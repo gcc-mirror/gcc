@@ -29,9 +29,7 @@ void test01()
   static_assert(test_category<is_compound, char>(false), "");
   static_assert(test_category<is_compound, signed char>(false), "");
   static_assert(test_category<is_compound, unsigned char>(false), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_compound, wchar_t>(false), "");
-#endif
   static_assert(test_category<is_compound, short>(false), "");
   static_assert(test_category<is_compound, unsigned short>(false), "");
   static_assert(test_category<is_compound, int>(false), "");

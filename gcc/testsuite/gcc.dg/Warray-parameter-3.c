@@ -77,7 +77,7 @@ gia3 (int a[3])
 __attribute__ ((noipa)) void
 gcas3 (char a[static 3])
 {
-  a[0] = 0; a[1] = 1; a[2] = 2; // { dg-warning "\\\[-Wstringop-overflow" { target { i?86-*-* x86_64-*-* } } }
+  a[0] = 0; a[1] = 1; a[2] = 2; // { dg-warning "\\\[-Wstringop-overflow" "" { target { i?86-*-* x86_64-*-* } } }
   a[3] = 3;                   // { dg-warning "\\\[-Warray-bounds" }
 }
 

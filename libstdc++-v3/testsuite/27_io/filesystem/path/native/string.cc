@@ -48,9 +48,11 @@ test02()
   VERIFY( str == "abc" );
   VERIFY( str == p.string() );
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   auto strw = p.string<wchar_t>();
   VERIFY( strw == L"abc" );
   VERIFY( strw == p.wstring() );
+#endif
 
   auto str16 = p.string<char16_t>();
   VERIFY( str16 == u"abc" );

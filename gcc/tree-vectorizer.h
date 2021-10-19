@@ -1701,14 +1701,22 @@ get_dr_vinfo_offset (vec_info *vinfo,
 }
 
 
+/* Return the vect cost model for LOOP.  */
+static inline enum vect_cost_model
+loop_cost_model (loop_p loop)
+{
+  if (loop != NULL
+      && loop->force_vectorize
+      && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
+    return flag_simd_cost_model;
+  return flag_vect_cost_model;
+}
+
 /* Return true if the vect cost model is unlimited.  */
 static inline bool
 unlimited_cost_model (loop_p loop)
 {
-  if (loop != NULL && loop->force_vectorize
-      && flag_simd_cost_model != VECT_COST_MODEL_DEFAULT)
-    return flag_simd_cost_model == VECT_COST_MODEL_UNLIMITED;
-  return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
+  return loop_cost_model (loop) == VECT_COST_MODEL_UNLIMITED;
 }
 
 /* Return true if the loop described by LOOP_VINFO is fully-masked and
@@ -1949,11 +1957,13 @@ extern bool vect_nop_conversion_p (stmt_vec_info);
 extern opt_result vect_analyze_stmt (vec_info *, stmt_vec_info, bool *,
 				     slp_tree,
 				     slp_instance, stmt_vector_for_cost *);
-extern void vect_get_load_cost (vec_info *, stmt_vec_info, int, bool,
+extern void vect_get_load_cost (vec_info *, stmt_vec_info, int,
+				dr_alignment_support, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,
 				stmt_vector_for_cost *, bool);
 extern void vect_get_store_cost (vec_info *, stmt_vec_info, int,
+				 dr_alignment_support, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (vec_info *, enum tree_code, tree);
 extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);
@@ -1970,7 +1980,7 @@ extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, unsigned int = 0);
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
-				   (vec_info *, dr_vec_info *, tree, bool);
+				   (vec_info *, dr_vec_info *, tree, int);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, tree);
 extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (vec_info *, slp_instance);

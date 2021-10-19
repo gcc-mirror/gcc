@@ -2230,7 +2230,6 @@ determine_specialization (tree template_id,
 	{
 	  tree decl_arg_types;
 	  tree fn_arg_types;
-	  tree insttype;
 
 	  /* In case of explicit specialization, we need to check if
 	     the number of template headers appearing in the specialization
@@ -2354,20 +2353,6 @@ determine_specialization (tree template_id,
 	  if (uses_template_parms (targs))
 	    /* We deduced something involving 'auto', which isn't a valid
 	       template argument.  */
-	    continue;
-
-          /* Remove, from the set of candidates, all those functions
-             whose constraints are not satisfied. */
-          if (flag_concepts && !constraints_satisfied_p (fn, targs))
-            continue;
-
-          // Then, try to form the new function type.
-	  insttype = tsubst (TREE_TYPE (fn), targs, tf_fndecl_type, NULL_TREE);
-	  if (insttype == error_mark_node)
-	    continue;
-	  fn_arg_types
-	    = skip_artificial_parms_for (fn, TYPE_ARG_TYPES (insttype));
-	  if (!compparms (fn_arg_types, decl_arg_types))
 	    continue;
 
 	  /* Save this template, and the arguments deduced.  */
@@ -21862,6 +21847,15 @@ fn_type_unification (tree fn,
 				 TREE_VALUE (sarg));
 	    goto fail;
 	  }
+      if ((i < nargs || sarg)
+	  /* add_candidates uses DEDUCE_EXACT for x.operator foo(), but args
+	     doesn't contain the trailing void, and conv fns are always ().  */
+	  && !DECL_CONV_FN_P (decl))
+	{
+	  unsigned nsargs = i + list_length (sarg);
+	  unify_arity (explain_p, nargs, nsargs);
+	  goto fail;
+	}
     }
 
   /* After doing deduction with the inherited constructor, actually return an
@@ -22384,6 +22378,10 @@ type_unification_real (tree tparms,
   parms = xparms;
   args = xargs;
   nargs = xnargs;
+
+  /* Only fn_type_unification cares about terminal void.  */
+  if (nargs && args[nargs-1] == void_type_node)
+    --nargs;
 
   ia = 0;
   while (parms && parms != void_list_node
@@ -24886,7 +24884,7 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
   nargs = list_length (decl_arg_types);
   args = XALLOCAVEC (tree, nargs);
   for (arg = decl_arg_types, ix = 0;
-       arg != NULL_TREE && arg != void_list_node;
+       arg != NULL_TREE;
        arg = TREE_CHAIN (arg), ++ix)
     args[ix] = TREE_VALUE (arg);
 

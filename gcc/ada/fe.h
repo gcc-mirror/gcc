@@ -260,6 +260,8 @@ extern Boolean Back_End_Exceptions	(void);
   restrict__check_no_implicit_task_alloc
 #define No_Exception_Handlers_Set	\
   restrict__no_exception_handlers_set
+#define No_Exception_Propagation_Active	\
+  restrict__no_exception_propagation_active
 
 extern void Check_Elaboration_Code_Allowed	(Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed	(Node_Id);
@@ -267,6 +269,7 @@ extern void Check_No_Implicit_Heap_Alloc	(Node_Id);
 extern void Check_No_Implicit_Protected_Alloc	(Node_Id);
 extern void Check_No_Implicit_Task_Alloc	(Node_Id);
 extern Boolean No_Exception_Handlers_Set	(void);
+extern Boolean No_Exception_Propagation_Active	(void);
 
 /* sem_aggr:  */
 

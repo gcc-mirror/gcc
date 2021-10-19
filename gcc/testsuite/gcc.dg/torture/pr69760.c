@@ -1,11 +1,10 @@
 /* PR tree-optimization/69760 */
 /* { dg-do run { target { { *-*-linux* *-*-gnu* *-*-uclinux* } && mmap } } } */
-/* { dg-options "-O2" } */
 
 #include <unistd.h>
 #include <sys/mman.h>
 
-__attribute__((noinline, noclone)) void
+__attribute__((noinline, noclone)) static void
 test_func (double *a, int L, int m, int n, int N)
 {
   int i, k;

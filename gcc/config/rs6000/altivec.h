@@ -129,7 +129,7 @@
 #define vec_vcfux __builtin_vec_vcfux
 #define vec_cts __builtin_vec_cts
 #define vec_ctu __builtin_vec_ctu
-#define vec_cpsgn __builtin_vec_copysign
+#define vec_cpsgn(x,y) __builtin_vec_copysign(y,x)
 #define vec_double __builtin_vec_double
 #define vec_doublee __builtin_vec_doublee
 #define vec_doubleo __builtin_vec_doubleo

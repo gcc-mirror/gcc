@@ -1464,7 +1464,6 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
   cppchar_t c, n = 0;
   size_t width = cvt.width;
   size_t mask = width_to_mask (width);
-  bool overflow = false;
 
   /* loc_reader and ranges must either be both NULL, or both be non-NULL.  */
   gcc_assert ((loc_reader != NULL) == (ranges != NULL));
@@ -1477,7 +1476,6 @@ convert_oct (cpp_reader *pfile, const uchar *from, const uchar *limit,
       from++;
       if (loc_reader)
 	char_range.m_finish = loc_reader->get_next ().m_finish;
-      overflow |= n ^ (n << 3 >> 3);
       n = (n << 3) + c - '0';
     }
 

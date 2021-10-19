@@ -253,8 +253,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
   }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
-
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   /// String conversions
@@ -625,8 +623,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
       char			_M_get_buf[_S_buffer_length-_S_putback_length];
       bool			_M_always_noconv;
     };
-
-#endif  // _GLIBCXX_USE_WCHAR_T
 
   /// @} group locales
 

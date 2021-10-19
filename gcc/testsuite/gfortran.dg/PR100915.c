@@ -67,7 +67,7 @@ check_fn (const CFI_cdesc_t *restrict auxp, const CFI_type_t type, const signed 
   /*  */
   assert (auxp->type==type);
   ityp = _CFI_decode_type(auxp->type);
-  assert (ityp == CFI_type_cptr);
+  assert (ityp == CFI_type_cfunptr);
   iknd = _CFI_decode_kind(auxp->type);
   assert (_CFI_decode_type(type)==ityp);
   assert (kind==iknd);

@@ -33,9 +33,7 @@ void test01()
   VERIFY( (test_category<is_integral, char>(true)) );
   VERIFY( (test_category<is_integral, signed char>(true)) );
   VERIFY( (test_category<is_integral, unsigned char>(true)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_integral, wchar_t>(true)) );
-#endif
   VERIFY( (test_category<is_integral, short>(true)) );
   VERIFY( (test_category<is_integral, unsigned short>(true)) );
   VERIFY( (test_category<is_integral, int>(true)) );

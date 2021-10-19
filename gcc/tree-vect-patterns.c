@@ -119,8 +119,9 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
     = STMT_VINFO_DEF_TYPE (orig_stmt_info);
   if (!STMT_VINFO_VECTYPE (pattern_stmt_info))
     {
-      gcc_assert (VECTOR_BOOLEAN_TYPE_P (vectype)
-		  == vect_use_mask_type_p (orig_stmt_info));
+      gcc_assert (!vectype
+		  || (VECTOR_BOOLEAN_TYPE_P (vectype)
+		      == vect_use_mask_type_p (orig_stmt_info)));
       STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
       pattern_stmt_info->mask_precision = orig_stmt_info->mask_precision;
     }
@@ -4283,8 +4284,6 @@ vect_recog_bool_pattern (vec_info *vinfo,
 	  || VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
 	return NULL;
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
-      if (vectype == NULL_TREE)
-	return NULL;
 
       if (check_bool_pattern (var, vinfo, bool_stmts))
 	{
@@ -5696,7 +5695,6 @@ vect_pattern_recog_1 (vec_info *vinfo,
     }
 
   loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
-  gcc_assert (pattern_vectype);
  
   /* Found a vectorizable pattern.  */
   if (dump_enabled_p ())

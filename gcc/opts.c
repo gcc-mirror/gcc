@@ -581,6 +581,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_ftree_sink, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_slsr, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ter, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fvar_tracking, NULL, 1 },
 
     /* -O1 (and not -Og) optimizations.  */
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fbranch_count_reg, NULL, 1 },
@@ -1320,11 +1321,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     control_options_for_live_patching (opts, opts_set,
 				       opts->x_flag_live_patching,
 				       loc);
-
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (opts->x_flag_unroll_all_loops)
-    opts->x_flag_unroll_loops = 1;
 
   /* Allow cunroll to grow size accordingly.  */
   if (!opts_set->x_flag_cunroll_grow_size)

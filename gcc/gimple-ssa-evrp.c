@@ -137,6 +137,9 @@ public:
 
   tree value_of_expr (tree name, gimple *s = NULL) OVERRIDE
   {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
     tree ret = m_ranger->value_of_expr (name, s);
     if (!ret && supported_pointer_equiv_p (name))
       ret = m_pta->get_equiv (name);
@@ -145,6 +148,9 @@ public:
 
   tree value_on_edge (edge e, tree name) OVERRIDE
   {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
     tree ret = m_ranger->value_on_edge (e, name);
     if (!ret && supported_pointer_equiv_p (name))
       ret = m_pta->get_equiv (name);
@@ -153,6 +159,9 @@ public:
 
   tree value_of_stmt (gimple *s, tree name = NULL) OVERRIDE
   {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
     return m_ranger->value_of_stmt (s, name);
   }
 
@@ -283,9 +292,15 @@ tree
 hybrid_folder::value_of_expr (tree op, gimple *stmt)
 {
   tree evrp_ret = evrp_folder::value_of_expr (op, stmt);
-  tree ranger_ret = m_ranger->value_of_expr (op, stmt);
-  if (!ranger_ret && supported_pointer_equiv_p (op))
-    ranger_ret = m_pta->get_equiv (op);
+  tree ranger_ret;
+  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    ranger_ret = NULL;
+  else
+    {
+      ranger_ret = m_ranger->value_of_expr (op, stmt);
+      if (!ranger_ret && supported_pointer_equiv_p (op))
+	ranger_ret = m_pta->get_equiv (op);
+    }
   return choose_value (evrp_ret, ranger_ret);
 }
 
@@ -295,9 +310,15 @@ hybrid_folder::value_on_edge (edge e, tree op)
   // Call evrp::value_of_expr directly.  Otherwise another dual call is made
   // via hybrid_folder::value_of_expr, but without an edge.
   tree evrp_ret = evrp_folder::value_of_expr (op, NULL);
-  tree ranger_ret = m_ranger->value_on_edge (e, op);
-  if (!ranger_ret && supported_pointer_equiv_p (op))
-    ranger_ret = m_pta->get_equiv (op);
+  tree ranger_ret;
+  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    ranger_ret = NULL;
+  else
+    {
+      ranger_ret = m_ranger->value_on_edge (e, op);
+      if (!ranger_ret && supported_pointer_equiv_p (op))
+	ranger_ret = m_pta->get_equiv (op);
+    }
   return choose_value (evrp_ret, ranger_ret);
 }
 
@@ -312,7 +333,11 @@ hybrid_folder::value_of_stmt (gimple *stmt, tree op)
   else
     evrp_ret = NULL_TREE;
 
-  tree ranger_ret = m_ranger->value_of_stmt (stmt, op);
+  tree ranger_ret;
+  if (op && TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    ranger_ret = NULL;
+  else
+    ranger_ret = m_ranger->value_of_stmt (stmt, op);
   return choose_value (evrp_ret, ranger_ret);
 }
 

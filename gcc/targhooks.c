@@ -2200,7 +2200,7 @@ pch_option_mismatch (const char *option)
 /* Default version of pch_valid_p.  */
 
 const char *
-default_pch_valid_p (const void *data_p, size_t len)
+default_pch_valid_p (const void *data_p, size_t len ATTRIBUTE_UNUSED)
 {
   struct cl_option_state state;
   const char *data = (const char *)data_p;
@@ -2221,7 +2221,6 @@ default_pch_valid_p (const void *data_p, size_t len)
 
       memcpy (&tf, data, sizeof (target_flags));
       data += sizeof (target_flags);
-      len -= sizeof (target_flags);
       r = targetm.check_pch_target_flags (tf);
       if (r != NULL)
 	return r;
@@ -2233,7 +2232,6 @@ default_pch_valid_p (const void *data_p, size_t len)
 	if (memcmp (data, state.data, state.size) != 0)
 	  return pch_option_mismatch (cl_options[i].opt_text);
 	data += state.size;
-	len -= state.size;
       }
 
   return NULL;

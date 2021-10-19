@@ -1817,6 +1817,14 @@ c_parser_gimple_postfix_expression_after_primary (gimple_parser &parser,
 	case CPP_DEREF:
 	  {
 	    /* Structure element reference.  */
+	    if (!POINTER_TYPE_P (TREE_TYPE (expr.value)))
+	      {
+		c_parser_error (parser, "dereference of non-pointer");
+		expr.set_error ();
+		expr.original_code = ERROR_MARK;
+		expr.original_type = NULL;
+		return expr;
+	      }
 	    c_parser_consume_token (parser);
 	    if (c_parser_next_token_is (parser, CPP_NAME))
 	      {

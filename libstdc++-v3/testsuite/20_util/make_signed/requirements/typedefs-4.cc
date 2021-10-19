@@ -22,11 +22,9 @@
 // libstdc++/60326
 
 using namespace std;
-#ifdef _GLIBCXX_USE_WCHAR_T
 using wchar_signed = make_signed<wchar_t>::type;
 using wchar_unsigned = make_unsigned<wchar_t>::type;
 static_assert( !is_same<wchar_signed, wchar_unsigned>::value, "wchar_t" );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
 static_assert( is_signed<make_signed<char8_t>::type>::value, "char8_t");
 #endif

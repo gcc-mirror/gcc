@@ -192,6 +192,51 @@ namespace std _GLIBCXX_VISIBILITY(default)
       return lcg();
     }
 #endif
+
+    enum Which {
+      rand_s = 1, rdseed = 2, rdrand = 4, device_file = 8, prng = 16,
+      any = 0xffff
+    };
+
+    inline Which
+    which_source(random_device::result_type (*func [[maybe_unused]])(void*),
+		 void* file [[maybe_unused]])
+    {
+#ifdef _GLIBCXX_USE_CRT_RAND_S
+      if (func == &__winxp_rand_s)
+	return rand_s;
+#endif
+
+#ifdef USE_RDSEED
+#ifdef USE_RDRAND
+      if (func == &__x86_rdseed_rdrand)
+	return rdseed;
+#endif
+      if (func == &__x86_rdseed)
+	return rdseed;
+#endif
+
+#ifdef USE_RDRAND
+      if (func == &__x86_rdrand)
+	return rdrand;
+#endif
+
+#ifdef _GLIBCXX_USE_DEV_RANDOM
+      if (file != nullptr)
+	return device_file;
+#endif
+
+#ifdef USE_LCG
+      if (func == &__lcg)
+	return prng;
+#endif
+
+#ifdef USE_MT19937
+      return prng;
+#endif
+
+      return any; // should be unreachable
+    }
   }
 
   void
@@ -209,10 +254,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     const char* fname [[gnu::unused]] = nullptr;
 
-    enum {
-	rand_s = 1, rdseed = 2, rdrand = 4, device_file = 8, prng = 16,
-	any = 0xffff
-    } which;
+    Which which;
 
     if (token == "default")
       {
@@ -449,10 +491,25 @@ namespace std _GLIBCXX_VISIBILITY(default)
   double
   random_device::_M_getentropy() const noexcept
   {
+    const int max = sizeof(result_type) * __CHAR_BIT__;
+
+    switch(which_source(_M_func, _M_file))
+    {
+    case rdrand:
+    case rdseed:
+      return (double) max;
+    case rand_s:
+    case prng:
+      return 0.0;
+    case device_file:
+      // handled below
+      break;
+    default:
+      return 0.0;
+    }
+
 #if defined _GLIBCXX_USE_DEV_RANDOM \
     && defined _GLIBCXX_HAVE_SYS_IOCTL_H && defined RNDGETENTCNT
-    if (!_M_file)
-      return 0.0;
 
 #ifdef USE_POSIX_FILE_IO
     const int fd = _M_fd;
@@ -469,7 +526,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
     if (ent < 0)
       return 0.0;
 
-    const int max = sizeof(result_type) * __CHAR_BIT__;
     if (ent > max)
       ent = max;
 

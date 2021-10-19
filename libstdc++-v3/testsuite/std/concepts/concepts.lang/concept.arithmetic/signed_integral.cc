@@ -39,9 +39,7 @@ static_assert( !std::signed_integral<bool> );
 static_assert( std::is_signed_v<char> ? std::signed_integral<char> : true );
 static_assert( !std::signed_integral<char16_t> );
 static_assert( !std::signed_integral<char32_t> );
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( std::is_signed_v<wchar_t> ? std::signed_integral<wchar_t> : true );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
 static_assert( !std::signed_integral<char8_t> );
 #endif

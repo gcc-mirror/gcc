@@ -806,7 +806,8 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	    }
 	}
       else if (constant_multiple_p (bitnum, regsize * BITS_PER_UNIT, &regnum)
-	       && multiple_p (bitsize, regsize * BITS_PER_UNIT))
+	       && multiple_p (bitsize, regsize * BITS_PER_UNIT)
+	       && known_ge (GET_MODE_BITSIZE (GET_MODE (op0)), bitsize))
 	{
 	  sub = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
 				     regnum * regsize);

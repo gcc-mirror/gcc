@@ -168,6 +168,70 @@ gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *list)
     }
 }
 
+static void
+gfc_free_omp_trait_property_list (gfc_omp_trait_property *list)
+{
+  while (list)
+    {
+      gfc_omp_trait_property *current = list;
+      list = list->next;
+      switch (current->property_kind)
+	{
+	case CTX_PROPERTY_ID:
+	  free (current->name);
+	  break;
+	case CTX_PROPERTY_NAME_LIST:
+	  if (current->is_name)
+	    free (current->name);
+	  break;
+	case CTX_PROPERTY_SIMD:
+	  gfc_free_omp_clauses (current->clauses);
+	  break;
+	default:
+	  break;
+	}
+      free (current);
+    }
+}
+
+static void
+gfc_free_omp_selector_list (gfc_omp_selector *list)
+{
+  while (list)
+    {
+      gfc_omp_selector *current = list;
+      list = list->next;
+      gfc_free_omp_trait_property_list (current->properties);
+      free (current);
+    }
+}
+
+static void
+gfc_free_omp_set_selector_list (gfc_omp_set_selector *list)
+{
+  while (list)
+    {
+      gfc_omp_set_selector *current = list;
+      list = list->next;
+      gfc_free_omp_selector_list (current->trait_selectors);
+      free (current);
+    }
+}
+
+/* Free an !$omp declare variant construct list.  */
+
+void
+gfc_free_omp_declare_variant_list (gfc_omp_declare_variant *list)
+{
+  while (list)
+    {
+      gfc_omp_declare_variant *current = list;
+      list = list->next;
+      gfc_free_omp_set_selector_list (current->set_selectors);
+      free (current);
+    }
+}
+
 /* Free an !$omp declare reduction.  */
 
 void
@@ -1353,7 +1417,7 @@ gfc_match_dupl_atomic (bool not_dupl, const char *name)
 static match
 gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		       bool first = true, bool needs_space = true,
-		       bool openacc = false)
+		       bool openacc = false, bool context_selector = false)
 {
   bool error = false;
   gfc_omp_clauses *c = gfc_get_omp_clauses ();
@@ -2843,7 +2907,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
     }
 
 end:
-  if (error || gfc_match_omp_eos () != MATCH_YES)
+  if (error
+      || (context_selector && gfc_peek_ascii_char () != ')')
+      || (!context_selector && gfc_match_omp_eos () != MATCH_YES))
     {
       if (!gfc_error_flag_test ())
 	gfc_error ("Failed to match clause at %C");
@@ -4426,6 +4492,449 @@ cleanup:
   if (c)
     gfc_free_omp_clauses (c);
   return MATCH_ERROR;
+}
+
+
+static const char *const omp_construct_selectors[] = {
+  "simd", "target", "teams", "parallel", "do", NULL };
+static const char *const omp_device_selectors[] = {
+  "kind", "isa", "arch", NULL };
+static const char *const omp_implementation_selectors[] = {
+  "vendor", "extension", "atomic_default_mem_order", "unified_address",
+  "unified_shared_memory", "dynamic_allocators", "reverse_offload", NULL };
+static const char *const omp_user_selectors[] = {
+  "condition", NULL };
+
+
+/* OpenMP 5.0:
+
+   trait-selector:
+     trait-selector-name[([trait-score:]trait-property[,trait-property[,...]])]
+
+   trait-score:
+     score(score-expression)  */
+
+match
+gfc_match_omp_context_selector (gfc_omp_set_selector *oss)
+{
+  do
+    {
+      char selector[GFC_MAX_SYMBOL_LEN + 1];
+
+      if (gfc_match_name (selector) != MATCH_YES)
+	{
+	  gfc_error ("expected trait selector name at %C");
+	  return MATCH_ERROR;
+	}
+
+      gfc_omp_selector *os = gfc_get_omp_selector ();
+      os->trait_selector_name = XNEWVEC (char, strlen (selector) + 1);
+      strcpy (os->trait_selector_name, selector);
+      os->next = oss->trait_selectors;
+      oss->trait_selectors = os;
+
+      const char *const *selectors = NULL;
+      bool allow_score = true;
+      bool allow_user = false;
+      int property_limit = 0;
+      enum gfc_omp_trait_property_kind property_kind = CTX_PROPERTY_NONE;
+      switch (oss->trait_set_selector_name[0])
+	{
+	case 'c': /* construct */
+	  selectors = omp_construct_selectors;
+	  allow_score = false;
+	  property_limit = 1;
+	  property_kind = CTX_PROPERTY_SIMD;
+	  break;
+	case 'd': /* device */
+	  selectors = omp_device_selectors;
+	  allow_score = false;
+	  allow_user = true;
+	  property_limit = 3;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
+	  break;
+	case 'i': /* implementation */
+	  selectors = omp_implementation_selectors;
+	  allow_user = true;
+	  property_limit = 3;
+	  property_kind = CTX_PROPERTY_NAME_LIST;
+	  break;
+	case 'u': /* user */
+	  selectors = omp_user_selectors;
+	  property_limit = 1;
+	  property_kind = CTX_PROPERTY_EXPR;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      for (int i = 0; ; i++)
+	{
+	  if (selectors[i] == NULL)
+	    {
+	      if (allow_user)
+		{
+		  property_kind = CTX_PROPERTY_USER;
+		  break;
+		}
+	      else
+		{
+		  gfc_error ("selector '%s' not allowed for context selector "
+			     "set '%s' at %C",
+			     selector, oss->trait_set_selector_name);
+		  return MATCH_ERROR;
+		}
+	    }
+	  if (i == property_limit)
+	    property_kind = CTX_PROPERTY_NONE;
+	  if (strcmp (selectors[i], selector) == 0)
+	    break;
+	}
+      if (property_kind == CTX_PROPERTY_NAME_LIST
+	  && oss->trait_set_selector_name[0] == 'i'
+	  && strcmp (selector, "atomic_default_mem_order") == 0)
+	property_kind = CTX_PROPERTY_ID;
+
+      if (gfc_match (" (") == MATCH_YES)
+	{
+	  if (property_kind == CTX_PROPERTY_NONE)
+	    {
+	      gfc_error ("selector '%s' does not accept any properties at %C",
+			 selector);
+	      return MATCH_ERROR;
+	    }
+
+	  if (allow_score && gfc_match (" score") == MATCH_YES)
+	    {
+	      if (gfc_match (" (") != MATCH_YES)
+		{
+		  gfc_error ("expected '(' at %C");
+		  return MATCH_ERROR;
+		}
+	      if (gfc_match_expr (&os->score) != MATCH_YES
+		  || !gfc_resolve_expr (os->score)
+		  || os->score->ts.type != BT_INTEGER
+		  || os->score->rank != 0)
+		{
+		  gfc_error ("score argument must be constant integer "
+			     "expression at %C");
+		  return MATCH_ERROR;
+		}
+
+	      if (os->score->expr_type == EXPR_CONSTANT
+		  && mpz_sgn (os->score->value.integer) < 0)
+		{
+		  gfc_error ("score argument must be non-negative at %C");
+		  return MATCH_ERROR;
+		}
+
+	      if (gfc_match (" )") != MATCH_YES)
+		{
+		  gfc_error ("expected ')' at %C");
+		  return MATCH_ERROR;
+		}
+
+	      if (gfc_match (" :") != MATCH_YES)
+		{
+		  gfc_error ("expected : at %C");
+		  return MATCH_ERROR;
+		}
+	    }
+
+	  gfc_omp_trait_property *otp = gfc_get_omp_trait_property ();
+	  otp->property_kind = property_kind;
+	  otp->next = os->properties;
+	  os->properties = otp;
+
+	  switch (property_kind)
+	    {
+	    case CTX_PROPERTY_USER:
+	      do
+		{
+		  if (gfc_match_expr (&otp->expr) != MATCH_YES)
+		    {
+		      gfc_error ("property must be constant integer "
+				 "expression or string literal at %C");
+		      return MATCH_ERROR;
+		    }
+
+		  if (gfc_match (" ,") != MATCH_YES)
+		    break;
+		}
+	      while (1);
+	      break;
+	    case CTX_PROPERTY_ID:
+	      {
+		char buf[GFC_MAX_SYMBOL_LEN + 1];
+		if (gfc_match_name (buf) == MATCH_YES)
+		  {
+		    otp->name = XNEWVEC (char, strlen (buf) + 1);
+		    strcpy (otp->name, buf);
+		  }
+		else
+		  {
+		    gfc_error ("expected identifier at %C");
+		    return MATCH_ERROR;
+		  }
+	      }
+	      break;
+	    case CTX_PROPERTY_NAME_LIST:
+	      do
+		{
+		  char buf[GFC_MAX_SYMBOL_LEN + 1];
+		  if (gfc_match_name (buf) == MATCH_YES)
+		    {
+		      otp->name = XNEWVEC (char, strlen (buf) + 1);
+		      strcpy (otp->name, buf);
+		      otp->is_name = true;
+		    }
+		  else if (gfc_match_literal_constant (&otp->expr, 0)
+			   != MATCH_YES
+			   || otp->expr->ts.type != BT_CHARACTER)
+		    {
+		      gfc_error ("expected identifier or string literal "
+				 "at %C");
+		      return MATCH_ERROR;
+		    }
+
+		  if (gfc_match (" ,") == MATCH_YES)
+		    {
+		      otp = gfc_get_omp_trait_property ();
+		      otp->property_kind = property_kind;
+		      otp->next = os->properties;
+		      os->properties = otp;
+		    }
+		  else
+		    break;
+		}
+	      while (1);
+	      break;
+	    case CTX_PROPERTY_EXPR:
+	      if (gfc_match_expr (&otp->expr) != MATCH_YES)
+		{
+		  gfc_error ("expected expression at %C");
+		  return MATCH_ERROR;
+		}
+	      if (!gfc_resolve_expr (otp->expr)
+		  || (otp->expr->ts.type != BT_LOGICAL
+		      && otp->expr->ts.type != BT_INTEGER)
+		  || otp->expr->rank != 0)
+		{
+		  gfc_error ("property must be constant integer or logical "
+			     "expression at %C");
+		  return MATCH_ERROR;
+		}
+	      break;
+	    case CTX_PROPERTY_SIMD:
+	      {
+		if (gfc_match_omp_clauses (&otp->clauses,
+					   OMP_DECLARE_SIMD_CLAUSES,
+					   true, false, false, true)
+		    != MATCH_YES)
+		  {
+		  gfc_error ("expected simd clause at %C");
+		    return MATCH_ERROR;
+		  }
+		break;
+	      }
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  if (gfc_match (" )") != MATCH_YES)
+	    {
+	      gfc_error ("expected ')' at %C");
+	      return MATCH_ERROR;
+	    }
+	}
+      else if (property_kind == CTX_PROPERTY_NAME_LIST
+	       || property_kind == CTX_PROPERTY_ID
+	       || property_kind == CTX_PROPERTY_EXPR)
+	{
+	  if (gfc_match (" (") != MATCH_YES)
+	    {
+	      gfc_error ("expected '(' at %C");
+	      return MATCH_ERROR;
+	    }
+	}
+
+      if (gfc_match (" ,") != MATCH_YES)
+	break;
+    }
+  while (1);
+
+  return MATCH_YES;
+}
+
+/* OpenMP 5.0:
+
+   trait-set-selector[,trait-set-selector[,...]]
+
+   trait-set-selector:
+     trait-set-selector-name = { trait-selector[, trait-selector[, ...]] }
+
+   trait-set-selector-name:
+     constructor
+     device
+     implementation
+     user  */
+
+match
+gfc_match_omp_context_selector_specification (gfc_omp_declare_variant *odv)
+{
+  do
+    {
+      match m;
+      const char *selector_sets[] = { "construct", "device",
+				      "implementation", "user" };
+      const int selector_set_count
+	= sizeof (selector_sets) / sizeof (*selector_sets);
+      int i;
+      char buf[GFC_MAX_SYMBOL_LEN + 1];
+
+      m = gfc_match_name (buf);
+      if (m == MATCH_YES)
+	for (i = 0; i < selector_set_count; i++)
+	  if (strcmp (buf, selector_sets[i]) == 0)
+	    break;
+
+      if (m != MATCH_YES || i == selector_set_count)
+	{
+	  gfc_error ("expected 'construct', 'device', 'implementation' or "
+		     "'user' at %C");
+	  return MATCH_ERROR;
+	}
+
+      m = gfc_match (" =");
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("expected '=' at %C");
+	  return MATCH_ERROR;
+	}
+
+      m = gfc_match (" {");
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("expected '{' at %C");
+	  return MATCH_ERROR;
+	}
+
+      gfc_omp_set_selector *oss = gfc_get_omp_set_selector ();
+      oss->next = odv->set_selectors;
+      oss->trait_set_selector_name = selector_sets[i];
+      odv->set_selectors = oss;
+
+      if (gfc_match_omp_context_selector (oss) != MATCH_YES)
+	return MATCH_ERROR;
+
+      m = gfc_match (" }");
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("expected '}' at %C");
+	  return MATCH_ERROR;
+	}
+
+      m = gfc_match (" ,");
+      if (m != MATCH_YES)
+	break;
+    }
+  while (1);
+
+  return MATCH_YES;
+}
+
+
+match
+gfc_match_omp_declare_variant (void)
+{
+  bool first_p = true;
+  char buf[GFC_MAX_SYMBOL_LEN + 1];
+
+  if (gfc_match (" (") != MATCH_YES)
+    {
+      gfc_error ("expected '(' at %C");
+      return MATCH_ERROR;
+    }
+
+  gfc_symtree *base_proc_st, *variant_proc_st;
+  if (gfc_match_name (buf) != MATCH_YES)
+    {
+      gfc_error ("expected name at %C");
+      return MATCH_ERROR;
+    }
+
+  if (gfc_get_ha_sym_tree (buf, &base_proc_st))
+    return MATCH_ERROR;
+
+  if (gfc_match (" :") == MATCH_YES)
+    {
+      if (gfc_match_name (buf) != MATCH_YES)
+	{
+	  gfc_error ("expected variant name at %C");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_get_ha_sym_tree (buf, &variant_proc_st))
+	return MATCH_ERROR;
+    }
+  else
+    {
+      /* Base procedure not specified.  */
+      variant_proc_st = base_proc_st;
+      base_proc_st = NULL;
+    }
+
+  gfc_omp_declare_variant *odv;
+  odv = gfc_get_omp_declare_variant ();
+  odv->where = gfc_current_locus;
+  odv->variant_proc_symtree = variant_proc_st;
+  odv->base_proc_symtree = base_proc_st;
+  odv->next = NULL;
+  odv->error_p = false;
+
+  /* Add the new declare variant to the end of the list.  */
+  gfc_omp_declare_variant **prev_next = &gfc_current_ns->omp_declare_variant;
+  while (*prev_next)
+    prev_next = &((*prev_next)->next);
+  *prev_next = odv;
+
+  if (gfc_match (" )") != MATCH_YES)
+    {
+      gfc_error ("expected ')' at %C");
+      return MATCH_ERROR;
+    }
+
+  for (;;)
+    {
+      if (gfc_match (" match") != MATCH_YES)
+	{
+	  if (first_p)
+	    {
+	      gfc_error ("expected 'match' at %C");
+	      return MATCH_ERROR;
+	    }
+	  else
+	    break;
+	}
+
+      if (gfc_match (" (") != MATCH_YES)
+	{
+	  gfc_error ("expected '(' at %C");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_match_omp_context_selector_specification (odv) != MATCH_YES)
+	return MATCH_ERROR;
+
+      if (gfc_match (" )") != MATCH_YES)
+	{
+	  gfc_error ("expected ')' at %C");
+	  return MATCH_ERROR;
+	}
+
+      first_p = false;
+    }
+
+  return MATCH_YES;
 }
 
 

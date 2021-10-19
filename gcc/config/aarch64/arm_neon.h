@@ -16198,7 +16198,7 @@ vld1_u8_x3 (const uint8_t *__a)
 
 __extension__ extern __inline int8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vld1_s8_x3 (const uint8_t *__a)
+vld1_s8_x3 (const int8_t *__a)
 {
   int8x8x3_t __i;
   __builtin_aarch64_simd_ci __o;
@@ -16250,7 +16250,7 @@ vld1_u32_x3 (const uint32_t *__a)
 
 __extension__ extern __inline int32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vld1_s32_x3 (const uint32_t *__a)
+vld1_s32_x3 (const int32_t *__a)
 {
   int32x2x3_t __i;
   __builtin_aarch64_simd_ci __o;

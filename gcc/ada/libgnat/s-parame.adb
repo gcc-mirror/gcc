@@ -55,7 +55,7 @@ package body System.Parameters is
    ------------------------
 
    function Default_Stack_Size return Size_Type is
-      Default_Stack_Size : Integer;
+      Default_Stack_Size : constant Integer;
       pragma Import (C, Default_Stack_Size, "__gl_default_stack_size");
    begin
       if Default_Stack_Size = -1 then

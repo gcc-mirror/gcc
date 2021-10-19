@@ -663,7 +663,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 
 /* Return the size of TYPE, which must be a positive power of 2.  */
 
-static unsigned int
+unsigned int
 resolve_atomic_size (tree type)
 {
   unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE_UNIT (type));

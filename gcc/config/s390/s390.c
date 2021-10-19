@@ -16569,6 +16569,75 @@ s390_excess_precision (enum excess_precision_type type)
 }
 #endif
 
+void
+s390_rawmemchr (machine_mode elt_mode, rtx dst, rtx src, rtx pat)
+{
+  machine_mode vec_mode = mode_for_vector (as_a <scalar_int_mode> (elt_mode),
+					   16 / GET_MODE_SIZE (elt_mode)).require();
+  rtx lens = gen_reg_rtx (V16QImode);
+  rtx pattern = gen_reg_rtx (vec_mode);
+  rtx loop_start = gen_label_rtx ();
+  rtx loop_end = gen_label_rtx ();
+  rtx addr = gen_reg_rtx (Pmode);
+  rtx offset = gen_reg_rtx (Pmode);
+  rtx loadlen = gen_reg_rtx (SImode);
+  rtx matchlen = gen_reg_rtx (SImode);
+  rtx mem;
+
+  pat = GEN_INT (trunc_int_for_mode (INTVAL (pat), elt_mode));
+  emit_insn (gen_rtx_SET (pattern, gen_rtx_VEC_DUPLICATE (vec_mode, pat)));
+
+  emit_move_insn (addr, XEXP (src, 0));
+
+  // alignment
+  emit_insn (gen_vlbb (lens, gen_rtx_MEM (BLKmode, addr), GEN_INT (6)));
+  emit_insn (gen_lcbb (loadlen, addr, GEN_INT (6)));
+  lens = convert_to_mode (vec_mode, lens, 1);
+  emit_insn (gen_vec_vfees (vec_mode, lens, lens, pattern, GEN_INT (0)));
+  lens = convert_to_mode (V4SImode, lens, 1);
+  emit_insn (gen_vec_extractv4sisi (matchlen, lens, GEN_INT (1)));
+  lens = convert_to_mode (vec_mode, lens, 1);
+  emit_cmp_and_jump_insns (matchlen, loadlen, LT, NULL_RTX, SImode, 1, loop_end);
+  force_expand_binop (Pmode, add_optab, addr, GEN_INT(16), addr, 1, OPTAB_DIRECT);
+  force_expand_binop (Pmode, and_optab, addr, GEN_INT(~HOST_WIDE_INT_UC(0xf)), addr, 1, OPTAB_DIRECT);
+  // now, addr is 16-byte aligned
+
+  mem = gen_rtx_MEM (vec_mode, addr);
+  set_mem_align (mem, 128);
+  emit_move_insn (lens, mem);
+  emit_insn (gen_vec_vfees (vec_mode, lens, lens, pattern, GEN_INT (VSTRING_FLAG_CS)));
+  add_int_reg_note (s390_emit_ccraw_jump (4, EQ, loop_end),
+		    REG_BR_PROB,
+		    profile_probability::very_unlikely ().to_reg_br_prob_note ());
+
+  emit_label (loop_start);
+  LABEL_NUSES (loop_start) = 1;
+
+  force_expand_binop (Pmode, add_optab, addr, GEN_INT (16), addr, 1, OPTAB_DIRECT);
+  mem = gen_rtx_MEM (vec_mode, addr);
+  set_mem_align (mem, 128);
+  emit_move_insn (lens, mem);
+  emit_insn (gen_vec_vfees (vec_mode, lens, lens, pattern, GEN_INT (VSTRING_FLAG_CS)));
+  add_int_reg_note (s390_emit_ccraw_jump (4, NE, loop_start),
+		    REG_BR_PROB,
+		    profile_probability::very_likely ().to_reg_br_prob_note ());
+
+  emit_label (loop_end);
+  LABEL_NUSES (loop_end) = 1;
+
+  if (TARGET_64BIT)
+    {
+      lens = convert_to_mode (V2DImode, lens, 1);
+      emit_insn (gen_vec_extractv2didi (offset, lens, GEN_INT (0)));
+    }
+  else
+    {
+      lens = convert_to_mode (V4SImode, lens, 1);
+      emit_insn (gen_vec_extractv4sisi (offset, lens, GEN_INT (1)));
+    }
+  force_expand_binop (Pmode, add_optab, addr, offset, dst, 1, OPTAB_DIRECT);
+}
+
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
 static unsigned HOST_WIDE_INT

@@ -26,13 +26,11 @@ void test01()
   using namespace __gnu_test;
 
   static_assert(test_category<is_void, void>(true), "");
-  
+
   static_assert(test_category<is_void, char>(false), "");
   static_assert(test_category<is_void, signed char>(false), "");
   static_assert(test_category<is_void, unsigned char>(false), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_void, wchar_t>(false), "");
-#endif
   static_assert(test_category<is_void, short>(false), "");
   static_assert(test_category<is_void, unsigned short>(false), "");
   static_assert(test_category<is_void, int>(false), "");

@@ -1032,7 +1032,7 @@ package body Ada.Tags is
    -- Wide_Expanded_Name --
    ------------------------
 
-   WC_Encoding : Character;
+   WC_Encoding : constant Character;
    pragma Import (C, WC_Encoding, "__gl_wc_encoding");
    --  Encoding method for source, as exported by binder
 

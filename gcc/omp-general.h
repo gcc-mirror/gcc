@@ -104,6 +104,9 @@ extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
 extern int omp_constructor_traits_to_codes (tree, enum tree_code *);
+extern tree omp_check_context_selector (location_t loc, tree ctx);
+extern void omp_mark_declare_variant (location_t loc, tree variant,
+				      tree construct);
 extern int omp_context_selector_matches (tree);
 extern int omp_context_selector_set_compare (const char *, tree, tree);
 extern tree omp_get_context_selector (tree, const char *, const char *);

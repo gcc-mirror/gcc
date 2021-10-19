@@ -19,8 +19,8 @@
 
 #include <limits>
 
-// libstdc++/40856 
-#if defined _GLIBCXX_USE_INT128 && ! defined __STRICT_ANSI__
+// libstdc++/40856
+#if defined __SIZEOF_INT128__
 static_assert(std::numeric_limits<__int128>::is_specialized == true, "");
 static_assert(std::numeric_limits<unsigned __int128>::is_specialized == true,
 	      "");

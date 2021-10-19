@@ -5307,8 +5307,8 @@ package body Sem_Aggr is
 
                   Add_Association
                    (Component      => Component,
-                    Expr       => Empty,
-                    Assoc_List => New_Assoc_List,
+                    Expr           => Empty,
+                    Assoc_List     => New_Assoc_List,
                     Is_Box_Present => True);
 
                elsif Present (Parent (Component))
@@ -5387,74 +5387,12 @@ package body Sem_Aggr is
                      Assoc_List => New_Assoc_List);
                   Set_Has_Self_Reference (N);
 
-               --  A box-defaulted access component gets the value null. Also
-               --  included are components of private types whose underlying
-               --  type is an access type. In either case set the type of the
-               --  literal, for subsequent use in semantic checks.
-
-               elsif Present (Underlying_Type (Ctyp))
-                 and then Is_Access_Type (Underlying_Type (Ctyp))
-               then
-                  --  If the component's type is private with an access type as
-                  --  its underlying type then we have to create an unchecked
-                  --  conversion to satisfy type checking.
-
-                  if Is_Private_Type (Ctyp) then
-                     declare
-                        Qual_Null : constant Node_Id :=
-                                      Make_Qualified_Expression (Sloc (N),
-                                        Subtype_Mark =>
-                                          New_Occurrence_Of
-                                            (Underlying_Type (Ctyp), Sloc (N)),
-                                        Expression   => Make_Null (Sloc (N)));
-
-                        Convert_Null : constant Node_Id :=
-                                         Unchecked_Convert_To
-                                           (Ctyp, Qual_Null);
-
-                     begin
-                        Analyze_And_Resolve (Convert_Null, Ctyp);
-                        Add_Association
-                          (Component  => Component,
-                           Expr       => Convert_Null,
-                           Assoc_List => New_Assoc_List);
-                     end;
-
-                  --  Otherwise the component type is non-private
-
-                  else
-                     Expr := Make_Null (Sloc (N));
-                     Set_Etype (Expr, Ctyp);
-
-                     Add_Association
-                       (Component  => Component,
-                        Expr       => Expr,
-                        Assoc_List => New_Assoc_List);
-                  end if;
-
-               --  Ada 2012: If component is scalar with default value, use it
-               --  by converting it to Ctyp, so that subtype constraints are
-               --  checked.
-
-               elsif Is_Scalar_Type (Ctyp)
-                 and then Has_Default_Aspect (Ctyp)
-               then
-                  declare
-                     Conv : constant Node_Id :=
-                       Convert_To
-                         (Typ  => Ctyp,
-                          Expr =>
-                            New_Copy_Tree
-                              (Default_Aspect_Value
-                                 (First_Subtype (Underlying_Type (Ctyp)))));
-
-                  begin
-                     Analyze_And_Resolve (Conv, Ctyp);
-                     Add_Association
-                       (Component  => Component,
-                        Expr       => Conv,
-                        Assoc_List => New_Assoc_List);
-                  end;
+               elsif Needs_Simple_Initialization (Ctyp) then
+                  Add_Association
+                    (Component      => Component,
+                     Expr           => Empty,
+                     Assoc_List     => New_Assoc_List,
+                     Is_Box_Present => True);
 
                elsif Has_Non_Null_Base_Init_Proc (Ctyp)
                  or else not Expander_Active

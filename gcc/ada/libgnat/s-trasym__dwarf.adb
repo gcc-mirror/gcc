@@ -691,7 +691,7 @@ package body System.Traceback.Symbolic is
       return Symbolic_Traceback (E, Suppress_Hex => True);
    end Symbolic_Traceback_No_Hex;
 
-   Exception_Tracebacks_Symbolic : Integer;
+   Exception_Tracebacks_Symbolic : constant Integer;
    pragma Import
      (C,
       Exception_Tracebacks_Symbolic,

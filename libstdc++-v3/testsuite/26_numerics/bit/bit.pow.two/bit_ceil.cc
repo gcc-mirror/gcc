@@ -107,7 +107,7 @@ static_assert( test( X{} ).did_not_match() );
 enum E : unsigned { e };
 static_assert( test( e ).did_not_match() );
 
-#if !defined(__STRICT_ANSI__) && defined _GLIBCXX_USE_INT128
+#if !defined(__STRICT_ANSI__) && defined __SIZEOF_INT128__
 static_assert( test( (unsigned __int128)0 ) );
 static_assert( test( (__int128)0 ).did_not_match() );
 #endif

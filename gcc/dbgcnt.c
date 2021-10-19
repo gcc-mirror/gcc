@@ -208,7 +208,6 @@ void
 dbg_cnt_process_opt (const char *arg)
 {
   char *str = xstrdup (arg);
-  unsigned int start = 0;
 
   auto_vec<char *> tokens;
   for (char *next = strtok (str, ","); next != NULL; next = strtok (NULL, ","))
@@ -227,7 +226,6 @@ dbg_cnt_process_opt (const char *arg)
 	  if (!dbg_cnt_process_single_pair (name, ranges[j]))
 	    break;
 	}
-      start += strlen (tokens[i]) + 1;
     }
 }
 

@@ -1454,6 +1454,34 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	    }
 	}
 
+      /* Validate shape, except for dynamic or PDT arrays.  */
+      if (cons->expr->expr_type == EXPR_ARRAY && rank == cons->expr->rank
+	  && comp->as && !comp->attr.allocatable && !comp->attr.pointer
+	  && !comp->attr.pdt_array)
+	{
+	  mpz_t len;
+	  mpz_init (len);
+	  for (int n = 0; n < rank; n++)
+	    {
+	      gcc_assert (comp->as->upper[n]->expr_type == EXPR_CONSTANT
+			  && comp->as->lower[n]->expr_type == EXPR_CONSTANT);
+	      mpz_set_ui (len, 1);
+	      mpz_add (len, len, comp->as->upper[n]->value.integer);
+	      mpz_sub (len, len, comp->as->lower[n]->value.integer);
+	      if (mpz_cmp (cons->expr->shape[n], len) != 0)
+		{
+		  gfc_error ("The shape of component %qs in the structure "
+			     "constructor at %L differs from the shape of the "
+			     "declared component for dimension %d (%ld/%ld)",
+			     comp->name, &cons->expr->where, n+1,
+			     mpz_get_si (cons->expr->shape[n]),
+			     mpz_get_si (len));
+		  t = false;
+		}
+	    }
+	  mpz_clear (len);
+	}
+
       if (!comp->attr.pointer || comp->attr.proc_pointer
 	  || cons->expr->expr_type == EXPR_NULL)
 	continue;

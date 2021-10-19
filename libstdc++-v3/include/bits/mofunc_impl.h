@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	move_only_function(in_place_type_t<_Tp>, initializer_list<_Up> __il,
 			   _Args&&... __args)
 	noexcept(_S_nothrow_init<_Tp, initializer_list<_Up>&, _Args...>())
-	: _Mofunc_base(nullptr), _M_invoke(&_S_invoke<_Tp>)
+	: _M_invoke(&_S_invoke<_Tp>)
 	{
 	  static_assert(is_same_v<decay_t<_Tp>, _Tp>);
 	  _M_init<_Tp>(__il, std::forward<_Args>(__args)...);

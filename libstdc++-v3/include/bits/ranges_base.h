@@ -614,12 +614,31 @@ namespace ranges
   template<sized_range _Range>
     using range_size_t = decltype(ranges::size(std::declval<_Range&>()));
 
+  template<typename _Derived>
+    requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class view_interface; // defined in <bits/ranges_util.h>
+
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up>
+      requires (!same_as<_Tp, view_interface<_Up>>)
+      void __is_derived_from_view_interface_fn(const _Tp&,
+					       const view_interface<_Up>&); // not defined
+
+    // Returns true iff _Tp has exactly one public base class that's a
+    // specialization of view_interface.
+    template<typename _Tp>
+      concept __is_derived_from_view_interface
+	= requires (_Tp __t) { __is_derived_from_view_interface_fn(__t, __t); };
+  }
+
   /// [range.view] The ranges::view_base type.
   struct view_base { };
 
   /// [range.view] The ranges::enable_view boolean.
   template<typename _Tp>
-    inline constexpr bool enable_view = derived_from<_Tp, view_base>;
+    inline constexpr bool enable_view = derived_from<_Tp, view_base>
+      || __detail::__is_derived_from_view_interface<_Tp>;
 
   /// [range.view] The ranges::view concept.
   template<typename _Tp>

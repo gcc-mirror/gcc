@@ -214,6 +214,16 @@ OMP_5.1 {
 	omp_display_env;
 	omp_display_env_;
 	omp_display_env_8_;
+	omp_set_num_teams;
+	omp_set_num_teams_;
+	omp_set_num_teams_8_;
+	omp_get_max_teams;
+	omp_get_max_teams_;
+	omp_set_teams_thread_limit;
+	omp_set_teams_thread_limit_;
+	omp_set_teams_thread_limit_8_;
+	omp_get_teams_thread_limit;
+	omp_get_teams_thread_limit_;
 } OMP_5.0.2;
 
 GOMP_1.0 {

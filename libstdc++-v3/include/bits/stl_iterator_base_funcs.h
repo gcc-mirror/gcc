@@ -119,6 +119,13 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	       input_iterator_tag);
 #endif
 
+#if __cplusplus >= 201103L
+  // Give better error if std::distance called with a non-Cpp17InputIterator.
+  template<typename _OutputIterator>
+    void
+    __distance(_OutputIterator, _OutputIterator, output_iterator_tag) = delete;
+#endif
+
   /**
    *  @brief A generalization of pointer arithmetic.
    *  @param  __first  An input iterator.
@@ -185,6 +192,13 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       else
 	__i += __n;
     }
+
+#if __cplusplus >= 201103L
+  // Give better error if std::advance called with a non-Cpp17InputIterator.
+  template<typename _OutputIterator, typename _Distance>
+    void
+    __advance(_OutputIterator&, _Distance, output_iterator_tag) = delete;
+#endif
 
   /**
    *  @brief A generalization of pointer arithmetic.

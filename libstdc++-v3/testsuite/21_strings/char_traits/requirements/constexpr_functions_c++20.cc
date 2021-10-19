@@ -44,9 +44,7 @@ template<typename CT>
 #endif
 
 static_assert( test_move<std::char_traits<char>>() );
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( test_move<std::char_traits<wchar_t>>() );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
 static_assert( test_move<std::char_traits<char8_t>>() );
 #endif

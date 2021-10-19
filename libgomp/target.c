@@ -385,7 +385,10 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
 	      else if (cbuf->chunks[middle].start <= doff)
 		{
 		  if (doff + sz > cbuf->chunks[middle].end)
-		    gomp_fatal ("internal libgomp cbuf error");
+		    {
+		      gomp_mutex_unlock (&devicep->lock);
+		      gomp_fatal ("internal libgomp cbuf error");
+		    }
 		  memcpy ((char *) cbuf->buf + (doff - cbuf->chunks[0].start),
 			  h, sz);
 		  return;

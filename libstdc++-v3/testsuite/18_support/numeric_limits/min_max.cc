@@ -48,9 +48,9 @@ DEFINE_EXTREMA(unsigned, 0U, UINT_MAX);
 DEFINE_EXTREMA(long, LONG_MIN, LONG_MAX);
 DEFINE_EXTREMA(unsigned long, 0UL, ULONG_MAX);
 
-#if _GLIBCXX_USE_WCHAR_T
+#if defined WCHAR_MIN && defined WCHAR_MAX
 DEFINE_EXTREMA(wchar_t, WCHAR_MIN, WCHAR_MAX);
-#endif //_GLIBCXX_USE_WCHAR_T
+#endif
 
 DEFINE_EXTREMA(float, FLT_MIN, FLT_MAX);
 DEFINE_EXTREMA(double, DBL_MIN, DBL_MAX);
@@ -74,7 +74,7 @@ int main()
   test_extrema<char>();
   test_extrema<signed char>();
   test_extrema<unsigned char>();
-  
+
   test_extrema<short>();
   test_extrema<unsigned short>();
 

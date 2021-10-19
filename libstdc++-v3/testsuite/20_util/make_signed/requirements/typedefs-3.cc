@@ -72,8 +72,6 @@ static_assert(is_same<make_signed<char16_t const>::type, I6 const>::value, "");
 using I7 = smallest_rank_t<char32_t>;
 static_assert(is_same<make_signed<char32_t>::type, I7>::value, "");
 static_assert(is_same<make_signed<char32_t const>::type, I7 const>::value, "");
-#ifdef _GLIBCXX_USE_WCHAR_T
 using I8 = smallest_rank_t<wchar_t>;
 static_assert(is_same<make_signed<wchar_t>::type, I8>::value, "");
 static_assert(is_same<make_signed<wchar_t const>::type, I8 const>::value, "");
-#endif

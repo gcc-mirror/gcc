@@ -13921,7 +13921,10 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 static void
 ix86_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
-  ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC, false);
+  if (this_is_asm_operands && ! address_operand (addr, VOIDmode))
+    output_operand_lossage ("invalid constraints for operand");
+  else
+    ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC, false);
 }
 
 /* Implementation of TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
@@ -19303,7 +19306,9 @@ ix86_hardreg_mov_ok (rtx dst, rtx src)
   /* Avoid complex sets of likely_spilled hard registers before reload.  */
   if (REG_P (dst) && HARD_REGISTER_P (dst)
       && !REG_P (src) && !MEM_P (src)
-      && !x86_64_immediate_operand (src, GET_MODE (dst))
+      && !(VECTOR_MODE_P (GET_MODE (dst))
+	   ? standard_sse_constant_p (src, GET_MODE (dst))
+	   : x86_64_immediate_operand (src, GET_MODE (dst)))
       && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
       && !reload_completed)
     return false;
@@ -20798,6 +20803,13 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else
 	*total = cost->sse_op;
       return true;
+
+    case MEM:
+      /* An insn that accesses memory is slightly more expensive
+         than one that does not.  */
+      if (speed)
+        *total += 1;
+      return false;
 
     default:
       return false;

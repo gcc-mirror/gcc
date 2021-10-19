@@ -184,30 +184,52 @@ public:
   /* The actual value for the given parameter.  */
   valtype value;
   /* The list of sources from which this value originates.  */
-  ipcp_value_source <valtype> *sources;
+  ipcp_value_source <valtype> *sources = nullptr;
   /* Next pointers in a linked list of all values in a lattice.  */
-  ipcp_value *next;
+  ipcp_value *next = nullptr;
   /* Next pointers in a linked list of values in a strongly connected component
      of values. */
-  ipcp_value *scc_next;
+  ipcp_value *scc_next = nullptr;
   /* Next pointers in a linked list of SCCs of values sorted topologically
      according their sources.  */
-  ipcp_value  *topo_next;
+  ipcp_value  *topo_next = nullptr;
   /* A specialized node created for this value, NULL if none has been (so far)
      created.  */
-  cgraph_node *spec_node;
+  cgraph_node *spec_node = nullptr;
   /* Depth first search number and low link for topological sorting of
      values.  */
-  int dfs, low_link;
+  int dfs = 0;
+  int low_link = 0;
+  /* SCC number to identify values which recursively feed into each other.
+     Values in the same SCC have the same SCC number.  */
+  int scc_no = 0;
+  /* Non zero if the value is generated from another value in the same lattice
+     for a self-recursive call, the actual number is how many times the
+     operation has been performed.  In the unlikely event of the value being
+     present in two chains fo self-recursive value generation chains, it is the
+     maximum.  */
+  unsigned self_recursion_generated_level = 0;
   /* True if this value is currently on the topo-sort stack.  */
-  bool on_stack;
-
-  ipcp_value()
-    : sources (0), next (0), scc_next (0), topo_next (0),
-      spec_node (0), dfs (0), low_link (0), on_stack (false) {}
+  bool on_stack = false;
 
   void add_source (cgraph_edge *cs, ipcp_value *src_val, int src_idx,
 		   HOST_WIDE_INT offset);
+
+  /* Return true if both THIS value and O feed into each other.  */
+
+  bool same_scc (const ipcp_value<valtype> *o)
+  {
+    return o->scc_no == scc_no;
+  }
+
+/* Return true, if a this value has been generated for a self-recursive call as
+   a result of an arithmetic pass-through jump-function acting on a value in
+   the same lattice function.  */
+
+  bool self_recursion_generated_p ()
+  {
+    return self_recursion_generated_level > 0;
+  }
 };
 
 /* Lattice describing potential values of a formal parameter of a function, or
@@ -239,7 +261,7 @@ public:
 		  ipcp_value<valtype> *src_val = NULL,
 		  int src_idx = 0, HOST_WIDE_INT offset = -1,
 		  ipcp_value<valtype> **val_p = NULL,
-		  bool unlimited = false);
+		  unsigned same_lat_gen_level = 0);
   void print (FILE * f, bool dump_sources, bool dump_benefits);
 };
 
@@ -498,7 +520,11 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
 	{
 	  ipcp_value_source<valtype> *s;
 
-	  fprintf (f, " [from:");
+	  if (val->self_recursion_generated_p ())
+	    fprintf (f, " [self_gen(%i), from:",
+		     val->self_recursion_generated_level);
+	  else
+	    fprintf (f, " [scc: %i, from:", val->scc_no);
 	  for (s = val->sources; s; s = s->next)
 	    fprintf (f, " %i(%f)", s->cs->caller->order,
 		     s->cs->sreal_frequency ().to_double ());
@@ -1837,12 +1863,13 @@ ipcp_value<valtype>::add_source (cgraph_edge *cs, ipcp_value *src_val,
    SOURCE and clear all other fields.  */
 
 static ipcp_value<tree> *
-allocate_and_init_ipcp_value (tree source)
+allocate_and_init_ipcp_value (tree cst, unsigned same_lat_gen_level)
 {
   ipcp_value<tree> *val;
 
   val = new (ipcp_cst_values_pool.allocate ()) ipcp_value<tree>();
-  val->value = source;
+  val->value = cst;
+  val->self_recursion_generated_level = same_lat_gen_level;
   return val;
 }
 
@@ -1850,14 +1877,15 @@ allocate_and_init_ipcp_value (tree source)
    value to SOURCE and clear all other fields.  */
 
 static ipcp_value<ipa_polymorphic_call_context> *
-allocate_and_init_ipcp_value (ipa_polymorphic_call_context source)
+allocate_and_init_ipcp_value (ipa_polymorphic_call_context ctx,
+			      unsigned same_lat_gen_level)
 {
   ipcp_value<ipa_polymorphic_call_context> *val;
 
-  // TODO
   val = new (ipcp_poly_ctx_values_pool.allocate ())
     ipcp_value<ipa_polymorphic_call_context>();
-  val->value = source;
+  val->value = ctx;
+  val->self_recursion_generated_level = same_lat_gen_level;
   return val;
 }
 
@@ -1865,8 +1893,12 @@ allocate_and_init_ipcp_value (ipa_polymorphic_call_context source)
    SRC_VAL SRC_INDEX and OFFSET are meant for add_source and have the same
    meaning.  OFFSET -1 means the source is scalar and not a part of an
    aggregate.  If non-NULL, VAL_P records address of existing or newly added
-   ipcp_value.  UNLIMITED means whether value count should not exceed the limit
-   given by PARAM_IPA_CP_VALUE_LIST_SIZE.  */
+   ipcp_value.
+
+   If the value is generated for a self-recursive call as a result of an
+   arithmetic pass-through jump-function acting on a value in the same lattice,
+   SAME_LAT_GEN_LEVEL must be the length of such chain, otherwise it must be
+   zero.  If it is non-zero, PARAM_IPA_CP_VALUE_LIST_SIZE limit is ignored.  */
 
 template <typename valtype>
 bool
@@ -1874,7 +1906,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 				  ipcp_value<valtype> *src_val,
 				  int src_idx, HOST_WIDE_INT offset,
 				  ipcp_value<valtype> **val_p,
-				  bool unlimited)
+				  unsigned same_lat_gen_level)
 {
   ipcp_value<valtype> *val, *last_val = NULL;
 
@@ -1890,6 +1922,9 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	if (val_p)
 	  *val_p = val;
 
+	if (val->self_recursion_generated_level < same_lat_gen_level)
+	  val->self_recursion_generated_level = same_lat_gen_level;
+
 	if (ipa_edge_within_scc (cs))
 	  {
 	    ipcp_value_source<valtype> *s;
@@ -1904,7 +1939,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	return false;
       }
 
-  if (!unlimited && values_count == opt_for_fn (cs->caller->decl,
+  if (!same_lat_gen_level && values_count == opt_for_fn (cs->caller->decl,
 						param_ipa_cp_value_list_size))
     {
       /* We can only free sources, not the values themselves, because sources
@@ -1923,7 +1958,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
     }
 
   values_count++;
-  val = allocate_and_init_ipcp_value (newval);
+  val = allocate_and_init_ipcp_value (newval, same_lat_gen_level);
   val->add_source (cs, src_val, src_idx, offset);
   val->next = NULL;
 
@@ -1936,60 +1971,6 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 
   if (val_p)
     *val_p = val;
-
-  return true;
-}
-
-/* Return true, if a ipcp_value VAL is orginated from parameter value of
-   self-feeding recursive function via some kind of pass-through jump
-   function.  */
-
-static bool
-self_recursively_generated_p (ipcp_value<tree> *val)
-{
-  class ipa_node_params *info = NULL;
-
-  for (ipcp_value_source<tree> *src = val->sources; src; src = src->next)
-    {
-      cgraph_edge *cs = src->cs;
-
-      if (!src->val || cs->caller != cs->callee->function_symbol ())
-	return false;
-
-      if (src->val == val)
-	continue;
-
-      if (!info)
-	info = ipa_node_params_sum->get (cs->caller);
-
-      class ipcp_param_lattices *plats = ipa_get_parm_lattices (info,
-								src->index);
-      ipcp_lattice<tree> *src_lat;
-      ipcp_value<tree> *src_val;
-
-      if (src->offset == -1)
-	src_lat = &plats->itself;
-      else
-	{
-	  struct ipcp_agg_lattice *src_aglat;
-
-	  for (src_aglat = plats->aggs; src_aglat; src_aglat = src_aglat->next)
-	    if (src_aglat->offset == src->offset)
-	      break;
-
-	  if (!src_aglat)
-	    return false;
-
-	  src_lat = src_aglat;
-	}
-
-      for (src_val = src_lat->values; src_val; src_val = src_val->next)
-	if (src_val == val)
-	  break;
-
-      if (!src_val)
-	return false;
-    }
 
   return true;
 }
@@ -2068,7 +2049,7 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 	     source, this is absolutely conservative, but could avoid explosion
 	     of lattice's value space, especially when one recursive function
 	     calls another recursive.  */
-	  if (self_recursively_generated_p (src_val))
+	  if (src_val->self_recursion_generated_p ())
 	    {
 	      ipcp_value_source<tree> *s;
 
@@ -2096,7 +2077,7 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 		break;
 
 	      ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
-					  src_offset, &src_val, true);
+					  src_offset, &src_val, j);
 	      gcc_checking_assert (src_val);
 	    }
 	}
@@ -2108,7 +2089,7 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 	/* Now we do not use self-recursively generated value as propagation
 	   source, otherwise it is easy to make value space of normal lattice
 	   overflow.  */
-	if (self_recursively_generated_p (src_val))
+	if (src_val->self_recursion_generated_p ())
 	  {
 	    ret |= dest_lat->set_contains_variable ();
 	    continue;
@@ -3732,6 +3713,7 @@ value_topo_info<valtype>::add_val (ipcp_value<valtype> *cur_val)
 	  v = stack;
 	  stack = v->topo_next;
 	  v->on_stack = false;
+	  v->scc_no = cur_val->dfs;
 
 	  v->scc_next = scc_list;
 	  scc_list = v;
@@ -3905,8 +3887,25 @@ value_topo_info<valtype>::propagate_effects ()
 		    else
 		      continue;
 		  }
+
+		int special_factor = 1;
+		if (val->same_scc (src->val))
+		  special_factor
+		    = opt_for_fn(src->cs->caller->decl,
+				 param_ipa_cp_recursive_freq_factor);
+		else if (val->self_recursion_generated_p ()
+			 && (src->cs->callee->function_symbol ()
+			     == src->cs->caller))
+		  {
+		    int max_recur_gen_depth
+		      = opt_for_fn(src->cs->caller->decl,
+				   param_ipa_cp_max_recursive_depth);
+		    special_factor = max_recur_gen_depth
+		      - val->self_recursion_generated_level + 1;
+		  }
+
 		src->val->prop_time_benefit
-		  += time * src->cs->sreal_frequency ();
+		  += time * special_factor * src->cs->sreal_frequency ();
 	      }
 
 	  if (size < INT_MAX)

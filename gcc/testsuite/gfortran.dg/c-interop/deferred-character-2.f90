@@ -43,7 +43,7 @@ program testit
       p = 'bar'
     end subroutine
 
-    subroutine frobc (a, p) bind (c) ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine frobc (a, p) bind (c)
       use iso_c_binding
       character (kind=C_CHAR, len=:), allocatable :: a
       character (kind=C_CHAR, len=:), pointer :: p

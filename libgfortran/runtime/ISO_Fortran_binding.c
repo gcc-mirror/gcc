@@ -34,6 +34,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern void cfi_desc_to_gfc_desc (gfc_array_void *, CFI_cdesc_t **);
 export_proto(cfi_desc_to_gfc_desc);
 
+/* NOTE: Since GCC 12, the FE generates code to do the conversion
+   directly without calling this function.  */
 void
 cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
 {
@@ -122,6 +124,8 @@ cfi_desc_to_gfc_desc (gfc_array_void *d, CFI_cdesc_t **s_ptr)
 extern void gfc_desc_to_cfi_desc (CFI_cdesc_t **, const gfc_array_void *);
 export_proto(gfc_desc_to_cfi_desc);
 
+/* NOTE: Since GCC 12, the FE generates code to do the conversion
+   directly without calling this function.  */
 void
 gfc_desc_to_cfi_desc (CFI_cdesc_t **d_ptr, const gfc_array_void *s)
 {

@@ -230,32 +230,32 @@ program main
   if (mod (TRANSFER (p, iptr), 32) /= 0) &
     stop 36
   ip(1) = 85
-  p = omp_realloc (p, 420_c_size_t, a, a2)
-  call c_f_pointer (p, ip, [420 / c_sizeof (0)])
+  p = omp_realloc (p, 320_c_size_t, a, a2)
+  call c_f_pointer (p, ip, [320 / c_sizeof (0)])
   if (mod (TRANSFER (p, iptr), 16) /= 0 &
       .or. ip(1) /= 85) &
     stop 37
   ip(1) = 5
-  ip(420 / c_sizeof (0)) = 6
+  ip(320 / c_sizeof (0)) = 6
   q = omp_alloc (c_sizeof (0), a)
   call c_f_pointer (q, iq, [1])
   if (mod (TRANSFER (q, iptr), 16) /= 0) &
     stop 38
   iq(1) = 43
-  q = omp_realloc (q, 420_c_size_t, a2, a)
-  call c_f_pointer (q, iq, [420 / c_sizeof (0)])
+  q = omp_realloc (q, 320_c_size_t, a2, a)
+  call c_f_pointer (q, iq, [320 / c_sizeof (0)])
   if (mod (TRANSFER (q, iptr), 32) /= 0 &
       .or. iq(1) /= 43) &
     stop 39
   iq(1) = 44
-  iq(420 / c_sizeof (0)) = 8
-  q = omp_realloc (q, 768_c_size_t, a2, a2)
-  call c_f_pointer (q, iq, [768 / c_sizeof (0)])
+  iq(320 / c_sizeof (0)) = 8
+  q = omp_realloc (q, 568_c_size_t, a2, a2)
+  call c_f_pointer (q, iq, [568 / c_sizeof (0)])
   if (mod (TRANSFER (q, iptr), 16) /= 0 &
       .or. iq(1) /= 44) &
     stop 40
   iq(1) = 7
-  iq(768 / c_sizeof (0)) = 8
+  iq(568 / c_sizeof (0)) = 8
   call omp_free (p, omp_null_allocator)
   call omp_free (q, a2)
   call omp_destroy_allocator (a2)

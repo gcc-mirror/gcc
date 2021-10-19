@@ -1,3 +1,610 @@
+2021-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102796
+	* g++.dg/pr102796.C: New.
+
+2021-10-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-variant-15.f90 (variant2, base2, test2):
+	Add tests.
+	* gfortran.dg/gomp/declare-variant-16.f90 (base2, variant2, test2):
+	Add tests.
+
+2021-10-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102761
+	* gcc.target/i386/pr102761.c: New test.
+
+2021-10-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/crash90.C: Check location of pedwarn.
+
+2021-10-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/387-12.c (dg-do compile): Require ia32.
+	(dg-options): Remove -m32.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/387-12.c: Add explicit -m32 option.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/bfin/ones.c: New test case.
+	* gcc.target/bfin/parity.c: New test case.
+	* gcc.target/bfin/popcount.c: New test case.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102788
+	* g++.dg/vect/pr102788.cc: New testcase.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/bfin/ssabs.c: New test case.
+	* gcc.target/bfin/ssneg.c: New test case.
+
+2021-10-18  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/93183
+	* gcc.target/aarch64/sve/cond_unary_4.c: Adjust.
+	* gcc.target/aarch64/sve/pr93183.c: New test.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102086
+	PR fortran/92189
+	PR fortran/92621
+	PR fortran/101308
+	PR fortran/101309
+	PR fortran/101635
+	PR fortran/92482
+	* gfortran.dg/ISO_Fortran_binding_4.f90: Extend testcase.
+	* gfortran.dg/PR100914.f90: Remove xfail.
+	* gfortran.dg/PR100915.c: Expect CFI_type_cfunptr.
+	* gfortran.dg/PR100915.f90: Handle CFI_type_cfunptr != CFI_type_cptr.
+	* gfortran.dg/PR93963.f90: Extend select-rank tests.
+	* gfortran.dg/bind-c-intent-out.f90: Change to dg-do run,
+	update scan-dump.
+	* gfortran.dg/bind_c_array_params_2.f90: Update/extend scan-dump.
+	* gfortran.dg/bind_c_char_10.f90: Update scan-dump.
+	* gfortran.dg/bind_c_char_8.f90: Remove dg-error "sorry".
+	* gfortran.dg/c-interop/allocatable-dummy.f90: Remove xfail.
+	* gfortran.dg/c-interop/c1255-1.f90: Likewise.
+	* gfortran.dg/c-interop/c407c-1.f90: Update dg-error.
+	* gfortran.dg/c-interop/cf-descriptor-5.f90: Remove xfail.
+	* gfortran.dg/c-interop/cf-out-descriptor-3.f90: Likewise.
+	* gfortran.dg/c-interop/cf-out-descriptor-4.f90: Likewise.
+	* gfortran.dg/c-interop/cf-out-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/contiguous-2.f90: Likewise.
+	* gfortran.dg/c-interop/contiguous-3.f90: Likewise.
+	* gfortran.dg/c-interop/deferred-character-1.f90: Likewise.
+	* gfortran.dg/c-interop/deferred-character-2.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-3.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-6.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-3.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-4.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-6.f90: Likewise.
+	* gfortran.dg/c-interop/ff-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/ff-descriptor-6.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-7.f90: Remove xfail + extend.
+	* gfortran.dg/c-interop/fc-descriptor-7-c.c: Update for changes.
+	* gfortran.dg/c-interop/shape.f90: Add implicit none.
+	* gfortran.dg/c-interop/typecodes-array-char-c.c: Add kind=4 char.
+	* gfortran.dg/c-interop/typecodes-array-char.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-array-float128.f90: Remove xfail.
+	* gfortran.dg/c-interop/typecodes-scalar-basic.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-float128.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-int128.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-longdouble.f90: Likewise.
+	* gfortran.dg/iso_c_binding_char_1.f90: Remove dg-error "sorry".
+	* gfortran.dg/pr93792.f90: Turn XFAIL into PASS.
+	* gfortran.dg/ISO_Fortran_binding_19.f90: New test.
+	* gfortran.dg/assumed_type_12.f90: New test.
+	* gfortran.dg/assumed_type_13.c: New test.
+	* gfortran.dg/assumed_type_13.f90: New test.
+	* gfortran.dg/bind-c-char-descr.f90: New test.
+	* gfortran.dg/bind-c-contiguous-1.c: New test.
+	* gfortran.dg/bind-c-contiguous-1.f90: New test.
+	* gfortran.dg/bind-c-contiguous-2.f90: New test.
+	* gfortran.dg/bind-c-contiguous-3.c: New test.
+	* gfortran.dg/bind-c-contiguous-3.f90: New test.
+	* gfortran.dg/bind-c-contiguous-4.c: New test.
+	* gfortran.dg/bind-c-contiguous-4.f90: New test.
+	* gfortran.dg/bind-c-contiguous-5.c: New test.
+	* gfortran.dg/bind-c-contiguous-5.f90: New test.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102798
+	* gcc.dg/pr102798.c: New testcase.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102745
+	* gfortran.dg/class_72.f90: New.
+
+2021-10-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51851
+	PR c++/101402
+	PR c++/102033
+	PR c++/102034
+	PR c++/102039
+	PR c++/102044
+	* g++.dg/template/fnspec2.C: New test.
+	* g++.dg/template/parm-cv1.C: New test.
+	* g++.dg/template/parm-cv2.C: New test.
+	* g++.dg/template/parm-cv3.C: New test.
+
+2021-10-15  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102685
+	* gfortran.dg/derived_constructor_char_1.f90: Fix invalid code.
+	* gfortran.dg/pr70931.f90: Likewise.
+	* gfortran.dg/transfer_simplify_2.f90: Likewise.
+	* gfortran.dg/pr102685.f90: New test.
+
+2021-10-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr102736.c: Make sign explicit.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	* lib/prune.exp: Prune STABS obsoletion message.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/102763
+	* gcc.dg/gimplefe-error-12.c: New testcase.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102762
+	* gcc.dg/torture/pr102762.c: New testcase.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-builtin_shuffle-1.c: New test.
+	* gcc.target/i386/avx512fp16-pr101846.c: Ditto.
+	* gcc.target/i386/avx512fp16-pr94680.c: Ditto.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-v4hf-concat.c: New test.
+
+2021-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfcmaddcph-1a.c: Add scan for
+	vblendmps.
+	* gcc.target/i386/avx512fp16-vfmaddcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-vfcmaddcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-vfmaddcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1a.c: Add -mno-avx512vl.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1a.c: Likewise.
+
+2021-10-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/vla22.C: Don't expect a narrowing error.
+	* g++.dg/cpp0x/constexpr-inst1.C: New test.
+
+2021-10-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr102738.c: Add target int128.
+
+2021-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/c11-dfp-printf-1.c,
+	gcc.dg/format/c11-dfp-scanf-1.c, gcc.dg/format/c2x-dfp-printf-1.c,
+	gcc.dg/format/c2x-dfp-scanf-1.c: New tests.
+
+2021-10-14  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
+
+	* gcc.target/powerpc/unwind-backchain.c: New test.
+
+2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102717
+	* gfortran.dg/reshape_shape_2.f90: New test.
+
+2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102716
+	* gfortran.dg/shape_10.f90: New test.
+
+2021-10-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102738
+	* gcc.dg/pr102738.c: New.
+
+2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-variant-1.f90: New test.
+	* gfortran.dg/gomp/declare-variant-10.f90: New test.
+	* gfortran.dg/gomp/declare-variant-11.f90: New test.
+	* gfortran.dg/gomp/declare-variant-12.f90: New test.
+	* gfortran.dg/gomp/declare-variant-13.f90: New test.
+	* gfortran.dg/gomp/declare-variant-14.f90: New test.
+	* gfortran.dg/gomp/declare-variant-15.f90: New test.
+	* gfortran.dg/gomp/declare-variant-16.f90: New test.
+	* gfortran.dg/gomp/declare-variant-17.f90: New test.
+	* gfortran.dg/gomp/declare-variant-18.f90: New test.
+	* gfortran.dg/gomp/declare-variant-19.f90: New test.
+	* gfortran.dg/gomp/declare-variant-2.f90: New test.
+	* gfortran.dg/gomp/declare-variant-2a.f90: New test.
+	* gfortran.dg/gomp/declare-variant-3.f90: New test.
+	* gfortran.dg/gomp/declare-variant-4.f90: New test.
+	* gfortran.dg/gomp/declare-variant-5.f90: New test.
+	* gfortran.dg/gomp/declare-variant-6.f90: New test.
+	* gfortran.dg/gomp/declare-variant-7.f90: New test.
+	* gfortran.dg/gomp/declare-variant-8.f90: New test.
+	* gfortran.dg/gomp/declare-variant-9.f90: New test.
+
+2021-10-14  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/mips/msa-insert-split.c: Turn off vectorizer.
+
+2021-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred-cond-reduc.c: New test.
+
+2021-10-14  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/tree-ssa/predcom-3.c: Disable vectorizer.
+
+2021-10-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102736
+	* gcc.dg/tree-ssa/pr102736.c: New test.
+
+2021-10-14  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new mask3 builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1a.c: Add scanning for
+	mask/mask3 intrinsic.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1a.c: Ditto.
+	* gcc.target/i386/avx512fp16-vfcmaddcsh-1c.c: New test for
+	-mavx512vl.
+	* gcc.target/i386/avx512fp16-vfmaddcsh-1c.c: Ditto.
+
+2021-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.dg/warn/Wuninitialized-13.C: Add -fno-tree-vectorize.
+
+2021-10-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102630
+	* gcc.target/i386/addr-space-2.c: Add -Wall.
+	* gcc.target/i386/addr-space-3.c: New test.
+
+2021-10-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/mve/mve.exp: Make it test main directory.
+	* gcc.target/arm/mve/mve_load_memory_modes.c: New test.
+	* gcc.target/arm/mve/mve_store_memory_modes.c: New test.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102659
+	* gcc.dg/torture/pr69760.c: Adjust the testcase.
+	* gcc.target/i386/avx2-vect-mask-store-move1.c: Expect to move
+	the conversions to unsigned as well.
+
+2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* gcc.dg/ipa/pr102714.c: New testcase.
+
+2021-10-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/102658
+	* gcc.target/powerpc/dform-1.c: Adjust as vectorization enabled at O2.
+	* gcc.target/powerpc/dform-2.c: Likewise.
+	* gcc.target/powerpc/pr80510-2.c: Likewise.
+
+2021-10-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/c11-printf-1.c, gcc.dg/format/c11-scanf-1.c,
+	gcc.dg/format/c2x-printf-1.c, gcc.dg/format/c2x-scanf-1.c,
+	gcc.dg/format/ext-9.c, gcc.dg/format/ext-10.c: New tests.
+
+2021-10-12  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101985
+	* gcc.target/powerpc/pr101985-1.c: New.
+	* gcc.target/powerpc/pr101985-2.c: New.
+
+2021-10-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/85730
+	PR target/82524
+	* gcc.target/i386/pr85730.c: New test.
+
+2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102696
+	* g++.dg/vect/pr102696.cc: New testcase.
+
+2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102572
+	* g++.dg/vect/pr102572.cc: New testcase.
+
+2021-10-12  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred-not-gen-1.c: New test.
+	* gcc.target/aarch64/sve/pred-not-gen-2.c: New test.
+	* gcc.target/aarch64/sve/pred-not-gen-3.c: New test.
+	* gcc.target/aarch64/sve/pred-not-gen-4.c: New test.
+
+2021-10-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102541
+	* gfortran.dg/assumed_rank_24.f90: New test.
+
+2021-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/simd-2.c: Remove option -fvect-cost-model=cheap.
+	* gcc.dg/gomp/simd-3.c: Likewise.
+
+2021-10-12  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102483.c: New test.
+	* gcc.target/i386/pr102483-2.c: New test.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/pr78102.c: Fix dg-require-effective-target.
+	* gcc.target/powerpc/sse4_1-packusdw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxsb.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxsd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxud.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmaxuw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminsb.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminsd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminud.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pminuw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxbd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxbw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovsxwd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxbd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxbq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxbw.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxdq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxwd.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmovzxwq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-pmulld.c: Likewise.
+	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Likewise.
+	* gcc.target/powerpc/sse4_1-phminposuw.c: Use correct
+	dg-require-effective-target.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/pr78102.c: Copy from gcc.target/i386,
+	adjust dg directives to suit.
+	* gcc.target/powerpc/sse4_1-packusdw.c: Same.
+	* gcc.target/powerpc/sse4_1-pcmpeqq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmuldq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmulld.c: Same.
+	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Same.
+	* gcc.target/powerpc/sse4_2-check.h: Copy from gcc.target/i386,
+	tweak to suit.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-pmovsxbd.c: Copy from gcc.target/i386,
+	adjust dg directives to suit.
+	* gcc.target/powerpc/sse4_1-pmovsxbq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxbw.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxdq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxwd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovsxwq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxbd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxbq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxbw.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxdq.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxwd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmovzxwq.c: Same.
+
+2021-10-12  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-pmaxsb.c: Copy from gcc.target/i386.
+	* gcc.target/powerpc/sse4_1-pmaxsd.c: Same.
+	* gcc.target/powerpc/sse4_1-pmaxud.c: Same.
+	* gcc.target/powerpc/sse4_1-pmaxuw.c: Same.
+	* gcc.target/powerpc/sse4_1-pminsb.c: Same.
+	* gcc.target/powerpc/sse4_1-pminsd.c: Same.
+	* gcc.target/powerpc/sse4_1-pminud.c: Same.
+	* gcc.target/powerpc/sse4_1-pminuw.c: Same.
+
+2021-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/torture/ssa-pta-fn-1.c: Fix template; add noipa.
+	* gcc.dg/tree-ssa/pta-callused.c: Fix template.
+
+2021-10-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102643
+	* g++.dg/cpp2a/class-deduction-alias11.C: New test.
+
+2021-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101480
+	* g++.dg/torture/pr10148.C: New testcase.
+
+2021-10-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/rawmemchr-1.c: New test.
+
+2021-10-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/ldist-rawmemchr-1.c: New test.
+	* gcc.dg/tree-ssa/ldist-rawmemchr-2.c: New test.
+	* gcc.dg/tree-ssa/ldist-strlen-1.c: New test.
+	* gcc.dg/tree-ssa/ldist-strlen-2.c: New test.
+	* gcc.dg/tree-ssa/ldist-strlen-3.c: New test.
+
+2021-10-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/100316
+	* gcc.c-torture/compile/pr100316.c: New.
+
+2021-10-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/102669
+	* gnat.dg/unroll1.adb: Add -fno-tree-vectorize.
+
+2021-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99348
+	PR fortran/102521
+	* gfortran.dg/parameter_array_init_8.f90: New test.
+
+2021-10-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102622
+	* gcc.c-torture/execute/bitfld-10.c: New test.
+
+2021-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/65454
+	* gfortran.dg/interface_operator_3.f90: New test.
+
+2021-10-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	* c-c++-common/Wstringop-overflow-2.c: Add missing comment.
+	* gcc.dg/Warray-bounds-51.c: Likewise.
+	* gcc.dg/Warray-parameter-3.c: Likewise.
+	* gcc.dg/Wstringop-overflow-14.c: Likewise.
+	* gcc.dg/Wstringop-overflow-21.c: Likewise.
+	* gcc.dg/Wstringop-overflow-76.c: Likewise.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.dg/tree-ssa/pr94403.C: Add -fno-tree-vectorize
+	* gcc.dg/optimize-bswapsi-5.c: Ditto.
+	* gcc.dg/optimize-bswapsi-6.c: Ditto.
+	* gcc.dg/Warray-bounds-51.c: Add additional option
+	-mtune=generic for target x86/i?86
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+
+2021-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/sections1.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).  Add testcases
+	for invalid no statements in between section directive(s).
+	* gcc.dg/gomp/sections-2.c (foo): Don't expect errors on
+	multiple statements in between section directive(s).
+	* g++.dg/gomp/sections-2.C (foo): Likewise.
+	* g++.dg/gomp/attrs-6.C (foo): Add testcases for multiple
+	statements in between section directive(s).
+	(bar): Add testcases for multiple statements in between scan
+	directive.
+	* g++.dg/gomp/attrs-7.C (bar): Adjust expected error recovery.
+
+2021-10-09  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr102639.C: New test.
+
+2021-10-08  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/54753
+	* gfortran.dg/c-interop/c535c-1.f90: Rewrite and expand.
+	* gfortran.dg/c-interop/c535c-2.f90: Remove xfails.
+	* gfortran.dg/c-interop/c535c-3.f90: Likewise.
+	* gfortran.dg/c-interop/c535c-4.f90: Likewise.
+	* gfortran.dg/PR94110.f90: Extend to cover class types.
+
+2021-10-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102627
+	* gcc.target/i386/pr102627.c: New test.
+
+2021-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/pr102385.c: New test.
+
+2021-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102640
+	* c-c++-common/gomp/pr102640.c: New test.
+
+2021-10-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-mmx-paddsb-2.c: Test for -128 or 128.
+	* gcc.target/i386/sse2-mmx-paddusb-2.c: Test for -1 or 255.
+	* gcc.target/i386/sse2-mmx-psubsb-2.c: Test for -128 or 128.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102464.c: New test.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/mmx-reduce-op-1.c: New test.
+	* gcc.target/i386/mmx-reduce-op-2.c: New test.
+
+2021-10-08  liuhongt  <hongtao.liu@intel.com>
+
+	* c-c++-common/Wstringop-overflow-2.c: Adjust testcase.
+	* g++.dg/tree-ssa/pr81408.C: Ditto.
+	* g++.dg/warn/Wuninitialized-13.C: Ditto.
+	* gcc.dg/Warray-bounds-51.c: Ditto.
+	* gcc.dg/Warray-parameter-3.c: Ditto.
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+	* gcc.dg/Wstringop-overflow-21.c: Ditto.
+	* gcc.dg/Wstringop-overflow-68.c: Ditto.
+	* gcc.dg/Wstringop-overflow-76.c: Ditto.
+	* gcc.dg/gomp/pr46032-2.c: Ditto.
+	* gcc.dg/gomp/pr46032-3.c: Ditto.
+	* gcc.dg/gomp/simd-2.c: Ditto.
+	* gcc.dg/gomp/simd-3.c: Ditto.
+	* gcc.dg/graphite/fuse-1.c: Ditto.
+	* gcc.dg/pr67089-6.c: Ditto.
+	* gcc.dg/pr82929-2.c: Ditto.
+	* gcc.dg/pr82929.c: Ditto.
+	* gcc.dg/store_merging_1.c: Ditto.
+	* gcc.dg/store_merging_11.c: Ditto.
+	* gcc.dg/store_merging_13.c: Ditto.
+	* gcc.dg/store_merging_15.c: Ditto.
+	* gcc.dg/store_merging_16.c: Ditto.
+	* gcc.dg/store_merging_19.c: Ditto.
+	* gcc.dg/store_merging_24.c: Ditto.
+	* gcc.dg/store_merging_25.c: Ditto.
+	* gcc.dg/store_merging_28.c: Ditto.
+	* gcc.dg/store_merging_30.c: Ditto.
+	* gcc.dg/store_merging_5.c: Ditto.
+	* gcc.dg/store_merging_7.c: Ditto.
+	* gcc.dg/store_merging_8.c: Ditto.
+	* gcc.dg/strlenopt-85.c: Ditto.
+	* gcc.dg/tree-ssa/dump-6.c: Ditto.
+	* gcc.dg/tree-ssa/pr19210-1.c: Ditto.
+	* gcc.dg/tree-ssa/pr47059.c: Ditto.
+	* gcc.dg/tree-ssa/pr86017.c: Ditto.
+	* gcc.dg/tree-ssa/pr91482.c: Ditto.
+	* gcc.dg/tree-ssa/predcom-1.c: Ditto.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-3.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-6.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-8.c: Ditto.
+	* gcc.dg/tree-ssa/prefetch-9.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-18.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-19.c: Ditto.
+	* gcc.dg/uninit-40.c: Ditto.
+	* gcc.dg/unroll-7.c: Ditto.
+	* gcc.misc-tests/help.exp: Ditto.
+	* gcc.target/i386/avx512vpopcntdqvl-vpopcntd-1.c: Ditto.
+	* gcc.target/i386/pr34012.c: Ditto.
+	* gcc.target/i386/pr49781-1.c: Ditto.
+	* gcc.target/i386/pr95798-1.c: Ditto.
+	* gcc.target/i386/pr95798-2.c: Ditto.
+	* gfortran.dg/pr77498.f: Ditto.
+
 2021-10-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/61355

@@ -276,6 +276,9 @@
 (define_subst_attr "round_expand_name" "round_expand" "" "_round")
 (define_subst_attr "round_expand_nimm_predicate" "round_expand" "nonimmediate_operand" "register_operand")
 (define_subst_attr "round_expand_operand" "round_expand" "" ", operands[5]")
+(define_subst_attr "round_embedded_complex" "round_expand" "0" "!(CONST_INT_P (operands[5])
+								  && (INTVAL (operands[5])
+								      == NO_ROUND))")
 
 (define_subst "round_expand"
  [(match_operand:SUBST_V 0)

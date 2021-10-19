@@ -24,14 +24,12 @@ void test01()
 {
   using std::is_fundamental;
   using namespace __gnu_test;
-  
+
   static_assert(test_category<is_fundamental, void>(true), "");
   static_assert(test_category<is_fundamental, char>(true), "");
   static_assert(test_category<is_fundamental, signed char>(true), "");
   static_assert(test_category<is_fundamental, unsigned char>(true), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_fundamental, wchar_t>(true), "");
-#endif
   static_assert(test_category<is_fundamental, short>(true), "");
   static_assert(test_category<is_fundamental, unsigned short>(true), "");
   static_assert(test_category<is_fundamental, int>(true), "");

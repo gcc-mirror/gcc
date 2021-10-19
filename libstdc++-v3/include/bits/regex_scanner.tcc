@@ -83,7 +83,7 @@ namespace __detail
 	_M_scan_in_brace();
       else
 	{
-	  __glibcxx_assert(false);
+	  __glibcxx_assert(!"unexpected state while processing regex");
 	}
     }
 
@@ -195,7 +195,7 @@ namespace __detail
 		_M_token = __it->second;
 		return;
 	      }
-	  __glibcxx_assert(false);
+	  __glibcxx_assert(!"unexpected special character in regex");
 	}
       else
 	{
