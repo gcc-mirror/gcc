@@ -1,3 +1,17 @@
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102086
+	PR fortran/92189
+	PR fortran/92621
+	PR fortran/101308
+	PR fortran/101309
+	PR fortran/101635
+	PR fortran/92482
+	* ISO_Fortran_binding.h (CFI_type_cfunptr): Make unique type again.
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc,
+	gfc_desc_to_cfi_desc): Add comment that those are no longer called
+	by new code.
+
 2021-09-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/94070

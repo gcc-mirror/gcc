@@ -1,3 +1,131 @@
+2021-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102796
+	* g++.dg/pr102796.C: New.
+
+2021-10-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-variant-15.f90 (variant2, base2, test2):
+	Add tests.
+	* gfortran.dg/gomp/declare-variant-16.f90 (base2, variant2, test2):
+	Add tests.
+
+2021-10-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102761
+	* gcc.target/i386/pr102761.c: New test.
+
+2021-10-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/crash90.C: Check location of pedwarn.
+
+2021-10-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/387-12.c (dg-do compile): Require ia32.
+	(dg-options): Remove -m32.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/387-12.c: Add explicit -m32 option.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/bfin/ones.c: New test case.
+	* gcc.target/bfin/parity.c: New test case.
+	* gcc.target/bfin/popcount.c: New test case.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102788
+	* g++.dg/vect/pr102788.cc: New testcase.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/bfin/ssabs.c: New test case.
+	* gcc.target/bfin/ssneg.c: New test case.
+
+2021-10-18  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/93183
+	* gcc.target/aarch64/sve/cond_unary_4.c: Adjust.
+	* gcc.target/aarch64/sve/pr93183.c: New test.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102086
+	PR fortran/92189
+	PR fortran/92621
+	PR fortran/101308
+	PR fortran/101309
+	PR fortran/101635
+	PR fortran/92482
+	* gfortran.dg/ISO_Fortran_binding_4.f90: Extend testcase.
+	* gfortran.dg/PR100914.f90: Remove xfail.
+	* gfortran.dg/PR100915.c: Expect CFI_type_cfunptr.
+	* gfortran.dg/PR100915.f90: Handle CFI_type_cfunptr != CFI_type_cptr.
+	* gfortran.dg/PR93963.f90: Extend select-rank tests.
+	* gfortran.dg/bind-c-intent-out.f90: Change to dg-do run,
+	update scan-dump.
+	* gfortran.dg/bind_c_array_params_2.f90: Update/extend scan-dump.
+	* gfortran.dg/bind_c_char_10.f90: Update scan-dump.
+	* gfortran.dg/bind_c_char_8.f90: Remove dg-error "sorry".
+	* gfortran.dg/c-interop/allocatable-dummy.f90: Remove xfail.
+	* gfortran.dg/c-interop/c1255-1.f90: Likewise.
+	* gfortran.dg/c-interop/c407c-1.f90: Update dg-error.
+	* gfortran.dg/c-interop/cf-descriptor-5.f90: Remove xfail.
+	* gfortran.dg/c-interop/cf-out-descriptor-3.f90: Likewise.
+	* gfortran.dg/c-interop/cf-out-descriptor-4.f90: Likewise.
+	* gfortran.dg/c-interop/cf-out-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/contiguous-2.f90: Likewise.
+	* gfortran.dg/c-interop/contiguous-3.f90: Likewise.
+	* gfortran.dg/c-interop/deferred-character-1.f90: Likewise.
+	* gfortran.dg/c-interop/deferred-character-2.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-3.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-6.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-3.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-4.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/fc-out-descriptor-6.f90: Likewise.
+	* gfortran.dg/c-interop/ff-descriptor-5.f90: Likewise.
+	* gfortran.dg/c-interop/ff-descriptor-6.f90: Likewise.
+	* gfortran.dg/c-interop/fc-descriptor-7.f90: Remove xfail + extend.
+	* gfortran.dg/c-interop/fc-descriptor-7-c.c: Update for changes.
+	* gfortran.dg/c-interop/shape.f90: Add implicit none.
+	* gfortran.dg/c-interop/typecodes-array-char-c.c: Add kind=4 char.
+	* gfortran.dg/c-interop/typecodes-array-char.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-array-float128.f90: Remove xfail.
+	* gfortran.dg/c-interop/typecodes-scalar-basic.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-float128.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-int128.f90: Likewise.
+	* gfortran.dg/c-interop/typecodes-scalar-longdouble.f90: Likewise.
+	* gfortran.dg/iso_c_binding_char_1.f90: Remove dg-error "sorry".
+	* gfortran.dg/pr93792.f90: Turn XFAIL into PASS.
+	* gfortran.dg/ISO_Fortran_binding_19.f90: New test.
+	* gfortran.dg/assumed_type_12.f90: New test.
+	* gfortran.dg/assumed_type_13.c: New test.
+	* gfortran.dg/assumed_type_13.f90: New test.
+	* gfortran.dg/bind-c-char-descr.f90: New test.
+	* gfortran.dg/bind-c-contiguous-1.c: New test.
+	* gfortran.dg/bind-c-contiguous-1.f90: New test.
+	* gfortran.dg/bind-c-contiguous-2.f90: New test.
+	* gfortran.dg/bind-c-contiguous-3.c: New test.
+	* gfortran.dg/bind-c-contiguous-3.f90: New test.
+	* gfortran.dg/bind-c-contiguous-4.c: New test.
+	* gfortran.dg/bind-c-contiguous-4.f90: New test.
+	* gfortran.dg/bind-c-contiguous-5.c: New test.
+	* gfortran.dg/bind-c-contiguous-5.f90: New test.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102798
+	* gcc.dg/pr102798.c: New testcase.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102745
+	* gfortran.dg/class_72.f90: New.
+
 2021-10-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51851

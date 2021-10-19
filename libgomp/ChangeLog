@@ -1,3 +1,19 @@
+2021-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): Add
+	&& gomp_places_list_len < count after nfirst <= nlast loop condition.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102086
+	PR fortran/92189
+	PR fortran/92621
+	PR fortran/101308
+	PR fortran/101309
+	PR fortran/101635
+	PR fortran/92482
+	* testsuite/libgomp.fortran/optional-bind-c.f90: New test.
+
 2021-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/affinity-1.c (struct places): Change name field

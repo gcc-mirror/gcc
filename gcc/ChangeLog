@@ -1,3 +1,151 @@
+2021-10-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102796
+	* gimple-range.cc (gimple_ranger::range_on_edge): Process EH edges
+	normally.  Return get_tree_range for non gimple_range_ssa_p names.
+	(gimple_ranger::range_of_stmt): Use get_tree_range for non
+	gimple_range_ssa_p names.
+
+2021-10-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102761
+	* config/i386/i386.c (ix86_print_operand_address):
+	Error out for non-address_operand asm operands.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_peeling_hash_insert): Do
+	not auto-convert dr_alignment_support to bool.
+	(vect_peeling_supportable): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_supportable_dr_alignment): Commonize read/write case.
+	* tree-vect-stmts.c (vect_get_store_cost): Use
+	dr_alignment_support, not int, for the vect_supportable_dr_alignment
+	result.
+	(vect_get_load_cost): Likewise.
+
+2021-10-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.c (object_sizes_execute): Consolidate LHS
+	null check and do it early.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_store): Use the
+	computed alignment scheme instead of querying
+	aligned_access_p.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_store): Do not recompute
+	alignment scheme already determined by get_load_store_type.
+
+2021-10-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (class pass_thread_jumps_full):
+	Clone corresponding pass.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* combine.c (recog_for_combine): For an unrecognized move/set of
+	a constant, try force_const_mem to place it in the constant pool.
+	* cse.c (constant_pool_entries_cost, constant_pool_entries_regcost):
+	Delete global variables (that are no longer assigned a cost value).
+	(cse_insn): Simplify logic for deciding whether to place a folded
+	constant in the constant pool using force_const_mem.
+	(cse_main): Remove zero initialization of constant_pool_entries_cost
+	and constant_pool_entries_regcost.
+	* config/i386/i386.c (ix86_rtx_costs): Make memory accesses
+	fractionally more expensive, when optimizing for speed.
+
+2021-10-18  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/102746
+	PR gcov-profile/102747
+	* gcov.c (main): Return return_code.
+	(output_gcov_file): Mark return_code when error happens.
+	(generate_results): Likewise.
+	(read_graph_file): Likewise.
+	(read_count_file): Likewise.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/bfin/bfin.md (define_constants): Remove UNSPEC_ONES.
+	(define_insn "ones"): Replace UNSPEC_ONES with a truncate of
+	a popcount, allowing compile-time evaluation/simplification.
+	(popcountsi2, popcounthi2): New expanders using a "ones" insn.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102788
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Allow
+	a NULL vectype.
+	(vect_pattern_recog_1): Likewise.
+	(vect_recog_bool_pattern): Continue matching the pattern
+	even if we do not have a vector type for a conversion
+	result.
+
+2021-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_const_unary_operation) [SS_NEG, SS_ABS]:
+	Evalute SS_NEG and SS_ABS of a constant argument.
+
+2021-10-18  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/93183
+	* gimple-match-head.c (try_conditional_simplification): Add case for single operand.
+	* internal-fn.def: Add entry for COND_NEG internal function.
+	* internal-fn.c (FOR_EACH_CODE_MAPPING): Add entry for
+	NEGATE_EXPR, COND_NEG mapping.
+	* optabs.def: Add entry for cond_neg_optab.
+	* match.pd (UNCOND_UNARY, COND_UNARY): New operator lists.
+	(vec_cond COND (foo A) B) -> (IFN_COND_FOO COND A B): New pattern.
+	(vec_cond COND B (foo A)) -> (IFN_COND_FOO ~COND A B): Likewise.
+
+2021-10-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-strlen.c (class strlen_pass): Rename from
+	strlen_dom_walker.
+	(handle_builtin_stxncpy_strncat): Move to strlen_pass.
+	(handle_assign): Same.
+	(adjust_last_stmt): Same.
+	(maybe_warn_overflow): Same.
+	(handle_builtin_strlen): Same.
+	(handle_builtin_strchr): Same.
+	(handle_builtin_strcpy): Same.
+	(handle_builtin_strncat): Same.
+	(handle_builtin_stxncpy_strncat): Same.
+	(handle_builtin_memcpy): Same.
+	(handle_builtin_strcat): Same.
+	(handle_alloc_call): Same.
+	(handle_builtin_memset): Same.
+	(handle_builtin_memcmp): Same.
+	(get_len_or_size): Same.
+	(strxcmp_eqz_result): Same.
+	(handle_builtin_string_cmp): Same.
+	(handle_pointer_plus): Same.
+	(count_nonzero_bytes_addr): Same.
+	(count_nonzero_bytes): Same.
+	(handle_store): Same.
+	(strlen_check_and_optimize_call): Same.
+	(handle_integral_assign): Same.
+	(check_and_optimize_stmt): Same.
+	(printf_strlen_execute): Rename strlen_dom_walker to strlen_pass.
+
+2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102798
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Only copy points-to info to newly generated SSA names.
+
+2021-10-18  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.c (dbg_cnt_process_opt): Remove unused but set variable.
+	* gcov.c (get_cycles_count): Likewise.
+	* lto-compress.c (lto_compression_zlib): Likewise.
+	(lto_uncompression_zlib): Likewise.
+	* targhooks.c (default_pch_valid_p): Likewise.
+
 2021-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-pass.h (make_pass_thread_jumps_full): New.
