@@ -1,3 +1,13 @@
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/declare-variant-15.f90 (variant2, base2, test2):
+	Add tests.
+	* gfortran.dg/gomp/declare-variant-16.f90 (base2, variant2, test2):
+	Add tests.
+
 2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
