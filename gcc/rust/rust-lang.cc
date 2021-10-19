@@ -32,6 +32,7 @@
 #include "convert.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "selftest.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -433,6 +434,29 @@ rust_localize_identifier (const char *ident)
 #define LANG_HOOKS_GETDECLS grs_langhook_getdecls
 #define LANG_HOOKS_GIMPLIFY_EXPR grs_langhook_gimplify_expr
 #define LANG_HOOKS_EH_PERSONALITY grs_langhook_eh_personality
+
+#if CHECKING_P
+
+#undef LANG_HOOKS_RUN_LANG_SELFTESTS
+#define LANG_HOOKS_RUN_LANG_SELFTESTS selftest::run_rust_tests
+
+namespace selftest {
+
+static void
+simple_assert ()
+{
+  ASSERT_TRUE (true);
+}
+
+void
+run_rust_tests ()
+{
+  // Call tests for the rust frontend here
+  simple_assert ();
+}
+} // namespace selftest
+
+#endif /* !CHECKING_P */
 
 // Expands all LANG_HOOKS_x of GCC
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

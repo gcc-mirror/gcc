@@ -209,8 +209,16 @@ rust.uninstall:
 	-rm -f $(RUST_ALL_OBJS)
 # ^those two are a maybe
 
-# No rust-specific selftests
-selftest-rust:
+# Enable selftests for the rust frontend
+selftest-rust: s-selftest-rust
+
+RUST_SELFTEST_FLAGS = -xrs $(SELFTEST_FLAGS)
+RUST_SELFTEST_DEPS = rust1$(exeext) $(SELFTEST_DEPS)
+
+# Run the rust selftests
+s-selftest-rust: $(RUST_SELFTEST_DEPS)
+	$(GCC_FOR_TARGET) $(RUST_SELFTEST_FLAGS)
+	$(STAMP) $@
 
 # Install info documentation for the front end, if it is present in the source directory. This target
 # should have dependencies on info files that should be installed.
@@ -319,4 +327,3 @@ rust/%.o: rust/typecheck/%.cc
 rust/%.o: rust/lint/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
-
