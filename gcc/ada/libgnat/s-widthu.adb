@@ -134,10 +134,13 @@ begin
          W := W + 1;
          Pow := Pow * 10;
 
-         pragma Loop_Variant (Decreases => T);
          pragma Loop_Invariant (W in 3 .. Max_W + 3);
          pragma Loop_Invariant (Pow = Big_10 ** (W - 2));
          pragma Loop_Invariant (Big (T) = Big (T_Init) / Pow);
+         pragma Loop_Variant (Decreases => T);
+         pragma Annotate
+           (CodePeer, False_Positive,
+            "validity check", "confusion on generated code");
       end loop;
 
       declare
