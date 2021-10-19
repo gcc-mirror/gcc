@@ -1967,13 +1967,14 @@ perm_mask_for_reverse (tree vectype)
 
 /* A subroutine of get_load_store_type, with a subset of the same
    arguments.  Handle the case where STMT_INFO is a load or store that
-   accesses consecutive elements with a negative step.  */
+   accesses consecutive elements with a negative step.  Sets *POFFSET
+   to the offset to be applied to the DR for the first access.  */
 
 static vect_memory_access_type
 get_negative_load_store_type (vec_info *vinfo,
 			      stmt_vec_info stmt_info, tree vectype,
 			      vec_load_store_type vls_type,
-			      unsigned int ncopies)
+			      unsigned int ncopies, poly_int64 *poffset)
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   dr_alignment_support alignment_support_scheme;
@@ -2003,6 +2004,7 @@ get_negative_load_store_type (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "negative step with invariant source;"
 			 " no permute needed.\n");
+      *poffset = -TYPE_VECTOR_SUBPARTS (vectype) + 1;
       return VMAT_CONTIGUOUS_DOWN;
     }
 
@@ -2014,6 +2016,7 @@ get_negative_load_store_type (vec_info *vinfo,
       return VMAT_ELEMENTWISE;
     }
 
+  *poffset = -TYPE_VECTOR_SUBPARTS (vectype) + 1;
   return VMAT_CONTIGUOUS_REVERSE;
 }
 
@@ -2108,6 +2111,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			   tree vectype, slp_tree slp_node,
 			   bool masked_p, vec_load_store_type vls_type,
 			   vect_memory_access_type *memory_access_type,
+			   poly_int64 *poffset,
 			   dr_alignment_support *alignment_support_scheme,
 			   int *misalignment,
 			   gather_scatter_info *gs_info)
@@ -2210,7 +2214,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 		/* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
 		   only correct for single element "interleaving" SLP.  */
 		*memory_access_type = get_negative_load_store_type
-				       (vinfo, stmt_info, vectype, vls_type, 1);
+			     (vinfo, stmt_info, vectype, vls_type, 1, poffset);
 	      else
 		{
 		  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
@@ -2359,6 +2363,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		     bool masked_p, vec_load_store_type vls_type,
 		     unsigned int ncopies,
 		     vect_memory_access_type *memory_access_type,
+		     poly_int64 *poffset,
 		     dr_alignment_support *alignment_support_scheme,
 		     int *misalignment,
 		     gather_scatter_info *gs_info)
@@ -2366,6 +2371,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   *misalignment = DR_MISALIGNMENT_UNKNOWN;
+  *poffset = 0;
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       *memory_access_type = VMAT_GATHER_SCATTER;
@@ -2412,7 +2418,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
     {
       if (!get_group_load_store_type (vinfo, stmt_info, vectype, slp_node,
 				      masked_p,
-				      vls_type, memory_access_type,
+				      vls_type, memory_access_type, poffset,
 				      alignment_support_scheme,
 				      misalignment, gs_info))
 	return false;
@@ -2444,7 +2450,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	{
 	  if (cmp < 0)
 	    *memory_access_type = get_negative_load_store_type
-	       (vinfo, stmt_info, vectype, vls_type, ncopies);
+	       (vinfo, stmt_info, vectype, vls_type, ncopies, poffset);
 	  else
 	    *memory_access_type = VMAT_CONTIGUOUS;
 	  *alignment_support_scheme
@@ -7242,7 +7248,6 @@ vectorizable_store (vec_info *vinfo,
   unsigned int group_size, i;
   vec<tree> oprnds = vNULL;
   vec<tree> result_chain = vNULL;
-  tree offset = NULL_TREE;
   vec<tree> vec_oprnds = vNULL;
   bool slp = (slp_node != NULL);
   unsigned int vec_num;
@@ -7352,8 +7357,9 @@ vectorizable_store (vec_info *vinfo,
   vect_memory_access_type memory_access_type;
   enum dr_alignment_support alignment_support_scheme;
   int misalignment;
+  poly_int64 poffset;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, vls_type,
-			    ncopies, &memory_access_type,
+			    ncopies, &memory_access_type, &poffset,
 			    &alignment_support_scheme, &misalignment, &gs_info))
     return false;
 
@@ -7941,9 +7947,9 @@ vectorizable_store (vec_info *vinfo,
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
-  if (memory_access_type == VMAT_CONTIGUOUS_DOWN
-      || memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-    offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
+  tree offset = NULL_TREE;
+  if (!known_eq (poffset, 0))
+    offset = size_int (poffset);
 
   tree bump;
   tree vec_offset = NULL_TREE;
@@ -8498,7 +8504,6 @@ vectorizable_load (vec_info *vinfo,
   unsigned int group_size;
   poly_uint64 group_gap_adj;
   tree msq = NULL_TREE, lsq;
-  tree offset = NULL_TREE;
   tree byte_offset = NULL_TREE;
   tree realignment_token = NULL_TREE;
   gphi *phi = NULL;
@@ -8708,8 +8713,9 @@ vectorizable_load (vec_info *vinfo,
   vect_memory_access_type memory_access_type;
   enum dr_alignment_support alignment_support_scheme;
   int misalignment;
+  poly_int64 poffset;
   if (!get_load_store_type (vinfo, stmt_info, vectype, slp_node, mask, VLS_LOAD,
-			    ncopies, &memory_access_type,
+			    ncopies, &memory_access_type, &poffset,
 			    &alignment_support_scheme, &misalignment, &gs_info))
     return false;
 
@@ -9293,6 +9299,9 @@ vectorizable_load (vec_info *vinfo,
   else
     at_loop = loop;
 
+  tree offset = NULL_TREE;
+  if (!known_eq (poffset, 0))
+    offset = size_int (poffset);
   if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
     offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
