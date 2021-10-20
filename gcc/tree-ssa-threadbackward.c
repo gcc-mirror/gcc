@@ -52,12 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 class back_threader_registry
 {
 public:
-  back_threader_registry ();
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   back_jt_path_registry m_lowlevel_registry;
-  int m_threaded_paths;
 };
 
 // Class to abstract the profitability code for the backwards threader.
@@ -574,11 +572,6 @@ back_threader::debug ()
   dump (stderr);
 }
 
-back_threader_registry::back_threader_registry ()
-{
-  m_threaded_paths = 0;
-}
-
 bool
 back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
 {
@@ -928,9 +921,7 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 
   m_lowlevel_registry.push_edge (jump_thread_path,
 				 taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-
-  if (m_lowlevel_registry.register_jump_thread (jump_thread_path))
-    ++m_threaded_paths;
+  m_lowlevel_registry.register_jump_thread (jump_thread_path);
   return true;
 }
 
