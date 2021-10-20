@@ -2157,7 +2157,8 @@ package body Gen_IL.Gen is
 
                   Put (S, F_Image (F) & " => (" &
                        Image (Field_Table (F).Field_Type) & "_Field, " &
-                       Image (Offset) & ")");
+                       Image (Offset) & ", " &
+                       Image (Field_Table (F).Type_Only) & ")");
 
                   FS := Field_Size (F);
                   FB := First_Bit (F, Offset);
@@ -2252,10 +2253,32 @@ package body Gen_IL.Gen is
          Decrease_Indent (S, 2);
          Put (S, ");" & LF & LF);
 
+         Put (S, "type Type_Only_Enum is" & LF);
+         Increase_Indent (S, 2);
+         Put (S, "(");
+
+         declare
+            First_Time : Boolean := True;
+         begin
+            for TO in Type_Only_Enum loop
+               if First_Time then
+                  First_Time := False;
+               else
+                  Put (S, ", ");
+               end if;
+
+               Put (S, Image (TO));
+            end loop;
+         end;
+
+         Decrease_Indent (S, 2);
+         Put (S, ");" & LF & LF);
+
          Put (S, "type Field_Descriptor is record" & LF);
          Increase_Indent (S, 3);
          Put (S, "Kind : Field_Kind;" & LF);
          Put (S, "Offset : Field_Offset;" & LF);
+         Put (S, "Type_Only : Type_Only_Enum;" & LF);
          Decrease_Indent (S, 3);
          Put (S, "end record;" & LF & LF);
 

@@ -854,14 +854,15 @@ package body Atree is
      (N : Node_Id; Field : Node_Or_Entity_Field) return Field_Size_32_Bit
    is
       Desc : Field_Descriptor renames Field_Descriptors (Field);
+      NN : constant Node_Or_Entity_Id := Node_To_Fetch_From (N, Field);
 
    begin
       case Field_Size (Desc.Kind) is
-         when 1 => return Field_Size_32_Bit (Get_1_Bit_Val (N, Desc.Offset));
-         when 2 => return Field_Size_32_Bit (Get_2_Bit_Val (N, Desc.Offset));
-         when 4 => return Field_Size_32_Bit (Get_4_Bit_Val (N, Desc.Offset));
-         when 8 => return Field_Size_32_Bit (Get_8_Bit_Val (N, Desc.Offset));
-         when others => return Get_32_Bit_Val (N, Desc.Offset);  -- 32
+         when 1 => return Field_Size_32_Bit (Get_1_Bit_Val (NN, Desc.Offset));
+         when 2 => return Field_Size_32_Bit (Get_2_Bit_Val (NN, Desc.Offset));
+         when 4 => return Field_Size_32_Bit (Get_4_Bit_Val (NN, Desc.Offset));
+         when 8 => return Field_Size_32_Bit (Get_8_Bit_Val (NN, Desc.Offset));
+         when others => return Get_32_Bit_Val (NN, Desc.Offset);  -- 32
       end case;
    end Get_Field_Value;
 
