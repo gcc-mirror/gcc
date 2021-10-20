@@ -480,14 +480,14 @@ SubstitutionRef::adjust_mappings_for_this (
 // this new substitution reference so ordering matters here
 SubstitutionArgumentMappings
 SubstitutionRef::solve_mappings_from_receiver_for_self (
-  SubstitutionArgumentMappings &mappings)
+  SubstitutionArgumentMappings &mappings) const
 {
   std::vector<SubstitutionArg> resolved_mappings;
 
   rust_assert (mappings.size () == get_num_substitutions ());
   for (size_t i = 0; i < get_num_substitutions (); i++)
     {
-      SubstitutionParamMapping &param_mapping = substitutions.at (i);
+      const SubstitutionParamMapping &param_mapping = substitutions.at (i);
       SubstitutionArg &arg = mappings.get_mappings ().at (i);
 
       if (param_mapping.needs_substitution ())

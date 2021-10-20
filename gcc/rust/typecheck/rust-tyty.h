@@ -943,7 +943,7 @@ public:
   // we need to figure out relevant generic arguemts for self to apply to the
   // fntype
   SubstitutionArgumentMappings solve_mappings_from_receiver_for_self (
-    SubstitutionArgumentMappings &mappings);
+    SubstitutionArgumentMappings &mappings) const;
 
   BaseType *infer_substitions (Location locus)
   {
