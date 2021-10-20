@@ -76,7 +76,6 @@ class back_threader
 {
 public:
   back_threader (bool speed_p, bool resolve);
-  ~back_threader ();
   void maybe_thread_block (basic_block bb);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
@@ -126,10 +125,6 @@ back_threader::back_threader (bool speed_p, bool resolve)
 {
   m_last_stmt = NULL;
   m_resolve = resolve;
-}
-
-back_threader::~back_threader ()
-{
 }
 
 // Register the current path for jump threading if it's profitable to
