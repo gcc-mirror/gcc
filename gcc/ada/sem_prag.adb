@@ -4144,8 +4144,10 @@ package body Sem_Prag is
       --  than library level instantiations these can appear in contexts which
       --  would normally be invalid (they only apply to the original template
       --  and to library level instantiations), and they are simply ignored,
-      --  which is implemented by rewriting them as null statements and raising
-      --  exception to terminate analysis.
+      --  which is implemented by rewriting them as null statements and
+      --  optionally raising Pragma_Exit to terminate analysis. An exception
+      --  is not always raised to avoid exception propagation during the
+      --  bootstrap, so all callers should check whether N has been rewritten.
 
       procedure Check_Variant (Variant : Node_Id; UU_Typ : Entity_Id);
       --  Check an Unchecked_Union variant for lack of nested variants and
@@ -6652,8 +6654,14 @@ package body Sem_Prag is
                Sindex := Source_Index (Current_Sem_Unit);
 
                if Loc not in Source_First (Sindex) .. Source_Last (Sindex) then
+                  --  We do not want to raise an exception here since this code
+                  --  is part of the bootstrap path where we cannot rely on
+                  --  exception proapgation working.
+                  --  Instead the caller should check for N being rewritten as
+                  --  a null statement.
+                  --  This code triggers when compiling a-except.adb.
+
                   Rewrite (N, Make_Null_Statement (Loc));
-                  raise Pragma_Exit;
 
                --  If before first declaration, the pragma applies to the
                --  enclosing unit, and the name if present must be this name.
@@ -12719,6 +12727,13 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
 
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
+
             Lib_Entity := Find_Lib_Unit_Name;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -15966,6 +15981,13 @@ package body Sem_Prag is
          begin
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
+
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
 
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
@@ -19650,6 +19672,13 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Valid_Library_Unit_Pragma;
 
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
+
             --  Must appear for a spec or generic spec
 
             if Nkind (Unit (Cunit (Current_Sem_Unit))) not in
@@ -21436,6 +21465,13 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
 
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
+
             Ent := Find_Lib_Unit_Name;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
@@ -22072,8 +22108,15 @@ package body Sem_Prag is
 
             if Is_Wrapper_Package (Current_Scope) then
                return;
-            else
-               Check_Valid_Library_Unit_Pragma;
+            end if;
+
+            Check_Valid_Library_Unit_Pragma;
+
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
             end if;
 
             Ent := Find_Lib_Unit_Name;
@@ -22612,6 +22655,13 @@ package body Sem_Prag is
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
 
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
+
             Cunit_Node := Cunit (Current_Sem_Unit);
             K          := Nkind (Unit (Cunit_Node));
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
@@ -22650,6 +22700,13 @@ package body Sem_Prag is
          begin
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
+
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
 
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
@@ -22846,6 +22903,13 @@ package body Sem_Prag is
          begin
             Check_Ada_83_Warning;
             Check_Valid_Library_Unit_Pragma;
+
+            --  If N was rewritten as a null statement there is nothing more
+            --  to do.
+
+            if Nkind (N) = N_Null_Statement then
+               return;
+            end if;
 
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
