@@ -257,6 +257,30 @@ struct gomp_doacross_work_share
   unsigned int shift_counts[];
 };
 
+/* Like struct gomp_work_share, but only the 1st cacheline of it plus
+   flexible array at the end.
+   Keep in sync with struct gomp_work_share.  */
+struct gomp_work_share_1st_cacheline
+{
+  enum gomp_schedule_type sched;
+  int mode;
+  union {
+    struct {
+      long chunk_size, end, incr;
+    };
+    struct {
+      unsigned long long chunk_size_ull, end_ull, incr_ull;
+    };
+  };
+  union {
+    unsigned *ordered_team_ids;
+    struct gomp_doacross_work_share *doacross;
+  };
+  unsigned ordered_num_used, ordered_owner, ordered_cur;
+  struct gomp_work_share *next_alloc;
+  char pad[];
+};
+
 struct gomp_work_share
 {
   /* This member records the SCHEDULE clause to be used for this construct.
@@ -324,7 +348,12 @@ struct gomp_work_share
      are in a different cache line.  */
 
   /* This lock protects the update of the following members.  */
+#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
   gomp_mutex_t lock __attribute__((aligned (64)));
+#else
+  char pad[64 - offsetof (struct gomp_work_share_1st_cacheline, pad)];
+  gomp_mutex_t lock;
+#endif
 
   /* This is the count of the number of threads that have exited the work
      share construct.  If the construct was marked nowait, they have moved on
@@ -361,6 +390,12 @@ struct gomp_work_share
      to this array which fills the padding at the end of this struct.  */
   unsigned inline_ordered_team_ids[0];
 };
+
+extern char gomp_workshare_struct_check1
+  [offsetof (struct gomp_work_share_1st_cacheline, next_alloc)
+   == offsetof (struct gomp_work_share, next_alloc) ? 1 : -1];
+extern char gomp_workshare_struct_check2
+  [offsetof (struct gomp_work_share, lock) == 64 ? 1 : -1];
 
 /* This structure contains all of the thread-local data associated with 
    a thread team.  This is the data that must be saved when a thread

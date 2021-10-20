@@ -1,3 +1,19 @@
+2021-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* libgomp.h (struct gomp_work_share_1st_cacheline): New type.
+	(struct gomp_work_share): Only use aligned(64) attribute if
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined, otherwise just
+	add padding before lock to ensure lock is at offset 64 bytes
+	into the structure.
+	(gomp_workshare_struct_check1, gomp_workshare_struct_check2):
+	New poor man's static assertions.
+	* work.c (gomp_work_share_start): Use gomp_aligned_alloc instead of
+	gomp_malloc if GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC.
+
 2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
