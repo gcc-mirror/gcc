@@ -51,8 +51,9 @@ test03()
 {
   // At least one of these tokens should be valid.
   const std::string tokens[] = {
-    "rdseed", "rdrand", "rand_s", "/dev/urandom", "/dev/random", "mt19937",
-    "prng"
+    "rdseed", "rdrand", "darn",
+    "rand_s", "/dev/urandom", "/dev/random",
+    "mt19937", "prng"
   };
   int count = 0;
   for (const std::string& token : tokens)

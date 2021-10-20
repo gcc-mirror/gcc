@@ -37,6 +37,8 @@
 # ifdef _GLIBCXX_X86_RDSEED
 #  define USE_RDSEED 1
 # endif
+#elif defined __powerpc__ && defined __BUILTIN_CPU_SUPPORTS__
+# define USE_DARN 1
 #endif
 
 #include <cerrno>
@@ -69,7 +71,7 @@
 #if defined _GLIBCXX_USE_CRT_RAND_S || defined _GLIBCXX_USE_DEV_RANDOM
 // The OS provides a source of randomness we can use.
 # pragma GCC poison _M_mt
-#elif defined USE_RDRAND || defined USE_RDSEED
+#elif defined USE_RDRAND || defined USE_RDSEED || defined USE_DARN
 // Hardware instructions might be available, but use cpuid checks at runtime.
 # pragma GCC poison _M_mt
 // If the runtime cpuid checks fail we'll use a linear congruential engine.
@@ -135,6 +137,24 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
 #endif
 
+#ifdef USE_DARN
+    unsigned int
+    __attribute__((target("cpu=power9")))
+    __ppc_darn(void*)
+    {
+      const uint64_t failed = -1;
+      unsigned int retries = 10;
+      uint64_t val = __builtin_darn();
+      while (val == failed) [[__unlikely__]]
+	{
+	  if (--retries == 0)
+	    std::__throw_runtime_error(__N("random_device: darn failed"));
+	  val = __builtin_darn();
+	}
+      return (uint32_t)val;
+    }
+#endif
+
 #ifdef _GLIBCXX_USE_CRT_RAND_S
     unsigned int
     __winxp_rand_s(void*)
@@ -193,10 +213,15 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 #endif
 
-    enum Which {
-      rand_s = 1, rdseed = 2, rdrand = 4, device_file = 8, prng = 16,
+    enum Which : unsigned {
+      device_file = 1, prng = 2, rand_s = 4,
+      rdseed = 64, rdrand = 128, darn = 256,
       any = 0xffff
     };
+
+    constexpr Which
+    operator|(Which l, Which r) noexcept
+    { return Which(unsigned(l) | unsigned(r)); }
 
     inline Which
     which_source(random_device::result_type (*func [[maybe_unused]])(void*),
@@ -219,6 +244,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef USE_RDRAND
       if (func == &__x86_rdrand)
 	return rdrand;
+#endif
+
+#ifdef USE_DARN
+      if (func == &__ppc_darn)
+	return darn;
 #endif
 
 #ifdef _GLIBCXX_USE_DEV_RANDOM
@@ -269,6 +299,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
     else if (token == "rdrand" || token == "rdrnd")
       which = rdrand;
 #endif // USE_RDRAND
+#ifdef USE_DARN
+    else if (token == "darn")
+      which = darn;
+#endif
+#if defined USE_RDRAND || defined USE_RDSEED || defined USE_DARN
+    else if (token == "hw" || token == "hardware")
+      which = rdrand | rdseed | darn;
+#endif
 #ifdef _GLIBCXX_USE_CRT_RAND_S
     else if (token == "rand_s")
       which = rand_s;
@@ -345,6 +383,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	}
     }
 #endif // USE_RDRAND
+
+#ifdef USE_DARN
+    if (which & darn)
+      {
+	if (__builtin_cpu_supports("darn"))
+	  {
+	    _M_func = &__ppc_darn;
+	    return;
+	  }
+      }
+#endif // USE_DARN
 
 #ifdef _GLIBCXX_USE_DEV_RANDOM
     if (which & device_file)
@@ -497,6 +546,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     {
     case rdrand:
     case rdseed:
+    case darn:
       return (double) max;
     case rand_s:
     case prng:
