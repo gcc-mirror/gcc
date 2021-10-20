@@ -83,7 +83,7 @@ private:
   edge maybe_register_path ();
   bool find_paths_to_names (basic_block bb, bitmap imports);
   bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
-  bool resolve_phi (gphi *phi, bitmap imports);
+  void resolve_phi (gphi *phi, bitmap imports);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
@@ -243,17 +243,14 @@ populate_worklist (vec<tree> &worklist, bitmap bits)
     }
 }
 
-// If taking any of the incoming edges to a PHI causes the final
-// conditional of the current path to be constant, register the
-// path(s), and return TRUE.
+// Find jump threading paths that go through a PHI.
 
-bool
+void
 back_threader::resolve_phi (gphi *phi, bitmap interesting)
 {
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (phi)))
-    return true;
+    return;
 
-  bool done = false;
   for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
     {
       edge e = gimple_phi_arg_edge (phi, i);
@@ -275,53 +272,24 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
 	  continue;
 	}
 
-      // FIXME: We currently stop looking if we find a threadable path
-      // through a PHI.  This is pessimistic, as there can be multiple
-      // paths that can resolve the path.  For example:
-      //
-      // x_5 = PHI <10(4), 20(5), ...>
-      // if (x_5 > 5)
-
       tree arg = gimple_phi_arg_def (phi, i);
-      if (TREE_CODE (arg) == SSA_NAME)
+      unsigned v = 0;
+
+      if (TREE_CODE (arg) == SSA_NAME
+	  && !bitmap_bit_p (interesting, SSA_NAME_VERSION (arg)))
 	{
-	  unsigned v = SSA_NAME_VERSION (arg);
-
-	  // Avoid loops as in: x_5 = PHI <x_5(2), ...>.
-	  if (bitmap_bit_p (interesting, v))
-	    continue;
-
+	  // Record that ARG is interesting when searching down this path.
+	  v = SSA_NAME_VERSION (arg);
+	  gcc_checking_assert (v != 0);
 	  bitmap_set_bit (interesting, v);
 	  bitmap_set_bit (m_imports, v);
-
-	  // When resolving unknowns, see if the incoming SSA can be
-	  // resolved on entry without having to keep looking back.
-	  bool keep_looking = true;
-	  if (m_resolve)
-	    {
-	      m_path.safe_push (e->src);
-	      if (maybe_register_path ())
-		{
-		  keep_looking = false;
-		  m_visited_bbs.add (e->src);
-		}
-	      m_path.pop ();
-	    }
-	  if (keep_looking)
-	    done |= find_paths_to_names (e->src, interesting);
-
-	  bitmap_clear_bit (interesting, v);
 	}
-      else if (TREE_CODE (arg) == INTEGER_CST)
-	{
-	  m_path.safe_push (e->src);
-	  edge taken_edge = maybe_register_path ();
-	  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
-	    done = true;
-	  m_path.pop ();
-	}
+
+      find_paths_to_names (e->src, interesting);
+
+      if (v)
+	bitmap_clear_bit (interesting, v);
     }
-  return done;
 }
 
 // If the definition of NAME causes the final conditional of the
@@ -333,9 +301,11 @@ back_threader::resolve_def (tree name, bitmap interesting, vec<tree> &worklist)
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
   // Handle PHIs.
-  if (is_a<gphi *> (def_stmt)
-      && resolve_phi (as_a<gphi *> (def_stmt), interesting))
-    return true;
+  if (is_a<gphi *> (def_stmt))
+    {
+      resolve_phi (as_a<gphi *> (def_stmt), interesting);
+      return true;
+    }
 
   // Defer copies of SSAs by adding the source to the worklist.
   if (gimple_assign_single_p (def_stmt)
