@@ -198,12 +198,6 @@ remove that directory when you do not need that specific version of GCC
 any longer, and, if shared libraries are installed there as well, no
 more binaries exist that use them.
 
-@ifhtml
-There are also some @uref{old.html,,old installation instructions},
-which are mostly obsolete but still contain some information which has
-not yet been merged into the main part of this manual.
-@end ifhtml
-
 @html
 <hr />
 <p>
