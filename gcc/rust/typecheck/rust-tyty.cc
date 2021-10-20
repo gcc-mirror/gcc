@@ -108,6 +108,9 @@ void
 BaseType::inherit_bounds (
   const std::vector<TyTy::TypeBoundPredicate> &specified_bounds)
 {
+  // FIXME
+  // 1. This needs to union the bounds
+  // 2. Do some checking for trait polarity to ensure compatibility
   for (auto &bound : specified_bounds)
     {
       add_bound (bound);
