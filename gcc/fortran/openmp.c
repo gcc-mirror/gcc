@@ -3581,7 +3581,7 @@ match_omp (gfc_exec_op op, const omp_mask mask)
 {
   gfc_omp_clauses *c;
   if (gfc_match_omp_clauses (&c, mask, true, true, false, false,
-			     (op == EXEC_OMP_TARGET)) != MATCH_YES)
+			     op == EXEC_OMP_TARGET) != MATCH_YES)
     return MATCH_ERROR;
   new_st.op = op;
   new_st.ext.omp_clauses = c;
