@@ -5399,9 +5399,18 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (scalar_mode)
 	{
 	case E_HFmode:
-	  opcode = (misaligned_p
-		    ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
-		    : "vmovdqa64");
+	  if (evex_reg_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "%vmovdqu")
+		      : "%vmovdqa");
 	  break;
 	case E_SFmode:
 	  opcode = misaligned_p ? "%vmovups" : "%vmovaps";
