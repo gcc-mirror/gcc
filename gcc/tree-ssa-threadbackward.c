@@ -140,6 +140,10 @@ back_threader::maybe_register_path ()
 
   if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
+      // Avoid circular paths.
+      if (m_visited_bbs.contains (taken_edge->dest))
+	return UNREACHABLE_EDGE;
+
       bool irreducible = false;
       bool profitable
 	= m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
