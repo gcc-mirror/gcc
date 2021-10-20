@@ -1893,6 +1893,7 @@ public:
     return has_substitutions ();
   }
 
+  const BaseType *get () const { return base; }
   BaseType *get () { return base; }
 
   bool contains_type_parameters () const override
