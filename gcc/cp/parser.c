@@ -44437,7 +44437,8 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	       dependent local extern variable decls are as rare as
 	       hen's teeth.  */
 	    if (auto alias = DECL_LOCAL_DECL_ALIAS (decl))
-	      decl = alias;
+	      if (alias != error_mark_node)
+		decl = alias;
 
 	  if (OMP_CLAUSE_MAP_KIND (t) == GOMP_MAP_LINK)
 	    id = get_identifier ("omp declare target link");
@@ -45665,7 +45666,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_LOCAL_DECL_P (t)
 	  && DECL_LANG_SPECIFIC (t)
-	  && DECL_LOCAL_DECL_ALIAS (t))
+	  && DECL_LOCAL_DECL_ALIAS (t)
+	  && DECL_LOCAL_DECL_ALIAS (t) != error_mark_node)
 	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
 					  device_type);
     }
