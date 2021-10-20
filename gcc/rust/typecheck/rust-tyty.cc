@@ -201,9 +201,10 @@ InferType::unify (BaseType *other)
 }
 
 bool
-InferType::can_eq (const BaseType *other, bool emit_errors) const
+InferType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  InferCmp r (this, emit_errors);
+  InferCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -278,7 +279,8 @@ ErrorType::unify (BaseType *other)
 }
 
 bool
-ErrorType::can_eq (const BaseType *other, bool emit_errors) const
+ErrorType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
   return get_kind () == other->get_kind ();
 }
@@ -641,9 +643,10 @@ ADTType::cast (BaseType *other)
 }
 
 bool
-ADTType::can_eq (const BaseType *other, bool emit_errors) const
+ADTType::can_eq (const BaseType *other, bool emit_errors,
+		 bool autoderef_mode) const
 {
-  ADTCmp r (this, emit_errors);
+  ADTCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -822,9 +825,10 @@ TupleType::cast (BaseType *other)
 }
 
 bool
-TupleType::can_eq (const BaseType *other, bool emit_errors) const
+TupleType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  TupleCmp r (this, emit_errors);
+  TupleCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -926,9 +930,10 @@ FnType::cast (BaseType *other)
 }
 
 bool
-FnType::can_eq (const BaseType *other, bool emit_errors) const
+FnType::can_eq (const BaseType *other, bool emit_errors,
+		bool autoderef_mode) const
 {
-  FnCmp r (this, emit_errors);
+  FnCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1143,9 +1148,10 @@ FnPtr::cast (BaseType *other)
 }
 
 bool
-FnPtr::can_eq (const BaseType *other, bool emit_errors) const
+FnPtr::can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const
 {
-  FnptrCmp r (this, emit_errors);
+  FnptrCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1209,9 +1215,10 @@ ClosureType::unify (BaseType *other)
 }
 
 bool
-ClosureType::can_eq (const BaseType *other, bool emit_errors) const
+ClosureType::can_eq (const BaseType *other, bool emit_errors,
+		     bool autoderef_mode) const
 {
-  ClosureCmp r (this, emit_errors);
+  ClosureCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1297,9 +1304,10 @@ ArrayType::cast (BaseType *other)
 }
 
 bool
-ArrayType::can_eq (const BaseType *other, bool emit_errors) const
+ArrayType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  ArrayCmp r (this, emit_errors);
+  ArrayCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1372,9 +1380,10 @@ BoolType::cast (BaseType *other)
 }
 
 bool
-BoolType::can_eq (const BaseType *other, bool emit_errors) const
+BoolType::can_eq (const BaseType *other, bool emit_errors,
+		  bool autoderef_mode) const
 {
-  BoolCmp r (this, emit_errors);
+  BoolCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1438,9 +1447,10 @@ IntType::cast (BaseType *other)
 }
 
 bool
-IntType::can_eq (const BaseType *other, bool emit_errors) const
+IntType::can_eq (const BaseType *other, bool emit_errors,
+		 bool autoderef_mode) const
 {
-  IntCmp r (this, emit_errors);
+  IntCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1515,9 +1525,10 @@ UintType::cast (BaseType *other)
 }
 
 bool
-UintType::can_eq (const BaseType *other, bool emit_errors) const
+UintType::can_eq (const BaseType *other, bool emit_errors,
+		  bool autoderef_mode) const
 {
-  UintCmp r (this, emit_errors);
+  UintCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1586,9 +1597,10 @@ FloatType::cast (BaseType *other)
 }
 
 bool
-FloatType::can_eq (const BaseType *other, bool emit_errors) const
+FloatType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  FloatCmp r (this, emit_errors);
+  FloatCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1649,9 +1661,10 @@ USizeType::cast (BaseType *other)
 }
 
 bool
-USizeType::can_eq (const BaseType *other, bool emit_errors) const
+USizeType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  USizeCmp r (this, emit_errors);
+  USizeCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1701,9 +1714,10 @@ ISizeType::cast (BaseType *other)
 }
 
 bool
-ISizeType::can_eq (const BaseType *other, bool emit_errors) const
+ISizeType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  ISizeCmp r (this, emit_errors);
+  ISizeCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1753,9 +1767,10 @@ CharType::cast (BaseType *other)
 }
 
 bool
-CharType::can_eq (const BaseType *other, bool emit_errors) const
+CharType::can_eq (const BaseType *other, bool emit_errors,
+		  bool autoderef_mode) const
 {
-  CharCmp r (this, emit_errors);
+  CharCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1806,9 +1821,10 @@ ReferenceType::cast (BaseType *other)
 }
 
 bool
-ReferenceType::can_eq (const BaseType *other, bool emit_errors) const
+ReferenceType::can_eq (const BaseType *other, bool emit_errors,
+		       bool autoderef_mode) const
 {
-  ReferenceCmp r (this, emit_errors);
+  ReferenceCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1892,9 +1908,10 @@ PointerType::cast (BaseType *other)
 }
 
 bool
-PointerType::can_eq (const BaseType *other, bool emit_errors) const
+PointerType::can_eq (const BaseType *other, bool emit_errors,
+		     bool autoderef_mode) const
 {
-  PointerCmp r (this, emit_errors);
+  PointerCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -1987,9 +2004,10 @@ ParamType::cast (BaseType *other)
 }
 
 bool
-ParamType::can_eq (const BaseType *other, bool emit_errors) const
+ParamType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  ParamCmp r (this, emit_errors);
+  ParamCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -2044,7 +2062,7 @@ ParamType::is_equal (const BaseType &other) const
     return false;
 
   if (can_resolve ())
-    return resolve ()->can_eq (other2.resolve (), false);
+    return resolve ()->can_eq (other2.resolve (), false, false);
 
   return get_symbol ().compare (other2.get_symbol ()) == 0;
 }
@@ -2108,9 +2126,10 @@ StrType::cast (BaseType *other)
 }
 
 bool
-StrType::can_eq (const BaseType *other, bool emit_errors) const
+StrType::can_eq (const BaseType *other, bool emit_errors,
+		 bool autoderef_mode) const
 {
-  StrCmp r (this, emit_errors);
+  StrCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -2160,9 +2179,10 @@ NeverType::cast (BaseType *other)
 }
 
 bool
-NeverType::can_eq (const BaseType *other, bool emit_errors) const
+NeverType::can_eq (const BaseType *other, bool emit_errors,
+		   bool autoderef_mode) const
 {
-  NeverCmp r (this, emit_errors);
+  NeverCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -2215,9 +2235,10 @@ PlaceholderType::cast (BaseType *other)
 }
 
 bool
-PlaceholderType::can_eq (const BaseType *other, bool emit_errors) const
+PlaceholderType::can_eq (const BaseType *other, bool emit_errors,
+			 bool autoderef_mode) const
 {
-  PlaceholderCmp r (this, emit_errors);
+  PlaceholderCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 
@@ -2315,9 +2336,10 @@ ProjectionType::cast (BaseType *other)
 }
 
 bool
-ProjectionType::can_eq (const BaseType *other, bool emit_errors) const
+ProjectionType::can_eq (const BaseType *other, bool emit_errors,
+			bool autoderef_mode) const
 {
-  return base->can_eq (other, emit_errors);
+  return base->can_eq (other, emit_errors, autoderef_mode);
 }
 
 BaseType *
@@ -2421,9 +2443,10 @@ DynamicObjectType::unify (BaseType *other)
 }
 
 bool
-DynamicObjectType::can_eq (const BaseType *other, bool emit_errors) const
+DynamicObjectType::can_eq (const BaseType *other, bool emit_errors,
+			   bool autoderef_mode) const
 {
-  DynamicCmp r (this, emit_errors);
+  DynamicCmp r (this, emit_errors, autoderef_mode);
   return r.can_eq (other);
 }
 

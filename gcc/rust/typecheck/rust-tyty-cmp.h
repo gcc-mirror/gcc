@@ -371,8 +371,18 @@ public:
 
   virtual void visit (const ParamType &type) override
   {
-    // it is ok for types to can eq to a ParamType
-    ok = true;
+    ok = false;
+    if (emit_error_flag)
+      {
+	Location ref_locus = mappings->lookup_location (type.get_ref ());
+	Location base_locus
+	  = mappings->lookup_location (get_base ()->get_ref ());
+	RichLocation r (ref_locus);
+	r.add_range (base_locus);
+	rust_error_at (r, "expected [%s] got [%s]",
+		       get_base ()->as_string ().c_str (),
+		       type.as_string ().c_str ());
+      }
   }
 
   virtual void visit (const DynamicObjectType &type) override
@@ -408,10 +418,10 @@ public:
   }
 
 protected:
-  BaseCmp (const BaseType *base, bool emit_errors)
+  BaseCmp (const BaseType *base, bool emit_errors, bool autoderef_mode)
     : mappings (Analysis::Mappings::get ()),
       context (Resolver::TypeCheckContext::get ()), ok (false),
-      emit_error_flag (emit_errors)
+      emit_error_flag (emit_errors), autoderef_mode_flag (autoderef_mode)
   {}
 
   Analysis::Mappings *mappings;
@@ -419,6 +429,7 @@ protected:
 
   bool ok;
   bool emit_error_flag;
+  bool autoderef_mode_flag;
 
 private:
   /* Returns a pointer to the ty that created this rule. */
@@ -430,8 +441,8 @@ class InferCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  InferCmp (const InferType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  InferCmp (const InferType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const BoolType &type) override
@@ -641,18 +652,7 @@ public:
     BaseCmp::visit (type);
   }
 
-  void visit (const ParamType &type) override
-  {
-    bool is_valid
-      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
-    if (is_valid)
-      {
-	ok = true;
-	return;
-      }
-
-    BaseCmp::visit (type);
-  }
+  void visit (const ParamType &) override { ok = true; }
 
   void visit (const DynamicObjectType &type) override
   {
@@ -690,8 +690,8 @@ class FnCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FnCmp (const FnType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  FnCmp (const FnType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -712,7 +712,7 @@ public:
 	auto a = base->param_at (i).second;
 	auto b = type.param_at (i).second;
 
-	if (!a->can_eq (b, emit_error_flag))
+	if (!a->can_eq (b, emit_error_flag, autoderef_mode_flag))
 	  {
 	    emit_error_flag = false;
 	    BaseCmp::visit (type);
@@ -721,7 +721,8 @@ public:
       }
 
     if (!base->get_return_type ()->can_eq (type.get_return_type (),
-					   emit_error_flag))
+					   emit_error_flag,
+					   autoderef_mode_flag))
       {
 	emit_error_flag = false;
 	BaseCmp::visit (type);
@@ -741,8 +742,8 @@ class FnptrCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FnptrCmp (const FnPtr *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  FnptrCmp (const FnPtr *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -766,7 +767,8 @@ public:
 
     auto this_ret_type = base->get_return_type ();
     auto other_ret_type = type.get_return_type ();
-    if (!this_ret_type->can_eq (other_ret_type, emit_error_flag))
+    if (!this_ret_type->can_eq (other_ret_type, emit_error_flag,
+				autoderef_mode_flag))
       {
 	BaseCmp::visit (type);
 	return;
@@ -776,7 +778,8 @@ public:
       {
 	auto this_param = base->param_at (i);
 	auto other_param = type.param_at (i);
-	if (!this_param->can_eq (other_param, emit_error_flag))
+	if (!this_param->can_eq (other_param, emit_error_flag,
+				 autoderef_mode_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -796,7 +799,8 @@ public:
 
     auto this_ret_type = base->get_return_type ();
     auto other_ret_type = type.get_return_type ();
-    if (!this_ret_type->can_eq (other_ret_type, emit_error_flag))
+    if (!this_ret_type->can_eq (other_ret_type, emit_error_flag,
+				autoderef_mode_flag))
       {
 	BaseCmp::visit (type);
 	return;
@@ -806,7 +810,8 @@ public:
       {
 	auto this_param = base->param_at (i);
 	auto other_param = type.param_at (i).second;
-	if (!this_param->can_eq (other_param, emit_error_flag))
+	if (!this_param->can_eq (other_param, emit_error_flag,
+				 autoderef_mode_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -826,8 +831,8 @@ class ClosureCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ClosureCmp (const ClosureType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  ClosureCmp (const ClosureType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
 private:
@@ -840,8 +845,8 @@ class ArrayCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ArrayCmp (const ArrayType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  ArrayCmp (const ArrayType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const ArrayType &type) override
@@ -856,7 +861,8 @@ public:
     // check base type
     const BaseType *base_element = base->get_element_type ();
     const BaseType *other_element = type.get_element_type ();
-    if (!base_element->can_eq (other_element, emit_error_flag))
+    if (!base_element->can_eq (other_element, emit_error_flag,
+			       autoderef_mode_flag))
       {
 	BaseCmp::visit (type);
 	return;
@@ -864,6 +870,8 @@ public:
 
     ok = true;
   }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -875,8 +883,8 @@ class BoolCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  BoolCmp (const BoolType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  BoolCmp (const BoolType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const BoolType &type) override { ok = true; }
@@ -885,6 +893,8 @@ public:
   {
     ok = type.get_infer_kind () == InferType::InferTypeKind::GENERAL;
   }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -896,8 +906,8 @@ class IntCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  IntCmp (const IntType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  IntCmp (const IntType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -910,6 +920,8 @@ public:
     ok = type.get_int_kind () == base->get_int_kind ();
   }
 
+  void visit (const ParamType &type) override { ok = true; }
+
 private:
   const BaseType *get_base () const override { return base; }
   const IntType *base;
@@ -920,8 +932,8 @@ class UintCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  UintCmp (const UintType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  UintCmp (const UintType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -934,6 +946,8 @@ public:
     ok = type.get_uint_kind () == base->get_uint_kind ();
   }
 
+  void visit (const ParamType &type) override { ok = true; }
+
 private:
   const BaseType *get_base () const override { return base; }
   const UintType *base;
@@ -944,8 +958,8 @@ class FloatCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  FloatCmp (const FloatType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  FloatCmp (const FloatType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -958,6 +972,8 @@ public:
     ok = type.get_float_kind () == base->get_float_kind ();
   }
 
+  void visit (const ParamType &type) override { ok = true; }
+
 private:
   const BaseType *get_base () const override { return base; }
   const FloatType *base;
@@ -968,8 +984,8 @@ class ADTCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ADTCmp (const ADTType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  ADTCmp (const ADTType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const ADTType &type) override
@@ -994,7 +1010,8 @@ public:
 	TyTy::BaseType *this_field_ty = base_field->get_field_type ();
 	TyTy::BaseType *other_field_ty = other_field->get_field_type ();
 
-	if (!this_field_ty->can_eq (other_field_ty, emit_error_flag))
+	if (!this_field_ty->can_eq (other_field_ty, emit_error_flag,
+				    autoderef_mode_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -1003,6 +1020,8 @@ public:
 
     ok = true;
   }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1014,8 +1033,8 @@ class TupleCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  TupleCmp (const TupleType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  TupleCmp (const TupleType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const TupleType &type) override
@@ -1031,7 +1050,7 @@ public:
 	BaseType *bo = base->get_field (i);
 	BaseType *fo = type.get_field (i);
 
-	if (!bo->can_eq (fo, emit_error_flag))
+	if (!bo->can_eq (fo, emit_error_flag, autoderef_mode_flag))
 	  {
 	    BaseCmp::visit (type);
 	    return;
@@ -1040,6 +1059,8 @@ public:
 
     ok = true;
   }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1051,8 +1072,8 @@ class USizeCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  USizeCmp (const USizeType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  USizeCmp (const USizeType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -1061,6 +1082,8 @@ public:
   }
 
   void visit (const USizeType &type) override { ok = true; }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1072,8 +1095,8 @@ class ISizeCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ISizeCmp (const ISizeType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  ISizeCmp (const ISizeType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -1082,6 +1105,8 @@ public:
   }
 
   void visit (const ISizeType &type) override { ok = true; }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1093,8 +1118,8 @@ class CharCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  CharCmp (const CharType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  CharCmp (const CharType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const InferType &type) override
@@ -1103,6 +1128,8 @@ public:
   }
 
   void visit (const CharType &type) override { ok = true; }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1114,8 +1141,9 @@ class ReferenceCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ReferenceCmp (const ReferenceType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  ReferenceCmp (const ReferenceType *base, bool emit_errors,
+		bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const ReferenceType &type) override
@@ -1123,7 +1151,8 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    ok = base_type->can_eq (other_base_type, emit_error_flag)
+    ok = base_type->can_eq (other_base_type, emit_error_flag,
+			    autoderef_mode_flag)
 	 && (base->is_mutable () == type.is_mutable ());
   }
 
@@ -1137,8 +1166,8 @@ class PointerCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  PointerCmp (const PointerType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  PointerCmp (const PointerType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const ReferenceType &type) override
@@ -1146,7 +1175,8 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    ok = base_type->can_eq (other_base_type, emit_error_flag)
+    ok = base_type->can_eq (other_base_type, emit_error_flag,
+			    autoderef_mode_flag)
 	 && (base->is_mutable () == type.is_mutable ());
   }
 
@@ -1160,8 +1190,8 @@ class ParamCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  ParamCmp (const ParamType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  ParamCmp (const ParamType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   // param types are a placeholder we shouldn't have cases where we unify
@@ -1183,13 +1213,7 @@ public:
     bool ok = context->lookup_type (base->get_ty_ref (), &lookup);
     rust_assert (ok);
 
-    if (lookup->get_kind () == TypeKind::PARAM)
-      {
-	InferType infer (UNKNOWN_HIRID, InferType::InferTypeKind::GENERAL);
-	return infer.can_eq (other, emit_error_flag);
-      }
-
-    return lookup->can_eq (other, emit_error_flag);
+    return lookup->can_eq (other, emit_error_flag, autoderef_mode_flag);
   }
 
   // imagine the case where we have:
@@ -1198,7 +1222,46 @@ public:
   // impl <X>Foo<X> { ... }
   // both of these types are compatible so we mostly care about the number of
   // generic arguments
-  void visit (const ParamType &type) override { ok = true; }
+  void visit (const ParamType &) override { ok = true; }
+
+  void visit (const TupleType &) override { ok = true; }
+
+  void visit (const ADTType &) override { ok = true; }
+
+  void visit (const InferType &) override { ok = true; }
+
+  void visit (const FnType &) override { ok = true; }
+
+  void visit (const FnPtr &) override { ok = true; }
+
+  void visit (const ArrayType &) override { ok = true; }
+
+  void visit (const BoolType &) override { ok = true; }
+
+  void visit (const IntType &) override { ok = true; }
+
+  void visit (const UintType &) override { ok = true; }
+
+  void visit (const USizeType &) override { ok = true; }
+
+  void visit (const ISizeType &) override { ok = true; }
+
+  void visit (const FloatType &) override { ok = true; }
+
+  void visit (const CharType &) override { ok = true; }
+
+  void visit (const ReferenceType &) override { ok = !autoderef_mode_flag; }
+
+  void visit (const PointerType &) override { ok = !autoderef_mode_flag; }
+
+  void visit (const StrType &) override { ok = true; }
+
+  void visit (const NeverType &) override { ok = true; }
+
+  void visit (const PlaceholderType &type) override
+  {
+    ok = base->get_symbol ().compare (type.get_symbol ()) == 0;
+  }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1211,11 +1274,13 @@ class StrCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  StrCmp (const StrType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  StrCmp (const StrType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const StrType &type) override { ok = true; }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1227,11 +1292,13 @@ class NeverCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  NeverCmp (const NeverType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  NeverCmp (const NeverType *base, bool emit_errors, bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const NeverType &type) override { ok = true; }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }
@@ -1243,8 +1310,9 @@ class PlaceholderCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  PlaceholderCmp (const PlaceholderType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  PlaceholderCmp (const PlaceholderType *base, bool emit_errors,
+		  bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   bool can_eq (const BaseType *other) override
@@ -1253,7 +1321,7 @@ public:
       return BaseCmp::can_eq (other);
 
     BaseType *lookup = base->resolve ();
-    return lookup->can_eq (other, emit_error_flag);
+    return lookup->can_eq (other, emit_error_flag, autoderef_mode_flag);
   }
 
   void visit (const TupleType &) override { ok = true; }
@@ -1308,8 +1376,9 @@ class DynamicCmp : public BaseCmp
   using Rust::TyTy::BaseCmp::visit;
 
 public:
-  DynamicCmp (const DynamicObjectType *base, bool emit_errors)
-    : BaseCmp (base, emit_errors), base (base)
+  DynamicCmp (const DynamicObjectType *base, bool emit_errors,
+	      bool autoderef_mode)
+    : BaseCmp (base, emit_errors, autoderef_mode), base (base)
   {}
 
   void visit (const DynamicObjectType &type) override
@@ -1323,6 +1392,8 @@ public:
     Location ref_locus = mappings->lookup_location (type.get_ref ());
     ok = base->bounds_compatible (type, ref_locus, false);
   }
+
+  void visit (const ParamType &type) override { ok = true; }
 
 private:
   const BaseType *get_base () const override { return base; }

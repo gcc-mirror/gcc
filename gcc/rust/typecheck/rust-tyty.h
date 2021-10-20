@@ -259,7 +259,8 @@ public:
   //
   // It can also be used to optional emit errors for trait item compatibility
   // checks
-  virtual bool can_eq (const BaseType *other, bool emit_errors) const = 0;
+  virtual bool can_eq (const BaseType *other, bool emit_errors,
+		       bool autoderef_mode) const = 0;
 
   // this is the base coercion interface for types
   virtual BaseType *coerce (BaseType *other) = 0;
@@ -404,7 +405,8 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
 
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
@@ -442,7 +444,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -476,7 +479,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -564,7 +568,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -998,7 +1003,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1126,7 +1132,8 @@ public:
   std::string get_identifier () const { return identifier; }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1234,7 +1241,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1294,7 +1302,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1346,7 +1355,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1388,7 +1398,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1424,7 +1435,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1467,7 +1479,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1508,7 +1521,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1541,7 +1555,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1567,7 +1582,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1593,7 +1609,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1623,7 +1640,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1670,7 +1688,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1715,7 +1734,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1751,7 +1771,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1784,7 +1805,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1852,7 +1874,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
 
@@ -1912,7 +1935,8 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+  bool can_eq (const BaseType *other, bool emit_errors,
+	       bool autoderef_mode) const override final;
   BaseType *coerce (BaseType *other) override;
   BaseType *cast (BaseType *other) override;
   bool is_equal (const BaseType &other) const override;

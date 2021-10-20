@@ -376,9 +376,12 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	      AssociatedImplTrait *lookup_associated = nullptr;
 	      bool found_impl_trait = context->lookup_associated_trait_impl (
 		impl->get_mappings ().get_hirid (), &lookup_associated);
-	      rust_assert (found_impl_trait);
 
-	      lookup_associated->setup_associated_types ();
+	      // setup associated mappings if possible we might be resolving a
+	      // path within a default implementation of a trait function
+	      // see: testsuite/rust/compile/torture/traits16.rs
+	      if (found_impl_trait)
+		lookup_associated->setup_associated_types ();
 
 	      // we need a new ty_ref_id for this trait item
 	      tyseg = tyseg->clone ();

@@ -227,7 +227,7 @@ protected:
     bool ok = context->lookup_type (impl_ty_id, &impl_block_ty);
     rust_assert (ok);
 
-    if (!receiver->can_eq (impl_block_ty, false))
+    if (!receiver->can_eq (impl_block_ty, false, false))
       return;
 
     // lets visit the impl_item

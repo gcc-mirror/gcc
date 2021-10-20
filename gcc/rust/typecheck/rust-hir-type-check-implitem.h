@@ -377,7 +377,7 @@ public:
       return;
 
     // check the types are compatible
-    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true))
+    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true, false))
       {
 	RichLocation r (constant.get_locus ());
 	r.add_range (resolved_trait_item.get_locus ());
@@ -413,7 +413,7 @@ public:
       return;
 
     // check the types are compatible
-    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true))
+    if (!resolved_trait_item.get_tyty ()->can_eq (lookup, true, false))
       {
 	RichLocation r (type.get_locus ());
 	r.add_range (resolved_trait_item.get_locus ());
@@ -487,7 +487,7 @@ public:
       = trait_item_fntype->handle_substitions (implicit_self_substs);
 
     // check the types are compatible
-    if (!trait_item_fntype->can_eq (fntype, true))
+    if (!trait_item_fntype->can_eq (fntype, true, false))
       {
 	RichLocation r (function.get_locus ());
 	r.add_range (resolved_trait_item.get_locus ());
