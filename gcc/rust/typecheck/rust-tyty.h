@@ -884,7 +884,7 @@ public:
 
   bool was_substituted () const { return !needs_substitution (); }
 
-  SubstitutionArgumentMappings get_substitution_arguments ()
+  SubstitutionArgumentMappings get_substitution_arguments () const
   {
     return used_arguments;
   }
