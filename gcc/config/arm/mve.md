@@ -7282,7 +7282,7 @@
 		[(match_operand:V4SI 0 "s_register_operand" "w")
 		 (match_operand:SI 1 "immediate_operand" "i")
 		 (match_operand:V4SI 2 "s_register_operand" "w")
-		 (match_operand:HI 3 "vpr_register_operand" "Up")]
+		 (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VSTRWSBQ))
   ]
   "TARGET_HAVE_MVE"
@@ -7371,7 +7371,7 @@
   [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
 		      (match_operand:SI 2 "immediate_operand" "i")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VLDRWGBQ))
   ]
   "TARGET_HAVE_MVE"
@@ -7609,7 +7609,7 @@
 (define_insn "mve_vldrwq_z_fv4sf"
   [(set (match_operand:V4SF 0 "s_register_operand" "=w")
 	(unspec:V4SF [(match_operand:V4SI 1 "mve_memory_operand" "Ux")
-	(match_operand:HI 2 "vpr_register_operand" "Up")]
+	(match_operand:V4BI 2 "vpr_register_operand" "Up")]
 	 VLDRWQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -7629,7 +7629,7 @@
 (define_insn "mve_vldrwq_z_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_operand:V4SI 1 "mve_memory_operand" "Ux")
-	(match_operand:HI 2 "vpr_register_operand" "Up")]
+	(match_operand:V4BI 2 "vpr_register_operand" "Up")]
 	 VLDRWQ))
   ]
   "TARGET_HAVE_MVE"
@@ -7813,7 +7813,7 @@
   [(set (match_operand:V8HF 0 "s_register_operand" "=&w")
 	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
 		      (match_operand:V8HI 2 "s_register_operand" "w")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V8BI 3 "vpr_register_operand" "Up")]
 	 VLDRHQGO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -7855,7 +7855,7 @@
   [(set (match_operand:V8HF 0 "s_register_operand" "=&w")
 	(unspec:V8HF [(match_operand:V8HI 1 "memory_operand" "Us")
 		      (match_operand:V8HI 2 "s_register_operand" "w")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V8BI 3 "vpr_register_operand" "Up")]
 	 VLDRHQGSO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -7897,7 +7897,7 @@
   [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
 	(unspec:V4SF [(match_operand:V4SI 1 "s_register_operand" "w")
 		      (match_operand:SI 2 "immediate_operand" "i")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VLDRWQGB_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -7958,7 +7958,7 @@
   [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
 	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VLDRWQGO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -7980,7 +7980,7 @@
   [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
 	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VLDRWGOQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8042,7 +8042,7 @@
   [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
 	(unspec:V4SF [(match_operand:V4SI 1 "memory_operand" "Us")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VLDRWQGSO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -8064,7 +8064,7 @@
   [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
 	(unspec:V4SI [(match_operand:V4SI 1 "memory_operand" "Us")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
-		      (match_operand:HI 3 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VLDRWGSOQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8104,7 +8104,7 @@
 (define_insn "mve_vstrhq_p_fv8hf"
   [(set (match_operand:V8HI 0 "mve_memory_operand" "=Ux")
 	(unspec:V8HI [(match_operand:V8HF 1 "s_register_operand" "w")
-		      (match_operand:HI 2 "vpr_register_operand" "Up")]
+		      (match_operand:V8BI 2 "vpr_register_operand" "Up")]
 	 VSTRHQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -8323,7 +8323,7 @@
 (define_insn "mve_vstrwq_p_<supf>v4si"
   [(set (match_operand:V4SI 0 "mve_memory_operand" "=Ux")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		      (match_operand:HI 2 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 2 "vpr_register_operand" "Up")]
 	 VSTRWQ))
   ]
   "TARGET_HAVE_MVE"
@@ -8576,7 +8576,7 @@
   [(match_operand:V8HI 0 "mve_scatter_memory")
    (match_operand:V8HI 1 "s_register_operand")
    (match_operand:V8HF 2 "s_register_operand")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V8BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRHQSO_F)]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
@@ -8594,7 +8594,7 @@
 	  [(match_operand:SI 0 "register_operand" "r")
 	   (match_operand:V8HI 1 "s_register_operand" "w")
 	   (match_operand:V8HF 2 "s_register_operand" "w")
-	   (match_operand:HI 3 "vpr_register_operand" "Up")]
+	   (match_operand:V8BI 3 "vpr_register_operand" "Up")]
 	  VSTRHQSO_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;vstrht.16\t%q2, [%0, %q1]"
@@ -8635,7 +8635,7 @@
   [(match_operand:V8HI 0 "memory_operand" "=Us")
    (match_operand:V8HI 1 "s_register_operand" "w")
    (match_operand:V8HF 2 "s_register_operand" "w")
-   (match_operand:HI 3 "vpr_register_operand" "Up")
+   (match_operand:V8BI 3 "vpr_register_operand" "Up")
    (unspec:V4SI [(const_int 0)] VSTRHQSSO_F)]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
@@ -8654,7 +8654,7 @@
 	  [(match_operand:SI 0 "register_operand" "r")
 	   (match_operand:V8HI 1 "s_register_operand" "w")
 	   (match_operand:V8HF 2 "s_register_operand" "w")
-	   (match_operand:HI 3 "vpr_register_operand" "Up")]
+	   (match_operand:V8BI 3 "vpr_register_operand" "Up")]
 	  VSTRHQSSO_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;vstrht.16\t%q2, [%0, %q1, uxtw #1]"
@@ -8691,7 +8691,7 @@
 		[(match_operand:V4SI 0 "s_register_operand" "w")
 		 (match_operand:SI 1 "immediate_operand" "i")
 		 (match_operand:V4SF 2 "s_register_operand" "w")
-		 (match_operand:HI 3 "vpr_register_operand" "Up")]
+		 (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	 VSTRWQSB_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
@@ -8740,7 +8740,7 @@
   [(match_operand:V4SI 0 "mve_scatter_memory")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:V4SF 2 "s_register_operand")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRWQSO_F)]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
@@ -8758,7 +8758,7 @@
 	  [(match_operand:SI 0 "register_operand" "r")
 	   (match_operand:V4SI 1 "s_register_operand" "w")
 	   (match_operand:V4SF 2 "s_register_operand" "w")
-	   (match_operand:HI 3 "vpr_register_operand" "Up")]
+	   (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	  VSTRWQSO_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;vstrwt.32\t%q2, [%0, %q1]"
@@ -8771,7 +8771,7 @@
   [(match_operand:V4SI 0 "mve_scatter_memory")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:V4SI 2 "s_register_operand")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRWSOQ)]
   "TARGET_HAVE_MVE"
 {
@@ -8789,7 +8789,7 @@
 	  [(match_operand:SI 0 "register_operand" "r")
 	   (match_operand:V4SI 1 "s_register_operand" "w")
 	   (match_operand:V4SI 2 "s_register_operand" "w")
-	   (match_operand:HI 3 "vpr_register_operand" "Up")]
+	   (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	  VSTRWSOQ))]
   "TARGET_HAVE_MVE"
   "vpst\;vstrwt.32\t%q2, [%0, %q1]"
@@ -8858,7 +8858,7 @@
   [(match_operand:V4SI 0 "mve_scatter_memory")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:V4SF 2 "s_register_operand")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRWQSSO_F)]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
@@ -8877,7 +8877,7 @@
 	  [(match_operand:SI 0 "register_operand" "r")
 	   (match_operand:V4SI 1 "s_register_operand" "w")
 	   (match_operand:V4SF 2 "s_register_operand" "w")
-	   (match_operand:HI 3 "vpr_register_operand" "Up")]
+	   (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	  VSTRWQSSO_F))]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vpst\;vstrwt.32\t%q2, [%0, %q1, uxtw #2]"
@@ -8890,7 +8890,7 @@
   [(match_operand:V4SI 0 "mve_scatter_memory")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:V4SI 2 "s_register_operand")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VSTRWSSOQ)]
   "TARGET_HAVE_MVE"
 {
@@ -8909,7 +8909,7 @@
 	  [(match_operand:SI 0 "register_operand" "r")
 	   (match_operand:V4SI 1 "s_register_operand" "w")
 	   (match_operand:V4SI 2 "s_register_operand" "w")
-	   (match_operand:HI 3 "vpr_register_operand" "Up")]
+	   (match_operand:V4BI 3 "vpr_register_operand" "Up")]
 	  VSTRWSSOQ))]
   "TARGET_HAVE_MVE"
   "vpst\;vstrwt.32\t%q2, [%0, %q1, uxtw #2]"
@@ -9376,7 +9376,7 @@
 		[(match_operand:V4SI 1 "s_register_operand" "0")
 		 (match_operand:SI 2 "mve_vldrd_immediate" "Ri")
 		 (match_operand:V4SI 3 "s_register_operand" "w")
-		 (match_operand:HI 4 "vpr_register_operand")]
+		 (match_operand:V4BI 4 "vpr_register_operand")]
 	VSTRWSBWBQ))
    (set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_dup 1) (match_dup 2)]
@@ -9427,7 +9427,7 @@
 		[(match_operand:V4SI 1 "s_register_operand" "0")
 		 (match_operand:SI 2 "mve_vldrd_immediate" "Ri")
 		 (match_operand:V4SF 3 "s_register_operand" "w")
-		 (match_operand:HI 4 "vpr_register_operand")]
+		 (match_operand:V4BI 4 "vpr_register_operand")]
 	VSTRWQSBWB_F))
    (set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_dup 1) (match_dup 2)]
@@ -9551,7 +9551,7 @@
   [(match_operand:V4SI 0 "s_register_operand")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VLDRWGBWBQ)]
   "TARGET_HAVE_MVE"
 {
@@ -9566,7 +9566,7 @@
   [(match_operand:V4SI 0 "s_register_operand")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VLDRWGBWBQ)]
   "TARGET_HAVE_MVE"
 {
@@ -9585,7 +9585,7 @@
   [(set (match_operand:V4SI 0 "s_register_operand" "=&w")
 	(unspec:V4SI [(match_operand:V4SI 2 "s_register_operand" "1")
 		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (match_operand:HI 4 "vpr_register_operand" "Up")
+		      (match_operand:V4BI 4 "vpr_register_operand" "Up")
 		      (mem:BLK (scratch))]
 	 VLDRWGBWBQ))
    (set (match_operand:V4SI 1 "s_register_operand" "=&w")
@@ -9659,7 +9659,7 @@
   [(match_operand:V4SI 0 "s_register_operand")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VLDRWQGBWB_F)]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
@@ -9675,7 +9675,7 @@
   [(match_operand:V4SF 0 "s_register_operand")
    (match_operand:V4SI 1 "s_register_operand")
    (match_operand:SI 2 "mve_vldrd_immediate")
-   (match_operand:HI 3 "vpr_register_operand")
+   (match_operand:V4BI 3 "vpr_register_operand")
    (unspec:V4SI [(const_int 0)] VLDRWQGBWB_F)]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
 {
@@ -9694,7 +9694,7 @@
   [(set (match_operand:V4SF 0 "s_register_operand" "=&w")
 	(unspec:V4SF [(match_operand:V4SI 2 "s_register_operand" "1")
 		      (match_operand:SI 3 "mve_vldrd_immediate" "Ri")
-		      (match_operand:HI 4 "vpr_register_operand" "Up")
+		      (match_operand:V4BI 4 "vpr_register_operand" "Up")
 		      (mem:BLK (scratch))]
 	 VLDRWQGBWB_F))
    (set (match_operand:V4SI 1 "s_register_operand" "=&w")
