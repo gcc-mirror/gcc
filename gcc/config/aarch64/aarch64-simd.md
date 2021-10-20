@@ -1818,6 +1818,40 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
+(define_insn "*aarch64_<srn_op>shrn<mode>_vect"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+        (truncate:<VNARROWQ>
+          (SHIFTRT:VQN (match_operand:VQN 1 "register_operand" "w")
+            (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>"))))]
+  "TARGET_SIMD"
+  "shrn\\t%0.<Vntype>, %1.<Vtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<srn_op>shrn<mode>2_vect_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN (match_operand:VQN 2 "register_operand" "w")
+	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "shrn2\\t%0.<V2ntype>, %2.<Vtype>, %3"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<srn_op>shrn<mode>2_vect_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN (match_operand:VQN 2 "register_operand" "w")
+	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "shrn2\\t%0.<V2ntype>, %2.<Vtype>, %3"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
 (define_expand "aarch64_shrn<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(truncate:<VNARROWQ>
