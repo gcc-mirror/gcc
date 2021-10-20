@@ -545,6 +545,12 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, 64)")))
 
+(define_predicate "aarch64_simd_shift_imm_vec_exact_top"
+  (and (match_code "const_vector")
+       (match_test "aarch64_const_vec_all_same_in_range_p (op,
+			GET_MODE_UNIT_BITSIZE (GET_MODE (op)) / 2,
+			GET_MODE_UNIT_BITSIZE (GET_MODE (op)) / 2)")))
+
 (define_predicate "aarch64_simd_shift_imm_vec_qi"
   (and (match_code "const_vector")
        (match_test "aarch64_const_vec_all_same_in_range_p (op, 1, 8)")))
