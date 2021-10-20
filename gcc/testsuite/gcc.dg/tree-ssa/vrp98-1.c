@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target int128 } */
-/* { dg-options "-Os -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
+/* { dg-options "-Os -fdump-tree-evrp-details" } */
 
 #include <stdint.h>
 #include <limits.h>
@@ -36,6 +36,6 @@ foo (bigger_than_word a, word b, uint8_t c)
   return ret;
 }
 
-/* { dg-final { scan-tree-dump "Folded into: if \\(_\[0-9\]+ == 1\\)" "vrp1" } } */
-/* { dg-final { scan-tree-dump-not "Folded into: if \\(_\[0-9\]+ == 2\\)" "vrp1" } } */
-/* { dg-final { scan-tree-dump "Folded into: if \\(_\[0-9\]+ == 3\\)" "vrp1" } } */
+/* { dg-final { scan-tree-dump "Folded into: if \\(_\[0-9\]+ == 1\\)" "evrp" } } */
+/* { dg-final { scan-tree-dump-not "Folded into: if \\(_\[0-9\]+ == 2\\)" "evrp" } } */
+/* { dg-final { scan-tree-dump "Folded into: if \\(_\[0-9\]+ == 3\\)" "evrp" } } */

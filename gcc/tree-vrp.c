@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "gimple-range-path.h"
 #include "value-pointer-equiv.h"
+#include "gimple-fold.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -4381,7 +4382,9 @@ public:
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
   {
-    return m_simplifier.simplify (gsi);
+    if (m_simplifier.simplify (gsi))
+      return true;
+    return ::fold_stmt (gsi, follow_single_use_edges);
   }
 
 private:
