@@ -3084,7 +3084,7 @@
 				(UNSPEC_FRINTI "nearbyint")
 				(UNSPEC_FRINTX "rint")
 				(UNSPEC_FRINTA "round")
-				(UNSPEC_FRINTN "frintn")])
+				(UNSPEC_FRINTN "roundeven")])
 
 ;; frint suffix for floating-point rounding instructions.
 (define_int_attr frint_suffix [(UNSPEC_FRINTZ "z") (UNSPEC_FRINTP "p")
