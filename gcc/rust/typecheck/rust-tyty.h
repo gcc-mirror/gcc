@@ -626,7 +626,7 @@ public:
 
   std::string as_string () const { return param->as_string (); }
 
-  void fill_param_ty (BaseType &type, Location locus);
+  bool fill_param_ty (BaseType &type, Location locus);
 
   SubstitutionParamMapping clone () const
   {
@@ -1812,7 +1812,9 @@ public:
 
   bool contains_type_parameters () const override
   {
-    rust_assert (can_resolve ());
+    if (!can_resolve ())
+      return false;
+
     return resolve ()->contains_type_parameters ();
   }
 

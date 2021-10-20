@@ -331,9 +331,11 @@ StructFieldType::clone () const
 			      get_field_type ()->clone ());
 }
 
-void
+bool
 SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
 {
+  auto context = Resolver::TypeCheckContext::get ();
+
   if (type.get_kind () == TyTy::TypeKind::INFER)
     {
       type.inherit_bounds (*param);
@@ -341,7 +343,7 @@ SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
   else
     {
       if (!param->bounds_compatible (type, locus, true))
-	return;
+	return false;
     }
 
   if (type.get_kind () == TypeKind::PARAM)
@@ -351,8 +353,52 @@ SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
     }
   else
     {
+      // check the substitution is compatible with bounds
+      if (!param->bounds_compatible (type, locus, true))
+	return false;
+
+      // setup any associated type mappings for the specified bonds and this
+      // type
+      auto candidates = Resolver::TypeBoundsProbe::Probe (&type);
+      for (auto &specified_bound : param->get_specified_bounds ())
+	{
+	  const Resolver::TraitReference *specified_bound_ref
+	    = specified_bound.get ();
+
+	  // since the bounds_compatible check has occurred we should be able to
+	  // assert on finding the trait references
+	  HirId associated_impl_block_id = UNKNOWN_HIRID;
+	  bool found = false;
+	  for (auto &bound : candidates)
+	    {
+	      const Resolver::TraitReference *bound_trait_ref = bound.first;
+	      const HIR::ImplBlock *associated_impl = bound.second;
+
+	      found = specified_bound_ref->is_equal (*bound_trait_ref);
+	      if (found)
+		{
+		  rust_assert (associated_impl != nullptr);
+		  associated_impl_block_id
+		    = associated_impl->get_mappings ().get_hirid ();
+		  break;
+		}
+	    }
+
+	  if (found && associated_impl_block_id != UNKNOWN_HIRID)
+	    {
+	      Resolver::AssociatedImplTrait *lookup_associated = nullptr;
+	      bool found_impl_trait = context->lookup_associated_trait_impl (
+		associated_impl_block_id, &lookup_associated);
+
+	      if (found_impl_trait)
+		lookup_associated->setup_associated_types ();
+	    }
+	}
+
       param->set_ty_ref (type.get_ref ());
     }
+
+  return true;
 }
 
 void

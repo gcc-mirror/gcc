@@ -276,7 +276,16 @@ protected:
 
 	TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
 
-	if (impl != nullptr)
+	// we cannot auto setup associated type mappings when our receiver is a
+	// generic type bound
+	const TyTy::BaseType *root = receiver->get_root ();
+	bool receiver_is_type_param
+	  = root->get_kind () == TyTy::TypeKind::PARAM;
+	bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
+	bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
+
+	if (impl != nullptr && !receiver_is_generic)
+
 	  {
 	    HirId impl_block_id = impl->get_mappings ().get_hirid ();
 	    AssociatedImplTrait *lookup_associated = nullptr;
