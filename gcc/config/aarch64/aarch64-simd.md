@@ -1127,12 +1127,14 @@
 )
 
 (define_insn "aarch64_simd_ashr<mode>"
- [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-       (ashiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		     (match_operand:VDQ_I  2 "aarch64_simd_rshift_imm" "Dr")))]
+ [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
+       (ashiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,w")
+		     (match_operand:VDQ_I  2 "aarch64_simd_rshift_imm" "D1,Dr")))]
  "TARGET_SIMD"
- "sshr\t%0.<Vtype>, %1.<Vtype>, %2"
-  [(set_attr "type" "neon_shift_imm<q>")]
+ "@
+  cmlt\t%0.<Vtype>, %1.<Vtype>, #0
+  sshr\t%0.<Vtype>, %1.<Vtype>, %2"
+  [(set_attr "type" "neon_compare<q>,neon_shift_imm<q>")]
 )
 
 (define_insn "*aarch64_simd_sra<mode>"
