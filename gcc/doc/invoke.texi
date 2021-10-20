@@ -2485,14 +2485,14 @@ supported for C as this construct is allowed by C++.
 Do not recognize @code{asm}, @code{inline} or @code{typeof} as a
 keyword, so that code can use these words as identifiers.  You can use
 the keywords @code{__asm__}, @code{__inline__} and @code{__typeof__}
-instead.  @option{-ansi} implies @option{-fno-asm}.
+instead.  In C, @option{-ansi} implies @option{-fno-asm}.
 
-In C++, this switch only affects the @code{typeof} keyword, since
-@code{asm} and @code{inline} are standard keywords.  You may want to
-use the @option{-fno-gnu-keywords} flag instead, which has the same
-effect.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}), this
-switch only affects the @code{asm} and @code{typeof} keywords, since
-@code{inline} is a standard keyword in ISO C99.
+In C++, @code{inline} is a standard keyword and is not affected by
+this switch.  You may want to use the @option{-fno-gnu-keywords} flag
+instead, which disables @code{typeof} but not @code{asm} and
+@code{inline}.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}),
+this switch only affects the @code{asm} and @code{typeof} keywords,
+since @code{inline} is a standard keyword in ISO C99.
 
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}
