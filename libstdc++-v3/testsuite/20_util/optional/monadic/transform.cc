@@ -110,6 +110,23 @@ static_assert( test_forwarding() );
 constexpr bool
 test_copy_elision()
 {
+  struct immovable
+  {
+    constexpr immovable(int p) : power_level(p) { }
+    immovable(immovable&&) = delete;
+
+    int power_level;
+  };
+
+  struct Force
+  {
+    constexpr immovable operator()(int i) const { return {i+1}; }
+  };
+
+  std::optional<int> irresistible(9000);
+  std::optional<immovable> object = irresistible.transform(Force{});
+  VERIFY( object->power_level > 9000 );
+
   return true;
 }
 
