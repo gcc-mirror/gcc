@@ -832,6 +832,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD arm_stack_protect_guard
+
+#undef TARGET_VECTORIZE_GET_MASK_MODE
+#define TARGET_VECTORIZE_GET_MASK_MODE arm_get_mask_mode
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -29286,7 +29289,8 @@ arm_vector_mode_supported_p (machine_mode mode)
 
   if (TARGET_HAVE_MVE
       && (mode == V2DImode || mode == V4SImode || mode == V8HImode
-	  || mode == V16QImode))
+	  || mode == V16QImode
+	  || mode == V16BImode || mode == V8BImode || mode == V4BImode))
       return true;
 
   if (TARGET_HAVE_MVE_FLOAT
@@ -31085,7 +31089,7 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 }
 
 /* Return the mode for the MVE vector of predicates corresponding to MODE.  */
-machine_mode
+opt_machine_mode
 arm_mode_to_pred_mode (machine_mode mode)
 {
   switch (GET_MODE_NUNITS (mode))
@@ -31094,7 +31098,7 @@ arm_mode_to_pred_mode (machine_mode mode)
     case 8: return V8BImode;
     case 4: return V4BImode;
     }
-  gcc_unreachable ();
+  return opt_machine_mode ();
 }
 
 /* Expand code to compare vectors OP0 and OP1 using condition CODE.
@@ -31102,16 +31106,12 @@ arm_mode_to_pred_mode (machine_mode mode)
    and return true if TARGET contains the inverse.  If !CAN_INVERT,
    always store the result in TARGET, never its inverse.
 
-   If VCOND_MVE, do not emit the vpsel instruction here, let arm_expand_vcond do
-   it with the right destination type to avoid emiting two vpsel, one here and
-   one in arm_expand_vcond.
-
    Note that the handling of floating-point comparisons is not
    IEEE compliant.  */
 
 bool
 arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
-			   bool can_invert, bool vcond_mve)
+			   bool can_invert)
 {
   machine_mode cmp_result_mode = GET_MODE (target);
   machine_mode cmp_mode = GET_MODE (op0);
@@ -31140,7 +31140,7 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	       and then store its inverse in TARGET.  This avoids reusing
 	       TARGET (which for integer NE could be one of the inputs).  */
 	    rtx tmp = gen_reg_rtx (cmp_result_mode);
-	    if (arm_expand_vector_compare (tmp, code, op0, op1, true, vcond_mve))
+	    if (arm_expand_vector_compare (tmp, code, op0, op1, true))
 	      gcc_unreachable ();
 	    emit_insn (gen_rtx_SET (target, gen_rtx_NOT (cmp_result_mode, tmp)));
 	    return false;
@@ -31176,35 +31176,21 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
     case NE:
       if (TARGET_HAVE_MVE)
 	{
-	  rtx vpr_p0;
-	  if (vcond_mve)
-	    vpr_p0 = target;
-	  else
-	    vpr_p0 = gen_reg_rtx (arm_mode_to_pred_mode (cmp_mode));
-
 	  switch (GET_MODE_CLASS (cmp_mode))
 	    {
 	    case MODE_VECTOR_INT:
-	      emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	      emit_insn (gen_mve_vcmpq (code, cmp_mode, target,
+					op0, force_reg (cmp_mode, op1)));
 	      break;
 	    case MODE_VECTOR_FLOAT:
 	      if (TARGET_HAVE_MVE_FLOAT)
-		emit_insn (gen_mve_vcmpq_f (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+		emit_insn (gen_mve_vcmpq_f (code, cmp_mode, target,
+					    op0, force_reg (cmp_mode, op1)));
 	      else
 		gcc_unreachable ();
 	      break;
 	    default:
 	      gcc_unreachable ();
-	    }
-
-	  /* If we are not expanding a vcond, build the result here.  */
-	  if (!vcond_mve)
-	    {
-	      rtx zero = gen_reg_rtx (cmp_result_mode);
-	      rtx one = gen_reg_rtx (cmp_result_mode);
-	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
-	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
-	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
 	    }
 	}
       else
@@ -31217,23 +31203,8 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
     case GEU:
     case GTU:
       if (TARGET_HAVE_MVE)
-	{
-	  rtx vpr_p0;
-	  if (vcond_mve)
-	    vpr_p0 = target;
-	  else
-	    vpr_p0 = gen_reg_rtx (arm_mode_to_pred_mode (cmp_mode));
-
-	  emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
-	  if (!vcond_mve)
-	    {
-	      rtx zero = gen_reg_rtx (cmp_result_mode);
-	      rtx one = gen_reg_rtx (cmp_result_mode);
-	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
-	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
-	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
-	    }
-	}
+	emit_insn (gen_mve_vcmpq (code, cmp_mode, target,
+				  op0, force_reg (cmp_mode, op1)));
       else
 	emit_insn (gen_neon_vc (code, cmp_mode, target,
 				op0, force_reg (cmp_mode, op1)));
@@ -31244,23 +31215,8 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
     case LEU:
     case LTU:
       if (TARGET_HAVE_MVE)
-	{
-	  rtx vpr_p0;
-	  if (vcond_mve)
-	    vpr_p0 = target;
-	  else
-	    vpr_p0 = gen_reg_rtx (arm_mode_to_pred_mode (cmp_mode));
-
-	  emit_insn (gen_mve_vcmpq (swap_condition (code), cmp_mode, vpr_p0, force_reg (cmp_mode, op1), op0));
-	  if (!vcond_mve)
-	    {
-	      rtx zero = gen_reg_rtx (cmp_result_mode);
-	      rtx one = gen_reg_rtx (cmp_result_mode);
-	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
-	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
-	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
-	    }
-	}
+	emit_insn (gen_mve_vcmpq (swap_condition (code), cmp_mode, target,
+				  force_reg (cmp_mode, op1), op0));
       else
 	emit_insn (gen_neon_vc (swap_condition (code), cmp_mode,
 				target, force_reg (cmp_mode, op1), op0));
@@ -31275,8 +31231,8 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	rtx gt_res = gen_reg_rtx (cmp_result_mode);
 	rtx alt_res = gen_reg_rtx (cmp_result_mode);
 	rtx_code alt_code = (code == LTGT ? LT : LE);
-	if (arm_expand_vector_compare (gt_res, GT, op0, op1, true, vcond_mve)
-	    || arm_expand_vector_compare (alt_res, alt_code, op0, op1, true, vcond_mve))
+	if (arm_expand_vector_compare (gt_res, GT, op0, op1, true)
+	    || arm_expand_vector_compare (alt_res, alt_code, op0, op1, true))
 	  gcc_unreachable ();
 	emit_insn (gen_rtx_SET (target, gen_rtx_IOR (cmp_result_mode,
 						     gt_res, alt_res)));
@@ -31296,19 +31252,15 @@ arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
 {
   /* When expanding for MVE, we do not want to emit a (useless) vpsel in
      arm_expand_vector_compare, and another one here.  */
-  bool vcond_mve=false;
   rtx mask;
 
   if (TARGET_HAVE_MVE)
-    {
-      vcond_mve=true;
-      mask = gen_reg_rtx (arm_mode_to_pred_mode (cmp_result_mode));
-    }
+    mask = gen_reg_rtx (arm_mode_to_pred_mode (cmp_result_mode).require ());
   else
     mask = gen_reg_rtx (cmp_result_mode);
 
   bool inverted = arm_expand_vector_compare (mask, GET_CODE (operands[3]),
-					     operands[4], operands[5], true, vcond_mve);
+					     operands[4], operands[5], true);
   if (inverted)
     std::swap (operands[1], operands[2]);
   if (TARGET_NEON)
@@ -31316,20 +31268,20 @@ arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
 			    mask, operands[1], operands[2]));
   else
     {
-      machine_mode cmp_mode = GET_MODE (operands[4]);
-      rtx vpr_p0 = mask;
-      rtx zero = gen_reg_rtx (cmp_mode);
-      rtx one = gen_reg_rtx (cmp_mode);
-      emit_move_insn (zero, CONST0_RTX (cmp_mode));
-      emit_move_insn (one, CONST1_RTX (cmp_mode));
+      machine_mode cmp_mode = GET_MODE (operands[0]);
+
       switch (GET_MODE_CLASS (cmp_mode))
 	{
 	case MODE_VECTOR_INT:
-	  emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, operands[0], one, zero, vpr_p0));
+	  emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_mode, operands[0],
+				     operands[1], operands[2], mask));
 	  break;
 	case MODE_VECTOR_FLOAT:
 	  if (TARGET_HAVE_MVE_FLOAT)
-	    emit_insn (gen_mve_vpselq_f (cmp_mode, operands[0], one, zero, vpr_p0));
+	    emit_insn (gen_mve_vpselq_f (cmp_mode, operands[0],
+					 operands[1], operands[2], mask));
+	  else
+	    gcc_unreachable ();
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -34250,5 +34202,16 @@ arm_mode_base_reg_class (machine_mode mode)
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
+
+/* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */
+
+opt_machine_mode
+arm_get_mask_mode (machine_mode mode)
+{
+  if (TARGET_HAVE_MVE)
+    return arm_mode_to_pred_mode (mode);
+
+  return default_get_mask_mode (mode);
+}
 
 #include "gt-arm.h"

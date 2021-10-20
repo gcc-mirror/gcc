@@ -5235,6 +5235,18 @@ proc check_effective_target_arm_hard_ok { } {
 	} "-mfloat-abi=hard"]
 }
 
+# Return 1 if this is an ARM target supporting MVE.
+proc check_effective_target_arm_mve { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages arm_mve assembly {
+	#if !defined (__ARM_FEATURE_MVE)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the target supports ARMv8.1-M MVE with floating point
 # instructions, 0 otherwise.  The test is valid for ARM.
 # Record the command line options needed.

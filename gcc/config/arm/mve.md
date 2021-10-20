@@ -10527,3 +10527,54 @@
       operands[1] = force_reg (<MODE>mode, operands[1]);
   }
 )
+
+;; Expanders for vec_cmp and vcond
+
+(define_expand "vec_cmp<mode><MVE_vpred>"
+  [(set (match_operand:<MVE_VPRED> 0 "s_register_operand")
+	(match_operator:<MVE_VPRED> 1 "comparison_operator"
+	  [(match_operand:MVE_VLD_ST 2 "s_register_operand")
+	   (match_operand:MVE_VLD_ST 3 "reg_or_zero_operand")]))]
+  "TARGET_HAVE_MVE
+   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><MVE_vpred>"
+  [(set (match_operand:<MVE_VPRED> 0 "s_register_operand")
+	(match_operator:<MVE_VPRED> 1 "comparison_operator"
+	  [(match_operand:MVE_2 2 "s_register_operand")
+	   (match_operand:MVE_2 3 "reg_or_zero_operand")]))]
+  "TARGET_HAVE_MVE"
+{
+  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
+			     operands[2], operands[3], false);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><MVE_vpred>"
+  [(set (match_operand:MVE_VLD_ST 0 "s_register_operand")
+	(if_then_else:MVE_VLD_ST
+	  (match_operand:<MVE_VPRED> 3 "s_register_operand")
+	  (match_operand:MVE_VLD_ST 1 "s_register_operand")
+	  (match_operand:MVE_VLD_ST 2 "s_register_operand")))]
+  "TARGET_HAVE_MVE"
+{
+  switch (GET_MODE_CLASS (<MODE>mode))
+    {
+      case MODE_VECTOR_INT:
+	emit_insn (gen_mve_vpselq (VPSELQ_S, <MODE>mode, operands[0],
+				   operands[1], operands[2], operands[3]));
+	break;
+      case MODE_VECTOR_FLOAT:
+	emit_insn (gen_mve_vpselq_f (<MODE>mode, operands[0],
+				     operands[1], operands[2], operands[3]));
+	break;
+      default:
+	gcc_unreachable ();
+    }
+  DONE;
+})
