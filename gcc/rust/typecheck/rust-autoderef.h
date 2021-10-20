@@ -34,13 +34,13 @@ public:
     DEREF_REF
   };
 
-  Adjustment (AdjustmentType type, TyTy::BaseType *expected)
+  Adjustment (AdjustmentType type, const TyTy::BaseType *expected)
     : type (type), expected (expected)
   {}
 
   AdjustmentType get_type () const { return type; }
 
-  TyTy::BaseType *get_expected () const { return expected; }
+  const TyTy::BaseType *get_expected () const { return expected; }
 
   std::string as_string () const
   {
@@ -65,7 +65,7 @@ public:
 
 private:
   AdjustmentType type;
-  TyTy::BaseType *expected;
+  const TyTy::BaseType *expected;
 };
 
 } // namespace Resolver
