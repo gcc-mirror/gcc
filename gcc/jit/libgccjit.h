@@ -612,6 +612,10 @@ gcc_jit_type_get_const (gcc_jit_type *type);
 extern gcc_jit_type *
 gcc_jit_type_get_volatile (gcc_jit_type *type);
 
+/* Given type "T", get its size.  */
+extern ssize_t
+gcc_jit_type_get_size (gcc_jit_type *type);
+
 /* Given type "T", get type "T[N]" (for a constant N).  */
 extern gcc_jit_type *
 gcc_jit_context_new_array_type (gcc_jit_context *ctxt,

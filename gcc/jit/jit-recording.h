@@ -366,8 +366,8 @@ private:
 
   type *m_basic_types[NUM_GCC_JIT_TYPES];
   /* Map from num_bits to integer types. */
-  tree m_signed_int_types[128];
-  tree m_unsigned_int_types[128];
+  /*tree m_signed_int_types[128];
+  tree m_unsigned_int_types[128];*/
   type *m_FILE_type;
 
   builtins_manager *m_builtins_manager; // lazily created
@@ -572,6 +572,7 @@ public:
   virtual bool is_void () const { return false; }
   virtual vector_type *is_vector () { return NULL; }
   virtual bool has_known_size () const { return true; }
+  virtual bool is_signed () const = 0;
 
   bool is_numeric () const
   {
@@ -612,12 +613,19 @@ public:
   bool accepts_writes_from (type *rtype) FINAL OVERRIDE
   {
     if (m_kind == GCC_JIT_TYPE_VOID_PTR)
+    {
       if (rtype->is_pointer ())
 	{
 	  /* LHS (this) is type (void *), and the RHS is a pointer:
 	     accept it:  */
 	  return true;
 	}
+    }
+    else if (is_int () && rtype->is_int () && get_size () == rtype->get_size () && is_signed () == rtype->is_signed ())
+    {
+      /* LHS (this) is an integer of the size size and sign as rtype.  */
+      return true;
+    }
 
     return type::accepts_writes_from (rtype);
   }
@@ -628,6 +636,7 @@ public:
   type *is_pointer () FINAL OVERRIDE { return dereference (); }
   type *is_array () FINAL OVERRIDE { return NULL; }
   bool is_void () const FINAL OVERRIDE { return m_kind == GCC_JIT_TYPE_VOID; }
+  bool is_signed () const FINAL OVERRIDE;
 
 public:
   void replay_into (replayer *r) FINAL OVERRIDE;
@@ -645,10 +654,10 @@ class memento_of_make_type : public type
 {
 public:
   memento_of_make_type (context *ctxt,
-			tree int_type,
+			bool is_signed,
 			size_t num_bits)
   : type (ctxt),
-    m_type (int_type),
+    m_is_signed (is_signed),
     m_num_bits (num_bits) {}
 
   type *dereference () FINAL OVERRIDE { return NULL; };
@@ -666,6 +675,7 @@ public:
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return NULL; }
   bool is_void () const FINAL OVERRIDE { return false; }
+  bool is_signed () const FINAL OVERRIDE { return m_is_signed; }
 
 public:
   void replay_into (replayer *r) FINAL OVERRIDE;
@@ -675,7 +685,7 @@ private:
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
 
 private:
-  tree m_type;
+  bool m_is_signed;
   size_t m_num_bits;
 };
 
@@ -701,6 +711,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return m_other_type; }
   type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
 private:
   string * make_debug_string () FINAL OVERRIDE;
@@ -722,12 +733,15 @@ public:
 
   type *dereference () FINAL OVERRIDE { return m_other_type->dereference (); }
 
+  size_t get_size () FINAL OVERRIDE { return m_other_type->get_size (); };
+
   bool is_int () const FINAL OVERRIDE { return m_other_type->is_int (); }
   bool is_float () const FINAL OVERRIDE { return m_other_type->is_float (); }
   bool is_bool () const FINAL OVERRIDE { return m_other_type->is_bool (); }
   type *is_pointer () FINAL OVERRIDE { return m_other_type->is_pointer (); }
   type *is_array () FINAL OVERRIDE { return m_other_type->is_array (); }
   struct_ *is_struct () FINAL OVERRIDE { return m_other_type->is_struct (); }
+  bool is_signed () const FINAL OVERRIDE { return m_other_type->is_signed (); }
 
 protected:
   type *m_other_type;
@@ -859,6 +873,7 @@ class array_type : public type
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return m_element_type; }
   int num_elements () { return m_num_elements; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -892,6 +907,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
@@ -1005,6 +1021,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return false; }
   type *is_pointer () FINAL OVERRIDE { return NULL; }
   type *is_array () FINAL OVERRIDE { return NULL; }
+  bool is_signed () const FINAL OVERRIDE { return false; }
 
   bool has_known_size () const FINAL OVERRIDE { return m_fields != NULL; }
 

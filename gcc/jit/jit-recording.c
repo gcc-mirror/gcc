@@ -564,8 +564,8 @@ recording::context::context (context *parent_ctxt)
     m_compound_types (),
     m_globals (),
     m_functions (),
-    m_signed_int_types(),
-    m_unsigned_int_types(),
+    /*m_signed_int_types(),
+    m_unsigned_int_types(),*/
     m_FILE_type (NULL),
     m_builtins_manager(NULL)
 {
@@ -796,6 +796,10 @@ recording::context::get_type (enum gcc_jit_types kind)
    Implements the post-error-checking part of
    gcc_jit_context_get_int_type.  */
 
+int nextPowerOfTwo(int x) {
+  return 1 << sizeof(x)*8 - __builtin_clz(x);
+}
+
 recording::type *
 recording::context::get_int_type (int num_bytes, int is_signed)
 {
@@ -805,7 +809,7 @@ recording::context::get_int_type (int num_bytes, int is_signed)
      Compare with tree.c's make_or_reuse_type.  Note that the _SIZE macros
      are in bits, rather than bytes.
   */
-  const int num_bits = num_bytes * 8;
+  /*const*/ int num_bits = num_bytes * 8;
   if (num_bits == INT_TYPE_SIZE)
     return get_type (is_signed
 		     ? GCC_JIT_TYPE_INT
@@ -832,33 +836,38 @@ recording::context::get_int_type (int num_bytes, int is_signed)
 		     : GCC_JIT_TYPE_UINT128_T);
 
   // TODO: check in num_bits > 0?
-  tree int_type;
+  /*tree int_type;*/
+  /*printf("Before: %d\n", num_bits);*/
+  /*num_bits = nextPowerOfTwo(num_bits);
+  printf("After: %d\n", num_bits);*/
   if (is_signed)
   {
-    if (tree type = m_signed_int_types[num_bits])
+    /*if (tree type = m_signed_int_types[num_bits])
     {
       int_type = type;
     }
     else
-    {
-      int_type = make_signed_type(num_bits);
-      m_signed_int_types[num_bits] = int_type;
-    }
+    {*/
+      // FIXME: seems like we cannot create a type here because the ggc is not initialized: instead, create it in
+      // playback.
+      /*int_type = make_signed_type(num_bits);*/
+      /*m_signed_int_types[num_bits] = int_type;
+    }*/
   }
   else
   {
-    if (tree type = m_unsigned_int_types[num_bits])
+    /*if (tree type = m_unsigned_int_types[num_bits])
     {
       int_type = type;
     }
     else
-    {
-      int_type = make_unsigned_type(num_bits);
-      m_unsigned_int_types[num_bits] = int_type;
-    }
+    {*/
+      /*int_type = make_unsigned_type(num_bits);*/
+      /*m_unsigned_int_types[num_bits] = int_type;
+    }*/
   }
 
-  recording::type *result = new memento_of_make_type (this, int_type, num_bits);
+  recording::type *result = new memento_of_make_type (this, is_signed, num_bits);
   record (result);
   return result;
 }
@@ -2387,14 +2396,22 @@ recording::memento_of_get_type::get_size ()
       size = LONG_LONG_TYPE_SIZE;
       break;
     case GCC_JIT_TYPE_UINT8_T:
-    case GCC_JIT_TYPE_UINT16_T:
-    case GCC_JIT_TYPE_UINT32_T:
-    case GCC_JIT_TYPE_UINT64_T:
-    case GCC_JIT_TYPE_UINT128_T:
     case GCC_JIT_TYPE_INT8_T:
+      size = 8;
+      break;
+    case GCC_JIT_TYPE_UINT16_T:
     case GCC_JIT_TYPE_INT16_T:
+      size = 16;
+      break;
+    case GCC_JIT_TYPE_UINT32_T:
     case GCC_JIT_TYPE_INT32_T:
+      size = 32;
+      break;
+    case GCC_JIT_TYPE_UINT64_T:
     case GCC_JIT_TYPE_INT64_T:
+      size = 64;
+      break;
+    case GCC_JIT_TYPE_UINT128_T:
     case GCC_JIT_TYPE_INT128_T:
       size = 128;
       break;
@@ -2406,6 +2423,10 @@ recording::memento_of_get_type::get_size ()
       break;
     case GCC_JIT_TYPE_LONG_DOUBLE:
       size = LONG_DOUBLE_TYPE_SIZE;
+      break;
+    case GCC_JIT_TYPE_SIZE_T:
+      size = POINTER_TYPE;
+      /*size = TYPE_PRECISION(size_type_node); // TODO: check that this code works.*/
       break;
     default:
       /* As this function is called by
@@ -2533,6 +2554,60 @@ recording::memento_of_get_type::is_int () const
 
     case GCC_JIT_TYPE_FILE_PTR:
       return false;
+
+    case GCC_JIT_TYPE_COMPLEX_FLOAT:
+    case GCC_JIT_TYPE_COMPLEX_DOUBLE:
+    case GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE:
+      return false;
+    }
+}
+
+/* Implementation of pure virtual hook recording::type::is_signed for
+   recording::memento_of_get_type.  */
+
+bool
+recording::memento_of_get_type::is_signed () const
+{
+  switch (m_kind)
+    {
+    default: gcc_unreachable ();
+
+    case GCC_JIT_TYPE_SIGNED_CHAR:
+    case GCC_JIT_TYPE_CHAR:
+    case GCC_JIT_TYPE_SHORT:
+    case GCC_JIT_TYPE_INT:
+    case GCC_JIT_TYPE_LONG:
+    case GCC_JIT_TYPE_LONG_LONG:
+    case GCC_JIT_TYPE_INT8_T:
+    case GCC_JIT_TYPE_INT16_T:
+    case GCC_JIT_TYPE_INT32_T:
+    case GCC_JIT_TYPE_INT64_T:
+    case GCC_JIT_TYPE_INT128_T:
+      return true;
+
+    case GCC_JIT_TYPE_VOID:
+    case GCC_JIT_TYPE_VOID_PTR:
+    case GCC_JIT_TYPE_BOOL:
+    case GCC_JIT_TYPE_UNSIGNED_CHAR:
+    case GCC_JIT_TYPE_UNSIGNED_SHORT:
+    case GCC_JIT_TYPE_UNSIGNED_INT:
+    case GCC_JIT_TYPE_UNSIGNED_LONG:
+    case GCC_JIT_TYPE_UNSIGNED_LONG_LONG:
+    case GCC_JIT_TYPE_UINT8_T:
+    case GCC_JIT_TYPE_UINT16_T:
+    case GCC_JIT_TYPE_UINT32_T:
+    case GCC_JIT_TYPE_UINT64_T:
+    case GCC_JIT_TYPE_UINT128_T:
+
+    case GCC_JIT_TYPE_FLOAT:
+    case GCC_JIT_TYPE_DOUBLE:
+    case GCC_JIT_TYPE_LONG_DOUBLE:
+
+    case GCC_JIT_TYPE_CONST_CHAR_PTR:
+
+    case GCC_JIT_TYPE_SIZE_T:
+
+    case GCC_JIT_TYPE_FILE_PTR:
 
     case GCC_JIT_TYPE_COMPLEX_FLOAT:
     case GCC_JIT_TYPE_COMPLEX_DOUBLE:
@@ -2790,7 +2865,7 @@ recording::memento_of_get_type::write_reproducer (reproducer &r)
 void
 recording::memento_of_make_type::replay_into (replayer *r)
 {
-  set_playback_obj (this);
+  set_playback_obj (r->make_type(m_is_signed, m_num_bits));
 }
 
 recording::string *
