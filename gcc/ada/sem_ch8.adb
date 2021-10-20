@@ -3099,7 +3099,7 @@ package body Sem_Ch8 is
       --  related formal type is class-wide.
 
       Inst_Node    : Node_Id   := Empty;
-      New_S        : Entity_Id;
+      New_S        : Entity_Id := Empty;
       Wrapped_Prim : Entity_Id := Empty;
 
    --  Start of processing for Analyze_Subprogram_Renaming
