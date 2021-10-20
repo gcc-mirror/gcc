@@ -114,13 +114,13 @@ BaseType::inherit_bounds (
     }
 }
 
-BaseType *
-BaseType::get_root ()
+const BaseType *
+BaseType::get_root () const
 {
-  BaseType *root = this;
+  const BaseType *root = this;
   while (root->get_kind () == TyTy::REF)
     {
-      ReferenceType *r = static_cast<ReferenceType *> (root);
+      const ReferenceType *r = static_cast<const ReferenceType *> (root);
       root = r->get_base ();
     }
   return root;

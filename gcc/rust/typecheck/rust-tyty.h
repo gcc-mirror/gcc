@@ -337,7 +337,7 @@ public:
 		debug_str ().c_str ());
   }
 
-  BaseType *get_root ();
+  const BaseType *get_root () const;
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,

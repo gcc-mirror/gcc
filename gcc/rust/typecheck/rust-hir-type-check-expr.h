@@ -219,7 +219,7 @@ public:
 
     // in order to probe of the correct type paths we need the root type, which
     // strips any references
-    TyTy::BaseType *root = receiver_tyty->get_root ();
+    const TyTy::BaseType *root = receiver_tyty->get_root ();
 
     // https://doc.rust-lang.org/reference/expressions/method-call-expr.html
     // method resolution is complex in rust once we start handling generics and
@@ -297,7 +297,7 @@ public:
 
     if (root->get_kind () == TyTy::TypeKind::ADT)
       {
-	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (root);
+	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
 	if (adt->has_substitutions () && fn->needs_substitution ())
 	  {
 	    // consider the case where we have:
@@ -322,7 +322,8 @@ public:
 	    auto s = fn->get_self_type ()->get_root ();
 	    rust_assert (s->can_eq (adt, false));
 	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
-	    TyTy::ADTType *self_adt = static_cast<TyTy::ADTType *> (s);
+	    const TyTy::ADTType *self_adt
+	      = static_cast<const TyTy::ADTType *> (s);
 
 	    // we need to grab the Self substitutions as the inherit type
 	    // parameters for this
