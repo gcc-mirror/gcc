@@ -1,3 +1,9 @@
+2021-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102786
+	* constexpr.c (cxx_eval_constant_expression): Don't reject
+	INTEGER_CSTs with type POINTER_TYPE to METHOD_TYPE.
+
 2021-10-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51851

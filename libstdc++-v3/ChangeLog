@@ -1,3 +1,106 @@
+2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (iota_view::_Iterator::operator+): Adjust
+	definition as per LWG 3580.
+	(iota_view::_Iterator::operator-): Likewise.
+
+2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (basic_istream_view::_M_object): Value
+	initialize as per LWG 3568.
+
+2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h
+	(__detail::__uses_nonqualification_pointer_conversion): Define
+	and use it ...
+	(__detail::__convertible_to_nonslicing): ... here, as per LWG 3470.
+	* testsuite/std/ranges/subrange/1.cc: New test.
+
+2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (iota_view::_Iterator): Befriend iota_view.
+	(iota_view::_Sentinel): Likewise.
+	(iota_view::iota_view): Add three overloads, each taking an
+	iterator/sentinel pair as per LWG 3523.
+	* testsuite/std/ranges/iota/iota_view.cc (test06): New test.
+
+2021-10-19  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (view_interface): Forward declare.
+	(__detail::__is_derived_from_view_interface_fn): Declare.
+	(__detail::__is_derived_from_view_interface): Define as per LWG 3549.
+	(enable_view): Adjust as per LWG 3549.
+	* include/bits/ranges_util.h (view_interface): Don't derive from
+	view_base.
+	* include/std/ranges (filter_view): Revert r11-3504 change.
+	(transform_view): Likewise.
+	(take_view): Likewise.
+	(take_while_view): Likewise.
+	(drop_view): Likewise.
+	(drop_while_view): Likewise.
+	(join_view): Likewise.
+	(lazy_split_view): Likewise.
+	(split_view): Likewise.
+	(reverse_view): Likewise.
+	* testsuite/std/ranges/adaptors/sizeof.cc: Update expected sizes.
+	* testsuite/std/ranges/view.cc (test_view::test_view): Remove
+	this default ctor since views no longer need to be default initable.
+	(test01): New test.
+
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (which_source): New helper function.
+	(random_device::_M_getentropy()): Use which_source and return
+	suitable values for sources other than device files.
+	* testsuite/26_numerics/random/random_device/entropy.cc: New test.
+
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am (stamp-html-doxygen, stamp-html-doxygen)
+	(stamp-latex-doxygen, stamp-man-doxygen): Fix recipes for
+	relative ${top_srcdir}.
+	* doc/Makefile.in: Regenerate.
+
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Uninitialized): Use an empty struct
+	for the unused union member, instead of char.
+
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_stack.h (stack(Iterator, Iterator)): Remove
+	non-deducible template parameter from deduction guide.
+	* testsuite/23_containers/stack/deduction.cc: Check new C++23
+	deduction guides.
+
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (_Optional_payload_base::_Storage): Add
+	constructor taking a callable function to invoke.
+	(_Optional_payload_base::_M_apply): New function.
+	(__cpp_lib_monadic_optional): Define for C++23.
+	(optional::and_then, optional::transform, optional::or_else):
+	Define for C++23.
+	* include/std/ranges (__detail::__cached): Remove.
+	(__detail::__non_propagating_cache): Remove use of __cached for
+	contained value. Use _Optional_payload_base::_M_construct and
+	_Optional_payload_base::_M_apply to set the contained value.
+	* include/std/version (__cpp_lib_monadic_optional): Define.
+	* testsuite/20_util/optional/monadic/and_then.cc: New test.
+	* testsuite/20_util/optional/monadic/or_else.cc: New test.
+	* testsuite/20_util/optional/monadic/or_else_neg.cc: New test.
+	* testsuite/20_util/optional/monadic/transform.cc: New test.
+	* testsuite/20_util/optional/monadic/version.cc: New test.
+
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102825
+	* include/bits/mofunc_impl.h (move_only_function): Remove
+	invalid base initializer.
+	* testsuite/20_util/move_only_function/cons.cc: Instantiate
+	constructors to check bodies.
+
 2021-10-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (path::_S_convert(T)): Avoid recursive

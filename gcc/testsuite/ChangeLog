@@ -1,3 +1,53 @@
+2021-10-19  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Tighten dg constraints
+	to minimally Power8.
+
+2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92482
+	* gfortran.dg/bind-c-char-descr.f90: Remove xfail; extend a bit.
+
+2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR target/102375
+	* gcc.target/aarch64/pr102375.c: New test.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102827
+	* gcc.dg/pr102827.c: New testcase.
+
+2021-10-19  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Update instruction counts.
+
+2021-10-19  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/p10_vec_xl_sext.c: New test.
+
+2021-10-19  prathamesh.kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/93183
+	* gcc.target/aarch64/sve/pr93183.c: Remove -mcpu=generic+sve from dg-options.
+
+2021-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102786
+	* g++.dg/cpp2a/constexpr-virtual19.C: New test.
+
+2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR target/102374
+	* gcc.target/i386/pr102374.c: New test.
+
+2021-10-19  dianhong xu  <dianhong.xu@intel.com>
+
+	* gcc.target/i386/avx512fp16-set1-pch-1a.c: New test.
+	* gcc.target/i386/avx512fp16-set1-pch-1b.c: New test.
+	* gcc.target/i386/avx512fp16vl-set1-pch-1a.c: New test.
+	* gcc.target/i386/avx512fp16vl-set1-pch-1b.c: New test.
+
 2021-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/102796

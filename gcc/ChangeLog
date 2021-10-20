@@ -1,3 +1,164 @@
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Basic PowerPC Built-in Functions): Fix typo.
+
+2021-10-19  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/101893
+	PR target/102719
+	* config/rs6000/emmintrin.h: Guard POWER8 intrinsics.
+	* config/rs6000/pmmintrin.h: Same.
+	* config/rs6000/smmintrin.h: Same.
+	* config/rs6000/tmmintrin.h: Same.
+
+2021-10-19  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config.gcc (extra_headers): Add nmmintrin.h.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_supportable_dr_alignment): Add
+	misalignment parameter.
+	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs):
+	Do not change DR_MISALIGNMENT in place, instead pass the
+	adjusted misalignment to vect_supportable_dr_alignment.
+	(vect_peeling_supportable): Likewise.
+	(vect_peeling_hash_get_lowest_cost): Adjust.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_vfa_access_size): Likewise.
+	(vect_supportable_dr_alignment): Add misalignment
+	parameter and simplify.
+	* tree-vect-stmts.c (get_negative_load_store_type): Adjust.
+	(get_group_load_store_type): Likewise.
+	(get_load_store_type): Likewise.
+
+2021-10-19  Clément Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_file_end): Move
+	__tls_get_addr reference to .text csect.
+
+2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR target/102375
+	* config/aarch64/aarch64.c (aarch64_process_one_target_attr):
+	Strip whitespaces.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_store_cost): Adjust signature.
+	(vect_get_load_cost): Likewise.
+	* tree-vect-data-refs.c (vect_get_data_access_cost): Get
+	alignment support scheme and misalignment as arguments
+	and pass them down.
+	(vect_get_peeling_costs_all_drs): Compute that info here
+	and note that we shouldn't need to.
+	* tree-vect-stmts.c (vect_model_store_cost): Get
+	alignment support scheme and misalignment as arguments.
+	(vect_get_store_cost): Likewise.
+	(vect_model_load_cost): Likewise.
+	(vect_get_load_cost): Likewise.
+	(vectorizable_store): Pass down alignment support scheme
+	and misalignment to costing.
+	(vectorizable_load): Likewise.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (get_negative_load_store_type): Add
+	offset output parameter and initialize it.
+	(get_group_load_store_type): Likewise.
+	(get_load_store_type): Likewise.
+	(vectorizable_store): Use offset as computed by
+	get_load_store_type.
+	(vectorizable_load): Likewise.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102827
+	* tree-if-conv.c (predicate_statements): Add pe parameter
+	and use that edge to insert invariant stmts on.
+	(combine_blocks): Pass through pe.
+	(tree_if_conversion): Compute the edge to insert invariant
+	stmts on and pass it along.
+
+2021-10-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/102785
+	* config/bfin/bfin.md (addsubv2hi3, subaddv2hi3, ssaddsubv2hi3,
+	sssubaddv2hi3):  Swap the order of operators in vec_concat.
+
+2021-10-19  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/altivec.md (*altivec_vmrghb_internal): Delete.
+	(altivec_vmrghb_direct): New.
+	(*altivec_vmrghh_internal): Delete.
+	(altivec_vmrghh_direct): New.
+	(*altivec_vmrghw_internal): Delete.
+	(altivec_vmrghw_direct_<mode>): New.
+	(altivec_vmrghw_direct): Delete.
+	(*altivec_vmrglb_internal): Delete.
+	(altivec_vmrglb_direct): New.
+	(*altivec_vmrglh_internal): Delete.
+	(altivec_vmrglh_direct): New.
+	(*altivec_vmrglw_internal): Delete.
+	(altivec_vmrglw_direct_<mode>): New.
+	(altivec_vmrglw_direct): Delete.
+	* config/rs6000/rs6000-p8swap.c (rtx_is_swappable_p): Adjust.
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const):
+	Adjust.
+	* config/rs6000/vsx.md (vsx_xxmrghw_<mode>): Adjust.
+	(vsx_xxmrglw_<mode>): Adjust.
+
+2021-10-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* passes.def: Change threading comment before pass_ccp pass.
+
+2021-10-19  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-call.c (altivec_expand_lxvr_builtin):
+	Modify the expansion for sign extension. All extensions are done
+	within VSX registers.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (get_group_load_store_type): Add
+	misalignment output parameter and initialize it.
+	(get_group_load_store_type): Likewise.
+	(vectorizable_store): Remove now redundant queries.
+	(vectorizable_load): Likewise.
+
+2021-10-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_supportable_dr_alignment): Remove
+	check_aligned argument.
+	* tree-vect-data-refs.c (vect_supportable_dr_alignment):
+	Likewise.
+	(vect_peeling_hash_insert): Add supportable_if_not_aligned
+	argument and do not call vect_supportable_dr_alignment here.
+	(vect_peeling_supportable): Adjust.
+	(vect_enhance_data_refs_alignment): Compute whether the
+	access is supported with different alignment here and
+	pass that down to vect_peeling_hash_insert.
+	(vect_vfa_access_size): Adjust.
+	* tree-vect-stmts.c (vect_get_store_cost): Likewise.
+	(vect_get_load_cost): Likewise.
+	(get_negative_load_store_type): Likewise.
+	(get_group_load_store_type): Likewise.
+	(get_load_store_type): Likewise.
+
+2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR target/102374
+	* config/i386/i386-options.c (ix86_valid_target_attribute_inner_p): Strip whitespaces.
+	* system.h (strip_whilespaces): New function.
+
+2021-10-19  dianhong xu  <dianhong.xu@intel.com>
+
+	* config/i386/avx512fp16intrin.h:
+	(_mm512_set1_pch): New intrinsic.
+	* config/i386/avx512fp16vlintrin.h:
+	(_mm256_set1_pch): New intrinsic.
+	(_mm_set1_pch): Ditto.
+
 2021-10-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/102796
