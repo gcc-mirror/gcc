@@ -329,6 +329,30 @@ StructFieldType::clone () const
 }
 
 void
+SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
+{
+  if (type.get_kind () == TyTy::TypeKind::INFER)
+    {
+      type.inherit_bounds (*param);
+    }
+  else
+    {
+      if (!param->bounds_compatible (type, locus, true))
+	return;
+    }
+
+  if (type.get_kind () == TypeKind::PARAM)
+    {
+      delete param;
+      param = static_cast<ParamType *> (type.clone ());
+    }
+  else
+    {
+      param->set_ty_ref (type.get_ref ());
+    }
+}
+
+void
 SubstitutionParamMapping::override_context ()
 {
   if (!param->can_resolve ())
@@ -643,7 +667,7 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
@@ -924,7 +948,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
 	{
-	  sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	  sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
 	}
     }
 
@@ -2275,7 +2299,7 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   auto fty = projection->base;

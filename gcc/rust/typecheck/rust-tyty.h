@@ -626,28 +626,7 @@ public:
 
   std::string as_string () const { return param->as_string (); }
 
-  void fill_param_ty (BaseType *type, Location locus)
-  {
-    if (type->get_kind () == TyTy::TypeKind::INFER)
-      {
-	type->inherit_bounds (*param);
-      }
-    else
-      {
-	if (!param->bounds_compatible (*type, locus, true))
-	  return;
-      }
-
-    if (type->get_kind () == TypeKind::PARAM)
-      {
-	delete param;
-	param = static_cast<ParamType *> (type->clone ());
-      }
-    else
-      {
-	param->set_ty_ref (type->get_ref ());
-      }
-  }
+  void fill_param_ty (BaseType &type, Location locus);
 
   SubstitutionParamMapping clone () const
   {
