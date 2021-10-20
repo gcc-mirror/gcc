@@ -2198,9 +2198,7 @@ bool
 PlaceholderType::can_resolve () const
 {
   auto context = Resolver::TypeCheckContext::get ();
-  HirId val
-    = context->lookup_associated_type_mapping (get_ty_ref (), UNKNOWN_HIRID);
-  return val != UNKNOWN_HIRID;
+  return context->lookup_associated_type_mapping (get_ty_ref (), nullptr);
 }
 
 BaseType *
@@ -2208,12 +2206,11 @@ PlaceholderType::resolve () const
 {
   auto context = Resolver::TypeCheckContext::get ();
 
-  rust_assert (can_resolve ());
-  HirId val
-    = context->lookup_associated_type_mapping (get_ty_ref (), UNKNOWN_HIRID);
-  rust_assert (val != UNKNOWN_HIRID);
+  HirId mapping;
+  bool ok = context->lookup_associated_type_mapping (get_ty_ref (), &mapping);
+  rust_assert (ok);
 
-  return TyVar (val).get_tyty ();
+  return TyVar (mapping).get_tyty ();
 }
 
 bool

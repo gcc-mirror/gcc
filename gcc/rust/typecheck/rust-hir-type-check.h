@@ -144,16 +144,24 @@ public:
 
   void clear_associated_type_mapping (HirId id)
   {
-    associated_type_mappings[id] = UNKNOWN_HIRID;
+    auto it = associated_type_mappings.find (id);
+    rust_assert (it != associated_type_mappings.end ());
+    associated_type_mappings.erase (it);
   }
 
-  HirId lookup_associated_type_mapping (HirId id, HirId default_value)
+  // lookup any associated type mappings, the out parameter of mapping is
+  // allowed to be nullptr which allows this interface to do a simple does exist
+  // check
+  bool lookup_associated_type_mapping (HirId id, HirId *mapping)
   {
     auto it = associated_type_mappings.find (id);
     if (it == associated_type_mappings.end ())
-      return default_value;
+      return false;
 
-    return it->second;
+    if (mapping != nullptr)
+      *mapping = it->second;
+
+    return true;
   }
 
   void insert_associated_impl_mapping (HirId trait_id,
@@ -169,19 +177,23 @@ public:
     associated_traits_to_impls[trait_id].push_back ({impl_type, impl_id});
   }
 
-  HirId lookup_associated_impl_mapping_for_self (HirId trait_id,
-						 const TyTy::BaseType *self)
+  bool lookup_associated_impl_mapping_for_self (HirId trait_id,
+						const TyTy::BaseType *self,
+						HirId *mapping)
   {
     auto it = associated_traits_to_impls.find (trait_id);
     if (it == associated_traits_to_impls.end ())
-      return UNKNOWN_HIRID;
+      return false;
 
     for (auto &item : it->second)
       {
 	if (item.first->can_eq (self, false))
-	  return item.second;
+	  {
+	    *mapping = item.second;
+	    return true;
+	  }
       }
-    return UNKNOWN_HIRID;
+    return false;
   }
 
   void insert_autoderef_mappings (HirId id,

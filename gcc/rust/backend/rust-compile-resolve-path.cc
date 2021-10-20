@@ -197,11 +197,11 @@ ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,
 
 	      Analysis::NodeMapping trait_mappings
 		= trait_item_ref->get_parent_trait_mappings ();
-	      auto associated_impl_id
-		= ctx->get_tyctx ()->lookup_associated_impl_mapping_for_self (
-		  trait_mappings.get_hirid (), receiver);
 
-	      rust_assert (associated_impl_id != UNKNOWN_HIRID);
+	      HirId associated_impl_id;
+	      ok = ctx->get_tyctx ()->lookup_associated_impl_mapping_for_self (
+		trait_mappings.get_hirid (), receiver, &associated_impl_id);
+	      rust_assert (ok);
 
 	      Resolver::AssociatedImplTrait *associated = nullptr;
 	      bool found_associated_trait_impl
