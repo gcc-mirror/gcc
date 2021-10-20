@@ -88,6 +88,7 @@ do_call (CFI_cdesc_t *x, CFI_cdesc_t *y, CFI_cdesc_t *z,
   basic_check (z, is_cont || num == 2);
   if (!is_cont && num == 1)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       check_str (x, "a\0\0\0b\0\0\0c\0\0\0", 3*4, zero);
       check_str (x, "g\0\0\0h\0\0\0i\0\0\0", 3*4, one);
       check_str (x, "n\0\0\0o\0\0\0p\0\0\0", 3*4, two);
@@ -97,24 +98,55 @@ do_call (CFI_cdesc_t *x, CFI_cdesc_t *y, CFI_cdesc_t *z,
       check_str (z, "a\0\0\0b\0\0\0c\0\0\0", 3*4, zero);
       check_str (z, "g\0\0\0h\0\0\0i\0\0\0", 3*4, one);
       check_str (z, "n\0\0\0o\0\0\0p\0\0\0", 3*4, two);
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+      check_str (x, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      check_str (x, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      check_str (x, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+      check_str (y, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      check_str (y, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      check_str (y, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+      check_str (z, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      check_str (z, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      check_str (z, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+#else
+#error "Unsupported __BYTE_ORDER__"
+#endif
     }
   else if (num == 1)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       if (memcmp ((const char*) x->base_addr, "a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) y->base_addr, "a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) z->base_addr, "a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p\0\0\0", 9*4) != 0)
 	__builtin_abort ();
+#else
+      if (memcmp ((const char*) x->base_addr, "\0\0\0a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) y->base_addr, "\0\0\0a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) z->base_addr, "\0\0\0a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p", 9*4) != 0)
+	__builtin_abort ();
+#endif
     }
   else if (num == 2)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       if (memcmp ((const char*) x->base_addr, "d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) y->base_addr, "d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) z->base_addr, "d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m\0\0\0", 9*4) != 0)
 	__builtin_abort ();
+#else
+      if (memcmp ((const char*) x->base_addr, "\0\0\0d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) y->base_addr, "\0\0\0d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) z->base_addr, "\0\0\0d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m", 9*4) != 0)
+	__builtin_abort ();
+#endif
     }
   else
     __builtin_abort ();
@@ -144,6 +176,7 @@ do_call (CFI_cdesc_t *x, CFI_cdesc_t *y, CFI_cdesc_t *z,
   // intent_in
   if (intent_in && !is_cont && num == 1)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       check_str (x, "a\0\0\0b\0\0\0c\0\0\0", 3*4, zero);
       check_str (x, "g\0\0\0h\0\0\0i\0\0\0", 3*4, one);
       check_str (x, "n\0\0\0o\0\0\0p\0\0\0", 3*4, two);
@@ -153,24 +186,53 @@ do_call (CFI_cdesc_t *x, CFI_cdesc_t *y, CFI_cdesc_t *z,
       check_str (z, "a\0\0\0b\0\0\0c\0\0\0", 3*4, zero);
       check_str (z, "g\0\0\0h\0\0\0i\0\0\0", 3*4, one);
       check_str (z, "n\0\0\0o\0\0\0p\0\0\0", 3*4, two);
+#else
+      check_str (x, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      check_str (x, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      check_str (x, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+      check_str (y, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      check_str (y, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      check_str (y, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+      check_str (z, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      check_str (z, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      check_str (z, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+#endif
     }
   else if (intent_in && num == 1)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       if (memcmp ((const char*) x->base_addr, "a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) y->base_addr, "a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) z->base_addr, "a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p\0\0\0", 9*4) != 0)
 	__builtin_abort ();
+#else
+      if (memcmp ((const char*) x->base_addr, "\0\0\0a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) y->base_addr, "\0\0\0a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) z->base_addr, "\0\0\0a\0\0\0b\0\0\0c\0\0\0g\0\0\0h\0\0\0i\0\0\0n\0\0\0o\0\0\0p", 9*4) != 0)
+	__builtin_abort ();
+#endif
     }
   else if (intent_in && num == 2)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       if (memcmp ((const char*) x->base_addr, "d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m\0\0\0", 9) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) y->base_addr, "d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m\0\0\0", 9) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) z->base_addr, "d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m\0\0\0", 9) != 0)
 	__builtin_abort ();
+#else
+      if (memcmp ((const char*) x->base_addr, "\0\0\0d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m", 9) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) y->base_addr, "\0\0\0d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m", 9) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) z->base_addr, "\0\0\0d\0\0\0e\0\0\0f\0\0\0g\0\0\0h\0\0\0i\0\0\0j\0\0\0l\0\0\0m", 9) != 0)
+	__builtin_abort ();
+#endif
     }
   else if (intent_in)
     __builtin_abort ();
@@ -179,15 +241,22 @@ do_call (CFI_cdesc_t *x, CFI_cdesc_t *y, CFI_cdesc_t *z,
       if (is_cont && num == 1)
         {
 	  /* Copy in - set the value to check that no copy out is done. */
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	  memcpy ((char*) x->base_addr, "1\0\0\0""2\0\0\0""3\0\0\0""4\0\0\0""5\0\0\0""6\0\0\0""7\0\0\0""8\0\0\0""9\0\0\0", 9*4);
 	  memcpy ((char*) y->base_addr, "1\0\0\0""2\0\0\0""3\0\0\0""4\0\0\0""5\0\0\0""6\0\0\0""7\0\0\0""8\0\0\0""9\0\0\0", 9*4);
 	  memcpy ((char*) z->base_addr, "1\0\0\0""2\0\0\0""3\0\0\0""4\0\0\0""5\0\0\0""6\0\0\0""7\0\0\0""8\0\0\0""9\0\0\0", 9*4);
+#else
+	  memcpy ((char*) x->base_addr, "\0\0\0""1\0\0\0""2\0\0\0""3\0\0\0""4\0\0\0""5\0\0\0""6\0\0\0""7\0\0\0""8\0\0\0""9", 9*4);
+	  memcpy ((char*) y->base_addr, "\0\0\0""1\0\0\0""2\0\0\0""3\0\0\0""4\0\0\0""5\0\0\0""6\0\0\0""7\0\0\0""8\0\0\0""9", 9*4);
+	  memcpy ((char*) z->base_addr, "\0\0\0""1\0\0\0""2\0\0\0""3\0\0\0""4\0\0\0""5\0\0\0""6\0\0\0""7\0\0\0""8\0\0\0""9", 9*4);
+#endif
         }
       return addr1;
     }
   // !intent_in
   if (!is_cont && num == 1)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       check_str (x, "A\0\0\0B\0\0\0C\0\0\0", 3*4, zero);
       check_str (x, "D\0\0\0E\0\0\0F\0\0\0", 3*4, one);
       check_str (x, "G\0\0\0H\0\0\0I\0\0\0", 3*4, two);
@@ -197,15 +266,35 @@ do_call (CFI_cdesc_t *x, CFI_cdesc_t *y, CFI_cdesc_t *z,
       check_str (z, "A\0\0\0B\0\0\0C\0\0\0", 3*4, zero);
       check_str (z, "D\0\0\0E\0\0\0F\0\0\0", 3*4, one);
       check_str (z, "G\0\0\0H\0\0\0I\0\0\0", 3*4, two);
+#else
+      check_str (x, "\0\0\0A\0\0\0B\0\0\0C", 3*4, zero);
+      check_str (x, "\0\0\0D\0\0\0E\0\0\0F", 3*4, one);
+      check_str (x, "\0\0\0G\0\0\0H\0\0\0I", 3*4, two);
+      check_str (y, "\0\0\0A\0\0\0B\0\0\0C", 3*4, zero);
+      check_str (y, "\0\0\0D\0\0\0E\0\0\0F", 3*4, one);
+      check_str (y, "\0\0\0G\0\0\0H\0\0\0I", 3*4, two);
+      check_str (z, "\0\0\0A\0\0\0B\0\0\0C", 3*4, zero);
+      check_str (z, "\0\0\0D\0\0\0E\0\0\0F", 3*4, one);
+      check_str (z, "\0\0\0G\0\0\0H\0\0\0I", 3*4, two);
+#endif
     }
   else
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       if (memcmp ((const char*) x->base_addr, "A\0\0\0B\0\0\0C\0\0\0D\0\0\0E\0\0\0F\0\0\0G\0\0\0H\0\0\0I\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) y->base_addr, "A\0\0\0B\0\0\0C\0\0\0D\0\0\0E\0\0\0F\0\0\0G\0\0\0H\0\0\0I\0\0\0", 9*4) != 0)
 	__builtin_abort ();
       if (memcmp ((const char*) z->base_addr, "A\0\0\0B\0\0\0C\0\0\0D\0\0\0E\0\0\0F\0\0\0G\0\0\0H\0\0\0I\0\0\0", 9*4) != 0)
 	__builtin_abort ();
+#else
+      if (memcmp ((const char*) x->base_addr, "\0\0\0A\0\0\0B\0\0\0C\0\0\0D\0\0\0E\0\0\0F\0\0\0G\0\0\0H\0\0\0I", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) y->base_addr, "\0\0\0A\0\0\0B\0\0\0C\0\0\0D\0\0\0E\0\0\0F\0\0\0G\0\0\0H\0\0\0I", 9*4) != 0)
+	__builtin_abort ();
+      if (memcmp ((const char*) z->base_addr, "\0\0\0A\0\0\0B\0\0\0C\0\0\0D\0\0\0E\0\0\0F\0\0\0G\0\0\0H\0\0\0I", 9*4) != 0)
+	__builtin_abort ();
+#endif
     }
   return addr1;
 }
@@ -275,15 +364,27 @@ reset_var (CFI_cdesc_t *x, int num)
 
   if (num == 1)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       set_str (x, "a\0\0\0b\0\0\0c\0\0\0", 3*4, zero);
       set_str (x, "g\0\0\0h\0\0\0i\0\0\0", 3*4, one);
       set_str (x, "n\0\0\0o\0\0\0p\0\0\0", 3*4, two);
+#else
+      set_str (x, "\0\0\0a\0\0\0b\0\0\0c", 3*4, zero);
+      set_str (x, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      set_str (x, "\0\0\0n\0\0\0o\0\0\0p", 3*4, two);
+#endif
     }
   else if (num == 2)
     {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
       set_str (x, "d\0\0\0e\0\0\0f\0\0\0", 3*4, zero);
       set_str (x, "g\0\0\0h\0\0\0i\0\0\0", 3*4, one);
       set_str (x, "j\0\0\0l\0\0\0m\0\0\0", 3*4, two);
+#else
+      set_str (x, "\0\0\0d\0\0\0e\0\0\0f", 3*4, zero);
+      set_str (x, "\0\0\0g\0\0\0h\0\0\0i", 3*4, one);
+      set_str (x, "\0\0\0j\0\0\0l\0\0\0m", 3*4, two);
+#endif
     }
   else
     __builtin_abort ();

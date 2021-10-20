@@ -1,3 +1,12 @@
+2021-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102815
+	* gfortran.dg/bind-c-contiguous-5.c (do_call, reset_var): Handle
+	big andian.
+
 2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
