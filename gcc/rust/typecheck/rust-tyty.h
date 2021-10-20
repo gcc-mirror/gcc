@@ -690,7 +690,7 @@ private:
 class SubstitutionArg
 {
 public:
-  SubstitutionArg (SubstitutionParamMapping *param, BaseType *argument)
+  SubstitutionArg (const SubstitutionParamMapping *param, BaseType *argument)
     : param (std::move (param)), argument (argument)
   {}
 
@@ -707,7 +707,7 @@ public:
 
   BaseType *get_tyty () { return argument; }
 
-  SubstitutionParamMapping *get_param_mapping () { return param; }
+  const SubstitutionParamMapping *get_param_mapping () { return param; }
 
   static SubstitutionArg error () { return SubstitutionArg (nullptr, nullptr); }
 
@@ -725,7 +725,7 @@ public:
   }
 
 private:
-  SubstitutionParamMapping *param;
+  const SubstitutionParamMapping *param;
   BaseType *argument;
 };
 
@@ -761,7 +761,7 @@ public:
   {
     for (auto &mapping : mappings)
       {
-	SubstitutionParamMapping *param = mapping.get_param_mapping ();
+	const SubstitutionParamMapping *param = mapping.get_param_mapping ();
 	const ParamType *p = param->get_param_ty ();
 
 	if (p->get_symbol ().compare (param_to_find->get_symbol ()) == 0)
