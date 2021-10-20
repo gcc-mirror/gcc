@@ -374,8 +374,8 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
       return false;
     }
 
-  // Try to resolve the path with nothing but ranger knowledge.
-  if (m_resolve && m_path.length () > 1 && maybe_register_path ())
+  // Try to resolve the path without looking back.
+  if (m_path.length () > 1 && maybe_register_path ())
     {
       m_path.pop ();
       m_visited_bbs.remove (bb);
