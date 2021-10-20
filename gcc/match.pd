@@ -3606,6 +3606,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 >= inside_prec - !inside_unsignedp)
      (convert @0)))))))
 
+/* (float_type)(integer_type) x -> trunc (x) if the type of x matches
+   float_type.  Only do the transformation if we do not need to preserve
+   trapping behaviour, so require !flag_trapping_math. */
+#if GIMPLE
+(simplify
+   (float (fix_trunc @0))
+   (if (!flag_trapping_math
+	&& types_match (type, TREE_TYPE (@0))
+	&& direct_internal_fn_supported_p (IFN_TRUNC, type,
+					  OPTIMIZE_FOR_BOTH))
+      (IFN_TRUNC @0)))
+#endif
+
 /* If we have a narrowing conversion to an integral type that is fed by a
    BIT_AND_EXPR, we might be able to remove the BIT_AND_EXPR if it merely
    masks off bits outside the final type (and nothing else).  */
