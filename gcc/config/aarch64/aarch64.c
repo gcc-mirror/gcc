@@ -14156,7 +14156,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt);
+      new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt, gsi);
       break;
 
     case AARCH64_BUILTIN_SVE:
