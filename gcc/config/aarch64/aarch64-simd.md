@@ -6620,6 +6620,23 @@
   [(set_attr "type" "neon_tst<q>")]
 )
 
+;; One can also get a cmtsts by having to combine a
+;; not (neq (eq x 0)) in which case you rewrite it to
+;; a comparison against itself
+
+(define_insn "*aarch64_cmtst_same_<mode>"
+  [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
+	(plus:<V_INT_EQUIV>
+	  (eq:<V_INT_EQUIV>
+	    (match_operand:VDQ_I 1 "register_operand" "w")
+	    (match_operand:VDQ_I 2 "aarch64_simd_imm_zero"))
+	  (match_operand:<V_INT_EQUIV> 3 "aarch64_simd_imm_minus_one")))
+  ]
+  "TARGET_SIMD"
+  "cmtst\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>1<Vmtype>"
+  [(set_attr "type" "neon_tst<q>")]
+)
+
 (define_insn_and_split "aarch64_cmtstdi"
   [(set (match_operand:DI 0 "register_operand" "=w,r")
 	(neg:DI
