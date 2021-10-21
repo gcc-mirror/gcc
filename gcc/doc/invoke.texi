@@ -812,6 +812,8 @@ Objective-C and Objective-C++ Dialects}.
 -mtp=@var{name}  -mtls-dialect=@var{dialect} @gol
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd @gol
+-mfix-cortex-a57-aes-1742098 @gol
+-mfix-cortex-a72-aes-1655431 @gol
 -munaligned-access @gol
 -mneon-for-64bits @gol
 -mslow-flash-data @gol
@@ -21280,6 +21282,15 @@ Some Cortex-M3 cores can cause data corruption when @code{ldrd} instructions
 with overlapping destination and base registers are used.  This option avoids
 generating these instructions.  This option is enabled by default when
 @option{-mcpu=cortex-m3} is specified.
+
+@item -mfix-cortex-a57-aes-1742098
+@itemx -mno-fix-cortex-a57-aes-1742098
+@itemx -mfix-cortex-a72-aes-1655431
+@itemx -mno-fix-cortex-a72-aes-1655431
+Enable (disable) mitigation for an erratum on Cortex-A57 and
+Cortex-A72 that affects the AES cryptographic instructions.  This
+option is enabled by default when either @option{-mcpu=cortex-a57} or
+@option{-mcpu=cortex-a72} is specified.
 
 @item -munaligned-access
 @itemx -mno-unaligned-access

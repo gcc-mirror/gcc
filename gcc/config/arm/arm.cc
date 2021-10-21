@@ -3638,6 +3638,15 @@ arm_option_override (void)
 	fix_vlldm = 0;
     }
 
+  /* Enable fix_aes by default if required.  */
+  if (fix_aes_erratum_1742098 == 2)
+    {
+      if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_aes_1742098))
+	fix_aes_erratum_1742098 = 1;
+      else
+	fix_aes_erratum_1742098 = 0;
+    }
+
   /* Hot/Cold partitioning is not currently supported, since we can't
      handle literal pool placement in that case.  */
   if (flag_reorder_blocks_and_partition)
