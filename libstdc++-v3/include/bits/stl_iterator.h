@@ -2472,6 +2472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @} group iterators
 
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     auto
     __niter_base(move_iterator<_Iterator> __it)
     -> decltype(make_move_iterator(__niter_base(__it.base())))
@@ -2485,6 +2486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     auto
     __miter_base(move_iterator<_Iterator> __it)
     -> decltype(__miter_base(__it.base()))
