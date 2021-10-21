@@ -1,3 +1,11 @@
+2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102642
+	* g++.dg/tls/pr102642.C: New test.
+
 2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

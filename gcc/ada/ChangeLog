@@ -1,3 +1,9 @@
+2021-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/100486
+	* sem_prag.adb (Check_Valid_Library_Unit_Pragma): Do not raise an
+	exception as part of the bootstrap.
+
 2021-09-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/s-dwalin.adb (Parse_Header): Tweak comments.
