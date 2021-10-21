@@ -265,6 +265,7 @@ subroutine f2
     end do
     !$omp end do
     !$omp sections
+      !$omp section
       block
         !$omp cancel parallel		! { dg-error "not closely nested inside" }
         !$omp cancel do			! { dg-error "not closely nested inside" }
@@ -417,6 +418,7 @@ subroutine f2
     !$omp end ordered
   end do
   !$omp sections
+    !$omp section
     block
       !$omp cancel parallel		! { dg-error "not closely nested inside" }
       !$omp cancel do			! { dg-error "not closely nested inside" }
@@ -515,6 +517,7 @@ subroutine f3
   end do
   !$omp end do nowait
   !$omp sections
+    !$omp section
     block
       !$omp cancel sections	! { dg-warning "nowait" }
     end block

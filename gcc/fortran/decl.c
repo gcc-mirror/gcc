@@ -8422,6 +8422,7 @@ gfc_match_end (gfc_statement *st)
       break;
 
     case COMP_BLOCK:
+    case COMP_OMP_STRICTLY_STRUCTURED_BLOCK:
       *st = ST_END_BLOCK;
       target = " block";
       eos_ok = 0;

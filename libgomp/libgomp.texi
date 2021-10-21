@@ -337,7 +337,7 @@ The OpenMP 4.5 specification is fully supported.
 
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
-@item Support of strictly structured blocks in Fortran @tab N @tab
+@item Support of strictly structured blocks in Fortran @tab Y @tab
 @item Support of structured block sequences in C/C++ @tab Y @tab
 @item @code{unconstrained} and @code{reproducible} modifiers on @code{order}
       clause @tab Y @tab
