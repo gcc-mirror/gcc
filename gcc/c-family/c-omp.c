@@ -2094,13 +2094,44 @@ c_omp_predefined_variable (tree decl)
 {
   if (VAR_P (decl)
       && DECL_ARTIFICIAL (decl)
-      && TREE_READONLY (decl)
       && TREE_STATIC (decl)
-      && DECL_NAME (decl)
-      && (DECL_NAME (decl) == ridpointers[RID_C99_FUNCTION_NAME]
-	  || DECL_NAME (decl) == ridpointers[RID_FUNCTION_NAME]
-	  || DECL_NAME (decl) == ridpointers[RID_PRETTY_FUNCTION_NAME]))
-    return true;
+      && DECL_NAME (decl))
+    {
+      if (TREE_READONLY (decl)
+	  && (DECL_NAME (decl) == ridpointers[RID_C99_FUNCTION_NAME]
+	      || DECL_NAME (decl) == ridpointers[RID_FUNCTION_NAME]
+	      || DECL_NAME (decl) == ridpointers[RID_PRETTY_FUNCTION_NAME]))
+	return true;
+      /* For UBSan handle the same also ubsan_create_data created
+	 variables.  There is no magic flag for those, but user variables
+	 shouldn't be DECL_ARTIFICIAL or have TYPE_ARTIFICIAL type with
+	 such names.  */
+      if ((flag_sanitize & (SANITIZE_UNDEFINED
+			    | SANITIZE_UNDEFINED_NONDEFAULT)) != 0
+	  && DECL_IGNORED_P (decl)
+	  && !TREE_READONLY (decl)
+	  && TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE
+	  && TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
+	  && TYPE_ARTIFICIAL (TREE_TYPE (decl))
+	  && TYPE_NAME (TREE_TYPE (decl))
+	  && TREE_CODE (TYPE_NAME (TREE_TYPE (decl))) == TYPE_DECL
+	  && DECL_NAME (TYPE_NAME (TREE_TYPE (decl)))
+	  && (TREE_CODE (DECL_NAME (TYPE_NAME (TREE_TYPE (decl))))
+	      == IDENTIFIER_NODE))
+	{
+	  tree id1 = DECL_NAME (decl);
+	  tree id2 = DECL_NAME (TYPE_NAME (TREE_TYPE (decl)));
+	  if (IDENTIFIER_LENGTH (id1) >= sizeof ("ubsan_data") - 1
+	      && IDENTIFIER_LENGTH (id2) >= sizeof ("__ubsan__data")
+	      && !memcmp (IDENTIFIER_POINTER (id2), "__ubsan_",
+			  sizeof ("__ubsan_") - 1)
+	      && !memcmp (IDENTIFIER_POINTER (id2) + IDENTIFIER_LENGTH (id2)
+			  - sizeof ("_data") + 1, "_data",
+			  sizeof ("_data") - 1)
+	      && strstr (IDENTIFIER_POINTER (id1), "ubsan_data"))
+	    return true;
+	}
+    }
   return false;
 }
 
