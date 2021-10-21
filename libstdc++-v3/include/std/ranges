@@ -3137,7 +3137,7 @@ namespace views::__adaptor
 	  { return _M_i_current(); }
 
 	  constexpr iterator_t<_Base>
-	  base() &&
+	  base() && requires forward_range<_Vp>
 	  { return std::move(_M_i_current()); }
 
 	  constexpr decltype(auto)
@@ -3229,8 +3229,11 @@ namespace views::__adaptor
       begin()
       {
 	if constexpr (forward_range<_Vp>)
-	  return _OuterIter<__detail::__simple_view<_Vp>>{
-	      this, ranges::begin(_M_base)};
+	  {
+	    constexpr bool __simple
+	      = __detail::__simple_view<_Vp> && __detail::__simple_view<_Pattern>;
+	    return _OuterIter<__simple>{this, ranges::begin(_M_base)};
+	  }
 	else
 	  {
 	    _M_current = ranges::begin(_M_base);
@@ -3247,8 +3250,9 @@ namespace views::__adaptor
       constexpr auto
       end() requires forward_range<_Vp> && common_range<_Vp>
       {
-	return _OuterIter<__detail::__simple_view<_Vp>>{
-	    this, ranges::end(_M_base)};
+	constexpr bool __simple
+	  = __detail::__simple_view<_Vp> && __detail::__simple_view<_Pattern>;
+	return _OuterIter<__simple>{this, ranges::end(_M_base)};
       }
 
       constexpr auto
@@ -3339,7 +3343,7 @@ namespace views::__adaptor
     { }
 
     constexpr _Vp
-    base() const& requires copyable<_Vp>
+    base() const& requires copy_constructible<_Vp>
     { return _M_base; }
 
     constexpr _Vp
