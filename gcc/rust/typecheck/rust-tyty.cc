@@ -357,7 +357,9 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       return SubstitutionArgumentMappings::error ();
     }
 
-  if (args.get_type_args ().size () > substitutions.size ())
+  // for inherited arguments
+  size_t offs = used_arguments.size ();
+  if (args.get_type_args ().size () + offs > substitutions.size ())
     {
       RichLocation r (args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
@@ -369,7 +371,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       return SubstitutionArgumentMappings::error ();
     }
 
-  if (args.get_type_args ().size () < min_required_substitutions ())
+  if (args.get_type_args ().size () + offs < min_required_substitutions ())
     {
       RichLocation r (args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
@@ -380,9 +382,6 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	substitutions.size (), args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
     }
-
-  // for inherited arguments
-  size_t offs = used_arguments.size ();
 
   std::vector<SubstitutionArg> mappings;
   for (auto &arg : args.get_type_args ())
