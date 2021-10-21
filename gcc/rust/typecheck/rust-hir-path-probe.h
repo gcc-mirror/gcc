@@ -146,8 +146,14 @@ public:
 
     std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
       union_type_bounds = probe.union_bounds (probed_bounds, specified_bounds);
-    probe.process_traits_for_candidates (union_type_bounds,
-					 ignore_mandatory_trait_items);
+    for (auto &candidate : union_type_bounds)
+      {
+	const TraitReference *trait_ref = candidate.first;
+	HIR::ImplBlock *impl = candidate.second;
+	probe.process_associated_trait_for_candidates (
+	  trait_ref, impl, ignore_mandatory_trait_items);
+      }
+
     return probe.candidates;
   }
 
@@ -234,96 +240,85 @@ protected:
     item->accept_vis (*this);
   }
 
-  void process_traits_for_candidates (
-    const std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
-      traits,
-    bool ignore_mandatory_trait_items)
+  void
+  process_associated_trait_for_candidates (const TraitReference *trait_ref,
+					   HIR::ImplBlock *impl,
+					   bool ignore_mandatory_trait_items)
   {
-    for (auto &ref : traits)
+    const TraitItemReference *trait_item_ref = nullptr;
+    if (!trait_ref->lookup_trait_item (search.as_string (), &trait_item_ref))
+      return;
+
+    bool trait_item_needs_implementation = !trait_item_ref->is_optional ();
+    if (ignore_mandatory_trait_items && trait_item_needs_implementation)
+      return;
+
+    PathProbeCandidate::CandidateType candidate_type;
+    switch (trait_item_ref->get_trait_item_type ())
       {
-	const TraitReference *trait_ref = ref.first;
-	HIR::ImplBlock *impl = ref.second;
+      case TraitItemReference::TraitItemType::FN:
+	candidate_type = PathProbeCandidate::CandidateType::TRAIT_FUNC;
+	break;
+      case TraitItemReference::TraitItemType::CONST:
+	candidate_type = PathProbeCandidate::CandidateType::TRAIT_ITEM_CONST;
+	break;
+      case TraitItemReference::TraitItemType::TYPE:
+	candidate_type = PathProbeCandidate::CandidateType::TRAIT_TYPE_ALIAS;
+	break;
 
-	const TraitItemReference *trait_item_ref = nullptr;
-	if (!trait_ref->lookup_trait_item (search.as_string (),
-					   &trait_item_ref))
-	  continue;
-
-	bool trait_item_needs_implementation = !trait_item_ref->is_optional ();
-	if (ignore_mandatory_trait_items && trait_item_needs_implementation)
-	  continue;
-
-	PathProbeCandidate::CandidateType candidate_type;
-	switch (trait_item_ref->get_trait_item_type ())
-	  {
-	  case TraitItemReference::TraitItemType::FN:
-	    candidate_type = PathProbeCandidate::CandidateType::TRAIT_FUNC;
-	    break;
-	  case TraitItemReference::TraitItemType::CONST:
-	    candidate_type
-	      = PathProbeCandidate::CandidateType::TRAIT_ITEM_CONST;
-	    break;
-	  case TraitItemReference::TraitItemType::TYPE:
-	    candidate_type
-	      = PathProbeCandidate::CandidateType::TRAIT_TYPE_ALIAS;
-	    break;
-
-	  case TraitItemReference::TraitItemType::ERROR:
-	  default:
-	    gcc_unreachable ();
-	    break;
-	  }
-
-	TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
-	if (impl != nullptr && !is_reciever_generic ())
-
-	  {
-	    HirId impl_block_id = impl->get_mappings ().get_hirid ();
-	    AssociatedImplTrait *lookup_associated = nullptr;
-	    bool found_impl_trait
-	      = context->lookup_associated_trait_impl (impl_block_id,
-						       &lookup_associated);
-	    // see testsuite/rust/compile/torture/traits10.rs this can be false
-	    if (found_impl_trait)
-	      lookup_associated->setup_associated_types ();
-	  }
-
-	// we can substitute the Self with the receiver here
-	if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
-	  {
-	    TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
-	    TyTy::SubstitutionParamMapping *param = nullptr;
-	    for (auto &param_mapping : fn->get_substs ())
-	      {
-		const HIR::TypeParam &type_param
-		  = param_mapping.get_generic_param ();
-		if (type_param.get_type_representation ().compare ("Self") == 0)
-		  {
-		    param = &param_mapping;
-		    break;
-		  }
-	      }
-	    rust_assert (param != nullptr);
-
-	    std::vector<TyTy::SubstitutionArg> mappings;
-	    mappings.push_back (
-	      TyTy::SubstitutionArg (param, receiver->clone ()));
-
-	    Location locus; // FIXME
-	    TyTy::SubstitutionArgumentMappings args (std::move (mappings),
-						     locus);
-	    trait_item_tyty
-	      = SubstMapperInternal::Resolve (trait_item_tyty, args);
-	  }
-
-	PathProbeCandidate::TraitItemCandidate trait_item_candidate{
-	  trait_ref, trait_item_ref, impl};
-	PathProbeCandidate candidate{candidate_type,
-				     trait_item_tyty,
-				     trait_ref->get_locus (),
-				     {trait_item_candidate}};
-	candidates.push_back (std::move (candidate));
+      case TraitItemReference::TraitItemType::ERROR:
+      default:
+	gcc_unreachable ();
+	break;
       }
+
+    TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
+    if (impl != nullptr && !is_reciever_generic ())
+
+      {
+	HirId impl_block_id = impl->get_mappings ().get_hirid ();
+	AssociatedImplTrait *lookup_associated = nullptr;
+	bool found_impl_trait
+	  = context->lookup_associated_trait_impl (impl_block_id,
+						   &lookup_associated);
+	// see testsuite/rust/compile/torture/traits10.rs this can be false
+	if (found_impl_trait)
+	  lookup_associated->setup_associated_types ();
+      }
+
+    // we can substitute the Self with the receiver here
+    if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
+      {
+	TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
+	TyTy::SubstitutionParamMapping *param = nullptr;
+	for (auto &param_mapping : fn->get_substs ())
+	  {
+	    const HIR::TypeParam &type_param
+	      = param_mapping.get_generic_param ();
+	    if (type_param.get_type_representation ().compare ("Self") == 0)
+	      {
+		param = &param_mapping;
+		break;
+	      }
+	  }
+	rust_assert (param != nullptr);
+
+	std::vector<TyTy::SubstitutionArg> mappings;
+	mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
+
+	Location locus; // FIXME
+	TyTy::SubstitutionArgumentMappings args (std::move (mappings), locus);
+	trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
+      }
+
+    PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
+								trait_item_ref,
+								impl};
+    PathProbeCandidate candidate{candidate_type,
+				 trait_item_tyty,
+				 trait_ref->get_locus (),
+				 {trait_item_candidate}};
+    candidates.push_back (std::move (candidate));
   }
 
 protected:
