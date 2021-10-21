@@ -1,3 +1,23 @@
+2021-10-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from master:
+	2021-10-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/94070
+	* expr.c (gfc_simplify_expr): Handle GFC_ISYM_SHAPE along with
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	* trans-array.c (gfc_conv_ss_startstride): Likewise.
+	(set_loop_bounds): Likewise.
+	* trans-intrinsic.c (gfc_trans_intrinsic_bound): Extend to
+	handle SHAPE.  Correct logic for zero-size special cases and
+	detecting assumed-rank arrays associated with an assumed-size
+	argument.
+	(gfc_conv_intrinsic_shape): Deleted.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_SHAPE like
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	(gfc_add_intrinsic_ss_code): Likewise.
+	(gfc_walk_intrinsic_bound): Likewise.
+
 2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

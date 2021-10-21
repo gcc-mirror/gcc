@@ -2205,7 +2205,8 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  (p->value.function.isym->id == GFC_ISYM_LBOUND
 	   || p->value.function.isym->id == GFC_ISYM_UBOUND
 	   || p->value.function.isym->id == GFC_ISYM_LCOBOUND
-	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND))
+	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND
+	   || p->value.function.isym->id == GFC_ISYM_SHAPE))
 	ap = ap->next;
 
       for ( ; ap; ap = ap->next)

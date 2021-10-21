@@ -1,3 +1,16 @@
+2021-10-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from master:
+	2021-10-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/94070
+	* gfortran.dg/c-interop/shape-bindc.f90: New test.
+	* gfortran.dg/c-interop/shape-poly.f90: New test.
+	* gfortran.dg/c-interop/size-bindc.f90: New test.
+	* gfortran.dg/c-interop/size-poly.f90: New test.
+	* gfortran.dg/c-interop/ubound-bindc.f90: New test.
+	* gfortran.dg/c-interop/ubound-poly.f90: New test.
+
 2021-10-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
