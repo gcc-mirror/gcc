@@ -87,3 +87,17 @@ test02()
   std::stack s8(std::move(l), l.get_allocator());
   check_type<std::stack<long, std::list<long>>>(s8);
 }
+
+#if __cpp_lib_adaptor_iterator_pair_constructor
+void
+test03()
+{
+  std::list<long> l;
+
+  std::stack s1(l.begin(), l.end());
+  check_type<std::stack<long>>(s1);
+
+  std::stack s2(l.begin(), l.end(), std::allocator<long>());
+  check_type<std::stack<long>>(s1);
+}
+#endif

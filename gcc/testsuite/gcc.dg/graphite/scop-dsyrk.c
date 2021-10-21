@@ -19,4 +19,4 @@ void dsyrk(int N)
 #pragma endscop
 }
 
-/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "number of SCoPs: 1" 1 "graphite" } } */

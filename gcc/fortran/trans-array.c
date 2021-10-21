@@ -4507,6 +4507,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	    case GFC_ISYM_UBOUND:
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:
+	    case GFC_ISYM_SHAPE:
 	    case GFC_ISYM_THIS_IMAGE:
 	      loop->dimen = ss->dimen;
 	      goto done;
@@ -4558,11 +4559,13 @@ done:
 	    /* Fall through to supply start and stride.  */
 	    case GFC_ISYM_LBOUND:
 	    case GFC_ISYM_UBOUND:
+	      /* This is the variant without DIM=...  */
+	      gcc_assert (expr->value.function.actual->next->expr == NULL);
+	      /* Fall through.  */
+
+	    case GFC_ISYM_SHAPE:
 	      {
 		gfc_expr *arg;
-
-		/* This is the variant without DIM=...  */
-		gcc_assert (expr->value.function.actual->next->expr == NULL);
 
 		arg = expr->value.function.actual->expr;
 		if (arg->rank == -1)
@@ -5350,10 +5353,13 @@ set_loop_bounds (gfc_loopinfo *loop)
 		gfc_expr *expr = loopspec[n]->info->expr;
 
 		/* The {l,u}bound of an assumed rank.  */
-		gcc_assert ((expr->value.function.isym->id == GFC_ISYM_LBOUND
-			     || expr->value.function.isym->id == GFC_ISYM_UBOUND)
-			     && expr->value.function.actual->next->expr == NULL
-			     && expr->value.function.actual->expr->rank == -1);
+		if (expr->value.function.isym->id == GFC_ISYM_SHAPE)
+		  gcc_assert (expr->value.function.actual->expr->rank == -1);
+		else
+		  gcc_assert ((expr->value.function.isym->id == GFC_ISYM_LBOUND
+			       || expr->value.function.isym->id == GFC_ISYM_UBOUND)
+			      && expr->value.function.actual->next->expr == NULL
+			      && expr->value.function.actual->expr->rank == -1);
 
 		loop->to[n] = info->end[dim];
 		break;

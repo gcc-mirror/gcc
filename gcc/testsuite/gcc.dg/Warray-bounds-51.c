@@ -39,7 +39,7 @@ void test_struct_char_vla_location (void)
   } s;
 
   s.cvla[0] = __LINE__;
-  s.cvla[nelts - 1] = 0; // { dg-warning "\\\[-Wstringop-overflow" "" { target { i?86-*-* x86_64-*-* } } }
+  s.cvla[nelts - 1] = 0; // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2qi_store } } }
   s.cvla[nelts] = 0;  // { dg-warning "\\\[-Warray-bounds" }
 
   sink (&s);

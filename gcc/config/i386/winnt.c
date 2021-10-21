@@ -1231,7 +1231,7 @@ seh_frame_related_expr (FILE *f, struct seh_frame_state *seh, rtx pat)
    required for unwind of this insn.  */
 
 void
-i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
+i386_pe_seh_unwind_emit (FILE *out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;
@@ -1246,8 +1246,8 @@ i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
       /* See ix86_seh_fixup_eh_fallthru for the rationale.  */
       rtx_insn *prev = prev_active_insn (insn);
       if (prev && !insn_nothrow_p (prev))
-	fputs ("\tnop\n", asm_out_file);
-      fputs ("\t.seh_endproc\n", asm_out_file);
+	fputs ("\tnop\n", out_file);
+      fputs ("\t.seh_endproc\n", out_file);
       seh->in_cold_section = true;
       return;
     }
@@ -1286,7 +1286,7 @@ i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	      if (GET_CODE (pat) == PARALLEL)
 		pat = XVECEXP (pat, 0, 0);
 	    }
-	  seh_cfa_adjust_cfa (asm_out_file, seh, pat);
+	  seh_cfa_adjust_cfa (out_file, seh, pat);
 	  handled_one = true;
 	  break;
 
@@ -1294,7 +1294,7 @@ i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	  pat = XEXP (note, 0);
 	  if (pat == NULL)
 	    pat = single_set (insn);
-	  seh_cfa_offset (asm_out_file, seh, pat);
+	  seh_cfa_offset (out_file, seh, pat);
 	  handled_one = true;
 	  break;
 
@@ -1306,7 +1306,7 @@ i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
     return;
   pat = PATTERN (insn);
  found:
-  seh_frame_related_expr (asm_out_file, seh, pat);
+  seh_frame_related_expr (out_file, seh, pat);
 }
 
 void

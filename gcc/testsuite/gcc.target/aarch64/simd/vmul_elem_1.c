@@ -146,12 +146,14 @@ check_v2sf (float32_t elemA, float32_t elemB)
 
   vst1_f32 (vec32x2_res, vmul_n_f32 (vec32x2_src, elemA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (* (uint32_t *) &vec32x2_res[indx] != * (uint32_t *) &expected2_1[indx])
       abort ();
 
   vst1_f32 (vec32x2_res, vmul_n_f32 (vec32x2_src, elemB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (* (uint32_t *) &vec32x2_res[indx] != * (uint32_t *) &expected2_2[indx])
       abort ();
@@ -169,24 +171,28 @@ check_v4sf (float32_t elemA, float32_t elemB, float32_t elemC, float32_t elemD)
 
   vst1q_f32 (vec32x4_res, vmulq_n_f32 (vec32x4_src, elemA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_1[indx])
       abort ();
 
   vst1q_f32 (vec32x4_res, vmulq_n_f32 (vec32x4_src, elemB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_2[indx])
       abort ();
 
   vst1q_f32 (vec32x4_res, vmulq_n_f32 (vec32x4_src, elemC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_3[indx])
       abort ();
 
   vst1q_f32 (vec32x4_res, vmulq_n_f32 (vec32x4_src, elemD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (* (uint32_t *) &vec32x4_res[indx] != * (uint32_t *) &expected4_4[indx])
       abort ();
@@ -204,12 +210,14 @@ check_v2df (float64_t elemdC, float64_t elemdD)
 
   vst1q_f64 (vec64x2_res, vmulq_n_f64 (vec64x2_src, elemdC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (* (uint64_t *) &vec64x2_res[indx] != * (uint64_t *) &expectedd2_1[indx])
       abort ();
 
   vst1q_f64 (vec64x2_res, vmulq_n_f64 (vec64x2_src, elemdD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (* (uint64_t *) &vec64x2_res[indx] != * (uint64_t *) &expectedd2_2[indx])
       abort ();
@@ -227,12 +235,14 @@ check_v2si (int32_t elemsA, int32_t elemsB)
 
   vst1_s32 (vecs32x2_res, vmul_n_s32 (vecs32x2_src, elemsA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (vecs32x2_res[indx] != expecteds2_1[indx])
       abort ();
 
   vst1_s32 (vecs32x2_res, vmul_n_s32 (vecs32x2_src, elemsB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (vecs32x2_res[indx] != expecteds2_2[indx])
       abort ();
@@ -248,12 +258,14 @@ check_v2si_unsigned (uint32_t elemusA, uint32_t elemusB)
 
   vst1_u32 (vecus32x2_res, vmul_n_u32 (vecus32x2_src, elemusA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (vecus32x2_res[indx] != expectedus2_1[indx])
       abort ();
 
   vst1_u32 (vecus32x2_res, vmul_n_u32 (vecus32x2_src, elemusB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 2; indx++)
     if (vecus32x2_res[indx] != expectedus2_2[indx])
       abort ();
@@ -271,24 +283,28 @@ check_v4si (int32_t elemsA, int32_t elemsB, int32_t elemsC, int32_t elemsD)
 
   vst1q_s32 (vecs32x4_res, vmulq_n_s32 (vecs32x4_src, elemsA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_1[indx])
       abort ();
 
   vst1q_s32 (vecs32x4_res, vmulq_n_s32 (vecs32x4_src, elemsB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_2[indx])
       abort ();
 
   vst1q_s32 (vecs32x4_res, vmulq_n_s32 (vecs32x4_src, elemsC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_3[indx])
       abort ();
 
   vst1q_s32 (vecs32x4_res, vmulq_n_s32 (vecs32x4_src, elemsD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecs32x4_res[indx] != expecteds4_4[indx])
       abort ();
@@ -305,24 +321,28 @@ check_v4si_unsigned (uint32_t elemusA, uint32_t elemusB, uint32_t elemusC,
 
   vst1q_u32 (vecus32x4_res, vmulq_n_u32 (vecus32x4_src, elemusA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_1[indx])
       abort ();
 
   vst1q_u32 (vecus32x4_res, vmulq_n_u32 (vecus32x4_src, elemusB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_2[indx])
       abort ();
 
   vst1q_u32 (vecus32x4_res, vmulq_n_u32 (vecus32x4_src, elemusC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_3[indx])
       abort ();
 
   vst1q_u32 (vecus32x4_res, vmulq_n_u32 (vecus32x4_src, elemusD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecus32x4_res[indx] != expectedus4_4[indx])
       abort ();
@@ -341,24 +361,28 @@ check_v4hi (int16_t elemhA, int16_t elemhB, int16_t elemhC, int16_t elemhD)
 
   vst1_s16 (vech16x4_res, vmul_n_s16 (vech16x4_src, elemhA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_1[indx])
       abort ();
 
   vst1_s16 (vech16x4_res, vmul_n_s16 (vech16x4_src, elemhB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_2[indx])
       abort ();
 
   vst1_s16 (vech16x4_res, vmul_n_s16 (vech16x4_src, elemhC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_3[indx])
       abort ();
 
   vst1_s16 (vech16x4_res, vmul_n_s16 (vech16x4_src, elemhD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vech16x4_res[indx] != expectedh4_4[indx])
       abort ();
@@ -375,24 +399,28 @@ check_v4hi_unsigned (uint16_t elemuhA, uint16_t elemuhB, uint16_t elemuhC,
 
   vst1_u16 (vecuh16x4_res, vmul_n_u16 (vecuh16x4_src, elemuhA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_1[indx])
       abort ();
 
   vst1_u16 (vecuh16x4_res, vmul_n_u16 (vecuh16x4_src, elemuhB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_2[indx])
       abort ();
 
   vst1_u16 (vecuh16x4_res, vmul_n_u16 (vecuh16x4_src, elemuhC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_3[indx])
       abort ();
 
   vst1_u16 (vecuh16x4_res, vmul_n_u16 (vecuh16x4_src, elemuhD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 4; indx++)
     if (vecuh16x4_res[indx] != expecteduh4_4[indx])
       abort ();
@@ -411,48 +439,56 @@ check_v8hi (int16_t elemhA, int16_t elemhB, int16_t elemhC, int16_t elemhD,
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_1[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_2[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_3[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_4[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhE));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_5[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhF));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_6[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhG));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_7[indx])
       abort ();
 
   vst1q_s16 (vech16x8_res, vmulq_n_s16 (vech16x8_src, elemhH));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vech16x8_res[indx] != expectedh8_8[indx])
       abort ();
@@ -470,48 +506,56 @@ check_v8hi_unsigned (uint16_t elemuhA, uint16_t elemuhB, uint16_t elemuhC,
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhA));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_1[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhB));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_2[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhC));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_3[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhD));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_4[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhE));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_5[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhF));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_6[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhG));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_7[indx])
       abort ();
 
   vst1q_u16 (vecuh16x8_res, vmulq_n_u16 (vecuh16x8_src, elemuhH));
 
+  asm volatile ("" : : : "memory");
   for (indx = 0; indx < 8; indx++)
     if (vecuh16x8_res[indx] != expecteduh8_8[indx])
       abort ();

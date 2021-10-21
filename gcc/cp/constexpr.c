@@ -6191,6 +6191,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
       if (TREE_CODE (t) == INTEGER_CST
 	  && TYPE_PTR_P (TREE_TYPE (t))
+	  /* INTEGER_CST with pointer-to-method type is only used
+	     for a virtual method in a pointer to member function.
+	     Don't reject those.  */
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) != METHOD_TYPE
 	  && !integer_zerop (t))
 	{
 	  if (!ctx->quiet)

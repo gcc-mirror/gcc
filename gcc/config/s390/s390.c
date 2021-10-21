@@ -7808,7 +7808,7 @@ s390_asm_declare_function_size (FILE *asm_out_file,
 /* Write the extra assembler code needed to declare a function properly.  */
 
 void
-s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
+s390_asm_output_function_label (FILE *out_file, const char *fname,
 				tree decl)
 {
   int hw_before, hw_after;
@@ -7822,11 +7822,11 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
       /* Add a trampoline code area before the function label and initialize it
 	 with two-byte nop instructions.  This area can be overwritten with code
 	 that jumps to a patched version of the function.  */
-      asm_fprintf (asm_out_file, "\tnopr\t%%r0"
+      asm_fprintf (out_file, "\tnopr\t%%r0"
 		   "\t# pre-label NOPs for hotpatch (%d halfwords)\n",
 		   hw_before);
       for (i = 1; i < hw_before; i++)
-	fputs ("\tnopr\t%r0\n", asm_out_file);
+	fputs ("\tnopr\t%r0\n", out_file);
 
       /* Note:  The function label must be aligned so that (a) the bytes of the
 	 following nop do not cross a cacheline boundary, and (b) a jump address
@@ -7843,35 +7843,35 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	function_alignment
 	  = MAX (function_alignment,
 		 (unsigned int) align_functions.levels[0].get_value ());
-      fputs ("\t# alignment for hotpatch\n", asm_out_file);
-      ASM_OUTPUT_ALIGN (asm_out_file, align_functions.levels[0].log);
+      fputs ("\t# alignment for hotpatch\n", out_file);
+      ASM_OUTPUT_ALIGN (out_file, align_functions.levels[0].log);
     }
 
   if (S390_USE_TARGET_ATTRIBUTE && TARGET_DEBUG_ARG)
     {
-      asm_fprintf (asm_out_file, "\t# fn:%s ar%d\n", fname, s390_arch);
-      asm_fprintf (asm_out_file, "\t# fn:%s tu%d\n", fname, s390_tune);
-      asm_fprintf (asm_out_file, "\t# fn:%s sg%d\n", fname, s390_stack_guard);
-      asm_fprintf (asm_out_file, "\t# fn:%s ss%d\n", fname, s390_stack_size);
-      asm_fprintf (asm_out_file, "\t# fn:%s bc%d\n", fname, s390_branch_cost);
-      asm_fprintf (asm_out_file, "\t# fn:%s wf%d\n", fname,
+      asm_fprintf (out_file, "\t# fn:%s ar%d\n", fname, s390_arch);
+      asm_fprintf (out_file, "\t# fn:%s tu%d\n", fname, s390_tune);
+      asm_fprintf (out_file, "\t# fn:%s sg%d\n", fname, s390_stack_guard);
+      asm_fprintf (out_file, "\t# fn:%s ss%d\n", fname, s390_stack_size);
+      asm_fprintf (out_file, "\t# fn:%s bc%d\n", fname, s390_branch_cost);
+      asm_fprintf (out_file, "\t# fn:%s wf%d\n", fname,
 		   s390_warn_framesize);
-      asm_fprintf (asm_out_file, "\t# fn:%s ba%d\n", fname, TARGET_BACKCHAIN);
-      asm_fprintf (asm_out_file, "\t# fn:%s hd%d\n", fname, TARGET_HARD_DFP);
-      asm_fprintf (asm_out_file, "\t# fn:%s hf%d\n", fname, !TARGET_SOFT_FLOAT);
-      asm_fprintf (asm_out_file, "\t# fn:%s ht%d\n", fname, TARGET_OPT_HTM);
-      asm_fprintf (asm_out_file, "\t# fn:%s vx%d\n", fname, TARGET_OPT_VX);
-      asm_fprintf (asm_out_file, "\t# fn:%s ps%d\n", fname,
+      asm_fprintf (out_file, "\t# fn:%s ba%d\n", fname, TARGET_BACKCHAIN);
+      asm_fprintf (out_file, "\t# fn:%s hd%d\n", fname, TARGET_HARD_DFP);
+      asm_fprintf (out_file, "\t# fn:%s hf%d\n", fname, !TARGET_SOFT_FLOAT);
+      asm_fprintf (out_file, "\t# fn:%s ht%d\n", fname, TARGET_OPT_HTM);
+      asm_fprintf (out_file, "\t# fn:%s vx%d\n", fname, TARGET_OPT_VX);
+      asm_fprintf (out_file, "\t# fn:%s ps%d\n", fname,
 		   TARGET_PACKED_STACK);
-      asm_fprintf (asm_out_file, "\t# fn:%s se%d\n", fname, TARGET_SMALL_EXEC);
-      asm_fprintf (asm_out_file, "\t# fn:%s mv%d\n", fname, TARGET_MVCLE);
-      asm_fprintf (asm_out_file, "\t# fn:%s zv%d\n", fname, TARGET_ZVECTOR);
-      asm_fprintf (asm_out_file, "\t# fn:%s wd%d\n", fname,
+      asm_fprintf (out_file, "\t# fn:%s se%d\n", fname, TARGET_SMALL_EXEC);
+      asm_fprintf (out_file, "\t# fn:%s mv%d\n", fname, TARGET_MVCLE);
+      asm_fprintf (out_file, "\t# fn:%s zv%d\n", fname, TARGET_ZVECTOR);
+      asm_fprintf (out_file, "\t# fn:%s wd%d\n", fname,
 		   s390_warn_dynamicstack_p);
     }
-  ASM_OUTPUT_LABEL (asm_out_file, fname);
+  ASM_OUTPUT_LABEL (out_file, fname);
   if (hw_after > 0)
-    asm_fprintf (asm_out_file,
+    asm_fprintf (out_file,
 		 "\t# post-label NOPs for hotpatch (%d halfwords)\n",
 		 hw_after);
 }

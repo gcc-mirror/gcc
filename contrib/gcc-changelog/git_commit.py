@@ -134,6 +134,7 @@ ignored_prefixes = {
     'gcc/go/gofrontend/',
     'gcc/testsuite/gdc.test/',
     'gcc/testsuite/go.test/test/',
+    'libffi/',
     'libgo/',
     'libphobos/libdruntime/',
     'libphobos/src/',

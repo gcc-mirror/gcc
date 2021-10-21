@@ -52,12 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 class back_threader_registry
 {
 public:
-  back_threader_registry ();
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   back_jt_path_registry m_lowlevel_registry;
-  int m_threaded_paths;
 };
 
 // Class to abstract the profitability code for the backwards threader.
@@ -78,7 +76,6 @@ class back_threader
 {
 public:
   back_threader (bool speed_p, bool resolve);
-  ~back_threader ();
   void maybe_thread_block (basic_block bb);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
@@ -130,10 +127,6 @@ back_threader::back_threader (bool speed_p, bool resolve)
   m_resolve = resolve;
 }
 
-back_threader::~back_threader ()
-{
-}
-
 // Register the current path for jump threading if it's profitable to
 // do so.
 //
@@ -147,6 +140,10 @@ back_threader::maybe_register_path ()
 
   if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
+      // Avoid circular paths.
+      if (m_visited_bbs.contains (taken_edge->dest))
+	return UNREACHABLE_EDGE;
+
       bool irreducible = false;
       bool profitable
 	= m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
@@ -574,11 +571,6 @@ back_threader::debug ()
   dump (stderr);
 }
 
-back_threader_registry::back_threader_registry ()
-{
-  m_threaded_paths = 0;
-}
-
 bool
 back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
 {
@@ -619,6 +611,15 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      reject that case.  */
   if (m_path.length () <= 1)
       return false;
+
+  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
+		 "the number of basic blocks on the path "
+		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
+      return false;
+    }
 
   int n_insns = 0;
   gimple_stmt_iterator gsi;
@@ -919,9 +920,7 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 
   m_lowlevel_registry.push_edge (jump_thread_path,
 				 taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-
-  if (m_lowlevel_registry.register_jump_thread (jump_thread_path))
-    ++m_threaded_paths;
+  m_lowlevel_registry.register_jump_thread (jump_thread_path);
   return true;
 }
 
@@ -1059,7 +1058,7 @@ public:
   {}
   opt_pass * clone (void) override
   {
-    return new pass_thread_jumps (m_ctxt);
+    return new pass_thread_jumps_full (m_ctxt);
   }
   bool gate (function *) override
   {

@@ -2171,7 +2171,7 @@ package body Checks is
          Lo_OK := (Ifirst > 0);
 
       else
-         Lo := Machine (Expr_Type, UR_From_Uint (Ifirst), Round_Even, Expr);
+         Lo := Machine_Number (Expr_Type, UR_From_Uint (Ifirst), Expr);
          Lo_OK := (Lo >= UR_From_Uint (Ifirst));
       end if;
 
@@ -2214,7 +2214,7 @@ package body Checks is
          Hi := UR_From_Uint (Ilast) + Ureal_Half;
          Hi_OK := (Ilast < 0);
       else
-         Hi := Machine (Expr_Type, UR_From_Uint (Ilast), Round_Even, Expr);
+         Hi := Machine_Number (Expr_Type, UR_From_Uint (Ilast), Expr);
          Hi_OK := (Hi <= UR_From_Uint (Ilast));
       end if;
 
@@ -5563,7 +5563,7 @@ package body Checks is
       --  the results in Lo_Right, Hi_Right, Lo_Left, Hi_Left.
 
       function Round_Machine (B : Ureal) return Ureal;
-      --  B is a real bound. Round it using mode Round_Even.
+      --  B is a real bound. Round it to the nearest machine number.
 
       -----------------
       -- OK_Operands --
@@ -5589,7 +5589,7 @@ package body Checks is
 
       function Round_Machine (B : Ureal) return Ureal is
       begin
-         return Machine (Typ, B, Round_Even, N);
+         return Machine_Number (Typ, B, N);
       end Round_Machine;
 
    --  Start of processing for Determine_Range_R
@@ -8077,7 +8077,7 @@ package body Checks is
       Is_High_Bound : Boolean   := False)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
-      Typ : constant Entity_Id  := Etype (Expr);
+      Typ : Entity_Id           := Etype (Expr);
       Exp : Node_Id;
 
    begin
@@ -8137,6 +8137,7 @@ package body Checks is
       while Nkind (Exp) = N_Type_Conversion loop
          Exp := Expression (Exp);
       end loop;
+      Typ := Etype (Exp);
 
       --  Do not generate a check for a variable which already validates the
       --  value of an assignable object.
@@ -8215,6 +8216,14 @@ package body Checks is
             if Do_Range_Check (Validated_Object (Var_Id)) then
                Set_Do_Range_Check (Exp);
                Set_Do_Range_Check (Validated_Object (Var_Id), False);
+            end if;
+
+            --  In case of a type conversion, an expansion of the expr may be
+            --  needed (eg. fixed-point as actual).
+
+            if Exp /= Expr then
+               pragma Assert (Nkind (Expr) = N_Type_Conversion);
+               Analyze_And_Resolve (Expr);
             end if;
 
             PV := New_Occurrence_Of (Var_Id, Loc);

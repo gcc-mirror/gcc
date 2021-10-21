@@ -3014,7 +3014,11 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
 	}
       if (sym->ts.type == BT_CHARACTER)
 	{
-	  spec[spec_len++] = 'R';
+	  if (!sym->ts.u.cl->length
+	      && (sym->attr.allocatable || sym->attr.pointer))
+	    spec[spec_len++] = 'w';
+	  else
+	    spec[spec_len++] = 'R';
 	  spec[spec_len++] = ' ';
 	}
     }

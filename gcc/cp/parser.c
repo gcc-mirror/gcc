@@ -3693,7 +3693,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*template_keyword_p=*/false,
 				/*check_dependency_p=*/true,
 				/*template_p=*/NULL,
-				/*declarator_p=*/false,
+				/*declarator_p=*/true,
 				/*optional_p=*/false);
   /* If the next token is a (, this is a function with no explicit return
      type, i.e. constructor, destructor or conversion op.  */
@@ -6605,6 +6605,8 @@ check_template_keyword_in_nested_name_spec (tree name)
    it unchanged if there is no nested-name-specifier.  Returns the new
    scope iff there is a nested-name-specifier, or NULL_TREE otherwise.
 
+   If CHECK_DEPENDENCY_P is FALSE, names are looked up in dependent scopes.
+
    If IS_DECLARATION is TRUE, the nested-name-specifier is known to be
    part of a declaration and/or decl-specifier.  */
 
@@ -6645,9 +6647,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	  /* Grab the nested-name-specifier and continue the loop.  */
 	  cp_parser_pre_parsed_nested_name_specifier (parser);
 	  /* If we originally encountered this nested-name-specifier
-	     with IS_DECLARATION set to false, we will not have
+	     with CHECK_DEPENDENCY_P set to true, we will not have
 	     resolved TYPENAME_TYPEs, so we must do so here.  */
 	  if (is_declaration
+	      && !check_dependency_p
 	      && TREE_CODE (parser->scope) == TYPENAME_TYPE)
 	    {
 	      new_scope = resolve_typename_type (parser->scope,
@@ -6729,6 +6732,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	 a template.  So, if we have a typename at this point, we make
 	 an effort to look through it.  */
       if (is_declaration
+	  && !check_dependency_p
 	  && !typename_keyword_p
 	  && parser->scope
 	  && TREE_CODE (parser->scope) == TYPENAME_TYPE)
@@ -44437,7 +44441,8 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	       dependent local extern variable decls are as rare as
 	       hen's teeth.  */
 	    if (auto alias = DECL_LOCAL_DECL_ALIAS (decl))
-	      decl = alias;
+	      if (alias != error_mark_node)
+		decl = alias;
 
 	  if (OMP_CLAUSE_MAP_KIND (t) == GOMP_MAP_LINK)
 	    id = get_identifier ("omp declare target link");
@@ -45665,7 +45670,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_LOCAL_DECL_P (t)
 	  && DECL_LANG_SPECIFIC (t)
-	  && DECL_LOCAL_DECL_ALIAS (t))
+	  && DECL_LOCAL_DECL_ALIAS (t)
+	  && DECL_LOCAL_DECL_ALIAS (t) != error_mark_node)
 	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
 					  device_type);
     }

@@ -1839,7 +1839,8 @@ static const struct tune_params neoversev1_tunings =
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
    | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
-   | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
+   | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT
+   | AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -1995,7 +1996,7 @@ static const struct tune_params neoversen2_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -9499,8 +9500,8 @@ aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
    The expansion for a table switch is quite expensive due to the number
    of instructions, the table lookup and hard to predict indirect jump.
    When optimizing for speed, and -O3 enabled, use the per-core tuning if 
-   set, otherwise use tables for > 16 cases as a tradeoff between size and
-   performance.  When optimizing for size, use the default setting.  */
+   set, otherwise use tables for >= 11 cases as a tradeoff between size and
+   performance.  When optimizing for size, use 8 for smallest codesize.  */
 
 static unsigned int
 aarch64_case_values_threshold (void)
@@ -9511,7 +9512,7 @@ aarch64_case_values_threshold (void)
       && selected_cpu->tune->max_case_values != 0)
     return selected_cpu->tune->max_case_values;
   else
-    return optimize_size ? default_case_values_threshold () : 17;
+    return optimize_size ? 8 : 11;
 }
 
 /* Return true if register REGNO is a valid index register.
@@ -14156,7 +14157,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt);
+      new_stmt = aarch64_general_gimple_fold_builtin (subcode, stmt, gsi);
       break;
 
     case AARCH64_BUILTIN_SVE:

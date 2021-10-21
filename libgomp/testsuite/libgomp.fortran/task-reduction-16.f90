@@ -20,6 +20,7 @@ contains
         !$omp scope reduction (task, iand: c)
           !$omp barrier
           !$omp sections
+            !$omp section
             block
               a = a + 1; b(0) = b(0) * 2; call bar (2); b(2) = b(2) * 3
               c(1) = iand(c(1), not(ishft(1_8, 2)))

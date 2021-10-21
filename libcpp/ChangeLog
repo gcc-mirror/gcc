@@ -1,3 +1,7 @@
+2021-10-18  Martin Liska  <mliska@suse.cz>
+
+	* charset.c (convert_oct): Remove unused but set variable.
+
 2021-10-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (lang_defaults): Implement P2334R1, enable elifdef for

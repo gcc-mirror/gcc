@@ -11,6 +11,7 @@ extern void abort (void);
 
 #define TEST_VMLS(q, su, size, in1_lanes, in2_lanes)		\
 static void							\
+__attribute__((noipa,noinline))					\
 test_vmlsq_lane##q##_##su##size (MAP##su (size, ) * res,	\
 				 const MAP##su(size, ) *in1,	\
 				 const MAP##su(size, ) *in2)	\

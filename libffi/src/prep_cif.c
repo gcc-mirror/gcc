@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   prep_cif.c - Copyright (c) 2011, 2012  Anthony Green
+   prep_cif.c - Copyright (c) 2011, 2012, 2021  Anthony Green
                 Copyright (c) 1996, 1998, 2007  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -29,12 +29,12 @@
 
 /* Round up to FFI_SIZEOF_ARG. */
 
-#define STACK_ARG_SIZE(x) ALIGN(x, FFI_SIZEOF_ARG)
+#define STACK_ARG_SIZE(x) FFI_ALIGN(x, FFI_SIZEOF_ARG)
 
 /* Perform machine independent initialization of aggregate type
    specifications. */
 
-static ffi_status initialize_aggregate(ffi_type *arg)
+static ffi_status initialize_aggregate(ffi_type *arg, size_t *offsets)
 {
   ffi_type **ptr;
 
@@ -52,13 +52,15 @@ static ffi_status initialize_aggregate(ffi_type *arg)
   while ((*ptr) != NULL)
     {
       if (UNLIKELY(((*ptr)->size == 0)
-		    && (initialize_aggregate((*ptr)) != FFI_OK)))
+		    && (initialize_aggregate((*ptr), NULL) != FFI_OK)))
 	return FFI_BAD_TYPEDEF;
 
       /* Perform a sanity check on the argument type */
       FFI_ASSERT_VALID_TYPE(*ptr);
 
-      arg->size = ALIGN(arg->size, (*ptr)->alignment);
+      arg->size = FFI_ALIGN(arg->size, (*ptr)->alignment);
+      if (offsets)
+	*offsets++ = arg->size;
       arg->size += (*ptr)->size;
 
       arg->alignment = (arg->alignment > (*ptr)->alignment) ?
@@ -74,7 +76,7 @@ static ffi_status initialize_aggregate(ffi_type *arg)
      struct A { long a; char b; }; struct B { struct A x; char y; };
      should find y at an offset of 2*sizeof(long) and result in a
      total size of 3*sizeof(long).  */
-  arg->size = ALIGN (arg->size, arg->alignment);
+  arg->size = FFI_ALIGN (arg->size, arg->alignment);
 
   /* On some targets, the ABI defines that structures have an additional
      alignment beyond the "natural" one based on their elements.  */
@@ -127,13 +129,16 @@ ffi_status FFI_HIDDEN ffi_prep_cif_core(ffi_cif *cif, ffi_abi abi,
   cif->rtype = rtype;
 
   cif->flags = 0;
-
+#if (defined(_M_ARM64) || defined(__aarch64__)) && defined(_WIN32)
+  cif->is_variadic = isvariadic;
+#endif
 #if HAVE_LONG_DOUBLE_VARIANT
   ffi_prep_types (abi);
 #endif
 
   /* Initialize the return type if necessary */
-  if ((cif->rtype->size == 0) && (initialize_aggregate(cif->rtype) != FFI_OK))
+  if ((cif->rtype->size == 0)
+      && (initialize_aggregate(cif->rtype, NULL) != FFI_OK))
     return FFI_BAD_TYPEDEF;
 
 #ifndef FFI_TARGET_HAS_COMPLEX_TYPE
@@ -164,7 +169,8 @@ ffi_status FFI_HIDDEN ffi_prep_cif_core(ffi_cif *cif, ffi_abi abi,
     {
 
       /* Initialize any uninitialized aggregate type definitions */
-      if (((*ptr)->size == 0) && (initialize_aggregate((*ptr)) != FFI_OK))
+      if (((*ptr)->size == 0)
+	  && (initialize_aggregate((*ptr), NULL) != FFI_OK))
 	return FFI_BAD_TYPEDEF;
 
 #ifndef FFI_TARGET_HAS_COMPLEX_TYPE
@@ -179,7 +185,7 @@ ffi_status FFI_HIDDEN ffi_prep_cif_core(ffi_cif *cif, ffi_abi abi,
 	{
 	  /* Add any padding if necessary */
 	  if (((*ptr)->alignment - 1) & bytes)
-	    bytes = (unsigned)ALIGN(bytes, (*ptr)->alignment);
+	    bytes = (unsigned)FFI_ALIGN(bytes, (*ptr)->alignment);
 
 #ifdef TILE
 	  if (bytes < 10 * FFI_SIZEOF_ARG &&
@@ -195,7 +201,7 @@ ffi_status FFI_HIDDEN ffi_prep_cif_core(ffi_cif *cif, ffi_abi abi,
 	    bytes = 6*4;
 #endif
 
-	  bytes += STACK_ARG_SIZE((*ptr)->size);
+	  bytes += (unsigned int)STACK_ARG_SIZE((*ptr)->size);
 	}
 #endif
     }
@@ -225,7 +231,26 @@ ffi_status ffi_prep_cif_var(ffi_cif *cif,
                             ffi_type *rtype,
                             ffi_type **atypes)
 {
-  return ffi_prep_cif_core(cif, abi, 1, nfixedargs, ntotalargs, rtype, atypes);
+  ffi_status rc;
+  size_t int_size = ffi_type_sint.size;
+  int i;
+
+  rc = ffi_prep_cif_core(cif, abi, 1, nfixedargs, ntotalargs, rtype, atypes);
+
+  if (rc != FFI_OK)
+    return rc;
+
+  for (i = 1; i < ntotalargs; i++)
+    {
+      ffi_type *arg_type = atypes[i];
+      if (arg_type == &ffi_type_float
+          || ((arg_type->type != FFI_TYPE_STRUCT
+               && arg_type->type != FFI_TYPE_COMPLEX)
+              && arg_type->size < int_size))
+        return FFI_BAD_ARGTYPE;
+    }
+
+  return FFI_OK;
 }
 
 #if FFI_CLOSURES
@@ -240,3 +265,18 @@ ffi_prep_closure (ffi_closure* closure,
 }
 
 #endif
+
+ffi_status
+ffi_get_struct_offsets (ffi_abi abi, ffi_type *struct_type, size_t *offsets)
+{
+  if (! (abi > FFI_FIRST_ABI && abi < FFI_LAST_ABI))
+    return FFI_BAD_ABI;
+  if (struct_type->type != FFI_TYPE_STRUCT)
+    return FFI_BAD_TYPEDEF;
+
+#if HAVE_LONG_DOUBLE_VARIANT
+  ffi_prep_types (abi);
+#endif
+
+  return initialize_aggregate(struct_type, offsets);
+}

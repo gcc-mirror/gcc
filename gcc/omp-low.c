@@ -591,7 +591,15 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
   tree copy = copy_var_decl (var, name, type);
 
   DECL_CONTEXT (copy) = current_function_decl;
-  DECL_CHAIN (copy) = ctx->block_vars;
+
+  if (ctx)
+    {
+      DECL_CHAIN (copy) = ctx->block_vars;
+      ctx->block_vars = copy;
+    }
+  else
+    record_vars (copy);
+
   /* If VAR is listed in task_shared_vars, it means it wasn't
      originally addressable and is just because task needs to take
      it's address.  But we don't need to take address of privatizations
@@ -602,7 +610,6 @@ omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
 	  || (global_nonaddressable_vars
 	      && bitmap_bit_p (global_nonaddressable_vars, DECL_UID (var)))))
     TREE_ADDRESSABLE (copy) = 0;
-  ctx->block_vars = copy;
 
   return copy;
 }
@@ -1281,7 +1288,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		  tree at = t;
 		  if (ctx->outer)
 		    scan_omp_op (&at, ctx->outer);
-		  tree nt = omp_copy_decl_1 (at, ctx);
+		  tree nt = omp_copy_decl_1 (at, ctx->outer);
 		  splay_tree_insert (ctx->field_map,
 				     (splay_tree_key) &DECL_CONTEXT (t),
 				     (splay_tree_value) nt);
@@ -1322,7 +1329,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      tree at = decl;
 	      if (ctx->outer)
 		scan_omp_op (&at, ctx->outer);
-	      tree nt = omp_copy_decl_1 (at, ctx);
+	      tree nt = omp_copy_decl_1 (at, ctx->outer);
 	      splay_tree_insert (ctx->field_map,
 				 (splay_tree_key) &DECL_CONTEXT (decl),
 				 (splay_tree_value) nt);

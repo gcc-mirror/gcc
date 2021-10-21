@@ -1166,9 +1166,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
           s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
           s-vxwext.adb<libgnarl/s-vxwext__kernel.adb \
           system.ads<libgnat/$(SVX)-$(ARCH_STR)-kernel.ads
-        else
-          LIBGNAT_TARGET_PAIRS += \
-          system.ads<libgnat/system-vxworks-ppc.ads
         endif
       endif
       EXTRA_GNATRTL_NONTASKING_OBJS+=i-vxinco.o i-vxwork.o i-vxwoio.o
@@ -1315,9 +1312,6 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
           s-vxwext.ads<libgnarl/s-vxwext__kernel.ads \
           s-vxwext.adb<libgnarl/s-vxwext__kernel.adb \
           system.ads<libgnat/$(SVX)-x86-kernel.ads
-        else
-          LIBGNAT_TARGET_PAIRS += \
-          system.ads<libgnat/system-vxworks-x86.ads
         endif
       endif
 

@@ -34,8 +34,9 @@
 with System.Width_U;
 with System.Unsigned_Types;
 
-package System.Wid_LLU is
-
+package System.Wid_LLU
+  with SPARK_Mode
+is
    subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
 
    function Width_Long_Long_Unsigned is new Width_U (Long_Long_Unsigned);

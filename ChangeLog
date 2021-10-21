@@ -1,3 +1,7 @@
+2021-10-19  Clément Chigot  <clement.chigot@atos.net>
+
+	* MAINTAINERS: Add myself for write after approval.
+
 2021-10-12  Eric Gallager  <egallager@gcc.gnu.org>
 
 	* Makefile.def: Mark libcody, libdecnumber,

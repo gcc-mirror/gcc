@@ -87,7 +87,7 @@ void test_C_global_buf (void)
   p->b1.a[ 1].i = 0;     // { dg-warning "\\\[-Wzero-length-bounds" }
   sink (p);
 
-  p->b2.a[ 0].i = 0;
+  p->b2.a[ 0].i = 0;    // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2si_store &&  { ! vect_slp_v4si_store } } } }
   p->b2.a[ 1].i = 0;
   p->b2.a[ 2].i = 0;     // { dg-warning "\\\[-Warray-bounds" }
   p->b2.a[ 3].i = 0;     // { dg-warning "\\\[-Warray-bounds" }

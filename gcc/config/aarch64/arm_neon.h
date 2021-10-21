@@ -26359,35 +26359,35 @@ __extension__ extern __inline float32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndns_f32 (float32_t __a)
 {
-  return __builtin_aarch64_frintnsf (__a);
+  return __builtin_aarch64_roundevensf (__a);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f32 (float32x2_t __a)
 {
-  return __builtin_aarch64_frintnv2sf (__a);
+  return __builtin_aarch64_roundevenv2sf (__a);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f64 (float64x1_t __a)
 {
-  return (float64x1_t) {__builtin_aarch64_frintndf (__a[0])};
+  return (float64x1_t) {__builtin_aarch64_roundevendf (__a[0])};
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnq_f32 (float32x4_t __a)
 {
-  return __builtin_aarch64_frintnv4sf (__a);
+  return __builtin_aarch64_roundevenv4sf (__a);
 }
 
 __extension__ extern __inline float64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnq_f64 (float64x2_t __a)
 {
-  return __builtin_aarch64_frintnv2df (__a);
+  return __builtin_aarch64_roundevenv2df (__a);
 }
 
 /* vrndp  */
@@ -32792,14 +32792,14 @@ __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f16 (float16x4_t __a)
 {
-  return __builtin_aarch64_frintnv4hf (__a);
+  return __builtin_aarch64_roundevenv4hf (__a);
 }
 
 __extension__ extern __inline float16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnq_f16 (float16x8_t __a)
 {
-  return __builtin_aarch64_frintnv8hf (__a);
+  return __builtin_aarch64_roundevenv8hf (__a);
 }
 
 __extension__ extern __inline float16x4_t

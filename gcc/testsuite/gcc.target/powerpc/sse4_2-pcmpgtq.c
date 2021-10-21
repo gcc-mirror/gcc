@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mvsx" } */
-/* { dg-require-effective-target vsx_hw } */
+/* { dg-options "-O2 -mpower8-vector" } */
+/* { dg-require-effective-target p8vector_hw } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse4_2-check.h"

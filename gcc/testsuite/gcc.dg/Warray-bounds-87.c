@@ -33,7 +33,7 @@ static unsigned int h (int i, int j)
     case 9:
       return j;
     case 10:
-      return a[i];  // { dg-bogus "-Warray-bounds" "pr101671" { xfail *-*-* } }
+      return a[i];  // { dg-bogus "-Warray-bounds" "pr101671" }
     }
   return 0;
 }

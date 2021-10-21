@@ -1197,6 +1197,12 @@ package body Gen_IL.Gen is
          for F in First .. Last loop
             if Field_Table (F).Field_Type in Node_Or_Entity_Type then
                Result (Node_Id) := True;
+
+            --  Subtypes of Uint all use the same Cast for Uint
+
+            elsif Field_Table (F).Field_Type in Uint_Subtype then
+               Result (Uint) := True;
+
             else
                Result (Field_Table (F).Field_Type) := True;
             end if;
@@ -1767,6 +1773,7 @@ package body Gen_IL.Gen is
          end if;
 
          Put_Get_Set_Incr (S, F, "Set");
+
          Decrease_Indent (S, 3);
          Put (S, "end Set_" & Image (F) & ";" & LF & LF);
       end Put_Setter_Body;

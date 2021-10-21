@@ -52,10 +52,7 @@ static_assert(!std::ranges::view<__gnu_test::test_random_access_range<int>>);
 template<typename T>
 struct test_view
 : __gnu_test::test_random_access_range<T>, std::ranges::view_base
-{
-  // views must be default-initializable:
-  test_view() : __gnu_test::test_random_access_range<T>(nullptr, nullptr) { }
-};
+{ };
 
 static_assert(std::ranges::view<test_view<int>>);
 
@@ -63,3 +60,26 @@ template<>
 constexpr bool std::ranges::enable_view<test_view<long>> = false;
 
 static_assert(!std::ranges::view<test_view<long>>);
+
+void
+test01()
+{
+  // Verify LWG 3549 changes to ranges::enable_view.
+  using std::ranges::view_interface;
+
+  struct v1
+    : __gnu_test::test_random_access_range<int>, view_interface<v1> { };
+  static_assert(!std::derived_from<v1, std::ranges::view_base>);
+  static_assert(std::ranges::enable_view<v1>);
+
+  struct v2 : v1, view_interface<v2> { };
+  static_assert(!std::derived_from<v2, std::ranges::view_base>);
+  static_assert(!std::ranges::enable_view<v2>);
+
+  struct v3 : __gnu_test::test_random_access_range<int> { };
+  static_assert(!std::derived_from<v3, std::ranges::view_base>);
+  static_assert(!std::ranges::enable_view<v3>);
+
+  struct v4 { };
+  static_assert(!std::ranges::enable_view<view_interface<v4>>);
+}

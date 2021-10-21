@@ -66,22 +66,62 @@ extern void abort (void);
 #define CLZ_INST(reg_len, data_len, is_signed) \
   CONCAT1 (vclz, POSTFIX (reg_len, data_len, is_signed))
 
-#define RUN_TEST(test_set, answ_set, reg_len, data_len, is_signed, n)	\
-  INHIB_OPTIMIZATION;							\
-  a = LOAD_INST (reg_len, data_len, is_signed) (test_set);		\
-  b = LOAD_INST (reg_len, data_len, is_signed) (answ_set);	        \
-  a = CLZ_INST (reg_len, data_len, is_signed) (a);			\
-  for (i = 0; i < n; i++)						\
-    if (a [i] != b [i])							\
-      return 1;
+#define BUILD_TEST(type, size, lanes)			    \
+int __attribute__((noipa,noinline))			    \
+run_test##type##size##x##lanes (int##size##_t* test_set,    \
+				int##size##_t* answ_set,    \
+				int reg_len, int data_len,  \
+				int n)			    \
+{							    \
+  int i;						    \
+  INHIB_OPTIMIZATION;					    \
+  int##size##x##lanes##_t a = vld1##type##size (test_set);  \
+  int##size##x##lanes##_t b = vld1##type##size (answ_set);  \
+  a = vclz##type##size (a);				    \
+  for (i = 0; i < n; i++){				    \
+    if (a [i] != b [i])					    \
+      return 1;						    \
+  }							    \
+  return 0;						    \
+}
+
+/* unsigned inputs  */
+#define U_BUILD_TEST(type, size, lanes)			    \
+int __attribute__((noipa,noinline))			    \
+run_test##type##size##x##lanes (uint##size##_t* test_set,   \
+				uint##size##_t* answ_set,   \
+				int reg_len, int data_len,  \
+				int n)	                    \
+{							    \
+  int i;						    \
+  INHIB_OPTIMIZATION;					    \
+  uint##size##x##lanes##_t a = vld1##type##size (test_set); \
+  uint##size##x##lanes##_t b = vld1##type##size (answ_set); \
+  a = vclz##type##size (a);				    \
+  for (i = 0; i < n; i++){				    \
+    if (a [i] != b [i])					    \
+      return 1;						    \
+  }							    \
+  return 0;						    \
+}
+
+BUILD_TEST (_s, 8, 8)
+BUILD_TEST (_s, 16, 4)
+BUILD_TEST (_s, 32, 2)
+BUILD_TEST (q_s, 8, 16)
+BUILD_TEST (q_s, 16, 8)
+BUILD_TEST (q_s, 32, 4)
+
+U_BUILD_TEST (_u, 8, 8)
+U_BUILD_TEST (_u, 16, 4)
+U_BUILD_TEST (_u, 32, 2)
+U_BUILD_TEST (q_u, 8, 16)
+U_BUILD_TEST (q_u, 16, 8)
+U_BUILD_TEST (q_u, 32, 4)
 
 int __attribute__ ((noinline))
 test_vclz_s8 ()
 {
-  int i;
-  int8x8_t a;
-  int8x8_t b;
-
   int8_t test_set0[8] = {
     TEST0, TEST1, TEST2, TEST3,
     TEST4, TEST5, TEST6, TEST7
@@ -98,22 +138,18 @@ test_vclz_s8 ()
     0, 0, 0, 0,
     0, 0, 0, 0
   };
-  RUN_TEST (test_set0, answ_set0, 64, 8, 1, 8);
-  RUN_TEST (test_set1, answ_set1, 64, 8, 1, 1);
+  int o1 = run_test_s8x8 (test_set0, answ_set0, 64, 8, 8);
+  int o2 = run_test_s8x8 (test_set1, answ_set1, 64, 8, 1);
 
-  return 0;
+  return o1||o2;
 }
 
 /* Double scan-assembler-times to take account of unsigned functions.  */
-/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.8b, v\[0-9\]+\.8b" 4 } } */
+/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.8b, v\[0-9\]+\.8b" 2 } } */
 
 int __attribute__ ((noinline))
 test_vclz_s16 ()
 {
-  int i;
-  int16x4_t a;
-  int16x4_t b;
-
   int16_t test_set0[4] = { TEST0, TEST1, TEST2, TEST3 };
   int16_t test_set1[4] = { TEST4, TEST5, TEST6, TEST7 };
   int16_t test_set2[4] = { TEST8, TEST9, TEST10, TEST11 };
@@ -126,25 +162,21 @@ test_vclz_s16 ()
   int16_t answ_set3[4] = { 4, 3, 2, 1 };
   int16_t answ_set4[4] = { 0, 0, 0, 0 };
 
-  RUN_TEST (test_set0, answ_set0, 64, 16, 1, 4);
-  RUN_TEST (test_set1, answ_set1, 64, 16, 1, 4);
-  RUN_TEST (test_set2, answ_set2, 64, 16, 1, 4);
-  RUN_TEST (test_set3, answ_set3, 64, 16, 1, 4);
-  RUN_TEST (test_set4, answ_set4, 64, 16, 1, 1);
+  int o1 = run_test_s16x4 (test_set0, answ_set0, 64, 16, 4);
+  int o2 = run_test_s16x4 (test_set1, answ_set1, 64, 16, 4);
+  int o3 = run_test_s16x4 (test_set2, answ_set2, 64, 16, 4);
+  int o4 = run_test_s16x4 (test_set3, answ_set3, 64, 16, 4);
+  int o5 = run_test_s16x4 (test_set4, answ_set4, 64, 16, 1);
 
-  return 0;
+  return o1||o2||o3||o4||o5;
 }
 
 /* Double scan-assembler-times to take account of unsigned functions.  */
-/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.4h, v\[0-9\]+\.4h" 10} } */
+/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.4h, v\[0-9\]+\.4h" 2} } */
 
 int __attribute__ ((noinline))
 test_vclz_s32 ()
 {
-  int i;
-  int32x2_t a;
-  int32x2_t b;
-
   int32_t test_set0[2] = { TEST0, TEST1 };
   int32_t test_set1[2] = { TEST2, TEST3 };
   int32_t test_set2[2] = { TEST4, TEST5 };
@@ -181,37 +213,34 @@ test_vclz_s32 ()
   int32_t answ_set15[2] = { 2, 1 };
   int32_t answ_set16[2] = { 0, 0 };
 
-  RUN_TEST (test_set0, answ_set0, 64, 32, 1, 2);
-  RUN_TEST (test_set1, answ_set1, 64, 32, 1, 2);
-  RUN_TEST (test_set2, answ_set2, 64, 32, 1, 2);
-  RUN_TEST (test_set3, answ_set3, 64, 32, 1, 2);
-  RUN_TEST (test_set4, answ_set4, 64, 32, 1, 2);
-  RUN_TEST (test_set5, answ_set5, 64, 32, 1, 2);
-  RUN_TEST (test_set6, answ_set6, 64, 32, 1, 2);
-  RUN_TEST (test_set7, answ_set7, 64, 32, 1, 2);
-  RUN_TEST (test_set8, answ_set8, 64, 32, 1, 2);
-  RUN_TEST (test_set9, answ_set9, 64, 32, 1, 2);
-  RUN_TEST (test_set10, answ_set10, 64, 32, 1, 2);
-  RUN_TEST (test_set11, answ_set11, 64, 32, 1, 2);
-  RUN_TEST (test_set12, answ_set12, 64, 32, 1, 2);
-  RUN_TEST (test_set13, answ_set13, 64, 32, 1, 2);
-  RUN_TEST (test_set14, answ_set14, 64, 32, 1, 2);
-  RUN_TEST (test_set15, answ_set15, 64, 32, 1, 2);
-  RUN_TEST (test_set16, answ_set16, 64, 32, 1, 1);
+  int o1 = run_test_s32x2 (test_set0, answ_set0, 64, 32, 2);
+  int o2 = run_test_s32x2 (test_set1, answ_set1, 64, 32, 2);
+  int o3 = run_test_s32x2 (test_set2, answ_set2, 64, 32, 2);
+  int o4 = run_test_s32x2 (test_set3, answ_set3, 64, 32, 2);
+  int o5 = run_test_s32x2 (test_set4, answ_set4, 64, 32, 2);
+  int o6 = run_test_s32x2 (test_set5, answ_set5, 64, 32, 2);
+  int o7 = run_test_s32x2 (test_set6, answ_set6, 64, 32, 2);
+  int o8 = run_test_s32x2 (test_set7, answ_set7, 64, 32, 2);
+  int o9 = run_test_s32x2 (test_set8, answ_set8, 64, 32, 2);
+  int o10 = run_test_s32x2 (test_set9, answ_set9, 64, 32, 2);
+  int o11 = run_test_s32x2 (test_set10, answ_set10, 64, 32, 2);
+  int o12 = run_test_s32x2 (test_set11, answ_set11, 64, 32, 2);
+  int o13 = run_test_s32x2 (test_set12, answ_set12, 64, 32, 2);
+  int o14 = run_test_s32x2 (test_set13, answ_set13, 64, 32, 2);
+  int o15 = run_test_s32x2 (test_set14, answ_set14, 64, 32, 2);
+  int o16 = run_test_s32x2 (test_set15, answ_set15, 64, 32, 2);
+  int o17 = run_test_s32x2 (test_set16, answ_set16, 64, 32, 1);
 
-  return 0;
+  return o1||o2||o3||o4||o5||o6||o7||o8||o9||o10||o11||o12||o13||o14
+    ||o15||o16||o17;
 }
 
 /* Double scan-assembler-times to take account of unsigned functions.  */
-/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s" 34 } } */
+/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s"  2 } } */
 
 int __attribute__ ((noinline))
 test_vclzq_s8 ()
 {
-  int i;
-  int8x16_t a;
-  int8x16_t b;
-
   int8_t test_set0[16] = {
     TEST0, TEST1, TEST2, TEST3, TEST4, TEST5, TEST6, TEST7,
     TEST8, TEST8, TEST8, TEST8, TEST8, TEST8, TEST8, TEST8
@@ -219,8 +248,8 @@ test_vclzq_s8 ()
   int8_t answ_set0[16] = {
     8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0
   };
-  RUN_TEST (test_set0, answ_set0, 128, 8, 1, 9);
-  return 0;
+  int o1 = run_testq_s8x16 (test_set0, answ_set0, 128, 8, 9);
+  return o1;
 }
 
 /* Double scan-assembler-times to take account of unsigned functions.  */
@@ -229,10 +258,6 @@ test_vclzq_s8 ()
 int __attribute__ ((noinline))
 test_vclzq_s16 ()
 {
-  int i;
-  int16x8_t a;
-  int16x8_t b;
-
   int16_t test_set0[8] = {
     TEST0, TEST1, TEST2, TEST3, TEST4, TEST5, TEST6, TEST7
   };
@@ -252,23 +277,19 @@ test_vclzq_s16 ()
   int16_t answ_set2[8] = {
     0, 0, 0, 0, 0, 0, 0, 0
   };
-  RUN_TEST (test_set0, answ_set0, 128, 16, 1, 8);
-  RUN_TEST (test_set1, answ_set1, 128, 16, 1, 8);
-  RUN_TEST (test_set2, answ_set2, 128, 16, 1, 1);
+  int o1 = run_testq_s16x8 (test_set0, answ_set0, 128, 16, 8);
+  int o2 = run_testq_s16x8 (test_set1, answ_set1, 128, 16, 8);
+  int o3 = run_testq_s16x8 (test_set2, answ_set2, 128, 16, 1);
 
-  return 0;
+  return o1||o2||o3;
 }
 
 /* Double scan-assembler-times to take account of unsigned functions.  */
-/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h" 6 } } */
+/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h" 2 } } */
 
 int __attribute__ ((noinline))
 test_vclzq_s32 ()
 {
-  int i;
-  int32x4_t a;
-  int32x4_t b;
-
   int32_t test_set0[4] = { TEST0, TEST1, TEST2, TEST3 };
   int32_t test_set1[4] = { TEST4, TEST5, TEST6, TEST7 };
   int32_t test_set2[4] = { TEST8, TEST9, TEST10, TEST11 };
@@ -289,27 +310,23 @@ test_vclzq_s32 ()
   int32_t answ_set7[4] = { 4, 3, 2, 1 };
   int32_t answ_set8[4] = { 0, 0, 0, 0 };
 
-  RUN_TEST (test_set0, answ_set0, 128, 32, 1, 4);
-  RUN_TEST (test_set1, answ_set1, 128, 32, 1, 4);
-  RUN_TEST (test_set2, answ_set2, 128, 32, 1, 4);
-  RUN_TEST (test_set3, answ_set3, 128, 32, 1, 4);
-  RUN_TEST (test_set4, answ_set4, 128, 32, 1, 1);
+  int o1 = run_testq_s32x4 (test_set0, answ_set0, 128, 32, 4);
+  int o2 = run_testq_s32x4 (test_set1, answ_set1, 128, 32, 4);
+  int o3 = run_testq_s32x4 (test_set2, answ_set2, 128, 32, 4);
+  int o4 = run_testq_s32x4 (test_set3, answ_set3, 128, 32, 4);
+  int o5 = run_testq_s32x4 (test_set4, answ_set4, 128, 32, 1);
 
-  return 0;
+  return o1||o2||o3||o4||o5;
 }
 
 /* Double scan-assembler-times to take account of unsigned functions.  */
-/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s" 10 } } */
+/* { dg-final { scan-assembler-times "clz\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s" 2 } } */
 
 /* Unsigned versions.  */
 
 int __attribute__ ((noinline))
 test_vclz_u8 ()
 {
-  int i;
-  uint8x8_t a;
-  uint8x8_t b;
-
   uint8_t test_set0[8] = {
     TEST0, TEST1, TEST2, TEST3, TEST4, TEST5, TEST6, TEST7
   };
@@ -323,10 +340,10 @@ test_vclz_u8 ()
     0, 0, 0, 0, 0, 0, 0, 0
   };
 
-  RUN_TEST (test_set0, answ_set0, 64, 8, 0, 8);
-  RUN_TEST (test_set1, answ_set1, 64, 8, 0, 1);
+  int o1 = run_test_u8x8 (test_set0, answ_set0, 64, 8, 8);
+  int o2 = run_test_u8x8 (test_set1, answ_set1, 64, 8, 1);
 
-  return 0;
+  return o1||o2;
 }
 
 /* ASM scan near test for signed version.  */
@@ -334,10 +351,6 @@ test_vclz_u8 ()
 int __attribute__ ((noinline))
 test_vclz_u16 ()
 {
-  int i;
-  uint16x4_t a;
-  uint16x4_t b;
-
   uint16_t test_set0[4] = { TEST0, TEST1, TEST2, TEST3 };
   uint16_t test_set1[4] = { TEST4, TEST5, TEST6, TEST7 };
   uint16_t test_set2[4] = { TEST8, TEST9, TEST10, TEST11 };
@@ -350,13 +363,13 @@ test_vclz_u16 ()
   uint16_t answ_set3[4] = { 4, 3, 2, 1 };
   uint16_t answ_set4[4] = { 0, 0, 0, 0 };
 
-  RUN_TEST (test_set0, answ_set0, 64, 16, 0, 4);
-  RUN_TEST (test_set1, answ_set1, 64, 16, 0, 4);
-  RUN_TEST (test_set2, answ_set2, 64, 16, 0, 4);
-  RUN_TEST (test_set3, answ_set3, 64, 16, 0, 4);
-  RUN_TEST (test_set4, answ_set4, 64, 16, 0, 1);
+  int o1 = run_test_u16x4 (test_set0, answ_set0, 64, 16, 4);
+  int o2 = run_test_u16x4 (test_set1, answ_set1, 64, 16, 4);
+  int o3 = run_test_u16x4 (test_set2, answ_set2, 64, 16, 4);
+  int o4 = run_test_u16x4 (test_set3, answ_set3, 64, 16, 4);
+  int o5 = run_test_u16x4 (test_set4, answ_set4, 64, 16, 1);
 
-  return 0;
+  return o1||o2||o3||o4||o5;
 }
 
 /* ASM scan near test for signed version.  */
@@ -364,10 +377,6 @@ test_vclz_u16 ()
 int __attribute__ ((noinline))
 test_vclz_u32 ()
 {
-  int i;
-  uint32x2_t a;
-  uint32x2_t b;
-
   uint32_t test_set0[2] = { TEST0, TEST1 };
   uint32_t test_set1[2] = { TEST2, TEST3 };
   uint32_t test_set2[2] = { TEST4, TEST5 };
@@ -404,25 +413,26 @@ test_vclz_u32 ()
   uint32_t answ_set15[2] = { 2, 1 };
   uint32_t answ_set16[2] = { 0, 0 };
 
-  RUN_TEST (test_set0, answ_set0, 64, 32, 0, 2);
-  RUN_TEST (test_set1, answ_set1, 64, 32, 0, 2);
-  RUN_TEST (test_set2, answ_set2, 64, 32, 0, 2);
-  RUN_TEST (test_set3, answ_set3, 64, 32, 0, 2);
-  RUN_TEST (test_set4, answ_set4, 64, 32, 0, 2);
-  RUN_TEST (test_set5, answ_set5, 64, 32, 0, 2);
-  RUN_TEST (test_set6, answ_set6, 64, 32, 0, 2);
-  RUN_TEST (test_set7, answ_set7, 64, 32, 0, 2);
-  RUN_TEST (test_set8, answ_set8, 64, 32, 0, 2);
-  RUN_TEST (test_set9, answ_set9, 64, 32, 0, 2);
-  RUN_TEST (test_set10, answ_set10, 64, 32, 0, 2);
-  RUN_TEST (test_set11, answ_set11, 64, 32, 0, 2);
-  RUN_TEST (test_set12, answ_set12, 64, 32, 0, 2);
-  RUN_TEST (test_set13, answ_set13, 64, 32, 0, 2);
-  RUN_TEST (test_set14, answ_set14, 64, 32, 0, 2);
-  RUN_TEST (test_set15, answ_set15, 64, 32, 0, 2);
-  RUN_TEST (test_set16, answ_set16, 64, 32, 0, 1);
+  int o1 = run_test_u32x2 (test_set0, answ_set0, 64, 32, 2);
+  int o2 = run_test_u32x2 (test_set1, answ_set1, 64, 32, 2);
+  int o3 = run_test_u32x2 (test_set2, answ_set2, 64, 32, 2);
+  int o4 = run_test_u32x2 (test_set3, answ_set3, 64, 32, 2);
+  int o5 = run_test_u32x2 (test_set4, answ_set4, 64, 32, 2);
+  int o6 = run_test_u32x2 (test_set5, answ_set5, 64, 32, 2);
+  int o7 = run_test_u32x2 (test_set6, answ_set6, 64, 32, 2);
+  int o8 = run_test_u32x2 (test_set7, answ_set7, 64, 32, 2);
+  int o9 = run_test_u32x2 (test_set8, answ_set8, 64, 32, 2);
+  int o10 = run_test_u32x2 (test_set9, answ_set9, 64, 32, 2);
+  int o11 = run_test_u32x2 (test_set10, answ_set10, 64, 32, 2);
+  int o12 = run_test_u32x2 (test_set11, answ_set11, 64, 32, 2);
+  int o13 = run_test_u32x2 (test_set12, answ_set12, 64, 32, 2);
+  int o14 = run_test_u32x2 (test_set13, answ_set13, 64, 32, 2);
+  int o15 = run_test_u32x2 (test_set14, answ_set14, 64, 32, 2);
+  int o16 = run_test_u32x2 (test_set15, answ_set15, 64, 32, 2);
+  int o17 = run_test_u32x2 (test_set16, answ_set16, 64, 32, 1);
 
-  return 0;
+  return o1||o2||o3||o4||o5||o6||o7||o8||o9||o10||o11||o12||o13||o14
+        ||o15||o16||o17;
 }
 
 /* ASM scan near test for signed version.  */
@@ -441,9 +451,9 @@ test_vclzq_u8 ()
   uint8_t answ_set0[16] = {
     8, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0
   };
-  RUN_TEST (test_set0, answ_set0, 128, 8, 0, 9);
+  int o1 = run_testq_u8x16 (test_set0, answ_set0, 128, 8, 9);
 
-  return 0;
+  return o1;
 }
 
 /* ASM scan near test for signed version.  */
@@ -476,11 +486,11 @@ test_vclzq_u16 ()
     0, 0, 0, 0, 0, 0, 0, 0
   };
 
-  RUN_TEST (test_set0, answ_set0, 128, 16, 0, 8);
-  RUN_TEST (test_set1, answ_set1, 128, 16, 0, 8);
-  RUN_TEST (test_set2, answ_set2, 128, 16, 0, 1);
+  int o1 = run_testq_u16x8 (test_set0, answ_set0, 128, 16, 8);
+  int o2 = run_testq_u16x8 (test_set1, answ_set1, 128, 16, 8);
+  int o3 = run_testq_u16x8 (test_set2, answ_set2, 128, 16, 1);
 
-  return 0;
+  return o1||o2||o3;
 }
 
 /* ASM scan near test for signed version.  */
@@ -488,10 +498,6 @@ test_vclzq_u16 ()
 int __attribute__ ((noinline))
 test_vclzq_u32 ()
 {
-  int i;
-  uint32x4_t a;
-  uint32x4_t b;
-
   uint32_t test_set0[4] = { TEST0, TEST1, TEST2, TEST3 };
   uint32_t test_set1[4] = { TEST4, TEST5, TEST6, TEST7 };
   uint32_t test_set2[4] = { TEST8, TEST9, TEST10, TEST11 };
@@ -512,13 +518,13 @@ test_vclzq_u32 ()
   uint32_t answ_set7[4] = { 4, 3, 2, 1 };
   uint32_t answ_set8[4] = { 0, 0, 0, 0 };
 
-  RUN_TEST (test_set0, answ_set0, 128, 32, 0, 4);
-  RUN_TEST (test_set1, answ_set1, 128, 32, 0, 4);
-  RUN_TEST (test_set2, answ_set2, 128, 32, 0, 4);
-  RUN_TEST (test_set3, answ_set3, 128, 32, 0, 4);
-  RUN_TEST (test_set4, answ_set4, 128, 32, 0, 1);
+  int o1 = run_testq_u32x4 (test_set0, answ_set0, 128, 32, 4);
+  int o2 = run_testq_u32x4 (test_set1, answ_set1, 128, 32, 4);
+  int o3 = run_testq_u32x4 (test_set2, answ_set2, 128, 32, 4);
+  int o4 = run_testq_u32x4 (test_set3, answ_set3, 128, 32, 4);
+  int o5 = run_testq_u32x4 (test_set4, answ_set4, 128, 32, 1);
 
-  return 0;
+  return o1||o2||o3||o4||o5;
 }
 
 /* ASM scan near test for signed version.  */

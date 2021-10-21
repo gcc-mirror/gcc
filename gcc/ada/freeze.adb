@@ -865,9 +865,12 @@ package body Freeze is
                Error_Msg_NE (Size_Too_Small_Message, Size_Clause (T), T);
             end if;
 
-         --  Set size if not set already
+         --  Set size if not set already. Do not set it to Uint_0, because in
+         --  some cases (notably array-of-record), the Component_Size is
+         --  No_Uint, which causes S to be Uint_0. Presumably the RM_Size and
+         --  Component_Size will eventually be set correctly by the back end.
 
-         elsif not Known_RM_Size (T) then
+         elsif not Known_RM_Size (T) and then S /= Uint_0 then
             Set_RM_Size (T, S);
          end if;
       end Set_Small_Size;
@@ -899,8 +902,17 @@ package body Freeze is
             --  String literals always have known size, and we can set it
 
             if Ekind (T) = E_String_Literal_Subtype then
-               Set_Small_Size
-                 (T, Component_Size (T) * String_Literal_Length (T));
+               if Known_Component_Size (T) then
+                  Set_Small_Size
+                    (T, Component_Size (T) * String_Literal_Length (T));
+
+               else
+                  --  The following is wrong, but does what previous versions
+                  --  did. The Component_Size is unknown for the string in a
+                  --  pragma Warnings.
+                  Set_Small_Size (T, Uint_0);
+               end if;
+
                return True;
 
             --  Unconstrained types never have known at compile time size
@@ -932,6 +944,12 @@ package body Freeze is
                Dim   : Uint;
 
             begin
+               --  See comment in Set_Small_Size above
+
+               if No (Size) then
+                  Size := Uint_0;
+               end if;
+
                Index := First_Index (T);
                while Present (Index) loop
                   if Nkind (Index) = N_Range then
@@ -954,7 +972,7 @@ package body Freeze is
                   else
                      Dim := Expr_Value (High) - Expr_Value (Low) + 1;
 
-                     if Dim >= 0 then
+                     if Dim > Uint_0 then
                         Size := Size * Dim;
                      else
                         Size := Uint_0;
@@ -3703,6 +3721,7 @@ package body Freeze is
                      if Has_Pragma_Pack (Arr)
                        and then not Present (Comp_Size_C)
                        and then (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
+                       and then Known_Esize (Base_Type (Ctyp))
                        and then Esize (Base_Type (Ctyp)) = Csiz + 1
                      then
                         Error_Msg_Uint_1 := Csiz;
@@ -6646,7 +6665,7 @@ package body Freeze is
 
                         Dim := Expr_Value (Hi) - Expr_Value (Lo) + 1;
 
-                        if Dim >= 0 then
+                        if Dim > Uint_0 then
                            Num_Elmts := Num_Elmts * Dim;
                         else
                            Num_Elmts := Uint_0;
@@ -6668,9 +6687,12 @@ package body Freeze is
                         if Implicit_Packing then
                            Set_Component_Size (Btyp, Rsiz);
 
-                        --  Otherwise give an error message
+                        --  Otherwise give an error message, except that if the
+                        --  specified Size is zero, there is no need for pragma
+                        --  Pack. Note that size zero is not considered
+                        --  Addressable.
 
-                        else
+                        elsif RM_Size (E) /= Uint_0 then
                            Error_Msg_NE
                              ("size given for& too small", SZ, E);
                            Error_Msg_N -- CODEFIX
