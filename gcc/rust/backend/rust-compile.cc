@@ -322,12 +322,21 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       return;
     }
 
-  // lookup compiled functions
+  // address of compiled function
+  Bexpression *fn_expr = ctx->get_backend ()->error_expression ();
+
+  // lookup compiled functions since it may have already been compiled
   Bfunction *fn = nullptr;
-  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
+  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
     {
-      // this might fail because its a forward decl so we can attempt to
-      // resolve it now
+      fn_expr
+	= ctx->get_backend ()->function_code_expression (fn, expr.get_locus ());
+    }
+  else
+    {
+      // Now we can try and resolve the address since this might be a forward
+      // declared function, generic function which has not be compiled yet or
+      // its an not yet trait bound function
       HIR::ImplItem *resolved_item = ctx->get_mappings ()->lookup_hir_implitem (
 	expr.get_mappings ().get_crate_num (), ref, nullptr);
       if (resolved_item == nullptr)
@@ -380,16 +389,9 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 		  return;
 		}
 
-	      CompileTraitItem::Compile (self_type,
-					 trait_item_ref->get_hir_trait_item (),
-					 ctx, fntype);
-	      if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
-		{
-		  translated = ctx->get_backend ()->error_expression ();
-		  rust_error_at (expr.get_locus (),
-				 "forward declaration was not compiled");
-		  return;
-		}
+	      fn_expr = CompileTraitItem::Compile (
+		self_type, trait_item_ref->get_hir_trait_item (), ctx, fntype,
+		true, expr.get_locus ());
 	    }
 	  else
 	    {
@@ -418,20 +420,13 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 		}
 
 	      if (!fntype->has_subsititions_defined ())
-		CompileInherentImplItem::Compile (self_type, impl_item, ctx,
-						  true);
+		fn_expr
+		  = CompileInherentImplItem::Compile (self_type, impl_item, ctx,
+						      true);
 	      else
-		CompileInherentImplItem::Compile (self_type, impl_item, ctx,
-						  true, fntype);
-
-	      if (!ctx->lookup_function_decl (
-		    impl_item->get_impl_mappings ().get_hirid (), &fn))
-		{
-		  translated = ctx->get_backend ()->error_expression ();
-		  rust_error_at (expr.get_locus (),
-				 "forward declaration was not compiled");
-		  return;
-		}
+		fn_expr
+		  = CompileInherentImplItem::Compile (self_type, impl_item, ctx,
+						      true, fntype);
 	    }
 	}
       else
@@ -446,24 +441,15 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	    }
 
 	  if (!fntype->has_subsititions_defined ())
-	    CompileInherentImplItem::Compile (self_type, resolved_item, ctx,
-					      true);
+	    fn_expr
+	      = CompileInherentImplItem::Compile (self_type, resolved_item, ctx,
+						  true);
 	  else
-	    CompileInherentImplItem::Compile (self_type, resolved_item, ctx,
-					      true, fntype);
-
-	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
-	    {
-	      translated = ctx->get_backend ()->error_expression ();
-	      rust_error_at (expr.get_locus (),
-			     "forward declaration was not compiled");
-	      return;
-	    }
+	    fn_expr
+	      = CompileInherentImplItem::Compile (self_type, resolved_item, ctx,
+						  true, fntype);
 	}
     }
-
-  Bexpression *fn_expr
-    = ctx->get_backend ()->function_code_expression (fn, expr.get_locus ());
 
   std::vector<Bexpression *> args;
 
