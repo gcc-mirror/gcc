@@ -19,7 +19,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-(define_insn "crypto_<crypto_pattern>"
+(define_insn "crypto_<CRYPTO_AESMC:crypto_pattern>"
   [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
 	(unspec:<crypto_mode>
 		[(match_operand:<crypto_mode> 1 "register_operand" "w")]
@@ -29,7 +29,7 @@
   [(set_attr "type" "<crypto_type>")]
 )
 
-(define_insn "crypto_<crypto_pattern>"
+(define_insn "crypto_<CRYPTO_AES:crypto_pattern>"
   [(set (match_operand:V16QI 0 "register_operand" "=w")
 	(unspec:V16QI
 		[(xor:V16QI
@@ -83,7 +83,7 @@
    (set_attr "length" "8")]
 )
 
-(define_insn "crypto_<crypto_pattern>"
+(define_insn "crypto_<CRYPTO_BINARY:crypto_pattern>"
   [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
 	(unspec:<crypto_mode>
 		[(match_operand:<crypto_mode> 1 "register_operand" "0")
@@ -94,7 +94,7 @@
   [(set_attr "type" "<crypto_type>")]
 )
 
-(define_insn "crypto_<crypto_pattern>"
+(define_insn "crypto_<CRYPTO_TERNARY:crypto_pattern>"
   [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
         (unspec:<crypto_mode> [(match_operand:<crypto_mode> 1 "register_operand" "0")
                       (match_operand:<crypto_mode> 2 "register_operand" "w")
@@ -145,7 +145,7 @@
    of the V4SI, adjusted for endianness. Required due to neon_vget_lane and
    neon_set_lane that change the element ordering in memory for big-endian.  */
 
-(define_expand "crypto_<crypto_pattern>"
+(define_expand "crypto_<CRYPTO_SELECTING:crypto_pattern>"
   [(set (match_operand:V4SI 0 "register_operand")
 	(unspec:<crypto_mode>
 		[(match_operand:<crypto_mode> 1 "register_operand")
@@ -160,7 +160,7 @@
   DONE;
 })
 
-(define_insn "crypto_<crypto_pattern>_lb"
+(define_insn "crypto_<CRYPTO_SELECTING:crypto_pattern>_lb"
   [(set (match_operand:V4SI 0 "register_operand" "=w")
         (unspec:<crypto_mode>
                      [(match_operand:<crypto_mode> 1 "register_operand" "0")
