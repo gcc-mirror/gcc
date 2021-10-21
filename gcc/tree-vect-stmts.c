@@ -1195,6 +1195,9 @@ vect_model_load_cost (vec_info *vinfo,
     {
       /* Invariant loads will ideally be hoisted and splat to a vector.  */
       prologue_cost += record_stmt_cost (cost_vec, 1,
+					 scalar_load, stmt_info, 0,
+					 vect_prologue);
+      prologue_cost += record_stmt_cost (cost_vec, 1,
 					 scalar_to_vec, stmt_info, 0,
 					 vect_prologue);
     }
