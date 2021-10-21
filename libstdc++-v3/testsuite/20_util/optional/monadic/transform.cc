@@ -132,9 +132,21 @@ test_copy_elision()
 
 static_assert( test_copy_elision() );
 
+void f(int&) { }
+
+void
+test_unconstrained()
+{
+  // PR libstc++/102863 - Optional monadic ops should not be constrained
+  std::optional<int> x;
+  auto answer = x.transform([](auto& y) { f(y); return 42; });
+  VERIFY( !answer );
+}
+
 int main()
 {
   test_transform();
   test_forwarding();
   test_copy_elision();
+  test_unconstrained();
 }
