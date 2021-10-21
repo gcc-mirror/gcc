@@ -1,6 +1,7 @@
 ! Test declare create with allocatable arrays.
 
 ! { dg-do run }
+! { dg-additional-options "-Wopenacc-parallelism" }
 
 module vars
   implicit none

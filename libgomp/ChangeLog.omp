@@ -1,3 +1,9 @@
+2021-10-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90: Compile
+	with -Wopenacc-parallelism.
+	* testsuite/libgomp.oacc-fortran/declare-allocatable-3.f90: Likewise.
+
 2021-08-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/bar.h (gomp_barrier_init): Limit thread count to the
