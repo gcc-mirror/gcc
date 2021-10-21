@@ -130,6 +130,20 @@ test05()
   static_assert(!requires { 0 | all; });
 }
 
+void
+test07()
+{
+  // LWG 3481
+  struct view_t : ranges::empty_view<int> { // move-only view
+    view_t(const view_t&) = delete;
+    view_t(view_t&&) = default;
+    view_t& operator=(const view_t&) = delete;
+    view_t& operator=(view_t&&) = default;
+  };
+  static_assert(std::movable<view_t> && !std::copyable<view_t>);
+  static_assert(!ranges::viewable_range<view_t&>);
+}
+
 int
 main()
 {
@@ -138,4 +152,5 @@ main()
   static_assert(test03());
   static_assert(test04());
   test05();
+  test07();
 }
