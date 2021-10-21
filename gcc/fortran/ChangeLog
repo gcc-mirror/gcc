@@ -1,3 +1,13 @@
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clause_reduction): Add 'openmp_target' default
+	false parameter. Add 'always,tofrom' map for OMP_LIST_IN_REDUCTION case.
+	(gfc_match_omp_clauses): Add 'openmp_target' default false parameter,
+	adjust call to gfc_match_omp_clause_reduction.
+	(match_omp): Adjust call to gfc_match_omp_clauses
+	* trans-openmp.c (gfc_trans_omp_taskgroup): Add call to
+	gfc_match_omp_clause, create and return block.
+
 2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-types.c (create_fn_spec): For allocatable/pointer

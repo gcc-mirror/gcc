@@ -1,3 +1,26 @@
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-in-reduction-1.f90: New test.
+	* testsuite/libgomp.fortran/target-in-reduction-2.f90: New test.
+
+2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* libgomp.h (struct gomp_work_share_1st_cacheline): New type.
+	(struct gomp_work_share): Only use aligned(64) attribute if
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined, otherwise just
+	add padding before lock to ensure lock is at offset 64 bytes
+	into the structure.
+	(gomp_workshare_struct_check1, gomp_workshare_struct_check2):
+	New poor man's static assertions.
+	* work.c (gomp_work_share_start): Use gomp_aligned_alloc instead of
+	gomp_malloc if GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.graphite/force-parallel-5.c: Remove xfail.
+
 2021-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linux/affinity.c (gomp_affinity_init_numa_domains): Add

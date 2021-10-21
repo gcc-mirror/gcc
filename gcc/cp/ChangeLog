@@ -1,3 +1,21 @@
+2021-10-20  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_parse_and_diagnose_invalid_type_name):
+	Pass true for declarator_p.
+	(cp_parser_nested_name_specifier_opt): Only look through
+	TYPENAME_TYPE if check_dependency_p is false.
+
+2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102642
+	* name-lookup.c (push_local_extern_decl_alias): Don't call
+	set_decl_tls_model on error_mark_node.
+	* decl.c (make_rtl_for_nonlocal_decl): Don't call
+	set_user_assembler_name on error_mark_node.
+	* parser.c (cp_parser_oacc_declare): Ignore DECL_LOCAL_DECL_ALIAS
+	if it is error_mark_node.
+	(cp_parser_omp_declare_target): Likewise.
+
 2021-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102786

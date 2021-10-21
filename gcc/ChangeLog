@@ -1,3 +1,201 @@
+2021-10-20  Alex Coplan  <alex.coplan@arm.com>
+
+	* calls.c (initialize_argument_information): Remove some dead
+	code, remove handling for function_arg returning const_int.
+	* doc/tm.texi: Delete documentation for unused target hooks.
+	* doc/tm.texi.in: Likewise.
+	* target.def (load_bounds_for_arg): Delete.
+	(store_bounds_for_arg): Delete.
+	(load_returned_bounds): Delete.
+	(store_returned_bounds): Delete.
+	* targhooks.c (default_load_bounds_for_arg): Delete.
+	(default_store_bounds_for_arg): Delete.
+	(default_load_returned_bounds): Delete.
+	(default_store_returned_bounds): Delete.
+	* targhooks.h (default_load_bounds_for_arg): Delete.
+	(default_store_bounds_for_arg): Delete.
+	(default_load_returned_bounds): Delete.
+	(default_store_returned_bounds): Delete.
+
+2021-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Basic Asm): Clarify that asm is not an
+	extension in C++.
+	* doc/invoke.texi (-fno-asm): Fix description for C++.
+
+2021-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/install.texi: Remove link to old.html
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_cmtst_same_<mode>): New.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_narrow_trunc<mode>): New.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_ashr<mode>): Add case cmp
+	case.
+	* config/aarch64/constraints.md (D1): New.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_<srn_op>topbits_shuffle<mode>_le): New.
+	(*aarch64_topbits_shuffle<mode>_le): New.
+	(*aarch64_<srn_op>topbits_shuffle<mode>_be): New.
+	(*aarch64_topbits_shuffle<mode>_be): New.
+	* config/aarch64/predicates.md
+	(aarch64_simd_shift_imm_vec_exact_top): New.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_<srn_op>shrn<mode>_vect,
+	*aarch64_<srn_op>shrn<mode>2_vect_le,
+	*aarch64_<srn_op>shrn<mode>2_vect_be): New.
+	* config/aarch64/iterators.md (srn_op): New.
+
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* omp-low.c (omp_copy_decl_2): For !ctx, use record_vars to add new copy
+	as local variable.
+	(scan_sharing_clauses): Place copy of OMP_CLAUSE_IN_REDUCTION decl in
+	ctx->outer instead of ctx.
+
+2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR target/102374
+	* config/i386/i386-options.c (ix86_valid_target_attribute_inner_p): Strip whitespaces.
+	* system.h (strip_whilespaces): New function.
+
+2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	PR target/102375
+	* config/aarch64/aarch64.c (aarch64_process_one_target_attr):
+	Strip whitespaces.
+
+2021-10-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_case_values_threshold):
+	Change to 8 with -Os, 11 otherwise.
+
+2021-10-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (neoversev1_tunings):
+	Enable AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND.
+	(neoversen2_tunings): Likewise.
+
+2021-10-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/100966
+	* config/aarch64/aarch64.md (frint_pattern): Update comment.
+	* config/aarch64/aarch64-simd-builtins.def: Change frintn to roundeven.
+	* config/aarch64/arm_fp16.h: Change frintn to roundeven.
+	* config/aarch64/arm_neon.h: Likewise.
+	* config/aarch64/iterators.md (frint_pattern): Use roundeven for FRINTN.
+
+2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	* config/arm/arm.c (arm_unwind_emit_sequence): Do not declare
+	already declared global variable.
+	(arm_unwind_emit_set): Use out_file as function argument.
+	(arm_unwind_emit): Likewise.
+	* config/darwin.c (machopic_output_data_section_indirection): Likewise.
+	(machopic_output_stub_indirection): Likewise.
+	(machopic_output_indirection): Likewise.
+	(machopic_finish): Likewise.
+	* config/i386/i386.c (ix86_asm_output_function_label): Likewise.
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): Likewise.
+	* config/ia64/ia64.c (process_epilogue): Likewise.
+	(process_cfa_adjust_cfa): Likewise.
+	(process_cfa_register): Likewise.
+	(process_cfa_offset): Likewise.
+	(ia64_asm_unwind_emit): Likewise.
+	* config/s390/s390.c (s390_asm_output_function_label): Likewise.
+
+2021-10-20  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_general_gimple_fold_builtin):
+	lower vld1 and vst1 variants of the neon builtins
+	* config/aarch64/aarch64-protos.h:
+	(aarch64_general_gimple_fold_builtin): Add gsi parameter.
+	* config/aarch64/aarch64.c (aarch64_general_gimple_fold_builtin):
+	Likwise.
+
+2021-10-20  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* match.pd: Generate IFN_TRUNC.
+
+2021-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102853
+	* tree-data-ref.c (split_constant_offset_1): Bail out
+	immediately if the expression traps on overflow.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::~back_threader): Remove.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (back_jt_path_registry::adjust_paths_after_duplication):
+	Remove superflous debugging message.
+	(back_jt_path_registry::duplicate_thread_path): Same.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader_registry::back_threader_registry):
+	Remove.
+	(back_threader_registry::register_path): Remove m_threaded_paths.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102814
+	* doc/invoke.texi: Document --param=max-fsm-thread-length.
+	* params.opt: Add --param=max-fsm-thread-length.
+	* tree-ssa-threadbackward.c
+	(back_threader_profitability::profitable_path_p): Fail on paths
+	longer than max-fsm-thread-length.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/102764
+	* cfgexpand.c (expand_gimple_basic_block): Disregard a final debug
+	statement to reset the current location for the outgoing edges.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-threadupdate.c (cancel_thread): Dump threading reason
+	on the same line as the threading cancellation.
+	(jt_path_registry::cancel_invalid_paths): Avoid rotating loops.
+	Avoid threading through loop headers where the path remains in the
+	loop.
+
+2021-10-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.c (unknown): Make into a function.  Adjust
+	all uses.
+	(unknown_object_size): Simplify implementation.
+
+2021-10-20  Hongtao Liu  <hongtao.liu@intel.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	vect_slp_v2qi_store, vect_slp_v4qi_store, vect_slp_v8qi_store,
+	vect_slp_v16qi_store, vect_slp_v2hi_store,
+	vect_slp_v4hi_store, vect_slp_v2si_store, vect_slp_v4si_store.
+
 2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Basic PowerPC Built-in Functions): Fix typo.

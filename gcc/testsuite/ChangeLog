@@ -1,3 +1,163 @@
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/mvn-cmeq0-1.c: New test.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/narrow_high_combine.c: Update case.
+	* gcc.target/aarch64/xtn-combine-1.c: New test.
+	* gcc.target/aarch64/xtn-combine-2.c: New test.
+	* gcc.target/aarch64/xtn-combine-3.c: New test.
+	* gcc.target/aarch64/xtn-combine-4.c: New test.
+	* gcc.target/aarch64/xtn-combine-5.c: New test.
+	* gcc.target/aarch64/xtn-combine-6.c: New test.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/shl-combine-2.c: New test.
+	* gcc.target/aarch64/shl-combine-3.c: New test.
+	* gcc.target/aarch64/shl-combine-4.c: New test.
+	* gcc.target/aarch64/shl-combine-5.c: New test.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/shrn-combine-10.c: New test.
+	* gcc.target/aarch64/shrn-combine-5.c: New test.
+	* gcc.target/aarch64/shrn-combine-6.c: New test.
+	* gcc.target/aarch64/shrn-combine-7.c: New test.
+	* gcc.target/aarch64/shrn-combine-8.c: New test.
+	* gcc.target/aarch64/shrn-combine-9.c: New test.
+
+2021-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/shrn-combine-1.c: New test.
+	* gcc.target/aarch64/shrn-combine-2.c: New test.
+	* gcc.target/aarch64/shrn-combine-3.c: New test.
+	* gcc.target/aarch64/shrn-combine-4.c: New test.
+
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gfortran.dg/gomp/reduction4.f90: Adjust omp target in_reduction' scan
+	pattern.
+
+2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	PR target/102374
+	* gcc.target/i386/pr102374.c: New test.
+
+2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-10-20  Martin Liska  <mliska@suse.cz>
+
+	PR target/102375
+	* gcc.target/aarch64/pr102375.c: New test.
+
+2021-10-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/100966
+	* gcc.target/aarch64/frint.x: Add roundeven tests.
+	* gcc.target/aarch64/frint_double.c: Likewise.
+	* gcc.target/aarch64/frint_float.c: Likewise.
+
+2021-10-20  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/fmla_intrinsic_1.c: prevent over optimization.
+	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/fmul_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mla_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/mul_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/simd/vmul_elem_1.c: Likewise.
+	* gcc.target/aarch64/vclz.c: Likewise.
+	* gcc.target/aarch64/vneg_s.c: Likewise.
+
+2021-10-20  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/merge_trunc1.c: New test.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr102764.c: New test.
+
+2021-10-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102815
+	* gfortran.dg/bind-c-contiguous-5.c (do_call, reset_var): Handle
+	big andian.
+
+2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102642
+	* g++.dg/tls/pr102642.C: New test.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/Warray-bounds-87.c: Remove xfail.
+	* gcc.dg/analyzer/pr94851-2.c: Remove xfail.
+	* gcc.dg/graphite/pr69728.c: Remove xfail.
+	* gcc.dg/graphite/scop-dsyr2k.c: Remove xfail.
+	* gcc.dg/graphite/scop-dsyrk.c: Remove xfail.
+	* gcc.dg/shrink-wrap-loop.c: Remove xfail.
+	* gcc.dg/loop-8.c: Adjust for new threading restrictions.
+	* gcc.dg/tree-ssa/ifc-20040816-1.c: Same.
+	* gcc.dg/tree-ssa/pr21559.c: Same.
+	* gcc.dg/tree-ssa/pr59597.c: Same.
+	* gcc.dg/tree-ssa/pr71437.c: Same.
+	* gcc.dg/tree-ssa/pr77445-2.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/vect/bb-slp-16.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-6.c: Remove.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: Remove.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2a.c: Remove.
+	* gcc.dg/tree-ssa/ssa-thread-invalid.c: New test.
+
+2021-10-20  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/plugin/gil-1.c: Add dg-require-effective-target marker.
+
+2021-10-20  Hongtao Liu  <hongtao.liu@intel.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR middle-end/102722
+	PR middle-end/102697
+	PR middle-end/102462
+	PR middle-end/102706
+	PR middle-end/102744
+	* c-c++-common/Wstringop-overflow-2.c: Adjust testcase with new
+	xfail/target selector.
+	* gcc.dg/Warray-bounds-51.c: Ditto.
+	* gcc.dg/Warray-parameter-3.c: Ditto.
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+	* gcc.dg/Wstringop-overflow-21.c: Ditto.
+	* gcc.dg/Wstringop-overflow-68.c: Ditto.
+	* gcc.dg/Wstringop-overflow-76.c: Ditto.
+	* gcc.dg/Warray-bounds-48.c: Ditto.
+	* gcc.dg/Wzero-length-array-bounds-2.c: Ditto.
+	* lib/target-supports.exp (check_vect_slp_aligned_store_usage):
+	New function.
+	(check_effective_target_vect_slp_v2qi_store): Ditto.
+	(check_effective_target_vect_slp_v4qi_store): Ditto.
+	(check_effective_target_vect_slp_v8qi_store): Ditto.
+	(check_effective_target_vect_slp_v16qi_store): Ditto.
+	(check_effective_target_vect_slp_v2hi_store): Ditto.
+	(check_effective_target_vect_slp_v4hi_store): Ditto.
+	(check_effective_target_vect_slp_v2si_store): Ditto.
+	(check_effective_target_vect_slp_v4si_store): Ditto.
+	* c-c++-common/Wstringop-overflow-2-novec.c: New test.
+	* gcc.dg/Warray-bounds-51-novec.c: New test.
+	* gcc.dg/Warray-bounds-48-novec.c: New test.
+	* gcc.dg/Warray-parameter-3-novec.c: New test.
+	* gcc.dg/Wstringop-overflow-14-novec.c: New test.
+	* gcc.dg/Wstringop-overflow-21-novec.c: New test.
+	* gcc.dg/Wstringop-overflow-76-novec.c: New test.
+	* gcc.dg/Wzero-length-array-bounds-2-novec.c: New test.
+
 2021-10-19  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc.target/powerpc/sse4_2-pcmpgtq.c: Tighten dg constraints

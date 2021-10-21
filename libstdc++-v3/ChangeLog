@@ -1,3 +1,8 @@
+2021-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/optional/monadic/transform.cc: Check that
+	an rvalue result is not materialized too soon.
+
 2021-10-19  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (iota_view::_Iterator::operator+): Adjust
