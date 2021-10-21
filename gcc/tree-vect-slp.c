@@ -975,7 +975,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			(gimple_call_internal_fn (call_stmt))))
 		   || gimple_call_tail_p (call_stmt)
 		   || gimple_call_noreturn_p (call_stmt)
-		   || !gimple_call_nothrow_p (call_stmt)
 		   || gimple_call_chain (call_stmt))
 	    {
 	      if (dump_enabled_p ())
