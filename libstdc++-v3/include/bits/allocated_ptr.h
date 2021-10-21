@@ -40,6 +40,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+/// @cond undocumented
 
   /// Non-standard RAII type for managing pointers obtained from allocators.
   template<typename _Alloc>
@@ -97,6 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return { __a, std::allocator_traits<_Alloc>::allocate(__a, 1) };
     }
 
+/// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
