@@ -887,7 +887,7 @@ EnumValue
 Enum(ranger_debug) String(trace) Value(RANGER_DEBUG_TRACE)
 
 EnumValue
-Enum(ranger_debug) String(cache) Value(RANGER_DEBUG_CACHE)
+Enum(ranger_debug) String(cache) Value(RANGER_DEBUG_TRACE_CACHE)
 
 EnumValue
 Enum(ranger_debug) String(gori) Value(RANGER_DEBUG_GORI)
