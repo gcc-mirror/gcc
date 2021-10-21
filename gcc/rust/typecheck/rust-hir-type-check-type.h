@@ -234,9 +234,27 @@ public:
 		  HIR::TraitBound *b
 		    = static_cast<HIR::TraitBound *> (bound.get ());
 
-		  TraitReference *trait = resolve_trait_path (b->get_path ());
+		  auto &type_path = b->get_path ();
+		  TraitReference *trait = resolve_trait_path (type_path);
 		  TyTy::TypeBoundPredicate predicate (
 		    trait->get_mappings ().get_defid (), b->get_locus ());
+
+		  auto &final_seg = type_path.get_final_segment ();
+		  if (final_seg->is_generic_segment ())
+		    {
+		      auto final_generic_seg
+			= static_cast<HIR::TypePathSegmentGeneric *> (
+			  final_seg.get ());
+		      if (final_generic_seg->has_generic_args ())
+			{
+			  HIR::GenericArgs &generic_args
+			    = final_generic_seg->get_generic_args ();
+
+			  // this is applying generic arguments to a trait
+			  // reference
+			  predicate.apply_generic_arguments (&generic_args);
+			}
+		    }
 
 		  specified_bounds.push_back (std::move (predicate));
 		}

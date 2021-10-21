@@ -130,28 +130,24 @@ public:
     if (!probe_bounds)
       return probe.candidates;
 
-    std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> probed_bounds
-      = TypeBoundsProbe::Probe (receiver);
+    if (!probe.is_reciever_generic ())
+      {
+	std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> probed_bounds
+	  = TypeBoundsProbe::Probe (receiver);
+	for (auto &candidate : probed_bounds)
+	  {
+	    const TraitReference *trait_ref = candidate.first;
+	    HIR::ImplBlock *impl = candidate.second;
+	    probe.process_associated_trait_for_candidates (
+	      trait_ref, impl, ignore_mandatory_trait_items);
+	  }
+      }
 
-    std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
-      specified_bounds;
     for (const TyTy::TypeBoundPredicate &predicate :
 	 receiver->get_specified_bounds ())
       {
-	const TraitReference *trait_item = predicate.get ();
-
-	// FIXME lookup impl_block for this trait impl for this receiver
-	specified_bounds.push_back ({trait_item, nullptr});
-      }
-
-    std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
-      union_type_bounds = probe.union_bounds (probed_bounds, specified_bounds);
-    for (auto &candidate : union_type_bounds)
-      {
-	const TraitReference *trait_ref = candidate.first;
-	HIR::ImplBlock *impl = candidate.second;
-	probe.process_associated_trait_for_candidates (
-	  trait_ref, impl, ignore_mandatory_trait_items);
+	probe.process_predicate_for_candidates (predicate,
+						ignore_mandatory_trait_items);
       }
 
     return probe.candidates;
@@ -317,6 +313,51 @@ protected:
     PathProbeCandidate candidate{candidate_type,
 				 trait_item_tyty,
 				 trait_ref->get_locus (),
+				 {trait_item_candidate}};
+    candidates.push_back (std::move (candidate));
+  }
+
+  void
+  process_predicate_for_candidates (const TyTy::TypeBoundPredicate &predicate,
+				    bool ignore_mandatory_trait_items)
+  {
+    const TraitReference *trait_ref = predicate.get ();
+
+    TyTy::TypeBoundPredicateItem item
+      = predicate.lookup_associated_item (search.as_string ());
+    if (item.is_error ())
+      return;
+
+    if (ignore_mandatory_trait_items && item.needs_implementation ())
+      return;
+
+    const TraitItemReference *trait_item_ref = item.get_raw_item ();
+    PathProbeCandidate::CandidateType candidate_type;
+    switch (trait_item_ref->get_trait_item_type ())
+      {
+      case TraitItemReference::TraitItemType::FN:
+	candidate_type = PathProbeCandidate::CandidateType::TRAIT_FUNC;
+	break;
+      case TraitItemReference::TraitItemType::CONST:
+	candidate_type = PathProbeCandidate::CandidateType::TRAIT_ITEM_CONST;
+	break;
+      case TraitItemReference::TraitItemType::TYPE:
+	candidate_type = PathProbeCandidate::CandidateType::TRAIT_TYPE_ALIAS;
+	break;
+
+      case TraitItemReference::TraitItemType::ERROR:
+      default:
+	gcc_unreachable ();
+	break;
+      }
+
+    TyTy::BaseType *trait_item_tyty = item.get_tyty_for_receiver (receiver);
+    PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
+								trait_item_ref,
+								nullptr};
+    PathProbeCandidate candidate{candidate_type,
+				 trait_item_tyty,
+				 trait_item_ref->get_locus (),
 				 {trait_item_candidate}};
     candidates.push_back (std::move (candidate));
   }

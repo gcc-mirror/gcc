@@ -146,11 +146,42 @@ public:
   }
 };
 
+class BaseType;
+class TypeBoundPredicate;
+class TypeBoundPredicateItem
+{
+public:
+  TypeBoundPredicateItem (const TypeBoundPredicate *parent,
+			  const Resolver::TraitItemReference *trait_item_ref)
+    : parent (parent), trait_item_ref (trait_item_ref)
+  {}
+
+  static TypeBoundPredicateItem error ()
+  {
+    return TypeBoundPredicateItem (nullptr, nullptr);
+  }
+
+  bool is_error () const
+  {
+    return parent == nullptr || trait_item_ref == nullptr;
+  }
+
+  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
+
+  const Resolver::TraitItemReference *get_raw_item () const;
+
+  bool needs_implementation () const;
+
+private:
+  const TypeBoundPredicate *parent;
+  const Resolver::TraitItemReference *trait_item_ref;
+};
+
 class TypeBoundPredicate
 {
 public:
   TypeBoundPredicate (DefId reference, Location locus)
-    : reference (reference), locus (locus)
+    : reference (reference), locus (locus), args (nullptr)
   {}
 
   std::string as_string () const;
@@ -165,9 +196,29 @@ public:
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
   bool is_object_safe (bool emit_error, Location locus) const;
 
+  void apply_generic_arguments (HIR::GenericArgs *generic_args);
+
+  bool contains_item (const std::string &search) const;
+
+  TypeBoundPredicateItem
+  lookup_associated_item (const std::string &search) const;
+
+  HIR::GenericArgs *get_generic_args () { return args; }
+
+  const HIR::GenericArgs *get_generic_args () const { return args; }
+
+  bool has_generic_args () const
+  {
+    if (args == nullptr)
+      return false;
+
+    return args->has_generic_args ();
+  }
+
 private:
   DefId reference;
   Location locus;
+  HIR::GenericArgs *args;
 };
 
 class TypeBoundsMappings
