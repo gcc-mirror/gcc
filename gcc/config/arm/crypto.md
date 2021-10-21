@@ -29,7 +29,28 @@
   [(set_attr "type" "<crypto_type>")]
 )
 
-(define_insn "crypto_<CRYPTO_AES:crypto_pattern>"
+(define_expand "crypto_<CRYPTO_AES:crypto_pattern>"
+  [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
+	(unspec:<crypto_mode>
+		[(xor:<crypto_mode>
+		     (match_operand:<crypto_mode> 1 "register_operand" "%0")
+		     (match_operand:<crypto_mode> 2 "register_operand" "w"))]
+	CRYPTO_AES))]
+  "TARGET_CRYPTO"
+{
+  if (fix_aes_erratum_1742098)
+    {
+      rtx op1_protect = gen_reg_rtx (V16QImode);
+      emit_insn (gen_aes_op_protect (op1_protect, operands[1]));
+      operands[1] = op1_protect;
+      rtx op2_protect = gen_reg_rtx (V16QImode);
+      emit_insn (gen_aes_op_protect (op2_protect, operands[2]));
+      operands[2] = op2_protect;
+    }
+  /* Fall through to default expansion.  */
+})
+
+(define_insn "*crypto_<CRYPTO_AES:crypto_pattern>_insn"
   [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
 	(unspec:<crypto_mode>
 	 [(xor:<crypto_mode>
@@ -39,6 +60,19 @@
   "TARGET_CRYPTO"
   "<crypto_pattern>.<crypto_size_sfx>\\t%q0, %q2"
   [(set_attr "type" "<crypto_type>")]
+)
+
+; Mitigate against AES erratum on Cortex-A57 and Cortex-A72 by performing
+; a 128-bit operation on an operand producer.  This can be eliminated only
+; if we know that the operand was produced by a full-width operation.
+; V16QImode matches <crypto_mode> for the AES instructions.
+(define_insn "aes_op_protect"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0")]
+	 UNSPEC_AES_PROTECT))]
+  "TARGET_CRYPTO && fix_aes_erratum_1742098"
+  "vmov\\t%q0, %q1"
+  [(set_attr "type" "neon_move_q")]
 )
 
 ;; When AESE/AESMC fusion is enabled we really want to keep the two together
