@@ -42,6 +42,7 @@
 #include <initializer_list>
 #include <iterator>
 #include <optional>
+#include <span>
 #include <tuple>
 #include <bits/ranges_util.h>
 #include <bits/refwrap.h>
@@ -2125,19 +2126,67 @@ namespace views::__adaptor
   {
     namespace __detail
     {
-      template<typename _Range, typename _Tp>
+      template<typename _Range>
+	inline constexpr bool __is_empty_view = false;
+
+      template<typename _Tp>
+	inline constexpr bool __is_empty_view<empty_view<_Tp>> = true;
+
+      template<typename _Range>
+	inline constexpr bool __is_basic_string_view = false;
+
+      template<typename _CharT, typename _Traits>
+	inline constexpr bool __is_basic_string_view<basic_string_view<_CharT, _Traits>>
+	  = true;
+
+      template<typename _Range>
+	inline constexpr bool __is_subrange = false;
+
+      template<typename _Iter, typename _Sent, subrange_kind _Kind>
+	inline constexpr bool __is_subrange<subrange<_Iter, _Sent, _Kind>> = true;
+
+      template<typename _Range>
+	inline constexpr bool __is_iota_view = false;
+
+      template<typename _Winc, typename _Bound>
+	inline constexpr bool __is_iota_view<iota_view<_Winc, _Bound>> = true;
+
+      template<typename _Range, typename _Dp>
 	concept __can_take_view
-	  = requires { take_view(std::declval<_Range>(), std::declval<_Tp>()); };
+	  = requires { take_view(std::declval<_Range>(), std::declval<_Dp>()); };
     } // namespace __detail
 
     struct _Take : __adaptor::_RangeAdaptor<_Take>
     {
-      template<viewable_range _Range, typename _Tp>
-	requires __detail::__can_take_view<_Range, _Tp>
+      template<viewable_range _Range, typename _Dp = range_difference_t<_Range>>
+	requires __detail::__can_take_view<_Range, _Dp>
 	constexpr auto
-	operator() [[nodiscard]] (_Range&& __r, _Tp&& __n) const
+	operator() [[nodiscard]] (_Range&& __r, type_identity_t<_Dp> __n) const
 	{
-	  return take_view(std::forward<_Range>(__r), std::forward<_Tp>(__n));
+	  using _Tp = remove_cvref_t<_Range>;
+	  if constexpr (__detail::__is_empty_view<_Tp>)
+	    return _Tp();
+	  else if constexpr (random_access_range<_Tp>
+			     && sized_range<_Tp>
+			     && (std::__detail::__is_span<_Tp>
+				 || __detail::__is_basic_string_view<_Tp>
+				 || __detail::__is_subrange<_Tp>
+				 || __detail::__is_iota_view<_Tp>))
+	    {
+	      __n = std::min<_Dp>(ranges::distance(__r), __n);
+	      auto __begin = ranges::begin(__r);
+	      auto __end = __begin + __n;
+	      if constexpr (std::__detail::__is_span<_Tp>)
+		return span<typename _Tp::element_type>(__begin, __end);
+	      else if constexpr (__detail::__is_basic_string_view<_Tp>)
+		return _Tp(__begin, __end);
+	      else if constexpr (__detail::__is_subrange<_Tp>)
+		return subrange<iterator_t<_Tp>>(__begin, __end);
+	      else
+		return iota_view(*__begin, *__end);
+	    }
+	  else
+	    return take_view(std::forward<_Range>(__r), __n);
 	}
 
       using _RangeAdaptor<_Take>::operator();
@@ -2372,19 +2421,49 @@ namespace views::__adaptor
   {
     namespace __detail
     {
-      template<typename _Range, typename _Tp>
+      template<typename _Range, typename _Dp>
 	concept __can_drop_view
-	  = requires { drop_view(std::declval<_Range>(), std::declval<_Tp>()); };
+	  = requires { drop_view(std::declval<_Range>(), std::declval<_Dp>()); };
     } // namespace __detail
 
     struct _Drop : __adaptor::_RangeAdaptor<_Drop>
     {
-      template<viewable_range _Range, typename _Tp>
-	requires __detail::__can_drop_view<_Range, _Tp>
+      template<viewable_range _Range, typename _Dp = range_difference_t<_Range>>
+	requires __detail::__can_drop_view<_Range, _Dp>
 	constexpr auto
-	operator() [[nodiscard]] (_Range&& __r, _Tp&& __n) const
+	operator() [[nodiscard]] (_Range&& __r, type_identity_t<_Dp> __n) const
 	{
-	  return drop_view(std::forward<_Range>(__r), std::forward<_Tp>(__n));
+	  using _Tp = remove_cvref_t<_Range>;
+	  if constexpr (__detail::__is_empty_view<_Tp>)
+	    return _Tp();
+	  else if constexpr (random_access_range<_Tp>
+			     && sized_range<_Tp>
+			     && (std::__detail::__is_span<_Tp>
+				 || __detail::__is_basic_string_view<_Tp>
+				 || __detail::__is_iota_view<_Tp>
+				 || __detail::__is_subrange<_Tp>))
+	    {
+	      __n = std::min<_Dp>(ranges::distance(__r), __n);
+	      auto __begin = ranges::begin(__r) + __n;
+	      auto __end = ranges::end(__r);
+	      if constexpr (std::__detail::__is_span<_Tp>)
+		return span<typename _Tp::element_type>(__begin, __end);
+	      else if constexpr (__detail::__is_subrange<_Tp>)
+		{
+		  if constexpr (_Tp::_S_store_size)
+		    {
+		      using ranges::__detail::__to_unsigned_like;
+		      auto __m = ranges::distance(__r) - __n;
+		      return _Tp(__begin, __end, __to_unsigned_like(__m));
+		    }
+		  else
+		    return _Tp(__begin, __end);
+		}
+	      else
+		return _Tp(__begin, __end);
+	    }
+	  else
+	    return drop_view(std::forward<_Range>(__r), __n);
 	}
 
       using _RangeAdaptor<_Drop>::operator();
@@ -3519,7 +3598,9 @@ namespace views::__adaptor
       constexpr auto
       operator() [[nodiscard]] (_Iter __i, iter_difference_t<_Iter> __n) const
       {
-	if constexpr (random_access_iterator<_Iter>)
+	if constexpr (contiguous_iterator<_Iter>)
+	  return span(std::__to_address(__i), __n);
+	else if constexpr (random_access_iterator<_Iter>)
 	  return subrange(__i, __i + __n);
 	else
 	  return subrange(counted_iterator(std::move(__i), __n),
