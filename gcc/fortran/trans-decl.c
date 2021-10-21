@@ -6668,7 +6668,7 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
   stmtblock_t block;
   gfc_init_block (&block);
   tree cfi = build_fold_indirect_ref_loc (input_location, cfi_desc);
-  tree rank, idx, etype, tmp, tmp2, size_var = NULL_TREE;
+  tree idx, etype, tmp, tmp2, size_var = NULL_TREE, rank = NULL_TREE;
   bool do_copy_inout = false;
 
   /* When allocatable + intent out, free the cfi descriptor.  */
