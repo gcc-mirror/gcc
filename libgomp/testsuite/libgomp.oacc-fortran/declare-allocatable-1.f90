@@ -1,6 +1,7 @@
 ! Test OpenACC 'declare create' with allocatable arrays.
 
 ! { dg-do run }
+! { dg-additional-options "-Wopenacc-parallelism" }
 
 !TODO-OpenACC-declare-allocate
 ! Not currently implementing correct '-DACC_MEM_SHARED=0' behavior:
