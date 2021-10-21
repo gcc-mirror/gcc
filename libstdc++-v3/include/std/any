@@ -72,8 +72,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief A type-safe container of any type.
    *
-   *  An @c any object's state is either empty or it stores a contained object
+   *  An `any` object's state is either empty or it stores a contained object
    *  of CopyConstructible type.
+   *
+   *  @since C++17
    */
   class any
   {
@@ -337,9 +339,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+    /// @cond undocumented
     template<typename _Tp>
       static constexpr bool __is_valid_cast()
       { return __or_<is_reference<_Tp>, is_copy_constructible<_Tp>>::value; }
+    /// @endcond
 
   private:
     enum _Op {
@@ -356,8 +360,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void (*_M_manager)(_Op, const any*, _Arg*);
     _Storage _M_storage;
 
+    /// @cond undocumented
     template<typename _Tp>
       friend void* __any_caster(const any* __any);
+    /// @endcond
 
     // Manage in-place contained object.
     template<typename _Tp>
