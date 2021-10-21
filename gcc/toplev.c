@@ -1227,9 +1227,6 @@ static void
 process_options (bool no_backend)
 {
   const char *language_string = lang_hooks.name;
-  /* Just in case lang_hooks.post_options ends up calling a debug_hook.
-     This can happen with incorrect pre-processed input. */
-  debug_hooks = &do_nothing_debug_hooks;
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
 
@@ -2338,6 +2335,9 @@ toplev::main (int argc, char **argv)
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     {
+      /* Just in case lang_hooks.post_options ends up calling a debug_hook.
+	 This can happen with incorrect pre-processed input. */
+      debug_hooks = &do_nothing_debug_hooks;
       /* Allow the front end to perform consistency checks and do further
 	 initialization based on the command line options.  This hook also
 	 sets the original filename if appropriate (e.g. foo.i -> foo.c)
