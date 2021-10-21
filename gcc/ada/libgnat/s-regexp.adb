@@ -210,7 +210,7 @@ package body System.Regexp is
          --  or the last occurrence of an opening curly brace, if Glob=True.
 
          procedure Raise_Exception_If_No_More_Chars (K : Integer := 0);
-         --  If no more characters are raised, call Raise_Exception
+         --  If S(J + 1 .. S'Last)'Length < K then call Raise_Exception
 
          --------------------------------------
          -- Raise_Exception_If_No_More_Chars --
@@ -430,6 +430,9 @@ package body System.Regexp is
                           ("'|' operator must be "
                            & "applied to a term in regular expression", J);
                      end if;
+
+                     --  A second term must follow
+                     Raise_Exception_If_No_More_Chars (K => 1);
 
                      Past_Elmt := False;
                      Past_Term := False;
