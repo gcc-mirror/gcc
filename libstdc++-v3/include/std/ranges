@@ -782,10 +782,27 @@ namespace views
       friend _Iterator;
     };
 
-  template<typename _Val, typename _CharT, typename _Traits>
-    basic_istream_view<_Val, _CharT, _Traits>
-    istream_view(basic_istream<_CharT, _Traits>& __s)
-    { return basic_istream_view<_Val, _CharT, _Traits>{__s}; }
+  template<typename _Val>
+    using istream_view = basic_istream_view<_Val, char>;
+
+  template<typename _Val>
+    using wistream_view = basic_istream_view<_Val, wchar_t>;
+
+namespace views
+{
+  template<typename _Tp>
+    struct _Istream
+    {
+      template<typename _CharT, typename _Traits>
+	[[nodiscard]]
+	constexpr auto
+	operator()(basic_istream<_CharT, _Traits>& __e) const
+	{ return basic_istream_view<_Tp, _CharT, _Traits>(__e); }
+    };
+
+  template<typename _Tp>
+    inline constexpr _Istream<_Tp> istream;
+}
 
   // C++20 24.7 [range.adaptors] Range adaptors
 
