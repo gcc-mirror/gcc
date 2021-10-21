@@ -2894,7 +2894,7 @@ package body Inline is
          if Present (Renamed_Object (F)) then
 
             --  If expander is active, it is an error to try to inline a
-            --  recursive program. In GNATprove mode, just indicate that the
+            --  recursive subprogram. In GNATprove mode, just indicate that the
             --  inlining will not happen, and mark the subprogram as not always
             --  inlined.
 
