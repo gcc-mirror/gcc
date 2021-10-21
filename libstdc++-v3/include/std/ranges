@@ -2523,7 +2523,8 @@ namespace views::__adaptor
 	    using _OuterCat = typename iterator_traits<_Outer_iter>::iterator_category;
 	    using _InnerCat = typename iterator_traits<_Inner_iter>::iterator_category;
 	    if constexpr (derived_from<_OuterCat, bidirectional_iterator_tag>
-			  && derived_from<_InnerCat, bidirectional_iterator_tag>)
+			  && derived_from<_InnerCat, bidirectional_iterator_tag>
+			  && common_range<range_reference_t<_Base<_Const>>>)
 	      return bidirectional_iterator_tag{};
 	    else if constexpr (derived_from<_OuterCat, forward_iterator_tag>
 			       && derived_from<_InnerCat, forward_iterator_tag>)
@@ -2575,7 +2576,8 @@ namespace views::__adaptor
 	  {
 	    if constexpr (_S_ref_is_glvalue
 			  && bidirectional_range<_Base>
-			  && bidirectional_range<range_reference_t<_Base>>)
+			  && bidirectional_range<range_reference_t<_Base>>
+			  && common_range<range_reference_t<_Base>>)
 	      return bidirectional_iterator_tag{};
 	    else if constexpr (_S_ref_is_glvalue
 			       && forward_range<_Base>
