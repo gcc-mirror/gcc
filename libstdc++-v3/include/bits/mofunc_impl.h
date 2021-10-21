@@ -44,6 +44,22 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   *  @brief Polymorphic function wrapper.
+   *  @ingroup functors
+   *  @since C++23
+   *  @headername functional
+   *
+   *  The `std::move_only_function` class template is a call wrapper similar
+   *  to *  `std::function`, but does not require the stored target function
+   *  to be copyable.
+   *
+   *  It also supports const-qualification, ref-qualification, and
+   *  no-throw guarantees. The qualifications and exception-specification
+   *  of the `move_only_function::operator()` member function are respected
+   *  when invoking the target function.
+   *
+   */
   template<typename _Res, typename... _ArgTypes, bool _Noex>
     class move_only_function<_Res(_ArgTypes...) _GLIBCXX_MOF_CV
 			       _GLIBCXX_MOF_REF noexcept(_Noex)>
@@ -64,15 +80,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using result_type = _Res;
 
+      /// Creates an empty object.
       move_only_function() noexcept { }
 
+      /// Creates an empty object.
       move_only_function(nullptr_t) noexcept { }
 
+      /// Moves the target object, leaving the source empty.
       move_only_function(move_only_function&& __x) noexcept
       : _Mofunc_base(static_cast<_Mofunc_base&&>(__x)),
 	_M_invoke(std::__exchange(__x._M_invoke, nullptr))
       { }
 
+      /// Stores a target object initialized from the argument.
       template<typename _Fn, typename _Vt = decay_t<_Fn>>
 	requires (!is_same_v<_Vt, move_only_function>)
 	  && (!__is_in_place_type_v<_Vt>) && __is_callable_from<_Vt>
@@ -89,6 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_invoke = &_S_invoke<_Vt>;
 	}
 
+      /// Stores a target object initialized from the arguments.
       template<typename _Tp, typename... _Args>
 	requires is_constructible_v<_Tp, _Args...>
 	  && __is_callable_from<_Tp>
@@ -101,6 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_init<_Tp>(std::forward<_Args>(__args)...);
 	}
 
+      /// Stores a target object initialized from the arguments.
       template<typename _Tp, typename _Up, typename... _Args>
 	requires is_constructible_v<_Tp, initializer_list<_Up>&, _Args...>
 	  && __is_callable_from<_Tp>
@@ -114,6 +136,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_init<_Tp>(__il, std::forward<_Args>(__args)...);
 	}
 
+      /// Stores a new target object, leaving `x` empty.
       move_only_function&
       operator=(move_only_function&& __x) noexcept
       {
@@ -122,6 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      /// Destroys the target object (if any).
       move_only_function&
       operator=(nullptr_t) noexcept
       {
@@ -130,6 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      /// Stores a new target object, initialized from the argument.
       template<typename _Fn>
 	requires is_constructible_v<move_only_function, _Fn>
 	move_only_function&
@@ -142,8 +167,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~move_only_function() = default;
 
+      /// True if a target object is present, false otherwise.
       explicit operator bool() const noexcept { return _M_invoke != nullptr; }
 
+      /** Invoke the target object.
+       *
+       * The target object will be invoked using the supplied arguments,
+       * and as an lvalue or rvalue, and as const or non-const, as dictated
+       * by the template arguments of the `move_only_function` specialization.
+       *
+       * @pre Must not be empty.
+       */
       _Res
       operator()(_ArgTypes... __args) _GLIBCXX_MOF_CV_REF noexcept(_Noex)
       {
@@ -151,6 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_invoke(this, std::forward<_ArgTypes>(__args)...);
       }
 
+      /// Exchange the target objects (if any).
       void
       swap(move_only_function& __x) noexcept
       {
@@ -158,10 +193,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::swap(_M_invoke, __x._M_invoke);
       }
 
+      /// Exchange the target objects (if any).
       friend void
       swap(move_only_function& __x, move_only_function& __y) noexcept
       { __x.swap(__y); }
 
+      /// Check for emptiness by comparing with `nullptr`.
       friend bool
       operator==(const move_only_function& __x, nullptr_t) noexcept
       { return __x._M_invoke == nullptr; }
