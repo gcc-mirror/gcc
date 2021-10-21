@@ -9,16 +9,16 @@ program main
 
   !$omp parallel
   block
-    x = x + 1
+    call do_work
   end block
-  x = x + 1
+  call do_work
   !$omp end parallel ! { dg-error "Unexpected !.OMP END PARALLEL statement" }
 
   !$omp teams
   block
-    x = x + 1
+    call do_work
   end block
-  x = x + 1
+  call do_work
   !$omp end teams ! { dg-error "Unexpected !.OMP END TEAMS statement" }
 
   !$omp masked
@@ -30,9 +30,9 @@ program main
 
   !$omp scope
   block
-    x = x + 1
+    call do_work
   end block
-  x = x + 1
+  call do_work
   !$omp end scope ! { dg-error "Unexpected !.OMP END SCOPE statement" }
 
   !$omp single
@@ -51,9 +51,9 @@ program main
 
   !$omp task
   block
-    x = x + 1
+    call do_work
   end block
-  x = x + 1
+  call do_work
   !$omp end task ! { dg-error "Unexpected !.OMP END TASK statement" }
 
   !$omp target data map(x)
@@ -86,16 +86,16 @@ program main
 
   !$omp target parallel
   block
-    x = x + 1
+    call do_work
   end block
-  x = x + 1
+  call do_work
   !$omp end target parallel ! { dg-error "Unexpected !.OMP END TARGET PARALLEL statement" }
 
   !$omp target teams
   block
-    x = x + 1
+    call do_work
   end block
-  x = x + 1
+  call do_work
   !$omp end target teams ! { dg-error "Unexpected !.OMP END TARGET TEAMS statement" }
 
   !$omp critical
@@ -116,9 +116,9 @@ program main
   do i = 1, n
      !$omp ordered
      block
-       x = x + 1
+       call do_work
      end block
-     x = x + 1
+     call do_work
      !$omp end ordered ! { dg-error "Unexpected !.OMP END ORDERED statement" }
   end do
 

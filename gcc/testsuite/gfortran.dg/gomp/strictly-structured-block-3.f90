@@ -10,7 +10,7 @@ program main
   !$omp parallel
     !$omp parallel
     block
-      x = x + 1
+      call do_work
     end block
     !$omp end parallel
   !$omp end parallel
@@ -32,7 +32,7 @@ program main
     end block
     x = x + 2
     !$omp section
-    x = x + 4
+    call do_work
   end block
 
   !$omp sections

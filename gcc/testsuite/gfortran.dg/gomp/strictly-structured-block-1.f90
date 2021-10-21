@@ -9,23 +9,23 @@ program main
 
   !$omp parallel
   block
-    x = x + 1
+    call do_work
   end block
 
   !$omp parallel
   block
-    x = x + 1
+    call do_work
   end block
   !$omp end parallel
 
   !$omp teams
   block
-    x = x + 1
+    call do_work
   end block
 
   !$omp teams
   block
-    x = x + 1
+    call do_work
   end block
   !$omp end teams
 
@@ -42,12 +42,12 @@ program main
 
   !$omp scope
   block
-    x = x + 1
+    call do_work
   end block
 
   !$omp scope
   block
-    x = x + 1
+    call do_work
   end block
   !$omp end scope
 
@@ -75,12 +75,12 @@ program main
 
   !$omp task
   block
-    x = x + 1
+    call do_work
   end block
 
   !$omp task
   block
-    x = x + 1
+    call do_work
   end block
   !$omp end task
 
@@ -130,23 +130,23 @@ program main
 
   !$omp target parallel
   block
-    x = x + 1
+    call do_work
   end block
 
   !$omp target parallel
   block
-    x = x + 1
+    call do_work
   end block
   !$omp end target parallel
 
   !$omp target teams
   block
-    x = x + 1
+    call do_work
   end block
 
   !$omp target teams
   block
-    x = x + 1
+    call do_work
   end block
   !$omp end target teams
 
@@ -176,7 +176,7 @@ program main
   do i = 1, n
      !$omp ordered
      block
-       x = x + 1
+       call do_work
      end block
   end do
 
@@ -184,7 +184,7 @@ program main
   do i = 1, n
      !$omp ordered
      block
-       x = x + 1
+       call do_work
      end block
      !$omp end ordered
   end do
