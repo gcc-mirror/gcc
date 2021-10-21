@@ -1191,6 +1191,13 @@ vect_model_load_cost (vec_info *vinfo,
 				       ncopies * assumed_nunits,
 				       scalar_load, stmt_info, 0, vect_body);
     }
+  else if (memory_access_type == VMAT_INVARIANT)
+    {
+      /* Invariant loads will ideally be hoisted and splat to a vector.  */
+      prologue_cost += record_stmt_cost (cost_vec, 1,
+					 scalar_to_vec, stmt_info, 0,
+					 vect_prologue);
+    }
   else
     vect_get_load_cost (vinfo, stmt_info, ncopies,
 			alignment_support_scheme, misalignment, first_stmt_p,
