@@ -15542,7 +15542,8 @@ which functions and calls should be skipped from instrumentation
 (@pxref{Function Attributes}).
 
 Currently the x86 GNU/Linux target provides an implementation based
-on Intel Control-flow Enforcement Technology (CET).
+on Intel Control-flow Enforcement Technology (CET) which works for
+i686 processor or newer.
 
 @item -fstack-protector
 @opindex fstack-protector
