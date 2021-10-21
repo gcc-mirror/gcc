@@ -451,8 +451,8 @@ public:
   FunctionQualifiers (AsyncConstStatus const_status, Unsafety unsafety,
 		      bool has_extern = false,
 		      std::string extern_abi = std::string ())
-    : const_status (const_status), unsafety (unsafety),
-      has_extern (has_extern), extern_abi (std::move (extern_abi))
+    : const_status (const_status), unsafety (unsafety), has_extern (has_extern),
+      extern_abi (std::move (extern_abi))
   {
     if (!this->extern_abi.empty ())
       {

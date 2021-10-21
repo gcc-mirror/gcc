@@ -607,7 +607,7 @@ public:
     auto trait_unsafety = Unsafety::Normal;
     if (trait.is_unsafe ())
       {
-        trait_unsafety = Unsafety::Unsafe;
+	trait_unsafety = Unsafety::Unsafe;
       }
 
     HIR::Trait *hir_trait
