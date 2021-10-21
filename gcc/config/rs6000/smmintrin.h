@@ -113,9 +113,13 @@ _mm_blend_epi16 (__m128i __A, __m128i __B, const int __imm8)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
 {
+#ifdef _ARCH_PWR10
+  return (__m128i) vec_blendv ((__v16qi) __A, (__v16qi) __B, (__v16qu) __mask);
+#else
   const __v16qu __seven = vec_splats ((unsigned char) 0x07);
   __v16qu __lmask = vec_sra ((__v16qu) __mask, __seven);
-  return (__m128i) vec_sel ((__v16qu) __A, (__v16qu) __B, __lmask);
+  return (__m128i) vec_sel ((__v16qi) __A, (__v16qi) __B, __lmask);
+#endif
 }
 
 extern __inline __m128
@@ -149,9 +153,13 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_ps (__m128 __A, __m128 __B, __m128 __mask)
 {
+#ifdef _ARCH_PWR10
+  return (__m128) vec_blendv ((__v4sf) __A, (__v4sf) __B, (__v4su) __mask);
+#else
   const __v4si __zero = {0};
   const __vector __bool int __boolmask = vec_cmplt ((__v4si) __mask, __zero);
   return (__m128) vec_sel ((__v4su) __A, (__v4su) __B, (__v4su) __boolmask);
+#endif
 }
 
 extern __inline __m128d
@@ -174,9 +182,13 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
 {
+#ifdef _ARCH_PWR10
+  return (__m128d) vec_blendv ((__v2df) __A, (__v2df) __B, (__v2du) __mask);
+#else
   const __v2di __zero = {0};
   const __vector __bool long long __boolmask = vec_cmplt ((__v2di) __mask, __zero);
   return (__m128d) vec_sel ((__v2du) __A, (__v2du) __B, (__v2du) __boolmask);
+#endif
 }
 #endif
 
