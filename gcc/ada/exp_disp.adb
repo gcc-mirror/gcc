@@ -3037,7 +3037,7 @@ package body Exp_Disp is
    begin
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
-      --  Null body is generated for interface types and non-concurrent
+      --  Null body is generated for interface types and nonconcurrent
       --  tagged types.
 
       if Is_Interface (Typ)

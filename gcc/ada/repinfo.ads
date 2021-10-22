@@ -118,12 +118,12 @@ package Repinfo is
    --  this field is done only in -gnatR3 mode, and in other modes, the value
    --  is set to Uint_Minus_1.
 
-   subtype Node_Ref is Uint;
+   subtype Node_Ref is Unegative;
    --  Subtype used for negative Uint values used to represent nodes
 
    subtype Node_Ref_Or_Val is Uint;
-   --  Subtype used for values that can either be a Node_Ref (negative)
-   --  or a value (non-negative)
+   --  Subtype used for values that can be a Node_Ref (negative) or a value
+   --  (non-negative) or No_Uint.
 
    type TCode is range 0 .. 27;
    --  Type used on Ada side to represent DEFTREECODE values defined in
@@ -306,7 +306,7 @@ package Repinfo is
    --  In the case of components, if the location of the component is static,
    --  then all four fields (Component_Bit_Offset, Normalized_Position, Esize,
    --  and Normalized_First_Bit) are set to appropriate values. In the case of
-   --  a non-static component location, Component_Bit_Offset is not used and
+   --  a nonstatic component location, Component_Bit_Offset is not used and
    --  is left set to Unknown. Normalized_Position and Normalized_First_Bit
    --  are set appropriately.
 

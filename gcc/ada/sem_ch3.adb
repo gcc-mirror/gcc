@@ -21301,7 +21301,7 @@ package body Sem_Ch3 is
                      goto Leave;
                   end;
 
-               --  For non-concurrent types, transfer explicit primitives, but
+               --  For nonconcurrent types, transfer explicit primitives, but
                --  omit those inherited from the parent of the private view
                --  since they will be re-inherited later on.
 

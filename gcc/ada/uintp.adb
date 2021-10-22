@@ -380,8 +380,8 @@ package body Uintp is
 
       procedure Image_String (S : String) is
       begin
-         for X in S'Range loop
-            Image_Char (S (X));
+         for X of S loop
+            Image_Char (X);
          end loop;
       end Image_String;
 

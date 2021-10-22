@@ -9236,7 +9236,7 @@ package body Sem_Ch8 is
       if Ekind (S) = E_Void then
          null;
 
-      --  Set scope depth if not a non-concurrent type, and we have not yet set
+      --  Set scope depth if not a nonconcurrent type, and we have not yet set
       --  the scope depth. This means that we have the first occurrence of the
       --  scope, and this is where the depth is set.
 

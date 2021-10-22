@@ -9500,9 +9500,7 @@ package body Freeze is
          Minsiz : constant Uint := UI_From_Int (Minimum_Size (Typ));
 
       begin
-         if Known_RM_Size (Typ)
-           and then RM_Size (Typ) /= Uint_0
-         then
+         if Known_RM_Size (Typ) then
             if RM_Size (Typ) < Minsiz then
                Error_Msg_Uint_1 := RM_Size (Typ);
                Error_Msg_Uint_2 := Minsiz;

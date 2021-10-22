@@ -204,9 +204,22 @@ package Gen_IL.Gen is
    --  Gen_IL.Fields, and delete all occurrences from Gen_IL.Gen.Gen_Entities.
 
    --  If a field is not set, it is initialized by default to whatever value is
-   --  represented by all-zero bits, with two exceptions: Elist fields default
-   --  to No_Elist, and Uint fields default to Uint_0. In retrospect, it would
-   --  have been better to use No_Uint instead of Uint_0.
+   --  represented by all-zero bits, with some exceptions. This means Flags are
+   --  initialized to False, Node_Ids and List_Ids are initialized to Empty,
+   --  and enumeration fields are initialized to 'First of the type (assuming
+   --  there is no representation clause).
+   --
+   --  Elists default to No_Elist.
+   --
+   --  Fields of type Uint (but not its subtypes) are initialized to No_Uint.
+   --  Fields of subtypes Valid_Uint, Unat, Upos, Nonzero_Uint, and Ureal have
+   --  no default; it is an error to call a getter before calling the setter.
+   --  Likewise, other types whose range does not include zero have no default
+   --  (see package Types for the ranges).
+   --
+   --  If a node is created by a function in Nmake, then the defaults are
+   --  different from what is specified above. The parameters of Make_...
+   --  functions can have defaults specified; see Create_Syntactic_Field.
 
    procedure Create_Node_Union_Type
      (T : Abstract_Node; Children : Type_Array);

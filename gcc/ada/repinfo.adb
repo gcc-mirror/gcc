@@ -2120,7 +2120,7 @@ package body Repinfo is
 
    function Rep_Value (Val : Node_Ref_Or_Val; D : Discrim_List) return Uint is
 
-      function B (Val : Boolean) return Uint;
+      function B (Val : Boolean) return Ubool;
       --  Returns Uint_0 for False, Uint_1 for True
 
       function T (Val : Node_Ref_Or_Val) return Boolean;
@@ -2141,7 +2141,7 @@ package body Repinfo is
       -- B --
       -------
 
-      function B (Val : Boolean) return Uint is
+      function B (Val : Boolean) return Ubool is
       begin
          if Val then
             return Uint_1;
