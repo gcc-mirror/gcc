@@ -165,6 +165,7 @@ c++.rest.encap:
 c++.info:
 c++.install-info:
 c++.dvi:
+c++.install-dvi:
 c++.pdf:
 c++.install-pdf:
 c++.install-html:
