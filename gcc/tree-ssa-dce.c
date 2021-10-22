@@ -436,7 +436,7 @@ find_obviously_necessary_stmts (bool aggressive)
 
       for (auto loop : loops_list (cfun, 0))
 	/* For loops without an exit do not mark any condition.  */
-	if (loop->exits->next && !finite_loop_p (loop))
+	if (loop->exits->next->e && !finite_loop_p (loop))
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "cannot prove finiteness of loop %i\n",
