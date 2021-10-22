@@ -451,8 +451,6 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	}
     }
 
-  std::vector<Bexpression *> args;
-
   // lookup the autoderef mappings
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
@@ -478,13 +476,31 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  break;
 	}
     }
-  args.push_back (self);
+
+  std::vector<Bexpression *> args;
+  args.push_back (self); // adjusted self
 
   // normal args
-  for (auto &argument : expr.get_arguments ())
+  for (size_t i = 0; i < expr.get_arguments ().size (); i++)
     {
-      Bexpression *compiled_expr = CompileExpr::Compile (argument.get (), ctx);
-      args.push_back (compiled_expr);
+      auto &argument = expr.get_arguments ().at (i);
+      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+
+      // assignments are coercion sites so lets convert the rvalue if
+      // necessary, offset from the already adjusted implicit self
+      bool ok;
+      TyTy::BaseType *expected = fntype->param_at (i + 1).second;
+
+      TyTy::BaseType *actual = nullptr;
+      ok = ctx->get_tyctx ()->lookup_type (
+	argument->get_mappings ().get_hirid (), &actual);
+      rust_assert (ok);
+
+      // coerce it if required
+      rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+      // add it to the list
+      args.push_back (rvalue);
     }
 
   auto fncontext = ctx->peek_fn ();
