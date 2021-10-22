@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2013-2020 Free Software Foundation, Inc.
+# Copyright (C) 2013-2021 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -233,7 +233,7 @@ class Copyright:
     def add_external_author (self, holder):
         self.holders[holder] = None
 
-    class BadYear():
+    class BadYear (Exception):
         def __init__ (self, year):
             self.year = year
 
