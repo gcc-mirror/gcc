@@ -1,3 +1,104 @@
+2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/stdheader.cc: Refactor. Use C++23. Add new
+	headers.
+	* scripts/run_doxygen: Fix post-processing of #include
+	directives in man pages. Use new xg++ to compile helper program.
+
+2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Add doxygen comments.
+	* include/std/functional: Likewise.
+
+2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Suppress doxygen documentation.
+	* include/bits/allocated_ptr.h: Likewise.
+	* include/bits/enable_special_members.h: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/uses_allocator.h: Likewise.
+	* include/bits/node_handle.h: Document node handles and suppress
+	documentation for protected members.
+	* include/std/any: Suppress documentation for implementation
+	details.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/102358
+	* include/bits/stl_iterator.h (__niter_base): Make constexpr
+	for C++20.
+	(__miter_base): Likewise.
+	* testsuite/25_algorithms/move/constexpr.cc: New test.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (istream_view): Replace this function
+	template with an alias template as per P2432R1.
+	(wistream_view): Define as per P2432R1.
+	(views::_Istream, views::istream): Likewise.
+	* testsuite/std/ranges/istream_view.cc (test07): New test.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h (views::_Drop): Forward declare.
+	(subrange): Befriend views::_Drop.
+	(subrange::_S_store_size): Declare constexpr instead of just
+	const, remove obsolete comment.
+	* include/std/ranges (views::__detail::__is_empty_view): Define.
+	(views::__detail::__is_basic_string_view): Likewise.
+	(views::__detail::__is_subrange): Likewise.
+	(views::__detail::__is_iota_view): Likewise.
+	(views::__detail::__can_take_view): Rename template parm _Tp to _Dp.
+	(views::_Take): Rename template parm _Tp to _Dp, make it non-deducible
+	and fix it to range_difference_t<_Range>.  Implement P1739R4 and
+	LWG 3407 changes.
+	(views::__detail::__can_drop_view): Rename template parm _Tp to _Dp.
+	(views::_Drop): As with views::_Take.
+	(views::_Counted): Implement P1739R4 changes.
+	* include/std/span (__detail::__is_std_span): Rename to ...
+	(__detail::__is_span): ... this and turn it into a variable
+	template.
+	(__detail::__is_std_array): Turn it into a variable template.
+	(span::span): Adjust uses of __is_std_span and __is_std_array
+	accordingly.
+	* testsuite/std/ranges/adaptors/p1739.cc: New test.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator::__arrow_proxy):
+	Make fully constexpr as per LWG 3595.
+	(common_iterator::__postfix_proxy): Likewise.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (lazy_split_view::base): Add forward_range
+	constraint as per LWG 3591.
+	(lazy_split_view::begin, lazy_split_view::end): Also check
+	simpleness of _Pattern as per LWG 3592.
+	(split_view::base): Relax copyable constraint as per LWG 3590.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (join_view::__iter_cat::_S_iter_cat): Adjust
+	criteria for returning bidirectional_iterator_tag as per LWG 3535.
+	(join_view::_Iterator::_S_iter_concept): Likewise.
+
+2021-10-21  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (viewable_range): Adjust as per
+	LWG 3481.
+	* testsuite/std/ranges/adaptors/all.cc (test07): New test.
+
+2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102863
+	* include/std/optional (optional::and_then, optional::transform):
+	Remove requires-clause.
+	* testsuite/20_util/optional/monadic/and_then.cc: Check
+	overload resolution doesn't cause errors.
+	* testsuite/20_util/optional/monadic/transform.cc: Likewise.
+
 2021-10-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/optional/monadic/transform.cc: Check that

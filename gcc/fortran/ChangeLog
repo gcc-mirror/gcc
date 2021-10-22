@@ -1,3 +1,33 @@
+2021-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* decl.c (gfc_match_end): Add COMP_OMP_STRICTLY_STRUCTURED_BLOCK case
+	together with COMP_BLOCK.
+	* parse.c (parse_omp_structured_block): Change return type to
+	'gfc_statement', add handling for strictly-structured block case, adjust
+	recursive calls to parse_omp_structured_block.
+	(parse_executable): Adjust calls to parse_omp_structured_block.
+	* parse.h (enum gfc_compile_state): Add
+	COMP_OMP_STRICTLY_STRUCTURED_BLOCK.
+	* trans-openmp.c (gfc_trans_omp_workshare): Add EXEC_BLOCK case
+	handling.
+
+2021-10-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/94070
+	* expr.c (gfc_simplify_expr): Handle GFC_ISYM_SHAPE along with
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	* trans-array.c (gfc_conv_ss_startstride): Likewise.
+	(set_loop_bounds): Likewise.
+	* trans-intrinsic.c (gfc_trans_intrinsic_bound): Extend to
+	handle SHAPE.  Correct logic for zero-size special cases and
+	detecting assumed-rank arrays associated with an assumed-size
+	argument.
+	(gfc_conv_intrinsic_shape): Deleted.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_SHAPE like
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	(gfc_add_intrinsic_ss_code): Likewise.
+	(gfc_walk_intrinsic_bound): Likewise.
+
 2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* openmp.c (gfc_match_omp_clause_reduction): Add 'openmp_target' default
