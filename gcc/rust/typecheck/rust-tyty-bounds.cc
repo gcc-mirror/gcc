@@ -40,7 +40,7 @@ TypeBoundsProbe::scan ()
       if (!ok)
 	return true;
 
-      if (!receiver->can_eq (impl_type, false))
+      if (!receiver->can_eq (impl_type, false, false))
 	return true;
 
       possible_trait_paths.push_back ({impl->get_trait_ref ().get (), impl});
@@ -106,6 +106,85 @@ TypeBoundPredicate::is_object_safe (bool emit_error, Location locus) const
   const Resolver::TraitReference *trait = get ();
   rust_assert (trait != nullptr);
   return trait->is_object_safe (emit_error, locus);
+}
+
+void
+TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args)
+{
+  args = generic_args;
+  // TODO verify these arguments are valid and not too many were added
+}
+
+bool
+TypeBoundPredicate::contains_item (const std::string &search) const
+{
+  auto trait_ref = get ();
+  const Resolver::TraitItemReference *trait_item_ref = nullptr;
+  return trait_ref->lookup_trait_item (search, &trait_item_ref);
+}
+
+TypeBoundPredicateItem
+TypeBoundPredicate::lookup_associated_item (const std::string &search) const
+{
+  auto trait_ref = get ();
+  const Resolver::TraitItemReference *trait_item_ref = nullptr;
+  if (!trait_ref->lookup_trait_item (search, &trait_item_ref))
+    return TypeBoundPredicateItem::error ();
+
+  return TypeBoundPredicateItem (this, trait_item_ref);
+}
+
+BaseType *
+TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
+{
+  TyTy::BaseType *trait_item_tyty = get_raw_item ()->get_tyty ();
+  if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
+    {
+      TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
+      TyTy::SubstitutionParamMapping *param = nullptr;
+      for (auto &param_mapping : fn->get_substs ())
+	{
+	  const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
+	  if (type_param.get_type_representation ().compare ("Self") == 0)
+	    {
+	      param = &param_mapping;
+	      break;
+	    }
+	}
+      rust_assert (param != nullptr);
+
+      std::vector<TyTy::SubstitutionArg> mappings;
+      mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
+
+      Location locus; // FIXME
+      TyTy::SubstitutionArgumentMappings args (std::move (mappings), locus);
+      trait_item_tyty
+	= Resolver::SubstMapperInternal::Resolve (trait_item_tyty, args);
+    }
+
+  if (!parent->has_generic_args ())
+    return trait_item_tyty;
+
+  // FIXME LEAK this should really be const
+  const HIR::GenericArgs *args = parent->get_generic_args ();
+  HIR::GenericArgs *generic_args = new HIR::GenericArgs (*args);
+  TyTy::BaseType *resolved
+    = Resolver::SubstMapper::Resolve (trait_item_tyty, parent->get_locus (),
+				      generic_args);
+
+  return resolved;
+}
+
+const Resolver::TraitItemReference *
+TypeBoundPredicateItem::get_raw_item () const
+{
+  return trait_item_ref;
+}
+
+bool
+TypeBoundPredicateItem::needs_implementation () const
+{
+  return !get_raw_item ()->is_optional ();
 }
 
 } // namespace TyTy

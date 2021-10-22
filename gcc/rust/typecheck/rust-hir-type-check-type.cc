@@ -445,7 +445,7 @@ TypeCheckType::resolve_segments (
 
 	  // lookup the associated-impl-trait
 	  HIR::ImplBlock *impl = candidate.item.trait.impl;
-	  if (impl != nullptr)
+	  if (impl != nullptr && !reciever_is_generic)
 	    {
 	      AssociatedImplTrait *lookup_associated = nullptr;
 	      bool found_impl_trait = context->lookup_associated_trait_impl (
