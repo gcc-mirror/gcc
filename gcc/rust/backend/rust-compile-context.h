@@ -660,7 +660,7 @@ public:
     ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
   }
 
-  void visit (const TyTy::ClosureType &type) override { gcc_unreachable (); }
+  void visit (const TyTy::ClosureType &) override { gcc_unreachable (); }
 
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode)
