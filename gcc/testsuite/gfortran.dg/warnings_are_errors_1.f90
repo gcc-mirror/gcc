@@ -22,4 +22,4 @@
 
        end
 ! { dg-final { output-exists-not } }
-! { dg-excess-errors "warnings being treated as errors" }
+! { dg-prune-output "warnings being treated as errors" }

@@ -120,4 +120,4 @@ end do
 
 end  ! { dg-error "Unexpected END statement" }
 
-! { dg-excess-errors "Unexpected end of file" }
+! { dg-error "Unexpected end of file" "" { target "*-*-*" } 0 }
