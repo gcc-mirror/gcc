@@ -76,6 +76,7 @@ package body Warnsw is
       Warn_On_Overlap                      := Setting;
       Warn_On_Overridden_Size              := Setting;
       Warn_On_Parameter_Order              := Setting;
+      Warn_On_Pedantic_Checks              := Setting;
       Warn_On_Questionable_Layout          := Setting;
       Warn_On_Questionable_Missing_Parens  := Setting;
       Warn_On_Record_Holes                 := Setting;
@@ -172,6 +173,8 @@ package body Warnsw is
         W.Warn_On_Overridden_Size;
       Warn_On_Parameter_Order              :=
         W.Warn_On_Parameter_Order;
+      Warn_On_Pedantic_Checks              :=
+        W.Warn_On_Pedantic_Checks;
       Warn_On_Questionable_Layout          :=
         W.Warn_On_Questionable_Layout;
       Warn_On_Questionable_Missing_Parens  :=
@@ -284,6 +287,8 @@ package body Warnsw is
         Warn_On_Overridden_Size;
       W.Warn_On_Parameter_Order              :=
         Warn_On_Parameter_Order;
+      W.Warn_On_Pedantic_Checks              :=
+        Warn_On_Pedantic_Checks;
       W.Warn_On_Questionable_Layout          :=
         Warn_On_Questionable_Layout;
       W.Warn_On_Questionable_Missing_Parens  :=
@@ -504,6 +509,12 @@ package body Warnsw is
 
          when 'C' =>
             Warn_On_Unknown_Compile_Time_Warning := False;
+
+         when 'p' =>
+            Warn_On_Pedantic_Checks := True;
+
+         when 'P' =>
+            Warn_On_Pedantic_Checks := False;
 
          when 'r' =>
             Warn_On_Component_Order := True;

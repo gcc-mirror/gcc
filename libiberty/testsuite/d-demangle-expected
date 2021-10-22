@@ -1462,3 +1462,11 @@ mod.func().nested!(int).nested()
 --format=dlang
 _D6mangle__T8fun21753VSQv6S21753S1f_DQBj10__lambda71MFNaNbNiNfZvZQCbQp
 mangle.fun21753!(mangle.S21753(mangle.__lambda71())).fun21753
+#
+--format=dlang
+_D8demangle9anonymous0Z
+demangle.anonymous
+#
+--format=dlang
+_D8demangle9anonymous03fooZ
+demangle.anonymous.foo

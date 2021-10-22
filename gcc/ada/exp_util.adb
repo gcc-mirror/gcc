@@ -4784,7 +4784,8 @@ package body Exp_Util is
       --  record or bit-packed array, then everything is fine, since the back
       --  end can handle these cases correctly.
 
-      elsif Esize (Comp) <= System_Max_Integer_Size
+      elsif Known_Esize (Comp)
+        and then Esize (Comp) <= System_Max_Integer_Size
         and then (Is_Record_Type (UT) or else Is_Bit_Packed_Array (UT))
       then
          return False;

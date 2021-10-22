@@ -96,3 +96,30 @@ static_assert( ! is_nothrow_constructible_v<move_only_function<void() noexcept>,
 					    in_place_type_t<H>, int> );
 static_assert( is_nothrow_constructible_v<move_only_function<void() noexcept>,
 					  in_place_type_t<H>, int, int> );
+
+struct I {
+  I(int, const char*);
+  I(std::initializer_list<char>);
+  int operator()() const noexcept;
+};
+
+static_assert( is_constructible_v<move_only_function<void()>,
+				  std::in_place_type_t<I>,
+				  int, const char*> );
+static_assert( is_constructible_v<move_only_function<void()>,
+				  std::in_place_type_t<I>,
+				  std::initializer_list<char>> );
+
+void
+test_instantiation()
+{
+  // Instantiate the constructor bodies
+  move_only_function<void()> f0;
+  move_only_function<void()> f1(nullptr);
+  move_only_function<void()> f2( I(1, "two") );
+  move_only_function<void()> f3(std::in_place_type<I>, 3, "four");
+  move_only_function<void()> f4(std::in_place_type<I>, // PR libstdc++/102825
+				{ 'P', 'R', '1', '0', '2', '8', '2', '5'});
+  auto f5 = std::move(f4);
+  f4 = std::move(f5);
+}

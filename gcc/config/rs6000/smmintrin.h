@@ -96,6 +96,7 @@ _mm_extract_ps (__m128 __X, const int __N)
   return ((__v4si)__X)[__N & 3];
 }
 
+#ifdef _ARCH_PWR8
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blend_epi16 (__m128i __A, __m128i __B, const int __imm8)
 {
@@ -107,6 +108,7 @@ _mm_blend_epi16 (__m128i __A, __m128i __B, const int __imm8)
   #endif
   return (__m128i) vec_sel ((__v8hu) __A, (__v8hu) __B, __shortmask);
 }
+#endif
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
@@ -167,6 +169,7 @@ _mm_blend_pd (__m128d __A, __m128d __B, const int __imm8)
   return (__m128d) __r;
 }
 
+#ifdef _ARCH_PWR8
 __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
@@ -175,6 +178,7 @@ _mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
   const __vector __bool long long __boolmask = vec_cmplt ((__v2di) __mask, __zero);
   return (__m128d) vec_sel ((__v2du) __A, (__v2du) __B, (__v2du) __boolmask);
 }
+#endif
 
 __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))

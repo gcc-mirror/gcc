@@ -8382,7 +8382,7 @@ resolve_address_of_overloaded_function (tree target_type,
       nargs = list_length (target_arg_types);
       args = XALLOCAVEC (tree, nargs);
       for (arg = target_arg_types, ia = 0;
-	   arg != NULL_TREE && arg != void_list_node;
+	   arg != NULL_TREE;
 	   arg = TREE_CHAIN (arg), ++ia)
 	args[ia] = TREE_VALUE (arg);
       nargs = ia;

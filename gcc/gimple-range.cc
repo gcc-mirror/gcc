@@ -42,7 +42,7 @@ gimple_ranger::gimple_ranger () :
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
-  if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_TRACE))
     tracer.enable_trace ();
 
   // Ensure the not_executable flag is clear everywhere.
@@ -180,9 +180,9 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   int_range_max edge_range;
   gcc_checking_assert (irange::supports_type_p (TREE_TYPE (name)));
 
-  // Do not process values along abnormal or EH edges.
-  if (e->flags & (EDGE_ABNORMAL|EDGE_EH))
-    return false;
+  // Do not process values along abnormal edges.
+  if (e->flags & EDGE_ABNORMAL)
+    return get_tree_range (r, name, NULL);
 
   unsigned idx;
   if ((idx = tracer.header ("range_on_edge (")))
@@ -203,7 +203,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 
   bool res = true;
   if (!gimple_range_ssa_p (name))
-    res = range_of_expr (r, name);
+    return get_tree_range (r, name, NULL);
   else
     {
       range_on_exit (r, e->src, name);
@@ -258,7 +258,7 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (!name)
     res = fold_range_internal (r, s, NULL_TREE);
   else if (!gimple_range_ssa_p (name))
-    res = false;
+    res = get_tree_range (r, name, NULL);
   // Check if the stmt has already been processed, and is not stale.
   else if (m_cache.get_non_stale_global_range (r, name))
     {

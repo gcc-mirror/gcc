@@ -1127,12 +1127,14 @@
 )
 
 (define_insn "aarch64_simd_ashr<mode>"
- [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-       (ashiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
-		     (match_operand:VDQ_I  2 "aarch64_simd_rshift_imm" "Dr")))]
+ [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
+       (ashiftrt:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,w")
+		     (match_operand:VDQ_I  2 "aarch64_simd_rshift_imm" "D1,Dr")))]
  "TARGET_SIMD"
- "sshr\t%0.<Vtype>, %1.<Vtype>, %2"
-  [(set_attr "type" "neon_shift_imm<q>")]
+ "@
+  cmlt\t%0.<Vtype>, %1.<Vtype>, #0
+  sshr\t%0.<Vtype>, %1.<Vtype>, %2"
+  [(set_attr "type" "neon_compare<q>,neon_shift_imm<q>")]
 )
 
 (define_insn "*aarch64_simd_sra<mode>"
@@ -1751,6 +1753,23 @@
   }
 )
 
+(define_insn "*aarch64_narrow_trunc<mode>"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+          (truncate:<VNARROWQ>
+            (match_operand:VQN 1 "register_operand" "w"))
+	  (truncate:<VNARROWQ>
+	    (match_operand:VQN 2 "register_operand" "w"))))]
+  "TARGET_SIMD"
+{
+  if (!BYTES_BIG_ENDIAN)
+    return "uzp1\\t%0.<V2ntype>, %1.<V2ntype>, %2.<V2ntype>";
+  else
+    return "uzp1\\t%0.<V2ntype>, %2.<V2ntype>, %1.<V2ntype>";
+}
+  [(set_attr "type" "neon_permute<q>")]
+)
+
 ;; Packing doubles.
 
 (define_expand "vec_pack_trunc_<mode>"
@@ -1816,6 +1835,100 @@
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "shrn\\t%0.<Vntype>, %1.<Vtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<srn_op>shrn<mode>_vect"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+        (truncate:<VNARROWQ>
+          (SHIFTRT:VQN (match_operand:VQN 1 "register_operand" "w")
+            (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>"))))]
+  "TARGET_SIMD"
+  "shrn\\t%0.<Vntype>, %1.<Vtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<srn_op>shrn<mode>2_vect_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN (match_operand:VQN 2 "register_operand" "w")
+	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "shrn2\\t%0.<V2ntype>, %2.<Vtype>, %3"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<srn_op>shrn<mode>2_vect_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN (match_operand:VQN 2 "register_operand" "w")
+	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "shrn2\\t%0.<V2ntype>, %2.<Vtype>, %3"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<srn_op>topbits_shuffle<mode>_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+          (truncate:<VNARROWQ>
+            (SHIFTRT:VQN (match_operand:VQN 1 "register_operand" "w")
+	      (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_exact_top")))
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN (match_operand:VQN 3 "register_operand" "w")
+	      (match_dup 2)))))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "uzp2\\t%0.<V2ntype>, %1.<V2ntype>, %3.<V2ntype>"
+  [(set_attr "type" "neon_permute<q>")]
+)
+
+(define_insn "*aarch64_topbits_shuffle<mode>_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+          (unspec:<VNARROWQ> [
+              (match_operand:VQN 1 "register_operand" "w")
+	      (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_exact_top")
+	     ] UNSPEC_RSHRN)
+	  (unspec:<VNARROWQ> [
+	      (match_operand:VQN 3 "register_operand" "w")
+	      (match_dup 2)
+	     ] UNSPEC_RSHRN)))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+  "uzp2\\t%0.<V2ntype>, %1.<V2ntype>, %3.<V2ntype>"
+  [(set_attr "type" "neon_permute<q>")]
+)
+
+(define_insn "*aarch64_<srn_op>topbits_shuffle<mode>_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN (match_operand:VQN 3 "register_operand" "w")
+	      (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_exact_top")))
+          (truncate:<VNARROWQ>
+            (SHIFTRT:VQN (match_operand:VQN 1 "register_operand" "w")
+	      (match_dup 2)))))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "uzp2\\t%0.<V2ntype>, %1.<V2ntype>, %3.<V2ntype>"
+  [(set_attr "type" "neon_permute<q>")]
+)
+
+(define_insn "*aarch64_topbits_shuffle<mode>_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (unspec:<VNARROWQ> [
+	      (match_operand:VQN 3 "register_operand" "w")
+	      (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_exact_top")
+	     ] UNSPEC_RSHRN)
+          (unspec:<VNARROWQ> [
+              (match_operand:VQN 1 "register_operand" "w")
+	      (match_dup 2)
+	     ] UNSPEC_RSHRN)))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "uzp2\\t%0.<V2ntype>, %1.<V2ntype>, %3.<V2ntype>"
+  [(set_attr "type" "neon_permute<q>")]
 )
 
 (define_expand "aarch64_shrn<mode>"
@@ -6504,6 +6617,23 @@
   ]
   "TARGET_SIMD"
   "cmtst\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  [(set_attr "type" "neon_tst<q>")]
+)
+
+;; One can also get a cmtsts by having to combine a
+;; not (neq (eq x 0)) in which case you rewrite it to
+;; a comparison against itself
+
+(define_insn "*aarch64_cmtst_same_<mode>"
+  [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
+	(plus:<V_INT_EQUIV>
+	  (eq:<V_INT_EQUIV>
+	    (match_operand:VDQ_I 1 "register_operand" "w")
+	    (match_operand:VDQ_I 2 "aarch64_simd_imm_zero"))
+	  (match_operand:<V_INT_EQUIV> 3 "aarch64_simd_imm_minus_one")))
+  ]
+  "TARGET_SIMD"
+  "cmtst\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_tst<q>")]
 )
 

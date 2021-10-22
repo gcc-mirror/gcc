@@ -1,3 +1,121 @@
+2021-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* libgomp.texi (Support of strictly structured blocks in Fortran):
+	Adjust to 'Y'.
+	* testsuite/libgomp.fortran/task-reduction-16.f90: Adjust testcase.
+
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.fortran/target-in-reduction-1.f90: New test.
+	* testsuite/libgomp.fortran/target-in-reduction-2.f90: New test.
+
+2021-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* libgomp.h (struct gomp_work_share_1st_cacheline): New type.
+	(struct gomp_work_share): Only use aligned(64) attribute if
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined, otherwise just
+	add padding before lock to ensure lock is at offset 64 bytes
+	into the structure.
+	(gomp_workshare_struct_check1, gomp_workshare_struct_check2):
+	New poor man's static assertions.
+	* work.c (gomp_work_share_start): Use gomp_aligned_alloc instead of
+	gomp_malloc if GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC.
+
+2021-10-20  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.graphite/force-parallel-5.c: Remove xfail.
+
+2021-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): Add
+	&& gomp_places_list_len < count after nfirst <= nlast loop condition.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102086
+	PR fortran/92189
+	PR fortran/92621
+	PR fortran/101308
+	PR fortran/101309
+	PR fortran/101635
+	PR fortran/92482
+	* testsuite/libgomp.fortran/optional-bind-c.f90: New test.
+
+2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/affinity-1.c (struct places): Change name field
+	type from char [50] to const char *.
+	(places_array): Add a testcase for simplified syntax place followed
+	by length or length and stride.
+
+2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_one_place): Handle non-negative-number the same
+	as { non-negative-number }.  Reject even !number:1 and
+	!number:1:stride or !place:1 or !place:1:stride instead of just
+	length other than 1.
+	* libgomp.texi (OpenMP 5.1): Document OMP_PLACES syntax extensions
+	and OMP_NUM_TEAMS/OMP_TEAMS_THREAD_LIMIT and
+	omp_{set_num,get_max}_teams/omp_{s,g}et_teams_thread_limit features
+	as implemented.
+	* testsuite/libgomp.c/affinity-1.c: Add a test for the 5.1 place
+	simplified syntax.
+
+2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_schedule): For strtoul or strtoull calls which don't
+	clearly reject return value 0 as invalid handle the case where end
+	pointer is the same as first argument as invalid.
+	(parse_unsigned_long_1): Likewise.
+	(parse_one_place): Likewise.
+	(parse_places_var): Likewise.
+	(parse_stacksize): Likewise.
+	(parse_spincount): Likewise.
+	(parse_affinity): Likewise.
+	(parse_gomp_openacc_dim): Likewise.  Avoid strict aliasing violation.
+	Make code valid C89.
+	* config/linux/affinity.c (gomp_affinity_find_last_cache_level):
+	For strtoul calls which don't clearly reject return value 0 as
+	invalid handle the case where end pointer is the same as first
+	argument as invalid.
+	(gomp_affinity_init_level_1): Likewise.
+	(gomp_affinity_init_numa_domains): Likewise.
+	* config/rtems/proc.c (parse_thread_pools): Likewise.
+
+2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linux/affinity.c (gomp_affinity_init_level_1): For level 1
+	after creating count places clean up and return immediately.
+	* testsuite/libgomp.c/places-6.c: New test.
+	* testsuite/libgomp.c/places-7.c: New test.
+	* testsuite/libgomp.c/places-8.c: New test.
+	* testsuite/libgomp.c/places-9.c: New test.
+	* testsuite/libgomp.c/places-10.c: New test.
+
+2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_places_var): Handle numa_domains as level 5.
+	* config/linux/affinity.c (gomp_affinity_init_numa_domains): New
+	function.
+	(gomp_affinity_init_level): Use it instead of
+	gomp_affinity_init_level_1 for level == 5.
+	* testsuite/libgomp.c/places-5.c: New test.
+
+2021-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (parse_places_var): Handle ll_caches as level 4.
+	* config/linux/affinity.c (gomp_affinity_find_last_cache_level): New
+	function.
+	(gomp_affinity_init_level_1): Handle level 4 as logical cpus sharing
+	last level cache.
+	(gomp_affinity_init_level): Likewise.
+	* testsuite/libgomp.c/places-1.c: New test.
+	* testsuite/libgomp.c/places-2.c: New test.
+	* testsuite/libgomp.c/places-3.c: New test.
+	* testsuite/libgomp.c/places-4.c: New test.
+
 2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.0): Update entry for declare variant

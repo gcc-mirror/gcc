@@ -1022,16 +1022,20 @@ package body Sem is
       Scop : Entity_Id;
 
    begin
-      --  Entity is global if defined outside of current outer_generic_scope:
-      --  Either the entity has a smaller depth that the outer generic, or it
+      --  Entity is global if defined outside of current Outer_Generic_Scope:
+      --  Either the entity has a smaller depth than the outer generic, or it
       --  is in a different compilation unit, or it is defined within a unit
-      --  in the same compilation, that is not within the outer_generic.
+      --  in the same compilation, that is not within the outer generic.
 
       if No (Outer_Generic_Scope) then
          return False;
 
-      elsif Scope_Depth (Scope (E)) < Scope_Depth (Outer_Generic_Scope)
-        or else not In_Same_Source_Unit (E, Outer_Generic_Scope)
+      --  It makes no sense to compare depths if not in same unit. Scope_Depth
+      --  is not set for inherited operations.
+
+      elsif not In_Same_Source_Unit (E, Outer_Generic_Scope)
+        or else not Scope_Depth_Set (Scope (E))
+        or else Scope_Depth (Scope (E)) < Scope_Depth (Outer_Generic_Scope)
       then
          return True;
 

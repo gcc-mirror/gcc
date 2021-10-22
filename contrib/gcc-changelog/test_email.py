@@ -415,6 +415,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_multiline_bad_parentheses(self):
         email = self.from_patch_glob('0002-Wrong-macro-changelog.patch')
         assert email.errors[0].message == 'bad parentheses wrapping'
+        assert email.errors[0].line == '	* config/i386/i386.md (*fix_trunc<mode>_i387_1,'
 
     def test_changelog_removal(self):
         email = self.from_patch_glob('0001-ChangeLog-removal.patch')

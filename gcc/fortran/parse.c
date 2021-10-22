@@ -5459,7 +5459,7 @@ parse_oacc_loop (gfc_statement acc_st)
 
 /* Parse the statements of an OpenMP structured block.  */
 
-static void
+static gfc_statement
 parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 {
   gfc_statement st, omp_end_st;
@@ -5546,6 +5546,32 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       gcc_unreachable ();
     }
 
+  bool block_construct = false;
+  gfc_namespace *my_ns = NULL;
+  gfc_namespace *my_parent = NULL;
+
+  st = next_statement ();
+
+  if (st == ST_BLOCK)
+    {
+      /* Adjust state to a strictly-structured block, now that we found that
+	 the body starts with a BLOCK construct.  */
+      s.state = COMP_OMP_STRICTLY_STRUCTURED_BLOCK;
+
+      block_construct = true;
+      gfc_notify_std (GFC_STD_F2008, "BLOCK construct at %C");
+
+      my_ns = gfc_build_block_ns (gfc_current_ns);
+      gfc_current_ns = my_ns;
+      my_parent = my_ns->parent;
+
+      new_st.op = EXEC_BLOCK;
+      new_st.ext.block.ns = my_ns;
+      new_st.ext.block.assoc = NULL;
+      accept_statement (ST_BLOCK);
+      st = parse_spec (ST_NONE);
+    }
+
   do
     {
       if (workshare_stmts_only)
@@ -5562,7 +5588,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	     restrictions apply recursively.  */
 	  bool cycle = true;
 
-	  st = next_statement ();
 	  for (;;)
 	    {
 	      switch (st)
@@ -5588,13 +5613,13 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:
 		case ST_OMP_PARALLEL_SECTIONS:
-		  parse_omp_structured_block (st, false);
-		  break;
+		  st = parse_omp_structured_block (st, false);
+		  continue;
 
 		case ST_OMP_PARALLEL_WORKSHARE:
 		case ST_OMP_CRITICAL:
-		  parse_omp_structured_block (st, true);
-		  break;
+		  st = parse_omp_structured_block (st, true);
+		  continue;
 
 		case ST_OMP_PARALLEL_DO:
 		case ST_OMP_PARALLEL_DO_SIMD:
@@ -5617,7 +5642,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	    }
 	}
       else
-	st = parse_executable (ST_NONE);
+	st = parse_executable (st);
       if (st == ST_NONE)
 	unexpected_eof ();
       else if (st == ST_OMP_SECTION
@@ -5627,9 +5652,27 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	  np = new_level (np);
 	  np->op = cp->op;
 	  np->block = NULL;
+	  st = next_statement ();
+	}
+      else if (block_construct && st == ST_END_BLOCK)
+	{
+	  accept_statement (st);
+	  gfc_current_ns = my_parent;
+	  pop_state ();
+
+	  st = next_statement ();
+	  if (st == omp_end_st)
+	    {
+	      accept_statement (st);
+	      st = next_statement ();
+	    }
+	  return st;
 	}
       else if (st != omp_end_st)
-	unexpected_statement (st);
+	{
+	  unexpected_statement (st);
+	  st = next_statement ();
+	}
     }
   while (st != omp_end_st);
 
@@ -5665,6 +5708,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   gfc_commit_symbols ();
   gfc_warning_check ();
   pop_state ();
+  st = next_statement ();
+  return st;
 }
 
 
@@ -5805,13 +5850,13 @@ parse_executable (gfc_statement st)
 	case ST_OMP_TEAMS:
 	case ST_OMP_TASK:
 	case ST_OMP_TASKGROUP:
-	  parse_omp_structured_block (st, false);
-	  break;
+	  st = parse_omp_structured_block (st, false);
+	  continue;
 
 	case ST_OMP_WORKSHARE:
 	case ST_OMP_PARALLEL_WORKSHARE:
-	  parse_omp_structured_block (st, true);
-	  break;
+	  st = parse_omp_structured_block (st, true);
+	  continue;
 
 	case ST_OMP_DISTRIBUTE:
 	case ST_OMP_DISTRIBUTE_PARALLEL_DO:

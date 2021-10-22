@@ -78,6 +78,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (CEIL)
 DEFINE_INT_AND_FLOAT_ROUND_FN (ROUND)
 DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
+/* Unary operations and their associated IFN_COND_* function.  */
+(define_operator_list UNCOND_UNARY
+  negate)
+(define_operator_list COND_UNARY
+  IFN_COND_NEG)
+
 /* Binary operations and their associated IFN_COND_* function.  */
 (define_operator_list UNCOND_BINARY
   plus minus
@@ -3600,6 +3606,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 >= inside_prec - !inside_unsignedp)
      (convert @0)))))))
 
+/* (float_type)(integer_type) x -> trunc (x) if the type of x matches
+   float_type.  Only do the transformation if we do not need to preserve
+   trapping behaviour, so require !flag_trapping_math. */
+#if GIMPLE
+(simplify
+   (float (fix_trunc @0))
+   (if (!flag_trapping_math
+	&& types_match (type, TREE_TYPE (@0))
+	&& direct_internal_fn_supported_p (IFN_TRUNC, type,
+					  OPTIMIZE_FOR_BOTH))
+      (IFN_TRUNC @0)))
+#endif
+
 /* If we have a narrowing conversion to an integral type that is fed by a
    BIT_AND_EXPR, we might be able to remove the BIT_AND_EXPR if it merely
    masks off bits outside the final type (and nothing else).  */
@@ -7075,6 +7094,32 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 						  false, prec)); })
 		     { build_zero_cst (TREE_TYPE (@0)); }))))))))
 
+#if GIMPLE
+
+/* Simplify:
+     a = op a1
+     r = cond ? a : b
+     --> r = .COND_FN (cond, a, b)
+and,
+    a = op a1
+    r = cond ? b : a
+    --> r = .COND_FN (~cond, b, a).  */
+
+(for uncond_op (UNCOND_UNARY)
+     cond_op (COND_UNARY)
+ (simplify
+  (vec_cond @0 (view_convert? (uncond_op@3 @1)) @2)
+   (with { tree op_type = TREE_TYPE (@3); }
+    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+        && is_truth_type_for (op_type, TREE_TYPE (@0)))
+     (cond_op @0 @1 @2))))
+ (simplify
+  (vec_cond @0 @1 (view_convert? (uncond_op@3 @2)))
+   (with { tree op_type = TREE_TYPE (@3); }
+    (if (vectorized_internal_fn_supported_p (as_internal_fn (cond_op), op_type)
+        && is_truth_type_for (op_type, TREE_TYPE (@0)))
+     (cond_op (bit_not @0) @2 @1)))))
+
 /* Simplify:
 
      a = a1 op a2
@@ -7093,7 +7138,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    conditional internal functions must support the same comparisons
    inside and outside a VEC_COND_EXPR.  */
 
-#if GIMPLE
 (for uncond_op (UNCOND_BINARY)
      cond_op (COND_BINARY)
  (simplify

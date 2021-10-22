@@ -1,3 +1,10 @@
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/102763
+	* gimple-parser.c
+	(c_parser_gimple_postfix_expression_after_primary): Check
+	for a pointer do be dereferenced by ->.
+
 2021-10-14  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-parser.c (c_finish_omp_declare_variant): Change call from

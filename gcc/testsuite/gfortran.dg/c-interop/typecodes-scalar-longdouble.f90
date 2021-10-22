@@ -1,7 +1,7 @@
 ! xfailed due to PR 101308
 ! PR 101305
 ! PR 100917
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-additional-sources "typecodes-scalar-longdouble-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }
 !

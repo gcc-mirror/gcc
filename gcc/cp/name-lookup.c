@@ -3474,7 +3474,9 @@ push_local_extern_decl_alias (tree decl)
 	  push_nested_namespace (ns);
 	  alias = do_pushdecl (alias, /* hiding= */true);
 	  pop_nested_namespace (ns);
-	  if (VAR_P (decl) && CP_DECL_THREAD_LOCAL_P (decl))
+	  if (VAR_P (decl)
+	      && CP_DECL_THREAD_LOCAL_P (decl)
+	      && alias != error_mark_node)
 	    set_decl_tls_model (alias, DECL_TLS_MODEL (decl));
 	}
     }

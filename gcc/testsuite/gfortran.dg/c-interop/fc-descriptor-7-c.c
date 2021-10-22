@@ -3,14 +3,18 @@
 #include <ISO_Fortran_binding.h>
 #include "dump-descriptors.h"
 
-extern void ctest (CFI_cdesc_t *a);
+extern void ctest (CFI_cdesc_t *, _Bool);
 
 void
-ctest (CFI_cdesc_t *a)
+ctest (CFI_cdesc_t *a, _Bool is_cont)
 {
+  CFI_index_t subscripts[2];
   /* Dump the descriptor contents to test that we can access the fields
      correctly, etc.  */
+
+#if DEBUG
   dump_CFI_cdesc_t (a);
+#endif
 
   /* We expect to get an array of shape (5,10) that may not be
      contiguous.  */
@@ -33,14 +37,17 @@ ctest (CFI_cdesc_t *a)
   if (a->dim[1].extent != 10)
     abort ();
 
-  /* There shall be an ordering of the dimensions such that the absolute
-     value of the sm member of the first dimension is not less than the 
-     elem_len member of the C descriptor and the absolute value of the sm 
-     member of each subsequent dimension is not less than the absolute 
-     value of the sm member of the previous dimension multiplied
-     by the extent of the previous dimension.  */
+  if (is_cont != CFI_is_contiguous (a))
+    abort ();
+
   if (abs (a->dim[0].sm) < a->elem_len)
     abort ();
-  if (abs (a->dim[1].sm) < abs (a->dim[0].sm) * a->dim[0].extent)
-    abort ();
+
+  for (int j = 0; j < 5; ++j)
+    for (int i = 0; i < 10; ++i)
+      {
+	subscripts[0] = j; subscripts[1] = i;
+	if (*(int *) CFI_address (a, subscripts) != (i+1) + 100*(j+1))
+	  abort ();
+      }
 }

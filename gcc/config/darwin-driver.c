@@ -259,14 +259,11 @@ maybe_get_sysroot_from_sdkroot ()
   return xstrndup (maybe_sysroot, strlen (maybe_sysroot));
 }
 
-/* Translate -filelist and -framework options in *DECODED_OPTIONS
-   (size *DECODED_OPTIONS_COUNT) to use -Xlinker so that they are
-   considered to be linker inputs in the case that no other inputs are
-   specified.  Handling these options in DRIVER_SELF_SPECS does not
-   suffice because specs are too late to add linker inputs, and
-   handling them in LINK_SPEC does not suffice because the linker will
-   not be called if there are no other inputs.  When native, also
-   default the -mmacosx-version-min flag.  */
+/* Handle the deduction of m32/m64 from -arch flags and the interactions
+   between them (i.e. try to warn a user who thinks that they have a driver
+   that can produce multi-slice "FAT" outputs with more than one arch).
+   Default the -mmacosx-version-min flag, which requires a system call on
+   native hosts.  */
 
 void
 darwin_driver_init (unsigned int *decoded_options_count,
@@ -324,23 +321,6 @@ darwin_driver_init (unsigned int *decoded_options_count,
 
 	case OPT_m64:
 	  seenM64 = true;
-	  break;
-
-	case OPT_filelist:
-	case OPT_framework:
-	  ++*decoded_options_count;
-	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
-					 *decoded_options,
-					 *decoded_options_count);
-	  memmove (*decoded_options + i + 2,
-		   *decoded_options + i + 1,
-		   ((*decoded_options_count - i - 2)
-		    * sizeof (struct cl_decoded_option)));
-	  generate_option (OPT_Xlinker, (*decoded_options)[i].arg, 1,
-			   CL_DRIVER, &(*decoded_options)[i + 1]);
-	  generate_option (OPT_Xlinker,
-			   (*decoded_options)[i].canonical_option[0], 1,
-			   CL_DRIVER, &(*decoded_options)[i]);
 	  break;
 
 	case OPT_mmacosx_version_min_:

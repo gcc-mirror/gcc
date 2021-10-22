@@ -33,3 +33,9 @@ ctest_1 (CFI_cdesc_t *arg_char, CFI_cdesc_t *arg_ucs4)
   check (arg_ucs4, 4, CFI_type_ucs4_char);
 }
 
+void
+ctest_5 (CFI_cdesc_t *arg_char, CFI_cdesc_t *arg_ucs4)
+{
+  check (arg_char, 5*1, CFI_type_char);
+  check (arg_ucs4, 5*4, CFI_type_ucs4_char);
+}

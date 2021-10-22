@@ -7279,8 +7279,10 @@ package body Sem_Ch8 is
                         if Within (It.Nam, Inst) then
                            if Within (Old_S, Inst) then
                               declare
-                                 It_D  : constant Uint := Scope_Depth (It.Nam);
-                                 Old_D : constant Uint := Scope_Depth (Old_S);
+                                 It_D  : constant Uint :=
+                                   Scope_Depth_Default_0 (It.Nam);
+                                 Old_D : constant Uint :=
+                                   Scope_Depth_Default_0 (Old_S);
                                  N_Ent : Entity_Id;
                               begin
                                  --  Choose the innermost subprogram, which
@@ -9057,10 +9059,12 @@ package body Sem_Ch8 is
             Set_Scope_Depth_Value (S, Uint_1);
 
          elsif not Is_Record_Type (Current_Scope) then
-            if Ekind (S) = E_Loop then
-               Set_Scope_Depth_Value (S, Scope_Depth (Current_Scope));
-            else
-               Set_Scope_Depth_Value (S, Scope_Depth (Current_Scope) + 1);
+            if Scope_Depth_Set (Current_Scope) then
+               if Ekind (S) = E_Loop then
+                  Set_Scope_Depth_Value (S, Scope_Depth (Current_Scope));
+               else
+                  Set_Scope_Depth_Value (S, Scope_Depth (Current_Scope) + 1);
+               end if;
             end if;
          end if;
       end if;

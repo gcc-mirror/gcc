@@ -1,3 +1,257 @@
+2021-10-20  Bob Duff  <duff@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove unnecessary
+	call to No_Uint_To_0.
+
+2021-10-20  Richard Kenner  <kenner@adacore.com>
+
+	* exp_unst.adb (Visit_Node, when N_Subprogram_Call): Never treat
+	instrinsic subprograms as nested.
+
+2021-10-20  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-widlllu.ads: Mark in SPARK.
+	* libgnat/s-widllu.ads: Likewise.
+	* libgnat/s-widuns.ads: Likewise.
+	* libgnat/s-widthu.adb: Add ghost code and a
+	pseudo-postcondition.
+
+2021-10-20  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-nbnbin__ghost.adb (Signed_Conversions,
+	Unsigned_Conversions): Mark subprograms as not imported.
+	* libgnat/a-nbnbin__ghost.ads: Provide a dummy body.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.adb (Eval_Type_Conversion): If the target subtype is
+	a static floating-point subtype and the result is a real literal,
+	consider its machine-rounded value to raise Constraint_Error.
+	(Test_In_Range): Turn local variables into constants.
+
+2021-10-20  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/g-io-put__vxworks.adb: Remove (unused)
+	* libgnat/s-parame__ae653.ads: Likewise.
+	* libgnat/s-thread.ads: Likewise.
+	* libgnat/s-thread__ae653.adb: Likewise.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.ads (Machine_Number): New inline function.
+	* sem_eval.adb (Machine_Number): New function body implementing
+	the machine rounding operation specified by RM 4.9(38/2).
+	(Check_Non_Static_Context): Call Machine_Number and set the
+	Is_Machine_Number flag consistently on the resulting node.
+	* sem_attr.adb (Eval_Attribute) <Attribute_Machine>: Likewise.
+	* checks.adb (Apply_Float_Conversion_Check): Call Machine_Number.
+	(Round_Machine): Likewise.
+
+2021-10-20  Johannes Kliemann  <kliemann@adacore.com>
+
+	* vxworks7-cert-rtp-link.spec: Add the definition of
+	__wrs_rtp_base.
+
+2021-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Delta_Record_Aggregate): Reject boxes in
+	record delta aggregates.
+
+2021-10-20  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Return_Construct_Accessibility): Modify
+	generation of accessibility checks to be more consolidated and
+	get triggered properly in required cases.
+	* sem_util.adb (Accessibility_Level): Add extra check within
+	condition to handle aliased formals properly in more cases.
+
+2021-10-20  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch7.adb (Make_Final_Call): Detect expanded protected types
+	and use original protected type in order to calculate
+	appropriate finalization routine.
+
+2021-10-20  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/a-nbnbin__ghost.ads: Add ghost package.
+
+2021-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Variant_Depth): Refine type from Integer to
+	Natural.
+
+2021-10-20  Bob Duff  <duff@adacore.com>
+
+	* atree.ads: Comment improvements. How is a "completely new
+	node" different from a "new node"? Document default values
+	corresponding to field types.
+	* exp_ch7.adb (Process_Tagged_Type_Declaration): Use
+	higher-level Scope_Depth instead of Scope_Depth_Value.  Remove
+	confusing comment: not clear what a "true" library level package
+	is.
+	* uintp.adb (Image_Out): Print No_Uint in a more readable way.
+	* gen_il-gen.adb, gen_il-gen-gen_entities.adb,
+	gen_il-gen-gen_nodes.adb, gen_il-types.ads: Tighten up the
+	subtypes of fields whose type is Uint, where possible; use
+	more-constrained subtypes such as Unat.
+	* einfo-utils.adb, einfo-utils.ads, exp_attr.adb,
+	exp_ch3.adb, exp_intr.adb, exp_unst.adb, exp_util.adb,
+	freeze.adb, repinfo.adb, sem.adb, sem_ch12.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch8.adb, sem_util.adb, sprint.adb, treepr.adb:
+	No longer use Uint_0 to indicate "unknown" or "not yet known"
+	for various fields whose type is Uint. Use No_Uint for that,
+	except in a small number of legacy cases that cause test
+	failures. Protect many queries of such fields with calls to
+	Known_... functions. Improve comments.
+	* exp_aggr.adb: Likewise.
+	(Is_OK_Aggregate): Check whether Csiz is present.
+	(Aggr_Assignment_OK_For_Backend): Ensure we do not access an
+	uninitialized size.
+	* exp_strm.adb (Build_Elementary_Input_Call,
+	Build_Elementary_Write_Call): Check whether P_Size is present.
+	* cstand.adb: Leave Component_Size of Any_Composite unknown.
+	Similar for RM_Size of Standard_Exception_Type.  These should
+	not be used.
+	* einfo.ads: Comment improvements.
+	* exp_disp.ads: Minor.
+	* gen_il-internals.ads, gen_il-internals.adb: Minor.
+	* sinfo-utils.adb: Take advantage of full-coverage rules.
+	* types.h: Minor.
+
+2021-10-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb: Add with and use of Warnsw.
+	(Check_Conformance): Report a warning when subtypes or
+	designated subtypes of formal parameters or result subtypes
+	denote different declarations between the spec and body of the
+	(Subprogram_Subtypes_Have_Same_Declaration): New function nested
+	within Check_Conformance that determines whether two subtype
+	entities referenced in a subprogram come from the same
+	declaration. Returns True immediately if the subprogram is in a
+	generic instantiation, or the subprogram is marked Is_Internal
+	or is declared in an internal (GNAT library) unit, or GNAT_Mode
+	is enabled, otherwise compares the nonlimited views of the
+	entities (or their designated subtypes' nonlimited views in the
+	anonymous access cases).
+	(Nonlimited_View_Of_Subtype): New function nested within
+	function Subprogram_Subtypes_Have_Same_Declaration that returns
+	Non_Limited_View of a type or subtype that is an incomplete or
+	class-wide type that comes from a limited of a
+	package (From_Limited_With is True for the entity), or returns
+	Full_View when the nonlimited view is an incomplete type.
+	Otherwise returns the entity passed in.
+	* warnsw.ads (Warn_On_Pedantic_Checks): New warning flag.
+	(type Warning_Record): New component Warn_On_Pedantic_Checks.
+	* warnsw.adb (All_Warnings): Set Warn_On_Pedantic_Checks from
+	parameter Setting.
+	(Restore_Warnings): Restore the value of the
+	Warn_On_Pedantic_Checks flag.
+	(Save_Warnings): Save the value of the Warn_On_Pedantic_Checks
+	flag.
+	(Set_Underscore_Warning_Switch): Add settings of the
+	Warn_On_Pedantic flag according to the switch ("-gnatw_p" vs.
+	"-gnatw_P").
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add
+	documentation of new switches -gnatw_p and -gnatw_P (warnings
+	for pedantic checks).
+	* gnat_ugn.texi: Regenerate.
+	* usage.adb: Add Warn_On_Pedantic_Checks.
+
+2021-10-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Guard
+	against equality of an uninitialized RM_Size field.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Also propagate an
+	interface name on an intrinsic subprogram.  Remove obsolete comment.
+	* libgnat/s-atopri.ads (Atomic_Load): New generic intrinsic function
+	(Atomic_Load_8): Rewrite into instantiation.
+	(Atomic_Load_16): Likewise.
+	(Atomic_Load_32): Likewise.
+	(Atomic_Load_64): Likewise.
+	(Sync_Compare_And_Swap): New generic intrinsic function.
+	(Sync_Compare_And_Swap_8): Rewrite into instantiation.
+	(Sync_Compare_And_Swap_16): Likewise.
+	(Sync_Compare_And_Swap_32): Likewise.
+	(Sync_Compare_And_Swap_64): Likewise.
+	(Lock_Free_Read): New generic inline function.
+	(Lock_Free_Read_8): Rewrite into instantiation.
+	(Lock_Free_Read_16): Likewise.
+	(Lock_Free_Read_32): Likewise.
+	(Lock_Free_Read_64): Likewise.
+	(Lock_Free_Try_Write): New generic inline function.
+	(Lock_Free_Try_Write_8): Rewrite into instantiation.
+	(Lock_Free_Try_Write_16): Likewise.
+	(Lock_Free_Try_Write_32): Likewise.
+	(Lock_Free_Try_Write_64): Likewise.
+	* libgnat/s-atopri.adb (Lock_Free_Read): New function body.
+	(Lock_Free_Read_8): Delete.
+	(Lock_Free_Read_16): Likewise.
+	(Lock_Free_Read_32): Likewise.
+	(Lock_Free_Read_64): Likewise.
+	(Lock_Free_Try_Write): New function body.
+	(Lock_Free_Try_Write_8): Delete.
+	(Lock_Free_Try_Write_16): Likewise.
+	(Lock_Free_Try_Write_32): Likewise.
+	(Lock_Free_Try_Write_64): Likewise.
+	* libgnat/s-aoinar.adb (Atomic_Fetch_And_Add): Use type-generic GCC
+	atomic builtin and tidy up implementation.
+	(Atomic_Fetch_And_Subtract): Likewise.
+	* libgnat/s-aomoar.adb (Atomic_Fetch_And_Add): Likewise.
+	(Atomic_Fetch_And_Subtract): Likewise.
+	* libgnat/s-atopex.adb (Atomic_Exchange): Likewise.
+	(Atomic_Compare_And_Exchange): Likewise.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>:
+	Replace test on Convention_Intrinsic with Is_Intrinsic_Subprogram.
+	(gnat_to_gnu_param): Likewise.
+	(gnat_to_gnu_subprog_type): Likewise.
+	* gcc-interface/trans.c (elaborate_all_entities_for_package): Ditto.
+
+2021-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_eval.ads (Check_Non_Static_Context): Update documentation.
+	* sem_eval.adb (In_Any_Integer_Context): Change parameter type,
+	adjust accordingly and remove unreachable case.
+	(Eval_Integer_Literal): Consider the node kind throughout and
+	trim down verbose condition.
+
+2021-10-20  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Remove references to system-vxworks-ppc.ads
+	and system-vxworks-x86.ads.
+	* libgnat/system-vxworks-ppc.ads: Remove.
+	* libgnat/system-vxworks-ppc-ravenscar.ads: Likewise.
+	* libgnat/system-vxworks-x86.ads: Likewise.
+
+2021-10-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Analyze_QUantified_Expression): Issue warning on
+	conjunct/disjunct sub-expression of the full expression inside a
+	quantified expression, when it does not reference the quantified
+	variable.
+
+2021-10-20  Marc Poulhiès  <poulhies@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): in case of checked type
+	conversion, update Typ to match Exp's type and add call to
+	Analyze_And_Resolve.
+
+2021-10-20  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/100486
+	* sem_prag.adb (Check_Valid_Library_Unit_Pragma): Do not raise an
+	exception as part of the bootstrap.
+
+2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc-interface/misc.c (gnat_post_options): Do not warn
+	about DBX_DEBUG use here.
+
 2021-10-14  Alexandre Oliva  <oliva@adacore.com>
 
 	* par-ch10.adb (P_Compilation_Unit): Reenable ada83 library

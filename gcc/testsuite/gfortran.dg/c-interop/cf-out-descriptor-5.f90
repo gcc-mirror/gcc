@@ -6,7 +6,7 @@
 ! This program checks use of an assumed-length character dummy argument
 ! as an intent(out) parameter in subroutines with C binding.
 
-subroutine ftest (a, n) bind (c, name="ftest")  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+subroutine ftest (a, n) bind (c, name="ftest")
   use iso_c_binding
   character(kind=C_CHAR, len=*), intent(out) :: a
   integer(C_INT), value :: n
@@ -20,13 +20,13 @@ program testit
   implicit none
 
   interface
-    subroutine ctest (a, n) bind (c)  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine ctest (a, n) bind (c)
       use iso_c_binding
       character(kind=C_CHAR, len=*), intent(out) :: a
       integer(C_INT), value :: n
     end subroutine
 
-    subroutine ftest (a, n) bind (c)  ! { dg-bogus "Sorry" "pr92482" { xfail *-*-* } }
+    subroutine ftest (a, n) bind (c)
       use iso_c_binding
       character(kind=C_CHAR, len=*), intent(out) :: a
       integer(C_INT), value :: n

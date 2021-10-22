@@ -9728,10 +9728,12 @@ A basic @code{asm} statement has the following syntax:
 asm @var{asm-qualifiers} ( @var{AssemblerInstructions} )
 @end example
 
-The @code{asm} keyword is a GNU extension.
-When writing code that can be compiled with @option{-ansi} and the
-various @option{-std} options, use @code{__asm__} instead of 
-@code{asm} (@pxref{Alternate Keywords}).
+For the C language, the @code{asm} keyword is a GNU extension.
+When writing C code that can be compiled with @option{-ansi} and the
+@option{-std} options that select C dialects without GNU extensions, use
+@code{__asm__} instead of @code{asm} (@pxref{Alternate Keywords}).  For
+the C++ language, @code{asm} is a standard keyword, but @code{__asm__}
+can be used for code compiled with @option{-fno-asm}.
 
 @subsubheading Qualifiers
 @table @code
@@ -17698,7 +17700,7 @@ macro @code{__BUILTIN_CPU_SUPPORTS__} if the
 @code{__builtin_cpu_supports} built-in function is fully supported.
 
 If GCC was configured to use a GLIBC before 2.23, the built-in
-function @code{__builtin_cpu_suports} always returns a 0 and the
+function @code{__builtin_cpu_supports} always returns a 0 and the
 compiler issues a warning.
 
 The following features can be

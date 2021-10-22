@@ -1,5 +1,5 @@
 ! Fails on x86 targets where sizeof(long double) == 16.
-! { dg-do run { xfail { { x86_64*-*-* i?86*-*-* } && longdouble128 } } }
+! { dg-do run }
 ! { dg-additional-sources PR100914.c }
 ! { dg-require-effective-target fortran_real_c_float128 }
 ! { dg-additional-options "-Wno-pedantic" }

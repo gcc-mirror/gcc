@@ -1,5 +1,5 @@
 /* PR target/26915 */
-/* { dg-do compile } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O -mfpmath=387 -mfancy-math-387" } */
 
 double testm0(void)

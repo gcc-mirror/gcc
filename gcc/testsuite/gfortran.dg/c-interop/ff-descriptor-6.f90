@@ -1,5 +1,5 @@
 ! Reported as pr94070.
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 !
 ! This program checks that passing assumed-size arrays to
 ! and from Fortran functions with C binding works.

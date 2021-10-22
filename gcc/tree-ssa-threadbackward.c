@@ -52,12 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 class back_threader_registry
 {
 public:
-  back_threader_registry ();
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   back_jt_path_registry m_lowlevel_registry;
-  int m_threaded_paths;
 };
 
 // Class to abstract the profitability code for the backwards threader.
@@ -78,7 +76,6 @@ class back_threader
 {
 public:
   back_threader (bool speed_p, bool resolve);
-  ~back_threader ();
   void maybe_thread_block (basic_block bb);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
@@ -114,7 +111,7 @@ private:
   static const edge UNREACHABLE_EDGE;
   // Set to TRUE if unknown SSA names along a path should be resolved
   // with the ranger.  Otherwise, unknown SSA names are assumed to be
-  // VARYING.  Setting to true more precise but slower.
+  // VARYING.  Setting to true is more precise but slower.
   bool m_resolve;
 };
 
@@ -128,10 +125,6 @@ back_threader::back_threader (bool speed_p, bool resolve)
 {
   m_last_stmt = NULL;
   m_resolve = resolve;
-}
-
-back_threader::~back_threader ()
-{
 }
 
 // Register the current path for jump threading if it's profitable to
@@ -574,11 +567,6 @@ back_threader::debug ()
   dump (stderr);
 }
 
-back_threader_registry::back_threader_registry ()
-{
-  m_threaded_paths = 0;
-}
-
 bool
 back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
 {
@@ -619,6 +607,15 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      reject that case.  */
   if (m_path.length () <= 1)
       return false;
+
+  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
+		 "the number of basic blocks on the path "
+		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
+      return false;
+    }
 
   int n_insns = 0;
   gimple_stmt_iterator gsi;
@@ -919,53 +916,19 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 
   m_lowlevel_registry.push_edge (jump_thread_path,
 				 taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-
-  if (m_lowlevel_registry.register_jump_thread (jump_thread_path))
-    ++m_threaded_paths;
+  m_lowlevel_registry.register_jump_thread (jump_thread_path);
   return true;
 }
 
-namespace {
-
-const pass_data pass_data_thread_jumps =
-{
-  GIMPLE_PASS,
-  "thread",
-  OPTGROUP_NONE,
-  TV_TREE_SSA_THREAD_JUMPS,
-  ( PROP_cfg | PROP_ssa ),
-  0,
-  0,
-  0,
-  TODO_update_ssa,
-};
-
-class pass_thread_jumps : public gimple_opt_pass
-{
-public:
-  pass_thread_jumps (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_thread_jumps, ctxt)
-  {}
-
-  opt_pass * clone (void) { return new pass_thread_jumps (m_ctxt); }
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
-};
-
-bool
-pass_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
-{
-  return flag_thread_jumps && flag_expensive_optimizations;
-}
-
-// Try to thread blocks in FUN.  Return TRUE if any jump thread paths were
-// registered.
+// Try to thread blocks in FUN.  RESOLVE is TRUE when fully resolving
+// unknown SSAs.  SPEED is TRUE when optimizing for speed.
+//
+// Return TRUE if any jump thread paths were registered.
 
 static bool
-try_thread_blocks (function *fun)
+try_thread_blocks (function *fun, bool resolve, bool speed)
 {
-  /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed=*/true, /*resolve=*/false);
+  back_threader threader (speed, resolve);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -975,24 +938,27 @@ try_thread_blocks (function *fun)
   return threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
 }
 
-unsigned int
-pass_thread_jumps::execute (function *fun)
+static unsigned int
+do_early_thread_jumps (function *fun, bool resolve)
+{
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+  try_thread_blocks (fun, resolve, /*speed=*/false);
+
+  loop_optimizer_finalize ();
+  return 0;
+}
+
+static unsigned int
+do_thread_jumps (function *fun, bool resolve)
 {
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
 
-  bool changed = try_thread_blocks (fun);
+  bool changed = try_thread_blocks (fun, resolve, /*speed=*/true);
 
   loop_optimizer_finalize ();
 
   return changed ? TODO_cleanup_cfg : 0;
-}
-
-}
-
-gimple_opt_pass *
-make_pass_thread_jumps (gcc::context *ctxt)
-{
-  return new pass_thread_jumps (ctxt);
 }
 
 namespace {
@@ -1010,6 +976,33 @@ const pass_data pass_data_early_thread_jumps =
   ( TODO_cleanup_cfg | TODO_update_ssa ),
 };
 
+const pass_data pass_data_thread_jumps =
+{
+  GIMPLE_PASS,
+  "thread",
+  OPTGROUP_NONE,
+  TV_TREE_SSA_THREAD_JUMPS,
+  ( PROP_cfg | PROP_ssa ),
+  0,
+  0,
+  0,
+  TODO_update_ssa,
+};
+
+const pass_data pass_data_thread_jumps_full =
+{
+  GIMPLE_PASS,
+  "thread-full",
+  OPTGROUP_NONE,
+  TV_TREE_SSA_THREAD_JUMPS,
+  ( PROP_cfg | PROP_ssa ),
+  0,
+  0,
+  0,
+  TODO_update_ssa,
+};
+
+// Early jump threading pass optimizing for size.
 class pass_early_thread_jumps : public gimple_opt_pass
 {
 public:
@@ -1017,36 +1010,74 @@ public:
     : gimple_opt_pass (pass_data_early_thread_jumps, ctxt)
   {}
 
-  opt_pass * clone (void) { return new pass_early_thread_jumps (m_ctxt); }
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  opt_pass * clone () override
+  {
+    return new pass_early_thread_jumps (m_ctxt);
+  }
+  bool gate (function *) override
+  {
+    return flag_thread_jumps;
+  }
+  unsigned int execute (function *fun) override
+  {
+    return do_early_thread_jumps (fun, /*resolve=*/false);
+  }
 };
 
-bool
-pass_early_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
+// Jump threading pass without resolving of unknown SSAs.
+class pass_thread_jumps : public gimple_opt_pass
 {
-  return flag_thread_jumps;
+public:
+  pass_thread_jumps (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_thread_jumps, ctxt)
+  {}
+  opt_pass * clone (void) override
+  {
+    return new pass_thread_jumps (m_ctxt);
+  }
+  bool gate (function *) override
+  {
+    return flag_thread_jumps && flag_expensive_optimizations;
+  }
+  unsigned int execute (function *fun) override
+  {
+    return do_thread_jumps (fun, /*resolve=*/false);
+  }
+};
+
+// Jump threading pass that fully resolves unknown SSAs.
+class pass_thread_jumps_full : public gimple_opt_pass
+{
+public:
+  pass_thread_jumps_full (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_thread_jumps_full, ctxt)
+  {}
+  opt_pass * clone (void) override
+  {
+    return new pass_thread_jumps_full (m_ctxt);
+  }
+  bool gate (function *) override
+  {
+    return flag_thread_jumps && flag_expensive_optimizations;
+  }
+  unsigned int execute (function *fun) override
+  {
+    return do_thread_jumps (fun, /*resolve=*/true);
+  }
+};
+
+} // namespace {
+
+gimple_opt_pass *
+make_pass_thread_jumps (gcc::context *ctxt)
+{
+  return new pass_thread_jumps (ctxt);
 }
 
-unsigned int
-pass_early_thread_jumps::execute (function *fun)
+gimple_opt_pass *
+make_pass_thread_jumps_full (gcc::context *ctxt)
 {
-  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-
-  /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/false, /*resolve=*/false);
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      if (EDGE_COUNT (bb->succs) > 1)
-	threader.maybe_thread_block (bb);
-    }
-  threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
-
-  loop_optimizer_finalize ();
-  return 0;
-}
-
+  return new pass_thread_jumps_full (ctxt);
 }
 
 gimple_opt_pass *

@@ -1,3 +1,13 @@
+2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-changelog/git_commit.py (ignored_prefixes): Add libffi/.
+
+2021-10-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Update location of
+	'bad parentheses wrapping'.
+	* gcc-changelog/test_email.py: Test it.
+
 2021-10-02  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Filter out -Wtautological-compare

@@ -589,5 +589,7 @@ package Gen_IL.Types is
 
    subtype Uint_Subtype is Type_Enum with
      Predicate => Uint_Subtype in Valid_Uint | Unat | Upos | Nonzero_Uint;
+   --  These are the subtypes of Uint that have predicates restricting their
+   --  values.
 
 end Gen_IL.Types;

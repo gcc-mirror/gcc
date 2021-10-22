@@ -1567,7 +1567,7 @@ ix86_function_naked (const_tree fn)
 /* Write the extra assembler code needed to declare a function properly.  */
 
 void
-ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
+ix86_asm_output_function_label (FILE *out_file, const char *fname,
 				tree decl)
 {
   bool is_ms_hook = ix86_function_ms_hook_prologue (decl);
@@ -1581,14 +1581,14 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
       unsigned int filler_cc = 0xcccccccc;
 
       for (i = 0; i < filler_count; i += 4)
-        fprintf (asm_out_file, ASM_LONG " %#x\n", filler_cc);
+	fprintf (out_file, ASM_LONG " %#x\n", filler_cc);
     }
 
 #ifdef SUBTARGET_ASM_UNWIND_INIT
-  SUBTARGET_ASM_UNWIND_INIT (asm_out_file);
+  SUBTARGET_ASM_UNWIND_INIT (out_file);
 #endif
 
-  ASM_OUTPUT_LABEL (asm_out_file, fname);
+  ASM_OUTPUT_LABEL (out_file, fname);
 
   /* Output magic byte marker, if hot-patch attribute is set.  */
   if (is_ms_hook)
@@ -1597,14 +1597,14 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	{
 	  /* leaq [%rsp + 0], %rsp  */
 	  fputs (ASM_BYTE "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n",
-		 asm_out_file);
+		 out_file);
 	}
       else
 	{
           /* movl.s %edi, %edi
 	     push   %ebp
 	     movl.s %esp, %ebp */
-	  fputs (ASM_BYTE "0x8b, 0xff, 0x55, 0x8b, 0xec\n", asm_out_file);
+	  fputs (ASM_BYTE "0x8b, 0xff, 0x55, 0x8b, 0xec\n", out_file);
 	}
     }
 }
@@ -5399,9 +5399,18 @@ ix86_get_ssemov (rtx *operands, unsigned size,
       switch (scalar_mode)
 	{
 	case E_HFmode:
-	  opcode = (misaligned_p
-		    ? (TARGET_AVX512BW ? "vmovdqu16" : "vmovdqu64")
-		    : "vmovdqa64");
+	  if (evex_reg_p)
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "vmovdqu64")
+		      : "vmovdqa64");
+	  else
+	    opcode = (misaligned_p
+		      ? (TARGET_AVX512BW
+			 ? "vmovdqu16"
+			 : "%vmovdqu")
+		      : "%vmovdqa");
 	  break;
 	case E_SFmode:
 	  opcode = misaligned_p ? "%vmovups" : "%vmovaps";
@@ -13921,7 +13930,10 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 static void
 ix86_print_operand_address (FILE *file, machine_mode /*mode*/, rtx addr)
 {
-  ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC, false);
+  if (this_is_asm_operands && ! address_operand (addr, VOIDmode))
+    output_operand_lossage ("invalid constraints for operand");
+  else
+    ix86_print_operand_address_as (file, addr, ADDR_SPACE_GENERIC, false);
 }
 
 /* Implementation of TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
@@ -19303,7 +19315,9 @@ ix86_hardreg_mov_ok (rtx dst, rtx src)
   /* Avoid complex sets of likely_spilled hard registers before reload.  */
   if (REG_P (dst) && HARD_REGISTER_P (dst)
       && !REG_P (src) && !MEM_P (src)
-      && !x86_64_immediate_operand (src, GET_MODE (dst))
+      && !(VECTOR_MODE_P (GET_MODE (dst))
+	   ? standard_sse_constant_p (src, GET_MODE (dst))
+	   : x86_64_immediate_operand (src, GET_MODE (dst)))
       && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst)))
       && !reload_completed)
     return false;
@@ -20798,6 +20812,13 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else
 	*total = cost->sse_op;
       return true;
+
+    case MEM:
+      /* An insn that accesses memory is slightly more expensive
+         than one that does not.  */
+      if (speed)
+        *total += 1;
+      return false;
 
     default:
       return false;

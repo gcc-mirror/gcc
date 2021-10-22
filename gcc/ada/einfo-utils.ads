@@ -274,13 +274,20 @@ package Einfo.Utils is
    function Safe_Emax_Value                     (Id : E) return U;
    function Safe_First_Value                    (Id : E) return R;
    function Safe_Last_Value                     (Id : E) return R;
-   function Scope_Depth                         (Id : E) return U;
-   function Scope_Depth_Set                     (Id : E) return B;
    function Size_Clause                         (Id : E) return N;
    function Stream_Size_Clause                  (Id : E) return N;
    function Type_High_Bound                     (Id : E) return N;
    function Type_Low_Bound                      (Id : E) return N;
    function Underlying_Type                     (Id : E) return E;
+
+   function Scope_Depth                         (Id : E) return U;
+   function Scope_Depth_Set                     (Id : E) return B;
+
+   function Scope_Depth_Default_0               (Id : E) return U;
+   --  In rare cases, the Scope_Depth_Value (queried by Scope_Depth) is
+   --  not correctly set before querying it; this may be used instead of
+   --  Scope_Depth in such cases. It returns Uint_0 if the Scope_Depth_Value
+   --  has not been set. See documentation in Einfo.
 
    pragma Inline (Address_Clause);
    pragma Inline (Alignment_Clause);
@@ -314,63 +321,6 @@ package Einfo.Utils is
    -- Type Representation Attribute Fields --
    ------------------------------------------
 
-   --  Each of the following fields can be in a "known" or "unknown" state:
-
-   --    Alignment
-   --    Component_Size
-   --    Component_Bit_Offset
-   --    Digits_Value
-   --    Esize
-   --    Normalized_First_Bit
-   --    Normalized_Position
-   --    RM_Size
-   --
-   --  NOTE: "known" here does not mean "known at compile time". It means that
-   --  the compiler has computed the value of the field (either by default, or
-   --  by noting some representation clauses), and the field has not been
-   --  reinitialized.
-   --
-   --  We document the Esize functions here; the others are analogous:
-   --
-   --     Known_Esize: True if Set_Esize has been called without a subsequent
-   --     Reinit_Esize.
-   --
-   --     Known_Static_Esize: True if Known_Esize and the Esize is known at
-   --     compile time. (We're not using "static" in the Ada RM sense here. We
-   --     are using it to mean "known at compile time.)
-   --
-   --     Reinit_Esize: Set the Esize field to its initial unknown state.
-   --
-   --     Copy_Esize: Copies the Esize from From to To; Known_Esize (From) may
-   --     be False, in which case Known_Esize (To) becomes False.
-   --
-   --     Esize: This is the normal automatially-generated getter for Esize,
-   --     declared elsewhere. It is an error to call this if Set_Esize has not
-   --     yet been called, or if Reinit_Esize has been called subsequently.
-   --
-   --     Set_Esize: This is the normal automatially-generated setter for
-   --     Esize. After a call to this, Known_Esize is True. It is an error
-   --     to call this with a No_Uint value.
-   --
-   --  Normally, we call Set_Esize first, and then query Esize (and similarly
-   --  for other fields). However in some cases, we need to check Known_Esize
-   --  before calling Esize, because the code is written in such a way that we
-   --  don't know whether Set_Esize has already been called.
-   --
-   --  We intend to use the initial zero value to represent "unknown". Note
-   --  that this value is different from No_Uint, and different from Uint_0.
-   --  However, this is work in progress; we are still using No_Uint or Uint_0
-   --  to represent "unknown" in some cases. Using Uint_0 leads to several
-   --  bugs, because zero is a legitimate value (T'Size can be zero bits) --
-   --  Uint_0 shouldn't mean two different things.
-   --
-   --  In two cases, Known_Static_Esize and Known_Static_RM_Size, there is one
-   --  more consideration, which is that we always return False for generic
-   --  types. Within a template, the size can look Known_Static, because of the
-   --  fake size values we put in template types, but they are not really
-   --  Known_Static and anyone testing if they are Known_Static within the
-   --  template should get False as a result to prevent incorrect assumptions.
-
    function Known_Alignment (E : Entity_Id) return B with Inline;
    procedure Reinit_Alignment (Id : E) with Inline;
    procedure Copy_Alignment (To, From : E);
@@ -399,6 +349,44 @@ package Einfo.Utils is
    function Known_Static_RM_Size (E : Entity_Id) return B with Inline;
    procedure Reinit_RM_Size (Id : E) with Inline;
    procedure Copy_RM_Size (To, From : E);
+
+   --  NOTE: "known" here does not mean "known at compile time". It means that
+   --  the compiler has computed the value of the field (either by default, or
+   --  by noting some representation clauses), and the field has not been
+   --  reinitialized.
+   --
+   --  We document the Esize functions here; the others above are analogous:
+   --
+   --     Known_Esize: True if Set_Esize has been called without a subsequent
+   --     Reinit_Esize.
+   --
+   --     Known_Static_Esize: True if Known_Esize and the Esize is known at
+   --     compile time. (We're not using "static" in the Ada RM sense here. We
+   --     are using it to mean "known at compile time".)
+   --
+   --     Reinit_Esize: Set the Esize field to its initial unknown state.
+   --
+   --     Copy_Esize: Copies the Esize from From to To; Known_Esize (From) may
+   --     be False, in which case Known_Esize (To) becomes False.
+   --
+   --     Esize: This is the normal automatically-generated getter for Esize,
+   --     declared elsewhere. Returns No_Uint if not Known_Esize.
+   --
+   --     Set_Esize: This is the normal automatically-generated setter for
+   --     Esize. After a call to this, Known_Esize is True. It is an error
+   --     to call this with a No_Uint value.
+   --
+   --  Normally, we call Set_Esize first, and then query Esize (and similarly
+   --  for other fields). However in some cases, we need to check Known_Esize
+   --  before calling Esize, because the code is written in such a way that we
+   --  don't know whether Set_Esize has already been called.
+   --
+   --  In two cases, Known_Static_Esize and Known_Static_RM_Size, there is one
+   --  more consideration, which is that we always return False for generic
+   --  types. Within a template, the size can look Known_Static, because of the
+   --  fake size values we put in template types, but they are not really
+   --  Known_Static and anyone testing if they are Known_Static within the
+   --  template should get False as a result to prevent incorrect assumptions.
 
    ---------------------------------------------------------
    -- Procedures for setting multiple of the above fields --

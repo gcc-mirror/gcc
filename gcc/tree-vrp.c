@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-array-bounds.h"
 #include "gimple-range.h"
 #include "gimple-range-path.h"
+#include "value-pointer-equiv.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -4313,6 +4314,127 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
   return 0;
 }
 
+// This is a ranger based folder which continues to use the dominator
+// walk to access the substitute and fold machinery.  Ranges are calculated
+// on demand.
+
+class rvrp_folder : public substitute_and_fold_engine
+{
+public:
+
+  rvrp_folder (gimple_ranger *r) : substitute_and_fold_engine (),
+				   m_simplifier (r, r->non_executable_edge_flag)
+  {
+    m_ranger = r;
+    m_pta = new pointer_equiv_analyzer (m_ranger);
+  }
+
+  ~rvrp_folder ()
+  {
+    delete m_pta;
+  }
+
+  tree value_of_expr (tree name, gimple *s = NULL) OVERRIDE
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    tree ret = m_ranger->value_of_expr (name, s);
+    if (!ret && supported_pointer_equiv_p (name))
+      ret = m_pta->get_equiv (name);
+    return ret;
+  }
+
+  tree value_on_edge (edge e, tree name) OVERRIDE
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    tree ret = m_ranger->value_on_edge (e, name);
+    if (!ret && supported_pointer_equiv_p (name))
+      ret = m_pta->get_equiv (name);
+    return ret;
+  }
+
+  tree value_of_stmt (gimple *s, tree name = NULL) OVERRIDE
+  {
+    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
+    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+      return NULL;
+    return m_ranger->value_of_stmt (s, name);
+  }
+
+  void pre_fold_bb (basic_block bb) OVERRIDE
+  {
+    m_pta->enter (bb);
+  }
+
+  void post_fold_bb (basic_block bb) OVERRIDE
+  {
+    m_pta->leave (bb);
+  }
+
+  void pre_fold_stmt (gimple *stmt) OVERRIDE
+  {
+    m_pta->visit_stmt (stmt);
+  }
+
+  bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
+  {
+    return m_simplifier.simplify (gsi);
+  }
+
+private:
+  DISABLE_COPY_AND_ASSIGN (rvrp_folder);
+  gimple_ranger *m_ranger;
+  simplify_using_ranges m_simplifier;
+  pointer_equiv_analyzer *m_pta;
+};
+
+/* Main entry point for a VRP pass using just ranger. This can be called
+  from anywhere to perform a VRP pass, including from EVRP.  */
+
+unsigned int
+execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p)
+{
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+  scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  gimple_ranger *ranger = enable_ranger (fun);
+  rvrp_folder folder (ranger);
+  folder.substitute_and_fold ();
+  ranger->export_global_ranges ();
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    ranger->dump (dump_file);
+
+
+  if (warn_array_bounds && warn_array_bounds_p)
+    {
+      // Set all edges as executable, except those ranger says aren't.
+      int non_exec_flag = ranger->non_executable_edge_flag;
+      basic_block bb;
+      FOR_ALL_BB_FN (bb, fun)
+	{
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (e->flags & non_exec_flag)
+	      e->flags &= ~EDGE_EXECUTABLE;
+	    else
+	      e->flags |= EDGE_EXECUTABLE;
+	}
+      array_bounds_checker array_checker (fun, ranger);
+      array_checker.check ();
+    }
+
+  disable_ranger (fun);
+  scev_finalize ();
+  loop_optimizer_finalize ();
+  return 0;
+}
+
 namespace {
 
 const pass_data pass_data_vrp =
@@ -4328,11 +4450,13 @@ const pass_data pass_data_vrp =
   ( TODO_cleanup_cfg | TODO_update_ssa ), /* todo_flags_finish */
 };
 
+static int vrp_pass_num = 0;
 class pass_vrp : public gimple_opt_pass
 {
 public:
   pass_vrp (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_vrp, ctxt), warn_array_bounds_p (false)
+    : gimple_opt_pass (pass_data_vrp, ctxt), warn_array_bounds_p (false),
+      my_pass (++vrp_pass_num)
   {}
 
   /* opt_pass methods: */
@@ -4344,10 +4468,16 @@ public:
     }
   virtual bool gate (function *) { return flag_tree_vrp != 0; }
   virtual unsigned int execute (function *fun)
-    { return execute_vrp (fun, warn_array_bounds_p); }
+    {
+      if ((my_pass == 1 && param_vrp1_mode == VRP_MODE_RANGER)
+	  || (my_pass == 2 && param_vrp2_mode == VRP_MODE_RANGER))
+	return execute_ranger_vrp (fun, warn_array_bounds_p);
+      return execute_vrp (fun, warn_array_bounds_p);
+    }
 
  private:
   bool warn_array_bounds_p;
+  int my_pass;
 }; // class pass_vrp
 
 } // anon namespace

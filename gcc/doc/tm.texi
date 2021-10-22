@@ -4079,12 +4079,6 @@ The return value is usually either a @code{reg} RTX for the hard
 register in which to pass the argument, or zero to pass the argument
 on the stack.
 
-The return value can be a @code{const_int} which means argument is
-passed in a target specific slot with specified number.  Target hooks
-should be used to store or load argument in such case.  See
-@code{TARGET_STORE_BOUNDS_FOR_ARG} and @code{TARGET_LOAD_BOUNDS_FOR_ARG}
-for more information.
-
 The value of the expression can also be a @code{parallel} RTX@.  This is
 used when an argument is passed in multiple locations.  The mode of the
 @code{parallel} should be the mode of the entire argument.  The
@@ -5428,37 +5422,6 @@ If you need to conditionally change ABIs so that one works with
 defined, then define this hook to return @code{true} if
 @code{TARGET_SETUP_INCOMING_VARARGS} is used, @code{false} otherwise.
 Otherwise, you should not define this hook.
-@end deftypefn
-
-@deftypefn {Target Hook} rtx TARGET_LOAD_BOUNDS_FOR_ARG (rtx @var{slot}, rtx @var{arg}, rtx @var{slot_no})
-This hook is used by expand pass to emit insn to load bounds of
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case
-bounds of @var{arg} are not passed in register.  If @var{slot} is a
-memory, then bounds are loaded as for regular pointer loaded from
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer
-constant holding number of the target dependent special slot which
-should be used to obtain bounds.  Hook returns RTX holding loaded bounds.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_STORE_BOUNDS_FOR_ARG (rtx @var{arg}, rtx @var{slot}, rtx @var{bounds}, rtx @var{slot_no})
-This hook is used by expand pass to emit insns to store @var{bounds} of
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case
-@var{bounds} of @var{arg} are not passed in register.  If @var{slot} is a
-memory, then @var{bounds} are stored as for regular pointer stored in
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer
-constant holding number of the target dependent special slot which
-should be used to store @var{bounds}.
-@end deftypefn
-
-@deftypefn {Target Hook} rtx TARGET_LOAD_RETURNED_BOUNDS (rtx @var{slot})
-This hook is used by expand pass to emit insn to load bounds
-returned by function call in @var{slot}.  Hook returns RTX holding
-loaded bounds.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_STORE_RETURNED_BOUNDS (rtx @var{slot}, rtx @var{bounds})
-This hook is used by expand pass to emit insn to store @var{bounds}
-returned by function call into @var{slot}.
 @end deftypefn
 
 @node Trampolines

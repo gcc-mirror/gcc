@@ -29,7 +29,7 @@
 #include <ffi.h>
 #include <ffi_common.h>
 
-#define STACK_ARG_SIZE(x) ALIGN(x, FFI_SIZEOF_ARG)
+#define STACK_ARG_SIZE(x) FFI_ALIGN(x, FFI_SIZEOF_ARG)
 
 static ffi_status
 initialize_aggregate_packed_struct (ffi_type * arg)
@@ -190,7 +190,7 @@ ffi_prep_cif_core (ffi_cif * cif,
       FFI_ASSERT_VALID_TYPE (*ptr);
 
       if (((*ptr)->alignment - 1) & bytes)
-	bytes = ALIGN (bytes, (*ptr)->alignment);
+	bytes = FFI_ALIGN (bytes, (*ptr)->alignment);
       if ((*ptr)->type == FFI_TYPE_STRUCT)
 	{
 	  if ((*ptr)->size > 8)

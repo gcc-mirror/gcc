@@ -38,6 +38,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+/// @cond undocumented
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -1970,6 +1971,7 @@ namespace __detail
 
  ///@} hashtable-detail
 } // namespace __detail
+/// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

@@ -136,7 +136,7 @@ Maximum number of outgoing edges in a switch before EVRP will not process it.
 
 -param=evrp-mode=
 Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_RVRP_ONLY) Param Optimization
---param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|trace|gori|cache|tracegori|debug] Specifies the mode Early VRP should operate in.
+--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first] Specifies the mode Early VRP should operate in.
 
 Enum
 Name(evrp_mode) Type(enum evrp_mode) UnknownError(unknown evrp mode %qs)
@@ -152,26 +152,6 @@ Enum(evrp_mode) String(legacy-first) Value(EVRP_MODE_EVRP_FIRST)
 
 EnumValue
 Enum(evrp_mode) String(ranger-first) Value(EVRP_MODE_RVRP_FIRST)
-
-EnumValue
-Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
-
-EnumValue
-Enum(evrp_mode) String(cache) Value(EVRP_MODE_CACHE)
-
-EnumValue
-Enum(evrp_mode) String(gori) Value(EVRP_MODE_GORI)
-
-EnumValue
-Enum(evrp_mode) String(tracegori) Value(EVRP_MODE_TRACE_GORI)
-
-EnumValue
-Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
-
--param=ranger-logical-depth=
-Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
-Maximum depth of logical expression evaluation ranger will look through when
-evaluating outgoing edge ranges.
 
 -param=fsm-scale-path-blocks=
 Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
@@ -533,6 +513,10 @@ The maximum number of nested indirect inlining performed by early inliner.
 Common Joined UInteger Var(param_max_fields_for_field_sensitive) Param
 Maximum number of fields in a structure before pointer analysis treats the structure as a single variable.
 
+-param=max-fsm-thread-length=
+Common Joined UInteger Var(param_max_fsm_thread_length) Init(10) IntegerRange(1, 999999) Param Optimization
+Maximum number of basic blocks on a jump thread path.
+
 -param=max-fsm-thread-path-insns=
 Common Joined UInteger Var(param_max_fsm_thread_path_insns) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path.
@@ -889,6 +873,36 @@ The minimum constant stride beyond which we should use prefetch hints for.
 Common Joined UInteger Var(param_profile_func_internal_id) IntegerRange(0, 1) Param
 Use internal function id in profile lookup.
 
+-param=ranger-debug=
+Common Joined Var(param_ranger_debug) Enum(ranger_debug) Init(RANGER_DEBUG_NONE) Param Optimization
+--param=ranger-debug=[none|trace|gori|cache|tracegori|all] Specifies the output mode for debugging ranger.
+
+Enum
+Name(ranger_debug) Type(enum ranger_debug) UnknownError(unknown ranger debug mode %qs)
+
+EnumValue
+Enum(ranger_debug) String(none) Value(RANGER_DEBUG_NONE)
+
+EnumValue
+Enum(ranger_debug) String(trace) Value(RANGER_DEBUG_TRACE)
+
+EnumValue
+Enum(ranger_debug) String(cache) Value(RANGER_DEBUG_CACHE)
+
+EnumValue
+Enum(ranger_debug) String(gori) Value(RANGER_DEBUG_GORI)
+
+EnumValue
+Enum(ranger_debug) String(tracegori) Value(RANGER_DEBUG_TRACE_GORI)
+
+EnumValue
+Enum(ranger_debug) String(all) Value(RANGER_DEBUG_ALL)
+
+-param=ranger-logical-depth=
+Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
+Maximum depth of logical expression evaluation ranger will look through when
+evaluating outgoing edge ranges.
+
 -param=rpo-vn-max-loop-depth=
 Common Joined UInteger Var(param_rpo_vn_max_loop_depth) Init(7) IntegerRange(2, 65536) Param Optimization
 Maximum depth of a loop nest to fully value-number optimistically.
@@ -1132,5 +1146,22 @@ Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only 
 -param=vect-inner-loop-cost-factor=
 Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 10000) Param Optimization
 The maximum factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
+
+-param=vrp1-mode=
+Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization
+--param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
+
+-param=vrp2-mode=
+Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization
+--param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in.
+
+Enum
+Name(vrp_mode) Type(enum vrp_mode) UnknownError(unknown vrp mode %qs)
+
+EnumValue
+Enum(vrp_mode) String(vrp) Value(VRP_MODE_VRP)
+
+EnumValue
+Enum(vrp_mode) String(ranger) Value(VRP_MODE_RANGER)
 
 ; This comment is to ensure we retain the blank line above.

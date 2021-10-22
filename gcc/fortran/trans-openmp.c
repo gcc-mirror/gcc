@@ -72,7 +72,8 @@ gfc_omp_is_allocatable_or_ptr (const_tree decl)
 static bool
 gfc_omp_is_optional_argument (const_tree decl)
 {
-  return (TREE_CODE (decl) == PARM_DECL
+  /* Note: VAR_DECL can occur with BIND(C) and array descriptors.  */
+  return ((TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL)
 	  && DECL_LANG_SPECIFIC (decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
@@ -105,8 +106,9 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
 	  || GFC_ARRAY_TYPE_P (TREE_TYPE (decl))))
     decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
 
+  /* Note: With BIND(C), array descriptors are converted to a VAR_DECL.  */
   if (decl == NULL_TREE
-      || TREE_CODE (decl) != PARM_DECL
+      || (TREE_CODE (decl) != PARM_DECL && TREE_CODE (decl) != VAR_DECL)
       || !DECL_LANG_SPECIFIC (decl)
       || !GFC_DECL_OPTIONAL_ARGUMENT (decl))
     return NULL_TREE;
@@ -6405,12 +6407,17 @@ gfc_trans_omp_task (gfc_code *code)
 static tree
 gfc_trans_omp_taskgroup (gfc_code *code)
 {
+  stmtblock_t block;
+  gfc_start_block (&block);
   tree body = gfc_trans_code (code->block->next);
   tree stmt = make_node (OMP_TASKGROUP);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TASKGROUP_BODY (stmt) = body;
-  OMP_TASKGROUP_CLAUSES (stmt) = NULL_TREE;
-  return stmt;
+  OMP_TASKGROUP_CLAUSES (stmt) = gfc_trans_omp_clauses (&block,
+							code->ext.omp_clauses,
+							code->loc);
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
 }
 
 static tree
@@ -6993,7 +7000,11 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 	  res = gfc_trans_omp_directive (code);
 	  ompws_flags = saved_ompws_flags;
 	  break;
-	
+
+	case EXEC_BLOCK:
+	  res = gfc_trans_block_construct (code);
+	  break;
+
 	default:
 	  gfc_internal_error ("gfc_trans_omp_workshare(): Bad statement code");
 	}

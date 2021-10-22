@@ -7149,6 +7149,19 @@ _mm512_permutexvar_ph (__m512i __A, __m512h __B)
 						     (__mmask32)-1);
 }
 
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_set1_pch (_Float16 _Complex __A)
+{
+  union
+  {
+    _Float16 _Complex a;
+    float b;
+  } u = { .a = __A};
+
+  return (__m512h) _mm512_set1_ps (u.b);
+}
+
 #ifdef __DISABLE_AVX512FP16__
 #undef __DISABLE_AVX512FP16__
 #pragma GCC pop_options

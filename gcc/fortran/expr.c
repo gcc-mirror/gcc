@@ -1110,11 +1110,13 @@ is_CFI_desc (gfc_symbol *sym, gfc_expr *e)
 
   if (sym && sym->attr.dummy
       && sym->ns->proc_name->attr.is_bind_c
-      && sym->attr.dimension
       && (sym->attr.pointer
 	  || sym->attr.allocatable
-	  || sym->as->type == AS_ASSUMED_SHAPE
-	  || sym->as->type == AS_ASSUMED_RANK))
+	  || (sym->attr.dimension
+	      && (sym->as->type == AS_ASSUMED_SHAPE
+		  || sym->as->type == AS_ASSUMED_RANK))
+	  || (sym->ts.type == BT_CHARACTER
+	      && (!sym->ts.u.cl || !sym->ts.u.cl->length))))
     return true;
 
 return false;
@@ -2203,7 +2205,8 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  (p->value.function.isym->id == GFC_ISYM_LBOUND
 	   || p->value.function.isym->id == GFC_ISYM_UBOUND
 	   || p->value.function.isym->id == GFC_ISYM_LCOBOUND
-	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND))
+	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND
+	   || p->value.function.isym->id == GFC_ISYM_SHAPE))
 	ap = ap->next;
 
       for ( ; ap; ap = ap->next)

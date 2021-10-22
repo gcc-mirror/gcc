@@ -1,3 +1,143 @@
+2021-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* decl.c (gfc_match_end): Add COMP_OMP_STRICTLY_STRUCTURED_BLOCK case
+	together with COMP_BLOCK.
+	* parse.c (parse_omp_structured_block): Change return type to
+	'gfc_statement', add handling for strictly-structured block case, adjust
+	recursive calls to parse_omp_structured_block.
+	(parse_executable): Adjust calls to parse_omp_structured_block.
+	* parse.h (enum gfc_compile_state): Add
+	COMP_OMP_STRICTLY_STRUCTURED_BLOCK.
+	* trans-openmp.c (gfc_trans_omp_workshare): Add EXEC_BLOCK case
+	handling.
+
+2021-10-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/94070
+	* expr.c (gfc_simplify_expr): Handle GFC_ISYM_SHAPE along with
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	* trans-array.c (gfc_conv_ss_startstride): Likewise.
+	(set_loop_bounds): Likewise.
+	* trans-intrinsic.c (gfc_trans_intrinsic_bound): Extend to
+	handle SHAPE.  Correct logic for zero-size special cases and
+	detecting assumed-rank arrays associated with an assumed-size
+	argument.
+	(gfc_conv_intrinsic_shape): Deleted.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_SHAPE like
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	(gfc_add_intrinsic_ss_code): Likewise.
+	(gfc_walk_intrinsic_bound): Likewise.
+
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clause_reduction): Add 'openmp_target' default
+	false parameter. Add 'always,tofrom' map for OMP_LIST_IN_REDUCTION case.
+	(gfc_match_omp_clauses): Add 'openmp_target' default false parameter,
+	adjust call to gfc_match_omp_clause_reduction.
+	(match_omp): Adjust call to gfc_match_omp_clauses
+	* trans-openmp.c (gfc_trans_omp_taskgroup): Add call to
+	gfc_match_omp_clause, create and return block.
+
+2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-types.c (create_fn_spec): For allocatable/pointer
+	character(len=:), use 'w' not 'R' as fn spec for the length dummy
+	argument.
+
+2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92482
+	* trans-expr.c (gfc_conv_procedure_call): Use TREE_OPERAND not
+	build_fold_indirect_ref_loc to undo an ADDR_EXPR.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102086
+	PR fortran/92189
+	PR fortran/92621
+	PR fortran/101308
+	PR fortran/101309
+	PR fortran/101635
+	PR fortran/92482
+	* decl.c (gfc_verify_c_interop_param): Remove 'sorry' for
+	scalar allocatable/pointer and len=*.
+	* expr.c (is_CFI_desc): Return true for for those.
+	* gfortran.h (CFI_type_kind_shift, CFI_type_mask,
+	CFI_type_from_type_kind, CFI_VERSION, CFI_MAX_RANK,
+	CFI_attribute_pointer, CFI_attribute_allocatable,
+	CFI_attribute_other, CFI_type_Integer, CFI_type_Logical,
+	CFI_type_Real, CFI_type_Complex, CFI_type_Character,
+	CFI_type_ucs4_char, CFI_type_struct, CFI_type_cptr,
+	CFI_type_cfunptr, CFI_type_other): New #define.
+	* trans-array.c (CFI_FIELD_BASE_ADDR, CFI_FIELD_ELEM_LEN,
+	CFI_FIELD_VERSION, CFI_FIELD_RANK, CFI_FIELD_ATTRIBUTE,
+	CFI_FIELD_TYPE, CFI_FIELD_DIM, CFI_DIM_FIELD_LOWER_BOUND,
+	CFI_DIM_FIELD_EXTENT, CFI_DIM_FIELD_SM,
+	gfc_get_cfi_descriptor_field, gfc_get_cfi_desc_base_addr,
+	gfc_get_cfi_desc_elem_len, gfc_get_cfi_desc_version,
+	gfc_get_cfi_desc_rank, gfc_get_cfi_desc_type,
+	gfc_get_cfi_desc_attribute, gfc_get_cfi_dim_item,
+	gfc_get_cfi_dim_lbound, gfc_get_cfi_dim_extent, gfc_get_cfi_dim_sm):
+	New define/functions to access the CFI array descriptor.
+	(gfc_conv_descriptor_type): New function for the GFC descriptor.
+	(gfc_get_array_span): Handle expr of CFI descriptors and
+	assumed-type descriptors.
+	(gfc_trans_array_bounds): Remove 'static'.
+	(gfc_conv_expr_descriptor): For assumed type, use the dtype of
+	the actual argument.
+	(structure_alloc_comps): Remove ' ' inside tabs.
+	* trans-array.h (gfc_trans_array_bounds, gfc_conv_descriptor_type,
+	gfc_get_cfi_desc_base_addr, gfc_get_cfi_desc_elem_len,
+	gfc_get_cfi_desc_version, gfc_get_cfi_desc_rank,
+	gfc_get_cfi_desc_type, gfc_get_cfi_desc_attribute,
+	gfc_get_cfi_dim_lbound, gfc_get_cfi_dim_extent, gfc_get_cfi_dim_sm):
+	New prototypes.
+	* trans-decl.c (gfor_fndecl_cfi_to_gfc, gfor_fndecl_gfc_to_cfi):
+	Remove global vars.
+	(gfc_build_builtin_function_decls): Remove their initialization.
+	(gfc_get_symbol_decl, create_function_arglist,
+	gfc_trans_deferred_vars): Update for CFI.
+	(convert_CFI_desc): Remove and replace by ...
+	(gfc_conv_cfi_to_gfc): ... this function
+	(gfc_generate_function_code): Call it; create local GFC var for CFI.
+	* trans-expr.c (gfc_maybe_dereference_var): Handle CFI.
+	(gfc_conv_subref_array_arg): Handle the if-noncontigous-only copy in
+	when the result should be a descriptor.
+	(gfc_conv_gfc_desc_to_cfi_desc): Completely rewritten.
+	(gfc_conv_procedure_call): CFI fixes.
+	* trans-openmp.c (gfc_omp_is_optional_argument,
+	gfc_omp_check_optional_argument): Handle optional
+	CFI.
+	* trans-stmt.c (gfc_trans_select_rank_cases): Cleanup, avoid invalid
+	code for allocatable/pointer dummies, which cannot be assumed size.
+	* trans-types.c (gfc_cfi_descriptor_base): New global var.
+	(gfc_get_dtype_rank_type): Skip rank init for rank < 0.
+	(gfc_sym_type): Handle CFI dummies.
+	(gfc_get_function_type): Update call.
+	(gfc_get_cfi_dim_type, gfc_get_cfi_type): New.
+	* trans-types.h (gfc_sym_type): Update prototype.
+	(gfc_get_cfi_type): New prototype.
+	* trans.c (gfc_trans_runtime_check): Make conditions more consistent
+	to avoid '<logical> AND_THEN <long int>' in conditions.
+	* trans.h (gfor_fndecl_cfi_to_gfc, gfor_fndecl_gfc_to_cfi): Remove
+	global-var declaration.
+
+2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102745
+	* intrinsic.c (gfc_convert_type_warn): Fix checks by checking CLASS
+	and do typcheck in correct order for type extension.
+	* misc.c (gfc_typename): Print proper not internal CLASS type name.
+
+2021-10-15  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102685
+	* decl.c (match_clist_expr): Set rank/shape of clist initializer
+	to match LHS.
+	* resolve.c (resolve_structure_cons): In a structure constructor,
+	compare shapes of array components against declared shape.
+
 2021-10-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102717

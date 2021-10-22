@@ -7373,7 +7373,8 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 		 This is horrible, as we're affecting a
 		 possibly-shared decl.  Again, a one-true-decl
 		 model breaks down.  */
-	      set_user_assembler_name (ns_decl, asmspec);
+	      if (ns_decl != error_mark_node)
+		set_user_assembler_name (ns_decl, asmspec);
 	}
     }
 

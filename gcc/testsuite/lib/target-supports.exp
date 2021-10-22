@@ -7580,6 +7580,188 @@ proc check_effective_target_vect_element_align_preferred { } {
 		   && [check_effective_target_vect_variable_length] }]
 }
 
+# Return true if vectorization of v2qi/v4qi/v8qi/v16qi/v2hi store is enabed.
+# Return zero if the desirable pattern isn't found.
+# It's used by Warray-bounds/Wstringop-overflow testcases which are
+# regressed by O2 vectorization, refer to PR102697/PR102462/PR102706
+proc check_vect_slp_aligned_store_usage { pattern macro } {
+    global tool
+
+    set result [check_compile slp_aligned_store_usage assembly {
+	char a[16] __attribute__ ((aligned (16)));
+	short b[4] __attribute__((aligned(8)));
+	int c[4] __attribute__((aligned(16)));
+	#ifdef TEST_V8QI
+	void
+	foo ()
+	{
+	    a[0] = 0;
+	    a[1] = 1;
+	    a[2] = 2;
+	    a[3] = 3;
+	    a[4] = 4;
+	    a[5] = 5;
+	    a[6] = 6;
+	    a[7] = 7;
+	}
+	#elif TEST_V16QI
+	void
+	foo1 ()
+	{
+	    a[0] = 0;
+	    a[1] = 1;
+	    a[2] = 2;
+	    a[3] = 3;
+	    a[4] = 4;
+	    a[5] = 5;
+	    a[6] = 6;
+	    a[7] = 7;
+	    a[8] = 8;
+	    a[9] = 9;
+	    a[10] = 10;
+	    a[11] = 11;
+	    a[12] = 12;
+	    a[13] = 13;
+	    a[14] = 14;
+	    a[15] = 15;
+	}
+	#elif TEST_V4QI
+	void
+	foo2 ()
+	{
+	    a[0] = 0;
+	    a[1] = 1;
+	    a[2] = 2;
+	    a[3] = 3;
+	}
+	#elif TEST_V2QI
+	void
+	foo3 ()
+	{
+	    a[0] = 0;
+	    a[1] = 1;
+	}
+	#elif TEST_V2HI
+	void
+	foo4 ()
+	{
+	    b[0] = 0;
+	    b[1] = 1;
+	}
+	#elif TEST_V4HI
+	void
+	foo5 ()
+	{
+	    b[0] = 0;
+	    b[1] = 1;
+	    b[2] = 2;
+	    b[3] = 3;
+	}
+	#elif TEST_V2SI
+	void
+	foo6 ()
+	{
+	    c[0] = 0;
+	    c[1] = 1;
+	}
+	#elif TEST_V4SI
+	void
+	foo7 ()
+	{
+	    c[0] = 0;
+	    c[1] = 1;
+	    c[2] = 2;
+	    c[3] = 3;
+	}
+	#endif
+    } "-O2 -fopt-info-all -D$macro" ]
+
+      # Get compiler emitted messages and delete generated file.
+      set lines [lindex $result 0]
+      set output [lindex $result 1]
+      remote_file build delete $output
+
+      # Check pattern exits in lines, set it to zero if not found.
+      if { [regexp $pattern $lines] } then {
+        return 1
+      }
+
+    return 0
+}
+
+# Return the true if target support vectorization of 2-byte char stores
+# with 2-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v2qi_store { } {
+    set pattern {add new stmt: MEM <vector\(2\) char>}
+    set macro "TEST_V2QI"
+    return [check_cached_effective_target vect_slp_v2qi_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro] }]
+
+}
+
+# Return the true if target support vectorization of 4-byte char stores
+# with 4-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v4qi_store { } {
+    set pattern {add new stmt: MEM <vector\(4\) char>}
+    set macro "TEST_V4QI"
+    return [check_cached_effective_target vect_slp_v4qi_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 8-byte char stores
+# with 8-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v8qi_store { } {
+    set pattern {add new stmt: MEM <vector\(8\) char>}
+    set macro "TEST_V8QI"
+    return [check_cached_effective_target vect_slp_v8qi_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 16-byte char stores
+# with 16-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v16qi_store { } {
+    set pattern {add new stmt: MEM <vector\(16\) char>}
+    set macro "TEST_V16QI"
+    return [check_cached_effective_target vect_slp_v16qi_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 4-byte short stores
+# with 4-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v2hi_store { } {
+    set pattern {add new stmt: MEM <vector\(2\) short int>}
+    set macro "TEST_V2HI"
+    return [check_cached_effective_target vect_slp_v2hi_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 8-byte short stores
+# with 8-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v4hi_store { } {
+    set pattern {add new stmt: MEM <vector\(4\) short int>}
+    set macro "TEST_V4HI"
+    return [check_cached_effective_target vect_slp_v4hi_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 8-byte int stores
+# with 8-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v2si_store { } {
+    set pattern {add new stmt: MEM <vector\(2\) int>}
+    set macro "TEST_V2SI"
+    return [check_cached_effective_target vect_slp_v2si_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 16-byte int stores
+# with 16-byte aligned address at plain O2.
+proc check_effective_target_vect_slp_v4si_store { } {
+    set pattern {add new stmt: MEM <vector\(4\) int>}
+    set macro "TEST_V4SI"
+    return [check_cached_effective_target vect_slp_v4si_store {
+	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+}
+
 # Return 1 if we can align stack data to the preferred vector alignment.
 
 proc check_effective_target_vect_align_stack_vars { } {

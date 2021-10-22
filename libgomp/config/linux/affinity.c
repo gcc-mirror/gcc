@@ -401,7 +401,7 @@ gomp_affinity_init_numa_domains (unsigned long count, cpu_set_t *copy,
 	    break;
 	  q = end;
 	}
-      for (; nfirst <= nlast; nfirst++)
+      for (; nfirst <= nlast && gomp_places_list_len < count; nfirst++)
 	{
 	  sprintf (name + prefix_len, "node%lu/cpulist", nfirst);
 	  f = fopen (name, "r");

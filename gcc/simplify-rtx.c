@@ -2026,6 +2026,20 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  result = wide_int::from (op0, width, SIGNED);
 	  break;
 
+	case SS_NEG:
+	  if (wi::only_sign_bit_p (op0))
+	    result = wi::max_value (GET_MODE_PRECISION (imode), SIGNED);
+	  else
+	    result = wi::neg (op0);
+	  break;
+
+	case SS_ABS:
+	  if (wi::only_sign_bit_p (op0))
+	    result = wi::max_value (GET_MODE_PRECISION (imode), SIGNED);
+	  else
+	    result = wi::abs (op0);
+	  break;
+
 	case SQRT:
 	default:
 	  return 0;

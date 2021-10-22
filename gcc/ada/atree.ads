@@ -230,11 +230,18 @@ package Atree is
    function New_Node
      (New_Node_Kind : Node_Kind;
       New_Sloc      : Source_Ptr) return Node_Id;
-   --  Allocates a completely new node with the given node type and source
-   --  location values. All other fields are set to their standard defaults:
+   --  Allocates a new node with the given node type and source location
+   --  values. Fields have defaults depending on their type:
+
+   --    Flag: False
+   --    Node_Id: Empty
+   --    List_Id: Empty
+   --    Elist_Id: No_Elist
+   --    Uint: No_Uint
    --
-   --    Empty for all FieldN fields
-   --    False for all FlagN fields
+   --    Name_Id, String_Id, Valid_Uint, Unat, Upos, Nonzero_Uint, Ureal:
+   --      No default. This means it is an error to call the getter before
+   --      calling the setter.
    --
    --  The usual approach is to build a new node using this function and
    --  then, using the value returned, use the Set_xxx functions to set
@@ -288,16 +295,16 @@ package Atree is
    --  with copying aspect specifications where this is required.
 
    function New_Copy (Source : Node_Id) return Node_Id;
-   --  This function allocates a completely new node, and then initializes
-   --  it by copying the contents of the source node into it. The contents of
-   --  the source node is not affected. The target node is always marked as
-   --  not being in a list (even if the source is a list member), and not
-   --  overloaded. The new node will have an extension if the source has
-   --  an extension. New_Copy (Empty) returns Empty, and New_Copy (Error)
-   --  returns Error. Note that, unlike Copy_Separate_Tree, New_Copy does not
-   --  recursively copy any descendants, so in general parent pointers are not
-   --  set correctly for the descendants of the copied node. Both normal and
-   --  extended nodes (entities) may be copied using New_Copy.
+   --  This function allocates a new node, and then initializes it by copying
+   --  the contents of the source node into it. The contents of the source node
+   --  is not affected. The target node is always marked as not being in a list
+   --  (even if the source is a list member), and not overloaded. The new node
+   --  will have an extension if the source has an extension. New_Copy (Empty)
+   --  returns Empty, and New_Copy (Error) returns Error. Note that, unlike
+   --  Copy_Separate_Tree, New_Copy does not recursively copy any descendants,
+   --  so in general parent pointers are not set correctly for the descendants
+   --  of the copied node. Both normal and extended nodes (entities) may be
+   --  copied using New_Copy.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
@@ -340,11 +347,11 @@ package Atree is
    --  Exchange the contents of two entities. The parent pointers are switched
    --  as well as the Defining_Identifier fields in the parents, so that the
    --  entities point correctly to their original parents. The effect is thus
-   --  to leave the tree completely unchanged in structure, except that the
-   --  entity ID values of the two entities are interchanged. Neither of the
-   --  two entities may be list members. Note that entities appear on two
-   --  semantic chains: Homonym and Next_Entity: the corresponding links must
-   --  be adjusted by the caller, according to context.
+   --  to leave the tree unchanged in structure, except that the entity ID
+   --  values of the two entities are interchanged. Neither of the two entities
+   --  may be list members. Note that entities appear on two semantic chains:
+   --  Homonym and Next_Entity: the corresponding links must be adjusted by the
+   --  caller, according to context.
 
    procedure Extend_Node (Source : Node_Id);
    --  This turns a node into an entity; it function is used only by Sinfo.CN.

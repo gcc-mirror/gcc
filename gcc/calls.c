@@ -1287,8 +1287,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
   args_size->constant = 0;
   args_size->var = 0;
 
-  bitmap_obstack_initialize (NULL);
-
   /* In this loop, we consider args in the order they are written.
      We fill up ARGS from the back.  */
 
@@ -1297,7 +1295,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
     int j = i;
     call_expr_arg_iterator iter;
     tree arg;
-    bitmap slots = NULL;
 
     if (struct_value_addr_value)
       {
@@ -1324,12 +1321,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	j--;
 	argpos++;
       }
-
-    if (slots)
-      BITMAP_FREE (slots);
   }
-
-  bitmap_obstack_release (NULL);
 
   /* I counts args in order (to be) pushed; ARGPOS counts in order written.  */
   for (argpos = 0; argpos < num_actuals; i--, argpos++)
@@ -1492,9 +1484,6 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       targetm.calls.warn_parameter_passing_abi (args_so_far, type);
 
       args[i].reg = targetm.calls.function_arg (args_so_far, arg);
-
-      if (args[i].reg && CONST_INT_P (args[i].reg))
-	args[i].reg = NULL;
 
       /* If this is a sibling call and the machine has register windows, the
 	 register window has to be unwinded before calling the routine, so

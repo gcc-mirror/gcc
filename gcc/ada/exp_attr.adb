@@ -6294,7 +6294,7 @@ package body Exp_Attr is
                --  size. This applies to both types and objects. The size of an
                --  object can be specified in the following ways:
 
-               --    An explicit size object is given for an object
+               --    An explicit size clause is given for an object
                --    A component size is specified for an indexed component
                --    A component clause is specified for a selected component
                --    The object is a component of a packed composite object
@@ -6310,7 +6310,7 @@ package body Exp_Attr is
                                 or else Is_Packed (Etype (Prefix (Pref)))))
                  or else
                    (Nkind (Pref) = N_Indexed_Component
-                     and then (Component_Size (Etype (Prefix (Pref))) /= 0
+                     and then (Known_Component_Size (Etype (Prefix (Pref)))
                                 or else Is_Packed (Etype (Prefix (Pref)))))
                then
                   Set_Attribute_Name (N, Name_Size);
@@ -7970,7 +7970,6 @@ package body Exp_Attr is
       elsif Id = Attribute_Size
         and then Is_Entity_Name (Pref)
         and then Is_Object (Entity (Pref))
-        and then Known_Esize (Entity (Pref))
         and then Known_Static_Esize (Entity (Pref))
       then
          Siz := Esize (Entity (Pref));

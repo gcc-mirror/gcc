@@ -3946,7 +3946,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	bool extern_flag
 	  = ((Is_Public (gnat_entity) && !definition)
 	     || imported_p
-	     || (Convention (gnat_entity) == Convention_Intrinsic
+	     || (Is_Intrinsic_Subprogram (gnat_entity)
 		 && Has_Pragma_Inline_Always (gnat_entity)));
 	tree gnu_param_list;
 
@@ -4490,7 +4490,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Likewise for the RM size, if any.  */
       if (!Known_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
 	Set_RM_Size (gnat_entity,
-		     No_Uint_To_0 (annotate_value (rm_size (gnu_type))));
+		     annotate_value (rm_size (gnu_type)));
 
       /* If we are at global level, GCC applied variable_size to the size but
 	 this has done nothing.  So, if it's not constant or self-referential,
@@ -5366,7 +5366,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   /* Builtins are expanded inline and there is no real call sequence involved.
      So the type expected by the underlying expander is always the type of the
      argument "as is".  */
-  if (Convention (gnat_subprog) == Convention_Intrinsic
+  if (Is_Intrinsic_Subprogram (gnat_subprog)
       && Present (Interface_Name (gnat_subprog)))
     mech = By_Copy;
 
@@ -5823,9 +5823,10 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
   else
     {
-      /* For foreign convention subprograms, return System.Address as void *
-	 or equivalent.  Note that this comprises GCC builtins.  */
-      if (Has_Foreign_Convention (gnat_subprog)
+      /* For foreign convention/intrinsic subprograms, return System.Address
+	 as void * or equivalent; this comprises GCC builtins.  */
+      if ((Has_Foreign_Convention (gnat_subprog)
+	   || Is_Intrinsic_Subprogram (gnat_subprog))
 	  && Is_Descendant_Of_Address (Underlying_Type (gnat_return_type)))
 	gnu_return_type = ptr_type_node;
       else
@@ -5995,9 +5996,10 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	{
 	  Entity_Id gnat_param_type = Etype (gnat_param);
 
-	  /* For foreign convention subprograms, pass System.Address as void *
-	     or equivalent.  Note that this comprises GCC builtins.  */
-	  if (Has_Foreign_Convention (gnat_subprog)
+	  /* For foreign convention/intrinsic subprograms, pass System.Address
+	     as void * or equivalent; this comprises GCC builtins.  */
+	  if ((Has_Foreign_Convention (gnat_subprog)
+	       || Is_Intrinsic_Subprogram (gnat_subprog))
 	      && Is_Descendant_Of_Address (Underlying_Type (gnat_param_type)))
 	    gnu_param_type = ptr_type_node;
 	  else
@@ -6303,7 +6305,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
       /* If this subprogram is expectedly bound to a GCC builtin, fetch the
 	 corresponding DECL node and check the parameter association.  */
-      if (Convention (gnat_subprog) == Convention_Intrinsic
+      if (Is_Intrinsic_Subprogram (gnat_subprog)
 	  && Present (Interface_Name (gnat_subprog)))
 	{
 	  tree gnu_ext_name = create_concat_name (gnat_subprog, NULL);

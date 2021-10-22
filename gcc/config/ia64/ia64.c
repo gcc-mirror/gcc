@@ -10044,7 +10044,7 @@ static bool need_copy_state;
 /* The function emits unwind directives for the start of an epilogue.  */
 
 static void
-process_epilogue (FILE *asm_out_file, rtx insn ATTRIBUTE_UNUSED,
+process_epilogue (FILE *out_file, rtx insn ATTRIBUTE_UNUSED,
 		  bool unwind, bool frame ATTRIBUTE_UNUSED)
 {
   /* If this isn't the last block of the function, then we need to label the
@@ -10053,19 +10053,19 @@ process_epilogue (FILE *asm_out_file, rtx insn ATTRIBUTE_UNUSED,
   if (!last_block)
     {
       if (unwind)
-	fprintf (asm_out_file, "\t.label_state %d\n",
+	fprintf (out_file, "\t.label_state %d\n",
 		 ++cfun->machine->state_num);
       need_copy_state = true;
     }
 
   if (unwind)
-    fprintf (asm_out_file, "\t.restore sp\n");
+    fprintf (out_file, "\t.restore sp\n");
 }
 
 /* This function processes a SET pattern for REG_CFA_ADJUST_CFA.  */
 
 static void
-process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
+process_cfa_adjust_cfa (FILE *out_file, rtx pat, rtx insn,
 			bool unwind, bool frame)
 {
   rtx dest = SET_DEST (pat);
@@ -10084,17 +10084,17 @@ process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
 	    {
 	      gcc_assert (!frame_pointer_needed);
 	      if (unwind)
-		fprintf (asm_out_file,
+		fprintf (out_file,
 			 "\t.fframe " HOST_WIDE_INT_PRINT_DEC"\n",
 			 -INTVAL (op1));
 	    }
 	  else
-	    process_epilogue (asm_out_file, insn, unwind, frame);
+	    process_epilogue (out_file, insn, unwind, frame);
 	}
       else
 	{
 	  gcc_assert (src == hard_frame_pointer_rtx);
-	  process_epilogue (asm_out_file, insn, unwind, frame);
+	  process_epilogue (out_file, insn, unwind, frame);
 	}
     }
   else if (dest == hard_frame_pointer_rtx)
@@ -10103,7 +10103,7 @@ process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
       gcc_assert (frame_pointer_needed);
 
       if (unwind)
-	fprintf (asm_out_file, "\t.vframe r%d\n",
+	fprintf (out_file, "\t.vframe r%d\n",
 		 ia64_dbx_register_number (REGNO (dest)));
     }
   else
@@ -10113,7 +10113,7 @@ process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
 /* This function processes a SET pattern for REG_CFA_REGISTER.  */
 
 static void
-process_cfa_register (FILE *asm_out_file, rtx pat, bool unwind)
+process_cfa_register (FILE *out_file, rtx pat, bool unwind)
 {
   rtx dest = SET_DEST (pat);
   rtx src = SET_SRC (pat);
@@ -10124,7 +10124,7 @@ process_cfa_register (FILE *asm_out_file, rtx pat, bool unwind)
     {
       /* Saving return address pointer.  */
       if (unwind)
-	fprintf (asm_out_file, "\t.save rp, r%d\n",
+	fprintf (out_file, "\t.save rp, r%d\n",
 		 ia64_dbx_register_number (dest_regno));
       return;
     }
@@ -10136,21 +10136,21 @@ process_cfa_register (FILE *asm_out_file, rtx pat, bool unwind)
     case PR_REG (0):
       gcc_assert (dest_regno == current_frame_info.r[reg_save_pr]);
       if (unwind)
-	fprintf (asm_out_file, "\t.save pr, r%d\n",
+	fprintf (out_file, "\t.save pr, r%d\n",
 		 ia64_dbx_register_number (dest_regno));
       break;
 
     case AR_UNAT_REGNUM:
       gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_unat]);
       if (unwind)
-	fprintf (asm_out_file, "\t.save ar.unat, r%d\n",
+	fprintf (out_file, "\t.save ar.unat, r%d\n",
 		 ia64_dbx_register_number (dest_regno));
       break;
 
     case AR_LC_REGNUM:
       gcc_assert (dest_regno == current_frame_info.r[reg_save_ar_lc]);
       if (unwind)
-	fprintf (asm_out_file, "\t.save ar.lc, r%d\n",
+	fprintf (out_file, "\t.save ar.lc, r%d\n",
 		 ia64_dbx_register_number (dest_regno));
       break;
 
@@ -10163,7 +10163,7 @@ process_cfa_register (FILE *asm_out_file, rtx pat, bool unwind)
 /* This function processes a SET pattern for REG_CFA_OFFSET.  */
 
 static void
-process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
+process_cfa_offset (FILE *out_file, rtx pat, bool unwind)
 {
   rtx dest = SET_DEST (pat);
   rtx src = SET_SRC (pat);
@@ -10203,35 +10203,35 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
     case BR_REG (0):
       gcc_assert (!current_frame_info.r[reg_save_b0]);
       if (unwind)
-	fprintf (asm_out_file, "\t%s rp, " HOST_WIDE_INT_PRINT_DEC "\n",
+	fprintf (out_file, "\t%s rp, " HOST_WIDE_INT_PRINT_DEC "\n",
 		 saveop, off);
       break;
 
     case PR_REG (0):
       gcc_assert (!current_frame_info.r[reg_save_pr]);
       if (unwind)
-	fprintf (asm_out_file, "\t%s pr, " HOST_WIDE_INT_PRINT_DEC "\n",
+	fprintf (out_file, "\t%s pr, " HOST_WIDE_INT_PRINT_DEC "\n",
 		 saveop, off);
       break;
 
     case AR_LC_REGNUM:
       gcc_assert (!current_frame_info.r[reg_save_ar_lc]);
       if (unwind)
-	fprintf (asm_out_file, "\t%s ar.lc, " HOST_WIDE_INT_PRINT_DEC "\n",
+	fprintf (out_file, "\t%s ar.lc, " HOST_WIDE_INT_PRINT_DEC "\n",
 		 saveop, off);
       break;
 
     case AR_PFS_REGNUM:
       gcc_assert (!current_frame_info.r[reg_save_ar_pfs]);
       if (unwind)
-	fprintf (asm_out_file, "\t%s ar.pfs, " HOST_WIDE_INT_PRINT_DEC "\n",
+	fprintf (out_file, "\t%s ar.pfs, " HOST_WIDE_INT_PRINT_DEC "\n",
 		 saveop, off);
       break;
 
     case AR_UNAT_REGNUM:
       gcc_assert (!current_frame_info.r[reg_save_ar_unat]);
       if (unwind)
-	fprintf (asm_out_file, "\t%s ar.unat, " HOST_WIDE_INT_PRINT_DEC "\n",
+	fprintf (out_file, "\t%s ar.unat, " HOST_WIDE_INT_PRINT_DEC "\n",
 		 saveop, off);
       break;
 
@@ -10240,7 +10240,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
     case GR_REG (6):
     case GR_REG (7):
       if (unwind)
-	fprintf (asm_out_file, "\t.save.g 0x%x\n",
+	fprintf (out_file, "\t.save.g 0x%x\n",
 		 1 << (src_regno - GR_REG (4)));
       break;
 
@@ -10250,7 +10250,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
     case BR_REG (4):
     case BR_REG (5):
       if (unwind)
-	fprintf (asm_out_file, "\t.save.b 0x%x\n",
+	fprintf (out_file, "\t.save.b 0x%x\n",
 		 1 << (src_regno - BR_REG (1)));
       break;
 
@@ -10259,7 +10259,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
     case FR_REG (4):
     case FR_REG (5):
       if (unwind)
-	fprintf (asm_out_file, "\t.save.f 0x%x\n",
+	fprintf (out_file, "\t.save.f 0x%x\n",
 		 1 << (src_regno - FR_REG (2)));
       break;
 
@@ -10268,7 +10268,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
     case FR_REG (24): case FR_REG (25): case FR_REG (26): case FR_REG (27):
     case FR_REG (28): case FR_REG (29): case FR_REG (30): case FR_REG (31):
       if (unwind)
-	fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
+	fprintf (out_file, "\t.save.gf 0x0, 0x%x\n",
 		 1 << (src_regno - FR_REG (12)));
       break;
 
@@ -10283,7 +10283,7 @@ process_cfa_offset (FILE *asm_out_file, rtx pat, bool unwind)
    required to unwind this insn.  */
 
 static void
-ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
+ia64_asm_unwind_emit (FILE *out_file, rtx_insn *insn)
 {
   bool unwind = ia64_except_unwind_info (&global_options) == UI_TARGET;
   bool frame = dwarf2out_do_frame ();
@@ -10303,8 +10303,8 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	{
 	  if (unwind)
 	    {
-	      fprintf (asm_out_file, "\t.body\n");
-	      fprintf (asm_out_file, "\t.copy_state %d\n",
+	      fprintf (out_file, "\t.body\n");
+	      fprintf (out_file, "\t.copy_state %d\n",
 		       cfun->machine->state_num);
 	    }
 	  need_copy_state = false;
@@ -10325,7 +10325,7 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
       if (dest_regno == current_frame_info.r[reg_save_ar_pfs])
 	{
 	  if (unwind)
-	    fprintf (asm_out_file, "\t.save ar.pfs, r%d\n",
+	    fprintf (out_file, "\t.save ar.pfs, r%d\n",
 		     ia64_dbx_register_number (dest_regno));
 	}
       else
@@ -10338,9 +10338,9 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	     sp" now.  */
 	  if (current_frame_info.total_size == 0 && !frame_pointer_needed)
 	    /* if haven't done process_epilogue() yet, do it now */
-	    process_epilogue (asm_out_file, insn, unwind, frame);
+	    process_epilogue (out_file, insn, unwind, frame);
 	  if (unwind)
-	    fprintf (asm_out_file, "\t.prologue\n");
+	    fprintf (out_file, "\t.prologue\n");
 	}
       return;
     }
@@ -10353,7 +10353,7 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	pat = XEXP (note, 0);
 	if (pat == NULL)
 	  pat = PATTERN (insn);
-	process_cfa_adjust_cfa (asm_out_file, pat, insn, unwind, frame);
+	process_cfa_adjust_cfa (out_file, pat, insn, unwind, frame);
 	handled_one = true;
 	break;
 
@@ -10361,7 +10361,7 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	pat = XEXP (note, 0);
 	if (pat == NULL)
 	  pat = PATTERN (insn);
-	process_cfa_offset (asm_out_file, pat, unwind);
+	process_cfa_offset (out_file, pat, unwind);
 	handled_one = true;
 	break;
 
@@ -10369,7 +10369,7 @@ ia64_asm_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
 	pat = XEXP (note, 0);
 	if (pat == NULL)
 	  pat = PATTERN (insn);
-	process_cfa_register (asm_out_file, pat, unwind);
+	process_cfa_register (out_file, pat, unwind);
 	handled_one = true;
 	break;
 

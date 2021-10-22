@@ -246,6 +246,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+READELF = @READELF@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -317,7 +318,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 DISTCLEANFILES = ffitarget.h
-noinst_HEADERS = ffi_common.h ffi_cfi.h
+noinst_HEADERS = ffi_common.h ffi_cfi.h tramp.h
 EXTRA_DIST = ffi.h.in
 
 # Where generated headers like ffitarget.h get installed.

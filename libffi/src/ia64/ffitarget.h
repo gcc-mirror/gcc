@@ -50,6 +50,7 @@ typedef enum ffi_abi {
 #define FFI_TRAMPOLINE_SIZE 24  /* Really the following struct, which 	*/
 				/* can be interpreted as a C function	*/
 				/* descriptor:				*/
+#define FFI_TARGET_SPECIFIC_VARIADIC 1
+#define FFI_EXTRA_CIF_FIELDS unsigned nfixedargs
 
 #endif
-

@@ -3384,9 +3384,8 @@ package body Sem_Aggr is
       function Nested_In (V1 : Node_Id; V2 : Node_Id) return Boolean;
       --  Determine whether variant V1 is within variant V2
 
-      function Variant_Depth (N : Node_Id) return Integer;
-      --  Determine the distance of a variant to the enclosing type
-      --  declaration.
+      function Variant_Depth (N : Node_Id) return Natural;
+      --  Determine the distance of a variant to the enclosing type declaration
 
       --------------------
       --  Check_Variant --
@@ -3492,8 +3491,8 @@ package body Sem_Aggr is
       -- Variant_Depth --
       -------------------
 
-      function Variant_Depth (N : Node_Id) return Integer is
-         Depth : Integer;
+      function Variant_Depth (N : Node_Id) return Natural is
+         Depth : Natural;
          Par   : Node_Id;
 
       begin
@@ -3546,7 +3545,19 @@ package body Sem_Aggr is
          end loop;
 
          pragma Assert (Present (Comp_Type));
-         Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+
+         --  A record_component_association in record_delta_aggregate shall not
+         --  use the box compound delimiter <> rather than an expression; see
+         --  RM 4.3.1(17.3/5).
+
+         pragma Assert (Present (Expression (Assoc)) xor Box_Present (Assoc));
+
+         if Box_Present (Assoc) then
+            Error_Msg_N
+              ("'<'> in record delta aggregate is not allowed", Assoc);
+         else
+            Analyze_And_Resolve (Expression (Assoc), Comp_Type);
+         end if;
          Next (Assoc);
       end loop;
    end Resolve_Delta_Record_Aggregate;

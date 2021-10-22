@@ -79,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** @brief The type of placeholder objects defined by libstdc++.
    *  @ingroup binders
+   *  @since C++11
    */
   template<int _Num> struct _Placeholder { };
 
@@ -90,7 +91,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #  define __cpp_lib_constexpr_functional 201907L
 # endif
 
-  /// Invoke a callable object.
+  /** Invoke a callable object.
+   *
+   * `std::invoke` takes a callable object as its first argument and calls it
+   * with the remaining arguments. The callable object can be a pointer or
+   * reference to a function, a lambda closure, a class with `operator()`,
+   * or even a pointer-to-member.  For a pointer-to-member the first argument
+   * must be a reference or pointer to the object that the pointer-to-member
+   * will be applied to.
+   *
+   *  @since C++17
+   */
   template<typename _Callable, typename... _Args>
     inline _GLIBCXX20_CONSTEXPR invoke_result_t<_Callable, _Args...>
     invoke(_Callable&& __fn, _Args&&... __args)
@@ -103,7 +114,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 202002L
 # define __cpp_lib_invoke_r 202106L
 
-  /// Invoke a callable object and convert the result to _Res.
+  /** Invoke a callable object and convert the result to `_Res`.
+   *
+   * `std::invoke_r<R>(f, args...)` is equivalent to `std::invoke(f, args...)`
+   * with the result implicitly converted to `R`.
+   *
+   *  @since C++23
+   */
   template<typename _Res, typename _Callable, typename... _Args>
     requires is_invocable_r_v<_Res, _Callable, _Args...>
     constexpr _Res
@@ -115,6 +132,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif // C++23
 #endif // C++17
+
+  /// @cond undocumented
 
   template<typename _MemFunPtr,
 	   bool __is_mem_fn = is_member_function_pointer<_MemFunPtr>::value>
@@ -182,13 +201,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using _Mem_fn_base<_Res _Class::*>::_Mem_fn_base;
     };
+  /// @endcond
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2048.  Unnecessary mem_fn overloads
   /**
-   *  @brief Returns a function object that forwards to the member
-   *  pointer @a pm.
-   *  @ingroup functors
+   * @brief Returns a function object that forwards to the member pointer
+   * pointer `pm`.
+   *
+   * This allows a pointer-to-member to be transformed into a function object
+   * that can be called with an object expression as its first argument.
+   *
+   * For a pointer-to-data-member the result must be called with exactly one
+   * argument, the object expression that would be used as the first operand
+   * in a `obj.*memptr` or `objp->*memptr` expression.
+   *
+   * For a pointer-to-member-function the result must be called with an object
+   * expression and any additional arguments to pass to the member function,
+   * as in an expression like `(obj.*memfun)(args...)` or
+   * `(objp->*memfun)(args...)`.
+   *
+   * The object expression can be a pointer, reference, `reference_wrapper`,
+   * or smart pointer, and the call wrapper will dereference it as needed
+   * to apply the pointer-to-member.
+   *
+   * @ingroup functors
+   * @since C++11
    */
   template<typename _Tp, typename _Class>
     _GLIBCXX20_CONSTEXPR
@@ -199,12 +237,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /**
-   *  @brief Determines if the given type _Tp is a function object that
-   *  should be treated as a subexpression when evaluating calls to
-   *  function objects returned by bind().
+   * @brief Trait that identifies a bind expression.
+   * 
+   * Determines if the given type `_Tp` is a function object that
+   * should be treated as a subexpression when evaluating calls to
+   * function objects returned by `std::bind`.
    *
-   *  C++11 [func.bind.isbind].
-   *  @ingroup binders
+   * C++11 [func.bind.isbind].
+   * @ingroup binders
+   * @since C++11
    */
   template<typename _Tp>
     struct is_bind_expression
@@ -216,6 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  C++11 [func.bind.isplace].
    *  @ingroup binders
+   *  @since C++11
    */
   template<typename _Tp>
     struct is_placeholder
@@ -232,6 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /** @namespace std::placeholders
    *  @brief ISO C++ 2011 namespace for std::bind placeholders.
    *  @ingroup binders
+   *  @since C++11
    */
   namespace placeholders
   {
@@ -274,6 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Partial specialization of is_placeholder that provides the placeholder
    *  number for the placeholder objects defined by libstdc++.
    *  @ingroup binders
+   *  @since C++11
    */
   template<int _Num>
     struct is_placeholder<_Placeholder<_Num> >
@@ -285,6 +329,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<int, _Num>
     { };
 
+  /// @cond undocumented
 
   // Like tuple_element_t but SFINAE-friendly.
   template<std::size_t __i, typename _Tuple>
@@ -413,6 +458,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __volget(const volatile tuple<_Tp...>& __tuple)
     -> __tuple_element_t<_Ind, tuple<_Tp...>> const volatile&
     { return std::get<_Ind>(const_cast<const tuple<_Tp...>&>(__tuple)); }
+
+  /// @endcond
 
   /// Type of the function object returned from bind().
   template<typename _Signature>
@@ -799,6 +846,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief Function template for std::bind.
    *  @ingroup binders
+   *  @since C++11
    */
   template<typename _Func, typename... _BoundArgs>
     inline _GLIBCXX20_CONSTEXPR typename
@@ -823,6 +871,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief Function template for std::bind<R>.
    *  @ingroup binders
+   *  @since C++11
    */
   template<typename _Result, typename _Func, typename... _BoundArgs>
     inline _GLIBCXX20_CONSTEXPR
@@ -923,6 +972,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using _Bind_front_t
       = _Bind_front<decay_t<_Fn>, decay_t<_Args>...>;
 
+  /** Create call wrapper by partial application of arguments to function.
+   *
+   * The result of `std::bind_front(f, args...)` is a function object that
+   * stores `f` and the bound arguments, `args...`. When that function
+   * object is invoked with `call_args...` it returns the result of calling
+   * `f(args..., call_args...)`.
+   *
+   *  @since C++20
+   */
   template<typename _Fn, typename... _Args>
     constexpr _Bind_front_t<_Fn, _Args...>
     bind_front(_Fn&& __fn, _Args&&... __args)
@@ -932,7 +990,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Bind_front_t<_Fn, _Args...>(0, std::forward<_Fn>(__fn),
 					  std::forward<_Args>(__args)...);
     }
-#endif
+#endif // C++20
 
 #if __cplusplus >= 201402L
   /// Generalized negator.
@@ -1003,8 +1061,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_byte_like<byte, equal_to<void>>
     : true_type { };
 
+  // [func.not_fn] Function template not_fn
 #define __cpp_lib_not_fn 201603
-  /// [func.not_fn] Function template not_fn
+  /** Wrap a function object to create one that negates its result.
+   *
+   * The function template `std::not_fn` creates a "forwarding call wrapper",
+   * which is a function object that wraps another function object and
+   * when called, forwards its arguments to the wrapped function object.
+   *
+   * The result of invoking the wrapper is the negation (using `!`) of
+   * the wrapped function object.
+   *
+   *  @ingroup functors
+   *  @since C++17
+   */
   template<typename _Fn>
     _GLIBCXX20_CONSTEXPR
     inline auto

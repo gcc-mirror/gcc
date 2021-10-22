@@ -278,7 +278,7 @@ cancel_thread (vec<jump_thread_edge *> *path, const char *reason = NULL)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       if (reason)
-	fprintf (dump_file, "%s:\n", reason);
+	fprintf (dump_file, "%s: ", reason);
 
       dump_jump_thread_path (dump_file, *path, false);
       fprintf (dump_file, "\n");
@@ -2295,12 +2295,6 @@ back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 {
   vec<jump_thread_edge *> *curr_path = m_paths[curr_path_num];
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "just threaded: ");
-      debug_path (dump_file, curr_path_num);
-    }
-
   /* Iterate through all the other paths and adjust them.  */
   for (unsigned cand_path_num = 0; cand_path_num < m_paths.length (); )
     {
@@ -2408,12 +2402,6 @@ back_jt_path_registry::duplicate_thread_path (edge entry,
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "\nabout to thread: ");
-      debug_path (dump_file, current_path_no);
-    }
 
   /* Some sanity checking.  Note that we do not check for all possible
      missuses of the functions.  I.e. if you ask to copy something weird,
@@ -2771,6 +2759,7 @@ jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
   bool seen_latch = false;
   int loops_crossed = 0;
   bool crossed_latch = false;
+  bool crossed_loop_header = false;
   // Use ->dest here instead of ->src to ignore the first block.  The
   // first block is allowed to be in a different loop, since it'll be
   // redirected.  See similar comment in profitable_path_p: "we don't
@@ -2804,6 +2793,14 @@ jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
 	  ++loops_crossed;
 	}
 
+      // ?? Avoid threading through loop headers that remain in the
+      // loop, as such threadings tend to create sub-loops which
+      // _might_ be OK ??.
+      if (e->dest->loop_father->header == e->dest
+	  && !flow_loop_nested_p (exit->dest->loop_father,
+				  e->dest->loop_father))
+	crossed_loop_header = true;
+
       if (flag_checking && !m_backedge_threads)
 	gcc_assert ((path[i]->e->flags & EDGE_DFS_BACK) == 0);
     }
@@ -2827,6 +2824,21 @@ jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
   if (loops_crossed)
     {
       cancel_thread (&path, "Path crosses loops");
+      return true;
+    }
+  // The path should either start and end in the same loop or exit the
+  // loop it starts in but never enter a loop.  This also catches
+  // creating irreducible loops, not only rotation.
+  if (entry->src->loop_father != exit->dest->loop_father
+      && !flow_loop_nested_p (exit->src->loop_father,
+			      entry->dest->loop_father))
+    {
+      cancel_thread (&path, "Path rotates loop");
+      return true;
+    }
+  if (crossed_loop_header)
+    {
+      cancel_thread (&path, "Path crosses loop header but does not exit it");
       return true;
     }
   return false;

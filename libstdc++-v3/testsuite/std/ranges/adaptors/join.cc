@@ -193,6 +193,18 @@ test11()
     ;
 }
 
+void
+test12()
+{
+  // PR libstdc++/101263
+  constexpr auto b = [] {
+    auto r = std::views::iota(0, 5)
+      | std::views::lazy_split(0)
+      | std::views::join;
+    return r.begin() != r.end();
+  }();
+}
+
 int
 main()
 {
@@ -207,4 +219,5 @@ main()
   test09();
   test10();
   test11();
+  test12();
 }
