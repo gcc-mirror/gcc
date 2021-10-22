@@ -1982,6 +1982,20 @@ ParamType::as_string () const
   return lookup->as_string ();
 }
 
+std::string
+ParamType::get_name () const
+{
+  if (get_ref () == get_ty_ref ())
+    return get_symbol ();
+
+  auto context = Resolver::TypeCheckContext::get ();
+  BaseType *lookup = nullptr;
+  bool ok = context->lookup_type (get_ty_ref (), &lookup);
+  rust_assert (ok);
+
+  return lookup->get_name ();
+}
+
 BaseType *
 ParamType::unify (BaseType *other)
 {
