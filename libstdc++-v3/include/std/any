@@ -428,16 +428,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Exchange the states of two @c any objects.
   inline void swap(any& __x, any& __y) noexcept { __x.swap(__y); }
 
-  /// Create an any holding a @c _Tp constructed from @c __args.
+  /// Create an `any` holding a `_Tp` constructed from `__args...`.
   template <typename _Tp, typename... _Args>
-    any make_any(_Args&&... __args)
+    inline
+    enable_if_t<is_constructible_v<any, in_place_type_t<_Tp>, _Args...>, any>
+    make_any(_Args&&... __args)
     {
       return any(in_place_type<_Tp>, std::forward<_Args>(__args)...);
     }
 
-  /// Create an any holding a @c _Tp constructed from @c __il and @c __args.
+  /// Create an `any` holding a `_Tp` constructed from `__il` and `__args...`.
   template <typename _Tp, typename _Up, typename... _Args>
-    any make_any(initializer_list<_Up> __il, _Args&&... __args)
+    inline
+    enable_if_t<is_constructible_v<any, in_place_type_t<_Tp>,
+				   initializer_list<_Up>&, _Args...>, any>
+    make_any(initializer_list<_Up> __il, _Args&&... __args)
     {
       return any(in_place_type<_Tp>, __il, std::forward<_Args>(__args)...);
     }
