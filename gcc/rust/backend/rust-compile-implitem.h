@@ -34,7 +34,7 @@ class CompileInherentImplItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (TyTy::BaseType *self, HIR::ImplItem *item,
+  static Bexpression *Compile (const TyTy::BaseType *self, HIR::ImplItem *item,
 			       Context *ctx, bool compile_fns,
 			       TyTy::BaseType *concrete = nullptr,
 			       bool is_query_mode = false,
@@ -309,14 +309,15 @@ public:
   }
 
 private:
-  CompileInherentImplItem (TyTy::BaseType *self, Context *ctx, bool compile_fns,
-			   TyTy::BaseType *concrete, Location ref_locus)
+  CompileInherentImplItem (const TyTy::BaseType *self, Context *ctx,
+			   bool compile_fns, TyTy::BaseType *concrete,
+			   Location ref_locus)
     : HIRCompileBase (ctx), self (self), compile_fns (compile_fns),
       concrete (concrete), reference (ctx->get_backend ()->error_expression ()),
       ref_locus (ref_locus)
   {}
 
-  TyTy::BaseType *self;
+  const TyTy::BaseType *self;
   bool compile_fns;
   TyTy::BaseType *concrete;
   Bexpression *reference;

@@ -35,10 +35,10 @@ class MethodResolution
 {
 public:
   static PathProbeCandidate *
-  Select (std::vector<PathProbeCandidate> &candidates, TyTy::BaseType *receiver,
-	  std::vector<Adjustment> &adjustments)
+  Select (std::vector<PathProbeCandidate> &candidates,
+	  const TyTy::BaseType *receiver, std::vector<Adjustment> &adjustments)
   {
-    TyTy::BaseType *r = receiver;
+    const TyTy::BaseType *r = receiver;
     while (true)
       {
 	PathProbeCandidate *c = nullptr;
@@ -80,7 +80,8 @@ public:
 	// FIXME this needs to use deref trait and fall back to unsized to
 	// remove array syntax
 
-	TyTy::ReferenceType *rr = static_cast<TyTy::ReferenceType *> (r);
+	const TyTy::ReferenceType *rr
+	  = static_cast<const TyTy::ReferenceType *> (r);
 	r = rr->get_base ();
 	adjustments.push_back (
 	  Adjustment (Adjustment::AdjustmentType::DEREF_REF, r));

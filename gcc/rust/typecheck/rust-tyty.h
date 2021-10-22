@@ -337,7 +337,7 @@ public:
 		debug_str ().c_str ());
   }
 
-  BaseType *get_root ();
+  const BaseType *get_root () const;
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
@@ -690,7 +690,7 @@ private:
 class SubstitutionArg
 {
 public:
-  SubstitutionArg (SubstitutionParamMapping *param, BaseType *argument)
+  SubstitutionArg (const SubstitutionParamMapping *param, BaseType *argument)
     : param (std::move (param)), argument (argument)
   {}
 
@@ -707,7 +707,7 @@ public:
 
   BaseType *get_tyty () { return argument; }
 
-  SubstitutionParamMapping *get_param_mapping () { return param; }
+  const SubstitutionParamMapping *get_param_mapping () { return param; }
 
   static SubstitutionArg error () { return SubstitutionArg (nullptr, nullptr); }
 
@@ -725,7 +725,7 @@ public:
   }
 
 private:
-  SubstitutionParamMapping *param;
+  const SubstitutionParamMapping *param;
   BaseType *argument;
 };
 
@@ -761,7 +761,7 @@ public:
   {
     for (auto &mapping : mappings)
       {
-	SubstitutionParamMapping *param = mapping.get_param_mapping ();
+	const SubstitutionParamMapping *param = mapping.get_param_mapping ();
 	const ParamType *p = param->get_param_ty ();
 
 	if (p->get_symbol ().compare (param_to_find->get_symbol ()) == 0)
@@ -884,7 +884,7 @@ public:
 
   bool was_substituted () const { return !needs_substitution (); }
 
-  SubstitutionArgumentMappings get_substitution_arguments ()
+  SubstitutionArgumentMappings get_substitution_arguments () const
   {
     return used_arguments;
   }
@@ -943,7 +943,7 @@ public:
   // we need to figure out relevant generic arguemts for self to apply to the
   // fntype
   SubstitutionArgumentMappings solve_mappings_from_receiver_for_self (
-    SubstitutionArgumentMappings &mappings);
+    SubstitutionArgumentMappings &mappings) const;
 
   BaseType *infer_substitions (Location locus)
   {
@@ -1893,6 +1893,7 @@ public:
     return has_substitutions ();
   }
 
+  const BaseType *get () const { return base; }
   BaseType *get () { return base; }
 
   bool contains_type_parameters () const override

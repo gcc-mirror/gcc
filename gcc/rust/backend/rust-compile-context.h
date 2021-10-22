@@ -340,10 +340,10 @@ private:
   std::vector<::Bfunction *> func_decls;
 };
 
-class TyTyResolveCompile : public TyTy::TyVisitor
+class TyTyResolveCompile : public TyTy::TyConstVisitor
 {
 public:
-  static ::Btype *compile (Context *ctx, TyTy::BaseType *ty,
+  static ::Btype *compile (Context *ctx, const TyTy::BaseType *ty,
 			   bool trait_object_mode = false)
   {
     TyTyResolveCompile compiler (ctx, trait_object_mode);
@@ -351,26 +351,25 @@ public:
     return compiler.translated;
   }
 
-  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
+  void visit (const TyTy::ErrorType &) override { gcc_unreachable (); }
+  void visit (const TyTy::InferType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::InferType &) override { gcc_unreachable (); }
-
-  void visit (TyTy::ProjectionType &type) override
+  void visit (const TyTy::ProjectionType &type) override
   {
     type.get ()->accept_vis (*this);
   }
 
-  void visit (TyTy::PlaceholderType &type) override
+  void visit (const TyTy::PlaceholderType &type) override
   {
     type.resolve ()->accept_vis (*this);
   }
 
-  void visit (TyTy::ParamType &param) override
+  void visit (const TyTy::ParamType &param) override
   {
     param.resolve ()->accept_vis (*this);
   }
 
-  void visit (TyTy::FnType &type) override
+  void visit (const TyTy::FnType &type) override
   {
     Backend::Btyped_identifier receiver;
     std::vector<Backend::Btyped_identifier> parameters;
@@ -409,7 +408,7 @@ public:
 	ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
-  void visit (TyTy::FnPtr &type) override
+  void visit (const TyTy::FnPtr &type) override
   {
     Btype *result_type
       = TyTyResolveCompile::compile (ctx, type.get_return_type ());
@@ -426,7 +425,7 @@ public:
       ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
-  void visit (TyTy::ADTType &type) override
+  void visit (const TyTy::ADTType &type) override
   {
     if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
       return;
@@ -434,7 +433,7 @@ public:
     std::vector<Backend::Btyped_identifier> fields;
     for (size_t i = 0; i < type.num_fields (); i++)
       {
-	TyTy::StructFieldType *field = type.get_field (i);
+	const TyTy::StructFieldType *field = type.get_field (i);
 	Btype *compiled_field_ty
 	  = TyTyResolveCompile::compile (ctx, field->get_field_type ());
 
@@ -460,7 +459,7 @@ public:
     ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
   }
 
-  void visit (TyTy::TupleType &type) override
+  void visit (const TyTy::TupleType &type) override
   {
     if (type.num_fields () == 0)
       {
@@ -504,7 +503,7 @@ public:
     translated = named_struct;
   }
 
-  void visit (TyTy::ArrayType &type) override
+  void visit (const TyTy::ArrayType &type) override
   {
     Btype *element_type
       = TyTyResolveCompile::compile (ctx, type.get_element_type ());
@@ -512,7 +511,7 @@ public:
       = ctx->get_backend ()->array_type (element_type, type.get_capacity ());
   }
 
-  void visit (TyTy::BoolType &type) override
+  void visit (const TyTy::BoolType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -520,7 +519,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::IntType &type) override
+  void visit (const TyTy::IntType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -528,7 +527,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::UintType &type) override
+  void visit (const TyTy::UintType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -536,7 +535,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::FloatType &type) override
+  void visit (const TyTy::FloatType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -544,7 +543,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::USizeType &type) override
+  void visit (const TyTy::USizeType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -552,7 +551,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::ISizeType &type) override
+  void visit (const TyTy::ISizeType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -560,7 +559,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::CharType &type) override
+  void visit (const TyTy::CharType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -568,7 +567,7 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::ReferenceType &type) override
+  void visit (const TyTy::ReferenceType &type) override
   {
     Btype *base_compiled_type
       = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
@@ -583,7 +582,7 @@ public:
       }
   }
 
-  void visit (TyTy::PointerType &type) override
+  void visit (const TyTy::PointerType &type) override
   {
     Btype *base_compiled_type
       = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
@@ -598,7 +597,7 @@ public:
       }
   }
 
-  void visit (TyTy::StrType &type) override
+  void visit (const TyTy::StrType &type) override
   {
     ::Btype *compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
@@ -606,12 +605,12 @@ public:
     translated = compiled_type;
   }
 
-  void visit (TyTy::NeverType &) override
+  void visit (const TyTy::NeverType &) override
   {
     translated = ctx->get_backend ()->unit_type ();
   }
 
-  void visit (TyTy::DynamicObjectType &type) override
+  void visit (const TyTy::DynamicObjectType &type) override
   {
     if (trait_object_mode)
       {
@@ -661,7 +660,7 @@ public:
     ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
   }
 
-  void visit (TyTy::ClosureType &type) override { gcc_unreachable (); }
+  void visit (const TyTy::ClosureType &type) override { gcc_unreachable (); }
 
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode)

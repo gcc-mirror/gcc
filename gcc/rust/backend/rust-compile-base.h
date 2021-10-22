@@ -205,14 +205,14 @@ protected:
 			      TyTy::BaseType *expected, Location locus);
 
   Bexpression *coerce_to_dyn_object (Bexpression *compiled_ref,
-				     TyTy::BaseType *actual,
-				     TyTy::BaseType *expected,
-				     TyTy::DynamicObjectType *ty,
+				     const TyTy::BaseType *actual,
+				     const TyTy::BaseType *expected,
+				     const TyTy::DynamicObjectType *ty,
 				     Location locus);
 
   Bexpression *
   compute_address_for_trait_item (const Resolver::TraitItemReference *ref,
-				  TyTy::BaseType *receiver);
+				  const TyTy::BaseType *receiver);
 };
 
 } // namespace Compile

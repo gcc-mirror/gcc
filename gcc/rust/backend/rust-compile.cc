@@ -234,8 +234,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
   if (is_dyn_dispatch)
     {
-      TyTy::DynamicObjectType *dyn
-	= static_cast<TyTy::DynamicObjectType *> (receiver->get_root ());
+      const TyTy::DynamicObjectType *dyn
+	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
 
       size_t offs = 0;
       const Resolver::TraitItemReference *ref = nullptr;
@@ -763,8 +763,8 @@ HIRCompileBase::coercion_site (Bexpression *compiled_ref,
   if (root_expected_kind == TyTy::TypeKind::DYNAMIC
       && root_actual_kind != TyTy::TypeKind::DYNAMIC)
     {
-      TyTy::DynamicObjectType *dyn
-	= static_cast<TyTy::DynamicObjectType *> (expected->get_root ());
+      const TyTy::DynamicObjectType *dyn
+	= static_cast<const TyTy::DynamicObjectType *> (expected->get_root ());
       return coerce_to_dyn_object (compiled_ref, actual, expected, dyn, locus);
     }
 
@@ -773,9 +773,9 @@ HIRCompileBase::coercion_site (Bexpression *compiled_ref,
 
 Bexpression *
 HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
-				      TyTy::BaseType *actual,
-				      TyTy::BaseType *expected,
-				      TyTy::DynamicObjectType *ty,
+				      const TyTy::BaseType *actual,
+				      const TyTy::BaseType *expected,
+				      const TyTy::DynamicObjectType *ty,
 				      Location locus)
 {
   Btype *dynamic_object = TyTyResolveCompile::compile (ctx, ty);
@@ -814,7 +814,7 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
   std::vector<Resolver::Adjustment> adjustments;
   while (e->get_kind () == TyTy::TypeKind::REF)
     {
-      auto r = static_cast<TyTy::ReferenceType *> (e);
+      auto r = static_cast<const TyTy::ReferenceType *> (e);
       e = r->get_base ();
 
       if (r->is_mutable ())
@@ -845,7 +845,8 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
 
 Bexpression *
 HIRCompileBase::compute_address_for_trait_item (
-  const Resolver::TraitItemReference *trait_item_ref, TyTy::BaseType *receiver)
+  const Resolver::TraitItemReference *trait_item_ref,
+  const TyTy::BaseType *receiver)
 {
   TyTy::BaseType *item_type = trait_item_ref->get_tyty ();
   rust_assert (item_type->get_kind () == TyTy::TypeKind::FNDEF);

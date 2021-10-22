@@ -317,51 +317,51 @@ private:
   TyTy::BaseType *resolved;
 };
 
-class GetUsedSubstArgs : public TyTy::TyVisitor
+class GetUsedSubstArgs : public TyTy::TyConstVisitor
 {
 public:
-  static TyTy::SubstitutionArgumentMappings From (TyTy::BaseType *from)
+  static TyTy::SubstitutionArgumentMappings From (const TyTy::BaseType *from)
   {
     GetUsedSubstArgs mapper;
     from->accept_vis (mapper);
     return mapper.args;
   }
 
-  void visit (TyTy::FnType &type) override
+  void visit (const TyTy::FnType &type) override
   {
     args = type.get_substitution_arguments ();
   }
 
-  void visit (TyTy::ADTType &type) override
+  void visit (const TyTy::ADTType &type) override
   {
     args = type.get_substitution_arguments ();
   }
 
-  void visit (TyTy::ClosureType &type) override
+  void visit (const TyTy::ClosureType &type) override
   {
     args = type.get_substitution_arguments ();
   }
 
-  void visit (TyTy::InferType &) override {}
-  void visit (TyTy::TupleType &) override {}
-  void visit (TyTy::FnPtr &) override {}
-  void visit (TyTy::ArrayType &) override {}
-  void visit (TyTy::BoolType &) override {}
-  void visit (TyTy::IntType &) override {}
-  void visit (TyTy::UintType &) override {}
-  void visit (TyTy::FloatType &) override {}
-  void visit (TyTy::USizeType &) override {}
-  void visit (TyTy::ISizeType &) override {}
-  void visit (TyTy::ErrorType &) override {}
-  void visit (TyTy::CharType &) override {}
-  void visit (TyTy::ReferenceType &) override {}
-  void visit (TyTy::PointerType &) override {}
-  void visit (TyTy::ParamType &) override {}
-  void visit (TyTy::StrType &) override {}
-  void visit (TyTy::NeverType &) override {}
-  void visit (TyTy::PlaceholderType &) override {}
-  void visit (TyTy::ProjectionType &) override {}
-  void visit (TyTy::DynamicObjectType &) override {}
+  void visit (const TyTy::InferType &) override {}
+  void visit (const TyTy::TupleType &) override {}
+  void visit (const TyTy::FnPtr &) override {}
+  void visit (const TyTy::ArrayType &) override {}
+  void visit (const TyTy::BoolType &) override {}
+  void visit (const TyTy::IntType &) override {}
+  void visit (const TyTy::UintType &) override {}
+  void visit (const TyTy::FloatType &) override {}
+  void visit (const TyTy::USizeType &) override {}
+  void visit (const TyTy::ISizeType &) override {}
+  void visit (const TyTy::ErrorType &) override {}
+  void visit (const TyTy::CharType &) override {}
+  void visit (const TyTy::ReferenceType &) override {}
+  void visit (const TyTy::PointerType &) override {}
+  void visit (const TyTy::ParamType &) override {}
+  void visit (const TyTy::StrType &) override {}
+  void visit (const TyTy::NeverType &) override {}
+  void visit (const TyTy::PlaceholderType &) override {}
+  void visit (const TyTy::ProjectionType &) override {}
+  void visit (const TyTy::DynamicObjectType &) override {}
 
 private:
   GetUsedSubstArgs () : args (TyTy::SubstitutionArgumentMappings::error ()) {}
