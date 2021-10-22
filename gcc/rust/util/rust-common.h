@@ -29,6 +29,12 @@ enum Mutability
   Mut
 };
 
+enum Unsafety
+{
+  Unsafe,
+  Normal
+};
+
 } // namespace Rust
 
 #endif // RUST_COMMON

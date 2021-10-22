@@ -384,7 +384,7 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
-      HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
+      HIR::FunctionQualifiers::AsyncConstStatus::NONE, Unsafety::Normal);
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
@@ -604,8 +604,14 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
+    auto trait_unsafety = Unsafety::Normal;
+    if (trait.is_unsafe ())
+      {
+	trait_unsafety = Unsafety::Unsafe;
+      }
+
     HIR::Trait *hir_trait
-      = new HIR::Trait (mapping, trait.get_identifier (), trait.is_unsafe (),
+      = new HIR::Trait (mapping, trait.get_identifier (), trait_unsafety,
 			std::move (generic_params),
 			std::move (type_param_bounds), where_clause,
 			std::move (trait_items), vis, trait.get_outer_attrs (),

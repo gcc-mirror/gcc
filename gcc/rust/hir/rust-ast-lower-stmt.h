@@ -329,7 +329,7 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
-      HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
+      HIR::FunctionQualifiers::AsyncConstStatus::NONE, Unsafety::Normal);
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need

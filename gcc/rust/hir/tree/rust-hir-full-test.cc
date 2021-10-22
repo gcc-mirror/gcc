@@ -667,7 +667,7 @@ Trait::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  if (has_unsafe)
+  if (unsafety == Unsafety::Unsafe)
     {
       str += "unsafe ";
     }
@@ -1989,7 +1989,7 @@ FunctionQualifiers::as_string () const
       return "ERROR_MARK_STRING: async-const status failure";
     }
 
-  if (has_unsafe)
+  if (unsafety == Unsafety::Unsafe)
     {
       str += "unsafe ";
     }

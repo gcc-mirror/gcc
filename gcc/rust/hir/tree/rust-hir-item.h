@@ -440,7 +440,7 @@ public:
 
 private:
   AsyncConstStatus const_status;
-  bool has_unsafe;
+  Unsafety unsafety;
   bool has_extern;
   std::string extern_abi; // e.g. extern "C" fn() -> i32 {}
   // TODO: maybe ensure that extern_abi only exists if extern exists?
@@ -448,11 +448,11 @@ private:
   // should this store location info?
 
 public:
-  FunctionQualifiers (AsyncConstStatus const_status, bool has_unsafe,
+  FunctionQualifiers (AsyncConstStatus const_status, Unsafety unsafety,
 		      bool has_extern = false,
 		      std::string extern_abi = std::string ())
-    : const_status (const_status), has_unsafe (has_unsafe),
-      has_extern (has_extern), extern_abi (std::move (extern_abi))
+    : const_status (const_status), unsafety (unsafety), has_extern (has_extern),
+      extern_abi (std::move (extern_abi))
   {
     if (!this->extern_abi.empty ())
       {
@@ -2433,7 +2433,7 @@ protected:
 // Rust trait item declaration HIR node
 class Trait : public VisItem
 {
-  bool has_unsafe;
+  Unsafety unsafety;
   Identifier name;
   std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
@@ -2464,14 +2464,14 @@ public:
   Identifier get_name () const { return name; }
 
   // Mega-constructor
-  Trait (Analysis::NodeMapping mappings, Identifier name, bool is_unsafe,
+  Trait (Analysis::NodeMapping mappings, Identifier name, Unsafety unsafety,
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
 	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
 	 AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      has_unsafe (is_unsafe), name (std::move (name)),
+      unsafety (unsafety), name (std::move (name)),
       generic_params (std::move (generic_params)),
       type_param_bounds (std::move (type_param_bounds)),
       where_clause (std::move (where_clause)),
@@ -2480,7 +2480,7 @@ public:
 
   // Copy constructor with vector clone
   Trait (Trait const &other)
-    : VisItem (other), has_unsafe (other.has_unsafe), name (other.name),
+    : VisItem (other), unsafety (other.unsafety), name (other.name),
       where_clause (other.where_clause), locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
@@ -2501,7 +2501,7 @@ public:
   {
     VisItem::operator= (other);
     name = other.name;
-    has_unsafe = other.has_unsafe;
+    unsafety = other.unsafety;
     where_clause = other.where_clause;
     locus = other.locus;
 
