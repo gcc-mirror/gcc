@@ -266,7 +266,7 @@ public:
       {
 	auto resolved
 	  = TypeCheckType::Resolve (function.get_return_type ().get ());
-	if (resolved == nullptr)
+	if (resolved->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (function.get_locus (),
 			   "failed to resolve return type");

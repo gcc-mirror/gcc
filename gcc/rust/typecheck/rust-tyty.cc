@@ -108,6 +108,9 @@ void
 BaseType::inherit_bounds (
   const std::vector<TyTy::TypeBoundPredicate> &specified_bounds)
 {
+  // FIXME
+  // 1. This needs to union the bounds
+  // 2. Do some checking for trait polarity to ensure compatibility
   for (auto &bound : specified_bounds)
     {
       add_bound (bound);
@@ -329,6 +332,30 @@ StructFieldType::clone () const
 }
 
 void
+SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
+{
+  if (type.get_kind () == TyTy::TypeKind::INFER)
+    {
+      type.inherit_bounds (*param);
+    }
+  else
+    {
+      if (!param->bounds_compatible (type, locus, true))
+	return;
+    }
+
+  if (type.get_kind () == TypeKind::PARAM)
+    {
+      delete param;
+      param = static_cast<ParamType *> (type.clone ());
+    }
+  else
+    {
+      param->set_ty_ref (type.get_ref ());
+    }
+}
+
+void
 SubstitutionParamMapping::override_context ()
 {
   if (!param->can_resolve ())
@@ -357,7 +384,9 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       return SubstitutionArgumentMappings::error ();
     }
 
-  if (args.get_type_args ().size () > substitutions.size ())
+  // for inherited arguments
+  size_t offs = used_arguments.size ();
+  if (args.get_type_args ().size () + offs > substitutions.size ())
     {
       RichLocation r (args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
@@ -369,7 +398,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       return SubstitutionArgumentMappings::error ();
     }
 
-  if (args.get_type_args ().size () < min_required_substitutions ())
+  if (args.get_type_args ().size () + offs < min_required_substitutions ())
     {
       RichLocation r (args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
@@ -380,9 +409,6 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	substitutions.size (), args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
     }
-
-  // for inherited arguments
-  size_t offs = used_arguments.size ();
 
   std::vector<SubstitutionArg> mappings;
   for (auto &arg : args.get_type_args ())
@@ -643,7 +669,7 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
@@ -924,7 +950,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
 	{
-	  sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	  sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
 	}
     }
 
@@ -2174,9 +2200,7 @@ bool
 PlaceholderType::can_resolve () const
 {
   auto context = Resolver::TypeCheckContext::get ();
-  HirId val
-    = context->lookup_associated_type_mapping (get_ty_ref (), UNKNOWN_HIRID);
-  return val != UNKNOWN_HIRID;
+  return context->lookup_associated_type_mapping (get_ty_ref (), nullptr);
 }
 
 BaseType *
@@ -2184,12 +2208,11 @@ PlaceholderType::resolve () const
 {
   auto context = Resolver::TypeCheckContext::get ();
 
-  rust_assert (can_resolve ());
-  HirId val
-    = context->lookup_associated_type_mapping (get_ty_ref (), UNKNOWN_HIRID);
-  rust_assert (val != UNKNOWN_HIRID);
+  HirId mapping;
+  bool ok = context->lookup_associated_type_mapping (get_ty_ref (), &mapping);
+  rust_assert (ok);
 
-  return TyVar (val).get_tyty ();
+  return TyVar (mapping).get_tyty ();
 }
 
 bool
@@ -2275,7 +2298,7 @@ ProjectionType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
       if (ok)
-	sub.fill_param_ty (arg.get_tyty (), subst_mappings.get_locus ());
+	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
     }
 
   auto fty = projection->base;

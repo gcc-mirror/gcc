@@ -95,7 +95,12 @@ public:
   }
 
   // if we have the path A::B::C this will give a callback for each segment
-  // example:
+  // including the prefix, example:
+  //
+  // path:
+  //   A::B::C
+  //
+  // iterate:
   //   A
   //   A::B
   //   A::B::C
@@ -110,6 +115,16 @@ public:
       }
   }
 
+  // if we have the path A::B::C this will give a callback for each segment
+  // example:
+  //
+  // path:
+  //   A::B::C
+  //
+  // iterate:
+  //   A
+  //      B
+  //         C
   void iterate_segs (std::function<bool (const CanonicalPath &)> cb) const
   {
     for (auto &seg : segs)
@@ -123,7 +138,7 @@ public:
 
   size_t size () const { return segs.size (); }
 
-  NodeId get_id () const
+  NodeId get_node_id () const
   {
     rust_assert (!segs.empty ());
     return segs.back ().first;
