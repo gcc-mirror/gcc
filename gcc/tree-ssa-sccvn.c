@@ -4499,7 +4499,12 @@ vn_phi_lookup (gimple *phi, bool backedges_varying_p)
       tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       if (TREE_CODE (def) == SSA_NAME
 	  && (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK)))
-	def = SSA_VAL (def);
+	{
+	  if (ssa_undefined_value_p (def, false))
+	    def = VN_TOP;
+	  else
+	    def = SSA_VAL (def);
+	}
       vp1->phiargs[e->dest_idx] = def;
     }
   vp1->type = TREE_TYPE (gimple_phi_result (phi));
@@ -4543,7 +4548,12 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
       tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       if (TREE_CODE (def) == SSA_NAME
 	  && (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK)))
-	def = SSA_VAL (def);
+	{
+	  if (ssa_undefined_value_p (def, false))
+	    def = VN_TOP;
+	  else
+	    def = SSA_VAL (def);
+	}
       vp1->phiargs[e->dest_idx] = def;
     }
   vp1->value_id = VN_INFO (result)->value_id;
