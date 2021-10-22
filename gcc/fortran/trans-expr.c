@@ -11727,6 +11727,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
 	  tmp = INDIRECT_REF_P (lse.expr)
 	      ? gfc_build_addr_expr (NULL_TREE, lse.expr) : lse.expr;
+	  STRIP_NOPS (tmp);
 
 	  /* We should only get array references here.  */
 	  gcc_assert (TREE_CODE (tmp) == POINTER_PLUS_EXPR
