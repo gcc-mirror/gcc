@@ -545,7 +545,7 @@ public:
 
   BaseType *resolve () const;
 
-  std::string get_name () const override final { return as_string (); }
+  std::string get_name () const override final;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -680,7 +680,7 @@ public:
     : generic (other.generic), param (other.param)
   {}
 
-  std::string as_string () const { return param->as_string (); }
+  std::string as_string () const { return param->get_name (); }
 
   bool fill_param_ty (BaseType &type, Location locus);
 
