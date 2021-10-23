@@ -16268,6 +16268,31 @@
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
+(define_insn "<code>v1ti3"
+  [(set (match_operand:V1TI 0 "register_operand" "=x,x,v")
+	(any_logic:V1TI
+	  (match_operand:V1TI 1 "register_operand" "%0,x,v")
+	  (match_operand:V1TI 2 "vector_operand" "xBm,xm,vm")))]
+  "TARGET_SSE2"
+  "@
+   p<logic>\t{%2, %0|%0, %2}
+   vp<logic>\t{%2, %1, %0|%0, %1, %2}
+   vp<logic>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx,avx")
+   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
+
+(define_expand "one_cmplv1ti2"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(xor:V1TI (match_operand:V1TI 1 "register_operand")
+		  (match_dup 2)))]
+  "TARGET_SSE2"
+{
+  operands[2] = force_reg (V1TImode, CONSTM1_RTX (V1TImode));
+})
+
 (define_mode_iterator AVX512ZEXTMASK
   [(DI "TARGET_AVX512BW") (SI "TARGET_AVX512BW") HI])
 
