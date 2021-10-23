@@ -1828,6 +1828,11 @@ simple_dce_from_worklist (bitmap worklist)
       if (gimple_has_side_effects (t))
 	continue;
 
+      /* Don't remove statements that are needed for non-call
+	 eh to work.  */
+      if (stmt_unremovable_because_of_non_call_eh_p (cfun, t))
+	continue;
+
       /* Add uses to the worklist.  */
       ssa_op_iter iter;
       use_operand_p use_p;
