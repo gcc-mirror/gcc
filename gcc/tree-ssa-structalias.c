@@ -7550,8 +7550,8 @@ compute_points_to_sets (void)
 		     always escaped.  */
 		  if (uses_global_memory)
 		    {
-		      pt->nonlocal = uses_global_memory;
-		      pt->escaped = uses_global_memory;
+		      pt->nonlocal = 1;
+		      pt->escaped = 1;
 		    }
 		}
 	      else if (uses_global_memory)
@@ -7561,6 +7561,8 @@ compute_points_to_sets (void)
 		  *pt = cfun->gimple_df->escaped;
 		  pt->nonlocal = 1;
 		}
+	      else
+		memset (pt, 0, sizeof (struct pt_solution));
 	    }
 
 	  pt = gimple_call_clobber_set (stmt);
@@ -7582,8 +7584,8 @@ compute_points_to_sets (void)
 		     always escaped.  */
 		  if (writes_global_memory)
 		    {
-		      pt->nonlocal = writes_global_memory;
-		      pt->escaped = writes_global_memory;
+		      pt->nonlocal = 1;
+		      pt->escaped = 1;
 		    }
 		}
 	      else if (writes_global_memory)
@@ -7593,6 +7595,8 @@ compute_points_to_sets (void)
 		  *pt = cfun->gimple_df->escaped;
 		  pt->nonlocal = 1;
 		}
+	      else
+		memset (pt, 0, sizeof (struct pt_solution));
 	    }
 	}
     }
