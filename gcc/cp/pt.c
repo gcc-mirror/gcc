@@ -1831,13 +1831,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
     case CONSTRUCTOR:
       {
-	tree field, value;
-	unsigned i;
 	iterative_hash_template_arg (TREE_TYPE (arg), val);
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
+	for (auto &e: CONSTRUCTOR_ELTS (arg))
 	  {
-	    val = iterative_hash_template_arg (field, val);
-	    val = iterative_hash_template_arg (value, val);
+	    val = iterative_hash_template_arg (e.index, val);
+	    val = iterative_hash_template_arg (e.value, val);
 	  }
 	return val;
       }
@@ -7004,9 +7002,8 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 
     case CONSTRUCTOR:
       {
-	unsigned i; tree elt;
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), i, elt)
-	  if (invalid_tparm_referent_p (TREE_TYPE (elt), elt, complain))
+	for (auto &e: CONSTRUCTOR_ELTS (expr))
+	  if (invalid_tparm_referent_p (TREE_TYPE (e.value), e.value, complain))
 	    return true;
       }
       break;
@@ -23605,8 +23602,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      we're dealing with a type. */
   if (BRACE_ENCLOSED_INITIALIZER_P (arg))
     {
-      tree elt, elttype;
-      unsigned i;
+      tree elttype;
       tree orig_parm = parm;
 
       if (!is_std_init_list (parm)
@@ -23633,8 +23629,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	/* If ELTTYPE has no deducible template parms, skip deduction from
 	   the list elements.  */;
       else
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
+	for (auto &e: CONSTRUCTOR_ELTS (arg))
 	  {
+	    tree elt = e.value;
 	    int elt_strict = strict;
 
 	    if (elt == error_mark_node)
@@ -27420,14 +27417,9 @@ type_dependent_expression_p (tree expression)
 
   if (BRACE_ENCLOSED_INITIALIZER_P (expression))
     {
-      tree elt;
-      unsigned i;
-
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), i, elt)
-	{
-	  if (type_dependent_expression_p (elt))
-	    return true;
-	}
+      for (auto &elt : CONSTRUCTOR_ELTS (expression))
+	if (type_dependent_expression_p (elt.value))
+	  return true;
       return false;
     }
 

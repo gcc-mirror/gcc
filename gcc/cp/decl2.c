@@ -1913,18 +1913,14 @@ coerce_delete_type (tree decl, location_t loc)
 static void
 mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 {
-  tree fnaddr;
-  unsigned HOST_WIDE_INT idx;
-
   /* It's OK for the vtable to refer to deprecated virtual functions.  */
   warning_sentinel w(warn_deprecated_decl);
 
   bool consteval_seen = false;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)),
-			      idx, fnaddr)
+  for (auto &e: CONSTRUCTOR_ELTS (DECL_INITIAL (decl)))
     {
-      tree fn;
+      tree fnaddr = e.value;
 
       STRIP_NOPS (fnaddr);
 
@@ -1934,7 +1930,7 @@ mark_vtable_entries (tree decl, vec<tree> &consteval_vtables)
 	   virtual call offset, an RTTI offset, etc.  */
 	continue;
 
-      fn = TREE_OPERAND (fnaddr, 0);
+      tree fn = TREE_OPERAND (fnaddr, 0);
       if (TREE_CODE (fn) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (fn))
 	{
 	  if (!consteval_seen)

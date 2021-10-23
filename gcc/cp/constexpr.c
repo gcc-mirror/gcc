@@ -1831,10 +1831,9 @@ clear_no_implicit_zero (tree ctor)
   if (CONSTRUCTOR_NO_CLEARING (ctor))
     {
       CONSTRUCTOR_NO_CLEARING (ctor) = false;
-      tree elt; unsigned HOST_WIDE_INT idx;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), idx, elt)
-	if (TREE_CODE (elt) == CONSTRUCTOR)
-	  clear_no_implicit_zero (elt);
+      for (auto &e: CONSTRUCTOR_ELTS (ctor))
+	if (TREE_CODE (e.value) == CONSTRUCTOR)
+	  clear_no_implicit_zero (e.value);
     }
 }
 
@@ -2950,7 +2949,7 @@ reduced_constant_expression_p (tree t)
 
     case CONSTRUCTOR:
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
-      tree idx, val, field; unsigned HOST_WIDE_INT i;
+      tree field;
       if (CONSTRUCTOR_NO_CLEARING (t))
 	{
 	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
@@ -2964,14 +2963,14 @@ reduced_constant_expression_p (tree t)
 	      tree min = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
 	      tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
 	      tree cursor = min;
-	      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
+	      for (auto &e: CONSTRUCTOR_ELTS (t))
 		{
-		  if (!reduced_constant_expression_p (val))
+		  if (!reduced_constant_expression_p (e.value))
 		    return false;
-		  if (array_index_cmp (cursor, idx) != 0)
+		  if (array_index_cmp (cursor, e.index) != 0)
 		    return false;
-		  if (TREE_CODE (idx) == RANGE_EXPR)
-		    cursor = TREE_OPERAND (idx, 1);
+		  if (TREE_CODE (e.index) == RANGE_EXPR)
+		    cursor = TREE_OPERAND (e.index, 1);
 		  cursor = int_const_binop (PLUS_EXPR, cursor, size_one_node);
 		}
 	      if (find_array_ctor_elt (t, max) == -1)
@@ -2992,14 +2991,14 @@ reduced_constant_expression_p (tree t)
 	}
       else
 	field = NULL_TREE;
-      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
+      for (auto &e: CONSTRUCTOR_ELTS (t))
 	{
 	  /* If VAL is null, we're in the middle of initializing this
 	     element.  */
-	  if (!reduced_constant_expression_p (val))
+	  if (!reduced_constant_expression_p (e.value))
 	    return false;
 	  /* Empty class field may or may not have an initializer.  */
-	  for (; field && idx != field;
+	  for (; field && e.index != field;
 	       field = next_initializable_field (DECL_CHAIN (field)))
 	    if (!is_really_empty_class (TREE_TYPE (field),
 					/*ignore_vptr*/false))

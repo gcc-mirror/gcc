@@ -9538,9 +9538,6 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 
   if (initial_value)
     {
-      unsigned HOST_WIDE_INT i;
-      tree value;
-
       /* An array of character type can be initialized from a
 	 brace-enclosed string constant.
 
@@ -9562,14 +9559,9 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
       /* If any of the elements are parameter packs, we can't actually
 	 complete this type now because the array size is dependent.  */
       if (TREE_CODE (initial_value) == CONSTRUCTOR)
-	{
-	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (initial_value), 
-				      i, value)
-	    {
-	      if (PACK_EXPANSION_P (value))
-		return 0;
-	    }
-	}
+	for (auto &e: CONSTRUCTOR_ELTS (initial_value))
+	  if (PACK_EXPANSION_P (e.value))
+	    return 0;
     }
 
   failure = complete_array_type (ptype, initial_value, do_default);
