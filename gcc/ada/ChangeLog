@@ -1,3 +1,9 @@
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* gcc-interface/Make-lang.in: Allow dvi-formatted
+	documentation to be installed.
+
 2021-10-20  Bob Duff  <duff@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove unnecessary

@@ -1,3 +1,8 @@
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy c.install-dvi target.
+
 2021-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR c/102763

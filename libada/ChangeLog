@@ -1,3 +1,8 @@
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.in: Add dummy install-dvi target.
+
 2020-01-24  Maciej W. Rozycki  <macro@wdc.com>
 
 	* Makefile.in (configure_deps): Add `toolexeclibdir.m4'.

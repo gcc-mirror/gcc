@@ -1,3 +1,9 @@
+2021-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102894
+	* include/std/any (make_any): Add SFINAE constraint.
+	* testsuite/20_util/any/102894.cc: New test.
+
 2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/doxygen/stdheader.cc: Refactor. Use C++23. Add new
