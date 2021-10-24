@@ -530,32 +530,6 @@ gfc_match_small_int (int *value)
 }
 
 
-/* This function is the same as the gfc_match_small_int, except that
-   we're keeping the pointer to the expr.  This function could just be
-   removed and the previously mentioned one modified, though all calls
-   to it would have to be modified then (and there were a number of
-   them).  Return MATCH_ERROR if fail to extract the int; otherwise,
-   return the result of gfc_match_expr().  The expr (if any) that was
-   matched is returned in the parameter expr.  */
-
-match
-gfc_match_small_int_expr (int *value, gfc_expr **expr)
-{
-  match m;
-  int i;
-
-  m = gfc_match_expr (expr);
-  if (m != MATCH_YES)
-    return m;
-
-  if (gfc_extract_int (*expr, &i, 1))
-    m = MATCH_ERROR;
-
-  *value = i;
-  return m;
-}
-
-
 /* Matches a statement label.  Uses gfc_match_small_literal_int() to
    do most of the work.  */
 
