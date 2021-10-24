@@ -5384,7 +5384,7 @@
   "
 {
   operands[4] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
-  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+  if (TARGET_PA_11 && !TARGET_SOFT_FLOAT && !TARGET_SOFT_MULT)
     {
       rtx scratch = gen_reg_rtx (DImode);
       operands[1] = force_reg (SImode, operands[1]);
@@ -5402,7 +5402,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "f"))))]
-  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT && ! TARGET_SOFT_MULT"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -5411,7 +5411,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
-  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && !TARGET_64BIT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT && ! TARGET_SOFT_MULT && !TARGET_64BIT"
   "xmpyu %1,%R2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -5420,7 +5420,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
-  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT && ! TARGET_SOFT_MULT && TARGET_64BIT"
   "xmpyu %1,%2R,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -5457,8 +5457,8 @@
 		 (match_operand:DI 2 "register_operand" "")))]
   "! optimize_size
    && TARGET_PA_11
-   && ! TARGET_DISABLE_FPREGS
-   && ! TARGET_SOFT_FLOAT"
+   && ! TARGET_SOFT_FLOAT
+   && ! TARGET_SOFT_MULT"
   "
 {
   rtx low_product = gen_reg_rtx (DImode);
@@ -7805,7 +7805,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       if (GET_CODE (op) == SYMBOL_REF)
 	{
 	  /* Handle special call to buggy powf function.  */
-	  if (TARGET_HPUX && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT
+	  if (TARGET_HPUX && !TARGET_SOFT_FLOAT
 	      && !strcmp (targetm.strip_name_encoding (XSTR (op, 0)), "powf"))
 	    call_powf = true;
 
@@ -10260,7 +10260,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   enum memmodel model;
 
-  if (TARGET_64BIT || TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_64BIT || TARGET_SOFT_FLOAT)
     FAIL;
 
   model = memmodel_from_int (INTVAL (operands[2]));
@@ -10276,7 +10276,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (mem:DI (match_operand:SI 1 "register_operand" "r")))
    (clobber (match_scratch:DI 2 "=f"))]
-  "!TARGET_64BIT && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT"
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
   "{fldds|fldd} 0(%1),%2\n\t{fstds|fstd} %2,-16(%%sp)\n\t{ldws|ldw} -16(%%sp),%0\n\t{ldws|ldw} -12(%%sp),%R0"
   [(set_attr "type" "move")
    (set_attr "length" "16")])
@@ -10299,7 +10299,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	DONE;
     }
 
-  if (TARGET_64BIT || TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_64BIT || TARGET_SOFT_FLOAT)
     FAIL;
 
   model = memmodel_from_int (INTVAL (operands[2]));
@@ -10317,7 +10317,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (mem:DI (match_operand:SI 0 "register_operand" "r,r"))
         (match_operand:DI 1 "reg_or_0_operand" "M,r"))
    (clobber (match_scratch:DI 2 "=X,f"))]
-  "!TARGET_64BIT && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT"
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
   "@
    {fstds|fstd} %%fr0,0(%0)
    {stws|stw} %1,-16(%%sp)\n\t{stws|stw} %R1,-12(%%sp)\n\t{fldds|fldd} -16(%%sp),%2\n\t{fstds|fstd} %2,0(%0)"
