@@ -599,7 +599,7 @@ cleanup:
    it.  We also make sure the symbol does not refer to another
    (active) block.  A matched label is pointed to by gfc_new_block.  */
 
-match
+static match
 gfc_match_label (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
