@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Get a new constructor structure.  */
 gfc_constructor *gfc_constructor_get (void);
 
-gfc_constructor_base gfc_constructor_get_base (void);
-
 /* Copy a constructor structure.  */
 gfc_constructor_base gfc_constructor_copy (gfc_constructor_base base);
 
@@ -63,14 +61,6 @@ gfc_constructor *gfc_constructor_lookup (gfc_constructor_base base, int n);
      gfc_expr *e = c ? c->expr : NULL;
 */
 gfc_expr *gfc_constructor_lookup_expr (gfc_constructor_base base, int n);
-
-
-int gfc_constructor_expr_foreach (gfc_constructor *ctor, int(*)(gfc_expr *));
-
-
-void gfc_constructor_swap (gfc_constructor *ctor, int n, int m);
-
-
 
 /* Get the first constructor node in the constructure structure.
    Returns NULL if there is no such expression.  */
