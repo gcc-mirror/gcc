@@ -118,8 +118,6 @@ void gfc_copy_loopinfo_to_se (gfc_se *, gfc_loopinfo *);
 
 /* Marks the start of a scalarized expression, and declares loop variables.  */
 void gfc_start_scalarized_body (gfc_loopinfo *, stmtblock_t *);
-/* Generates one actual loop for a scalarized expression.  */
-void  gfc_trans_scalarized_loop_end (gfc_loopinfo *, int, stmtblock_t *);
 /* Generates the actual loops for a scalarized expression.  */
 void gfc_trans_scalarizing_loops (gfc_loopinfo *, stmtblock_t *);
 /* Mark the end of the main loop body and the start of the copying loop.  */
@@ -137,8 +135,6 @@ tree gfc_build_null_descriptor (tree);
 void gfc_conv_array_ref (gfc_se *, gfc_array_ref *, gfc_expr *, locus *);
 /* Translate a reference to a temporary array.  */
 void gfc_conv_tmp_array_ref (gfc_se * se);
-/* Translate a reference to an array temporary.  */
-void gfc_conv_tmp_ref (gfc_se *);
 
 /* Calculate the overall offset, including subreferences.  */
 void gfc_get_dataptr_offset (stmtblock_t*, tree, tree, tree, bool, gfc_expr*);
@@ -149,8 +145,6 @@ void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *);
 /* Convert an array for passing as an actual function parameter.  */
 void gfc_conv_array_parameter (gfc_se *, gfc_expr *, bool,
 			       const gfc_symbol *, const char *, tree *);
-/* Evaluate and transpose a matrix expression.  */
-void gfc_conv_array_transpose (gfc_se *, gfc_expr *);
 
 /* These work with both descriptors and descriptorless arrays.  */
 tree gfc_conv_array_data (tree);
