@@ -1,3 +1,20 @@
+2021-10-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR fortran/9262
+	* gfortran.dg/bind-c-intent-out-2.f90: Moved to ...
+	* gfortran.dg/ubsan/bind-c-intent-out-2.f90
+
+2021-10-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-logic.c: New test case.
+	* gcc.target/i386/sse2-v1ti-logic-2.c: New test case.
+
+2021-10-23  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/95196
+	* gfortran.dg/PR95196.f90: New.
+
 2021-10-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/associate_3.f03: Replace dg-excess-errors by

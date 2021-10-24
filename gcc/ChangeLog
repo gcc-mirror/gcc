@@ -1,3 +1,18 @@
+2021-10-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/i386/x86-tune-sched-bd.c (dispatch_group): Commentary
+	typo fix.
+
+2021-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-structalias.c (compute_points_to_sets): Cleanup.
+
+2021-10-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/sse.md (<any_logic>v1ti3): New define_insn to
+	implement V1TImode AND, IOR and XOR on TARGET_SSE2 (and above).
+	(one_cmplv1ti2): New define expand.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663
