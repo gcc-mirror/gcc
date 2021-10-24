@@ -2186,14 +2186,14 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,?r,?*f")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
    && !TARGET_64BIT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2214,14 +2214,14 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
    && TARGET_64BIT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2240,14 +2240,14 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && TARGET_SOFT_FLOAT
    && TARGET_64BIT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2381,13 +2381,13 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && TARGET_SOFT_FLOAT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2909,11 +2909,11 @@
   [(set (match_operand:HI 0 "move_dest_operand"
 	 		  "=r,r,r,r,r,Q,!*q,!r")
 	(match_operand:HI 1 "move_src_operand"
-			  "rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -3069,11 +3069,11 @@
   [(set (match_operand:QI 0 "move_dest_operand"
 			  "=r,r,r,r,r,Q,!*q,!r")
 	(match_operand:QI 1 "move_src_operand"
-			  "rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -4221,13 +4221,13 @@
   [(set (match_operand:DI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T")
 	(match_operand:DI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && !TARGET_SOFT_FLOAT && TARGET_64BIT"
   "@
    ldd RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    depdi,z %z1,%0
@@ -4246,13 +4246,13 @@
   [(set (match_operand:DI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r")
 	(match_operand:DI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && TARGET_SOFT_FLOAT && TARGET_64BIT"
   "@
    ldd RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    depdi,z %z1,%0
