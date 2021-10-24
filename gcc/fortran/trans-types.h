@@ -65,9 +65,6 @@ enum gfc_packed {
   PACKED_STATIC
 };
 
-/* be-function.c */
-void gfc_convert_function_code (gfc_namespace *);
-
 /* trans-types.c */
 void gfc_init_kinds (void);
 void gfc_init_types (void);
