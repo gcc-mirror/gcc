@@ -188,7 +188,6 @@ protected:
 class LifetimeWhereClauseItem : public WhereClauseItem
 {
   Lifetime lifetime;
-
   std::vector<Lifetime> lifetime_bounds;
   Location locus;
   NodeId node_id;
@@ -211,6 +210,8 @@ public:
   Lifetime &get_lifetime () { return lifetime; }
 
   std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
+
+  Location get_locus () const { return locus; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
