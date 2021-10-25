@@ -402,7 +402,7 @@ Common Joined UInteger Var(param_lim_expensive) Init(20) Param Optimization
 The minimum cost of an expensive expression in the loop invariant motion.
 
 -param=logical-op-non-short-circuit=
-Common Joined UInteger Var(param_logical_op_non_short_circuit) Init(-1) IntegerRange(-1, 1) Param
+Common Joined UInteger Var(param_logical_op_non_short_circuit) Init(-1) IntegerRange(0, 1) Param
 True if a non-short-circuit operation is optimal.
 
 -param=loop-block-tile-size=
@@ -1132,7 +1132,7 @@ Common Joined UInteger Var(param_vect_epilogues_nomask) Init(1) IntegerRange(0, 
 Enable loop epilogue vectorization using smaller vector size.
 
 -param=vect-max-peeling-for-alignment=
-Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(-1, 64) Param Optimization
+Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(0, 64) Param Optimization
 Maximum number of loop peels to enhance alignment of data references in a loop.
 
 -param=vect-max-version-for-alias-checks=
