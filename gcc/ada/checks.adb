@@ -1388,6 +1388,8 @@ package body Checks is
 
          if Nkind (N) = N_Aggregate
            and then No (Expressions (N))
+           and then Nkind (First (Component_Associations (N))) =
+             N_Component_Association
            and then Nkind
             (First (Choices (First (Component_Associations (N)))))
               = N_Others_Choice
