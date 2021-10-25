@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2021 Free Software Foundation, Inc.
+/* Copyright (C) 2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -21,22 +21,11 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifndef NO_WARN_X86_INTRINSICS
-/* This header is distributed to simplify porting x86_64 code that
-   makes explicit use of Intel intrinsics to powerpc64le.
-   It is the user's responsibility to determine if the results are
-   acceptable and make additional changes as necessary.
-   Note that much code that uses Intel intrinsics can be rewritten in
-   standard C or GNU C extensions, which are more portable and better
-   optimized across multiple targets.  */
-#error "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this error."
-#endif
+#ifndef _X86GPRINTRIN_H_INCLUDED
+#define _X86GPRINTRIN_H_INCLUDED
 
-#ifndef _X86INTRIN_H_INCLUDED
-#define _X86INTRIN_H_INCLUDED
+#include <bmiintrin.h>
 
-#ifdef __ALTIVEC__
-#include <immintrin.h>
-#endif /* __ALTIVEC__ */
+#include <bmi2intrin.h>
 
-#endif /* _X86INTRIN_H_INCLUDED */
+#endif /* _X86GPRINTRIN_H_INCLUDED.  */

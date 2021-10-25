@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mvsx" } */
-/* { dg-require-effective-target vsx_hw } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -DNO_WARN_X86_INTRINSICS" } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 
 #include <x86intrin.h>
 
