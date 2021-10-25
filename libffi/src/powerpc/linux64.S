@@ -29,6 +29,8 @@
 #include <fficonfig.h>
 #include <ffi.h>
 
+	.machine altivec
+
 #ifdef POWERPC64
 	.hidden	ffi_call_LINUX64
 	.globl	ffi_call_LINUX64
