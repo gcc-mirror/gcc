@@ -4441,11 +4441,15 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 	    if (inverted_p)
 	      std::swap (te2, fe2);
 
-	    /* ???  Handle VN_TOP specially.  */
+	    /* Since we do not know which edge will be executed we have
+	       to be careful when matching VN_TOP.  Be conservative and
+	       only match VN_TOP == VN_TOP for now, we could allow
+	       VN_TOP on the not prevailing PHI though.  See for example
+	       PR102920.  */
 	    if (! expressions_equal_p (vp1->phiargs[te1->dest_idx],
-				       vp2->phiargs[te2->dest_idx])
+				       vp2->phiargs[te2->dest_idx], false)
 		|| ! expressions_equal_p (vp1->phiargs[fe1->dest_idx],
-					  vp2->phiargs[fe2->dest_idx]))
+					  vp2->phiargs[fe2->dest_idx], false))
 	      return false;
 
 	    return true;
@@ -4470,7 +4474,7 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
       tree phi2op = vp2->phiargs[i];
       if (phi1op == phi2op)
 	continue;
-      if (!expressions_equal_p (phi1op, phi2op))
+      if (!expressions_equal_p (phi1op, phi2op, false))
 	return false;
     }
 
@@ -5816,17 +5820,20 @@ get_next_constant_value_id (void)
 }
 
 
-/* Compare two expressions E1 and E2 and return true if they are equal.  */
+/* Compare two expressions E1 and E2 and return true if they are equal.
+   If match_vn_top_optimistically is true then VN_TOP is equal to anything,
+   otherwise VN_TOP only matches VN_TOP.  */
 
 bool
-expressions_equal_p (tree e1, tree e2)
+expressions_equal_p (tree e1, tree e2, bool match_vn_top_optimistically)
 {
   /* The obvious case.  */
   if (e1 == e2)
     return true;
 
   /* If either one is VN_TOP consider them equal.  */
-  if (e1 == VN_TOP || e2 == VN_TOP)
+  if (match_vn_top_optimistically
+      && (e1 == VN_TOP || e2 == VN_TOP))
     return true;
 
   /* SSA_NAME compare pointer equal.  */
