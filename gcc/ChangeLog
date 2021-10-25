@@ -1,3 +1,29 @@
+2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-d.c (pa_d_handle_target_float_abi): Don't check
+	TARGET_DISABLE_FPREGS.
+	* config/pa/pa.c (fix_range): Use MASK_SOFT_FLOAT instead of
+	MASK_DISABLE_FPREGS.
+	(hppa_rtx_costs): Don't check TARGET_DISABLE_FPREGS.  Adjust
+	cost of hardware integer multiplication.
+	(pa_conditional_register_usage): Don't check TARGET_DISABLE_FPREGS.
+	* config/pa/pa.h (INT14_OK_STRICT): Likewise.
+	* config/pa/pa.md: Don't check TARGET_DISABLE_FPREGS. Check
+	TARGET_SOFT_FLOAT in patterns that use xmpyu instruction.
+	* config/pa/pa.opt (mdisable-fpregs): Change target mask to
+	SOFT_FLOAT.  Revise comment.
+	(msoft-float): New option.
+
+2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Don't use 'G' constraint in integer move patterns.
+
+2021-10-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Remove obsolete details
+	around GNU/Linux on Itanium.
+	(Specific): Remove reference to Windows for Itanium.
+
 2021-10-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* config/i386/x86-tune-sched-bd.c (dispatch_group): Commentary
