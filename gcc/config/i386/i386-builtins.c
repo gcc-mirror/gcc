@@ -1652,6 +1652,20 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  else if (out_n == 16 && in_n == 16)
 	    return ix86_get_builtin (IX86_BUILTIN_FLOORPS512);
 	}
+      if (out_mode == HFmode && in_mode == HFmode)
+	{
+	  /* V8HF/V16HF is supported in ix86_vector_mode_supported_p
+	     under TARGET_AVX512FP16, TARGET_AVX512VL is needed here.  */
+	  if (out_n < 32 && !TARGET_AVX512VL)
+	    break;
+
+	  if (out_n == 8 && in_n == 8)
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPH);
+	  else if (out_n == 16 && in_n == 16)
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPH256);
+	  else if (out_n == 32 && in_n == 32)
+	    return ix86_get_builtin (IX86_BUILTIN_FLOORPH512);
+	}
       break;
 
     CASE_CFN_CEIL:
@@ -1677,6 +1691,20 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	  else if (out_n == 16 && in_n == 16)
 	    return ix86_get_builtin (IX86_BUILTIN_CEILPS512);
 	}
+      if (out_mode == HFmode && in_mode == HFmode)
+	{
+	  /* V8HF/V16HF is supported in ix86_vector_mode_supported_p
+	     under TARGET_AVX512FP16, TARGET_AVX512VL is needed here.  */
+	  if (out_n < 32 && !TARGET_AVX512VL)
+	    break;
+
+	  if (out_n == 8 && in_n == 8)
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPH);
+	  else if (out_n == 16 && in_n == 16)
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPH256);
+	  else if (out_n == 32 && in_n == 32)
+	    return ix86_get_builtin (IX86_BUILTIN_CEILPH512);
+	}
       break;
 
     CASE_CFN_TRUNC:
@@ -1701,6 +1729,20 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS256);
 	  else if (out_n == 16 && in_n == 16)
 	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPS512);
+	}
+      if (out_mode == HFmode && in_mode == HFmode)
+	{
+	  /* V8HF/V16HF is supported in ix86_vector_mode_supported_p
+	     under TARGET_AVX512FP16, TARGET_AVX512VL is needed here.  */
+	  if (out_n < 32 && !TARGET_AVX512VL)
+	    break;
+
+	  if (out_n == 8 && in_n == 8)
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPH);
+	  else if (out_n == 16 && in_n == 16)
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPH256);
+	  else if (out_n == 32 && in_n == 32)
+	    return ix86_get_builtin (IX86_BUILTIN_TRUNCPH512);
 	}
       break;
 

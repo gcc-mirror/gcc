@@ -21936,18 +21936,18 @@
    (set_attr "mode" "TI")])
 
 (define_expand "nearbyint<mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-	(unspec:VF
-	  [(match_operand:VF 1 "vector_operand")
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "vector_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
   "TARGET_SSE4_1"
   "operands[2] = GEN_INT (ROUND_MXCSR | ROUND_NO_EXC);")
 
 (define_expand "rint<mode>2"
-  [(set (match_operand:VF 0 "register_operand")
-	(unspec:VF
-	  [(match_operand:VF 1 "vector_operand")
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "vector_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
   "TARGET_SSE4_1"
