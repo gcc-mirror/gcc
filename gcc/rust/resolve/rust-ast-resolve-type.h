@@ -473,6 +473,36 @@ private:
   bool ok;
 };
 
+class ResolveWhereClause : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static void Resolve (AST::WhereClause &where_clause)
+  {
+    ResolveWhereClause r (where_clause.get_node_id ());
+    for (auto &clause : where_clause.get_items ())
+      clause->accept_vis (r);
+  }
+
+  void visit (AST::LifetimeWhereClauseItem &) override {}
+
+  void visit (AST::TypeBoundWhereClauseItem &item) override
+  {
+    ResolveType::go (item.get_type ().get (), item.get_node_id ());
+    if (item.has_type_param_bounds ())
+      {
+	for (auto &bound : item.get_type_param_bounds ())
+	  {
+	    ResolveTypeBound::go (bound.get (), item.get_node_id ());
+	  }
+      }
+  }
+
+private:
+  ResolveWhereClause (NodeId parent) : ResolverBase (parent) {}
+}; // namespace Resolver
+
 } // namespace Resolver
 } // namespace Rust
 
