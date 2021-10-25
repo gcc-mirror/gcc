@@ -177,6 +177,8 @@ public:
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
+  virtual NodeId get_node_id () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual WhereClauseItem *clone_where_clause_item_impl () const = 0;
@@ -187,22 +189,28 @@ class LifetimeWhereClauseItem : public WhereClauseItem
 {
   Lifetime lifetime;
 
-  // LifetimeBounds lifetime_bounds;
-  std::vector<Lifetime> lifetime_bounds; // inlined lifetime bounds
-
+  std::vector<Lifetime> lifetime_bounds;
   Location locus;
+  NodeId node_id;
 
 public:
   LifetimeWhereClauseItem (Lifetime lifetime,
 			   std::vector<Lifetime> lifetime_bounds,
 			   Location locus)
     : lifetime (std::move (lifetime)),
-      lifetime_bounds (std::move (lifetime_bounds)), locus (locus)
+      lifetime_bounds (std::move (lifetime_bounds)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  NodeId get_node_id () const override final { return node_id; }
+
+  Lifetime &get_lifetime () { return lifetime; }
+
+  std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -215,18 +223,10 @@ protected:
 // A type bound where clause item
 class TypeBoundWhereClauseItem : public WhereClauseItem
 {
-  // bool has_for_lifetimes;
-  // LifetimeParams for_lifetimes;
-  std::vector<LifetimeParam> for_lifetimes; // inlined
-
+  std::vector<LifetimeParam> for_lifetimes;
   std::unique_ptr<Type> bound_type;
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
-    type_param_bounds; // inlined form
-
-  // should this store location info?
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
+  NodeId node_id;
 
 public:
   // Returns whether the item has ForLifetimes
@@ -240,7 +240,8 @@ public:
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
-      type_param_bounds (std::move (type_param_bounds))
+      type_param_bounds (std::move (type_param_bounds)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Copy constructor requires clone
@@ -248,6 +249,7 @@ public:
     : for_lifetimes (other.for_lifetimes),
       bound_type (other.bound_type->clone_type ())
   {
+    node_id = other.node_id;
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -256,9 +258,9 @@ public:
   // Overload assignment operator to clone
   TypeBoundWhereClauseItem &operator= (TypeBoundWhereClauseItem const &other)
   {
+    node_id = other.node_id;
     for_lifetimes = other.for_lifetimes;
     bound_type = other.bound_type->clone_type ();
-
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -275,7 +277,6 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type ()
   {
     rust_assert (bound_type != nullptr);
@@ -287,11 +288,14 @@ public:
   {
     return type_param_bounds;
   }
+
   const std::vector<std::unique_ptr<TypeParamBound>> &
   get_type_param_bounds () const
   {
     return type_param_bounds;
   }
+
+  NodeId get_node_id () const override final { return node_id; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -306,17 +310,18 @@ struct WhereClause
 {
 private:
   std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items;
-
-  // should this store location info?
+  NodeId node_id;
 
 public:
   WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items)
-    : where_clause_items (std::move (where_clause_items))
+    : where_clause_items (std::move (where_clause_items)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // copy constructor with vector clone
   WhereClause (WhereClause const &other)
   {
+    node_id = other.node_id;
     where_clause_items.reserve (other.where_clause_items.size ());
     for (const auto &e : other.where_clause_items)
       where_clause_items.push_back (e->clone_where_clause_item ());
@@ -325,6 +330,7 @@ public:
   // overloaded assignment operator with vector clone
   WhereClause &operator= (WhereClause const &other)
   {
+    node_id = other.node_id;
     where_clause_items.reserve (other.where_clause_items.size ());
     for (const auto &e : other.where_clause_items)
       where_clause_items.push_back (e->clone_where_clause_item ());
@@ -346,6 +352,8 @@ public:
   bool is_empty () const { return where_clause_items.empty (); }
 
   std::string as_string () const;
+
+  NodeId get_node_id () const { return node_id; }
 
   // TODO: this mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<WhereClauseItem>> &get_items ()
