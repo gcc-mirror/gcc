@@ -1387,6 +1387,8 @@ public:
     return generic_params;
   }
 
+  WhereClause &get_where_clause () { return where_clause; }
+
 protected:
   Struct (Analysis::NodeMapping mappings, Identifier struct_name,
 	  std::vector<std::unique_ptr<GenericParam>> generic_params,
@@ -1993,6 +1995,8 @@ public:
 	  return;
       }
   }
+
+  WhereClause &get_where_clause () { return where_clause; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2703,6 +2707,8 @@ public:
     rust_assert (has_trait_ref ());
     return trait_ref;
   }
+
+  WhereClause &get_where_clause () { return where_clause; }
 
 protected:
   ImplBlock *clone_item_impl () const override { return new ImplBlock (*this); }

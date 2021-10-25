@@ -1,6 +1,5 @@
-trait Foo
-where
-    Self: Sized,
+trait Foo // where
+//     Self: Sized,
 {
     fn get(self) -> i32;
     // { dg-warning "unused name" "" { target *-*-* } .-1 }
