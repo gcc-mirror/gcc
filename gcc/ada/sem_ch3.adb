@@ -3506,6 +3506,15 @@ package body Sem_Ch3 is
          Set_Is_Tagged_Type (T, True);
          Set_No_Tagged_Streams_Pragma (T, No_Tagged_Streams);
          Make_Class_Wide_Type (T);
+      end if;
+
+      --  For tagged types, or when prefixed-call syntax is allowed for
+      --  untagged types, initialize the list of primitive operations to
+      --  an empty list.
+
+      if Tagged_Present (N)
+        or else Extensions_Allowed
+      then
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
       end if;
 
