@@ -35,6 +35,12 @@ enum Unsafety
   Normal
 };
 
+enum Polarity
+{
+  Positive,
+  Negative
+};
+
 } // namespace Rust
 
 #endif // RUST_COMMON
