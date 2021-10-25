@@ -3579,9 +3579,11 @@ Parser<ManagedTokenSource>::parse_lifetime_where_clause_item ()
   std::vector<AST::Lifetime> lifetime_bounds = parse_lifetime_bounds ();
   // TODO: have end token passed in?
 
+  Location locus = lifetime.get_locus ();
+
   return std::unique_ptr<AST::LifetimeWhereClauseItem> (
     new AST::LifetimeWhereClauseItem (std::move (lifetime),
-				      std::move (lifetime_bounds)));
+				      std::move (lifetime_bounds), locus));
 }
 
 // Parses a type bound where clause item.
