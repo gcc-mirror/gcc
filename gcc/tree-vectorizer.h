@@ -1606,7 +1606,8 @@ set_dr_misalignment (dr_vec_info *dr_info, int val)
   dr_info->misalignment = val;
 }
 
-extern int dr_misalignment (dr_vec_info *dr_info, tree vectype);
+extern int dr_misalignment (dr_vec_info *dr_info, tree vectype,
+			    poly_int64 offset = 0);
 
 #define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 

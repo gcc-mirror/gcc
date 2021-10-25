@@ -2001,7 +2001,7 @@ get_negative_load_store_type (vec_info *vinfo,
   *poffset = ((-TYPE_VECTOR_SUBPARTS (vectype) + 1)
 	      * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
 
-  int misalignment = dr_misalignment (dr_info, vectype);
+  int misalignment = dr_misalignment (dr_info, vectype, *poffset);
   alignment_support_scheme
     = vect_supportable_dr_alignment (vinfo, dr_info, vectype, misalignment);
   if (alignment_support_scheme != dr_aligned
@@ -2010,8 +2010,8 @@ get_negative_load_store_type (vec_info *vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "negative step but alignment required.\n");
-      return VMAT_ELEMENTWISE;
       *poffset = 0;
+      return VMAT_ELEMENTWISE;
     }
 
   if (vls_type == VLS_STORE_INVARIANT)
@@ -2320,7 +2320,7 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
     }
   else
     {
-      *misalignment = dr_misalignment (first_dr_info, vectype);
+      *misalignment = dr_misalignment (first_dr_info, vectype, *poffset);
       *alignment_support_scheme
 	= vect_supportable_dr_alignment (vinfo, first_dr_info, vectype,
 					 *misalignment);
@@ -2470,7 +2470,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	  else
 	    *memory_access_type = VMAT_CONTIGUOUS;
 	  *misalignment = dr_misalignment (STMT_VINFO_DR_INFO (stmt_info),
-					   vectype);
+					   vectype, *poffset);
 	  *alignment_support_scheme
 	    = vect_supportable_dr_alignment (vinfo,
 					     STMT_VINFO_DR_INFO (stmt_info),
@@ -8252,10 +8252,7 @@ vectorizable_store (vec_info *vinfo,
 
 	      align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
 	      if (alignment_support_scheme == dr_aligned)
-		{
-		  gcc_assert (aligned_access_p (first_dr_info, vectype));
-		  misalign = 0;
-		}
+		misalign = 0;
 	      else if (misalignment == DR_MISALIGNMENT_UNKNOWN)
 		{
 		  align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
@@ -8340,7 +8337,7 @@ vectorizable_store (vec_info *vinfo,
 					  ? dataref_offset
 					  : build_int_cst (ref_type, 0));
 		  if (alignment_support_scheme == dr_aligned)
-		    gcc_assert (aligned_access_p (first_dr_info, vectype));
+		    ;
 		  else
 		    TREE_TYPE (data_ref)
 		      = build_aligned_type (TREE_TYPE (data_ref),
@@ -9589,10 +9586,7 @@ vectorizable_load (vec_info *vinfo,
 		    align =
 		      known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
 		    if (alignment_support_scheme == dr_aligned)
-		      {
-			gcc_assert (aligned_access_p (first_dr_info, vectype));
-			misalign = 0;
-		      }
+		      misalign = 0;
 		    else if (misalignment == DR_MISALIGNMENT_UNKNOWN)
 		      {
 			align = dr_alignment
