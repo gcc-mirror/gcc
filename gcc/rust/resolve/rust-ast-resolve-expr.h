@@ -269,11 +269,12 @@ public:
 			 struct_expr.get_node_id ());
       }
 
-    struct_expr.iterate (
-      [&] (AST::StructExprField *struct_field) mutable -> bool {
-	ResolveStructExprField::go (struct_field, struct_expr.get_node_id ());
-	return true;
-      });
+    auto const &struct_fields = struct_expr.get_fields ();
+    for (auto &struct_field : struct_fields)
+      {
+	ResolveStructExprField::go (struct_field.get (),
+				    struct_expr.get_node_id ());
+      }
   }
 
   void visit (AST::GroupedExpr &expr) override
