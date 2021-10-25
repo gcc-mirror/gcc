@@ -89,7 +89,7 @@ assert_streq (const location &loc,
 	if (strcmp (val1, val2) == 0)
 	  pass (loc, "ASSERT_STREQ");
 	else
-	  fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=\"%s\" val2=\"%s\"",
+	  fail_formatted (loc, "ASSERT_STREQ (%s, %s)\n val1=\"%s\"\n val2=\"%s\"\n",
 			  desc_val1, desc_val2, val1, val2);
       }
 }
