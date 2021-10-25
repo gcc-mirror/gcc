@@ -141,6 +141,12 @@ protected:
 class WhereClauseItem
 {
 public:
+  enum ItemType
+  {
+    LIFETIME,
+    TYPE_BOUND,
+  };
+
   virtual ~WhereClauseItem () {}
 
   // Unique pointer custom clone function
@@ -154,6 +160,8 @@ public:
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_mappings () const = 0;
+
+  virtual ItemType get_item_type () const = 0;
 
 protected:
   // Clone function implementation as pure virtual method
@@ -189,6 +197,11 @@ public:
   {
     return mappings;
   };
+
+  ItemType get_item_type () const override final
+  {
+    return WhereClauseItem::ItemType::LIFETIME;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -268,6 +281,11 @@ public:
   {
     return mappings;
   };
+
+  ItemType get_item_type () const override final
+  {
+    return WhereClauseItem::ItemType::TYPE_BOUND;
+  }
 
 protected:
   // Clone function implementation as (not pure) virtual method
