@@ -317,8 +317,8 @@ public:
 	  if (!ctx->get_tyctx ()->lookup_type (
 		expr.get_mappings ().get_hirid (), &tyty))
 	    {
-	      rust_fatal_error (expr.get_locus (),
-				"did not resolve type for this array expr");
+	      rust_error_at (expr.get_locus (),
+			     "did not resolve type for this byte string");
 	      return;
 	    }
 
