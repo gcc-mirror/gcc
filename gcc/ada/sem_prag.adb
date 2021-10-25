@@ -1684,7 +1684,15 @@ package body Sem_Prag is
                --  States and global objects are not used properly only when
                --  the subprogram is subject to pragma Global.
 
-               elsif Global_Seen then
+               elsif Global_Seen
+                 and then Ekind (Item_Id) in E_Abstract_State
+                                           | E_Constant
+                                           | E_Loop_Parameter
+                                           | E_Protected_Type
+                                           | E_Task_Type
+                                           | E_Variable
+                                           | Formal_Kind
+               then
                   Usage_Error (Item_Id);
                end if;
             end if;
