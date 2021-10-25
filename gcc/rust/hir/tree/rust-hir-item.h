@@ -20,6 +20,7 @@
 #define RUST_HIR_ITEM_H
 
 #include "rust-ast-full-decls.h"
+#include "rust-common.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 
@@ -152,6 +153,8 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  virtual Analysis::NodeMapping get_mappings () const = 0;
+
 protected:
   // Clone function implementation as pure virtual method
   virtual WhereClauseItem *clone_where_clause_item_impl () const = 0;
@@ -161,23 +164,31 @@ protected:
 class LifetimeWhereClauseItem : public WhereClauseItem
 {
   Lifetime lifetime;
-
-  // LifetimeBounds lifetime_bounds;
-  std::vector<Lifetime> lifetime_bounds; // inlined lifetime bounds
-
+  std::vector<Lifetime> lifetime_bounds;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
-  LifetimeWhereClauseItem (Lifetime lifetime,
+  LifetimeWhereClauseItem (Analysis::NodeMapping mappings, Lifetime lifetime,
 			   std::vector<Lifetime> lifetime_bounds,
 			   Location locus)
     : lifetime (std::move (lifetime)),
-      lifetime_bounds (std::move (lifetime_bounds)), locus (locus)
+      lifetime_bounds (std::move (lifetime_bounds)), locus (locus),
+      mappings (std::move (mappings))
   {}
 
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Lifetime &get_lifetime () { return lifetime; }
+
+  std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
+
+  Analysis::NodeMapping get_mappings () const override final
+  {
+    return mappings;
+  };
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -190,18 +201,10 @@ protected:
 // A type bound where clause item
 class TypeBoundWhereClauseItem : public WhereClauseItem
 {
-  // bool has_for_lifetimes;
-  // LifetimeParams for_lifetimes;
-  std::vector<LifetimeParam> for_lifetimes; // inlined
-
+  std::vector<LifetimeParam> for_lifetimes;
   std::unique_ptr<Type> bound_type;
-
-  // bool has_type_param_bounds;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound>>
-    type_param_bounds; // inlined form
-
-  // should this store location info?
+  std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
+  Analysis::NodeMapping mappings;
 
 public:
   // Returns whether the item has ForLifetimes
@@ -211,17 +214,19 @@ public:
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
   TypeBoundWhereClauseItem (
-    std::vector<LifetimeParam> for_lifetimes, std::unique_ptr<Type> bound_type,
+    Analysis::NodeMapping mappings, std::vector<LifetimeParam> for_lifetimes,
+    std::unique_ptr<Type> bound_type,
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
-      type_param_bounds (std::move (type_param_bounds))
+      type_param_bounds (std::move (type_param_bounds)),
+      mappings (std::move (mappings))
   {}
 
   // Copy constructor requires clone
   TypeBoundWhereClauseItem (TypeBoundWhereClauseItem const &other)
     : for_lifetimes (other.for_lifetimes),
-      bound_type (other.bound_type->clone_type ())
+      bound_type (other.bound_type->clone_type ()), mappings (other.mappings)
   {
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -231,9 +236,9 @@ public:
   // Overload assignment operator to clone
   TypeBoundWhereClauseItem &operator= (TypeBoundWhereClauseItem const &other)
   {
+    mappings = other.mappings;
     for_lifetimes = other.for_lifetimes;
     bound_type = other.bound_type->clone_type ();
-
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -249,6 +254,20 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+
+  std::unique_ptr<Type> &get_bound_type () { return bound_type; }
+
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+
+  Analysis::NodeMapping get_mappings () const override final
+  {
+    return mappings;
+  };
 
 protected:
   // Clone function implementation as (not pure) virtual method
