@@ -1,3 +1,14 @@
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Allow dvi-formatted documentation
+	to be installed.
+
+2021-10-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92621
+	* trans-expr.c (gfc_trans_assignment_1): Add STRIP_NOPS.
+
 2021-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* decl.c (gfc_match_end): Add COMP_OMP_STRICTLY_STRUCTURED_BLOCK case

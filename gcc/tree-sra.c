@@ -3288,7 +3288,7 @@ totally_scalarize_subtree (struct access *root)
 	      continue;
 
 	    HOST_WIDE_INT pos = root->offset + int_bit_position (fld);
-	    if (pos + fsize > root->size)
+	    if (pos + fsize > root->offset + root->size)
 	      return false;
 	    enum total_sra_field_state
 	      state = total_should_skip_creating_access (root,

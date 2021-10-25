@@ -91,6 +91,7 @@ objc.rest.encap:
 objc.info:
 objc.install-info:
 objc.dvi:
+objc.install-dvi:
 objc.pdf:
 objc.install-pdf:
 objc.html:

@@ -1802,6 +1802,96 @@ install-info-target: maybe-install-info-target-libgomp
 install-info-target: maybe-install-info-target-libitm
 install-info-target: maybe-install-info-target-libatomic
 
+.PHONY: do-install-dvi
+do-install-dvi:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) install-dvi-host \
+	  install-dvi-target
+
+
+.PHONY: install-dvi-host
+
+install-dvi-host: maybe-install-dvi-bfd
+install-dvi-host: maybe-install-dvi-opcodes
+install-dvi-host: maybe-install-dvi-binutils
+install-dvi-host: maybe-install-dvi-bison
+install-dvi-host: maybe-install-dvi-cgen
+install-dvi-host: maybe-install-dvi-dejagnu
+install-dvi-host: maybe-install-dvi-etc
+install-dvi-host: maybe-install-dvi-fastjar
+install-dvi-host: maybe-install-dvi-fixincludes
+install-dvi-host: maybe-install-dvi-flex
+install-dvi-host: maybe-install-dvi-gas
+install-dvi-host: maybe-install-dvi-gcc
+install-dvi-host: maybe-install-dvi-gmp
+install-dvi-host: maybe-install-dvi-mpfr
+install-dvi-host: maybe-install-dvi-mpc
+install-dvi-host: maybe-install-dvi-isl
+install-dvi-host: maybe-install-dvi-libelf
+install-dvi-host: maybe-install-dvi-gold
+install-dvi-host: maybe-install-dvi-gprof
+install-dvi-host: maybe-install-dvi-intl
+install-dvi-host: maybe-install-dvi-tcl
+install-dvi-host: maybe-install-dvi-itcl
+install-dvi-host: maybe-install-dvi-ld
+install-dvi-host: maybe-install-dvi-libbacktrace
+install-dvi-host: maybe-install-dvi-libcpp
+install-dvi-host: maybe-install-dvi-libcody
+install-dvi-host: maybe-install-dvi-libdecnumber
+install-dvi-host: maybe-install-dvi-libgui
+install-dvi-host: maybe-install-dvi-libiberty
+install-dvi-host: maybe-install-dvi-libiberty-linker-plugin
+install-dvi-host: maybe-install-dvi-libiconv
+install-dvi-host: maybe-install-dvi-m4
+install-dvi-host: maybe-install-dvi-readline
+install-dvi-host: maybe-install-dvi-sid
+install-dvi-host: maybe-install-dvi-sim
+install-dvi-host: maybe-install-dvi-texinfo
+install-dvi-host: maybe-install-dvi-zlib
+install-dvi-host: maybe-install-dvi-gnulib
+install-dvi-host: maybe-install-dvi-gdbsupport
+install-dvi-host: maybe-install-dvi-gdbserver
+install-dvi-host: maybe-install-dvi-gdb
+install-dvi-host: maybe-install-dvi-expect
+install-dvi-host: maybe-install-dvi-guile
+install-dvi-host: maybe-install-dvi-tk
+install-dvi-host: maybe-install-dvi-libtermcap
+install-dvi-host: maybe-install-dvi-utils
+install-dvi-host: maybe-install-dvi-c++tools
+install-dvi-host: maybe-install-dvi-gnattools
+install-dvi-host: maybe-install-dvi-lto-plugin
+install-dvi-host: maybe-install-dvi-libcc1
+install-dvi-host: maybe-install-dvi-gotools
+install-dvi-host: maybe-install-dvi-libctf
+
+.PHONY: install-dvi-target
+
+install-dvi-target: maybe-install-dvi-target-libstdc++-v3
+install-dvi-target: maybe-install-dvi-target-libsanitizer
+install-dvi-target: maybe-install-dvi-target-libvtv
+install-dvi-target: maybe-install-dvi-target-liboffloadmic
+install-dvi-target: maybe-install-dvi-target-libssp
+install-dvi-target: maybe-install-dvi-target-newlib
+install-dvi-target: maybe-install-dvi-target-libgcc
+install-dvi-target: maybe-install-dvi-target-libbacktrace
+install-dvi-target: maybe-install-dvi-target-libquadmath
+install-dvi-target: maybe-install-dvi-target-libgfortran
+install-dvi-target: maybe-install-dvi-target-libobjc
+install-dvi-target: maybe-install-dvi-target-libgo
+install-dvi-target: maybe-install-dvi-target-libphobos
+install-dvi-target: maybe-install-dvi-target-libtermcap
+install-dvi-target: maybe-install-dvi-target-winsup
+install-dvi-target: maybe-install-dvi-target-libgloss
+install-dvi-target: maybe-install-dvi-target-libffi
+install-dvi-target: maybe-install-dvi-target-zlib
+install-dvi-target: maybe-install-dvi-target-rda
+install-dvi-target: maybe-install-dvi-target-libada
+install-dvi-target: maybe-install-dvi-target-libgomp
+install-dvi-target: maybe-install-dvi-target-libitm
+install-dvi-target: maybe-install-dvi-target-libatomic
+
 .PHONY: do-install-pdf
 do-install-pdf:
 	@: $(MAKE); $(unstage)
@@ -2436,7 +2526,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libatomic
 # Here are the targets which correspond to the do-X targets.
 
 .PHONY: info installcheck dvi pdf html
-.PHONY: install-info install-pdf install-html
+.PHONY: install-info install-dvi install-pdf install-html
 .PHONY: clean distclean mostlyclean maintainer-clean realclean
 .PHONY: local-clean local-distclean local-maintainer-clean
 info: do-info
@@ -2454,6 +2544,8 @@ install-info: do-install-info dir.info
 	if [ -f dir.info ]; then \
 	  $(INSTALL_DATA) dir.info $(DESTDIR)$(infodir)/dir.info; \
 	else true; fi
+
+install-dvi: do-install-dvi
 
 install-pdf: do-install-pdf
 
@@ -4267,6 +4359,32 @@ install-info-bfd: \
 
 @endif bfd
 
+.PHONY: maybe-install-dvi-bfd install-dvi-bfd
+maybe-install-dvi-bfd:
+@if bfd
+maybe-install-dvi-bfd: install-dvi-bfd
+
+install-dvi-bfd: \
+    configure-bfd \
+    dvi-bfd 
+	@[ -f ./bfd/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in bfd"; \
+	(cd $(HOST_SUBDIR)/bfd && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif bfd
+
 .PHONY: maybe-install-pdf-bfd install-pdf-bfd
 maybe-install-pdf-bfd:
 @if bfd
@@ -5377,6 +5495,32 @@ install-info-opcodes: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif opcodes
+
+.PHONY: maybe-install-dvi-opcodes install-dvi-opcodes
+maybe-install-dvi-opcodes:
+@if opcodes
+maybe-install-dvi-opcodes: install-dvi-opcodes
+
+install-dvi-opcodes: \
+    configure-opcodes \
+    dvi-opcodes 
+	@[ -f ./opcodes/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in opcodes"; \
+	(cd $(HOST_SUBDIR)/opcodes && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif opcodes
@@ -6495,6 +6639,32 @@ install-info-binutils: \
 
 @endif binutils
 
+.PHONY: maybe-install-dvi-binutils install-dvi-binutils
+maybe-install-dvi-binutils:
+@if binutils
+maybe-install-dvi-binutils: install-dvi-binutils
+
+install-dvi-binutils: \
+    configure-binutils \
+    dvi-binutils 
+	@[ -f ./binutils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in binutils"; \
+	(cd $(HOST_SUBDIR)/binutils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif binutils
+
 .PHONY: maybe-install-pdf-binutils install-pdf-binutils
 maybe-install-pdf-binutils:
 @if binutils
@@ -6928,6 +7098,33 @@ install-info-bison: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif bison
+
+.PHONY: maybe-install-dvi-bison install-dvi-bison
+maybe-install-dvi-bison:
+@if bison
+maybe-install-dvi-bison: install-dvi-bison
+
+install-dvi-bison: \
+    configure-bison \
+    dvi-bison 
+	@: $(MAKE); $(unstage)
+	@[ -f ./bison/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in bison"; \
+	(cd $(HOST_SUBDIR)/bison && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif bison
@@ -7373,6 +7570,33 @@ install-info-cgen: \
 
 @endif cgen
 
+.PHONY: maybe-install-dvi-cgen install-dvi-cgen
+maybe-install-dvi-cgen:
+@if cgen
+maybe-install-dvi-cgen: install-dvi-cgen
+
+install-dvi-cgen: \
+    configure-cgen \
+    dvi-cgen 
+	@: $(MAKE); $(unstage)
+	@[ -f ./cgen/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in cgen"; \
+	(cd $(HOST_SUBDIR)/cgen && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif cgen
+
 .PHONY: maybe-install-pdf-cgen install-pdf-cgen
 maybe-install-pdf-cgen:
 @if cgen
@@ -7810,6 +8034,33 @@ install-info-dejagnu: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif dejagnu
+
+.PHONY: maybe-install-dvi-dejagnu install-dvi-dejagnu
+maybe-install-dvi-dejagnu:
+@if dejagnu
+maybe-install-dvi-dejagnu: install-dvi-dejagnu
+
+install-dvi-dejagnu: \
+    configure-dejagnu \
+    dvi-dejagnu 
+	@: $(MAKE); $(unstage)
+	@[ -f ./dejagnu/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in dejagnu"; \
+	(cd $(HOST_SUBDIR)/dejagnu && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif dejagnu
@@ -8255,6 +8506,33 @@ install-info-etc: \
 
 @endif etc
 
+.PHONY: maybe-install-dvi-etc install-dvi-etc
+maybe-install-dvi-etc:
+@if etc
+maybe-install-dvi-etc: install-dvi-etc
+
+install-dvi-etc: \
+    configure-etc \
+    dvi-etc 
+	@: $(MAKE); $(unstage)
+	@[ -f ./etc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in etc"; \
+	(cd $(HOST_SUBDIR)/etc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif etc
+
 .PHONY: maybe-install-pdf-etc install-pdf-etc
 maybe-install-pdf-etc:
 @if etc
@@ -8695,6 +8973,33 @@ install-info-fastjar: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif fastjar
+
+.PHONY: maybe-install-dvi-fastjar install-dvi-fastjar
+maybe-install-dvi-fastjar:
+@if fastjar
+maybe-install-dvi-fastjar: install-dvi-fastjar
+
+install-dvi-fastjar: \
+    configure-fastjar \
+    dvi-fastjar 
+	@: $(MAKE); $(unstage)
+	@[ -f ./fastjar/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in fastjar"; \
+	(cd $(HOST_SUBDIR)/fastjar && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif fastjar
@@ -9805,6 +10110,16 @@ install-info-fixincludes: \
 
 @endif fixincludes
 
+.PHONY: maybe-install-dvi-fixincludes install-dvi-fixincludes
+maybe-install-dvi-fixincludes:
+@if fixincludes
+maybe-install-dvi-fixincludes: install-dvi-fixincludes
+
+# fixincludes doesn't support install-dvi.
+install-dvi-fixincludes:
+
+@endif fixincludes
+
 .PHONY: maybe-install-pdf-fixincludes install-pdf-fixincludes
 maybe-install-pdf-fixincludes:
 @if fixincludes
@@ -10238,6 +10553,33 @@ install-info-flex: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif flex
+
+.PHONY: maybe-install-dvi-flex install-dvi-flex
+maybe-install-dvi-flex:
+@if flex
+maybe-install-dvi-flex: install-dvi-flex
+
+install-dvi-flex: \
+    configure-flex \
+    dvi-flex 
+	@: $(MAKE); $(unstage)
+	@[ -f ./flex/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in flex"; \
+	(cd $(HOST_SUBDIR)/flex && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif flex
@@ -11363,6 +11705,32 @@ install-info-gas: \
 
 @endif gas
 
+.PHONY: maybe-install-dvi-gas install-dvi-gas
+maybe-install-dvi-gas:
+@if gas
+maybe-install-dvi-gas: install-dvi-gas
+
+install-dvi-gas: \
+    configure-gas \
+    dvi-gas 
+	@[ -f ./gas/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gas"; \
+	(cd $(HOST_SUBDIR)/gas && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gas
+
 .PHONY: maybe-install-pdf-gas install-pdf-gas
 maybe-install-pdf-gas:
 @if gas
@@ -12473,6 +12841,32 @@ install-info-gcc: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif gcc
+
+.PHONY: maybe-install-dvi-gcc install-dvi-gcc
+maybe-install-dvi-gcc:
+@if gcc
+maybe-install-dvi-gcc: install-dvi-gcc
+
+install-dvi-gcc: \
+    configure-gcc \
+    dvi-gcc 
+	@[ -f ./gcc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gcc"; \
+	(cd $(HOST_SUBDIR)/gcc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif gcc
@@ -13588,6 +13982,32 @@ install-info-gmp: \
 
 @endif gmp
 
+.PHONY: maybe-install-dvi-gmp install-dvi-gmp
+maybe-install-dvi-gmp:
+@if gmp
+maybe-install-dvi-gmp: install-dvi-gmp
+
+install-dvi-gmp: \
+    configure-gmp \
+    dvi-gmp 
+	@[ -f ./gmp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) AM_CFLAGS="-DNO_ASM"; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gmp"; \
+	(cd $(HOST_SUBDIR)/gmp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gmp
+
 .PHONY: maybe-install-pdf-gmp install-pdf-gmp
 maybe-install-pdf-gmp:
 @if gmp
@@ -14695,6 +15115,32 @@ install-info-mpfr: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif mpfr
+
+.PHONY: maybe-install-dvi-mpfr install-dvi-mpfr
+maybe-install-dvi-mpfr:
+@if mpfr
+maybe-install-dvi-mpfr: install-dvi-mpfr
+
+install-dvi-mpfr: \
+    configure-mpfr \
+    dvi-mpfr 
+	@[ -f ./mpfr/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) AM_CFLAGS="-DNO_ASM"; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in mpfr"; \
+	(cd $(HOST_SUBDIR)/mpfr && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif mpfr
@@ -15810,6 +16256,32 @@ install-info-mpc: \
 
 @endif mpc
 
+.PHONY: maybe-install-dvi-mpc install-dvi-mpc
+maybe-install-dvi-mpc:
+@if mpc
+maybe-install-dvi-mpc: install-dvi-mpc
+
+install-dvi-mpc: \
+    configure-mpc \
+    dvi-mpc 
+	@[ -f ./mpc/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in mpc"; \
+	(cd $(HOST_SUBDIR)/mpc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif mpc
+
 .PHONY: maybe-install-pdf-mpc install-pdf-mpc
 maybe-install-pdf-mpc:
 @if mpc
@@ -16921,6 +17393,32 @@ install-info-isl: \
 
 @endif isl
 
+.PHONY: maybe-install-dvi-isl install-dvi-isl
+maybe-install-dvi-isl:
+@if isl
+maybe-install-dvi-isl: install-dvi-isl
+
+install-dvi-isl: \
+    configure-isl \
+    dvi-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in isl"; \
+	(cd $(HOST_SUBDIR)/isl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif isl
+
 .PHONY: maybe-install-pdf-isl install-pdf-isl
 maybe-install-pdf-isl:
 @if isl
@@ -18028,6 +18526,32 @@ install-info-libelf: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif libelf
+
+.PHONY: maybe-install-dvi-libelf install-dvi-libelf
+maybe-install-dvi-libelf:
+@if libelf
+maybe-install-dvi-libelf: install-dvi-libelf
+
+install-dvi-libelf: \
+    configure-libelf \
+    dvi-libelf 
+	@[ -f ./libelf/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libelf"; \
+	(cd $(HOST_SUBDIR)/libelf && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif libelf
@@ -19146,6 +19670,32 @@ install-info-gold: \
 
 @endif gold
 
+.PHONY: maybe-install-dvi-gold install-dvi-gold
+maybe-install-dvi-gold:
+@if gold
+maybe-install-dvi-gold: install-dvi-gold
+
+install-dvi-gold: \
+    configure-gold \
+    dvi-gold 
+	@[ -f ./gold/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gold"; \
+	(cd $(HOST_SUBDIR)/gold && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gold
+
 .PHONY: maybe-install-pdf-gold install-pdf-gold
 maybe-install-pdf-gold:
 @if gold
@@ -19576,6 +20126,33 @@ install-info-gprof: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif gprof
+
+.PHONY: maybe-install-dvi-gprof install-dvi-gprof
+maybe-install-dvi-gprof:
+@if gprof
+maybe-install-dvi-gprof: install-dvi-gprof
+
+install-dvi-gprof: \
+    configure-gprof \
+    dvi-gprof 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gprof/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gprof"; \
+	(cd $(HOST_SUBDIR)/gprof && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif gprof
@@ -20701,6 +21278,32 @@ install-info-intl: \
 
 @endif intl
 
+.PHONY: maybe-install-dvi-intl install-dvi-intl
+maybe-install-dvi-intl:
+@if intl
+maybe-install-dvi-intl: install-dvi-intl
+
+install-dvi-intl: \
+    configure-intl \
+    dvi-intl 
+	@[ -f ./intl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in intl"; \
+	(cd $(HOST_SUBDIR)/intl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif intl
+
 .PHONY: maybe-install-pdf-intl install-pdf-intl
 maybe-install-pdf-intl:
 @if intl
@@ -21135,6 +21738,33 @@ install-info-tcl: \
 
 @endif tcl
 
+.PHONY: maybe-install-dvi-tcl install-dvi-tcl
+maybe-install-dvi-tcl:
+@if tcl
+maybe-install-dvi-tcl: install-dvi-tcl
+
+install-dvi-tcl: \
+    configure-tcl \
+    dvi-tcl 
+	@: $(MAKE); $(unstage)
+	@[ -f ./tcl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in tcl"; \
+	(cd $(HOST_SUBDIR)/tcl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif tcl
+
 .PHONY: maybe-install-pdf-tcl install-pdf-tcl
 maybe-install-pdf-tcl:
 @if tcl
@@ -21557,6 +22187,33 @@ install-info-itcl: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif itcl
+
+.PHONY: maybe-install-dvi-itcl install-dvi-itcl
+maybe-install-dvi-itcl:
+@if itcl
+maybe-install-dvi-itcl: install-dvi-itcl
+
+install-dvi-itcl: \
+    configure-itcl \
+    dvi-itcl 
+	@: $(MAKE); $(unstage)
+	@[ -f ./itcl/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in itcl"; \
+	(cd $(HOST_SUBDIR)/itcl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif itcl
@@ -22682,6 +23339,32 @@ install-info-ld: \
 
 @endif ld
 
+.PHONY: maybe-install-dvi-ld install-dvi-ld
+maybe-install-dvi-ld:
+@if ld
+maybe-install-dvi-ld: install-dvi-ld
+
+install-dvi-ld: \
+    configure-ld \
+    dvi-ld 
+	@[ -f ./ld/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in ld"; \
+	(cd $(HOST_SUBDIR)/ld && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif ld
+
 .PHONY: maybe-install-pdf-ld install-pdf-ld
 maybe-install-pdf-ld:
 @if ld
@@ -23792,6 +24475,32 @@ install-info-libbacktrace: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-install-dvi-libbacktrace install-dvi-libbacktrace
+maybe-install-dvi-libbacktrace:
+@if libbacktrace
+maybe-install-dvi-libbacktrace: install-dvi-libbacktrace
+
+install-dvi-libbacktrace: \
+    configure-libbacktrace \
+    dvi-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libbacktrace"; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif libbacktrace
@@ -24910,6 +25619,32 @@ install-info-libcpp: \
 
 @endif libcpp
 
+.PHONY: maybe-install-dvi-libcpp install-dvi-libcpp
+maybe-install-dvi-libcpp:
+@if libcpp
+maybe-install-dvi-libcpp: install-dvi-libcpp
+
+install-dvi-libcpp: \
+    configure-libcpp \
+    dvi-libcpp 
+	@[ -f ./libcpp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libcpp"; \
+	(cd $(HOST_SUBDIR)/libcpp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libcpp
+
 .PHONY: maybe-install-pdf-libcpp install-pdf-libcpp
 maybe-install-pdf-libcpp:
 @if libcpp
@@ -25876,23 +26611,8 @@ maybe-dvi-libcody:
 @if libcody
 maybe-dvi-libcody: dvi-libcody
 
-dvi-libcody: \
-    configure-libcody 
-	@[ -f ./libcody/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	echo "Doing dvi in libcody"; \
-	(cd $(HOST_SUBDIR)/libcody && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	          dvi) \
-	  || exit 1
+# libcody doesn't support dvi.
+dvi-libcody:
 
 @endif libcody
 
@@ -25933,6 +26653,16 @@ maybe-install-info-libcody: install-info-libcody
 
 # libcody doesn't support install-info.
 install-info-libcody:
+
+@endif libcody
+
+.PHONY: maybe-install-dvi-libcody install-dvi-libcody
+maybe-install-dvi-libcody:
+@if libcody
+maybe-install-dvi-libcody: install-dvi-libcody
+
+# libcody doesn't support install-dvi.
+install-dvi-libcody:
 
 @endif libcody
 
@@ -27003,6 +27733,32 @@ install-info-libdecnumber: \
 
 @endif libdecnumber
 
+.PHONY: maybe-install-dvi-libdecnumber install-dvi-libdecnumber
+maybe-install-dvi-libdecnumber:
+@if libdecnumber
+maybe-install-dvi-libdecnumber: install-dvi-libdecnumber
+
+install-dvi-libdecnumber: \
+    configure-libdecnumber \
+    dvi-libdecnumber 
+	@[ -f ./libdecnumber/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libdecnumber"; \
+	(cd $(HOST_SUBDIR)/libdecnumber && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libdecnumber
+
 .PHONY: maybe-install-pdf-libdecnumber install-pdf-libdecnumber
 maybe-install-pdf-libdecnumber:
 @if libdecnumber
@@ -27433,6 +28189,33 @@ install-info-libgui: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif libgui
+
+.PHONY: maybe-install-dvi-libgui install-dvi-libgui
+maybe-install-dvi-libgui:
+@if libgui
+maybe-install-dvi-libgui: install-dvi-libgui
+
+install-dvi-libgui: \
+    configure-libgui \
+    dvi-libgui 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libgui/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libgui"; \
+	(cd $(HOST_SUBDIR)/libgui && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif libgui
@@ -28567,6 +29350,32 @@ install-info-libiberty: \
 
 @endif libiberty
 
+.PHONY: maybe-install-dvi-libiberty install-dvi-libiberty
+maybe-install-dvi-libiberty:
+@if libiberty
+maybe-install-dvi-libiberty: install-dvi-libiberty
+
+install-dvi-libiberty: \
+    configure-libiberty \
+    dvi-libiberty 
+	@[ -f ./libiberty/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libiberty"; \
+	(cd $(HOST_SUBDIR)/libiberty && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libiberty
+
 .PHONY: maybe-install-pdf-libiberty install-pdf-libiberty
 maybe-install-pdf-libiberty:
 @if libiberty
@@ -29690,6 +30499,32 @@ install-info-libiberty-linker-plugin: \
 
 @endif libiberty-linker-plugin
 
+.PHONY: maybe-install-dvi-libiberty-linker-plugin install-dvi-libiberty-linker-plugin
+maybe-install-dvi-libiberty-linker-plugin:
+@if libiberty-linker-plugin
+maybe-install-dvi-libiberty-linker-plugin: install-dvi-libiberty-linker-plugin
+
+install-dvi-libiberty-linker-plugin: \
+    configure-libiberty-linker-plugin \
+    dvi-libiberty-linker-plugin 
+	@[ -f ./libiberty-linker-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libiberty-linker-plugin"; \
+	(cd $(HOST_SUBDIR)/libiberty-linker-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libiberty-linker-plugin
+
 .PHONY: maybe-install-pdf-libiberty-linker-plugin install-pdf-libiberty-linker-plugin
 maybe-install-pdf-libiberty-linker-plugin:
 @if libiberty-linker-plugin
@@ -30740,6 +31575,32 @@ install-info-libiconv:
 
 @endif libiconv
 
+.PHONY: maybe-install-dvi-libiconv install-dvi-libiconv
+maybe-install-dvi-libiconv:
+@if libiconv
+maybe-install-dvi-libiconv: install-dvi-libiconv
+
+install-dvi-libiconv: \
+    configure-libiconv \
+    dvi-libiconv 
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libiconv"; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libiconv
+
 .PHONY: maybe-install-pdf-libiconv install-pdf-libiconv
 maybe-install-pdf-libiconv:
 @if libiconv
@@ -31138,6 +31999,33 @@ install-info-m4: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif m4
+
+.PHONY: maybe-install-dvi-m4 install-dvi-m4
+maybe-install-dvi-m4:
+@if m4
+maybe-install-dvi-m4: install-dvi-m4
+
+install-dvi-m4: \
+    configure-m4 \
+    dvi-m4 
+	@: $(MAKE); $(unstage)
+	@[ -f ./m4/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in m4"; \
+	(cd $(HOST_SUBDIR)/m4 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif m4
@@ -31583,6 +32471,33 @@ install-info-readline: \
 
 @endif readline
 
+.PHONY: maybe-install-dvi-readline install-dvi-readline
+maybe-install-dvi-readline:
+@if readline
+maybe-install-dvi-readline: install-dvi-readline
+
+install-dvi-readline: \
+    configure-readline \
+    dvi-readline 
+	@: $(MAKE); $(unstage)
+	@[ -f ./readline/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in readline"; \
+	(cd $(HOST_SUBDIR)/readline && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif readline
+
 .PHONY: maybe-install-pdf-readline install-pdf-readline
 maybe-install-pdf-readline:
 @if readline
@@ -32020,6 +32935,33 @@ install-info-sid: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif sid
+
+.PHONY: maybe-install-dvi-sid install-dvi-sid
+maybe-install-dvi-sid:
+@if sid
+maybe-install-dvi-sid: install-dvi-sid
+
+install-dvi-sid: \
+    configure-sid \
+    dvi-sid 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sid/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in sid"; \
+	(cd $(HOST_SUBDIR)/sid && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif sid
@@ -32465,6 +33407,33 @@ install-info-sim: \
 
 @endif sim
 
+.PHONY: maybe-install-dvi-sim install-dvi-sim
+maybe-install-dvi-sim:
+@if sim
+maybe-install-dvi-sim: install-dvi-sim
+
+install-dvi-sim: \
+    configure-sim \
+    dvi-sim 
+	@: $(MAKE); $(unstage)
+	@[ -f ./sim/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in sim"; \
+	(cd $(HOST_SUBDIR)/sim && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif sim
+
 .PHONY: maybe-install-pdf-sim install-pdf-sim
 maybe-install-pdf-sim:
 @if sim
@@ -32890,6 +33859,33 @@ install-info-texinfo: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif texinfo
+
+.PHONY: maybe-install-dvi-texinfo install-dvi-texinfo
+maybe-install-dvi-texinfo:
+@if texinfo
+maybe-install-dvi-texinfo: install-dvi-texinfo
+
+install-dvi-texinfo: \
+    configure-texinfo \
+    dvi-texinfo 
+	@: $(MAKE); $(unstage)
+	@[ -f ./texinfo/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in texinfo"; \
+	(cd $(HOST_SUBDIR)/texinfo && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif texinfo
@@ -34006,6 +35002,32 @@ install-info-zlib: \
 
 @endif zlib
 
+.PHONY: maybe-install-dvi-zlib install-dvi-zlib
+maybe-install-dvi-zlib:
+@if zlib
+maybe-install-dvi-zlib: install-dvi-zlib
+
+install-dvi-zlib: \
+    configure-zlib \
+    dvi-zlib 
+	@[ -f ./zlib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in zlib"; \
+	(cd $(HOST_SUBDIR)/zlib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif zlib
+
 .PHONY: maybe-install-pdf-zlib install-pdf-zlib
 maybe-install-pdf-zlib:
 @if zlib
@@ -34436,6 +35458,33 @@ install-info-gnulib: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif gnulib
+
+.PHONY: maybe-install-dvi-gnulib install-dvi-gnulib
+maybe-install-dvi-gnulib:
+@if gnulib
+maybe-install-dvi-gnulib: install-dvi-gnulib
+
+install-dvi-gnulib: \
+    configure-gnulib \
+    dvi-gnulib 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnulib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gnulib"; \
+	(cd $(HOST_SUBDIR)/gnulib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif gnulib
@@ -34881,6 +35930,33 @@ install-info-gdbsupport: \
 
 @endif gdbsupport
 
+.PHONY: maybe-install-dvi-gdbsupport install-dvi-gdbsupport
+maybe-install-dvi-gdbsupport:
+@if gdbsupport
+maybe-install-dvi-gdbsupport: install-dvi-gdbsupport
+
+install-dvi-gdbsupport: \
+    configure-gdbsupport \
+    dvi-gdbsupport 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbsupport/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gdbsupport"; \
+	(cd $(HOST_SUBDIR)/gdbsupport && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gdbsupport
+
 .PHONY: maybe-install-pdf-gdbsupport install-pdf-gdbsupport
 maybe-install-pdf-gdbsupport:
 @if gdbsupport
@@ -35318,6 +36394,33 @@ install-info-gdbserver: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif gdbserver
+
+.PHONY: maybe-install-dvi-gdbserver install-dvi-gdbserver
+maybe-install-dvi-gdbserver:
+@if gdbserver
+maybe-install-dvi-gdbserver: install-dvi-gdbserver
+
+install-dvi-gdbserver: \
+    configure-gdbserver \
+    dvi-gdbserver 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdbserver/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gdbserver"; \
+	(cd $(HOST_SUBDIR)/gdbserver && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif gdbserver
@@ -35763,6 +36866,33 @@ install-info-gdb: \
 
 @endif gdb
 
+.PHONY: maybe-install-dvi-gdb install-dvi-gdb
+maybe-install-dvi-gdb:
+@if gdb
+maybe-install-dvi-gdb: install-dvi-gdb
+
+install-dvi-gdb: \
+    configure-gdb \
+    dvi-gdb 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gdb/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gdb"; \
+	(cd $(HOST_SUBDIR)/gdb && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gdb
+
 .PHONY: maybe-install-pdf-gdb install-pdf-gdb
 maybe-install-pdf-gdb:
 @if gdb
@@ -36200,6 +37330,33 @@ install-info-expect: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif expect
+
+.PHONY: maybe-install-dvi-expect install-dvi-expect
+maybe-install-dvi-expect:
+@if expect
+maybe-install-dvi-expect: install-dvi-expect
+
+install-dvi-expect: \
+    configure-expect \
+    dvi-expect 
+	@: $(MAKE); $(unstage)
+	@[ -f ./expect/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in expect"; \
+	(cd $(HOST_SUBDIR)/expect && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif expect
@@ -36645,6 +37802,33 @@ install-info-guile: \
 
 @endif guile
 
+.PHONY: maybe-install-dvi-guile install-dvi-guile
+maybe-install-dvi-guile:
+@if guile
+maybe-install-dvi-guile: install-dvi-guile
+
+install-dvi-guile: \
+    configure-guile \
+    dvi-guile 
+	@: $(MAKE); $(unstage)
+	@[ -f ./guile/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in guile"; \
+	(cd $(HOST_SUBDIR)/guile && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif guile
+
 .PHONY: maybe-install-pdf-guile install-pdf-guile
 maybe-install-pdf-guile:
 @if guile
@@ -37086,6 +38270,33 @@ install-info-tk: \
 
 @endif tk
 
+.PHONY: maybe-install-dvi-tk install-dvi-tk
+maybe-install-dvi-tk:
+@if tk
+maybe-install-dvi-tk: install-dvi-tk
+
+install-dvi-tk: \
+    configure-tk \
+    dvi-tk 
+	@: $(MAKE); $(unstage)
+	@[ -f ./tk/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in tk"; \
+	(cd $(HOST_SUBDIR)/tk && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif tk
+
 .PHONY: maybe-install-pdf-tk install-pdf-tk
 maybe-install-pdf-tk:
 @if tk
@@ -37521,6 +38732,33 @@ install-info-libtermcap: \
 
 @endif libtermcap
 
+.PHONY: maybe-install-dvi-libtermcap install-dvi-libtermcap
+maybe-install-dvi-libtermcap:
+@if libtermcap
+maybe-install-dvi-libtermcap: install-dvi-libtermcap
+
+install-dvi-libtermcap: \
+    configure-libtermcap \
+    dvi-libtermcap 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libtermcap/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libtermcap"; \
+	(cd $(HOST_SUBDIR)/libtermcap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif libtermcap
+
 .PHONY: maybe-install-pdf-libtermcap install-pdf-libtermcap
 maybe-install-pdf-libtermcap:
 @if libtermcap
@@ -37892,6 +39130,33 @@ install-info-utils: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif utils
+
+.PHONY: maybe-install-dvi-utils install-dvi-utils
+maybe-install-dvi-utils:
+@if utils
+maybe-install-dvi-utils: install-dvi-utils
+
+install-dvi-utils: \
+    configure-utils \
+    dvi-utils 
+	@: $(MAKE); $(unstage)
+	@[ -f ./utils/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in utils"; \
+	(cd $(HOST_SUBDIR)/utils && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif utils
@@ -38317,6 +39582,33 @@ install-info-c++tools: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif c++tools
+
+.PHONY: maybe-install-dvi-c++tools install-dvi-c++tools
+maybe-install-dvi-c++tools:
+@if c++tools
+maybe-install-dvi-c++tools: install-dvi-c++tools
+
+install-dvi-c++tools: \
+    configure-c++tools \
+    dvi-c++tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./c++tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in c++tools"; \
+	(cd $(HOST_SUBDIR)/c++tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif c++tools
@@ -38758,6 +40050,33 @@ install-info-gnattools: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif gnattools
+
+.PHONY: maybe-install-dvi-gnattools install-dvi-gnattools
+maybe-install-dvi-gnattools:
+@if gnattools
+maybe-install-dvi-gnattools: install-dvi-gnattools
+
+install-dvi-gnattools: \
+    configure-gnattools \
+    dvi-gnattools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gnattools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gnattools"; \
+	(cd $(HOST_SUBDIR)/gnattools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif gnattools
@@ -39892,6 +41211,32 @@ install-info-lto-plugin: \
 
 @endif lto-plugin
 
+.PHONY: maybe-install-dvi-lto-plugin install-dvi-lto-plugin
+maybe-install-dvi-lto-plugin:
+@if lto-plugin
+maybe-install-dvi-lto-plugin: install-dvi-lto-plugin
+
+install-dvi-lto-plugin: \
+    configure-lto-plugin \
+    dvi-lto-plugin 
+	@[ -f ./lto-plugin/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) @extra_linker_plugin_flags@; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in lto-plugin"; \
+	(cd $(HOST_SUBDIR)/lto-plugin && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif lto-plugin
+
 .PHONY: maybe-install-pdf-lto-plugin install-pdf-lto-plugin
 maybe-install-pdf-lto-plugin:
 @if lto-plugin
@@ -40322,6 +41667,33 @@ install-info-libcc1: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif libcc1
+
+.PHONY: maybe-install-dvi-libcc1 install-dvi-libcc1
+maybe-install-dvi-libcc1:
+@if libcc1
+maybe-install-dvi-libcc1: install-dvi-libcc1
+
+install-dvi-libcc1: \
+    configure-libcc1 \
+    dvi-libcc1 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libcc1/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libcc1"; \
+	(cd $(HOST_SUBDIR)/libcc1 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif libcc1
@@ -40763,6 +42135,33 @@ install-info-gotools: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif gotools
+
+.PHONY: maybe-install-dvi-gotools install-dvi-gotools
+maybe-install-dvi-gotools:
+@if gotools
+maybe-install-dvi-gotools: install-dvi-gotools
+
+install-dvi-gotools: \
+    configure-gotools \
+    dvi-gotools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gotools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gotools"; \
+	(cd $(HOST_SUBDIR)/gotools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif gotools
@@ -41884,6 +43283,32 @@ install-info-libctf: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	          install-info) \
+	  || exit 1
+
+@endif libctf
+
+.PHONY: maybe-install-dvi-libctf install-dvi-libctf
+maybe-install-dvi-libctf:
+@if libctf
+maybe-install-dvi-libctf: install-dvi-libctf
+
+install-dvi-libctf: \
+    configure-libctf \
+    dvi-libctf 
+	@[ -f ./libctf/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in libctf"; \
+	(cd $(HOST_SUBDIR)/libctf && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
 	  || exit 1
 
 @endif libctf
@@ -43125,6 +44550,33 @@ install-info-target-libstdc++-v3: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libstdc++-v3
+
+.PHONY: maybe-install-dvi-target-libstdc++-v3 install-dvi-target-libstdc++-v3
+maybe-install-dvi-target-libstdc++-v3:
+@if target-libstdc++-v3
+maybe-install-dvi-target-libstdc++-v3: install-dvi-target-libstdc++-v3
+
+install-dvi-target-libstdc++-v3: \
+    configure-target-libstdc++-v3 \
+    dvi-target-libstdc++-v3 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libstdc++-v3/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libstdc++-v3"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libstdc++-v3 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libstdc++-v3
@@ -44372,6 +45824,33 @@ install-info-target-libsanitizer: \
 
 @endif target-libsanitizer
 
+.PHONY: maybe-install-dvi-target-libsanitizer install-dvi-target-libsanitizer
+maybe-install-dvi-target-libsanitizer:
+@if target-libsanitizer
+maybe-install-dvi-target-libsanitizer: install-dvi-target-libsanitizer
+
+install-dvi-target-libsanitizer: \
+    configure-target-libsanitizer \
+    dvi-target-libsanitizer 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libsanitizer/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libsanitizer"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libsanitizer && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libsanitizer
+
 .PHONY: maybe-install-pdf-target-libsanitizer install-pdf-target-libsanitizer
 maybe-install-pdf-target-libsanitizer:
 @if target-libsanitizer
@@ -45615,6 +47094,33 @@ install-info-target-libvtv: \
 
 @endif target-libvtv
 
+.PHONY: maybe-install-dvi-target-libvtv install-dvi-target-libvtv
+maybe-install-dvi-target-libvtv:
+@if target-libvtv
+maybe-install-dvi-target-libvtv: install-dvi-target-libvtv
+
+install-dvi-target-libvtv: \
+    configure-target-libvtv \
+    dvi-target-libvtv 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libvtv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(RAW_CXX_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libvtv"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libvtv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libvtv
+
 .PHONY: maybe-install-pdf-target-libvtv install-pdf-target-libvtv
 maybe-install-pdf-target-libvtv:
 @if target-libvtv
@@ -46069,6 +47575,33 @@ install-info-target-liboffloadmic: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-liboffloadmic
+
+.PHONY: maybe-install-dvi-target-liboffloadmic install-dvi-target-liboffloadmic
+maybe-install-dvi-target-liboffloadmic:
+@if target-liboffloadmic
+maybe-install-dvi-target-liboffloadmic: install-dvi-target-liboffloadmic
+
+install-dvi-target-liboffloadmic: \
+    configure-target-liboffloadmic \
+    dvi-target-liboffloadmic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/liboffloadmic/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/liboffloadmic"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/liboffloadmic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-liboffloadmic
@@ -46531,6 +48064,33 @@ install-info-target-libssp: \
 
 @endif target-libssp
 
+.PHONY: maybe-install-dvi-target-libssp install-dvi-target-libssp
+maybe-install-dvi-target-libssp:
+@if target-libssp
+maybe-install-dvi-target-libssp: install-dvi-target-libssp
+
+install-dvi-target-libssp: \
+    configure-target-libssp \
+    dvi-target-libssp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libssp"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libssp
+
 .PHONY: maybe-install-pdf-target-libssp install-pdf-target-libssp
 maybe-install-pdf-target-libssp:
 @if target-libssp
@@ -46985,6 +48545,33 @@ install-info-target-newlib: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-newlib
+
+.PHONY: maybe-install-dvi-target-newlib install-dvi-target-newlib
+maybe-install-dvi-target-newlib:
+@if target-newlib
+maybe-install-dvi-target-newlib: install-dvi-target-newlib
+
+install-dvi-target-newlib: \
+    configure-target-newlib \
+    dvi-target-newlib 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/newlib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/newlib"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/newlib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-newlib
@@ -48211,6 +49798,16 @@ install-info-target-libgcc: \
 
 @endif target-libgcc
 
+.PHONY: maybe-install-dvi-target-libgcc install-dvi-target-libgcc
+maybe-install-dvi-target-libgcc:
+@if target-libgcc
+maybe-install-dvi-target-libgcc: install-dvi-target-libgcc
+
+# libgcc doesn't support install-dvi.
+install-dvi-target-libgcc:
+
+@endif target-libgcc
+
 .PHONY: maybe-install-pdf-target-libgcc install-pdf-target-libgcc
 maybe-install-pdf-target-libgcc:
 @if target-libgcc
@@ -48665,6 +50262,33 @@ install-info-target-libbacktrace: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-install-dvi-target-libbacktrace install-dvi-target-libbacktrace
+maybe-install-dvi-target-libbacktrace:
+@if target-libbacktrace
+maybe-install-dvi-target-libbacktrace: install-dvi-target-libbacktrace
+
+install-dvi-target-libbacktrace: \
+    configure-target-libbacktrace \
+    dvi-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libbacktrace"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libbacktrace
@@ -49127,6 +50751,33 @@ install-info-target-libquadmath: \
 
 @endif target-libquadmath
 
+.PHONY: maybe-install-dvi-target-libquadmath install-dvi-target-libquadmath
+maybe-install-dvi-target-libquadmath:
+@if target-libquadmath
+maybe-install-dvi-target-libquadmath: install-dvi-target-libquadmath
+
+install-dvi-target-libquadmath: \
+    configure-target-libquadmath \
+    dvi-target-libquadmath 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libquadmath/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libquadmath"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libquadmath && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libquadmath
+
 .PHONY: maybe-install-pdf-target-libquadmath install-pdf-target-libquadmath
 maybe-install-pdf-target-libquadmath:
 @if target-libquadmath
@@ -49585,6 +51236,33 @@ install-info-target-libgfortran: \
 
 @endif target-libgfortran
 
+.PHONY: maybe-install-dvi-target-libgfortran install-dvi-target-libgfortran
+maybe-install-dvi-target-libgfortran:
+@if target-libgfortran
+maybe-install-dvi-target-libgfortran: install-dvi-target-libgfortran
+
+install-dvi-target-libgfortran: \
+    configure-target-libgfortran \
+    dvi-target-libgfortran 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgfortran/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libgfortran"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgfortran && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libgfortran
+
 .PHONY: maybe-install-pdf-target-libgfortran install-pdf-target-libgfortran
 maybe-install-pdf-target-libgfortran:
 @if target-libgfortran
@@ -50024,6 +51702,16 @@ install-info-target-libobjc: \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
 	  || exit 1
+
+@endif target-libobjc
+
+.PHONY: maybe-install-dvi-target-libobjc install-dvi-target-libobjc
+maybe-install-dvi-target-libobjc:
+@if target-libobjc
+maybe-install-dvi-target-libobjc: install-dvi-target-libobjc
+
+# libobjc doesn't support install-dvi.
+install-dvi-target-libobjc:
 
 @endif target-libobjc
 
@@ -50481,6 +52169,33 @@ install-info-target-libgo: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libgo
+
+.PHONY: maybe-install-dvi-target-libgo install-dvi-target-libgo
+maybe-install-dvi-target-libgo:
+@if target-libgo
+maybe-install-dvi-target-libgo: install-dvi-target-libgo
+
+install-dvi-target-libgo: \
+    configure-target-libgo \
+    dvi-target-libgo 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgo/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libgo"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgo && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libgo
@@ -50943,6 +52658,33 @@ install-info-target-libphobos: \
 
 @endif target-libphobos
 
+.PHONY: maybe-install-dvi-target-libphobos install-dvi-target-libphobos
+maybe-install-dvi-target-libphobos:
+@if target-libphobos
+maybe-install-dvi-target-libphobos: install-dvi-target-libphobos
+
+install-dvi-target-libphobos: \
+    configure-target-libphobos \
+    dvi-target-libphobos 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libphobos/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libphobos"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libphobos && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libphobos
+
 .PHONY: maybe-install-pdf-target-libphobos install-pdf-target-libphobos
 maybe-install-pdf-target-libphobos:
 @if target-libphobos
@@ -51396,6 +53138,33 @@ install-info-target-libtermcap: \
 
 @endif target-libtermcap
 
+.PHONY: maybe-install-dvi-target-libtermcap install-dvi-target-libtermcap
+maybe-install-dvi-target-libtermcap:
+@if target-libtermcap
+maybe-install-dvi-target-libtermcap: install-dvi-target-libtermcap
+
+install-dvi-target-libtermcap: \
+    configure-target-libtermcap \
+    dvi-target-libtermcap 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libtermcap/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libtermcap"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libtermcap && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libtermcap
+
 .PHONY: maybe-install-pdf-target-libtermcap install-pdf-target-libtermcap
 maybe-install-pdf-target-libtermcap:
 @if target-libtermcap
@@ -51790,6 +53559,33 @@ install-info-target-winsup: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-winsup
+
+.PHONY: maybe-install-dvi-target-winsup install-dvi-target-winsup
+maybe-install-dvi-target-winsup:
+@if target-winsup
+maybe-install-dvi-target-winsup: install-dvi-target-winsup
+
+install-dvi-target-winsup: \
+    configure-target-winsup \
+    dvi-target-winsup 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/winsup/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/winsup"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/winsup && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-winsup
@@ -52247,6 +54043,33 @@ install-info-target-libgloss: \
 
 @endif target-libgloss
 
+.PHONY: maybe-install-dvi-target-libgloss install-dvi-target-libgloss
+maybe-install-dvi-target-libgloss:
+@if target-libgloss
+maybe-install-dvi-target-libgloss: install-dvi-target-libgloss
+
+install-dvi-target-libgloss: \
+    configure-target-libgloss \
+    dvi-target-libgloss 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgloss/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libgloss"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgloss && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libgloss
+
 .PHONY: maybe-install-pdf-target-libgloss install-pdf-target-libgloss
 maybe-install-pdf-target-libgloss:
 @if target-libgloss
@@ -52691,6 +54514,33 @@ install-info-target-libffi: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libffi
+
+.PHONY: maybe-install-dvi-target-libffi install-dvi-target-libffi
+maybe-install-dvi-target-libffi:
+@if target-libffi
+maybe-install-dvi-target-libffi: install-dvi-target-libffi
+
+install-dvi-target-libffi: \
+    configure-target-libffi \
+    dvi-target-libffi 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libffi"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libffi && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libffi
@@ -53153,6 +55003,33 @@ install-info-target-zlib: \
 
 @endif target-zlib
 
+.PHONY: maybe-install-dvi-target-zlib install-dvi-target-zlib
+maybe-install-dvi-target-zlib:
+@if target-zlib
+maybe-install-dvi-target-zlib: install-dvi-target-zlib
+
+install-dvi-target-zlib: \
+    configure-target-zlib \
+    dvi-target-zlib 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/zlib/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/zlib"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/zlib && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-zlib
+
 .PHONY: maybe-install-pdf-target-zlib install-pdf-target-zlib
 maybe-install-pdf-target-zlib:
 @if target-zlib
@@ -53611,6 +55488,33 @@ install-info-target-rda: \
 
 @endif target-rda
 
+.PHONY: maybe-install-dvi-target-rda install-dvi-target-rda
+maybe-install-dvi-target-rda:
+@if target-rda
+maybe-install-dvi-target-rda: install-dvi-target-rda
+
+install-dvi-target-rda: \
+    configure-target-rda \
+    dvi-target-rda 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/rda/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/rda"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/rda && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-rda
+
 .PHONY: maybe-install-pdf-target-rda install-pdf-target-rda
 maybe-install-pdf-target-rda:
 @if target-rda
@@ -54065,6 +55969,33 @@ install-info-target-libada: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libada
+
+.PHONY: maybe-install-dvi-target-libada install-dvi-target-libada
+maybe-install-dvi-target-libada:
+@if target-libada
+maybe-install-dvi-target-libada: install-dvi-target-libada
+
+install-dvi-target-libada: \
+    configure-target-libada \
+    dvi-target-libada 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libada/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libada"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libada && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libada
@@ -55312,6 +57243,33 @@ install-info-target-libgomp: \
 
 @endif target-libgomp
 
+.PHONY: maybe-install-dvi-target-libgomp install-dvi-target-libgomp
+maybe-install-dvi-target-libgomp:
+@if target-libgomp
+maybe-install-dvi-target-libgomp: install-dvi-target-libgomp
+
+install-dvi-target-libgomp: \
+    configure-target-libgomp \
+    dvi-target-libgomp 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgomp/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libgomp"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgomp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libgomp
+
 .PHONY: maybe-install-pdf-target-libgomp install-pdf-target-libgomp
 maybe-install-pdf-target-libgomp:
 @if target-libgomp
@@ -55770,6 +57728,33 @@ install-info-target-libitm: \
 
 @endif target-libitm
 
+.PHONY: maybe-install-dvi-target-libitm install-dvi-target-libitm
+maybe-install-dvi-target-libitm:
+@if target-libitm
+maybe-install-dvi-target-libitm: install-dvi-target-libitm
+
+install-dvi-target-libitm: \
+    configure-target-libitm \
+    dvi-target-libitm 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libitm/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libitm"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libitm && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libitm
+
 .PHONY: maybe-install-pdf-target-libitm install-pdf-target-libitm
 maybe-install-pdf-target-libitm:
 @if target-libitm
@@ -56224,6 +58209,33 @@ install-info-target-libatomic: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libatomic
+
+.PHONY: maybe-install-dvi-target-libatomic install-dvi-target-libatomic
+maybe-install-dvi-target-libatomic:
+@if target-libatomic
+maybe-install-dvi-target-libatomic: install-dvi-target-libatomic
+
+install-dvi-target-libatomic: \
+    configure-target-libatomic \
+    dvi-target-libatomic 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libatomic/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libatomic"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libatomic && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libatomic

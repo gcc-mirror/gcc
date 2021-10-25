@@ -483,16 +483,16 @@ package body Sem_Ch13 is
                      if Warn_On_Reverse_Bit_Order then
                         Error_Msg_N
                           ("info: multi-byte field specified with "
-                           & "non-standard Bit_Order?V?", CC);
+                           & "non-standard Bit_Order?.v?", CC);
 
                         if Bytes_Big_Endian then
                            Error_Msg_N
                              ("\bytes are not reversed "
-                              & "(component is big-endian)?V?", CC);
+                              & "(component is big-endian)?.v?", CC);
                         else
                            Error_Msg_N
                              ("\bytes are not reversed "
-                              & "(component is little-endian)?V?", CC);
+                              & "(component is little-endian)?.v?", CC);
                         end if;
                      end if;
 
@@ -707,17 +707,18 @@ package body Sem_Ch13 is
                      Error_Msg_Uint_1 := MSS;
                      Error_Msg_N
                        ("info: reverse bit order in machine scalar of "
-                        & "length^?V?", First_Bit (CC));
+                        & "length^?.v?", First_Bit (CC));
                      Error_Msg_Uint_1 := NFB;
                      Error_Msg_Uint_2 := NLB;
 
                      if Bytes_Big_Endian then
                         Error_Msg_NE
-                          ("\big-endian range for component & is ^ .. ^?V?",
+                          ("\big-endian range for component & is ^ .. ^?.v?",
                            First_Bit (CC), Comp);
                      else
                         Error_Msg_NE
-                          ("\little-endian range for component & is ^ .. ^?V?",
+                          ("\little-endian range for component " &
+                           "& is ^ .. ^?.v?",
                            First_Bit (CC), Comp);
                      end if;
                   end if;
@@ -782,16 +783,16 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("info: multi-byte field specified with non-standard "
-                        & "Bit_Order?V?", CLC);
+                        & "Bit_Order?.v?", CLC);
 
                      if Bytes_Big_Endian then
                         Error_Msg_N
                           ("\bytes are not reversed "
-                           & "(component is big-endian)?V?", CLC);
+                           & "(component is big-endian)?.v?", CLC);
                      else
                         Error_Msg_N
                           ("\bytes are not reversed "
-                           & "(component is little-endian)?V?", CLC);
+                           & "(component is little-endian)?.v?", CLC);
                      end if;
 
                   --  Do not allow non-contiguous field
@@ -815,13 +816,13 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("info: Bit_Order clause does not affect byte "
-                        & "ordering?V?", Pos);
+                        & "ordering?.v?", Pos);
                      Error_Msg_Uint_1 :=
                        Intval (Pos) + Intval (FB) /
                        System_Storage_Unit;
                      Error_Msg_N
                        ("info: position normalized to ^ before bit order "
-                        & "interpreted?V?", Pos);
+                        & "interpreted?.v?", Pos);
                   end if;
 
                   --  Here is where we fix up the Component_Bit_Offset value
@@ -6911,7 +6912,7 @@ package body Sem_Ch13 is
                  and then RM_Size (Ctyp) /= Csize
                then
                   Error_Msg_NE
-                    ("component size overrides size clause for&?S?", N, Ctyp);
+                    ("component size overrides size clause for&?.s?", N, Ctyp);
                end if;
 
                Set_Has_Component_Size_Clause (Btype, True);
@@ -8809,7 +8810,7 @@ package body Sem_Ch13 is
                           and then RM_Size (Etype (Comp)) /= Esize (Comp)
                         then
                            Error_Msg_NE
-                             ("?S?component size overrides size clause for&",
+                             ("?.s?component size overrides size clause for&",
                               Component_Name (CC), Etype (Comp));
                         end if;
 
@@ -8918,7 +8919,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
-                       ("?C?no component clause given for & declared #",
+                       ("?.c?no component clause given for & declared #",
                         N, Comp);
                   end if;
 
@@ -8939,9 +8940,6 @@ package body Sem_Ch13 is
       Nam  : Name_Id)
    is
       Loc : constant Source_Ptr := Sloc (Expr);
-
-      Non_Static : exception;
-      --  Raised if something non-static is found
 
       Btyp : constant Entity_Id := Base_Type (Typ);
 
@@ -8995,7 +8993,7 @@ package body Sem_Ch13 is
 
       function Build_Val (V : Uint) return Node_Id;
       --  Return an analyzed N_Identifier node referencing this value, suitable
-      --  for use as an entry in the Static_Discrte_Predicate list. This node
+      --  for use as an entry in the Static_Discrete_Predicate list. This node
       --  is typed with the base type.
 
       function Build_Range (Lo : Uint; Hi : Uint) return Node_Id;
@@ -9003,9 +9001,13 @@ package body Sem_Ch13 is
       --  use as an entry in the Static_Discrete_Predicate list. This node is
       --  typed with the base type.
 
-      function Get_RList (Exp : Node_Id) return RList;
+      function Get_RList
+        (Exp    : Node_Id;
+         Static : access Boolean) return RList;
       --  This is a recursive routine that converts the given expression into a
       --  list of ranges, suitable for use in building the static predicate.
+      --  Static.all will be set to False if the expression is found to be non
+      --  static. Note that Static.all should be set to True by the caller.
 
       function Is_False (R : RList) return Boolean;
       pragma Inline (Is_False);
@@ -9033,18 +9035,23 @@ package body Sem_Ch13 is
       --  a static expression or static range, gets either the expression value
       --  or the high bound of the range.
 
-      function Membership_Entry (N : Node_Id) return RList;
+      function Membership_Entry
+        (N : Node_Id; Static : access Boolean) return RList;
       --  Given a single membership entry (range, value, or subtype), returns
-      --  the corresponding range list. Raises Static_Error if not static.
+      --  the corresponding range list. Set Static.all to False if not static.
 
-      function Membership_Entries (N : Node_Id) return RList;
+      function Membership_Entries
+        (N : Node_Id; Static : access Boolean) return RList;
       --  Given an element on an alternatives list of a membership operation,
       --  returns the range list corresponding to this entry and all following
       --  entries (i.e. returns the "or" of this list of values).
+      --  Set Static.all to False if not static.
 
-      function Stat_Pred (Typ : Entity_Id) return RList;
-      --  Given a type, if it has a static predicate, then return the predicate
-      --  as a range list, otherwise raise Non_Static.
+      function Stat_Pred
+        (Typ    : Entity_Id;
+         Static : access Boolean) return RList;
+      --  Given a type, if it has a static predicate, then set Result to the
+      --  predicate as a range list, otherwise set Static.all to False.
 
       -----------
       -- "and" --
@@ -9296,7 +9303,10 @@ package body Sem_Ch13 is
       -- Get_RList --
       ---------------
 
-      function Get_RList (Exp : Node_Id) return RList is
+      function Get_RList
+        (Exp    : Node_Id;
+         Static : access Boolean) return RList
+      is
          Op  : Node_Kind;
          Val : Uint;
 
@@ -9322,23 +9332,23 @@ package body Sem_Ch13 is
             when N_And_Then
                | N_Op_And
             =>
-               return Get_RList (Left_Opnd (Exp))
+               return Get_RList (Left_Opnd (Exp), Static)
                         and
-                      Get_RList (Right_Opnd (Exp));
+                      Get_RList (Right_Opnd (Exp), Static);
 
             --  Or
 
             when N_Op_Or
                | N_Or_Else
             =>
-               return Get_RList (Left_Opnd (Exp))
+               return Get_RList (Left_Opnd (Exp), Static)
                         or
-                      Get_RList (Right_Opnd (Exp));
+                      Get_RList (Right_Opnd (Exp), Static);
 
             --  Not
 
             when N_Op_Not =>
-               return not Get_RList (Right_Opnd (Exp));
+               return not Get_RList (Right_Opnd (Exp), Static);
 
                --  Comparisons of type with static value
 
@@ -9371,7 +9381,8 @@ package body Sem_Ch13 is
                --  Other cases are non-static
 
                else
-                  raise Non_Static;
+                  Static.all := False;
+                  return False_Range;
                end if;
 
                --  Construct range according to comparison operation
@@ -9403,26 +9414,30 @@ package body Sem_Ch13 is
 
             when N_In =>
                if not Is_Type_Ref (Left_Opnd (Exp)) then
-                  raise Non_Static;
+                  Static.all := False;
+                  return False_Range;
                end if;
 
                if Present (Right_Opnd (Exp)) then
-                  return Membership_Entry (Right_Opnd (Exp));
+                  return Membership_Entry (Right_Opnd (Exp), Static);
                else
-                  return Membership_Entries (First (Alternatives (Exp)));
+                  return Membership_Entries
+                           (First (Alternatives (Exp)), Static);
                end if;
 
             --  Negative membership (NOT IN)
 
             when N_Not_In =>
                if not Is_Type_Ref (Left_Opnd (Exp)) then
-                  raise Non_Static;
+                  Static.all := False;
+                  return False_Range;
                end if;
 
                if Present (Right_Opnd (Exp)) then
-                  return not Membership_Entry (Right_Opnd (Exp));
+                  return not Membership_Entry (Right_Opnd (Exp), Static);
                else
-                  return not Membership_Entries (First (Alternatives (Exp)));
+                  return not Membership_Entries
+                               (First (Alternatives (Exp)), Static);
                end if;
 
             --  Function call, may be call to static predicate
@@ -9436,19 +9451,20 @@ package body Sem_Ch13 is
                           or else
                         Is_Predicate_Function_M (Ent)
                      then
-                        return Stat_Pred (Etype (First_Formal (Ent)));
+                        return Stat_Pred (Etype (First_Formal (Ent)), Static);
                      end if;
                   end;
                end if;
 
                --  Other function call cases are non-static
 
-               raise Non_Static;
+               Static.all := False;
+               return False_Range;
 
             --  Qualified expression, dig out the expression
 
             when N_Qualified_Expression =>
-               return Get_RList (Expression (Exp));
+               return Get_RList (Expression (Exp), Static);
 
             when N_Case_Expression =>
                declare
@@ -9473,7 +9489,8 @@ package body Sem_Ch13 is
                      Dep := Expression (Alt);
 
                      if not Is_OK_Static_Expression (Dep) then
-                        raise Non_Static;
+                        Static.all := False;
+                        return False_Range;
 
                      elsif Is_True (Expr_Value (Dep)) then
                         Append_List_To (Choices,
@@ -9483,30 +9500,32 @@ package body Sem_Ch13 is
                      Next (Alt);
                   end loop;
 
-                  return Membership_Entries (First (Choices));
+                  return Membership_Entries (First (Choices), Static);
                end;
 
             --  Expression with actions: if no actions, dig out expression
 
             when N_Expression_With_Actions =>
                if Is_Empty_List (Actions (Exp)) then
-                  return Get_RList (Expression (Exp));
+                  return Get_RList (Expression (Exp), Static);
                else
-                  raise Non_Static;
+                  Static.all := False;
+                  return False_Range;
                end if;
 
             --  Xor operator
 
             when N_Op_Xor =>
-               return (Get_RList (Left_Opnd (Exp))
-                        and not Get_RList (Right_Opnd (Exp)))
-                 or   (Get_RList (Right_Opnd (Exp))
-                        and not Get_RList (Left_Opnd (Exp)));
+               return (Get_RList (Left_Opnd (Exp), Static)
+                        and not Get_RList (Right_Opnd (Exp), Static))
+                 or   (Get_RList (Right_Opnd (Exp), Static)
+                        and not Get_RList (Left_Opnd (Exp), Static));
 
             --  Any other node type is non-static
 
             when others =>
-               raise Non_Static;
+               Static.all := False;
+               return False_Range;
          end case;
       end Get_RList;
 
@@ -9573,12 +9592,14 @@ package body Sem_Ch13 is
       -- Membership_Entries --
       ------------------------
 
-      function Membership_Entries (N : Node_Id) return RList is
+      function Membership_Entries
+        (N : Node_Id; Static : access Boolean) return RList is
       begin
          if No (Next (N)) then
-            return Membership_Entry (N);
+            return Membership_Entry (N, Static);
          else
-            return Membership_Entry (N) or Membership_Entries (Next (N));
+            return Membership_Entry (N, Static)
+              or Membership_Entries (Next (N), Static);
          end if;
       end Membership_Entries;
 
@@ -9586,7 +9607,9 @@ package body Sem_Ch13 is
       -- Membership_Entry --
       ----------------------
 
-      function Membership_Entry (N : Node_Id) return RList is
+      function Membership_Entry
+        (N : Node_Id; Static : access Boolean) return RList
+      is
          Val : Uint;
          SLo : Uint;
          SHi : Uint;
@@ -9599,7 +9622,8 @@ package body Sem_Ch13 is
                  or else
                not Is_OK_Static_Expression (High_Bound (N))
             then
-               raise Non_Static;
+               Static.all := False;
+               return False_Range;
             else
                SLo := Expr_Value (Low_Bound  (N));
                SHi := Expr_Value (High_Bound (N));
@@ -9642,7 +9666,7 @@ package body Sem_Ch13 is
                --  If type has predicates, process them
 
                if Has_Predicates (Entity (N)) then
-                  return Stat_Pred (Entity (N));
+                  return Stat_Pred (Entity (N), Static);
 
                --  For static subtype without predicates, get range
 
@@ -9654,14 +9678,16 @@ package body Sem_Ch13 is
                --  Any other type makes us non-static
 
                else
-                  raise Non_Static;
+                  Static.all := False;
+                  return False_Range;
                end if;
 
             --  Any other kind of identifier in predicate (e.g. a non-static
             --  expression value) means this is not a static predicate.
 
             else
-               raise Non_Static;
+               Static.all := False;
+               return False_Range;
             end if;
          end if;
       end Membership_Entry;
@@ -9670,12 +9696,15 @@ package body Sem_Ch13 is
       -- Stat_Pred --
       ---------------
 
-      function Stat_Pred (Typ : Entity_Id) return RList is
+      function Stat_Pred
+        (Typ    : Entity_Id;
+         Static : access Boolean) return RList is
       begin
          --  Not static if type does not have static predicates
 
          if not Has_Static_Predicate (Typ) then
-            raise Non_Static;
+            Static.all := False;
+            return False_Range;
          end if;
 
          --  Otherwise we convert the predicate list to a range list
@@ -9716,12 +9745,19 @@ package body Sem_Ch13 is
       --  Analyze the expression to see if it is a static predicate
 
       declare
-         Ranges : constant RList := Get_RList (Expr);
+         Static : aliased Boolean := True;
+         Ranges : constant RList := Get_RList (Expr, Static'Access);
          --  Range list from expression if it is static
 
          Plist : List_Id;
 
       begin
+         --  If non-static, return doing nothing
+
+         if not Static then
+            return;
+         end if;
+
          --  Convert range list into a form for the static predicate. In the
          --  Ranges array, we just have raw ranges, these must be converted
          --  to properly typed and analyzed static expressions or range nodes.
@@ -9826,12 +9862,6 @@ package body Sem_Ch13 is
             end if;
          end;
       end;
-
-      --  If non-static, return doing nothing
-
-   exception
-      when Non_Static =>
-         return;
    end Build_Discrete_Static_Predicate;
 
    --------------------------------
@@ -10096,7 +10126,7 @@ package body Sem_Ch13 is
             then
                Error_Msg_Sloc := Sloc (Predicate_Function (T));
                Error_Msg_Node_2 := T;
-               Error_Msg_N ("info: & inherits predicate from & #?L?", Typ);
+               Error_Msg_N ("info: & inherits predicate from & #?.l?", Typ);
             end if;
          end if;
       end Add_Call;
@@ -11881,7 +11911,7 @@ package body Sem_Ch13 is
          Clause : Node_Id := First (Component_Clauses (N));
          Prev_Bit_Offset : Uint := Uint_0;
          OOO : constant String :=
-           "?component clause out of order with respect to declaration";
+           "?_r?component clause out of order with respect to declaration";
 
       begin
          --  Step Comp through components and Clause through component clauses,
@@ -11907,7 +11937,7 @@ package body Sem_Ch13 is
                  and then not Reverse_Storage_Order (Rectype)
                  and then Component_Bit_Offset (Comp) < Prev_Bit_Offset
                then
-                  Error_Msg_N ("?memory layout out of order", Clause);
+                  Error_Msg_N ("?_r?memory layout out of order", Clause);
                   exit;
                end if;
 
@@ -12147,7 +12177,7 @@ package body Sem_Ch13 is
 
                         if Warn and then Error_Msg_Uint_1 > 0 then
                            Error_Msg_NE
-                             ("?H?^-bit gap before component&",
+                             ("?.h?^-bit gap before component&",
                               Component_Name (Component_Clause (CEnt)),
                               CEnt);
                         end if;
@@ -13144,6 +13174,28 @@ package body Sem_Ch13 is
                   else
                      Check_Aspect_At_Freeze_Point (Ritem);
                   end if;
+
+               --  A pragma Predicate should be checked like one of the
+               --  corresponding aspects, wrt possible misuse of ghost
+               --  entities.
+
+               elsif Nkind (Ritem) = N_Pragma
+                 and then No (Corresponding_Aspect (Ritem))
+                 and then
+                   Get_Pragma_Id (Pragma_Name (Ritem)) = Pragma_Predicate
+               then
+                  --  Retrieve the visibility to components and discriminants
+                  --  in order to properly analyze the pragma.
+
+                  declare
+                     Arg : constant Node_Id :=
+                        Next (First (Pragma_Argument_Associations (Ritem)));
+                  begin
+                     Push_Type (E);
+                     Preanalyze_Spec_Expression
+                       (Expression (Arg), Standard_Boolean);
+                     Pop_Type (E);
+                  end;
                end if;
 
                Next_Rep_Item (Ritem);
@@ -16649,7 +16701,7 @@ package body Sem_Ch13 is
 
          if Warn_On_Biased_Representation then
             Error_Msg_NE
-              ("?B?" & Msg & " forces biased representation for&", N, E);
+              ("?.b?" & Msg & " forces biased representation for&", N, E);
          end if;
       end if;
    end Set_Biased;

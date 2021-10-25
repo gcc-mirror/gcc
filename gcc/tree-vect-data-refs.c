@@ -1994,9 +1994,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		 prune all entries from the peeling hashtable which cause
 		 DRs to be not supported.  */
 	      bool supportable_if_not_aligned
-		= targetm.vectorize.support_vector_misalignment
-		    (TYPE_MODE (vectype), TREE_TYPE (DR_REF (dr_info->dr)),
-		     DR_MISALIGNMENT_UNKNOWN, false);
+		= vect_supportable_dr_alignment
+		    (loop_vinfo, dr_info, vectype, DR_MISALIGNMENT_UNKNOWN);
 	      while (known_le (npeel_tmp, nscalars))
                 {
                   vect_peeling_hash_insert (&peeling_htab, loop_vinfo,

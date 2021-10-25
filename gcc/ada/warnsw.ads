@@ -50,7 +50,8 @@ package Warnsw is
 
    Warn_On_Unknown_Compile_Time_Warning : Boolean := True;
    --  Warn on a pragma Compile_Time_Warning whose condition has a value that
-   --  is not known at compile time.
+   --  is not known at compile time. On by default, modified by use
+   --  of -gnatw_c/_C and set as part of -gnatwa.
 
    Warn_On_Overridden_Size : Boolean := False;
    --  Warn when explicit record component clause or array component_size

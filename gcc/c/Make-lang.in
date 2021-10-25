@@ -99,6 +99,7 @@ c.dvi:
 c.pdf:
 c.html:
 c.install-info:
+c.install-dvi:
 c.install-pdf:
 c.install-html:
 c.all.cross:

@@ -16,4 +16,4 @@
    end subroutine foo
   end
 ! { dg-error "Line truncated" " " { target *-*-* } 8 }
-! { dg-excess-errors "some warnings being treated as errors" }
+! { dg-prune-output "some warnings being treated as errors" }

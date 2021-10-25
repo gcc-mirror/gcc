@@ -76,7 +76,8 @@ package Ada.Strings.Superbounded with SPARK_Mode is
    --  that they can be renamed in Ada.Strings.Bounded.Generic_Bounded_Length.
 
    function Super_Length (Source : Super_String) return Natural
-   is (Source.Current_Length);
+   is (Source.Current_Length)
+   with Global => null;
 
    --------------------------------------------------------
    -- Conversion, Concatenation, and Selection Functions --
@@ -620,7 +621,8 @@ package Ada.Strings.Superbounded with SPARK_Mode is
    is (if Index <= Source.Current_Length
        then Source.Data (Index)
        else raise Index_Error)
-   with Pre => Index <= Super_Length (Source);
+   with Pre    => Index <= Super_Length (Source),
+        Global => null;
 
    procedure Super_Replace_Element
      (Source : in out Super_String;
@@ -649,8 +651,9 @@ package Ada.Strings.Superbounded with SPARK_Mode is
           --  get the null string in accordance with normal Ada slice rules.
 
           String (Source.Data (Low .. High)))
-   with Pre => Low - 1 <= Super_Length (Source)
-                 and then High <= Super_Length (Source);
+   with Pre    => Low - 1 <= Super_Length (Source)
+                    and then High <= Super_Length (Source),
+        Global => null;
 
    function Super_Slice
      (Source : Super_String;

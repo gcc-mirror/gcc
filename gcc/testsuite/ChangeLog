@@ -1,3 +1,88 @@
+2021-10-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/bfin/20090914-3.c: Tweak test case.
+
+2021-10-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR fortran/9262
+	* gfortran.dg/bind-c-intent-out-2.f90: Moved to ...
+	* gfortran.dg/ubsan/bind-c-intent-out-2.f90
+
+2021-10-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-logic.c: New test case.
+	* gcc.target/i386/sse2-v1ti-logic-2.c: New test case.
+
+2021-10-23  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/95196
+	* gfortran.dg/PR95196.f90: New.
+
+2021-10-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/associate_3.f03: Replace dg-excess-errors by
+	other dg-* to change XFAIL to PASS.
+	* gfortran.dg/binding_label_tests_4.f03: Likewise.
+	* gfortran.dg/block_4.f08: Likewise.
+	* gfortran.dg/charlen_04.f90: Likewise.
+	* gfortran.dg/charlen_05.f90: Likewise.
+	* gfortran.dg/charlen_06.f90: Likewise.
+	* gfortran.dg/charlen_13.f90: Likewise.
+	* gfortran.dg/coarray_9.f90: Likewise.
+	* gfortran.dg/coarray_collectives_3.f90: Likewise.
+	* gfortran.dg/data_invalid.f90: Likewise.
+	* gfortran.dg/do_4.f: Likewise.
+	* gfortran.dg/dollar_sym_1.f90: Likewise.
+	* gfortran.dg/dollar_sym_3.f: Likewise.
+	* gfortran.dg/fmt_tab_1.f90: Likewise.
+	* gfortran.dg/fmt_tab_2.f90: Likewise.
+	* gfortran.dg/forall_16.f90: Likewise.
+	* gfortran.dg/g77/970125-0.f: Likewise.
+	* gfortran.dg/gomp/unexpected-end.f90: Likewise.
+	* gfortran.dg/interface_operator_1.f90: Likewise.
+	* gfortran.dg/interface_operator_2.f90: Likewise.
+	* gfortran.dg/line_length_4.f90: Likewise.
+	* gfortran.dg/line_length_5.f90: Likewise.
+	* gfortran.dg/line_length_6.f90: Likewise.
+	* gfortran.dg/line_length_8.f90: Likewise.
+	* gfortran.dg/line_length_9.f90: Likewise.
+	* gfortran.dg/pr65045.f90: Likewise.
+	* gfortran.dg/pr69497.f90: Likewise.
+	* gfortran.dg/submodule_21.f08: Likewise.
+	* gfortran.dg/tab_continuation.f: Likewise.
+	* gfortran.dg/typebound_proc_2.f90: Likewise.
+	* gfortran.dg/warnings_are_errors_1.f90: Likewise.
+
+2021-10-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92621
+	* gfortran.dg/bind-c-intent-out-2.f90: New test.
+
+2021-10-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/94289
+	* gfortran.dg/PR94289.f90: New.
+
+2021-10-22  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/100906
+	* gfortran.dg/PR100906.f90: New.
+	* gfortran.dg/PR100906.c: New.
+
+2021-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102893
+	* gcc.dg/tree-ssa/ssa-dce-9.c: New testcase.
+
+2021-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/102681
+	* gcc.dg/tree-ssa/ssa-fre-97.c: New testcase.
+	* gcc.dg/ubsan/pr81981.c: XFAIL one case.
+
 2021-10-21  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR testsuite/102840

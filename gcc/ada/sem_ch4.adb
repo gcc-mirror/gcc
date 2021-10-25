@@ -281,6 +281,19 @@ package body Sem_Ch4 is
    --  type is not directly visible. The routine uses this type to emit a more
    --  informative message.
 
+   function Has_Possible_Literal_Aspects (N : Node_Id) return Boolean;
+   --  Ada_2022: if an operand is a literal it may be subject to an
+   --  implicit conversion to a type for which a user-defined literal
+   --  function exists. During the first pass of type resolution we do
+   --  not know the context imposed on the literal, so we assume that
+   --  the literal type is a valid candidate and rely on the second pass
+   --  of resolution to find the type with the proper aspect. We only
+   --  add this interpretation if no other one was found, which may be
+   --  too restrictive but seems sufficient to handle most proper uses
+   --  of the new aspect. It is unclear whether a full implementation of
+   --  these aspects can be achieved without larger modifications to the
+   --  two-pass resolution algorithm.
+
    procedure Remove_Abstract_Operations (N : Node_Id);
    --  Ada 2005: implementation of AI-310. An abstract non-dispatching
    --  operation is not a candidate interpretation.
@@ -3229,7 +3242,7 @@ package body Sem_Ch4 is
         and then Intval (Right_Opnd (Parent (N))) <= Uint_128
       then
          Error_Msg_N
-           ("suspicious MOD value, was '*'* intended'??M?", Parent (N));
+           ("suspicious MOD value, was '*'* intended'??.m?", Parent (N));
       end if;
 
       --  Remaining processing is same as for other arithmetic operators
@@ -4334,7 +4347,7 @@ package body Sem_Ch4 is
                     (if Kind = Conjunct then "conjunct" else "disjunct");
                begin
                   Error_Msg_NE
-                    ("?T?unused variable & in " & Sub, Expr, Loop_Id);
+                    ("?.t?unused variable & in " & Sub, Expr, Loop_Id);
                   Error_Msg_NE
                     ("\consider extracting " & Sub & " from quantified "
                      & "expression", Expr, Loop_Id);
@@ -4354,7 +4367,7 @@ package body Sem_Ch4 is
            and then not (Modify_Tree_For_C and In_Inlined_Body)
          then
             if not Referenced (Loop_Id, Cond) then
-               Error_Msg_N ("?T?unused variable &", Loop_Id);
+               Error_Msg_N ("?.t?unused variable &", Loop_Id);
             else
                Check_Subexpr (Cond, Kind => Full);
             end if;
@@ -4375,7 +4388,7 @@ package body Sem_Ch4 is
         and then Nkind (Cond) = N_If_Expression
         and then No_Else_Or_Trivial_True (Cond)
       then
-         Error_Msg_N ("?T?suspicious expression", N);
+         Error_Msg_N ("?.t?suspicious expression", N);
          Error_Msg_N ("\\did you mean (for all X ='> (if P then Q))", N);
          Error_Msg_N ("\\or (for some X ='> P and then Q) instead'?", N);
       end if;
@@ -7541,6 +7554,9 @@ package body Sem_Ch4 is
             then
                return;
 
+            elsif Has_Possible_Literal_Aspects (N) then
+               return;
+
             --  If we have a logical operator, one of whose operands is
             --  Boolean, then we know that the other operand cannot resolve to
             --  Boolean (since we got no interpretations), but in that case we
@@ -7856,6 +7872,69 @@ package body Sem_Ch4 is
          end;
       end if;
    end Operator_Check;
+
+   ----------------------------------
+   -- Has_Possible_Literal_Aspects --
+   ----------------------------------
+
+   function Has_Possible_Literal_Aspects (N : Node_Id) return Boolean is
+      R : constant Node_Id := Right_Opnd (N);
+      L : Node_Id := Empty;
+
+      procedure Check_Literal_Opnd (Opnd : Node_Id);
+      --  If an operand is a literal to which an aspect may apply,
+      --  add the corresponding type to operator node.
+
+      ------------------------
+      -- Check_Literal_Opnd --
+      ------------------------
+
+      procedure Check_Literal_Opnd (Opnd : Node_Id) is
+      begin
+         if Nkind (Opnd) in N_Numeric_Or_String_Literal
+           or else (Is_Entity_Name (Opnd)
+             and then Present (Entity (Opnd))
+             and then Is_Named_Number (Entity (Opnd)))
+         then
+            Add_One_Interp (N, Etype (Opnd), Etype (Opnd));
+         end if;
+      end Check_Literal_Opnd;
+
+   --  Start of processing for Has_Possible_Literal_Aspects
+
+   begin
+      if Ada_Version < Ada_2022 then
+         return False;
+      end if;
+
+      if Nkind (N) in N_Binary_Op then
+         L := Left_Opnd (N);
+      else
+         L := Empty;
+      end if;
+      Check_Literal_Opnd (R);
+
+      --  Check left operand only if right one did not provide a
+      --  possible interpretation. Note that literal types are not
+      --  overloadable, in the sense that there is no overloadable
+      --  entity name whose several interpretations can be used to
+      --  indicate possible resulting types, so there is no way to
+      --  provide more than one interpretation to the operator node.
+      --  The choice of one operand over the other is arbitrary at
+      --  this point, and may lead to spurious resolution when both
+      --  operands are literals of different kinds, but the second
+      --  pass of resolution will examine anew both operands to
+      --  determine whether a user-defined literal may apply to
+      --  either or both.
+
+      if Present (L)
+        and then Etype (N) = Any_Type
+      then
+         Check_Literal_Opnd (L);
+      end if;
+
+      return Etype (N) /= Any_Type;
+   end Has_Possible_Literal_Aspects;
 
    --------------------------------
    -- Remove_Abstract_Operations --

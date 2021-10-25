@@ -10972,16 +10972,13 @@ package body Exp_Ch3 is
          while Present (Prim) loop
             if Chars (Node (Prim)) = Name_Op_Eq
               and then not Is_Internal (Node (Prim))
-              and then Present (First_Entity (Node (Prim)))
 
               --  The predefined equality primitive must have exactly two
-              --  formals whose type is this tagged type
+              --  formals whose type is this tagged type.
 
-              and then Present (Last_Entity (Node (Prim)))
-              and then Next_Entity (First_Entity (Node (Prim)))
-                         = Last_Entity (Node (Prim))
-              and then Etype (First_Entity (Node (Prim))) = Tag_Typ
-              and then Etype (Last_Entity (Node (Prim))) = Tag_Typ
+              and then Number_Formals (Node (Prim)) = 2
+              and then Etype (First_Formal (Node (Prim))) = Tag_Typ
+              and then Etype (Last_Formal (Node (Prim))) = Tag_Typ
             then
                Eq_Needed := False;
                Eq_Name := No_Name;
@@ -11102,7 +11099,6 @@ package body Exp_Ch3 is
       --  they may be ancestors of synchronized interface types).
 
       if Ada_Version >= Ada_2005
-        and then not Is_Interface (Tag_Typ)
         and then
           ((Is_Interface (Etype (Tag_Typ))
              and then Is_Limited_Record (Etype (Tag_Typ)))
@@ -11123,7 +11119,7 @@ package body Exp_Ch3 is
          Append_To (Res, Make_Disp_Timed_Select_Body        (Tag_Typ));
       end if;
 
-      if not Is_Limited_Type (Tag_Typ) and then not Is_Interface (Tag_Typ) then
+      if not Is_Limited_Type (Tag_Typ) then
 
          --  Body for equality
 

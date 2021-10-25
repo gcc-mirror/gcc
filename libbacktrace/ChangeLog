@@ -1,3 +1,13 @@
+2021-10-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/102742
+	* btest.c (MIN_DESCRIPTOR): New.
+	(MAX_DESCRIPTOR): Likewise.
+	(check_available_files): Likewise.
+	(check_open_files): Check only file descriptors that
+	were not available at the entry.
+	(main): Call check_available_files.
+
 2021-08-13  Sergei Trofimovich  <siarheit@google.com>
 
 	* install-debuginfo-for-buildid.sh.in: Force non-localized readelf

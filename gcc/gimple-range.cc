@@ -303,7 +303,7 @@ gimple_ranger::export_global_ranges ()
 	  && !r.varying_p())
 	{
 	  bool updated = update_global_range (r, name);
-	  if (!updated || !dump_file || !(dump_flags & TDF_DETAILS))
+	  if (!updated || !dump_file)
 	    continue;
 
 	  if (print_header)

@@ -1,3 +1,10 @@
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.def: Handle install-dvi target.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+
 2021-10-19  Clément Chigot  <clement.chigot@atos.net>
 
 	* MAINTAINERS: Add myself for write after approval.

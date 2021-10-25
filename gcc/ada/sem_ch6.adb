@@ -6254,7 +6254,7 @@ package body Sem_Ch6 is
                           (Old_Id, Old_Type, New_Type)
          then
             Error_Msg_N ("result subtypes conform but come from different "
-                          & "declarations??", New_Id);
+                          & "declarations?_p?", New_Id);
          end if;
 
          --  Ada 2005 (AI-231): In case of anonymous access types check the
@@ -6462,7 +6462,7 @@ package body Sem_Ch6 is
                           (Old_Id, Old_Formal_Base, New_Formal_Base)
          then
             Error_Msg_N ("formal subtypes conform but come from "
-                          & "different declarations??", New_Formal);
+                          & "different declarations?_p?", New_Formal);
          end if;
 
          --  For mode conformance, mode must match
@@ -10918,11 +10918,11 @@ package body Sem_Ch6 is
                         if Pragma_Name (Prag) = Name_Precondition then
                            Error_Msg_N
                              ("info: & inherits `Pre''Class` aspect from "
-                              & "#?L?", E);
+                              & "#?.l?", E);
                         else
                            Error_Msg_N
                              ("info: & inherits `Post''Class` aspect from "
-                              & "#?L?", E);
+                              & "#?.l?", E);
                         end if;
                      end if;
 
@@ -11981,11 +11981,11 @@ package body Sem_Ch6 is
          --  renaming declaration becomes hidden.
 
          if Ekind (E) = E_Package
-           and then Present (Renamed_Object (E))
-           and then Renamed_Object (E) = Current_Scope
-           and then Nkind (Parent (Renamed_Object (E))) =
+           and then Present (Renamed_Entity (E))
+           and then Renamed_Entity (E) = Current_Scope
+           and then Nkind (Parent (Renamed_Entity (E))) =
                                                      N_Package_Specification
-           and then Present (Generic_Parent (Parent (Renamed_Object (E))))
+           and then Present (Generic_Parent (Parent (Renamed_Entity (E))))
          then
             Set_Is_Hidden (E);
             Set_Is_Immediately_Visible (E, False);

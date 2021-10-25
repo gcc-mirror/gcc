@@ -4762,7 +4762,7 @@ package Einfo is
 
 --  Several entity attributes relate to renaming constructs, and to the use of
 --  different names to refer to the same entity. The following is a summary of
---  these constructs and their prefered uses.
+--  these constructs and their preferred uses.
 
 --  There are three related attributes:
 
@@ -4775,7 +4775,7 @@ package Einfo is
 
 --  a) Renamed_Entity applies to entities in renaming declarations that rename
 --  an entity, so the value of the attribute IS an entity. This applies to
---  generic renamings, package renamings, exception renamings, and subprograms
+--  generic renamings, package renamings, exception renamings, and subprogram
 --  renamings that rename a subprogram (rather than an attribute, an entry, a
 --  protected operation, etc).
 
@@ -4797,9 +4797,9 @@ package Einfo is
 --  in a few cases we need to use a loop to trace a chain of object renamings
 --  where all of them happen to be entities. So:
 
---    X : integer;
---    Y : integer renames X;   -- renamed object is the identifier X
---    Z : integer renames Y;   -- renamed object is the identifier Y
+--    X : Integer;
+--    Y : Integer renames X;   -- renamed object is the identifier X
+--    Z : Integer renames Y;   -- renamed object is the identifier Y
 
 --  The front-end does not store explicitly the fact that Z renames X.
 

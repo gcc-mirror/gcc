@@ -3815,14 +3815,14 @@ package body Sem_Elab is
       -----------------------
 
       function Ultimate_Variable (Var_Id : Entity_Id) return Entity_Id is
+         pragma Assert (Ekind (Var_Id) = E_Variable);
          Ren_Id : Entity_Id;
-
       begin
          Ren_Id := Var_Id;
-         while Present (Renamed_Entity (Ren_Id))
-           and then Nkind (Renamed_Entity (Ren_Id)) in N_Entity
+         while Present (Renamed_Object (Ren_Id))
+           and then Nkind (Renamed_Object (Ren_Id)) in N_Entity
          loop
-            Ren_Id := Renamed_Entity (Ren_Id);
+            Ren_Id := Renamed_Object (Ren_Id);
          end loop;
 
          return Ren_Id;

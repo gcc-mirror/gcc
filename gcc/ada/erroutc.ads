@@ -80,14 +80,14 @@ package Erroutc is
    --  Set True to indicate that the current message starts with one of
    --  "high: ", "medium: ", "low: " and is to be treated as a check message.
 
-   Warning_Msg_Char : Character;
-   --  Warning character, valid only if Is_Warning_Msg is True
-   --    ' '      -- ?   or <   appeared on its own in message
-   --    '?'      -- ??  or <<  appeared in message
-   --    'x'      -- ?x? or <x< appeared in message (x = a .. z)
-   --    'X'      -- ?X? or <X< appeared in message (X = A .. Z)
-   --    '*'      -- ?*? or <*< appeared in message
-   --    '$'      -- ?$? or <$< appeared in message
+   Warning_Msg_Char : String (1 .. 2);
+   --  Warning switch, valid only if Is_Warning_Msg is True
+   --    "  "      -- ?   or <   appeared on its own in message
+   --    "? "      -- ??  or <<  appeared in message
+   --    "x "      -- ?x? or <x< appeared in message
+   --              -- (x = a .. z | A .. Z | * | $)
+   --    ".x"      -- ?.x? appeared in message (x = a .. z | A .. Z)
+   --    "_x"      -- ?_x? appeared in message (x = a .. z | A .. Z)
    --  In the case of the < sequences, this is set only if the message is
    --  actually a warning, i.e. if Error_Msg_Warn is True
 
@@ -239,16 +239,8 @@ package Erroutc is
       --  True if this is a warning message which is to be treated as an error
       --  as a result of a match with a Warning_As_Error pragma.
 
-      Warn_Chr : Character;
-      --  Warning character (note: set even if Warning_Doc_Switch is False)
-      --    ' '      -- ?   or <   appeared on its own in message
-      --    '?'      -- ??  or <<  appeared in message
-      --    'x'      -- ?x? or <x< appeared in message (x = a .. z)
-      --    'X'      -- ?X? or <X< appeared in message (X = A .. Z)
-      --    '*'      -- ?*? or <*< appeared in message
-      --    '$'      -- ?$? or <$< appeared in message
-      --  In the case of the < sequences, this is set only if the message is
-      --  actually a warning, i.e. if Error_Msg_Warn is True
+      Warn_Chr : String (1 .. 2);
+      --  See Warning_Msg_Char
 
       Style : Boolean;
       --  True if style message (starts with "(style)")

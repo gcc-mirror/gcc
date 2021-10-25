@@ -27,25 +27,37 @@ with Einfo.Entities; use Einfo.Entities;
 
 package Einfo.Utils is
 
-   -----------------------------------
-   -- Renamings of Renamed_Or_Alias --
-   -----------------------------------
+   -------------------------------------------
+   -- Aliases/Renamings of Renamed_Or_Alias --
+   -------------------------------------------
 
    --  See the comment in einfo.ads, "Renaming and Aliasing", which is somewhat
-   --  incorrect. In fact, the compiler uses Alias, Renamed_Entity, and
-   --  Renamed_Object more-or-less interchangeably, so we rename them here.
-   --  Alias isn't really renamed, because we want an assertion in the body.
+   --  incorrect. Each of the following calls [Set_]Renamed_Or_Alias. Alias and
+   --  Renamed_Entity are fields of nonobject Entity_Ids, and the value of the
+   --  field is Entity_Id. Alias is only for callable entities and subprogram
+   --  types. We sometimes call Set_Renamed_Entity and then expect Alias to
+   --  return the value set. Renamed_Object is a field of Entity_Ids that are
+   --  objects, and it returns an expression, because you can rename things
+   --  like "X.all(J).Y". Renamings of entries and subprograms can also be
+   --  expressions, but those use different mechanisms; the fields here are not
+   --  used.
 
    function Alias (N : Entity_Id) return Node_Id;
    procedure Set_Alias (N : Entity_Id; Val : Node_Id);
-   function Renamed_Entity
-     (N : Entity_Id) return Node_Id renames Renamed_Or_Alias;
-   procedure Set_Renamed_Entity
-     (N : Entity_Id; Val : Node_Id) renames Set_Renamed_Or_Alias;
-   function Renamed_Object
-     (N : Entity_Id) return Node_Id renames Renamed_Or_Alias;
-   procedure Set_Renamed_Object
-     (N : Entity_Id; Val : Node_Id) renames Set_Renamed_Or_Alias;
+   function Renamed_Entity (N : Entity_Id) return Node_Id;
+   procedure Set_Renamed_Entity (N : Entity_Id; Val : Node_Id);
+   function Renamed_Object (N : Entity_Id) return Node_Id;
+   procedure Set_Renamed_Object (N : Entity_Id; Val : Node_Id);
+
+   function Renamed_Entity_Or_Object (N : Entity_Id) return Node_Id;
+   --  This getter is used when we don't know statically whether we want to
+   --  call Renamed_Entity or Renamed_Object.
+
+   procedure Set_Renamed_Object_Of_Possibly_Void
+     (N : Entity_Id; Val : Node_Id);
+   --  Set_Renamed_Object doesn't allow Void; this is used in the rare cases
+   --  where we set the field of an entity that might be Void. It might be a
+   --  good idea to get rid of calls to this.
 
    pragma Inline (Alias);
    pragma Inline (Set_Alias);
@@ -53,6 +65,8 @@ package Einfo.Utils is
    pragma Inline (Set_Renamed_Entity);
    pragma Inline (Renamed_Object);
    pragma Inline (Set_Renamed_Object);
+   pragma Inline (Renamed_Entity_Or_Object);
+   pragma Inline (Set_Renamed_Object_Of_Possibly_Void);
 
    -------------------
    -- Type Synonyms --

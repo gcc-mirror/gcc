@@ -1024,6 +1024,8 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
+      pragma Assert (FD.Type_Only = No_Type_Only);
+      --  Type_Only is for entities
    begin
       if not Field_Is_Initial_Zero (N, Field) then
          Print_Field (Prefix, Image (Field), N, FD, Format);
@@ -1041,9 +1043,10 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
+      NN : constant Node_Id := Node_To_Fetch_From (N, Field);
    begin
       if not Field_Is_Initial_Zero (N, Field) then
-         Print_Field (Prefix, Image (Field), N, FD, Format);
+         Print_Field (Prefix, Image (Field), NN, FD, Format);
       end if;
    end Print_Entity_Field;
 

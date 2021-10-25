@@ -106,9 +106,25 @@ package body Sem_Case is
 
    package Composite_Case_Ops is
 
+      function Box_Value_Required (Subtyp : Entity_Id) return Boolean;
+      --  If result is True, then the only allowed value (in a choice
+      --  aggregate) for a component of this (sub)type is a box. This rule
+      --  means that such a component can be ignored in case alternative
+      --  selection. This in turn implies that it is ok if the component
+      --  type doesn't meet the usual restrictions, such as not being an
+      --  access/task/protected type, since nobody is going to look
+      --  at it.
+
       function Choice_Count (Alternatives : List_Id) return Nat;
       --  The sum of the number of choices for each alternative in the given
       --  list.
+
+      function Normalized_Case_Expr_Type
+        (Case_Statement : Node_Id) return Entity_Id;
+      --  Usually returns the Etype of the selector expression of the
+      --  case statement. However, in the case of a constrained composite
+      --  subtype with a nonstatic constraint, returns the unconstrained
+      --  base type.
 
       function Scalar_Part_Count (Subtyp : Entity_Id) return Nat;
       --  Given the composite type Subtyp of a case selector, returns the
@@ -118,13 +134,6 @@ package body Sem_Case is
       package Array_Case_Ops is
          function Array_Choice_Length (Choice : Node_Id) return Nat;
          --  Given a choice expression of an array type, returns its length.
-
-         function Normalized_Case_Expr_Type
-           (Case_Statement : Node_Id) return Entity_Id;
-         --  Usually returns the Etype of the selector expression of the
-         --  case statement. However, in the case of a constrained array
-         --  subtype with a nonstatic constraint, returns the unconstrained
-         --  array base type.
 
          function Unconstrained_Array_Effective_Length
            (Array_Type : Entity_Id; Case_Statement : Node_Id) return Nat;
@@ -1164,6 +1173,54 @@ package body Sem_Case is
          return UI_To_Int (Len);
       end Static_Array_Length;
 
+      ------------------------
+      -- Box_Value_Required --
+      ------------------------
+
+      function Box_Value_Required (Subtyp : Entity_Id) return Boolean is
+         --  Some of these restrictions will be relaxed eventually, but best
+         --  to initially err in the direction of being too restrictive.
+      begin
+         if Has_Predicates (Subtyp) then
+            return True;
+         elsif Is_Discrete_Type (Subtyp) then
+            if not Is_Static_Subtype (Subtyp) then
+               return True;
+            elsif Is_Enumeration_Type (Subtyp)
+               and then Has_Enumeration_Rep_Clause (Subtyp)
+               --  Maybe enumeration rep clauses can be ignored here?
+            then
+               return True;
+            end if;
+         elsif Is_Array_Type (Subtyp) then
+            if Number_Dimensions (Subtyp) /= 1 then
+               return True;
+            elsif not Is_Constrained (Subtyp) then
+               if not Is_Static_Subtype (Etype (First_Index (Subtyp))) then
+                  return True;
+               end if;
+            elsif not Is_OK_Static_Range (First_Index (Subtyp)) then
+               return True;
+            end if;
+         elsif Is_Record_Type (Subtyp) then
+            if Has_Discriminants (Subtyp)
+              and then Is_Constrained (Subtyp)
+              and then not Has_Static_Discriminant_Constraint (Subtyp)
+            then
+               --  Perhaps treat differently the case where Subtyp is the
+               --  subtype of the top-level selector expression, as opposed
+               --  to the subtype of some subcomponent thereof.
+               return True;
+            end if;
+         else
+            --  Return True for any type that is not a discrete type,
+            --  a record type, or an array type.
+            return True;
+         end if;
+
+         return False;
+      end Box_Value_Required;
+
       ------------------
       -- Choice_Count --
       ------------------
@@ -1179,13 +1236,45 @@ package body Sem_Case is
          return Result;
       end Choice_Count;
 
+      -------------------------------
+      -- Normalized_Case_Expr_Type --
+      -------------------------------
+
+      function Normalized_Case_Expr_Type
+        (Case_Statement : Node_Id) return Entity_Id
+      is
+         Unnormalized : constant Entity_Id :=
+           Etype (Expression (Case_Statement));
+
+         Is_Dynamically_Constrained_Array : constant Boolean :=
+           Is_Array_Type (Unnormalized)
+             and then Is_Constrained (Unnormalized)
+             and then not Has_Static_Array_Bounds (Unnormalized);
+
+         Is_Dynamically_Constrained_Record : constant Boolean :=
+           Is_Record_Type (Unnormalized)
+             and then Has_Discriminants (Unnormalized)
+             and then Is_Constrained (Unnormalized)
+             and then not Has_Static_Discriminant_Constraint (Unnormalized);
+      begin
+         if Is_Dynamically_Constrained_Array
+           or Is_Dynamically_Constrained_Record
+         then
+            return Base_Type (Unnormalized);
+         else
+            return Unnormalized;
+         end if;
+      end Normalized_Case_Expr_Type;
+
       -----------------------
       -- Scalar_Part_Count --
       -----------------------
 
       function Scalar_Part_Count (Subtyp : Entity_Id) return Nat is
       begin
-         if Is_Scalar_Type (Subtyp) then
+         if Box_Value_Required (Subtyp) then
+            return 0; -- component does not participate in case selection
+         elsif Is_Scalar_Type (Subtyp) then
             return 1;
          elsif Is_Array_Type (Subtyp) then
             return Static_Array_Length (Subtyp)
@@ -1203,8 +1292,8 @@ package body Sem_Case is
                return Result;
             end;
          else
-            pragma Assert (False);
-            raise Program_Error;
+            pragma Assert (Serious_Errors_Detected > 0);
+            return 0;
          end if;
       end Scalar_Part_Count;
 
@@ -1255,29 +1344,9 @@ package body Sem_Case is
             return 0;
          end Array_Choice_Length;
 
-         -------------------------------
-         -- Normalized_Case_Expr_Type --
-         -------------------------------
-
-         function Normalized_Case_Expr_Type
-           (Case_Statement : Node_Id) return Entity_Id
-         is
-            Unnormalized : constant Entity_Id :=
-              Etype (Expression (Case_Statement));
-         begin
-            if Is_Array_Type (Unnormalized)
-              and then Is_Constrained (Unnormalized)
-              and then not Has_Static_Array_Bounds (Unnormalized)
-            then
-               return Base_Type (Unnormalized);
-            else
-               return Unnormalized;
-            end if;
-         end Normalized_Case_Expr_Type;
-
-      ------------------------------------------
+         ------------------------------------------
          -- Unconstrained_Array_Effective_Length --
-      ------------------------------------------
+         ------------------------------------------
 
          function Unconstrained_Array_Effective_Length
            (Array_Type : Entity_Id; Case_Statement : Node_Id) return Nat
@@ -1374,6 +1443,10 @@ package body Sem_Case is
 
             procedure Traverse_Discrete_Parts (Subtyp : Entity_Id) is
             begin
+               if Box_Value_Required (Subtyp) then
+                  return;
+               end if;
+
                if Is_Discrete_Type (Subtyp) then
                   Update_Result
                     ((Low  => Expr_Value (Type_Low_Bound (Subtyp)),
@@ -1668,13 +1741,32 @@ package body Sem_Case is
                               end loop;
                            end;
 
-                           if Box_Present (Comp_Assoc) then
-                              --  Box matches all values
-                              Update_Result_For_Full_Coverage
-                                (Etype (First (Choices (Comp_Assoc))));
-                           else
-                              Traverse_Choice (Expression (Comp_Assoc));
-                           end if;
+                           declare
+                              Comp_Type : constant Entity_Id :=
+                                Etype (First (Choices (Comp_Assoc)));
+                           begin
+                              if Box_Value_Required (Comp_Type) then
+                                 --  This component is not allowed to
+                                 --  influence which alternative is
+                                 --  chosen; case choice must be box.
+                                 --
+                                 --  For example, component might be
+                                 --  of a real type or of an access type
+                                 --  or of a non-static discrete subtype.
+                                 if not Box_Present (Comp_Assoc) then
+                                    Error_Msg_N
+                                      ("Non-box case choice component value" &
+                                         " of unsupported type/subtype",
+                                       Expression (Comp_Assoc));
+                                 end if;
+                              elsif Box_Present (Comp_Assoc) then
+                                 --  Box matches all values
+                                 Update_Result_For_Full_Coverage
+                                   (Etype (First (Choices (Comp_Assoc))));
+                              else
+                                 Traverse_Choice (Expression (Comp_Assoc));
+                              end if;
+                           end;
 
                            if Binding_Chars (Comp_Assoc) /= No_Name
                            then
@@ -1702,9 +1794,19 @@ package body Sem_Case is
                              Next_Component_Or_Discriminant (Comp_From_Type);
                         end loop;
 
-                        pragma Assert
-                          (Nat (Next_Part - Saved_Next_Part)
-                           = Scalar_Part_Count (Etype (Expr)));
+                        declare
+                           Expr_Type : Entity_Id := Etype (Expr);
+                        begin
+                           if Has_Discriminants (Expr_Type) then
+                              --  Avoid nonstatic choice expr types,
+                              --  for which Scalar_Part_Count returns 0.
+                              Expr_Type := Base_Type (Expr_Type);
+                           end if;
+
+                           pragma Assert
+                             (Nat (Next_Part - Saved_Next_Part)
+                               = Scalar_Part_Count (Expr_Type));
+                        end;
                      end;
                   elsif Is_Array_Type (Etype (Expr)) then
                      if Is_Non_Empty_List (Component_Associations (Expr)) then
@@ -3256,108 +3358,14 @@ package body Sem_Case is
          -----------------------------------
 
          procedure Check_Composite_Case_Selector is
-            --  Some of these restrictions will be relaxed eventually, but best
-            --  to initially err in the direction of being too restrictive.
-
-            procedure Check_Component_Subtype (Subtyp : Entity_Id);
-            --  Recursively traverse subcomponent types to perform checks.
-
-            -----------------------------
-            -- Check_Component_Subtype --
-            -----------------------------
-
-            procedure Check_Component_Subtype (Subtyp : Entity_Id) is
-            begin
-               if Has_Predicates (Subtyp) then
-                  Error_Msg_N
-                     ("subtype of case selector (or subcomponent thereof) " &
-                      "has predicate", N);
-               elsif Is_Discrete_Type (Subtyp) then
-                  if not Is_Static_Subtype (Subtyp) then
-                     Error_Msg_N
-                       ("discrete subtype of selector subcomponent is not " &
-                        "a static subtype", N);
-                  elsif Is_Enumeration_Type (Subtyp)
-                    and then Has_Enumeration_Rep_Clause (Subtyp)
-                  then
-                     Error_Msg_N
-                       ("enumeration type of selector subcomponent has " &
-                        "an enumeration representation clause", N);
-                  end if;
-               elsif Is_Array_Type (Subtyp) then
-                  if Number_Dimensions (Subtyp) /= 1 then
-                     Error_Msg_N
-                       ("dimensionality of array type of case selector (or " &
-                        "subcomponent thereof) is greater than 1", N);
-
-                  elsif not Is_Constrained (Subtyp) then
-                     if not Is_Static_Subtype
-                              (Etype (First_Index (Subtyp)))
-                     then
-                        Error_Msg_N
-                          ("Unconstrained array subtype of case selector" &
-                           " has nonstatic index subtype", N);
-                     end if;
-
-                  elsif not Is_OK_Static_Range (First_Index (Subtyp)) then
-                     Error_Msg_N
-                       ("array subtype of case selector (or " &
-                        "subcomponent thereof) has nonstatic constraint", N);
-                  end if;
-                  Check_Component_Subtype (Component_Type (Subtyp));
-               elsif Is_Record_Type (Subtyp) then
-
-                  if Has_Discriminants (Subtyp)
-                    and then Is_Constrained (Subtyp)
-                    and then not Has_Static_Discriminant_Constraint (Subtyp)
-                  then
-                     --  We are only disallowing nonstatic constraints for
-                     --  subcomponent subtypes, not for the subtype of the
-                     --  expression we are casing on. This test could be
-                     --  implemented via an Is_Recursive_Call parameter if
-                     --  that seems preferable.
-
-                     if Subtyp /= Check_Choices.Subtyp then
-                        Error_Msg_N
-                          ("constrained discriminated subtype of case " &
-                           "selector subcomponent has nonstatic " &
-                           "constraint", N);
-                     end if;
-                  end if;
-
-                  declare
-                     Comp : Entity_Id :=
-                       First_Component_Or_Discriminant (Base_Type (Subtyp));
-                  begin
-                     while Present (Comp) loop
-                        Check_Component_Subtype (Etype (Comp));
-                        Next_Component_Or_Discriminant (Comp);
-                     end loop;
-                  end;
-               else
-                  Error_Msg_N
-                    ("type of case selector (or subcomponent thereof) is " &
-                     "not a discrete type, a record type, or an array type",
-                     N);
-               end if;
-            end Check_Component_Subtype;
-
          begin
             if not Is_Composite_Type (Subtyp) then
                Error_Msg_N
                  ("case selector type neither discrete nor composite", N);
-
             elsif Is_Limited_Type (Subtyp) then
                Error_Msg_N ("case selector type is limited", N);
-
             elsif Is_Class_Wide_Type (Subtyp) then
                Error_Msg_N ("case selector type is class-wide", N);
-
-            elsif Needs_Finalization (Subtyp) then
-               Error_Msg_N ("case selector type requires finalization", N);
-
-            else
-               Check_Component_Subtype (Subtyp);
             end if;
          end Check_Composite_Case_Selector;
 

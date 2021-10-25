@@ -1,3 +1,78 @@
+2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-d.c (pa_d_handle_target_float_abi): Don't check
+	TARGET_DISABLE_FPREGS.
+	* config/pa/pa.c (fix_range): Use MASK_SOFT_FLOAT instead of
+	MASK_DISABLE_FPREGS.
+	(hppa_rtx_costs): Don't check TARGET_DISABLE_FPREGS.  Adjust
+	cost of hardware integer multiplication.
+	(pa_conditional_register_usage): Don't check TARGET_DISABLE_FPREGS.
+	* config/pa/pa.h (INT14_OK_STRICT): Likewise.
+	* config/pa/pa.md: Don't check TARGET_DISABLE_FPREGS. Check
+	TARGET_SOFT_FLOAT in patterns that use xmpyu instruction.
+	* config/pa/pa.opt (mdisable-fpregs): Change target mask to
+	SOFT_FLOAT.  Revise comment.
+	(msoft-float): New option.
+
+2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Don't use 'G' constraint in integer move patterns.
+
+2021-10-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Remove obsolete details
+	around GNU/Linux on Itanium.
+	(Specific): Remove reference to Windows for Itanium.
+
+2021-10-23  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/i386/x86-tune-sched-bd.c (dispatch_group): Commentary
+	typo fix.
+
+2021-10-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-structalias.c (compute_points_to_sets): Cleanup.
+
+2021-10-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/sse.md (<any_logic>v1ti3): New define_insn to
+	implement V1TImode AND, IOR and XOR on TARGET_SSE2 (and above).
+	(one_cmplv1ti2): New define expand.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.in: Handle dvidir and install-dvi target.
+	* configure: Regenerate.
+	* configure.ac: Add install-dvi to target_list.
+
+2021-10-22  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Convert mingw-w64.org to https.
+	(Specific): Ditto.
+
+2021-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102893
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Fix the
+	test for an exit edge.
+
+2021-10-22  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::compute_phi_relations):
+	Kill any global relations we may know before registering a new
+	one.
+	* value-relation.cc (path_oracle::killing_def): New.
+	* value-relation.h (path_oracle::killing_def): New.
+
+2021-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/102681
+	* tree-ssa-sccvn.c (vn_phi_insert): For undefined SSA args
+	record VN_TOP.
+	(vn_phi_lookup): Likewise.
+
 2021-10-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/98667

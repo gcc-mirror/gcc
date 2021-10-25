@@ -17,4 +17,4 @@
 ! { dg-error "Nonconforming tab character in column 1 of line 13" "Nonconforming tab" { target *-*-* } 0 }
 ! { dg-error "Nonconforming tab character in column 1 of line 14" "Nonconforming tab" { target *-*-* } 0 }
 ! { dg-error "Nonconforming tab character in column 1 of line 15" "Nonconforming tab" { target *-*-* } 0 }
-! { dg-excess-errors "some warnings being treated as errors" }
+! { dg-prune-output "some warnings being treated as errors" }

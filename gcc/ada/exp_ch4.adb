@@ -2583,7 +2583,7 @@ package body Exp_Ch4 is
 
          return
            Make_Function_Call (Loc,
-             Name => New_Occurrence_Of (Eq_Op, Loc),
+             Name                   => New_Occurrence_Of (Eq_Op, Loc),
              Parameter_Associations =>
                New_List
                  (Unchecked_Convert_To (Etype (First_Formal (Eq_Op)), Lhs),
@@ -2606,7 +2606,7 @@ package body Exp_Ch4 is
                begin
                   return
                     Make_Function_Call (Loc,
-                      Name                  => New_Occurrence_Of (Eq_Op, Loc),
+                      Name                   => New_Occurrence_Of (Eq_Op, Loc),
                       Parameter_Associations => New_List (
                         OK_Convert_To (T, Lhs),
                         OK_Convert_To (T, Rhs)));
@@ -4592,7 +4592,7 @@ package body Exp_Ch4 is
                        and then Nkind (Associated_Node_For_Itype (PtrT)) =
                                   N_Object_Declaration)
       then
-         Error_Msg_N ("??use of an anonymous access type allocator", N);
+         Error_Msg_N ("?_a?use of an anonymous access type allocator", N);
       end if;
 
       --  RM E.2.2(17). We enforce that the expected type of an allocator
@@ -13116,41 +13116,35 @@ package body Exp_Ch4 is
       ------------------------
 
       function Element_To_Compare (C : Entity_Id) return Entity_Id is
-         Comp : Entity_Id;
+         Comp : Entity_Id := C;
 
       begin
-         Comp := C;
-         loop
-            --  Exit loop when the next element to be compared is found, or
-            --  there is no more such element.
+         while Present (Comp) loop
+            --  Skip inherited components
 
-            exit when No (Comp);
+            --  Note: for a tagged type, we always generate the "=" primitive
+            --  for the base type (not on the first subtype), so the test for
+            --  Comp /= Original_Record_Component (Comp) is True for inherited
+            --  components only.
 
-            exit when Ekind (Comp) in E_Discriminant | E_Component
-              and then not (
-
-              --  Skip inherited components
-
-              --  Note: for a tagged type, we always generate the "=" primitive
-              --  for the base type (not on the first subtype), so the test for
-              --  Comp /= Original_Record_Component (Comp) is True for
-              --  inherited components only.
-
-              (Is_Tagged_Type (Typ)
+            if (Is_Tagged_Type (Typ)
                 and then Comp /= Original_Record_Component (Comp))
 
-              --  Skip _Tag
+            --  Skip _Tag
 
               or else Chars (Comp) = Name_uTag
 
-              --  Skip interface elements (secondary tags???)
+            --  Skip interface elements (secondary tags???)
 
-              or else Is_Interface (Etype (Comp)));
-
-            Next_Entity (Comp);
+              or else Is_Interface (Etype (Comp))
+            then
+               Next_Component_Or_Discriminant (Comp);
+            else
+               return Comp;
+            end if;
          end loop;
 
-         return Comp;
+         return Empty;
       end Element_To_Compare;
 
    --  Start of processing for Expand_Record_Equality
@@ -13166,7 +13160,7 @@ package body Exp_Ch4 is
       --    and then Lhs.Cmpn = Rhs.Cmpn
 
       Result := New_Occurrence_Of (Standard_True, Loc);
-      C := Element_To_Compare (First_Entity (Typ));
+      C := Element_To_Compare (First_Component_Or_Discriminant (Typ));
       while Present (C) loop
          declare
             New_Lhs : Node_Id;
@@ -13224,7 +13218,7 @@ package body Exp_Ch4 is
          end;
 
          First_Time := False;
-         C := Element_To_Compare (Next_Entity (C));
+         C := Element_To_Compare (Next_Component_Or_Discriminant (C));
       end loop;
 
       return Result;

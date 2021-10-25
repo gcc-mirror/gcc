@@ -1,3 +1,8 @@
+2021-10-22  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/sfp-machine.h (_FP_TININESS_AFTER_ROUNDING):
+	Change to 0.
+
 2021-10-14  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
 
 	* config/rs6000/linux-unwind.h (struct rt_sigframe): Move it to
