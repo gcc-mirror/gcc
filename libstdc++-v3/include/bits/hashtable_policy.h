@@ -1250,6 +1250,19 @@ namespace __detail
 	  return _M_hash()(__k);
 	}
 
+      __hash_code
+      _M_hash_code(const _Hash&,
+		   const _Hash_node_value<_Value, true>& __n) const
+      { return __n._M_hash_code; }
+
+      // Compute hash code using _Hash as __n _M_hash_code, if present, was
+      // computed using _H2.
+      template<typename _H2>
+	__hash_code
+	_M_hash_code(const _H2&,
+		const _Hash_node_value<_Value, __cache_hash_code>& __n) const
+	{ return _M_hash_code(_ExtractKey{}(__n._M_v())); }
+
       std::size_t
       _M_bucket_index(__hash_code __c, std::size_t __bkt_count) const
       { return _RangeHash{}(__c, __bkt_count); }

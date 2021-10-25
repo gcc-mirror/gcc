@@ -1076,7 +1076,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      auto __pos = __i++;
 	      const key_type& __k = _ExtractKey{}(*__pos);
-	      __hash_code __code = this->_M_hash_code(__k);
+	      __hash_code __code
+		= this->_M_hash_code(__src.hash_function(), *__pos._M_cur);
 	      size_type __bkt = _M_bucket_index(__code);
 	      if (_M_find_node(__bkt, __k, __code) == nullptr)
 		{
@@ -1099,14 +1100,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      node_type>, "Node types are compatible");
 	  __glibcxx_assert(get_allocator() == __src.get_allocator());
 
+	  __node_ptr __hint = nullptr;
 	  this->reserve(size() + __src.size());
 	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
 	      auto __pos = __i++;
-	      const key_type& __k = _ExtractKey{}(*__pos);
-	      __hash_code __code = this->_M_hash_code(__k);
+	      __hash_code __code
+		= this->_M_hash_code(__src.hash_function(), *__pos._M_cur);
 	      auto __nh = __src.extract(__pos);
-	      _M_insert_multi_node(nullptr, __code, __nh._M_ptr);
+	      __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
 	      __nh._M_ptr = nullptr;
 	    }
 	}
