@@ -4064,9 +4064,25 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	}
       break;
 
-    case ASHIFT:
     case SS_ASHIFT:
+      if (CONST_INT_P (trueop0)
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && (UINTVAL (trueop0) == (GET_MODE_MASK (mode) >> 1)
+	      || mode_signbit_p (mode, trueop0))
+	  && ! side_effects_p (op1))
+	return op0;
+      goto simplify_ashift;
+
     case US_ASHIFT:
+      if (CONST_INT_P (trueop0)
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && UINTVAL (trueop0) == GET_MODE_MASK (mode)
+	  && ! side_effects_p (op1))
+	return op0;
+      /* FALLTHRU */
+
+    case ASHIFT:
+simplify_ashift:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
       if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
@@ -5004,6 +5020,8 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case LSHIFTRT:
 	case ASHIFTRT:
 	case ASHIFT:
+	case SS_ASHIFT:
+	case US_ASHIFT:
 	  {
 	    wide_int wop1 = pop1;
 	    if (SHIFT_COUNT_TRUNCATED)
@@ -5023,6 +5041,24 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 
 	      case ASHIFT:
 		result = wi::lshift (pop0, wop1);
+		break;
+
+	      case SS_ASHIFT:
+		if (wi::leu_p (wop1, wi::clrsb (pop0)))
+		  result = wi::lshift (pop0, wop1);
+		else if (wi::neg_p (pop0))
+		  result = wi::min_value (int_mode, SIGNED);
+		else
+		  result = wi::max_value (int_mode, SIGNED);
+		break;
+
+	      case US_ASHIFT:
+		if (wi::eq_p (pop0, 0))
+		  result = pop0;
+		else if (wi::leu_p (wop1, wi::clz (pop0)))
+		  result = wi::lshift (pop0, wop1);
+		else
+		  result = wi::max_value (int_mode, UNSIGNED);
 		break;
 
 	      default:
