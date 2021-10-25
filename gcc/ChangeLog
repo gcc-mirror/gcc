@@ -1,3 +1,7 @@
+2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Don't use 'G' constraint in integer move patterns.
+
 2021-10-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
