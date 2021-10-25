@@ -340,6 +340,15 @@ public:
   bool is_empty () const { return where_clause_items.empty (); }
 
   std::string as_string () const;
+
+  std::vector<std::unique_ptr<WhereClauseItem>> &get_items ()
+  {
+    return where_clause_items;
+  }
+  const std::vector<std::unique_ptr<WhereClauseItem>> &get_items () const
+  {
+    return where_clause_items;
+  }
 };
 
 // A self parameter in a method
@@ -1205,11 +1214,7 @@ public:
   Identifier get_function_name () const { return function_name; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   bool has_return_type () const { return return_type != nullptr; }
 
@@ -1322,11 +1327,7 @@ public:
     return generic_params;
   }
 
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   std::unique_ptr<Type> &get_type_aliased ()
   {

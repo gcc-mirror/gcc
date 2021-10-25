@@ -887,11 +887,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   Identifier get_method_name () const { return method_name; }
 
@@ -1587,11 +1583,7 @@ public:
   Identifier get_function_name () const { return function_name; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_return_type ()
@@ -1719,11 +1711,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type_aliased ()
@@ -1789,11 +1777,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   Identifier get_identifier () const { return struct_name; }
 
@@ -2410,11 +2394,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2520,11 +2500,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   Identifier get_identifier () const { return union_name; }
 
@@ -2877,11 +2853,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 };
 
 // Actual trait item function declaration within traits
@@ -3104,11 +3076,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   SelfParam &get_self_param () { return self_param; }
   const SelfParam &get_self_param () const { return self_param; }
@@ -3542,11 +3510,7 @@ public:
     return type_param_bounds;
   }
 
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   void insert_implict_self (std::unique_ptr<AST::GenericParam> &&param)
   {
@@ -3619,11 +3583,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_type ()
@@ -4270,11 +4230,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  WhereClause &get_where_clause ()
-  {
-    rust_assert (has_where_clause ());
-    return where_clause;
-  }
+  WhereClause &get_where_clause () { return where_clause; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Type> &get_return_type ()
