@@ -165,13 +165,14 @@ class LifetimeWhereClauseItem : public WhereClauseItem
   // LifetimeBounds lifetime_bounds;
   std::vector<Lifetime> lifetime_bounds; // inlined lifetime bounds
 
-  // should this store location info?
+  Location locus;
 
 public:
   LifetimeWhereClauseItem (Lifetime lifetime,
-			   std::vector<Lifetime> lifetime_bounds)
+			   std::vector<Lifetime> lifetime_bounds,
+			   Location locus)
     : lifetime (std::move (lifetime)),
-      lifetime_bounds (std::move (lifetime_bounds))
+      lifetime_bounds (std::move (lifetime_bounds)), locus (locus)
   {}
 
   std::string as_string () const override;
