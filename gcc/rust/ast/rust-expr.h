@@ -1799,15 +1799,6 @@ public:
     return fields;
   }
 
-  void iterate (std::function<bool (StructExprField *)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field.get ()))
-	  return;
-      }
-  }
-
   StructBase &get_struct_base () { return struct_base; }
   const StructBase &get_struct_base () const { return struct_base; }
 

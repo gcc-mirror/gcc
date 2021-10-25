@@ -546,13 +546,14 @@ public:
 	  = new HIR::StructBase (std::unique_ptr<HIR::Expr> (translated_base));
       }
 
+    auto const &in_fields = struct_expr.get_fields ();
     std::vector<std::unique_ptr<HIR::StructExprField> > fields;
-    struct_expr.iterate ([&] (AST::StructExprField *field) mutable -> bool {
-      HIR::StructExprField *translated
-	= ASTLowerStructExprField::translate (field);
-      fields.push_back (std::unique_ptr<HIR::StructExprField> (translated));
-      return true;
-    });
+    for (auto &field : in_fields)
+      {
+	HIR::StructExprField *translated
+	  = ASTLowerStructExprField::translate (field.get ());
+	fields.push_back (std::unique_ptr<HIR::StructExprField> (translated));
+      }
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, struct_expr.get_node_id (),
