@@ -4030,11 +4030,11 @@ compute_format_length (call_info &info, format_result *res, range_query *query)
   return success;
 }
 
-/* Return the size of the object referenced by the expression DEST if
-   available, or the maximum possible size otherwise.  */
+/* Return the size of the object referenced by the expression DEST in
+   statement STMT, if available, or the maximum possible size otherwise.  */
 
 static unsigned HOST_WIDE_INT
-get_destination_size (tree dest, pointer_query &ptr_qry)
+get_destination_size (tree dest, gimple *stmt, pointer_query &ptr_qry)
 {
   /* When there is no destination return the maximum.  */
   if (!dest)
@@ -4042,7 +4042,7 @@ get_destination_size (tree dest, pointer_query &ptr_qry)
 
   /* Use compute_objsize to determine the size of the destination object.  */
   access_ref aref;
-  if (!ptr_qry.get_ref (dest, &aref))
+  if (!ptr_qry.get_ref (dest, stmt, &aref))
     return HOST_WIDE_INT_MAX;
 
   offset_int remsize = aref.size_remaining ();
@@ -4516,7 +4516,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
       /* For non-bounded functions like sprintf, determine the size
 	 of the destination from the object or pointer passed to it
 	 as the first argument.  */
-      dstsize = get_destination_size (dstptr, ptr_qry);
+      dstsize = get_destination_size (dstptr, info.callstmt, ptr_qry);
     }
   else if (tree size = gimple_call_arg (info.callstmt, idx_dstsize))
     {
