@@ -2267,8 +2267,6 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	  if (!VECTOR_TYPE_P (tgt_type))
 	    return 0;
 	  tree op2_type = TREE_TYPE (op2);
-	  /* Should have folded this before.  */
-	  gcc_assert (op2_type != tgt_type);
 
 	  /* Figure out the shrunk factor.  */
 	  poly_uint64 tgt_units = TYPE_VECTOR_SUBPARTS (tgt_type);
