@@ -1625,8 +1625,8 @@ package body Exp_Ch4 is
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
-         Num : Int) return Node_Id;
-      --  This builds the attribute reference Arr'Nam (Expr)
+         Dim : Pos) return Node_Id;
+      --  This builds the attribute reference Arr'Nam (Dim)
 
       function Component_Equality (Typ : Entity_Id) return Node_Id;
       --  Create one statement to compare corresponding components, designated
@@ -1691,14 +1691,14 @@ package body Exp_Ch4 is
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
-         Num : Int) return Node_Id
+         Dim : Pos) return Node_Id
       is
       begin
          return
            Make_Attribute_Reference (Loc,
              Attribute_Name => Nam,
              Prefix         => New_Occurrence_Of (Arr, Loc),
-             Expressions    => New_List (Make_Integer_Literal (Loc, Num)));
+             Expressions    => New_List (Make_Integer_Literal (Loc, Dim)));
       end Arr_Attr;
 
       ------------------------
