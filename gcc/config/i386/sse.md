@@ -500,6 +500,9 @@
 (define_mode_iterator VI1_AVX512F
   [(V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI])
 
+(define_mode_iterator VI1_AVX512VNNI
+  [(V64QI "TARGET_AVX512VNNI") (V32QI "TARGET_AVX2") V16QI])
+
 (define_mode_iterator VI12_256_512_AVX512VL
   [V64QI (V32QI "TARGET_AVX512VL")
    V32HI (V16HI "TARGET_AVX512VL")])
@@ -509,6 +512,10 @@
 
 (define_mode_iterator VI2_AVX512F
   [(V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX2") V8HI])
+
+(define_mode_iterator VI2_AVX512VNNIBW
+  [(V32HI "TARGET_AVX512BW || TARGET_AVX512VNNI")
+   (V16HI "TARGET_AVX2") V8HI])
 
 (define_mode_iterator VI4_AVX
   [(V8SI "TARGET_AVX") V4SI])
@@ -14798,19 +14805,37 @@
 (define_mode_attr SDOT_PMADD_SUF
   [(V32HI "512v32hi") (V16HI "") (V8HI "")])
 
+(define_mode_attr SDOT_VPDP_SUF
+  [(V32HI "v16si") (V16HI "v8si") (V8HI "v4si")])
+
 (define_expand "sdot_prod<mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI2_AVX2 1 "register_operand")
-   (match_operand:VI2_AVX2 2 "register_operand")
+   (match_operand:VI2_AVX512VNNIBW 1 "register_operand")
+   (match_operand:VI2_AVX512VNNIBW 2 "register_operand")
    (match_operand:<sseunpackmode> 3 "register_operand")]
   "TARGET_SSE2"
 {
-  rtx t = gen_reg_rtx (<sseunpackmode>mode);
-  emit_insn (gen_<sse2_avx2>_pmaddwd<SDOT_PMADD_SUF> (t, operands[1], operands[2]));
-  emit_insn (gen_rtx_SET (operands[0],
-			  gen_rtx_PLUS (<sseunpackmode>mode,
-					operands[3], t)));
-  DONE;
+  /* Try with vnni instructions.  */
+  if ((<MODE_SIZE> == 64 && TARGET_AVX512VNNI)
+      || (<MODE_SIZE> < 64
+	  && ((TARGET_AVX512VNNI && TARGET_AVX512VL) || TARGET_AVXVNNI)))
+    {
+      operands[1] = lowpart_subreg (<sseunpackmode>mode, operands[1], <MODE>mode);
+      operands[2] = lowpart_subreg (<sseunpackmode>mode, operands[2], <MODE>mode);
+      emit_insn (gen_rtx_SET (operands[0], operands[3]));
+      emit_insn (gen_vpdpwssd_<SDOT_VPDP_SUF> (operands[0], operands[3],
+					       operands[1], operands[2]));
+    }
+    /* Otherwise use pmaddwd + paddd.  */
+    else
+    {
+      rtx t = gen_reg_rtx (<sseunpackmode>mode);
+      emit_insn (gen_<sse2_avx2>_pmaddwd<SDOT_PMADD_SUF> (t, operands[1], operands[2]));
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_PLUS (<sseunpackmode>mode,
+					    operands[3], t)));
+    }
+    DONE;
 })
 
 ;; Normally we use widen_mul_even/odd, but combine can't quite get it all
@@ -27064,6 +27089,29 @@
   "vpshldv<ssemodesuffix>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
    [(set_attr ("prefix") ("evex"))
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_attr VI1SI
+ [(V64QI "V16SI") (V32QI "V8SI") (V16QI "V4SI")])
+
+(define_mode_attr vi1si
+ [(V64QI "v16si") (V32QI "v8si") (V16QI "v4si")])
+
+(define_expand "usdot_prod<mode>"
+  [(match_operand:<VI1SI> 0 "register_operand")
+   (match_operand:VI1_AVX512VNNI 1 "register_operand")
+   (match_operand:VI1_AVX512VNNI 2 "register_operand")
+   (match_operand:<VI1SI> 3 "register_operand")]
+  "(<MODE_SIZE> == 64
+    ||((TARGET_AVX512VNNI && TARGET_AVX512VL)
+	    || TARGET_AVXVNNI))"
+{
+  operands[1] = lowpart_subreg (<VI1SI>mode, operands[1], <MODE>mode);
+  operands[2] = lowpart_subreg (<VI1SI>mode, operands[2], <MODE>mode);
+  emit_insn (gen_rtx_SET (operands[0], operands[3]));
+  emit_insn (gen_vpdpbusd_<vi1si> (operands[0], operands[3],
+				  operands[1], operands[2]));
+  DONE;
+})
 
 (define_insn "vpdpbusd_v16si"
   [(set (match_operand:V16SI 0 "register_operand" "=v")
