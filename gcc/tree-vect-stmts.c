@@ -1996,6 +1996,11 @@ get_negative_load_store_type (vec_info *vinfo,
       return VMAT_ELEMENTWISE;
     }
 
+  /* For backward running DRs the first access in vectype actually is
+     N-1 elements before the address of the DR.  */
+  *poffset = ((-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+	      * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
+
   int misalignment = dr_misalignment (dr_info, vectype);
   alignment_support_scheme
     = vect_supportable_dr_alignment (vinfo, dr_info, vectype, misalignment);
@@ -2006,6 +2011,7 @@ get_negative_load_store_type (vec_info *vinfo,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "negative step but alignment required.\n");
       return VMAT_ELEMENTWISE;
+      *poffset = 0;
     }
 
   if (vls_type == VLS_STORE_INVARIANT)
@@ -2014,7 +2020,6 @@ get_negative_load_store_type (vec_info *vinfo,
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "negative step with invariant source;"
 			 " no permute needed.\n");
-      *poffset = -TYPE_VECTOR_SUBPARTS (vectype) + 1;
       return VMAT_CONTIGUOUS_DOWN;
     }
 
@@ -2023,10 +2028,10 @@ get_negative_load_store_type (vec_info *vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "negative step and reversing not supported.\n");
+      *poffset = 0;
       return VMAT_ELEMENTWISE;
     }
 
-  *poffset = -TYPE_VECTOR_SUBPARTS (vectype) + 1;
   return VMAT_CONTIGUOUS_REVERSE;
 }
 
@@ -9315,8 +9320,6 @@ vectorizable_load (vec_info *vinfo,
   tree offset = NULL_TREE;
   if (!known_eq (poffset, 0))
     offset = size_int (poffset);
-  if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
-    offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
   tree bump;
   tree vec_offset = NULL_TREE;

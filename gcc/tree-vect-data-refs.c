@@ -4753,8 +4753,7 @@ vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 	    if LOOP=i_loop:	&in		(relative to i_loop)
 	    if LOOP=j_loop: 	&in+i*2B	(relative to j_loop)
    BYTE_OFFSET: Optional, defaulted to NULL.  If supplied, it is added to the
-	    initial address.  Unlike OFFSET, which is number of elements to
-	    be added, BYTE_OFFSET is measured in bytes.
+	    initial address.  Both OFFSET and BYTE_OFFSET are measured in bytes.
 
    Output:
    1. Return an SSA_NAME whose value is the address of the memory location of
@@ -4777,7 +4776,6 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
   tree dest;
   gimple_seq seq = NULL;
   tree vect_ptr_type;
-  tree step = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   innermost_loop_behavior *drb = vect_dr_behavior (vinfo, dr_info);
 
@@ -4801,8 +4799,7 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (offset)
     {
-      offset = fold_build2 (MULT_EXPR, sizetype,
-			    fold_convert (sizetype, offset), step);
+      offset = fold_convert (sizetype, offset);
       base_offset = fold_build2 (PLUS_EXPR, sizetype,
 				 base_offset, offset);
     }
@@ -4860,8 +4857,8 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
    2. AGGR_TYPE: the type of the reference, which should be either a vector
         or an array.
    3. AT_LOOP: the loop where the vector memref is to be created.
-   4. OFFSET (optional): an offset to be added to the initial address accessed
-	by the data-ref in STMT_INFO.
+   4. OFFSET (optional): a byte offset to be added to the initial address
+	accessed by the data-ref in STMT_INFO.
    5. BSI: location where the new stmts are to be placed if there is no loop
    6. ONLY_INIT: indicate if ap is to be updated in the loop, or remain
         pointing to the initial address.
@@ -4885,7 +4882,7 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
       if OFFSET is not supplied:
          initial_address = &a[init];
       if OFFSET is supplied:
-         initial_address = &a[init + OFFSET];
+	 initial_address = &a[init] + OFFSET;
       if BYTE_OFFSET is supplied:
 	 initial_address = &a[init] + BYTE_OFFSET;
 
@@ -5031,7 +5028,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
   /* (2) Calculate the initial address of the aggregate-pointer, and set
      the aggregate-pointer to point to it before the loop.  */
 
-  /* Create: (&(base[init_val+offset]+byte_offset) in the loop preheader.  */
+  /* Create: (&(base[init_val]+offset+byte_offset) in the loop preheader.  */
 
   new_temp = vect_create_addr_base_for_vector_ref (vinfo,
 						   stmt_info, &new_stmt_list,
