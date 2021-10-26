@@ -4772,8 +4772,6 @@ vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 	    is as follows:
 	    if LOOP=i_loop:	&in		(relative to i_loop)
 	    if LOOP=j_loop: 	&in+i*2B	(relative to j_loop)
-   BYTE_OFFSET: Optional, defaulted to NULL.  If supplied, it is added to the
-	    initial address.  Both OFFSET and BYTE_OFFSET are measured in bytes.
 
    Output:
    1. Return an SSA_NAME whose value is the address of the memory location of
@@ -4786,8 +4784,7 @@ vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 tree
 vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
 				      gimple_seq *new_stmt_list,
-				      tree offset,
-				      tree byte_offset)
+				      tree offset)
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   struct data_reference *dr = dr_info->dr;
@@ -4822,12 +4819,6 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
       offset = fold_convert (sizetype, offset);
       base_offset = fold_build2 (PLUS_EXPR, sizetype,
 				 base_offset, offset);
-    }
-  if (byte_offset)
-    {
-      byte_offset = fold_convert (sizetype, byte_offset);
-      base_offset = fold_build2 (PLUS_EXPR, sizetype,
-				 base_offset, byte_offset);
     }
 
   /* base + base_offset */
@@ -4882,10 +4873,6 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
    5. BSI: location where the new stmts are to be placed if there is no loop
    6. ONLY_INIT: indicate if ap is to be updated in the loop, or remain
         pointing to the initial address.
-   7. BYTE_OFFSET (optional, defaults to NULL): a byte offset to be added
-	to the initial address accessed by the data-ref in STMT_INFO.  This is
-	similar to OFFSET, but OFFSET is counted in elements, while BYTE_OFFSET
-	in bytes.
    8. IV_STEP (optional, defaults to NULL): the amount that should be added
 	to the IV during each iteration of the loop.  NULL says to move
 	by one copy of AGGR_TYPE up or down, depending on the step of the
@@ -4920,7 +4907,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 			  tree aggr_type, class loop *at_loop, tree offset,
 			  tree *initial_address, gimple_stmt_iterator *gsi,
 			  gimple **ptr_incr, bool only_init,
-			  tree byte_offset, tree iv_step)
+			  tree iv_step)
 {
   const char *base_name;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -5048,11 +5035,11 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
   /* (2) Calculate the initial address of the aggregate-pointer, and set
      the aggregate-pointer to point to it before the loop.  */
 
-  /* Create: (&(base[init_val]+offset+byte_offset) in the loop preheader.  */
+  /* Create: (&(base[init_val]+offset) in the loop preheader.  */
 
   new_temp = vect_create_addr_base_for_vector_ref (vinfo,
 						   stmt_info, &new_stmt_list,
-						   offset, byte_offset);
+						   offset);
   if (new_stmt_list)
     {
       if (pe)

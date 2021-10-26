@@ -8110,7 +8110,7 @@ vectorizable_store (vec_info *vinfo,
 	      = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
 					  simd_lane_access_p ? loop : NULL,
 					  offset, &dummy, gsi, &ptr_incr,
-					  simd_lane_access_p, NULL_TREE, bump);
+					  simd_lane_access_p, bump);
 	}
       else
 	{
@@ -8518,7 +8518,6 @@ vectorizable_load (vec_info *vinfo,
   unsigned int group_size;
   poly_uint64 group_gap_adj;
   tree msq = NULL_TREE, lsq;
-  tree byte_offset = NULL_TREE;
   tree realignment_token = NULL_TREE;
   gphi *phi = NULL;
   vec<tree> dr_chain = vNULL;
@@ -9290,6 +9289,7 @@ vectorizable_load (vec_info *vinfo,
   bool diff_first_stmt_info
     = first_stmt_info_for_drptr && first_stmt_info != first_stmt_info_for_drptr;
 
+  tree offset = NULL_TREE;
   if ((alignment_support_scheme == dr_explicit_realign_optimized
        || alignment_support_scheme == dr_explicit_realign)
       && !compute_in_loop)
@@ -9306,17 +9306,18 @@ vectorizable_load (vec_info *vinfo,
       if (alignment_support_scheme == dr_explicit_realign_optimized)
 	{
 	  phi = as_a <gphi *> (SSA_NAME_DEF_STMT (msq));
-	  byte_offset = size_binop (MINUS_EXPR, TYPE_SIZE_UNIT (vectype),
-				    size_one_node);
+	  offset = size_binop (MINUS_EXPR, TYPE_SIZE_UNIT (vectype),
+			       size_one_node);
 	  gcc_assert (!first_stmt_info_for_drptr);
 	}
     }
   else
     at_loop = loop;
 
-  tree offset = NULL_TREE;
   if (!known_eq (poffset, 0))
-    offset = size_int (poffset);
+    offset = (offset
+	      ? size_binop (PLUS_EXPR, offset, size_int (poffset))
+	      : size_int (poffset));
 
   tree bump;
   tree vec_offset = NULL_TREE;
@@ -9374,7 +9375,7 @@ vectorizable_load (vec_info *vinfo,
 		= vect_create_data_ref_ptr (vinfo, first_stmt_info_for_drptr,
 					    aggr_type, at_loop, offset, &dummy,
 					    gsi, &ptr_incr, simd_lane_access_p,
-					    byte_offset, bump);
+					    bump);
 	      /* Adjust the pointer by the difference to first_stmt.  */
 	      data_reference_p ptrdr
 		= STMT_VINFO_DATA_REF (first_stmt_info_for_drptr);
@@ -9406,8 +9407,7 @@ vectorizable_load (vec_info *vinfo,
 	      = vect_create_data_ref_ptr (vinfo, first_stmt_info, aggr_type,
 					  at_loop,
 					  offset, &dummy, gsi, &ptr_incr,
-					  simd_lane_access_p,
-					  byte_offset, bump);
+					  simd_lane_access_p, bump);
 	  if (mask)
 	    vec_mask = vec_masks[0];
 	}

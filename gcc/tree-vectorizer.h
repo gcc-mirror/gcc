@@ -2003,7 +2003,7 @@ extern tree vect_create_data_ref_ptr (vec_info *,
 				      stmt_vec_info, tree, class loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple **, bool,
-				      tree = NULL_TREE, tree = NULL_TREE);
+				      tree = NULL_TREE);
 extern tree bump_vector_ptr (vec_info *, tree, gimple *, gimple_stmt_iterator *,
 			     stmt_vec_info, tree);
 extern void vect_copy_ref_info (tree, tree);
@@ -2028,7 +2028,7 @@ extern tree vect_get_new_ssa_name (tree, enum vect_var_kind,
 				   const char * = NULL);
 extern tree vect_create_addr_base_for_vector_ref (vec_info *,
 						  stmt_vec_info, gimple_seq *,
-						  tree, tree = NULL_TREE);
+						  tree);
 
 /* In tree-vect-loop.c.  */
 extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
