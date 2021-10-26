@@ -1774,7 +1774,8 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt))
+      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt)
+	  && !STMT_VINFO_SIMD_LANE_ACCESS_P (dr_info->stmt))
 	vect_update_init_of_dr (dr, niters, code);
     }
 }
