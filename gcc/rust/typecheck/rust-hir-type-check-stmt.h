@@ -331,12 +331,12 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType
-      = new TyTy::FnType (function.get_mappings ().get_hirid (),
-			  function.get_mappings ().get_defid (),
-			  function.get_function_name (), FNTYPE_DEFAULT_FLAGS,
-			  ABI::RUST, std::move (params), ret_type,
-			  std::move (substitutions));
+    auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
+				    function.get_mappings ().get_defid (),
+				    function.get_function_name (),
+				    TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
+				    ABI::RUST, std::move (params), ret_type,
+				    std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
 
     TyTy::FnType *resolved_fn_type = fnType;
