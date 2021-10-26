@@ -380,7 +380,7 @@ public:
   std::string debug_str () const
   {
     return TypeKindFormat::to_string (get_kind ()) + ":" + as_string () + ":"
-	   + mappings_str ();
+	   + mappings_str () + ":" + bounds_as_string ();
   }
 
   void debug () const
