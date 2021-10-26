@@ -2109,6 +2109,9 @@ private:
   pass_waccess (pass_waccess &) = delete;
   void operator= (pass_waccess &) = delete;
 
+  /* Check a call to an atomic built-in function.  */
+  bool check_atomic_builtin (gcall *);
+
   /* Check a call to a built-in function.  */
   bool check_builtin (gcall *);
 
@@ -2681,6 +2684,87 @@ pass_waccess::check_memop_access (gimple *stmt, tree dest, tree src, tree size)
 		srcsize, dstsize, data.mode, &data);
 }
 
+/* Check a call STMT to an atomic or sync built-in.  */
+
+bool
+pass_waccess::check_atomic_builtin (gcall *stmt)
+{
+  tree callee = gimple_call_fndecl (stmt);
+  if (!callee)
+    return false;
+
+  /* The size in bytes of the access by the function, and the number
+     of the second argument to check (if any).  */
+  unsigned bytes = 0, arg2 = UINT_MAX;
+
+  switch (DECL_FUNCTION_CODE (callee))
+    {
+#define BUILTIN_ACCESS_SIZE_FNSPEC(N)			\
+      BUILT_IN_ATOMIC_LOAD_ ## N:			\
+    case BUILT_IN_SYNC_FETCH_AND_ADD_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_SUB_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_OR_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_AND_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_XOR_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_NAND_ ## N:		\
+    case BUILT_IN_SYNC_ADD_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_SUB_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_OR_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_AND_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_XOR_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_NAND_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_ ## N:		\
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_ ## N:	\
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_ ## N:	\
+    case BUILT_IN_SYNC_LOCK_RELEASE_ ## N:		\
+    case BUILT_IN_ATOMIC_EXCHANGE_ ## N:		\
+    case BUILT_IN_ATOMIC_STORE_ ## N:			\
+    case BUILT_IN_ATOMIC_ADD_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_SUB_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_AND_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_NAND_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_XOR_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_OR_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_ADD_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_SUB_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_AND_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_NAND_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_OR_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_XOR_ ## N:		\
+	bytes = N;					\
+	break;						\
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_ ## N:	\
+	bytes = N;					\
+	arg2 = 1
+
+    case BUILTIN_ACCESS_SIZE_FNSPEC (1);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (2);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (4);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (8);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (16);
+      break;
+
+    default:
+      return false;
+    }
+
+  tree size = build_int_cstu (sizetype, bytes);
+  tree dst = gimple_call_arg (stmt, 0);
+  check_memop_access (stmt, dst, NULL_TREE, size);
+
+  if (arg2 != UINT_MAX)
+    {
+      tree dst = gimple_call_arg (stmt, arg2);
+      check_memop_access (stmt, dst, NULL_TREE, size);
+    }
+
+  return true;
+}
+
 /* Check call STMT to a built-in function for invalid accesses.  Return
    true if a call has been handled.  */
 
@@ -2795,10 +2879,11 @@ pass_waccess::check_builtin (gcall *stmt)
       }
 	
     default:
-      return false;
+      if (check_atomic_builtin (stmt))
+	return true;
+      break;
     }
-
-  return true;
+  return false;
 }
 
 /* Returns the type of the argument ARGNO to function with type FNTYPE
