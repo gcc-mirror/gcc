@@ -15075,6 +15075,50 @@
   operands[4] = gen_lowpart (<MODE>mode, operands[3]);
 })
 
+(define_expand "ashlv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(ashift:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_int_operand")))]
+  "TARGET_SSE2"
+{
+  ix86_expand_v1ti_shift (ASHIFT, operands);
+  DONE;
+})
+
+(define_expand "lshrv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(lshiftrt:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_int_operand")))]
+  "TARGET_SSE2"
+{
+  ix86_expand_v1ti_shift (LSHIFTRT, operands);
+  DONE;
+})
+
+(define_expand "rotlv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(rotate:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_int_operand")))]
+  "TARGET_SSE2"
+{
+  ix86_expand_v1ti_rotate (ROTATE, operands);
+  DONE;
+})
+
+(define_expand "rotrv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(rotatert:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:SI 2 "const_int_operand")))]
+  "TARGET_SSE2"
+{
+  ix86_expand_v1ti_rotate (ROTATERT, operands);
+  DONE;
+})
+
 (define_insn "avx512bw_<insn><mode>3"
   [(set (match_operand:VIMAX_AVX512VL 0 "register_operand" "=v")
 	(any_lshift:VIMAX_AVX512VL

@@ -6157,6 +6157,169 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
     }
 }
 
+/* Expand V1TI mode shift (of rtx_code CODE) by constant.  */
+void ix86_expand_v1ti_shift (enum rtx_code code, rtx operands[])
+{
+  HOST_WIDE_INT bits = INTVAL (operands[2]) & 127;
+  rtx op1 = force_reg (V1TImode, operands[1]);
+
+  if (bits == 0)
+    {
+      emit_move_insn (operands[0], op1);
+      return;
+    }
+
+  if ((bits & 7) == 0)
+    {
+      rtx tmp = gen_reg_rtx (V1TImode);
+      if (code == ASHIFT)
+        emit_insn (gen_sse2_ashlv1ti3 (tmp, op1, GEN_INT (bits)));
+      else
+	emit_insn (gen_sse2_lshrv1ti3 (tmp, op1, GEN_INT (bits)));
+      emit_move_insn (operands[0], tmp);
+      return;
+    }
+
+  rtx tmp1 = gen_reg_rtx (V1TImode);
+  if (code == ASHIFT)
+    emit_insn (gen_sse2_ashlv1ti3 (tmp1, op1, GEN_INT (64)));
+  else
+    emit_insn (gen_sse2_lshrv1ti3 (tmp1, op1, GEN_INT (64)));
+
+  /* tmp2 is operands[1] shifted by 64, in V2DImode.  */
+  rtx tmp2 = gen_reg_rtx (V2DImode);
+  emit_move_insn (tmp2, gen_lowpart (V2DImode, tmp1));
+
+  /* tmp3 will be the V2DImode result.  */
+  rtx tmp3 = gen_reg_rtx (V2DImode);
+
+  if (bits > 64)
+    {
+      if (code == ASHIFT)
+	emit_insn (gen_ashlv2di3 (tmp3, tmp2, GEN_INT (bits - 64)));
+      else
+	emit_insn (gen_lshrv2di3 (tmp3, tmp2, GEN_INT (bits - 64)));
+    }
+  else
+    {
+      /* tmp4 is operands[1], in V2DImode.  */
+      rtx tmp4 = gen_reg_rtx (V2DImode);
+      emit_move_insn (tmp4, gen_lowpart (V2DImode, op1));
+
+      rtx tmp5 = gen_reg_rtx (V2DImode);
+      if (code == ASHIFT)
+	emit_insn (gen_ashlv2di3 (tmp5, tmp4, GEN_INT (bits)));
+      else
+	emit_insn (gen_lshrv2di3 (tmp5, tmp4, GEN_INT (bits)));
+
+      rtx tmp6 = gen_reg_rtx (V2DImode);
+      if (code == ASHIFT)
+	emit_insn (gen_lshrv2di3 (tmp6, tmp2, GEN_INT (64 - bits)));
+      else
+	emit_insn (gen_ashlv2di3 (tmp6, tmp2, GEN_INT (64 - bits)));
+
+      emit_insn (gen_iorv2di3 (tmp3, tmp5, tmp6));
+    }
+
+  /* Convert the result back to V1TImode and store in operands[0].  */
+  rtx tmp7 = gen_reg_rtx (V1TImode);
+  emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp3));
+  emit_move_insn (operands[0], tmp7);
+}
+
+/* Expand V1TI mode rotate (of rtx_code CODE) by constant.  */
+void ix86_expand_v1ti_rotate (enum rtx_code code, rtx operands[])
+{
+  HOST_WIDE_INT bits = INTVAL (operands[2]) & 127;
+  rtx op1 = force_reg (V1TImode, operands[1]);
+
+  if (bits == 0)
+    {
+      emit_move_insn (operands[0], op1);
+      return;
+    }
+
+  if (code == ROTATERT)
+    bits = 128 - bits;
+
+  if ((bits & 31) == 0)
+    {
+      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp2 = gen_reg_rtx (V4SImode);
+      rtx tmp3 = gen_reg_rtx (V1TImode);
+
+      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
+      if (bits == 32)
+	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x93)));
+      else if (bits == 64)
+	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x4e)));
+      else
+	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x39)));
+      emit_move_insn (tmp3, gen_lowpart (V1TImode, tmp2));
+      emit_move_insn (operands[0], tmp3);
+      return;
+    }
+
+  if ((bits & 7) == 0)
+    {
+      rtx tmp1 = gen_reg_rtx (V1TImode);
+      rtx tmp2 = gen_reg_rtx (V1TImode);
+      rtx tmp3 = gen_reg_rtx (V1TImode);
+
+      emit_insn (gen_sse2_ashlv1ti3 (tmp1, op1, GEN_INT (bits)));
+      emit_insn (gen_sse2_lshrv1ti3 (tmp2, op1, GEN_INT (128 - bits)));
+      emit_insn (gen_iorv1ti3 (tmp3, tmp1, tmp2));
+      emit_move_insn (operands[0], tmp3);
+      return;
+    }
+
+  rtx op1_v4si = gen_reg_rtx (V4SImode);
+  emit_move_insn (op1_v4si, gen_lowpart (V4SImode, op1));
+
+  rtx lobits;
+  rtx hibits;
+
+  switch (bits >> 5)
+    {
+    case 0:
+      lobits = op1_v4si;
+      hibits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (hibits, op1_v4si, GEN_INT (0x93)));
+      break;
+
+    case 1:
+      lobits = gen_reg_rtx (V4SImode);
+      hibits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (lobits, op1_v4si, GEN_INT (0x93)));
+      emit_insn (gen_sse2_pshufd (hibits, op1_v4si, GEN_INT (0x4e)));
+      break;
+
+    case 2:
+      lobits = gen_reg_rtx (V4SImode);
+      hibits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (lobits, op1_v4si, GEN_INT (0x4e)));
+      emit_insn (gen_sse2_pshufd (hibits, op1_v4si, GEN_INT (0x39)));
+      break;
+
+    default:
+      lobits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (lobits, op1_v4si, GEN_INT (0x39)));
+      hibits = op1_v4si;
+      break;
+    }
+
+  rtx tmp1 = gen_reg_rtx (V4SImode);
+  rtx tmp2 = gen_reg_rtx (V4SImode);
+  rtx tmp3 = gen_reg_rtx (V4SImode);
+  rtx tmp4 = gen_reg_rtx (V1TImode);
+
+  emit_insn (gen_ashlv4si3 (tmp1, lobits, GEN_INT (bits & 31)));
+  emit_insn (gen_lshrv4si3 (tmp2, hibits, GEN_INT (32 - (bits & 31))));
+  emit_insn (gen_iorv4si3 (tmp3, tmp1, tmp2));
+  emit_move_insn (tmp4, gen_lowpart (V1TImode, tmp3));
+  emit_move_insn (operands[0], tmp4);
+}
+
 /* Return mode for the memcpy/memset loop counter.  Prefer SImode over
    DImode for constant loop counts.  */
 
