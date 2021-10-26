@@ -266,4 +266,13 @@ inline tree compute_objsize (tree ptr, int ostype, access_ref *pref)
 extern tree compute_objsize (tree, int, tree * = nullptr, tree * = nullptr,
 			     range_query * = nullptr);
 
+/* Return the field at the constant offset.  */
+extern tree field_at_offset (tree, tree, HOST_WIDE_INT,
+			     HOST_WIDE_INT * = nullptr,
+			     HOST_WIDE_INT * = nullptr);
+/* Return the array at the constant offset.  */
+extern tree array_elt_at_offset (tree, HOST_WIDE_INT,
+				 HOST_WIDE_INT * = nullptr,
+				 HOST_WIDE_INT * = nullptr);
+
 #endif   // GCC_POINTER_QUERY_H

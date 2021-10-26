@@ -2194,3 +2194,167 @@ compute_objsize (tree ptr, int ostype, tree *pdecl /* = NULL */,
 
   return size;
 }
+
+/* Determine the offset *FLDOFF of the first byte of a struct member
+   of TYPE (possibly recursively) into which the byte offset OFF points,
+   starting after the field START_AFTER if it's non-null.  On success,
+   if nonnull, set *FLDOFF to the offset of the first byte, and return
+   the field decl.  If nonnull, set *NEXTOFF to the offset of the next
+   field (which reflects any padding between the returned field and
+   the next).  Otherwise, if no such member can be found, return null.  */
+
+tree
+field_at_offset (tree type, tree start_after, HOST_WIDE_INT off,
+		 HOST_WIDE_INT *fldoff /* = nullptr */,
+		 HOST_WIDE_INT *nextoff /* = nullptr */)
+{
+  tree first_fld = TYPE_FIELDS (type);
+
+  HOST_WIDE_INT offbuf = 0, nextbuf = 0;
+  if (!fldoff)
+    fldoff = &offbuf;
+  if (!nextoff)
+    nextoff = &nextbuf;
+
+  *nextoff = 0;
+
+  /* The field to return.  */
+  tree last_fld = NULL_TREE;
+  /* The next field to advance to.  */
+  tree next_fld = NULL_TREE;
+
+  /* NEXT_FLD's cached offset.  */
+  HOST_WIDE_INT next_pos = -1;
+
+  for (tree fld = first_fld; fld; fld = next_fld)
+    {
+      next_fld = fld;
+      do
+	/* Advance to the next relevant data member.  */
+	next_fld = TREE_CHAIN (next_fld);
+      while (next_fld
+	     && (TREE_CODE (next_fld) != FIELD_DECL
+		 || DECL_ARTIFICIAL (next_fld)));
+
+      if (TREE_CODE (fld) != FIELD_DECL || DECL_ARTIFICIAL (fld))
+	continue;
+
+      if (fld == start_after)
+	continue;
+
+      tree fldtype = TREE_TYPE (fld);
+      /* The offset of FLD within its immediately enclosing structure.  */
+      HOST_WIDE_INT fldpos = next_pos < 0 ? int_byte_position (fld) : next_pos;
+
+      /* If the size is not available the field is a flexible array
+	 member.  Treat this case as success.  */
+      tree typesize = TYPE_SIZE_UNIT (fldtype);
+      HOST_WIDE_INT fldsize = (tree_fits_uhwi_p (typesize)
+			       ? tree_to_uhwi (typesize)
+			       : off);
+
+      /* If OFF is beyond the end of the current field continue.  */
+      HOST_WIDE_INT fldend = fldpos + fldsize;
+      if (fldend < off)
+	continue;
+
+      if (next_fld)
+	{
+	  /* If OFF is equal to the offset of the next field continue
+	     to it and skip the array/struct business below.  */
+	  next_pos = int_byte_position (next_fld);
+	  *nextoff = *fldoff + next_pos;
+	  if (*nextoff == off && TREE_CODE (type) != UNION_TYPE)
+	    continue;
+	}
+      else
+	*nextoff = HOST_WIDE_INT_MAX;
+
+      /* OFF refers somewhere into the current field or just past its end,
+	 which could mean it refers to the next field.  */
+      if (TREE_CODE (fldtype) == ARRAY_TYPE)
+	{
+	  /* Will be set to the offset of the first byte of the array
+	     element (which may be an array) of FLDTYPE into which
+	     OFF - FLDPOS points (which may be past ELTOFF).  */
+	  HOST_WIDE_INT eltoff = 0;
+	  if (tree ft = array_elt_at_offset (fldtype, off - fldpos, &eltoff))
+	    fldtype = ft;
+	  else
+	    continue;
+
+	  /* Advance the position to include the array element above.
+	     If OFF - FLPOS refers to a member of FLDTYPE, the member
+	     will be determined below.  */
+	  fldpos += eltoff;
+	}
+
+      *fldoff += fldpos;
+
+      if (TREE_CODE (fldtype) == RECORD_TYPE)
+	/* Drill down into the current field if it's a struct.  */
+	fld = field_at_offset (fldtype, start_after, off - fldpos,
+			       fldoff, nextoff);
+
+      last_fld = fld;
+
+      /* Unless the offset is just past the end of the field return it.
+	 Otherwise save it and return it only if the offset of the next
+	 next field is greater (i.e., there is padding between the two)
+	 or if there is no next field.  */
+      if (off < fldend)
+	break;
+    }
+
+  if (*nextoff == HOST_WIDE_INT_MAX && next_fld)
+    *nextoff = next_pos;
+
+  return last_fld;
+}
+
+/* Determine the offset *ELTOFF of the first byte of the array element
+   of array ARTYPE into which the byte offset OFF points.  On success
+   set *ELTOFF to the offset of the first byte and return type.
+   Otherwise, if no such element can be found, return null.  */
+
+tree
+array_elt_at_offset (tree artype, HOST_WIDE_INT off,
+		     HOST_WIDE_INT *eltoff /* = nullptr */,
+		     HOST_WIDE_INT *subar_size /* = nullptr */)
+{
+  gcc_assert (TREE_CODE (artype) == ARRAY_TYPE);
+
+  HOST_WIDE_INT dummy;
+  if (!eltoff)
+    eltoff = &dummy;
+  if (!subar_size)
+    subar_size = &dummy;
+
+  tree eltype = artype;
+  while (TREE_CODE (TREE_TYPE (eltype)) == ARRAY_TYPE)
+    eltype = TREE_TYPE (eltype);
+
+  tree subartype = eltype;
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (eltype))
+      || TYPE_MODE (TREE_TYPE (eltype)) != TYPE_MODE (char_type_node))
+    eltype = TREE_TYPE (eltype);
+
+  *subar_size = int_size_in_bytes (subartype);
+
+  if (eltype == artype)
+    {
+      *eltoff = 0;
+      return artype;
+    }
+
+  HOST_WIDE_INT artype_size = int_size_in_bytes (artype);
+  HOST_WIDE_INT eltype_size = int_size_in_bytes (eltype);
+
+  if (off < artype_size)// * eltype_size)
+    {
+      *eltoff = (off / eltype_size) * eltype_size;
+      return TREE_CODE (eltype) == ARRAY_TYPE ? TREE_TYPE (eltype) : eltype;
+    }
+
+  return NULL_TREE;
+}
