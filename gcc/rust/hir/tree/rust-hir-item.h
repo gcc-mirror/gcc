@@ -2562,6 +2562,7 @@ class ImplBlock : public VisItem
   std::unique_ptr<Type> impl_type;
   std::unique_ptr<TypePath> trait_ref;
   WhereClause where_clause;
+  Polarity polarity;
   AST::AttrVec inner_attrs;
   Location locus;
   std::vector<std::unique_ptr<ImplItem>> impl_items;
@@ -2572,20 +2573,20 @@ public:
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> impl_type,
 	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
-	     Visibility vis, AST::AttrVec inner_attrs, AST::AttrVec outer_attrs,
-	     Location locus)
+	     Polarity polarity, Visibility vis, AST::AttrVec inner_attrs,
+	     AST::AttrVec outer_attrs, Location locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       generic_params (std::move (generic_params)),
       impl_type (std::move (impl_type)), trait_ref (std::move (trait_ref)),
-      where_clause (std::move (where_clause)),
+      where_clause (std::move (where_clause)), polarity (polarity),
       inner_attrs (std::move (inner_attrs)), locus (locus),
       impl_items (std::move (impl_items))
   {}
 
   ImplBlock (ImplBlock const &other)
     : VisItem (other), impl_type (other.impl_type->clone_type ()),
-      where_clause (other.where_clause), inner_attrs (other.inner_attrs),
-      locus (other.locus)
+      where_clause (other.where_clause), polarity (other.polarity),
+      inner_attrs (other.inner_attrs), locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2601,6 +2602,7 @@ public:
     VisItem::operator= (other);
     impl_type = other.impl_type->clone_type ();
     where_clause = other.where_clause;
+    polarity = other.polarity;
     inner_attrs = other.inner_attrs;
     locus = other.locus;
 
@@ -2640,6 +2642,9 @@ public:
 
   // Returns whether impl has where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
+
+  // Returns the polarity of the impl.
+  Polarity get_polarity () const { return polarity; }
 
   // Returns whether impl has inner attributes.
   bool has_inner_attrs () const { return !inner_attrs.empty (); }

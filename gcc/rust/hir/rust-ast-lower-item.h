@@ -520,13 +520,12 @@ public:
 	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
 
-    HIR::ImplBlock *hir_impl_block
-      = new HIR::ImplBlock (mapping, std::move (impl_items),
-			    std::move (generic_params),
-			    std::unique_ptr<HIR::Type> (impl_type), nullptr,
-			    where_clause, vis, impl_block.get_inner_attrs (),
-			    impl_block.get_outer_attrs (),
-			    impl_block.get_locus ());
+    Polarity polarity = Positive;
+    HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
+      mapping, std::move (impl_items), std::move (generic_params),
+      std::unique_ptr<HIR::Type> (impl_type), nullptr, where_clause, polarity,
+      vis, impl_block.get_inner_attrs (), impl_block.get_outer_attrs (),
+      impl_block.get_locus ());
     translated = hir_impl_block;
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
@@ -689,14 +688,13 @@ public:
 	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
 
-    HIR::ImplBlock *hir_impl_block
-      = new HIR::ImplBlock (mapping, std::move (impl_items),
-			    std::move (generic_params),
-			    std::unique_ptr<HIR::Type> (impl_type),
-			    std::unique_ptr<HIR::TypePath> (trait_ref),
-			    where_clause, vis, impl_block.get_inner_attrs (),
-			    impl_block.get_outer_attrs (),
-			    impl_block.get_locus ());
+    Polarity polarity = impl_block.is_exclam () ? Positive : Negative;
+    HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
+      mapping, std::move (impl_items), std::move (generic_params),
+      std::unique_ptr<HIR::Type> (impl_type),
+      std::unique_ptr<HIR::TypePath> (trait_ref), where_clause, polarity, vis,
+      impl_block.get_inner_attrs (), impl_block.get_outer_attrs (),
+      impl_block.get_locus ());
     translated = hir_impl_block;
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
