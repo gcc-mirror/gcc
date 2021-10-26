@@ -1902,41 +1902,20 @@ package body Exp_Ch4 is
       -----------------------
 
       function Test_Empty_Arrays return Node_Id is
-         Alist : Node_Id;
-         Blist : Node_Id;
-
-         Atest : Node_Id;
-         Btest : Node_Id;
+         Alist : Node_Id := Empty;
+         Blist : Node_Id := Empty;
 
       begin
-         Alist := Empty;
-         Blist := Empty;
          for J in 1 .. Number_Dimensions (Ltyp) loop
-            Atest :=
+            Evolve_Or_Else (Alist,
               Make_Op_Eq (Loc,
                 Left_Opnd  => Arr_Attr (A, Name_Length, J),
-                Right_Opnd => Make_Integer_Literal (Loc, 0));
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_0)));
 
-            Btest :=
+            Evolve_Or_Else (Blist,
               Make_Op_Eq (Loc,
                 Left_Opnd  => Arr_Attr (B, Name_Length, J),
-                Right_Opnd => Make_Integer_Literal (Loc, 0));
-
-            if No (Alist) then
-               Alist := Atest;
-               Blist := Btest;
-
-            else
-               Alist :=
-                 Make_Or_Else (Loc,
-                   Left_Opnd  => Relocate_Node (Alist),
-                   Right_Opnd => Atest);
-
-               Blist :=
-                 Make_Or_Else (Loc,
-                   Left_Opnd  => Relocate_Node (Blist),
-                   Right_Opnd => Btest);
-            end if;
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_0)));
          end loop;
 
          return
@@ -1950,25 +1929,14 @@ package body Exp_Ch4 is
       -----------------------------
 
       function Test_Lengths_Correspond return Node_Id is
-         Result : Node_Id;
-         Rtest  : Node_Id;
+         Result : Node_Id := Empty;
 
       begin
-         Result := Empty;
          for J in 1 .. Number_Dimensions (Ltyp) loop
-            Rtest :=
+            Evolve_Or_Else (Result,
               Make_Op_Ne (Loc,
                 Left_Opnd  => Arr_Attr (A, Name_Length, J),
-                Right_Opnd => Arr_Attr (B, Name_Length, J));
-
-            if No (Result) then
-               Result := Rtest;
-            else
-               Result :=
-                 Make_Or_Else (Loc,
-                   Left_Opnd  => Relocate_Node (Result),
-                   Right_Opnd => Rtest);
-            end if;
+                Right_Opnd => Arr_Attr (B, Name_Length, J)));
          end loop;
 
          return Result;
