@@ -6837,6 +6837,13 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
       gfc_add_modify (&block, sym->ts.u.cl->backend_decl, tmp);
     }
 
+  if (sym->ts.type == BT_CHARACTER
+      && !INTEGER_CST_P (sym->ts.u.cl->backend_decl))
+    {
+      gfc_conv_string_length (sym->ts.u.cl, NULL, init);
+      gfc_trans_vla_type_sizes (sym, init);
+    }
+
   /* gfc->data = cfi->base_addr - or for scalars: gfc = cfi->base_addr.
      assumed-size/explicit-size arrays end up here for character(len=*)
      only. */
