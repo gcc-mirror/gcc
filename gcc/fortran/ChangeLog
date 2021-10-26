@@ -1,3 +1,7 @@
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* trans-decl.c (gfc_conv_cfi_to_gfc): Initialize rank to NULL_TREE.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

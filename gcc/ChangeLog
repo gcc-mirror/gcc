@@ -1,3 +1,215 @@
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.c (vrp_simplify_cond_using_ranges): Add return type and
+	move to vr-values.c.
+	(simplify_casted_conds): Move to vrp_folder class.
+	(execute_vrp): Call via vrp_folder now.
+	* vr-values.c (simplify_cond_using_ranges_1): Call simplify_casted_cond.
+	(simplify_using_ranges::simplify_casted_cond): Relocate from tree-vrp.c.
+	* vr-values.h (simplify_casted_cond): Add prototype.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.c (rvrp_folder::fold_stmt): If simplification fails, try
+	to fold anyway.
+
+2021-10-25  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_testz_si128): Add "extern" to
+	function signature.
+	(_mm_testc_si128): Likewise.
+	(_mm_testnzc_si128): Likewise.
+	(_mm_blend_ps): Likewise.
+	(_mm_blendv_ps): Likewise.
+	(_mm_blend_pd): Likewise.
+	(_mm_blendv_pd): Likewise.
+	(_mm_ceil_pd): Likewise.
+	(_mm_ceil_sd): Likewise.
+	(_mm_ceil_ps): Likewise.
+	(_mm_ceil_ss): Likewise.
+	(_mm_floor_pd): Likewise.
+	(_mm_floor_sd): Likewise.
+	(_mm_floor_ps): Likewise.
+	(_mm_floor_ss): Likewise.
+	(_mm_minpos_epu16): Likewise.
+	(_mm_mul_epi32): Likewise.
+	(_mm_cvtepi8_epi16): Likewise.
+	(_mm_packus_epi32): Likewise.
+	(_mm_cmpgt_epi64): Likewise.
+
+2021-10-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1) [SS_ASHIFT]: Simplify
+	shifts of the mode's smin_value and smax_value when the bit count
+	operand doesn't have side-effects.
+	[US_ASHIFT]: Likewise, simplify shifts of the mode's umax_value
+	when the bit count operand doesn't have side-effects.
+	(simplify_const_binary_operation) [SS_ASHIFT, US_ASHIFT]: Perform
+	compile-time evaluation of saturating left shifts with constant
+	arguments.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::export_global_ranges): Remove check
+	for TDF_DETAILS.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* flag-types.h (enum ranger_debug): Adjust values.
+	* params.opt (ranger_debug): Ditto.
+
+2021-10-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/102886
+	* tree-sra.c (totally_scalarize_subtree): Fix the out of
+	access-condition.
+
+2021-10-25  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-dce.c (simple_dce_from_worklist):
+	Check stmt_unremovable_because_of_non_call_eh_p also
+	before removing the statement.
+
+2021-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102905
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Use vect_supportable_dr_alignment again to determine whether
+	an access is supported when not aligned.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_rtx_costs): Handle cost model
+	for zbs extension.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+	    Shi-Hua Liao  <shihua@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (shiftm1): New.
+	(*bset<mode>): Ditto.
+	(*bset<mode>_mask): Ditto.
+	(*bset<mode>_1): Ditto.
+	(*bset<mode>_1_mask): Ditto.
+	(*bseti<mode>): Ditto.
+	(*bclr<mode>): Ditto.
+	(*bclri<mode>): Ditto.
+	(*binv<mode>): Ditto.
+	(*binvi<mode>): Ditto.
+	(*bext<mode>): Ditto.
+	(*bexti): Ditto.
+	* config/riscv/predicates.md (splittable_const_int_operand):
+	Handle bseti.
+	(single_bit_mask_operand): New.
+	(not_single_bit_mask_operand): Ditto.
+	(const31_operand): Ditto.
+	(const63_operand): Ditto.
+	* config/riscv/riscv.c (riscv_build_integer_1): Handle bseti.
+	(riscv_output_move): Ditto.
+	(riscv_print_operand): Handle new operand type: T and S.
+	* config/riscv/riscv.h (SINGLE_BIT_MASK_OPERAND): New.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_build_integer_1): Build integer
+	with rotate.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_extend_cost): Handle cost model
+	for zbb extension.
+	(riscv_rtx_costs): Ditto.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (bitmanip_bitwise): New.
+	(bitmanip_minmax): New.
+	(clz_ctz_pcnt): New.
+	(bitmanip_optab): New.
+	(bitmanip_insn): New.
+	(*<optab>_not<mode>): New.
+	(*xor_not<mode>): New.
+	(<bitmanip_optab>si2): New.
+	(*<bitmanip_optab>disi2): New.
+	(<bitmanip_optab>di2): New.
+	(*zero_extendhi<GPR:mode>2_bitmanip): New.
+	(*extend<SHORT:mode><SUPERQI:mode>2_zbb): New.
+	(*zero_extendhi<GPR:mode>2_zbb): New.
+	(rotrsi3): New.
+	(rotrdi3): New.
+	(rotrsi3_sext): New.
+	(rotlsi3): New.
+	(rotldi3): New.
+	(rotlsi3_sext): New.
+	(bswap<mode>2): New.
+	(<bitmanip_optab><mode>3): New.
+	* config/riscv/riscv.md (type): Add rotate.
+	(zero_extendhi<GPR:mode>2): Change to define_expand pattern.
+	(*zero_extendhi<GPR:mode>2): New.
+	(extend<SHORT:mode><SUPERQI:mode>2): Change to define_expand pattern.
+	(*extend<SHORT:mode><SUPERQI:mode>2): New.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_extend_cost): Handle cost model
+	for zba extension.
+	(riscv_rtx_costs): Ditto.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (*zero_extendsidi2_bitmanip): New.
+	(*shNadd): Ditto.
+	(*shNadduw): Ditto.
+	(*add.uw): Ditto.
+	(*slliuw): Ditto.
+	(riscv_rtx_costs): Ditto.
+	* config/riscv/riscv.md: Include bitmanip.md
+	(type): Add bitmanip bype.
+	(zero_extendsidi2): Change to define_expand pattern.
+	(*zero_extendsidi2_internal): New.
+	(zero_extendsidi2_shifted): Disable for ZBA.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_ext_version_table):
+	Add zba, zbb, zbc and zbs.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_ZBA): New.
+	(MASK_ZBB): Ditto.
+	(MASK_ZBC): Ditto.
+	(MASK_ZBS): Ditto.
+	(TARGET_ZBA): Ditto.
+	(TARGET_ZBB): Ditto.
+	(TARGET_ZBC): Ditto.
+	(TARGET_ZBS): Ditto.
+	* config/riscv/riscv.opt (riscv_zb_subext): New.
+
+2021-10-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* match.pd: Simplify (_Float16) sqrtf((float) a) to .SQRT(a)
+	when direct_internal_fn_supported_p, similar for sqrt/sqrtl.
+
+2021-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102920
+	* tree-ssa-sccvn.h (expressions_equal_p): Add argument
+	controlling VN_TOP matching behavior.
+	* tree-ssa-sccvn.c (expressions_equal_p): Likewise.
+	(vn_phi_eq): Do not optimistically match VN_TOP.
+
+2021-10-25  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/sse.md (fma_<mode>_fadd_fmul): Add new
+	define_insn_and_split.
+	(fma_<mode>_fadd_fcmul):Likewise
+	(fma_<complexopname>_<mode>_fma_zero):Likewise
+
 2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-d.c (pa_d_handle_target_float_abi): Don't check
