@@ -3495,12 +3495,18 @@ simplify_using_ranges::fold_cond (gcond *cond)
       if (TREE_CODE (gimple_cond_lhs (cond)) != SSA_NAME
 	  && TREE_CODE (gimple_cond_rhs (cond)) != SSA_NAME)
 	return false;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Folding predicate ");
+	  print_gimple_expr (dump_file, cond, 0);
+	  fprintf (dump_file, " to ");
+	}
       edge e0 = EDGE_SUCC (gimple_bb (cond), 0);
       edge e1 = EDGE_SUCC (gimple_bb (cond), 1);
       if (r.zero_p ())
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "\nPredicate evaluates to: 0\n");
+	  if (dump_file)
+	    fprintf (dump_file, "0\n");
 	  gimple_cond_make_false (cond);
 	  if (e0->flags & EDGE_TRUE_VALUE)
 	    set_and_propagate_unexecutable (e0);
@@ -3509,8 +3515,8 @@ simplify_using_ranges::fold_cond (gcond *cond)
 	}
       else
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "\nPredicate evaluates to: 1\n");
+	  if (dump_file)
+	    fprintf (dump_file, "1\n");
 	  gimple_cond_make_true (cond);
 	  if (e0->flags & EDGE_FALSE_VALUE)
 	    set_and_propagate_unexecutable (e0);
