@@ -1138,11 +1138,10 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
-  // FIXME these could be constants
-#define FNTYPE_DEFAULT_FLAGS 0x00
-#define FNTYPE_IS_METHOD_FLAG 0x01
-#define FNTYPE_IS_EXTERN_FLAG 0x02
-#define FNTYPE_IS_VARADIC_FLAG 0X04
+  static const uint8_t FNTYPE_DEFAULT_FLAGS = 0x00;
+  static const uint8_t FNTYPE_IS_METHOD_FLAG = 0x01;
+  static const uint8_t FNTYPE_IS_EXTERN_FLAG = 0x02;
+  static const uint8_t FNTYPE_IS_VARADIC_FLAG = 0X04;
 
   FnType (HirId ref, DefId id, std::string identifier, uint8_t flags, ABI abi,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *>> params,

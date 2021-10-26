@@ -583,8 +583,9 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
     = new TyTy::FnType (fn.get_mappings ().get_hirid (),
 			fn.get_mappings ().get_defid (),
 			function.get_function_name (),
-			function.is_method () ? FNTYPE_IS_METHOD_FLAG
-					      : FNTYPE_DEFAULT_FLAGS,
+			function.is_method ()
+			  ? TyTy::FnType::FNTYPE_IS_METHOD_FLAG
+			  : TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
 			ABI::RUST, std::move (params), ret_type, substitutions);
 
   context->insert_type (fn.get_mappings (), resolved);
