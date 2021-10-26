@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2 -mtune=generic" } */
+/* { dg-options "-O2 -msse2 -mtune=generic -mno-stackrealign" } */
 
 extern char *dst, *src;
 
