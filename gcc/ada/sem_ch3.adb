@@ -5755,6 +5755,15 @@ package body Sem_Ch3 is
                   if Is_Tagged_Type (Id) then
                      Set_No_Tagged_Streams_Pragma
                        (Id, No_Tagged_Streams_Pragma (T));
+                  end if;
+
+                  --  For tagged types, or when prefixed-call syntax is allowed
+                  --  for untagged types, initialize the list of primitive
+                  --  operations to an empty list.
+
+                  if Is_Tagged_Type (Id)
+                    or else Extensions_Allowed
+                  then
                      Set_Direct_Primitive_Operations (Id, New_Elmt_List);
                   end if;
 
@@ -17199,8 +17208,12 @@ package body Sem_Ch3 is
          Set_Etype        (T, Any_Type);
          Set_Scalar_Range (T, Scalar_Range (Any_Type));
 
-         if Is_Tagged_Type (T)
-           and then Is_Record_Type (T)
+         --  For tagged types, or when prefixed-call syntax is allowed for
+         --  untagged types, initialize the list of primitive operations to
+         --  an empty list.
+
+         if (Is_Tagged_Type (T) and then Is_Record_Type (T))
+           or else Extensions_Allowed
          then
             Set_Direct_Primitive_Operations (T, New_Elmt_List);
          end if;
