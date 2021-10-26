@@ -426,6 +426,12 @@ gm2_langhook_handle_option (
         }
       else
         return 0;
+    case OPT_save_temps:
+      M2Options_SetSaveTemps (value);
+      return 1;
+    case OPT_save_temps_:
+      M2Options_SetSaveTempsDir (arg);
+      return 1;
     default:
       if (insideCppArgs)
         {

@@ -184,3 +184,7 @@ DEFINE_LANG_NAME ("Modula-2")
       N_("insert semantic plugin to detect runtime errors at compile time") },
   { "-fno-m2-plugin",
       N_("do not insert semantic plugin to detect runtime errors at compile time") },
+  { "-fsave-temps",
+      N_("save temporary files after the preprocessor phase") },
+  { "-fsave-temps=",
+      N_("save temporary files and place them in the directory specified") },

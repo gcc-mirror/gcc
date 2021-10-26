@@ -33,7 +33,7 @@ FROM libc IMPORT system, exit, unlink, printf, atexit ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, ForeachItemInListDo ;
 FROM FIO IMPORT StdErr, StdOut ;
 FROM M2Printf IMPORT fprintf1 ;
-FROM M2Options IMPORT Verbose, CppCommandLine ;
+FROM M2Options IMPORT Verbose, CppCommandLine, SaveTemps ;
 FROM NameKey IMPORT Name, MakeKey, KeyToCharStar, makekey ;
 
 
@@ -79,6 +79,16 @@ END RemoveFiles ;
 
 
 (*
+   MakeSaveTempsFileName - return a temporary file "filename.i".
+*)
+
+PROCEDURE MakeSaveTempsFileName (filename: String) : String ;
+BEGIN
+   RETURN ConCat (Dup (filename), InitString ('.i'))
+END MakeSaveTempsFileName ;
+
+
+(*
    PreprocessModule - preprocess a file, filename, returning the new filename
                       of the preprocessed file.
                       Preprocessing will only occur if requested by the user.
@@ -99,7 +109,12 @@ BEGIN
    THEN
       RETURN filename
    ELSE
-      tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('cpp')))) ;
+      IF SaveTemps
+      THEN
+         tempfile := InitStringCharStar (MakeSaveTempsFileName (filename))
+      ELSE
+         tempfile := InitStringCharStar (make_temp_file (KeyToCharStar (MakeKey('i'))))
+      END ;
       commandLine := Dup (command) ;
       commandLine := ConCat (ConCat (ConCat (ConCatChar (Dup (commandLine), ' '), filename),
                                      Mark (InitString(' -o '))),
@@ -118,7 +133,12 @@ BEGIN
          exit (1)
       END ;
       commandLine := KillString (commandLine) ;
-      RETURN OnExitDelete (tempfile)
+      IF SaveTemps
+      THEN
+         RETURN tempfile
+      ELSE
+         RETURN OnExitDelete (tempfile)
+      END
    END
 END PreprocessModule ;
 

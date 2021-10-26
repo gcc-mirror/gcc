@@ -106,7 +106,9 @@ EXTERN void M2Options_SetUnusedVariableChecking (int value);
 EXTERN void M2Options_SetUnusedParameterChecking (int value);
 EXTERN void M2Options_SetStrictTypeChecking (int value);
 EXTERN void M2Options_SetWall (int value);
-
+EXTERN void M2Options_SetSaveTemps (int value);
+EXTERN void M2Options_SetSaveTempsDir (const char *arg);
+EXTERN int M2Options_GetSaveTemps (void);
 EXTERN void M2Options_DisplayVersion (int mustExit);
 
 #undef EXTERN

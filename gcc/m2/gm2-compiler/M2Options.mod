@@ -995,9 +995,29 @@ BEGIN
 END SetWall ;
 
 
+(*
+   SetSaveTemps - turn on/off -save-temps.
+*)
+
+PROCEDURE SetSaveTemps (value: BOOLEAN) ;
 BEGIN
-   CppArgs                      := InitString('') ;
-   CppProgram                   := InitString('') ;
+   SaveTemps := value
+END SetSaveTemps ;
+
+
+(*
+   SetSaveTempsDir - turn on/off -save-temps and specify the directory.
+*)
+
+PROCEDURE SetSaveTempsDir (arg: ADDRESS) ;
+BEGIN
+   (* printf1 ("SetSaveTempsDir: arg = %s\n", arg);  *)
+END SetSaveTempsDir ;
+
+
+BEGIN
+   CppArgs                      := InitString ('') ;
+   CppProgram                   := InitString ('') ;
    Pim                          :=  TRUE ;
    Pim2                         := FALSE ;
    Pim3                         := FALSE ;
@@ -1049,5 +1069,6 @@ BEGIN
    UnusedVariableChecking       := FALSE ;
    UnusedParameterChecking      := FALSE ;
    StrictTypeChecking           := TRUE ;
-   AutoInit                     := FALSE
+   AutoInit                     := FALSE ;
+   SaveTemps                    := FALSE
 END M2Options.

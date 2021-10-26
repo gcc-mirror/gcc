@@ -354,4 +354,15 @@ x
 Modula-2 Joined
 specify the language from the compiler driver
 
+-save-temps
+Modula-2 Alias(save-temps)
+
+save-temps
+Modula-2
+save temporary preprocessed files
+
+save-temps=
+Modula-2 Joined
+save temporary preprocessed files
+
 ; This comment is to ensure we retain the blank line above.
