@@ -2701,52 +2701,13 @@ package body Scng is
 
       Tabs_Loop : loop
 
-         --  Inner loop scans past blanks as fast as possible, bumping Scan_Ptr
-         --  past the blanks and adjusting Start_Column to account for them.
+         --  Inner loop scans past blanks, bumping Scan_Ptr past the blanks and
+         --  adjusting Start_Column to account for them.
 
-         Blanks_Loop : loop
-            if Source (Scan_Ptr) = ' ' then
-               if Source (Scan_Ptr + 1) = ' ' then
-                  if Source (Scan_Ptr + 2) = ' ' then
-                     if Source (Scan_Ptr + 3) = ' ' then
-                        if Source (Scan_Ptr + 4) = ' ' then
-                           if Source (Scan_Ptr + 5) = ' ' then
-                              if Source (Scan_Ptr + 6) = ' ' then
-                                 Scan_Ptr := Scan_Ptr + 7;
-                                 Start_Column := Start_Column + 7;
-                              else
-                                 Scan_Ptr := Scan_Ptr + 6;
-                                 Start_Column := Start_Column + 6;
-                                 exit Blanks_Loop;
-                              end if;
-                           else
-                              Scan_Ptr := Scan_Ptr + 5;
-                              Start_Column := Start_Column + 5;
-                              exit Blanks_Loop;
-                           end if;
-                        else
-                           Scan_Ptr := Scan_Ptr + 4;
-                           Start_Column := Start_Column + 4;
-                           exit Blanks_Loop;
-                        end if;
-                     else
-                        Scan_Ptr := Scan_Ptr + 3;
-                        Start_Column := Start_Column + 3;
-                        exit Blanks_Loop;
-                     end if;
-                  else
-                     Scan_Ptr := Scan_Ptr + 2;
-                     Start_Column := Start_Column + 2;
-                     exit Blanks_Loop;
-                  end if;
-               else
-                  Scan_Ptr := Scan_Ptr + 1;
-                  Start_Column := Start_Column + 1;
-                  exit Blanks_Loop;
-               end if;
-            else
-               exit Blanks_Loop;
-            end if;
+         Blanks_Loop :
+         while Source (Scan_Ptr) = ' ' loop
+            Scan_Ptr := Scan_Ptr + 1;
+            Start_Column := Start_Column + 1;
          end loop Blanks_Loop;
 
          --  Outer loop keeps going only if a horizontal tab follows
@@ -2771,7 +2732,7 @@ package body Scng is
 
    exception
       when Constraint_Error =>
-         return Start_Column;
+         return Column_Number'Last;
    end Set_Start_Column;
 
 end Scng;
