@@ -1,3 +1,13 @@
+2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am (stamp-html-doxygen, stamp-html-doxygen)
+	(stamp-latex-doxygen, stamp-man-doxygen): Fix recipes for
+	relative ${top_srcdir}.
+	* doc/Makefile.in: Regenerate.
+
 2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
