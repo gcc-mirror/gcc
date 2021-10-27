@@ -1297,8 +1297,9 @@ path_oracle::killing_def (tree ssa)
       fprintf (dump_file, "\n");
     }
 
+  unsigned v = SSA_NAME_VERSION (ssa);
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
-  bitmap_set_bit (b, SSA_NAME_VERSION (ssa));
+  bitmap_set_bit (b, v);
   equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
 						    sizeof (equiv_chain));
   ptr->m_names = b;
@@ -1306,6 +1307,24 @@ path_oracle::killing_def (tree ssa)
   ptr->m_next = m_equiv.m_next;
   m_equiv.m_next = ptr;
   bitmap_ior_into (m_equiv.m_names, b);
+
+  // Walk the relation list an remove SSA from any relations.
+  if (!bitmap_bit_p (m_relations.m_names, v))
+    return;
+
+  bitmap_clear_bit (m_relations.m_names, v);
+  relation_chain **prev = &(m_relations.m_head);
+  relation_chain *next = NULL;
+  for (relation_chain *ptr = m_relations.m_head; ptr; ptr = next)
+    {
+      gcc_checking_assert (*prev == ptr);
+      next = ptr->m_next;
+      if (SSA_NAME_VERSION (ptr->op1 ()) == v
+	  || SSA_NAME_VERSION (ptr->op2 ()) == v)
+	*prev = ptr->m_next;
+      else
+	prev = &(ptr->m_next);
+    }
 }
 
 // Register relation K between SSA1 and SSA2, resolving unknowns by
