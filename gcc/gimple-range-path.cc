@@ -288,8 +288,14 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
 
   if (gimple_code (def_stmt) == GIMPLE_PHI)
     ssa_range_in_phi (r, as_a<gphi *> (def_stmt));
-  else if (!range_of_stmt (r, def_stmt, name))
-    r.set_varying (TREE_TYPE (name));
+  else
+    {
+      if (name)
+	get_path_oracle ()->killing_def (name);
+
+      if (!range_of_stmt (r, def_stmt, name))
+	r.set_varying (TREE_TYPE (name));
+    }
 
   if (bb)
     m_non_null.adjust_range (r, name, bb);
