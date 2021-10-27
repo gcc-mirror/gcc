@@ -181,15 +181,14 @@ class Parse
   void method_spec(Typed_identifier_list*);
   void declaration();
   bool declaration_may_start_here();
-  void decl(void (Parse::*)(unsigned int, std::vector<std::string>*),
-	    unsigned int pragmas, std::vector<std::string>* embeds);
-  void list(void (Parse::*)(unsigned int, std::vector<std::string>*), bool);
+  void decl(void (Parse::*)());
+  void list(void (Parse::*)(), bool);
   void const_decl();
   void const_spec(int, Type**, Expression_list**);
-  void type_decl(unsigned int pragmas);
-  void type_spec(unsigned int pragmas, std::vector<std::string>*);
-  void var_decl(std::vector<std::string>* embeds);
-  void var_spec(unsigned int pragmas, std::vector<std::string>*);
+  void type_decl();
+  void type_spec();
+  void var_decl();
+  void var_spec();
   void init_vars(const Typed_identifier_list*, Type*, Expression_list*,
 		 bool is_coloneq, std::vector<std::string>*, Location);
   bool init_vars_from_call(const Typed_identifier_list*, Type*, Expression*,
@@ -210,7 +209,7 @@ class Parse
   void simple_var_decl_or_assignment(const std::string&, Location,
 				     bool may_be_composite_lit,
 				     Range_clause*, Type_switch*);
-  void function_decl(unsigned int pragmas);
+  void function_decl();
   Typed_identifier* receiver();
   Expression* operand(bool may_be_sink, bool *is_parenthesized);
   Expression* enclosing_var_reference(Named_object*, Named_object*,
@@ -278,7 +277,10 @@ class Parse
   void goto_stat();
   void package_clause();
   void import_decl();
-  void import_spec(unsigned int pragmas, std::vector<std::string>*);
+  void import_spec();
+
+  // Check for unused compiler directives.
+  void check_directives();
 
   // Skip past an error looking for a semicolon or OP.  Return true if
   // all is well, false if we found EOF.

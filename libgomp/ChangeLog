@@ -1,3 +1,9 @@
+2021-10-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/102910
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-2.c: Use __builtin_alloca
+	instead of #include <alloca.h> + alloca.
+
 2021-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* libgomp.texi (Support of strictly structured blocks in Fortran):

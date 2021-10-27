@@ -1,7 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread1-stats -fdump-tree-thread2-stats -fdump-tree-dom2-stats -fdump-tree-thread3-stats -fdump-tree-dom3-stats -fdump-tree-vrp2-stats -fno-guess-branch-probability" } */
+/* { dg-options "-O2 -fdump-tree-dom2-stats -fdump-tree-thread3-stats -fdump-tree-dom3-stats -fdump-tree-vrp-thread2-stats -fno-guess-branch-probability" } */
 
-/* { dg-final { scan-tree-dump "Jumps threaded: 12"  "thread3" } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom2" } } */
 
 /* aarch64 has the highest CASE_VALUES_THRESHOLD in GCC.  It's high enough
@@ -9,6 +8,8 @@
    jump threading opportunities.  Skip the later tests on aarch64.  */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom3" { target { ! aarch64*-*-* } } } } */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "vrp-thread2" { target { ! aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 11"  "thread3" { target { ! aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 18"  "thread3" { target { aarch64*-*-* } } } } */
 
 enum STATE {
   S0=0,

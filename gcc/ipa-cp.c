@@ -400,9 +400,9 @@ object_allocator<ipcp_value_source<tree> > ipcp_sources_pool
 object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
   ("IPA_CP aggregate lattices");
 
-/* Maximal count found in program.  */
+/* Base count to use in heuristics when using profile feedback.  */
 
-static profile_count max_count;
+static profile_count base_count;
 
 /* Original overall size of the program.  */
 
@@ -701,20 +701,36 @@ ipcp_versionable_function_p (struct cgraph_node *node)
 
 struct caller_statistics
 {
+  /* If requested (see below), self-recursive call counts are summed into this
+     field.  */
+  profile_count rec_count_sum;
+  /* The sum of all ipa counts of all the other (non-recursive) calls.  */
   profile_count count_sum;
+  /* Sum of all frequencies for all calls.  */
   sreal freq_sum;
+  /* Number of calls and hot calls respectively.  */
   int n_calls, n_hot_calls;
+  /* If itself is set up, also count the number of non-self-recursive
+     calls.  */
+  int n_nonrec_calls;
+  /* If non-NULL, this is the node itself and calls from it should have their
+     counts included in rec_count_sum and not count_sum.  */
+  cgraph_node *itself;
 };
 
-/* Initialize fields of STAT to zeroes.  */
+/* Initialize fields of STAT to zeroes and optionally set it up so that edges
+   from IGNORED_CALLER are not counted.  */
 
 static inline void
-init_caller_stats (struct caller_statistics *stats)
+init_caller_stats (caller_statistics *stats, cgraph_node *itself = NULL)
 {
+  stats->rec_count_sum = profile_count::zero ();
   stats->count_sum = profile_count::zero ();
   stats->n_calls = 0;
   stats->n_hot_calls = 0;
+  stats->n_nonrec_calls = 0;
   stats->freq_sum = 0;
+  stats->itself = itself;
 }
 
 /* Worker callback of cgraph_for_node_and_aliases accumulating statistics of
@@ -729,10 +745,22 @@ gather_caller_stats (struct cgraph_node *node, void *data)
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (!cs->caller->thunk)
       {
-        if (cs->count.ipa ().initialized_p ())
-	  stats->count_sum += cs->count.ipa ();
+	ipa_node_params *info = ipa_node_params_sum->get (cs->caller);
+	if (info && info->node_dead)
+	  continue;
+
+	if (cs->count.ipa ().initialized_p ())
+	  {
+	    if (stats->itself && stats->itself == cs->caller)
+	      stats->rec_count_sum += cs->count.ipa ();
+	    else
+	      stats->count_sum += cs->count.ipa ();
+	  }
 	stats->freq_sum += cs->sreal_frequency ();
 	stats->n_calls++;
+	if (stats->itself && stats->itself != cs->caller)
+	  stats->n_nonrec_calls++;
+
 	if (cs->maybe_hot_p ())
 	  stats->n_hot_calls ++;
       }
@@ -781,7 +809,8 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   /* When profile is available and function is hot, propagate into it even if
      calls seems cold; constant propagation can improve function's speed
      significantly.  */
-  if (max_count > profile_count::zero ())
+  if (stats.count_sum > profile_count::zero ()
+      && node->count.ipa ().initialized_p ())
     {
       if (stats.count_sum > node->count.ipa ().apply_scale (90, 100))
 	{
@@ -3282,10 +3311,10 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
-  if (max_count > profile_count::zero ())
+  if (count_sum > profile_count::zero ())
     {
-
-      sreal factor = count_sum.probability_in (max_count).to_sreal ();
+      gcc_assert (base_count > profile_count::zero ());
+      sreal factor = count_sum.probability_in (base_count).to_sreal ();
       sreal evaluation = (time_benefit * factor) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
       evaluation *= 1000;
@@ -3922,6 +3951,21 @@ value_topo_info<valtype>::propagate_effects ()
     }
 }
 
+/* Callback for qsort to sort counts of all edges.  */
+
+static int
+compare_edge_profile_counts (const void *a, const void *b)
+{
+  const profile_count *cnt1 = (const profile_count *) a;
+  const profile_count *cnt2 = (const profile_count *) b;
+
+  if (*cnt1 < *cnt2)
+    return 1;
+  if (*cnt1 > *cnt2)
+    return -1;
+  return 0;
+}
+
 
 /* Propagate constants, polymorphic contexts and their effects from the
    summaries interprocedurally.  */
@@ -3934,8 +3978,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
   if (dump_file)
     fprintf (dump_file, "\n Propagating constants:\n\n");
 
-  max_count = profile_count::uninitialized ();
+  base_count = profile_count::uninitialized ();
 
+  bool compute_count_base = false;
+  unsigned base_count_pos_percent = 0;
   FOR_EACH_DEFINED_FUNCTION (node)
   {
     if (node->has_gimple_body_p ()
@@ -3953,8 +3999,56 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
     ipa_size_summary *s = ipa_size_summaries->get (node);
     if (node->definition && !node->alias && s != NULL)
       overall_size += s->self_size;
-    max_count = max_count.max (node->count.ipa ());
+    if (node->count.ipa ().initialized_p ())
+      {
+	compute_count_base = true;
+	unsigned pos_percent = opt_for_fn (node->decl,
+					   param_ipa_cp_profile_count_base);
+	base_count_pos_percent = MAX (base_count_pos_percent, pos_percent);
+      }
   }
+
+  if (compute_count_base)
+    {
+      auto_vec<profile_count> all_edge_counts;
+      all_edge_counts.reserve_exact (symtab->edges_count);
+      FOR_EACH_DEFINED_FUNCTION (node)
+	for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
+	  {
+	    profile_count count = cs->count.ipa ();
+	    if (!(count > profile_count::zero ()))
+	      continue;
+
+	    enum availability avail;
+	    cgraph_node *tgt
+	      = cs->callee->function_or_virtual_thunk_symbol (&avail);
+	    ipa_node_params *info = ipa_node_params_sum->get (tgt);
+	    if (info && info->versionable)
+	      all_edge_counts.quick_push (count);
+	  }
+
+      if (!all_edge_counts.is_empty ())
+	{
+	  gcc_assert (base_count_pos_percent <= 100);
+	  all_edge_counts.qsort (compare_edge_profile_counts);
+
+	  unsigned base_count_pos
+	    = ((all_edge_counts.length () * (base_count_pos_percent)) / 100);
+	  base_count = all_edge_counts[base_count_pos];
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "\nSelected base_count from %u edges at "
+		       "position %u, arriving at: ", all_edge_counts.length (),
+		       base_count_pos);
+	      base_count.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+      else if (dump_file)
+	fprintf (dump_file, "\nNo candidates with non-zero call count found, "
+		 "continuing as if without profile feedback.\n");
+    }
 
   orig_overall_size = overall_size;
 
@@ -4202,19 +4296,22 @@ get_next_cgraph_edge_clone (struct cgraph_edge *cs)
 
 /* Given VAL that is intended for DEST, iterate over all its sources and if any
    of them is viable and hot, return true.  In that case, for those that still
-   hold, add their edge frequency and their number into *FREQUENCY and
-   *CALLER_COUNT respectively.  */
+   hold, add their edge frequency and their number and cumulative profile
+   counts of self-ecursive and other edges into *FREQUENCY, *CALLER_COUNT,
+   REC_COUNT_SUM and NONREC_COUNT_SUM respectively.  */
 
 template <typename valtype>
 static bool
 get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
-				sreal *freq_sum, profile_count *count_sum,
-				int *caller_count)
+				sreal *freq_sum, int *caller_count,
+				profile_count *rec_count_sum,
+				profile_count *nonrec_count_sum)
 {
   ipcp_value_source<valtype> *src;
   sreal freq = 0;
   int count = 0;
-  profile_count cnt = profile_count::zero ();
+  profile_count rec_cnt = profile_count::zero ();
+  profile_count nonrec_cnt = profile_count::zero ();
   bool hot = false;
   bool non_self_recursive = false;
 
@@ -4227,11 +4324,15 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 	    {
 	      count++;
 	      freq += cs->sreal_frequency ();
-	      if (cs->count.ipa ().initialized_p ())
-	        cnt += cs->count.ipa ();
 	      hot |= cs->maybe_hot_p ();
 	      if (cs->caller != dest)
-		non_self_recursive = true;
+		{
+		  non_self_recursive = true;
+		  if (cs->count.ipa ().initialized_p ())
+		    rec_cnt += cs->count.ipa ();
+		}
+	      else if (cs->count.ipa ().initialized_p ())
+	        nonrec_cnt += cs->count.ipa ();
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -4243,8 +4344,9 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
     return false;
 
   *freq_sum = freq;
-  *count_sum = cnt;
   *caller_count = count;
+  *rec_count_sum = rec_cnt;
+  *nonrec_count_sum = nonrec_cnt;
 
   if (!hot && ipa_node_params_sum->get (dest)->node_within_scc)
     {
@@ -4349,112 +4451,399 @@ get_replacement_map (class ipa_node_params *info, tree value, int parm_num,
   return replace_map;
 }
 
-/* Dump new profiling counts */
+/* Dump new profiling counts of NODE.  SPEC is true when NODE is a specialzied
+   one, otherwise it will be referred to as the original node.  */
 
 static void
-dump_profile_updates (struct cgraph_node *orig_node,
-		      struct cgraph_node *new_node)
+dump_profile_updates (cgraph_node *node, bool spec)
 {
-  struct cgraph_edge *cs;
+  if (spec)
+    fprintf (dump_file, "     setting count of the specialized node %s to ",
+	     node->dump_name ());
+  else
+    fprintf (dump_file, "     setting count of the original node %s to ",
+	     node->dump_name ());
 
-  fprintf (dump_file, "    setting count of the specialized node to ");
-  new_node->count.dump (dump_file);
+  node->count.dump (dump_file);
   fprintf (dump_file, "\n");
-  for (cs = new_node->callees; cs; cs = cs->next_callee)
+  for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
     {
-      fprintf (dump_file, "      edge to %s has count ",
-	       cs->callee->dump_name ());
-      cs->count.dump (dump_file);
-      fprintf (dump_file, "\n");
-    }
-
-  fprintf (dump_file, "    setting count of the original node to ");
-  orig_node->count.dump (dump_file);
-  fprintf (dump_file, "\n");
-  for (cs = orig_node->callees; cs; cs = cs->next_callee)
-    {
-      fprintf (dump_file, "      edge to %s is left with ",
+      fprintf (dump_file, "       edge to %s has count ",
 	       cs->callee->dump_name ());
       cs->count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
 }
 
+/* With partial train run we do not want to assume that original's count is
+   zero whenever we redurect all executed edges to clone.  Simply drop profile
+   to local one in this case.  In eany case, return the new value.  ORIG_NODE
+   is the original node and its count has not been updaed yet.  */
+
+profile_count
+lenient_count_portion_handling (profile_count remainder, cgraph_node *orig_node)
+{
+  if (remainder.ipa_p () && !remainder.ipa ().nonzero_p ()
+      && orig_node->count.ipa_p () && orig_node->count.ipa ().nonzero_p ()
+      && opt_for_fn (orig_node->decl, flag_profile_partial_training))
+    remainder = remainder.guessed_local ();
+
+  return remainder;
+}
+
+/* Structure to sum counts coming from nodes other than the original node and
+   its clones.  */
+
+struct gather_other_count_struct
+{
+  cgraph_node *orig;
+  profile_count other_count;
+};
+
+/* Worker callback of call_for_symbol_thunks_and_aliases summing the number of
+   counts that come from non-self-recursive calls..  */
+
+static bool
+gather_count_of_non_rec_edges (cgraph_node *node, void *data)
+{
+  gather_other_count_struct *desc = (gather_other_count_struct *) data;
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    if (cs->caller != desc->orig && cs->caller->clone_of != desc->orig)
+      desc->other_count += cs->count.ipa ();
+  return false;
+}
+
+/* Structure to help analyze if we need to boost counts of some clones of some
+   non-recursive edges to match the new callee count.  */
+
+struct desc_incoming_count_struct
+{
+  cgraph_node *orig;
+  hash_set <cgraph_edge *> *processed_edges;
+  profile_count count;
+  unsigned unproc_orig_rec_edges;
+};
+
+/* Go over edges calling NODE and its thunks and gather information about
+   incoming counts so that we know if we need to make any adjustments.  */
+
+static void
+analyze_clone_icoming_counts (cgraph_node *node,
+			      desc_incoming_count_struct *desc)
+{
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    if (cs->caller->thunk)
+      {
+	analyze_clone_icoming_counts (cs->caller, desc);
+	continue;
+      }
+    else
+      {
+	if (cs->count.initialized_p ())
+	  desc->count += cs->count.ipa ();
+	if (!desc->processed_edges->contains (cs)
+	    && cs->caller->clone_of == desc->orig)
+	  desc->unproc_orig_rec_edges++;
+      }
+}
+
+/* If caller edge counts of a clone created for a self-recursive arithmetic
+   jump function must be adjusted because it is coming from a the "seed" clone
+   for the first value and so has been excessively scaled back as if it was not
+   a recursive call, adjust it so that the incoming counts of NODE match its
+   count. NODE is the node or its thunk.  */
+
+static void
+adjust_clone_incoming_counts (cgraph_node *node,
+			      desc_incoming_count_struct *desc)
+{
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    if (cs->caller->thunk)
+      {
+	adjust_clone_incoming_counts (cs->caller, desc);
+	profile_count sum = profile_count::zero ();
+	for (cgraph_edge *e = cs->caller->callers; e; e = e->next_caller)
+	  if (e->count.initialized_p ())
+	    sum += e->count.ipa ();
+	cs->count = cs->count.combine_with_ipa_count (sum);
+      }
+    else if (!desc->processed_edges->contains (cs)
+	     && cs->caller->clone_of == desc->orig)
+      {
+	cs->count += desc->count;
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "       Adjusted count of an incoming edge of "
+		     "a clone %s -> %s to ", cs->caller->dump_name (),
+		     cs->callee->dump_name ());
+	    cs->count.dump (dump_file);
+	    fprintf (dump_file, "\n");
+	  }
+      }
+}
+
+/* When ORIG_NODE has been cloned for values which have been generated fora
+   self-recursive call as a result of an arithmetic pass-through
+   jump-functions, adjust its count together with counts of all such clones in
+   SELF_GEN_CLONES which also at this point contains ORIG_NODE itself.
+
+   The function sums the counts of the original node and all its clones that
+   cannot be attributed to a specific clone because it comes from a
+   non-recursive edge.  This sum is then evenly divided between the clones and
+   on top of that each one gets all the counts which can be attributed directly
+   to it.  */
+
+static void
+update_counts_for_self_gen_clones (cgraph_node *orig_node,
+				   const vec<cgraph_node *> &self_gen_clones)
+{
+  profile_count redist_sum = orig_node->count.ipa ();
+  if (!(redist_sum > profile_count::zero ()))
+    return;
+
+  if (dump_file)
+    fprintf (dump_file, "     Updating profile of self recursive clone "
+	     "series\n");
+
+  gather_other_count_struct gocs;
+  gocs.orig = orig_node;
+  gocs.other_count = profile_count::zero ();
+
+  auto_vec <profile_count, 8> other_edges_count;
+  for (cgraph_node *n : self_gen_clones)
+    {
+      gocs.other_count = profile_count::zero ();
+      n->call_for_symbol_thunks_and_aliases (gather_count_of_non_rec_edges,
+					     &gocs, false);
+      other_edges_count.safe_push (gocs.other_count);
+      redist_sum -= gocs.other_count;
+    }
+
+  hash_set<cgraph_edge *> processed_edges;
+  unsigned i = 0;
+  for (cgraph_node *n : self_gen_clones)
+    {
+      profile_count orig_count = n->count;
+      profile_count new_count
+	= (redist_sum.apply_scale (1, self_gen_clones.length ())
+	   + other_edges_count[i]);
+      new_count = lenient_count_portion_handling (new_count, orig_node);
+      n->count = new_count;
+      profile_count::adjust_for_ipa_scaling (&new_count, &orig_count);
+      for (cgraph_edge *cs = n->callees; cs; cs = cs->next_callee)
+	{
+	  cs->count = cs->count.apply_scale (new_count, orig_count);
+	  processed_edges.add (cs);
+	}
+      for (cgraph_edge *cs = n->indirect_calls; cs; cs = cs->next_callee)
+	cs->count = cs->count.apply_scale (new_count, orig_count);
+
+      i++;
+    }
+
+  /* There are still going to be edges to ORIG_NODE that have one or more
+     clones coming from another node clone in SELF_GEN_CLONES and which we
+     scaled by the same amount, which means that the total incoming sum of
+     counts to ORIG_NODE will be too high, scale such edges back.  */
+  for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
+    {
+      if (cs->callee->ultimate_alias_target () == orig_node)
+	{
+	  unsigned den = 0;
+	  for (cgraph_edge *e = cs; e; e = get_next_cgraph_edge_clone (e))
+	    if (e->callee->ultimate_alias_target () == orig_node
+		&& processed_edges.contains (e))
+	      den++;
+	  if (den > 0)
+	    for (cgraph_edge *e = cs; e; e = get_next_cgraph_edge_clone (e))
+	      if (e->callee->ultimate_alias_target () == orig_node
+		  && processed_edges.contains (e))
+		e->count = e->count.apply_scale (1, den);
+	}
+    }
+
+  /* Edges from the seeds of the valus generated for arithmetic jump-functions
+     along self-recursive edges are likely to have fairly low count and so
+     edges from them to nodes in the self_gen_clones do not correspond to the
+     artificially distributed count of the nodes, the total sum of incoming
+     edges to some clones might be too low.  Detect this situation and correct
+     it.  */
+  for (cgraph_node *n : self_gen_clones)
+    {
+      if (!(n->count.ipa () > profile_count::zero ()))
+	continue;
+
+      desc_incoming_count_struct desc;
+      desc.orig = orig_node;
+      desc.processed_edges = &processed_edges;
+      desc.count = profile_count::zero ();
+      desc.unproc_orig_rec_edges = 0;
+      analyze_clone_icoming_counts (n, &desc);
+
+      if (n->count.differs_from_p (desc.count))
+	{
+	  if (n->count > desc.count
+	      && desc.unproc_orig_rec_edges > 0)
+	    {
+	      desc.count = n->count - desc.count;
+	      desc.count
+		= desc.count.apply_scale (1, desc.unproc_orig_rec_edges);
+	      adjust_clone_incoming_counts (n, &desc);
+	    }
+	  else if (dump_file)
+	    fprintf (dump_file,
+		     "       Unable to fix up incoming counts for %s.\n",
+		     n->dump_name ());
+	}
+    }
+
+  if (dump_file)
+    for (cgraph_node *n : self_gen_clones)
+      dump_profile_updates (n, n != orig_node);
+  return;
+}
+
 /* After a specialized NEW_NODE version of ORIG_NODE has been created, update
-   their profile information to reflect this.  */
+   their profile information to reflect this.  This function should not be used
+   for clones generated for arithmetic pass-through jump functions on a
+   self-recursive call graph edge, that situation is handled by
+   update_counts_for_self_gen_clones.  */
 
 static void
 update_profiling_info (struct cgraph_node *orig_node,
 		       struct cgraph_node *new_node)
 {
-  struct cgraph_edge *cs;
   struct caller_statistics stats;
-  profile_count new_sum, orig_sum;
-  profile_count remainder, orig_node_count = orig_node->count;
-  profile_count orig_new_node_count = new_node->count;
+  profile_count new_sum;
+  profile_count remainder, orig_node_count = orig_node->count.ipa ();
 
-  if (!(orig_node_count.ipa () > profile_count::zero ()))
+  if (!(orig_node_count > profile_count::zero ()))
     return;
 
-  init_caller_stats (&stats);
-  orig_node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
-					       false);
-  orig_sum = stats.count_sum;
-  init_caller_stats (&stats);
+  if (dump_file)
+    {
+      fprintf (dump_file, "     Updating profile from original count: ");
+      orig_node_count.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+
+  init_caller_stats (&stats, new_node);
   new_node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
 					      false);
   new_sum = stats.count_sum;
 
-  if (orig_node_count < orig_sum + new_sum)
+  if (new_sum > orig_node_count)
     {
-      if (dump_file)
-	{
-	  fprintf (dump_file, "    Problem: node %s has too low count ",
-		   orig_node->dump_name ());
-	  orig_node_count.dump (dump_file);
-	  fprintf (dump_file, "while the sum of incoming count is ");
-	  (orig_sum + new_sum).dump (dump_file);
-	  fprintf (dump_file, "\n");
-	}
-
-      orig_node_count = (orig_sum + new_sum).apply_scale (12, 10);
-      if (dump_file)
-	{
-	  fprintf (dump_file, "      proceeding by pretending it was ");
-	  orig_node_count.dump (dump_file);
-	  fprintf (dump_file, "\n");
-	}
+      /* TODO: Perhaps this should be gcc_unreachable ()?  */
+      remainder = profile_count::zero ().guessed_local ();
     }
+  else if (stats.rec_count_sum.nonzero_p ())
+    {
+      int new_nonrec_calls = stats.n_nonrec_calls;
+      /* There are self-recursive edges which are likely to bring in the
+	 majority of calls but which we must divide in between the original and
+	 new node.  */
+      init_caller_stats (&stats, orig_node);
+      orig_node->call_for_symbol_thunks_and_aliases (gather_caller_stats,
+						     &stats, false);
+      int orig_nonrec_calls = stats.n_nonrec_calls;
+      profile_count orig_nonrec_call_count = stats.count_sum;
 
-  remainder = orig_node_count.combine_with_ipa_count (orig_node_count.ipa ()
-						      - new_sum.ipa ());
+      if (orig_node->local)
+	{
+	  if (!orig_nonrec_call_count.nonzero_p ())
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "       The original is local and the only "
+			 "incoming edges from non-dead callers with nonzero "
+			 "counts are self-recursive, assuming it is cold.\n");
+	      /* The NEW_NODE count and counts of all its outgoing edges
+		 are still unmodified copies of ORIG_NODE's.  Just clear
+		 the latter and bail out.  */
+	      profile_count zero;
+              if (opt_for_fn (orig_node->decl, flag_profile_partial_training))
+                zero = profile_count::zero ().guessed_local ();
+	      else
+		zero = profile_count::adjusted_zero ();
+	      orig_node->count = zero;
+	      for (cgraph_edge *cs = orig_node->callees;
+		   cs;
+		   cs = cs->next_callee)
+		cs->count = zero;
+	      for (cgraph_edge *cs = orig_node->indirect_calls;
+		   cs;
+		   cs = cs->next_callee)
+		cs->count = zero;
+	      return;
+	    }
+	}
+      else
+	{
+	  /* Let's behave as if there was another caller that accounts for all
+	     the calls that were either indirect or from other compilation
+	     units. */
+	  orig_nonrec_calls++;
+	  profile_count pretend_caller_count
+	    = (orig_node_count - new_sum - orig_nonrec_call_count
+	       - stats.rec_count_sum);
+	  orig_nonrec_call_count += pretend_caller_count;
+	}
 
-  /* With partial train run we do not want to assume that original's
-     count is zero whenever we redurect all executed edges to clone.
-     Simply drop profile to local one in this case.  */
-  if (remainder.ipa_p () && !remainder.ipa ().nonzero_p ()
-      && orig_node->count.ipa_p () && orig_node->count.ipa ().nonzero_p ()
-      && flag_profile_partial_training)
-    remainder = remainder.guessed_local ();
+      /* Divide all "unexplained" counts roughly proportionally to sums of
+	 counts of non-recursive calls.
+
+	 We put rather arbitrary limits on how many counts we claim because the
+	 number of non-self-recursive incoming count is only a rough guideline
+	 and there are cases (such as mcf) where using it blindly just takes
+	 too many.  And if lattices are considered in the opposite order we
+	 could also take too few.  */
+      profile_count unexp = orig_node_count - new_sum - orig_nonrec_call_count;
+
+      int limit_den = 2 * (orig_nonrec_calls + new_nonrec_calls);
+      profile_count new_part
+	= MAX(MIN (unexp.apply_scale (new_sum,
+				      new_sum + orig_nonrec_call_count),
+		   unexp.apply_scale (limit_den - 1, limit_den)),
+	      unexp.apply_scale (new_nonrec_calls, limit_den));
+      if (dump_file)
+	{
+	  fprintf (dump_file, "       Claiming ");
+	  new_part.dump (dump_file);
+	  fprintf (dump_file, " of unexplained ");
+	  unexp.dump (dump_file);
+	  fprintf (dump_file, " counts because of self-recursive "
+		   "calls\n");
+	}
+      new_sum += new_part;
+      remainder = lenient_count_portion_handling (orig_node_count - new_sum,
+						  orig_node);
+    }
+  else
+    remainder = lenient_count_portion_handling (orig_node_count - new_sum,
+						orig_node);
 
   new_sum = orig_node_count.combine_with_ipa_count (new_sum);
   new_node->count = new_sum;
   orig_node->count = remainder;
 
+  profile_count orig_new_node_count = orig_node_count;
   profile_count::adjust_for_ipa_scaling (&new_sum, &orig_new_node_count);
-  for (cs = new_node->callees; cs; cs = cs->next_callee)
+  for (cgraph_edge *cs = new_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
-  for (cs = new_node->indirect_calls; cs; cs = cs->next_callee)
+  for (cgraph_edge *cs = new_node->indirect_calls; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
 
   profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
-  for (cs = orig_node->callees; cs; cs = cs->next_callee)
+  for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (remainder, orig_node_count);
-  for (cs = orig_node->indirect_calls; cs; cs = cs->next_callee)
+  for (cgraph_edge *cs = orig_node->indirect_calls; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (remainder, orig_node_count);
 
   if (dump_file)
-    dump_profile_updates (orig_node, new_node);
+    {
+      dump_profile_updates (new_node, true);
+      dump_profile_updates (orig_node, false);
+    }
 }
 
 /* Update the respective profile of specialized NEW_NODE and the original
@@ -4495,7 +4884,10 @@ update_specialized_profile (struct cgraph_node *new_node,
     }
 
   if (dump_file)
-    dump_profile_updates (orig_node, new_node);
+    {
+      dump_profile_updates (new_node, true);
+      dump_profile_updates (orig_node, false);
+    }
 }
 
 static void adjust_references_in_caller (cgraph_edge *cs,
@@ -4795,8 +5187,7 @@ create_specialized_node (struct cgraph_node *node,
       if (aggvals)
 	ipa_dump_agg_replacement_values (dump_file, aggvals);
     }
-  ipa_check_create_node_params ();
-  update_profiling_info (node, new_node);
+
   new_info = ipa_node_params_sum->get (new_node);
   new_info->ipcp_orig_node = node;
   new_node->ipcp_clone = true;
@@ -5621,17 +6012,20 @@ ipcp_val_agg_replacement_ok_p (ipa_agg_replacement_value *,
 /* Decide whether to create a special version of NODE for value VAL of
    parameter at the given INDEX.  If OFFSET is -1, the value is for the
    parameter itself, otherwise it is stored at the given OFFSET of the
-   parameter.  AVALS describes the other already known values.  */
+   parameter.  AVALS describes the other already known values.  SELF_GEN_CLONES
+   is a vector which contains clones created for self-recursive calls with an
+   arithmetic pass-through jump function.  */
 
 template <typename valtype>
 static bool
 decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
-		    ipcp_value<valtype> *val, ipa_auto_call_arg_values *avals)
+		    ipcp_value<valtype> *val, ipa_auto_call_arg_values *avals,
+		    vec<cgraph_node *> *self_gen_clones)
 {
   struct ipa_agg_replacement_value *aggvals;
   int caller_count;
   sreal freq_sum;
-  profile_count count_sum;
+  profile_count count_sum, rec_count_sum;
   vec<cgraph_edge *> callers;
 
   if (val->spec_node)
@@ -5647,12 +6041,30 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 		 val->local_size_cost + overall_size);
       return false;
     }
-  else if (!get_info_about_necessary_edges (val, node, &freq_sum, &count_sum,
-					    &caller_count))
+  else if (!get_info_about_necessary_edges (val, node, &freq_sum, &caller_count,
+					    &rec_count_sum, &count_sum))
     return false;
 
   if (!dbg_cnt (ipa_cp_values))
     return false;
+
+  if (val->self_recursion_generated_p ())
+    {
+      /* The edge counts in this case might not have been adjusted yet.
+	 Nevertleless, even if they were it would be only a guesswork which we
+	 can do now.  The recursive part of the counts can be derived from the
+	 count of the original node anyway.  */
+      if (node->count.ipa ().nonzero_p ())
+	{
+	  unsigned dem = self_gen_clones->length () + 1;
+	  rec_count_sum = node->count.ipa ().apply_scale (1, dem);
+	}
+      else
+	rec_count_sum = profile_count::zero ();
+    }
+
+  /* get_info_about_necessary_edges only sums up ipa counts.  */
+  count_sum += rec_count_sum;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -5694,6 +6106,12 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 						      offset, val->value));
   val->spec_node = create_specialized_node (node, known_csts, known_contexts,
 					    aggvals, callers);
+
+  if (val->self_recursion_generated_p ())
+    self_gen_clones->safe_push (val->spec_node);
+  else
+    update_profiling_info (node, val->spec_node);
+
   callers.release ();
   overall_size += val->local_size_cost;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5722,6 +6140,7 @@ decide_whether_version_node (struct cgraph_node *node)
     fprintf (dump_file, "\nEvaluating opportunities for %s.\n",
 	     node->dump_name ());
 
+  auto_vec <cgraph_node *, 9> self_gen_clones;
   ipa_auto_call_arg_values avals;
   gather_context_independent_values (info, &avals, false, NULL);
 
@@ -5736,7 +6155,8 @@ decide_whether_version_node (struct cgraph_node *node)
 	{
 	  ipcp_value<tree> *val;
 	  for (val = lat->values; val; val = val->next)
-	    ret |= decide_about_value (node, i, -1, val, &avals);
+	    ret |= decide_about_value (node, i, -1, val, &avals,
+				       &self_gen_clones);
 	}
 
       if (!plats->aggs_bottom)
@@ -5750,7 +6170,8 @@ decide_whether_version_node (struct cgraph_node *node)
 		&& (plats->aggs_contain_variable
 		    || !aglat->is_single_const ()))
 	      for (val = aglat->values; val; val = val->next)
-		ret |= decide_about_value (node, i, aglat->offset, val, &avals);
+		ret |= decide_about_value (node, i, aglat->offset, val, &avals,
+					   &self_gen_clones);
 	}
 
       if (!ctxlat->bottom
@@ -5758,8 +6179,15 @@ decide_whether_version_node (struct cgraph_node *node)
 	{
 	  ipcp_value<ipa_polymorphic_call_context> *val;
 	  for (val = ctxlat->values; val; val = val->next)
-	    ret |= decide_about_value (node, i, -1, val, &avals);
+	    ret |= decide_about_value (node, i, -1, val, &avals,
+				       &self_gen_clones);
 	}
+    }
+
+  if (!self_gen_clones.is_empty ())
+    {
+      self_gen_clones.safe_push (node);
+      update_counts_for_self_gen_clones (node, self_gen_clones);
     }
 
   if (info->do_clone_for_all_contexts)
@@ -6205,7 +6633,7 @@ make_pass_ipa_cp (gcc::context *ctxt)
 void
 ipa_cp_c_finalize (void)
 {
-  max_count = profile_count::uninitialized ();
+  base_count = profile_count::uninitialized ();
   overall_size = 0;
   orig_overall_size = 0;
   ipcp_free_transformation_sum ();

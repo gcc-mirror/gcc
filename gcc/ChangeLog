@@ -1,3 +1,386 @@
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102238
+	PR tree-optimization/102919
+	* gimple-ssa-sprintf.c (get_string_length): Add an argument.
+	(array_elt_at_offset): Move to pointer-query.
+	(set_aggregate_size_and_offset): New function.
+	(field_at_offset):  Move to pointer-query.
+	(get_origin_and_offset): Rename...
+	(get_origin_and_offset_r): this.  Add an argument.  Make aggregate
+	handling more robust.
+	(get_origin_and_offset): New.
+	(alias_offset): Add an argument.
+	(format_string): Use subobject size determined by get_origin_and_offset.
+	* pointer-query.cc (field_at_offset): Move from gimple-ssa-sprintf.c.
+	Improve/correct handling of aggregates.
+	(array_elt_at_offset): Same.
+	* pointer-query.h (field_at_offset): Declare.
+	(array_elt_at_offset): Declare.
+
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (check_strncat_sizes): Pass access_data ctor additional
+	arguments.
+	(expand_builtin_memcmp): Move code to gimple-ssa-warn-access.cc.
+	(expand_builtin_fork_or_exec): Same.
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref): Pass
+	compute_objsize additional arguments.
+	(inbounds_memaccess_p): Same.
+	(array_bounds_checker::check_array_bounds): Add an assert.  Stash
+	statement in a member.
+	(check_array_bounds_dom_walker::before_dom_children): Same.
+	* gimple-array-bounds.h (array_bounds_checker::m_stmt): New member.
+	* gimple-ssa-sprintf.c (get_destination_size): Add an argument.
+	(handle_printf_call): Pass a new argument.
+	* gimple-ssa-warn-access.cc (get_size_range): Add an argument.
+	(check_access): Add an argument and pass it along to callees.
+	(check_read_access): Make a member function.
+	(pass_waccess::check_strcat): Pass access_data ctor additional
+	arguments.
+	(pass_waccess::check_strncat): Same.
+	(pass_waccess::check_stxcpy): Same.
+	(pass_waccess::check_stxncpy): Same.
+	(pass_waccess::check_strncmp): Same.
+	(pass_waccess::check_read_access): Same.
+	(pass_waccess::check_builtin): Same.
+	(pass_waccess::maybe_check_access_sizes): Same.
+	(pass_waccess::maybe_check_dealloc_call): Same.
+	* gimple-ssa-warn-access.h (check_read_access): Declare a new
+	member function.
+	* pointer-query.cc (compute_objsize_r): Add an argument.
+	(gimple_call_return_array): Same.
+	(gimple_call_alloc_size): Same.
+	(access_ref::access_ref): Same.
+	(access_ref::get_ref): Same.
+	(pointer_query::get_ref): Same.
+	(handle_min_max_size): Pass an arguments to callees.
+	(handle_array_ref): Add an argument.
+	(handle_mem_ref): Same.
+	(compute_objsize): Same.
+	* pointer-query.h (struct access_ref): Adjust signatures.
+	(struct access_data): Same.
+	(gimple_call_alloc_size): Add an argument.
+	(gimple_parm_array_size): Same.
+	(compute_objsize): Same.
+	* tree-ssa-strlen.c (strlen_pass::adjust_last_stmt): Pass an additional
+	argument to compute_objsize.
+	(strlen_pass::maybe_warn_overflow): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102453
+	* gimple-ssa-warn-access.cc (pass_waccess::check_atomic_builtin): New.
+	(pass_waccess::check_atomic_builtin): Call it.
+
+2021-10-26  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* lra-constraints.c (match_reload): Ignore out in checking values
+	of outs.
+	(curr_insn_transform): Collect outputs before doing reloads of operands.
+
+2021-10-26  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/102719
+	* config/rs6000/x86intrin.h: Move some included headers to new
+	headers.  Include new immintrin.h instead of those headers.
+	* config/rs6000/immintrin.h: New.
+	* config/rs6000/x86gprintrin.h: New.
+	* config.gcc (powerpc*-*-*): Add new headers to extra_headers.
+
+2021-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_create_addr_base_for_vector_ref):
+	Remove byte_offset parameter.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Likewise.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Adjust.
+	(vectorizable_load): Likewise.
+
+2021-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96109
+	* tree-vectorizer.h (dr_misalignment): Add optional offset
+	parameter.
+	* tree-vect-data-refs.c (dr_misalignment): Likewise.  Remove
+	offset applied for negative stride accesses.
+	(vect_enhance_data_refs_alignment): Compute negative stride
+	access offset and pass it to dr_misalignment.
+	* tree-vect-stmts.c (get_negative_load_store_type): Pass
+	negative offset to dr_misalignment.
+	(get_group_load_store_type): Likewise.
+	(get_load_store_type): Likewise.
+	(vectorizable_store): Remove asserts about alignment.
+	(vectorizable_load): Likewise.
+
+2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102897
+	* tree-ssa-forwprop.c (simplify_permutation): Remove a wrong assertion.
+
+2021-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Take offset in bytes.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-loop-manip.c (get_misalign_in_elems): Multiply
+	offset by element size.
+	(vect_create_cond_for_align_checks): Likewise.
+	* tree-vect-stmts.c (get_negative_load_store_type): Likewise.
+	(vectorizable_load): Remove duplicate leftover from merge
+	conflict.
+
+2021-10-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_v1ti_shift): New helper
+	function to expand V1TI mode logical shifts by integer constants.
+	(ix86_expand_v1ti_rotate): New helper function to expand V1TI
+	mode rotations by integer constants.
+	* config/i386/i386-protos.h (ix86_expand_v1ti_shift,
+	ix86_expand_v1ti_rotate): Prototype new functions here.
+	* config/i386/sse.md (ashlv1ti3, lshrv1ti3, rotlv1ti3, rotrv1ti3):
+	New TARGET_SSE2 expanders to implement V1TI shifts and rotations.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::maybe_register_path):
+	Avoid threading circular paths.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::resolve_phi):
+	Attempt to resolve all incoming paths to a PHI.
+	(back_threader::resolve_def): Always return true for PHIs.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::find_paths_to_names):
+	Always try to resolve path without looking back.
+	* tree-ssa-threadupdate.c (dump_jump_thread): Indidicate whether
+	edge is a back edge.
+
+2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102789
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Do not
+	update inits of simd_lane_access.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.c (vrp_simplify_cond_using_ranges): Add return type and
+	move to vr-values.c.
+	(simplify_casted_conds): Move to vrp_folder class.
+	(execute_vrp): Call via vrp_folder now.
+	* vr-values.c (simplify_cond_using_ranges_1): Call simplify_casted_cond.
+	(simplify_using_ranges::simplify_casted_cond): Relocate from tree-vrp.c.
+	* vr-values.h (simplify_casted_cond): Add prototype.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.c (rvrp_folder::fold_stmt): If simplification fails, try
+	to fold anyway.
+
+2021-10-25  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_testz_si128): Add "extern" to
+	function signature.
+	(_mm_testc_si128): Likewise.
+	(_mm_testnzc_si128): Likewise.
+	(_mm_blend_ps): Likewise.
+	(_mm_blendv_ps): Likewise.
+	(_mm_blend_pd): Likewise.
+	(_mm_blendv_pd): Likewise.
+	(_mm_ceil_pd): Likewise.
+	(_mm_ceil_sd): Likewise.
+	(_mm_ceil_ps): Likewise.
+	(_mm_ceil_ss): Likewise.
+	(_mm_floor_pd): Likewise.
+	(_mm_floor_sd): Likewise.
+	(_mm_floor_ps): Likewise.
+	(_mm_floor_ss): Likewise.
+	(_mm_minpos_epu16): Likewise.
+	(_mm_mul_epi32): Likewise.
+	(_mm_cvtepi8_epi16): Likewise.
+	(_mm_packus_epi32): Likewise.
+	(_mm_cmpgt_epi64): Likewise.
+
+2021-10-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1) [SS_ASHIFT]: Simplify
+	shifts of the mode's smin_value and smax_value when the bit count
+	operand doesn't have side-effects.
+	[US_ASHIFT]: Likewise, simplify shifts of the mode's umax_value
+	when the bit count operand doesn't have side-effects.
+	(simplify_const_binary_operation) [SS_ASHIFT, US_ASHIFT]: Perform
+	compile-time evaluation of saturating left shifts with constant
+	arguments.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::export_global_ranges): Remove check
+	for TDF_DETAILS.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* flag-types.h (enum ranger_debug): Adjust values.
+	* params.opt (ranger_debug): Ditto.
+
+2021-10-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/102886
+	* tree-sra.c (totally_scalarize_subtree): Fix the out of
+	access-condition.
+
+2021-10-25  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-dce.c (simple_dce_from_worklist):
+	Check stmt_unremovable_because_of_non_call_eh_p also
+	before removing the statement.
+
+2021-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102905
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Use vect_supportable_dr_alignment again to determine whether
+	an access is supported when not aligned.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_rtx_costs): Handle cost model
+	for zbs extension.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+	    Shi-Hua Liao  <shihua@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (shiftm1): New.
+	(*bset<mode>): Ditto.
+	(*bset<mode>_mask): Ditto.
+	(*bset<mode>_1): Ditto.
+	(*bset<mode>_1_mask): Ditto.
+	(*bseti<mode>): Ditto.
+	(*bclr<mode>): Ditto.
+	(*bclri<mode>): Ditto.
+	(*binv<mode>): Ditto.
+	(*binvi<mode>): Ditto.
+	(*bext<mode>): Ditto.
+	(*bexti): Ditto.
+	* config/riscv/predicates.md (splittable_const_int_operand):
+	Handle bseti.
+	(single_bit_mask_operand): New.
+	(not_single_bit_mask_operand): Ditto.
+	(const31_operand): Ditto.
+	(const63_operand): Ditto.
+	* config/riscv/riscv.c (riscv_build_integer_1): Handle bseti.
+	(riscv_output_move): Ditto.
+	(riscv_print_operand): Handle new operand type: T and S.
+	* config/riscv/riscv.h (SINGLE_BIT_MASK_OPERAND): New.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_build_integer_1): Build integer
+	with rotate.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_extend_cost): Handle cost model
+	for zbb extension.
+	(riscv_rtx_costs): Ditto.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (bitmanip_bitwise): New.
+	(bitmanip_minmax): New.
+	(clz_ctz_pcnt): New.
+	(bitmanip_optab): New.
+	(bitmanip_insn): New.
+	(*<optab>_not<mode>): New.
+	(*xor_not<mode>): New.
+	(<bitmanip_optab>si2): New.
+	(*<bitmanip_optab>disi2): New.
+	(<bitmanip_optab>di2): New.
+	(*zero_extendhi<GPR:mode>2_bitmanip): New.
+	(*extend<SHORT:mode><SUPERQI:mode>2_zbb): New.
+	(*zero_extendhi<GPR:mode>2_zbb): New.
+	(rotrsi3): New.
+	(rotrdi3): New.
+	(rotrsi3_sext): New.
+	(rotlsi3): New.
+	(rotldi3): New.
+	(rotlsi3_sext): New.
+	(bswap<mode>2): New.
+	(<bitmanip_optab><mode>3): New.
+	* config/riscv/riscv.md (type): Add rotate.
+	(zero_extendhi<GPR:mode>2): Change to define_expand pattern.
+	(*zero_extendhi<GPR:mode>2): New.
+	(extend<SHORT:mode><SUPERQI:mode>2): Change to define_expand pattern.
+	(*extend<SHORT:mode><SUPERQI:mode>2): New.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_extend_cost): Handle cost model
+	for zba extension.
+	(riscv_rtx_costs): Ditto.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (*zero_extendsidi2_bitmanip): New.
+	(*shNadd): Ditto.
+	(*shNadduw): Ditto.
+	(*add.uw): Ditto.
+	(*slliuw): Ditto.
+	(riscv_rtx_costs): Ditto.
+	* config/riscv/riscv.md: Include bitmanip.md
+	(type): Add bitmanip bype.
+	(zero_extendsidi2): Change to define_expand pattern.
+	(*zero_extendsidi2_internal): New.
+	(zero_extendsidi2_shifted): Disable for ZBA.
+
+2021-10-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_ext_version_table):
+	Add zba, zbb, zbc and zbs.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv-opts.h (MASK_ZBA): New.
+	(MASK_ZBB): Ditto.
+	(MASK_ZBC): Ditto.
+	(MASK_ZBS): Ditto.
+	(TARGET_ZBA): Ditto.
+	(TARGET_ZBB): Ditto.
+	(TARGET_ZBC): Ditto.
+	(TARGET_ZBS): Ditto.
+	* config/riscv/riscv.opt (riscv_zb_subext): New.
+
+2021-10-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* match.pd: Simplify (_Float16) sqrtf((float) a) to .SQRT(a)
+	when direct_internal_fn_supported_p, similar for sqrt/sqrtl.
+
+2021-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102920
+	* tree-ssa-sccvn.h (expressions_equal_p): Add argument
+	controlling VN_TOP matching behavior.
+	* tree-ssa-sccvn.c (expressions_equal_p): Likewise.
+	(vn_phi_eq): Do not optimistically match VN_TOP.
+
+2021-10-25  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/sse.md (fma_<mode>_fadd_fmul): Add new
+	define_insn_and_split.
+	(fma_<mode>_fadd_fcmul):Likewise
+	(fma_<complexopname>_<mode>_fma_zero):Likewise
+
 2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa-d.c (pa_d_handle_target_float_abi): Don't check

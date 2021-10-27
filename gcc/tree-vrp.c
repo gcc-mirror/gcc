@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "gimple-range-path.h"
 #include "value-pointer-equiv.h"
+#include "gimple-fold.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -4030,6 +4031,7 @@ class vrp_folder : public substitute_and_fold_engine
     : substitute_and_fold_engine (/* Fold all stmts.  */ true),
       m_vr_values (v), simplifier (v)
     {  }
+  void simplify_casted_conds (function *fun);
 
 private:
   tree value_of_expr (tree name, gimple *stmt) OVERRIDE
@@ -4116,78 +4118,6 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
   return simplifier.simplify (si);
 }
 
-/* STMT is a conditional at the end of a basic block.
-
-   If the conditional is of the form SSA_NAME op constant and the SSA_NAME
-   was set via a type conversion, try to replace the SSA_NAME with the RHS
-   of the type conversion.  Doing so makes the conversion dead which helps
-   subsequent passes.  */
-
-static void
-vrp_simplify_cond_using_ranges (range_query *query, gcond *stmt)
-{
-  tree op0 = gimple_cond_lhs (stmt);
-  tree op1 = gimple_cond_rhs (stmt);
-
-  /* If we have a comparison of an SSA_NAME (OP0) against a constant,
-     see if OP0 was set by a type conversion where the source of
-     the conversion is another SSA_NAME with a range that fits
-     into the range of OP0's type.
-
-     If so, the conversion is redundant as the earlier SSA_NAME can be
-     used for the comparison directly if we just massage the constant in the
-     comparison.  */
-  if (TREE_CODE (op0) == SSA_NAME
-      && TREE_CODE (op1) == INTEGER_CST)
-    {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
-      tree innerop;
-
-      if (!is_gimple_assign (def_stmt))
-	return;
-
-      switch (gimple_assign_rhs_code (def_stmt))
-	{
-	CASE_CONVERT:
-	  innerop = gimple_assign_rhs1 (def_stmt);
-	  break;
-	case VIEW_CONVERT_EXPR:
-	  innerop = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
-	  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
-	    return;
-	  break;
-	default:
-	  return;
-	}
-
-      if (TREE_CODE (innerop) == SSA_NAME
-	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
-	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop)
-	  && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
-	{
-	  const value_range *vr = query->get_value_range (innerop);
-
-	  if (range_int_cst_p (vr)
-	      && range_fits_type_p (vr,
-				    TYPE_PRECISION (TREE_TYPE (op0)),
-				    TYPE_SIGN (TREE_TYPE (op0)))
-	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
-	    {
-	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
-	      gimple_cond_set_lhs (stmt, innerop);
-	      gimple_cond_set_rhs (stmt, newconst);
-	      update_stmt (stmt);
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "Folded into: ");
-		  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-		  fprintf (dump_file, "\n");
-		}
-	    }
-	}
-    }
-}
-
 /* A comparison of an SSA_NAME against a constant where the SSA_NAME
    was set by a type conversion can often be rewritten to use the RHS
    of the type conversion.  Do this optimization for all conditionals
@@ -4197,15 +4127,25 @@ vrp_simplify_cond_using_ranges (range_query *query, gcond *stmt)
    So that transformation is not performed until after jump threading
    is complete.  */
 
-static void
-simplify_casted_conds (function *fun, range_query *query)
+void
+vrp_folder::simplify_casted_conds (function *fun)
 {
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple *last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_COND)
-	vrp_simplify_cond_using_ranges (query, as_a <gcond *> (last));
+	{
+	  if (simplifier.simplify_casted_cond (as_a <gcond *> (last)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Folded into: ");
+		  print_gimple_stmt (dump_file, last, 0, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
+	    }
+	}
     }
 }
 
@@ -4300,7 +4240,7 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
       array_checker.check ();
     }
 
-  simplify_casted_conds (fun, &vrp_vr_values);
+  folder.simplify_casted_conds (fun);
 
   free_numbers_of_iterations_estimates (fun);
 
@@ -4381,7 +4321,9 @@ public:
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
   {
-    return m_simplifier.simplify (gsi);
+    if (m_simplifier.simplify (gsi))
+      return true;
+    return ::fold_stmt (gsi, follow_single_use_edges);
   }
 
 private:

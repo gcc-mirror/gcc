@@ -1,3 +1,12 @@
+2021-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Fix up Maciej's entries.
+
+2021-10-26  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself as a VAX port
+	maintainer.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

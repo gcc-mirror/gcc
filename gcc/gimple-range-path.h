@@ -57,8 +57,9 @@ private:
   void compute_ranges_in_block (basic_block bb);
   void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
-  void compute_relations (const vec<basic_block> &);
+  void compute_outgoing_relations (basic_block bb, basic_block next);
   void compute_phi_relations (basic_block bb, basic_block prev);
+  void maybe_register_phi_relation (gphi *, tree arg);
   void add_copies_to_imports ();
   bool add_to_imports (tree name, bitmap imports);
 

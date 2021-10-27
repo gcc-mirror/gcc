@@ -1909,14 +1909,13 @@ Lex::skip_cpp_comment()
   if (saw_error)
     return;
 
-  // Recognize various magic comments at the start of a line.
+  // Recognize various magic comments at the start of a line, preceded
+  // only by spaces or tabs.
 
-  if (lineoff != 2)
-    {
-      // Not at the start of the line.  (lineoff == 2 because of the
-      // two characters in "//").
+  // "- 2" for the "//" at the start of the comment.
+  for (const char* psp = this->linebuf_; psp < p - 2; psp++)
+    if (*psp != ' ' && *psp != '\t')
       return;
-    }
 
   while (pend > p
 	 && (pend[-1] == ' ' || pend[-1] == '\t'

@@ -620,7 +620,9 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 	  if (dump_file && (dump_flags & TDF_DETAILS) && rel != VREL_NONE)
 	    {
 	      fprintf (dump_file, " folding with relation ");
+	      print_generic_expr (dump_file, op1, TDF_SLIM);
 	      print_relation (dump_file, rel);
+	      print_generic_expr (dump_file, op2, TDF_SLIM);
 	      fputc ('\n', dump_file);
 	    }
 	  // Fold range, and register any dependency if available.

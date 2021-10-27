@@ -118,7 +118,7 @@ _mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
   return (__m128i) vec_sel ((__v16qu) __A, (__v16qu) __B, __lmask);
 }
 
-__inline __m128
+extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blend_ps (__m128 __A, __m128 __B, const int __imm8)
 {
@@ -145,7 +145,7 @@ _mm_blend_ps (__m128 __A, __m128 __B, const int __imm8)
   return (__m128) __r;
 }
 
-__inline __m128
+extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_ps (__m128 __A, __m128 __B, __m128 __mask)
 {
@@ -154,7 +154,7 @@ _mm_blendv_ps (__m128 __A, __m128 __B, __m128 __mask)
   return (__m128) vec_sel ((__v4su) __A, (__v4su) __B, (__v4su) __boolmask);
 }
 
-__inline __m128d
+extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blend_pd (__m128d __A, __m128d __B, const int __imm8)
 {
@@ -170,7 +170,7 @@ _mm_blend_pd (__m128d __A, __m128d __B, const int __imm8)
 }
 
 #ifdef _ARCH_PWR8
-__inline __m128d
+extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
 {
@@ -180,7 +180,7 @@ _mm_blendv_pd (__m128d __A, __m128d __B, __m128d __mask)
 }
 #endif
 
-__inline int
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_testz_si128 (__m128i __A, __m128i __B)
 {
@@ -189,7 +189,7 @@ _mm_testz_si128 (__m128i __A, __m128i __B)
   return vec_all_eq (vec_and ((__v16qu) __A, (__v16qu) __B), __zero);
 }
 
-__inline int
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_testc_si128 (__m128i __A, __m128i __B)
 {
@@ -199,7 +199,7 @@ _mm_testc_si128 (__m128i __A, __m128i __B)
   return vec_all_eq (vec_and ((__v16qu) __notA, (__v16qu) __B), __zero);
 }
 
-__inline int
+extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_testnzc_si128 (__m128i __A, __m128i __B)
 {
@@ -214,14 +214,14 @@ _mm_testnzc_si128 (__m128i __A, __m128i __B)
 
 #define _mm_test_mix_ones_zeros(M, V) _mm_testnzc_si128 ((M), (V))
 
-__inline __m128d
+extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ceil_pd (__m128d __A)
 {
   return (__m128d) vec_ceil ((__v2df) __A);
 }
 
-__inline __m128d
+extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ceil_sd (__m128d __A, __m128d __B)
 {
@@ -230,14 +230,14 @@ _mm_ceil_sd (__m128d __A, __m128d __B)
   return (__m128d) __r;
 }
 
-__inline __m128d
+extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_floor_pd (__m128d __A)
 {
   return (__m128d) vec_floor ((__v2df) __A);
 }
 
-__inline __m128d
+extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_floor_sd (__m128d __A, __m128d __B)
 {
@@ -246,14 +246,14 @@ _mm_floor_sd (__m128d __A, __m128d __B)
   return (__m128d) __r;
 }
 
-__inline __m128
+extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ceil_ps (__m128 __A)
 {
   return (__m128) vec_ceil ((__v4sf) __A);
 }
 
-__inline __m128
+extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_ceil_ss (__m128 __A, __m128 __B)
 {
@@ -262,14 +262,14 @@ _mm_ceil_ss (__m128 __A, __m128 __B)
   return __r;
 }
 
-__inline __m128
+extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_floor_ps (__m128 __A)
 {
   return (__m128) vec_floor ((__v4sf) __A);
 }
 
-__inline __m128
+extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_floor_ss (__m128 __A, __m128 __B)
 {
@@ -351,7 +351,7 @@ _mm_mullo_epi32 (__m128i __X, __m128i __Y)
 }
 
 #ifdef _ARCH_PWR8
-__inline __m128i
+extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mul_epi32 (__m128i __X, __m128i __Y)
 {
@@ -359,7 +359,7 @@ _mm_mul_epi32 (__m128i __X, __m128i __Y)
 }
 #endif
 
-__inline __m128i
+extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtepi8_epi16 (__m128i __A)
 {
@@ -499,7 +499,7 @@ _mm_cvtepu32_epi64 (__m128i __A)
 
 /* Return horizontal packed word minimum and its index in bits [15:0]
    and bits [18:16] respectively.  */
-__inline __m128i
+extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_minpos_epu16 (__m128i __A)
 {
@@ -524,7 +524,7 @@ _mm_minpos_epu16 (__m128i __A)
   return __r.__m;
 }
 
-__inline __m128i
+extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_packus_epi32 (__m128i __X, __m128i __Y)
 {
@@ -532,7 +532,7 @@ _mm_packus_epi32 (__m128i __X, __m128i __Y)
 }
 
 #ifdef _ARCH_PWR8
-__inline __m128i
+extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
 {

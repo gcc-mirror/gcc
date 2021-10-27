@@ -720,6 +720,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (pdt_len, pointer)
   conf (pdt_len, dimension)
   conf (pdt_len, codimension)
+  conf (pdt_len, pdt_kind)
 
   if (attr->access == ACCESS_PRIVATE)
     {

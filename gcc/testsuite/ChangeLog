@@ -1,3 +1,214 @@
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102238
+	PR tree-optimization/102919
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-23.c: Remove warnings.
+	* gcc.dg/Wrestrict-23.c: New test.
+
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-22.c: Correct typos.
+	* gcc.dg/Wstringop-overflow-81.c: New test.
+
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102453
+	* gcc.dg/Warray-bounds-90.c: New test.
+	* gcc.dg/Wstringop-overflow-77.c: New test.
+	* gcc.dg/Wstringop-overflow-78.c: New test.
+	* gcc.dg/Wstringop-overflow-79.c: New test.
+	* gcc.dg/Wstringop-overflow-80.c: New test.
+	* c-c++-common/gomp/atomic-4.c: Avoid an out-of-bounds access.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86551
+	* gfortran.dg/pr86551.f90: New test to verify that PR86551 remains
+	fixed.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102956
+	* gfortran.dg/pdt_32.f03: New test.
+
+2021-10-26  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* g++.target/arm/pr102842.C: New test.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102917
+	* gfortran.dg/pdt_4.f03: Adjust testcase.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102816
+	* gfortran.dg/pr102816.f90: New test.
+
+2021-10-26  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/pr78102.c: Fix dg directives to require Power8
+	vector support.  Also, add -DNO_WARN_X86_INTRINSICS.
+
+2021-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102617
+	* g++.dg/cpp23/init-stmt1.C: New test.
+	* g++.dg/cpp23/init-stmt2.C: New test.
+
+2021-10-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR testsuite/102910
+	* gfortran.dg/c-interop/cf-descriptor-5-c.c: Use a static buffer
+	instead of alloca.
+
+2021-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/102834
+	* gcc.target/i386/avx512f-pr96891-3.c: Add -mstv -mno-stackrealign
+	to dg-options.
+
+2021-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/102835
+	* gcc.target/i386/avx512fp16-trunchf.c: Allow for %esp instead of
+	%ebp.
+
+2021-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/102836
+	* gcc.target/i386/pieces-memset-1.c: Add -mno-stackrealign to
+	dg-options.
+	* gcc.target/i386/pieces-memset-4.c: Likewise.
+	* gcc.target/i386/pieces-memset-7.c: Likewise.
+	* gcc.target/i386/pieces-memset-8.c: Likewise.
+	* gcc.target/i386/pieces-memset-41.c: Likewise.
+	* gcc.target/i386/pr90773-1.c: Likewise.
+
+2021-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr100704-1.c: Add -fomit-frame-pointer to
+	dg-options.
+	* gcc.target/i386/pr100704-2.c: Likewise.
+
+2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/pr102897.c: New test.
+
+2021-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102885
+	* gfortran.dg/lto/bind-c-char_0.f90: New test.
+
+2021-10-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-shift.c: New test case.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR testsuite/102857
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Add -fdump-tree-vrp2-stats.
+	Tweak for aarch64.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr21090.c: Adjust for threading.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Removed.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/graphite/scop-dsyr2k-2.c: Adjust for jump threading changes.
+	* gcc.dg/graphite/scop-dsyr2k.c: Same.
+	* gcc.dg/graphite/scop-dsyrk-2.c: Same.
+	* gcc.dg/graphite/scop-dsyrk.c: Same.
+	* gcc.dg/tree-ssa/pr20701.c: Same.
+	* gcc.dg/tree-ssa/pr20702.c: Same.
+	* gcc.dg/tree-ssa/pr21086.c: Same.
+	* gcc.dg/tree-ssa/pr25382.c: Same.
+	* gcc.dg/tree-ssa/pr58480.c: Same.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Same.
+	* gcc.dg/tree-ssa/vrp08.c: Same.
+	* gcc.dg/tree-ssa/vrp55.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Removed.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Removed.
+	* gcc.dg/uninit-pr89230-1.c: xfail.
+	* gcc.dg/tree-ssa/ssa-thread-backedge.c: New file.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp98.c: Disable evrp for vrp1 test.
+	* gcc.dg/tree-ssa/vrp98-1.c: New. Test for folding in evrp.
+
+2021-10-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/bfin/ssashift-1.c: New test case.
+
+2021-10-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/102907
+	* gcc.target/aarch64/shrn-combine-1.c: Disable SVE.
+	* gcc.target/aarch64/shrn-combine-2.c: Likewise.
+	* gcc.target/aarch64/shrn-combine-3.c: Likewise.
+	* gcc.target/aarch64/shrn-combine-4.c: Likewise.
+	* gcc.target/aarch64/shrn-combine-5.c: Likewise.
+	* gcc.target/aarch64/shrn-combine-6.c: Likewise.
+	* gcc.target/aarch64/shrn-combine-7.c: Likewise.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+	    Shi-Hua Liao  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/zba-slliuw.c: Apply zbs to this testcase.
+	* gcc.target/riscv/zbs-bclr.c: New.
+	* gcc.target/riscv/zbs-bext.c: Ditto.
+	* gcc.target/riscv/zbs-binv.c: Ditto.
+	* gcc.target/riscv/zbs-bset.c: Ditto.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/zbb-li-rotr.c: New.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbb-andn-orn-xnor-01.c: New.
+	* gcc.target/riscv/zbb-andn-orn-xnor-02.c: Ditto.
+	* gcc.target/riscv/zbb-min-max.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-01.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-02.c: Ditto.
+	* gcc.target/riscv/zbb-rol-ror-03.c: Ditto.
+	* gcc.target/riscv/zbbw.c: Ditto.
+
+2021-10-25  Jim Wilson  <jimw@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Jia-Wei Chen  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zba-adduw.c: New.
+	* gcc.target/riscv/zba-shNadd-01.c: Ditto.
+	* gcc.target/riscv/zba-shNadd-02.c: Ditto.
+	* gcc.target/riscv/zba-shNadd-03.c: Ditto.
+	* gcc.target/riscv/zba-slliuw.c: Ditto.
+	* gcc.target/riscv/zba-zextw.c: Ditto.
+
+2021-10-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* gcc.target/i386/pr102464-sqrtph.c: New test.
+	* gcc.target/i386/pr102464-sqrtsh.c: New test.
+
+2021-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102920
+	* gcc.dg/torture/pr102920.c: New testcase.
+
+2021-10-25  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512fp16-complex-fma.c: New test.
+
 2021-10-24  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/bfin/20090914-3.c: Tweak test case.

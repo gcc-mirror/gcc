@@ -1,3 +1,11 @@
+2021-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102617
+	* parser.c (cp_parser_for): Maybe call cp_parser_init_statement
+	twice.  Warn about range-based for loops with initializer here.
+	(cp_parser_init_statement): Don't duplicate code.  Allow
+	alias-declaration in init-statement.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

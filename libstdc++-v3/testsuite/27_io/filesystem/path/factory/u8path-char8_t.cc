@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-fchar8_t" }
+// { dg-options "-fchar8_t -Wno-stringop-overread" }
 // { dg-do run { target c++17 } }
 
 #include <filesystem>
@@ -36,6 +36,7 @@ test01()
   p = fs::u8path(u8"\xf0\x9d\x84\x9e");
   VERIFY( p.u8string() == u8"\U0001D11E" );
 
+  // The following triggers -Wstringop-overread.  See PR 102958.
   std::u8string s1 = u8"filename2";
   p = fs::u8path(s1);
   VERIFY( p.u8string() == u8"filename2" );

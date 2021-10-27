@@ -3630,6 +3630,75 @@ simplify_using_ranges::simplify_cond_using_ranges_1 (gcond *stmt)
 	    }
 	}
     }
+  // Try to simplify casted conditions.
+  return simplify_casted_cond (stmt);
+}
+
+/* STMT is a conditional at the end of a basic block.
+
+   If the conditional is of the form SSA_NAME op constant and the SSA_NAME
+   was set via a type conversion, try to replace the SSA_NAME with the RHS
+   of the type conversion.  Doing so makes the conversion dead which helps
+   subsequent passes.  */
+
+bool
+simplify_using_ranges::simplify_casted_cond (gcond *stmt)
+{
+  tree op0 = gimple_cond_lhs (stmt);
+  tree op1 = gimple_cond_rhs (stmt);
+
+  /* If we have a comparison of an SSA_NAME (OP0) against a constant,
+     see if OP0 was set by a type conversion where the source of
+     the conversion is another SSA_NAME with a range that fits
+     into the range of OP0's type.
+
+     If so, the conversion is redundant as the earlier SSA_NAME can be
+     used for the comparison directly if we just massage the constant in the
+     comparison.  */
+  if (TREE_CODE (op0) == SSA_NAME
+      && TREE_CODE (op1) == INTEGER_CST)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (op0);
+      tree innerop;
+
+      if (!is_gimple_assign (def_stmt))
+	return false;
+
+      switch (gimple_assign_rhs_code (def_stmt))
+	{
+	CASE_CONVERT:
+	  innerop = gimple_assign_rhs1 (def_stmt);
+	  break;
+	case VIEW_CONVERT_EXPR:
+	  innerop = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
+	    return false;
+	  break;
+	default:
+	  return false;
+	}
+
+      if (TREE_CODE (innerop) == SSA_NAME
+	  && !POINTER_TYPE_P (TREE_TYPE (innerop))
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop)
+	  && desired_pro_or_demotion_p (TREE_TYPE (innerop), TREE_TYPE (op0)))
+	{
+	  const value_range *vr = query->get_value_range (innerop);
+
+	  if (range_int_cst_p (vr)
+	      && range_fits_type_p (vr,
+				    TYPE_PRECISION (TREE_TYPE (op0)),
+				    TYPE_SIGN (TREE_TYPE (op0)))
+	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
+	    {
+	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
+	      gimple_cond_set_lhs (stmt, innerop);
+	      gimple_cond_set_rhs (stmt, newconst);
+	      update_stmt (stmt);
+	      return true;
+	    }
+	}
+    }
   return false;
 }
 

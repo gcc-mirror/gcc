@@ -5592,14 +5592,6 @@ match_attr_spec (void)
 		  m = MATCH_ERROR;
 		  goto cleanup;
 		}
-	      if (current_ts.kind != gfc_default_integer_kind)
-		{
-		  gfc_error ("Component with KIND attribute at %C must be "
-			     "default integer kind (%d)",
-			      gfc_default_integer_kind);
-		  m = MATCH_ERROR;
-		  goto cleanup;
-		}
 	    }
 	  else if (d == DECL_LEN)
 	    {
@@ -5616,14 +5608,6 @@ match_attr_spec (void)
 		{
 		  gfc_error ("Component with LEN attribute at %C must be "
 			     "INTEGER");
-		  m = MATCH_ERROR;
-		  goto cleanup;
-		}
-	      if (current_ts.kind != gfc_default_integer_kind)
-		{
-		  gfc_error ("Component with LEN attribute at %C must be "
-			     "default integer kind (%d)",
-			      gfc_default_integer_kind);
 		  m = MATCH_ERROR;
 		  goto cleanup;
 		}

@@ -1463,8 +1463,15 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  mpz_init (len);
 	  for (int n = 0; n < rank; n++)
 	    {
-	      gcc_assert (comp->as->upper[n]->expr_type == EXPR_CONSTANT
-			  && comp->as->lower[n]->expr_type == EXPR_CONSTANT);
+	      if (comp->as->upper[n]->expr_type != EXPR_CONSTANT
+		  || comp->as->lower[n]->expr_type != EXPR_CONSTANT)
+		{
+		  gfc_error ("Bad array spec of component %qs referenced in "
+			     "structure constructor at %L",
+			     comp->name, &cons->expr->where);
+		  t = false;
+		  break;
+		};
 	      mpz_set_ui (len, 1);
 	      mpz_add (len, len, comp->as->upper[n]->value.integer);
 	      mpz_sub (len, len, comp->as->lower[n]->value.integer);

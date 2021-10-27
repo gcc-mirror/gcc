@@ -887,10 +887,11 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
   return res;
 }
 
-/* Return the misalignment of DR_INFO accessed in VECTYPE.  */
+/* Return the misalignment of DR_INFO accessed in VECTYPE with OFFSET
+   applied.  */
 
 int
-dr_misalignment (dr_vec_info *dr_info, tree vectype)
+dr_misalignment (dr_vec_info *dr_info, tree vectype, poly_int64 offset)
 {
   HOST_WIDE_INT diff = 0;
   /* Alignment is only analyzed for the first element of a DR group,
@@ -919,13 +920,9 @@ dr_misalignment (dr_vec_info *dr_info, tree vectype)
 		targetm.vectorize.preferred_vector_alignment (vectype)))
     return DR_MISALIGNMENT_UNKNOWN;
 
-  /* If this is a backward running DR then first access in the larger
-     vectype actually is N-1 elements before the address in the DR.
-     Adjust misalign accordingly.  */
-  poly_int64 misalignment = misalign + diff;
-  if (tree_int_cst_sgn (DR_STEP (dr_info->dr)) < 0)
-    misalignment += ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
-		     * -TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
+  /* Apply the offset from the DR group start and the externally supplied
+     offset which can for example result from a negative stride access.  */
+  poly_int64 misalignment = misalign + diff + offset;
 
   /* vect_compute_data_ref_alignment will have ensured that target_alignment
      is constant and otherwise set misalign to DR_MISALIGNMENT_UNKNOWN.  */
@@ -1549,8 +1546,15 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
       int misalignment;
       unsigned HOST_WIDE_INT alignment;
 
+      bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
+					    size_zero_node) < 0;
+      poly_int64 off = 0;
+      if (negative)
+	off = ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
+	       * -TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
+
       if (npeel == 0)
-	misalignment = dr_misalignment (dr_info, vectype);
+	misalignment = dr_misalignment (dr_info, vectype, off);
       else if (dr_info == dr0_info
 	       || vect_dr_aligned_if_peeled_dr_is (dr_info, dr0_info))
 	misalignment = 0;
@@ -1560,7 +1564,7 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
 	misalignment = DR_MISALIGNMENT_UNKNOWN;
       else
 	{
-	  misalignment = dr_misalignment (dr_info, vectype);
+	  misalignment = dr_misalignment (dr_info, vectype, off);
 	  misalignment += npeel * TREE_INT_CST_LOW (DR_STEP (dr_info->dr));
 	  misalignment &= alignment - 1;
 	}
@@ -1960,8 +1964,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	       */
 	      unsigned int target_align =
 		DR_TARGET_ALIGNMENT (dr_info).to_constant ();
-	      unsigned int dr_size = vect_get_scalar_dr_size (dr_info);
-	      unsigned int mis = dr_misalignment (dr_info, vectype);
+	      unsigned HOST_WIDE_INT dr_size = vect_get_scalar_dr_size (dr_info);
+	      poly_int64 off = 0;
+	      if (negative)
+		off = (TYPE_VECTOR_SUBPARTS (vectype) - 1) * -dr_size;
+	      unsigned int mis = dr_misalignment (dr_info, vectype, off);
 	      mis = negative ? mis : -mis;
 	      if (mis != 0)
 		npeel_tmp = (mis & (target_align - 1)) / dr_size;
@@ -2238,8 +2245,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  updating DR_MISALIGNMENT values.  The peeling factor is the
                  vectorization factor minus the misalignment as an element
                  count.  */
+	      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	      poly_int64 off = 0;
+	      if (negative)
+		off = ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
+		       * -TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
 	      unsigned int mis
-		= dr_misalignment (dr0_info, STMT_VINFO_VECTYPE (stmt_info));
+		= dr_misalignment (dr0_info, vectype, off);
 	      mis = negative ? mis : -mis;
 	      /* If known_alignment_for_access_p then we have set
 	         DR_MISALIGNMENT which is only done if we know it at compiler
@@ -2383,18 +2395,26 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       FOR_EACH_VEC_ELT (datarefs, i, dr)
         {
 	  dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-	  stmt_vec_info stmt_info = dr_info->stmt;
-	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-	  int misalignment;
-	  if ((misalignment = dr_misalignment (dr_info, vectype)) == 0
-	      || !vect_relevant_for_alignment_p (dr_info))
+	  if (!vect_relevant_for_alignment_p (dr_info))
 	    continue;
 
+	  stmt_vec_info stmt_info = dr_info->stmt;
 	  if (STMT_VINFO_STRIDED_P (stmt_info))
 	    {
 	      do_versioning = false;
 	      break;
 	    }
+
+	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	  bool negative = tree_int_cst_compare (DR_STEP (dr),
+						size_zero_node) < 0;
+	  poly_int64 off = 0;
+	  if (negative)
+	    off = ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
+		   * -TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))));
+	  int misalignment;
+	  if ((misalignment = dr_misalignment (dr_info, vectype, off)) == 0)
+	    continue;
 
 	  enum dr_alignment_support supportable_dr_alignment
 	    = vect_supportable_dr_alignment (loop_vinfo, dr_info, vectype,
@@ -4752,9 +4772,6 @@ vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 	    is as follows:
 	    if LOOP=i_loop:	&in		(relative to i_loop)
 	    if LOOP=j_loop: 	&in+i*2B	(relative to j_loop)
-   BYTE_OFFSET: Optional, defaulted to NULL.  If supplied, it is added to the
-	    initial address.  Unlike OFFSET, which is number of elements to
-	    be added, BYTE_OFFSET is measured in bytes.
 
    Output:
    1. Return an SSA_NAME whose value is the address of the memory location of
@@ -4767,8 +4784,7 @@ vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 tree
 vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
 				      gimple_seq *new_stmt_list,
-				      tree offset,
-				      tree byte_offset)
+				      tree offset)
 {
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   struct data_reference *dr = dr_info->dr;
@@ -4777,7 +4793,6 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
   tree dest;
   gimple_seq seq = NULL;
   tree vect_ptr_type;
-  tree step = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   innermost_loop_behavior *drb = vect_dr_behavior (vinfo, dr_info);
 
@@ -4801,16 +4816,9 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (offset)
     {
-      offset = fold_build2 (MULT_EXPR, sizetype,
-			    fold_convert (sizetype, offset), step);
+      offset = fold_convert (sizetype, offset);
       base_offset = fold_build2 (PLUS_EXPR, sizetype,
 				 base_offset, offset);
-    }
-  if (byte_offset)
-    {
-      byte_offset = fold_convert (sizetype, byte_offset);
-      base_offset = fold_build2 (PLUS_EXPR, sizetype,
-				 base_offset, byte_offset);
     }
 
   /* base + base_offset */
@@ -4860,15 +4868,11 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
    2. AGGR_TYPE: the type of the reference, which should be either a vector
         or an array.
    3. AT_LOOP: the loop where the vector memref is to be created.
-   4. OFFSET (optional): an offset to be added to the initial address accessed
-	by the data-ref in STMT_INFO.
+   4. OFFSET (optional): a byte offset to be added to the initial address
+	accessed by the data-ref in STMT_INFO.
    5. BSI: location where the new stmts are to be placed if there is no loop
    6. ONLY_INIT: indicate if ap is to be updated in the loop, or remain
         pointing to the initial address.
-   7. BYTE_OFFSET (optional, defaults to NULL): a byte offset to be added
-	to the initial address accessed by the data-ref in STMT_INFO.  This is
-	similar to OFFSET, but OFFSET is counted in elements, while BYTE_OFFSET
-	in bytes.
    8. IV_STEP (optional, defaults to NULL): the amount that should be added
 	to the IV during each iteration of the loop.  NULL says to move
 	by one copy of AGGR_TYPE up or down, depending on the step of the
@@ -4885,7 +4889,7 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
       if OFFSET is not supplied:
          initial_address = &a[init];
       if OFFSET is supplied:
-         initial_address = &a[init + OFFSET];
+	 initial_address = &a[init] + OFFSET;
       if BYTE_OFFSET is supplied:
 	 initial_address = &a[init] + BYTE_OFFSET;
 
@@ -4903,7 +4907,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 			  tree aggr_type, class loop *at_loop, tree offset,
 			  tree *initial_address, gimple_stmt_iterator *gsi,
 			  gimple **ptr_incr, bool only_init,
-			  tree byte_offset, tree iv_step)
+			  tree iv_step)
 {
   const char *base_name;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -5031,11 +5035,11 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
   /* (2) Calculate the initial address of the aggregate-pointer, and set
      the aggregate-pointer to point to it before the loop.  */
 
-  /* Create: (&(base[init_val+offset]+byte_offset) in the loop preheader.  */
+  /* Create: (&(base[init_val]+offset) in the loop preheader.  */
 
   new_temp = vect_create_addr_base_for_vector_ref (vinfo,
 						   stmt_info, &new_stmt_list,
-						   offset, byte_offset);
+						   offset);
   if (new_stmt_list)
     {
       if (pe)

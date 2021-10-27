@@ -1,3 +1,31 @@
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102956
+	* symbol.c (gfc_check_conflict): Add conflict check for PDT KIND
+	and LEN type parameters.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102917
+	* decl.c (match_attr_spec): Remove invalid integer kind checks on
+	KIND and LEN attributes of PDTs.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102816
+	* resolve.c (resolve_structure_cons): Reject invalid array spec of
+	a DT component referenced in a structure constructor.
+
+2021-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102885
+	* trans-decl.c (gfc_conv_cfi_to_gfc): Properly handle nonconstant
+	character lenghts.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* trans-decl.c (gfc_conv_cfi_to_gfc): Initialize rank to NULL_TREE.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

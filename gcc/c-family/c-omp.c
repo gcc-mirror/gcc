@@ -1353,6 +1353,20 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
 	}
       d->fail = true;
     }
+  else if ((d->kind & 4)
+	   && TREE_CODE (*tp) != TREE_VEC
+	   && TREE_CODE (*tp) != PLUS_EXPR
+	   && TREE_CODE (*tp) != MINUS_EXPR
+	   && TREE_CODE (*tp) != MULT_EXPR
+	   && TREE_CODE (*tp) != POINTER_PLUS_EXPR
+	   && !CONVERT_EXPR_P (*tp))
+    {
+      *walk_subtrees = 0;
+      d->kind &= 3;
+      walk_tree_1 (tp, c_omp_check_loop_iv_r, data, NULL, d->lh);
+      d->kind |= 4;
+      return NULL_TREE;
+    }
   else if (d->ppset->add (*tp))
     *walk_subtrees = 0;
   /* Don't walk dtors added by C++ wrap_cleanups_r.  */
@@ -1463,6 +1477,18 @@ c_omp_check_nonrect_loop_iv (tree *tp, struct c_omp_check_loop_iv_data *d,
 	  break;
 	}
       a2 = integer_zero_node;
+      break;
+    case POINTER_PLUS_EXPR:
+      a1 = TREE_OPERAND (t, 0);
+      a2 = TREE_OPERAND (t, 1);
+      while (CONVERT_EXPR_P (a1))
+	a1 = TREE_OPERAND (a1, 0);
+      if (DECL_P (a1) && c_omp_is_loop_iterator (a1, d) >= 0)
+	{
+	  a2 = TREE_OPERAND (t, 1);
+	  t = a1;
+	  break;
+	}
       break;
     default:
       break;
@@ -1586,10 +1612,7 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	  data.fail = true;
 	}
       /* Handle non-rectangular loop nests.  */
-      if (TREE_CODE (stmt) != OACC_LOOP
-	  && (TREE_CODE (TREE_OPERAND (init, 1)) == TREE_VEC
-	      || INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 1))))
-	  && i > 0)
+      if (TREE_CODE (stmt) != OACC_LOOP && i > 0)
 	kind = 4;
       data.kind = kind;
       data.idx = i;
@@ -1651,11 +1674,13 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 /* Similar, but allows to check the init or cond expressions individually.  */
 
 bool
-c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
-			   tree init, tree cond, walk_tree_lh lh)
+c_omp_check_loop_iv_exprs (location_t stmt_loc, enum tree_code code,
+			   tree declv, int i, tree decl, tree init, tree cond,
+			   walk_tree_lh lh)
 {
   hash_set<tree> pset;
   struct c_omp_check_loop_iv_data data;
+  int kind = (code != OACC_LOOP && i > 0) ? 4 : 0;
 
   data.declv = declv;
   data.fail = false;
@@ -1674,7 +1699,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
   if (init)
     {
       data.expr_loc = EXPR_LOCATION (init);
-      data.kind = 0;
+      data.kind = kind;
       walk_tree_1 (&init,
 		   c_omp_check_loop_iv_r, &data, NULL, lh);
     }
@@ -1682,7 +1707,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
     {
       gcc_assert (COMPARISON_CLASS_P (cond));
       data.expr_loc = EXPR_LOCATION (init);
-      data.kind = 1;
+      data.kind = kind | 1;
       if (TREE_OPERAND (cond, 0) == decl)
 	walk_tree_1 (&TREE_OPERAND (cond, 1),
 		     c_omp_check_loop_iv_r, &data, NULL, lh);
