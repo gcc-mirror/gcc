@@ -1,3 +1,12 @@
+2021-10-26  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	Backported from master:
+	2021-10-16  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	* configure.ac: Treat powerpc64*-*-freebsd* the same as
+	powerpc64-*-freebsd*.
+	* configure: Regenerate.
+
 2021-10-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Don't use 'G' constraint in integer move patterns.
