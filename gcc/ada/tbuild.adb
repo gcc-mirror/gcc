@@ -699,11 +699,10 @@ package body Tbuild is
       Loc    : Source_Ptr) return Node_Id
    is
       pragma Assert (Present (Def_Id) and then Nkind (Def_Id) in N_Entity);
-      Occurrence : Node_Id;
+      Occurrence : constant Node_Id :=
+        Make_Identifier (Loc, Chars (Def_Id));
 
    begin
-      Occurrence := New_Node (N_Identifier, Loc);
-      Set_Chars (Occurrence, Chars (Def_Id));
       Set_Entity (Occurrence, Def_Id);
 
       if Is_Type (Def_Id) then
