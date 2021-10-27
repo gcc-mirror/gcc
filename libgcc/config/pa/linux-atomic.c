@@ -28,6 +28,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define EBUSY   16
 #define ENOSYS 251 
 
+typedef unsigned char u8;
+typedef short unsigned int u16;
+#ifdef __LP64__
+typedef long unsigned int u64;
+#else
+typedef long long unsigned int u64;
+#endif
+
 /* PA-RISC 2.0 supports out-of-order execution for loads and stores.
    Thus, we need to synchonize memory accesses.  For more info, see:
    "Advanced Performance Features of the 64-bit PA-8000" by Doug Hunt.
@@ -117,26 +125,26 @@ __kernel_cmpxchg2 (volatile void *mem, const void *oldval, const void *newval,
     return tmp;								\
   }
 
-FETCH_AND_OP_2 (add,   , +, long long unsigned int, 8, 3)
-FETCH_AND_OP_2 (sub,   , -, long long unsigned int, 8, 3)
-FETCH_AND_OP_2 (or,    , |, long long unsigned int, 8, 3)
-FETCH_AND_OP_2 (and,   , &, long long unsigned int, 8, 3)
-FETCH_AND_OP_2 (xor,   , ^, long long unsigned int, 8, 3)
-FETCH_AND_OP_2 (nand, ~, &, long long unsigned int, 8, 3)
+FETCH_AND_OP_2 (add,   , +, u64, 8, 3)
+FETCH_AND_OP_2 (sub,   , -, u64, 8, 3)
+FETCH_AND_OP_2 (or,    , |, u64, 8, 3)
+FETCH_AND_OP_2 (and,   , &, u64, 8, 3)
+FETCH_AND_OP_2 (xor,   , ^, u64, 8, 3)
+FETCH_AND_OP_2 (nand, ~, &, u64, 8, 3)
 
-FETCH_AND_OP_2 (add,   , +, short unsigned int, 2, 1)
-FETCH_AND_OP_2 (sub,   , -, short unsigned int, 2, 1)
-FETCH_AND_OP_2 (or,    , |, short unsigned int, 2, 1)
-FETCH_AND_OP_2 (and,   , &, short unsigned int, 2, 1)
-FETCH_AND_OP_2 (xor,   , ^, short unsigned int, 2, 1)
-FETCH_AND_OP_2 (nand, ~, &, short unsigned int, 2, 1)
+FETCH_AND_OP_2 (add,   , +, u16, 2, 1)
+FETCH_AND_OP_2 (sub,   , -, u16, 2, 1)
+FETCH_AND_OP_2 (or,    , |, u16, 2, 1)
+FETCH_AND_OP_2 (and,   , &, u16, 2, 1)
+FETCH_AND_OP_2 (xor,   , ^, u16, 2, 1)
+FETCH_AND_OP_2 (nand, ~, &, u16, 2, 1)
 
-FETCH_AND_OP_2 (add,   , +, unsigned char, 1, 0)
-FETCH_AND_OP_2 (sub,   , -, unsigned char, 1, 0)
-FETCH_AND_OP_2 (or,    , |, unsigned char, 1, 0)
-FETCH_AND_OP_2 (and,   , &, unsigned char, 1, 0)
-FETCH_AND_OP_2 (xor,   , ^, unsigned char, 1, 0)
-FETCH_AND_OP_2 (nand, ~, &, unsigned char, 1, 0)
+FETCH_AND_OP_2 (add,   , +, u8, 1, 0)
+FETCH_AND_OP_2 (sub,   , -, u8, 1, 0)
+FETCH_AND_OP_2 (or,    , |, u8, 1, 0)
+FETCH_AND_OP_2 (and,   , &, u8, 1, 0)
+FETCH_AND_OP_2 (xor,   , ^, u8, 1, 0)
+FETCH_AND_OP_2 (nand, ~, &, u8, 1, 0)
 
 #define OP_AND_FETCH_2(OP, PFX_OP, INF_OP, TYPE, WIDTH, INDEX)		\
   TYPE HIDDEN								\
@@ -154,26 +162,26 @@ FETCH_AND_OP_2 (nand, ~, &, unsigned char, 1, 0)
     return PFX_OP (tmp INF_OP val);					\
   }
 
-OP_AND_FETCH_2 (add,   , +, long long unsigned int, 8, 3)
-OP_AND_FETCH_2 (sub,   , -, long long unsigned int, 8, 3)
-OP_AND_FETCH_2 (or,    , |, long long unsigned int, 8, 3)
-OP_AND_FETCH_2 (and,   , &, long long unsigned int, 8, 3)
-OP_AND_FETCH_2 (xor,   , ^, long long unsigned int, 8, 3)
-OP_AND_FETCH_2 (nand, ~, &, long long unsigned int, 8, 3)
+OP_AND_FETCH_2 (add,   , +, u64, 8, 3)
+OP_AND_FETCH_2 (sub,   , -, u64, 8, 3)
+OP_AND_FETCH_2 (or,    , |, u64, 8, 3)
+OP_AND_FETCH_2 (and,   , &, u64, 8, 3)
+OP_AND_FETCH_2 (xor,   , ^, u64, 8, 3)
+OP_AND_FETCH_2 (nand, ~, &, u64, 8, 3)
 
-OP_AND_FETCH_2 (add,   , +, short unsigned int, 2, 1)
-OP_AND_FETCH_2 (sub,   , -, short unsigned int, 2, 1)
-OP_AND_FETCH_2 (or,    , |, short unsigned int, 2, 1)
-OP_AND_FETCH_2 (and,   , &, short unsigned int, 2, 1)
-OP_AND_FETCH_2 (xor,   , ^, short unsigned int, 2, 1)
-OP_AND_FETCH_2 (nand, ~, &, short unsigned int, 2, 1)
+OP_AND_FETCH_2 (add,   , +, u16, 2, 1)
+OP_AND_FETCH_2 (sub,   , -, u16, 2, 1)
+OP_AND_FETCH_2 (or,    , |, u16, 2, 1)
+OP_AND_FETCH_2 (and,   , &, u16, 2, 1)
+OP_AND_FETCH_2 (xor,   , ^, u16, 2, 1)
+OP_AND_FETCH_2 (nand, ~, &, u16, 2, 1)
 
-OP_AND_FETCH_2 (add,   , +, unsigned char, 1, 0)
-OP_AND_FETCH_2 (sub,   , -, unsigned char, 1, 0)
-OP_AND_FETCH_2 (or,    , |, unsigned char, 1, 0)
-OP_AND_FETCH_2 (and,   , &, unsigned char, 1, 0)
-OP_AND_FETCH_2 (xor,   , ^, unsigned char, 1, 0)
-OP_AND_FETCH_2 (nand, ~, &, unsigned char, 1, 0)
+OP_AND_FETCH_2 (add,   , +, u8, 1, 0)
+OP_AND_FETCH_2 (sub,   , -, u8, 1, 0)
+OP_AND_FETCH_2 (or,    , |, u8, 1, 0)
+OP_AND_FETCH_2 (and,   , &, u8, 1, 0)
+OP_AND_FETCH_2 (xor,   , ^, u8, 1, 0)
+OP_AND_FETCH_2 (nand, ~, &, u8, 1, 0)
 
 #define FETCH_AND_OP_WORD(OP, PFX_OP, INF_OP)				\
   unsigned int HIDDEN							\
@@ -254,9 +262,9 @@ typedef unsigned char bool;
     return (failure == 0);						\
   }
 
-COMPARE_AND_SWAP_2 (long long unsigned int, 8, 3)
-COMPARE_AND_SWAP_2 (short unsigned int, 2, 1)
-COMPARE_AND_SWAP_2 (unsigned char, 1, 0)
+COMPARE_AND_SWAP_2 (u64, 8, 3)
+COMPARE_AND_SWAP_2 (u16, 2, 1)
+COMPARE_AND_SWAP_2 (u8, 1, 0)
 
 unsigned int HIDDEN
 __sync_val_compare_and_swap_4 (volatile void *ptr, unsigned int oldval,
@@ -304,9 +312,9 @@ TYPE HIDDEN								\
     return oldval;							\
   }
 
-SYNC_LOCK_TEST_AND_SET_2 (long long unsigned int, 8, 3)
-SYNC_LOCK_TEST_AND_SET_2 (short unsigned int, 2, 1)
-SYNC_LOCK_TEST_AND_SET_2 (unsigned char, 1, 0)
+SYNC_LOCK_TEST_AND_SET_2 (u64, 8, 3)
+SYNC_LOCK_TEST_AND_SET_2 (u16, 2, 1)
+SYNC_LOCK_TEST_AND_SET_2 (u8, 1, 0)
 
 unsigned int HIDDEN
 __sync_lock_test_and_set_4 (volatile void *ptr, unsigned int val)
@@ -336,9 +344,9 @@ __sync_lock_test_and_set_4 (volatile void *ptr, unsigned int val)
     } while (failure != 0);					\
   }
 
-SYNC_LOCK_RELEASE_1 (long long unsigned int, 8, 3)
-SYNC_LOCK_RELEASE_1 (short unsigned int, 2, 1)
-SYNC_LOCK_RELEASE_1 (unsigned char, 1, 0)
+SYNC_LOCK_RELEASE_1 (u64, 8, 3)
+SYNC_LOCK_RELEASE_1 (u16, 2, 1)
+SYNC_LOCK_RELEASE_1 (u8, 1, 0)
 
 void HIDDEN
 __sync_lock_release_4 (volatile void *ptr)
