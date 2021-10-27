@@ -288,6 +288,7 @@ package body Exp_Ch8 is
       function Build_Body_For_Renaming (Typ : Entity_Id) return Node_Id is
          Left    : constant Entity_Id := First_Formal (Id);
          Right   : constant Entity_Id := Next_Formal (Left);
+         Bodies  : List_Id;
          Body_Id : Entity_Id;
          Decl    : Node_Id;
 
@@ -295,11 +296,11 @@ package body Exp_Ch8 is
          Set_Alias (Id, Empty);
          Set_Has_Completion (Id, False);
          Rewrite (N,
-           Make_Subprogram_Declaration (Sloc (N),
+           Make_Subprogram_Declaration (Loc,
              Specification => Specification (N)));
          Set_Has_Delayed_Freeze (Id);
 
-         Body_Id := Make_Defining_Identifier (Sloc (N), Chars (Id));
+         Body_Id := Make_Defining_Identifier (Loc, Chars (Id));
          Set_Debug_Info_Needed (Body_Id);
 
          if Has_Variant_Part (Typ) then
@@ -317,6 +318,12 @@ package body Exp_Ch8 is
          --  subprogram.
 
          else
+            --  While expanding record equality we might create auxiliary
+            --  subprograms that will be placed in the declaration list of the
+            --  equality subprogram itself.
+
+            Bodies := Empty_List;
+
             Decl :=
               Make_Subprogram_Body (Loc,
                 Specification              =>
@@ -325,20 +332,18 @@ package body Exp_Ch8 is
                     Parameter_Specifications => Copy_Parameter_List (Id),
                     Result_Definition        =>
                       New_Occurrence_Of (Standard_Boolean, Loc)),
-                Declarations               => Empty_List,
-                Handled_Statement_Sequence => Empty);
-
-            Set_Handled_Statement_Sequence (Decl,
-              Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (
-                  Make_Simple_Return_Statement (Loc,
-                    Expression =>
-                      Expand_Record_Equality
-                        (Id,
-                         Typ    => Typ,
-                         Lhs    => Make_Identifier (Loc, Chars (Left)),
-                         Rhs    => Make_Identifier (Loc, Chars (Right)),
-                         Bodies => Declarations (Decl))))));
+                Declarations               => Bodies,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (
+                      Make_Simple_Return_Statement (Loc,
+                        Expression =>
+                          Expand_Record_Equality
+                            (Id,
+                             Typ    => Typ,
+                             Lhs    => Make_Identifier (Loc, Chars (Left)),
+                             Rhs    => Make_Identifier (Loc, Chars (Right)),
+                             Bodies => Bodies)))));
          end if;
 
          return Decl;
@@ -375,7 +380,7 @@ package body Exp_Ch8 is
         and then Scope (Entity (Nam)) = Standard_Standard
       then
          declare
-            Typ  : constant Entity_Id := Etype (First_Formal (Id));
+            Typ : constant Entity_Id := Etype (First_Formal (Id));
 
          begin
             --  Check whether this is a renaming of a predefined equality on an
