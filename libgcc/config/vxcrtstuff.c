@@ -66,14 +66,18 @@ __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
 
 #define EH_CTOR_NAME _crtbe_register_frame
 #define EH_DTOR_NAME _ctrbe_deregister_frame
+#define EH_LINKAGE static
 
 #else
 
 /* No specific sections for constructors or destructors: we thus use a
    symbol naming convention so that the constructors are then recognized
-   by munch or whatever tool is used for the final link phase.  */
+   by munch or whatever tool is used for the final link phase.  Since the
+   pointers to the constructor/destructor functions are not created in this
+   translation unit, they must have external linkage.  */
 #define EH_CTOR_NAME _GLOBAL__I_00101_0__crtbe_register_frame
 #define EH_DTOR_NAME _GLOBAL__D_00101_1__crtbe_deregister_frame
+#define EH_LINKAGE
 
 #endif
 
@@ -96,13 +100,13 @@ __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
 
 #endif /* USE_INITFINI_ARRAY  */
 
-EH_CTOR_ATTRIBUTE void EH_CTOR_NAME (void)
+EH_LINKAGE EH_CTOR_ATTRIBUTE void EH_CTOR_NAME (void)
 {
   static struct object object;
   __register_frame_info (__EH_FRAME_BEGIN__, &object);
 }
 
-EH_DTOR_ATTRIBUTE void EH_DTOR_NAME (void)
+EH_LINKAGE EH_DTOR_ATTRIBUTE void EH_DTOR_NAME (void)
 {
   __deregister_frame_info (__EH_FRAME_BEGIN__);
 }
