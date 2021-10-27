@@ -3713,7 +3713,7 @@ insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
 }
 
 
-bool
+static bool
 gfc_insert_kind_parameter_exprs (gfc_expr *e)
 {
   return gfc_traverse_expr (e, NULL, &insert_parameter_exprs, 0);
