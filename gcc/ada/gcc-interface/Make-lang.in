@@ -440,6 +440,7 @@ GNAT_ADA_OBJS =	\
  ada/sprint.o	\
  ada/stand.o	\
  ada/stringt.o	\
+ ada/strub.o	\
  ada/style.o	\
  ada/styleg.o	\
  ada/stylesw.o	\

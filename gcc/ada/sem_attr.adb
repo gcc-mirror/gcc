@@ -74,6 +74,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with System;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Style;
 with Stylesw;        use Stylesw;
 with Targparm;       use Targparm;
@@ -11292,6 +11293,27 @@ package body Sem_Attr is
                end;
             else
                Resolve (P);
+            end if;
+
+            --  Refuse to compute access to variables and constants when that
+            --  would drop the strub mode associated with them, unless they're
+            --  unchecked conversions. We don't have to do this when the types
+            --  of the data objects are annotated: then the access type
+            --  designates the annotated type, and there's no loss. Only when
+            --  the variable is annotated directly that the pragma gets
+            --  attached to the variable, rather than to its type, and then,
+            --  expressing an access-to-annotated-type type to hold the 'Access
+            --  result is not possible without resorting to that very annotated
+            --  type.
+
+            if Attr_Id /= Attribute_Unchecked_Access
+              and then Comes_From_Source (N)
+              and then Is_Entity_Name (P)
+              and then Explicit_Strub_Mode (Entity (P)) = Enabled
+              and then
+                Explicit_Strub_Mode (Designated_Type (Btyp)) = Unspecified
+            then
+               Error_Msg_F ("target access type drops `strub` mode from &", P);
             end if;
 
             --  X'Access is illegal if X denotes a constant and the access type

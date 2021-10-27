@@ -84,6 +84,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinfo.CN;       use Sinfo.CN;
 with Sinput;         use Sinput;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Stylesw;        use Stylesw;
 with Table;
 with Targparm;       use Targparm;
@@ -19446,7 +19447,29 @@ package body Sem_Prag is
             Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
             Def_Id := Entity (Get_Pragma_Arg (Arg1));
 
-            if Is_Access_Type (Def_Id) then
+            --  Apply the pragma to the designated type, rather than to the
+            --  access type, unless it's a strub annotation.  We wish to enable
+            --  objects of access type, as well as access types themselves, to
+            --  be annotated, so that reading the access objects (as oposed to
+            --  the designated data) automatically enables stack
+            --  scrubbing. That said, as in the attribute handler that
+            --  processes the pragma turned into a compiler attribute, a strub
+            --  annotation that must be associated with a subprogram type (for
+            --  holding an explicit strub mode), when applied to an
+            --  access-to-subprogram, gets promoted to the subprogram type. We
+            --  might be tempted to leave it alone here, since the C attribute
+            --  handler will adjust it, but then GNAT would convert the
+            --  annotated subprogram types to naked ones before using them,
+            --  cancelling out their intended effects.
+
+            if Is_Access_Type (Def_Id)
+              and then (not Strub_Pragma_P (N)
+                          or else
+                          (Present (Arg3)
+                             and then
+                             Ekind (Designated_Type
+                                      (Def_Id)) = E_Subprogram_Type))
+            then
                Def_Id := Designated_Type (Def_Id);
             end if;
 
@@ -19464,7 +19487,7 @@ package body Sem_Prag is
             if Rep_Item_Too_Late (Def_Id, N) then
                return;
             else
-               Set_Has_Gigi_Rep_Item (Entity (Get_Pragma_Arg (Arg1)));
+               Set_Has_Gigi_Rep_Item (Def_Id);
             end if;
          end Machine_Attribute;
 
