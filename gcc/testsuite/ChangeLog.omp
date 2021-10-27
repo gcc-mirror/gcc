@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-10-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/loop-8.c: New test.
+	* c-c++-common/gomp/loop-9.c: New test.
+
+2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/102854
 	* g++.dg/gomp/loop-3.C: Don't expect some errors.
 	* g++.dg/gomp/loop-7.C: New test.

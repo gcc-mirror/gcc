@@ -1,3 +1,11 @@
+2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-26.c: New test.
+	* testsuite/libgomp.c/loop-27.c: New test.
+
 2021-10-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/declare-allocatable-1.f90: Compile

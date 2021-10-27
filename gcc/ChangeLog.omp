@@ -1,3 +1,12 @@
+2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for_init_counts): Handle non-rectangular
+	iterators with pointer types.
+	(expand_omp_for_init_vars, extract_omp_for_update_vars): Likewise.
+
 2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
