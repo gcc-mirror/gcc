@@ -394,9 +394,10 @@ do {                                                    \
    profiling a function entry.  */
 #define PROFILE_HOOK(LABEL)						\
   {									\
-    rtx fun;								\
+    rtx fun, ra;							\
+    ra = get_hard_reg_initial_val (Pmode, LR_REGNUM);			\
     fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
-    emit_library_call (fun, LCT_NORMAL, VOIDmode);			\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode, ra, Pmode);		\
   }
 
 /* All the work is done in PROFILE_HOOK, but this is still required.  */
