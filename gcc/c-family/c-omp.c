@@ -1353,6 +1353,19 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
 	}
       d->fail = true;
     }
+  else if ((d->kind & 4)
+	   && TREE_CODE (*tp) != TREE_VEC
+	   && TREE_CODE (*tp) != PLUS_EXPR
+	   && TREE_CODE (*tp) != MINUS_EXPR
+	   && TREE_CODE (*tp) != MULT_EXPR
+	   && !CONVERT_EXPR_P (*tp))
+    {
+      *walk_subtrees = 0;
+      d->kind &= 3;
+      walk_tree_1 (tp, c_omp_check_loop_iv_r, data, NULL, d->lh);
+      d->kind |= 4;
+      return NULL_TREE;
+    }
   else if (d->ppset->add (*tp))
     *walk_subtrees = 0;
   /* Don't walk dtors added by C++ wrap_cleanups_r.  */
@@ -1651,11 +1664,13 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 /* Similar, but allows to check the init or cond expressions individually.  */
 
 bool
-c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
-			   tree init, tree cond, walk_tree_lh lh)
+c_omp_check_loop_iv_exprs (location_t stmt_loc, enum tree_code code,
+			   tree declv, int i, tree decl, tree init, tree cond,
+			   walk_tree_lh lh)
 {
   hash_set<tree> pset;
   struct c_omp_check_loop_iv_data data;
+  int kind = (code != OACC_LOOP && i > 0) ? 4 : 0;
 
   data.declv = declv;
   data.fail = false;
@@ -1674,7 +1689,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
   if (init)
     {
       data.expr_loc = EXPR_LOCATION (init);
-      data.kind = 0;
+      data.kind = kind;
       walk_tree_1 (&init,
 		   c_omp_check_loop_iv_r, &data, NULL, lh);
     }
@@ -1682,7 +1697,7 @@ c_omp_check_loop_iv_exprs (location_t stmt_loc, tree declv, int i, tree decl,
     {
       gcc_assert (COMPARISON_CLASS_P (cond));
       data.expr_loc = EXPR_LOCATION (init);
-      data.kind = 1;
+      data.kind = kind | 1;
       if (TREE_OPERAND (cond, 0) == decl)
 	walk_tree_1 (&TREE_OPERAND (cond, 1),
 		     c_omp_check_loop_iv_r, &data, NULL, lh);
