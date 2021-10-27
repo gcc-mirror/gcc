@@ -1358,6 +1358,7 @@ c_omp_check_loop_iv_r (tree *tp, int *walk_subtrees, void *data)
 	   && TREE_CODE (*tp) != PLUS_EXPR
 	   && TREE_CODE (*tp) != MINUS_EXPR
 	   && TREE_CODE (*tp) != MULT_EXPR
+	   && TREE_CODE (*tp) != POINTER_PLUS_EXPR
 	   && !CONVERT_EXPR_P (*tp))
     {
       *walk_subtrees = 0;
@@ -1476,6 +1477,18 @@ c_omp_check_nonrect_loop_iv (tree *tp, struct c_omp_check_loop_iv_data *d,
 	  break;
 	}
       a2 = integer_zero_node;
+      break;
+    case POINTER_PLUS_EXPR:
+      a1 = TREE_OPERAND (t, 0);
+      a2 = TREE_OPERAND (t, 1);
+      while (CONVERT_EXPR_P (a1))
+	a1 = TREE_OPERAND (a1, 0);
+      if (DECL_P (a1) && c_omp_is_loop_iterator (a1, d) >= 0)
+	{
+	  a2 = TREE_OPERAND (t, 1);
+	  t = a1;
+	  break;
+	}
       break;
     default:
       break;
@@ -1599,10 +1612,7 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	  data.fail = true;
 	}
       /* Handle non-rectangular loop nests.  */
-      if (TREE_CODE (stmt) != OACC_LOOP
-	  && (TREE_CODE (TREE_OPERAND (init, 1)) == TREE_VEC
-	      || INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (init, 1))))
-	  && i > 0)
+      if (TREE_CODE (stmt) != OACC_LOOP && i > 0)
 	kind = 4;
       data.kind = kind;
       data.idx = i;
