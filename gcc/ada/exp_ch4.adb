@@ -1637,7 +1637,7 @@ package body Exp_Ch4 is
       --  for that argument in the corresponding function formal
 
       function Handle_One_Dimension
-        (N     : Int;
+        (N     : Pos;
          Index : Node_Id) return Node_Id;
       --  This procedure returns the following code
       --
@@ -1786,7 +1786,7 @@ package body Exp_Ch4 is
       ---------------------------
 
       function Handle_One_Dimension
-        (N     : Int;
+        (N     : Pos;
          Index : Node_Id) return Node_Id
       is
          Need_Separate_Indexes : constant Boolean :=
