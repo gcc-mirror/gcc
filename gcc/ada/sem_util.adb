@@ -6797,14 +6797,11 @@ package body Sem_Util is
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id is
       Loc    : constant Source_Ptr := Sloc (Subp_Id);
       Plist  : List_Id;
-      Formal : Entity_Id;
+      Formal : Entity_Id := First_Formal (Subp_Id);
 
    begin
-      if No (First_Formal (Subp_Id)) then
-         return No_List;
-      else
-         Plist  := New_List;
-         Formal := First_Formal (Subp_Id);
+      if Present (Formal) then
+         Plist := New_List;
          while Present (Formal) loop
             Append_To (Plist,
               Make_Parameter_Specification (Loc,
@@ -6819,6 +6816,8 @@ package body Sem_Util is
 
             Next_Formal (Formal);
          end loop;
+      else
+         Plist := No_List;
       end if;
 
       return Plist;
