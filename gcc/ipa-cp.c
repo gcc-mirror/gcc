@@ -400,9 +400,9 @@ object_allocator<ipcp_value_source<tree> > ipcp_sources_pool
 object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
   ("IPA_CP aggregate lattices");
 
-/* Maximal count found in program.  */
+/* Base count to use in heuristics when using profile feedback.  */
 
-static profile_count max_count;
+static profile_count base_count;
 
 /* Original overall size of the program.  */
 
@@ -809,7 +809,8 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   /* When profile is available and function is hot, propagate into it even if
      calls seems cold; constant propagation can improve function's speed
      significantly.  */
-  if (max_count > profile_count::zero ())
+  if (stats.count_sum > profile_count::zero ()
+      && node->count.ipa ().initialized_p ())
     {
       if (stats.count_sum > node->count.ipa ().apply_scale (90, 100))
 	{
@@ -3310,10 +3311,10 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
-  if (max_count > profile_count::zero ())
+  if (base_count > profile_count::zero ())
     {
 
-      sreal factor = count_sum.probability_in (max_count).to_sreal ();
+      sreal factor = count_sum.probability_in (base_count).to_sreal ();
       sreal evaluation = (time_benefit * factor) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
       evaluation *= 1000;
@@ -3950,6 +3951,21 @@ value_topo_info<valtype>::propagate_effects ()
     }
 }
 
+/* Callback for qsort to sort counts of all edges.  */
+
+static int
+compare_edge_profile_counts (const void *a, const void *b)
+{
+  const profile_count *cnt1 = (const profile_count *) a;
+  const profile_count *cnt2 = (const profile_count *) b;
+
+  if (*cnt1 < *cnt2)
+    return 1;
+  if (*cnt1 > *cnt2)
+    return -1;
+  return 0;
+}
+
 
 /* Propagate constants, polymorphic contexts and their effects from the
    summaries interprocedurally.  */
@@ -3962,8 +3978,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
   if (dump_file)
     fprintf (dump_file, "\n Propagating constants:\n\n");
 
-  max_count = profile_count::uninitialized ();
+  base_count = profile_count::uninitialized ();
 
+  bool compute_count_base = false;
+  unsigned base_count_pos_percent = 0;
   FOR_EACH_DEFINED_FUNCTION (node)
   {
     if (node->has_gimple_body_p ()
@@ -3981,8 +3999,56 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
     ipa_size_summary *s = ipa_size_summaries->get (node);
     if (node->definition && !node->alias && s != NULL)
       overall_size += s->self_size;
-    max_count = max_count.max (node->count.ipa ());
+    if (node->count.ipa ().initialized_p ())
+      {
+	compute_count_base = true;
+	unsigned pos_percent = opt_for_fn (node->decl,
+					   param_ipa_cp_profile_count_base);
+	base_count_pos_percent = MAX (base_count_pos_percent, pos_percent);
+      }
   }
+
+  if (compute_count_base)
+    {
+      auto_vec<profile_count> all_edge_counts;
+      all_edge_counts.reserve_exact (symtab->edges_count);
+      FOR_EACH_DEFINED_FUNCTION (node)
+	for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
+	  {
+	    profile_count count = cs->count.ipa ();
+	    if (!(count > profile_count::zero ()))
+	      continue;
+
+	    enum availability avail;
+	    cgraph_node *tgt
+	      = cs->callee->function_or_virtual_thunk_symbol (&avail);
+	    ipa_node_params *info = ipa_node_params_sum->get (tgt);
+	    if (info && info->versionable)
+	      all_edge_counts.quick_push (count);
+	  }
+
+      if (!all_edge_counts.is_empty ())
+	{
+	  gcc_assert (base_count_pos_percent <= 100);
+	  all_edge_counts.qsort (compare_edge_profile_counts);
+
+	  unsigned base_count_pos
+	    = ((all_edge_counts.length () * (base_count_pos_percent)) / 100);
+	  base_count = all_edge_counts[base_count_pos];
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "\nSelected base_count from %u edges at "
+		       "position %u, arriving at: ", all_edge_counts.length (),
+		       base_count_pos);
+	      base_count.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	}
+      else if (dump_file)
+	fprintf (dump_file, "\nNo candidates with non-zero call count found, "
+		 "continuing as if without profile feedback.\n");
+    }
 
   orig_overall_size = overall_size;
 
@@ -6567,7 +6633,7 @@ make_pass_ipa_cp (gcc::context *ctxt)
 void
 ipa_cp_c_finalize (void)
 {
-  max_count = profile_count::uninitialized ();
+  base_count = profile_count::uninitialized ();
   overall_size = 0;
   orig_overall_size = 0;
   ipcp_free_transformation_sum ();
