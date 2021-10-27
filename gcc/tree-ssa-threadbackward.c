@@ -49,13 +49,10 @@ along with GCC; see the file COPYING3.  If not see
 // registered with register_path(), thread_through_all_blocks() is called
 // to modify the CFG.
 
-class back_threader_registry
+class back_threader_registry : public back_jt_path_registry
 {
 public:
   bool register_path (const vec<basic_block> &, edge taken);
-  bool thread_through_all_blocks (bool may_peel_loop_headers);
-private:
-  back_jt_path_registry m_lowlevel_registry;
 };
 
 // Class to abstract the profitability code for the backwards threader.
@@ -541,12 +538,6 @@ back_threader::debug ()
   dump (stderr);
 }
 
-bool
-back_threader_registry::thread_through_all_blocks (bool may_peel_loop_headers)
-{
-  return m_lowlevel_registry.thread_through_all_blocks (may_peel_loop_headers);
-}
-
 /* Examine jump threading path PATH and return TRUE if it is profitable to
    thread it, otherwise return FALSE.
 
@@ -873,8 +864,7 @@ bool
 back_threader_registry::register_path (const vec<basic_block> &m_path,
 				       edge taken_edge)
 {
-  vec<jump_thread_edge *> *jump_thread_path
-    = m_lowlevel_registry.allocate_thread_path ();
+  vec<jump_thread_edge *> *jump_thread_path = allocate_thread_path ();
 
   // The generic copier ignores the edge type.  We can build the
   // thread edges with any type.
@@ -885,12 +875,11 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 
       edge e = find_edge (bb1, bb2);
       gcc_assert (e);
-      m_lowlevel_registry.push_edge (jump_thread_path, e, EDGE_COPY_SRC_BLOCK);
+      push_edge (jump_thread_path, e, EDGE_COPY_SRC_BLOCK);
     }
 
-  m_lowlevel_registry.push_edge (jump_thread_path,
-				 taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-  m_lowlevel_registry.register_jump_thread (jump_thread_path);
+  push_edge (jump_thread_path, taken_edge, EDGE_NO_COPY_SRC_BLOCK);
+  register_jump_thread (jump_thread_path);
   return true;
 }
 
