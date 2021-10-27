@@ -744,6 +744,13 @@ package body Sem_Util is
             then
                return Accessibility_Level (Related_Expression (E));
 
+            elsif Level = Dynamic_Level
+               and then Ekind (E) in E_In_Parameter | E_In_Out_Parameter
+               and then Present (Init_Proc_Level_Formal (Scope (E)))
+            then
+               return New_Occurrence_Of
+                        (Init_Proc_Level_Formal (Scope (E)), Loc);
+
             --  Normal object - get the level of the enclosing scope
 
             else
