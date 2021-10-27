@@ -506,11 +506,11 @@ package body Ada.Strings.Unbounded is
 
       if Object.Reference /= Null_String'Access then
          declare
-            Reference_Copy : String_Access := Object.Reference;
+            Old : String_Access := Object.Reference;
             --  The original reference cannot be null, so we must create a
             --  copy which will become null when deallocated.
          begin
-            Deallocate (Reference_Copy);
+            Deallocate (Old);
             Object.Reference := Null_Unbounded_String.Reference;
          end;
          Object.Last := 0;
@@ -833,9 +833,13 @@ package body Ada.Strings.Unbounded is
             Tmp : constant String_Access :=
               new String (1 .. New_Rounded_Up_Size);
 
+            Old : String_Access := Source.Reference;
+            --  The original reference cannot be null, so we must create a copy
+            --  which will become null when deallocated.
+
          begin
             Tmp (1 .. Source.Last) := Source.Reference (1 .. Source.Last);
-            Free (Source.Reference);
+            Free (Old);
             Source.Reference := Tmp;
          end;
       end if;
