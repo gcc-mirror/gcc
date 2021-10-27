@@ -6239,9 +6239,7 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 
   const_TokenPtr t = lexer.peek_token ();
   Location locus = t->get_locus ();
-  const_TokenPtr t2 = lexer.peek_token (1);
-  while (t->get_id () == LIFETIME
-	 && (t2->get_id () == COMMA || !is_right_angle_tok (t2->get_id ())))
+  while (!is_right_angle_tok (t->get_id ()))
     {
       AST::Lifetime lifetime = parse_lifetime ();
       if (lifetime.is_error ())
@@ -6261,7 +6259,6 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
       lexer.skip_token ();
 
       t = lexer.peek_token ();
-      t2 = lexer.peek_token (1);
     }
 
   // try to parse types second
