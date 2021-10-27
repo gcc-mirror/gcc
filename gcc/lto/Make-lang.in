@@ -60,6 +60,7 @@ lto.install-common: installdirs
 lto.install-man:
 lto.install-info:
 lto.dvi:
+lto.install-dvi:
 lto.pdf:
 lto.install-pdf:
 lto.html:

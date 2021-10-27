@@ -30,9 +30,7 @@ void test01()
   static_assert(test_category<is_floating_point, char>(false), "");
   static_assert(test_category<is_floating_point, signed char>(false), "");
   static_assert(test_category<is_floating_point, unsigned char>(false), "");
-#ifdef _GLIBCXX_USE_WCHAR_T
   static_assert(test_category<is_floating_point, wchar_t>(false), "");
-#endif
   static_assert(test_category<is_floating_point, short>(false), "");
   static_assert(test_category<is_floating_point, unsigned short>(false), "");
   static_assert(test_category<is_floating_point, int>(false), "");
@@ -53,7 +51,7 @@ void test01()
   static_assert(test_category<is_floating_point, __float128>(true), "");
 #endif
 
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   static_assert(test_category<is_floating_point, __int128>(false), "");
   static_assert(test_category<is_floating_point,
 		unsigned __int128>(false), "");

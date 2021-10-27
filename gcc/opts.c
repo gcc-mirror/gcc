@@ -581,6 +581,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS, OPT_ftree_sink, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_slsr, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ter, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fvar_tracking, NULL, 1 },
 
     /* -O1 (and not -Og) optimizations.  */
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fbranch_count_reg, NULL, 1 },
@@ -1321,11 +1322,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 				       opts->x_flag_live_patching,
 				       loc);
 
-  /* Unrolling all loops implies that standard loop unrolling must also
-     be done.  */
-  if (opts->x_flag_unroll_all_loops)
-    opts->x_flag_unroll_loops = 1;
-
   /* Allow cunroll to grow size accordingly.  */
   if (!opts_set->x_flag_cunroll_grow_size)
     opts->x_flag_cunroll_grow_size
@@ -1353,6 +1349,51 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     SET_OPTION_IF_UNSET (opts, opts_set, flag_vect_cost_model,
 			 VECT_COST_MODEL_CHEAP);
 
+  /* One could use EnabledBy, but it would lead to a circular dependency.  */
+  if (!OPTION_SET_P (flag_var_tracking_uninit))
+     flag_var_tracking_uninit = flag_var_tracking;
+
+  if (!OPTION_SET_P (flag_var_tracking_assignments))
+    flag_var_tracking_assignments
+      = (flag_var_tracking
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  if (flag_var_tracking_assignments_toggle)
+    flag_var_tracking_assignments = !flag_var_tracking_assignments;
+
+  if (flag_var_tracking_assignments && !flag_var_tracking)
+    flag_var_tracking = flag_var_tracking_assignments = -1;
+
+  if (flag_var_tracking_assignments
+      && (flag_selective_scheduling || flag_selective_scheduling2))
+    warning_at (loc, 0,
+		"var-tracking-assignments changes selective scheduling");
+
+  if (flag_syntax_only)
+    {
+      write_symbols = NO_DEBUG;
+      profile_flag = 0;
+    }
+
+  if (flag_gtoggle)
+    {
+      if (debug_info_level == DINFO_LEVEL_NONE)
+	{
+	  debug_info_level = DINFO_LEVEL_NORMAL;
+
+	  if (write_symbols == NO_DEBUG)
+	    write_symbols = PREFERRED_DEBUGGING_TYPE;
+	}
+      else
+	debug_info_level = DINFO_LEVEL_NONE;
+    }
+
+  if (!OPTION_SET_P (debug_nonbind_markers_p))
+    debug_nonbind_markers_p
+      = (optimize
+	 && debug_info_level >= DINFO_LEVEL_NORMAL
+	 && dwarf_debuginfo_p ()
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 }
 
 #define LEFT_COLUMN	27

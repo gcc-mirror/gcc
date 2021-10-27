@@ -157,7 +157,7 @@ typedef enum omp_alloctrait_value_t
   omp_atv_contended = 3,
   omp_atv_uncontended = 4,
   omp_atv_serialized = 5,
-  omp_atv_sequential = omp_atv_serialized,
+  omp_atv_sequential __GOMP_DEPRECATED_5_1 = omp_atv_serialized,
   omp_atv_private = 6,
   omp_atv_all = 7,
   omp_atv_thread = 8,
@@ -260,6 +260,11 @@ extern int omp_get_initial_device (void) __GOMP_NOTHROW;
 extern int omp_get_max_task_priority (void) __GOMP_NOTHROW;
 
 extern void omp_fulfill_event (omp_event_handle_t) __GOMP_NOTHROW;
+
+extern void omp_set_num_teams (int) __GOMP_NOTHROW;
+extern int omp_get_max_teams (void) __GOMP_NOTHROW;
+extern void omp_set_teams_thread_limit (int) __GOMP_NOTHROW;
+extern int omp_get_teams_thread_limit (void) __GOMP_NOTHROW;
 
 extern void *omp_target_alloc (__SIZE_TYPE__, int) __GOMP_NOTHROW;
 extern void omp_target_free (void *, int) __GOMP_NOTHROW;

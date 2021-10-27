@@ -1923,7 +1923,7 @@ EnumValue
 Enum(ira_algorithm) String(priority) Value(IRA_ALGORITHM_PRIORITY)
 
 fira-region=
-Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_AUTODETECT) Optimization
+Common Joined RejectNegative Enum(ira_region) Var(flag_ira_region) Init(IRA_REGION_ONE) Optimization
 -fira-region=[one|all|mixed]	Set regions for IRA.
 
 Enum
@@ -2399,7 +2399,7 @@ Common Var(flag_live_range_shrinkage) Init(0) Optimization
 Relief of register pressure through live range shrinkage.
 
 frename-registers
-Common Var(flag_rename_registers) Init(2) Optimization
+Common Var(flag_rename_registers) Optimization EnabledBy(funroll-loops)
 Perform a register renaming optimization pass.
 
 fschedule-fusion
@@ -2797,7 +2797,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-cselim
-Common Var(flag_tree_cselim) Init(2) Optimization
+Common Var(flag_tree_cselim) Optimization
 Transform condition stores into unconditional ones.
 
 ftree-switch-conversion
@@ -2935,7 +2935,7 @@ Common Var(flag_unit_at_a_time) Init(1)
 Compile whole compilation unit at a time.
 
 funroll-loops
-Common Var(flag_unroll_loops) Optimization
+Common Var(flag_unroll_loops) Optimization EnabledBy(funroll-all-loops)
 Perform loop unrolling when iteration count is known.
 
 funroll-all-loops
@@ -3003,19 +3003,16 @@ Common Undocumented Var(flag_use_linker_plugin)
 
 ; Positive if we should track variables, negative if we should run
 ; the var-tracking pass only to discard debug annotations, zero if
-; we're not to run it.  When flag_var_tracking == 2 (AUTODETECT_VALUE) it
-; will be set according to optimize, debug_info_level and debug_hooks
-; in process_options ().
+; we're not to run it.
 fvar-tracking
-Common Var(flag_var_tracking) Init(2) PerFunction
+Common Var(flag_var_tracking) PerFunction EnabledBy(fvar-tracking-uninit)
 Perform variable tracking.
 
 ; Positive if we should track variables at assignments, negative if
 ; we should run the var-tracking pass only to discard debug
-; annotations.  When flag_var_tracking_assignments ==
-; AUTODETECT_VALUE it will be set according to flag_var_tracking.
+; annotations.
 fvar-tracking-assignments
-Common Var(flag_var_tracking_assignments) Init(2) PerFunction
+Common Var(flag_var_tracking_assignments) PerFunction
 Perform variable tracking by annotating assignments.
 
 ; Nonzero if we should toggle flag_var_tracking_assignments after
@@ -3026,8 +3023,7 @@ Toggle -fvar-tracking-assignments.
 
 ; Positive if we should track uninitialized variables, negative if
 ; we should run the var-tracking pass only to discard debug
-; annotations.  When flag_var_tracking_uninit == AUTODETECT_VALUE it
-; will be set according to flag_var_tracking.
+; annotations.
 fvar-tracking-uninit
 Common Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
@@ -3158,7 +3154,7 @@ Common Var(flag_value_profile_transformations) Optimization
 Use expression value profiles in optimizations.
 
 fweb
-Common Var(flag_web) Init(2) Optimization
+Common Var(flag_web) Optimization EnabledBy(funroll-loops)
 Construct webs and split unrelated uses of single variable.
 
 ftree-builtin-call-dce
@@ -3190,11 +3186,11 @@ Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
 gas-loc-support
-Common Driver Var(dwarf2out_as_loc_support) Init(2)
+Common Driver Var(dwarf2out_as_loc_support)
 Assume assembler support for (DWARF2+) .loc directives.
 
 gas-locview-support
-Common Driver Var(dwarf2out_as_locview_support) Init(2)
+Common Driver Var(dwarf2out_as_locview_support)
 Assume assembler support for view in (DWARF2+) .loc directives.
 
 gcoff
@@ -3248,7 +3244,7 @@ Common Driver JoinedOrMissing
 Generate debug information in default extended format.
 
 ginline-points
-Common Driver Var(debug_inline_points) Init(2)
+Common Driver Var(debug_inline_points)
 Generate extended entry point information for inlined functions.
 
 ginternal-reset-location-views
@@ -3288,7 +3284,7 @@ Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
 gstatement-frontiers
-Common Driver Var(debug_nonbind_markers_p) Init(2)
+Common Driver Var(debug_nonbind_markers_p) PerFunction
 Emit progressive recommended breakpoint locations.
 
 gstrict-dwarf
@@ -3304,7 +3300,7 @@ Common Driver Var(flag_gtoggle)
 Toggle debug information generation.
 
 gvariable-location-views
-Common Driver Var(debug_variable_location_views, 1) Init(2)
+Common Driver Var(debug_variable_location_views, 1)
 Augment variable location lists with progressive views.
 
 gvariable-location-views=incompat5

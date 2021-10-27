@@ -120,7 +120,7 @@ static float_struct_info struct_passed_as_elements(call_builder *cb, ffi_type *t
 
         ret.type1 = fields[0]->type;
         ret.type2 = fields[1]->type;
-        ret.offset2 = ALIGN(fields[0]->size, fields[1]->alignment);
+        ret.offset2 = FFI_ALIGN(fields[0]->size, fields[1]->alignment);
         ret.as_elements = 1;
     }
 
@@ -238,8 +238,8 @@ static void marshal(call_builder *cb, ffi_type *type, int var, void *data) {
         /* variadics are aligned even in registers */
         if (type->alignment > __SIZEOF_POINTER__) {
             if (var)
-                cb->used_integer = ALIGN(cb->used_integer, 2);
-            cb->used_stack = (size_t *)ALIGN(cb->used_stack, 2*__SIZEOF_POINTER__);
+                cb->used_integer = FFI_ALIGN(cb->used_integer, 2);
+            cb->used_stack = (size_t *)FFI_ALIGN(cb->used_stack, 2*__SIZEOF_POINTER__);
         }
 
         memcpy(realign, data, type->size);
@@ -286,8 +286,8 @@ static void *unmarshal(call_builder *cb, ffi_type *type, int var, void *data) {
         /* variadics are aligned even in registers */
         if (type->alignment > __SIZEOF_POINTER__) {
             if (var)
-                cb->used_integer = ALIGN(cb->used_integer, 2);
-            cb->used_stack = (size_t *)ALIGN(cb->used_stack, 2*__SIZEOF_POINTER__);
+                cb->used_integer = FFI_ALIGN(cb->used_integer, 2);
+            cb->used_stack = (size_t *)FFI_ALIGN(cb->used_stack, 2*__SIZEOF_POINTER__);
         }
 
         if (type->size > 0)
@@ -334,10 +334,10 @@ ffi_call_int (ffi_cif *cif, void (*fn) (void), void *rvalue, void **avalue,
     /* this is a conservative estimate, assuming a complex return value and
        that all remaining arguments are long long / __int128 */
     size_t arg_bytes = cif->nargs <= 3 ? 0 :
-        ALIGN(2 * sizeof(size_t) * (cif->nargs - 3), STKALIGN);
+        FFI_ALIGN(2 * sizeof(size_t) * (cif->nargs - 3), STKALIGN);
     size_t rval_bytes = 0;
     if (rvalue == NULL && cif->rtype->size > 2*__SIZEOF_POINTER__)
-        rval_bytes = ALIGN(cif->rtype->size, STKALIGN);
+        rval_bytes = FFI_ALIGN(cif->rtype->size, STKALIGN);
     size_t alloc_size = arg_bytes + rval_bytes + sizeof(call_context);
 
     /* the assembly code will deallocate all stack data at lower addresses
@@ -350,7 +350,7 @@ ffi_call_int (ffi_cif *cif, void (*fn) (void), void *rvalue, void **avalue,
            guarantee alloca alignment to at least that much */
         alloc_base = (size_t)alloca(alloc_size);
     } else {
-        alloc_base = ALIGN(alloca(alloc_size + STKALIGN - 1), STKALIGN);
+        alloc_base = FFI_ALIGN(alloca(alloc_size + STKALIGN - 1), STKALIGN);
     }
 
     if (rval_bytes)

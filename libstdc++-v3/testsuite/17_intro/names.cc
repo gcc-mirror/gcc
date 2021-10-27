@@ -251,6 +251,10 @@
 #undef p
 // See https://gcc.gnu.org/ml/libstdc++/2019-05/msg00175.html
 #undef ptr
+// <sys/timespec_util.h> uses this as parameter
+#undef r
+// <stdlib.h> uses this as member of drand48_data
+#undef x
 #endif
 
 #ifdef __VXWORKS__

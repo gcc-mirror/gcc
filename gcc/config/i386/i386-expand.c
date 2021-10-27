@@ -615,6 +615,16 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       return;
     }
 
+  /* If operand0 is a hard register, make operand1 a pseudo.  */
+  if (can_create_pseudo_p ()
+      && !ix86_hardreg_mov_ok (op0, op1))
+    {
+      rtx tmp = gen_reg_rtx (GET_MODE (op0));
+      emit_move_insn (tmp, op1);
+      emit_move_insn (op0, tmp);
+      return;
+    }
+
   /* Make operand1 a register if it isn't already.  */
   if (can_create_pseudo_p ()
       && !register_operand (op0, mode)
@@ -3613,6 +3623,10 @@ ix86_valid_mask_cmp_mode (machine_mode mode)
   if (TARGET_XOP && !TARGET_AVX512F)
     return false;
 
+  /* HFmode only supports vcmpsh whose dest is mask register.  */
+  if (TARGET_AVX512FP16 && mode == HFmode)
+    return true;
+
   /* AVX512F is needed for mask operation.  */
   if (!(TARGET_AVX512F && VECTOR_MODE_P (mode)))
     return false;
@@ -3634,7 +3648,9 @@ ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
 {
   int vector_size = GET_MODE_SIZE (mode);
 
-  if (vector_size < 16)
+  if (cmp_mode == HFmode)
+    return true;
+  else if (vector_size < 16)
     return false;
   else if (vector_size == 64)
     return true;
@@ -3750,7 +3766,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       && GET_MODE_CLASS (cmpmode) == MODE_INT)
     {
       gcc_assert (ix86_valid_mask_cmp_mode (mode));
-      /* Using vector move with mask register.  */
+      /* Using scalar/vector move with mask register.  */
       cmp = force_reg (cmpmode, cmp);
       /* Optimize for mask zero.  */
       op_true = (op_true != CONST0_RTX (mode)
@@ -3769,8 +3785,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	  std::swap (op_true, op_false);
 	}
 
-      rtx vec_merge = gen_rtx_VEC_MERGE (mode, op_true, op_false, cmp);
-      emit_insn (gen_rtx_SET (dest, vec_merge));
+      if (mode == HFmode)
+	emit_insn (gen_movhf_mask (dest, op_true, op_false, cmp));
+      else
+	{
+	  rtx vec_merge = gen_rtx_VEC_MERGE (mode, op_true, op_false, cmp);
+	  emit_insn (gen_rtx_SET (dest, vec_merge));
+	}
       return;
     }
   else if (vector_all_ones_operand (op_true, mode)
@@ -4824,6 +4845,16 @@ ix86_expand_vec_perm (rtx operands[])
   w = GET_MODE_NUNITS (mode);
   e = GET_MODE_UNIT_SIZE (mode);
   gcc_assert (w <= 64);
+
+  /* For HF mode vector, convert it to HI using subreg.  */
+  if (GET_MODE_INNER (mode) == HFmode)
+    {
+      machine_mode orig_mode = mode;
+      mode = mode_for_vector (HImode, w).require ();
+      target = lowpart_subreg (mode, target, orig_mode);
+      op0 = lowpart_subreg (mode, op0, orig_mode);
+      op1 = lowpart_subreg (mode, op1, orig_mode);
+    }
 
   if (TARGET_AVX512F && one_operand_shuffle)
     {
@@ -6124,6 +6155,169 @@ ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
 	emit_insn (gen_x86_shift_adj_2
 		   (half_mode, low[0], high[0], operands[2]));
     }
+}
+
+/* Expand V1TI mode shift (of rtx_code CODE) by constant.  */
+void ix86_expand_v1ti_shift (enum rtx_code code, rtx operands[])
+{
+  HOST_WIDE_INT bits = INTVAL (operands[2]) & 127;
+  rtx op1 = force_reg (V1TImode, operands[1]);
+
+  if (bits == 0)
+    {
+      emit_move_insn (operands[0], op1);
+      return;
+    }
+
+  if ((bits & 7) == 0)
+    {
+      rtx tmp = gen_reg_rtx (V1TImode);
+      if (code == ASHIFT)
+        emit_insn (gen_sse2_ashlv1ti3 (tmp, op1, GEN_INT (bits)));
+      else
+	emit_insn (gen_sse2_lshrv1ti3 (tmp, op1, GEN_INT (bits)));
+      emit_move_insn (operands[0], tmp);
+      return;
+    }
+
+  rtx tmp1 = gen_reg_rtx (V1TImode);
+  if (code == ASHIFT)
+    emit_insn (gen_sse2_ashlv1ti3 (tmp1, op1, GEN_INT (64)));
+  else
+    emit_insn (gen_sse2_lshrv1ti3 (tmp1, op1, GEN_INT (64)));
+
+  /* tmp2 is operands[1] shifted by 64, in V2DImode.  */
+  rtx tmp2 = gen_reg_rtx (V2DImode);
+  emit_move_insn (tmp2, gen_lowpart (V2DImode, tmp1));
+
+  /* tmp3 will be the V2DImode result.  */
+  rtx tmp3 = gen_reg_rtx (V2DImode);
+
+  if (bits > 64)
+    {
+      if (code == ASHIFT)
+	emit_insn (gen_ashlv2di3 (tmp3, tmp2, GEN_INT (bits - 64)));
+      else
+	emit_insn (gen_lshrv2di3 (tmp3, tmp2, GEN_INT (bits - 64)));
+    }
+  else
+    {
+      /* tmp4 is operands[1], in V2DImode.  */
+      rtx tmp4 = gen_reg_rtx (V2DImode);
+      emit_move_insn (tmp4, gen_lowpart (V2DImode, op1));
+
+      rtx tmp5 = gen_reg_rtx (V2DImode);
+      if (code == ASHIFT)
+	emit_insn (gen_ashlv2di3 (tmp5, tmp4, GEN_INT (bits)));
+      else
+	emit_insn (gen_lshrv2di3 (tmp5, tmp4, GEN_INT (bits)));
+
+      rtx tmp6 = gen_reg_rtx (V2DImode);
+      if (code == ASHIFT)
+	emit_insn (gen_lshrv2di3 (tmp6, tmp2, GEN_INT (64 - bits)));
+      else
+	emit_insn (gen_ashlv2di3 (tmp6, tmp2, GEN_INT (64 - bits)));
+
+      emit_insn (gen_iorv2di3 (tmp3, tmp5, tmp6));
+    }
+
+  /* Convert the result back to V1TImode and store in operands[0].  */
+  rtx tmp7 = gen_reg_rtx (V1TImode);
+  emit_move_insn (tmp7, gen_lowpart (V1TImode, tmp3));
+  emit_move_insn (operands[0], tmp7);
+}
+
+/* Expand V1TI mode rotate (of rtx_code CODE) by constant.  */
+void ix86_expand_v1ti_rotate (enum rtx_code code, rtx operands[])
+{
+  HOST_WIDE_INT bits = INTVAL (operands[2]) & 127;
+  rtx op1 = force_reg (V1TImode, operands[1]);
+
+  if (bits == 0)
+    {
+      emit_move_insn (operands[0], op1);
+      return;
+    }
+
+  if (code == ROTATERT)
+    bits = 128 - bits;
+
+  if ((bits & 31) == 0)
+    {
+      rtx tmp1 = gen_reg_rtx (V4SImode);
+      rtx tmp2 = gen_reg_rtx (V4SImode);
+      rtx tmp3 = gen_reg_rtx (V1TImode);
+
+      emit_move_insn (tmp1, gen_lowpart (V4SImode, op1));
+      if (bits == 32)
+	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x93)));
+      else if (bits == 64)
+	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x4e)));
+      else
+	emit_insn (gen_sse2_pshufd (tmp2, tmp1, GEN_INT (0x39)));
+      emit_move_insn (tmp3, gen_lowpart (V1TImode, tmp2));
+      emit_move_insn (operands[0], tmp3);
+      return;
+    }
+
+  if ((bits & 7) == 0)
+    {
+      rtx tmp1 = gen_reg_rtx (V1TImode);
+      rtx tmp2 = gen_reg_rtx (V1TImode);
+      rtx tmp3 = gen_reg_rtx (V1TImode);
+
+      emit_insn (gen_sse2_ashlv1ti3 (tmp1, op1, GEN_INT (bits)));
+      emit_insn (gen_sse2_lshrv1ti3 (tmp2, op1, GEN_INT (128 - bits)));
+      emit_insn (gen_iorv1ti3 (tmp3, tmp1, tmp2));
+      emit_move_insn (operands[0], tmp3);
+      return;
+    }
+
+  rtx op1_v4si = gen_reg_rtx (V4SImode);
+  emit_move_insn (op1_v4si, gen_lowpart (V4SImode, op1));
+
+  rtx lobits;
+  rtx hibits;
+
+  switch (bits >> 5)
+    {
+    case 0:
+      lobits = op1_v4si;
+      hibits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (hibits, op1_v4si, GEN_INT (0x93)));
+      break;
+
+    case 1:
+      lobits = gen_reg_rtx (V4SImode);
+      hibits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (lobits, op1_v4si, GEN_INT (0x93)));
+      emit_insn (gen_sse2_pshufd (hibits, op1_v4si, GEN_INT (0x4e)));
+      break;
+
+    case 2:
+      lobits = gen_reg_rtx (V4SImode);
+      hibits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (lobits, op1_v4si, GEN_INT (0x4e)));
+      emit_insn (gen_sse2_pshufd (hibits, op1_v4si, GEN_INT (0x39)));
+      break;
+
+    default:
+      lobits = gen_reg_rtx (V4SImode);
+      emit_insn (gen_sse2_pshufd (lobits, op1_v4si, GEN_INT (0x39)));
+      hibits = op1_v4si;
+      break;
+    }
+
+  rtx tmp1 = gen_reg_rtx (V4SImode);
+  rtx tmp2 = gen_reg_rtx (V4SImode);
+  rtx tmp3 = gen_reg_rtx (V4SImode);
+  rtx tmp4 = gen_reg_rtx (V1TImode);
+
+  emit_insn (gen_ashlv4si3 (tmp1, lobits, GEN_INT (bits & 31)));
+  emit_insn (gen_lshrv4si3 (tmp2, hibits, GEN_INT (32 - (bits & 31))));
+  emit_insn (gen_iorv4si3 (tmp3, tmp1, tmp2));
+  emit_move_insn (tmp4, gen_lowpart (V1TImode, tmp3));
+  emit_move_insn (operands[0], tmp4);
 }
 
 /* Return mode for the memcpy/memset loop counter.  Prefer SImode over
@@ -10866,7 +11060,27 @@ ix86_expand_round_builtin (const struct builtin_description *d,
 
 	  /* If there is no rounding use normal version of the pattern.  */
 	  if (INTVAL (op) == NO_ROUND)
-	    redundant_embed_rnd = 1;
+	    {
+	      /* Skip erasing embedded rounding for below expanders who
+		 generates multiple insns.  In ix86_erase_embedded_rounding
+		 the pattern will be transformed to a single set, and emit_insn
+		 appends the set insead of insert it to chain.  So the insns
+		 emitted inside define_expander would be ignored.  */
+	      switch (icode)
+		{
+		case CODE_FOR_avx512bw_fmaddc_v32hf_mask1_round:
+		case CODE_FOR_avx512bw_fcmaddc_v32hf_mask1_round:
+		case CODE_FOR_avx512fp16_fmaddcsh_v8hf_mask1_round:
+		case CODE_FOR_avx512fp16_fcmaddcsh_v8hf_mask1_round:
+		case CODE_FOR_avx512fp16_fmaddcsh_v8hf_mask3_round:
+		case CODE_FOR_avx512fp16_fcmaddcsh_v8hf_mask3_round:
+		  redundant_embed_rnd = 0;
+		  break;
+		default:
+		  redundant_embed_rnd = 1;
+		  break;
+		}
+	    }
 	}
       else
 	{
@@ -15081,7 +15295,8 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
 	  rtx ops[2] = { XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1) };
 	  if (inner_mode == QImode
 	      || inner_mode == HImode
-	      || inner_mode == TImode)
+	      || inner_mode == TImode
+	      || inner_mode == HFmode)
 	    {
 	      unsigned int n_bits = n_elts * GET_MODE_SIZE (inner_mode);
 	      scalar_mode elt_mode = inner_mode == TImode ? DImode : SImode;
@@ -16005,11 +16220,15 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       /* Let the rtl optimizers know about the zero extension performed.  */
       if (inner_mode == QImode || inner_mode == HImode)
 	{
+	  rtx reg = gen_reg_rtx (SImode);
 	  tmp = gen_rtx_ZERO_EXTEND (SImode, tmp);
-	  target = gen_lowpart (SImode, target);
+	  emit_move_insn (reg, tmp);
+	  tmp = gen_lowpart (inner_mode, reg);
+	  SUBREG_PROMOTED_VAR_P (tmp) = 1;
+	  SUBREG_PROMOTED_SET (tmp, 1);
 	}
 
-      emit_insn (gen_rtx_SET (target, tmp));
+      emit_move_insn (target, tmp);
     }
   else
     {
@@ -16042,6 +16261,11 @@ emit_reduc_half (rtx dest, rtx src, int i)
       break;
     case E_V2DFmode:
       tem = gen_vec_interleave_highv2df (dest, src, src);
+      break;
+    case E_V4QImode:
+      d = gen_reg_rtx (V1SImode);
+      tem = gen_mmx_lshrv1si3 (d, gen_lowpart (V1SImode, src),
+			       GEN_INT (i / 2));
       break;
     case E_V4HImode:
       d = gen_reg_rtx (V1DImode);
@@ -21087,6 +21311,20 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   unsigned char perm[MAX_VECT_LEN];
   unsigned int i, nelt, which;
   bool two_args;
+
+  /* For HF mode vector, convert it to HI using subreg.  */
+  if (GET_MODE_INNER (vmode) == HFmode)
+    {
+      machine_mode orig_mode = vmode;
+      vmode = mode_for_vector (HImode,
+			       GET_MODE_NUNITS (vmode)).require ();
+      if (target)
+	target = lowpart_subreg (vmode, target, orig_mode);
+      if (op0)
+	op0 = lowpart_subreg (vmode, op0, orig_mode);
+      if (op1)
+	op1 = lowpart_subreg (vmode, op1, orig_mode);
+    }
 
   d.target = target;
   d.op0 = op0;

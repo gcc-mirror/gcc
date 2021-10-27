@@ -14,7 +14,7 @@ module isof_m
   private
   
   public :: &
-    CFI_type_cptr
+    CFI_type_cptr, CFI_type_cfunptr
   
   public ::      &
     check_fn_as, &
@@ -33,6 +33,7 @@ module isof_m
 
   ! Intrinsic types. Their kind number defines their storage size. */
   integer(kind=c_signed_char), parameter :: CFI_type_cptr   = 7
+  integer(kind=c_signed_char), parameter :: CFI_type_cfunptr   = 8
 
   interface
     subroutine check_fn_as(a, t, k, e, n) &
@@ -99,7 +100,7 @@ module iso_check_m
     c_funptr, c_funloc, c_associated
 
   use :: isof_m, only:  &
-    CFI_type_cptr
+    CFI_type_cptr, CFI_type_cfunptr
   
   use :: isof_m, only: &
     check_fn_as,       &
@@ -155,7 +156,7 @@ contains
     !
     k = 0
     e = storage_size(a)/b
-    t = cfi_encode_type(CFI_type_cptr, k)
+    t = cfi_encode_type(CFI_type_cfunptr, k)
     ! Assumes 64-bit target.
     ! if(e/=8) stop 5
     do i = 1, n
@@ -176,7 +177,7 @@ contains
     !
     k = 0
     e = storage_size(a)/b
-    t = cfi_encode_type(CFI_type_cptr, k)
+    t = cfi_encode_type(CFI_type_cfunptr, k)
     ! Assumes 64-bit target.
     ! if(e/=8) stop 8
     do i = 1, n
@@ -198,7 +199,7 @@ contains
     !
     k = 0
     e = storage_size(a)/b
-    t = cfi_encode_type(CFI_type_cptr, k)
+    t = cfi_encode_type(CFI_type_cfunptr, k)
     ! Assumes 64-bit target.
     ! if(e/=8) stop 11
     select rank(a)
@@ -229,7 +230,7 @@ contains
     !
     k = 0
     e = storage_size(a)/b
-    t = cfi_encode_type(CFI_type_cptr, k)
+    t = cfi_encode_type(CFI_type_cfunptr, k)
     ! Assumes 64-bit target.
     ! if(e/=8) stop 16
     select rank(a)

@@ -523,8 +523,8 @@ package body Sem_Eval is
               and then Nkind (Parent (N)) in N_Subexpr
             then
                Rewrite (N, New_Copy (N));
-               Set_Realval
-                 (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+               Set_Realval (N, Machine_Number (Base_Type (T), Realval (N), N));
+               Set_Is_Machine_Number (N);
             end if;
          end if;
 
@@ -575,18 +575,7 @@ package body Sem_Eval is
               (N, Corresponding_Integer_Value (N) * Small_Value (T));
 
          elsif not UR_Is_Zero (Realval (N)) then
-
-            --  Note: even though RM 4.9(38) specifies biased rounding, this
-            --  has been modified by AI-100 in order to prevent confusing
-            --  differences in rounding between static and non-static
-            --  expressions. AI-100 specifies that the effect of such rounding
-            --  is implementation dependent, and in GNAT we round to nearest
-            --  even to match the run-time behavior. Note that this applies
-            --  to floating point literals, not fixed points ones, even though
-            --  their compiler representation is also as a universal real.
-
-            Set_Realval
-              (N, Machine (Base_Type (T), Realval (N), Round_Even, N));
+            Set_Realval (N, Machine_Number (Base_Type (T), Realval (N), N));
             Set_Is_Machine_Number (N);
          end if;
 
@@ -2845,7 +2834,7 @@ package body Sem_Eval is
    --  the expander that do not correspond to static expressions.
 
    procedure Eval_Integer_Literal (N : Node_Id) is
-      function In_Any_Integer_Context (Context : Node_Id) return Boolean;
+      function In_Any_Integer_Context (K : Node_Kind) return Boolean;
       --  If the literal is resolved with a specific type in a context where
       --  the expected type is Any_Integer, there are no range checks on the
       --  literal. By the time the literal is evaluated, it carries the type
@@ -2856,23 +2845,21 @@ package body Sem_Eval is
       -- In_Any_Integer_Context --
       ----------------------------
 
-      function In_Any_Integer_Context (Context : Node_Id) return Boolean is
+      function In_Any_Integer_Context (K : Node_Kind) return Boolean is
       begin
          --  Any_Integer also appears in digits specifications for real types,
          --  but those have bounds smaller that those of any integer base type,
          --  so we can safely ignore these cases.
 
-         return
-           Nkind (Context) in N_Attribute_Definition_Clause
-                            | N_Attribute_Reference
-                            | N_Modular_Type_Definition
-                            | N_Number_Declaration
-                            | N_Signed_Integer_Type_Definition;
+         return K in N_Attribute_Definition_Clause
+                   | N_Modular_Type_Definition
+                   | N_Number_Declaration
+                   | N_Signed_Integer_Type_Definition;
       end In_Any_Integer_Context;
 
       --  Local variables
 
-      Par : constant Node_Id   := Parent (N);
+      PK  : constant Node_Kind := Nkind (Parent (N));
       Typ : constant Entity_Id := Etype (N);
 
    --  Start of processing for Eval_Integer_Literal
@@ -2890,12 +2877,11 @@ package body Sem_Eval is
       --  Check_Non_Static_Context on an expanded literal may lead to spurious
       --  and misleading warnings.
 
-      if (Nkind (Par) in N_Case_Expression_Alternative | N_If_Expression
-           or else Nkind (Par) not in N_Subexpr)
-        and then (Nkind (Par) not in N_Case_Expression_Alternative
-                                   | N_If_Expression
-                   or else Comes_From_Source (N))
-        and then not In_Any_Integer_Context (Par)
+      if (PK not in N_Subexpr
+           or else (PK in N_Case_Expression_Alternative | N_If_Expression
+                     and then
+                    Comes_From_Source (N)))
+        and then not In_Any_Integer_Context (PK)
       then
          Check_Non_Static_Context (N);
       end if;
@@ -4366,7 +4352,25 @@ package body Sem_Eval is
          Fold_Uint (N, Expr_Value (Operand), Stat);
       end if;
 
-      if Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
+      --  If the target is a static floating-point subtype, then its bounds
+      --  are machine numbers so we must consider the machine-rounded value.
+
+      if Is_Floating_Point_Type (Target_Type)
+        and then Nkind (N) = N_Real_Literal
+        and then not Is_Machine_Number (N)
+      then
+         declare
+            Lo   : constant Node_Id := Type_Low_Bound (Target_Type);
+            Hi   : constant Node_Id := Type_High_Bound (Target_Type);
+            Valr : constant Ureal   :=
+                     Machine_Number (Target_Type, Expr_Value_R (N), N);
+         begin
+            if Valr < Expr_Value_R (Lo) or else Valr > Expr_Value_R (Hi) then
+               Out_Of_Range (N);
+            end if;
+         end;
+
+      elsif Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
          Out_Of_Range (N);
       end if;
    end Eval_Type_Conversion;
@@ -6049,6 +6053,27 @@ package body Sem_Eval is
    end Is_Statically_Unevaluated;
 
    --------------------
+   -- Machine_Number --
+   --------------------
+
+   --  Historical note: RM 4.9(38) originally specified biased rounding but
+   --  this has been modified by AI-268 to prevent confusing differences in
+   --  rounding between static and nonstatic expressions. This AI specifies
+   --  that the effect of such rounding is implementation-dependent instead,
+   --  and in GNAT we round to nearest even to match the run-time behavior.
+   --  Note that this applies to floating-point literals, not fixed-point
+   --  ones, even though their representation is also a universal real.
+
+   function Machine_Number
+     (Typ : Entity_Id;
+      Val : Ureal;
+      N   : Node_Id) return Ureal
+   is
+   begin
+      return Machine (Typ, Val, Round_Even, N);
+   end Machine_Number;
+
+   --------------------
    -- Not_Null_Range --
    --------------------
 
@@ -7335,19 +7360,12 @@ package body Sem_Eval is
 
       elsif Compile_Time_Known_Value (N) then
          declare
-            Lo       : Node_Id;
-            Hi       : Node_Id;
-
-            LB_Known : Boolean;
-            HB_Known : Boolean;
+            Lo       : constant Node_Id := Type_Low_Bound (Typ);
+            Hi       : constant Node_Id := Type_High_Bound (Typ);
+            LB_Known : constant Boolean := Compile_Time_Known_Value (Lo);
+            HB_Known : constant Boolean := Compile_Time_Known_Value (Hi);
 
          begin
-            Lo := Type_Low_Bound  (Typ);
-            Hi := Type_High_Bound (Typ);
-
-            LB_Known := Compile_Time_Known_Value (Lo);
-            HB_Known := Compile_Time_Known_Value (Hi);
-
             --  Fixed point types should be considered as such only if flag
             --  Fixed_Int is set to False.
 

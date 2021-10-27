@@ -624,7 +624,7 @@ package body Exp_Strm is
          end if;
 
       else pragma Assert (Is_Access_Type (U_Type));
-         if P_Size > System_Address_Size then
+         if Present (P_Size) and then P_Size > System_Address_Size then
             Lib_RE := RE_I_AD;
          else
             Lib_RE := RE_I_AS;
@@ -868,7 +868,7 @@ package body Exp_Strm is
 
       else pragma Assert (Is_Access_Type (U_Type));
 
-         if P_Size > System_Address_Size then
+         if Present (P_Size) and then P_Size > System_Address_Size then
             Lib_RE := RE_W_AD;
          else
             Lib_RE := RE_W_AS;

@@ -430,20 +430,10 @@ _mm_cmpnge_pd (__m128d __A, __m128d __B)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpord_pd (__m128d __A, __m128d __B)
 {
-#if _ARCH_PWR8
   __v2du c, d;
   /* Compare against self will return false (0's) if NAN.  */
   c = (__v2du)vec_cmpeq (__A, __A);
   d = (__v2du)vec_cmpeq (__B, __B);
-#else
-  __v2du a, b;
-  __v2du c, d;
-  const __v2du double_exp_mask  = {0x7ff0000000000000, 0x7ff0000000000000};
-  a = (__v2du)vec_abs ((__v2df)__A);
-  b = (__v2du)vec_abs ((__v2df)__B);
-  c = (__v2du)vec_cmpgt (double_exp_mask, a);
-  d = (__v2du)vec_cmpgt (double_exp_mask, b);
-#endif
   /* A != NAN and B != NAN.  */
   return ((__m128d)vec_and(c, d));
 }
@@ -1472,6 +1462,7 @@ _mm_mul_su32 (__m64 __A, __m64 __B)
   return ((__m64)a * (__m64)b);
 }
 
+#ifdef _ARCH_PWR8
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mul_epu32 (__m128i __A, __m128i __B)
 {
@@ -1498,6 +1489,7 @@ _mm_mul_epu32 (__m128i __A, __m128i __B)
   return (__m128i) vec_mule ((__v4su)__A, (__v4su)__B);
 #endif
 }
+#endif
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_slli_epi16 (__m128i __A, int __B)

@@ -39,9 +39,7 @@ static_assert( std::unsigned_integral<bool> );
 static_assert( std::is_signed_v<char> ? true : std::unsigned_integral<char> );
 static_assert( std::unsigned_integral<char16_t> );
 static_assert( std::unsigned_integral<char32_t> );
-#ifdef _GLIBCXX_USE_WCHAR_T
 static_assert( std::is_signed_v<wchar_t> ? true : std::unsigned_integral<wchar_t> );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
 static_assert( std::unsigned_integral<char8_t> );
 #endif

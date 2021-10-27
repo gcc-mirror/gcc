@@ -1,7 +1,7 @@
 ! xfailed due to PR 101308
 ! PR 101305
 ! PR 100914
-! { dg-do run { xfail *-*-* } }
+! { dg-do run }
 ! { dg-require-effective-target fortran_real_c_float128 }
 ! { dg-additional-sources "typecodes-scalar-float128-c.c dump-descriptors.c" }
 ! { dg-additional-options "-g" }

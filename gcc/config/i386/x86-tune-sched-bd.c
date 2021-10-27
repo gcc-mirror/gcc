@@ -67,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #define BIG 100
 
 
-/* Dispatch groups.  Istructions that affect the mix in a dispatch window.  */
+/* Dispatch groups.  Instructions that affect the mix in a dispatch window.  */
 enum dispatch_group {
   disp_no_group = 0,
   disp_load,

@@ -44,7 +44,7 @@ package body System.Tasking.Queuing is
 
    --  Entry Queues implemented as doubly linked list
 
-   Queuing_Policy : Character;
+   Queuing_Policy : constant Character;
    pragma Import (C, Queuing_Policy, "__gl_queuing_policy");
 
    Priority_Queuing : constant Boolean := Queuing_Policy = 'P';

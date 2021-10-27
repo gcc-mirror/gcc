@@ -147,7 +147,7 @@ along with GCC; see the file COPYING3.  If not see
                                                                         \
         /* Don't emit DWARF3/4 unless specifically selected. */         \
         /* DWARF3/4 currently does not work for DJGPP.  */              \
-        if (!global_options_set.x_dwarf_version)                        \
+        if (!OPTION_SET_P (dwarf_version))                        \
             dwarf_version = 2;                                          \
                                                                         \
         }                                                               \

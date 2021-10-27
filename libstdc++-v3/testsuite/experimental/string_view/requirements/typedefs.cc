@@ -38,11 +38,9 @@ __gnu_test::basic_types<std::experimental::string_view> t1b;
 __gnu_test::reversible_types<std::experimental::string_view> t1r;
 typedef typename std::experimental::string_view::traits_type traits_type1;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
 __gnu_test::basic_types<std::experimental::wstring_view> t2b;
 __gnu_test::reversible_types<std::experimental::wstring_view> t2r;
 typedef typename std::experimental::wstring_view::traits_type traits_type2;
-#endif
 
 static_assert(
     std::is_same<std::experimental::string_view::pointer, char*>(),

@@ -119,10 +119,6 @@ unsigned int save_decoded_options_count;
 /* Vector of saved Optimization decoded command line options.  */
 vec<cl_decoded_option> *save_opt_decoded_options;
 
-/* Used to enable -fvar-tracking, -fweb and -frename-registers according
-   to optimize in process_options ().  */
-#define AUTODETECT_VALUE 2
-
 /* Debug hooks - dependent upon command line options.  */
 
 const struct gcc_debug_hooks *debug_hooks;
@@ -1231,9 +1227,6 @@ static void
 process_options (bool no_backend)
 {
   const char *language_string = lang_hooks.name;
-  /* Just in case lang_hooks.post_options ends up calling a debug_hook.
-     This can happen with incorrect pre-processed input. */
-  debug_hooks = &do_nothing_debug_hooks;
 
   maximum_field_alignment = initial_max_fld_align * BITS_PER_UNIT;
 
@@ -1319,7 +1312,7 @@ process_options (bool no_backend)
     }
 
   /* One region RA really helps to decrease the code size.  */
-  if (flag_ira_region == IRA_REGION_AUTODETECT)
+  if (!OPTION_SET_P (flag_ira_region))
     flag_ira_region
       = optimize_size || !optimize ? IRA_REGION_ONE : IRA_REGION_MIXED;
 
@@ -1330,13 +1323,6 @@ process_options (bool no_backend)
 		"%<-fabi-version=1%> is no longer supported");
       flag_abi_version = 2;
     }
-
-  /* web and rename-registers help when run after loop unrolling.  */
-  if (flag_web == AUTODETECT_VALUE)
-    flag_web = flag_unroll_loops;
-
-  if (flag_rename_registers == AUTODETECT_VALUE)
-    flag_rename_registers = flag_unroll_loops;
 
   if (flag_non_call_exceptions)
     flag_asynchronous_unwind_tables = 1;
@@ -1389,25 +1375,6 @@ process_options (bool no_backend)
 	}
     }
 
-  if (flag_syntax_only)
-    {
-      write_symbols = NO_DEBUG;
-      profile_flag = 0;
-    }
-
-  if (flag_gtoggle)
-    {
-      if (debug_info_level == DINFO_LEVEL_NONE)
-	{
-	  debug_info_level = DINFO_LEVEL_NORMAL;
-
-	  if (write_symbols == NO_DEBUG)
-	    write_symbols = PREFERRED_DEBUGGING_TYPE;
-	}
-      else
-	debug_info_level = DINFO_LEVEL_NONE;
-    }
-
   /* CTF is supported for only C at this time.  */
   if (!lang_GNU_C ()
       && ctf_debug_info_level > CTFINFO_LEVEL_NONE)
@@ -1445,6 +1412,11 @@ process_options (bool no_backend)
   if (debug_info_level == DINFO_LEVEL_NONE
       && ctf_debug_info_level == CTFINFO_LEVEL_NONE)
     write_symbols = NO_DEBUG;
+
+  /* Warn if STABS debug gets enabled and is not the default.  */
+  if (PREFERRED_DEBUGGING_TYPE != DBX_DEBUG && (write_symbols & DBX_DEBUG))
+    warning (0, "STABS debugging information is obsolete and not "
+	     "supported anymore");
 
   if (write_symbols == NO_DEBUG)
     ;
@@ -1490,8 +1462,9 @@ process_options (bool no_backend)
       || !dwarf_debuginfo_p ()
       || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
     {
-      if (flag_var_tracking == 1
-	  || flag_var_tracking_uninit == 1)
+      if ((OPTION_SET_P (flag_var_tracking) && flag_var_tracking == 1)
+	  || (OPTION_SET_P (flag_var_tracking_uninit)
+	      && flag_var_tracking_uninit == 1))
         {
 	  if (debug_info_level < DINFO_LEVEL_NORMAL)
 	    warning_at (UNKNOWN_LOCATION, 0,
@@ -1504,6 +1477,7 @@ process_options (bool no_backend)
 	}
       flag_var_tracking = 0;
       flag_var_tracking_uninit = 0;
+      flag_var_tracking_assignments = 0;
     }
 
   /* The debug hooks are used to implement -fdump-go-spec because it
@@ -1512,49 +1486,12 @@ process_options (bool no_backend)
   if (flag_dump_go_spec != NULL)
     debug_hooks = dump_go_spec_init (flag_dump_go_spec, debug_hooks);
 
-  /* If the user specifically requested variable tracking with tagging
-     uninitialized variables, we need to turn on variable tracking.
-     (We already determined above that variable tracking is feasible.)  */
-  if (flag_var_tracking_uninit == 1)
-    flag_var_tracking = 1;
+  if (!OPTION_SET_P (dwarf2out_as_loc_support))
+    dwarf2out_as_loc_support = dwarf2out_default_as_loc_support ();
+  if (!OPTION_SET_P (dwarf2out_as_locview_support))
+    dwarf2out_as_locview_support = dwarf2out_default_as_locview_support ();
 
-  if (flag_var_tracking == AUTODETECT_VALUE)
-    flag_var_tracking = optimize >= 1;
-
-  if (flag_var_tracking_uninit == AUTODETECT_VALUE)
-    flag_var_tracking_uninit = flag_var_tracking;
-
-  if (flag_var_tracking_assignments == AUTODETECT_VALUE)
-    flag_var_tracking_assignments
-      = (flag_var_tracking
-	 && !(flag_selective_scheduling || flag_selective_scheduling2));
-
-  if (flag_var_tracking_assignments_toggle)
-    flag_var_tracking_assignments = !flag_var_tracking_assignments;
-
-  if (flag_var_tracking_assignments && !flag_var_tracking)
-    flag_var_tracking = flag_var_tracking_assignments = -1;
-
-  if (flag_var_tracking_assignments
-      && (flag_selective_scheduling || flag_selective_scheduling2))
-    warning_at (UNKNOWN_LOCATION, 0,
-		"var-tracking-assignments changes selective scheduling");
-
-  if (debug_nonbind_markers_p == AUTODETECT_VALUE)
-    debug_nonbind_markers_p
-      = (optimize
-	 && debug_info_level >= DINFO_LEVEL_NORMAL
-	 && dwarf_debuginfo_p ()
-	 && !(flag_selective_scheduling || flag_selective_scheduling2));
-
-  if (dwarf2out_as_loc_support == AUTODETECT_VALUE)
-    dwarf2out_as_loc_support
-      = dwarf2out_default_as_loc_support ();
-  if (dwarf2out_as_locview_support == AUTODETECT_VALUE)
-    dwarf2out_as_locview_support
-      = dwarf2out_default_as_locview_support ();
-
-  if (debug_variable_location_views == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (debug_variable_location_views))
     {
       debug_variable_location_views
 	= (flag_var_tracking
@@ -1588,7 +1525,7 @@ process_options (bool no_backend)
       debug_internal_reset_location_views = 0;
     }
 
-  if (debug_inline_points == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (debug_inline_points))
     debug_inline_points = debug_variable_location_views;
   else if (debug_inline_points && !debug_nonbind_markers_p)
     {
@@ -1598,7 +1535,7 @@ process_options (bool no_backend)
       debug_inline_points = 0;
     }
 
-  if (flag_tree_cselim == AUTODETECT_VALUE)
+  if (!OPTION_SET_P (flag_tree_cselim))
     {
       if (HAVE_conditional_move)
 	flag_tree_cselim = 1;
@@ -1753,7 +1690,7 @@ process_options (bool no_backend)
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
-  if (!global_options_set.x_warnings_are_errors)
+  if (!OPTION_SET_P (warnings_are_errors))
     {
       if (warn_coverage_mismatch
 	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
@@ -2353,6 +2290,9 @@ toplev::main (int argc, char **argv)
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     {
+      /* Just in case lang_hooks.post_options ends up calling a debug_hook.
+	 This can happen with incorrect pre-processed input. */
+      debug_hooks = &do_nothing_debug_hooks;
       /* Allow the front end to perform consistency checks and do further
 	 initialization based on the command line options.  This hook also
 	 sets the original filename if appropriate (e.g. foo.i -> foo.c)

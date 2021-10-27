@@ -56,11 +56,7 @@ main (int argc, char argv[])
   return crc;
 }
 
-/* Previously we had 3 jump threads, but one of them crossed loops.
-   The reason the old threader was allowing it, was because there was
-   an ASSERT_EXPR getting in the way.  Without the ASSERT_EXPR, we
-   have an empty pre-header block as the final block in the thread,
-   which the threader will simply join with the next block which *is*
-   in a different loop.  */
-/* { dg-final { scan-tree-dump-times "Registering jump thread" 2 "vrp-thread1" } } */
+/* None of the threads we can get in vrp-thread1 are valid.  They all
+   cross or rotate loops.  */
+/* { dg-final { scan-tree-dump-not "Registering jump thread" "vrp-thread1" } } */
 /* { dg-final { scan-tree-dump-not "joiner" "vrp-thread1" } } */

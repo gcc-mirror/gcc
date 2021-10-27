@@ -436,7 +436,7 @@ find_obviously_necessary_stmts (bool aggressive)
 
       for (auto loop : loops_list (cfun, 0))
 	/* For loops without an exit do not mark any condition.  */
-	if (loop->exits->next && !finite_loop_p (loop))
+	if (loop->exits->next->e && !finite_loop_p (loop))
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "cannot prove finiteness of loop %i\n",
@@ -1826,6 +1826,11 @@ simple_dce_from_worklist (bitmap worklist)
 
       gimple *t = SSA_NAME_DEF_STMT (def);
       if (gimple_has_side_effects (t))
+	continue;
+
+      /* Don't remove statements that are needed for non-call
+	 eh to work.  */
+      if (stmt_unremovable_because_of_non_call_eh_p (cfun, t))
 	continue;
 
       /* Add uses to the worklist.  */

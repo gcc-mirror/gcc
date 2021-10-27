@@ -225,7 +225,8 @@ TEST_2_UNARY (vqmovun, uint32x4_t, int64x2_t, s64, u32)
 /* { dg-final { scan-assembler-times "\\tuqshrn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\tsqrshrn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\tuqrshrn2\\tv" 6} }  */
-/* { dg-final { scan-assembler-times "\\txtn2\\tv" 12} }  */
+/* { dg-final { scan-assembler-times "\\txtn2\\tv" 6} }  */
+/* { dg-final { scan-assembler-times "\\tuzp1\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\tuqxtn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\tsqxtn2\\tv" 6} }  */
 /* { dg-final { scan-assembler-times "\\tsqxtun2\\tv" 6} }  */

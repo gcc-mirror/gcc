@@ -564,9 +564,7 @@ inline namespace fundamentals_v1
   // basic_string_view typedef names
 
   using string_view = basic_string_view<char>;
-#ifdef _GLIBCXX_USE_WCHAR_T
   using wstring_view = basic_string_view<wchar_t>;
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   using u8string_view = basic_string_view<char8_t>;
 #endif
@@ -593,7 +591,6 @@ inline namespace fundamentals_v1
     struct __is_fast_hash<hash<experimental::string_view>> : std::false_type
     { };
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     struct hash<experimental::wstring_view>
     : public __hash_base<size_t, wstring>
@@ -607,7 +604,6 @@ inline namespace fundamentals_v1
   template<>
     struct __is_fast_hash<hash<experimental::wstring_view>> : std::false_type
     { };
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<>
@@ -665,11 +661,9 @@ namespace experimental
     operator""sv(const char* __str, size_t __len) noexcept
     { return basic_string_view<char>{__str, __len}; }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
     inline constexpr basic_string_view<wchar_t>
     operator""sv(const wchar_t* __str, size_t __len) noexcept
     { return basic_string_view<wchar_t>{__str, __len}; }
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
     inline constexpr basic_string_view<char8_t>

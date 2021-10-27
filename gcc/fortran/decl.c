@@ -896,9 +896,6 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       expr->ts = *ts;
       expr->value.constructor = array_head;
 
-      expr->rank = as->rank;
-      expr->shape = gfc_get_shape (expr->rank);
-
       /* Validate sizes.  We built expr ourselves, so cons_size will be
 	 constant (we fail above for non-constant expressions).
 	 We still need to verify that the sizes match.  */
@@ -911,6 +908,12 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       mpz_clear (cons_size);
       if (cmp)
 	goto cleanup;
+
+      /* Set the rank/shape to match the LHS as auto-reshape is implied. */
+      expr->rank = as->rank;
+      expr->shape = gfc_get_shape (as->rank);
+      for (int i = 0; i < as->rank; ++i)
+	spec_dimen_size (as, i, &expr->shape[i]);
     }
 
   /* Make sure scalar types match. */
@@ -1602,15 +1605,6 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 					    sym->name, &sym->declared_at,
 					    sym->ns->proc_name->name))
 		    retval = false;
-		  else if (!sym->attr.dimension)
-		    {
-		      /* FIXME: Use CFI array descriptor for scalars.  */
-		      gfc_error ("Sorry, deferred-length scalar character dummy "
-				 "argument %qs at %L of procedure %qs with "
-				 "BIND(C) not yet supported", sym->name,
-				 &sym->declared_at, sym->ns->proc_name->name);
-		      retval = false;
-		    }
 		}
 	      else if (sym->attr.value
 		       && (!cl || !cl->length
@@ -1633,20 +1627,6 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 				      "attribute", sym->name, &sym->declared_at,
 				      sym->ns->proc_name->name))
 		    retval = false;
-		  else if (!sym->attr.dimension
-			   || sym->as->type == AS_ASSUMED_SIZE
-			   || sym->as->type == AS_EXPLICIT)
-		    {
-		      /* FIXME: Valid - should use the CFI array descriptor, but
-			 not yet handled for scalars and assumed-/explicit-size
-			 arrays.  */
-		      gfc_error ("Sorry, character dummy argument %qs at %L "
-				 "with assumed length is not yet supported for "
-				 "procedure %qs with BIND(C) attribute",
-				 sym->name, &sym->declared_at,
-				 sym->ns->proc_name->name);
-		      retval = false;
-		    }
 		}
 	      else if (cl->length->expr_type != EXPR_CONSTANT
 		       || mpz_cmp_si (cl->length->value.integer, 1) != 0)
@@ -2228,12 +2208,16 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  gfc_expr *array;
 	  int n;
 	  if (sym->attr.flavor == FL_PARAMETER
-		&& init->expr_type == EXPR_CONSTANT
-		&& spec_size (sym->as, &size)
-		&& mpz_cmp_si (size, 0) > 0)
+	      && gfc_is_constant_expr (init)
+	      && (init->expr_type == EXPR_CONSTANT
+		  || init->expr_type == EXPR_STRUCTURE)
+	      && spec_size (sym->as, &size)
+	      && mpz_cmp_si (size, 0) > 0)
 	    {
 	      array = gfc_get_array_expr (init->ts.type, init->ts.kind,
 					  &init->where);
+	      if (init->ts.type == BT_DERIVED)
+		array->ts.u.derived = init->ts.u.derived;
 	      for (n = 0; n < (int)mpz_get_si (size); n++)
 		gfc_constructor_append_expr (&array->value.constructor,
 					     n == 0
@@ -5608,14 +5592,6 @@ match_attr_spec (void)
 		  m = MATCH_ERROR;
 		  goto cleanup;
 		}
-	      if (current_ts.kind != gfc_default_integer_kind)
-		{
-		  gfc_error ("Component with KIND attribute at %C must be "
-			     "default integer kind (%d)",
-			      gfc_default_integer_kind);
-		  m = MATCH_ERROR;
-		  goto cleanup;
-		}
 	    }
 	  else if (d == DECL_LEN)
 	    {
@@ -5632,14 +5608,6 @@ match_attr_spec (void)
 		{
 		  gfc_error ("Component with LEN attribute at %C must be "
 			     "INTEGER");
-		  m = MATCH_ERROR;
-		  goto cleanup;
-		}
-	      if (current_ts.kind != gfc_default_integer_kind)
-		{
-		  gfc_error ("Component with LEN attribute at %C must be "
-			     "default integer kind (%d)",
-			      gfc_default_integer_kind);
 		  m = MATCH_ERROR;
 		  goto cleanup;
 		}
@@ -8445,6 +8413,7 @@ gfc_match_end (gfc_statement *st)
       break;
 
     case COMP_BLOCK:
+    case COMP_OMP_STRICTLY_STRUCTURED_BLOCK:
       *st = ST_END_BLOCK;
       target = " block";
       eos_ok = 0;

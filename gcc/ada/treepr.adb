@@ -885,14 +885,13 @@ package body Treepr is
                Val : constant Uint := Get_Uint (N, FD.Offset);
                function Cast is new Unchecked_Conversion (Uint, Int);
             begin
-               --  Do this even if Val = No_Uint, because Uint fields default
-               --  to Uint_0.
-
-               Print_Initial;
-               UI_Write (Val, Format);
-               Write_Str (" (Uint = ");
-               Write_Int (Cast (Val));
-               Write_Char (')');
+               if Present (Val) then
+                  Print_Initial;
+                  UI_Write (Val, Format);
+                  Write_Str (" (Uint = ");
+                  Write_Int (Cast (Val));
+                  Write_Char (')');
+               end if;
             end;
 
          when Valid_Uint_Field | Unat_Field | Upos_Field
@@ -1025,6 +1024,8 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
+      pragma Assert (FD.Type_Only = No_Type_Only);
+      --  Type_Only is for entities
    begin
       if not Field_Is_Initial_Zero (N, Field) then
          Print_Field (Prefix, Image (Field), N, FD, Format);
@@ -1042,9 +1043,10 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
+      NN : constant Node_Id := Node_To_Fetch_From (N, Field);
    begin
       if not Field_Is_Initial_Zero (N, Field) then
-         Print_Field (Prefix, Image (Field), N, FD, Format);
+         Print_Field (Prefix, Image (Field), NN, FD, Format);
       end if;
    end Print_Entity_Field;
 
@@ -1184,7 +1186,6 @@ package body Treepr is
       Prefix : constant String := Prefix_Str & Prefix_Char;
 
       Sfile : Source_File_Index;
-      Fmt   : UI_Format;
 
    begin
       if Phase /= Printing then
@@ -1400,12 +1401,6 @@ package body Treepr is
          end if;
       end if;
 
-      if Nkind (N) = N_Integer_Literal and then Print_In_Hex (N) then
-         Fmt := Hex;
-      else
-         Fmt := Auto;
-      end if;
-
       declare
          Fields : Node_Field_Array renames Node_Field_Table (Nkind (N)).all;
          Should_Print : constant Node_Field_Set :=
@@ -1440,6 +1435,12 @@ package body Treepr is
               => False,
 
             others => True);
+
+         Fmt : constant UI_Format :=
+           (if Nkind (N) = N_Integer_Literal and then Print_In_Hex (N)
+            then Hex
+            else Auto);
+
       begin
          --  Outer loop makes flags come out last
 
@@ -2054,25 +2055,16 @@ package body Treepr is
       New_Prefix : String (Prefix_Str'First .. Prefix_Str'Last + 2);
       --  Prefix string for printing referenced fields
 
-      procedure Visit_Descendant
-        (D         : Union_Id;
-         No_Indent : Boolean := False);
+      procedure Visit_Descendant (D : Union_Id);
       --  This procedure tests the given value of one of the Fields referenced
       --  by the current node to determine whether to visit it recursively.
-      --  Normally No_Indent is false, which means that the visited node will
-      --  be indented using New_Prefix. If No_Indent is set to True, then
-      --  this indentation is skipped, and Prefix_Str is used for the call
-      --  to print the descendant. No_Indent is effective only if the
-      --  referenced descendant is a node.
+      --  The visited node will be indented using New_Prefix.
 
       ----------------------
       -- Visit_Descendant --
       ----------------------
 
-      procedure Visit_Descendant
-        (D         : Union_Id;
-         No_Indent : Boolean := False)
-      is
+      procedure Visit_Descendant (D : Union_Id) is
       begin
          --  Case of descendant is a node
 
@@ -2145,11 +2137,7 @@ package body Treepr is
                --  execute a return if the node is not to be visited), we can
                --  go ahead and visit the node.
 
-               if No_Indent then
-                  Visit_Node (Nod, Prefix_Str, Prefix_Char);
-               else
-                  Visit_Node (Nod, New_Prefix, ' ');
-               end if;
+               Visit_Node (Nod, New_Prefix, ' ');
             end;
 
          --  Case of descendant is a list

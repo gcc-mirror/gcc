@@ -44,7 +44,7 @@ subroutine s2 (x)
   implicit none
   type(*) :: x(*)
 
-  call g (x, 1)  ! { dg-error "Assumed.type" }
+  call g (x, 1)  ! { dg-error "Assumed-type actual argument at .1. corresponding to assumed-rank dummy argument 'a' must be assumed-shape or assumed-rank" }
 end subroutine
 
 ! Check that a scalar gives an error.

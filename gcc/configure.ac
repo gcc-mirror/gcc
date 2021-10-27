@@ -6515,7 +6515,7 @@ EOF
 esac
 
 case "$target:$tm_file" in
-  powerpc64-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
+  powerpc64*-*-freebsd* | powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
   case "$target" in
      *le-*-linux*)
      emul_name="-melf64lppc"
@@ -7218,8 +7218,8 @@ done
 rm -f Make-hooks
 touch Make-hooks
 target_list="all.cross start.encap rest.encap tags \
-	install-common install-man install-info install-pdf install-html dvi \
-	pdf html uninstall info man srcextra srcman srcinfo \
+	install-common install-man install-info install-dvi install-pdf \
+	install-html dvi pdf html uninstall info man srcextra srcman srcinfo \
 	mostlyclean clean distclean maintainer-clean install-plugin"
 
 for t in $target_list

@@ -2387,6 +2387,7 @@ package body Exp_Ch5 is
             Ent := Name (N);
             while Nkind (Ent) in N_Has_Entity
               and then Present (Entity (Ent))
+              and then Is_Object (Entity (Ent))
               and then Present (Renamed_Object (Entity (Ent)))
             loop
                Ent := Renamed_Object (Entity (Ent));

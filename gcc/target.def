@@ -4731,45 +4731,6 @@ not generate any instructions in this case.",
  default_setup_incoming_varargs)
 
 DEFHOOK
-(load_bounds_for_arg,
- "This hook is used by expand pass to emit insn to load bounds of\n\
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case\n\
-bounds of @var{arg} are not passed in register.  If @var{slot} is a\n\
-memory, then bounds are loaded as for regular pointer loaded from\n\
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer\n\
-constant holding number of the target dependent special slot which\n\
-should be used to obtain bounds.  Hook returns RTX holding loaded bounds.",
- rtx, (rtx slot, rtx arg, rtx slot_no),
- default_load_bounds_for_arg)
-
-DEFHOOK
-(store_bounds_for_arg,
- "This hook is used by expand pass to emit insns to store @var{bounds} of\n\
-@var{arg} passed in @var{slot}.  Expand pass uses this hook in case\n\
-@var{bounds} of @var{arg} are not passed in register.  If @var{slot} is a\n\
-memory, then @var{bounds} are stored as for regular pointer stored in\n\
-memory.  If @var{slot} is not a memory then @var{slot_no} is an integer\n\
-constant holding number of the target dependent special slot which\n\
-should be used to store @var{bounds}.",
- void, (rtx arg, rtx slot, rtx bounds, rtx slot_no),
- default_store_bounds_for_arg)
-
-DEFHOOK
-(load_returned_bounds,
- "This hook is used by expand pass to emit insn to load bounds\n\
-returned by function call in @var{slot}.  Hook returns RTX holding\n\
-loaded bounds.",
- rtx, (rtx slot),
- default_load_returned_bounds)
-
-DEFHOOK
-(store_returned_bounds,
- "This hook is used by expand pass to emit insn to store @var{bounds}\n\
-returned by function call into @var{slot}.",
- void, (rtx slot, rtx bounds),
- default_store_returned_bounds)
-
-DEFHOOK
 (call_args,
  "While generating RTL for a function call, this target hook is invoked once\n\
 for each argument passed to the function, either a register returned by\n\
@@ -4971,12 +4932,6 @@ the previous arguments.\n\
 The return value is usually either a @code{reg} RTX for the hard\n\
 register in which to pass the argument, or zero to pass the argument\n\
 on the stack.\n\
-\n\
-The return value can be a @code{const_int} which means argument is\n\
-passed in a target specific slot with specified number.  Target hooks\n\
-should be used to store or load argument in such case.  See\n\
-@code{TARGET_STORE_BOUNDS_FOR_ARG} and @code{TARGET_LOAD_BOUNDS_FOR_ARG}\n\
-for more information.\n\
 \n\
 The value of the expression can also be a @code{parallel} RTX@.  This is\n\
 used when an argument is passed in multiple locations.  The mode of the\n\

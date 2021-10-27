@@ -575,7 +575,7 @@ alpha_option_override (void)
   }
 
   /* Default the definition of "small data" to 8 bytes.  */
-  if (!global_options_set.x_g_switch_value)
+  if (!OPTION_SET_P (g_switch_value))
     g_switch_value = 8;
 
   /* Infer TARGET_SMALL_DATA from -fpic/-fPIC.  */

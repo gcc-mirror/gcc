@@ -1,6 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mpower9-vector -O2" } */
+/* Now O2 enables vectorization by default, which generates unexpected float
+   conversion for vector construction, so simply disable it.  */
+/* { dg-options "-mpower9-vector -O2 -fno-tree-vectorize" } */
 
 #ifndef TYPE
 #define TYPE float

@@ -7359,10 +7359,10 @@ The @code{warn_if_not_aligned} attribute can also be used for types
 The @code{alloc_size} variable attribute may be applied to the declaration
 of a pointer to a function that returns a pointer and takes at least one
 argument of an integer type.  It indicates that the returned pointer points
-to an object whose size is given by the function argument at @var{position-1},
+to an object whose size is given by the function argument at @var{position},
 or by the product of the arguments at @var{position-1} and @var{position-2}.
 Meaningful sizes are positive values less than @code{PTRDIFF_MAX}.  Other
-sizes are disagnosed when detected.  GCC uses this information to improve
+sizes are diagnosed when detected.  GCC uses this information to improve
 the results of @code{__builtin_object_size}.
 
 For instance, the following declarations
@@ -9728,10 +9728,12 @@ A basic @code{asm} statement has the following syntax:
 asm @var{asm-qualifiers} ( @var{AssemblerInstructions} )
 @end example
 
-The @code{asm} keyword is a GNU extension.
-When writing code that can be compiled with @option{-ansi} and the
-various @option{-std} options, use @code{__asm__} instead of 
-@code{asm} (@pxref{Alternate Keywords}).
+For the C language, the @code{asm} keyword is a GNU extension.
+When writing C code that can be compiled with @option{-ansi} and the
+@option{-std} options that select C dialects without GNU extensions, use
+@code{__asm__} instead of @code{asm} (@pxref{Alternate Keywords}).  For
+the C++ language, @code{asm} is a standard keyword, but @code{__asm__}
+can be used for code compiled with @option{-fno-asm}.
 
 @subsubheading Qualifiers
 @table @code
@@ -17698,7 +17700,7 @@ macro @code{__BUILTIN_CPU_SUPPORTS__} if the
 @code{__builtin_cpu_supports} built-in function is fully supported.
 
 If GCC was configured to use a GLIBC before 2.23, the built-in
-function @code{__builtin_cpu_suports} always returns a 0 and the
+function @code{__builtin_cpu_supports} always returns a 0 and the
 compiler issues a warning.
 
 The following features can be

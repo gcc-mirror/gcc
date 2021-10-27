@@ -6840,7 +6840,13 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
       gfc_extract_int (e, &shape[rank]);
 
       gcc_assert (rank >= 0 && rank < GFC_MAX_DIMENSIONS);
-      gcc_assert (shape[rank] >= 0);
+      if (shape[rank] < 0)
+	{
+	  gfc_error ("The SHAPE array for the RESHAPE intrinsic at %L has a "
+		     "negative value %d for dimension %d",
+		     &shape_exp->where, shape[rank], rank+1);
+	  return &gfc_bad_expr;
+	}
 
       rank++;
     }

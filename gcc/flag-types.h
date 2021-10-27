@@ -191,10 +191,6 @@ enum ira_region
   IRA_REGION_ONE,
   IRA_REGION_ALL,
   IRA_REGION_MIXED,
-  /* This value means that there were no options -fira-region on the
-     command line and that we should choose a value depending on the
-     used -O option.  */
-  IRA_REGION_AUTODETECT
 };
 
 /* The options for excess precision.  */
@@ -453,18 +449,32 @@ enum parloops_schedule_type
   PARLOOPS_SCHEDULE_RUNTIME
 };
 
+/* Ranger debug mode.  */
+enum ranger_debug
+{
+  RANGER_DEBUG_NONE = 0,
+  RANGER_DEBUG_TRACE = 1,
+  RANGER_DEBUG_CACHE = 2,
+  RANGER_DEBUG_GORI = 4,
+  RANGER_DEBUG_TRACE_GORI = (RANGER_DEBUG_TRACE | RANGER_DEBUG_GORI),
+  RANGER_DEBUG_TRACE_CACHE = (RANGER_DEBUG_TRACE | RANGER_DEBUG_CACHE),
+  RANGER_DEBUG_ALL = (RANGER_DEBUG_GORI | RANGER_DEBUG_CACHE)
+};
+
 /* EVRP mode.  */
 enum evrp_mode
 {
-  EVRP_MODE_RVRP_ONLY = 0,
-  EVRP_MODE_EVRP_ONLY = 1,
-  EVRP_MODE_EVRP_FIRST = 2,
-  EVRP_MODE_RVRP_FIRST = 3,
-  EVRP_MODE_TRACE = 4,
-  EVRP_MODE_CACHE = (8 | EVRP_MODE_TRACE),
-  EVRP_MODE_GORI = 16,
-  EVRP_MODE_TRACE_GORI = (EVRP_MODE_TRACE | EVRP_MODE_GORI),
-  EVRP_MODE_DEBUG = (EVRP_MODE_GORI | EVRP_MODE_CACHE)
+  EVRP_MODE_RVRP_ONLY,
+  EVRP_MODE_EVRP_ONLY,
+  EVRP_MODE_EVRP_FIRST,
+  EVRP_MODE_RVRP_FIRST
+};
+
+/* VRP modes.  */
+enum vrp_mode
+{
+  VRP_MODE_VRP,
+  VRP_MODE_RANGER
 };
 
 /* Modes of OpenACC 'kernels' constructs handling.  */

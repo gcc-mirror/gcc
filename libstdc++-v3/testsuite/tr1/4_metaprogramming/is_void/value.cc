@@ -33,9 +33,7 @@ void test01()
   VERIFY( (test_category<is_void, char>(false)) );
   VERIFY( (test_category<is_void, signed char>(false)) );
   VERIFY( (test_category<is_void, unsigned char>(false)) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( (test_category<is_void, wchar_t>(false)) );
-#endif
   VERIFY( (test_category<is_void, short>(false)) );
   VERIFY( (test_category<is_void, unsigned short>(false)) );
   VERIFY( (test_category<is_void, int>(false)) );

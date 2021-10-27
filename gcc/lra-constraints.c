@@ -1102,7 +1102,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	  for (i = 0; outs[i] >= 0; i++)
 	    {
 	      rtx other_out_rtx = *curr_id->operand_loc[outs[i]];
-	      if (REG_P (other_out_rtx)
+	      if (outs[i] != out && REG_P (other_out_rtx)
 		  && (regno_val_use_in (REGNO (in_rtx), other_out_rtx)
 		      != NULL_RTX))
 		{
@@ -4382,7 +4382,10 @@ curr_insn_transform (bool check_only_p)
       }
 
   n_outputs = 0;
-  outputs[0] = -1;
+  for (i = 0; i < n_operands; i++)
+    if (curr_static_id->operand[i].type == OP_OUT)
+      outputs[n_outputs++] = i;
+  outputs[n_outputs] = -1;
   for (i = 0; i < n_operands; i++)
     {
       int regno;
@@ -4457,8 +4460,6 @@ curr_insn_transform (bool check_only_p)
 		     lra-lives.c.  */
 		  match_reload (i, goal_alt_matched[i], outputs, goal_alt[i], &before,
 				&after, TRUE);
-		  outputs[n_outputs++] = i;
-		  outputs[n_outputs] = -1;
 		}
 	      continue;
 	    }
@@ -4635,14 +4636,6 @@ curr_insn_transform (bool check_only_p)
 	/* We must generate code in any case when function
 	   process_alt_operands decides that it is possible.  */
 	gcc_unreachable ();
-
-      /* Memorise processed outputs so that output remaining to be processed
-	 can avoid using the same register value (see match_reload).  */
-      if (curr_static_id->operand[i].type == OP_OUT)
-	{
-	  outputs[n_outputs++] = i;
-	  outputs[n_outputs] = -1;
-	}
 
       if (optional_p)
 	{
@@ -5799,11 +5792,12 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	 part of a multi-word register.  In that case, just use the reg_rtx
 	 mode.  Do the same also if the biggest mode was larger than a register
 	 or we can not compare the modes.  Otherwise, limit the size to that of
-	 the biggest access in the function.  */
+	 the biggest access in the function or to the natural mode at least.  */
       if (mode == VOIDmode
 	  || !ordered_p (GET_MODE_PRECISION (mode),
 			 GET_MODE_PRECISION (reg_rtx_mode))
-	  || paradoxical_subreg_p (mode, reg_rtx_mode))
+	  || paradoxical_subreg_p (mode, reg_rtx_mode)
+	  || maybe_gt (GET_MODE_PRECISION (reg_rtx_mode), GET_MODE_PRECISION (mode)))
 	{
 	  original_reg = regno_reg_rtx[hard_regno];
 	  mode = reg_rtx_mode;

@@ -49,7 +49,7 @@ test01()
   VERIFY( std::numeric_limits<char32_t>::max_digits10 == 0 );
 
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   VERIFY( std::numeric_limits<__int128>::max_digits10 == 0 );
   VERIFY( std::numeric_limits<unsigned __int128>::max_digits10 == 0 );
 #endif

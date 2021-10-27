@@ -160,7 +160,8 @@ tree gfc_conv_array_stride (tree, int);
 tree gfc_conv_array_lbound (tree, int);
 tree gfc_conv_array_ubound (tree, int);
 
-/* Set cobounds of an array.  */
+/* Set (co)bounds of an array.  */
+tree gfc_trans_array_bounds (tree, gfc_symbol *, tree *, stmtblock_t *);
 void gfc_trans_array_cobounds (tree, stmtblock_t *, const gfc_symbol *);
 
 /* Build expressions for accessing components of an array descriptor.  */
@@ -175,6 +176,7 @@ tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_rank (tree);
 tree gfc_conv_descriptor_elem_len (tree);
 tree gfc_conv_descriptor_attribute (tree);
+tree gfc_conv_descriptor_type (tree);
 tree gfc_get_descriptor_dimension (tree);
 tree gfc_conv_descriptor_stride_get (tree, tree);
 tree gfc_conv_descriptor_lbound_get (tree, tree);
@@ -187,6 +189,18 @@ void gfc_conv_descriptor_span_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_stride_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_lbound_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_ubound_set (stmtblock_t *, tree, tree, tree);
+
+/* CFI descriptor.  */
+tree gfc_get_cfi_desc_base_addr (tree);
+tree gfc_get_cfi_desc_elem_len (tree);
+tree gfc_get_cfi_desc_version (tree);
+tree gfc_get_cfi_desc_rank (tree);
+tree gfc_get_cfi_desc_type (tree);
+tree gfc_get_cfi_desc_attribute (tree);
+tree gfc_get_cfi_dim_lbound (tree, tree);
+tree gfc_get_cfi_dim_extent (tree, tree);
+tree gfc_get_cfi_dim_sm (tree, tree);
+
 
 /* Shift lower bound of descriptor, updating ubound and offset.  */
 void gfc_conv_shift_descriptor_lbound (stmtblock_t*, tree, int, tree);

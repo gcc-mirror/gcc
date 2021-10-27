@@ -44,6 +44,21 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   * @defgroup node_handles Node handles
+   * @ingroup associative_containers
+   * @since C++17
+   *
+   * The associative containers (`map`, `set`, `multimap` and `multiset`)
+   * support extracting and re-inserting nodes from the container. Those
+   * operations use the container's `node_handle` type, which is an alias
+   * for a `_Node_handle<...>` type. You should always use the container's
+   * `node_handle` type (e.g. `std::set<int>::node_handle`) to refer to
+   * these types, not the non-standard internal `_Node_handle` names.
+   *
+   * @{
+   */
+
   /// Base class for node handle types of maps and sets.
   template<typename _Val, typename _NodeAlloc>
     class _Node_handle_common
@@ -64,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       [[nodiscard]] bool empty() const noexcept { return _M_ptr == nullptr; }
 
+    /// @cond undocumented
     protected:
       constexpr _Node_handle_common() noexcept : _M_ptr() { }
 
@@ -214,6 +230,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2, typename _Value2, typename _KeyOfValue,
 	       typename _Compare, typename _ValueAlloc>
 	friend class _Rb_tree;
+
+      /// @endcond
     };
 
   /// Node handle type for maps.
@@ -366,6 +384,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool		inserted = false;
       _NodeHandle	node;
     };
+
+  /// @}
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

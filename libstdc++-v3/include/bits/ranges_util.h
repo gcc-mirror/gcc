@@ -61,7 +61,7 @@ namespace ranges
   /// The ranges::view_interface class template
   template<typename _Derived>
     requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
-    class view_interface : public view_base
+    class view_interface
     {
     private:
       constexpr _Derived& _M_derived() noexcept
@@ -184,11 +184,16 @@ namespace ranges
 
   namespace __detail
   {
-    template<class _From, class _To>
+    template<typename _From, typename _To>
+      concept __uses_nonqualification_pointer_conversion
+	= is_pointer_v<_From> && is_pointer_v<_To>
+	  && !convertible_to<remove_pointer_t<_From>(*)[],
+			     remove_pointer_t<_To>(*)[]>;
+
+    template<typename _From, typename _To>
       concept __convertible_to_non_slicing = convertible_to<_From, _To>
-	&& !(is_pointer_v<decay_t<_From>> && is_pointer_v<decay_t<_To>>
-	    && __different_from<remove_pointer_t<decay_t<_From>>,
-				remove_pointer_t<decay_t<_To>>>);
+	&& !__uses_nonqualification_pointer_conversion<decay_t<_From>,
+						       decay_t<_To>>;
 
     template<typename _Tp>
       concept __pair_like
@@ -211,6 +216,8 @@ namespace ranges
 
   } // namespace __detail
 
+  namespace views { struct _Drop; } // defined in <ranges>
+
   enum class subrange_kind : bool { unsized, sized };
 
   /// The ranges::subrange class template
@@ -221,9 +228,10 @@ namespace ranges
     class subrange : public view_interface<subrange<_It, _Sent, _Kind>>
     {
     private:
-      // XXX: gcc complains when using constexpr here
-      static const bool _S_store_size
+      static constexpr bool _S_store_size
 	= _Kind == subrange_kind::sized && !sized_sentinel_for<_Sent, _It>;
+
+      friend struct views::_Drop; // Needs to inspect _S_store_size.
 
       _It _M_begin = _It();
       [[no_unique_address]] _Sent _M_end = _Sent();

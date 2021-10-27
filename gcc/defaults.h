@@ -899,33 +899,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_GDB_EXTENSIONS 1
 #endif
 
-/* If more than one debugging type is supported, you must define
-   PREFERRED_DEBUGGING_TYPE to choose the default.  */
-
-#if 1 < (defined (DBX_DEBUGGING_INFO) \
-         + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO) \
-         + defined (VMS_DEBUGGING_INFO))
+/* Default to DWARF2_DEBUGGING_INFO.  Legacy targets can choose different
+   by defining PREFERRED_DEBUGGING_TYPE.  */
 #ifndef PREFERRED_DEBUGGING_TYPE
-#error You must define PREFERRED_DEBUGGING_TYPE
-#endif /* no PREFERRED_DEBUGGING_TYPE */
-
-/* If only one debugging format is supported, define PREFERRED_DEBUGGING_TYPE
-   here so other code needn't care.  */
-#elif defined DBX_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
-#elif defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
+#if defined DWARF2_DEBUGGING_INFO || defined DWARF2_LINENO_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-#elif defined VMS_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
-
-#elif defined XCOFF_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
-
 #else
-/* No debugging format is supported by this target.  */
-#define PREFERRED_DEBUGGING_TYPE NO_DEBUG
+#error You must define PREFERRED_DEBUGGING_TYPE if DWARF is not supported
+#endif
 #endif
 
 #ifndef FLOAT_LIB_COMPARE_RETURNS_BOOL

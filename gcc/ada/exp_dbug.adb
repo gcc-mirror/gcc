@@ -290,6 +290,11 @@ package body Exp_Dbug is
    --------------------------------
 
    function Debug_Renaming_Declaration (N : Node_Id) return Node_Id is
+      pragma Assert
+        (Nkind (N) in N_Object_Renaming_Declaration
+                    | N_Package_Renaming_Declaration
+                    | N_Exception_Renaming_Declaration);
+
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Node_Id    := Defining_Entity (N);
       Nam : constant Node_Id    := Name (N);
@@ -410,7 +415,7 @@ package body Exp_Dbug is
                | N_Identifier
             =>
                if No (Entity (Ren))
-                 or else not Present (Renamed_Object (Entity (Ren)))
+                 or else not Present (Renamed_Entity_Or_Object (Entity (Ren)))
                then
                   exit;
                end if;
@@ -418,7 +423,7 @@ package body Exp_Dbug is
                --  This is a renaming of a renaming: traverse until the final
                --  renaming to see if anything is packed along the way.
 
-               Ren := Renamed_Object (Entity (Ren));
+               Ren := Renamed_Entity_Or_Object (Entity (Ren));
 
             when N_Selected_Component =>
                declare

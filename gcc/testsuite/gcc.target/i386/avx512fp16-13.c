@@ -18,7 +18,7 @@ store256_ph (void *p, __m256h a)
   _mm256_store_ph (p, a);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)" 1 } } */
 
 void
 __attribute__ ((noinline, noclone))
@@ -27,7 +27,7 @@ store_ph (void *p, __m128h a)
   _mm_store_ph (p, a);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*\\)" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*\\)" 1 } } */
 
 __m512h
 __attribute__ ((noinline, noclone))
@@ -45,7 +45,7 @@ load256_ph (void const *p)
   return _mm256_load_ph (p);
 }
 
-/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\]*\\)" 1 } } */
 
 __m128h
 __attribute__ ((noinline, noclone))
@@ -53,7 +53,7 @@ load_ph (void const *p)
 {
   return _mm_load_ph (p);
 }
-/* { dg-final { scan-assembler-times "vmovdqa64\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*\\)" 1 } } */
+/* { dg-final { scan-assembler-times "vmovdqa\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\]*\\)" 1 } } */
 
 __m512h
 __attribute__ ((noinline, noclone))

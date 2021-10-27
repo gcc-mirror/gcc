@@ -1298,9 +1298,7 @@ namespace __gnu_debug
 
   typedef basic_string<char>    string;
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   typedef basic_string<wchar_t> wstring;
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   /// A string of @c char8_t

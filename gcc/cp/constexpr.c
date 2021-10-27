@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const-call.h"
 #include "stor-layout.h"
 #include "cgraph.h"
+#include "opts.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -1608,24 +1609,24 @@ addr_of_non_const_var (tree *tp, int *walk_subtrees, void *data)
    all arguments and bind their values to correspondings
    parameters, making up the NEW_CALL context.  */
 
-static void
-cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
-                             constexpr_call *new_call,
+static tree
+cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t, tree fun,
 			     bool *non_constant_p, bool *overflow_p,
 			     bool *non_constant_args)
 {
   const int nargs = call_expr_nargs (t);
-  tree fun = new_call->fundef->decl;
-  tree parms = new_call->fundef->parms;
+  tree parms = DECL_ARGUMENTS (fun);
   int i;
   /* We don't record ellipsis args below.  */
   int nparms = list_length (parms);
   int nbinds = nargs < nparms ? nargs : nparms;
-  tree binds = new_call->bindings = make_tree_vec (nbinds);
+  tree binds = make_tree_vec (nbinds);
   for (i = 0; i < nargs; ++i)
     {
       tree x, arg;
       tree type = parms ? TREE_TYPE (parms) : void_type_node;
+      if (parms && DECL_BY_REFERENCE (parms))
+	type = TREE_TYPE (type);
       x = get_nth_callarg (t, i);
       /* For member function, the first argument is a pointer to the implied
          object.  For a constructor, it might still be a dummy object, in
@@ -1646,7 +1647,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 					  non_constant_p, overflow_p);
       /* Don't VERIFY_CONSTANT here.  */
       if (*non_constant_p && ctx->quiet)
-	return;
+	break;
       /* Just discard ellipsis args after checking their constantitude.  */
       if (!parms)
 	continue;
@@ -1697,6 +1698,8 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	}
       parms = TREE_CHAIN (parms);
     }
+
+  return binds;
 }
 
 /* Variables and functions to manage constexpr call expansion context.
@@ -2563,6 +2566,26 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	}
     }
 
+  bool non_constant_args = false;
+  new_call.bindings
+    = cxx_bind_parameters_in_call (ctx, t, fun, non_constant_p,
+				   overflow_p, &non_constant_args);
+
+  /* We build up the bindings list before we know whether we already have this
+     call cached.  If we don't end up saving these bindings, ggc_free them when
+     this function exits.  */
+  class free_bindings
+  {
+    tree *bindings;
+  public:
+    free_bindings (tree &b): bindings (&b) { }
+    ~free_bindings () { if (bindings) ggc_free (*bindings); }
+    void preserve () { bindings = NULL; }
+  } fb (new_call.bindings);
+
+  if (*non_constant_p)
+    return t;
+
   /* We can't defer instantiating the function any longer.  */
   if (!DECL_INITIAL (fun)
       && DECL_TEMPLOID_INSTANTIATION (fun)
@@ -2613,25 +2636,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
           return t;
         }
     }
-
-  bool non_constant_args = false;
-  cxx_bind_parameters_in_call (ctx, t, &new_call,
-			       non_constant_p, overflow_p, &non_constant_args);
-
-  /* We build up the bindings list before we know whether we already have this
-     call cached.  If we don't end up saving these bindings, ggc_free them when
-     this function exits.  */
-  class free_bindings
-  {
-    tree *bindings;
-  public:
-    free_bindings (tree &b): bindings (&b) { }
-    ~free_bindings () { if (bindings) ggc_free (*bindings); }
-    void preserve () { bindings = NULL; }
-  } fb (new_call.bindings);
-
-  if (*non_constant_p)
-    return t;
 
   depth_ok = push_cx_call_context (t);
 
@@ -6107,7 +6111,7 @@ maybe_warn_about_constant_value (location_t loc, tree decl)
   static bool explained = false;
   if (cxx_dialect >= cxx17
       && warn_interference_size
-      && !global_options_set.x_param_destruct_interfere_size
+      && !OPTION_SET_P (param_destruct_interfere_size)
       && DECL_CONTEXT (decl) == std_node
       && id_equal (DECL_NAME (decl), "hardware_destructive_interference_size")
       && (LOCATION_FILE (input_location) != main_input_filename
@@ -6187,6 +6191,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
       if (TREE_CODE (t) == INTEGER_CST
 	  && TYPE_PTR_P (TREE_TYPE (t))
+	  /* INTEGER_CST with pointer-to-method type is only used
+	     for a virtual method in a pointer to member function.
+	     Don't reject those.  */
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (t))) != METHOD_TYPE
 	  && !integer_zerop (t))
 	{
 	  if (!ctx->quiet)
@@ -7268,6 +7276,10 @@ find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
 {
   if (TREE_CODE (*tp) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (*tp))
     return *tp;
+  if (TREE_CODE (*tp) == PTRMEM_CST
+      && TREE_CODE (PTRMEM_CST_MEMBER (*tp)) == FUNCTION_DECL
+      && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (*tp)))
+    return PTRMEM_CST_MEMBER (*tp);
   return NULL_TREE;
 }
 
@@ -7393,7 +7405,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   auto_vec<tree, 16> cleanups;
   global_ctx.cleanups = &cleanups;
 
-  instantiate_constexpr_fns (r);
+  if (manifestly_const_eval)
+    instantiate_constexpr_fns (r);
   r = cxx_eval_constant_expression (&ctx, r,
 				    false, &non_constant_p, &overflow_p);
 
@@ -7459,12 +7472,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     }
 
   /* Check that immediate invocation does not return an expression referencing
-     any immediate function decls.  They need to be allowed while parsing
-     immediate functions, but can't leak outside of them.  */
-  if (is_consteval
-      && t != r
-      && (current_function_decl == NULL_TREE
-	  || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
+     any immediate function decls.  */
+  if (is_consteval || in_immediate_context ())
     if (tree immediate_fndecl
 	= cp_walk_tree_without_duplicates (&r, find_immediate_fndecl,
 					   NULL))

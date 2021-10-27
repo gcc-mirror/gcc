@@ -7872,21 +7872,24 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Pop_Constraint_Error_Label:
       gnat_temp = gnu_constraint_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Storage_Error_Label:
       gnat_temp = gnu_storage_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
     case N_Pop_Program_Error_Label:
       gnat_temp = gnu_program_error_label_stack.pop ();
       if (Present (gnat_temp)
-	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false)))
+	  && !TREE_USED (gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))
+	  && No_Exception_Propagation_Active ())
 	Warn_If_No_Local_Raise (gnat_temp);
       break;
 
@@ -9076,7 +9079,7 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
 	continue;
 
       /* Skip stuff internal to the compiler.  */
-      if (Convention (gnat_entity) == Convention_Intrinsic)
+      if (Is_Intrinsic_Subprogram (gnat_entity))
 	continue;
       if (kind == E_Operator)
 	continue;

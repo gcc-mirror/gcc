@@ -149,8 +149,7 @@ package body CStand is
    function New_Operator (Op : Name_Id; Typ : Entity_Id) return Entity_Id;
    --  Build entity for standard operator with given name and type
 
-   function New_Standard_Entity
-     (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id;
+   function New_Standard_Entity return Entity_Id;
    --  Builds a new entity for Standard
 
    function New_Standard_Entity (Nam : String) return Entity_Id;
@@ -1234,9 +1233,10 @@ package body CStand is
       Mutate_Ekind          (Any_Composite, E_Array_Type);
       Set_Scope             (Any_Composite, Standard_Standard);
       Set_Etype             (Any_Composite, Any_Composite);
-      Set_Component_Size    (Any_Composite, Uint_0);
       Set_Component_Type    (Any_Composite, Standard_Integer);
       Reinit_Size_Align     (Any_Composite);
+
+      pragma Assert (not Known_Component_Size (Any_Composite));
 
       Any_Discrete := New_Standard_Entity ("a discrete type");
       Mutate_Ekind          (Any_Discrete, E_Signed_Integer_Type);
@@ -1509,9 +1509,10 @@ package body CStand is
          Set_Scope       (Standard_Exception_Type, Standard_Standard);
          Set_Stored_Constraint
                          (Standard_Exception_Type, No_Elist);
-         Set_RM_Size (Standard_Exception_Type, Uint_0);
          Set_Size_Known_At_Compile_Time
                          (Standard_Exception_Type, True);
+
+         pragma Assert (not Known_RM_Size (Standard_Exception_Type));
 
          Make_Aliased_Component (Standard_Exception_Type, Standard_Boolean,
                          "Not_Handled_By_Others");
@@ -1793,10 +1794,9 @@ package body CStand is
    -- New_Standard_Entity --
    -------------------------
 
-   function New_Standard_Entity
-     (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id
+   function New_Standard_Entity return Entity_Id
    is
-      E : constant Entity_Id := New_Entity (New_Node_Kind, Stloc);
+      E : constant Entity_Id := New_Entity (N_Defining_Identifier, Stloc);
 
    begin
       --  All standard entities are Pure and Public

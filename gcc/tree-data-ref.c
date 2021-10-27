@@ -757,6 +757,9 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
   *var = NULL_TREE;
   *off = NULL_TREE;
 
+  if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type))
+    return false;
+
   switch (code)
     {
     case INTEGER_CST:
@@ -1370,6 +1373,7 @@ dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop)
       tree op = TREE_OPERAND (ref, 0);
       tree access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (nest, loop, access_fn);
+      STRIP_NOPS (access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
 	{
 	  tree memoff = TREE_OPERAND (ref, 1);

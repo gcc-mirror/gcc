@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-excess-errors "XFAIL because of PR libstdc++/55043 fix" }
 
 // Copyright (C) 2012-2021 Free Software Foundation, Inc.
 //

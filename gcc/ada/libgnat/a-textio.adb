@@ -67,7 +67,7 @@ is
 
    use type System.CRTL.size_t;
 
-   WC_Encoding : Character;
+   WC_Encoding : constant Character;
    pragma Import (C, WC_Encoding, "__gl_wc_encoding");
    --  Default wide character encoding
 

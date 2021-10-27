@@ -45,7 +45,7 @@ contains
   subroutine test_assumed_size (a1, a2)
     type(t1) :: a1(*), a2(*)
     
-    call s1 (a1, a2)  !  { dg-error "(A|a)ssumed.rank" "pr54753" { xfail *-*-* } }
+    call s1 (a1, a2)  !  { dg-error "(A|a)ssumed.rank" }
   end subroutine
 
   ! This call should be OK.
@@ -67,7 +67,7 @@ contains
   subroutine test_assumed_rank_plain (a1, a2)
     type(t1) :: a1(..), a2(..)
 
-    call s1 (a1, a2)  ! { dg-error "(A|a)ssumed.rank" "pr54753" { xfail *-*-* } }
+    call s1 (a1, a2)  ! { dg-error "(A|a)ssumed.rank" }
   end subroutine
 
 end module

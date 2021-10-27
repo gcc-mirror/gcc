@@ -296,7 +296,7 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
     return false;
   /* TODO Now pt->null is conservatively set to true in PTA
      analysis. vrp is the only pass (including ipa-vrp)
-     that clears pt.null via set_ptr_nonull when it knows
+     that clears pt.null via set_ptr_nonnull when it knows
      for sure. PTA will preserves the pt.null value set by VRP.
 
      When PTA analysis is improved, pt.anything, pt.nonlocal
@@ -416,8 +416,9 @@ get_range_global (irange &r, tree name)
 value_range
 gimple_range_global (tree name)
 {
-  gcc_checking_assert (gimple_range_ssa_p (name));
   tree type = TREE_TYPE (name);
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME
+		       && irange::supports_type_p (type));
 
   if (SSA_NAME_IS_DEFAULT_DEF (name) || (cfun && cfun->after_inlining)
       || is_a<gphi *> (SSA_NAME_DEF_STMT (name)))

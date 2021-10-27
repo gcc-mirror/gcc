@@ -2000,6 +2000,13 @@ irange::dump (FILE *file) const
 }
 
 void
+irange::debug () const
+{
+  dump (stderr);
+  fprintf (stderr, "\n");
+}
+
+void
 dump_value_range (FILE *file, const irange *vr)
 {
   vr->dump (file);

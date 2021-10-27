@@ -222,6 +222,7 @@ public:
   ~path_oracle ();
   const_bitmap equiv_set (tree, basic_block);
   void register_relation (basic_block, relation_kind, tree, tree);
+  void killing_def (tree);
   relation_kind query_relation (basic_block, tree, tree);
   relation_kind query_relation (basic_block, const_bitmap, const_bitmap);
   void reset_path ();

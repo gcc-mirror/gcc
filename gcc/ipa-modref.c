@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "attribs.h"
 
 
 namespace {
@@ -280,17 +281,6 @@ modref_summary::~modref_summary ()
     ggc_delete (stores);
 }
 
-/* All flags that are implied by the ECF_CONST functions.  */
-const int implicit_const_eaf_flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE
-				     | EAF_NODIRECTESCAPE | EAF_NOREAD;
-/* All flags that are implied by the ECF_PURE function.  */
-const int implicit_pure_eaf_flags = EAF_NOCLOBBER | EAF_NOESCAPE
-				    | EAF_NODIRECTESCAPE;
-/* All flags implied when we know we can ignore stores (i.e. when handling
-   call to noreturn).  */
-const int ignore_stores_eaf_flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE
-				    | EAF_NODIRECTESCAPE;
-
 /* Remove all flags from EAF_FLAGS that are implied by ECF_FLAGS and not
    useful to track.  If returns_void is true moreover clear
    EAF_NOT_RETURNED.  */
@@ -305,10 +295,6 @@ remove_useless_eaf_flags (int eaf_flags, int ecf_flags, bool returns_void)
     eaf_flags &= ~implicit_pure_eaf_flags;
   else if ((ecf_flags & ECF_NORETURN) || returns_void)
     eaf_flags &= ~EAF_NOT_RETURNED;
-  /* Only NOCLOBBER or DIRECT flags alone are not useful (see comments
-     in tree-ssa-alias.c).  Give up earlier.  */
-  if ((eaf_flags & ~(EAF_DIRECT | EAF_NOCLOBBER)) == 0)
-    return 0;
   return eaf_flags;
 }
 
@@ -344,6 +330,26 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
     return false;
   return stores && !stores->every_base;
 }
+
+/* Return true if global memory is read
+   (that is loads summary contains global memory access).  */
+bool
+modref_summary::global_memory_read_p ()
+{
+  if (!loads)
+    return true;
+  return loads->global_access_p ();
+}
+
+/* Return true if global memory is written.  */
+bool
+modref_summary::global_memory_written_p ()
+{
+  if (!stores)
+    return true;
+  return stores->global_access_p ();
+}
+
 
 /* Single function summary used for LTO.  */
 
@@ -2016,7 +2022,8 @@ analyze_function (function *f, bool ipa)
 	     DECL_PURE_P (current_function_decl) ? " (pure)" : "");
 
   /* Don't analyze this function if it's compiled with -fno-strict-aliasing.  */
-  if (!flag_ipa_modref)
+  if (!flag_ipa_modref
+      || lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
     return;
 
   /* Compute no-LTO summaries when local optimization is going to happen.  */

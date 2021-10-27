@@ -234,9 +234,8 @@ procedure Gnatls is
       --  already been initialized.
 
       procedure Add_Directories
-        (Self    : in out String_Access;
-         Path    : String;
-         Prepend : Boolean := False);
+        (Self : in out String_Access;
+         Path : String);
       --  Add one or more directories to the path. Directories added with this
       --  procedure are added in order after the current directory and before
       --  the path given by the environment variable GPR_PROJECT_PATH. A value
@@ -1239,9 +1238,8 @@ procedure Gnatls is
       ---------------------
 
       procedure Add_Directories
-        (Self    : in out String_Access;
-         Path    : String;
-         Prepend : Boolean := False)
+        (Self : in out String_Access;
+         Path : String)
       is
          Tmp : String_Access;
 
@@ -1250,11 +1248,7 @@ procedure Gnatls is
             Self := new String'(Uninitialized_Prefix & Path);
          else
             Tmp := Self;
-            if Prepend then
-               Self := new String'(Path & Path_Separator & Tmp.all);
-            else
-               Self := new String'(Tmp.all & Path_Separator & Path);
-            end if;
+            Self := new String'(Tmp.all & Path_Separator & Path);
             Free (Tmp);
          end if;
       end Add_Directories;

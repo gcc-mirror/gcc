@@ -7808,7 +7808,7 @@ s390_asm_declare_function_size (FILE *asm_out_file,
 /* Write the extra assembler code needed to declare a function properly.  */
 
 void
-s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
+s390_asm_output_function_label (FILE *out_file, const char *fname,
 				tree decl)
 {
   int hw_before, hw_after;
@@ -7822,11 +7822,11 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
       /* Add a trampoline code area before the function label and initialize it
 	 with two-byte nop instructions.  This area can be overwritten with code
 	 that jumps to a patched version of the function.  */
-      asm_fprintf (asm_out_file, "\tnopr\t%%r0"
+      asm_fprintf (out_file, "\tnopr\t%%r0"
 		   "\t# pre-label NOPs for hotpatch (%d halfwords)\n",
 		   hw_before);
       for (i = 1; i < hw_before; i++)
-	fputs ("\tnopr\t%r0\n", asm_out_file);
+	fputs ("\tnopr\t%r0\n", out_file);
 
       /* Note:  The function label must be aligned so that (a) the bytes of the
 	 following nop do not cross a cacheline boundary, and (b) a jump address
@@ -7843,35 +7843,35 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	function_alignment
 	  = MAX (function_alignment,
 		 (unsigned int) align_functions.levels[0].get_value ());
-      fputs ("\t# alignment for hotpatch\n", asm_out_file);
-      ASM_OUTPUT_ALIGN (asm_out_file, align_functions.levels[0].log);
+      fputs ("\t# alignment for hotpatch\n", out_file);
+      ASM_OUTPUT_ALIGN (out_file, align_functions.levels[0].log);
     }
 
   if (S390_USE_TARGET_ATTRIBUTE && TARGET_DEBUG_ARG)
     {
-      asm_fprintf (asm_out_file, "\t# fn:%s ar%d\n", fname, s390_arch);
-      asm_fprintf (asm_out_file, "\t# fn:%s tu%d\n", fname, s390_tune);
-      asm_fprintf (asm_out_file, "\t# fn:%s sg%d\n", fname, s390_stack_guard);
-      asm_fprintf (asm_out_file, "\t# fn:%s ss%d\n", fname, s390_stack_size);
-      asm_fprintf (asm_out_file, "\t# fn:%s bc%d\n", fname, s390_branch_cost);
-      asm_fprintf (asm_out_file, "\t# fn:%s wf%d\n", fname,
+      asm_fprintf (out_file, "\t# fn:%s ar%d\n", fname, s390_arch);
+      asm_fprintf (out_file, "\t# fn:%s tu%d\n", fname, s390_tune);
+      asm_fprintf (out_file, "\t# fn:%s sg%d\n", fname, s390_stack_guard);
+      asm_fprintf (out_file, "\t# fn:%s ss%d\n", fname, s390_stack_size);
+      asm_fprintf (out_file, "\t# fn:%s bc%d\n", fname, s390_branch_cost);
+      asm_fprintf (out_file, "\t# fn:%s wf%d\n", fname,
 		   s390_warn_framesize);
-      asm_fprintf (asm_out_file, "\t# fn:%s ba%d\n", fname, TARGET_BACKCHAIN);
-      asm_fprintf (asm_out_file, "\t# fn:%s hd%d\n", fname, TARGET_HARD_DFP);
-      asm_fprintf (asm_out_file, "\t# fn:%s hf%d\n", fname, !TARGET_SOFT_FLOAT);
-      asm_fprintf (asm_out_file, "\t# fn:%s ht%d\n", fname, TARGET_OPT_HTM);
-      asm_fprintf (asm_out_file, "\t# fn:%s vx%d\n", fname, TARGET_OPT_VX);
-      asm_fprintf (asm_out_file, "\t# fn:%s ps%d\n", fname,
+      asm_fprintf (out_file, "\t# fn:%s ba%d\n", fname, TARGET_BACKCHAIN);
+      asm_fprintf (out_file, "\t# fn:%s hd%d\n", fname, TARGET_HARD_DFP);
+      asm_fprintf (out_file, "\t# fn:%s hf%d\n", fname, !TARGET_SOFT_FLOAT);
+      asm_fprintf (out_file, "\t# fn:%s ht%d\n", fname, TARGET_OPT_HTM);
+      asm_fprintf (out_file, "\t# fn:%s vx%d\n", fname, TARGET_OPT_VX);
+      asm_fprintf (out_file, "\t# fn:%s ps%d\n", fname,
 		   TARGET_PACKED_STACK);
-      asm_fprintf (asm_out_file, "\t# fn:%s se%d\n", fname, TARGET_SMALL_EXEC);
-      asm_fprintf (asm_out_file, "\t# fn:%s mv%d\n", fname, TARGET_MVCLE);
-      asm_fprintf (asm_out_file, "\t# fn:%s zv%d\n", fname, TARGET_ZVECTOR);
-      asm_fprintf (asm_out_file, "\t# fn:%s wd%d\n", fname,
+      asm_fprintf (out_file, "\t# fn:%s se%d\n", fname, TARGET_SMALL_EXEC);
+      asm_fprintf (out_file, "\t# fn:%s mv%d\n", fname, TARGET_MVCLE);
+      asm_fprintf (out_file, "\t# fn:%s zv%d\n", fname, TARGET_ZVECTOR);
+      asm_fprintf (out_file, "\t# fn:%s wd%d\n", fname,
 		   s390_warn_dynamicstack_p);
     }
-  ASM_OUTPUT_LABEL (asm_out_file, fname);
+  ASM_OUTPUT_LABEL (out_file, fname);
   if (hw_after > 0)
-    asm_fprintf (asm_out_file,
+    asm_fprintf (out_file,
 		 "\t# post-label NOPs for hotpatch (%d halfwords)\n",
 		 hw_after);
 }
@@ -15746,9 +15746,9 @@ s390_option_override (void)
     {
       /* Don't emit DWARF3/4 unless specifically selected.  The TPF
 	 debuggers do not yet support DWARF 3/4.  */
-      if (!global_options_set.x_dwarf_strict)
+      if (!OPTION_SET_P (dwarf_strict))
 	dwarf_strict = 1;
-      if (!global_options_set.x_dwarf_version)
+      if (!OPTION_SET_P (dwarf_version))
 	dwarf_version = 2;
     }
 }
@@ -16568,6 +16568,75 @@ s390_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 #endif
+
+void
+s390_rawmemchr (machine_mode elt_mode, rtx dst, rtx src, rtx pat)
+{
+  machine_mode vec_mode = mode_for_vector (as_a <scalar_int_mode> (elt_mode),
+					   16 / GET_MODE_SIZE (elt_mode)).require();
+  rtx lens = gen_reg_rtx (V16QImode);
+  rtx pattern = gen_reg_rtx (vec_mode);
+  rtx loop_start = gen_label_rtx ();
+  rtx loop_end = gen_label_rtx ();
+  rtx addr = gen_reg_rtx (Pmode);
+  rtx offset = gen_reg_rtx (Pmode);
+  rtx loadlen = gen_reg_rtx (SImode);
+  rtx matchlen = gen_reg_rtx (SImode);
+  rtx mem;
+
+  pat = GEN_INT (trunc_int_for_mode (INTVAL (pat), elt_mode));
+  emit_insn (gen_rtx_SET (pattern, gen_rtx_VEC_DUPLICATE (vec_mode, pat)));
+
+  emit_move_insn (addr, XEXP (src, 0));
+
+  // alignment
+  emit_insn (gen_vlbb (lens, gen_rtx_MEM (BLKmode, addr), GEN_INT (6)));
+  emit_insn (gen_lcbb (loadlen, addr, GEN_INT (6)));
+  lens = convert_to_mode (vec_mode, lens, 1);
+  emit_insn (gen_vec_vfees (vec_mode, lens, lens, pattern, GEN_INT (0)));
+  lens = convert_to_mode (V4SImode, lens, 1);
+  emit_insn (gen_vec_extractv4sisi (matchlen, lens, GEN_INT (1)));
+  lens = convert_to_mode (vec_mode, lens, 1);
+  emit_cmp_and_jump_insns (matchlen, loadlen, LT, NULL_RTX, SImode, 1, loop_end);
+  force_expand_binop (Pmode, add_optab, addr, GEN_INT(16), addr, 1, OPTAB_DIRECT);
+  force_expand_binop (Pmode, and_optab, addr, GEN_INT(~HOST_WIDE_INT_UC(0xf)), addr, 1, OPTAB_DIRECT);
+  // now, addr is 16-byte aligned
+
+  mem = gen_rtx_MEM (vec_mode, addr);
+  set_mem_align (mem, 128);
+  emit_move_insn (lens, mem);
+  emit_insn (gen_vec_vfees (vec_mode, lens, lens, pattern, GEN_INT (VSTRING_FLAG_CS)));
+  add_int_reg_note (s390_emit_ccraw_jump (4, EQ, loop_end),
+		    REG_BR_PROB,
+		    profile_probability::very_unlikely ().to_reg_br_prob_note ());
+
+  emit_label (loop_start);
+  LABEL_NUSES (loop_start) = 1;
+
+  force_expand_binop (Pmode, add_optab, addr, GEN_INT (16), addr, 1, OPTAB_DIRECT);
+  mem = gen_rtx_MEM (vec_mode, addr);
+  set_mem_align (mem, 128);
+  emit_move_insn (lens, mem);
+  emit_insn (gen_vec_vfees (vec_mode, lens, lens, pattern, GEN_INT (VSTRING_FLAG_CS)));
+  add_int_reg_note (s390_emit_ccraw_jump (4, NE, loop_start),
+		    REG_BR_PROB,
+		    profile_probability::very_likely ().to_reg_br_prob_note ());
+
+  emit_label (loop_end);
+  LABEL_NUSES (loop_end) = 1;
+
+  if (TARGET_64BIT)
+    {
+      lens = convert_to_mode (V2DImode, lens, 1);
+      emit_insn (gen_vec_extractv2didi (offset, lens, GEN_INT (0)));
+    }
+  else
+    {
+      lens = convert_to_mode (V4SImode, lens, 1);
+      emit_insn (gen_vec_extractv4sisi (offset, lens, GEN_INT (1)));
+    }
+  force_expand_binop (Pmode, add_optab, addr, offset, dst, 1, OPTAB_DIRECT);
+}
 
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 

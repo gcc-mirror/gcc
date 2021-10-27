@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mvsx -Wno-psabi" } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target vsx_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1
 #ifndef CHECK_H

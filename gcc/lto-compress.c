@@ -250,7 +250,6 @@ lto_compression_zlib (struct lto_compression_stream *stream)
   const size_t outbuf_length = Z_BUFFER_LENGTH;
   unsigned char *outbuf = (unsigned char *) xmalloc (outbuf_length);
   z_stream out_stream;
-  size_t compressed_bytes = 0;
   int status;
 
   gcc_assert (stream->is_compression);
@@ -282,7 +281,6 @@ lto_compression_zlib (struct lto_compression_stream *stream)
 
       stream->callback ((const char *) outbuf, out_bytes, stream->opaque);
       lto_stats.num_compressed_il_bytes += out_bytes;
-      compressed_bytes += out_bytes;
 
       cursor += in_bytes;
       remaining -= in_bytes;
@@ -342,7 +340,6 @@ lto_uncompression_zlib (struct lto_compression_stream *stream)
   size_t remaining = stream->bytes;
   const size_t outbuf_length = Z_BUFFER_LENGTH;
   unsigned char *outbuf = (unsigned char *) xmalloc (outbuf_length);
-  size_t uncompressed_bytes = 0;
 
   gcc_assert (!stream->is_compression);
   timevar_push (TV_IPA_LTO_DECOMPRESS);
@@ -378,7 +375,6 @@ lto_uncompression_zlib (struct lto_compression_stream *stream)
 
 	  stream->callback ((const char *) outbuf, out_bytes, stream->opaque);
 	  lto_stats.num_uncompressed_il_bytes += out_bytes;
-	  uncompressed_bytes += out_bytes;
 
 	  cursor += in_bytes;
 	  remaining -= in_bytes;

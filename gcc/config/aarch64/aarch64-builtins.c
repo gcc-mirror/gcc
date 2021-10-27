@@ -46,6 +46,7 @@
 #include "emit-rtl.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple-fold.h"
 
 #define v8qi_UP  E_V8QImode
 #define v4hi_UP  E_V4HImode
@@ -2399,11 +2400,65 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
   return NULL_TREE;
 }
 
+enum aarch64_simd_type
+get_mem_type_for_load_store (unsigned int fcode)
+{
+  switch (fcode)
+  {
+    VAR1 (LOAD1, ld1 , 0, LOAD, v8qi)
+    VAR1 (STORE1, st1 , 0, STORE, v8qi)
+      return Int8x8_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v16qi)
+    VAR1 (STORE1, st1 , 0, STORE, v16qi)
+      return Int8x16_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v4hi)
+    VAR1 (STORE1, st1 , 0, STORE, v4hi)
+      return Int16x4_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v8hi)
+    VAR1 (STORE1, st1 , 0, STORE, v8hi)
+      return Int16x8_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v2si)
+    VAR1 (STORE1, st1 , 0, STORE, v2si)
+      return Int32x2_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v4si)
+    VAR1 (STORE1, st1 , 0, STORE, v4si)
+      return Int32x4_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v2di)
+    VAR1 (STORE1, st1 , 0, STORE, v2di)
+      return Int64x2_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v4hf)
+    VAR1 (STORE1, st1 , 0, STORE, v4hf)
+      return Float16x4_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v8hf)
+    VAR1 (STORE1, st1 , 0, STORE, v8hf)
+      return Float16x8_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v4bf)
+    VAR1 (STORE1, st1 , 0, STORE, v4bf)
+      return Bfloat16x4_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v8bf)
+    VAR1 (STORE1, st1 , 0, STORE, v8bf)
+      return Bfloat16x8_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v2sf)
+    VAR1 (STORE1, st1 , 0, STORE, v2sf)
+      return Float32x2_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v4sf)
+    VAR1 (STORE1, st1 , 0, STORE, v4sf)
+      return Float32x4_t;
+    VAR1 (LOAD1, ld1 , 0, LOAD, v2df)
+    VAR1 (STORE1, st1 , 0, STORE, v2df)
+      return Float64x2_t;
+    default:
+      gcc_unreachable ();
+      break;
+  }
+}
+
 /* Try to fold STMT, given that it's a call to the built-in function with
    subcode FCODE.  Return the new statement on success and null on
    failure.  */
 gimple *
-aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
+aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
+				     gimple_stmt_iterator *gsi)
 {
   gimple *new_stmt = NULL;
   unsigned nargs = gimple_call_num_args (stmt);
@@ -2421,6 +2476,52 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
+
+     /*lower store and load neon builtins to gimple.  */
+     BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
+	if (!BYTES_BIG_ENDIAN)
+	  {
+	    enum aarch64_simd_type mem_type
+	      = get_mem_type_for_load_store(fcode);
+	    aarch64_simd_type_info simd_type
+	      = aarch64_simd_types[mem_type];
+	    tree elt_ptr_type = build_pointer_type (simd_type.eltype);
+	    tree zero = build_zero_cst (elt_ptr_type);
+	    gimple_seq stmts = NULL;
+	    tree base = gimple_convert (&stmts, elt_ptr_type,
+					args[0]);
+	    if (stmts)
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	    new_stmt
+	      = gimple_build_assign (gimple_get_lhs (stmt),
+				     fold_build2 (MEM_REF,
+						  simd_type.itype,
+						  base, zero));
+	  }
+	break;
+
+      BUILTIN_VALL_F16 (STORE1, st1, 0, STORE)
+	if (!BYTES_BIG_ENDIAN)
+	  {
+	    enum aarch64_simd_type mem_type
+	      = get_mem_type_for_load_store(fcode);
+	    aarch64_simd_type_info simd_type
+	      = aarch64_simd_types[mem_type];
+	    tree elt_ptr_type = build_pointer_type (simd_type.eltype);
+	    tree zero = build_zero_cst (elt_ptr_type);
+	    gimple_seq stmts = NULL;
+	    tree base = gimple_convert (&stmts, elt_ptr_type,
+					args[0]);
+	    if (stmts)
+	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	    new_stmt
+	      = gimple_build_assign (fold_build2 (MEM_REF,
+				     simd_type.itype,
+				     base,
+				     zero), args[1]);
+	  }
+	break;
+
       BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10, ALL)
       BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10, ALL)
 	new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,

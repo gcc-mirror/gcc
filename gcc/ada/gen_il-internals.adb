@@ -370,7 +370,7 @@ package body Gen_IL.Internals is
          return Image (Default);
 
       else
-         --  Strip off the prefix and capitalize it
+         --  Strip off the prefix
 
          declare
             Im : constant String := Image (Default);

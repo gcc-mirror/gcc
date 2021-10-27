@@ -65,4 +65,6 @@ extern void maybe_set_nonzero_bits (edge, tree);
 extern wide_int masked_increment (const wide_int &val_in, const wide_int &mask,
 				  const wide_int &sgnbit, unsigned int prec);
 
+extern unsigned int execute_ranger_vrp (struct function *fun,
+					bool warn_array_bounds_p = false);
 #endif /* GCC_TREE_VRP_H */

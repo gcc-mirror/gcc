@@ -214,12 +214,14 @@ void test_struct_member_array (struct S3 *s3, int i)
   T (d, "%s", d);       /* { dg-warning "overlaps" } */
   T (d, "%s", d + 0);   /* { dg-warning "overlaps" } */
   T (d, "%s", d + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", d + 2);   /* { dg-warning "may overlap" } */
+  /* Since d below points to char[4], strlen(d + 2) must be at most 1
+     and so the call cannot overlap. */
+  T (d, "%s", d + 2);
   T (d, "%s", d + i);   /* { dg-warning "may overlap" } */
 
   T (d, "%s", &d[0]);   /* { dg-warning "overlaps" } */
   T (d, "%s", &d[1]);   /* { dg-warning "may overlap" } */
-  T (d, "%s", &d[2]);   /* { dg-warning "may overlap" } */
+  T (d, "%s", &d[2]);
   T (d, "%s", &d[i]);   /* { dg-warning "may overlap" } */
 
   T (d + 0, "%s", d);   /* { dg-warning "overlaps" } */
@@ -236,7 +238,7 @@ void test_struct_member_array (struct S3 *s3, int i)
 
   T (d, "%s", s);       /* { dg-warning "overlaps" } */
   T (d, "%s", s + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", s + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", s + 2);
   T (d, "%s", s + i);   /* { dg-warning "may overlap" } */
 
   s = s3->s2_1.s_1.b;
@@ -324,7 +326,7 @@ void test_struct_member_array (struct S3 *s3, int i)
 
   T (d, "%s", s);       /* { dg-warning "overlaps" } */
   T (d, "%s", s + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", s + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", s + 2);
   T (d, "%s", s + i);   /* { dg-warning "may overlap" } */
 
   s = s3->s2_2.s_2.a;
@@ -368,7 +370,7 @@ void test_struct_member_array (struct S3 *s3, int i)
 
   T (d, "%s", s);       /* { dg-warning "overlaps" } */
   T (d, "%s", s + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", s + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", s + 2);
   T (d, "%s", s + i);   /* { dg-warning "may overlap" } */
 
   s = s3->s2_2.s_2.a;
@@ -394,12 +396,12 @@ void test_struct_member_array_array (struct S3 *s3, int i)
   T (d, "%s", s);       /* { dg-warning "overlaps" } */
   T (d, "%s", s + 0);   /* { dg-warning "overlaps" } */
   T (d, "%s", s + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", s + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", s + 2);
   T (d, "%s", s + i);   /* { dg-warning "may overlap" } */
 
   T (d, "%s", &s[0]);   /* { dg-warning "overlaps" } */
   T (d, "%s", &s[1]);   /* { dg-warning "may overlap" } */
-  T (d, "%s", &s[2]);   /* { dg-warning "may overlap" } */
+  T (d, "%s", &s[2]);
   T (d, "%s", &s[i]);   /* { dg-warning "may overlap" } */
 
   T (d + 0, "%s", s);   /* { dg-warning "overlaps" } */
@@ -566,12 +568,12 @@ void test_union_member_array (union U *un, int i)
   T (d, "%s", d);       /* { dg-warning "overlaps" } */
   T (d, "%s", d + 0);   /* { dg-warning "overlaps" } */
   T (d, "%s", d + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", d + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", d + 2);
   T (d, "%s", d + i);   /* { dg-warning "may overlap" } */
 
   T (d, "%s", &d[0]);   /* { dg-warning "overlaps" } */
   T (d, "%s", &d[1]);   /* { dg-warning "may overlap" } */
-  T (d, "%s", &d[2]);   /* { dg-warning "may overlap" } */
+  T (d, "%s", &d[2]);
   T (d, "%s", &d[i]);   /* { dg-warning "may overlap" } */
 
   T (d + 0, "%s", d);   /* { dg-warning "overlaps" } */
@@ -588,7 +590,7 @@ void test_union_member_array (union U *un, int i)
 
   T (d, "%s", s);       /* { dg-warning "overlaps" } */
   T (d, "%s", s + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", s + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", s + 2);
   T (d, "%s", s + i);   /* { dg-warning "may overlap" } */
 
   s = un->s2_1.s_1.b;
@@ -616,7 +618,7 @@ void test_union_member_array (union U *un, int i)
 
   T (d, "%s", s);       /* { dg-warning "overlaps" } */
   T (d, "%s", s + 1);   /* { dg-warning "may overlap" } */
-  T (d, "%s", s + 2);   /* { dg-warning "may overlap" } */
+  T (d, "%s", s + 2);
   T (d, "%s", s + i);   /* { dg-warning "may overlap" } */
 
   s = un->s2_2.s_1.b;

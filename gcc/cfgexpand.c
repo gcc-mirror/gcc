@@ -5756,6 +5756,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   rtx_insn *last;
   edge e;
   edge_iterator ei;
+  bool nondebug_stmt_seen = false;
 
   if (dump_file)
     fprintf (dump_file, "\n;; Generating RTL for gimple basic block %d\n",
@@ -5836,6 +5837,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt))
+	nondebug_stmt_seen = true;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed
@@ -6090,7 +6093,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   /* Expand implicit goto and convert goto_locus.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      if (e->goto_locus != UNKNOWN_LOCATION || !stmt)
+      if (e->goto_locus != UNKNOWN_LOCATION || !nondebug_stmt_seen)
 	set_curr_insn_location (e->goto_locus);
       if ((e->flags & EDGE_FALLTHRU) && e->dest != bb->next_bb)
 	{

@@ -37,6 +37,8 @@ GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
   (void) flags;
   (void) num_teams;
   unsigned old_thread_limit_var = 0;
+  if (thread_limit == 0)
+    thread_limit = gomp_teams_thread_limit_var;
   if (thread_limit)
     {
       struct gomp_task_icv *icv = gomp_icv (true);
@@ -45,7 +47,7 @@ GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
 	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
     }
   if (num_teams == 0)
-    num_teams = 3;
+    num_teams = gomp_nteams_var ? gomp_nteams_var : 3;
   gomp_num_teams = num_teams;
   for (gomp_team_num = 0; gomp_team_num < num_teams; gomp_team_num++)
     fn (data);

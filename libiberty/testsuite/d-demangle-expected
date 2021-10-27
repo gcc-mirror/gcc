@@ -18,6 +18,14 @@ _Dmain
 D main
 #
 --format=dlang
+_D8demangleZ
+demangle
+#
+--format=dlang
+_D8demangle4testZ
+demangle.test
+#
+--format=dlang
 _D8demangle4testPFLAiYi
 demangle.test
 #
@@ -973,6 +981,10 @@ demangle.test(char)
 _D8demangle000000004testFaZv
 demangle.test(char)
 #
+--format=dlang
+_D8demangle__T3abcS_DQt10__lambda13FNaNbNiNfZiZQBhFZi
+demangle.abc!(demangle.__lambda13()).abc()
+#
 # Unittests
 #
 --format=dlang
@@ -1450,3 +1462,11 @@ mod.func().nested!(int).nested()
 --format=dlang
 _D6mangle__T8fun21753VSQv6S21753S1f_DQBj10__lambda71MFNaNbNiNfZvZQCbQp
 mangle.fun21753!(mangle.S21753(mangle.__lambda71())).fun21753
+#
+--format=dlang
+_D8demangle9anonymous0Z
+demangle.anonymous
+#
+--format=dlang
+_D8demangle9anonymous03fooZ
+demangle.anonymous.foo

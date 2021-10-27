@@ -1413,6 +1413,15 @@ package body Sem_Attr is
                return;
             end if;
 
+         --  'Old attribute reference ok in a _Postconditions procedure
+
+         elsif Nkind (Prag) = N_Subprogram_Body
+           and then not Comes_From_Source (Prag)
+           and then Nkind (Corresponding_Spec (Prag)) = N_Defining_Identifier
+           and then Chars (Corresponding_Spec (Prag)) = Name_uPostconditions
+         then
+            null;
+
          --  Otherwise the placement of the attribute is illegal
 
          else
@@ -1424,6 +1433,15 @@ package body Sem_Attr is
 
          if Nkind (Prag) = N_Aspect_Specification then
             Subp_Decl := Parent (Prag);
+         elsif Nkind (Prag) = N_Subprogram_Body then
+            declare
+               Enclosing_Scope : constant Node_Id :=
+                 Scope (Corresponding_Spec (Prag));
+            begin
+               pragma Assert (Postconditions_Proc (Enclosing_Scope)
+                               = Corresponding_Spec (Prag));
+               Subp_Decl := Parent (Parent (Enclosing_Scope));
+            end;
          else
             Subp_Decl := Find_Related_Declaration_Or_Body (Prag);
          end if;
@@ -2836,7 +2854,7 @@ package body Sem_Attr is
          if Bad_Unordered_Enumeration_Reference (N, P_Base_Type) then
             Error_Msg_Sloc := Sloc (P_Base_Type);
             Error_Msg_NE
-              ("comparison on unordered enumeration type& declared#?U?",
+              ("comparison on unordered enumeration type& declared#?.u?",
                N, P_Base_Type);
          end if;
       end Min_Max;
@@ -9233,14 +9251,12 @@ package body Sem_Attr is
       -- Machine --
       -------------
 
-      --  We use the same rounding mode as the one used for RM 4.9(38)
+      --  We use the same rounding as the one used for RM 4.9(38/2)
 
       when Attribute_Machine =>
          Fold_Ureal
-           (N,
-            Eval_Fat.Machine
-              (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round_Even, N),
-            Static);
+           (N, Machine_Number (P_Base_Type, Expr_Value_R (E1), N), Static);
+         Set_Is_Machine_Number (N);
 
       ------------------
       -- Machine_Emax --

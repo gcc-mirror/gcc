@@ -32,17 +32,13 @@ test01()
   using namespace std::experimental::literals::string_view_literals;
 
   std::experimental::string_view planet = "Mercury"sv;
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::experimental::wstring_view wplanet = L"Venus"sv;
-#endif
   u8string_view u8planet = u8"Mars"sv;
   std::experimental::u16string_view u16planet = u"Jupiter"sv;
   std::experimental::u32string_view u32planet = U"Saturn"sv;
 
   VERIFY( planet == std::experimental::string_view("Mercury") );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet == std::experimental::wstring_view(L"Venus") );
-#endif
   VERIFY( u8planet == u8string_view(u8"Mars") );
   VERIFY( u16planet == std::experimental::u16string_view(u"Jupiter") );
   VERIFY( u32planet == std::experimental::u32string_view(U"Saturn") );
@@ -54,19 +50,15 @@ test02()
   using namespace std::experimental::literals::string_view_literals;
 
   std::experimental::string_view planet_cratered = "Mercury\0cratered"sv;
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::experimental::wstring_view wplanet_cratered = L"Venus\0cratered"sv;
-#endif
   u8string_view u8planet_cratered = u8"Mars\0cratered"sv;
   std::experimental::u16string_view u16planet_cratered = u"Jupiter\0cratered"sv;
   std::experimental::u32string_view u32planet_cratered = U"Saturn\0cratered"sv;
 
   VERIFY( planet_cratered ==
 	  std::experimental::string_view("Mercury\0cratered", 16) );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet_cratered ==
 	  std::experimental::wstring_view(L"Venus\0cratered", 14) );
-#endif
   VERIFY( u8planet_cratered == u8string_view(u8"Mars\0cratered", 13) );
   VERIFY( u16planet_cratered ==
 	  std::experimental::u16string_view(u"Jupiter\0cratered", 16) );

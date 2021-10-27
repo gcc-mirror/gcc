@@ -2485,14 +2485,14 @@ supported for C as this construct is allowed by C++.
 Do not recognize @code{asm}, @code{inline} or @code{typeof} as a
 keyword, so that code can use these words as identifiers.  You can use
 the keywords @code{__asm__}, @code{__inline__} and @code{__typeof__}
-instead.  @option{-ansi} implies @option{-fno-asm}.
+instead.  In C, @option{-ansi} implies @option{-fno-asm}.
 
-In C++, this switch only affects the @code{typeof} keyword, since
-@code{asm} and @code{inline} are standard keywords.  You may want to
-use the @option{-fno-gnu-keywords} flag instead, which has the same
-effect.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}), this
-switch only affects the @code{asm} and @code{typeof} keywords, since
-@code{inline} is a standard keyword in ISO C99.
+In C++, @code{inline} is a standard keyword and is not affected by
+this switch.  You may want to use the @option{-fno-gnu-keywords} flag
+instead, which disables @code{typeof} but not @code{asm} and
+@code{inline}.  In C99 mode (@option{-std=c99} or @option{-std=gnu99}),
+this switch only affects the @code{asm} and @code{typeof} keywords,
+since @code{inline} is a standard keyword in ISO C99.
 
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}
@@ -14246,6 +14246,15 @@ Maximum depth of recursive cloning for self-recursive function.
 Recursive cloning only when the probability of call being executed exceeds
 the parameter.
 
+@item ipa-cp-profile-count-base
+When using @option{-fprofile-use} option, IPA-CP will consider the measured
+execution count of a call graph edge at this percentage position in their
+histogram as the basis for its heuristics calculation.
+
+@item ipa-cp-recursive-freq-factor
+The number of times interprocedural copy propagation expects recursive
+functions to call themselves.
+
 @item ipa-cp-recursion-penalty
 Percentage penalty the recursive functions will receive when they
 are evaluated for cloning.
@@ -14465,12 +14474,7 @@ Maximum number of instructions to copy when duplicating blocks on a
 finite state automaton jump thread path.
 
 @item max-fsm-thread-length
-Maximum number of basic blocks on a finite state automaton jump thread
-path.
-
-@item max-fsm-thread-paths
-Maximum number of new jump thread paths to create for a finite state
-automaton.
+Maximum number of basic blocks on a jump thread path.
 
 @item parloops-chunk-size
 Chunk size of omp schedule for loops parallelized by parloops.
@@ -14504,6 +14508,15 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 
 @item evrp-mode
 Specifies the mode Early VRP should operate in.
+
+@item vrp1-mode
+Specifies the mode VRP pass 1 should operate in.
+
+@item vrp2-mode
+Specifies the mode VRP pass 2 should operate in.
+
+@item ranger-debug
+Specifies the type of debug output to be issued for ranges.
 
 @item evrp-switch-limit
 Specifies the maximum number of switch cases before EVRP ignores a switch.
@@ -14625,10 +14638,6 @@ The maximum depth of recursive inlining for non-inline functions.
 @item fsm-scale-path-stmts
 Scale factor to apply to the number of statements in a threading path
 when comparing to the number of (scaled) blocks.
-
-@item fsm-maximum-phi-arguments
-Maximum number of arguments a PHI may have before the FSM threader
-will not try to thread through its block.
 
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
@@ -14881,6 +14890,10 @@ concurrent instances of your program, and provided that the file system
 supports locking, the data files will be correctly updated.  Unless
 a strict ISO C dialect option is in effect, @code{fork} calls are
 detected and correctly handled without double counting.
+
+Moreover, an object file can be recompiled multiple times
+and the corresponding @file{.gcda} file merges as long as
+the source file and the compiler options are unchanged.
 
 @item
 For profile-directed optimizations, compile the source files again with
@@ -15247,7 +15260,8 @@ The option cannot be combined with @option{-fsanitize=thread}.
 @opindex fsanitize=undefined
 Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector.
 Various computations are instrumented to detect undefined behavior
-at runtime.  Current suboptions are:
+at runtime.  See @uref{https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html} for more details.   The run-time behavior can be influenced using the
+@env{UBSAN_OPTIONS} environment variable.  Current suboptions are:
 
 @table @gcctabopt
 
@@ -15533,7 +15547,8 @@ which functions and calls should be skipped from instrumentation
 (@pxref{Function Attributes}).
 
 Currently the x86 GNU/Linux target provides an implementation based
-on Intel Control-flow Enforcement Technology (CET).
+on Intel Control-flow Enforcement Technology (CET) which works for
+i686 processor or newer.
 
 @item -fstack-protector
 @opindex fstack-protector

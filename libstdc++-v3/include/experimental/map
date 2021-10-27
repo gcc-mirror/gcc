@@ -50,19 +50,13 @@ inline namespace fundamentals_v2
 	   typename _Predicate>
     inline void
     erase_if(map<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
-    {
-      _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Alloc>& __c = __cont;
-      std::__detail::__erase_nodes_if(__c, __pred);
-    }
+    { std::__detail::__erase_nodes_if(__cont, __pred); }
 
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
     inline void
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
-    {
-      _GLIBCXX_STD_C::multimap<_Key, _Tp, _Compare, _Alloc>& __c = __cont;
-      std::__detail::__erase_nodes_if(__c, __pred);
-    }
+    { std::__detail::__erase_nodes_if(__cont, __pred); }
 
   namespace pmr {
     template<typename _Key, typename _Tp, typename _Compare = less<_Key>>

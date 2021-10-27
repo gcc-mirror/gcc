@@ -60,6 +60,7 @@
 #include "dumpfile.h"
 #include "builtins.h"
 #include "flags.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -221,7 +222,7 @@ c6x_option_override (void)
 {
   unsigned i;
 
-  if (global_options_set.x_c6x_arch_option)
+  if (OPTION_SET_P (c6x_arch_option))
     {
       c6x_arch = all_isas[c6x_arch_option].type;
       c6x_insn_mask &= ~C6X_INSNS_ALL_CPU_BITS;

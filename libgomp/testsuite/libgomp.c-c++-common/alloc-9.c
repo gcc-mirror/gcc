@@ -195,25 +195,25 @@ main ()
   if ((((uintptr_t) p) % 32) != 0)
     abort ();
   p[0] = 85;
-  p = (int *) omp_realloc (p, 420, a, a2);
+  p = (int *) omp_realloc (p, 320, a, a2);
   if ((((uintptr_t) p) % 16) != 0 || p[0] != 85)
     abort ();
   p[0] = 5;
-  p[419 / sizeof (int)] = 6;
+  p[319 / sizeof (int)] = 6;
   q = (int *) omp_alloc (sizeof (int), a);
   if ((((uintptr_t) q) % 16) != 0)
     abort ();
   q[0] = 43;
-  q = (int *) omp_realloc (q, 420, a2, a);
+  q = (int *) omp_realloc (q, 320, a2, a);
   if ((((uintptr_t) q) % 32) != 0 || q[0] != 43)
     abort ();
   q[0] = 44;
-  q[419 / sizeof (int)] = 8;
-  q = (int *) omp_realloc (q, 768, a2, a2);
+  q[319 / sizeof (int)] = 8;
+  q = (int *) omp_realloc (q, 568, a2, a2);
   if ((((uintptr_t) q) % 16) != 0 || q[0] != 44)
     abort ();
   q[0] = 7;
-  q[767 / sizeof (int)] = 8;
+  q[567 / sizeof (int)] = 8;
   omp_free (p, omp_null_allocator);
   omp_free (q, a2);
   omp_destroy_allocator (a2);

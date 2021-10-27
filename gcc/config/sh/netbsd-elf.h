@@ -85,7 +85,7 @@ while (0)
   do									\
     {									\
       /* Set -musermode if it hasn't been specified.  */		\
-      if (global_options_set.x_TARGET_USERMODE == 0)			\
+      if (OPTION_SET_P (TARGET_USERMODE) == 0)			\
 	TARGET_USERMODE = true;						\
     }									\
   while (0)

@@ -40,7 +40,6 @@
 #include <bits/chrono.h>
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#include <exception> // std::terminate
 #include <sys/time.h>
 #endif
 

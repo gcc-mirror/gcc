@@ -49,19 +49,17 @@ void test01()
   typedef make_unsigned<const char>::type  	test22_type;
   static_assert(is_same<test22_type, const unsigned char>::value, "");
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   typedef make_unsigned<volatile wchar_t>::type  	test23_type;
   static_assert(is_unsigned<test23_type>::value
                 && is_volatile<test23_type>::value
                 && sizeof(test23_type) == sizeof(volatile wchar_t), "");
-#endif
 
   typedef make_unsigned<test_enum>::type  	  test24_type;
   static_assert(is_same<test24_type, unsigned short>::value, "");
 
 #ifndef __STRICT_ANSI__
   // GNU Extensions.
-#ifdef _GLIBCXX_USE_INT128
+#ifdef __SIZEOF_INT128__
   typedef make_unsigned<unsigned __int128>::type  test25_type;
   static_assert(is_same<test25_type, unsigned __int128>::value, "");
 

@@ -3693,7 +3693,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*template_keyword_p=*/false,
 				/*check_dependency_p=*/true,
 				/*template_p=*/NULL,
-				/*declarator_p=*/false,
+				/*declarator_p=*/true,
 				/*optional_p=*/false);
   /* If the next token is a (, this is a function with no explicit return
      type, i.e. constructor, destructor or conversion op.  */
@@ -6605,6 +6605,8 @@ check_template_keyword_in_nested_name_spec (tree name)
    it unchanged if there is no nested-name-specifier.  Returns the new
    scope iff there is a nested-name-specifier, or NULL_TREE otherwise.
 
+   If CHECK_DEPENDENCY_P is FALSE, names are looked up in dependent scopes.
+
    If IS_DECLARATION is TRUE, the nested-name-specifier is known to be
    part of a declaration and/or decl-specifier.  */
 
@@ -6645,9 +6647,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	  /* Grab the nested-name-specifier and continue the loop.  */
 	  cp_parser_pre_parsed_nested_name_specifier (parser);
 	  /* If we originally encountered this nested-name-specifier
-	     with IS_DECLARATION set to false, we will not have
+	     with CHECK_DEPENDENCY_P set to true, we will not have
 	     resolved TYPENAME_TYPEs, so we must do so here.  */
 	  if (is_declaration
+	      && !check_dependency_p
 	      && TREE_CODE (parser->scope) == TYPENAME_TYPE)
 	    {
 	      new_scope = resolve_typename_type (parser->scope,
@@ -6729,6 +6732,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	 a template.  So, if we have a typename at this point, we make
 	 an effort to look through it.  */
       if (is_declaration
+	  && !check_dependency_p
 	  && !typename_keyword_p
 	  && parser->scope
 	  && TREE_CODE (parser->scope) == TYPENAME_TYPE)
@@ -12036,6 +12040,7 @@ cp_parser_handle_directive_omp_attributes (cp_parser *parser, tree *pattrs,
   init-statement:
     expression-statement
     simple-declaration
+    alias-declaration
 
   TM Extension:
 
@@ -13323,6 +13328,23 @@ cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll)
   /* Begin the for-statement.  */
   scope = begin_for_scope (&init);
 
+  /* Maybe parse the optional init-statement in a range-based for loop.  */
+  if (cp_parser_range_based_for_with_init_p (parser)
+      /* Checked for diagnostic purposes only.  */
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+    {
+      tree dummy;
+      cp_parser_init_statement (parser, &dummy);
+      if (cxx_dialect < cxx20)
+	{
+	  pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		   OPT_Wc__20_extensions,
+		   "range-based %<for%> loops with initializer only "
+		   "available with %<-std=c++20%> or %<-std=gnu++20%>");
+	  decl = error_mark_node;
+	}
+    }
+
   /* Parse the initialization.  */
   is_range_for = cp_parser_init_statement (parser, &decl);
 
@@ -13983,12 +14005,13 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
   return statement;
 }
 
-/* Parse a init-statement or the declarator of a range-based-for.
+/* Parse an init-statement or the declarator of a range-based-for.
    Returns true if a range-based-for declaration is seen.
 
    init-statement:
      expression-statement
-     simple-declaration  */
+     simple-declaration
+     alias-declaration  */
 
 static bool
 cp_parser_init_statement (cp_parser *parser, tree *decl)
@@ -14004,40 +14027,29 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
       bool is_range_for = false;
       bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
-      /* Try to parse the init-statement.  */
-      if (cp_parser_range_based_for_with_init_p (parser))
-	{
-	  tree dummy;
-	  cp_parser_parse_tentatively (parser);
-	  /* Parse the declaration.  */
-	  cp_parser_simple_declaration (parser,
-					/*function_definition_allowed_p=*/false,
-					&dummy);
-	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	  if (!cp_parser_parse_definitely (parser))
-	    /* That didn't work, try to parse it as an expression-statement.  */
-	    cp_parser_expression_statement (parser, NULL_TREE);
-
-	  if (cxx_dialect < cxx20)
-	    {
-	      pedwarn (cp_lexer_peek_token (parser->lexer)->location,
-		       OPT_Wc__20_extensions,
-		       "range-based %<for%> loops with initializer only "
-		       "available with %<-std=c++20%> or %<-std=gnu++20%>");
-	      *decl = error_mark_node;
-	    }
-	}
-
       /* A colon is used in range-based for.  */
       parser->colon_corrects_to_scope_p = false;
 
       /* We're going to speculatively look for a declaration, falling back
 	 to an expression, if necessary.  */
       cp_parser_parse_tentatively (parser);
-      /* Parse the declaration.  */
-      cp_parser_simple_declaration (parser,
-				    /*function_definition_allowed_p=*/false,
-				    decl);
+      bool expect_semicolon_p = true;
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
+	{
+	  cp_parser_alias_declaration (parser);
+	  expect_semicolon_p = false;
+	  if (cxx_dialect < cxx23
+	      && !cp_parser_uncommitted_to_tentative_parse_p (parser))
+	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		     OPT_Wc__23_extensions,
+		     "alias-declaration in init-statement only "
+		     "available with %<-std=c++23%> or %<-std=gnu++23%>");
+	}
+      else
+	/* Parse the declaration.  */
+	cp_parser_simple_declaration (parser,
+				      /*function_definition_allowed_p=*/false,
+				      decl);
       parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
       if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
 	{
@@ -14050,7 +14062,7 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
 		     "range-based %<for%> loops only available with "
 		     "%<-std=c++11%> or %<-std=gnu++11%>");
 	}
-      else
+      else if (expect_semicolon_p)
 	/* The ';' is not consumed yet because we told
 	   cp_parser_simple_declaration not to.  */
 	cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
@@ -40136,14 +40148,12 @@ cp_parser_end_omp_structured_block (cp_parser *parser, unsigned save)
 }
 
 static tree
-cp_parser_omp_structured_block (cp_parser *parser, bool *if_p,
-				bool disallow_omp_attrs = true)
+cp_parser_omp_structured_block (cp_parser *parser, bool *if_p)
 {
   tree stmt = begin_omp_structured_block ();
   unsigned int save = cp_parser_begin_omp_structured_block (parser);
 
-  if (disallow_omp_attrs)
-    parser->omp_attrs_forbidden_p = true;
+  parser->omp_attrs_forbidden_p = true;
   cp_parser_statement (parser, NULL_TREE, false, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
@@ -42001,6 +42011,43 @@ cp_parser_omp_section_scan (cp_parser *parser, const char *directive,
   return true;
 }
 
+/* Parse an OpenMP structured block sequence.  KIND is the corresponding
+   separating directive.  */
+
+static tree
+cp_parser_omp_structured_block_sequence (cp_parser *parser,
+					 enum pragma_kind kind)
+{
+  tree stmt = begin_omp_structured_block ();
+  unsigned int save = cp_parser_begin_omp_structured_block (parser);
+
+  cp_parser_statement (parser, NULL_TREE, false, NULL);
+  while (true)
+    {
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+
+      if (token->type == CPP_CLOSE_BRACE
+	  || token->type == CPP_EOF
+	  || token->type == CPP_PRAGMA_EOL
+	  || (token->type == CPP_KEYWORD && token->keyword == RID_AT_END)
+	  || (kind != PRAGMA_NONE
+	      && cp_parser_pragma_kind (token) == kind))
+	break;
+
+      if (kind != PRAGMA_NONE
+	  && cp_parser_omp_section_scan (parser,
+					 kind == PRAGMA_OMP_SCAN
+					 ? "scan" : "section", false))
+	break;
+
+      cp_parser_statement (parser, NULL_TREE, false, NULL);
+    }
+
+  cp_parser_end_omp_structured_block (parser, save);
+  return finish_omp_structured_block (stmt);
+}
+
+
 /* OpenMP 5.0:
 
    scan-loop-body:
@@ -42015,11 +42062,10 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
   if (!braces.require_open (parser))
     return;
 
-  substmt = cp_parser_omp_structured_block (parser, NULL, false);
+  substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_OMP_SCAN);
   substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
   add_stmt (substmt);
 
-  cp_parser_omp_section_scan (parser, "scan", false);
   cp_token *tok = cp_lexer_peek_token (parser->lexer);
   if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_SCAN)
     {
@@ -42055,7 +42101,7 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
     error ("expected %<#pragma omp scan%>");
 
   clauses = finish_omp_clauses (clauses, C_ORT_OMP);
-  substmt = cp_parser_omp_structured_block (parser, NULL, false);
+  substmt = cp_parser_omp_structured_block_sequence (parser, PRAGMA_NONE);
   substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
 			clauses);
   add_stmt (substmt);
@@ -42924,7 +42970,8 @@ cp_parser_omp_sections_scope (cp_parser *parser)
       != PRAGMA_OMP_SECTION
       && !cp_parser_omp_section_scan (parser, "section", true))
     {
-      substmt = cp_parser_omp_structured_block (parser, NULL, false);
+      substmt = cp_parser_omp_structured_block_sequence (parser,
+							 PRAGMA_OMP_SECTION);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       add_stmt (substmt);
     }
@@ -42951,7 +42998,8 @@ cp_parser_omp_sections_scope (cp_parser *parser)
 	  error_suppress = true;
 	}
 
-      substmt = cp_parser_omp_structured_block (parser, NULL, false);
+      substmt = cp_parser_omp_structured_block_sequence (parser,
+							 PRAGMA_OMP_SECTION);
       substmt = build1 (OMP_SECTION, void_type_node, substmt);
       add_stmt (substmt);
     }
@@ -44401,7 +44449,8 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	       dependent local extern variable decls are as rare as
 	       hen's teeth.  */
 	    if (auto alias = DECL_LOCAL_DECL_ALIAS (decl))
-	      decl = alias;
+	      if (alias != error_mark_node)
+		decl = alias;
 
 	  if (OMP_CLAUSE_MAP_KIND (t) == GOMP_MAP_LINK)
 	    id = get_identifier ("omp declare target link");
@@ -45283,7 +45332,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   tree ctx = cp_parser_omp_context_selector_specification (parser, true);
   if (ctx == error_mark_node)
     goto fail;
-  ctx = c_omp_check_context_selector (match_loc, ctx);
+  ctx = omp_check_context_selector (match_loc, ctx);
   if (ctx != error_mark_node && variant != error_mark_node)
     {
       tree match_loc_node = maybe_wrap_with_location (integer_zero_node,
@@ -45505,6 +45554,71 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
   return attrs;
 }
 
+/* Helper for cp_parser_omp_declare_target, handle one to or link clause
+   on #pragma omp declare target.  Return false if errors were reported.  */
+
+static bool
+handle_omp_declare_target_clause (tree c, tree t, int device_type)
+{
+  tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
+  tree at2 = lookup_attribute ("omp declare target link", DECL_ATTRIBUTES (t));
+  tree id;
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINK)
+    {
+      id = get_identifier ("omp declare target link");
+      std::swap (at1, at2);
+    }
+  else
+    id = get_identifier ("omp declare target");
+  if (at2)
+    {
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"%qD specified both in declare target %<link%> and %<to%>"
+		" clauses", t);
+      return false;
+    }
+  if (!at1)
+    {
+      DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+      if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
+	return true;
+
+      symtab_node *node = symtab_node::get (t);
+      if (node != NULL)
+	{
+	  node->offloadable = 1;
+	  if (ENABLE_OFFLOADING)
+	    {
+	      g->have_offload = true;
+	      if (is_a <varpool_node *> (node))
+		vec_safe_push (offload_vars, t);
+	    }
+	}
+    }
+  if (TREE_CODE (t) != FUNCTION_DECL)
+    return true;
+  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0)
+    {
+      tree at3 = lookup_attribute ("omp declare target host",
+				   DECL_ATTRIBUTES (t));
+      if (at3 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target host");
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
+  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0)
+    {
+      tree at3 = lookup_attribute ("omp declare target nohost",
+				   DECL_ATTRIBUTES (t));
+      if (at3 == NULL_TREE)
+	{
+	  id = get_identifier ("omp declare target nohost");
+	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	}
+    }
+  return true;
+}
 
 /* OpenMP 4.0:
    # pragma omp declare target new-line
@@ -45557,67 +45671,17 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     {
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	continue;
-      tree t = OMP_CLAUSE_DECL (c), id;
-      tree at1 = lookup_attribute ("omp declare target", DECL_ATTRIBUTES (t));
-      tree at2 = lookup_attribute ("omp declare target link",
-				   DECL_ATTRIBUTES (t));
+      tree t = OMP_CLAUSE_DECL (c);
       only_device_type = false;
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINK)
-	{
-	  id = get_identifier ("omp declare target link");
-	  std::swap (at1, at2);
-	}
-      else
-	id = get_identifier ("omp declare target");
-      if (at2)
-	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%qD specified both in declare target %<link%> and %<to%>"
-		    " clauses", t);
-	  continue;
-	}
-      if (!at1)
-	{
-	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
-	    continue;
-
-	  symtab_node *node = symtab_node::get (t);
-	  if (node != NULL)
-	    {
-	      node->offloadable = 1;
-	      if (ENABLE_OFFLOADING)
-		{
-		  g->have_offload = true;
-		  if (is_a <varpool_node *> (node))
-		    vec_safe_push (offload_vars, t);
-		}
-	    }
-	}
-      if (TREE_CODE (t) != FUNCTION_DECL)
+      if (!handle_omp_declare_target_clause (c, t, device_type))
 	continue;
-      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0)
-	{
-	  tree at3 = lookup_attribute ("omp declare target host",
-				       DECL_ATTRIBUTES (t));
-	  if (at3 == NULL_TREE)
-	    {
-	      id = get_identifier ("omp declare target host");
-	      DECL_ATTRIBUTES (t)
-		= tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	    }
-	}
-      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0)
-	{
-	  tree at3 = lookup_attribute ("omp declare target nohost",
-				       DECL_ATTRIBUTES (t));
-	  if (at3 == NULL_TREE)
-	    {
-	      id = get_identifier ("omp declare target nohost");
-	      DECL_ATTRIBUTES (t)
-		= tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
-	    }
-	}
+      if (VAR_OR_FUNCTION_DECL_P (t)
+	  && DECL_LOCAL_DECL_P (t)
+	  && DECL_LANG_SPECIFIC (t)
+	  && DECL_LOCAL_DECL_ALIAS (t)
+	  && DECL_LOCAL_DECL_ALIAS (t) != error_mark_node)
+	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
+					  device_type);
     }
   if (device_type && only_device_type)
     warning_at (OMP_CLAUSE_LOCATION (clauses), 0,

@@ -564,6 +564,36 @@
           end function omp_get_max_task_priority
         end interface
 
+        interface omp_set_num_teams
+          subroutine omp_set_num_teams (num_teams)
+            integer (4), intent (in) :: num_teams
+          end subroutine omp_set_num_teams
+          subroutine omp_set_num_teams_8 (num_teams)
+            integer (8), intent (in) :: num_teams
+          end subroutine omp_set_num_teams_8
+        end interface
+
+        interface
+          function omp_get_max_teams ()
+            integer (4) :: omp_get_max_teams
+          end function omp_get_max_teams
+        end interface
+
+        interface omp_set_teams_thread_limit
+          subroutine omp_set_teams_thread_limit (thread_limit)
+            integer (4), intent (in) :: thread_limit
+          end subroutine omp_set_teams_thread_limit
+          subroutine omp_set_teams_thread_limit_8 (thread_limit)
+            integer (8), intent (in) :: thread_limit
+          end subroutine omp_set_teams_thread_limit_8
+        end interface
+
+        interface
+          function omp_get_teams_thread_limit ()
+            integer (4) :: omp_get_teams_thread_limit
+          end function omp_get_teams_thread_limit
+        end interface
+
         interface
           subroutine omp_fulfill_event (event)
             use omp_lib_kinds
@@ -810,7 +840,7 @@
 #endif
 
 #if _OPENMP >= 202011
-!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master
+!GCC$ ATTRIBUTES DEPRECATED :: omp_proc_bind_master, omp_atv_sequential
 #endif
 
       end module omp_lib

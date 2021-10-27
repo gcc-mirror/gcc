@@ -71,6 +71,7 @@
 #include "gimple.h"
 #include "selftest.h"
 #include "tree-vectorizer.h"
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -303,11 +304,6 @@ static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 static int arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 					   tree vectype,
 					   int misalign ATTRIBUTE_UNUSED);
-static unsigned arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
-				   enum vect_cost_for_stmt kind,
-				   struct _stmt_vec_info *stmt_info,
-				   tree vectype, int misalign,
-				   enum vect_cost_model_location where);
 
 static void arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 					 bool op0_preserve_value);
@@ -768,8 +764,6 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   arm_builtin_vectorization_cost
-#undef TARGET_VECTORIZE_ADD_STMT_COST
-#define TARGET_VECTORIZE_ADD_STMT_COST arm_add_stmt_cost
 
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON \
@@ -843,8 +837,6 @@ static char *         minipool_startobj;
 /* The maximum number of insns skipped which
    will be conditionalised if possible.  */
 static int max_insns_skipped = 5;
-
-extern FILE * asm_out_file;
 
 /* True if we are currently building a constant table.  */
 int making_const_table;
@@ -3468,7 +3460,7 @@ arm_option_override (void)
 
   arm_active_target.isa = sbitmap_alloc (isa_num_bits);
 
-  if (!global_options_set.x_arm_fpu_index)
+  if (!OPTION_SET_P (arm_fpu_index))
     {
       bool ok;
       int fpu_index;
@@ -3528,7 +3520,7 @@ arm_option_override (void)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
   /* Override the default structure alignment for AAPCS ABI.  */
-  if (!global_options_set.x_arm_structure_size_boundary)
+  if (!OPTION_SET_P (arm_structure_size_boundary))
     {
       if (TARGET_AAPCS_BASED)
 	arm_structure_size_boundary = 8;
@@ -3553,12 +3545,12 @@ arm_option_override (void)
 
   if (TARGET_VXWORKS_RTP)
     {
-      if (!global_options_set.x_arm_pic_data_is_text_relative)
+      if (!OPTION_SET_P (arm_pic_data_is_text_relative))
 	arm_pic_data_is_text_relative = 0;
     }
   else if (flag_pic
 	   && !arm_pic_data_is_text_relative
-	   && !(global_options_set.x_target_flags & MASK_SINGLE_PIC_BASE))
+	   && !(OPTION_SET_P (target_flags) & MASK_SINGLE_PIC_BASE))
     /* When text & data segments don't have a fixed displacement, the
        intended use is with a single, read only, pic base register.
        Unless the user explicitly requested not to do that, set
@@ -8530,8 +8522,7 @@ thumb2_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
 
-  if (TARGET_HAVE_MVE
-      && (mode == V8QImode || mode == E_V4QImode || mode == V4HImode))
+  if (TARGET_HAVE_MVE && VALID_MVE_MODE (mode))
     return mve_vector_mem_operand (mode, x, strict_p);
 
   if (arm_address_register_rtx_p (x, strict_p))
@@ -12242,39 +12233,6 @@ arm_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
-/* Implement targetm.vectorize.add_stmt_cost.  */
-
-static unsigned
-arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
-		   enum vect_cost_for_stmt kind,
-		   struct _stmt_vec_info *stmt_info, tree vectype,
-		   int misalign, enum vect_cost_model_location where)
-{
-  unsigned *cost = (unsigned *) data;
-  unsigned retval = 0;
-
-  if (flag_vect_cost_model)
-    {
-      int stmt_cost = arm_builtin_vectorization_cost (kind, vectype, misalign);
-
-      /* Statements in an inner loop relative to the loop being
-	 vectorized are weighted more heavily.  The value here is
-	 arbitrary and could potentially be improved with analysis.  */
-      if (where == vect_body && stmt_info
-	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	{
-	  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-	  gcc_assert (loop_vinfo);
-	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
-	}
-
-      retval = (unsigned) (count * stmt_cost);
-      cost[where] += retval;
-    }
-
-  return retval;
-}
-
 /* Return true if and only if this insn can dual-issue only as older.  */
 static bool
 cortexa7_older_only (rtx_insn *insn)
@@ -13433,53 +13391,49 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
       || code == PRE_INC || code == POST_DEC)
     {
       reg_no = REGNO (XEXP (op, 0));
-      return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
-	       ? reg_no <= LAST_LO_REGNUM
-	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
-	      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+      return ((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
+	      ? reg_no <= LAST_LO_REGNUM
+	      :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
+	|| reg_no >= FIRST_PSEUDO_REGISTER;
     }
-  else if ((code == POST_MODIFY || code == PRE_MODIFY)
-	   && GET_CODE (XEXP (op, 1)) == PLUS && REG_P (XEXP (XEXP (op, 1), 1)))
+  else if (((code == POST_MODIFY || code == PRE_MODIFY)
+	    && GET_CODE (XEXP (op, 1)) == PLUS
+	    && XEXP (op, 0) == XEXP (XEXP (op, 1), 0)
+	    && REG_P (XEXP (op, 0))
+	    && GET_CODE (XEXP (XEXP (op, 1), 1)) == CONST_INT)
+	   /* Make sure to only accept PLUS after reload_completed, otherwise
+	      this will interfere with auto_inc's pattern detection.  */
+	   || (reload_completed && code == PLUS && REG_P (XEXP (op, 0))
+	       && GET_CODE (XEXP (op, 1)) == CONST_INT))
     {
       reg_no = REGNO (XEXP (op, 0));
-      val = INTVAL (XEXP ( XEXP (op, 1), 1));
+      if (code == PLUS)
+	val = INTVAL (XEXP (op, 1));
+      else
+	val = INTVAL (XEXP(XEXP (op, 1), 1));
+
       switch (mode)
 	{
 	  case E_V16QImode:
-	    if (abs (val) <= 127)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
-	  case E_V8HImode:
-	  case E_V8HFmode:
-	    if (abs (val) <= 255)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
 	  case E_V8QImode:
 	  case E_V4QImode:
 	    if (abs (val) <= 127)
-	      return (reg_no <= LAST_LO_REGNUM
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
+	  case E_V8HImode:
+	  case E_V8HFmode:
 	  case E_V4HImode:
 	  case E_V4HFmode:
 	    if (val % 2 == 0 && abs (val) <= 254)
-	      return (reg_no <= LAST_LO_REGNUM
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return reg_no <= LAST_LO_REGNUM
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
 	  case E_V4SImode:
 	  case E_V4SFmode:
 	    if (val % 4 == 0 && abs (val) <= 508)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
-	    return FALSE;
-	  case E_V2DImode:
-	  case E_V2DFmode:
-	  case E_TImode:
-	    if (val % 4 == 0 && val >= 0 && val <= 1020)
-	      return ((reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
-		      || (!strict && reg_no >= FIRST_PSEUDO_REGISTER));
+	      return (reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM)
+		|| reg_no >= FIRST_PSEUDO_REGISTER;
 	    return FALSE;
 	  default:
 	    return FALSE;
@@ -24276,7 +24230,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	else if (code == POST_MODIFY || code == PRE_MODIFY)
 	  {
 	    asm_fprintf (stream, "[%r", REGNO (XEXP (addr, 0)));
-	    postinc_reg = XEXP ( XEXP (x, 1), 1);
+	    postinc_reg = XEXP (XEXP (addr, 1), 1);
 	    if (postinc_reg && CONST_INT_P (postinc_reg))
 	      {
 		if (code == POST_MODIFY)
@@ -29452,7 +29406,7 @@ arm_dwarf_register_span (rtx rtl)
    epilogue.  */
 
 static void
-arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
+arm_unwind_emit_sequence (FILE * out_file, rtx p)
 {
   int i;
   HOST_WIDE_INT offset;
@@ -29496,14 +29450,14 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
 	padlast = offset - 4;
       gcc_assert (padlast == 0 || padlast == 4);
       if (padlast == 4)
-	fprintf (asm_out_file, "\t.pad #4\n");
+	fprintf (out_file, "\t.pad #4\n");
       reg_size = 4;
-      fprintf (asm_out_file, "\t.save {");
+      fprintf (out_file, "\t.save {");
     }
   else if (IS_VFP_REGNUM (reg))
     {
       reg_size = 8;
-      fprintf (asm_out_file, "\t.vsave {");
+      fprintf (out_file, "\t.vsave {");
     }
   else
     /* Unknown register type.  */
@@ -29529,13 +29483,13 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
       gcc_assert (reg >= lastreg);
 
       if (i != 1)
-	fprintf (asm_out_file, ", ");
+	fprintf (out_file, ", ");
       /* We can't use %r for vfp because we need to use the
 	 double precision register names.  */
       if (IS_VFP_REGNUM (reg))
-	asm_fprintf (asm_out_file, "d%d", (reg - FIRST_VFP_REGNUM) / 2);
+	asm_fprintf (out_file, "d%d", (reg - FIRST_VFP_REGNUM) / 2);
       else
-	asm_fprintf (asm_out_file, "%r", reg);
+	asm_fprintf (out_file, "%r", reg);
 
       if (flag_checking)
 	{
@@ -29553,15 +29507,15 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
 	  offset += reg_size;
 	}
     }
-  fprintf (asm_out_file, "}\n");
+  fprintf (out_file, "}\n");
   if (padfirst)
-    fprintf (asm_out_file, "\t.pad #%d\n", padfirst);
+    fprintf (out_file, "\t.pad #%d\n", padfirst);
 }
 
 /*  Emit unwind directives for a SET.  */
 
 static void
-arm_unwind_emit_set (FILE * asm_out_file, rtx p)
+arm_unwind_emit_set (FILE * out_file, rtx p)
 {
   rtx e0;
   rtx e1;
@@ -29578,12 +29532,12 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	  || REGNO (XEXP (XEXP (e0, 0), 0)) != SP_REGNUM)
 	abort ();
 
-      asm_fprintf (asm_out_file, "\t.save ");
+      asm_fprintf (out_file, "\t.save ");
       if (IS_VFP_REGNUM (REGNO (e1)))
-	asm_fprintf(asm_out_file, "{d%d}\n",
+	asm_fprintf(out_file, "{d%d}\n",
 		    (REGNO (e1) - FIRST_VFP_REGNUM) / 2);
       else
-	asm_fprintf(asm_out_file, "{%r}\n", REGNO (e1));
+	asm_fprintf(out_file, "{%r}\n", REGNO (e1));
       break;
 
     case REG:
@@ -29596,7 +29550,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      || !CONST_INT_P (XEXP (e1, 1)))
 	    abort ();
 
-	  asm_fprintf (asm_out_file, "\t.pad #%wd\n",
+	  asm_fprintf (out_file, "\t.pad #%wd\n",
 		       -INTVAL (XEXP (e1, 1)));
 	}
       else if (REGNO (e0) == HARD_FRAME_POINTER_REGNUM)
@@ -29610,14 +29564,14 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 		abort ();
 	      reg = REGNO (XEXP (e1, 0));
 	      offset = INTVAL (XEXP (e1, 1));
-	      asm_fprintf (asm_out_file, "\t.setfp %r, %r, #%wd\n",
+	      asm_fprintf (out_file, "\t.setfp %r, %r, #%wd\n",
 			   HARD_FRAME_POINTER_REGNUM, reg,
 			   offset);
 	    }
 	  else if (REG_P (e1))
 	    {
 	      reg = REGNO (e1);
-	      asm_fprintf (asm_out_file, "\t.setfp %r, %r\n",
+	      asm_fprintf (out_file, "\t.setfp %r, %r\n",
 			   HARD_FRAME_POINTER_REGNUM, reg);
 	    }
 	  else
@@ -29626,7 +29580,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
       else if (REG_P (e1) && REGNO (e1) == SP_REGNUM)
 	{
 	  /* Move from sp to reg.  */
-	  asm_fprintf (asm_out_file, "\t.movsp %r\n", REGNO (e0));
+	  asm_fprintf (out_file, "\t.movsp %r\n", REGNO (e0));
 	}
      else if (GET_CODE (e1) == PLUS
 	      && REG_P (XEXP (e1, 0))
@@ -29634,7 +29588,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      && CONST_INT_P (XEXP (e1, 1)))
 	{
 	  /* Set reg to offset from sp.  */
-	  asm_fprintf (asm_out_file, "\t.movsp %r, #%d\n",
+	  asm_fprintf (out_file, "\t.movsp %r, #%d\n",
 		       REGNO (e0), (int)INTVAL(XEXP (e1, 1)));
 	}
       else
@@ -29650,7 +29604,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 /* Emit unwind directives for the given insn.  */
 
 static void
-arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
+arm_unwind_emit (FILE * out_file, rtx_insn *insn)
 {
   rtx note, pat;
   bool handled_one = false;
@@ -29693,7 +29647,7 @@ arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
 
 	    gcc_assert (src == stack_pointer_rtx);
 	    reg = REGNO (dest);
-	    asm_fprintf (asm_out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
+	    asm_fprintf (out_file, "\t.unwind_raw 0, 0x%x @ vsp = r%d\n",
 			 reg + 0x90, reg);
 	  }
 	  handled_one = true;
@@ -29726,12 +29680,12 @@ arm_unwind_emit (FILE * asm_out_file, rtx_insn *insn)
   switch (GET_CODE (pat))
     {
     case SET:
-      arm_unwind_emit_set (asm_out_file, pat);
+      arm_unwind_emit_set (out_file, pat);
       break;
 
     case SEQUENCE:
       /* Store multiple.  */
-      arm_unwind_emit_sequence (asm_out_file, pat);
+      arm_unwind_emit_sequence (out_file, pat);
       break;
 
     default:

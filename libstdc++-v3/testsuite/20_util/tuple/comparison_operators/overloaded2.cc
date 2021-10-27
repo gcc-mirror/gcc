@@ -49,5 +49,7 @@ TwistedLogic operator<(const Compares&, const Compares&) { return {false}; }
 auto a = std::make_tuple(nullptr, Compares{}, 2, 'U');
 auto b = a < a;
 
-// { dg-error "ordered comparison" "" { target *-*-* } 0 }
+// { dg-error "no match for 'operator<'" "" { target c++20 } 0 }
+// { dg-error "no match for .*_Synth3way|in requirements" "" { target c++20 } 0 }
+// { dg-error "ordered comparison" "" { target c++17_down } 0 }
 // { dg-error "not a return-statement" "" { target c++11_only } 0 }

@@ -466,15 +466,16 @@ program main
 end
 
 ! All arguments shall use array descriptors
-! { dg-final { scan-tree-dump-times "void as1 \\(struct array01_character\\(kind=1\\) & restrict x1\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void as2 \\(struct array01_character\\(kind=1\\) & restrict x2\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void as4 \\(struct array01_character\\(kind=1\\) & restrict xstar\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void as3 \\(struct array01_character\\(kind=1\\) & restrict xn, integer(kind=4) & restrict n)
-! { dg-final { scan-tree-dump-times "void ar1 \\(struct array15_character\\(kind=1\\) & restrict x1\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void ar2 \\(struct array15_character\\(kind=1\\) & restrict x2\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void ar3 \\(struct array15_character\\(kind=1\\) & restrict xn, integer(kind=4) & restrict n)
-! { dg-final { scan-tree-dump-times "void ar4 \\(struct array15_character\\(kind=1\\) & restrict xstar\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void a5a \\(struct array01_character\\(kind=1\\) & restrict xcolon\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void a5ar \\(struct array15_character\\(kind=1\\) & restrict xcolon\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void a5p \\(struct array01_character\\(kind=1\\) & xcolon\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "void a5pr \\(struct array15_character\\(kind=1\\) & xcolon\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void as1 \\(struct CFI_cdesc_t01 & restrict _x1\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void as2 \\(struct CFI_cdesc_t01 & restrict _x2\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void as3 \\(struct CFI_cdesc_t01 & restrict _xn, integer\\(kind=4\\) & restrict n\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void as4 \\(struct CFI_cdesc_t01 & restrict _xstar\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void ar1 \\(struct CFI_cdesc_t & restrict _x1\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void ar2 \\(struct CFI_cdesc_t & restrict _x2\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void ar3 \\(struct CFI_cdesc_t & restrict _xn, integer\\(kind=4\\) & restrict n\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void ar4 \\(struct CFI_cdesc_t & restrict _xstar\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void a5ar \\(struct CFI_cdesc_t & restrict _xcolon\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void a5a \\(struct CFI_cdesc_t01 & restrict _xcolon\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void a5pr \\(struct CFI_cdesc_t & _xcolon\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "void a5p \\(struct CFI_cdesc_t01 & _xcolon\\)" 1 "original" } }
+

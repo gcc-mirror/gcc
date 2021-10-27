@@ -1821,13 +1821,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       iter_value_t<_It> _M_keep;
 
+      constexpr
       __arrow_proxy(iter_reference_t<_It>&& __x)
       : _M_keep(std::move(__x)) { }
 
       friend class common_iterator;
 
     public:
-      const iter_value_t<_It>*
+      constexpr const iter_value_t<_It>*
       operator->() const noexcept
       { return std::__addressof(_M_keep); }
     };
@@ -1836,13 +1837,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       iter_value_t<_It> _M_keep;
 
+      constexpr
       __postfix_proxy(iter_reference_t<_It>&& __x)
       : _M_keep(std::forward<iter_reference_t<_It>>(__x)) { }
 
       friend class common_iterator;
 
     public:
-      const iter_value_t<_It>&
+      constexpr const iter_value_t<_It>&
       operator*() const noexcept
       { return _M_keep; }
     };
@@ -2470,6 +2472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @} group iterators
 
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     auto
     __niter_base(move_iterator<_Iterator> __it)
     -> decltype(make_move_iterator(__niter_base(__it.base())))
@@ -2483,6 +2486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     auto
     __miter_base(move_iterator<_Iterator> __it)
     -> decltype(__miter_base(__it.base()))

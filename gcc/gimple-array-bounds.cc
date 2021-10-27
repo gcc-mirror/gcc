@@ -426,7 +426,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
       axssize = wi::to_offset (access_size);
 
   access_ref aref;
-  if (!compute_objsize (ref, 0, &aref, ranges))
+  if (!compute_objsize (ref, m_stmt, 0, &aref, ranges))
     return false;
 
   if (aref.offset_in_range (axssize))
@@ -667,7 +667,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t,
    problems discussed in pr98266 and pr97595.  */
 
 static bool
-inbounds_memaccess_p (tree t)
+inbounds_memaccess_p (tree t, gimple *stmt)
 {
   if (TREE_CODE (t) != COMPONENT_REF)
     return false;
@@ -686,7 +686,7 @@ inbounds_memaccess_p (tree t)
      allocated).  */
   access_ref aref;   // unused
   tree refop = TREE_OPERAND (mref, 0);
-  tree refsize = compute_objsize (refop, 1, &aref);
+  tree refsize = compute_objsize (refop, stmt, 1, &aref);
   if (!refsize || TREE_CODE (refsize) != INTEGER_CST)
     return false;
 
@@ -724,6 +724,7 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
 {
   tree t = *tp;
   struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+
   location_t location;
 
   if (EXPR_HAS_LOCATION (t))
@@ -735,6 +736,8 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
 
   bool warned = false;
   array_bounds_checker *checker = (array_bounds_checker *) wi->info;
+  gcc_assert (checker->m_stmt == wi->stmt);
+
   if (TREE_CODE (t) == ARRAY_REF)
     warned = checker->check_array_ref (location, t, wi->stmt,
 				       false/*ignore_off_by_one*/);
@@ -746,7 +749,7 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
       checker->check_addr_expr (location, t, wi->stmt);
       *walk_subtree = false;
     }
-  else if (inbounds_memaccess_p (t))
+  else if (inbounds_memaccess_p (t, wi->stmt))
     /* Hack: Skip MEM_REF checks in accesses to a member of a base class
        at an offset that's within the bounds of the enclosing object.
        See pr98266 and pr97595.  */
@@ -794,14 +797,13 @@ check_array_bounds_dom_walker::before_dom_children (basic_block bb)
   for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
     {
       gimple *stmt = gsi_stmt (si);
-      struct walk_stmt_info wi;
       if (!gimple_has_location (stmt)
 	  || is_gimple_debug (stmt))
 	continue;
 
-      memset (&wi, 0, sizeof (wi));
-
+      struct walk_stmt_info wi{ };
       wi.info = checker;
+      checker->m_stmt = stmt;
 
       walk_gimple_op (stmt, array_bounds_checker::check_array_bounds, &wi);
     }

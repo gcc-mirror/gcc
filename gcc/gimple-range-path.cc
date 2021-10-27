@@ -134,6 +134,7 @@ path_range_query::defined_outside_path (tree name)
 void
 path_range_query::range_on_path_entry (irange &r, tree name)
 {
+  gcc_checking_assert (defined_outside_path (name));
   int_range_max tmp;
   basic_block entry = entry_bb ();
   bool changed = false;
@@ -258,7 +259,10 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 		// Using both the range on entry to the path, and the
 		// range on this edge yields significantly better
 		// results.
-		range_on_path_entry (r, arg);
+		if (defined_outside_path (arg))
+		  range_on_path_entry (r, arg);
+		else
+		  r.set_varying (TREE_TYPE (name));
 		m_ranger.range_on_edge (tmp, e_in, arg);
 		r.intersect (tmp);
 		return;
@@ -694,7 +698,15 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 	    tree arg = gimple_phi_arg_def (phi, i);
 
 	    if (gimple_range_ssa_p (arg))
-	      m_oracle->register_relation (entry, EQ_EXPR, arg, result);
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "  from bb%d:", bb->index);
+
+		// Throw away any previous relation.
+		get_path_oracle ()->killing_def (result);
+
+		m_oracle->register_relation (entry, EQ_EXPR, arg, result);
+	      }
 
 	    break;
 	  }

@@ -1859,7 +1859,7 @@ sparc_option_override (void)
       }
 
   /* Set the default CPU if no -mcpu option was specified.  */
-  if (!global_options_set.x_sparc_cpu_and_features)
+  if (!OPTION_SET_P (sparc_cpu_and_features))
     {
       for (def = &cpu_default[0]; def->cpu != -1; ++def)
 	if (def->cpu == TARGET_CPU_DEFAULT)
@@ -1869,7 +1869,7 @@ sparc_option_override (void)
     }
 
   /* Set the default CPU if no -mtune option was specified.  */
-  if (!global_options_set.x_sparc_cpu)
+  if (!OPTION_SET_P (sparc_cpu))
     sparc_cpu = sparc_cpu_and_features;
 
   cpu = &cpu_table[(int) sparc_cpu_and_features];
@@ -1975,7 +1975,7 @@ sparc_option_override (void)
     dump_target_flags ("Final target_flags", target_flags);
 
   /* Set the code model if no -mcmodel option was specified.  */
-  if (global_options_set.x_sparc_code_model)
+  if (OPTION_SET_P (sparc_code_model))
     {
       if (TARGET_ARCH32)
 	error ("%<-mcmodel=%> is not supported in 32-bit mode");
@@ -1989,7 +1989,7 @@ sparc_option_override (void)
     }
 
   /* Set the memory model if no -mmemory-model option was specified.  */
-  if (!global_options_set.x_sparc_memory_model)
+  if (!OPTION_SET_P (sparc_memory_model))
     {
       /* Choose the memory model for the operating system.  */
       enum sparc_memory_model_type os_default = SUBTARGET_DEFAULT_MEMORY_MODEL;
@@ -2177,12 +2177,12 @@ sparc_option_override (void)
   /* Disable save slot sharing for call-clobbered registers by default.
      The IRA sharing algorithm works on single registers only and this
      pessimizes for double floating-point registers.  */
-  if (!global_options_set.x_flag_ira_share_save_slots)
+  if (!OPTION_SET_P (flag_ira_share_save_slots))
     flag_ira_share_save_slots = 0;
 
   /* Only enable REE by default in 64-bit mode where it helps to eliminate
      redundant 32-to-64-bit extensions.  */
-  if (!global_options_set.x_flag_ree && TARGET_ARCH32)
+  if (!OPTION_SET_P (flag_ree) && TARGET_ARCH32)
     flag_ree = 0;
 
   /* Do various machine dependent initializations.  */

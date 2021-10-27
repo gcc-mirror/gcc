@@ -30,8 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "tree-cfg.h"
 
-#define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_CACHE) \
-					 == EVRP_MODE_CACHE)
+#define DEBUG_RANGE_CACHE (dump_file					\
+			   && (param_ranger_debug & RANGER_DEBUG_CACHE))
 
 // During contructor, allocate the vector of ssa_names.
 
@@ -61,6 +61,9 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
     return false;
 
   unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_nn.length ())
+    m_nn.safe_grow_cleared (num_ssa_names + 1);
+
   if (!m_nn[v])
     process_name (name);
 

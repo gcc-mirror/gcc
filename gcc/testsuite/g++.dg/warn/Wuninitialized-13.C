@@ -1,11 +1,14 @@
 /* PR c/98597 - ICE in -Wuninitialized printing a MEM_REF
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -fno-tree-vectorize" } */
 
+/* After vectorization, the location of the warning that's off,
+   the warning itself is still issued but it's swallowed by
+   the dg-prune-output directive. Refer to pr102700.  */
 struct shared_count {
   shared_count () { }
   shared_count (shared_count &r)
-    : pi (r.pi) { }     // { dg-warning "\\\[-Wuninitialized" "" { xfail { i?86-*-* x86_64-*-* } } }
+    : pi (r.pi) { }     // { dg-warning "\\\[-Wuninitialized" }
   int pi;
 };
 

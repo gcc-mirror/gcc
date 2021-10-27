@@ -27,9 +27,7 @@ test01()
   using namespace std::literals::string_literals;
 
   std::string planet = "Mercury"s;
-#ifdef _GLIBCXX_USE_WCHAR_T
   std::wstring wplanet = L"Venus"s;
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   std::u8string u8planet = u8"Mars"s;
 #else
@@ -39,9 +37,7 @@ test01()
   std::u32string u32planet = U"Saturn"s;
 
   VERIFY( planet == std::string("Mercury") );
-#ifdef _GLIBCXX_USE_WCHAR_T
   VERIFY( wplanet == std::wstring(L"Venus") );
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   VERIFY( u8planet == std::u8string(u8"Mars") );
 #else

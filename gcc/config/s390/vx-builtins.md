@@ -1366,32 +1366,6 @@
 
 ; Vector find element equal
 
-; vfeebs, vfeehs, vfeefs
-; vfeezbs, vfeezhs, vfeezfs
-(define_insn "*vfees<mode>"
-  [(set (match_operand:VI_HW_QHS 0 "register_operand" "=v")
-	(unspec:VI_HW_QHS [(match_operand:VI_HW_QHS 1 "register_operand" "v")
-			   (match_operand:VI_HW_QHS 2 "register_operand" "v")
-			   (match_operand:QI 3 "const_mask_operand" "C")]
-			  UNSPEC_VEC_VFEE))
-   (set (reg:CCRAW CC_REGNUM)
-	(unspec:CCRAW [(match_dup 1)
-		       (match_dup 2)
-		       (match_dup 3)]
-		      UNSPEC_VEC_VFEECC))]
-  "TARGET_VX"
-{
-  unsigned HOST_WIDE_INT flags = UINTVAL (operands[3]);
-
-  gcc_assert (!(flags & ~(VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
-  flags &= ~VSTRING_FLAG_CS;
-
-  if (flags == VSTRING_FLAG_ZS)
-    return "vfeez<bhfgq>s\t%v0,%v1,%v2";
-  return "vfee<bhfgq>s\t%v0,%v1,%v2,%b3";
-}
-  [(set_attr "op_type" "VRR")])
-
 ; vfeeb, vfeeh, vfeef
 (define_insn "vfee<mode>"
   [(set (match_operand:VI_HW_QHS                    0 "register_operand" "=v")

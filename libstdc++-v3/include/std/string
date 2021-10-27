@@ -68,9 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     using u16string = basic_string<char16_t>;
     using u32string = basic_string<char32_t>;
-#ifdef _GLIBCXX_USE_WCHAR_T
     using wstring   = basic_string<wchar_t>;
-#endif
   } // namespace pmr
 
   template<typename _Str>
@@ -100,12 +98,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct hash<pmr::u32string>
     : public __hash_string_base<pmr::u32string>
     { };
-#ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     struct hash<pmr::wstring>
     : public __hash_string_base<pmr::wstring>
     { };
-#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

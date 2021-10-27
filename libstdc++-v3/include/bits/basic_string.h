@@ -971,6 +971,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #pragma GCC diagnostic pop
 #endif
 
+#if __cplusplus > 202002L
+#define __cpp_lib_string_resize_and_overwrite 202110L
+      template<typename _Operation>
+	constexpr void
+	resize_and_overwrite(size_type __n, _Operation __op);
+#endif
+
       /**
        *  Returns the total number of characters that the %string can hold
        *  before needing to allocate more memory.
@@ -3954,7 +3961,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_fast_hash<hash<string>> : std::false_type
     { };
 
-#ifdef _GLIBCXX_USE_WCHAR_T
   /// std::hash specialization for wstring.
   template<>
     struct hash<wstring>
@@ -3969,7 +3975,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<wstring>> : std::false_type
     { };
-#endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
 #ifdef _GLIBCXX_USE_CHAR8_T
@@ -4034,12 +4039,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator""s(const char* __str, size_t __len)
     { return basic_string<char>{__str, __len}; }
 
-#ifdef _GLIBCXX_USE_WCHAR_T
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<wchar_t>
     operator""s(const wchar_t* __str, size_t __len)
     { return basic_string<wchar_t>{__str, __len}; }
-#endif
 
 #ifdef _GLIBCXX_USE_CHAR8_T
     _GLIBCXX_DEFAULT_ABI_TAG

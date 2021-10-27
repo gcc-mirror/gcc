@@ -367,46 +367,48 @@ package body Repinfo is
          null;
 
       else
-         --  If Esize and RM_Size are the same, list as Size. This is a common
-         --  case, which we may as well list in simple form.
+         if Known_Esize (Ent) and then Known_RM_Size (Ent) then
+            --  If Esize and RM_Size are the same, list as Size. This is a
+            --  common case, which we may as well list in simple form.
 
-         if Esize (Ent) = RM_Size (Ent) then
-            if List_Representation_Info_To_JSON then
-               Write_Str ("  ""Size"": ");
-               Write_Val (Esize (Ent));
-               Write_Line (",");
-            else
-               Write_Str ("for ");
-               List_Name (Ent);
-               Write_Str ("'Size use ");
-               Write_Val (Esize (Ent));
-               Write_Line (";");
-            end if;
+            if Esize (Ent) = RM_Size (Ent) then
+               if List_Representation_Info_To_JSON then
+                  Write_Str ("  ""Size"": ");
+                  Write_Val (Esize (Ent));
+                  Write_Line (",");
+               else
+                  Write_Str ("for ");
+                  List_Name (Ent);
+                  Write_Str ("'Size use ");
+                  Write_Val (Esize (Ent));
+                  Write_Line (";");
+               end if;
 
-         --  Otherwise list size values separately
-
-         else
-            if List_Representation_Info_To_JSON then
-               Write_Str ("  ""Object_Size"": ");
-               Write_Val (Esize (Ent));
-               Write_Line (",");
-
-               Write_Str ("  ""Value_Size"": ");
-               Write_Val (RM_Size (Ent));
-               Write_Line (",");
+            --  Otherwise list size values separately
 
             else
-               Write_Str ("for ");
-               List_Name (Ent);
-               Write_Str ("'Object_Size use ");
-               Write_Val (Esize (Ent));
-               Write_Line (";");
+               if List_Representation_Info_To_JSON then
+                  Write_Str ("  ""Object_Size"": ");
+                  Write_Val (Esize (Ent));
+                  Write_Line (",");
 
-               Write_Str ("for ");
-               List_Name (Ent);
-               Write_Str ("'Value_Size use ");
-               Write_Val (RM_Size (Ent));
-               Write_Line (";");
+                  Write_Str ("  ""Value_Size"": ");
+                  Write_Val (RM_Size (Ent));
+                  Write_Line (",");
+
+               else
+                  Write_Str ("for ");
+                  List_Name (Ent);
+                  Write_Str ("'Object_Size use ");
+                  Write_Val (Esize (Ent));
+                  Write_Line (";");
+
+                  Write_Str ("for ");
+                  List_Name (Ent);
+                  Write_Str ("'Value_Size use ");
+                  Write_Val (RM_Size (Ent));
+                  Write_Line (";");
+               end if;
             end if;
          end if;
       end if;
@@ -569,7 +571,7 @@ package body Repinfo is
                --  as for some Java bindings and for generic instances).
 
                if Ekind (E) = E_Package then
-                  if No (Renamed_Object (E)) then
+                  if No (Renamed_Entity (E)) then
                      List_Entities (E, Bytes_Big_Endian);
                   end if;
 
@@ -2118,7 +2120,7 @@ package body Repinfo is
 
    function Rep_Value (Val : Node_Ref_Or_Val; D : Discrim_List) return Uint is
 
-      function B (Val : Boolean) return Uint;
+      function B (Val : Boolean) return Ubool;
       --  Returns Uint_0 for False, Uint_1 for True
 
       function T (Val : Node_Ref_Or_Val) return Boolean;
@@ -2139,7 +2141,7 @@ package body Repinfo is
       -- B --
       -------
 
-      function B (Val : Boolean) return Uint is
+      function B (Val : Boolean) return Ubool is
       begin
          if Val then
             return Uint_1;

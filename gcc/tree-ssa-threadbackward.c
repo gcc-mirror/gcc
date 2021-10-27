@@ -52,13 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 class back_threader_registry
 {
 public:
-  back_threader_registry (int max_allowable_paths);
   bool register_path (const vec<basic_block> &, edge taken);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
   back_jt_path_registry m_lowlevel_registry;
-  const int m_max_allowable_paths;
-  int m_threaded_paths;
 };
 
 // Class to abstract the profitability code for the backwards threader.
@@ -78,8 +75,7 @@ private:
 class back_threader
 {
 public:
-  back_threader (bool speed_p);
-  ~back_threader ();
+  back_threader (bool speed_p, bool resolve);
   void maybe_thread_block (basic_block bb);
   bool thread_through_all_blocks (bool may_peel_loop_headers);
 private:
@@ -87,7 +83,7 @@ private:
   edge maybe_register_path ();
   bool find_paths_to_names (basic_block bb, bitmap imports);
   bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
-  bool resolve_phi (gphi *phi, bitmap imports);
+  void resolve_phi (gphi *phi, bitmap imports);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
@@ -105,7 +101,7 @@ private:
   hash_set<basic_block> m_visited_bbs;
   // The set of SSA names, any of which could potentially change the
   // value of the final conditional in a path.
-  bitmap m_imports;
+  auto_bitmap m_imports;
   // The last statement in the path.
   gimple *m_last_stmt;
   // This is a bit of a wart.  It's used to pass the LHS SSA name to
@@ -113,25 +109,22 @@ private:
   tree m_name;
   // Marker to differentiate unreachable edges.
   static const edge UNREACHABLE_EDGE;
+  // Set to TRUE if unknown SSA names along a path should be resolved
+  // with the ranger.  Otherwise, unknown SSA names are assumed to be
+  // VARYING.  Setting to true is more precise but slower.
+  bool m_resolve;
 };
 
 // Used to differentiate unreachable edges, so we may stop the search
 // in a the given direction.
 const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
 
-back_threader::back_threader (bool speed_p)
-  : m_registry (param_max_fsm_thread_paths),
-    m_profit (speed_p),
-    m_solver (m_ranger, /*resolve=*/false)
+back_threader::back_threader (bool speed_p, bool resolve)
+  : m_profit (speed_p),
+    m_solver (m_ranger, resolve)
 {
   m_last_stmt = NULL;
-  m_imports = BITMAP_ALLOC (NULL);
-}
-
-back_threader::~back_threader ()
-{
-  m_path.release ();
-  BITMAP_FREE (m_imports);
+  m_resolve = resolve;
 }
 
 // Register the current path for jump threading if it's profitable to
@@ -147,6 +140,10 @@ back_threader::maybe_register_path ()
 
   if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
+      // Avoid circular paths.
+      if (m_visited_bbs.contains (taken_edge->dest))
+	return UNREACHABLE_EDGE;
+
       bool irreducible = false;
       bool profitable
 	= m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
@@ -250,17 +247,14 @@ populate_worklist (vec<tree> &worklist, bitmap bits)
     }
 }
 
-// If taking any of the incoming edges to a PHI causes the final
-// conditional of the current path to be constant, register the
-// path(s), and return TRUE.
+// Find jump threading paths that go through a PHI.
 
-bool
+void
 back_threader::resolve_phi (gphi *phi, bitmap interesting)
 {
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (phi)))
-    return true;
+    return;
 
-  bool done = false;
   for (size_t i = 0; i < gimple_phi_num_args (phi); ++i)
     {
       edge e = gimple_phi_arg_edge (phi, i);
@@ -283,29 +277,23 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
 	}
 
       tree arg = gimple_phi_arg_def (phi, i);
-      if (TREE_CODE (arg) == SSA_NAME)
+      unsigned v = 0;
+
+      if (TREE_CODE (arg) == SSA_NAME
+	  && !bitmap_bit_p (interesting, SSA_NAME_VERSION (arg)))
 	{
-	  unsigned v = SSA_NAME_VERSION (arg);
-
-	  // Avoid loops as in: x_5 = PHI <x_5(2), ...>.
-	  if (bitmap_bit_p (interesting, v))
-	    continue;
-
+	  // Record that ARG is interesting when searching down this path.
+	  v = SSA_NAME_VERSION (arg);
+	  gcc_checking_assert (v != 0);
 	  bitmap_set_bit (interesting, v);
 	  bitmap_set_bit (m_imports, v);
-	  done |= find_paths_to_names (e->src, interesting);
-	  bitmap_clear_bit (interesting, v);
 	}
-      else if (TREE_CODE (arg) == INTEGER_CST)
-	{
-	  m_path.safe_push (e->src);
-	  edge taken_edge = maybe_register_path ();
-	  if (taken_edge && taken_edge != UNREACHABLE_EDGE)
-	    done = true;
-	  m_path.pop ();
-	}
+
+      find_paths_to_names (e->src, interesting);
+
+      if (v)
+	bitmap_clear_bit (interesting, v);
     }
-  return done;
 }
 
 // If the definition of NAME causes the final conditional of the
@@ -317,9 +305,11 @@ back_threader::resolve_def (tree name, bitmap interesting, vec<tree> &worklist)
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
   // Handle PHIs.
-  if (is_a<gphi *> (def_stmt)
-      && resolve_phi (as_a<gphi *> (def_stmt), interesting))
-    return true;
+  if (is_a<gphi *> (def_stmt))
+    {
+      resolve_phi (as_a<gphi *> (def_stmt), interesting);
+      return true;
+    }
 
   // Defer copies of SSAs by adding the source to the worklist.
   if (gimple_assign_single_p (def_stmt)
@@ -356,6 +346,14 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
       m_path.pop ();
       m_visited_bbs.remove (bb);
       return false;
+    }
+
+  // Try to resolve the path without looking back.
+  if (m_path.length () > 1 && maybe_register_path ())
+    {
+      m_path.pop ();
+      m_visited_bbs.remove (bb);
+      return true;
     }
 
   auto_bitmap processed;
@@ -541,12 +539,6 @@ void
 back_threader::debug ()
 {
   dump (stderr);
-}
-
-back_threader_registry::back_threader_registry (int max_allowable_paths)
-  : m_max_allowable_paths (max_allowable_paths)
-{
-  m_threaded_paths = 0;
 }
 
 bool
@@ -881,15 +873,6 @@ bool
 back_threader_registry::register_path (const vec<basic_block> &m_path,
 				       edge taken_edge)
 {
-  if (m_threaded_paths > m_max_allowable_paths)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
-		 "the number of previously recorded paths to "
-		 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
-      return false;
-    }
-
   vec<jump_thread_edge *> *jump_thread_path
     = m_lowlevel_registry.allocate_thread_path ();
 
@@ -907,53 +890,19 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 
   m_lowlevel_registry.push_edge (jump_thread_path,
 				 taken_edge, EDGE_NO_COPY_SRC_BLOCK);
-
-  if (m_lowlevel_registry.register_jump_thread (jump_thread_path))
-    ++m_threaded_paths;
+  m_lowlevel_registry.register_jump_thread (jump_thread_path);
   return true;
 }
 
-namespace {
-
-const pass_data pass_data_thread_jumps =
-{
-  GIMPLE_PASS,
-  "thread",
-  OPTGROUP_NONE,
-  TV_TREE_SSA_THREAD_JUMPS,
-  ( PROP_cfg | PROP_ssa ),
-  0,
-  0,
-  0,
-  TODO_update_ssa,
-};
-
-class pass_thread_jumps : public gimple_opt_pass
-{
-public:
-  pass_thread_jumps (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_thread_jumps, ctxt)
-  {}
-
-  opt_pass * clone (void) { return new pass_thread_jumps (m_ctxt); }
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
-};
-
-bool
-pass_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
-{
-  return flag_thread_jumps && flag_expensive_optimizations;
-}
-
-// Try to thread blocks in FUN.  Return TRUE if any jump thread paths were
-// registered.
+// Try to thread blocks in FUN.  RESOLVE is TRUE when fully resolving
+// unknown SSAs.  SPEED is TRUE when optimizing for speed.
+//
+// Return TRUE if any jump thread paths were registered.
 
 static bool
-try_thread_blocks (function *fun)
+try_thread_blocks (function *fun, bool resolve, bool speed)
 {
-  /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/true);
+  back_threader threader (speed, resolve);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -963,24 +912,27 @@ try_thread_blocks (function *fun)
   return threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
 }
 
-unsigned int
-pass_thread_jumps::execute (function *fun)
+static unsigned int
+do_early_thread_jumps (function *fun, bool resolve)
+{
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+  try_thread_blocks (fun, resolve, /*speed=*/false);
+
+  loop_optimizer_finalize ();
+  return 0;
+}
+
+static unsigned int
+do_thread_jumps (function *fun, bool resolve)
 {
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
 
-  bool changed = try_thread_blocks (fun);
+  bool changed = try_thread_blocks (fun, resolve, /*speed=*/true);
 
   loop_optimizer_finalize ();
 
   return changed ? TODO_cleanup_cfg : 0;
-}
-
-}
-
-gimple_opt_pass *
-make_pass_thread_jumps (gcc::context *ctxt)
-{
-  return new pass_thread_jumps (ctxt);
 }
 
 namespace {
@@ -998,6 +950,33 @@ const pass_data pass_data_early_thread_jumps =
   ( TODO_cleanup_cfg | TODO_update_ssa ),
 };
 
+const pass_data pass_data_thread_jumps =
+{
+  GIMPLE_PASS,
+  "thread",
+  OPTGROUP_NONE,
+  TV_TREE_SSA_THREAD_JUMPS,
+  ( PROP_cfg | PROP_ssa ),
+  0,
+  0,
+  0,
+  TODO_update_ssa,
+};
+
+const pass_data pass_data_thread_jumps_full =
+{
+  GIMPLE_PASS,
+  "thread-full",
+  OPTGROUP_NONE,
+  TV_TREE_SSA_THREAD_JUMPS,
+  ( PROP_cfg | PROP_ssa ),
+  0,
+  0,
+  0,
+  TODO_update_ssa,
+};
+
+// Early jump threading pass optimizing for size.
 class pass_early_thread_jumps : public gimple_opt_pass
 {
 public:
@@ -1005,36 +984,74 @@ public:
     : gimple_opt_pass (pass_data_early_thread_jumps, ctxt)
   {}
 
-  opt_pass * clone (void) { return new pass_early_thread_jumps (m_ctxt); }
-  virtual bool gate (function *);
-  virtual unsigned int execute (function *);
+  opt_pass * clone () override
+  {
+    return new pass_early_thread_jumps (m_ctxt);
+  }
+  bool gate (function *) override
+  {
+    return flag_thread_jumps;
+  }
+  unsigned int execute (function *fun) override
+  {
+    return do_early_thread_jumps (fun, /*resolve=*/false);
+  }
 };
 
-bool
-pass_early_thread_jumps::gate (function *fun ATTRIBUTE_UNUSED)
+// Jump threading pass without resolving of unknown SSAs.
+class pass_thread_jumps : public gimple_opt_pass
 {
-  return flag_thread_jumps;
+public:
+  pass_thread_jumps (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_thread_jumps, ctxt)
+  {}
+  opt_pass * clone (void) override
+  {
+    return new pass_thread_jumps (m_ctxt);
+  }
+  bool gate (function *) override
+  {
+    return flag_thread_jumps && flag_expensive_optimizations;
+  }
+  unsigned int execute (function *fun) override
+  {
+    return do_thread_jumps (fun, /*resolve=*/false);
+  }
+};
+
+// Jump threading pass that fully resolves unknown SSAs.
+class pass_thread_jumps_full : public gimple_opt_pass
+{
+public:
+  pass_thread_jumps_full (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_thread_jumps_full, ctxt)
+  {}
+  opt_pass * clone (void) override
+  {
+    return new pass_thread_jumps_full (m_ctxt);
+  }
+  bool gate (function *) override
+  {
+    return flag_thread_jumps && flag_expensive_optimizations;
+  }
+  unsigned int execute (function *fun) override
+  {
+    return do_thread_jumps (fun, /*resolve=*/true);
+  }
+};
+
+} // namespace {
+
+gimple_opt_pass *
+make_pass_thread_jumps (gcc::context *ctxt)
+{
+  return new pass_thread_jumps (ctxt);
 }
 
-unsigned int
-pass_early_thread_jumps::execute (function *fun)
+gimple_opt_pass *
+make_pass_thread_jumps_full (gcc::context *ctxt)
 {
-  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-
-  /* Try to thread each block with more than one successor.  */
-  back_threader threader (/*speed_p=*/false);
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      if (EDGE_COUNT (bb->succs) > 1)
-	threader.maybe_thread_block (bb);
-    }
-  threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
-
-  loop_optimizer_finalize ();
-  return 0;
-}
-
+  return new pass_thread_jumps_full (ctxt);
 }
 
 gimple_opt_pass *

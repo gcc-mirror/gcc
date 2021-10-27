@@ -31,7 +31,7 @@ namespace __gnu_test
 	struct _Concept
 	{
 	  void __constraint()
-	  { 
+	  {
 	    typedef typename _Ttesttype::char_type char_type;
 	    typedef typename _Ttesttype::int_type int_type;
 	    const char_type c1(0);
@@ -64,9 +64,7 @@ int main()
 {
   __gnu_test::constexpr_member_functions test;
   test.operator()<std::char_traits<char>>();
-#ifdef _GLIBCXX_USE_WCHAR_T
   test.operator()<std::char_traits<wchar_t>>();
-#endif
 #ifdef _GLIBCXX_USE_CHAR8_T
   test.operator()<std::char_traits<char8_t>>();
 #endif

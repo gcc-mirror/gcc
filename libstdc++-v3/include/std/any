@@ -72,8 +72,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @brief A type-safe container of any type.
    *
-   *  An @c any object's state is either empty or it stores a contained object
+   *  An `any` object's state is either empty or it stores a contained object
    *  of CopyConstructible type.
+   *
+   *  @since C++17
    */
   class any
   {
@@ -337,9 +339,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+    /// @cond undocumented
     template<typename _Tp>
       static constexpr bool __is_valid_cast()
       { return __or_<is_reference<_Tp>, is_copy_constructible<_Tp>>::value; }
+    /// @endcond
 
   private:
     enum _Op {
@@ -356,8 +360,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void (*_M_manager)(_Op, const any*, _Arg*);
     _Storage _M_storage;
 
+    /// @cond undocumented
     template<typename _Tp>
       friend void* __any_caster(const any* __any);
+    /// @endcond
 
     // Manage in-place contained object.
     template<typename _Tp>
@@ -422,16 +428,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Exchange the states of two @c any objects.
   inline void swap(any& __x, any& __y) noexcept { __x.swap(__y); }
 
-  /// Create an any holding a @c _Tp constructed from @c __args.
+  /// Create an `any` holding a `_Tp` constructed from `__args...`.
   template <typename _Tp, typename... _Args>
-    any make_any(_Args&&... __args)
+    inline
+    enable_if_t<is_constructible_v<any, in_place_type_t<_Tp>, _Args...>, any>
+    make_any(_Args&&... __args)
     {
       return any(in_place_type<_Tp>, std::forward<_Args>(__args)...);
     }
 
-  /// Create an any holding a @c _Tp constructed from @c __il and @c __args.
+  /// Create an `any` holding a `_Tp` constructed from `__il` and `__args...`.
   template <typename _Tp, typename _Up, typename... _Args>
-    any make_any(initializer_list<_Up> __il, _Args&&... __args)
+    inline
+    enable_if_t<is_constructible_v<any, in_place_type_t<_Tp>,
+				   initializer_list<_Up>&, _Args...>, any>
+    make_any(initializer_list<_Up> __il, _Args&&... __args)
     {
       return any(in_place_type<_Tp>, __il, std::forward<_Args>(__args)...);
     }

@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <setjmp.h>
 #include "match.h"
 #include "parse.h"
+#include "tree-core.h"
+#include "omp-general.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
    can get wiped during statement matching, we have to keep it separate.  */
@@ -860,6 +862,8 @@ decode_omp_directive (void)
 	       ST_OMP_DECLARE_SIMD);
       matchdo ("declare target", gfc_match_omp_declare_target,
 	       ST_OMP_DECLARE_TARGET);
+      matchdo ("declare variant", gfc_match_omp_declare_variant,
+	       ST_OMP_DECLARE_VARIANT);
       break;
     case 's':
       matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
@@ -1718,6 +1722,7 @@ next_statement (void)
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
+  case ST_OMP_DECLARE_VARIANT: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* Block end statements.  Errors associated with interchanging these
@@ -2360,6 +2365,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_DECLARE_TARGET:
       p = "!$OMP DECLARE TARGET";
+      break;
+    case ST_OMP_DECLARE_VARIANT:
+      p = "!$OMP DECLARE VARIANT";
       break;
     case ST_OMP_DEPOBJ:
       p = "!$OMP DEPOBJ";
@@ -5451,7 +5459,7 @@ parse_oacc_loop (gfc_statement acc_st)
 
 /* Parse the statements of an OpenMP structured block.  */
 
-static void
+static gfc_statement
 parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 {
   gfc_statement st, omp_end_st;
@@ -5538,6 +5546,32 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       gcc_unreachable ();
     }
 
+  bool block_construct = false;
+  gfc_namespace *my_ns = NULL;
+  gfc_namespace *my_parent = NULL;
+
+  st = next_statement ();
+
+  if (st == ST_BLOCK)
+    {
+      /* Adjust state to a strictly-structured block, now that we found that
+	 the body starts with a BLOCK construct.  */
+      s.state = COMP_OMP_STRICTLY_STRUCTURED_BLOCK;
+
+      block_construct = true;
+      gfc_notify_std (GFC_STD_F2008, "BLOCK construct at %C");
+
+      my_ns = gfc_build_block_ns (gfc_current_ns);
+      gfc_current_ns = my_ns;
+      my_parent = my_ns->parent;
+
+      new_st.op = EXEC_BLOCK;
+      new_st.ext.block.ns = my_ns;
+      new_st.ext.block.assoc = NULL;
+      accept_statement (ST_BLOCK);
+      st = parse_spec (ST_NONE);
+    }
+
   do
     {
       if (workshare_stmts_only)
@@ -5554,7 +5588,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	     restrictions apply recursively.  */
 	  bool cycle = true;
 
-	  st = next_statement ();
 	  for (;;)
 	    {
 	      switch (st)
@@ -5580,13 +5613,13 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:
 		case ST_OMP_PARALLEL_SECTIONS:
-		  parse_omp_structured_block (st, false);
-		  break;
+		  st = parse_omp_structured_block (st, false);
+		  continue;
 
 		case ST_OMP_PARALLEL_WORKSHARE:
 		case ST_OMP_CRITICAL:
-		  parse_omp_structured_block (st, true);
-		  break;
+		  st = parse_omp_structured_block (st, true);
+		  continue;
 
 		case ST_OMP_PARALLEL_DO:
 		case ST_OMP_PARALLEL_DO_SIMD:
@@ -5609,7 +5642,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	    }
 	}
       else
-	st = parse_executable (ST_NONE);
+	st = parse_executable (st);
       if (st == ST_NONE)
 	unexpected_eof ();
       else if (st == ST_OMP_SECTION
@@ -5619,9 +5652,27 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	  np = new_level (np);
 	  np->op = cp->op;
 	  np->block = NULL;
+	  st = next_statement ();
+	}
+      else if (block_construct && st == ST_END_BLOCK)
+	{
+	  accept_statement (st);
+	  gfc_current_ns = my_parent;
+	  pop_state ();
+
+	  st = next_statement ();
+	  if (st == omp_end_st)
+	    {
+	      accept_statement (st);
+	      st = next_statement ();
+	    }
+	  return st;
 	}
       else if (st != omp_end_st)
-	unexpected_statement (st);
+	{
+	  unexpected_statement (st);
+	  st = next_statement ();
+	}
     }
   while (st != omp_end_st);
 
@@ -5657,6 +5708,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   gfc_commit_symbols ();
   gfc_warning_check ();
   pop_state ();
+  st = next_statement ();
+  return st;
 }
 
 
@@ -5797,13 +5850,13 @@ parse_executable (gfc_statement st)
 	case ST_OMP_TEAMS:
 	case ST_OMP_TASK:
 	case ST_OMP_TASKGROUP:
-	  parse_omp_structured_block (st, false);
-	  break;
+	  st = parse_omp_structured_block (st, false);
+	  continue;
 
 	case ST_OMP_WORKSHARE:
 	case ST_OMP_PARALLEL_WORKSHARE:
-	  parse_omp_structured_block (st, true);
-	  break;
+	  st = parse_omp_structured_block (st, true);
+	  continue;
 
 	case ST_OMP_DISTRIBUTE:
 	case ST_OMP_DISTRIBUTE_PARALLEL_DO:
@@ -6792,6 +6845,24 @@ done:
   for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
        gfc_current_ns = gfc_current_ns->sibling)
     gfc_check_omp_requires (gfc_current_ns, omp_requires);
+
+  /* Populate omp_requires_mask (needed for resolving OpenMP
+     metadirectives and declare variant).  */
+  switch (omp_requires & OMP_REQ_ATOMIC_MEM_ORDER_MASK)
+    {
+    case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_SEQ_CST);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
+      break;
+    case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+      break;
+    }
 
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;

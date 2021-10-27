@@ -128,13 +128,13 @@ package body System.Task_Primitives.Operations is
    -- External Configuration Values --
    -----------------------------------
 
-   Time_Slice_Val : Integer;
+   Time_Slice_Val : constant Integer;
    pragma Import (C, Time_Slice_Val, "__gl_time_slice_val");
 
-   Locking_Policy : Character;
+   Locking_Policy : constant Character;
    pragma Import (C, Locking_Policy, "__gl_locking_policy");
 
-   Dispatching_Policy : Character;
+   Dispatching_Policy : constant Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
    Foreign_Task_Elaborated : aliased Boolean := True;

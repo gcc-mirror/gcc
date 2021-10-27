@@ -892,7 +892,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 
   /* Even non-dependent expressions can still have template
      codes like CAST_EXPR, so use *_non_dependent_expr to cope.  */
-  init = fold_non_dependent_expr (init, complain);
+  init = fold_non_dependent_expr (init, complain, /*manifest*/true);
   if (init == error_mark_node)
     return ok;
 

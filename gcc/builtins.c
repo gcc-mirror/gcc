@@ -105,7 +105,6 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 bool force_folding_builtin_constant_p;
 
 static int target_char_cast (tree, char *);
-static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
 static int apply_result_size (void);
 static rtx result_vector (int, rtx);
@@ -1355,7 +1354,7 @@ expand_builtin_prefetch (tree exp)
    the maximum length of the block of memory that might be accessed or
    NULL if unknown.  */
 
-static rtx
+rtx
 get_memory_rtx (tree exp, tree len)
 {
   tree orig_exp = exp;
@@ -3601,7 +3600,7 @@ check_strncat_sizes (tree exp, tree objsize)
   /* Try to verify that the destination is big enough for the shortest
      string.  */
 
-  access_data data (exp, access_read_write, maxread, true);
+  access_data data (nullptr, exp, access_read_write, maxread, true);
   if (!objsize && warn_stringop_overflow)
     {
       /* If it hasn't been provided by __strncat_chk, try to determine
@@ -4260,12 +4259,6 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
   tree arg1 = CALL_EXPR_ARG (exp, 0);
   tree arg2 = CALL_EXPR_ARG (exp, 1);
   tree len = CALL_EXPR_ARG (exp, 2);
-
-  /* Diagnose calls where the specified length exceeds the size of either
-     object.  */
-  if (!check_read_access (exp, arg1, len, 0)
-      || !check_read_access (exp, arg2, len, 0))
-    return NULL_RTX;
 
   /* Due to the performance benefit, always inline the calls first
      when result_eq is false.  */
@@ -5163,12 +5156,10 @@ default_emit_call_builtin___clear_cache (rtx begin, rtx end)
 void
 maybe_emit_call_builtin___clear_cache (rtx begin, rtx end)
 {
-  if ((GET_MODE (begin) != ptr_mode && GET_MODE (begin) != Pmode)
-      || (GET_MODE (end) != ptr_mode && GET_MODE (end) != Pmode))
-    {
-      error ("both arguments to %<__builtin___clear_cache%> must be pointers");
-      return;
-    }
+  gcc_assert ((GET_MODE (begin) == ptr_mode || GET_MODE (begin) == Pmode
+	       || CONST_INT_P (begin))
+	      && (GET_MODE (end) == ptr_mode || GET_MODE (end) == Pmode
+		  || CONST_INT_P (end)));
 
   if (targetm.have_clear_cache ())
     {
@@ -5488,27 +5479,6 @@ expand_builtin_fork_or_exec (tree fn, tree exp, rtx target, int ignore)
 {
   tree id, decl;
   tree call;
-
-  if (DECL_FUNCTION_CODE (fn) != BUILT_IN_FORK)
-    {
-      tree path = CALL_EXPR_ARG (exp, 0);
-      /* Detect unterminated path.  */
-      if (!check_read_access (exp, path))
-	return NULL_RTX;
-
-      /* Also detect unterminated first argument.  */
-      switch (DECL_FUNCTION_CODE (fn))
-	{
-	case BUILT_IN_EXECL:
-	case BUILT_IN_EXECLE:
-	case BUILT_IN_EXECLP:
-	  if (!check_read_access (exp, path))
-	    return NULL_RTX;
-	default:
-	  break;
-	}
-    }
-
 
   /* If we are not profiling, just call the function.  */
   if (!profile_arc_flag)
