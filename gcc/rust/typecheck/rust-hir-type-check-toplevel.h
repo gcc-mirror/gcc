@@ -46,6 +46,11 @@ public:
       = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
 
     context->insert_type (alias.get_mappings (), actual_type);
+
+    for (auto &where_clause_item : alias.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+      }
   }
 
   void visit (HIR::TupleStruct &struct_decl) override
@@ -74,6 +79,11 @@ public:
 		break;
 	      }
 	  }
+      }
+
+    for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
     std::vector<TyTy::StructFieldType *> fields;
@@ -136,6 +146,11 @@ public:
 	  }
       }
 
+    for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+      }
+
     std::vector<TyTy::StructFieldType *> fields;
 
     for (auto &field : struct_decl.get_fields ())
@@ -186,6 +201,11 @@ public:
 		break;
 	      }
 	  }
+      }
+
+    for (auto &where_clause_item : union_decl.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
     std::vector<TyTy::StructFieldType *> variants;
@@ -259,6 +279,11 @@ public:
 	  }
       }
 
+    for (auto &where_clause_item : function.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+      }
+
     TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
       ret_type = new TyTy::TupleType (function.get_mappings ().get_hirid ());
@@ -296,6 +321,7 @@ public:
 				    TyTy::FnType::FNTYPE_DEFAULT_FLAGS,
 				    ABI::RUST, std::move (params), ret_type,
 				    std::move (substitutions));
+
     context->insert_type (function.get_mappings (), fnType);
   }
 
@@ -325,6 +351,11 @@ public:
 		break;
 	      }
 	  }
+      }
+
+    for (auto &where_clause_item : impl_block.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
     auto self

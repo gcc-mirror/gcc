@@ -58,7 +58,8 @@ public:
     resolver->get_type_scope ().append_reference_for_def (type.get_node_id (),
 							  type.get_node_id ());
 
-    // TODO resolve the type-bounds
+    for (auto &bound : type.get_type_param_bounds ())
+      ResolveTypeBound::go (bound.get (), type.get_node_id ());
   }
 
   void visit (AST::TraitItemFunc &func) override
@@ -94,6 +95,9 @@ public:
 	resolver->mark_assignment_to_decl (param.get_pattern ()->get_node_id (),
 					   param.get_node_id ());
       }
+
+    if (function.has_where_clause ())
+      ResolveWhereClause::Resolve (function.get_where_clause ());
 
     // trait items have an optional body
     if (func.has_definition ())
@@ -158,6 +162,9 @@ public:
 					   param.get_node_id ());
       }
 
+    if (function.has_where_clause ())
+      ResolveWhereClause::Resolve (function.get_where_clause ());
+
     // trait items have an optional body
     if (func.has_definition ())
       ResolveExpr::go (func.get_definition ().get (), func.get_node_id ());
@@ -211,6 +218,9 @@ public:
 	  ResolveGenericParam::go (generic.get (), alias.get_node_id ());
       }
 
+    if (alias.has_where_clause ())
+      ResolveWhereClause::Resolve (alias.get_where_clause ());
+
     ResolveType::go (alias.get_type_aliased ().get (), alias.get_node_id ());
 
     resolver->get_type_scope ().pop ();
@@ -251,6 +261,9 @@ public:
 	  }
       }
 
+    if (struct_decl.has_where_clause ())
+      ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
+
     struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
       ResolveType::go (field.get_field_type ().get (),
 		       struct_decl.get_node_id ());
@@ -272,6 +285,9 @@ public:
 	    ResolveGenericParam::go (generic.get (), enum_decl.get_node_id ());
 	  }
       }
+
+    if (enum_decl.has_where_clause ())
+      ResolveWhereClause::Resolve (enum_decl.get_where_clause ());
 
     /* The actual fields are inside the variants.  */
     for (auto &variant : enum_decl.get_variants ())
@@ -310,6 +326,9 @@ public:
 	  }
       }
 
+    if (struct_decl.has_where_clause ())
+      ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
+
     struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
       ResolveType::go (field.get_field_type ().get (),
 		       struct_decl.get_node_id ());
@@ -331,6 +350,9 @@ public:
 	    ResolveGenericParam::go (generic.get (), union_decl.get_node_id ());
 	  }
       }
+
+    if (union_decl.has_where_clause ())
+      ResolveWhereClause::Resolve (union_decl.get_where_clause ());
 
     union_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
       ResolveType::go (field.get_field_type ().get (),
@@ -379,6 +401,10 @@ public:
 	  ResolveGenericParam::go (generic.get (), function.get_node_id ());
       }
 
+    // resolve any where clause items
+    if (function.has_where_clause ())
+      ResolveWhereClause::Resolve (function.get_where_clause ());
+
     if (function.has_return_type ())
       ResolveType::go (function.get_return_type ().get (),
 		       function.get_node_id ());
@@ -421,6 +447,10 @@ public:
 	    ResolveGenericParam::go (generic.get (), impl_block.get_node_id ());
 	  }
       }
+
+    // resolve any where clause items
+    if (impl_block.has_where_clause ())
+      ResolveWhereClause::Resolve (impl_block.get_where_clause ());
 
     bool canonicalize_type_with_generics = false;
     NodeId resolved_node = ResolveType::go (impl_block.get_type ().get (),
@@ -468,6 +498,10 @@ public:
 	  ResolveGenericParam::go (generic.get (), method.get_node_id ());
       }
 
+    // resolve any where clause items
+    if (method.has_where_clause ())
+      ResolveWhereClause::Resolve (method.get_where_clause ());
+
     if (method.has_return_type ())
       ResolveType::go (method.get_return_type ().get (), method.get_node_id ());
 
@@ -505,6 +539,10 @@ public:
 					   param.get_node_id ());
       }
 
+    // resolve any where clause items
+    if (method.has_where_clause ())
+      ResolveWhereClause::Resolve (method.get_where_clause ());
+
     // resolve the function body
     ResolveExpr::go (method.get_definition ().get (), method.get_node_id ());
 
@@ -528,6 +566,10 @@ public:
 	    ResolveGenericParam::go (generic.get (), impl_block.get_node_id ());
 	  }
       }
+
+    // resolve any where clause items
+    if (impl_block.has_where_clause ())
+      ResolveWhereClause::Resolve (impl_block.get_where_clause ());
 
     bool canonicalize_type_with_generics = false;
     NodeId trait_resolved_node
@@ -600,6 +642,10 @@ public:
 	    ResolveTypeBound::go (bound.get (), trait.get_node_id ());
 	  }
       }
+
+    // resolve any where clause items
+    if (trait.has_where_clause ())
+      ResolveWhereClause::Resolve (trait.get_where_clause ());
 
     for (auto &item : trait.get_trait_items ())
       {

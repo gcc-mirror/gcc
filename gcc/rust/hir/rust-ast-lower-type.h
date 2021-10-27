@@ -60,7 +60,7 @@ public:
 
   void visit (AST::TypePath &path) override
   {
-    std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
+    std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
 
     path.iterate_segments ([&] (AST::TypePathSegment *seg) mutable -> bool {
       translated_segment = nullptr;
@@ -188,7 +188,7 @@ public:
 
   void visit (AST::TupleType &tuple) override
   {
-    std::vector<std::unique_ptr<HIR::Type> > elems;
+    std::vector<std::unique_ptr<HIR::Type>> elems;
     for (auto &e : tuple.get_elems ())
       {
 	HIR::Type *t = ASTLoweringType::translate (e.get ());
@@ -340,7 +340,7 @@ public:
   void visit (AST::TypeParam &param) override
   {
     AST::Attribute outer_attr = AST::Attribute::create_empty ();
-    std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+    std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
     if (param.has_type_param_bounds ())
       {
 	for (auto &bound : param.get_type_param_bounds ())
@@ -420,6 +420,72 @@ private:
   ASTLoweringTypeBounds () : ASTLoweringBase (), translated (nullptr) {}
 
   HIR::TypeParamBound *translated;
+};
+
+class ASTLowerWhereClauseItem : public ASTLoweringBase
+{
+  using Rust::HIR::ASTLoweringBase::visit;
+
+public:
+  static HIR::WhereClauseItem *translate (AST::WhereClauseItem &item)
+  {
+    ASTLowerWhereClauseItem compiler;
+    item.accept_vis (compiler);
+    rust_assert (compiler.translated != nullptr);
+    return compiler.translated;
+  }
+
+  void visit (AST::LifetimeWhereClauseItem &item) override
+  {
+    HIR::Lifetime l = lower_lifetime (item.get_lifetime ());
+    std::vector<HIR::Lifetime> lifetime_bounds;
+    for (auto &lifetime_bound : item.get_lifetime_bounds ())
+      {
+	HIR::Lifetime ll = lower_lifetime (lifetime_bound);
+	lifetime_bounds.push_back (std::move (ll));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::LifetimeWhereClauseItem (mapping, std::move (l),
+						   std::move (lifetime_bounds),
+						   item.get_locus ());
+  }
+
+  void visit (AST::TypeBoundWhereClauseItem &item) override
+  {
+    // FIXME
+    std::vector<HIR::LifetimeParam> for_lifetimes;
+
+    std::unique_ptr<HIR::Type> bound_type = std::unique_ptr<HIR::Type> (
+      ASTLoweringType::translate (item.get_type ().get ()));
+
+    std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
+    for (auto &bound : item.get_type_param_bounds ())
+      {
+	HIR::TypeParamBound *b
+	  = ASTLoweringTypeBounds::translate (bound.get ());
+	type_param_bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TypeBoundWhereClauseItem (mapping, std::move (for_lifetimes),
+					   std::move (bound_type),
+					   std::move (type_param_bounds));
+  }
+
+private:
+  ASTLowerWhereClauseItem () : ASTLoweringBase (), translated (nullptr) {}
+
+  HIR::WhereClauseItem *translated;
 };
 
 } // namespace HIR

@@ -277,6 +277,111 @@ private:
   TyTy::ParamType *resolved;
 };
 
+class ResolveWhereClauseItem : public TypeCheckBase
+{
+  using Rust::Resolver::TypeCheckBase::visit;
+
+public:
+  static void Resolve (HIR::WhereClauseItem &item)
+  {
+    ResolveWhereClauseItem resolver;
+    item.accept_vis (resolver);
+  }
+
+  void visit (HIR::LifetimeWhereClauseItem &) override {}
+
+  void visit (HIR::TypeBoundWhereClauseItem &item) override
+  {
+    auto &binding_type_path = item.get_bound_type ();
+    TyTy::BaseType *binding = TypeCheckType::Resolve (binding_type_path.get ());
+
+    std::vector<TyTy::TypeBoundPredicate> specified_bounds;
+    for (auto &bound : item.get_type_param_bounds ())
+      {
+	switch (bound->get_bound_type ())
+	  {
+	    case HIR::TypeParamBound::BoundType::TRAITBOUND: {
+	      HIR::TraitBound *b
+		= static_cast<HIR::TraitBound *> (bound.get ());
+
+	      auto &type_path = b->get_path ();
+	      TraitReference *trait = resolve_trait_path (type_path);
+	      TyTy::TypeBoundPredicate predicate (
+		trait->get_mappings ().get_defid (), b->get_locus ());
+
+	      auto &final_seg = type_path.get_final_segment ();
+	      if (final_seg->is_generic_segment ())
+		{
+		  auto final_generic_seg
+		    = static_cast<HIR::TypePathSegmentGeneric *> (
+		      final_seg.get ());
+		  if (final_generic_seg->has_generic_args ())
+		    {
+		      HIR::GenericArgs &generic_args
+			= final_generic_seg->get_generic_args ();
+
+		      // this is applying generic arguments to a trait
+		      // reference
+		      predicate.apply_generic_arguments (&generic_args);
+		    }
+		}
+
+	      specified_bounds.push_back (std::move (predicate));
+	    }
+	    break;
+
+	  default:
+	    break;
+	  }
+      }
+    binding->inherit_bounds (specified_bounds);
+
+    // When we apply these bounds we must lookup which type this binding
+    // resolves to, as this is the type which will be used during resolution of
+    // the block.
+    NodeId ast_node_id = binding_type_path->get_mappings ().get_nodeid ();
+
+    // then lookup the reference_node_id
+    NodeId ref_node_id = UNKNOWN_NODEID;
+    if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
+      {
+	// FIXME
+	rust_error_at (Location (),
+		       "Failed to lookup type reference for node: %s",
+		       binding_type_path->as_string ().c_str ());
+	return;
+      }
+
+    // node back to HIR
+    HirId ref;
+    if (!mappings->lookup_node_to_hir (
+	  binding_type_path->get_mappings ().get_crate_num (), ref_node_id,
+	  &ref))
+      {
+	// FIXME
+	rust_error_at (Location (), "where-clause reverse lookup failure");
+	return;
+      }
+
+    // the base reference for this name _must_ have a type set
+    TyTy::BaseType *lookup;
+    if (!context->lookup_type (ref, &lookup))
+      {
+	rust_error_at (mappings->lookup_location (ref),
+		       "Failed to resolve where-clause binding type: %s",
+		       binding_type_path->as_string ().c_str ());
+	return;
+      }
+
+    // FIXME
+    // rust_assert (binding->is_equal (*lookup));
+    lookup->inherit_bounds (specified_bounds);
+  }
+
+private:
+  ResolveWhereClauseItem () : TypeCheckBase () {}
+};
+
 } // namespace Resolver
 } // namespace Rust
 

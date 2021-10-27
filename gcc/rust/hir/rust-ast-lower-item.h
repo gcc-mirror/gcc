@@ -95,6 +95,14 @@ public:
   void visit (AST::TypeAlias &alias) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : alias.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -134,6 +142,14 @@ public:
       }
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : struct_decl.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -186,6 +202,14 @@ public:
       }
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : struct_decl.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -242,6 +266,14 @@ public:
       }
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : enum_decl.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -282,6 +314,13 @@ public:
       }
 
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : union_decl.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
@@ -380,8 +419,15 @@ public:
 
   void visit (AST::Function &function) override
   {
-    // ignore for now and leave empty
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : function.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
       HIR::FunctionQualifiers::AsyncConstStatus::NONE, Unsafety::Normal);
@@ -466,6 +512,13 @@ public:
   void visit (AST::InherentImpl &impl_block) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+    for (auto &item : impl_block.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
@@ -545,8 +598,15 @@ public:
   void visit (AST::Trait &trait) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
-
+    for (auto &item : trait.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
     HIR::WhereClause where_clause (std::move (where_clause_items));
+
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
@@ -632,7 +692,13 @@ public:
   void visit (AST::TraitImpl &impl_block) override
   {
     std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
-
+    for (auto &item : impl_block.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
 

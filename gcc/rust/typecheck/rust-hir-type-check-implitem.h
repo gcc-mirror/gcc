@@ -150,6 +150,11 @@ public:
       = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
 
     context->insert_type (alias.get_mappings (), actual_type);
+
+    for (auto &where_clause_item : alias.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
+      }
   }
 
   void visit (HIR::ConstantItem &constant) override
@@ -189,6 +194,11 @@ public:
 		break;
 	      }
 	  }
+      }
+
+    for (auto &where_clause_item : function.get_where_clause ().get_items ())
+      {
+	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
     TyTy::BaseType *ret_type = nullptr;
