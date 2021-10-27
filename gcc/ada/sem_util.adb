@@ -686,9 +686,9 @@ package body Sem_Util is
                return New_Occurrence_Of
                         (Get_Dynamic_Accessibility (E), Loc);
 
-            --  Initialization procedures have a special extra accessitility
+            --  Initialization procedures have a special extra accessibility
             --  parameter associated with the level at which the object
-            --  begin initialized exists
+            --  being initialized exists
 
             elsif Ekind (E) = E_Record_Type
               and then Is_Limited_Record (E)
