@@ -1076,6 +1076,10 @@ Enum(indirect_branch) String(thunk-inline) Value(indirect_branch_thunk_inline)
 EnumValue
 Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
 
+mindirect-branch-cs-prefix
+Target Var(ix86_indirect_branch_cs_prefix) Init(0)
+Add CS prefix to call and jmp to indirect thunk with branch target in r8-r15 registers.
+
 mindirect-branch-register
 Target Var(ix86_indirect_branch_register) Init(0)
 Force indirect call and jump via register.
