@@ -1975,6 +1975,7 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  break;
       if (i == fd->last_nonrect
 	  && fd->loops[i].outer == fd->last_nonrect - fd->first_nonrect
+	  && !POINTER_TYPE_P (TREE_TYPE (fd->loops[i].v))
 	  && !TYPE_UNSIGNED (TREE_TYPE (fd->loops[i].v)))
 	{
 	  int o = fd->first_nonrect;
@@ -2250,15 +2251,22 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      gsi2 = gsi_after_labels (cur_bb);
 	      tree n1, n2;
 	      t = fold_convert (itype, unshare_expr (fd->loops[i].n1));
-	      if (fd->loops[i].m1)
+	      if (fd->loops[i].m1 == NULL_TREE)
+		n1 = t;
+	      else if (POINTER_TYPE_P (itype))
+		{
+		  gcc_assert (integer_onep (fd->loops[i].m1));
+		  t = fold_convert (sizetype,
+				    unshare_expr (fd->loops[i].n1));
+		  n1 = fold_build_pointer_plus (vs[i - fd->loops[i].outer], t);
+		}
+	      else
 		{
 		  n1 = fold_convert (itype, unshare_expr (fd->loops[i].m1));
 		  n1 = fold_build2 (MULT_EXPR, itype,
 				    vs[i - fd->loops[i].outer], n1);
 		  n1 = fold_build2 (PLUS_EXPR, itype, n1, t);
 		}
-	      else
-		n1 = t;
 	      n1 = force_gimple_operand_gsi (&gsi2, n1, true, NULL_TREE,
 					     true, GSI_SAME_STMT);
 	      if (i < fd->last_nonrect)
@@ -2267,17 +2275,26 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 		  expand_omp_build_assign (&gsi2, vs[i], n1);
 		}
 	      t = fold_convert (itype, unshare_expr (fd->loops[i].n2));
-	      if (fd->loops[i].m2)
+	      if (fd->loops[i].m2 == NULL_TREE)
+		n2 = t;
+	      else if (POINTER_TYPE_P (itype))
+		{
+		  gcc_assert (integer_onep (fd->loops[i].m2));
+		  t = fold_convert (sizetype,
+				    unshare_expr (fd->loops[i].n2));
+		  n2 = fold_build_pointer_plus (vs[i - fd->loops[i].outer], t);
+		}
+	      else
 		{
 		  n2 = fold_convert (itype, unshare_expr (fd->loops[i].m2));
 		  n2 = fold_build2 (MULT_EXPR, itype,
 				    vs[i - fd->loops[i].outer], n2);
 		  n2 = fold_build2 (PLUS_EXPR, itype, n2, t);
 		}
-	      else
-		n2 = t;
 	      n2 = force_gimple_operand_gsi (&gsi2, n2, true, NULL_TREE,
 					     true, GSI_SAME_STMT);
+	      if (POINTER_TYPE_P (itype))
+		itype = signed_type_for (itype);
 	      if (i == fd->last_nonrect)
 		{
 		  gcond *cond_stmt
@@ -2295,8 +2312,10 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 					     ? -1 : 1));
 		  t = fold_build2 (PLUS_EXPR, itype,
 				   fold_convert (itype, fd->loops[i].step), t);
-		  t = fold_build2 (PLUS_EXPR, itype, t, n2);
-		  t = fold_build2 (MINUS_EXPR, itype, t, n1);
+		  t = fold_build2 (PLUS_EXPR, itype, t,
+				   fold_convert (itype, n2));
+		  t = fold_build2 (MINUS_EXPR, itype, t,
+				   fold_convert (itype, n1));
 		  tree step = fold_convert (itype, fd->loops[i].step);
 		  if (TYPE_UNSIGNED (itype)
 		      && fd->loops[i].cond_code == GT_EXPR)
@@ -2323,7 +2342,11 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      gsi2 = gsi_after_labels (e->dest);
 	      tree step = fold_convert (itype,
 					unshare_expr (fd->loops[i].step));
-	      t = fold_build2 (PLUS_EXPR, itype, vs[i], step);
+	      if (POINTER_TYPE_P (TREE_TYPE (vs[i])))
+		t = fold_build_pointer_plus (vs[i],
+					     fold_convert (sizetype, step));
+	      else
+		t = fold_build2 (PLUS_EXPR, itype, vs[i], step);
 	      t = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
 					    true, GSI_SAME_STMT);
 	      expand_omp_build_assign (&gsi2, vs[i], t);
@@ -2761,17 +2784,22 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 			     && !fd->loops[j].non_rect_referenced);
 	      gsi2 = gsi_after_labels (cur_bb);
 	      t = fold_convert (itype, unshare_expr (fd->loops[j].n1));
-	      if (fd->loops[j].m1)
+	      if (fd->loops[j].m1 == NULL_TREE)
+		n1 = rect_p ? build_zero_cst (type) : t;
+	      else if (POINTER_TYPE_P (itype))
+		{
+		  gcc_assert (integer_onep (fd->loops[j].m1));
+		  t = fold_convert (sizetype,
+				    unshare_expr (fd->loops[j].n1));
+		  n1 = fold_build_pointer_plus (vs[j - fd->loops[j].outer], t);
+		}
+	      else
 		{
 		  n1 = fold_convert (itype, unshare_expr (fd->loops[j].m1));
 		  n1 = fold_build2 (MULT_EXPR, itype,
 				    vs[j - fd->loops[j].outer], n1);
 		  n1 = fold_build2 (PLUS_EXPR, itype, n1, t);
 		}
-	      else if (rect_p)
-		n1 = build_zero_cst (type);
-	      else
-		n1 = t;
 	      n1 = force_gimple_operand_gsi (&gsi2, n1, true, NULL_TREE,
 					     true, GSI_SAME_STMT);
 	      if (j < fd->last_nonrect)
@@ -2780,19 +2808,26 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 		  expand_omp_build_assign (&gsi2, vs[j], n1);
 		}
 	      t = fold_convert (itype, unshare_expr (fd->loops[j].n2));
-	      if (fd->loops[j].m2)
+	      if (fd->loops[j].m2 == NULL_TREE)
+		n2 = rect_p ? counts[j] : t;
+	      else if (POINTER_TYPE_P (itype))
+		{
+		  gcc_assert (integer_onep (fd->loops[j].m2));
+		  t = fold_convert (sizetype,
+				    unshare_expr (fd->loops[j].n2));
+		  n2 = fold_build_pointer_plus (vs[j - fd->loops[j].outer], t);
+		}
+	      else
 		{
 		  n2 = fold_convert (itype, unshare_expr (fd->loops[j].m2));
 		  n2 = fold_build2 (MULT_EXPR, itype,
 				    vs[j - fd->loops[j].outer], n2);
 		  n2 = fold_build2 (PLUS_EXPR, itype, n2, t);
 		}
-	      else if (rect_p)
-		n2 = counts[j];
-	      else
-		n2 = t;
 	      n2 = force_gimple_operand_gsi (&gsi2, n2, true, NULL_TREE,
 					     true, GSI_SAME_STMT);
+	      if (POINTER_TYPE_P (itype))
+		itype = signed_type_for (itype);
 	      if (j == fd->last_nonrect)
 		{
 		  gcond *cond_stmt
@@ -2810,8 +2845,10 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 					     ? -1 : 1));
 		  t = fold_build2 (PLUS_EXPR, itype,
 				   fold_convert (itype, fd->loops[j].step), t);
-		  t = fold_build2 (PLUS_EXPR, itype, t, n2);
-		  t = fold_build2 (MINUS_EXPR, itype, t, n1);
+		  t = fold_build2 (PLUS_EXPR, itype, t,
+				   fold_convert (itype, n2));
+		  t = fold_build2 (MINUS_EXPR, itype, t,
+				   fold_convert (itype, n1));
 		  tree step = fold_convert (itype, fd->loops[j].step);
 		  if (TYPE_UNSIGNED (itype)
 		      && fd->loops[j].cond_code == GT_EXPR)
@@ -2853,7 +2890,11 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 		{
 		  tree step
 		    = fold_convert (itype, unshare_expr (fd->loops[j].step));
-		  t = fold_build2 (PLUS_EXPR, itype, vs[j], step);
+		  if (POINTER_TYPE_P (vtype))
+		    t = fold_build_pointer_plus (vs[j], fold_convert (sizetype,
+								      step));
+		  else
+		    t = fold_build2 (PLUS_EXPR, itype, vs[j], step);
 		}
 	      t = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
 					    true, GSI_SAME_STMT);
@@ -2899,7 +2940,10 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	    }
 	  for (int j = fd->last_nonrect; j >= fd->first_nonrect; j--)
 	    {
-	      tree itype = TREE_TYPE (fd->loops[j].v);
+	      tree vtype = TREE_TYPE (fd->loops[j].v);
+	      tree itype = vtype;
+	      if (POINTER_TYPE_P (itype))
+		itype = signed_type_for (itype);
 	      bool rect_p = (fd->loops[j].m1 == NULL_TREE
 			     && fd->loops[j].m2 == NULL_TREE
 			     && !fd->loops[j].non_rect_referenced);
@@ -2910,7 +2954,11 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 		  tree t2
 		    = fold_convert (itype, unshare_expr (fd->loops[j].step));
 		  t = fold_build2 (MULT_EXPR, itype, t, t2);
-		  t = fold_build2 (PLUS_EXPR, itype, n1, t);
+		  if (POINTER_TYPE_P (vtype))
+		    t = fold_build_pointer_plus (n1,
+						 fold_convert (sizetype, t));
+		  else
+		    t = fold_build2 (PLUS_EXPR, itype, n1, t);
 		}
 	      else if (rect_p)
 		{
@@ -2918,7 +2966,8 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 		  t = fold_build2 (MULT_EXPR, itype, t,
 				   fold_convert (itype, fd->loops[j].step));
 		  if (POINTER_TYPE_P (vtype))
-		    t = fold_build_pointer_plus (fd->loops[j].n1, t);
+		    t = fold_build_pointer_plus (fd->loops[j].n1,
+						 fold_convert (sizetype, t));
 		  else
 		    t = fold_build2 (PLUS_EXPR, itype, fd->loops[j].n1, t);
 		}
@@ -2978,12 +3027,23 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	{
 	  tree itype = TREE_TYPE (fd->loops[i].v);
 
-	  tree t = fold_convert (itype, unshare_expr (fd->loops[i].m2));
-	  t = fold_build2 (MULT_EXPR, itype,
-			   fd->loops[i - fd->loops[i].outer].v, t);
-	  t = fold_build2 (PLUS_EXPR, itype, t,
-			   fold_convert (itype,
-					 unshare_expr (fd->loops[i].n2)));
+	  tree t;
+	  if (POINTER_TYPE_P (itype))
+	    {
+	      gcc_assert (integer_onep (fd->loops[i].m2));
+	      t = fold_convert (sizetype, unshare_expr (fd->loops[i].n2));
+	      t = fold_build_pointer_plus (fd->loops[i - fd->loops[i].outer].v,
+					   t);
+	    }
+	  else
+	    {
+	      t = fold_convert (itype, unshare_expr (fd->loops[i].m2));
+	      t = fold_build2 (MULT_EXPR, itype,
+			       fd->loops[i - fd->loops[i].outer].v, t);
+	      t = fold_build2 (PLUS_EXPR, itype, t,
+			       fold_convert (itype,
+					     unshare_expr (fd->loops[i].n2)));
+	    }
 	  nonrect_bounds[i] = create_tmp_reg (itype, ".bound");
 	  t = force_gimple_operand_gsi (gsi, t, false,
 					NULL_TREE, false,
@@ -3065,10 +3125,16 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 	      t = l->n1;
 	      if (l->m1)
 		{
-		  tree t2
-		    = fold_build2 (MULT_EXPR, TREE_TYPE (t),
-				   fd->loops[i + 1 - l->outer].v, l->m1);
-		  t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t2, t);
+		  if (POINTER_TYPE_P (TREE_TYPE (l->v)))
+		    t = fold_build_pointer_plus (fd->loops[i + 1 - l->outer].v,
+						 fold_convert (sizetype, t));
+		  else
+		    {
+		      tree t2
+			= fold_build2 (MULT_EXPR, TREE_TYPE (t),
+				       fd->loops[i + 1 - l->outer].v, l->m1);
+		      t = fold_build2 (PLUS_EXPR, TREE_TYPE (t), t2, t);
+		    }
 		}
 	      t = force_gimple_operand_gsi (&gsi, t,
 					    DECL_P (l->v)
@@ -3116,9 +3182,17 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 		  }
 		if (l->m1)
 		  {
-		    t = fold_build2 (MULT_EXPR, TREE_TYPE (l->m1), l->m1,
-				     fd->loops[i].v);
-		    t = fold_build2 (PLUS_EXPR, TREE_TYPE (l->v), t, l->n1);
+		    if (POINTER_TYPE_P (TREE_TYPE (l->v)))
+		      t = fold_build_pointer_plus (fd->loops[i].v,
+						   fold_convert (sizetype,
+								 l->n1));
+		    else
+		      {
+			t = fold_build2 (MULT_EXPR, TREE_TYPE (l->m1), l->m1,
+					 fd->loops[i].v);
+			t = fold_build2 (PLUS_EXPR, TREE_TYPE (l->v),
+					 t, l->n1);
+		      }
 		    n1 = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
 						   false,
 						   GSI_CONTINUE_LINKING);
@@ -3132,10 +3206,18 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 						 GSI_CONTINUE_LINKING);
 		if (l->m2)
 		  {
-		    t = fold_build2 (MULT_EXPR, TREE_TYPE (l->m2), l->m2,
-				     fd->loops[i].v);
-		    t = fold_build2 (PLUS_EXPR, TREE_TYPE (nonrect_bounds[j]),
-				     t, unshare_expr (l->n2));
+		    if (POINTER_TYPE_P (TREE_TYPE (l->v)))
+		      t = fold_build_pointer_plus (fd->loops[i].v,
+						   fold_convert (sizetype,
+								 l->n2));
+		    else
+		      {
+			t = fold_build2 (MULT_EXPR, TREE_TYPE (l->m2), l->m2,
+					 fd->loops[i].v);
+			t = fold_build2 (PLUS_EXPR,
+					 TREE_TYPE (nonrect_bounds[j]),
+					 t, unshare_expr (l->n2));
+		      }
 		    n2 = force_gimple_operand_gsi (&gsi2, t, true, NULL_TREE,
 						   false,
 						   GSI_CONTINUE_LINKING);

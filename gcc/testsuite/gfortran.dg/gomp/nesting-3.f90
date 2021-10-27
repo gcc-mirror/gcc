@@ -7,7 +7,7 @@ subroutine f1
         block; end block
       end do
       !$omp sections	! { dg-error "may not be closely nested" }
-        block; end block
+        call do_work
         !$omp section
         block; end block
       !$omp end sections
@@ -33,7 +33,7 @@ subroutine f1
   !$omp end sections
   !$omp sections
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -72,7 +72,7 @@ subroutine f1
   !$omp sections
     !$omp section
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -105,7 +105,7 @@ subroutine f1
       block; end block
     end do
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -129,7 +129,7 @@ subroutine f1
       block; end block
     end do
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -150,7 +150,7 @@ subroutine f1
       block; end block
     end do
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -171,7 +171,7 @@ subroutine f1
       block; end block
     end do
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -195,7 +195,7 @@ subroutine f1
       block; end block
     end do
     !$omp sections
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -224,7 +224,7 @@ subroutine f1
       block; end block
     end do
     !$omp sections
-      block; end block
+      call do_work
     !$omp section
       block; end block
     !$omp end sections
@@ -257,7 +257,7 @@ subroutine f2
       block; end block
     end do
     !$omp sections	! { dg-error "may not be closely nested" }
-      block; end block
+      call do_work
       !$omp section
       block; end block
     !$omp end sections

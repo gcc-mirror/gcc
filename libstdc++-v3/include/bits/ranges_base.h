@@ -688,7 +688,8 @@ namespace ranges
   /// A range which can be safely converted to a view.
   template<typename _Tp>
     concept viewable_range = range<_Tp>
-      && (borrowed_range<_Tp> || view<remove_cvref_t<_Tp>>);
+      && ((view<remove_cvref_t<_Tp>> && constructible_from<remove_cvref_t<_Tp>, _Tp>)
+	  || (!view<remove_cvref_t<_Tp>> && borrowed_range<_Tp>));
 
   // [range.iter.ops] range iterator operations
 

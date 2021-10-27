@@ -1833,7 +1833,7 @@ strlen_pass::adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
       tree dst = gimple_call_arg (last.stmt, 0);
 
       access_ref aref;
-      tree size = compute_objsize (dst, 1, &aref, &ptr_qry);
+      tree size = compute_objsize (dst, stmt, 1, &aref, &ptr_qry);
       if (size && tree_int_cst_lt (size, len))
 	return;
     }
@@ -2035,7 +2035,7 @@ strlen_pass::maybe_warn_overflow (gimple *stmt, bool call_lhs, tree len,
   access_ref aref;
   /* The size of the destination region (which is smaller than
      the destination object for stores at a non-zero offset).  */
-  tree destsize = compute_objsize (dest, ostype, &aref, &ptr_qry);
+  tree destsize = compute_objsize (dest, stmt, ostype, &aref, &ptr_qry);
 
   if (!destsize)
     {
@@ -3115,7 +3115,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
     }
 
   access_ref aref;
-  if (tree dstsize = compute_objsize (dst, 1, &aref, ptr_qry))
+  if (tree dstsize = compute_objsize (dst, stmt, 1, &aref, ptr_qry))
     {
       /* The source length is unknown.  Try to determine the destination
 	 size and see if it matches the specified bound.  If not, bail.
@@ -3130,7 +3130,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
       /* Avoid warning for strncpy(a, b, N) calls where the following
 	 equalities hold:
 	   N == sizeof a && N == sizeof b */
-      if (tree srcsize = compute_objsize (src, 1, &aref, ptr_qry))
+      if (tree srcsize = compute_objsize (src, stmt, 1, &aref, ptr_qry))
 	if (wi::to_wide (srcsize) == cntrange[1])
 	  return false;
 

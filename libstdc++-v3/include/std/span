@@ -58,16 +58,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace __detail
   {
     template<typename _Tp>
-      struct __is_std_span : false_type { };
+      inline constexpr bool __is_span = false;
 
     template<typename _Tp, size_t _Num>
-      struct __is_std_span<span<_Tp, _Num>> : true_type { };
+      inline constexpr bool __is_span<span<_Tp, _Num>> = true;
 
     template<typename _Tp>
-      struct __is_std_array : false_type { };
+      inline constexpr bool __is_std_array = false;
 
     template<typename _Tp, size_t _Num>
-      struct __is_std_array<std::array<_Tp, _Num>> : true_type { };
+      inline constexpr bool __is_std_array<std::array<_Tp, _Num>> = true;
 
     template<size_t _Extent>
       class __extent_storage
@@ -203,8 +203,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Range>
 	requires ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
 	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
-	  && (!__detail::__is_std_span<remove_cvref_t<_Range>>::value)
-	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>::value)
+	  && (!__detail::__is_span<remove_cvref_t<_Range>>)
+	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>)
 	  && (!is_array_v<remove_cvref_t<_Range>>)
 	  && __is_compatible_ref<ranges::range_reference_t<_Range>>::value
 	constexpr explicit(extent != dynamic_extent)

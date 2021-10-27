@@ -833,7 +833,6 @@ extern int may_call_alloca;
 
 #define INT14_OK_STRICT \
   (TARGET_SOFT_FLOAT                                                   \
-   || TARGET_DISABLE_FPREGS                                            \
    || (TARGET_PA_20 && !TARGET_ELF32))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx

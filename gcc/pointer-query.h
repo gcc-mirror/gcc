@@ -60,18 +60,16 @@ class pointer_query;
 /* Describes a reference to an object used in an access.  */
 struct access_ref
 {
-  /* Set the bounds of the reference to at most as many bytes
-     as the first argument or unknown when null, and at least
-     one when the second argument is true unless the first one
-     is a constant zero.  */
-  access_ref (tree = NULL_TREE, bool = false);
+  /* Set the bounds of the reference.  */
+  access_ref (range_query *query = nullptr, tree = NULL_TREE,
+	      gimple * = nullptr, bool = false);
 
   /* Return the PHI node REF refers to or null if it doesn't.  */
   gphi *phi () const;
 
   /* Return the object to which REF refers.  */
-  tree get_ref (vec<access_ref> *, access_ref * = NULL, int = 1,
-		ssa_name_limit_t * = NULL, pointer_query * = NULL) const;
+  tree get_ref (vec<access_ref> *, access_ref * = nullptr, int = 1,
+		ssa_name_limit_t * = nullptr, pointer_query * = nullptr) const;
 
   /* Return true if OFFRNG is the constant zero.  */
   bool offset_zero () const
@@ -85,7 +83,7 @@ struct access_ref
 
   /* Return the maximum amount of space remaining and if non-null, set
      argument to the minimum.  */
-  offset_int size_remaining (offset_int * = NULL) const;
+  offset_int size_remaining (offset_int * = nullptr) const;
 
 /* Return true if the offset and object size are in range for SIZE.  */
   bool offset_in_range (const offset_int &) const;
@@ -172,13 +170,13 @@ public:
   };
 
   /* Construct an object with the given Ranger instance and cache.  */
-  explicit pointer_query (range_query * = NULL, cache_type * = NULL);
+  explicit pointer_query (range_query * = nullptr, cache_type * = nullptr);
 
   /* Retrieve the access_ref for a variable from cache if it's there.  */
   const access_ref* get_ref (tree, int = 1) const;
 
   /* Retrieve the access_ref for a variable from cache or compute it.  */
-  bool get_ref (tree, access_ref*, int = 1);
+  bool get_ref (tree, gimple *, access_ref*, int = 1);
 
   /* Add an access_ref for the SSA_NAME to the cache.  */
   void put_ref (tree, const access_ref&, int = 1);
@@ -208,19 +206,23 @@ struct access_data
 {
   /* Set the access to at most MAXWRITE and MAXREAD bytes, and
      at least 1 when MINWRITE or MINREAD, respectively, is set.  */
-  access_data (gimple *stmt, access_mode mode,
+  access_data (range_query *query, gimple *stmt, access_mode mode,
 	       tree maxwrite = NULL_TREE, bool minwrite = false,
 	       tree maxread = NULL_TREE, bool minread = false)
     : stmt (stmt), call (),
-      dst (maxwrite, minwrite), src (maxread, minread), mode (mode) { }
+      dst (query, maxwrite, stmt, minwrite),
+      src (query, maxread, stmt, minread),
+      mode (mode) { }
 
   /* Set the access to at most MAXWRITE and MAXREAD bytes, and
      at least 1 when MINWRITE or MINREAD, respectively, is set.  */
-  access_data (tree expr, access_mode mode,
+  access_data (range_query *query, tree expr, access_mode mode,
 	       tree maxwrite = NULL_TREE, bool minwrite = false,
 	       tree maxread = NULL_TREE, bool minread = false)
     : stmt (), call (expr),
-      dst (maxwrite, minwrite), src (maxread, minread), mode (mode) { }
+      dst (query, maxwrite, nullptr, minwrite),
+      src (query, maxread, nullptr, minread),
+      mode (mode) { }
 
   /* Access statement.  */
   gimple *stmt;
@@ -245,14 +247,32 @@ extern bool get_size_range (tree, tree[2], int = 0);
 extern bool get_size_range (range_query *, tree, gimple *, tree[2], int = 0);
 
 class range_query;
-extern tree gimple_call_alloc_size (gimple *, wide_int[2] = NULL,
-				    range_query * = NULL);
-extern tree gimple_parm_array_size (tree, wide_int[2], bool * = NULL);
+extern tree gimple_call_alloc_size (gimple *, wide_int[2] = nullptr,
+				    range_query * = nullptr);
 
-extern tree compute_objsize (tree, int, access_ref *, range_query * = NULL);
+/* Compute the size of an object referenced by the first argument in
+   a statement given by second argument, using Object Size Type given
+   by third argument.  Store result in an access_ref.  */
+extern tree compute_objsize (tree, gimple *, int, access_ref *,
+			     range_query * = nullptr);
+extern tree compute_objsize (tree, gimple *, int, access_ref *,
+			     pointer_query *);
+inline tree compute_objsize (tree ptr, int ostype, access_ref *pref)
+{
+  return compute_objsize (ptr, nullptr, ostype, pref, (range_query *)nullptr);
+}
+
 /* Legacy/transitional API.  Should not be used in new code.  */
-extern tree compute_objsize (tree, int, access_ref *, pointer_query *);
-extern tree compute_objsize (tree, int, tree * = NULL, tree * = NULL,
-			     range_query * = NULL);
+extern tree compute_objsize (tree, int, tree * = nullptr, tree * = nullptr,
+			     range_query * = nullptr);
+
+/* Return the field at the constant offset.  */
+extern tree field_at_offset (tree, tree, HOST_WIDE_INT,
+			     HOST_WIDE_INT * = nullptr,
+			     HOST_WIDE_INT * = nullptr);
+/* Return the array at the constant offset.  */
+extern tree array_elt_at_offset (tree, HOST_WIDE_INT,
+				 HOST_WIDE_INT * = nullptr,
+				 HOST_WIDE_INT * = nullptr);
 
 #endif   // GCC_POINTER_QUERY_H

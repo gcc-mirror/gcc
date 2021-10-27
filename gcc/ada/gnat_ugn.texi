@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 28, 2021
+GNAT User's Guide for Native Platforms , Oct 19, 2021
 
 AdaCore
 
@@ -11798,6 +11798,34 @@ default is that such warnings are not given.
 
 This switch suppresses warnings on cases of suspicious parameter
 ordering.
+@end table
+
+@geindex -gnatw_p (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_p}
+
+@emph{Activate warnings for pedantic checks.}
+
+This switch activates warnings for the failure of certain pedantic checks.
+The only case currently supported is a check that the subtype_marks given
+for corresponding formal parameter and function results in a subprogram
+declaration and its body denote the same subtype declaration. The default
+is that such warnings are not given.
+@end table
+
+@geindex -gnatw_P (gcc)
+
+
+@table @asis
+
+@item @code{-gnatw_P}
+
+@emph{Suppress warnings for pedantic checks.}
+
+This switch suppresses warnings on violations of pedantic checks.
 @end table
 
 @geindex -gnatwq (gcc)

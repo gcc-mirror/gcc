@@ -3,6 +3,5 @@
 program p
    type t
       character(*), allocatable :: x(*)  ! { dg-error "must have a deferred shape" }
-   end type
+   end type                              ! { dg-error "needs to be a constant specification" "" { target "*-*-*" } .-1 } 
 end
-! { dg-excess-errors "needs to be a constant specification" } 

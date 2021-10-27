@@ -5,5 +5,4 @@
       program TestFormat
         write (*, 10)
  10     format ('Hello ',	'bug!') ! { dg-warning "tab character in format" }
-      end
-! { dg-excess-errors "tab character in FORMAT" }
+      end                               ! { dg-warning "tab character at " "" { target "*-*-*" } .-1 }

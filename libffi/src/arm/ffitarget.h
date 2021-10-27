@@ -43,7 +43,7 @@ typedef enum ffi_abi {
   FFI_SYSV,
   FFI_VFP,
   FFI_LAST_ABI,
-#ifdef __ARM_PCS_VFP
+#if defined(__ARM_PCS_VFP) || defined(_WIN32)
   FFI_DEFAULT_ABI = FFI_VFP,
 #else
   FFI_DEFAULT_ABI = FFI_SYSV,
@@ -57,13 +57,33 @@ typedef enum ffi_abi {
   signed char vfp_args[16]			\
 
 #define FFI_TARGET_SPECIFIC_VARIADIC
+#ifndef _WIN32
 #define FFI_TARGET_HAS_COMPLEX_TYPE
+#endif
 
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
 #define FFI_GO_CLOSURES 1
-#define FFI_TRAMPOLINE_SIZE 12
 #define FFI_NATIVE_RAW_API 0
+
+#if defined (FFI_EXEC_TRAMPOLINE_TABLE) && FFI_EXEC_TRAMPOLINE_TABLE
+
+#ifdef __MACH__
+#define FFI_TRAMPOLINE_SIZE 12
+#define FFI_TRAMPOLINE_CLOSURE_OFFSET 8
+#else
+#error "No trampoline table implementation"
+#endif
+
+#else
+#ifdef _WIN32
+#define FFI_TRAMPOLINE_SIZE 16
+#define FFI_TRAMPOLINE_CLOSURE_FUNCTION 12
+#else
+#define FFI_TRAMPOLINE_SIZE 12
+#endif
+#define FFI_TRAMPOLINE_CLOSURE_OFFSET FFI_TRAMPOLINE_SIZE
+#endif
 
 #endif

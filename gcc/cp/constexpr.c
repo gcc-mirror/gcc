@@ -7276,6 +7276,10 @@ find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
 {
   if (TREE_CODE (*tp) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (*tp))
     return *tp;
+  if (TREE_CODE (*tp) == PTRMEM_CST
+      && TREE_CODE (PTRMEM_CST_MEMBER (*tp)) == FUNCTION_DECL
+      && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (*tp)))
+    return PTRMEM_CST_MEMBER (*tp);
   return NULL_TREE;
 }
 
@@ -7468,12 +7472,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     }
 
   /* Check that immediate invocation does not return an expression referencing
-     any immediate function decls.  They need to be allowed while parsing
-     immediate functions, but can't leak outside of them.  */
-  if (is_consteval
-      && t != r
-      && (current_function_decl == NULL_TREE
-	  || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
+     any immediate function decls.  */
+  if (is_consteval || in_immediate_context ())
     if (tree immediate_fndecl
 	= cp_walk_tree_without_duplicates (&r, find_immediate_fndecl,
 					   NULL))

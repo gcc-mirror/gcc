@@ -116,7 +116,7 @@ ADA_FLAGS_TO_PASS = \
 
 # List of Ada tools to build and install
 ADA_TOOLS=gnatbind gnatchop gnat gnatkr gnatlink gnatls gnatmake \
-          gnatname gnatprep gnatxref gnatfind gnatclean
+          gnatname gnatprep gnatclean
 
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
@@ -838,8 +838,20 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-ada.dvi: doc/gnat_ugn.dvi \
-      doc/gnat_rm.dvi doc/gnat-style.dvi
+ADA_DVIFILES = doc/gnat_ugn.dvi \
+               doc/gnat_rm.dvi doc/gnat-style.dvi
+
+ada.dvi: $(ADA_DVIFILES)
+
+ada.install-dvi: $(ADA_DVIFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@list='$(ADA_DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
 
 ADA_PDFFILES = doc/gnat_ugn.pdf \
                doc/gnat_rm.pdf doc/gnat-style.pdf
@@ -891,8 +903,7 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # (cross). $(prefix) comes from the --program-prefix configure option,
 # or from the --target option if the former is not specified.
 # Do the same for the rest of the Ada tools (gnatchop, gnat, gnatkr,
-# gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
-# gnatclean).
+# gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatclean).
 # gnatdll is only used on Windows.
 ada.install-common: $(gnat_install_lib) gnat-install-tools
 
@@ -963,8 +974,6 @@ ada.distclean:
 	-$(RM) gnatmake$(exeext)
 	-$(RM) gnatname$(exeext)
 	-$(RM) gnatprep$(exeext)
-	-$(RM) gnatfind$(exeext)
-	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
 	-$(RM) ada/rts/*
 	-$(RMDIR) ada/rts

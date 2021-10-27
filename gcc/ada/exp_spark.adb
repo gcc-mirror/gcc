@@ -451,6 +451,7 @@ package body Exp_SPARK is
                Apply_Universal_Integer_Attribute_Checks (N);
 
                if Present (Typ)
+                 and then Known_RM_Size (Typ)
                  and then RM_Size (Typ) = RM_Size (Standard_Long_Long_Integer)
                then
                   --  ??? This should rather be a range check, but this would

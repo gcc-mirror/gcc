@@ -1,3 +1,94 @@
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102956
+	* symbol.c (gfc_check_conflict): Add conflict check for PDT KIND
+	and LEN type parameters.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102917
+	* decl.c (match_attr_spec): Remove invalid integer kind checks on
+	KIND and LEN attributes of PDTs.
+
+2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102816
+	* resolve.c (resolve_structure_cons): Reject invalid array spec of
+	a DT component referenced in a structure constructor.
+
+2021-10-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102885
+	* trans-decl.c (gfc_conv_cfi_to_gfc): Properly handle nonconstant
+	character lenghts.
+
+2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* trans-decl.c (gfc_conv_cfi_to_gfc): Initialize rank to NULL_TREE.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Allow dvi-formatted documentation
+	to be installed.
+
+2021-10-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92621
+	* trans-expr.c (gfc_trans_assignment_1): Add STRIP_NOPS.
+
+2021-10-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* decl.c (gfc_match_end): Add COMP_OMP_STRICTLY_STRUCTURED_BLOCK case
+	together with COMP_BLOCK.
+	* parse.c (parse_omp_structured_block): Change return type to
+	'gfc_statement', add handling for strictly-structured block case, adjust
+	recursive calls to parse_omp_structured_block.
+	(parse_executable): Adjust calls to parse_omp_structured_block.
+	* parse.h (enum gfc_compile_state): Add
+	COMP_OMP_STRICTLY_STRUCTURED_BLOCK.
+	* trans-openmp.c (gfc_trans_omp_workshare): Add EXEC_BLOCK case
+	handling.
+
+2021-10-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/94070
+	* expr.c (gfc_simplify_expr): Handle GFC_ISYM_SHAPE along with
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	* trans-array.c (gfc_conv_ss_startstride): Likewise.
+	(set_loop_bounds): Likewise.
+	* trans-intrinsic.c (gfc_trans_intrinsic_bound): Extend to
+	handle SHAPE.  Correct logic for zero-size special cases and
+	detecting assumed-rank arrays associated with an assumed-size
+	argument.
+	(gfc_conv_intrinsic_shape): Deleted.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_SHAPE like
+	GFC_ISYM_LBOUND and GFC_ISYM_UBOUND.
+	(gfc_add_intrinsic_ss_code): Likewise.
+	(gfc_walk_intrinsic_bound): Likewise.
+
+2021-10-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clause_reduction): Add 'openmp_target' default
+	false parameter. Add 'always,tofrom' map for OMP_LIST_IN_REDUCTION case.
+	(gfc_match_omp_clauses): Add 'openmp_target' default false parameter,
+	adjust call to gfc_match_omp_clause_reduction.
+	(match_omp): Adjust call to gfc_match_omp_clauses
+	* trans-openmp.c (gfc_trans_omp_taskgroup): Add call to
+	gfc_match_omp_clause, create and return block.
+
+2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-types.c (create_fn_spec): For allocatable/pointer
+	character(len=:), use 'w' not 'R' as fn spec for the length dummy
+	argument.
+
+2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92482
+	* trans-expr.c (gfc_conv_procedure_call): Use TREE_OPERAND not
+	build_fold_indirect_ref_loc to undo an ADDR_EXPR.
+
 2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/102086

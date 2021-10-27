@@ -490,7 +490,7 @@ package body Exp_Aggr is
          --  Fat pointers are rejected as they are not really elementary
          --  for the backend.
 
-         if Csiz /= System_Address_Size then
+         if No (Csiz) or else Csiz /= System_Address_Size then
             return False;
          end if;
 
@@ -504,8 +504,7 @@ package body Exp_Aggr is
 
       --  Scalar types are OK if their size is a multiple of Storage_Unit
 
-      elsif Is_Scalar_Type (Ctyp) then
-         pragma Assert (Present (Csiz));
+      elsif Is_Scalar_Type (Ctyp) and then Present (Csiz) then
 
          if Csiz mod System_Storage_Unit /= 0 then
             return False;
@@ -9098,11 +9097,11 @@ package body Exp_Aggr is
    -----------------------------
 
    function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean is
-      C : constant Int := UI_To_Int (Component_Size (Typ));
+      C : constant Uint := Component_Size (Typ);
    begin
       return Number_Dimensions (Typ) = 2
         and then Is_Bit_Packed_Array (Typ)
-        and then (C = 1 or else C = 2 or else C = 4);
+        and then C in Uint_1 | Uint_2 | Uint_4; -- False if No_Uint
    end Is_Two_Dim_Packed_Array;
 
    --------------------

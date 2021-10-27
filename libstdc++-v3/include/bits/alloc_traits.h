@@ -45,6 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 #define __cpp_lib_allocator_traits_is_always_equal 201411
 
+  /// @cond undocumented
   struct __allocator_traits_base
   {
     template<typename _Tp, typename _Up, typename = void>
@@ -77,10 +78,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc, typename _Up>
     using __alloc_rebind
       = typename __allocator_traits_base::template __rebind<_Alloc, _Up>::type;
+  /// @endcond
 
   /**
    * @brief  Uniform interface to all allocator types.
+   * @headerfile memory
    * @ingroup allocators
+   * @since C++11
   */
   template<typename _Alloc>
     struct allocator_traits : __allocator_traits_base

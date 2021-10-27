@@ -5,7 +5,6 @@
    Originator:	        ARM Ltd. */
 
 /* { dg-do run } */
-/* { dg-output "" { xfail avr32*-*-* } } */
 
 #include "ffitest.h"
 #include <stdarg.h>
@@ -25,62 +24,10 @@ struct large_tag
   unsigned e;
 };
 
-static int
-test_fn (int n, ...)
-{
-  va_list ap;
-  struct small_tag s1;
-  struct small_tag s2;
-  struct large_tag l;
-  unsigned char uc;
-  signed char sc;
-  unsigned short us;
-  signed short ss;
-  unsigned int ui;
-  signed int si;
-  unsigned long ul;
-  signed long sl;
-  float f;
-  double d;
-
-  va_start (ap, n);
-  s1 = va_arg (ap, struct small_tag);
-  l = va_arg (ap, struct large_tag);
-  s2 = va_arg (ap, struct small_tag);
-
-  uc = va_arg (ap, unsigned);
-  sc = va_arg (ap, signed);
-
-  us = va_arg (ap, unsigned);
-  ss = va_arg (ap, signed);
-
-  ui = va_arg (ap, unsigned int);
-  si = va_arg (ap, signed int);
-
-  ul = va_arg (ap, unsigned long);
-  sl = va_arg (ap, signed long);
-
-  f = va_arg (ap, double);	/* C standard promotes float->double
-				   when anonymous */
-  d = va_arg (ap, double);
-
-  printf ("%u %u %u %u %u %u %u %u %u uc=%u sc=%d %u %d %u %d %lu %ld %f %f\n",
-	  s1.a, s1.b, l.a, l.b, l.c, l.d, l.e,
-	  s2.a, s2.b,
-	  uc, sc,
-	  us, ss,
-	  ui, si,
-	  ul, sl,
-	  f, d);
-  va_end (ap);
-  return n + 1;
-}
-
 int
 main (void)
 {
   ffi_cif cif;
-  void* args[15];
   ffi_type* arg_types[15];
 
   ffi_type s_type;
@@ -88,24 +35,6 @@ main (void)
 
   ffi_type l_type;
   ffi_type *l_type_elements[6];
-
-  struct small_tag s1;
-  struct small_tag s2;
-  struct large_tag l1;
-
-  int n;
-  ffi_arg res;
-
-  unsigned char uc;
-  signed char sc;
-  unsigned short us;
-  signed short ss;
-  unsigned int ui;
-  signed int si;
-  unsigned long ul;
-  signed long sl;
-  double d1;
-  double f1;
 
   s_type.size = 0;
   s_type.alignment = 0;
@@ -144,53 +73,6 @@ main (void)
   arg_types[13] = &ffi_type_double;
   arg_types[14] = NULL;
 
-  CHECK(ffi_prep_cif_var(&cif, FFI_DEFAULT_ABI, 1, 14, &ffi_type_sint, arg_types) == FFI_OK);
-
-  s1.a = 5;
-  s1.b = 6;
-
-  l1.a = 10;
-  l1.b = 11;
-  l1.c = 12;
-  l1.d = 13;
-  l1.e = 14;
-
-  s2.a = 7;
-  s2.b = 8;
-
-  n = 41;
-
-  uc = 9;
-  sc = 10;
-  us = 11;
-  ss = 12;
-  ui = 13;
-  si = 14;
-  ul = 15;
-  sl = 16;
-  f1 = 2.12;
-  d1 = 3.13;
-
-  args[0] = &n;
-  args[1] = &s1;
-  args[2] = &l1;
-  args[3] = &s2;
-  args[4] = &uc;
-  args[5] = &sc;
-  args[6] = &us;
-  args[7] = &ss;
-  args[8] = &ui;
-  args[9] = &si;
-  args[10] = &ul;
-  args[11] = &sl;
-  args[12] = &f1;
-  args[13] = &d1;
-  args[14] = NULL;
-
-  ffi_call(&cif, FFI_FN(test_fn), &res, args);
-  /* { dg-output "5 6 10 11 12 13 14 7 8 uc=9 sc=10 11 12 13 14 15 16 2.120000 3.130000" } */
-  printf("res: %d\n", (int) res);
-  /* { dg-output "\nres: 42" } */
-
+  CHECK(ffi_prep_cif_var(&cif, FFI_DEFAULT_ABI, 1, 14, &ffi_type_sint, arg_types) == FFI_BAD_ARGTYPE);
   return 0;
 }

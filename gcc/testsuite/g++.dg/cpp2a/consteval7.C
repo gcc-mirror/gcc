@@ -7,7 +7,7 @@ constexpr auto a = bar ();	// { dg-error "immediate evaluation returns address o
 struct S { int b; int (*c) (); };
 consteval S baz () { return { 5, foo }; }
 consteval int qux () { S s = baz (); return s.b + s.c (); }
-consteval int quux () { constexpr S s = baz (); return s.b + s.c (); }
+consteval int quux () { constexpr S s = baz (); return s.b + s.c (); }	// { dg-error "immediate evaluation returns address of immediate function 'consteval int foo\\(\\)'" }
 constexpr auto d = baz ();	// { dg-error "immediate evaluation returns address of immediate function 'consteval int foo\\(\\)'" }
 constexpr auto e = qux ();
 constexpr auto f = quux ();

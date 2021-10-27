@@ -9120,92 +9120,6 @@ vtstq_p64 (poly64x2_t __a, poly64x2_t __b)
 		       != __AARCH64_INT64_C (0));
 }
 
-/* End of temporary inline asm implementations.  */
-
-/* Start of temporary inline asm for vldn, vstn and friends.  */
-
-/* Create struct element types for duplicating loads.
-
-   Create 2 element structures of:
-
-   +------+----+----+----+----+
-   |      | 8  | 16 | 32 | 64 |
-   +------+----+----+----+----+
-   |int   | Y  | Y  | N  | N  |
-   +------+----+----+----+----+
-   |uint  | Y  | Y  | N  | N  |
-   +------+----+----+----+----+
-   |float | -  | Y  | N  | N  |
-   +------+----+----+----+----+
-   |poly  | Y  | Y  | -  | -  |
-   +------+----+----+----+----+
-
-   Create 3 element structures of:
-
-   +------+----+----+----+----+
-   |      | 8  | 16 | 32 | 64 |
-   +------+----+----+----+----+
-   |int   | Y  | Y  | Y  | Y  |
-   +------+----+----+----+----+
-   |uint  | Y  | Y  | Y  | Y  |
-   +------+----+----+----+----+
-   |float | -  | Y  | Y  | Y  |
-   +------+----+----+----+----+
-   |poly  | Y  | Y  | -  | -  |
-   +------+----+----+----+----+
-
-   Create 4 element structures of:
-
-   +------+----+----+----+----+
-   |      | 8  | 16 | 32 | 64 |
-   +------+----+----+----+----+
-   |int   | Y  | N  | N  | Y  |
-   +------+----+----+----+----+
-   |uint  | Y  | N  | N  | Y  |
-   +------+----+----+----+----+
-   |float | -  | N  | N  | Y  |
-   +------+----+----+----+----+
-   |poly  | Y  | N  | -  | -  |
-   +------+----+----+----+----+
-
-  This is required for casting memory reference.  */
-#define __STRUCTN(t, sz, nelem)			\
-  typedef struct t ## sz ## x ## nelem ## _t {	\
-    t ## sz ## _t val[nelem];			\
-  }  t ## sz ## x ## nelem ## _t;
-
-/* 2-element structs.  */
-__STRUCTN (int, 8, 2)
-__STRUCTN (int, 16, 2)
-__STRUCTN (uint, 8, 2)
-__STRUCTN (uint, 16, 2)
-__STRUCTN (float, 16, 2)
-__STRUCTN (poly, 8, 2)
-__STRUCTN (poly, 16, 2)
-/* 3-element structs.  */
-__STRUCTN (int, 8, 3)
-__STRUCTN (int, 16, 3)
-__STRUCTN (int, 32, 3)
-__STRUCTN (int, 64, 3)
-__STRUCTN (uint, 8, 3)
-__STRUCTN (uint, 16, 3)
-__STRUCTN (uint, 32, 3)
-__STRUCTN (uint, 64, 3)
-__STRUCTN (float, 16, 3)
-__STRUCTN (float, 32, 3)
-__STRUCTN (float, 64, 3)
-__STRUCTN (poly, 8, 3)
-__STRUCTN (poly, 16, 3)
-/* 4-element structs.  */
-__STRUCTN (int, 8, 4)
-__STRUCTN (int, 64, 4)
-__STRUCTN (uint, 8, 4)
-__STRUCTN (uint, 64, 4)
-__STRUCTN (poly, 8, 4)
-__STRUCTN (float, 64, 4)
-#undef __STRUCTN
-
-
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_f16 (float16_t *__ptr, float16x4x2_t __val, const int __lane)
@@ -26359,35 +26273,35 @@ __extension__ extern __inline float32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndns_f32 (float32_t __a)
 {
-  return __builtin_aarch64_frintnsf (__a);
+  return __builtin_aarch64_roundevensf (__a);
 }
 
 __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f32 (float32x2_t __a)
 {
-  return __builtin_aarch64_frintnv2sf (__a);
+  return __builtin_aarch64_roundevenv2sf (__a);
 }
 
 __extension__ extern __inline float64x1_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f64 (float64x1_t __a)
 {
-  return (float64x1_t) {__builtin_aarch64_frintndf (__a[0])};
+  return (float64x1_t) {__builtin_aarch64_roundevendf (__a[0])};
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnq_f32 (float32x4_t __a)
 {
-  return __builtin_aarch64_frintnv4sf (__a);
+  return __builtin_aarch64_roundevenv4sf (__a);
 }
 
 __extension__ extern __inline float64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnq_f64 (float64x2_t __a)
 {
-  return __builtin_aarch64_frintnv2df (__a);
+  return __builtin_aarch64_roundevenv2df (__a);
 }
 
 /* vrndp  */
@@ -32792,14 +32706,14 @@ __extension__ extern __inline float16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndn_f16 (float16x4_t __a)
 {
-  return __builtin_aarch64_frintnv4hf (__a);
+  return __builtin_aarch64_roundevenv4hf (__a);
 }
 
 __extension__ extern __inline float16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrndnq_f16 (float16x8_t __a)
 {
-  return __builtin_aarch64_frintnv8hf (__a);
+  return __builtin_aarch64_roundevenv8hf (__a);
 }
 
 __extension__ extern __inline float16x4_t

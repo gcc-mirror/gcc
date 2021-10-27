@@ -3693,7 +3693,7 @@ cp_parser_parse_and_diagnose_invalid_type_name (cp_parser *parser)
 				/*template_keyword_p=*/false,
 				/*check_dependency_p=*/true,
 				/*template_p=*/NULL,
-				/*declarator_p=*/false,
+				/*declarator_p=*/true,
 				/*optional_p=*/false);
   /* If the next token is a (, this is a function with no explicit return
      type, i.e. constructor, destructor or conversion op.  */
@@ -6605,6 +6605,8 @@ check_template_keyword_in_nested_name_spec (tree name)
    it unchanged if there is no nested-name-specifier.  Returns the new
    scope iff there is a nested-name-specifier, or NULL_TREE otherwise.
 
+   If CHECK_DEPENDENCY_P is FALSE, names are looked up in dependent scopes.
+
    If IS_DECLARATION is TRUE, the nested-name-specifier is known to be
    part of a declaration and/or decl-specifier.  */
 
@@ -6645,9 +6647,10 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	  /* Grab the nested-name-specifier and continue the loop.  */
 	  cp_parser_pre_parsed_nested_name_specifier (parser);
 	  /* If we originally encountered this nested-name-specifier
-	     with IS_DECLARATION set to false, we will not have
+	     with CHECK_DEPENDENCY_P set to true, we will not have
 	     resolved TYPENAME_TYPEs, so we must do so here.  */
 	  if (is_declaration
+	      && !check_dependency_p
 	      && TREE_CODE (parser->scope) == TYPENAME_TYPE)
 	    {
 	      new_scope = resolve_typename_type (parser->scope,
@@ -6729,6 +6732,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	 a template.  So, if we have a typename at this point, we make
 	 an effort to look through it.  */
       if (is_declaration
+	  && !check_dependency_p
 	  && !typename_keyword_p
 	  && parser->scope
 	  && TREE_CODE (parser->scope) == TYPENAME_TYPE)
@@ -12036,6 +12040,7 @@ cp_parser_handle_directive_omp_attributes (cp_parser *parser, tree *pattrs,
   init-statement:
     expression-statement
     simple-declaration
+    alias-declaration
 
   TM Extension:
 
@@ -13323,6 +13328,23 @@ cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll)
   /* Begin the for-statement.  */
   scope = begin_for_scope (&init);
 
+  /* Maybe parse the optional init-statement in a range-based for loop.  */
+  if (cp_parser_range_based_for_with_init_p (parser)
+      /* Checked for diagnostic purposes only.  */
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+    {
+      tree dummy;
+      cp_parser_init_statement (parser, &dummy);
+      if (cxx_dialect < cxx20)
+	{
+	  pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		   OPT_Wc__20_extensions,
+		   "range-based %<for%> loops with initializer only "
+		   "available with %<-std=c++20%> or %<-std=gnu++20%>");
+	  decl = error_mark_node;
+	}
+    }
+
   /* Parse the initialization.  */
   is_range_for = cp_parser_init_statement (parser, &decl);
 
@@ -13983,12 +14005,13 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
   return statement;
 }
 
-/* Parse a init-statement or the declarator of a range-based-for.
+/* Parse an init-statement or the declarator of a range-based-for.
    Returns true if a range-based-for declaration is seen.
 
    init-statement:
      expression-statement
-     simple-declaration  */
+     simple-declaration
+     alias-declaration  */
 
 static bool
 cp_parser_init_statement (cp_parser *parser, tree *decl)
@@ -14004,40 +14027,29 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
       bool is_range_for = false;
       bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
 
-      /* Try to parse the init-statement.  */
-      if (cp_parser_range_based_for_with_init_p (parser))
-	{
-	  tree dummy;
-	  cp_parser_parse_tentatively (parser);
-	  /* Parse the declaration.  */
-	  cp_parser_simple_declaration (parser,
-					/*function_definition_allowed_p=*/false,
-					&dummy);
-	  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	  if (!cp_parser_parse_definitely (parser))
-	    /* That didn't work, try to parse it as an expression-statement.  */
-	    cp_parser_expression_statement (parser, NULL_TREE);
-
-	  if (cxx_dialect < cxx20)
-	    {
-	      pedwarn (cp_lexer_peek_token (parser->lexer)->location,
-		       OPT_Wc__20_extensions,
-		       "range-based %<for%> loops with initializer only "
-		       "available with %<-std=c++20%> or %<-std=gnu++20%>");
-	      *decl = error_mark_node;
-	    }
-	}
-
       /* A colon is used in range-based for.  */
       parser->colon_corrects_to_scope_p = false;
 
       /* We're going to speculatively look for a declaration, falling back
 	 to an expression, if necessary.  */
       cp_parser_parse_tentatively (parser);
-      /* Parse the declaration.  */
-      cp_parser_simple_declaration (parser,
-				    /*function_definition_allowed_p=*/false,
-				    decl);
+      bool expect_semicolon_p = true;
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
+	{
+	  cp_parser_alias_declaration (parser);
+	  expect_semicolon_p = false;
+	  if (cxx_dialect < cxx23
+	      && !cp_parser_uncommitted_to_tentative_parse_p (parser))
+	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		     OPT_Wc__23_extensions,
+		     "alias-declaration in init-statement only "
+		     "available with %<-std=c++23%> or %<-std=gnu++23%>");
+	}
+      else
+	/* Parse the declaration.  */
+	cp_parser_simple_declaration (parser,
+				      /*function_definition_allowed_p=*/false,
+				      decl);
       parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
       if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
 	{
@@ -14050,7 +14062,7 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
 		     "range-based %<for%> loops only available with "
 		     "%<-std=c++11%> or %<-std=gnu++11%>");
 	}
-      else
+      else if (expect_semicolon_p)
 	/* The ';' is not consumed yet because we told
 	   cp_parser_simple_declaration not to.  */
 	cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
@@ -44437,7 +44449,8 @@ cp_parser_oacc_declare (cp_parser *parser, cp_token *pragma_tok)
 	       dependent local extern variable decls are as rare as
 	       hen's teeth.  */
 	    if (auto alias = DECL_LOCAL_DECL_ALIAS (decl))
-	      decl = alias;
+	      if (alias != error_mark_node)
+		decl = alias;
 
 	  if (OMP_CLAUSE_MAP_KIND (t) == GOMP_MAP_LINK)
 	    id = get_identifier ("omp declare target link");
@@ -45665,7 +45678,8 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_LOCAL_DECL_P (t)
 	  && DECL_LANG_SPECIFIC (t)
-	  && DECL_LOCAL_DECL_ALIAS (t))
+	  && DECL_LOCAL_DECL_ALIAS (t)
+	  && DECL_LOCAL_DECL_ALIAS (t) != error_mark_node)
 	handle_omp_declare_target_clause (c, DECL_LOCAL_DECL_ALIAS (t),
 					  device_type);
     }

@@ -1146,8 +1146,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	  next_optstr = NULL;
 	}
 
-      p = strip_whitespaces (p, &len);
-
       /* Recognize no-xxx.  */
       if (len > 3 && p[0] == 'n' && p[1] == 'o' && p[2] == '-')
 	{

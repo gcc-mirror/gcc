@@ -885,14 +885,13 @@ package body Treepr is
                Val : constant Uint := Get_Uint (N, FD.Offset);
                function Cast is new Unchecked_Conversion (Uint, Int);
             begin
-               --  Do this even if Val = No_Uint, because Uint fields default
-               --  to Uint_0.
-
-               Print_Initial;
-               UI_Write (Val, Format);
-               Write_Str (" (Uint = ");
-               Write_Int (Cast (Val));
-               Write_Char (')');
+               if Present (Val) then
+                  Print_Initial;
+                  UI_Write (Val, Format);
+                  Write_Str (" (Uint = ");
+                  Write_Int (Cast (Val));
+                  Write_Char (')');
+               end if;
             end;
 
          when Valid_Uint_Field | Unat_Field | Upos_Field
@@ -1025,6 +1024,8 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
+      pragma Assert (FD.Type_Only = No_Type_Only);
+      --  Type_Only is for entities
    begin
       if not Field_Is_Initial_Zero (N, Field) then
          Print_Field (Prefix, Image (Field), N, FD, Format);
@@ -1042,9 +1043,10 @@ package body Treepr is
       FD     : Field_Descriptor;
       Format : UI_Format := Auto)
    is
+      NN : constant Node_Id := Node_To_Fetch_From (N, Field);
    begin
       if not Field_Is_Initial_Zero (N, Field) then
-         Print_Field (Prefix, Image (Field), N, FD, Format);
+         Print_Field (Prefix, Image (Field), NN, FD, Format);
       end if;
    end Print_Entity_Field;
 

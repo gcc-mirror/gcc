@@ -410,6 +410,13 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
       codes[0].value = value;
       return 1;
     }
+  if (TARGET_ZBS && SINGLE_BIT_MASK_OPERAND (value))
+    {
+      /* Simply BSETI.  */
+      codes[0].code = UNKNOWN;
+      codes[0].value = value;
+      return 1;
+    }
 
   /* End with ADDI.  When constructing HImode constants, do not generate any
      intermediate value that is not itself a valid HImode constant.  The
@@ -459,6 +466,47 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	  alt_codes[alt_cost-1].value = shift;
 	  memcpy (codes, alt_codes, sizeof (alt_codes));
 	  cost = alt_cost;
+	}
+    }
+
+  if (cost > 2 && TARGET_64BIT && TARGET_ZBB)
+    {
+      int leading_ones = clz_hwi (~value);
+      int trailing_ones = ctz_hwi (~value);
+
+      /* If all bits are one except a few that are zero, and the zero bits
+	 are within a range of 11 bits, and at least one of the upper 32-bits
+	 is a zero, then we can generate a constant by loading a small
+	 negative constant and rotating.  */
+      if (leading_ones < 32
+	  && ((64 - leading_ones - trailing_ones) < 12))
+	{
+	  codes[0].code = UNKNOWN;
+	  /* The sign-bit might be zero, so just rotate to be safe.  */
+	  codes[0].value = (((unsigned HOST_WIDE_INT) value >> trailing_ones)
+			    | (value << (64 - trailing_ones)));
+	  codes[1].code = ROTATERT;
+	  codes[1].value = 64 - trailing_ones;
+	  cost = 2;
+	}
+      /* Handle the case where the 11 bit range of zero bits wraps around.  */
+      else
+	{
+	  int upper_trailing_ones = ctz_hwi (~value >> 32);
+	  int lower_leading_ones = clz_hwi (~value << 32);
+
+	  if (upper_trailing_ones < 32 && lower_leading_ones < 32
+	      && ((64 - upper_trailing_ones - lower_leading_ones) < 12))
+	    {
+	      codes[0].code = UNKNOWN;
+	      /* The sign-bit might be zero, so just rotate to be safe.  */
+	      codes[0].value = ((value << (32 - upper_trailing_ones))
+				| ((unsigned HOST_WIDE_INT) value
+				   >> (32 + upper_trailing_ones)));
+	      codes[1].code = ROTATERT;
+	      codes[1].value = 32 - upper_trailing_ones;
+	      cost = 2;
+	    }
 	}
     }
 
@@ -1703,6 +1751,20 @@ riscv_extend_cost (rtx op, bool unsigned_p)
     /* We can use ANDI.  */
     return COSTS_N_INSNS (1);
 
+  /* ZBA provide zext.w.  */
+  if (TARGET_ZBA && TARGET_64BIT && unsigned_p && GET_MODE (op) == SImode)
+    return COSTS_N_INSNS (1);
+
+  /* ZBB provide zext.h, sext.b and sext.h.  */
+  if (TARGET_ZBB)
+    {
+      if (!unsigned_p && GET_MODE (op) == QImode)
+	return COSTS_N_INSNS (1);
+
+      if (GET_MODE (op) == HImode)
+	return COSTS_N_INSNS (1);
+    }
+
   if (!unsigned_p && GET_MODE (op) == SImode)
     /* We can use SEXT.W.  */
     return COSTS_N_INSNS (1);
@@ -1776,8 +1838,60 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case AND:
+      /* slli.uw pattern for zba.  */
+      if (TARGET_ZBA && TARGET_64BIT && mode == DImode
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT)
+	{
+	  rtx and_rhs = XEXP (x, 1);
+	  rtx ashift_lhs = XEXP (XEXP (x, 0), 0);
+	  rtx ashift_rhs = XEXP (XEXP (x, 0), 1);
+	  if (REG_P (ashift_lhs)
+	      && CONST_INT_P (ashift_rhs)
+	      && CONST_INT_P (and_rhs)
+	      && ((INTVAL (and_rhs) >> INTVAL (ashift_rhs)) == 0xffffffff))
+	    *total = COSTS_N_INSNS (1);
+	    return true;
+	}
+      /* bclri pattern for zbs.  */
+      if (TARGET_ZBS
+	  && not_single_bit_mask_operand (XEXP (x, 1), VOIDmode))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* bclr pattern for zbs.  */
+      if (TARGET_ZBS
+	  && REG_P (XEXP (x, 1))
+	  && GET_CODE (XEXP (x, 0)) == ROTATE
+	  && CONST_INT_P (XEXP ((XEXP (x, 0)), 0))
+	  && INTVAL (XEXP ((XEXP (x, 0)), 0)) == -2)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
+      gcc_fallthrough ();
     case IOR:
     case XOR:
+      /* orn, andn and xorn pattern for zbb.  */
+      if (TARGET_ZBB
+	  && GET_CODE (XEXP (x, 0)) == NOT)
+	{
+	  *total = riscv_binary_cost (x, 1, 2);
+	  return true;
+	}
+
+      /* bset[i] and binv[i] pattern for zbs.  */
+      if ((GET_CODE (x) == IOR || GET_CODE (x) == XOR)
+	  && TARGET_ZBS
+	  && ((GET_CODE (XEXP (x, 0)) == ASHIFT
+	      && CONST_INT_P (XEXP (XEXP (x, 0), 0)))
+	      || single_bit_mask_operand (XEXP (x, 1), VOIDmode)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
       /* Double-word operations use two single-word operations.  */
       *total = riscv_binary_cost (x, 1, 2);
       return false;
@@ -1793,9 +1907,26 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
 	  return true;
 	}
+      /* bext pattern for zbs.  */
+      if (TARGET_ZBS && outer_code == SET
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && INTVAL (XEXP (x, 1)) == 1)
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
       return false;
 
     case ASHIFT:
+      /* bset pattern for zbs.  */
+      if (TARGET_ZBS
+	  && CONST_INT_P (XEXP (x, 0))
+	  && INTVAL (XEXP (x, 0)) == 1)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      gcc_fallthrough ();
     case ASHIFTRT:
     case LSHIFTRT:
       *total = riscv_binary_cost (x, SINGLE_SHIFT_COST,
@@ -1867,6 +1998,68 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 
     case MINUS:
     case PLUS:
+      /* add.uw pattern for zba.  */
+      if (TARGET_ZBA
+	  && (TARGET_64BIT && (mode == DImode))
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == SImode)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* shNadd pattern for zba.  */
+      if (TARGET_ZBA
+	  && ((!TARGET_64BIT && (mode == SImode)) ||
+	      (TARGET_64BIT && (mode == DImode)))
+	  && (GET_CODE (XEXP (x, 0)) == ASHIFT)
+	  && REG_P (XEXP (XEXP (x, 0), 0))
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 0))
+	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 0)), 1, 3))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* shNadd.uw pattern for zba.
+	 [(set (match_operand:DI 0 "register_operand" "=r")
+	       (plus:DI
+		 (and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+				    (match_operand:QI 2 "immediate_operand" "I"))
+			 (match_operand 3 "immediate_operand" ""))
+		 (match_operand:DI 4 "register_operand" "r")))]
+	 "TARGET_64BIT && TARGET_ZBA
+	  && (INTVAL (operands[2]) >= 1) && (INTVAL (operands[2]) <= 3)
+	  && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
+      */
+      if (TARGET_ZBA
+	  && (TARGET_64BIT && (mode == DImode))
+	  && (GET_CODE (XEXP (x, 0)) == AND)
+	  && (REG_P (XEXP (x, 1))))
+	{
+	  do {
+	    rtx and_lhs = XEXP (XEXP (x, 0), 0);
+	    rtx and_rhs = XEXP (XEXP (x, 0), 1);
+	    if (GET_CODE (and_lhs) != ASHIFT)
+	      break;
+	    if (!CONST_INT_P (and_rhs))
+	      break;
+
+	    rtx ashift_lhs = XEXP (and_lhs, 0);
+	    rtx ashift_rhs = XEXP (and_lhs, 1);
+
+	    if (!CONST_INT_P (ashift_rhs)
+		|| !IN_RANGE (INTVAL (ashift_rhs), 1, 3))
+	      break;
+
+	    if (CONST_INT_P (and_rhs)
+		&& ((INTVAL (and_rhs) >> INTVAL (ashift_rhs)) == 0xffffffff))
+	      {
+		*total = COSTS_N_INSNS (1);
+		return true;
+	      }
+	  } while (false);
+	}
+
       if (float_mode_p)
 	*total = tune_param->fp_add[mode == DFmode];
       else
@@ -2081,7 +2274,17 @@ riscv_output_move (rtx dest, rtx src)
 	  }
 
       if (src_code == CONST_INT)
-	return "li\t%0,%1";
+	{
+	  if (SMALL_OPERAND (INTVAL (src)) || LUI_OPERAND (INTVAL (src)))
+	    return "li\t%0,%1";
+
+	  if (TARGET_ZBS
+	      && SINGLE_BIT_MASK_OPERAND (INTVAL (src)))
+	    return "bseti\t%0,zero,%S1";
+
+	  /* Should never reach here.  */
+	  abort ();
+	}
 
       if (src_code == HIGH)
 	return "lui\t%0,%h1";
@@ -3422,7 +3625,9 @@ riscv_memmodel_needs_release_fence (enum memmodel model)
    'A'	Print the atomic operation suffix for memory model OP.
    'F'	Print a FENCE if the memory model requires a release.
    'z'	Print x0 if OP is zero, otherwise print OP normally.
-   'i'	Print i if the operand is not a register.  */
+   'i'	Print i if the operand is not a register.
+   'S'	Print shift-index of single-bit mask OP.
+   'T'	Print shift-index of inverted single-bit mask OP.  */
 
 static void
 riscv_print_operand (FILE *file, rtx op, int letter)
@@ -3462,6 +3667,18 @@ riscv_print_operand (FILE *file, rtx op, int letter)
         fputs ("i", file);
       break;
 
+    case 'S':
+      {
+	rtx newop = GEN_INT (ctz_hwi (INTVAL (op)));
+	output_addr_const (file, newop);
+	break;
+      }
+    case 'T':
+      {
+	rtx newop = GEN_INT (ctz_hwi (~INTVAL (op)));
+	output_addr_const (file, newop);
+	break;
+      }
     default:
       switch (code)
 	{

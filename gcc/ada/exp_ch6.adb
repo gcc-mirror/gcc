@@ -9707,7 +9707,9 @@ package body Exp_Ch6 is
          --  At this point, Defining_Identifier (Obj_Decl) is no longer equal
          --  to Obj_Def_Id.
 
-         Set_Renamed_Object (Defining_Identifier (Obj_Decl), Call_Deref);
+         pragma Assert (Ekind (Defining_Identifier (Obj_Decl)) = E_Void);
+         Set_Renamed_Object_Of_Possibly_Void
+           (Defining_Identifier (Obj_Decl), Call_Deref);
 
          --  If the original entity comes from source, then mark the new
          --  entity as needing debug information, even though it's defined

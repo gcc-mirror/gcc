@@ -2253,36 +2253,6 @@ default_member_type_forces_blk (const_tree, machine_mode)
   return false;
 }
 
-rtx
-default_load_bounds_for_arg (rtx addr ATTRIBUTE_UNUSED,
-			     rtx ptr ATTRIBUTE_UNUSED,
-			     rtx bnd ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-void
-default_store_bounds_for_arg (rtx val ATTRIBUTE_UNUSED,
-			      rtx addr ATTRIBUTE_UNUSED,
-			      rtx bounds ATTRIBUTE_UNUSED,
-			      rtx to ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-rtx
-default_load_returned_bounds (rtx slot ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-void
-default_store_returned_bounds (rtx slot ATTRIBUTE_UNUSED,
-			       rtx bounds ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
 /* Default version of canonicalize_comparison.  */
 
 void

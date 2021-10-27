@@ -269,6 +269,8 @@ find . -name "* *" -print0 | xargs -0r rm        # requires GNU tools
 
 # man pages are for functions/types/other entities, not source files
 # directly.  who the heck would type "man foo.h" anyhow?
+# FIXME: This also removes std.3 which is the only place that a lot of
+# functions are documented. Should we keep it?
 find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
 rm -f *.h.3 *.hpp.3 *config* *.cc.3 *.tcc.3 *_t.3
 #rm ext_*.3 tr1_*.3 debug_*.3
@@ -278,18 +280,23 @@ rm -f *.h.3 *.hpp.3 *config* *.cc.3 *.tcc.3 *_t.3
 #find . -name "[a-z]*" -a ! -name "std_*" -print | xargs -i mv {} trash
 #mv *.h.3 *config* *.cc.3 *.tcc.3 *_t.3  trash
 
+gxx=$($builddir/scripts/testsuite_flags --build-cxx)
+cppflags=$($builddir/scripts/testsuite_flags --build-includes)
+cxxflags="-Og -g -std=gnu++23"
+
 # Standardize the displayed header names.  If anyone who knows perl cares
 # enough to rewrite all this, feel free.  This only gets run once a century,
 # and I'm off getting coffee then anyhow, so I didn't care enough to make
 # this super-fast.
-g++ ${srcdir}/doc/doxygen/stdheader.cc -o ./stdheader
-problematic=`egrep -l '#include <.*_.*>' [a-z]*.3`
+$gxx $cppflags $cxxflags ${srcdir}/doc/doxygen/stdheader.cc -o ./stdheader || exit 1
+# Doxygen outputs something like "\fC#include <unique_lock\&.h>\fP" and
+# we want that internal header to be replaced with something like <mutex>.
+problematic=`egrep -l '#include <.*h>' [a-z]*.3`
 for f in $problematic; do
     # this is also slow, but safe and easy to debug
     oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
-    newh=`echo $oldh | ./stdheader`
-    sed 's=${oldh}=${newh}=' $f > TEMP
-    mv TEMP $f
+    newh=`echo $oldh | sed 's/\\\\&\\././g' | ./stdheader`
+    sed "s=${oldh/\\/.}=${newh}=" $f > TEMP && mv TEMP $f
 done
 rm stdheader
 
@@ -323,10 +330,14 @@ cp ${srcdir}/doc/doxygen/Intro.3 C++Intro.3
 # Why didn't I do this at the start?  Were rabid weasels eating my brain?
 # Who the fsck would "man std_vector" when the class isn't named that?
 
+# If no files match a glob, skip the for-loop:
+shopt -s nullglob
 # First, deal with nested namespaces.
-for f in *chrono_*; do
-    newname=`echo $f | sed 's/chrono_/chrono::/'`
-    mv $f $newname
+for ns in chrono filesystem ranges views literals; do
+  for f in std_${ns}_*; do
+      newname=`echo $f | sed "s/std_${ns}_/std::${ns}::/"`
+      mv $f $newname
+  done
 done
 for f in *__debug_*; do
     newname=`echo $f | sed 's/__debug_/__debug::/'`
@@ -413,11 +424,16 @@ for f in *_src_*; do
     rm $f
 done
 
+# Remove all internal implementation details?
+# rm std::_[A-Z]*.3 std::__detail*.3
+
+shopt -u nullglob
+
 
 # Also, for some reason, typedefs don't get their own man pages.  Sigh.
 for f in ios streambuf istream ostream iostream stringbuf \
 	 istringstream ostringstream stringstream filebuf ifstream \
-	 ofstream fstream string;
+	 ofstream fstream string
 do
     echo ".so man3/std::basic_${f}.3" > std::${f}.3
     echo ".so man3/std::basic_${f}.3" > std::w${f}.3

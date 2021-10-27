@@ -27,10 +27,10 @@ void max_a3_a5 (int i)
      by its own warning independently of -Wstringop-overflow.  */
   char *d = MAX (p, q);
 
-  d[2] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "" { target { i?86-*-* x86_64-*-* } } }
+  d[2] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "pr102706" { target { vect_slp_v4qi_store } } }
   d[3] = 0;
   d[4] = 0;
-  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { i?86-*-* x86_64-*-* } } }
+  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102706" { xfail { vect_slp_v4qi_store } } }
 }
 
 
@@ -44,10 +44,10 @@ void max_b6_b4 (int i)
   char *q = b4 + i;
   char *d = MAX (p, q);
 
-  d[3] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "" { target { i?86-*-* x86_64-*-* } } }
+  d[3] = 0;         // { dg-warning "writing 4 bytes into a region of size 3" "pr102706" { target { vect_slp_v4qi_store } } }
   d[4] = 0;
   d[5] = 0;
-  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { i?86-*-* x86_64-*-* } } }
+  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102706" { xfail { vect_slp_v4qi_store } } }
 }
 
 
@@ -82,7 +82,8 @@ void max_d8_p (char *q, int i)
 struct A3_5
 {
   char a3[3];  // { dg-message "at offset 3 into destination object 'a3' of size 3" "pr??????" { xfail *-*-* } }
-  char a5[5];  // { dg-message "at offset 5 into destination object 'a5' of size 5" "note" { xfail { i?86-*-* x86_64-*-* } } }
+  // refer to pr102697 for xfail
+  char a5[5];  // { dg-message "at offset 5 into destination object 'a5' of size 5" "note" { xfail { vect_slp_v4qi_store } } }
 };
 
 void max_A3_A5 (int i, struct A3_5 *pa3_5)
@@ -95,14 +96,15 @@ void max_A3_A5 (int i, struct A3_5 *pa3_5)
   d[2] = 0;
   d[3] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr??????" { xfail *-*-* } }
   d[4] = 0;
-  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { i?86-*-* x86_64-*-* } } }
+  d[5] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102697" { xfail { vect_slp_v4qi_store } } }
 }
 
 
 struct B4_B6
 {
   char b4[4];
-  char b6[6];       // { dg-message "at offset \[^a-zA-Z\n\r\]*6\[^a-zA-Z0-9\]* into destination object 'b6' of size 6" "note" { xfail { i?86-*-* x86_64-*-* } } }
+  // refer to pr102697 for xfail
+  char b6[6];       // { dg-message "at offset \[^a-zA-Z\n\r\]*6\[^a-zA-Z0-9\]* into destination object 'b6' of size 6" "note" { xfail { vect_slp_v4qi_store } } }
 };
 
 void max_B6_B4 (int i, struct B4_B6 *pb4_b6)
@@ -114,7 +116,7 @@ void max_B6_B4 (int i, struct B4_B6 *pb4_b6)
   d[3] = 0;
   d[4] = 0;
   d[5] = 0;
-  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "" { xfail { i?86-*-* x86_64-*-* } } }
+  d[6] = 0;         // { dg-warning "writing 1 byte into a region of size 0" "pr102697" { xfail { vect_slp_v4qi_store } } }
 }
 
 

@@ -113,8 +113,20 @@ test_forwarding()
 
 static_assert( test_forwarding() );
 
+void f(int&) { }
+
+void
+test_unconstrained()
+{
+  // PR libstc++/102863 - Optional monadic ops should not be constrained
+  std::optional<int> x;
+  auto answer = x.and_then([](auto& y) { f(y); return std::optional<int>{42}; });
+  VERIFY( !answer );
+}
+
 int main()
 {
   test_and_then();
   test_forwarding();
+  test_unconstrained();
 }

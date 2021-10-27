@@ -30,7 +30,7 @@ static void nowarn_ax_extern (struct AX *p)
 
 static void warn_ax_local_buf (struct AX *p)
 {
-  p->ax[0] = 4; p->ax[1] = 5;
+  p->ax[0] = 4; p->ax[1] = 5;  // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2hi_store &&  { ! vect_slp_v4hi_store } } } }
 
   p->ax[2] = 6;     // { dg-warning "\\\[-Warray-bounds" }
   p->ax[3] = 7;     // { dg-warning "\\\[-Warray-bounds" }
@@ -130,7 +130,7 @@ static void warn_a0_extern (struct A0 *p)
 
 static void warn_a0_local_buf (struct A0 *p)
 {
-  p->a0[0] = 4; p->a0[1] = 5;
+  p->a0[0] = 4; p->a0[1] = 5;  // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2hi_store && { ! vect_slp_v4hi_store } } } }
 
   p->a0[2] = 6;     // { dg-warning "\\\[-Warray-bounds" }
   p->a0[3] = 7;     // { dg-warning "\\\[-Warray-bounds" }

@@ -2024,8 +2024,8 @@ format_floating (const directive &dir, tree arg, range_query *)
    Used by the format_string function below.  */
 
 static fmtresult
-get_string_length (tree str, gimple *stmt, unsigned eltsize,
-		   range_query *query)
+get_string_length (tree str, gimple *stmt, unsigned HOST_WIDE_INT max_size,
+		   unsigned eltsize, range_query *query)
 {
   if (!str)
     return fmtresult ();
@@ -2065,6 +2065,20 @@ get_string_length (tree str, gimple *stmt, unsigned eltsize,
       && (!lendata.maxbound || lenmax <= tree_to_uhwi (lendata.maxbound))
       && lenmax <= tree_to_uhwi (lendata.maxlen))
     {
+      if (max_size > 0 && max_size < HOST_WIDE_INT_MAX)
+	{
+	  /* Adjust the conservative unknown/unbounded result if MAX_SIZE
+	     is valid.  Set UNLIKELY to maximum in case MAX_SIZE refers
+	     to a subobject.
+	     TODO: This is overly conservative.  Set UNLIKELY to the size
+	     of the outermost enclosing declared object.  */
+	  fmtresult res (0, max_size - 1);
+	  res.nonstr = lendata.decl;
+	  res.range.likely = res.range.max;
+	  res.range.unlikely = HOST_WIDE_INT_MAX;
+	  return res;
+	}
+
       fmtresult res;
       res.nonstr = lendata.decl;
       return res;
@@ -2203,110 +2217,80 @@ format_character (const directive &dir, tree arg, range_query *query)
   return res.adjust_for_width_or_precision (dir.width);
 }
 
-/* Determine the offset *INDEX of the first byte of an array element of
-   TYPE (possibly recursively) into which the byte offset OFF points.
-   On success set *INDEX to the offset of the first byte and return type.
-   Otherwise, if no such element can be found, return null.  */
+/* If TYPE is an array or struct or union, increment *FLDOFF by the starting
+   offset of the member that *OFF point into and set *FLDSIZE to its size
+   in bytes and decrement *OFF by the same.  Otherwise do nothing.  */
 
-static tree
-array_elt_at_offset (tree type, HOST_WIDE_INT off, HOST_WIDE_INT *index)
+static void
+set_aggregate_size_and_offset (tree type, HOST_WIDE_INT *fldoff,
+			       HOST_WIDE_INT *fldsize, HOST_WIDE_INT *off)
 {
-  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
-
-  tree eltype = type;
-  while (TREE_CODE (TREE_TYPE (eltype)) == ARRAY_TYPE)
-    eltype = TREE_TYPE (eltype);
-
-  if (TYPE_MODE (TREE_TYPE (eltype)) != TYPE_MODE (char_type_node))
-    eltype = TREE_TYPE (eltype);
-
-  if (eltype == type)
+  /* The byte offset of the most basic struct member the byte
+     offset *OFF corresponds to, or for a (multidimensional)
+     array member, the byte offset of the array element.  */
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
     {
-      *index = 0;
-      return type;
-    }
-
-  HOST_WIDE_INT typsz = int_size_in_bytes (type);
-  HOST_WIDE_INT eltsz = int_size_in_bytes (eltype);
-  if (off < typsz * eltsz)
-    {
-      *index = (off / eltsz) * eltsz;
-      return TREE_CODE (eltype) == ARRAY_TYPE ? TREE_TYPE (eltype) : eltype;
-    }
-
-  return NULL_TREE;
-}
-
-/* Determine the offset *INDEX of the first byte of a struct member of TYPE
-   (possibly recursively) into which the byte offset OFF points.  On success
-   set *INDEX to the offset of the first byte and return true.  Otherwise,
-   if no such member can be found, return false.  */
-
-static bool
-field_at_offset (tree type, HOST_WIDE_INT off, HOST_WIDE_INT *index)
-{
-  gcc_assert (RECORD_OR_UNION_TYPE_P (type));
-
-  for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
-    {
-      if (TREE_CODE (fld) != FIELD_DECL || DECL_ARTIFICIAL (fld))
-	continue;
-
-      tree fldtype = TREE_TYPE (fld);
-      HOST_WIDE_INT fldoff = int_byte_position (fld);
-
-      /* If the size is not available the field is a flexible array
-	 member.  Treat this case as success.  */
-      tree typesize = TYPE_SIZE_UNIT (fldtype);
-      HOST_WIDE_INT fldsize = (tree_fits_uhwi_p (typesize)
-			       ? tree_to_uhwi (typesize)
-			       : off);
-
-      if (fldoff + fldsize < off)
-	continue;
-
-      if (TREE_CODE (fldtype) == ARRAY_TYPE)
+      HOST_WIDE_INT index = 0, arrsize = 0;
+      if (array_elt_at_offset (type, *off, &index, &arrsize))
 	{
-	  HOST_WIDE_INT idx = 0;
-	  if (tree ft = array_elt_at_offset (fldtype, off, &idx))
-	    fldtype = ft;
+	  *fldoff += index;
+	  *off -= index;
+	  *fldsize = arrsize;
+	}
+    }
+  else if (RECORD_OR_UNION_TYPE_P (type))
+    {
+      HOST_WIDE_INT index = 0;
+      tree sub = field_at_offset (type, NULL_TREE, *off, &index);
+      if (sub)
+	{
+	  tree subsize = DECL_SIZE_UNIT (sub);
+	  if (*fldsize < HOST_WIDE_INT_MAX
+	      && subsize
+	      && tree_fits_uhwi_p (subsize))
+	    *fldsize = tree_to_uhwi (subsize);
 	  else
-	    break;
-
-	  *index += idx;
-	  fldoff -= idx;
-	  off -= idx;
+	    *fldsize = HOST_WIDE_INT_MAX;
+	  *fldoff += index;
+	  *off -= index;
 	}
-
-      if (RECORD_OR_UNION_TYPE_P (fldtype))
-	{
-	  *index += fldoff;
-	  return field_at_offset (fldtype, off - fldoff, index);
-	}
-
-      *index += fldoff;
-      return true;
     }
-
-  return false;
 }
 
 /* For an expression X of pointer type, recursively try to find the same
-   origin (object or pointer) as Y it references and return such an X.
-   When X refers to a struct member, set *FLDOFF to the offset of the
-   member from the beginning of the "most derived" object.  */
+   origin (object or pointer) as Y it references and return such a Y.
+   When X refers to an array element or struct member, set *FLDOFF to
+   the offset of the element or member from the beginning of the "most
+   derived" object and *FLDSIZE to its size.  When nonnull, set *OFF to
+   the overall offset from the beginning of the object so that
+   *FLDOFF <= *OFF.  */
 
 static tree
-get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
+get_origin_and_offset_r (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *fldsize,
+			 HOST_WIDE_INT *off)
 {
   if (!x)
     return NULL_TREE;
+
+  HOST_WIDE_INT sizebuf = -1;
+  if (!fldsize)
+    fldsize = &sizebuf;
+
+  if (DECL_P (x))
+    {
+      /* Set the size if it hasn't been set yet.  */
+      if (tree size = DECL_SIZE_UNIT (x))
+	if (*fldsize < 0 && tree_fits_shwi_p (size))
+	  *fldsize = tree_to_shwi (size);
+      return x;
+    }
 
   switch (TREE_CODE (x))
     {
     case ADDR_EXPR:
       x = TREE_OPERAND (x, 0);
-      return get_origin_and_offset (x, fldoff, off);
+      return get_origin_and_offset_r (x, fldoff, fldsize, off);
 
     case ARRAY_REF:
       {
@@ -2326,7 +2310,7 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
 	  *fldoff = idx;
 
 	x = TREE_OPERAND (x, 0);
-	return get_origin_and_offset (x, fldoff, NULL);
+	return get_origin_and_offset_r (x, fldoff, fldsize, nullptr);
       }
 
     case MEM_REF:
@@ -2345,32 +2329,19 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
 	    = (TREE_CODE (x) == ADDR_EXPR
 	       ? TREE_TYPE (TREE_OPERAND (x, 0)) : TREE_TYPE (TREE_TYPE (x)));
 
-	  /* The byte offset of the most basic struct member the byte
-	     offset *OFF corresponds to, or for a (multidimensional)
-	     array member, the byte offset of the array element.  */
-	  HOST_WIDE_INT index = 0;
-
-	  if ((RECORD_OR_UNION_TYPE_P (xtype)
-	       && field_at_offset (xtype, *off, &index))
-	      || (TREE_CODE (xtype) == ARRAY_TYPE
-		  && TREE_CODE (TREE_TYPE (xtype)) == ARRAY_TYPE
-		  && array_elt_at_offset (xtype, *off, &index)))
-	    {
-	      *fldoff += index;
-	      *off -= index;
-	    }
+	  set_aggregate_size_and_offset (xtype, fldoff, fldsize, off);
 	}
 
-      return get_origin_and_offset (x, fldoff, NULL);
+      return get_origin_and_offset_r (x, fldoff, fldsize, nullptr);
 
     case COMPONENT_REF:
       {
 	tree fld = TREE_OPERAND (x, 1);
 	*fldoff += int_byte_position (fld);
 
-	get_origin_and_offset (fld, fldoff, off);
+	get_origin_and_offset_r (fld, fldoff, fldsize, off);
 	x = TREE_OPERAND (x, 0);
-	return get_origin_and_offset (x, fldoff, off);
+	return get_origin_and_offset_r (x, fldoff, nullptr, off);
       }
 
     case SSA_NAME:
@@ -2382,27 +2353,41 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
 	    if (code == ADDR_EXPR)
 	      {
 		x = gimple_assign_rhs1 (def);
-		return get_origin_and_offset (x, fldoff, off);
+		return get_origin_and_offset_r (x, fldoff, fldsize, off);
 	      }
 
 	    if (code == POINTER_PLUS_EXPR)
 	      {
 		tree offset = gimple_assign_rhs2 (def);
-		if (off)
-		  *off = (tree_fits_uhwi_p (offset)
-			  ? tree_to_uhwi (offset) : HOST_WIDE_INT_MAX);
+		if (off && tree_fits_uhwi_p (offset))
+		  *off = tree_to_uhwi (offset);
 
 		x = gimple_assign_rhs1 (def);
-		return get_origin_and_offset (x, fldoff, NULL);
+		x = get_origin_and_offset_r (x, fldoff, fldsize, off);
+		if (off && !tree_fits_uhwi_p (offset))
+		  *off = HOST_WIDE_INT_MAX;
+		if (off)
+		  {
+		    tree xtype = TREE_TYPE (x);
+		    set_aggregate_size_and_offset (xtype, fldoff, fldsize, off);
+		  }
+		return x;
 	      }
 	    else if (code == VAR_DECL)
 	      {
 		x = gimple_assign_rhs1 (def);
-		return get_origin_and_offset (x, fldoff, off);
+		return get_origin_and_offset_r (x, fldoff, fldsize, off);
 	      }
 	  }
 	else if (gimple_nop_p (def) && SSA_NAME_VAR (x))
 	  x = SSA_NAME_VAR (x);
+
+	tree xtype = TREE_TYPE (x);
+	if (POINTER_TYPE_P (xtype))
+	  xtype = TREE_TYPE (xtype);
+
+	if (off)
+	  set_aggregate_size_and_offset (xtype, fldoff, fldsize, off);
       }
 
     default:
@@ -2412,13 +2397,41 @@ get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off)
   return x;
 }
 
+/* Nonrecursive version of the above.  */
+
+static tree
+get_origin_and_offset (tree x, HOST_WIDE_INT *fldoff, HOST_WIDE_INT *off,
+		       HOST_WIDE_INT *fldsize = nullptr)
+{
+  HOST_WIDE_INT sizebuf;
+  if (!fldsize)
+    fldsize = &sizebuf;
+
+  *fldsize = -1;
+
+  *fldoff = *off = *fldsize = 0;
+  tree orig = get_origin_and_offset_r (x, fldoff, fldsize, off);
+  if (!orig)
+    return NULL_TREE;
+
+  if (!*fldoff && *off == *fldsize)
+    {
+      *fldoff = *off;
+      *off = 0;
+    }
+
+  return orig;
+}
+
 /* If ARG refers to the same (sub)object or array element as described
    by DST and DST_FLD, return the byte offset into the struct member or
-   array element referenced by ARG.  Otherwise return HOST_WIDE_INT_MIN
-   to indicate that ARG and DST do not refer to the same object.  */
+   array element referenced by ARG and set *ARG_SIZE to the size of
+   the (sub)object.  Otherwise return HOST_WIDE_INT_MIN to indicate
+   that ARG and DST do not refer to the same object.  */
 
 static HOST_WIDE_INT
-alias_offset (tree arg, tree dst, HOST_WIDE_INT dst_fld)
+alias_offset (tree arg, HOST_WIDE_INT *arg_size,
+	      tree dst, HOST_WIDE_INT dst_fld)
 {
   /* See if the argument refers to the same base object as the destination
      of the formatted function call, and if so, try to determine if they
@@ -2430,7 +2443,7 @@ alias_offset (tree arg, tree dst, HOST_WIDE_INT dst_fld)
      to a struct member, see if the members are one and the same.  */
   HOST_WIDE_INT arg_off = 0, arg_fld = 0;
 
-  tree arg_orig = get_origin_and_offset (arg, &arg_fld, &arg_off);
+  tree arg_orig = get_origin_and_offset (arg, &arg_fld, &arg_off, arg_size);
 
   if (arg_orig == dst && arg_fld == dst_fld)
     return arg_off;
@@ -2448,6 +2461,10 @@ format_string (const directive &dir, tree arg, range_query *query)
 {
   fmtresult res;
 
+  /* The size of the (sub)object ARG refers to.  Used to adjust
+     the conservative get_string_length() result.  */
+  HOST_WIDE_INT arg_size = 0;
+
   if (warn_restrict)
     {
       /* See if ARG might alias the destination of the call with
@@ -2455,8 +2472,12 @@ format_string (const directive &dir, tree arg, range_query *query)
 	 so that the overlap can be determined for certain later,
 	 when the amount of output of the call (including subsequent
 	 directives) has been computed.  Otherwise, store HWI_MIN.  */
-      res.dst_offset = alias_offset (arg, dir.info->dst_origin,
+      res.dst_offset = alias_offset (arg, &arg_size, dir.info->dst_origin,
 				     dir.info->dst_field);
+      if (res.dst_offset >= 0 && res.dst_offset <= arg_size)
+	arg_size -= res.dst_offset;
+      else
+	arg_size = 0;
     }
 
   /* Compute the range the argument's length can be in.  */
@@ -2473,7 +2494,8 @@ format_string (const directive &dir, tree arg, range_query *query)
       gcc_checking_assert (count_by == 2 || count_by == 4);
     }
 
-  fmtresult slen = get_string_length (arg, dir.info->callstmt, count_by, query);
+  fmtresult slen =
+    get_string_length (arg, dir.info->callstmt, arg_size, count_by, query);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)
     {
@@ -4030,11 +4052,11 @@ compute_format_length (call_info &info, format_result *res, range_query *query)
   return success;
 }
 
-/* Return the size of the object referenced by the expression DEST if
-   available, or the maximum possible size otherwise.  */
+/* Return the size of the object referenced by the expression DEST in
+   statement STMT, if available, or the maximum possible size otherwise.  */
 
 static unsigned HOST_WIDE_INT
-get_destination_size (tree dest, pointer_query &ptr_qry)
+get_destination_size (tree dest, gimple *stmt, pointer_query &ptr_qry)
 {
   /* When there is no destination return the maximum.  */
   if (!dest)
@@ -4042,7 +4064,7 @@ get_destination_size (tree dest, pointer_query &ptr_qry)
 
   /* Use compute_objsize to determine the size of the destination object.  */
   access_ref aref;
-  if (!ptr_qry.get_ref (dest, &aref))
+  if (!ptr_qry.get_ref (dest, stmt, &aref))
     return HOST_WIDE_INT_MAX;
 
   offset_int remsize = aref.size_remaining ();
@@ -4516,7 +4538,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
       /* For non-bounded functions like sprintf, determine the size
 	 of the destination from the object or pointer passed to it
 	 as the first argument.  */
-      dstsize = get_destination_size (dstptr, ptr_qry);
+      dstsize = get_destination_size (dstptr, info.callstmt, ptr_qry);
     }
   else if (tree size = gimple_call_arg (info.callstmt, idx_dstsize))
     {

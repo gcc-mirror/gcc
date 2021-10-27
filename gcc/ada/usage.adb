@@ -557,6 +557,8 @@ begin
                                                   "order");
    Write_Line ("        .P*  turn off warnings for suspicious parameter " &
                                                   "order");
+   Write_Line ("        _p   turn on warnings for pedantic checks");
+   Write_Line ("        _P   turn off warnings for pedantic checks");
    Write_Line ("        q*+  turn on warnings for questionable " &
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &

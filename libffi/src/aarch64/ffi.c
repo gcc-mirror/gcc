@@ -19,12 +19,18 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#if defined(__aarch64__) || defined(__arm64__)|| defined (_M_ARM64)
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <fficonfig.h>
 #include <ffi.h>
 #include <ffi_common.h>
 #include "internal.h"
+#ifdef _WIN32
+#include <windows.h> /* FlushInstructionCache */
+#endif
+#include <tramp.h>
 
 /* Force FFI_TYPE_LONGDOUBLE to be different than FFI_TYPE_DOUBLE;
    all further uses in this file will refer to the 128-bit type.  */
@@ -54,6 +60,17 @@ struct call_context
   UINT64 x[N_X_ARG_REG];
 };
 
+#if FFI_EXEC_TRAMPOLINE_TABLE
+
+#ifdef __MACH__
+#ifdef HAVE_PTRAUTH
+#include <ptrauth.h>
+#endif
+#include <mach/vm_param.h>
+#endif
+
+#else
+
 #if defined (__clang__) && defined (__APPLE__)
 extern void sys_icache_invalidate (void *start, size_t len);
 #endif
@@ -65,10 +82,14 @@ ffi_clear_cache (void *start, void *end)
   sys_icache_invalidate (start, (char *)end - (char *)start);
 #elif defined (__GNUC__)
   __builtin___clear_cache (start, end);
+#elif defined (_WIN32)
+  FlushInstructionCache(GetCurrentProcess(), start, (char*)end - (char*)start);
 #else
 #error "Missing builtin to flush instruction cache"
 #endif
 }
+
+#endif
 
 /* A subroutine of is_vfp_type.  Given a structure type, return the type code
    of the first non-structure element.  Recurse for structure elements.
@@ -220,7 +241,7 @@ is_vfp_type (const ffi_type *ty)
 
   /* All tests succeeded.  Encode the result.  */
  done:
-  return candidate * 4 + (4 - ele_count);
+  return candidate * 4 + (4 - (int)ele_count);
 }
 
 /* Representation of the procedure call argument marshalling
@@ -269,7 +290,7 @@ allocate_to_stack (struct arg_state *state, void *stack,
     alignment = 8;
 #endif
     
-  nsaa = ALIGN (nsaa, alignment);
+  nsaa = FFI_ALIGN (nsaa, alignment);
   state->nsaa = nsaa + size;
 
   return (char *)stack + nsaa;
@@ -304,10 +325,13 @@ extend_integer_type (void *source, int type)
     }
 }
 
+#if defined(_MSC_VER)
+void extend_hfa_type (void *dest, void *src, int h);
+#else
 static void
 extend_hfa_type (void *dest, void *src, int h)
 {
-  int f = h - AARCH64_RET_S4;
+  ssize_t f = h - AARCH64_RET_S4;
   void *x0;
 
   asm volatile (
@@ -339,10 +363,10 @@ extend_hfa_type (void *dest, void *src, int h)
 "	b	1f\n"
 "	nop\n"
 "	ldp	q16, q17, [%3]\n"	/* Q4 */
-"	ldp	q18, q19, [%3, #16]\n"
+"	ldp	q18, q19, [%3, #32]\n"
 "	b	4f\n"
 "	ldp	q16, q17, [%3]\n"	/* Q3 */
-"	ldr	q18, [%3, #16]\n"
+"	ldr	q18, [%3, #32]\n"
 "	b	3f\n"
 "	ldp	q16, q17, [%3]\n"	/* Q2 */
 "	b	2f\n"
@@ -357,7 +381,11 @@ extend_hfa_type (void *dest, void *src, int h)
     : "r"(f * 12), "r"(dest), "r"(src)
     : "memory", "v16", "v17", "v18", "v19");
 }
+#endif
 
+#if defined(_MSC_VER)
+void* compress_hfa_type (void *dest, void *src, int h);
+#else
 static void *
 compress_hfa_type (void *dest, void *reg, int h)
 {
@@ -426,6 +454,7 @@ compress_hfa_type (void *dest, void *reg, int h)
     }
   return dest;
 }
+#endif
 
 /* Either allocate an appropriate register for the argument type, or if
    none are available, allocate a stack slot and return a pointer
@@ -443,7 +472,7 @@ allocate_int_to_reg_or_stack (struct call_context *context,
   return allocate_to_stack (state, stack, size, size);
 }
 
-ffi_status
+ffi_status FFI_HIDDEN
 ffi_prep_cif_machdep (ffi_cif *cif)
 {
   ffi_type *rtype = cif->rtype;
@@ -517,7 +546,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
       }
 
   /* Round the stack up to a multiple of the stack alignment requirement. */
-  cif->bytes = ALIGN(bytes, 16);
+  cif->bytes = (unsigned) FFI_ALIGN(bytes, 16);
   cif->flags = flags;
 #if defined (__APPLE__)
   cif->aarch64_nfixedargs = 0;
@@ -528,12 +557,20 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 
 #if defined (__APPLE__)
 /* Perform Apple-specific cif processing for variadic calls */
-ffi_status ffi_prep_cif_machdep_var(ffi_cif *cif,
-				    unsigned int nfixedargs,
-				    unsigned int ntotalargs)
+ffi_status FFI_HIDDEN
+ffi_prep_cif_machdep_var(ffi_cif *cif, unsigned int nfixedargs,
+			 unsigned int ntotalargs)
 {
   ffi_status status = ffi_prep_cif_machdep (cif);
   cif->aarch64_nfixedargs = nfixedargs;
+  return status;
+}
+#else
+ffi_status FFI_HIDDEN
+ffi_prep_cif_machdep_var(ffi_cif *cif, unsigned int nfixedargs, unsigned int ntotalargs)
+{
+  ffi_status status = ffi_prep_cif_machdep (cif);
+  cif->flags |= AARCH64_FLAG_VARARG;
   return status;
 }
 #endif /* __APPLE__ */
@@ -552,13 +589,19 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *orig_rvalue,
   void *stack, *frame, *rvalue;
   struct arg_state state;
   size_t stack_bytes, rtype_size, rsize;
-  int i, nargs, flags;
+  int i, nargs, flags, isvariadic = 0;
   ffi_type *rtype;
 
   flags = cif->flags;
   rtype = cif->rtype;
   rtype_size = rtype->size;
   stack_bytes = cif->bytes;
+
+  if (flags & AARCH64_FLAG_VARARG)
+  {
+    isvariadic = 1;
+    flags &= ~AARCH64_FLAG_VARARG;
+  }
 
   /* If the target function returns a structure via hidden pointer,
      then we cannot allow a null rvalue.  Otherwise, mash a null
@@ -574,11 +617,12 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *orig_rvalue,
   else if (flags & AARCH64_RET_NEED_COPY)
     rsize = 16;
 
-  /* Allocate consectutive stack for everything we'll need.  */
-  context = alloca (sizeof(struct call_context) + stack_bytes + 32 + rsize);
+  /* Allocate consectutive stack for everything we'll need.
+     The frame uses 40 bytes for: lr, fp, rvalue, flags, sp */
+  context = alloca (sizeof(struct call_context) + stack_bytes + 40 + rsize);
   stack = context + 1;
-  frame = stack + stack_bytes;
-  rvalue = (rsize ? frame + 32 : orig_rvalue);
+  frame = (void*)((uintptr_t)stack + (uintptr_t)stack_bytes);
+  rvalue = (rsize ? (void*)((uintptr_t)frame + 40) : orig_rvalue);
 
   arg_init (&state);
   for (i = 0, nargs = cif->nargs; i < nargs; i++)
@@ -639,16 +683,31 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *orig_rvalue,
 	    h = is_vfp_type (ty);
 	    if (h)
 	      {
-		int elems = 4 - (h & 3);
-	        if (state.nsrn + elems <= N_V_ARG_REG)
-		  {
-		    dest = &context->v[state.nsrn];
-		    state.nsrn += elems;
-		    extend_hfa_type (dest, a, h);
-		    break;
-		  }
-		state.nsrn = N_V_ARG_REG;
-		dest = allocate_to_stack (&state, stack, ty->alignment, s);
+              int elems = 4 - (h & 3);
+              if (cif->abi == FFI_WIN64 && isvariadic)
+              {
+                if (state.ngrn + elems <= N_X_ARG_REG)
+                {
+                  dest = &context->x[state.ngrn];
+                  state.ngrn += elems;
+                  extend_hfa_type(dest, a, h);
+                  break;
+                }
+                state.nsrn = N_X_ARG_REG;
+                dest = allocate_to_stack(&state, stack, ty->alignment, s);
+              }
+              else
+              {
+                if (state.nsrn + elems <= N_V_ARG_REG)
+                {
+                  dest = &context->v[state.nsrn];
+                  state.nsrn += elems;
+                  extend_hfa_type (dest, a, h);
+                  break;
+                }
+                state.nsrn = N_V_ARG_REG;
+                dest = allocate_to_stack (&state, stack, ty->alignment, s);
+              }
 	      }
 	    else if (s > 16)
 	      {
@@ -657,6 +716,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *orig_rvalue,
 		   the argument is replaced by a pointer to the copy.  */
 		a = &avalue[i];
 		t = FFI_TYPE_POINTER;
+		s = sizeof (void *);
 		goto do_pointer;
 	      }
 	    else
@@ -669,7 +729,7 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *orig_rvalue,
 		       X registers, then the argument is copied into
 		       consecutive X registers.  */
 		    dest = &context->x[state.ngrn];
-		    state.ngrn += n;
+                    state.ngrn += (unsigned int)n;
 		  }
 		else
 		  {
@@ -711,6 +771,8 @@ ffi_call (ffi_cif *cif, void (*fn) (void), void *rvalue, void **avalue)
   ffi_call_int (cif, fn, rvalue, avalue, NULL);
 }
 
+#if FFI_CLOSURES
+
 #ifdef FFI_GO_CLOSURES
 void
 ffi_call_go (ffi_cif *cif, void (*fn) (void), void *rvalue,
@@ -724,239 +786,9 @@ ffi_call_go (ffi_cif *cif, void (*fn) (void), void *rvalue,
 
 extern void ffi_closure_SYSV (void) FFI_HIDDEN;
 extern void ffi_closure_SYSV_V (void) FFI_HIDDEN;
-
-#if FFI_EXEC_TRAMPOLINE_TABLE
-
-#include <mach/mach.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-extern void *ffi_closure_trampoline_table_page;
-
-typedef struct ffi_trampoline_table ffi_trampoline_table;
-typedef struct ffi_trampoline_table_entry ffi_trampoline_table_entry;
-
-struct ffi_trampoline_table
-{
-  /* contiguous writable and executable pages */
-  vm_address_t config_page;
-  vm_address_t trampoline_page;
-
-  /* free list tracking */
-  uint16_t free_count;
-  ffi_trampoline_table_entry *free_list;
-  ffi_trampoline_table_entry *free_list_pool;
-
-  ffi_trampoline_table *prev;
-  ffi_trampoline_table *next;
-};
-
-struct ffi_trampoline_table_entry
-{
-  void *(*trampoline) ();
-  ffi_trampoline_table_entry *next;
-};
-
-/* The trampoline configuration is placed a page prior to the trampoline's entry point */
-#define FFI_TRAMPOLINE_CODELOC_CONFIG(codeloc) ((void **) (((uint8_t *) codeloc) - PAGE_SIZE));
-
-/* Total number of trampolines that fit in one trampoline table */
-#define FFI_TRAMPOLINE_COUNT (PAGE_SIZE / FFI_TRAMPOLINE_SIZE)
-
-static pthread_mutex_t ffi_trampoline_lock = PTHREAD_MUTEX_INITIALIZER;
-static ffi_trampoline_table *ffi_trampoline_tables = NULL;
-
-static ffi_trampoline_table *
-ffi_trampoline_table_alloc ()
-{
-  ffi_trampoline_table *table = NULL;
-
-  /* Loop until we can allocate two contiguous pages */
-  while (table == NULL)
-    {
-      vm_address_t config_page = 0x0;
-      kern_return_t kt;
-
-      /* Try to allocate two pages */
-      kt =
-	vm_allocate (mach_task_self (), &config_page, PAGE_SIZE * 2,
-		     VM_FLAGS_ANYWHERE);
-      if (kt != KERN_SUCCESS)
-	{
-	  fprintf (stderr, "vm_allocate() failure: %d at %s:%d\n", kt,
-		   __FILE__, __LINE__);
-	  break;
-	}
-
-      /* Now drop the second half of the allocation to make room for the trampoline table */
-      vm_address_t trampoline_page = config_page + PAGE_SIZE;
-      kt = vm_deallocate (mach_task_self (), trampoline_page, PAGE_SIZE);
-      if (kt != KERN_SUCCESS)
-	{
-	  fprintf (stderr, "vm_deallocate() failure: %d at %s:%d\n", kt,
-		   __FILE__, __LINE__);
-	  break;
-	}
-
-      /* Remap the trampoline table to directly follow the config page */
-      vm_prot_t cur_prot;
-      vm_prot_t max_prot;
-
-      kt =
-	vm_remap (mach_task_self (), &trampoline_page, PAGE_SIZE, 0x0, FALSE,
-		  mach_task_self (),
-		  (vm_address_t) & ffi_closure_trampoline_table_page, FALSE,
-		  &cur_prot, &max_prot, VM_INHERIT_SHARE);
-
-      /* If we lost access to the destination trampoline page, drop our config allocation mapping and retry */
-      if (kt != KERN_SUCCESS)
-	{
-	  /* Log unexpected failures */
-	  if (kt != KERN_NO_SPACE)
-	    {
-	      fprintf (stderr, "vm_remap() failure: %d at %s:%d\n", kt,
-		       __FILE__, __LINE__);
-	    }
-
-	  vm_deallocate (mach_task_self (), config_page, PAGE_SIZE);
-	  continue;
-	}
-
-      /* We have valid trampoline and config pages */
-      table = calloc (1, sizeof (ffi_trampoline_table));
-      table->free_count = FFI_TRAMPOLINE_COUNT;
-      table->config_page = config_page;
-      table->trampoline_page = trampoline_page;
-
-      /* Create and initialize the free list */
-      table->free_list_pool =
-	calloc (FFI_TRAMPOLINE_COUNT, sizeof (ffi_trampoline_table_entry));
-
-      uint16_t i;
-      for (i = 0; i < table->free_count; i++)
-	{
-	  ffi_trampoline_table_entry *entry = &table->free_list_pool[i];
-	  entry->trampoline =
-	    (void *) (table->trampoline_page + (i * FFI_TRAMPOLINE_SIZE));
-
-	  if (i < table->free_count - 1)
-	    entry->next = &table->free_list_pool[i + 1];
-	}
-
-      table->free_list = table->free_list_pool;
-    }
-
-  return table;
-}
-
-void *
-ffi_closure_alloc (size_t size, void **code)
-{
-  /* Create the closure */
-  ffi_closure *closure = malloc (size);
-  if (closure == NULL)
-    return NULL;
-
-  pthread_mutex_lock (&ffi_trampoline_lock);
-
-  /* Check for an active trampoline table with available entries. */
-  ffi_trampoline_table *table = ffi_trampoline_tables;
-  if (table == NULL || table->free_list == NULL)
-    {
-      table = ffi_trampoline_table_alloc ();
-      if (table == NULL)
-	{
-	  free (closure);
-	  return NULL;
-	}
-
-      /* Insert the new table at the top of the list */
-      table->next = ffi_trampoline_tables;
-      if (table->next != NULL)
-	table->next->prev = table;
-
-      ffi_trampoline_tables = table;
-    }
-
-  /* Claim the free entry */
-  ffi_trampoline_table_entry *entry = ffi_trampoline_tables->free_list;
-  ffi_trampoline_tables->free_list = entry->next;
-  ffi_trampoline_tables->free_count--;
-  entry->next = NULL;
-
-  pthread_mutex_unlock (&ffi_trampoline_lock);
-
-  /* Initialize the return values */
-  *code = entry->trampoline;
-  closure->trampoline_table = table;
-  closure->trampoline_table_entry = entry;
-
-  return closure;
-}
-
-void
-ffi_closure_free (void *ptr)
-{
-  ffi_closure *closure = ptr;
-
-  pthread_mutex_lock (&ffi_trampoline_lock);
-
-  /* Fetch the table and entry references */
-  ffi_trampoline_table *table = closure->trampoline_table;
-  ffi_trampoline_table_entry *entry = closure->trampoline_table_entry;
-
-  /* Return the entry to the free list */
-  entry->next = table->free_list;
-  table->free_list = entry;
-  table->free_count++;
-
-  /* If all trampolines within this table are free, and at least one other table exists, deallocate
-   * the table */
-  if (table->free_count == FFI_TRAMPOLINE_COUNT
-      && ffi_trampoline_tables != table)
-    {
-      /* Remove from the list */
-      if (table->prev != NULL)
-	table->prev->next = table->next;
-
-      if (table->next != NULL)
-	table->next->prev = table->prev;
-
-      /* Deallocate pages */
-      kern_return_t kt;
-      kt = vm_deallocate (mach_task_self (), table->config_page, PAGE_SIZE);
-      if (kt != KERN_SUCCESS)
-	fprintf (stderr, "vm_deallocate() failure: %d at %s:%d\n", kt,
-		 __FILE__, __LINE__);
-
-      kt =
-	vm_deallocate (mach_task_self (), table->trampoline_page, PAGE_SIZE);
-      if (kt != KERN_SUCCESS)
-	fprintf (stderr, "vm_deallocate() failure: %d at %s:%d\n", kt,
-		 __FILE__, __LINE__);
-
-      /* Deallocate free list */
-      free (table->free_list_pool);
-      free (table);
-    }
-  else if (ffi_trampoline_tables != table)
-    {
-      /* Otherwise, bump this table to the top of the list */
-      table->prev = NULL;
-      table->next = ffi_trampoline_tables;
-      if (ffi_trampoline_tables != NULL)
-	ffi_trampoline_tables->prev = table;
-
-      ffi_trampoline_tables = table;
-    }
-
-  pthread_mutex_unlock (&ffi_trampoline_lock);
-
-  /* Free the closure */
-  free (closure);
-}
-
+#if defined(FFI_EXEC_STATIC_TRAMP)
+extern void ffi_closure_SYSV_alt (void) FFI_HIDDEN;
+extern void ffi_closure_SYSV_V_alt (void) FFI_HIDDEN;
 #endif
 
 ffi_status
@@ -966,7 +798,7 @@ ffi_prep_closure_loc (ffi_closure *closure,
                       void *user_data,
                       void *codeloc)
 {
-  if (cif->abi != FFI_SYSV)
+  if (cif->abi != FFI_SYSV && cif->abi != FFI_WIN64)
     return FFI_BAD_ABI;
 
   void (*start)(void);
@@ -977,9 +809,14 @@ ffi_prep_closure_loc (ffi_closure *closure,
     start = ffi_closure_SYSV;
 
 #if FFI_EXEC_TRAMPOLINE_TABLE
-  void **config = FFI_TRAMPOLINE_CODELOC_CONFIG (codeloc);
+#ifdef __MACH__
+#ifdef HAVE_PTRAUTH
+  codeloc = ptrauth_auth_data(codeloc, ptrauth_key_function_pointer, 0);
+#endif
+  void **config = (void **)((uint8_t *)codeloc - PAGE_MAX_SIZE);
   config[0] = closure;
   config[1] = start;
+#endif
 #else
   static const unsigned char trampoline[16] = {
     0x90, 0x00, 0x00, 0x58,	/* ldr	x16, tramp+16	*/
@@ -987,12 +824,37 @@ ffi_prep_closure_loc (ffi_closure *closure,
     0x00, 0x02, 0x1f, 0xd6	/* br	x16		*/
   };
   char *tramp = closure->tramp;
-  
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+  if (ffi_tramp_is_present(closure))
+    {
+      /* Initialize the static trampoline's parameters. */
+      if (start == ffi_closure_SYSV_V)
+          start = ffi_closure_SYSV_V_alt;
+      else
+          start = ffi_closure_SYSV_alt;
+      ffi_tramp_set_parms (closure->ftramp, start, closure);
+      goto out;
+    }
+#endif
+
+  /* Initialize the dynamic trampoline. */
   memcpy (tramp, trampoline, sizeof(trampoline));
   
   *(UINT64 *)(tramp + 16) = (uintptr_t)start;
 
   ffi_clear_cache(tramp, tramp + FFI_TRAMPOLINE_SIZE);
+
+  /* Also flush the cache for code mapping.  */
+#ifdef _WIN32
+  // Not using dlmalloc.c for Windows ARM64 builds
+  // so calling ffi_data_to_code_pointer() isn't necessary
+  unsigned char *tramp_code = tramp;
+  #else
+  unsigned char *tramp_code = ffi_data_to_code_pointer (tramp);
+  #endif
+  ffi_clear_cache (tramp_code, tramp_code + FFI_TRAMPOLINE_SIZE);
+out:
 #endif
 
   closure->cif = cif;
@@ -1012,7 +874,7 @@ ffi_prep_go_closure (ffi_go_closure *closure, ffi_cif* cif,
 {
   void (*start)(void);
 
-  if (cif->abi != FFI_SYSV)
+  if (cif->abi != FFI_SYSV && cif->abi != FFI_WIN64)
     return FFI_BAD_ABI;
 
   if (cif->flags & AARCH64_FLAG_ARG_V)
@@ -1052,10 +914,17 @@ ffi_closure_SYSV_inner (ffi_cif *cif,
 			void *stack, void *rvalue, void *struct_rvalue)
 {
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));
-  int i, h, nargs, flags;
+  int i, h, nargs, flags, isvariadic = 0;
   struct arg_state state;
 
   arg_init (&state);
+
+  flags = cif->flags;
+  if (flags & AARCH64_FLAG_VARARG)
+  {
+    isvariadic = 1;
+    flags &= ~AARCH64_FLAG_VARARG;
+  }
 
   for (i = 0, nargs = cif->nargs; i < nargs; i++)
     {
@@ -1091,58 +960,85 @@ ffi_closure_SYSV_inner (ffi_cif *cif,
 	  if (h)
 	    {
 	      n = 4 - (h & 3);
-	      if (state.nsrn + n <= N_V_ARG_REG)
-		{
-		  void *reg = &context->v[state.nsrn];
-		  state.nsrn += n;
+              if (cif->abi == FFI_WIN64 && isvariadic)
+                {
+                  if (state.ngrn + n <= N_X_ARG_REG)
+                    {
+                      void *reg = &context->x[state.ngrn];
+                      state.ngrn += (unsigned int)n;
+    
+                      /* Eeek! We need a pointer to the structure, however the
+                       homogeneous float elements are being passed in individual
+                       registers, therefore for float and double the structure
+                       is not represented as a contiguous sequence of bytes in
+                       our saved register context.  We don't need the original
+                       contents of the register storage, so we reformat the
+                       structure into the same memory.  */
+                      avalue[i] = compress_hfa_type(reg, reg, h);
+                    }
+                  else
+                    {
+                      state.ngrn = N_X_ARG_REG;
+                      state.nsrn = N_V_ARG_REG;
+                      avalue[i] = allocate_to_stack(&state, stack,
+                             ty->alignment, s);
+                    }
+                }
+              else
+                {
+                  if (state.nsrn + n <= N_V_ARG_REG)
+                    {
+                      void *reg = &context->v[state.nsrn];
+                      state.nsrn += (unsigned int)n;
+                      avalue[i] = compress_hfa_type(reg, reg, h);
+                    }
+                  else
+                    {
+                      state.nsrn = N_V_ARG_REG;
+                      avalue[i] = allocate_to_stack(&state, stack,
+                                                   ty->alignment, s);
+                    }
+                }
+            }
+          else if (s > 16)
+            {
+              /* Replace Composite type of size greater than 16 with a
+                  pointer.  */
+              avalue[i] = *(void **)
+              allocate_int_to_reg_or_stack (context, &state, stack,
+                                         sizeof (void *));
+            }
+          else
+            {
+              n = (s + 7) / 8;
+              if (state.ngrn + n <= N_X_ARG_REG)
+                {
+                  avalue[i] = &context->x[state.ngrn];
+                  state.ngrn += (unsigned int)n;
+                }
+              else
+                {
+                  state.ngrn = N_X_ARG_REG;
+                  avalue[i] = allocate_to_stack(&state, stack,
+                                           ty->alignment, s);
+                }
+            }
+          break;
 
-		  /* Eeek! We need a pointer to the structure, however the
-		     homogeneous float elements are being passed in individual
-		     registers, therefore for float and double the structure
-		     is not represented as a contiguous sequence of bytes in
-		     our saved register context.  We don't need the original
-		     contents of the register storage, so we reformat the
-		     structure into the same memory.  */
-		  avalue[i] = compress_hfa_type (reg, reg, h);
-		}
-	      else
-		{
-		  state.nsrn = N_V_ARG_REG;
-		  avalue[i] = allocate_to_stack (&state, stack,
-						 ty->alignment, s);
-		}
-	    }
-	  else if (s > 16)
-	    {
-	      /* Replace Composite type of size greater than 16 with a
-		 pointer.  */
-	      avalue[i] = *(void **)
-		allocate_int_to_reg_or_stack (context, &state, stack,
-					      sizeof (void *));
-	    }
-	  else
-	    {
-	      n = (s + 7) / 8;
-	      if (state.ngrn + n <= N_X_ARG_REG)
-		{
-		  avalue[i] = &context->x[state.ngrn];
-		  state.ngrn += n;
-		}
-	      else
-		{
-		  state.ngrn = N_X_ARG_REG;
-		  avalue[i] = allocate_to_stack (&state, stack,
-						 ty->alignment, s);
-		}
-	    }
-	  break;
+        default:
+          abort();
+      }
 
-	default:
-	  abort();
+#if defined (__APPLE__)
+      if (i + 1 == cif->aarch64_nfixedargs)
+	{
+	  state.ngrn = N_X_ARG_REG;
+	  state.nsrn = N_V_ARG_REG;
+	  state.allocating_variadic = 1;
 	}
+#endif
     }
 
-  flags = cif->flags;
   if (flags & AARCH64_RET_IN_MEM)
     rvalue = struct_rvalue;
 
@@ -1150,3 +1046,19 @@ ffi_closure_SYSV_inner (ffi_cif *cif,
 
   return flags;
 }
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+void *
+ffi_tramp_arch (size_t *tramp_size, size_t *map_size)
+{
+  extern void *trampoline_code_table;
+
+  *tramp_size = AARCH64_TRAMP_SIZE;
+  *map_size = AARCH64_TRAMP_MAP_SIZE;
+  return &trampoline_code_table;
+}
+#endif
+
+#endif /* FFI_CLOSURES */
+
+#endif /* (__aarch64__) || defined(__arm64__)|| defined (_M_ARM64)*/

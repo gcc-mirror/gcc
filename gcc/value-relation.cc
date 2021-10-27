@@ -1285,6 +1285,29 @@ path_oracle::register_equiv (basic_block bb, tree ssa1, tree ssa2)
   bitmap_ior_into (m_equiv.m_names, b);
 }
 
+// Register killing definition of an SSA_NAME.
+
+void
+path_oracle::killing_def (tree ssa)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, " Registering killing_def (path_oracle) ");
+      print_generic_expr (dump_file, ssa, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+  bitmap b = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_set_bit (b, SSA_NAME_VERSION (ssa));
+  equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
+						    sizeof (equiv_chain));
+  ptr->m_names = b;
+  ptr->m_bb = NULL;
+  ptr->m_next = m_equiv.m_next;
+  m_equiv.m_next = ptr;
+  bitmap_ior_into (m_equiv.m_names, b);
+}
+
 // Register relation K between SSA1 and SSA2, resolving unknowns by
 // querying from BB.
 

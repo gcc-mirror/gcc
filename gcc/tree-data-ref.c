@@ -757,6 +757,9 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
   *var = NULL_TREE;
   *off = NULL_TREE;
 
+  if (INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type))
+    return false;
+
   switch (code)
     {
     case INTEGER_CST:

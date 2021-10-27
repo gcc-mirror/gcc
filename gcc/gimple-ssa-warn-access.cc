@@ -1190,11 +1190,11 @@ warn_for_access (location_t loc, tree func, tree expr, int opt,
    by BNDRNG if nonnull and valid.  */
 
 static void
-get_size_range (range_query *query, tree bound, tree range[2],
+get_size_range (range_query *query, tree bound, gimple *stmt, tree range[2],
 		const offset_int bndrng[2])
 {
   if (bound)
-    get_size_range (query, bound, NULL, range);
+    get_size_range (query, bound, stmt, range);
 
   if (!bndrng || (bndrng[0] == 0 && bndrng[1] == HOST_WIDE_INT_M1U))
     return;
@@ -1251,7 +1251,8 @@ template <class GimpleOrTree>
 static bool
 check_access (GimpleOrTree exp, tree dstwrite,
 	      tree maxread, tree srcstr, tree dstsize,
-	      access_mode mode, const access_data *pad /* = NULL */)
+	      access_mode mode, const access_data *pad,
+	      range_query *rvals)
 {
   /* The size of the largest object is half the address space, or
      PTRDIFF_MAX.  (This is way too permissive.)  */
@@ -1338,7 +1339,8 @@ check_access (GimpleOrTree exp, tree dstwrite,
 
   /* Set RANGE to that of DSTWRITE if non-null, bounded by PAD->DST.BNDRNG
      if valid.  */
-  get_size_range (NULL, dstwrite, range, pad ? pad->dst.bndrng : NULL);
+  gimple *stmt = pad ? pad->stmt : nullptr;
+  get_size_range (rvals, dstwrite, stmt, range, pad ? pad->dst.bndrng : NULL);
 
   tree func = get_callee_fndecl (exp);
   /* Read vs write access by built-ins can be determined from the const
@@ -1432,7 +1434,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (NULL, maxread, range, pad ? pad->src.bndrng : NULL);
+      get_size_range (rvals, maxread, stmt, range, pad ? pad->src.bndrng : NULL);
 
       location_t loc = get_location (exp);
       tree size = dstsize;
@@ -1479,7 +1481,7 @@ check_access (GimpleOrTree exp, tree dstwrite,
     {
       /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (NULL, maxread, range, pad ? pad->src.bndrng : NULL);
+      get_size_range (rvals, maxread, stmt, range, pad ? pad->src.bndrng : NULL);
       /* Set OVERREAD for reads starting just past the end of an object.  */
       overread = pad->src.sizrng[1] - pad->src.offrng[0] < pad->src.bndrng[0];
       range[0] = wide_int_to_tree (sizetype, pad->src.bndrng[0]);
@@ -1512,13 +1514,14 @@ check_access (GimpleOrTree exp, tree dstwrite,
   return true;
 }
 
-bool
+static bool
 check_access (gimple *stmt, tree dstwrite,
 	      tree maxread, tree srcstr, tree dstsize,
-	      access_mode mode, const access_data *pad /* = NULL */)
+	      access_mode mode, const access_data *pad,
+	      range_query *rvals)
 {
-  return check_access<gimple *>(stmt, dstwrite, maxread, srcstr, dstsize,
-				mode, pad);
+  return check_access<gimple *> (stmt, dstwrite, maxread, srcstr, dstsize,
+				 mode, pad, rvals);
 }
 
 bool
@@ -1526,45 +1529,8 @@ check_access (tree expr, tree dstwrite,
 	      tree maxread, tree srcstr, tree dstsize,
 	      access_mode mode, const access_data *pad /* = NULL */)
 {
-  return check_access<tree>(expr, dstwrite, maxread, srcstr, dstsize,
-			    mode, pad);
-}
-
-/* A convenience wrapper for check_access above to check access
-   by a read-only function like puts.  */
-
-template <class GimpleOrTree>
-static bool
-check_read_access (GimpleOrTree expr, tree src, tree bound, int ost)
-{
-  if (!warn_stringop_overread)
-    return true;
-
-  if (bound && !useless_type_conversion_p (size_type_node, TREE_TYPE (bound)))
-    bound = fold_convert (size_type_node, bound);
-
-  tree fndecl = get_callee_fndecl (expr);
-  maybe_warn_nonstring_arg (fndecl, expr);
-
-  access_data data (expr, access_read_only, NULL_TREE, false, bound, true);
-  compute_objsize (src, ost, &data.src);
-  return check_access (expr, /*dstwrite=*/ NULL_TREE, /*maxread=*/ bound,
-		       /*srcstr=*/ src, /*dstsize=*/ NULL_TREE, data.mode,
-		       &data);
-}
-
-bool
-check_read_access (gimple *stmt, tree src, tree bound /* = NULL_TREE */,
-		   int ost /* = 1 */)
-{
-  return check_read_access<gimple *>(stmt, src, bound, ost);
-}
-
-bool
-check_read_access (tree expr, tree src, tree bound /* = NULL_TREE */,
-		   int ost /* = 1 */)
-{
-  return check_read_access<tree>(expr, src, bound, ost);
+  return check_access<tree> (expr, dstwrite, maxread, srcstr, dstsize,
+			     mode, pad, nullptr);
 }
 
 /* Return true if STMT is a call to an allocation function.  Unless
@@ -2109,6 +2075,9 @@ private:
   pass_waccess (pass_waccess &) = delete;
   void operator= (pass_waccess &) = delete;
 
+  /* Check a call to an atomic built-in function.  */
+  bool check_atomic_builtin (gcall *);
+
   /* Check a call to a built-in function.  */
   bool check_builtin (gcall *);
 
@@ -2130,6 +2099,7 @@ private:
   void check_stxncpy (gcall *);
   void check_strncmp (gcall *);
   void check_memop_access (gimple *, tree, tree, tree);
+  void check_read_access (gimple *, tree, tree = NULL_TREE, int = 1);
 
   void maybe_check_dealloc_call (gcall *);
   void maybe_check_access_sizes (rdwr_map *, tree, tree, gimple *);
@@ -2425,14 +2395,14 @@ pass_waccess::check_strcat (gcall *stmt)
      the destination to which the SRC string is being appended so
      just diagnose cases when the souce string is longer than
      the destination object.  */
-  access_data data (stmt, access_read_write, NULL_TREE, true,
-		    NULL_TREE, true);
+  access_data data (m_ptr_qry.rvals, stmt, access_read_write, NULL_TREE,
+		    true, NULL_TREE, true);
   const int ost = warn_stringop_overflow ? warn_stringop_overflow - 1 : 1;
-  compute_objsize (src, ost, &data.src, &m_ptr_qry);
-  tree destsize = compute_objsize (dest, ost, &data.dst, &m_ptr_qry);
+  compute_objsize (src, stmt, ost, &data.src, &m_ptr_qry);
+  tree destsize = compute_objsize (dest, stmt, ost, &data.dst, &m_ptr_qry);
 
   check_access (stmt, /*dstwrite=*/NULL_TREE, /*maxread=*/NULL_TREE,
-		src, destsize, data.mode, &data);
+		src, destsize, data.mode, &data, m_ptr_qry.rvals);
 }
 
 /* Check a call STMT to strcat() for overflow and warn if it does.  */
@@ -2466,12 +2436,12 @@ pass_waccess::check_strncat (gcall *stmt)
       maxlen = lendata.maxbound;
     }
 
-  access_data data (stmt, access_read_write);
+  access_data data (m_ptr_qry.rvals, stmt, access_read_write);
   /* Try to verify that the destination is big enough for the shortest
      string.  First try to determine the size of the destination object
      into which the source is being copied.  */
   const int ost = warn_stringop_overflow - 1;
-  tree destsize = compute_objsize (dest, ost, &data.dst, &m_ptr_qry);
+  tree destsize = compute_objsize (dest, stmt, ost, &data.dst, &m_ptr_qry);
 
   /* Add one for the terminating nul.  */
   tree srclen = (maxlen
@@ -2500,7 +2470,7 @@ pass_waccess::check_strncat (gcall *stmt)
     srclen = maxread;
 
   check_access (stmt, /*dstwrite=*/NULL_TREE, maxread, srclen,
-		destsize, data.mode, &data);
+		destsize, data.mode, &data, m_ptr_qry.rvals);
 }
 
 /* Check a call STMT to stpcpy() or strcpy() for overflow and warn
@@ -2524,14 +2494,14 @@ pass_waccess::check_stxcpy (gcall *stmt)
 
   if (warn_stringop_overflow)
     {
-      access_data data (stmt, access_read_write, NULL_TREE, true,
-			NULL_TREE, true);
+      access_data data (m_ptr_qry.rvals, stmt, access_read_write, NULL_TREE,
+			true, NULL_TREE, true);
       const int ost = warn_stringop_overflow ? warn_stringop_overflow - 1 : 1;
-      compute_objsize (src, ost, &data.src, &m_ptr_qry);
-      tree dstsize = compute_objsize (dst, ost, &data.dst, &m_ptr_qry);
+      compute_objsize (src, stmt, ost, &data.src, &m_ptr_qry);
+      tree dstsize = compute_objsize (dst, stmt, ost, &data.dst, &m_ptr_qry);
       check_access (stmt, /*dstwrite=*/ NULL_TREE,
 		    /*maxread=*/ NULL_TREE, /*srcstr=*/ src,
-		    dstsize, data.mode, &data);
+		    dstsize, data.mode, &data, m_ptr_qry.rvals);
     }
 
   /* Check to see if the argument was declared attribute nonstring
@@ -2555,13 +2525,14 @@ pass_waccess::check_stxncpy (gcall *stmt)
   /* The number of bytes to write (not the maximum).  */
   tree len = call_arg (stmt, 2);
 
-  access_data data (stmt, access_read_write, len, true, len, true);
+  access_data data (m_ptr_qry.rvals, stmt, access_read_write, len, true, len,
+		    true);
   const int ost = warn_stringop_overflow ? warn_stringop_overflow - 1 : 1;
-  compute_objsize (src, ost, &data.src, &m_ptr_qry);
-  tree dstsize = compute_objsize (dst, ost, &data.dst, &m_ptr_qry);
+  compute_objsize (src, stmt, ost, &data.src, &m_ptr_qry);
+  tree dstsize = compute_objsize (dst, stmt, ost, &data.dst, &m_ptr_qry);
 
-  check_access (stmt, /*dstwrite=*/len,
-		/*maxread=*/len, src, dstsize, data.mode, &data);
+  check_access (stmt, /*dstwrite=*/len, /*maxread=*/len, src, dstsize,
+		data.mode, &data, m_ptr_qry.rvals);
 }
 
 /* Check a call STMT to stpncpy() or strncpy() for overflow and warn
@@ -2594,6 +2565,11 @@ pass_waccess::check_strncmp (gcall *stmt)
   tree len1 = c_strlen (arg1, 1, &lendata1);
   tree len2 = c_strlen (arg2, 1, &lendata2);
 
+  if (len1 && TREE_CODE (len1) != INTEGER_CST)
+    len1 = NULL_TREE;
+  if (len2 && TREE_CODE (len2) != INTEGER_CST)
+    len2 = NULL_TREE;
+
   if (len1 && len2)
     /* If the length of both arguments was computed they must both be
        nul-terminated and no further checking is necessary regardless
@@ -2606,13 +2582,15 @@ pass_waccess::check_strncmp (gcall *stmt)
   if (maybe_warn_nonstring_arg (get_callee_fndecl (stmt), stmt))
     return;
 
-  access_data adata1 (stmt, access_read_only, NULL_TREE, false, bound, true);
-  access_data adata2 (stmt, access_read_only, NULL_TREE, false, bound, true);
+  access_data adata1 (m_ptr_qry.rvals, stmt, access_read_only, NULL_TREE, false,
+		      bound, true);
+  access_data adata2 (m_ptr_qry.rvals, stmt, access_read_only, NULL_TREE, false,
+		      bound, true);
 
   /* Determine the range of the bound first and bail if it fails; it's
      cheaper than computing the size of the objects.  */
   tree bndrng[2] = { NULL_TREE, NULL_TREE };
-  get_size_range (m_ptr_qry.rvals, bound, bndrng, adata1.src.bndrng);
+  get_size_range (m_ptr_qry.rvals, bound, stmt, bndrng, adata1.src.bndrng);
   if (!bndrng[0] || integer_zerop (bndrng[0]))
     return;
 
@@ -2623,8 +2601,8 @@ pass_waccess::check_strncmp (gcall *stmt)
 
   /* compute_objsize almost never fails (and ultimately should never
      fail).  Don't bother to handle the rare case when it does.  */
-  if (!compute_objsize (arg1, 1, &adata1.src, &m_ptr_qry)
-      || !compute_objsize (arg2, 1, &adata2.src, &m_ptr_qry))
+  if (!compute_objsize (arg1, stmt, 1, &adata1.src, &m_ptr_qry)
+      || !compute_objsize (arg2, stmt, 1, &adata2.src, &m_ptr_qry))
     return;
 
   /* Compute the size of the remaining space in each array after
@@ -2672,13 +2650,120 @@ pass_waccess::check_memop_access (gimple *stmt, tree dest, tree src, tree size)
      try to determine the size of the largest source and destination
      object using type-0 Object Size regardless of the object size
      type specified by the option.  */
-  access_data data (stmt, access_read_write);
+  access_data data (m_ptr_qry.rvals, stmt, access_read_write);
   tree srcsize
-    = src ? compute_objsize (src, 0, &data.src, &m_ptr_qry) : NULL_TREE;
-  tree dstsize = compute_objsize (dest, 0, &data.dst, &m_ptr_qry);
+    = src ? compute_objsize (src, stmt, 0, &data.src, &m_ptr_qry) : NULL_TREE;
+  tree dstsize = compute_objsize (dest, stmt, 0, &data.dst, &m_ptr_qry);
 
-  check_access (stmt, size, /*maxread=*/NULL_TREE,
-		srcsize, dstsize, data.mode, &data);
+  check_access (stmt, size, /*maxread=*/NULL_TREE, srcsize, dstsize,
+		data.mode, &data, m_ptr_qry.rvals);
+}
+
+/* A convenience wrapper for check_access to check access by a read-only
+   function like puts or strcmp.  */
+
+void
+pass_waccess::check_read_access (gimple *stmt, tree src,
+				 tree bound /* = NULL_TREE */,
+				 int ost /* = 1 */)
+{
+  if (!warn_stringop_overread)
+    return;
+
+  if (bound && !useless_type_conversion_p (size_type_node, TREE_TYPE (bound)))
+    bound = fold_convert (size_type_node, bound);
+
+  tree fndecl = get_callee_fndecl (stmt);
+  maybe_warn_nonstring_arg (fndecl, stmt);
+
+  access_data data (m_ptr_qry.rvals, stmt, access_read_only, NULL_TREE,
+		   false, bound, true);
+  compute_objsize (src, stmt, ost, &data.src, &m_ptr_qry);
+  check_access (stmt, /*dstwrite=*/ NULL_TREE, /*maxread=*/ bound,
+		/*srcstr=*/ src, /*dstsize=*/ NULL_TREE, data.mode,
+		&data, m_ptr_qry.rvals);
+}
+
+
+/* Check a call STMT to an atomic or sync built-in.  */
+
+bool
+pass_waccess::check_atomic_builtin (gcall *stmt)
+{
+  tree callee = gimple_call_fndecl (stmt);
+  if (!callee)
+    return false;
+
+  /* The size in bytes of the access by the function, and the number
+     of the second argument to check (if any).  */
+  unsigned bytes = 0, arg2 = UINT_MAX;
+
+  switch (DECL_FUNCTION_CODE (callee))
+    {
+#define BUILTIN_ACCESS_SIZE_FNSPEC(N)			\
+      BUILT_IN_ATOMIC_LOAD_ ## N:			\
+    case BUILT_IN_SYNC_FETCH_AND_ADD_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_SUB_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_OR_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_AND_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_XOR_ ## N:		\
+    case BUILT_IN_SYNC_FETCH_AND_NAND_ ## N:		\
+    case BUILT_IN_SYNC_ADD_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_SUB_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_OR_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_AND_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_XOR_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_NAND_AND_FETCH_ ## N:		\
+    case BUILT_IN_SYNC_LOCK_TEST_AND_SET_ ## N:		\
+    case BUILT_IN_SYNC_BOOL_COMPARE_AND_SWAP_ ## N:	\
+    case BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_ ## N:	\
+    case BUILT_IN_SYNC_LOCK_RELEASE_ ## N:		\
+    case BUILT_IN_ATOMIC_EXCHANGE_ ## N:		\
+    case BUILT_IN_ATOMIC_STORE_ ## N:			\
+    case BUILT_IN_ATOMIC_ADD_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_SUB_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_AND_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_NAND_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_XOR_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_OR_FETCH_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_ADD_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_SUB_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_AND_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_NAND_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_OR_ ## N:		\
+    case BUILT_IN_ATOMIC_FETCH_XOR_ ## N:		\
+	bytes = N;					\
+	break;						\
+    case BUILT_IN_ATOMIC_COMPARE_EXCHANGE_ ## N:	\
+	bytes = N;					\
+	arg2 = 1
+
+    case BUILTIN_ACCESS_SIZE_FNSPEC (1);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (2);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (4);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (8);
+      break;
+    case BUILTIN_ACCESS_SIZE_FNSPEC (16);
+      break;
+
+    default:
+      return false;
+    }
+
+  tree size = build_int_cstu (sizetype, bytes);
+  tree dst = gimple_call_arg (stmt, 0);
+  check_memop_access (stmt, dst, NULL_TREE, size);
+
+  if (arg2 != UINT_MAX)
+    {
+      tree dst = gimple_call_arg (stmt, arg2);
+      check_memop_access (stmt, dst, NULL_TREE, size);
+    }
+
+  return true;
 }
 
 /* Check call STMT to a built-in function for invalid accesses.  Return
@@ -2697,6 +2782,15 @@ pass_waccess::check_builtin (gcall *stmt)
     case BUILT_IN_ALLOCA_WITH_ALIGN:
     case BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX:
       check_alloca (stmt);
+      return true;
+
+    case BUILT_IN_EXECL:
+    case BUILT_IN_EXECLE:
+    case BUILT_IN_EXECLP:
+    case BUILT_IN_EXECV:
+    case BUILT_IN_EXECVE:
+    case BUILT_IN_EXECVP:
+      check_read_access (stmt, call_arg (stmt, 0));
       return true;
 
     case BUILT_IN_GETTEXT:
@@ -2721,8 +2815,12 @@ pass_waccess::check_builtin (gcall *stmt)
 
     case BUILT_IN_STRNDUP:
     case BUILT_IN_STRNLEN:
-      check_read_access (stmt, call_arg (stmt, 0), call_arg (stmt, 1));
-      return true;
+      {
+	tree str = call_arg (stmt, 0);
+	tree len = call_arg (stmt, 1);
+	check_read_access (stmt, str, len);
+	return true;
+      }
 
     case BUILT_IN_STRCAT:
       check_strcat (stmt);
@@ -2795,10 +2893,11 @@ pass_waccess::check_builtin (gcall *stmt)
       }
 	
     default:
-      return false;
+      if (check_atomic_builtin (stmt))
+	return true;
+      break;
     }
-
-  return true;
+  return false;
 }
 
 /* Returns the type of the argument ARGNO to function with type FNTYPE
@@ -2900,7 +2999,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       /* Format the value or range to avoid an explosion of messages.  */
       char sizstr[80];
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
-      if (get_size_range (m_ptr_qry.rvals, access_size, NULL, sizrng, 1))
+      if (get_size_range (m_ptr_qry.rvals, access_size, stmt, sizrng, 1))
 	{
 	  char *s0 = print_generic_expr_to_str (sizrng[0]);
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
@@ -3028,11 +3127,11 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	    }
 	}
 
-      access_data data (ptr, access.second.mode, NULL_TREE, false,
-			NULL_TREE, false);
+      access_data data (m_ptr_qry.rvals, stmt, access.second.mode,
+			NULL_TREE, false, NULL_TREE, false);
       access_ref* const pobj = (access.second.mode == access_write_only
 				? &data.dst : &data.src);
-      tree objsize = compute_objsize (ptr, 1, pobj, &m_ptr_qry);
+      tree objsize = compute_objsize (ptr, stmt, 1, pobj, &m_ptr_qry);
 
       /* The size of the destination or source object.  */
       tree dstsize = NULL_TREE, srcsize = NULL_TREE;
@@ -3064,7 +3163,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       if (mode == access_deferred)
 	mode = TYPE_READONLY (argtype) ? access_read_only : access_read_write;
       check_access (stmt, access_size, /*maxread=*/ NULL_TREE, srcsize,
-		    dstsize, mode, &data);
+		    dstsize, mode, &data, m_ptr_qry.rvals);
 
       if (warning_suppressed_p (stmt, OPT_Wstringop_overflow_))
 	opt_warned = OPT_Wstringop_overflow_;
@@ -3187,7 +3286,7 @@ pass_waccess::maybe_check_dealloc_call (gcall *call)
     return;
 
   access_ref aref;
-  if (!compute_objsize (ptr, 0, &aref, &m_ptr_qry))
+  if (!compute_objsize (ptr, call, 0, &aref, &m_ptr_qry))
     return;
 
   tree ref = aref.ref;

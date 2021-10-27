@@ -1,3 +1,9 @@
+2021-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64888
+	* c-omp.c (c_omp_predefined_variable): Return true also for
+	ubsan_create_data created artificial variables.
+
 2021-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-format.c (printf_length_specs, scanf_length_specs)

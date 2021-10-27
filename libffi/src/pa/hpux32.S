@@ -1,7 +1,6 @@
 /* -----------------------------------------------------------------------
    hpux32.S - Copyright (c) 2006 Free Software Foundation, Inc.
 	                (c) 2008 Red Hat, Inc.
-			(c) 2016 John David Anglin
    based on src/pa/linux.S
 
    HP-UX PA Foreign Function Interface
@@ -42,8 +41,7 @@
 			       unsigned bytes,
 			       unsigned flags,
 			       unsigned *rvalue,
-			       void (*fn)(void),
-			       ffi_go_closure *closure);
+			       void (*fn)(void));
 	 */
 
 	.export	ffi_call_pa32,ENTRY,PRIV_LEV=3
@@ -106,7 +104,6 @@ L$CFI13
 	   we need to give it a place to put the result.  */
 	ldw	-52(%r3), %ret0		; %ret0 <- rvalue
 	ldw	-56(%r3), %r22		; %r22 <- function to call
-	ldw	-60(%r3), %ret1		; %ret1 <- closure
 	bl	$$dyncall, %r31		; Call the user function
 	copy	%r31, %rp
 
@@ -262,7 +259,7 @@ L$done
 L$FE1
 
 	/* void ffi_closure_pa32(void);
-	   Called with closure argument in %r21 */
+	   Called with closure argument in %r19 */
 
 	.SPACE $TEXT$
 	.SUBSPA $CODE$
@@ -288,9 +285,9 @@ L$CFI22
 	stw	%arg2, -44(%r3)
 	stw	%arg3, -48(%r3)
 
-	/* Closure type 0.  */
-	copy	%r21, %arg0
-	copy	%r0, %arg2
+	/* Retrieve closure pointer and real gp.  */
+	copy	%r19, %arg0
+	ldw	8(%r19), %r19
 	bl	ffi_closure_inner_pa32, %r2
 	copy    %r3, %arg1
 	ldwm	-64(%sp), %r3
@@ -301,47 +298,6 @@ L$CFI22
 	.exit
 	.procend
 L$FE2:
-
-	/* void ffi_go_closure_pa32(void);
-	   Called with closure argument in %ret1 */
-
-	.SPACE $TEXT$
-	.SUBSPA $CODE$
-	.export ffi_go_closure_pa32,ENTRY,PRIV_LEV=3,RTNVAL=GR
-	.import ffi_closure_inner_pa32,CODE
-	.align 4
-L$FB3
-ffi_go_closure_pa32
-	.proc
-	.callinfo FRAME=64,CALLS,SAVE_RP,SAVE_SP,ENTRY_GR=3
-	.entry
-
-	stw	%rp, -20(%sp)
-	copy	%r3, %r1
-L$CFI31
-	copy	%sp, %r3
-L$CFI32
-	stwm	%r1, 64(%sp)
-
-	/* Put arguments onto the stack and call ffi_closure_inner.  */
-	stw	%arg0, -36(%r3)
-	stw	%arg1, -40(%r3)
-	stw	%arg2, -44(%r3)
-	stw	%arg3, -48(%r3)
-
-	/* Closure type 1.  */
-	copy	%ret1, %arg0
-	ldi	1, %arg2
-	bl	ffi_closure_inner_pa32, %r2
-	copy    %r3, %arg1
-	ldwm	-64(%sp), %r3
-	ldw	-20(%sp), %rp
-	ldw	-36(%sp), %ret0
-	bv	%r0(%rp)
-	ldw	-40(%sp), %ret1
-	.exit
-	.procend
-L$FE3:
 
 	.SPACE $PRIVATE$
 	.SUBSPA $DATA$
@@ -412,25 +368,3 @@ L$ASFDE2:
 
 	.align 4
 L$EFDE2:
-
-L$SFDE3:
-	.word   L$EFDE3-L$ASFDE3        ;# FDE Length
-L$ASFDE3:
-	.word   L$ASFDE3-L$frame1       ;# FDE CIE offset
-	.word   L$FB3   ;# FDE initial location
-	.word   L$FE3-L$FB3     ;# FDE address range
-	.byte   0x4     ;# DW_CFA_advance_loc4
-	.word   L$CFI31-L$FB3
-	.byte   0x83    ;# DW_CFA_offset, column 0x3
-	.uleb128 0x0
-	.byte   0x11    ;# DW_CFA_offset_extended_sf
-	.uleb128 0x2
-	.sleb128 -5
-
-	.byte   0x4     ;# DW_CFA_advance_loc4
-	.word   L$CFI32-L$CFI31
-	.byte   0xd     ;# DW_CFA_def_cfa_register = r3
-	.uleb128 0x3
-
-	.align 4
-L$EFDE3:

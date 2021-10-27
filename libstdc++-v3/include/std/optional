@@ -1048,7 +1048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // [optional.monadic]
 
-      template<typename _Fn> requires invocable<_Fn, _Tp&>
+      template<typename _Fn>
 	constexpr auto
 	and_then(_Fn&& __f) &
 	{
@@ -1060,7 +1060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _Up();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, const _Tp&>
+      template<typename _Fn>
 	constexpr auto
 	and_then(_Fn&& __f) const &
 	{
@@ -1072,7 +1072,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _Up();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, _Tp>
+      template<typename _Fn>
 	constexpr auto
 	and_then(_Fn&& __f) &&
 	{
@@ -1084,7 +1084,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _Up();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, const _Tp>
+      template<typename _Fn>
 	constexpr auto
 	and_then(_Fn&& __f) const &&
 	{
@@ -1096,7 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _Up();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, _Tp&>
+      template<typename _Fn>
 	constexpr auto
 	transform(_Fn&& __f) &
 	{
@@ -1107,7 +1107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return optional<_Up>();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, const _Tp&>
+      template<typename _Fn>
 	constexpr auto
 	transform(_Fn&& __f) const &
 	{
@@ -1118,7 +1118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return optional<_Up>();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, _Tp>
+      template<typename _Fn>
 	constexpr auto
 	transform(_Fn&& __f) &&
 	{
@@ -1129,7 +1129,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return optional<_Up>();
 	}
 
-      template<typename _Fn> requires invocable<_Fn, const _Tp>
+      template<typename _Fn>
 	constexpr auto
 	transform(_Fn&& __f) const &&
 	{

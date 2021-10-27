@@ -6773,9 +6773,19 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    return error_mark_node;
 	  }
 
+	if (TREE_CODE (t) == FUNCTION_DECL
+	    && DECL_IMMEDIATE_FUNCTION_P (t)
+	    && !in_immediate_context ())
+	  {
+	    if (complain & tf_error)
+	      error_at (loc, "taking address of an immediate function %qD",
+			t);
+	    return error_mark_node;
+	  }
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
-	t = make_ptrmem_cst (type, TREE_OPERAND (arg, 1));
+	t = make_ptrmem_cst (type, t);
 	return t;
       }
 
@@ -6800,9 +6810,7 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       tree stripped_arg = tree_strip_any_location_wrapper (arg);
       if (TREE_CODE (stripped_arg) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (stripped_arg)
-	  && cp_unevaluated_operand == 0
-	  && (current_function_decl == NULL_TREE
-	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl)))
+	  && !in_immediate_context ())
 	{
 	  if (complain & tf_error)
 	    error_at (loc, "taking address of an immediate function %qD",

@@ -28,10 +28,41 @@
    DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
+#if defined(__arm__) || defined(_M_ARM)
+#include <fficonfig.h>
 #include <ffi.h>
 #include <ffi_common.h>
+#include <stdint.h>
 #include <stdlib.h>
+#include <tramp.h>
 #include "internal.h"
+
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+#if FFI_EXEC_TRAMPOLINE_TABLE
+
+#ifdef __MACH__
+#include <mach/machine/vm_param.h>
+#endif
+
+#else
+#ifndef _WIN32
+extern unsigned int ffi_arm_trampoline[2] FFI_HIDDEN;
+#else
+// Declare this as an array of char, instead of array of int,
+// otherwise Clang optimizes out the "& 0xFFFFFFFE" for clearing
+// the thumb bit.
+extern unsigned char ffi_arm_trampoline[12] FFI_HIDDEN;
+#endif
+#endif
+
+#if defined(__FreeBSD__) && defined(__arm__)
+#include <sys/types.h>
+#include <machine/sysarch.h>
+#endif
 
 /* Forward declares. */
 static int vfp_type_p (const ffi_type *);
@@ -49,7 +80,7 @@ ffi_align (ffi_type *ty, void *p)
   if (alignment < 4)
     alignment = 4;
 #endif
-  return (void *) ALIGN (p, alignment);
+  return (void *) FFI_ALIGN (p, alignment);
 }
 
 static size_t
@@ -76,9 +107,19 @@ ffi_put_arg (ffi_type *ty, void *src, void *dst)
     case FFI_TYPE_SINT32:
     case FFI_TYPE_UINT32:
     case FFI_TYPE_POINTER:
+#ifndef _WIN32
     case FFI_TYPE_FLOAT:
+#endif
       *(UINT32 *)dst = *(UINT32 *)src;
       break;
+
+#ifdef _WIN32
+    // casting a float* to a UINT32* doesn't work on Windows
+    case FFI_TYPE_FLOAT:
+        *(uintptr_t *)dst = 0;
+        *(float *)dst = *(float *)src;
+        break;
+#endif
 
     case FFI_TYPE_SINT64:
     case FFI_TYPE_UINT64:
@@ -95,7 +136,7 @@ ffi_put_arg (ffi_type *ty, void *src, void *dst)
       abort();
     }
 
-  return ALIGN (z, 4);
+  return FFI_ALIGN (z, 4);
 }
 
 /* ffi_prep_args is called once stack space has been allocated
@@ -198,7 +239,7 @@ ffi_prep_args_VFP (ffi_cif *cif, int flags, void *rvalue,
 }
 
 /* Perform machine dependent cif processing */
-ffi_status
+ffi_status FFI_HIDDEN
 ffi_prep_cif_machdep (ffi_cif *cif)
 {
   int flags = 0, cabi = cif->abi;
@@ -276,7 +317,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
   /* Round the stack up to a multiple of 8 bytes.  This isn't needed
      everywhere, but it is on some platforms, and it doesn't harm anything
      when it isn't needed.  */
-  bytes = ALIGN (bytes, 8);
+  bytes = FFI_ALIGN (bytes, 8);
 
   /* Minimum stack space is the 4 register arguments that we pop.  */
   if (bytes < 4*4)
@@ -289,7 +330,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 }
 
 /* Perform machine dependent cif processing for variadic calls */
-ffi_status
+ffi_status FFI_HIDDEN
 ffi_prep_cif_machdep_var (ffi_cif * cif,
 			  unsigned int nfixedargs, unsigned int ntotalargs)
 {
@@ -389,12 +430,14 @@ ffi_call (ffi_cif *cif, void (*fn) (void), void *rvalue, void **avalue)
   ffi_call_int (cif, fn, rvalue, avalue, NULL);
 }
 
+#ifdef FFI_GO_CLOSURES
 void
 ffi_call_go (ffi_cif *cif, void (*fn) (void), void *rvalue,
 	     void **avalue, void *closure)
 {
   ffi_call_int (cif, fn, rvalue, avalue, closure);
 }
+#endif
 
 static void *
 ffi_prep_incoming_args_SYSV (ffi_cif *cif, void *rvalue,
@@ -407,6 +450,11 @@ ffi_prep_incoming_args_SYSV (ffi_cif *cif, void *rvalue,
     {
       rvalue = *(void **) argp;
       argp += 4;
+    }
+  else
+    {
+      if (cif->rtype->size && cif->rtype->size < 4)
+        *(uint32_t *) rvalue = 0;
     }
 
   for (i = 0, n = cif->nargs; i < n; i++)
@@ -492,6 +540,8 @@ ffi_prep_incoming_args_VFP (ffi_cif *cif, void *rvalue, char *stack,
   return rvalue;
 }
 
+#if FFI_CLOSURES
+
 struct closure_frame
 {
   char vfp_space[8*8] __attribute__((aligned(8)));
@@ -527,256 +577,27 @@ ffi_closure_inner_VFP (ffi_cif *cif,
 
 void ffi_closure_SYSV (void) FFI_HIDDEN;
 void ffi_closure_VFP (void) FFI_HIDDEN;
+#if defined(FFI_EXEC_STATIC_TRAMP)
+void ffi_closure_SYSV_alt (void) FFI_HIDDEN;
+void ffi_closure_VFP_alt (void) FFI_HIDDEN;
+#endif
+
+#ifdef FFI_GO_CLOSURES
 void ffi_go_closure_SYSV (void) FFI_HIDDEN;
 void ffi_go_closure_VFP (void) FFI_HIDDEN;
-
-#if FFI_EXEC_TRAMPOLINE_TABLE
-
-#include <mach/mach.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-extern void *ffi_closure_trampoline_table_page;
-
-typedef struct ffi_trampoline_table ffi_trampoline_table;
-typedef struct ffi_trampoline_table_entry ffi_trampoline_table_entry;
-
-struct ffi_trampoline_table
-{
-  /* contiguous writable and executable pages */
-  vm_address_t config_page;
-  vm_address_t trampoline_page;
-
-  /* free list tracking */
-  uint16_t free_count;
-  ffi_trampoline_table_entry *free_list;
-  ffi_trampoline_table_entry *free_list_pool;
-
-  ffi_trampoline_table *prev;
-  ffi_trampoline_table *next;
-};
-
-struct ffi_trampoline_table_entry
-{
-  void *(*trampoline) ();
-  ffi_trampoline_table_entry *next;
-};
-
-/* Override the standard architecture trampoline size */
-// XXX TODO - Fix
-#undef FFI_TRAMPOLINE_SIZE
-#define FFI_TRAMPOLINE_SIZE 12
-
-/* The trampoline configuration is placed at 4080 bytes prior to the trampoline's entry point */
-#define FFI_TRAMPOLINE_CODELOC_CONFIG(codeloc) ((void **) (((uint8_t *) codeloc) - 4080));
-
-/* The first 16 bytes of the config page are unused, as they are unaddressable from the trampoline page. */
-#define FFI_TRAMPOLINE_CONFIG_PAGE_OFFSET 16
-
-/* Total number of trampolines that fit in one trampoline table */
-#define FFI_TRAMPOLINE_COUNT ((PAGE_SIZE - FFI_TRAMPOLINE_CONFIG_PAGE_OFFSET) / FFI_TRAMPOLINE_SIZE)
-
-static pthread_mutex_t ffi_trampoline_lock = PTHREAD_MUTEX_INITIALIZER;
-static ffi_trampoline_table *ffi_trampoline_tables = NULL;
-
-static ffi_trampoline_table *
-ffi_trampoline_table_alloc ()
-{
-  ffi_trampoline_table *table = NULL;
-
-  /* Loop until we can allocate two contiguous pages */
-  while (table == NULL)
-    {
-      vm_address_t config_page = 0x0;
-      kern_return_t kt;
-
-      /* Try to allocate two pages */
-      kt =
-	vm_allocate (mach_task_self (), &config_page, PAGE_SIZE * 2,
-		     VM_FLAGS_ANYWHERE);
-      if (kt != KERN_SUCCESS)
-	{
-	  fprintf (stderr, "vm_allocate() failure: %d at %s:%d\n", kt,
-		   __FILE__, __LINE__);
-	  break;
-	}
-
-      /* Now drop the second half of the allocation to make room for the trampoline table */
-      vm_address_t trampoline_page = config_page + PAGE_SIZE;
-      kt = vm_deallocate (mach_task_self (), trampoline_page, PAGE_SIZE);
-      if (kt != KERN_SUCCESS)
-	{
-	  fprintf (stderr, "vm_deallocate() failure: %d at %s:%d\n", kt,
-		   __FILE__, __LINE__);
-	  break;
-	}
-
-      /* Remap the trampoline table to directly follow the config page */
-      vm_prot_t cur_prot;
-      vm_prot_t max_prot;
-
-      kt =
-	vm_remap (mach_task_self (), &trampoline_page, PAGE_SIZE, 0x0, FALSE,
-		  mach_task_self (),
-		  (vm_address_t) & ffi_closure_trampoline_table_page, FALSE,
-		  &cur_prot, &max_prot, VM_INHERIT_SHARE);
-
-      /* If we lost access to the destination trampoline page, drop our config allocation mapping and retry */
-      if (kt != KERN_SUCCESS)
-	{
-	  /* Log unexpected failures */
-	  if (kt != KERN_NO_SPACE)
-	    {
-	      fprintf (stderr, "vm_remap() failure: %d at %s:%d\n", kt,
-		       __FILE__, __LINE__);
-	    }
-
-	  vm_deallocate (mach_task_self (), config_page, PAGE_SIZE);
-	  continue;
-	}
-
-      /* We have valid trampoline and config pages */
-      table = calloc (1, sizeof (ffi_trampoline_table));
-      table->free_count = FFI_TRAMPOLINE_COUNT;
-      table->config_page = config_page;
-      table->trampoline_page = trampoline_page;
-
-      /* Create and initialize the free list */
-      table->free_list_pool =
-	calloc (FFI_TRAMPOLINE_COUNT, sizeof (ffi_trampoline_table_entry));
-
-      uint16_t i;
-      for (i = 0; i < table->free_count; i++)
-	{
-	  ffi_trampoline_table_entry *entry = &table->free_list_pool[i];
-	  entry->trampoline =
-	    (void *) (table->trampoline_page + (i * FFI_TRAMPOLINE_SIZE));
-
-	  if (i < table->free_count - 1)
-	    entry->next = &table->free_list_pool[i + 1];
-	}
-
-      table->free_list = table->free_list_pool;
-    }
-
-  return table;
-}
-
-void *
-ffi_closure_alloc (size_t size, void **code)
-{
-  /* Create the closure */
-  ffi_closure *closure = malloc (size);
-  if (closure == NULL)
-    return NULL;
-
-  pthread_mutex_lock (&ffi_trampoline_lock);
-
-  /* Check for an active trampoline table with available entries. */
-  ffi_trampoline_table *table = ffi_trampoline_tables;
-  if (table == NULL || table->free_list == NULL)
-    {
-      table = ffi_trampoline_table_alloc ();
-      if (table == NULL)
-	{
-	  free (closure);
-	  return NULL;
-	}
-
-      /* Insert the new table at the top of the list */
-      table->next = ffi_trampoline_tables;
-      if (table->next != NULL)
-	table->next->prev = table;
-
-      ffi_trampoline_tables = table;
-    }
-
-  /* Claim the free entry */
-  ffi_trampoline_table_entry *entry = ffi_trampoline_tables->free_list;
-  ffi_trampoline_tables->free_list = entry->next;
-  ffi_trampoline_tables->free_count--;
-  entry->next = NULL;
-
-  pthread_mutex_unlock (&ffi_trampoline_lock);
-
-  /* Initialize the return values */
-  *code = entry->trampoline;
-  closure->trampoline_table = table;
-  closure->trampoline_table_entry = entry;
-
-  return closure;
-}
-
-void
-ffi_closure_free (void *ptr)
-{
-  ffi_closure *closure = ptr;
-
-  pthread_mutex_lock (&ffi_trampoline_lock);
-
-  /* Fetch the table and entry references */
-  ffi_trampoline_table *table = closure->trampoline_table;
-  ffi_trampoline_table_entry *entry = closure->trampoline_table_entry;
-
-  /* Return the entry to the free list */
-  entry->next = table->free_list;
-  table->free_list = entry;
-  table->free_count++;
-
-  /* If all trampolines within this table are free, and at least one other table exists, deallocate
-   * the table */
-  if (table->free_count == FFI_TRAMPOLINE_COUNT
-      && ffi_trampoline_tables != table)
-    {
-      /* Remove from the list */
-      if (table->prev != NULL)
-	table->prev->next = table->next;
-
-      if (table->next != NULL)
-	table->next->prev = table->prev;
-
-      /* Deallocate pages */
-      kern_return_t kt;
-      kt = vm_deallocate (mach_task_self (), table->config_page, PAGE_SIZE);
-      if (kt != KERN_SUCCESS)
-	fprintf (stderr, "vm_deallocate() failure: %d at %s:%d\n", kt,
-		 __FILE__, __LINE__);
-
-      kt =
-	vm_deallocate (mach_task_self (), table->trampoline_page, PAGE_SIZE);
-      if (kt != KERN_SUCCESS)
-	fprintf (stderr, "vm_deallocate() failure: %d at %s:%d\n", kt,
-		 __FILE__, __LINE__);
-
-      /* Deallocate free list */
-      free (table->free_list_pool);
-      free (table);
-    }
-  else if (ffi_trampoline_tables != table)
-    {
-      /* Otherwise, bump this table to the top of the list */
-      table->prev = NULL;
-      table->next = ffi_trampoline_tables;
-      if (ffi_trampoline_tables != NULL)
-	ffi_trampoline_tables->prev = table;
-
-      ffi_trampoline_tables = table;
-    }
-
-  pthread_mutex_unlock (&ffi_trampoline_lock);
-
-  /* Free the closure */
-  free (closure);
-}
-
-#else
-
-extern unsigned int ffi_arm_trampoline[2] FFI_HIDDEN;
-
 #endif
 
 /* the cif must already be prep'ed */
+
+#if defined(__FreeBSD__) && defined(__arm__)
+#define __clear_cache(start, end) do { \
+		struct arm_sync_icache_args ua; 		\
+								\
+		ua.addr = (uintptr_t)(start);			\
+		ua.len = (char *)(end) - (char *)start;		\
+		sysarch(ARM_SYNC_ICACHE, &ua);			\
+	} while (0);
+#endif
 
 ffi_status
 ffi_prep_closure_loc (ffi_closure * closure,
@@ -796,14 +617,47 @@ ffi_prep_closure_loc (ffi_closure * closure,
     return FFI_BAD_ABI;
 
 #if FFI_EXEC_TRAMPOLINE_TABLE
-  void **config = FFI_TRAMPOLINE_CODELOC_CONFIG (codeloc);
+  void **config = (void **)((uint8_t *)codeloc - PAGE_MAX_SIZE);
   config[0] = closure;
   config[1] = closure_func;
 #else
-  memcpy (closure->tramp, ffi_arm_trampoline, 8);
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+  if (ffi_tramp_is_present(closure))
+    {
+      /* Initialize the static trampoline's parameters. */
+      if (closure_func == ffi_closure_SYSV)
+        closure_func = ffi_closure_SYSV_alt;
+      else
+        closure_func = ffi_closure_VFP_alt;
+      ffi_tramp_set_parms (closure->ftramp, closure_func, closure);
+      goto out;
+    }
+#endif
+
+  /* Initialize the dynamic trampoline. */
+#ifndef _WIN32
+  memcpy(closure->tramp, ffi_arm_trampoline, 8);
+#else
+  // cast away function type so MSVC doesn't set the lower bit of the function pointer
+  memcpy(closure->tramp, (void*)((uintptr_t)ffi_arm_trampoline & 0xFFFFFFFE), FFI_TRAMPOLINE_CLOSURE_OFFSET);
+#endif
+
+#if defined (__QNX__)
+  msync(closure->tramp, 8, 0x1000000);	/* clear data map */
+  msync(codeloc, 8, 0x1000000);	/* clear insn map */
+#elif defined(_WIN32)
+  FlushInstructionCache(GetCurrentProcess(), closure->tramp, FFI_TRAMPOLINE_SIZE);
+#else
   __clear_cache(closure->tramp, closure->tramp + 8);	/* clear data map */
   __clear_cache(codeloc, codeloc + 8);			/* clear insn map */
+#endif
+#ifdef _WIN32
+  *(void(**)(void))(closure->tramp + FFI_TRAMPOLINE_CLOSURE_FUNCTION) = closure_func;
+#else
   *(void (**)(void))(closure->tramp + 8) = closure_func;
+#endif
+out:
 #endif
 
   closure->cif = cif;
@@ -813,6 +667,7 @@ ffi_prep_closure_loc (ffi_closure * closure,
   return FFI_OK;
 }
 
+#ifdef FFI_GO_CLOSURES
 ffi_status
 ffi_prep_go_closure (ffi_go_closure *closure, ffi_cif *cif,
 		     void (*fun) (ffi_cif *, void *, void **, void *))
@@ -834,6 +689,9 @@ ffi_prep_go_closure (ffi_go_closure *closure, ffi_cif *cif,
 
   return FFI_OK;
 }
+#endif
+
+#endif /* FFI_CLOSURES */
 
 /* Below are routines for VFP hard-float support. */
 
@@ -1005,7 +863,7 @@ place_vfp_arg (ffi_cif *cif, int h)
 	}
       /* Found regs to allocate. */
       cif->vfp_used |= new_used;
-      cif->vfp_args[cif->vfp_nargs++] = reg;
+      cif->vfp_args[cif->vfp_nargs++] = (signed char)reg;
 
       /* Update vfp_reg_free. */
       if (cif->vfp_used & (1 << cif->vfp_reg_free))
@@ -1027,7 +885,7 @@ place_vfp_arg (ffi_cif *cif, int h)
 static void
 layout_vfp_args (ffi_cif * cif)
 {
-  int i;
+  unsigned int i;
   /* Init VFP fields */
   cif->vfp_used = 0;
   cif->vfp_nargs = 0;
@@ -1041,3 +899,17 @@ layout_vfp_args (ffi_cif * cif)
 	break;
     }
 }
+
+#if defined(FFI_EXEC_STATIC_TRAMP)
+void *
+ffi_tramp_arch (size_t *tramp_size, size_t *map_size)
+{
+  extern void *trampoline_code_table;
+
+  *tramp_size = ARM_TRAMP_SIZE;
+  *map_size = ARM_TRAMP_MAP_SIZE;
+  return &trampoline_code_table;
+}
+#endif
+
+#endif /* __arm__ or _M_ARM */

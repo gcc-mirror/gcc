@@ -497,7 +497,7 @@ fix_range (const char *const_str)
       break;
 
   if (i > FP_REG_LAST)
-    target_flags |= MASK_DISABLE_FPREGS;
+    target_flags |= MASK_SOFT_FLOAT;
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */
@@ -1578,14 +1578,14 @@ hppa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	}
       else if (mode == DImode)
 	{
-	  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
-	    *total = COSTS_N_INSNS (32);
+	  if (TARGET_PA_11 && !TARGET_SOFT_FLOAT && !TARGET_SOFT_MULT)
+	    *total = COSTS_N_INSNS (25);
 	  else
 	    *total = COSTS_N_INSNS (80);
 	}
       else
 	{
-	  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+	  if (TARGET_PA_11 && !TARGET_SOFT_FLOAT && !TARGET_SOFT_MULT)
 	    *total = COSTS_N_INSNS (8);
 	  else
 	    *total = COSTS_N_INSNS (20);
@@ -10627,7 +10627,7 @@ pa_conditional_register_usage (void)
       for (i = 33; i < 56; i += 2)
 	fixed_regs[i] = call_used_regs[i] = 1;
     }
-  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_SOFT_FLOAT)
     {
       for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)
 	fixed_regs[i] = call_used_regs[i] = 1;

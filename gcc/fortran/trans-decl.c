@@ -6668,7 +6668,7 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
   stmtblock_t block;
   gfc_init_block (&block);
   tree cfi = build_fold_indirect_ref_loc (input_location, cfi_desc);
-  tree rank, idx, etype, tmp, tmp2, size_var = NULL_TREE;
+  tree idx, etype, tmp, tmp2, size_var = NULL_TREE, rank = NULL_TREE;
   bool do_copy_inout = false;
 
   /* When allocatable + intent out, free the cfi descriptor.  */
@@ -6835,6 +6835,13 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
 			       build_int_cst (gfc_charlen_type_node,
 					      sym->ts.kind));
       gfc_add_modify (&block, sym->ts.u.cl->backend_decl, tmp);
+    }
+
+  if (sym->ts.type == BT_CHARACTER
+      && !INTEGER_CST_P (sym->ts.u.cl->backend_decl))
+    {
+      gfc_conv_string_length (sym->ts.u.cl, NULL, init);
+      gfc_trans_vla_type_sizes (sym, init);
     }
 
   /* gfc->data = cfi->base_addr - or for scalars: gfc = cfi->base_addr.

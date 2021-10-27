@@ -1,3 +1,8 @@
+2021-10-19  Martin Liska  <mliska@suse.cz>
+
+	* include/coi/source/COIBuffer_source.h: Convert 2 chars to
+	unicode.
+
 2021-05-25  Richard Biener  <rguenther@suse.de>
 
 	PR libgomp/100747

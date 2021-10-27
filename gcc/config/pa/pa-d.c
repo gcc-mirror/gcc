@@ -47,7 +47,7 @@ pa_d_handle_target_float_abi (void)
 {
   const char *abi;
 
-  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_SOFT_FLOAT)
     abi = "soft";
   else
     abi = "hard";

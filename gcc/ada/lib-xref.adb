@@ -481,7 +481,9 @@ package body Lib.Xref is
                            --  e.g. function call, slicing of a function call,
                            --  pointer dereference, etc.
 
-                           if No (Obj) then
+                           if No (Obj)
+                             or else Ekind (Obj) = E_Enumeration_Literal
+                           then
                               return Empty;
                            end if;
                         else

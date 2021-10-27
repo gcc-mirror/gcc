@@ -1625,7 +1625,9 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
   bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
 					size_zero_node) < 0;
   tree offset = (negative
-		 ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+		 ? size_int ((-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+			     * TREE_INT_CST_LOW
+				 (TYPE_SIZE_UNIT (TREE_TYPE (vectype))))
 		 : size_zero_node);
   tree start_addr = vect_create_addr_base_for_vector_ref (loop_vinfo,
 							  stmt_info, seq,
@@ -1820,7 +1822,8 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters,
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
-      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt))
+      if (!STMT_VINFO_GATHER_SCATTER_P (dr_info->stmt)
+	  && !STMT_VINFO_SIMD_LANE_ACCESS_P (dr_info->stmt))
 	vect_update_init_of_dr (dr_info, niters, code);
     }
 }
@@ -3226,7 +3229,9 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       bool negative = tree_int_cst_compare
 	(DR_STEP (STMT_VINFO_DATA_REF (stmt_info)), size_zero_node) < 0;
       tree offset = negative
-	? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
+	? size_int ((-TYPE_VECTOR_SUBPARTS (vectype) + 1)
+		    * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype))))
+	: size_zero_node;
 
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =

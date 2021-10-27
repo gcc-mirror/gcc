@@ -36,8 +36,12 @@ private:
   void check_addr_expr (location_t, tree, gimple *);
   const value_range *get_value_range (const_tree op, gimple *);
 
+  /* Current function.  */
   struct function *fun;
+  /* Ranger instance.  */
   range_query *ranges;
+  /* Current statement.  */
+  gimple *m_stmt;
 };
 
 #endif // GCC_GIMPLE_ARRAY_BOUNDS_H

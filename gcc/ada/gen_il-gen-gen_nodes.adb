@@ -984,7 +984,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Case_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Expression, Node_Id, Default_Empty),
         Sy (Alternatives, List_Id, Default_No_List),
-        Sy (End_Span, Uint, Default_Uint_0),
+        Sy (End_Span, Unat, Default_Uint_0),
         Sm (From_Conditional_Expression, Flag)));
 
    Cc (N_Code_Statement, N_Statement_Other_Than_Procedure_Call,
@@ -1094,7 +1094,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Then_Statements, List_Id),
         Sy (Elsif_Parts, List_Id, Default_No_List),
         Sy (Else_Statements, List_Id, Default_No_List),
-        Sy (End_Span, Uint, Default_Uint_0),
+        Sy (End_Span, Unat, Default_Uint_0),
         Sm (From_Conditional_Expression, Flag)));
 
    Cc (N_Accept_Alternative, Node_Kind,
@@ -1594,7 +1594,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Dcheck_Function, Node_Id),
         Sm (Enclosing_Variant, Node_Id),
         Sm (Has_SP_Choice, Flag),
-        Sm (Present_Expr, Uint)));
+        Sm (Present_Expr, Valid_Uint)));
 
    Cc (N_Variant_Part, Node_Kind,
        (Sy (Name, Node_Id, Default_Empty),
@@ -1675,16 +1675,29 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Union (N_Is_Decl,
           Children =>
-            (N_Declaration,
+            (N_Aggregate,
+             N_Block_Statement,
+             N_Declaration,
              N_Discriminant_Specification,
+             N_Entry_Index_Specification,
              N_Enumeration_Type_Definition,
              N_Exception_Handler,
+             N_Explicit_Dereference,
+             N_Expression_With_Actions,
+             N_Extension_Aggregate,
+             N_Identifier,
+             N_Iterated_Component_Association,
              N_Later_Decl_Item,
+             N_Loop_Statement,
+             N_Null_Statement,
+             N_Number_Declaration,
              N_Package_Specification,
              N_Parameter_Specification,
              N_Renaming_Declaration,
-             N_Subprogram_Specification));
-   --  Nodes that can be returned by Declaration_Node
+             N_Quantified_Expression));
+   --  Nodes that can be returned by Declaration_Node; it can also return
+   --  Empty. Not all of these are true "declarations", but Declaration_Node
+   --  can return them in some cases.
 
    Union (N_Is_Range,
           Children =>

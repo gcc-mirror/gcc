@@ -42,7 +42,7 @@ gimple_ranger::gimple_ranger () :
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
-  if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_TRACE))
     tracer.enable_trace ();
 
   // Ensure the not_executable flag is clear everywhere.
@@ -303,7 +303,7 @@ gimple_ranger::export_global_ranges ()
 	  && !r.varying_p())
 	{
 	  bool updated = update_global_range (r, name);
-	  if (!updated || !dump_file || !(dump_flags & TDF_DETAILS))
+	  if (!updated || !dump_file)
 	    continue;
 
 	  if (print_header)

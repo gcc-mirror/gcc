@@ -75,7 +75,7 @@ ffi_struct_float_mask (ffi_type *outer_type, int size_mask)
       size_t z = t->size;
       int o, m, tt;
 
-      size_mask = ALIGN(size_mask, t->alignment);
+      size_mask = FFI_ALIGN(size_mask, t->alignment);
       switch (t->type)
 	{
 	case FFI_TYPE_STRUCT:
@@ -99,7 +99,7 @@ ffi_struct_float_mask (ffi_type *outer_type, int size_mask)
       size_mask += z;
     }
 
-  size_mask = ALIGN(size_mask, outer_type->alignment);
+  size_mask = FFI_ALIGN(size_mask, outer_type->alignment);
   FFI_ASSERT ((size_mask & 0xff) == outer_type->size);
 
   return size_mask;
@@ -284,8 +284,8 @@ ffi_prep_cif_machdep_core(ffi_cif *cif)
 	  flags |= SPARC_FLAG_FP_ARGS;
 	  break;
 	}
-      bytes = ALIGN(bytes, a);
-      bytes += ALIGN(z, 8);
+      bytes = FFI_ALIGN(bytes, a);
+      bytes += FFI_ALIGN(z, 8);
     }
 
   /* Sparc call frames require that space is allocated for 6 args,
@@ -294,7 +294,7 @@ ffi_prep_cif_machdep_core(ffi_cif *cif)
     bytes = 6 * 8;
 
   /* The stack must be 2 word aligned, so round bytes up appropriately. */
-  bytes = ALIGN(bytes, 16);
+  bytes = FFI_ALIGN(bytes, 16);
 
   /* Include the call frame to prep_args.  */
   bytes += 8*16 + 8*8;
@@ -405,7 +405,7 @@ ffi_prep_args_v9(ffi_cif *cif, unsigned long *argp, void *rvalue, void **avalue)
 	  if (((unsigned long)argp & 15) && ty->alignment > 8)
 	    argp++;
 	  memcpy(argp, a, z);
-	  argp += ALIGN(z, 8) / 8;
+	  argp += FFI_ALIGN(z, 8) / 8;
 	  break;
 
 	default:
@@ -425,7 +425,7 @@ ffi_call_int(ffi_cif *cif, void (*fn)(void), void *rvalue,
   FFI_ASSERT (cif->abi == FFI_V9);
 
   if (rvalue == NULL && (cif->flags & SPARC_FLAG_RET_IN_MEM))
-    bytes += ALIGN (cif->rtype->size, 16);
+    bytes += FFI_ALIGN (cif->rtype->size, 16);
 
   ffi_call_v9(cif, fn, rvalue, avalue, -bytes, closure);
 }
@@ -547,7 +547,7 @@ ffi_closure_sparc_inner_v9(ffi_cif *cif,
 	    a = *(void **)a;
 	  else
 	    {
-	      argx = argn + ALIGN (z, 8) / 8;
+	      argx = argn + FFI_ALIGN (z, 8) / 8;
 	      if (named && argn < 16)
 		{
 		  int size_mask = ffi_struct_float_mask (ty, 0);
@@ -561,7 +561,7 @@ ffi_closure_sparc_inner_v9(ffi_cif *cif,
 	  break;
 
 	case FFI_TYPE_LONGDOUBLE:
-	  argn = ALIGN (argn, 2);
+	  argn = FFI_ALIGN (argn, 2);
 	  a = (named && argn < 16 ? fpr : gpr) + argn;
 	  argx = argn + 2;
 	  break;

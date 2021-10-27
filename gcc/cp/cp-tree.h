@@ -1825,7 +1825,8 @@ struct GTY(()) saved_scope {
      if-statement.  */
   BOOL_BITFIELD discarded_stmt : 1;
   /* Nonzero if we are parsing or instantiating the compound-statement
-     of consteval if statement.  */
+     of consteval if statement.  Also set while processing an immediate
+     invocation.  */
   BOOL_BITFIELD consteval_if_p : 1;
 
   int unevaluated_operand;
@@ -6547,6 +6548,7 @@ extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern vec<tree,va_gc> *resolve_args (vec<tree,va_gc>*, tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
+extern bool in_immediate_context		();
 extern tree build_cxx_call			(tree, int, tree *,
 						 tsubst_flags_t,
 						 tree = NULL_TREE);

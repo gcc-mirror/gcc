@@ -59,6 +59,7 @@ html::
 info::
 install-info::
 install-pdf::
+install-dvi::
 install-man::
 install-html::
 

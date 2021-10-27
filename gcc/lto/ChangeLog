@@ -1,3 +1,8 @@
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Make-lang.in: Add dummy lto.install-dvi target.
+
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* lto-lang.c (lto_init_options_struct): Set also

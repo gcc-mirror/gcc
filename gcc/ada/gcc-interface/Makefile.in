@@ -449,7 +449,7 @@ gnattools2: ../stamp-tools
 common-tools: ../stamp-tools
 	$(GNATMAKE) -j0 -c -b $(ADA_INCLUDES) \
 	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
-	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatxref gnatfind gnatname \
+	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatname \
 	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
 	$(GNATLINK) -v gnatcmd -o ../../gnat$(exeext) \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
@@ -460,10 +460,6 @@ common-tools: ../stamp-tools
 	$(GNATLINK) -v gnatls -o ../../gnatls$(exeext) \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatxref -o ../../gnatxref$(exeext) \
-	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
-	$(GNATLINK) -v gnatfind -o ../../gnatfind$(exeext) \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatname -o ../../gnatname$(exeext) \
 	  --GCC="$(CC) $(ADA_INCLUDES)" --LINK="$(GCC_LINK)" $(TOOLS_LIBS)

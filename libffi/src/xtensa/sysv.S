@@ -169,8 +169,13 @@ ENTRY(ffi_cacheflush)
 
 	entry	a1, 16
 
-1:	dhwbi	a2, 0
+1:	
+#if XCHAL_DCACHE_SIZE
+	dhwbi	a2, 0
+#endif
+#if XCHAL_ICACHE_SIZE
 	ihi	a2, 0
+#endif
 	addi	a2, a2, 4
 	blt	a2, a3, 1b
 
