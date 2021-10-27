@@ -1988,14 +1988,16 @@ package body Exp_Ch4 is
         and then Ltyp = Rtyp
         and then Is_Constrained (Ltyp)
         and then Number_Dimensions (Ltyp) = 1
-        and then Nkind (First_Idx) = N_Range
-        and then Compile_Time_Known_Value (Low_Bound (First_Idx))
-        and then Compile_Time_Known_Value (High_Bound (First_Idx))
-        and then Expr_Value (High_Bound (First_Idx)) =
-                                         Expr_Value (Low_Bound (First_Idx)) + 1
+        and then Compile_Time_Known_Bounds (Ltyp)
+        and then Expr_Value (Type_High_Bound (Etype (First_Idx))) =
+                   Expr_Value (Type_Low_Bound (Etype (First_Idx))) + 1
       then
          declare
             Ctyp         : constant Entity_Id := Component_Type (Ltyp);
+            Low_B        : constant Node_Id :=
+              Type_Low_Bound (Etype (First_Idx));
+            High_B       : constant Node_Id :=
+              Type_High_Bound (Etype (First_Idx));
             L, R         : Node_Id;
             TestL, TestH : Node_Id;
 
@@ -2003,28 +2005,24 @@ package body Exp_Ch4 is
             L :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Copy_Tree (New_Lhs),
-                Expressions =>
-                  New_List (New_Copy_Tree (Low_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (Low_B)));
 
             R :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Copy_Tree (New_Rhs),
-                Expressions =>
-                  New_List (New_Copy_Tree (Low_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (Low_B)));
 
             TestL := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
 
             L :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Lhs,
-                Expressions =>
-                  New_List (New_Copy_Tree (High_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (High_B)));
 
             R :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Rhs,
-                Expressions =>
-                  New_List (New_Copy_Tree (High_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (High_B)));
 
             TestH := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
 
