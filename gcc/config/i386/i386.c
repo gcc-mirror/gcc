@@ -5802,6 +5802,8 @@ output_indirect_thunk (unsigned int regno)
     }
 
   fputs ("\tret\n", asm_out_file);
+  if ((ix86_harden_sls & harden_sls_return))
+    fputs ("\tint3\n", asm_out_file);
 }
 
 /* Output a funtion with a call and return thunk for indirect branch.
@@ -15738,6 +15740,8 @@ ix86_output_jmp_thunk_or_indirect (const char *thunk_name, const int regno)
       fprintf (asm_out_file, "\tjmp\t");
       assemble_name (asm_out_file, thunk_name);
       putc ('\n', asm_out_file);
+      if ((ix86_harden_sls & harden_sls_indirect_branch))
+	fputs ("\tint3\n", asm_out_file);
     }
   else
     output_indirect_thunk (regno);
@@ -15960,10 +15964,10 @@ ix86_output_indirect_jmp (rtx call_op)
 	gcc_unreachable ();
 
       ix86_output_indirect_branch (call_op, "%0", true);
-      return "";
     }
   else
-    return "%!jmp\t%A0";
+    output_asm_insn ("%!jmp\t%A0", &call_op);
+  return (ix86_harden_sls & harden_sls_indirect_branch) ? "int3" : "";
 }
 
 /* Output return instrumentation for current function if needed.  */
@@ -16031,10 +16035,8 @@ ix86_output_function_return (bool long_p)
       return "";
     }
 
-  if (!long_p)
-    return "ret";
-
-  return "rep%; ret";
+  output_asm_insn (long_p ? "rep%; ret" : "ret", nullptr);
+  return (ix86_harden_sls & harden_sls_return) ? "int3" : "";
 }
 
 /* Output indirect function return.  RET_OP is the function return
@@ -16129,7 +16131,12 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
       if (output_indirect_p && !direct_p)
 	ix86_output_indirect_branch (call_op, xasm, true);
       else
-	output_asm_insn (xasm, &call_op);
+	{
+	  output_asm_insn (xasm, &call_op);
+	  if (!direct_p
+	      && (ix86_harden_sls & harden_sls_indirect_branch))
+	    return "int3";
+	}
       return "";
     }
 
