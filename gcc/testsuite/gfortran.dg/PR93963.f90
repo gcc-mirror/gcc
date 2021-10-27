@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-fdump-tree-original" }
 !
 ! Test the fix for PR93963
 !
@@ -190,3 +191,7 @@ program selr_p
   deallocate(inta)
 
 end program selr_p
+
+! Special code for assumed rank - but only if not allocatable/pointer
+! Thus, expect it only once for subroutine rank_o but not for rank_a or rank_p
+! { dg-final { scan-tree-dump-times "ubound != -1" 1 "original" } }

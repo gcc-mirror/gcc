@@ -3685,7 +3685,7 @@ gfc_trans_select_rank_cases (gfc_code * code)
   rank = gfc_conv_descriptor_rank (se.expr);
   rank = gfc_evaluate_now (rank, &block);
   symbol_attribute attr = gfc_expr_attr (code->expr1);
-  if (!attr.pointer || !attr.allocatable)
+  if (!attr.pointer && !attr.allocatable)
     {
       /* Special case for assumed-rank ('rank(*)', internally -1):
 	 rank = (rank == 0 || ubound[rank-1] != -1) ? rank : -1.  */
