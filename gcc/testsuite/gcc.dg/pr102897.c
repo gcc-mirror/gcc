@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* Specify C99 to avoid the warning/error on compound literals.  */
-/* { dg-options "-O1 -std=c99" } */
+/* { dg-options "-O1 -std=c99 -Wno-psabi" } */
 
 /* Verify that there is no ICE.  */
 
