@@ -1,3 +1,174 @@
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102238
+	PR tree-optimization/102919
+	* gimple-ssa-sprintf.c (get_string_length): Add an argument.
+	(array_elt_at_offset): Move to pointer-query.
+	(set_aggregate_size_and_offset): New function.
+	(field_at_offset):  Move to pointer-query.
+	(get_origin_and_offset): Rename...
+	(get_origin_and_offset_r): this.  Add an argument.  Make aggregate
+	handling more robust.
+	(get_origin_and_offset): New.
+	(alias_offset): Add an argument.
+	(format_string): Use subobject size determined by get_origin_and_offset.
+	* pointer-query.cc (field_at_offset): Move from gimple-ssa-sprintf.c.
+	Improve/correct handling of aggregates.
+	(array_elt_at_offset): Same.
+	* pointer-query.h (field_at_offset): Declare.
+	(array_elt_at_offset): Declare.
+
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (check_strncat_sizes): Pass access_data ctor additional
+	arguments.
+	(expand_builtin_memcmp): Move code to gimple-ssa-warn-access.cc.
+	(expand_builtin_fork_or_exec): Same.
+	* gimple-array-bounds.cc (array_bounds_checker::check_mem_ref): Pass
+	compute_objsize additional arguments.
+	(inbounds_memaccess_p): Same.
+	(array_bounds_checker::check_array_bounds): Add an assert.  Stash
+	statement in a member.
+	(check_array_bounds_dom_walker::before_dom_children): Same.
+	* gimple-array-bounds.h (array_bounds_checker::m_stmt): New member.
+	* gimple-ssa-sprintf.c (get_destination_size): Add an argument.
+	(handle_printf_call): Pass a new argument.
+	* gimple-ssa-warn-access.cc (get_size_range): Add an argument.
+	(check_access): Add an argument and pass it along to callees.
+	(check_read_access): Make a member function.
+	(pass_waccess::check_strcat): Pass access_data ctor additional
+	arguments.
+	(pass_waccess::check_strncat): Same.
+	(pass_waccess::check_stxcpy): Same.
+	(pass_waccess::check_stxncpy): Same.
+	(pass_waccess::check_strncmp): Same.
+	(pass_waccess::check_read_access): Same.
+	(pass_waccess::check_builtin): Same.
+	(pass_waccess::maybe_check_access_sizes): Same.
+	(pass_waccess::maybe_check_dealloc_call): Same.
+	* gimple-ssa-warn-access.h (check_read_access): Declare a new
+	member function.
+	* pointer-query.cc (compute_objsize_r): Add an argument.
+	(gimple_call_return_array): Same.
+	(gimple_call_alloc_size): Same.
+	(access_ref::access_ref): Same.
+	(access_ref::get_ref): Same.
+	(pointer_query::get_ref): Same.
+	(handle_min_max_size): Pass an arguments to callees.
+	(handle_array_ref): Add an argument.
+	(handle_mem_ref): Same.
+	(compute_objsize): Same.
+	* pointer-query.h (struct access_ref): Adjust signatures.
+	(struct access_data): Same.
+	(gimple_call_alloc_size): Add an argument.
+	(gimple_parm_array_size): Same.
+	(compute_objsize): Same.
+	* tree-ssa-strlen.c (strlen_pass::adjust_last_stmt): Pass an additional
+	argument to compute_objsize.
+	(strlen_pass::maybe_warn_overflow): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+
+2021-10-26  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/102453
+	* gimple-ssa-warn-access.cc (pass_waccess::check_atomic_builtin): New.
+	(pass_waccess::check_atomic_builtin): Call it.
+
+2021-10-26  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* lra-constraints.c (match_reload): Ignore out in checking values
+	of outs.
+	(curr_insn_transform): Collect outputs before doing reloads of operands.
+
+2021-10-26  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/102719
+	* config/rs6000/x86intrin.h: Move some included headers to new
+	headers.  Include new immintrin.h instead of those headers.
+	* config/rs6000/immintrin.h: New.
+	* config/rs6000/x86gprintrin.h: New.
+	* config.gcc (powerpc*-*-*): Add new headers to extra_headers.
+
+2021-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_create_addr_base_for_vector_ref):
+	Remove byte_offset parameter.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Likewise.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Adjust.
+	(vectorizable_load): Likewise.
+
+2021-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96109
+	* tree-vectorizer.h (dr_misalignment): Add optional offset
+	parameter.
+	* tree-vect-data-refs.c (dr_misalignment): Likewise.  Remove
+	offset applied for negative stride accesses.
+	(vect_enhance_data_refs_alignment): Compute negative stride
+	access offset and pass it to dr_misalignment.
+	* tree-vect-stmts.c (get_negative_load_store_type): Pass
+	negative offset to dr_misalignment.
+	(get_group_load_store_type): Likewise.
+	(get_load_store_type): Likewise.
+	(vectorizable_store): Remove asserts about alignment.
+	(vectorizable_load): Likewise.
+
+2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102897
+	* tree-ssa-forwprop.c (simplify_permutation): Remove a wrong assertion.
+
+2021-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Take offset in bytes.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-loop-manip.c (get_misalign_in_elems): Multiply
+	offset by element size.
+	(vect_create_cond_for_align_checks): Likewise.
+	* tree-vect-stmts.c (get_negative_load_store_type): Likewise.
+	(vectorizable_load): Remove duplicate leftover from merge
+	conflict.
+
+2021-10-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_v1ti_shift): New helper
+	function to expand V1TI mode logical shifts by integer constants.
+	(ix86_expand_v1ti_rotate): New helper function to expand V1TI
+	mode rotations by integer constants.
+	* config/i386/i386-protos.h (ix86_expand_v1ti_shift,
+	ix86_expand_v1ti_rotate): Prototype new functions here.
+	* config/i386/sse.md (ashlv1ti3, lshrv1ti3, rotlv1ti3, rotrv1ti3):
+	New TARGET_SSE2 expanders to implement V1TI shifts and rotations.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::maybe_register_path):
+	Avoid threading circular paths.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::resolve_phi):
+	Attempt to resolve all incoming paths to a PHI.
+	(back_threader::resolve_def): Always return true for PHIs.
+
+2021-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::find_paths_to_names):
+	Always try to resolve path without looking back.
+	* tree-ssa-threadupdate.c (dump_jump_thread): Indidicate whether
+	edge is a back edge.
+
+2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102789
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Do not
+	update inits of simd_lane_access.
+
 2021-10-25  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-vrp.c (vrp_simplify_cond_using_ranges): Add return type and
