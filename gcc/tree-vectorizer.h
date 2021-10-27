@@ -2152,8 +2152,17 @@ extern bool reduction_fn_for_scalar_code (enum tree_code, internal_fn *);
 
 /* Drive for loop transformation stage.  */
 extern class loop *vect_transform_loop (loop_vec_info, gimple *);
-extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
-						 vec_info_shared *);
+struct vect_loop_form_info
+{
+  tree number_of_iterations;
+  tree number_of_iterationsm1;
+  tree assumptions;
+  gcond *loop_cond;
+  gcond *inner_loop_cond;
+};
+extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
+extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
+					     const vect_loop_form_info *);
 extern bool vectorizable_live_operation (vec_info *,
 					 stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, slp_instance, int,

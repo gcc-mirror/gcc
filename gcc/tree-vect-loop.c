@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_ALGORITHM
+#define INCLUDE_FUNCTIONAL
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1309,7 +1310,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 }
 
 
-/* Function vect_analyze_loop_form_1.
+/* Function vect_analyze_loop_form.
 
    Verify that certain CFG restrictions hold, including:
    - the loop has a pre-header
@@ -1319,9 +1320,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
      niter could be analyzed under some assumptions.  */
 
 opt_result
-vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
-			  tree *assumptions, tree *number_of_iterationsm1,
-			  tree *number_of_iterations, gcond **inner_loop_cond)
+vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 {
   DUMP_VECT_SCOPE ("vect_analyze_loop_form");
 
@@ -1329,6 +1328,7 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
      vs. an outer (nested) loop.
      (FORNOW. May want to relax some of these restrictions in the future).  */
 
+  info->inner_loop_cond = NULL;
   if (!loop->inner)
     {
       /* Inner-most loop.  We currently require that the number of BBs is
@@ -1393,11 +1393,8 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 				       " unsupported outerloop form.\n");
 
       /* Analyze the inner-loop.  */
-      tree inner_niterm1, inner_niter, inner_assumptions;
-      opt_result res
-	= vect_analyze_loop_form_1 (loop->inner, inner_loop_cond,
-				    &inner_assumptions, &inner_niterm1,
-				    &inner_niter, NULL);
+      vect_loop_form_info inner;
+      opt_result res = vect_analyze_loop_form (loop->inner, &inner);
       if (!res)
 	{
 	  if (dump_enabled_p ())
@@ -1408,11 +1405,11 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 
       /* Don't support analyzing niter under assumptions for inner
 	 loop.  */
-      if (!integer_onep (inner_assumptions))
+      if (!integer_onep (inner.assumptions))
 	return opt_result::failure_at (vect_location,
 				       "not vectorized: Bad inner loop.\n");
 
-      if (!expr_invariant_in_loop_p (loop, inner_niter))
+      if (!expr_invariant_in_loop_p (loop, inner.number_of_iterations))
 	return opt_result::failure_at (vect_location,
 				       "not vectorized: inner-loop count not"
 				       " invariant.\n");
@@ -1420,6 +1417,7 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "Considering outer-loop vectorization.\n");
+      info->inner_loop_cond = inner.loop_cond;
     }
 
   if (!single_exit (loop))
@@ -1446,48 +1444,42 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 				   "not vectorized:"
 				   " abnormal loop exit edge.\n");
 
-  *loop_cond = vect_get_loop_niters (loop, assumptions, number_of_iterations,
-				     number_of_iterationsm1);
-  if (!*loop_cond)
+  info->loop_cond
+    = vect_get_loop_niters (loop, &info->assumptions,
+			    &info->number_of_iterations,
+			    &info->number_of_iterationsm1);
+  if (!info->loop_cond)
     return opt_result::failure_at
       (vect_location,
        "not vectorized: complicated exit condition.\n");
 
-  if (integer_zerop (*assumptions)
-      || !*number_of_iterations
-      || chrec_contains_undetermined (*number_of_iterations))
+  if (integer_zerop (info->assumptions)
+      || !info->number_of_iterations
+      || chrec_contains_undetermined (info->number_of_iterations))
     return opt_result::failure_at
-      (*loop_cond,
+      (info->loop_cond,
        "not vectorized: number of iterations cannot be computed.\n");
 
-  if (integer_zerop (*number_of_iterations))
+  if (integer_zerop (info->number_of_iterations))
     return opt_result::failure_at
-      (*loop_cond,
+      (info->loop_cond,
        "not vectorized: number of iterations = 0.\n");
 
   return opt_result::success ();
 }
 
-/* Analyze LOOP form and return a loop_vec_info if it is of suitable form.  */
+/* Create a loop_vec_info for LOOP with SHARED and the
+   vect_analyze_loop_form result.  */
 
-opt_loop_vec_info
-vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
+loop_vec_info
+vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
+			const vect_loop_form_info *info)
 {
-  tree assumptions, number_of_iterations, number_of_iterationsm1;
-  gcond *loop_cond, *inner_loop_cond = NULL;
-
-  opt_result res
-    = vect_analyze_loop_form_1 (loop, &loop_cond,
-				&assumptions, &number_of_iterationsm1,
-				&number_of_iterations, &inner_loop_cond);
-  if (!res)
-    return opt_loop_vec_info::propagate_failure (res);
-
   loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared);
-  LOOP_VINFO_NITERSM1 (loop_vinfo) = number_of_iterationsm1;
-  LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
-  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
-  if (!integer_onep (assumptions))
+  LOOP_VINFO_NITERSM1 (loop_vinfo) = info->number_of_iterationsm1;
+  LOOP_VINFO_NITERS (loop_vinfo) = info->number_of_iterations;
+  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = info->number_of_iterations;
+  if (!integer_onep (info->assumptions))
     {
       /* We consider to vectorize this loop by versioning it under
 	 some assumptions.  In order to do this, we need to clear
@@ -1498,7 +1490,7 @@ vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
 	 analysis are done under the assumptions.  */
       loop_constraint_set (loop, LOOP_C_FINITE);
       /* Also record the assumptions for versioning.  */
-      LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = assumptions;
+      LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
     }
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
@@ -1507,17 +1499,17 @@ vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
         {
           dump_printf_loc (MSG_NOTE, vect_location,
 			   "Symbolic number of iterations is ");
-	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, number_of_iterations);
+	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, info->number_of_iterations);
           dump_printf (MSG_NOTE, "\n");
         }
     }
 
-  stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (loop_cond);
+  stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (info->loop_cond);
   STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
-  if (inner_loop_cond)
+  if (info->inner_loop_cond)
     {
       stmt_vec_info inner_loop_cond_info
-	= loop_vinfo->lookup_stmt (inner_loop_cond);
+	= loop_vinfo->lookup_stmt (info->inner_loop_cond);
       STMT_VINFO_TYPE (inner_loop_cond_info) = loop_exit_ctrl_vec_info_type;
       /* If we have an estimate on the number of iterations of the inner
 	 loop use that to limit the scale for costing, otherwise use
@@ -1530,7 +1522,7 @@ vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
 
   gcc_assert (!loop->aux);
   loop->aux = loop_vinfo;
-  return opt_loop_vec_info::success (loop_vinfo);
+  return loop_vinfo;
 }
 
 
@@ -2899,43 +2891,57 @@ vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
   return true;
 }
 
-/* If LOOP_VINFO is already a main loop, return it unmodified.  Otherwise
-   try to reanalyze it as a main loop.  Return the loop_vinfo on success
-   and null on failure.  */
+/* Analyze LOOP with VECTOR_MODE and as epilogue if MAIN_LOOP_VINFO is
+   not NULL.  Process the analyzed loop with PROCESS even if analysis
+   failed.  Sets *N_STMTS and FATAL according to the analysis.
+   Return the loop_vinfo on success and wrapped null on failure.  */
 
-static loop_vec_info
-vect_reanalyze_as_main_loop (loop_vec_info loop_vinfo, unsigned int *n_stmts)
+static opt_loop_vec_info
+vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
+		     const vect_loop_form_info *loop_form_info,
+		     machine_mode vector_mode, loop_vec_info main_loop_vinfo,
+		     unsigned int *n_stmts, bool &fatal,
+		     std::function<void(loop_vec_info)> process = nullptr)
 {
-  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
-    return loop_vinfo;
+  loop_vec_info loop_vinfo
+    = vect_create_loop_vinfo (loop, shared, loop_form_info);
+  loop_vinfo->vector_mode = vector_mode;
+
+  if (main_loop_vinfo)
+    LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = main_loop_vinfo;
+
+  /* Run the main analysis.  */
+  fatal = false;
+  opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal, n_stmts);
+  loop->aux = NULL;
+
+  /* Process info before we destroy loop_vinfo upon analysis failure
+     when there was no fatal failure.  */
+  if (!fatal && process)
+    process (loop_vinfo);
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "***** Reanalyzing as a main loop with vector mode %s\n",
-		     GET_MODE_NAME (loop_vinfo->vector_mode));
+    {
+      if (res)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Analysis succeeded with vector mode %s\n",
+			 GET_MODE_NAME (loop_vinfo->vector_mode));
+      else
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Analysis failed with vector mode %s\n",
+			 GET_MODE_NAME (loop_vinfo->vector_mode));
+    }
 
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  vec_info_shared *shared = loop_vinfo->shared;
-  opt_loop_vec_info main_loop_vinfo = vect_analyze_loop_form (loop, shared);
-  gcc_assert (main_loop_vinfo);
-
-  main_loop_vinfo->vector_mode = loop_vinfo->vector_mode;
-
-  bool fatal = false;
-  bool res = vect_analyze_loop_2 (main_loop_vinfo, fatal, n_stmts);
-  loop->aux = NULL;
   if (!res)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Failed to analyze main loop with vector"
-			 " mode %s\n",
-			 GET_MODE_NAME (loop_vinfo->vector_mode));
-      delete main_loop_vinfo;
-      return NULL;
+      delete loop_vinfo;
+      if (fatal)
+	gcc_checking_assert (main_loop_vinfo == NULL);
+      return opt_loop_vec_info::propagate_failure (res);
     }
-  LOOP_VINFO_VECTORIZABLE_P (main_loop_vinfo) = 1;
-  return main_loop_vinfo;
+
+  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
+  return opt_loop_vec_info::success (loop_vinfo);
 }
 
 /* Function vect_analyze_loop.
@@ -2968,34 +2974,29 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
        "not vectorized: loop nest containing two or more consecutive inner"
        " loops cannot be vectorized\n");
 
+  /* Analyze the loop form.  */
+  vect_loop_form_info loop_form_info;
+  opt_result res = vect_analyze_loop_form (loop, &loop_form_info);
+  if (!res)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "bad loop form.\n");
+      return opt_loop_vec_info::propagate_failure (res);
+    }
+
   unsigned n_stmts = 0;
   machine_mode autodetected_vector_mode = VOIDmode;
   opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
   machine_mode next_vector_mode = VOIDmode;
   poly_uint64 lowest_th = 0;
-  unsigned vectorized_loops = 0;
   bool pick_lowest_cost_p = ((autovec_flags & VECT_COMPARE_COSTS)
 			     && !unlimited_cost_model (loop));
 
   bool vect_epilogues = false;
-  opt_result res = opt_result::success ();
   unsigned HOST_WIDE_INT simdlen = loop->simdlen;
   while (1)
     {
-      /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
-      opt_loop_vec_info loop_vinfo = vect_analyze_loop_form (loop, shared);
-      if (!loop_vinfo)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "bad loop form.\n");
-	  gcc_checking_assert (first_loop_vinfo == NULL);
-	  return loop_vinfo;
-	}
-      loop_vinfo->vector_mode = next_vector_mode;
-
-      bool fatal = false;
-
       /* When pick_lowest_cost_p is true, we should in principle iterate
 	 over all the loop_vec_infos that LOOP_VINFO could replace and
 	 try to vectorize LOOP_VINFO under the same conditions.
@@ -3024,43 +3025,35 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	 LOOP_VINFO fails when treated as an epilogue loop, succeeds when
 	 treated as a standalone loop, and ends up being genuinely cheaper
 	 than FIRST_LOOP_VINFO.  */
-      if (vect_epilogues)
-	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
 
-      res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
-      if (mode_i == 0)
-	autodetected_vector_mode = loop_vinfo->vector_mode;
-      if (dump_enabled_p ())
+      bool fatal;
+      auto cb = [&] (loop_vec_info loop_vinfo)
 	{
-	  if (res)
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Analysis succeeded with vector mode %s\n",
-			     GET_MODE_NAME (loop_vinfo->vector_mode));
-	  else
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Analysis failed with vector mode %s\n",
-			     GET_MODE_NAME (loop_vinfo->vector_mode));
-	}
+	  if (mode_i == 0)
+	    autodetected_vector_mode = loop_vinfo->vector_mode;
+	  while (mode_i < vector_modes.length ()
+		 && vect_chooses_same_modes_p (loop_vinfo,
+					       vector_modes[mode_i]))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "***** The result for vector mode %s would"
+				 " be the same\n",
+				 GET_MODE_NAME (vector_modes[mode_i]));
+	      mode_i += 1;
+	    }
+	};
+      opt_loop_vec_info loop_vinfo
+	= vect_analyze_loop_1 (loop, shared, &loop_form_info,
+			       next_vector_mode,
+			       vect_epilogues
+			       ? (loop_vec_info)first_loop_vinfo : NULL,
+			       &n_stmts, fatal, cb);
+      if (fatal)
+	break;
 
-      loop->aux = NULL;
-
-      if (!fatal)
-	while (mode_i < vector_modes.length ()
-	       && vect_chooses_same_modes_p (loop_vinfo, vector_modes[mode_i]))
-	  {
-	    if (dump_enabled_p ())
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "***** The result for vector mode %s would"
-			       " be the same\n",
-			       GET_MODE_NAME (vector_modes[mode_i]));
-	    mode_i += 1;
-	  }
-
-      if (res)
+      if (loop_vinfo)
 	{
-	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
-	  vectorized_loops++;
-
 	  /* Once we hit the desired simdlen for the first time,
 	     discard any previous attempts.  */
 	  if (simdlen
@@ -3085,33 +3078,44 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      if (vinfos.is_empty ()
 		  && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
 		{
-		  loop_vec_info main_loop_vinfo
-		    = vect_reanalyze_as_main_loop (loop_vinfo, &n_stmts);
-		  if (main_loop_vinfo == loop_vinfo)
+		  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
 		    {
 		      delete first_loop_vinfo;
 		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		    }
-		  else if (main_loop_vinfo
-			   && vect_joust_loop_vinfos (main_loop_vinfo,
-						      first_loop_vinfo))
-		    {
-		      delete first_loop_vinfo;
-		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		      delete loop_vinfo;
-		      loop_vinfo
-			= opt_loop_vec_info::success (main_loop_vinfo);
 		    }
 		  else
 		    {
 		      if (dump_enabled_p ())
 			dump_printf_loc (MSG_NOTE, vect_location,
-					 "***** No longer preferring vector"
-					 " mode %s after reanalyzing the loop"
-					 " as a main loop\n",
+					 "***** Reanalyzing as a main loop "
+					 "with vector mode %s\n",
 					 GET_MODE_NAME
-					   (main_loop_vinfo->vector_mode));
-		      delete main_loop_vinfo;
+					   (loop_vinfo->vector_mode));
+		      opt_loop_vec_info main_loop_vinfo
+			= vect_analyze_loop_1 (loop, shared, &loop_form_info,
+					       loop_vinfo->vector_mode,
+					       NULL, &n_stmts, fatal);
+		      if (main_loop_vinfo
+			  && vect_joust_loop_vinfos (main_loop_vinfo,
+						     first_loop_vinfo))
+			{
+			  delete first_loop_vinfo;
+			  first_loop_vinfo = opt_loop_vec_info::success (NULL);
+			  delete loop_vinfo;
+			  loop_vinfo
+			    = opt_loop_vec_info::success (main_loop_vinfo);
+			}
+		      else
+			{
+			  if (dump_enabled_p ())
+			    dump_printf_loc (MSG_NOTE, vect_location,
+					     "***** No longer preferring vector"
+					     " mode %s after reanalyzing the "
+					     " loop as a main loop\n",
+					     GET_MODE_NAME
+					       (loop_vinfo->vector_mode));
+			  delete main_loop_vinfo;
+			}
 		    }
 		}
 	    }
@@ -3159,16 +3163,6 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	     alternatives.  */
 	  if (!simdlen && !vect_epilogues && !pick_lowest_cost_p)
 	    break;
-	}
-      else
-	{
-	  delete loop_vinfo;
-	  loop_vinfo = opt_loop_vec_info::success (NULL);
-	  if (fatal)
-	    {
-	      gcc_checking_assert (first_loop_vinfo == NULL);
-	      break;
-	    }
 	}
 
       /* Handle the case that the original loop can use partial
