@@ -2068,6 +2068,11 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	     and the operand is a signaling NaN.  */
 	  if (HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d))
 	    return NULL_RTX;
+	  /* Or if flag_rounding_math is on and the truncation is not
+	     exact.  */
+	  if (HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+	      && !exact_real_truncate (mode, &d))
+	    return NULL_RTX;
 	  d = real_value_truncate (mode, d);
 	  break;
 	case FLOAT_EXTEND:
