@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp-details -fdump-tree-vrp-thread1-details" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details" } */
 
 static int blocksize = 4096;
 
@@ -34,8 +34,3 @@ void foo (void)
 
 /* First, we should simplify the bits < 0 test within the loop.  */
 /* { dg-final { scan-tree-dump-times "Simplified relational" 1 "evrp" } } */
-
-/* We used to check for 3 threaded jumps here, but they all would
-   rotate the loop.  */
-
-

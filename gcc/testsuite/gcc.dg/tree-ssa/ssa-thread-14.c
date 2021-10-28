@@ -1,7 +1,6 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O2 -fdump-tree-vrp-thread1-details --param logical-op-non-short-circuit=1" }  */
-/* { dg-additional-options "-fdisable-tree-thread1" } */
-/* { dg-final { scan-tree-dump-times "Threaded jump" 8 "vrp-thread1" } }  */
+/* { dg-additional-options "-O2 --param logical-op-non-short-circuit=1 -fdump-tree-threadfull1-details" }  */
+/* { dg-final { scan-tree-dump-times "Registering jump thread" 8 "threadfull1" } }  */
 
 void foo (void);
 void bar (void);

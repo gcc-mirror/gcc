@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdisable-tree-ethread -fdisable-tree-thread1 -fdisable-tree-thread2 -fno-tree-dominator-opts -fdump-tree-thread3-details" }
+// { dg-options "-O2 -fdisable-tree-ethread -fdisable-tree-thread1 -fdisable-tree-thread2 -fno-tree-dominator-opts -fdump-tree-threadfull2-details" }
 
 // Test that we can thread jumps across the backedge of a loop through
 // the switch statement to a particular case.
@@ -29,4 +29,4 @@ int foo (unsigned int x, int s)
   return s;
 }
 
-// { dg-final { scan-tree-dump "Registering jump thread:.*normal \\(back\\)" "thread3" } }
+// { dg-final { scan-tree-dump "Registering jump thread:.*normal \\(back\\)" "threadfull2" } }

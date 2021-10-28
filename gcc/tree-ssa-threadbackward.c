@@ -955,7 +955,7 @@ const pass_data pass_data_thread_jumps =
 const pass_data pass_data_thread_jumps_full =
 {
   GIMPLE_PASS,
-  "thread-full",
+  "threadfull",
   OPTGROUP_NONE,
   TV_TREE_SSA_THREAD_JUMPS,
   ( PROP_cfg | PROP_ssa ),
