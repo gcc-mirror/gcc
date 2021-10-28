@@ -59,6 +59,8 @@
 #include "diagnostic-core.h" /* For error_at and friends.  */
 #include "intl.h"	     /* For _().  */
 
+#define RUST_ATTRIBUTE_NORETURN ATTRIBUTE_NORETURN
+
 // File separator to use based on whether or not the OS we're working with is
 // DOS-based
 #if defined(HAVE_DOS_BASED_FILE_SYSTEM)

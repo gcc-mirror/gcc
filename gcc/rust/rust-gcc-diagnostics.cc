@@ -24,6 +24,16 @@
 #include "options.h"
 
 void
+rust_be_internal_error_at (const Location location, const std::string &errmsg)
+{
+  std::string loc_str = Linemap::location_to_string (location);
+  if (loc_str.empty ())
+    internal_error ("%s", errmsg.c_str ());
+  else
+    internal_error ("at %s, %s", loc_str.c_str (), errmsg.c_str ());
+}
+
+void
 rust_be_error_at (const Location location, const std::string &errmsg)
 {
   location_t gcc_loc = location.gcc_location ();

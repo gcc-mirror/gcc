@@ -50,6 +50,10 @@
 
 // simple location
 extern void
+rust_internal_error_at (const Location, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (2, 3)
+  RUST_ATTRIBUTE_NORETURN;
+extern void
 rust_error_at (const Location, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 extern void
@@ -81,6 +85,9 @@ rust_close_quote ();
 // instead use the equivalent routines above. The back end is required to
 // implement these routines.
 
+extern void
+rust_be_internal_error_at (const Location, const std::string &errmsg)
+  RUST_ATTRIBUTE_NORETURN;
 extern void
 rust_be_error_at (const Location, const std::string &errmsg);
 extern void

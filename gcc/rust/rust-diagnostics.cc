@@ -147,6 +147,16 @@ rust_close_quote ()
 }
 
 void
+rust_internal_error_at (const Location location, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_internal_error_at (location, expand_message (fmt, ap));
+  va_end (ap);
+}
+
+void
 rust_error_at (const Location location, const char *fmt, ...)
 {
   va_list ap;
