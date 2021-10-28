@@ -427,6 +427,15 @@ public:
       = ctx->get_backend ()->negation_expression (op, negated_expr, location);
   }
 
+  void visit (HIR::ArrayIndexExpr &expr) override
+  {
+    Bexpression *array = ConstFoldExpr::fold (expr.get_array_expr ());
+    Bexpression *index = ConstFoldExpr::fold (expr.get_index_expr ());
+
+    folded = ctx->get_backend ()->array_index_expression (array, index,
+							  expr.get_locus ());
+  }
+
 private:
   ConstFoldExpr ()
     : ConstFoldBase (), folded (ctx->get_backend ()->error_expression ())
