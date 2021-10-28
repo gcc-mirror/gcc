@@ -30,14 +30,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct shared_memory_act;
 typedef struct shared_memory_act * shared_memory;
 
-#define SHMPTR_NULL ((shared_mem_ptr) {.offset = -1})
-#define SHMPTR_IS_NULL(x) (x.offset == -1)
+#define SHMPTR_NULL ((shared_mem_ptr) {.p = NULL})
+#define SHMPTR_IS_NULL(x) (x.p == NULL)
 
 #define SHMPTR_DEREF(x, s, sm) \
-  ((x) = *(__typeof(x) *) shared_mem_ptr_to_void_ptr (sm, s);
-#define SHMPTR_AS(t, s, sm) ((t) shared_mem_ptr_to_void_ptr(sm, s))
+  ((x) = *(__typeof(x) *) s.p)
+#define SHMPTR_AS(t, s, sm) ((t) s.p) 
 #define SHMPTR_SET(v, s, sm) (v = SHMPTR_AS(__typeof(v), s, sm))
-#define SHMPTR_EQUALS(s1, s2) (s1.offset == s2.offset)
+#define SHMPTR_EQUALS(s1, s2) (s1.p == s2.p)
 
 #define SHARED_MEMORY_RAW_ALLOC(mem, t, n) \
   shared_memory_get_mem_with_alignment(mem, sizeof(t)*n, __alignof__(t))
@@ -50,7 +50,7 @@ typedef struct shared_memory_act * shared_memory;
 
 typedef struct shared_mem_ptr
 {
-  ssize_t offset;
+  void *p;
 } shared_mem_ptr;
 
 void shared_memory_init (shared_memory *, size_t);
@@ -62,8 +62,5 @@ internal_proto (shared_memory_prepare);
 shared_mem_ptr shared_memory_get_mem_with_alignment (shared_memory *mem,
 						     size_t size, size_t align);
 internal_proto (shared_memory_get_mem_with_alignment);
-
-void *shared_mem_ptr_to_void_ptr (shared_memory *, shared_mem_ptr);
-internal_proto (shared_mem_ptr_to_void_ptr);
 
 #endif

@@ -416,8 +416,8 @@ dump_hm (hashmap *hm)
   size_t occ_num = 0;
   PE ("h %p (size: %lu, bitnum: %d)\n", hm, hm->s->size, hm->s->bitnum);
   data = get_data (hm);
-  fprintf (stderr, "offset = %lx data = %p\n",
-	   (unsigned long)hm->s->data.offset, data);
+  fprintf (stderr, "offset = %p data = %p\n",
+	   (unsigned long)hm->s->data.p, data);
 
 #undef INDENT
 #define INDENT "   "
@@ -426,9 +426,9 @@ dump_hm (hashmap *hm)
       exp = get_expected_offset (hm, data[i].id);
       if (!SHMPTR_IS_NULL (data[i].p))
 	{
-	  PE ("%2lu. (exp: %2lu w la %d) id %#-16lx p %#-14lx s %-7lu -- la "
+	  PE ("%2lu. (exp: %2lu w la %d) id %#-16lx p %#-14p s %-7lu -- la "
 	      "%u ref %u %-16p\n",
-	      i, exp, data[exp].max_lookahead, data[i].id, data[i].p.offset,
+	      i, exp, data[exp].max_lookahead, data[i].id, data[i].p.p,
 	      data[i].s, data[i].max_lookahead, data[i].refcnt, data + i);
 	  occ_num++;
 	}

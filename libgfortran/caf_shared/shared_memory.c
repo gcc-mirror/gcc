@@ -46,39 +46,27 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef struct
 {
-  size_t size;
   size_t used;
-  int fd;
 } global_shared_memory_meta;
 
 /* Type realization for opaque type shared_memory.  */
 
 typedef struct shared_memory_act
 {
-  global_shared_memory_meta *meta;
-  void *header;
-  size_t last_seen_size;
-
-  /* We don't need to free these. We probably also don't need to keep
-     track of them, but it is much more future proof if we do.  */
-
-  size_t num_local_allocs;
-
-  struct local_alloc
-  {
-    void *base;
-    size_t size;
-  } allocs[];
-
+  union { 
+    void *base; 
+    global_shared_memory_meta *meta;
+  } glbl;
+  size_t size; // const
 } shared_memory_act;
 
 /* Convenience wrapper for mmap.  */
 
 static inline void *
-map_memory (int fd, size_t size, off_t offset)
+map_memory (size_t size)
 {
   void *ret
-      = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, offset);
+      = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
   if (ret == MAP_FAILED)
     {
       perror ("mmap failed");
@@ -87,38 +75,6 @@ map_memory (int fd, size_t size, off_t offset)
   return ret;
 }
 
-/* Returns the size of shared_memory_act.  */
-
-static inline size_t
-get_shared_memory_act_size (int nallocs)
-{
-  return sizeof (shared_memory_act) + nallocs * sizeof (struct local_alloc);
-}
-
-/* When the shared memory block is enlarged, we need to map it into
-   virtual memory again.  */
-
-static inline shared_memory_act *
-new_base_mapping (shared_memory_act *mem)
-{
-  shared_memory_act *newmem;
-  /* We need another entry in the alloc table.  */
-  mem->num_local_allocs++;
-  newmem = realloc (mem, get_shared_memory_act_size (mem->num_local_allocs));
-  newmem->allocs[newmem->num_local_allocs - 1] = ((struct local_alloc){
-      .base = map_memory (newmem->meta->fd, newmem->meta->size, 0),
-      .size = newmem->meta->size });
-  newmem->last_seen_size = newmem->meta->size;
-  return newmem;
-}
-
-/* Return the most recently allocated base pointer.  */
-
-static inline void *
-last_base (shared_memory_act *mem)
-{
-  return mem->allocs[mem->num_local_allocs - 1].base;
-}
 
 /* Get a pointer into the shared memory block with alignemnt
    (works similar to sbrk).  */
@@ -127,47 +83,11 @@ shared_mem_ptr
 shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
 				      size_t align)
 {
-  shared_memory_act *mem = *pmem;
-  size_t new_size;
-  size_t orig_used;
-
-  /* Offset into memory block with alignment.  */
-  size_t used_wa = alignto (mem->meta->used, align);
-
-  if (used_wa + size <= mem->meta->size)
-    {
-      memset (last_base (mem) + mem->meta->used, 0xCA,
-	      used_wa - mem->meta->used);
-      memset (last_base (mem) + used_wa, 0x42, size);
-      mem->meta->used = used_wa + size;
-
-      return (shared_mem_ptr){ .offset = used_wa };
-    }
-
-  /* We need to enlarge the memory segment.  Double the size if that
-     is big enough, otherwise get what's needed.  */
-
-  if (mem->meta->size * 2 > used_wa + size)
-    new_size = mem->meta->size * 2;
-  else
-    new_size = round_to_pagesize (used_wa + size);
-
-  orig_used = mem->meta->used;
-  mem->meta->size = new_size;
-  mem->meta->used = used_wa + size;
-  ftruncate (mem->meta->fd, mem->meta->size);
-  /* This also sets the new base pointer where the shared memory
-     can be found in the address space.  */
-
-  mem = new_base_mapping (mem);
-
-  *pmem = mem;
-  assert (used_wa != 0);
-
-  memset (last_base (mem) + orig_used, 0xCA, used_wa - orig_used);
-  memset (last_base (mem) + used_wa, 0x42, size);
-
-  return (shared_mem_ptr){ .offset = used_wa };
+  shared_memory_act* mem = *pmem;
+  size_t aligned_curr_size = alignto(mem->glbl.meta->used, align);
+  void *p = mem->glbl.base+aligned_curr_size;
+  mem->glbl.meta->used = aligned_curr_size + size;
+  return (shared_mem_ptr) {.p = p};
 }
 
 /* If another image changed the size, update the size accordingly.  */
@@ -175,44 +95,21 @@ shared_memory_get_mem_with_alignment (shared_memory_act **pmem, size_t size,
 void
 shared_memory_prepare (shared_memory_act **pmem)
 {
-  shared_memory_act *mem = *pmem;
-  if (mem->meta->size == mem->last_seen_size)
-    return;
-  mem = new_base_mapping (mem);
-  *pmem = mem;
+  asm volatile("":::"memory");
 }
 
 /* Initialize the memory with one page, the shared metadata of the
    shared memory is stored at the beginning.  */
 
 void
-shared_memory_init (shared_memory_act **pmem, size_t initial_size)
+shared_memory_init (shared_memory_act **pmem, size_t size)
 {
   shared_memory_act *mem;
-  int fd;
 
-  mem = malloc (get_shared_memory_act_size (1));
-  fd = get_shmem_fd ();
-
-  ftruncate (fd, initial_size);
-  mem->meta = map_memory (fd, initial_size, 0);
-  *mem->meta = ((global_shared_memory_meta){
-      .size = initial_size,
-      .used = sizeof (global_shared_memory_meta),
-      .fd = fd });
-  mem->last_seen_size = initial_size;
-  mem->num_local_allocs = 1;
-  mem->allocs[0]
-      = ((struct local_alloc){ .base = mem->meta, .size = initial_size });
+  mem = malloc (sizeof(shared_memory_act));
+  mem->glbl.base = map_memory(size);
+  mem->size = size;
+  mem->glbl.meta->used = sizeof(global_shared_memory_meta);
 
   *pmem = mem;
-}
-
-/* Convert a shared memory pointer (i.e. an offset into the shared
-   memory block) to a pointer.  */
-
-void *
-shared_mem_ptr_to_void_ptr (shared_memory_act **pmem, shared_mem_ptr smp)
-{
-  return last_base (*pmem) + smp.offset;
 }

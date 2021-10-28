@@ -68,7 +68,6 @@ shared_malloc (allocator *a, size_t size)
   ret = a->s->free_bucket_head[bucket_list_index];
   a->s->free_bucket_head[bucket_list_index]
       = (SHMPTR_AS (bucket *, ret, a->shm)->next);
-  assert (ret.offset != 0);
   return ret;
 }
 

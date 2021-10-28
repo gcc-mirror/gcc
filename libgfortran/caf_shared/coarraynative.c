@@ -95,11 +95,11 @@ get_memory_size (void)
     }
   if (sz == 0)
     {
-      /* Use 256 MB for 32-bit systems and 256 GB for 64-bit systems.  */
+      /* Use 256 MB for 32-bit systems and 4 GB for 64-bit systems.  */
       if (sizeof (size_t) == 4)
 	sz = ((size_t) 1) << 28;
       else
-	sz = ((size_t) 1) << 38;
+	sz = ((size_t) 1) << 34;
     }
   return sz;
 }
