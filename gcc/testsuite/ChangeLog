@@ -1,3 +1,44 @@
+2021-10-27  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Warray-bounds-90.c: Fix a typo.
+
+2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/PR93963.f90: Extend testcase by scan-tree-dump test.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102897
+	* gcc.dg/pr102897.c: Add -Wno-psabi to dg-options.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-8.c: New test.
+	* c-c++-common/gomp/loop-9.c: New test.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102854
+	* g++.dg/gomp/loop-3.C: Don't expect some errors.
+	* g++.dg/gomp/loop-7.C: New test.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102753
+	* g++.dg/cpp2a/consteval7.C: Expect diagnostics on quux.
+	* g++.dg/cpp2a/consteval24.C: New test.
+	* g++.dg/cpp23/consteval-if12.C: New test.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102753
+	* g++.dg/cpp2a/consteval13.C: Don't expect errors.
+	* g++.dg/cpp2a/consteval20.C: New test.
+	* g++.dg/cpp2a/consteval21.C: New test.
+	* g++.dg/cpp2a/consteval22.C: New test.
+	* g++.dg/cpp2a/consteval23.C: New test.
+	* g++.dg/cpp23/consteval-if11.C: New test.
+
 2021-10-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/102238

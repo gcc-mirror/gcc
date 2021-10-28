@@ -3128,7 +3128,7 @@ cleanup:
    This assumes that the byte size is equal to the kind number for
    non-COMPLEX types, and equal to twice the kind number for COMPLEX.  */
 
-match
+static match
 gfc_match_old_kind_spec (gfc_typespec *ts)
 {
   match m;
@@ -5851,7 +5851,7 @@ set_binding_label (const char **dest_label, const char *sym_name,
 /* Set the status of the given common block as being BIND(C) or not,
    depending on the given parameter, is_bind_c.  */
 
-void
+static void
 set_com_block_bind_c (gfc_common_head *com_block, int is_bind_c)
 {
   com_block->is_bind_c = is_bind_c;
@@ -6039,7 +6039,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
    the type is C interoperable.  Errors are reported by the functions
    used to set/test these fields.  */
 
-bool
+static bool
 set_verify_bind_c_sym (gfc_symbol *tmp_sym, int num_idents)
 {
   bool retval = true;
@@ -6059,7 +6059,7 @@ set_verify_bind_c_sym (gfc_symbol *tmp_sym, int num_idents)
 /* Set the fields marking the given common block as BIND(C), including
    a binding label, and report any errors encountered.  */
 
-bool
+static bool
 set_verify_bind_c_com_block (gfc_common_head *com_block, int num_idents)
 {
   bool retval = true;
@@ -6079,7 +6079,7 @@ set_verify_bind_c_com_block (gfc_common_head *com_block, int num_idents)
 /* Retrieve the list of one or more identifiers that the given bind(c)
    attribute applies to.  */
 
-bool
+static bool
 get_bind_c_idents (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
@@ -6788,7 +6788,7 @@ match_result (gfc_symbol *function, gfc_symbol **result)
    clause and BIND(C), either one, or neither.  The draft does not
    require them to come in a specific order.  */
 
-match
+static match
 gfc_match_suffix (gfc_symbol *sym, gfc_symbol **result)
 {
   match is_bind_c;   /* Found bind(c).  */
@@ -10100,7 +10100,7 @@ check_extended_derived_type (char *name)
    not a handled attribute, and MATCH_YES otherwise.  TODO: More error
    checking on attribute conflicts needs to be done.  */
 
-match
+static match
 gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
 {
   /* See if the derived type is marked as private.  */
@@ -11778,6 +11778,7 @@ gfc_match_gcc_unroll (void)
 {
   int value;
 
+  /* FIXME: use gfc_match_small_literal_int instead, delete small_int  */
   if (gfc_match_small_int (&value) == MATCH_YES)
     {
       if (value < 0 || value > USHRT_MAX)

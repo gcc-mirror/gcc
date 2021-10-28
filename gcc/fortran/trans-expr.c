@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Calculate the number of characters in a string.  */
 
-tree
+static tree
 gfc_get_character_len (tree type)
 {
   tree len;
@@ -278,7 +278,7 @@ gfc_class_len_get (tree decl)
 /* Try to get the _len component of a class.  When the class is not unlimited
    poly, i.e. no _len field exists, then return a zero node.  */
 
-tree
+static tree
 gfc_class_len_or_zero_get (tree decl)
 {
   tree len;
@@ -382,7 +382,7 @@ VTAB_GET_FIELD_GEN (def_init, VTABLE_DEF_INIT_FIELD)
 VTAB_GET_FIELD_GEN (copy, VTABLE_COPY_FIELD)
 VTAB_GET_FIELD_GEN (final, VTABLE_FINAL_FIELD)
 VTAB_GET_FIELD_GEN (deallocate, VTABLE_DEALLOCATE_FIELD)
-
+#undef VTAB_GET_FIELD_GEN
 
 /* The size field is returned as an array index type.  Therefore treat
    it and only it specially.  */
@@ -1367,7 +1367,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 /* Given a class array declaration and an index, returns the address
    of the referenced element.  */
 
-tree
+static tree
 gfc_get_class_array_ref (tree index, tree class_decl, tree data_comp,
 			 bool unlimited)
 {
@@ -4531,7 +4531,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
    the length of each argument, adding any initialization code to PRE and
    any finalization code to POST.  */
 
-void
+static void
 gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
 			      stmtblock_t * pre, stmtblock_t * post)
 {

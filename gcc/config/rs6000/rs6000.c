@@ -5146,7 +5146,8 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
 	  {
 	    elements = TYPE_VECTOR_SUBPARTS (vectype);
-	    if (elements == 2)
+	    /* See PR102767, consider V1TI to keep consistency.  */
+	    if (elements == 2 || elements == 1)
 	      /* Double word aligned.  */
 	      return 4;
 
@@ -5183,39 +5184,40 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	if (TARGET_EFFICIENT_UNALIGNED_VSX)
 	  return 1;
 
-        if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
-          {
-            elements = TYPE_VECTOR_SUBPARTS (vectype);
-            if (elements == 2)
-              /* Double word aligned.  */
-              return 2;
+	if (TARGET_VSX && TARGET_ALLOW_MOVMISALIGN)
+	  {
+	    elements = TYPE_VECTOR_SUBPARTS (vectype);
+	    /* See PR102767, consider V1TI to keep consistency.  */
+	    if (elements == 2 || elements == 1)
+	      /* Double word aligned.  */
+	      return 2;
 
-            if (elements == 4)
-              {
-                switch (misalign)
-                  {
-                    case 8:
-                      /* Double word aligned.  */
-                      return 2;
+	    if (elements == 4)
+	      {
+		switch (misalign)
+		  {
+		  case 8:
+		    /* Double word aligned.  */
+		    return 2;
 
-                    case -1:
-                      /* Unknown misalignment.  */
-                    case 4:
-                    case 12:
-                      /* Word aligned.  */
-                      return 23;
+		  case -1:
+		    /* Unknown misalignment.  */
+		  case 4:
+		  case 12:
+		    /* Word aligned.  */
+		    return 23;
 
-                    default:
-                      gcc_unreachable ();
-                  }
-              }
-          }
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
 
-        if (TARGET_ALTIVEC)
-          /* Misaligned stores are not supported.  */
-          gcc_unreachable ();
+	if (TARGET_ALTIVEC)
+	  /* Misaligned stores are not supported.  */
+	  gcc_unreachable ();
 
-        return 2;
+	return 2;
 
       case vec_construct:
 	/* This is a rough approximation assuming non-constant elements
@@ -16033,9 +16035,7 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   machine_mode dest_mode = GET_MODE (dest);
   machine_mode mask_mode = GET_MODE (cc_op0);
   enum rtx_code rcode = GET_CODE (cond);
-  machine_mode cc_mode = CCmode;
   rtx mask;
-  rtx cond2;
   bool invert_move = false;
 
   if (VECTOR_UNIT_NONE_P (dest_mode))
@@ -16075,8 +16075,6 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
     case GEU:
     case LTU:
     case LEU:
-      /* Mark unsigned tests with CCUNSmode.  */
-      cc_mode = CCUNSmode;
 
       /* Invert condition to avoid compound test if necessary.  */
       if (rcode == GEU || rcode == LEU)
@@ -16095,6 +16093,9 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 
   if (!mask)
     return 0;
+
+  if (mask_mode != dest_mode)
+    mask = simplify_gen_subreg (dest_mode, mask, mask_mode, 0);
 
   if (invert_move)
     std::swap (op_true, op_false);
@@ -16135,13 +16136,11 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   if (!REG_P (op_false) && !SUBREG_P (op_false))
     op_false = force_reg (dest_mode, op_false);
 
-  cond2 = gen_rtx_fmt_ee (NE, cc_mode, gen_lowpart (dest_mode, mask),
-			  CONST0_RTX (dest_mode));
-  emit_insn (gen_rtx_SET (dest,
-			  gen_rtx_IF_THEN_ELSE (dest_mode,
-						cond2,
-						op_true,
-						op_false)));
+  rtx tmp = gen_rtx_IOR (dest_mode,
+			 gen_rtx_AND (dest_mode, gen_rtx_NOT (dest_mode, mask),
+				      op_false),
+			 gen_rtx_AND (dest_mode, mask, op_true));
+  emit_insn (gen_rtx_SET (dest, tmp));
   return 1;
 }
 

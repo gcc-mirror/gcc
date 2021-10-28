@@ -28,7 +28,7 @@ import itertools
 from functools import reduce
 
 
-CANONICAL_ORDER = "mafdgqlcbjtpvn"
+CANONICAL_ORDER = "imafdgqlcbjtpvn"
 LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
 
 #

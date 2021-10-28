@@ -8892,13 +8892,18 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       tmp = boolean_false_node;
     truth:
       {
-	tree op = TREE_OPERAND (t, 0);
-	if (!RECUR (op, rval))
+	tree op0 = TREE_OPERAND (t, 0);
+	tree op1 = TREE_OPERAND (t, 1);
+	if (!RECUR (op0, rval))
 	  return false;
+	if (!(flags & tf_error) && RECUR (op1, rval))
+	  /* When quiet, try to avoid expensive trial evaluation by first
+	     checking potentiality of the second operand.  */
+	  return true;
 	if (!processing_template_decl)
-	  op = cxx_eval_outermost_constant_expr (op, true);
-	if (tree_int_cst_equal (op, tmp))
-	  return RECUR (TREE_OPERAND (t, 1), rval);
+	  op0 = cxx_eval_outermost_constant_expr (op0, true);
+	if (tree_int_cst_equal (op0, tmp))
+	  return (flags & tf_error) ? RECUR (op1, rval) : false;
 	else
 	  return true;
       }
@@ -9107,6 +9112,17 @@ bool
 potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 				 tsubst_flags_t flags)
 {
+  if (flags & tf_error)
+    {
+      /* Check potentiality quietly first, as that could be performed more
+	 efficiently in some cases (currently only for TRUTH_*_EXPR).  If
+	 that fails, replay the check noisily to give errors.  */
+      flags &= ~tf_error;
+      if (potential_constant_expression_1 (t, want_rval, strict, now, flags))
+	return true;
+      flags |= tf_error;
+    }
+
   tree target = NULL_TREE;
   return potential_constant_expression_1 (t, want_rval, strict, now,
 					  flags, &target);

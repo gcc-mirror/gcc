@@ -87,3 +87,43 @@ types and subtypes, may be silently ignored.  Specifically, it is not
 currently recommended to rely on any effects this pragma might be
 expected to have when calling subprograms through access-to-subprogram
 variables.
+
+
+.. Hardened Conditionals:
+
+Hardened Conditionals
+=====================
+
+GNAT can harden conditionals to protect against control flow attacks.
+
+This is accomplished by two complementary transformations, each
+activated by a separate command-line option.
+
+The option *-fharden-compares* enables hardening of compares that
+compute results stored in variables, adding verification that the
+reversed compare yields the opposite result.
+
+The option *-fharden-conditional-branches* enables hardening of
+compares that guard conditional branches, adding verification of the
+reversed compare to both execution paths.
+
+These transformations are introduced late in the compilation pipeline,
+long after boolean expressions are decomposed into separate compares,
+each one turned into either a conditional branch or a compare whose
+result is stored in a boolean variable or temporary.  Compiler
+optimizations, if enabled, may also turn conditional branches into
+stored compares, and vice-versa.  Conditionals may also be optimized
+out entirely, if their value can be determined at compile time, and
+occasionally multiple compares can be combined into one.
+
+It is thus difficult to predict which of these two options will affect
+a specific compare operation expressed in source code.  Using both
+options ensures that every compare that is not optimized out will be
+hardened.
+
+The addition of reversed compares can be observed by enabling the dump
+files of the corresponding passes, through command line options
+*-fdump-tree-hardcmp* and *-fdump-tree-hardcbr*, respectively.
+
+They are separate options, however, because of the significantly
+different performance impact of the hardening transformations.

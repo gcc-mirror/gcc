@@ -1,3 +1,70 @@
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* intrinsic.h (gfc_check_sum, gfc_resolve_atan2d, gfc_resolve_kill,
+	gfc_resolve_kill_sub): Delete declaration.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-types.h (gfc_convert_function_code): Delete.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-stmt.h (gfc_trans_deallocate_array): Delete.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_scalarized_loop_end): Make static.
+	* trans-array.h (gfc_trans_scalarized_loop_end,
+	gfc_conv_tmp_ref, gfc_conv_array_transpose): Delete declaration.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* constructor.c (gfc_constructor_get_base): Make static.
+	(gfc_constructor_expr_foreach, gfc_constructor_swap): Delete.
+	* constructor.h (gfc_constructor_get_base): Remove declaration.
+	(gfc_constructor_expr_foreach, gfc_constructor_swap): Delete.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* decl.c (gfc_match_old_kind_spec, set_com_block_bind_c,
+	set_verify_bind_c_sym, set_verify_bind_c_com_block,
+	get_bind_c_idents, gfc_match_suffix, gfc_get_type_attr_spec,
+	check_extended_derived_type): Make static.
+	(gfc_match_gcc_unroll): Add comment.
+	* match.c (gfc_match_small_int_expr): Delete definition.
+	* match.h (gfc_match_small_int_expr): Delete declaration.
+	(gfc_match_name_C, gfc_match_old_kind_spec, set_com_block_bind_c,
+	set_verify_bind_c_sym, set_verify_bind_c_com_block,
+	get_bind_c_idents, gfc_match_suffix,
+	gfc_get_type_attr_spec): Delete declaration.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* expr.c (is_non_empty_structure_constructor): Make static.
+	* gfortran.h (gfc_check_any_c_kind): Delete.
+	* match.c (gfc_match_label): Make static.
+	* match.h (gfc_match_label): Delete declaration.
+	* scanner.c (file_changes_cur, file_changes_count,
+	file_changes_allocated): Make static.
+	* trans-expr.c (gfc_get_character_len): Make static.
+	(gfc_class_len_or_zero_get): Make static.
+	(VTAB_GET_FIELD_GEN): Undefine.
+	(gfc_get_class_array_ref): Make static.
+	(gfc_finish_interface_mapping): Make static.
+	* trans-types.c (gfc_check_any_c_kind): Delete.
+	(pfunc_type_node, dtype_type_node, gfc_get_ppc_type): Make static.
+	* trans-types.h (gfc_get_ppc_type): Delete declaration.
+	* trans.c (gfc_msg_wrong_return): Delete.
+	* trans.h (gfc_class_len_or_zero_get, gfc_class_vtab_extends_get,
+	gfc_vptr_extends_get, gfc_get_class_array_ref, gfc_get_character_len,
+	gfc_finish_interface_mapping, gfc_msg_wrong_return,
+	gfc_get_function_decl): Delete declaration.
+
+2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_select_rank_cases): Fix condition
+	for allocatables/pointers.
+
 2021-10-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102956

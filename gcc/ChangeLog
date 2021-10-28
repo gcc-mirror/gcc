@@ -1,3 +1,97 @@
+2021-10-27  Saagar Jha  <saagar@saagarjha.com>
+
+	* config.gcc: Adjust for Darwin21.
+	* config/darwin-c.c (macosx_version_as_macro): Likewise.
+	* config/darwin-driver.c (validate_macosx_version_min):
+	Likewise.
+	(darwin_find_version_from_kernel): Likewise.
+
+2021-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc
+	(path_range_query::range_defined_in_block): Call killing_def.
+
+2021-10-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Dump
+	operands as well as relation.
+	* gimple-range-path.cc
+	(path_range_query::compute_ranges_in_block): Compute PHI relations
+	first.  Compute outgoing relations at the end.
+	(path_range_query::compute_ranges): Remove call to compute_relations.
+	(path_range_query::compute_relations): Remove.
+	(path_range_query::maybe_register_phi_relation): New.
+	(path_range_query::compute_phi_relations): Abstract out
+	registering one PHI relation to...
+	(path_range_query::compute_outgoing_relations): ...here.
+	* gimple-range-path.h (class path_range_query): Remove
+	compute_relations.
+	Add maybe_register_phi_relation.
+
+2021-10-27  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (path_oracle::killing_def): Kill second
+	order relations.
+
+2021-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (good_cloning_opportunity_p): Decide whether to use
+	profile feedback depending on their local availability.
+
+2021-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (param_ipa_cp_profile_count_base): New parameter.
+	* doc/invoke.texi (Optimize Options): Add entry for
+	ipa-cp-profile-count-base.
+	* ipa-cp.c (max_count): Replace with base_count, replace all
+	occurrences too, unless otherwise stated.
+	(ipcp_cloning_candidate_p): identify mostly-directly called
+	functions based on their counts, not max_count.
+	(compare_edge_profile_counts): New function.
+	(ipcp_propagate_stage): Instead of setting max_count, find the
+	appropriate edge count in a sorted vector of counts of eligible
+	edges and make it the base_count.
+
+2021-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (struct caller_statistics): New fields rec_count_sum,
+	n_nonrec_calls and itself, document all fields.
+	(init_caller_stats): Initialize the above new fields.
+	(gather_caller_stats): Gather self-recursive counts and calls number.
+	(get_info_about_necessary_edges): Gather counts of self-recursive and
+	other edges bringing in the requested value separately.
+	(dump_profile_updates): Rework to dump info about a single node only.
+	(lenient_count_portion_handling): New function.
+	(struct gather_other_count_struct): New type.
+	(gather_count_of_non_rec_edges): New function.
+	(struct desc_incoming_count_struct): New type.
+	(analyze_clone_icoming_counts): New function.
+	(adjust_clone_incoming_counts): Likewise.
+	(update_counts_for_self_gen_clones): Likewise.
+	(update_profiling_info): Rewritten.
+	(update_specialized_profile): Adjust call to dump_profile_updates.
+	(create_specialized_node): Do not update profiling info.
+	(decide_about_value): New parameter self_gen_clones, either push new
+	clones into it or updat their profile counts.  For self-recursively
+	generated values, use a portion of the node count instead of count
+	from self-recursive edges to estimate goodness.
+	(decide_whether_version_node): Gather clones for self-generated values
+	in a new vector, update their profiles at once at the end.
+
+2021-10-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.c (vect_transform_loops): New function,
+	split out from ...
+	(try_vectorize_loop_1): ... here.  Simplify as epilogues
+	are now fully handled in the split part.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for_init_counts): Handle non-rectangular
+	iterators with pointer types.
+	(expand_omp_for_init_vars, extract_omp_for_update_vars): Likewise.
+
 2021-10-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/102238

@@ -78,8 +78,8 @@ static struct gfc_file_change
   gfc_linebuf *lb;
   int line;
 } *file_changes;
-size_t file_changes_cur, file_changes_count;
-size_t file_changes_allocated;
+static size_t file_changes_cur, file_changes_count;
+static size_t file_changes_allocated;
 
 static gfc_char_t *last_error_char;
 

@@ -11173,6 +11173,45 @@ altivec_expand_vec_ext_builtin (tree exp, rtx target)
   return target;
 }
 
+/* Expand vec_sel builtin.  */
+static rtx
+altivec_expand_vec_sel_builtin (enum insn_code icode, tree exp, rtx target)
+{
+  rtx op0, op1, op2, pat;
+  tree arg0, arg1, arg2;
+
+  arg0 = CALL_EXPR_ARG (exp, 0);
+  op0 = expand_normal (arg0);
+  arg1 = CALL_EXPR_ARG (exp, 1);
+  op1 = expand_normal (arg1);
+  arg2 = CALL_EXPR_ARG (exp, 2);
+  op2 = expand_normal (arg2);
+
+  machine_mode tmode = insn_data[icode].operand[0].mode;
+  machine_mode mode0 = insn_data[icode].operand[1].mode;
+  machine_mode mode1 = insn_data[icode].operand[2].mode;
+  machine_mode mode2 = insn_data[icode].operand[3].mode;
+
+  if (target == 0 || GET_MODE (target) != tmode
+      || !(*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+  if (!(*insn_data[icode].operand[3].predicate) (op2, mode2))
+    op2 = copy_to_mode_reg (mode2, op2);
+
+  pat = GEN_FCN (icode) (target, op0, op1, op2, op2);
+  if (pat)
+    emit_insn (pat);
+  else
+    return NULL_RTX;
+
+  return target;
+}
+
 /* Expand the builtin in EXP and store the result in TARGET.  Store
    true in *EXPANDEDP if we found a builtin to expand.  */
 static rtx
@@ -11357,6 +11396,29 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       if (pat)
 	emit_insn (pat);
       return NULL_RTX;
+
+    case ALTIVEC_BUILTIN_VSEL_2DF:
+      return altivec_expand_vec_sel_builtin (CODE_FOR_altivec_vselv2df, exp,
+					     target);
+    case ALTIVEC_BUILTIN_VSEL_2DI:
+    case ALTIVEC_BUILTIN_VSEL_2DI_UNS:
+      return altivec_expand_vec_sel_builtin (CODE_FOR_altivec_vselv2di, exp,
+					     target);
+    case ALTIVEC_BUILTIN_VSEL_4SF:
+      return altivec_expand_vec_sel_builtin (CODE_FOR_altivec_vselv4sf, exp,
+					     target);
+    case ALTIVEC_BUILTIN_VSEL_4SI:
+    case ALTIVEC_BUILTIN_VSEL_4SI_UNS:
+      return altivec_expand_vec_sel_builtin (CODE_FOR_altivec_vselv4si, exp,
+					     target);
+    case ALTIVEC_BUILTIN_VSEL_8HI:
+    case ALTIVEC_BUILTIN_VSEL_8HI_UNS:
+      return altivec_expand_vec_sel_builtin (CODE_FOR_altivec_vselv8hi, exp,
+					     target);
+    case ALTIVEC_BUILTIN_VSEL_16QI:
+    case ALTIVEC_BUILTIN_VSEL_16QI_UNS:
+      return altivec_expand_vec_sel_builtin (CODE_FOR_altivec_vselv16qi, exp,
+					     target);
 
     case ALTIVEC_BUILTIN_DSSALL:
       emit_insn (gen_altivec_dssall ());

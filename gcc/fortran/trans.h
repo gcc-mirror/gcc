@@ -425,7 +425,6 @@ tree gfc_class_set_static_fields (tree, tree, tree);
 tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
-tree gfc_class_len_or_zero_get (tree);
 tree gfc_resize_class_size_with_len (stmtblock_t *, tree, tree);
 gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false,
 					       gfc_typespec **ts = NULL);
@@ -433,14 +432,12 @@ gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false,
    available.  */
 tree gfc_class_vtab_hash_get (tree);
 tree gfc_class_vtab_size_get (tree);
-tree gfc_class_vtab_extends_get (tree);
 tree gfc_class_vtab_def_init_get (tree);
 tree gfc_class_vtab_copy_get (tree);
 tree gfc_class_vtab_final_get (tree);
 /* Get an accessor to the vtab's * field, when a vptr handle is present.  */
 tree gfc_vptr_hash_get (tree);
 tree gfc_vptr_size_get (tree);
-tree gfc_vptr_extends_get (tree);
 tree gfc_vptr_def_init_get (tree);
 tree gfc_vptr_copy_get (tree);
 tree gfc_vptr_final_get (tree);
@@ -450,7 +447,6 @@ void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
 tree gfc_get_vptr_from_expr (tree);
-tree gfc_get_class_array_ref (tree, tree, tree, bool);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);
 bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
@@ -509,7 +505,6 @@ void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
 
 /* trans-expr.c */
-tree gfc_get_character_len (tree);
 tree gfc_get_character_len_in_bytes (tree);
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
 tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
@@ -620,9 +615,6 @@ tree gfc_get_label_decl (gfc_st_label *);
 tree gfc_get_extern_function_decl (gfc_symbol *,
 				   gfc_actual_arglist *args = NULL,
 				   const char *fnspec = NULL);
-
-/* Return the decl for a function.  */
-tree gfc_get_function_decl (gfc_symbol *);
 
 /* Build an ADDR_EXPR.  */
 tree gfc_build_addr_expr (tree, tree);
@@ -1171,15 +1163,12 @@ void gfc_init_interface_mapping (gfc_interface_mapping *);
 void gfc_free_interface_mapping (gfc_interface_mapping *);
 void gfc_add_interface_mapping (gfc_interface_mapping *,
 				gfc_symbol *, gfc_se *, gfc_expr *);
-void gfc_finish_interface_mapping (gfc_interface_mapping *,
-				   stmtblock_t *, stmtblock_t *);
 void gfc_apply_interface_mapping (gfc_interface_mapping *,
 				  gfc_se *, gfc_expr *);
 
 
 /* Standard error messages used in all the trans-*.c files.  */
 extern const char gfc_msg_fault[];
-extern const char gfc_msg_wrong_return[];
 
 #define OMPWS_WORKSHARE_FLAG	1	/* Set if in a workshare construct.  */
 #define OMPWS_CURR_SINGLEUNIT	2	/* Set if current gfc_code in workshare

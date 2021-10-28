@@ -18905,9 +18905,10 @@ ix86_vectorize_builtin_scatter (const_tree vectype,
    1.0/sqrt.  */
 
 static bool
-use_rsqrt_p ()
+use_rsqrt_p (machine_mode mode)
 {
-  return (TARGET_SSE && TARGET_SSE_MATH
+  return ((mode == HFmode
+	   || (TARGET_SSE && TARGET_SSE_MATH))
 	  && flag_finite_math_only
 	  && !flag_trapping_math
 	  && flag_unsafe_math_optimizations);
@@ -23603,29 +23604,27 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
       return opt_type == OPTIMIZE_FOR_SPEED;
 
     case rint_optab:
-      if (mode1 == HFmode)
-	return true;
-      else if (SSE_FLOAT_MODE_P (mode1)
-	       && TARGET_SSE_MATH
-	       && !flag_trapping_math
-	       && !TARGET_SSE4_1)
+      if (SSE_FLOAT_MODE_P (mode1)
+	  && TARGET_SSE_MATH
+	  && !flag_trapping_math
+	  && !TARGET_SSE4_1
+	  && mode1 != HFmode)
 	return opt_type == OPTIMIZE_FOR_SPEED;
       return true;
 
     case floor_optab:
     case ceil_optab:
     case btrunc_optab:
-      if (mode1 == HFmode)
-	return true;
-      else if (SSE_FLOAT_MODE_P (mode1)
-	       && TARGET_SSE_MATH
-	       && !flag_trapping_math
-	       && TARGET_SSE4_1)
+      if (((SSE_FLOAT_MODE_P (mode1)
+	    && TARGET_SSE_MATH
+	    && TARGET_SSE4_1)
+	   || mode1 == HFmode)
+	  && !flag_trapping_math)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
 
     case rsqrt_optab:
-      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p ();
+      return opt_type == OPTIMIZE_FOR_SPEED && use_rsqrt_p (mode1);
 
     default:
       return true;

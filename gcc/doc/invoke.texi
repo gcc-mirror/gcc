@@ -596,6 +596,7 @@ Objective-C and Objective-C++ Dialects}.
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
+-fharden-compares -fharden-conditional-branches @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -15549,6 +15550,24 @@ which functions and calls should be skipped from instrumentation
 Currently the x86 GNU/Linux target provides an implementation based
 on Intel Control-flow Enforcement Technology (CET) which works for
 i686 processor or newer.
+
+@item -fharden-compares
+@opindex fharden-compares
+For every logical test that survives gimple optimizations and is
+@emph{not} the condition in a conditional branch (for example,
+conditions tested for conditional moves, or to store in boolean
+variables), emit extra code to compute and verify the reversed
+condition, and to call @code{__builtin_trap} if the results do not
+match.  Use with @samp{-fharden-conditional-branches} to cover all
+conditionals.
+
+@item -fharden-conditional-branches
+@opindex fharden-conditional-branches
+For every non-vectorized conditional branch that survives gimple
+optimizations, emit extra code to compute and verify the reversed
+condition, and to call @code{__builtin_trap} if the result is
+unexpected.  Use with @samp{-fharden-compares} to cover all
+conditionals.
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -32837,8 +32856,7 @@ Substitute the contents of spec string @var{name} at this point.
 Accumulate an option for @samp{%X}.
 
 @item %X
-Output the accumulated linker options specified by @option{-Wl} or a @samp{%x}
-spec string.
+Output the accumulated linker options specified by a @samp{%x} spec string.
 
 @item %Y
 Output the accumulated assembler options specified by @option{-Wa}.

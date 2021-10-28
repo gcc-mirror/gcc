@@ -85,7 +85,8 @@ gfc_constructor_get (void)
   return c;
 }
 
-gfc_constructor_base gfc_constructor_get_base (void)
+static gfc_constructor_base
+gfc_constructor_get_base (void)
 {
   return splay_tree_new (splay_tree_compare_ints, NULL, node_free);
 }
@@ -207,23 +208,6 @@ gfc_constructor_lookup_expr (gfc_constructor_base base, int offset)
   gfc_constructor *c = gfc_constructor_lookup (base, offset);
   return c ? c->expr : NULL;
 }
-
-
-int
-gfc_constructor_expr_foreach (gfc_constructor *ctor ATTRIBUTE_UNUSED,
-			      int(*f)(gfc_expr *) ATTRIBUTE_UNUSED)
-{
-  gcc_assert (0);
-  return 0;
-}
-
-void
-gfc_constructor_swap (gfc_constructor *ctor ATTRIBUTE_UNUSED,
-                      int n ATTRIBUTE_UNUSED, int m ATTRIBUTE_UNUSED)
-{
-  gcc_assert (0);
-}
-
 
 
 gfc_constructor *

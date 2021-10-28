@@ -1722,6 +1722,14 @@ fguess-branch-probability
 Common Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities.
 
+fharden-compares
+Common Var(flag_harden_compares) Optimization
+Harden conditionals not used in branches, checking reversed conditions.
+
+fharden-conditional-branches
+Common Var(flag_harden_conditional_branches) Optimization
+Harden conditional branches by checking reversed conditions.
+
 ; Nonzero means ignore `#ident' directives.  0 means handle them.
 ; Generate position-independent code for executables if possible
 ; On SVR4 targets, it also controls whether or not to emit a

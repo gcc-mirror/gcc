@@ -1,3 +1,21 @@
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_check_loop_iv_r): Don't clear 3rd bit for
+	POINTER_PLUS_EXPR.
+	(c_omp_check_nonrect_loop_iv): Handle POINTER_PLUS_EXPR.
+	(c_omp_check_loop_iv): Set kind even if the iterator is non-integral.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102854
+	* c-common.h (c_omp_check_loop_iv_exprs): Add enum tree_code argument.
+	* c-omp.c (c_omp_check_loop_iv_r): For trees other than decls,
+	TREE_VEC, PLUS_EXPR, MINUS_EXPR, MULT_EXPR, POINTER_PLUS_EXPR or
+	conversions temporarily clear the 3rd bit from d->kind while walking
+	subtrees.
+	(c_omp_check_loop_iv_exprs): Add CODE argument.  Or in 4 into data.kind
+	if possibly non-rectangular.
+
 2021-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64888

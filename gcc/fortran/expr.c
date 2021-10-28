@@ -4817,7 +4817,7 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
 /* Check whether an expression is a structure constructor and whether it has
    other values than NULL.  */
 
-bool
+static bool
 is_non_empty_structure_constructor (gfc_expr * e)
 {
   if (e->expr_type != EXPR_STRUCTURE)

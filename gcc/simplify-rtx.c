@@ -1917,6 +1917,19 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
         return 0;
 
       d = real_value_truncate (mode, d);
+
+      /* Avoid the folding if flag_rounding_math is on and the
+	 conversion is not exact.  */
+      if (HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	{
+	  bool fail = false;
+	  wide_int w = real_to_integer (&d, &fail,
+					GET_MODE_PRECISION
+					  (as_a <scalar_int_mode> (op_mode)));
+	  if (fail || wi::ne_p (w, wide_int (rtx_mode_t (op, op_mode))))
+	    return 0;
+	}
+
       return const_double_from_real_value (d, mode);
     }
   else if (code == UNSIGNED_FLOAT && CONST_SCALAR_INT_P (op))
@@ -1941,6 +1954,19 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
         return 0;
 
       d = real_value_truncate (mode, d);
+
+      /* Avoid the folding if flag_rounding_math is on and the
+	 conversion is not exact.  */
+      if (HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	{
+	  bool fail = false;
+	  wide_int w = real_to_integer (&d, &fail,
+					GET_MODE_PRECISION
+					  (as_a <scalar_int_mode> (op_mode)));
+	  if (fail || wi::ne_p (w, wide_int (rtx_mode_t (op, op_mode))))
+	    return 0;
+	}
+
       return const_double_from_real_value (d, mode);
     }
 
@@ -2067,6 +2093,11 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  /* Don't perform the operation if flag_signaling_nans is on
 	     and the operand is a signaling NaN.  */
 	  if (HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d))
+	    return NULL_RTX;
+	  /* Or if flag_rounding_math is on and the truncation is not
+	     exact.  */
+	  if (HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+	      && !exact_real_truncate (mode, &d))
 	    return NULL_RTX;
 	  d = real_value_truncate (mode, d);
 	  break;

@@ -6338,8 +6338,12 @@ vectorizable_operation (vec_info *vinfo,
 static void
 ensure_base_align (dr_vec_info *dr_info)
 {
-  if (dr_info->misalignment == DR_MISALIGNMENT_UNINITIALIZED)
-    return;
+  /* Alignment is only analyzed for the first element of a DR group,
+     use that to look at base alignment we need to enforce.  */
+  if (STMT_VINFO_GROUPED_ACCESS (dr_info->stmt))
+    dr_info = STMT_VINFO_DR_INFO (DR_GROUP_FIRST_ELEMENT (dr_info->stmt));
+
+  gcc_assert (dr_info->misalignment != DR_MISALIGNMENT_UNINITIALIZED);
 
   if (dr_info->base_misaligned)
     {
