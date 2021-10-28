@@ -419,6 +419,8 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_resx);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_gimple_isel);
+  NEXT_PASS (pass_harden_conditional_branches);
+  NEXT_PASS (pass_harden_compares);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   NEXT_PASS (pass_warn_function_noreturn);
   NEXT_PASS (pass_warn_access);
