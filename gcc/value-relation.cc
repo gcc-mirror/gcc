@@ -1298,17 +1298,17 @@ path_oracle::killing_def (tree ssa)
     }
 
   unsigned v = SSA_NAME_VERSION (ssa);
-  bitmap b = BITMAP_ALLOC (&m_bitmaps);
-  bitmap_set_bit (b, v);
-  equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
-						    sizeof (equiv_chain));
-  ptr->m_names = b;
-  ptr->m_bb = NULL;
-  ptr->m_next = m_equiv.m_next;
-  m_equiv.m_next = ptr;
-  bitmap_ior_into (m_equiv.m_names, b);
 
-  // Walk the relation list an remove SSA from any relations.
+  // Walk the equivalency list and remove SSA from any equivalencies.
+  if (bitmap_bit_p (m_equiv.m_names, v))
+    {
+      bitmap_clear_bit (m_equiv.m_names, v);
+      for (equiv_chain *ptr = m_equiv.m_next; ptr; ptr = ptr->m_next)
+	if (bitmap_bit_p (ptr->m_names, v))
+	  bitmap_clear_bit (ptr->m_names, v);
+    }
+
+  // Walk the relation list and remove SSA from any relations.
   if (!bitmap_bit_p (m_relations.m_names, v))
     return;
 
