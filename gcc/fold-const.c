@@ -2290,7 +2290,20 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
   else if (TREE_CODE (type) == REAL_TYPE)
     {
       if (TREE_CODE (arg1) == INTEGER_CST)
-	return build_real_from_int_cst (type, arg1);
+	{
+	  tree res = build_real_from_int_cst (type, arg1);
+	  /* Avoid the folding if flag_rounding_math is on and the
+	     conversion is not exact.  */
+	  if (HONOR_SIGN_DEPENDENT_ROUNDING (type))
+	    {
+	      bool fail = false;
+	      wide_int w = real_to_integer (&TREE_REAL_CST (res), &fail,
+					    TYPE_PRECISION (TREE_TYPE (arg1)));
+	      if (fail || wi::ne_p (w, wi::to_wide (arg1)))
+		return NULL_TREE;
+	    }
+	  return res;
+	}
       else if (TREE_CODE (arg1) == REAL_CST)
 	return fold_convert_const_real_from_real (type, arg1);
       else if (TREE_CODE (arg1) == FIXED_CST)
