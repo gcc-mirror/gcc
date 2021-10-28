@@ -192,12 +192,14 @@ public:
   {
     HIR::Expr *func
       = ASTLoweringExpr::translate (expr.get_function_expr ().get ());
+
+    auto const &in_params = expr.get_params ();
     std::vector<std::unique_ptr<HIR::Expr> > params;
-    expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
-      auto trans = ASTLoweringExpr::translate (p);
-      params.push_back (std::unique_ptr<HIR::Expr> (trans));
-      return true;
-    });
+    for (auto &param : in_params)
+      {
+	auto trans = ASTLoweringExpr::translate (param.get ());
+	params.push_back (std::unique_ptr<HIR::Expr> (trans));
+      }
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (
@@ -217,12 +219,13 @@ public:
     HIR::Expr *receiver
       = ASTLoweringExpr::translate (expr.get_receiver_expr ().get ());
 
+    auto const &in_params = expr.get_params ();
     std::vector<std::unique_ptr<HIR::Expr> > params;
-    expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
-      auto trans = ASTLoweringExpr::translate (p);
-      params.push_back (std::unique_ptr<HIR::Expr> (trans));
-      return true;
-    });
+    for (auto &param : in_params)
+      {
+	auto trans = ASTLoweringExpr::translate (param.get ());
+	params.push_back (std::unique_ptr<HIR::Expr> (trans));
+      }
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),

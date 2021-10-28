@@ -101,10 +101,9 @@ public:
   void visit (AST::CallExpr &expr) override
   {
     ResolveExpr::go (expr.get_function_expr ().get (), expr.get_node_id ());
-    expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
-      ResolveExpr::go (p, expr.get_node_id ());
-      return true;
-    });
+    auto const &in_params = expr.get_params ();
+    for (auto &param : in_params)
+      ResolveExpr::go (param.get (), expr.get_node_id ());
   }
 
   void visit (AST::MethodCallExpr &expr) override
@@ -117,10 +116,9 @@ public:
 	ResolveTypeToCanonicalPath::type_resolve_generic_args (args);
       }
 
-    expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
-      ResolveExpr::go (p, expr.get_node_id ());
-      return true;
-    });
+    auto const &in_params = expr.get_params ();
+    for (auto &param : in_params)
+      ResolveExpr::go (param.get (), expr.get_node_id ());
   }
 
   void visit (AST::AssignmentExpr &expr) override
