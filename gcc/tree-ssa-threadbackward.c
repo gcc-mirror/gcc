@@ -195,11 +195,11 @@ back_threader::find_taken_edge_switch (const vec<basic_block> &path,
   if (r.varying_p ())
     return NULL;
 
-  tree val;
-  if (r.singleton_p (&val))
-    return ::find_taken_edge (gimple_bb (sw), val);
+  tree label = find_case_label_range (sw, &r);
+  if (!label)
+    return NULL;
 
-  return NULL;
+  return find_edge (gimple_bb (sw), label_to_block (cfun, CASE_LABEL (label)));
 }
 
 // Same as find_taken_edge, but for paths ending in a GIMPLE_COND.
