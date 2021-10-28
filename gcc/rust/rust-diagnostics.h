@@ -61,7 +61,8 @@ rust_warning_at (const Location, int opt, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 extern void
 rust_fatal_error (const Location, const char *fmt, ...)
-  RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+  RUST_ATTRIBUTE_GCC_DIAG (2, 3)
+  RUST_ATTRIBUTE_NORETURN;
 extern void
 rust_inform (const Location, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
@@ -95,7 +96,8 @@ rust_be_error_at (const RichLocation &, const std::string &errmsg);
 extern void
 rust_be_warning_at (const Location, int opt, const std::string &warningmsg);
 extern void
-rust_be_fatal_error (const Location, const std::string &errmsg);
+rust_be_fatal_error (const Location, const std::string &errmsg)
+  RUST_ATTRIBUTE_NORETURN;
 extern void
 rust_be_inform (const Location, const std::string &infomsg);
 extern void
