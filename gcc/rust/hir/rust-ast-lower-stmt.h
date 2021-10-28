@@ -83,6 +83,34 @@ public:
     mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
+  void visit (AST::ConstantItem &constant) override
+  {
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
+    HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    HIR::ConstantItem *constant_item
+      = new HIR::ConstantItem (mapping, constant.get_identifier (), vis,
+			       std::unique_ptr<HIR::Type> (type),
+			       std::unique_ptr<HIR::Expr> (expr),
+			       constant.get_outer_attrs (),
+			       constant.get_locus ());
+    translated = constant_item;
+
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       constant_item);
+    mappings->insert_hir_stmt (mapping.get_crate_num (), mapping.get_hirid (),
+			       constant_item);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       constant.get_locus ());
+  }
+
   void visit (AST::LetStmt &stmt) override
   {
     HIR::Pattern *variables

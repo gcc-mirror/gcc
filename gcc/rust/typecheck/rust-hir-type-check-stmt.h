@@ -55,6 +55,19 @@ public:
       = TyTy::TupleType::get_unit_type (stmt.get_mappings ().get_hirid ());
   }
 
+  void visit (HIR::ConstantItem &constant) override
+  {
+    TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
+    TyTy::BaseType *expr_type
+      = TypeCheckExpr::Resolve (constant.get_expr (), false);
+
+    infered = type->unify (expr_type);
+    context->insert_type (constant.get_mappings (), infered);
+
+    // notify the constant folder of this
+    ConstFold::ConstFoldItem::fold (constant);
+  }
+
   void visit (HIR::LetStmt &stmt) override
   {
     infered = new TyTy::TupleType (stmt.get_mappings ().get_hirid ());
