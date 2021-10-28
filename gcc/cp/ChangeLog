@@ -1,3 +1,34 @@
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102854
+	* semantics.c (handle_omp_for_class_iterator,
+	finish_omp_for): Adjust c_omp_check_loop_iv_exprs caller.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102753
+	* constexpr.c (cxx_eval_outermost_constant_expr): Perform
+	find_immediate_fndecl discovery if is_consteval or
+	in_immediate_context () rather than if is_consteval, t != r
+	and not in immediate function's body.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102753
+	* cp-tree.h (saved_scope): Document that consteval_if_p member
+	is also set while processing immediate invocation.
+	(in_immediate_context): Declare.
+	* call.c (in_immediate_context): New function.
+	(immediate_invocation_p): Use it.
+	(struct in_consteval_if_p_temp_override): New class.
+	(build_over_call): Temporarily set in_consteval_if_p for processing
+	immediate invocation arguments.
+	* typeck.c (cp_build_addr_expr_1): Diagnose taking address of
+	an immediate method.  Use t instead of TREE_OPERAND (arg, 1).
+	Use in_immediate_context function.
+	* constexpr.c (find_immediate_fndecl): Handle PTRMEM_CST
+	which refers to immediate function decl.
+
 2021-10-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102617

@@ -1,3 +1,14 @@
+2021-10-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.host (hppa*64*-*-linux*): Don't add pa/t-linux to
+	tmake_file.
+	* config/pa/linux-atomic.c: Define u8, u16 and u64 types.
+	Use them in FETCH_AND_OP_2, OP_AND_FETCH_2, COMPARE_AND_SWAP_2,
+	SYNC_LOCK_TEST_AND_SET_2 and SYNC_LOCK_RELEASE_1 macros.
+	* config/pa/t-linux64 (LIB1ASMSRC): New define.
+	(LIB1ASMFUNCS): Revise.
+	(HOST_LIBGCC2_CFLAGS): Add "-DLINUX=1".
+
 2021-10-22  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/sfp-machine.h (_FP_TININESS_AFTER_ROUNDING):

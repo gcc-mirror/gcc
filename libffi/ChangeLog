@@ -1,3 +1,7 @@
+2021-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit 90454a90082.
+
 2021-10-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* src/powerpc/linux64.S: Enable AltiVec insns.

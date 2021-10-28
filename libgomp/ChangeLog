@@ -1,3 +1,13 @@
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.0): Mention that Non-rectangular loop nests
+	aren't implemented for Fortran yet.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-26.c: New test.
+	* testsuite/libgomp.c/loop-27.c: New test.
+
 2021-10-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR testsuite/102910
