@@ -51,6 +51,30 @@ public:
     ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
   }
 
+  void visit (AST::ConstantItem &constant) override
+  {
+    auto path = ResolveConstantItemToCanonicalPath::resolve (constant);
+    resolver->get_name_scope ().insert (
+      path, constant.get_node_id (), constant.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (constant.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (constant.get_node_id (),
+				     Definition{constant.get_node_id (),
+						constant.get_node_id ()});
+
+    ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
+    ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
+
+    // the mutability checker needs to verify for immutable decls the number
+    // of assignments are <1. This marks an implicit assignment
+    resolver->mark_decl_mutability (constant.get_node_id (), false);
+    resolver->mark_assignment_to_decl (constant.get_node_id (),
+				       constant.get_node_id ());
+  }
+
   void visit (AST::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())

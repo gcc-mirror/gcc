@@ -48,6 +48,33 @@ public:
     translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
+  void visit (HIR::ConstantItem &constant) override
+  {
+    TyTy::BaseType *resolved_type = nullptr;
+    bool ok
+      = ctx->get_tyctx ()->lookup_type (constant.get_mappings ().get_hirid (),
+					&resolved_type);
+    rust_assert (ok);
+
+    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
+
+    const Resolver::CanonicalPath *canonical_path = nullptr;
+    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+      constant.get_mappings ().get_crate_num (),
+      constant.get_mappings ().get_nodeid (), &canonical_path));
+
+    std::string ident = canonical_path->get ();
+    Bexpression *const_expr
+      = ctx->get_backend ()->named_constant_expression (type, ident, value,
+							constant.get_locus ());
+
+    ctx->push_const (const_expr);
+    ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
+
+    translated = const_expr;
+  }
+
   void visit (HIR::LetStmt &stmt) override
   {
     // nothing to do
