@@ -96,9 +96,6 @@ __attribute__((section(__LIBGCC_EH_FRAME_SECTION_NAME__), aligned(4)))
 
 #endif /* USE_INITFINI_ARRAY  */
 
-void EH_CTOR_NAME (void);
-void EH_DTOR_NAME (void);
-
 EH_CTOR_ATTRIBUTE void EH_CTOR_NAME (void)
 {
   static struct object object;
