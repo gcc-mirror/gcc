@@ -1,3 +1,8 @@
+2021-10-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102761
+	* gcc.target/i386/pr102761.c: New test.
+
 2021-10-23  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
