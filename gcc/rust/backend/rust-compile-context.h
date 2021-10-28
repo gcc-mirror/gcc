@@ -53,11 +53,12 @@ public:
     for (auto it = builtins.begin (); it != builtins.end (); it++)
       {
 	HirId ref;
-	rust_assert (
-	  tyctx->lookup_type_by_node_id ((*it)->get_node_id (), &ref));
+	bool ok = tyctx->lookup_type_by_node_id ((*it)->get_node_id (), &ref);
+	rust_assert (ok);
 
 	TyTy::BaseType *lookup;
-	rust_assert (tyctx->lookup_type (ref, &lookup));
+	ok = tyctx->lookup_type (ref, &lookup);
+	rust_assert (ok);
 
 	Btype *compiled = TyTyCompile::compile (backend, lookup);
 	compiled_type_map.insert (std::pair<HirId, Btype *> (ref, compiled));
