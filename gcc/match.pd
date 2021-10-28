@@ -3009,6 +3009,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     @0
     @2)))
 
+/* Simplify min (&var[off0], &var[off1]) etc. depending on whether
+   the addresses are known to be less, equal or greater.  */
+(for minmax (min max)
+     cmp (lt gt)
+ (simplify
+  (minmax (convert1?@2 addr@0) (convert2?@3 addr@1))
+  (with
+   {
+     poly_int64 off0, off1;
+     tree base0, base1;
+     int equal = address_compare (cmp, TREE_TYPE (@2), @0, @1, base0, base1,
+				  off0, off1, GENERIC);
+   }
+   (if (equal == 1)
+    (if (minmax == MIN_EXPR)
+     (if (known_le (off0, off1))
+      @2
+      (if (known_gt (off0, off1))
+       @3))
+     (if (known_ge (off0, off1))
+      @2
+      (if (known_lt (off0, off1))
+       @3)))))))
+
 /* (convert (minmax ((convert (x) c)))) -> minmax (x c) if x is promoted
    and the outer convert demotes the expression back to x's type.  */
 (for minmax (min max)
@@ -5291,132 +5315,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with
    {
      poly_int64 off0, off1;
-     tree base0 = get_addr_base_and_unit_offset (TREE_OPERAND (@0, 0), &off0);
-     tree base1 = get_addr_base_and_unit_offset (TREE_OPERAND (@1, 0), &off1);
-     if (base0 && TREE_CODE (base0) == MEM_REF)
-       {
-	 off0 += mem_ref_offset (base0).force_shwi ();
-         base0 = TREE_OPERAND (base0, 0);
-       }
-     if (base1 && TREE_CODE (base1) == MEM_REF)
-       {
-	 off1 += mem_ref_offset (base1).force_shwi ();
-         base1 = TREE_OPERAND (base1, 0);
-       }
+     tree base0, base1;
+     int equal = address_compare (cmp, TREE_TYPE (@2), @0, @1, base0, base1,
+				  off0, off1, GENERIC);
    }
-   (if (base0 && base1)
-    (with
-     {
-       int equal = 2;
-       /* Punt in GENERIC on variables with value expressions;
-	  the value expressions might point to fields/elements
-	  of other vars etc.  */
-       if (GENERIC
-	   && ((VAR_P (base0) && DECL_HAS_VALUE_EXPR_P (base0))
-	       || (VAR_P (base1) && DECL_HAS_VALUE_EXPR_P (base1))))
-	 ;
-       else if (decl_in_symtab_p (base0)
-		&& decl_in_symtab_p (base1))
-         equal = symtab_node::get_create (base0)
-	           ->equal_address_to (symtab_node::get_create (base1));
-       else if ((DECL_P (base0)
-		 || TREE_CODE (base0) == SSA_NAME
-		 || TREE_CODE (base0) == STRING_CST)
-		&& (DECL_P (base1)
-		    || TREE_CODE (base1) == SSA_NAME
-		    || TREE_CODE (base1) == STRING_CST))
-         equal = (base0 == base1);
-       if (equal == 0)
-	 {
-	   HOST_WIDE_INT ioff0 = -1, ioff1 = -1;
-	   off0.is_constant (&ioff0);
-	   off1.is_constant (&ioff1);
-	   if ((DECL_P (base0) && TREE_CODE (base1) == STRING_CST)
-	       || (TREE_CODE (base0) == STRING_CST && DECL_P (base1))
-	       || (TREE_CODE (base0) == STRING_CST
-		   && TREE_CODE (base1) == STRING_CST
-		   && ioff0 >= 0 && ioff1 >= 0
-		   && ioff0 < TREE_STRING_LENGTH (base0)
-		   && ioff1 < TREE_STRING_LENGTH (base1)
-		   /* This is a too conservative test that the STRING_CSTs
-		      will not end up being string-merged.  */
-		   && strncmp (TREE_STRING_POINTER (base0) + ioff0,
-			       TREE_STRING_POINTER (base1) + ioff1,
-			       MIN (TREE_STRING_LENGTH (base0) - ioff0,
-				    TREE_STRING_LENGTH (base1) - ioff1)) != 0))
-	     ;
-	   else if (!DECL_P (base0) || !DECL_P (base1))
-	     equal = 2;
-	   else if (cmp != EQ_EXPR && cmp != NE_EXPR)
-	     equal = 2;
-	   /* If this is a pointer comparison, ignore for now even
-	      valid equalities where one pointer is the offset zero
-	      of one object and the other to one past end of another one.  */
-	   else if (!INTEGRAL_TYPE_P (TREE_TYPE (@2)))
-	     ;
-	   /* Assume that automatic variables can't be adjacent to global
-	      variables.  */
-	   else if (is_global_var (base0) != is_global_var (base1))
-	     ;
-	   else
-	     {
-	       tree sz0 = DECL_SIZE_UNIT (base0);
-	       tree sz1 = DECL_SIZE_UNIT (base1);
-	       /* If sizes are unknown, e.g. VLA or not representable,
-		  punt.  */
-	       if (!tree_fits_poly_int64_p (sz0)
-		   || !tree_fits_poly_int64_p (sz1))
-		 equal = 2;
-	       else
-		 {
-		   poly_int64 size0 = tree_to_poly_int64 (sz0);
-		   poly_int64 size1 = tree_to_poly_int64 (sz1);
-		   /* If one offset is pointing (or could be) to the beginning
-		      of one object and the other is pointing to one past the
-		      last byte of the other object, punt.  */
-		   if (maybe_eq (off0, 0) && maybe_eq (off1, size1))
-		     equal = 2;
-		   else if (maybe_eq (off1, 0) && maybe_eq (off0, size0))
-		     equal = 2;
-		   /* If both offsets are the same, there are some cases
-		      we know that are ok.  Either if we know they aren't
-		      zero, or if we know both sizes are no zero.  */
-		   if (equal == 2
-		       && known_eq (off0, off1)
-		       && (known_ne (off0, 0)
-			   || (known_ne (size0, 0) && known_ne (size1, 0))))
-		     equal = 0;
-		 }
-	     }
-	 }
-     }
-     (if (equal == 1
-	  && (cmp == EQ_EXPR || cmp == NE_EXPR
-	      /* If the offsets are equal we can ignore overflow.  */
-	      || known_eq (off0, off1)
-	      || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
-		 /* Or if we compare using pointers to decls or strings.  */
-	      || (POINTER_TYPE_P (TREE_TYPE (@2))
-		  && (DECL_P (base0) || TREE_CODE (base0) == STRING_CST))))
-      (switch
-       (if (cmp == EQ_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
-	{ constant_boolean_node (known_eq (off0, off1), type); })
-       (if (cmp == NE_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
-	{ constant_boolean_node (known_ne (off0, off1), type); })
-       (if (cmp == LT_EXPR && (known_lt (off0, off1) || known_ge (off0, off1)))
-	{ constant_boolean_node (known_lt (off0, off1), type); })
-       (if (cmp == LE_EXPR && (known_le (off0, off1) || known_gt (off0, off1)))
-	{ constant_boolean_node (known_le (off0, off1), type); })
-       (if (cmp == GE_EXPR && (known_ge (off0, off1) || known_lt (off0, off1)))
-	{ constant_boolean_node (known_ge (off0, off1), type); })
-       (if (cmp == GT_EXPR && (known_gt (off0, off1) || known_le (off0, off1)))
-	{ constant_boolean_node (known_gt (off0, off1), type); }))
-      (if (equal == 0)
-	(switch
-	 (if (cmp == EQ_EXPR)
-	  { constant_boolean_node (false, type); })
-	 (if (cmp == NE_EXPR)
-	  { constant_boolean_node (true, type); })))))))))
+   (if (equal == 1)
+    (switch
+     (if (cmp == EQ_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
+      { constant_boolean_node (known_eq (off0, off1), type); })
+     (if (cmp == NE_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
+      { constant_boolean_node (known_ne (off0, off1), type); })
+     (if (cmp == LT_EXPR && (known_lt (off0, off1) || known_ge (off0, off1)))
+      { constant_boolean_node (known_lt (off0, off1), type); })
+     (if (cmp == LE_EXPR && (known_le (off0, off1) || known_gt (off0, off1)))
+      { constant_boolean_node (known_le (off0, off1), type); })
+     (if (cmp == GE_EXPR && (known_ge (off0, off1) || known_lt (off0, off1)))
+      { constant_boolean_node (known_ge (off0, off1), type); })
+     (if (cmp == GT_EXPR && (known_gt (off0, off1) || known_le (off0, off1)))
+      { constant_boolean_node (known_gt (off0, off1), type); }))
+    (if (equal == 0)
+     (switch
+      (if (cmp == EQ_EXPR)
+       { constant_boolean_node (false, type); })
+      (if (cmp == NE_EXPR)
+       { constant_boolean_node (true, type); })))))))
 
 /* Simplify pointer equality compares using PTA.  */
 (for neeq (ne eq)
