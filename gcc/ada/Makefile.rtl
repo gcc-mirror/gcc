@@ -2072,6 +2072,13 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   ifeq ($(strip $(filter-out aarch64% riscv%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   endif
+
+  # Target CPUs that support atomic primitives
+  ifeq ($(strip $(filter-out aarch64%,$(target_cpu))),)
+     LIBGNAT_TARGET_PAIRS += \
+       $(ATOMICS_TARGET_PAIRS) \
+       $(ATOMICS_BUILTINS_TARGET_PAIRS)
+  endif
 endif
 
 # PikeOS
