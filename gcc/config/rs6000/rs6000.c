@@ -16033,9 +16033,7 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   machine_mode dest_mode = GET_MODE (dest);
   machine_mode mask_mode = GET_MODE (cc_op0);
   enum rtx_code rcode = GET_CODE (cond);
-  machine_mode cc_mode = CCmode;
   rtx mask;
-  rtx cond2;
   bool invert_move = false;
 
   if (VECTOR_UNIT_NONE_P (dest_mode))
@@ -16075,8 +16073,6 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
     case GEU:
     case LTU:
     case LEU:
-      /* Mark unsigned tests with CCUNSmode.  */
-      cc_mode = CCUNSmode;
 
       /* Invert condition to avoid compound test if necessary.  */
       if (rcode == GEU || rcode == LEU)
@@ -16095,6 +16091,9 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
 
   if (!mask)
     return 0;
+
+  if (mask_mode != dest_mode)
+    mask = simplify_gen_subreg (dest_mode, mask, mask_mode, 0);
 
   if (invert_move)
     std::swap (op_true, op_false);
@@ -16135,13 +16134,11 @@ rs6000_emit_vector_cond_expr (rtx dest, rtx op_true, rtx op_false,
   if (!REG_P (op_false) && !SUBREG_P (op_false))
     op_false = force_reg (dest_mode, op_false);
 
-  cond2 = gen_rtx_fmt_ee (NE, cc_mode, gen_lowpart (dest_mode, mask),
-			  CONST0_RTX (dest_mode));
-  emit_insn (gen_rtx_SET (dest,
-			  gen_rtx_IF_THEN_ELSE (dest_mode,
-						cond2,
-						op_true,
-						op_false)));
+  rtx tmp = gen_rtx_IOR (dest_mode,
+			 gen_rtx_AND (dest_mode, gen_rtx_NOT (dest_mode, mask),
+				      op_false),
+			 gen_rtx_AND (dest_mode, mask, op_true));
+  emit_insn (gen_rtx_SET (dest, tmp));
   return 1;
 }
 

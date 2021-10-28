@@ -681,26 +681,56 @@
   "vcmpgefp %0,%1,%2"
   [(set_attr "type" "veccmp")])
 
-(define_insn "*altivec_vsel<mode>"
+(define_insn "altivec_vsel<mode>"
   [(set (match_operand:VM 0 "altivec_register_operand" "=v")
-	(if_then_else:VM
-	 (ne:CC (match_operand:VM 1 "altivec_register_operand" "v")
-		(match_operand:VM 4 "zero_constant" ""))
-	 (match_operand:VM 2 "altivec_register_operand" "v")
-	 (match_operand:VM 3 "altivec_register_operand" "v")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vsel %0,%3,%2,%1"
+	(ior:VM
+	  (and:VM
+	    (not:VM (match_operand:VM 3 "altivec_register_operand" "v"))
+	    (match_operand:VM 1 "altivec_register_operand" "v"))
+	  (and:VM
+	    (match_dup 3)
+	    (match_operand:VM 2 "altivec_register_operand" "v"))))]
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "vsel %0,%1,%2,%3"
   [(set_attr "type" "vecmove")])
 
-(define_insn "*altivec_vsel<mode>_uns"
+(define_insn "altivec_vsel<mode>2"
   [(set (match_operand:VM 0 "altivec_register_operand" "=v")
-	(if_then_else:VM
-	 (ne:CCUNS (match_operand:VM 1 "altivec_register_operand" "v")
-		   (match_operand:VM 4 "zero_constant" ""))
-	 (match_operand:VM 2 "altivec_register_operand" "v")
-	 (match_operand:VM 3 "altivec_register_operand" "v")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vsel %0,%3,%2,%1"
+	(ior:VM
+	  (and:VM
+	    (not:VM (match_operand:VM 3 "altivec_register_operand" "v"))
+	    (match_operand:VM 1 "altivec_register_operand" "v"))
+	  (and:VM
+	    (match_operand:VM 2 "altivec_register_operand" "v")
+	    (match_dup 3))))]
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "vsel %0,%1,%2,%3"
+  [(set_attr "type" "vecmove")])
+
+(define_insn "altivec_vsel<mode>3"
+  [(set (match_operand:VM 0 "altivec_register_operand" "=v")
+	(ior:VM
+	  (and:VM
+	    (match_operand:VM 3 "altivec_register_operand" "v")
+	    (match_operand:VM 1 "altivec_register_operand" "v"))
+	  (and:VM
+	    (not:VM (match_dup 3))
+	    (match_operand:VM 2 "altivec_register_operand" "v"))))]
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "vsel %0,%2,%1,%3"
+  [(set_attr "type" "vecmove")])
+
+(define_insn "altivec_vsel<mode>4"
+  [(set (match_operand:VM 0 "altivec_register_operand" "=v")
+	(ior:VM
+	  (and:VM
+	    (match_operand:VM 1 "altivec_register_operand" "v")
+	    (match_operand:VM 3 "altivec_register_operand" "v"))
+	  (and:VM
+	    (not:VM (match_dup 3))
+	    (match_operand:VM 2 "altivec_register_operand" "v"))))]
+  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "vsel %0,%2,%1,%3"
   [(set_attr "type" "vecmove")])
 
 ;; Fused multiply add.
