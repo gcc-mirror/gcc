@@ -48,12 +48,9 @@ public:
 
     if (is_query_mode
 	&& ctx->get_backend ()->is_error_expression (compiler.reference))
-      {
-	rust_error_at (ref_locus, "failed to compile item: %s",
-		       item->as_string ().c_str ());
-	rust_assert (
-	  !ctx->get_backend ()->is_error_expression (compiler.reference));
-      }
+      rust_internal_error_at (ref_locus, "failed to compile item: %s",
+			      item->as_string ().c_str ());
+
     return compiler.reference;
   }
 
