@@ -2184,63 +2184,6 @@
   "xvcmpge<sd>p. %x0,%x1,%x2"
   [(set_attr "type" "<VStype_simple>")])
 
-;; Vector select
-(define_insn "vsx_xxsel<mode>"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
-	(ior:VSX_L
-	  (and:VSX_L
-	    (not:VSX_L (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa"))
-	    (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa"))
-	  (and:VSX_L
-	    (match_dup 3)
-	    (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa"))))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxsel %x0,%x1,%x2,%x3"
-  [(set_attr "type" "vecmove")
-   (set_attr "isa" "<VSisa>")])
-
-(define_insn "vsx_xxsel<mode>2"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
-	(ior:VSX_L
-	  (and:VSX_L
-	    (not:VSX_L (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa"))
-	    (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa"))
-	  (and:VSX_L
-	    (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa")
-	    (match_dup 3))))]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxsel %x0,%x1,%x2,%x3"
-  [(set_attr "type" "vecmove")
-   (set_attr "isa" "<VSisa>")])
-
-(define_insn "vsx_xxsel<mode>3"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
-	(ior:VSX_L
-	  (and:VSX_L
-	    (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa")
-	    (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa"))
-	  (and:VSX_L
-	    (not:VSX_L (match_dup 3))
-	    (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa"))))]
- "VECTOR_MEM_VSX_P (<MODE>mode)"
-  "xxsel %x0,%x2,%x1,%x3"
- [(set_attr "type" "vecmove")
- (set_attr "isa" "<VSisa>")])
-
-(define_insn "vsx_xxsel<mode>4"
-  [(set (match_operand:VSX_L 0 "vsx_register_operand" "=<VSr>,?wa")
-	(ior:VSX_L
-	  (and:VSX_L
-	    (match_operand:VSX_L 1 "vsx_register_operand" "<VSr>,wa")
-	    (match_operand:VSX_L 3 "vsx_register_operand" "<VSr>,wa"))
-	  (and:VSX_L
-	    (not:VSX_L (match_dup 3))
-	    (match_operand:VSX_L 2 "vsx_register_operand" "<VSr>,wa"))))]
- "VECTOR_MEM_VSX_P (<MODE>mode)"
- "xxsel %x0,%x2,%x1,%x3"
- [(set_attr "type" "vecmove")
- (set_attr "isa" "<VSisa>")])
-
 ;; Copy sign
 (define_insn "vsx_copysign<mode>3"
   [(set (match_operand:VSX_F 0 "vsx_register_operand" "=wa")
