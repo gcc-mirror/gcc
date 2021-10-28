@@ -28345,7 +28345,7 @@ static int
 extract_autos_r (tree t, void *data)
 {
   hash_table<auto_hash> &hash = *(hash_table<auto_hash>*)data;
-  if (is_auto (t))
+  if (is_auto (t) && !template_placeholder_p (t))
     {
       /* All the autos were built with index 0; fix that up now.  */
       tree *p = hash.find_slot (t, INSERT);
@@ -28379,10 +28379,8 @@ extract_autos (tree type)
   for_each_template_parm (type, extract_autos_r, &hash, &visited, true);
 
   tree tree_vec = make_tree_vec (hash.elements());
-  for (hash_table<auto_hash>::iterator iter = hash.begin();
-       iter != hash.end(); ++iter)
+  for (tree elt : hash)
     {
-      tree elt = *iter;
       unsigned i = TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (elt));
       TREE_VEC_ELT (tree_vec, i)
 	= build_tree_list (NULL_TREE, TYPE_NAME (elt));
@@ -29624,7 +29622,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
       tree parms = build_tree_list (NULL_TREE, type);
       tree tparms;
 
-      if (flag_concepts)
+      if (flag_concepts_ts)
 	tparms = extract_autos (type);
       else
 	{
@@ -29812,7 +29810,7 @@ type_uses_auto (tree type)
 {
   if (type == NULL_TREE)
     return NULL_TREE;
-  else if (flag_concepts)
+  else if (flag_concepts_ts)
     {
       /* The Concepts TS allows multiple autos in one type-specifier; just
 	 return the first one we find, do_auto_deduction will collect all of
@@ -29835,6 +29833,11 @@ type_uses_auto (tree type)
 bool
 check_auto_in_tmpl_args (tree tmpl, tree args)
 {
+  if (!flag_concepts_ts)
+    /* Only the concepts TS allows 'auto' as a type-id; it'd otherwise
+       have already been rejected by the parser more generally.  */
+    return false;
+
   /* If there were previous errors, nevermind.  */
   if (!args || TREE_CODE (args) != TREE_VEC)
     return false;
@@ -29844,11 +29847,10 @@ check_auto_in_tmpl_args (tree tmpl, tree args)
      We'll only be able to tell during template substitution, so we
      expect to be called again then.  If concepts are enabled and we
      know we have a type, we're ok.  */
-  if (flag_concepts
-      && (identifier_p (tmpl)
-	  || (DECL_P (tmpl)
-	      &&  (DECL_TYPE_TEMPLATE_P (tmpl)
-		   || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))))
+  if (identifier_p (tmpl)
+      || (DECL_P (tmpl)
+	  &&  (DECL_TYPE_TEMPLATE_P (tmpl)
+	       || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))))
     return false;
 
   /* Quickly search for any occurrences of auto; usually there won't
