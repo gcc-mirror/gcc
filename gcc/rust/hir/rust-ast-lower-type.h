@@ -479,7 +479,8 @@ public:
     translated
       = new HIR::TypeBoundWhereClauseItem (mapping, std::move (for_lifetimes),
 					   std::move (bound_type),
-					   std::move (type_param_bounds));
+					   std::move (type_param_bounds),
+					   item.get_locus ());
   }
 
 private:
