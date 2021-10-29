@@ -705,6 +705,57 @@ ADTType::clone () const
 		      get_combined_refs ());
 }
 
+static bool
+handle_substitions (SubstitutionArgumentMappings &subst_mappings,
+		    StructFieldType *field)
+{
+  auto fty = field->get_field_type ();
+  bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
+  if (is_param_ty)
+    {
+      ParamType *p = static_cast<ParamType *> (fty);
+
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
+      if (ok)
+	{
+	  auto argt = arg.get_tyty ();
+	  bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	  bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
+
+	  if (arg_is_param || arg_is_concrete)
+	    {
+	      auto new_field = argt->clone ();
+	      new_field->set_ref (fty->get_ref ());
+	      field->set_field_type (new_field);
+	    }
+	  else
+	    {
+	      field->get_field_type ()->set_ty_ref (argt->get_ref ());
+	    }
+	}
+    }
+  else if (fty->has_subsititions_defined () || fty->contains_type_parameters ())
+    {
+      BaseType *concrete
+	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
+
+      if (concrete->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (subst_mappings.get_locus (),
+			 "Failed to resolve field substitution type: %s",
+			 fty->as_string ().c_str ());
+	  return false;
+	}
+
+      auto new_field = concrete->clone ();
+      new_field->set_ref (fty->get_ref ());
+      field->set_field_type (new_field);
+    }
+
+  return true;
+}
+
 ADTType *
 ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
@@ -723,50 +774,9 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 
   for (auto &field : adt->fields)
     {
-      auto fty = field->get_field_type ();
-      bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
-      if (is_param_ty)
-	{
-	  ParamType *p = static_cast<ParamType *> (fty);
-
-	  SubstitutionArg arg = SubstitutionArg::error ();
-	  bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
-	  if (ok)
-	    {
-	      auto argt = arg.get_tyty ();
-	      bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
-	      bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
-
-	      if (arg_is_param || arg_is_concrete)
-		{
-		  auto new_field = argt->clone ();
-		  new_field->set_ref (fty->get_ref ());
-		  field->set_field_type (new_field);
-		}
-	      else
-		{
-		  field->get_field_type ()->set_ty_ref (argt->get_ref ());
-		}
-	    }
-	}
-      else if (fty->has_subsititions_defined ()
-	       || fty->contains_type_parameters ())
-	{
-	  BaseType *concrete
-	    = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
-
-	  if (concrete->get_kind () == TyTy::TypeKind::ERROR)
-	    {
-	      rust_error_at (subst_mappings.get_locus (),
-			     "Failed to resolve field substitution type: %s",
-			     fty->as_string ().c_str ());
-	      return adt;
-	    }
-
-	  auto new_field = concrete->clone ();
-	  new_field->set_ref (fty->get_ref ());
-	  field->set_field_type (new_field);
-	}
+      bool ok = ::Rust::TyTy::handle_substitions (subst_mappings, field);
+      if (!ok)
+	return adt;
     }
 
   return adt;
