@@ -1339,61 +1339,57 @@ procedure Gnatls is
          if Gpr_Prj_Path_File.all /= "" then
             FD := Open_Read (Gpr_Prj_Path_File.all, GNAT.OS_Lib.Text);
 
-            if FD = Invalid_FD then
-               Osint.Fail
-                 ("warning: could not read project path file """
-                  & Gpr_Prj_Path_File.all & """");
+            if FD /= Invalid_FD then
+               Len := Integer (File_Length (FD));
+
+               declare
+                  Buffer : String (1 .. Len);
+                  Index  : Positive := 1;
+                  Last   : Positive;
+                  Tmp    : String_Access;
+
+               begin
+                  --  Read the file
+
+                  Len := Read (FD, Buffer (1)'Address, Len);
+                  Close (FD);
+
+                  --  Scan the file line by line
+
+                  while Index < Buffer'Last loop
+
+                     --  Find the end of line
+
+                     Last := Index;
+                     while Last <= Buffer'Last
+                       and then Buffer (Last) /= ASCII.LF
+                       and then Buffer (Last) /= ASCII.CR
+                     loop
+                        Last := Last + 1;
+                     end loop;
+
+                     --  Ignore empty lines
+
+                     if Last > Index then
+                        Tmp := Self;
+                        Self :=
+                          new String'
+                            (Tmp.all & Path_Separator &
+                             Buffer (Index .. Last - 1));
+                        Free (Tmp);
+                     end if;
+
+                     --  Find the beginning of the next line
+
+                     Index := Last;
+                     while Buffer (Index) = ASCII.CR or else
+                           Buffer (Index) = ASCII.LF
+                     loop
+                        Index := Index + 1;
+                     end loop;
+                  end loop;
+               end;
             end if;
-
-            Len := Integer (File_Length (FD));
-
-            declare
-               Buffer : String (1 .. Len);
-               Index  : Positive := 1;
-               Last   : Positive;
-               Tmp    : String_Access;
-
-            begin
-               --  Read the file
-
-               Len := Read (FD, Buffer (1)'Address, Len);
-               Close (FD);
-
-               --  Scan the file line by line
-
-               while Index < Buffer'Last loop
-
-                  --  Find the end of line
-
-                  Last := Index;
-                  while Last <= Buffer'Last
-                    and then Buffer (Last) /= ASCII.LF
-                    and then Buffer (Last) /= ASCII.CR
-                  loop
-                     Last := Last + 1;
-                  end loop;
-
-                  --  Ignore empty lines
-
-                  if Last > Index then
-                     Tmp := Self;
-                     Self :=
-                       new String'
-                         (Tmp.all & Path_Separator &
-                          Buffer (Index .. Last - 1));
-                     Free (Tmp);
-                  end if;
-
-                  --  Find the beginning of the next line
-
-                  Index := Last;
-                  while Buffer (Index) = ASCII.CR or else
-                        Buffer (Index) = ASCII.LF
-                  loop
-                     Index := Index + 1;
-                  end loop;
-               end loop;
-            end;
 
          end if;
 
