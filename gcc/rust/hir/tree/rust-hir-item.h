@@ -1694,12 +1694,12 @@ public:
     return std::unique_ptr<EnumItem> (clone_item_impl ());
   }
 
-  virtual std::string as_string () const;
+  virtual std::string as_string () const override;
 
   // not pure virtual as not abstract
-  virtual void accept_vis (HIRVisitor &vis);
+  virtual void accept_vis (HIRVisitor &vis) override;
 
-  Location get_locus () const { return locus; }
+  Location get_locus () const override { return locus; }
 
   Identifier get_identifier () const { return variant_name; }
 
@@ -1728,6 +1728,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<TupleField> &get_tuple_fields () { return tuple_fields; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -1758,6 +1760,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<StructField> &get_struct_fields () { return struct_fields; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -1804,6 +1808,8 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_discriminant_expression () { return expression; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -1898,6 +1904,16 @@ public:
   void accept_vis (HIRVisitor &vis) override;
 
   Identifier get_identifier () const { return enum_name; }
+
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
+  {
+    return generic_params;
+  }
+
+  const std::vector<std::unique_ptr<EnumItem>> &get_variants () const
+  {
+    return items;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
