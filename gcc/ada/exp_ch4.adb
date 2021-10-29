@@ -15346,6 +15346,17 @@ package body Exp_Ch4 is
    begin
       SCIL_Node := Empty;
 
+      --  We have to examine the corresponding record type when dealing with
+      --  protected types instead of the original, unexpanded, type.
+
+      if Ekind (Right_Type) = E_Protected_Type then
+         Right_Type := Corresponding_Record_Type (Right_Type);
+      end if;
+
+      if Ekind (Left_Type) = E_Protected_Type then
+         Left_Type := Corresponding_Record_Type (Left_Type);
+      end if;
+
       --  In the case where the type is an access type, the test is applied
       --  using the designated types (needed in Ada 2012 for implicit anonymous
       --  access conversions, for AI05-0149).
