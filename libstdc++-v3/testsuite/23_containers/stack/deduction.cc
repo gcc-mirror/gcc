@@ -98,6 +98,6 @@ test03()
   check_type<std::stack<long>>(s1);
 
   std::stack s2(l.begin(), l.end(), std::allocator<long>());
-  check_type<std::stack<long>>(s1);
+  check_type<std::stack<long>>(s2);
 }
 #endif
