@@ -3079,6 +3079,22 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   return result;
 }
 
+/* Return true if CONSTRUCTOR EXPR after pack expansion could have no
+   elements.  */
+
+static bool
+maybe_zero_constructor_nelts (tree expr)
+{
+  if (CONSTRUCTOR_NELTS (expr) == 0)
+    return true;
+  if (!processing_template_decl)
+    return false;
+  for (constructor_elt &elt : CONSTRUCTOR_ELTS (expr))
+    if (!PACK_EXPANSION_P (elt.value))
+      return false;
+  return true;
+}
+
 /* Finish a compound-literal expression or C++11 functional cast with aggregate
    initializer.  TYPE is the type to which the CONSTRUCTOR in COMPOUND_LITERAL
    is being cast.  */
@@ -3104,9 +3120,20 @@ finish_compound_literal (tree type, tree compound_literal,
 
   if (!TYPE_OBJ_P (type))
     {
-      if (complain & tf_error)
-	error ("compound literal of non-object type %qT", type);
-      return error_mark_node;
+      /* DR2351 */
+      if (VOID_TYPE_P (type) && CONSTRUCTOR_NELTS (compound_literal) == 0)
+	return void_node;
+      else if (VOID_TYPE_P (type)
+	       && processing_template_decl
+	       && maybe_zero_constructor_nelts (compound_literal))
+	/* If there are only packs in compound_literal, it could
+	   be void{} after pack expansion.  */;
+      else
+	{
+	  if (complain & tf_error)
+	    error ("compound literal of non-object type %qT", type);
+	  return error_mark_node;
+	}
     }
 
   if (template_placeholder_p (type))
