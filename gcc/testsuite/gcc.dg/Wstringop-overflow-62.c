@@ -223,7 +223,7 @@ void test_max (void)
 
     char *q = MAX (pi, pj);
 
-    memset (q, 0, 1);         // { dg-warning "writing 1 byte into a region of size 0 " "" { target *-*-* } 0 }
+    memset (q, 0, 1);         // { dg-warning "writing 1 byte into a region of size 0 " }
     memset (q, 0, 2);         // { dg-warning "writing 2 bytes into a region of size 0 " }
   }
 
@@ -345,7 +345,7 @@ void test_max (void)
        not reflected in the determaxed offset).  */
     char *q = MAX (p1, p2);
 
-    memset (q, 0, 1);
+    memset (q, 0, 1);         // { dg-warning "writing 1 byte into a region of size 0 " }
   }
 
   {
