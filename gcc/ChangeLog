@@ -1,3 +1,7 @@
+2021-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (%X): Remove obsolete reference to -Wl.
+
 2021-10-27  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
