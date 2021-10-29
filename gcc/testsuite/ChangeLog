@@ -1,3 +1,70 @@
+2021-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102951
+	* gcc.dg/tree-ssa/pr102951.c: New test.
+	* gcc.dg/Wstringop-overflow-62.c: Adjust expected diagnostics.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/ifcvt-4.c: Adjust.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp9.c: Adjust message scanned for.
+	* gcc.dg/tree-ssa/pr21458-2.c: Ditto.
+
+2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102933
+	* g++.dg/cpp2a/nontype-class50.C: New test.
+	* g++.dg/cpp2a/nontype-class50a.C: New test.
+
+2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102780
+	* g++.dg/cpp1z/fold13.C: New test.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84407
+	* gcc.dg/torture/fp-uint64-convert-double-1.c: New testcase.
+	* gcc.dg/torture/fp-uint64-convert-double-2.c: Likewise.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp106.c: Adjust for threading.
+	* gcc.dg/tree-ssa/vrp113.c: Same.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57245
+	* gcc.dg/torture/fp-double-convert-float-1.c: New testcase.
+
+2021-10-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102767
+	* gcc.target/powerpc/ppc-fortran/pr102767.f90: New file.
+
+2021-10-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/torture/harden-comp.c: New.
+	* c-c++-common/torture/harden-cond.c: New.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Adjust.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/94613
+	* gcc.target/powerpc/pr94613.c: New test.
+
+2021-10-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-recip-1.c: New test.
+	* gcc.target/i386/avx512fp16-recip-2.c: Ditto.
+	* gcc.target/i386/pr102464.c: Add -fno-trapping-math.
+
 2021-10-27  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Warray-bounds-90.c: Fix a typo.

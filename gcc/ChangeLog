@@ -1,3 +1,156 @@
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (path_oracle::killing_def): Walk the
+	equivalency list and remove SSA from any equivalencies.
+
+2021-10-28  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.h (PROFILE_HOOK): Add return address argument
+	to _mcount.
+
+2021-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102951
+	* fold-const.h (address_compare): Declare.
+	* fold-const.c (address_compare): New function.
+	* match.pd (cmp (convert1?@2 addr@0) (convert2? addr@1)): Use
+	address_compare helper.
+	(minmax cmp (convert1?@2 addr@0) (convert2?@3 addr@1)): New
+	simplification.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* vr-values.c (simplify_using_ranges::fold_cond): Change fold message.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102940
+	* tree-vrp.c (execute_ranger_vrp): Reset scev.
+
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* config/nios2/linux.h (MUSL_DYNAMIC_LINKER): Add musl linker
+
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* configure: Regenerate.
+	* configure.ac: Use CPPFLAGS_FOR_BUILD for GMPINC
+
+2021-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (%X): Remove obsolete reference to -Wl.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84407
+	* fold-const.c (fold_convert_const): Avoid int to float
+	constant folding with -frounding-math and inexact result.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise
+	for both float and unsigned_float.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader::find_taken_edge_switch): Use find_case_label_range
+	instead of find_taken_edge.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (class back_threader_registry):
+	Inherit from back_jt_path_registry.
+	(back_threader_registry::thread_through_all_blocks): Remove.
+	(back_threader_registry::register_path): Remove
+	m_lowlevel_registry prefix.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57245
+	* fold-const.c (fold_convert_const_real_from_real): Honor
+	-frounding-math if the conversion is not exact.
+	* simplify-rtx.c (simplify_const_unary_operation): Do not
+	simplify FLOAT_TRUNCATE with sign dependent rounding.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102949
+	* tree-vect-stmts.c (ensure_base_align): Look at the
+	dr_info of a group leader and assert we are looking at
+	one with analyzed alignment.
+
+2021-10-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102767
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Consider
+	V1T1 mode for unaligned load and store.
+
+2021-10-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md (zero_extendsidi2_internal): Allow ZBB
+	use this pattern.
+
+2021-10-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize (CANONICAL_ORDER): Add `i` to
+	CANONICAL_ORDER.
+
+2021-10-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (fharden-compares): New.
+	(fharden-conditional-branches): New.
+	* doc/invoke.texi: Document new options.
+	* gimple-harden-conditionals.cc: New.
+	* Makefile.in (OBJS): Build it.
+	* passes.def: Add new passes.
+	* tree-pass.h (make_pass_harden_compares): Declare.
+	(make_pass_harden_conditional_branches): Declare.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/94613
+	* config/rs6000/altivec.md: Add vsx register constraints.
+	* config/rs6000/vsx.md (vsx_xxsel<mode>): Delete.
+	(vsx_xxsel<mode>2): Likewise.
+	(vsx_xxsel<mode>3): Likewise.
+	(vsx_xxsel<mode>4): Likewise.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/94613
+	* config/rs6000/altivec.md (*altivec_vsel<mode>): Change to ...
+	(altivec_vsel<mode>): ... this and update define.
+	(*altivec_vsel<mode>_uns): Delete.
+	(altivec_vsel<mode>2): New define_insn.
+	(altivec_vsel<mode>3): Likewise.
+	(altivec_vsel<mode>4): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_expand_vec_sel_builtin): New.
+	(altivec_expand_builtin): Call altivec_expand_vec_sel_builtin to expand
+	vel_sel.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_cond_expr): Use bit-wise
+	selection instead of per element.
+	* config/rs6000/vector.md:
+	* config/rs6000/vsx.md (*vsx_xxsel<mode>): Change to ...
+	(vsx_xxsel<mode>): ... this and update define.
+	(*vsx_xxsel<mode>_uns): Delete.
+	(vsx_xxsel<mode>2): New define_insn.
+	(vsx_xxsel<mode>3): Likewise.
+	(vsx_xxsel<mode>4): Likewise.
+
+2021-10-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.c (use_rsqrt_p): Add mode parameter, enable
+	  HFmode rsqrt without TARGET_SSE_MATH.
+	(ix86_optab_supported_p): Refactor rint, adjust floor, ceil,
+	btrunc condition to be restricted by -ftrapping-math, adjust
+	use_rsqrt_p function call.
+	* config/i386/i386.md (rcphf2): New define_insn.
+	(rsqrthf2): Likewise.
+	* config/i386/sse.md (div<mode>3): Change VF2H to VF2.
+	(div<mode>3): New expander for HF mode.
+	(rsqrt<mode>2): Likewise.
+	(*avx512fp16_vmrcpv8hf2): New define_insn for rpad pass.
+	(*avx512fp16_vmrsqrtv8hf2): Likewise.
+
 2021-10-27  Saagar Jha  <saagar@saagarjha.com>
 
 	* config.gcc: Adjust for Darwin21.
