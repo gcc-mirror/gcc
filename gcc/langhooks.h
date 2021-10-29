@@ -477,7 +477,7 @@ struct lang_hooks
   void (*print_statistics) (void);
 
   /* Called by print_tree when there is a tree of class tcc_exceptional
-     that it doesn't know how to display.  */
+     or tcc_constant that it doesn't know how to display.  */
   lang_print_tree_hook print_xnode;
 
   /* Called to print language-dependent parts of tcc_decl, tcc_type,
