@@ -1302,11 +1302,22 @@ path_oracle::killing_def (tree ssa)
   // Walk the equivalency list and remove SSA from any equivalencies.
   if (bitmap_bit_p (m_equiv.m_names, v))
     {
-      bitmap_clear_bit (m_equiv.m_names, v);
       for (equiv_chain *ptr = m_equiv.m_next; ptr; ptr = ptr->m_next)
 	if (bitmap_bit_p (ptr->m_names, v))
 	  bitmap_clear_bit (ptr->m_names, v);
     }
+  else
+    bitmap_set_bit (m_equiv.m_names, v);
+
+  // Now add an equivalency with itself so we don't look to the root oracle.
+  bitmap b = BITMAP_ALLOC (&m_bitmaps);
+  bitmap_set_bit (b, v);
+  equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
+						    sizeof (equiv_chain));
+  ptr->m_names = b;
+  ptr->m_bb = NULL;
+  ptr->m_next = m_equiv.m_next;
+  m_equiv.m_next = ptr;
 
   // Walk the relation list and remove SSA from any relations.
   if (!bitmap_bit_p (m_relations.m_names, v))
