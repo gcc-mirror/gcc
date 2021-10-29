@@ -1105,15 +1105,6 @@ public:
   std::vector<StructFieldType *> &get_fields () { return fields; }
   const std::vector<StructFieldType *> &get_fields () const { return fields; }
 
-  void iterate_fields (std::function<bool (StructFieldType *)> cb)
-  {
-    for (auto &f : fields)
-      {
-	if (!cb (f))
-	  return;
-      }
-  }
-
   bool needs_generic_substitutions () const override final
   {
     return needs_substitution ();

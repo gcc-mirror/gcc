@@ -201,16 +201,15 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	  // we have a struct base to assign the missing fields from.
 	  // the missing fields can be implicit FieldAccessExprs for the value
 	  std::set<std::string> missing_fields;
-	  struct_path_resolved->iterate_fields (
-	    [&] (TyTy::StructFieldType *field) mutable -> bool {
+	  for (auto &field : struct_path_resolved->get_fields ())
+	    {
 	      auto it = fields_assigned.find (field->get_name ());
 	      if (it == fields_assigned.end ())
 		missing_fields.insert (field->get_name ());
-	      return true;
-	    });
+	    }
 
-	  // we can generate FieldAccessExpr or TupleAccessExpr for the values
-	  // of the missing fields.
+	  // we can generate FieldAccessExpr or TupleAccessExpr for the
+	  // values of the missing fields.
 	  for (auto &missing : missing_fields)
 	    {
 	      HIR::Expr *receiver
