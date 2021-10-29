@@ -113,14 +113,18 @@ public:
       }
 
     TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (resolved);
+    rust_assert (!adt->is_enum ());
+    rust_assert (adt->number_of_variants () == 1);
+
+    TyTy::VariantDef *variant = adt->get_variants ().at (0);
     TupleIndex index = expr.get_tuple_index ();
-    if ((size_t) index >= adt->num_fields ())
+    if ((size_t) index >= variant->num_fields ())
       {
 	rust_error_at (expr.get_locus (), "unknown field at index %i", index);
 	return;
       }
 
-    auto field_tyty = adt->get_field ((size_t) index);
+    auto field_tyty = variant->get_field_at_index ((size_t) index);
     if (field_tyty == nullptr)
       {
 	rust_error_at (expr.get_locus (),
@@ -984,8 +988,15 @@ public:
       }
 
     TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (struct_base);
-    auto resolved = adt->get_field (expr.get_field_name ());
-    if (resolved == nullptr)
+    rust_assert (!adt->is_enum ());
+    rust_assert (adt->number_of_variants () == 1);
+
+    TyTy::VariantDef *vaiant = adt->get_variants ().at (0);
+
+    TyTy::StructFieldType *lookup = nullptr;
+    bool found
+      = vaiant->lookup_field (expr.get_field_name (), &lookup, nullptr);
+    if (!found)
       {
 	rust_error_at (expr.get_locus (), "unknown field [%s] for type [%s]",
 		       expr.get_field_name ().c_str (),
@@ -993,7 +1004,7 @@ public:
 	return;
       }
 
-    infered = resolved->get_field_type ();
+    infered = lookup->get_field_type ();
   }
 
   void visit (HIR::QualifiedPathInExpression &expr) override;

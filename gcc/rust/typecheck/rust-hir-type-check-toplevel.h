@@ -87,7 +87,6 @@ public:
       }
 
     std::vector<TyTy::StructFieldType *> fields;
-
     size_t idx = 0;
     for (auto &field : struct_decl.get_fields ())
       {
@@ -102,12 +101,19 @@ public:
 	idx++;
       }
 
+    // there is only a single variant
+    std::vector<TyTy::VariantDef *> variants;
+    variants.push_back (
+      new TyTy::VariantDef (struct_decl.get_identifier (),
+			    TyTy::VariantDef::VariantType::TUPLE,
+			    std::move (fields)));
+
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (),
 			   TyTy::ADTType::ADTKind::TUPLE_STRUCT,
-			   std::move (fields), std::move (substitutions));
+			   std::move (variants), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -165,12 +171,19 @@ public:
 			      ty_field->get_field_type ());
       }
 
+    // there is only a single variant
+    std::vector<TyTy::VariantDef *> variants;
+    variants.push_back (
+      new TyTy::VariantDef (struct_decl.get_identifier (),
+			    TyTy::VariantDef::VariantType::STRUCT,
+			    std::move (fields)));
+
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (),
 			   TyTy::ADTType::ADTKind::STRUCT_STRUCT,
-			   std::move (fields), std::move (substitutions));
+			   std::move (variants), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -208,18 +221,25 @@ public:
 	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
-    std::vector<TyTy::StructFieldType *> variants;
-    union_decl.iterate ([&] (HIR::StructField &variant) mutable -> bool {
-      TyTy::BaseType *variant_type
-	= TypeCheckType::Resolve (variant.get_field_type ().get ());
-      TyTy::StructFieldType *ty_variant
-	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
-				     variant.get_field_name (), variant_type);
-      variants.push_back (ty_variant);
-      context->insert_type (variant.get_mappings (),
-			    ty_variant->get_field_type ());
-      return true;
-    });
+    std::vector<TyTy::StructFieldType *> fields;
+    for (auto &variant : union_decl.get_variants ())
+      {
+	TyTy::BaseType *variant_type
+	  = TypeCheckType::Resolve (variant.get_field_type ().get ());
+	TyTy::StructFieldType *ty_variant
+	  = new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
+				       variant.get_field_name (), variant_type);
+	fields.push_back (ty_variant);
+	context->insert_type (variant.get_mappings (),
+			      ty_variant->get_field_type ());
+      }
+
+    // there is only a single variant
+    std::vector<TyTy::VariantDef *> variants;
+    variants.push_back (
+      new TyTy::VariantDef (union_decl.get_identifier (),
+			    TyTy::VariantDef::VariantType::STRUCT,
+			    std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),

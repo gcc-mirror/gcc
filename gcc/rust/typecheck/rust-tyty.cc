@@ -590,35 +590,16 @@ ADTType::accept_vis (TyConstVisitor &vis) const
 std::string
 ADTType::as_string () const
 {
-  if (num_fields () == 0)
-    return identifier;
-
-  std::string fields_buffer;
-  for (size_t i = 0; i < num_fields (); ++i)
+  std::string variants_buffer;
+  for (size_t i = 0; i < number_of_variants (); ++i)
     {
-      fields_buffer += get_field (i)->as_string ();
-      if ((i + 1) < num_fields ())
-	fields_buffer += ", ";
+      TyTy::VariantDef *variant = variants.at (i);
+      variants_buffer += variant->as_string ();
+      if ((i + 1) < number_of_variants ())
+	variants_buffer += ", ";
     }
 
-  return identifier + subst_as_string () + "{" + fields_buffer + "}";
-}
-
-const StructFieldType *
-ADTType::get_field (size_t index) const
-{
-  return fields.at (index);
-}
-
-const BaseType *
-ADTType::get_field_type (size_t index) const
-{
-  const StructFieldType *ref = get_field (index);
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (ref->get_field_type ()->get_ref (), &lookup);
-  rust_assert (ok);
-  return lookup;
+  return identifier + subst_as_string () + "{" + variants_buffer + "}";
 }
 
 BaseType *
@@ -657,7 +638,10 @@ ADTType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const ADTType &> (other);
-  if (num_fields () != other2.num_fields ())
+  if (get_adt_kind () != other2.get_adt_kind ())
+    return false;
+
+  if (number_of_variants () != other2.number_of_variants ())
     return false;
 
   if (has_subsititions_defined () != other2.has_subsititions_defined ())
@@ -683,9 +667,12 @@ ADTType::is_equal (const BaseType &other) const
     }
   else
     {
-      for (size_t i = 0; i < num_fields (); i++)
+      for (size_t i = 0; i < number_of_variants (); i++)
 	{
-	  if (!get_field (i)->is_equal (*other2.get_field (i)))
+	  const TyTy::VariantDef *a = get_variants ().at (i);
+	  const TyTy::VariantDef *b = other2.get_variants ().at (i);
+
+	  if (!a->is_equal (*b))
 	    return false;
 	}
     }
@@ -696,12 +683,12 @@ ADTType::is_equal (const BaseType &other) const
 BaseType *
 ADTType::clone () const
 {
-  std::vector<StructFieldType *> cloned_fields;
-  for (auto &f : fields)
-    cloned_fields.push_back ((StructFieldType *) f->clone ());
+  std::vector<VariantDef *> cloned_variants;
+  for (auto &variant : variants)
+    cloned_variants.push_back (variant->clone ());
 
   return new ADTType (get_ref (), get_ty_ref (), identifier, get_adt_kind (),
-		      cloned_fields, clone_substs (), used_arguments,
+		      cloned_variants, clone_substs (), used_arguments,
 		      get_combined_refs ());
 }
 
@@ -772,11 +759,14 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
     }
 
-  for (auto &field : adt->fields)
+  for (auto &variant : adt->get_variants ())
     {
-      bool ok = ::Rust::TyTy::handle_substitions (subst_mappings, field);
-      if (!ok)
-	return adt;
+      for (auto &field : variant->get_fields ())
+	{
+	  bool ok = ::Rust::TyTy::handle_substitions (subst_mappings, field);
+	  if (!ok)
+	    return adt;
+	}
     }
 
   return adt;
@@ -2556,18 +2546,22 @@ TypeCheckCallExpr::visit (ADTType &type)
       return;
     }
 
-  if (call.num_params () != type.num_fields ())
+  rust_assert (!type.is_enum ());
+  rust_assert (type.number_of_variants () == 1);
+  TyTy::VariantDef *variant = type.get_variants ().at (0);
+
+  if (call.num_params () != variant->num_fields ())
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), type.num_fields ());
+		     call.num_params (), variant->num_fields ());
       return;
     }
 
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
-      StructFieldType *field = type.get_field (i);
+      StructFieldType *field = variant->get_field_at_index (i);
       BaseType *field_tyty = field->get_field_type ();
 
       BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get (), false);

@@ -1016,29 +1016,47 @@ public:
 
   void visit (ADTType &type) override
   {
+    if (base->get_adt_kind () != type.get_adt_kind ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
     if (base->get_identifier ().compare (type.get_identifier ()) != 0)
       {
 	BaseRules::visit (type);
 	return;
       }
 
-    if (base->num_fields () != type.num_fields ())
+    if (base->number_of_variants () != type.number_of_variants ())
       {
 	BaseRules::visit (type);
 	return;
       }
 
-    for (size_t i = 0; i < type.num_fields (); ++i)
+    for (size_t i = 0; i < type.number_of_variants (); ++i)
       {
-	TyTy::StructFieldType *base_field = base->get_field (i);
-	TyTy::StructFieldType *other_field = type.get_field (i);
+	TyTy::VariantDef *a = base->get_variants ().at (i);
+	TyTy::VariantDef *b = type.get_variants ().at (i);
 
-	TyTy::BaseType *this_field_ty = base_field->get_field_type ();
-	TyTy::BaseType *other_field_ty = other_field->get_field_type ();
+	if (a->num_fields () != b->num_fields ())
+	  {
+	    BaseRules::visit (type);
+	    return;
+	  }
 
-	BaseType *unified_ty = this_field_ty->unify (other_field_ty);
-	if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
-	  return;
+	for (size_t j = 0; j < a->num_fields (); j++)
+	  {
+	    TyTy::StructFieldType *base_field = a->get_field_at_index (i);
+	    TyTy::StructFieldType *other_field = b->get_field_at_index (i);
+
+	    TyTy::BaseType *this_field_ty = base_field->get_field_type ();
+	    TyTy::BaseType *other_field_ty = other_field->get_field_type ();
+
+	    BaseType *unified_ty = this_field_ty->unify (other_field_ty);
+	    if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
+	      return;
+	  }
       }
 
     resolved = type.clone ();

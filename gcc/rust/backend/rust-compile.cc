@@ -73,6 +73,10 @@ CompileExpr::visit (HIR::CallExpr &expr)
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
       Btype *compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
+      rust_assert (!adt->is_enum ());
+      rust_assert (adt->number_of_variants () == 1);
+      auto variant = adt->get_variants ().at (0);
+
       // this assumes all fields are in order from type resolution and if a
       // base struct was specified those fields are filed via accesors
       std::vector<Bexpression *> vals;
@@ -83,7 +87,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
 	  // assignments are coercion sites so lets convert the rvalue if
 	  // necessary
-	  auto respective_field = adt->get_field (i);
+	  auto respective_field = variant->get_field_at_index (i);
 	  auto expected = respective_field->get_field_type ();
 
 	  TyTy::BaseType *actual = nullptr;

@@ -2005,14 +2005,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  void iterate (std::function<bool (StructField &)> cb)
-  {
-    for (auto &variant : variants)
-      {
-	if (!cb (variant))
-	  return;
-      }
-  }
+  std::vector<StructField> &get_variants () { return variants; }
 
   WhereClause &get_where_clause () { return where_clause; }
 

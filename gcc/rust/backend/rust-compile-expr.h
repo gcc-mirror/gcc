@@ -698,7 +698,13 @@ public:
     if (receiver->get_kind () == TyTy::TypeKind::ADT)
       {
 	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
-	adt->get_field (expr.get_field_name (), &field_index);
+	rust_assert (!adt->is_enum ());
+	rust_assert (adt->number_of_variants () == 1);
+
+	TyTy::VariantDef *variant = adt->get_variants ().at (0);
+	bool ok = variant->lookup_field (expr.get_field_name (), nullptr,
+					 &field_index);
+	rust_assert (ok);
       }
     else if (receiver->get_kind () == TyTy::TypeKind::REF)
       {
@@ -707,9 +713,15 @@ public:
 	rust_assert (b->get_kind () == TyTy::TypeKind::ADT);
 
 	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (b);
-	adt->get_field (expr.get_field_name (), &field_index);
-	Btype *adt_tyty = TyTyResolveCompile::compile (ctx, adt);
+	rust_assert (!adt->is_enum ());
+	rust_assert (adt->number_of_variants () == 1);
 
+	TyTy::VariantDef *variant = adt->get_variants ().at (0);
+	bool ok = variant->lookup_field (expr.get_field_name (), nullptr,
+					 &field_index);
+	rust_assert (ok);
+
+	Btype *adt_tyty = TyTyResolveCompile::compile (ctx, adt);
 	Bexpression *indirect
 	  = ctx->get_backend ()->indirect_expression (adt_tyty, receiver_ref,
 						      true, expr.get_locus ());

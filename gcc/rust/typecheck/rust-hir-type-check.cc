@@ -178,7 +178,11 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
     }
 
   // check the arguments are all assigned and fix up the ordering
-  if (fields_assigned.size () != struct_path_resolved->num_fields ())
+  rust_assert (!struct_path_resolved->is_enum ());
+  rust_assert (struct_path_resolved->number_of_variants () == 1);
+  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
+
+  if (fields_assigned.size () != variant->num_fields ())
     {
       if (struct_def->is_union ())
 	{
@@ -201,7 +205,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	  // we have a struct base to assign the missing fields from.
 	  // the missing fields can be implicit FieldAccessExprs for the value
 	  std::set<std::string> missing_fields;
-	  for (auto &field : struct_path_resolved->get_fields ())
+	  for (auto &field : variant->get_fields ())
 	    {
 	      auto it = fields_assigned.find (field->get_name ());
 	      if (it == fields_assigned.end ())
@@ -235,7 +239,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 		struct_expr.struct_base->base_struct->get_locus ());
 
 	      size_t field_index;
-	      bool ok = struct_path_resolved->get_field (missing, &field_index);
+	      bool ok = variant->lookup_field (missing, nullptr, &field_index);
 	      rust_assert (ok);
 
 	      adtFieldIndexToField[field_index] = implicit_field;
@@ -291,10 +295,14 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
+  rust_assert (!struct_path_resolved->is_enum ());
+  rust_assert (struct_path_resolved->number_of_variants () == 1);
+  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
+
   size_t field_index;
-  TyTy::StructFieldType *field_type
-    = struct_path_resolved->get_field (field.field_name, &field_index);
-  if (field_type == nullptr)
+  TyTy::StructFieldType *field_type;
+  bool ok = variant->lookup_field (field.field_name, &field_type, &field_index);
+  if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
       return;
@@ -320,11 +328,14 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
-  size_t field_index;
+  rust_assert (!struct_path_resolved->is_enum ());
+  rust_assert (struct_path_resolved->number_of_variants () == 1);
+  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
 
-  TyTy::StructFieldType *field_type
-    = struct_path_resolved->get_field (field_name, &field_index);
-  if (field_type == nullptr)
+  size_t field_index;
+  TyTy::StructFieldType *field_type;
+  bool ok = variant->lookup_field (field_name, &field_type, &field_index);
+  if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
       return;
@@ -349,10 +360,15 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       return;
     }
 
+  rust_assert (!struct_path_resolved->is_enum ());
+  rust_assert (struct_path_resolved->number_of_variants () == 1);
+  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
+
   size_t field_index;
-  TyTy::StructFieldType *field_type
-    = struct_path_resolved->get_field (field.get_field_name (), &field_index);
-  if (field_type == nullptr)
+  TyTy::StructFieldType *field_type;
+  bool ok = variant->lookup_field (field.get_field_name (), &field_type,
+				   &field_index);
+  if (!ok)
     {
       rust_error_at (field.get_locus (), "unknown field");
       return;
