@@ -23349,7 +23349,15 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
     {OPTION_MASK_P8_VECTOR,
      BYTES_BIG_ENDIAN ? CODE_FOR_p8_vmrgow_v4sf_direct
 		      : CODE_FOR_p8_vmrgew_v4sf_direct,
-     {4, 5, 6, 7, 20, 21, 22, 23, 12, 13, 14, 15, 28, 29, 30, 31}}};
+     {4, 5, 6, 7, 20, 21, 22, 23, 12, 13, 14, 15, 28, 29, 30, 31}},
+    {OPTION_MASK_VSX, CODE_FOR_vsx_xxpermdi_v16qi,
+     {0, 1, 2, 3, 4, 5, 6, 7, 16, 17, 18, 19, 20, 21, 22, 23}},
+    {OPTION_MASK_VSX, CODE_FOR_vsx_xxpermdi_v16qi,
+     {8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}},
+    {OPTION_MASK_VSX, CODE_FOR_vsx_xxpermdi_v16qi,
+     {0, 1, 2, 3, 4, 5, 6, 7, 24, 25, 26, 27, 28, 29, 30, 31}},
+    {OPTION_MASK_VSX, CODE_FOR_vsx_xxpermdi_v16qi,
+     {8, 9, 10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31}}};
 
   unsigned int i, j, elt, which;
   unsigned char perm[16];
@@ -23472,6 +23480,27 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
 	  machine_mode omode = insn_data[icode].operand[0].mode;
 	  machine_mode imode = insn_data[icode].operand[1].mode;
 
+	  rtx perm_idx = GEN_INT (0);
+	  if (icode == CODE_FOR_vsx_xxpermdi_v16qi)
+	    {
+	      int perm_val = 0;
+	      if (one_vec)
+		{
+		  if (perm[0] == 8)
+		    perm_val |= 2;
+		  if (perm[8] == 8)
+		    perm_val |= 1;
+		}
+	      else
+		{
+		  if (perm[0] != 0)
+		    perm_val |= 2;
+		  if (perm[8] != 16)
+		    perm_val |= 1;
+		}
+	      perm_idx = GEN_INT (perm_val);
+	    }
+
 	  /* For little-endian, don't use vpkuwum and vpkuhum if the
 	     underlying vector type is not V4SI and V8HI, respectively.
 	     For example, using vpkuwum with a V8HI picks up the even
@@ -23495,7 +23524,8 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
           /* For little-endian, the two input operands must be swapped
              (or swapped back) to ensure proper right-to-left numbering
              from 0 to 2N-1.  */
-	  if (swapped ^ !BYTES_BIG_ENDIAN)
+	  if (swapped ^ !BYTES_BIG_ENDIAN
+	      && icode != CODE_FOR_vsx_xxpermdi_v16qi)
 	    std::swap (op0, op1);
 	  if (imode != V16QImode)
 	    {
@@ -23506,7 +23536,10 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
 	    x = target;
 	  else
 	    x = gen_reg_rtx (omode);
-	  emit_insn (GEN_FCN (icode) (x, op0, op1));
+	  if (icode == CODE_FOR_vsx_xxpermdi_v16qi)
+	    emit_insn (GEN_FCN (icode) (x, op0, op1, perm_idx));
+	  else
+	    emit_insn (GEN_FCN (icode) (x, op0, op1));
 	  if (omode != V16QImode)
 	    emit_move_insn (target, gen_lowpart (V16QImode, x));
 	  return true;
