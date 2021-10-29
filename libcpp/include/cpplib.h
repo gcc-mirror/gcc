@@ -198,6 +198,7 @@ struct GTY(()) cpp_string {
 				    operator, or before this token
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
+#define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 

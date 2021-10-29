@@ -1259,7 +1259,7 @@ collect_args (cpp_reader *pfile, const cpp_hashnode *node,
 	  else if (token->type == CPP_EOF
 		   || (token->type == CPP_HASH && token->flags & BOL))
 	    break;
-	  else if (token->type == CPP_PRAGMA)
+	  else if (token->type == CPP_PRAGMA && !(token->flags & PRAGMA_OP))
 	    {
 	      cpp_token *newtok = _cpp_temp_token (pfile);
 
