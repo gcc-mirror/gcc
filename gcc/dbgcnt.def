@@ -144,6 +144,10 @@ echo ubound: $ub
    Please keep the list sorted in alphabetic order.  */
 DEBUG_COUNTER (asan_use_after_scope)
 DEBUG_COUNTER (auto_inc_dec)
+DEBUG_COUNTER (back_thread1)
+DEBUG_COUNTER (back_thread2)
+DEBUG_COUNTER (back_threadfull1)
+DEBUG_COUNTER (back_threadfull2)
 DEBUG_COUNTER (ccp)
 DEBUG_COUNTER (cfg_cleanup)
 DEBUG_COUNTER (cprop)

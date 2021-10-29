@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
 	  NEXT_PASS (pass_forwprop);
-          NEXT_PASS (pass_early_thread_jumps);
+          NEXT_PASS (pass_early_thread_jumps, /*first=*/true);
 	  NEXT_PASS (pass_sra_early);
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
@@ -210,7 +210,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_return_slot);
       NEXT_PASS (pass_fre, true /* may_iterate */);
       NEXT_PASS (pass_merge_phi);
-      NEXT_PASS (pass_thread_jumps_full);
+      NEXT_PASS (pass_thread_jumps_full, /*first=*/true);
       NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
@@ -233,7 +233,7 @@ along with GCC; see the file COPYING3.  If not see
 	 propagations have already run, but before some more dead code
 	 is removed, and this place fits nicely.  Remember this when
 	 trying to move or duplicate pass_dominator somewhere earlier.  */
-      NEXT_PASS (pass_thread_jumps);
+      NEXT_PASS (pass_thread_jumps, /*first=*/true);
       NEXT_PASS (pass_dominator, true /* may_peel_loop_headers_p */);
       /* Threading can leave many const/copy propagations in the IL.
 	 Clean them up.  Failure to do so well can lead to false
@@ -332,10 +332,10 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fre, false /* may_iterate */);
       /* After late FRE we rewrite no longer addressed locals into SSA
          form if possible.  */
-      NEXT_PASS (pass_thread_jumps);
+      NEXT_PASS (pass_thread_jumps, /*first=*/false);
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
-      NEXT_PASS (pass_thread_jumps_full);
+      NEXT_PASS (pass_thread_jumps_full, /*first=*/false);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
       /* Run CCP to compute alignment and nonzero bits.  */
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
