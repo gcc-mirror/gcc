@@ -2537,7 +2537,8 @@ DynamicObjectType::get_object_items () const
 void
 TypeCheckCallExpr::visit (ADTType &type)
 {
-  if (!type.is_tuple_struct ())
+  rust_assert (!variant.is_error ());
+  if (variant.get_variant_type () != TyTy::VariantDef::VariantType::TUPLE)
     {
       rust_error_at (
 	call.get_locus (),
@@ -2546,22 +2547,18 @@ TypeCheckCallExpr::visit (ADTType &type)
       return;
     }
 
-  rust_assert (!type.is_enum ());
-  rust_assert (type.number_of_variants () == 1);
-  TyTy::VariantDef *variant = type.get_variants ().at (0);
-
-  if (call.num_params () != variant->num_fields ())
+  if (call.num_params () != variant.num_fields ())
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), variant->num_fields ());
+		     call.num_params (), variant.num_fields ());
       return;
     }
 
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
-      StructFieldType *field = variant->get_field_at_index (i);
+      StructFieldType *field = variant.get_field_at_index (i);
       BaseType *field_tyty = field->get_field_type ();
 
       BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get (), false);

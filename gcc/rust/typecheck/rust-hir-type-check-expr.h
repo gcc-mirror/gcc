@@ -198,7 +198,33 @@ public:
 	return;
       }
 
-    infered = TyTy::TypeCheckCallExpr::go (function_tyty, expr, context);
+    TyTy::VariantDef &variant = TyTy::VariantDef::get_error_node ();
+    if (function_tyty->get_kind () == TyTy::TypeKind::ADT)
+      {
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (function_tyty);
+	if (adt->is_enum ())
+	  {
+	    // lookup variant id
+	    HirId variant_id;
+	    bool ok = context->lookup_variant_definition (
+	      expr.get_fnexpr ()->get_mappings ().get_hirid (), &variant_id);
+	    rust_assert (ok);
+
+	    TyTy::VariantDef *lookup_variant = nullptr;
+	    ok = adt->lookup_variant_by_id (variant_id, &lookup_variant);
+	    rust_assert (ok);
+
+	    variant = *lookup_variant;
+	  }
+	else
+	  {
+	    rust_assert (adt->number_of_variants () == 1);
+	    variant = *adt->get_variants ().at (0);
+	  }
+      }
+
+    infered
+      = TyTy::TypeCheckCallExpr::go (function_tyty, expr, variant, context);
     if (infered == nullptr)
       {
 	rust_error_at (expr.get_locus (), "failed to lookup type to CallExpr");

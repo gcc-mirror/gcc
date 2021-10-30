@@ -214,6 +214,24 @@ public:
     return true;
   }
 
+  void insert_variant_definition (HirId id, HirId variant)
+  {
+    auto it = variants.find (id);
+    rust_assert (it == variants.end ());
+
+    variants[id] = variant;
+  }
+
+  bool lookup_variant_definition (HirId id, HirId *variant)
+  {
+    auto it = variants.find (id);
+    if (it == variants.end ())
+      return false;
+
+    *variant = it->second;
+    return true;
+  }
+
 private:
   TypeCheckContext ();
 
@@ -234,6 +252,9 @@ private:
 
   // adjustment mappings
   std::map<HirId, std::vector<Adjustment>> autoderef_mappings;
+
+  // variants
+  std::map<HirId, HirId> variants;
 };
 
 class TypeResolution

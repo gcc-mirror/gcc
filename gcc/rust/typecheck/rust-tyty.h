@@ -1045,6 +1045,14 @@ public:
 		 || (type == VariantType::STRUCT && discriminant == 0));
   }
 
+  static VariantDef &get_error_node ()
+  {
+    static VariantDef node = VariantDef (UNKNOWN_HIRID, "", -1);
+    return node;
+  }
+
+  bool is_error () const { return get_id () == UNKNOWN_HIRID; }
+
   HirId get_id () const { return id; }
 
   VariantType get_variant_type () const { return type; }
@@ -1241,6 +1249,19 @@ public:
     for (auto &variant : variants)
       {
 	if (variant->get_identifier ().compare (lookup) == 0)
+	  {
+	    *found_variant = variant;
+	    return true;
+	  }
+      }
+    return false;
+  }
+
+  bool lookup_variant_by_id (HirId id, VariantDef **found_variant) const
+  {
+    for (auto &variant : variants)
+      {
+	if (variant->get_id () == id)
 	  {
 	    *found_variant = variant;
 	    return true;

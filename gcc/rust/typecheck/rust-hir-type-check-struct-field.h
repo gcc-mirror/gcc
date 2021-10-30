@@ -51,7 +51,8 @@ private:
   TypeCheckStructExpr (HIR::Expr *e)
     : TypeCheckBase (),
       resolved (new TyTy::ErrorType (e->get_mappings ().get_hirid ())),
-      struct_path_resolved (nullptr)
+      struct_path_resolved (nullptr),
+      variant (&TyTy::VariantDef::get_error_node ())
   {}
 
   // result
@@ -59,6 +60,7 @@ private:
 
   // internal state:
   TyTy::ADTType *struct_path_resolved;
+  TyTy::VariantDef *variant;
   TyTy::BaseType *resolved_field_value_expr;
   std::set<std::string> fields_assigned;
   std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;

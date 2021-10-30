@@ -53,6 +53,25 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 	}
     }
 
+  // figure out the variant
+  if (struct_path_resolved->is_enum ())
+    {
+      // lookup variant id
+      HirId variant_id;
+      bool ok = context->lookup_variant_definition (
+	struct_expr.get_struct_name ().get_mappings ().get_hirid (),
+	&variant_id);
+      rust_assert (ok);
+
+      ok = struct_path_resolved->lookup_variant_by_id (variant_id, &variant);
+      rust_assert (ok);
+    }
+  else
+    {
+      rust_assert (struct_path_resolved->number_of_variants () == 1);
+      variant = struct_path_resolved->get_variants ().at (0);
+    }
+
   std::vector<TyTy::StructFieldType *> infered_fields;
   bool ok = true;
 
@@ -80,10 +99,6 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
     }
 
   // check the arguments are all assigned and fix up the ordering
-  rust_assert (!struct_path_resolved->is_enum ());
-  rust_assert (struct_path_resolved->number_of_variants () == 1);
-  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
-
   if (fields_assigned.size () != variant->num_fields ())
     {
       if (struct_def->is_union ())
@@ -197,10 +212,6 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifierValue &field)
       return;
     }
 
-  rust_assert (!struct_path_resolved->is_enum ());
-  rust_assert (struct_path_resolved->number_of_variants () == 1);
-  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
-
   size_t field_index;
   TyTy::StructFieldType *field_type;
   bool ok = variant->lookup_field (field.field_name, &field_type, &field_index);
@@ -230,10 +241,6 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIndexValue &field)
       return;
     }
 
-  rust_assert (!struct_path_resolved->is_enum ());
-  rust_assert (struct_path_resolved->number_of_variants () == 1);
-  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
-
   size_t field_index;
   TyTy::StructFieldType *field_type;
   bool ok = variant->lookup_field (field_name, &field_type, &field_index);
@@ -261,10 +268,6 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       rust_fatal_error (field.get_locus (), "used more than once");
       return;
     }
-
-  rust_assert (!struct_path_resolved->is_enum ());
-  rust_assert (struct_path_resolved->number_of_variants () == 1);
-  TyTy::VariantDef *variant = struct_path_resolved->get_variants ().at (0);
 
   size_t field_index;
   TyTy::StructFieldType *field_type;

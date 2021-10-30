@@ -32,9 +32,10 @@ class TypeCheckCallExpr : private TyVisitor
 {
 public:
   static BaseType *go (BaseType *ref, HIR::CallExpr &call,
+		       TyTy::VariantDef &variant,
 		       Resolver::TypeCheckContext *context)
   {
-    TypeCheckCallExpr checker (call, context);
+    TypeCheckCallExpr checker (call, variant, context);
     ref->accept_vis (checker);
     return checker.resolved;
   }
@@ -58,6 +59,7 @@ public:
   void visit (PlaceholderType &) override { gcc_unreachable (); }
   void visit (ProjectionType &) override { gcc_unreachable (); }
   void visit (DynamicObjectType &) override { gcc_unreachable (); }
+  void visit (ClosureType &type) override { gcc_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
@@ -65,16 +67,17 @@ public:
   // call fns
   void visit (FnType &type) override;
   void visit (FnPtr &type) override;
-  void visit (ClosureType &type) override { gcc_unreachable (); }
 
 private:
-  TypeCheckCallExpr (HIR::CallExpr &c, Resolver::TypeCheckContext *context)
-    : resolved (nullptr), call (c), context (context),
+  TypeCheckCallExpr (HIR::CallExpr &c, TyTy::VariantDef &variant,
+		     Resolver::TypeCheckContext *context)
+    : resolved (nullptr), call (c), variant (variant), context (context),
       mappings (Analysis::Mappings::get ())
   {}
 
   BaseType *resolved;
   HIR::CallExpr &call;
+  TyTy::VariantDef &variant;
   Resolver::TypeCheckContext *context;
   Analysis::Mappings *mappings;
 };
