@@ -24,6 +24,7 @@
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-enumitem.h"
 #include "rust-tyty.h"
 
 namespace Rust {
@@ -186,6 +187,57 @@ public:
 			   std::move (variants), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
+  }
+
+  void visit (HIR::Enum &enum_decl) override
+  {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (enum_decl.has_generics ())
+      {
+	for (auto &generic_param : enum_decl.get_generic_params ())
+	  {
+	    switch (generic_param.get ()->get_kind ())
+	      {
+	      case HIR::GenericParam::GenericKind::LIFETIME:
+		// Skipping Lifetime completely until better handling.
+		break;
+
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  auto param_type
+		    = TypeResolveGenericParam::Resolve (generic_param.get ());
+		  context->insert_type (generic_param->get_mappings (),
+					param_type);
+
+		  substitutions.push_back (TyTy::SubstitutionParamMapping (
+		    static_cast<HIR::TypeParam &> (*generic_param),
+		    param_type));
+		}
+		break;
+	      }
+	  }
+      }
+
+    std::vector<TyTy::VariantDef *> variants;
+    int64_t discriminant_value = 0;
+    for (auto &variant : enum_decl.get_variants ())
+      {
+	TyTy::VariantDef *field_type
+	  = TypeCheckEnumItem::Resolve (variant.get (), discriminant_value);
+
+	variants.push_back (field_type);
+	if (field_type->get_variant_type ()
+	    == TyTy::VariantDef::VariantType::NUM)
+	  discriminant_value = field_type->get_discriminant ();
+      }
+
+    TyTy::BaseType *type
+      = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
+			   mappings->get_next_hir_id (),
+			   enum_decl.get_identifier (),
+			   TyTy::ADTType::ADTKind::ENUM, std::move (variants),
+			   std::move (substitutions));
+
+    context->insert_type (enum_decl.get_mappings (), type);
   }
 
   void visit (HIR::Union &union_decl) override
