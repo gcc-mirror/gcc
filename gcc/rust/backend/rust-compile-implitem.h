@@ -67,9 +67,10 @@ public:
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
-    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+    ok = ctx->get_mappings ()->lookup_canonical_path (
       constant.get_mappings ().get_crate_num (),
-      constant.get_mappings ().get_nodeid (), &canonical_path));
+      constant.get_mappings ().get_nodeid (), &canonical_path);
+    rust_assert (ok);
 
     std::string ident = canonical_path->get ();
     Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
@@ -148,9 +149,10 @@ public:
       flags |= Backend::function_is_visible;
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
-    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+    bool ok = ctx->get_mappings ()->lookup_canonical_path (
       function.get_mappings ().get_crate_num (),
-      function.get_mappings ().get_nodeid (), &canonical_path));
+      function.get_mappings ().get_nodeid (), &canonical_path);
+    rust_assert (ok);
 
     std::string ir_symbol_name
       = canonical_path->get () + fntype->subst_as_string ();
@@ -260,7 +262,7 @@ public:
       }
 
     std::vector<Bvariable *> locals;
-    bool ok = compile_locals_for_block (*rib, fndecl, locals);
+    ok = compile_locals_for_block (*rib, fndecl, locals);
     rust_assert (ok);
 
     Bblock *enclosing_scope = NULL;
@@ -358,9 +360,10 @@ public:
       = CompileExpr::Compile (constant.get_expr ().get (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
-    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+    bool ok = ctx->get_mappings ()->lookup_canonical_path (
       constant.get_mappings ().get_crate_num (),
-      constant.get_mappings ().get_nodeid (), &canonical_path));
+      constant.get_mappings ().get_nodeid (), &canonical_path);
+    rust_assert (ok);
 
     std::string ident = canonical_path->get ();
     Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
@@ -413,9 +416,10 @@ public:
     unsigned int flags = 0;
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
-    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+    bool ok = ctx->get_mappings ()->lookup_canonical_path (
       func.get_mappings ().get_crate_num (), func.get_mappings ().get_nodeid (),
-      &canonical_path));
+      &canonical_path);
+    rust_assert (ok);
 
     std::string fn_identifier = canonical_path->get ();
     std::string asm_name = ctx->mangle_item (fntype, *canonical_path);
@@ -522,7 +526,7 @@ public:
       }
 
     std::vector<Bvariable *> locals;
-    bool ok = compile_locals_for_block (*rib, fndecl, locals);
+    ok = compile_locals_for_block (*rib, fndecl, locals);
     rust_assert (ok);
 
     Bblock *enclosing_scope = NULL;

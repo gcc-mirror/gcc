@@ -60,9 +60,10 @@ public:
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
-    rust_assert (ctx->get_mappings ()->lookup_canonical_path (
+    ok = ctx->get_mappings ()->lookup_canonical_path (
       constant.get_mappings ().get_crate_num (),
-      constant.get_mappings ().get_nodeid (), &canonical_path));
+      constant.get_mappings ().get_nodeid (), &canonical_path);
+    rust_assert (ok);
 
     std::string ident = canonical_path->get ();
     Bexpression *const_expr
