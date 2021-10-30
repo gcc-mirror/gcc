@@ -12295,12 +12295,12 @@ end program test_real
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name             @tab Argument           @tab Return type     @tab Standard
-@item @code{FLOAT(A)}  @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab GNU extension
+@item @code{FLOAT(A)}  @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab Fortran 77 and later
 @item @code{DFLOAT(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(8)}  @tab GNU extension
-@item @code{FLOATI(A)} @tab @code{INTEGER(2)}  @tab @code{REAL(4)}  @tab GNU extension
-@item @code{FLOATJ(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab GNU extension
-@item @code{FLOATK(A)} @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab GNU extension
-@item @code{SNGL(A)}   @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab GNU extension
+@item @code{FLOATI(A)} @tab @code{INTEGER(2)}  @tab @code{REAL(4)}  @tab GNU extension (-fdec)
+@item @code{FLOATJ(A)} @tab @code{INTEGER(4)}  @tab @code{REAL(4)}  @tab GNU extension (-fdec)
+@item @code{FLOATK(A)} @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab GNU extension (-fdec)
+@item @code{SNGL(A)}   @tab @code{REAL(8)}     @tab @code{REAL(4)}  @tab Fortran 77 and later
 @end multitable
 
 
