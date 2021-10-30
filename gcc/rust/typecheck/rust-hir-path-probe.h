@@ -83,32 +83,13 @@ struct PathProbeCandidate
 
   bool is_impl_candidate () const
   {
-    switch (type)
-      {
-      case IMPL_CONST:
-      case IMPL_TYPE_ALIAS:
-      case IMPL_FUNC:
-	return true;
-
-      default:
-	return false;
-      }
-    gcc_unreachable ();
+    return type == IMPL_CONST || type == IMPL_TYPE_ALIAS || type == IMPL_FUNC;
   }
 
   bool is_trait_candidate () const
   {
-    switch (type)
-      {
-      case TRAIT_ITEM_CONST:
-      case TRAIT_TYPE_ALIAS:
-      case TRAIT_FUNC:
-	return true;
-
-      default:
-	return false;
-      }
-    gcc_unreachable ();
+    return type == TRAIT_ITEM_CONST || type == TRAIT_TYPE_ALIAS
+	   || type == TRAIT_FUNC;
   }
 };
 
