@@ -1232,6 +1232,20 @@ public:
   std::vector<VariantDef *> &get_variants () { return variants; }
   const std::vector<VariantDef *> &get_variants () const { return variants; }
 
+  bool lookup_variant (const std::string &lookup,
+		       VariantDef **found_variant) const
+  {
+    for (auto &variant : variants)
+      {
+	if (variant->get_identifier ().compare (lookup) == 0)
+	  {
+	    *found_variant = variant;
+	    return true;
+	  }
+      }
+    return false;
+  }
+
   ADTType *
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
