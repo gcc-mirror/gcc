@@ -218,6 +218,7 @@ class TypeBoundWhereClauseItem : public WhereClauseItem
   std::unique_ptr<Type> bound_type;
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   Analysis::NodeMapping mappings;
+  Location locus;
 
 public:
   // Returns whether the item has ForLifetimes
@@ -229,11 +230,12 @@ public:
   TypeBoundWhereClauseItem (
     Analysis::NodeMapping mappings, std::vector<LifetimeParam> for_lifetimes,
     std::unique_ptr<Type> bound_type,
-    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds)
+    std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
+    Location locus)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds)),
-      mappings (std::move (mappings))
+      mappings (std::move (mappings)), locus (locus)
   {}
 
   // Copy constructor requires clone

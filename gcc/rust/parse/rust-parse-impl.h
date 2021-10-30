@@ -3612,10 +3612,12 @@ Parser<ManagedTokenSource>::parse_type_bound_where_clause_item ()
   std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds
     = parse_type_param_bounds ();
 
+  Location locus = lexer.peek_token ()->get_locus ();
+
   return std::unique_ptr<AST::TypeBoundWhereClauseItem> (
     new AST::TypeBoundWhereClauseItem (std::move (for_lifetimes),
 				       std::move (type),
-				       std::move (type_param_bounds)));
+				       std::move (type_param_bounds), locus));
 }
 
 // Parses a for lifetimes clause, including the for keyword and angle brackets.
