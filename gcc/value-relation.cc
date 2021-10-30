@@ -877,7 +877,13 @@ relation_oracle::register_edge (edge e, relation_kind k, tree op1, tree op2)
 void
 dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
 			       tree op2)
-{  // Equivalencies are handled by the equivalence oracle.
+{
+  // If the 2 ssa_names are the same, do nothing.  An equivalence is implied,
+  // and no other relation makes sense.
+  if (op1 == op2)
+    return;
+
+  // Equivalencies are handled by the equivalence oracle.
   if (k == EQ_EXPR)
     equiv_oracle::register_relation (bb, k, op1, op2);
   else
