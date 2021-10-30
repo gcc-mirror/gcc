@@ -16,6 +16,7 @@ implicit none (type, external)
     call omp_set_teams_thread_limit (12)
   end if
   !$omp teams
+   !$omp parallel if(.false.)
     if (omp_get_max_teams () /= 6 &
         .or. omp_get_teams_thread_limit () /= 12 &
         .or. omp_get_num_teams () < 1 &
@@ -25,6 +26,7 @@ implicit none (type, external)
         .or. omp_get_thread_limit () < 1 &
         .or. omp_get_thread_limit () > 12) &
       error stop 3
+   !$omp end parallel
   !$omp end teams
 contains
   logical function env_is_set (name, val)
