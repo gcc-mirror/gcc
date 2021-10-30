@@ -1,3 +1,118 @@
+2021-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (assert_streq): Add newlines when emitting non-equal
+	non-NULL strings.
+
+2021-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in: Fix syntax for reference to LIBDEPS in
+	gengtype link rule.
+
+2021-10-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/install.texi: Bump required minimum DejaGnu version.
+
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (path_oracle::killing_def): Add a
+	self-equivalence so we don't look to the root oracle.
+
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* passes.def: Replace the pass_thread_jumps before VRP* with
+	pass_thread_jumps_full.  Remove all pass_vrp_threader instances.
+	* tree-ssa-threadbackward.c (pass_data_thread_jumps_full):
+	Remove hyphen from "thread-full" name.
+
+2021-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102983
+	* gimple-range-cache.h (propagate_updated_value): Make public.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Propagate exports
+	when processing gcond stmts.
+
+2021-10-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.c (gimple_call_retslot_flags): New function.
+	* gimple.h (gimple_call_retslot_flags): Declare.
+	* ipa-modref.c: Include tree-cfg.h.
+	(struct escape_entry): Turn parm_index to signed.
+	(modref_summary_lto::modref_summary_lto): Add retslot_flags.
+	(modref_summary::modref_summary): Initialize retslot_flags.
+	(struct modref_summary_lto): Likewise.
+	(modref_summary::useful_p): Check retslot_flags.
+	(modref_summary_lto::useful_p): Likewise.
+	(modref_summary::dump): Dump retslot_flags.
+	(modref_summary_lto::dump): Likewise.
+	(struct escape_point): Add hidden_args enum.
+	(analyze_ssa_name_flags): Ignore return slot return;
+	use gimple_call_retslot_flags.
+	(record_escape_points): Break out from ...
+	(analyze_parms): ... here; handle retslot_flags.
+	(modref_summaries::duplicate): Duplicate retslot_flags.
+	(modref_summaries_lto::duplicate): Likewise.
+	(modref_write_escape_summary): Stream parm_index as signed.
+	(modref_read_escape_summary): Likewise.
+	(modref_write): Stream retslot_flags.
+	(read_section): Likewise.
+	(struct escape_map): Fix typo in comment.
+	(update_escape_summary_1): Fix whitespace.
+	(ipa_merge_modref_summary_after_inlining): Drop retslot_flags.
+	(modref_merge_call_site_flags): Merge retslot_flags.
+	* ipa-modref.h (struct modref_summary): Add retslot_flags.
+	* tree-ssa-structalias.c (handle_rhs_call): Handle retslot_flags.
+
+2021-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102977
+	* tree-vect-slp-patterns.c (vect_match_call_p): Remove.
+	(vect_detect_pair_op): Add crosslane check.
+	(vect_match_call_complex_mla): Remove.
+	(class complex_mul_pattern): Update comment.
+	(complex_mul_pattern::matches): Update detection.
+	(class complex_fma_pattern): Remove.
+	(complex_fma_pattern::matches): Remove.
+	(complex_fma_pattern::recognize): Remove.
+	(complex_fma_pattern::build): Remove.
+	(class complex_fms_pattern):  Update comment.
+	(complex_fms_pattern::matches): Remove.
+	(complex_operations_pattern::recognize): Remove complex_fma_pattern
+
+2021-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.c (gimple_fold_builtin_memset): Copy over location from
+	call to store.
+
+2021-10-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102868
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Add
+	patterns match and emit for VSX xxpermdi.
+
+2021-10-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* config/i386/i386-builtin-types.def (V8HF_FTYPE_V8HF): New
+	function type.
+	(V16HF_FTYPE_V16HF): Ditto.
+	(V32HF_FTYPE_V32HF): Ditto.
+	(V8HF_FTYPE_V8HF_ROUND): Ditto.
+	(V16HF_FTYPE_V16HF_ROUND): Ditto.
+	(V32HF_FTYPE_V32HF_ROUND): Ditto.
+	* config/i386/i386-builtin.def ( IX86_BUILTIN_FLOORPH,
+	IX86_BUILTIN_CEILPH, IX86_BUILTIN_TRUNCPH,
+	IX86_BUILTIN_FLOORPH256, IX86_BUILTIN_CEILPH256,
+	IX86_BUILTIN_TRUNCPH256, IX86_BUILTIN_FLOORPH512,
+	IX86_BUILTIN_CEILPH512, IX86_BUILTIN_TRUNCPH512): New builtin.
+	* config/i386/i386-builtins.c
+	(ix86_builtin_vectorized_function): Enable vectorization for
+	HFmode FLOOR/CEIL/TRUNC operation.
+	* config/i386/i386-expand.c (ix86_expand_args_builtin): Handle
+	new builtins.
+	* config/i386/sse.md (rint<mode>2, nearbyint<mode>2): Extend
+	to vector HFmodes.
+
 2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
 	    Andrew MacLeod  <amacleod@redhat.com>
 

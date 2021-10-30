@@ -1,3 +1,13 @@
+2021-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102820
+	* semantics.c (maybe_zero_constructor_nelts): New function.
+	(finish_compound_literal): Implement DR2351 - void{}.
+	If type is cv void and compound_literal has no elements, return
+	void_node.  If type is cv void and compound_literal might have no
+	elements after expansion, handle it like other dependent compound
+	literals.
+
 2021-10-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/102933

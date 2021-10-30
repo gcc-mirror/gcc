@@ -1,3 +1,12 @@
+2021-10-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102409
+	* directives.c (destringize_and_run): Add PRAGMA_OP to the
+	CPP_PRAGMA token's flags to mark is as coming from _Pragma.
+	* include/cpplib.h (PRAGMA_OP): #define, to be used with token flags.
+	* macro.c (collect_args): Only handle CPP_PRAGMA special if PRAGMA_OP
+	is set.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

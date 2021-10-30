@@ -1,3 +1,8 @@
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: Adjust for threading changes.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Same.
+
 2021-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (OpenMP 5.0): Mention that Non-rectangular loop nests

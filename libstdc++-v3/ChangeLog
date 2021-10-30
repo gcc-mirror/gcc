@@ -1,3 +1,7 @@
+2021-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/stack/deduction.cc: Fix typo.
+
 2021-10-26  Martin Sebor  <msebor@redhat.com>
 
 	* testsuite/21_strings/basic_string/capacity/1.cc: Also suppress

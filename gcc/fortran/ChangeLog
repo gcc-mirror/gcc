@@ -1,3 +1,8 @@
+2021-10-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* symbol.c (free_tb_tree): Free type-bound procedure struct.
+	(gfc_get_typebound_proc): Use explicit memcpy for clarity.
+
 2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* intrinsic.h (gfc_check_sum, gfc_resolve_atan2d, gfc_resolve_kill,
