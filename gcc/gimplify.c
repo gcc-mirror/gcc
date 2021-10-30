@@ -12298,6 +12298,24 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  gimplify_omp_ctxp->loop_iter_var.quick_push (decl);
 	}
 
+      if (for_stmt == orig_for_stmt)
+	{
+	  tree orig_decl = decl;
+	  if (OMP_FOR_ORIG_DECLS (for_stmt))
+	    {
+	      tree orig_decl = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i);
+	      if (TREE_CODE (orig_decl) == TREE_LIST)
+		{
+		  orig_decl = TREE_PURPOSE (orig_decl);
+		  if (!orig_decl)
+		    orig_decl = decl;
+		}
+	    }
+	  if (is_global_var (orig_decl) && DECL_THREAD_LOCAL_P (orig_decl))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "threadprivate iteration variable %qD", orig_decl);
+	}
+
       /* Make sure the iteration variable is private.  */
       tree c = NULL_TREE;
       tree c2 = NULL_TREE;
