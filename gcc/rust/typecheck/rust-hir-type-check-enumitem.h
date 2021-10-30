@@ -49,7 +49,8 @@ public:
       rust_error_at (item.get_locus (), "discriminant too big");
 
     variant
-      = new TyTy::VariantDef (item.get_identifier (), last_discriminant + 1);
+      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+			      item.get_identifier (), last_discriminant + 1);
   }
 
   void visit (HIR::EnumItemDiscriminant &item) override
@@ -83,7 +84,8 @@ public:
     rust_assert (ok);
 
     variant
-      = new TyTy::VariantDef (item.get_identifier (), specified_discriminant);
+      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+			      item.get_identifier (), specified_discriminant);
   }
 
   void visit (HIR::EnumItemTuple &item) override
@@ -107,7 +109,8 @@ public:
       }
 
     variant
-      = new TyTy::VariantDef (item.get_identifier (),
+      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+			      item.get_identifier (),
 			      TyTy::VariantDef::VariantType::TUPLE, fields);
   }
 
@@ -130,7 +133,8 @@ public:
       }
 
     variant
-      = new TyTy::VariantDef (item.get_identifier (),
+      = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
+			      item.get_identifier (),
 			      TyTy::VariantDef::VariantType::STRUCT, fields);
   }
 

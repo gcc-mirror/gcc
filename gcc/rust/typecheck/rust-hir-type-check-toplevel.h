@@ -104,10 +104,9 @@ public:
 
     // there is only a single variant
     std::vector<TyTy::VariantDef *> variants;
-    variants.push_back (
-      new TyTy::VariantDef (struct_decl.get_identifier (),
-			    TyTy::VariantDef::VariantType::TUPLE,
-			    std::move (fields)));
+    variants.push_back (new TyTy::VariantDef (
+      struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+      TyTy::VariantDef::VariantType::TUPLE, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
@@ -174,10 +173,9 @@ public:
 
     // there is only a single variant
     std::vector<TyTy::VariantDef *> variants;
-    variants.push_back (
-      new TyTy::VariantDef (struct_decl.get_identifier (),
-			    TyTy::VariantDef::VariantType::STRUCT,
-			    std::move (fields)));
+    variants.push_back (new TyTy::VariantDef (
+      struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+      TyTy::VariantDef::VariantType::STRUCT, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
@@ -288,10 +286,9 @@ public:
 
     // there is only a single variant
     std::vector<TyTy::VariantDef *> variants;
-    variants.push_back (
-      new TyTy::VariantDef (union_decl.get_identifier (),
-			    TyTy::VariantDef::VariantType::STRUCT,
-			    std::move (fields)));
+    variants.push_back (new TyTy::VariantDef (
+      union_decl.get_mappings ().get_hirid (), union_decl.get_identifier (),
+      TyTy::VariantDef::VariantType::STRUCT, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),

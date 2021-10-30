@@ -1020,30 +1020,32 @@ public:
     STRUCT
   };
 
-  VariantDef (std::string identifier, int discriminant)
-    : identifier (identifier), discriminant (discriminant)
+  VariantDef (HirId id, std::string identifier, int discriminant)
+    : id (id), identifier (identifier), discriminant (discriminant)
   {
     type = VariantType::NUM;
     fields = {};
   }
 
-  VariantDef (std::string identifier, VariantType type,
+  VariantDef (HirId id, std::string identifier, VariantType type,
 	      std::vector<StructFieldType *> fields)
-    : identifier (identifier), type (type), fields (fields)
+    : id (id), identifier (identifier), type (type), fields (fields)
   {
     discriminant = 0;
     rust_assert (type == VariantType::TUPLE || type == VariantType::STRUCT);
   }
 
-  VariantDef (std::string identifier, VariantType type, int discriminant,
-	      std::vector<StructFieldType *> fields)
-    : identifier (identifier), type (type), discriminant (discriminant),
-      fields (fields)
+  VariantDef (HirId id, std::string identifier, VariantType type,
+	      int discriminant, std::vector<StructFieldType *> fields)
+    : id (id), identifier (identifier), type (type),
+      discriminant (discriminant), fields (fields)
   {
     rust_assert ((type == VariantType::NUM && fields.empty ())
 		 || (type == VariantType::TUPLE && discriminant == 0)
 		 || (type == VariantType::STRUCT && discriminant == 0));
   }
+
+  HirId get_id () const { return id; }
 
   VariantType get_variant_type () const { return type; }
 
@@ -1132,10 +1134,11 @@ public:
     for (auto &f : fields)
       cloned_fields.push_back ((StructFieldType *) f->clone ());
 
-    return new VariantDef (identifier, type, discriminant, cloned_fields);
+    return new VariantDef (id, identifier, type, discriminant, cloned_fields);
   }
 
 private:
+  HirId id;
   std::string identifier;
   VariantType type;
   int discriminant; /* Either discriminant or fields are valid.  */
