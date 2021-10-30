@@ -8,7 +8,7 @@ module m
     end
     integer function omp_get_num_threads ()
     end
-    integer function omp_target_is_present (x, i)
+    integer function omp_target_is_present (x, i) bind(c)
       import :: c_ptr
       type(c_ptr) :: x
       integer, value :: i

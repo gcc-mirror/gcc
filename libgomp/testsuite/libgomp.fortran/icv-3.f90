@@ -13,6 +13,7 @@ implicit none (type, external)
   if (omp_get_teams_thread_limit () /= 15) &
     error stop 4
   !$omp teams
+   !$omp parallel if(.false.)
     if (omp_get_max_teams () /= 7 &
         .or. omp_get_teams_thread_limit () /= 15 &
         .or. omp_get_num_teams () < 1 &
@@ -22,8 +23,10 @@ implicit none (type, external)
         .or. omp_get_thread_limit () < 1 &
         .or. omp_get_thread_limit () > 15) &
       error stop 5
+   !$omp end parallel
   !$omp end teams
   !$omp teams num_teams(5) thread_limit (13)
+   !$omp parallel if(.false.)
     if (omp_get_max_teams () /= 7 &
         .or. omp_get_teams_thread_limit () /= 15 &
         .or. omp_get_num_teams () /= 5 &
@@ -32,8 +35,10 @@ implicit none (type, external)
         .or. omp_get_thread_limit () < 1 &
         .or. omp_get_thread_limit () > 13) &
       error stop 6
+   !$omp end parallel
   !$omp end teams
   !$omp teams num_teams(8) thread_limit (16)
+   !$omp parallel if(.false.)
     if (omp_get_max_teams () /= 7 &
         .or. omp_get_teams_thread_limit () /= 15 &
         .or. omp_get_num_teams () /= 8 &
@@ -42,6 +47,7 @@ implicit none (type, external)
         .or. omp_get_thread_limit () < 1 &
         .or. omp_get_thread_limit () > 16) &
       error stop 7
+   !$omp end parallel
   !$omp end teams
 contains
   logical function env_exists (name)
