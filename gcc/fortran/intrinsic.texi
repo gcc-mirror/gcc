@@ -218,10 +218,9 @@ Some basic guidelines for editing this document:
 * @code{LNBLNK}:        LNBLNK,    Index of the last non-blank character in a string
 * @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
-* @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{LOG10}:         LOG10,     Base 10 logarithm function
 * @code{LOG_GAMMA}:     LOG_GAMMA, Logarithm of the Gamma function
 * @code{LOGICAL}:       LOGICAL,   Convert to logical type
-* @code{LONG}:          LONG,      Convert to integer type
 * @code{LSHIFT}:        LSHIFT,    Left shift bits
 * @code{LSTAT}:         LSTAT,     Get file status
 * @code{LTIME}:         LTIME,     Convert time to local time info
@@ -8372,7 +8371,6 @@ end program
 @node INT2
 @section @code{INT2} --- Convert to 16-bit integer type
 @fnindex INT2
-@fnindex SHORT
 @cindex conversion, to integer
 
 @table @asis
@@ -8380,8 +8378,6 @@ end program
 Convert to a @code{KIND=2} integer type. This is equivalent to the
 standard @code{INT} intrinsic with an optional argument of
 @code{KIND=2}, and is only included for backwards compatibility.
-
-The @code{SHORT} intrinsic is equivalent to @code{INT2}.
 
 @item @emph{Standard}:
 GNU extension
@@ -8403,8 +8399,7 @@ The return value is a @code{INTEGER(2)} variable.
 
 @item @emph{See also}:
 @ref{INT}, @gol
-@ref{INT8}, @gol
-@ref{LONG}
+@ref{INT8}
 @end table
 
 
@@ -8440,8 +8435,7 @@ The return value is a @code{INTEGER(8)} variable.
 
 @item @emph{See also}:
 @ref{INT}, @gol
-@ref{INT2}, @gol
-@ref{LONG}
+@ref{INT2}
 @end table
 
 
@@ -9845,44 +9839,6 @@ kind corresponding to @var{KIND}, or of the default logical kind if
 @ref{INT}, @gol
 @ref{REAL}, @gol
 @ref{CMPLX}
-@end table
-
-
-
-@node LONG
-@section @code{LONG} --- Convert to integer type
-@fnindex LONG
-@cindex conversion, to integer
-
-@table @asis
-@item @emph{Description}:
-Convert to a @code{KIND=4} integer type, which is the same size as a C
-@code{long} integer.  This is equivalent to the standard @code{INT}
-intrinsic with an optional argument of @code{KIND=4}, and is only
-included for backwards compatibility.
-
-@item @emph{Standard}:
-GNU extension
-
-@item @emph{Class}:
-Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LONG(A)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{A}    @tab Shall be of type @code{INTEGER},
-@code{REAL}, or @code{COMPLEX}.
-@end multitable
-
-@item @emph{Return value}:
-The return value is a @code{INTEGER(4)} variable.
-
-@item @emph{See also}:
-@ref{INT}, @gol
-@ref{INT2}, @gol
-@ref{INT8}
 @end table
 
 
