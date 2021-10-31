@@ -1,3 +1,22 @@
+2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/102972
+	* testsuite/libgomp.c-c++-common/icv-3.c: Nest API calls inside
+	parallel construct.
+	* testsuite/libgomp.c-c++-common/icv-4.c: Likewise.
+	* testsuite/libgomp.c/target-3.c: Likewise.
+	* testsuite/libgomp.c/target-5.c: Likewise.
+	* testsuite/libgomp.c/target-6.c: Likewise.
+	* testsuite/libgomp.c/target-teams-1.c: Likewise.
+	* testsuite/libgomp.c/teams-1.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-2.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-3.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-4.c: Likewise.
+	* testsuite/libgomp.c/thread-limit-5.c: Likewise.
+	* testsuite/libgomp.fortran/icv-3.f90: Likewise.
+	* testsuite/libgomp.fortran/icv-4.f90: Likewise.
+	* testsuite/libgomp.fortran/teams1.f90: Likewise.
+
 2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	* testsuite/libgomp.graphite/force-parallel-4.c: Adjust for threading changes.

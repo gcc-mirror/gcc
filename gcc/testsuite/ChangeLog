@@ -1,3 +1,26 @@
+2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/102972
+	* c-c++-common/gomp/target-device-ancestor-3.c: Add non-API
+	routine test.
+	* gfortran.dg/gomp/order-6.f90: Add missing bind(C).
+	* c-c++-common/gomp/teams-3.c: New test.
+	* gfortran.dg/gomp/teams-3.f90: New test.
+	* gfortran.dg/gomp/teams-4.f90: New test.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/intrinsic_short-long.f90: New test.
+
+2021-10-30  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99853
+	* gfortran.dg/pr99853.f90: New test.
+
+2021-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-10.c: New test.
+
 2021-10-29  Tamar Christina  <tamar.christina@arm.com>
 
 	* g++.dg/vect/pr99149.cc: Update case.

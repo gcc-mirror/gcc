@@ -1,3 +1,16 @@
+2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/102972
+	* omp-low.c (omp_runtime_api_call): Use DECL_ASSEMBLER_NAME to get
+	internal Fortran name; new permit_num_teams arg to permit
+	omp_get_num_teams and omp_get_team_num.
+	(scan_omp_1_stmt): Update call to it, add missing call for
+	reverse offload, and check for strictly nested API calls in teams.
+
+2021-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_for): Diagnose threadprivate iterators.
+
 2021-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* selftest.c (assert_streq): Add newlines when emitting non-equal

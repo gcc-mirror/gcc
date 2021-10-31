@@ -1,3 +1,35 @@
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* intrinsic.texi: Remove entries for SHORT and LONG intrinsics.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* check.c (gfc_check_intconv): Change error message.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* intrinsic.texi (REAL): Fix entries in Specific names table.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* intrinsic.texi: Adjust @columnfractions commands to improve
+	appearance for narrow 80 character terminals.
+
+2021-10-30  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* parse.c (clean_up_modules): Free gsym.
+
+2021-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.texi (bug reports): credit Gerhard Steinmetz for
+	  numerous bug reports.
+
+2021-10-30  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99853
+	* resolve.c (resolve_select): Generate regular gfc_error on
+	invalid conversions instead of an gfc_internal_error.
+
 2021-10-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* symbol.c (free_tb_tree): Free type-bound procedure struct.
