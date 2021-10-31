@@ -490,20 +490,18 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
   std::unique_ptr<HIR::TypePathSegment> associated_segment (translated_segment);
 
   std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
-  path.iterate_segments ([&] (AST::TypePathSegment *seg) mutable -> bool {
-    translated_segment = nullptr;
-    seg->accept_vis (*this);
-    if (translated_segment == nullptr)
-      {
-	rust_fatal_error (seg->get_locus (),
-			  "failed to translate AST TypePathSegment");
-	return false;
-      }
-
-    translated_segments.push_back (
-      std::unique_ptr<HIR::TypePathSegment> (translated_segment));
-    return true;
-  });
+  for (auto &seg : path.get_segments ())
+    {
+      translated_segment = nullptr;
+      seg->accept_vis (*this);
+      if (translated_segment == nullptr)
+	{
+	  rust_fatal_error (seg->get_locus (),
+			    "failed to translte AST TypePathSegment");
+	}
+      translated_segments.push_back (
+	std::unique_ptr<HIR::TypePathSegment> (translated_segment));
+    }
 
   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
 				 mappings->get_next_localdef_id (crate_num));
