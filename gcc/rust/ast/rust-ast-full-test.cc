@@ -3984,53 +3984,11 @@ file_exists (const std::string path)
 static std::string
 filename_from_path_attribute (std::vector<Attribute> &outer_attrs)
 {
-  Attribute path_attr = Attribute::create_empty ();
-  for (auto attr : outer_attrs)
-    {
-      if (attr.get_path ().as_string () == "path")
-	{
-	  path_attr = attr;
-	  break;
-	}
-    }
-
-  // We didn't find a path attribute. This is not an error, there simply isn't
-  // one present
-  if (path_attr.is_empty ())
-    return "";
-
-  // Here, we found a path attribute, but it has no associated string. This is
-  // invalid
-  if (!path_attr.has_attr_input ())
-    {
-      rust_error_at (
-	path_attr.get_locus (),
-	// Split the format string so that -Wformat-diag does not complain...
-	"path attributes must contain a filename: '%s'", "#[path = \"file\"]");
-      return "";
-    }
-
-  auto path_value = path_attr.get_attr_input ().as_string ();
-
-  // At this point, the 'path' is of the following format: '= "<file.rs>"'
-  // We need to remove the equal sign and only keep the actual filename.
-  // In order to do this, we can simply go through the string until we find
-  // a character that is not an equal sign or whitespace
-  auto filename_begin = path_value.find_first_not_of ("=\t ");
-
-  auto path = path_value.substr (filename_begin);
-
-  // On windows, the path might mix '/' and '\' separators. Replace the
-  // UNIX-like separators by MSDOS separators to make sure the path will resolve
-  // properly.
-  //
-  // Source: rustc compiler
-  // (https://github.com/rust-lang/rust/blob/9863bf51a52b8e61bcad312f81b5193d53099f9f/compiler/rustc_expand/src/module.rs#L174)
-#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
-  path.replace ('/', '\\');
-#endif /* HAVE_DOS_BASED_FILE_SYSTEM */
-
-  return path;
+  // An out-of-line module cannot have inner attributes. Additionally, the
+  // default name is specified as `""` so that the caller can detect the case
+  // of "no path given" and use the default path logic (`name.rs` or
+  // `name/mod.rs`).
+  return extract_module_path ({}, outer_attrs, "");
 }
 
 void
@@ -4057,6 +4015,13 @@ Module::process_file_path ()
     current_directory_name
       = including_fname.substr (0, dir_slash_pos) + file_separator;
 
+  // Handle inline module declarations adding path components.
+  for (auto const &name : module_scope)
+    {
+      current_directory_name.append (name);
+      current_directory_name.append (file_separator);
+    }
+
   auto path_string = filename_from_path_attribute (get_outer_attrs ());
   if (!path_string.empty ())
     {
@@ -4070,12 +4035,13 @@ Module::process_file_path ()
   // current file is titled `mod.rs`.
 
   // First, we search for <directory>/<module_name>.rs
-  bool file_mod_found
-    = file_exists (current_directory_name + expected_file_path);
+  std::string file_mod_path = current_directory_name + expected_file_path;
+  bool file_mod_found = file_exists (file_mod_path);
 
   // Then, search for <directory>/<module_name>/mod.rs
-  current_directory_name += module_name + file_separator;
-  bool dir_mod_found = file_exists (current_directory_name + expected_dir_path);
+  std::string dir_mod_path
+    = current_directory_name + module_name + file_separator + expected_dir_path;
+  bool dir_mod_found = file_exists (dir_mod_path);
 
   bool multiple_candidates_found = file_mod_found && dir_mod_found;
   bool no_candidates_found = !file_mod_found && !dir_mod_found;
@@ -4093,8 +4059,7 @@ Module::process_file_path ()
   if (no_candidates_found || multiple_candidates_found)
     return;
 
-  module_file = file_mod_found ? expected_file_path
-			       : current_directory_name + expected_dir_path;
+  module_file = std::move (file_mod_found ? file_mod_path : dir_mod_path);
 }
 
 void

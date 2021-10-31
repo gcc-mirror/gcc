@@ -622,7 +622,26 @@ private:
   ManagedTokenSource lexer;
   // The error list.
   std::vector<Error> error_table;
+  // The names of inline modules while parsing.
+  std::vector<std::string> inline_module_stack;
+
+  class InlineModuleStackScope
+  {
+  private:
+    Parser &parser;
+
+  public:
+    InlineModuleStackScope (Parser &parser, std::string name) : parser (parser)
+    {
+      parser.inline_module_stack.emplace_back (std::move (name));
+    }
+    ~InlineModuleStackScope () { parser.inline_module_stack.pop_back (); }
+  };
 };
+
+std::string
+extract_module_path (const AST::AttrVec &inner_attrs,
+		     const AST::AttrVec &outer_attrs, const std::string &name);
 } // namespace Rust
 
 // as now template, include implementations of all methods
