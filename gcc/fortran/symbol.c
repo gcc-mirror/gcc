@@ -5073,7 +5073,7 @@ gfc_get_typebound_proc (gfc_typebound_proc *tb0)
 
   result = XCNEW (gfc_typebound_proc);
   if (tb0)
-    memcpy (result, tb0, sizeof (gfc_typebound_proc));
+    *result = *tb0;
   result->error = 1;
 
   latest_undo_chgset->tbps.safe_push (result);
