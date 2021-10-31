@@ -2513,7 +2513,7 @@ check_open_constraints (gfc_open *open, locus *where)
 	  spec = "";
 	}
 
-      warn_or_error (G_("%s specifier at %L not allowed in OPEN statement for "
+      warn_or_error (G_("%sspecifier at %L not allowed in OPEN statement for "
 		     "unformatted I/O"), spec, loc);
     }
 
