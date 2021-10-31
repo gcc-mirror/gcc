@@ -13179,7 +13179,7 @@ static bool
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
-  bool allocatable_or_pointer;
+  bool allocatable_or_pointer = false;
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))
