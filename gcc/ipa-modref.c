@@ -1841,7 +1841,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		 We do not track memory locations, so assume that value
 		 is used arbitrarily.  */
 	      if (memory_access_to (gimple_assign_rhs1 (assign), name))
-		lattice[index].merge (0);
+		lattice[index].merge (deref_flags (0, false));
 	      /* Handle *name = *exp.  */
 	      else if (memory_access_to (gimple_assign_lhs (assign), name))
 		lattice[index].merge_direct_store ();
