@@ -1211,8 +1211,8 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    */
   template<class _Tp>
     inline _Tp*
-    begin(valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]); }
+    begin(valarray<_Tp>& __va) noexcept
+    { return __va.size() ? std::__addressof(__va[0]) : nullptr; }
 
   /**
    *  @brief  Return an iterator pointing to the first element of
@@ -1221,8 +1221,8 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    */
   template<class _Tp>
     inline const _Tp*
-    begin(const valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]); }
+    begin(const valarray<_Tp>& __va) noexcept
+    { return __va.size() ? std::__addressof(__va[0]) : nullptr; }
 
   /**
    *  @brief  Return an iterator pointing to one past the last element of
@@ -1231,8 +1231,13 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    */
   template<class _Tp>
     inline _Tp*
-    end(valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]) + __va.size(); }
+    end(valarray<_Tp>& __va) noexcept
+    {
+      if (auto __n = __va.size())
+	return std::__addressof(__va[0]) + __n;
+      else
+	return nullptr;
+    }
 
   /**
    *  @brief  Return an iterator pointing to one past the last element of
@@ -1241,8 +1246,13 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    */
   template<class _Tp>
     inline const _Tp*
-    end(const valarray<_Tp>& __va)
-    { return std::__addressof(__va[0]) + __va.size(); }
+    end(const valarray<_Tp>& __va) noexcept
+    {
+      if (auto __n = __va.size())
+	return std::__addressof(__va[0]) + __n;
+      else
+	return nullptr;
+    }
 #endif // C++11
 
   /// @} group numeric_arrays
