@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fdisable-tree-evrp -fdump-tree-vrp1-details" } */
+/* { dg-options "-O2 -fno-tree-ccp -fdisable-tree-evrp -fdump-tree-vrp1" } */
 
 void h (void);
 
@@ -17,4 +17,5 @@ int g (int i, int j)
     return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "gimple_simplified" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "return 0" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "return 1" "vrp1" } } */
