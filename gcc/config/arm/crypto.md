@@ -75,6 +75,20 @@
   [(set_attr "type" "neon_move_q")]
 )
 
+;; An AESMC operation can feed directly into a subsequent AES
+;; operation without needing mitigation.
+(define_insn "*crypto_<CRYPTO_AESMC:crypto_pattern>_protected"
+  [(set (match_operand:<crypto_mode> 0 "register_operand" "=w")
+	(unspec:<crypto_mode>
+	 [(unspec:<crypto_mode>
+	   [(match_operand:<crypto_mode> 1 "register_operand" "w")]
+	   CRYPTO_AESMC)]
+	 UNSPEC_AES_PROTECT))]
+  "TARGET_CRYPTO && fix_aes_erratum_1742098"
+  "<crypto_pattern>.<crypto_size_sfx>\\t%q0, %q1"
+  [(set_attr "type" "<crypto_type>")]
+)
+
 ;; When AESE/AESMC fusion is enabled we really want to keep the two together
 ;; and enforce the register dependency without scheduling or register
 ;; allocation messing up the order or introducing moves inbetween.
@@ -95,6 +109,25 @@
    (set_attr "length" "8")]
 )
 
+;; And similarly when mitigation is enabled, but not needed in this
+;; case.
+(define_insn "*aarch32_crypto_aese_fused_protected"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI
+	 [(unspec:V16QI
+	   [(unspec:V16QI [(xor:V16QI
+			    (match_operand:V16QI 1 "register_operand" "%0")
+			    (match_operand:V16QI 2 "register_operand" "w"))]
+	     UNSPEC_AESE)]
+	   UNSPEC_AESMC)]
+	 UNSPEC_AES_PROTECT))]
+  "TARGET_CRYPTO && fix_aes_erratum_1742098
+   && arm_fusion_enabled_p (tune_params::FUSE_AES_AESMC)"
+  "aese.8\\t%q0, %q2\;aesmc.8\\t%q0, %q0"
+  [(set_attr "type" "crypto_aese")
+   (set_attr "length" "8")]
+)
+
 ;; When AESD/AESIMC fusion is enabled we really want to keep the two together
 ;; and enforce the register dependency without scheduling or register
 ;; allocation messing up the order or introducing moves inbetween.
@@ -109,6 +142,23 @@
 	   UNSPEC_AESD)]
 	 UNSPEC_AESIMC))]
   "TARGET_CRYPTO
+   && arm_fusion_enabled_p (tune_params::FUSE_AES_AESMC)"
+  "aesd.8\\t%q0, %q2\;aesimc.8\\t%q0, %q0"
+  [(set_attr "type" "crypto_aese")
+   (set_attr "length" "8")]
+)
+
+(define_insn "*aarch32_crypto_aesd_fused_protected"
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI
+	 [(unspec:V16QI
+	   [(unspec:V16QI [(xor:V16QI
+			    (match_operand:V16QI 1 "register_operand" "%0")
+			    (match_operand:V16QI 2 "register_operand" "w"))]
+	     UNSPEC_AESD)]
+	   UNSPEC_AESIMC)]
+	 UNSPEC_AES_PROTECT))]
+  "TARGET_CRYPTO && fix_aes_erratum_1742098
    && arm_fusion_enabled_p (tune_params::FUSE_AES_AESMC)"
   "aesd.8\\t%q0, %q2\;aesimc.8\\t%q0, %q0"
   [(set_attr "type" "crypto_aese")
