@@ -30,3 +30,5 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DECLARE_LIBRARY_RENAMES \
   asm(".text; ___divdc3: jmp ___ieee_divdc3 ; .globl ___divdc3");
 #endif
+
+extern void * _darwin10_Unwind_FindEnclosingFunction (void *);

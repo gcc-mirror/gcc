@@ -1,6 +1,7 @@
 #include "tconfig.h"
 #include "tsystem.h"
 #include "unwind-dw2-fde.h"
+#include "libgcc_tm.h"
 
 void *
 _darwin10_Unwind_FindEnclosingFunction (void *pc)
