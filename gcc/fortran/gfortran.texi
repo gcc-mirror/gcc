@@ -5397,7 +5397,6 @@ but they are also things doable by someone who is willing and able.
 @menu
 * Contributors::
 * Projects::
-* Proposed Extensions::
 @end menu
 
 
@@ -5491,91 +5490,14 @@ isolating them.  Going through the bugzilla database at
 add more information (for example, for which version does the testcase
 work, for which versions does it fail?) is also very helpful.
 
+@item Missing features
+For a larger project, consider working on the missing features required for
+Fortran language standards compliance (@pxref{Standards}), or contributing
+to the implementation of extensions such as OpenMP (@pxref{OpenMP}) or
+OpenACC (@pxref{OpenACC}) that are under active development.  Again,
+contributing test cases for these features is useful too!
+
 @end table
-
-
-@node Proposed Extensions
-@section Proposed Extensions
-
-Here's a list of proposed extensions for the GNU Fortran compiler, in no particular
-order.  Most of these are necessary to be fully compatible with
-existing Fortran compilers, but they are not part of the official
-J3 Fortran 95 standard.
-
-@subsection Compiler extensions:
-@itemize @bullet
-@item
-User-specified alignment rules for structures.
-
-@item
-Automatically extend single precision constants to double.
-
-@item
-Compile code that conserves memory by dynamically allocating common and
-module storage either on stack or heap.
-
-@item
-Compile flag to generate code for array conformance checking (suggest -CC).
-
-@item
-User control of symbol names (underscores, etc).
-
-@item
-Compile setting for maximum size of stack frame size before spilling
-parts to static or heap.
-
-@item
-Flag to force local variables into static space.
-
-@item
-Flag to force local variables onto stack.
-@end itemize
-
-
-@subsection Environment Options
-@itemize @bullet
-@item
-Pluggable library modules for random numbers, linear algebra.
-LA should use BLAS calling conventions.
-
-@item
-Environment variables controlling actions on arithmetic exceptions like
-overflow, underflow, precision loss---Generate NaN, abort, default.
-action.
-
-@item
-Set precision for fp units that support it (i387).
-
-@item
-Variable for setting fp rounding mode.
-
-@item
-Variable to fill uninitialized variables with a user-defined bit
-pattern.
-
-@item
-Environment variable controlling filename that is opened for that unit
-number.
-
-@item
-Environment variable to clear/trash memory being freed.
-
-@item
-Environment variable to control tracing of allocations and frees.
-
-@item
-Environment variable to display allocated memory at normal program end.
-
-@item
-Environment variable for filename for * IO-unit.
-
-@item
-Environment variable for temporary file directory.
-
-@item
-Environment variable forcing standard output to be line buffered (Unix).
-
-@end itemize
 
 
 @c ---------------------------------------------------------------------
