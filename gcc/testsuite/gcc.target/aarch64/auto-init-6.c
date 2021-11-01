@@ -1,6 +1,6 @@
 /* Verify pattern initialization for complex type automatic variables.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern" } */
 
 
 _Complex long double result;
@@ -15,4 +15,4 @@ _Complex long double foo()
   return result;
 }
 
-/* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe\\\]\\\) repeated x16" 3 "expand" } } */
+/* { dg-final { scan-assembler-times "word\t-16843010" 14  } } */

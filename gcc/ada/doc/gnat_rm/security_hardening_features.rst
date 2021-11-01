@@ -112,14 +112,15 @@ long after boolean expressions are decomposed into separate compares,
 each one turned into either a conditional branch or a compare whose
 result is stored in a boolean variable or temporary.  Compiler
 optimizations, if enabled, may also turn conditional branches into
-stored compares, and vice-versa.  Conditionals may also be optimized
+stored compares, and vice-versa, or into operations with implied
+conditionals (e.g. MIN and MAX).  Conditionals may also be optimized
 out entirely, if their value can be determined at compile time, and
 occasionally multiple compares can be combined into one.
 
 It is thus difficult to predict which of these two options will affect
 a specific compare operation expressed in source code.  Using both
-options ensures that every compare that is not optimized out will be
-hardened.
+options ensures that every compare that is neither optimized out nor
+optimized into implied conditionals will be hardened.
 
 The addition of reversed compares can be observed by enabling the dump
 files of the corresponding passes, through command line options

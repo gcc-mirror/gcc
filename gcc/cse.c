@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "function-abi.h"
 #include "rtlanal.h"
+#include "expr.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -4239,14 +4240,21 @@ try_back_substitute_reg (rtx set, rtx_insn *insn)
 	}
     }
 }
-
+
+/* Add an entry containing RTL X into SETS.  */
+static inline void
+add_to_set (vec<struct set> *sets, rtx x)
+{
+  struct set entry = {};
+  entry.rtl = x;
+  sets->safe_push (entry);
+}
+
 /* Record all the SETs in this instruction into SETS_PTR,
    and return the number of recorded sets.  */
 static int
-find_sets_in_insn (rtx_insn *insn, struct set **psets)
+find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
 {
-  struct set *sets = *psets;
-  int n_sets = 0;
   rtx x = PATTERN (insn);
 
   if (GET_CODE (x) == SET)
@@ -4266,8 +4274,25 @@ find_sets_in_insn (rtx_insn *insn, struct set **psets)
 	 someplace else, so it isn't worth cse'ing.  */
       else if (GET_CODE (SET_SRC (x)) == CALL)
 	;
+      else if (GET_CODE (SET_SRC (x)) == CONST_VECTOR
+	       && GET_MODE_CLASS (GET_MODE (SET_SRC (x))) != MODE_VECTOR_BOOL)
+	{
+	  /* First register the vector itself.  */
+	  add_to_set (psets, x);
+	  rtx src = SET_SRC (x);
+	  /* Go over the constants of the CONST_VECTOR in forward order, to
+	     put them in the same order in the SETS array.  */
+	  for (unsigned i = 0; i < const_vector_encoded_nelts (src) ; i++)
+	    {
+	      /* These are templates and don't actually get emitted but are
+		 used to tell CSE how to get to a particular constant.  */
+	      rtx y = simplify_gen_vec_select (SET_DEST (x), i);
+	      gcc_assert (y);
+	      add_to_set (psets, gen_rtx_SET (y, CONST_VECTOR_ELT (src, i)));
+	    }
+	}
       else
-	sets[n_sets++].rtl = x;
+	add_to_set (psets, x);
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -4288,12 +4313,12 @@ find_sets_in_insn (rtx_insn *insn, struct set **psets)
 	      else if (GET_CODE (SET_SRC (y)) == CALL)
 		;
 	      else
-		sets[n_sets++].rtl = y;
+		add_to_set (psets, y);
 	    }
 	}
     }
 
-  return n_sets;
+  return psets->length ();
 }
 
 /* Subroutine of canonicalize_insn.  X is an ASM_OPERANDS in INSN.  */
@@ -4341,9 +4366,10 @@ canon_asm_operands (rtx x, rtx_insn *insn)
    see canon_reg.  */
 
 static void
-canonicalize_insn (rtx_insn *insn, struct set **psets, int n_sets)
+canonicalize_insn (rtx_insn *insn, vec<struct set> *psets)
 {
-  struct set *sets = *psets;
+  vec<struct set> sets = *psets;
+  int n_sets = sets.length ();
   rtx tem;
   rtx x = PATTERN (insn);
   int i;
@@ -4502,13 +4528,6 @@ cse_insn (rtx_insn *insn)
   int src_eqv_in_memory = 0;
   unsigned src_eqv_hash = 0;
 
-  struct set *sets = (struct set *) 0;
-
-  if (GET_CODE (x) == SET)
-    sets = XALLOCA (struct set);
-  else if (GET_CODE (x) == PARALLEL)
-    sets = XALLOCAVEC (struct set, XVECLEN (x, 0));
-
   this_insn = insn;
 
   /* Find all regs explicitly clobbered in this insn,
@@ -4517,10 +4536,11 @@ cse_insn (rtx_insn *insn)
   invalidate_from_sets_and_clobbers (insn);
 
   /* Record all the SETs in this instruction.  */
-  n_sets = find_sets_in_insn (insn, &sets);
+  auto_vec<struct set, 8> sets;
+  n_sets = find_sets_in_insn (insn, (vec<struct set>*)&sets);
 
   /* Substitute the canonical register where possible.  */
-  canonicalize_insn (insn, &sets, n_sets);
+  canonicalize_insn (insn, (vec<struct set>*)&sets);
 
   /* If this insn has a REG_EQUAL note, store the equivalent value in SRC_EQV,
      if different, or if the DEST is a STRICT_LOW_PART/ZERO_EXTRACT.  The
@@ -4986,6 +5006,30 @@ cse_insn (rtx_insn *insn)
 	  src_related_is_const_anchor = src_related != NULL_RTX;
 	}
 
+      /* Try to re-materialize a vec_dup with an existing constant.   */
+      rtx src_elt;
+      if ((!src_eqv_here || CONSTANT_P (src_eqv_here))
+	  && const_vec_duplicate_p (src, &src_elt))
+	{
+	   machine_mode const_mode = GET_MODE_INNER (GET_MODE (src));
+	   struct table_elt *related_elt
+		= lookup (src_elt, HASH (src_elt, const_mode), const_mode);
+	   if (related_elt)
+	    {
+	      for (related_elt = related_elt->first_same_value;
+		   related_elt; related_elt = related_elt->next_same_value)
+		if (REG_P (related_elt->exp))
+		  {
+		   /* We don't need to compare costs with an existing (constant)
+		      src_eqv_here, since any such src_eqv_here should already be
+		      available in src_const.  */
+		    src_eqv_here
+			= gen_rtx_VEC_DUPLICATE (GET_MODE (src),
+						 related_elt->exp);
+		    break;
+		  }
+	    }
+	}
 
       if (src == src_folded)
 	src_folded = 0;

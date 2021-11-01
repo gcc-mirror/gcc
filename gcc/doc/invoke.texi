@@ -312,7 +312,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-path-depths @gol
 -fno-show-column @gol
 -fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]} @gol
--fdiagnostics-column-origin=@var{origin}}
+-fdiagnostics-column-origin=@var{origin} @gol
+-fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -5126,6 +5127,38 @@ first column.  The default value of 1 corresponds to traditional GCC
 behavior and to the GNU style guide.  Some utilities may perform better with an
 origin of 0; any non-negative value may be specified.
 
+@item -fdiagnostics-escape-format=@var{FORMAT}
+@opindex fdiagnostics-escape-format
+When GCC prints pertinent source lines for a diagnostic it normally attempts
+to print the source bytes directly.  However, some diagnostics relate to encoding
+issues in the source file, such as malformed UTF-8, or issues with Unicode
+normalization.  These diagnostics are flagged so that GCC will escape bytes
+that are not printable ASCII when printing their pertinent source lines.
+
+This option controls how such bytes should be escaped.
+
+The default @var{FORMAT}, @samp{unicode} displays Unicode characters that
+are not printable ASCII in the form @samp{<U+XXXX>}, and bytes that do not
+correspond to a Unicode character validly-encoded in UTF-8-encoded will be
+displayed as hexadecimal in the form @samp{<XX>}.
+
+For example, a source line containing the string @samp{before} followed by the
+Unicode character U+03C0 (``GREEK SMALL LETTER PI'', with UTF-8 encoding
+0xCF 0x80) followed by the byte 0xBF (a stray UTF-8 trailing byte), followed by
+the string @samp{after} will be printed for such a diagnostic as:
+
+@smallexample
+ before<U+03C0><BF>after
+@end smallexample
+
+Setting @var{FORMAT} to @samp{bytes} will display all non-printable-ASCII bytes
+in the form @samp{<XX>}, thus showing the underlying encoding of non-ASCII
+Unicode characters.  For the example above, the following will be printed:
+
+@smallexample
+ before<CF><80><BF>after
+@end smallexample
+
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
@@ -5193,9 +5226,11 @@ might be printed in JSON form (after formatting) like this:
                         @}
                     @}
                 ],
+                "escape-source": false,
                 "message": "...this statement, but the latter is @dots{}"
             @}
         ]
+	"escape-source": false,
 	"column-origin": 1,
     @}
 ]
@@ -5281,6 +5316,7 @@ of the expression, which have labels.  It might be printed in JSON form as:
                 "label": "T @{aka struct t@}"
             @}
         ],
+        "escape-source": false,
         "message": "invalid operands to binary + @dots{}"
     @}
 @end smallexample
@@ -5334,6 +5370,7 @@ might be printed in JSON form as:
                 @}
             @}
         ],
+        "escape-source": false,
         "message": "\u2018struct s\u2019 has no member named @dots{}"
     @}
 @end smallexample
@@ -5390,6 +5427,10 @@ For example, the intraprocedural example shown for
         @}
     ]
 @end smallexample
+
+Diagnostics have a boolean attribute @code{escape-source}, hinting whether
+non-ASCII bytes should be escaped when printing the pertinent lines of
+source code (@code{true} for diagnostics involving source encoding issues).
 
 @end table
 

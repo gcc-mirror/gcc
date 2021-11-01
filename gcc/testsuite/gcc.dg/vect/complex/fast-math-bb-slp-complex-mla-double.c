@@ -7,3 +7,5 @@
 #define N 16
 #include "complex-mla-template.c"
 
+/* { dg-final { scan-tree-dump "Found COMPLEX_FMA_CONJ" "slp1" } } */
+/* { dg-final { scan-tree-dump "Found COMPLEX_FMA" "slp1" } } */

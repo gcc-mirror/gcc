@@ -1,3 +1,257 @@
+2021-10-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/modref-1.C: New test.
+
+2021-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102959
+	* gdc.dg/torture/pr96435.d: Adjust for BigEndian.
+
+2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/102972
+	* c-c++-common/gomp/target-device-ancestor-3.c: Add non-API
+	routine test.
+	* gfortran.dg/gomp/order-6.f90: Add missing bind(C).
+	* c-c++-common/gomp/teams-3.c: New test.
+	* gfortran.dg/gomp/teams-3.f90: New test.
+	* gfortran.dg/gomp/teams-4.f90: New test.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/intrinsic_short-long.f90: New test.
+
+2021-10-30  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99853
+	* gfortran.dg/pr99853.f90: New test.
+
+2021-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-10.c: New test.
+
+2021-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.dg/vect/pr99149.cc: Update case.
+
+2021-10-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/pragma-1.c: New test.
+	* c-c++-common/gomp/pragma-2.c: New test.
+
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/loop-unswitch-2.c: Adjust for threading changes.
+	* gcc.dg/old-style-asm-1.c: Same.
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: Same.
+	* gcc.dg/tree-ssa/phi_on_compare-2.c: Same.
+	* gcc.dg/tree-ssa/phi_on_compare-3.c: Same.
+	* gcc.dg/tree-ssa/phi_on_compare-4.c: Same.
+	* gcc.dg/tree-ssa/pr20701.c: Same.
+	* gcc.dg/tree-ssa/pr21001.c: Same.
+	* gcc.dg/tree-ssa/pr21294.c: Same.
+	* gcc.dg/tree-ssa/pr21417.c: Same.
+	* gcc.dg/tree-ssa/pr21559.c: Same.
+	* gcc.dg/tree-ssa/pr21563.c: Same.
+	* gcc.dg/tree-ssa/pr49039.c: Same.
+	* gcc.dg/tree-ssa/pr59597.c: Same.
+	* gcc.dg/tree-ssa/pr61839_1.c: Same.
+	* gcc.dg/tree-ssa/pr61839_3.c: Same.
+	* gcc.dg/tree-ssa/pr66752-3.c: Same.
+	* gcc.dg/tree-ssa/pr68198.c: Same.
+	* gcc.dg/tree-ssa/pr77445-2.c: Same.
+	* gcc.dg/tree-ssa/pr77445.c: Same.
+	* gcc.dg/tree-ssa/ranger-threader-1.c: Same.
+	* gcc.dg/tree-ssa/ranger-threader-2.c: Same.
+	* gcc.dg/tree-ssa/ranger-threader-4.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-1.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-12.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-16.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-2b.c: Same.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Same.
+	* gcc.dg/tree-ssa/ssa-thread-backedge.c: Same.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Same.
+	* gcc.dg/tree-ssa/vrp02.c: Same.
+	* gcc.dg/tree-ssa/vrp03.c: Same.
+	* gcc.dg/tree-ssa/vrp05.c: Same.
+	* gcc.dg/tree-ssa/vrp06.c: Same.
+	* gcc.dg/tree-ssa/vrp07.c: Same.
+	* gcc.dg/tree-ssa/vrp08.c: Same.
+	* gcc.dg/tree-ssa/vrp09.c: Same.
+	* gcc.dg/tree-ssa/vrp33.c: Same.
+	* gcc.dg/uninit-pred-9_b.c: Same.
+	* gcc.dg/uninit-pred-7_a.c: xfail.
+
+2021-10-29  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* lib/multiline.exp (_build_multiline_regex): Use a better
+	regexp than .* to match up to EOL.
+
+2021-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr102983.c: New.
+
+2021-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102977
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-int.c: Updated.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-long.c: Updated.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-short.c: Updated.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-int.c:
+	Updated.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-long.c:
+	Updated.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-short.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c:
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-double.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-half-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-double.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-half-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-double.c: Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-half-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mla-double.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mla-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: Updated.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-byte.c: Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-int.c: Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-long.c: Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-short.c: Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-byte.c:
+	Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-int.c:
+	Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-long.c:
+	Updated.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-short.c:
+	Updated.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-byte.c: Removed.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-byte.c:
+	Removed.
+
+2021-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-62.c: Adjust expected diagnostics.
+
+2021-10-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/fp-uint64-convert-double-1.c: Add
+	-fexcess-precision=standard.
+
+2021-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102820
+	* g++.dg/cpp0x/dr2351.C: New test.
+
+2021-10-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102868
+	* gcc.target/powerpc/pr102868.c: New test.
+
+2021-10-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102464-vrndscaleph.c: New test.
+
+2021-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102951
+	* gcc.dg/tree-ssa/pr102951.c: New test.
+	* gcc.dg/Wstringop-overflow-62.c: Adjust expected diagnostics.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/ifcvt-4.c: Adjust.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp9.c: Adjust message scanned for.
+	* gcc.dg/tree-ssa/pr21458-2.c: Ditto.
+
+2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102933
+	* g++.dg/cpp2a/nontype-class50.C: New test.
+	* g++.dg/cpp2a/nontype-class50a.C: New test.
+
+2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102780
+	* g++.dg/cpp1z/fold13.C: New test.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84407
+	* gcc.dg/torture/fp-uint64-convert-double-1.c: New testcase.
+	* gcc.dg/torture/fp-uint64-convert-double-2.c: Likewise.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp106.c: Adjust for threading.
+	* gcc.dg/tree-ssa/vrp113.c: Same.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57245
+	* gcc.dg/torture/fp-double-convert-float-1.c: New testcase.
+
+2021-10-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102767
+	* gcc.target/powerpc/ppc-fortran/pr102767.f90: New file.
+
+2021-10-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/torture/harden-comp.c: New.
+	* c-c++-common/torture/harden-cond.c: New.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c: Adjust.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/94613
+	* gcc.target/powerpc/pr94613.c: New test.
+
+2021-10-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/avx512fp16-recip-1.c: New test.
+	* gcc.target/i386/avx512fp16-recip-2.c: Ditto.
+	* gcc.target/i386/pr102464.c: Add -fno-trapping-math.
+
 2021-10-27  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Warray-bounds-90.c: Fix a typo.

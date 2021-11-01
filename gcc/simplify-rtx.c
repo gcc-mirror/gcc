@@ -7620,6 +7620,28 @@ simplify_context::lowpart_subreg (machine_mode outer_mode, rtx expr,
 			      subreg_lowpart_offset (outer_mode, inner_mode));
 }
 
+/* Generate RTX to select element at INDEX out of vector OP.  */
+
+rtx simplify_context::simplify_gen_vec_select (rtx op, unsigned int index)
+{
+
+  if (!VECTOR_MODE_P (GET_MODE (op)))
+    return NULL_RTX;
+
+  machine_mode imode = GET_MODE_INNER (GET_MODE (op));
+
+  if (index == 0)
+    {
+      rtx res = lowpart_subreg (imode, op, GET_MODE (op));
+      if (res)
+	return res;
+    }
+
+  rtx tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, GEN_INT (index)));
+  return gen_rtx_VEC_SELECT (imode, op, tmp);
+}
+
+
 /* Simplify X, an rtx expression.
 
    Return the simplified expression or NULL if no simplifications

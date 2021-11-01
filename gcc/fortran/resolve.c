@@ -8770,11 +8770,11 @@ resolve_select (gfc_code *code, bool select_type)
 
 	      if (cp->low != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->low))
-		gfc_convert_type_warn (case_expr, &cp->low->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->low->ts, 1, 0);
 
 	      if (cp->high != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->high))
-		gfc_convert_type_warn (case_expr, &cp->high->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->high->ts, 1, 0);
 	    }
 	 }
     }
@@ -13179,7 +13179,7 @@ static bool
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
-  bool allocatable_or_pointer;
+  bool allocatable_or_pointer = false;
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))

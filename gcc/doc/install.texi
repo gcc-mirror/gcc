@@ -452,7 +452,7 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @file{gcc/cp/cfns.gperf} to regenerate its associated header file, e.g.@:
 @file{gcc/cp/cfns.h}.
 
-@item DejaGnu 1.4.4
+@item DejaGnu version 1.5.3 (or later)
 @itemx Expect
 @itemx Tcl
 @c Once Tcl 8.5 or higher is required, remove any obsolete

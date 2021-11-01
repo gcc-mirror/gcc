@@ -166,10 +166,9 @@ struct cfg_hooks
 
   /* A hook for duplicating loop in CFG, currently this is used
      in loop versioning.  */
-  bool (*cfg_hook_duplicate_loop_to_header_edge) (class loop *, edge,
-						  unsigned, sbitmap,
-						  edge, vec<edge> *,
-						  int);
+  bool (*cfg_hook_duplicate_loop_body_to_header_edge) (class loop *, edge,
+						       unsigned, sbitmap, edge,
+						       vec<edge> *, int);
 
   /* Add condition to new basic block and update CFG used in loop
      versioning.  */
@@ -250,12 +249,11 @@ extern bool block_ends_with_condjump_p (const_basic_block bb);
 extern int flow_call_edges_add (sbitmap);
 extern void execute_on_growing_pred (edge);
 extern void execute_on_shrinking_pred (edge);
-extern bool cfg_hook_duplicate_loop_to_header_edge (class loop *loop, edge,
-						    unsigned int ndupl,
-						    sbitmap wont_exit,
-						    edge orig,
-						    vec<edge> *to_remove,
-						    int flags);
+extern bool
+cfg_hook_duplicate_loop_body_to_header_edge (class loop *loop, edge,
+					     unsigned int ndupl,
+					     sbitmap wont_exit, edge orig,
+					     vec<edge> *to_remove, int flags);
 
 extern void lv_flush_pending_stmts (edge);
 extern void extract_cond_bb_edges (basic_block, edge *, edge*);

@@ -331,7 +331,7 @@ proc _build_multiline_regex { multiline index } {
 		# Support arbitrary followup text on each non-empty line,
 		# to deal with comments containing containing DejaGnu
 		# directives.
-		append rexp ".*"
+		append rexp "\[^\\n\\r\]*"
 	    }
 	}
 	append rexp "\n"

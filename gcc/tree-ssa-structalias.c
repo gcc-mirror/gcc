@@ -4254,17 +4254,28 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results,
       && gimple_call_lhs (stmt) != NULL_TREE
       && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
     {
-      auto_vec<ce_s> tmpc;
-      struct constraint_expr *c;
-      unsigned i;
+      int flags = gimple_call_retslot_flags (stmt);
+      if ((flags & (EAF_NOESCAPE | EAF_NOT_RETURNED))
+	  != (EAF_NOESCAPE | EAF_NOT_RETURNED))
+	{
+	  auto_vec<ce_s> tmpc;
 
-      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+	  get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
 
-      make_constraints_to (callescape->id, tmpc);
-      if (writes_global_memory)
-	make_constraints_to (escaped_id, tmpc);
-      FOR_EACH_VEC_ELT (tmpc, i, c)
-	results->safe_push (*c);
+	  if (!(flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE)))
+	    {
+	      make_constraints_to (callescape->id, tmpc);
+	      if (writes_global_memory)
+		make_constraints_to (escaped_id, tmpc);
+	    }
+	  if (!(flags & EAF_NOT_RETURNED))
+	    {
+	      struct constraint_expr *c;
+	      unsigned i;
+	      FOR_EACH_VEC_ELT (tmpc, i, c)
+		results->safe_push (*c);
+	    }
+	}
     }
 }
 

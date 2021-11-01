@@ -1597,9 +1597,48 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 	  if (!node->binds_to_current_def_p ())
 	    {
 	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
-		modref_flags &= ~EAF_UNUSED;
+		{
+		  modref_flags &= ~EAF_UNUSED;
+		  modref_flags |= EAF_NOESCAPE;
+		}
+	      if ((modref_flags & EAF_NOREAD) && !(flags & EAF_NOREAD))
+		modref_flags &= ~EAF_NOREAD;
 	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
 		modref_flags &= ~EAF_DIRECT;
+	    }
+	  if (dbg_cnt (ipa_mod_ref_pta))
+	    flags |= modref_flags;
+	}
+    }
+  return flags;
+}
+
+/* Detects argument flags for return slot on call STMT.  */
+
+int
+gimple_call_retslot_flags (const gcall *stmt)
+{
+  int flags = EAF_DIRECT | EAF_NOREAD;
+
+  tree callee = gimple_call_fndecl (stmt);
+  if (callee)
+    {
+      cgraph_node *node = cgraph_node::get (callee);
+      modref_summary *summary = node ? get_modref_function_summary (node)
+				: NULL;
+
+      if (summary)
+	{
+	  int modref_flags = summary->retslot_flags;
+
+	  /* We have possibly optimized out load.  Be conservative here.  */
+	  if (!node->binds_to_current_def_p ())
+	    {
+	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
+		{
+		  modref_flags &= ~EAF_UNUSED;
+		  modref_flags |= EAF_NOESCAPE;
+		}
 	    }
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;

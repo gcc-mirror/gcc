@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1 -std=gnu89 -fdisable-tree-ethread -fdisable-tree-thread1" } */
+/* { dg-options "-O2 -fno-tree-fre -fdisable-tree-evrp -fdump-tree-vrp1 -std=gnu89 -fno-thread-jumps" } */
 
 foo (int *p)
 {

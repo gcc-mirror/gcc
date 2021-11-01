@@ -5888,6 +5888,7 @@ GNU Fortran project:
 @item Dominique d'Humi@`eres
 @item Kate Hedstrom
 @item Erik Schnetter
+@item Gerhard Steinmetz
 @item Joost VandeVondele
 @end itemize
 

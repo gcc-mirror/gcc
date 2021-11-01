@@ -9586,6 +9586,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V4SF_ROUND:
     case V8SF_FTYPE_V8SF_ROUND:
     case V16SF_FTYPE_V16SF_ROUND:
+    case V8HF_FTYPE_V8HF_ROUND:
+    case V16HF_FTYPE_V16HF_ROUND:
+    case V32HF_FTYPE_V32HF_ROUND:
     case V4SI_FTYPE_V4SF_ROUND:
     case V8SI_FTYPE_V8SF_ROUND:
     case V16SI_FTYPE_V16SF_ROUND:

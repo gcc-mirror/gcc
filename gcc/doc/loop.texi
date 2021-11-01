@@ -249,8 +249,8 @@ are only reliable for the innermost loops:
 @item @code{create_iv}: Creates a new induction variable.  Only works on
 GIMPLE@.  @code{standard_iv_increment_position} can be used to find a
 suitable place for the iv increment.
-@item @code{duplicate_loop_to_header_edge},
-@code{tree_duplicate_loop_to_header_edge}: These functions (on RTL and
+@item @code{duplicate_loop_body_to_header_edge},
+@code{tree_duplicate_loop_body_to_header_edge}: These functions (on RTL and
 on GIMPLE) duplicate the body of the loop prescribed number of times on
 one of the edges entering loop header, thus performing either loop
 unrolling or loop peeling.  @code{can_duplicate_loop_p}

@@ -846,71 +846,6 @@ create_empty_loop_on_edge (edge entry_edge,
   return loop;
 }
 
-/* Make area between HEADER_EDGE and LATCH_EDGE a loop by connecting
-   latch to header and update loop tree and dominators
-   accordingly. Everything between them plus LATCH_EDGE destination must
-   be dominated by HEADER_EDGE destination, and back-reachable from
-   LATCH_EDGE source.  HEADER_EDGE is redirected to basic block SWITCH_BB,
-   FALSE_EDGE of SWITCH_BB to original destination of HEADER_EDGE and
-   TRUE_EDGE of SWITCH_BB to original destination of LATCH_EDGE.
-   Returns the newly created loop.  Frequencies and counts in the new loop
-   are scaled by FALSE_SCALE and in the old one by TRUE_SCALE.  */
-
-class loop *
-loopify (edge latch_edge, edge header_edge,
-	 basic_block switch_bb, edge true_edge, edge false_edge,
-	 bool redirect_all_edges, profile_probability true_scale,
-	 profile_probability false_scale)
-{
-  basic_block succ_bb = latch_edge->dest;
-  basic_block pred_bb = header_edge->src;
-  class loop *loop = alloc_loop ();
-  class loop *outer = loop_outer (succ_bb->loop_father);
-  profile_count cnt;
-
-  loop->header = header_edge->dest;
-  loop->latch = latch_edge->src;
-
-  cnt = header_edge->count ();
-
-  /* Redirect edges.  */
-  loop_redirect_edge (latch_edge, loop->header);
-  loop_redirect_edge (true_edge, succ_bb);
-
-  /* During loop versioning, one of the switch_bb edge is already properly
-     set. Do not redirect it again unless redirect_all_edges is true.  */
-  if (redirect_all_edges)
-    {
-      loop_redirect_edge (header_edge, switch_bb);
-      loop_redirect_edge (false_edge, loop->header);
-
-      /* Update dominators.  */
-      set_immediate_dominator (CDI_DOMINATORS, switch_bb, pred_bb);
-      set_immediate_dominator (CDI_DOMINATORS, loop->header, switch_bb);
-    }
-
-  set_immediate_dominator (CDI_DOMINATORS, succ_bb, switch_bb);
-
-  /* Compute new loop.  */
-  add_loop (loop, outer);
-
-  /* Add switch_bb to appropriate loop.  */
-  if (switch_bb->loop_father)
-    remove_bb_from_loops (switch_bb);
-  add_bb_to_loop (switch_bb, outer);
-
-  /* Fix counts.  */
-  if (redirect_all_edges)
-    {
-      switch_bb->count = cnt;
-    }
-  scale_loop_frequencies (loop, false_scale);
-  scale_loop_frequencies (succ_bb->loop_father, true_scale);
-  update_dominators_in_loop (loop);
-
-  return loop;
-}
-
 /* Remove the latch edge of a LOOP and update loops to indicate that
    the LOOP was removed.  After this function, original loop latch will
    have no successor, which caller is expected to fix somehow.
@@ -1124,10 +1059,9 @@ can_duplicate_loop_p (const class loop *loop)
    impossible.  */
 
 bool
-duplicate_loop_to_header_edge (class loop *loop, edge e,
-			       unsigned int ndupl, sbitmap wont_exit,
-			       edge orig, vec<edge> *to_remove,
-			       int flags)
+duplicate_loop_body_to_header_edge (class loop *loop, edge e,
+				    unsigned int ndupl, sbitmap wont_exit,
+				    edge orig, vec<edge> *to_remove, int flags)
 {
   class loop *target, *aloop;
   class loop **orig_loops;
@@ -1681,7 +1615,7 @@ loop_version (class loop *loop,
 	      bool place_after)
 {
   basic_block first_head, second_head;
-  edge entry, latch_edge, true_edge, false_edge;
+  edge entry, latch_edge;
   int irred_flag;
   class loop *nloop;
   basic_block cond_bb;
@@ -1694,19 +1628,36 @@ loop_version (class loop *loop,
   /* Note down head of loop as first_head.  */
   first_head = entry->dest;
 
-  /* Duplicate loop.  */
-  if (!cfg_hook_duplicate_loop_to_header_edge (loop, entry, 1,
-					       NULL, NULL, NULL, 0))
+  /* 1) Duplicate loop on the entry edge.  */
+  if (!cfg_hook_duplicate_loop_body_to_header_edge (loop, entry, 1, NULL, NULL,
+						    NULL, 0))
     {
       entry->flags |= irred_flag;
       return NULL;
     }
 
+  /* 2) loopify the duplicated new loop. */
+  latch_edge = single_succ_edge (get_bb_copy (loop->latch));
+  nloop = alloc_loop ();
+  class loop *outer = loop_outer (latch_edge->dest->loop_father);
+  edge new_header_edge = single_pred_edge (get_bb_copy (loop->header));
+  nloop->header = new_header_edge->dest;
+  nloop->latch = latch_edge->src;
+  loop_redirect_edge (latch_edge, nloop->header);
+
+  /* Compute new loop.  */
+  add_loop (nloop, outer);
+  copy_loop_info (loop, nloop);
+  set_loop_copy (loop, nloop);
+
+  /* loopify redirected latch_edge. Update its PENDING_STMTS.  */
+  lv_flush_pending_stmts (latch_edge);
+
   /* After duplication entry edge now points to new loop head block.
      Note down new head as second_head.  */
   second_head = entry->dest;
 
-  /* Split loop entry edge and insert new block with cond expr.  */
+  /* 3) Split loop entry edge and insert new block with cond expr.  */
   cond_bb =  lv_adjust_loop_entry_edge (first_head, second_head,
 					entry, cond_expr, then_prob, else_prob);
   if (condition_bb)
@@ -1718,24 +1669,17 @@ loop_version (class loop *loop,
       return NULL;
     }
 
-  latch_edge = single_succ_edge (get_bb_copy (loop->latch));
+  /* Add cond_bb to appropriate loop.  */
+  if (cond_bb->loop_father)
+    remove_bb_from_loops (cond_bb);
+  add_bb_to_loop (cond_bb, outer);
 
-  extract_cond_bb_edges (cond_bb, &true_edge, &false_edge);
-  nloop = loopify (latch_edge,
-		   single_pred_edge (get_bb_copy (loop->header)),
-		   cond_bb, true_edge, false_edge,
-		   false /* Do not redirect all edges.  */,
-		   then_scale, else_scale);
+  /* 4) Scale the original loop and new loop frequency.  */
+  scale_loop_frequencies (loop, then_scale);
+  scale_loop_frequencies (nloop, else_scale);
+  update_dominators_in_loop (loop);
+  update_dominators_in_loop (nloop);
 
-  copy_loop_info (loop, nloop);
-  set_loop_copy (loop, nloop);
-
-  /* loopify redirected latch_edge. Update its PENDING_STMTS.  */
-  lv_flush_pending_stmts (latch_edge);
-
-  /* loopify redirected condition_bb's succ edge. Update its PENDING_STMTS.  */
-  extract_cond_bb_edges (cond_bb, &true_edge, &false_edge);
-  lv_flush_pending_stmts (false_edge);
   /* Adjust irreducible flag.  */
   if (irred_flag)
     {

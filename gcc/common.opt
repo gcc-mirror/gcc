@@ -1365,6 +1365,10 @@ fdiagnostics-format=
 Common Joined RejectNegative Enum(diagnostics_output_format)
 -fdiagnostics-format=[text|json]	Select output format.
 
+fdiagnostics-escape-format=
+Common Joined RejectNegative Enum(diagnostics_escape_format)
+-fdiagnostics-escape-format=[unicode|bytes]	Select how to escape non-printable-ASCII bytes in the source for diagnostics that suggest it.
+
 ; Required for these enum values.
 SourceInclude
 diagnostic.h
@@ -1377,6 +1381,15 @@ Enum(diagnostics_column_unit) String(display) Value(DIAGNOSTICS_COLUMN_UNIT_DISP
 
 EnumValue
 Enum(diagnostics_column_unit) String(byte) Value(DIAGNOSTICS_COLUMN_UNIT_BYTE)
+
+Enum
+Name(diagnostics_escape_format) Type(int)
+
+EnumValue
+Enum(diagnostics_escape_format) String(unicode) Value(DIAGNOSTICS_ESCAPE_FORMAT_UNICODE)
+
+EnumValue
+Enum(diagnostics_escape_format) String(bytes) Value(DIAGNOSTICS_ESCAPE_FORMAT_BYTES)
 
 Enum
 Name(diagnostics_output_format) Type(int)

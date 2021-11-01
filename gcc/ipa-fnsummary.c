@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "symtab-clones.h"
 #include "gimple-range.h"
+#include "tree-dfa.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -2569,7 +2570,20 @@ points_to_local_or_readonly_memory_p (tree t)
   if (integer_zerop (t))
     return flag_delete_null_pointer_checks;
   if (TREE_CODE (t) == SSA_NAME)
-    return !ptr_deref_may_alias_global_p (t);
+    {
+      /* For IPA passes we can consinder accesses to return slot local
+	 even if it is not local in the sense that memory is dead by
+	 the end of founction.
+	 The outer function will see a store in the call assignment
+	 and thus this will do right thing for all uses of this
+	 function in the current IPA passes (modref, pure/const discovery
+	 and inlining heuristics).  */
+      if (DECL_RESULT (current_function_decl)
+	  && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl))
+	  && t == ssa_default_def (cfun, DECL_RESULT (current_function_decl)))
+	return true;
+      return !ptr_deref_may_alias_global_p (t);
+    }
   if (TREE_CODE (t) == ADDR_EXPR)
     return refs_local_or_readonly_memory_p (TREE_OPERAND (t, 0));
   return false;

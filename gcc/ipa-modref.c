@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-ssanames.h"
 #include "attribs.h"
+#include "tree-cfg.h"
 
 
 namespace {
@@ -133,7 +134,7 @@ static fnspec_summaries_t *fnspec_summaries = NULL;
 struct escape_entry
 {
   /* Parameter that escapes at a given call.  */
-  unsigned int parm_index;
+  int parm_index;
   /* Argument it escapes to.  */
   unsigned int arg;
   /* Minimal flags known about the argument.  */
@@ -269,7 +270,7 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 /* Summary for a single function which this pass produces.  */
 
 modref_summary::modref_summary ()
-  : loads (NULL), stores (NULL), writes_errno (NULL)
+  : loads (NULL), stores (NULL), retslot_flags (0), writes_errno (false)
 {
 }
 
@@ -322,6 +323,8 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
     return true;
   arg_flags.release ();
+  if (check_flags && remove_useless_eaf_flags (retslot_flags, ecf_flags, false))
+    return true;
   if (ecf_flags & ECF_CONST)
     return false;
   if (loads && !loads->every_base)
@@ -363,6 +366,7 @@ struct GTY(()) modref_summary_lto
   modref_records_lto *loads;
   modref_records_lto *stores;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
+  eaf_flags_t retslot_flags;
   bool writes_errno;
 
   modref_summary_lto ();
@@ -374,7 +378,7 @@ struct GTY(()) modref_summary_lto
 /* Summary for a single function which this pass produces.  */
 
 modref_summary_lto::modref_summary_lto ()
-  : loads (NULL), stores (NULL), writes_errno (NULL)
+  : loads (NULL), stores (NULL), retslot_flags (0), writes_errno (false)
 {
 }
 
@@ -400,6 +404,8 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
     return true;
   arg_flags.release ();
+  if (check_flags && remove_useless_eaf_flags (retslot_flags, ecf_flags, false))
+    return true;
   if (ecf_flags & ECF_CONST)
     return false;
   if (loads && !loads->every_base)
@@ -608,6 +614,11 @@ modref_summary::dump (FILE *out)
 	    dump_eaf_flags (out, arg_flags[i]);
 	  }
     }
+  if (retslot_flags)
+    {
+      fprintf (out, "  Retslot flags:");
+      dump_eaf_flags (out, retslot_flags);
+    }
 }
 
 /* Dump summary.  */
@@ -629,6 +640,11 @@ modref_summary_lto::dump (FILE *out)
 	    fprintf (out, "  parm %i flags:", i);
 	    dump_eaf_flags (out, arg_flags[i]);
 	  }
+    }
+  if (retslot_flags)
+    {
+      fprintf (out, "  Retslot flags:");
+      dump_eaf_flags (out, retslot_flags);
     }
 }
 
@@ -1396,6 +1412,11 @@ namespace {
 
 struct escape_point
 {
+  /* Extra hidden args we keep track of.  */
+  enum hidden_args
+  {
+    retslot_arg = -1
+  };
   /* Value escapes to this call.  */
   gcall *call;
   /* Argument it escapes to.  */
@@ -1705,7 +1726,11 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	 Returning name counts as an use by tree-ssa-structalias.c  */
       if (greturn *ret = dyn_cast <greturn *> (use_stmt))
 	{
-	  if (gimple_return_retval (ret) == name)
+	  /* Returning through return slot is seen as memory write earlier.  */
+	  if (DECL_RESULT (current_function_decl)
+	      && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+	    ;
+	  else if (gimple_return_retval (ret) == name)
 	    lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED));
 	  else if (memory_access_to (gimple_return_retval (ret), name))
 	    {
@@ -1748,7 +1773,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		     may make LHS to escape.  See PR 98499.  */
 		  if (gimple_call_return_slot_opt_p (call)
 		      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
-		    lattice[index].merge (EAF_NOREAD | EAF_DIRECT);
+		    lattice[index].merge (gimple_call_retslot_flags (call));
 		}
 
 	      /* We do not track accesses to the static chain (we could)
@@ -1777,7 +1802,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 			  lattice[index].merge (call_flags);
 			else
 			  lattice[index].add_escape_point (call, i,
-			     				   call_flags, true);
+							   call_flags, true);
 		      }
 		    if (!ignore_retval)
 		      merge_call_lhs_flags (call, i, index, false,
@@ -1816,7 +1841,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		 We do not track memory locations, so assume that value
 		 is used arbitrarily.  */
 	      if (memory_access_to (gimple_assign_rhs1 (assign), name))
-		lattice[index].merge (0);
+		lattice[index].merge (deref_flags (0, false));
 	      /* Handle *name = *exp.  */
 	      else if (memory_access_to (gimple_assign_lhs (assign), name))
 		lattice[index].merge_direct_store ();
@@ -1912,6 +1937,29 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
   lattice[index].known = true;
 }
 
+/* Record escape points of PARM_INDEX according to LATTICE.  */
+
+static void
+record_escape_points (modref_lattice &lattice, int parm_index, int flags)
+{
+  if (lattice.escape_points.length ())
+    {
+      escape_point *ep;
+      unsigned int ip;
+      cgraph_node *node = cgraph_node::get (current_function_decl);
+
+      FOR_EACH_VEC_ELT (lattice.escape_points, ip, ep)
+	if ((ep->min_flags & flags) != flags)
+	  {
+	    cgraph_edge *e = node->get_edge (ep->call);
+	    struct escape_entry ee = {parm_index, ep->arg,
+				      ep->min_flags, ep->direct};
+
+	    escape_summaries->get_create (e)->esc.safe_push (ee);
+	  }
+    }
+}
+
 /* Determine EAF flags for function parameters.  */
 
 static void
@@ -1921,16 +1969,22 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   unsigned int parm_index = 0;
   unsigned int count = 0;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
+  tree retslot = NULL;
 
   /* For novops functions we have nothing to gain by EAF flags.  */
   if (ecf_flags & ECF_NOVOPS)
     return;
 
+  /* If there is return slot, look up its SSA name.  */
+  if (DECL_RESULT (current_function_decl)
+      && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+    retslot = ssa_default_def (cfun, DECL_RESULT (current_function_decl));
+
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
        parm = TREE_CHAIN (parm))
     count++;
 
-  if (!count)
+  if (!count && !retslot)
     return;
 
   auto_vec<modref_lattice> lattice;
@@ -1984,24 +2038,24 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		summary_lto->arg_flags.safe_grow_cleared (count, true);
 	      summary_lto->arg_flags[parm_index] = flags;
 	    }
-	  if (lattice[SSA_NAME_VERSION (name)].escape_points.length ())
-	    {
-	      escape_point *ep;
-	      unsigned int ip;
-	      cgraph_node *node = cgraph_node::get (current_function_decl);
+	  record_escape_points (lattice[SSA_NAME_VERSION (name)],
+				parm_index, flags);
+	}
+    }
+  if (retslot)
+    {
+      analyze_ssa_name_flags (retslot, lattice, 0, ipa);
+      int flags = lattice[SSA_NAME_VERSION (retslot)].flags;
 
-	      gcc_checking_assert (ipa);
-	      FOR_EACH_VEC_ELT
-		  (lattice[SSA_NAME_VERSION (name)].escape_points, ip, ep)
-		if ((ep->min_flags & flags) != flags)
-		  {
-		    cgraph_edge *e = node->get_edge (ep->call);
-		    struct escape_entry ee = {parm_index, ep->arg,
-		     			      ep->min_flags, ep->direct};
-
-		    escape_summaries->get_create (e)->esc.safe_push (ee);
-		  }
-	    }
+      flags = remove_useless_eaf_flags (flags, ecf_flags, false);
+      if (flags)
+	{
+	  if (summary)
+	    summary->retslot_flags = flags;
+	  if (summary_lto)
+	    summary_lto->retslot_flags = flags;
+	  record_escape_points (lattice[SSA_NAME_VERSION (retslot)],
+				escape_point::retslot_arg, flags);
 	}
     }
   if (ipa)
@@ -2287,6 +2341,7 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
   dst_data->writes_errno = src_data->writes_errno;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
+  dst_data->retslot_flags = src_data->retslot_flags;
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -2312,6 +2367,7 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
   dst_data->writes_errno = src_data->writes_errno;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
+  dst_data->retslot_flags = src_data->retslot_flags;
 }
 
 namespace
@@ -2551,7 +2607,7 @@ modref_write_escape_summary (struct bitpack_d *bp, escape_summary *esum)
   escape_entry *ee;
   FOR_EACH_VEC_ELT (esum->esc, i, ee)
     {
-      bp_pack_var_len_unsigned (bp, ee->parm_index);
+      bp_pack_var_len_int (bp, ee->parm_index);
       bp_pack_var_len_unsigned (bp, ee->arg);
       bp_pack_var_len_unsigned (bp, ee->min_flags);
       bp_pack_value (bp, ee->direct, 1);
@@ -2571,7 +2627,7 @@ modref_read_escape_summary (struct bitpack_d *bp, cgraph_edge *e)
   for (unsigned int i = 0; i < n; i++)
     {
       escape_entry ee;
-      ee.parm_index = bp_unpack_var_len_unsigned (bp);
+      ee.parm_index = bp_unpack_var_len_int (bp);
       ee.arg = bp_unpack_var_len_unsigned (bp);
       ee.min_flags = bp_unpack_var_len_unsigned (bp);
       ee.direct = bp_unpack_value (bp, 1);
@@ -2628,6 +2684,7 @@ modref_write ()
 	  streamer_write_uhwi (ob, r->arg_flags.length ());
 	  for (unsigned int i = 0; i < r->arg_flags.length (); i++)
 	    streamer_write_uhwi (ob, r->arg_flags[i]);
+	  streamer_write_uhwi (ob, r->retslot_flags);
 
 	  write_modref_records (r->loads, ob);
 	  write_modref_records (r->stores, ob);
@@ -2724,6 +2781,11 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	  if (modref_sum_lto)
 	    modref_sum_lto->arg_flags.quick_push (flags);
 	}
+      eaf_flags_t flags = streamer_read_uhwi (&ib);
+      if (modref_sum)
+	modref_sum->retslot_flags = flags;
+      if (modref_sum_lto)
+	modref_sum_lto->retslot_flags = flags;
       read_modref_records (&ib, data_in,
 			   modref_sum ? &modref_sum->loads : NULL,
 			   modref_sum_lto ? &modref_sum_lto->loads : NULL);
@@ -3098,7 +3160,7 @@ struct escape_map
   bool direct;
 };
 
-/* Update escape map fo E.  */
+/* Update escape map for E.  */
 
 static void
 update_escape_summary_1 (cgraph_edge *e,
@@ -3117,7 +3179,10 @@ update_escape_summary_1 (cgraph_edge *e,
     {
       unsigned int j;
       struct escape_map *em;
-      if (ee->parm_index >= map.length ())
+      /* TODO: We do not have jump functions for return slots, so we
+	 never propagate them to outer function.  */
+      if (ee->parm_index >= (int)map.length ()
+	  || ee->parm_index < 0)
 	continue;
       FOR_EACH_VEC_ELT (map[ee->parm_index], j, em)
 	{
@@ -3125,7 +3190,7 @@ update_escape_summary_1 (cgraph_edge *e,
 	  if (ee->direct && !em->direct)
 	    min_flags = deref_flags (min_flags, ignore_stores);
 	  struct escape_entry entry = {em->parm_index, ee->arg,
-	    			       ee->min_flags,
+				       ee->min_flags,
 				       ee->direct & em->direct};
 	  sum->esc.safe_push (entry);
 	}
@@ -3245,7 +3310,11 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     FOR_EACH_VEC_ELT (sum->esc, i, ee)
       {
 	bool needed = false;
-	if (to_info && to_info->arg_flags.length () > ee->parm_index)
+	/* TODO: We do not have jump functions for return slots, so we
+	   never propagate them to outer function.  */
+	if (ee->parm_index < 0)
+	  continue;
+	if (to_info && (int)to_info->arg_flags.length () > ee->parm_index)
 	  {
 	    int flags = callee_info
 			&& callee_info->arg_flags.length () > ee->arg
@@ -3259,7 +3328,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    if (to_info->arg_flags[ee->parm_index])
 	      needed = true;
 	  }
-	if (to_info_lto && to_info_lto->arg_flags.length () > ee->parm_index)
+	if (to_info_lto && (int)to_info_lto->arg_flags.length () > ee->parm_index)
 	  {
 	    int flags = callee_info_lto
 			&& callee_info_lto->arg_flags.length () > ee->arg
@@ -3798,29 +3867,31 @@ modref_merge_call_site_flags (escape_summary *sum,
       if (flags_lto & EAF_NOESCAPE)
 	flags_lto |= EAF_NODIRECTESCAPE;
       if (!(flags & EAF_UNUSED)
-	  && cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
+	  && cur_summary && ee->parm_index < (int)cur_summary->arg_flags.length ())
 	{
-	  int f = cur_summary->arg_flags[ee->parm_index];
+	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
+			   ? cur_summary->retslot_flags
+			   : cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
 	    {
 	      f = remove_useless_eaf_flags
 			 (f & flags, ecf_flags,
 			  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (caller))));
-	      cur_summary->arg_flags[ee->parm_index] = f;
 	      changed = true;
 	    }
 	}
       if (!(flags_lto & EAF_UNUSED)
 	  && cur_summary_lto
-	  && ee->parm_index < cur_summary_lto->arg_flags.length ())
+	  && ee->parm_index < (int)cur_summary_lto->arg_flags.length ())
 	{
-	  int f = cur_summary_lto->arg_flags[ee->parm_index];
+	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
+			   ? cur_summary_lto->retslot_flags
+			   : cur_summary_lto->arg_flags[ee->parm_index];
 	  if ((f & flags_lto) != f)
 	    {
 	      f = remove_useless_eaf_flags
 			 (f & flags_lto, ecf_flags,
 			  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (caller))));
-	      cur_summary_lto->arg_flags[ee->parm_index] = f;
 	      changed = true;
 	    }
 	}

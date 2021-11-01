@@ -1,3 +1,37 @@
+2021-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102820
+	* semantics.c (maybe_zero_constructor_nelts): New function.
+	(finish_compound_literal): Implement DR2351 - void{}.
+	If type is cv void and compound_literal has no elements, return
+	void_node.  If type is cv void and compound_literal might have no
+	elements after expansion, handle it like other dependent compound
+	literals.
+
+2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102933
+	* parser.c (cp_parser_simple_type_specifier): Adjust diagnostic
+	for using auto in parameter declaration.
+	* pt.c (extract_autos_r): Ignore CTAD placeholders.
+	(extract_autos): Use range-based for.
+	(do_auto_deduction): Use extract_autos only for the concepts TS
+	and not also for standard concepts.
+	(type_uses_auto): Likewise with for_each_template_parm.
+	(check_auto_in_tmpl_args): Just return false outside of the
+	concepts TS.  Simplify.
+
+2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102780
+	* constexpr.c (potential_constant_expression_1) <case TRUTH_*_EXPR>:
+	When tf_error isn't set, preemptively check potentiality of the
+	second operand before performing trial evaluation of the first
+	operand.
+	(potential_constant_expression_1): When tf_error is set, first check
+	potentiality quietly and return true if successful, otherwise
+	proceed noisily to give errors.
+
 2021-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102854

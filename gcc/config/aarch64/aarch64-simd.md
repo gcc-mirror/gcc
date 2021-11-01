@@ -74,12 +74,14 @@
 )
 
 (define_insn "aarch64_simd_dup<mode>"
-  [(set (match_operand:VDQF_F16 0 "register_operand" "=w")
+  [(set (match_operand:VDQF_F16 0 "register_operand" "=w,w")
 	(vec_duplicate:VDQF_F16
-	  (match_operand:<VEL> 1 "register_operand" "w")))]
+	  (match_operand:<VEL> 1 "register_operand" "w,r")))]
   "TARGET_SIMD"
-  "dup\\t%0.<Vtype>, %1.<Vetype>[0]"
-  [(set_attr "type" "neon_dup<q>")]
+  "@
+   dup\\t%0.<Vtype>, %1.<Vetype>[0]
+   dup\\t%0.<Vtype>, %<vw>1"
+  [(set_attr "type" "neon_dup<q>, neon_from_gp<q>")]
 )
 
 (define_insn "aarch64_dup_lane<mode>"

@@ -60,6 +60,8 @@ vpath %.cc $(srcdir)
 
 all:: Makefile
 
+mostlyclean::
+
 clean:: Makefile
 
 # FIXME: Delete
@@ -77,7 +79,9 @@ revision.stamp: $(srcdir)/.
 revision: revision.stamp
 	@cmp -s $< $@ || cp -f $< $@
 
-clean::
+mostlyclean::
+
+clean:: mostlyclean
 	rm -f revision.stamp revision
 
 distclean:: clean
@@ -102,16 +106,18 @@ endif
 config.status: $(srcdir)/configure $(srcdir)/config.h.in
 	if test -x $@; then ./$@ -recheck; else $< @configure_args@; fi
 
+mostlyclean::
+
+clean:: mostlyclean
+	rm -f $(shell find $(srcdir) -name '*~')
+
 distclean:: clean
 	rm -f config.h
 
 maintainer-clean:: distclean
 	rm -f $(srcdir)/config.h.in
 
-clean::
-	rm -f $(shell find $(srcdir) -name '*~')
-
-.PHONY: all check clean distclean maintainer-clean
+.PHONY: all check clean distclean maintainer-clean mostlyclean
 
 CXXFLAGS/ := -I$(srcdir)
 LIBCODY.O := buffer.o client.o fatal.o netclient.o netserver.o \
@@ -123,7 +129,9 @@ libcody.a: $(LIBCODY.O)
 	$(AR) -cr $@ $^
 	$(RANLIB) $@
 
-clean::
+mostlyclean::
+
+clean:: mostlyclean
 	rm -f $(LIBCODY.O) $(LIBCODY.O:.o=.d)
 	rm -f libcody.a
 

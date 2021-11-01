@@ -256,7 +256,17 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 
   // If no name, simply call the base routine.
   if (!name)
-    res = fold_range_internal (r, s, NULL_TREE);
+    {
+      res = fold_range_internal (r, s, NULL_TREE);
+      if (res && is_a <gcond *> (s))
+	{
+	  // Update any exports in the cache if this is a gimple cond statement.
+	  tree exp;
+	  basic_block bb = gimple_bb (s);
+	  FOR_EACH_GORI_EXPORT_NAME (m_cache.m_gori, bb, exp)
+	    m_cache.propagate_updated_value (exp, bb);
+	}
+    }
   else if (!gimple_range_ssa_p (name))
     res = get_tree_range (r, name, NULL);
   // Check if the stmt has already been processed, and is not stale.

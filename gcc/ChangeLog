@@ -1,3 +1,292 @@
+2021-10-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c: Include tree-dfa.h.
+	(points_to_local_or_readonly_memory_p): Return true on return
+	slot writes.
+	* ipa-modref.c (analyze_ssa_name_flags): Fix handling of copy
+	statement.
+
+2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/102972
+	* omp-low.c (omp_runtime_api_call): Use DECL_ASSEMBLER_NAME to get
+	internal Fortran name; new permit_num_teams arg to permit
+	omp_get_num_teams and omp_get_team_num.
+	(scan_omp_1_stmt): Update call to it, add missing call for
+	reverse offload, and check for strictly nested API calls in teams.
+
+2021-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_omp_for): Diagnose threadprivate iterators.
+
+2021-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* selftest.c (assert_streq): Add newlines when emitting non-equal
+	non-NULL strings.
+
+2021-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in: Fix syntax for reference to LIBDEPS in
+	gengtype link rule.
+
+2021-10-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* doc/install.texi: Bump required minimum DejaGnu version.
+
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (path_oracle::killing_def): Add a
+	self-equivalence so we don't look to the root oracle.
+
+2021-10-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* passes.def: Replace the pass_thread_jumps before VRP* with
+	pass_thread_jumps_full.  Remove all pass_vrp_threader instances.
+	* tree-ssa-threadbackward.c (pass_data_thread_jumps_full):
+	Remove hyphen from "thread-full" name.
+
+2021-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102983
+	* gimple-range-cache.h (propagate_updated_value): Make public.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Propagate exports
+	when processing gcond stmts.
+
+2021-10-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.c (gimple_call_retslot_flags): New function.
+	* gimple.h (gimple_call_retslot_flags): Declare.
+	* ipa-modref.c: Include tree-cfg.h.
+	(struct escape_entry): Turn parm_index to signed.
+	(modref_summary_lto::modref_summary_lto): Add retslot_flags.
+	(modref_summary::modref_summary): Initialize retslot_flags.
+	(struct modref_summary_lto): Likewise.
+	(modref_summary::useful_p): Check retslot_flags.
+	(modref_summary_lto::useful_p): Likewise.
+	(modref_summary::dump): Dump retslot_flags.
+	(modref_summary_lto::dump): Likewise.
+	(struct escape_point): Add hidden_args enum.
+	(analyze_ssa_name_flags): Ignore return slot return;
+	use gimple_call_retslot_flags.
+	(record_escape_points): Break out from ...
+	(analyze_parms): ... here; handle retslot_flags.
+	(modref_summaries::duplicate): Duplicate retslot_flags.
+	(modref_summaries_lto::duplicate): Likewise.
+	(modref_write_escape_summary): Stream parm_index as signed.
+	(modref_read_escape_summary): Likewise.
+	(modref_write): Stream retslot_flags.
+	(read_section): Likewise.
+	(struct escape_map): Fix typo in comment.
+	(update_escape_summary_1): Fix whitespace.
+	(ipa_merge_modref_summary_after_inlining): Drop retslot_flags.
+	(modref_merge_call_site_flags): Merge retslot_flags.
+	* ipa-modref.h (struct modref_summary): Add retslot_flags.
+	* tree-ssa-structalias.c (handle_rhs_call): Handle retslot_flags.
+
+2021-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/102977
+	* tree-vect-slp-patterns.c (vect_match_call_p): Remove.
+	(vect_detect_pair_op): Add crosslane check.
+	(vect_match_call_complex_mla): Remove.
+	(class complex_mul_pattern): Update comment.
+	(complex_mul_pattern::matches): Update detection.
+	(class complex_fma_pattern): Remove.
+	(complex_fma_pattern::matches): Remove.
+	(complex_fma_pattern::recognize): Remove.
+	(complex_fma_pattern::build): Remove.
+	(class complex_fms_pattern):  Update comment.
+	(complex_fms_pattern::matches): Remove.
+	(complex_operations_pattern::recognize): Remove complex_fma_pattern
+
+2021-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-fold.c (gimple_fold_builtin_memset): Copy over location from
+	call to store.
+
+2021-10-29  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102868
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Add
+	patterns match and emit for VSX xxpermdi.
+
+2021-10-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* config/i386/i386-builtin-types.def (V8HF_FTYPE_V8HF): New
+	function type.
+	(V16HF_FTYPE_V16HF): Ditto.
+	(V32HF_FTYPE_V32HF): Ditto.
+	(V8HF_FTYPE_V8HF_ROUND): Ditto.
+	(V16HF_FTYPE_V16HF_ROUND): Ditto.
+	(V32HF_FTYPE_V32HF_ROUND): Ditto.
+	* config/i386/i386-builtin.def ( IX86_BUILTIN_FLOORPH,
+	IX86_BUILTIN_CEILPH, IX86_BUILTIN_TRUNCPH,
+	IX86_BUILTIN_FLOORPH256, IX86_BUILTIN_CEILPH256,
+	IX86_BUILTIN_TRUNCPH256, IX86_BUILTIN_FLOORPH512,
+	IX86_BUILTIN_CEILPH512, IX86_BUILTIN_TRUNCPH512): New builtin.
+	* config/i386/i386-builtins.c
+	(ix86_builtin_vectorized_function): Enable vectorization for
+	HFmode FLOOR/CEIL/TRUNC operation.
+	* config/i386/i386-expand.c (ix86_expand_args_builtin): Handle
+	new builtins.
+	* config/i386/sse.md (rint<mode>2, nearbyint<mode>2): Extend
+	to vector HFmodes.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (path_oracle::killing_def): Walk the
+	equivalency list and remove SSA from any equivalencies.
+
+2021-10-28  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.h (PROFILE_HOOK): Add return address argument
+	to _mcount.
+
+2021-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102951
+	* fold-const.h (address_compare): Declare.
+	* fold-const.c (address_compare): New function.
+	* match.pd (cmp (convert1?@2 addr@0) (convert2? addr@1)): Use
+	address_compare helper.
+	(minmax cmp (convert1?@2 addr@0) (convert2?@3 addr@1)): New
+	simplification.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* vr-values.c (simplify_using_ranges::fold_cond): Change fold message.
+
+2021-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102940
+	* tree-vrp.c (execute_ranger_vrp): Reset scev.
+
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* config/nios2/linux.h (MUSL_DYNAMIC_LINKER): Add musl linker
+
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* configure: Regenerate.
+	* configure.ac: Use CPPFLAGS_FOR_BUILD for GMPINC
+
+2021-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (%X): Remove obsolete reference to -Wl.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84407
+	* fold-const.c (fold_convert_const): Avoid int to float
+	constant folding with -frounding-math and inexact result.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise
+	for both float and unsigned_float.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader::find_taken_edge_switch): Use find_case_label_range
+	instead of find_taken_edge.
+
+2021-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (class back_threader_registry):
+	Inherit from back_jt_path_registry.
+	(back_threader_registry::thread_through_all_blocks): Remove.
+	(back_threader_registry::register_path): Remove
+	m_lowlevel_registry prefix.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57245
+	* fold-const.c (fold_convert_const_real_from_real): Honor
+	-frounding-math if the conversion is not exact.
+	* simplify-rtx.c (simplify_const_unary_operation): Do not
+	simplify FLOAT_TRUNCATE with sign dependent rounding.
+
+2021-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102949
+	* tree-vect-stmts.c (ensure_base_align): Look at the
+	dr_info of a group leader and assert we are looking at
+	one with analyzed alignment.
+
+2021-10-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102767
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Consider
+	V1T1 mode for unaligned load and store.
+
+2021-10-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md (zero_extendsidi2_internal): Allow ZBB
+	use this pattern.
+
+2021-10-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/arch-canonicalize (CANONICAL_ORDER): Add `i` to
+	CANONICAL_ORDER.
+
+2021-10-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (fharden-compares): New.
+	(fharden-conditional-branches): New.
+	* doc/invoke.texi: Document new options.
+	* gimple-harden-conditionals.cc: New.
+	* Makefile.in (OBJS): Build it.
+	* passes.def: Add new passes.
+	* tree-pass.h (make_pass_harden_compares): Declare.
+	(make_pass_harden_conditional_branches): Declare.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/94613
+	* config/rs6000/altivec.md: Add vsx register constraints.
+	* config/rs6000/vsx.md (vsx_xxsel<mode>): Delete.
+	(vsx_xxsel<mode>2): Likewise.
+	(vsx_xxsel<mode>3): Likewise.
+	(vsx_xxsel<mode>4): Likewise.
+
+2021-10-28  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/94613
+	* config/rs6000/altivec.md (*altivec_vsel<mode>): Change to ...
+	(altivec_vsel<mode>): ... this and update define.
+	(*altivec_vsel<mode>_uns): Delete.
+	(altivec_vsel<mode>2): New define_insn.
+	(altivec_vsel<mode>3): Likewise.
+	(altivec_vsel<mode>4): Likewise.
+	* config/rs6000/rs6000-call.c (altivec_expand_vec_sel_builtin): New.
+	(altivec_expand_builtin): Call altivec_expand_vec_sel_builtin to expand
+	vel_sel.
+	* config/rs6000/rs6000.c (rs6000_emit_vector_cond_expr): Use bit-wise
+	selection instead of per element.
+	* config/rs6000/vector.md:
+	* config/rs6000/vsx.md (*vsx_xxsel<mode>): Change to ...
+	(vsx_xxsel<mode>): ... this and update define.
+	(*vsx_xxsel<mode>_uns): Delete.
+	(vsx_xxsel<mode>2): New define_insn.
+	(vsx_xxsel<mode>3): Likewise.
+	(vsx_xxsel<mode>4): Likewise.
+
+2021-10-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.c (use_rsqrt_p): Add mode parameter, enable
+	  HFmode rsqrt without TARGET_SSE_MATH.
+	(ix86_optab_supported_p): Refactor rint, adjust floor, ceil,
+	btrunc condition to be restricted by -ftrapping-math, adjust
+	use_rsqrt_p function call.
+	* config/i386/i386.md (rcphf2): New define_insn.
+	(rsqrthf2): Likewise.
+	* config/i386/sse.md (div<mode>3): Change VF2H to VF2.
+	(div<mode>3): New expander for HF mode.
+	(rsqrt<mode>2): Likewise.
+	(*avx512fp16_vmrcpv8hf2): New define_insn for rpad pass.
+	(*avx512fp16_vmrsqrtv8hf2): Likewise.
+
 2021-10-27  Saagar Jha  <saagar@saagarjha.com>
 
 	* config.gcc: Adjust for Darwin21.

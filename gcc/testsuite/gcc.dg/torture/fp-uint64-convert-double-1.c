@@ -1,7 +1,7 @@
 /* PR84407 */
 /* { dg-do run } */
 /* { dg-require-effective-target fenv } */
-/* { dg-additional-options "-frounding-math" } */
+/* { dg-additional-options "-frounding-math -fexcess-precision=standard" } */
 
 #include <fenv.h>
 #include <stdlib.h>

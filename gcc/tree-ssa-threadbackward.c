@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-pretty-print.h"
 #include "cfghooks.h"
+#include "dbgcnt.h"
 
 // Path registry for the backwards threader.  After all paths have been
 // registered with register_path(), thread_through_all_blocks() is called
@@ -69,14 +70,24 @@ private:
   const bool m_speed_p;
 };
 
+// Back threader flags.
+#define BT_NONE 0
+// Generate fast code at the expense of code size.
+#define BT_SPEED 1
+// Resolve unknown SSAs on entry to a threading path.  If set, use the
+// ranger.  If not, assume all ranges on entry to a path are VARYING.
+#define BT_RESOLVE 2
+
 class back_threader
 {
 public:
-  back_threader (bool speed_p, bool resolve);
-  void maybe_thread_block (basic_block bb);
-  bool thread_through_all_blocks (bool may_peel_loop_headers);
+  back_threader (function *fun, unsigned flags, bool first);
+  ~back_threader ();
+  unsigned thread_blocks ();
 private:
+  void maybe_thread_block (basic_block bb);
   void find_paths (basic_block bb, tree name);
+  bool debug_counter ();
   edge maybe_register_path ();
   bool find_paths_to_names (basic_block bb, bitmap imports);
   bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
@@ -89,8 +100,8 @@ private:
 
   back_threader_registry m_registry;
   back_threader_profitability m_profit;
-  gimple_ranger m_ranger;
-  path_range_query m_solver;
+  gimple_ranger *m_ranger;
+  path_range_query *m_solver;
 
   // Current path being analyzed.
   auto_vec<basic_block> m_path;
@@ -109,19 +120,70 @@ private:
   // Set to TRUE if unknown SSA names along a path should be resolved
   // with the ranger.  Otherwise, unknown SSA names are assumed to be
   // VARYING.  Setting to true is more precise but slower.
-  bool m_resolve;
+  function *m_fun;
+  unsigned m_flags;
+  // Set to TRUE for the first of each thread[12] pass or the first of
+  // each threadfull[12] pass.  This is used to differentiate between
+  // the different threading passes so we can set up debug counters.
+  bool m_first;
 };
 
 // Used to differentiate unreachable edges, so we may stop the search
 // in a the given direction.
 const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
 
-back_threader::back_threader (bool speed_p, bool resolve)
-  : m_profit (speed_p),
-    m_solver (m_ranger, resolve)
+back_threader::back_threader (function *fun, unsigned flags, bool first)
+  : m_profit (flags & BT_SPEED),
+    m_first (first)
 {
+  if (flags & BT_SPEED)
+    loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
+  else
+    loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
+  m_fun = fun;
+  m_flags = flags;
+  m_ranger = new gimple_ranger;
+  m_solver = new path_range_query (*m_ranger, flags & BT_RESOLVE);
   m_last_stmt = NULL;
-  m_resolve = resolve;
+}
+
+back_threader::~back_threader ()
+{
+  delete m_solver;
+  delete m_ranger;
+
+  loop_optimizer_finalize ();
+}
+
+// A wrapper for the various debug counters for the threading passes.
+// Returns TRUE if it's OK to register the current threading
+// candidate.
+
+bool
+back_threader::debug_counter ()
+{
+  // The ethread pass is mostly harmless ;-).
+  if ((m_flags & BT_SPEED) == 0)
+    return true;
+
+  if (m_flags & BT_RESOLVE)
+    {
+      if (m_first && !dbg_cnt (back_threadfull1))
+	return false;
+
+      if (!m_first && !dbg_cnt (back_threadfull2))
+	return false;
+    }
+  else
+    {
+      if (m_first && !dbg_cnt (back_thread1))
+	return false;
+
+      if (!m_first && !dbg_cnt (back_thread2))
+	return false;
+    }
+  return true;
 }
 
 // Register the current path for jump threading if it's profitable to
@@ -147,6 +209,9 @@ back_threader::maybe_register_path ()
 
       if (profitable)
 	{
+	  if (!debug_counter ())
+	    return NULL;
+
 	  m_registry.register_path (m_path, taken_edge);
 
 	  if (irreducible)
@@ -186,8 +251,8 @@ back_threader::find_taken_edge_switch (const vec<basic_block> &path,
   tree name = gimple_switch_index (sw);
   int_range_max r;
 
-  m_solver.compute_ranges (path, m_imports);
-  m_solver.range_of_expr (r, name, sw);
+  m_solver->compute_ranges (path, m_imports);
+  m_solver->range_of_expr (r, name, sw);
 
   if (r.undefined_p ())
     return UNREACHABLE_EDGE;
@@ -210,10 +275,10 @@ back_threader::find_taken_edge_cond (const vec<basic_block> &path,
 {
   int_range_max r;
 
-  m_solver.compute_ranges (path, m_imports);
-  m_solver.range_of_stmt (r, cond);
+  m_solver->compute_ranges (path, m_imports);
+  m_solver->range_of_stmt (r, cond);
 
-  if (m_solver.unreachable_path_p ())
+  if (m_solver->unreachable_path_p ())
     return UNREACHABLE_EDGE;
 
   int_range<2> true_range (boolean_true_node, boolean_true_node);
@@ -381,7 +446,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
       // Examine blocks that define or export an interesting SSA,
       // since they may compute a range which resolve this path.
       if ((def_bb == bb
-	   || bitmap_bit_p (m_ranger.gori ().exports (bb), i))
+	   || bitmap_bit_p (m_ranger->gori ().exports (bb), i))
 	  && m_path.length () > 1)
 	{
 	  if (maybe_register_path ())
@@ -436,7 +501,7 @@ back_threader::find_paths (basic_block bb, tree name)
       bitmap_clear (m_imports);
 
       auto_bitmap interesting;
-      bitmap_copy (m_imports, m_ranger.gori ().imports (bb));
+      bitmap_copy (m_imports, m_ranger->gori ().imports (bb));
       bitmap_copy (interesting, m_imports);
       find_paths_to_names (bb, interesting);
     }
@@ -486,14 +551,6 @@ back_threader::maybe_thread_block (basic_block bb)
   find_paths (bb, name);
 }
 
-// Perform the actual jump threading for the all queued paths.
-
-bool
-back_threader::thread_through_all_blocks (bool may_peel_loop_headers)
-{
-  return m_registry.thread_through_all_blocks (may_peel_loop_headers);
-}
-
 // Dump a sequence of BBs through the CFG.
 
 DEBUG_FUNCTION void
@@ -517,7 +574,7 @@ debug (const vec <basic_block> &path)
 void
 back_threader::dump (FILE *out)
 {
-  m_solver.dump (out);
+  m_solver->dump (out);
   fprintf (out, "\nCandidates for pre-computation:\n");
   fprintf (out, "===================================\n");
 
@@ -883,45 +940,24 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
   return true;
 }
 
-// Try to thread blocks in FUN.  RESOLVE is TRUE when fully resolving
-// unknown SSAs.  SPEED is TRUE when optimizing for speed.
+// Thread all suitable paths in the current function.
 //
-// Return TRUE if any jump thread paths were registered.
+// Return TODO_flags.
 
-static bool
-try_thread_blocks (function *fun, bool resolve, bool speed)
+unsigned int
+back_threader::thread_blocks ()
 {
-  back_threader threader (speed, resolve);
   basic_block bb;
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      if (EDGE_COUNT (bb->succs) > 1)
-	threader.maybe_thread_block (bb);
-    }
-  return threader.thread_through_all_blocks (/*peel_loop_headers=*/true);
-}
+  FOR_EACH_BB_FN (bb, m_fun)
+    if (EDGE_COUNT (bb->succs) > 1)
+      maybe_thread_block (bb);
 
-static unsigned int
-do_early_thread_jumps (function *fun, bool resolve)
-{
-  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+  bool changed = m_registry.thread_through_all_blocks (true);
 
-  try_thread_blocks (fun, resolve, /*speed=*/false);
+  if (m_flags & BT_SPEED)
+    return changed ? TODO_cleanup_cfg : 0;
 
-  loop_optimizer_finalize ();
-  return 0;
-}
-
-static unsigned int
-do_thread_jumps (function *fun, bool resolve)
-{
-  loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
-
-  bool changed = try_thread_blocks (fun, resolve, /*speed=*/true);
-
-  loop_optimizer_finalize ();
-
-  return changed ? TODO_cleanup_cfg : 0;
+  return false;
 }
 
 namespace {
@@ -955,7 +991,7 @@ const pass_data pass_data_thread_jumps =
 const pass_data pass_data_thread_jumps_full =
 {
   GIMPLE_PASS,
-  "thread-full",
+  "threadfull",
   OPTGROUP_NONE,
   TV_TREE_SSA_THREAD_JUMPS,
   ( PROP_cfg | PROP_ssa ),
@@ -977,14 +1013,21 @@ public:
   {
     return new pass_early_thread_jumps (m_ctxt);
   }
+  void set_pass_param (unsigned int, bool param) override
+  {
+    m_first = param;
+  }
   bool gate (function *) override
   {
     return flag_thread_jumps;
   }
   unsigned int execute (function *fun) override
   {
-    return do_early_thread_jumps (fun, /*resolve=*/false);
+    back_threader threader (fun, BT_NONE, m_first);
+    return threader.thread_blocks ();
   }
+private:
+  bool m_first;
 };
 
 // Jump threading pass without resolving of unknown SSAs.
@@ -998,14 +1041,21 @@ public:
   {
     return new pass_thread_jumps (m_ctxt);
   }
+  void set_pass_param (unsigned int, bool param) override
+  {
+    m_first = param;
+  }
   bool gate (function *) override
   {
     return flag_thread_jumps && flag_expensive_optimizations;
   }
   unsigned int execute (function *fun) override
   {
-    return do_thread_jumps (fun, /*resolve=*/false);
+    back_threader threader (fun, BT_SPEED, m_first);
+    return threader.thread_blocks ();
   }
+private:
+  bool m_first;
 };
 
 // Jump threading pass that fully resolves unknown SSAs.
@@ -1019,14 +1069,21 @@ public:
   {
     return new pass_thread_jumps_full (m_ctxt);
   }
+  void set_pass_param (unsigned int, bool param) override
+  {
+    m_first = param;
+  }
   bool gate (function *) override
   {
     return flag_thread_jumps && flag_expensive_optimizations;
   }
   unsigned int execute (function *fun) override
   {
-    return do_thread_jumps (fun, /*resolve=*/true);
+    back_threader threader (fun, BT_SPEED | BT_RESOLVE, m_first);
+    return threader.thread_blocks ();
   }
+private:
+  bool m_first;
 };
 
 } // namespace {

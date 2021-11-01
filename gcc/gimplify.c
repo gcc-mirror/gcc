@@ -1784,8 +1784,8 @@ gimple_add_init_for_auto_var (tree decl,
    that padding is initialized to zero. So, we always initialize paddings
    to zeroes regardless INIT_TYPE.
    To do the padding initialization, we insert a call to
-   __BUILTIN_CLEAR_PADDING (&decl, 0, for_auto_init = true).
-   Note, we add an additional dummy argument for __BUILTIN_CLEAR_PADDING,
+   __builtin_clear_padding (&decl, 0, for_auto_init = true).
+   Note, we add an additional dummy argument for __builtin_clear_padding,
    'for_auto_init' to distinguish whether this call is for automatic
    variable initialization or not.
    */
@@ -1954,8 +1954,14 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	     pattern initialization.
 	     In order to make the paddings as zeroes for pattern init, We
 	     should add a call to __builtin_clear_padding to clear the
-	     paddings to zero in compatiple with CLANG.  */
-	  if (flag_auto_var_init == AUTO_INIT_PATTERN)
+	     paddings to zero in compatiple with CLANG.
+	     We cannot insert this call if the variable is a gimple register
+	     since __builtin_clear_padding will take the address of the
+	     variable.  As a result, if a long double/_Complex long double
+	     variable will spilled into stack later, its padding is 0XFE.  */
+	  if (flag_auto_var_init == AUTO_INIT_PATTERN
+	      && !is_gimple_reg (decl)
+	      && clear_padding_type_may_have_padding_p (TREE_TYPE (decl)))
 	    gimple_add_padding_init_for_auto_var (decl, is_vla, seq_p);
 	}
     }
@@ -5384,12 +5390,19 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   /* If the user requests to initialize automatic variables, we
      should initialize paddings inside the variable.  Add a call to
-     __BUILTIN_CLEAR_PADDING (&object, 0, for_auto_init = true) to
+     __builtin_clear_pading (&object, 0, for_auto_init = true) to
      initialize paddings of object always to zero regardless of
      INIT_TYPE.  Note, we will not insert this call if the aggregate
      variable has be completely cleared already or it's initialized
-     with an empty constructor.  */
+     with an empty constructor.  We cannot insert this call if the
+     variable is a gimple register since __builtin_clear_padding will take
+     the address of the variable.  As a result, if a long double/_Complex long
+     double variable will be spilled into stack later, its padding cannot
+     be cleared with __builtin_clear_padding.  We should clear its padding
+     when it is spilled into memory.  */
   if (is_init_expr
+      && !is_gimple_reg (object)
+      && clear_padding_type_may_have_padding_p (type)
       && ((AGGREGATE_TYPE_P (type) && !cleared && !is_empty_ctor)
 	  || !AGGREGATE_TYPE_P (type))
       && is_var_need_auto_init (object))
@@ -12296,6 +12309,24 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  else
 	    gimplify_omp_ctxp->loop_iter_var.quick_push (decl);
 	  gimplify_omp_ctxp->loop_iter_var.quick_push (decl);
+	}
+
+      if (for_stmt == orig_for_stmt)
+	{
+	  tree orig_decl = decl;
+	  if (OMP_FOR_ORIG_DECLS (for_stmt))
+	    {
+	      tree orig_decl = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i);
+	      if (TREE_CODE (orig_decl) == TREE_LIST)
+		{
+		  orig_decl = TREE_PURPOSE (orig_decl);
+		  if (!orig_decl)
+		    orig_decl = decl;
+		}
+	    }
+	  if (is_global_var (orig_decl) && DECL_THREAD_LOCAL_P (orig_decl))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "threadprivate iteration variable %qD", orig_decl);
 	}
 
       /* Make sure the iteration variable is private.  */

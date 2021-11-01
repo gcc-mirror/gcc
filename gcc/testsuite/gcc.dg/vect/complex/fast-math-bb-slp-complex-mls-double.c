@@ -5,5 +5,9 @@
 
 #define TYPE double
 #define N 16
-#include "complex-mla-template.c"
+#include "complex-mls-template.c"
 
+/* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT270" "slp1" } } */
+/* { dg-final { scan-tree-dump "Found COMPLEX_FMA" "slp1" } } */
+/* { dg-final { scan-tree-dump "Found COMPLEX_FMS_CONJ" "slp1" } } */
+/* { dg-final { scan-tree-dump "Found COMPLEX_FMS" "slp1" } } */

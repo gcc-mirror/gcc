@@ -17,10 +17,10 @@ int foo (int n, int l, int m, int r)
 
   if (l > 100)
     if ( (n <= 9) &&  (m < 100)  && (r < 19) )
-      blah(v); /* { dg-bogus "uninitialized" "bogus warning" } */
+      blah(v); /* { dg-bogus "uninitialized" "bogus warning" { xfail powerpc64*-*-* } } */
 
   if ( (n <= 8) &&  (m < 99)  && (r < 19) )
-      blah(v); /* { dg-bogus "uninitialized" "pr101674" { xfail powerpc64*-*-* mmix-*-* cris-*-* } } */
+      blah(v); /* { dg-bogus "uninitialized" "pr101674" { xfail mmix-*-* cris-*-* } } */
 
   return 0;
 }

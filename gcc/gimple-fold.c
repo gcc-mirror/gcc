@@ -1505,6 +1505,7 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
   var = fold_build2 (MEM_REF, etype, dest, build_int_cst (ptr_type_node, 0));
   gimple *store = gimple_build_assign (var, build_int_cst_type (etype, cval));
   gimple_move_vops (store, stmt);
+  gimple_set_location (store, gimple_location (stmt));
   gsi_insert_before (gsi, store, GSI_SAME_STMT);
   if (gimple_call_lhs (stmt))
     {

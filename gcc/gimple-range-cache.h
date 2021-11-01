@@ -103,6 +103,8 @@ public:
   bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
 
+  void propagate_updated_value (tree name, basic_block bb);
+
   non_null_ref m_non_null;
   gori_compute m_gori;
 
@@ -119,8 +121,6 @@ private:
   void range_of_def (irange &r, tree name, basic_block bb = NULL);
   void entry_range (irange &r, tree expr, basic_block bb);
   void exit_range (irange &r, tree expr, basic_block bb);
-
-  void propagate_updated_value (tree name, basic_block bb);
 
   bitmap m_propfail;
   vec<basic_block> m_workback;

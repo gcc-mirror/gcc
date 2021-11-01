@@ -877,7 +877,13 @@ relation_oracle::register_edge (edge e, relation_kind k, tree op1, tree op2)
 void
 dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
 			       tree op2)
-{  // Equivalencies are handled by the equivalence oracle.
+{
+  // If the 2 ssa_names are the same, do nothing.  An equivalence is implied,
+  // and no other relation makes sense.
+  if (op1 == op2)
+    return;
+
+  // Equivalencies are handled by the equivalence oracle.
   if (k == EQ_EXPR)
     equiv_oracle::register_relation (bb, k, op1, op2);
   else
@@ -1298,6 +1304,18 @@ path_oracle::killing_def (tree ssa)
     }
 
   unsigned v = SSA_NAME_VERSION (ssa);
+
+  // Walk the equivalency list and remove SSA from any equivalencies.
+  if (bitmap_bit_p (m_equiv.m_names, v))
+    {
+      for (equiv_chain *ptr = m_equiv.m_next; ptr; ptr = ptr->m_next)
+	if (bitmap_bit_p (ptr->m_names, v))
+	  bitmap_clear_bit (ptr->m_names, v);
+    }
+  else
+    bitmap_set_bit (m_equiv.m_names, v);
+
+  // Now add an equivalency with itself so we don't look to the root oracle.
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
   bitmap_set_bit (b, v);
   equiv_chain *ptr = (equiv_chain *) obstack_alloc (&m_chain_obstack,
@@ -1306,9 +1324,8 @@ path_oracle::killing_def (tree ssa)
   ptr->m_bb = NULL;
   ptr->m_next = m_equiv.m_next;
   m_equiv.m_next = ptr;
-  bitmap_ior_into (m_equiv.m_names, b);
 
-  // Walk the relation list an remove SSA from any relations.
+  // Walk the relation list and remove SSA from any relations.
   if (!bitmap_bit_p (m_relations.m_names, v))
     return;
 

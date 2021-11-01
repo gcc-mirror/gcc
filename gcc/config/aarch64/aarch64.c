@@ -9076,13 +9076,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 	2) The RETAA instruction is not available before ARMv8.3-A, so if we are
 	   generating code for !TARGET_ARMV8_3 we can't use it and must
 	   explicitly authenticate.
-
-	3) On an eh_return path we make extra stack adjustments to update the
-	   canonical frame address to be the exception handler's CFA.  We want
-	   to authenticate using the CFA of the function which calls eh_return.
     */
   if (aarch64_return_address_signing_enabled ()
-      && (for_sibcall || !TARGET_ARMV8_3 || crtl->calls_eh_return))
+      && (for_sibcall || !TARGET_ARMV8_3))
     {
       switch (aarch64_ra_sign_key)
 	{
@@ -12705,7 +12701,7 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
   rtx op0, op1, op2;
   const struct cpu_cost_table *extra_cost
     = aarch64_tune_params.insn_extra_cost;
-  int code = GET_CODE (x);
+  rtx_code code = GET_CODE (x);
   scalar_int_mode int_mode;
 
   /* By default, assume that everything has equivalent cost to the
@@ -13466,8 +13462,7 @@ cost_plus:
 
 	 we must cost the explicit register move.  */
       if (mode == DImode
-	  && GET_MODE (op0) == SImode
-	  && outer == SET)
+	  && GET_MODE (op0) == SImode)
 	{
 	  int op_cost = rtx_cost (op0, VOIDmode, ZERO_EXTEND, 0, speed);
 
@@ -14006,8 +14001,39 @@ cost_plus:
 			     mode, MULT, 1, speed);
           return true;
         }
+	break;
+    case CONST_VECTOR:
+	{
+	  /* Load using MOVI/MVNI.  */
+	  if (aarch64_simd_valid_immediate (x, NULL))
+	    *cost = extra_cost->vect.movi;
+	  else /* Load using constant pool.  */
+	    *cost = extra_cost->ldst.load;
+	  break;
+	}
+    case VEC_CONCAT:
+	/* depending on the operation, either DUP or INS.
+	   For now, keep default costing.  */
+	break;
+    case VEC_DUPLICATE:
+	/* Load using a DUP.  */
+	*cost = extra_cost->vect.dup;
+	return false;
+    case VEC_SELECT:
+	{
+	  rtx op0 = XEXP (x, 0);
+	  *cost = rtx_cost (op0, GET_MODE (op0), VEC_SELECT, 0, speed);
 
-      /* Fall through.  */
+	  /* cost subreg of 0 as free, otherwise as DUP */
+	  rtx op1 = XEXP (x, 1);
+	  if (vec_series_lowpart_p (mode, GET_MODE (op1), op1))
+	    ;
+	  else if (vec_series_highpart_p (mode, GET_MODE (op1), op1))
+	    *cost = extra_cost->vect.dup;
+	  else
+	    *cost = extra_cost->vect.extract;
+	  return true;
+	}
     default:
       break;
     }

@@ -3832,7 +3832,7 @@ free_tb_tree (gfc_symtree *t)
 
   /* TODO: Free type-bound procedure structs themselves; probably needs some
      sort of ref-counting mechanism.  */
-
+  free (t->n.tb);
   free (t);
 }
 

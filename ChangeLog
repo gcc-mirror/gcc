@@ -1,3 +1,10 @@
+2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* Makefile.tpl: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
+
 2021-10-26  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* MAINTAINERS: Fix up Maciej's entries.
