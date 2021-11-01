@@ -329,14 +329,11 @@ Some basic guidelines for editing this document:
 @node Introduction to Intrinsics
 @section Introduction to intrinsic procedures
 
-The intrinsic procedures provided by GNU Fortran include all of the
-intrinsic procedures required by the Fortran 95 standard, a set of
-intrinsic procedures for backwards compatibility with G77, and a
-selection of intrinsic procedures from the Fortran 2003 and Fortran 2008
-standards.  Any conflict between a description here and a description in
-either the Fortran 95 standard, the Fortran 2003 standard or the Fortran
-2008 standard is unintentional, and the standard(s) should be considered
-authoritative.
+The intrinsic procedures provided by GNU Fortran include procedures required
+by the Fortran 95 and later supported standards, and a set of intrinsic
+procedures for backwards compatibility with G77.  Any conflict between
+a description here and a description in the Fortran standards is
+unintentional, and the standard(s) should be considered authoritative.
 
 The enumeration of the @code{KIND} type parameter is processor defined in
 the Fortran 95 standard.  GNU Fortran defines the default integer type and
@@ -355,7 +352,7 @@ Many of the intrinsic procedures take one or more optional arguments.
 This document follows the convention used in the Fortran 95 standard,
 and denotes such arguments by square brackets.
 
-GNU Fortran offers the @option{-std=f95} and @option{-std=gnu} options,
+GNU Fortran offers the @option{-std=} command-line option,
 which can be used to restrict the set of intrinsic procedures to a 
 given standard.  By default, @command{gfortran} sets the @option{-std=gnu}
 option, and so all intrinsic procedures described here are accepted.  There
