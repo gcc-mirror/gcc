@@ -1210,7 +1210,6 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
-    [[__nodiscard__]]
     inline _Tp*
     begin(valarray<_Tp>& __va) noexcept
     { return __va.size() ? std::__addressof(__va[0]) : nullptr; }
@@ -1221,7 +1220,6 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
-    [[__nodiscard__]]
     inline const _Tp*
     begin(const valarray<_Tp>& __va) noexcept
     { return __va.size() ? std::__addressof(__va[0]) : nullptr; }
@@ -1232,7 +1230,6 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
-    [[__nodiscard__]]
     inline _Tp*
     end(valarray<_Tp>& __va) noexcept
     {
@@ -1248,7 +1245,6 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
    *  @param  __va  valarray.
    */
   template<class _Tp>
-    [[__nodiscard__]]
     inline const _Tp*
     end(const valarray<_Tp>& __va) noexcept
     {
