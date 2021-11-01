@@ -710,8 +710,6 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 		return false;
 	      /* Do not count empty statements and labels.  */
 	      if (gimple_code (stmt) != GIMPLE_NOP
-		  && !(gimple_code (stmt) == GIMPLE_ASSIGN
-		       && gimple_assign_rhs_code (stmt) == ASSERT_EXPR)
 		  && !is_gimple_debug (stmt))
 		n_insns += estimate_num_insns (stmt, &eni_size_weights);
 	    }
