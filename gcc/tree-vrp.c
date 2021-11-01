@@ -4323,7 +4323,7 @@ public:
   {
     if (m_simplifier.simplify (gsi))
       return true;
-    return ::fold_stmt (gsi, follow_single_use_edges);
+    return m_ranger->fold_stmt (gsi, follow_single_use_edges);
   }
 
 private:
