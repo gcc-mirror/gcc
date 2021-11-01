@@ -1,3 +1,12 @@
+2021-10-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/modref-1.C: New test.
+
+2021-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102959
+	* gdc.dg/torture/pr96435.d: Adjust for BigEndian.
+
 2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/102972
