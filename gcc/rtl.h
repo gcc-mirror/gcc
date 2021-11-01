@@ -3425,6 +3425,7 @@ public:
 			    rtx, rtx, rtx);
   rtx simplify_gen_relational (rtx_code, machine_mode, machine_mode, rtx, rtx);
   rtx simplify_gen_subreg (machine_mode, rtx, machine_mode, poly_uint64);
+  rtx simplify_gen_vec_select (rtx, unsigned int);
 
   /* Tracks the level of MEM nesting for the value being simplified:
      0 means the value is not in a MEM, >0 means it is.  This is needed
@@ -3524,6 +3525,12 @@ simplify_gen_subreg (machine_mode outermode, rtx op, machine_mode innermode,
 {
   return simplify_context ().simplify_gen_subreg (outermode, op,
 						  innermode, byte);
+}
+
+inline rtx
+simplify_gen_vec_select (rtx op, unsigned int index)
+{
+  return simplify_context ().simplify_gen_vec_select (op, index);
 }
 
 inline rtx
