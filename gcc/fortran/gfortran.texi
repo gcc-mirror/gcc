@@ -2726,20 +2726,22 @@ and their use is highly recommended.
 
 @node Interoperability with C
 @section Interoperability with C
+@cindex interoperability with C
+@cindex C interoperability
 
 @menu
 * Intrinsic Types::
 * Derived Types and struct::
 * Interoperable Global Variables::
 * Interoperable Subroutines and Functions::
-* Working with Pointers::
+* Working with C Pointers::
 * Further Interoperability of Fortran with C::
 @end menu
 
 Since Fortran 2003 (ISO/IEC 1539-1:2004(E)) there is a
 standardized way to generate procedure and derived-type
-declarations and global variables which are interoperable with C
-(ISO/IEC 9899:1999).  The @code{bind(C)} attribute has been added
+declarations and global variables that are interoperable with C
+(ISO/IEC 9899:1999).  The @code{BIND(C)} attribute has been added
 to inform the compiler that a symbol shall be interoperable with C;
 also, some constraints are added.  Note, however, that not
 all C features have a Fortran equivalent or vice versa.  For instance,
@@ -2755,12 +2757,16 @@ assuming @math{i < n}) in memory is @code{A(i+1,j)} (C: @code{A[j-1][i]}).
 
 @node Intrinsic Types
 @subsection Intrinsic Types
+@cindex C intrinsic type interoperability
+@cindex intrinsic type interoperability with C
+@cindex interoperability, intrinsic type
 
 In order to ensure that exactly the same variable type and kind is used
-in C and Fortran, the named constants shall be used which are defined in the
-@code{ISO_C_BINDING} intrinsic module.  That module contains named constants
-for kind parameters and character named constants for the escape sequences
-in C.  For a list of the constants, see @ref{ISO_C_BINDING}.
+in C and Fortran, you should use the named constants for kind parameters
+that are defined in the @code{ISO_C_BINDING} intrinsic module.
+That module contains named constants of character type representing
+the escaped special characters in C, such as newline.
+For a list of the constants, see @ref{ISO_C_BINDING}.
 
 For logical types, please note that the Fortran standard only guarantees
 interoperability between C99's @code{_Bool} and Fortran's @code{C_Bool}-kind
@@ -2770,12 +2776,13 @@ the value 0.  Using any other integer value with GNU Fortran's @code{LOGICAL}
 values than 0 and 1 to GCC's @code{_Bool} is also undefined, unless the
 integer is explicitly or implicitly casted to @code{_Bool}.)
 
-
-
 @node Derived Types and struct
 @subsection Derived Types and struct
+@cindex C derived type and struct interoperability
+@cindex derived type interoperability with C
+@cindex interoperability, derived type and struct
 
-For compatibility of derived types with @code{struct}, one needs to use
+For compatibility of derived types with @code{struct}, use
 the @code{BIND(C)} attribute in the type declaration.  For instance, the
 following type declaration
 
@@ -2790,6 +2797,7 @@ following type declaration
  END TYPE
 @end smallexample
 
+@noindent
 matches the following @code{struct} declaration in C
 
 @smallexample
@@ -2814,6 +2822,9 @@ with bit field or variable-length array members are interoperable.
 
 @node Interoperable Global Variables
 @subsection Interoperable Global Variables
+@cindex C variable interoperability
+@cindex variable interoperability with C
+@cindex interoperability, variable
 
 Variables can be made accessible from C using the C binding attribute,
 optionally together with specifying a binding name.  Those variables
@@ -2841,17 +2852,18 @@ a macro.  Use the @code{IERRNO} intrinsic (GNU extension) instead.
 
 @node Interoperable Subroutines and Functions
 @subsection Interoperable Subroutines and Functions
+@cindex C procedure interoperability
+@cindex procedure interoperability with C
+@cindex function interoperability with C
+@cindex subroutine interoperability with C
+@cindex interoperability, subroutine and function
 
 Subroutines and functions have to have the @code{BIND(C)} attribute to
 be compatible with C.  The dummy argument declaration is relatively
 straightforward.  However, one needs to be careful because C uses
 call-by-value by default while Fortran behaves usually similar to
 call-by-reference.  Furthermore, strings and pointers are handled
-differently.  Note that in Fortran 2003 and 2008 only explicit size
-and assumed-size arrays are supported but not assumed-shape or
-deferred-shape (i.e. allocatable or pointer) arrays.  However, those
-are allowed since the Technical Specification 29113, see
-@ref{Further Interoperability of Fortran with C}
+differently.
 
 To pass a variable by value, use the @code{VALUE} attribute.
 Thus, the following C prototype
@@ -2860,6 +2872,7 @@ Thus, the following C prototype
 @code{int func(int i, int *j)}
 @end smallexample
 
+@noindent
 matches the Fortran declaration
 
 @smallexample
@@ -2870,12 +2883,12 @@ matches the Fortran declaration
 @end smallexample
 
 Note that pointer arguments also frequently need the @code{VALUE} attribute,
-see @ref{Working with Pointers}.
+see @ref{Working with C Pointers}.
 
 Strings are handled quite differently in C and Fortran.  In C a string
 is a @code{NUL}-terminated array of characters while in Fortran each string
 has a length associated with it and is thus not terminated (by e.g.
-@code{NUL}).  For example, if one wants to use the following C function,
+@code{NUL}).  For example, if you want to use the following C function,
 
 @smallexample
   #include <stdio.h>
@@ -2885,7 +2898,8 @@ has a length associated with it and is thus not terminated (by e.g.
   @}
 @end smallexample
 
-to print ``Hello World'' from Fortran, one can call it using
+@noindent
+to print ``Hello World'' from Fortran, you can call it using
 
 @smallexample
   use iso_c_binding, only: C_CHAR, C_NULL_CHAR
@@ -2898,7 +2912,7 @@ to print ``Hello World'' from Fortran, one can call it using
   call print_c(C_CHAR_"Hello World"//C_NULL_CHAR)
 @end smallexample
 
-As the example shows, one needs to ensure that the
+As the example shows, you need to ensure that the
 string is @code{NUL} terminated.  Additionally, the dummy argument
 @var{string} of @code{print_C} is a length-one assumed-size
 array; using @code{character(len=*)} is not allowed.  The example
@@ -2914,6 +2928,7 @@ function @code{strncpy}, whose prototype is
   char *strncpy(char *restrict s1, const char *restrict s2, size_t n);
 @end smallexample
 
+@noindent
 The function @code{strncpy} copies at most @var{n} characters from
 string @var{s2} to @var{s1} and returns @var{s1}.  In the following
 example, we ignore the return value:
@@ -2941,18 +2956,21 @@ example, we ignore the return value:
 
 The intrinsic procedures are described in @ref{Intrinsic Procedures}.
 
-@node Working with Pointers
-@subsection Working with Pointers
+@node Working with C Pointers
+@subsection Working with C Pointers
+@cindex C pointers
+@cindex pointers, C
 
-C pointers are represented in Fortran via the special opaque derived type
-@code{type(c_ptr)} (with private components).  Thus one needs to
+C pointers are represented in Fortran via the special opaque derived
+type @code{type(c_ptr)} (with private components).  C pointers are distinct
+from Fortran objects with the @code{POINTER} attribute.  Thus one needs to
 use intrinsic conversion procedures to convert from or to C pointers.
+For some applications, using an assumed type (@code{TYPE(*)}) can be
+an alternative to a C pointer, and you can also use library routines
+to access Fortran pointers from C.  See @ref{Further Interoperability
+of Fortran with C}.
 
-For some applications, using an assumed type (@code{TYPE(*)}) can be an
-alternative to a C pointer; see
-@ref{Further Interoperability of Fortran with C}.
-
-For example,
+Here is an example of using C pointers in Fortran:
 
 @smallexample
   use iso_c_binding
@@ -2970,7 +2988,7 @@ For example,
 When converting C to Fortran arrays, the one-dimensional @code{SHAPE} argument
 has to be passed.
 
-If a pointer is a dummy-argument of an interoperable procedure, it usually
+If a pointer is a dummy argument of an interoperable procedure, it usually
 has to be declared using the @code{VALUE} attribute.  @code{void*}
 matches @code{TYPE(C_PTR), VALUE}, while @code{TYPE(C_PTR)} alone
 matches @code{void**}.
@@ -3096,81 +3114,31 @@ END MODULE m
 
 @node Further Interoperability of Fortran with C
 @subsection Further Interoperability of Fortran with C
+@cindex Further Interoperability of Fortran with C
+@cindex TS 29113
+@cindex array descriptor
+@cindex dope vector
+@cindex assumed-type
+@cindex assumed-rank
 
-The Technical Specification ISO/IEC TS 29113:2012 on further
-interoperability of Fortran with C extends the interoperability support
-of Fortran 2003 and Fortran 2008. Besides removing some restrictions
-and constraints, it adds assumed-type (@code{TYPE(*)}) and assumed-rank
-(@code{dimension}) variables and allows for interoperability of
-assumed-shape, assumed-rank and deferred-shape arrays, including
-allocatables and pointers.
+GNU Fortran implements the Technical Specification ISO/IEC TS
+29113:2012, which extends the interoperability support of Fortran 2003
+and Fortran 2008 and is now part of the 2018 Fortran standard.
+Besides removing some restrictions and constraints, the Technical
+Specification adds assumed-type (@code{TYPE(*)}) and assumed-rank
+(@code{DIMENSION(..)}) variables and allows for interoperability of
+assumed-shape, assumed-rank, and deferred-shape arrays, as well as
+allocatables and pointers.  Objects of these types are passed to
+@code{BIND(C)} functions as descriptors with a standard interface,
+declared in the header file @code{<ISO_Fortran_binding.h>}.
 
 Note: Currently, GNU Fortran does not use internally the array descriptor
 (dope vector) as specified in the Technical Specification, but uses
-an array descriptor with different fields. Assumed type and assumed rank
-formal arguments are converted in the library to the specified form. The
-ISO_Fortran_binding API functions (also Fortran 2018 18.4) are implemented
-in libgfortran. Alternatively, the Chasm Language Interoperability Tools,
-@url{http://chasm-interop.sourceforge.net/}, provide an interface to GNU
-Fortran's array descriptor.
-
-The Technical Specification adds the following new features, which
-are supported by GNU Fortran:
-
-@itemize @bullet
-
-@item The @code{ASYNCHRONOUS} attribute has been clarified and
-extended to allow its use with asynchronous communication in
-user-provided libraries such as in implementations of the
-Message Passing Interface specification.
-
-@item Many constraints have been relaxed, in particular for
-the @code{C_LOC} and @code{C_F_POINTER} intrinsics.
-
-@item The @code{OPTIONAL} attribute is now allowed for dummy
-arguments; an absent argument matches a @code{NULL} pointer.
-
-@item Assumed types (@code{TYPE(*)}) have been added, which may
-only be used for dummy arguments.  They are unlimited polymorphic
-but contrary to @code{CLASS(*)} they do not contain any type
-information, similar to C's @code{void *} pointers.  Expressions
-of any type and kind can be passed; thus, it can be used as
-replacement for @code{TYPE(C_PTR)}, avoiding the use of
-@code{C_LOC} in the caller.
-
-Note, however, that @code{TYPE(*)} only accepts scalar arguments,
-unless the @code{DIMENSION} is explicitly specified.  As
-@code{DIMENSION(*)} only supports array (including array elements) but
-no scalars, it is not a full replacement for @code{C_LOC}.  On the
-other hand, assumed-type assumed-rank dummy arguments
-(@code{TYPE(*), DIMENSION(..)}) allow for both scalars and arrays, but
-require special code on the callee side to handle the array descriptor.
-
-@item Assumed-rank arrays (@code{DIMENSION(..)}) as dummy argument
-allow that scalars and arrays of any rank can be passed as actual
-argument. As the Technical Specification does not provide for direct
-means to operate with them, they have to be used either from the C side
-or be converted using @code{C_LOC} and @code{C_F_POINTER} to scalars
-or arrays of a specific rank. The rank can be determined using the
-@code{RANK} intrinisic.
-@end itemize
-
-
-Currently unimplemented:
-
-@itemize @bullet
-
-@item GNU Fortran always uses an array descriptor, which does not
-match the one of the Technical Specification. The
-@code{ISO_Fortran_binding.h} header file and the C functions it
-specifies are not available.
-
-@item Using assumed-shape, assumed-rank and deferred-shape arrays in
-@code{BIND(C)} procedures is not fully supported. In particular,
-C interoperable strings of other length than one are not supported
-as this requires the new array descriptor.
-@end itemize
-
+an array descriptor with different fields in functions without the
+@code{BIND(C)} attribute.  Arguments to functions marked @code{BIND(C)}
+are converted to the specified form.  If you need to access GNU Fortran's
+internal array descriptor, you can use the Chasm Language Interoperability
+Tools, @url{http://chasm-interop.sourceforge.net/}.
 
 @node GNU Fortran Compiler Directives
 @section GNU Fortran Compiler Directives
