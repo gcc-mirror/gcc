@@ -193,7 +193,9 @@
 
   ;; For AVX512FP16 suppport
   UNSPEC_COMPLEX_FMA
+  UNSPEC_COMPLEX_FMA_PAIR
   UNSPEC_COMPLEX_FCMA
+  UNSPEC_COMPLEX_FCMA_PAIR
   UNSPEC_COMPLEX_FMUL
   UNSPEC_COMPLEX_FCMUL
   UNSPEC_COMPLEX_MASK
@@ -5920,6 +5922,9 @@
 (define_int_iterator UNSPEC_COMPLEX_F_C_MA
 	[UNSPEC_COMPLEX_FMA UNSPEC_COMPLEX_FCMA])
 
+(define_int_iterator UNSPEC_COMPLEX_F_C_MA_PAIR
+	[UNSPEC_COMPLEX_FMA_PAIR UNSPEC_COMPLEX_FCMA_PAIR])
+
 (define_int_iterator UNSPEC_COMPLEX_F_C_MUL
 	[UNSPEC_COMPLEX_FMUL UNSPEC_COMPLEX_FCMUL])
 
@@ -5928,6 +5933,10 @@
 	 (UNSPEC_COMPLEX_FCMA "fcmaddc")
 	 (UNSPEC_COMPLEX_FMUL "fmulc")
 	 (UNSPEC_COMPLEX_FCMUL "fcmulc")])
+
+(define_int_attr complexpairopname
+	[(UNSPEC_COMPLEX_FMA_PAIR "fmaddc")
+	 (UNSPEC_COMPLEX_FCMA_PAIR "fcmaddc")])
 
 (define_mode_attr complexmove
   [(V32HF "avx512f_loadv16sf")
@@ -6073,6 +6082,59 @@
 	(unspec:VF_AVX512FP16VL
 	  [(match_dup 1) (match_dup 2) (match_dup 4)]
 	   UNSPEC_COMPLEX_F_C_MA))])
+
+(define_insn "fma_<complexpairopname>_<mode>_pair"
+ [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=&v")
+       (unspec:VF1_AVX512VL
+	 [(match_operand:VF1_AVX512VL 1 "vector_operand" "%v")
+	  (match_operand:VF1_AVX512VL 2 "bcst_vector_operand" "vmBr")
+	  (match_operand:VF1_AVX512VL 3 "vector_operand" "0")]
+	  UNSPEC_COMPLEX_F_C_MA_PAIR))]
+ "TARGET_AVX512FP16"
+ "v<complexpairopname>ph\t{%2, %1, %0|%0, %1, %2}"
+ [(set_attr "type" "ssemuladd")])
+
+(define_insn_and_split "fma_<mode>_fmaddc_bcst"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(unspec:VF_AVX512FP16VL
+	  [(match_operand:VF_AVX512FP16VL 1 "vector_operand")
+	   (subreg:VF_AVX512FP16VL
+	     (match_operand:<ssePSmode> 2 "bcst_vector_operand") 0)
+	   (match_operand:VF_AVX512FP16VL 3 "vector_operand")]
+	   UNSPEC_COMPLEX_FMA))]
+  "TARGET_AVX512FP16"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<ssePSmode>
+	  [(match_dup 1) (match_dup 2) (match_dup 3)]
+	   UNSPEC_COMPLEX_FMA_PAIR))]
+  {
+    operands[0] = lowpart_subreg (<ssePSmode>mode, operands[0], <MODE>mode);
+    operands[1] = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
+    operands[3] = lowpart_subreg (<ssePSmode>mode, operands[3], <MODE>mode);
+  })
+
+(define_insn_and_split "fma_<mode>_fcmaddc_bcst"
+  [(set (match_operand:VF_AVX512FP16VL 0 "register_operand")
+	(unspec:VF_AVX512FP16VL
+	  [(match_operand:VF_AVX512FP16VL 1 "vector_operand")
+	   (subreg:VF_AVX512FP16VL
+	     (match_operand:<ssePSmode> 2 "bcst_vector_operand") 0)
+	   (match_operand:VF_AVX512FP16VL 3 "vector_operand")]
+	   UNSPEC_COMPLEX_FCMA))]
+  "TARGET_AVX512FP16"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<ssePSmode>
+	  [(match_dup 1) (match_dup 2) (match_dup 3)]
+	   UNSPEC_COMPLEX_FCMA_PAIR))]
+  {
+    operands[0] = lowpart_subreg (<ssePSmode>mode, operands[0], <MODE>mode);
+    operands[1] = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
+    operands[3] = lowpart_subreg (<ssePSmode>mode, operands[3], <MODE>mode);
+  })
 
 (define_insn "<avx512>_<complexopname>_<mode>_mask<round_name>"
   [(set (match_operand:VF_AVX512FP16VL 0 "register_operand" "=&v")
