@@ -62,20 +62,18 @@ public:
   {
     std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
 
-    path.iterate_segments ([&] (AST::TypePathSegment *seg) mutable -> bool {
-      translated_segment = nullptr;
-      seg->accept_vis (*this);
-      if (translated_segment == nullptr)
-	{
-	  rust_fatal_error (seg->get_locus (),
-			    "failed to translate AST TypePathSegment");
-	  return false;
-	}
-
-      translated_segments.push_back (
-	std::unique_ptr<HIR::TypePathSegment> (translated_segment));
-      return true;
-    });
+    for (auto &seg : path.get_segments ())
+      {
+	translated_segment = nullptr;
+	seg->accept_vis (*this);
+	if (translated_segment == nullptr)
+	  {
+	    rust_fatal_error (seg->get_locus (),
+			      "failed to translate AST TypePathSegment");
+	  }
+	translated_segments.push_back (
+	  std::unique_ptr<HIR::TypePathSegment> (translated_segment));
+      }
 
     auto crate_num = mappings->get_current_crate ();
     auto hirid = mappings->get_next_hir_id (crate_num);
