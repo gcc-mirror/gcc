@@ -9126,7 +9126,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   gimple_flow_call_edges_add,   /* flow_call_edges_add */
   gimple_execute_on_growing_pred,	/* execute_on_growing_pred */
   gimple_execute_on_shrinking_pred, /* execute_on_shrinking_pred */
-  gimple_duplicate_loop_to_header_edge, /* duplicate loop for trees */
+  gimple_duplicate_loop_body_to_header_edge, /* duplicate loop for trees */
   gimple_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
   gimple_lv_adjust_loop_header_phi, /* lv_adjust_loop_header_phi*/
   extract_true_false_edges_from_block, /* extract_cond_bb_edges */

@@ -48,9 +48,9 @@ extern class loop * duplicate_loop (class loop *, class loop *,
 				     class loop * = NULL);
 extern void duplicate_subloops (class loop *, class loop *);
 extern bool can_duplicate_loop_p (const class loop *loop);
-extern bool duplicate_loop_to_header_edge (class loop *, edge,
-					   unsigned, sbitmap, edge,
- 					   vec<edge> *, int);
+extern bool
+duplicate_loop_body_to_header_edge (class loop *, edge, unsigned, sbitmap, edge,
+				    vec<edge> *, int);
 extern bool mfb_keep_just (edge);
 basic_block create_preheader (class loop *, int);
 extern void create_preheaders (int);

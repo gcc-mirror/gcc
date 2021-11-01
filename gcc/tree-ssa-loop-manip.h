@@ -42,10 +42,9 @@ extern basic_block ip_end_pos (class loop *);
 extern basic_block ip_normal_pos (class loop *);
 extern void standard_iv_increment_position (class loop *,
 					    gimple_stmt_iterator *, bool *);
-extern bool gimple_duplicate_loop_to_header_edge (class loop *, edge,
-						  unsigned int, sbitmap,
-						  edge, vec<edge> *,
-						  int);
+extern bool
+gimple_duplicate_loop_body_to_header_edge (class loop *, edge, unsigned int,
+					   sbitmap, edge, vec<edge> *, int);
 extern bool can_unroll_loop_p (class loop *loop, unsigned factor,
 			       class tree_niter_desc *niter);
 extern gcov_type niter_for_unrolled_loop (class loop *, unsigned);

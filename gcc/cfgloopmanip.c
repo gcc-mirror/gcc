@@ -1059,10 +1059,9 @@ can_duplicate_loop_p (const class loop *loop)
    impossible.  */
 
 bool
-duplicate_loop_to_header_edge (class loop *loop, edge e,
-			       unsigned int ndupl, sbitmap wont_exit,
-			       edge orig, vec<edge> *to_remove,
-			       int flags)
+duplicate_loop_body_to_header_edge (class loop *loop, edge e,
+				    unsigned int ndupl, sbitmap wont_exit,
+				    edge orig, vec<edge> *to_remove, int flags)
 {
   class loop *target, *aloop;
   class loop **orig_loops;
@@ -1630,8 +1629,8 @@ loop_version (class loop *loop,
   first_head = entry->dest;
 
   /* 1) Duplicate loop on the entry edge.  */
-  if (!cfg_hook_duplicate_loop_to_header_edge (loop, entry, 1,
-					       NULL, NULL, NULL, 0))
+  if (!cfg_hook_duplicate_loop_body_to_header_edge (loop, entry, 1, NULL, NULL,
+						    NULL, 0))
     {
       entry->flags |= irred_flag;
       return NULL;

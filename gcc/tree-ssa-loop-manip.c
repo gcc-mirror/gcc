@@ -911,7 +911,7 @@ copy_phi_node_args (unsigned first_new_block)
 }
 
 
-/* The same as cfgloopmanip.c:duplicate_loop_to_header_edge, but also
+/* The same as cfgloopmanip.c:duplicate_loop_body_to_header_edge, but also
    updates the PHI nodes at start of the copied region.  In order to
    achieve this, only loops whose exits all lead to the same location
    are handled.
@@ -921,10 +921,10 @@ copy_phi_node_args (unsigned first_new_block)
    after the loop has been duplicated.  */
 
 bool
-gimple_duplicate_loop_to_header_edge (class loop *loop, edge e,
-				    unsigned int ndupl, sbitmap wont_exit,
-				    edge orig, vec<edge> *to_remove,
-				    int flags)
+gimple_duplicate_loop_body_to_header_edge (class loop *loop, edge e,
+					   unsigned int ndupl,
+					   sbitmap wont_exit, edge orig,
+					   vec<edge> *to_remove, int flags)
 {
   unsigned first_new_block;
 
@@ -934,8 +934,8 @@ gimple_duplicate_loop_to_header_edge (class loop *loop, edge e,
     return false;
 
   first_new_block = last_basic_block_for_fn (cfun);
-  if (!duplicate_loop_to_header_edge (loop, e, ndupl, wont_exit,
-				      orig, to_remove, flags))
+  if (!duplicate_loop_body_to_header_edge (loop, e, ndupl, wont_exit, orig,
+					   to_remove, flags))
     return false;
 
   /* Readd the removed phi args for e.  */
@@ -1388,9 +1388,11 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
   bitmap_clear_bit (wont_exit, factor - 1);
 
   auto_vec<edge> to_remove;
-  bool ok = gimple_duplicate_loop_to_header_edge
-	  (loop, loop_latch_edge (loop), factor - 1,
-	   wont_exit, new_exit, &to_remove, DLTHE_FLAG_UPDATE_FREQ);
+  bool ok
+    = gimple_duplicate_loop_body_to_header_edge (loop, loop_latch_edge (loop),
+						 factor - 1, wont_exit,
+						 new_exit, &to_remove,
+						 DLTHE_FLAG_UPDATE_FREQ);
   gcc_assert (ok);
 
   for (edge e : to_remove)
