@@ -42,9 +42,6 @@ extern void scale_loop_profile (class loop *, profile_probability, gcov_type);
 extern edge create_empty_if_region_on_edge (edge, tree);
 extern class loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
 					       tree *, tree *, class loop *);
-extern class loop *loopify (edge, edge,
-			     basic_block, edge, edge, bool,
-			     profile_probability, profile_probability);
 extern void unloop (class loop *, bool *, bitmap);
 extern void copy_loop_info (class loop *loop, class loop *target);
 extern class loop * duplicate_loop (class loop *, class loop *,
