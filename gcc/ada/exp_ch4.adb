@@ -146,18 +146,14 @@ package body Exp_Ch4 is
    --  where we allow comparison of "out of range" values.
 
    function Expand_Composite_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id;
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested composite
-   --  types. Used by Expand_Record/Array_Equality, Bodies is a list on which
-   --  to attach bodies of local functions that are created in the process. It
-   --  is the responsibility of the caller to insert those bodies at the right
-   --  place. Nod provides the Sloc value for generated code. Lhs and Rhs are
-   --  the left and right sides for the comparison, and Typ is the type of the
-   --  objects to compare.
+   --  types. Used by Expand_Record/Array_Equality. Nod provides the Sloc value
+   --  for generated code. Lhs and Rhs are the left and right sides for the
+   --  comparison, and Typ is the type of the objects to compare.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands
@@ -1722,8 +1718,7 @@ package body Exp_Ch4 is
              Prefix      => Make_Identifier (Loc, Chars (B)),
              Expressions => Index_List2);
 
-         Test := Expand_Composite_Equality
-                   (Nod, Component_Type (Typ), L, R, Decls);
+         Test := Expand_Composite_Equality (Nod, Component_Type (Typ), L, R);
 
          --  If some (sub)component is an unchecked_union, the whole operation
          --  will raise program error.
@@ -2012,7 +2007,7 @@ package body Exp_Ch4 is
                 Prefix      => New_Copy_Tree (New_Rhs),
                 Expressions => New_List (New_Copy_Tree (Low_B)));
 
-            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R);
 
             L :=
               Make_Indexed_Component (Loc,
@@ -2024,7 +2019,7 @@ package body Exp_Ch4 is
                 Prefix      => New_Rhs,
                 Expressions => New_List (New_Copy_Tree (High_B)));
 
-            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R);
 
             return
               Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
@@ -2437,17 +2432,14 @@ package body Exp_Ch4 is
    --  case because it is not possible to respect normal Ada visibility rules.
 
    function Expand_Composite_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Nod);
       Full_Type : Entity_Id;
       Eq_Op     : Entity_Id;
-
-   --  Start of processing for Expand_Composite_Equality
 
    begin
       if Is_Private_Type (Typ) then
@@ -2665,7 +2657,7 @@ package body Exp_Ch4 is
             end;
 
          else
-            return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs, Bodies);
+            return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs);
          end if;
 
       --  Case of non-record types (always use predefined equality)
@@ -8640,10 +8632,8 @@ package body Exp_Ch4 is
          else
             Remove_Side_Effects (Lhs);
             Remove_Side_Effects (Rhs);
-            Rewrite (N,
-              Expand_Record_Equality (N, Typl, Lhs, Rhs, Bodies));
+            Rewrite (N, Expand_Record_Equality (N, Typl, Lhs, Rhs));
 
-            Insert_Actions      (N, Bodies,           Suppress => All_Checks);
             Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
          end if;
 
@@ -8666,10 +8656,8 @@ package body Exp_Ch4 is
          Rewrite (N,
            Expand_Record_Equality (N, Typl,
              Unchecked_Convert_To (Typl, Lhs),
-             Unchecked_Convert_To (Typl, Rhs),
-             Bodies));
+             Unchecked_Convert_To (Typl, Rhs)));
 
-         Insert_Actions      (N, Bodies,           Suppress => All_Checks);
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end if;
 
@@ -12994,11 +12982,10 @@ package body Exp_Ch4 is
    --  otherwise the primitive "=" is used directly.
 
    function Expand_Record_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Nod);
 
@@ -13085,8 +13072,7 @@ package body Exp_Ch4 is
                Rhs =>
                  Make_Selected_Component (Loc,
                    Prefix        => New_Rhs,
-                   Selector_Name => New_Occurrence_Of (C, Loc)),
-               Bodies => Bodies);
+                   Selector_Name => New_Occurrence_Of (C, Loc)));
 
             --  If some (sub)component is an unchecked_union, the whole
             --  operation will raise program error.

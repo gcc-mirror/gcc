@@ -288,7 +288,6 @@ package body Exp_Ch8 is
       function Build_Body_For_Renaming (Typ : Entity_Id) return Node_Id is
          Left    : constant Entity_Id := First_Formal (Id);
          Right   : constant Entity_Id := Next_Formal (Left);
-         Bodies  : List_Id;
          Body_Id : Entity_Id;
          Decl    : Node_Id;
 
@@ -318,12 +317,6 @@ package body Exp_Ch8 is
          --  subprogram.
 
          else
-            --  While expanding record equality we might create auxiliary
-            --  subprograms that will be placed in the declaration list of the
-            --  equality subprogram itself.
-
-            Bodies := Empty_List;
-
             Decl :=
               Make_Subprogram_Body (Loc,
                 Specification              =>
@@ -332,7 +325,7 @@ package body Exp_Ch8 is
                     Parameter_Specifications => Copy_Parameter_List (Id),
                     Result_Definition        =>
                       New_Occurrence_Of (Standard_Boolean, Loc)),
-                Declarations               => Bodies,
+                Declarations               => Empty_List,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements => New_List (
@@ -340,10 +333,9 @@ package body Exp_Ch8 is
                         Expression =>
                           Expand_Record_Equality
                             (Id,
-                             Typ    => Typ,
-                             Lhs    => Make_Identifier (Loc, Chars (Left)),
-                             Rhs    => Make_Identifier (Loc, Chars (Right)),
-                             Bodies => Bodies)))));
+                             Typ => Typ,
+                             Lhs => Make_Identifier (Loc, Chars (Left)),
+                             Rhs => Make_Identifier (Loc, Chars (Right)))))));
          end if;
 
          return Decl;
