@@ -9076,13 +9076,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 	2) The RETAA instruction is not available before ARMv8.3-A, so if we are
 	   generating code for !TARGET_ARMV8_3 we can't use it and must
 	   explicitly authenticate.
-
-	3) On an eh_return path we make extra stack adjustments to update the
-	   canonical frame address to be the exception handler's CFA.  We want
-	   to authenticate using the CFA of the function which calls eh_return.
     */
   if (aarch64_return_address_signing_enabled ()
-      && (for_sibcall || !TARGET_ARMV8_3 || crtl->calls_eh_return))
+      && (for_sibcall || !TARGET_ARMV8_3))
     {
       switch (aarch64_ra_sign_key)
 	{
