@@ -1427,9 +1427,11 @@ maybe_warn_bidi_on_close (cpp_reader *pfile, const uchar *p)
       const location_t loc
 	= linemap_position_for_column (pfile->line_table,
 				       CPP_BUF_COLUMN (pfile->buffer, p));
-      cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
-			     "unpaired UTF-8 bidirectional control character "
-			     "detected");
+      rich_location rich_loc (pfile->line_table, loc);
+      rich_loc.set_escape_on_output (true);
+      cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+		      "unpaired UTF-8 bidirectional control character "
+		      "detected");
     }
   /* We're done with this context.  */
   bidi::on_close ();
@@ -1454,6 +1456,9 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
       const location_t loc
 	= linemap_position_for_column (pfile->line_table,
 				       CPP_BUF_COLUMN (pfile->buffer, p));
+      rich_location rich_loc (pfile->line_table, loc);
+      rich_loc.set_escape_on_output (true);
+
       /* It seems excessive to warn about a PDI/PDF that is closing
 	 an opened context because we've already warned about the
 	 opening character.  Except warn when we have a UCN x UTF-8
@@ -1462,20 +1467,20 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
 	{
 	  if (warn_bidi == bidirectional_unpaired
 	      && bidi::current_ctx_ucn_p () != ucn_p)
-	    cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
-				   "UTF-8 vs UCN mismatch when closing "
-				   "a context by \"%s\"", bidi::to_str (kind));
+	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+			    "UTF-8 vs UCN mismatch when closing "
+			    "a context by \"%s\"", bidi::to_str (kind));
 	}
       else if (warn_bidi == bidirectional_any)
 	{
 	  if (kind == bidi::kind::PDF || kind == bidi::kind::PDI)
-	    cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
-				   "\"%s\" is closing an unopened context",
-				   bidi::to_str (kind));
+	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+			    "\"%s\" is closing an unopened context",
+			    bidi::to_str (kind));
 	  else
-	    cpp_warning_with_line (pfile, CPP_W_BIDIRECTIONAL, loc, 0,
-				   "found problematic Unicode character \"%s\"",
-				   bidi::to_str (kind));
+	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+			    "found problematic Unicode character \"%s\"",
+			    bidi::to_str (kind));
 	}
     }
   /* We're done with this context.  */
