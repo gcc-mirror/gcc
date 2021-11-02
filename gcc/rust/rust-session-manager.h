@@ -180,6 +180,7 @@ struct CompileOptions
    * whatever data related to target arch, features, os, family, env, endian,
    * pointer width, vendor */
   TargetOptions target_data;
+  std::string crate_name;
   bool enable_test = false;
   bool debug_assertions = false;
   bool proc_macro = false;
@@ -202,6 +203,13 @@ struct CompileOptions
     enable_dump_option (DumpOption::TARGET_OPTION_DUMP);
     enable_dump_option (DumpOption::HIR_DUMP);
     enable_dump_option (DumpOption::TYPE_RESOLUTION_DUMP);
+  }
+
+  bool set_crate_name (std::string name)
+  {
+    // TODO: validate the crate name?
+    crate_name = std::move (name);
+    return true;
   }
 };
 
