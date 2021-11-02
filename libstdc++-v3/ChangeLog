@@ -1,3 +1,20 @@
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/valarray (begin, end): Remove nodiscard attribute.
+
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103022
+	* include/std/valarray (begin, end): Do not dereference an empty
+	valarray. Add noexcept and [[nodiscard]].
+	* testsuite/26_numerics/valarray/range_access.cc: Check empty
+	valarray. Check iterator properties. Run as well as compiling.
+	* testsuite/26_numerics/valarray/range_access2.cc: Likewise.
+	* testsuite/26_numerics/valarray/103022.cc: New test.
+
 2021-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
