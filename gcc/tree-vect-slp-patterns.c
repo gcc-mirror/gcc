@@ -1197,12 +1197,16 @@ complex_fms_pattern::matches (complex_operation_t op,
 
   auto childs = SLP_TREE_CHILDREN (nodes[0]);
   auto l0node = SLP_TREE_CHILDREN (childs[0]);
-  auto l1node = SLP_TREE_CHILDREN (childs[1]);
 
   /* Now operand2+4 may lead to another expression.  */
   auto_vec<slp_tree> left_op, right_op;
   left_op.safe_splice (SLP_TREE_CHILDREN (l0node[1]));
   right_op.safe_splice (SLP_TREE_CHILDREN (nodes[1]));
+
+  /* If these nodes don't have any children then they're
+     not ones we're interested in.  */
+  if (left_op.length () != 2 || right_op.length () != 2)
+    return IFN_LAST;
 
   bool is_neg = vect_normalize_conj_loc (left_op);
 
