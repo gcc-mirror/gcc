@@ -12,5 +12,4 @@ pub fn main() {
 
     let b: &dyn Bar = &a;
     // { dg-error "trait bound is not object safe" "" { target *-*-* } .-1 }
-    // { dg-error "expected" "" { target *-*-* } .-2 }
 }

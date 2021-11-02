@@ -149,7 +149,6 @@ public:
   virtual void visit (TraitObjectType &type) = 0;
   virtual void visit (ParenthesisedType &type) = 0;
   virtual void visit (ImplTraitTypeOneBound &type) = 0;
-  virtual void visit (TraitObjectTypeOneBound &type) = 0;
   virtual void visit (TupleType &type) = 0;
   virtual void visit (NeverType &type) = 0;
   virtual void visit (RawPointerType &type) = 0;

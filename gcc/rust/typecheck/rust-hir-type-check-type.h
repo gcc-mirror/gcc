@@ -147,7 +147,7 @@ public:
 				      TyTy::InferType::InferTypeKind::GENERAL);
   }
 
-  void visit (HIR::TraitObjectTypeOneBound &type) override;
+  void visit (HIR::TraitObjectType &type) override;
 
 private:
   TypeCheckType (std::vector<TyTy::SubstitutionParamMapping> *subst_mappings)

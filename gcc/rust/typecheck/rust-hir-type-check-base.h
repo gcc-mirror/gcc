@@ -177,7 +177,6 @@ public:
   virtual void visit (HIR::TraitObjectType &) override {}
   virtual void visit (HIR::ParenthesisedType &) override {}
   virtual void visit (HIR::ImplTraitTypeOneBound &) override {}
-  virtual void visit (HIR::TraitObjectTypeOneBound &) override {}
   virtual void visit (HIR::TupleType &) override {}
   virtual void visit (HIR::NeverType &) override {}
   virtual void visit (HIR::RawPointerType &) override {}

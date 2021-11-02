@@ -177,7 +177,6 @@ public:
   virtual void visit (HIR::TraitObjectType &type) {}
   virtual void visit (HIR::ParenthesisedType &type) {}
   virtual void visit (HIR::ImplTraitTypeOneBound &type) {}
-  virtual void visit (HIR::TraitObjectTypeOneBound &type) {}
   virtual void visit (HIR::TupleType &type) {}
   virtual void visit (HIR::NeverType &type) {}
   virtual void visit (HIR::RawPointerType &type) {}

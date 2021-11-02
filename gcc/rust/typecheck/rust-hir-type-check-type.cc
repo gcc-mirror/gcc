@@ -525,22 +525,27 @@ TypeCheckType::resolve_segments (
 }
 
 void
-TypeCheckType::visit (HIR::TraitObjectTypeOneBound &type)
+TypeCheckType::visit (HIR::TraitObjectType &type)
 {
   std::vector<TyTy::TypeBoundPredicate> specified_bounds;
-
-  HIR::TraitBound &trait_bound = type.get_trait_bound ();
-  TraitReference *trait = resolve_trait_path (trait_bound.get_path ());
-  TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
-				      trait_bound.get_locus ());
-
-  if (predicate.is_object_safe (true, type.get_locus ()))
+  for (auto &bound : type.get_type_param_bounds ())
     {
-      specified_bounds.push_back (std::move (predicate));
-      translated
-	= new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
-				       std::move (specified_bounds));
+      if (bound->get_bound_type ()
+	  != HIR::TypeParamBound::BoundType::TRAITBOUND)
+	continue;
+
+      HIR::TypeParamBound &b = *bound.get ();
+      HIR::TraitBound &trait_bound = static_cast<HIR::TraitBound &> (b);
+      TraitReference *trait = resolve_trait_path (trait_bound.get_path ());
+      TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
+					  trait_bound.get_locus ());
+
+      if (predicate.is_object_safe (true, type.get_locus ()))
+	specified_bounds.push_back (std::move (predicate));
     }
+
+  translated = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
+					    std::move (specified_bounds));
 }
 
 } // namespace Resolver

@@ -517,21 +517,43 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 void
 ASTLoweringType::visit (AST::TraitObjectTypeOneBound &type)
 {
-  HIR::TypeParamBound *b
+  std::vector<std::unique_ptr<HIR::TypeParamBound> > bounds;
+  HIR::TypeParamBound *translated_bound
     = ASTLoweringTypeBounds::translate (&type.get_trait_bound ());
-  rust_assert (b->get_bound_type () == HIR::TypeParamBound::TRAITBOUND);
-  HIR::TraitBound *bb = static_cast<HIR::TraitBound *> (b);
-  HIR::TraitBound bound (*bb);
-  delete bb;
+  bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (translated_bound));
 
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 mappings->get_next_localdef_id (crate_num));
 
-  translated
-    = new HIR::TraitObjectTypeOneBound (mapping, std::move (bound),
-					type.get_locus (), type.is_dyn ());
+  translated = new HIR::TraitObjectType (mapping, std::move (bounds),
+					 type.get_locus (), type.is_dyn ());
+
+  mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
+			     translated);
+}
+
+void
+ASTLoweringType::visit (AST::TraitObjectType &type)
+{
+  std::vector<std::unique_ptr<HIR::TypeParamBound> > bounds;
+
+  for (auto &bound : type.get_type_param_bounds ())
+    {
+      HIR::TypeParamBound *translated_bound
+	= ASTLoweringTypeBounds::translate (bound.get ());
+      bounds.push_back (
+	std::unique_ptr<HIR::TypeParamBound> (translated_bound));
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  translated = new HIR::TraitObjectType (mapping, std::move (bounds),
+					 type.get_locus (), type.is_dyn ());
 
   mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
 			     translated);
