@@ -117,8 +117,12 @@ struct die_struct;
 /* Nonzero if the argument does not escape to return value.  */
 #define EAF_NOT_RETURNED	(1 << 5)
 
+/* Nonzero if the argument itself does not escape
+   to return value but memory referenced by it may escape.  */
+#define EAF_NOT_RETURNED_DIRECTLY (1 << 6)
+
 /* Nonzero if the argument is not read.  */
-#define EAF_NOREAD		(1 << 6)
+#define EAF_NOREAD		(1 << 7)
 
 /* Call return flags.  */
 /* Mask for the argument number that is returned.  Lower two bits of

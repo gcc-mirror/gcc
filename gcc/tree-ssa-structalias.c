@@ -4082,8 +4082,16 @@ handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
     {
       struct constraint_expr cexpr;
       cexpr.var = tem->id;
-      cexpr.type = SCALAR;
-      cexpr.offset = 0;
+      if (flags & EAF_NOT_RETURNED_DIRECTLY)
+	{
+	  cexpr.type = DEREF;
+	  cexpr.offset = UNKNOWN_OFFSET;
+	}
+      else
+	{
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	}
       results->safe_push (cexpr);
     }
 
