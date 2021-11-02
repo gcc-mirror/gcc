@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  ADA.NUMERICS.BIG_NUMBERS.BIG_INTEGERS                   --
+--               ADA.NUMERICS.BIG_NUMBERS.BIG_INTEGERS_GHOST                --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -33,7 +33,12 @@
 --  currently does not compile instantiations of the spec with imported ghost
 --  generics for packages Signed_Conversions and Unsigned_Conversions.
 
-package body Ada.Numerics.Big_Numbers.Big_Integers with
+--  Ghost code in this unit is meant for analysis only, not for run-time
+--  checking. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost => Ignore);
+
+package body Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
    SPARK_Mode => Off
 is
 
@@ -73,4 +78,4 @@ is
 
    end Unsigned_Conversions;
 
-end Ada.Numerics.Big_Numbers.Big_Integers;
+end Ada.Numerics.Big_Numbers.Big_Integers_Ghost;

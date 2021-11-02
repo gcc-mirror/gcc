@@ -211,6 +211,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-lllwti$(objext) \
   a-lllzti$(objext) \
   a-locale$(objext) \
+  a-nbnbig$(objext) \
   a-nbnbin$(objext) \
   a-nbnbre$(objext) \
   a-ncelfu$(objext) \

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  ADA.NUMERICS.BIG_NUMBERS.BIG_INTEGERS                   --
+--               ADA.NUMERICS.BIG_NUMBERS.BIG_INTEGERS_GHOST                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -13,7 +13,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada.Numerics.Big_Numbers.Big_Integers with
+--  This unit is provided as a replacement for the standard unit
+--  Ada.Numerics.Big_Numbers.Big_Integers when only proof with SPARK is
+--  intended. It cannot be used for execution, as all subprograms are marked
+--  imported with no definition.
+
+--  Contrary to Ada.Numerics.Big_Numbers.Big_Integers, this unit does not
+--  depend on System or Ada.Finalization, which makes it more convenient for
+--  use in run-time units.
+
+--  Ghost code in this unit is meant for analysis only, not for run-time
+--  checking. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost => Ignore);
+
+package Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
    SPARK_Mode,
    Ghost,
    Preelaborate
@@ -199,4 +213,4 @@ private
 
    type Big_Integer is null record;
 
-end Ada.Numerics.Big_Numbers.Big_Integers;
+end Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
