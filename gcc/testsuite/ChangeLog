@@ -1,3 +1,19 @@
+2021-10-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102917
+	* gfortran.dg/pdt_4.f03: Adjust testcase.
+
+2021-10-27  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-10-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/102505
+	* g++.dg/torture/pr102505.C: New test.
+
 2021-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

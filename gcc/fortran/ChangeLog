@@ -1,3 +1,12 @@
+2021-10-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102917
+	* decl.c (match_attr_spec): Remove invalid integer kind checks on
+	KIND and LEN attributes of PDTs.
+
 2021-10-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
