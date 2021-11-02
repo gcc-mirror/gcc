@@ -590,6 +590,19 @@ namespace __variant
       __index_type _M_index;
     };
 
+  // Implementation of v.emplace<N>(args...).
+  template<size_t _Np, bool _Triv, typename... _Types, typename... _Args>
+    _GLIBCXX20_CONSTEXPR
+    inline void
+    __emplace(_Variant_storage<_Triv, _Types...>& __v, _Args&&... __args)
+    {
+      __v._M_reset();
+      auto* __addr = std::__addressof(__variant::__get_n<_Np>(__v._M_u));
+      std::_Construct(__addr, std::forward<_Args>(__args)...);
+      // Construction didn't throw, so can set the new index now:
+      __v._M_index = _Np;
+    }
+
   template<typename... _Types>
     using _Variant_storage_alias =
 	_Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
@@ -655,6 +668,7 @@ namespace __variant
 	  }, __variant_cast<_Types...>(std::move(__rhs)));
 	this->_M_index = __rhs._M_index;
       }
+
       _Move_ctor_base(const _Move_ctor_base&) = default;
       _Move_ctor_base& operator=(const _Move_ctor_base&) = default;
       _Move_ctor_base& operator=(_Move_ctor_base&&) = default;
@@ -685,36 +699,24 @@ namespace __variant
 	__variant::__raw_idx_visit(
 	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
-	    if constexpr (__rhs_index != variant_npos)
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j == variant_npos)
+	      this->_M_reset(); // Make *this valueless.
+	    else if (this->_M_index == __j)
+	      __variant::__get<__j>(*this) = __rhs_mem;
+	    else
 	      {
-		if (this->_M_index == __rhs_index)
-		  __variant::__get<__rhs_index>(*this) = __rhs_mem;
+		using _Tj = typename _Nth_type<__j, _Types...>::type;
+		if constexpr (is_nothrow_copy_constructible_v<_Tj>
+			      || !is_nothrow_move_constructible_v<_Tj>)
+		  __variant::__emplace<__j>(*this, __rhs_mem);
 		else
 		  {
-		    using __rhs_type = __remove_cvref_t<decltype(__rhs_mem)>;
-		    if constexpr (is_nothrow_copy_constructible_v<__rhs_type>
-			|| !is_nothrow_move_constructible_v<__rhs_type>)
-		      {
-			// The standard says emplace<__rhs_index>(__rhs_mem)
-			// should be used here, but this is equivalent. Either
-			// copy construction doesn't throw, so we have strong
-			// exception safety guarantee, or both copy construction
-			// and move construction can throw, so emplace only
-			// gives basic exception safety anyway.
-			this->_M_reset();
-			std::_Construct(std::__addressof(this->_M_u),
-					in_place_index<__rhs_index>,
-					__rhs_mem);
-			this->_M_index = __rhs_index;
-		      }
-		    else
-		      __variant_cast<_Types...>(*this)
-			= variant<_Types...>(std::in_place_index<__rhs_index>,
-					     __rhs_mem);
+		    using _Variant = variant<_Types...>;
+		    _Variant& __self = __variant_cast<_Types...>(*this);
+		    __self = _Variant(in_place_index<__j>, __rhs_mem);
 		  }
 	      }
-	    else
-	      this->_M_reset();
 	  }, __variant_cast<_Types...>(__rhs));
 	return *this;
       }
@@ -749,13 +751,23 @@ namespace __variant
 	__variant::__raw_idx_visit(
 	  [this](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
-	    if constexpr (__rhs_index != variant_npos)
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j != variant_npos)
 	      {
-		if (this->_M_index == __rhs_index)
-		  __variant::__get<__rhs_index>(*this) = std::move(__rhs_mem);
+		if (this->_M_index == __j)
+		  __variant::__get<__j>(*this) = std::move(__rhs_mem);
 		else
-		  __variant_cast<_Types...>(*this)
-		    .template emplace<__rhs_index>(std::move(__rhs_mem));
+		  {
+		    using _Tj = typename _Nth_type<__j, _Types...>::type;
+		    if constexpr (is_nothrow_move_constructible_v<_Tj>)
+		      __variant::__emplace<__j>(*this, std::move(__rhs_mem));
+		    else
+		      {
+			using _Variant = variant<_Types...>;
+			_Variant& __self = __variant_cast<_Types...>(*this);
+			__self.template emplace<__j>(std::move(__rhs_mem));
+		      }
+		  }
 	      }
 	    else
 	      this->_M_reset();
@@ -1164,17 +1176,6 @@ namespace __variant
 	>;
     }
 
-  template<size_t _Np, typename _Variant, typename... _Args>
-    _GLIBCXX20_CONSTEXPR
-    inline void
-    __construct_by_index(_Variant& __v, _Args&&... __args)
-    {
-      std::_Construct(std::__addressof(__variant::__get<_Np>(__v)),
-		      std::forward<_Args>(__args)...);
-      // Construction didn't throw, so can set the new index now:
-      __v._M_index = _Np;
-    }
-
 } // namespace __variant
 } // namespace __detail
 
@@ -1415,11 +1416,6 @@ namespace __variant
 	friend _GLIBCXX20_CONSTEXPR decltype(auto)
 	__variant_cast(_Tp&&);
 
-      template<size_t _Np, typename _Variant, typename... _Args>
-	friend _GLIBCXX20_CONSTEXPR void
-	__detail::__variant::__construct_by_index(_Variant& __v,
-						  _Args&&... __args);
-
       static_assert(sizeof...(_Types) > 0,
 		    "variant must have at least one alternative");
       static_assert(!(std::is_reference_v<_Types> || ...),
@@ -1589,17 +1585,14 @@ namespace __variant
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
 	    {
-	      this->_M_reset();
-	      __variant::__construct_by_index<_Np>(*this,
-		  std::forward<_Args>(__args)...);
+	      __variant::__emplace<_Np>(*this, std::forward<_Args>(__args)...);
 	    }
 	  else if constexpr (is_scalar_v<type>)
 	    {
 	      // This might invoke a potentially-throwing conversion operator:
 	      const type __tmp(std::forward<_Args>(__args)...);
-	      // But these steps won't throw:
-	      this->_M_reset();
-	      __variant::__construct_by_index<_Np>(*this, __tmp);
+	      // But this won't throw:
+	      __variant::__emplace<_Np>(*this, __tmp);
 	    }
 	  else if constexpr (__variant::_Never_valueless_alt<type>()
 	      && _Traits::_S_move_assign)
@@ -1614,9 +1607,7 @@ namespace __variant
 	    {
 	      // This case only provides the basic exception-safety guarantee,
 	      // i.e. the variant can become valueless.
-	      this->_M_reset();
-	      __variant::__construct_by_index<_Np>(*this,
-		std::forward<_Args>(__args)...);
+	      __variant::__emplace<_Np>(*this, std::forward<_Args>(__args)...);
 	    }
 	  return std::get<_Np>(*this);
 	}
@@ -1636,9 +1627,8 @@ namespace __variant
 						   initializer_list<_Up>&,
 						   _Args...>)
 	    {
-	      this->_M_reset();
-	      __variant::__construct_by_index<_Np>(*this, __il,
-		  std::forward<_Args>(__args)...);
+	      __variant::__emplace<_Np>(*this, __il,
+					std::forward<_Args>(__args)...);
 	    }
 	  else if constexpr (__variant::_Never_valueless_alt<type>()
 	      && _Traits::_S_move_assign)
@@ -1653,9 +1643,8 @@ namespace __variant
 	    {
 	      // This case only provides the basic exception-safety guarantee,
 	      // i.e. the variant can become valueless.
-	      this->_M_reset();
-	      __variant::__construct_by_index<_Np>(*this, __il,
-		std::forward<_Args>(__args)...);
+	      __variant::__emplace<_Np>(*this, __il,
+					std::forward<_Args>(__args)...);
 	    }
 	  return std::get<_Np>(*this);
 	}
@@ -1686,61 +1675,57 @@ namespace __variant
       noexcept((__is_nothrow_swappable<_Types>::value && ...)
 	       && is_nothrow_move_constructible_v<variant>)
       {
-	__detail::__variant::__raw_idx_visit(
+	static_assert((is_move_constructible_v<_Types> && ...));
+
+	// Handle this here to simplify the visitation.
+	if (__rhs.valueless_by_exception()) [[__unlikely__]]
+	  {
+	    if (!this->valueless_by_exception()) [[__likely__]]
+	      __rhs.swap(*this);
+	    return;
+	  }
+
+	namespace __variant = __detail::__variant;
+
+	__variant::__raw_idx_visit(
 	  [this, &__rhs](auto&& __rhs_mem, auto __rhs_index) mutable
 	  {
-	    if constexpr (__rhs_index != variant_npos)
+	    constexpr size_t __j = __rhs_index;
+	    if constexpr (__j != variant_npos)
 	      {
-		if (this->index() == __rhs_index)
+		if (this->index() == __j)
 		  {
-		    auto& __this_mem =
-		      std::get<__rhs_index>(*this);
 		    using std::swap;
-		    swap(__this_mem, __rhs_mem);
+		    swap(std::get<__j>(*this), __rhs_mem);
 		  }
 		else
 		  {
-		    constexpr size_t __j = __rhs_index;
-		    if (!this->valueless_by_exception()) [[__likely__]]
-		      {
-			auto __tmp(std::move(__rhs_mem));
-			__rhs = std::move(*this);
-			this->_M_reset();
-			std::_Construct(std::__addressof(this->_M_u),
-					in_place_index<__j>,
-					std::move(__tmp));
-			this->_M_index = __j;
-		      }
+		    auto __tmp(std::move(__rhs_mem));
+
+		    if constexpr (_Traits::_S_trivial_move_assign)
+		      __rhs = std::move(*this);
 		    else
-		      {
-			this->_M_reset();
-			std::_Construct(std::__addressof(this->_M_u),
-					in_place_index<__j>,
-					std::move(__rhs_mem));
-			this->_M_index = __j;
-			__rhs._M_reset();
-		      }
-		  }
-	      }
-	    else
-	      {
-		if (!this->valueless_by_exception()) [[__likely__]]
-		  {
-		    __rhs = std::move(*this);
-		    this->_M_reset();
+		      __variant::__raw_idx_visit(
+			[&__rhs](auto&& __this_mem, auto __this_index) mutable
+			{
+			  constexpr size_t __k = __this_index;
+			  if constexpr (__k != variant_npos)
+			    __variant::__emplace<__k>(__rhs,
+						      std::move(__this_mem));
+			}, *this);
+
+		    __variant::__emplace<__j>(*this, std::move(__tmp));
 		  }
 	      }
 	  }, __rhs);
       }
 
-    private:
-
 #if defined(__clang__) && __clang_major__ <= 7
     public:
       using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
-    private:
 #endif
 
+    private:
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto)
 	__detail::__variant::__get(_Vp&& __v) noexcept;
