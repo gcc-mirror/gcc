@@ -6685,6 +6685,12 @@ package body Sem_Ch4 is
       It    : Interp;
 
    begin
+      --  Defend against previous error
+
+      if Nkind (R) = N_Error then
+         return;
+      end if;
+
       if T1 = Universal_Integer or else T1 = Universal_Real
 
         --  If the left operand of an equality operator is null, the visibility
