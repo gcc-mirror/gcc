@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-loop-distribution -fdump-tree-ldist-details" } */
+/* { dg-additional-options "-march=z13 -mzarch" { target s390x-*-* } } */
 /* { dg-final { scan-tree-dump-times "generated strlenQI\n" 4 "ldist" } } */
 /* { dg-final { scan-tree-dump-times "generated strlenHI\n" 4 "ldist" { target s390x-*-* } } } */
 /* { dg-final { scan-tree-dump-times "generated strlenSI\n" 4 "ldist" { target s390x-*-* } } } */
