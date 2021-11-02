@@ -70,8 +70,6 @@ const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
-// FIME in the imports/visibility milestone - this needs to be command line
-// option
 const std::string kDefaultCrateName = "TestCrate";
 
 // Implicitly enable a target_feature (and recursively enable dependencies).
@@ -330,6 +328,9 @@ Session::init ()
   // setup backend to GCC GIMPLE
   backend = rust_get_backend ();
 
+  // set the default crate name
+  options.set_crate_name (kDefaultCrateName);
+
   // the constant folder uses gcc
   ConstFold::Context::init (backend);
 }
@@ -358,6 +359,13 @@ Session::handle_option (
       break;
     case OPT_L:
       // TODO: add library link path or something
+      break;
+    case OPT_frust_crate_:
+      // set the crate name
+      if (arg != nullptr)
+	ret = options.set_crate_name (arg);
+      else
+	ret = false;
       break;
     case OPT_frust_dump_:
       // enable dump and return whether this was successful
@@ -451,7 +459,7 @@ void
 Session::parse_files (int num_files, const char **files)
 {
   auto mappings = Analysis::Mappings::get ();
-  CrateNum crate_num = mappings->setup_crate_mappings (kDefaultCrateName);
+  CrateNum crate_num = mappings->setup_crate_mappings (options.crate_name);
   mappings->set_current_crate (crate_num);
 
   for (int i = 0; i < num_files; i++)

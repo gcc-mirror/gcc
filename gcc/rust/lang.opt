@@ -34,6 +34,10 @@ L
 Rust Joined Separate
 ; Not documented
 
+frust-crate=
+Rust Joined RejectNegative
+-frust-crate=<name>             Set the crate name for the compilation
+
 frust-debug
 Rust Var(flag_rust_debug)
 Dump various Rust front end internals.
