@@ -1791,7 +1791,7 @@ package body Freeze is
          return Result;
       end Needs_Wrapper;
 
-      Ifaces_List    : Elist_Id;
+      Ifaces_List    : Elist_Id := No_Elist;
       Ifaces_Listed  : Boolean := False;
       --  Cache the list of interface operations inherited by R
 
