@@ -1,3 +1,203 @@
+2021-11-01  Martin Liska  <mliska@suse.cz>
+
+	* opt-functions.awk: Add new sanity checking.
+	* optc-gen.awk: Add new argument to integer_range_info.
+	* params.opt: Update 2 params which have negative IntegerRange.
+
+2021-11-01  qing zhao  <qing.zhao@oracle.com>
+
+	* gimplify.c (gimplify_decl_expr): Do not add call to
+	__builtin_clear_padding when a variable is a gimple register
+	or it might not have padding.
+	(gimplify_init_constructor): Likewise.
+
+2021-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/arm/aarch-common-protos.h (struct vector_cost_table): Add
+	movi, dup and extract costing fields.
+	* config/aarch64/aarch64-cost-tables.h (qdf24xx_extra_costs,
+	thunderx_extra_costs, thunderx2t99_extra_costs,
+	thunderx3t110_extra_costs, tsv110_extra_costs, a64fx_extra_costs): Use
+	them.
+	* config/arm/aarch-cost-tables.h (generic_extra_costs,
+	cortexa53_extra_costs, cortexa57_extra_costs, cortexa76_extra_costs,
+	exynosm1_extra_costs, xgene1_extra_costs): Likewise
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>): Add r->w dup.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Add extra costs.
+
+2021-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* cse.c (add_to_set): New.
+	(find_sets_in_insn): Register constants in sets.
+	(canonicalize_insn): Use auto_vec instead.
+	(cse_insn): Try materializing using vec_dup.
+	* rtl.h (simplify_context::simplify_gen_vec_select,
+	simplify_gen_vec_select): New.
+	* simplify-rtx.c (simplify_context::simplify_gen_vec_select): New.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-escape-format=): New.
+	(diagnostics_escape_format): New enum.
+	(DIAGNOSTICS_ESCAPE_FORMAT_UNICODE): New enum value.
+	(DIAGNOSTICS_ESCAPE_FORMAT_BYTES): Likewise.
+	* diagnostic-format-json.cc (json_end_diagnostic): Add
+	"escape-source" attribute.
+	* diagnostic-show-locus.c
+	(exploc_with_display_col::exploc_with_display_col): Replace
+	"tabstop" param with a cpp_char_column_policy and add an "aspect"
+	param.  Use these to compute m_display_col accordingly.
+	(struct char_display_policy): New struct.
+	(layout::m_policy): New field.
+	(layout::m_escape_on_output): New field.
+	(def_policy): New function.
+	(make_range): Update for changes to exploc_with_display_col ctor.
+	(default_print_decoded_ch): New.
+	(width_per_escaped_byte): New.
+	(escape_as_bytes_width): New.
+	(escape_as_bytes_print): New.
+	(escape_as_unicode_width): New.
+	(escape_as_unicode_print): New.
+	(make_policy): New.
+	(layout::layout): Initialize new fields.  Update m_exploc ctor
+	call for above change to ctor.
+	(layout::maybe_add_location_range): Update for changes to
+	exploc_with_display_col ctor.
+	(layout::calculate_x_offset_display): Update for change to
+	cpp_display_width.
+	(layout::print_source_line): Pass policy
+	to cpp_display_width_computation. Capture cpp_decoded_char when
+	calling process_next_codepoint.  Move printing of source code to
+	m_policy.m_print_cb.
+	(line_label::line_label): Pass in policy rather than context.
+	(layout::print_any_labels): Update for change to line_label ctor.
+	(get_affected_range): Pass in policy rather than context, updating
+	calls to location_compute_display_column accordingly.
+	(get_printed_columns): Likewise, also for cpp_display_width.
+	(correction::correction): Pass in policy rather than tabstop.
+	(correction::compute_display_cols): Pass m_policy rather than
+	m_tabstop to cpp_display_width.
+	(correction::m_tabstop): Replace with...
+	(correction::m_policy): ...this.
+	(line_corrections::line_corrections): Pass in policy rather than
+	context.
+	(line_corrections::m_context): Replace with...
+	(line_corrections::m_policy): ...this.
+	(line_corrections::add_hint): Update to use m_policy rather than
+	m_context.
+	(line_corrections::add_hint): Likewise.
+	(layout::print_trailing_fixits): Likewise.
+	(selftest::test_display_widths): New.
+	(selftest::test_layout_x_offset_display_utf8): Update to use
+	policy rather than tabstop.
+	(selftest::test_one_liner_labels_utf8): Add test of escaping
+	source lines.
+	(selftest::test_diagnostic_show_locus_one_liner_utf8): Update to
+	use policy rather than tabstop.
+	(selftest::test_overlapped_fixit_printing): Likewise.
+	(selftest::test_overlapped_fixit_printing_utf8): Likewise.
+	(selftest::test_overlapped_fixit_printing_2): Likewise.
+	(selftest::test_tab_expansion): Likewise.
+	(selftest::test_escaping_bytes_1): New.
+	(selftest::test_escaping_bytes_2): New.
+	(selftest::diagnostic_show_locus_c_tests): Call the new tests.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	context->escape_format.
+	(convert_column_unit): Update to use default character width policy.
+	(selftest::test_diagnostic_get_location_text): Likewise.
+	* diagnostic.h (enum diagnostics_escape_format): New enum.
+	(diagnostic_context::escape_format): New field.
+	* doc/invoke.texi (-fdiagnostics-escape-format=): New option.
+	(-fdiagnostics-format=): Add "escape-source" attribute to examples
+	of JSON output, and document it.
+	* input.c (location_compute_display_column): Pass in "policy"
+	rather than "tabstop", passing to
+	cpp_byte_column_to_display_column.
+	(selftest::test_cpp_utf8): Update to use cpp_char_column_policy.
+	* input.h (class cpp_char_column_policy): New forward decl.
+	(location_compute_display_column): Pass in "policy" rather than
+	"tabstop".
+	* opts.c (common_handle_option): Handle
+	OPT_fdiagnostics_escape_format_.
+	* selftest.c (temp_source_file::temp_source_file): New ctor
+	overload taking a size_t.
+	* selftest.h (temp_source_file::temp_source_file): Likewise.
+
+2021-11-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dbgcnt.def: Add debug counter for back_thread[12] and
+	back_threadfull[12].
+	* passes.def: Pass "first" argument to each back threading pass.
+	* tree-ssa-threadbackward.c (back_threader::back_threader): Add
+	first argument.
+	(back_threader::debug_counter): New.
+	(back_threader::maybe_register_path): Call debug_counter.
+
+2021-11-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (BT_NONE): New.
+	(BT_SPEED): New.
+	(BT_RESOLVE): New.
+	(back_threader::back_threader): Add flags.
+	Move loop initialization here.
+	(back_threader::~back_threader): New.
+	(back_threader::find_taken_edge_switch): Change solver and ranger
+	to pointers.
+	(back_threader::find_taken_edge_cond): Same.
+	(back_threader::find_paths_to_names): Same.
+	(back_threader::find_paths): Same.
+	(back_threader::dump): Same.
+	(try_thread_blocks): Merge into thread_blocks.
+	(back_threader::thread_blocks): New.
+	(do_early_thread_jumps): Merge into thread_blocks.
+	(do_thread_jumps): Merge into thread_blocks.
+	(back_threader::thread_through_all_blocks): Remove.
+
+2021-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103003
+	* value-relation.cc (dom_oracle::register_relation): If the 2
+	ssa names are the same, don't register any relation.
+
+2021-11-01  Dan Li  <ashimida@linux.alibaba.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_epilogue): Remove
+	redundant check for calls_eh_return.
+	* config/aarch64/aarch64.md (*do_return): Likewise.
+
+2021-11-01  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* cfghooks.c (cfg_hook_duplicate_loop_to_header_edge): Rename
+	duplicate_loop_to_header_edge to
+	duplicate_loop_body_to_header_edge.
+	(cfg_hook_duplicate_loop_body_to_header_edge): Likewise.
+	* cfghooks.h (struct cfg_hooks): Likewise.
+	(cfg_hook_duplicate_loop_body_to_header_edge): Likewise.
+	* cfgloopmanip.c (duplicate_loop_body_to_header_edge): Likewise.
+	(clone_loop_to_header_edge): Likewise.
+	* cfgloopmanip.h (duplicate_loop_body_to_header_edge): Likewise.
+	* cfgrtl.c (struct cfg_hooks): Likewise.
+	* doc/loop.texi: Likewise.
+	* loop-unroll.c (unroll_loop_constant_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise.
+	(unroll_loop_stupid): Likewise.
+	(apply_opt_in_copies): Likewise.
+	* tree-cfg.c (struct cfg_hooks): Likewise.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Likewise.
+	(try_peel_loop): Likewise.
+	* tree-ssa-loop-manip.c (copy_phi_node_args): Likewise.
+	(gimple_duplicate_loop_body_to_header_edge): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	* tree-ssa-loop-manip.h (gimple_duplicate_loop_body_to_header_edge):
+	Likewise.
+
+2021-11-01  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* cfgloopmanip.c (loop_version): Refactor loopify to
+	loop_version.  Move condition generation after loopify.
+	(loopify): Delete.
+	* cfgloopmanip.h (loopify): Delete.
+
 2021-10-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c: Include tree-dfa.h.

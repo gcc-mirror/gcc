@@ -1,3 +1,8 @@
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lex.c (c_lex_with_flags): When complaining about non-printable
+	CPP_OTHER tokens, set the "escape on output" flag.
+
 2021-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_check_loop_iv_r): Don't clear 3rd bit for

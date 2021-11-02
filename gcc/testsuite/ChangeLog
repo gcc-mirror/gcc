@@ -1,3 +1,51 @@
+2021-11-01  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/modref-1.C: Fix test-suite pattern scanning.
+
+2021-11-01  qing zhao  <qing.zhao@oracle.com>
+
+	* c-c++-common/pr102281.c: New test.
+	* gcc.target/i386/auto-init-2.c: Adjust testing case.
+	* gcc.target/i386/auto-init-4.c: Likewise.
+	* gcc.target/i386/auto-init-6.c: Likewise.
+	* gcc.target/aarch64/auto-init-6.c: Likewise.
+
+2021-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/vect-cse-codegen.c: New test.
+
+2021-11-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/103000
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c:
+	Force unroll.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: likewise
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c:
+	Likewise
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Likewise.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/diagnostic-format-json-1.c: Add regexp to consume
+	"escape-source" attribute.
+	* c-c++-common/diagnostic-format-json-2.c: Likewise.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* c-c++-common/diagnostic-format-json-4.c: Likewise, twice.
+	* c-c++-common/diagnostic-format-json-5.c: Likewise.
+	* gcc.dg/cpp/warn-normalized-4-bytes.c: New test.
+	* gcc.dg/cpp/warn-normalized-4-unicode.c: New test.
+	* gcc.dg/encoding-issues-bytes.c: New test.
+	* gcc.dg/encoding-issues-unicode.c: New test.
+	* gfortran.dg/diagnostic-format-json-1.F90: Add regexp to consume
+	"escape-source" attribute.
+	* gfortran.dg/diagnostic-format-json-2.F90: Likewise.
+	* gfortran.dg/diagnostic-format-json-3.F90: Likewise.
+
+2021-11-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr103003.c: New.
+
 2021-10-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/modref-1.C: New test.

@@ -1,3 +1,25 @@
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/stl_iterator.h (__valid_range): Add constexpr
+	for C++20. Qualify call to avoid ADL.
+	(__get_distance, __can_advance, __unsafe, __base): Likewise.
+	* testsuite/25_algorithms/move/constexpr.cc: Also check with
+	std::reverse_iterator arguments.
+
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span(Range&&)): Reorder constraints.
+
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103022
+	* include/std/valarray (begin, end): Do not dereference an empty
+	valarray. Add noexcept and [[nodiscard]].
+	* testsuite/26_numerics/valarray/range_access.cc: Check empty
+	valarray. Check iterator properties. Run as well as compiling.
+	* testsuite/26_numerics/valarray/range_access2.cc: Likewise.
+	* testsuite/26_numerics/valarray/103022.cc: New test.
+
 2021-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/stack/deduction.cc: Fix typo.

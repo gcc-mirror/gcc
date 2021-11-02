@@ -1,3 +1,7 @@
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* unicode/utf8-dump.py: New file.
+
 2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc-changelog/git_commit.py (ignored_prefixes): Add libffi/.
