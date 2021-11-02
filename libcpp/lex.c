@@ -1172,11 +1172,34 @@ namespace bidi {
   /* All the UTF-8 encodings of bidi characters start with E2.  */
   constexpr uchar utf8_start = 0xe2;
 
+  struct context
+  {
+    context () {}
+    context (location_t loc, kind k, bool pdf, bool ucn)
+    : m_loc (loc), m_kind (k), m_pdf (pdf), m_ucn (ucn)
+    {
+    }
+
+    kind get_pop_kind () const
+    {
+      return m_pdf ? kind::PDF : kind::PDI;
+    }
+    bool ucn_p () const
+    {
+      return m_ucn;
+    }
+
+    location_t m_loc;
+    kind m_kind;
+    unsigned m_pdf : 1;
+    unsigned m_ucn : 1;
+  };
+
   /* A vector holding currently open bidi contexts.  We use a char for
      each context, its LSB is 1 if it represents a PDF context, 0 if it
      represents a PDI context.  The next bit is 1 if this context was open
      by a bidi character written as a UCN, and 0 when it was UTF-8.  */
-  semi_embedded_vec <unsigned char, 16> vec;
+  semi_embedded_vec <context, 16> vec;
 
   /* Close the whole comment/identifier/string literal/character constant
      context.  */
@@ -1193,19 +1216,19 @@ namespace bidi {
     vec.truncate (len - 1);
   }
 
-  /* Return the context of the Ith element.  */
-  kind ctx_at (unsigned int i)
+  /* Return the pop kind of the context of the Ith element.  */
+  kind pop_kind_at (unsigned int i)
   {
-    return (vec[i] & 1) ? kind::PDF : kind::PDI;
+    return vec[i].get_pop_kind ();
   }
 
-  /* Return which context is currently opened.  */
+  /* Return the pop kind of the context that is currently opened.  */
   kind current_ctx ()
   {
     unsigned int len = vec.count ();
     if (len == 0)
       return kind::NONE;
-    return ctx_at (len - 1);
+    return vec[len - 1].get_pop_kind ();
   }
 
   /* Return true if the current context comes from a UCN origin, that is,
@@ -1214,11 +1237,19 @@ namespace bidi {
   {
     unsigned int len = vec.count ();
     gcc_checking_assert (len > 0);
-    return (vec[len - 1] >> 1) & 1;
+    return vec[len - 1].m_ucn;
   }
 
-  /* We've read a bidi char, update the current vector as necessary.  */
-  void on_char (kind k, bool ucn_p)
+  location_t current_ctx_loc ()
+  {
+    unsigned int len = vec.count ();
+    gcc_checking_assert (len > 0);
+    return vec[len - 1].m_loc;
+  }
+
+  /* We've read a bidi char, update the current vector as necessary.
+     LOC is only valid when K is not kind::NONE.  */
+  void on_char (kind k, bool ucn_p, location_t loc)
   {
     switch (k)
       {
@@ -1226,12 +1257,12 @@ namespace bidi {
       case kind::RLE:
       case kind::LRO:
       case kind::RLO:
-	vec.push (ucn_p ? 3u : 1u);
+	vec.push (context (loc, k, true, ucn_p));
 	break;
       case kind::LRI:
       case kind::RLI:
       case kind::FSI:
-	vec.push (ucn_p ? 2u : 0u);
+	vec.push (context (loc, k, false, ucn_p));
 	break;
       /* PDF terminates the scope of the last LRE, RLE, LRO, or RLO
 	 whose scope has not yet been terminated.  */
@@ -1245,7 +1276,7 @@ namespace bidi {
 	 yet been terminated.  */
       case kind::PDI:
 	for (int i = vec.count () - 1; i >= 0; --i)
-	  if (ctx_at (i) == kind::PDI)
+	  if (pop_kind_at (i) == kind::PDI)
 	    {
 	      vec.truncate (i);
 	      break;
@@ -1295,10 +1326,47 @@ namespace bidi {
   }
 }
 
+/* Get location_t for the range of bytes [START, START + NUM_BYTES)
+   within the current line in FILE, with the caret at START.  */
+
+static location_t
+get_location_for_byte_range_in_cur_line (cpp_reader *pfile,
+					 const unsigned char *const start,
+					 size_t num_bytes)
+{
+  gcc_checking_assert (num_bytes > 0);
+
+  /* CPP_BUF_COLUMN and linemap_position_for_column both refer
+     to offsets in bytes, but CPP_BUF_COLUMN is 0-based,
+     whereas linemap_position_for_column is 1-based.  */
+
+  /* Get 0-based offsets within the line.  */
+  size_t start_offset = CPP_BUF_COLUMN (pfile->buffer, start);
+  size_t end_offset = start_offset + num_bytes - 1;
+
+  /* Now convert to location_t, where "columns" are 1-based byte offsets.  */
+  location_t start_loc = linemap_position_for_column (pfile->line_table,
+						      start_offset + 1);
+  location_t end_loc = linemap_position_for_column (pfile->line_table,
+						     end_offset + 1);
+
+  if (start_loc == end_loc)
+    return start_loc;
+
+  source_range src_range;
+  src_range.m_start = start_loc;
+  src_range.m_finish = end_loc;
+  location_t combined_loc = COMBINE_LOCATION_DATA (pfile->line_table,
+						   start_loc,
+						   src_range,
+						   NULL);
+  return combined_loc;
+}
+
 /* Parse a sequence of 3 bytes starting with P and return its bidi code.  */
 
 static bidi::kind
-get_bidi_utf8 (const unsigned char *const p)
+get_bidi_utf8_1 (const unsigned char *const p)
 {
   gcc_checking_assert (p[0] == bidi::utf8_start);
 
@@ -1340,10 +1408,25 @@ get_bidi_utf8 (const unsigned char *const p)
   return bidi::kind::NONE;
 }
 
+/* Parse a sequence of 3 bytes starting with P and return its bidi code.
+   If the kind is not NONE, write the location to *OUT.*/
+
+static bidi::kind
+get_bidi_utf8 (cpp_reader *pfile, const unsigned char *const p, location_t *out)
+{
+  bidi::kind result = get_bidi_utf8_1 (p);
+  if (result != bidi::kind::NONE)
+    {
+      /* We have a sequence of 3 bytes starting at P.  */
+      *out = get_location_for_byte_range_in_cur_line (pfile, p, 3);
+    }
+  return result;
+}
+
 /* Parse a UCN where P points just past \u or \U and return its bidi code.  */
 
 static bidi::kind
-get_bidi_ucn (const unsigned char *p, bool is_U)
+get_bidi_ucn_1 (const unsigned char *p, bool is_U)
 {
   /* 6.4.3 Universal Character Names
       \u hex-quad
@@ -1412,6 +1495,62 @@ get_bidi_ucn (const unsigned char *p, bool is_U)
   return bidi::kind::NONE;
 }
 
+/* Parse a UCN where P points just past \u or \U and return its bidi code.
+   If the kind is not NONE, write the location to *OUT.*/
+
+static bidi::kind
+get_bidi_ucn (cpp_reader *pfile,  const unsigned char *p, bool is_U,
+	      location_t *out)
+{
+  bidi::kind result = get_bidi_ucn_1 (p, is_U);
+  if (result != bidi::kind::NONE)
+    {
+      const unsigned char *start = p - 2;
+      size_t num_bytes = 2 + (is_U ? 8 : 4);
+      *out = get_location_for_byte_range_in_cur_line (pfile, start, num_bytes);
+    }
+  return result;
+}
+
+/* Subclass of rich_location for reporting on unpaired UTF-8
+   bidirectional control character(s).
+   Escape the source lines on output, and show all unclosed
+   bidi context, labelling everything.  */
+
+class unpaired_bidi_rich_location : public rich_location
+{
+ public:
+  class custom_range_label : public range_label
+  {
+   public:
+     label_text get_text (unsigned range_idx) const FINAL OVERRIDE
+     {
+       /* range 0 is the primary location; each subsequent range i + 1
+	  is for bidi::vec[i].  */
+       if (range_idx > 0)
+	 {
+	   const bidi::context &ctxt (bidi::vec[range_idx - 1]);
+	   return label_text::borrow (bidi::to_str (ctxt.m_kind));
+	 }
+       else
+	 return label_text::borrow (_("end of bidirectional context"));
+     }
+  };
+
+  unpaired_bidi_rich_location (cpp_reader *pfile, location_t loc)
+  : rich_location (pfile->line_table, loc, &m_custom_label)
+  {
+    set_escape_on_output (true);
+    for (unsigned i = 0; i < bidi::vec.count (); i++)
+      add_range (bidi::vec[i].m_loc,
+		 SHOW_RANGE_WITHOUT_CARET,
+		 &m_custom_label);
+  }
+
+ private:
+   custom_range_label m_custom_label;
+};
+
 /* We're closing a bidi context, that is, we've encountered a newline,
    are closing a C-style comment, or are at the end of a string literal,
    character constant, or identifier.  Warn if this context was not
@@ -1427,11 +1566,17 @@ maybe_warn_bidi_on_close (cpp_reader *pfile, const uchar *p)
       const location_t loc
 	= linemap_position_for_column (pfile->line_table,
 				       CPP_BUF_COLUMN (pfile->buffer, p));
-      rich_location rich_loc (pfile->line_table, loc);
-      rich_loc.set_escape_on_output (true);
-      cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
-		      "unpaired UTF-8 bidirectional control character "
-		      "detected");
+      unpaired_bidi_rich_location rich_loc (pfile, loc);
+      /* cpp_callbacks doesn't yet have a way to handle singular vs plural
+	 forms of a diagnostic, so fake it for now.  */
+      if (bidi::vec.count () > 1)
+	cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+			"unpaired UTF-8 bidirectional control characters "
+			"detected");
+      else
+	cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+			"unpaired UTF-8 bidirectional control character "
+			"detected");
     }
   /* We're done with this context.  */
   bidi::on_close ();
@@ -1439,12 +1584,13 @@ maybe_warn_bidi_on_close (cpp_reader *pfile, const uchar *p)
 
 /* We're at the beginning or in the middle of an identifier/comment/string
    literal/character constant.  Warn if we've encountered a bidi character.
-   KIND says which bidi character it was; P points to it in the character
-   stream.  UCN_P is true iff this bidi character was written as a UCN.  */
+   KIND says which bidi control character it was; UCN_P is true iff this bidi
+   control character was written as a UCN.  LOC is the location of the
+   character, but is only valid if KIND != bidi::kind::NONE.  */
 
 static void
-maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
-			 bool ucn_p)
+maybe_warn_bidi_on_char (cpp_reader *pfile, bidi::kind kind,
+			 bool ucn_p, location_t loc)
 {
   if (__builtin_expect (kind == bidi::kind::NONE, 1))
     return;
@@ -1453,9 +1599,6 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
 
   if (warn_bidi != bidirectional_none)
     {
-      const location_t loc
-	= linemap_position_for_column (pfile->line_table,
-				       CPP_BUF_COLUMN (pfile->buffer, p));
       rich_location rich_loc (pfile->line_table, loc);
       rich_loc.set_escape_on_output (true);
 
@@ -1467,9 +1610,12 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
 	{
 	  if (warn_bidi == bidirectional_unpaired
 	      && bidi::current_ctx_ucn_p () != ucn_p)
-	    cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
-			    "UTF-8 vs UCN mismatch when closing "
-			    "a context by \"%s\"", bidi::to_str (kind));
+	    {
+	      rich_loc.add_range (bidi::current_ctx_loc ());
+	      cpp_warning_at (pfile, CPP_W_BIDIRECTIONAL, &rich_loc,
+			      "UTF-8 vs UCN mismatch when closing "
+			      "a context by \"%s\"", bidi::to_str (kind));
+	    }
 	}
       else if (warn_bidi == bidirectional_any)
 	{
@@ -1484,7 +1630,7 @@ maybe_warn_bidi_on_char (cpp_reader *pfile, const uchar *p, bidi::kind kind,
 	}
     }
   /* We're done with this context.  */
-  bidi::on_char (kind, ucn_p);
+  bidi::on_char (kind, ucn_p, loc);
 }
 
 /* Skip a C-style block comment.  We find the end of the comment by
@@ -1552,8 +1698,9 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	 a bidirectional control character.  */
       else if (__builtin_expect (c == bidi::utf8_start, 0) && warn_bidi_p)
 	{
-	  bidi::kind kind = get_bidi_utf8 (cur - 1);
-	  maybe_warn_bidi_on_char (pfile, cur, kind, /*ucn_p=*/false);
+	  location_t loc;
+	  bidi::kind kind = get_bidi_utf8 (pfile, cur - 1, &loc);
+	  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
 	}
     }
 
@@ -1586,9 +1733,9 @@ skip_line_comment (cpp_reader *pfile)
 	    {
 	      if (__builtin_expect (*buffer->cur == bidi::utf8_start, 0))
 		{
-		  bidi::kind kind = get_bidi_utf8 (buffer->cur);
-		  maybe_warn_bidi_on_char (pfile, buffer->cur, kind,
-					   /*ucn_p=*/false);
+		  location_t loc;
+		  bidi::kind kind = get_bidi_utf8 (pfile, buffer->cur, &loc);
+		  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
 		}
 	      buffer->cur++;
 	    }
@@ -1737,9 +1884,9 @@ forms_identifier_p (cpp_reader *pfile, int first,
 	  if (__builtin_expect (*buffer->cur == bidi::utf8_start, 0)
 	      && warn_bidi_p)
 	    {
-	      bidi::kind kind = get_bidi_utf8 (buffer->cur);
-	      maybe_warn_bidi_on_char (pfile, buffer->cur, kind,
-				       /*ucn_p=*/false);
+	      location_t loc;
+	      bidi::kind kind = get_bidi_utf8 (pfile, buffer->cur, &loc);
+	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
 	    }
 	  if (_cpp_valid_utf8 (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
 			       state, &s))
@@ -1751,10 +1898,12 @@ forms_identifier_p (cpp_reader *pfile, int first,
 	  buffer->cur += 2;
 	  if (warn_bidi_p)
 	    {
-	      bidi::kind kind = get_bidi_ucn (buffer->cur,
-					      buffer->cur[-1] == 'U');
-	      maybe_warn_bidi_on_char (pfile, buffer->cur, kind,
-				       /*ucn_p=*/true);
+	      location_t loc;
+	      bidi::kind kind = get_bidi_ucn (pfile,
+					      buffer->cur,
+					      buffer->cur[-1] == 'U',
+					      &loc);
+	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/true, loc);
 	    }
 	  if (_cpp_valid_ucn (pfile, &buffer->cur, buffer->rlimit, 1 + !first,
 			      state, &s, NULL, NULL))
@@ -2375,8 +2524,11 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	}
       else if (__builtin_expect ((unsigned char) c == bidi::utf8_start, 0)
 	       && warn_bidi_p)
-	maybe_warn_bidi_on_char (pfile, pos - 1, get_bidi_utf8 (pos - 1),
-				 /*ucn_p=*/false);
+	{
+	  location_t loc;
+	  bidi::kind kind = get_bidi_utf8 (pfile, pos - 1, &loc);
+	  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
+	}
     }
 
   if (warn_bidi_p)
@@ -2486,8 +2638,10 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	{
 	  if ((cur[0] == 'u' || cur[0] == 'U') && warn_bidi_p)
 	    {
-	      bidi::kind kind = get_bidi_ucn (cur + 1, cur[0] == 'U');
-	      maybe_warn_bidi_on_char (pfile, cur, kind, /*ucn_p=*/true);
+	      location_t loc;
+	      bidi::kind kind = get_bidi_ucn (pfile, cur + 1, cur[0] == 'U',
+					      &loc);
+	      maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/true, loc);
 	    }
 	  cur++;
 	}
@@ -2515,8 +2669,9 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	saw_NUL = true;
       else if (__builtin_expect (c == bidi::utf8_start, 0) && warn_bidi_p)
 	{
-	  bidi::kind kind = get_bidi_utf8 (cur - 1);
-	  maybe_warn_bidi_on_char (pfile, cur - 1, kind, /*ucn_p=*/false);
+	  location_t loc;
+	  bidi::kind kind = get_bidi_utf8 (pfile, cur - 1, &loc);
+	  maybe_warn_bidi_on_char (pfile, kind, /*ucn_p=*/false, loc);
 	}
     }
 
