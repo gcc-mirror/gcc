@@ -779,6 +779,10 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       tree arg = gimple_phi_arg_def (phi, x);
+      // An argument that is the same as the def provides no new range.
+      if (arg == phi_def)
+	continue;
+
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Get the range of the argument on its edge.
