@@ -1,3 +1,10 @@
+2021-11-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backport from master:
+	2021-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/loop-10.c: New test.
+
 2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from master:
