@@ -257,7 +257,6 @@ check in changes outside of the parts of the compiler they maintain.
 
 			Reviewers
 
-arc port		Andrew Burgess		<andrew.burgess@embecosm.com>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Liska		<mliska@suse.cz>
 callgraph		Martin Jambor		<mjambor@suse.cz>
@@ -344,6 +343,7 @@ Robert Bowdidge					<bowdidge@apple.com>
 Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
 Christian Bruel					<christian.bruel@st.com>
+Andrew Burgess					<aburgess@redhat.com>
 Kevin Buettner					<kevinb@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
