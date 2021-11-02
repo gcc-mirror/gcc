@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
 #include "opts.h"
+#include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -16601,6 +16602,42 @@ cxx_simulate_enum_decl (location_t loc, const char *name,
 
   input_location = saved_loc;
   return enumtype;
+}
+
+/* Implement LANG_HOOKS_SIMULATE_RECORD_DECL.  */
+
+tree
+cxx_simulate_record_decl (location_t loc, const char *name,
+			  array_slice<const tree> fields)
+{
+  iloc_sentinel ils (loc);
+
+  tree ident = get_identifier (name);
+  tree type = xref_tag (/*tag_code=*/record_type, ident);
+  if (type != error_mark_node
+      && (TREE_CODE (type) != RECORD_TYPE || COMPLETE_TYPE_P (type)))
+    {
+      error ("redefinition of %q#T", type);
+      type = error_mark_node;
+    }
+  if (type == error_mark_node)
+    return lhd_simulate_record_decl (loc, name, fields);
+
+  xref_basetypes (type, NULL_TREE);
+  type = begin_class_definition (type);
+  if (type == error_mark_node)
+    return lhd_simulate_record_decl (loc, name, fields);
+
+  for (tree field : fields)
+    finish_member_declaration (field);
+
+  type = finish_struct (type, NULL_TREE);
+
+  tree decl = build_decl (loc, TYPE_DECL, ident, type);
+  set_underlying_type (decl);
+  lang_hooks.decls.pushdecl (decl);
+
+  return type;
 }
 
 /* We're defining DECL.  Make sure that its type is OK.  */

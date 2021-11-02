@@ -68,6 +68,16 @@ struct lang_hooks_for_types
      them all with the given source location.  */
   tree (*simulate_enum_decl) (location_t, const char *, vec<string_int_pair> *);
 
+  /* Do the equivalent of:
+
+       typedef struct NAME { FIELDS; } NAME;
+
+     associating it with location LOC.  Return the associated RECORD_TYPE.
+
+     FIELDS is a list of FIELD_DECLs, in layout order.  */
+  tree (*simulate_record_decl) (location_t loc, const char *name,
+				array_slice<const tree> fields);
+
   /* Return what kind of RECORD_TYPE this is, mainly for purposes of
      debug information.  If not defined, record types are assumed to
      be structures.  */
