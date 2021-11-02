@@ -32,6 +32,8 @@ struct PathProbeCandidate
 {
   enum CandidateType
   {
+    ENUM_VARIANT,
+
     IMPL_CONST,
     IMPL_TYPE_ALIAS,
     IMPL_FUNC,
@@ -39,6 +41,12 @@ struct PathProbeCandidate
     TRAIT_ITEM_CONST,
     TRAIT_TYPE_ALIAS,
     TRAIT_FUNC,
+  };
+
+  struct EnumItemCandidate
+  {
+    const TyTy::ADTType *parent;
+    const TyTy::VariantDef *variant;
   };
 
   struct ImplItemCandidate
@@ -59,12 +67,19 @@ struct PathProbeCandidate
   Location locus;
   union Candidate
   {
+    EnumItemCandidate enum_field;
     ImplItemCandidate impl;
     TraitItemCandidate trait;
 
+    Candidate (EnumItemCandidate enum_field) : enum_field (enum_field) {}
     Candidate (ImplItemCandidate impl) : impl (impl) {}
     Candidate (TraitItemCandidate trait) : trait (trait) {}
   } item;
+
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+		      EnumItemCandidate enum_field)
+    : type (type), ty (ty), item (enum_field)
+  {}
 
   PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
 		      ImplItemCandidate impl)
@@ -81,34 +96,17 @@ struct PathProbeCandidate
     return "PathProbe candidate TODO - as_string";
   }
 
+  bool is_enum_candidate () const { return type == ENUM_VARIANT; }
+
   bool is_impl_candidate () const
   {
-    switch (type)
-      {
-      case IMPL_CONST:
-      case IMPL_TYPE_ALIAS:
-      case IMPL_FUNC:
-	return true;
-
-      default:
-	return false;
-      }
-    gcc_unreachable ();
+    return type == IMPL_CONST || type == IMPL_TYPE_ALIAS || type == IMPL_FUNC;
   }
 
   bool is_trait_candidate () const
   {
-    switch (type)
-      {
-      case TRAIT_ITEM_CONST:
-      case TRAIT_TYPE_ALIAS:
-      case TRAIT_FUNC:
-	return true;
-
-      default:
-	return false;
-      }
-    gcc_unreachable ();
+    return type == TRAIT_ITEM_CONST || type == TRAIT_TYPE_ALIAS
+	   || type == TRAIT_FUNC;
   }
 };
 
@@ -125,7 +123,17 @@ public:
   {
     PathProbeType probe (receiver, segment_name);
     if (probe_impls)
-      probe.process_impl_items_for_candidates ();
+      {
+	if (receiver->get_kind () == TyTy::TypeKind::ADT)
+	  {
+	    const TyTy::ADTType *adt
+	      = static_cast<const TyTy::ADTType *> (receiver);
+	    if (adt->is_enum ())
+	      probe.process_enum_item_for_candiates (adt);
+	  }
+
+	probe.process_impl_items_for_candidates ();
+      }
 
     if (!probe_bounds)
       return probe.candidates;
@@ -211,6 +219,19 @@ public:
   }
 
 protected:
+  void process_enum_item_for_candiates (const TyTy::ADTType *adt)
+  {
+    TyTy::VariantDef *v;
+    if (!adt->lookup_variant (search.as_string (), &v))
+      return;
+
+    PathProbeCandidate::EnumItemCandidate enum_item_candidate{adt, v};
+    PathProbeCandidate candidate{
+      PathProbeCandidate::CandidateType::ENUM_VARIANT, receiver->clone (),
+      mappings->lookup_location (adt->get_ty_ref ()), enum_item_candidate};
+    candidates.push_back (std::move (candidate));
+  }
+
   void process_impl_items_for_candidates ()
   {
     mappings->iterate_impl_items ([&] (HirId id, HIR::ImplItem *item,
@@ -422,6 +443,10 @@ public:
       {
 	switch (c.type)
 	  {
+	  case PathProbeCandidate::CandidateType::ENUM_VARIANT:
+	    gcc_unreachable ();
+	    break;
+
 	  case PathProbeCandidate::CandidateType::IMPL_CONST:
 	  case PathProbeCandidate::CandidateType::IMPL_TYPE_ALIAS:
 	  case PathProbeCandidate::CandidateType::IMPL_FUNC:

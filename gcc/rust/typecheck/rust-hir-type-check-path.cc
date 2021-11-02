@@ -359,7 +359,24 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
       prev_segment = tyseg;
       tyseg = candidate.ty;
 
-      if (candidate.is_impl_candidate ())
+      if (candidate.is_enum_candidate ())
+	{
+	  const TyTy::VariantDef *variant = candidate.item.enum_field.variant;
+
+	  CrateNum crate_num = mappings->get_current_crate ();
+	  HirId variant_id = variant->get_id ();
+
+	  HIR::Item *enum_item
+	    = mappings->lookup_hir_item (crate_num, variant_id);
+	  rust_assert (enum_item != nullptr);
+
+	  resolved_node_id = enum_item->get_mappings ().get_nodeid ();
+
+	  // insert the id of the variant we are resolved to
+	  context->insert_variant_definition (expr_mappings.get_hirid (),
+					      variant_id);
+	}
+      else if (candidate.is_impl_candidate ())
 	{
 	  resolved_node_id
 	    = candidate.item.impl.impl_item->get_impl_mappings ().get_nodeid ();

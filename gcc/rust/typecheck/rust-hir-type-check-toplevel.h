@@ -24,6 +24,7 @@
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-hir-type-check-enumitem.h"
 #include "rust-tyty.h"
 
 namespace Rust {
@@ -87,7 +88,6 @@ public:
       }
 
     std::vector<TyTy::StructFieldType *> fields;
-
     size_t idx = 0;
     for (auto &field : struct_decl.get_fields ())
       {
@@ -102,12 +102,18 @@ public:
 	idx++;
       }
 
+    // there is only a single variant
+    std::vector<TyTy::VariantDef *> variants;
+    variants.push_back (new TyTy::VariantDef (
+      struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+      TyTy::VariantDef::VariantType::TUPLE, std::move (fields)));
+
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (),
 			   TyTy::ADTType::ADTKind::TUPLE_STRUCT,
-			   std::move (fields), std::move (substitutions));
+			   std::move (variants), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -165,14 +171,71 @@ public:
 			      ty_field->get_field_type ());
       }
 
+    // there is only a single variant
+    std::vector<TyTy::VariantDef *> variants;
+    variants.push_back (new TyTy::VariantDef (
+      struct_decl.get_mappings ().get_hirid (), struct_decl.get_identifier (),
+      TyTy::VariantDef::VariantType::STRUCT, std::move (fields)));
+
     TyTy::BaseType *type
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (),
 			   TyTy::ADTType::ADTKind::STRUCT_STRUCT,
-			   std::move (fields), std::move (substitutions));
+			   std::move (variants), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
+  }
+
+  void visit (HIR::Enum &enum_decl) override
+  {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (enum_decl.has_generics ())
+      {
+	for (auto &generic_param : enum_decl.get_generic_params ())
+	  {
+	    switch (generic_param.get ()->get_kind ())
+	      {
+	      case HIR::GenericParam::GenericKind::LIFETIME:
+		// Skipping Lifetime completely until better handling.
+		break;
+
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  auto param_type
+		    = TypeResolveGenericParam::Resolve (generic_param.get ());
+		  context->insert_type (generic_param->get_mappings (),
+					param_type);
+
+		  substitutions.push_back (TyTy::SubstitutionParamMapping (
+		    static_cast<HIR::TypeParam &> (*generic_param),
+		    param_type));
+		}
+		break;
+	      }
+	  }
+      }
+
+    std::vector<TyTy::VariantDef *> variants;
+    int64_t discriminant_value = 0;
+    for (auto &variant : enum_decl.get_variants ())
+      {
+	TyTy::VariantDef *field_type
+	  = TypeCheckEnumItem::Resolve (variant.get (), discriminant_value);
+
+	variants.push_back (field_type);
+	if (field_type->get_variant_type ()
+	    == TyTy::VariantDef::VariantType::NUM)
+	  discriminant_value = field_type->get_discriminant ();
+      }
+
+    TyTy::BaseType *type
+      = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
+			   mappings->get_next_hir_id (),
+			   enum_decl.get_identifier (),
+			   TyTy::ADTType::ADTKind::ENUM, std::move (variants),
+			   std::move (substitutions));
+
+    context->insert_type (enum_decl.get_mappings (), type);
   }
 
   void visit (HIR::Union &union_decl) override
@@ -208,18 +271,24 @@ public:
 	ResolveWhereClauseItem::Resolve (*where_clause_item.get ());
       }
 
-    std::vector<TyTy::StructFieldType *> variants;
-    union_decl.iterate ([&] (HIR::StructField &variant) mutable -> bool {
-      TyTy::BaseType *variant_type
-	= TypeCheckType::Resolve (variant.get_field_type ().get ());
-      TyTy::StructFieldType *ty_variant
-	= new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
-				     variant.get_field_name (), variant_type);
-      variants.push_back (ty_variant);
-      context->insert_type (variant.get_mappings (),
-			    ty_variant->get_field_type ());
-      return true;
-    });
+    std::vector<TyTy::StructFieldType *> fields;
+    for (auto &variant : union_decl.get_variants ())
+      {
+	TyTy::BaseType *variant_type
+	  = TypeCheckType::Resolve (variant.get_field_type ().get ());
+	TyTy::StructFieldType *ty_variant
+	  = new TyTy::StructFieldType (variant.get_mappings ().get_hirid (),
+				       variant.get_field_name (), variant_type);
+	fields.push_back (ty_variant);
+	context->insert_type (variant.get_mappings (),
+			      ty_variant->get_field_type ());
+      }
+
+    // there is only a single variant
+    std::vector<TyTy::VariantDef *> variants;
+    variants.push_back (new TyTy::VariantDef (
+      union_decl.get_mappings ().get_hirid (), union_decl.get_identifier (),
+      TyTy::VariantDef::VariantType::STRUCT, std::move (fields)));
 
     TyTy::BaseType *type
       = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),

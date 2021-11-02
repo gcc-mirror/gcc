@@ -990,31 +990,49 @@ public:
 
   void visit (const ADTType &type) override
   {
+    if (base->get_adt_kind () != type.get_adt_kind ())
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
     if (base->get_identifier ().compare (type.get_identifier ()) != 0)
       {
 	BaseCmp::visit (type);
 	return;
       }
 
-    if (base->num_fields () != type.num_fields ())
+    if (base->number_of_variants () != type.number_of_variants ())
       {
 	BaseCmp::visit (type);
 	return;
       }
 
-    for (size_t i = 0; i < type.num_fields (); ++i)
+    for (size_t i = 0; i < type.number_of_variants (); ++i)
       {
-	const TyTy::StructFieldType *base_field = base->get_imm_field (i);
-	const TyTy::StructFieldType *other_field = type.get_imm_field (i);
+	TyTy::VariantDef *a = base->get_variants ().at (i);
+	TyTy::VariantDef *b = type.get_variants ().at (i);
 
-	TyTy::BaseType *this_field_ty = base_field->get_field_type ();
-	TyTy::BaseType *other_field_ty = other_field->get_field_type ();
-
-	if (!this_field_ty->can_eq (other_field_ty, emit_error_flag,
-				    autoderef_mode_flag))
+	if (a->num_fields () != b->num_fields ())
 	  {
 	    BaseCmp::visit (type);
 	    return;
+	  }
+
+	for (size_t j = 0; j < a->num_fields (); j++)
+	  {
+	    TyTy::StructFieldType *base_field = a->get_field_at_index (i);
+	    TyTy::StructFieldType *other_field = b->get_field_at_index (i);
+
+	    TyTy::BaseType *this_field_ty = base_field->get_field_type ();
+	    TyTy::BaseType *other_field_ty = other_field->get_field_type ();
+
+	    if (!this_field_ty->can_eq (other_field_ty, emit_error_flag,
+					autoderef_mode_flag))
+	      {
+		BaseCmp::visit (type);
+		return;
+	      }
 	  }
       }
 

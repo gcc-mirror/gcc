@@ -1009,6 +1009,150 @@ protected:
   SubstitutionArgumentMappings used_arguments;
 };
 
+// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
+class VariantDef
+{
+public:
+  enum VariantType
+  {
+    NUM,
+    TUPLE,
+    STRUCT
+  };
+
+  VariantDef (HirId id, std::string identifier, int discriminant)
+    : id (id), identifier (identifier), discriminant (discriminant)
+  {
+    type = VariantType::NUM;
+    fields = {};
+  }
+
+  VariantDef (HirId id, std::string identifier, VariantType type,
+	      std::vector<StructFieldType *> fields)
+    : id (id), identifier (identifier), type (type), fields (fields)
+  {
+    discriminant = 0;
+    rust_assert (type == VariantType::TUPLE || type == VariantType::STRUCT);
+  }
+
+  VariantDef (HirId id, std::string identifier, VariantType type,
+	      int discriminant, std::vector<StructFieldType *> fields)
+    : id (id), identifier (identifier), type (type),
+      discriminant (discriminant), fields (fields)
+  {
+    rust_assert ((type == VariantType::NUM && fields.empty ())
+		 || (type == VariantType::TUPLE && discriminant == 0)
+		 || (type == VariantType::STRUCT && discriminant == 0));
+  }
+
+  static VariantDef &get_error_node ()
+  {
+    static VariantDef node = VariantDef (UNKNOWN_HIRID, "", -1);
+    return node;
+  }
+
+  bool is_error () const { return get_id () == UNKNOWN_HIRID; }
+
+  HirId get_id () const { return id; }
+
+  VariantType get_variant_type () const { return type; }
+
+  std::string get_identifier () const { return identifier; }
+  int get_discriminant () const { return discriminant; }
+
+  size_t num_fields () const { return fields.size (); }
+  StructFieldType *get_field_at_index (size_t index)
+  {
+    // FIXME this is not safe
+    return fields.at (index);
+  }
+
+  std::vector<StructFieldType *> &get_fields ()
+  {
+    rust_assert (type != NUM);
+    return fields;
+  }
+
+  bool lookup_field (const std::string &lookup, StructFieldType **field_lookup,
+		     size_t *index) const
+  {
+    size_t i = 0;
+    for (auto &field : fields)
+      {
+	if (field->get_name ().compare (lookup) == 0)
+	  {
+	    if (index != nullptr)
+	      *index = i;
+
+	    if (field_lookup != nullptr)
+	      *field_lookup = field;
+
+	    return true;
+	  }
+	i++;
+      }
+    return false;
+  }
+
+  std::string as_string () const
+  {
+    if (type == VariantType::NUM)
+      return identifier + " = " + std::to_string (discriminant);
+
+    std::string buffer;
+    for (size_t i = 0; i < fields.size (); ++i)
+      {
+	buffer += fields.at (i)->as_string ();
+	if ((i + 1) < fields.size ())
+	  buffer += ", ";
+      }
+
+    if (type == VariantType::TUPLE)
+      return identifier + " (" + buffer + ")";
+    else
+      return identifier + " {" + buffer + "}";
+  }
+
+  bool is_equal (const VariantDef &other) const
+  {
+    if (type != other.type)
+      return false;
+
+    if (identifier.compare (other.identifier) != 0)
+      return false;
+
+    if (discriminant != other.discriminant)
+      return false;
+
+    if (fields.size () != other.fields.size ())
+      return false;
+
+    for (size_t i = 0; i < fields.size (); i++)
+      {
+	if (!fields.at (i)->is_equal (*other.fields.at (i)))
+	  return false;
+      }
+
+    return true;
+  }
+
+  VariantDef *clone () const
+  {
+    std::vector<StructFieldType *> cloned_fields;
+    for (auto &f : fields)
+      cloned_fields.push_back ((StructFieldType *) f->clone ());
+
+    return new VariantDef (id, identifier, type, discriminant, cloned_fields);
+  }
+
+private:
+  HirId id;
+  std::string identifier;
+  VariantType type;
+  int discriminant; /* Either discriminant or fields are valid.  */
+  std::vector<StructFieldType *> fields;
+};
+
 class ADTType : public BaseType, public SubstitutionRef
 {
 public:
@@ -1017,36 +1161,48 @@ public:
     STRUCT_STRUCT,
     TUPLE_STRUCT,
     UNION,
-    // ENUM ?
+    ENUM
   };
 
   ADTType (HirId ref, std::string identifier, ADTKind adt_kind,
-	   std::vector<StructFieldType *> fields,
+	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ADT, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
-      identifier (identifier), fields (fields), adt_kind (adt_kind)
+      identifier (identifier), variants (variants), adt_kind (adt_kind)
   {}
 
   ADTType (HirId ref, HirId ty_ref, std::string identifier, ADTKind adt_kind,
-	   std::vector<StructFieldType *> fields,
+	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, refs),
       SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
-      identifier (identifier), fields (fields), adt_kind (adt_kind)
+      identifier (identifier), variants (variants), adt_kind (adt_kind)
   {}
 
   ADTKind get_adt_kind () const { return adt_kind; }
+
+  bool is_struct_struct () const { return adt_kind == STRUCT_STRUCT; }
   bool is_tuple_struct () const { return adt_kind == TUPLE_STRUCT; }
   bool is_union () const { return adt_kind == UNION; }
+  bool is_enum () const { return adt_kind == ENUM; }
 
-  bool is_unit () const override { return this->fields.empty (); }
+  bool is_unit () const override
+  {
+    if (number_of_variants () == 0)
+      return true;
+
+    if (number_of_variants () == 1)
+      return variants.at (0)->num_fields () == 0;
+
+    return false;
+  }
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1061,8 +1217,6 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  size_t num_fields () const { return fields.size (); }
-
   std::string get_identifier () const { return identifier; }
 
   std::string get_name () const override final
@@ -1070,49 +1224,7 @@ public:
     return identifier + subst_as_string ();
   }
 
-  BaseType *get_field_type (size_t index);
-
-  const BaseType *get_field_type (size_t index) const;
-
-  const StructFieldType *get_field (size_t index) const;
-
-  StructFieldType *get_field (size_t index) { return fields.at (index); }
-
-  const StructFieldType *get_imm_field (size_t index) const
-  {
-    return fields.at (index);
-  }
-
-  StructFieldType *get_field (const std::string &lookup,
-			      size_t *index = nullptr) const
-  {
-    size_t i = 0;
-    for (auto &field : fields)
-      {
-	if (field->get_name ().compare (lookup) == 0)
-	  {
-	    if (index != nullptr)
-	      *index = i;
-	    return field;
-	  }
-	i++;
-      }
-    return nullptr;
-  }
-
   BaseType *clone () const final override;
-
-  std::vector<StructFieldType *> &get_fields () { return fields; }
-  const std::vector<StructFieldType *> &get_fields () const { return fields; }
-
-  void iterate_fields (std::function<bool (StructFieldType *)> cb)
-  {
-    for (auto &f : fields)
-      {
-	if (!cb (f))
-	  return;
-      }
-  }
 
   bool needs_generic_substitutions () const override final
   {
@@ -1126,12 +1238,44 @@ public:
     return has_substitutions ();
   }
 
+  size_t number_of_variants () const { return variants.size (); }
+
+  std::vector<VariantDef *> &get_variants () { return variants; }
+  const std::vector<VariantDef *> &get_variants () const { return variants; }
+
+  bool lookup_variant (const std::string &lookup,
+		       VariantDef **found_variant) const
+  {
+    for (auto &variant : variants)
+      {
+	if (variant->get_identifier ().compare (lookup) == 0)
+	  {
+	    *found_variant = variant;
+	    return true;
+	  }
+      }
+    return false;
+  }
+
+  bool lookup_variant_by_id (HirId id, VariantDef **found_variant) const
+  {
+    for (auto &variant : variants)
+      {
+	if (variant->get_id () == id)
+	  {
+	    *found_variant = variant;
+	    return true;
+	  }
+      }
+    return false;
+  }
+
   ADTType *
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
 private:
   std::string identifier;
-  std::vector<StructFieldType *> fields;
+  std::vector<VariantDef *> variants;
   ADTType::ADTKind adt_kind;
 };
 

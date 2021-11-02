@@ -127,7 +127,7 @@ public:
     return std::unique_ptr<Item> (clone_item_impl ());
   }
 
-  std::string as_string () const;
+  std::string as_string () const override;
 
   /* Adds crate names to the vector passed by reference, if it can
    * (polymorphism). */

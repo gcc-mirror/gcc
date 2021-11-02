@@ -228,11 +228,17 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
     }
 
   rust_assert (adt != nullptr);
+  rust_assert (!adt->is_enum ());
+  rust_assert (adt->number_of_variants () == 1);
+
+  TyTy::VariantDef *variant = adt->get_variants ().at (0);
 
   // get the field index
-  size_t index = 0;
-  adt->get_field (expr.get_field_name (), &index);
-  if (index >= adt->num_fields ())
+  size_t index;
+  TyTy::StructFieldType *field;
+  bool ok = variant->lookup_field (expr.get_field_name (), &field, &index);
+  rust_assert (ok);
+  if (index >= variant->num_fields ())
     {
       rust_error_at (expr.get_receiver_expr ()->get_locus (),
 		     "cannot access struct %s by index: %ld",
@@ -241,7 +247,7 @@ MarkLive::visit (HIR::FieldAccessExpr &expr)
     }
 
   // get the field hir id
-  HirId field_id = adt->get_field (index)->get_ref ();
+  HirId field_id = field->get_ref ();
   mark_hir_id (field_id);
 }
 

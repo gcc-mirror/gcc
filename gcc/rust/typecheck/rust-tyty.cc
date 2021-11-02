@@ -590,35 +590,16 @@ ADTType::accept_vis (TyConstVisitor &vis) const
 std::string
 ADTType::as_string () const
 {
-  if (num_fields () == 0)
-    return identifier;
-
-  std::string fields_buffer;
-  for (size_t i = 0; i < num_fields (); ++i)
+  std::string variants_buffer;
+  for (size_t i = 0; i < number_of_variants (); ++i)
     {
-      fields_buffer += get_field (i)->as_string ();
-      if ((i + 1) < num_fields ())
-	fields_buffer += ", ";
+      TyTy::VariantDef *variant = variants.at (i);
+      variants_buffer += variant->as_string ();
+      if ((i + 1) < number_of_variants ())
+	variants_buffer += ", ";
     }
 
-  return identifier + subst_as_string () + "{" + fields_buffer + "}";
-}
-
-const StructFieldType *
-ADTType::get_field (size_t index) const
-{
-  return fields.at (index);
-}
-
-const BaseType *
-ADTType::get_field_type (size_t index) const
-{
-  const StructFieldType *ref = get_field (index);
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (ref->get_field_type ()->get_ref (), &lookup);
-  rust_assert (ok);
-  return lookup;
+  return identifier + subst_as_string () + "{" + variants_buffer + "}";
 }
 
 BaseType *
@@ -657,7 +638,10 @@ ADTType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const ADTType &> (other);
-  if (num_fields () != other2.num_fields ())
+  if (get_adt_kind () != other2.get_adt_kind ())
+    return false;
+
+  if (number_of_variants () != other2.number_of_variants ())
     return false;
 
   if (has_subsititions_defined () != other2.has_subsititions_defined ())
@@ -683,9 +667,12 @@ ADTType::is_equal (const BaseType &other) const
     }
   else
     {
-      for (size_t i = 0; i < num_fields (); i++)
+      for (size_t i = 0; i < number_of_variants (); i++)
 	{
-	  if (!get_field (i)->is_equal (*other2.get_field (i)))
+	  const TyTy::VariantDef *a = get_variants ().at (i);
+	  const TyTy::VariantDef *b = other2.get_variants ().at (i);
+
+	  if (!a->is_equal (*b))
 	    return false;
 	}
     }
@@ -696,13 +683,64 @@ ADTType::is_equal (const BaseType &other) const
 BaseType *
 ADTType::clone () const
 {
-  std::vector<StructFieldType *> cloned_fields;
-  for (auto &f : fields)
-    cloned_fields.push_back ((StructFieldType *) f->clone ());
+  std::vector<VariantDef *> cloned_variants;
+  for (auto &variant : variants)
+    cloned_variants.push_back (variant->clone ());
 
   return new ADTType (get_ref (), get_ty_ref (), identifier, get_adt_kind (),
-		      cloned_fields, clone_substs (), used_arguments,
+		      cloned_variants, clone_substs (), used_arguments,
 		      get_combined_refs ());
+}
+
+static bool
+handle_substitions (SubstitutionArgumentMappings &subst_mappings,
+		    StructFieldType *field)
+{
+  auto fty = field->get_field_type ();
+  bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
+  if (is_param_ty)
+    {
+      ParamType *p = static_cast<ParamType *> (fty);
+
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
+      if (ok)
+	{
+	  auto argt = arg.get_tyty ();
+	  bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	  bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
+
+	  if (arg_is_param || arg_is_concrete)
+	    {
+	      auto new_field = argt->clone ();
+	      new_field->set_ref (fty->get_ref ());
+	      field->set_field_type (new_field);
+	    }
+	  else
+	    {
+	      field->get_field_type ()->set_ty_ref (argt->get_ref ());
+	    }
+	}
+    }
+  else if (fty->has_subsititions_defined () || fty->contains_type_parameters ())
+    {
+      BaseType *concrete
+	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
+
+      if (concrete->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (subst_mappings.get_locus (),
+			 "Failed to resolve field substitution type: %s",
+			 fty->as_string ().c_str ());
+	  return false;
+	}
+
+      auto new_field = concrete->clone ();
+      new_field->set_ref (fty->get_ref ());
+      field->set_field_type (new_field);
+    }
+
+  return true;
 }
 
 ADTType *
@@ -721,54 +759,15 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	sub.fill_param_ty (*arg.get_tyty (), subst_mappings.get_locus ());
     }
 
-  adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
-    auto fty = field->get_field_type ();
-    bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
-    if (is_param_ty)
-      {
-	ParamType *p = static_cast<ParamType *> (fty);
-
-	SubstitutionArg arg = SubstitutionArg::error ();
-	bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
-	if (ok)
-	  {
-	    auto argt = arg.get_tyty ();
-	    bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
-	    bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
-
-	    if (arg_is_param || arg_is_concrete)
-	      {
-		auto new_field = argt->clone ();
-		new_field->set_ref (fty->get_ref ());
-		field->set_field_type (new_field);
-	      }
-	    else
-	      {
-		field->get_field_type ()->set_ty_ref (argt->get_ref ());
-	      }
-	  }
-      }
-    else if (fty->has_subsititions_defined ()
-	     || fty->contains_type_parameters ())
-      {
-	BaseType *concrete
-	  = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
-
-	if (concrete->get_kind () == TyTy::TypeKind::ERROR)
-	  {
-	    rust_error_at (subst_mappings.get_locus (),
-			   "Failed to resolve field substitution type: %s",
-			   fty->as_string ().c_str ());
-	    return false;
-	  }
-
-	auto new_field = concrete->clone ();
-	new_field->set_ref (fty->get_ref ());
-	field->set_field_type (new_field);
-      }
-
-    return true;
-  });
+  for (auto &variant : adt->get_variants ())
+    {
+      for (auto &field : variant->get_fields ())
+	{
+	  bool ok = ::Rust::TyTy::handle_substitions (subst_mappings, field);
+	  if (!ok)
+	    return adt;
+	}
+    }
 
   return adt;
 }
@@ -2538,7 +2537,8 @@ DynamicObjectType::get_object_items () const
 void
 TypeCheckCallExpr::visit (ADTType &type)
 {
-  if (!type.is_tuple_struct ())
+  rust_assert (!variant.is_error ());
+  if (variant.get_variant_type () != TyTy::VariantDef::VariantType::TUPLE)
     {
       rust_error_at (
 	call.get_locus (),
@@ -2547,18 +2547,18 @@ TypeCheckCallExpr::visit (ADTType &type)
       return;
     }
 
-  if (call.num_params () != type.num_fields ())
+  if (call.num_params () != variant.num_fields ())
     {
       rust_error_at (call.get_locus (),
 		     "unexpected number of arguments %lu expected %lu",
-		     call.num_params (), type.num_fields ());
+		     call.num_params (), variant.num_fields ());
       return;
     }
 
   size_t i = 0;
   for (auto &argument : call.get_arguments ())
     {
-      StructFieldType *field = type.get_field (i);
+      StructFieldType *field = variant.get_field_at_index (i);
       BaseType *field_tyty = field->get_field_type ();
 
       BaseType *arg = Resolver::TypeCheckExpr::Resolve (argument.get (), false);

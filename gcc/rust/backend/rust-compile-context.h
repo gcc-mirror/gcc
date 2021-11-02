@@ -431,10 +431,15 @@ public:
     if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
       return;
 
+    // we dont support enums yet
+    rust_assert (!type.is_enum ());
+    rust_assert (type.number_of_variants () == 1);
+
+    TyTy::VariantDef &variant = *type.get_variants ().at (0);
     std::vector<Backend::Btyped_identifier> fields;
-    for (size_t i = 0; i < type.num_fields (); i++)
+    for (size_t i = 0; i < variant.num_fields (); i++)
       {
-	const TyTy::StructFieldType *field = type.get_field (i);
+	const TyTy::StructFieldType *field = variant.get_field_at_index (i);
 	Btype *compiled_field_ty
 	  = TyTyResolveCompile::compile (ctx, field->get_field_type ());
 
