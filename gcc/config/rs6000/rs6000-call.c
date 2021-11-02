@@ -12536,6 +12536,14 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       return true;
     /* flavors of vec_min.  */
     case VSX_BUILTIN_XVMINDP:
+    case ALTIVEC_BUILTIN_VMINFP:
+      {
+	lhs = gimple_call_lhs (stmt);
+	tree type = TREE_TYPE (lhs);
+	if (HONOR_NANS (type))
+	  return false;
+	gcc_fallthrough ();
+      }
     case P8V_BUILTIN_VMINSD:
     case P8V_BUILTIN_VMINUD:
     case ALTIVEC_BUILTIN_VMINSB:
@@ -12544,7 +12552,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VMINUB:
     case ALTIVEC_BUILTIN_VMINUH:
     case ALTIVEC_BUILTIN_VMINUW:
-    case ALTIVEC_BUILTIN_VMINFP:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -12554,6 +12561,14 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       return true;
     /* flavors of vec_max.  */
     case VSX_BUILTIN_XVMAXDP:
+    case ALTIVEC_BUILTIN_VMAXFP:
+      {
+	lhs = gimple_call_lhs (stmt);
+	tree type = TREE_TYPE (lhs);
+	if (HONOR_NANS (type))
+	  return false;
+	gcc_fallthrough ();
+      }
     case P8V_BUILTIN_VMAXSD:
     case P8V_BUILTIN_VMAXUD:
     case ALTIVEC_BUILTIN_VMAXSB:
@@ -12562,7 +12577,6 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VMAXUB:
     case ALTIVEC_BUILTIN_VMAXUH:
     case ALTIVEC_BUILTIN_VMAXUW:
-    case ALTIVEC_BUILTIN_VMAXFP:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
