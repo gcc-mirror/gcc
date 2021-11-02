@@ -22,6 +22,7 @@
 #include "rust-compile-struct-field-expr.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
+#include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
 
 namespace Rust {
@@ -243,8 +244,9 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
       size_t offs = 0;
       const Resolver::TraitItemReference *ref = nullptr;
-      for (auto &item : dyn->get_object_items ())
+      for (auto &bound : dyn->get_object_items ())
 	{
+	  const Resolver::TraitItemReference *item = bound.first;
 	  auto t = item->get_tyty ();
 	  rust_assert (t->get_kind () == TyTy::TypeKind::FNDEF);
 	  auto ft = static_cast<TyTy::FnType *> (t);
@@ -790,18 +792,25 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
   // __trait_object_ptr
   // [list of function ptrs]
 
+  auto root = actual->get_root ();
+  std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
+    probed_bounds_for_receiver = Resolver::TypeBoundsProbe::Probe (root);
+
   std::vector<Bexpression *> vals;
   vals.push_back (compiled_ref);
-  for (auto &item : ty->get_object_items ())
+  for (auto &bound : ty->get_object_items ())
     {
-      // compute the address of each method item
-      auto address = compute_address_for_trait_item (item, actual->get_root ());
+      const Resolver::TraitItemReference *item = bound.first;
+      const TyTy::TypeBoundPredicate *predicate = bound.second;
+
+      auto address = compute_address_for_trait_item (item, predicate,
+						     probed_bounds_for_receiver,
+						     actual, root, locus);
       vals.push_back (address);
     }
 
   Bexpression *constructed_trait_object
     = ctx->get_backend ()->constructor_expression (dynamic_object, vals, -1,
-
 						   locus);
 
   fncontext fnctx = ctx->peek_fn ();
@@ -851,44 +860,148 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
 
 Bexpression *
 HIRCompileBase::compute_address_for_trait_item (
-  const Resolver::TraitItemReference *trait_item_ref,
-  const TyTy::BaseType *receiver)
+  const Resolver::TraitItemReference *ref,
+  const TyTy::TypeBoundPredicate *predicate,
+  std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
+    &receiver_bounds,
+  const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus)
 {
-  TyTy::BaseType *item_type = trait_item_ref->get_tyty ();
-  rust_assert (item_type->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (item_type);
-
-  auto root = receiver->get_root ();
-  HIR::PathIdentSegment segment_name (trait_item_ref->get_identifier ());
-  std::vector<Resolver::PathProbeCandidate> candidates
-    = Resolver::PathProbeType::Probe (root, segment_name, true, false, true);
-
-  // FIXME for default trait item resolution
+  // There are two cases here one where its an item which has an implementation
+  // within a trait-impl-block. Then there is the case where there is a default
+  // implementation for this within the trait.
   //
-  // if (candidates.size () == 0)
-  //   {
-  //     rust_assert (trait_item_ref->is_optional ()); // has definition
+  // The awkward part here is that this might be a generic trait and we need to
+  // figure out the correct monomorphized type for this so we can resolve the
+  // address of the function , this is stored as part of the
+  // type-bound-predicate
   //
-  //     CompileTraitItem::Compile (self_type,
-  //       			 trait_item_ref->get_hir_trait_item (), ctx,
-  //       			 fntype);
-  //     if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
-  //       {
-  //         return ctx->get_backend ()->error_expression ();
-  //       }
-  //   }
+  // Algo:
+  // check if there is an impl-item for this trait-item-ref first
+  // else assert that the trait-item-ref has an implementation
 
-  rust_assert (!candidates.empty ());
-  rust_assert (candidates.size () == 1);
+  TyTy::TypeBoundPredicateItem predicate_item
+    = predicate->lookup_associated_item (ref->get_identifier ());
+  rust_assert (!predicate_item.is_error ());
 
-  Resolver::PathProbeCandidate *candidate = &candidates.at (0);
-  rust_assert (candidate->is_impl_candidate ());
+  // this is the expected end type
+  TyTy::BaseType *trait_item_type = predicate_item.get_tyty_for_receiver (root);
+  rust_assert (trait_item_type->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *trait_item_fntype
+    = static_cast<TyTy::FnType *> (trait_item_type);
 
-  HIR::ImplItem *impl_item = candidate->item.impl.impl_item;
+  // find impl-block for this trait-item-ref
+  HIR::ImplBlock *associated_impl_block = nullptr;
+  const Resolver::TraitReference *predicate_trait_ref = predicate->get ();
+  for (auto &item : receiver_bounds)
+    {
+      Resolver::TraitReference *trait_ref = item.first;
+      HIR::ImplBlock *impl_block = item.second;
+      if (predicate_trait_ref->is_equal (*trait_ref))
+	{
+	  associated_impl_block = impl_block;
+	  break;
+	}
+    }
 
-  return CompileInherentImplItem::Compile (receiver->get_root (), impl_item,
-					   ctx, true, fntype, true,
-					   Location () /* FIXME */);
+  // FIXME this probably should just return error_mark_node but this helps
+  // debug for now since we are wrongly returning early on type-resolution
+  // failures, until we take advantage of more error types and error_mark_node
+  rust_assert (associated_impl_block != nullptr);
+
+  // lookup self for the associated impl
+  std::unique_ptr<HIR::Type> &self_type_path
+    = associated_impl_block->get_type ();
+  TyTy::BaseType *self = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    self_type_path->get_mappings ().get_hirid (), &self);
+  rust_assert (ok);
+
+  // lookup the predicate item from the self
+  TyTy::TypeBoundPredicate *self_bound = nullptr;
+  for (auto &bound : self->get_specified_bounds ())
+    {
+      const Resolver::TraitReference *bound_ref = bound.get ();
+      const Resolver::TraitReference *specified_ref = predicate->get ();
+      if (bound_ref->is_equal (*specified_ref))
+	{
+	  self_bound = &bound;
+	  break;
+	}
+    }
+  rust_assert (self_bound != nullptr);
+
+  // lookup the associated item from the associated impl block
+  TyTy::TypeBoundPredicateItem associated_self_item
+    = self_bound->lookup_associated_item (ref->get_identifier ());
+  rust_assert (!associated_self_item.is_error ());
+
+  // apply any generic arguments from this predicate
+  TyTy::BaseType *mono1 = associated_self_item.get_tyty_for_receiver (self);
+  TyTy::BaseType *mono2 = nullptr;
+  if (predicate->has_generic_args ())
+    {
+      mono2 = associated_self_item.get_tyty_for_receiver (
+	self, predicate->get_generic_args ());
+    }
+  else
+    {
+      mono2 = associated_self_item.get_tyty_for_receiver (self);
+    }
+  rust_assert (mono1 != nullptr);
+  rust_assert (mono1->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *assocated_item_ty1 = static_cast<TyTy::FnType *> (mono1);
+
+  rust_assert (mono2 != nullptr);
+  rust_assert (mono2->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *assocated_item_ty2 = static_cast<TyTy::FnType *> (mono2);
+
+  // Lookup the impl-block for the associated impl_item if it exists
+  HIR::Function *associated_function = nullptr;
+  for (auto &impl_item : associated_impl_block->get_impl_items ())
+    {
+      bool is_function = impl_item->get_impl_item_type ()
+			 == HIR::ImplItem::ImplItemType::FUNCTION;
+      if (!is_function)
+	continue;
+
+      HIR::Function *fn = static_cast<HIR::Function *> (impl_item.get ());
+      bool found_associated_item
+	= fn->get_function_name ().compare (ref->get_identifier ()) == 0;
+      if (found_associated_item)
+	associated_function = fn;
+    }
+
+  // we found an impl_item for this
+  if (associated_function != nullptr)
+    {
+      // lookup the associated type for this item
+      TyTy::BaseType *lookup = nullptr;
+      bool ok = ctx->get_tyctx ()->lookup_type (
+	associated_function->get_mappings ().get_hirid (), &lookup);
+      rust_assert (ok);
+      rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+      TyTy::FnType *lookup_fntype = static_cast<TyTy::FnType *> (lookup);
+
+      if (lookup_fntype->needs_substitution ())
+	{
+	  TyTy::SubstitutionArgumentMappings mappings
+	    = assocated_item_ty1->solve_missing_mappings_from_this (
+	      *assocated_item_ty2, *lookup_fntype);
+	  lookup_fntype = lookup_fntype->handle_substitions (mappings);
+	}
+
+      return CompileInherentImplItem::Compile (root, associated_function, ctx,
+					       true, lookup_fntype, true,
+					       locus);
+    }
+
+  // we can only compile trait-items with a body
+  bool trait_item_has_definition = ref->is_optional ();
+  rust_assert (trait_item_has_definition);
+
+  HIR::TraitItem *trait_item = ref->get_hir_trait_item ();
+  return CompileTraitItem::Compile (root, trait_item, ctx, trait_item_fntype,
+				    true, locus);
 }
 
 } // namespace Compile

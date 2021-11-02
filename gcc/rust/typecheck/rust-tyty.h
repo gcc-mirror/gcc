@@ -166,11 +166,15 @@ public:
     return parent == nullptr || trait_item_ref == nullptr;
   }
 
-  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
+  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver,
+				   const HIR::GenericArgs *bound_args
+				   = nullptr);
 
   const Resolver::TraitItemReference *get_raw_item () const;
 
   bool needs_implementation () const;
+
+  const TypeBoundPredicate *get_parent () const { return parent; }
 
 private:
   const TypeBoundPredicate *parent;
@@ -992,6 +996,11 @@ public:
   SubstitutionArgumentMappings solve_mappings_from_receiver_for_self (
     SubstitutionArgumentMappings &mappings) const;
 
+  // TODO comment
+  SubstitutionArgumentMappings
+  solve_missing_mappings_from_this (SubstitutionRef &ref, SubstitutionRef &to);
+
+  // TODO comment
   BaseType *infer_substitions (Location locus)
   {
     std::vector<SubstitutionArg> args;
@@ -2228,7 +2237,8 @@ public:
   bool is_concrete () const override final { return true; }
 
   // this returns a flat list of items including super trait bounds
-  const std::vector<const Resolver::TraitItemReference *>
+  const std::vector<
+    std::pair<const Resolver::TraitItemReference *, const TypeBoundPredicate *>>
   get_object_items () const;
 };
 
