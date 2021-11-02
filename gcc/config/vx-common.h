@@ -97,7 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* ------------------------ Misc configuration bits ----------------------  */
 
-#ifndef TARGET_VXWORKS7
+#if !TARGET_VXWORKS7
 /* VxWorks, prior to version 7, could not have dots in constructor
    labels, because it used a mutant variation of collect2 that
    generates C code instead of assembly.  Thus each constructor label
