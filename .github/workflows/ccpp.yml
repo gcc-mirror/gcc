@@ -52,6 +52,12 @@ jobs:
       run: |
            cd gccrs-build; \
            make check-rust
+    - name: Archive check-rust results
+      uses: actions/upload-artifact@v2
+      with:
+        name: check-rust-logs
+        path: |
+          gccrs-build/gcc/testsuite/rust/
     - name: Check regressions
       run: |
            cd gccrs-build; \
