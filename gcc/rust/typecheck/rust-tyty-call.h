@@ -71,7 +71,8 @@ public:
 private:
   TypeCheckCallExpr (HIR::CallExpr &c, TyTy::VariantDef &variant,
 		     Resolver::TypeCheckContext *context)
-    : resolved (nullptr), call (c), variant (variant), context (context),
+    : resolved (new TyTy::ErrorType (c.get_mappings ().get_hirid ())), call (c),
+      variant (variant), context (context),
       mappings (Analysis::Mappings::get ())
   {}
 
