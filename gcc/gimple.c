@@ -1647,6 +1647,33 @@ gimple_call_retslot_flags (const gcall *stmt)
   return flags;
 }
 
+/* Detects argument flags for static chain on call STMT.  */
+
+int
+gimple_call_static_chain_flags (const gcall *stmt)
+{
+  int flags = 0;
+
+  tree callee = gimple_call_fndecl (stmt);
+  if (callee)
+    {
+      cgraph_node *node = cgraph_node::get (callee);
+      modref_summary *summary = node ? get_modref_function_summary (node)
+				: NULL;
+
+      if (summary)
+	{
+	  int modref_flags = summary->static_chain_flags;
+
+	  /* We have possibly optimized out load.  Be conservative here.  */
+	  gcc_checking_assert (node->binds_to_current_def_p ());
+	  if (dbg_cnt (ipa_mod_ref_pta))
+	    flags |= modref_flags;
+	}
+    }
+  return flags;
+}
+
 /* Detects return flags for the call STMT.  */
 
 int

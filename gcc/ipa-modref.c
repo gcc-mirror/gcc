@@ -272,7 +272,8 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 /* Summary for a single function which this pass produces.  */
 
 modref_summary::modref_summary ()
-  : loads (NULL), stores (NULL), retslot_flags (0), writes_errno (false)
+  : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
+    writes_errno (false)
 {
 }
 
@@ -327,6 +328,9 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
   arg_flags.release ();
   if (check_flags && remove_useless_eaf_flags (retslot_flags, ecf_flags, false))
     return true;
+  if (check_flags
+      && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
+    return true;
   if (ecf_flags & ECF_CONST)
     return false;
   if (loads && !loads->every_base)
@@ -369,6 +373,7 @@ struct GTY(()) modref_summary_lto
   modref_records_lto *stores;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   eaf_flags_t retslot_flags;
+  eaf_flags_t static_chain_flags;
   bool writes_errno;
 
   modref_summary_lto ();
@@ -380,7 +385,8 @@ struct GTY(()) modref_summary_lto
 /* Summary for a single function which this pass produces.  */
 
 modref_summary_lto::modref_summary_lto ()
-  : loads (NULL), stores (NULL), retslot_flags (0), writes_errno (false)
+  : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
+    writes_errno (false)
 {
 }
 
@@ -407,6 +413,9 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
     return true;
   arg_flags.release ();
   if (check_flags && remove_useless_eaf_flags (retslot_flags, ecf_flags, false))
+    return true;
+  if (check_flags
+      && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & ECF_CONST)
     return false;
@@ -621,6 +630,11 @@ modref_summary::dump (FILE *out)
       fprintf (out, "  Retslot flags:");
       dump_eaf_flags (out, retslot_flags);
     }
+  if (static_chain_flags)
+    {
+      fprintf (out, "  Static chain flags:");
+      dump_eaf_flags (out, static_chain_flags);
+    }
 }
 
 /* Dump summary.  */
@@ -647,6 +661,11 @@ modref_summary_lto::dump (FILE *out)
     {
       fprintf (out, "  Retslot flags:");
       dump_eaf_flags (out, retslot_flags);
+    }
+  if (static_chain_flags)
+    {
+      fprintf (out, "  Static chain flags:");
+      dump_eaf_flags (out, static_chain_flags);
     }
 }
 
@@ -1417,7 +1436,8 @@ struct escape_point
   /* Extra hidden args we keep track of.  */
   enum hidden_args
   {
-    retslot_arg = -1
+    retslot_arg = -1,
+    static_chain_arg = -2
   };
   /* Value escapes to this call.  */
   gcall *call;
@@ -1787,11 +1807,9 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		    lattice[index].merge (gimple_call_retslot_flags (call));
 		}
 
-	      /* We do not track accesses to the static chain (we could)
-		 so give up.  */
 	      if (gimple_call_chain (call)
 		  && (gimple_call_chain (call) == name))
-		lattice[index].merge (0);
+		lattice[index].merge (gimple_call_static_chain_flags (call));
 
 	      /* Process internal functions and right away.  */
 	      bool record_ipa = ipa && !gimple_call_internal_p (call);
@@ -1983,6 +2001,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   unsigned int count = 0;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
   tree retslot = NULL;
+  tree static_chain = NULL;
 
   /* For novops functions we have nothing to gain by EAF flags.  */
   if (ecf_flags & ECF_NOVOPS)
@@ -1992,12 +2011,14 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   if (DECL_RESULT (current_function_decl)
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
     retslot = ssa_default_def (cfun, DECL_RESULT (current_function_decl));
+  if (cfun->static_chain_decl)
+    static_chain = ssa_default_def (cfun, cfun->static_chain_decl);
 
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
        parm = TREE_CHAIN (parm))
     count++;
 
-  if (!count && !retslot)
+  if (!count && !retslot && !static_chain)
     return;
 
   auto_vec<modref_lattice> lattice;
@@ -2069,6 +2090,22 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	    summary_lto->retslot_flags = flags;
 	  record_escape_points (lattice[SSA_NAME_VERSION (retslot)],
 				escape_point::retslot_arg, flags);
+	}
+    }
+  if (static_chain)
+    {
+      analyze_ssa_name_flags (static_chain, lattice, 0, ipa);
+      int flags = lattice[SSA_NAME_VERSION (static_chain)].flags;
+
+      flags = remove_useless_eaf_flags (flags, ecf_flags, false);
+      if (flags)
+	{
+	  if (summary)
+	    summary->static_chain_flags = flags;
+	  if (summary_lto)
+	    summary_lto->static_chain_flags = flags;
+	  record_escape_points (lattice[SSA_NAME_VERSION (static_chain)],
+				escape_point::static_chain_arg, flags);
 	}
     }
   if (ipa)
@@ -2355,6 +2392,7 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
+  dst_data->static_chain_flags = src_data->static_chain_flags;
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -2381,6 +2419,7 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
+  dst_data->static_chain_flags = src_data->static_chain_flags;
 }
 
 namespace
@@ -2698,6 +2737,7 @@ modref_write ()
 	  for (unsigned int i = 0; i < r->arg_flags.length (); i++)
 	    streamer_write_uhwi (ob, r->arg_flags[i]);
 	  streamer_write_uhwi (ob, r->retslot_flags);
+	  streamer_write_uhwi (ob, r->static_chain_flags);
 
 	  write_modref_records (r->loads, ob);
 	  write_modref_records (r->stores, ob);
@@ -2799,6 +2839,13 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	modref_sum->retslot_flags = flags;
       if (modref_sum_lto)
 	modref_sum_lto->retslot_flags = flags;
+
+      flags = streamer_read_uhwi (&ib);
+      if (modref_sum)
+	modref_sum->static_chain_flags = flags;
+      if (modref_sum_lto)
+	modref_sum_lto->static_chain_flags = flags;
+
       read_modref_records (&ib, data_in,
 			   modref_sum ? &modref_sum->loads : NULL,
 			   modref_sum_lto ? &modref_sum_lto->loads : NULL);
@@ -3888,6 +3935,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	{
 	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
 			   ? cur_summary->retslot_flags
+			   : ee->parm_index == escape_point::static_chain_arg
+			   ? cur_summary->static_chain_flags
 			   : cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
 	    {
@@ -3903,6 +3952,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	{
 	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
 			   ? cur_summary_lto->retslot_flags
+			   : ee->parm_index == escape_point::static_chain_arg
+			   ? cur_summary_lto->static_chain_flags
 			   : cur_summary_lto->arg_flags[ee->parm_index];
 	  if ((f & flags_lto) != f)
 	    {
