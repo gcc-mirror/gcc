@@ -642,14 +642,7 @@ public:
     return true;
   }
 
-  void iterate_fields (std::function<bool (BaseType *)> cb) const
-  {
-    for (size_t i = 0; i < num_fields (); i++)
-      {
-	if (!cb (get_field (i)))
-	  return;
-      }
-  }
+  const std::vector<TyVar> &get_fields () const { return fields; }
 
   std::string get_name () const override final { return as_string (); }
 
