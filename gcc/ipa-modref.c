@@ -1832,7 +1832,6 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 						    ecf_flags);
 	      bool ignore_retval = ignore_retval_p (current_function_decl,
 						    ecf_flags);
-	      bool deref_retval = false;
 
 	      /* Handle *name = func (...).  */
 	      if (gimple_call_lhs (call)
