@@ -15136,8 +15136,8 @@
   [(set (match_operand:V1TI 0 "register_operand")
 	(ashift:V1TI
 	 (match_operand:V1TI 1 "register_operand")
-	 (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_SSE2"
+	 (match_operand:QI 2 "general_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT"
 {
   ix86_expand_v1ti_shift (ASHIFT, operands);
   DONE;
@@ -15147,10 +15147,21 @@
   [(set (match_operand:V1TI 0 "register_operand")
 	(lshiftrt:V1TI
 	 (match_operand:V1TI 1 "register_operand")
-	 (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_SSE2"
+	 (match_operand:QI 2 "general_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT"
 {
   ix86_expand_v1ti_shift (LSHIFTRT, operands);
+  DONE;
+})
+
+(define_expand "ashrv1ti3"
+  [(set (match_operand:V1TI 0 "register_operand")
+	(ashiftrt:V1TI
+	 (match_operand:V1TI 1 "register_operand")
+	 (match_operand:QI 2 "general_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT"
+{
+  ix86_expand_v1ti_ashiftrt (operands);
   DONE;
 })
 
@@ -15158,8 +15169,8 @@
   [(set (match_operand:V1TI 0 "register_operand")
 	(rotate:V1TI
 	 (match_operand:V1TI 1 "register_operand")
-	 (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_SSE2"
+	 (match_operand:QI 2 "const_int_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT"
 {
   ix86_expand_v1ti_rotate (ROTATE, operands);
   DONE;
@@ -15169,8 +15180,8 @@
   [(set (match_operand:V1TI 0 "register_operand")
 	(rotatert:V1TI
 	 (match_operand:V1TI 1 "register_operand")
-	 (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_SSE2"
+	 (match_operand:QI 2 "const_int_operand")))]
+  "TARGET_SSE2 && TARGET_64BIT"
 {
   ix86_expand_v1ti_rotate (ROTATERT, operands);
   DONE;
