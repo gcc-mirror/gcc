@@ -21989,6 +21989,10 @@ ix86_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 static bool
 ix86_vector_mode_supported_p (machine_mode mode)
 {
+  /* For ia32, scalar TImode isn't supported and so V1TImode shouldn't be
+     either.  */
+  if (!TARGET_64BIT && GET_MODE_INNER (mode) == TImode)
+    return false;
   if (TARGET_SSE && VALID_SSE_REG_MODE (mode))
     return true;
   if (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
