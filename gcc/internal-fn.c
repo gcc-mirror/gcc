@@ -3090,8 +3090,12 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 			     (total_bytes * BITS_PER_UNIT, 1);
 	      wide_int w = wi::from_buffer (buf, total_bytes);
 	      init = wide_int_to_tree (itype, w);
-	      /* Pun the LHS to make sure its type has constant size.  */
-	      lhs = build1 (VIEW_CONVERT_EXPR, itype, lhs);
+	      /* Pun the LHS to make sure its type has constant size
+		 unless it is an SSA name where that's already known.  */
+	      if (TREE_CODE (lhs) != SSA_NAME)
+		lhs = build1 (VIEW_CONVERT_EXPR, itype, lhs);
+	      else
+		init = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), init);
 	    }
 	}
       else
