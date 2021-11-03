@@ -152,6 +152,13 @@
        (match_test "aarch64_symbolic_address_p (op)")
        (match_test "aarch64_mov_operand_p (op, GET_MODE (op))")))
 
+(define_constraint "Usw"
+  "@internal
+   A constraint that matches a small GOT access."
+  (and (match_code "symbol_ref")
+       (match_test "aarch64_classify_symbolic_expression (op)
+		     == SYMBOL_SMALL_GOT_4G")))
+
 (define_constraint "Uss"
   "@internal
   A constraint that matches an immediate shift constant in SImode."

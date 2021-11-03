@@ -3754,47 +3754,8 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       }
 
     case SYMBOL_SMALL_GOT_4G:
-      {
-	/* In ILP32, the mode of dest can be either SImode or DImode,
-	   while the got entry is always of SImode size.  The mode of
-	   dest depends on how dest is used: if dest is assigned to a
-	   pointer (e.g. in the memory), it has SImode; it may have
-	   DImode if dest is dereferenced to access the memeory.
-	   This is why we have to handle three different ldr_got_small
-	   patterns here (two patterns for ILP32).  */
-
-	rtx insn;
-	rtx mem;
-	rtx tmp_reg = dest;
-	machine_mode mode = GET_MODE (dest);
-
-	if (can_create_pseudo_p ())
-	  tmp_reg = gen_reg_rtx (mode);
-
-	emit_move_insn (tmp_reg, gen_rtx_HIGH (mode, imm));
-	if (mode == ptr_mode)
-	  {
-	    if (mode == DImode)
-	      insn = gen_ldr_got_small_di (dest, tmp_reg, imm);
-	    else
-	      insn = gen_ldr_got_small_si (dest, tmp_reg, imm);
-
-	    mem = XVECEXP (SET_SRC (insn), 0, 0);
-	  }
-	else
-	  {
-	    gcc_assert (mode == Pmode);
-
-	    insn = gen_ldr_got_small_sidi (dest, tmp_reg, imm);
-	    mem = XVECEXP (XEXP (SET_SRC (insn), 0), 0, 0);
-	  }
-
-	gcc_assert (MEM_P (mem));
-	MEM_READONLY_P (mem) = 1;
-	MEM_NOTRAP_P (mem) = 1;
-	emit_insn (insn);
-	return;
-      }
+      emit_insn (gen_rtx_SET (dest, imm));
+      return;
 
     case SYMBOL_SMALL_TLSGD:
       {
@@ -11156,7 +11117,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       switch (aarch64_classify_symbolic_expression (x))
 	{
 	case SYMBOL_SMALL_GOT_4G:
-	  asm_fprintf (asm_out_file, ":lo12:");
+	  asm_fprintf (asm_out_file, ":got_lo12:");
 	  break;
 
 	case SYMBOL_SMALL_TLSGD:
@@ -20263,6 +20224,11 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
 
       return aarch64_simd_valid_immediate (x, NULL);
     }
+
+  /* GOT accesses are valid moves.  */
+  if (SYMBOL_REF_P (x)
+      && aarch64_classify_symbolic_expression (x) == SYMBOL_SMALL_GOT_4G)
+    return true;
 
   x = strip_salt (x);
   if (SYMBOL_REF_P (x) && mode == DImode && CONSTANT_ADDRESS_P (x))
