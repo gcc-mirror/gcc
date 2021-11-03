@@ -61,13 +61,40 @@ namespace __variant
   template<size_t _Np, typename... _Types>
     struct _Nth_type;
 
-  template<size_t _Np, typename _First, typename... _Rest>
-    struct _Nth_type<_Np, _First, _Rest...>
-    : _Nth_type<_Np-1, _Rest...> { };
+  template<typename _Tp0, typename... _Rest>
+    struct _Nth_type<0, _Tp0, _Rest...>
+    { using type = _Tp0; };
 
-  template<typename _First, typename... _Rest>
-    struct _Nth_type<0, _First, _Rest...>
-    { using type = _First; };
+  template<typename _Tp0, typename _Tp1, typename... _Rest>
+    struct _Nth_type<1, _Tp0, _Tp1, _Rest...>
+    { using type = _Tp1; };
+
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
+    struct _Nth_type<2, _Tp0, _Tp1, _Tp2, _Rest...>
+    { using type = _Tp2; };
+
+  template<size_t _Np, typename _Tp0, typename _Tp1, typename _Tp2,
+	   typename... _Rest>
+#if __cpp_concepts
+    requires (_Np >= 3)
+#endif
+    struct _Nth_type<_Np, _Tp0, _Tp1, _Tp2, _Rest...>
+    : _Nth_type<_Np - 3, _Rest...>
+    { };
+
+#if ! __cpp_concepts // Need additional specializations to avoid ambiguities.
+  template<typename _Tp0, typename _Tp1, typename... _Rest>
+    struct _Nth_type<0, _Tp0, _Tp1, _Rest...>
+    { using type = _Tp0; };
+
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
+    struct _Nth_type<0, _Tp0, _Tp1, _Tp2, _Rest...>
+    { using type = _Tp0; };
+
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
+    struct _Nth_type<1, _Tp0, _Tp1, _Tp2, _Rest...>
+    { using type = _Tp1; };
+#endif
 
 } // namespace __variant
 } // namespace __detail
@@ -102,16 +129,25 @@ namespace __variant
   template<typename _Variant>
     inline constexpr size_t variant_size_v = variant_size<_Variant>::value;
 
+  template<typename... _Types>
+    inline constexpr size_t
+    variant_size_v<variant<_Types...>> = sizeof...(_Types);
+
+  template<typename... _Types>
+    inline constexpr size_t
+    variant_size_v<const variant<_Types...>> = sizeof...(_Types);
+
   template<size_t _Np, typename _Variant>
     struct variant_alternative;
 
-  template<size_t _Np, typename _First, typename... _Rest>
-    struct variant_alternative<_Np, variant<_First, _Rest...>>
-    : variant_alternative<_Np-1, variant<_Rest...>> {};
+  template<size_t _Np, typename... _Types>
+    struct variant_alternative<_Np, variant<_Types...>>
+    {
+      static_assert(_Np < sizeof...(_Types));
 
-  template<typename _First, typename... _Rest>
-    struct variant_alternative<0, variant<_First, _Rest...>>
-    { using type = _First; };
+      using type
+	= typename __detail::__variant::_Nth_type<_Np, _Types...>::type;
+    };
 
   template<size_t _Np, typename _Variant>
     using variant_alternative_t =
@@ -390,7 +426,13 @@ namespace __variant
 
   // Defines members and ctors.
   template<typename... _Types>
-    union _Variadic_union { };
+    union _Variadic_union
+    {
+      _Variadic_union() = default;
+
+      template<size_t _Np, typename... _Args>
+	_Variadic_union(in_place_index_t<_Np>, _Args&&...) = delete;
+    };
 
   template<typename _First, typename... _Rest>
     union _Variadic_union<_First, _Rest...>
@@ -758,28 +800,21 @@ namespace __variant
       _Variant_base& operator=(_Variant_base&&) = default;
     };
 
-  // For how many times does _Tp appear in _Tuple?
-  template<typename _Tp, typename _Tuple>
-    struct __tuple_count;
+  // How many times does _Tp appear in _Types?
+  template<typename _Tp, typename... _Types>
+    inline constexpr size_t __count = 0;
 
-  template<typename _Tp, typename _Tuple>
-    inline constexpr size_t __tuple_count_v =
-      __tuple_count<_Tp, _Tuple>::value;
+  template<typename _Tp, typename _Up, typename... _Types>
+    inline constexpr size_t __count<_Tp, _Up, _Types...>
+      = __count<_Tp, _Types...>;
 
   template<typename _Tp, typename... _Types>
-    struct __tuple_count<_Tp, tuple<_Types...>>
-    : integral_constant<size_t, 0> { };
-
-  template<typename _Tp, typename _First, typename... _Rest>
-    struct __tuple_count<_Tp, tuple<_First, _Rest...>>
-    : integral_constant<
-	size_t,
-	__tuple_count_v<_Tp, tuple<_Rest...>> + is_same_v<_Tp, _First>> { };
+    inline constexpr size_t __count<_Tp, _Tp, _Types...>
+      = 1 + __count<_Tp, _Types...>;
 
   // TODO: Reuse this in <tuple> ?
   template<typename _Tp, typename... _Types>
-    inline constexpr bool __exactly_once =
-      __tuple_count_v<_Tp, tuple<_Types...>> == 1;
+    inline constexpr bool __exactly_once = __count<_Tp, _Types...> == 1;
 
   // Helper used to check for valid conversions that don't involve narrowing.
   template<typename _Ti> struct _Arr { _Ti _M_x[1]; };
@@ -1411,7 +1446,8 @@ namespace __variant
 	  = __detail::__variant::__accepted_index<_Tp, variant>::value;
 
       template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
-	using __to_type = variant_alternative_t<_Np, variant>;
+	using __to_type
+	  = typename __detail::__variant::_Nth_type<_Np, _Types...>::type;
 
       template<typename _Tp, typename = enable_if_t<__not_self<_Tp>>>
 	using __accepted_type = __to_type<__accepted_index<_Tp>>;
@@ -1543,15 +1579,12 @@ namespace __variant
 
       template<size_t _Np, typename... _Args>
 	_GLIBCXX20_CONSTEXPR
-	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
-				       _Args...>,
-		    variant_alternative_t<_Np, variant>&>
+	enable_if_t<is_constructible_v<__to_type<_Np>, _Args...>,
+		    __to_type<_Np>&>
 	emplace(_Args&&... __args)
 	{
-	  static_assert(_Np < sizeof...(_Types),
-			"The index must be in [0, number of alternatives)");
-	  using type = variant_alternative_t<_Np, variant>;
 	  namespace __variant = std::__detail::__variant;
+	  using type = typename __variant::_Nth_type<_Np, _Types...>::type;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
@@ -1590,15 +1623,13 @@ namespace __variant
 
       template<size_t _Np, typename _Up, typename... _Args>
 	_GLIBCXX20_CONSTEXPR
-	enable_if_t<is_constructible_v<variant_alternative_t<_Np, variant>,
+	enable_if_t<is_constructible_v<__to_type<_Np>,
 				       initializer_list<_Up>&, _Args...>,
-		    variant_alternative_t<_Np, variant>&>
+		    __to_type<_Np>&>
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
-	  static_assert(_Np < sizeof...(_Types),
-			"The index must be in [0, number of alternatives)");
-	  using type = variant_alternative_t<_Np, variant>;
 	  namespace __variant = std::__detail::__variant;
+	  using type = typename __variant::_Nth_type<_Np, _Types...>::type;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type,
@@ -1628,6 +1659,12 @@ namespace __variant
 	    }
 	  return std::get<_Np>(*this);
 	}
+
+      template<size_t _Np, typename... _Args>
+	enable_if_t<!(_Np < sizeof...(_Types))> emplace(_Args&&...) = delete;
+
+      template<typename _Tp, typename... _Args>
+	enable_if_t<!__exactly_once<_Tp>> emplace(_Args&&...) = delete;
 
       constexpr bool valueless_by_exception() const noexcept
       { return !this->_M_valid(); }
