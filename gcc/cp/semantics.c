@@ -3134,6 +3134,20 @@ finish_compound_literal (tree type, tree compound_literal,
       if (type == error_mark_node)
 	return error_mark_node;
     }
+  /* C++23 auto{x}.  */
+  else if (is_auto (type)
+	   && !AUTO_IS_DECLTYPE (type)
+	   && CONSTRUCTOR_NELTS (compound_literal) == 1)
+    {
+      if (cxx_dialect < cxx23)
+	pedwarn (input_location, OPT_Wc__23_extensions,
+		 "%<auto{x}%> only available with "
+		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
+      type = do_auto_deduction (type, compound_literal, type, complain,
+				adc_variable_type);
+      if (type == error_mark_node)
+	return error_mark_node;
+    }
 
   /* Used to hold a copy of the compound literal in a template.  */
   tree orig_cl = NULL_TREE;
