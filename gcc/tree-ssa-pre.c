@@ -1391,6 +1391,7 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
   vn_ssa_aux_t vn_info = VN_INFO (name);
   vn_info->value_id = value_id;
   vn_info->valnum = valnum ? valnum : name;
+  vn_info->visited = true;
   /* ???  For now mark this SSA name for release by VN.  */
   vn_info->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
@@ -1508,10 +1509,6 @@ phi_translate_1 (bitmap_set_t dest,
 		  return constant;
 	      }
 
-	    /* vn_nary_* do not valueize operands.  */
-	    for (i = 0; i < newnary->length; ++i)
-	      if (TREE_CODE (newnary->op[i]) == SSA_NAME)
-		newnary->op[i] = VN_INFO (newnary->op[i])->valnum;
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,
 						    newnary->type,
