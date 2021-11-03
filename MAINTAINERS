@@ -15,6 +15,9 @@ To report problems in GCC, please visit:
 
   http://gcc.gnu.org/bugs/
 
+Note: when adding someone to a more specific section please remove any
+corresponding entry from the Write After Approval list.
+
 Maintainers
 ===========
 
