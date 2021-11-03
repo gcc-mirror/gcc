@@ -1046,10 +1046,10 @@
 
 ;; True for registers, or (not: registers).  Used to optimize 3-operand
 ;; bitwise operation.
-(define_predicate "reg_or_notreg_operand"
-  (ior (match_operand 0 "register_operand")
+(define_predicate "regmem_or_bitnot_regmem_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
        (and (match_code "not")
-	    (match_test "register_operand (XEXP (op, 0), mode)"))))
+	    (match_test "nonimmediate_operand (XEXP (op, 0), mode)"))))
 
 ;; True if OP is acceptable as operand of DImode shift expander.
 (define_predicate "shiftdi_operand"
