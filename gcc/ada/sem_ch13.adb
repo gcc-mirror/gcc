@@ -6249,7 +6249,7 @@ package body Sem_Ch13 is
 
       Check_Restriction_No_Use_Of_Attribute (N);
 
-      if Get_Aspect_Id (Chars (N)) /= No_Aspect then
+      if Is_Aspect_Id (Chars (N)) then
          --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.

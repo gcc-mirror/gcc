@@ -10444,6 +10444,49 @@ package body Sem_Prag is
          Expr  : Node_Id;
          Val   : Uint;
 
+         procedure Process_No_Specification_of_Aspect;
+         --  Process the No_Specification_of_Aspect restriction
+
+         procedure Process_No_Use_Of_Attribute;
+         --  Process the No_Use_Of_Attribute restriction
+
+         ----------------------------------------
+         -- Process_No_Specification_of_Aspect --
+         ----------------------------------------
+
+         procedure Process_No_Specification_of_Aspect is
+            Name : constant Name_Id := Chars (Expr);
+         begin
+            if Nkind (Expr) = N_Identifier
+               and then Is_Aspect_Id (Name)
+            then
+               Set_Restriction_No_Specification_Of_Aspect (Expr, Warn);
+            else
+               Bad_Aspect (Expr, Name, Warn => True);
+
+               raise Pragma_Exit;
+            end if;
+         end Process_No_Specification_of_Aspect;
+
+         ---------------------------------
+         -- Process_No_Use_Of_Attribute --
+         ---------------------------------
+
+         procedure Process_No_Use_Of_Attribute is
+            Name : constant Name_Id := Chars (Expr);
+         begin
+            if Nkind (Expr) = N_Identifier
+               and then Is_Attribute_Name (Name)
+            then
+               Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
+            else
+               Bad_Attribute (Expr, Name, Warn => True);
+            end if;
+
+         end Process_No_Use_Of_Attribute;
+
+      --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
+
       begin
          --  Ignore all Restrictions pragmas in CodePeer mode
 
@@ -10668,34 +10711,12 @@ package body Sem_Prag is
             --  Case of No_Specification_Of_Aspect => aspect-identifier
 
             elsif Id = Name_No_Specification_Of_Aspect then
-               declare
-                  A_Id : Aspect_Id;
-
-               begin
-                  if Nkind (Expr) /= N_Identifier then
-                     A_Id := No_Aspect;
-                  else
-                     A_Id := Get_Aspect_Id (Chars (Expr));
-                  end if;
-
-                  if A_Id = No_Aspect then
-                     Error_Pragma_Arg ("invalid restriction name", Arg);
-                  else
-                     Set_Restriction_No_Specification_Of_Aspect (Expr, Warn);
-                  end if;
-               end;
+               Process_No_Specification_of_Aspect;
 
             --  Case of No_Use_Of_Attribute => attribute-identifier
 
             elsif Id = Name_No_Use_Of_Attribute then
-               if Nkind (Expr) /= N_Identifier
-                 or else not Is_Attribute_Name (Chars (Expr))
-               then
-                  Error_Msg_N ("unknown attribute name??", Expr);
-
-               else
-                  Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
-               end if;
+               Process_No_Use_Of_Attribute;
 
             --  Case of No_Use_Of_Entity => fully-qualified-name
 
@@ -11488,7 +11509,7 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
-      if Get_Aspect_Id (Chars (Pragma_Identifier (N))) /= No_Aspect then
+      if Is_Aspect_Id (Chars (Pragma_Identifier (N))) then
          --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.
