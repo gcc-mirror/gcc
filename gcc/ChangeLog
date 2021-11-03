@@ -1,3 +1,13 @@
+2021-11-02  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-10-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/102505
+	* tree-sra.c (totally_scalarize_subtree): Check that the
+	encountered field fits within the acces we would like to put it
+	in.
+
 2021-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (%X): Remove obsolete reference to -Wl.

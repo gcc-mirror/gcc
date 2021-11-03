@@ -1,3 +1,11 @@
+2021-11-02  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-10-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/102505
+	* g++.dg/torture/pr102505.C: New test.
+
 2021-10-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/102761
