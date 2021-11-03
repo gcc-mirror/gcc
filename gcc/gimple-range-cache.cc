@@ -847,7 +847,7 @@ ranger_cache::register_dependency (tree name, tree dep)
 // the request is actually made (ie, isn't a duplicate).
 
 bool
-ranger_cache::push_poor_value (basic_block bb, tree name)
+ranger_cache::push_poor_value (basic_block, tree)
 {
   // Disable poor value processing for GCC 11.  It has been disabled in GCC 12
   // as adding too much churn/compile time for too little benefit.
