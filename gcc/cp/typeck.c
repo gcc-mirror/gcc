@@ -6492,6 +6492,11 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	}
 
       exp = cp_build_addr_expr_strict (xarg, complain);
+
+      if (TREE_CODE (exp) == PTRMEM_CST)
+	exp = maybe_wrap_with_location (exp, loc);
+      else
+	protected_set_expr_location (exp, loc);
     }
 
   if (processing_template_decl && exp != error_mark_node)
@@ -8179,9 +8184,13 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
   if (!(complain & tf_warning_or_error))
     return error_mark_node;
 
+  location_t loc = cp_expr_loc_or_input_loc (expr);
+
   if (pedantic || warn_pmf2ptr)
-    pedwarn (input_location, pedantic ? OPT_Wpedantic : OPT_Wpmf_conversions,
+    pedwarn (loc, pedantic ? OPT_Wpedantic : OPT_Wpmf_conversions,
 	     "converting from %qH to %qI", intype, type);
+
+  STRIP_ANY_LOCATION_WRAPPER (expr);
 
   if (TREE_CODE (intype) == METHOD_TYPE)
     expr = build_addr_func (expr, complain);
@@ -8197,7 +8206,9 @@ convert_member_func_to_ptr (tree type, tree expr, tsubst_flags_t complain)
   if (expr == error_mark_node)
     return error_mark_node;
 
-  return build_nop (type, expr);
+  expr = build_nop (type, expr);
+  SET_EXPR_LOCATION (expr, loc);
+  return expr;
 }
 
 /* Build a NOP_EXPR to TYPE, but mark it as a reinterpret_cast so that
