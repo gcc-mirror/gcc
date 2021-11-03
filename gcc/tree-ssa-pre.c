@@ -1609,6 +1609,21 @@ phi_translate_1 (bitmap_set_t dest,
 		newoperands.release ();
 		return NULL;
 	      }
+	    /* When we translate a MEM_REF across a backedge and we have
+	       restrict info that's not from our functions parameters
+	       we have to remap it since we now may deal with a different
+	       instance where the dependence info is no longer valid.
+	       See PR102970.  Note instead of keeping a remapping table
+	       per backedge we simply throw away restrict info.  */
+	    if ((newop.opcode == MEM_REF
+		 || newop.opcode == TARGET_MEM_REF)
+		&& newop.clique > 1
+		&& (e->flags & EDGE_DFS_BACK))
+	      {
+		newop.clique = 0;
+		newop.base = 0;
+		changed = true;
+	      }
 	    if (!changed)
 	      continue;
 	    if (!newoperands.exists ())
