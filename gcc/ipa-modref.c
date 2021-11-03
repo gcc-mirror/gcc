@@ -1694,7 +1694,8 @@ private:
 /* Call statements may return their parameters.  Consider argument number
    ARG of USE_STMT and determine flags that can needs to be cleared
    in case pointer possibly indirectly references from ARG I is returned.
-   LATTICE, DEPTH and ipa are same as in analyze_ssa_name.  */
+   LATTICE, DEPTH and ipa are same as in analyze_ssa_name.
+   ARG is set to -1 for static chain.  */
 
 void
 modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
@@ -1708,28 +1709,54 @@ modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
 
   /* If we know that function returns given argument and it is not ARG
      we can still be happy.  */
-  int flags = gimple_call_return_flags (call);
-  if ((flags & ERF_RETURNS_ARG)
-      && (flags & ERF_RETURN_ARG_MASK) != arg)
-    return;
-
-  int eaf_flags = gimple_call_arg_flags (call, arg);
-
-  if (eaf_flags & (EAF_NOT_RETURNED | EAF_UNUSED))
-    return;
+  if (arg >= 0)
+    {
+      int flags = gimple_call_return_flags (call);
+      if ((flags & ERF_RETURNS_ARG)
+	  && (flags & ERF_RETURN_ARG_MASK) != arg)
+	return;
+    }
 
   /* If return value is SSA name determine its flags.  */
   if (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME)
     {
       tree lhs = gimple_call_lhs (call);
-      merge_with_ssa_name (name, lhs,
-			   (deref || (eaf_flags & EAF_NOT_RETURNED_DIRECTLY)));
+      merge_with_ssa_name (name, lhs, deref);
     }
   /* In the case of memory store we can do nothing.  */
-  else if (eaf_flags & EAF_NOT_RETURNED_DIRECTLY)
+  else if (deref)
     m_lattice[index].merge (deref_flags (0, false));
   else
     m_lattice[index].merge (0);
+}
+
+/* CALL_FLAGS are EAF_FLAGS of the argument.  Turn them
+   into flags for caller, update LATTICE of corresponding
+   argument if needed.  */
+
+static int
+callee_to_caller_flags (int call_flags, bool ignore_stores,
+			modref_lattice &lattice)
+{
+  /* call_flags is about callee returning a value
+     that is not the same as caller returning it.  */
+  call_flags |= EAF_NOT_RETURNED
+		| EAF_NOT_RETURNED_DIRECTLY;
+  /* TODO: We miss return value propagation.
+     Be conservative and if value escapes to memory
+     also mark it as escaping.  */
+  if (!ignore_stores && !(call_flags & EAF_UNUSED))
+    {
+      if (!(call_flags & EAF_NOESCAPE))
+	lattice.merge (~(EAF_NOT_RETURNED | EAF_UNUSED));
+      if (!(call_flags & (EAF_NODIRECTESCAPE | EAF_NOESCAPE)))
+	lattice.merge (~(EAF_NOT_RETURNED_DIRECTLY
+			 | EAF_NOT_RETURNED
+			 | EAF_UNUSED));
+    }
+  else
+    call_flags |= ignore_stores_eaf_flags;
+  return call_flags;
 }
 
 /* Analyze EAF flags for SSA name NAME and store result to LATTICE.
@@ -1843,12 +1870,55 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 		     may make LHS to escape.  See PR 98499.  */
 		  if (gimple_call_return_slot_opt_p (call)
 		      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
-		    m_lattice[index].merge (gimple_call_retslot_flags (call));
+		    {
+		      int call_flags = gimple_call_retslot_flags (call);
+		      bool isretslot = false;
+
+		      if (DECL_RESULT (current_function_decl)
+			  && DECL_BY_REFERENCE
+				(DECL_RESULT (current_function_decl)))
+			isretslot = ssa_default_def
+					 (cfun,
+					  DECL_RESULT (current_function_decl))
+					 == name;
+
+		      /* Passing returnslot to return slot is special because
+			 not_returned and escape has same meaning.
+			 However passing arg to return slot is different.  If
+			 the callee's return slot is returned it means that
+			 arg is written to itself which is an escape.  */
+		      if (!isretslot)
+			{
+			  if (!(call_flags & (EAF_NOT_RETURNED | EAF_UNUSED)))
+			    m_lattice[index].merge (~(EAF_NOESCAPE
+						      | EAF_UNUSED));
+			  if (!(call_flags & (EAF_NOT_RETURNED_DIRECTLY
+					      | EAF_UNUSED
+					      | EAF_NOT_RETURNED)))
+			    m_lattice[index].merge (~(EAF_NODIRECTESCAPE
+						      | EAF_NOESCAPE
+						      | EAF_UNUSED));
+			  call_flags = callee_to_caller_flags
+					   (call_flags, false,
+					    m_lattice[index]);
+			}
+		      m_lattice[index].merge (call_flags);
+		    }
 		}
 
 	      if (gimple_call_chain (call)
 		  && (gimple_call_chain (call) == name))
-		m_lattice[index].merge (gimple_call_static_chain_flags (call));
+		{
+		  int call_flags = gimple_call_static_chain_flags (call);
+		  if (!ignore_retval
+		       && !(call_flags & (EAF_NOT_RETURNED | EAF_UNUSED)))
+		    merge_call_lhs_flags (call, -1, name, false);
+		  call_flags = callee_to_caller_flags
+				   (call_flags, ignore_stores,
+				    m_lattice[index]);
+		  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
+		    m_lattice[index].merge (call_flags);
+		}
 
 	      /* Process internal functions and right away.  */
 	      bool record_ipa = m_ipa && !gimple_call_internal_p (call);
@@ -1860,42 +1930,45 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 		/* Name is directly passed to the callee.  */
 		if (gimple_call_arg (call, i) == name)
 		  {
+		    int call_flags = gimple_call_arg_flags (call, i);
+		    if (!ignore_retval && !(call_flags
+					    & (EAF_NOT_RETURNED | EAF_UNUSED)))
+		      merge_call_lhs_flags
+			      (call, i, name,
+			       call_flags & EAF_NOT_RETURNED_DIRECTLY);
 		    if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
 		      {
-			int call_flags = gimple_call_arg_flags (call, i)
-					 | EAF_NOT_RETURNED
-					 | EAF_NOT_RETURNED_DIRECTLY;
-			if (ignore_stores)
-			  call_flags |= ignore_stores_eaf_flags;
-
+			call_flags = callee_to_caller_flags
+					 (call_flags, ignore_stores,
+					  m_lattice[index]);
 			if (!record_ipa)
 			  m_lattice[index].merge (call_flags);
 			else
 			  m_lattice[index].add_escape_point (call, i,
 							   call_flags, true);
 		      }
-		    if (!ignore_retval)
-		      merge_call_lhs_flags (call, i, name, false);
 		  }
 		/* Name is dereferenced and passed to a callee.  */
 		else if (memory_access_to (gimple_call_arg (call, i), name))
 		  {
+		    int call_flags = deref_flags
+			    (gimple_call_arg_flags (call, i), ignore_stores);
+		    if (!ignore_retval
+			 && !(call_flags & (EAF_NOT_RETURNED | EAF_UNUSED)))
+		      merge_call_lhs_flags (call, i, name, true);
 		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
 		      m_lattice[index].merge_direct_load ();
 		    else
 		      {
-			int call_flags = deref_flags
-			   (gimple_call_arg_flags (call, i)
-			    | EAF_NOT_RETURNED
-			    | EAF_NOT_RETURNED_DIRECTLY, ignore_stores);
+			call_flags = callee_to_caller_flags
+					 (call_flags, ignore_stores,
+					  m_lattice[index]);
 			if (!record_ipa)
 			  m_lattice[index].merge (call_flags);
 			else
 			  m_lattice[index].add_escape_point (call, i,
-							   call_flags, false);
+							     call_flags, false);
 		      }
-		    if (!ignore_retval)
-		      merge_call_lhs_flags (call, i, name, true);
 		  }
 	    }
 	}
@@ -4068,7 +4141,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	      needed = true;
 	  }
 	if (to_info_lto
-     	    && (int)to_info_lto->arg_flags.length () > ee->parm_index)
+	    && (int)to_info_lto->arg_flags.length () > ee->parm_index)
 	  {
 	    int flags = callee_info_lto
 			&& callee_info_lto->arg_flags.length () > ee->arg
