@@ -788,11 +788,11 @@ std::string
 TupleType::as_string () const
 {
   std::string fields_buffer;
-  iterate_fields ([&] (BaseType *field) mutable -> bool {
-    fields_buffer += field->as_string ();
-    fields_buffer += ", ";
-    return true;
-  });
+  for (const TyVar &field : get_fields ())
+    {
+      fields_buffer += field.get_tyty ()->as_string ();
+      fields_buffer += ", ";
+    }
   return "(" + fields_buffer + ")";
 }
 
