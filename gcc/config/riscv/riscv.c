@@ -4574,10 +4574,10 @@ riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 static unsigned char
 riscv_class_max_nregs (reg_class_t rclass, machine_mode mode)
 {
-  if (reg_class_subset_p (FP_REGS, rclass))
+  if (reg_class_subset_p (rclass, FP_REGS))
     return riscv_hard_regno_nregs (FP_REG_FIRST, mode);
 
-  if (reg_class_subset_p (GR_REGS, rclass))
+  if (reg_class_subset_p (rclass, GR_REGS))
     return riscv_hard_regno_nregs (GP_REG_FIRST, mode);
 
   return 0;
