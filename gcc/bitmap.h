@@ -436,7 +436,7 @@ extern bool bitmap_clear_bit (bitmap, int);
 extern bool bitmap_set_bit (bitmap, int);
 
 /* Return true if a bit is set in a bitmap.  */
-extern int bitmap_bit_p (const_bitmap, int);
+extern bool bitmap_bit_p (const_bitmap, int);
 
 /* Set and get multiple bit values in a sparse bitmap.  This allows a bitmap to
    function as a sparse array of bit patterns where the patterns are

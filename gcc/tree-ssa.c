@@ -649,10 +649,8 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 {
   bool err = false;
 
-  if (bitmap_bit_p (visited, bb->index))
+  if (!bitmap_set_bit (visited, bb->index))
     return false;
-
-  bitmap_set_bit (visited, bb->index);
 
   /* Pick up the single virtual PHI def.  */
   gphi *phi = NULL;

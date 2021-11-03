@@ -114,7 +114,7 @@ bitmap_check_sizes (const_sbitmap a, const_sbitmap b)
 }
 
 /* Test if bit number bitno in the bitmap is set.  */
-static inline SBITMAP_ELT_TYPE
+static inline bool
 bitmap_bit_p (const_sbitmap map, int bitno)
 {
   bitmap_check_index (map, bitno);
@@ -124,26 +124,36 @@ bitmap_bit_p (const_sbitmap map, int bitno)
   return (map->elms[i] >> s) & (SBITMAP_ELT_TYPE) 1;
 }
 
-/* Set bit number BITNO in the sbitmap MAP.  */
+/* Set bit number BITNO in the sbitmap MAP.
+   Return true if the bit changed.  */
 
-static inline void
+static inline bool
 bitmap_set_bit (sbitmap map, int bitno)
 {
   bitmap_check_index (map, bitno);
 
-  map->elms[bitno / SBITMAP_ELT_BITS]
-    |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS;
+  size_t i = bitno / SBITMAP_ELT_BITS;
+  unsigned int s = bitno % SBITMAP_ELT_BITS;
+  if (map->elms[i] & ((SBITMAP_ELT_TYPE) 1 << s))
+    return false;
+  map->elms[i] |= (SBITMAP_ELT_TYPE) 1 << s;
+  return true;
 }
 
-/* Reset bit number BITNO in the sbitmap MAP.  */
+/* Reset bit number BITNO in the sbitmap MAP.
+   Return true if the bit changed.  */
 
-static inline void
+static inline bool
 bitmap_clear_bit (sbitmap map, int bitno)
 {
   bitmap_check_index (map, bitno);
 
-  map->elms[bitno / SBITMAP_ELT_BITS]
-    &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS);
+  size_t i = bitno / SBITMAP_ELT_BITS;
+  unsigned int s = bitno % SBITMAP_ELT_BITS;
+  if (!(map->elms[i] & ((SBITMAP_ELT_TYPE) 1 << s)))
+    return false;
+  map->elms[i] &= ~((SBITMAP_ELT_TYPE) 1 << s);
+  return true;
 }
 
 /* The iterator for sbitmap.  */
