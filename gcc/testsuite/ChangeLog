@@ -1,3 +1,246 @@
+2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/modref-3.c: New test.
+
+2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/modref-1.C: Update template.
+	* gcc.dg/tree-ssa/modref-10.c: New test.
+
+2021-11-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/ldist-rawmemchr-1.c: For IBM Z set arch to z13
+	and use z/Architecture since the tests require vector extensions.
+	* gcc.dg/tree-ssa/ldist-rawmemchr-2.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-strlen-1.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-strlen-3.c: Likewise.
+
+2021-11-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103007
+	* g++.dg/pr103007.C: New test.
+
+2021-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103038
+	* g++.dg/pr103038.C: New testcase.
+
+2021-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103020
+	* gcc.target/i386/pr103020.c: New test.
+
+2021-11-02  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/vect/vect.exp: Include also tsvc sub-directory.
+	* gcc.dg/vect/tsvc/license.txt: New test.
+	* gcc.dg/vect/tsvc/tsvc.h: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s000.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s111.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1111.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1112.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1113.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1115.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1119.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s112.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s113.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s114.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s115.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s116.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1161.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s118.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s119.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s121.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1213.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s122.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1221.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s123.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1232.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s124.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1244.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s125.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1251.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s126.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s127.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1279.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s128.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1281.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s131.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s13110.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s132.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1351.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s141.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s1421.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s151.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s152.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s161.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s162.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s171.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s172.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s173.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s174.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s175.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s176.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2101.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2102.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s211.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2111.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s212.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s221.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s222.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2233.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2244.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2251.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2275.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s231.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s232.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s233.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s235.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s241.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s242.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s243.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s244.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s251.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s252.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s253.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s254.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s255.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s256.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s257.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s258.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s261.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s271.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2710.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2711.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s2712.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s272.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s273.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s274.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s275.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s276.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s277.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s278.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s279.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s281.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s291.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s292.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s293.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s311.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s3110.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s3111.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s31111.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s3112.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s3113.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s312.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s313.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s314.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s315.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s316.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s317.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s318.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s319.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s321.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s322.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s323.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s3251.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s331.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s332.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s341.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s342.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s343.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s351.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s352.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s353.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4112.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4113.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4114.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4115.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4116.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4117.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4121.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s421.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s422.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s423.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s424.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s431.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s441.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s442.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s443.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s451.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s452.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s453.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s471.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s481.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s482.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-s491.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-va.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vag.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vas.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vbor.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vdotr.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vif.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vpv.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vpvpv.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vpvts.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vpvtv.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vsumr.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vtv.c: New test.
+	* gcc.dg/vect/tsvc/vect-tsvc-vtvtv.c: New test.
+
+2021-11-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR testsuite/102944
+	* c-c++-common/Wstringop-overflow-2.c: Adjust target/xfail
+	selector.
+	* gcc.dg/Warray-bounds-48.c: Ditto.
+	* gcc.dg/Warray-bounds-51.c: Ditto.
+	* gcc.dg/Warray-parameter-3.c: Ditto.
+	* gcc.dg/Wstringop-overflow-14.c: Ditto.
+	* gcc.dg/Wstringop-overflow-21.c: Ditto.
+	* gcc.dg/Wstringop-overflow-68.c: Ditto
+	* gcc.dg/Wstringop-overflow-76.c: Ditto
+	* gcc.dg/Wzero-length-array-bounds-2.c: Ditto.
+	* lib/target-supports.exp (vect_slp_v4qi_store_unalign): New
+	efficient target.
+	(vect_slp_v4qi_store_unalign_1): Ditto.
+	(struct_4char_block_move): Ditto.
+	(struct_8char_block_move): Ditto.
+	(stryct_16char_block_move): Ditto.
+	(vect_slp_v2hi_store_align): Ditto.
+	(vect_slp_v2qi_store): Rename to ..
+	(vect_slp_v2qi_store_align): .. this.
+	(vect_slp_v4qi_store): Rename to ..
+	(vect_slp_v4qi_store_align): .. This.
+	(vect_slp_v8qi_store): Rename to ..
+	(vect_slp_v8qi_store_unalign_1): .. This.
+	(vect_slp_v16qi_store): Rename to ..
+	(vect_slp_v16qi_store_unalign_1): .. This.
+	(vect_slp_v2hi_store): Rename to ..
+	(vect_slp_v2hi_store_unalign): .. This.
+	(vect_slp_v4hi_store): Rename to ..
+	(vect_slp_v4hi_store_unalign): This.
+	(vect_slp_v2si_store): Rename to ..
+	(vect_slp_v2si_store_align): .. This.
+	(vect_slp_v4si_store): Rename to ..
+	(vect_slp_v4si_store_unalign): Ditto.
+	(check_vect_slp_aligned_store_usage): Rename to ..
+	(check_vect_slp_store_usage): .. this and adjust code to make
+	it an exact pattern match of corresponding testcase.
+
+2021-11-02  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102986
+	* gcc.target/i386/sse2-v1ti-ashiftrt-1.c: New test case.
+	* gcc.target/i386/sse2-v1ti-ashiftrt-2.c: New test case.
+	* gcc.target/i386/sse2-v1ti-ashiftrt-3.c: New test case.
+	* gcc.target/i386/sse2-v1ti-shift-2.c: New test case.
+	* gcc.target/i386/sse2-v1ti-shift-3.c: New test case.
+
+2021-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/loop-8.C: New test.
+
 2021-11-01  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/modref-1.C: Fix test-suite pattern scanning.

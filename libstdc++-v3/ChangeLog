@@ -1,3 +1,8 @@
+2021-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/valarray (valarray::valarray()): Add noexcept.
+	(valarray::operator[]): Likewise.
+
 2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/stl_iterator.h (__valid_range): Add constexpr

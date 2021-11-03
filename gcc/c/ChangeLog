@@ -1,3 +1,9 @@
+2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_record_decl): Declare.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_RECORD_DECL): Override.
+	* c-decl.c (c_simulate_record_decl): New function.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

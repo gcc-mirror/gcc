@@ -1,3 +1,10 @@
+2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* decl.c: Include langhooks-def.h.
+	(cxx_simulate_record_decl): New function.
+	* cp-objcp-common.h (cxx_simulate_record_decl): Declare.
+	(LANG_HOOKS_SIMULATE_RECORD_DECL): Override.
+
 2021-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102820

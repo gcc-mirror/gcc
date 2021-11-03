@@ -1,3 +1,145 @@
+2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (modref_eaf_analysis::analyze_ssa_name): Revert
+	accidental commit.
+
+2021-11-02  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (<any_rotate>ti3): Provide expansion for
+	rotations by non-constant amounts.
+
+2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c: Fix anonymous namespace placement.
+	(class modref_eaf_analysis): New class.
+	(analyze_ssa_name_flags): Turn to ...
+	(modref_eaf_analysis::analyze_ssa_name): ... this one.
+	(merge_call_lhs_flags): Turn to ...
+	(modref_eaf_analysis::merge_call_lhs_flags): .. this one
+	(modref_eaf_analysis::merge_with_ssa_name): New member function.
+	(record_escape_points): Turn to ...
+	(modref_eaf_analysis::record_escape_points): ... this one.
+	(analyze_parms): Updat
+	(ipa_merge_modref_summary_after_inlining): Move to the end of file.
+
+2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.c (gimple_call_static_chain_flags): New function.
+	* gimple.h (gimple_call_static_chain_flags): Declare
+	* ipa-modref.c (modref_summary::modref_summary): Initialize
+	static_chain_flags.
+	(modref_summary_lto::modref_summary_lto): Likewise.
+	(modref_summary::useful_p): Test static_chain_flags.
+	(modref_summary_lto::useful_p): Likewise.
+	(struct modref_summary_lto): Add static_chain_flags.
+	(modref_summary::dump): Dump static_chain_flags.
+	(modref_summary_lto::dump): Likewise.
+	(struct escape_point): Add static_cahin_arg.
+	(analyze_ssa_name_flags): Use gimple_call_static_chain_flags.
+	(analyze_parms): Handle static chains.
+	(modref_summaries::duplicate): Duplicate static_chain_flags.
+	(modref_summaries_lto::duplicate): Likewise.
+	(modref_write): Stream static_chain_flags.
+	(read_section): Likewise.
+	(modref_merge_call_site_flags): Handle static_chain_flags.
+	* ipa-modref.h (struct modref_summary): Add static_chain_flags.
+	* tree-ssa-structalias.c (handle_rhs_call): Use
+	gimple_static_chain_flags.
+
+2021-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103029
+	* tree-vect-loop-manip.c (vect_loop_versioning): Ensure
+	the PHI nodes in the loop maintain their original operand
+	order.
+
+2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-core.h (EAF_NOT_RETURNED_DIRECTLY): New flag.
+	(EAF_NOREAD): Renumber.
+	* ipa-modref.c (dump_eaf_flags): Dump EAF_NOT_RETURNED_DIRECTLY.
+	(remove_useless_eaf_flags): Handle EAF_NOT_RETURNED_DIRECTLY
+	(deref_flags): Likewise.
+	(modref_lattice::init): Likewise.
+	(modref_lattice::merge): Likewise.
+	(merge_call_lhs_flags): Likewise.
+	(analyze_ssa_name_flags): Likewise.
+	(modref_merge_call_site_flags): Likewise.
+	* tree-ssa-structalias.c (handle_call_arg): Likewise.
+
+2021-11-02  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.c (riscv_rtx_costs): Correct a CONST_INT_P
+	check and remove an unused local variable with shNadd/shNadd.uw
+	pattern handling.
+
+2021-11-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103007
+	* tree-vect-slp-patterns.c (complex_fms_pattern::matches): Add elem
+	check.
+
+2021-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103038
+	* fold-const.c (native_interpret_expr): Handle OFFSET_TYPE.
+	(can_native_interpret_type_p): Likewise.
+	* internal-fn.c (expand_DEFERRED_INIT): View-convert the
+	RHS if the LHS is an SSA name.
+
+2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* langhooks.h (lang_hooks_for_types::simulate_record_decl): New hook.
+	* langhooks-def.h (lhd_simulate_record_decl): Declare.
+	(LANG_HOOKS_SIMULATE_RECORD_DECL): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Include it.
+	* langhooks.c (lhd_simulate_record_decl): New function.
+
+2021-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103020
+	* config/i386/i386.c (ix86_vector_mode_supported_p): Reject vector
+	modes with TImode inner mode if 32-bit.
+
+2021-11-02  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/sourcebuild.texi (vect_slp_v4qi_store_unalign,
+	vect_slp_v2hi_store_unalign, vect_slp_v4hi_store_unalign,
+	vect_slp_v4si_store_unalign): Document efficient target.
+	(vect_slp_v4qi_store_unalign_1, vect_slp_v8qi_store_unalign_1,
+	vect_slp_v16qi_store_unalign_1): Ditto.
+	(vect_slp_v2hi_store_align,vect_slp_v2qi_store_align,
+	vect_slp_v2si_store_align, vect_slp_v4qi_store_align): Ditto.
+	(struct_4char_block_move, struct_8char_block_move,
+	struct_16char_block_move): Ditto.
+
+2021-11-02  Roger Sayle  <roger@nextmovesoftware.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/102986
+	* config/i386/i386-expand.c (ix86_expand_v1ti_to_ti,
+	ix86_expand_ti_to_v1ti): New helper functions.
+	(ix86_expand_v1ti_shift): Check if the amount operand is an
+	integer constant, and expand as a TImode shift if it isn't.
+	(ix86_expand_v1ti_rotate): Check if the amount operand is an
+	integer constant, and expand as a TImode rotate if it isn't.
+	(ix86_expand_v1ti_ashiftrt): New function to expand arithmetic
+	right shifts of V1TImode quantities.
+	* config/i386/i386-protos.h (ix86_expand_v1ti_ashift): Prototype.
+	* config/i386/sse.md (ashlv1ti3, lshrv1ti3): Change constraints
+	to QImode general_operand, and let the helper functions lower
+	shifts by non-constant operands, as TImode shifts.  Make
+	conditional on TARGET_64BIT.
+	(ashrv1ti3): New expander calling ix86_expand_v1ti_ashiftrt.
+	(rotlv1ti3, rotrv1ti3): Change shift operand to QImode.
+	Make conditional on TARGET_64BIT.
+
+2021-11-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md ("*cc_to_int", "tabort", "*tabort_1",
+	"*tabort_1_plus"): Remove operands non-null check.
+
 2021-11-01  Martin Liska  <mliska@suse.cz>
 
 	* opt-functions.awk: Add new sanity checking.

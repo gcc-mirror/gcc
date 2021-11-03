@@ -1,3 +1,8 @@
+2021-11-02  Andrew Burgess  <andrew.burgess@embecosm.com>
+
+	* MAINTAINERS (Reviewers, arc): Remove my entry.
+	(Write After Approval): Add an entry for myself.
+
 2021-10-28  Richard Purdie  <richard.purdie@linuxfoundation.org>
 
 	* Makefile.tpl: Add CPP_FOR_BUILD and CPPFLAGS_FOR_BUILD support
