@@ -1685,6 +1685,15 @@ convert (tree type, tree expr)
 		      tf_warning_or_error);
 }
 
+/* Like convert, but in a static initializer (called from
+   convert_and_check).  */
+
+tree
+convert_init (tree type, tree expr)
+{
+  return convert (type, expr);
+}
+
 /* Like cp_convert, except permit conversions to take place which
    are not normally allowed due to access restrictions
    (such as conversion from sub-type to private super-type).  */

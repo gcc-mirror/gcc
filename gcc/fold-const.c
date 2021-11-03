@@ -13941,6 +13941,18 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
   folding_initializer = saved_folding_initializer;
 
 tree
+fold_init (tree expr)
+{
+  tree result;
+  START_FOLD_INIT;
+
+  result = fold (expr);
+
+  END_FOLD_INIT;
+  return result;
+}
+
+tree
 fold_build1_initializer_loc (location_t loc, enum tree_code code,
 			     tree type, tree op)
 {

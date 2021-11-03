@@ -1739,10 +1739,13 @@ unsafe_conversion_p (tree type, tree expr, tree result, bool check_sign)
 
 /* Convert EXPR to TYPE, warning about conversion problems with constants.
    Invoke this function on every expression that is converted implicitly,
-   i.e. because of language rules and not because of an explicit cast.  */
+   i.e. because of language rules and not because of an explicit cast.
+   INIT_CONST is true if the conversion is for arithmetic types for a static
+   initializer and folding must apply accordingly (discarding floating-point
+   exceptions and assuming the default rounding mode is in effect).  */
 
 tree
-convert_and_check (location_t loc, tree type, tree expr)
+convert_and_check (location_t loc, tree type, tree expr, bool init_const)
 {
   tree result;
   tree expr_for_warning;
@@ -1754,7 +1757,9 @@ convert_and_check (location_t loc, tree type, tree expr)
     {
       tree orig_type = TREE_TYPE (expr);
       expr = TREE_OPERAND (expr, 0);
-      expr_for_warning = convert (orig_type, expr);
+      expr_for_warning = (init_const
+			  ? convert_init (orig_type, expr)
+			  : convert (orig_type, expr));
       if (orig_type == type)
 	return expr_for_warning;
     }
@@ -1764,7 +1769,7 @@ convert_and_check (location_t loc, tree type, tree expr)
   if (TREE_TYPE (expr) == type)
     return expr;
 
-  result = convert (type, expr);
+  result = init_const ? convert_init (type, expr) : convert (type, expr);
 
   if (c_inhibit_evaluation_warnings == 0
       && !TREE_OVERFLOW_P (expr)
