@@ -2438,8 +2438,9 @@ package body Sem_Type is
    -------------------------
 
    function Has_Compatible_Type
-     (N   : Node_Id;
-      Typ : Entity_Id) return Boolean
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      For_Comparison : Boolean := False) return Boolean
    is
       I  : Interp_Index;
       It : Interp;
@@ -2479,6 +2480,12 @@ package body Sem_Type is
            or else
              (Nkind (N) = N_String_Literal
                and then Present (Find_Aspect (Typ, Aspect_String_Literal)))
+
+           or else
+             (For_Comparison
+               and then not Is_Tagged_Type (Typ)
+               and then Ekind (Typ) /= E_Anonymous_Access_Type
+               and then Covers (Etype (N), Typ))
          then
             return True;
          end if;
@@ -2503,6 +2510,11 @@ package body Sem_Type is
                   and then Covers (Typ, Corresponding_Record_Type
                                                              (Etype (It.Typ))))
 
+             or else
+               (For_Comparison
+                 and then not Is_Tagged_Type (Typ)
+                 and then Ekind (Typ) /= E_Anonymous_Access_Type
+                 and then Covers (It.Typ, Typ))
             then
                return True;
             end if;

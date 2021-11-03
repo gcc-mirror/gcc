@@ -3113,7 +3113,7 @@ package body Sem_Ch4 is
 
       procedure Try_One_Interp (T1 : Entity_Id) is
       begin
-         if Has_Compatible_Type (R, T1) or else Covers (Etype (R), T1) then
+         if Has_Compatible_Type (R, T1, For_Comparison => True) then
             if Found
               and then Base_Type (T1) /= Base_Type (T_F)
             then
@@ -6607,8 +6607,7 @@ package body Sem_Ch4 is
          end if;
 
          if Valid_Comparison_Arg (T1)
-           and then (Has_Compatible_Type (R, T1)
-                      or else Covers (Etype (R), T1))
+           and then Has_Compatible_Type (R, T1, For_Comparison => True)
          then
             if Found and then Base_Type (T1) /= Base_Type (T_F) then
                It := Disambiguate (L, I_F, Index, Any_Type);
@@ -7105,8 +7104,8 @@ package body Sem_Ch4 is
 
          if T1 /= Standard_Void_Type
            and then (Universal_Access
-                      or else Has_Compatible_Type (R, T1)
-                      or else Covers (Etype (R), T1))
+                      or else
+                     Has_Compatible_Type (R, T1, For_Comparison => True))
 
            and then
              ((not Is_Limited_Type (T1)
