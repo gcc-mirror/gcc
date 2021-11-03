@@ -2104,13 +2104,17 @@ Parser<ManagedTokenSource>::parse_module (AST::Visibility vis,
       // Construct an external module
       return std::unique_ptr<AST::Module> (
 	new AST::Module (std::move (name), std::move (vis),
-			 std::move (outer_attrs), locus,
-			 lexer.get_filename ()));
+			 std::move (outer_attrs), locus, lexer.get_filename (),
+			 inline_module_stack));
       case LEFT_CURLY: {
 	lexer.skip_token ();
 
 	// parse inner attributes
 	AST::AttrVec inner_attrs = parse_inner_attributes ();
+
+	std::string module_path_name
+	  = extract_module_path (inner_attrs, outer_attrs, name);
+	InlineModuleStackScope scope (*this, std::move (module_path_name));
 
 	// parse items
 	std::vector<std::unique_ptr<AST::Item>> items;

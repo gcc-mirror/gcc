@@ -991,6 +991,8 @@ private:
   std::vector<Attribute> inner_attrs;
   // bool has_items;
   std::vector<std::unique_ptr<Item>> items;
+  // Names of including inline modules (immediate parent is last in the list)
+  std::vector<std::string> module_scope;
 
   // Filename the module refers to. Empty string on LOADED modules or if an
   // error occured when dealing with UNLOADED modules
@@ -1013,11 +1015,12 @@ public:
   // Unloaded module constructor
   Module (Identifier module_name, Visibility visibility,
 	  std::vector<Attribute> outer_attrs, Location locus,
-	  std::string outer_filename)
+	  std::string outer_filename, std::vector<std::string> module_scope)
     : VisItem (std::move (visibility), std::move (outer_attrs)),
       module_name (module_name), locus (locus), kind (ModuleKind::UNLOADED),
       outer_filename (outer_filename), inner_attrs (std::vector<Attribute> ()),
-      items (std::vector<std::unique_ptr<Item>> ())
+      items (std::vector<std::unique_ptr<Item>> ()),
+      module_scope (std::move (module_scope))
   {}
 
   // Loaded module constructor, with items
@@ -1035,7 +1038,8 @@ public:
   // Copy constructor with vector clone
   Module (Module const &other)
     : VisItem (other), module_name (other.module_name), locus (other.locus),
-      kind (other.kind), inner_attrs (other.inner_attrs)
+      kind (other.kind), inner_attrs (other.inner_attrs),
+      module_scope (other.module_scope)
   {
     // We need to check whether we are copying a loaded module or an unloaded
     // one. In the second case, clear the `items` vector.
@@ -1054,6 +1058,7 @@ public:
     locus = other.locus;
     kind = other.kind;
     inner_attrs = other.inner_attrs;
+    module_scope = other.module_scope;
 
     // Likewise, we need to clear the `items` vector in case the other module is
     // unloaded
