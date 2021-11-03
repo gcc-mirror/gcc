@@ -678,7 +678,11 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
        gsi_next (&iter))
     {
       gphi *phi = iter.phi ();
+      tree result = gimple_phi_result (phi);
       unsigned nargs = gimple_phi_num_args (phi);
+
+      if (!import_p (result))
+	continue;
 
       for (size_t i = 0; i < nargs; ++i)
 	if (e_in == gimple_phi_arg_edge (phi, i))
@@ -701,7 +705,8 @@ path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
 
   if (stmt
       && gimple_code (stmt) == GIMPLE_COND
-      && irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (stmt))))
+      && (import_p (gimple_cond_lhs (stmt))
+	  || import_p (gimple_cond_rhs (stmt))))
     {
       int_range<2> r;
       gcond *cond = as_a<gcond *> (stmt);
