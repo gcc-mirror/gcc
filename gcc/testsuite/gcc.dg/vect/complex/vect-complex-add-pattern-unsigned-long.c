@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-add-options arm_v8_1m_mve_fp } */
+/* { dg-require-effective-target vect_long } */
+/* { dg-add-options arm_v8_3a_complex_neon } */
+
+#define UNROLL
 
 #define TYPE uint64_t
 #define N 200
