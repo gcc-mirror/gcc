@@ -37,7 +37,8 @@ along with GCC; see the file COPYING3.  If not see
    integer_pow2p
    uniform_integer_cst_p
    HONOR_NANS
-   uniform_vector_p)
+   uniform_vector_p
+   expand_vec_cmp_expr_p)
 
 /* Operator lists.  */
 (define_operator_list tcc_comparison
@@ -830,6 +831,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (with
     { tree utype = unsigned_type_for (type); }
     (convert (rshift (lshift (convert:utype @0) @2) @3))))))
+
+/* Fold (-x >> C) into -(x > 0) where C = precision(type) - 1.  */
+(for cst (INTEGER_CST VECTOR_CST)
+ (simplify
+  (rshift (negate:s @0) cst@1)
+   (if (!TYPE_UNSIGNED (type)
+        && TYPE_OVERFLOW_UNDEFINED (type))
+    (with { tree stype = TREE_TYPE (@1);
+	    tree bt = truth_type_for (type);
+	    tree zeros = build_zero_cst (type);
+	    tree cst = NULL_TREE; }
+     (switch
+      /* Handle scalar case.  */
+      (if (INTEGRAL_TYPE_P (type)
+	   /* If we apply the rule to the scalar type before vectorization
+	      we will enforce the result of the comparison being a bool
+	      which will require an extra AND on the result that will be
+	      indistinguishable from when the user did actually want 0
+	      or 1 as the result so it can't be removed.  */
+	   && canonicalize_math_after_vectorization_p ()
+	   && wi::eq_p (wi::to_wide (@1), TYPE_PRECISION (type) - 1))
+       (negate (convert (gt @0 { zeros; }))))
+      /* Handle vector case.  */
+      (if (VECTOR_INTEGER_TYPE_P (type)
+	   /* First check whether the target has the same mode for vector
+	      comparison results as it's operands do.  */
+	   && TYPE_MODE (bt) == TYPE_MODE (type)
+	   /* Then check to see if the target is able to expand the comparison
+	      with the given type later on, otherwise we may ICE.  */
+	   && expand_vec_cmp_expr_p (type, bt, GT_EXPR)
+	   && (cst = uniform_integer_cst_p (@1)) != NULL
+	   && wi::eq_p (wi::to_wide (cst), element_precision (type) - 1))
+       (view_convert (gt:bt @0 { zeros; }))))))))
 
 /* Fold (C1/X)*C2 into (C1*C2)/X.  */
 (simplify
