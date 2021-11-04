@@ -899,10 +899,12 @@ simplify_context::simplify_unary_operation (rtx_code code, machine_mode mode,
 static bool
 exact_int_to_float_conversion_p (const_rtx op)
 {
-  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
   machine_mode op0_mode = GET_MODE (XEXP (op, 0));
-  /* Constants shouldn't reach here.  */
-  gcc_assert (op0_mode != VOIDmode);
+  /* Constants can reach here with -frounding-math, if they do then
+     the conversion isn't exact.  */
+  if (op0_mode == VOIDmode)
+    return false;
+  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
   int in_prec = GET_MODE_UNIT_PRECISION (op0_mode);
   int in_bits = in_prec;
   if (HWI_COMPUTABLE_MODE_P (op0_mode))
