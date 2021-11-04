@@ -131,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
 		       | m_TIGERLAKE | m_COOPERLAKE | m_SAPPHIRERAPIDS \
 		       | m_ROCKETLAKE)
-#define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_ALDERLAKE | m_CORE_AVX512)
+#define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
 #define m_GOLDMONT_PLUS (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT_PLUS)
@@ -736,7 +736,7 @@ static const struct processor_costs *processor_cost_table[] =
   &icelake_cost,
   &skylake_cost,
   &icelake_cost,
-  &icelake_cost,
+  &alderlake_cost,
   &icelake_cost,
   &intel_cost,
   &geode_cost,
