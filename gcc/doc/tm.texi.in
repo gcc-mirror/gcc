@@ -6085,6 +6085,8 @@ encountering an @code{init_priority} attribute.
 
 @hook TARGET_HAVE_CTORS_DTORS
 
+@hook TARGET_DTORS_FROM_CXA_ATEXIT
+
 @hook TARGET_ASM_CONSTRUCTOR
 
 @hook TARGET_ASM_DESTRUCTOR
