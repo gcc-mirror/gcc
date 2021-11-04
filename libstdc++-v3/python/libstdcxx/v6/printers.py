@@ -240,32 +240,63 @@ class SharedPointerPrinter:
                 state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
         return '%s<%s> (%s)' % (self.typename, str(self.val.type.template_argument(0)), state)
 
+def _tuple_impl_get(val):
+    "Return the tuple element stored in a _Tuple_impl<N, T> base class."
+    bases = val.type.fields()
+    if not bases[-1].is_base_class:
+        raise ValueError("Unsupported implementation for std::tuple: %s" % str(val.type))
+    # Get the _Head_base<N, T> base class:
+    head_base = val.cast(bases[-1].type)
+    fields = head_base.type.fields()
+    if len(fields) == 0:
+        raise ValueError("Unsupported implementation for std::tuple: %s" % str(val.type))
+    if fields[0].name == '_M_head_impl':
+        # The tuple element is the _Head_base::_M_head_impl data member.
+        return head_base['_M_head_impl']
+    elif fields[0].is_base_class:
+        # The tuple element is an empty base class of _Head_base.
+        # Cast to that empty base class.
+        return head_base.cast(fields[0].type)
+    else:
+        raise ValueError("Unsupported implementation for std::tuple: %s" % str(val.type))
+
+def tuple_get(n, val):
+    "Return the result of std::get<n>(val) on a std::tuple"
+    tuple_size = len(get_template_arg_list(val.type))
+    if n > tuple_size:
+        raise ValueError("Out of range index for std::get<N> on std::tuple")
+    # Get the first _Tuple_impl<0, T...> base class:
+    node = val.cast(val.type.fields()[0].type)
+    while n > 0:
+        # Descend through the base classes until the Nth one.
+        node = node.cast(node.type.fields()[0].type)
+        n -= 1
+    return _tuple_impl_get(node)
+
+def unique_ptr_get(val):
+    "Return the result of val.get() on a std::unique_ptr"
+    # std::unique_ptr<T, D> contains a std::tuple<D::pointer, D>,
+    # either as a direct data member _M_t (the old implementation)
+    # or within a data member of type __uniq_ptr_data.
+    impl_type = val.type.fields()[0].type.strip_typedefs()
+    # Check for new implementations first:
+    if is_specialization_of(impl_type, '__uniq_ptr_data') \
+        or is_specialization_of(impl_type, '__uniq_ptr_impl'):
+        tuple_member = val['_M_t']['_M_t']
+    elif is_specialization_of(impl_type, 'tuple'):
+        tuple_member = val['_M_t']
+    else:
+        raise ValueError("Unsupported implementation for unique_ptr: %s" % str(impl_type))
+    return tuple_get(0, tuple_member)
+
 class UniquePointerPrinter:
     "Print a unique_ptr"
 
     def __init__ (self, typename, val):
         self.val = val
-        impl_type = val.type.fields()[0].type.strip_typedefs()
-        # Check for new implementations first:
-        if is_specialization_of(impl_type, '__uniq_ptr_data') \
-            or is_specialization_of(impl_type, '__uniq_ptr_impl'):
-            tuple_member = val['_M_t']['_M_t']
-        elif is_specialization_of(impl_type, 'tuple'):
-            tuple_member = val['_M_t']
-        else:
-            raise ValueError("Unsupported implementation for unique_ptr: %s" % str(impl_type))
-        tuple_impl_type = tuple_member.type.fields()[0].type # _Tuple_impl
-        tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
-        head_field = tuple_head_type.fields()[0]
-        if head_field.name == '_M_head_impl':
-            self.pointer = tuple_member['_M_head_impl']
-        elif head_field.is_base_class:
-            self.pointer = tuple_member.cast(head_field.type)
-        else:
-            raise ValueError("Unsupported implementation for tuple in unique_ptr: %s" % str(impl_type))
 
     def children (self):
-        return SmartPtrIterator(self.pointer)
+        return SmartPtrIterator(unique_ptr_get(self.val))
 
     def to_string (self):
         return ('std::unique_ptr<%s>' % (str(self.val.type.template_argument(0))))
@@ -1370,7 +1401,7 @@ class StdPathPrinter:
     def __init__ (self, typename, val):
         self.val = val
         self.typename = typename
-        impl = self.val['_M_cmpts']['_M_impl']['_M_t']['_M_t']['_M_head_impl']
+        impl = unique_ptr_get(self.val['_M_cmpts']['_M_impl'])
         self.type = impl.cast(gdb.lookup_type('uintptr_t')) & 3
         if self.type == 0:
             self.impl = impl
