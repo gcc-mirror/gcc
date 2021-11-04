@@ -328,6 +328,9 @@ public:
 			   gimple *orig_stmt);
   /* Return the new chain of parameters.  */
   tree get_new_param_chain ();
+  /* Replace all occurances of SSAs in m_dead_ssa_debug_equiv in t with what
+     they are mapped to.  */
+  void remap_with_debug_expressions (tree *t);
 
   /* Pointers to data structures defining how the function should be
      modified.  */
@@ -348,6 +351,12 @@ public:
   hash_set<gimple *> m_dead_stmts;
   hash_set<tree> m_dead_ssas;
 
+  /* Mapping from DCEd SSAs to what their potential debug_binds should be.  */
+  hash_map<tree, tree> m_dead_ssa_debug_equiv;
+  /* Mapping from DCEd statements to debug expressions that will be placed on
+     the RHS of debug statement that will replace this one.  */
+  hash_map<gimple *, tree> m_dead_stmt_debug_equiv;
+
 private:
   void common_initialization (tree old_fndecl, tree *vars,
 			      vec<ipa_replace_map *, va_gc> *tree_map);
@@ -361,7 +370,8 @@ private:
   bool modify_call_stmt (gcall **stmt_p, gimple *orig_stmt);
   bool modify_cfun_body ();
   void reset_debug_stmts ();
-  void mark_dead_statements (tree dead_param);
+  void mark_dead_statements (tree dead_param, vec<tree> *debugstack);
+  bool prepare_debug_expressions (tree dead_ssa);
 
   /* Declaration of the function that is being transformed.  */
 
