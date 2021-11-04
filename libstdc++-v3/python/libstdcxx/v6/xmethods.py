@@ -597,7 +597,7 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
         tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
         head_field = tuple_head_type.fields()[0]
         if head_field.name == '_M_head_impl':
-            return tuple_member['_M_head_impl']
+            return tuple_member.cast(tuple_head_type)['_M_head_impl']
         elif head_field.is_base_class:
             return tuple_member.cast(head_field.type)
         else:
