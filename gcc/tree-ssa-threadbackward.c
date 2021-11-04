@@ -443,18 +443,6 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 	      goto leave_bb;
 	    }
 	}
-      // Examine blocks that define or export an interesting SSA,
-      // since they may compute a range which resolve this path.
-      if ((def_bb == bb
-	   || bitmap_bit_p (m_ranger->gori ().exports (bb), i))
-	  && m_path.length () > 1)
-	{
-	  if (maybe_register_path ())
-	    {
-	      done = true;
-	      goto leave_bb;
-	    }
-	}
     }
 
   // If there are interesting names not yet processed, keep looking.
