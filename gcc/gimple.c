@@ -1666,7 +1666,18 @@ gimple_call_static_chain_flags (const gcall *stmt)
 	  int modref_flags = summary->static_chain_flags;
 
 	  /* We have possibly optimized out load.  Be conservative here.  */
-	  gcc_checking_assert (node->binds_to_current_def_p ());
+	  if (!node->binds_to_current_def_p ())
+	    {
+	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
+		{
+		  modref_flags &= ~EAF_UNUSED;
+		  modref_flags |= EAF_NOESCAPE;
+		}
+	      if ((modref_flags & EAF_NOREAD) && !(flags & EAF_NOREAD))
+		modref_flags &= ~EAF_NOREAD;
+	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
+		modref_flags &= ~EAF_DIRECT;
+	    }
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}
