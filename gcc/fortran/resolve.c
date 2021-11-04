@@ -4064,7 +4064,7 @@ resolve_operator (gfc_expr *e)
     {
     default:
       if (!gfc_resolve_expr (e->value.op.op2))
-	return false;
+	t = false;
 
     /* Fall through.  */
 
@@ -4090,6 +4090,9 @@ resolve_operator (gfc_expr *e)
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
   if (op1 == NULL && op2 == NULL)
+    return false;
+  /* Error out if op2 did not resolve. We already diagnosed op1.  */
+  if (t == false)
     return false;
 
   dual_locus_error = false;

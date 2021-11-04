@@ -3064,6 +3064,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   gfc_array_spec *fas, *aas;
   bool pointer_dummy, pointer_arg, allocatable_arg;
 
+  bool ok = true;
+
   actual = *ap;
 
   if (actual == NULL && formal == NULL)
@@ -3134,7 +3136,6 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("More actual than formal arguments in procedure "
 		       "call at %L", where);
-
 	  return false;
 	}
 
@@ -3192,13 +3193,16 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  else if (where)
 	    gfc_error ("Fortran 2008: Null pointer at %L to non-pointer "
 		       "dummy %qs", where, f->sym->name);
-
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       if (!compare_parameter (f->sym, a->expr, ranks_must_agree,
 			      is_elemental, where))
-	return false;
+	{
+	  ok = false;
+	  goto match;
+	}
 
       /* TS 29113, 6.3p2; F2018 15.5.2.4.  */
       if (f->sym->ts.type == BT_ASSUMED
@@ -3217,7 +3221,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			 "has type parameters or is of "
 			 "derived type with type-bound or FINAL procedures",
 			 &a->expr->where);
-	      return false;
+	      ok = false;
+	      goto match;
 	    }
 	}
 
@@ -3249,7 +3254,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			 mpz_get_si (a->expr->ts.u.cl->length->value.integer),
 			 mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			 f->sym->name, &a->expr->where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       if ((f->sym->attr.pointer || f->sym->attr.allocatable)
@@ -3261,7 +3267,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "pointer dummy argument %qs must have a deferred "
 		       "length type parameter if and only if the dummy has one",
 		       &a->expr->where, f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       if (f->sym->ts.type == BT_CLASS)
@@ -3295,7 +3302,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			       "at %L", f->sym->name, actual_size,
 			       formal_size, &a->expr->where);
 	    }
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
      skip_size_check:
@@ -3312,7 +3320,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Expected a procedure pointer for argument %qs at %L",
 		       f->sym->name, &a->expr->where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Satisfy F03:12.4.1.3 by ensuring that a procedure actual argument is
@@ -3328,7 +3337,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Expected a procedure for argument %qs at %L",
 		       f->sym->name, &a->expr->where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Class array variables and expressions store array info in a
@@ -3392,7 +3402,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Actual argument for %qs cannot be an assumed-size"
 		       " array at %L", f->sym->name, where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Diagnose F2018 C839 (TS29113 C535c).  Here the problem is
@@ -3421,7 +3432,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    gfc_error ("Actual argument to assumed-rank INTENT(OUT) "
 		       "dummy %qs at %L cannot be of unknown size",
 		       f->sym->name, where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       if (a->expr->expr_type != EXPR_NULL
@@ -3430,7 +3442,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Actual argument for %qs must be a pointer at %L",
 		       f->sym->name, &a->expr->where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       if (a->expr->expr_type != EXPR_NULL
@@ -3440,7 +3453,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Fortran 2008: Non-pointer actual argument at %L to "
 		       "pointer dummy %qs", &a->expr->where,f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
 
@@ -3451,7 +3465,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    gfc_error ("Coindexed actual argument at %L to pointer "
 		       "dummy %qs",
 		       &a->expr->where, f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Fortran 2008, 12.5.2.5 (no constraint).  */
@@ -3464,7 +3479,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    gfc_error ("Coindexed actual argument at %L to allocatable "
 		       "dummy %qs requires INTENT(IN)",
 		       &a->expr->where, f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Fortran 2008, C1237.  */
@@ -3479,7 +3495,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "%L requires that dummy %qs has neither "
 		       "ASYNCHRONOUS nor VOLATILE", &a->expr->where,
 		       f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Fortran 2008, 12.5.2.4 (no constraint).  */
@@ -3492,7 +3509,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	    gfc_error ("Coindexed actual argument at %L with allocatable "
 		       "ultimate component to dummy %qs requires either VALUE "
 		       "or INTENT(IN)", &a->expr->where, f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
      if (f->sym->ts.type == BT_CLASS
@@ -3503,7 +3521,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Actual CLASS array argument for %qs must be a full "
 		       "array at %L", f->sym->name, &a->expr->where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
 
@@ -3513,7 +3532,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Actual argument for %qs must be ALLOCATABLE at %L",
 		       f->sym->name, &a->expr->where);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Check intent = OUT/INOUT for definable actual argument.  */
@@ -3529,9 +3549,15 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		&& CLASS_DATA (f->sym)->attr.class_pointer)
 	       || (f->sym->ts.type != BT_CLASS && f->sym->attr.pointer))
 	      && !gfc_check_vardef_context (a->expr, true, false, false, context))
-	    return false;
+	    {
+	      ok = false;
+	      goto match;
+	    }
 	  if (!gfc_check_vardef_context (a->expr, false, false, false, context))
-	    return false;
+	    {
+	      ok = false;
+	      goto match;
+	    }
 	}
 
       if ((f->sym->attr.intent == INTENT_OUT
@@ -3546,7 +3572,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "INTENT(INOUT), VOLATILE or ASYNCHRONOUS attribute "
 		       "of the dummy argument %qs",
 		       &a->expr->where, f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* C1232 (R1221) For an actual argument which is an array section or
@@ -3564,7 +3591,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "incompatible with the non-assumed-shape "
 		       "dummy argument %qs due to VOLATILE attribute",
 		       &a->expr->where,f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* Find the last array_ref.  */
@@ -3581,7 +3609,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "incompatible with the non-assumed-shape "
 		       "dummy argument %qs due to VOLATILE attribute",
 		       &a->expr->where, f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
       /* C1233 (R1221) For an actual argument which is a pointer array, the
@@ -3601,7 +3630,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "an assumed-shape or pointer-array dummy "
 		       "argument %qs due to VOLATILE attribute",
 		       &a->expr->where,f->sym->name);
-	  return false;
+	  ok = false;
+	  goto match;
 	}
 
     match:
@@ -3610,6 +3640,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       new_arg[i++] = a;
     }
+
+  /* Give up now if we saw any bad argument.  */
+  if (!ok)
+    return false;
 
   /* Make sure missing actual arguments are optional.  */
   i = 0;

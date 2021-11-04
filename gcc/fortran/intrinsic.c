@@ -223,6 +223,7 @@ static bool
 do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 {
   gfc_actual_arglist *a;
+  bool ok = true;
 
   for (a = arg; a; a = a->next)
     {
@@ -238,7 +239,7 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	  gfc_error ("Variable with NO_ARG_CHECK attribute at %L is only "
 		     "permitted as argument to the intrinsic functions "
 		     "C_LOC and PRESENT", &a->expr->where);
-	  return false;
+	  ok = false;
 	}
       else if (a->expr->ts.type == BT_ASSUMED
 	       && specific->id != GFC_ISYM_LBOUND
@@ -254,32 +255,32 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	  gfc_error ("Assumed-type argument at %L is not permitted as actual"
 		     " argument to the intrinsic %s", &a->expr->where,
 		     gfc_current_intrinsic);
-	  return false;
+	  ok = false;
 	}
       else if (a->expr->ts.type == BT_ASSUMED && a != arg)
 	{
 	  gfc_error ("Assumed-type argument at %L is only permitted as "
 		     "first actual argument to the intrinsic %s",
 		     &a->expr->where, gfc_current_intrinsic);
-	  return false;
+	  ok = false;
 	}
-      if (a->expr->rank == -1 && !specific->inquiry)
+      else if (a->expr->rank == -1 && !specific->inquiry)
 	{
 	  gfc_error ("Assumed-rank argument at %L is only permitted as actual "
 		     "argument to intrinsic inquiry functions",
 		     &a->expr->where);
-	  return false;
+	  ok = false;
 	}
-      if (a->expr->rank == -1 && arg != a)
+      else if (a->expr->rank == -1 && arg != a)
 	{
 	  gfc_error ("Assumed-rank argument at %L is only permitted as first "
 		     "actual argument to the intrinsic inquiry function %s",
 		     &a->expr->where, gfc_current_intrinsic);
-	  return false;
+	  ok = false;
 	}
     }
 
-  return true;
+  return ok;
 }
 
 

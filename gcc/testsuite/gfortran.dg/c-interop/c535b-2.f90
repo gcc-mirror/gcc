@@ -57,18 +57,18 @@ subroutine test_calls (x, y)
   ! Make sure each invalid argument produces a diagnostic.
   ! scalar dummies
   call f (x, &  ! { dg-error "(A|a)ssumed.rank" }
-          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337" } 
   ! assumed-rank dummies
   call g (x, y)  ! OK
   ! assumed-size dummies
   call h (x, &  ! { dg-error "(A|a)ssumed.rank" "pr101334" }
-          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   ! assumed-shape dummies
   call i (x, &  ! { dg-error "(A|a)ssumed.rank" }
-          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
  ! fixed-size array dummies
   call j (x, &  ! { dg-error "(A|a)ssumed.rank" "pr101334" }
-          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+          y)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
 end subroutine
 
 ! Check that you can't use an assumed-rank array variable in an array
@@ -81,7 +81,7 @@ subroutine test_designators (x)
 
   call f (x(1), 1)  ! { dg-error "(A|a)ssumed.rank" }
   call g (x(1:3:1), &  ! { dg-error "(A|a)ssumed.rank" }
-          x)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+          x)
 end subroutine
 
 ! Check that you can't use an assumed-rank array variable in elemental
@@ -122,7 +122,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   z = x + y  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     + b  ! { dg-error "(A|a)ssumed.rank" }
   z = x + i  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
@@ -133,7 +133,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   z = x - y  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     - b  ! { dg-error "(A|a)ssumed.rank" }
   z = x - i  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
@@ -144,7 +144,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   z = x * y  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     * b  ! { dg-error "(A|a)ssumed.rank" }
   z = x * i  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
@@ -155,7 +155,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   z = x / y  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     / b  ! { dg-error "(A|a)ssumed.rank" }
   z = x / i  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
@@ -166,7 +166,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   z = x ** y  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     ** b  ! { dg-error "(A|a)ssumed.rank" }
   z = x ** i  ! OK
   c &  ! { dg-error "(A|a)ssumed.rank" }
@@ -179,7 +179,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = x .eq. y  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .eq. b  ! { dg-error "(A|a)ssumed.rank" }
   r = x .eq. i  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -190,7 +190,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = x .ne. y  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .ne. b  ! { dg-error "(A|a)ssumed.rank" }
   r = x .ne. i  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -201,7 +201,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = x .lt. y  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .lt. b  ! { dg-error "(A|a)ssumed.rank" }
   r = x .lt. i  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -212,7 +212,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = x .le. y  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .le. b  ! { dg-error "(A|a)ssumed.rank" }
   r = x .le. i  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -223,7 +223,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = x .gt. y  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .gt. b  ! { dg-error "(A|a)ssumed.rank" }
   r = x .gt. i  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -234,7 +234,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = x .ge. y  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = a &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .ge. b  ! { dg-error "(A|a)ssumed.rank" }
   r = x .ge. i  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -253,7 +253,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = p .and. q  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .and. m  ! { dg-error "(A|a)ssumed.rank" }
   r = p .and. j  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -264,7 +264,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = p .or. q  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .or. m  ! { dg-error "(A|a)ssumed.rank" }
   r = p .or. j  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -275,7 +275,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = p .eqv. q  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .eqv. m  ! { dg-error "(A|a)ssumed.rank" }
   r = p .eqv. j  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -286,7 +286,7 @@ subroutine test_expressions (a, b, c, l, m, n, x, y, z, p, q, r, s, i, j)
 
   r = p .neqv. q  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
-    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+    = l &  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
     .neqv. m  ! { dg-error "(A|a)ssumed.rank" }
   r = p .neqv. j  ! OK
   n &  ! { dg-error "(A|a)ssumed.rank" }
@@ -320,7 +320,7 @@ subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
   ! trig, hyperbolic, other math functions
   r1 &  ! { dg-error "(A|a)ssumed.rank" }
     = atan2 (r1, &  ! { dg-error "(A|a)ssumed.rank" }
-             r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+             r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   r1 &  ! { dg-error "(A|a)ssumed.rank" }
     = atan (r2)  ! { dg-error "(A|a)ssumed.rank" }
   c1 &  ! { dg-error "(A|a)ssumed.rank" }
@@ -335,7 +335,7 @@ subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
   ! bit operations
   l1 &  ! { dg-error "(A|a)ssumed.rank" }
     = blt (i1, &  ! { dg-error "(A|a)ssumed.rank" }
-           i2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+           i2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   l1 &  ! { dg-error "(A|a)ssumed.rank" }
     = btest (i1, 0)  ! { dg-error "(A|a)ssumed.rank" }
   i1 &  ! { dg-error "(A|a)ssumed.rank" }
@@ -348,7 +348,7 @@ subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
     = char (i1)  ! { dg-error "(A|a)ssumed.rank" }
   c1 &  ! { dg-error "(A|a)ssumed.rank" }
     = cmplx (r1, &  ! { dg-error "(A|a)ssumed.rank" }
-             r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+             r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   i1 &  ! { dg-error "(A|a)ssumed.rank" }
     = floor (r1)  ! { dg-error "(A|a)ssumed.rank" }
   r1 &  ! { dg-error "(A|a)ssumed.rank" }
@@ -357,16 +357,16 @@ subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
   ! reductions
   l = any (l2)  ! { dg-error "(A|a)ssumed.rank" }
   r = dot_product (r1, &  ! { dg-error "(A|a)ssumed.rank" }
-                   r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+                   r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   i = iall (i2, &  ! { dg-error "(A|a)ssumed.rank" }
-            l2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+            l2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
 
   ! string operations
   s1 &  ! { dg-error "(A|a)ssumed.rank" }
     = adjustr (s2)  ! { dg-error "(A|a)ssumed.rank" }
   i1 &  ! { dg-error "(A|a)ssumed.rank" }
     = index (c1, &  ! { dg-error "(A|a)ssumed.rank" }
-             c2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+             c2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
 
   ! misc
   i1 &  ! { dg-error "(A|a)ssumed.rank" }
@@ -374,12 +374,12 @@ subroutine test_intrinsics (i1, i2, r1, r2, c1, c2, l1, l2, s1, s2)
   i = findloc (r1, 0.0)  ! { dg-error "(A|a)ssumed.rank" }
   r1 &  ! { dg-error "(A|a)ssumed.rank" }
     = matmul (r1, &  ! { dg-error "(A|a)ssumed.rank" }
-              r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+              r2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   r1 &  ! { dg-error "(A|a)ssumed.rank" }
     = reshape (r2, [10, 3])  ! { dg-error "(A|a)ssumed.rank" }
   i1 &  ! { dg-error "(A|a)ssumed.rank" }
     = sign (i1, &  ! { dg-error "(A|a)ssumed.rank" }
-            i2)  ! { dg-error "(A|a)ssumed.rank" "pr101337, failure to diagnose both operands" { xfail *-*-*} }
+            i2)  ! { dg-error "(A|a)ssumed.rank" "pr101337" }
   s1 &  ! { dg-error "(A|a)ssumed.rank" }
     = transpose (s2)  ! { dg-error "(A|a)ssumed.rank" }
 
