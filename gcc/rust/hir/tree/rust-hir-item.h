@@ -1122,6 +1122,11 @@ public:
   // Returns whether function has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  ImplItemType get_impl_item_type () const override final
+  {
+    return ImplItem::ImplItemType::FUNCTION;
+  }
+
   // Mega-constructor with all possible fields
   Function (Analysis::NodeMapping mappings, Identifier function_name,
 	    FunctionQualifiers qualifiers,
@@ -1272,6 +1277,11 @@ public:
 
   // Returns whether type alias has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
+
+  ImplItemType get_impl_item_type () const override final
+  {
+    return ImplItem::ImplItemType::TYPE_ALIAS;
+  }
 
   // Mega-constructor with all possible fields
   TypeAlias (Analysis::NodeMapping mappings, Identifier new_type_name,
@@ -2074,6 +2084,11 @@ public:
   {
     return get_mappings ();
   };
+
+  ImplItemType get_impl_item_type () const override final
+  {
+    return ImplItem::ImplItemType::CONSTANT;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

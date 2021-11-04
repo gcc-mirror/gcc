@@ -642,11 +642,14 @@ public:
 
 class ImplItem
 {
-protected:
-  // Clone function implementation as pure virtual method
-  virtual ImplItem *clone_inherent_impl_item_impl () const = 0;
-
 public:
+  enum ImplItemType
+  {
+    FUNCTION,
+    TYPE_ALIAS,
+    CONSTANT
+  };
+
   virtual ~ImplItem () {}
 
   // Unique pointer custom clone function
@@ -662,6 +665,12 @@ public:
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
 
   virtual Location get_locus () const = 0;
+
+  virtual ImplItemType get_impl_item_type () const = 0;
+
+protected:
+  // Clone function implementation as pure virtual method
+  virtual ImplItem *clone_inherent_impl_item_impl () const = 0;
 };
 
 // A crate HIR object - holds all the data for a single compilation unit
