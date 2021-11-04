@@ -1874,7 +1874,7 @@
         (and:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "%v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vand %3,%3,%2
@@ -1892,7 +1892,7 @@
         (and:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vand %3,%3,%2
@@ -1910,7 +1910,7 @@
         (and:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vand %3,%3,%2
@@ -1928,7 +1928,7 @@
         (and:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vand %3,%3,%2
@@ -1946,7 +1946,7 @@
         (and:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vand %3,%3,%2
@@ -1964,7 +1964,7 @@
         (and:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vand %3,%3,%2
@@ -1982,7 +1982,7 @@
         (and:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vand %3,%3,%2
@@ -2000,7 +2000,7 @@
         (and:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vand %3,%3,%2
@@ -2018,7 +2018,7 @@
         (and:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vandc %3,%3,%2
@@ -2036,7 +2036,7 @@
         (and:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vandc %3,%3,%2
@@ -2054,7 +2054,7 @@
         (and:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vandc %3,%3,%2
@@ -2072,7 +2072,7 @@
         (and:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vandc %3,%3,%2
@@ -2090,7 +2090,7 @@
         (and:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vandc %3,%3,%2
@@ -2108,7 +2108,7 @@
         (and:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vandc %3,%3,%2
@@ -2126,7 +2126,7 @@
         (and:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vandc %3,%3,%2
@@ -2144,7 +2144,7 @@
         (and:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vandc %3,%3,%2
@@ -2162,7 +2162,7 @@
         (not:VM (xor:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;veqv %3,%3,%2
@@ -2180,7 +2180,7 @@
         (not:VM (xor:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;veqv %3,%3,%2
@@ -2198,7 +2198,7 @@
         (not:VM (xor:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "%v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;veqv %3,%3,%2
@@ -2216,7 +2216,7 @@
         (not:VM (xor:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;veqv %3,%3,%2
@@ -2234,7 +2234,7 @@
         (not:VM (xor:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;veqv %3,%3,%2
@@ -2252,7 +2252,7 @@
         (not:VM (xor:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;veqv %3,%3,%2
@@ -2270,7 +2270,7 @@
         (not:VM (xor:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;veqv %3,%3,%2
@@ -2288,7 +2288,7 @@
         (not:VM (xor:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;veqv %3,%3,%2
@@ -2306,7 +2306,7 @@
         (ior:VM (not:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vnand %3,%3,%2
@@ -2324,7 +2324,7 @@
         (ior:VM (not:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vnand %3,%3,%2
@@ -2342,7 +2342,7 @@
         (ior:VM (not:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vnand %3,%3,%2
@@ -2360,7 +2360,7 @@
         (ior:VM (not:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vnand %3,%3,%2
@@ -2378,7 +2378,7 @@
         (ior:VM (not:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vnand %3,%3,%2
@@ -2396,7 +2396,7 @@
         (ior:VM (not:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vnand %3,%3,%2
@@ -2414,7 +2414,7 @@
         (ior:VM (not:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vnand %3,%3,%2
@@ -2432,7 +2432,7 @@
         (ior:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vnand %3,%3,%2
@@ -2450,7 +2450,7 @@
         (and:VM (not:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vnor %3,%3,%2
@@ -2468,7 +2468,7 @@
         (and:VM (not:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vnor %3,%3,%2
@@ -2486,7 +2486,7 @@
         (and:VM (not:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vnor %3,%3,%2
@@ -2504,7 +2504,7 @@
         (and:VM (not:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vnor %3,%3,%2
@@ -2522,7 +2522,7 @@
         (and:VM (not:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vnor %3,%3,%2
@@ -2540,7 +2540,7 @@
         (and:VM (not:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vnor %3,%3,%2
@@ -2558,7 +2558,7 @@
         (and:VM (not:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vnor %3,%3,%2
@@ -2576,7 +2576,7 @@
         (and:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vnor %3,%3,%2
@@ -2594,7 +2594,7 @@
         (ior:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vor %3,%3,%2
@@ -2612,7 +2612,7 @@
         (ior:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vor %3,%3,%2
@@ -2630,7 +2630,7 @@
         (ior:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vor %3,%3,%2
@@ -2648,7 +2648,7 @@
         (ior:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vor %3,%3,%2
@@ -2666,7 +2666,7 @@
         (ior:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vor %3,%3,%2
@@ -2684,7 +2684,7 @@
         (ior:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "%v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vor %3,%3,%2
@@ -2702,7 +2702,7 @@
         (ior:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vor %3,%3,%2
@@ -2720,7 +2720,7 @@
         (ior:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vor %3,%3,%2
@@ -2738,7 +2738,7 @@
         (ior:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vorc %3,%3,%2
@@ -2756,7 +2756,7 @@
         (ior:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vorc %3,%3,%2
@@ -2774,7 +2774,7 @@
         (ior:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vorc %3,%3,%2
@@ -2792,7 +2792,7 @@
         (ior:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vorc %3,%3,%2
@@ -2810,7 +2810,7 @@
         (ior:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vorc %3,%3,%2
@@ -2828,7 +2828,7 @@
         (ior:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vorc %3,%3,%2
@@ -2846,7 +2846,7 @@
         (ior:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vorc %3,%3,%2
@@ -2864,7 +2864,7 @@
         (ior:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (not:VM (match_operand:VM 2 "altivec_register_operand" "v,v,v,v"))))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vorc %3,%3,%2
@@ -2882,7 +2882,7 @@
         (xor:VM (and:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vand %3,%1,%0\;vxor %3,%3,%2
@@ -2900,7 +2900,7 @@
         (xor:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vandc %3,%1,%0\;vxor %3,%3,%2
@@ -2918,7 +2918,7 @@
         (xor:VM (not:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    veqv %3,%1,%0\;vxor %3,%3,%2
@@ -2936,7 +2936,7 @@
         (xor:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnand %3,%1,%0\;vxor %3,%3,%2
@@ -2954,7 +2954,7 @@
         (xor:VM (and:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (not:VM (match_operand:VM 1 "altivec_register_operand" "v,v,v,v")))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vnor %3,%1,%0\;vxor %3,%3,%2
@@ -2972,7 +2972,7 @@
         (xor:VM (ior:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vor %3,%1,%0\;vxor %3,%3,%2
@@ -2990,7 +2990,7 @@
         (xor:VM (ior:VM (not:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v"))
                           (match_operand:VM 1 "altivec_register_operand" "v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vorc %3,%1,%0\;vxor %3,%3,%2
@@ -3008,7 +3008,7 @@
         (xor:VM (xor:VM (match_operand:VM 0 "altivec_register_operand" "v,v,v,v")
                           (match_operand:VM 1 "altivec_register_operand" "%v,v,v,v"))
                  (match_operand:VM 2 "altivec_register_operand" "v,v,v,v")))
-   (clobber (match_scratch:VM 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:VM 4 "=X,X,X,&v"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_2LOGICAL)"
   "@
    vxor %3,%1,%0\;vxor %3,%3,%2
