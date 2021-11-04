@@ -1,3 +1,24 @@
+2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gimple-range-cache.cc (ranger_cache::push_poor_value): Mark
+	parameters unused.
+
+2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* lra-constraints.c (match_reload): Ignore out in checking values
+	of outs.
+	(curr_insn_transform): Collect outputs before doing reloads of operands.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* ipa-sra.c (ptr_parm_has_nonarg_uses): Fix volatileness
+	check.
+
 2021-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (%X): Remove obsolete reference to -Wl.

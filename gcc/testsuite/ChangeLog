@@ -1,3 +1,16 @@
+2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* g++.target/arm/pr102842.C: New test.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* gcc.dg/ipa/pr102714.c: New testcase.
+
 2021-10-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
