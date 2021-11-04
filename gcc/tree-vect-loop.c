@@ -814,7 +814,7 @@ bb_in_loop_p (const_basic_block bb, const void *data)
    stmt_vec_info structs for all the stmts in LOOP_IN.  */
 
 _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
-  : vec_info (vec_info::loop, init_cost (loop_in, false), shared),
+  : vec_info (vec_info::loop, shared),
     loop (loop_in),
     bbs (XCNEWVEC (basic_block, loop->num_nodes)),
     num_itersm1 (NULL_TREE),
@@ -1292,18 +1292,18 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
     }
 
   /* Now accumulate cost.  */
-  void *target_cost_data = init_cost (loop, true);
+  vector_costs *target_cost_data = init_cost (loop_vinfo, true);
   stmt_info_for_cost *si;
   int j;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 		    j, si)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, si->count,
+    (void) add_stmt_cost (target_cost_data, si->count,
 			  si->kind, si->stmt_info, si->vectype,
 			  si->misalign, si->where);
   unsigned prologue_cost = 0, body_cost = 0, epilogue_cost = 0;
   finish_cost (target_cost_data, &prologue_cost, &body_cost,
 	       &epilogue_cost);
-  destroy_cost_data (target_cost_data);
+  delete target_cost_data;
   LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
     = prologue_cost + body_cost + epilogue_cost;
 }
@@ -1783,7 +1783,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
         }
     } /* bbs */
 
-  add_stmt_costs (loop_vinfo, loop_vinfo->target_cost_data, &cost_vec);
+  add_stmt_costs (loop_vinfo->target_cost_data, &cost_vec);
 
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
@@ -2393,6 +2393,8 @@ start_over:
 		   LOOP_VINFO_INT_NITERS (loop_vinfo));
     }
 
+  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo) = init_cost (loop_vinfo, false);
+
   /* Analyze the alignment of the data-refs in the loop.
      Fail if a data reference is found that cannot be vectorized.  */
 
@@ -2757,9 +2759,8 @@ again:
   LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).release ();
   LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).release ();
   /* Reset target cost data.  */
-  destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
-  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo)
-    = init_cost (LOOP_VINFO_LOOP (loop_vinfo), false);
+  delete LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo) = nullptr;
   /* Reset accumulated rgroup information.  */
   release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo));
   release_vec_loop_controls (&LOOP_VINFO_LENS (loop_vinfo));
@@ -3895,7 +3896,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   int scalar_outside_cost = 0;
   int assumed_vf = vect_vf_for_cost (loop_vinfo);
   int npeel = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
-  void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+  vector_costs *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
 
   /* Cost model disabled.  */
   if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
@@ -3912,7 +3913,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       unsigned len = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).length ();
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, len, vector_stmt,
+      (void) add_stmt_cost (target_cost_data, len, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
@@ -3925,12 +3926,12 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       unsigned len = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).length ();
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, len, vector_stmt,
+      (void) add_stmt_cost (target_cost_data, len, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_prologue);
       len = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).length ();
       if (len)
 	/* Count LEN - 1 ANDs and LEN comparisons.  */
-	(void) add_stmt_cost (loop_vinfo, target_cost_data, len * 2 - 1,
+	(void) add_stmt_cost (target_cost_data, len * 2 - 1,
 			      scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
       len = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo).length ();
       if (len)
@@ -3941,7 +3942,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	  for (unsigned int i = 0; i < len; ++i)
 	    if (!LOOP_VINFO_LOWER_BOUNDS (loop_vinfo)[i].unsigned_p)
 	      nstmts += 1;
-	  (void) add_stmt_cost (loop_vinfo, target_cost_data, nstmts,
+	  (void) add_stmt_cost (target_cost_data, nstmts,
 				scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
 	}
       if (dump_enabled_p ())
@@ -3954,7 +3955,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo))
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, vector_stmt,
+      (void) add_stmt_cost (target_cost_data, 1, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
@@ -3963,7 +3964,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+    (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken,
 			  NULL, NULL_TREE, 0, vect_prologue);
 
   /* Count statements in scalar loop.  Using this as scalar cost for a single
@@ -4051,7 +4052,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (peel_iters_prologue)
     FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
       {
-	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+	(void) add_stmt_cost (target_cost_data,
 			      si->count * peel_iters_prologue, si->kind,
 			      si->stmt_info, si->vectype, si->misalign,
 			      vect_prologue);
@@ -4061,7 +4062,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (peel_iters_epilogue)
     FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
       {
-	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+	(void) add_stmt_cost (target_cost_data,
 			      si->count * peel_iters_epilogue, si->kind,
 			      si->stmt_info, si->vectype, si->misalign,
 			      vect_epilogue);
@@ -4070,20 +4071,20 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* Add possible cond_branch_taken/cond_branch_not_taken cost.  */
 
   if (prologue_need_br_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+    (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken,
 			  NULL, NULL_TREE, 0, vect_prologue);
 
   if (prologue_need_br_not_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+    (void) add_stmt_cost (target_cost_data, 1,
 			  cond_branch_not_taken, NULL, NULL_TREE, 0,
 			  vect_prologue);
 
   if (epilogue_need_br_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+    (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken,
 			  NULL, NULL_TREE, 0, vect_epilogue);
 
   if (epilogue_need_br_not_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+    (void) add_stmt_cost (target_cost_data, 1,
 			  cond_branch_not_taken, NULL, NULL_TREE, 0,
 			  vect_epilogue);
 
@@ -4111,9 +4112,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	 simpler and safer to use the worst-case cost; if this ends up
 	 being the tie-breaker between vectorizing or not, then it's
 	 probably better not to vectorize.  */
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks,
+      (void) add_stmt_cost (target_cost_data, num_masks,
 			    vector_stmt, NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks - 1,
+      (void) add_stmt_cost (target_cost_data, num_masks - 1,
 			    vector_stmt, NULL, NULL_TREE, 0, vect_body);
     }
   else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
@@ -4163,9 +4164,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	      body_stmts += 3 * num_vectors;
 	  }
 
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, prologue_stmts,
+      (void) add_stmt_cost (target_cost_data, prologue_stmts,
 			    scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, body_stmts,
+      (void) add_stmt_cost (target_cost_data, body_stmts,
 			    scalar_stmt, NULL, NULL_TREE, 0, vect_body);
     }
 

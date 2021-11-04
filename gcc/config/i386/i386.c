@@ -22868,26 +22868,30 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
   return default_noce_conversion_profitable_p (seq, if_info);
 }
 
-/* Implement targetm.vectorize.init_cost.  */
-
-static void *
-ix86_init_cost (class loop *, bool)
+/* x86-specific vector costs.  */
+class ix86_vector_costs : public vector_costs
 {
-  unsigned *cost = XNEWVEC (unsigned, 3);
-  cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
-  return cost;
+  using vector_costs::vector_costs;
+
+  unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
+			      stmt_vec_info stmt_info, tree vectype,
+			      int misalign,
+			      vect_cost_model_location where) override;
+};
+
+/* Implement targetm.vectorize.create_costs.  */
+
+static vector_costs *
+ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
+{
+  return new ix86_vector_costs (vinfo, costing_for_scalar);
 }
 
-/* Implement targetm.vectorize.add_stmt_cost.  */
-
-static unsigned
-ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
-		    enum vect_cost_for_stmt kind,
-		    class _stmt_vec_info *stmt_info, tree vectype,
-		    int misalign,
-		    enum vect_cost_model_location where)
+unsigned
+ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
+				  stmt_vec_info stmt_info, tree vectype,
+				  int misalign, vect_cost_model_location where)
 {
-  unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
   bool scalar_p
     = (kind == scalar_stmt || kind == scalar_load || kind == scalar_store);
@@ -23058,15 +23062,7 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
   /* Statements in an inner loop relative to the loop being
      vectorized are weighted more heavily.  The value here is
      arbitrary and could potentially be improved with analysis.  */
-  if (where == vect_body && stmt_info
-      && stmt_in_inner_loop_p (vinfo, stmt_info))
-    {
-      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-      gcc_assert (loop_vinfo);
-      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
-    }
-
-  retval = (unsigned) (count * stmt_cost);
+  retval = adjust_cost_for_freq (stmt_info, where, count * stmt_cost);
 
   /* We need to multiply all vector stmt cost by 1.7 (estimated cost)
      for Silvermont as it has out of order integer pipeline and can execute
@@ -23081,29 +23077,9 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	retval = (retval * 17) / 10;
     }
 
-  cost[where] += retval;
+  m_costs[where] += retval;
 
   return retval;
-}
-
-/* Implement targetm.vectorize.finish_cost.  */
-
-static void
-ix86_finish_cost (void *data, unsigned *prologue_cost,
-		  unsigned *body_cost, unsigned *epilogue_cost)
-{
-  unsigned *cost = (unsigned *) data;
-  *prologue_cost = cost[vect_prologue];
-  *body_cost     = cost[vect_body];
-  *epilogue_cost = cost[vect_epilogue];
-}
-
-/* Implement targetm.vectorize.destroy_cost_data.  */
-
-static void
-ix86_destroy_cost_data (void *data)
-{
-  free (data);
 }
 
 /* Validate target specific memory model bits in VAL. */
@@ -24387,14 +24363,8 @@ ix86_libgcc_floating_mode_supported_p
   ix86_autovectorize_vector_modes
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE ix86_get_mask_mode
-#undef TARGET_VECTORIZE_INIT_COST
-#define TARGET_VECTORIZE_INIT_COST ix86_init_cost
-#undef TARGET_VECTORIZE_ADD_STMT_COST
-#define TARGET_VECTORIZE_ADD_STMT_COST ix86_add_stmt_cost
-#undef TARGET_VECTORIZE_FINISH_COST
-#define TARGET_VECTORIZE_FINISH_COST ix86_finish_cost
-#undef TARGET_VECTORIZE_DESTROY_COST_DATA
-#define TARGET_VECTORIZE_DESTROY_COST_DATA ix86_destroy_cost_data
+#undef TARGET_VECTORIZE_CREATE_COSTS
+#define TARGET_VECTORIZE_CREATE_COSTS ix86_vectorize_create_costs
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function

@@ -98,11 +98,10 @@ auto_purge_vect_location::~auto_purge_vect_location ()
 /* Dump a cost entry according to args to F.  */
 
 void
-dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
+dump_stmt_cost (FILE *f, int count, enum vect_cost_for_stmt kind,
 		stmt_vec_info stmt_info, tree, int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
-  fprintf (f, "%p ", data);
   if (stmt_info)
     {
       print_gimple_expr (f, STMT_VINFO_STMT (stmt_info), 0, TDF_SLIM);
@@ -457,12 +456,11 @@ shrink_simd_arrays
 /* Initialize the vec_info with kind KIND_IN and target cost data
    TARGET_COST_DATA_IN.  */
 
-vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in,
-		    vec_info_shared *shared_)
+vec_info::vec_info (vec_info::vec_kind kind_in, vec_info_shared *shared_)
   : kind (kind_in),
     shared (shared_),
     stmt_vec_info_ro (false),
-    target_cost_data (target_cost_data_in)
+    target_cost_data (nullptr)
 {
   stmt_vec_infos.create (50);
 }
@@ -472,7 +470,7 @@ vec_info::~vec_info ()
   for (slp_instance &instance : slp_instances)
     vect_free_slp_instance (instance);
 
-  destroy_cost_data (target_cost_data);
+  delete target_cost_data;
   free_stmt_vec_infos ();
 }
 
@@ -1689,4 +1687,61 @@ scalar_cond_masked_key::get_cond_ops_from_tree (tree t)
   this->code = NE_EXPR;
   this->op0 = t;
   this->op1 = build_zero_cst (TREE_TYPE (t));
+}
+
+/* See the comment above the declaration for details.  */
+
+unsigned int
+vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
+			     stmt_vec_info stmt_info, tree vectype,
+			     int misalign, vect_cost_model_location where)
+{
+  unsigned int cost
+    = builtin_vectorization_cost (kind, vectype, misalign) * count;
+  return record_stmt_cost (stmt_info, where, cost);
+}
+
+/* See the comment above the declaration for details.  */
+
+void
+vector_costs::finish_cost ()
+{
+  gcc_assert (!m_finished);
+  m_finished = true;
+}
+
+/* Record a base cost of COST units against WHERE.  If STMT_INFO is
+   nonnull, use it to adjust the cost based on execution frequency
+   (where appropriate).  */
+
+unsigned int
+vector_costs::record_stmt_cost (stmt_vec_info stmt_info,
+				vect_cost_model_location where,
+				unsigned int cost)
+{
+  cost = adjust_cost_for_freq (stmt_info, where, cost);
+  m_costs[where] += cost;
+  return cost;
+}
+
+/* COST is the base cost we have calculated for an operation in location WHERE.
+   If STMT_INFO is nonnull, use it to adjust the cost based on execution
+   frequency (where appropriate).  Return the adjusted cost.  */
+
+unsigned int
+vector_costs::adjust_cost_for_freq (stmt_vec_info stmt_info,
+				    vect_cost_model_location where,
+				    unsigned int cost)
+{
+  /* Statements in an inner loop relative to the loop being
+     vectorized are weighted more heavily.  The value here is
+     arbitrary and could potentially be improved with analysis.  */
+  if (where == vect_body
+      && stmt_info
+      && stmt_in_inner_loop_p (m_vinfo, stmt_info))
+    {
+      loop_vec_info loop_vinfo = as_a<loop_vec_info> (m_vinfo);
+      cost *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
+    }
+  return cost;
 }

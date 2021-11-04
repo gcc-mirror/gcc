@@ -2051,7 +2051,7 @@ stores.",
 
 /* Target function to initialize the cost model for a loop or block.  */
 DEFHOOK
-(init_cost,
+(create_costs,
  "This hook should initialize target-specific data structures in preparation\n\
 for modeling the costs of vectorizing a loop or basic block.  The default\n\
 allocates three unsigned integers for accumulating costs for the prologue,\n\
@@ -2060,50 +2060,9 @@ non-NULL, it identifies the loop being vectorized; otherwise a single block\n\
 is being vectorized.  If @var{costing_for_scalar} is true, it indicates the\n\
 current cost model is for the scalar version of a loop or block; otherwise\n\
 it is for the vector version.",
- void *,
- (class loop *loop_info, bool costing_for_scalar),
- default_init_cost)
-
-/* Target function to record N statements of the given kind using the
-   given vector type within the cost model data for the current loop or
-    block.  */
-DEFHOOK
-(add_stmt_cost,
- "This hook should update the target-specific @var{data} in response to\n\
-adding @var{count} copies of the given @var{kind} of statement to a\n\
-loop or basic block.  The default adds the builtin vectorizer cost for\n\
-the copies of the statement to the accumulator specified by @var{where},\n\
-(the prologue, body, or epilogue) and returns the amount added.  The\n\
-return value should be viewed as a tentative cost that may later be\n\
-revised.",
- unsigned,
- (class vec_info *, void *data, int count, enum vect_cost_for_stmt kind,
-  class _stmt_vec_info *stmt_info, tree vectype, int misalign,
-  enum vect_cost_model_location where),
- default_add_stmt_cost)
-
-/* Target function to calculate the total cost of the current vectorized
-   loop or block.  */
-DEFHOOK
-(finish_cost,
- "This hook should complete calculations of the cost of vectorizing a loop\n\
-or basic block based on @var{data}, and return the prologue, body, and\n\
-epilogue costs as unsigned integers.  The default returns the value of\n\
-the three accumulators.",
- void,
- (void *data, unsigned *prologue_cost, unsigned *body_cost,
-  unsigned *epilogue_cost),
- default_finish_cost)
-
-/* Function to delete target-specific cost modeling data.  */
-DEFHOOK
-(destroy_cost_data,
- "This hook should release @var{data} and any related data structures\n\
-allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the\n\
-accumulator.",
- void,
- (void *data),
- default_destroy_cost_data)
+ class vector_costs *,
+ (vec_info *vinfo, bool costing_for_scalar),
+ default_vectorize_create_costs)
 
 HOOK_VECTOR_END (vectorize)
 

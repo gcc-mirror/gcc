@@ -4354,7 +4354,7 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 /* Initialize a bb_vec_info struct for the statements in BBS basic blocks.  */
 
 _bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
-  : vec_info (vec_info::bb, init_cost (NULL, false), shared),
+  : vec_info (vec_info::bb, shared),
     bbs (_bbs),
     roots (vNULL)
 {
@@ -4896,7 +4896,7 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	    instance->cost_vec = cost_vec;
 	  else
 	    {
-	      add_stmt_costs (vinfo, vinfo->target_cost_data, &cost_vec);
+	      add_stmt_costs (vinfo->target_cost_data, &cost_vec);
 	      cost_vec.release ();
 	    }
 	}
@@ -5336,32 +5336,30 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	  continue;
 	}
 
-      void *scalar_target_cost_data = init_cost (NULL, true);
+      class vector_costs *scalar_target_cost_data = init_cost (bb_vinfo, true);
       do
 	{
-	  add_stmt_cost (bb_vinfo, scalar_target_cost_data,
-			 li_scalar_costs[si].second);
+	  add_stmt_cost (scalar_target_cost_data, li_scalar_costs[si].second);
 	  si++;
 	}
       while (si < li_scalar_costs.length ()
 	     && li_scalar_costs[si].first == sl);
       unsigned dummy;
       finish_cost (scalar_target_cost_data, &dummy, &scalar_cost, &dummy);
-      destroy_cost_data (scalar_target_cost_data);
+      delete scalar_target_cost_data;
 
       /* Complete the target-specific vector cost calculation.  */
-      void *vect_target_cost_data = init_cost (NULL, false);
+      class vector_costs *vect_target_cost_data = init_cost (bb_vinfo, false);
       do
 	{
-	  add_stmt_cost (bb_vinfo, vect_target_cost_data,
-			 li_vector_costs[vi].second);
+	  add_stmt_cost (vect_target_cost_data, li_vector_costs[vi].second);
 	  vi++;
 	}
       while (vi < li_vector_costs.length ()
 	     && li_vector_costs[vi].first == vl);
       finish_cost (vect_target_cost_data, &vec_prologue_cost,
 		   &vec_inside_cost, &vec_epilogue_cost);
-      destroy_cost_data (vect_target_cost_data);
+      delete vect_target_cost_data;
 
       vec_outside_cost = vec_prologue_cost + vec_epilogue_cost;
 
