@@ -2719,6 +2719,54 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
+      BUILTIN_VSDQ_I_DI (BINOP, ashl, 3, NONE)
+	if (TREE_CODE (args[1]) == INTEGER_CST
+	    && wi::ltu_p (wi::to_wide (args[1]), element_precision (args[0])))
+	  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+					  LSHIFT_EXPR, args[0], args[1]);
+	break;
+      BUILTIN_VSDQ_I_DI (BINOP, sshl, 0, NONE)
+      BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0, NONE)
+	{
+	  tree cst = args[1];
+	  tree ctype = TREE_TYPE (cst);
+	  /* Left shifts can be both scalar or vector, e.g. uint64x1_t is
+	     treated as a scalar type not a vector one.  */
+	  if ((cst = uniform_integer_cst_p (cst)) != NULL_TREE)
+	    {
+	      wide_int wcst = wi::to_wide (cst);
+	      tree unit_ty = TREE_TYPE (cst);
+
+	      wide_int abs_cst = wi::abs (wcst);
+	      if (wi::geu_p (abs_cst, element_precision (args[0])))
+		break;
+
+	      if (wi::neg_p (wcst, TYPE_SIGN (ctype)))
+		{
+		  tree final_cst;
+		  final_cst = wide_int_to_tree (unit_ty, abs_cst);
+		  if (TREE_CODE (cst) != INTEGER_CST)
+		    final_cst = build_uniform_cst (ctype, final_cst);
+
+		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						  RSHIFT_EXPR, args[0],
+						  final_cst);
+		}
+	      else
+		new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						LSHIFT_EXPR, args[0], args[1]);
+	    }
+	}
+	break;
+      BUILTIN_VDQ_I (SHIFTIMM, ashr, 3, NONE)
+      VAR1 (SHIFTIMM, ashr_simd, 0, NONE, di)
+      BUILTIN_VDQ_I (USHIFTIMM, lshr, 3, NONE)
+      VAR1 (USHIFTIMM, lshr_simd, 0, NONE, di)
+	if (TREE_CODE (args[1]) == INTEGER_CST
+	    && wi::ltu_p (wi::to_wide (args[1]), element_precision (args[0])))
+	  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+					  RSHIFT_EXPR, args[0], args[1]);
+	break;
       BUILTIN_GPF (BINOP, fmulx, 0, ALL)
 	{
 	  gcc_assert (nargs == 2);

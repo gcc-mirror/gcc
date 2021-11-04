@@ -24128,21 +24128,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshr_n_u8 (uint8x8_t __a, const int __b)
 {
-  return (uint8x8_t) __builtin_aarch64_lshrv8qi ((int8x8_t) __a, __b);
+  return __builtin_aarch64_lshrv8qi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshr_n_u16 (uint16x4_t __a, const int __b)
 {
-  return (uint16x4_t) __builtin_aarch64_lshrv4hi ((int16x4_t) __a, __b);
+  return __builtin_aarch64_lshrv4hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshr_n_u32 (uint32x2_t __a, const int __b)
 {
-  return (uint32x2_t) __builtin_aarch64_lshrv2si ((int32x2_t) __a, __b);
+  return __builtin_aarch64_lshrv2si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
@@ -24184,28 +24184,28 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u8 (uint8x16_t __a, const int __b)
 {
-  return (uint8x16_t) __builtin_aarch64_lshrv16qi ((int8x16_t) __a, __b);
+  return __builtin_aarch64_lshrv16qi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u16 (uint16x8_t __a, const int __b)
 {
-  return (uint16x8_t) __builtin_aarch64_lshrv8hi ((int16x8_t) __a, __b);
+  return __builtin_aarch64_lshrv8hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u32 (uint32x4_t __a, const int __b)
 {
-  return (uint32x4_t) __builtin_aarch64_lshrv4si ((int32x4_t) __a, __b);
+  return __builtin_aarch64_lshrv4si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u64 (uint64x2_t __a, const int __b)
 {
-  return (uint64x2_t) __builtin_aarch64_lshrv2di ((int64x2_t) __a, __b);
+  return __builtin_aarch64_lshrv2di_uus (__a, __b);
 }
 
 __extension__ extern __inline int64_t
