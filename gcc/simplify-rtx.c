@@ -7622,15 +7622,15 @@ simplify_context::lowpart_subreg (machine_mode outer_mode, rtx expr,
 
 /* Generate RTX to select element at INDEX out of vector OP.  */
 
-rtx simplify_context::simplify_gen_vec_select (rtx op, unsigned int index)
+rtx
+simplify_context::simplify_gen_vec_select (rtx op, unsigned int index)
 {
+  gcc_assert (VECTOR_MODE_P (GET_MODE (op)));
 
-  if (!VECTOR_MODE_P (GET_MODE (op)))
-    return NULL_RTX;
+  scalar_mode imode = GET_MODE_INNER (GET_MODE (op));
 
-  machine_mode imode = GET_MODE_INNER (GET_MODE (op));
-
-  if (index == 0)
+  if (known_eq (index * GET_MODE_SIZE (imode),
+		subreg_lowpart_offset (imode, GET_MODE (op))))
     {
       rtx res = lowpart_subreg (imode, op, GET_MODE (op));
       if (res)
