@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_char_add } */
 /* { dg-additional-options "-O3" } */
 #define TYPE unsigned char
 #define MIN 0
