@@ -53,6 +53,7 @@ test03()
   const std::string tokens[] = {
     "rdseed", "rdrand", "darn",
     "rand_s", "/dev/urandom", "/dev/random",
+    "getentropy", "arc4random",
     "mt19937", "prng"
   };
   int count = 0;

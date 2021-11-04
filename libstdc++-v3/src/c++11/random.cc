@@ -68,7 +68,12 @@
 # include <stdlib.h>
 #endif
 
-#if defined _GLIBCXX_USE_CRT_RAND_S || defined _GLIBCXX_USE_DEV_RANDOM
+#ifdef _GLIBCXX_HAVE_GETENTROPY
+# include <unistd.h>
+#endif
+
+#if defined _GLIBCXX_USE_CRT_RAND_S || defined _GLIBCXX_USE_DEV_RANDOM \
+  || _GLIBCXX_HAVE_GETENTROPY
 // The OS provides a source of randomness we can use.
 # pragma GCC poison _M_mt
 #elif defined USE_RDRAND || defined USE_RDSEED || defined USE_DARN
@@ -166,6 +171,25 @@ namespace std _GLIBCXX_VISIBILITY(default)
     }
 #endif
 
+#ifdef _GLIBCXX_HAVE_GETENTROPY
+    unsigned int
+    __libc_getentropy(void*)
+    {
+      unsigned int val;
+      if (::getentropy(&val, sizeof(val)) != 0)
+	std::__throw_runtime_error(__N("random_device: getentropy failed"));
+      return val;
+    }
+#endif
+
+#ifdef _GLIBCXX_HAVE_ARC4RANDOM
+    unsigned int
+    __libc_arc4random(void*)
+    {
+      return ::arc4random();
+    }
+#endif
+
 #ifdef USE_LCG
     // TODO: use this to seed std::mt19937 engine too.
     unsigned
@@ -214,7 +238,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
 
     enum Which : unsigned {
-      device_file = 1, prng = 2, rand_s = 4,
+      device_file = 1, prng = 2, rand_s = 4, getentropy = 8, arc4random = 16,
       rdseed = 64, rdrand = 128, darn = 256,
       any = 0xffff
     };
@@ -254,6 +278,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef _GLIBCXX_USE_DEV_RANDOM
       if (file != nullptr)
 	return device_file;
+#endif
+
+#ifdef _GLIBCXX_HAVE_ARC4RANDOM
+      if (func == __libc_arc4random)
+	return arc4random;
+#endif
+
+#ifdef _GLIBCXX_HAVE_GETENTROPY
+      if (func == __libc_getentropy)
+	return getentropy;
 #endif
 
 #ifdef USE_LCG
@@ -311,6 +345,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
     else if (token == "rand_s")
       which = rand_s;
 #endif // _GLIBCXX_USE_CRT_RAND_S
+#ifdef _GLIBCXX_HAVE_GETENTROPY
+    else if (token == "getentropy")
+      which = getentropy;
+#endif // _GLIBCXX_HAVE_GETENTROPY
+#ifdef _GLIBCXX_HAVE_ARC4RANDOM
+    else if (token == "arc4random")
+      which = arc4random;
+#endif // _GLIBCXX_HAVE_ARC4RANDOM
 #ifdef _GLIBCXX_USE_DEV_RANDOM
     else if (token == "/dev/urandom" || token == "/dev/random")
       {
@@ -394,6 +436,26 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	  }
       }
 #endif // USE_DARN
+
+#ifdef _GLIBCXX_HAVE_ARC4RANDOM
+    if (which & arc4random)
+      {
+	_M_func = &__libc_arc4random;
+	return;
+      }
+#endif // _GLIBCXX_HAVE_ARC4RANDOM
+
+#ifdef _GLIBCXX_HAVE_GETENTROPY
+    if (which & getentropy)
+      {
+	unsigned int i;
+	if (::getentropy(&i, sizeof(i)) == 0) // On linux the syscall can fail.
+	  {
+	    _M_func = &__libc_getentropy;
+	    return;
+	  }
+      }
+#endif // _GLIBCXX_HAVE_GETENTROPY
 
 #ifdef _GLIBCXX_USE_DEV_RANDOM
     if (which & device_file)
@@ -547,6 +609,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
     case rdrand:
     case rdseed:
     case darn:
+      return (double) max;
+    case arc4random:
+    case getentropy:
       return (double) max;
     case rand_s:
     case prng:
