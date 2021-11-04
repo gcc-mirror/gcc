@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-require-effective-target c++11 }
+// { dg-require-effective-target c++14 }
 // { dg-options "-O2 -funroll-loops -fno-tree-vectorize" }
 
 #include <vector>
