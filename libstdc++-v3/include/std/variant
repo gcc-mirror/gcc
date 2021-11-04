@@ -54,51 +54,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-namespace __detail
-{
-namespace __variant
-{
-  template<size_t _Np, typename... _Types>
-    struct _Nth_type;
-
-  template<typename _Tp0, typename... _Rest>
-    struct _Nth_type<0, _Tp0, _Rest...>
-    { using type = _Tp0; };
-
-  template<typename _Tp0, typename _Tp1, typename... _Rest>
-    struct _Nth_type<1, _Tp0, _Tp1, _Rest...>
-    { using type = _Tp1; };
-
-  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
-    struct _Nth_type<2, _Tp0, _Tp1, _Tp2, _Rest...>
-    { using type = _Tp2; };
-
-  template<size_t _Np, typename _Tp0, typename _Tp1, typename _Tp2,
-	   typename... _Rest>
-#if __cpp_concepts
-    requires (_Np >= 3)
-#endif
-    struct _Nth_type<_Np, _Tp0, _Tp1, _Tp2, _Rest...>
-    : _Nth_type<_Np - 3, _Rest...>
-    { };
-
-#if ! __cpp_concepts // Need additional specializations to avoid ambiguities.
-  template<typename _Tp0, typename _Tp1, typename... _Rest>
-    struct _Nth_type<0, _Tp0, _Tp1, _Rest...>
-    { using type = _Tp0; };
-
-  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
-    struct _Nth_type<0, _Tp0, _Tp1, _Tp2, _Rest...>
-    { using type = _Tp0; };
-
-  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
-    struct _Nth_type<1, _Tp0, _Tp1, _Tp2, _Rest...>
-    { using type = _Tp1; };
-#endif
-
-} // namespace __variant
-} // namespace __detail
-
 #if __cplusplus >= 202002L && __cpp_concepts
 // P2231R1 constexpr needs constexpr unions and constrained destructors.
 # define __cpp_lib_variant 202106L
@@ -145,8 +100,7 @@ namespace __variant
     {
       static_assert(_Np < sizeof...(_Types));
 
-      using type
-	= typename __detail::__variant::_Nth_type<_Np, _Types...>::type;
+      using type = typename _Nth_type<_Np, _Types...>::type;
     };
 
   template<size_t _Np, typename _Variant>
@@ -1442,8 +1396,7 @@ namespace __variant
 	  = __detail::__variant::__accepted_index<_Tp, variant>::value;
 
       template<size_t _Np, typename = enable_if_t<(_Np < sizeof...(_Types))>>
-	using __to_type
-	  = typename __detail::__variant::_Nth_type<_Np, _Types...>::type;
+	using __to_type = typename _Nth_type<_Np, _Types...>::type;
 
       template<typename _Tp, typename = enable_if_t<__not_self<_Tp>>>
 	using __accepted_type = __to_type<__accepted_index<_Tp>>;
@@ -1580,7 +1533,7 @@ namespace __variant
 	emplace(_Args&&... __args)
 	{
 	  namespace __variant = std::__detail::__variant;
-	  using type = typename __variant::_Nth_type<_Np, _Types...>::type;
+	  using type = typename _Nth_type<_Np, _Types...>::type;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type, _Args...>)
@@ -1620,7 +1573,7 @@ namespace __variant
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  namespace __variant = std::__detail::__variant;
-	  using type = typename __variant::_Nth_type<_Np, _Types...>::type;
+	  using type = typename _Nth_type<_Np, _Types...>::type;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
 	  if constexpr (is_nothrow_constructible_v<type,
@@ -1803,8 +1756,7 @@ namespace __variant
 	  constexpr size_t __max = 11; // "These go to eleven."
 
 	  // The type of the first variant in the pack.
-	  using _V0
-	    = typename __detail::__variant::_Nth_type<0, _Variants...>::type;
+	  using _V0 = typename _Nth_type<0, _Variants...>::type;
 	  // The number of alternatives in that first variant.
 	  constexpr auto __n = variant_size_v<remove_reference_t<_V0>>;
 

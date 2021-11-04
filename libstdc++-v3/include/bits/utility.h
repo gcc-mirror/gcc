@@ -70,6 +70,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_size<const volatile __enable_if_has_tuple_size<_Tp>>
     : public tuple_size<_Tp> { };
 
+#if __cplusplus >= 201703L
+  template<typename _Tp>
+    inline constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+#endif
+
   /// Gives the type of the ith element of a given tuple type.
   template<size_t __i, typename _Tp>
     struct tuple_element;
@@ -97,8 +102,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus >= 201402L
-// The standard says this macro and alias template should be in <tuple>
-// but we define them here, to be available in <utility> and <array> too.
+// The standard says this macro and alias template should be in <tuple> but we
+// we define them here, to be available in <array>, <utility> and <ranges> too.
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 3378. tuple_size_v/tuple_element_t should be available when
+//       tuple_size/tuple_element are
 #define __cpp_lib_tuple_element_t 201402L
 
   template<size_t __i, typename _Tp>
@@ -194,6 +202,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++17
 #endif // C++14
+
+  template<size_t _Np, typename... _Types>
+    struct _Nth_type
+    { };
+
+  template<typename _Tp0, typename... _Rest>
+    struct _Nth_type<0, _Tp0, _Rest...>
+    { using type = _Tp0; };
+
+  template<typename _Tp0, typename _Tp1, typename... _Rest>
+    struct _Nth_type<1, _Tp0, _Tp1, _Rest...>
+    { using type = _Tp1; };
+
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
+    struct _Nth_type<2, _Tp0, _Tp1, _Tp2, _Rest...>
+    { using type = _Tp2; };
+
+  template<size_t _Np, typename _Tp0, typename _Tp1, typename _Tp2,
+	   typename... _Rest>
+#if __cpp_concepts
+    requires (_Np >= 3)
+#endif
+    struct _Nth_type<_Np, _Tp0, _Tp1, _Tp2, _Rest...>
+    : _Nth_type<_Np - 3, _Rest...>
+    { };
+
+#if ! __cpp_concepts // Need additional specializations to avoid ambiguities.
+  template<typename _Tp0, typename _Tp1, typename... _Rest>
+    struct _Nth_type<0, _Tp0, _Tp1, _Rest...>
+    { using type = _Tp0; };
+
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
+    struct _Nth_type<0, _Tp0, _Tp1, _Tp2, _Rest...>
+    { using type = _Tp0; };
+
+  template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
+    struct _Nth_type<1, _Tp0, _Tp1, _Tp2, _Rest...>
+    { using type = _Tp1; };
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

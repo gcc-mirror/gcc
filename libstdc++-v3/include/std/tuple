@@ -1344,36 +1344,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_size<tuple<_Elements...>>
     : public integral_constant<size_t, sizeof...(_Elements)> { };
 
-#if __cplusplus > 201402L
-  template <typename _Tp>
-    inline constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
+#if __cplusplus >= 201703L
+  template<typename... _Types>
+    inline constexpr size_t tuple_size_v<tuple<_Types>>
+      = sizeof...(_Types);
+
+  template<typename... _Types>
+    inline constexpr size_t tuple_size_v<const tuple<_Types>>
+      = sizeof...(_Types);
 #endif
 
-  /**
-   * Recursive case for tuple_element: strip off the first element in
-   * the tuple and retrieve the (i-1)th element of the remaining tuple.
-   */
-  template<size_t __i, typename _Head, typename... _Tail>
-    struct tuple_element<__i, tuple<_Head, _Tail...> >
-    : tuple_element<__i - 1, tuple<_Tail...> > { };
-
-  /**
-   * Basis case for tuple_element: The first element is the one we're seeking.
-   */
-  template<typename _Head, typename... _Tail>
-    struct tuple_element<0, tuple<_Head, _Tail...> >
+  /// Trait to get the Ith element type from a tuple.
+  template<size_t __i, typename... _Types>
+    struct tuple_element<__i, tuple<_Types...>>
     {
-      typedef _Head type;
-    };
+      static_assert(__i < sizeof...(_Types), "tuple index must be in range");
 
-  /**
-   * Error case for tuple_element: invalid index.
-   */
-  template<size_t __i>
-    struct tuple_element<__i, tuple<>>
-    {
-      static_assert(__i < tuple_size<tuple<>>::value,
-	  "tuple index must be in range");
+      using type = typename _Nth_type<__i, _Types...>::type;
     };
 
   template<size_t __i, typename _Head, typename... _Tail>
