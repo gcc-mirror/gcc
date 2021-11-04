@@ -89,7 +89,7 @@ private:
   void find_paths (basic_block bb, tree name);
   bool debug_counter ();
   edge maybe_register_path ();
-  bool find_paths_to_names (basic_block bb, bitmap imports);
+  void find_paths_to_names (basic_block bb, bitmap imports);
   bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
   void resolve_phi (gphi *phi, bitmap imports);
   edge find_taken_edge (const vec<basic_block> &path);
@@ -388,40 +388,28 @@ back_threader::resolve_def (tree name, bitmap interesting, vec<tree> &worklist)
 // Find jump threading paths to any of the SSA names in the
 // INTERESTING bitmap, and register any such paths.
 //
-// Return TRUE if no further processing past this block is necessary.
-// This is because we've either registered a path, or because there is
-// nothing of interesting beyond this block.
-//
 // BB is the current path being processed.
 
-bool
+void
 back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
 {
   if (m_visited_bbs.add (bb))
-    return true;
+    return;
 
   m_path.safe_push (bb);
 
-  if (m_path.length () > 1
-      && !m_profit.profitable_path_p (m_path, m_name, NULL))
-    {
-      m_path.pop ();
-      m_visited_bbs.remove (bb);
-      return false;
-    }
-
   // Try to resolve the path without looking back.
-  if (m_path.length () > 1 && maybe_register_path ())
+  if (m_path.length () > 1
+      && (!m_profit.profitable_path_p (m_path, m_name, NULL)
+	  || maybe_register_path ()))
     {
       m_path.pop ();
       m_visited_bbs.remove (bb);
-      return true;
+      return;
     }
 
   auto_bitmap processed;
-  unsigned i;
   bool done = false;
-
   // We use a worklist instead of iterating through the bitmap,
   // because we may add new items in-flight.
   auto_vec<tree> worklist (bitmap_count_bits (interesting));
@@ -433,37 +421,32 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
       basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
 
       // Process any names defined in this block.
-      if (def_bb == bb)
+      if (def_bb == bb
+	  && bitmap_set_bit (processed, i)
+	  && resolve_def (name, interesting, worklist))
 	{
-	  bitmap_set_bit (processed, i);
-
-	  if (resolve_def (name, interesting, worklist))
-	    {
-	      done = true;
-	      goto leave_bb;
-	    }
+	  done = true;
+	  break;
+	}
+    }
+  // If there are interesting names not yet processed, keep looking.
+  if (!done)
+    {
+      bitmap_and_compl_into (interesting, processed);
+      if (!bitmap_empty_p (interesting))
+	{
+	  edge_iterator iter;
+	  edge e;
+	  FOR_EACH_EDGE (e, iter, bb->preds)
+	    if ((e->flags & EDGE_ABNORMAL) == 0)
+	      find_paths_to_names (e->src, interesting);
 	}
     }
 
-  // If there are interesting names not yet processed, keep looking.
-  bitmap_and_compl_into (interesting, processed);
-  if (!bitmap_empty_p (interesting))
-    {
-      edge_iterator iter;
-      edge e;
-      FOR_EACH_EDGE (e, iter, bb->preds)
-	if ((e->flags & EDGE_ABNORMAL) == 0)
-	  done |= find_paths_to_names (e->src, interesting);
-    }
-
- leave_bb:
-  bitmap_iterator bi;
-  EXECUTE_IF_SET_IN_BITMAP (processed, 0, i, bi)
-    bitmap_set_bit (interesting, i);
-
+  // Reset things to their original state.
+  bitmap_ior_into (interesting, processed);
   m_path.pop ();
   m_visited_bbs.remove (bb);
-  return done;
 }
 
 // Search backwards from BB looking for paths where the final
