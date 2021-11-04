@@ -161,19 +161,6 @@ namespace __detail
 {
 namespace __variant
 {
-  // Returns the first appearance of _Tp in _Types.
-  // Returns sizeof...(_Types) if _Tp is not in _Types.
-  template<typename _Tp, typename... _Types>
-    struct __index_of : std::integral_constant<size_t, 0> {};
-
-  template<typename _Tp, typename... _Types>
-    inline constexpr size_t __index_of_v = __index_of<_Tp, _Types...>::value;
-
-  template<typename _Tp, typename _First, typename... _Rest>
-    struct __index_of<_Tp, _First, _Rest...> :
-      std::integral_constant<size_t, is_same_v<_Tp, _First>
-	? 0 : __index_of_v<_Tp, _Rest...> + 1> {};
-
   // used for raw visitation
   struct __variant_cookie {};
   // used for raw visitation with indices passed in
@@ -766,21 +753,9 @@ namespace __variant
       _Variant_base& operator=(_Variant_base&&) = default;
     };
 
-  // How many times does _Tp appear in _Types?
   template<typename _Tp, typename... _Types>
-    inline constexpr size_t __count = 0;
-
-  template<typename _Tp, typename _Up, typename... _Types>
-    inline constexpr size_t __count<_Tp, _Up, _Types...>
-      = __count<_Tp, _Types...>;
-
-  template<typename _Tp, typename... _Types>
-    inline constexpr size_t __count<_Tp, _Tp, _Types...>
-      = 1 + __count<_Tp, _Types...>;
-
-  // TODO: Reuse this in <tuple> ?
-  template<typename _Tp, typename... _Types>
-    inline constexpr bool __exactly_once = __count<_Tp, _Types...> == 1;
+    inline constexpr bool __exactly_once
+      = std::__find_uniq_type_in_pack<_Tp, _Types...>() < sizeof...(_Types);
 
   // Helper used to check for valid conversions that don't involve narrowing.
   template<typename _Ti> struct _Arr { _Ti _M_x[1]; };
@@ -1139,45 +1114,51 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      return __v.index() == __detail::__variant::__index_of_v<_Tp, _Types...>;
+      return __v.index() == std::__find_uniq_type_in_pack<_Tp, _Types...>();
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr _Tp& get(variant<_Types...>& __v)
+    constexpr _Tp&
+    get(variant<_Types...>& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(__v);
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr _Tp&& get(variant<_Types...>&& __v)
+    constexpr _Tp&&
+    get(variant<_Types...>&& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	std::move(__v));
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(std::move(__v));
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr const _Tp& get(const variant<_Types...>& __v)
+    constexpr const _Tp&
+    get(const variant<_Types...>& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(__v);
     }
 
   template<typename _Tp, typename... _Types>
-    constexpr const _Tp&& get(const variant<_Types...>&& __v)
+    constexpr const _Tp&&
+    get(const variant<_Types...>&& __v)
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	std::move(__v));
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get<__n>(std::move(__v));
     }
 
   template<size_t _Np, typename... _Types>
@@ -1214,8 +1195,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	  __ptr);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get_if<__n>(__ptr);
     }
 
   template<typename _Tp, typename... _Types>
@@ -1225,8 +1206,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp must not be void");
-      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
-	  __ptr);
+      constexpr size_t __n = std::__find_uniq_type_in_pack<_Tp, _Types...>();
+      return std::get_if<__n>(__ptr);
     }
 
   struct monostate { };
@@ -1402,8 +1383,8 @@ namespace __variant
 	using __accepted_type = __to_type<__accepted_index<_Tp>>;
 
       template<typename _Tp>
-	static constexpr size_t __index_of =
-	  __detail::__variant::__index_of_v<_Tp, _Types...>;
+	static constexpr size_t __index_of
+	  = std::__find_uniq_type_in_pack<_Tp, _Types...>();
 
       using _Traits = __detail::__variant::_Traits<_Types...>;
 

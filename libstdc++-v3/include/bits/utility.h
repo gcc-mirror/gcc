@@ -102,6 +102,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __cplusplus >= 201402L
+
+  // Return the index of _Tp in _Types, if it occurs exactly once.
+  // Otherwise, return sizeof...(_Types).
+  template<typename _Tp, typename... _Types>
+    constexpr size_t
+    __find_uniq_type_in_pack()
+    {
+      constexpr size_t __sz = sizeof...(_Types);
+      constexpr bool __found[__sz] = { __is_same(_Tp, _Types) ... };
+      size_t __n = __sz;
+      for (size_t __i = 0; __i < __sz; ++__i)
+	{
+	  if (__found[__i])
+	    {
+	      if (__n < __sz) // more than one _Tp found
+		return __sz;
+	      __n = __i;
+	    }
+	}
+      return __n;
+    }
+
 // The standard says this macro and alias template should be in <tuple> but we
 // we define them here, to be available in <array>, <utility> and <ranges> too.
 // _GLIBCXX_RESOLVE_LIB_DEFECTS

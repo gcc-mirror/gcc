@@ -1419,28 +1419,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_tuples_by_type 201304L
 
-  // Return the index of _Tp in _Types, if it occurs exactly once.
-  // Otherwise, return sizeof...(_Types).
-  // TODO reuse this for __detail::__variant::__exactly_once.
-  template<typename _Tp, typename... _Types>
-    constexpr size_t
-    __find_uniq_type_in_pack()
-    {
-      constexpr size_t __sz = sizeof...(_Types);
-      constexpr bool __found[__sz] = { __is_same(_Tp, _Types) ... };
-      size_t __n = __sz;
-      for (size_t __i = 0; __i < __sz; ++__i)
-	{
-	  if (__found[__i])
-	    {
-	      if (__n < __sz) // more than one _Tp found
-		return __sz;
-	      __n = __i;
-	    }
-	}
-      return __n;
-    }
-
   /// Return a reference to the unique element of type _Tp of a tuple.
   template <typename _Tp, typename... _Types>
     constexpr _Tp&
