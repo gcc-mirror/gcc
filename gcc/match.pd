@@ -6243,6 +6243,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && direct_internal_fn_supported_p (as_internal_fn (tos),
 					  type, OPTIMIZE_FOR_BOTH))
     (tos @0 @1 @2))))
+
+(for maxmin (max min)
+ (simplify
+  (convert (maxmin (convert@2 @0) (convert @1)))
+   (if (optimize
+       && FLOAT_TYPE_P (type)
+       && FLOAT_TYPE_P (TREE_TYPE (@2))
+       && types_match (type, TREE_TYPE (@0))
+       && types_match (type, TREE_TYPE (@1))
+       && element_precision (type) < element_precision (TREE_TYPE (@2)))
+    (maxmin @0 @1))))
 #endif
 
 (for froms (XFLOORL XCEILL XROUNDL XRINTL)
