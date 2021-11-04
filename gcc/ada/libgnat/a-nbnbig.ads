@@ -30,7 +30,7 @@ pragma Assertion_Policy (Ghost => Ignore);
 package Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
    SPARK_Mode,
    Ghost,
-   Preelaborate
+   Pure
 is
    type Big_Integer is private
      with Integer_Literal => From_Universal_Image;
