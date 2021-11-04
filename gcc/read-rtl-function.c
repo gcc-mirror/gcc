@@ -1498,6 +1498,9 @@ function_reader::consolidate_singletons (rtx x)
     case CONST_INT:
       return gen_rtx_CONST_INT (GET_MODE (x), INTVAL (x));
 
+    case CONST_VECTOR:
+      return gen_rtx_CONST_VECTOR (GET_MODE (x), XVEC (x, 0));
+
     default:
       break;
     }
