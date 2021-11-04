@@ -265,7 +265,7 @@ sub gen_logical_addsubf
 (define_insn "*fuse_${inner_op}_${outer_name}"
   [(set (match_operand:${mode} 3 "${pred}" "=&0,&1,&${constraint},${constraint}")
         ${outer_exp})
-   (clobber (match_scratch:${mode} 4 "=X,X,X,&r"))]
+   (clobber (match_scratch:${mode} 4 "=X,X,X,&${constraint}"))]
   "(TARGET_P10_FUSION && $target_flag)"
   "@
    ${inner_op} %3,%1,%0\\;${outer_op} %3,${outer_32}
