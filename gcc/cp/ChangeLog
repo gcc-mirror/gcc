@@ -1,3 +1,8 @@
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* cvt.c (convert_init): New function.
+
 2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* decl.c: Include langhooks-def.h.

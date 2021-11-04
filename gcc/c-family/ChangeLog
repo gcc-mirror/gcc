@@ -1,3 +1,11 @@
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* c-common.c (convert_and_check): Add argument init_const.  Call
+	convert_init if init_const.
+	* c-common.h (convert_and_check): Update prototype.
+	(convert_init): New prototype.
+
 2021-11-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lex.c (c_lex_with_flags): When complaining about non-printable

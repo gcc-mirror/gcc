@@ -1,3 +1,158 @@
+2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/riscv/riscv.c (riscv_class_max_nregs): Swap the
+	arguments to `reg_class_subset_p'.
+
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* fold-const.c (fold_init): New function.
+	* fold-const.h (fold_init): New prototype.
+
+2021-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* params.opt (param_vrp2_mode): Make ranger the default for VRP2.
+
+2021-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Don't import
+	a range from edge if arg == phidef.
+
+2021-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_builtin_call): Test
+	for constant before any other processing.
+
+2021-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* flag-types.h (RANGER_DEBUG_ALL): Fix values.
+
+2021-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Initialize current_bb.
+	(gimple_ranger::range_of_expr): Pick up range_on_entry when there is
+	no explcit context and current_bb is set.
+	(gimple_ranger::fold_stmt): New.
+	* gimple-range.h (current_bb, fold_stmt): New.
+	* tree-vrp.c (rvrp_folder::fold_stmt): Call ranger's fold_stmt.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102970
+	* tree-ssa-pre.c (phi_translate_1): Drop clique and base
+	when translating a MEM_REF over a backedge.
+
+2021-11-03  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New Ampere-1	core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64-cost-tables.h: Add extra costs for Ampere-1.
+	* config/aarch64/aarch64.c: Add tuning structures for Ampere-1.
+	* doc/invoke.texi: Add documentation for Ampere-1 core.
+
+2021-11-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (movsi): Add alternative for GOT accesses.
+	(movdi): Likewise.
+	(ldr_got_small_<mode>): Remove pattern.
+	(ldr_got_small_sidi): Likewise.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Keep
+	GOT accesses as moves.
+	(aarch64_print_operand): Correctly print got_lo12 in L specifier.
+	(aarch64_mov_operand_p): Make GOT accesses valid move operands.
+	* config/aarch64/constraints.md: Add new constraint Usw for GOT access.
+
+2021-11-03  Martin Liska  <mliska@suse.cz>
+
+	* gcov.c (read_line): Remove dead variable.
+
+2021-11-03  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/102828
+	* ipa-fnsummary.c (edge_predicate_pool): Rename predicate class to ipa_predicate.
+	(ipa_fn_summary::account_size_time): Likewise.
+	(edge_set_predicate): Likewise.
+	(set_hint_predicate): Likewise.
+	(add_freqcounting_predicate): Likewise.
+	(evaluate_conditions_for_known_args): Likewise.
+	(evaluate_properties_for_edge): Likewise.
+	(remap_freqcounting_preds_after_dup): Likewise.
+	(ipa_fn_summary_t::duplicate): Likewise.
+	(set_cond_stmt_execution_predicate): Likewise.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(compute_bb_predicates): Likewise.
+	(will_be_nonconstant_expr_predicate): Likewise.
+	(will_be_nonconstant_predicate): Likewise.
+	(phi_result_unknown_predicate): Likewise.
+	(predicate_for_phi_result): Likewise.
+	(analyze_function_body): Likewise.
+	(compute_fn_summary): Likewise.
+	(summarize_calls_size_and_time): Likewise.
+	(estimate_calls_size_and_time): Likewise.
+	(ipa_call_context::estimate_size_and_time): Likewise.
+	(remap_edge_summaries): Likewise.
+	(remap_freqcounting_predicate): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(ipa_update_overall_fn_summary): Likewise.
+	(read_ipa_call_summary): Likewise.
+	(inline_read_section): Likewise.
+	* ipa-fnsummary.h (struct ipa_freqcounting_predicate): Likewise.
+	* ipa-predicate.c (predicate::add_clause): Likewise.
+	(ipa_predicate::add_clause): Likewise.
+	(predicate::or_with): Likewise.
+	(ipa_predicate::or_with): Likewise.
+	(predicate::evaluate): Likewise.
+	(ipa_predicate::evaluate): Likewise.
+	(predicate::probability): Likewise.
+	(ipa_predicate::probability): Likewise.
+	(dump_condition): Likewise.
+	(dump_clause): Likewise.
+	(predicate::dump): Likewise.
+	(ipa_predicate::dump): Likewise.
+	(predicate::debug): Likewise.
+	(ipa_predicate::debug): Likewise.
+	(predicate::remap_after_duplication): Likewise.
+	(ipa_predicate::remap_after_duplication): Likewise.
+	(predicate::remap_after_inlining): Likewise.
+	(ipa_predicate::remap_after_inlining): Likewise.
+	(predicate::stream_in): Likewise.
+	(ipa_predicate::stream_in): Likewise.
+	(predicate::stream_out): Likewise.
+	(ipa_predicate::stream_out): Likewise.
+	(add_condition): Likewise.
+	* ipa-predicate.h (class predicate): Likewise.
+	(class ipa_predicate): Likewise.
+	(add_condition): Likewise.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	* bitmap.h (bitmap_bit_p): Change the return type to bool.
+	* bitmap.c (bitmap_bit_p): Likewise.
+	* sbitmap.h (bitmap_bit_p): Likewise.
+	(bitmap_set_bit): Return whether the bit changed.
+	(bitmap_clear_bit): Likewise.
+	* tree-ssa.c (verify_vssa): Make use of the changed state
+	from bitmap_set_bit.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103033
+	* internal-fn.c (expand_DEFERRED_INIT): Elide the
+	native_interpret_expr path in favor of folding the
+	VIEW_CONVERT_EXPR generated when punning the RHS.
+
+2021-11-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loop_unroll_adjust): In case of early
+	exit free bbs.
+
+2021-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103040
+	* ipa-modref.c (callee_to_caller_flags): New function.
+	(modref_eaf_analysis::analyze_ssa_name): Use it.
+	(ipa_merge_modref_summary_after_inlining): Fix whitespace.
+
 2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-modref.c (modref_eaf_analysis::analyze_ssa_name): Revert

@@ -1,3 +1,27 @@
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* gcc.dg/init-rounding-math-1.c: New test.
+
+2021-11-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/pr23744.c: Tweak output checks.
+	* gcc.dg/tree-ssa/vrp07.c: Ditto.
+	* gcc.dg/tree-ssa/vrp08.c: Ditto.
+	* gcc.dg/tree-ssa/vrp09.c: Ditto.
+	* gcc.dg/tree-ssa/vrp20.c: Ditto.
+	* gcc.dg/tree-ssa/vrp92.c: Ditto.
+	* jit.dg/test-sum-of-squares.c: Ditto.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102970
+	* g++.dg/opt/pr102970.C: New testcase.
+
+2021-11-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/torture/pr103040.C: New test.
+
 2021-11-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/modref-3.c: New test.

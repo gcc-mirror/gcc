@@ -1,3 +1,15 @@
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* c-convert.c (c_convert): New function, based on convert.
+	(convert): Make into wrapper of c_convert.
+	(convert_init): New function.
+	* c-typeck.c (enum impl_conv): Add ic_init_const.
+	(convert_for_assignment): Handle ic_init_const like ic_init.  Add
+	new argument to convert_and_check call.
+	(digest_init): Pass ic_init_const to convert_for_assignment for
+	initializers required to be constant.
+
 2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-tree.h (c_simulate_record_decl): Declare.

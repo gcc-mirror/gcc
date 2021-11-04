@@ -1,5 +1,14 @@
 2021-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66742
+	* include/bits/list.tcc (list::sort): Use mutable iterators for
+	comparisons.
+	* include/bits/stl_list.h (_Scratch_list::_Ptr_cmp): Likewise.
+	* testsuite/23_containers/list/operations/66742.cc: Check
+	non-const comparisons.
+
+2021-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/std/valarray (valarray::valarray()): Add noexcept.
 	(valarray::operator[]): Likewise.
 
