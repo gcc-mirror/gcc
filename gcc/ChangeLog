@@ -1,3 +1,10 @@
+2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* lra-constraints.c (match_reload): Ignore out in checking values
+	of outs.
+	(curr_insn_transform): Collect outputs before doing reloads of operands.
+
 2021-11-02  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

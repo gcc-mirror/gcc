@@ -1,3 +1,8 @@
+2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* g++.target/arm/pr102842.C: New test.
+
 2021-11-02  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
