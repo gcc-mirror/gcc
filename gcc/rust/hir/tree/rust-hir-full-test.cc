@@ -2893,25 +2893,6 @@ TypePathSegmentGeneric::as_string () const
 }
 
 std::string
-TraitObjectTypeOneBound::as_string () const
-{
-  std::string str ("TraitObjectTypeOneBound: \n Has dyn dispatch: ");
-
-  if (has_dyn)
-    {
-      str += "true";
-    }
-  else
-    {
-      str += "false";
-    }
-
-  str += "\n TraitBound: " + trait_bound.as_string ();
-
-  return str;
-}
-
-std::string
 TypePathFunction::as_string () const
 {
   std::string str ("(");
@@ -4457,12 +4438,6 @@ ParenthesisedType::accept_vis (HIRVisitor &vis)
 
 void
 ImplTraitTypeOneBound::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-TraitObjectTypeOneBound::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

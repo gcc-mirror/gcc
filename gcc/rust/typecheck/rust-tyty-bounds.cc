@@ -70,7 +70,10 @@ namespace TyTy {
 std::string
 TypeBoundPredicate::as_string () const
 {
-  return get ()->as_string ();
+  return get ()->as_string ()
+	 + (has_generic_args ()
+	      ? std::string ("<") + args->as_string () + std::string (">")
+	      : "");
 }
 
 const Resolver::TraitReference *
@@ -135,7 +138,8 @@ TypeBoundPredicate::lookup_associated_item (const std::string &search) const
 }
 
 BaseType *
-TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
+TypeBoundPredicateItem::get_tyty_for_receiver (
+  const TyTy::BaseType *receiver, const HIR::GenericArgs *bound_args)
 {
   TyTy::BaseType *trait_item_tyty = get_raw_item ()->get_tyty ();
   if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
@@ -166,7 +170,8 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
     return trait_item_tyty;
 
   // FIXME LEAK this should really be const
-  const HIR::GenericArgs *args = parent->get_generic_args ();
+  const HIR::GenericArgs *args
+    = (bound_args != nullptr) ? bound_args : parent->get_generic_args ();
   HIR::GenericArgs *generic_args = new HIR::GenericArgs (*args);
   TyTy::BaseType *resolved
     = Resolver::SubstMapper::Resolve (trait_item_tyty, parent->get_locus (),

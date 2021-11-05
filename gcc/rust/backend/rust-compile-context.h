@@ -367,6 +367,9 @@ public:
 
   void visit (const TyTy::ParamType &param) override
   {
+    recursion_count++;
+    rust_assert (recursion_count < kDefaultRecusionLimit);
+
     param.resolve ()->accept_vis (*this);
   }
 
@@ -670,12 +673,16 @@ public:
 
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode)
-    : ctx (ctx), trait_object_mode (trait_object_mode), translated (nullptr)
+    : ctx (ctx), trait_object_mode (trait_object_mode), translated (nullptr),
+      recursion_count (0)
   {}
 
   Context *ctx;
   bool trait_object_mode;
   ::Btype *translated;
+  size_t recursion_count;
+
+  static const size_t kDefaultRecusionLimit = 5;
 };
 
 } // namespace Compile

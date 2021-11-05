@@ -726,6 +726,17 @@ ResolveType::visit (AST::TraitObjectTypeOneBound &type)
   ok = bound_resolved_id != UNKNOWN_NODEID;
 }
 
+void
+ResolveType::visit (AST::TraitObjectType &type)
+{
+  ok = true;
+  for (auto &bound : type.get_type_param_bounds ())
+    {
+      /* NodeId bound_resolved_id = */
+      ResolveTypeBound::go (bound.get (), type.get_node_id ());
+    }
+}
+
 // rust-ast-resolve-item.h
 
 void

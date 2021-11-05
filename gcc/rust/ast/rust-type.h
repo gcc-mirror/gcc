@@ -162,10 +162,7 @@ public:
 class TraitObjectType : public Type
 {
   bool has_dyn;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
-    type_param_bounds; // inlined form
-
+  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
   Location locus;
 
 protected:
@@ -179,7 +176,7 @@ protected:
 public:
   TraitObjectType (
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    Location locus, bool is_dyn_dispatch = false)
+    Location locus, bool is_dyn_dispatch)
     : has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
@@ -214,6 +211,8 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  bool is_dyn () const { return has_dyn; }
 
   // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()

@@ -70,12 +70,34 @@ public:
 	  }
       }
 
+    std::vector<TyTy::TypeBoundPredicate> specified_bounds;
     TraitReference *trait_reference = &TraitReference::error_node ();
     if (impl_block.has_trait_ref ())
       {
 	std::unique_ptr<HIR::TypePath> &ref = impl_block.get_trait_ref ();
 	trait_reference = TraitResolver::Resolve (*ref.get ());
 	rust_assert (!trait_reference->is_error ());
+
+	// setup the bound
+	TyTy::TypeBoundPredicate predicate (
+	  trait_reference->get_mappings ().get_defid (), ref->get_locus ());
+	auto &final_seg = ref->get_final_segment ();
+	if (final_seg->is_generic_segment ())
+	  {
+	    auto final_generic_seg
+	      = static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
+	    if (final_generic_seg->has_generic_args ())
+	      {
+		HIR::GenericArgs &generic_args
+		  = final_generic_seg->get_generic_args ();
+
+		// this is applying generic arguments to a trait
+		// reference
+		predicate.apply_generic_arguments (&generic_args);
+	      }
+	  }
+
+	specified_bounds.push_back (std::move (predicate));
       }
 
     TyTy::BaseType *self = nullptr;
@@ -86,6 +108,8 @@ public:
 		       "failed to resolve Self for ImplBlock");
 	return;
       }
+    // inherit the bounds
+    self->inherit_bounds (specified_bounds);
 
     bool is_trait_impl_block = !trait_reference->is_error ();
 

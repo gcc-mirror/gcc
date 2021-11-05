@@ -95,7 +95,7 @@ TypeCheckType::visit (HIR::TypePath &path)
 		     "TypePath %s declares generic arguments but "
 		     "the type %s does not have any",
 		     path.as_string ().c_str (),
-		     translated->as_string ().c_str ());
+		     path_type->as_string ().c_str ());
     }
   else
     {
@@ -525,22 +525,44 @@ TypeCheckType::resolve_segments (
 }
 
 void
-TypeCheckType::visit (HIR::TraitObjectTypeOneBound &type)
+TypeCheckType::visit (HIR::TraitObjectType &type)
 {
   std::vector<TyTy::TypeBoundPredicate> specified_bounds;
-
-  HIR::TraitBound &trait_bound = type.get_trait_bound ();
-  TraitReference *trait = resolve_trait_path (trait_bound.get_path ());
-  TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
-				      trait_bound.get_locus ());
-
-  if (predicate.is_object_safe (true, type.get_locus ()))
+  for (auto &bound : type.get_type_param_bounds ())
     {
-      specified_bounds.push_back (std::move (predicate));
-      translated
-	= new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
-				       std::move (specified_bounds));
+      if (bound->get_bound_type ()
+	  != HIR::TypeParamBound::BoundType::TRAITBOUND)
+	continue;
+
+      HIR::TypeParamBound &b = *bound.get ();
+      HIR::TraitBound &trait_bound = static_cast<HIR::TraitBound &> (b);
+
+      auto &type_path = trait_bound.get_path ();
+      TraitReference *trait = resolve_trait_path (type_path);
+      TyTy::TypeBoundPredicate predicate (trait->get_mappings ().get_defid (),
+					  trait_bound.get_locus ());
+      auto &final_seg = type_path.get_final_segment ();
+      if (final_seg->is_generic_segment ())
+	{
+	  auto final_generic_seg
+	    = static_cast<HIR::TypePathSegmentGeneric *> (final_seg.get ());
+	  if (final_generic_seg->has_generic_args ())
+	    {
+	      HIR::GenericArgs &generic_args
+		= final_generic_seg->get_generic_args ();
+
+	      // this is applying generic arguments to a trait
+	      // reference
+	      predicate.apply_generic_arguments (&generic_args);
+	    }
+	}
+
+      if (predicate.is_object_safe (true, type.get_locus ()))
+	specified_bounds.push_back (std::move (predicate));
     }
+
+  translated = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (),
+					    std::move (specified_bounds));
 }
 
 } // namespace Resolver

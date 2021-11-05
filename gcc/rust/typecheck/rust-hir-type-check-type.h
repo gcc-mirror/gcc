@@ -62,13 +62,9 @@ public:
 	   std::vector<TyTy::SubstitutionParamMapping> *subst_mappings
 	   = nullptr)
   {
-    TypeCheckType resolver (subst_mappings);
+    TypeCheckType resolver (type->get_mappings ().get_hirid (), subst_mappings);
     type->accept_vis (resolver);
-
-    if (resolver.translated == nullptr)
-      resolver.translated
-	= new TyTy::ErrorType (type->get_mappings ().get_hirid ());
-
+    rust_assert (resolver.translated != nullptr);
     resolver.context->insert_type (type->get_mappings (), resolver.translated);
     return resolver.translated;
   }
@@ -147,11 +143,13 @@ public:
 				      TyTy::InferType::InferTypeKind::GENERAL);
   }
 
-  void visit (HIR::TraitObjectTypeOneBound &type) override;
+  void visit (HIR::TraitObjectType &type) override;
 
 private:
-  TypeCheckType (std::vector<TyTy::SubstitutionParamMapping> *subst_mappings)
-    : TypeCheckBase (), subst_mappings (subst_mappings), translated (nullptr)
+  TypeCheckType (HirId id,
+		 std::vector<TyTy::SubstitutionParamMapping> *subst_mappings)
+    : TypeCheckBase (), subst_mappings (subst_mappings),
+      translated (new TyTy::ErrorType (id))
   {}
 
   void

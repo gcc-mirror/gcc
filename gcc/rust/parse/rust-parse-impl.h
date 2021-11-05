@@ -9065,7 +9065,8 @@ Parser<ManagedTokenSource>::parse_type ()
 	  = parse_type_param_bounds ();
 
 	return std::unique_ptr<AST::TraitObjectType> (
-	  new AST::TraitObjectType (std::move (bounds), t->get_locus ()));
+	  new AST::TraitObjectType (std::move (bounds), t->get_locus (),
+				    false));
       }
     case IDENTIFIER:
     case SUPER:
@@ -9152,7 +9153,7 @@ Parser<ManagedTokenSource>::parse_type ()
 		}
 
 	      return std::unique_ptr<AST::TraitObjectType> (
-		new AST::TraitObjectType (std::move (bounds), locus));
+		new AST::TraitObjectType (std::move (bounds), locus, false));
 	    }
 	  default:
 	    // assume that this is a type path and not an error
@@ -9422,7 +9423,8 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type ()
 	    }
 
 	  return std::unique_ptr<AST::TraitObjectType> (
-	    new AST::TraitObjectType (std::move (bounds), left_delim_locus));
+	    new AST::TraitObjectType (std::move (bounds), left_delim_locus,
+				      false));
 	}
       else
 	{
@@ -9532,7 +9534,7 @@ Parser<ManagedTokenSource>::parse_for_prefixed_type ()
 	  }
 
 	return std::unique_ptr<AST::TraitObjectType> (
-	  new AST::TraitObjectType (std::move (bounds), for_locus));
+	  new AST::TraitObjectType (std::move (bounds), for_locus, false));
       }
     default:
       // error

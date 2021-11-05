@@ -145,10 +145,7 @@ public:
 class TraitObjectType : public Type
 {
   bool has_dyn;
-  // TypeParamBounds type_param_bounds;
-  std::vector<std::unique_ptr<TypeParamBound> >
-    type_param_bounds; // inlined form
-
+  std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds;
   Location locus;
 
 protected:
@@ -163,7 +160,7 @@ public:
   TraitObjectType (
     Analysis::NodeMapping mappings,
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
-    Location locus, bool is_dyn_dispatch = false)
+    Location locus, bool is_dyn_dispatch)
     : Type (mappings), has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
@@ -199,6 +196,17 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
+
+  const std::vector<std::unique_ptr<TypeParamBound> > &
+  get_type_param_bounds () const
+  {
+    return type_param_bounds;
+  }
 };
 
 // A type with parentheses around it, used to avoid ambiguity.
@@ -303,46 +311,6 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
-};
-
-/* A trait object with a single trait bound. The "trait bound" is really just
- * the trait. Basically like using an interface as a type in an OOP language. */
-class TraitObjectTypeOneBound : public TypeNoBounds
-{
-  bool has_dyn;
-  TraitBound trait_bound;
-  Location locus;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TraitObjectTypeOneBound *clone_type_impl () const override
-  {
-    return new TraitObjectTypeOneBound (mappings, trait_bound, locus, has_dyn);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  TraitObjectTypeOneBound *clone_type_no_bounds_impl () const override
-  {
-    return new TraitObjectTypeOneBound (mappings, trait_bound, locus, has_dyn);
-  }
-
-public:
-  TraitObjectTypeOneBound (Analysis::NodeMapping mappings,
-			   TraitBound trait_bound, Location locus,
-			   bool is_dyn_dispatch)
-    : TypeNoBounds (mappings), has_dyn (is_dyn_dispatch),
-      trait_bound (std::move (trait_bound)), locus (locus)
-  {}
-
-  std::string as_string () const override;
-
-  Location get_locus () const { return locus; }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  TraitBound &get_trait_bound () { return trait_bound; }
 };
 
 class TypePath; // definition moved to "rust-path.h"
