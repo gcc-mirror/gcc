@@ -1991,6 +1991,154 @@ package body Sem_Case is
             procedure Check_Bindings
             is
                use Case_Bindings_Table;
+
+               function Binding_Subtype (Idx : Binding_Index;
+                                         Tab : Table_Type)
+                 return Entity_Id is
+                 (Etype (Nlists.First (Choices (Tab (Idx).Comp_Assoc))));
+
+               procedure Declare_Binding_Objects
+                  (Alt_Start             : Binding_Index;
+                   Alt                   : Node_Id;
+                   First_Choice_Bindings : Natural;
+                   Tab                   : Table_Type);
+               --  Declare the binding objects for a given alternative
+
+               ------------------------------
+               --  Declare_Binding_Objects --
+               ------------------------------
+
+               procedure Declare_Binding_Objects
+                  (Alt_Start             : Binding_Index;
+                   Alt                   : Node_Id;
+                   First_Choice_Bindings : Natural;
+                   Tab                   : Table_Type)
+               is
+                  Loc : constant Source_Ptr := Sloc (Alt);
+                  Declarations : constant List_Id := New_List;
+                  Decl         : Node_Id;
+                  Obj_Type     : Entity_Id;
+                  Def_Id       : Entity_Id;
+               begin
+                  for FC_Idx in Alt_Start ..
+                    Alt_Start + Binding_Index (First_Choice_Bindings - 1)
+                  loop
+                     Obj_Type := Binding_Subtype (FC_Idx, Tab);
+                     Def_Id := Make_Defining_Identifier
+                                 (Loc,
+                                  Binding_Chars (Tab (FC_Idx).Comp_Assoc));
+
+                     --  Either make a copy or rename the original. At a
+                     --  minimum, we do not want a copy if it would need
+                     --  finalization. Copies may also introduce problems
+                     --  if default init can have side effects (although we
+                     --  could suppress such default initialization).
+                     --  We have to make a copy in any cases where
+                     --  Unrestricted_Access doesn't work.
+                     --
+                     --  This is where the copy-or-rename decision is made.
+                     --  In many cases either way would work and so we have
+                     --  some flexibility here.
+
+                     if not Is_By_Copy_Type (Obj_Type) then
+                        --  Generate
+                        --     type Ref
+                        --       is access constant Obj_Type;
+                        --     Ptr : Ref := <some bogus value>;
+                        --     Obj : Obj_Type renames Ptr.all;
+                                       --
+                        --  Initialization of Ptr will be generated later
+                        --  during expansion.
+
+                        declare
+                           Ptr_Type : constant Entity_Id :=
+                             Make_Temporary (Loc, 'P');
+
+                           Ptr_Type_Def : constant Node_Id :=
+                             Make_Access_To_Object_Definition (Loc,
+                               All_Present => True,
+                               Subtype_Indication =>
+                                 New_Occurrence_Of (Obj_Type, Loc));
+
+                           Ptr_Type_Decl : constant Node_Id :=
+                             Make_Full_Type_Declaration (Loc,
+                               Ptr_Type,
+                               Type_Definition => Ptr_Type_Def);
+
+                           Ptr_Obj : constant Entity_Id :=
+                             Make_Temporary (Loc, 'T');
+
+                           --  We will generate initialization code for this
+                           --  object later (during expansion) but in the
+                           --  meantime we don't want the dereference that
+                           --  is generated a few lines below here to be
+                           --  transformed into a Raise_C_E. To prevent this,
+                           --  we provide a bogus initial value here; this
+                           --  initial value will be removed later during
+                           --  expansion.
+
+                           Ptr_Obj_Decl : constant Node_Id :=
+                             Make_Object_Declaration
+                               (Loc, Ptr_Obj,
+                                Object_Definition =>
+                                  New_Occurrence_Of (Ptr_Type, Loc),
+                                Expression =>
+                                  Unchecked_Convert_To
+                                    (Ptr_Type,
+                                     Make_Integer_Literal (Loc, 5432)));
+                        begin
+                           Mutate_Ekind (Ptr_Type, E_Access_Type);
+
+                           --  in effect, Storage_Size => 0
+                           Set_No_Pool_Assigned (Ptr_Type);
+
+                           Set_Is_Access_Constant (Ptr_Type);
+
+                           --  We could set Ptr_Type'Alignment here if that
+                           --  ever turns out to be needed for renaming a
+                           --  misaligned subcomponent.
+
+                           Mutate_Ekind (Ptr_Obj, E_Variable);
+                           Set_Etype (Ptr_Obj, Ptr_Type);
+
+                           Decl :=
+                             Make_Object_Renaming_Declaration
+                               (Loc, Def_Id,
+                                Subtype_Mark =>
+                                  New_Occurrence_Of (Obj_Type, Loc),
+                                Name =>
+                                  Make_Explicit_Dereference
+                                    (Loc, New_Occurrence_Of (Ptr_Obj, Loc)));
+
+                           Append_To (Declarations, Ptr_Type_Decl);
+                           Append_To (Declarations, Ptr_Obj_Decl);
+                        end;
+                     else
+                        Decl := Make_Object_Declaration
+                          (Sloc => Loc,
+                           Defining_Identifier => Def_Id,
+                           Object_Definition =>
+                              New_Occurrence_Of (Obj_Type, Loc));
+                     end if;
+                     Append_To (Declarations, Decl);
+                  end loop;
+
+                  declare
+                     Old_Statements : constant List_Id := Statements (Alt);
+                     New_Statements : constant List_Id := New_List;
+
+                     Block_Statement : constant Node_Id :=
+                       Make_Block_Statement (Sloc => Loc,
+                         Declarations => Declarations,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements
+                             (Loc, Old_Statements),
+                         Has_Created_Identifier => True);
+                  begin
+                     Append_To (New_Statements, Block_Statement);
+                     Set_Statements (Alt, New_Statements);
+                  end;
+               end Declare_Binding_Objects;
             begin
                if Last = 0 then
                   --  no bindings to check
@@ -2005,10 +2153,6 @@ package body Sem_Case is
                     return Boolean is (
                     Binding_Chars (Tab (Idx1).Comp_Assoc) =
                     Binding_Chars (Tab (Idx2).Comp_Assoc));
-
-                  function Binding_Subtype (Idx : Binding_Index)
-                    return Entity_Id is
-                    (Etype (Nlists.First (Choices (Tab (Idx).Comp_Assoc))));
                begin
                   --  Verify that elements with given choice or alt value
                   --  are contiguous, and that elements with equal
@@ -2172,8 +2316,8 @@ package body Sem_Case is
                                     loop
                                        if Same_Id (Idx2, FC_Idx) then
                                           if not Subtypes_Statically_Match
-                                            (Binding_Subtype (Idx2),
-                                             Binding_Subtype (FC_Idx))
+                                            (Binding_Subtype (Idx2, Tab),
+                                             Binding_Subtype (FC_Idx, Tab))
                                           then
                                              Error_Msg_N
                                                ("subtype of binding in "
@@ -2228,50 +2372,12 @@ package body Sem_Case is
                            --  the current alternative. Then analyze them.
 
                            if First_Choice_Bindings > 0 then
-                              declare
-                                 Loc : constant Source_Ptr := Sloc (Alt);
-                                 Declarations : constant List_Id := New_List;
-                                 Decl         : Node_Id;
-                              begin
-                                 for FC_Idx in
-                                   Alt_Start ..
-                                   Alt_Start +
-                                     Binding_Index (First_Choice_Bindings - 1)
-                                 loop
-                                    Decl := Make_Object_Declaration
-                                      (Sloc => Loc,
-                                       Defining_Identifier =>
-                                         Make_Defining_Identifier
-                                           (Loc,
-                                            Binding_Chars
-                                              (Tab (FC_Idx).Comp_Assoc)),
-                                        Object_Definition =>
-                                          New_Occurrence_Of
-                                            (Binding_Subtype (FC_Idx), Loc));
-
-                                    Append_To (Declarations, Decl);
-                                 end loop;
-
-                                 declare
-                                    Old_Statements : constant List_Id :=
-                                      Statements (Alt);
-                                    New_Statements : constant List_Id :=
-                                      New_List;
-
-                                    Block_Statement : constant Node_Id :=
-                                      Make_Block_Statement (Sloc => Loc,
-                                        Declarations => Declarations,
-                                        Handled_Statement_Sequence =>
-                                          Make_Handled_Sequence_Of_Statements
-                                            (Loc, Old_Statements),
-                                        Has_Created_Identifier => True);
-                                 begin
-                                    Append_To
-                                      (New_Statements, Block_Statement);
-
-                                    Set_Statements (Alt, New_Statements);
-                                 end;
-                              end;
+                              Declare_Binding_Objects
+                                (Alt_Start             => Alt_Start,
+                                 Alt                   => Alt,
+                                 First_Choice_Bindings =>
+                                   First_Choice_Bindings,
+                                 Tab                   => Tab);
                            end if;
                         end;
                      end if;
@@ -3361,11 +3467,32 @@ package body Sem_Case is
          begin
             if not Is_Composite_Type (Subtyp) then
                Error_Msg_N
-                 ("case selector type neither discrete nor composite", N);
+                 ("case selector type must be discrete or composite", N);
             elsif Is_Limited_Type (Subtyp) then
-               Error_Msg_N ("case selector type is limited", N);
+               Error_Msg_N ("case selector type must not be limited", N);
             elsif Is_Class_Wide_Type (Subtyp) then
-               Error_Msg_N ("case selector type is class-wide", N);
+               Error_Msg_N ("case selector type must not be class-wide", N);
+            elsif Needs_Finalization (Subtyp)
+              and then Is_Newly_Constructed
+                         (Expression (N), Context_Requires_NC => False)
+            then
+               --  We could allow this case as long as there are no bindings.
+               --
+               --  If there are bindings, then allowing this case will get
+               --  messy because the selector expression will be finalized
+               --  before the statements of the selected alternative are
+               --  executed (unless we add an INOX-specific change to the
+               --  accessibility rules to prevent this earlier-than-wanted
+               --  finalization, but adding new INOX-specific accessibility
+               --  complexity is probably not the direction we want to go).
+               --  This early selector finalization would be ok if we made
+               --  copies in this case (so that the bindings would not yield
+               --  a view of a finalized object), but then we'd have to deal
+               --  with finalizing those copies (which would necessarily
+               --  include defining their accessibility level). So it gets
+               --  messy either way.
+
+               Error_Msg_N ("case selector must not require finalization", N);
             end if;
          end Check_Composite_Case_Selector;
 

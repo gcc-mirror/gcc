@@ -1521,6 +1521,25 @@ package Sem_Util is
    --  integer for use in compile-time checking. Note: Level is restricted to
    --  be non-dynamic.
 
+   function Is_Newly_Constructed
+     (Exp : Node_Id; Context_Requires_NC : Boolean) return Boolean;
+   --  Indicates whether a given expression is "newly constructed" (RM 4.4).
+   --  Context_Requires_NC determines the result returned for cases like a
+   --  raise expression or a conditional expression where some-but-not-all
+   --  operative constituents are newly constructed. Thus, this is a
+   --  somewhat unusual predicate in that the result required in order to
+   --  satisfy whatever legality rule is being checked can influence the
+   --  result of the predicate. Context_Requires_NC might be True for
+   --  something like the "newly constructed" rule for a limited expression
+   --  of a return statement, and False for something like the
+   --  "newly constructed" rule pertaining to a limited object renaming in a
+   --  declare expression. Eventually, the code to implement every
+   --  RM legality rule requiring/prohibiting a "newly constructed" expression
+   --  should be implemented by calling this function; that's not done yet.
+   --  The function name doesn't quite match the RM definition of the term if
+   --  Context_Requires_NC = False; in that case, "Might_Be_Newly_Constructed"
+   --  might be a more accurate name.
+
    function Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post
      (Subp : Entity_Id) return Boolean;
    --  Return True if Subp is a primitive of an abstract type, where the

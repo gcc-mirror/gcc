@@ -18426,6 +18426,117 @@ package body Sem_Util is
       end case;
    end Is_Name_Reference;
 
+   --------------------------
+   -- Is_Newly_Constructed --
+   --------------------------
+
+   function Is_Newly_Constructed
+     (Exp : Node_Id; Context_Requires_NC : Boolean) return Boolean
+   is
+      Original_Exp : constant Node_Id := Original_Node (Exp);
+
+      function Is_NC (Exp : Node_Id) return Boolean is
+        (Is_Newly_Constructed (Exp, Context_Requires_NC));
+
+      --  If the context requires that the expression shall be newly
+      --  constructed, then "True" is a good result in the sense that the
+      --  expression satisfies the requirements of the context (and "False"
+      --  is analogously a bad result). If the context requires that the
+      --  expression shall *not* be newly constructed, then things are
+      --  reversed: "False" is the good value and "True" is the bad value.
+
+      Good_Result : constant Boolean := Context_Requires_NC;
+      Bad_Result  : constant Boolean := not Good_Result;
+   begin
+      case Nkind (Original_Exp) is
+         when N_Aggregate
+            | N_Extension_Aggregate
+            | N_Function_Call
+            | N_Op
+         =>
+            return True;
+
+         when N_Identifier =>
+            return Present (Entity (Original_Exp))
+              and then Ekind (Entity (Original_Exp)) = E_Function;
+
+         when N_Qualified_Expression =>
+            return Is_NC (Expression (Original_Exp));
+
+         when N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            if Is_View_Conversion (Original_Exp) then
+               return Is_NC (Expression (Original_Exp));
+            elsif not Comes_From_Source (Exp) then
+               if Exp /= Original_Exp then
+                  return Is_NC (Original_Exp);
+               else
+                  return Is_NC (Expression (Original_Exp));
+               end if;
+            else
+               return False;
+            end if;
+
+         when N_Explicit_Dereference
+            | N_Indexed_Component
+            | N_Selected_Component
+         =>
+            return Nkind (Exp) = N_Function_Call;
+
+         --  A use of 'Input is a function call, hence allowed. Normally the
+         --  attribute will be changed to a call, but the attribute by itself
+         --  can occur with -gnatc.
+
+         when N_Attribute_Reference =>
+            return Attribute_Name (Original_Exp) = Name_Input;
+
+         --  "return raise ..." is OK
+
+         when N_Raise_Expression =>
+            return Good_Result;
+
+         --  For a case expression, all dependent expressions must be legal
+
+         when N_Case_Expression =>
+            declare
+               Alt : Node_Id;
+
+            begin
+               Alt := First (Alternatives (Original_Exp));
+               while Present (Alt) loop
+                  if Is_NC (Expression (Alt)) = Bad_Result then
+                     return Bad_Result;
+                  end if;
+
+                  Next (Alt);
+               end loop;
+
+               return Good_Result;
+            end;
+
+         --  For an if expression, all dependent expressions must be legal
+
+         when N_If_Expression =>
+            declare
+               Then_Expr : constant Node_Id :=
+                             Next (First (Expressions (Original_Exp)));
+               Else_Expr : constant Node_Id := Next (Then_Expr);
+            begin
+               if (Is_NC (Then_Expr) = Bad_Result)
+                 or else (Is_NC (Else_Expr) = Bad_Result)
+               then
+                  return Bad_Result;
+               else
+                  return Good_Result;
+               end if;
+            end;
+
+         when others =>
+            return False;
+      end case;
+   end Is_Newly_Constructed;
+
    ------------------------------------
    -- Is_Non_Preelaborable_Construct --
    ------------------------------------
