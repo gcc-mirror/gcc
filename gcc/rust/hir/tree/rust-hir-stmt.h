@@ -41,6 +41,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  bool is_item () const override final { return false; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -119,6 +121,8 @@ public:
 
   HIR::Pattern *get_pattern () { return variables_pattern.get (); }
 
+  bool is_item () const override final { return false; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -135,6 +139,8 @@ class ExprStmt : public Stmt
 
 public:
   Location get_locus () const override final { return locus; }
+
+  bool is_item () const override final { return false; }
 
 protected:
   ExprStmt (Analysis::NodeMapping mappings, Location locus)

@@ -93,22 +93,37 @@ TypeResolution::Resolve (HIR::Crate &crate)
 void
 TypeCheckExpr::visit (HIR::BlockExpr &expr)
 {
-  expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-    auto resolved = TypeCheckStmt::Resolve (s, inside_loop);
-    if (resolved == nullptr)
-      {
-	rust_error_at (s->get_locus (), "failure to resolve type");
-	return false;
-      }
+  for (auto &s : expr.get_statements ())
+    {
+      if (!s->is_item ())
+	continue;
 
-    if (s->is_unit_check_needed () && !resolved->is_unit ())
-      {
-	auto unit = new TyTy::TupleType (s->get_mappings ().get_hirid ());
-	resolved = unit->unify (resolved);
-      }
+      auto resolved = TypeCheckStmt::Resolve (s.get (), inside_loop);
+      if (resolved == nullptr)
+	{
+	  rust_error_at (s->get_locus (), "failure to resolve type");
+	  return;
+	}
+    }
 
-    return true;
-  });
+  for (auto &s : expr.get_statements ())
+    {
+      if (s->is_item ())
+	continue;
+
+      auto resolved = TypeCheckStmt::Resolve (s.get (), inside_loop);
+      if (resolved == nullptr)
+	{
+	  rust_error_at (s->get_locus (), "failure to resolve type");
+	  return;
+	}
+
+      if (s->is_unit_check_needed () && !resolved->is_unit ())
+	{
+	  auto unit = new TyTy::TupleType (s->get_mappings ().get_hirid ());
+	  resolved = unit->unify (resolved);
+	}
+    }
 
   if (expr.has_expr ())
     infered

@@ -822,6 +822,8 @@ public:
   virtual bool is_marked_for_strip () const = 0;
   NodeId get_node_id () const { return node_id; }
 
+  virtual bool is_item () const = 0;
+
 protected:
   Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
@@ -846,6 +848,8 @@ public:
   virtual void
   add_crate_name (std::vector<std::string> &names ATTRIBUTE_UNUSED) const
   {}
+
+  bool is_item () const override final { return true; }
 
 protected:
   // Clone function implementation as pure virtual method

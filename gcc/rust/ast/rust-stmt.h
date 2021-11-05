@@ -46,6 +46,8 @@ public:
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
+  bool is_item () const override final { return false; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -169,6 +171,8 @@ public:
     return type;
   }
 
+  bool is_item () const override final { return false; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -185,6 +189,8 @@ class ExprStmt : public Stmt
 
 public:
   Location get_locus () const override final { return locus; }
+
+  bool is_item () const override final { return false; }
 
 protected:
   ExprStmt (Location locus) : locus (locus) {}

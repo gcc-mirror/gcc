@@ -2007,15 +2007,6 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  void iterate_stmts (std::function<bool (Stmt *)> cb)
-  {
-    for (auto it = statements.begin (); it != statements.end (); it++)
-      {
-	if (!cb (it->get ()))
-	  return;
-      }
-  }
-
   bool is_final_stmt (Stmt *stmt) { return statements.back ().get () == stmt; }
 
   Location get_closing_locus ()
