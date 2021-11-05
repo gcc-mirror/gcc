@@ -2718,11 +2718,23 @@ reading from the position marked previously.
 * Naming and argument-passing conventions::
 @end menu
 
-This chapter is about mixed-language interoperability, but also applies
-if one links Fortran code compiled by different compilers.  In most cases,
-use of the C Binding features of the Fortran 2003 standard is sufficient,
-and their use is highly recommended.
+This chapter is about mixed-language interoperability, but also
+applies if you link Fortran code compiled by different compilers.  In
+most cases, use of the C Binding features of the Fortran 2003 and
+later standards is sufficient.
 
+For example, it is possible to mix Fortran code with C++ code as well
+as C, if you declare the interface functions as @code{extern "C"} on
+the C++ side and @code{BIND(C)} on the Fortran side, and follow the
+rules for interoperability with C.  Note that you cannot manipulate
+C++ class objects in Fortran or vice versa except as opaque pointers.
+
+You can use the @command{gfortran} command to link both Fortran and
+non-Fortran code into the same program, or you can use @command{gcc}
+or @command{g++} if you also add an explicit @option{-lgfortran} option
+to link with the Fortran library.  If your main program is written in
+C or some other language instead of Fortran, see
+@ref{Non-Fortran Main Program}, below.
 
 @node Interoperability with C
 @section Interoperability with C
