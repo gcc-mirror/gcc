@@ -50,40 +50,48 @@ proc get_line_number {filename marker} {
     return $gdb_markers($filename,$marker)
 }
 
-# Make note of a gdb test.  A test consists of a variable name and an
-# expected result.
-proc note-test {var result} {
+proc register_gdb_test {var result kind rexp selector} {
     global gdb_tests
 
-    lappend gdb_tests $var $result print 0
+    set xfail 0
+    if {[string length $selector] > 0} {
+	switch [dg-process-target $selector] {
+	    "N" { return }
+	    "S" { }
+	    "P" { }
+	    "F" { set xfail 1 }
+	}
+    }
+
+    lappend gdb_tests $var $result $kind $rexp $xfail
+}
+
+# Make note of a gdb test.  A test consists of a variable name and an
+# expected result, and an optional target selector.
+proc note-test {var result {selector {}}} {
+    register_gdb_test $var $result print 0 $selector
 }
 
 # A test that uses a regular expression.  This is like note-test, but
 # the result is a regular expression that is matched against the
 # output.
-proc regexp-test {var result} {
-    global gdb_tests
-
-    lappend gdb_tests $var $result print 1
+proc regexp-test {var result {selector {}}} {
+    register_gdb_test $var $result print 1 $selector
 }
 
 # A test of 'whatis'.  This tests a type rather than a variable.
-proc whatis-test {var result} {
-    global gdb_tests
-
-    lappend gdb_tests $var $result whatis 0
+proc whatis-test {var result {selector {}}} {
+    register_gdb_test $var $result whatis 0 $selector
 }
 
 # A test of 'whatis' that uses a regular expression. This tests a type rather
 # than a variable.
-proc whatis-regexp-test {var result} {
-    global gdb_tests
-
-    lappend gdb_tests $var $result whatis 1
+proc whatis-regexp-test {var result {selector {}}} {
+    register_gdb_test $var $result whatis 1 $selector
 }
 
 # Utility for testing variable values using gdb, invoked via dg-final.
-# Tests all tests indicated by note-test and regexp-test.
+# Tests all tests indicated by note-test, whatis-test, and the regexp versions.
 #
 # Argument 0 is the marker on which to put a breakpoint
 # Argument 2 handles expected failures and the like
@@ -144,7 +152,7 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
     puts $fd "info share"
 
     set count 0
-    foreach {var result kind rexp} $gdb_tests {
+    foreach {var result kind rexp xfail} $gdb_tests {
 	incr count
 	set gdb_var($count) $var
 	set gdb_expected($count) $result
@@ -152,6 +160,7 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	    if {$do_whatis_tests} {
 		set gdb_is_type($count) 1
 		set gdb_is_regexp($count) $rexp
+		set gdb_is_xfail($count) $xfail
 		set gdb_command($count) "whatis $var"
 	    } else {
 	        unsupported "$testname"
@@ -161,6 +170,7 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	} else {
 	    set gdb_is_type($count) 0
 	    set gdb_is_regexp($count) $rexp
+	    set gdb_is_xfail($count) $xfail
 	    set gdb_command($count) "print $var"
 	}
 	puts $fd $gdb_command($count)
@@ -198,11 +208,20 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	    }
 
 	    if {$match} {
-		pass "$testname $gdb_command($test_counter)"
+		if {$gdb_is_xfail($test_counter)} {
+		    xpass "$testname $gdb_command($test_counter)"
+		    verbose " matched =>$first<="
+		} else {
+		    pass "$testname $gdb_command($test_counter)"
+		}
 	    } else {
-		fail "$testname $gdb_command($test_counter)"
-		verbose "     got =>$first<="
-		verbose "expected =>$gdb_expected($test_counter)<="
+		if {$gdb_is_xfail($test_counter)} {
+		    xfail "$testname $gdb_command($test_counter)"
+		} else {
+		    fail "$testname $gdb_command($test_counter)"
+		    verbose "     got =>$first<="
+		    verbose "expected =>$gdb_expected($test_counter)<="
+		}
 	    }
 
 	    if {$test_counter == $count} {
