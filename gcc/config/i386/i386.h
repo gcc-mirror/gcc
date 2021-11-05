@@ -258,8 +258,9 @@ struct stringop_algs
        this issue.  Since this header is used by code compiled with the C
        compiler we must guard the addition.  */
 #ifdef __cplusplus
-    stringop_strategy(int _max = -1, enum stringop_alg _alg = libcall,
-		      int _noalign = false)
+    constexpr
+    stringop_strategy (int _max = -1, enum stringop_alg _alg = libcall,
+		       int _noalign = false)
       : max (_max), alg (_alg), noalign (_noalign) {}
 #endif
     const int max;
