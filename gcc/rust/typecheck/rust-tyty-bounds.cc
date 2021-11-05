@@ -70,7 +70,10 @@ namespace TyTy {
 std::string
 TypeBoundPredicate::as_string () const
 {
-  return get ()->as_string ();
+  return get ()->as_string ()
+	 + (has_generic_args ()
+	      ? std::string ("<") + args->as_string () + std::string (">")
+	      : "");
 }
 
 const Resolver::TraitReference *
