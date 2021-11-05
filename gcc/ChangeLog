@@ -1,3 +1,10 @@
+2021-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/amxtileintrin.h (_tile_loadd_internal): Add
+	parentheses to base and stride.
+	(_tile_stream_loadd_internal): Likewise.
+	(_tile_stored_internal): Likewise.
+
 2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
 
 	* gimple-range-cache.cc (ranger_cache::push_poor_value): Mark

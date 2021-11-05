@@ -1,3 +1,14 @@
+2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/amxtile-3.c: Check leal/addl for x32.
+
+2021-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/amxtile-3.c: New test.
+
 2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/102842
