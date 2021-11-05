@@ -7696,6 +7696,10 @@ maybe_constant_value (tree t, tree decl, bool manifestly_const_eval)
       return r;
     }
 
+  /* Don't evaluate an unevaluated operand.  */
+  if (cp_unevaluated_operand)
+    return t;
+
   uid_sensitive_constexpr_evaluation_checker c;
   r = cxx_eval_outermost_constant_expr (t, true, true, false, false, decl);
   gcc_checking_assert (r == t
@@ -7758,6 +7762,9 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 	    }
 	  return t;
 	}
+
+      if (cp_unevaluated_operand && !manifestly_const_eval)
+	return t;
 
       tree r = cxx_eval_outermost_constant_expr (t, true, true,
 						 manifestly_const_eval,
