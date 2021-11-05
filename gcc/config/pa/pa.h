@@ -136,6 +136,9 @@ extern unsigned long total_code_bytes;
    by default.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
+/* Select dwarf2 as the preferred debug format.  */
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
 /* This used to be zero (no max length), but big enums and such can
    cause huge strings which killed gas.
 
