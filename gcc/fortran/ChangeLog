@@ -1,3 +1,52 @@
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Projects): Add bullet for helping with
+	incomplete standards compliance.
+	(Proposed Extensions): Delete section.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* intrinsic.texi (Introduction to Intrinsics): Genericize
+	references to standard versions.
+	* invoke.texi (-fall-intrinsics): Likewise.
+	(-fmax-identifier-length=): Likewise.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Interoperability with C): Copy-editing.  Add
+	more index entries.
+	(Intrinsic Types): Likewise.
+	(Derived Types and struct): Likewise.
+	(Interoperable Global Variables): Likewise.
+	(Interoperable Subroutines and Functions): Likewise.
+	(Working with C Pointers): Likewise.
+	(Further Interoperability of Fortran with C): Likewise.  Rewrite
+	to reflect that this is now fully supported by gfortran.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (About GNU Fortran): Consolidate material
+	formerly in other sections.  Copy-editing.
+	(Preprocessing and conditional compilation): Delete, moving
+	most material to invoke.texi.
+	(GNU Fortran and G77): Delete.
+	(Project Status): Delete.
+	(Standards): Update.
+	(Fortran 95 status): Mention conditional compilation here.
+	(Fortran 2003 status): Rewrite to mention the 1 missing feature
+	instead of all the ones implemented.
+	(Fortran 2008 status): Similarly for the 2 missing features.
+	(Fortran 2018 status): Rewrite to reflect completion of TS29113
+	feature support.
+	* invoke.texi (Preprocessing Options): Move material formerly
+	in introductory chapter here.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Standards): Move discussion of specific
+	standard versions here....
+	(Fortran standards status): ...from here, and delete this node.
+
 2021-10-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* symbol.c (gfc_get_typebound_proc): Revert memcpy.

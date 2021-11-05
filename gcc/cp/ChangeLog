@@ -1,3 +1,16 @@
+2021-11-04  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_array_conv): Use range-for.
+	(build_complex_conv): Likewise.
+	* constexpr.c (clear_no_implicit_zero)
+	(reduced_constant_expression_p): Likewise.
+	* decl.c (cp_complete_array_type): Likewise.
+	* decl2.c (mark_vtable_entries): Likewise.
+	* pt.c (iterative_hash_template_arg):
+	(invalid_tparm_referent_p, unify)
+	(type_dependent_expression_p): Likewise.
+	* typeck.c (build_ptrmemfunc_access_expr): Likewise.
+
 2021-11-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/103031

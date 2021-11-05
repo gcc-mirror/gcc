@@ -1,3 +1,178 @@
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-eh2.C: Add dg-warning for new
+	deprecation warnings.
+	* g++.dg/cpp0x/noexcept06.C: Likewise.
+	* g++.dg/cpp0x/noexcept07.C: Likewise.
+	* g++.dg/eh/forced3.C: Likewise.
+	* g++.dg/eh/unexpected1.C: Likewise.
+	* g++.old-deja/g++.eh/spec1.C: Likewise.
+	* g++.old-deja/g++.eh/spec2.C: Likewise.
+	* g++.old-deja/g++.eh/spec3.C: Likewise.
+	* g++.old-deja/g++.eh/spec4.C: Likewise.
+	* g++.old-deja/g++.mike/eh33.C: Likewise.
+	* g++.old-deja/g++.mike/eh34.C: Likewise.
+	* g++.old-deja/g++.mike/eh50.C: Likewise.
+	* g++.old-deja/g++.mike/eh51.C: Likewise.
+
+2021-11-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-1.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-2.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-3.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-4.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-5.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-6.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-7.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-8.c: New test.
+	* gcc.target/aarch64/signbit-2.c: New test.
+
+2021-11-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/signbit-2.c: New test.
+	* gcc.dg/signbit-3.c: New test.
+	* gcc.dg/signbit-4.c: New test.
+	* gcc.dg/signbit-5.c: New test.
+	* gcc.dg/signbit-6.c: New test.
+	* gcc.target/aarch64/signbit-1.c: New test.
+
+2021-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103079
+	* gcc.dg/pr103079.c: New.
+
+2021-11-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/93385
+	* gcc.dg/guality/ipa-sra-1.c: New test.
+
+2021-11-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/vector_structure_intrinsics.c: New code
+	generation tests.
+
+2021-11-04  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_vldN_lane_2.c:
+	Relax incorrect register number requirement.
+	* gcc.target/aarch64/sve/pcs/struct_3_256.c: Accept
+	equivalent codegen with fmov.
+
+2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/amxtile-3.c: Check leal/addl for x32.
+
+2021-11-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/103042
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-int.c: Update guards.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-short.c: Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-int.c:
+	Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-short.c:
+	Likewise.
+	* gcc.dg/vect/complex/complex-add-pattern-template.c: Likewise.
+	* gcc.dg/vect/complex/complex-add-template.c: Likewise.
+	* gcc.dg/vect/complex/complex-operations-run.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-byte.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-int.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-short.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-byte.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-int.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-short.c:
+	Likewise.
+
+2021-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/103075
+	* gcc.dg/pr103075.c: New testcase.
+
+2021-11-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103062
+	* gcc.dg/pr103062.c: New test.
+
+2021-11-04  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.dg/vect/pr101145_1.c: Update case.
+	* gcc.dg/vect/pr101145_2.c: Update case.
+	* gcc.dg/vect/pr101145_3.c: Update case.
+
+2021-11-04  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/asan/asan_test.C: Disable one warning.
+
+2021-11-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/rtl/aarch64/big-endian-cse-1.c: New test.
+
+2021-11-04  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr101989-3.c: New test.
+
+2021-11-04  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102464-copysign-1.c: New test.
+
+2021-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/vnni-auto-vectorize-1.c: New test.
+	* gcc.target/i386/vnni-auto-vectorize-2.c: Ditto.
+
+2021-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/amxtile-3.c: New test.
+
+2021-11-04  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/opt/pr102970.C: Only run in C++14 and up.
+
 2021-11-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/103031

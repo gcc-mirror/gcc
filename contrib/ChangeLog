@@ -1,3 +1,9 @@
+2021-11-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Add -v option.
+	* gcc-changelog/git_commit.py: Print verbose diff for wrong
+	filename.
+
 2021-11-02  Martin Liska  <mliska@suse.cz>
 
 	* check-internal-format-escaping.py: Fix flake8 errors.

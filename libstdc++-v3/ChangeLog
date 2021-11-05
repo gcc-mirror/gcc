@@ -1,3 +1,112 @@
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103086
+	* python/libstdcxx/v6/printers.py (_tuple_impl_get): New helper
+	for accessing the tuple element stored in a _Tuple_impl node.
+	(tuple_get): New function for accessing a tuple element.
+	(unique_ptr_get): New function for accessing a unique_ptr.
+	(UniquePointerPrinter, StdPathPrinter): Use unique_ptr_get.
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker): Cast
+	tuple to its base class before accessing _M_head_impl.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecations.
+	* doc/html/*: Regenerate.
+	* libsupc++/exception (unexpected_handler, unexpected)
+	(get_unexpected, set_unexpected): Add deprecated attribute.
+	Do not define without _GLIBCXX_USE_DEPRECATED for C++17 and up.
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Disable
+	deprecated warnings.
+	* libsupc++/eh_ptr.cc (std::rethrow_exception): Likewise.
+	* libsupc++/eh_terminate.cc: Likewise.
+	* libsupc++/eh_throw.cc (__cxa_init_primary_exception):
+	Likewise.
+	* libsupc++/unwind-cxx.h (struct __cxa_exception): Use
+	terminate_handler instead of unexpected_handler.
+	(struct __cxa_dependent_exception): Likewise.
+	(__unexpected): Likewise.
+	* testsuite/18_support/headers/exception/synopsis.cc: Add
+	dg-warning for deprecated warning.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc:
+	Disable deprecated warnings.
+	* testsuite/18_support/set_unexpected.cc: Likewise.
+	* testsuite/18_support/unexpected_handler.cc: Likewise.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h (__find_uniq_type_in_pack): Move
+	definition to here, ...
+	* include/std/tuple (__find_uniq_type_in_pack): ... from here.
+	* include/std/variant (__detail__variant::__index_of): Remove.
+	(__detail::__variant::__exactly_once): Define using
+	__find_uniq_type_in_pack instead of __index_of.
+	(get<T>, get_if<T>, variant::__index_of): Likewise.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (tuple_size_v): Define partial
+	specializations for std::pair.
+	* include/bits/utility.h (_Nth_type): Move definition here
+	and define primary template.
+	(tuple_size_v): Move definition here.
+	* include/std/array (tuple_size_v): Define partial
+	specializations for std::array.
+	* include/std/tuple (tuple_size_v): Move primary template to
+	<bits/utility.h>.  Define partial specializations for
+	std::tuple.
+	(tuple_element): Change definition to use _Nth_type.
+	* include/std/variant (_Nth_type): Move to <bits/utility.h>.
+	(variant_alternative, variant): Adjust qualification of
+	_Nth_type.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Prune
+	additional errors from _Nth_type.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__emplace): New
+	function template.
+	(_Copy_assign_base::operator=): Reorder conditions to match
+	bulleted list of effects in the standard. Use __emplace instead
+	of _M_reset followed by _Construct.
+	(_Move_assign_base::operator=): Likewise.
+	(__construct_by_index): Remove.
+	(variant::emplace): Use __emplace instead of _M_reset followed
+	by __construct_by_index.
+	(variant::swap): Hoist valueless cases out of visitor. Use
+	__emplace to replace _M_reset followed by _Construct.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Nth_type): Define partial
+	specializations to reduce number of instantiations.
+	(variant_size_v): Define partial specializations to avoid
+	instantiations.
+	(variant_alternative): Use _Nth_type. Add static assert.
+	(__tuple_count, __tuple_count_v): Replace with ...
+	(__count): New variable template.
+	(_Variant_union): Add deleted constructor.
+	(variant::__to_type): Use _Nth_type.
+	(variant::emplace): Use _Nth_type. Add deleted overloads for
+	invalid types and indices.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102912
+	* include/std/variant (_Variant_storage::__index_of): Remove.
+	(__variant_construct_single): Remove.
+	(__variant_construct): Remove.
+	(_Copy_ctor_base::_Copy_ctor_base(const _Copy_ctor_base&)): Do
+	construction directly instead of using __variant_construct.
+	(_Move_ctor_base::_Move_ctor_base(_Move_ctor_base&&)): Likewise.
+	(_Move_ctor_base::_M_destructive_move()): Remove.
+	(_Move_ctor_base::_M_destructive_copy()): Remove.
+	(_Copy_assign_base::operator=(const _Copy_assign_base&)): Do
+	construction directly instead of using _M_destructive_copy.
+	(variant::swap): Do construction directly instead of using
+	_M_destructive_move.
+	* testsuite/20_util/variant/102912.cc: New test.
+
 2021-11-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66742
