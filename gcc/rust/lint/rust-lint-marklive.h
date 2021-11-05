@@ -97,10 +97,10 @@ public:
 
   void visit (HIR::BlockExpr &expr) override
   {
-    expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-      s->accept_vis (*this);
-      return true;
-    });
+    for (auto &s : expr.get_statements ())
+      {
+	s->accept_vis (*this);
+      }
     if (expr.has_expr ())
       {
 	expr.get_final_expr ()->accept_vis (*this);

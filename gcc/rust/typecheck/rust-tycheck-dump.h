@@ -94,12 +94,12 @@ public:
   {
     indentation_level++;
 
-    expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-      dump += indent ();
-      s->accept_vis (*this);
-      dump += ";\n";
-      return true;
-    });
+    for (auto &s : expr.get_statements ())
+      {
+	dump += indent ();
+	s->accept_vis (*this);
+	dump += ";\n";
+      }
 
     if (expr.has_expr ())
       {
