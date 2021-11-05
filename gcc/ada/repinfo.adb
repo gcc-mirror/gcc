@@ -1123,7 +1123,7 @@ package body Repinfo is
          Npos  : constant Uint := Normalized_Position (Ent);
          Fbit  : constant Uint := Normalized_First_Bit (Ent);
          Spos  : Uint;
-         Sbit  : Uint;
+         Sbit  : Uint := No_Uint;
          Lbit  : Uint;
 
       begin
