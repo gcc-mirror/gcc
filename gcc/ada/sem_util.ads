@@ -372,7 +372,7 @@ package Sem_Util is
    procedure Check_Ambiguous_Aggregate (Call : Node_Id);
    --  Additional information on an ambiguous call in Ada_2022 when a
    --  subprogram call has an actual that is an aggregate, and the
-   --  presence of container aggregates (or types with the correwponding
+   --  presence of container aggregates (or types with the corresponding
    --  aspect)  provides an additional interpretation. Message indicates
    --  that an aggregate actual should carry a type qualification.
 

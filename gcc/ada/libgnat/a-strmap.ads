@@ -376,7 +376,7 @@ private
    --  the defined operations in the spec, but the operations defined
    --  on Character_Set_Internal remain visible.
 
-   Null_Set : constant Character_Set := (others => False);
+   Null_Set : constant Character_Set := [others => False];
 
    type Character_Mapping is array (Character) of Character;
 

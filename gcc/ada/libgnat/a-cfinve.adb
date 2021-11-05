@@ -871,7 +871,7 @@ is
 
       J := To_Array_Index (Before);
 
-      Elems (Container) (J .. J - 1 + Count) := (others => H (New_Item));
+      Elems (Container) (J .. J - 1 + Count) := [others => H (New_Item)];
    end Insert;
 
    procedure Insert
@@ -1445,7 +1445,7 @@ is
            (Capacity     => Length,
             Last         => Last,
             Elements_Ptr => <>,
-            Elements     => (others => H (New_Item)));
+            Elements     => [others => H (New_Item)]);
       end;
    end To_Vector;
 

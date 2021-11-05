@@ -199,7 +199,7 @@ package body System.Regpat is
 
    type Bit_Conversion_Array is array (Class_Byte range 0 .. 7) of Class_Byte;
    Bit_Conversion : constant Bit_Conversion_Array :=
-                      (1, 2, 4, 8, 16, 32, 64, 128);
+                      [1, 2, 4, 8, 16, 32, 64, 128];
 
    type Std_Class is (ANYOF_NONE,
                       ANYOF_ALNUM,   --  Alphanumeric class [a-zA-Z0-9]
@@ -2111,9 +2111,9 @@ package body System.Regpat is
             declare
                Point   : constant String := Pointer'Image (Index);
             begin
-               Put ((1 .. 4 - Point'Length => ' ')
+               Put ([1 .. 4 - Point'Length => ' ']
                     & Point & ":"
-                    & (1 .. Local_Indent * 2 => ' ') & Opcode'Image (Op));
+                    & [1 .. Local_Indent * 2 => ' '] & Opcode'Image (Op));
             end;
 
             --  Print the parenthesis number
@@ -2506,11 +2506,11 @@ package body System.Regpat is
 
       begin
          if Prefix then
-            Put ((1 .. 5 - Pos'Length => ' '));
+            Put ([1 .. 5 - Pos'Length => ' ']);
             Put (Pos & " <"
                  & Data (Input_Pos
                      .. Integer'Min (Last_In_Data, Input_Pos + Length - 1)));
-            Put ((1 .. Length - 1 - Last_In_Data + Input_Pos => ' '));
+            Put ([1 .. Length - 1 - Last_In_Data + Input_Pos => ' ']);
             Put ("> |");
 
          else
@@ -2527,7 +2527,7 @@ package body System.Regpat is
       procedure Dump_Error (Msg : String) is
       begin
          Put ("                   |     ");
-         Put ((1 .. Dump_Indent * 2 => ' '));
+         Put ([1 .. Dump_Indent * 2 => ' ']);
          Put_Line (Msg);
       end Dump_Error;
 
@@ -3381,7 +3381,7 @@ package body System.Regpat is
       begin
          Input_Pos  := Pos;
          Last_Paren := 0;
-         Matches_Full := (others => No_Match);
+         Matches_Full := [others => No_Match];
 
          if Match (Program_First) then
             Matches_Full (0) := (Pos, Input_Pos - 1);
@@ -3397,7 +3397,7 @@ package body System.Regpat is
       --  Do we have the regexp Never_Match?
 
       if Self.Size = 0 then
-         Matches := (others => No_Match);
+         Matches := [others => No_Match];
          return;
       end if;
 
@@ -3420,7 +3420,7 @@ package body System.Regpat is
             end loop;
 
             if Next_Try = 0 then
-               Matches := (others => No_Match);
+               Matches := [others => No_Match];
                return;                  -- Not present
             end if;
          end;
@@ -3740,7 +3740,7 @@ package body System.Regpat is
 
    procedure Reset_Class (Bitmap : out Character_Class) is
    begin
-      Bitmap := (others => 0);
+      Bitmap := [others => 0];
    end Reset_Class;
 
    ------------------

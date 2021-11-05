@@ -89,7 +89,7 @@ package body Ada.Directories is
    end record;
    --  The current state of a search
 
-   Empty_String : constant String := (1 .. 0 => ASCII.NUL);
+   Empty_String : constant String := "";
    --  Empty string, returned by function Extension when there is no extension
 
    procedure Free is new Ada.Unchecked_Deallocation (Search_Data, Search_Ptr);
@@ -107,7 +107,7 @@ package body Ada.Directories is
      (Search                 : in out Search_Type;
       Directory              : String;
       Pattern                : String;
-      Filter                 : Filter_Type := (others => True);
+      Filter                 : Filter_Type := [others => True];
       Force_Case_Insensitive : Boolean);
    --  Similar to Start_Search except we can force a search to be
    --  case-insensitive, which is important for detecting the name-case
@@ -1094,7 +1094,7 @@ package body Ada.Directories is
         (Search    => S,
          Directory => To_String (Dir_Path),
          Pattern   => "",
-         Filter    => (Directory => False, others => True));
+         Filter    => [Directory => False, others => True]);
 
       loop
          Get_Next_Entry (S, Test_File);
@@ -1114,7 +1114,7 @@ package body Ada.Directories is
         (Search                 => S,
          Directory              => To_String (Dir_Path),
          Pattern                => Simple_Name (Test_File),
-         Filter                 => (Directory => False, others => True),
+         Filter                 => [Directory => False, others => True],
          Force_Case_Insensitive => True);
 
       --  We will find at least one match due to the search hitting our test
@@ -1215,7 +1215,7 @@ package body Ada.Directories is
    procedure Search
      (Directory : String;
       Pattern   : String;
-      Filter    : Filter_Type := (others => True);
+      Filter    : Filter_Type := [others => True];
       Process   : not null access procedure
                                     (Directory_Entry : Directory_Entry_Type))
    is
@@ -1401,7 +1401,7 @@ package body Ada.Directories is
      (Search    : in out Search_Type;
       Directory : String;
       Pattern   : String;
-      Filter    : Filter_Type := (others => True))
+      Filter    : Filter_Type := [others => True])
    is
    begin
       Start_Search_Internal (Search, Directory, Pattern, Filter, False);
@@ -1415,7 +1415,7 @@ package body Ada.Directories is
      (Search                 : in out Search_Type;
       Directory              : String;
       Pattern                : String;
-      Filter                 : Filter_Type := (others => True);
+      Filter                 : Filter_Type := [others => True];
       Force_Case_Insensitive : Boolean)
    is
       function opendir (file_name : String) return DIRs;

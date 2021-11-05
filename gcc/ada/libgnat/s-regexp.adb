@@ -124,7 +124,7 @@ package body System.Regexp is
       --  The pattern which is really compiled (when the pattern is case
       --  insensitive, we convert this string to lower-cases).
 
-      Map : Mapping := (others => 0);
+      Map : Mapping := [others => 0];
       --  Mapping between characters and columns in the tables
 
       Alphabet_Size : Column_Index := 0;
@@ -1103,7 +1103,7 @@ package body System.Regexp is
       --  Start of processing for Create_Primary_Table
 
       begin
-         Table.all := (others => (others => 0));
+         Table.all := [others => [others => 0]];
          Create_Simple (S'First, S'Last, Start_State, End_State);
          Num_States := Current_State;
       end Create_Primary_Table;
@@ -1372,7 +1372,7 @@ package body System.Regexp is
       --  Start of processing for Create_Primary_Table_Glob
 
       begin
-         Table.all := (others => (others => 0));
+         Table.all := [others => [others => 0]];
          Create_Simple (S'First, S'Last, Start_State, End_State);
          Num_States := Current_State;
       end Create_Primary_Table_Glob;
@@ -1392,7 +1392,7 @@ package body System.Regexp is
          pragma Pack (Meta_State);
          --  Whether a state from first_table belongs to a metastate.
 
-         No_States : constant Meta_State := (others => False);
+         No_States : constant Meta_State := [others => False];
 
          type Meta_States_Array is array (State_Index range <>) of Meta_State;
          type Meta_States_List is access all Meta_States_Array;
@@ -1444,25 +1444,25 @@ package body System.Regexp is
             if Meta_States = null then
                Meta_States := new Meta_States_Array
                   (1 .. State_Index'Max (Last_Index, Meta) + 1);
-               Meta_States (Meta_States'Range) := (others => No_States);
+               Meta_States (Meta_States'Range) := [others => No_States];
 
                Table := new Meta_States_Transition_Arr
                   (1 .. State_Index'Max (Last_Index, Meta) + 1);
-               Table.all := (others => (others => 0));
+               Table.all := [others => [others => 0]];
 
             elsif Meta > Meta_States'Last then
                Meta_States := new Meta_States_Array
                   (1 .. State_Index'Max (2 * Tmp'Last, Meta));
                Meta_States (Tmp'Range) := Tmp.all;
                Meta_States (Tmp'Last + 1 .. Meta_States'Last) :=
-                  (others => No_States);
+                  [others => No_States];
                Unchecked_Free (Tmp);
 
                Table := new Meta_States_Transition_Arr
                   (1 .. State_Index'Max (2 * Tmp2'Last, Meta) + 1);
                Table (Tmp2'Range) := Tmp2.all;
                Table (Tmp2'Last + 1 .. Table'Last) :=
-                  (others => (others => 0));
+                  [others => [others => 0]];
                Unchecked_Free (Tmp2);
             end if;
          end Ensure_Meta_State;
@@ -1595,9 +1595,9 @@ package body System.Regexp is
                  R => new Regexp_Value'
                       (Alphabet_Size => 0,
                        Num_States    => 1,
-                       Map           => (others => 0),
-                       States        => (others => (others => 1)),
-                       Is_Final      => (others => True),
+                       Map           => [others => 0],
+                       States        => [others => [others => 1]],
+                       Is_Final      => [others => True],
                        Case_Sensitive => True));
       end if;
 
@@ -1726,7 +1726,7 @@ package body System.Regexp is
          New_Columns := Table'Last (2) * (Column / Table'Last (2) + 1);
          New_Table := new Regexp_Array (Table'First (1) .. New_Lines,
                                         Table'First (2) .. New_Columns);
-         New_Table.all := (others => (others => 0));
+         New_Table.all := [others => [others => 0]];
 
          for J in Table'Range (1) loop
             for K in Table'Range (2) loop

@@ -242,7 +242,7 @@ private
    --  epoch) expressed in nanoseconds. Note that year 2100 is non-leap.
 
    Days_In_Month : constant array (Month_Number) of Day_Number :=
-                     (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
+                     [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
    --  Days in month for non-leap year, leap year case is adjusted in code
 
    Invalid_Time_Zone_Offset : Long_Integer;

@@ -64,7 +64,7 @@ is
    Graphic    : constant Character_Flags := Alphanum or Special;
 
    Char_Map : constant array (Character) of Character_Flags :=
-   (
+   [
      NUL                         => Control,
      SOH                         => Control,
      STX                         => Control,
@@ -282,7 +282,7 @@ is
      LC_Y_Acute                  => Lower,
      LC_Icelandic_Thorn          => Lower + Basic,
      LC_Y_Diaeresis              => Lower
-   );
+   ];
 
    ---------------------
    -- Is_Alphanumeric --

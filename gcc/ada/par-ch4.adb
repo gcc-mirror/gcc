@@ -1694,6 +1694,10 @@ package body Ch4 is
                end if;
             end if;
          when Tok_Left_Paren =>
+            if Nkind (Aggregate_Node) = N_Aggregate then
+               Set_Is_Parenthesis_Aggregate (Aggregate_Node);
+            end if;
+
             T_Right_Paren;
          when others => raise Program_Error;
       end case;

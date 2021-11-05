@@ -103,10 +103,10 @@ package body Ada.Strings.Text_Buffers.Unbounded is
             --  If this aggregate becomes illegal due to new field, don't
             --  forget to add corresponding assignment statement below.
             Dummy : array (1 .. 0) of Buffer_Type :=
-              (others =>
-                 (Indentation  => <>, Indent_Pending => <>, UTF_8_Length => <>,
+              [others =>
+                 [Indentation  => <>, Indent_Pending => <>, UTF_8_Length => <>,
                   UTF_8_Column => <>, All_7_Bits => <>, All_8_Bits => <>,
-                  List         => <>, Last_Used => <>));
+                  List         => <>, Last_Used => <>]];
          begin
             Buffer.Indentation    := Defaulted.Indentation;
             Buffer.Indent_Pending := Defaulted.Indent_Pending;

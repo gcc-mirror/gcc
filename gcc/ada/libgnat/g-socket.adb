@@ -71,31 +71,31 @@ package body GNAT.Sockets is
    --  Correspondence tables
 
    Levels : constant array (Level_Type) of C.int :=
-              (Socket_Level               => SOSC.SOL_SOCKET,
+              [Socket_Level               => SOSC.SOL_SOCKET,
                IP_Protocol_For_IP_Level   => SOSC.IPPROTO_IP,
                IP_Protocol_For_IPv6_Level => SOSC.IPPROTO_IPV6,
                IP_Protocol_For_UDP_Level  => SOSC.IPPROTO_UDP,
                IP_Protocol_For_TCP_Level  => SOSC.IPPROTO_TCP,
                IP_Protocol_For_ICMP_Level => SOSC.IPPROTO_ICMP,
                IP_Protocol_For_IGMP_Level => SOSC.IPPROTO_IGMP,
-               IP_Protocol_For_RAW_Level  => SOSC.IPPROTO_RAW);
+               IP_Protocol_For_RAW_Level  => SOSC.IPPROTO_RAW];
 
    Modes : constant array (Mode_Type) of C.int :=
-             (Socket_Stream   => SOSC.SOCK_STREAM,
+             [Socket_Stream   => SOSC.SOCK_STREAM,
               Socket_Datagram => SOSC.SOCK_DGRAM,
-              Socket_Raw      => SOSC.SOCK_RAW);
+              Socket_Raw      => SOSC.SOCK_RAW];
 
    Shutmodes : constant array (Shutmode_Type) of C.int :=
-                 (Shut_Read       => SOSC.SHUT_RD,
+                 [Shut_Read       => SOSC.SHUT_RD,
                   Shut_Write      => SOSC.SHUT_WR,
-                  Shut_Read_Write => SOSC.SHUT_RDWR);
+                  Shut_Read_Write => SOSC.SHUT_RDWR];
 
    Requests : constant array (Request_Name) of SOSC.IOCTL_Req_T :=
-                (Non_Blocking_IO => SOSC.FIONBIO,
-                 N_Bytes_To_Read => SOSC.FIONREAD);
+                [Non_Blocking_IO => SOSC.FIONBIO,
+                 N_Bytes_To_Read => SOSC.FIONREAD];
 
    Options : constant array (Specific_Option_Name) of C.int :=
-               (Keep_Alive          => SOSC.SO_KEEPALIVE,
+               [Keep_Alive          => SOSC.SO_KEEPALIVE,
                 Keep_Alive_Count    => SOSC.TCP_KEEPCNT,
                 Keep_Alive_Idle     => SOSC.TCP_KEEPIDLE,
                 Keep_Alive_Interval => SOSC.TCP_KEEPINTVL,
@@ -120,15 +120,15 @@ package body GNAT.Sockets is
                 IPv6_Only           => SOSC.IPV6_V6ONLY,
                 Send_Timeout        => SOSC.SO_SNDTIMEO,
                 Receive_Timeout     => SOSC.SO_RCVTIMEO,
-                Busy_Polling        => SOSC.SO_BUSY_POLL);
+                Busy_Polling        => SOSC.SO_BUSY_POLL];
    --  ??? Note: for OpenSolaris, Receive_Packet_Info should be IP_RECVPKTINFO,
    --  but for Linux compatibility this constant is the same as IP_PKTINFO.
 
    Flags : constant array (0 .. 3) of C.int :=
-             (0 => SOSC.MSG_OOB,     --  Process_Out_Of_Band_Data
+             [0 => SOSC.MSG_OOB,     --  Process_Out_Of_Band_Data
               1 => SOSC.MSG_PEEK,    --  Peek_At_Incoming_Data
               2 => SOSC.MSG_WAITALL, --  Wait_For_A_Full_Reception
-              3 => SOSC.MSG_EOR);    --  Send_End_Of_Record
+              3 => SOSC.MSG_EOR];    --  Send_End_Of_Record
 
    Socket_Error_Id : constant Exception_Id := Socket_Error'Identity;
    Host_Error_Id   : constant Exception_Id := Host_Error'Identity;
@@ -1184,8 +1184,8 @@ package body GNAT.Sockets is
       Numeric_Serv : Boolean := False) return Host_Service
    is
       SA  : aliased Sockaddr;
-      H   : aliased C.char_array := (1 .. SOSC.NI_MAXHOST => C.nul);
-      S   : aliased C.char_array := (1 .. SOSC.NI_MAXSERV => C.nul);
+      H   : aliased C.char_array := [1 .. SOSC.NI_MAXHOST => C.nul];
+      S   : aliased C.char_array := [1 .. SOSC.NI_MAXSERV => C.nul];
       RC  : C.int;
       Len : C.int;
    begin
@@ -1621,7 +1621,7 @@ package body GNAT.Sockets is
             when Family_Inet   => 4 * Value.Sin_V4'Length,
             when Family_Inet6  => 6 * 5 + 4 * 4);
             --  1234:1234:1234:1234:1234:1234:123.123.123.123
-      Dst : aliased C.char_array := (1 .. C.size_t (Size) => C.nul);
+      Dst : aliased C.char_array := [1 .. C.size_t (Size) => C.nul];
       Ia  : aliased In_Addr_Union (Value.Family);
    begin
       case Value.Family is
