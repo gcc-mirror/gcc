@@ -116,8 +116,13 @@ struct GTY(()) modref_access_node
 	       if (!known_le (parm_offset, a.parm_offset)
 		   && !range_info_useful_p ())
 		 return false;
+	       /* We allow negative aoffset_adj here in case
+		  there is an useful range.  This is because adding
+		  a.offset may result in non-ngative offset again.
+		  Ubsan fails on val << LOG_BITS_PER_UNIT where val
+		  is negative.  */
 	       aoffset_adj = (a.parm_offset - parm_offset)
-			     << LOG2_BITS_PER_UNIT;
+			     * BITS_PER_UNIT;
 	    }
 	}
       if (range_info_useful_p ())
