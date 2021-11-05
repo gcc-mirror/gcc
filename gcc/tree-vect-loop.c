@@ -2998,35 +2998,6 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
       return opt_loop_vec_info::propagate_failure (res);
     }
 
-  /* When pick_lowest_cost_p is true, we should in principle iterate
-     over all the loop_vec_infos that LOOP_VINFO could replace and
-     try to vectorize LOOP_VINFO under the same conditions.
-     E.g. when trying to replace an epilogue loop, we should vectorize
-     LOOP_VINFO as an epilogue loop with the same VF limit.  When trying
-     to replace the main loop, we should vectorize LOOP_VINFO as a main
-     loop too.
-
-     However, autovectorize_vector_modes is usually sorted as follows:
-
-     - Modes that naturally produce lower VFs usually follow modes that
-     naturally produce higher VFs.
-
-     - When modes naturally produce the same VF, maskable modes
-     usually follow unmaskable ones, so that the maskable mode
-     can be used to vectorize the epilogue of the unmaskable mode.
-
-     This order is preferred because it leads to the maximum
-     epilogue vectorization opportunities.  Targets should only use
-     a different order if they want to make wide modes available while
-     disparaging them relative to earlier, smaller modes.  The assumption
-     in that case is that the wider modes are more expensive in some
-     way that isn't reflected directly in the costs.
-
-     There should therefore be few interesting cases in which
-     LOOP_VINFO fails when treated as an epilogue loop, succeeds when
-     treated as a standalone loop, and ends up being genuinely cheaper
-     than FIRST_LOOP_VINFO.  */
-
   auto_vector_modes vector_modes;
   /* Autodetect first vector size we try.  */
   vector_modes.safe_push (VOIDmode);
@@ -3042,7 +3013,10 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
   unsigned int first_loop_next_i = 0;
   unsigned HOST_WIDE_INT simdlen = loop->simdlen;
 
-  /* First determine the main loop vectorization mode.  */
+  /* First determine the main loop vectorization mode, either the first
+     one that works, starting with auto-detecting the vector mode and then
+     following the targets order of preference, or the one with the
+     lowest cost if pick_lowest_cost_p.  */
   while (1)
     {
       unsigned int loop_vinfo_i = mode_i;
@@ -3065,15 +3039,13 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      first_loop_vinfo = opt_loop_vec_info::success (NULL);
 	      simdlen = 0;
 	    }
-	  else if (pick_lowest_cost_p && first_loop_vinfo)
+	  else if (pick_lowest_cost_p
+		   && first_loop_vinfo
+		   && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
 	    {
-	      /* Keep trying to roll back vectorization attempts while the
-		 loop_vec_infos they produced were worse than this one.  */
-	      if (vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
-		{
-		  delete first_loop_vinfo;
-		  first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		}
+	      /* Pick loop_vinfo over first_loop_vinfo.  */
+	      delete first_loop_vinfo;
+	      first_loop_vinfo = opt_loop_vec_info::success (NULL);
 	    }
 	  if (first_loop_vinfo == NULL)
 	    {
