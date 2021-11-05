@@ -1629,26 +1629,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         Node : constant Count_Type :=
-                  Key_Keys.Find (Container'Unrestricted_Access.all, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = 0 then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "key not in set";
          end if;
 
-         declare
-            N : Node_Type renames Container.Nodes (Node);
-            TC : constant Tamper_Counts_Access :=
-              Container.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => N.Element'Unchecked_Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -1836,29 +1824,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Count_Type := Key_Keys.Find (Container, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = 0 then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "key not in set";
          end if;
 
-         declare
-            P : constant Cursor := Find (Container, Key);
-         begin
-            return R : constant Reference_Type :=
-              (Element => Container.Nodes (Node).Element'Unrestricted_Access,
-               Control =>
-                 (Controlled with
-                    Container.TC'Unrestricted_Access,
-                    Container'Unrestricted_Access,
-                    Index  => Key_Keys.Index (Container, Key),
-                    Old_Pos => P,
-                    Old_Hash => Hash (Key)))
-            do
-               Busy (Container.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -------------
