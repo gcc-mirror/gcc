@@ -1346,11 +1346,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
   template<typename... _Types>
-    inline constexpr size_t tuple_size_v<tuple<_Types>>
+    inline constexpr size_t tuple_size_v<tuple<_Types...>>
       = sizeof...(_Types);
 
   template<typename... _Types>
-    inline constexpr size_t tuple_size_v<const tuple<_Types>>
+    inline constexpr size_t tuple_size_v<const tuple<_Types...>>
       = sizeof...(_Types);
 #endif
 
