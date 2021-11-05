@@ -11,7 +11,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifndef __APPLE__
 #include <malloc.h>
+#endif
 #include <string.h>
 #include <math.h>
 
@@ -187,8 +189,13 @@ void set_2d_array(real_t arr[LEN_2D][LEN_2D], real_t value, int stride)
 }
 
 void init(int** ip, real_t* s1, real_t* s2){
+#ifndef __APPLE__
     xx = (real_t*) memalign(ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
     *ip = (int *) memalign(ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
+#else
+    posix_memalign ((void*)&xx, ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
+    posix_memalign ((void*)ip, ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
+#endif    
 
     for (int i = 0; i < LEN_1D; i = i+5){
         (*ip)[i]   = (i+4);
