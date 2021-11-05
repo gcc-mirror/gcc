@@ -487,6 +487,11 @@ public:
 						       expr.get_locus ());
   }
 
+  void visit (HIR::GroupedExpr &expr) override
+  {
+    folded = ConstFoldExpr::fold (expr.get_expr_in_parens ().get ());
+  }
+
 private:
   ConstFoldExpr ()
     : ConstFoldBase (), folded (ctx->get_backend ()->error_expression ())
