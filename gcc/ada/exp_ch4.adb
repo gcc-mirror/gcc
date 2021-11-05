@@ -1541,14 +1541,14 @@ package body Exp_Ch4 is
    --          and then
    --        (B'length (1) = 0 or else B'length (2) = 0)
    --     then
-   --        return True;    -- RM 4.5.2(22)
+   --        return true;    -- RM 4.5.2(22)
    --     end if;
 
    --     if A'length (1) /= B'length (1)
    --               or else
    --           A'length (2) /= B'length (2)
    --     then
-   --        return False;   -- RM 4.5.2(23)
+   --        return false;   -- RM 4.5.2(23)
    --     end if;
 
    --     declare
@@ -1638,6 +1638,7 @@ package body Exp_Ch4 is
       --  This procedure returns the following code
       --
       --    declare
+      --       An : Index_T := A'First (N);
       --       Bn : Index_T := B'First (N);
       --    begin
       --       loop
