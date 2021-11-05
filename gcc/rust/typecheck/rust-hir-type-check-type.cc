@@ -95,7 +95,7 @@ TypeCheckType::visit (HIR::TypePath &path)
 		     "TypePath %s declares generic arguments but "
 		     "the type %s does not have any",
 		     path.as_string ().c_str (),
-		     translated->as_string ().c_str ());
+		     path_type->as_string ().c_str ());
     }
   else
     {
