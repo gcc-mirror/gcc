@@ -340,7 +340,7 @@ public:
 
   virtual bool is_unit () const { return false; }
 
-  virtual bool is_concrete () const { return true; }
+  virtual bool is_concrete () const = 0;
 
   TypeKind get_kind () const { return kind; }
 
@@ -470,7 +470,7 @@ public:
 
   bool default_type (BaseType **type) const;
 
-  bool is_concrete () const final override { return false; }
+  bool is_concrete () const final override { return true; }
 
 private:
   InferTypeKind infer_kind;
@@ -503,6 +503,8 @@ public:
   BaseType *clone () const final override;
 
   std::string get_name () const override final { return as_string (); }
+
+  bool is_concrete () const final override { return false; }
 };
 
 class SubstitutionArgumentMappings;
@@ -559,6 +561,11 @@ public:
     return true;
   }
 
+  bool is_concrete () const override final
+  {
+    return !contains_type_parameters ();
+  }
+
   ParamType *handle_substitions (SubstitutionArgumentMappings mappings);
 
 private:
@@ -586,6 +593,8 @@ public:
   void set_field_type (BaseType *fty) { ty = fty; }
 
   StructFieldType *clone () const;
+
+  bool is_concrete () const { return ty->is_concrete (); }
 
   void debug () const { rust_debug ("%s", as_string ().c_str ()); }
 
@@ -717,6 +726,8 @@ public:
     return var.get_tyty ();
   }
 
+  bool need_substitution () const;
+
 private:
   const HIR::TypeParam &generic;
   ParamType *param;
@@ -750,8 +761,13 @@ public:
 
   bool is_conrete () const
   {
-    return argument != nullptr && argument->get_kind () != TyTy::TypeKind::ERROR
-	   && argument->get_kind () != TyTy::TypeKind::PARAM;
+    if (argument != nullptr)
+      return true;
+
+    if (argument->get_kind () == TyTy::TypeKind::PARAM)
+      return false;
+
+    return argument->is_concrete ();
   }
 
   std::string as_string () const
@@ -905,16 +921,12 @@ public:
 
   bool needs_substitution () const
   {
-    if (!has_substitutions ())
-      return false;
-
-    if (used_arguments.is_error ())
-      return true;
-
-    if (used_arguments.size () != get_num_substitutions ())
-      return true;
-
-    return !used_arguments.is_concrete ();
+    for (auto &sub : substitutions)
+      {
+	if (sub.need_substitution ())
+	  return true;
+      }
+    return false;
   }
 
   bool was_substituted () const { return !needs_substitution (); }
@@ -1224,6 +1236,19 @@ public:
     return identifier + subst_as_string ();
   }
 
+  bool is_concrete () const override final
+  {
+    for (auto &variant : variants)
+      {
+	for (auto &field : variant->get_fields ())
+	  {
+	    if (!field->is_concrete ())
+	      return false;
+	  }
+      }
+    return true;
+  }
+
   BaseType *clone () const final override;
 
   bool needs_generic_substitutions () const override final
@@ -1356,6 +1381,17 @@ public:
     return param_at (0).second;
   }
 
+  bool is_concrete () const override final
+  {
+    for (const auto &param : params)
+      {
+	const BaseType *p = param.second;
+	if (!p->is_concrete ())
+	  return false;
+      }
+    return get_return_type ()->is_concrete ();
+  }
+
   std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params ()
   {
     return params;
@@ -1453,6 +1489,16 @@ public:
       }
   }
 
+  bool is_concrete () const override final
+  {
+    for (auto &p : params)
+      {
+	if (!p.get_tyty ()->is_concrete ())
+	  return false;
+      }
+    return result_type.get_tyty ()->is_concrete ();
+  }
+
 private:
   std::vector<TyVar> params;
   TyVar result_type;
@@ -1504,6 +1550,17 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+
+  bool is_concrete () const override final
+  {
+    for (auto &param : parameter_types)
+      {
+	auto p = param.get_tyty ();
+	if (!p->is_concrete ())
+	  return false;
+      }
+    return result_type.get_tyty ()->is_concrete ();
+  }
 
   bool needs_generic_substitutions () const override final
   {
@@ -1598,6 +1655,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  bool is_concrete () const override final { return true; }
 };
 
 class IntType : public BaseType
@@ -1639,6 +1697,7 @@ public:
   BaseType *clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
+  bool is_concrete () const override final { return true; }
 
 private:
   IntKind int_kind;
@@ -1683,6 +1742,7 @@ public:
   BaseType *clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
+  bool is_concrete () const override final { return true; }
 
 private:
   UintKind uint_kind;
@@ -1725,6 +1785,7 @@ public:
   BaseType *clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
+  bool is_concrete () const override final { return true; }
 
 private:
   FloatKind float_kind;
@@ -1755,6 +1816,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  bool is_concrete () const override final { return true; }
 };
 
 class ISizeType : public BaseType
@@ -1782,6 +1844,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  bool is_concrete () const override final { return true; }
 };
 
 class CharType : public BaseType
@@ -1809,6 +1872,7 @@ public:
   BaseType *cast (BaseType *other) override;
 
   BaseType *clone () const final override;
+  bool is_concrete () const override final { return true; }
 };
 
 class ReferenceType : public BaseType
@@ -1846,6 +1910,11 @@ public:
   bool contains_type_parameters () const override final
   {
     return get_base ()->contains_type_parameters ();
+  }
+
+  bool is_concrete () const override final
+  {
+    return !contains_type_parameters ();
   }
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
@@ -1896,6 +1965,11 @@ public:
     return get_base ()->contains_type_parameters ();
   }
 
+  bool is_concrete () const override final
+  {
+    return !contains_type_parameters ();
+  }
+
   PointerType *handle_substitions (SubstitutionArgumentMappings mappings);
 
   Mutability mutability () const { return mut; }
@@ -1936,6 +2010,7 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+  bool is_concrete () const override final { return true; }
 };
 
 // https://doc.rust-lang.org/std/primitive.never.html
@@ -1975,6 +2050,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_unit () const override { return true; }
+  bool is_concrete () const override final { return true; }
 };
 
 // used at the type in associated types in traits
@@ -2032,6 +2108,11 @@ public:
       return false;
 
     return resolve ()->contains_type_parameters ();
+  }
+
+  bool is_concrete () const override final
+  {
+    return !contains_type_parameters ();
   }
 
 private:
@@ -2099,6 +2180,11 @@ public:
     return base->contains_type_parameters ();
   }
 
+  bool is_concrete () const override final
+  {
+    return !contains_type_parameters ();
+  }
+
   ProjectionType *
   handle_substitions (SubstitutionArgumentMappings mappings) override final;
 
@@ -2138,6 +2224,8 @@ public:
   BaseType *clone () const final override;
 
   std::string get_name () const override final;
+
+  bool is_concrete () const override final { return true; }
 
   // this returns a flat list of items including super trait bounds
   const std::vector<const Resolver::TraitItemReference *>

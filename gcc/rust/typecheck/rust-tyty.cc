@@ -334,6 +334,16 @@ StructFieldType::clone () const
 }
 
 bool
+SubstitutionParamMapping::need_substitution () const
+{
+  if (!param->can_resolve ())
+    return true;
+
+  auto resolved = param->resolve ();
+  return !resolved->is_concrete ();
+}
+
+bool
 SubstitutionParamMapping::fill_param_ty (BaseType &type, Location locus)
 {
   auto context = Resolver::TypeCheckContext::get ();
