@@ -5288,6 +5288,13 @@ gfc_match_common (void)
 		  goto cleanup;
 		}
 
+	      if (as->corank)
+		{
+		  gfc_error ("Symbol %qs in COMMON at %C cannot be a "
+			     "coarray", sym->name);
+		  goto cleanup;
+		}
+
 	      if (!gfc_add_dimension (&sym->attr, sym->name, NULL))
 		goto cleanup;
 
