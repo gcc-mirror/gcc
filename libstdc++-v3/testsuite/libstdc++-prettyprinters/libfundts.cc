@@ -50,7 +50,7 @@ main()
   om = std::map<int, double>{ {1, 2.}, {3, 4.}, {5, 6.} };
 // { dg-final { regexp-test om {std::experimental::optional<std::(__debug::)?map<int, double>> containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
   optional<std::string> os{ "stringy" };
-// { dg-final { note-test os {std::experimental::optional<std::string> = {[contained value] = "stringy"}} } }
+// { dg-final { note-test os {std::experimental::optional<std::string> = {[contained value] = "stringy"}} { xfail c++20 } } }
 
   any a;
 // { dg-final { note-test a {std::experimental::any [no contained value]} } }
@@ -61,7 +61,7 @@ main()
   any ap = (void*)nullptr;
 // { dg-final { note-test ap {std::experimental::any containing void * = {[contained value] = 0x0}} } }
   any as = *os;
-// { dg-final { note-test as {std::experimental::any containing std::string = {[contained value] = "stringy"}} } }
+// { dg-final { note-test as {std::experimental::any containing std::string = {[contained value] = "stringy"}} { xfail c++20 } } }
   any as2("stringiest");
 // { dg-final { regexp-test as2 {std::experimental::any containing const char \* = {\[contained value\] = 0x[[:xdigit:]]+ "stringiest"}} } }
   any am = *om;
