@@ -97,7 +97,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       unsigned int retries = 100;
       unsigned int val;
 
-      while (__builtin_ia32_rdrand32_step(&val) == 0)
+      while (__builtin_ia32_rdrand32_step(&val) == 0) [[__unlikely__]]
 	if (--retries == 0)
 	  std::__throw_runtime_error(__N("random_device: rdrand failed"));
 
@@ -113,7 +113,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       unsigned int retries = 100;
       unsigned int val;
 
-      while (__builtin_ia32_rdseed_si_step(&val) == 0)
+      while (__builtin_ia32_rdseed_si_step(&val) == 0) [[__unlikely__]]
 	{
 	  if (--retries == 0)
 	    {
