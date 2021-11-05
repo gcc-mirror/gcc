@@ -226,9 +226,6 @@ range_def_chain::get_imports (tree name)
   if (!has_def_chain (name))
     get_def_chain (name);
   bitmap i = m_def_chain[SSA_NAME_VERSION (name)].m_import;
-  // Either this is a default def,  OR imports must be a subset of exports.
-  gcc_checking_assert (!get_def_chain (name) || !i
-		       || !bitmap_intersect_compl_p (i, get_def_chain (name)));
   return i;
 }
 
