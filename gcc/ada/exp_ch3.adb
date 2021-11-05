@@ -10138,7 +10138,6 @@ package body Exp_Ch3 is
       --  Local variables
 
       Loc           : constant Source_Ptr := Sloc (Parent (Tag_Typ));
-      Stmts         : constant List_Id    := New_List;
       Decl          : Node_Id;
       Eq_Prim       : Entity_Id;
       Left_Op       : Entity_Id;
@@ -10154,7 +10153,7 @@ package body Exp_Ch3 is
       --  the body executed is that of the overriding declaration, even if the
       --  overriding declaration is not visible at the place of the renaming;
       --  otherwise, the inherited or predefined subprogram is called, see
-      --  (RM 8.5.4(8))
+      --  (RM 8.5.4(8)).
 
       --  Stage 1: Search for a renaming of the inequality primitive and also
       --  search for an overriding of the equality primitive located before the
@@ -10264,18 +10263,18 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      Append_To (Stmts,
-        Make_Simple_Return_Statement (Loc,
-          Expression =>
-            Make_Op_Not (Loc,
-              Make_Function_Call (Loc,
-                Name                   => New_Occurrence_Of (Target, Loc),
-                Parameter_Associations => New_List (
-                  Make_Identifier (Loc, Chars (Left_Op)),
-                  Make_Identifier (Loc, Chars (Right_Op)))))));
-
       Set_Handled_Statement_Sequence
-        (Decl, Make_Handled_Sequence_Of_Statements (Loc, Stmts));
+        (Decl,
+         Make_Handled_Sequence_Of_Statements (Loc, New_List (
+           Make_Simple_Return_Statement (Loc,
+              Expression =>
+                Make_Op_Not (Loc,
+                  Make_Function_Call (Loc,
+                  Name                   => New_Occurrence_Of (Target, Loc),
+                  Parameter_Associations => New_List (
+                    Make_Identifier (Loc, Chars (Left_Op)),
+                    Make_Identifier (Loc, Chars (Right_Op)))))))));
+
       return Decl;
    end Make_Neq_Body;
 
