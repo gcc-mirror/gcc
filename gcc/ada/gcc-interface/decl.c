@@ -4095,19 +4095,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    else if (extern_flag && gnu_ext_name == DECL_NAME (realloc_decl))
 	      gnu_decl = realloc_decl;
 	    else
-	      {
-		gnu_decl
-		  = create_subprog_decl (gnu_entity_name, gnu_ext_name,
-					 gnu_type, gnu_param_list,
-					 inline_status, public_flag,
-					 extern_flag, artificial_p,
-					 debug_info_p,
-					 definition && imported_p, attr_list,
-					 gnat_entity);
-
-		DECL_STUBBED_P (gnu_decl)
-		  = (Convention (gnat_entity) == Convention_Stubbed);
-	      }
+	      gnu_decl
+		= create_subprog_decl (gnu_entity_name, gnu_ext_name,
+				       gnu_type, gnu_param_list,
+				       inline_status, public_flag,
+				       extern_flag, artificial_p,
+				       debug_info_p,
+				       definition && imported_p, attr_list,
+				       gnat_entity);
 	  }
       }
       break;
