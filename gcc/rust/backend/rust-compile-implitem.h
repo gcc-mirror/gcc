@@ -331,7 +331,7 @@ class CompileTraitItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (TyTy::BaseType *self, HIR::TraitItem *item,
+  static Bexpression *Compile (const TyTy::BaseType *self, HIR::TraitItem *item,
 			       Context *ctx, TyTy::BaseType *concrete,
 			       bool is_query_mode = false,
 			       Location ref_locus = Location ())
@@ -575,14 +575,14 @@ public:
   }
 
 private:
-  CompileTraitItem (TyTy::BaseType *self, Context *ctx,
+  CompileTraitItem (const TyTy::BaseType *self, Context *ctx,
 		    TyTy::BaseType *concrete, Location ref_locus)
     : HIRCompileBase (ctx), self (self), concrete (concrete),
       reference (ctx->get_backend ()->error_expression ()),
       ref_locus (ref_locus)
   {}
 
-  TyTy::BaseType *self;
+  const TyTy::BaseType *self;
   TyTy::BaseType *concrete;
   Bexpression *reference;
   Location ref_locus;
