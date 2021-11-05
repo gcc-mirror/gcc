@@ -475,7 +475,8 @@ vec_info::~vec_info ()
 }
 
 vec_info_shared::vec_info_shared ()
-  : datarefs (vNULL),
+  : n_stmts (0),
+    datarefs (vNULL),
     datarefs_copy (vNULL),
     ddrs (vNULL)
 {

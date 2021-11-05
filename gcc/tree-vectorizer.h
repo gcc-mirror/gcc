@@ -350,6 +350,9 @@ public:
   void save_datarefs();
   void check_datarefs();
 
+  /* The number of scalar stmts.  */
+  unsigned n_stmts;
+
   /* All data references.  Freed by free_data_refs, so not an auto_vec.  */
   vec<data_reference_p> datarefs;
   vec<data_reference> datarefs_copy;
@@ -822,6 +825,7 @@ public:
 #define LOOP_VINFO_RGROUP_COMPARE_TYPE(L)  (L)->rgroup_compare_type
 #define LOOP_VINFO_RGROUP_IV_TYPE(L)       (L)->rgroup_iv_type
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
+#define LOOP_VINFO_N_STMTS(L)		   (L)->shared->n_stmts
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->shared->ddrs
@@ -927,12 +931,6 @@ public:
 #define BB_VINFO_SLP_INSTANCES(B)    (B)->slp_instances
 #define BB_VINFO_DATAREFS(B)         (B)->shared->datarefs
 #define BB_VINFO_DDRS(B)             (B)->shared->ddrs
-
-static inline bb_vec_info
-vec_info_for_bb (basic_block bb)
-{
-  return (bb_vec_info) bb->aux;
-}
 
 /*-----------------------------------------------------------------*/
 /* Info on vectorized defs.                                        */
