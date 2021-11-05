@@ -21,6 +21,10 @@
 #ifndef _MD5_H
 #define _MD5_H 1
 
+#ifdef USE_SYSTEM_MD5
+#include_next <md5.h>
+#else
+
 #include <stdio.h>
 
 #if defined HAVE_LIMITS_H || _LIBC
@@ -150,5 +154,7 @@ extern void *md5_buffer (const char *buffer, size_t len, void *resblock);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // USE_SYSTEM_MD5
 
 #endif
