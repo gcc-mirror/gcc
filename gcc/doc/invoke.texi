@@ -11958,13 +11958,13 @@ and @option{-ftree-slp-vectorize} if not explicitly specified.
 @item -ftree-loop-vectorize
 @opindex ftree-loop-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
-@option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
+@option{-O2} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
 
 @item -ftree-slp-vectorize
 @opindex ftree-slp-vectorize
 Perform basic block vectorization on trees. This flag is enabled by default at
-@option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
+@option{-O2} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
 
 @item -ftrivial-auto-var-init=@var{choice}
