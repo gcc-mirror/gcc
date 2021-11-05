@@ -322,6 +322,49 @@ package body Scng is
       --  Returns True if the scan pointer is pointing to the start of a wide
       --  character sequence, does not modify the scan pointer in any case.
 
+      procedure Check_Bidi (Code : Char_Code);
+      --  Give a warning if Code is a bidirectional character, which can cause
+      --  security vulnerabilities. See the following article:
+      --
+      --  @article{boucher_trojansource_2021,
+      --      title = {Trojan {Source}: {Invisible} {Vulnerabilities}},
+      --      author = {Nicholas Boucher and Ross Anderson},
+      --      year = {2021},
+      --      journal = {Preprint},
+      --      eprint = {2111.00169},
+      --      archivePrefix = {arXiv},
+      --      primaryClass = {cs.CR},
+      --      url = {https://arxiv.org/abs/2111.00169}
+      --  }
+
+      ----------------
+      -- Check_Bidi --
+      ----------------
+
+      type Bidi_Characters is
+        (LRE, RLE, LRO, RLO, LRI, RLI, FSI, PDF, PDI);
+      Bidi_Character_Codes : constant array (Bidi_Characters) of Char_Code :=
+        (LRE => 16#202A#,
+         RLE => 16#202B#,
+         LRO => 16#202D#,
+         RLO => 16#202E#,
+         LRI => 16#2066#,
+         RLI => 16#2067#,
+         FSI => 16#2068#,
+         PDF => 16#202C#,
+         PDI => 16#2069#);
+      --  Above are the bidirectional characters, along with their Unicode code
+      --  points.
+
+      procedure Check_Bidi (Code : Char_Code) is
+      begin
+         for Bidi_Code of Bidi_Character_Codes loop
+            if Code = Bidi_Code then
+               Error_Msg ("??bidirectional wide character", Wptr);
+            end if;
+         end loop;
+      end Check_Bidi;
+
       -----------------------
       -- Double_Char_Token --
       -----------------------
@@ -1070,6 +1113,8 @@ package body Scng is
                   if Err then
                      Error_Illegal_Wide_Character;
                      Code := Get_Char_Code (' ');
+                  else
+                     Check_Bidi (Code);
                   end if;
 
                   Accumulate_Checksum (Code);
@@ -1611,11 +1656,11 @@ package body Scng is
 
                   elsif Start_Of_Wide_Character then
                      declare
-                        Wptr : constant Source_Ptr := Scan_Ptr;
                         Code : Char_Code;
                         Err  : Boolean;
 
                      begin
+                        Wptr := Scan_Ptr;
                         Scan_Wide (Source, Scan_Ptr, Code, Err);
 
                         --  If not well formed wide character, then just skip
@@ -1629,6 +1674,8 @@ package body Scng is
                         elsif Is_UTF_32_Line_Terminator (UTF_32 (Code)) then
                            Scan_Ptr := Wptr;
                            exit;
+                        else
+                           Check_Bidi (Code);
                         end if;
                      end;
 
@@ -1736,7 +1783,6 @@ package body Scng is
                if Start_Of_Wide_Character then
                   Wptr := Scan_Ptr;
                   Scan_Wide (Source, Scan_Ptr, Code, Err);
-                  Accumulate_Checksum (Code);
 
                   if Err then
                      Error_Illegal_Wide_Character;
@@ -1752,7 +1798,11 @@ package body Scng is
                      Error_Msg -- CODEFIX
                        ("(Ada 2005) non-graphic character not permitted " &
                         "in character literal", Wptr);
+                  else
+                     Check_Bidi (Code);
                   end if;
+
+                  Accumulate_Checksum (Code);
 
                   if Source (Scan_Ptr) /= ''' then
                         Error_Msg_S ("missing apostrophe");
