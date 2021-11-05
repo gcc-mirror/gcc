@@ -20379,12 +20379,14 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
       return aarch64_simd_valid_immediate (x, NULL);
     }
 
+  /* Remove UNSPEC_SALT_ADDR before checking symbol reference.  */
+  x = strip_salt (x);
+
   /* GOT accesses are valid moves.  */
   if (SYMBOL_REF_P (x)
       && aarch64_classify_symbolic_expression (x) == SYMBOL_SMALL_GOT_4G)
     return true;
 
-  x = strip_salt (x);
   if (SYMBOL_REF_P (x) && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
