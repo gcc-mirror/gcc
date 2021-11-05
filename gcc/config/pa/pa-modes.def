@@ -30,3 +30,6 @@ FLOAT_MODE (TF, 16, mips_quad_format);
 
 /* HPPA floating comparisons produce distinct condition codes.  */
 CC_MODE (CCFP);
+
+/* Mode used for signed overflow checking of TImode.  */
+INT_MODE (OI, 32);
