@@ -2128,6 +2128,8 @@ simplify_parameter_variable (gfc_expr *p, int type)
       if (e == NULL)
 	return false;
 
+      gfc_free_shape (&e->shape, e->rank);
+      e->shape = gfc_copy_shape (p->shape, p->rank);
       e->rank = p->rank;
 
       if (e->ts.type == BT_CHARACTER && p->ts.u.cl)
