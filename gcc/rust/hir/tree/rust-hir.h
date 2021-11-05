@@ -104,6 +104,8 @@ public:
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
+  virtual bool is_item () const = 0;
+
 protected:
   Stmt (Analysis::NodeMapping mappings) : mappings (std::move (mappings)) {}
 
@@ -139,6 +141,8 @@ public:
 
   AST::AttrVec &get_outer_attrs () { return outer_attrs; }
   const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
+
+  bool is_item () const override final { return true; }
 
 protected:
   // Constructor
