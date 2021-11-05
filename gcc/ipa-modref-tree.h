@@ -818,6 +818,36 @@ struct GTY((user)) modref_tree
 
     bool changed = false;
 
+    /* We may end up with max_size being less than size for accesses past the
+       end of array.  Those are undefined and safe to ignore.  */
+    if (a.range_info_useful_p ()
+	&& known_size_p (a.size) && known_size_p (a.max_size)
+	&& known_lt (a.max_size, a.size))
+      {
+	if (dump_file)
+	  fprintf (dump_file,
+		   "   - Paradoxical range. Ignoring\n");
+	return false;
+      }
+    if (known_size_p (a.size)
+	&& known_eq (a.size, 0))
+      {
+	if (dump_file)
+	  fprintf (dump_file,
+		   "   - Zero size. Ignoring\n");
+	return false;
+      }
+    if (known_size_p (a.max_size)
+	&& known_eq (a.max_size, 0))
+      {
+	if (dump_file)
+	  fprintf (dump_file,
+		   "   - Zero max_size. Ignoring\n");
+	return false;
+      }
+    gcc_checking_assert (!known_size_p (a.max_size)
+			 || !known_le (a.max_size, 0));
+
     /* No useful information tracked; collapse everything.  */
     if (!base && !ref && !a.useful_p ())
       {
