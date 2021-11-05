@@ -571,8 +571,11 @@ coverage_compute_profile_id (struct cgraph_node *n)
       if (!use_name_only && first_global_object_name)
 	chksum = coverage_checksum_string
 	  (chksum, first_global_object_name);
-      chksum = coverage_checksum_string
-	(chksum, aux_base_name);
+      char *base_name = xstrdup (aux_base_name);
+      if (endswith (base_name, ".gk"))
+	base_name[strlen (base_name) - 3] = '\0';
+      chksum = coverage_checksum_string (chksum, base_name);
+      free (base_name);
     }
 
   /* Non-negative integers are hopefully small enough to fit in all targets.
