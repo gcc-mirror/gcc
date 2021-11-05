@@ -91,9 +91,7 @@ public:
 
   TraitItemType get_trait_item_type () const { return type; }
 
-  const HIR::TraitItem *get_hir_trait_item () const { return hir_trait_item; }
-
-  HIR::TraitItem *get_hir_trait_item () { return hir_trait_item; }
+  HIR::TraitItem *get_hir_trait_item () const { return hir_trait_item; }
 
   Location get_locus () const { return locus; }
 
