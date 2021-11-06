@@ -3207,7 +3207,6 @@ int gfc_at_eof (void);
 int gfc_at_bol (void);
 int gfc_at_eol (void);
 void gfc_advance_line (void);
-int gfc_check_include (void);
 int gfc_define_undef_line (void);
 
 int gfc_wide_is_printable (gfc_char_t);
