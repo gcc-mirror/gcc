@@ -404,7 +404,8 @@ public:
   inline bool
   can_be_discarded_p (void)
   {
-    return (DECL_EXTERNAL (decl)
+    return ((DECL_EXTERNAL (decl)
+	     && !in_other_partition)
 	    || ((get_comdat_group ()
 		 || DECL_COMMON (decl)
 		 || (DECL_SECTION_NAME (decl) && DECL_WEAK (decl)))
