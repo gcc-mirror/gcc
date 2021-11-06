@@ -10059,6 +10059,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   tree decl1, old_decl;
   tree restype, resdecl;
   location_t loc;
+  location_t result_loc;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -10285,8 +10286,11 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   push_scope ();
   declare_parm_level ();
 
+  /* Set the result decl source location to the location of the typespec.  */
+  result_loc = (declspecs->locations[cdw_typespec] == UNKNOWN_LOCATION
+		? loc : declspecs->locations[cdw_typespec]);
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
-  resdecl = build_decl (loc, RESULT_DECL, NULL_TREE, restype);
+  resdecl = build_decl (result_loc, RESULT_DECL, NULL_TREE, restype);
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (current_function_decl) = resdecl;
