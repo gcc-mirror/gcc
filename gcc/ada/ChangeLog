@@ -1,3 +1,10 @@
+2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc-interface/Make-lang.in: Use iOS signal trampoline code
+	for hosted Ada tools.
+	* sigtramp-ios.c: Wrap the declarations in extern "C" when
+	the code is built by a C++ compiler.
+
 2021-10-30  Alexandre Oliva  <oliva@adacore.com>
 
 	* doc/gnat_rm/security_hardening_features.rst: Mention

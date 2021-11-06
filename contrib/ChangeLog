@@ -1,3 +1,7 @@
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite-management/validate_failures.py: 2to3
+
 2021-11-04  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_check_commit.py: Add -v option.

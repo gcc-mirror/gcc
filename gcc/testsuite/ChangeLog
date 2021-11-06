@@ -1,3 +1,50 @@
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102817
+	* gfortran.dg/pr102817.f90: New test.
+
+2021-11-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103073
+	* g++.dg/torture/pr103073.C: New test.
+	* gcc.dg/tree-ssa/modref-11.c: New test.
+
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69419
+	* gfortran.dg/pr69419.f90: New test.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/100972
+	* gfortran.dg/implicit_14.f90: Adjust error.
+	* gfortran.dg/external_implicit_none_3.f08: New test.
+
+2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/vect/tsvc/tsvc.h: Do not try to include malloc.h
+	on Darwin also use posix_memalign ().
+
+2021-11-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr103093.c: New.
+
+2021-11-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/103085
+	PR target/103085
+	* gcc.target/aarch64/pr103085.c: New test
+
+2021-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/102945
+	* gcc.dg/gcov-info-to-gcda.c: Filter supported targets.
+
+2021-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR debug/102955
+	* g++.dg/pr102955.C: New test.
+
 2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-eh2.C: Add dg-warning for new

@@ -1,3 +1,153 @@
+2021-11-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103073
+	* ipa-modref-tree.h (modref_tree::insert): Do nothing for
+	paradoxical and zero sized accesses.
+
+2021-11-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103082
+	* ipa-modref-tree.h (struct modref_access_node): Avoid left shift
+	of negative value
+
+2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Add LTRAMP
+	to the list of symbol prefixes that must be made linker-
+	visible.
+
+2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add support for aarch64-*-darwin.
+	* config/aarch64/host-aarch64-darwin.c: New file.
+	* config/aarch64/x-darwin: New file.
+
+2021-11-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103093
+	* gimple-range-gori.cc (range_def_chain::get_imports): Remove assert.
+
+2021-11-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102943
+	* gimple-range-cache.cc (class update_list): New.
+	(update_list::add): Replace add_to_update.
+	(update_list::pop): New.
+	(ranger_cache::ranger_cache): Adjust.
+	(ranger_cache::~ranger_cache): Adjust.
+	(ranger_cache::add_to_update): Delete.
+	(ranger_cache::propagate_cache): Adjust to new class.
+	(ranger_cache::propagate_updated_value): Ditto.
+	(ranger_cache::fill_block_cache): Ditto.
+	* gimple-range-cache.h (class ranger_cache): Adjust to update class.
+
+2021-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop): Remove obsolete
+	comment and expand on another one.  Combine nested if.
+
+2021-11-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/96661
+	* config/pa/pa-modes.def: Add OImode integer type.
+	* config/pa/pa.c (pa_scalar_mode_supported_p): Allow TImode
+	for TARGET_64BIT.
+	* config/pa/pa.h (MIN_UNITS_PER_WORD) Define to MIN_UNITS_PER_WORD
+	to UNITS_PER_WORD if IN_LIBGCC2.
+	* config/pa/pa.md (addti3, addvti3, subti3, subvti3, negti2,
+	negvti2, ashlti3, shrpd_internal): New patterns.
+	Change some multi instruction types to multi.
+
+2021-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/100246
+	* config/i386/i386.h
+	(stringop_algs::stringop_strategy::stringop_strategy): Make the ctor
+	constexpr.
+
+2021-11-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/103085
+	* config/aarch64/aarch64.c (aarch64_mov_operand_p): Strip the salt
+	first.
+	* config/aarch64/constraints.md: Support const in Usw.
+
+2021-11-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (PREFERRED_DEBUGGING_TYPE): Define to DWARF2_DEBUG.
+	* config/pa/pa64-hpux.h (PREFERRED_DEBUGGING_TYPE): Remove define.
+
+2021-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vec_info_shared::n_stmts): Add.
+	(LOOP_VINFO_N_STMTS): Likewise.
+	(vec_info_for_bb): Remove unused function.
+	* tree-vectorizer.c (vec_info_shared::vec_info_shared):
+	Initialize n_stmts member.
+	* tree-vect-loop.c: Remove INCLUDE_FUNCTIONAL.
+	(vect_create_loop_vinfo): Do not set loop->aux.
+	(vect_analyze_loop_2): Do not get n_stmts as argument,
+	instead use LOOP_VINFO_N_STMTS.  Set LOOP_VINFO_VECTORIZABLE_P
+	here.
+	(vect_analyze_loop_1): Remove callback, get the mode iterator
+	and autodetected_vector_mode as argument, advancing the
+	iterator and initializing autodetected_vector_mode here.
+	(vect_analyze_loop): Split analysis loop into two, first
+	processing main loops only and then epilogues.
+
+2021-11-05  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (compute_complex_assign_jump_func): Remove
+	unnecessary check for RECORD_TYPE.
+
+2021-11-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi2html: Do not generate old.html any longer.
+
+2021-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR debug/102955
+	* opts.c (finish_options): Reset flag_gtoggle when it is used.
+
+2021-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103046
+	* dwarf2out.c (add_const_value_attribute): Add MODE argument, use it
+	in CONST_WIDE_INT handling.  Adjust recursive calls.
+	(add_location_or_const_value_attribute): Pass DECL_MODE (decl) to
+	new add_const_value_attribute argument.
+	(tree_add_const_value_attribute): Pass TYPE_MODE (type) to new
+	add_const_value_attribute argument.
+
+2021-11-05  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vx-common.h: Test value of TARGET_VXWORKS7 rather
+	than definedness.
+
+2021-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct vect_loop_form_info): New.
+	(vect_analyze_loop_form): Adjust.
+	(vect_create_loop_vinfo): New.
+	* tree-parloops.c (gather_scalar_reductions): Adjust for
+	vect_analyze_loop_form API change.
+	* tree-vect-loop.c: Include <functional>.
+	(vect_analyze_loop_form_1): Rename to vect_analyze_loop_form,
+	take struct vect_loop_form_info as output parameter and adjust.
+	(vect_analyze_loop_form): Rename to vect_create_loop_vinfo and
+	split out call to the original vect_analyze_loop_form_1.
+	(vect_reanalyze_as_main_loop): Rename to...
+	(vect_analyze_loop_1): ... this, factor out the call to
+	vect_analyze_loop_form and generalize to be able to use it twice ...
+	(vect_analyze_loop): ... here.  Perform vect_analyze_loop_form
+	once only and here.
+
+2021-11-05  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/102991
+	* config/rs6000/fusion.md: Regenerate.
+	* config/rs6000/genfusion.pl: Fix incorrect clobber constraint.
+
 2021-11-04  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.h (STACK_CHECK_MOVING_SP): New macro

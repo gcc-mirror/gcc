@@ -1,3 +1,40 @@
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(valarray), end(valarray)):
+	Add noexcept.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (tuple_size_v): Fix pack expansion.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (__x86_rdrand, __x86_rdseed): Add
+	[[unlikely]] attribute.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc [__powerpc__] (USE_DARN): Define.
+	(__ppc_darn): New function to use POWER9 DARN instruction.
+	(Which): Add 'darn' enumerator.
+	(which_source): Check for __ppc_darn.
+	(random_device::_M_init): Support "darn" and "hw" tokens.
+	(random_device::_M_getentropy): Add darn to switch.
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Check "darn" token.
+	* testsuite/26_numerics/random/random_device/entropy.cc:
+	Likewise.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/gdb-test.exp: Add target selector support to the
+	dg-final directives.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for
+	C++20.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Tweak
+	comment.
+
 2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103086

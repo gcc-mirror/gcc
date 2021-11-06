@@ -1,3 +1,8 @@
+2021-11-05  Gerald Pfeifer  <gerald@pfeifer.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* md5.h (USE_SYSTEM_MD5): Introduce.
+
 2021-09-27  Vincent Lefevre  <vincent@vinc17.net>
 
 	* floatformat.h: Update pathname for IBM long double description.

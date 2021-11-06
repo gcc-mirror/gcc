@@ -1,3 +1,42 @@
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102817
+	* expr.c (simplify_parameter_variable): Copy shape of referenced
+	subobject when simplifying.
+
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69419
+	* match.c (gfc_match_common): Check array spec of a symbol in a
+	COMMON object list and reject it if it is a coarray.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/100972
+	* decl.c (gfc_match_implicit_none): Fix typo in warning.
+	* resolve.c (resolve_unknown_f): Reject external procedures
+	without explicit EXTERNAL attribute whe IMPLICIT none (external)
+	is in effect.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* decl.c (gfc_insert_kind_parameter_exprs): Make static.
+	* expr.c (gfc_build_init_expr): Make static
+	(gfc_build_default_init_expr): Move below its static helper.
+	* gfortran.h (gfc_insert_kind_parameter_exprs, gfc_add_saved_common,
+	gfc_add_common, gfc_use_derived_tree, gfc_free_charlen,
+	gfc_get_ultimate_derived_super_type,
+	gfc_resolve_oacc_parallel_loop_blocks, gfc_build_init_expr,
+	gfc_iso_c_sub_interface): Delete.
+	* symbol.c (gfc_new_charlen, gfc_get_derived_super_type): Make
+	static.
+
+2021-11-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/35276
+	* gfortran.texi (Mixed-Language Programming): Talk about C++,
+	and how to link.
+
 2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gfortran.texi (Projects): Add bullet for helping with
