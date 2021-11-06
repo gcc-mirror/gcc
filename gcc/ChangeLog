@@ -1,3 +1,36 @@
+2021-11-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/96661
+	* config/pa/pa-modes.def: Add OImode integer type.
+	* config/pa/pa.c (pa_scalar_mode_supported_p): Allow TImode
+	for TARGET_64BIT.
+	* config/pa/pa.h (MIN_UNITS_PER_WORD) Define to MIN_UNITS_PER_WORD
+	to UNITS_PER_WORD if IN_LIBGCC2.
+	* config/pa/pa.md (addti3, addvti3, subti3, subvti3, negti2,
+	negvti2, ashlti3, shrpd_internal): New patterns.
+	Change some multi instruction types to multi.
+
+2021-11-05  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/100393
+	* tree-switch-conversion.c (group_cluster::dump): Use
+	  get_comparison_count.
+	(jump_table_cluster::find_jump_tables): Pre-compute number of
+	comparisons and then decrement it. Cache also max_ratio.
+	(jump_table_cluster::can_be_handled): Change signature.
+	* tree-switch-conversion.h (get_comparison_count): New.
+
+2021-11-05  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	Backported from master:
+	2021-11-05  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vx-common.h: Test value of TARGET_VXWORKS7 rather
+	than definedness.
+
 2021-11-04  Hongyu Wang  <hongyu.wang@intel.com>
 
 	* config/i386/amxtileintrin.h (_tile_loadd_internal): Add
