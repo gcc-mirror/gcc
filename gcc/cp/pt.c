@@ -3792,6 +3792,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     }
   else
     {
+      hi = instantiate_non_dependent_expr_sfinae (hi, complain);
       hi = cxx_constant_value (hi);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
 
