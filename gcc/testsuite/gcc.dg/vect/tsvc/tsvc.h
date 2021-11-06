@@ -189,7 +189,7 @@ void set_2d_array(real_t arr[LEN_2D][LEN_2D], real_t value, int stride)
 }
 
 void init(int** ip, real_t* s1, real_t* s2){
-#ifndef __APPLE__
+#if !defined (__APPLE__) && !defined (_AIX)
     xx = (real_t*) memalign(ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
     *ip = (int *) memalign(ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
 #else
