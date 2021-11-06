@@ -2105,6 +2105,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	    }
 	}
 
+      if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension && sym->as
+	  && sym->as->rank && init->rank && init->rank != sym->as->rank)
+	{
+	  gfc_error ("Rank mismatch of array at %L and its initializer "
+		     "(%d/%d)", &sym->declared_at, sym->as->rank, init->rank);
+	  return false;
+	}
+
       /* If sym is implied-shape, set its upper bounds from init.  */
       if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension
 	  && sym->as->type == AS_IMPLIED_SHAPE)
