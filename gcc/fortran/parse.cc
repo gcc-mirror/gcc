@@ -4710,7 +4710,7 @@ done:
    context that causes it to become redefined.  If the symbol is an
    iterator, we generate an error message and return nonzero.  */
 
-int
+bool
 gfc_check_do_variable (gfc_symtree *st)
 {
   gfc_state_data *s;

@@ -483,7 +483,7 @@ gfc_set_decl_assembler_name (tree decl, tree name)
 
 /* Returns true if a variable of specified size should go on the stack.  */
 
-int
+bool
 gfc_can_put_var_on_stack (tree size)
 {
   unsigned HOST_WIDE_INT low;

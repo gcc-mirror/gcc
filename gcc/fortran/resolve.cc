@@ -1585,7 +1585,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 /* Returns 0 if a symbol was not declared with a type or
    attribute declaration statement, nonzero otherwise.  */
 
-static int
+static bool
 was_declared (gfc_symbol *sym)
 {
   symbol_attribute a;
@@ -3091,13 +3091,13 @@ is_external_proc (gfc_symbol *sym)
 /* Figure out if a function reference is pure or not.  Also set the name
    of the function for a potential error message.  Return nonzero if the
    function is PURE, zero if not.  */
-static int
+static bool
 pure_stmt_function (gfc_expr *, gfc_symbol *);
 
-int
+bool
 gfc_pure_function (gfc_expr *e, const char **name)
 {
-  int pure;
+  bool pure;
   gfc_component *comp;
 
   *name = NULL;
@@ -3137,7 +3137,7 @@ gfc_pure_function (gfc_expr *e, const char **name)
 
 /* Check if the expression is a reference to an implicitly pure function.  */
 
-int
+bool
 gfc_implicit_pure_function (gfc_expr *e)
 {
   gfc_component *comp = gfc_get_proc_ptr_comp (e);
@@ -3168,7 +3168,7 @@ impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
 }
 
 
-static int
+static bool
 pure_stmt_function (gfc_expr *e, gfc_symbol *sym)
 {
   return gfc_traverse_expr (e, sym, impure_stmt_fcn, 0) ? 0 : 1;
@@ -7630,7 +7630,7 @@ resolve_forall_iterators (gfc_forall_iterator *it)
    PRIVATE.  The search is recursive if necessary.  Returns zero if no
    inaccessible components are found, nonzero otherwise.  */
 
-static int
+static bool
 derived_inaccessible (gfc_symbol *sym)
 {
   gfc_component *c;
@@ -17137,7 +17137,7 @@ resolve_data (gfc_data *d)
 /* Determines if a variable is not 'pure', i.e., not assignable within a pure
    procedure.  Returns zero if assignment is OK, nonzero if there is a
    problem.  */
-int
+bool
 gfc_impure_variable (gfc_symbol *sym)
 {
   gfc_symbol *proc;
@@ -17172,7 +17172,7 @@ gfc_impure_variable (gfc_symbol *sym)
 /* Test whether a symbol is pure or not.  For a NULL pointer, checks if the
    current namespace is inside a pure procedure.  */
 
-int
+bool
 gfc_pure (gfc_symbol *sym)
 {
   symbol_attribute attr;
@@ -17204,7 +17204,7 @@ gfc_pure (gfc_symbol *sym)
    checks if the current namespace is implicitly pure.  Note that this
    function returns false for a PURE procedure.  */
 
-int
+bool
 gfc_implicit_pure (gfc_symbol *sym)
 {
   gfc_namespace *ns;
@@ -17258,7 +17258,7 @@ gfc_unset_implicit_pure (gfc_symbol *sym)
 
 /* Test whether the current procedure is elemental or not.  */
 
-int
+bool
 gfc_elemental (gfc_symbol *sym)
 {
   symbol_attribute attr;

@@ -1374,7 +1374,7 @@ gfc_get_element_type (tree type)
 
 /* Returns true if the array sym does not require a descriptor.  */
 
-int
+bool
 gfc_is_nodesc_array (gfc_symbol * sym)
 {
   symbol_attribute *array_attr;
@@ -2451,7 +2451,7 @@ gfc_add_field_to_struct (tree context, tree name, tree type, tree **chain)
    the two derived type symbols are "equal", as described
    in 4.4.2 and resolved by gfc_compare_derived_types.  */
 
-int
+bool
 gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
 			   bool from_gsym)
 {
@@ -2940,7 +2940,7 @@ copy_derived_types:
 }
 
 
-int
+bool
 gfc_return_by_reference (gfc_symbol * sym)
 {
   if (!sym->attr.function)

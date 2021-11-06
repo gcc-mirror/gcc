@@ -88,7 +88,7 @@ tree gfc_get_character_type_len_for_eltype (tree, tree);
 tree gfc_sym_type (gfc_symbol *, bool is_bind_c_arg = false);
 tree gfc_get_cfi_type (int dimen, bool restricted);
 tree gfc_typenode_for_spec (gfc_typespec *, int c = 0);
-int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
+bool gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
 tree gfc_get_function_type (gfc_symbol *, gfc_actual_arglist *args = NULL,
 			    const char *fnspec = NULL);
@@ -109,10 +109,10 @@ tree gfc_add_field_to_struct (tree, tree, tree, tree **);
 void gfc_finish_type (tree);
 
 /* Some functions have an extra parameter for the return value.  */
-int gfc_return_by_reference (gfc_symbol *);
+bool gfc_return_by_reference (gfc_symbol *);
 
 /* Returns true if the array sym does not require a descriptor.  */
-int gfc_is_nodesc_array (gfc_symbol *);
+bool gfc_is_nodesc_array (gfc_symbol *);
 
 /* Return the DTYPE for an array.  */
 tree gfc_get_dtype_rank_type (int, tree);

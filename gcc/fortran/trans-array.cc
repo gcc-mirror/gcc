@@ -4982,7 +4982,7 @@ done:
 /* Return true if both symbols could refer to the same data object.  Does
    not take account of aliasing due to equivalence statements.  */
 
-static int
+static bool
 symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
 		     bool lsym_target, bool rsym_pointer, bool rsym_target)
 {

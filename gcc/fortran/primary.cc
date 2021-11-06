@@ -109,10 +109,10 @@ get_kind (int *is_iso_c)
 /* Given a character and a radix, see if the character is a valid
    digit in that radix.  */
 
-int
+bool
 gfc_check_digit (char c, int radix)
 {
-  int r;
+  bool r;
 
   switch (radix)
     {

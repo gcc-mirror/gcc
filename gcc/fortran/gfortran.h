@@ -3220,16 +3220,16 @@ void gfc_release_include_path (void);
 void gfc_check_include_dirs (bool);
 FILE *gfc_open_included_file (const char *, bool, bool);
 
-int gfc_at_end (void);
-int gfc_at_eof (void);
-int gfc_at_bol (void);
-int gfc_at_eol (void);
+bool gfc_at_end (void);
+bool gfc_at_eof (void);
+bool gfc_at_bol (void);
+bool gfc_at_eol (void);
 void gfc_advance_line (void);
-int gfc_define_undef_line (void);
+bool gfc_define_undef_line (void);
 
-int gfc_wide_is_printable (gfc_char_t);
-int gfc_wide_is_digit (gfc_char_t);
-int gfc_wide_fits_in_byte (gfc_char_t);
+bool gfc_wide_is_printable (gfc_char_t);
+bool gfc_wide_is_digit (gfc_char_t);
+bool gfc_wide_fits_in_byte (gfc_char_t);
 gfc_char_t gfc_wide_tolower (gfc_char_t);
 gfc_char_t gfc_wide_toupper (gfc_char_t);
 size_t gfc_wide_strlen (const gfc_char_t *);
@@ -3487,7 +3487,7 @@ void gfc_release_symbol (gfc_symbol *&);
 gfc_symbol *gfc_new_symbol (const char *, gfc_namespace *);
 gfc_symtree* gfc_find_symtree_in_proc (const char *, gfc_namespace *);
 int gfc_find_symbol (const char *, gfc_namespace *, int, gfc_symbol **);
-int gfc_find_sym_tree (const char *, gfc_namespace *, int, gfc_symtree **);
+bool gfc_find_sym_tree (const char *, gfc_namespace *, int, gfc_symtree **);
 int gfc_get_symbol (const char *, gfc_namespace *, gfc_symbol **);
 bool gfc_verify_c_interop (gfc_typespec *);
 bool gfc_verify_c_interop_param (gfc_symbol *);
@@ -3567,10 +3567,10 @@ bool gfc_convert_type (gfc_expr *, gfc_typespec *, int);
 bool gfc_convert_type_warn (gfc_expr *, gfc_typespec *, int, int,
 			    bool array = false);
 bool gfc_convert_chartype (gfc_expr *, gfc_typespec *);
-int gfc_generic_intrinsic (const char *);
-int gfc_specific_intrinsic (const char *);
+bool gfc_generic_intrinsic (const char *);
+bool gfc_specific_intrinsic (const char *);
 bool gfc_is_intrinsic (gfc_symbol*, int, locus);
-int gfc_intrinsic_actual_ok (const char *, const bool);
+bool gfc_intrinsic_actual_ok (const char *, const bool);
 gfc_intrinsic_sym *gfc_find_function (const char *);
 gfc_intrinsic_sym *gfc_find_subroutine (const char *);
 gfc_intrinsic_sym *gfc_intrinsic_function_by_id (gfc_isym_id);
@@ -3648,7 +3648,7 @@ void gfc_type_convert_binary (gfc_expr *, int);
 bool gfc_is_constant_expr (gfc_expr *);
 bool gfc_simplify_expr (gfc_expr *, int);
 bool gfc_try_simplify_expr (gfc_expr *, int);
-int gfc_has_vector_index (gfc_expr *);
+bool gfc_has_vector_index (gfc_expr *);
 
 gfc_expr *gfc_get_expr (void);
 gfc_expr *gfc_get_array_expr (bt type, int kind, locus *);
@@ -3672,7 +3672,7 @@ gfc_ref* gfc_copy_ref (gfc_ref*);
 
 bool gfc_specification_expr (gfc_expr *);
 
-int gfc_numeric_ts (gfc_typespec *);
+bool gfc_numeric_ts (gfc_typespec *);
 int gfc_kind_max (gfc_expr *, gfc_expr *);
 
 bool gfc_check_conformance (gfc_expr *, gfc_expr *, const char *, ...) ATTRIBUTE_PRINTF_3;
@@ -3737,11 +3737,11 @@ void gfc_resolve (gfc_namespace *);
 void gfc_resolve_code (gfc_code *, gfc_namespace *);
 void gfc_resolve_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_formal_arglist (gfc_symbol *);
-int gfc_impure_variable (gfc_symbol *);
-int gfc_pure (gfc_symbol *);
-int gfc_implicit_pure (gfc_symbol *);
+bool gfc_impure_variable (gfc_symbol *);
+bool gfc_pure (gfc_symbol *);
+bool gfc_implicit_pure (gfc_symbol *);
 void gfc_unset_implicit_pure (gfc_symbol *);
-int gfc_elemental (gfc_symbol *);
+bool gfc_elemental (gfc_symbol *);
 bool gfc_resolve_iterator (gfc_iterator *, bool, bool);
 bool find_forall_index (gfc_expr *, gfc_symbol *, int);
 bool gfc_resolve_index (gfc_expr *, int);
@@ -3755,8 +3755,8 @@ bool gfc_resolve_intrinsic (gfc_symbol *, locus *);
 bool gfc_explicit_interface_required (gfc_symbol *, char *, int);
 extern int gfc_do_concurrent_flag;
 const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
-int gfc_pure_function (gfc_expr *e, const char **name);
-int gfc_implicit_pure_function (gfc_expr *e);
+bool gfc_pure_function (gfc_expr *e, const char **name);
+bool gfc_implicit_pure_function (gfc_expr *e);
 
 
 /* array.cc */
@@ -3769,12 +3769,12 @@ bool gfc_set_array_spec (gfc_symbol *, gfc_array_spec *, locus *);
 gfc_array_spec *gfc_copy_array_spec (gfc_array_spec *);
 bool gfc_resolve_array_spec (gfc_array_spec *, int);
 
-int gfc_compare_array_spec (gfc_array_spec *, gfc_array_spec *);
+bool gfc_compare_array_spec (gfc_array_spec *, gfc_array_spec *);
 
 void gfc_simplify_iterator_var (gfc_expr *);
 bool gfc_expand_constructor (gfc_expr *, bool);
-int gfc_constant_ac (gfc_expr *);
-int gfc_expanded_ac (gfc_expr *);
+bool gfc_constant_ac (gfc_expr *);
+bool gfc_expanded_ac (gfc_expr *);
 bool gfc_resolve_character_array_constructor (gfc_expr *);
 bool gfc_resolve_array_constructor (gfc_expr *);
 bool gfc_check_constructor_type (gfc_expr *);
@@ -3859,7 +3859,7 @@ symbol_attribute gfc_expr_attr (gfc_expr *);
 symbol_attribute gfc_caf_attr (gfc_expr *, bool i = false, bool *r = NULL);
 match gfc_match_rvalue (gfc_expr **);
 match gfc_match_varspec (gfc_expr*, int, bool, bool);
-int gfc_check_digit (char, int);
+bool gfc_check_digit (char, int);
 bool gfc_is_function_return_value (gfc_symbol *, gfc_namespace *);
 bool gfc_convert_to_structure_constructor (gfc_expr *, gfc_symbol *,
 					      gfc_expr **,
