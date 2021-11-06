@@ -4565,7 +4565,7 @@
 
 ;; V4SI splat support
 (define_insn "vsx_splat_v4si"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=we,we")
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,wa")
 	(vec_duplicate:V4SI
 	 (match_operand:SI 1 "splat_input_operand" "r,Z")))]
   "TARGET_P9_VECTOR"
@@ -4578,7 +4578,7 @@
 ;; allows us to use direct move to get the value in a vector register
 ;; so that we can use XXSPLTW
 (define_insn "vsx_splat_v4si_di"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,we")
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,wa")
 	(vec_duplicate:V4SI
 	 (truncate:SI
 	  (match_operand:DI 1 "gpc_reg_operand" "wa,r"))))]
