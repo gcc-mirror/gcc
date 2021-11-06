@@ -23102,11 +23102,10 @@ aarch64_evpc_ins (struct expand_vec_perm_d *d)
     }
   gcc_assert (extractindex < nelt);
 
-  emit_move_insn (d->target, insv);
   insn_code icode = code_for_aarch64_simd_vec_copy_lane (mode);
   expand_operand ops[5];
   create_output_operand (&ops[0], d->target, mode);
-  create_input_operand (&ops[1], d->target, mode);
+  create_input_operand (&ops[1], insv, mode);
   create_integer_operand (&ops[2], 1 << idx);
   create_input_operand (&ops[3], extractv, mode);
   create_integer_operand (&ops[4], extractindex);
