@@ -11492,16 +11492,14 @@ gfc_get_intrinsic_for_expr (gfc_expr *call)
 
 static bool
 arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
-				 gfc_actual_arglist &actual_arg, int arg_num)
+				 gfc_dummy_arg *dummy_arg)
 {
-  if (function != NULL)
+  if (function != NULL && dummy_arg != NULL)
     {
       switch (function->id)
 	{
 	  case GFC_ISYM_INDEX:
-	    if ((actual_arg.name == NULL && arg_num == 3)
-		|| (actual_arg.name != NULL
-		    && strcmp ("kind", actual_arg.name) == 0))
+	    if (strcmp ("kind", gfc_dummy_arg_get_name (*dummy_arg)) == 0)
 	      return false;
 	  /* Fallthrough.  */
 
@@ -11532,15 +11530,14 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   head = gfc_ss_terminator;
   tail = NULL;
 
-  int arg_num = 0;
   scalar = 1;
   for (; arg; arg = arg->next)
     {
       gfc_dummy_arg * const dummy_arg = arg->associated_dummy;
       if (!arg->expr
 	  || arg->expr->expr_type == EXPR_NULL
-	  || !arg_evaluated_for_scalarization (intrinsic_sym, *arg, arg_num))
-	goto loop_continue;
+	  || !arg_evaluated_for_scalarization (intrinsic_sym, dummy_arg))
+	continue;
 
       newss = gfc_walk_subexpr (head, arg->expr);
       if (newss == head)
@@ -11570,9 +11567,6 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
           while (tail->next != gfc_ss_terminator)
             tail = tail->next;
         }
-
-loop_continue:
-      arg_num++;
     }
 
   if (scalar)

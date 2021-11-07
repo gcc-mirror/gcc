@@ -5534,6 +5534,23 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 }
 
 
+const char *
+gfc_dummy_arg_get_name (gfc_dummy_arg & dummy_arg)
+{
+  switch (dummy_arg.intrinsicness)
+    {
+    case GFC_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.intrinsic->name;
+
+    case GFC_NON_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.non_intrinsic->sym->name;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
 const gfc_typespec &
 gfc_dummy_arg_get_typespec (gfc_dummy_arg & dummy_arg)
 {

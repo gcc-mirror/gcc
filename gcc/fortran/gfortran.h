@@ -2329,6 +2329,7 @@ struct gfc_dummy_arg
 #define gfc_get_dummy_arg() XCNEW (gfc_dummy_arg)
 
 
+const char * gfc_dummy_arg_get_name (gfc_dummy_arg &);
 const gfc_typespec & gfc_dummy_arg_get_typespec (gfc_dummy_arg &);
 bool gfc_dummy_arg_is_optional (gfc_dummy_arg &);
 
