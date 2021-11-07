@@ -11460,6 +11460,59 @@ gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
 }
 
 
+/* Given an expression referring to an intrinsic function call,
+   return the intrinsic symbol.  */
+
+gfc_intrinsic_sym *
+gfc_get_intrinsic_for_expr (gfc_expr *call)
+{
+  if (call == NULL)
+    return NULL;
+
+  /* Normal procedure case.  */
+  if (call->expr_type == EXPR_FUNCTION)
+    return call->value.function.isym;
+  else
+    return NULL;
+}
+
+
+/* Indicates whether an argument to an intrinsic function should be used in
+   scalarization.  It is usually the case, except for some intrinsics
+   requiring the value to be constant, and using the value at compile time only.
+   As the value is not used at runtime in those cases, we don’t produce code
+   for it, and it should not be visible to the scalarizer.
+   FUNCTION is the intrinsic function being called, ACTUAL_ARG is the actual
+   argument being examined in that call, and ARG_NUM the index number
+   of ACTUAL_ARG in the list of arguments.
+   The intrinsic procedure’s dummy argument associated with ACTUAL_ARG is
+   identified using the name in ACTUAL_ARG if it is present (that is: if it’s
+   a keyword argument), otherwise using ARG_NUM.  */
+
+static bool
+arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
+				 gfc_actual_arglist &actual_arg, int arg_num)
+{
+  if (function != NULL)
+    {
+      switch (function->id)
+	{
+	  case GFC_ISYM_INDEX:
+	    if ((actual_arg.name == NULL && arg_num == 3)
+		|| (actual_arg.name != NULL
+		    && strcmp ("kind", actual_arg.name) == 0))
+	      return false;
+	  /* Fallthrough.  */
+
+	  default:
+	    break;
+	}
+    }
+
+  return true;
+}
+
+
 /* Walk the arguments of an elemental function.
    PROC_EXPR is used to check whether an argument is permitted to be absent.  If
    it is NULL, we don't do the check and the argument is assumed to be present.
@@ -11467,6 +11520,7 @@ gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
 
 gfc_ss *
 gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
+				  gfc_intrinsic_sym *intrinsic_sym,
 				  gfc_symbol *proc_ifc, gfc_ss_type type)
 {
   gfc_formal_arglist *dummy_arg;
@@ -11483,10 +11537,13 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   else
     dummy_arg = NULL;
 
+  int arg_num = 0;
   scalar = 1;
   for (; arg; arg = arg->next)
     {
-      if (!arg->expr || arg->expr->expr_type == EXPR_NULL)
+      if (!arg->expr
+	  || arg->expr->expr_type == EXPR_NULL
+	  || !arg_evaluated_for_scalarization (intrinsic_sym, *arg, arg_num))
 	goto loop_continue;
 
       newss = gfc_walk_subexpr (head, arg->expr);
@@ -11519,6 +11576,7 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
         }
 
 loop_continue:
+      arg_num++;
       if (dummy_arg != NULL)
 	dummy_arg = dummy_arg->next;
     }
@@ -11579,6 +11637,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 
       ss = gfc_walk_elemental_function_args (old_ss,
 					     expr->value.function.actual,
+					     gfc_get_intrinsic_for_expr (expr),
 					     gfc_get_proc_ifc_for_expr (expr),
 					     GFC_SS_REFERENCE);
       if (ss != old_ss
