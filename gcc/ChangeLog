@@ -1,3 +1,28 @@
+2021-11-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.h (cgraph_node::can_be_discarded_p): Do not
+	return true on functions from other partition.
+
+2021-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/vsx.md (vsx_splat_v4si): Change constraints to "wa".
+	(vsx_splat_v4si_di): Change constraint to "wa".
+
+2021-11-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103061
+	* value-relation.cc (path_oracle::path_oracle): Initialize
+	m_killed_defs.
+	(path_oracle::killing_def): Set m_killed_defs.
+	(path_oracle::query_relation): Do not look at the root oracle for
+	killed defs.
+	* value-relation.h (class path_oracle): Add m_killed_defs.
+
+2021-11-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (back_threader::find_paths_to_names):
+	Remove gotos and other cleanups.
+
 2021-11-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103073

@@ -1,3 +1,9 @@
+2021-11-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102715
+	* decl.c (add_init_expr_to_sym): Reject rank mismatch between
+	array and its initializer.
+
 2021-11-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102817

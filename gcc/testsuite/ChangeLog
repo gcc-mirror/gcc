@@ -1,3 +1,13 @@
+2021-11-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102715
+	* gfortran.dg/pr68019.f90: Adjust error message.
+	* gfortran.dg/pr102715.f90: New test.
+
+2021-11-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/vect/tsvc/tsvc.h (init): Use posix_memalign on AIX.
+
 2021-11-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102817
