@@ -3715,11 +3715,6 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   if (*ap == NULL && n > 0)
     *ap = new_arg[0];
 
-  /* Note the types of omitted optional arguments.  */
-  for (a = *ap, f = formal; a; a = a->next, f = f->next)
-    if (a->expr == NULL && a->label == NULL)
-      a->missing_arg_type = f->sym->ts.type;
-
   return true;
 }
 

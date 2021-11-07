@@ -4406,10 +4406,7 @@ do_sort:
 	}
 
       if (a == NULL)
-	{
-	  a = gfc_get_actual_arglist ();
-	  a->missing_arg_type = f->ts.type;
-	}
+	a = gfc_get_actual_arglist ();
 
       a->associated_dummy = get_intrinsic_dummy_arg (f);
 
