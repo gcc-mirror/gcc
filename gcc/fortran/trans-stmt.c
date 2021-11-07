@@ -356,6 +356,25 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 }
 
 
+/* Given an executable statement referring to an intrinsic function call,
+   returns the intrinsic symbol.  */
+
+static gfc_intrinsic_sym *
+get_intrinsic_for_code (gfc_code *code)
+{
+  if (code->op == EXEC_CALL)
+    {
+      gfc_intrinsic_sym * const isym = code->resolved_isym;
+      if (isym)
+	return isym;
+      else
+	return gfc_get_intrinsic_for_expr (code->expr1);
+    }
+
+  return NULL;
+}
+
+
 /* Get the interface symbol for the procedure corresponding to the given call.
    We can't get the procedure symbol directly as we have to handle the case
    of (deferred) type-bound procedures.  */
@@ -402,6 +421,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
   ss = gfc_ss_terminator;
   if (code->resolved_sym->attr.elemental)
     ss = gfc_walk_elemental_function_args (ss, code->ext.actual,
+					   get_intrinsic_for_code (code),
 					   get_proc_ifc_for_call (code),
 					   GFC_SS_REFERENCE);
 
