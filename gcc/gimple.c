@@ -1595,17 +1595,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 
 	  /* We have possibly optimized out load.  Be conservative here.  */
 	  if (!node->binds_to_current_def_p ())
-	    {
-	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
-		{
-		  modref_flags &= ~EAF_UNUSED;
-		  modref_flags |= EAF_NOESCAPE;
-		}
-	      if ((modref_flags & EAF_NOREAD) && !(flags & EAF_NOREAD))
-		modref_flags &= ~EAF_NOREAD;
-	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
-		modref_flags &= ~EAF_DIRECT;
-	    }
+	    modref_flags = interposable_eaf_flags (modref_flags, flags);
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}
@@ -1633,13 +1623,7 @@ gimple_call_retslot_flags (const gcall *stmt)
 
 	  /* We have possibly optimized out load.  Be conservative here.  */
 	  if (!node->binds_to_current_def_p ())
-	    {
-	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
-		{
-		  modref_flags &= ~EAF_UNUSED;
-		  modref_flags |= EAF_NOESCAPE;
-		}
-	    }
+	    modref_flags = interposable_eaf_flags (modref_flags, flags);
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}
@@ -1665,19 +1649,9 @@ gimple_call_static_chain_flags (const gcall *stmt)
 	{
 	  int modref_flags = summary->static_chain_flags;
 
-	  /* We have possibly optimized out load.  Be conservative here.  */
+	  /* ??? Nested functions should always bind to current def.  */
 	  if (!node->binds_to_current_def_p ())
-	    {
-	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
-		{
-		  modref_flags &= ~EAF_UNUSED;
-		  modref_flags |= EAF_NOESCAPE;
-		}
-	      if ((modref_flags & EAF_NOREAD) && !(flags & EAF_NOREAD))
-		modref_flags &= ~EAF_NOREAD;
-	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
-		modref_flags &= ~EAF_DIRECT;
-	    }
+	    modref_flags = interposable_eaf_flags (modref_flags, flags);
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}

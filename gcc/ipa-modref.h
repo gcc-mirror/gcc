@@ -58,4 +58,33 @@ static const int implicit_pure_eaf_flags = EAF_NOCLOBBER | EAF_NOESCAPE
 static const int ignore_stores_eaf_flags = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE
 				    | EAF_NODIRECTESCAPE;
 
+/* If function does not bind to current def (i.e. it is inline in comdat
+   section), the modref analysis may not match the behaviour of function
+   which will be later symbol interposed to.  All side effects must match
+   however it is possible that the other function body contains more loads
+   which may trap.
+   MODREF_FLAGS are flags determined by analysis of function body while
+   FLAGS are flags known otherwise (i.e. by fnspec, pure/const attributes
+   etc.)  */
+static inline int
+interposable_eaf_flags (int modref_flags, int flags)
+{
+  /* If parameter was previously unused, we know it is only read
+     and its value is not used.  */
+  if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
+    {
+      modref_flags &= ~EAF_UNUSED;
+      modref_flags |= EAF_NOESCAPE | EAF_NOT_RETURNED
+		      | EAF_NOT_RETURNED_DIRECTLY | EAF_NOCLOBBER;
+    }
+  /* We can not deterine that value is not read at all.  */
+  if ((modref_flags & EAF_NOREAD) && !(flags & EAF_NOREAD))
+    modref_flags &= ~EAF_NOREAD;
+  /* Clear direct flags so we also know that value is possibly read
+     indirectly.  */
+  if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
+    modref_flags &= ~EAF_DIRECT;
+  return modref_flags;
+}
+
 #endif

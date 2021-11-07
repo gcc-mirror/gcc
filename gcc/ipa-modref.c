@@ -291,9 +291,7 @@ modref_summary::~modref_summary ()
 static int
 remove_useless_eaf_flags (int eaf_flags, int ecf_flags, bool returns_void)
 {
-  if (ecf_flags & ECF_NOVOPS)
-    return 0;
-  if (ecf_flags & ECF_CONST)
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
     eaf_flags &= ~implicit_const_eaf_flags;
   else if (ecf_flags & ECF_PURE)
     eaf_flags &= ~implicit_pure_eaf_flags;
@@ -319,8 +317,6 @@ eaf_flags_useful_p (vec <eaf_flags_t> &flags, int ecf_flags)
 bool
 modref_summary::useful_p (int ecf_flags, bool check_flags)
 {
-  if (ecf_flags & ECF_NOVOPS)
-    return false;
   if (arg_flags.length () && !check_flags)
     return true;
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
@@ -331,7 +327,7 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
   if (check_flags
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
-  if (ecf_flags & ECF_CONST)
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
     return false;
   if (loads && !loads->every_base)
     return true;
@@ -405,8 +401,6 @@ modref_summary_lto::~modref_summary_lto ()
 bool
 modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
 {
-  if (ecf_flags & ECF_NOVOPS)
-    return false;
   if (arg_flags.length () && !check_flags)
     return true;
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
@@ -417,7 +411,7 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
   if (check_flags
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
-  if (ecf_flags & ECF_CONST)
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
     return false;
   if (loads && !loads->every_base)
     return true;
@@ -2321,10 +2315,6 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   tree retslot = NULL;
   tree static_chain = NULL;
 
-  /* For novops functions we have nothing to gain by EAF flags.  */
-  if (ecf_flags & ECF_NOVOPS)
-    return;
-
   /* If there is return slot, look up its SSA name.  */
   if (DECL_RESULT (current_function_decl)
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
@@ -2471,6 +2461,11 @@ analyze_function (function *f, bool ipa)
   modref_summary *summary = NULL;
   modref_summary_lto *summary_lto = NULL;
 
+  bool past_flags_known = false;
+  auto_vec <eaf_flags_t> past_flags;
+  int past_retslot_flags = 0;
+  int past_static_chain_flags = 0;
+
   /* Initialize the summary.
      If we run in local mode there is possibly pre-existing summary from
      IPA pass.  Dump it so it is easy to compare if mod-ref info has
@@ -2490,6 +2485,11 @@ analyze_function (function *f, bool ipa)
 	      fprintf (dump_file, "Past summary:\n");
 	      optimization_summaries->get
 		 (cgraph_node::get (f->decl))->dump (dump_file);
+	      past_flags.reserve_exact (summary->arg_flags.length ());
+	      past_flags.splice (summary->arg_flags);
+	      past_retslot_flags = summary->retslot_flags;
+	      past_static_chain_flags = summary->static_chain_flags;
+	      past_flags_known = true;
 	    }
 	  optimization_summaries->remove (cgraph_node::get (f->decl));
 	}
@@ -2630,6 +2630,108 @@ analyze_function (function *f, bool ipa)
       if (summary_lto)
 	summary_lto->dump (dump_file);
       dump_modref_edge_summaries (dump_file, fnode, 2);
+      /* To simplify debugging, compare IPA and local solutions.  */
+      if (past_flags_known && summary)
+	{
+	  size_t len = summary->arg_flags.length ();
+
+	  if (past_flags.length () > len)
+	    len = past_flags.length ();
+	  for (size_t i = 0; i < len; i++)
+	    {
+	      int old_flags = i < past_flags.length () ? past_flags[i] : 0;
+	      int new_flags = i < summary->arg_flags.length ()
+			      ? summary->arg_flags[i] : 0;
+	      old_flags = remove_useless_eaf_flags
+		(old_flags, flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	      if (old_flags != new_flags)
+		{
+		  if ((old_flags & ~new_flags) == 0)
+		    fprintf (dump_file, "  Flags for param %i improved:",
+			     (int)i);
+		  else if ((new_flags & ~old_flags) == 0)
+		    fprintf (dump_file, "  Flags for param %i worsened:",
+			     (int)i);
+		  else
+		    fprintf (dump_file, "  Flags for param %i changed:",
+			     (int)i);
+		  dump_eaf_flags (dump_file, old_flags, false);
+		  fprintf (dump_file, " -> ");
+		  dump_eaf_flags (dump_file, new_flags, true);
+		}
+	    }
+	  past_retslot_flags = remove_useless_eaf_flags
+		(past_retslot_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_retslot_flags != summary->retslot_flags)
+	    {
+	      if ((past_retslot_flags & ~summary->retslot_flags) == 0)
+		fprintf (dump_file, "  Flags for retslot improved:");
+	      else if ((summary->retslot_flags & ~past_retslot_flags) == 0)
+		fprintf (dump_file, "  Flags for retslot worsened:");
+	      else
+		fprintf (dump_file, "  Flags for retslot changed:");
+	      dump_eaf_flags (dump_file, past_retslot_flags, false);
+	      fprintf (dump_file, " -> ");
+	      dump_eaf_flags (dump_file, summary->retslot_flags, true);
+	    }
+	  past_static_chain_flags = remove_useless_eaf_flags
+		(past_static_chain_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_static_chain_flags != summary->static_chain_flags)
+	    {
+	      if ((past_static_chain_flags & ~summary->static_chain_flags) == 0)
+		fprintf (dump_file, "  Flags for static chain improved:");
+	      else if ((summary->static_chain_flags
+			& ~past_static_chain_flags) == 0)
+		fprintf (dump_file, "  Flags for static chain worsened:");
+	      else
+		fprintf (dump_file, "  Flags for static chain changed:");
+	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
+	      fprintf (dump_file, " -> ");
+	      dump_eaf_flags (dump_file, summary->static_chain_flags, true);
+	    }
+	}
+      else if (past_flags_known && !summary)
+	{
+	  for (size_t i = 0; i < past_flags.length (); i++)
+	    {
+	      int old_flags = past_flags[i];
+	      old_flags = remove_useless_eaf_flags
+		(old_flags, flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	      if (old_flags)
+		{
+		  fprintf (dump_file, "  Flags for param %i worsened:",
+			   (int)i);
+		  dump_eaf_flags (dump_file, old_flags, false);
+		  fprintf (dump_file, " -> \n");
+		}
+	    }
+	  past_retslot_flags = remove_useless_eaf_flags
+		(past_retslot_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_retslot_flags)
+	    {
+	      fprintf (dump_file, "  Flags for retslot worsened:");
+	      dump_eaf_flags (dump_file, past_retslot_flags, false);
+	      fprintf (dump_file, " ->\n");
+	    }
+	  past_static_chain_flags = remove_useless_eaf_flags
+		(past_static_chain_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_static_chain_flags)
+	    {
+	      fprintf (dump_file, "  Flags for static chain worsened:");
+	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
+	      fprintf (dump_file, " ->\n");
+	    }
+	}
     }
 }
 
@@ -4039,12 +4141,15 @@ modref_merge_call_site_flags (escape_summary *sum,
 			      modref_summary *summary,
 			      modref_summary_lto *summary_lto,
 			      tree caller,
-			      int ecf_flags)
+			      cgraph_edge *e,
+			      int caller_ecf_flags,
+			      int callee_ecf_flags,
+			      bool binds_to_current_def)
 {
   escape_entry *ee;
   unsigned int i;
   bool changed = false;
-  bool ignore_stores = ignore_stores_p (caller, ecf_flags);
+  bool ignore_stores = ignore_stores_p (caller, callee_ecf_flags);
 
   /* If we have no useful info to propagate.  */
   if ((!cur_summary || !cur_summary->arg_flags.length ())
@@ -4055,6 +4160,8 @@ modref_merge_call_site_flags (escape_summary *sum,
     {
       int flags = 0;
       int flags_lto = 0;
+      /* Returning the value is already accounted to at local propagation.  */
+      int implicit_flags = EAF_NOT_RETURNED | EAF_NOT_RETURNED_DIRECTLY;
 
       if (summary && ee->arg < summary->arg_flags.length ())
 	flags = summary->arg_flags[ee->arg];
@@ -4066,14 +4173,43 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  flags = deref_flags (flags, ignore_stores);
 	  flags_lto = deref_flags (flags_lto, ignore_stores);
 	}
-      else if (ignore_stores)
+      if (ignore_stores)
+	 implicit_flags |= ignore_stores_eaf_flags;
+      if (callee_ecf_flags & ECF_PURE)
+	implicit_flags |= implicit_pure_eaf_flags;
+      if (callee_ecf_flags & (ECF_CONST | ECF_NOVOPS))
+	implicit_flags |= implicit_const_eaf_flags;
+      class fnspec_summary *fnspec_sum = fnspec_summaries->get (e);
+      if (fnspec_sum)
 	{
-	  flags |= ignore_stores_eaf_flags;
-	  flags_lto |= ignore_stores_eaf_flags;
+	  attr_fnspec fnspec (fnspec_sum->fnspec);
+	  int fnspec_flags = 0;
+
+	  if (fnspec.arg_specified_p (ee->arg))
+	    {
+	      if (!fnspec.arg_used_p (ee->arg))
+		fnspec_flags = EAF_UNUSED;
+	      else
+		{
+		  if (fnspec.arg_direct_p (ee->arg))
+		    fnspec_flags |= EAF_DIRECT;
+		  if (fnspec.arg_noescape_p (ee->arg))
+		    fnspec_flags |= EAF_NOESCAPE | EAF_NODIRECTESCAPE;
+		  if (fnspec.arg_readonly_p (ee->arg))
+		    fnspec_flags |= EAF_NOCLOBBER;
+		}
+	    }
+	  implicit_flags |= fnspec_flags;
 	}
-      /* Returning the value is already accounted to at local propagation.  */
-      flags |= ee->min_flags | EAF_NOT_RETURNED | EAF_NOT_RETURNED_DIRECTLY;
-      flags_lto |= ee->min_flags | EAF_NOT_RETURNED | EAF_NOT_RETURNED_DIRECTLY;
+      if (!ee->direct)
+	implicit_flags = deref_flags (implicit_flags, ignore_stores);
+      flags |= implicit_flags;
+      flags_lto |= implicit_flags;
+      if (!binds_to_current_def && (flags || flags_lto))
+	{
+	  flags = interposable_eaf_flags (flags, implicit_flags);
+	  flags_lto = interposable_eaf_flags (flags_lto, implicit_flags);
+	}
       /* Noescape implies that value also does not escape directly.
 	 Fnspec machinery does set both so compensate for this.  */
       if (flags & EAF_NOESCAPE)
@@ -4095,7 +4231,7 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  if ((f & flags) != f)
 	    {
 	      f = remove_useless_eaf_flags
-			 (f & flags, ecf_flags,
+			 (f & flags, caller_ecf_flags,
 			  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (caller))));
 	      changed = true;
 	    }
@@ -4112,7 +4248,7 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  if ((f & flags_lto) != f)
 	    {
 	      f = remove_useless_eaf_flags
-			 (f & flags_lto, ecf_flags,
+			 (f & flags_lto, caller_ecf_flags,
 			  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (caller))));
 	      changed = true;
 	    }
@@ -4146,6 +4282,7 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 
 	  if (!cur_summary && !cur_summary_lto)
 	    continue;
+	  int caller_ecf_flags = flags_from_decl_or_type (cur->decl);
 
 	  if (dump_file)
 	    fprintf (dump_file, "  Processing %s%s%s\n",
@@ -4164,7 +4301,11 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	      changed |= modref_merge_call_site_flags
 				(sum, cur_summary, cur_summary_lto,
 				 NULL, NULL,
-				 node->decl, e->indirect_info->ecf_flags);
+				 node->decl,
+				 e,
+				 caller_ecf_flags,
+				 e->indirect_info->ecf_flags,
+				 false);
 	    }
 
 	  if (!cur_summary && !cur_summary_lto)
@@ -4216,7 +4357,11 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	      changed |= modref_merge_call_site_flags
 				(sum, cur_summary, cur_summary_lto,
 				 callee_summary, callee_summary_lto,
-				 node->decl, ecf_flags);
+				 node->decl,
+				 callee_edge,
+				 caller_ecf_flags,
+				 ecf_flags,
+				 callee->binds_to_current_def_p ());
 	      if (dump_file && changed)
 		{
 		  if (cur_summary)
