@@ -4379,19 +4379,18 @@ do_sort:
 
   for (f = formal; f; f = f->next)
     {
-      if (f->actual && f->actual->label != NULL && f->ts.type)
+      a = f->actual;
+      if (a && a->label != NULL && f->ts.type)
 	{
 	  gfc_error ("ALTERNATE RETURN not permitted at %L", where);
 	  return false;
 	}
 
-      if (f->actual == NULL)
+      if (a == NULL)
 	{
 	  a = gfc_get_actual_arglist ();
 	  a->missing_arg_type = f->ts.type;
 	}
-      else
-	a = f->actual;
 
       if (actual == NULL)
 	*ap = a;
