@@ -40,7 +40,15 @@ These will be imported into a GitHub PR to follow the normal review process, and
 
 * Where possible please add test cases to `gcc/testsuite/rust/` for all PRs. Some issues may not be testable via dejagnu/automation such as debug dump changes.
 
-* PR's cannot be merged untill clang format and the build and tests pass.
+* PRs won't be merged until `clang-format` and the build and tests pass.
+
+** Running `clang-format` locally
+
+... corresponding to what the _Clang Format Lint_ (`.github/workflows/clang-format.yml`) is doing, with `clang-format-10` being available locally, and avoiding the Docker overhead.
+
+    $ wget 'https://github.com/DoozyX/clang-format-lint-action/raw/v0.11/run-clang-format.py'
+    $ cp contrib/clang-format .clang-format
+    $ python3 run-clang-format.py --clang-format-executable clang-format-10 --recursive --extensions h,cc gcc/rust/
 
 * Please take the time to create good git commit messages see the existing format of them in the git log or refer to something like: https://chris.beams.io/posts/git-commit/
 
