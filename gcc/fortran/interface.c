@@ -5537,3 +5537,37 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
       f = &((*f)->next);
     }
 }
+
+
+const gfc_typespec &
+gfc_dummy_arg_get_typespec (gfc_dummy_arg & dummy_arg)
+{
+  switch (dummy_arg.intrinsicness)
+    {
+    case GFC_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.intrinsic->ts;
+
+    case GFC_NON_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.non_intrinsic->sym->ts;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
+bool
+gfc_dummy_arg_is_optional (gfc_dummy_arg & dummy_arg)
+{
+  switch (dummy_arg.intrinsicness)
+    {
+    case GFC_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.intrinsic->optional;
+
+    case GFC_NON_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.non_intrinsic->sym->attr.optional;
+
+    default:
+      gcc_unreachable ();
+    }
+}

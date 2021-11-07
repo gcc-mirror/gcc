@@ -3010,7 +3010,8 @@ gfc_scalar_elemental_arg_saved_as_reference (gfc_ss_info * ss_info)
   /* If the expression is of polymorphic type, it's actual size is not known,
      so we avoid copying it anywhere.  */
   if (ss_info->data.scalar.dummy_arg
-      && ss_info->data.scalar.dummy_arg->ts.type == BT_CLASS
+      && gfc_dummy_arg_get_typespec (*ss_info->data.scalar.dummy_arg).type
+	 == BT_CLASS
       && ss_info->expr->ts.type == BT_CLASS)
     return true;
 
@@ -11521,9 +11522,8 @@ arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
 gfc_ss *
 gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 				  gfc_intrinsic_sym *intrinsic_sym,
-				  gfc_symbol *proc_ifc, gfc_ss_type type)
+				  gfc_ss_type type)
 {
-  gfc_formal_arglist *dummy_arg;
   int scalar;
   gfc_ss *head;
   gfc_ss *tail;
@@ -11532,15 +11532,11 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   head = gfc_ss_terminator;
   tail = NULL;
 
-  if (proc_ifc)
-    dummy_arg = gfc_sym_get_dummy_args (proc_ifc);
-  else
-    dummy_arg = NULL;
-
   int arg_num = 0;
   scalar = 1;
   for (; arg; arg = arg->next)
     {
+      gfc_dummy_arg * const dummy_arg = arg->associated_dummy;
       if (!arg->expr
 	  || arg->expr->expr_type == EXPR_NULL
 	  || !arg_evaluated_for_scalarization (intrinsic_sym, *arg, arg_num))
@@ -11554,13 +11550,13 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->info->type = type;
 	  if (dummy_arg)
-	    newss->info->data.scalar.dummy_arg = dummy_arg->sym;
+	    newss->info->data.scalar.dummy_arg = dummy_arg;
 	}
       else
 	scalar = 0;
 
       if (dummy_arg != NULL
-	  && dummy_arg->sym->attr.optional
+	  && gfc_dummy_arg_is_optional (*dummy_arg)
 	  && arg->expr->expr_type == EXPR_VARIABLE
 	  && (gfc_expr_attr (arg->expr).optional
 	      || gfc_expr_attr (arg->expr).allocatable
@@ -11577,8 +11573,6 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 
 loop_continue:
       arg_num++;
-      if (dummy_arg != NULL)
-	dummy_arg = dummy_arg->next;
     }
 
   if (scalar)
@@ -11638,7 +11632,6 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
       ss = gfc_walk_elemental_function_args (old_ss,
 					     expr->value.function.actual,
 					     gfc_get_intrinsic_for_expr (expr),
-					     gfc_get_proc_ifc_for_expr (expr),
 					     GFC_SS_REFERENCE);
       if (ss != old_ss
 	  && (comp

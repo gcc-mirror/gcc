@@ -2334,6 +2334,10 @@ struct gfc_dummy_arg
 #define gfc_get_dummy_arg() XCNEW (gfc_dummy_arg)
 
 
+const gfc_typespec & gfc_dummy_arg_get_typespec (gfc_dummy_arg &);
+bool gfc_dummy_arg_is_optional (gfc_dummy_arg &);
+
+
 /* Specifies the various kinds of check functions used to verify the
    argument lists of intrinsic functions. fX with X an integer refer
    to check functions of intrinsics with X arguments. f1m is used for
