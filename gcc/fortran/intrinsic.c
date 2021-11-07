@@ -4237,6 +4237,18 @@ remove_nullargs (gfc_actual_arglist **ap)
 }
 
 
+static gfc_dummy_arg *
+get_intrinsic_dummy_arg (gfc_intrinsic_arg *intrinsic)
+{
+  gfc_dummy_arg * const dummy_arg = gfc_get_dummy_arg ();
+
+  dummy_arg->intrinsicness = GFC_INTRINSIC_DUMMY_ARG;
+  dummy_arg->u.intrinsic = intrinsic;
+
+  return dummy_arg;
+}
+
+
 /* Given an actual arglist and a formal arglist, sort the actual
    arglist so that its arguments are in a one-to-one correspondence
    with the format arglist.  Arguments that are not present are given
@@ -4254,8 +4266,14 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   remove_nullargs (ap);
   actual = *ap;
 
+  auto_vec<gfc_intrinsic_arg *> dummy_args;
+  auto_vec<gfc_actual_arglist *> ordered_actual_args;
+
   for (f = formal; f; f = f->next)
-    f->actual = NULL;
+    dummy_args.safe_push (f);
+
+  ordered_actual_args.safe_grow_cleared (dummy_args.length (),
+					 /* exact = */true);
 
   f = formal;
   a = actual;
@@ -4307,7 +4325,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
 	}
     }
 
-  for (;;)
+  for (int i = 0;; i++)
     {		/* Put the nonkeyword arguments in a 1:1 correspondence */
       if (f == NULL)
 	break;
@@ -4317,7 +4335,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
       if (a->name != NULL)
 	goto keywords;
 
-      f->actual = a;
+      ordered_actual_args[i] = a;
 
       f = f->next;
       a = a->next;
@@ -4335,7 +4353,8 @@ keywords:
      to be keyword arguments.  */
   for (; a; a = a->next)
     {
-      for (f = formal; f; f = f->next)
+      int idx;
+      FOR_EACH_VEC_ELT (dummy_args, idx, f)
 	if (strcmp (a->name, f->name) == 0)
 	  break;
 
@@ -4350,21 +4369,21 @@ keywords:
 	  return false;
 	}
 
-      if (f->actual != NULL)
+      if (ordered_actual_args[idx] != NULL)
 	{
 	  gfc_error ("Argument %qs appears twice in call to %qs at %L",
 		     f->name, name, where);
 	  return false;
 	}
-
-      f->actual = a;
+      ordered_actual_args[idx] = a;
     }
 
 optional:
   /* At this point, all unmatched formal args must be optional.  */
-  for (f = formal; f; f = f->next)
+  int idx;
+  FOR_EACH_VEC_ELT (dummy_args, idx, f)
     {
-      if (f->actual == NULL && f->optional == 0)
+      if (ordered_actual_args[idx] == NULL && f->optional == 0)
 	{
 	  gfc_error ("Missing actual argument %qs in call to %qs at %L",
 		     f->name, name, where);
@@ -4377,9 +4396,9 @@ do_sort:
      together in a way that corresponds with the formal list.  */
   actual = NULL;
 
-  for (f = formal; f; f = f->next)
+  FOR_EACH_VEC_ELT (dummy_args, idx, f)
     {
-      a = f->actual;
+      a = ordered_actual_args[idx];
       if (a && a->label != NULL && f->ts.type)
 	{
 	  gfc_error ("ALTERNATE RETURN not permitted at %L", where);
@@ -4391,6 +4410,8 @@ do_sort:
 	  a = gfc_get_actual_arglist ();
 	  a->missing_arg_type = f->ts.type;
 	}
+
+      a->associated_dummy = get_intrinsic_dummy_arg (f);
 
       if (actual == NULL)
 	*ap = a;
