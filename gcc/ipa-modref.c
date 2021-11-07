@@ -752,8 +752,9 @@ record_access (modref_records *tt, ao_ref *ref)
   modref_access_node a = get_access (ref);
   if (dump_file)
     {
-       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i parm=%i\n",
-		base_set, ref_set, a.parm_index);
+       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i ",
+		base_set, ref_set);
+       dump_access (&a, dump_file);
     }
   tt->insert (base_set, ref_set, a, false);
 }
@@ -816,9 +817,9 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
       fprintf (dump_file, " (alias set %i) ref type:",
 	       base_type ? get_alias_set (base_type) : 0);
       print_generic_expr (dump_file, ref_type);
-      fprintf (dump_file, " (alias set %i) parm:%i\n",
-	       ref_type ? get_alias_set (ref_type) : 0,
-	       a.parm_index);
+      fprintf (dump_file, " (alias set %i) ",
+	       ref_type ? get_alias_set (ref_type) : 0);
+       dump_access (&a, dump_file);
     }
 
   tt->insert (base_type, ref_type, a, false);
@@ -1456,13 +1457,31 @@ class modref_lattice
 public:
   /* EAF flags of the SSA name.  */
   eaf_flags_t flags;
-  /* DFS bookkkeeping: we don't do real dataflow yet.  */
+  /* Used during DFS walk to mark names where final value was determined
+     without need for dataflow.  */
   bool known;
+  /* Used during DFS walk to mark open vertices (for cycle detection).  */
   bool open;
+  /* Set during DFS walk for names that needs dataflow propagation.  */
+  bool do_dataflow;
+  /* Used during the iterative dataflow.  */
+  bool changed;
 
   /* When doing IPA analysis we can not merge in callee escape points;
      Only remember them and do the merging at IPA propagation time.  */
   vec <escape_point, va_heap, vl_ptr> escape_points;
+
+  /* Representation of a graph for dataaflow.  This graph is built on-demand
+     using modref_eaf_analysis::analyze_ssa and later solved by
+     modref_eaf_analysis::propagate.
+     Each edge represents the fact that flags of current lattice should be
+     propagated to lattice of SSA_NAME.  */
+  struct propagate_edge
+  {
+    int ssa_name;
+    bool deref;
+  };
+  vec <propagate_edge, va_heap, vl_ptr> propagate_to;
 
   void init ();
   void release ();
@@ -1495,6 +1514,7 @@ void
 modref_lattice::release ()
 {
   escape_points.release ();
+  propagate_to.release ();
 }
 
 /* Dump lattice to OUT; indent with INDENT spaces.  */
@@ -1587,7 +1607,7 @@ bool
 modref_lattice::merge (const modref_lattice &with)
 {
   if (!with.known)
-    return merge (0);
+    do_dataflow = true;
 
   bool changed = merge (with.flags);
 
@@ -1608,7 +1628,7 @@ bool
 modref_lattice::merge_deref (const modref_lattice &with, bool ignore_stores)
 {
   if (!with.known)
-    return merge (0);
+    do_dataflow = true;
 
   bool changed = merge (deref_flags (with.flags, ignore_stores));
 
@@ -1646,13 +1666,24 @@ modref_lattice::merge_direct_store ()
   return merge (~(EAF_UNUSED | EAF_NOCLOBBER));
 }
 
-/* Analyzer of EAF flags.  */
+/* Analyzer of EAF flags.
+   This is genrally dataflow problem over the SSA graph, however we only
+   care about flags of few selected ssa names (arguments, return slot and
+   static chain).  So we first call analyze_ssa_name on all relevant names
+   and perform a DFS walk to discover SSA names where flags needs to be
+   determined.  For acyclic graphs we try to determine final flags during
+   this walk.  Once cycles or recursin depth is met we enlist SSA names
+   for dataflow which is done by propagate call.
+
+   After propagation the flags can be obtained using get_ssa_name_flags.  */
 
 class modref_eaf_analysis
 {
 public:
-  /* Compute flags for NAME.  */
+  /* Mark NAME as relevant for analysis.  */
   void analyze_ssa_name (tree name);
+  /* Dataflow slover.  */
+  void propagate ();
   /* Return flags computed earlier for NAME.  */
   int get_ssa_name_flags (tree name)
   {
@@ -1673,7 +1704,7 @@ public:
   ~modref_eaf_analysis ()
   {
     gcc_checking_assert (!m_depth);
-    if (m_ipa)
+    if (m_ipa || m_names_to_propagate.length ())
       for (unsigned int i = 0; i < num_ssa_names; i++)
 	m_lattice[i].release ();
   }
@@ -1685,6 +1716,8 @@ private:
   int m_depth;
   /* Propagation lattice for individual ssa names.  */
   auto_vec<modref_lattice> m_lattice;
+  auto_vec<tree> m_deferred_names;
+  auto_vec<int> m_names_to_propagate;
 
   void merge_with_ssa_name (tree dest, tree src, bool deref);
   void merge_call_lhs_flags (gcall *call, int arg, tree name, bool deref);
@@ -1773,26 +1806,27 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
   int index = SSA_NAME_VERSION (name);
 
   /* See if value is already computed.  */
-  if (m_lattice[index].known)
+  if (m_lattice[index].known || m_lattice[index].do_dataflow)
    return;
   if (m_lattice[index].open)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "%*sGiving up on a cycle in SSA graph\n",
-		 m_depth * 4, "");
-      return;
-    }
-  if (m_depth == param_modref_max_depth)
-    {
-      if (dump_file)
-	fprintf (dump_file,
-		 "%*sGiving up on max depth\n",
+		 "%*sCycle in SSA graph\n",
 		 m_depth * 4, "");
       return;
     }
   /* Recursion guard.  */
   m_lattice[index].init ();
+  if (m_depth == param_modref_max_depth)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "%*sMax recursion depth reached; postponing\n",
+		 m_depth * 4, "");
+      m_deferred_names.safe_push (name);
+      return;
+    }
 
   if (dump_file)
     {
@@ -2072,7 +2106,8 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
       m_lattice[index].dump (dump_file, m_depth * 4 + 2);
     }
   m_lattice[index].open = false;
-  m_lattice[index].known = true;
+  if (!m_lattice[index].do_dataflow)
+    m_lattice[index].known = true;
 }
 
 /* Propagate info from SRC to DEST.  If DEREF it true, assume that SRC
@@ -2084,6 +2119,10 @@ modref_eaf_analysis::merge_with_ssa_name (tree dest, tree src, bool deref)
   int index = SSA_NAME_VERSION (dest);
   int src_index = SSA_NAME_VERSION (src);
 
+  /* Merging lattice with itself is a no-op.  */
+  if (!deref && src == dest)
+    return;
+
   m_depth++;
   analyze_ssa_name (src);
   m_depth--;
@@ -2091,6 +2130,157 @@ modref_eaf_analysis::merge_with_ssa_name (tree dest, tree src, bool deref)
     m_lattice[index].merge_deref (m_lattice[src_index], false);
   else
     m_lattice[index].merge (m_lattice[src_index]);
+
+  /* If we failed to produce final solution add an edge to the dataflow
+     graph.  */
+  if (!m_lattice[src_index].known)
+    {
+      modref_lattice::propagate_edge e = {index, deref};
+
+      if (!m_lattice[src_index].propagate_to.length ())
+	m_names_to_propagate.safe_push (src_index);
+      m_lattice[src_index].propagate_to.safe_push (e);
+      m_lattice[src_index].changed = true;
+      m_lattice[src_index].do_dataflow = true;
+      if (dump_file)
+	fprintf (dump_file,
+		 "%*sWill propgate from ssa_name %i to %i%s\n",
+		 m_depth * 4 + 4,
+		 "", src_index, index, deref ? " (deref)" : "");
+    }
+}
+
+/* In the case we deferred some SSA names, reprocess them.  In the case some
+   dataflow edges were introduced, do the actual iterative dataflow.  */
+
+void
+modref_eaf_analysis::propagate ()
+{
+  int iterations = 0;
+  size_t i;
+  int index;
+  bool changed = true;
+
+  while (m_deferred_names.length ())
+    {
+      tree name = m_deferred_names.pop ();
+      m_lattice[SSA_NAME_VERSION (name)].open = false;
+      if (dump_file)
+	fprintf (dump_file, "Analyzing deferred SSA name\n");
+      analyze_ssa_name (name);
+    }
+
+  if (!m_names_to_propagate.length ())
+    return;
+  if (dump_file)
+    fprintf (dump_file, "Propagating EAF flags\n");
+
+  /* Compute reverse postorder.  */
+  auto_vec <int> rpo;
+  struct stack_entry
+  {
+    int name;
+    unsigned pos;
+  };
+  auto_vec <struct stack_entry> stack;
+  int pos = m_names_to_propagate.length () - 1;
+
+  rpo.safe_grow (m_names_to_propagate.length (), true);
+  stack.reserve_exact (m_names_to_propagate.length ());
+
+  /* We reuse known flag for RPO DFS walk bookeeping.  */
+  if (flag_checking)
+    FOR_EACH_VEC_ELT (m_names_to_propagate, i, index)
+      gcc_assert (!m_lattice[index].known && m_lattice[index].changed);
+
+  FOR_EACH_VEC_ELT (m_names_to_propagate, i, index)
+    {
+      if (!m_lattice[index].known)
+	{
+	  stack_entry e = {index, 0};
+
+	  stack.quick_push (e);
+	  m_lattice[index].known = true;
+	}
+      while (stack.length ())
+	{
+	  bool found = false;
+	  int index1 = stack.last ().name;
+
+	  while (stack.last ().pos < m_lattice[index1].propagate_to.length ())
+	    {
+	      int index2 = m_lattice[index1]
+		      .propagate_to[stack.last ().pos].ssa_name;
+
+	      stack.last ().pos++;
+	      if (!m_lattice[index2].known
+		  && m_lattice[index2].propagate_to.length ())
+		{
+		  stack_entry e = {index2, 0};
+
+		  stack.quick_push (e);
+		  m_lattice[index2].known = true;
+		  found = true;
+		  break;
+		}
+	    }
+	  if (!found
+	      && stack.last ().pos == m_lattice[index1].propagate_to.length ())
+	    {
+	      rpo[pos--] = index1;
+	      stack.pop ();
+	    }
+	}
+    }
+
+  /* Perform itrative dataflow.  */
+  while (changed)
+    {
+      changed = false;
+      iterations++;
+      if (dump_file)
+	fprintf (dump_file, " iteration %i\n", iterations);
+      FOR_EACH_VEC_ELT (rpo, i, index)
+	{
+	  if (m_lattice[index].changed)
+	    {
+	      size_t j;
+
+	      m_lattice[index].changed = false;
+	      if (dump_file)
+		fprintf (dump_file, "  Visiting ssa name %i\n", index);
+	      for (j = 0; j < m_lattice[index].propagate_to.length (); j++)
+		{
+		  bool ch;
+		  int target = m_lattice[index].propagate_to[j].ssa_name;
+		  bool deref = m_lattice[index].propagate_to[j].deref;
+
+		  if (dump_file)
+		    fprintf (dump_file, "   Propagating flags of ssa name"
+			     " %i to %i%s\n",
+			     index, target, deref ? " (deref)" : "");
+		  m_lattice[target].known = true;
+		  if (!m_lattice[index].propagate_to[j].deref)
+		    ch = m_lattice[target].merge (m_lattice[index]);
+		  else
+		    ch = m_lattice[target].merge_deref (m_lattice[index],
+							false);
+		  if (!ch)
+		    continue;
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "   New lattice: ");
+		      m_lattice[target].dump (dump_file);
+		    }
+		  if (target <= (int)i)
+		    changed = true;
+		  m_lattice[target].changed = true;
+		}
+	    }
+	}
+    }
+  if (dump_file)
+    fprintf (dump_file, "EAF flags propagated in %i iterations\n", iterations);
 }
 
 /* Record escape points of PARM_INDEX according to LATTICE.  */
@@ -2151,6 +2341,23 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 
   modref_eaf_analysis eaf_analysis (ipa);
 
+  /* Determine all SSA names we need to know flags for.  */
+  for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
+       parm = TREE_CHAIN (parm))
+    {
+      tree name = ssa_default_def (cfun, parm);
+      if (name)
+	eaf_analysis.analyze_ssa_name (name);
+    }
+  if (retslot)
+    eaf_analysis.analyze_ssa_name (retslot);
+  if (static_chain)
+    eaf_analysis.analyze_ssa_name (static_chain);
+
+  /* Do the dataflow.  */
+  eaf_analysis.propagate ();
+
+  /* Store results to summaries.  */
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm; parm_index++,
        parm = TREE_CHAIN (parm))
     {
@@ -2175,7 +2382,6 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	    }
 	  continue;
 	}
-      eaf_analysis.analyze_ssa_name (name);
       int flags = eaf_analysis.get_ssa_name_flags (name);
 
       /* Eliminate useless flags so we do not end up storing unnecessary
@@ -2204,7 +2410,6 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
     }
   if (retslot)
     {
-      eaf_analysis.analyze_ssa_name (retslot);
       int flags = eaf_analysis.get_ssa_name_flags (retslot);
 
       flags = remove_useless_eaf_flags (flags, ecf_flags, false);
@@ -2220,7 +2425,6 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
     }
   if (static_chain)
     {
-      eaf_analysis.analyze_ssa_name (static_chain);
       int flags = eaf_analysis.get_ssa_name_flags (static_chain);
 
       flags = remove_useless_eaf_flags (flags, ecf_flags, false);
