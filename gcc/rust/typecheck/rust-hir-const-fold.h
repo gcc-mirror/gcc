@@ -47,9 +47,33 @@ public:
     translated = backend->array_type (element_ty, type.get_capacity ());
   }
 
-  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+  void visit (TyTy::ReferenceType &type) override
+  {
+    Btype *base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
+    if (type.is_mutable ())
+      {
+	translated = backend->reference_type (base_compiled_type);
+      }
+    else
+      {
+	auto base = backend->immutable_type (base_compiled_type);
+	translated = backend->reference_type (base);
+      }
+  }
 
-  void visit (TyTy::PointerType &) override { gcc_unreachable (); }
+  void visit (TyTy::PointerType &type) override
+  {
+    Btype *base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
+    if (type.is_mutable ())
+      {
+	translated = backend->pointer_type (base_compiled_type);
+      }
+    else
+      {
+	auto base = backend->immutable_type (base_compiled_type);
+	translated = backend->pointer_type (base);
+      }
+  }
 
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
 
@@ -434,6 +458,38 @@ public:
 
     folded = ctx->get_backend ()->array_index_expression (array, index,
 							  expr.get_locus ());
+  }
+
+  void visit (HIR::BorrowExpr &expr) override
+  {
+    Bexpression *main_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
+
+    folded
+      = ctx->get_backend ()->address_expression (main_expr, expr.get_locus ());
+  }
+
+  void visit (HIR::DereferenceExpr &expr) override
+  {
+    Bexpression *main_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
+
+    TyTy::BaseType *tyty = nullptr;
+    if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
+      {
+	rust_fatal_error (expr.get_locus (),
+			  "did not resolve type for this TupleExpr");
+	return;
+      }
+
+    Btype *expected_type = ConstFoldType::fold (tyty, ctx->get_backend ());
+    bool known_valid = true;
+    folded = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
+						       known_valid,
+						       expr.get_locus ());
+  }
+
+  void visit (HIR::GroupedExpr &expr) override
+  {
+    folded = ConstFoldExpr::fold (expr.get_expr_in_parens ().get ());
   }
 
 private:
