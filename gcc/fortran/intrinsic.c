@@ -3806,7 +3806,7 @@ add_subroutines (void)
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_reduce, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
-	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "operation", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
