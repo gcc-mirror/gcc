@@ -749,12 +749,15 @@ make_partial_integer_mode (const char *base, const char *name,
 
 /* A single vector mode can be specified by naming its component
    mode and the number of components.  */
-#define VECTOR_MODE(C, M, N) \
-  make_vector_mode (MODE_##C, #M, N, __FILE__, __LINE__);
+#define VECTOR_MODE_WITH_PREFIX(PREFIX, C, M, N, ORDER) \
+  make_vector_mode (MODE_##C, #PREFIX, #M, N, ORDER, __FILE__, __LINE__);
+#define VECTOR_MODE(C, M, N) VECTOR_MODE_WITH_PREFIX(V, C, M, N, 0);
 static void ATTRIBUTE_UNUSED
 make_vector_mode (enum mode_class bclass,
+		  const char *prefix,
 		  const char *base,
 		  unsigned int ncomponents,
+		  unsigned int order,
 		  const char *file, unsigned int line)
 {
   struct mode_data *v;
@@ -778,7 +781,7 @@ make_vector_mode (enum mode_class bclass,
       return;
     }
 
-  if ((size_t)snprintf (namebuf, sizeof namebuf, "V%u%s",
+  if ((size_t)snprintf (namebuf, sizeof namebuf, "%s%u%s", prefix,
 			ncomponents, base) >= sizeof namebuf)
     {
       error ("%s:%d: mode name \"%s\" is too long",
@@ -787,6 +790,7 @@ make_vector_mode (enum mode_class bclass,
     }
 
   v = new_mode (vclass, xstrdup (namebuf), file, line);
+  v->order = order;
   v->ncomponents = ncomponents;
   v->component = component;
 }

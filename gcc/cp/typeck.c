@@ -3460,12 +3460,9 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
 
   if (TREE_CODE (ptrmem) == CONSTRUCTOR)
     {
-      unsigned int ix;
-      tree index, value;
-      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ptrmem),
-				ix, index, value)
-	if (index && DECL_P (index) && DECL_NAME (index) == member_name)
-	  return value;
+      for (auto &e: CONSTRUCTOR_ELTS (ptrmem))
+	if (e.index && DECL_P (e.index) && DECL_NAME (e.index) == member_name)
+	  return e.value;
       gcc_unreachable ();
     }
 

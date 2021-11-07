@@ -25,4 +25,3 @@ public:
 main() { n.j(); }
 
 /* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_MUL" 1 "slp2" } } */
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_FMA" 1 "slp2" } } */

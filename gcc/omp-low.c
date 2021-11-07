@@ -3942,7 +3942,8 @@ omp_runtime_api_call (const_tree fndecl)
       "target_memcpy",
       "target_memcpy_rect",
       NULL,
-      /* Now omp_* calls that are available as omp_* and omp_*_.  */
+      /* Now omp_* calls that are available as omp_* and omp_*_; however, the
+	 DECL_NAME is always omp_* without tailing underscore.  */
       "capture_affinity",
       "destroy_allocator",
       "destroy_lock",
@@ -3994,7 +3995,8 @@ omp_runtime_api_call (const_tree fndecl)
       "unset_lock",
       "unset_nest_lock",
       NULL,
-      /* And finally calls available as omp_*, omp_*_ and omp_*_8_.  */
+      /* And finally calls available as omp_*, omp_*_ and omp_*_8_; however,
+	 as DECL_NAME only omp_* and omp_*_8 appear.  */
       "display_env",
       "get_ancestor_thread_num",
       "init_allocator",
@@ -4024,11 +4026,7 @@ omp_runtime_api_call (const_tree fndecl)
       size_t len = strlen (omp_runtime_apis[i]);
       if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
 	  && (name[4 + len] == '\0'
-	      || (mode > 0
-		  && name[4 + len] == '_'
-		  && (name[4 + len + 1] == '\0'
-		      || (mode > 1
-			  && strcmp (name + 4 + len + 1, "8_") == 0)))))
+	      || (mode > 1 && strcmp (name + 4 + len, "_8") == 0)))
 	return true;
     }
   return false;
@@ -4095,9 +4093,26 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 			    "OpenMP runtime API call %qD in a region with "
 			    "%<order(concurrent)%> clause", fndecl);
 		}
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+		  && omp_runtime_api_call (fndecl)
+		  && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl))
+		       != strlen ("omp_get_num_teams"))
+		      || strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+				 "omp_get_num_teams") != 0)
+		  && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl))
+		       != strlen ("omp_get_team_num"))
+		      || strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+				 "omp_get_team_num") != 0))
+		{
+		  remove = true;
+		  error_at (gimple_location (stmt),
+			    "OpenMP runtime API call %qD strictly nested in a "
+			    "%<teams%> region", fndecl);
+		}
 	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
 		  && (gimple_omp_target_kind (ctx->stmt)
-		      == GF_OMP_TARGET_KIND_REGION))
+		      == GF_OMP_TARGET_KIND_REGION)
+		  && omp_runtime_api_call (fndecl))
 		{
 		  tree tgt_clauses = gimple_omp_target_clauses (ctx->stmt);
 		  tree c = omp_find_clause (tgt_clauses, OMP_CLAUSE_DEVICE);

@@ -2508,19 +2508,6 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
 					   NULL);
 	    }
 	}
-      /* FIXME: A SIMD parallel will eventually lead to a subreg of a
-	 SIMD register, which is currently broken.  While we get GCC
-	 to emit proper RTL for these cases, let's dump to memory.  */
-      else if (VECTOR_MODE_P (GET_MODE (dst))
-	       && REG_P (src))
-	{
-	  poly_uint64 slen = GET_MODE_SIZE (GET_MODE (src));
-	  rtx mem;
-
-	  mem = assign_stack_temp (GET_MODE (src), slen);
-	  emit_move_insn (mem, src);
-	  tmps[i] = adjust_address (mem, mode, bytepos);
-	}
       else if (CONSTANT_P (src) && GET_MODE (dst) != BLKmode
                && XVECLEN (dst, 0) > 1)
         tmps[i] = simplify_gen_subreg (mode, src, GET_MODE (dst), bytepos);

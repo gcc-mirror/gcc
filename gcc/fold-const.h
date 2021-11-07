@@ -44,6 +44,7 @@ extern void shift_bytes_in_array_right (unsigned char *, unsigned int,
    subexpressions are not changed.  */
 
 extern tree fold (tree);
+extern tree fold_init (tree);
 #define fold_unary(CODE,T1,T2)\
    fold_unary_loc (UNKNOWN_LOCATION, CODE, T1, T2)
 extern tree fold_unary_loc (location_t, enum tree_code, tree, tree);
@@ -213,6 +214,8 @@ extern bool negate_mathfn_p (combined_fn);
 extern const char *getbyterep (tree, unsigned HOST_WIDE_INT *);
 extern const char *c_getstr (tree);
 extern wide_int tree_nonzero_bits (const_tree);
+extern int address_compare (tree_code, tree, tree, tree, tree &, tree &,
+			    poly_int64 &, poly_int64 &, bool);
 
 /* Return OFF converted to a pointer offset type suitable as offset for
    POINTER_PLUS_EXPR.  Use location LOC for this conversion.  */

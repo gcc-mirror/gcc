@@ -38,17 +38,17 @@ public:
   void enter (basic_block);
   void leave (basic_block);
   void visit_stmt (gimple *stmt);
-  tree get_equiv (tree ssa) const;
+  tree get_equiv (tree ssa);
 
 private:
   void visit_edge (edge e);
-  tree get_equiv_expr (tree_code code, tree expr) const;
+  tree get_equiv_expr (tree_code code, tree expr);
   void set_global_equiv (tree ssa, tree pointee);
   void set_cond_equiv (tree ssa, tree pointee);
 
   gimple_ranger *m_ranger;
   // Global pointer equivalency indexed by SSA_NAME_VERSION.
-  tree *m_global_points;
+  auto_vec<tree> m_global_points;
   // Conditional pointer equivalency.
   class ssa_equiv_stack *m_cond_points;
 };

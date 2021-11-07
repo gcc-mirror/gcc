@@ -6569,7 +6569,7 @@ resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
 
 
 static void
-clean_up_modules (gfc_gsymbol *gsym)
+clean_up_modules (gfc_gsymbol *&gsym)
 {
   if (gsym == NULL)
     return;
@@ -6577,14 +6577,18 @@ clean_up_modules (gfc_gsymbol *gsym)
   clean_up_modules (gsym->left);
   clean_up_modules (gsym->right);
 
-  if (gsym->type != GSYM_MODULE || !gsym->ns)
+  if (gsym->type != GSYM_MODULE)
     return;
 
-  gfc_current_ns = gsym->ns;
-  gfc_derived_types = gfc_current_ns->derived_types;
-  gfc_done_2 ();
-  gsym->ns = NULL;
-  return;
+  if (gsym->ns)
+    {
+      gfc_current_ns = gsym->ns;
+      gfc_derived_types = gfc_current_ns->derived_types;
+      gfc_done_2 ();
+      gsym->ns = NULL;
+    }
+  free (gsym);
+  gsym = NULL;
 }
 
 

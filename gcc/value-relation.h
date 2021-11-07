@@ -233,6 +233,7 @@ private:
   equiv_chain m_equiv;
   relation_chain_head m_relations;
   relation_oracle *m_root;
+  bitmap m_killed_defs;
 
   bitmap_obstack m_bitmaps;
   struct obstack m_chain_obstack;

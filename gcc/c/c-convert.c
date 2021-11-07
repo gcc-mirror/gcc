@@ -60,10 +60,13 @@ along with GCC; see the file COPYING3.  If not see
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable
    conversions; callers should filter out those that are
-   not permitted by the language being compiled.  */
+   not permitted by the language being compiled.
+   INIT_CONST is true if the conversion is for arithmetic types for a static
+   initializer and folding must apply accordingly (discarding floating-point
+   exceptions and assuming the default rounding mode is in effect).  */
 
-tree
-convert (tree type, tree expr)
+static tree
+c_convert (tree type, tree expr, bool init_const)
 {
   tree e = expr;
   enum tree_code code = TREE_CODE (type);
@@ -115,7 +118,7 @@ convert (tree type, tree expr)
 	  && COMPLETE_TYPE_P (type))
 	{
 	  expr = save_expr (expr);
-	  expr = c_fully_fold (expr, false, NULL);
+	  expr = c_fully_fold (expr, init_const, NULL);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr);
 	  expr = fold_build1 (FIX_TRUNC_EXPR, type, expr);
 	  if (check == NULL_TREE)
@@ -173,10 +176,32 @@ convert (tree type, tree expr)
 
     maybe_fold:
       if (TREE_CODE (ret) != C_MAYBE_CONST_EXPR)
-	ret = fold (ret);
+	ret = init_const ? fold_init (ret) : fold (ret);
       return ret;
     }
 
   error ("conversion to non-scalar type requested");
   return error_mark_node;
+}
+
+/* Create an expression whose value is that of EXPR, converted to type TYPE.
+   The TREE_TYPE of the value is always TYPE.  This function implements all
+   reasonable conversions; callers should filter out those that are not
+   permitted by the language being compiled.  */
+
+tree
+convert (tree type, tree expr)
+{
+  return c_convert (type, expr, false);
+}
+
+/* Create an expression whose value is that of EXPR, converted to type TYPE, in
+   a static initializer.  The TREE_TYPE of the value is always TYPE.  This
+   function implements all reasonable conversions; callers should filter out
+   those that are not permitted by the language being compiled.  */
+
+tree
+convert_init (tree type, tree expr)
+{
+  return c_convert (type, expr, true);
 }

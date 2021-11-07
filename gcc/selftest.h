@@ -112,6 +112,8 @@ class temp_source_file : public named_temp_file
  public:
   temp_source_file (const location &loc, const char *suffix,
 		    const char *content);
+  temp_source_file (const location &loc, const char *suffix,
+		    const char *content, size_t sz);
 };
 
 /* RAII-style class for avoiding introducing locale-specific differences

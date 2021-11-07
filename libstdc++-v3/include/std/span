@@ -201,11 +201,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<typename _Range>
-	requires ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
-	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
-	  && (!__detail::__is_span<remove_cvref_t<_Range>>)
+	requires (!__detail::__is_span<remove_cvref_t<_Range>>)
 	  && (!__detail::__is_std_array<remove_cvref_t<_Range>>)
 	  && (!is_array_v<remove_cvref_t<_Range>>)
+	  && ranges::contiguous_range<_Range> && ranges::sized_range<_Range>
+	  && (ranges::borrowed_range<_Range> || is_const_v<element_type>)
 	  && __is_compatible_ref<ranges::range_reference_t<_Range>>::value
 	constexpr explicit(extent != dynamic_extent)
 	span(_Range&& __range)

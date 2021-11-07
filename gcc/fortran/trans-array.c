@@ -4161,7 +4161,7 @@ gfc_start_scalarized_body (gfc_loopinfo * loop, stmtblock_t * pbody)
 
 /* Generates the actual loop code for a scalarization loop.  */
 
-void
+static void
 gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
 			       stmtblock_t * pbody)
 {

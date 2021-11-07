@@ -3562,11 +3562,28 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			 "applying loop versioning to outer loop %d\n",
 			 loop_to_version->num);
 
+      unsigned orig_pe_idx = loop_preheader_edge (loop)->dest_idx;
+
       initialize_original_copy_tables ();
       nloop = loop_version (loop_to_version, cond_expr, &condition_bb,
 			    prob, prob.invert (), prob, prob.invert (), true);
       gcc_assert (nloop);
       nloop = get_loop_copy (loop);
+
+      /* For cycle vectorization with SLP we rely on the PHI arguments
+	 appearing in the same order as the SLP node operands which for the
+	 loop PHI nodes means the preheader edge dest index needs to remain
+	 the same for the analyzed loop which also becomes the vectorized one.
+	 Make it so in case the state after versioning differs by redirecting
+	 the first edge into the header to the same destination which moves
+	 it last.  */
+      if (loop_preheader_edge (loop)->dest_idx != orig_pe_idx)
+	{
+	  edge e = EDGE_PRED (loop->header, 0);
+	  ssa_redirect_edge (e, e->dest);
+	  flush_pending_stmts (e);
+	}
+      gcc_assert (loop_preheader_edge (loop)->dest_idx == orig_pe_idx);
 
       /* Kill off IFN_LOOP_VECTORIZED_CALL in the copy, nobody will
          reap those otherwise;  they also refer to the original

@@ -3070,9 +3070,11 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
     }
   else
     {
-      /* If this variable is in a register use expand_assignment.  */
+      /* If this variable is in a register use expand_assignment.
+	 For boolean scalars force zero-init.  */
       tree init;
-      if (tree_fits_uhwi_p (var_size)
+      if (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE
+	  && tree_fits_uhwi_p (var_size)
 	  && (init_type == AUTO_INIT_PATTERN
 	      || !is_gimple_reg_type (var_type))
 	  && int_mode_for_size (tree_to_uhwi (var_size) * BITS_PER_UNIT,
@@ -3082,17 +3084,16 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
 	  memset (buf, (init_type == AUTO_INIT_PATTERN
 			? INIT_PATTERN_VALUE : 0), total_bytes);
-	  if (can_native_interpret_type_p (var_type))
-	    init = native_interpret_expr (var_type, buf, total_bytes);
+	  tree itype = build_nonstandard_integer_type
+			 (total_bytes * BITS_PER_UNIT, 1);
+	  wide_int w = wi::from_buffer (buf, total_bytes);
+	  init = wide_int_to_tree (itype, w);
+	  /* Pun the LHS to make sure its type has constant size
+	     unless it is an SSA name where that's already known.  */
+	  if (TREE_CODE (lhs) != SSA_NAME)
+	    lhs = build1 (VIEW_CONVERT_EXPR, itype, lhs);
 	  else
-	    {
-	      tree itype = build_nonstandard_integer_type
-			     (total_bytes * BITS_PER_UNIT, 1);
-	      wide_int w = wi::from_buffer (buf, total_bytes);
-	      init = wide_int_to_tree (itype, w);
-	      /* Pun the LHS to make sure its type has constant size.  */
-	      lhs = build1 (VIEW_CONVERT_EXPR, itype, lhs);
-	    }
+	    init = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), init);
 	}
       else
 	/* Use zero-init also for variable-length sizes.  */

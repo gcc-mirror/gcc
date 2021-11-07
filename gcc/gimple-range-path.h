@@ -57,10 +57,12 @@ private:
   void compute_ranges_in_block (basic_block bb);
   void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
-  void compute_relations (const vec<basic_block> &);
+  void compute_outgoing_relations (basic_block bb, basic_block next);
   void compute_phi_relations (basic_block bb, basic_block prev);
+  void maybe_register_phi_relation (gphi *, tree arg);
   void add_copies_to_imports ();
   bool add_to_imports (tree name, bitmap imports);
+  inline bool import_p (tree name);
 
   // Path navigation.
   void set_path (const vec<basic_block> &);
@@ -95,5 +97,14 @@ private:
   // Set if there were any undefined expressions while pre-calculating path.
   bool m_undefined_path;
 };
+
+// Return TRUE if NAME is in the import bitmap.
+
+bool
+path_range_query::import_p (tree name)
+{
+  return (TREE_CODE (name) == SSA_NAME
+	  && bitmap_bit_p (m_imports, SSA_NAME_VERSION (name)));
+}
 
 #endif // GCC_TREE_SSA_THREADSOLVER_H

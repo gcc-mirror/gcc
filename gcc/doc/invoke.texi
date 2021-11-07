@@ -312,7 +312,8 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-show-path-depths @gol
 -fno-show-column @gol
 -fdiagnostics-column-unit=@r{[}display@r{|}byte@r{]} @gol
--fdiagnostics-column-origin=@var{origin}}
+-fdiagnostics-column-origin=@var{origin} @gol
+-fdiagnostics-escape-format=@r{[}unicode@r{|}bytes@r{]}}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -596,6 +597,7 @@ Objective-C and Objective-C++ Dialects}.
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]} @gol
+-fharden-compares -fharden-conditional-branches @gol
 -fstack-protector  -fstack-protector-all  -fstack-protector-strong @gol
 -fstack-protector-explicit  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
@@ -5125,6 +5127,38 @@ first column.  The default value of 1 corresponds to traditional GCC
 behavior and to the GNU style guide.  Some utilities may perform better with an
 origin of 0; any non-negative value may be specified.
 
+@item -fdiagnostics-escape-format=@var{FORMAT}
+@opindex fdiagnostics-escape-format
+When GCC prints pertinent source lines for a diagnostic it normally attempts
+to print the source bytes directly.  However, some diagnostics relate to encoding
+issues in the source file, such as malformed UTF-8, or issues with Unicode
+normalization.  These diagnostics are flagged so that GCC will escape bytes
+that are not printable ASCII when printing their pertinent source lines.
+
+This option controls how such bytes should be escaped.
+
+The default @var{FORMAT}, @samp{unicode} displays Unicode characters that
+are not printable ASCII in the form @samp{<U+XXXX>}, and bytes that do not
+correspond to a Unicode character validly-encoded in UTF-8-encoded will be
+displayed as hexadecimal in the form @samp{<XX>}.
+
+For example, a source line containing the string @samp{before} followed by the
+Unicode character U+03C0 (``GREEK SMALL LETTER PI'', with UTF-8 encoding
+0xCF 0x80) followed by the byte 0xBF (a stray UTF-8 trailing byte), followed by
+the string @samp{after} will be printed for such a diagnostic as:
+
+@smallexample
+ before<U+03C0><BF>after
+@end smallexample
+
+Setting @var{FORMAT} to @samp{bytes} will display all non-printable-ASCII bytes
+in the form @samp{<XX>}, thus showing the underlying encoding of non-ASCII
+Unicode characters.  For the example above, the following will be printed:
+
+@smallexample
+ before<CF><80><BF>after
+@end smallexample
+
 @item -fdiagnostics-format=@var{FORMAT}
 @opindex fdiagnostics-format
 Select a different format for printing diagnostics.
@@ -5192,9 +5226,11 @@ might be printed in JSON form (after formatting) like this:
                         @}
                     @}
                 ],
+                "escape-source": false,
                 "message": "...this statement, but the latter is @dots{}"
             @}
         ]
+	"escape-source": false,
 	"column-origin": 1,
     @}
 ]
@@ -5280,6 +5316,7 @@ of the expression, which have labels.  It might be printed in JSON form as:
                 "label": "T @{aka struct t@}"
             @}
         ],
+        "escape-source": false,
         "message": "invalid operands to binary + @dots{}"
     @}
 @end smallexample
@@ -5333,6 +5370,7 @@ might be printed in JSON form as:
                 @}
             @}
         ],
+        "escape-source": false,
         "message": "\u2018struct s\u2019 has no member named @dots{}"
     @}
 @end smallexample
@@ -5389,6 +5427,10 @@ For example, the intraprocedural example shown for
         @}
     ]
 @end smallexample
+
+Diagnostics have a boolean attribute @code{escape-source}, hinting whether
+non-ASCII bytes should be escaped when printing the pertinent lines of
+source code (@code{true} for diagnostics involving source encoding issues).
 
 @end table
 
@@ -14246,6 +14288,11 @@ Maximum depth of recursive cloning for self-recursive function.
 Recursive cloning only when the probability of call being executed exceeds
 the parameter.
 
+@item ipa-cp-profile-count-base
+When using @option{-fprofile-use} option, IPA-CP will consider the measured
+execution count of a call graph edge at this percentage position in their
+histogram as the basis for its heuristics calculation.
+
 @item ipa-cp-recursive-freq-factor
 The number of times interprocedural copy propagation expects recursive
 functions to call themselves.
@@ -15544,6 +15591,24 @@ which functions and calls should be skipped from instrumentation
 Currently the x86 GNU/Linux target provides an implementation based
 on Intel Control-flow Enforcement Technology (CET) which works for
 i686 processor or newer.
+
+@item -fharden-compares
+@opindex fharden-compares
+For every logical test that survives gimple optimizations and is
+@emph{not} the condition in a conditional branch (for example,
+conditions tested for conditional moves, or to store in boolean
+variables), emit extra code to compute and verify the reversed
+condition, and to call @code{__builtin_trap} if the results do not
+match.  Use with @samp{-fharden-conditional-branches} to cover all
+conditionals.
+
+@item -fharden-conditional-branches
+@opindex fharden-conditional-branches
+For every non-vectorized conditional branch that survives gimple
+optimizations, emit extra code to compute and verify the reversed
+condition, and to call @code{__builtin_trap} if the result is
+unexpected.  Use with @samp{-fharden-compares} to cover all
+conditionals.
 
 @item -fstack-protector
 @opindex fstack-protector
@@ -18672,7 +18737,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x2},
-@samp{cortex-a510}, @samp{cortex-a710}, @samp{native}.
+@samp{cortex-a510}, @samp{cortex-a710}, @samp{ampere1}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -32832,8 +32897,7 @@ Substitute the contents of spec string @var{name} at this point.
 Accumulate an option for @samp{%X}.
 
 @item %X
-Output the accumulated linker options specified by @option{-Wl} or a @samp{%x}
-spec string.
+Output the accumulated linker options specified by a @samp{%x} spec string.
 
 @item %Y
 Output the accumulated assembler options specified by @option{-Wa}.

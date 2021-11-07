@@ -31,6 +31,8 @@ struct GTY(()) modref_summary
   modref_records *loads;
   modref_records *stores;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
+  eaf_flags_t retslot_flags;
+  eaf_flags_t static_chain_flags;
   bool writes_errno;
 
   modref_summary ();

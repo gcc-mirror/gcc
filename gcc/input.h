@@ -39,8 +39,11 @@ STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 extern bool is_location_from_builtin_token (location_t);
 extern expanded_location expand_location (location_t);
 
-extern int location_compute_display_column (expanded_location exploc,
-					    int tabstop);
+class cpp_char_column_policy;
+
+extern int
+location_compute_display_column (expanded_location exploc,
+				 const cpp_char_column_policy &policy);
 
 /* A class capturing the bounds of a buffer, to allow for run-time
    bounds-checking in a checked build.  */

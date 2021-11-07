@@ -47,11 +47,8 @@ match gfc_match_space (void);
 match gfc_match_eos (void);
 match gfc_match_small_literal_int (int *, int *);
 match gfc_match_st_label (gfc_st_label **);
-match gfc_match_label (void);
 match gfc_match_small_int (int *);
-match gfc_match_small_int_expr (int *, gfc_expr **);
 match gfc_match_name (char *);
-match gfc_match_name_C (const char **buffer);
 match gfc_match_symbol (gfc_symbol **, int);
 match gfc_match_sym_tree (gfc_symtree **, int);
 match gfc_match_intrinsic_op (gfc_intrinsic_op *);
@@ -237,7 +234,6 @@ match gfc_match_omp_end_single (void);
 match gfc_match_data (void);
 match gfc_match_null (gfc_expr **);
 match gfc_match_kind_spec (gfc_typespec *, bool);
-match gfc_match_old_kind_spec (gfc_typespec *);
 match gfc_match_decl_type_spec (gfc_typespec *, int);
 
 match gfc_match_end (gfc_statement *);
@@ -296,14 +292,8 @@ match gfc_match_volatile (void);
 
 /* Fortran 2003 c interop.
    TODO: some of these should be moved to another file rather than decl.c */
-void set_com_block_bind_c (gfc_common_head *, int);
-bool set_verify_bind_c_sym (gfc_symbol *, int);
-bool set_verify_bind_c_com_block (gfc_common_head *, int);
-bool get_bind_c_idents (void);
 match gfc_match_bind_c_stmt (void);
-match gfc_match_suffix (gfc_symbol *, gfc_symbol **);
 match gfc_match_bind_c (gfc_symbol *, bool);
-match gfc_get_type_attr_spec (symbol_attribute *, char*);
 
 /* primary.c.  */
 match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **);

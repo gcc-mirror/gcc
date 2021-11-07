@@ -30,6 +30,8 @@
 #pragma GCC push_options
 #pragma GCC target ("+nothing+simd")
 
+#pragma GCC aarch64 "arm_neon.h"
+
 #include <stdint.h>
 
 #define __AARCH64_UINT64_C(__C) ((uint64_t) __C)
@@ -75,456 +77,6 @@ typedef double float64_t;
 
 typedef __Bfloat16x4_t bfloat16x4_t;
 typedef __Bfloat16x8_t bfloat16x8_t;
-
-typedef struct bfloat16x4x2_t
-{
-  bfloat16x4_t val[2];
-} bfloat16x4x2_t;
-
-typedef struct bfloat16x8x2_t
-{
-  bfloat16x8_t val[2];
-} bfloat16x8x2_t;
-
-typedef struct bfloat16x4x3_t
-{
-  bfloat16x4_t val[3];
-} bfloat16x4x3_t;
-
-typedef struct bfloat16x8x3_t
-{
-  bfloat16x8_t val[3];
-} bfloat16x8x3_t;
-
-typedef struct bfloat16x4x4_t
-{
-  bfloat16x4_t val[4];
-} bfloat16x4x4_t;
-
-typedef struct bfloat16x8x4_t
-{
-  bfloat16x8_t val[4];
-} bfloat16x8x4_t;
-
-typedef struct int8x8x2_t
-{
-  int8x8_t val[2];
-} int8x8x2_t;
-
-typedef struct int8x16x2_t
-{
-  int8x16_t val[2];
-} int8x16x2_t;
-
-typedef struct int16x4x2_t
-{
-  int16x4_t val[2];
-} int16x4x2_t;
-
-typedef struct int16x8x2_t
-{
-  int16x8_t val[2];
-} int16x8x2_t;
-
-typedef struct int32x2x2_t
-{
-  int32x2_t val[2];
-} int32x2x2_t;
-
-typedef struct int32x4x2_t
-{
-  int32x4_t val[2];
-} int32x4x2_t;
-
-typedef struct int64x1x2_t
-{
-  int64x1_t val[2];
-} int64x1x2_t;
-
-typedef struct int64x2x2_t
-{
-  int64x2_t val[2];
-} int64x2x2_t;
-
-typedef struct uint8x8x2_t
-{
-  uint8x8_t val[2];
-} uint8x8x2_t;
-
-typedef struct uint8x16x2_t
-{
-  uint8x16_t val[2];
-} uint8x16x2_t;
-
-typedef struct uint16x4x2_t
-{
-  uint16x4_t val[2];
-} uint16x4x2_t;
-
-typedef struct uint16x8x2_t
-{
-  uint16x8_t val[2];
-} uint16x8x2_t;
-
-typedef struct uint32x2x2_t
-{
-  uint32x2_t val[2];
-} uint32x2x2_t;
-
-typedef struct uint32x4x2_t
-{
-  uint32x4_t val[2];
-} uint32x4x2_t;
-
-typedef struct uint64x1x2_t
-{
-  uint64x1_t val[2];
-} uint64x1x2_t;
-
-typedef struct uint64x2x2_t
-{
-  uint64x2_t val[2];
-} uint64x2x2_t;
-
-typedef struct float16x4x2_t
-{
-  float16x4_t val[2];
-} float16x4x2_t;
-
-typedef struct float16x8x2_t
-{
-  float16x8_t val[2];
-} float16x8x2_t;
-
-typedef struct float32x2x2_t
-{
-  float32x2_t val[2];
-} float32x2x2_t;
-
-typedef struct float32x4x2_t
-{
-  float32x4_t val[2];
-} float32x4x2_t;
-
-typedef struct float64x2x2_t
-{
-  float64x2_t val[2];
-} float64x2x2_t;
-
-typedef struct float64x1x2_t
-{
-  float64x1_t val[2];
-} float64x1x2_t;
-
-typedef struct poly8x8x2_t
-{
-  poly8x8_t val[2];
-} poly8x8x2_t;
-
-typedef struct poly8x16x2_t
-{
-  poly8x16_t val[2];
-} poly8x16x2_t;
-
-typedef struct poly16x4x2_t
-{
-  poly16x4_t val[2];
-} poly16x4x2_t;
-
-typedef struct poly16x8x2_t
-{
-  poly16x8_t val[2];
-} poly16x8x2_t;
-
-typedef struct poly64x1x2_t
-{
-  poly64x1_t val[2];
-} poly64x1x2_t;
-
-typedef struct poly64x1x3_t
-{
-  poly64x1_t val[3];
-} poly64x1x3_t;
-
-typedef struct poly64x1x4_t
-{
-  poly64x1_t val[4];
-} poly64x1x4_t;
-
-typedef struct poly64x2x2_t
-{
-  poly64x2_t val[2];
-} poly64x2x2_t;
-
-typedef struct poly64x2x3_t
-{
-  poly64x2_t val[3];
-} poly64x2x3_t;
-
-typedef struct poly64x2x4_t
-{
-  poly64x2_t val[4];
-} poly64x2x4_t;
-
-typedef struct int8x8x3_t
-{
-  int8x8_t val[3];
-} int8x8x3_t;
-
-typedef struct int8x16x3_t
-{
-  int8x16_t val[3];
-} int8x16x3_t;
-
-typedef struct int16x4x3_t
-{
-  int16x4_t val[3];
-} int16x4x3_t;
-
-typedef struct int16x8x3_t
-{
-  int16x8_t val[3];
-} int16x8x3_t;
-
-typedef struct int32x2x3_t
-{
-  int32x2_t val[3];
-} int32x2x3_t;
-
-typedef struct int32x4x3_t
-{
-  int32x4_t val[3];
-} int32x4x3_t;
-
-typedef struct int64x1x3_t
-{
-  int64x1_t val[3];
-} int64x1x3_t;
-
-typedef struct int64x2x3_t
-{
-  int64x2_t val[3];
-} int64x2x3_t;
-
-typedef struct uint8x8x3_t
-{
-  uint8x8_t val[3];
-} uint8x8x3_t;
-
-typedef struct uint8x16x3_t
-{
-  uint8x16_t val[3];
-} uint8x16x3_t;
-
-typedef struct uint16x4x3_t
-{
-  uint16x4_t val[3];
-} uint16x4x3_t;
-
-typedef struct uint16x8x3_t
-{
-  uint16x8_t val[3];
-} uint16x8x3_t;
-
-typedef struct uint32x2x3_t
-{
-  uint32x2_t val[3];
-} uint32x2x3_t;
-
-typedef struct uint32x4x3_t
-{
-  uint32x4_t val[3];
-} uint32x4x3_t;
-
-typedef struct uint64x1x3_t
-{
-  uint64x1_t val[3];
-} uint64x1x3_t;
-
-typedef struct uint64x2x3_t
-{
-  uint64x2_t val[3];
-} uint64x2x3_t;
-
-typedef struct float16x4x3_t
-{
-  float16x4_t val[3];
-} float16x4x3_t;
-
-typedef struct float16x8x3_t
-{
-  float16x8_t val[3];
-} float16x8x3_t;
-
-typedef struct float32x2x3_t
-{
-  float32x2_t val[3];
-} float32x2x3_t;
-
-typedef struct float32x4x3_t
-{
-  float32x4_t val[3];
-} float32x4x3_t;
-
-typedef struct float64x2x3_t
-{
-  float64x2_t val[3];
-} float64x2x3_t;
-
-typedef struct float64x1x3_t
-{
-  float64x1_t val[3];
-} float64x1x3_t;
-
-typedef struct poly8x8x3_t
-{
-  poly8x8_t val[3];
-} poly8x8x3_t;
-
-typedef struct poly8x16x3_t
-{
-  poly8x16_t val[3];
-} poly8x16x3_t;
-
-typedef struct poly16x4x3_t
-{
-  poly16x4_t val[3];
-} poly16x4x3_t;
-
-typedef struct poly16x8x3_t
-{
-  poly16x8_t val[3];
-} poly16x8x3_t;
-
-typedef struct int8x8x4_t
-{
-  int8x8_t val[4];
-} int8x8x4_t;
-
-typedef struct int8x16x4_t
-{
-  int8x16_t val[4];
-} int8x16x4_t;
-
-typedef struct int16x4x4_t
-{
-  int16x4_t val[4];
-} int16x4x4_t;
-
-typedef struct int16x8x4_t
-{
-  int16x8_t val[4];
-} int16x8x4_t;
-
-typedef struct int32x2x4_t
-{
-  int32x2_t val[4];
-} int32x2x4_t;
-
-typedef struct int32x4x4_t
-{
-  int32x4_t val[4];
-} int32x4x4_t;
-
-typedef struct int64x1x4_t
-{
-  int64x1_t val[4];
-} int64x1x4_t;
-
-typedef struct int64x2x4_t
-{
-  int64x2_t val[4];
-} int64x2x4_t;
-
-typedef struct uint8x8x4_t
-{
-  uint8x8_t val[4];
-} uint8x8x4_t;
-
-typedef struct uint8x16x4_t
-{
-  uint8x16_t val[4];
-} uint8x16x4_t;
-
-typedef struct uint16x4x4_t
-{
-  uint16x4_t val[4];
-} uint16x4x4_t;
-
-typedef struct uint16x8x4_t
-{
-  uint16x8_t val[4];
-} uint16x8x4_t;
-
-typedef struct uint32x2x4_t
-{
-  uint32x2_t val[4];
-} uint32x2x4_t;
-
-typedef struct uint32x4x4_t
-{
-  uint32x4_t val[4];
-} uint32x4x4_t;
-
-typedef struct uint64x1x4_t
-{
-  uint64x1_t val[4];
-} uint64x1x4_t;
-
-typedef struct uint64x2x4_t
-{
-  uint64x2_t val[4];
-} uint64x2x4_t;
-
-typedef struct float16x4x4_t
-{
-  float16x4_t val[4];
-} float16x4x4_t;
-
-typedef struct float16x8x4_t
-{
-  float16x8_t val[4];
-} float16x8x4_t;
-
-typedef struct float32x2x4_t
-{
-  float32x2_t val[4];
-} float32x2x4_t;
-
-typedef struct float32x4x4_t
-{
-  float32x4_t val[4];
-} float32x4x4_t;
-
-typedef struct float64x2x4_t
-{
-  float64x2_t val[4];
-} float64x2x4_t;
-
-typedef struct float64x1x4_t
-{
-  float64x1_t val[4];
-} float64x1x4_t;
-
-typedef struct poly8x8x4_t
-{
-  poly8x8_t val[4];
-} poly8x8x4_t;
-
-typedef struct poly8x16x4_t
-{
-  poly8x16_t val[4];
-} poly8x16x4_t;
-
-typedef struct poly16x4x4_t
-{
-  poly16x4_t val[4];
-} poly16x4x4_t;
-
-typedef struct poly16x8x4_t
-{
-  poly16x8_t val[4];
-} poly16x8x4_t;
 
 /* __aarch64_vdup_lane internal macros.  */
 #define __aarch64_vdup_lane_any(__size, __q, __a, __b) \
@@ -9124,14 +8676,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_f16 (float16_t *__ptr, float16x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  float16x8x2_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev4hf ((__builtin_aarch64_simd_hf *) __ptr, __o,
+  __builtin_aarch64_st2_lanev4hf ((__builtin_aarch64_simd_hf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9139,14 +8684,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_f32 (float32_t *__ptr, float32x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  float32x4x2_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev2sf ((__builtin_aarch64_simd_sf *) __ptr, __o,
+  __builtin_aarch64_st2_lanev2sf ((__builtin_aarch64_simd_sf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9154,14 +8692,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_f64 (float64_t *__ptr, float64x1x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  float64x2x2_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanedf ((__builtin_aarch64_simd_df *) __ptr, __o,
+  __builtin_aarch64_st2_lanedf ((__builtin_aarch64_simd_df *) __ptr, __val,
 				__lane);
 }
 
@@ -9169,59 +8700,31 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_p8 (poly8_t *__ptr, poly8x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly8x16x2_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev8qi_sps ((__builtin_aarch64_simd_qi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_p16 (poly16_t *__ptr, poly16x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly16x8x2_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev4hi_sps ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_p64 (poly64_t *__ptr, poly64x1x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly64x2x2_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
-				__lane);
+  __builtin_aarch64_st2_lanedi_sps ((__builtin_aarch64_simd_di *) __ptr,
+				    __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_s8 (int8_t *__ptr, int8x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  int8x16x2_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
+  __builtin_aarch64_st2_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9229,14 +8732,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_s16 (int16_t *__ptr, int16x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  int16x8x2_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
+  __builtin_aarch64_st2_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9244,14 +8740,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_s32 (int32_t *__ptr, int32x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  int32x4x2_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __o,
+  __builtin_aarch64_st2_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __val,
 				  __lane);
 }
 
@@ -9259,14 +8748,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_s64 (int64_t *__ptr, int64x1x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  int64x2x2_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
+  __builtin_aarch64_st2_lanedi ((__builtin_aarch64_simd_di *) __ptr, __val,
 				__lane);
 }
 
@@ -9274,69 +8756,39 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_u8 (uint8_t *__ptr, uint8x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint8x16x2_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev8qi_sus ((__builtin_aarch64_simd_qi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_u16 (uint16_t *__ptr, uint16x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint16x8x2_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev4hi_sus ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_u32 (uint32_t *__ptr, uint32x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint32x4x2_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev2si_sus ((__builtin_aarch64_simd_si *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_u64 (uint64_t *__ptr, uint64x1x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint64x2x2_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
-				__lane);
+  __builtin_aarch64_st2_lanedi_sus ((__builtin_aarch64_simd_di *) __ptr, __val,
+				    __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_f16 (float16_t *__ptr, float16x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev8hf ((__builtin_aarch64_simd_hf *) __ptr, __o,
+  __builtin_aarch64_st2_lanev8hf ((__builtin_aarch64_simd_hf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9344,9 +8796,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_f32 (float32_t *__ptr, float32x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev4sf ((__builtin_aarch64_simd_sf *) __ptr, __o,
+  __builtin_aarch64_st2_lanev4sf ((__builtin_aarch64_simd_sf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9354,9 +8804,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_f64 (float64_t *__ptr, float64x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev2df ((__builtin_aarch64_simd_df *) __ptr, __o,
+  __builtin_aarch64_st2_lanev2df ((__builtin_aarch64_simd_df *) __ptr, __val,
 				  __lane);
 }
 
@@ -9364,39 +8812,31 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_p8 (poly8_t *__ptr, poly8x16x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				   __lane);
+  __builtin_aarch64_st2_lanev16qi_sps ((__builtin_aarch64_simd_qi *) __ptr,
+				       __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_p16 (poly16_t *__ptr, poly16x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev8hi_sps ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_p64 (poly64_t *__ptr, poly64x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev2di_sps ((__builtin_aarch64_simd_di *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_s8 (int8_t *__ptr, int8x16x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
+  __builtin_aarch64_st2_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __val,
 				   __lane);
 }
 
@@ -9404,9 +8844,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_s16 (int16_t *__ptr, int16x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
+  __builtin_aarch64_st2_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9414,9 +8852,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_s32 (int32_t *__ptr, int32x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __o,
+  __builtin_aarch64_st2_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __val,
 				  __lane);
 }
 
@@ -9424,9 +8860,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_s64 (int64_t *__ptr, int64x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
+  __builtin_aarch64_st2_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __val,
 				  __lane);
 }
 
@@ -9434,56 +8868,39 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_u8 (uint8_t *__ptr, uint8x16x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				   __lane);
+  __builtin_aarch64_st2_lanev16qi_sus ((__builtin_aarch64_simd_qi *) __ptr,
+				       __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_u16 (uint16_t *__ptr, uint16x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev8hi_sus ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_u32 (uint32_t *__ptr, uint32x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev4si_sus ((__builtin_aarch64_simd_si *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_u64 (uint64_t *__ptr, uint64x2x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st2_lanev2di_sus ((__builtin_aarch64_simd_di *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_f16 (float16_t *__ptr, float16x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  float16x8x3_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f16 (__val.val[2],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev4hf ((__builtin_aarch64_simd_hf *) __ptr, __o,
+  __builtin_aarch64_st3_lanev4hf ((__builtin_aarch64_simd_hf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9491,16 +8908,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_f32 (float32_t *__ptr, float32x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  float32x4x3_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f32 (__val.val[2],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev2sf ((__builtin_aarch64_simd_sf *) __ptr, __o,
+  __builtin_aarch64_st3_lanev2sf ((__builtin_aarch64_simd_sf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9508,16 +8916,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_f64 (float64_t *__ptr, float64x1x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  float64x2x3_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f64 (__val.val[2],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanedf ((__builtin_aarch64_simd_df *) __ptr, __o,
+  __builtin_aarch64_st3_lanedf ((__builtin_aarch64_simd_df *) __ptr, __val,
 				__lane);
 }
 
@@ -9525,67 +8924,31 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_p8 (poly8_t *__ptr, poly8x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly8x16x3_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p8 (__val.val[2],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev8qi_sps ((__builtin_aarch64_simd_qi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_p16 (poly16_t *__ptr, poly16x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly16x8x3_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p16 (__val.val[2],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev4hi_sps ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_p64 (poly64_t *__ptr, poly64x1x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly64x2x3_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p64 (__val.val[2],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
-				__lane);
+  __builtin_aarch64_st3_lanedi_sps ((__builtin_aarch64_simd_di *) __ptr, __val,
+				    __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_s8 (int8_t *__ptr, int8x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  int8x16x3_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s8 (__val.val[2],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
+  __builtin_aarch64_st3_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9593,16 +8956,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_s16 (int16_t *__ptr, int16x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  int16x8x3_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s16 (__val.val[2],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
+  __builtin_aarch64_st3_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9610,16 +8964,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_s32 (int32_t *__ptr, int32x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  int32x4x3_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s32 (__val.val[2],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __o,
+  __builtin_aarch64_st3_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __val,
 				  __lane);
 }
 
@@ -9627,16 +8972,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_s64 (int64_t *__ptr, int64x1x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  int64x2x3_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s64 (__val.val[2],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
+  __builtin_aarch64_st3_lanedi ((__builtin_aarch64_simd_di *) __ptr, __val,
 				__lane);
 }
 
@@ -9644,77 +8980,39 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_u8 (uint8_t *__ptr, uint8x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint8x16x3_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u8 (__val.val[2],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev8qi_sus ((__builtin_aarch64_simd_qi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_u16 (uint16_t *__ptr, uint16x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint16x8x3_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u16 (__val.val[2],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev4hi_sus ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_u32 (uint32_t *__ptr, uint32x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint32x4x3_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u32 (__val.val[2],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev2si_sus ((__builtin_aarch64_simd_si *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_u64 (uint64_t *__ptr, uint64x1x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint64x2x3_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u64 (__val.val[2],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
-				__lane);
+  __builtin_aarch64_st3_lanedi_sus ((__builtin_aarch64_simd_di *) __ptr, __val,
+				    __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_f16 (float16_t *__ptr, float16x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev8hf ((__builtin_aarch64_simd_hf *) __ptr, __o,
+  __builtin_aarch64_st3_lanev8hf ((__builtin_aarch64_simd_hf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9722,9 +9020,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_f32 (float32_t *__ptr, float32x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev4sf ((__builtin_aarch64_simd_sf *) __ptr, __o,
+  __builtin_aarch64_st3_lanev4sf ((__builtin_aarch64_simd_sf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9732,9 +9028,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_f64 (float64_t *__ptr, float64x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev2df ((__builtin_aarch64_simd_df *) __ptr, __o,
+  __builtin_aarch64_st3_lanev2df ((__builtin_aarch64_simd_df *) __ptr, __val,
 				  __lane);
 }
 
@@ -9742,39 +9036,31 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_p8 (poly8_t *__ptr, poly8x16x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				   __lane);
+  __builtin_aarch64_st3_lanev16qi_sps ((__builtin_aarch64_simd_qi *) __ptr,
+				       __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_p16 (poly16_t *__ptr, poly16x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev8hi_sps ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_p64 (poly64_t *__ptr, poly64x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev2di_sps ((__builtin_aarch64_simd_di *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_s8 (int8_t *__ptr, int8x16x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
+  __builtin_aarch64_st3_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __val,
 				   __lane);
 }
 
@@ -9782,9 +9068,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_s16 (int16_t *__ptr, int16x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
+  __builtin_aarch64_st3_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9792,9 +9076,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_s32 (int32_t *__ptr, int32x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __o,
+  __builtin_aarch64_st3_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __val,
 				  __lane);
 }
 
@@ -9802,9 +9084,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_s64 (int64_t *__ptr, int64x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
+  __builtin_aarch64_st3_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __val,
 				  __lane);
 }
 
@@ -9812,58 +9092,39 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_u8 (uint8_t *__ptr, uint8x16x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				   __lane);
+  __builtin_aarch64_st3_lanev16qi_sus ((__builtin_aarch64_simd_qi *) __ptr,
+				       __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_u16 (uint16_t *__ptr, uint16x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev8hi_sus ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_u32 (uint32_t *__ptr, uint32x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev4si_sus ((__builtin_aarch64_simd_si *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_u64 (uint64_t *__ptr, uint64x2x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st3_lanev2di_sus ((__builtin_aarch64_simd_di *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_f16 (float16_t *__ptr, float16x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  float16x8x4_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f16 (__val.val[2],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f16 (__val.val[3],
-				vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev4hf ((__builtin_aarch64_simd_hf *) __ptr, __o,
+  __builtin_aarch64_st4_lanev4hf ((__builtin_aarch64_simd_hf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9871,18 +9132,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_f32 (float32_t *__ptr, float32x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  float32x4x4_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f32 (__val.val[2],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f32 (__val.val[3],
-				vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev2sf ((__builtin_aarch64_simd_sf *) __ptr, __o,
+  __builtin_aarch64_st4_lanev2sf ((__builtin_aarch64_simd_sf *) __ptr, __val,
 				  __lane);
 }
 
@@ -9890,18 +9140,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_f64 (float64_t *__ptr, float64x1x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  float64x2x4_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f64 (__val.val[2],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f64 (__val.val[3],
-				vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanedf ((__builtin_aarch64_simd_df *) __ptr, __o,
+  __builtin_aarch64_st4_lanedf ((__builtin_aarch64_simd_df *) __ptr, __val,
 				__lane);
 }
 
@@ -9909,75 +9148,31 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_p8 (poly8_t *__ptr, poly8x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly8x16x4_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p8 (__val.val[2],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p8 (__val.val[3],
-			       vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev8qi_sps ((__builtin_aarch64_simd_qi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_p16 (poly16_t *__ptr, poly16x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly16x8x4_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p16 (__val.val[2],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p16 (__val.val[3],
-				vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev4hi_sps ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_p64 (poly64_t *__ptr, poly64x1x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly64x2x4_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p64 (__val.val[2],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p64 (__val.val[3],
-				vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
-				__lane);
+  __builtin_aarch64_st4_lanedi_sps ((__builtin_aarch64_simd_di *) __ptr, __val,
+				    __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_s8 (int8_t *__ptr, int8x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  int8x16x4_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s8 (__val.val[2],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_s8 (__val.val[3],
-			       vcreate_s8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
+  __builtin_aarch64_st4_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __val,
 				  __lane);
 }
 
@@ -9985,18 +9180,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_s16 (int16_t *__ptr, int16x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  int16x8x4_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s16 (__val.val[2],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_s16 (__val.val[3],
-				vcreate_s16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
+  __builtin_aarch64_st4_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __val,
 				  __lane);
 }
 
@@ -10004,18 +9188,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_s32 (int32_t *__ptr, int32x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  int32x4x4_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s32 (__val.val[2],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_s32 (__val.val[3],
-				vcreate_s32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __o,
+  __builtin_aarch64_st4_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __val,
 				  __lane);
 }
 
@@ -10023,18 +9196,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_s64 (int64_t *__ptr, int64x1x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  int64x2x4_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_s64 (__val.val[2],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_s64 (__val.val[3],
-				vcreate_s64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
+  __builtin_aarch64_st4_lanedi ((__builtin_aarch64_simd_di *) __ptr, __val,
 				__lane);
 }
 
@@ -10042,85 +9204,39 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_u8 (uint8_t *__ptr, uint8x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint8x16x4_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u8 (__val.val[2],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u8 (__val.val[3],
-			       vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev8qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev8qi_sus ((__builtin_aarch64_simd_qi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_u16 (uint16_t *__ptr, uint16x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint16x8x4_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u16 (__val.val[2],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u16 (__val.val[3],
-				vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev4hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev4hi_sus ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_u32 (uint32_t *__ptr, uint32x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint32x4x4_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u32 (__val.val[2],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u32 (__val.val[3],
-				vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev2si ((__builtin_aarch64_simd_si *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev2si_sus ((__builtin_aarch64_simd_si *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_u64 (uint64_t *__ptr, uint64x1x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint64x2x4_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u64 (__val.val[2],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u64 (__val.val[3],
-				vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanedi ((__builtin_aarch64_simd_di *) __ptr, __o,
-				__lane);
+  __builtin_aarch64_st4_lanedi_sus ((__builtin_aarch64_simd_di *) __ptr, __val,
+				    __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_f16 (float16_t *__ptr, float16x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev8hf ((__builtin_aarch64_simd_hf *) __ptr, __o,
+  __builtin_aarch64_st4_lanev8hf ((__builtin_aarch64_simd_hf *) __ptr, __val,
 				  __lane);
 }
 
@@ -10128,9 +9244,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_f32 (float32_t *__ptr, float32x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev4sf ((__builtin_aarch64_simd_sf *) __ptr, __o,
+  __builtin_aarch64_st4_lanev4sf ((__builtin_aarch64_simd_sf *) __ptr, __val,
 				  __lane);
 }
 
@@ -10138,9 +9252,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_f64 (float64_t *__ptr, float64x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev2df ((__builtin_aarch64_simd_df *) __ptr, __o,
+  __builtin_aarch64_st4_lanev2df ((__builtin_aarch64_simd_df *) __ptr, __val,
 				  __lane);
 }
 
@@ -10148,39 +9260,31 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_p8 (poly8_t *__ptr, poly8x16x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				   __lane);
+  __builtin_aarch64_st4_lanev16qi_sps ((__builtin_aarch64_simd_qi *) __ptr,
+				       __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_p16 (poly16_t *__ptr, poly16x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev8hi_sps ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_p64 (poly64_t *__ptr, poly64x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev2di_sps ((__builtin_aarch64_simd_di *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_s8 (int8_t *__ptr, int8x16x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
+  __builtin_aarch64_st4_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __val,
 				   __lane);
 }
 
@@ -10188,9 +9292,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_s16 (int16_t *__ptr, int16x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
+  __builtin_aarch64_st4_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __val,
 				  __lane);
 }
 
@@ -10198,9 +9300,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_s32 (int32_t *__ptr, int32x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __o,
+  __builtin_aarch64_st4_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __val,
 				  __lane);
 }
 
@@ -10208,9 +9308,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_s64 (int64_t *__ptr, int64x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
+  __builtin_aarch64_st4_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __val,
 				  __lane);
 }
 
@@ -10218,40 +9316,32 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_u8 (uint8_t *__ptr, uint8x16x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev16qi ((__builtin_aarch64_simd_qi *) __ptr, __o,
-				   __lane);
+  __builtin_aarch64_st4_lanev16qi_sus ((__builtin_aarch64_simd_qi *) __ptr,
+				       __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_u16 (uint16_t *__ptr, uint16x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev8hi ((__builtin_aarch64_simd_hi *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev8hi_sus ((__builtin_aarch64_simd_hi *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_u32 (uint32_t *__ptr, uint32x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev4si ((__builtin_aarch64_simd_si *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev4si_sus ((__builtin_aarch64_simd_si *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_u64 (uint64_t *__ptr, uint64x2x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev2di ((__builtin_aarch64_simd_di *) __ptr, __o,
-				  __lane);
+  __builtin_aarch64_st4_lanev2di_sus ((__builtin_aarch64_simd_di *) __ptr,
+				      __val, __lane);
 }
 
 __extension__ extern __inline int64_t
@@ -10468,12 +9558,10 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl3_s8 (int8x8x3_t __tab, int8x8_t __idx)
 {
   int8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_s8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_s8 (__tab.val[2],
 			       vcreate_s8 (__AARCH64_UINT64_C (0x0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return __builtin_aarch64_qtbl2v8qi (__o, __idx);
+  return __builtin_aarch64_qtbl2v8qi (__temp, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -10481,12 +9569,10 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl3_u8 (uint8x8x3_t __tab, uint8x8_t __idx)
 {
   uint8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_u8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_u8 (__tab.val[2],
 			       vcreate_u8 (__AARCH64_UINT64_C (0x0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return (uint8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_uuu (__temp, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
@@ -10494,12 +9580,10 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl3_p8 (poly8x8x3_t __tab, uint8x8_t __idx)
 {
   poly8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_p8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_p8 (__tab.val[2],
 			       vcreate_p8 (__AARCH64_UINT64_C (0x0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return (poly8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_ppu (__temp, __idx);
 }
 
 __extension__ extern __inline int8x8_t
@@ -10507,11 +9591,9 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl4_s8 (int8x8x4_t __tab, int8x8_t __idx)
 {
   int8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_s8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_s8 (__tab.val[2], __tab.val[3]);
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return __builtin_aarch64_qtbl2v8qi (__o, __idx);
+  return __builtin_aarch64_qtbl2v8qi (__temp, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -10519,11 +9601,9 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl4_u8 (uint8x8x4_t __tab, uint8x8_t __idx)
 {
   uint8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_u8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_u8 (__tab.val[2], __tab.val[3]);
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return (uint8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_uuu (__temp, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
@@ -10531,11 +9611,9 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbl4_p8 (poly8x8x4_t __tab, uint8x8_t __idx)
 {
   poly8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_p8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_p8 (__tab.val[2], __tab.val[3]);
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return(poly8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_ppu (__temp, __idx);
 }
 
 __extension__ extern __inline int8x8_t
@@ -16101,366 +15179,211 @@ __extension__ extern __inline uint8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u8_x3 (const uint8_t *__a)
 {
-  uint8x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = (__builtin_aarch64_simd_ci)__builtin_aarch64_ld1x3v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  __i.val[0] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 0);
-  __i.val[1] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 1);
-  __i.val[2] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s8_x3 (const int8_t *__a)
 {
-  int8x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  __i.val[0] = (int8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 0);
-  __i.val[1] = (int8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 1);
-  __i.val[2] = (int8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u16_x3 (const uint16_t *__a)
 {
-  uint16x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  __i.val[0] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 0);
-  __i.val[1] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 1);
-  __i.val[2] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s16_x3 (const int16_t *__a)
 {
-  int16x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  __i.val[0] = (int16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 0);
-  __i.val[1] = (int16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 1);
-  __i.val[2] = (int16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u32_x3 (const uint32_t *__a)
 {
-  uint32x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2si ((const __builtin_aarch64_simd_si *) __a);
-  __i.val[0] = (uint32x2_t) __builtin_aarch64_get_dregciv2si  (__o, 0);
-  __i.val[1] = (uint32x2_t) __builtin_aarch64_get_dregciv2si  (__o, 1);
-  __i.val[2] = (uint32x2_t) __builtin_aarch64_get_dregciv2si  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s32_x3 (const int32_t *__a)
 {
-  int32x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2si ((const __builtin_aarch64_simd_si *) __a);
-  __i.val[0] = (int32x2_t) __builtin_aarch64_get_dregciv2si  (__o, 0);
-  __i.val[1] = (int32x2_t) __builtin_aarch64_get_dregciv2si  (__o, 1);
-  __i.val[2] = (int32x2_t) __builtin_aarch64_get_dregciv2si  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u64_x3 (const uint64_t *__a)
 {
-  uint64x1x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3di ((const __builtin_aarch64_simd_di *) __a);
-  __i.val[0] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __i.val[1] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __i.val[2] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s64_x3 (const int64_t *__a)
 {
-  int64x1x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3di ((const __builtin_aarch64_simd_di *) __a);
-  __i.val[0] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __i.val[1] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __i.val[2] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-
-  return __i;
+  return __builtin_aarch64_ld1x3di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f16_x3 (const float16_t *__a)
 {
-  float16x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4hf ((const __builtin_aarch64_simd_hf *) __a);
-  __i.val[0] = (float16x4_t) __builtin_aarch64_get_dregciv4hf  (__o, 0);
-  __i.val[1] = (float16x4_t) __builtin_aarch64_get_dregciv4hf  (__o, 1);
-  __i.val[2] = (float16x4_t) __builtin_aarch64_get_dregciv4hf  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f32_x3 (const float32_t *__a)
 {
-  float32x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2sf ((const __builtin_aarch64_simd_sf *) __a);
-  __i.val[0] = (float32x2_t) __builtin_aarch64_get_dregciv2sf  (__o, 0);
-  __i.val[1] = (float32x2_t) __builtin_aarch64_get_dregciv2sf  (__o, 1);
-  __i.val[2] = (float32x2_t) __builtin_aarch64_get_dregciv2sf  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f64_x3 (const float64_t *__a)
 {
-  float64x1x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3df ((const __builtin_aarch64_simd_df *) __a);
-  __i.val[0] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __i.val[1] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __i.val[2] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p8_x3 (const poly8_t *__a)
 {
-  poly8x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  __i.val[0] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 0);
-  __i.val[1] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 1);
-  __i.val[2] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p16_x3 (const poly16_t *__a)
 {
-  poly16x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  __i.val[0] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 0);
-  __i.val[1] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 1);
-  __i.val[2] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p64_x3 (const poly64_t *__a)
 {
-  poly64x1x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3di ((const __builtin_aarch64_simd_di *) __a);
-  __i.val[0] = (poly64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __i.val[1] = (poly64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __i.val[2] = (poly64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-
-return __i;
+  return __builtin_aarch64_ld1x3di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u8_x3 (const uint8_t *__a)
 {
-  uint8x16x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  __i.val[0] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 0);
-  __i.val[1] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 1);
-  __i.val[2] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s8_x3 (const int8_t *__a)
 {
-  int8x16x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  __i.val[0] = (int8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 0);
-  __i.val[1] = (int8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 1);
-  __i.val[2] = (int8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v16qi (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u16_x3 (const uint16_t *__a)
 {
-  uint16x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  __i.val[0] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 0);
-  __i.val[1] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 1);
-  __i.val[2] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s16_x3 (const int16_t *__a)
 {
-  int16x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  __i.val[0] = (int16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 0);
-  __i.val[1] = (int16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 1);
-  __i.val[2] = (int16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u32_x3 (const uint32_t *__a)
 {
-  uint32x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4si ((const __builtin_aarch64_simd_si *) __a);
-  __i.val[0] = (uint32x4_t) __builtin_aarch64_get_qregciv4si  (__o, 0);
-  __i.val[1] = (uint32x4_t) __builtin_aarch64_get_qregciv4si  (__o, 1);
-  __i.val[2] = (uint32x4_t) __builtin_aarch64_get_qregciv4si  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s32_x3 (const int32_t *__a)
 {
-  int32x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4si ((const __builtin_aarch64_simd_si *) __a);
-  __i.val[0] = (int32x4_t) __builtin_aarch64_get_qregciv4si  (__o, 0);
-  __i.val[1] = (int32x4_t) __builtin_aarch64_get_qregciv4si  (__o, 1);
-  __i.val[2] = (int32x4_t) __builtin_aarch64_get_qregciv4si  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u64_x3 (const uint64_t *__a)
 {
-  uint64x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2di ((const __builtin_aarch64_simd_di *) __a);
-  __i.val[0] = (uint64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 0);
-  __i.val[1] = (uint64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 1);
-  __i.val[2] = (uint64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s64_x3 (const int64_t *__a)
 {
-  int64x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2di ((const __builtin_aarch64_simd_di *) __a);
-  __i.val[0] = (int64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 0);
-  __i.val[1] = (int64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 1);
-  __i.val[2] = (int64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f16_x3 (const float16_t *__a)
 {
-  float16x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8hf ((const __builtin_aarch64_simd_hf *) __a);
-  __i.val[0] = (float16x8_t) __builtin_aarch64_get_qregciv8hf  (__o, 0);
-  __i.val[1] = (float16x8_t) __builtin_aarch64_get_qregciv8hf  (__o, 1);
-  __i.val[2] = (float16x8_t) __builtin_aarch64_get_qregciv8hf  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f32_x3 (const float32_t *__a)
 {
-  float32x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4sf ((const __builtin_aarch64_simd_sf *) __a);
-  __i.val[0] = (float32x4_t) __builtin_aarch64_get_qregciv4sf  (__o, 0);
-  __i.val[1] = (float32x4_t) __builtin_aarch64_get_qregciv4sf  (__o, 1);
-  __i.val[2] = (float32x4_t) __builtin_aarch64_get_qregciv4sf  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f64_x3 (const float64_t *__a)
 {
-  float64x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2df ((const __builtin_aarch64_simd_df *) __a);
-  __i.val[0] = (float64x2_t) __builtin_aarch64_get_qregciv2df  (__o, 0);
-  __i.val[1] = (float64x2_t) __builtin_aarch64_get_qregciv2df  (__o, 1);
-  __i.val[2] = (float64x2_t) __builtin_aarch64_get_qregciv2df  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p8_x3 (const poly8_t *__a)
 {
-  poly8x16x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  __i.val[0] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 0);
-  __i.val[1] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 1);
-  __i.val[2] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p16_x3 (const poly16_t *__a)
 {
-  poly16x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  __i.val[0] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 0);
-  __i.val[1] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 1);
-  __i.val[2] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p64_x3 (const poly64_t *__a)
 {
-  poly64x2x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v2di ((const __builtin_aarch64_simd_di *) __a);
-  __i.val[0] = (poly64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 0);
-  __i.val[1] = (poly64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 1);
-  __i.val[2] = (poly64x2_t) __builtin_aarch64_get_qregciv2di  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 /* vld1q */
@@ -16550,336 +15473,211 @@ __extension__ extern __inline uint8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u8_x2 (const uint8_t *__a)
 {
-  uint8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s8_x2 (const int8_t *__a)
 {
-  int8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u16_x2 (const uint16_t *__a)
 {
-  uint16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s16_x2 (const int16_t *__a)
 {
-  int16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u32_x2 (const uint32_t *__a)
 {
-  uint32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s32_x2 (const int32_t *__a)
 {
-  int32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u64_x2 (const uint64_t *__a)
 {
-  uint64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s64_x2 (const int64_t *__a)
 {
-  int64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f16_x2 (const float16_t *__a)
 {
-  float16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x4_t) __builtin_aarch64_get_dregoiv4hf (__o, 0);
-  ret.val[1] = (float16x4_t) __builtin_aarch64_get_dregoiv4hf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f32_x2 (const float32_t *__a)
 {
-  float32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregoiv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregoiv2sf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f64_x2 (const float64_t *__a)
 {
-  float64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregoidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregoidf (__o, 1)};
-  return ret;
+  return __builtin_aarch64_ld1x2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p8_x2 (const poly8_t *__a)
 {
-  poly8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p16_x2 (const poly16_t *__a)
 {
-  poly16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p64_x2 (const poly64_t *__a)
 {
-  poly64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u8_x2 (const uint8_t *__a)
 {
-  uint8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s8_x2 (const int8_t *__a)
 {
-  int8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v16qi (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u16_x2 (const uint16_t *__a)
 {
-  uint16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s16_x2 (const int16_t *__a)
 {
-  int16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u32_x2 (const uint32_t *__a)
 {
-  uint32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s32_x2 (const int32_t *__a)
 {
-  int32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u64_x2 (const uint64_t *__a)
 {
-  uint64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s64_x2 (const int64_t *__a)
 {
-  int64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f16_x2 (const float16_t *__a)
 {
-  float16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregoiv8hf (__o, 0);
-  ret.val[1] = (float16x8_t) __builtin_aarch64_get_qregoiv8hf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f32_x2 (const float32_t *__a)
 {
-  float32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregoiv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregoiv4sf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f64_x2 (const float64_t *__a)
 {
-  float64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregoiv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregoiv2df (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p8_x2 (const poly8_t *__a)
 {
-  poly8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p16_x2 (const poly16_t *__a)
 {
-  poly16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p64_x2 (const poly64_t *__a)
 {
-  poly64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint16x8_t
@@ -16912,280 +15710,211 @@ __extension__ extern __inline int8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s8_x4 (const int8_t *__a)
 {
-  union { int8x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s8_x4 (const int8_t *__a)
 {
-  union { int8x16x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v16qi (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s16_x4 (const int16_t *__a)
 {
-  union { int16x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s16_x4 (const int16_t *__a)
 {
-  union { int16x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s32_x4 (const int32_t *__a)
 {
-  union { int32x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-  = __builtin_aarch64_ld1x4v2si ((const __builtin_aarch64_simd_si *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s32_x4 (const int32_t *__a)
 {
-  union { int32x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-  = __builtin_aarch64_ld1x4v4si ((const __builtin_aarch64_simd_si *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u8_x4 (const uint8_t *__a)
 {
-  union { uint8x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u8_x4 (const uint8_t *__a)
 {
-  union { uint8x16x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u16_x4 (const uint16_t *__a)
 {
-  union { uint16x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u16_x4 (const uint16_t *__a)
 {
-  union { uint16x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u32_x4 (const uint32_t *__a)
 {
-  union { uint32x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v2si ((const __builtin_aarch64_simd_si *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u32_x4 (const uint32_t *__a)
 {
-  union { uint32x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4si ((const __builtin_aarch64_simd_si *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f16_x4 (const float16_t *__a)
 {
-  union { float16x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4hf ((const __builtin_aarch64_simd_hf *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f16_x4 (const float16_t *__a)
 {
-  union { float16x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8hf ((const __builtin_aarch64_simd_hf *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f32_x4 (const float32_t *__a)
 {
-  union { float32x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v2sf ((const __builtin_aarch64_simd_sf *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f32_x4 (const float32_t *__a)
 {
-  union { float32x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4sf ((const __builtin_aarch64_simd_sf *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline poly8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p8_x4 (const poly8_t *__a)
 {
-  union { poly8x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p8_x4 (const poly8_t *__a)
 {
-  union { poly8x16x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p16_x4 (const poly16_t *__a)
 {
-  union { poly16x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p16_x4 (const poly16_t *__a)
 {
-  union { poly16x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_s64_x4 (const int64_t *__a)
 {
-  union { int64x1x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4di ((const __builtin_aarch64_simd_di *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_u64_x4 (const uint64_t *__a)
 {
-  union { uint64x1x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4di ((const __builtin_aarch64_simd_di *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline poly64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_p64_x4 (const poly64_t *__a)
 {
-  union { poly64x1x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4di ((const __builtin_aarch64_simd_di *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_s64_x4 (const int64_t *__a)
 {
-  union { int64x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v2di ((const __builtin_aarch64_simd_di *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_u64_x4 (const uint64_t *__a)
 {
-  union { uint64x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v2di ((const __builtin_aarch64_simd_di *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline poly64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_p64_x4 (const poly64_t *__a)
 {
-  union { poly64x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v2di ((const __builtin_aarch64_simd_di *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_f64_x4 (const float64_t *__a)
 {
-  union { float64x1x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4df ((const __builtin_aarch64_simd_df *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline float64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_f64_x4 (const float64_t *__a)
 {
-  union { float64x2x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v2df ((const __builtin_aarch64_simd_df *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 /* vld1_dup  */
@@ -17594,1092 +16323,622 @@ __extension__ extern __inline int64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_s64 (const int64_t * __a)
 {
-  int64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_u64 (const uint64_t * __a)
 {
-  uint64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2di_us ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_f64 (const float64_t * __a)
 {
-  float64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregoidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregoidf (__o, 1)};
-  return ret;
+  return __builtin_aarch64_ld2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline int8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_s8 (const int8_t * __a)
 {
-  int8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_p8 (const poly8_t * __a)
 {
-  poly8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_p64 (const poly64_t * __a)
 {
-  poly64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregoidi_pss (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregoidi_pss (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2di_ps ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_s16 (const int16_t * __a)
 {
-  int16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_p16 (const poly16_t * __a)
 {
-  poly16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_s32 (const int32_t * __a)
 {
-  int32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_u8 (const uint8_t * __a)
 {
-  uint8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_u16 (const uint16_t * __a)
 {
-  uint16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_u32 (const uint32_t * __a)
 {
-  uint32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_f16 (const float16_t * __a)
 {
-  float16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4hf (__a);
-  ret.val[0] = __builtin_aarch64_get_dregoiv4hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_dregoiv4hf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4hf (__a);
 }
 
 __extension__ extern __inline float32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_f32 (const float32_t * __a)
 {
-  float32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregoiv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregoiv2sf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline int8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_s8 (const int8_t * __a)
 {
-  int8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v16qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_p8 (const poly8_t * __a)
 {
-  poly8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_s16 (const int16_t * __a)
 {
-  int16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_p16 (const poly16_t * __a)
 {
-  poly16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_p64 (const poly64_t * __a)
 {
-  poly64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregoiv2di_pss (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregoiv2di_pss (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_s32 (const int32_t * __a)
 {
-  int32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_s64 (const int64_t * __a)
 {
-  int64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_u8 (const uint8_t * __a)
 {
-  uint8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_u16 (const uint16_t * __a)
 {
-  uint16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_u32 (const uint32_t * __a)
 {
-  uint32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_u64 (const uint64_t * __a)
 {
-  uint64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_f16 (const float16_t * __a)
 {
-  float16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8hf (__a);
-  ret.val[0] = __builtin_aarch64_get_qregoiv8hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_qregoiv8hf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8hf (__a);
 }
 
 __extension__ extern __inline float32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_f32 (const float32_t * __a)
 {
-  float32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregoiv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregoiv4sf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_f64 (const float64_t * __a)
 {
-  float64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregoiv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregoiv2df (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline int64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_s64 (const int64_t * __a)
 {
-  int64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  ret.val[2] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_u64 (const uint64_t * __a)
 {
-  uint64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  ret.val[2] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3di_us ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_f64 (const float64_t * __a)
 {
-  float64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregcidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregcidf (__o, 1)};
-  ret.val[2] = (float64x1_t) {__builtin_aarch64_get_dregcidf (__o, 2)};
-  return ret;
+  return __builtin_aarch64_ld3df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline int8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_s8 (const int8_t * __a)
 {
-  int8x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 1);
-  ret.val[2] = (int8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_p8 (const poly8_t * __a)
 {
-  poly8x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 1);
-  ret.val[2] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_s16 (const int16_t * __a)
 {
-  int16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 1);
-  ret.val[2] = (int16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_p16 (const poly16_t * __a)
 {
-  poly16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 1);
-  ret.val[2] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_s32 (const int32_t * __a)
 {
-  int32x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregciv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregciv2si (__o, 1);
-  ret.val[2] = (int32x2_t) __builtin_aarch64_get_dregciv2si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_u8 (const uint8_t * __a)
 {
-  uint8x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 1);
-  ret.val[2] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_u16 (const uint16_t * __a)
 {
-  uint16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 1);
-  ret.val[2] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_u32 (const uint32_t * __a)
 {
-  uint32x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregciv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregciv2si (__o, 1);
-  ret.val[2] = (uint32x2_t) __builtin_aarch64_get_dregciv2si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_f16 (const float16_t * __a)
 {
-  float16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4hf (__a);
-  ret.val[0] = __builtin_aarch64_get_dregciv4hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_dregciv4hf (__o, 1);
-  ret.val[2] = __builtin_aarch64_get_dregciv4hf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4hf (__a);
 }
 
 __extension__ extern __inline float32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_f32 (const float32_t * __a)
 {
-  float32x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregciv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregciv2sf (__o, 1);
-  ret.val[2] = (float32x2_t) __builtin_aarch64_get_dregciv2sf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline poly64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_p64 (const poly64_t * __a)
 {
-  poly64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregcidi_pss (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregcidi_pss (__o, 1);
-  ret.val[2] = (poly64x1_t) __builtin_aarch64_get_dregcidi_pss (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3di_ps ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_s8 (const int8_t * __a)
 {
-  int8x16x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 1);
-  ret.val[2] = (int8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v16qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_p8 (const poly8_t * __a)
 {
-  poly8x16x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 1);
-  ret.val[2] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v16qi_ps ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_s16 (const int16_t * __a)
 {
-  int16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 1);
-  ret.val[2] = (int16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_p16 (const poly16_t * __a)
 {
-  poly16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 1);
-  ret.val[2] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8hi_ps ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_s32 (const int32_t * __a)
 {
-  int32x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_s64 (const int64_t * __a)
 {
-  int64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregciv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregciv2di (__o, 1);
-  ret.val[2] = (int64x2_t) __builtin_aarch64_get_qregciv2di (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_u8 (const uint8_t * __a)
 {
-  uint8x16x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 1);
-  ret.val[2] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_u16 (const uint16_t * __a)
 {
-  uint16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 1);
-  ret.val[2] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_u32 (const uint32_t * __a)
 {
-  uint32x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_u64 (const uint64_t * __a)
 {
-  uint64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregciv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregciv2di (__o, 1);
-  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregciv2di (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_f16 (const float16_t * __a)
 {
-  float16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8hf (__a);
-  ret.val[0] = __builtin_aarch64_get_qregciv8hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_qregciv8hf (__o, 1);
-  ret.val[2] = __builtin_aarch64_get_qregciv8hf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8hf (__a);
 }
 
 __extension__ extern __inline float32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_f32 (const float32_t * __a)
 {
-  float32x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregciv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregciv4sf (__o, 1);
-  ret.val[2] = (float32x4_t) __builtin_aarch64_get_qregciv4sf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_f64 (const float64_t * __a)
 {
-  float64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregciv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregciv2df (__o, 1);
-  ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregciv2df (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_p64 (const poly64_t * __a)
 {
-  poly64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregciv2di_pss (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregciv2di_pss (__o, 1);
-  ret.val[2] = (poly64x2_t) __builtin_aarch64_get_qregciv2di_pss (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_s64 (const int64_t * __a)
 {
-  int64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  ret.val[2] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  ret.val[3] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_u64 (const uint64_t * __a)
 {
-  uint64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  ret.val[2] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  ret.val[3] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4di_us ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_f64 (const float64_t * __a)
 {
-  float64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 1)};
-  ret.val[2] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 2)};
-  ret.val[3] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 3)};
-  return ret;
+  return __builtin_aarch64_ld4df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline int8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_s8 (const int8_t * __a)
 {
-  int8x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 1);
-  ret.val[2] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 2);
-  ret.val[3] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_p8 (const poly8_t * __a)
 {
-  poly8x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 1);
-  ret.val[2] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 2);
-  ret.val[3] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_s16 (const int16_t * __a)
 {
-  int16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 1);
-  ret.val[2] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 2);
-  ret.val[3] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_p16 (const poly16_t * __a)
 {
-  poly16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 1);
-  ret.val[2] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 2);
-  ret.val[3] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_s32 (const int32_t * __a)
 {
-  int32x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 1);
-  ret.val[2] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 2);
-  ret.val[3] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_u8 (const uint8_t * __a)
 {
-  uint8x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 1);
-  ret.val[2] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 2);
-  ret.val[3] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_u16 (const uint16_t * __a)
 {
-  uint16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 1);
-  ret.val[2] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 2);
-  ret.val[3] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_u32 (const uint32_t * __a)
 {
-  uint32x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 1);
-  ret.val[2] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 2);
-  ret.val[3] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_f16 (const float16_t * __a)
 {
-  float16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4hf (__a);
-  ret.val[0] = __builtin_aarch64_get_dregxiv4hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_dregxiv4hf (__o, 1);
-  ret.val[2] = __builtin_aarch64_get_dregxiv4hf (__o, 2);
-  ret.val[3] = __builtin_aarch64_get_dregxiv4hf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4hf (__a);
 }
 
 __extension__ extern __inline float32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_f32 (const float32_t * __a)
 {
-  float32x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 1);
-  ret.val[2] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 2);
-  ret.val[3] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline poly64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_p64 (const poly64_t * __a)
 {
-  poly64x1x4_t  ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 1);
-  ret.val[2] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 2);
-  ret.val[3] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4di_ps ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_s8 (const int8_t * __a)
 {
-  int8x16x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 1);
-  ret.val[2] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 2);
-  ret.val[3] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v16qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_p8 (const poly8_t * __a)
 {
-  poly8x16x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 1);
-  ret.val[2] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 2);
-  ret.val[3] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_s16 (const int16_t * __a)
 {
-  int16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 1);
-  ret.val[2] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 2);
-  ret.val[3] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_p16 (const poly16_t * __a)
 {
-  poly16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 1);
-  ret.val[2] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 2);
-  ret.val[3] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_s32 (const int32_t * __a)
 {
-  int32x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_s64 (const int64_t * __a)
 {
-  int64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 1);
-  ret.val[2] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 2);
-  ret.val[3] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_u8 (const uint8_t * __a)
 {
-  uint8x16x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 1);
-  ret.val[2] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 2);
-  ret.val[3] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_u16 (const uint16_t * __a)
 {
-  uint16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 1);
-  ret.val[2] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 2);
-  ret.val[3] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_u32 (const uint32_t * __a)
 {
-  uint32x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_u64 (const uint64_t * __a)
 {
-  uint64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 1);
-  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 2);
-  ret.val[3] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_f16 (const float16_t * __a)
 {
-  float16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8hf (__a);
-  ret.val[0] = __builtin_aarch64_get_qregxiv8hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_qregxiv8hf (__o, 1);
-  ret.val[2] = __builtin_aarch64_get_qregxiv8hf (__o, 2);
-  ret.val[3] = __builtin_aarch64_get_qregxiv8hf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8hf (__a);
 }
 
 __extension__ extern __inline float32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_f32 (const float32_t * __a)
 {
-  float32x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 1);
-  ret.val[2] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 2);
-  ret.val[3] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_f64 (const float64_t * __a)
 {
-  float64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 1);
-  ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 2);
-  ret.val[3] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_p64 (const poly64_t * __a)
 {
-  poly64x2x4_t  ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 1);
-  ret.val[2] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 2);
-  ret.val[3] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline poly128_t
@@ -18695,1093 +16954,624 @@ __extension__ extern __inline int8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_s8 (const int8_t * __a)
 {
-  int8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_s16 (const int16_t * __a)
 {
-  int16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_s32 (const int32_t * __a)
 {
-  int32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_f16 (const float16_t * __a)
 {
-  float16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = __builtin_aarch64_get_dregoiv4hf (__o, 0);
-  ret.val[1] = (float16x4_t) __builtin_aarch64_get_dregoiv4hf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_f32 (const float32_t * __a)
 {
-  float32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregoiv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregoiv2sf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_f64 (const float64_t * __a)
 {
-  float64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rdf ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregoidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregoidf (__o, 1)};
-  return ret;
+  return __builtin_aarch64_ld2rdf ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline uint8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_u8 (const uint8_t * __a)
 {
-  uint8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_u16 (const uint16_t * __a)
 {
-  uint16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_u32 (const uint32_t * __a)
 {
-  uint32x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregoiv2si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline poly8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_p8 (const poly8_t * __a)
 {
-  poly8x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregoiv8qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_p16 (const poly16_t * __a)
 {
-  poly16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregoiv4hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_p64 (const poly64_t * __a)
 {
-  poly64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregoidi_pss (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregoidi_pss (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rdi_ps ((const __builtin_aarch64_simd_di *) __a);
 }
-
 
 __extension__ extern __inline int64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_s64 (const int64_t * __a)
 {
-  int64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rdi ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rdi ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_u64 (const uint64_t * __a)
 {
-  uint64x1x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rdi ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rdi_us ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_s8 (const int8_t * __a)
 {
-  int8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv16qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_p8 (const poly8_t * __a)
 {
-  poly8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_s16 (const int16_t * __a)
 {
-  int16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_p16 (const poly16_t * __a)
 {
-  poly16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_s32 (const int32_t * __a)
 {
-  int32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_s64 (const int64_t * __a)
 {
-  int64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_u8 (const uint8_t * __a)
 {
-  uint8x16x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregoiv16qi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_u16 (const uint16_t * __a)
 {
-  uint16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregoiv8hi (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_u32 (const uint32_t * __a)
 {
-  uint32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_u64 (const uint64_t * __a)
 {
-  uint64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregoiv2di (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_f16 (const float16_t * __a)
 {
-  float16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregoiv8hf (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_qregoiv8hf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_f32 (const float32_t * __a)
 {
-  float32x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregoiv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregoiv4sf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_f64 (const float64_t * __a)
 {
-  float64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregoiv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregoiv2df (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_p64 (const poly64_t * __a)
 {
-  poly64x2x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregoiv2di_pss (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregoiv2di_pss (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_s64 (const int64_t * __a)
 {
-  int64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rdi ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  ret.val[2] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rdi ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_u64 (const uint64_t * __a)
 {
-  uint64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rdi ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  ret.val[2] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rdi_us ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_f64 (const float64_t * __a)
 {
-  float64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rdf ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregcidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregcidf (__o, 1)};
-  ret.val[2] = (float64x1_t) {__builtin_aarch64_get_dregcidf (__o, 2)};
-  return ret;
+  return __builtin_aarch64_ld3rdf ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline int8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_s8 (const int8_t * __a)
 {
-  int8x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 1);
-  ret.val[2] = (int8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_p8 (const poly8_t * __a)
 {
-  poly8x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 1);
-  ret.val[2] = (poly8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_s16 (const int16_t * __a)
 {
-  int16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 1);
-  ret.val[2] = (int16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_p16 (const poly16_t * __a)
 {
-  poly16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 1);
-  ret.val[2] = (poly16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_s32 (const int32_t * __a)
 {
-  int32x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregciv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregciv2si (__o, 1);
-  ret.val[2] = (int32x2_t) __builtin_aarch64_get_dregciv2si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_u8 (const uint8_t * __a)
 {
-  uint8x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 1);
-  ret.val[2] = (uint8x8_t) __builtin_aarch64_get_dregciv8qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_u16 (const uint16_t * __a)
 {
-  uint16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 1);
-  ret.val[2] = (uint16x4_t) __builtin_aarch64_get_dregciv4hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_u32 (const uint32_t * __a)
 {
-  uint32x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregciv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregciv2si (__o, 1);
-  ret.val[2] = (uint32x2_t) __builtin_aarch64_get_dregciv2si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_f16 (const float16_t * __a)
 {
-  float16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x4_t) __builtin_aarch64_get_dregciv4hf (__o, 0);
-  ret.val[1] = (float16x4_t) __builtin_aarch64_get_dregciv4hf (__o, 1);
-  ret.val[2] = (float16x4_t) __builtin_aarch64_get_dregciv4hf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_f32 (const float32_t * __a)
 {
-  float32x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregciv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregciv2sf (__o, 1);
-  ret.val[2] = (float32x2_t) __builtin_aarch64_get_dregciv2sf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline poly64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_p64 (const poly64_t * __a)
 {
-  poly64x1x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregcidi_pss (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregcidi_pss (__o, 1);
-  ret.val[2] = (poly64x1_t) __builtin_aarch64_get_dregcidi_pss (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rdi_ps ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_s8 (const int8_t * __a)
 {
-  int8x16x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 1);
-  ret.val[2] = (int8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv16qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_p8 (const poly8_t * __a)
 {
-  poly8x16x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 1);
-  ret.val[2] = (poly8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_s16 (const int16_t * __a)
 {
-  int16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 1);
-  ret.val[2] = (int16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_p16 (const poly16_t * __a)
 {
-  poly16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 1);
-  ret.val[2] = (poly16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_s32 (const int32_t * __a)
 {
-  int32x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_s64 (const int64_t * __a)
 {
-  int64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregciv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregciv2di (__o, 1);
-  ret.val[2] = (int64x2_t) __builtin_aarch64_get_qregciv2di (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_u8 (const uint8_t * __a)
 {
-  uint8x16x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 1);
-  ret.val[2] = (uint8x16_t) __builtin_aarch64_get_qregciv16qi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_u16 (const uint16_t * __a)
 {
-  uint16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 1);
-  ret.val[2] = (uint16x8_t) __builtin_aarch64_get_qregciv8hi (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_u32 (const uint32_t * __a)
 {
-  uint32x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_u64 (const uint64_t * __a)
 {
-  uint64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregciv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregciv2di (__o, 1);
-  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregciv2di (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_f16 (const float16_t * __a)
 {
-  float16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregciv8hf (__o, 0);
-  ret.val[1] = (float16x8_t) __builtin_aarch64_get_qregciv8hf (__o, 1);
-  ret.val[2] = (float16x8_t) __builtin_aarch64_get_qregciv8hf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_f32 (const float32_t * __a)
 {
-  float32x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregciv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregciv4sf (__o, 1);
-  ret.val[2] = (float32x4_t) __builtin_aarch64_get_qregciv4sf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_f64 (const float64_t * __a)
 {
-  float64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregciv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregciv2df (__o, 1);
-  ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregciv2df (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_p64 (const poly64_t * __a)
 {
-  poly64x2x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregciv2di_pss (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregciv2di_pss (__o, 1);
-  ret.val[2] = (poly64x2_t) __builtin_aarch64_get_qregciv2di_pss (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_s64 (const int64_t * __a)
 {
-  int64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rdi ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  ret.val[1] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  ret.val[2] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  ret.val[3] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rdi ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_u64 (const uint64_t * __a)
 {
-  uint64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rdi ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  ret.val[1] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  ret.val[2] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  ret.val[3] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rdi_us ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_f64 (const float64_t * __a)
 {
-  float64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rdf ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 0)};
-  ret.val[1] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 1)};
-  ret.val[2] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 2)};
-  ret.val[3] = (float64x1_t) {__builtin_aarch64_get_dregxidf (__o, 3)};
-  return ret;
+  return __builtin_aarch64_ld4rdf ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline int8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_s8 (const int8_t * __a)
 {
-  int8x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 0);
-  ret.val[1] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 1);
-  ret.val[2] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 2);
-  ret.val[3] = (int8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_p8 (const poly8_t * __a)
 {
-  poly8x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 0);
-  ret.val[1] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 1);
-  ret.val[2] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 2);
-  ret.val[3] = (poly8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_s16 (const int16_t * __a)
 {
-  int16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 0);
-  ret.val[1] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 1);
-  ret.val[2] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 2);
-  ret.val[3] = (int16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_p16 (const poly16_t * __a)
 {
-  poly16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 0);
-  ret.val[1] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 1);
-  ret.val[2] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 2);
-  ret.val[3] = (poly16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_s32 (const int32_t * __a)
 {
-  int32x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 0);
-  ret.val[1] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 1);
-  ret.val[2] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 2);
-  ret.val[3] = (int32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_u8 (const uint8_t * __a)
 {
-  uint8x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 0);
-  ret.val[1] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 1);
-  ret.val[2] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 2);
-  ret.val[3] = (uint8x8_t) __builtin_aarch64_get_dregxiv8qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_u16 (const uint16_t * __a)
 {
-  uint16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 0);
-  ret.val[1] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 1);
-  ret.val[2] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 2);
-  ret.val[3] = (uint16x4_t) __builtin_aarch64_get_dregxiv4hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_u32 (const uint32_t * __a)
 {
-  uint32x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 0);
-  ret.val[1] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 1);
-  ret.val[2] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 2);
-  ret.val[3] = (uint32x2_t) __builtin_aarch64_get_dregxiv2si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline float16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_f16 (const float16_t * __a)
 {
-  float16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x4_t) __builtin_aarch64_get_dregxiv4hf (__o, 0);
-  ret.val[1] = (float16x4_t) __builtin_aarch64_get_dregxiv4hf (__o, 1);
-  ret.val[2] = (float16x4_t) __builtin_aarch64_get_dregxiv4hf (__o, 2);
-  ret.val[3] = (float16x4_t) __builtin_aarch64_get_dregxiv4hf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_f32 (const float32_t * __a)
 {
-  float32x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 0);
-  ret.val[1] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 1);
-  ret.val[2] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 2);
-  ret.val[3] = (float32x2_t) __builtin_aarch64_get_dregxiv2sf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline poly64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_p64 (const poly64_t * __a)
 {
-  poly64x1x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 0);
-  ret.val[1] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 1);
-  ret.val[2] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 2);
-  ret.val[3] = (poly64x1_t) __builtin_aarch64_get_dregxidi_pss (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rdi_ps ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline int8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_s8 (const int8_t * __a)
 {
-  int8x16x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 1);
-  ret.val[2] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 2);
-  ret.val[3] = (int8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv16qi ((const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline poly8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_p8 (const poly8_t * __a)
 {
-  poly8x16x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 1);
-  ret.val[2] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 2);
-  ret.val[3] = (poly8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv16qi_ps (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline int16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_s16 (const int16_t * __a)
 {
-  int16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 1);
-  ret.val[2] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 2);
-  ret.val[3] = (int16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8hi ((const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline poly16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_p16 (const poly16_t * __a)
 {
-  poly16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 1);
-  ret.val[2] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 2);
-  ret.val[3] = (poly16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8hi_ps (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline int32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_s32 (const int32_t * __a)
 {
-  int32x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4si ((const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline int64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_s64 (const int64_t * __a)
 {
-  int64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 1);
-  ret.val[2] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 2);
-  ret.val[3] = (int64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2di ((const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline uint8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_u8 (const uint8_t * __a)
 {
-  uint8x16x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv16qi ((const __builtin_aarch64_simd_qi *) __a);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 1);
-  ret.val[2] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 2);
-  ret.val[3] = (uint8x16_t) __builtin_aarch64_get_qregxiv16qi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv16qi_us (
+				(const __builtin_aarch64_simd_qi *) __a);
 }
 
 __extension__ extern __inline uint16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_u16 (const uint16_t * __a)
 {
-  uint16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8hi ((const __builtin_aarch64_simd_hi *) __a);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 1);
-  ret.val[2] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 2);
-  ret.val[3] = (uint16x8_t) __builtin_aarch64_get_qregxiv8hi (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8hi_us (
+				(const __builtin_aarch64_simd_hi *) __a);
 }
 
 __extension__ extern __inline uint32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_u32 (const uint32_t * __a)
 {
-  uint32x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4si ((const __builtin_aarch64_simd_si *) __a);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4si_us (
+				(const __builtin_aarch64_simd_si *) __a);
 }
 
 __extension__ extern __inline uint64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_u64 (const uint64_t * __a)
 {
-  uint64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 1);
-  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 2);
-  ret.val[3] = (uint64x2_t) __builtin_aarch64_get_qregxiv2di (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2di_us (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 __extension__ extern __inline float16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_f16 (const float16_t * __a)
 {
-  float16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8hf ((const __builtin_aarch64_simd_hf *) __a);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregxiv8hf (__o, 0);
-  ret.val[1] = (float16x8_t) __builtin_aarch64_get_qregxiv8hf (__o, 1);
-  ret.val[2] = (float16x8_t) __builtin_aarch64_get_qregxiv8hf (__o, 2);
-  ret.val[3] = (float16x8_t) __builtin_aarch64_get_qregxiv8hf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8hf ((const __builtin_aarch64_simd_hf *) __a);
 }
 
 __extension__ extern __inline float32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_f32 (const float32_t * __a)
 {
-  float32x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4sf ((const __builtin_aarch64_simd_sf *) __a);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 1);
-  ret.val[2] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 2);
-  ret.val[3] = (float32x4_t) __builtin_aarch64_get_qregxiv4sf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4sf ((const __builtin_aarch64_simd_sf *) __a);
 }
 
 __extension__ extern __inline float64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_f64 (const float64_t * __a)
 {
-  float64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2df ((const __builtin_aarch64_simd_df *) __a);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 1);
-  ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 2);
-  ret.val[3] = (float64x2_t) __builtin_aarch64_get_qregxiv2df (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2df ((const __builtin_aarch64_simd_df *) __a);
 }
 
 __extension__ extern __inline poly64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_p64 (const poly64_t * __a)
 {
-  poly64x2x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv2di ((const __builtin_aarch64_simd_di *) __a);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 1);
-  ret.val[2] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 2);
-  ret.val[3] = (poly64x2_t) __builtin_aarch64_get_qregxiv2di_pss (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv2di_ps (
+				(const __builtin_aarch64_simd_di *) __a);
 }
 
 /* vld2_lane */
@@ -19790,238 +17580,112 @@ __extension__ extern __inline uint8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_u8 (const uint8_t * __ptr, uint8x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint8x16x2_t __temp;
-  __temp.val[0] = vcombine_u8 (__b.val[0], vcreate_u8 (0));
-  __temp.val[1] = vcombine_u8 (__b.val[1], vcreate_u8 (0));
-  __o = __builtin_aarch64_set_qregoiv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (uint8x8_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (uint8x8_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev8qi_usus (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_u16 (const uint16_t * __ptr, uint16x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint16x8x2_t __temp;
-  __temp.val[0] = vcombine_u16 (__b.val[0], vcreate_u16 (0));
-  __temp.val[1] = vcombine_u16 (__b.val[1], vcreate_u16 (0));
-  __o = __builtin_aarch64_set_qregoiv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (uint16x4_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (uint16x4_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev4hi_usus (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_u32 (const uint32_t * __ptr, uint32x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint32x4x2_t __temp;
-  __temp.val[0] = vcombine_u32 (__b.val[0], vcreate_u32 (0));
-  __temp.val[1] = vcombine_u32 (__b.val[1], vcreate_u32 (0));
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev2si (
-	  (__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  __b.val[0] = (uint32x2_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (uint32x2_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev2si_usus (
+	  (__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_u64 (const uint64_t * __ptr, uint64x1x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint64x2x2_t __temp;
-  __temp.val[0] = vcombine_u64 (__b.val[0], vcreate_u64 (0));
-  __temp.val[1] = vcombine_u64 (__b.val[1], vcreate_u64 (0));
-  __o = __builtin_aarch64_set_qregoiv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (uint64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanedi_usus (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_s8 (const int8_t * __ptr, int8x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int8x16x2_t __temp;
-  __temp.val[0] = vcombine_s8 (__b.val[0], vcreate_s8 (0));
-  __temp.val[1] = vcombine_s8 (__b.val[1], vcreate_s8 (0));
-  __o = __builtin_aarch64_set_qregoiv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (int8x8_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (int8x8_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev8qi (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_s16 (const int16_t * __ptr, int16x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int16x8x2_t __temp;
-  __temp.val[0] = vcombine_s16 (__b.val[0], vcreate_s16 (0));
-  __temp.val[1] = vcombine_s16 (__b.val[1], vcreate_s16 (0));
-  __o = __builtin_aarch64_set_qregoiv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (int16x4_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (int16x4_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev4hi (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_s32 (const int32_t * __ptr, int32x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int32x4x2_t __temp;
-  __temp.val[0] = vcombine_s32 (__b.val[0], vcreate_s32 (0));
-  __temp.val[1] = vcombine_s32 (__b.val[1], vcreate_s32 (0));
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev2si (
-	  (__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  __b.val[0] = (int32x2_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (int32x2_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev2si (
+	  (__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_s64 (const int64_t * __ptr, int64x1x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int64x2x2_t __temp;
-  __temp.val[0] = vcombine_s64 (__b.val[0], vcreate_s64 (0));
-  __temp.val[1] = vcombine_s64 (__b.val[1], vcreate_s64 (0));
-  __o = __builtin_aarch64_set_qregoiv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (int64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanedi (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_f16 (const float16_t * __ptr, float16x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  float16x8x2_t __temp;
-  __temp.val[0] = vcombine_f16 (__b.val[0], vcreate_f16 (0));
-  __temp.val[1] = vcombine_f16 (__b.val[1], vcreate_f16 (0));
-  __o = __builtin_aarch64_set_qregoiv8hf (__o, (float16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv8hf (__o, (float16x8_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev4hf (
-	  (__builtin_aarch64_simd_hf *) __ptr, __o, __c);
-  __b.val[0] = (float16x4_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (float16x4_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev4hf (
+	  (__builtin_aarch64_simd_hf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float32x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_f32 (const float32_t * __ptr, float32x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  float32x4x2_t __temp;
-  __temp.val[0] = vcombine_f32 (__b.val[0], vcreate_f32 (0));
-  __temp.val[1] = vcombine_f32 (__b.val[1], vcreate_f32 (0));
-  __o = __builtin_aarch64_set_qregoiv4sf (__o, (float32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4sf (__o, (float32x4_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev2sf (
-	  (__builtin_aarch64_simd_sf *) __ptr, __o, __c);
-  __b.val[0] = (float32x2_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (float32x2_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev2sf (
+	  (__builtin_aarch64_simd_sf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_f64 (const float64_t * __ptr, float64x1x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  float64x2x2_t __temp;
-  __temp.val[0] = vcombine_f64 (__b.val[0], vcreate_f64 (0));
-  __temp.val[1] = vcombine_f64 (__b.val[1], vcreate_f64 (0));
-  __o = __builtin_aarch64_set_qregoiv2df (__o, (float64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv2df (__o, (float64x2_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanedf (
-	  (__builtin_aarch64_simd_df *) __ptr, __o, __c);
-  __b.val[0] = (float64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (float64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanedf (
+	  (__builtin_aarch64_simd_df *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly8x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_p8 (const poly8_t * __ptr, poly8x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly8x16x2_t __temp;
-  __temp.val[0] = vcombine_p8 (__b.val[0], vcreate_p8 (0));
-  __temp.val[1] = vcombine_p8 (__b.val[1], vcreate_p8 (0));
-  __o = __builtin_aarch64_set_qregoiv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (poly8x8_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (poly8x8_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev8qi_psps (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_p16 (const poly16_t * __ptr, poly16x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly16x8x2_t __temp;
-  __temp.val[0] = vcombine_p16 (__b.val[0], vcreate_p16 (0));
-  __temp.val[1] = vcombine_p16 (__b.val[1], vcreate_p16 (0));
-  __o = __builtin_aarch64_set_qregoiv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (poly16x4_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (poly16x4_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev4hi_psps (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly64x1x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_p64 (const poly64_t * __ptr, poly64x1x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly64x2x2_t __temp;
-  __temp.val[0] = vcombine_p64 (__b.val[0], vcreate_p64 (0));
-  __temp.val[1] = vcombine_p64 (__b.val[1], vcreate_p64 (0));
-  __o = __builtin_aarch64_set_qregoiv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (poly64x1_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (poly64x1_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanedi_psps (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 /* vld2q_lane */
@@ -20030,210 +17694,112 @@ __extension__ extern __inline uint8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_u8 (const uint8_t * __ptr, uint8x16x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint8x16x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev16qi_usus (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_u16 (const uint16_t * __ptr, uint16x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint16x8x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev8hi_usus (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_u32 (const uint32_t * __ptr, uint32x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint32x4x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev4si (
-	(__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev4si_usus (
+	(__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_u64 (const uint64_t * __ptr, uint64x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint64x2x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev2di_usus (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_s8 (const int8_t * __ptr, int8x16x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int8x16x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev16qi (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_s16 (const int16_t * __ptr, int16x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int16x8x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev8hi (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_s32 (const int32_t * __ptr, int32x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int32x4x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev4si (
-	(__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  ret.val[0] = __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev4si (
+	(__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_s64 (const int64_t * __ptr, int64x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  int64x2x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev2di (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_f16 (const float16_t * __ptr, float16x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  float16x8x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev8hf (
-	(__builtin_aarch64_simd_hf *) __ptr, __o, __c);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (float16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev8hf (
+	(__builtin_aarch64_simd_hf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float32x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_f32 (const float32_t * __ptr, float32x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  float32x4x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev4sf (
-	(__builtin_aarch64_simd_sf *) __ptr, __o, __c);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev4sf (
+	(__builtin_aarch64_simd_sf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_f64 (const float64_t * __ptr, float64x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  float64x2x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev2df (
-	(__builtin_aarch64_simd_df *) __ptr, __o, __c);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev2df (
+	(__builtin_aarch64_simd_df *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly8x16x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_p8 (const poly8_t * __ptr, poly8x16x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly8x16x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev16qi_psps (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_p16 (const poly16_t * __ptr, poly16x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly16x8x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev8hi_psps (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly64x2x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_p64 (const poly64_t * __ptr, poly64x2x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly64x2x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev2di_psps (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 /* vld3_lane */
@@ -20242,280 +17808,112 @@ __extension__ extern __inline uint8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_u8 (const uint8_t * __ptr, uint8x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint8x16x3_t __temp;
-  __temp.val[0] = vcombine_u8 (__b.val[0], vcreate_u8 (0));
-  __temp.val[1] = vcombine_u8 (__b.val[1], vcreate_u8 (0));
-  __temp.val[2] = vcombine_u8 (__b.val[2], vcreate_u8 (0));
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (uint8x8_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (uint8x8_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (uint8x8_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev8qi_usus (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_u16 (const uint16_t * __ptr, uint16x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint16x8x3_t __temp;
-  __temp.val[0] = vcombine_u16 (__b.val[0], vcreate_u16 (0));
-  __temp.val[1] = vcombine_u16 (__b.val[1], vcreate_u16 (0));
-  __temp.val[2] = vcombine_u16 (__b.val[2], vcreate_u16 (0));
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (uint16x4_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (uint16x4_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (uint16x4_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev4hi_usus (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_u32 (const uint32_t * __ptr, uint32x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint32x4x3_t __temp;
-  __temp.val[0] = vcombine_u32 (__b.val[0], vcreate_u32 (0));
-  __temp.val[1] = vcombine_u32 (__b.val[1], vcreate_u32 (0));
-  __temp.val[2] = vcombine_u32 (__b.val[2], vcreate_u32 (0));
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev2si (
-	  (__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  __b.val[0] = (uint32x2_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (uint32x2_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (uint32x2_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev2si_usus (
+	  (__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_u64 (const uint64_t * __ptr, uint64x1x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint64x2x3_t __temp;
-  __temp.val[0] = vcombine_u64 (__b.val[0], vcreate_u64 (0));
-  __temp.val[1] = vcombine_u64 (__b.val[1], vcreate_u64 (0));
-  __temp.val[2] = vcombine_u64 (__b.val[2], vcreate_u64 (0));
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (uint64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanedi_usus (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_s8 (const int8_t * __ptr, int8x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int8x16x3_t __temp;
-  __temp.val[0] = vcombine_s8 (__b.val[0], vcreate_s8 (0));
-  __temp.val[1] = vcombine_s8 (__b.val[1], vcreate_s8 (0));
-  __temp.val[2] = vcombine_s8 (__b.val[2], vcreate_s8 (0));
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (int8x8_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (int8x8_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (int8x8_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev8qi (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_s16 (const int16_t * __ptr, int16x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int16x8x3_t __temp;
-  __temp.val[0] = vcombine_s16 (__b.val[0], vcreate_s16 (0));
-  __temp.val[1] = vcombine_s16 (__b.val[1], vcreate_s16 (0));
-  __temp.val[2] = vcombine_s16 (__b.val[2], vcreate_s16 (0));
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (int16x4_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (int16x4_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (int16x4_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev4hi (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_s32 (const int32_t * __ptr, int32x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int32x4x3_t __temp;
-  __temp.val[0] = vcombine_s32 (__b.val[0], vcreate_s32 (0));
-  __temp.val[1] = vcombine_s32 (__b.val[1], vcreate_s32 (0));
-  __temp.val[2] = vcombine_s32 (__b.val[2], vcreate_s32 (0));
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev2si (
-	  (__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  __b.val[0] = (int32x2_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (int32x2_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (int32x2_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev2si (
+	  (__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_s64 (const int64_t * __ptr, int64x1x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int64x2x3_t __temp;
-  __temp.val[0] = vcombine_s64 (__b.val[0], vcreate_s64 (0));
-  __temp.val[1] = vcombine_s64 (__b.val[1], vcreate_s64 (0));
-  __temp.val[2] = vcombine_s64 (__b.val[2], vcreate_s64 (0));
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (int64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanedi (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_f16 (const float16_t * __ptr, float16x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  float16x8x3_t __temp;
-  __temp.val[0] = vcombine_f16 (__b.val[0], vcreate_f16 (0));
-  __temp.val[1] = vcombine_f16 (__b.val[1], vcreate_f16 (0));
-  __temp.val[2] = vcombine_f16 (__b.val[2], vcreate_f16 (0));
-  __o = __builtin_aarch64_set_qregciv8hf (__o, (float16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv8hf (__o, (float16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv8hf (__o, (float16x8_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev4hf (
-	  (__builtin_aarch64_simd_hf *) __ptr, __o, __c);
-  __b.val[0] = (float16x4_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (float16x4_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (float16x4_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev4hf (
+	  (__builtin_aarch64_simd_hf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float32x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_f32 (const float32_t * __ptr, float32x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  float32x4x3_t __temp;
-  __temp.val[0] = vcombine_f32 (__b.val[0], vcreate_f32 (0));
-  __temp.val[1] = vcombine_f32 (__b.val[1], vcreate_f32 (0));
-  __temp.val[2] = vcombine_f32 (__b.val[2], vcreate_f32 (0));
-  __o = __builtin_aarch64_set_qregciv4sf (__o, (float32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4sf (__o, (float32x4_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4sf (__o, (float32x4_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev2sf (
-	  (__builtin_aarch64_simd_sf *) __ptr, __o, __c);
-  __b.val[0] = (float32x2_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (float32x2_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (float32x2_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev2sf (
+	  (__builtin_aarch64_simd_sf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_f64 (const float64_t * __ptr, float64x1x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  float64x2x3_t __temp;
-  __temp.val[0] = vcombine_f64 (__b.val[0], vcreate_f64 (0));
-  __temp.val[1] = vcombine_f64 (__b.val[1], vcreate_f64 (0));
-  __temp.val[2] = vcombine_f64 (__b.val[2], vcreate_f64 (0));
-  __o = __builtin_aarch64_set_qregciv2df (__o, (float64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv2df (__o, (float64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv2df (__o, (float64x2_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanedf (
-	  (__builtin_aarch64_simd_df *) __ptr, __o, __c);
-  __b.val[0] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (float64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanedf (
+	  (__builtin_aarch64_simd_df *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly8x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_p8 (const poly8_t * __ptr, poly8x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly8x16x3_t __temp;
-  __temp.val[0] = vcombine_p8 (__b.val[0], vcreate_p8 (0));
-  __temp.val[1] = vcombine_p8 (__b.val[1], vcreate_p8 (0));
-  __temp.val[2] = vcombine_p8 (__b.val[2], vcreate_p8 (0));
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv16qi (__o, (int8x16_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (poly8x8_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (poly8x8_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (poly8x8_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev8qi_psps (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_p16 (const poly16_t * __ptr, poly16x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly16x8x3_t __temp;
-  __temp.val[0] = vcombine_p16 (__b.val[0], vcreate_p16 (0));
-  __temp.val[1] = vcombine_p16 (__b.val[1], vcreate_p16 (0));
-  __temp.val[2] = vcombine_p16 (__b.val[2], vcreate_p16 (0));
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv8hi (__o, (int16x8_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (poly16x4_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (poly16x4_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (poly16x4_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev4hi_psps (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly64x1x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_p64 (const poly64_t * __ptr, poly64x1x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly64x2x3_t __temp;
-  __temp.val[0] = vcombine_p64 (__b.val[0], vcreate_p64 (0));
-  __temp.val[1] = vcombine_p64 (__b.val[1], vcreate_p64 (0));
-  __temp.val[2] = vcombine_p64 (__b.val[2], vcreate_p64 (0));
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv2di (__o, (int64x2_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (poly64x1_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (poly64x1_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (poly64x1_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanedi_psps (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 /* vld3q_lane */
@@ -20524,238 +17922,112 @@ __extension__ extern __inline uint8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_u8 (const uint8_t * __ptr, uint8x16x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint8x16x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (uint8x16_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev16qi_usus (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_u16 (const uint16_t * __ptr, uint16x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint16x8x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (uint16x8_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev8hi_usus (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_u32 (const uint32_t * __ptr, uint32x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint32x4x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev4si (
-	(__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (uint32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev4si_usus (
+	(__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_u64 (const uint64_t * __ptr, uint64x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint64x2x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev2di_usus (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_s8 (const int8_t * __ptr, int8x16x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int8x16x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (int8x16_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev16qi (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_s16 (const int16_t * __ptr, int16x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int16x8x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (int16x8_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev8hi (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_s32 (const int32_t * __ptr, int32x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int32x4x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev4si (
-	(__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (int32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev4si (
+	(__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_s64 (const int64_t * __ptr, int64x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  int64x2x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (int64x2_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev2di (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_f16 (const float16_t * __ptr, float16x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  float16x8x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev8hf (
-	(__builtin_aarch64_simd_hf *) __ptr, __o, __c);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (float16x8_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (float16x8_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev8hf (
+	(__builtin_aarch64_simd_hf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float32x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_f32 (const float32_t * __ptr, float32x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  float32x4x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev4sf (
-	(__builtin_aarch64_simd_sf *) __ptr, __o, __c);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (float32x4_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev4sf (
+	(__builtin_aarch64_simd_sf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_f64 (const float64_t * __ptr, float64x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  float64x2x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev2df (
-	(__builtin_aarch64_simd_df *) __ptr, __o, __c);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev2df (
+	(__builtin_aarch64_simd_df *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly8x16x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_p8 (const poly8_t * __ptr, poly8x16x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly8x16x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (poly8x16_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev16qi_psps (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_p16 (const poly16_t * __ptr, poly16x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly16x8x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (poly16x8_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev8hi_psps (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly64x2x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_p64 (const poly64_t * __ptr, poly64x2x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly64x2x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (poly64x2_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev2di_psps (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 /* vld4_lane */
@@ -20764,322 +18036,112 @@ __extension__ extern __inline uint8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_u8 (const uint8_t * __ptr, uint8x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint8x16x4_t __temp;
-  __temp.val[0] = vcombine_u8 (__b.val[0], vcreate_u8 (0));
-  __temp.val[1] = vcombine_u8 (__b.val[1], vcreate_u8 (0));
-  __temp.val[2] = vcombine_u8 (__b.val[2], vcreate_u8 (0));
-  __temp.val[3] = vcombine_u8 (__b.val[3], vcreate_u8 (0));
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (uint8x8_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (uint8x8_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (uint8x8_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (uint8x8_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev8qi_usus (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_u16 (const uint16_t * __ptr, uint16x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint16x8x4_t __temp;
-  __temp.val[0] = vcombine_u16 (__b.val[0], vcreate_u16 (0));
-  __temp.val[1] = vcombine_u16 (__b.val[1], vcreate_u16 (0));
-  __temp.val[2] = vcombine_u16 (__b.val[2], vcreate_u16 (0));
-  __temp.val[3] = vcombine_u16 (__b.val[3], vcreate_u16 (0));
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (uint16x4_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (uint16x4_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (uint16x4_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (uint16x4_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev4hi_usus (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_u32 (const uint32_t * __ptr, uint32x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint32x4x4_t __temp;
-  __temp.val[0] = vcombine_u32 (__b.val[0], vcreate_u32 (0));
-  __temp.val[1] = vcombine_u32 (__b.val[1], vcreate_u32 (0));
-  __temp.val[2] = vcombine_u32 (__b.val[2], vcreate_u32 (0));
-  __temp.val[3] = vcombine_u32 (__b.val[3], vcreate_u32 (0));
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev2si (
-	  (__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  __b.val[0] = (uint32x2_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (uint32x2_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (uint32x2_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (uint32x2_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev2si_usus (
+	  (__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_u64 (const uint64_t * __ptr, uint64x1x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint64x2x4_t __temp;
-  __temp.val[0] = vcombine_u64 (__b.val[0], vcreate_u64 (0));
-  __temp.val[1] = vcombine_u64 (__b.val[1], vcreate_u64 (0));
-  __temp.val[2] = vcombine_u64 (__b.val[2], vcreate_u64 (0));
-  __temp.val[3] = vcombine_u64 (__b.val[3], vcreate_u64 (0));
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (uint64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanedi_usus (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_s8 (const int8_t * __ptr, int8x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int8x16x4_t __temp;
-  __temp.val[0] = vcombine_s8 (__b.val[0], vcreate_s8 (0));
-  __temp.val[1] = vcombine_s8 (__b.val[1], vcreate_s8 (0));
-  __temp.val[2] = vcombine_s8 (__b.val[2], vcreate_s8 (0));
-  __temp.val[3] = vcombine_s8 (__b.val[3], vcreate_s8 (0));
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (int8x8_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (int8x8_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (int8x8_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (int8x8_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev8qi (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_s16 (const int16_t * __ptr, int16x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int16x8x4_t __temp;
-  __temp.val[0] = vcombine_s16 (__b.val[0], vcreate_s16 (0));
-  __temp.val[1] = vcombine_s16 (__b.val[1], vcreate_s16 (0));
-  __temp.val[2] = vcombine_s16 (__b.val[2], vcreate_s16 (0));
-  __temp.val[3] = vcombine_s16 (__b.val[3], vcreate_s16 (0));
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (int16x4_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (int16x4_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (int16x4_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (int16x4_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev4hi (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_s32 (const int32_t * __ptr, int32x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int32x4x4_t __temp;
-  __temp.val[0] = vcombine_s32 (__b.val[0], vcreate_s32 (0));
-  __temp.val[1] = vcombine_s32 (__b.val[1], vcreate_s32 (0));
-  __temp.val[2] = vcombine_s32 (__b.val[2], vcreate_s32 (0));
-  __temp.val[3] = vcombine_s32 (__b.val[3], vcreate_s32 (0));
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev2si (
-	  (__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  __b.val[0] = (int32x2_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (int32x2_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (int32x2_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (int32x2_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev2si (
+	  (__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_s64 (const int64_t * __ptr, int64x1x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int64x2x4_t __temp;
-  __temp.val[0] = vcombine_s64 (__b.val[0], vcreate_s64 (0));
-  __temp.val[1] = vcombine_s64 (__b.val[1], vcreate_s64 (0));
-  __temp.val[2] = vcombine_s64 (__b.val[2], vcreate_s64 (0));
-  __temp.val[3] = vcombine_s64 (__b.val[3], vcreate_s64 (0));
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (int64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanedi (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_f16 (const float16_t * __ptr, float16x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  float16x8x4_t __temp;
-  __temp.val[0] = vcombine_f16 (__b.val[0], vcreate_f16 (0));
-  __temp.val[1] = vcombine_f16 (__b.val[1], vcreate_f16 (0));
-  __temp.val[2] = vcombine_f16 (__b.val[2], vcreate_f16 (0));
-  __temp.val[3] = vcombine_f16 (__b.val[3], vcreate_f16 (0));
-  __o = __builtin_aarch64_set_qregxiv8hf (__o, (float16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv8hf (__o, (float16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv8hf (__o, (float16x8_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv8hf (__o, (float16x8_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev4hf (
-	  (__builtin_aarch64_simd_hf *) __ptr, __o, __c);
-  __b.val[0] = (float16x4_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (float16x4_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (float16x4_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (float16x4_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev4hf (
+	  (__builtin_aarch64_simd_hf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float32x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_f32 (const float32_t * __ptr, float32x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  float32x4x4_t __temp;
-  __temp.val[0] = vcombine_f32 (__b.val[0], vcreate_f32 (0));
-  __temp.val[1] = vcombine_f32 (__b.val[1], vcreate_f32 (0));
-  __temp.val[2] = vcombine_f32 (__b.val[2], vcreate_f32 (0));
-  __temp.val[3] = vcombine_f32 (__b.val[3], vcreate_f32 (0));
-  __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4sf (__o, (float32x4_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev2sf (
-	  (__builtin_aarch64_simd_sf *) __ptr, __o, __c);
-  __b.val[0] = (float32x2_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (float32x2_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (float32x2_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (float32x2_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev2sf (
+	  (__builtin_aarch64_simd_sf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_f64 (const float64_t * __ptr, float64x1x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  float64x2x4_t __temp;
-  __temp.val[0] = vcombine_f64 (__b.val[0], vcreate_f64 (0));
-  __temp.val[1] = vcombine_f64 (__b.val[1], vcreate_f64 (0));
-  __temp.val[2] = vcombine_f64 (__b.val[2], vcreate_f64 (0));
-  __temp.val[3] = vcombine_f64 (__b.val[3], vcreate_f64 (0));
-  __o = __builtin_aarch64_set_qregxiv2df (__o, (float64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv2df (__o, (float64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv2df (__o, (float64x2_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv2df (__o, (float64x2_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanedf (
-	  (__builtin_aarch64_simd_df *) __ptr, __o, __c);
-  __b.val[0] = (float64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (float64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (float64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (float64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanedf (
+	  (__builtin_aarch64_simd_df *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly8x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_p8 (const poly8_t * __ptr, poly8x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly8x16x4_t __temp;
-  __temp.val[0] = vcombine_p8 (__b.val[0], vcreate_p8 (0));
-  __temp.val[1] = vcombine_p8 (__b.val[1], vcreate_p8 (0));
-  __temp.val[2] = vcombine_p8 (__b.val[2], vcreate_p8 (0));
-  __temp.val[3] = vcombine_p8 (__b.val[3], vcreate_p8 (0));
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv16qi (__o, (int8x16_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev8qi (
-	  (__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  __b.val[0] = (poly8x8_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (poly8x8_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (poly8x8_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (poly8x8_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev8qi_psps (
+	  (__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_p16 (const poly16_t * __ptr, poly16x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly16x8x4_t __temp;
-  __temp.val[0] = vcombine_p16 (__b.val[0], vcreate_p16 (0));
-  __temp.val[1] = vcombine_p16 (__b.val[1], vcreate_p16 (0));
-  __temp.val[2] = vcombine_p16 (__b.val[2], vcreate_p16 (0));
-  __temp.val[3] = vcombine_p16 (__b.val[3], vcreate_p16 (0));
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv8hi (__o, (int16x8_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev4hi (
-	  (__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  __b.val[0] = (poly16x4_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (poly16x4_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (poly16x4_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (poly16x4_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev4hi_psps (
+	  (__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly64x1x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_p64 (const poly64_t * __ptr, poly64x1x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly64x2x4_t __temp;
-  __temp.val[0] = vcombine_p64 (__b.val[0], vcreate_p64 (0));
-  __temp.val[1] = vcombine_p64 (__b.val[1], vcreate_p64 (0));
-  __temp.val[2] = vcombine_p64 (__b.val[2], vcreate_p64 (0));
-  __temp.val[3] = vcombine_p64 (__b.val[3], vcreate_p64 (0));
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv2di (__o, (int64x2_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanedi (
-	  (__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  __b.val[0] = (poly64x1_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (poly64x1_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (poly64x1_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (poly64x1_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanedi_psps (
+	  (__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 /* vld4q_lane */
@@ -21088,266 +18150,112 @@ __extension__ extern __inline uint8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_u8 (const uint8_t * __ptr, uint8x16x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint8x16x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (uint8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (uint8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (uint8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (uint8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev16qi_usus (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_u16 (const uint16_t * __ptr, uint16x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint16x8x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (uint16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (uint16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (uint16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (uint16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev8hi_usus (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_u32 (const uint32_t * __ptr, uint32x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint32x4x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev4si (
-	(__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  ret.val[0] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (uint32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev4si_usus (
+	(__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline uint64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_u64 (const uint64_t * __ptr, uint64x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint64x2x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (uint64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (uint64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (uint64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (uint64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev2di_usus (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_s8 (const int8_t * __ptr, int8x16x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int8x16x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (int8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (int8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (int8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (int8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev16qi (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_s16 (const int16_t * __ptr, int16x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int16x8x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (int16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (int16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (int16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (int16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev8hi (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_s32 (const int32_t * __ptr, int32x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int32x4x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev4si (
-	(__builtin_aarch64_simd_si *) __ptr, __o, __c);
-  ret.val[0] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (int32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev4si (
+	(__builtin_aarch64_simd_si *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline int64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_s64 (const int64_t * __ptr, int64x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  int64x2x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (int64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (int64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (int64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (int64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev2di (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_f16 (const float16_t * __ptr, float16x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  float16x8x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev8hf (
-	(__builtin_aarch64_simd_hf *) __ptr, __o, __c);
-  ret.val[0] = (float16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (float16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (float16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (float16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev8hf (
+	(__builtin_aarch64_simd_hf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float32x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_f32 (const float32_t * __ptr, float32x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  float32x4x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev4sf (
-	(__builtin_aarch64_simd_sf *) __ptr, __o, __c);
-  ret.val[0] = (float32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (float32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (float32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (float32x4_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev4sf (
+	(__builtin_aarch64_simd_sf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline float64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_f64 (const float64_t * __ptr, float64x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  float64x2x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev2df (
-	(__builtin_aarch64_simd_df *) __ptr, __o, __c);
-  ret.val[0] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (float64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev2df (
+	(__builtin_aarch64_simd_df *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly8x16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_p8 (const poly8_t * __ptr, poly8x16x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly8x16x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev16qi (
-	(__builtin_aarch64_simd_qi *) __ptr, __o, __c);
-  ret.val[0] = (poly8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (poly8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (poly8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (poly8x16_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev16qi_psps (
+	(__builtin_aarch64_simd_qi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_p16 (const poly16_t * __ptr, poly16x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly16x8x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev8hi (
-	(__builtin_aarch64_simd_hi *) __ptr, __o, __c);
-  ret.val[0] = (poly16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (poly16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (poly16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (poly16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev8hi_psps (
+	(__builtin_aarch64_simd_hi *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline poly64x2x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_p64 (const poly64_t * __ptr, poly64x2x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly64x2x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev2di (
-	(__builtin_aarch64_simd_di *) __ptr, __o, __c);
-  ret.val[0] = (poly64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (poly64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (poly64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (poly64x2_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev2di_psps (
+	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
 /* vmax */
@@ -25364,54 +22272,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl2_s8 (int8x16x2_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl2_u8 (uint8x16x2_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl2_p8 (poly8x16x2_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x8_t)__builtin_aarch64_qtbl2v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl2v8qi_ppu (__tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl2q_s8 (int8x16x2_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbl2v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl2v16qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl2q_u8 (uint8x16x2_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x16_t)__builtin_aarch64_qtbl2v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl2v16qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl2q_p8 (poly8x16x2_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x16_t)__builtin_aarch64_qtbl2v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl2v16qi_ppu (__tab, __idx);
 }
 
 /* vqtbl3 */
@@ -25420,54 +22316,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl3_s8 (int8x16x3_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbl3v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl3v8qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl3_u8 (uint8x16x3_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x8_t)__builtin_aarch64_qtbl3v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl3v8qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl3_p8 (poly8x16x3_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x8_t)__builtin_aarch64_qtbl3v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl3v8qi_ppu (__tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl3q_s8 (int8x16x3_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbl3v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl3v16qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl3q_u8 (uint8x16x3_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x16_t)__builtin_aarch64_qtbl3v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl3v16qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl3q_p8 (poly8x16x3_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x16_t)__builtin_aarch64_qtbl3v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl3v16qi_ppu (__tab, __idx);
 }
 
 /* vqtbl4 */
@@ -25476,54 +22360,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl4_s8 (int8x16x4_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbl4v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl4v8qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl4_u8 (uint8x16x4_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x8_t)__builtin_aarch64_qtbl4v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl4v8qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl4_p8 (poly8x16x4_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x8_t)__builtin_aarch64_qtbl4v8qi (__o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbl4v8qi_ppu (__tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl4q_s8 (int8x16x4_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbl4v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl4v16qi_ssu (__tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl4q_u8 (uint8x16x4_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x16_t)__builtin_aarch64_qtbl4v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl4v16qi_uuu (__tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbl4q_p8 (poly8x16x4_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x16_t)__builtin_aarch64_qtbl4v16qi (__o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbl4v16qi_ppu (__tab, __idx);
 }
 
 /* vqtbx2 */
@@ -25532,58 +22404,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx2_s8 (int8x8_t __r, int8x16x2_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbx2v8qi (__r, __o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx2v8qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx2_u8 (uint8x8_t __r, uint8x16x2_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x8_t)__builtin_aarch64_qtbx2v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx2v8qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx2_p8 (poly8x8_t __r, poly8x16x2_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x8_t)__builtin_aarch64_qtbx2v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx2v8qi_pppu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx2q_s8 (int8x16_t __r, int8x16x2_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbx2v16qi (__r, __o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx2v16qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx2q_u8 (uint8x16_t __r, uint8x16x2_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x16_t)__builtin_aarch64_qtbx2v16qi ((int8x16_t)__r, __o,
-						   (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx2v16qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx2q_p8 (poly8x16_t __r, poly8x16x2_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x16_t)__builtin_aarch64_qtbx2v16qi ((int8x16_t)__r, __o,
-						   (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx2v16qi_pppu (__r, __tab, __idx);
 }
 
 /* vqtbx3 */
@@ -25592,58 +22448,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx3_s8 (int8x8_t __r, int8x16x3_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbx3v8qi (__r, __o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx3v8qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx3_u8 (uint8x8_t __r, uint8x16x3_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x8_t)__builtin_aarch64_qtbx3v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx3v8qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx3_p8 (poly8x8_t __r, poly8x16x3_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x8_t)__builtin_aarch64_qtbx3v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx3v8qi_pppu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx3q_s8 (int8x16_t __r, int8x16x3_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbx3v16qi (__r, __o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx3v16qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx3q_u8 (uint8x16_t __r, uint8x16x3_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x16_t)__builtin_aarch64_qtbx3v16qi ((int8x16_t)__r, __o,
-						   (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx3v16qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx3q_p8 (poly8x16_t __r, poly8x16x3_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x16_t)__builtin_aarch64_qtbx3v16qi ((int8x16_t)__r, __o,
-						   (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx3v16qi_pppu (__r, __tab, __idx);
 }
 
 /* vqtbx4 */
@@ -25652,58 +22492,42 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx4_s8 (int8x8_t __r, int8x16x4_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbx4v8qi (__r, __o, (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx4v8qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx4_u8 (uint8x8_t __r, uint8x16x4_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x8_t)__builtin_aarch64_qtbx4v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx4v8qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx4_p8 (poly8x8_t __r, poly8x16x4_t __tab, uint8x8_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x8_t)__builtin_aarch64_qtbx4v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx4v8qi_pppu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx4q_s8 (int8x16_t __r, int8x16x4_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return __builtin_aarch64_qtbx4v16qi (__r, __o, (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx4v16qi_sssu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx4q_u8 (uint8x16_t __r, uint8x16x4_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (uint8x16_t)__builtin_aarch64_qtbx4v16qi ((int8x16_t)__r, __o,
-						   (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx4v16qi_uuuu (__r, __tab, __idx);
 }
 
 __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vqtbx4q_p8 (poly8x16_t __r, poly8x16x4_t __tab, uint8x16_t __idx)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__tab, sizeof (__tab));
-  return (poly8x16_t)__builtin_aarch64_qtbx4v16qi ((int8x16_t)__r, __o,
-						   (int8x16_t)__idx);
+  return __builtin_aarch64_qtbx4v16qi_pppu (__r, __tab, __idx);
 }
 
 /* vrbit  */
@@ -27304,21 +24128,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshr_n_u8 (uint8x8_t __a, const int __b)
 {
-  return (uint8x8_t) __builtin_aarch64_lshrv8qi ((int8x8_t) __a, __b);
+  return __builtin_aarch64_lshrv8qi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshr_n_u16 (uint16x4_t __a, const int __b)
 {
-  return (uint16x4_t) __builtin_aarch64_lshrv4hi ((int16x4_t) __a, __b);
+  return __builtin_aarch64_lshrv4hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshr_n_u32 (uint32x2_t __a, const int __b)
 {
-  return (uint32x2_t) __builtin_aarch64_lshrv2si ((int32x2_t) __a, __b);
+  return __builtin_aarch64_lshrv2si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint64x1_t
@@ -27360,28 +24184,28 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u8 (uint8x16_t __a, const int __b)
 {
-  return (uint8x16_t) __builtin_aarch64_lshrv16qi ((int8x16_t) __a, __b);
+  return __builtin_aarch64_lshrv16qi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u16 (uint16x8_t __a, const int __b)
 {
-  return (uint16x8_t) __builtin_aarch64_lshrv8hi ((int16x8_t) __a, __b);
+  return __builtin_aarch64_lshrv8hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u32 (uint32x4_t __a, const int __b)
 {
-  return (uint32x4_t) __builtin_aarch64_lshrv4si ((int32x4_t) __a, __b);
+  return __builtin_aarch64_lshrv4si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrq_n_u64 (uint64x2_t __a, const int __b)
 {
-  return (uint64x2_t) __builtin_aarch64_lshrv2di ((int64x2_t) __a, __b);
+  return __builtin_aarch64_lshrv2di_uus (__a, __b);
 }
 
 __extension__ extern __inline int64_t
@@ -28329,310 +25153,196 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s64_x2 (int64_t * __a, int64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int64x2x2_t __temp;
-  __temp.val[0]
-    = vcombine_s64 (__val.val[0], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[1]
-    = vcombine_s64 (__val.val[1], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u64_x2 (uint64_t * __a, uint64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint64x2x2_t __temp;
-  __temp.val[0]
-    = vcombine_u64 (__val.val[0], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1]
-    = vcombine_u64 (__val.val[1], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f64_x2 (float64_t * __a, float64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  float64x2x2_t __temp;
-  __temp.val[0]
-    = vcombine_f64 (__val.val[0], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1]
-    = vcombine_f64 (__val.val[1], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st1x2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s8_x2 (int8_t * __a, int8x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int8x16x2_t __temp;
-  __temp.val[0]
-    = vcombine_s8 (__val.val[0], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[1]
-    = vcombine_s8 (__val.val[1], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x2v8qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p8_x2 (poly8_t * __a, poly8x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly8x16x2_t __temp;
-  __temp.val[0]
-    = vcombine_p8 (__val.val[0], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1]
-    = vcombine_p8 (__val.val[1], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x2v8qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s16_x2 (int16_t * __a, int16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int16x8x2_t __temp;
-  __temp.val[0]
-    = vcombine_s16 (__val.val[0], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[1]
-    = vcombine_s16 (__val.val[1], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x2v4hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p16_x2 (poly16_t * __a, poly16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly16x8x2_t __temp;
-  __temp.val[0]
-    = vcombine_p16 (__val.val[0], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1]
-    = vcombine_p16 (__val.val[1], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x2v4hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s32_x2 (int32_t * __a, int32x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int32x4x2_t __temp;
-  __temp.val[0]
-    = vcombine_s32 (__val.val[0], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[1]
-    = vcombine_s32 (__val.val[1], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x2v2si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u8_x2 (uint8_t * __a, uint8x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint8x16x2_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x2v8qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u16_x2 (uint16_t * __a, uint16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint16x8x2_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x2v4hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u32_x2 (uint32_t * __a, uint32x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint32x4x2_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x2v2si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f16_x2 (float16_t * __a, float16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  float16x8x2_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v4hf (__a, __o);
+  __builtin_aarch64_st1x2v4hf (__a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f32_x2 (float32_t * __a, float32x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  float32x4x2_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v2sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st1x2v2sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p64_x2 (poly64_t * __a, poly64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly64x2x2_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s8_x2 (int8_t * __a, int8x16x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x2v16qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p8_x2 (poly8_t * __a, poly8x16x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x2v16qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s16_x2 (int16_t * __a, int16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x2v8hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p16_x2 (poly16_t * __a, poly16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x2v8hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s32_x2 (int32_t * __a, int32x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x2v4si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s64_x2 (int64_t * __a, int64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x2v2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u8_x2 (uint8_t * __a, uint8x16x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x2v16qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u16_x2 (uint16_t * __a, uint16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x2v8hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u32_x2 (uint32_t * __a, uint32x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x2v4si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u64_x2 (uint64_t * __a, uint64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x2v2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f16_x2 (float16_t * __a, float16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v8hf (__a, __o);
+  __builtin_aarch64_st1x2v8hf (__a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f32_x2 (float32_t * __a, float32x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v4sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st1x2v4sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f64_x2 (float64_t * __a, float64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st1x2v2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p64_x2 (poly64_t * __a, poly64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x2v2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 /* vst1x3 */
@@ -28641,308 +25351,197 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s64_x3 (int64_t * __a, int64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int64x2x3_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s64 (__val.val[2], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x3di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u64_x3 (uint64_t * __a, uint64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint64x2x3_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u64 (__val.val[2], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x3di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f64_x3 (float64_t * __a, float64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  float64x2x3_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f64 (__val.val[2], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st1x3df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s8_x3 (int8_t * __a, int8x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int8x16x3_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s8 (__val.val[2], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x3v8qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p8_x3 (poly8_t * __a, poly8x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly8x16x3_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p8 (__val.val[2], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x3v8qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s16_x3 (int16_t * __a, int16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int16x8x3_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s16 (__val.val[2], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x3v4hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p16_x3 (poly16_t * __a, poly16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly16x8x3_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p16 (__val.val[2], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x3v4hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s32_x3 (int32_t * __a, int32x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int32x4x3_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s32 (__val.val[2], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x3v2si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u8_x3 (uint8_t * __a, uint8x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint8x16x3_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u8 (__val.val[2], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x3v8qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u16_x3 (uint16_t * __a, uint16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint16x8x3_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u16 (__val.val[2], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x3v4hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u32_x3 (uint32_t * __a, uint32x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint32x4x3_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u32 (__val.val[2], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x3v2si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f16_x3 (float16_t * __a, float16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  float16x8x3_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f16 (__val.val[2], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v4hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st1x3v4hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f32_x3 (float32_t * __a, float32x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  float32x4x3_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f32 (__val.val[2], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v2sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st1x3v2sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p64_x3 (poly64_t * __a, poly64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly64x2x3_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p64 (__val.val[2], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x3di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s8_x3 (int8_t * __a, int8x16x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x3v16qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p8_x3 (poly8_t * __a, poly8x16x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x3v16qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s16_x3 (int16_t * __a, int16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x3v8hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p16_x3 (poly16_t * __a, poly16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x3v8hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s32_x3 (int32_t * __a, int32x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x3v4si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s64_x3 (int64_t * __a, int64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x3v2di ((__builtin_aarch64_simd_di *) __a,
+			       (int64x2x3_t) __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u8_x3 (uint8_t * __a, uint8x16x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x3v16qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u16_x3 (uint16_t * __a, uint16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x3v8hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u32_x3 (uint32_t * __a, uint32x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x3v4si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u64_x3 (uint64_t * __a, uint64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x3v2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f16_x3 (float16_t * __a, float16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v8hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st1x3v8hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f32_x3 (float32_t * __a, float32x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v4sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st1x3v4sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f64_x3 (float64_t * __a, float64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st1x3v2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p64_x3 (poly64_t * __a, poly64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x3v2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 /* vst1(q)_x4.  */
@@ -28951,322 +25550,196 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s8_x4 (int8_t * __a, int8x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int8x16x4_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s8 (__val.val[2], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s8 (__val.val[3], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x4v8qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s8_x4 (int8_t * __a, int8x16x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x4v16qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s16_x4 (int16_t * __a, int16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int16x8x4_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s16 (__val.val[2], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s16 (__val.val[3], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x4v4hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s16_x4 (int16_t * __a, int16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x4v8hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s32_x4 (int32_t * __a, int32x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int32x4x4_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s32 (__val.val[2], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s32 (__val.val[3], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x4v2si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s32_x4 (int32_t * __a, int32x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x4v4si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u8_x4 (uint8_t * __a, uint8x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint8x16x4_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u8 (__val.val[2], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u8 (__val.val[3], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x4v8qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u8_x4 (uint8_t * __a, uint8x16x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x4v16qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u16_x4 (uint16_t * __a, uint16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint16x8x4_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u16 (__val.val[2], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u16 (__val.val[3], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x4v4hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u16_x4 (uint16_t * __a, uint16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x4v8hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u32_x4 (uint32_t * __a, uint32x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint32x4x4_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u32 (__val.val[2], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u32 (__val.val[3], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x4v2si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u32_x4 (uint32_t * __a, uint32x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st1x4v4si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f16_x4 (float16_t * __a, float16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  float16x8x4_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f16 (__val.val[2], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f16 (__val.val[3], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v4hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st1x4v4hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f16_x4 (float16_t * __a, float16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v8hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st1x4v8hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f32_x4 (float32_t * __a, float32x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  float32x4x4_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f32 (__val.val[2], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f32 (__val.val[3], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v2sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st1x4v2sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f32_x4 (float32_t * __a, float32x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v4sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st1x4v4sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p8_x4 (poly8_t * __a, poly8x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly8x16x4_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p8 (__val.val[2], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p8 (__val.val[3], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x4v8qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p8_x4 (poly8_t * __a, poly8x16x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st1x4v16qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p16_x4 (poly16_t * __a, poly16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly16x8x4_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p16 (__val.val[2], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p16 (__val.val[3], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x4v4hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p16_x4 (poly16_t * __a, poly16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st1x4v8hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_s64_x4 (int64_t * __a, int64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int64x2x4_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s64 (__val.val[2], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s64 (__val.val[3], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x4di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_u64_x4 (uint64_t * __a, uint64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint64x2x4_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u64 (__val.val[2], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u64 (__val.val[3], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x4di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_p64_x4 (poly64_t * __a, poly64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly64x2x4_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p64 (__val.val[2], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p64 (__val.val[3], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x4di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_s64_x4 (int64_t * __a, int64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x4v2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_u64_x4 (uint64_t * __a, uint64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x4v2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_p64_x4 (poly64_t * __a, poly64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st1x4v2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_f64_x4 (float64_t * __a, float64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  float64x2x4_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f64 (__val.val[2], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f64 (__val.val[3], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st1x4df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_f64_x4 (float64_t * __a, float64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st1x4v2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 /* vstn */
@@ -29275,924 +25748,588 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_s64 (int64_t * __a, int64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int64x2x2_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_u64 (uint64_t * __a, uint64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint64x2x2_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_f64 (float64_t * __a, float64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  float64x2x2_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_s8 (int8_t * __a, int8x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int8x16x2_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st2v8qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_p8 (poly8_t * __a, poly8x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly8x16x2_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st2v8qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_s16 (int16_t * __a, int16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int16x8x2_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st2v4hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_p16 (poly16_t * __a, poly16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly16x8x2_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st2v4hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_s32 (int32_t * __a, int32x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  int32x4x2_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st2v2si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_u8 (uint8_t * __a, uint8x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint8x16x2_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st2v8qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_u16 (uint16_t * __a, uint16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint16x8x2_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st2v4hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_u32 (uint32_t * __a, uint32x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  uint32x4x2_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st2v2si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_f16 (float16_t * __a, float16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  float16x8x2_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v4hf (__a, __o);
+  __builtin_aarch64_st2v4hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_f32 (float32_t * __a, float32x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  float32x4x2_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v2sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st2v2sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_p64 (poly64_t * __a, poly64x1x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  poly64x2x2_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_s8 (int8_t * __a, int8x16x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st2v16qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_p8 (poly8_t * __a, poly8x16x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st2v16qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_s16 (int16_t * __a, int16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st2v8hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_p16 (poly16_t * __a, poly16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st2v8hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_s32 (int32_t * __a, int32x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st2v4si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_s64 (int64_t * __a, int64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st2v2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_u8 (uint8_t * __a, uint8x16x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st2v16qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_u16 (uint16_t * __a, uint16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st2v8hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_u32 (uint32_t * __a, uint32x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st2v4si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_u64 (uint64_t * __a, uint64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st2v2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_f16 (float16_t * __a, float16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v8hf (__a, __o);
+  __builtin_aarch64_st2v8hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_f32 (float32_t * __a, float32x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v4sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st2v4sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_f64 (float64_t * __a, float64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st2v2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_p64 (poly64_t * __a, poly64x2x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st2v2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_s64 (int64_t * __a, int64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int64x2x3_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s64 (__val.val[2], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st3di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_u64 (uint64_t * __a, uint64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint64x2x3_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u64 (__val.val[2], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st3di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_f64 (float64_t * __a, float64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  float64x2x3_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f64 (__val.val[2], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st3df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_s8 (int8_t * __a, int8x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int8x16x3_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s8 (__val.val[2], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st3v8qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_p8 (poly8_t * __a, poly8x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly8x16x3_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p8 (__val.val[2], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st3v8qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_s16 (int16_t * __a, int16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int16x8x3_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s16 (__val.val[2], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st3v4hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_p16 (poly16_t * __a, poly16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly16x8x3_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p16 (__val.val[2], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st3v4hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_s32 (int32_t * __a, int32x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  int32x4x3_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s32 (__val.val[2], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st3v2si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_u8 (uint8_t * __a, uint8x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint8x16x3_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u8 (__val.val[2], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st3v8qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_u16 (uint16_t * __a, uint16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint16x8x3_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u16 (__val.val[2], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st3v4hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_u32 (uint32_t * __a, uint32x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  uint32x4x3_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u32 (__val.val[2], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st3v2si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_f16 (float16_t * __a, float16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  float16x8x3_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f16 (__val.val[2], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v4hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st3v4hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_f32 (float32_t * __a, float32x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  float32x4x3_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f32 (__val.val[2], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v2sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st3v2sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_p64 (poly64_t * __a, poly64x1x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  poly64x2x3_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p64 (__val.val[2], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st3di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_s8 (int8_t * __a, int8x16x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st3v16qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_p8 (poly8_t * __a, poly8x16x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st3v16qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_s16 (int16_t * __a, int16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st3v8hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_p16 (poly16_t * __a, poly16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st3v8hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_s32 (int32_t * __a, int32x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st3v4si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_s64 (int64_t * __a, int64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st3v2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_u8 (uint8_t * __a, uint8x16x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st3v16qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_u16 (uint16_t * __a, uint16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st3v8hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_u32 (uint32_t * __a, uint32x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st3v4si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_u64 (uint64_t * __a, uint64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st3v2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_f16 (float16_t * __a, float16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v8hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st3v8hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_f32 (float32_t * __a, float32x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v4sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st3v4sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_f64 (float64_t * __a, float64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st3v2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_p64 (poly64_t * __a, poly64x2x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st3v2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_s64 (int64_t * __a, int64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int64x2x4_t __temp;
-  __temp.val[0] = vcombine_s64 (__val.val[0], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s64 (__val.val[1], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s64 (__val.val[2], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s64 (__val.val[3], vcreate_s64 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st4di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_u64 (uint64_t * __a, uint64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint64x2x4_t __temp;
-  __temp.val[0] = vcombine_u64 (__val.val[0], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u64 (__val.val[1], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u64 (__val.val[2], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u64 (__val.val[3], vcreate_u64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st4di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_f64 (float64_t * __a, float64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  float64x2x4_t __temp;
-  __temp.val[0] = vcombine_f64 (__val.val[0], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f64 (__val.val[1], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f64 (__val.val[2], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f64 (__val.val[3], vcreate_f64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st4df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_s8 (int8_t * __a, int8x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int8x16x4_t __temp;
-  __temp.val[0] = vcombine_s8 (__val.val[0], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s8 (__val.val[1], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s8 (__val.val[2], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s8 (__val.val[3], vcreate_s8 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st4v8qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_p8 (poly8_t * __a, poly8x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly8x16x4_t __temp;
-  __temp.val[0] = vcombine_p8 (__val.val[0], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p8 (__val.val[1], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p8 (__val.val[2], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p8 (__val.val[3], vcreate_p8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st4v8qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_s16 (int16_t * __a, int16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int16x8x4_t __temp;
-  __temp.val[0] = vcombine_s16 (__val.val[0], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s16 (__val.val[1], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s16 (__val.val[2], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s16 (__val.val[3], vcreate_s16 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st4v4hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_p16 (poly16_t * __a, poly16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly16x8x4_t __temp;
-  __temp.val[0] = vcombine_p16 (__val.val[0], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p16 (__val.val[1], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p16 (__val.val[2], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p16 (__val.val[3], vcreate_p16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st4v4hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_s32 (int32_t * __a, int32x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  int32x4x4_t __temp;
-  __temp.val[0] = vcombine_s32 (__val.val[0], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[1] = vcombine_s32 (__val.val[1], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[2] = vcombine_s32 (__val.val[2], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __temp.val[3] = vcombine_s32 (__val.val[3], vcreate_s32 (__AARCH64_INT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st4v2si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_u8 (uint8_t * __a, uint8x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint8x16x4_t __temp;
-  __temp.val[0] = vcombine_u8 (__val.val[0], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u8 (__val.val[1], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u8 (__val.val[2], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u8 (__val.val[3], vcreate_u8 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v8qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st4v8qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_u16 (uint16_t * __a, uint16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint16x8x4_t __temp;
-  __temp.val[0] = vcombine_u16 (__val.val[0], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u16 (__val.val[1], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u16 (__val.val[2], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u16 (__val.val[3], vcreate_u16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v4hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st4v4hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_u32 (uint32_t * __a, uint32x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  uint32x4x4_t __temp;
-  __temp.val[0] = vcombine_u32 (__val.val[0], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_u32 (__val.val[1], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_u32 (__val.val[2], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_u32 (__val.val[3], vcreate_u32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v2si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st4v2si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_f16 (float16_t * __a, float16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  float16x8x4_t __temp;
-  __temp.val[0] = vcombine_f16 (__val.val[0], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f16 (__val.val[1], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f16 (__val.val[2], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f16 (__val.val[3], vcreate_f16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v4hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st4v4hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_f32 (float32_t * __a, float32x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  float32x4x4_t __temp;
-  __temp.val[0] = vcombine_f32 (__val.val[0], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_f32 (__val.val[1], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_f32 (__val.val[2], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_f32 (__val.val[3], vcreate_f32 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v2sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st4v2sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_p64 (poly64_t * __a, poly64x1x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  poly64x2x4_t __temp;
-  __temp.val[0] = vcombine_p64 (__val.val[0], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_p64 (__val.val[1], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_p64 (__val.val[2], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_p64 (__val.val[3], vcreate_p64 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st4di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_s8 (int8_t * __a, int8x16x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st4v16qi ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_p8 (poly8_t * __a, poly8x16x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st4v16qi_sp ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_s16 (int16_t * __a, int16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st4v8hi ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_p16 (poly16_t * __a, poly16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st4v8hi_sp ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_s32 (int32_t * __a, int32x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st4v4si ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_s64 (int64_t * __a, int64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st4v2di ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_u8 (uint8_t * __a, uint8x16x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v16qi ((__builtin_aarch64_simd_qi *) __a, __o);
+  __builtin_aarch64_st4v16qi_su ((__builtin_aarch64_simd_qi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_u16 (uint16_t * __a, uint16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v8hi ((__builtin_aarch64_simd_hi *) __a, __o);
+  __builtin_aarch64_st4v8hi_su ((__builtin_aarch64_simd_hi *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_u32 (uint32_t * __a, uint32x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v4si ((__builtin_aarch64_simd_si *) __a, __o);
+  __builtin_aarch64_st4v4si_su ((__builtin_aarch64_simd_si *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_u64 (uint64_t * __a, uint64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st4v2di_su ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_f16 (float16_t * __a, float16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v8hf ((__builtin_aarch64_simd_hf *) __a, __o);
+  __builtin_aarch64_st4v8hf ((__builtin_aarch64_simd_hf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_f32 (float32_t * __a, float32x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v4sf ((__builtin_aarch64_simd_sf *) __a, __o);
+  __builtin_aarch64_st4v4sf ((__builtin_aarch64_simd_sf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_f64 (float64_t * __a, float64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v2df ((__builtin_aarch64_simd_df *) __a, __o);
+  __builtin_aarch64_st4v2df ((__builtin_aarch64_simd_df *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_p64 (poly64_t * __a, poly64x2x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v2di ((__builtin_aarch64_simd_di *) __a, __o);
+  __builtin_aarch64_st4v2di_sp ((__builtin_aarch64_simd_di *) __a, __val);
 }
 
 __extension__ extern __inline void
@@ -30291,11 +26428,9 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx4_s8 (int8x8_t __r, int8x8x4_t __tab, int8x8_t __idx)
 {
   int8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_s8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_s8 (__tab.val[2], __tab.val[3]);
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return __builtin_aarch64_qtbx2v8qi (__r, __o, __idx);
+  return __builtin_aarch64_qtbx2v8qi (__r, __temp, __idx);
 }
 
 __extension__ extern __inline uint8x8_t
@@ -30303,12 +26438,9 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx4_u8 (uint8x8_t __r, uint8x8x4_t __tab, uint8x8_t __idx)
 {
   uint8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_u8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_u8 (__tab.val[2], __tab.val[3]);
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return (uint8x8_t)__builtin_aarch64_qtbx2v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx2v8qi_uuuu (__r, __temp, __idx);
 }
 
 __extension__ extern __inline poly8x8_t
@@ -30316,12 +26448,9 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vtbx4_p8 (poly8x8_t __r, poly8x8x4_t __tab, uint8x8_t __idx)
 {
   poly8x16x2_t __temp;
-  __builtin_aarch64_simd_oi __o;
   __temp.val[0] = vcombine_p8 (__tab.val[0], __tab.val[1]);
   __temp.val[1] = vcombine_p8 (__tab.val[2], __tab.val[3]);
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  return (poly8x8_t)__builtin_aarch64_qtbx2v8qi ((int8x8_t)__r, __o,
-						 (int8x8_t)__idx);
+  return __builtin_aarch64_qtbx2v8qi_pppu (__r, __temp, __idx);
 }
 
 /* vtrn */
@@ -34750,69 +30879,42 @@ __extension__ extern __inline bfloat16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_bf16_x2 (const bfloat16_t *__a)
 {
-  bfloat16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v4bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregoiv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregoiv4bf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld1x2v4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_bf16_x2 (const bfloat16_t *__a)
 {
-  bfloat16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld1x2v8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv8bf (__o, 1);
-  return ret;
+  return  __builtin_aarch64_ld1x2v8bf (
+				(const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_bf16_x3 (const bfloat16_t *__a)
 {
-  bfloat16x4x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v4bf ((const __builtin_aarch64_simd_bf *) __a);
-  __i.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf  (__o, 0);
-  __i.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf  (__o, 1);
-  __i.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_bf16_x3 (const bfloat16_t *__a)
 {
-  bfloat16x8x3_t __i;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld1x3v8bf ((const __builtin_aarch64_simd_bf *) __a);
-  __i.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf  (__o, 0);
-  __i.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf  (__o, 1);
-  __i.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf  (__o, 2);
-  return __i;
+  return __builtin_aarch64_ld1x3v8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 __extension__ extern __inline bfloat16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1_bf16_x4 (const bfloat16_t *__a)
 {
-  union { bfloat16x4x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v4bf ((const __builtin_aarch64_simd_bf *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld1q_bf16_x4 (const bfloat16_t *__a)
 {
-  union { bfloat16x8x4_t __i; __builtin_aarch64_simd_xi __o; } __au;
-  __au.__o
-    = __builtin_aarch64_ld1x4v8bf ((const __builtin_aarch64_simd_bf *) __a);
-  return __au.__i;
+  return __builtin_aarch64_ld1x4v8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4_t
@@ -34847,156 +30949,84 @@ __extension__ extern __inline bfloat16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v4bf (__a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregoiv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregoiv4bf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v4bf (__a);
 }
 
 __extension__ extern __inline bfloat16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2v8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv8bf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2v8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2_dup_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x4x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv4bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregoiv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregoiv4bf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld2q_dup_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x8x2_t ret;
-  __builtin_aarch64_simd_oi __o;
-  __o = __builtin_aarch64_ld2rv8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv8bf (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2rv8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v4bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf (__o, 1);
-  ret.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3v8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf (__o, 1);
-  ret.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3v8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3_dup_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x4x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv4bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf (__o, 1);
-  ret.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregciv4bf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld3q_dup_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x8x3_t ret;
-  __builtin_aarch64_simd_ci __o;
-  __o = __builtin_aarch64_ld3rv8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf (__o, 1);
-  ret.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregciv8bf (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3rv8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v4bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 1);
-  ret.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 2);
-  ret.val[3] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4v8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 1);
-  ret.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 2);
-  ret.val[3] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4v8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4_dup_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x4x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv4bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 0);
-  ret.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 1);
-  ret.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 2);
-  ret.val[3] = (bfloat16x4_t) __builtin_aarch64_get_dregxiv4bf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv4bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 __extension__ extern __inline bfloat16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vld4q_dup_bf16 (const bfloat16_t * __a)
 {
-  bfloat16x8x4_t ret;
-  __builtin_aarch64_simd_xi __o;
-  __o = __builtin_aarch64_ld4rv8bf ((const __builtin_aarch64_simd_bf *) __a);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 1);
-  ret.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 2);
-  ret.val[3] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv8bf (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4rv8bf ((const __builtin_aarch64_simd_bf *) __a);
 }
 
 /* vst */
@@ -35012,66 +31042,42 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_bf16_x2 (bfloat16_t * __a, bfloat16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  bfloat16x8x2_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x2v4bf (__a, __o);
+  __builtin_aarch64_st1x2v4bf (__a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_bf16_x2 (bfloat16_t * __a, bfloat16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x2v8bf (__a, __o);
+  __builtin_aarch64_st1x2v8bf (__a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_bf16_x3 (bfloat16_t * __a, bfloat16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  bfloat16x8x3_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_bf16 (__val.val[2], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x3v4bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st1x3v4bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_bf16_x3 (bfloat16_t * __a, bfloat16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x3v8bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st1x3v8bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1_bf16_x4 (bfloat16_t * __a, bfloat16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  bfloat16x8x4_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_bf16 (__val.val[2], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_bf16 (__val.val[3], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st1x4v4bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st1x4v4bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst1q_bf16_x4 (bfloat16_t * __a, bfloat16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st1x4v8bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st1x4v8bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
@@ -35099,66 +31105,42 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_bf16 (bfloat16_t * __a, bfloat16x4x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  bfloat16x8x2_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2v4bf (__a, __o);
+  __builtin_aarch64_st2v4bf (__a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_bf16 (bfloat16_t * __a, bfloat16x8x2_t __val)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2v8bf (__a, __o);
+  __builtin_aarch64_st2v8bf (__a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_bf16 (bfloat16_t * __a, bfloat16x4x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  bfloat16x8x3_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_bf16 (__val.val[2], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3v4bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st3v4bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_bf16 (bfloat16_t * __a, bfloat16x8x3_t __val)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3v8bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st3v8bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_bf16 (bfloat16_t * __a, bfloat16x4x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  bfloat16x8x4_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_bf16 (__val.val[2], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_bf16 (__val.val[3], vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4v4bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st4v4bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_bf16 (bfloat16_t * __a, bfloat16x8x4_t __val)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4v8bf ((__builtin_aarch64_simd_bf *) __a, __o);
+  __builtin_aarch64_st4v8bf ((__builtin_aarch64_simd_bf *) __a, __val);
 }
 
 /* vreinterpret */
@@ -35765,125 +31747,55 @@ __extension__ extern __inline bfloat16x4x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2_lane_bf16 (const bfloat16_t * __ptr, bfloat16x4x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  bfloat16x8x2_t __temp;
-  __temp.val[0] = vcombine_bf16 (__b.val[0], vcreate_bf16 (0));
-  __temp.val[1] = vcombine_bf16 (__b.val[1], vcreate_bf16 (0));
-  __o = __builtin_aarch64_set_qregoiv8bf (__o, (bfloat16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv8bf (__o, (bfloat16x8_t) __temp.val[1], 1);
-  __o =	__builtin_aarch64_ld2_lanev4bf (
-	  (__builtin_aarch64_simd_bf *) __ptr, __o, __c);
-  __b.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregoidi (__o, 0);
-  __b.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregoidi (__o, 1);
-  return __b;
+  return __builtin_aarch64_ld2_lanev4bf (
+	  (__builtin_aarch64_simd_bf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline bfloat16x8x2_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld2q_lane_bf16 (const bfloat16_t * __ptr, bfloat16x8x2_t __b, const int __c)
 {
-  __builtin_aarch64_simd_oi __o;
-  bfloat16x8x2_t ret;
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregoiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_ld2_lanev8bf (
-	(__builtin_aarch64_simd_bf *) __ptr, __o, __c);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregoiv4si (__o, 1);
-  return ret;
+  return __builtin_aarch64_ld2_lanev8bf (
+	  (__builtin_aarch64_simd_bf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline bfloat16x4x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3_lane_bf16 (const bfloat16_t * __ptr, bfloat16x4x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  bfloat16x8x3_t __temp;
-  __temp.val[0] = vcombine_bf16 (__b.val[0], vcreate_bf16 (0));
-  __temp.val[1] = vcombine_bf16 (__b.val[1], vcreate_bf16 (0));
-  __temp.val[2] = vcombine_bf16 (__b.val[2], vcreate_bf16 (0));
-  __o = __builtin_aarch64_set_qregciv8bf (__o, (bfloat16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv8bf (__o, (bfloat16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv8bf (__o, (bfloat16x8_t) __temp.val[2], 2);
-  __o =	__builtin_aarch64_ld3_lanev4bf (
-	  (__builtin_aarch64_simd_bf *) __ptr, __o, __c);
-  __b.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregcidi (__o, 0);
-  __b.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregcidi (__o, 1);
-  __b.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregcidi (__o, 2);
-  return __b;
+  return __builtin_aarch64_ld3_lanev4bf (
+	  (__builtin_aarch64_simd_bf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline bfloat16x8x3_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld3q_lane_bf16 (const bfloat16_t * __ptr, bfloat16x8x3_t __b, const int __c)
 {
-  __builtin_aarch64_simd_ci __o;
-  bfloat16x8x3_t ret;
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregciv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_ld3_lanev8bf (
-	(__builtin_aarch64_simd_bf *) __ptr, __o, __c);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregciv4si (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregciv4si (__o, 1);
-  ret.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregciv4si (__o, 2);
-  return ret;
+  return __builtin_aarch64_ld3_lanev8bf (
+	  (__builtin_aarch64_simd_bf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline bfloat16x4x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4_lane_bf16 (const bfloat16_t * __ptr, bfloat16x4x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  bfloat16x8x4_t __temp;
-  __temp.val[0] = vcombine_bf16 (__b.val[0], vcreate_bf16 (0));
-  __temp.val[1] = vcombine_bf16 (__b.val[1], vcreate_bf16 (0));
-  __temp.val[2] = vcombine_bf16 (__b.val[2], vcreate_bf16 (0));
-  __temp.val[3] = vcombine_bf16 (__b.val[3], vcreate_bf16 (0));
-  __o = __builtin_aarch64_set_qregxiv8bf (__o, (bfloat16x8_t) __temp.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv8bf (__o, (bfloat16x8_t) __temp.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv8bf (__o, (bfloat16x8_t) __temp.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv8bf (__o, (bfloat16x8_t) __temp.val[3], 3);
-  __o =	__builtin_aarch64_ld4_lanev4bf (
-	  (__builtin_aarch64_simd_bf *) __ptr, __o, __c);
-  __b.val[0] = (bfloat16x4_t) __builtin_aarch64_get_dregxidi (__o, 0);
-  __b.val[1] = (bfloat16x4_t) __builtin_aarch64_get_dregxidi (__o, 1);
-  __b.val[2] = (bfloat16x4_t) __builtin_aarch64_get_dregxidi (__o, 2);
-  __b.val[3] = (bfloat16x4_t) __builtin_aarch64_get_dregxidi (__o, 3);
-  return __b;
+  return __builtin_aarch64_ld4_lanev4bf (
+	  (__builtin_aarch64_simd_bf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline bfloat16x8x4_t
 __attribute__ ((__always_inline__, __gnu_inline__,__artificial__))
 vld4q_lane_bf16 (const bfloat16_t * __ptr, bfloat16x8x4_t __b, const int __c)
 {
-  __builtin_aarch64_simd_xi __o;
-  bfloat16x8x4_t ret;
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[0], 0);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[1], 1);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[2], 2);
-  __o = __builtin_aarch64_set_qregxiv4si (__o, (int32x4_t) __b.val[3], 3);
-  __o = __builtin_aarch64_ld4_lanev8bf (
-	(__builtin_aarch64_simd_bf *) __ptr, __o, __c);
-  ret.val[0] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 0);
-  ret.val[1] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 1);
-  ret.val[2] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 2);
-  ret.val[3] = (bfloat16x8_t) __builtin_aarch64_get_qregxiv4si (__o, 3);
-  return ret;
+  return __builtin_aarch64_ld4_lanev8bf (
+	  (__builtin_aarch64_simd_bf *) __ptr, __b, __c);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2_lane_bf16 (bfloat16_t *__ptr, bfloat16x4x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  bfloat16x8x2_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st2_lanev4bf ((__builtin_aarch64_simd_bf *) __ptr, __o,
+  __builtin_aarch64_st2_lanev4bf ((__builtin_aarch64_simd_bf *) __ptr, __val,
 				  __lane);
 }
 
@@ -35891,9 +31803,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst2q_lane_bf16 (bfloat16_t *__ptr, bfloat16x8x2_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_oi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st2_lanev8bf ((__builtin_aarch64_simd_bf *) __ptr, __o,
+  __builtin_aarch64_st2_lanev8bf ((__builtin_aarch64_simd_bf *) __ptr, __val,
 				  __lane);
 }
 
@@ -35901,16 +31811,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3_lane_bf16 (bfloat16_t *__ptr, bfloat16x4x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  bfloat16x8x3_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_bf16 (__val.val[2],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st3_lanev4bf ((__builtin_aarch64_simd_bf *) __ptr, __o,
+  __builtin_aarch64_st3_lanev4bf ((__builtin_aarch64_simd_bf *) __ptr, __val,
 				  __lane);
 }
 
@@ -35918,9 +31819,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst3q_lane_bf16 (bfloat16_t *__ptr, bfloat16x8x3_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_ci __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st3_lanev8bf ((__builtin_aarch64_simd_bf *) __ptr, __o,
+  __builtin_aarch64_st3_lanev8bf ((__builtin_aarch64_simd_bf *) __ptr, __val,
 				  __lane);
 }
 
@@ -35928,18 +31827,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4_lane_bf16 (bfloat16_t *__ptr, bfloat16x4x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  bfloat16x8x4_t __temp;
-  __temp.val[0] = vcombine_bf16 (__val.val[0],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[1] = vcombine_bf16 (__val.val[1],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[2] = vcombine_bf16 (__val.val[2],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __temp.val[3] = vcombine_bf16 (__val.val[3],
-				 vcreate_bf16 (__AARCH64_UINT64_C (0)));
-  __builtin_memcpy (&__o, &__temp, sizeof (__temp));
-  __builtin_aarch64_st4_lanev4bf ((__builtin_aarch64_simd_bf *) __ptr, __o,
+  __builtin_aarch64_st4_lanev4bf ((__builtin_aarch64_simd_bf *) __ptr, __val,
 				  __lane);
 }
 
@@ -35947,9 +31835,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vst4q_lane_bf16 (bfloat16_t *__ptr, bfloat16x8x4_t __val, const int __lane)
 {
-  __builtin_aarch64_simd_xi __o;
-  __builtin_memcpy (&__o, &__val, sizeof (__val));
-  __builtin_aarch64_st4_lanev8bf ((__builtin_aarch64_simd_bf *) __ptr, __o,
+  __builtin_aarch64_st4_lanev8bf ((__builtin_aarch64_simd_bf *) __ptr, __val,
 				  __lane);
 }
 

@@ -16,4 +16,4 @@ foo (int a)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Predicate evaluates to: 1" 1 "evrp" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate.* to 1" 1 "evrp" } } */

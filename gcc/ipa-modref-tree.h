@@ -116,8 +116,13 @@ struct GTY(()) modref_access_node
 	       if (!known_le (parm_offset, a.parm_offset)
 		   && !range_info_useful_p ())
 		 return false;
+	       /* We allow negative aoffset_adj here in case
+		  there is an useful range.  This is because adding
+		  a.offset may result in non-ngative offset again.
+		  Ubsan fails on val << LOG_BITS_PER_UNIT where val
+		  is negative.  */
 	       aoffset_adj = (a.parm_offset - parm_offset)
-			     << LOG2_BITS_PER_UNIT;
+			     * BITS_PER_UNIT;
 	    }
 	}
       if (range_info_useful_p ())
@@ -812,6 +817,36 @@ struct GTY((user)) modref_tree
       return false;
 
     bool changed = false;
+
+    /* We may end up with max_size being less than size for accesses past the
+       end of array.  Those are undefined and safe to ignore.  */
+    if (a.range_info_useful_p ()
+	&& known_size_p (a.size) && known_size_p (a.max_size)
+	&& known_lt (a.max_size, a.size))
+      {
+	if (dump_file)
+	  fprintf (dump_file,
+		   "   - Paradoxical range. Ignoring\n");
+	return false;
+      }
+    if (known_size_p (a.size)
+	&& known_eq (a.size, 0))
+      {
+	if (dump_file)
+	  fprintf (dump_file,
+		   "   - Zero size. Ignoring\n");
+	return false;
+      }
+    if (known_size_p (a.max_size)
+	&& known_eq (a.max_size, 0))
+      {
+	if (dump_file)
+	  fprintf (dump_file,
+		   "   - Zero max_size. Ignoring\n");
+	return false;
+      }
+    gcc_checking_assert (!known_size_p (a.max_size)
+			 || !known_le (a.max_size, 0));
 
     /* No useful information tracked; collapse everything.  */
     if (!base && !ref && !a.useful_p ())

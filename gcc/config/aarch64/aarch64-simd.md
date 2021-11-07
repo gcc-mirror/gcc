@@ -74,12 +74,14 @@
 )
 
 (define_insn "aarch64_simd_dup<mode>"
-  [(set (match_operand:VDQF_F16 0 "register_operand" "=w")
+  [(set (match_operand:VDQF_F16 0 "register_operand" "=w,w")
 	(vec_duplicate:VDQF_F16
-	  (match_operand:<VEL> 1 "register_operand" "w")))]
+	  (match_operand:<VEL> 1 "register_operand" "w,r")))]
   "TARGET_SIMD"
-  "dup\\t%0.<Vtype>, %1.<Vetype>[0]"
-  [(set_attr "type" "neon_dup<q>")]
+  "@
+   dup\\t%0.<Vtype>, %1.<Vetype>[0]
+   dup\\t%0.<Vtype>, %<vw>1"
+  [(set_attr "type" "neon_dup<q>, neon_from_gp<q>")]
 )
 
 (define_insn "aarch64_dup_lane<mode>"
@@ -6766,162 +6768,165 @@
 
 ;; Patterns for vector struct loads and stores.
 
-(define_insn "aarch64_simd_ld2<mode>"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD2))]
+(define_insn "aarch64_simd_ld2<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2Q 0 "register_operand" "=w")
+	(unspec:VSTRUCT_2Q [
+	  (match_operand:VSTRUCT_2Q 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD2))]
   "TARGET_SIMD"
   "ld2\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "type" "neon_load2_2reg<q>")]
 )
 
-(define_insn "aarch64_simd_ld2r<mode>"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-       (unspec:OI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-                   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY) ]
-                  UNSPEC_LD2_DUP))]
+(define_insn "aarch64_simd_ld2r<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_2QD [
+	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+          UNSPEC_LD2_DUP))]
   "TARGET_SIMD"
   "ld2r\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "type" "neon_load2_all_lanes<q>")]
 )
 
-(define_insn "aarch64_vec_load_lanesoi_lane<mode>"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (match_operand:OI 2 "register_operand" "0")
-		    (match_operand:SI 3 "immediate_operand" "i")
-		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY) ]
-		   UNSPEC_LD2_LANE))]
+(define_insn "aarch64_vec_load_lanes<mode>_lane<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_2QD [
+		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		(match_operand:VSTRUCT_2QD 2 "register_operand" "0")
+		(match_operand:SI 3 "immediate_operand" "i")]
+		UNSPEC_LD2_LANE))]
   "TARGET_SIMD"
   {
-    operands[3] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[3]));
+    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
+					   INTVAL (operands[3]));
     return "ld2\\t{%S0.<Vetype> - %T0.<Vetype>}[%3], %1";
   }
   [(set_attr "type" "neon_load2_one_lane")]
 )
 
-(define_expand "vec_load_lanesoi<mode>"
-  [(set (match_operand:OI 0 "register_operand")
-	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD2))]
+(define_expand "vec_load_lanes<mode><vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2Q 0 "register_operand")
+	(unspec:VSTRUCT_2Q [
+		(match_operand:VSTRUCT_2Q 1 "aarch64_simd_struct_operand")]
+		UNSPEC_LD2))]
   "TARGET_SIMD"
 {
   if (BYTES_BIG_ENDIAN)
     {
-      rtx tmp = gen_reg_rtx (OImode);
-      rtx mask = aarch64_reverse_mask (<MODE>mode, <nunits>);
-      emit_insn (gen_aarch64_simd_ld2<mode> (tmp, operands[1]));
-      emit_insn (gen_aarch64_rev_reglistoi (operands[0], tmp, mask));
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx mask = aarch64_reverse_mask (<VSTRUCT_ELT>mode,
+			GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>);
+      emit_insn (gen_aarch64_simd_ld2<vstruct_elt> (tmp, operands[1]));
+      emit_insn (gen_aarch64_rev_reglist<mode> (operands[0], tmp, mask));
     }
   else
-    emit_insn (gen_aarch64_simd_ld2<mode> (operands[0], operands[1]));
+    emit_insn (gen_aarch64_simd_ld2<vstruct_elt> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_simd_st2<mode>"
-  [(set (match_operand:OI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:OI [(match_operand:OI 1 "register_operand" "w")
-                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST2))]
+(define_insn "aarch64_simd_st2<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2Q 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_2Q [
+		(match_operand:VSTRUCT_2Q 1 "register_operand" "w")]
+                UNSPEC_ST2))]
   "TARGET_SIMD"
   "st2\\t{%S1.<Vtype> - %T1.<Vtype>}, %0"
   [(set_attr "type" "neon_store2_2reg<q>")]
 )
 
 ;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "aarch64_vec_store_lanesoi_lane<mode>"
+(define_insn "aarch64_vec_store_lanes<mode>_lane<vstruct_elt>"
   [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:OI 1 "register_operand" "w")
-		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
-		    (match_operand:SI 2 "immediate_operand" "i")]
-		   UNSPEC_ST2_LANE))]
+	(unspec:BLK [(match_operand:VSTRUCT_2QD 1 "register_operand" "w")
+		     (match_operand:SI 2 "immediate_operand" "i")]
+		     UNSPEC_ST2_LANE))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
+					   INTVAL (operands[2]));
     return "st2\\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0";
   }
   [(set_attr "type" "neon_store2_one_lane<q>")]
 )
 
-(define_expand "vec_store_lanesoi<mode>"
-  [(set (match_operand:OI 0 "aarch64_simd_struct_operand")
-	(unspec:OI [(match_operand:OI 1 "register_operand")
-                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "vec_store_lanes<mode><vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2Q 0 "aarch64_simd_struct_operand")
+	(unspec:VSTRUCT_2Q [(match_operand:VSTRUCT_2Q 1 "register_operand")]
                    UNSPEC_ST2))]
   "TARGET_SIMD"
 {
   if (BYTES_BIG_ENDIAN)
     {
-      rtx tmp = gen_reg_rtx (OImode);
-      rtx mask = aarch64_reverse_mask (<MODE>mode, <nunits>);
-      emit_insn (gen_aarch64_rev_reglistoi (tmp, operands[1], mask));
-      emit_insn (gen_aarch64_simd_st2<mode> (operands[0], tmp));
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx mask = aarch64_reverse_mask (<VSTRUCT_ELT>mode,
+			GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>);
+      emit_insn (gen_aarch64_rev_reglist<mode> (tmp, operands[1], mask));
+      emit_insn (gen_aarch64_simd_st2<vstruct_elt> (operands[0], tmp));
     }
   else
-    emit_insn (gen_aarch64_simd_st2<mode> (operands[0], operands[1]));
+    emit_insn (gen_aarch64_simd_st2<vstruct_elt> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_simd_ld3<mode>"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-	(unspec:CI [(match_operand:CI 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD3))]
+(define_insn "aarch64_simd_ld3<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3Q 0 "register_operand" "=w")
+	(unspec:VSTRUCT_3Q [
+	  (match_operand:VSTRUCT_3Q 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD3))]
   "TARGET_SIMD"
   "ld3\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "type" "neon_load3_3reg<q>")]
 )
 
-(define_insn "aarch64_simd_ld3r<mode>"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-       (unspec:CI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-                   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY) ]
-                  UNSPEC_LD3_DUP))]
+(define_insn "aarch64_simd_ld3r<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_3QD [
+	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+          UNSPEC_LD3_DUP))]
   "TARGET_SIMD"
   "ld3r\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "type" "neon_load3_all_lanes<q>")]
 )
 
-(define_insn "aarch64_vec_load_lanesci_lane<mode>"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-	(unspec:CI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (match_operand:CI 2 "register_operand" "0")
-		    (match_operand:SI 3 "immediate_operand" "i")
-		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD3_LANE))]
+(define_insn "aarch64_vec_load_lanes<mode>_lane<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_3QD [
+		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		(match_operand:VSTRUCT_3QD 2 "register_operand" "0")
+		(match_operand:SI 3 "immediate_operand" "i")]
+		UNSPEC_LD3_LANE))]
   "TARGET_SIMD"
 {
-    operands[3] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[3]));
+    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
+					   INTVAL (operands[3]));
     return "ld3\\t{%S0.<Vetype> - %U0.<Vetype>}[%3], %1";
 }
   [(set_attr "type" "neon_load3_one_lane")]
 )
 
-(define_expand "vec_load_lanesci<mode>"
-  [(set (match_operand:CI 0 "register_operand")
-	(unspec:CI [(match_operand:CI 1 "aarch64_simd_struct_operand")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD3))]
+(define_expand "vec_load_lanes<mode><vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3Q 0 "register_operand")
+	(unspec:VSTRUCT_3Q [
+		(match_operand:VSTRUCT_3Q 1 "aarch64_simd_struct_operand")]
+		UNSPEC_LD3))]
   "TARGET_SIMD"
 {
   if (BYTES_BIG_ENDIAN)
     {
-      rtx tmp = gen_reg_rtx (CImode);
-      rtx mask = aarch64_reverse_mask (<MODE>mode, <nunits>);
-      emit_insn (gen_aarch64_simd_ld3<mode> (tmp, operands[1]));
-      emit_insn (gen_aarch64_rev_reglistci (operands[0], tmp, mask));
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx mask = aarch64_reverse_mask (<VSTRUCT_ELT>mode,
+			GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>);
+      emit_insn (gen_aarch64_simd_ld3<vstruct_elt> (tmp, operands[1]));
+      emit_insn (gen_aarch64_rev_reglist<mode> (operands[0], tmp, mask));
     }
   else
-    emit_insn (gen_aarch64_simd_ld3<mode> (operands[0], operands[1]));
+    emit_insn (gen_aarch64_simd_ld3<vstruct_elt> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_simd_st3<mode>"
-  [(set (match_operand:CI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:CI [(match_operand:CI 1 "register_operand" "w")
-                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_insn "aarch64_simd_st3<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3Q 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_3Q [(match_operand:VSTRUCT_3Q 1 "register_operand" "w")]
                    UNSPEC_ST3))]
   "TARGET_SIMD"
   "st3\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
@@ -6929,141 +6934,144 @@
 )
 
 ;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "aarch64_vec_store_lanesci_lane<mode>"
+(define_insn "aarch64_vec_store_lanes<mode>_lane<vstruct_elt>"
   [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:CI 1 "register_operand" "w")
-		     (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+	(unspec:BLK [(match_operand:VSTRUCT_3QD 1 "register_operand" "w")
 		     (match_operand:SI 2 "immediate_operand" "i")]
-		    UNSPEC_ST3_LANE))]
+		     UNSPEC_ST3_LANE))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
+					   INTVAL (operands[2]));
     return "st3\\t{%S1.<Vetype> - %U1.<Vetype>}[%2], %0";
   }
   [(set_attr "type" "neon_store3_one_lane<q>")]
 )
 
-(define_expand "vec_store_lanesci<mode>"
-  [(set (match_operand:CI 0 "aarch64_simd_struct_operand")
-	(unspec:CI [(match_operand:CI 1 "register_operand")
-                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST3))]
+(define_expand "vec_store_lanes<mode><vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3Q 0 "aarch64_simd_struct_operand")
+	(unspec:VSTRUCT_3Q [
+		(match_operand:VSTRUCT_3Q 1 "register_operand")]
+                UNSPEC_ST3))]
   "TARGET_SIMD"
 {
   if (BYTES_BIG_ENDIAN)
     {
-      rtx tmp = gen_reg_rtx (CImode);
-      rtx mask = aarch64_reverse_mask (<MODE>mode, <nunits>);
-      emit_insn (gen_aarch64_rev_reglistci (tmp, operands[1], mask));
-      emit_insn (gen_aarch64_simd_st3<mode> (operands[0], tmp));
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx mask = aarch64_reverse_mask (<VSTRUCT_ELT>mode,
+			GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>);
+      emit_insn (gen_aarch64_rev_reglist<mode> (tmp, operands[1], mask));
+      emit_insn (gen_aarch64_simd_st3<vstruct_elt> (operands[0], tmp));
     }
   else
-    emit_insn (gen_aarch64_simd_st3<mode> (operands[0], operands[1]));
+    emit_insn (gen_aarch64_simd_st3<vstruct_elt> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_simd_ld4<mode>"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(unspec:XI [(match_operand:XI 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD4))]
+(define_insn "aarch64_simd_ld4<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4Q 0 "register_operand" "=w")
+	(unspec:VSTRUCT_4Q [
+	  (match_operand:VSTRUCT_4Q 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD4))]
   "TARGET_SIMD"
   "ld4\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "type" "neon_load4_4reg<q>")]
 )
 
-(define_insn "aarch64_simd_ld4r<mode>"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-       (unspec:XI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-                   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY) ]
-                  UNSPEC_LD4_DUP))]
+(define_insn "aarch64_simd_ld4r<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_4QD [
+	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+          UNSPEC_LD4_DUP))]
   "TARGET_SIMD"
   "ld4r\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "type" "neon_load4_all_lanes<q>")]
 )
 
-(define_insn "aarch64_vec_load_lanesxi_lane<mode>"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(unspec:XI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (match_operand:XI 2 "register_operand" "0")
-		    (match_operand:SI 3 "immediate_operand" "i")
-		    (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD4_LANE))]
+(define_insn "aarch64_vec_load_lanes<mode>_lane<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_4QD [
+		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		(match_operand:VSTRUCT_4QD 2 "register_operand" "0")
+		(match_operand:SI 3 "immediate_operand" "i")]
+		UNSPEC_LD4_LANE))]
   "TARGET_SIMD"
 {
-    operands[3] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[3]));
+    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
+					   INTVAL (operands[3]));
     return "ld4\\t{%S0.<Vetype> - %V0.<Vetype>}[%3], %1";
 }
   [(set_attr "type" "neon_load4_one_lane")]
 )
 
-(define_expand "vec_load_lanesxi<mode>"
-  [(set (match_operand:XI 0 "register_operand")
-	(unspec:XI [(match_operand:XI 1 "aarch64_simd_struct_operand")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD4))]
+(define_expand "vec_load_lanes<mode><vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4Q 0 "register_operand")
+	(unspec:VSTRUCT_4Q [
+		(match_operand:VSTRUCT_4Q 1 "aarch64_simd_struct_operand")]
+		UNSPEC_LD4))]
   "TARGET_SIMD"
 {
   if (BYTES_BIG_ENDIAN)
     {
-      rtx tmp = gen_reg_rtx (XImode);
-      rtx mask = aarch64_reverse_mask (<MODE>mode, <nunits>);
-      emit_insn (gen_aarch64_simd_ld4<mode> (tmp, operands[1]));
-      emit_insn (gen_aarch64_rev_reglistxi (operands[0], tmp, mask));
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx mask = aarch64_reverse_mask (<VSTRUCT_ELT>mode,
+			GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>);
+      emit_insn (gen_aarch64_simd_ld4<vstruct_elt> (tmp, operands[1]));
+      emit_insn (gen_aarch64_rev_reglist<mode> (operands[0], tmp, mask));
     }
   else
-    emit_insn (gen_aarch64_simd_ld4<mode> (operands[0], operands[1]));
+    emit_insn (gen_aarch64_simd_ld4<vstruct_elt> (operands[0], operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_simd_st4<mode>"
-  [(set (match_operand:XI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:XI [(match_operand:XI 1 "register_operand" "w")
-                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST4))]
+(define_insn "aarch64_simd_st4<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4Q 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_4Q [
+		(match_operand:VSTRUCT_4Q 1 "register_operand" "w")]
+                UNSPEC_ST4))]
   "TARGET_SIMD"
   "st4\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
   [(set_attr "type" "neon_store4_4reg<q>")]
 )
 
 ;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "aarch64_vec_store_lanesxi_lane<mode>"
+(define_insn "aarch64_vec_store_lanes<mode>_lane<vstruct_elt>"
   [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:XI 1 "register_operand" "w")
-		     (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+	(unspec:BLK [(match_operand:VSTRUCT_4QD 1 "register_operand" "w")
 		     (match_operand:SI 2 "immediate_operand" "i")]
-		    UNSPEC_ST4_LANE))]
+		     UNSPEC_ST4_LANE))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
+					   INTVAL (operands[2]));
     return "st4\\t{%S1.<Vetype> - %V1.<Vetype>}[%2], %0";
   }
   [(set_attr "type" "neon_store4_one_lane<q>")]
 )
 
-(define_expand "vec_store_lanesxi<mode>"
-  [(set (match_operand:XI 0 "aarch64_simd_struct_operand")
-	(unspec:XI [(match_operand:XI 1 "register_operand")
-                    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "vec_store_lanes<mode><vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4Q 0 "aarch64_simd_struct_operand")
+	(unspec:VSTRUCT_4Q [(match_operand:VSTRUCT_4Q 1 "register_operand")]
                    UNSPEC_ST4))]
   "TARGET_SIMD"
 {
   if (BYTES_BIG_ENDIAN)
     {
-      rtx tmp = gen_reg_rtx (XImode);
-      rtx mask = aarch64_reverse_mask (<MODE>mode, <nunits>);
-      emit_insn (gen_aarch64_rev_reglistxi (tmp, operands[1], mask));
-      emit_insn (gen_aarch64_simd_st4<mode> (operands[0], tmp));
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      rtx mask = aarch64_reverse_mask (<VSTRUCT_ELT>mode,
+			GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>);
+      emit_insn (gen_aarch64_rev_reglist<mode> (tmp, operands[1], mask));
+      emit_insn (gen_aarch64_simd_st4<vstruct_elt> (operands[0], tmp));
     }
   else
-    emit_insn (gen_aarch64_simd_st4<mode> (operands[0], operands[1]));
+    emit_insn (gen_aarch64_simd_st4<vstruct_elt> (operands[0], operands[1]));
   DONE;
 })
 
 (define_insn_and_split "aarch64_rev_reglist<mode>"
-[(set (match_operand:VSTRUCT 0 "register_operand" "=&w")
-	(unspec:VSTRUCT
-	           [(match_operand:VSTRUCT 1 "register_operand" "w")
+[(set (match_operand:VSTRUCT_QD 0 "register_operand" "=&w")
+	(unspec:VSTRUCT_QD
+	           [(match_operand:VSTRUCT_QD 1 "register_operand" "w")
 		    (match_operand:V16QI 2 "register_operand" "w")]
                    UNSPEC_REV_REGLIST))]
   "TARGET_SIMD"
@@ -7072,7 +7080,7 @@
   [(const_int 0)]
 {
   int i;
-  int nregs = GET_MODE_SIZE (<MODE>mode) / UNITS_PER_VREG;
+  int nregs = GET_MODE_SIZE (<MODE>mode).to_constant () / UNITS_PER_VREG;
   for (i = 0; i < nregs; i++)
     {
       rtx op0 = gen_rtx_REG (V16QImode, REGNO (operands[0]) + i);
@@ -7088,6 +7096,18 @@
 ;; Reload patterns for AdvSIMD register list operands.
 
 (define_expand "mov<mode>"
+  [(set (match_operand:VSTRUCT_QD 0 "nonimmediate_operand")
+	(match_operand:VSTRUCT_QD 1 "general_operand"))]
+  "TARGET_SIMD"
+{
+  if (can_create_pseudo_p ())
+    {
+      if (GET_CODE (operands[0]) != REG)
+	operands[1] = force_reg (<MODE>mode, operands[1]);
+    }
+})
+
+(define_expand "mov<mode>"
   [(set (match_operand:VSTRUCT 0 "nonimmediate_operand")
 	(match_operand:VSTRUCT 1 "general_operand"))]
   "TARGET_SIMD"
@@ -7099,112 +7119,119 @@
     }
 })
 
-
-(define_expand "aarch64_ld1x3<VALLDIF:mode>"
-  [(match_operand:CI 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "aarch64_ld1x3<vstruct_elt>"
+  [(match_operand:VSTRUCT_3QD 0 "register_operand")
+   (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (CImode, operands[1]);
-  emit_insn (gen_aarch64_ld1_x3_<VALLDIF:mode> (operands[0], mem));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[1]);
+  emit_insn (gen_aarch64_ld1_x3_<vstruct_elt> (operands[0], mem));
   DONE;
 })
 
-(define_insn "aarch64_ld1_x3_<mode>"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-        (unspec:CI
-	  [(match_operand:CI 1 "aarch64_simd_struct_operand" "Utv")
-	   (unspec:VALLDIF [(const_int 3)] UNSPEC_VSTRUCTDUMMY)] UNSPEC_LD1))]
+(define_insn "aarch64_ld1_x3_<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3QD 0 "register_operand" "=w")
+        (unspec:VSTRUCT_3QD
+	  [(match_operand:VSTRUCT_3QD 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD1))]
   "TARGET_SIMD"
   "ld1\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "type" "neon_load1_3reg<q>")]
 )
 
-(define_expand "aarch64_ld1x4<VALLDIF:mode>"
-  [(match_operand:XI 0 "register_operand" "=w")
-   (match_operand:DI 1 "register_operand" "r")
-   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "aarch64_ld1x4<vstruct_elt>"
+  [(match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
+   (match_operand:DI 1 "register_operand" "r")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (XImode, operands[1]);
-  emit_insn (gen_aarch64_ld1_x4_<VALLDIF:mode> (operands[0], mem));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[1]);
+  emit_insn (gen_aarch64_ld1_x4_<vstruct_elt> (operands[0], mem));
   DONE;
 })
 
-(define_insn "aarch64_ld1_x4_<mode>"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(unspec:XI
-	  [(match_operand:XI 1 "aarch64_simd_struct_operand" "Utv")
-	   (unspec:VALLDIF [(const_int 4)] UNSPEC_VSTRUCTDUMMY)]
+(define_insn "aarch64_ld1_x4_<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_4QD
+	  [(match_operand:VSTRUCT_4QD 1 "aarch64_simd_struct_operand" "Utv")]
 	UNSPEC_LD1))]
   "TARGET_SIMD"
   "ld1\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "type" "neon_load1_4reg<q>")]
 )
 
-(define_expand "aarch64_st1x2<VALLDIF:mode>"
+(define_expand "aarch64_st1x2<vstruct_elt>"
   [(match_operand:DI 0 "register_operand")
-   (match_operand:OI 1 "register_operand")
-   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (match_operand:VSTRUCT_2QD 1 "register_operand")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (OImode, operands[0]);
-  emit_insn (gen_aarch64_st1_x2_<VALLDIF:mode> (mem, operands[1]));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[0]);
+  emit_insn (gen_aarch64_st1_x2_<vstruct_elt> (mem, operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_st1_x2_<mode>"
-   [(set (match_operand:OI 0 "aarch64_simd_struct_operand" "=Utv")
-	 (unspec:OI
-	  [(match_operand:OI 1 "register_operand" "w")
-          (unspec:VALLDIF [(const_int 2)] UNSPEC_VSTRUCTDUMMY)] UNSPEC_ST1))]
+(define_insn "aarch64_st1_x2_<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_2QD 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_2QD
+		[(match_operand:VSTRUCT_2QD 1 "register_operand" "w")]
+		UNSPEC_ST1))]
   "TARGET_SIMD"
   "st1\\t{%S1.<Vtype> - %T1.<Vtype>}, %0"
   [(set_attr "type" "neon_store1_2reg<q>")]
 )
 
-(define_expand "aarch64_st1x3<VALLDIF:mode>"
+(define_expand "aarch64_st1x3<vstruct_elt>"
   [(match_operand:DI 0 "register_operand")
-   (match_operand:CI 1 "register_operand")
-   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (match_operand:VSTRUCT_3QD 1 "register_operand")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (CImode, operands[0]);
-  emit_insn (gen_aarch64_st1_x3_<VALLDIF:mode> (mem, operands[1]));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[0]);
+  emit_insn (gen_aarch64_st1_x3_<vstruct_elt> (mem, operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_st1_x3_<mode>"
-   [(set (match_operand:CI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:CI
-         [(match_operand:CI 1 "register_operand" "w")
-	  (unspec:VALLDIF [(const_int 3)] UNSPEC_VSTRUCTDUMMY)] UNSPEC_ST1))]
+(define_insn "aarch64_st1_x3_<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_3QD 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_3QD
+		[(match_operand:VSTRUCT_3QD 1 "register_operand" "w")]
+		UNSPEC_ST1))]
   "TARGET_SIMD"
   "st1\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
   [(set_attr "type" "neon_store1_3reg<q>")]
 )
 
-(define_expand "aarch64_st1x4<VALLDIF:mode>"
+(define_expand "aarch64_st1x4<vstruct_elt>"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:XI 1 "register_operand" "")
-   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+   (match_operand:VSTRUCT_4QD 1 "register_operand" "")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (XImode, operands[0]);
-  emit_insn (gen_aarch64_st1_x4_<VALLDIF:mode> (mem, operands[1]));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[0]);
+  emit_insn (gen_aarch64_st1_x4_<vstruct_elt> (mem, operands[1]));
   DONE;
 })
 
-(define_insn "aarch64_st1_x4_<mode>"
-  [(set (match_operand:XI 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:XI
-	   [(match_operand:XI 1 "register_operand" "w")
-	   (unspec:VALLDIF [(const_int 4)] UNSPEC_VSTRUCTDUMMY)]
-	UNSPEC_ST1))]
+(define_insn "aarch64_st1_x4_<vstruct_elt>"
+  [(set (match_operand:VSTRUCT_4QD 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_4QD
+		[(match_operand:VSTRUCT_4QD 1 "register_operand" "w")]
+		UNSPEC_ST1))]
   "TARGET_SIMD"
   "st1\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
   [(set_attr "type" "neon_store1_4reg<q>")]
+)
+
+(define_insn "*aarch64_mov<mode>"
+  [(set (match_operand:VSTRUCT_QD 0 "aarch64_simd_nonimmediate_operand" "=w,Utv,w")
+	(match_operand:VSTRUCT_QD 1 "aarch64_simd_general_operand" " w,w,Utv"))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
+  "@
+   #
+   st1\\t{%S1.<Vtype> - %<Vendreg>1.<Vtype>}, %0
+   ld1\\t{%S0.<Vtype> - %<Vendreg>0.<Vtype>}, %1"
+  [(set_attr "type" "multiple,neon_store<nregs>_<nregs>reg_q,\
+		     neon_load<nregs>_<nregs>reg_q")
+   (set_attr "length" "<insn_count>,4,4")]
 )
 
 (define_insn "*aarch64_mov<mode>"
@@ -7241,6 +7268,34 @@
   [(set_attr "type" "neon_store1_1reg<q>")]
 )
 
+(define_insn "*aarch64_be_mov<mode>"
+  [(set (match_operand:VSTRUCT_2D 0 "nonimmediate_operand" "=w,m,w")
+	(match_operand:VSTRUCT_2D 1 "general_operand"      " w,w,m"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
+  "@
+   #
+   stp\\t%d1, %R1, %0
+   ldp\\t%d0, %R0, %1"
+  [(set_attr "type" "multiple,neon_stp,neon_ldp")
+   (set_attr "length" "8,4,4")]
+)
+
+(define_insn "*aarch64_be_mov<mode>"
+  [(set (match_operand:VSTRUCT_2Q 0 "nonimmediate_operand" "=w,m,w")
+	(match_operand:VSTRUCT_2Q 1 "general_operand"      " w,w,m"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
+  "@
+   #
+   stp\\t%q1, %R1, %0
+   ldp\\t%q0, %R0, %1"
+  [(set_attr "type" "multiple,neon_stp_q,neon_ldp_q")
+   (set_attr "length" "8,4,4")]
+)
+
 (define_insn "*aarch64_be_movoi"
   [(set (match_operand:OI 0 "nonimmediate_operand" "=w,m,w")
 	(match_operand:OI 1 "general_operand"      " w,w,m"))]
@@ -7255,6 +7310,17 @@
    (set_attr "length" "8,4,4")]
 )
 
+(define_insn "*aarch64_be_mov<mode>"
+  [(set (match_operand:VSTRUCT_3QD 0 "nonimmediate_operand" "=w,o,w")
+	(match_operand:VSTRUCT_3QD 1 "general_operand"      " w,w,o"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
+  "#"
+  [(set_attr "type" "multiple")
+   (set_attr "length" "12,8,8")]
+)
+
 (define_insn "*aarch64_be_movci"
   [(set (match_operand:CI 0 "nonimmediate_operand" "=w,o,w")
 	(match_operand:CI 1 "general_operand"      " w,w,o"))]
@@ -7264,6 +7330,17 @@
   "#"
   [(set_attr "type" "multiple")
    (set_attr "length" "12,4,4")]
+)
+
+(define_insn "*aarch64_be_mov<mode>"
+  [(set (match_operand:VSTRUCT_4QD 0 "nonimmediate_operand" "=w,o,w")
+	(match_operand:VSTRUCT_4QD 1 "general_operand"      " w,w,o"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[1], <MODE>mode))"
+  "#"
+  [(set_attr "type" "multiple")
+   (set_attr "length" "16,8,8")]
 )
 
 (define_insn "*aarch64_be_movxi"
@@ -7278,6 +7355,16 @@
 )
 
 (define_split
+  [(set (match_operand:VSTRUCT_2QD 0 "register_operand")
+	(match_operand:VSTRUCT_2QD 1 "register_operand"))]
+  "TARGET_SIMD && reload_completed"
+  [(const_int 0)]
+{
+  aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 2);
+  DONE;
+})
+
+(define_split
   [(set (match_operand:OI 0 "register_operand")
 	(match_operand:OI 1 "register_operand"))]
   "TARGET_SIMD && reload_completed"
@@ -7285,6 +7372,42 @@
 {
   aarch64_simd_emit_reg_reg_move (operands, TImode, 2);
   DONE;
+})
+
+(define_split
+  [(set (match_operand:VSTRUCT_3QD 0 "nonimmediate_operand")
+	(match_operand:VSTRUCT_3QD 1 "general_operand"))]
+  "TARGET_SIMD && reload_completed"
+  [(const_int 0)]
+{
+  if (register_operand (operands[0], <MODE>mode)
+      && register_operand (operands[1], <MODE>mode))
+    {
+      aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 3);
+      DONE;
+    }
+  else if (BYTES_BIG_ENDIAN)
+    {
+      int elt_size = GET_MODE_SIZE (<MODE>mode).to_constant () / <nregs>;
+      machine_mode pair_mode = elt_size == 16 ? V2x16QImode : V2x8QImode;
+      emit_move_insn (simplify_gen_subreg (pair_mode, operands[0],
+					   <MODE>mode, 0),
+		      simplify_gen_subreg (pair_mode, operands[1],
+					   <MODE>mode, 0));
+      emit_move_insn (gen_lowpart (<VSTRUCT_ELT>mode,
+				   simplify_gen_subreg (<VSTRUCT_ELT>mode,
+							operands[0],
+							<MODE>mode,
+							2 * elt_size)),
+		      gen_lowpart (<VSTRUCT_ELT>mode,
+				   simplify_gen_subreg (<VSTRUCT_ELT>mode,
+							operands[1],
+							<MODE>mode,
+							2 * elt_size)));
+      DONE;
+    }
+  else
+    FAIL;
 })
 
 (define_split
@@ -7316,6 +7439,36 @@
 })
 
 (define_split
+  [(set (match_operand:VSTRUCT_4QD 0 "nonimmediate_operand")
+	(match_operand:VSTRUCT_4QD 1 "general_operand"))]
+  "TARGET_SIMD && reload_completed"
+  [(const_int 0)]
+{
+  if (register_operand (operands[0], <MODE>mode)
+      && register_operand (operands[1], <MODE>mode))
+    {
+      aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 4);
+      DONE;
+    }
+  else if (BYTES_BIG_ENDIAN)
+    {
+      int elt_size = GET_MODE_SIZE (<MODE>mode).to_constant () / <nregs>;
+      machine_mode pair_mode = elt_size == 16 ? V2x16QImode : V2x8QImode;
+      emit_move_insn (simplify_gen_subreg (pair_mode, operands[0],
+					   <MODE>mode, 0),
+		      simplify_gen_subreg (pair_mode, operands[1],
+					   <MODE>mode, 0));
+      emit_move_insn (simplify_gen_subreg (pair_mode, operands[0],
+					   <MODE>mode, 2 * elt_size),
+		      simplify_gen_subreg (pair_mode, operands[1],
+					   <MODE>mode, 2 * elt_size));
+      DONE;
+    }
+  else
+    FAIL;
+})
+
+(define_split
   [(set (match_operand:XI 0 "nonimmediate_operand")
 	(match_operand:XI 1 "general_operand"))]
   "TARGET_SIMD && reload_completed"
@@ -7339,91 +7492,85 @@
     FAIL;
 })
 
-(define_expand "aarch64_ld<VSTRUCT:nregs>r<VALLDIF:mode>"
-  [(match_operand:VSTRUCT 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "aarch64_ld<nregs>r<vstruct_elt>"
+  [(match_operand:VSTRUCT_QD 0 "register_operand")
+   (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
   rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
-  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<VALLDIF:MODE>mode))
-		     * <VSTRUCT:nregs>);
+  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) * <nregs>);
 
-  emit_insn (gen_aarch64_simd_ld<VSTRUCT:nregs>r<VALLDIF:mode> (operands[0],
-								mem));
+  emit_insn (gen_aarch64_simd_ld<nregs>r<vstruct_elt> (operands[0], mem));
   DONE;
 })
 
-(define_insn "aarch64_ld2<mode>_dreg"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD2_DREG))]
+(define_insn "aarch64_ld2<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_2DNX 0 "register_operand" "=w")
+	(unspec:VSTRUCT_2DNX [
+	  (match_operand:VSTRUCT_2DNX 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD2_DREG))]
   "TARGET_SIMD"
   "ld2\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "type" "neon_load2_2reg<q>")]
 )
 
-(define_insn "aarch64_ld2<mode>_dreg"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD2_DREG))]
+(define_insn "aarch64_ld2<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_2DX 0 "register_operand" "=w")
+	(unspec:VSTRUCT_2DX [
+	  (match_operand:VSTRUCT_2DX 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD2_DREG))]
   "TARGET_SIMD"
   "ld1\\t{%S0.1d - %T0.1d}, %1"
   [(set_attr "type" "neon_load1_2reg<q>")]
 )
 
-(define_insn "aarch64_ld3<mode>_dreg"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-	(unspec:CI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD3_DREG))]
+(define_insn "aarch64_ld3<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_3DNX 0 "register_operand" "=w")
+	(unspec:VSTRUCT_3DNX [
+	  (match_operand:VSTRUCT_3DNX 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD3_DREG))]
   "TARGET_SIMD"
   "ld3\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "type" "neon_load3_3reg<q>")]
 )
 
-(define_insn "aarch64_ld3<mode>_dreg"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-	(unspec:CI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD3_DREG))]
+(define_insn "aarch64_ld3<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_3DX 0 "register_operand" "=w")
+	(unspec:VSTRUCT_3DX [
+	  (match_operand:VSTRUCT_3DX 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD3_DREG))]
   "TARGET_SIMD"
   "ld1\\t{%S0.1d - %U0.1d}, %1"
   [(set_attr "type" "neon_load1_3reg<q>")]
 )
 
-(define_insn "aarch64_ld4<mode>_dreg"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(unspec:XI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD4_DREG))]
+(define_insn "aarch64_ld4<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_4DNX 0 "register_operand" "=w")
+	(unspec:VSTRUCT_4DNX [
+	  (match_operand:VSTRUCT_4DNX 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD4_DREG))]
   "TARGET_SIMD"
   "ld4\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "type" "neon_load4_4reg<q>")]
 )
 
-(define_insn "aarch64_ld4<mode>_dreg"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(unspec:XI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD4_DREG))]
+(define_insn "aarch64_ld4<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_4DX 0 "register_operand" "=w")
+	(unspec:VSTRUCT_4DX [
+	  (match_operand:VSTRUCT_4DX 1 "aarch64_simd_struct_operand" "Utv")]
+	  UNSPEC_LD4_DREG))]
   "TARGET_SIMD"
   "ld1\\t{%S0.1d - %V0.1d}, %1"
   [(set_attr "type" "neon_load1_4reg<q>")]
 )
 
-(define_expand "aarch64_ld<VSTRUCT:nregs><VDC:mode>"
- [(match_operand:VSTRUCT 0 "register_operand")
-  (match_operand:DI 1 "register_operand")
-  (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "aarch64_ld<nregs><vstruct_elt>"
+ [(match_operand:VSTRUCT_D 0 "register_operand")
+  (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
-  set_mem_size (mem, <VSTRUCT:nregs> * 8);
-
-  emit_insn (gen_aarch64_ld<VSTRUCT:nregs><VDC:mode>_dreg (operands[0], mem));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[1]);
+  emit_insn (gen_aarch64_ld<nregs><vstruct_elt>_dreg (operands[0], mem));
   DONE;
 })
 
@@ -7442,97 +7589,42 @@
   DONE;
 })
 
-(define_expand "aarch64_ld<VSTRUCT:nregs><VQ:mode>"
- [(match_operand:VSTRUCT 0 "register_operand")
-  (match_operand:DI 1 "register_operand")
-  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "aarch64_ld<nregs><vstruct_elt>"
+ [(match_operand:VSTRUCT_Q 0 "register_operand")
+  (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
-  machine_mode mode = <VSTRUCT:MODE>mode;
-  rtx mem = gen_rtx_MEM (mode, operands[1]);
-
-  emit_insn (gen_aarch64_simd_ld<VSTRUCT:nregs><VQ:mode> (operands[0], mem));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[1]);
+  emit_insn (gen_aarch64_simd_ld<nregs><vstruct_elt> (operands[0], mem));
   DONE;
 })
 
-(define_expand "aarch64_ld1x2<VQ:mode>"
- [(match_operand:OI 0 "register_operand")
-  (match_operand:DI 1 "register_operand")
-  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+(define_expand "aarch64_ld1x2<vstruct_elt>"
+ [(match_operand:VSTRUCT_2QD 0 "register_operand")
+  (match_operand:DI 1 "register_operand")]
   "TARGET_SIMD"
 {
-  machine_mode mode = OImode;
+  machine_mode mode = <MODE>mode;
   rtx mem = gen_rtx_MEM (mode, operands[1]);
 
-  emit_insn (gen_aarch64_simd_ld1<VQ:mode>_x2 (operands[0], mem));
+  emit_insn (gen_aarch64_simd_ld1<vstruct_elt>_x2 (operands[0], mem));
   DONE;
 })
 
-(define_expand "aarch64_ld1x2<VDC:mode>"
- [(match_operand:OI 0 "register_operand")
-  (match_operand:DI 1 "register_operand")
-  (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_SIMD"
-{
-  machine_mode mode = OImode;
-  rtx mem = gen_rtx_MEM (mode, operands[1]);
-
-  emit_insn (gen_aarch64_simd_ld1<VDC:mode>_x2 (operands[0], mem));
-  DONE;
-})
-
-
-(define_expand "aarch64_ld<VSTRUCT:nregs>_lane<VALLDIF:mode>"
-  [(match_operand:VSTRUCT 0 "register_operand")
+(define_expand "aarch64_ld<nregs>_lane<vstruct_elt>"
+  [(match_operand:VSTRUCT_QD 0 "register_operand")
 	(match_operand:DI 1 "register_operand")
-	(match_operand:VSTRUCT 2 "register_operand")
-	(match_operand:SI 3 "immediate_operand")
-	(unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+	(match_operand:VSTRUCT_QD 2 "register_operand")
+	(match_operand:SI 3 "immediate_operand")]
   "TARGET_SIMD"
 {
   rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
-  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<VALLDIF:MODE>mode))
-		     * <VSTRUCT:nregs>);
+  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) * <nregs>);
 
-  aarch64_simd_lane_bounds (operands[3], 0, <VALLDIF:nunits>, NULL);
-  emit_insn (gen_aarch64_vec_load_lanes<VSTRUCT:mode>_lane<VALLDIF:mode> (
-	operands[0], mem, operands[2], operands[3]));
-  DONE;
-})
-
-;; Expanders for builtins to extract vector registers from large
-;; opaque integer modes.
-
-;; D-register list.
-
-(define_expand "aarch64_get_dreg<VSTRUCT:mode><VDC:mode>"
- [(match_operand:VDC 0 "register_operand")
-  (match_operand:VSTRUCT 1 "register_operand")
-  (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-{
-  int part = INTVAL (operands[2]);
-  rtx temp = gen_reg_rtx (<VDC:VDBL>mode);
-  int offset = part * 16;
-
-  emit_move_insn (temp, gen_rtx_SUBREG (<VDC:VDBL>mode, operands[1], offset));
-  emit_move_insn (operands[0], gen_lowpart (<VDC:MODE>mode, temp));
-  DONE;
-})
-
-;; Q-register list.
-
-(define_expand "aarch64_get_qreg<VSTRUCT:mode><VQ:mode>"
- [(match_operand:VQ 0 "register_operand")
-  (match_operand:VSTRUCT 1 "register_operand")
-  (match_operand:SI 2 "immediate_operand")]
-  "TARGET_SIMD"
-{
-  int part = INTVAL (operands[2]);
-  int offset = part * 16;
-
-  emit_move_insn (operands[0],
-		  gen_rtx_SUBREG (<VQ:MODE>mode, operands[1], offset));
+  aarch64_simd_lane_bounds (operands[3], 0,
+		GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>, NULL);
+  emit_insn (gen_aarch64_vec_load_lanes<mode>_lane<vstruct_elt> (operands[0],
+				mem, operands[2], operands[3]));
   DONE;
 })
 
@@ -7579,7 +7671,7 @@
 
 (define_insn "aarch64_qtbl2<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
-	(unspec:VB [(match_operand:OI 1 "register_operand" "w")
+	(unspec:VB [(match_operand:V2x16QI 1 "register_operand" "w")
 		      (match_operand:VB 2 "register_operand" "w")]
 		      UNSPEC_TBL))]
   "TARGET_SIMD"
@@ -7590,7 +7682,7 @@
 (define_insn "aarch64_qtbx2<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
-		      (match_operand:OI 2 "register_operand" "w")
+		      (match_operand:V2x16QI 2 "register_operand" "w")
 		      (match_operand:VB 3 "register_operand" "w")]
 		      UNSPEC_TBX))]
   "TARGET_SIMD"
@@ -7602,7 +7694,7 @@
 
 (define_insn "aarch64_qtbl3<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
-	(unspec:VB [(match_operand:CI 1 "register_operand" "w")
+	(unspec:VB [(match_operand:V3x16QI 1 "register_operand" "w")
 		      (match_operand:VB 2 "register_operand" "w")]
 		      UNSPEC_TBL))]
   "TARGET_SIMD"
@@ -7613,7 +7705,7 @@
 (define_insn "aarch64_qtbx3<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
-		      (match_operand:CI 2 "register_operand" "w")
+		      (match_operand:V3x16QI 2 "register_operand" "w")
 		      (match_operand:VB 3 "register_operand" "w")]
 		      UNSPEC_TBX))]
   "TARGET_SIMD"
@@ -7625,7 +7717,7 @@
 
 (define_insn "aarch64_qtbl4<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
-	(unspec:VB [(match_operand:XI 1 "register_operand" "w")
+	(unspec:VB [(match_operand:V4x16QI 1 "register_operand" "w")
 		      (match_operand:VB 2 "register_operand" "w")]
 		      UNSPEC_TBL))]
   "TARGET_SIMD"
@@ -7636,7 +7728,7 @@
 (define_insn "aarch64_qtbx4<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "0")
-		      (match_operand:XI 2 "register_operand" "w")
+		      (match_operand:V4x16QI 2 "register_operand" "w")
 		      (match_operand:VB 3 "register_operand" "w")]
 		      UNSPEC_TBX))]
   "TARGET_SIMD"
@@ -7645,10 +7737,10 @@
 )
 
 (define_insn_and_split "aarch64_combinev16qi"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:V16QI 1 "register_operand" "w")
-		    (match_operand:V16QI 2 "register_operand" "w")]
-		   UNSPEC_CONCAT))]
+  [(set (match_operand:V2x16QI 0 "register_operand" "=w")
+	(unspec:V2x16QI [(match_operand:V16QI 1 "register_operand" "w")
+			 (match_operand:V16QI 2 "register_operand" "w")]
+			UNSPEC_CONCAT))]
   "TARGET_SIMD"
   "#"
   "&& reload_completed"
@@ -7704,105 +7796,99 @@
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_insn "aarch64_st2<mode>_dreg"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:OI 1 "register_operand" "w")
-                    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST2))]
+(define_insn "aarch64_st2<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_2DNX 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_2DNX [
+		(match_operand:VSTRUCT_2DNX 1 "register_operand" "w")]
+		UNSPEC_ST2))]
   "TARGET_SIMD"
   "st2\\t{%S1.<Vtype> - %T1.<Vtype>}, %0"
   [(set_attr "type" "neon_store2_2reg")]
 )
 
-(define_insn "aarch64_st2<mode>_dreg"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:OI 1 "register_operand" "w")
-                    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST2))]
+(define_insn "aarch64_st2<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_2DX 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_2DX [
+		(match_operand:VSTRUCT_2DX 1 "register_operand" "w")]
+		UNSPEC_ST2))]
   "TARGET_SIMD"
   "st1\\t{%S1.1d - %T1.1d}, %0"
   [(set_attr "type" "neon_store1_2reg")]
 )
 
-(define_insn "aarch64_st3<mode>_dreg"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:CI 1 "register_operand" "w")
-                    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST3))]
+(define_insn "aarch64_st3<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_3DNX 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_3DNX [
+		(match_operand:VSTRUCT_3DNX 1 "register_operand" "w")]
+		UNSPEC_ST3))]
   "TARGET_SIMD"
   "st3\\t{%S1.<Vtype> - %U1.<Vtype>}, %0"
   [(set_attr "type" "neon_store3_3reg")]
 )
 
-(define_insn "aarch64_st3<mode>_dreg"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:CI 1 "register_operand" "w")
-                    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST3))]
+(define_insn "aarch64_st3<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_3DX 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_3DX [
+		(match_operand:VSTRUCT_3DX 1 "register_operand" "w")]
+		UNSPEC_ST3))]
   "TARGET_SIMD"
   "st1\\t{%S1.1d - %U1.1d}, %0"
   [(set_attr "type" "neon_store1_3reg")]
 )
 
-(define_insn "aarch64_st4<mode>_dreg"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:XI 1 "register_operand" "w")
-                    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST4))]
+(define_insn "aarch64_st4<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_4DNX 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_4DNX [
+		(match_operand:VSTRUCT_4DNX 1 "register_operand" "w")]
+		UNSPEC_ST4))]
   "TARGET_SIMD"
   "st4\\t{%S1.<Vtype> - %V1.<Vtype>}, %0"
   [(set_attr "type" "neon_store4_4reg")]
 )
 
-(define_insn "aarch64_st4<mode>_dreg"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:XI 1 "register_operand" "w")
-                    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_ST4))]
+(define_insn "aarch64_st4<vstruct_elt>_dreg"
+  [(set (match_operand:VSTRUCT_4DX 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:VSTRUCT_4DX [
+		(match_operand:VSTRUCT_4DX 1 "register_operand" "w")]
+		UNSPEC_ST4))]
   "TARGET_SIMD"
   "st1\\t{%S1.1d - %V1.1d}, %0"
   [(set_attr "type" "neon_store1_4reg")]
 )
 
-(define_expand "aarch64_st<VSTRUCT:nregs><VDC:mode>"
+(define_expand "aarch64_st<nregs><vstruct_elt>"
  [(match_operand:DI 0 "register_operand")
-  (match_operand:VSTRUCT 1 "register_operand")
-  (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  (match_operand:VSTRUCT_D 1 "register_operand")]
   "TARGET_SIMD"
 {
-  rtx mem = gen_rtx_MEM (BLKmode, operands[0]);
-  set_mem_size (mem, <VSTRUCT:nregs> * 8);
-
-  emit_insn (gen_aarch64_st<VSTRUCT:nregs><VDC:mode>_dreg (mem, operands[1]));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[0]);
+  emit_insn (gen_aarch64_st<nregs><vstruct_elt>_dreg (mem, operands[1]));
   DONE;
 })
 
-(define_expand "aarch64_st<VSTRUCT:nregs><VQ:mode>"
+(define_expand "aarch64_st<nregs><vstruct_elt>"
  [(match_operand:DI 0 "register_operand")
-  (match_operand:VSTRUCT 1 "register_operand")
-  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  (match_operand:VSTRUCT_Q 1 "register_operand")]
   "TARGET_SIMD"
 {
-  machine_mode mode = <VSTRUCT:MODE>mode;
-  rtx mem = gen_rtx_MEM (mode, operands[0]);
-
-  emit_insn (gen_aarch64_simd_st<VSTRUCT:nregs><VQ:mode> (mem, operands[1]));
+  rtx mem = gen_rtx_MEM (<MODE>mode, operands[0]);
+  emit_insn (gen_aarch64_simd_st<nregs><vstruct_elt> (mem, operands[1]));
   DONE;
 })
 
-(define_expand "aarch64_st<VSTRUCT:nregs>_lane<VALLDIF:mode>"
+(define_expand "aarch64_st<nregs>_lane<vstruct_elt>"
  [(match_operand:DI 0 "register_operand")
-  (match_operand:VSTRUCT 1 "register_operand")
-  (unspec:VALLDIF [(const_int 0)] UNSPEC_VSTRUCTDUMMY)
+  (match_operand:VSTRUCT_QD 1 "register_operand")
   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {
   rtx mem = gen_rtx_MEM (BLKmode, operands[0]);
-  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<VALLDIF:MODE>mode))
-		     * <VSTRUCT:nregs>);
+  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) * <nregs>);
 
-  emit_insn (gen_aarch64_vec_store_lanes<VSTRUCT:mode>_lane<VALLDIF:mode> (
-		mem, operands[1], operands[2]));
+  aarch64_simd_lane_bounds (operands[2], 0,
+		GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>, NULL);
+  emit_insn (gen_aarch64_vec_store_lanes<mode>_lane<vstruct_elt> (mem,
+					operands[1], operands[2]));
   DONE;
 })
 
@@ -7818,28 +7904,6 @@
     emit_insn (gen_aarch64_be_st1<VALL_F16:mode> (mem, operands[1]));
   else
     emit_move_insn (mem, operands[1]);
-  DONE;
-})
-
-;; Expander for builtins to insert vector registers into large
-;; opaque integer modes.
-
-;; Q-register list.  We don't need a D-reg inserter as we zero
-;; extend them in arm_neon.h and insert the resulting Q-regs.
-
-(define_expand "aarch64_set_qreg<VSTRUCT:mode><VQ:mode>"
- [(match_operand:VSTRUCT 0 "register_operand")
-  (match_operand:VSTRUCT 1 "register_operand")
-  (match_operand:VQ 2 "register_operand")
-  (match_operand:SI 3 "immediate_operand")]
-  "TARGET_SIMD"
-{
-  int part = INTVAL (operands[3]);
-  int offset = part * 16;
-
-  emit_move_insn (operands[0], operands[1]);
-  emit_move_insn (gen_rtx_SUBREG (<VQ:MODE>mode, operands[0], offset),
-		  operands[2]);
   DONE;
 })
 
@@ -7872,21 +7936,11 @@
   [(set_attr "type" "neon_load1_all_lanes")]
 )
 
-(define_insn "aarch64_simd_ld1<mode>_x2"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD1))]
-  "TARGET_SIMD"
-  "ld1\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load1_2reg<q>")]
-)
-
-(define_insn "aarch64_simd_ld1<mode>_x2"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
-		    (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_LD1))]
+(define_insn "aarch64_simd_ld1<vstruct_elt>_x2"
+  [(set (match_operand:VSTRUCT_2QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_2QD [
+	    (match_operand:VSTRUCT_2QD 1 "aarch64_simd_struct_operand" "Utv")]
+	    UNSPEC_LD1))]
   "TARGET_SIMD"
   "ld1\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "type" "neon_load1_2reg<q>")]

@@ -1377,6 +1377,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   if (flag_gtoggle)
     {
+      /* Make sure to process -gtoggle only once.  */
+      flag_gtoggle = false;
       if (debug_info_level == DINFO_LEVEL_NONE)
 	{
 	  debug_info_level = DINFO_LEVEL_NORMAL;
@@ -2732,6 +2734,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_column_origin_:
       dc->column_origin = value;
+      break;
+
+    case OPT_fdiagnostics_escape_format_:
+      dc->escape_format = (enum diagnostics_escape_format)value;
       break;
 
     case OPT_fdiagnostics_show_cwe:

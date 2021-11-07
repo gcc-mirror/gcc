@@ -46,7 +46,7 @@ main()
   // { dg-final { whatis-regexp-test p1 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?vector<int>\\*>>>" } }
   // { dg-final { whatis-regexp-test p2 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?set<int>\\*>>\\\[\\\]>" } }
   // { dg-final { whatis-regexp-test p3 "std::unique_ptr<std::(__debug::)?set<std::unique_ptr<std::(__debug::)?vector<int>\\*>>\\\[10\\\]>" } }
-  // { dg-final { whatis-regexp-test p4 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?list<std::string>\\\[\\\]>>\\\[99\\\]>" } }
+  // { dg-final { whatis-regexp-test p4 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?list<std::string>\\\[\\\]>>\\\[99\\\]>" { xfail c++20 } } }
 
   placeholder(&p1);		// Mark SPOT
   placeholder(&p2);

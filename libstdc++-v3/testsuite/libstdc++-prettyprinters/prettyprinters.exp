@@ -49,7 +49,7 @@ gdb-dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
 
 if { [check_effective_target_lto] } {
   append cxxflags " -flto"
-  # work around sourceware.org 20882
+  # Work around linker bug https://sourceware.org/PR20882
   regsub {^(.*)-Wl,--gc-sections(.*)$} $cxxldflags {\1\2} cxxldflags
   gdb-dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
     "" "$DEFAULT_CXXFLAGS -flto $PCH_CXXFLAGS"

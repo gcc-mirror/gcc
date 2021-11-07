@@ -499,7 +499,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Scratch_list* __fill = __tmp;
 	_Scratch_list* __counter;
 
-	_Scratch_list::_Ptr_cmp<const_iterator, void> __ptr_comp;
+	_Scratch_list::_Ptr_cmp<iterator, void> __ptr_comp;
 
 	__try
 	  {
@@ -623,7 +623,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  _Scratch_list* __fill = __tmp;
 	  _Scratch_list* __counter;
 
-	_Scratch_list::_Ptr_cmp<const_iterator, _StrictWeakOrdering> __ptr_comp
+	_Scratch_list::_Ptr_cmp<iterator, _StrictWeakOrdering> __ptr_comp
 	  = { __comp };
 
 	  __try

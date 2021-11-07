@@ -4082,8 +4082,16 @@ handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
     {
       struct constraint_expr cexpr;
       cexpr.var = tem->id;
-      cexpr.type = SCALAR;
-      cexpr.offset = 0;
+      if (flags & EAF_NOT_RETURNED_DIRECTLY)
+	{
+	  cexpr.type = DEREF;
+	  cexpr.offset = UNKNOWN_OFFSET;
+	}
+      else
+	{
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	}
       results->safe_push (cexpr);
     }
 
@@ -4246,7 +4254,8 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results,
   /* The static chain escapes as well.  */
   if (gimple_call_chain (stmt))
     handle_call_arg (stmt, gimple_call_chain (stmt), results,
-		     implicit_eaf_flags,
+		     implicit_eaf_flags
+		     | gimple_call_static_chain_flags (stmt),
 		     callescape->id, writes_global_memory);
 
   /* And if we applied NRV the address of the return slot escapes as well.  */
@@ -4254,17 +4263,28 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results,
       && gimple_call_lhs (stmt) != NULL_TREE
       && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
     {
-      auto_vec<ce_s> tmpc;
-      struct constraint_expr *c;
-      unsigned i;
+      int flags = gimple_call_retslot_flags (stmt);
+      if ((flags & (EAF_NOESCAPE | EAF_NOT_RETURNED))
+	  != (EAF_NOESCAPE | EAF_NOT_RETURNED))
+	{
+	  auto_vec<ce_s> tmpc;
 
-      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+	  get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
 
-      make_constraints_to (callescape->id, tmpc);
-      if (writes_global_memory)
-	make_constraints_to (escaped_id, tmpc);
-      FOR_EACH_VEC_ELT (tmpc, i, c)
-	results->safe_push (*c);
+	  if (!(flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE)))
+	    {
+	      make_constraints_to (callescape->id, tmpc);
+	      if (writes_global_memory)
+		make_constraints_to (escaped_id, tmpc);
+	    }
+	  if (!(flags & EAF_NOT_RETURNED))
+	    {
+	      struct constraint_expr *c;
+	      unsigned i;
+	      FOR_EACH_VEC_ELT (tmpc, i, c)
+		results->safe_push (*c);
+	    }
+	}
     }
 }
 

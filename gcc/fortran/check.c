@@ -3240,7 +3240,7 @@ gfc_check_intconv (gfc_expr *x)
   if (strcmp (gfc_current_intrinsic, "short") == 0
       || strcmp (gfc_current_intrinsic, "long") == 0)
     {
-      gfc_error ("%qs intrinsic subprogram at %L has been deprecated.  "
+      gfc_error ("%qs intrinsic subprogram at %L has been removed.  "
 		 "Use INT intrinsic subprogram.", gfc_current_intrinsic,
 		 &x->where);
       return false;

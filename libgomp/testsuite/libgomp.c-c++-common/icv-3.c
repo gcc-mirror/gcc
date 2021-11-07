@@ -18,6 +18,7 @@ main ()
     abort ();
   #pragma omp teams
   {
+    #pragma omp parallel if(0)
     if (omp_get_max_teams () != 7
 	|| omp_get_teams_thread_limit () != 15
 	|| omp_get_num_teams () < 1
@@ -30,6 +31,7 @@ main ()
   }
   #pragma omp teams num_teams(5) thread_limit (13)
   {
+    #pragma omp parallel if(0)
     if (omp_get_max_teams () != 7
 	|| omp_get_teams_thread_limit () != 15
 	|| omp_get_num_teams () != 5
@@ -41,6 +43,7 @@ main ()
   }
   #pragma omp teams num_teams(8) thread_limit (16)
   {
+    #pragma omp parallel if(0)
     if (omp_get_max_teams () != 7
 	|| omp_get_teams_thread_limit () != 15
 	|| omp_get_num_teams () != 8

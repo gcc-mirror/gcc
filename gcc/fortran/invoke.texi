@@ -227,7 +227,7 @@ form is determined by the file extension.
 @item -fall-intrinsics
 @opindex @code{fall-intrinsics}
 This option causes all intrinsic procedures (including the GNU-specific
-extensions) to be accepted.  This can be useful with @option{-std=f95} to
+extensions) to be accepted.  This can be useful with @option{-std=} to
 force standard-compliance but get access to the full range of intrinsics
 available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 will be ignored and no user-defined procedure with the same name as any
@@ -397,7 +397,7 @@ lines in the source file. The default value is 132.
 @item -fmax-identifier-length=@var{n}
 @opindex @code{fmax-identifier-length=}@var{n}
 Specify the maximum allowed identifier length. Typical values are
-31 (Fortran 95) and 63 (Fortran 2003 and Fortran 2008).
+31 (Fortran 95) and 63 (Fortran 2003 and later).
 
 @item -fimplicit-none
 @opindex @code{fimplicit-none}
@@ -570,10 +570,46 @@ Enhance test coverage by forcing most forall assignments to use temporary.
 @cindex preprocessor
 @cindex options, preprocessor
 @cindex CPP
+@cindex FPP
+@cindex Conditional compilation
+@cindex Preprocessing
+@cindex preprocessor, include file handling
 
-Preprocessor related options. See section 
-@ref{Preprocessing and conditional compilation} for more detailed
-information on preprocessing in @command{gfortran}.
+Many Fortran compilers including GNU Fortran allow passing the source code
+through a C preprocessor (CPP; sometimes also called the Fortran preprocessor,
+FPP) to allow for conditional compilation.  In the case of GNU Fortran,
+this is the GNU C Preprocessor in the traditional mode.  On systems with
+case-preserving file names, the preprocessor is automatically invoked if the
+filename extension is @file{.F}, @file{.FOR}, @file{.FTN}, @file{.fpp},
+@file{.FPP}, @file{.F90}, @file{.F95}, @file{.F03} or @file{.F08}.  To manually
+invoke the preprocessor on any file, use @option{-cpp}, to disable
+preprocessing on files where the preprocessor is run automatically, use
+@option{-nocpp}.
+
+If a preprocessed file includes another file with the Fortran @code{INCLUDE}
+statement, the included file is not preprocessed.  To preprocess included
+files, use the equivalent preprocessor statement @code{#include}.
+
+If GNU Fortran invokes the preprocessor, @code{__GFORTRAN__}
+is defined.  The macros @code{__GNUC__}, @code{__GNUC_MINOR__} and
+@code{__GNUC_PATCHLEVEL__} can be used to determine the version of the
+compiler.  See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
+
+GNU Fortran supports a number of @code{INTEGER} and @code{REAL} kind types
+in additional to the kind types required by the Fortran standard.
+The availability of any given kind type is architecture dependent.  The
+following pre-defined preprocessor macros can be used to conditionally
+include code for these additional kind types: @code{__GFC_INT_1__},
+@code{__GFC_INT_2__}, @code{__GFC_INT_8__}, @code{__GFC_INT_16__},
+@code{__GFC_REAL_10__}, and @code{__GFC_REAL_16__}.
+
+While CPP is the de-facto standard for preprocessing Fortran code,
+Part 3 of the Fortran 95 standard (ISO/IEC 1539-3:1998) defines
+Conditional Compilation, which is not widely used and not directly
+supported by the GNU Fortran compiler.  You can use the program coco
+to preprocess such files (@uref{http://www.daniellnagle.com/coco.html}).
+
+The following options control preprocessing of Fortran code:
 
 @table @gcctabopt
 @item -cpp

@@ -19513,7 +19513,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  else if (!flag_concepts)
 	    pedwarn (token->location, 0,
 		     "use of %<auto%> in parameter declaration "
-		     "only available with %<-fconcepts-ts%>");
+		     "only available with %<-std=c++20%> or %<-fconcepts%>");
 	}
       else
 	type = make_auto ();

@@ -1,3 +1,9 @@
+2021-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/102837
+	* libdruntime/gcc/deh.d (ExceptionHeader.free): Use memset to reset
+	contents of internal EH storage.
+
 2021-09-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/gcc/deh.d (ExceptionHeader.getClassInfo): Move to...

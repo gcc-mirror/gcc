@@ -37,16 +37,13 @@ bool
 gimple_range_calc_op1 (irange &r, const gimple *stmt, const irange &lhs_range)
 {
   gcc_checking_assert (gimple_num_ops (stmt) < 3);
-
-  // An empty range is viral.
-  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
+  // Give up on empty ranges.
   if (lhs_range.undefined_p ())
-    {
-      r.set_undefined ();
-      return true;
-    }
+    return false;
+
   // Unary operations require the type of the first operand in the
   // second range position.
+  tree type = TREE_TYPE (gimple_range_operand1 (stmt));
   int_range<2> type_range (type);
   return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
 						 type_range);
@@ -61,15 +58,23 @@ bool
 gimple_range_calc_op1 (irange &r, const gimple *stmt,
 		       const irange &lhs_range, const irange &op2_range)
 {
+  // Give up on empty ranges.
+  if (lhs_range.undefined_p ())
+    return false;
+
   // Unary operation are allowed to pass a range in for second operand
   // as there are often additional restrictions beyond the type which
   // can be imposed.  See operator_cast::op1_range().
   tree type = TREE_TYPE (gimple_range_operand1 (stmt));
-  // An empty range is viral.
-  if (op2_range.undefined_p () || lhs_range.undefined_p ())
+  // If op2 is undefined, solve as if it is varying.
+  if (op2_range.undefined_p ())
     {
-      r.set_undefined ();
-      return true;
+      // This is sometimes invoked on single operand stmts.
+      if (gimple_num_ops (stmt) < 3)
+	return false;
+      int_range<2> trange (TREE_TYPE (gimple_range_operand2 (stmt)));
+      return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
+						     trange);
     }
   return gimple_range_handler (stmt)->op1_range (r, type, lhs_range,
 						 op2_range);
@@ -84,12 +89,17 @@ bool
 gimple_range_calc_op2 (irange &r, const gimple *stmt,
 		       const irange &lhs_range, const irange &op1_range)
 {
+  // Give up on empty ranges.
+  if (lhs_range.undefined_p ())
+    return false;
+
   tree type = TREE_TYPE (gimple_range_operand2 (stmt));
-  // An empty range is viral.
-  if (op1_range.undefined_p () || lhs_range.undefined_p ())
+  // If op1 is undefined, solve as if it is varying.
+  if (op1_range.undefined_p ())
     {
-      r.set_undefined ();
-      return true;
+      int_range<2> trange (TREE_TYPE (gimple_range_operand1 (stmt)));
+      return gimple_range_handler (stmt)->op2_range (r, type, lhs_range,
+						     trange);
     }
   return gimple_range_handler (stmt)->op2_range (r, type, lhs_range,
 						 op1_range);
@@ -216,9 +226,6 @@ range_def_chain::get_imports (tree name)
   if (!has_def_chain (name))
     get_def_chain (name);
   bitmap i = m_def_chain[SSA_NAME_VERSION (name)].m_import;
-  // Either this is a default def,  OR imports must be a subset of exports.
-  gcc_checking_assert (!get_def_chain (name) || !i
-		       || !bitmap_intersect_compl_p (i, get_def_chain (name)));
   return i;
 }
 

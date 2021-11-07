@@ -109,7 +109,7 @@ void warn_atomic_load (void)
   long long *plli = (long long*)((char*)&elli + 1);
   load (&eaclli, plli, 0);          // { dg-warning "-Warray-bounds" }
   plli = (long long*)((char*)&elli + 1);
-  load (&eacli, plli, 0);           // { dg-warning "-Warray-bounds" }
+  load (&eaclli, plli, 0);          // { dg-warning "-Warray-bounds" }
   plli = &elli + 1;
   load (&eaclli, plli, 0);          // { dg-warning "-Warray-bounds" }
 }

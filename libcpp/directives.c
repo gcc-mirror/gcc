@@ -1907,6 +1907,8 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
   save_directive = pfile->directive;
   pfile->directive = &dtable[T_PRAGMA];
   do_pragma (pfile);
+  if (pfile->directive_result.type == CPP_PRAGMA)
+    pfile->directive_result.flags |= PRAGMA_OP;
   end_directive (pfile, 1);
   pfile->directive = save_directive;
 

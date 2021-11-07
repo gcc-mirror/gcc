@@ -620,7 +620,9 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 	  if (dump_file && (dump_flags & TDF_DETAILS) && rel != VREL_NONE)
 	    {
 	      fprintf (dump_file, " folding with relation ");
+	      print_generic_expr (dump_file, op1, TDF_SLIM);
 	      print_relation (dump_file, rel);
+	      print_generic_expr (dump_file, op2, TDF_SLIM);
 	      fputc ('\n', dump_file);
 	    }
 	  // Fold range, and register any dependency if available.
@@ -777,6 +779,10 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       tree arg = gimple_phi_arg_def (phi, x);
+      // An argument that is the same as the def provides no new range.
+      if (arg == phi_def)
+	continue;
+
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Get the range of the argument on its edge.
@@ -958,16 +964,16 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
-      if (cfun->after_inlining)
-	{
-	  r.set_zero (type);
-	  // r.equiv_clear ();
-	  return true;
-	}
       arg = gimple_call_arg (call, 0);
       if (src.get_operand (r, arg) && r.singleton_p ())
 	{
 	  r.set (build_one_cst (type), build_one_cst (type));
+	  return true;
+	}
+      if (cfun->after_inlining)
+	{
+	  r.set_zero (type);
+	  // r.equiv_clear ();
 	  return true;
 	}
       break;

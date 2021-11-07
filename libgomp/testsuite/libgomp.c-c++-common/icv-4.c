@@ -26,6 +26,7 @@ main ()
     omp_set_teams_thread_limit (12);
   #pragma omp teams
   {
+    #pragma omp parallel if(0)
     if (omp_get_max_teams () != 6
 	|| omp_get_teams_thread_limit () != 12
 	|| omp_get_num_teams () < 1

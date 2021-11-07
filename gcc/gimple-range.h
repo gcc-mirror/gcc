@@ -58,10 +58,12 @@ public:
   void debug ();
   void dump_bb (FILE *f, basic_block bb);
   auto_edge_flag non_executable_edge_flag;
+  bool fold_stmt (gimple_stmt_iterator *gsi, tree (*) (tree));
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
   ranger_cache m_cache;
   range_tracer tracer;
+  basic_block current_bb;
 };
 
 /* Create a new ranger instance and associate it with a function.

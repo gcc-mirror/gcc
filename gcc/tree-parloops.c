@@ -3298,10 +3298,11 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   auto_vec<gimple *, 4> double_reduc_stmts;
 
   vec_info_shared shared;
-  simple_loop_info = vect_analyze_loop_form (loop, &shared);
-  if (simple_loop_info == NULL)
+  vect_loop_form_info info;
+  if (!vect_analyze_loop_form (loop, &info))
     goto gather_done;
 
+  simple_loop_info = vect_create_loop_vinfo (loop, &shared, &info);
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
@@ -3339,9 +3340,11 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   if (!double_reduc_phis.is_empty ())
     {
       vec_info_shared shared;
-      simple_loop_info = vect_analyze_loop_form (loop->inner, &shared);
-      if (simple_loop_info)
+      vect_loop_form_info info;
+      if (vect_analyze_loop_form (loop->inner, &info))
 	{
+	  simple_loop_info
+	    = vect_create_loop_vinfo (loop->inner, &shared, &info);
 	  gphi *phi;
 	  unsigned int i;
 

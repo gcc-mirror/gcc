@@ -198,7 +198,10 @@ std::rethrow_exception(std::exception_ptr ep)
   dep->primaryException = obj;
   __gnu_cxx::__eh_atomic_inc (&eh->referenceCount);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   dep->unexpectedHandler = get_unexpected ();
+#pragma GCC diagnostic pop
   dep->terminateHandler = get_terminate ();
   __GXX_INIT_DEPENDENT_EXCEPTION_CLASS(dep->unwindHeader.exception_class);
   dep->unwindHeader.exception_cleanup = __gxx_dependent_exception_cleanup;

@@ -1,3 +1,210 @@
+2021-11-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102715
+	* decl.c (add_init_expr_to_sym): Reject rank mismatch between
+	array and its initializer.
+
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102817
+	* expr.c (simplify_parameter_variable): Copy shape of referenced
+	subobject when simplifying.
+
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69419
+	* match.c (gfc_match_common): Check array spec of a symbol in a
+	COMMON object list and reject it if it is a coarray.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/100972
+	* decl.c (gfc_match_implicit_none): Fix typo in warning.
+	* resolve.c (resolve_unknown_f): Reject external procedures
+	without explicit EXTERNAL attribute whe IMPLICIT none (external)
+	is in effect.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* decl.c (gfc_insert_kind_parameter_exprs): Make static.
+	* expr.c (gfc_build_init_expr): Make static
+	(gfc_build_default_init_expr): Move below its static helper.
+	* gfortran.h (gfc_insert_kind_parameter_exprs, gfc_add_saved_common,
+	gfc_add_common, gfc_use_derived_tree, gfc_free_charlen,
+	gfc_get_ultimate_derived_super_type,
+	gfc_resolve_oacc_parallel_loop_blocks, gfc_build_init_expr,
+	gfc_iso_c_sub_interface): Delete.
+	* symbol.c (gfc_new_charlen, gfc_get_derived_super_type): Make
+	static.
+
+2021-11-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/35276
+	* gfortran.texi (Mixed-Language Programming): Talk about C++,
+	and how to link.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Projects): Add bullet for helping with
+	incomplete standards compliance.
+	(Proposed Extensions): Delete section.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* intrinsic.texi (Introduction to Intrinsics): Genericize
+	references to standard versions.
+	* invoke.texi (-fall-intrinsics): Likewise.
+	(-fmax-identifier-length=): Likewise.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Interoperability with C): Copy-editing.  Add
+	more index entries.
+	(Intrinsic Types): Likewise.
+	(Derived Types and struct): Likewise.
+	(Interoperable Global Variables): Likewise.
+	(Interoperable Subroutines and Functions): Likewise.
+	(Working with C Pointers): Likewise.
+	(Further Interoperability of Fortran with C): Likewise.  Rewrite
+	to reflect that this is now fully supported by gfortran.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (About GNU Fortran): Consolidate material
+	formerly in other sections.  Copy-editing.
+	(Preprocessing and conditional compilation): Delete, moving
+	most material to invoke.texi.
+	(GNU Fortran and G77): Delete.
+	(Project Status): Delete.
+	(Standards): Update.
+	(Fortran 95 status): Mention conditional compilation here.
+	(Fortran 2003 status): Rewrite to mention the 1 missing feature
+	instead of all the ones implemented.
+	(Fortran 2008 status): Similarly for the 2 missing features.
+	(Fortran 2018 status): Rewrite to reflect completion of TS29113
+	feature support.
+	* invoke.texi (Preprocessing Options): Move material formerly
+	in introductory chapter here.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Standards): Move discussion of specific
+	standard versions here....
+	(Fortran standards status): ...from here, and delete this node.
+
+2021-10-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* symbol.c (gfc_get_typebound_proc): Revert memcpy.
+
+2021-10-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* resolve.c (resolve_fl_procedure): Initialize
+	allocatable_or_pointer.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* intrinsic.texi: Remove entries for SHORT and LONG intrinsics.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* check.c (gfc_check_intconv): Change error message.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* intrinsic.texi (REAL): Fix entries in Specific names table.
+
+2021-10-30  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* intrinsic.texi: Adjust @columnfractions commands to improve
+	appearance for narrow 80 character terminals.
+
+2021-10-30  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* parse.c (clean_up_modules): Free gsym.
+
+2021-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.texi (bug reports): credit Gerhard Steinmetz for
+	  numerous bug reports.
+
+2021-10-30  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99853
+	* resolve.c (resolve_select): Generate regular gfc_error on
+	invalid conversions instead of an gfc_internal_error.
+
+2021-10-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* symbol.c (free_tb_tree): Free type-bound procedure struct.
+	(gfc_get_typebound_proc): Use explicit memcpy for clarity.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* intrinsic.h (gfc_check_sum, gfc_resolve_atan2d, gfc_resolve_kill,
+	gfc_resolve_kill_sub): Delete declaration.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-types.h (gfc_convert_function_code): Delete.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-stmt.h (gfc_trans_deallocate_array): Delete.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-array.c (gfc_trans_scalarized_loop_end): Make static.
+	* trans-array.h (gfc_trans_scalarized_loop_end,
+	gfc_conv_tmp_ref, gfc_conv_array_transpose): Delete declaration.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* constructor.c (gfc_constructor_get_base): Make static.
+	(gfc_constructor_expr_foreach, gfc_constructor_swap): Delete.
+	* constructor.h (gfc_constructor_get_base): Remove declaration.
+	(gfc_constructor_expr_foreach, gfc_constructor_swap): Delete.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* decl.c (gfc_match_old_kind_spec, set_com_block_bind_c,
+	set_verify_bind_c_sym, set_verify_bind_c_com_block,
+	get_bind_c_idents, gfc_match_suffix, gfc_get_type_attr_spec,
+	check_extended_derived_type): Make static.
+	(gfc_match_gcc_unroll): Add comment.
+	* match.c (gfc_match_small_int_expr): Delete definition.
+	* match.h (gfc_match_small_int_expr): Delete declaration.
+	(gfc_match_name_C, gfc_match_old_kind_spec, set_com_block_bind_c,
+	set_verify_bind_c_sym, set_verify_bind_c_com_block,
+	get_bind_c_idents, gfc_match_suffix,
+	gfc_get_type_attr_spec): Delete declaration.
+
+2021-10-27  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* expr.c (is_non_empty_structure_constructor): Make static.
+	* gfortran.h (gfc_check_any_c_kind): Delete.
+	* match.c (gfc_match_label): Make static.
+	* match.h (gfc_match_label): Delete declaration.
+	* scanner.c (file_changes_cur, file_changes_count,
+	file_changes_allocated): Make static.
+	* trans-expr.c (gfc_get_character_len): Make static.
+	(gfc_class_len_or_zero_get): Make static.
+	(VTAB_GET_FIELD_GEN): Undefine.
+	(gfc_get_class_array_ref): Make static.
+	(gfc_finish_interface_mapping): Make static.
+	* trans-types.c (gfc_check_any_c_kind): Delete.
+	(pfunc_type_node, dtype_type_node, gfc_get_ppc_type): Make static.
+	* trans-types.h (gfc_get_ppc_type): Delete declaration.
+	* trans.c (gfc_msg_wrong_return): Delete.
+	* trans.h (gfc_class_len_or_zero_get, gfc_class_vtab_extends_get,
+	gfc_vptr_extends_get, gfc_get_class_array_ref, gfc_get_character_len,
+	gfc_finish_interface_mapping, gfc_msg_wrong_return,
+	gfc_get_function_decl): Delete declaration.
+
+2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_select_rank_cases): Fix condition
+	for allocatables/pointers.
+
 2021-10-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102956

@@ -53,12 +53,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 
-/* Possible cases of implicit bad conversions.  Used to select
-   diagnostic messages in convert_for_assignment.  */
+/* Possible cases of implicit conversions.  Used to select diagnostic messages
+   and control folding initializers in convert_for_assignment.  */
 enum impl_conv {
   ic_argpass,
   ic_assign,
   ic_init,
+  ic_init_const,
   ic_return
 };
 
@@ -6802,6 +6803,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
         pedwarn (LOCATION, OPT, AS);                                     \
         break;                                                           \
       case ic_init:                                                      \
+      case ic_init_const:                                                \
         pedwarn_init (LOCATION, OPT, IN);                                \
         break;                                                           \
       case ic_return:                                                    \
@@ -6838,6 +6840,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  warning_at (LOCATION, OPT, AS, QUALS);                         \
         break;                                                           \
       case ic_init:                                                      \
+      case ic_init_const:                                                \
 	if (PEDWARN)							 \
 	  pedwarn (LOCATION, OPT, IN, QUALS);                            \
 	else								 \
@@ -6886,6 +6889,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  break;
 
 	case ic_init:
+	case ic_init_const:
 	  parmno = -2;
 	  break;
 
@@ -6919,6 +6923,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     "%qT in assignment is invalid in C++", rhstype, type);
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    pedwarn_init (location, OPT_Wc___compat, "enum conversion from "
 			  "%qT to %qT in initialization is invalid in C++",
 			  rhstype, type);
@@ -7029,7 +7034,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      && sanitize_flags_p (SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
       tree ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
-				    ? expr_loc : location, type, orig_rhs);
+				    ? expr_loc : location, type, orig_rhs,
+				    errtype == ic_init_const);
       in_late_binary_op = save;
       return ret;
     }
@@ -7252,6 +7258,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		break;
 	      }
 	    case ic_init:
+	    case ic_init_const:
 	      {
 		const char msg[] = G_("initialization from pointer to "
 				      "non-enclosed address space");
@@ -7296,6 +7303,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			"a candidate for a format attribute");
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    warning_at (location, OPT_Wsuggest_attribute_format,
 			"initialization left-hand side might be "
 			"a candidate for a format attribute");
@@ -7339,6 +7347,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			  "incompatible scalar storage order", type, rhstype);
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    /* Likewise.  */
 	    if (TREE_CODE (rhs) != CALL_EXPR
 		|| (t = get_callee_fndecl (rhs)) == NULL_TREE
@@ -7465,6 +7474,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			     "differ in signedness", rhstype, type);
 		    break;
 		  case ic_init:
+		  case ic_init_const:
 		    pedwarn_init (location, OPT_Wpointer_sign,
 				  "pointer targets in initialization of %qT "
 				  "from %qT differ in signedness", type,
@@ -7530,6 +7540,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			 type, rhstype);
 	      break;
 	    case ic_init:
+	    case ic_init_const:
 	      if (bltin)
 		pedwarn_init (location, OPT_Wincompatible_pointer_types,
 			      "initialization of %qT from pointer to "
@@ -7599,6 +7610,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		     "without a cast", type, rhstype);
 	    break;
 	  case ic_init:
+	  case ic_init_const:
 	    pedwarn_init (location, OPT_Wint_conversion,
 			  "initialization of %qT from %qT makes pointer from "
 			  "integer without a cast", type, rhstype);
@@ -7635,6 +7647,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		   "without a cast", type, rhstype);
 	  break;
 	case ic_init:
+	case ic_init_const:
 	  pedwarn_init (location, OPT_Wint_conversion,
 			"initialization of %qT from %qT makes integer from "
 			"pointer without a cast", type, rhstype);
@@ -7686,6 +7699,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	break;
       }
     case ic_init:
+    case ic_init_const:
       {
 	const char msg[]
 	  = G_("incompatible types when initializing type %qT using type %qT");
@@ -8195,7 +8209,9 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
 	inside_init = convert_for_assignment (init_loc, UNKNOWN_LOCATION,
 					      type, inside_init, origtype,
-					      ic_init, null_pointer_constant,
+					      (require_constant
+					       ? ic_init_const
+					       : ic_init), null_pointer_constant,
 					      NULL_TREE, NULL_TREE, 0);
       return inside_init;
     }
@@ -8215,7 +8231,8 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 			      inside_init);
       inside_init
 	= convert_for_assignment (init_loc, UNKNOWN_LOCATION, type,
-				  inside_init, origtype, ic_init,
+				  inside_init, origtype,
+				  require_constant ? ic_init_const : ic_init,
 				  null_pointer_constant, NULL_TREE, NULL_TREE,
 				  0);
 

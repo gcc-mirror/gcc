@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdisable-tree-evrp -fno-tree-fre -fdump-tree-vrp1-details -fdisable-tree-ethread" } */
+/* { dg-options "-O2 -fdisable-tree-evrp -fno-tree-fre -fdump-tree-vrp1 -fdisable-tree-ethread" } */
 
 void bar (void);
 int foo (int i, int j)
@@ -18,5 +18,6 @@ int foo (int i, int j)
   return j;
 }
 
-/* { dg-final { scan-tree-dump "res_.: int \\\[1, 1\\\]" "vrp1" } } */
-/* { dg-final { scan-tree-dump-not "Threaded" "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "PHI" "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "goto" "vrp1" } } */
+/* { dg-final { scan-tree-dump-not "if" "vrp1" } } */

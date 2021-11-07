@@ -111,7 +111,7 @@ typedef vec<condition, va_gc> *conditions;
    is not.  */
 
 typedef uint32_t clause_t;
-class predicate
+class ipa_predicate
 {
 public:
   enum predicate_conditions
@@ -138,7 +138,7 @@ public:
 
 
   /* Initialize predicate either to true of false depending on P.  */
-  inline predicate (bool p = true)
+  inline ipa_predicate (bool p = true)
     {
       if (p)
         /* True predicate.  */
@@ -149,42 +149,42 @@ public:
     }
 
   /* Sanity check that we do not mix pointers to predicates with predicates.  */
-  inline predicate (predicate *)
+  inline ipa_predicate (ipa_predicate *)
     {
       gcc_unreachable ();
     }
 
   /* Return predicate testing condition I.  */
-  static inline predicate predicate_testing_cond (int i)
+  static inline ipa_predicate predicate_testing_cond (int i)
     {
-      class predicate p;
+      ipa_predicate p;
       p.set_to_cond (i + first_dynamic_condition);
       return p;
     }
 
   /* Return predicate testing that function was not inlined.  */
-  static predicate not_inlined (void)
+  static ipa_predicate not_inlined (void)
     {
-      class predicate p;
+      ipa_predicate p;
       p.set_to_cond (not_inlined_condition);
       return p;
     }
 
-  /* Compute logical and of predicates.  */
-  predicate & operator &= (const predicate &);
-  inline predicate operator &(const predicate &p) const
+  /* Compute logical and of ipa_predicates.  */
+  ipa_predicate & operator &= (const ipa_predicate &);
+  inline ipa_predicate operator &(const ipa_predicate &p) const
     {
-      predicate ret = *this;
+      ipa_predicate ret = *this;
       ret &= p;
       return ret;
     }
 
-  /* Compute logical or of predicates.  This is not operator because
+  /* Compute logical or of ipa_predicates.  This is not operator because
      extra parameter CONDITIONS is needed  */
-  predicate or_with (conditions, const predicate &) const;
+  ipa_predicate or_with (conditions, const ipa_predicate &) const;
 
-  /* Return true if predicates are known to be equal.  */
-  inline bool operator==(const predicate &p2) const
+  /* Return true if ipa_predicates are known to be equal.  */
+  inline bool operator==(const ipa_predicate &p2) const
     {
       int i;
       for (i = 0; m_clause[i]; i++)
@@ -215,7 +215,7 @@ public:
       return false;
     }
 
-  inline bool operator!=(const predicate &p2) const
+  inline bool operator!=(const ipa_predicate &p2) const
     {
       return !(*this == p2);
     }
@@ -236,18 +236,19 @@ public:
   void dump (FILE *f, conditions, bool nl=true) const;
   void DEBUG_FUNCTION debug (conditions) const;
 
-  /* Return predicate equal to THIS after duplication.  */
-  predicate remap_after_duplication (clause_t);
+  /* Return ipa_predicate equal to THIS after duplication.  */
+  ipa_predicate remap_after_duplication (clause_t);
 
-  /* Return predicate equal to THIS after inlining.  */
-  predicate remap_after_inlining (class ipa_fn_summary *,
-		  		  class ipa_node_params *params_summary,
-			          class ipa_fn_summary *,
-				  const vec<int> &, const vec<HOST_WIDE_INT> &,
-				  clause_t, const predicate &);
+  /* Return ipa_predicate equal to THIS after inlining.  */
+  ipa_predicate remap_after_inlining (class ipa_fn_summary *,
+				      ipa_node_params *params_summary,
+				      ipa_fn_summary *,
+				      const vec<int> &,
+				      const vec<HOST_WIDE_INT> &,
+				      clause_t, const ipa_predicate &);
 
-  void stream_in (class lto_input_block *);
-  void stream_out (struct output_block *);
+  void stream_in (lto_input_block *);
+  void stream_out (output_block *);
 
 private:
   static const int max_clauses = 8;
@@ -264,9 +265,9 @@ private:
 };
 
 void dump_condition (FILE *f, conditions conditions, int cond);
-predicate add_condition (class ipa_fn_summary *summary,
-			 class ipa_node_params *params_summary,
-	       		 int operand_num,
-			 tree type, struct agg_position_info *aggpos,
-			 enum tree_code code, tree val,
-			 expr_eval_ops param_ops = NULL);
+ipa_predicate add_condition (ipa_fn_summary *summary,
+			     ipa_node_params *params_summary,
+			     int operand_num,
+			     tree type, struct agg_position_info *aggpos,
+			     enum tree_code code, tree val,
+			     expr_eval_ops param_ops = NULL);

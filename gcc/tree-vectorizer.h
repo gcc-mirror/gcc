@@ -350,6 +350,9 @@ public:
   void save_datarefs();
   void check_datarefs();
 
+  /* The number of scalar stmts.  */
+  unsigned n_stmts;
+
   /* All data references.  Freed by free_data_refs, so not an auto_vec.  */
   vec<data_reference_p> datarefs;
   vec<data_reference> datarefs_copy;
@@ -368,7 +371,7 @@ public:
   typedef hash_set<int_hash<machine_mode, E_VOIDmode, E_BLKmode> > mode_set;
   enum vec_kind { bb, loop };
 
-  vec_info (vec_kind, void *, vec_info_shared *);
+  vec_info (vec_kind, vec_info_shared *);
   ~vec_info ();
 
   stmt_vec_info add_stmt (gimple *);
@@ -406,7 +409,7 @@ public:
   auto_vec<stmt_vec_info> grouped_stores;
 
   /* Cost data used by the target cost model.  */
-  void *target_cost_data;
+  class vector_costs *target_cost_data;
 
   /* The set of vector modes used in the vectorized region.  */
   mode_set used_vector_modes;
@@ -822,6 +825,7 @@ public:
 #define LOOP_VINFO_RGROUP_COMPARE_TYPE(L)  (L)->rgroup_compare_type
 #define LOOP_VINFO_RGROUP_IV_TYPE(L)       (L)->rgroup_iv_type
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
+#define LOOP_VINFO_N_STMTS(L)		   (L)->shared->n_stmts
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->shared->ddrs
@@ -927,12 +931,6 @@ public:
 #define BB_VINFO_SLP_INSTANCES(B)    (B)->slp_instances
 #define BB_VINFO_DATAREFS(B)         (B)->shared->datarefs
 #define BB_VINFO_DDRS(B)             (B)->shared->ddrs
-
-static inline bb_vec_info
-vec_info_for_bb (basic_block bb)
-{
-  return (bb_vec_info) bb->aux;
-}
 
 /*-----------------------------------------------------------------*/
 /* Info on vectorized defs.                                        */
@@ -1395,6 +1393,103 @@ struct gather_scatter_info {
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
+/* Contains the scalar or vector costs for a vec_info.  */
+class vector_costs
+{
+public:
+  vector_costs (vec_info *, bool);
+  virtual ~vector_costs () {}
+
+  /* Update the costs in response to adding COUNT copies of a statement.
+
+     - WHERE specifies whether the cost occurs in the loop prologue,
+       the loop body, or the loop epilogue.
+     - KIND is the kind of statement, which is always meaningful.
+     - STMT_INFO, if nonnull, describes the statement that will be
+       vectorized.
+     - VECTYPE, if nonnull, is the vector type that the vectorized
+       statement will operate on.  Note that this should be used in
+       preference to STMT_VINFO_VECTYPE (STMT_INFO) since the latter
+       is not correct for SLP.
+     - for unaligned_load and unaligned_store statements, MISALIGN is
+       the byte misalignment of the load or store relative to the target's
+       preferred alignment for VECTYPE, or DR_MISALIGNMENT_UNKNOWN
+       if the misalignment is not known.
+
+     Return the calculated cost as well as recording it.  The return
+     value is used for dumping purposes.  */
+  virtual unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
+				      stmt_vec_info stmt_info, tree vectype,
+				      int misalign,
+				      vect_cost_model_location where);
+
+  /* Finish calculating the cost of the code.  The results can be
+     read back using the functions below.  */
+  virtual void finish_cost ();
+
+  unsigned int prologue_cost () const;
+  unsigned int body_cost () const;
+  unsigned int epilogue_cost () const;
+
+protected:
+  unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
+				 unsigned int);
+  unsigned int adjust_cost_for_freq (stmt_vec_info, vect_cost_model_location,
+				     unsigned int);
+
+  /* The region of code that we're considering vectorizing.  */
+  vec_info *m_vinfo;
+
+  /* True if we're costing the scalar code, false if we're costing
+     the vector code.  */
+  bool m_costing_for_scalar;
+
+  /* The costs of the three regions, indexed by vect_cost_model_location.  */
+  unsigned int m_costs[3];
+
+  /* True if finish_cost has been called.  */
+  bool m_finished;
+};
+
+/* Create costs for VINFO.  COSTING_FOR_SCALAR is true if the costs
+   are for scalar code, false if they are for vector code.  */
+
+inline
+vector_costs::vector_costs (vec_info *vinfo, bool costing_for_scalar)
+  : m_vinfo (vinfo),
+    m_costing_for_scalar (costing_for_scalar),
+    m_costs (),
+    m_finished (false)
+{
+}
+
+/* Return the cost of the prologue code (in abstract units).  */
+
+inline unsigned int
+vector_costs::prologue_cost () const
+{
+  gcc_checking_assert (m_finished);
+  return m_costs[vect_prologue];
+}
+
+/* Return the cost of the body code (in abstract units).  */
+
+inline unsigned int
+vector_costs::body_cost () const
+{
+  gcc_checking_assert (m_finished);
+  return m_costs[vect_body];
+}
+
+/* Return the cost of the epilogue code (in abstract units).  */
+
+inline unsigned int
+vector_costs::epilogue_cost () const
+{
+  gcc_checking_assert (m_finished);
+  return m_costs[vect_epilogue];
+}
+
 #define VECT_MAX_COST 1000
 
 /* The maximum number of intermediate steps required in multi-step type
@@ -1531,29 +1626,28 @@ int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
 
 /* Alias targetm.vectorize.init_cost.  */
 
-static inline void *
-init_cost (class loop *loop_info, bool costing_for_scalar)
+static inline vector_costs *
+init_cost (vec_info *vinfo, bool costing_for_scalar)
 {
-  return targetm.vectorize.init_cost (loop_info, costing_for_scalar);
+  return targetm.vectorize.create_costs (vinfo, costing_for_scalar);
 }
 
-extern void dump_stmt_cost (FILE *, void *, int, enum vect_cost_for_stmt,
+extern void dump_stmt_cost (FILE *, int, enum vect_cost_for_stmt,
 			    stmt_vec_info, tree, int, unsigned,
 			    enum vect_cost_model_location);
 
 /* Alias targetm.vectorize.add_stmt_cost.  */
 
 static inline unsigned
-add_stmt_cost (vec_info *vinfo, void *data, int count,
+add_stmt_cost (vector_costs *costs, int count,
 	       enum vect_cost_for_stmt kind,
 	       stmt_vec_info stmt_info, tree vectype, int misalign,
 	       enum vect_cost_model_location where)
 {
-  unsigned cost = targetm.vectorize.add_stmt_cost (vinfo, data, count, kind,
-						   stmt_info, vectype,
-						   misalign, where);
+  unsigned cost = costs->add_stmt_cost (count, kind, stmt_info, vectype,
+					misalign, where);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_stmt_cost (dump_file, data, count, kind, stmt_info, vectype, misalign,
+    dump_stmt_cost (dump_file, count, kind, stmt_info, vectype, misalign,
 		    cost, where);
   return cost;
 }
@@ -1561,36 +1655,31 @@ add_stmt_cost (vec_info *vinfo, void *data, int count,
 /* Alias targetm.vectorize.add_stmt_cost.  */
 
 static inline unsigned
-add_stmt_cost (vec_info *vinfo, void *data, stmt_info_for_cost *i)
+add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 {
-  return add_stmt_cost (vinfo, data, i->count, i->kind, i->stmt_info,
+  return add_stmt_cost (costs, i->count, i->kind, i->stmt_info,
 			i->vectype, i->misalign, i->where);
 }
 
 /* Alias targetm.vectorize.finish_cost.  */
 
 static inline void
-finish_cost (void *data, unsigned *prologue_cost,
+finish_cost (vector_costs *costs, unsigned *prologue_cost,
 	     unsigned *body_cost, unsigned *epilogue_cost)
 {
-  targetm.vectorize.finish_cost (data, prologue_cost, body_cost, epilogue_cost);
-}
-
-/* Alias targetm.vectorize.destroy_cost_data.  */
-
-static inline void
-destroy_cost_data (void *data)
-{
-  targetm.vectorize.destroy_cost_data (data);
+  costs->finish_cost ();
+  *prologue_cost = costs->prologue_cost ();
+  *body_cost = costs->body_cost ();
+  *epilogue_cost = costs->epilogue_cost ();
 }
 
 inline void
-add_stmt_costs (vec_info *vinfo, void *data, stmt_vector_for_cost *cost_vec)
+add_stmt_costs (vector_costs *costs, stmt_vector_for_cost *cost_vec)
 {
   stmt_info_for_cost *cost;
   unsigned i;
   FOR_EACH_VEC_ELT (*cost_vec, i, cost)
-    add_stmt_cost (vinfo, data, cost->count, cost->kind, cost->stmt_info,
+    add_stmt_cost (costs, cost->count, cost->kind, cost->stmt_info,
 		   cost->vectype, cost->misalign, cost->where);
 }
 
@@ -2061,8 +2150,17 @@ extern bool reduction_fn_for_scalar_code (enum tree_code, internal_fn *);
 
 /* Drive for loop transformation stage.  */
 extern class loop *vect_transform_loop (loop_vec_info, gimple *);
-extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
-						 vec_info_shared *);
+struct vect_loop_form_info
+{
+  tree number_of_iterations;
+  tree number_of_iterationsm1;
+  tree assumptions;
+  gcond *loop_cond;
+  gcond *inner_loop_cond;
+};
+extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
+extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
+					     const vect_loop_form_info *);
 extern bool vectorizable_live_operation (vec_info *,
 					 stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, slp_instance, int,

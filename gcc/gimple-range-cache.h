@@ -103,6 +103,8 @@ public:
   bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
 
+  void propagate_updated_value (tree name, basic_block bb);
+
   non_null_ref m_non_null;
   gori_compute m_gori;
 
@@ -112,7 +114,6 @@ private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
   class temporal_cache *m_temporal;
-  void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);
 
@@ -120,11 +121,8 @@ private:
   void entry_range (irange &r, tree expr, basic_block bb);
   void exit_range (irange &r, tree expr, basic_block bb);
 
-  void propagate_updated_value (tree name, basic_block bb);
-
-  bitmap m_propfail;
   vec<basic_block> m_workback;
-  vec<basic_block> m_update_list;
+  class update_list *m_update;
 };
 
 #endif // GCC_SSA_RANGE_CACHE_H

@@ -190,7 +190,7 @@ void ga1__ (void)
   struct A1 a = { 1 };
   a.a[0] = 0;
   a.a[1] = 1;                    // { dg-warning "\\\[-Wstringop-overflow" }
-  a.a[2] = 2;                    // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store } } }
+  a.a[2] = 2;                    // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store_align } } }
   sink (&a);
 }
 
@@ -207,7 +207,7 @@ void ga1_0_ (void)
   struct A1 a = { 1, { } };
   a.a[0] = 0;
   a.a[1] = 1;                   // { dg-warning "\\\[-Wstringop-overflow" }
-  a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store } } }
+  a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store_align } } }
   sink (&a);
 }
 
@@ -221,10 +221,10 @@ void ga1_1 (void)
   a1_1.a[1] = 1;                // { dg-warning "\\\[-Wstringop-overflow" }
   a1_1.a[2] = 2;                // { dg-warning "\\\[-Wstringop-overflow" }
 
-  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v4qi_store } } }
+  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v4qi_store_align } } }
   a.a[0] = 0;
-  a.a[1] = 1;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v4qi_store } } }
-  a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v4qi_store } } }
+  a.a[1] = 1;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v4qi_store_align } } }
+  a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "" { xfail { vect_slp_v4qi_store_align } } }
   sink (&a);
 }
 
@@ -289,7 +289,7 @@ void ga1i__ (void)
   struct A1i a = { 0 };
   a.a[0] = 0;
   a.a[1] = 1;                    // { dg-warning "\\\[-Wstringop-overflow" }
-  a.a[2] = 2;                    // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store } } }
+  a.a[2] = 2;                    // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store_align } } }
   sink (&a);
 }
 
@@ -306,7 +306,7 @@ void ga1i_0_ (void)
   struct A1 a = { 0, { } };
   a.a[0] = 0;
   a.a[1] = 1;                   // { dg-warning "\\\[-Wstringop-overflow" }
-  a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store } } }
+  a.a[2] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v2qi_store_align } } }
   sink (&a);
 }
 
@@ -320,10 +320,10 @@ void ga1i_1 (void)
   a1i_1.a[1] = 1;               // { dg-warning "\\\[-Wstringop-overflow" }
   a1i_1.a[2] = 2;               // { dg-warning "\\\[-Wstringop-overflow" }
 
-  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { target { vect_slp_v4qi_store } } }
+  struct A1 a = { 0, { 1 } };   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { target { vect_slp_v4qi_store_align } } }
   a.a[0] = 1;
-  a.a[1] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v4qi_store } } }
-  a.a[2] = 3;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v4qi_store } } }
+  a.a[1] = 2;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v4qi_store_align } } }
+  a.a[2] = 3;                   // { dg-warning "\\\[-Wstringop-overflow" "pr102462" { xfail { vect_slp_v4qi_store_align } } }
   sink (&a);
 }
 

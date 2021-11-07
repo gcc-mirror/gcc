@@ -3832,7 +3832,7 @@ free_tb_tree (gfc_symtree *t)
 
   /* TODO: Free type-bound procedure structs themselves; probably needs some
      sort of ref-counting mechanism.  */
-
+  free (t->n.tb);
   free (t);
 }
 
@@ -3985,7 +3985,7 @@ gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
 /* Free the charlen list from cl to end (end is not freed).
    Free the whole list if end is NULL.  */
 
-void
+static void
 gfc_free_charlen (gfc_charlen *cl, gfc_charlen *end)
 {
   gfc_charlen *cl2;
@@ -5108,7 +5108,7 @@ gfc_get_derived_super_type (gfc_symbol* derived)
 
 /* Get the ultimate super-type of a given derived type.  */
 
-gfc_symbol*
+static gfc_symbol*
 gfc_get_ultimate_derived_super_type (gfc_symbol* derived)
 {
   if (!derived->attr.extension)
