@@ -529,6 +529,8 @@ special_builtin_state (enum pure_const_state_e *state, bool *looping,
       case BUILT_IN_APPLY_ARGS:
       case BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT:
       case BUILT_IN_ASAN_AFTER_DYNAMIC_INIT:
+      case BUILT_IN_DWARF_CFA:
+      case BUILT_IN_RETURN_ADDRESS:
 	*looping = false;
 	*state = IPA_CONST;
 	return true;
