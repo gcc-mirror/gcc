@@ -6217,6 +6217,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 					  type, OPTIMIZE_FOR_BOTH))
     (IFN_COPYSIGN @0 @1))))
 
+(for froms (BUILT_IN_FMAF BUILT_IN_FMA BUILT_IN_FMAL)
+     tos (IFN_FMA IFN_FMA IFN_FMA)
+ (simplify
+  (convert (froms (convert@3 @0) (convert @1) (convert @2)))
+   (if (flag_unsafe_math_optimizations
+       && optimize
+       && FLOAT_TYPE_P (type)
+       && FLOAT_TYPE_P (TREE_TYPE (@3))
+       && types_match (type, TREE_TYPE (@0))
+       && types_match (type, TREE_TYPE (@1))
+       && types_match (type, TREE_TYPE (@2))
+       && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@3))
+       && direct_internal_fn_supported_p (as_internal_fn (tos),
+					  type, OPTIMIZE_FOR_BOTH))
+    (tos @0 @1 @2))))
 #endif
 
 (for froms (XFLOORL XCEILL XROUNDL XRINTL)
