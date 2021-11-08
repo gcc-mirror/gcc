@@ -2784,17 +2784,75 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 	return new_simdlen_p;
     }
 
+  loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo);
+  if (main_loop)
+    {
+      poly_uint64 main_poly_vf = LOOP_VINFO_VECT_FACTOR (main_loop);
+      unsigned HOST_WIDE_INT main_vf;
+      unsigned HOST_WIDE_INT old_factor, new_factor, old_cost, new_cost;
+      /* If we can determine how many iterations are left for the epilogue
+	 loop, that is if both the main loop's vectorization factor and number
+	 of iterations are constant, then we use them to calculate the cost of
+	 the epilogue loop together with a 'likely value' for the epilogues
+	 vectorization factor.  Otherwise we use the main loop's vectorization
+	 factor and the maximum poly value for the epilogue's.  If the target
+	 has not provided with a sensible upper bound poly vectorization
+	 factors are likely to be favored over constant ones.  */
+      if (main_poly_vf.is_constant (&main_vf)
+	  && LOOP_VINFO_NITERS_KNOWN_P (main_loop))
+	{
+	  unsigned HOST_WIDE_INT niters
+	    = LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
+	  HOST_WIDE_INT old_likely_vf
+	    = estimated_poly_value (old_vf, POLY_VALUE_LIKELY);
+	  HOST_WIDE_INT new_likely_vf
+	    = estimated_poly_value (new_vf, POLY_VALUE_LIKELY);
+
+	  /* If the epilogue is using partial vectors we account for the
+	     partial iteration here too.  */
+	  old_factor = niters / old_likely_vf;
+	  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (old_loop_vinfo)
+	      && niters % old_likely_vf != 0)
+	    old_factor++;
+
+	  new_factor = niters / new_likely_vf;
+	  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (new_loop_vinfo)
+	      && niters % new_likely_vf != 0)
+	    new_factor++;
+	}
+      else
+	{
+	  unsigned HOST_WIDE_INT main_vf_max
+	    = estimated_poly_value (main_poly_vf, POLY_VALUE_MAX);
+
+	  old_factor = main_vf_max / estimated_poly_value (old_vf,
+							   POLY_VALUE_MAX);
+	  new_factor = main_vf_max / estimated_poly_value (new_vf,
+							   POLY_VALUE_MAX);
+
+	  /* If the loop is not using partial vectors then it will iterate one
+	     time less than one that does.  It is safe to subtract one here,
+	     because the main loop's vf is always at least 2x bigger than that
+	     of an epilogue.  */
+	  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (old_loop_vinfo))
+	    old_factor -= 1;
+	  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (new_loop_vinfo))
+	    new_factor -= 1;
+	}
+
+      /* Compute the costs by multiplying the inside costs with the factor and
+	 add the outside costs for a more complete picture.  The factor is the
+	 amount of times we are expecting to iterate this epilogue.  */
+      old_cost = old_loop_vinfo->vec_inside_cost * old_factor;
+      new_cost = new_loop_vinfo->vec_inside_cost * new_factor;
+      old_cost += old_loop_vinfo->vec_outside_cost;
+      new_cost += new_loop_vinfo->vec_outside_cost;
+      return new_cost < old_cost;
+    }
+
   /* Limit the VFs to what is likely to be the maximum number of iterations,
      to handle cases in which at least one loop_vinfo is fully-masked.  */
-  HOST_WIDE_INT estimated_max_niter;
-  loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo);
-  unsigned HOST_WIDE_INT main_vf;
-  if (main_loop
-      && LOOP_VINFO_NITERS_KNOWN_P (main_loop)
-      && LOOP_VINFO_VECT_FACTOR (main_loop).is_constant (&main_vf))
-    estimated_max_niter = LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
-  else
-    estimated_max_niter = likely_max_stmt_executions_int (loop);
+  HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
   if (estimated_max_niter != -1)
     {
       if (known_le (estimated_max_niter, new_vf))
