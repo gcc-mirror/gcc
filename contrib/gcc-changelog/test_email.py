@@ -258,7 +258,7 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-Add-patch_are')
         msg = 'ChangeLog, DATESTAMP, BASE-VER and DEV-PHASE updates should ' \
               'be done separately from normal commits'
-        assert email.errors[0].message == msg
+        assert email.errors[0].message.startswith(msg)
 
     def test_strict_mode_normal_patch(self):
         email = self.get_git_email('0001-Just-test-it.patch')
@@ -415,6 +415,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_multiline_bad_parentheses(self):
         email = self.from_patch_glob('0002-Wrong-macro-changelog.patch')
         assert email.errors[0].message == 'bad parentheses wrapping'
+        assert email.errors[0].line == '	* config/i386/i386.md (*fix_trunc<mode>_i387_1,'
 
     def test_changelog_removal(self):
         email = self.from_patch_glob('0001-ChangeLog-removal.patch')
@@ -427,3 +428,21 @@ class TestGccChangelog(unittest.TestCase):
     def test_multi_same_file(self):
         email = self.from_patch_glob('0001-OpenMP-Fix-SIMT')
         assert email.errors[0].message == 'same file specified multiple times'
+
+    def test_pr_only_in_subject(self):
+        email = self.from_patch_glob('0001-rs6000-Support-doubleword')
+        assert (email.errors[0].message ==
+                'PR 100085 in subject but not in changelog')
+
+    def test_wrong_pr_comp_in_subject(self):
+        email = self.from_patch_glob('pr-wrong-comp.patch')
+        assert email.errors[0].message == 'invalid PR component in subject'
+
+    def test_copyright_years(self):
+        email = self.from_patch_glob('copyright-years.patch')
+        assert not email.errors
+
+    def test_non_ascii_email(self):
+        email = self.from_patch_glob('non-ascii-email.patch')
+        assert (email.errors[0].message ==
+                'non-ASCII characters in git commit email address (jbglaw@ług-owl.de)')
