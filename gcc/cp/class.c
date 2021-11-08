@@ -5455,10 +5455,9 @@ default_init_uninitialized_part (tree type)
       if (r)
 	return r;
     }
-  for (t = TYPE_FIELDS (type); t; t = DECL_CHAIN (t))
-    if (TREE_CODE (t) == FIELD_DECL
-	&& !DECL_ARTIFICIAL (t)
-	&& !DECL_INITIAL (t))
+  for (t = next_initializable_field (TYPE_FIELDS (type)); t;
+       t = next_initializable_field (DECL_CHAIN (t)))
+    if (!DECL_INITIAL (t) && !DECL_ARTIFICIAL (t))
       {
 	r = default_init_uninitialized_part (TREE_TYPE (t));
 	if (r)

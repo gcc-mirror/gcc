@@ -2295,7 +2295,9 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
     {
       tree mem_type, argtype, rval;
 
-      if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
+      if (TREE_CODE (field) != FIELD_DECL
+	  || DECL_ARTIFICIAL (field)
+	  || DECL_UNNAMED_BIT_FIELD (field))
 	continue;
 
       /* Variant members only affect deletedness.  In particular, they don't
