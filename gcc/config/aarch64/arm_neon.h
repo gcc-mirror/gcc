@@ -6608,18 +6608,14 @@ __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_n_u16 (uint16x4_t __a, uint16x4_t __b, uint16_t __c)
 {
-  return (uint16x4_t) __builtin_aarch64_mla_nv4hi ((int16x4_t) __a,
-                                                   (int16x4_t) __b,
-                                                   (int16_t) __c);
+  return __builtin_aarch64_mla_nv4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_n_u32 (uint32x2_t __a, uint32x2_t __b, uint32_t __c)
 {
-  return (uint32x2_t) __builtin_aarch64_mla_nv2si ((int32x2_t) __a,
-                                                   (int32x2_t) __b,
-                                                   (int32_t) __c);
+  return __builtin_aarch64_mla_nv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x8_t
@@ -6647,27 +6643,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_u8 (uint8x8_t __a, uint8x8_t __b, uint8x8_t __c)
 {
-  return (uint8x8_t) __builtin_aarch64_mlav8qi ((int8x8_t) __a,
-                                                (int8x8_t) __b,
-                                                (int8x8_t) __c);
+  return __builtin_aarch64_mlav8qi_uuuu (__a, __b,  __c);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_u16 (uint16x4_t __a, uint16x4_t __b, uint16x4_t __c)
 {
-  return (uint16x4_t) __builtin_aarch64_mlav4hi ((int16x4_t) __a,
-                                                 (int16x4_t) __b,
-                                                 (int16x4_t) __c);
+  return __builtin_aarch64_mlav4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmla_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
 {
-  return (uint32x2_t) __builtin_aarch64_mlav2si ((int32x2_t) __a,
-                                                 (int32x2_t) __b,
-                                                 (int32x2_t) __c);
+  return __builtin_aarch64_mlav2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -6955,18 +6945,14 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_n_u16 (uint16x8_t __a, uint16x8_t __b, uint16_t __c)
 {
-  return (uint16x8_t) __builtin_aarch64_mla_nv8hi ((int16x8_t) __a,
-                                                   (int16x8_t) __b,
-                                                   (int16_t) __c);
+  return __builtin_aarch64_mla_nv8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_n_u32 (uint32x4_t __a, uint32x4_t __b, uint32_t __c)
 {
-  return (uint32x4_t) __builtin_aarch64_mla_nv4si ((int32x4_t) __a,
-                                                   (int32x4_t) __b,
-                                                   (int32_t) __c);
+  return __builtin_aarch64_mla_nv4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x16_t
@@ -6994,27 +6980,21 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
 {
-  return (uint8x16_t) __builtin_aarch64_mlav16qi ((int8x16_t) __a,
-                                                  (int8x16_t) __b,
-                                                  (int8x16_t) __c);
+  return __builtin_aarch64_mlav16qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
-  return (uint16x8_t) __builtin_aarch64_mlav8hi ((int16x8_t) __a,
-                                                 (int16x8_t) __b,
-                                                 (int16x8_t) __c);
+  return __builtin_aarch64_mlav8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlaq_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
 {
-  return (uint32x4_t) __builtin_aarch64_mlav4si ((int32x4_t) __a,
-                                                 (int32x4_t) __b,
-                                                 (int32x4_t) __c);
+  return __builtin_aarch64_mlav4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline float32x2_t
@@ -7042,18 +7022,14 @@ __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_u16 (uint16x4_t __a, uint16x4_t __b, uint16_t __c)
 {
-  return (uint16x4_t) __builtin_aarch64_mls_nv4hi ((int16x4_t) __a,
-                                                   (int16x4_t) __b,
-                                                   (int16_t) __c);
+  return __builtin_aarch64_mls_nv4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_n_u32 (uint32x2_t __a, uint32x2_t __b, uint32_t __c)
 {
-  return (uint32x2_t) __builtin_aarch64_mls_nv2si ((int32x2_t) __a,
-                                                   (int32x2_t) __b,
-                                                   (int32_t) __c);
+  return __builtin_aarch64_mls_nv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x8_t
@@ -7081,27 +7057,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_u8 (uint8x8_t __a, uint8x8_t __b, uint8x8_t __c)
 {
-  return (uint8x8_t) __builtin_aarch64_mlsv8qi ((int8x8_t) __a,
-                                                (int8x8_t) __b,
-                                                (int8x8_t) __c);
+  return __builtin_aarch64_mlsv8qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_u16 (uint16x4_t __a, uint16x4_t __b, uint16x4_t __c)
 {
-  return (uint16x4_t) __builtin_aarch64_mlsv4hi ((int16x4_t) __a,
-                                                 (int16x4_t) __b,
-                                                 (int16x4_t) __c);
+  return __builtin_aarch64_mlsv4hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmls_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
 {
-  return (uint32x2_t) __builtin_aarch64_mlsv2si ((int32x2_t) __a,
-                                                 (int32x2_t) __b,
-                                                 (int32x2_t) __c);
+  return __builtin_aarch64_mlsv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -7393,18 +7363,14 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_u16 (uint16x8_t __a, uint16x8_t __b, uint16_t __c)
 {
-  return (uint16x8_t) __builtin_aarch64_mls_nv8hi ((int16x8_t) __a,
-                                                   (int16x8_t) __b,
-                                                   (int16_t) __c);
+  return __builtin_aarch64_mls_nv8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_n_u32 (uint32x4_t __a, uint32x4_t __b, uint32_t __c)
 {
-  return (uint32x4_t) __builtin_aarch64_mls_nv4si ((int32x4_t) __a,
-                                                   (int32x4_t) __b,
-                                                   (int32_t) __c);
+  return __builtin_aarch64_mls_nv4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x16_t
@@ -7432,27 +7398,21 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
 {
-  return (uint8x16_t) __builtin_aarch64_mlsv16qi ((int8x16_t) __a,
-                                                  (int8x16_t) __b,
-                                                  (int8x16_t) __c);
+  return __builtin_aarch64_mlsv16qi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
-  return (uint16x8_t) __builtin_aarch64_mlsv8hi ((int16x8_t) __a,
-                                                 (int16x8_t) __b,
-                                                 (int16x8_t) __c);
+  return __builtin_aarch64_mlsv8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsq_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
 {
-  return (uint32x4_t) __builtin_aarch64_mlsv4si ((int32x4_t) __a,
-                                                 (int32x4_t) __b,
-                                                 (int32x4_t) __c);
+  return __builtin_aarch64_mlsv4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
