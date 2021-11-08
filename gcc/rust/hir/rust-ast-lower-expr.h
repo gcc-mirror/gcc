@@ -452,11 +452,8 @@ public:
 			       expr.get_locus ());
   }
 
-  /* Compound assignment expression is compiled away. */
   void visit (AST::CompoundAssignmentExpr &expr) override
   {
-    /* First we need to find the corresponding arithmetic or logical operator.
-     */
     ArithmeticOrLogicalOperator op;
     switch (expr.get_expr_type ())
       {
@@ -503,15 +500,10 @@ public:
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
-    HIR::Expr *operator_expr
-      = new HIR::ArithmeticOrLogicalExpr (mapping, asignee_expr->clone_expr (),
-					  std::unique_ptr<HIR::Expr> (value),
-					  op, expr.get_locus ());
-    translated
-      = new HIR::AssignmentExpr (mapping,
-				 std::unique_ptr<HIR::Expr> (asignee_expr),
-				 std::unique_ptr<HIR::Expr> (operator_expr),
-				 expr.get_locus ());
+
+    translated = new HIR::CompoundAssignmentExpr (
+      mapping, std::unique_ptr<HIR::Expr> (asignee_expr),
+      std::unique_ptr<HIR::Expr> (value), op, expr.get_locus ());
   }
 
   void visit (AST::StructExprStruct &struct_expr) override

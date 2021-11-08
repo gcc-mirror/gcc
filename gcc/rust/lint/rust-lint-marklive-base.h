@@ -53,7 +53,7 @@ public:
   virtual void visit (HIR::LazyBooleanExpr &) override {}
   virtual void visit (HIR::TypeCastExpr &) override {}
   virtual void visit (HIR::AssignmentExpr &) override {}
-
+  virtual void visit (HIR::CompoundAssignmentExpr &) override {}
   virtual void visit (HIR::GroupedExpr &) override {}
 
   virtual void visit (HIR::ArrayElemsValues &) override {}

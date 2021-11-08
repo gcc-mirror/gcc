@@ -470,6 +470,29 @@ public:
       result->clone ());
   }
 
+  void visit (HIR::CompoundAssignmentExpr &expr) override
+  {
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+
+    auto lhs = TypeCheckExpr::Resolve (expr.get_left_expr ().get (), false);
+    auto rhs = TypeCheckExpr::Resolve (expr.get_right_expr ().get (), false);
+
+    bool valid_lhs = validate_arithmetic_type (lhs, expr.get_expr_type ());
+    bool valid_rhs = validate_arithmetic_type (rhs, expr.get_expr_type ());
+    bool valid = valid_lhs && valid_rhs;
+    if (!valid)
+      {
+	rust_error_at (expr.get_locus (),
+		       "cannot apply this operator to types %s and %s",
+		       lhs->as_string ().c_str (), rhs->as_string ().c_str ());
+	return;
+      }
+
+    auto result = lhs->unify (rhs);
+    if (result->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+  }
+
   void visit (HIR::IdentifierExpr &expr) override
   {
     NodeId ast_node_id = expr.get_mappings ().get_nodeid ();

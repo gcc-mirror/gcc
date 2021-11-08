@@ -186,6 +186,12 @@ public:
     expr.visit_rhs (*this);
   }
 
+  void visit (HIR::CompoundAssignmentExpr &expr) override
+  {
+    expr.visit_lhs (*this);
+    expr.visit_rhs (*this);
+  }
+
   void visit (HIR::IfExpr &expr) override
   {
     expr.get_if_condition ()->accept_vis (*this);
