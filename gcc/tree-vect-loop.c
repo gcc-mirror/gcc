@@ -1464,6 +1464,18 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
       (info->loop_cond,
        "not vectorized: number of iterations = 0.\n");
 
+  if (!(tree_fits_shwi_p (info->number_of_iterations)
+	&& tree_to_shwi (info->number_of_iterations) > 0))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Symbolic number of iterations is ");
+	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, info->number_of_iterations);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+    }
+
   return opt_result::success ();
 }
 
@@ -1472,36 +1484,17 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 
 loop_vec_info
 vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
-			const vect_loop_form_info *info)
+			const vect_loop_form_info *info,
+			loop_vec_info main_loop_info)
 {
   loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared);
   LOOP_VINFO_NITERSM1 (loop_vinfo) = info->number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = info->number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = info->number_of_iterations;
-  if (!integer_onep (info->assumptions))
-    {
-      /* We consider to vectorize this loop by versioning it under
-	 some assumptions.  In order to do this, we need to clear
-	 existing information computed by scev and niter analyzer.  */
-      scev_reset_htab ();
-      free_numbers_of_iterations_estimates (loop);
-      /* Also set flag for this loop so that following scev and niter
-	 analysis are done under the assumptions.  */
-      loop_constraint_set (loop, LOOP_C_FINITE);
-      /* Also record the assumptions for versioning.  */
-      LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
-    }
-
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    {
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-			   "Symbolic number of iterations is ");
-	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, info->number_of_iterations);
-          dump_printf (MSG_NOTE, "\n");
-        }
-    }
+  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = main_loop_info;
+  /* Also record the assumptions for versioning.  */
+  if (!integer_onep (info->assumptions) && !main_loop_info)
+    LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
 
   stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (info->loop_cond);
   STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
@@ -2903,9 +2896,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 		     bool &fatal)
 {
   loop_vec_info loop_vinfo
-    = vect_create_loop_vinfo (loop, shared, loop_form_info);
-  if (main_loop_vinfo)
-    LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = main_loop_vinfo;
+    = vect_create_loop_vinfo (loop, shared, loop_form_info, main_loop_vinfo);
 
   machine_mode vector_mode = vector_modes[mode_i];
   loop_vinfo->vector_mode = vector_mode;
@@ -2996,6 +2987,17 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "bad loop form.\n");
       return opt_loop_vec_info::propagate_failure (res);
+    }
+  if (!integer_onep (loop_form_info.assumptions))
+    {
+      /* We consider to vectorize this loop by versioning it under
+	 some assumptions.  In order to do this, we need to clear
+	 existing information computed by scev and niter analyzer.  */
+      scev_reset_htab ();
+      free_numbers_of_iterations_estimates (loop);
+      /* Also set flag for this loop so that following scev and niter
+	 analysis are done under the assumptions.  */
+      loop_constraint_set (loop, LOOP_C_FINITE);
     }
 
   auto_vector_modes vector_modes;

@@ -2160,7 +2160,8 @@ struct vect_loop_form_info
 };
 extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
 extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
-					     const vect_loop_form_info *);
+					     const vect_loop_form_info *,
+					     loop_vec_info = nullptr);
 extern bool vectorizable_live_operation (vec_info *,
 					 stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, slp_instance, int,
