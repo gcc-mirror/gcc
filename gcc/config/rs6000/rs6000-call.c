@@ -16411,11 +16411,31 @@ rs6000_init_builtins (void)
     }
 }
 
+static tree
+rs6000_new_builtin_decl (unsigned code, bool /* initialize_p */)
+{
+  rs6000_gen_builtins fcode = (rs6000_gen_builtins) code;
+
+  if (fcode >= RS6000_OVLD_MAX)
+    return error_mark_node;
+
+  if (!rs6000_new_builtin_is_supported (fcode))
+    {
+      rs6000_invalid_new_builtin (fcode);
+      return error_mark_node;
+    }
+
+  return rs6000_builtin_decls_x[code];
+}
+
 /* Returns the rs6000 builtin decl for CODE.  */
 
 tree
 rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
 {
+  if (new_builtins_are_live)
+    return rs6000_new_builtin_decl (code, initialize_p);
+
   HOST_WIDE_INT fnmask;
 
   if (code >= RS6000_BUILTIN_COUNT)
