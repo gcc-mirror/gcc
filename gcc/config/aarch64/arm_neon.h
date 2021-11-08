@@ -7606,21 +7606,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrn_n_u16 (uint16x8_t __a, const int __b)
 {
-  return (uint8x8_t)__builtin_aarch64_shrnv8hi ((int16x8_t)__a, __b);
+  return __builtin_aarch64_shrnv8hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrn_n_u32 (uint32x4_t __a, const int __b)
 {
-  return (uint16x4_t)__builtin_aarch64_shrnv4si ((int32x4_t)__a, __b);
+  return __builtin_aarch64_shrnv4si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrn_n_u64 (uint64x2_t __a, const int __b)
 {
-  return (uint32x2_t)__builtin_aarch64_shrnv2di ((int64x2_t)__a, __b);
+  return __builtin_aarch64_shrnv2di_uus (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
@@ -8387,24 +8387,21 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrshrn_high_n_u16 (uint8x8_t __a, uint16x8_t __b, const int __c)
 {
-  return (uint8x16_t) __builtin_aarch64_rshrn2v8hi ((int8x8_t) __a,
-						    (int16x8_t) __b, __c);
+  return __builtin_aarch64_rshrn2v8hi_uuus (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrshrn_high_n_u32 (uint16x4_t __a, uint32x4_t __b, const int __c)
 {
-  return (uint16x8_t) __builtin_aarch64_rshrn2v4si ((int16x4_t) __a,
-						    (int32x4_t) __b, __c);
+  return __builtin_aarch64_rshrn2v4si_uuus (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrshrn_high_n_u64 (uint32x2_t __a, uint64x2_t __b, const int __c)
 {
-  return (uint32x4_t) __builtin_aarch64_rshrn2v2di ((int32x2_t)__a,
-						    (int64x2_t)__b, __c);
+  return __builtin_aarch64_rshrn2v2di_uuus (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x8_t
@@ -8432,21 +8429,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrshrn_n_u16 (uint16x8_t __a, const int __b)
 {
-  return (uint8x8_t) __builtin_aarch64_rshrnv8hi ((int16x8_t) __a, __b);
+  return __builtin_aarch64_rshrnv8hi_uus (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrshrn_n_u32 (uint32x4_t __a, const int __b)
 {
-  return (uint16x4_t) __builtin_aarch64_rshrnv4si ((int32x4_t) __a, __b);
+  return __builtin_aarch64_rshrnv4si_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrshrn_n_u64 (uint64x2_t __a, const int __b)
 {
-  return (uint32x2_t) __builtin_aarch64_rshrnv2di ((int64x2_t) __a, __b);
+  return __builtin_aarch64_rshrnv2di_uus (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
@@ -8488,24 +8485,21 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrn_high_n_u16 (uint8x8_t __a, uint16x8_t __b, const int __c)
 {
-  return (uint8x16_t)
-    __builtin_aarch64_shrn2v8hi ((int8x8_t) __a, (int16x8_t) __b, __c);
+  return __builtin_aarch64_shrn2v8hi_uuus (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrn_high_n_u32 (uint16x4_t __a, uint32x4_t __b, const int __c)
 {
-  return (uint16x8_t)
-    __builtin_aarch64_shrn2v4si ((int16x4_t) __a, (int32x4_t) __b, __c);
+  return __builtin_aarch64_shrn2v4si_uuus (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vshrn_high_n_u64 (uint32x2_t __a, uint64x2_t __b, const int __c)
 {
-  return (uint32x4_t)
-    __builtin_aarch64_shrn2v2di ((int32x2_t) __a, (int64x2_t) __b, __c);
+  return __builtin_aarch64_shrn2v2di_uuus (__a, __b, __c);
 }
 
 __extension__ extern __inline poly8x8_t

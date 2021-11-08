@@ -253,15 +253,19 @@
 
   /* Implemented by aarch64_shrn<mode>".  */
   BUILTIN_VQN (SHIFTIMM, shrn, 0, NONE)
+  BUILTIN_VQN (USHIFTIMM, shrn, 0, NONE)
 
   /* Implemented by aarch64_shrn2<mode>.  */
-  BUILTIN_VQN (SHIFTACC, shrn2, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, shrn2, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, shrn2, 0, NONE)
 
   /* Implemented by aarch64_rshrn<mode>".  */
   BUILTIN_VQN (SHIFTIMM, rshrn, 0, NONE)
+  BUILTIN_VQN (USHIFTIMM, rshrn, 0, NONE)
 
   /* Implemented by aarch64_rshrn2<mode>.  */
-  BUILTIN_VQN (SHIFTACC, rshrn2, 0, NONE)
+  BUILTIN_VQN (SHIFT2IMM, rshrn2, 0, NONE)
+  BUILTIN_VQN (USHIFT2IMM, rshrn2, 0, NONE)
 
   /* Implemented by aarch64_<su>mlsl<mode>.  */
   BUILTIN_VD_BHSI (TERNOP, smlsl, 0, NONE)
