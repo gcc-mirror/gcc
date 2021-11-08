@@ -7522,24 +7522,21 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_high_u16 (uint8x8_t __a, uint16x8_t __b)
 {
-  return (uint8x16_t)
-	   __builtin_aarch64_xtn2v8hi ((int8x8_t) __a, (int16x8_t) __b);
+  return __builtin_aarch64_xtn2v8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_high_u32 (uint16x4_t __a, uint32x4_t __b)
 {
-  return (uint16x8_t)
-	   __builtin_aarch64_xtn2v4si ((int16x4_t) __a, (int32x4_t) __b);
+  return __builtin_aarch64_xtn2v4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_high_u64 (uint32x2_t __a, uint64x2_t __b)
 {
-  return (uint32x4_t)
-	   __builtin_aarch64_xtn2v2di ((int32x2_t) __a, (int64x2_t) __b);
+  return __builtin_aarch64_xtn2v2di_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x8_t
@@ -7567,21 +7564,21 @@ __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u16 (uint16x8_t __a)
 {
-  return (uint8x8_t)__builtin_aarch64_xtnv8hi ((int16x8_t) __a);
+  return __builtin_aarch64_xtnv8hi_uu (__a);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u32 (uint32x4_t __a)
 {
-  return (uint16x4_t) __builtin_aarch64_xtnv4si ((int32x4_t )__a);
+  return __builtin_aarch64_xtnv4si_uu (__a);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmovn_u64 (uint64x2_t __a)
 {
-  return (uint32x2_t) __builtin_aarch64_xtnv2di ((int64x2_t) __a);
+  return __builtin_aarch64_xtnv2di_uu (__a);
 }
 
 __extension__ extern __inline int8x8_t

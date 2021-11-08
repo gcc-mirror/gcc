@@ -235,6 +235,7 @@
 
   /* Implemented by aarch64_xtn<mode>.  */
   BUILTIN_VQN (UNOP, xtn, 0, NONE)
+  BUILTIN_VQN (UNOPU, xtn, 0, NONE)
 
   /* Implemented by aarch64_mla<mode>.  */
   BUILTIN_VDQ_BHSI (TERNOP, mla, 0, NONE)
@@ -489,7 +490,8 @@
   BUILTIN_VSDQ_I (USHIFTIMM, uqshl_n, 0, NONE)
 
   /* Implemented by aarch64_xtn2<mode>.  */
-  BUILTIN_VQN (UNOP, xtn2, 0, NONE)
+  BUILTIN_VQN (BINOP, xtn2, 0, NONE)
+  BUILTIN_VQN (BINOPU, xtn2, 0, NONE)
 
   /* Implemented by vec_unpack<su>_hi_<mode>.  */
   BUILTIN_VQW (UNOP, vec_unpacks_hi_, 10, NONE)
