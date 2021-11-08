@@ -1316,6 +1316,19 @@ enum machine_mode\n{");
   NUM_MACHINE_MODES = MAX_MACHINE_MODE\n\
 };\n");
 
+  /* Define a NUM_* macro for each mode class, giving the number of modes
+     in the class.  */
+  for (c = 0; c < MAX_MODE_CLASS; c++)
+    {
+      printf ("#define NUM_%s ", mode_class_names[c]);
+      if (modes[c])
+	printf ("(MAX_%s - MIN_%s + 1)\n", mode_class_names[c],
+		mode_class_names[c]);
+      else
+	printf ("0\n");
+    }
+  printf ("\n");
+
   /* I can't think of a better idea, can you?  */
   printf ("#define CONST_MODE_NUNITS%s\n", adj_nunits ? "" : " const");
   printf ("#define CONST_MODE_PRECISION%s\n", adj_nunits ? "" : " const");
