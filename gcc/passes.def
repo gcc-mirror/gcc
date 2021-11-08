@@ -360,9 +360,11 @@ along with GCC; see the file COPYING3.  If not see
          number of false positives from it.  */
       NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_late_warn_uninitialized);
-      NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
       NEXT_PASS (pass_modref);
+      /* uncprop replaces constants by SSA names.  This makes analysis harder
+	 and thus it should be run last.  */
+      NEXT_PASS (pass_uncprop);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_all_optimizations_g);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
@@ -393,9 +395,11 @@ along with GCC; see the file COPYING3.  If not see
          number of false positives from it.  */
       NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_late_warn_uninitialized);
-      NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
       NEXT_PASS (pass_modref);
+      /* uncprop replaces constants by SSA names.  This makes analysis harder
+	 and thus it should be run last.  */
+      NEXT_PASS (pass_uncprop);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_tm_init);
   PUSH_INSERT_PASSES_WITHIN (pass_tm_init)
