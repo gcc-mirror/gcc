@@ -3108,6 +3108,23 @@ aarch64_vl_bytes (machine_mode mode, unsigned int vec_flags)
   return BYTES_PER_SVE_PRED;
 }
 
+/* If MODE holds an array of vectors, return the number of vectors
+   in the array, otherwise return 1.  */
+
+static unsigned int
+aarch64_ldn_stn_vectors (machine_mode mode)
+{
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  if (vec_flags == (VEC_ADVSIMD | VEC_PARTIAL | VEC_STRUCT))
+    return exact_div (GET_MODE_SIZE (mode), 8).to_constant ();
+  if (vec_flags == (VEC_ADVSIMD | VEC_STRUCT))
+    return exact_div (GET_MODE_SIZE (mode), 16).to_constant ();
+  if (vec_flags == (VEC_SVE_DATA | VEC_STRUCT))
+    return exact_div (GET_MODE_SIZE (mode),
+		      BYTES_PER_SVE_VECTOR).to_constant ();
+  return 1;
+}
+
 /* Given an Advanced SIMD vector mode MODE and a tuple size NELEMS, return the
    corresponding vector structure mode.  */
 static opt_machine_mode
@@ -12511,9 +12528,10 @@ aarch64_address_cost (rtx x,
 	  cost += addr_cost->pre_modify;
 	else if (c == POST_INC || c == POST_DEC || c == POST_MODIFY)
 	  {
-	    if (mode == CImode)
+	    unsigned int nvectors = aarch64_ldn_stn_vectors (mode);
+	    if (nvectors == 3)
 	      cost += addr_cost->post_modify_ld3_st3;
-	    else if (mode == XImode)
+	    else if (nvectors == 4)
 	      cost += addr_cost->post_modify_ld4_st4;
 	    else
 	      cost += addr_cost->post_modify;
