@@ -91,7 +91,7 @@ GNATRTL_ALTIVEC_OBJS= \
   g-alvety$(objext) \
   g-alvevi$(objext)
 
-# Objects needed for non-tasking.
+# Objects needed for non-tasking
 GNATRTL_NONTASKING_OBJS= \
   a-assert$(objext) \
   a-btgbso$(objext) \
@@ -2970,7 +2970,7 @@ setup-rts: force
 
 ADA_TARGET_PROPERTIES = -gnatet=ada_target_properties
 
-system.o  : system.ads
+system.o: system.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< \
 	  $(ADA_TARGET_PROPERTIES) \
 	  $(OUTPUT_OPTION)
@@ -2979,7 +2979,7 @@ system.o  : system.ads
 # frames to be skipped when computing a call chain is not modified by
 # optimization. We don't want inlining, either.
 
-s-traceb.o  : s-traceb.adb s-traceb.ads
+s-traceb.o: s-traceb.adb s-traceb.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
 	  $(NO_INLINE_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< \
 	  $(OUTPUT_OPTION)
@@ -2987,7 +2987,7 @@ s-traceb.o  : s-traceb.adb s-traceb.ads
 # Compile s-tasdeb.o without optimization and with debug info so that it is
 # always possible to set conditional breakpoints on tasks.
 
-s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
+s-tasdeb.o: s-tasdeb.adb s-tasdeb.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
@@ -2997,7 +2997,7 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 # possible to set conditional breakpoints on exceptions.
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
-a-except.o  : a-except.adb a-except.ads
+a-except.o: a-except.adb a-except.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) -O1 $(FORCE_DEBUG_ADAFLAGS) \
 	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
@@ -3006,28 +3006,28 @@ a-except.o  : a-except.adb a-except.ads
 # debugger set breakpoints and inspect subprogram parameters on exception
 # related events.
 
-s-excdeb.o  : s-excdeb.adb s-excdeb.ads s-except.ads
+s-excdeb.o: s-excdeb.adb s-excdeb.ads s-except.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	  $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # Force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
 
-s-assert.o  : s-assert.adb s-assert.ads
+s-assert.o: s-assert.adb s-assert.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
 # Force debugging information on a-tags.o so that the debugger can find
 # the description of Ada.Tags.Type_Specific_Data.
 
-a-tags.o  : a-tags.adb a-tags.ads
+a-tags.o: a-tags.adb a-tags.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
 # Force no sibling call optimization on s-memory.o to avoid turning the
 # tail recursion in Alloc into a loop that confuses branch prediction.
 
-s-memory.o  : s-memory.adb s-memory.ads
+s-memory.o: s-memory.adb s-memory.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
