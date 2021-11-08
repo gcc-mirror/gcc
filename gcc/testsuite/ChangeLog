@@ -1,3 +1,49 @@
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102816
+	* gfortran.dg/pr102816.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-15  Harald Anlauf  <anlauf@gmx.de>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102685
+	* gfortran.dg/derived_constructor_char_1.f90: Fix invalid code.
+	* gfortran.dg/pr70931.f90: Likewise.
+	* gfortran.dg/transfer_simplify_2.f90: Likewise.
+	* gfortran.dg/pr102685.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102715
+	* gfortran.dg/pr68019.f90: Adjust error message.
+	* gfortran.dg/pr102715.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102817
+	* gfortran.dg/pr102817.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99348
+	PR fortran/102521
+	* gfortran.dg/parameter_array_init_8.f90: New test.
+
 2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
