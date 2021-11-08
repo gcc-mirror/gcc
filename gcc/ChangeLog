@@ -1,3 +1,79 @@
+2021-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103055
+	* params.opt (modref-max-depth): Add range.
+	(modref-max-adjustments): Fix range.
+
+2021-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-pass.h (make_pass_vrp_threader): Remove.
+	* tree-ssa-threadbackward.c
+	(back_threader_profitability::profitable_path_p): Remove
+	ASSERT_EXPR references.
+	* tree-ssa-threadedge.c (jt_state::register_equivs_stmt): Same.
+	* tree-vrp.c (vrp_folder::simplify_casted_conds): Same.
+	(execute_vrp): Same.
+	(class hybrid_threader): Remove.
+	(hybrid_threader::hybrid_threader): Remove.
+	(hybrid_threader::~hybrid_threader): Remove.
+	(hybrid_threader::before_dom_children): Remove.
+	(hybrid_threader::after_dom_children): Remove.
+	(execute_vrp_threader): Remove.
+	(class pass_vrp_threader): Remove.
+	(make_pass_vrp_threader): Remove.
+
+2021-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.c (gimple_call_arg_flags): Use interposable_eaf_flags.
+	(gimple_call_retslot_flags): Likewise.
+	(gimple_call_static_chain_flags): Likewise.
+	* ipa-modref.c (remove_useless_eaf_flags): Do not remove everything for
+	NOVOPS.
+	(modref_summary::useful_p): Likewise.
+	(modref_summary_lto::useful_p): Likewise.
+	(analyze_parms): Do not give up on NOVOPS.
+	(analyze_function): When dumping report chnages in EAF flags
+	between IPA and local pass.
+	(modref_merge_call_site_flags): Compute implicit eaf flags
+	based on callee ecf_flags and fnspec; if the function does not
+	bind to current defs use interposable_eaf_flags.
+	(modref_propagate_flags_in_scc): Update.
+	* ipa-modref.h (interposable_eaf_flags): New function.
+
+2021-11-07  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_expand_new_builtin): New
+	forward decl.
+	(rs6000_invalid_new_builtin): New function.
+	(rs6000_expand_builtin): Call rs6000_expand_new_builtin.
+	(rs6000_expand_ldst_mask): New function.
+	(new_cpu_expand_builtin): Likewise.
+	(elemrev_icode): Likewise.
+	(ldv_expand_builtin): Likewise.
+	(lxvrse_expand_builtin): Likewise.
+	(lxvrze_expand_builtin): Likewise.
+	(stv_expand_builtin): Likewise.
+	(new_mma_expand_builtin): Likewise.
+	(new_htm_spr_num): Likewise.
+	(new_htm_expand_builtin): Likewise.
+	(rs6000_expand_new_builtin): Likewise.
+	(rs6000_init_builtins): Initialize altivec_builtin_mask_for_load.
+
+2021-11-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (modref_lattice): Add do_dataflow,
+	changed and propagate_to fields.
+	(modref_lattice::release): Free propagate_to
+	(modref_lattice::merge): Do not give up early on unknown
+	lattice values.
+	(modref_lattice::merge_deref): Likewise.
+	(modref_eaf_analysis): Update toplevel comment.
+	(modref_eaf_analysis::analyze_ssa_name): Record postponned ssa names;
+	do optimistic dataflow initialization.
+	(modref_eaf_analysis::merge_with_ssa_name): Build dataflow graph.
+	(modref_eaf_analysis::propagate): New member function.
+	(analyze_parms): Update to new API of modref_eaf_analysis.
+
 2021-11-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.h (cgraph_node::can_be_discarded_p): Do not

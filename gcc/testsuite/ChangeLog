@@ -1,3 +1,23 @@
+2021-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/co_reduce_2.f90: New test.
+	* gfortran.dg/coarray_collectives_14.f90: Change OPERATOR
+	to OPERATION.
+	* gfortran.dg/coarray_collectives_16.f90: Likewise.
+	* gfortran.dg/coarray_collectives_9.f90: Likewise.
+	Co-authored by: Steve Kargl <steve@gcc.gnu.org>
+
+2021-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.dg/bessel_3.f90: Expect additional diagnostics from
+	multiple bad arguments in the call.
+	* gfortran.dg/pr24823.f: Likewise.
+	* gfortran.dg/pr39937.f: Likewise.
+	* gfortran.dg/pr41011.f: Likewise.
+	* gfortran.dg/pr61318.f90: Likewise.
+	* gfortran.dg/c-interop/c407b-2.f90: Remove xfails.
+	* gfortran.dg/c-interop/c535b-2.f90: Likewise.
+
 2021-11-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102715

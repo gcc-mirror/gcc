@@ -1,3 +1,19 @@
+2021-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.c (add_subroutines): Change keyword "operator"
+	to the correct one, "operation".
+	* check.c (gfc_check_co_reduce): Change OPERATOR to
+	OPERATION in error messages.
+	* intrinsic.texi: Change OPERATOR to OPERATION in
+	documentation.
+
+2021-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* interface.c (gfc_compare_actual_formal): Continue checking
+	all arguments after encountering an error.
+	* intrinsic.c (do_ts29113_check): Likewise.
+	* resolve.c (resolve_operator): Continue resolving on op2 error.
+
 2021-11-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102715
