@@ -138,7 +138,7 @@ test_merge ()
   t2->insert (3, 4, a, false);
   t2->insert (3, 5, a, false);
 
-  t1->merge (t2, NULL, false);
+  t1->merge (t2, NULL, NULL, false);
 
   ASSERT_FALSE (t1->every_base);
   ASSERT_NE (t1->bases, NULL);

@@ -42,6 +42,18 @@ along with GCC; see the file COPYING3.  If not see
 
 struct ipa_modref_summary;
 
+/* parm indexes greater than 0 are normal parms.
+   Some negative values have special meaning.  */
+enum modref_special_parms {
+  MODREF_UNKNOWN_PARM = -1,
+  MODREF_STATIC_CHAIN_PARM = -2,
+  MODREF_RETSLOT_PARM = -3,
+  /* Used in modref_parm_map to tak references which can be removed
+     from the summary during summary update since they now points to loca
+     memory.  */
+  MODREF_LOCAL_MEMORY_PARM = -4
+};
+
 /* Memory access.  */
 struct GTY(()) modref_access_node
 {
@@ -65,12 +77,12 @@ struct GTY(()) modref_access_node
   /* Return true if access node holds no useful info.  */
   bool useful_p () const
     {
-      return parm_index != -1;
+      return parm_index != MODREF_UNKNOWN_PARM;
     }
   /* Return true if range info is useful.  */
   bool range_info_useful_p () const
     {
-      return parm_index != -1 && parm_offset_known
+      return parm_index != MODREF_UNKNOWN_PARM && parm_offset_known
 	     && (known_size_p (size)
 		 || known_size_p (max_size)
 		 || known_ge (offset, 0));
@@ -80,7 +92,7 @@ struct GTY(()) modref_access_node
     {
       if (parm_index != a.parm_index)
 	return false;
-      if (parm_index >= 0)
+      if (parm_index != MODREF_UNKNOWN_PARM)
 	{
 	  if (parm_offset_known != a.parm_offset_known)
 	    return false;
@@ -101,7 +113,7 @@ struct GTY(()) modref_access_node
   bool contains (const modref_access_node &a) const
     {
       poly_int64 aoffset_adj = 0;
-      if (parm_index >= 0)
+      if (parm_index != MODREF_UNKNOWN_PARM)
 	{
 	  if (parm_index != a.parm_index)
 	    return false;
@@ -211,7 +223,7 @@ struct GTY(()) modref_access_node
 
       /* We assume that containment was tested earlier.  */
       gcc_checking_assert (!contains (a) && !a.contains (*this));
-      if (parm_index >= 0)
+      if (parm_index != MODREF_UNKNOWN_PARM)
 	{
 	  if (parm_index != a.parm_index)
 	    return false;
@@ -350,8 +362,8 @@ struct GTY(()) modref_access_node
     {
       if (parm_index != a.parm_index)
 	{
-	  gcc_checking_assert (parm_index != -1);
-	  parm_index = -1;
+	  gcc_checking_assert (parm_index != MODREF_UNKNOWN_PARM);
+	  parm_index = MODREF_UNKNOWN_PARM;
 	  return;
 	}
 
@@ -454,7 +466,7 @@ private:
 
 /* Access node specifying no useful info.  */
 const modref_access_node unspecified_modref_access_node
-		 = {0, -1, -1, 0, -1, false, 0};
+		 = {0, -1, -1, 0, MODREF_UNKNOWN_PARM, false, 0};
 
 template <typename T>
 struct GTY((user)) modref_ref_node
@@ -506,6 +518,12 @@ struct GTY((user)) modref_ref_node
     size_t i, j;
     modref_access_node *a2;
 
+    /* Only the following kind of paramters needs to be tracked.
+       We do not track return slots because they are seen as a direct store
+       in the caller.  */
+    gcc_checking_assert (a.parm_index >= 0
+			 || a.parm_index == MODREF_STATIC_CHAIN_PARM
+			 || a.parm_index == MODREF_UNKNOWN_PARM);
     if (flag_checking)
       verify ();
 
@@ -734,9 +752,7 @@ struct GTY((user)) modref_base_node
 struct modref_parm_map
 {
   /* Index of parameter we translate to.
-     -1 indicates that parameter is unknown
-     -2 indicates that parameter points to local memory and access can be
-	discarded.  */
+     Values from special_params enum are permitted too.  */
   int parm_index;
   bool parm_offset_known;
   poly_int64 parm_offset;
@@ -946,10 +962,11 @@ struct GTY((user)) modref_tree
  }
 
   /* Merge OTHER into the tree.
-     PARM_MAP, if non-NULL, maps parm indexes of callee to caller.  -2 is used
-     to signalize that parameter is local and does not need to be tracked.
+     PARM_MAP, if non-NULL, maps parm indexes of callee to caller.
+     Similar CHAIN_MAP, if non-NULL, maps static chain of callee to caller.
      Return true if something has changed.  */
   bool merge (modref_tree <T> *other, vec <modref_parm_map> *parm_map,
+	      modref_parm_map *static_chain_map,
 	      bool record_accesses)
   {
     if (!other || every_base)
@@ -1003,21 +1020,21 @@ struct GTY((user)) modref_tree
 		  {
 		    modref_access_node a = *access_node;
 
-		    if (a.parm_index != -1 && parm_map)
+		    if (a.parm_index != MODREF_UNKNOWN_PARM && parm_map)
 		      {
 			if (a.parm_index >= (int)parm_map->length ())
-			  a.parm_index = -1;
-			else if ((*parm_map) [a.parm_index].parm_index == -2)
-			  continue;
+			  a.parm_index = MODREF_UNKNOWN_PARM;
 			else
 			  {
-			    a.parm_offset
-				 += (*parm_map) [a.parm_index].parm_offset;
-			    a.parm_offset_known
-				 &= (*parm_map)
-					 [a.parm_index].parm_offset_known;
-			    a.parm_index
-				 = (*parm_map) [a.parm_index].parm_index;
+			    modref_parm_map &m
+				    = a.parm_index == MODREF_STATIC_CHAIN_PARM
+				      ? *static_chain_map
+				      : (*parm_map) [a.parm_index];
+			    if (m.parm_index == MODREF_LOCAL_MEMORY_PARM)
+			      continue;
+			    a.parm_offset += m.parm_offset;
+			    a.parm_offset_known &= m.parm_offset_known;
+			    a.parm_index = m.parm_index;
 			  }
 		      }
 		    changed |= insert (base_node->base, ref_node->ref, a,
@@ -1033,7 +1050,7 @@ struct GTY((user)) modref_tree
   /* Copy OTHER to THIS.  */
   void copy_from (modref_tree <T> *other)
   {
-    merge (other, NULL, false);
+    merge (other, NULL, NULL, false);
   }
 
   /* Search BASE in tree; return NULL if failed.  */
@@ -1065,7 +1082,7 @@ struct GTY((user)) modref_tree
 	    if (ref_node->every_access)
 	      return true;
 	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	      if (access_node->parm_index < 0)
+	      if (access_node->parm_index == MODREF_UNKNOWN_PARM)
 		return true;
 	  }
       }
@@ -1127,7 +1144,7 @@ struct GTY((user)) modref_tree
 		  if (access_node->parm_index < (int)map->length ())
 		    access_node->parm_index = (*map)[access_node->parm_index];
 		  else
-		    access_node->parm_index = -1;
+		    access_node->parm_index = MODREF_UNKNOWN_PARM;
 		}
 	  }
       }

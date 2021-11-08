@@ -426,9 +426,14 @@ static void
 dump_access (modref_access_node *a, FILE *out)
 {
   fprintf (out, "          access:");
-  if (a->parm_index != -1)
+  if (a->parm_index != MODREF_UNKNOWN_PARM)
     {
-      fprintf (out, " Parm %i", a->parm_index);
+      if (a->parm_index >= 0)
+	fprintf (out, " Parm %i", a->parm_index);
+      else if (a->parm_index == MODREF_STATIC_CHAIN_PARM)
+	fprintf (out, " Static chain");
+      else
+	gcc_unreachable ();
       if (a->parm_offset_known)
 	{
 	  fprintf (out, " param offset:");
@@ -697,40 +702,40 @@ get_access (ao_ref *ref)
 
   base = ao_ref_base (ref);
   modref_access_node a = {ref->offset, ref->size, ref->max_size,
-			  0, -1, false, 0};
+			  0, MODREF_UNKNOWN_PARM, false, 0};
   if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
     {
       tree memref = base;
       base = TREE_OPERAND (base, 0);
+
       if (TREE_CODE (base) == SSA_NAME
 	  && SSA_NAME_IS_DEFAULT_DEF (base)
 	  && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL)
 	{
 	  a.parm_index = 0;
-	  for (tree t = DECL_ARGUMENTS (current_function_decl);
-	       t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
-	    {
-	      if (!t)
-		{
-		  a.parm_index = -1;
-		  break;
-		}
-	      a.parm_index++;
-	    }
-	  if (TREE_CODE (memref) == MEM_REF)
-	    {
-	      a.parm_offset_known
-		 = wi::to_poly_wide (TREE_OPERAND
-					 (memref, 1)).to_shwi (&a.parm_offset);
-	    }
+	  if (cfun->static_chain_decl
+	      && base == ssa_default_def (cfun, cfun->static_chain_decl))
+	    a.parm_index = MODREF_STATIC_CHAIN_PARM;
 	  else
-	    a.parm_offset_known = false;
+	    for (tree t = DECL_ARGUMENTS (current_function_decl);
+		 t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
+	      a.parm_index++;
 	}
       else
-	a.parm_index = -1;
+	a.parm_index = MODREF_UNKNOWN_PARM;
+
+      if (a.parm_index != MODREF_UNKNOWN_PARM
+	  && TREE_CODE (memref) == MEM_REF)
+	{
+	  a.parm_offset_known
+	     = wi::to_poly_wide (TREE_OPERAND
+				     (memref, 1)).to_shwi (&a.parm_offset);
+	}
+      else
+	a.parm_offset_known = false;
     }
   else
-    a.parm_index = -1;
+    a.parm_index = MODREF_UNKNOWN_PARM;
   return a;
 }
 
@@ -858,12 +863,11 @@ ignore_stores_p (tree caller, int flags)
   return false;
 }
 
-/* Determine parm_map for argument I of STMT.  */
+/* Determine parm_map for argument OP.  */
 
 modref_parm_map
-parm_map_for_arg (gimple *stmt, int i)
+parm_map_for_arg (tree op)
 {
-  tree op = gimple_call_arg (stmt, i);
   bool offset_known;
   poly_int64 offset;
   struct modref_parm_map parm_map;
@@ -882,7 +886,7 @@ parm_map_for_arg (gimple *stmt, int i)
 	{
 	  if (!t)
 	    {
-	      index = -1;
+	      index = MODREF_UNKNOWN_PARM;
 	      break;
 	    }
 	  index++;
@@ -892,9 +896,9 @@ parm_map_for_arg (gimple *stmt, int i)
       parm_map.parm_offset = offset;
     }
   else if (points_to_local_or_readonly_memory_p (op))
-    parm_map.parm_index = -2;
+    parm_map.parm_index = MODREF_LOCAL_MEMORY_PARM;
   else
-    parm_map.parm_index = -1;
+    parm_map.parm_index = MODREF_UNKNOWN_PARM;
   return parm_map;
 }
 
@@ -911,6 +915,7 @@ merge_call_side_effects (modref_summary *cur_summary,
 			 bool record_adjustments)
 {
   auto_vec <modref_parm_map, 32> parm_map;
+  modref_parm_map chain_map;
   bool changed = false;
 
   /* We can not safely optimize based on summary of callee if it does
@@ -931,7 +936,7 @@ merge_call_side_effects (modref_summary *cur_summary,
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
-      parm_map[i] = parm_map_for_arg (stmt, i);
+      parm_map[i] = parm_map_for_arg (gimple_call_arg (stmt, i));
       if (dump_file)
 	{
 	  fprintf (dump_file, " %i", parm_map[i].parm_index);
@@ -943,16 +948,30 @@ merge_call_side_effects (modref_summary *cur_summary,
 	    }
 	}
     }
+  if (gimple_call_chain (stmt))
+    {
+      chain_map = parm_map_for_arg (gimple_call_chain (stmt));
+      if (dump_file)
+	{
+	  fprintf (dump_file, "static chain %i", chain_map.parm_index);
+	  if (chain_map.parm_offset_known)
+	    {
+	      fprintf (dump_file, " offset:");
+	      print_dec ((poly_int64_pod)chain_map.parm_offset,
+			 dump_file, SIGNED);
+	    }
+	}
+    }
   if (dump_file)
     fprintf (dump_file, "\n");
 
   /* Merge with callee's summary.  */
   changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map,
-					record_adjustments);
+					&chain_map, record_adjustments);
   if (!ignore_stores)
     {
       changed |= cur_summary->stores->merge (callee_summary->stores,
-					     &parm_map,
+					     &parm_map, &chain_map,
 					     record_adjustments);
       if (!cur_summary->writes_errno
 	  && callee_summary->writes_errno)
@@ -1078,11 +1097,12 @@ process_fnspec (modref_summary *cur_summary,
 	else if (!fnspec.arg_specified_p (i)
 		 || fnspec.arg_maybe_read_p (i))
 	  {
-	    modref_parm_map map = parm_map_for_arg (call, i);
+	    modref_parm_map map = parm_map_for_arg
+					(gimple_call_arg (call, i));
 
-	    if (map.parm_index == -2)
+	    if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 	      continue;
-	    if (map.parm_index == -1)
+	    if (map.parm_index == MODREF_UNKNOWN_PARM)
 	      {
 		collapse_loads (cur_summary, cur_summary_lto);
 		break;
@@ -1113,11 +1133,12 @@ process_fnspec (modref_summary *cur_summary,
 	else if (!fnspec.arg_specified_p (i)
 		 || fnspec.arg_maybe_written_p (i))
 	  {
-	    modref_parm_map map = parm_map_for_arg (call, i);
+	    modref_parm_map map = parm_map_for_arg
+					 (gimple_call_arg (call, i));
 
-	    if (map.parm_index == -2)
+	    if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 	      continue;
-	    if (map.parm_index == -1)
+	    if (map.parm_index == MODREF_UNKNOWN_PARM)
 	      {
 		collapse_stores (cur_summary, cur_summary_lto);
 		break;
@@ -1429,12 +1450,6 @@ deref_flags (int flags, bool ignore_stores)
 
 struct escape_point
 {
-  /* Extra hidden args we keep track of.  */
-  enum hidden_args
-  {
-    retslot_arg = -1,
-    static_chain_arg = -2
-  };
   /* Value escapes to this call.  */
   gcall *call;
   /* Argument it escapes to.  */
@@ -2410,7 +2425,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	  if (summary_lto)
 	    summary_lto->retslot_flags = flags;
 	  eaf_analysis.record_escape_points (retslot,
-					     escape_point::retslot_arg, flags);
+					     MODREF_RETSLOT_PARM, flags);
 	}
     }
   if (static_chain)
@@ -2425,7 +2440,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	  if (summary_lto)
 	    summary_lto->static_chain_flags = flags;
 	  eaf_analysis.record_escape_points (static_chain,
-					     escape_point::static_chain_arg,
+					     MODREF_STATIC_CHAIN_PARM,
 					     flags);
 	}
     }
@@ -3586,7 +3601,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 	{
 	  if (es && es->param[i].points_to_local_or_readonly_memory)
 	    {
-	      (*parm_map)[i].parm_index = -2;
+	      (*parm_map)[i].parm_index = MODREF_LOCAL_MEMORY_PARM;
 	      continue;
 	    }
 
@@ -3600,7 +3615,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 						 (callee_pi, i));
 	      if (cst && points_to_local_or_readonly_memory_p (cst))
 		{
-		  (*parm_map)[i].parm_index = -2;
+		  (*parm_map)[i].parm_index = MODREF_LOCAL_MEMORY_PARM;
 		  continue;
 		}
 	    }
@@ -3798,9 +3813,9 @@ propagate_unknown_call (cgraph_node *node,
 		   || fnspec.arg_maybe_read_p (i))
 	    {
 	      modref_parm_map map = parm_map[i];
-	      if (map.parm_index == -2)
+	      if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 		continue;
-	      if (map.parm_index == -1)
+	      if (map.parm_index == MODREF_UNKNOWN_PARM)
 		{
 		  collapse_loads (cur_summary, cur_summary_lto);
 		  break;
@@ -3828,9 +3843,9 @@ propagate_unknown_call (cgraph_node *node,
 		   || fnspec.arg_maybe_written_p (i))
 	    {
 	      modref_parm_map map = parm_map[i];
-	      if (map.parm_index == -2)
+	      if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 		continue;
-	      if (map.parm_index == -1)
+	      if (map.parm_index == MODREF_UNKNOWN_PARM)
 		{
 		  collapse_stores (cur_summary, cur_summary_lto);
 		  break;
@@ -4030,6 +4045,10 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
 
 	      auto_vec <modref_parm_map, 32> parm_map;
+	      modref_parm_map chain_map;
+	      /* TODO: Once we get jump functions for static chains we could
+		 compute this.  */
+	      chain_map.parm_index = MODREF_UNKNOWN_PARM;
 
 	      compute_parm_map (callee_edge, &parm_map);
 
@@ -4037,12 +4056,13 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      if (callee_summary)
 		{
 		  changed |= cur_summary->loads->merge
-				  (callee_summary->loads, &parm_map, !first);
+				  (callee_summary->loads, &parm_map,
+				   &chain_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary->stores->merge
 				      (callee_summary->stores, &parm_map,
-				       !first);
+				       &chain_map, !first);
 		      if (!cur_summary->writes_errno
 			  && callee_summary->writes_errno)
 			{
@@ -4055,12 +4075,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		{
 		  changed |= cur_summary_lto->loads->merge
 				  (callee_summary_lto->loads, &parm_map,
-				   !first);
+				   &chain_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary_lto->stores->merge
 				      (callee_summary_lto->stores, &parm_map,
-				       !first);
+				       &chain_map, !first);
 		      if (!cur_summary_lto->writes_errno
 			  && callee_summary_lto->writes_errno)
 			{
@@ -4223,9 +4243,9 @@ modref_merge_call_site_flags (escape_summary *sum,
       if (!(flags & EAF_UNUSED)
 	  && cur_summary && ee->parm_index < (int)cur_summary->arg_flags.length ())
 	{
-	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
+	  eaf_flags_t &f = ee->parm_index == MODREF_RETSLOT_PARM
 			   ? cur_summary->retslot_flags
-			   : ee->parm_index == escape_point::static_chain_arg
+			   : ee->parm_index == MODREF_STATIC_CHAIN_PARM
 			   ? cur_summary->static_chain_flags
 			   : cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
@@ -4240,9 +4260,9 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  && cur_summary_lto
 	  && ee->parm_index < (int)cur_summary_lto->arg_flags.length ())
 	{
-	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
+	  eaf_flags_t &f = ee->parm_index == MODREF_RETSLOT_PARM
 			   ? cur_summary_lto->retslot_flags
-			   : ee->parm_index == escape_point::static_chain_arg
+			   : ee->parm_index == MODREF_STATIC_CHAIN_PARM
 			   ? cur_summary_lto->static_chain_flags
 			   : cur_summary_lto->arg_flags[ee->parm_index];
 	  if ((f & flags_lto) != f)
@@ -4428,24 +4448,30 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
   if (callee_info || callee_info_lto)
     {
       auto_vec <modref_parm_map, 32> parm_map;
+      modref_parm_map chain_map;
+      /* TODO: Once we get jump functions for static chains we could
+	 compute this.  */
+      chain_map.parm_index = MODREF_UNKNOWN_PARM;
 
       compute_parm_map (edge, &parm_map);
 
       if (!ignore_stores)
 	{
 	  if (to_info && callee_info)
-	    to_info->stores->merge (callee_info->stores, &parm_map, false);
+	    to_info->stores->merge (callee_info->stores, &parm_map,
+				    &chain_map, false);
 	  if (to_info_lto && callee_info_lto)
 	    to_info_lto->stores->merge (callee_info_lto->stores, &parm_map,
-					false);
+					&chain_map, false);
 	}
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	{
 	  if (to_info && callee_info)
-	    to_info->loads->merge (callee_info->loads, &parm_map, false);
+	    to_info->loads->merge (callee_info->loads, &parm_map,
+				   &chain_map, false);
 	  if (to_info_lto && callee_info_lto)
 	    to_info_lto->loads->merge (callee_info_lto->loads, &parm_map,
-				       false);
+				       &chain_map, false);
 	}
     }
 

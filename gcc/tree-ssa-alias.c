@@ -2594,14 +2594,18 @@ modref_may_conflict (const gimple *stmt,
 	      if (num_tests >= max_tests)
 		return true;
 
-	      if (access_node->parm_index == -1
-		  || (unsigned)access_node->parm_index
-		     >= gimple_call_num_args (stmt))
+	      if (access_node->parm_index == MODREF_UNKNOWN_PARM
+		  || access_node->parm_index
+		     >= (int)gimple_call_num_args (stmt))
 		return true;
 
 	      alias_stats.modref_baseptr_tests++;
+	      tree arg;
 
-	      tree arg = gimple_call_arg (stmt, access_node->parm_index);
+	      if (access_node->parm_index == MODREF_STATIC_CHAIN_PARM)
+		arg = gimple_call_chain (stmt);
+	      else
+		arg = gimple_call_arg (stmt, access_node->parm_index);
 
 	      if (integer_zerop (arg) && flag_delete_null_pointer_checks)
 		continue;
