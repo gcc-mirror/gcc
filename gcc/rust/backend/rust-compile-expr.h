@@ -388,22 +388,7 @@ public:
     ctx->add_statement (assignment);
   }
 
-  void visit (HIR::CompoundAssignmentExpr &expr) override
-  {
-    fncontext fn = ctx->peek_fn ();
-    auto lvalue = CompileExpr::Compile (expr.get_left_expr ().get (), ctx);
-    auto rvalue = CompileExpr::Compile (expr.get_right_expr ().get (), ctx);
-
-    auto op = expr.get_expr_type ();
-    auto operator_expr = ctx->get_backend ()->arithmetic_or_logical_expression (
-      op, lvalue, rvalue, expr.get_locus ());
-
-    Bstatement *assignment
-      = ctx->get_backend ()->assignment_statement (fn.fndecl, lvalue,
-						   operator_expr,
-						   expr.get_locus ());
-    ctx->add_statement (assignment);
-  }
+  void visit (HIR::CompoundAssignmentExpr &expr) override;
 
   void visit (HIR::ArrayIndexExpr &expr) override
   {

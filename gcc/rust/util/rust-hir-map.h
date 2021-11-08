@@ -41,7 +41,9 @@ public:
     MULTIPLY,
     DIVIDE,
     REMAINDER,
+
     NEGATION,
+
     ADD_ASSIGN,
     SUB_ASSIGN,
     MUL_ASSIGN,
@@ -148,6 +150,32 @@ public:
 	return ItemType::DIVIDE;
       case ArithmeticOrLogicalOperator::MODULUS:
 	return ItemType::REMAINDER;
+
+      case ArithmeticOrLogicalOperator::BITWISE_AND:
+      case ArithmeticOrLogicalOperator::BITWISE_OR:
+      case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+	return ItemType::UNKNOWN;
+      }
+    return ItemType::UNKNOWN;
+  }
+
+  static ItemType
+  CompoundAssignmentOperatorToLangItem (ArithmeticOrLogicalOperator op)
+  {
+    switch (op)
+      {
+      case ArithmeticOrLogicalOperator::ADD:
+	return ItemType::ADD_ASSIGN;
+      case ArithmeticOrLogicalOperator::SUBTRACT:
+	return ItemType::SUB_ASSIGN;
+      case ArithmeticOrLogicalOperator::MULTIPLY:
+	return ItemType::MUL_ASSIGN;
+      case ArithmeticOrLogicalOperator::DIVIDE:
+	return ItemType::DIV_ASSIGN;
+      case ArithmeticOrLogicalOperator::MODULUS:
+	return ItemType::REM_ASSIGN;
 
       case ArithmeticOrLogicalOperator::BITWISE_AND:
       case ArithmeticOrLogicalOperator::BITWISE_OR:
