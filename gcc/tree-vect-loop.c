@@ -3330,7 +3330,7 @@ reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
    of the scalar elements.  If the reduction has just a single initial value
    then INITIAL_VALUE is that value, otherwise it is null.  */
 
-static tree
+tree
 neutral_op_for_reduction (tree scalar_type, tree_code code, tree initial_value)
 {
   switch (code)
