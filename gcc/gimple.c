@@ -1645,13 +1645,13 @@ gimple_call_static_chain_flags (const gcall *stmt)
       modref_summary *summary = node ? get_modref_function_summary (node)
 				: NULL;
 
+      /* Nested functions should always bind to current def since
+	 there is no public ABI for them.  */
+      gcc_checking_assert (node->binds_to_current_def_p ());
       if (summary)
 	{
 	  int modref_flags = summary->static_chain_flags;
 
-	  /* ??? Nested functions should always bind to current def.  */
-	  if (!node->binds_to_current_def_p ())
-	    modref_flags = interposable_eaf_flags (modref_flags, flags);
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}
