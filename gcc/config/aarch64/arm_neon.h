@@ -1007,8 +1007,7 @@ __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_p8 (poly8x8_t __a, poly8x8_t __b)
 {
-  return (poly8x8_t) __builtin_aarch64_pmulv8qi ((int8x8_t) __a,
-						 (int8x8_t) __b);
+  return __builtin_aarch64_pmulv8qi_ppp (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
@@ -1071,8 +1070,7 @@ __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmulq_p8 (poly8x16_t __a, poly8x16_t __b)
 {
-  return (poly8x16_t) __builtin_aarch64_pmulv16qi ((int8x16_t) __a,
-						   (int8x16_t) __b);
+  return __builtin_aarch64_pmulv16qi_ppp (__a, __b);
 }
 
 __extension__ extern __inline int8x8_t
@@ -7716,8 +7714,7 @@ __extension__ extern __inline poly16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_high_p8 (poly8x16_t __a, poly8x16_t __b)
 {
-  return (poly16x8_t) __builtin_aarch64_pmull_hiv16qi ((int8x16_t) __a,
-						       (int8x16_t) __b);
+  return __builtin_aarch64_pmull_hiv16qi_ppp (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
@@ -7850,8 +7847,7 @@ __extension__ extern __inline poly16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_p8 (poly8x8_t __a, poly8x8_t __b)
 {
-  return (poly16x8_t) __builtin_aarch64_pmullv8qi ((int8x8_t) __a,
-						   (int8x8_t) __b);
+  return __builtin_aarch64_pmullv8qi_ppp (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
