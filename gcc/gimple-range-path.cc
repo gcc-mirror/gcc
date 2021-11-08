@@ -300,6 +300,9 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
   if (def_bb != bb)
     return false;
 
+  if (get_cache (r, name))
+    return true;
+
   if (gimple_code (def_stmt) == GIMPLE_PHI)
     ssa_range_in_phi (r, as_a<gphi *> (def_stmt));
   else
