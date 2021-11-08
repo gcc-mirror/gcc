@@ -1825,7 +1825,10 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  tree value = gimple_debug_bind_get_value (stmt);
 	  if (id->param_body_adjs
 	      && id->param_body_adjs->m_dead_stmts.contains (stmt))
-	    id->param_body_adjs->remap_with_debug_expressions (&value);
+	    {
+	      value = unshare_expr_without_location (value);
+	      id->param_body_adjs->remap_with_debug_expressions (&value);
+	    }
 
 	  gdebug *copy = gimple_build_debug_bind (var, value, stmt);
 	  if (id->reset_location)

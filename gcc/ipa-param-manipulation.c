@@ -1185,8 +1185,8 @@ ipa_param_body_adjustments::prepare_debug_expressions (tree dead_ssa)
 	  return (*d != NULL_TREE);
 	}
 
-      tree val = gimple_assign_rhs_to_tree (def);
-      SET_EXPR_LOCATION (val, UNKNOWN_LOCATION);
+      tree val
+	= unshare_expr_without_location (gimple_assign_rhs_to_tree (def));
       remap_with_debug_expressions (&val);
 
       tree vexpr = make_node (DEBUG_EXPR_DECL);
