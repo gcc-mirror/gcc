@@ -17,6 +17,7 @@
 # <http://www.gnu.org/licenses/>.  */
 
 import os
+import re
 import sys
 from itertools import takewhile
 
@@ -28,6 +29,8 @@ from unidiff import PatchSet, PatchedFile
 
 DATE_PREFIX = 'Date: '
 FROM_PREFIX = 'From: '
+SUBJECT_PREFIX = 'Subject: '
+subject_patch_regex = re.compile(r'^\[PATCH( \d+/\d+)?\] ')
 unidiff_supports_renaming = hasattr(PatchedFile(), 'is_rename')
 
 
@@ -37,7 +40,9 @@ class GitEmail(GitCommit):
         diff = PatchSet.from_filename(filename)
         date = None
         author = None
+        subject = ''
 
+        subject_last = False
         with open(self.filename, 'r') as f:
             lines = f.read().splitlines()
         lines = list(takewhile(lambda line: line != '---', lines))
@@ -46,8 +51,21 @@ class GitEmail(GitCommit):
                 date = parse(line[len(DATE_PREFIX):])
             elif line.startswith(FROM_PREFIX):
                 author = GitCommit.format_git_author(line[len(FROM_PREFIX):])
+            elif line.startswith(SUBJECT_PREFIX):
+                subject = line[len(SUBJECT_PREFIX):]
+                subject_last = True
+            elif subject_last and line.startswith(' '):
+                subject += line
+            elif line == '':
+                break
+            else:
+                subject_last = False
+
+        if subject:
+            subject = subject_patch_regex.sub('', subject)
         header = list(takewhile(lambda line: line != '', lines))
-        body = lines[len(header) + 1:]
+        # Note: commit message consists of email subject, empty line, email body
+        message = [subject] + lines[len(header):]
 
         modified_files = []
         for f in diff:
@@ -67,7 +85,7 @@ class GitEmail(GitCommit):
             else:
                 t = 'M'
             modified_files.append((target if t != 'D' else source, t))
-        git_info = GitInfo(None, date, author, body, modified_files)
+        git_info = GitInfo(None, date, author, message, modified_files)
         super().__init__(git_info,
                          commit_to_info_hook=lambda x: None)
 
