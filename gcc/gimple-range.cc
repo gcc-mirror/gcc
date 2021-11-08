@@ -88,8 +88,8 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
       if (!m_cache.get_global_range (r, expr))
         r = gimple_range_global (expr);
       // Pick up implied context information from the on-entry cache
-      // if current_bb is set.
-      if (current_bb && m_cache.block_range (tmp, current_bb, expr))
+      // if current_bb is set.  Do not attempt any new calculations.
+      if (current_bb && m_cache.block_range (tmp, current_bb, expr, false))
 	{
 	  r.intersect (tmp);
 	  char str[80];
