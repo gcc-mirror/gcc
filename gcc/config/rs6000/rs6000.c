@@ -22743,12 +22743,16 @@ rs6000_builtin_reciprocal (tree fndecl)
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
 
+      if (new_builtins_are_live)
+	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
       return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
     case VSX_BUILTIN_XVSQRTSP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
 
+      if (new_builtins_are_live)
+	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_4SF];
       return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
 
     default:
@@ -25371,7 +25375,10 @@ add_condition_to_bb (tree function_decl, tree version_decl,
 
   tree bool_zero = build_int_cst (bool_int_type_node, 0);
   tree cond_var = create_tmp_var (bool_int_type_node);
-  tree predicate_decl = rs6000_builtin_decls [(int) RS6000_BUILTIN_CPU_SUPPORTS];
+  tree predicate_decl
+    = new_builtins_are_live
+	? rs6000_builtin_decls_x[(int) RS6000_BIF_CPU_SUPPORTS]
+	: rs6000_builtin_decls [(int) RS6000_BUILTIN_CPU_SUPPORTS];
   const char *arg_str = rs6000_clone_map[clone_isa].name;
   tree predicate_arg = build_string_literal (strlen (arg_str) + 1, arg_str);
   gimple *call_cond_stmt = gimple_build_call (predicate_decl, 1, predicate_arg);
@@ -28011,8 +28018,12 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       return;
     }
 
-  tree mffs = rs6000_builtin_decls[RS6000_BUILTIN_MFFS];
-  tree mtfsf = rs6000_builtin_decls[RS6000_BUILTIN_MTFSF];
+  tree mffs
+    = new_builtins_are_live ? rs6000_builtin_decls_x[RS6000_BIF_MFFS]
+			    : rs6000_builtin_decls[RS6000_BUILTIN_MFFS];
+  tree mtfsf
+    = new_builtins_are_live ? rs6000_builtin_decls_x[RS6000_BIF_MTFSF]
+			    : rs6000_builtin_decls[RS6000_BUILTIN_MTFSF];
   tree call_mffs = build_call_expr (mffs, 0);
 
   /* Generates the equivalent of feholdexcept (&fenv_var)
