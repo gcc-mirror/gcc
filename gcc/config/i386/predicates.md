@@ -617,9 +617,11 @@
 ;; use @GOTOFF unless we are absolutely sure that the symbol is in the
 ;; same segment as the GOT.  Unfortunately, the flexibility of linker
 ;; scripts means that we can't be sure of that in general, so assume
-;; that @GOTOFF is never valid on VxWorks.
+;; @GOTOFF is not valid on VxWorks, except with the large code model.
 (define_predicate "gotoff_operand"
-  (and (not (match_test "TARGET_VXWORKS_RTP"))
+  (and (ior (not (match_test "TARGET_VXWORKS_RTP"))
+            (match_test "ix86_cmodel == CM_LARGE")
+            (match_test "ix86_cmodel == CM_LARGE_PIC"))
        (match_operand 0 "local_symbolic_operand")))
 
 ;; Test for various thread-local symbols.

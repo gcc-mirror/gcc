@@ -11161,7 +11161,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
     }
   else if ((GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (addr) == 0)
-	   /* We can't use @GOTOFF for text labels
+	   /* We can't always use @GOTOFF for text labels
 	      on VxWorks, see gotoff_operand.  */
 	   || (TARGET_VXWORKS_RTP && GET_CODE (addr) == LABEL_REF))
     {
@@ -11190,9 +11190,19 @@ legitimize_pic_address (rtx orig, rtx reg)
 	     from the Global Offset Table (@GOT).  */
 	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+
 	  if (TARGET_64BIT)
-	    new_rtx = force_reg (Pmode, new_rtx);
-	  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
+	    new_rtx = copy_to_suggested_reg (new_rtx, reg, Pmode);
+
+	  if (reg != 0)
+	    {
+	      gcc_assert (REG_P (reg));
+	      new_rtx = expand_simple_binop (Pmode, PLUS, pic_offset_table_rtx,
+					     new_rtx, reg, 1, OPTAB_DIRECT);
+	    }
+	  else
+	    new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
+
 	  new_rtx = gen_const_mem (Pmode, new_rtx);
 	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
 	}
