@@ -1324,7 +1324,7 @@ public:
       params (std::move (params)), type (type), flags (flags),
       identifier (identifier), id (id), abi (abi)
   {
-    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
 
@@ -1339,7 +1339,7 @@ public:
       params (params), type (type), flags (flags), identifier (identifier),
       id (id), abi (abi)
   {
-    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
 
@@ -1519,7 +1519,7 @@ public:
       parameter_types (std::move (parameter_types)),
       result_type (std::move (result_type)), id (id)
   {
-    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
 
@@ -1533,7 +1533,7 @@ public:
       parameter_types (std::move (parameter_types)),
       result_type (std::move (result_type)), id (id)
   {
-    LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
+    LocalDefId local_def_id = id.localDefId;
     rust_assert (local_def_id != UNKNOWN_LOCAL_DEFID);
   }
 
