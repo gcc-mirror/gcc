@@ -2045,6 +2045,15 @@ package Sem_Util is
    --  Determine whether subprogram [body] Subp denotes an expression function
    --  or is completed by an expression function body.
 
+   function Is_Extended_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean;
+   --  Return whether E is an extended precision floating point type,
+   --  characterized by:
+   --  . machine_radix = 2
+   --  . machine_mantissa = 64
+   --  . machine_emax = 2**14
+   --  . machine_emin = 3 - machine_emax
+
    function Is_EVF_Expression (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a reference to a formal parameter of
    --  a specific tagged type whose related subprogram is subject to pragma

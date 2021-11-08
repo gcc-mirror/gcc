@@ -17541,6 +17541,20 @@ package body Sem_Util is
       end if;
    end Is_Expression_Function_Or_Completion;
 
+   -----------------------------------------------
+   -- Is_Extended_Precision_Floating_Point_Type --
+   -----------------------------------------------
+
+   function Is_Extended_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean is
+   begin
+      return Is_Floating_Point_Type (E)
+        and then Machine_Radix_Value (E) = Uint_2
+        and then Machine_Mantissa_Value (E) = Uint_64
+        and then Machine_Emax_Value (E) = Uint_2 ** Uint_14
+        and then Machine_Emin_Value (E) = Uint_3 - (Uint_2 ** Uint_14);
+   end Is_Extended_Precision_Floating_Point_Type;
+
    -----------------------
    -- Is_EVF_Expression --
    -----------------------
