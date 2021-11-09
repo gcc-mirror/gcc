@@ -429,3 +429,16 @@
 				      (const_int 1)
 				      (match_dup 2)))
    (set (match_dup 0) (xor:X (match_dup 0) (const_int 1)))])
+
+;; We can create a polarity-reversed mask (i.e. bit N -> { set = 0, clear = -1 })
+;; using a bext(i) followed by an addi instruction.
+;; This splits the canonical representation of "(a & (1 << BIT_NO)) ? 0 : -1".
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+       (neg:GPR (eq:GPR (zero_extract:GPR (match_operand:GPR 1 "register_operand")
+                                          (const_int 1)
+                                          (match_operand 2))
+                        (const_int 0))))]
+  "TARGET_ZBS"
+  [(set (match_dup 0) (zero_extract:GPR (match_dup 1) (const_int 1) (match_dup 2)))
+   (set (match_dup 0) (plus:GPR (match_dup 0) (const_int -1)))])

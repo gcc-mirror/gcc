@@ -26,6 +26,6 @@ long bexti64_4(long a, char bitno)
 }
 
 /* { dg-final { scan-assembler-times "bexti\t" 4 } } */
-/* { dg-final { scan-assembler-times "xori\t|snez\t" 1 } } */
+/* { dg-final { scan-assembler-times "xori\t" 1 } } */
 /* { dg-final { scan-assembler-times "addi\t" 1 } } */
 /* { dg-final { scan-assembler-times "neg\t" 1 } } */
