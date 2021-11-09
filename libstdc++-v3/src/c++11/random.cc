@@ -37,7 +37,7 @@
 # ifdef _GLIBCXX_X86_RDSEED
 #  define USE_RDSEED 1
 # endif
-#elif defined __powerpc__ && defined __BUILTIN_CPU_SUPPORTS__
+#elif defined __powerpc64__ && defined __BUILTIN_CPU_SUPPORTS__
 # define USE_DARN 1
 #endif
 
