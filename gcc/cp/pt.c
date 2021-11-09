@@ -5877,12 +5877,19 @@ push_template_decl (tree decl, bool is_friend)
       if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
 	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs (is_typedef_decl (decl)
-					   ? DECL_ORIGINAL_TYPE (decl)
-					   : TREE_TYPE (decl)))
+  else
     {
-      TREE_TYPE (decl) = error_mark_node;
-      return error_mark_node;
+      if (check_for_bare_parameter_packs (is_typedef_decl (decl)
+					  ? DECL_ORIGINAL_TYPE (decl)
+					  : TREE_TYPE (decl)))
+	{
+	  TREE_TYPE (decl) = error_mark_node;
+	  return error_mark_node;
+	}
+
+      if (is_partial && VAR_P (decl)
+	  && check_for_bare_parameter_packs (DECL_TI_ARGS (decl)))
+	return error_mark_node;
     }
 
   if (is_partial)
