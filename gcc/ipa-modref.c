@@ -2318,11 +2318,18 @@ modref_eaf_analysis::record_escape_points (tree name, int parm_index, int flags)
     }
 }
 
-/* Determine EAF flags for function parameters.  */
+/* Determine EAF flags for function parameters
+   and fill in SUMMARY/SUMMARY_LTO.  If IPA is true work in IPA mode
+   where we also collect scape points.
+   PAST_FLAGS, PAST_RETSLOT_FLAGS, PAST_STATIC_CHAIN_FLAGS can be
+   used to preserve flags from prevoius (IPA) run for cases where
+   late optimizations changed code in a way we can no longer analyze
+   it easily.  */
 
 static void
 analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
-	       bool ipa)
+	       bool ipa, vec<eaf_flags_t> &past_flags,
+	       int past_retslot_flags, int past_static_chain_flags)
 {
   unsigned int parm_index = 0;
   unsigned int count = 0;
@@ -2395,6 +2402,25 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
       flags = remove_useless_eaf_flags
 		 (flags, ecf_flags,
 		  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+      if (past_flags.length () > parm_index)
+	{
+	  int past = past_flags[parm_index];
+	  past = remove_useless_eaf_flags
+		     (past, ecf_flags,
+		      VOID_TYPE_P (TREE_TYPE
+			  (TREE_TYPE (current_function_decl))));
+	  if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
+	    {
+	      fprintf (dump_file,
+		       "  Flags for param %i combined with IPA pass:",
+		       (int)parm_index);
+	      dump_eaf_flags (dump_file, past, false);
+	      fprintf (dump_file, " local ");
+	      dump_eaf_flags (dump_file, flags | past, true);
+	    }
+	  if (!(flags & EAF_UNUSED))
+	    flags |= past;
+	}
 
       if (flags)
 	{
@@ -2416,8 +2442,23 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   if (retslot)
     {
       int flags = eaf_analysis.get_ssa_name_flags (retslot);
+      int past = past_retslot_flags;
 
       flags = remove_useless_eaf_flags (flags, ecf_flags, false);
+      past = remove_useless_eaf_flags
+		 (past, ecf_flags,
+		  VOID_TYPE_P (TREE_TYPE
+		      (TREE_TYPE (current_function_decl))));
+      if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
+	{
+	  fprintf (dump_file,
+		   "  Retslot flags combined with IPA pass:");
+	  dump_eaf_flags (dump_file, past, false);
+	  fprintf (dump_file, " local ");
+	  dump_eaf_flags (dump_file, flags, true);
+	}
+      if (!(flags & EAF_UNUSED))
+	flags |= past;
       if (flags)
 	{
 	  if (summary)
@@ -2431,8 +2472,23 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   if (static_chain)
     {
       int flags = eaf_analysis.get_ssa_name_flags (static_chain);
+      int past = past_static_chain_flags;
 
       flags = remove_useless_eaf_flags (flags, ecf_flags, false);
+      past = remove_useless_eaf_flags
+		 (past, ecf_flags,
+		  VOID_TYPE_P (TREE_TYPE
+		      (TREE_TYPE (current_function_decl))));
+      if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
+	{
+	  fprintf (dump_file,
+		   "  Static chain flags combined with IPA pass:");
+	  dump_eaf_flags (dump_file, past, false);
+	  fprintf (dump_file, " local ");
+	  dump_eaf_flags (dump_file, flags, true);
+	}
+      if (!(flags & EAF_UNUSED))
+	lags |= past;
       if (flags)
 	{
 	  if (summary)
@@ -2567,7 +2623,8 @@ analyze_function (function *f, bool ipa)
       summary_lto->writes_errno = false;
     }
 
-  analyze_parms (summary, summary_lto, ipa);
+  analyze_parms (summary, summary_lto, ipa,
+		 past_flags, past_retslot_flags, past_static_chain_flags);
 
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
   auto_vec <gimple *, 32> recursive_calls;
@@ -2662,15 +2719,12 @@ analyze_function (function *f, bool ipa)
 		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
 	      if (old_flags != new_flags)
 		{
-		  if ((old_flags & ~new_flags) == 0)
+		  if ((old_flags & ~new_flags) == 0
+		      || (new_flags & EAF_UNUSED))
 		    fprintf (dump_file, "  Flags for param %i improved:",
 			     (int)i);
-		  else if ((new_flags & ~old_flags) == 0)
-		    fprintf (dump_file, "  Flags for param %i worsened:",
-			     (int)i);
 		  else
-		    fprintf (dump_file, "  Flags for param %i changed:",
-			     (int)i);
+		    gcc_unreachable ();
 		  dump_eaf_flags (dump_file, old_flags, false);
 		  fprintf (dump_file, " -> ");
 		  dump_eaf_flags (dump_file, new_flags, true);
@@ -2682,12 +2736,11 @@ analyze_function (function *f, bool ipa)
 		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
 	  if (past_retslot_flags != summary->retslot_flags)
 	    {
-	      if ((past_retslot_flags & ~summary->retslot_flags) == 0)
+	      if ((past_retslot_flags & ~summary->retslot_flags) == 0
+		  || (summary->retslot_flags & EAF_UNUSED))
 		fprintf (dump_file, "  Flags for retslot improved:");
-	      else if ((summary->retslot_flags & ~past_retslot_flags) == 0)
-		fprintf (dump_file, "  Flags for retslot worsened:");
 	      else
-		fprintf (dump_file, "  Flags for retslot changed:");
+		gcc_unreachable ();
 	      dump_eaf_flags (dump_file, past_retslot_flags, false);
 	      fprintf (dump_file, " -> ");
 	      dump_eaf_flags (dump_file, summary->retslot_flags, true);
@@ -2698,13 +2751,11 @@ analyze_function (function *f, bool ipa)
 		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
 	  if (past_static_chain_flags != summary->static_chain_flags)
 	    {
-	      if ((past_static_chain_flags & ~summary->static_chain_flags) == 0)
+	      if ((past_static_chain_flags & ~summary->static_chain_flags) == 0
+		  || (summary->static_chain_flags & EAF_UNUSED))
 		fprintf (dump_file, "  Flags for static chain improved:");
-	      else if ((summary->static_chain_flags
-			& ~past_static_chain_flags) == 0)
-		fprintf (dump_file, "  Flags for static chain worsened:");
 	      else
-		fprintf (dump_file, "  Flags for static chain changed:");
+		gcc_unreachable ();
 	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
 	      fprintf (dump_file, " -> ");
 	      dump_eaf_flags (dump_file, summary->static_chain_flags, true);
