@@ -1,3 +1,105 @@
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102798
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Only copy points-to info to newly generated SSA names.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102518
+	* tree-inline.c (setup_one_parameter): Avoid substituting
+	an invariant into contexts where a GIMPLE register is not valid.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102788
+	* tree-vect-patterns.c (vect_init_pattern_stmt): Allow
+	a NULL vectype.
+	(vect_pattern_recog_1): Likewise.
+	(vect_recog_bool_pattern): Continue matching the pattern
+	even if we do not have a vector type for a conversion
+	result.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102762
+	* tree-inline.c (copy_bb): Avoid underflowing nargs.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102572
+	* tree-vect-stmts.c (vect_build_gather_load_calls): When
+	gathering the vectorized defs for the mask pass in the
+	desired mask vector type so invariants will be handled
+	correctly.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102139
+	* tree-vectorizer.h (vec_base_alignments): Adjust hash-map
+	type to record a std::pair of the stmt-info and the innermost
+	loop behavior.
+	(dr_vec_info::group): New member.
+	* tree-vect-data-refs.c (vect_record_base_alignment): Adjust.
+	(vect_compute_data_ref_alignment): Verify the recorded
+	base alignment can be used.
+	(data_ref_pair): Remove.
+	(dr_group_sort_cmp): Adjust.
+	(vect_analyze_data_ref_accesses): Store the group-ID in the
+	dr_vec_info and operate on a vector of dr_vec_infos.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Do not compare
+	BBs.
+	(vect_analyze_data_ref_accesses): Likewise.  Assign the BB
+	index as group_id when dataref_groups were not computed.
+	* tree-vect-slp.c (vect_slp_bbs): Bump current_group when
+	we advace to the next BB.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101480
+	* gimple.c (gimple_call_fnspec): Do not mark operator new/delete
+	as const.
+
+2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100520
+	* coverage.c (coverage_compute_profile_id): Strip .gk when
+	compare debug is used.
+	* system.h (endswith): New function.
+
+2021-11-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102789
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Do not
+	update inits of simd_lane_access.
+
 2021-11-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libgomp/96661
