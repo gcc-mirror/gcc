@@ -1,3 +1,12 @@
+2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Sync from master.
+	* gcc-changelog/git_commit.py: Likewise.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_update_version.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2021-06-23  Martin Liska  <mliska@suse.cz>
 
 	* mklog.py: New file.

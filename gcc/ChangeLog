@@ -1,3 +1,12 @@
+2021-11-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102789
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Do not
+	update inits of simd_lane_access.
+
 2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/102842
