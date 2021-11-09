@@ -41,7 +41,7 @@ test02()
 #ifdef _GLIBCXX_USE_DEV_RANDOM
   std::random_device x1("/dev/urandom");
   std::random_device x2("/dev/random");
-  VERIFY( x1() != x2() );
+  VERIFY( x1() != x2() || x1() != x2() );
 #endif
 }
 
