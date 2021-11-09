@@ -1071,8 +1071,9 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
 }
 
 /* Callback to walk_tree.  If REMAP is an SSA_NAME that is present in hash_map
-   passed in DATA, replace it with unshared version of what it was mapped
-   to.  */
+   passed in DATA, replace it with unshared version of what it was mapped to.
+   If an SSA argument would be remapped to NULL, the whole operation needs to
+   abort which is signaled by returning error_mark_node.  */
 
 static tree
 replace_with_mapped_expr (tree *remap, int *walk_subtrees, void *data)
@@ -1089,7 +1090,11 @@ replace_with_mapped_expr (tree *remap, int *walk_subtrees, void *data)
 
   hash_map<tree, tree> *equivs = (hash_map<tree, tree> *) data;
   if (tree *p = equivs->get (*remap))
-    *remap = unshare_expr (*p);
+    {
+      if (!*p)
+	return error_mark_node;
+      *remap = unshare_expr (*p);
+    }
   return 0;
 }
 
@@ -1100,16 +1105,22 @@ void
 ipa_param_body_adjustments::remap_with_debug_expressions (tree *t)
 {
   /* If *t is an SSA_NAME which should have its debug statements reset, it is
-     mapped to NULL in the hash_map.  We need to handle that case separately or
-     otherwise the walker would segfault.  No expression that is more
-     complicated than that can have its operands mapped to NULL.  */
+     mapped to NULL in the hash_map.
+
+     It is perhaps simpler to handle the SSA_NAME cases directly and only
+     invoke walk_tree on more complex expressions.  When
+     remap_with_debug_expressions is called from tree-inline.c, a to-be-reset
+     SSA_NAME can be an operand to such expressions and the entire debug
+     variable we are remapping should be reset.  This is signaled by walk_tree
+     returning error_mark_node and done by setting *t to NULL.  */
   if (TREE_CODE (*t) == SSA_NAME)
     {
       if (tree *p = m_dead_ssa_debug_equiv.get (*t))
 	*t = *p;
     }
-  else
-    walk_tree (t, replace_with_mapped_expr, &m_dead_ssa_debug_equiv, NULL);
+  else if (walk_tree (t, replace_with_mapped_expr,
+		      &m_dead_ssa_debug_equiv, NULL) == error_mark_node)
+    *t = NULL_TREE;
 }
 
 /* For an SSA_NAME DEAD_SSA which is about to be DCEd because it is based on a
