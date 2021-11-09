@@ -187,6 +187,18 @@ back_threader::debug_counter ()
   return true;
 }
 
+static void
+dump_path (FILE *dump_file, const vec<basic_block> &path)
+{
+  for (unsigned i = path.length (); i > 0; --i)
+    {
+      basic_block bb = path[i - 1];
+      fprintf (dump_file, "%d", bb->index);
+      if (i > 1)
+	fprintf (dump_file, "->");
+    }
+}
+
 // Dump details of an attempt to register a path.
 
 void
@@ -196,14 +208,7 @@ back_threader::maybe_register_path_dump (edge taken)
     return;
 
   fprintf (dump_file, "path: ");
-
-  for (unsigned i = m_path.length (); i > 0; --i)
-    {
-      basic_block bb = m_path[i - 1];
-      fprintf (dump_file, "%d", bb->index);
-      if (i > 1)
-	fprintf (dump_file, "->");
-    }
+  dump_path (dump_file, m_path);
   fprintf (dump_file, "->");
 
   if (taken == UNREACHABLE_EDGE)
@@ -368,9 +373,14 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
       if (!profitable_p)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "  FAIL: path through PHI in bb%d (incoming bb:%d) crosses loop\n",
-		     e->dest->index, e->src->index);
+	    {
+	      fprintf (dump_file,
+		       "  FAIL: path through PHI in bb%d (incoming bb:%d) crosses loop\n",
+		       e->dest->index, e->src->index);
+	      fprintf (dump_file, "path: %d->", e->src->index);
+	      dump_path (dump_file, m_path);
+	      fprintf (dump_file, "->xx REJECTED\n");
+	    }
 	  continue;
 	}
 
@@ -558,24 +568,11 @@ back_threader::maybe_thread_block (basic_block bb)
   find_paths (bb, name);
 }
 
-// Dump a sequence of BBs through the CFG.
-
-DEBUG_FUNCTION void
-dump_path (FILE *dump_file, const vec<basic_block> &path)
-{
-  for (size_t i = 0; i < path.length (); ++i)
-    {
-      fprintf (dump_file, "BB%d", path[i]->index);
-      if (i + 1 < path.length ())
-	fprintf (dump_file, " <- ");
-    }
-  fprintf (dump_file, "\n");
-}
-
 DEBUG_FUNCTION void
 debug (const vec <basic_block> &path)
 {
   dump_path (stderr, path);
+  fputc ('\n', stderr);
 }
 
 void
