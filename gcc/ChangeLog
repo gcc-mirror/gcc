@@ -1,3 +1,313 @@
+2021-11-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def (VEC_INIT_V16QI): Use
+	escape-newline support.
+	(VEC_INIT_V4SI): Likewise.
+	(VEC_INIT_V8HI): Likewise.
+	(PACK_V1TI): Likewise.
+	(DIVDEU): Likewise.
+	(VFIRSTMISMATCHOREOSINDEX_V16QI): Likewise.
+	(VFIRSTMISMATCHOREOSINDEX_V8HI): Likewise.
+	(VFIRSTMISMATCHOREOSINDEX_V4SI): Likewise.
+	(CMPRB2): Likewise.
+	(VSTDCP): Likewise.
+	(VSIEDP): Likewise.
+	(FMAF128_ODD): Likewise.
+	(VSCEQPUO): Likewise.
+	(VSIEQP): Likewise.
+	(VSIEQPF): Likewise.
+	(VSTDCQP): Likewise.
+	(PACK_TD): Likewise.
+	(TABORTDC): Likewise.
+	(TABORTDCI): Likewise.
+	(SE_LXVRBX): Likewise.
+	(SE_LXVRHX): Likewise.
+	(SE_LXVRWX): Likewise.
+	(SE_LXVRDX): Likewise.
+	(VREPLACE_UN_UV2DI): Likewise.
+	(VREPLACE_UN_UV4SI): Likewise.
+	(VREPLACE_UN_V2DI): Likewise.
+	(VREPLACE_ELT_UV2DI): Likewise.
+	(VREPLACE_ELT_V2DI): Likewise.
+	(ZE_LXVRBX): Likewise.
+	(ZE_LXVRHX): Likewise.
+	(ZE_LXVRWX): Likewise.
+	(ZE_LXVRDX): Likewise.
+	(CFUGED): Likewise.
+	(CNTLZDM): Likewise.
+	(CNTTZDM): Likewise.
+	(PDEPD): Likewise.
+	(PEXTD): Likewise.
+	(PMXVBF16GER2): Likewise.
+	(PMXVBF16GER2_INTERNAL): Likewise.
+	(PMXVBF16GER2NN): Likewise.
+	(PMXVBF16GER2NN_INTERNAL): Likewise.
+	(PMXVBF16GER2NP): Likewise.
+	(PMXVBF16GER2NP_INTERNAL): Likewise.
+	(PMXVBF16GER2PN): Likewise.
+	(PMXVBF16GER2PN_INTERNAL): Likewise.
+	(PMXVBF16GER2PP): Likewise.
+	(PMXVBF16GER2PP_INTERNAL): Likewise.
+	(PMXVF16GER2): Likewise.
+	(PMXVF16GER2_INTERNAL): Likewise.
+	(PMXVF16GER2NN): Likewise.
+	(PMXVF16GER2NN_INTERNAL): Likewise.
+	(PMXVF16GER2NP): Likewise.
+	(PMXVF16GER2NP_INTERNAL): Likewise.
+	(PMXVF16GER2PN): Likewise.
+	(PMXVF16GER2PN_INTERNAL): Likewise.
+	(PMXVF16GER2PP): Likewise.
+	(PMXVF16GER2PP_INTERNAL): Likewise.
+	(PMXVF32GER_INTERNAL): Likewise.
+	(PMXVF32GERNN): Likewise.
+	(PMXVF32GERNN_INTERNAL): Likewise.
+	(PMXVF32GERNP): Likewise.
+	(PMXVF32GERNP_INTERNAL): Likewise.
+	(PMXVF32GERPN): Likewise.
+	(PMXVF32GERPN_INTERNAL): Likewise.
+	(PMXVF32GERPP): Likewise.
+	(PMXVF32GERPP_INTERNAL): Likewise.
+	(PMXVF64GER): Likewise.
+	(PMXVF64GER_INTERNAL): Likewise.
+	(PMXVF64GERNN): Likewise.
+	(PMXVF64GERNN_INTERNAL): Likewise.
+	(PMXVF64GERNP): Likewise.
+	(PMXVF64GERNP_INTERNAL): Likewise.
+	(PMXVF64GERPN): Likewise.
+	(PMXVF64GERPN_INTERNAL): Likewise.
+	(PMXVF64GERPP): Likewise.
+	(PMXVF64GERPP_INTERNAL): Likewise.
+	(PMXVI16GER2): Likewise.
+	(PMXVI16GER2_INTERNAL): Likewise.
+	(PMXVI16GER2PP): Likewise.
+	(PMXVI16GER2PP_INTERNAL): Likewise.
+	(PMXVI16GER2S): Likewise.
+	(PMXVI16GER2S_INTERNAL): Likewise.
+	(PMXVI16GER2SPP): Likewise.
+	(PMXVI16GER2SPP_INTERNAL): Likewise.
+	(PMXVI4GER8): Likewise.
+	(PMXVI4GER8_INTERNAL): Likewise.
+	(PMXVI4GER8PP): Likewise.
+	(PMXVI4GER8PP_INTERNAL): Likewise.
+	(PMXVI8GER4): Likewise.
+	(PMXVI8GER4_INTERNAL): Likewise.
+	(PMXVI8GER4PP): Likewise.
+	(PMXVI8GER4PP_INTERNAL): Likewise.
+	(PMXVI8GER4SPP): Likewise.
+	(PMXVI8GER4SPP_INTERNAL): Likewise.
+	* config/rs6000/rs6000-gen-builtins.c (MAXLINES): New macro.
+	(linebuf): Increase size.
+	(lines): New variable.
+	(lastline): Likewise.
+	(real_line_pos): New function.
+	(diag): Change signature.
+	(bif_diag): Change signature; support escape-newline handling.
+	(ovld_diag): Likewise.
+	(fatal): Move earlier.
+	(consume_whitespace): Adjust diag call.
+	(advance_line): Add escape-newline handling; call fatal.
+	(safe_inc_pos): Adjust diag call.
+	(match_identifier): Likewise.
+	(match_integer): Likewise.
+	(match_to_right_bracket): Call fatal instead of diag; adjust diag
+	call.
+	(match_basetype): Adjust diag calls.
+	(match_bracketed_pair): Likewise.
+	(match_const_restriction): Likewise.
+	(match_type): Likewise.
+	(parse_args): Likewise.
+	(parse_bif_attrs): Likewise.
+	(complete_vector_type): Likewise.
+	(complete_base_type): Likewise.
+	(parse_prototype): Likewise.
+	(parse_bif_entry): Likewise.
+	(parse_bif_stanza): Likewise.
+	(parse_ovld_entry): Likewise.
+	(parse_ovld_stanza): Likewise.
+	(main): Allocate buffers for lines[].
+
+2021-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.c (legitimize_pic_address): Adjust comment and
+	use the REG argument on the CM_LARGE_PIC code path as well.
+	* config/i386/predicates.md (gotoff_operand): Do not treat VxWorks
+	specially with the large code models.
+
+2021-11-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gimple.c (gimple_call_static_chain_flags): Revert the workaround
+	allowing interposition since issues with binds_to_local_def were
+	hopefully solved.
+
+2021-11-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103122
+	* gimple-range.cc (gimple_ranger::range_of_expr): Request the cache
+	entry with "calulate new values" set to false.
+
+2021-11-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* builtins.c (is_simple_builtin): Add builitin_dwarf_cfa
+	and builtin_return_address.
+	(builtin_fnspec): Annotate builtin_return,
+	bulitin_eh_pointer, builtin_eh_filter, builtin_unwind_resume,
+	builtin_cxa_end_cleanup, builtin_eh_copy_values,
+	builtin_frame_address, builtin_apply_args,
+	builtin_asan_before_dynamic_init, builtin_asan_after_dynamic_init,
+	builtin_prefetch, builtin_dwarf_cfa, builtin_return_addrss
+	as ".c"
+	* ipa-pure-const.c (special_builtin_state): Add builtin_dwarf_cfa
+	and builtin_return_address.
+
+2021-11-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/103177
+	* passes.def: Move uncprop after pure/const and modref.
+
+2021-11-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103099
+	PR ipa/103107
+	* tree-inline.c (remap_gimple_stmt): Unshare the expression without
+	location before invoking remap_with_debug_expressions on it.
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::prepare_debug_expressions): Likewise.
+
+2021-11-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/vsx.md (vsx_splat_v4si_di): Revert "wa"
+	constraint to "we".
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	* cfgloop.c (verify_loop_structure): Use a temporary BB flag
+	instead of an sbitmap to cache irreducible state.
+
+2021-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103120
+	* gimple-range-path.cc (path_range_query::range_defined_in_block):
+	Bail if there's a cache entry.
+
+2021-11-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_reciprocal): Use
+	rs6000_builtin_decls_x when appropriate.
+	(add_condition_to_bb): Likewise.
+	(rs6000_atomic_assign_expand_fenv): Likewise.
+
+2021-11-08  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_new_builtin_decl): New function.
+	(rs6000_builtin_decl): Call it.
+
+2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump it from decl.
+
+2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100520
+	* coverage.c (coverage_compute_profile_id): Strip .gk when
+	compare debug is used.
+	* system.h (endswith): New function.
+
+2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump static_chain_decl.
+
+2021-11-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/rs6000/rbtree.c: Fix 'Copyright (C) 2020-21' into '2020-2021'
+	* config/rs6000/rbtree.h: Likewise.
+	* config/rs6000/rs6000-builtin-new.def: Likewise.
+	* config/rs6000/rs6000-gen-builtins.c: Likewise.
+	* config/rs6000/rs6000-overload.def: Likewise.
+
+2021-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_ldn_stn_vectors): New function.
+	(aarch64_address_cost): Use it instead of testing for CImode and
+	XImode directly.
+
+2021-11-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genmodes.c (emit_insn_modes_h): Define NUM_MODE_* macros.
+	* expmed.h (NUM_MODE_INT): Delete in favor of genmodes definitions.
+	(NUM_MODE_PARTIAL_INT, NUM_MODE_VECTOR_INT): Likewise.
+	* real.h (real_format_for_mode): Use NUM_MODE_FLOAT and
+	NUM_MODE_DECIMAL_FLOAT.
+	(REAL_MODE_FORMAT): Likewise.
+
+2021-11-08  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): Change how epilogue loop
+	costs are compared.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_create_loop_vinfo): Add main_loop_info
+	parameter.
+	* tree-vect-loop.c (vect_create_loop_vinfo): Likewise.  Set
+	LOOP_VINFO_ORIG_LOOP_INFO and conditionalize set of
+	LOOP_VINFO_NITERS_ASSUMPTIONS.
+	(vect_analyze_loop_1): Adjust.
+	(vect_analyze_loop): Move loop constraint setting and
+	SCEV/niter reset here from vect_create_loop_vinfo to perform
+	it only once.
+	(vect_analyze_loop_form): Move dumping of symbolic niters
+	here from vect_create_loop_vinfo.
+
+2021-11-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.h (enum modref_special_parms): New enum.
+	(struct modref_access_node): update for special parms.
+	(struct modref_ref_node): Likewise.
+	(struct modref_parm_map): Likewise.
+	(struct modref_tree): Likewise.
+	* ipa-modref.c (dump_access): Likewise.
+	(get_access): Detect static chain.
+	(parm_map_for_arg): Take tree as arg instead of
+	stmt and index.
+	(merge_call_side_effects): Compute map for static chain.
+	(process_fnspec): Update.
+	(struct escape_point): Remove retslot_arg and static_chain_arg.
+	(analyze_parms): Update.
+	(compute_parm_map): Update.
+	(propagate_unknown_call): Update.
+	(modref_propagate_in_scc): Update.
+	(modref_merge_call_site_flags): Update.
+	(ipa_merge_modref_summary_after_inlining): Update.
+	* tree-ssa-alias.c (modref_may_conflict): Handle static chain.
+	* ipa-modref-tree.c (test_merge): Update.
+
+2021-11-08  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_builtin): Disable
+	gimple fold for VSX_BUILTIN_XVMINDP, ALTIVEC_BUILTIN_VMINFP,
+	VSX_BUILTIN_XVMAXDP, ALTIVEC_BUILTIN_VMAXFP when fast-math is not
+	set.
+
+2021-11-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103077
+	* doc/invoke.texi (Options That Control Optimization):
+	Update documentation for -ftree-loop-vectorize and
+	-ftree-slp-vectorize which are enabled by default at -02.
+
+2021-11-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* match.pd (Simplifcation (trunc)copysign((extend)a, (extend)b)
+	to .COPYSIGN (a, b)): Add !HONOR_SNANS.
+
+2021-11-08  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* match.pd: Simplify
+	(trunc)fma ((extend)a, (extend)b, (extend)c) to IFN_FMA (a, b,
+	c) under flag_unsafe_math_optimizations.
+
 2021-11-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103055
