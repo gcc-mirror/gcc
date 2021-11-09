@@ -220,13 +220,17 @@
 
   /* Implemented by aarch64_<sur><addsub>hn<mode>.  */
   BUILTIN_VQN (BINOP, addhn, 0, NONE)
+  BUILTIN_VQN (BINOPU, addhn, 0, NONE)
   BUILTIN_VQN (BINOP, subhn, 0, NONE)
   BUILTIN_VQN (BINOP, raddhn, 0, NONE)
+  BUILTIN_VQN (BINOPU, raddhn, 0, NONE)
   BUILTIN_VQN (BINOP, rsubhn, 0, NONE)
   /* Implemented by aarch64_<sur><addsub>hn2<mode>.  */
   BUILTIN_VQN (TERNOP, addhn2, 0, NONE)
+  BUILTIN_VQN (TERNOPU, addhn2, 0, NONE)
   BUILTIN_VQN (TERNOP, subhn2, 0, NONE)
   BUILTIN_VQN (TERNOP, raddhn2, 0, NONE)
+  BUILTIN_VQN (TERNOPU, raddhn2, 0, NONE)
   BUILTIN_VQN (TERNOP, rsubhn2, 0, NONE)
 
   /* Implemented by aarch64_<us>xtl<mode>.  */
