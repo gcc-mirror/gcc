@@ -24,6 +24,7 @@
 
 #include <random>
 #include <stdexcept>
+#include <cstdio>
 #include <testsuite_hooks.h>
 #include <testsuite_random.h>
 
@@ -59,8 +60,14 @@ test03()
   int count = 0;
   for (const std::string& token : tokens)
   {
+    std::printf("checking std::random_device(\"%s\"):\t", token.c_str());
     if (__gnu_test::random_device_available(token))
+    {
+      std::puts("yes");
       ++count;
+    }
+    else
+      std::puts("no");
   }
   VERIFY( count != 0 );
 }
