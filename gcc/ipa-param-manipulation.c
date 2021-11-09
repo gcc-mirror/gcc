@@ -1200,10 +1200,7 @@ ipa_param_body_adjustments::prepare_debug_expressions (tree dead_ssa)
 	= unshare_expr_without_location (gimple_assign_rhs_to_tree (def));
       remap_with_debug_expressions (&val);
 
-      tree vexpr = make_node (DEBUG_EXPR_DECL);
-      DECL_ARTIFICIAL (vexpr) = 1;
-      TREE_TYPE (vexpr) = TREE_TYPE (val);
-      SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (val)));
+      tree vexpr = build_debug_expr_decl (TREE_TYPE (val));
       m_dead_stmt_debug_equiv.put (def, val);
       m_dead_ssa_debug_equiv.put (dead_ssa, vexpr);
       return true;

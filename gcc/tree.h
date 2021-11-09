@@ -4567,6 +4567,7 @@ extern tree build_tree_list (tree, tree CXX_MEM_STAT_INFO);
 extern tree build_tree_list_vec (const vec<tree, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_decl (location_t, enum tree_code,
 			tree, tree CXX_MEM_STAT_INFO);
+extern tree build_debug_expr_decl (tree type);
 extern tree build_fn_decl (const char *, tree);
 extern tree build_translation_unit_decl (tree);
 extern tree build_block (tree, tree, tree, tree);

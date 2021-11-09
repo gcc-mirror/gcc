@@ -5280,6 +5280,18 @@ build_decl (location_t loc, enum tree_code code, tree name,
   return t;
 }
 
+/* Create and return a DEBUG_EXPR_DECL node of the given TYPE.  */
+
+tree
+build_debug_expr_decl (tree type)
+{
+  tree vexpr = make_node (DEBUG_EXPR_DECL);
+  DECL_ARTIFICIAL (vexpr) = 1;
+  TREE_TYPE (vexpr) = type;
+  SET_DECL_MODE (vexpr, TYPE_MODE (type));
+  return vexpr;
+}
+
 /* Builds and returns function declaration with NAME and TYPE.  */
 
 tree

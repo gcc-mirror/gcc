@@ -4341,11 +4341,8 @@ avoid_deep_ter_for_debug (gimple *stmt, int depth)
 	  tree &vexpr = deep_ter_debug_map->get_or_insert (use);
 	  if (vexpr != NULL)
 	    continue;
-	  vexpr = make_node (DEBUG_EXPR_DECL);
+	  vexpr = build_debug_expr_decl (TREE_TYPE (use));
 	  gimple *def_temp = gimple_build_debug_bind (vexpr, use, g);
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (use);
-	  SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (use)));
 	  gimple_stmt_iterator gsi = gsi_for_stmt (g);
 	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
 	  avoid_deep_ter_for_debug (def_temp, 0);

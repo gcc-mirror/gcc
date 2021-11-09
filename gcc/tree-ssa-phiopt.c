@@ -2429,19 +2429,13 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	     all floating point numbers should be comparable.  */
 	  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (phi));
 	  tree type = TREE_TYPE (phires);
-	  tree temp1 = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (temp1) = 1;
-	  TREE_TYPE (temp1) = type;
-	  SET_DECL_MODE (temp1, TYPE_MODE (type));
+	  tree temp1 = build_debug_expr_decl (type);
 	  tree t = build2 (one_cmp, boolean_type_node, lhs1, rhs2);
 	  t = build3 (COND_EXPR, type, t, build_one_cst (type),
 		      build_int_cst (type, -1));
 	  gimple *g = gimple_build_debug_bind (temp1, t, phi);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-	  tree temp2 = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (temp2) = 1;
-	  TREE_TYPE (temp2) = type;
-	  SET_DECL_MODE (temp2, TYPE_MODE (type));
+	  tree temp2 = build_debug_expr_decl (type);
 	  t = build2 (EQ_EXPR, boolean_type_node, lhs1, rhs2);
 	  t = build3 (COND_EXPR, type, t, build_zero_cst (type), temp1);
 	  g = gimple_build_debug_bind (temp2, t, phi);
