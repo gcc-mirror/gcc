@@ -14518,6 +14518,9 @@ finite state automaton jump thread path.
 @item max-fsm-thread-length
 Maximum number of basic blocks on a jump thread path.
 
+@item threader-debug
+threader-debug=[none|all] Enables verbose dumping of the threader solver.
+
 @item parloops-chunk-size
 Chunk size of omp schedule for loops parallelized by parloops.
 
