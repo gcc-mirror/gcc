@@ -158,21 +158,21 @@
   BUILTIN_VALLP (STORESTRUCT_LANE_P, st4_lane, 0, ALL)
 
   BUILTIN_VQW (BINOP, saddl2, 0, NONE)
-  BUILTIN_VQW (BINOP, uaddl2, 0, NONE)
+  BUILTIN_VQW (BINOPU, uaddl2, 0, NONE)
   BUILTIN_VQW (BINOP, ssubl2, 0, NONE)
   BUILTIN_VQW (BINOP, usubl2, 0, NONE)
   BUILTIN_VQW (BINOP, saddw2, 0, NONE)
-  BUILTIN_VQW (BINOP, uaddw2, 0, NONE)
+  BUILTIN_VQW (BINOPU, uaddw2, 0, NONE)
   BUILTIN_VQW (BINOP, ssubw2, 0, NONE)
   BUILTIN_VQW (BINOP, usubw2, 0, NONE)
   /* Implemented by aarch64_<ANY_EXTEND:su><ADDSUB:optab>l<mode>.  */
   BUILTIN_VD_BHSI (BINOP, saddl, 0, NONE)
-  BUILTIN_VD_BHSI (BINOP, uaddl, 0, NONE)
+  BUILTIN_VD_BHSI (BINOPU, uaddl, 0, NONE)
   BUILTIN_VD_BHSI (BINOP, ssubl, 0, NONE)
   BUILTIN_VD_BHSI (BINOP, usubl, 0, NONE)
   /* Implemented by aarch64_<ANY_EXTEND:su><ADDSUB:optab>w<mode>.  */
   BUILTIN_VD_BHSI (BINOP, saddw, 0, NONE)
-  BUILTIN_VD_BHSI (BINOP, uaddw, 0, NONE)
+  BUILTIN_VD_BHSI (BINOPU, uaddw, 0, NONE)
   BUILTIN_VD_BHSI (BINOP, ssubw, 0, NONE)
   BUILTIN_VD_BHSI (BINOP, usubw, 0, NONE)
   /* Implemented by aarch64_<sur>h<addsub><mode>.  */
