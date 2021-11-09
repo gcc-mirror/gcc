@@ -4056,8 +4056,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (integer_onep (@2))
       (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } )))
      /* a ? powerof2cst : 0 -> (!a) << (log2(powerof2cst)) */
-     (if (INTEGRAL_TYPE_P (type) &&  integer_pow2p (@2)
-         && TYPE_PRECISION (type) != 1)
+     (if (INTEGRAL_TYPE_P (type) &&  integer_pow2p (@2))
       (with {
 	tree shift = build_int_cst (integer_type_node, tree_log2 (@2));
        }
