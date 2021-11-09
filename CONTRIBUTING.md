@@ -44,7 +44,7 @@ These will be imported into a GitHub PR to follow the normal review process, and
 
 * PRs won't be merged until the build and tests pass.
 
-* Please take the time to create good git commit messages see the existing format of them in the git log or refer to something like: https://chris.beams.io/posts/git-commit/
+* Please take the time to create good git commit messages. See the existing format of them in the git log or refer to something like: https://chris.beams.io/posts/git-commit/
 
 #### Running `clang-format` locally
 
