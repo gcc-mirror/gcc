@@ -2488,7 +2488,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	  dump_eaf_flags (dump_file, flags, true);
 	}
       if (!(flags & EAF_UNUSED))
-	lags |= past;
+	flags |= past;
       if (flags)
 	{
 	  if (summary)
