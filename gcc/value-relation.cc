@@ -1448,10 +1448,14 @@ void
 path_oracle::dump (FILE *f) const
 {
   equiv_chain *ptr = m_equiv.m_next;
+  relation_chain *ptr2 = m_relations.m_head;
+
+  if (ptr || ptr2)
+    fprintf (f, "\npath_oracle:\n");
+
   for (; ptr; ptr = ptr->m_next)
     ptr->dump (f);
 
-  relation_chain *ptr2 = m_relations.m_head;
   for (; ptr2; ptr2 = ptr2->m_next)
     {
       fprintf (f, "Relational : ");

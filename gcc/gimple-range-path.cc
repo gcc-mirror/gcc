@@ -98,7 +98,6 @@ path_range_query::dump (FILE *dump_file)
   unsigned i;
   bitmap_iterator bi;
 
-  fprintf (dump_file, "\nPath is (length=%d):\n", m_path->length ());
   dump_ranger (dump_file, *m_path);
 
   fprintf (dump_file, "Imports:\n");
@@ -505,7 +504,7 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
 				  const bitmap_head *imports)
 {
   if (DEBUG_SOLVER)
-    fprintf (dump_file, "\n*********** path_range_query ******************\n");
+    fprintf (dump_file, "\n==============================================\n");
 
   set_path (path);
   bitmap_copy (m_imports, imports);
@@ -519,13 +518,13 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
 
   if (DEBUG_SOLVER)
     {
-      fprintf (dump_file, "\npath_range_query: compute_ranges for path: ");
+      fprintf (dump_file, "path_range_query: compute_ranges for path: ");
       for (unsigned i = path.length (); i > 0; --i)
 	{
 	  basic_block bb = path[i - 1];
-	  fprintf (dump_file, "BB %d", bb->index);
+	  fprintf (dump_file, "%d", bb->index);
 	  if (i > 1)
-	    fprintf (dump_file, ", ");
+	    fprintf (dump_file, "->");
 	}
       fprintf (dump_file, "\n");
     }
@@ -557,9 +556,7 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
 
   if (DEBUG_SOLVER)
     {
-      fprintf (dump_file, "\npath_oracle:\n");
       get_path_oracle ()->dump (dump_file);
-      fprintf (dump_file, "\n");
       dump (dump_file);
     }
 }
