@@ -48,6 +48,7 @@
 // All other format specifiers are as defined by 'sprintf'. The final resulting
 // message is then sent to the back end via rust_be_error_at/rust_be_warning_at.
 
+// clang-format off
 // simple location
 extern void
 rust_internal_error_at (const Location, const char *fmt, ...)
@@ -71,6 +72,7 @@ rust_inform (const Location, const char *fmt, ...)
 extern void
 rust_error_at (const RichLocation &, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+// clang-format on
 
 // These interfaces provide a way for the front end to ask for
 // the open/close quote characters it should use when formatting
@@ -86,6 +88,7 @@ rust_close_quote ();
 // instead use the equivalent routines above. The back end is required to
 // implement these routines.
 
+// clang-format off
 extern void
 rust_be_internal_error_at (const Location, const std::string &errmsg)
   RUST_ATTRIBUTE_NORETURN;
@@ -104,6 +107,7 @@ extern void
 rust_be_get_quotechars (const char **open_quote, const char **close_quote);
 extern bool
 rust_be_debug_p (void);
+// clang-format on
 
 namespace Rust {
 /* A structure used to represent an error. Useful for enabling
