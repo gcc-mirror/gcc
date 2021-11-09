@@ -1,3 +1,31 @@
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101373
+	PR tree-optimization/101868
+	* tree-ssa-pre.c (prune_clobbered_mems): Also prune trapping
+	references when the BB may not return.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101824
+	* tree-nested.c (get_frame_field): Mark the COMPONENT_REF as
+	volatile in case the variable was.
+
+2021-11-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-10-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/102789
+	* tree-vect-loop-manip.c (vect_update_inits_of_drs): Do not
+	update inits of simd_lane_access.
+
 2021-10-26  Piotr Kubaj  <pkubaj@FreeBSD.org>
 
 	Backported from master:
