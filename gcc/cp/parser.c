@@ -4804,9 +4804,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
       else /* if (id_equal (suffix_id, "il")) */
 	type = long_double_type_node;
 
-      value = build_complex (build_complex_type (type),
-			     fold_convert (type, integer_zero_node),
-			     fold_convert (type, value));
+      value = fold_build2 (COMPLEX_EXPR, build_complex_type (type),
+			   build_zero_cst (type), fold_convert (type, value));
     }
 
   if (cp_parser_uncommitted_to_tentative_parse_p (parser))
