@@ -4848,7 +4848,8 @@ foreach { armfunc armflag armdefs } {
 	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
 		__ARM_ARCH_8M_BASE__
 	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__
-	v8_1m_main "-march=armv8.1-m.main -mthumb" __ARM_ARCH_8M_MAIN__ } {
+	v8_1m_main "-march=armv8.1-m.main -mthumb" __ARM_ARCH_8M_MAIN__
+	v9a "-march=armv9-a" __ARM_ARCH_9A__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {

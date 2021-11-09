@@ -20119,6 +20119,7 @@ Permissible names are:
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
 @samp{armv8.1-m.main},
+@samp{armv9-a},
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
