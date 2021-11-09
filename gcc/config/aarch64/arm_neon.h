@@ -2022,186 +2022,168 @@ __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return (int8x8_t) __builtin_aarch64_subhnv8hi (__a, __b);
+  return __builtin_aarch64_subhnv8hi (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return (int16x4_t) __builtin_aarch64_subhnv4si (__a, __b);
+  return __builtin_aarch64_subhnv4si (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_s64 (int64x2_t __a, int64x2_t __b)
 {
-  return (int32x2_t) __builtin_aarch64_subhnv2di (__a, __b);
+  return __builtin_aarch64_subhnv2di (__a, __b);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint8x8_t) __builtin_aarch64_subhnv8hi ((int16x8_t) __a,
-						  (int16x8_t) __b);
+  return __builtin_aarch64_subhnv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint16x4_t) __builtin_aarch64_subhnv4si ((int32x4_t) __a,
-						   (int32x4_t) __b);
+  return __builtin_aarch64_subhnv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_u64 (uint64x2_t __a, uint64x2_t __b)
 {
-  return (uint32x2_t) __builtin_aarch64_subhnv2di ((int64x2_t) __a,
-						   (int64x2_t) __b);
+  return __builtin_aarch64_subhnv2di_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return (int8x8_t) __builtin_aarch64_rsubhnv8hi (__a, __b);
+  return __builtin_aarch64_rsubhnv8hi (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return (int16x4_t) __builtin_aarch64_rsubhnv4si (__a, __b);
+  return __builtin_aarch64_rsubhnv4si (__a, __b);
 }
 
 __extension__ extern __inline int32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_s64 (int64x2_t __a, int64x2_t __b)
 {
-  return (int32x2_t) __builtin_aarch64_rsubhnv2di (__a, __b);
+  return __builtin_aarch64_rsubhnv2di (__a, __b);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint8x8_t) __builtin_aarch64_rsubhnv8hi ((int16x8_t) __a,
-						   (int16x8_t) __b);
+  return __builtin_aarch64_rsubhnv8hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint16x4_t) __builtin_aarch64_rsubhnv4si ((int32x4_t) __a,
-						    (int32x4_t) __b);
+  return __builtin_aarch64_rsubhnv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_u64 (uint64x2_t __a, uint64x2_t __b)
 {
-  return (uint32x2_t) __builtin_aarch64_rsubhnv2di ((int64x2_t) __a,
-						    (int64x2_t) __b);
+  return __builtin_aarch64_rsubhnv2di_uuu (__a, __b);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_high_s16 (int8x8_t __a, int16x8_t __b, int16x8_t __c)
 {
-  return (int8x16_t) __builtin_aarch64_rsubhn2v8hi (__a, __b, __c);
+  return __builtin_aarch64_rsubhn2v8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_high_s32 (int16x4_t __a, int32x4_t __b, int32x4_t __c)
 {
-  return (int16x8_t) __builtin_aarch64_rsubhn2v4si (__a, __b, __c);
+  return __builtin_aarch64_rsubhn2v4si (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_high_s64 (int32x2_t __a, int64x2_t __b, int64x2_t __c)
 {
-  return (int32x4_t) __builtin_aarch64_rsubhn2v2di (__a, __b, __c);
+  return __builtin_aarch64_rsubhn2v2di (__a, __b, __c);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_high_u16 (uint8x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
-  return (uint8x16_t) __builtin_aarch64_rsubhn2v8hi ((int8x8_t) __a,
-						     (int16x8_t) __b,
-						     (int16x8_t) __c);
+  return __builtin_aarch64_rsubhn2v8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_high_u32 (uint16x4_t __a, uint32x4_t __b, uint32x4_t __c)
 {
-  return (uint16x8_t) __builtin_aarch64_rsubhn2v4si ((int16x4_t) __a,
-						     (int32x4_t) __b,
-						     (int32x4_t) __c);
+  return __builtin_aarch64_rsubhn2v4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vrsubhn_high_u64 (uint32x2_t __a, uint64x2_t __b, uint64x2_t __c)
 {
-  return (uint32x4_t) __builtin_aarch64_rsubhn2v2di ((int32x2_t) __a,
-						     (int64x2_t) __b,
-						     (int64x2_t) __c);
+  return __builtin_aarch64_rsubhn2v2di_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_high_s16 (int8x8_t __a, int16x8_t __b, int16x8_t __c)
 {
-  return (int8x16_t) __builtin_aarch64_subhn2v8hi (__a, __b, __c);
+  return __builtin_aarch64_subhn2v8hi (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_high_s32 (int16x4_t __a, int32x4_t __b, int32x4_t __c)
 {
-  return (int16x8_t) __builtin_aarch64_subhn2v4si (__a, __b, __c);;
+  return __builtin_aarch64_subhn2v4si (__a, __b, __c);;
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_high_s64 (int32x2_t __a, int64x2_t __b, int64x2_t __c)
 {
-  return (int32x4_t) __builtin_aarch64_subhn2v2di (__a, __b, __c);
+  return __builtin_aarch64_subhn2v2di (__a, __b, __c);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_high_u16 (uint8x8_t __a, uint16x8_t __b, uint16x8_t __c)
 {
-  return (uint8x16_t) __builtin_aarch64_subhn2v8hi ((int8x8_t) __a,
-						    (int16x8_t) __b,
-						    (int16x8_t) __c);
+  return __builtin_aarch64_subhn2v8hi_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_high_u32 (uint16x4_t __a, uint32x4_t __b, uint32x4_t __c)
 {
-  return (uint16x8_t) __builtin_aarch64_subhn2v4si ((int16x4_t) __a,
-						    (int32x4_t) __b,
-						    (int32x4_t) __c);
+  return __builtin_aarch64_subhn2v4si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsubhn_high_u64 (uint32x2_t __a, uint64x2_t __b, uint64x2_t __c)
 {
-  return (uint32x4_t) __builtin_aarch64_subhn2v2di ((int32x2_t) __a,
-						    (int64x2_t) __b,
-						    (int64x2_t) __c);
+  return __builtin_aarch64_subhn2v2di_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline uint16x4_t
