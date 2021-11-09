@@ -1047,6 +1047,19 @@ Maximum number of escape points tracked by modref per SSA-name.
 Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange(0, 254) Param Optimization
 Maximum number of times a given range is adjusted during the dataflow.
 
+-param=threader-debug=
+Common Joined Var(param_threader_debug) Enum(threader_debug) Init(THREADER_DEBUG_NONE) Param Optimization
+--param=threader-debug=[none|all] Enables verbose dumping of the threader solver.
+
+Enum
+Name(threader_debug) Type(enum threader_debug) UnknownError(unknown threader debug mode %qs)
+
+EnumValue
+Enum(threader_debug) String(none) Value(THREADER_DEBUG_NONE)
+
+EnumValue
+Enum(threader_debug) String(all) Value(THREADER_DEBUG_ALL)
+
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
 Size in bytes after which thread-local aggregates should be instrumented with the logging functions instead of save/restore pairs.

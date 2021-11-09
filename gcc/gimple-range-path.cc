@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 
 // Internal construct to help facilitate debugging of solver.
-#define DEBUG_SOLVER (dump_file && dump_flags & TDF_THREADING)
+#define DEBUG_SOLVER (dump_file && (param_threader_debug == THREADER_DEBUG_ALL))
 
 path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
   : m_ranger (ranger)
