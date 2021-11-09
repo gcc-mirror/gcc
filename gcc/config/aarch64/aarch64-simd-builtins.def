@@ -178,10 +178,10 @@
   /* Implemented by aarch64_<sur>h<addsub><mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, shadd, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, shsub, 0, NONE)
-  BUILTIN_VDQ_BHSI (BINOP, uhadd, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOPU, uhadd, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, uhsub, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, srhadd, 0, NONE)
-  BUILTIN_VDQ_BHSI (BINOP, urhadd, 0, NONE)
+  BUILTIN_VDQ_BHSI (BINOPU, urhadd, 0, NONE)
 
   /* Implemented by aarch64_<su>addlp<mode>.  */
   BUILTIN_VDQV_L (UNOP, saddlp, 0, NONE)
