@@ -130,7 +130,11 @@ operator!= (const nowarn_spec_t &lhs, const nowarn_spec_t &rhs)
   return !(lhs == rhs);
 }
 
-typedef int_hash <location_t, 0, UINT_MAX> xint_hash_t;
+/* Per PR103157 "'gengtype': 'typedef' causing infinite-recursion code to be
+   generated", don't use
+       typedef int_hash<location_t, 0, UINT_MAX> xint_hash_t;
+   here.  */
+struct xint_hash_t : int_hash<location_t, 0, UINT_MAX> {};
 typedef hash_map<xint_hash_t, nowarn_spec_t> xint_hash_map_t;
 
 /* A mapping from a 'location_t' to the warning spec set for it.  */
