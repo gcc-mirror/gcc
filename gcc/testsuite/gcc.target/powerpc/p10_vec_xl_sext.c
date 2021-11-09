@@ -24,7 +24,7 @@ foo3 (signed long a, signed int *b)
 }
 
 vector signed __int128
-foo4 (signed long a, signed long *b)
+foo4 (signed long a, signed long long *b)
 {
   return vec_xl_sext (a, b);
 }

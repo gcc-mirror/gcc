@@ -13902,6 +13902,14 @@ rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
     /* flavors of vec_min.  */
     case RS6000_BIF_XVMINDP:
     case RS6000_BIF_XVMINSP:
+    case RS6000_BIF_VMINFP:
+      {
+	lhs = gimple_call_lhs (stmt);
+	tree type = TREE_TYPE (lhs);
+	if (HONOR_NANS (type))
+	  return false;
+	gcc_fallthrough ();
+      }
     case RS6000_BIF_VMINSD:
     case RS6000_BIF_VMINUD:
     case RS6000_BIF_VMINSB:
@@ -13910,7 +13918,6 @@ rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_VMINUB:
     case RS6000_BIF_VMINUH:
     case RS6000_BIF_VMINUW:
-    case RS6000_BIF_VMINFP:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -13921,6 +13928,14 @@ rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
     /* flavors of vec_max.  */
     case RS6000_BIF_XVMAXDP:
     case RS6000_BIF_XVMAXSP:
+    case RS6000_BIF_VMAXFP:
+      {
+	lhs = gimple_call_lhs (stmt);
+	tree type = TREE_TYPE (lhs);
+	if (HONOR_NANS (type))
+	  return false;
+	gcc_fallthrough ();
+      }
     case RS6000_BIF_VMAXSD:
     case RS6000_BIF_VMAXUD:
     case RS6000_BIF_VMAXSB:
@@ -13929,7 +13944,6 @@ rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
     case RS6000_BIF_VMAXUB:
     case RS6000_BIF_VMAXUH:
     case RS6000_BIF_VMAXUW:
-    case RS6000_BIF_VMAXFP:
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
       lhs = gimple_call_lhs (stmt);
@@ -15157,7 +15171,7 @@ lxvrse_expand_builtin (rtx target, insn_code icode, rtx *op,
 			  gen_rtx_PLUS (Pmode, op[1], op[0]));
     }
 
-  rtx discratch = gen_reg_rtx (DImode);
+  rtx discratch = gen_reg_rtx (V2DImode);
   rtx tiscratch = gen_reg_rtx (TImode);
 
   /* Emit the lxvr*x insn.  */
@@ -15166,20 +15180,31 @@ lxvrse_expand_builtin (rtx target, insn_code icode, rtx *op,
     return 0;
   emit_insn (pat);
 
-  /* Emit a sign extension from QI,HI,WI to double (DI).  */
-  rtx scratch = gen_lowpart (smode, tiscratch);
+  /* Emit a sign extension from V16QI,V8HI,V4SI to V2DI.  */
+  rtx temp1;
   if (icode == CODE_FOR_vsx_lxvrbx)
-    emit_insn (gen_extendqidi2 (discratch, scratch));
+    {
+      temp1  = simplify_gen_subreg (V16QImode, tiscratch, TImode, 0);
+      emit_insn (gen_vsx_sign_extend_qi_v2di (discratch, temp1));
+    }
   else if (icode == CODE_FOR_vsx_lxvrhx)
-    emit_insn (gen_extendhidi2 (discratch, scratch));
+    {
+      temp1  = simplify_gen_subreg (V8HImode, tiscratch, TImode, 0);
+      emit_insn (gen_vsx_sign_extend_hi_v2di (discratch, temp1));
+    }
   else if (icode == CODE_FOR_vsx_lxvrwx)
-    emit_insn (gen_extendsidi2 (discratch, scratch));
-  /*  Assign discratch directly if scratch is already DI.  */
-  if (icode == CODE_FOR_vsx_lxvrdx)
-    discratch = scratch;
+    {
+      temp1  = simplify_gen_subreg (V4SImode, tiscratch, TImode, 0);
+      emit_insn (gen_vsx_sign_extend_si_v2di (discratch, temp1));
+    }
+  else if (icode == CODE_FOR_vsx_lxvrdx)
+    discratch = simplify_gen_subreg (V2DImode, tiscratch, TImode, 0);
+  else
+    gcc_unreachable ();
 
-  /* Emit the sign extension from DI (double) to TI (quad).  */
-  emit_insn (gen_extendditi2 (target, discratch));
+  /* Emit the sign extension from V2DI (double) to TI (quad).  */
+  rtx temp2 = simplify_gen_subreg (TImode, discratch, V2DImode, 0);
+  emit_insn (gen_extendditi2_vector (target, temp2));
 
   return target;
 }
