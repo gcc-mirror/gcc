@@ -513,6 +513,7 @@
 
   /* Implemented by aarch64_reduc_plus_<mode>.  */
   BUILTIN_VALL (UNOP, reduc_plus_scal_, 10, NONE)
+  BUILTIN_VDQ_I (UNOPU, reduc_plus_scal_, 10, NONE)
 
   /* Implemented by reduc_<maxmin_uns>_scal_<mode> (producing scalar).  */
   BUILTIN_VDQIF_F16 (UNOP, reduc_smax_scal_, 10, NONE)

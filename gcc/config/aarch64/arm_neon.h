@@ -9695,21 +9695,21 @@ __extension__ extern __inline uint8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddv_u8 (uint8x8_t __a)
 {
-  return (uint8_t) __builtin_aarch64_reduc_plus_scal_v8qi ((int8x8_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v8qi_uu (__a);
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddv_u16 (uint16x4_t __a)
 {
-  return (uint16_t) __builtin_aarch64_reduc_plus_scal_v4hi ((int16x4_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v4hi_uu (__a);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddv_u32 (uint32x2_t __a)
 {
-  return (int32_t) __builtin_aarch64_reduc_plus_scal_v2si ((int32x2_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v2si_uu (__a);
 }
 
 __extension__ extern __inline int8_t
@@ -9744,28 +9744,28 @@ __extension__ extern __inline uint8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddvq_u8 (uint8x16_t __a)
 {
-  return (uint8_t) __builtin_aarch64_reduc_plus_scal_v16qi ((int8x16_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v16qi_uu (__a);
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddvq_u16 (uint16x8_t __a)
 {
-  return (uint16_t) __builtin_aarch64_reduc_plus_scal_v8hi ((int16x8_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v8hi_uu (__a);
 }
 
 __extension__ extern __inline uint32_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddvq_u32 (uint32x4_t __a)
 {
-  return (uint32_t) __builtin_aarch64_reduc_plus_scal_v4si ((int32x4_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v4si_uu (__a);
 }
 
 __extension__ extern __inline uint64_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vaddvq_u64 (uint64x2_t __a)
 {
-  return (uint64_t) __builtin_aarch64_reduc_plus_scal_v2di ((int64x2_t) __a);
+  return __builtin_aarch64_reduc_plus_scal_v2di_uu (__a);
 }
 
 __extension__ extern __inline float32_t
