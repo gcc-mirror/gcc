@@ -4873,8 +4873,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
      binding annotations among them.  */
   cfun->debug_nonbind_markers = lang_hooks.emits_begin_stmt
     && MAY_HAVE_DEBUG_MARKER_STMTS;
-
-  cfun->x_range_query = &global_ranges;
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL

@@ -467,6 +467,7 @@ enable_ranger (struct function *fun)
 {
   gimple_ranger *r;
 
+  gcc_checking_assert (!fun->x_range_query);
   r = new gimple_ranger;
   fun->x_range_query = r;
 
@@ -479,7 +480,7 @@ enable_ranger (struct function *fun)
 void
 disable_ranger (struct function *fun)
 {
+  gcc_checking_assert (fun->x_range_query);
   delete fun->x_range_query;
-
-  fun->x_range_query = &global_ranges;
+  fun->x_range_query = NULL;
 }
