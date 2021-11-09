@@ -186,11 +186,10 @@ back_threader::debug_counter ()
   return true;
 }
 
-// Register the current path for jump threading if it's profitable to
-// do so.
 //
-// Return the known taken edge out of the path, even if the path was
-// not registered, or NULL if the taken edge could not be determined.
+// Return NULL if it is unprofitable to thread this path, or the
+// outgoing edge is unknown.  Return UNREACHABLE_EDGE if the path is
+// unreachable.
 
 edge
 back_threader::maybe_register_path ()
@@ -199,23 +198,26 @@ back_threader::maybe_register_path ()
 
   if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
-      // Avoid circular paths.
       if (m_visited_bbs.contains (taken_edge->dest))
-	return UNREACHABLE_EDGE;
-
-      bool irreducible = false;
-      bool profitable
-	= m_profit.profitable_path_p (m_path, m_name, taken_edge, &irreducible);
-
-      if (profitable)
 	{
-	  if (!debug_counter ())
-	    return NULL;
+	  // Avoid circular paths by indicating there is nothing to
+	  // see in this direction.
+	  taken_edge = UNREACHABLE_EDGE;
+	}
+      else
+	{
+	  bool irreducible = false;
+	  if (m_profit.profitable_path_p (m_path, m_name, taken_edge,
+					  &irreducible)
+	      && debug_counter ())
+	    {
+	      m_registry.register_path (m_path, taken_edge);
 
-	  m_registry.register_path (m_path, taken_edge);
-
-	  if (irreducible)
-	    vect_free_loop_info_assumptions (m_path[0]->loop_father);
+	      if (irreducible)
+		vect_free_loop_info_assumptions (m_path[0]->loop_father);
+	    }
+	  else
+	    taken_edge = NULL;
 	}
     }
   return taken_edge;
