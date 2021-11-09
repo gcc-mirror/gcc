@@ -5106,23 +5106,6 @@ gfc_get_derived_super_type (gfc_symbol* derived)
 }
 
 
-/* Get the ultimate super-type of a given derived type.  */
-
-static gfc_symbol*
-gfc_get_ultimate_derived_super_type (gfc_symbol* derived)
-{
-  if (!derived->attr.extension)
-    return NULL;
-
-  derived = gfc_get_derived_super_type (derived);
-
-  if (derived->attr.extension)
-    return gfc_get_ultimate_derived_super_type (derived);
-  else
-    return derived;
-}
-
-
 /* Check if a derived type t2 is an extension of (or equal to) a type t1.  */
 
 bool
