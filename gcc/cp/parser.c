@@ -19855,7 +19855,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
   Note that the Concepts TS allows the auto or decltype(auto) to be
   omitted in a constrained-type-specifier.  */
 
-tree
+static tree
 cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
 				      tree tmpl, bool tentative)
 {
@@ -19871,7 +19871,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       args = TREE_OPERAND (tmpl, 1);
       tmpl = TREE_OPERAND (tmpl, 0);
     }
-  if (args == NULL_TREE)
+  else
     /* A concept-name with no arguments can't be an expression.  */
     tentative = false;
 
@@ -19909,8 +19909,11 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       if (!flag_concepts_ts
 	  || !processing_template_parmlist)
 	{
-	  error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
-	  inform (DECL_SOURCE_LOCATION (con), "concept defined here");
+	  if (!tentative)
+	    {
+	      error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
+	      inform (DECL_SOURCE_LOCATION (con), "concept defined here");
+	    }
 	  return error_mark_node;
 	}
     }
