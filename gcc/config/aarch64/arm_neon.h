@@ -5975,21 +5975,21 @@ __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_s8 (int8x8_t __a, int8x8_t __b)
 {
-  return (int8x16_t) __builtin_aarch64_combinev8qi (__a, __b);
+  return __builtin_aarch64_combinev8qi (__a, __b);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_s16 (int16x4_t __a, int16x4_t __b)
 {
-  return (int16x8_t) __builtin_aarch64_combinev4hi (__a, __b);
+  return __builtin_aarch64_combinev4hi (__a, __b);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_s32 (int32x2_t __a, int32x2_t __b)
 {
-  return (int32x4_t) __builtin_aarch64_combinev2si (__a, __b);
+  return __builtin_aarch64_combinev2si (__a, __b);
 }
 
 __extension__ extern __inline int64x2_t
@@ -6010,38 +6010,35 @@ __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_f32 (float32x2_t __a, float32x2_t __b)
 {
-  return (float32x4_t) __builtin_aarch64_combinev2sf (__a, __b);
+  return __builtin_aarch64_combinev2sf (__a, __b);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x16_t) __builtin_aarch64_combinev8qi ((int8x8_t) __a,
-						     (int8x8_t) __b);
+  return __builtin_aarch64_combinev8qi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x8_t) __builtin_aarch64_combinev4hi ((int16x4_t) __a,
-						     (int16x4_t) __b);
+  return __builtin_aarch64_combinev4hi_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x4_t) __builtin_aarch64_combinev2si ((int32x2_t) __a,
-						     (int32x2_t) __b);
+  return __builtin_aarch64_combinev2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline uint64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x2_t) __builtin_aarch64_combinedi (__a[0], __b[0]);
+  return __builtin_aarch64_combinedi_uuu (__a[0], __b[0]);
 }
 
 __extension__ extern __inline float64x2_t
@@ -6055,23 +6052,21 @@ __extension__ extern __inline poly8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_p8 (poly8x8_t __a, poly8x8_t __b)
 {
-  return (poly8x16_t) __builtin_aarch64_combinev8qi ((int8x8_t) __a,
-						     (int8x8_t) __b);
+  return __builtin_aarch64_combinev8qi_ppp (__a, __b);
 }
 
 __extension__ extern __inline poly16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_p16 (poly16x4_t __a, poly16x4_t __b)
 {
-  return (poly16x8_t) __builtin_aarch64_combinev4hi ((int16x4_t) __a,
-						     (int16x4_t) __b);
+  return __builtin_aarch64_combinev4hi_ppp (__a, __b);
 }
 
 __extension__ extern __inline poly64x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_p64 (poly64x1_t __a, poly64x1_t __b)
 {
-  return (poly64x2_t) __builtin_aarch64_combinedi_ppp (__a[0], __b[0]);
+  return __builtin_aarch64_combinedi_ppp (__a[0], __b[0]);
 }
 
 /* Start of temporary inline asm implementations.  */
@@ -30648,7 +30643,7 @@ __extension__ extern __inline bfloat16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcombine_bf16 (bfloat16x4_t __a, bfloat16x4_t __b)
 {
-  return (bfloat16x8_t)__builtin_aarch64_combinev4bf (__a, __b);
+  return __builtin_aarch64_combinev4bf (__a, __b);
 }
 
 /* vdup */

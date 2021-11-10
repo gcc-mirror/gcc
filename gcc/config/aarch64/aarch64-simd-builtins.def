@@ -43,8 +43,9 @@
    help describe the attributes (for example, pure) for the intrinsic
    function.  */
 
-  BUILTIN_VDC (COMBINE, combine, 0, AUTO_FP)
-  VAR1 (COMBINEP, combine, 0, NONE, di)
+  BUILTIN_VDC (BINOP, combine, 0, AUTO_FP)
+  BUILTIN_VD_I (BINOPU, combine, 0, NONE)
+  BUILTIN_VDC_P (BINOPP, combine, 0, NONE)
   BUILTIN_VB (BINOPP, pmul, 0, NONE)
   VAR1 (BINOPP, pmull, 0, NONE, v8qi)
   VAR1 (BINOPP, pmull_hi, 0, NONE, v16qi)

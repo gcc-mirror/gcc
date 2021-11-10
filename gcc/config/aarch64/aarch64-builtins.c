@@ -353,17 +353,6 @@ aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_immediate };
 #define TYPES_USHIFTACC (aarch64_types_unsigned_shiftacc_qualifiers)
 
-
-static enum aarch64_type_qualifiers
-aarch64_types_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_none };
-#define TYPES_COMBINE (aarch64_types_combine_qualifiers)
-
-static enum aarch64_type_qualifiers
-aarch64_types_combine_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_poly, qualifier_poly, qualifier_poly };
-#define TYPES_COMBINEP (aarch64_types_combine_p_qualifiers)
-
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode };
