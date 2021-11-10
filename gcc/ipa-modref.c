@@ -87,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "attribs.h"
 #include "tree-cfg.h"
+#include "tree-eh.h"
 
 
 namespace {
@@ -275,7 +276,7 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 
 modref_summary::modref_summary ()
   : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
-    writes_errno (false)
+    writes_errno (false), side_effects (false)
 {
 }
 
@@ -373,6 +374,7 @@ struct GTY(()) modref_summary_lto
   eaf_flags_t retslot_flags;
   eaf_flags_t static_chain_flags;
   bool writes_errno;
+  bool side_effects;
 
   modref_summary_lto ();
   ~modref_summary_lto ();
@@ -384,7 +386,7 @@ struct GTY(()) modref_summary_lto
 
 modref_summary_lto::modref_summary_lto ()
   : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
-    writes_errno (false)
+    writes_errno (false), side_effects (false)
 {
 }
 
@@ -617,6 +619,8 @@ modref_summary::dump (FILE *out)
     }
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
+  if (side_effects)
+    fprintf (out, "  Side effects\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -649,6 +653,8 @@ modref_summary_lto::dump (FILE *out)
   dump_lto_records (stores, out);
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
+  if (side_effects)
+    fprintf (out, "  Side effects\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -982,6 +988,12 @@ merge_call_side_effects (modref_summary *cur_summary,
 	  changed = true;
 	}
     }
+  if (!cur_summary->side_effects
+      && callee_summary->side_effects)
+    {
+      cur_summary->side_effects = true;
+      changed = true;
+    }
   return changed;
 }
 
@@ -1077,6 +1089,18 @@ process_fnspec (modref_summary *cur_summary,
 		gcall *call, bool ignore_stores)
 {
   attr_fnspec fnspec = gimple_call_fnspec (call);
+  int flags = gimple_call_flags (call);
+
+  if (!(flags & (ECF_CONST | ECF_NOVOPS))
+      || (flags & ECF_LOOPING_CONST_OR_PURE)
+      || (cfun->can_throw_non_call_exceptions
+	  && stmt_could_throw_p (cfun, call)))
+    {
+      if (cur_summary)
+	cur_summary->side_effects = true;
+      if (cur_summary_lto)
+	cur_summary_lto->side_effects = true;
+    }
   if (!fnspec.known_p ())
     {
       if (dump_file && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
@@ -1214,6 +1238,10 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   if (recursive_call_p (current_function_decl, callee))
     {
       recursive_calls->safe_push (stmt);
+      if (cur_summary)
+	cur_summary->side_effects = true;
+      if (cur_summary_lto)
+	cur_summary_lto->side_effects = true;
       if (dump_file)
 	fprintf (dump_file, " - Skipping recursive call.\n");
       return true;
@@ -1224,6 +1252,20 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   /* Get the function symbol and its availability.  */
   enum availability avail;
   callee_node = callee_node->function_symbol (&avail);
+  bool looping;
+  if (builtin_safe_for_const_function_p (&looping, callee))
+    {
+      if (looping)
+	{
+	  if (cur_summary)
+	    cur_summary->side_effects = true;
+	  if (cur_summary_lto)
+	    cur_summary_lto->side_effects = true;
+	}
+      if (dump_file)
+	fprintf (dump_file, " - Bulitin is safe for const.\n");
+      return true;
+    }
   if (avail <= AVAIL_INTERPOSABLE)
     {
       if (dump_file)
@@ -1270,6 +1312,18 @@ analyze_load (gimple *, tree, tree op, void *data)
       fprintf (dump_file, "\n");
     }
 
+  if (TREE_THIS_VOLATILE (op)
+      || (cfun->can_throw_non_call_exceptions
+	  && tree_could_throw_p (op)))
+    {
+      if (dump_file)
+	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
+      if (summary)
+	summary->side_effects = true;
+      if (summary_lto)
+	summary_lto->side_effects = true;
+    }
+
   if (!record_access_p (op))
     return false;
 
@@ -1296,6 +1350,18 @@ analyze_store (gimple *, tree, tree op, void *data)
       fprintf (dump_file, " - Analyzing store: ");
       print_generic_expr (dump_file, op);
       fprintf (dump_file, "\n");
+    }
+
+  if (TREE_THIS_VOLATILE (op)
+      || (cfun->can_throw_non_call_exceptions
+	  && tree_could_throw_p (op)))
+    {
+      if (dump_file)
+	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
+      if (summary)
+	summary->side_effects = true;
+      if (summary_lto)
+	summary_lto->side_effects = true;
     }
 
   if (!record_access_p (op))
@@ -1334,6 +1400,15 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
   switch (gimple_code (stmt))
    {
    case GIMPLE_ASM:
+      if (gimple_asm_volatile_p (as_a <gasm *> (stmt))
+	  || (cfun->can_throw_non_call_exceptions
+	      && stmt_could_throw_p (cfun, stmt)))
+	{
+	  if (summary)
+	    summary->side_effects = true;
+	  if (summary_lto)
+	    summary_lto->side_effects = true;
+	}
      /* If the ASM statement does not read nor write memory, there's nothing
 	to do.  Otherwise just give up.  */
      if (!gimple_asm_clobbers_memory_p (as_a <gasm *> (stmt)))
@@ -1365,7 +1440,14 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
       }
      return true;
    default:
-     /* Nothing to do for other types of statements.  */
+     if (cfun->can_throw_non_call_exceptions
+	 && stmt_could_throw_p (cfun, stmt))
+	{
+	  if (summary)
+	    summary->side_effects = true;
+	  if (summary_lto)
+	    summary_lto->side_effects = true;
+	}
      return true;
    }
 }
@@ -2616,6 +2698,7 @@ analyze_function (function *f, bool ipa)
 						    param_modref_max_refs,
 						    param_modref_max_accesses);
       summary->writes_errno = false;
+      summary->side_effects = false;
     }
   if (lto)
     {
@@ -2630,6 +2713,7 @@ analyze_function (function *f, bool ipa)
 				  param_modref_max_refs,
 				  param_modref_max_accesses);
       summary_lto->writes_errno = false;
+      summary_lto->side_effects = false;
     }
 
   analyze_parms (summary, summary_lto, ipa,
@@ -2700,6 +2784,12 @@ analyze_function (function *f, bool ipa)
       summaries_lto->remove (fnode);
       summary_lto = NULL;
     }
+  if (summary && !summary->global_memory_written_p () && !summary->side_effects
+      && !finite_function_p ())
+    summary->side_effects = true;
+  if (summary_lto && !summary_lto->side_effects && !finite_function_p ())
+    summary_lto->side_effects = true;
+
   if (ipa && !summary && !summary_lto)
     remove_modref_edge_summaries (fnode);
 
@@ -2904,6 +2994,7 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
+  dst_data->side_effects = src_data->side_effects;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
@@ -2931,6 +3022,7 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
+  dst_data->side_effects = src_data->side_effects;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
@@ -3259,6 +3351,7 @@ modref_write ()
 
 	  struct bitpack_d bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, r->writes_errno, 1);
+	  bp_pack_value (&bp, r->side_effects, 1);
 	  if (!flag_wpa)
 	    {
 	      for (cgraph_edge *e = cnode->indirect_calls;
@@ -3328,9 +3421,15 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	modref_sum = optimization_summaries->get_create (node);
 
       if (modref_sum)
-	modref_sum->writes_errno = false;
+	{
+	  modref_sum->writes_errno = false;
+	  modref_sum->side_effects = false;
+	}
       if (modref_sum_lto)
-	modref_sum_lto->writes_errno = false;
+	{
+	  modref_sum_lto->writes_errno = false;
+	  modref_sum_lto->side_effects = false;
+	}
 
       gcc_assert (!modref_sum || (!modref_sum->loads
 				  && !modref_sum->stores));
@@ -3374,6 +3473,13 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	    modref_sum->writes_errno = true;
 	  if (modref_sum_lto)
 	    modref_sum_lto->writes_errno = true;
+	}
+      if (bp_unpack_value (&bp, 1))
+	{
+	  if (modref_sum)
+	    modref_sum->side_effects = true;
+	  if (modref_sum_lto)
+	    modref_sum_lto->side_effects = true;
 	}
       if (!flag_ltrans)
 	{
@@ -3523,7 +3629,7 @@ update_signature (struct cgraph_node *node)
 
   map.reserve (max + 1);
   for (i = 0; i <= max; i++)
-    map.quick_push (-1);
+    map.quick_push (MODREF_UNKNOWN_PARM);
   FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
       int idx = info->param_adjustments->get_original_index (i);
@@ -3862,6 +3968,39 @@ propagate_unknown_call (cgraph_node *node,
   bool changed = false;
   class fnspec_summary *fnspec_sum = fnspec_summaries->get (e);
   auto_vec <modref_parm_map, 32> parm_map;
+  bool looping;
+
+  if (e->callee
+      && builtin_safe_for_const_function_p (&looping, e->callee->decl))
+    {
+      if (cur_summary && !cur_summary->side_effects)
+	{
+	  cur_summary->side_effects = true;
+	  changed = true;
+	}
+      if (cur_summary_lto && !cur_summary_lto->side_effects)
+	{
+	  cur_summary_lto->side_effects = true;
+	  changed = true;
+	}
+      return changed;
+    }
+
+  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS))
+      || (ecf_flags & ECF_LOOPING_CONST_OR_PURE))
+    {
+      if (cur_summary && !cur_summary->side_effects)
+	{
+	  cur_summary->side_effects = true;
+	  changed = true;
+	}
+      if (cur_summary_lto && !cur_summary_lto->side_effects)
+	{
+	  cur_summary_lto->side_effects = true;
+	  changed = true;
+	}
+    }
+
   if (fnspec_sum
       && compute_parm_map (e, &parm_map))
     {
@@ -4126,6 +4265,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		  changed |= cur_summary->loads->merge
 				  (callee_summary->loads, &parm_map,
 				   &chain_map, !first);
+		  if (!cur_summary->side_effects
+		      && callee_summary->side_effects)
+		    {
+		      cur_summary->side_effects = true;
+		      changed = true;
+		    }
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary->stores->merge
@@ -4144,6 +4289,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		  changed |= cur_summary_lto->loads->merge
 				  (callee_summary_lto->loads, &parm_map,
 				   &chain_map, !first);
+		  if (!cur_summary_lto->side_effects
+		      && callee_summary_lto->side_effects)
+		    {
+		      cur_summary_lto->side_effects = true;
+		      changed = true;
+		    }
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary_lto->stores->merge

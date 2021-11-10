@@ -506,11 +506,10 @@ worse_state (enum pure_const_state_e *state, bool *looping,
   *looping = MAX (*looping, looping2);
 }
 
-/* Recognize special cases of builtins that are by themselves not pure or const
+/* Recognize special cases of builtins that are by themselves not const
    but function using them is.  */
-static bool
-special_builtin_state (enum pure_const_state_e *state, bool *looping,
-		       tree callee)
+bool
+builtin_safe_for_const_function_p (bool *looping, tree callee)
 {
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (callee))
@@ -532,11 +531,9 @@ special_builtin_state (enum pure_const_state_e *state, bool *looping,
       case BUILT_IN_DWARF_CFA:
       case BUILT_IN_RETURN_ADDRESS:
 	*looping = false;
-	*state = IPA_CONST;
 	return true;
       case BUILT_IN_PREFETCH:
 	*looping = true;
-	*state = IPA_CONST;
 	return true;
       default:
 	break;
@@ -594,17 +591,16 @@ check_call (funct_state local, gcall *call, bool ipa)
      graph.  */
   if (callee_t)
     {
-      enum pure_const_state_e call_state;
       bool call_looping;
 
       if (gimple_call_builtin_p (call, BUILT_IN_NORMAL)
 	  && !nonfreeing_call_p (call))
 	local->can_free = true;
 
-      if (special_builtin_state (&call_state, &call_looping, callee_t))
+      if (builtin_safe_for_const_function_p (&call_looping, callee_t))
 	{
 	  worse_state (&local->pure_const_state, &local->looping,
-		       call_state, call_looping,
+		       IPA_CONST, call_looping,
 		       NULL, NULL);
 	  return;
 	}
@@ -1007,6 +1003,51 @@ malloc_candidate_p (function *fun, bool ipa)
 
 #undef DUMP_AND_RETURN
 
+/* Return true if function is known to be finite.  */
+
+bool
+finite_function_p ()
+{
+  /* Const functions cannot have back edges (an
+     indication of possible infinite loop side
+     effect.  */
+  bool finite = true;
+  if (mark_dfs_back_edges ())
+    {
+      /* Preheaders are needed for SCEV to work.
+	 Simple latches and recorded exits improve chances that loop will
+	 proved to be finite in testcases such as in loop-15.c
+	 and loop-24.c  */
+      loop_optimizer_init (LOOPS_HAVE_PREHEADERS
+			   | LOOPS_HAVE_SIMPLE_LATCHES
+			   | LOOPS_HAVE_RECORDED_EXITS);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	flow_loops_dump (dump_file, NULL, 0);
+      if (mark_irreducible_loops ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "    has irreducible loops\n");
+	  finite = false;
+	}
+      else
+	{
+	  scev_initialize ();
+	  for (auto loop : loops_list (cfun, 0))
+	    if (!finite_loop_p (loop))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "    cannot prove finiteness of "
+			   "loop %i\n", loop->num);
+		finite =false;
+		break;
+	      }
+	  scev_finalize ();
+	}
+      loop_optimizer_finalize ();
+    }
+  return finite;
+}
+
 /* This is the main routine for finding the reference patterns for
    global variables within a function FN.  */
 
@@ -1065,45 +1106,10 @@ analyze_function (struct cgraph_node *fn, bool ipa)
     }
 
 end:
-  if (l->pure_const_state != IPA_NEITHER)
-    {
-      /* Const functions cannot have back edges (an
-	 indication of possible infinite loop side
-	 effect.  */
-      if (mark_dfs_back_edges ())
-        {
-	  /* Preheaders are needed for SCEV to work.
-	     Simple latches and recorded exits improve chances that loop will
-	     proved to be finite in testcases such as in loop-15.c
-	     and loop-24.c  */
-	  loop_optimizer_init (LOOPS_HAVE_PREHEADERS
-			       | LOOPS_HAVE_SIMPLE_LATCHES
-			       | LOOPS_HAVE_RECORDED_EXITS);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    flow_loops_dump (dump_file, NULL, 0);
-	  if (mark_irreducible_loops ())
-	    {
-	      if (dump_file)
-	        fprintf (dump_file, "    has irreducible loops\n");
-	      l->looping = true;
-	    }
-	  else
-	    {
-	      scev_initialize ();
-	      for (auto loop : loops_list (cfun, 0))
-		if (!finite_loop_p (loop))
-		  {
-		    if (dump_file)
-		      fprintf (dump_file, "    cannot prove finiteness of "
-			       "loop %i\n", loop->num);
-		    l->looping =true;
-		    break;
-		  }
-	      scev_finalize ();
-	    }
-          loop_optimizer_finalize ();
-	}
-    }
+  if (l->pure_const_state != IPA_NEITHER
+      && !l->looping
+      && !finite_function_p ())
+    l->looping = true;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "    checking previously known:");
@@ -1539,9 +1545,9 @@ propagate_pure_const (void)
 		      edge_looping = y_l->looping;
 		    }
 		}
-	      else if (special_builtin_state (&edge_state, &edge_looping,
-					      y->decl))
-		;
+	      else if (builtin_safe_for_const_function_p (&edge_looping,
+							   y->decl))
+		edge_state = IPA_CONST;
 	      else
 		state_from_flags (&edge_state, &edge_looping,
 				  flags_from_decl_or_type (y->decl),

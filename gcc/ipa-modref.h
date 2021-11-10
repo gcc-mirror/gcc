@@ -34,6 +34,7 @@ struct GTY(()) modref_summary
   eaf_flags_t retslot_flags;
   eaf_flags_t static_chain_flags;
   bool writes_errno;
+  bool side_effects;
 
   modref_summary ();
   ~modref_summary ();
