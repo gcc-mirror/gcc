@@ -2643,7 +2643,7 @@ get_mem_type_for_load_store (unsigned int fcode)
    failure.  */
 gimple *
 aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
-				     gimple_stmt_iterator *gsi)
+				     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED)
 {
   gimple *new_stmt = NULL;
   unsigned nargs = gimple_call_num_args (stmt);
