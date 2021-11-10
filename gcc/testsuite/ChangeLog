@@ -1,3 +1,11 @@
+2021-11-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* gcc.dg/torture/pr100672.c: New testcase.
+
 2021-11-08  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

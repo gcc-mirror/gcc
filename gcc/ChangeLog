@@ -1,3 +1,12 @@
+2021-11-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* fold-const.c (fold_negate_expr_1): Use element_precision.
+	(negate_expr_p): Likewise.
+
 2021-11-08  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
