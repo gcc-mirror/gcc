@@ -1,3 +1,131 @@
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102798
+	* gcc.dg/pr102798.c: New testcase.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/102518
+	* gcc.dg/torture/pr102518.c: New testcase.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102788
+	* g++.dg/vect/pr102788.cc: New testcase.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102762
+	* gcc.dg/torture/pr102762.c: New testcase.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102572
+	* g++.dg/vect/pr102572.cc: New testcase.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102139
+	* gcc.dg/torture/pr102139.c: New testcase.
+
+2021-11-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101480
+	* g++.dg/torture/pr10148.C: New testcase.
+
+2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-11-08  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100520
+	* gcc.dg/pr100520.c: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102816
+	* gfortran.dg/pr102816.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-15  Harald Anlauf  <anlauf@gmx.de>
+		    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/102685
+	* gfortran.dg/derived_constructor_char_1.f90: Fix invalid code.
+	* gfortran.dg/pr70931.f90: Likewise.
+	* gfortran.dg/transfer_simplify_2.f90: Likewise.
+	* gfortran.dg/pr102685.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102715
+	* gfortran.dg/pr68019.f90: Adjust error message.
+	* gfortran.dg/pr102715.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102817
+	* gfortran.dg/pr102817.f90: New test.
+
+2021-11-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99348
+	PR fortran/102521
+	* gfortran.dg/parameter_array_init_8.f90: New test.
+
+2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/amxtile-3.c: Check leal/addl for x32.
+
+2021-11-04  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/amxtile-3.c: New test.
+
+2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/102842
+	* g++.target/arm/pr102842.C: New test.
+
+2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* gcc.dg/ipa/pr102714.c: New testcase.
+
 2021-10-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

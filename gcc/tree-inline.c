@@ -2131,7 +2131,13 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      size_t nargs = nargs_caller;
 
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
-		nargs--;
+		{
+		  /* Avoid crashing on invalid IL that doesn't have a
+		     varargs function or that passes not enough arguments.  */
+		  if (nargs == 0)
+		    break;
+		  nargs--;
+		}
 
 	      /* Create the new array of arguments.  */
 	      size_t nargs_callee = gimple_call_num_args (call_stmt);
@@ -3504,7 +3510,11 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	 invalid sharing when operand is not really constant.
 	 It is not big deal to prohibit constant propagation here as
 	 we will constant propagate in DOM1 pass anyway.  */
-      if (is_gimple_min_invariant (value)
+      if ((is_gimple_min_invariant (value)
+	   /* When the parameter is used in a context that forces it to
+	      not be a GIMPLE register avoid substituting something that
+	      is not a decl there.  */
+	   && ! DECL_NOT_GIMPLE_REG_P (p))
 	  && useless_type_conversion_p (TREE_TYPE (p),
 						 TREE_TYPE (value))
 	  /* We have to be very careful about ADDR_EXPR.  Make sure

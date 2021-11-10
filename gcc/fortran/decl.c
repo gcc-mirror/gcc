@@ -896,9 +896,6 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       expr->ts = *ts;
       expr->value.constructor = array_head;
 
-      expr->rank = as->rank;
-      expr->shape = gfc_get_shape (expr->rank);
-
       /* Validate sizes.  We built expr ourselves, so cons_size will be
 	 constant (we fail above for non-constant expressions).
 	 We still need to verify that the sizes match.  */
@@ -911,6 +908,12 @@ match_clist_expr (gfc_expr **result, gfc_typespec *ts, gfc_array_spec *as)
       mpz_clear (cons_size);
       if (cmp)
 	goto cleanup;
+
+      /* Set the rank/shape to match the LHS as auto-reshape is implied. */
+      expr->rank = as->rank;
+      expr->shape = gfc_get_shape (as->rank);
+      for (int i = 0; i < as->rank; ++i)
+	spec_dimen_size (as, i, &expr->shape[i]);
     }
 
   /* Make sure scalar types match. */
@@ -2102,6 +2105,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	    }
 	}
 
+      if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension && sym->as
+	  && sym->as->rank && init->rank && init->rank != sym->as->rank)
+	{
+	  gfc_error ("Rank mismatch of array at %L and its initializer "
+		     "(%d/%d)", &sym->declared_at, sym->as->rank, init->rank);
+	  return false;
+	}
+
       /* If sym is implied-shape, set its upper bounds from init.  */
       if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension
 	  && sym->as->type == AS_IMPLIED_SHAPE)
@@ -2205,12 +2216,16 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  gfc_expr *array;
 	  int n;
 	  if (sym->attr.flavor == FL_PARAMETER
-		&& init->expr_type == EXPR_CONSTANT
-		&& spec_size (sym->as, &size)
-		&& mpz_cmp_si (size, 0) > 0)
+	      && gfc_is_constant_expr (init)
+	      && (init->expr_type == EXPR_CONSTANT
+		  || init->expr_type == EXPR_STRUCTURE)
+	      && spec_size (sym->as, &size)
+	      && mpz_cmp_si (size, 0) > 0)
 	    {
 	      array = gfc_get_array_expr (init->ts.type, init->ts.kind,
 					  &init->where);
+	      if (init->ts.type == BT_DERIVED)
+		array->ts.u.derived = init->ts.u.derived;
 	      for (n = 0; n < (int)mpz_get_si (size); n++)
 		gfc_constructor_append_expr (&array->value.constructor,
 					     n == 0

@@ -1291,4 +1291,17 @@ void gcc_stablesort (void *, size_t, size_t,
 #define NULL nullptr
 #endif
 
+/* Return true if STR string ends with SUFFIX.  */
+
+static inline bool
+endswith (const char *str, const char *suffix)
+{
+  size_t str_len = strlen (str);
+  size_t suffix_len = strlen (suffix);
+  if (str_len < suffix_len)
+    return false;
+
+  return memcmp (str + str_len - suffix_len, suffix, suffix_len) == 0;
+}
+
 #endif /* ! GCC_SYSTEM_H */

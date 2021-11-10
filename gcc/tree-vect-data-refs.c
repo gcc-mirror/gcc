@@ -892,11 +892,11 @@ vect_record_base_alignment (vec_info *vinfo, stmt_vec_info stmt_info,
 			    innermost_loop_behavior *drb)
 {
   bool existed;
-  innermost_loop_behavior *&entry
+  std::pair<stmt_vec_info, innermost_loop_behavior *> &entry
     = vinfo->base_alignments.get_or_insert (drb->base_address, &existed);
-  if (!existed || entry->base_alignment < drb->base_alignment)
+  if (!existed || entry.second->base_alignment < drb->base_alignment)
     {
-      entry = drb;
+      entry = std::make_pair (stmt_info, drb);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "recording new base alignment for %T\n"
@@ -1059,11 +1059,18 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info)
 
   /* Calculate the maximum of the pooled base address alignment and the
      alignment that we can compute for DR itself.  */
-  innermost_loop_behavior **entry = base_alignments->get (drb->base_address);
-  if (entry && base_alignment < (*entry)->base_alignment)
+  std::pair<stmt_vec_info, innermost_loop_behavior *> *entry
+    = base_alignments->get (drb->base_address);
+  if (entry
+      && base_alignment < (*entry).second->base_alignment
+      && (loop_vinfo
+	  || (dominated_by_p (CDI_DOMINATORS, gimple_bb (stmt_info->stmt),
+			      gimple_bb (entry->first->stmt))
+	      && (gimple_bb (stmt_info->stmt) != gimple_bb (entry->first->stmt)
+		  || (entry->first->dr_aux.group <= dr_info->group)))))
     {
-      base_alignment = (*entry)->base_alignment;
-      base_misalignment = (*entry)->base_misalignment;
+      base_alignment = entry->second->base_alignment;
+      base_misalignment = entry->second->base_misalignment;
     }
 
   if (drb->offset_alignment < vect_align_c
@@ -2817,33 +2824,25 @@ vect_analyze_data_ref_access (vec_info *vinfo, dr_vec_info *dr_info)
   return vect_analyze_group_access (vinfo, dr_info);
 }
 
-typedef std::pair<data_reference_p, int> data_ref_pair;
-
 /* Compare two data-references DRA and DRB to group them into chunks
    suitable for grouping.  */
 
 static int
 dr_group_sort_cmp (const void *dra_, const void *drb_)
 {
-  data_ref_pair dra_pair = *(data_ref_pair *)const_cast<void *>(dra_);
-  data_ref_pair drb_pair = *(data_ref_pair *)const_cast<void *>(drb_);
-  data_reference_p dra = dra_pair.first;
-  data_reference_p drb = drb_pair.first;
+  dr_vec_info *dra_info = *(dr_vec_info **)const_cast<void *>(dra_);
+  dr_vec_info *drb_info = *(dr_vec_info **)const_cast<void *>(drb_);
+  data_reference_p dra = dra_info->dr;
+  data_reference_p drb = drb_info->dr;
   int cmp;
 
   /* Stabilize sort.  */
   if (dra == drb)
     return 0;
 
-  /* DRs in different basic-blocks never belong to the same group.  */
-  int bb_index1 = gimple_bb (DR_STMT (dra))->index;
-  int bb_index2 = gimple_bb (DR_STMT (drb))->index;
-  if (bb_index1 != bb_index2)
-    return bb_index1 < bb_index2 ? -1 : 1;
-
   /* Different group IDs lead never belong to the same group.  */
-  if (dra_pair.second != drb_pair.second)
-    return dra_pair.second < drb_pair.second ? -1 : 1;
+  if (dra_info->group != drb_info->group)
+    return dra_info->group < drb_info->group ? -1 : 1;
 
   /* Ordering of DRs according to base.  */
   cmp = data_ref_compare_tree (DR_BASE_ADDRESS (dra),
@@ -2963,12 +2962,18 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
   /* Sort the array of datarefs to make building the interleaving chains
      linear.  Don't modify the original vector's order, it is needed for
      determining what dependencies are reversed.  */
-  vec<data_ref_pair> datarefs_copy;
+  vec<dr_vec_info *> datarefs_copy;
   datarefs_copy.create (datarefs.length ());
   for (unsigned i = 0; i < datarefs.length (); i++)
     {
-      int group_id = dataref_groups ? (*dataref_groups)[i] : 0;
-      datarefs_copy.quick_push (data_ref_pair (datarefs[i], group_id));
+      dr_vec_info *dr_info = vinfo->lookup_dr (datarefs[i]);
+      /* If the caller computed DR grouping use that, otherwise group by
+	 basic blocks.  */
+      if (dataref_groups)
+	dr_info->group = (*dataref_groups)[i];
+      else
+	dr_info->group = gimple_bb (DR_STMT (datarefs[i]))->index;
+      datarefs_copy.quick_push (dr_info);
     }
   datarefs_copy.qsort (dr_group_sort_cmp);
   hash_set<stmt_vec_info> to_fixup;
@@ -2976,9 +2981,9 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
   /* Build the interleaving chains.  */
   for (i = 0; i < datarefs_copy.length () - 1;)
     {
-      data_reference_p dra = datarefs_copy[i].first;
-      int dra_group_id = datarefs_copy[i].second;
-      dr_vec_info *dr_info_a = vinfo->lookup_dr (dra);
+      dr_vec_info *dr_info_a = datarefs_copy[i];
+      data_reference_p dra = dr_info_a->dr;
+      int dra_group_id = dr_info_a->group;
       stmt_vec_info stmtinfo_a = dr_info_a->stmt;
       stmt_vec_info lastinfo = NULL;
       if (!STMT_VINFO_VECTORIZABLE (stmtinfo_a)
@@ -2989,9 +2994,9 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	}
       for (i = i + 1; i < datarefs_copy.length (); ++i)
 	{
-	  data_reference_p drb = datarefs_copy[i].first;
-	  int drb_group_id = datarefs_copy[i].second;
-	  dr_vec_info *dr_info_b = vinfo->lookup_dr (drb);
+	  dr_vec_info *dr_info_b = datarefs_copy[i];
+	  data_reference_p drb = dr_info_b->dr;
+	  int drb_group_id = dr_info_b->group;
 	  stmt_vec_info stmtinfo_b = dr_info_b->stmt;
 	  if (!STMT_VINFO_VECTORIZABLE (stmtinfo_b)
 	      || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
@@ -3003,13 +3008,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	     matters we can push those to a worklist and re-iterate
 	     over them.  The we can just skip ahead to the next DR here.  */
 
-	  /* DRs in a different BBs should not be put into the same
+	  /* DRs in a different DR group should not be put into the same
 	     interleaving group.  */
-	  int bb_index1 = gimple_bb (DR_STMT (dra))->index;
-	  int bb_index2 = gimple_bb (DR_STMT (drb))->index;
-	  if (bb_index1 != bb_index2)
-	    break;
-
 	  if (dra_group_id != drb_group_id)
 	    break;
 
@@ -3057,7 +3057,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
 	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
 	  HOST_WIDE_INT init_prev
-	    = TREE_INT_CST_LOW (DR_INIT (datarefs_copy[i-1].first));
+	    = TREE_INT_CST_LOW (DR_INIT (datarefs_copy[i-1]->dr));
 	  gcc_assert (init_a <= init_b
 		      && init_a <= init_prev
 		      && init_prev <= init_b);
@@ -3065,7 +3065,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
 	  /* Do not place the same access in the interleaving chain twice.  */
 	  if (init_b == init_prev)
 	    {
-	      gcc_assert (gimple_uid (DR_STMT (datarefs_copy[i-1].first))
+	      gcc_assert (gimple_uid (DR_STMT (datarefs_copy[i-1]->dr))
 			  < gimple_uid (DR_STMT (drb)));
 	      /* Simply link in duplicates and fix up the chain below.  */
 	    }
@@ -3178,10 +3178,9 @@ vect_analyze_data_ref_accesses (vec_info *vinfo,
       to_fixup.add (newgroup);
     }
 
-  data_ref_pair *dr_pair;
-  FOR_EACH_VEC_ELT (datarefs_copy, i, dr_pair)
+  dr_vec_info *dr_info;
+  FOR_EACH_VEC_ELT (datarefs_copy, i, dr_info)
     {
-      dr_vec_info *dr_info = vinfo->lookup_dr (dr_pair->first);
       if (STMT_VINFO_VECTORIZABLE (dr_info->stmt)
 	  && !vect_analyze_data_ref_access (vinfo, dr_info))
 	{
@@ -4702,7 +4701,8 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (DR_PTR_INFO (dr)
       && TREE_CODE (addr_base) == SSA_NAME
-      && !SSA_NAME_PTR_INFO (addr_base))
+      /* We should only duplicate pointer info to newly created SSA names.  */
+      && SSA_NAME_VAR (addr_base) == dest)
     {
       vect_duplicate_ssa_name_ptr_info (addr_base, dr_info);
       if (offset || byte_offset)
