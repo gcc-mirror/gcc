@@ -1553,7 +1553,7 @@
 })
 
 ;; Pairwise Integer Max/Min operations.
-(define_insn "aarch64_<maxmin_uns>p<mode>"
+(define_insn "aarch64_<optab>p<mode>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand" "w")
 			 (match_operand:VDQ_BHSI 2 "register_operand" "w")]
@@ -1564,7 +1564,7 @@
 )
 
 ;; Pairwise FP Max/Min operations.
-(define_insn "aarch64_<maxmin_uns>p<mode>"
+(define_insn "aarch64_<optab>p<mode>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
 		      (match_operand:VHSDF 2 "register_operand" "w")]
@@ -3488,7 +3488,7 @@
 ;; Vector forms for fmax, fmin, fmaxnm, fminnm.
 ;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
 ;; which implement the IEEE fmax ()/fmin () functions.
-(define_insn "<maxmin_uns><mode>3"
+(define_insn "<fmaxmin><mode>3"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
 		      (match_operand:VHSDF 2 "register_operand" "w")]
@@ -3622,7 +3622,7 @@
 
 ;; Template for outputting a scalar, so we can create __builtins which can be
 ;; gimple_fold'd to the IFN_REDUC_(MAX|MIN) function.  (This is FP smax/smin).
-(define_expand "reduc_<maxmin_uns>_scal_<mode>"
+(define_expand "reduc_<optab>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
    (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")]
 		  FMAXMINV)]
@@ -3630,15 +3630,15 @@
   {
     rtx elt = aarch64_endian_lane_rtx (<MODE>mode, 0);
     rtx scratch = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_aarch64_reduc_<maxmin_uns>_internal<mode> (scratch,
-							      operands[1]));
+    emit_insn (gen_aarch64_reduc_<optab>_internal<mode> (scratch,
+							 operands[1]));
     emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
     DONE;
   }
 )
 
 ;; Likewise for integer cases, signed and unsigned.
-(define_expand "reduc_<maxmin_uns>_scal_<mode>"
+(define_expand "reduc_<optab>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
    (unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand")]
 		    MAXMINV)]
@@ -3646,14 +3646,14 @@
   {
     rtx elt = aarch64_endian_lane_rtx (<MODE>mode, 0);
     rtx scratch = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_aarch64_reduc_<maxmin_uns>_internal<mode> (scratch,
-							      operands[1]));
+    emit_insn (gen_aarch64_reduc_<optab>_internal<mode> (scratch,
+							 operands[1]));
     emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
     DONE;
   }
 )
 
-(define_insn "aarch64_reduc_<maxmin_uns>_internal<mode>"
+(define_insn "aarch64_reduc_<optab>_internal<mode>"
  [(set (match_operand:VDQV_S 0 "register_operand" "=w")
        (unspec:VDQV_S [(match_operand:VDQV_S 1 "register_operand" "w")]
 		    MAXMINV))]
@@ -3662,7 +3662,7 @@
   [(set_attr "type" "neon_reduc_minmax<q>")]
 )
 
-(define_insn "aarch64_reduc_<maxmin_uns>_internalv2si"
+(define_insn "aarch64_reduc_<optab>_internalv2si"
  [(set (match_operand:V2SI 0 "register_operand" "=w")
        (unspec:V2SI [(match_operand:V2SI 1 "register_operand" "w")]
 		    MAXMINV))]
@@ -3671,7 +3671,7 @@
   [(set_attr "type" "neon_reduc_minmax")]
 )
 
-(define_insn "aarch64_reduc_<maxmin_uns>_internal<mode>"
+(define_insn "aarch64_reduc_<optab>_internal<mode>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
 		      FMAXMINV))]

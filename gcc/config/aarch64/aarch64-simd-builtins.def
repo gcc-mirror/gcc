@@ -502,21 +502,19 @@
   BUILTIN_VHSDF (UNOP, reduc_smax_nan_scal_, 10, NONE)
   BUILTIN_VHSDF (UNOP, reduc_smin_nan_scal_, 10, NONE)
 
-  /* Implemented by <maxmin_uns><mode>3.
-     smax variants map to fmaxnm,
-     smax_nan variants map to fmax.  */
+  /* Implemented by <optab><mode>3.  */
   BUILTIN_VDQ_BHSI (BINOP, smax, 3, NONE)
   BUILTIN_VDQ_BHSI (BINOP, smin, 3, NONE)
   BUILTIN_VDQ_BHSI (BINOP, umax, 3, NONE)
   BUILTIN_VDQ_BHSI (BINOP, umin, 3, NONE)
-  BUILTIN_VHSDF_DF (BINOP, smax_nan, 3, NONE)
-  BUILTIN_VHSDF_DF (BINOP, smin_nan, 3, NONE)
 
-  /* Implemented by <maxmin_uns><mode>3.  */
+  /* Implemented by <fmaxmin><mode>3.  */
   BUILTIN_VHSDF_HSDF (BINOP, fmax, 3, FP)
   BUILTIN_VHSDF_HSDF (BINOP, fmin, 3, FP)
+  BUILTIN_VHSDF_DF (BINOP, fmax_nan, 3, FP)
+  BUILTIN_VHSDF_DF (BINOP, fmin_nan, 3, FP)
 
-  /* Implemented by aarch64_<maxmin_uns>p<mode>.  */
+  /* Implemented by aarch64_<optab>p<mode>.  */
   BUILTIN_VDQ_BHSI (BINOP, smaxp, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, sminp, 0, NONE)
   BUILTIN_VDQ_BHSI (BINOP, umaxp, 0, NONE)

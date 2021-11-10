@@ -6475,7 +6475,7 @@
 ;; Scalar forms for fmax, fmin, fmaxnm, fminnm.
 ;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
 ;; which implement the IEEE fmax ()/fmin () functions.
-(define_insn "<maxmin_uns><mode>3"
+(define_insn "<fmaxmin><mode>3"
   [(set (match_operand:GPF_F16 0 "register_operand" "=w")
 	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")
 		     (match_operand:GPF_F16 2 "register_operand" "w")]
