@@ -1,3 +1,24 @@
+2021-11-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/102714
+	* gcc.dg/ipa/pr102714.c: New testcase.
+
+2021-11-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* gcc.dg/torture/pr100672.c: New testcase.
+
+2021-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100253
+	* g++.dg/pr100253.C: New testcase.
+
 2021-11-03  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/102842
