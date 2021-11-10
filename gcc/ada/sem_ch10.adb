@@ -5271,7 +5271,7 @@ package body Sem_Ch10 is
             end if;
 
             if Is_Generic_Instance (Uname)
-              and then Ekind (Uname) in Subprogram_Kind
+              and then Is_Subprogram (Uname)
             then
                --  Set flag as well on the visible entity that denotes the
                --  instance, which renames the current one.

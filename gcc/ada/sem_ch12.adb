@@ -5298,7 +5298,7 @@ package body Sem_Ch12 is
 
          Scop := Scope (E);
          while Scop /= Standard_Standard loop
-            if Ekind (Scop) in Subprogram_Kind and then Is_Inlined (Scop) then
+            if Is_Subprogram (Scop) and then Is_Inlined (Scop) then
                return True;
             end if;
 

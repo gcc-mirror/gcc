@@ -9248,7 +9248,7 @@ package body Exp_Aggr is
 
             when N_Object_Declaration =>
                return not Constant_Present (C)
-                 and then Ekind (Current_Scope) in Subprogram_Kind;
+                 and then Is_Subprogram (Current_Scope);
 
             --  False for all other contexts
 

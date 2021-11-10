@@ -29476,7 +29476,7 @@ package body Sem_Util is
                   --  Since we are only interested in the formal case, avoid
                   --  the anonymous access result type.
 
-                  if Ekind (Def_Ent) in Subprogram_Kind
+                  if Is_Subprogram (Def_Ent)
                     and then not (Ekind (Def_Ent) = E_Function
                                    and then Etype (Def_Ent) = Typ)
                   then
