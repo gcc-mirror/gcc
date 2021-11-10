@@ -372,25 +372,6 @@ control_dependences::clear_control_dependence_bitmap (basic_block bb)
   bitmap_clear (&control_dependence_map[bb->index]);
 }
 
-/* Find the immediate postdominator PDOM of the specified basic block BLOCK.
-   This function is necessary because some blocks have negative numbers.  */
-
-static inline basic_block
-find_pdom (basic_block block)
-{
-  gcc_assert (block != ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
-  if (block == EXIT_BLOCK_PTR_FOR_FN (cfun))
-    return EXIT_BLOCK_PTR_FOR_FN (cfun);
-  else
-    {
-      basic_block bb = get_immediate_dominator (CDI_POST_DOMINATORS, block);
-      if (! bb)
-	return EXIT_BLOCK_PTR_FOR_FN (cfun);
-      return bb;
-    }
-}
-
 /* Determine all blocks' control dependences on the given edge with edge_list
    EL index EDGE_INDEX, ala Morgan, Section 3.6.  */
 
@@ -402,15 +383,14 @@ control_dependences::find_control_dependence (int edge_index)
 
   gcc_assert (get_edge_src (edge_index) != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
-  if (get_edge_src (edge_index) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    ending_block = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  else
-    ending_block = find_pdom (get_edge_src (edge_index));
+  ending_block = get_immediate_dominator (CDI_POST_DOMINATORS,
+					  get_edge_src (edge_index));
 
   for (current_block = get_edge_dest (edge_index);
        current_block != ending_block
        && current_block != EXIT_BLOCK_PTR_FOR_FN (cfun);
-       current_block = find_pdom (current_block))
+       current_block = get_immediate_dominator (CDI_POST_DOMINATORS,
+						current_block))
     set_control_dependence_map_bit (current_block, edge_index);
 }
 

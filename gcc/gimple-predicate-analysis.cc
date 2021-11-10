@@ -45,36 +45,6 @@
 
 #define DEBUG_PREDICATE_ANALYZER 1
 
-/* Find the immediate postdominator of the specified basic block BB.  */
-
-static inline basic_block
-find_pdom (basic_block bb)
-{
-  basic_block exit_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
-  if (bb == exit_bb)
-    return exit_bb;
-
-  if (basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb))
-    return pdom;
-
-  return exit_bb;
-}
-
-/* Find the immediate dominator of the specified basic block BB.  */
-
-static inline basic_block
-find_dom (basic_block bb)
-{
-  basic_block entry_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  if (bb == entry_bb)
-    return entry_bb;
-
-  if (basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb))
-    return dom;
-
-  return entry_bb;
-}
-
 /* Return true if BB1 is postdominating BB2 and BB1 is not a loop exit
    bb.  The loop exit bb check is simple and does not cover all cases.  */
 
@@ -96,7 +66,7 @@ is_non_loop_exit_postdominating (basic_block bb1, basic_block bb2)
 static inline basic_block
 find_control_equiv_block (basic_block bb)
 {
-  basic_block pdom = find_pdom (bb);
+  basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
   /* Skip the postdominating bb that is also a loop exit.  */
   if (!is_non_loop_exit_postdominating (pdom, bb))
@@ -1167,7 +1137,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      break;
 	    }
 
-	  cd_bb = find_pdom (cd_bb);
+	  cd_bb = get_immediate_dominator (CDI_POST_DOMINATORS, cd_bb);
 	  post_dom_check++;
 	  if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      || post_dom_check > MAX_POSTDOM_CHECK)
@@ -1788,7 +1758,7 @@ predicate::init_from_phi_def (gphi *phi)
 
   basic_block phi_bb = gimple_bb (phi);
   /* Find the closest dominating bb to be the control dependence root.  */
-  basic_block cd_root = find_dom (phi_bb);
+  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
   if (!cd_root)
     return false;
 
