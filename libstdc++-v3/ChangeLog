@@ -1,3 +1,105 @@
+2021-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (__distance_fw): Replace class keyword with
+	typename.
+	* include/bits/hashtable.h (_Hashtable<>::_M_merge_unique): Remove noexcept
+	qualification. Use const_iterator for node extraction/reinsert.
+	(_Hashtable<>::_M_merge_multi): Likewise. Compute new hash code before extract.
+	* include/debug/safe_container.h (_Safe_container<>): Make all methods
+	protected.
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container<>::_UContInvalidatePred<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_UMContInvalidatePred<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_UContMergeGuard<_Source, _InvalidatePred>): New.
+	(_Safe_unordered_container<>::_S_uc_guard<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_S_umc_guard<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_M_invalide_all): Make public.
+	(_Safe_unordered_container<>::_M_invalide_if): Likewise.
+	(_Safe_unordered_container<>::_M_invalide_local_if): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_map<>::reference, const_reference, difference_type): New typedef.
+	(unordered_map<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_map<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_map<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_map<>::operator[], at, rehash, reserve): Add usings.
+	(unordered_map<>::merge): New.
+	(unordered_multimap<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_multimap<>::reference, const_reference, difference_type): New typedef.
+	(unordered_multimap<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_multimap<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_multimap<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_multimap<>::rehash, reserve): Add usings.
+	(unordered_multimap<>::merge): New.
+	* include/debug/unordered_set
+	(unordered_set<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_set<>::reference, const_reference, difference_type): New typedef.
+	(unordered_set<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_set<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_set<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_set<>::rehash, reserve): Add usings.
+	(unordered_set<>::merge): New.
+	(unordered_multiset<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_multiset<>::reference, const_reference, difference_type): New typedef.
+	(unordered_multiset<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_multiset<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_multiset<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_multiset<>::rehash, reserve): Add usings.
+	(unordered_multiset<>::merge): New.
+	* testsuite/23_containers/unordered_map/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/merge4_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge4_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge4_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge4_neg.cc: New test.
+	* testsuite/util/testsuite_abi.h: [_GLIBCXX_DEBUG] Use normal unordered
+	container implementation.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Print results of random_device_available checks.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103146
+	* src/c++11/random.cc: Check __powerpc64__ not __powerpc__.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_GETENTROPY, GLIBCXX_CHECK_ARC4RANDOM):
+	Define.
+	* configure.ac (GLIBCXX_CHECK_GETENTROPY, GLIBCXX_CHECK_ARC4RANDOM):
+	Use them.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++11/random.cc (random_device): Add getentropy and
+	arc4random as sources.
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Check new tokens.
+	* testsuite/26_numerics/random/random_device/entropy.cc:
+	Likewise.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Retry if random devices produce the same value.
+
+2021-11-09  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/os/vxworks/os_defines.h (_GLIBCXX_HAVE_TLS): Only
+	define for VxWorks >= 6.6.
+
 2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/range_access.h (begin(valarray), end(valarray)):

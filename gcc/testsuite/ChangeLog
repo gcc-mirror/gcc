@@ -1,3 +1,60 @@
+2021-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/bad-pragma-locations.c: New test.
+
+2021-11-09  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/p10_vec_xl_sext.c: Fix long long case.
+
+2021-11-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/10352
+	* gcc.c-torture/execute/pr10352-1.c: New test.
+
+2021-11-09  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/init/bitfield6.C: New test.
+
+2021-11-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr102957.c: New.
+
+2021-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103114
+	* g++.dg/ext/complex10.C: New test.
+
+2021-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98394
+	PR c++/85846
+	* g++.dg/cpp2a/concepts-pr98394.C: New test.
+	* g++.dg/cpp2a/concepts-pr85846.C: New test.
+
+2021-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100652
+	* g++.dg/cpp1y/var-templ69.C: New test.
+
+2021-11-09  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* gcc.target/arm/multilib.exp: Update test with armv9-a entries.
+	* lib/target-supports.exp (v9a): Add new armflag.
+	(__ARM_ARCH_9A__): Add new armdef.
+
+2021-11-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103132
+	* gcc.dg/ipa/pr103132.c: New test.
+
+2021-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-22.c: XFAIL.
+
+2021-11-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.dg/tree-ssa/bittest.c: New test
+
 2021-11-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* g++.dg/pr103122.C: New.

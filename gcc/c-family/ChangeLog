@@ -1,3 +1,13 @@
+2021-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pragma.c (GCC_BAD_AT): New macro.
+	(GCC_BAD2_AT): New macro.
+	(handle_pragma_pack): Use the location of the pertinent token when
+	issuing diagnostics about invalid constants/actions, and trailing
+	junk.
+	(handle_pragma_target): Likewise for non-string "GCC option".
+	(handle_pragma_message): Likewise for trailing junk.
+
 2021-11-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/103031

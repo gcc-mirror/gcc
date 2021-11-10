@@ -1,3 +1,28 @@
+2021-11-09  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/68800
+	* class.c (generate_finalization_wrapper): Do not leak
+	finalization wrappers if they will not be used.
+	* expr.c (gfc_free_actual_arglist): Formatting fix.
+	* gfortran.h (gfc_free_symbol): Pass argument by reference.
+	(gfc_release_symbol): Likewise.
+	(gfc_free_namespace): Likewise.
+	* symbol.c (gfc_release_symbol): Adjust acordingly.
+	(free_components): Set procedure pointer components
+	of derived types to NULL after freeing.
+	(free_tb_tree): Likewise.
+	(gfc_free_symbol): Set sym to NULL after freeing.
+	(gfc_free_namespace): Set namespace to NULL after freeing.
+
+2021-11-09  Martin Liska  <mliska@suse.cz>
+
+	* symbol.c (gfc_get_ultimate_derived_super_type): Remove.
+
+2021-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* misc.c (gfc_dummy_typename): Make sure ts->kind is
+	non-negative.
+
 2021-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsic.c (add_subroutines): Change keyword "operator"

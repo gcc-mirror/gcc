@@ -1,3 +1,35 @@
+2021-11-09  Marek Polacek  <polacek@redhat.com>
+
+	* class.c (default_init_uninitialized_part): Use
+	next_initializable_field.
+	* method.c (walk_field_subobs): Skip unnamed bit-fields.
+
+2021-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103114
+	* parser.c (cp_parser_userdef_numeric_literal): Use fold_build2
+	with COMPLEX_EXPR arg instead of build_complex, use build_zero_cst
+	instead of fold_convert from integer_zero_node.
+
+2021-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98394
+	PR c++/85846
+	* parser.c (cp_parser_placeholder_type_specifier): Declare
+	static.  Don't override tentative to false when tmpl is a
+	concept-id with empty argument list.  Don't emit a "does not
+	constrain a type" error when tentative.
+
+2021-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100652
+	* pt.c (push_template_decl): Check for bare parameter packs in
+	the argument list of a variable template partial specialization.
+
+2021-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ptree.c (cxx_print_xnode): Add more space to pfx array.
+
 2021-11-04  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_array_conv): Use range-for.
