@@ -1744,3 +1744,207 @@ vector_costs::adjust_cost_for_freq (stmt_vec_info stmt_info,
     }
   return cost;
 }
+
+/* See the comment above the declaration for details.  */
+
+bool
+vector_costs::better_main_loop_than_p (const vector_costs *other) const
+{
+  int diff = compare_inside_loop_cost (other);
+  if (diff != 0)
+    return diff < 0;
+
+  /* If there's nothing to choose between the loop bodies, see whether
+     there's a difference in the prologue and epilogue costs.  */
+  diff = compare_outside_loop_cost (other);
+  if (diff != 0)
+    return diff < 0;
+
+  return false;
+}
+
+
+/* See the comment above the declaration for details.  */
+
+bool
+vector_costs::better_epilogue_loop_than_p (const vector_costs *other,
+					   loop_vec_info main_loop) const
+{
+  loop_vec_info this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
+  loop_vec_info other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
+
+  poly_int64 this_vf = LOOP_VINFO_VECT_FACTOR (this_loop_vinfo);
+  poly_int64 other_vf = LOOP_VINFO_VECT_FACTOR (other_loop_vinfo);
+
+  poly_uint64 main_poly_vf = LOOP_VINFO_VECT_FACTOR (main_loop);
+  unsigned HOST_WIDE_INT main_vf;
+  unsigned HOST_WIDE_INT other_factor, this_factor, other_cost, this_cost;
+  /* If we can determine how many iterations are left for the epilogue
+     loop, that is if both the main loop's vectorization factor and number
+     of iterations are constant, then we use them to calculate the cost of
+     the epilogue loop together with a 'likely value' for the epilogues
+     vectorization factor.  Otherwise we use the main loop's vectorization
+     factor and the maximum poly value for the epilogue's.  If the target
+     has not provided with a sensible upper bound poly vectorization
+     factors are likely to be favored over constant ones.  */
+  if (main_poly_vf.is_constant (&main_vf)
+      && LOOP_VINFO_NITERS_KNOWN_P (main_loop))
+    {
+      unsigned HOST_WIDE_INT niters
+	= LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
+      HOST_WIDE_INT other_likely_vf
+	= estimated_poly_value (other_vf, POLY_VALUE_LIKELY);
+      HOST_WIDE_INT this_likely_vf
+	= estimated_poly_value (this_vf, POLY_VALUE_LIKELY);
+
+      /* If the epilogue is using partial vectors we account for the
+	 partial iteration here too.  */
+      other_factor = niters / other_likely_vf;
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (other_loop_vinfo)
+	  && niters % other_likely_vf != 0)
+	other_factor++;
+
+      this_factor = niters / this_likely_vf;
+      if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (this_loop_vinfo)
+	  && niters % this_likely_vf != 0)
+	this_factor++;
+    }
+  else
+    {
+      unsigned HOST_WIDE_INT main_vf_max
+	= estimated_poly_value (main_poly_vf, POLY_VALUE_MAX);
+
+      other_factor = main_vf_max / estimated_poly_value (other_vf,
+						       POLY_VALUE_MAX);
+      this_factor = main_vf_max / estimated_poly_value (this_vf,
+						       POLY_VALUE_MAX);
+
+      /* If the loop is not using partial vectors then it will iterate one
+	 time less than one that does.  It is safe to subtract one here,
+	 because the main loop's vf is always at least 2x bigger than that
+	 of an epilogue.  */
+      if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (other_loop_vinfo))
+	other_factor -= 1;
+      if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (this_loop_vinfo))
+	this_factor -= 1;
+    }
+
+  /* Compute the costs by multiplying the inside costs with the factor and
+     add the outside costs for a more complete picture.  The factor is the
+     amount of times we are expecting to iterate this epilogue.  */
+  other_cost = other->body_cost () * other_factor;
+  this_cost = this->body_cost () * this_factor;
+  other_cost += other->outside_cost ();
+  this_cost += this->outside_cost ();
+  return this_cost < other_cost;
+}
+
+/* A <=>-style subroutine of better_main_loop_than_p.  Check whether we can
+   determine the return value of better_main_loop_than_p by comparing the
+   inside (loop body) costs of THIS and OTHER.  Return:
+
+   * -1 if better_main_loop_than_p should return true.
+   * 1 if better_main_loop_than_p should return false.
+   * 0 if we can't decide.  */
+
+int
+vector_costs::compare_inside_loop_cost (const vector_costs *other) const
+{
+  loop_vec_info this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
+  loop_vec_info other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
+
+  struct loop *loop = LOOP_VINFO_LOOP (this_loop_vinfo);
+  gcc_assert (LOOP_VINFO_LOOP (other_loop_vinfo) == loop);
+
+  poly_int64 this_vf = LOOP_VINFO_VECT_FACTOR (this_loop_vinfo);
+  poly_int64 other_vf = LOOP_VINFO_VECT_FACTOR (other_loop_vinfo);
+
+  /* Limit the VFs to what is likely to be the maximum number of iterations,
+     to handle cases in which at least one loop_vinfo is fully-masked.  */
+  HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
+  if (estimated_max_niter != -1)
+    {
+      if (known_le (estimated_max_niter, this_vf))
+	this_vf = estimated_max_niter;
+      if (known_le (estimated_max_niter, other_vf))
+	other_vf = estimated_max_niter;
+    }
+
+  /* Check whether the (fractional) cost per scalar iteration is lower or
+     higher: this_inside_cost / this_vf vs. other_inside_cost / other_vf.  */
+  poly_int64 rel_this = this_loop_vinfo->vector_costs->body_cost () * other_vf;
+  poly_int64 rel_other
+    = other_loop_vinfo->vector_costs->body_cost () * this_vf;
+
+  HOST_WIDE_INT est_rel_this_min
+    = estimated_poly_value (rel_this, POLY_VALUE_MIN);
+  HOST_WIDE_INT est_rel_this_max
+    = estimated_poly_value (rel_this, POLY_VALUE_MAX);
+
+  HOST_WIDE_INT est_rel_other_min
+    = estimated_poly_value (rel_other, POLY_VALUE_MIN);
+  HOST_WIDE_INT est_rel_other_max
+    = estimated_poly_value (rel_other, POLY_VALUE_MAX);
+
+  /* Check first if we can make out an unambigous total order from the minimum
+     and maximum estimates.  */
+  if (est_rel_this_min < est_rel_other_min
+      && est_rel_this_max < est_rel_other_max)
+    return -1;
+
+  if (est_rel_other_min < est_rel_this_min
+      && est_rel_other_max < est_rel_this_max)
+    return 1;
+
+  /* When other_loop_vinfo uses a variable vectorization factor,
+     we know that it has a lower cost for at least one runtime VF.
+     However, we don't know how likely that VF is.
+
+     One option would be to compare the costs for the estimated VFs.
+     The problem is that that can put too much pressure on the cost
+     model.  E.g. if the estimated VF is also the lowest possible VF,
+     and if other_loop_vinfo is 1 unit worse than this_loop_vinfo
+     for the estimated VF, we'd then choose this_loop_vinfo even
+     though (a) this_loop_vinfo might not actually be better than
+     other_loop_vinfo for that VF and (b) it would be significantly
+     worse at larger VFs.
+
+     Here we go for a hacky compromise: pick this_loop_vinfo if it is
+     no more expensive than other_loop_vinfo even after doubling the
+     estimated other_loop_vinfo VF.  For all but trivial loops, this
+     ensures that we only pick this_loop_vinfo if it is significantly
+     better than other_loop_vinfo at the estimated VF.  */
+  if (est_rel_other_min != est_rel_this_min
+      || est_rel_other_max != est_rel_this_max)
+    {
+      HOST_WIDE_INT est_rel_this_likely
+	= estimated_poly_value (rel_this, POLY_VALUE_LIKELY);
+      HOST_WIDE_INT est_rel_other_likely
+	= estimated_poly_value (rel_other, POLY_VALUE_LIKELY);
+
+      return est_rel_this_likely * 2 <= est_rel_other_likely ? -1 : 1;
+    }
+
+  return 0;
+}
+
+/* A <=>-style subroutine of better_main_loop_than_p, used when there is
+   nothing to choose between the inside (loop body) costs of THIS and OTHER.
+   Check whether we can determine the return value of better_main_loop_than_p
+   by comparing the outside (prologue and epilogue) costs of THIS and OTHER.
+   Return:
+
+   * -1 if better_main_loop_than_p should return true.
+   * 1 if better_main_loop_than_p should return false.
+   * 0 if we can't decide.  */
+
+int
+vector_costs::compare_outside_loop_cost (const vector_costs *other) const
+{
+  auto this_outside_cost = this->outside_cost ();
+  auto other_outside_cost = other->outside_cost ();
+  if (this_outside_cost != other_outside_cost)
+    return this_outside_cost < other_outside_cost ? -1 : 1;
+
+  return 0;
+}

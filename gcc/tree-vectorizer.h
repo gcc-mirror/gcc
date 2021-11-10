@@ -1419,6 +1419,21 @@ public:
      read back using the functions below.  */
   virtual void finish_cost ();
 
+  /* The costs in THIS and OTHER both describe ways of vectorizing
+     a main loop.  Return true if the costs described by THIS are
+     cheaper than the costs described by OTHER.  Return false if any
+     of the following are true:
+
+     - THIS and OTHER are of equal cost
+     - OTHER is better than THIS
+     - we can't be sure about the relative costs of THIS and OTHER.  */
+  virtual bool better_main_loop_than_p (const vector_costs *other) const;
+
+  /* Likewise, but the costs in THIS and OTHER both describe ways of
+     vectorizing an epilogue loop of MAIN_LOOP.  */
+  virtual bool better_epilogue_loop_than_p (const vector_costs *other,
+					    loop_vec_info main_loop) const;
+
   unsigned int prologue_cost () const;
   unsigned int body_cost () const;
   unsigned int epilogue_cost () const;
@@ -1429,6 +1444,8 @@ protected:
 				 unsigned int);
   unsigned int adjust_cost_for_freq (stmt_vec_info, vect_cost_model_location,
 				     unsigned int);
+  int compare_inside_loop_cost (const vector_costs *) const;
+  int compare_outside_loop_cost (const vector_costs *) const;
 
   /* The region of code that we're considering vectorizing.  */
   vec_info *m_vinfo;
