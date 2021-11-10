@@ -2246,15 +2246,20 @@ cxx_eval_thunk_call (const constexpr_ctx *ctx, tree t, tree thunk_fndecl,
 {
   tree function = THUNK_TARGET (thunk_fndecl);
 
-  /* virtual_offset is only set in the presence of virtual bases, which make
-     the class non-literal, so we don't need to handle it here.  */
   if (THUNK_VIRTUAL_OFFSET (thunk_fndecl))
     {
-      gcc_assert (!DECL_DECLARED_CONSTEXPR_P (function));
       if (!ctx->quiet)
 	{
-	  error ("call to non-%<constexpr%> function %qD", function);
-	  explain_invalid_constexpr_fn (function);
+	  if (!DECL_DECLARED_CONSTEXPR_P (function))
+	    {
+	      error ("call to non-%<constexpr%> function %qD", function);
+	      explain_invalid_constexpr_fn (function);
+	    }
+	  else
+	    /* virtual_offset is only set for virtual bases, which make the
+	       class non-literal, so we don't need to handle it here.  */
+	    error ("calling constexpr member function %qD through virtual "
+		   "base subobject", function);
 	}
       *non_constant_p = true;
       return t;
