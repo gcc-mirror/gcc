@@ -5096,6 +5096,9 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
     return true;
 
+  if (source->ref == NULL)
+    return false;
+
   ar = gfc_find_array_ref (source);
 
   if (ar->as && ar->as->type == AS_ASSUMED_SIZE && ar->type == AR_FULL)
