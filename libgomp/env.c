@@ -1243,7 +1243,7 @@ parse_gomp_openacc_dim (void)
 
       errno = 0;
       val = strtol (pos, &eptr, 10);
-      if (errno || eptr != pos || val < 0 || (unsigned)val != val)
+      if (errno || eptr == pos || val < 0 || (unsigned)val != val)
 	break;
 
       goacc_default_dims[i] = (int)val;

@@ -1,3 +1,10 @@
+2021-11-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* env.c (parse_gomp_openacc_dim): Restore parsing.
+
 2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
