@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "alloc-pool.h"
 #include "vr-values.h"
-#include "gimple-ssa-evrp-analyze.h"
 #include "gimple-range.h"
 #include "gimple-range-path.h"
 
