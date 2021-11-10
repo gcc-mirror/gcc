@@ -697,11 +697,13 @@
 
   /* Implemented by aarch64_ld1<VALL_F16:mode>.  */
   BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
-  VAR1(STORE1P, ld1, 0, ALL, v2di)
+  BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
+  BUILTIN_VALLP_NO_DI (LOAD1_P, ld1, 0, LOAD)
 
   /* Implemented by aarch64_st1<VALL_F16:mode>.  */
   BUILTIN_VALL_F16 (STORE1, st1, 0, STORE)
-  VAR1 (STORE1P, st1, 0, STORE, v2di)
+  BUILTIN_VDQ_I (STORE1_U, st1, 0, STORE)
+  BUILTIN_VALLP_NO_DI (STORE1_P, st1, 0, STORE)
 
   /* Implemented by fma<mode>4.  */
   BUILTIN_VHSDF (TERNOP, fma, 4, FP)
