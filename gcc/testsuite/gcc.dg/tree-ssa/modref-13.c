@@ -18,4 +18,4 @@ test ()
 	return w.array == &arrayval;
 }
 /* We should deterine that write_array writes to PTR only indirectly.  */
-/* { dg-final { scan-tree-dump "return 1" "releae_ssa"  } } */
+/* { dg-final { scan-tree-dump "return 1" "release_ssa"  } } */
