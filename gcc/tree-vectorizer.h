@@ -590,6 +590,9 @@ public:
   /* The cost of the vector code.  */
   class vector_costs *vector_costs;
 
+  /* The cost of the scalar code.  */
+  class vector_costs *scalar_costs;
+
   /* Threshold of number of iterations below which vectorization will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
      param_min_vect_loop_bound.  */
@@ -721,9 +724,6 @@ public:
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
   poly_uint64 slp_unrolling_factor;
 
-  /* Cost of a single scalar iteration.  */
-  int single_scalar_iteration_cost;
-
   /* The factor used to over weight those statements in an inner loop
      relative to the loop being vectorized.  */
   unsigned int inner_loop_cost_factor;
@@ -843,7 +843,6 @@ public:
 #define LOOP_VINFO_SCALAR_LOOP_SCALING(L)  (L)->scalar_loop_scaling
 #define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
-#define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
 #define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
 #define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
@@ -1438,6 +1437,7 @@ public:
   unsigned int body_cost () const;
   unsigned int epilogue_cost () const;
   unsigned int outside_cost () const;
+  unsigned int total_cost () const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -1506,6 +1506,15 @@ inline unsigned int
 vector_costs::outside_cost () const
 {
   return prologue_cost () + epilogue_cost ();
+}
+
+/* Return the cost of the prologue, body and epilogue code
+   (in abstract units).  */
+
+inline unsigned int
+vector_costs::total_cost () const
+{
+  return body_cost () + outside_cost ();
 }
 
 #define VECT_MAX_COST 1000

@@ -822,6 +822,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     num_iters_unchanged (NULL_TREE),
     num_iters_assumptions (NULL_TREE),
     vector_costs (nullptr),
+    scalar_costs (nullptr),
     th (0),
     versioning_threshold (0),
     vectorization_factor (0),
@@ -839,7 +840,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     ivexpr_map (NULL),
     scan_map (NULL),
     slp_unrolling_factor (1),
-    single_scalar_iteration_cost (0),
     inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
@@ -931,6 +931,7 @@ _loop_vec_info::~_loop_vec_info ()
   delete ivexpr_map;
   delete scan_map;
   epilogue_vinfos.release ();
+  delete scalar_costs;
   delete vector_costs;
 
   /* When we release an epiloge vinfo that we do not intend to use
@@ -1292,20 +1293,15 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
     }
 
   /* Now accumulate cost.  */
-  vector_costs *target_cost_data = init_cost (loop_vinfo, true);
+  loop_vinfo->scalar_costs = init_cost (loop_vinfo, true);
   stmt_info_for_cost *si;
   int j;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 		    j, si)
-    (void) add_stmt_cost (target_cost_data, si->count,
+    (void) add_stmt_cost (loop_vinfo->scalar_costs, si->count,
 			  si->kind, si->stmt_info, si->vectype,
 			  si->misalign, si->where);
-  unsigned prologue_cost = 0, body_cost = 0, epilogue_cost = 0;
-  finish_cost (target_cost_data, &prologue_cost, &body_cost,
-	       &epilogue_cost);
-  delete target_cost_data;
-  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
-    = prologue_cost + body_cost + epilogue_cost;
+  loop_vinfo->scalar_costs->finish_cost ();
 }
 
 
@@ -3868,8 +3864,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Consider assigning different costs to different scalar
      statements.  */
 
-  scalar_single_iter_cost
-    = LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo);
+  scalar_single_iter_cost = loop_vinfo->scalar_costs->total_cost ();
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.  (For fully-masked loops there will be no peeling.)
