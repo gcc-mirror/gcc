@@ -1703,7 +1703,7 @@ vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 /* See the comment above the declaration for details.  */
 
 void
-vector_costs::finish_cost ()
+vector_costs::finish_cost (const vector_costs *)
 {
   gcc_assert (!m_finished);
   m_finished = true;

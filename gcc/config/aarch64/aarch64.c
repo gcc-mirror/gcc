@@ -14745,7 +14745,7 @@ public:
 			      stmt_vec_info stmt_info, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
-  void finish_cost () override;
+  void finish_cost (const vector_costs *) override;
 
 private:
   void record_potential_advsimd_unrolling (loop_vec_info);
@@ -16138,7 +16138,7 @@ aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
 }
 
 void
-aarch64_vector_costs::finish_cost ()
+aarch64_vector_costs::finish_cost (const vector_costs *scalar_costs)
 {
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
   if (loop_vinfo
@@ -16146,7 +16146,7 @@ aarch64_vector_costs::finish_cost ()
       && aarch64_use_new_vector_costs_p ())
     m_costs[vect_body] = adjust_body_cost (m_costs[vect_body]);
 
-  vector_costs::finish_cost ();
+  vector_costs::finish_cost (scalar_costs);
 }
 
 static void initialize_aarch64_code_model (struct gcc_options *);

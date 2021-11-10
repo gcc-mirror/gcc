@@ -1415,8 +1415,11 @@ public:
 				      vect_cost_model_location where);
 
   /* Finish calculating the cost of the code.  The results can be
-     read back using the functions below.  */
-  virtual void finish_cost ();
+     read back using the functions below.
+
+     If the costs describe vector code, SCALAR_COSTS gives the costs
+     of the corresponding scalar code, otherwise it is null.  */
+  virtual void finish_cost (const vector_costs *scalar_costs);
 
   /* The costs in THIS and OTHER both describe ways of vectorizing
      a main loop.  Return true if the costs described by THIS are
@@ -1691,10 +1694,11 @@ add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 /* Alias targetm.vectorize.finish_cost.  */
 
 static inline void
-finish_cost (vector_costs *costs, unsigned *prologue_cost,
-	     unsigned *body_cost, unsigned *epilogue_cost)
+finish_cost (vector_costs *costs, const vector_costs *scalar_costs,
+	     unsigned *prologue_cost, unsigned *body_cost,
+	     unsigned *epilogue_cost)
 {
-  costs->finish_cost ();
+  costs->finish_cost (scalar_costs);
   *prologue_cost = costs->prologue_cost ();
   *body_cost = costs->body_cost ();
   *epilogue_cost = costs->epilogue_cost ();

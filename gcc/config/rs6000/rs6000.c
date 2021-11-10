@@ -5268,7 +5268,7 @@ public:
 			      stmt_vec_info stmt_info, tree vectype,
 			      int misalign,
 			      vect_cost_model_location where) override;
-  void finish_cost () override;
+  void finish_cost (const vector_costs *) override;
 
 protected:
   void update_target_cost_per_stmt (vect_cost_for_stmt, stmt_vec_info,
@@ -5522,7 +5522,7 @@ rs6000_cost_data::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
 }
 
 void
-rs6000_cost_data::finish_cost ()
+rs6000_cost_data::finish_cost (const vector_costs *scalar_costs)
 {
   if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo))
     {
@@ -5539,7 +5539,7 @@ rs6000_cost_data::finish_cost ()
 	m_costs[vect_body] += 10000;
     }
 
-  vector_costs::finish_cost ();
+  vector_costs::finish_cost (scalar_costs);
 }
 
 /* Implement targetm.loop_unroll_adjust.  */
