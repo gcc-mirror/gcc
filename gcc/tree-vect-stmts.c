@@ -10344,12 +10344,29 @@ vectorizable_condition (vec_info *vinfo,
 	  else
 	    {
 	      bool honor_nans = HONOR_NANS (TREE_TYPE (cond.op0));
+	      tree_code orig_code = cond.code;
 	      cond.code = invert_tree_comparison (cond.code, honor_nans);
 	      if (loop_vinfo->scalar_cond_masked_set.contains (cond))
 		{
 		  masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		  cond_code = cond.code;
 		  swap_cond_operands = true;
+		}
+	      else
+		{
+		  /* Try the inverse of the current mask.  We check if the
+		     inverse mask is live and if so we generate a negate of
+		     the current mask such that we still honor NaNs.  */
+		  cond.inverted_p = true;
+		  cond.code = orig_code;
+		  if (loop_vinfo->scalar_cond_masked_set.contains (cond))
+		    {
+		      bitop1 = orig_code;
+		      bitop2 = BIT_NOT_EXPR;
+		      masks = &LOOP_VINFO_MASKS (loop_vinfo);
+		      cond_code = cond.code;
+		      swap_cond_operands = true;
+		    }
 		}
 	    }
 	}

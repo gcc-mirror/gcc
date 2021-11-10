@@ -1678,6 +1678,7 @@ scalar_cond_masked_key::get_cond_ops_from_tree (tree t)
       this->code = TREE_CODE (t);
       this->op0 = TREE_OPERAND (t, 0);
       this->op1 = TREE_OPERAND (t, 1);
+      this->inverted_p = false;
       return;
     }
 
@@ -1690,13 +1691,31 @@ scalar_cond_masked_key::get_cond_ops_from_tree (tree t)
 	    this->code = code;
 	    this->op0 = gimple_assign_rhs1 (stmt);
 	    this->op1 = gimple_assign_rhs2 (stmt);
+	    this->inverted_p = false;
 	    return;
+	  }
+	else if (code == BIT_NOT_EXPR)
+	  {
+	    tree n_op = gimple_assign_rhs1 (stmt);
+	    if ((stmt = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (n_op))))
+	      {
+		code = gimple_assign_rhs_code (stmt);
+		if (TREE_CODE_CLASS (code) == tcc_comparison)
+		  {
+		    this->code = code;
+		    this->op0 = gimple_assign_rhs1 (stmt);
+		    this->op1 = gimple_assign_rhs2 (stmt);
+		    this->inverted_p = true;
+		    return;
+		  }
+	      }
 	  }
       }
 
   this->code = NE_EXPR;
   this->op0 = t;
   this->op1 = build_zero_cst (TREE_TYPE (t));
+  this->inverted_p = false;
 }
 
 /* See the comment above the declaration for details.  */

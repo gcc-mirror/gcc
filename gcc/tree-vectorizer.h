@@ -266,6 +266,7 @@ struct scalar_cond_masked_key
   void get_cond_ops_from_tree (tree);
 
   unsigned ncopies;
+  bool inverted_p;
   tree_code code;
   tree op0;
   tree op1;
@@ -285,6 +286,7 @@ struct default_hash_traits<scalar_cond_masked_key>
     inchash::add_expr (v.op0, h, 0);
     inchash::add_expr (v.op1, h, 0);
     h.add_int (v.ncopies);
+    h.add_flag (v.inverted_p);
     return h.end ();
   }
 
@@ -292,9 +294,10 @@ struct default_hash_traits<scalar_cond_masked_key>
   equal (value_type existing, value_type candidate)
   {
     return (existing.ncopies == candidate.ncopies
-           && existing.code == candidate.code
-           && operand_equal_p (existing.op0, candidate.op0, 0)
-           && operand_equal_p (existing.op1, candidate.op1, 0));
+	    && existing.code == candidate.code
+	    && existing.inverted_p == candidate.inverted_p
+	    && operand_equal_p (existing.op0, candidate.op0, 0)
+	    && operand_equal_p (existing.op1, candidate.op1, 0));
   }
 
   static const bool empty_zero_p = true;
@@ -303,6 +306,7 @@ struct default_hash_traits<scalar_cond_masked_key>
   mark_empty (value_type &v)
   {
     v.ncopies = 0;
+    v.inverted_p = false;
   }
 
   static inline bool
