@@ -19522,9 +19522,8 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
 	 disallow a change to these modes, reload will assume it's ok to
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
 	 the vec_dupv4hi pattern.
-	 NB: AVX512FP16 supports vmovw which can load 16bit data to sse
-	 register.  */
-      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_AVX512FP16 ? 2 : 4;
+	 NB: SSE2 can load 16bit data to sse register via pinsrw.  */
+      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_SSE2 ? 2 : 4;
       if (GET_MODE_SIZE (from) < mov_size)
 	return false;
     }
