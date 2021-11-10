@@ -724,13 +724,6 @@ public:
   /* Cost of a single scalar iteration.  */
   int single_scalar_iteration_cost;
 
-  /* The cost of the vector prologue and epilogue, including peeled
-     iterations and set-up code.  */
-  int vec_outside_cost;
-
-  /* The cost of the vector loop body.  */
-  int vec_inside_cost;
-
   /* The factor used to over weight those statements in an inner loop
      relative to the loop being vectorized.  */
   unsigned int inner_loop_cost_factor;
@@ -1429,6 +1422,7 @@ public:
   unsigned int prologue_cost () const;
   unsigned int body_cost () const;
   unsigned int epilogue_cost () const;
+  unsigned int outside_cost () const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
@@ -1487,6 +1481,14 @@ vector_costs::epilogue_cost () const
 {
   gcc_checking_assert (m_finished);
   return m_costs[vect_epilogue];
+}
+
+/* Return the cost of the prologue and epilogue code (in abstract units).  */
+
+inline unsigned int
+vector_costs::outside_cost () const
+{
+  return prologue_cost () + epilogue_cost ();
 }
 
 #define VECT_MAX_COST 1000

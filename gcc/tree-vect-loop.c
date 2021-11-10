@@ -840,8 +840,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     scan_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
-    vec_outside_cost (0),
-    vec_inside_cost (0),
     inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
@@ -2845,10 +2843,10 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
       /* Compute the costs by multiplying the inside costs with the factor and
 	 add the outside costs for a more complete picture.  The factor is the
 	 amount of times we are expecting to iterate this epilogue.  */
-      old_cost = old_loop_vinfo->vec_inside_cost * old_factor;
-      new_cost = new_loop_vinfo->vec_inside_cost * new_factor;
-      old_cost += old_loop_vinfo->vec_outside_cost;
-      new_cost += new_loop_vinfo->vec_outside_cost;
+      old_cost = old_loop_vinfo->vector_costs->body_cost () * old_factor;
+      new_cost = new_loop_vinfo->vector_costs->body_cost () * new_factor;
+      old_cost += old_loop_vinfo->vector_costs->outside_cost ();
+      new_cost += new_loop_vinfo->vector_costs->outside_cost ();
       return new_cost < old_cost;
     }
 
@@ -2865,8 +2863,8 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 
   /* Check whether the (fractional) cost per scalar iteration is lower
      or higher: new_inside_cost / new_vf vs. old_inside_cost / old_vf.  */
-  poly_int64 rel_new = new_loop_vinfo->vec_inside_cost * old_vf;
-  poly_int64 rel_old = old_loop_vinfo->vec_inside_cost * new_vf;
+  poly_int64 rel_new = new_loop_vinfo->vector_costs->body_cost () * old_vf;
+  poly_int64 rel_old = old_loop_vinfo->vector_costs->body_cost () * new_vf;
 
   HOST_WIDE_INT est_rel_new_min
     = estimated_poly_value (rel_new, POLY_VALUE_MIN);
@@ -2918,8 +2916,10 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 
   /* If there's nothing to choose between the loop bodies, see whether
      there's a difference in the prologue and epilogue costs.  */
-  if (new_loop_vinfo->vec_outside_cost != old_loop_vinfo->vec_outside_cost)
-    return new_loop_vinfo->vec_outside_cost < old_loop_vinfo->vec_outside_cost;
+  auto old_outside_cost = old_loop_vinfo->vector_costs->outside_cost ();
+  auto new_outside_cost = new_loop_vinfo->vector_costs->outside_cost ();
+  if (new_outside_cost != old_outside_cost)
+    return new_outside_cost < old_outside_cost;
 
   return false;
 }
@@ -4271,10 +4271,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	       &vec_inside_cost, &vec_epilogue_cost);
 
   vec_outside_cost = (int)(vec_prologue_cost + vec_epilogue_cost);
-
-  /* Stash the costs so that we can compare two loop_vec_infos.  */
-  loop_vinfo->vec_inside_cost = vec_inside_cost;
-  loop_vinfo->vec_outside_cost = vec_outside_cost;
 
   if (dump_enabled_p ())
     {
