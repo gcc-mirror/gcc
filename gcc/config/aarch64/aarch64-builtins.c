@@ -2670,18 +2670,18 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	      = get_mem_type_for_load_store(fcode);
 	    aarch64_simd_type_info simd_type
 	      = aarch64_simd_types[mem_type];
-	    tree elt_ptr_type = build_pointer_type (simd_type.eltype);
+	    tree elt_ptr_type = build_pointer_type_for_mode (simd_type.eltype,
+							     VOIDmode, true);
 	    tree zero = build_zero_cst (elt_ptr_type);
-	    gimple_seq stmts = NULL;
-	    tree base = gimple_convert (&stmts, elt_ptr_type,
-					args[0]);
-	    if (stmts)
-	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	    /* Use element type alignment.  */
+	    tree access_type
+	      = build_aligned_type (simd_type.itype,
+				    TYPE_ALIGN (simd_type.eltype));
 	    new_stmt
 	      = gimple_build_assign (gimple_get_lhs (stmt),
 				     fold_build2 (MEM_REF,
-						  simd_type.itype,
-						  base, zero));
+						  access_type,
+						  args[0], zero));
 	  }
 	break;
 
@@ -2692,18 +2692,17 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	      = get_mem_type_for_load_store(fcode);
 	    aarch64_simd_type_info simd_type
 	      = aarch64_simd_types[mem_type];
-	    tree elt_ptr_type = build_pointer_type (simd_type.eltype);
+	    tree elt_ptr_type = build_pointer_type_for_mode (simd_type.eltype,
+							     VOIDmode, true);
 	    tree zero = build_zero_cst (elt_ptr_type);
-	    gimple_seq stmts = NULL;
-	    tree base = gimple_convert (&stmts, elt_ptr_type,
-					args[0]);
-	    if (stmts)
-	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	    /* Use element type alignment.  */
+	    tree access_type
+	      = build_aligned_type (simd_type.itype,
+				    TYPE_ALIGN (simd_type.eltype));
 	    new_stmt
-	      = gimple_build_assign (fold_build2 (MEM_REF,
-				     simd_type.itype,
-				     base,
-				     zero), args[1]);
+	      = gimple_build_assign (fold_build2 (MEM_REF, access_type,
+						  args[0], zero),
+				     args[1]);
 	  }
 	break;
 
