@@ -946,7 +946,6 @@ complex_mul_pattern::matches (complex_operation_t op,
 
   auto childs = *ops;
   auto l0node = SLP_TREE_CHILDREN (childs[0]);
-  auto l1node = SLP_TREE_CHILDREN (childs[1]);
 
   bool mul0 = vect_match_expression_p (l0node[0], MULT_EXPR);
   bool mul1 = vect_match_expression_p (l0node[1], MULT_EXPR);
