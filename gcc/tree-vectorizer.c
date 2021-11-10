@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "opt-problem.h"
 #include "internal-fn.h"
-
+#include "tree-ssa-sccvn.h"
 
 /* Loop or bb location, with hotness information.  */
 dump_user_location_t vect_location;
@@ -1276,6 +1276,29 @@ vectorize_loops (void)
 	  }
       }
 
+  /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
+  if (cfun->has_simduid_loops)
+    {
+      adjust_simduid_builtins (simduid_to_vf_htab);
+      /* Avoid stale SCEV cache entries for the SIMD_LANE defs.  */
+      scev_reset ();
+    }
+  /* Shrink any "omp array simd" temporary arrays to the
+     actual vectorization factors.  */
+  if (simd_array_to_simduid_htab)
+    shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
+  delete simduid_to_vf_htab;
+  cfun->has_simduid_loops = false;
+
+  if (num_vectorized_loops > 0)
+    {
+      /* If we vectorized any loop only virtual SSA form needs to be updated.
+	 ???  Also while we try hard to update loop-closed SSA form we fail
+	 to properly do this in some corner-cases (see PR56286).  */
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_only_virtuals);
+      ret |= TODO_cleanup_cfg;
+    }
+
   for (i = 1; i < number_of_loops (cfun); i++)
     {
       loop_vec_info loop_vinfo;
@@ -1290,33 +1313,21 @@ vectorize_loops (void)
       if (has_mask_store
 	  && targetm.vectorize.empty_mask_is_expensive (IFN_MASK_STORE))
 	optimize_mask_stores (loop);
+
+      auto_bitmap exit_bbs;
+      /* Perform local CSE, this esp. helps because we emit code for
+	 predicates that need to be shared for optimal predicate usage.
+	 However reassoc will re-order them and prevent CSE from working
+	 as it should.  CSE only the loop body, not the entry.  */
+      bitmap_set_bit (exit_bbs, single_exit (loop)->dest->index);
+
+      edge entry = EDGE_PRED (loop_preheader_edge (loop)->src, 0);
+      do_rpo_vn (cfun, entry, exit_bbs);
+
       loop->aux = NULL;
     }
 
-  /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
-  if (cfun->has_simduid_loops)
-    {
-      adjust_simduid_builtins (simduid_to_vf_htab);
-      /* Avoid stale SCEV cache entries for the SIMD_LANE defs.  */
-      scev_reset ();
-    }
-
-  /* Shrink any "omp array simd" temporary arrays to the
-     actual vectorization factors.  */
-  if (simd_array_to_simduid_htab)
-    shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
-  delete simduid_to_vf_htab;
-  cfun->has_simduid_loops = false;
   vect_slp_fini ();
-
-  if (num_vectorized_loops > 0)
-    {
-      /* If we vectorized any loop only virtual SSA form needs to be updated.
-	 ???  Also while we try hard to update loop-closed SSA form we fail
-	 to properly do this in some corner-cases (see PR56286).  */
-      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa_only_virtuals);
-      return TODO_cleanup_cfg;
-    }
 
   return ret;
 }
