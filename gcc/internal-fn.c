@@ -3059,10 +3059,10 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       mark_addressable (lhs);
       tree var_addr = build_fold_addr_expr (lhs);
 
-      tree value = (init_type == AUTO_INIT_PATTERN) ?
-		    build_int_cst (integer_type_node,
-				   INIT_PATTERN_VALUE) :
-		    integer_zero_node;
+      tree value = (init_type == AUTO_INIT_PATTERN)
+		    ? build_int_cst (integer_type_node,
+				     INIT_PATTERN_VALUE)
+		    : integer_zero_node;
       tree m_call = build_call_expr (builtin_decl_implicit (BUILT_IN_MEMSET),
 				     3, var_addr, value, var_size);
       /* Expand this memset call.  */
@@ -3073,15 +3073,17 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       /* If this variable is in a register use expand_assignment.
 	 For boolean scalars force zero-init.  */
       tree init;
+      scalar_int_mode var_mode;
       if (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE
 	  && tree_fits_uhwi_p (var_size)
 	  && (init_type == AUTO_INIT_PATTERN
 	      || !is_gimple_reg_type (var_type))
 	  && int_mode_for_size (tree_to_uhwi (var_size) * BITS_PER_UNIT,
-				0).exists ())
+				0).exists (&var_mode)
+	  && have_insn_for (SET, var_mode))
 	{
 	  unsigned HOST_WIDE_INT total_bytes = tree_to_uhwi (var_size);
-	  unsigned char *buf = (unsigned char *) xmalloc (total_bytes);
+	  unsigned char *buf = XALLOCAVEC (unsigned char, total_bytes);
 	  memset (buf, (init_type == AUTO_INIT_PATTERN
 			? INIT_PATTERN_VALUE : 0), total_bytes);
 	  tree itype = build_nonstandard_integer_type
