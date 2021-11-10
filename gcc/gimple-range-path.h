@@ -34,7 +34,8 @@ class path_range_query : public range_query
 public:
   path_range_query (class gimple_ranger &ranger, bool resolve);
   virtual ~path_range_query ();
-  void compute_ranges (const vec<basic_block> &, const bitmap_head *imports);
+  void compute_ranges (const vec<basic_block> &, const bitmap_head *imports = NULL);
+  void compute_ranges (edge e);
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
@@ -66,12 +67,12 @@ private:
 
   // Path navigation.
   void set_path (const vec<basic_block> &);
-  basic_block entry_bb () { return (*m_path)[m_path->length () - 1]; }
-  basic_block exit_bb ()  { return (*m_path)[0]; }
-  basic_block curr_bb ()  { return (*m_path)[m_pos]; }
-  basic_block prev_bb ()  { return (*m_path)[m_pos + 1]; }
-  basic_block next_bb ()  { return (*m_path)[m_pos - 1]; }
-  bool at_entry ()	  { return m_pos == m_path->length () - 1; }
+  basic_block entry_bb () { return m_path[m_path.length () - 1]; }
+  basic_block exit_bb ()  { return m_path[0]; }
+  basic_block curr_bb ()  { return m_path[m_pos]; }
+  basic_block prev_bb ()  { return m_path[m_pos + 1]; }
+  basic_block next_bb ()  { return m_path[m_pos - 1]; }
+  bool at_entry ()	  { return m_pos == m_path.length () - 1; }
   bool at_exit ()	  { return m_pos == 0; }
   void move_next ()	  { --m_pos; }
 
@@ -82,7 +83,7 @@ private:
   bitmap m_has_cache_entry;
 
   // Path being analyzed.
-  const vec<basic_block> *m_path;
+  auto_vec<basic_block> m_path;
 
   auto_bitmap m_imports;
   gimple_ranger &m_ranger;

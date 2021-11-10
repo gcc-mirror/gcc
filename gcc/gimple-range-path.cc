@@ -41,7 +41,6 @@ path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
 {
   m_cache = new ssa_global_cache;
   m_has_cache_entry = BITMAP_ALLOC (NULL);
-  m_path = NULL;
   m_resolve = resolve;
   m_oracle = new path_oracle (ranger.oracle ());
 }
@@ -92,13 +91,13 @@ path_range_query::dump (FILE *dump_file)
 {
   push_dump_file save (dump_file, dump_flags & ~TDF_DETAILS);
 
-  if (m_path->is_empty ())
+  if (m_path.is_empty ())
     return;
 
   unsigned i;
   bitmap_iterator bi;
 
-  dump_ranger (dump_file, *m_path);
+  dump_ranger (dump_file, m_path);
 
   fprintf (dump_file, "Imports:\n");
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
@@ -125,7 +124,7 @@ path_range_query::defined_outside_path (tree name)
   gimple *def = SSA_NAME_DEF_STMT (name);
   basic_block bb = gimple_bb (def);
 
-  return !bb || !m_path->contains (bb);
+  return !bb || !m_path.contains (bb);
 }
 
 // Return the range of NAME on entry to the path.
@@ -230,8 +229,8 @@ void
 path_range_query::set_path (const vec<basic_block> &path)
 {
   gcc_checking_assert (path.length () > 1);
-  m_path = &path;
-  m_pos = m_path->length () - 1;
+  m_path = path.copy ();
+  m_pos = m_path.length () - 1;
   bitmap_clear (m_has_cache_entry);
 }
 
@@ -486,7 +485,7 @@ path_range_query::add_copies_to_imports ()
 	      tree arg = gimple_phi_arg (phi, i)->def;
 
 	      if (TREE_CODE (arg) == SSA_NAME
-		  && m_path->contains (e->src)
+		  && m_path.contains (e->src)
 		  && bitmap_set_bit (m_imports, SSA_NAME_VERSION (arg)))
 		worklist.safe_push (arg);
 	    }
@@ -497,7 +496,8 @@ path_range_query::add_copies_to_imports ()
 // Compute the ranges for IMPORTS along PATH.
 //
 // IMPORTS are the set of SSA names, any of which could potentially
-// change the value of the final conditional in PATH.
+// change the value of the final conditional in PATH.  Default to the
+// imports of the last block in the path if none is given.
 
 void
 path_range_query::compute_ranges (const vec<basic_block> &path,
@@ -507,8 +507,15 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
     fprintf (dump_file, "\n==============================================\n");
 
   set_path (path);
-  bitmap_copy (m_imports, imports);
   m_undefined_path = false;
+
+  if (imports)
+    bitmap_copy (m_imports, imports);
+  else
+    {
+      bitmap imports = m_ranger.gori ().imports (exit_bb ());
+      bitmap_copy (m_imports, imports);
+    }
 
   if (m_resolve)
     {
@@ -559,6 +566,18 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
       get_path_oracle ()->dump (dump_file);
       dump (dump_file);
     }
+}
+
+// Convenience function to compute ranges along a path consisting of
+// E->SRC and E->DEST.
+
+void
+path_range_query::compute_ranges (edge e)
+{
+  auto_vec<basic_block> bbs (2);
+  bbs.quick_push (e->dest);
+  bbs.quick_push (e->src);
+  compute_ranges (bbs);
 }
 
 // A folding aid used to register and query relations along a path.
@@ -643,7 +662,7 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   if (m_resolve)
     {
       fold_using_range f;
-      jt_fur_source src (stmt, this, &m_ranger.gori (), *m_path);
+      jt_fur_source src (stmt, this, &m_ranger.gori (), m_path);
       if (!f.fold_stmt (r, stmt, src))
 	r.set_varying (type);
     }
@@ -734,7 +753,7 @@ path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
       else
 	gcc_unreachable ();
 
-      jt_fur_source src (NULL, this, &m_ranger.gori (), *m_path);
+      jt_fur_source src (NULL, this, &m_ranger.gori (), m_path);
       src.register_outgoing_edges (cond, r, e0, e1);
     }
 }
