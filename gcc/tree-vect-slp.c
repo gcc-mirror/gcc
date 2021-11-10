@@ -4889,16 +4889,15 @@ vect_slp_analyze_operations (vec_info *vinfo)
       else
 	{
 	  i++;
-
-	  /* For BB vectorization remember the SLP graph entry
-	     cost for later.  */
-	  if (is_a <bb_vec_info> (vinfo))
-	    instance->cost_vec = cost_vec;
-	  else
+	  if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo))
 	    {
-	      add_stmt_costs (vinfo->target_cost_data, &cost_vec);
+	      add_stmt_costs (loop_vinfo->vector_costs, &cost_vec);
 	      cost_vec.release ();
 	    }
+	  else
+	    /* For BB vectorization remember the SLP graph entry
+	       cost for later.  */
+	    instance->cost_vec = cost_vec;
 	}
     }
 

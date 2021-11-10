@@ -408,9 +408,6 @@ public:
      stmt in the chain.  */
   auto_vec<stmt_vec_info> grouped_stores;
 
-  /* Cost data used by the target cost model.  */
-  class vector_costs *target_cost_data;
-
   /* The set of vector modes used in the vectorized region.  */
   mode_set used_vector_modes;
 
@@ -589,6 +586,9 @@ public:
   tree num_iters_unchanged;
   /* Condition under which this loop is analyzed and versioned.  */
   tree num_iters_assumptions;
+
+  /* The cost of the vector code.  */
+  class vector_costs *vector_costs;
 
   /* Threshold of number of iterations below which vectorization will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
@@ -843,7 +843,6 @@ public:
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
-#define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies

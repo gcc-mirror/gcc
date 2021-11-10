@@ -459,8 +459,7 @@ shrink_simd_arrays
 vec_info::vec_info (vec_info::vec_kind kind_in, vec_info_shared *shared_)
   : kind (kind_in),
     shared (shared_),
-    stmt_vec_info_ro (false),
-    target_cost_data (nullptr)
+    stmt_vec_info_ro (false)
 {
   stmt_vec_infos.create (50);
 }
@@ -470,7 +469,6 @@ vec_info::~vec_info ()
   for (slp_instance &instance : slp_instances)
     vect_free_slp_instance (instance);
 
-  delete target_cost_data;
   free_stmt_vec_infos ();
 }
 
