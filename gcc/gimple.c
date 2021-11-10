@@ -1575,11 +1575,12 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
       else
 	{
 	  if (fnspec.arg_direct_p (arg))
-	    flags |= EAF_DIRECT;
+	    flags |= EAF_NO_INDIRECT_READ | EAF_NO_INDIRECT_ESCAPE
+		     | EAF_NOT_RETURNED_INDIRECTLY | EAF_NO_INDIRECT_CLOBBER;
 	  if (fnspec.arg_noescape_p (arg))
-	    flags |= EAF_NOESCAPE | EAF_NODIRECTESCAPE;
+	    flags |= EAF_NO_DIRECT_ESCAPE | EAF_NO_INDIRECT_ESCAPE;
 	  if (fnspec.arg_readonly_p (arg))
-	    flags |= EAF_NOCLOBBER;
+	    flags |= EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER;
 	}
     }
   tree callee = gimple_call_fndecl (stmt);
@@ -1608,7 +1609,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 int
 gimple_call_retslot_flags (const gcall *stmt)
 {
-  int flags = EAF_DIRECT | EAF_NOREAD;
+  int flags = implicit_retslot_eaf_flags;
 
   tree callee = gimple_call_fndecl (stmt);
   if (callee)

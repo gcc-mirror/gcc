@@ -148,22 +148,24 @@ struct escape_entry
 static void
 dump_eaf_flags (FILE *out, int flags, bool newline = true)
 {
-  if (flags & EAF_DIRECT)
-    fprintf (out, " direct");
-  if (flags & EAF_NOCLOBBER)
-    fprintf (out, " noclobber");
-  if (flags & EAF_NOESCAPE)
-    fprintf (out, " noescape");
-  if (flags & EAF_NODIRECTESCAPE)
-    fprintf (out, " nodirectescape");
   if (flags & EAF_UNUSED)
     fprintf (out, " unused");
-  if (flags & EAF_NOT_RETURNED)
-    fprintf (out, " not_returned");
+  if (flags & EAF_NO_DIRECT_CLOBBER)
+    fprintf (out, " no_direct_clobber");
+  if (flags & EAF_NO_INDIRECT_CLOBBER)
+    fprintf (out, " no_indirect_clobber");
+  if (flags & EAF_NO_DIRECT_ESCAPE)
+    fprintf (out, " no_direct_escape");
+  if (flags & EAF_NO_INDIRECT_ESCAPE)
+    fprintf (out, " no_indirect_escape");
   if (flags & EAF_NOT_RETURNED_DIRECTLY)
     fprintf (out, " not_returned_directly");
-  if (flags & EAF_NOREAD)
-    fprintf (out, " noread");
+  if (flags & EAF_NOT_RETURNED_INDIRECTLY)
+    fprintf (out, " not_returned_indirectly");
+  if (flags & EAF_NO_DIRECT_READ)
+    fprintf (out, " no_direct_read");
+  if (flags & EAF_NO_INDIRECT_READ)
+    fprintf (out, " no_indirect_read");
   if (newline)
   fprintf (out, "\n");
 }
@@ -296,7 +298,7 @@ remove_useless_eaf_flags (int eaf_flags, int ecf_flags, bool returns_void)
   else if (ecf_flags & ECF_PURE)
     eaf_flags &= ~implicit_pure_eaf_flags;
   else if ((ecf_flags & ECF_NORETURN) || returns_void)
-    eaf_flags &= ~(EAF_NOT_RETURNED | EAF_NOT_RETURNED_DIRECTLY);
+    eaf_flags &= ~(EAF_NOT_RETURNED_DIRECTLY | EAF_NOT_RETURNED_INDIRECTLY);
   return eaf_flags;
 }
 
@@ -1412,35 +1414,32 @@ memory_access_to (tree op, tree ssa_name)
 static int
 deref_flags (int flags, bool ignore_stores)
 {
-  int ret = EAF_NODIRECTESCAPE | EAF_NOT_RETURNED_DIRECTLY;
+  /* Dereference is also a direct read but dereferenced value does not
+     yield any other direct use.  */
+  int ret = EAF_NO_DIRECT_CLOBBER | EAF_NO_DIRECT_ESCAPE
+	    | EAF_NOT_RETURNED_DIRECTLY;
   /* If argument is unused just account for
      the read involved in dereference.  */
   if (flags & EAF_UNUSED)
-    ret |= EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOT_RETURNED;
+    ret |= EAF_NO_INDIRECT_READ | EAF_NO_INDIRECT_CLOBBER
+	   | EAF_NO_INDIRECT_ESCAPE;
   else
     {
-      if ((flags & EAF_NOCLOBBER) || ignore_stores)
-	ret |= EAF_NOCLOBBER;
-      if ((flags & EAF_NOESCAPE) || ignore_stores)
-	ret |= EAF_NOESCAPE;
-      /* If the value dereferenced is not used for another load or store
-	 we can still consider ARG as used only directly.
-
-	 Consider
-
-	 int
-	 test (int *a)
-	   {
-	     return *a!=0;
-	   }
-
-	*/
-      if ((flags & (EAF_NOREAD | EAF_NOT_RETURNED | EAF_NOESCAPE | EAF_DIRECT))
-	  == (EAF_NOREAD | EAF_NOT_RETURNED | EAF_NOESCAPE | EAF_DIRECT)
-	  && ((flags & EAF_NOCLOBBER) || ignore_stores))
-	ret |= EAF_DIRECT;
-      if (flags & EAF_NOT_RETURNED)
-	ret |= EAF_NOT_RETURNED;
+      /* Direct or indirect accesses leads to indirect accesses.  */
+      if (((flags & EAF_NO_DIRECT_CLOBBER)
+	   && (flags & EAF_NO_INDIRECT_CLOBBER))
+	  || ignore_stores)
+	ret |= EAF_NO_INDIRECT_CLOBBER;
+      if (((flags & EAF_NO_DIRECT_ESCAPE)
+	   && (flags & EAF_NO_INDIRECT_ESCAPE))
+	  || ignore_stores)
+	ret |= EAF_NO_INDIRECT_ESCAPE;
+      if ((flags & EAF_NO_DIRECT_READ)
+	   && (flags & EAF_NO_INDIRECT_READ))
+	ret |= EAF_NO_INDIRECT_READ;
+      if ((flags & EAF_NOT_RETURNED_DIRECTLY)
+	  && (flags & EAF_NOT_RETURNED_INDIRECTLY))
+	ret |= EAF_NOT_RETURNED_INDIRECTLY;
     }
   return ret;
 }
@@ -1508,9 +1507,11 @@ void
 modref_lattice::init ()
 {
   /* All flags we track.  */
-  int f = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED
-	  | EAF_NODIRECTESCAPE | EAF_NOT_RETURNED |
-	  EAF_NOT_RETURNED_DIRECTLY | EAF_NOREAD;
+  int f = EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER
+	  | EAF_NO_DIRECT_ESCAPE | EAF_NO_INDIRECT_ESCAPE
+	  | EAF_NO_DIRECT_READ | EAF_NO_INDIRECT_READ
+	  | EAF_NOT_RETURNED_DIRECTLY | EAF_NOT_RETURNED_INDIRECTLY
+	  | EAF_UNUSED;
   flags = f;
   /* Check that eaf_flags_t is wide enough to hold all flags.  */
   gcc_checking_assert (f == flags);
@@ -1589,12 +1590,6 @@ modref_lattice::merge (int f)
 {
   if (f & EAF_UNUSED)
     return false;
-  /* Noescape implies that value also does not escape directly.
-     Fnspec machinery does set both so compensate for this.  */
-  if (f & EAF_NOESCAPE)
-    f |= EAF_NODIRECTESCAPE;
-  if (f & EAF_NOT_RETURNED)
-    f |= EAF_NOT_RETURNED_DIRECTLY;
   if ((flags & f) != flags)
     {
       flags &= f;
@@ -1664,7 +1659,7 @@ modref_lattice::merge_deref (const modref_lattice &with, bool ignore_stores)
 bool
 modref_lattice::merge_direct_load ()
 {
-  return merge (~(EAF_UNUSED | EAF_NOREAD));
+  return merge (~(EAF_UNUSED | EAF_NO_DIRECT_READ));
 }
 
 /* Merge in flags for direct store.  */
@@ -1672,7 +1667,7 @@ modref_lattice::merge_direct_load ()
 bool
 modref_lattice::merge_direct_store ()
 {
-  return merge (~(EAF_UNUSED | EAF_NOCLOBBER));
+  return merge (~(EAF_UNUSED | EAF_NO_DIRECT_CLOBBER));
 }
 
 /* Analyzer of EAF flags.
@@ -1729,21 +1724,29 @@ private:
   auto_vec<int> m_names_to_propagate;
 
   void merge_with_ssa_name (tree dest, tree src, bool deref);
-  void merge_call_lhs_flags (gcall *call, int arg, tree name, bool deref);
+  void merge_call_lhs_flags (gcall *call, int arg, tree name, bool direct,
+			     bool deref);
 };
 
 
-/* Call statements may return their parameters.  Consider argument number
+/* Call statements may return tgeir parameters.  Consider argument number
    ARG of USE_STMT and determine flags that can needs to be cleared
    in case pointer possibly indirectly references from ARG I is returned.
+   If DIRECT is true consider direct returns and if INDIRECT consider
+   indirect returns.
    LATTICE, DEPTH and ipa are same as in analyze_ssa_name.
    ARG is set to -1 for static chain.  */
 
 void
 modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
-					   tree name, bool deref)
+					   tree name, bool direct,
+					   bool indirect)
 {
   int index = SSA_NAME_VERSION (name);
+
+  /* If value is not returned at all, do nothing.  */
+  if (!direct && !indirect)
+    return;
 
   /* If there is no return value, no flags are affected.  */
   if (!gimple_call_lhs (call))
@@ -1763,10 +1766,13 @@ modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
   if (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME)
     {
       tree lhs = gimple_call_lhs (call);
-      merge_with_ssa_name (name, lhs, deref);
+      if (direct)
+	merge_with_ssa_name (name, lhs, false);
+      if (indirect)
+	merge_with_ssa_name (name, lhs, true);
     }
   /* In the case of memory store we can do nothing.  */
-  else if (deref)
+  else if (!direct)
     m_lattice[index].merge (deref_flags (0, false));
   else
     m_lattice[index].merge (0);
@@ -1782,18 +1788,19 @@ callee_to_caller_flags (int call_flags, bool ignore_stores,
 {
   /* call_flags is about callee returning a value
      that is not the same as caller returning it.  */
-  call_flags |= EAF_NOT_RETURNED
-		| EAF_NOT_RETURNED_DIRECTLY;
+  call_flags |= EAF_NOT_RETURNED_DIRECTLY
+		| EAF_NOT_RETURNED_INDIRECTLY;
   /* TODO: We miss return value propagation.
      Be conservative and if value escapes to memory
      also mark it as escaping.  */
   if (!ignore_stores && !(call_flags & EAF_UNUSED))
     {
-      if (!(call_flags & EAF_NOESCAPE))
-	lattice.merge (~(EAF_NOT_RETURNED | EAF_UNUSED));
-      if (!(call_flags & (EAF_NODIRECTESCAPE | EAF_NOESCAPE)))
+      if (!(call_flags & EAF_NO_DIRECT_ESCAPE))
 	lattice.merge (~(EAF_NOT_RETURNED_DIRECTLY
-			 | EAF_NOT_RETURNED
+			 | EAF_NOT_RETURNED_INDIRECTLY
+			 | EAF_UNUSED));
+      if (!(call_flags & EAF_NO_INDIRECT_ESCAPE))
+	lattice.merge (~(EAF_NOT_RETURNED_INDIRECTLY
 			 | EAF_UNUSED));
     }
   else
@@ -1869,13 +1876,13 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 	      && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 	    ;
 	  else if (gimple_return_retval (ret) == name)
-	    m_lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED
+	    m_lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED_DIRECTLY
 				      | EAF_NOT_RETURNED_DIRECTLY));
 	  else if (memory_access_to (gimple_return_retval (ret), name))
 	    {
 	      m_lattice[index].merge_direct_load ();
-	      m_lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED
-					| EAF_NOT_RETURNED_DIRECTLY));
+	      m_lattice[index].merge (~(EAF_UNUSED
+					| EAF_NOT_RETURNED_INDIRECTLY));
 	    }
 	}
       /* Account for LHS store, arg loads and flags from callee function.  */
@@ -1889,7 +1896,7 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 	     is on since that would allow propagation of this from -fno-ipa-pta
 	     to -fipa-pta functions.  */
 	  if (gimple_call_fn (use_stmt) == name)
-	    m_lattice[index].merge (~(EAF_NOCLOBBER | EAF_UNUSED));
+	    m_lattice[index].merge (~(EAF_NO_DIRECT_CLOBBER | EAF_UNUSED));
 
 	  /* Recursion would require bit of propagation; give up for now.  */
 	  if (callee && !m_ipa && recursive_call_p (current_function_decl,
@@ -1932,14 +1939,14 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 			 arg is written to itself which is an escape.  */
 		      if (!isretslot)
 			{
-			  if (!(call_flags & (EAF_NOT_RETURNED | EAF_UNUSED)))
-			    m_lattice[index].merge (~(EAF_NOESCAPE
-						      | EAF_UNUSED));
 			  if (!(call_flags & (EAF_NOT_RETURNED_DIRECTLY
-					      | EAF_UNUSED
-					      | EAF_NOT_RETURNED)))
-			    m_lattice[index].merge (~(EAF_NODIRECTESCAPE
-						      | EAF_NOESCAPE
+					      | EAF_UNUSED)))
+			    m_lattice[index].merge (~(EAF_NO_DIRECT_ESCAPE
+						      | EAF_NO_INDIRECT_ESCAPE
+						      | EAF_UNUSED));
+			  if (!(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
+					      | EAF_UNUSED)))
+			    m_lattice[index].merge (~(EAF_NO_INDIRECT_ESCAPE
 						      | EAF_UNUSED));
 			  call_flags = callee_to_caller_flags
 					   (call_flags, false,
@@ -1953,9 +1960,11 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 		  && (gimple_call_chain (call) == name))
 		{
 		  int call_flags = gimple_call_static_chain_flags (call);
-		  if (!ignore_retval
-		       && !(call_flags & (EAF_NOT_RETURNED | EAF_UNUSED)))
-		    merge_call_lhs_flags (call, -1, name, false);
+		  if (!ignore_retval && !(call_flags & EAF_UNUSED))
+		    merge_call_lhs_flags
+			 (call, -1, name,
+			  !(call_flags & EAF_NOT_RETURNED_DIRECTLY),
+			  !(call_flags & EAF_NOT_RETURNED_INDIRECTLY));
 		  call_flags = callee_to_caller_flags
 				   (call_flags, ignore_stores,
 				    m_lattice[index]);
@@ -1974,11 +1983,11 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 		if (gimple_call_arg (call, i) == name)
 		  {
 		    int call_flags = gimple_call_arg_flags (call, i);
-		    if (!ignore_retval && !(call_flags
-					    & (EAF_NOT_RETURNED | EAF_UNUSED)))
+		    if (!ignore_retval && !(call_flags & EAF_UNUSED))
 		      merge_call_lhs_flags
 			      (call, i, name,
-			       call_flags & EAF_NOT_RETURNED_DIRECTLY);
+			       !(call_flags & EAF_NOT_RETURNED_DIRECTLY),
+			       !(call_flags & EAF_NOT_RETURNED_INDIRECTLY));
 		    if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
 		      {
 			call_flags = callee_to_caller_flags
@@ -1996,9 +2005,10 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 		  {
 		    int call_flags = deref_flags
 			    (gimple_call_arg_flags (call, i), ignore_stores);
-		    if (!ignore_retval
-			 && !(call_flags & (EAF_NOT_RETURNED | EAF_UNUSED)))
-		      merge_call_lhs_flags (call, i, name, true);
+		    if (!ignore_retval && !(call_flags & EAF_UNUSED)
+			&& !(call_flags & EAF_NOT_RETURNED_DIRECTLY)
+			&& !(call_flags & EAF_NOT_RETURNED_INDIRECTLY))
+		      merge_call_lhs_flags (call, i, name, false, true);
 		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
 		      m_lattice[index].merge_direct_load ();
 		    else
@@ -2281,8 +2291,7 @@ modref_eaf_analysis::propagate ()
 		      fprintf (dump_file, "   New lattice: ");
 		      m_lattice[target].dump (dump_file);
 		    }
-		  if (target <= (int)i)
-		    changed = true;
+		  changed = true;
 		  m_lattice[target].changed = true;
 		}
 	    }
@@ -2819,6 +2828,14 @@ modref_generate (void)
 }
 
 }  /* ANON namespace.  */
+
+/* Debugging helper.  */
+
+void
+debug_eaf_flags (int flags)
+{
+   dump_eaf_flags (stderr, flags, true);
+}
 
 /* Called when a new function is inserted to callgraph late.  */
 
@@ -4232,7 +4249,8 @@ modref_merge_call_site_flags (escape_summary *sum,
       int flags = 0;
       int flags_lto = 0;
       /* Returning the value is already accounted to at local propagation.  */
-      int implicit_flags = EAF_NOT_RETURNED | EAF_NOT_RETURNED_DIRECTLY;
+      int implicit_flags = EAF_NOT_RETURNED_DIRECTLY
+			   | EAF_NOT_RETURNED_INDIRECTLY;
 
       if (summary && ee->arg < summary->arg_flags.length ())
 	flags = summary->arg_flags[ee->arg];
@@ -4263,11 +4281,15 @@ modref_merge_call_site_flags (escape_summary *sum,
 	      else
 		{
 		  if (fnspec.arg_direct_p (ee->arg))
-		    fnspec_flags |= EAF_DIRECT;
+		    fnspec_flags |= EAF_NO_INDIRECT_READ
+			     | EAF_NO_INDIRECT_ESCAPE
+			     | EAF_NOT_RETURNED_INDIRECTLY
+			     | EAF_NO_INDIRECT_CLOBBER;
 		  if (fnspec.arg_noescape_p (ee->arg))
-		    fnspec_flags |= EAF_NOESCAPE | EAF_NODIRECTESCAPE;
+		    fnspec_flags |= EAF_NO_DIRECT_ESCAPE
+				    | EAF_NO_INDIRECT_ESCAPE;
 		  if (fnspec.arg_readonly_p (ee->arg))
-		    fnspec_flags |= EAF_NOCLOBBER;
+		    flags |= EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER;
 		}
 	    }
 	  implicit_flags |= fnspec_flags;
@@ -4281,16 +4303,6 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  flags = interposable_eaf_flags (flags, implicit_flags);
 	  flags_lto = interposable_eaf_flags (flags_lto, implicit_flags);
 	}
-      /* Noescape implies that value also does not escape directly.
-	 Fnspec machinery does set both so compensate for this.  */
-      if (flags & EAF_NOESCAPE)
-	flags |= EAF_NODIRECTESCAPE;
-      if (flags_lto & EAF_NOESCAPE)
-	flags_lto |= EAF_NODIRECTESCAPE;
-      if (flags & EAF_NOT_RETURNED)
-	flags |= EAF_NOT_RETURNED_DIRECTLY;
-      if (flags_lto & EAF_NOT_RETURNED)
-	flags_lto |= EAF_NOT_RETURNED_DIRECTLY;
       if (!(flags & EAF_UNUSED)
 	  && cur_summary && ee->parm_index < (int)cur_summary->arg_flags.length ())
 	{
@@ -4695,8 +4707,6 @@ ipa_modref_c_finalize ()
   if (optimization_summaries)
     ggc_delete (optimization_summaries);
   optimization_summaries = NULL;
-  gcc_checking_assert (!summaries
-		       || flag_incremental_link == INCREMENTAL_LINK_LTO);
   if (summaries_lto)
     ggc_delete (summaries_lto);
   summaries_lto = NULL;

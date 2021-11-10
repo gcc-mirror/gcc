@@ -17,4 +17,4 @@ main ()
     linker_error ();
   return 0;
 }
-/* { dg-final { scan-ipa-dump "Static chain flags: noclobber noescape nodirectescape" "modref" } } */
+/* { dg-final { scan-ipa-dump "Static chain flags: no_direct_clobber no_indirect_clobber no_direct_escape no_indirect_escape not_returned_directly no_indirect_read" "modref" } } */

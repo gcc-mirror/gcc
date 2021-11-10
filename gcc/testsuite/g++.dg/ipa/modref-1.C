@@ -31,5 +31,5 @@ int main()
 	return 0;
 }
 /* { dg-final { scan-tree-dump "Function found to be const: {anonymous}::B::genB" "local-pure-const1"  } } */
-/* { dg-final { scan-tree-dump "Retslot flags: direct noescape nodirectescape not_returned not_returned_directly noread" "modref1" } } */
+/* { dg-final { scan-tree-dump "Retslot flags: no_indirect_clobber no_direct_escape no_indirect_escape not_returned_directly not_returned_indirectly no_direct_read no_indirect_read" "modref1" } } */
   

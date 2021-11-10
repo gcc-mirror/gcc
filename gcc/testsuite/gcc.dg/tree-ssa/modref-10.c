@@ -17,4 +17,4 @@ main()
 		linker_error ();
 	return 0;
 }
-/* { dg-final { scan-tree-dump "parm 0 flags: noclobber noescape nodirectescape not_returned_directly" "modref1"} } */
+/* { dg-final { scan-tree-dump "no_direct_clobber no_indirect_clobber no_direct_escape no_indirect_escape not_returned_directly no_indirect_read" "modref1"} } */
