@@ -1139,7 +1139,7 @@ struct GTY((user)) modref_tree
 	    size_t k;
 	    modref_access_node *access_node;
 	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	      if (access_node->parm_index > 0)
+	      if (access_node->parm_index >= 0)
 		{
 		  if (access_node->parm_index < (int)map->length ())
 		    access_node->parm_index = (*map)[access_node->parm_index];
