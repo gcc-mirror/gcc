@@ -395,7 +395,8 @@ struct frame_layout
 };
 
 
-void ppc_backchain_fallback (struct _Unwind_Context *context, void *a)
+static void
+ppc_backchain_fallback (struct _Unwind_Context *context, void *a)
 {
   struct frame_layout *current;
   struct trace_arg *arg = a;
