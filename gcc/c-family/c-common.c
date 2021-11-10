@@ -8213,8 +8213,16 @@ release_tree_vector (vec<tree, va_gc> *vec)
 {
   if (vec != NULL)
     {
-      vec->truncate (0);
-      vec_safe_push (tree_vector_cache, vec);
+      if (vec->allocated () >= 16)
+	/* Don't cache vecs that have expanded more than once.  On a p64
+	   target, vecs double in alloc size with each power of 2 elements, e.g
+	   at 16 elements the alloc increases from 128 to 256 bytes.  */
+	vec_free (vec);
+      else
+	{
+	  vec->truncate (0);
+	  vec_safe_push (tree_vector_cache, vec);
+	}
     }
 }
 
