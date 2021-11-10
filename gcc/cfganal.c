@@ -362,14 +362,14 @@ control_dependences::set_control_dependence_map_bit (basic_block bb,
   if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     return;
   gcc_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
-  bitmap_set_bit (control_dependence_map[bb->index], edge_index);
+  bitmap_set_bit (&control_dependence_map[bb->index], edge_index);
 }
 
 /* Clear all control dependences for block BB.  */
 void
 control_dependences::clear_control_dependence_bitmap (basic_block bb)
 {
-  bitmap_clear (control_dependence_map[bb->index]);
+  bitmap_clear (&control_dependence_map[bb->index]);
 }
 
 /* Find the immediate postdominator PDOM of the specified basic block BLOCK.
@@ -402,13 +402,6 @@ control_dependences::find_control_dependence (int edge_index)
 
   gcc_assert (get_edge_src (edge_index) != EXIT_BLOCK_PTR_FOR_FN (cfun));
 
-  /* For abnormal edges, we don't make current_block control
-     dependent because instructions that throw are always necessary
-     anyway.  */
-  edge e = find_edge (get_edge_src (edge_index), get_edge_dest (edge_index));
-  if (e->flags & EDGE_ABNORMAL)
-    return;
-
   if (get_edge_src (edge_index) == ENTRY_BLOCK_PTR_FOR_FN (cfun))
     ending_block = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   else
@@ -440,11 +433,23 @@ control_dependences::control_dependences ()
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
-      m_el.quick_push (std::make_pair (e->src->index, e->dest->index));
+      {
+	/* For abnormal edges, we don't make current_block control
+	   dependent because instructions that throw are always necessary
+	   anyway.  */
+	if (e->flags & EDGE_ABNORMAL)
+	  {
+	    num_edges--;
+	    continue;
+	  }
+	m_el.quick_push (std::make_pair (e->src->index, e->dest->index));
+      }
 
+  bitmap_obstack_initialize (&m_bitmaps);
   control_dependence_map.create (last_basic_block_for_fn (cfun));
+  control_dependence_map.quick_grow (last_basic_block_for_fn (cfun));
   for (int i = 0; i < last_basic_block_for_fn (cfun); ++i)
-    control_dependence_map.quick_push (BITMAP_ALLOC (NULL));
+    bitmap_initialize (&control_dependence_map[i], &m_bitmaps);
   for (int i = 0; i < num_edges; ++i)
     find_control_dependence (i);
 
@@ -455,10 +460,9 @@ control_dependences::control_dependences ()
 
 control_dependences::~control_dependences ()
 {
-  for (unsigned i = 0; i < control_dependence_map.length (); ++i)
-    BITMAP_FREE (control_dependence_map[i]);
   control_dependence_map.release ();
   m_el.release ();
+  bitmap_obstack_release (&m_bitmaps);
 }
 
 /* Returns the bitmap of edges the basic-block I is dependent on.  */
@@ -466,7 +470,7 @@ control_dependences::~control_dependences ()
 bitmap
 control_dependences::get_edges_dependent_on (int i)
 {
-  return control_dependence_map[i];
+  return &control_dependence_map[i];
 }
 
 /* Returns the edge source with index I from the edge list.  */
