@@ -35,11 +35,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "value-range.h"
+#include "gimple-range.h"
+#include "gimple-range-path.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
    increases effectiveness of code motion optimizations, and reduces the need
    for loop preconditioning.  */
+
+/* Return true if the condition on the first iteration of the loop can
+   be statically determined.  */
+
+static bool
+entry_loop_condition_is_static (class loop *l, path_range_query *query)
+{
+  edge e = loop_preheader_edge (l);
+  gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
+
+  if (!last
+      || !irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (last))))
+    return false;
+
+  int_range<2> r;
+  query->compute_ranges (e);
+  query->range_of_stmt (r, last);
+  return r == int_range<2> (boolean_true_node, boolean_true_node);
+}
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
    instructions should be duplicated, limit is decreased by the actual
@@ -47,18 +69,18 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool
 should_duplicate_loop_header_p (basic_block header, class loop *loop,
-				int *limit)
+				int *limit, path_range_query *query)
 {
   gimple_stmt_iterator bsi;
 
   gcc_assert (!header->aux);
 
-  /* Loop header copying usually increases size of the code.  This used not to
-     be true, since quite often it is possible to verify that the condition is
-     satisfied in the first iteration and therefore to eliminate it.  Jump
-     threading handles these cases now.  */
+  /* Avoid loop header copying when optimizing for size unless we can
+     determine that the loop condition is static in the first
+     iteration.  */
   if (optimize_loop_for_size_p (loop)
-      && !loop->force_vectorize)
+      && !loop->force_vectorize
+      && !entry_loop_condition_is_static (loop, query))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -267,6 +289,9 @@ class ch_base : public gimple_opt_pass
 
   /* Return true to copy headers of LOOP or false to skip.  */
   virtual bool process_loop_p (class loop *loop) = 0;
+
+  gimple_ranger *m_ranger = NULL;
+  path_range_query *m_query = NULL;
 };
 
 const pass_data pass_data_ch =
@@ -389,7 +414,8 @@ ch_base::copy_headers (function *fun)
 
       exit = NULL;
       n_bbs = 0;
-      while (should_duplicate_loop_header_p (header, loop, &remaining_limit))
+      while (should_duplicate_loop_header_p (header, loop, &remaining_limit,
+					     m_query))
 	{
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
@@ -526,9 +552,13 @@ pass_ch::execute (function *fun)
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_SIMPLE_LATCHES
 		       | LOOPS_HAVE_RECORDED_EXITS);
+  m_ranger = new gimple_ranger;
+  m_query = new path_range_query (*m_ranger, /*resolve=*/true);
 
   unsigned int res = copy_headers (fun);
 
+  delete m_query;
+  delete m_ranger;
   loop_optimizer_finalize ();
   return res;
 }
@@ -540,7 +570,12 @@ pass_ch::execute (function *fun)
 unsigned int
 pass_ch_vect::execute (function *fun)
 {
-  return copy_headers (fun);
+  m_ranger = new gimple_ranger;
+  m_query = new path_range_query (*m_ranger, /*resolve=*/true);
+  unsigned int res = copy_headers (fun);
+  delete m_query;
+  delete m_ranger;
+  return res;
 }
 
 /* Apply header copying according to a very simple test of do-while shape.  */
