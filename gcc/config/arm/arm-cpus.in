@@ -1513,6 +1513,17 @@ begin cpu cortex-a78c
  part d4b
 end cpu cortex-a78c
 
+begin cpu cortex-a710
+ cname cortexa710
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv9-a+fp16+bf16+i8mm
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d47
+end cpu cortex-a710
+
 begin cpu cortex-x1
  cname cortexx1
  tune for cortex-a57
