@@ -69,7 +69,7 @@
   "TARGET_SIMD"
   "@
    dup\\t%0.<Vtype>, %1.<Vetype>[0]
-   dup\\t%0.<Vtype>, %<vw>1"
+   dup\\t%0.<Vtype>, %<vwcore>1"
   [(set_attr "type" "neon_dup<q>, neon_from_gp<q>")]
 )
 
@@ -80,7 +80,7 @@
   "TARGET_SIMD"
   "@
    dup\\t%0.<Vtype>, %1.<Vetype>[0]
-   dup\\t%0.<Vtype>, %<vw>1"
+   dup\\t%0.<Vtype>, %<vwcore>1"
   [(set_attr "type" "neon_dup<q>, neon_from_gp<q>")]
 )
 
