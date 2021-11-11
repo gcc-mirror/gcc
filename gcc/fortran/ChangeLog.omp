@@ -1,6 +1,21 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (struct gfc_omp_clauses): Rename num_teams to
+	num_teams_upper, add num_teams_upper.
+	* dump-parse-tree.c (show_omp_clauses): Update to handle
+	lower-bound num_teams clause.
+	* frontend-passes.c (gfc_code_walker): Likewise
+	* openmp.c (gfc_free_omp_clauses, gfc_match_omp_clauses,
+	resolve_omp_clauses): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_split_omp_clauses,
+	gfc_trans_omp_target): Likewise.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.c (gfc_trans_omp_clauses): Use

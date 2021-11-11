@@ -5634,7 +5634,8 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->chunk_size);
 		  WALK_SUBEXPR (co->ext.omp_clauses->safelen_expr);
 		  WALK_SUBEXPR (co->ext.omp_clauses->simdlen_expr);
-		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams_lower);
+		  WALK_SUBEXPR (co->ext.omp_clauses->num_teams_upper);
 		  WALK_SUBEXPR (co->ext.omp_clauses->device);
 		  WALK_SUBEXPR (co->ext.omp_clauses->thread_limit);
 		  WALK_SUBEXPR (co->ext.omp_clauses->dist_chunk_size);
