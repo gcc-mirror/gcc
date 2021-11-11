@@ -17977,7 +17977,18 @@ aarch64_process_target_attr (tree args)
       num_attrs++;
       if (!aarch64_process_one_target_attr (token))
 	{
-	  error ("pragma or attribute %<target(\"%s\")%> is not valid", token);
+	  /* Check if token is possibly an arch extension without
+	     leading '+'.  */
+	  uint64_t isa_temp = 0;
+	  auto with_plus = std::string ("+") + token;
+	  enum aarch64_parse_opt_result ext_res
+	    = aarch64_parse_extension (with_plus.c_str (), &isa_temp, nullptr);
+
+	  if (ext_res == AARCH64_PARSE_OK)
+	    error ("arch extension %<%s%> should be prefixed by %<+%>",
+		   token);
+	  else
+	    error ("pragma or attribute %<target(\"%s\")%> is not valid", token);
 	  return false;
 	}
 
