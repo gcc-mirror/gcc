@@ -2462,13 +2462,35 @@ operation_could_trap_helper_p (enum tree_code op,
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-    case RDIV_EXPR:
-      if (honor_snans)
-	return true;
-      if (fp_operation)
-	return flag_trapping_math;
       if (!TREE_CONSTANT (divisor) || integer_zerop (divisor))
         return true;
+      if (TREE_CODE (divisor) == VECTOR_CST)
+	{
+	  /* Inspired by initializer_each_zero_or_onep.  */
+	  unsigned HOST_WIDE_INT nelts = vector_cst_encoded_nelts (divisor);
+	  if (VECTOR_CST_STEPPED_P (divisor)
+	      && !TYPE_VECTOR_SUBPARTS (TREE_TYPE (divisor))
+		    .is_constant (&nelts))
+	    return true;
+	  for (unsigned int i = 0; i < nelts; ++i)
+	    {
+	      tree elt = vector_cst_elt (divisor, i);
+	      if (integer_zerop (elt))
+		return true;
+	    }
+	}
+      return false;
+
+    case RDIV_EXPR:
+      if (fp_operation)
+	{
+	  if (honor_snans)
+	    return true;
+	  return flag_trapping_math;
+	}
+      /* Fixed point operations also use RDIV_EXPR.  */
+      if (!TREE_CONSTANT (divisor) || fixed_zerop (divisor))
+	return true;
       return false;
 
     case LT_EXPR:
