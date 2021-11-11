@@ -102,6 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_erase_if 202002L
 
   template<typename _Tp, typename _Alloc, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     inline typename vector<_Tp, _Alloc>::size_type
     erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
@@ -115,6 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Alloc, typename _Up>
+    _GLIBCXX20_CONSTEXPR
     inline typename vector<_Tp, _Alloc>::size_type
     erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
     {

@@ -24,11 +24,7 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
-#ifdef _GLIBCXX_DEBUG
-  using std::_GLIBCXX_STD_C::_S_word_bit;
-#else
-  using std::_S_word_bit;
-#endif
+using std::_S_word_bit;
 
 inline void
 check_cap_ge_size(const std::vector<bool>& x)

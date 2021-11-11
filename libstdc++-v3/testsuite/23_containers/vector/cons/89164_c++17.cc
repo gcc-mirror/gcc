@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++17 } }
 
 #include <vector>
 
@@ -27,21 +27,12 @@ struct X
   X(const X&) = delete;
 };
 
-void test01()
+void test03()
 {
-  X x[1];
-  // Should not be able to create vector using uninitialized_copy:
-  std::vector<X> v1{x, x+1};	// { dg-error "here" "" { target c++17_down } }
-  // { dg-error "deleted function 'X::X" "" { target c++20 } 0 }
-}
-
-void test02()
-{
-  struct Y : X { };
-
-  // Should not be able to create vector using uninitialized_fill_n:
-  std::vector<Y> v2{2u, Y{}};	// { dg-error "here" "" { target c++17_down } }
-  // { dg-error "deleted function .*Y::Y" "" { target c++20 } 0 }
+  // Can create initializer_list<Y> with C++17 guaranteed copy elision,
+  // but shouldn't be able to copy from it with uninitialized_copy:
+  std::vector<X> v3{X{}, X{}, X{}};   // { dg-error "here" "" { target c++17_only } }
+  // { dg-error "deleted function .*X::X" "" { target c++20 } 0 }
 }
 
 // { dg-error "must be constructible from input type" "" { target *-*-* } 0 }
