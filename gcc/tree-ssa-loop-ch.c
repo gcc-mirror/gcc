@@ -57,10 +57,24 @@ entry_loop_condition_is_static (class loop *l, path_range_query *query)
       || !irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (last))))
     return false;
 
+  edge true_e, false_e;
+  extract_true_false_edges_from_block (e->dest, &true_e, &false_e);
+
+  /* If neither edge is the exit edge, this is not a case we'd like to
+     special-case.  */
+  if (!loop_exit_edge_p (l, true_e) && !loop_exit_edge_p (l, false_e))
+    return false;
+
+  tree desired_static_value;
+  if (loop_exit_edge_p (l, true_e))
+    desired_static_value = boolean_false_node;
+  else
+    desired_static_value = boolean_true_node;
+
   int_range<2> r;
   query->compute_ranges (e);
   query->range_of_stmt (r, last);
-  return r == int_range<2> (boolean_true_node, boolean_true_node);
+  return r == int_range<2> (desired_static_value, desired_static_value);
 }
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
