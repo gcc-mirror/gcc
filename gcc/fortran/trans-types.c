@@ -3417,10 +3417,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   base_decl = GFC_TYPE_ARRAY_BASE_DECL (type, indirect);
   if (!base_decl)
     {
-      base_decl = make_node (DEBUG_EXPR_DECL);
-      DECL_ARTIFICIAL (base_decl) = 1;
-      TREE_TYPE (base_decl) = indirect ? build_pointer_type (ptype) : ptype;
-      SET_DECL_MODE (base_decl, TYPE_MODE (TREE_TYPE (base_decl)));
+      base_decl = build_debug_expr_decl (indirect
+					 ? build_pointer_type (ptype) : ptype);
       GFC_TYPE_ARRAY_BASE_DECL (type, indirect) = base_decl;
     }
   info->base_decl = base_decl;
