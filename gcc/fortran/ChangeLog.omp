@@ -1,3 +1,11 @@
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Use
+	OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead of OMP_CLAUSE_NUM_TEAMS_EXPR.
+
 2022-02-11  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.h (is_omp_declarative_stmt): New.

@@ -1,6 +1,26 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_NUM_TEAMS_EXPR): Rename to ...
+	(OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR): ... this.
+	(OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR): Define.
+	* tree.c (omp_clause_num_ops): Increase num ops for
+	OMP_CLAUSE_NUM_TEAMS to 2.
+	* tree-pretty-print.c (dump_omp_clause): Print optional lower bound
+	for OMP_CLAUSE_NUM_TEAMS.
+	* gimplify.c (gimplify_scan_omp_clauses): Gimplify
+	OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR if non-NULL.
+	(optimize_target_teams): Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead
+	of OMP_CLAUSE_NUM_TEAMS_EXPR.  Handle OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR.
+	* omp-low.c (lower_omp_teams): Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR
+	instead of OMP_CLAUSE_NUM_TEAMS_EXPR.
+	* omp-expand.c (expand_teams_call, get_target_arguments): Likewise.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/102972

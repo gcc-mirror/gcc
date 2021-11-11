@@ -1,6 +1,13 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/teams-1.c: New test.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/102972
