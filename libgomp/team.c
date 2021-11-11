@@ -56,6 +56,8 @@ struct gomp_thread_start_data
   struct gomp_task *task;
   struct gomp_thread_pool *thread_pool;
   unsigned int place;
+  unsigned int num_teams;
+  unsigned int team_num;
   bool nested;
   pthread_t handle;
 };
@@ -88,6 +90,8 @@ gomp_thread_start (void *xdata)
   thr->ts = data->ts;
   thr->task = data->task;
   thr->place = data->place;
+  thr->num_teams = data->num_teams;
+  thr->team_num = data->team_num;
 #ifdef GOMP_NEEDS_THREAD_HANDLE
   thr->handle = data->handle;
 #endif
@@ -645,6 +649,8 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	  nthr->ts.single_count = 0;
 #endif
 	  nthr->ts.static_trip = 0;
+	  nthr->num_teams = thr->num_teams;
+	  nthr->team_num = thr->team_num;
 	  nthr->task = &team->implicit_task[i];
 	  nthr->place = place;
 	  gomp_init_task (nthr->task, task, icv);
@@ -833,6 +839,8 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       start_data->ts.single_count = 0;
 #endif
       start_data->ts.static_trip = 0;
+      start_data->num_teams = thr->num_teams;
+      start_data->team_num = thr->team_num;
       start_data->task = &team->implicit_task[i];
       gomp_init_task (start_data->task, task, icv);
       team->implicit_task[i].icv.nthreads_var = nthreads_var;
