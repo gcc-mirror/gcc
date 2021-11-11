@@ -1513,6 +1513,9 @@ propagate_pure_const (void)
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
 
+	      if (e->recursive_p ())
+		looping = true;
+
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "    Call to %s",
