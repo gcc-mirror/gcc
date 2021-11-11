@@ -3430,6 +3430,11 @@ Create_function_descriptors::expression(Expression** pexpr)
 	      if (args->traverse(this) == TRAVERSE_EXIT)
 		return TRAVERSE_EXIT;
 	    }
+
+	  // Traverse the subexpressions of the function, if any.
+	  if (fn->traverse_subexpressions(this) == TRAVERSE_EXIT)
+	    return TRAVERSE_EXIT;
+
 	  return TRAVERSE_SKIP_COMPONENTS;
 	}
     }
