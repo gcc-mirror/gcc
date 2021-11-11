@@ -83,25 +83,11 @@ entry_loop_condition_is_static (class loop *l, path_range_query *query)
 
 static bool
 should_duplicate_loop_header_p (basic_block header, class loop *loop,
-				int *limit, path_range_query *query)
+				int *limit)
 {
   gimple_stmt_iterator bsi;
 
   gcc_assert (!header->aux);
-
-  /* Avoid loop header copying when optimizing for size unless we can
-     determine that the loop condition is static in the first
-     iteration.  */
-  if (optimize_loop_for_size_p (loop)
-      && !loop->force_vectorize
-      && !entry_loop_condition_is_static (loop, query))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "  Not duplicating bb %i: optimizing for size.\n",
-		 header->index);
-      return false;
-    }
 
   gcc_assert (EDGE_COUNT (header->succs) > 0);
   if (single_succ_p (header))
@@ -237,8 +223,6 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       return false;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "    Will duplicate bb %i\n", header->index); 
   return true;
 }
 
@@ -303,9 +287,6 @@ class ch_base : public gimple_opt_pass
 
   /* Return true to copy headers of LOOP or false to skip.  */
   virtual bool process_loop_p (class loop *loop) = 0;
-
-  gimple_ranger *m_ranger = NULL;
-  path_range_query *m_query = NULL;
 };
 
 const pass_data pass_data_ch =
@@ -400,8 +381,11 @@ ch_base::copy_headers (function *fun)
   copied_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
   bbs_size = n_basic_blocks_for_fn (fun);
 
+  auto_vec<loop_p> candidates;
   auto_vec<std::pair<edge, loop_p> > copied;
 
+  gimple_ranger *ranger = new gimple_ranger;
+  path_range_query *query = new path_range_query (*ranger, /*resolve=*/true);
   for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
@@ -420,6 +404,37 @@ ch_base::copy_headers (function *fun)
 	  || !process_loop_p (loop))
 	continue;
 
+      /* Avoid loop header copying when optimizing for size unless we can
+	 determine that the loop condition is static in the first
+	 iteration.  */
+      if (optimize_loop_for_size_p (loop)
+	  && !loop->force_vectorize
+	  && !entry_loop_condition_is_static (loop, query))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  Not duplicating bb %i: optimizing for size.\n",
+		     header->index);
+	  continue;
+	}
+
+      if (should_duplicate_loop_header_p (header, loop, &remaining_limit))
+	candidates.safe_push (loop);
+    }
+  /* Do not use ranger after we change the IL and not have updated SSA.  */
+  delete query;
+  delete ranger;
+
+  for (auto loop : candidates)
+    {
+      int initial_limit = param_max_loop_header_insns;
+      int remaining_limit = initial_limit;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Copying headers of loop %i\n", loop->num);
+
+      header = loop->header;
+
       /* Iterate the header copying up to limit; this takes care of the cases
 	 like while (a && b) {...}, where we want to have both of the conditions
 	 copied.  TODO -- handle while (a || b) - like cases, by not requiring
@@ -428,9 +443,11 @@ ch_base::copy_headers (function *fun)
 
       exit = NULL;
       n_bbs = 0;
-      while (should_duplicate_loop_header_p (header, loop, &remaining_limit,
-					     m_query))
+      while (should_duplicate_loop_header_p (header, loop, &remaining_limit))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "    Will duplicate bb %i\n", header->index);
+
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
 	  if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest))
@@ -566,13 +583,9 @@ pass_ch::execute (function *fun)
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_SIMPLE_LATCHES
 		       | LOOPS_HAVE_RECORDED_EXITS);
-  m_ranger = new gimple_ranger;
-  m_query = new path_range_query (*m_ranger, /*resolve=*/true);
 
   unsigned int res = copy_headers (fun);
 
-  delete m_query;
-  delete m_ranger;
   loop_optimizer_finalize ();
   return res;
 }
@@ -584,12 +597,7 @@ pass_ch::execute (function *fun)
 unsigned int
 pass_ch_vect::execute (function *fun)
 {
-  m_ranger = new gimple_ranger;
-  m_query = new path_range_query (*m_ranger, /*resolve=*/true);
-  unsigned int res = copy_headers (fun);
-  delete m_query;
-  delete m_ranger;
-  return res;
+  return copy_headers (fun);
 }
 
 /* Apply header copying according to a very simple test of do-while shape.  */
