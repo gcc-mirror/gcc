@@ -229,8 +229,8 @@ static vec<queued_reg_save> queued_reg_saves;
 static bool any_cfis_emitted;
 
 /* Short-hand for commonly used register numbers.  */
-static unsigned dw_stack_pointer_regnum;
-static unsigned dw_frame_pointer_regnum;
+static struct cfa_reg dw_stack_pointer_regnum;
+static struct cfa_reg dw_frame_pointer_regnum;
 
 /* Hook used by __throw.  */
 
@@ -430,7 +430,7 @@ new_cfi_row (void)
 {
   dw_cfi_row *row = ggc_cleared_alloc<dw_cfi_row> ();
 
-  row->cfa.reg = INVALID_REGNUM;
+  row->cfa.reg.set_by_dwreg (INVALID_REGNUM);
 
   return row;
 }
@@ -538,7 +538,7 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
   cfa->offset = 0;
   cfa->base_offset = 0;
   cfa->indirect = 0;
-  cfa->reg = -1;
+  cfa->reg.set_by_dwreg (INVALID_REGNUM);
 
   for (ptr = loc; ptr != NULL; ptr = ptr->dw_loc_next)
     {
@@ -578,10 +578,10 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 	case DW_OP_reg29:
 	case DW_OP_reg30:
 	case DW_OP_reg31:
-	  cfa->reg = op - DW_OP_reg0;
+	  cfa->reg.set_by_dwreg (op - DW_OP_reg0);
 	  break;
 	case DW_OP_regx:
-	  cfa->reg = ptr->dw_loc_oprnd1.v.val_int;
+	  cfa->reg.set_by_dwreg (ptr->dw_loc_oprnd1.v.val_int);
 	  break;
 	case DW_OP_breg0:
 	case DW_OP_breg1:
@@ -615,15 +615,94 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_node *loc)
 	case DW_OP_breg29:
 	case DW_OP_breg30:
 	case DW_OP_breg31:
-	  cfa->reg = op - DW_OP_breg0;
-	  cfa->base_offset = ptr->dw_loc_oprnd1.v.val_int;
-	  break;
 	case DW_OP_bregx:
-	  cfa->reg = ptr->dw_loc_oprnd1.v.val_int;
-	  cfa->base_offset = ptr->dw_loc_oprnd2.v.val_int;
+	  if (cfa->reg.reg == INVALID_REGNUM)
+	    {
+	      unsigned regno
+		= (op == DW_OP_bregx
+		   ? ptr->dw_loc_oprnd1.v.val_int : op - DW_OP_breg0);
+	      cfa->reg.set_by_dwreg (regno);
+	      cfa->base_offset = ptr->dw_loc_oprnd1.v.val_int;
+	    }
+	  else
+	    {
+	      /* Handle case when span can cover multiple registers.  We
+		 only support the simple case of consecutive registers
+		 all with the same size.  DWARF that we are dealing with
+		 will look something like:
+		 <DW_OP_bregx: (r49) 0; DW_OP_const1u: 32; DW_OP_shl;
+		  DW_OP_bregx: (r48) 0; DW_OP_plus> */
+
+	      unsigned regno
+		= (op == DW_OP_bregx
+		   ? ptr->dw_loc_oprnd1.v.val_int : op - DW_OP_breg0);
+	      gcc_assert (regno == cfa->reg.reg - 1);
+	      cfa->reg.span++;
+	      /* From all the consecutive registers used, we want to set
+		 cfa->reg.reg to lower number register.  */
+	      cfa->reg.reg = regno;
+	      /* The offset was the shift value.  Use it to get the
+		 span_width and then set it to 0.  */
+	      cfa->reg.span_width = cfa->offset.to_constant () / 8;
+	      cfa->offset = 0;
+	    }
 	  break;
 	case DW_OP_deref:
 	  cfa->indirect = 1;
+	  break;
+	case DW_OP_shl:
+	  break;
+	case DW_OP_lit0:
+	case DW_OP_lit1:
+	case DW_OP_lit2:
+	case DW_OP_lit3:
+	case DW_OP_lit4:
+	case DW_OP_lit5:
+	case DW_OP_lit6:
+	case DW_OP_lit7:
+	case DW_OP_lit8:
+	case DW_OP_lit9:
+	case DW_OP_lit10:
+	case DW_OP_lit11:
+	case DW_OP_lit12:
+	case DW_OP_lit13:
+	case DW_OP_lit14:
+	case DW_OP_lit15:
+	case DW_OP_lit16:
+	case DW_OP_lit17:
+	case DW_OP_lit18:
+	case DW_OP_lit19:
+	case DW_OP_lit20:
+	case DW_OP_lit21:
+	case DW_OP_lit22:
+	case DW_OP_lit23:
+	case DW_OP_lit24:
+	case DW_OP_lit25:
+	case DW_OP_lit26:
+	case DW_OP_lit27:
+	case DW_OP_lit28:
+	case DW_OP_lit29:
+	case DW_OP_lit30:
+	case DW_OP_lit31:
+	  gcc_assert (known_eq (cfa->offset, 0));
+	  cfa->offset = op - DW_OP_lit0;
+	  break;
+	case DW_OP_const1u:
+	case DW_OP_const1s:
+	case DW_OP_const2u:
+	case DW_OP_const2s:
+	case DW_OP_const4s:
+	case DW_OP_const8s:
+	case DW_OP_constu:
+	case DW_OP_consts:
+	  gcc_assert (known_eq (cfa->offset, 0));
+	  cfa->offset = ptr->dw_loc_oprnd1.v.val_int;
+	  break;
+	case DW_OP_minus:
+	  cfa->offset = -cfa->offset;
+	  break;
+	case DW_OP_plus:
+	  /* The offset is already in place.  */
 	  break;
 	case DW_OP_plus_uconst:
 	  cfa->offset = ptr->dw_loc_oprnd1.v.val_unsigned;
@@ -648,11 +727,11 @@ lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc, dw_cfa_location *remember)
       loc->offset = cfi->dw_cfi_oprnd1.dw_cfi_offset;
       break;
     case DW_CFA_def_cfa_register:
-      loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
+      loc->reg.set_by_dwreg (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
       break;
     case DW_CFA_def_cfa:
     case DW_CFA_def_cfa_sf:
-      loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
+      loc->reg.set_by_dwreg (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
       loc->offset = cfi->dw_cfi_oprnd2.dw_cfi_offset;
       break;
     case DW_CFA_def_cfa_expression:
@@ -798,6 +877,7 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
 
   HOST_WIDE_INT const_offset;
   if (new_cfa->reg == old_cfa->reg
+      && new_cfa->reg.span == 1
       && !new_cfa->indirect
       && !old_cfa->indirect
       && new_cfa->offset.is_constant (&const_offset))
@@ -814,7 +894,8 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
     }
   else if (new_cfa->offset.is_constant ()
 	   && known_eq (new_cfa->offset, old_cfa->offset)
-	   && old_cfa->reg != INVALID_REGNUM
+	   && old_cfa->reg.reg != INVALID_REGNUM
+	   && new_cfa->reg.span == 1
 	   && !new_cfa->indirect
 	   && !old_cfa->indirect)
     {
@@ -824,10 +905,11 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
 	 been set as a register plus offset rather than a general
 	 DW_CFA_def_cfa_expression.  */
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg.reg;
     }
   else if (new_cfa->indirect == 0
-	   && new_cfa->offset.is_constant (&const_offset))
+	   && new_cfa->offset.is_constant (&const_offset)
+	   && new_cfa->reg.span == 1)
     {
       /* Construct a "DW_CFA_def_cfa <register> <offset>" instruction,
 	 indicating the CFA register has changed to <register> with
@@ -838,7 +920,7 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg.reg;
       cfi->dw_cfi_oprnd2.dw_cfi_offset = const_offset;
     }
   else
@@ -885,18 +967,18 @@ def_cfa_1 (dw_cfa_location *new_cfa)
 }
 
 /* Add the CFI for saving a register.  REG is the CFA column number.
-   If SREG is -1, the register is saved at OFFSET from the CFA;
+   If SREG is INVALID_REGISTER, the register is saved at OFFSET from the CFA;
    otherwise it is saved in SREG.  */
 
 static void
-reg_save (unsigned int reg, unsigned int sreg, poly_int64 offset)
+reg_save (unsigned int reg, struct cfa_reg sreg, poly_int64 offset)
 {
   dw_fde_ref fde = cfun ? cfun->fde : NULL;
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
 
-  if (sreg == INVALID_REGNUM)
+  if (sreg.reg == INVALID_REGNUM)
     {
       HOST_WIDE_INT const_offset;
       /* When stack is aligned, store REG using DW_CFA_expression with FP.  */
@@ -926,7 +1008,7 @@ reg_save (unsigned int reg, unsigned int sreg, poly_int64 offset)
 	    = build_cfa_loc (&cur_row->cfa, offset);
 	}
     }
-  else if (sreg == reg)
+  else if (sreg.reg == reg)
     {
       /* While we could emit something like DW_CFA_same_value or
 	 DW_CFA_restore, we never expect to see something like that
@@ -934,10 +1016,16 @@ reg_save (unsigned int reg, unsigned int sreg, poly_int64 offset)
 	 can always bypass this by using REG_CFA_RESTORE directly.  */
       gcc_unreachable ();
     }
+  else if (sreg.span > 1)
+    {
+      cfi->dw_cfi_opc = DW_CFA_expression;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
+      cfi->dw_cfi_oprnd2.dw_cfi_loc = build_span_loc (sreg);
+    }
   else
     {
       cfi->dw_cfi_opc = DW_CFA_register;
-      cfi->dw_cfi_oprnd2.dw_cfi_reg_num = sreg;
+      cfi->dw_cfi_oprnd2.dw_cfi_reg_num = sreg.reg;
     }
 
   add_cfi (cfi);
@@ -1018,6 +1106,44 @@ dwf_regno (const_rtx reg)
   return DWARF_FRAME_REGNUM (REGNO (reg));
 }
 
+/* Like dwf_regno, but when the value can span multiple registers.  */
+
+static struct cfa_reg
+dwf_cfa_reg (rtx reg)
+{
+  struct cfa_reg result;
+
+  gcc_assert (REGNO (reg) < FIRST_PSEUDO_REGISTER);
+
+  result.reg = dwf_regno (reg);
+  result.span = 1;
+  result.span_width = 0;
+
+  rtx span = targetm.dwarf_register_span (reg);
+  if (span)
+    {
+      /* We only support the simple case of consecutive registers all with the
+	 same size.  */
+      result.span = XVECLEN (span, 0);
+      result.span_width = GET_MODE_SIZE (GET_MODE (XVECEXP (span, 0, 0)))
+			  .to_constant ();
+
+      if (CHECKING_P)
+	{
+	  /* Ensure that the above assumption is accurate.  */
+	  for (unsigned int i = 0; i < result.span; i++)
+	    {
+	      gcc_assert (GET_MODE_SIZE (GET_MODE (XVECEXP (span, 0, i)))
+			  .to_constant ()  == result.span_width);
+	      gcc_assert (REG_P (XVECEXP (span, 0, i)));
+	      gcc_assert (dwf_regno (XVECEXP (span, 0, i)) == result.reg + i);
+	    }
+	}
+    }
+
+  return result;
+}
+
 /* Compare X and Y for equivalence.  The inputs may be REGs or PC_RTX.  */
 
 static bool
@@ -1086,7 +1212,8 @@ dwarf2out_flush_queued_reg_saves (void)
 
   FOR_EACH_VEC_ELT (queued_reg_saves, i, q)
     {
-      unsigned int reg, sreg;
+      unsigned int reg;
+      struct cfa_reg sreg;
 
       record_reg_saved_in_reg (q->saved_reg, q->reg);
 
@@ -1095,9 +1222,9 @@ dwarf2out_flush_queued_reg_saves (void)
       else
         reg = dwf_regno (q->reg);
       if (q->saved_reg)
-	sreg = dwf_regno (q->saved_reg);
+	sreg = dwf_cfa_reg (q->saved_reg);
       else
-	sreg = INVALID_REGNUM;
+	sreg.set_by_dwreg (INVALID_REGNUM);
       reg_save (reg, sreg, q->cfa_offset);
     }
 
@@ -1169,7 +1296,7 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
   /* ??? If this fails, we could be calling into the _loc functions to
      define a full expression.  So far no port does that.  */
   gcc_assert (REG_P (pat));
-  cur_cfa->reg = dwf_regno (pat);
+  cur_cfa->reg = dwf_cfa_reg (pat);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_ADJUST_CFA note.  */
@@ -1186,7 +1313,7 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
   switch (GET_CODE (src))
     {
     case PLUS:
-      gcc_assert (dwf_regno (XEXP (src, 0)) == cur_cfa->reg);
+      gcc_assert (dwf_cfa_reg (XEXP (src, 0)) == cur_cfa->reg);
       cur_cfa->offset -= rtx_to_poly_int64 (XEXP (src, 1));
       break;
 
@@ -1197,7 +1324,7 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
       gcc_unreachable ();
     }
 
-  cur_cfa->reg = dwf_regno (dest);
+  cur_cfa->reg = dwf_cfa_reg (dest);
   gcc_assert (cur_cfa->indirect == 0);
 }
 
@@ -1219,11 +1346,11 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
   switch (GET_CODE (addr))
     {
     case REG:
-      gcc_assert (dwf_regno (addr) == cur_cfa->reg);
+      gcc_assert (dwf_cfa_reg (addr) == cur_cfa->reg);
       offset = -cur_cfa->offset;
       break;
     case PLUS:
-      gcc_assert (dwf_regno (XEXP (addr, 0)) == cur_cfa->reg);
+      gcc_assert (dwf_cfa_reg (XEXP (addr, 0)) == cur_cfa->reg);
       offset = rtx_to_poly_int64 (XEXP (addr, 1)) - cur_cfa->offset;
       break;
     default:
@@ -1243,8 +1370,10 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
 
   /* ??? We'd like to use queue_reg_save, but we need to come up with
      a different flushing heuristic for epilogues.  */
+  struct cfa_reg invalid;
+  invalid.set_by_dwreg (INVALID_REGNUM);
   if (!span)
-    reg_save (sregno, INVALID_REGNUM, offset);
+    reg_save (sregno, invalid, offset);
   else
     {
       /* We have a PARALLEL describing where the contents of SRC live.
@@ -1258,7 +1387,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
 	{
 	  rtx elem = XVECEXP (span, 0, par_index);
 	  sregno = dwf_regno (src);
-	  reg_save (sregno, INVALID_REGNUM, span_offset);
+	  reg_save (sregno, invalid, span_offset);
 	  span_offset += GET_MODE_SIZE (GET_MODE (elem));
 	}
     }
@@ -1270,7 +1399,8 @@ static void
 dwarf2out_frame_debug_cfa_register (rtx set)
 {
   rtx src, dest;
-  unsigned sregno, dregno;
+  unsigned sregno;
+  struct cfa_reg dregno;
 
   src = XEXP (set, 1);
   dest = XEXP (set, 0);
@@ -1281,7 +1411,7 @@ dwarf2out_frame_debug_cfa_register (rtx set)
   else
     sregno = dwf_regno (src);
 
-  dregno = dwf_regno (dest);
+  dregno = dwf_cfa_reg (dest);
 
   /* ??? We'd like to use queue_reg_save, but we need to come up with
      a different flushing heuristic for epilogues.  */
@@ -1667,7 +1797,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	{
 	  /* Setting FP from SP.  */
 	case REG:
-	  if (cur_cfa->reg == dwf_regno (src))
+	  if (cur_cfa->reg == dwf_cfa_reg (src))
 	    {
 	      /* Rule 1 */
 	      /* Update the CFA rule wrt SP or FP.  Make sure src is
@@ -1677,7 +1807,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 		 ARM copies SP to a temporary register, and from there to
 		 FP.  So we just rely on the backends to only set
 		 RTX_FRAME_RELATED_P on appropriate insns.  */
-	      cur_cfa->reg = dwf_regno (dest);
+	      cur_cfa->reg = dwf_cfa_reg (dest);
 	      cur_trace->cfa_temp.reg = cur_cfa->reg;
 	      cur_trace->cfa_temp.offset = cur_cfa->offset;
 	    }
@@ -1698,7 +1828,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 		{
 		  gcc_assert (REGNO (dest) == HARD_FRAME_POINTER_REGNUM
 			      && fde->drap_reg != INVALID_REGNUM
-			      && cur_cfa->reg != dwf_regno (src)
+			      && cur_cfa->reg != dwf_cfa_reg (src)
 			      && fde->rule18);
 		  fde->rule18 = 0;
 		  /* The save of hard frame pointer has been deferred
@@ -1722,7 +1852,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      /* Adjusting SP.  */
 	      if (REG_P (XEXP (src, 1)))
 		{
-		  gcc_assert (dwf_regno (XEXP (src, 1))
+		  gcc_assert (dwf_cfa_reg (XEXP (src, 1))
 			      == cur_trace->cfa_temp.reg);
 		  offset = cur_trace->cfa_temp.offset;
 		}
@@ -1756,7 +1886,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      gcc_assert (frame_pointer_needed);
 
 	      gcc_assert (REG_P (XEXP (src, 0))
-			  && dwf_regno (XEXP (src, 0)) == cur_cfa->reg);
+			  && dwf_cfa_reg (XEXP (src, 0)) == cur_cfa->reg);
 	      offset = rtx_to_poly_int64 (XEXP (src, 1));
 	      if (GET_CODE (src) != MINUS)
 		offset = -offset;
@@ -1769,14 +1899,14 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	      /* Rule 4 */
 	      if (REG_P (XEXP (src, 0))
-		  && dwf_regno (XEXP (src, 0)) == cur_cfa->reg
+		  && dwf_cfa_reg (XEXP (src, 0)) == cur_cfa->reg
 		  && poly_int_rtx_p (XEXP (src, 1), &offset))
 		{
 		  /* Setting a temporary CFA register that will be copied
 		     into the FP later on.  */
 		  offset = -offset;
 		  cur_cfa->offset += offset;
-		  cur_cfa->reg = dwf_regno (dest);
+		  cur_cfa->reg = dwf_cfa_reg (dest);
 		  /* Or used to save regs to the stack.  */
 		  cur_trace->cfa_temp.reg = cur_cfa->reg;
 		  cur_trace->cfa_temp.offset = cur_cfa->offset;
@@ -1784,13 +1914,13 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	      /* Rule 5 */
 	      else if (REG_P (XEXP (src, 0))
-		       && dwf_regno (XEXP (src, 0)) == cur_trace->cfa_temp.reg
+		       && dwf_cfa_reg (XEXP (src, 0)) == cur_trace->cfa_temp.reg
 		       && XEXP (src, 1) == stack_pointer_rtx)
 		{
 		  /* Setting a scratch register that we will use instead
 		     of SP for saving registers to the stack.  */
 		  gcc_assert (cur_cfa->reg == dw_stack_pointer_regnum);
-		  cur_trace->cfa_store.reg = dwf_regno (dest);
+		  cur_trace->cfa_store.reg = dwf_cfa_reg (dest);
 		  cur_trace->cfa_store.offset
 		    = cur_cfa->offset - cur_trace->cfa_temp.offset;
 		}
@@ -1799,7 +1929,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      else if (GET_CODE (src) == LO_SUM
 		       && poly_int_rtx_p (XEXP (src, 1),
 					  &cur_trace->cfa_temp.offset))
-		cur_trace->cfa_temp.reg = dwf_regno (dest);
+		cur_trace->cfa_temp.reg = dwf_cfa_reg (dest);
 	      else
 		gcc_unreachable ();
 	    }
@@ -1808,17 +1938,17 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  /* Rule 6 */
 	case CONST_INT:
 	case CONST_POLY_INT:
-	  cur_trace->cfa_temp.reg = dwf_regno (dest);
+	  cur_trace->cfa_temp.reg = dwf_cfa_reg (dest);
 	  cur_trace->cfa_temp.offset = rtx_to_poly_int64 (src);
 	  break;
 
 	  /* Rule 7 */
 	case IOR:
 	  gcc_assert (REG_P (XEXP (src, 0))
-		      && dwf_regno (XEXP (src, 0)) == cur_trace->cfa_temp.reg
+		      && dwf_cfa_reg (XEXP (src, 0)) == cur_trace->cfa_temp.reg
 		      && CONST_INT_P (XEXP (src, 1)));
 
-	  cur_trace->cfa_temp.reg = dwf_regno (dest);
+	  cur_trace->cfa_temp.reg = dwf_cfa_reg (dest);
 	  if (!can_ior_p (cur_trace->cfa_temp.offset, INTVAL (XEXP (src, 1)),
 			  &cur_trace->cfa_temp.offset))
 	    /* The target shouldn't generate this kind of CFI note if we
@@ -1851,14 +1981,17 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      dwarf2out_flush_queued_reg_saves ();
 
               gcc_assert (cur_trace->cfa_store.reg
-			  == dwf_regno (XEXP (src, 0)));
+			  == dwf_cfa_reg (XEXP (src, 0)));
               fde->stack_realign = 1;
               fde->stack_realignment = INTVAL (XEXP (src, 1));
               cur_trace->cfa_store.offset = 0;
 
 	      if (cur_cfa->reg != dw_stack_pointer_regnum
 		  && cur_cfa->reg != dw_frame_pointer_regnum)
-		fde->drap_reg = cur_cfa->reg;
+		{
+		  gcc_assert (cur_cfa->reg.span == 1);
+		  fde->drap_reg = cur_cfa->reg.reg;
+		}
             }
           return;
 
@@ -1935,14 +2068,14 @@ dwarf2out_frame_debug_expr (rtx expr)
 	case MINUS:
 	case LO_SUM:
 	  {
-	    unsigned int regno;
+	    struct cfa_reg regno;
 
 	    gcc_assert (REG_P (XEXP (XEXP (dest, 0), 0)));
 	    offset = rtx_to_poly_int64 (XEXP (XEXP (dest, 0), 1));
 	    if (GET_CODE (XEXP (dest, 0)) == MINUS)
 	      offset = -offset;
 
-	    regno = dwf_regno (XEXP (XEXP (dest, 0), 0));
+	    regno = dwf_cfa_reg (XEXP (XEXP (dest, 0), 0));
 
 	    if (cur_cfa->reg == regno)
 	      offset -= cur_cfa->offset;
@@ -1960,7 +2093,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  /* Without an offset.  */
 	case REG:
 	  {
-	    unsigned int regno = dwf_regno (XEXP (dest, 0));
+	    struct cfa_reg regno = dwf_cfa_reg (XEXP (dest, 0));
 
 	    if (cur_cfa->reg == regno)
 	      offset = -cur_cfa->offset;
@@ -1977,7 +2110,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  /* Rule 14 */
 	case POST_INC:
 	  gcc_assert (cur_trace->cfa_temp.reg
-		      == dwf_regno (XEXP (XEXP (dest, 0), 0)));
+		      == dwf_cfa_reg (XEXP (XEXP (dest, 0), 0)));
 	  offset = -cur_trace->cfa_temp.offset;
 	  cur_trace->cfa_temp.offset -= GET_MODE_SIZE (GET_MODE (dest));
 	  break;
@@ -1995,7 +2128,7 @@ dwarf2out_frame_debug_expr (rtx expr)
       if (REG_P (src)
 	  && REGNO (src) != STACK_POINTER_REGNUM
 	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM
-	  && dwf_regno (src) == cur_cfa->reg)
+	  && dwf_cfa_reg (src) == cur_cfa->reg)
 	{
 	  /* We're storing the current CFA reg into the stack.  */
 
@@ -2012,7 +2145,7 @@ dwarf2out_frame_debug_expr (rtx expr)
                   && cur_cfa->indirect == 0
                   && cur_cfa->reg != dw_frame_pointer_regnum)
                 {
-		  gcc_assert (fde->drap_reg == cur_cfa->reg);
+		  gcc_assert (fde->drap_reg == cur_cfa->reg.reg);
 
 		  cur_cfa->indirect = 1;
 		  cur_cfa->reg = dw_frame_pointer_regnum;
@@ -2039,7 +2172,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 		x = XEXP (x, 0);
 	      gcc_assert (REG_P (x));
 
-	      cur_cfa->reg = dwf_regno (x);
+	      cur_cfa->reg = dwf_cfa_reg (x);
 	      cur_cfa->base_offset = offset;
 	      cur_cfa->indirect = 1;
 	      break;
@@ -2951,7 +3084,7 @@ create_pseudo_cfg (void)
   ti.head = get_insns ();
   ti.beg_row = cie_cfi_row;
   ti.cfa_store = cie_cfi_row->cfa;
-  ti.cfa_temp.reg = INVALID_REGNUM;
+  ti.cfa_temp.reg.set_by_dwreg (INVALID_REGNUM);
   trace_info.quick_push (ti);
 
   if (cie_return_save)
@@ -3014,14 +3147,15 @@ create_pseudo_cfg (void)
 static void
 initial_return_save (rtx rtl)
 {
-  unsigned int reg = INVALID_REGNUM;
+  struct cfa_reg reg;
+  reg.set_by_dwreg (INVALID_REGNUM);
   poly_int64 offset = 0;
 
   switch (GET_CODE (rtl))
     {
     case REG:
       /* RA is in a register.  */
-      reg = dwf_regno (rtl);
+      reg = dwf_cfa_reg (rtl);
       break;
 
     case MEM:
@@ -3062,9 +3196,9 @@ initial_return_save (rtx rtl)
       gcc_unreachable ();
     }
 
-  if (reg != DWARF_FRAME_RETURN_COLUMN)
+  if (reg.reg != DWARF_FRAME_RETURN_COLUMN)
     {
-      if (reg != INVALID_REGNUM)
+      if (reg.reg != INVALID_REGNUM)
         record_reg_saved_in_reg (rtl, pc_rtx);
       reg_save (DWARF_FRAME_RETURN_COLUMN, reg, offset - cur_row->cfa.offset);
     }
@@ -3076,7 +3210,8 @@ create_cie_data (void)
   dw_cfa_location loc;
   dw_trace_info cie_trace;
 
-  dw_stack_pointer_regnum = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
+  dw_stack_pointer_regnum = dwf_cfa_reg (gen_rtx_REG (Pmode,
+						      STACK_POINTER_REGNUM));
 
   memset (&cie_trace, 0, sizeof (cie_trace));
   cur_trace = &cie_trace;
@@ -3135,7 +3270,8 @@ static unsigned int
 execute_dwarf2_frame (void)
 {
   /* Different HARD_FRAME_POINTER_REGNUM might coexist in the same file.  */
-  dw_frame_pointer_regnum = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
+  dw_frame_pointer_regnum
+    = dwf_cfa_reg (gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM));
 
   /* The first time we're called, compute the incoming frame state.  */
   if (cie_cfi_vec == NULL)
@@ -3515,7 +3651,7 @@ dump_cfi_row (FILE *f, dw_cfi_row *row)
     {
       dw_cfa_location dummy;
       memset (&dummy, 0, sizeof (dummy));
-      dummy.reg = INVALID_REGNUM;
+      dummy.reg.set_by_dwreg (INVALID_REGNUM);
       cfi = def_cfa_0 (&dummy, &row->cfa);
     }
   output_cfi_directive (f, cfi);
