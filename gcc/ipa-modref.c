@@ -331,11 +331,11 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
-    return false;
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
   if (ecf_flags & ECF_PURE)
-    return false;
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
 
@@ -416,11 +416,11 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
-    return false;
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
   if (ecf_flags & ECF_PURE)
-    return false;
+    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
 
@@ -925,6 +925,18 @@ merge_call_side_effects (modref_summary *cur_summary,
   auto_vec <modref_parm_map, 32> parm_map;
   modref_parm_map chain_map;
   bool changed = false;
+  int flags = gimple_call_flags (stmt);
+
+  if (!cur_summary->side_effects && callee_summary->side_effects)
+    {
+      if (dump_file)
+	fprintf (dump_file, " - merging side effects.\n");
+      cur_summary->side_effects = true;
+      changed = true;
+    }
+
+  if (flags & (ECF_CONST | ECF_NOVOPS))
+    return changed;
 
   /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
@@ -987,12 +999,6 @@ merge_call_side_effects (modref_summary *cur_summary,
 	  cur_summary->writes_errno = true;
 	  changed = true;
 	}
-    }
-  if (!cur_summary->side_effects
-      && callee_summary->side_effects)
-    {
-      cur_summary->side_effects = true;
-      changed = true;
     }
   return changed;
 }
@@ -1091,7 +1097,7 @@ process_fnspec (modref_summary *cur_summary,
   attr_fnspec fnspec = gimple_call_fnspec (call);
   int flags = gimple_call_flags (call);
 
-  if (!(flags & (ECF_CONST | ECF_NOVOPS))
+  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE)
       || (cfun->can_throw_non_call_exceptions
 	  && stmt_could_throw_p (cfun, call)))
@@ -1101,6 +1107,8 @@ process_fnspec (modref_summary *cur_summary,
       if (cur_summary_lto)
 	cur_summary_lto->side_effects = true;
     }
+  if (flags & (ECF_CONST | ECF_NOVOPS))
+    return true;
   if (!fnspec.known_p ())
     {
       if (dump_file && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
@@ -1203,7 +1211,8 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   /* Check flags on the function call.  In certain cases, analysis can be
      simplified.  */
   int flags = gimple_call_flags (stmt);
-  if (flags & (ECF_CONST | ECF_NOVOPS))
+  if ((flags & (ECF_CONST | ECF_NOVOPS))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (dump_file)
 	fprintf (dump_file,
@@ -3963,7 +3972,8 @@ static bool
 propagate_unknown_call (cgraph_node *node,
 			cgraph_edge *e, int ecf_flags,
 			modref_summary *cur_summary,
-			modref_summary_lto *cur_summary_lto)
+			modref_summary_lto *cur_summary_lto,
+			bool nontrivial_scc)
 {
   bool changed = false;
   class fnspec_summary *fnspec_sum = fnspec_summaries->get (e);
@@ -3973,12 +3983,12 @@ propagate_unknown_call (cgraph_node *node,
   if (e->callee
       && builtin_safe_for_const_function_p (&looping, e->callee->decl))
     {
-      if (cur_summary && !cur_summary->side_effects)
+      if (looping && cur_summary && !cur_summary->side_effects)
 	{
 	  cur_summary->side_effects = true;
 	  changed = true;
 	}
-      if (cur_summary_lto && !cur_summary_lto->side_effects)
+      if (looping && cur_summary_lto && !cur_summary_lto->side_effects)
 	{
 	  cur_summary_lto->side_effects = true;
 	  changed = true;
@@ -3986,8 +3996,9 @@ propagate_unknown_call (cgraph_node *node,
       return changed;
     }
 
-  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS))
-      || (ecf_flags & ECF_LOOPING_CONST_OR_PURE))
+  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (ecf_flags & ECF_LOOPING_CONST_OR_PURE)
+      || nontrivial_scc)
     {
       if (cur_summary && !cur_summary->side_effects)
 	{
@@ -4000,6 +4011,8 @@ propagate_unknown_call (cgraph_node *node,
 	  changed = true;
 	}
     }
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    return changed;
 
   if (fnspec_sum
       && compute_parm_map (e, &parm_map))
@@ -4126,6 +4139,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
   while (changed)
     {
+      bool nontrivial_scc
+		 = ((struct ipa_dfs_info *) component_node->aux)->next_cycle;
       changed = false;
       for (struct cgraph_node *cur = component_node; cur;
 	   cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
@@ -4151,14 +4166,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
 	  for (cgraph_edge *e = cur->indirect_calls; e; e = e->next_callee)
 	    {
-	      if (e->indirect_info->ecf_flags & (ECF_CONST | ECF_NOVOPS))
-		continue;
 	      if (dump_file)
-		fprintf (dump_file, "    Indirect call"
-			 "collapsing loads\n");
+		fprintf (dump_file, "    Indirect call\n");
 	      if (propagate_unknown_call
 			   (node, e, e->indirect_info->ecf_flags,
-			    cur_summary, cur_summary_lto))
+			    cur_summary, cur_summary_lto,
+			    nontrivial_scc))
 		{
 		  changed = true;
 		  remove_useless_summaries (node, &cur_summary,
@@ -4180,8 +4193,9 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      modref_summary_lto *callee_summary_lto = NULL;
 	      struct cgraph_node *callee;
 
-	      if (flags & (ECF_CONST | ECF_NOVOPS)
-		  || !callee_edge->inline_failed)
+	      if (!callee_edge->inline_failed
+		 || ((flags & (ECF_CONST | ECF_NOVOPS))
+		     && !(flags & ECF_LOOPING_CONST_OR_PURE)))
 		continue;
 
 	      /* Get the callee and its summary.  */
@@ -4210,7 +4224,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 			     " or not available\n");
 		  changed |= propagate_unknown_call
 			       (node, callee_edge, flags,
-				cur_summary, cur_summary_lto);
+				cur_summary, cur_summary_lto,
+				nontrivial_scc);
 		  if (!cur_summary && !cur_summary_lto)
 		    break;
 		  continue;
@@ -4226,7 +4241,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		    fprintf (dump_file, "      No call target summary\n");
 		  changed |= propagate_unknown_call
 			       (node, callee_edge, flags,
-				cur_summary, NULL);
+				cur_summary, NULL,
+				nontrivial_scc);
 		}
 	      if (cur_summary_lto
 		  && !(callee_summary_lto = summaries_lto->get (callee)))
@@ -4235,8 +4251,26 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		    fprintf (dump_file, "      No call target summary\n");
 		  changed |= propagate_unknown_call
 			       (node, callee_edge, flags,
-				NULL, cur_summary_lto);
+				NULL, cur_summary_lto,
+				nontrivial_scc);
 		}
+
+	      if (callee_summary && !cur_summary->side_effects
+		  && (callee_summary->side_effects
+		      || callee_edge->recursive_p ()))
+		{
+		  cur_summary->side_effects = true;
+		  changed = true;
+		}
+	      if (callee_summary_lto && !cur_summary_lto->side_effects
+		  && (callee_summary_lto->side_effects
+		      || callee_edge->recursive_p ()))
+		{
+		  cur_summary_lto->side_effects = true;
+		  changed = true;
+		}
+	      if (flags & (ECF_CONST | ECF_NOVOPS))
+		continue;
 
 	      /* We can not safely optimize based on summary of callee if it
 		 does not always bind to current def: it is possible that
@@ -4265,12 +4299,6 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		  changed |= cur_summary->loads->merge
 				  (callee_summary->loads, &parm_map,
 				   &chain_map, !first);
-		  if (!cur_summary->side_effects
-		      && callee_summary->side_effects)
-		    {
-		      cur_summary->side_effects = true;
-		      changed = true;
-		    }
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary->stores->merge
@@ -4289,12 +4317,6 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		  changed |= cur_summary_lto->loads->merge
 				  (callee_summary_lto->loads, &parm_map,
 				   &chain_map, !first);
-		  if (!cur_summary_lto->side_effects
-		      && callee_summary_lto->side_effects)
-		    {
-		      cur_summary_lto->side_effects = true;
-		      changed = true;
-		    }
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary_lto->stores->merge
