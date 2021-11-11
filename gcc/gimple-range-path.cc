@@ -439,26 +439,32 @@ path_range_query::add_to_imports (tree name, bitmap imports)
   return false;
 }
 
-// Add the copies of any SSA names in IMPORTS to IMPORTS.
+// Compute the imports to the path ending in EXIT.  These are
+// essentially the SSA names used to calculate the final conditional
+// along the path.
 //
-// These are hints for the solver.  Adding more elements (within
-// reason) doesn't slow us down, because we don't solve anything that
-// doesn't appear in the path.  On the other hand, not having enough
-// imports will limit what we can solve.
+// They are hints for the solver.  Adding more elements doesn't slow
+// us down, because we don't solve anything that doesn't appear in the
+// path.  On the other hand, not having enough imports will limit what
+// we can solve.
 
 void
-path_range_query::add_copies_to_imports ()
+path_range_query::compute_imports (bitmap imports, basic_block exit)
 {
-  auto_vec<tree> worklist (bitmap_count_bits (m_imports));
+  // Start with the imports from the exit block...
+  bitmap r_imports = m_ranger.gori ().imports (exit);
+  bitmap_copy (imports, r_imports);
+
+  auto_vec<tree> worklist (bitmap_count_bits (imports));
   bitmap_iterator bi;
   unsigned i;
-
-  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (imports, 0, i, bi)
     {
       tree name = ssa_name (i);
       worklist.quick_push (name);
     }
 
+  // ...and add any operands used to define these imports.
   while (!worklist.is_empty ())
     {
       tree name = worklist.pop ();
@@ -466,15 +472,12 @@ path_range_query::add_copies_to_imports ()
 
       if (is_gimple_assign (def_stmt))
 	{
-	  // ?? Adding assignment copies doesn't get us much.  At the
-	  // time of writing, we got 63 more threaded paths across the
-	  // .ii files from a bootstrap.
-	  add_to_imports (gimple_assign_rhs1 (def_stmt), m_imports);
+	  add_to_imports (gimple_assign_rhs1 (def_stmt), imports);
 	  tree rhs = gimple_assign_rhs2 (def_stmt);
-	  if (rhs && add_to_imports (rhs, m_imports))
+	  if (rhs && add_to_imports (rhs, imports))
 	    worklist.safe_push (rhs);
 	  rhs = gimple_assign_rhs3 (def_stmt);
-	  if (rhs && add_to_imports (rhs, m_imports))
+	  if (rhs && add_to_imports (rhs, imports))
 	    worklist.safe_push (rhs);
 	}
       else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
@@ -486,7 +489,7 @@ path_range_query::add_copies_to_imports ()
 
 	      if (TREE_CODE (arg) == SSA_NAME
 		  && m_path.contains (e->src)
-		  && bitmap_set_bit (m_imports, SSA_NAME_VERSION (arg)))
+		  && bitmap_set_bit (imports, SSA_NAME_VERSION (arg)))
 		worklist.safe_push (arg);
 	    }
 	}
@@ -512,16 +515,10 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
   if (imports)
     bitmap_copy (m_imports, imports);
   else
-    {
-      bitmap imports = m_ranger.gori ().imports (exit_bb ());
-      bitmap_copy (m_imports, imports);
-    }
+    compute_imports (m_imports, exit_bb ());
 
   if (m_resolve)
-    {
-      add_copies_to_imports ();
-      get_path_oracle ()->reset_path ();
-    }
+    get_path_oracle ()->reset_path ();
 
   if (DEBUG_SOLVER)
     {

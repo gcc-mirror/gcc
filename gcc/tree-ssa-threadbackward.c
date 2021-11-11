@@ -91,7 +91,6 @@ private:
   edge maybe_register_path ();
   void maybe_register_path_dump (edge taken_edge);
   void find_paths_to_names (basic_block bb, bitmap imports);
-  bool resolve_def (tree name, bitmap interesting, vec<tree> &worklist);
   void resolve_phi (gphi *phi, bitmap imports);
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
@@ -363,12 +362,8 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
       edge e = gimple_phi_arg_edge (phi, i);
 
       // This is like path_crosses_loops in profitable_path_p but more
-      // restrictive, since profitable_path_p allows threading the
-      // first block because it would be redirected anyhow.
-      //
-      // If we loosened the restriction and used profitable_path_p()
-      // here instead, we would peel off the first iterations of loops
-      // in places like tree-ssa/pr14341.c.
+      // restrictive to avoid peeling off loop iterations (see
+      // tree-ssa/pr14341.c for an example).
       bool profitable_p = m_path[0]->loop_father == e->src->loop_father;
       if (!profitable_p)
 	{
@@ -404,33 +399,6 @@ back_threader::resolve_phi (gphi *phi, bitmap interesting)
     }
 }
 
-// If the definition of NAME causes the final conditional of the
-// current path to be constant, register the path, and return TRUE.
-
-bool
-back_threader::resolve_def (tree name, bitmap interesting, vec<tree> &worklist)
-{
-  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-
-  // Handle PHIs.
-  if (is_a<gphi *> (def_stmt))
-    {
-      resolve_phi (as_a<gphi *> (def_stmt), interesting);
-      return true;
-    }
-
-  // Defer copies of SSAs by adding the source to the worklist.
-  if (gimple_assign_single_p (def_stmt)
-      && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
-    {
-      tree rhs = gimple_assign_rhs1 (def_stmt);
-      bitmap_set_bit (m_imports, SSA_NAME_VERSION (rhs));
-      bitmap_set_bit (interesting, SSA_NAME_VERSION (rhs));
-      worklist.safe_push (rhs);
-    }
-  return false;
-}
-
 // Find jump threading paths to any of the SSA names in the
 // INTERESTING bitmap, and register any such paths.
 //
@@ -464,13 +432,15 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting)
     {
       tree name = worklist.pop ();
       unsigned i = SSA_NAME_VERSION (name);
-      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+      basic_block def_bb = gimple_bb (def_stmt);
 
-      // Process any names defined in this block.
+      // Process any PHIs defined in this block.
       if (def_bb == bb
 	  && bitmap_set_bit (processed, i)
-	  && resolve_def (name, interesting, worklist))
+	  && gimple_code (def_stmt) == GIMPLE_PHI)
 	{
+	  resolve_phi (as_a<gphi *> (def_stmt), interesting);
 	  done = true;
 	  break;
 	}
@@ -515,10 +485,9 @@ back_threader::find_paths (basic_block bb, tree name)
       m_visited_bbs.empty ();
       m_path.truncate (0);
       m_name = name;
-      bitmap_clear (m_imports);
+      m_solver->compute_imports (m_imports, bb);
 
       auto_bitmap interesting;
-      bitmap_copy (m_imports, m_ranger->gori ().imports (bb));
       bitmap_copy (interesting, m_imports);
       find_paths_to_names (bb, interesting);
     }

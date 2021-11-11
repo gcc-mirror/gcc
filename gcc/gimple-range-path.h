@@ -36,6 +36,7 @@ public:
   virtual ~path_range_query ();
   void compute_ranges (const vec<basic_block> &, const bitmap_head *imports = NULL);
   void compute_ranges (edge e);
+  void compute_imports (bitmap imports, basic_block exit);
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (irange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
@@ -61,7 +62,6 @@ private:
   void compute_outgoing_relations (basic_block bb, basic_block next);
   void compute_phi_relations (basic_block bb, basic_block prev);
   void maybe_register_phi_relation (gphi *, tree arg);
-  void add_copies_to_imports ();
   bool add_to_imports (tree name, bitmap imports);
   inline bool import_p (tree name);
 
