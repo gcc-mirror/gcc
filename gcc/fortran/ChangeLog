@@ -1,3 +1,13 @@
+2021-11-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103137
+	PR fortran/103138
+	* check.c (gfc_check_shape): Avoid NULL pointer dereference on
+	missing ref.
+	* simplify.c (gfc_simplify_cshift): Avoid NULL pointer dereference
+	when shape not set.
+	(gfc_simplify_transpose): Likewise.
+
 2021-11-09  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR fortran/68800

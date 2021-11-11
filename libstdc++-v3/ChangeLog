@@ -1,3 +1,16 @@
+2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100117
+	* testsuite/17_intro/headers/c++1998/49745.cc: Explicitly list
+	all C++ headers instead of including <bits/stdc++.h>
+
+2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100748
+	PR libstdc++/103133
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK):
+	Define for glibc 2.34 and later.
+
 2021-11-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (__distance_fw): Replace class keyword with

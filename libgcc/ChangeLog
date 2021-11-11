@@ -1,3 +1,8 @@
+2021-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/linux-unwind.h (ppc_back_fallback): Make it static,
+	formatting fix.
+
 2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin10-unwind-find-enc-func.c: Include libgcc_tm.h.

@@ -1,3 +1,9 @@
+2021-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101940
+	* c-pragma.c (handle_pragma_diagnostic): Handle #pragma GCC diagnostic
+	ignored_attributes.
+
 2021-11-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-pragma.c (GCC_BAD_AT): New macro.

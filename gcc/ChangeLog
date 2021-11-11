@@ -1,3 +1,365 @@
+2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/102906
+	* tree-ssa-loop-ch.c (entry_loop_condition_is_static): New.
+	(should_duplicate_loop_header_p): Call entry_loop_condition_is_static.
+	(class ch_base): Add m_ranger and m_query.
+	(ch_base::copy_headers): Pass m_query to
+	entry_loop_condition_is_static.
+	(pass_ch::execute): Allocate and deallocate m_ranger and
+	m_query.
+	(pass_ch_vect::execute): Same.
+
+2021-11-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/103170
+	* config/aarch64/aarch64-simd.md (aarch64_simd_dup<mode>):
+	Use vwcore iterator for the r constraint output string.
+
+2021-11-10  qing zhao  <qing.zhao@oracle.com>
+
+	* internal-fn.c (expand_DEFERRED_INIT): Apply pattern initialization
+	only when have_insn_for return true for the mode. Fix a memory leak.
+
+2021-11-10  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	* config/arm/arm.c (cortexa9_extra_costs, cortexa8_extra_costs,
+	cortexa5_extra_costs, cortexa7_extra_costs,
+	cortexa12_extra_costs, cortexa15_extra_costs, v7m_extra_costs):
+	Initialize movi, dup and extract costing fields.
+
+2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query): Do
+	not init m_path.
+	(path_range_query::dump): Change m_path uses to non-pointer.
+	(path_range_query::defined_outside_path):  Same.
+	(path_range_query::set_path): Same.
+	(path_range_query::add_copies_to_imports): Same.
+	(path_range_query::range_of_stmt): Same.
+	(path_range_query::compute_outgoing_relations): Same.
+	(path_range_query::compute_ranges): Imports are now optional.
+	Implement overload that takes an edge.
+	* gimple-range-path.h (class path_range_query): Make imports
+	optional for compute_ranges.  Add compute_ranges(edge) overload.
+	Make m_path an auto_vec instead of a pointer and adjust
+	accordingly.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vectorizer.h (struct scalar_cond_masked_key): Add inverted_p.
+	(default_hash_traits<scalar_conf_masked_key>): Likewise.
+	* tree-vect-stmts.c (vectorizable_condition): Check if inverse of mask
+	is live.
+	* tree-vectorizer.c (scalar_cond_masked_key::get_cond_ops_from_tree):
+	Register mask inverses.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vectorizer.c (vectorize_loops): Do local CSE through RPVN upon
+	successful vectorization.
+
+2021-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (sbr_vector::grow): New.
+	(sbr_vector::set_bb_range): Call grow.
+	(sbr_vector::get_bb_range): Same.
+	(sbr_vector::bb_range_p): Remove assert.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*aarch64_topbits_shuffle<mode>_le
+	,*aarch64_topbits_shuffle<mode>_be): Remove.
+
+2021-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c: Include tree-eh.h
+	(modref_summary::modref_summary): Initialize side_effects.
+	(struct modref_summary_lto): New bool field side_effects.
+	(modref_summary_lto::modref_summary_lto): Initialize side_effects.
+	(modref_summary::dump): Dump side_effects.
+	(modref_summary_lto::dump): Dump side_effects.
+	(merge_call_side_effects): Merge side effects.
+	(process_fnspec): Calls to non-const/pure or looping
+	function is a side effect.
+	(analyze_call): Self-recursion is a side-effect; handle
+	special builtins.
+	(analyze_load): Watch for volatile and throwing memory.
+	(analyze_store): Likewise.
+	(analyze_stmt): Watch for volatitle asm.
+	(analyze_function): Handle side_effects.
+	(modref_summaries::duplicate): Duplicate side_effects.
+	(modref_summaries_lto::duplicate): Likewise.
+	(modref_write): Stream side_effects.
+	(read_section): Likewise.
+	(update_signature): Update.
+	(propagate_unknown_call): Handle side_effects.
+	(modref_propagate_in_scc): Likewise.
+	* ipa-modref.h (struct modref_summary): Add side_effects.
+	* ipa-pure-const.c (special_builtin_state): Rename to ...
+	(builtin_safe_for_const_function_p): ... this one.
+	(check_call): Update.
+	(finite_function_p): Break out from ...
+	(propagate_pure_const): ... here
+	* ipa-utils.h (finite_function): Declare.
+
+2021-11-10  Lucas A. M. Magalhães  <lamm@linux.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Remove -rpath from
+	--with-advance-toolchain.
+
+2021-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101940
+	* attribs.c (struct scoped_attributes): Add a bool member.
+	(lookup_scoped_attribute_spec): Forward declare.
+	(register_scoped_attributes): New bool parameter, defaulted to
+	false.  Use it.
+	(handle_ignored_attributes_option): New function.
+	(free_attr_data): New function.
+	(init_attributes): Call handle_ignored_attributes_option.
+	(attr_namespace_ignored_p): New function.
+	(decl_attributes): Check attr_namespace_ignored_p before
+	warning.
+	* attribs.h (free_attr_data): Declare.
+	(register_scoped_attributes): Adjust declaration.
+	(handle_ignored_attributes_option): Declare.
+	(canonicalize_attr_name): New function template.
+	(canonicalize_attr_name): Use it.
+	* common.opt (Wattributes=): New option with a variable.
+	* doc/extend.texi: Document #pragma GCC diagnostic ignored_attributes.
+	* doc/invoke.texi: Document -Wno-attributes=.
+	* opts.c (common_handle_option) <case OPT_Wattributes_>: Handle.
+	* plugin.h (register_scoped_attributes): Adjust declaration.
+	* toplev.c (compile_file): Call free_attr_data.
+
+2021-11-10  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/arm/arm-cpus.in (cortex-a710): New CPU.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi: Update docs.
+
+2021-11-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_general_gimple_fold_builtin): Mark argument as unused.
+
+2021-11-10  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (merge_and_complain): Make the first argument
+	a reference type.
+
+2021-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (optab): Use fmax_nan instead of
+	smax_nan and fmin_nan instead of smin_nan.
+	(maxmin_uns): Rename to...
+	(fmaxmin): ...this and make the same changes.  Remove entries
+	unrelated to fmax* and fmin*.
+	* config/aarch64/aarch64.md (<maxmin_uns><mode>3): Rename to...
+	(<fmaxmin><mode>3): ...this.
+	* config/aarch64/aarch64-simd.md (aarch64_<maxmin_uns>p<mode>):
+	Rename to...
+	(aarch64_<optab>p<mode>): ...this.
+	(<maxmin_uns><mode>3): Rename to...
+	(<fmaxmin><mode>3): ...this.
+	(reduc_<maxmin_uns>_scal_<mode>): Rename to...
+	(reduc_<optab>_scal_<mode>): ...this and update gen* call.
+	(aarch64_reduc_<maxmin_uns>_internal<mode>): Rename to...
+	(aarch64_reduc_<optab>_internal<mode>): ...this.
+	(aarch64_reduc_<maxmin_uns>_internalv2si): Rename to...
+	(aarch64_reduc_<optab>_internalv2si): ...this.
+	* config/aarch64/aarch64-sve.md (<maxmin_uns><mode>3): Rename to...
+	(<fmaxmin><mode>3): ...this.
+	* config/aarch64/aarch64-simd-builtins.def (smax_nan, smin_nan)
+	Rename to...
+	(fmax_nan, fmin_nan): ...this.
+	* config/aarch64/arm_neon.h (vmax_f32, vmax_f64, vmaxq_f32, vmaxq_f64)
+	(vmin_f32, vmin_f64, vminq_f32, vminq_f64, vmax_f16, vmaxq_f16)
+	(vmin_f16, vminq_f16): Update accordingly.
+
+2021-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vector_costs::finish_cost): Take the
+	corresponding scalar costs as a parameter.
+	(finish_cost): Likewise.
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost)
+	(vect_estimate_min_profitable_iters): Update accordingly.
+	* tree-vect-slp.c (vect_bb_vectorization_profitable_p): Likewise.
+	* tree-vectorizer.c (vector_costs::finish_cost): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vector_costs::finish_cost):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_cost_data::finish_cost): Likewise.
+
+2021-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (_loop_vec_info::scalar_costs): New member
+	variable.
+	(_loop_vec_info::single_scalar_iteration_cost): Delete.
+	(LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST): Delete.
+	(vector_costs::total_cost): New function.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Update
+	after above changes.
+	(_loop_vec_info::~_loop_vec_info): Delete scalar_costs.
+	(vect_compute_single_scalar_iteration_cost): Store the costs
+	in loop_vinfo->scalar_costs.
+	(vect_estimate_min_profitable_iters): Get the scalar cost from
+	loop_vinfo->scalar_costs.
+
+2021-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vector_costs::better_main_loop_than_p)
+	(vector_costs::better_epilogue_loop_than_p)
+	(vector_costs::compare_inside_loop_cost)
+	(vector_costs::compare_outside_loop_cost): Likewise.
+	* tree-vectorizer.c (vector_costs::better_main_loop_than_p)
+	(vector_costs::better_epilogue_loop_than_p)
+	(vector_costs::compare_inside_loop_cost)
+	(vector_costs::compare_outside_loop_cost): New functions,
+	containing code moved from...
+	* tree-vect-loop.c (vect_better_loop_vinfo_p): ...here.
+
+2021-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (_loop_vec_info): Remove vec_outside_cost
+	and vec_inside_cost.
+	(vector_costs::outside_cost): New function.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Update
+	after above.
+	(vect_estimate_min_profitable_iters): Likewise.
+	(vect_better_loop_vinfo_p): Get the inside and outside costs
+	from the loop_vec_infos' vector_costs.
+
+2021-11-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vec_info::target_cost_data): Replace with...
+	(_loop_vec_info::vector_costs): ...this.
+	(LOOP_VINFO_TARGET_COST_DATA): Delete.
+	* tree-vectorizer.c (vec_info::vec_info): Remove target_cost_data
+	initialization.
+	(vec_info::~vec_info): Remove corresponding delete.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	vector_costs to null.
+	(_loop_vec_info::~_loop_vec_info): Delete vector_costs.
+	(vect_analyze_loop_operations): Update after above changes.
+	(vect_analyze_loop_2): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vect-slp.c (vect_slp_analyze_operations): Likewise.
+
+2021-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-core.h (EAF_DIRECT): Remove.
+	(EAF_NOCLOBBER): Remove.
+	(EAF_UNUSED): Remove.
+	(EAF_NOESCAPE): Remove.
+	(EAF_NO_DIRECT_CLOBBER): New.
+	(EAF_NO_INDIRECT_CLOBBER): New.
+	(EAF_NODIRECTESCAPE): Remove.
+	(EAF_NO_DIRECT_ESCAPE): New.
+	(EAF_NO_INDIRECT_ESCAPE): New.
+	(EAF_NOT_RETURNED): Remove.
+	(EAF_NOT_RETURNED_INDIRECTLY): New.
+	(EAF_NOREAD): Remove.
+	(EAF_NO_DIRECT_READ): New.
+	(EAF_NO_INDIRECT_READ): New.
+	* gimple.c (gimple_call_arg_flags): Update for new flags.
+	(gimple_call_retslot_flags): Update for new flags.
+	* ipa-modref.c (dump_eaf_flags): Likewise.
+	(remove_useless_eaf_flags): Likewise.
+	(deref_flags): Likewise.
+	(modref_lattice::init): Likewise.
+	(modref_lattice::merge): Likewise.
+	(modref_lattice::merge_direct_load): Likewise.
+	(modref_lattice::merge_direct_store): Likewise.
+	(modref_eaf_analysis::merge_call_lhs_flags): Likewise.
+	(callee_to_caller_flags): Likewise.
+	(modref_eaf_analysis::analyze_ssa_name): Likewise.
+	(modref_eaf_analysis::propagate): Likewise.
+	(modref_merge_call_site_flags): Likewise.
+	* ipa-modref.h (interposable_eaf_flags): Likewise.
+	* tree-ssa-alias.c: (ref_maybe_used_by_call_p_1) Likewise.
+	* tree-ssa-structalias.c (handle_call_arg): Likewise.
+	(handle_rhs_call): Likewise.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Likewise.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-slp-patterns.c (complex_mul_pattern::matches): Remove l1node.
+
+2021-11-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_general_gimple_fold_builtin): Change pointer alignment and
+	alias.
+
+2021-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref-tree.h (modref_tree::remap_params): Fix off-by-one error.
+
+2021-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR middle-end/102566
+	* match.pd (nop_atomic_bit_test_and_p): New match.
+	* tree-ssa-ccp.c (convert_atomic_bit_not): New function.
+	(gimple_nop_atomic_bit_test_and_p): New prototype.
+	(optimize_atomic_bit_test_and): Transform equivalent, but slighly
+	different cases to their canonical forms.
+
+2021-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/103126
+	* tree-vect-loop.c (neutral_op_for_reduction): Remove static.
+	* tree-vectorizer.h (neutral_op_for_reduction): Declare.
+	* tree-if-conv.c : Include tree-vectorizer.h.
+	(is_cond_scalar_reduction): Handle
+	BIT_XOR_EXPR/BIT_IOR_EXPR/BIT_AND_EXPR.
+	(convert_scalar_cond_reduction): Ditto.
+
+2021-11-10  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/sse.md (cmul<conj_op><mode>3): add new define_expand.
+	(cmla<conj_op><mode>4): Likewise
+
+2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadedge.c: Do not include
+	gimple-ssa-evrp-analyze.h.
+	* value-pointer-equiv.cc: Same.
+
+2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader::maybe_register_path_dump): Abstract path dumping...
+	(dump_path): ...here.
+	(back_threader::resolve_phi): Call dump_path.
+	(debug): Same.
+
+2021-11-10  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/sse.md (fma_<complexpairopname>_<mode>_pair):
+	Add new define_insn.
+	(fma_<mode>_fmaddc_bcst): Add new define_insn_and_split.
+	(fma_<mode>_fcmaddc_bcst): Likewise
+
+2021-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102464
+	* match.pd: Simplify (trunc)fmax/fmin((extend)a, (extend)b) to
+	MAX/MIN(a,b)
+
+2021-11-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101529
+	* config/aarch64/aarch64.c (aarch64_evpc_ins): Don't use target
+	as an input, use original one.
+
+2021-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_can_inline_p): New.
+	(TARGET_CAN_INLINE_P): Define.
+
 2021-11-09  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_new_builtin):

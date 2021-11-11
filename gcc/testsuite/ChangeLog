@@ -1,3 +1,158 @@
+2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr102906.c: New test.
+
+2021-11-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/103170
+	* gcc.c-torture/compile/vector-dup-1.c: New test.
+
+2021-11-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/102892
+	* gcc.dg/pr102892-1.c: New file.
+	* gcc.dg/pr102892-2.c: Likewise.
+
+2021-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/103161
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-16.c: Avoid relying on
+	argument evaluation order.  Cast width and precision to signed
+	to avoid undefined behavior.
+
+2021-11-10  qing zhao  <qing.zhao@oracle.com>
+
+	* gcc.target/i386/auto-init-6.c: _Complex long double is initialized
+	to zero now with -ftrivial-auto-var-init=pattern.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred-not-gen-1.c: Update testcase.
+	* gcc.target/aarch64/sve/pred-not-gen-2.c: Update testcase.
+	* gcc.target/aarch64/sve/pred-not-gen-3.c: Update testcase.
+	* gcc.target/aarch64/sve/pred-not-gen-4.c: Update testcase.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/shrn-combine-8.c: Update.
+	* gcc.target/aarch64/shrn-combine-9.c: Update.
+
+2021-11-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-13.c: Fix typo.
+
+2021-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101940
+	* c-c++-common/Wno-attributes-1.c: New test.
+	* c-c++-common/Wno-attributes-2.c: New test.
+	* c-c++-common/Wno-attributes-3.c: New test.
+
+2021-11-10  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/modref-1.C: Update template.
+	* gcc.dg/ipa/modref-3.c: Update template.
+	* gcc.dg/lto/modref-3_0.c: Update template.
+	* gcc.dg/lto/modref-4_0.c: Update template.
+	* gcc.dg/tree-ssa/modref-10.c: Update template.
+	* gcc.dg/tree-ssa/modref-11.c: Update template.
+	* gcc.dg/tree-ssa/modref-5.c: Update template.
+	* gcc.dg/tree-ssa/modref-6.c: Update template.
+	* gcc.dg/tree-ssa/modref-13.c: New test.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/103042
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-long.c: Use
+	vect_long_long instead of vect_long.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-long.c:
+	Likewise.
+
+2021-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/signbit-2.c: Turn off masks.
+	* gcc.dg/signbit-5.c: Likewise.
+
+2021-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/102690
+	* g++.dg/warn/Warray-bounds-16.C: XFAIL diagnostic part
+	and optimization.
+
+2021-11-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/simd/lowering_tbaa.c: New test.
+
+2021-11-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Fix big-endian testism.
+	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/fmul_intrinsic_1.c: Likewise.
+
+2021-11-10  H.J. Lu  <hongjiu.lu@intel.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR middle-end/102566
+	* g++.target/i386/pr102566-1.C: New test.
+	* g++.target/i386/pr102566-2.C: Likewise.
+	* g++.target/i386/pr102566-3.C: Likewise.
+	* g++.target/i386/pr102566-4.C: Likewise.
+	* g++.target/i386/pr102566-5a.C: Likewise.
+	* g++.target/i386/pr102566-5b.C: Likewise.
+	* g++.target/i386/pr102566-6a.C: Likewise.
+	* g++.target/i386/pr102566-6b.C: Likewise.
+	* gcc.target/i386/pr102566-1a.c: Likewise.
+	* gcc.target/i386/pr102566-1b.c: Likewise.
+	* gcc.target/i386/pr102566-2.c: Likewise.
+	* gcc.target/i386/pr102566-3a.c: Likewise.
+	* gcc.target/i386/pr102566-3b.c: Likewise.
+	* gcc.target/i386/pr102566-4.c: Likewise.
+	* gcc.target/i386/pr102566-5.c: Likewise.
+	* gcc.target/i386/pr102566-6.c: Likewise.
+	* gcc.target/i386/pr102566-7.c: Likewise.
+	* gcc.target/i386/pr102566-8a.c: Likewise.
+	* gcc.target/i386/pr102566-8b.c: Likewise.
+	* gcc.target/i386/pr102566-9a.c: Likewise.
+	* gcc.target/i386/pr102566-9b.c: Likewise.
+	* gcc.target/i386/pr102566-10a.c: Likewise.
+	* gcc.target/i386/pr102566-10b.c: Likewise.
+	* gcc.target/i386/pr102566-11.c: Likewise.
+	* gcc.target/i386/pr102566-12.c: Likewise.
+	* gcc.target/i386/pr102566-13.c: New test.
+	* gcc.target/i386/pr102566-14.c: New test.
+
+2021-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/ifcvt-reduction-logic-op.c: New test.
+
+2021-11-10  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512fp16-vector-complex-float.c: New test.
+
+2021-11-10  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512fp16vl-complex-broadcast-1.c: New test.
+
+2021-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102464-maxmin.c: New test.
+
+2021-11-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/101529
+	* c-c++-common/torture/builtin-convertvector-2.c: New test.
+	* c-c++-common/torture/builtin-shufflevector-2.c: New test.
+
+2021-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/nios2/custom-fp-inline-1.c: New.
+	* gcc.target/nios2/custom-fp-inline-2.c: New.
+	* gcc.target/nios2/custom-fp-inline-3.c: New.
+	* gcc.target/nios2/custom-fp-inline-4.c: New.
+
 2021-11-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/bad-pragma-locations.c: New test.
