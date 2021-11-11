@@ -2327,6 +2327,10 @@ fprofile-prefix-path=
 Common Joined RejectNegative Var(profile_prefix_path)
 Remove prefix from absolute path before mangling name for -fprofile-generate= and -fprofile-use=.
 
+fprofile-prefix-map=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fprofile-prefix-map=<old>=<new>	Map one directory name to another in GCOV coverage result.
+
 fprofile-generate
 Common
 Enable common options for generating profile info for profile feedback directed optimizations.

@@ -613,7 +613,8 @@ Objective-C and Objective-C++ Dialects}.
 -fvtv-counts  -fvtv-debug @gol
 -finstrument-functions @gol
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
--finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}}
+-finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}} @gol
+-fprofile-prefix-map=@var{old}=@var{new}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
@@ -2182,7 +2183,8 @@ files resided in directory @file{@var{new}} instead.  Specifying this
 option is equivalent to specifying all the individual
 @option{-f*-prefix-map} options.  This can be used to make reproducible
 builds that are location independent.  See also
-@option{-fmacro-prefix-map} and @option{-fdebug-prefix-map}.
+@option{-fmacro-prefix-map}, @option{-fdebug-prefix-map} and
+@option{-fprofile-prefix-map}.
 
 @item -fplugin=@var{name}.so
 @opindex fplugin
@@ -15272,6 +15274,14 @@ feedback because the profile data will not be found during the optimized build.
 In such setups @option{-fprofile-prefix-path=}@var{path} with @var{path}
 pointing to the base directory of the build can be used to strip the irrelevant
 part of the path and keep all file names relative to the main build directory.
+
+@item -fprofile-prefix-map=@var{old}=@var{new}
+@opindex fprofile-prefix-map
+When compiling files residing in directory @file{@var{old}}, record
+profiling information (with @option{--coverage})
+describing them as if the files resided in
+directory @file{@var{new}} instead.
+See also @option{-ffile-prefix-map}.
 
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
