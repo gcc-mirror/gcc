@@ -1502,7 +1502,8 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *chunk_size;
   struct gfc_expr *safelen_expr;
   struct gfc_expr *simdlen_expr;
-  struct gfc_expr *num_teams;
+  struct gfc_expr *num_teams_lower;
+  struct gfc_expr *num_teams_upper;
   struct gfc_expr *device;
   struct gfc_expr *thread_limit;
   struct gfc_expr *grainsize;
