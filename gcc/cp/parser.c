@@ -18558,11 +18558,6 @@ cp_parser_template_name (cp_parser* parser,
 static tree
 cp_parser_template_argument_list (cp_parser* parser)
 {
-  tree fixed_args[10];
-  unsigned n_args = 0;
-  unsigned alloced = 10;
-  tree *arg_ary = fixed_args;
-  tree vec;
   bool saved_in_template_argument_list_p;
   bool saved_ice_p;
   bool saved_non_ice_p;
@@ -18581,16 +18576,15 @@ cp_parser_template_argument_list (cp_parser* parser)
   parser->non_integral_constant_expression_p = false;
 
   /* Parse the arguments.  */
+  auto_vec<tree, 10> args;
   do
     {
-      tree argument;
-
-      if (n_args)
+      if (!args.is_empty ())
 	/* Consume the comma.  */
 	cp_lexer_consume_token (parser->lexer);
 
       /* Parse the template-argument.  */
-      argument = cp_parser_template_argument (parser);
+      tree argument = cp_parser_template_argument (parser);
 
       /* If the next token is an ellipsis, we're expanding a template
          argument pack. */
@@ -18610,29 +18604,16 @@ cp_parser_template_argument_list (cp_parser* parser)
           argument = make_pack_expansion (argument);
         }
 
-      if (n_args == alloced)
-	{
-	  alloced *= 2;
-
-	  if (arg_ary == fixed_args)
-	    {
-	      arg_ary = XNEWVEC (tree, alloced);
-	      memcpy (arg_ary, fixed_args, sizeof (tree) * n_args);
-	    }
-	  else
-	    arg_ary = XRESIZEVEC (tree, arg_ary, alloced);
-	}
-      arg_ary[n_args++] = argument;
+      args.safe_push (argument);
     }
   while (cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
 
-  vec = make_tree_vec (n_args);
+  int n_args = args.length ();
+  tree vec = make_tree_vec (n_args);
 
-  while (n_args--)
-    TREE_VEC_ELT (vec, n_args) = arg_ary[n_args];
+  for (int i = 0; i < n_args; i++)
+    TREE_VEC_ELT (vec, i) = args[i];
 
-  if (arg_ary != fixed_args)
-    free (arg_ary);
   parser->non_integral_constant_expression_p = saved_non_ice_p;
   parser->integral_constant_expression_p = saved_ice_p;
   parser->in_template_argument_list_p = saved_in_template_argument_list_p;
