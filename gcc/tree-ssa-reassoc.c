@@ -1515,7 +1515,8 @@ insert_stmt_after (gimple *stmt, gimple *insert_point)
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
       return;
     }
-  else if (gimple_code (insert_point) == GIMPLE_ASM)
+  else if (gimple_code (insert_point) == GIMPLE_ASM
+	   && gimple_asm_nlabels (as_a <gasm *> (insert_point)) != 0)
     /* We have no idea where to insert - it depends on where the
        uses will be placed.  */
     gcc_unreachable ();
