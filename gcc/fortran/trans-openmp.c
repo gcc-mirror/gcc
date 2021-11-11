@@ -3938,7 +3938,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       gfc_add_block_to_block (block, &se.post);
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_TEAMS);
-      OMP_CLAUSE_NUM_TEAMS_EXPR (c) = num_teams;
+      OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = num_teams;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 

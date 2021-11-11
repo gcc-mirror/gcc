@@ -38275,21 +38275,35 @@ cp_parser_omp_clause_orderedkind (cp_parser * /*parser*/,
 }
 
 /* OpenMP 4.0:
-   num_teams ( expression ) */
+   num_teams ( expression )
+
+   OpenMP 5.1:
+   num_teams ( expression : expression ) */
 
 static tree
 cp_parser_omp_clause_num_teams (cp_parser *parser, tree list,
 				location_t location)
 {
-  tree t, c;
+  tree upper, lower = NULL_TREE, c;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_assignment_expression (parser);
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+  parser->colon_corrects_to_scope_p = false;
+  upper = cp_parser_assignment_expression (parser);
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 
-  if (t == error_mark_node
+  if (upper != error_mark_node
+      && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    {
+      lower = upper;
+      cp_lexer_consume_token (parser->lexer);
+      upper = cp_parser_assignment_expression (parser);
+    }
+
+  if (upper == error_mark_node
       || !parens.require_close (parser))
     cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					   /*or_comma=*/false,
@@ -38299,7 +38313,8 @@ cp_parser_omp_clause_num_teams (cp_parser *parser, tree list,
 			     "num_teams", location);
 
   c = build_omp_clause (location, OMP_CLAUSE_NUM_TEAMS);
-  OMP_CLAUSE_NUM_TEAMS_EXPR (c) = t;
+  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = upper;
+  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = lower;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
@@ -44104,32 +44119,33 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  if (ret == NULL_TREE)
 	    return false;
 	  if (ccode == OMP_TEAMS && !processing_template_decl)
-	    {
-	      /* For combined target teams, ensure the num_teams and
-		 thread_limit clause expressions are evaluated on the host,
-		 before entering the target construct.  */
-	      tree c;
-	      for (c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
-		   c; c = OMP_CLAUSE_CHAIN (c))
-		if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
-		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
-		    && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) != INTEGER_CST)
-		  {
-		    tree expr = OMP_CLAUSE_OPERAND (c, 0);
-		    expr = force_target_expr (TREE_TYPE (expr), expr, tf_none);
-		    if (expr == error_mark_node)
-		      continue;
-		    tree tmp = TARGET_EXPR_SLOT (expr);
-		    add_stmt (expr);
-		    OMP_CLAUSE_OPERAND (c, 0) = expr;
-		    tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (tc) = tmp;
-		    OMP_CLAUSE_CHAIN (tc)
-		      = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
-		    cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
-		  }
-	    }
+	    /* For combined target teams, ensure the num_teams and
+	       thread_limit clause expressions are evaluated on the host,
+	       before entering the target construct.  */
+	    for (tree c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+		 c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
+		for (int i = 0;
+		     i <= (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS); ++i)
+		  if (OMP_CLAUSE_OPERAND (c, i)
+		      && TREE_CODE (OMP_CLAUSE_OPERAND (c, i)) != INTEGER_CST)
+		    {
+		      tree expr = OMP_CLAUSE_OPERAND (c, i);
+		      expr = force_target_expr (TREE_TYPE (expr), expr,
+						tf_none);
+		      if (expr == error_mark_node)
+			continue;
+		      tree tmp = TARGET_EXPR_SLOT (expr);
+		      add_stmt (expr);
+		      OMP_CLAUSE_OPERAND (c, i) = expr;
+		      tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_FIRSTPRIVATE);
+		      OMP_CLAUSE_DECL (tc) = tmp;
+		      OMP_CLAUSE_CHAIN (tc)
+			= cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
+		    }
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];

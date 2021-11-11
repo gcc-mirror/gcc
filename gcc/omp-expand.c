@@ -938,7 +938,7 @@ expand_teams_call (basic_block bb, gomp_teams *entry_stmt)
     num_teams = build_int_cst (unsigned_type_node, 0);
   else
     {
-      num_teams = OMP_CLAUSE_NUM_TEAMS_EXPR (num_teams);
+      num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
       num_teams = fold_convert (unsigned_type_node, num_teams);
     }
   tree thread_limit = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
@@ -9625,7 +9625,7 @@ get_target_arguments (gimple_stmt_iterator *gsi, gomp_target *tgt_stmt)
   tree clauses = gimple_omp_target_clauses (tgt_stmt);
   tree t, c = omp_find_clause (clauses, OMP_CLAUSE_NUM_TEAMS);
   if (c)
-    t = OMP_CLAUSE_NUM_TEAMS_EXPR (c);
+    t = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c);
   else
     t = integer_minus_one_node;
   push_target_argument_according_to_value (gsi, GOMP_TARGET_ARG_DEVICE_ALL,

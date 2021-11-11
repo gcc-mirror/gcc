@@ -7228,6 +7228,53 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      OMP_CLAUSE_OPERAND (c, 0) = t;
 	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+	      && OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+	      && !remove)
+	    {
+	      t = OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c);
+	      if (t == error_mark_node)
+		remove = true;
+	      else if (!type_dependent_expression_p (t)
+		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qs expression must be integral",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      else
+		{
+		  t = mark_rvalue_use (t);
+		  if (!processing_template_decl)
+		    {
+		      t = maybe_constant_value (t);
+		      if (TREE_CODE (t) == INTEGER_CST
+			  && tree_int_cst_sgn (t) != 1)
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%qs value must be positive",
+				      omp_clause_code_name
+				      [OMP_CLAUSE_CODE (c)]);
+			  t = NULL_TREE;
+			}
+		      else
+			t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		      tree upper = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c);
+		      if (t
+			  && TREE_CODE (t) == INTEGER_CST
+			  && TREE_CODE (upper) == INTEGER_CST
+			  && tree_int_cst_lt (upper, t))
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<num_teams%> lower bound %qE bigger "
+				      "than upper bound %qE", t, upper);
+			  t = NULL_TREE;
+			}
+		    }
+		  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = t;
+		}
+	    }
 	  break;
 
 	case OMP_CLAUSE_SCHEDULE:

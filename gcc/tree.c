@@ -330,7 +330,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_DIST_SCHEDULE  */
   0, /* OMP_CLAUSE_INBRANCH  */
   0, /* OMP_CLAUSE_NOTINBRANCH  */
-  1, /* OMP_CLAUSE_NUM_TEAMS  */
+  2, /* OMP_CLAUSE_NUM_TEAMS  */
   1, /* OMP_CLAUSE_THREAD_LIMIT  */
   0, /* OMP_CLAUSE_PROC_BIND  */
   1, /* OMP_CLAUSE_SAFELEN  */

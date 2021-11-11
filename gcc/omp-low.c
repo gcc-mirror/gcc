@@ -13906,7 +13906,7 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     num_teams = build_int_cst (unsigned_type_node, 0);
   else
     {
-      num_teams = OMP_CLAUSE_NUM_TEAMS_EXPR (num_teams);
+      num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
       num_teams = fold_convert (unsigned_type_node, num_teams);
       gimplify_expr (&num_teams, &bind_body, NULL, is_gimple_val, fb_rvalue);
     }
