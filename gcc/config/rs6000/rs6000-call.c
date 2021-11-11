@@ -11943,7 +11943,8 @@ rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
       error ("%qs requires the %qs option", name, "-mcpu=power8");
       break;
     case ENB_P8V:
-      error ("%qs requires the %qs option", name, "-mpower8-vector");
+      error ("%qs requires the %qs and %qs options", name, "-mcpu=power8",
+	     "-mvsx");
       break;
     case ENB_P9:
       error ("%qs requires the %qs option", name, "-mcpu=power9");
@@ -11953,7 +11954,8 @@ rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
 	     name, "-mcpu=power9", "-m64", "-mpowerpc64");
       break;
     case ENB_P9V:
-      error ("%qs requires the %qs option", name, "-mpower9-vector");
+      error ("%qs requires the %qs and %qs options", name, "-mcpu=power9",
+	     "-mvsx");
       break;
     case ENB_IEEE128_HW:
       error ("%qs requires ISA 3.0 IEEE 128-bit floating point", name);
