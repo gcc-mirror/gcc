@@ -201,15 +201,7 @@ namespace __gnu_debug
 		  __glibcxx_check_valid_constructor_range(__begin, __end)),
 		__gnu_debug::__base(__end), __a) { }
 
-#if __cplusplus < 201103L
-      basic_string&
-      operator=(const basic_string& __str)
-      {
-	this->_M_safe() = __str;
-	_M_base() = __str;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       basic_string&
       operator=(const basic_string&) = default;
 

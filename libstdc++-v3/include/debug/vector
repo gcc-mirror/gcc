@@ -71,17 +71,17 @@ namespace __gnu_debug
 	: _M_guaranteed_capacity(__n)
       { }
 
-#if __cplusplus >= 201103L
-      _Safe_vector(_Safe_vector&& __x) noexcept
-	: _Safe_vector()
-      { __x._M_guaranteed_capacity = 0; }
-
       _Safe_vector&
-      operator=(const _Safe_vector&) noexcept
+      operator=(const _Safe_vector&) _GLIBCXX_NOEXCEPT
       {
 	_M_update_guaranteed_capacity();
 	return *this;
       }
+
+#if __cplusplus >= 201103L
+      _Safe_vector(_Safe_vector&& __x) noexcept
+	: _Safe_vector()
+      { __x._M_guaranteed_capacity = 0; }
 
       _Safe_vector&
       operator=(_Safe_vector&& __x) noexcept
@@ -234,16 +234,7 @@ namespace __debug
       vector(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
-#if __cplusplus < 201103L
-      vector&
-      operator=(const vector& __x)
-      {
-	this->_M_safe() = __x;
-	_M_base() = __x;
-	this->_M_update_guaranteed_capacity();
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       vector&
       operator=(const vector&) = default;
 

@@ -152,15 +152,7 @@ namespace __debug
       multiset(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
-#if __cplusplus < 201103L
-      multiset&
-      operator=(const multiset& __x)
-      {
-	this->_M_safe() = __x;
-	_M_base() = __x;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       multiset&
       operator=(const multiset&) = default;
 

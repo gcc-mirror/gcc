@@ -152,15 +152,7 @@ namespace __debug
 		__gnu_debug::__base(__last),
 		__comp, __a) { }
 
-#if __cplusplus < 201103L
-      map&
-      operator=(const map& __x)
-      {
-	this->_M_safe() = __x;
-	_M_base() = __x;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       map&
       operator=(const map&) = default;
 

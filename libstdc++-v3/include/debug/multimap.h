@@ -152,15 +152,7 @@ namespace __debug
       multimap(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
-#if __cplusplus < 201103L
-      multimap&
-      operator=(const multimap& __x)
-      {
-	this->_M_safe() = __x;
-	_M_base() = __x;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       multimap&
       operator=(const multimap&) = default;
 
