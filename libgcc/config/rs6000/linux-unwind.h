@@ -402,8 +402,14 @@ ppc_backchain_fallback (struct _Unwind_Context *context, void *a)
   struct trace_arg *arg = a;
   int count;
 
-  /* Get the last address computed and start with the next.  */
+  /* Get the last address computed.  */
   current = context->cfa;
+
+  /* If the trace CFA is not the context CFA the backtrace is done.  */
+  if (arg == NULL || arg->cfa != current)
+	return;
+
+  /* Start with next address.  */
   current = current->backchain;
 
   for (count = arg->count; current != NULL; current = current->backchain)
