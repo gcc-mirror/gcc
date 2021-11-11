@@ -996,14 +996,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       back() const
       { return *(end() - 1); }
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 464. Suggestion for new member functions in standard containers.
-      // N.B. DR 464 says nothing about vector<bool> but we need something
-      // here due to the way we are implementing DR 464 in the debug-mode
-      // vector class.
-      void
-      data() _GLIBCXX_NOEXCEPT { }
-
       void
       push_back(bool __x)
       {
@@ -1363,7 +1355,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       iterator
       _M_erase(iterator __first, iterator __last);
-  };
+
+    protected:
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 464. Suggestion for new member functions in standard containers.
+      // N.B. DR 464 says nothing about vector<bool> but we need something
+      // here due to the using-declaration in __gnu_debug::vector.
+      // vector class.
+#if __cplusplus >= 201103L
+      void data() = delete;
+#else
+      void data() { }
+#endif
+    };
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
