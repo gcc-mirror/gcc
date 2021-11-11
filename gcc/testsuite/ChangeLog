@@ -1,3 +1,12 @@
+2021-11-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/102690
+	* g++.dg/warn/Warray-bounds-16.C: XFAIL diagnostic part
+	and optimization.
+
 2021-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/102798
