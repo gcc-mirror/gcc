@@ -32,7 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 class path_range_query : public range_query
 {
 public:
-  path_range_query (class gimple_ranger &ranger, bool resolve);
+  path_range_query (class gimple_ranger *ranger, bool resolve = true);
+  path_range_query (bool resolve = true);
   virtual ~path_range_query ();
   void compute_ranges (const vec<basic_block> &, const bitmap_head *imports = NULL);
   void compute_ranges (edge e);
@@ -86,7 +87,7 @@ private:
   auto_vec<basic_block> m_path;
 
   auto_bitmap m_imports;
-  gimple_ranger &m_ranger;
+  gimple_ranger *m_ranger;
   non_null_ref m_non_null;
 
   // Current path position.
@@ -97,6 +98,10 @@ private:
 
   // Set if there were any undefined expressions while pre-calculating path.
   bool m_undefined_path;
+
+  // True if m_ranger was allocated in this class and must be freed at
+  // destruction.
+  bool m_alloced_ranger;
 };
 
 // Return TRUE if NAME is in the import bitmap.

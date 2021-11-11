@@ -36,13 +36,24 @@ along with GCC; see the file COPYING3.  If not see
 // Internal construct to help facilitate debugging of solver.
 #define DEBUG_SOLVER (dump_file && (param_threader_debug == THREADER_DEBUG_ALL))
 
-path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
-  : m_ranger (ranger)
+path_range_query::path_range_query (gimple_ranger *ranger, bool resolve)
+  : m_cache (new ssa_global_cache),
+    m_has_cache_entry (BITMAP_ALLOC (NULL)),
+    m_ranger (ranger),
+    m_resolve (resolve),
+    m_alloced_ranger (false)
 {
-  m_cache = new ssa_global_cache;
-  m_has_cache_entry = BITMAP_ALLOC (NULL);
-  m_resolve = resolve;
-  m_oracle = new path_oracle (ranger.oracle ());
+  m_oracle = new path_oracle (ranger->oracle ());
+}
+
+path_range_query::path_range_query (bool resolve)
+  : m_cache (new ssa_global_cache),
+    m_has_cache_entry (BITMAP_ALLOC (NULL)),
+    m_ranger (new gimple_ranger),
+    m_resolve (resolve),
+    m_alloced_ranger (true)
+{
+  m_oracle = new path_oracle (m_ranger->oracle ());
 }
 
 path_range_query::~path_range_query ()
@@ -50,6 +61,8 @@ path_range_query::~path_range_query ()
   BITMAP_FREE (m_has_cache_entry);
   delete m_cache;
   delete m_oracle;
+  if (m_alloced_ranger)
+    delete m_ranger;
 }
 
 // Mark cache entry for NAME as unused.
@@ -140,7 +153,7 @@ path_range_query::range_on_path_entry (irange &r, tree name)
   gimple *last = last_stmt (entry);
   if (last)
     {
-      if (m_ranger.range_of_expr (r, name, last))
+      if (m_ranger->range_of_expr (r, name, last))
 	return;
       gcc_unreachable ();
     }
@@ -156,7 +169,7 @@ path_range_query::range_on_path_entry (irange &r, tree name)
     {
       edge e = EDGE_PRED (entry, i);
       if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
-	  && m_ranger.range_on_edge (tmp, e, name))
+	  && m_ranger->range_on_edge (tmp, e, name))
 	{
 	  r.union_ (tmp);
 	  changed = true;
@@ -244,7 +257,7 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 
   if (at_entry ())
     {
-      if (m_resolve && m_ranger.range_of_expr (r, name, phi))
+      if (m_resolve && m_ranger->range_of_expr (r, name, phi))
 	return;
 
       // Try fold just in case we can resolve simple things like PHI <5(99), 6(88)>.
@@ -275,7 +288,7 @@ path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 		  range_on_path_entry (r, arg);
 		else
 		  r.set_varying (TREE_TYPE (name));
-		m_ranger.range_on_edge (tmp, e_in, arg);
+		m_ranger->range_on_edge (tmp, e_in, arg);
 		r.intersect (tmp);
 		return;
 	      }
@@ -370,7 +383,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
     {
       tree name = ssa_name (i);
-      gori_compute &g = m_ranger.gori ();
+      gori_compute &g = m_ranger->gori ();
       bitmap exports = g.exports (bb);
 
       if (bitmap_bit_p (exports, i))
@@ -452,7 +465,7 @@ void
 path_range_query::compute_imports (bitmap imports, basic_block exit)
 {
   // Start with the imports from the exit block...
-  bitmap r_imports = m_ranger.gori ().imports (exit);
+  bitmap r_imports = m_ranger->gori ().imports (exit);
   bitmap_copy (imports, r_imports);
 
   auto_vec<tree> worklist (bitmap_count_bits (imports));
@@ -539,7 +552,7 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
 
       if (m_resolve)
 	{
-	  gori_compute &gori = m_ranger.gori ();
+	  gori_compute &gori = m_ranger->gori ();
 	  tree name;
 
 	  // Exported booleans along the path, may help conditionals.
@@ -659,7 +672,7 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   if (m_resolve)
     {
       fold_using_range f;
-      jt_fur_source src (stmt, this, &m_ranger.gori (), m_path);
+      jt_fur_source src (stmt, this, &m_ranger->gori (), m_path);
       if (!f.fold_stmt (r, stmt, src))
 	r.set_varying (type);
     }
@@ -750,7 +763,7 @@ path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
       else
 	gcc_unreachable ();
 
-      jt_fur_source src (NULL, this, &m_ranger.gori (), m_path);
+      jt_fur_source src (NULL, this, &m_ranger->gori (), m_path);
       src.register_outgoing_edges (cond, r, e0, e1);
     }
 }

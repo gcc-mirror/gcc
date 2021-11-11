@@ -384,8 +384,7 @@ ch_base::copy_headers (function *fun)
   auto_vec<loop_p> candidates;
   auto_vec<std::pair<edge, loop_p> > copied;
 
-  gimple_ranger *ranger = new gimple_ranger;
-  path_range_query *query = new path_range_query (*ranger, /*resolve=*/true);
+  path_range_query *query = new path_range_query;
   for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
@@ -423,7 +422,6 @@ ch_base::copy_headers (function *fun)
     }
   /* Do not use ranger after we change the IL and not have updated SSA.  */
   delete query;
-  delete ranger;
 
   for (auto loop : candidates)
     {

@@ -100,7 +100,6 @@ private:
 
   back_threader_registry m_registry;
   back_threader_profitability m_profit;
-  gimple_ranger *m_ranger;
   path_range_query *m_solver;
 
   // Current path being analyzed.
@@ -143,15 +142,13 @@ back_threader::back_threader (function *fun, unsigned flags, bool first)
 
   m_fun = fun;
   m_flags = flags;
-  m_ranger = new gimple_ranger;
-  m_solver = new path_range_query (*m_ranger, flags & BT_RESOLVE);
+  m_solver = new path_range_query (flags & BT_RESOLVE);
   m_last_stmt = NULL;
 }
 
 back_threader::~back_threader ()
 {
   delete m_solver;
-  delete m_ranger;
 
   loop_optimizer_finalize ();
 }
