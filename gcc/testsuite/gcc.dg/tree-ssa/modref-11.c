@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-modref1"  } */
+/* { dg-options "-O2 -fdump-tree-modref1 -fno-ipa-pure-const"  } */
 struct linkedlist {
   struct linkedlist *next;
 };

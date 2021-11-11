@@ -275,7 +275,7 @@ warn_function_noreturn (tree decl)
   static hash_set<tree> *warned_about;
   if (!lang_hooks.missing_noreturn_ok_p (decl)
       && targetm.warn_func_return (decl))
-    warned_about 
+    warned_about
       = suggest_attribute (OPT_Wsuggest_attribute_noreturn, original_decl,
 			   true, warned_about, "noreturn");
 }
@@ -286,7 +286,7 @@ warn_function_cold (tree decl)
   tree original_decl = decl;
 
   static hash_set<tree> *warned_about;
-  warned_about 
+  warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_cold, original_decl,
 			 true, warned_about, "cold");
 }
@@ -1428,6 +1428,105 @@ ignore_edge_for_pure_const (struct cgraph_edge *e)
 			  flag_ipa_pure_const));
 }
 
+/* Return true if function should be skipped for local pure const analysis.  */
+
+static bool
+skip_function_for_local_pure_const (struct cgraph_node *node)
+{
+  /* Because we do not schedule pass_fixup_cfg over whole program after early
+     optimizations we must not promote functions that are called by already
+     processed functions.  */
+
+  if (function_called_by_processed_nodes_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
+      return true;
+    }
+  /* Save some work and do not analyze functions which are interposable and
+     do not have any non-interposable aliases.  */
+  if (node->get_availability () <= AVAIL_INTERPOSABLE
+      && !flag_lto
+      && !node->has_aliases_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Function is interposable; not analyzing.\n");
+      return true;
+    }
+  return false;
+}
+
+/* Make function const and output warning.  If LOCAL is true,
+   return true if anything changed.  Otherwise return true if
+   we may have introduced removale ctors.  */
+
+bool
+ipa_make_function_const (struct cgraph_node *node, bool looping, bool local)
+{
+  bool cdtor = false;
+
+  if (TREE_READONLY (node->decl)
+      && (looping || !DECL_LOOPING_CONST_OR_PURE_P (node->decl)))
+    return false;
+  warn_function_const (node->decl, !looping);
+  if (local && skip_function_for_local_pure_const (node))
+    return false;
+  if (dump_file)
+    fprintf (dump_file, "Function found to be %sconst: %s\n",
+	     looping ? "looping " : "",
+	     node->dump_name ());
+  if (!local)
+    cdtor = node->call_for_symbol_and_aliases (cdtor_p, NULL, true);
+  if (node->set_const_flag (true, looping))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Declaration updated to be %sconst: %s\n",
+		 looping ? "looping " : "",
+		 node->dump_name ());
+      if (local)
+	return true;
+      return cdtor;
+    }
+  return false;
+}
+
+/* Make function const and output warning.  If LOCAL is true,
+   return true if anything changed.  Otherwise return true if
+   we may have introduced removale ctors.  */
+
+bool
+ipa_make_function_pure (struct cgraph_node *node, bool looping, bool local)
+{
+  bool cdtor = false;
+
+  if (DECL_PURE_P (node->decl)
+      && (looping || DECL_LOOPING_CONST_OR_PURE_P (node->decl)))
+    return false;
+  warn_function_pure (node->decl, !looping);
+  if (local && skip_function_for_local_pure_const (node))
+    return false;
+  if (dump_file)
+    fprintf (dump_file, "Function found to be %spure: %s\n",
+	     looping ? "looping " : "",
+	     node->dump_name ());
+  if (!local)
+    cdtor = node->call_for_symbol_and_aliases (cdtor_p, NULL, true);
+  if (node->set_pure_flag (true, looping))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Declaration updated to be %spure: %s\n",
+		 looping ? "looping " : "",
+		 node->dump_name ());
+      if (local)
+	return true;
+      return cdtor;
+    }
+  return false;
+}
+
 /* Produce transitive closure over the callgraph and compute pure/const
    attributes.  */
 
@@ -1442,7 +1541,6 @@ propagate_pure_const (void)
   int i;
   struct ipa_dfs_info * w_info;
   bool remove_p = false;
-  bool has_cdtor;
 
   order_pos = ipa_reduced_postorder (order, true,
 				     ignore_edge_for_pure_const);
@@ -1512,6 +1610,9 @@ propagate_pure_const (void)
 								  e->caller);
 	      enum pure_const_state_e edge_state = IPA_CONST;
 	      bool edge_looping = false;
+
+	      if (e->recursive_p ())
+		looping = true;
 
 	      if (e->recursive_p ())
 		looping = true;
@@ -1699,55 +1800,11 @@ propagate_pure_const (void)
 	    switch (this_state)
 	      {
 	      case IPA_CONST:
-		if (!TREE_READONLY (w->decl))
-		  {
-		    warn_function_const (w->decl, !this_looping);
-		    if (dump_file)
-		      fprintf (dump_file, "Function found to be %sconst: %s\n",
-			       this_looping ? "looping " : "",
-			       w->dump_name ());
-		  }
-		/* Turning constructor or destructor to non-looping const/pure
-		   enables us to possibly remove the function completely.  */
-		if (this_looping)
-		  has_cdtor = false;
-		else
-		  has_cdtor = w->call_for_symbol_and_aliases (cdtor_p,
-							      NULL, true);
-		if (w->set_const_flag (true, this_looping))
-		  {
-		    if (dump_file)
-		      fprintf (dump_file,
-			       "Declaration updated to be %sconst: %s\n",
-			       this_looping ? "looping " : "",
-			       w->dump_name ());
-		    remove_p |= has_cdtor;
-		  }
+		remove_p |= ipa_make_function_const (node, looping, false);
 		break;
 
 	      case IPA_PURE:
-		if (!DECL_PURE_P (w->decl))
-		  {
-		    warn_function_pure (w->decl, !this_looping);
-		    if (dump_file)
-		      fprintf (dump_file, "Function found to be %spure: %s\n",
-			       this_looping ? "looping " : "",
-			       w->dump_name ());
-		  }
-		if (this_looping)
-		  has_cdtor = false;
-		else
-		  has_cdtor = w->call_for_symbol_and_aliases (cdtor_p,
-							      NULL, true);
-		if (w->set_pure_flag (true, this_looping))
-		  {
-		    if (dump_file)
-		      fprintf (dump_file,
-			       "Declaration updated to be %spure: %s\n",
-			       this_looping ? "looping " : "",
-			       w->dump_name ());
-		    remove_p |= has_cdtor;
-		  }
+		remove_p |= ipa_make_function_pure (node, looping, false);
 		break;
 
 	      default:
@@ -2046,34 +2103,6 @@ make_pass_ipa_pure_const (gcc::context *ctxt)
   return new pass_ipa_pure_const (ctxt);
 }
 
-/* Return true if function should be skipped for local pure const analysis.  */
-
-static bool
-skip_function_for_local_pure_const (struct cgraph_node *node)
-{
-  /* Because we do not schedule pass_fixup_cfg over whole program after early
-     optimizations we must not promote functions that are called by already
-     processed functions.  */
-
-  if (function_called_by_processed_nodes_p ())
-    {
-      if (dump_file)
-        fprintf (dump_file, "Function called in recursive cycle; ignoring\n");
-      return true;
-    }
-  /* Save some work and do not analyze functions which are interposable and
-     do not have any non-interposable aliases.  */
-  if (node->get_availability () <= AVAIL_INTERPOSABLE
-      && !node->has_aliases_p ())
-    {
-      if (dump_file)
-        fprintf (dump_file,
-		 "Function is interposable; not analyzing.\n");
-      return true;
-    }
-  return false;
-}
-
 /* Simple local pass for pure const discovery reusing the analysis from
    ipa_pure_const.   This pass is effective when executed together with
    other optimization passes in early optimization pass queue.  */
@@ -2144,55 +2173,13 @@ pass_local_pure_const::execute (function *fun)
   switch (l->pure_const_state)
     {
     case IPA_CONST:
-      if (!TREE_READONLY (current_function_decl))
-	{
-	  warn_function_const (current_function_decl, !l->looping);
-	  if (dump_file)
-	    fprintf (dump_file, "Function found to be %sconst: %s\n",
-		     l->looping ? "looping " : "",
-		     current_function_name ());
-	}
-      else if (DECL_LOOPING_CONST_OR_PURE_P (current_function_decl)
-	       && !l->looping)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Function found to be non-looping: %s\n",
-		     current_function_name ());
-	}
-      if (!skip && node->set_const_flag (true, l->looping))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Declaration updated to be %sconst: %s\n",
-		     l->looping ? "looping " : "",
-		     current_function_name ());
-	  changed = true;
-	}
+      changed |= ipa_make_function_const
+		   (cgraph_node::get (current_function_decl), l->looping, true);
       break;
 
     case IPA_PURE:
-      if (!DECL_PURE_P (current_function_decl))
-	{
-	  warn_function_pure (current_function_decl, !l->looping);
-	  if (dump_file)
-	    fprintf (dump_file, "Function found to be %spure: %s\n",
-		     l->looping ? "looping " : "",
-		     current_function_name ());
-	}
-      else if (DECL_LOOPING_CONST_OR_PURE_P (current_function_decl)
-	       && !l->looping)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Function found to be non-looping: %s\n",
-		     current_function_name ());
-	}
-      if (!skip && node->set_pure_flag (true, l->looping))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Declaration updated to be %spure: %s\n",
-		     l->looping ? "looping " : "",
-		     current_function_name ());
-	  changed = true;
-	}
+      changed |= ipa_make_function_pure
+		   (cgraph_node::get (current_function_decl), l->looping, true);
       break;
 
     default:

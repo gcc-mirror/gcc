@@ -2603,11 +2603,13 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 }
 
 /* Analyze function F.  IPA indicates whether we're running in local mode
-   (false) or the IPA mode (true).  */
+   (false) or the IPA mode (true).
+   Return true if fixup cfg is needed after the pass.  */
 
-static void
+static bool
 analyze_function (function *f, bool ipa)
 {
+  bool fixup_cfg = false;
   if (dump_file)
     fprintf (dump_file, "modref analyzing '%s' (ipa=%i)%s%s\n",
 	     function_name (f), ipa,
@@ -2617,7 +2619,7 @@ analyze_function (function *f, bool ipa)
   /* Don't analyze this function if it's compiled with -fno-strict-aliasing.  */
   if (!flag_ipa_modref
       || lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
-    return;
+    return false;
 
   /* Compute no-LTO summaries when local optimization is going to happen.  */
   bool nolto = (!ipa || ((!flag_lto || flag_fat_lto_objects) && !in_lto_p)
@@ -2774,10 +2776,30 @@ analyze_function (function *f, bool ipa)
 	      if (!summary->useful_p (ecf_flags, false))
 		{
 		  remove_summary (lto, nolto, ipa);
-		  return;
+		  return false;
 		}
 	    }
 	  first = false;
+	}
+    }
+  if (summary && !summary->global_memory_written_p () && !summary->side_effects
+      && !finite_function_p ())
+    summary->side_effects = true;
+  if (summary_lto && !summary_lto->side_effects && !finite_function_p ())
+    summary_lto->side_effects = true;
+
+  if (!ipa && flag_ipa_pure_const)
+    {
+      if (!summary->stores->every_base && !summary->stores->bases)
+	{
+	  if (!summary->loads->every_base && !summary->loads->bases)
+	    fixup_cfg = ipa_make_function_const
+		   (cgraph_node::get (current_function_decl),
+		    summary->side_effects, true);
+	  else
+	    fixup_cfg = ipa_make_function_pure
+		   (cgraph_node::get (current_function_decl),
+		    summary->side_effects, true);
 	}
     }
   if (summary && !summary->useful_p (ecf_flags))
@@ -2793,11 +2815,6 @@ analyze_function (function *f, bool ipa)
       summaries_lto->remove (fnode);
       summary_lto = NULL;
     }
-  if (summary && !summary->global_memory_written_p () && !summary->side_effects
-      && !finite_function_p ())
-    summary->side_effects = true;
-  if (summary_lto && !summary_lto->side_effects && !finite_function_p ())
-    summary_lto->side_effects = true;
 
   if (ipa && !summary && !summary_lto)
     remove_modref_edge_summaries (fnode);
@@ -2907,6 +2924,7 @@ analyze_function (function *f, bool ipa)
 	    }
 	}
     }
+  return fixup_cfg;
 }
 
 /* Callback for generate_summary.  */
@@ -3714,7 +3732,8 @@ public:
 
 unsigned int pass_modref::execute (function *f)
 {
-  analyze_function (f, false);
+  if (analyze_function (f, false))
+    return execute_fixup_cfg ();
   return 0;
 }
 
@@ -3749,9 +3768,7 @@ ignore_edge (struct cgraph_edge *e)
 
   return (avail <= AVAIL_INTERPOSABLE
 	  || ((!optimization_summaries || !optimization_summaries->get (callee))
-	      && (!summaries_lto || !summaries_lto->get (callee)))
-	  || flags_from_decl_or_type (e->callee->decl)
-	     & (ECF_CONST | ECF_NOVOPS));
+	      && (!summaries_lto || !summaries_lto->get (callee))));
 }
 
 /* Compute parm_map for CALLEE_EDGE.  */
@@ -4130,7 +4147,7 @@ remove_useless_summaries (cgraph_node *node,
 /* Perform iterative dataflow on SCC component starting in COMPONENT_NODE
    and propagate loads/stores.  */
 
-static void
+static bool
 modref_propagate_in_scc (cgraph_node *component_node)
 {
   bool changed = true;
@@ -4352,6 +4369,38 @@ modref_propagate_in_scc (cgraph_node *component_node)
   if (dump_file)
     fprintf (dump_file,
 	     "Propagation finished in %i iterations\n", iteration);
+  bool pureconst = false;
+  for (struct cgraph_node *cur = component_node; cur;
+       cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+    if (!cur->inlined_to && opt_for_fn (cur->decl, flag_ipa_pure_const))
+      {
+	modref_summary *summary = optimization_summaries
+				  ? optimization_summaries->get (cur)
+				  : NULL;
+	modref_summary_lto *summary_lto = summaries_lto
+					  ? summaries_lto->get (cur)
+					  : NULL;
+	if (summary && !summary->stores->every_base && !summary->stores->bases)
+	  {
+	    if (!summary->loads->every_base && !summary->loads->bases)
+	      pureconst |= ipa_make_function_const
+		     (cur, summary->side_effects, false);
+	    else
+	      pureconst |= ipa_make_function_pure
+		     (cur, summary->side_effects, false);
+	  }
+	if (summary_lto && !summary_lto->stores->every_base
+	    && !summary_lto->stores->bases)
+	  {
+	    if (!summary_lto->loads->every_base && !summary_lto->loads->bases)
+	      pureconst |= ipa_make_function_const
+		     (cur, summary_lto->side_effects, false);
+	    else
+	      pureconst |= ipa_make_function_pure
+		     (cur, summary_lto->side_effects, false);
+	  }
+     }
+  return pureconst;
 }
 
 /* Dump results of propagation in SCC rooted in COMPONENT_NODE.  */
@@ -4831,6 +4880,7 @@ pass_ipa_modref::execute (function *)
 {
   if (!summaries && !summaries_lto)
     return 0;
+  bool pureconst = false;
 
   if (optimization_summaries)
     ggc_delete (optimization_summaries);
@@ -4853,7 +4903,7 @@ pass_ipa_modref::execute (function *)
       if (dump_file)
 	fprintf (dump_file, "\n\nStart of SCC component\n");
 
-      modref_propagate_in_scc (component_node);
+      pureconst |= modref_propagate_in_scc (component_node);
       modref_propagate_flags_in_scc (component_node);
       if (dump_file)
 	modref_propagate_dump_scc (component_node);
@@ -4869,7 +4919,10 @@ pass_ipa_modref::execute (function *)
   fnspec_summaries = NULL;
   delete escape_summaries;
   escape_summaries = NULL;
-  return 0;
+
+  /* If we posibly made constructors const/pure we may need to remove
+     them.  */
+  return pureconst ? TODO_remove_functions : 0;
 }
 
 /* Summaries must stay alive until end of compilation.  */
