@@ -166,7 +166,7 @@ namespace __debug
       deque&
       operator=(initializer_list<value_type> __l)
       {
-	_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -344,7 +344,7 @@ namespace __debug
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
-	return _M_base()[__n];
+	return _Base::operator[](__n);
       }
 
       _GLIBCXX_NODISCARD
@@ -352,7 +352,7 @@ namespace __debug
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
-	return _M_base()[__n];
+	return _Base::operator[](__n);
       }
 
       using _Base::at;

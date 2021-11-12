@@ -242,8 +242,8 @@ namespace __debug
 	noexcept(
 	  std::is_nothrow_constructible<_Base,
 	    _Base, const allocator_type&>::value )
-      : _Safe(std::move(__list._M_safe()), __al),
-	_Base(std::move(__list._M_base()), __al)
+      : _Safe(std::move(__list), __al),
+	_Base(std::move(__list), __al)
       { }
 
       explicit
@@ -287,7 +287,7 @@ namespace __debug
       forward_list&
       operator=(std::initializer_list<_Tp> __il)
       {
-	_M_base() = __il;
+	_Base::operator=(__il);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -584,7 +584,7 @@ namespace __debug
 	    return __it != __list._M_base().cbefore_begin()
 		   && __it != __list._M_base().end();
 	  });
-	_Base::splice_after(__pos.base(), std::move(__list._M_base()));
+	_Base::splice_after(__pos.base(), std::move(__list));
       }
 
       void
@@ -613,8 +613,7 @@ namespace __debug
 	_Base_const_iterator __next = std::next(__i.base());
 	this->_M_transfer_from_if(__list, [__next](_Base_const_iterator __it)
 	  { return __it == __next; });
-	_Base::splice_after(__pos.base(), std::move(__list._M_base()),
-			    __i.base());
+	_Base::splice_after(__pos.base(), std::move(__list), __i.base());
       }
 
       void
@@ -669,7 +668,7 @@ namespace __debug
 	      { return __it == __tmp; });
 	  }
 
-	_Base::splice_after(__pos.base(), std::move(__list._M_base()),
+	_Base::splice_after(__pos.base(), std::move(__list),
 			    __before.base(), __last.base());
       }
 
@@ -710,7 +709,7 @@ namespace __debug
 		this->_M_invalidate_if([__next](_Base_const_iterator __it)
 				       { return __it == __next; });
 		__to_destroy.splice_after(__to_destroy.cbefore_begin(),
-					  _M_base(), __old);
+					  *this, __old);
 		__x = __old;
 		_GLIBCXX20_ONLY( __removed++ );
 	      }
@@ -739,7 +738,7 @@ namespace __debug
 		  this->_M_invalidate_if([__x](_Base_const_iterator __it)
 					 { return __it == __x; });
 		  __to_destroy.splice_after(__to_destroy.cbefore_begin(),
-					    _M_base(), __old);
+					    *this, __old);
 		  __x = __old;
 		  _GLIBCXX20_ONLY( __removed++ );
 		}
@@ -777,7 +776,7 @@ namespace __debug
 		  this->_M_invalidate_if([__next](_Base_const_iterator __it)
 					 { return __it == __next; });
 		  __to_destroy.splice_after(__to_destroy.cbefore_begin(),
-					    _M_base(), __first);
+					    *this, __first);
 		  __next = __first;
 		  _GLIBCXX20_ONLY( __removed++ );
 		}
@@ -804,7 +803,7 @@ namespace __debug
 	      return __it != __list._M_base().cbefore_begin()
 		     && __it != __list._M_base().cend();
 	    });
-	  _Base::merge(std::move(__list._M_base()));
+	  _Base::merge(std::move(__list));
 	}
       }
 
@@ -827,7 +826,7 @@ namespace __debug
 		return __it != __list._M_base().cbefore_begin()
 		       && __it != __list._M_base().cend();
 	      });
-	    _Base::merge(std::move(__list._M_base()), __comp);
+	    _Base::merge(std::move(__list), __comp);
 	  }
 	}
 

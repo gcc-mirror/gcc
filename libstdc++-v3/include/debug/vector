@@ -219,8 +219,8 @@ namespace __debug
       noexcept(
 	std::is_nothrow_constructible<_Base,
 	  _Base, const allocator_type&>::value )
-      : _Safe(std::move(__x._M_safe()), __a),
-	_Base(std::move(__x._M_base()), __a),
+      : _Safe(std::move(__x), __a),
+	_Base(std::move(__x), __a),
 	_Safe_vector(std::move(__x)) { }
 
       vector(initializer_list<value_type> __l,
@@ -244,7 +244,7 @@ namespace __debug
       vector&
       operator=(initializer_list<value_type> __l)
       {
-	_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	this->_M_update_guaranteed_capacity();
 	return *this;
@@ -440,7 +440,7 @@ namespace __debug
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
-	return _M_base()[__n];
+	return _Base::operator[](__n);
       }
 
       _GLIBCXX_NODISCARD
@@ -448,7 +448,7 @@ namespace __debug
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
-	return _M_base()[__n];
+	return _Base::operator[](__n);
       }
 
       using _Base::at;

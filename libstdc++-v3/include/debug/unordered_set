@@ -146,9 +146,9 @@ namespace __debug
 
       unordered_set(unordered_set&& __uset,
 		    const allocator_type& __a)
-      noexcept( noexcept(_Base(std::move(__uset._M_base()), __a)) )
-      : _Safe(std::move(__uset._M_safe()), __a),
-	_Base(std::move(__uset._M_base()), __a) { }
+      noexcept( noexcept(_Base(std::move(__uset), __a)) )
+      : _Safe(std::move(__uset), __a),
+	_Base(std::move(__uset), __a) { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 0,
@@ -203,7 +203,7 @@ namespace __debug
       unordered_set&
       operator=(initializer_list<value_type> __l)
       {
-	_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -448,7 +448,7 @@ namespace __debug
 	{
 	  auto __guard
 	    = _Safe::_S_uc_guard(std::__detail::_Identity{}, __source);
-	  _Base::merge(__source._M_base());
+	  _Base::merge(__source);
 	}
 
       template<typename _H2, typename _P2>
@@ -462,7 +462,7 @@ namespace __debug
 	{
 	  auto __guard
 	    = _Safe::_S_umc_guard(std::__detail::_Identity{}, __source);
-	  _Base::merge(__source._M_base());
+	  _Base::merge(__source);
 	}
 
       template<typename _H2, typename _P2>
@@ -819,9 +819,9 @@ namespace __debug
 
       unordered_multiset(unordered_multiset&& __uset,
 			 const allocator_type& __a)
-      noexcept( noexcept(_Base(std::move(__uset._M_base()), __a)) )
-      : _Safe(std::move(__uset._M_safe()), __a),
-	_Base(std::move(__uset._M_base()), __a) { }
+      noexcept( noexcept(_Base(std::move(__uset), __a)) )
+      : _Safe(std::move(__uset), __a),
+	_Base(std::move(__uset), __a) { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 0,
@@ -876,7 +876,7 @@ namespace __debug
       unordered_multiset&
       operator=(initializer_list<value_type> __l)
       {
-	this->_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -1116,7 +1116,7 @@ namespace __debug
 	{
 	  auto __guard
 	    = _Safe::_S_umc_guard(std::__detail::_Identity{}, __source);
-	  _Base::merge(__source._M_base());
+	  _Base::merge(__source);
 	}
 
       template<typename _H2, typename _P2>
@@ -1130,7 +1130,7 @@ namespace __debug
 	{
 	  auto __guard
 	    = _Safe::_S_uc_guard(std::__detail::_Identity{}, __source);
-	  _Base::merge(__source._M_base());
+	  _Base::merge(__source);
 	}
 
       template<typename _H2, typename _P2>

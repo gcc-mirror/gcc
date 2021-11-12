@@ -122,8 +122,8 @@ namespace __debug
 	noexcept(
 	  std::is_nothrow_constructible<_Base,
 	    _Base, const allocator_type&>::value )
-      : _Safe(std::move(__x._M_safe()), __a),
-	_Base(std::move(__x._M_base()), __a) { }
+      : _Safe(std::move(__x), __a),
+	_Base(std::move(__x), __a) { }
 #endif
 
       explicit
@@ -172,7 +172,7 @@ namespace __debug
       operator=(initializer_list<value_type> __l)
       {
 	this->_M_invalidate_all();
-	_M_base() = __l;
+	_Base::operator=(__l);
 	return *this;
       }
 
@@ -583,7 +583,7 @@ namespace __debug
 			      _M_message(__gnu_debug::__msg_self_splice)
 			      ._M_sequence(*this, "this"));
 	this->_M_transfer_from_if(__x, _Not_equal(__x._M_base().end()));
-	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()));
+	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x));
       }
 
 #if __cplusplus >= 201103L
@@ -614,7 +614,7 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 250. splicing invalidates iterators
 	this->_M_transfer_from_if(__x, _Equal(__i.base()));
-	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
+	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x),
 		      __i.base());
       }
 
@@ -662,7 +662,7 @@ namespace __debug
 	    this->_M_transfer_from_if(__x, _Equal(__tmp));
 	  }
 
-	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x._M_base()),
+	_Base::splice(__position.base(), _GLIBCXX_MOVE(__x),
 		      __first.base(), __last.base());
       }
 
@@ -709,7 +709,7 @@ namespace __debug
 		// 526. Is it undefined if a function in the standard changes
 		// in parameters?
 		this->_M_invalidate_if(_Equal(__first));
-		__to_destroy.splice(__to_destroy.begin(), _M_base(), __first);
+		__to_destroy.splice(__to_destroy.begin(), *this, __first);
 #if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
 #endif
@@ -743,7 +743,7 @@ namespace __debug
 	    if (__pred(*__x))
 	      {
 		this->_M_invalidate_if(_Equal(__x));
-		__to_destroy.splice(__to_destroy.begin(), _M_base(), __x);
+		__to_destroy.splice(__to_destroy.begin(), *this, __x);
 #if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
 #endif
@@ -780,7 +780,7 @@ namespace __debug
 	  if (*__first == *__next)
 	    {
 	      this->_M_invalidate_if(_Equal(__next));
-	      __to_destroy.splice(__to_destroy.begin(), _M_base(), __next);
+	      __to_destroy.splice(__to_destroy.begin(), *this, __next);
 	      __next = __first;
 #if !_GLIBCXX_USE_CXX11_ABI
 	      _GLIBCXX20_ONLY( __removed++ );
@@ -818,7 +818,7 @@ namespace __debug
 	    if (__binary_pred(*__first, *__next))
 	      {
 		this->_M_invalidate_if(_Equal(__next));
-		__to_destroy.splice(__to_destroy.begin(), _M_base(), __next);
+		__to_destroy.splice(__to_destroy.begin(), *this, __next);
 		__next = __first;
 #if !_GLIBCXX_USE_CXX11_ABI
 		_GLIBCXX20_ONLY( __removed++ );
@@ -851,7 +851,7 @@ namespace __debug
 	    __glibcxx_check_sorted(_Base::begin(), _Base::end());
 	    __glibcxx_check_sorted(__x.begin().base(), __x.end().base());
 	    this->_M_transfer_from_if(__x, _Not_equal(__x._M_base().end()));
-	    _Base::merge(_GLIBCXX_MOVE(__x._M_base()));
+	    _Base::merge(_GLIBCXX_MOVE(__x));
 	  }
       }
 
@@ -878,7 +878,7 @@ namespace __debug
 	      __glibcxx_check_sorted_pred(__x.begin().base(), __x.end().base(),
 					  __comp);
 	      this->_M_transfer_from_if(__x, _Not_equal(__x._M_base().end()));
-	      _Base::merge(_GLIBCXX_MOVE(__x._M_base()), __comp);
+	      _Base::merge(_GLIBCXX_MOVE(__x), __comp);
 	    }
 	}
 
