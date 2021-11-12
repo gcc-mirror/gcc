@@ -8447,8 +8447,20 @@ fi
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :
   enableval=$enable_host_shared; host_shared=$enableval
+ case $target in
+   x86_64-*-darwin* | aarch64-*-darwin*)
+     if test x$host_shared != xyes ; then
+       # PIC is the default, and actually cannot be switched off.
+       echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
+       host_shared=yes
+     fi ;;
+  *) ;;
+ esac
 else
-  host_shared=no
+  case $target in
+  x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
+  *) host_shared=no ;;
+ esac
 fi
 
 
@@ -10065,6 +10077,8 @@ done
 
 
 # Build tools.
+
+
 
 
 
