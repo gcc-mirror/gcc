@@ -32,10 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 class path_range_query : public range_query
 {
 public:
-  path_range_query (class gimple_ranger *ranger, bool resolve = true);
-  path_range_query (bool resolve = true);
+  path_range_query (bool resolve = true, class gimple_ranger *ranger = NULL);
   virtual ~path_range_query ();
-  void compute_ranges (const vec<basic_block> &, const bitmap_head *imports = NULL);
+  void compute_ranges (const vec<basic_block> &,
+		       const bitmap_head *imports = NULL);
   void compute_ranges (edge e);
   void compute_imports (bitmap imports, basic_block exit);
   bool range_of_expr (irange &r, tree name, gimple * = NULL) override;
@@ -64,7 +64,7 @@ private:
   void compute_phi_relations (basic_block bb, basic_block prev);
   void maybe_register_phi_relation (gphi *, tree arg);
   bool add_to_imports (tree name, bitmap imports);
-  inline bool import_p (tree name);
+  bool import_p (tree name);
 
   // Path navigation.
   void set_path (const vec<basic_block> &);
@@ -103,14 +103,5 @@ private:
   // destruction.
   bool m_alloced_ranger;
 };
-
-// Return TRUE if NAME is in the import bitmap.
-
-bool
-path_range_query::import_p (tree name)
-{
-  return (TREE_CODE (name) == SSA_NAME
-	  && bitmap_bit_p (m_imports, SSA_NAME_VERSION (name)));
-}
 
 #endif // GCC_TREE_SSA_THREADSOLVER_H

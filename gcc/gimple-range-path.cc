@@ -36,33 +36,36 @@ along with GCC; see the file COPYING3.  If not see
 // Internal construct to help facilitate debugging of solver.
 #define DEBUG_SOLVER (dump_file && (param_threader_debug == THREADER_DEBUG_ALL))
 
-path_range_query::path_range_query (gimple_ranger *ranger, bool resolve)
+path_range_query::path_range_query (bool resolve, gimple_ranger *ranger)
   : m_cache (new ssa_global_cache),
     m_has_cache_entry (BITMAP_ALLOC (NULL)),
-    m_ranger (ranger),
     m_resolve (resolve),
-    m_alloced_ranger (false)
+    m_alloced_ranger (!ranger)
 {
-  m_oracle = new path_oracle (ranger->oracle ());
-}
+  if (m_alloced_ranger)
+    m_ranger = new gimple_ranger;
+  else
+    m_ranger = ranger;
 
-path_range_query::path_range_query (bool resolve)
-  : m_cache (new ssa_global_cache),
-    m_has_cache_entry (BITMAP_ALLOC (NULL)),
-    m_ranger (new gimple_ranger),
-    m_resolve (resolve),
-    m_alloced_ranger (true)
-{
   m_oracle = new path_oracle (m_ranger->oracle ());
 }
 
 path_range_query::~path_range_query ()
 {
-  BITMAP_FREE (m_has_cache_entry);
-  delete m_cache;
   delete m_oracle;
   if (m_alloced_ranger)
     delete m_ranger;
+  BITMAP_FREE (m_has_cache_entry);
+  delete m_cache;
+}
+
+// Return TRUE if NAME is in the import bitmap.
+
+bool
+path_range_query::import_p (tree name)
+{
+  return (TREE_CODE (name) == SSA_NAME
+	  && bitmap_bit_p (m_imports, SSA_NAME_VERSION (name)));
 }
 
 // Mark cache entry for NAME as unused.
