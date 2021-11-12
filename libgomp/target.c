@@ -3088,6 +3088,32 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
   (void) num_teams;
 }
 
+bool
+GOMP_teams4 (unsigned int num_teams_low, unsigned int num_teams_high,
+	     unsigned int thread_limit, bool first)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  if (first)
+    {
+      if (thread_limit)
+	{
+	  struct gomp_task_icv *icv = gomp_icv (true);
+	  icv->thread_limit_var
+	    = thread_limit > INT_MAX ? UINT_MAX : thread_limit;
+	}
+      (void) num_teams_high;
+      if (num_teams_low == 0)
+	num_teams_low = 1;
+      thr->num_teams = num_teams_low - 1;
+      thr->team_num = 0;
+    }
+  else if (thr->team_num == thr->num_teams)
+    return false;
+  else
+    ++thr->team_num;
+  return true;
+}
+
 void *
 omp_target_alloc (size_t size, int device_num)
 {

@@ -26,9 +26,12 @@
 #include "libgomp.h"
 #include <limits.h>
 
-void
-GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
+bool
+GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
+	     unsigned int thread_limit, bool first)
 {
+  if (!first)
+    return false;
   if (thread_limit)
     {
       struct gomp_task_icv *icv = gomp_icv (true);
@@ -38,14 +41,15 @@ GOMP_teams (unsigned int num_teams, unsigned int thread_limit)
   unsigned int num_blocks, block_id;
   asm ("mov.u32 %0, %%nctaid.x;" : "=r" (num_blocks));
   asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
-  if (!num_teams || num_teams >= num_blocks)
-    num_teams = num_blocks;
-  else if (block_id >= num_teams)
-    {
-      gomp_free_thread (nvptx_thrs);
-      asm ("exit;");
-    }
-  gomp_num_teams_var = num_teams - 1;
+  /* FIXME: If num_teams_lower > num_blocks, we want to loop multiple
+     times for some CTAs.  */
+  (void) num_teams_lower;
+  if (!num_teams_upper || num_teams_upper >= num_blocks)
+    num_teams_upper = num_blocks;
+  else if (block_id >= num_teams_upper)
+    return false;
+  gomp_num_teams_var = num_teams_upper - 1;
+  return true;
 }
 
 int
