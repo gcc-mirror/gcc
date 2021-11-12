@@ -4470,11 +4470,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 
      We do need to keep going if we're copying an array.  */
 
-  if (try_const && !init)
+  if (try_const && !init
+      && (cxx_dialect < cxx20
+	  || !default_init_uninitialized_part (inner_elt_type)))
     /* With a constexpr default constructor, which we checked for when
        setting try_const above, default-initialization is equivalent to
        value-initialization, and build_value_init gives us something more
-       friendly to maybe_constant_init.  */
+       friendly to maybe_constant_init.  Except in C++20 and up a constexpr
+       constructor need not initialize all the members.  */
     explicit_value_init_p = true;
   if (from_array
       || ((type_build_ctor_call (type) || init || explicit_value_init_p)
