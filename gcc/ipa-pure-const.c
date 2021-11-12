@@ -1614,9 +1614,6 @@ propagate_pure_const (void)
 	      if (e->recursive_p ())
 		looping = true;
 
-	      if (e->recursive_p ())
-		looping = true;
-
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file, "    Call to %s",
@@ -1800,11 +1797,11 @@ propagate_pure_const (void)
 	    switch (this_state)
 	      {
 	      case IPA_CONST:
-		remove_p |= ipa_make_function_const (node, looping, false);
+		remove_p |= ipa_make_function_const (node, this_looping, false);
 		break;
 
 	      case IPA_PURE:
-		remove_p |= ipa_make_function_pure (node, looping, false);
+		remove_p |= ipa_make_function_pure (node, this_looping, false);
 		break;
 
 	      default:
