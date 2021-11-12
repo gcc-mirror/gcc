@@ -1681,6 +1681,13 @@ modref_lattice::merge (int f)
 {
   if (f & EAF_UNUSED)
     return false;
+  /* Check that flags seems sane: if function does not read the parameter
+     it can not access it indirectly.  */
+  gcc_checking_assert (!(f & EAF_NO_DIRECT_READ)
+		       || ((f & EAF_NO_INDIRECT_READ)
+			   && (f & EAF_NO_INDIRECT_CLOBBER)
+			   && (f & EAF_NO_INDIRECT_ESCAPE)
+			   && (f & EAF_NOT_RETURNED_INDIRECTLY)));
   if ((flags & f) != flags)
     {
       flags &= f;
@@ -1889,9 +1896,11 @@ callee_to_caller_flags (int call_flags, bool ignore_stores,
       if (!(call_flags & EAF_NO_DIRECT_ESCAPE))
 	lattice.merge (~(EAF_NOT_RETURNED_DIRECTLY
 			 | EAF_NOT_RETURNED_INDIRECTLY
+			 | EAF_NO_DIRECT_READ
 			 | EAF_UNUSED));
       if (!(call_flags & EAF_NO_INDIRECT_ESCAPE))
 	lattice.merge (~(EAF_NOT_RETURNED_INDIRECTLY
+			 | EAF_NO_DIRECT_READ
 			 | EAF_UNUSED));
     }
   else
@@ -2033,11 +2042,11 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 			  if (!(call_flags & (EAF_NOT_RETURNED_DIRECTLY
 					      | EAF_UNUSED)))
 			    m_lattice[index].merge (~(EAF_NO_DIRECT_ESCAPE
-						      | EAF_NO_INDIRECT_ESCAPE
 						      | EAF_UNUSED));
 			  if (!(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
 					      | EAF_UNUSED)))
 			    m_lattice[index].merge (~(EAF_NO_INDIRECT_ESCAPE
+						      | EAF_NO_DIRECT_READ
 						      | EAF_UNUSED));
 			  call_flags = callee_to_caller_flags
 					   (call_flags, false,
