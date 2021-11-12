@@ -1502,7 +1502,7 @@ ipa_make_function_pure (struct cgraph_node *node, bool looping, bool local)
   bool cdtor = false;
 
   if (DECL_PURE_P (node->decl)
-      && (looping || DECL_LOOPING_CONST_OR_PURE_P (node->decl)))
+      && (looping || !DECL_LOOPING_CONST_OR_PURE_P (node->decl)))
     return false;
   warn_function_pure (node->decl, !looping);
   if (local && skip_function_for_local_pure_const (node))
