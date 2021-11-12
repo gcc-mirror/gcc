@@ -14914,8 +14914,8 @@ public:
 private:
   void record_potential_advsimd_unrolling (loop_vec_info);
   void analyze_loop_vinfo (loop_vec_info);
-  void count_ops (unsigned int, vect_cost_for_stmt, stmt_vec_info, tree,
-		  aarch64_vec_op_count *, unsigned int);
+  void count_ops (unsigned int, vect_cost_for_stmt, stmt_vec_info,
+		  aarch64_vec_op_count *);
   fractional_cost adjust_body_cost_sve (const aarch64_vec_op_count *,
 					fractional_cost, unsigned int,
 					unsigned int *, bool *);
@@ -14959,16 +14959,6 @@ private:
      or vector loop.  There is one entry for each tuning option of
      interest.  */
   auto_vec<aarch64_vec_op_count, 2> m_ops;
-
-  /* Used only when vectorizing loops for SVE.  For the first element of M_OPS,
-     it estimates what the equivalent Advanced SIMD-only code would need
-     in order to perform the same work as one iteration of the SVE loop.  */
-  auto_vec<aarch64_vec_op_count, 1> m_advsimd_ops;
-
-  /* Used to detect cases in which we end up costing the same load twice,
-     once to account for results that are actually used and once to account
-     for unused results.  */
-  hash_map<nofree_ptr_hash<_stmt_vec_info>, unsigned int> m_seen_loads;
 };
 
 aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
@@ -14980,8 +14970,6 @@ aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
   if (auto *issue_info = aarch64_tune_params.vec_costs->issue_info)
     {
       m_ops.quick_push ({ issue_info, m_vec_flags });
-      if (m_vec_flags & VEC_ANY_SVE)
-	m_advsimd_ops.quick_push ({ issue_info, VEC_ADVSIMD });
       if (aarch64_tune_params.vec_costs == &neoverse512tvb_vector_cost)
 	{
 	  unsigned int vf_factor = (m_vec_flags & VEC_ANY_SVE) ? 2 : 1;
@@ -15620,26 +15608,19 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
   return stmt_cost;
 }
 
-/* COUNT, KIND, STMT_INFO and VECTYPE are the same as for
-   vector_costs::add_stmt_cost and they describe an operation in the
-   body of a vector loop.  Record issue information relating to the vector
-   operation in OPS, where OPS is one of m_ops or m_advsimd_ops; see the
-   comments above those variables for details.
-
-   FACTOR says how many iterations of the loop described by VEC_FLAGS would be
-   needed to match one iteration of the vector loop in VINFO.  */
+/* COUNT, KIND and STMT_INFO are the same as for vector_costs::add_stmt_cost
+   and they describe an operation in the body of a vector loop.  Record issue
+   information relating to the vector operation in OPS.  */
 void
 aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
-				 stmt_vec_info stmt_info, tree vectype,
-				 aarch64_vec_op_count *ops,
-				 unsigned int factor)
+				 stmt_vec_info stmt_info,
+				 aarch64_vec_op_count *ops)
 {
   const aarch64_base_vec_issue_info *base_issue = ops->base_issue_info ();
   if (!base_issue)
     return;
   const aarch64_simd_vec_issue_info *simd_issue = ops->simd_issue_info ();
   const aarch64_sve_vec_issue_info *sve_issue = ops->sve_issue_info ();
-  unsigned int vec_flags = ops->vec_flags ();
 
   /* Calculate the minimum cycles per iteration imposed by a reduction
      operation.  */
@@ -15647,45 +15628,16 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       && vect_is_reduction (stmt_info))
     {
       unsigned int base
-	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, vec_flags);
-      if (vect_reduc_type (m_vinfo, stmt_info) == FOLD_LEFT_REDUCTION)
-	{
-	  if (vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
-	    {
-	      /* When costing an SVE FADDA, the vectorizer treats vec_to_scalar
-		 as a single operation, whereas for Advanced SIMD it is a
-		 per-element one.  Increase the factor accordingly, both for
-		 the reduction_latency calculation and for the op couting.  */
-	      if (vec_flags & VEC_ADVSIMD)
-		factor = vect_nunits_for_cost (vectype);
-	    }
-	  else
-	    /* An Advanced SIMD fold-left reduction is the same as a
-	       scalar one and the vectorizer therefore treats vec_to_scalar
-	       as a per-element cost.  There is no extra factor to apply for
-	       scalar code, either for reduction_latency or for the op
-	       counting below.  */
-	    factor = 1;
-	}
+	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, m_vec_flags);
 
-      /* ??? Ideally for vector code we'd do COUNT * FACTOR reductions in
-	 parallel, but unfortunately that's not yet the case.  */
-      ops->reduction_latency = MAX (ops->reduction_latency,
-				    base * count * factor);
+      /* ??? Ideally we'd do COUNT reductions in parallel, but unfortunately
+	 that's not yet the case.  */
+      ops->reduction_latency = MAX (ops->reduction_latency, base * count);
     }
 
   /* Assume that multiply-adds will become a single operation.  */
-  if (stmt_info && aarch64_multiply_add_p (m_vinfo, stmt_info, vec_flags))
+  if (stmt_info && aarch64_multiply_add_p (m_vinfo, stmt_info, m_vec_flags))
     return;
-
-  /* When costing scalar statements in vector code, the count already
-     includes the number of scalar elements in the vector, so we don't
-     need to apply the factor as well.  */
-  if (kind == scalar_load || kind == scalar_store || kind == scalar_stmt)
-    factor = 1;
-
-  /* This can go negative with the load handling below.  */
-  int num_copies = count * factor;
 
   /* Count the basic operation cost associated with KIND.  */
   switch (kind)
@@ -15702,65 +15654,38 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     case vec_construct:
     case vec_to_scalar:
     case scalar_to_vec:
-      /* Assume that these operations have no overhead in the original
-	 scalar code.  */
-      if (!vec_flags)
-	break;
-      /* Fallthrough.  */
     case vector_stmt:
     case scalar_stmt:
-      ops->general_ops += num_copies;
+      ops->general_ops += count;
       break;
 
     case scalar_load:
     case vector_load:
     case unaligned_load:
-      /* When costing scalars, detect cases in which we are called twice for
-	 the same load.  This happens for LD[234] operations if only some of
-	 the results are used.  The first time represents the cost of loading
-	 the unused vectors, while the second time represents the cost of
-	 loading the useful parts.  Only the latter should count towards the
-	 scalar costs.  */
-      if (stmt_info && !vec_flags)
-	{
-	  bool existed = false;
-	  unsigned int &prev_count
-	    = m_seen_loads.get_or_insert (stmt_info, &existed);
-	  if (existed)
-	    num_copies -= prev_count;
-	  else
-	    prev_count = num_copies;
-	}
-      ops->loads += num_copies;
-      if (vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
-	ops->general_ops += base_issue->fp_simd_load_general_ops * num_copies;
+      ops->loads += count;
+      if (m_vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
+	ops->general_ops += base_issue->fp_simd_load_general_ops * count;
       break;
 
     case vector_store:
     case unaligned_store:
     case scalar_store:
-      ops->stores += num_copies;
-      if (vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
-	ops->general_ops += base_issue->fp_simd_store_general_ops * num_copies;
+      ops->stores += count;
+      if (m_vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
+	ops->general_ops += base_issue->fp_simd_store_general_ops * count;
       break;
     }
 
   /* Add any embedded comparison operations.  */
   if ((kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
       && vect_embedded_comparison_type (stmt_info))
-    ops->general_ops += num_copies;
+    ops->general_ops += count;
 
-  /* Detect COND_REDUCTIONs and things that would need to become
-     COND_REDUCTIONs if they were implemented using Advanced SIMD.
-     There are then two sets of VEC_COND_EXPRs, whereas so far we
+  /* COND_REDUCTIONS need two sets of VEC_COND_EXPRs, whereas so far we
      have only accounted for one.  */
-  if (vec_flags && (kind == vector_stmt || kind == vec_to_scalar))
-    {
-      int reduc_type = vect_reduc_type (m_vinfo, stmt_info);
-      if ((reduc_type == EXTRACT_LAST_REDUCTION && (vec_flags & VEC_ADVSIMD))
-	  || reduc_type == COND_REDUCTION)
-	ops->general_ops += num_copies;
-    }
+  if ((kind == vector_stmt || kind == vec_to_scalar)
+      && vect_reduc_type (m_vinfo, stmt_info) == COND_REDUCTION)
+    ops->general_ops += count;
 
   /* Count the predicate operations needed by an SVE comparison.  */
   if (sve_issue && (kind == vector_stmt || kind == vec_to_scalar))
@@ -15769,7 +15694,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	unsigned int base = (FLOAT_TYPE_P (type)
 			     ? sve_issue->fp_cmp_pred_ops
 			     : sve_issue->int_cmp_pred_ops);
-	ops->pred_ops += base * num_copies;
+	ops->pred_ops += base * count;
       }
 
   /* Add any extra overhead associated with LD[234] and ST[234] operations.  */
@@ -15777,15 +15702,15 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     switch (aarch64_ld234_st234_vectors (kind, stmt_info))
       {
       case 2:
-	ops->general_ops += simd_issue->ld2_st2_general_ops * num_copies;
+	ops->general_ops += simd_issue->ld2_st2_general_ops * count;
 	break;
 
       case 3:
-	ops->general_ops += simd_issue->ld3_st3_general_ops * num_copies;
+	ops->general_ops += simd_issue->ld3_st3_general_ops * count;
 	break;
 
       case 4:
-	ops->general_ops += simd_issue->ld4_st4_general_ops * num_copies;
+	ops->general_ops += simd_issue->ld4_st4_general_ops * count;
 	break;
       }
 
@@ -15861,15 +15786,8 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  && (m_costing_for_scalar || where == vect_body)
 	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
 	  && stmt_cost != 0)
-	{
-	  for (auto &ops : m_ops)
-	    count_ops (count, kind, stmt_info, vectype, &ops, 1);
-	  for (auto &ops : m_advsimd_ops)
-	    /* Record estimates for a possible Advanced SIMD version
-	       of the SVE code.  */
-	    count_ops (count, kind, stmt_info, vectype, &ops,
-		       aarch64_estimated_sve_vq ());
-	}
+	for (auto &ops : m_ops)
+	  count_ops (count, kind, stmt_info, &ops);
 
       /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
 	 estimate the number of statements in the unrolled Advanced SIMD
