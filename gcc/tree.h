@@ -1689,6 +1689,11 @@ class auto_suppress_location_wrappers
    map clause.  */
 #define OMP_CLAUSE_MAP_IMPLICIT(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.default_def_flag)
+/* Nonzero if this map clause is to be indicated to the runtime as 'implicit',
+   due to being created through implicit data-mapping rules in the middle-end.
+   NOTE: this is different than OMP_CLAUSE_MAP_IMPLICIT.  */
+#define OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.deprecated_flag)
 
 /* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
    clause.  */
