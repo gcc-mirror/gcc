@@ -79,6 +79,7 @@
 #include "tree-ssa-loop-niter.h"
 #include "fractional-cost.h"
 #include "rtlanal.h"
+#include "tree-dfa.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -24569,6 +24570,97 @@ aarch64_sched_adjust_priority (rtx_insn *insn, int priority)
   return priority;
 }
 
+/* Check if *MEM1 and *MEM2 are consecutive memory references and,
+   if they are, try to make them use constant offsets from the same base
+   register.  Return true on success.  When returning true, set *REVERSED
+   to true if *MEM1 comes after *MEM2, false if *MEM1 comes before *MEM2.  */
+static bool
+aarch64_check_consecutive_mems (rtx *mem1, rtx *mem2, bool *reversed)
+{
+  *reversed = false;
+  if (GET_RTX_CLASS (GET_CODE (XEXP (*mem1, 0))) == RTX_AUTOINC
+      || GET_RTX_CLASS (GET_CODE (XEXP (*mem2, 0))) == RTX_AUTOINC)
+    return false;
+
+  if (!MEM_SIZE_KNOWN_P (*mem1) || !MEM_SIZE_KNOWN_P (*mem2))
+    return false;
+
+  auto size1 = MEM_SIZE (*mem1);
+  auto size2 = MEM_SIZE (*mem2);
+
+  rtx base1, base2, offset1, offset2;
+  extract_base_offset_in_addr (*mem1, &base1, &offset1);
+  extract_base_offset_in_addr (*mem2, &base2, &offset2);
+
+  /* Make sure at least one memory is in base+offset form.  */
+  if (!(base1 && offset1) && !(base2 && offset2))
+    return false;
+
+  /* If both mems already use the same base register, just check the
+     offsets.  */
+  if (base1 && base2 && rtx_equal_p (base1, base2))
+    {
+      if (!offset1 || !offset2)
+	return false;
+
+      if (known_eq (UINTVAL (offset1) + size1, UINTVAL (offset2)))
+	return true;
+
+      if (known_eq (UINTVAL (offset2) + size2, UINTVAL (offset1)))
+	{
+	  *reversed = true;
+	  return true;
+	}
+
+      return false;
+    }
+
+  /* Otherwise, check whether the MEM_EXPRs and MEM_OFFSETs together
+     guarantee that the values are consecutive.  */
+  if (MEM_EXPR (*mem1)
+      && MEM_EXPR (*mem2)
+      && MEM_OFFSET_KNOWN_P (*mem1)
+      && MEM_OFFSET_KNOWN_P (*mem2))
+    {
+      poly_int64 expr_offset1;
+      poly_int64 expr_offset2;
+      tree expr_base1 = get_addr_base_and_unit_offset (MEM_EXPR (*mem1),
+						       &expr_offset1);
+      tree expr_base2 = get_addr_base_and_unit_offset (MEM_EXPR (*mem2),
+						       &expr_offset2);
+      if (!expr_base1
+	  || !expr_base2
+	  || !operand_equal_p (expr_base1, expr_base2, OEP_ADDRESS_OF))
+	return false;
+
+      expr_offset1 += MEM_OFFSET (*mem1);
+      expr_offset2 += MEM_OFFSET (*mem2);
+
+      if (known_eq (expr_offset1 + size1, expr_offset2))
+	;
+      else if (known_eq (expr_offset2 + size2, expr_offset1))
+	*reversed = true;
+      else
+	return false;
+
+      if (base2)
+	{
+	  rtx addr1 = plus_constant (Pmode, XEXP (*mem2, 0),
+				     expr_offset1 - expr_offset2);
+	  *mem1 = replace_equiv_address_nv (*mem1, addr1);
+	}
+      else
+	{
+	  rtx addr2 = plus_constant (Pmode, XEXP (*mem1, 0),
+				     expr_offset2 - expr_offset1);
+	  *mem2 = replace_equiv_address_nv (*mem2, addr2);
+	}
+      return true;
+    }
+
+  return false;
+}
+
 /* Given OPERANDS of consecutive load/store, check if we can merge
    them into ldp/stp.  LOAD is true if they are load instructions.
    MODE is the mode of memory operands.  */
@@ -24577,9 +24669,8 @@ bool
 aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 				machine_mode mode)
 {
-  HOST_WIDE_INT offval_1, offval_2, msize;
   enum reg_class rclass_1, rclass_2;
-  rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2, offset_1, offset_2;
+  rtx mem_1, mem_2, reg_1, reg_2;
 
   if (load)
     {
@@ -24589,6 +24680,8 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
       reg_2 = operands[2];
       gcc_assert (REG_P (reg_1) && REG_P (reg_2));
       if (REGNO (reg_1) == REGNO (reg_2))
+	return false;
+      if (reg_overlap_mentioned_p (reg_1, mem_2))
 	return false;
     }
   else
@@ -24613,40 +24706,13 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
     return false;
 
   /* Check if the addresses are in the form of [base+offset].  */
-  extract_base_offset_in_addr (mem_1, &base_1, &offset_1);
-  if (base_1 == NULL_RTX || offset_1 == NULL_RTX)
-    return false;
-  extract_base_offset_in_addr (mem_2, &base_2, &offset_2);
-  if (base_2 == NULL_RTX || offset_2 == NULL_RTX)
-    return false;
-
-  /* Check if the bases are same.  */
-  if (!rtx_equal_p (base_1, base_2))
+  bool reversed = false;
+  if (!aarch64_check_consecutive_mems (&mem_1, &mem_2, &reversed))
     return false;
 
   /* The operands must be of the same size.  */
   gcc_assert (known_eq (GET_MODE_SIZE (GET_MODE (mem_1)),
-			 GET_MODE_SIZE (GET_MODE (mem_2))));
-
-  offval_1 = INTVAL (offset_1);
-  offval_2 = INTVAL (offset_2);
-  /* We should only be trying this for fixed-sized modes.  There is no
-     SVE LDP/STP instruction.  */
-  msize = GET_MODE_SIZE (mode).to_constant ();
-  /* Check if the offsets are consecutive.  */
-  if (offval_1 != (offval_2 + msize) && offval_2 != (offval_1 + msize))
-    return false;
-
-  /* Check if the addresses are clobbered by load.  */
-  if (load)
-    {
-      if (reg_mentioned_p (reg_1, mem_1))
-	return false;
-
-      /* In increasing order, the last load can clobber the address.  */
-      if (offval_1 > offval_2 && reg_mentioned_p (reg_2, mem_2))
-	return false;
-    }
+			GET_MODE_SIZE (GET_MODE (mem_2))));
 
   /* One of the memory accesses must be a mempair operand.
      If it is not the first one, they need to be swapped by the
@@ -24677,27 +24743,13 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 void
 aarch64_swap_ldrstr_operands (rtx* operands, bool load)
 {
-  rtx mem_1, mem_2, base_1, base_2, offset_1, offset_2;
-  HOST_WIDE_INT offval_1, offval_2;
+  int mem_op = load ? 1 : 0;
+  bool reversed = false;
+  if (!aarch64_check_consecutive_mems (operands + mem_op,
+				       operands + mem_op + 2, &reversed))
+    gcc_unreachable ();
 
-  if (load)
-    {
-      mem_1 = operands[1];
-      mem_2 = operands[3];
-    }
-  else
-    {
-      mem_1 = operands[0];
-      mem_2 = operands[2];
-    }
-
-  extract_base_offset_in_addr (mem_1, &base_1, &offset_1);
-  extract_base_offset_in_addr (mem_2, &base_2, &offset_2);
-
-  offval_1 = INTVAL (offset_1);
-  offval_2 = INTVAL (offset_2);
-
-  if (offval_1 > offval_2)
+  if (reversed)
     {
       /* Irrespective of whether this is a load or a store,
 	 we do the same swap.  */
