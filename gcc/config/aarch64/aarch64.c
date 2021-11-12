@@ -14711,9 +14711,12 @@ class aarch64_vec_op_count
 {
 public:
   aarch64_vec_op_count () = default;
-  aarch64_vec_op_count (const aarch64_vec_issue_info *, unsigned int);
+  aarch64_vec_op_count (const aarch64_vec_issue_info *, unsigned int,
+			unsigned int = 1);
 
   unsigned int vec_flags () const { return m_vec_flags; }
+  unsigned int vf_factor () const { return m_vf_factor; }
+
   const aarch64_base_vec_issue_info *base_issue_info () const;
   const aarch64_simd_vec_issue_info *simd_issue_info () const;
   const aarch64_sve_vec_issue_info *sve_issue_info () const;
@@ -14753,13 +14756,23 @@ private:
      - If M_VEC_FLAGS & VEC_ANY_SVE is nonzero then this structure describes
        SVE code.  */
   unsigned int m_vec_flags = 0;
+
+  /* Assume that, when the code is executing on the core described
+     by M_ISSUE_INFO, one iteration of the loop will handle M_VF_FACTOR
+     times more data than the vectorizer anticipates.
+
+     This is only ever different from 1 for SVE.  It allows us to consider
+     what would happen on a 256-bit SVE target even when the -mtune
+     parameters say that the “likely” SVE length is 128 bits.  */
+  unsigned int m_vf_factor = 1;
 };
 
 aarch64_vec_op_count::
 aarch64_vec_op_count (const aarch64_vec_issue_info *issue_info,
-		      unsigned int vec_flags)
+		      unsigned int vec_flags, unsigned int vf_factor)
   : m_issue_info (issue_info),
-    m_vec_flags (vec_flags)
+    m_vec_flags (vec_flags),
+    m_vf_factor (vf_factor)
 {
 }
 
@@ -14973,7 +14986,11 @@ aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
       if (m_vec_flags & VEC_ANY_SVE)
 	m_advsimd_ops.quick_push ({ issue_info, VEC_ADVSIMD });
       if (aarch64_tune_params.vec_costs == &neoverse512tvb_vector_cost)
-	m_ops.quick_push ({ &neoversev1_vec_issue_info, m_vec_flags });
+	{
+	  unsigned int vf_factor = (m_vec_flags & VEC_ANY_SVE) ? 2 : 1;
+	  m_ops.quick_push ({ &neoversev1_vec_issue_info, m_vec_flags,
+			      vf_factor });
+	}
     }
 }
 
@@ -16111,8 +16128,9 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Neoverse V1 estimate:\n");
-	  adjust_body_cost_sve (&m_ops[1], scalar_cycles_per_iter * 2,
-				advsimd_cycles_per_iter * 2,
+	  auto vf_factor = m_ops[1].vf_factor ();
+	  adjust_body_cost_sve (&m_ops[1], scalar_cycles_per_iter * vf_factor,
+				advsimd_cycles_per_iter * vf_factor,
 				could_use_advsimd, orig_body_cost,
 				&body_cost, &should_disparage);
 	}
