@@ -5878,6 +5878,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* And this is copied to all.  */
 	  clausesa[GFC_OMP_SPLIT_TARGET].if_expr
 	    = code->ext.omp_clauses->if_expr;
+	  clausesa[GFC_OMP_SPLIT_TARGET].nowait
+	    = code->ext.omp_clauses->nowait;
 	}
       if (mask & GFC_OMP_MASK_TEAMS)
 	{
