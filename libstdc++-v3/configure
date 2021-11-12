@@ -75445,7 +75445,8 @@ $as_echo_n "checking for getentropy... " >&6; }
   $as_echo_n "(cached) " >&6
 else
 
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
 int
@@ -75463,6 +75464,30 @@ else
   glibcxx_cv_getentropy=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+unsigned i;
+	 ::getentropy(&i, sizeof(i));
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_getentropy=yes
+else
+  glibcxx_cv_getentropy=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
 
 fi
 
@@ -75496,7 +75521,8 @@ $as_echo_n "checking for arc4random... " >&6; }
   $as_echo_n "(cached) " >&6
 else
 
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdlib.h>
 int
@@ -75513,6 +75539,29 @@ else
   glibcxx_cv_arc4random=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <stdlib.h>
+int
+main ()
+{
+unsigned i = ::arc4random();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_arc4random=yes
+else
+  glibcxx_cv_arc4random=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
 
 fi
 

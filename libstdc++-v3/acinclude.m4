@@ -4839,7 +4839,7 @@ AC_DEFUN([GLIBCXX_CHECK_GETENTROPY], [
   AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING([for getentropy])
   AC_CACHE_VAL(glibcxx_cv_getentropy, [
-      AC_TRY_COMPILE(
+      GCC_TRY_COMPILE_OR_LINK(
 	[#include <unistd.h>],
 	[unsigned i;
 	 ::getentropy(&i, sizeof(i));],
@@ -4862,7 +4862,7 @@ AC_DEFUN([GLIBCXX_CHECK_ARC4RANDOM], [
   AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING([for arc4random])
   AC_CACHE_VAL(glibcxx_cv_arc4random, [
-      AC_TRY_COMPILE(
+      GCC_TRY_COMPILE_OR_LINK(
 	[#include <stdlib.h>],
 	[unsigned i = ::arc4random();],
 	[glibcxx_cv_arc4random=yes], [glibcxx_cv_arc4random=no])
