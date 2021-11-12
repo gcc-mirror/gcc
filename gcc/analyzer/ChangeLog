@@ -1,3 +1,7 @@
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* supergraph.cc: Include bitmap.h.
+
 2021-11-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* program-state.cc (sm_state_map::dump): Use default_tree_printer

@@ -1,3 +1,70 @@
+2021-11-11  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/test_mffsl.c: Require Power9.
+
+2021-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gfortran.dg/inline_matmul_17.f90: Fix template
+
+2021-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-c++-common/tm/inline-asm.c: Disable pure-const.
+	* g++.dg/ipa/modref-1.C: Update template.
+	* gcc.dg/tree-ssa/modref-11.c: Disable pure-const.
+	* gcc.dg/tree-ssa/modref-14.c: New test.
+	* gcc.dg/tree-ssa/modref-8.c: Do not optimize sibling calls.
+	* gfortran.dg/do_subscript_3.f90: Add -O0.
+
+2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/num-teams-1.f90: New file.
+	* gfortran.dg/gomp/num-teams-2.f90: New file.
+
+2021-11-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/warn/Wmismatched-new-delete-5.C: Add
+	-fdelete-null-pointer-checks.
+	* gcc.dg/attr-returns-nonnull.c: Likewise.
+	* gcc.dg/debug/btf/btf-datasec-1.c: Add -G0 option for nios2.
+	* gcc.dg/ifcvt-4.c: Skip on nios2.
+	* gcc.dg/struct-by-value-1.c: Add -G0 option for nios2.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103188
+	* gcc.dg/torture/pr103188.c: New testcase.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103181
+	* gcc.dg/torture/pr103181.c: New testcase.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101378
+	* g++.dg/debug/dwarf2/pr101378.C: New test.
+
+2021-11-11  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/102376
+	* gcc.target/aarch64/pr102376.c: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-1.c (bar): Supply lower-bound expression
+	to half of the num_teams clauses.
+	* c-c++-common/gomp/num-teams-1.c: New test.
+	* c-c++-common/gomp/num-teams-2.c: New test.
+	* g++.dg/gomp/attrs-1.C (bar): Supply lower-bound expression
+	to half of the num_teams clauses.
+	* g++.dg/gomp/attrs-2.C (bar): Likewise.
+	* g++.dg/gomp/num-teams-1.C: New test.
+	* g++.dg/gomp/num-teams-2.C: New test.
+
+2021-11-11  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103151.c: New test.
+
 2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/tree-ssa/pr102906.c: New test.

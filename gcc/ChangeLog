@@ -1,3 +1,561 @@
+2021-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query): New
+	ctor without a ranger.
+	(path_range_query::~path_range_query): Free ranger if necessary.
+	(path_range_query::range_on_path_entry): Adjust m_ranger for pointer.
+	(path_range_query::ssa_range_in_phi): Same.
+	(path_range_query::compute_ranges_in_block): Same.
+	(path_range_query::compute_imports): Same.
+	(path_range_query::compute_ranges): Same.
+	(path_range_query::range_of_stmt): Same.
+	(path_range_query::compute_outgoing_relations): Same.
+	* gimple-range-path.h (class path_range_query): New ctor.
+	* tree-ssa-loop-ch.c (ch_base::copy_headers): Remove gimple_ranger
+	as path_range_query allocates one.
+	* tree-ssa-threadbackward.c (class back_threader): Remove m_ranger.
+	(back_threader::~back_threader): Same.
+
+2021-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c
+	(back_threader_profitability::profitable_path_p): Remove loop
+	crossing restriction.
+
+2021-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (analyze_function): Do pure/const discovery, return
+	true on success.
+	(pass_modref::execute): If pure/const is discovered fixup cfg.
+	(ignore_edge): Do not ignore pure/const edges.
+	(modref_propagate_in_scc): Do pure/const discovery, return true if
+	cdtor was promoted pure/const.
+	(pass_ipa_modref::execute): If needed remove unreachable functions.
+	* ipa-pure-const.c (warn_function_noreturn): Fix whitespace.
+	(warn_function_cold): Likewise.
+	(skip_function_for_local_pure_const): Move earlier.
+	(ipa_make_function_const): Break out from ...
+	(ipa_make_function_pure): Break out from ...
+	(propagate_pure_const): ... here.
+	(pass_local_pure_const::execute): Use it.
+	* ipa-utils.h (ipa_make_function_const): Declare.
+	(ipa_make_function_pure): Declare.
+	* passes.def: Move early modref after pure-const.
+
+2021-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/103129
+	* diagnostic-show-locus.c (def_policy): Use def_tabstop.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_COMBINE): Delete.
+	(TYPES_COMBINEP): Delete.
+	* config/aarch64/aarch64-simd-builtins.def: Declare type-
+	qualified builtins for vcombine_* intrinsics.
+	* config/aarch64/arm_neon.h (vcombine_s8): Remove unnecessary
+	cast.
+	(vcombine_s16): Likewise.
+	(vcombine_s32): Likewise.
+	(vcombine_f32): Likewise.
+	(vcombine_u8): Use type-qualified builtin and remove casts.
+	(vcombine_u16): Likewise.
+	(vcombine_u32): Likewise.
+	(vcombine_u64): Likewise.
+	(vcombine_p8): Likewise.
+	(vcombine_p16): Likewise.
+	(vcombine_p64): Likewise.
+	(vcombine_bf16): Remove unnecessary cast.
+	* config/aarch64/iterators.md (VD_I): New mode iterator.
+	(VDC_P): New mode iterator.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (TYPES_LOAD1_U): Define.
+	(TYPES_LOAD1_P): Define.
+	(TYPES_STORE1_U): Define.
+	(TYPES_STORE1P): Rename to...
+	(TYPES_STORE1_P): This.
+	(get_mem_type_for_load_store): Add unsigned and poly types.
+	(aarch64_general_gimple_fold_builtin): Add unsigned and poly
+	type-qualified builtin declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Declare type-
+	qualified builtins for LD1/ST1.
+	* config/aarch64/arm_neon.h (vld1_p8): Use type-qualified
+	builtin and remove cast.
+	(vld1_p16): Likewise.
+	(vld1_u8): Likewise.
+	(vld1_u16): Likewise.
+	(vld1_u32): Likewise.
+	(vld1q_p8): Likewise.
+	(vld1q_p16): Likewise.
+	(vld1q_p64): Likewise.
+	(vld1q_u8): Likewise.
+	(vld1q_u16): Likewise.
+	(vld1q_u32): Likewise.
+	(vld1q_u64): Likewise.
+	(vst1_p8): Likewise.
+	(vst1_p16): Likewise.
+	(vst1_u8): Likewise.
+	(vst1_u16): Likewise.
+	(vst1_u32): Likewise.
+	(vst1q_p8): Likewise.
+	(vst1q_p16): Likewise.
+	(vst1q_p64): Likewise.
+	(vst1q_u8): Likewise.
+	(vst1q_u16): Likewise.
+	(vst1q_u32): Likewise.
+	(vst1q_u64): Likewise.
+	* config/aarch64/iterators.md (VALLP_NO_DI): New iterator.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Declare unsigned
+	builtins for vector reduction.
+	* config/aarch64/arm_neon.h (vaddv_u8): Use type-qualified
+	builtin and remove casts.
+	(vaddv_u16): Likewise.
+	(vaddv_u32): Likewise.
+	(vaddvq_u8): Likewise.
+	(vaddvq_u16): Likewise.
+	(vaddvq_u32): Likewise.
+	(vaddvq_u64): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def:
+	* config/aarch64/arm_neon.h (vpaddq_u8): Use type-qualified
+	builtin and remove casts.
+	(vpaddq_u16): Likewise.
+	(vpaddq_u32): Likewise.
+	(vpaddq_u64): Likewise.
+	(vpadd_u8): Likewise.
+	(vpadd_u16): Likewise.
+	(vpadd_u32): Likewise.
+	(vpaddd_u64): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Declare unsigned
+	builtins for [r]subhn[2].
+	* config/aarch64/arm_neon.h (vsubhn_s16): Remove unnecessary
+	cast.
+	(vsubhn_s32): Likewise.
+	(vsubhn_s64): Likewise.
+	(vsubhn_u16): Use type-qualified builtin and remove casts.
+	(vsubhn_u32): Likewise.
+	(vsubhn_u64): Likewise.
+	(vrsubhn_s16): Remove unnecessary cast.
+	(vrsubhn_s32): Likewise.
+	(vrsubhn_s64): Likewise.
+	(vrsubhn_u16): Use type-qualified builtin and remove casts.
+	(vrsubhn_u32): Likewise.
+	(vrsubhn_u64): Likewise.
+	(vrsubhn_high_s16): Remove unnecessary cast.
+	(vrsubhn_high_s32): Likewise.
+	(vrsubhn_high_s64): Likewise.
+	(vrsubhn_high_u16): Use type-qualified builtin and remove
+	casts.
+	(vrsubhn_high_u32): Likewise.
+	(vrsubhn_high_u64): Likewise.
+	(vsubhn_high_s16): Remove unnecessary cast.
+	(vsubhn_high_s32): Likewise.
+	(vsubhn_high_s64): Likewise.
+	(vsubhn_high_u16): Use type-qualified builtin and remove
+	casts.
+	(vsubhn_high_u32): Likewise.
+	(vsubhn_high_u64): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Declare unsigned
+	builtins for [r]addhn[2].
+	* config/aarch64/arm_neon.h (vaddhn_s16): Remove unnecessary
+	cast.
+	(vaddhn_s32): Likewise.
+	(vaddhn_s64): Likewise.
+	(vaddhn_u16): Use type-qualified builtin and remove casts.
+	(vaddhn_u32): Likewise.
+	(vaddhn_u64): Likewise.
+	(vraddhn_s16): Remove unnecessary cast.
+	(vraddhn_s32): Likewise.
+	(vraddhn_s64): Likewise.
+	(vraddhn_u16): Use type-qualified builtin and remove casts.
+	(vraddhn_u32): Likewise.
+	(vraddhn_u64): Likewise.
+	(vaddhn_high_s16): Remove unnecessary cast.
+	(vaddhn_high_s32): Likewise.
+	(vaddhn_high_s64): Likewise.
+	(vaddhn_high_u16): Use type-qualified builtin and remove
+	casts.
+	(vaddhn_high_u32): Likewise.
+	(vaddhn_high_u64): Likewise.
+	(vraddhn_high_s16): Remove unnecessary cast.
+	(vraddhn_high_s32): Likewise.
+	(vraddhn_high_s64): Likewise.
+	(vraddhn_high_u16): Use type-qualified builtin and remove
+	casts.
+	(vraddhn_high_u32): Likewise.
+	(vraddhn_high_u64): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use BINOPU type
+	qualifiers in generator macros for uhsub builtins.
+	* config/aarch64/arm_neon.h (vhsub_s8): Remove unnecessary
+	cast.
+	(vhsub_s16): Likewise.
+	(vhsub_s32): Likewise.
+	(vhsub_u8): Use type-qualified builtin and remove casts.
+	(vhsub_u16): Likewise.
+	(vhsub_u32): Likewise.
+	(vhsubq_s8): Remove unnecessary cast.
+	(vhsubq_s16): Likewise.
+	(vhsubq_s32): Likewise.
+	(vhsubq_u8): Use type-qualified builtin and remove casts.
+	(vhsubq_u16): Likewise.
+	(vhsubq_u32): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use BINOPU type
+	qualifiers in generator macros for u[r]hadd builtins.
+	* config/aarch64/arm_neon.h (vhadd_s8): Remove unnecessary
+	cast.
+	(vhadd_s16): Likewise.
+	(vhadd_s32): Likewise.
+	(vhadd_u8): Use type-qualified builtin and remove casts.
+	(vhadd_u16): Likewise.
+	(vhadd_u32): Likewise.
+	(vhaddq_s8): Remove unnecessary cast.
+	(vhaddq_s16): Likewise.
+	(vhaddq_s32): Likewise.
+	(vhaddq_u8): Use type-qualified builtin and remove casts.
+	(vhaddq_u16): Likewise.
+	(vhaddq_u32): Likewise.
+	(vrhadd_s8): Remove unnecessary cast.
+	(vrhadd_s16): Likewise.
+	(vrhadd_s32): Likewise.
+	(vrhadd_u8): Use type-qualified builtin and remove casts.
+	(vrhadd_u16): Likewise.
+	(vrhadd_u32): Likewise.
+	(vrhaddq_s8): Remove unnecessary cast.
+	(vrhaddq_s16): Likewise.
+	(vrhaddq_s32): Likewise.
+	(vrhaddq_u8): Use type-wualified builtin and remove casts.
+	(vrhaddq_u16): Likewise.
+	(vrhaddq_u32): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use BINOPU type
+	qualifiers in generator macros for usub[lw][2] builtins.
+	* config/aarch64/arm_neon.h (vsubl_s8): Remove unnecessary
+	cast.
+	(vsubl_s16): Likewise.
+	(vsubl_s32): Likewise.
+	(vsubl_u8): Use type-qualified builtin and remove casts.
+	(vsubl_u16): Likewise.
+	(vsubl_u32): Likewise.
+	(vsubl_high_s8): Remove unnecessary cast.
+	(vsubl_high_s16): Likewise.
+	(vsubl_high_s32): Likewise.
+	(vsubl_high_u8): Use type-qualified builtin and remove casts.
+	(vsubl_high_u16): Likewise.
+	(vsubl_high_u32): Likewise.
+	(vsubw_s8): Remove unnecessary casts.
+	(vsubw_s16): Likewise.
+	(vsubw_s32): Likewise.
+	(vsubw_u8): Use type-qualified builtin and remove casts.
+	(vsubw_u16): Likewise.
+	(vsubw_u32): Likewise.
+	(vsubw_high_s8): Remove unnecessary cast.
+	(vsubw_high_s16): Likewise.
+	(vsubw_high_s32): Likewise.
+	(vsubw_high_u8): Use type-qualified builtin and remove casts.
+	(vsubw_high_u16): Likewise.
+	(vsubw_high_u32): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use BINOPU type
+	qualifiers in generator macros for uadd[lw][2] builtins.
+	* config/aarch64/arm_neon.h (vaddl_s8): Remove unnecessary
+	cast.
+	(vaddl_s16): Likewise.
+	(vaddl_s32): Likewise.
+	(vaddl_u8): Use type-qualified builtin and remove casts.
+	(vaddl_u16): Likewise.
+	(vaddl_u32): Likewise.
+	(vaddl_high_s8): Remove unnecessary cast.
+	(vaddl_high_s16): Likewise.
+	(vaddl_high_s32): Likewise.
+	(vaddl_high_u8): Use type-qualified builtin and remove casts.
+	(vaddl_high_u16): Likewise.
+	(vaddl_high_u32): Likewise.
+	(vaddw_s8): Remove unnecessary cast.
+	(vaddw_s16): Likewise.
+	(vaddw_s32): Likewise.
+	(vaddw_u8): Use type-qualified builtin and remove casts.
+	(vaddw_u16): Likewise.
+	(vaddw_u32): Likewise.
+	(vaddw_high_s8): Remove unnecessary cast.
+	(vaddw_high_s16): Likewise.
+	(vaddw_high_s32): Likewise.
+	(vaddw_high_u8): Use type-qualified builtin and remove casts.
+	(vaddw_high_u16): Likewise.
+	(vaddw_high_u32): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Declare type-
+	qualified builtins for [R]SHRN[2].
+	* config/aarch64/arm_neon.h (vshrn_n_u16): Use type-qualified
+	builtin and remove casts.
+	(vshrn_n_u32): Likewise.
+	(vshrn_n_u64): Likewise.
+	(vrshrn_high_n_u16): Likewise.
+	(vrshrn_high_n_u32): Likewise.
+	(vrshrn_high_n_u64): Likewise.
+	(vrshrn_n_u16): Likewise.
+	(vrshrn_n_u32): Likewise.
+	(vrshrn_n_u64): Likewise.
+	(vshrn_high_n_u16): Likewise.
+	(vshrn_high_n_u32): Likewise.
+	(vshrn_high_n_u64): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Declare unsigned
+	type-qualified builtins for XTN[2].
+	* config/aarch64/arm_neon.h (vmovn_high_u16): Use type-
+	qualified builtin and remove casts.
+	(vmovn_high_u32): Likewise.
+	(vmovn_high_u64): Likewise.
+	(vmovn_u16): Likewise.
+	(vmovn_u32): Likewise.
+	(vmovn_u64): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use poly type
+	qualifier in builtin generator macros.
+	* config/aarch64/arm_neon.h (vmul_p8): Use type-qualified
+	builtin and remove casts.
+	(vmulq_p8): Likewise.
+	(vmull_high_p8): Likewise.
+	(vmull_p8): Likewise.
+
+2021-11-11  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Declare type-
+	qualified builtin generators for unsigned MLA/MLS intrinsics.
+	* config/aarch64/arm_neon.h (vmla_n_u16): Use type-qualified
+	builtin.
+	(vmla_n_u32): Likewise.
+	(vmla_u8): Likewise.
+	(vmla_u16): Likewise.
+	(vmla_u32): Likewise.
+	(vmlaq_n_u16): Likewise.
+	(vmlaq_n_u32): Likewise.
+	(vmlaq_u8): Likewise.
+	(vmlaq_u16): Likewise.
+	(vmlaq_u32): Likewise.
+	(vmls_n_u16): Likewise.
+	(vmls_n_u32): Likewise.
+	(vmls_u8): Likewise.
+	(vmls_u16): Likewise.
+	(vmls_u32): Likewise.
+	(vmlsq_n_u16): Likewise.
+	(vmlsq_n_u32): Likewise.
+	(vmlsq_u8): Likewise.
+	(vmlsq_u16): Likewise.
+	(vmlsq_u32): Likewise.
+
+2021-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (modref_summary::useful_p): Check also for side-effects
+	with looping const/pure.
+	(modref_summary_lto::useful_p): Likewise.
+	(merge_call_side_effects): Merge side effects before early exit
+	for pure/const.
+	(process_fnspec): Also handle pure functions.
+	(analyze_call): Do not early exit on looping pure const.
+	(propagate_unknown_call): Also handle nontrivial SCC as side-effect.
+	(modref_propagate_in_scc): Update.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103190
+	* tree-ssa-reassoc.c (insert_stmt_after): Only assert on asm goto.
+
+2021-11-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::add_copies_to_imports):
+	Rename to...
+	(path_range_query::compute_imports): ...this.  Adapt it so it can
+	be passed the imports bitmap instead of working on m_imports.
+	(path_range_query::compute_ranges): Call compute_imports in all
+	cases unless an imports bitmap is passed.
+	* gimple-range-path.h (path_range_query::compute_imports): New.
+	(path_range_query::add_copies_to_imports): Remove.
+	* tree-ssa-threadbackward.c (back_threader::resolve_def): Remove.
+	(back_threader::find_paths_to_names): Inline resolve_def.
+	(back_threader::find_paths): Call compute_imports.
+	(back_threader::resolve_phi): Adjust comment.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103188
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p):
+	Remove query parameter, split out check for size
+	optimization.
+	(ch_base::m_ranger, cb_base::m_query): Remove.
+	(ch_base::copy_headers): Split processing loop into
+	analysis around which we allocate and use ranger and
+	transform where we do not.
+	(pass_ch::execute): Do not allocate/free ranger here.
+	(pass_ch_vect::execute): Likewise.
+
+2021-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-pure-const.c (propagate_pure_const): Self recursion is
+	a side effects.
+
+2021-11-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (set_noreturn_flag_1): New function.
+	(cgraph_node::set_noreturn_flag): New member function
+	* cgraph.h (cgraph_node::set_noreturn_flags): Declare.
+	* ipa-pure-const.c (pass_local_pure_const::execute): Use it.
+
+2021-11-11  Aldy Hernandez  <aldyh@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ch.c (entry_loop_condition_is_static): Resolve
+	statically to the edge remaining in the loop.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103181
+	* tree-eh.c (operation_could_trap_helper_p): Properly
+	check vector constants for a zero element for integer
+	division.  Separate floating point and integer division code.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/101378
+	* dwarf2out.c (field_byte_offset): Do the PCC_BITFIELD_TYPE_MATTERS
+	handling only for DECL_BIT_FIELD_TYPE decls.
+
+2021-11-11  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/102376
+	* config/aarch64/aarch64.c (aarch64_process_target_attr): Check if
+	token is arch extension without leading '+' and emit appropriate
+	diagnostic for the same.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_NUM_TEAMS_EXPR): Rename to ...
+	(OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR): ... this.
+	(OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR): Define.
+	* tree.c (omp_clause_num_ops): Increase num ops for
+	OMP_CLAUSE_NUM_TEAMS to 2.
+	* tree-pretty-print.c (dump_omp_clause): Print optional lower bound
+	for OMP_CLAUSE_NUM_TEAMS.
+	* gimplify.c (gimplify_scan_omp_clauses): Gimplify
+	OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR if non-NULL.
+	(optimize_target_teams): Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead
+	of OMP_CLAUSE_NUM_TEAMS_EXPR.  Handle OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR.
+	* omp-low.c (lower_omp_teams): Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR
+	instead of OMP_CLAUSE_NUM_TEAMS_EXPR.
+	* omp-expand.c (expand_teams_call, get_target_arguments): Likewise.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.c (find_pdom): Remove.
+	(control_dependences::find_control_dependence): Remove
+	special-casing of entry block, call get_immediate_dominator
+	directly.
+	* gimple-predicate-analysis.cc (find_pdom): Remove.
+	(find_dom): Likewise.
+	(find_control_equiv_block): Call get_immediate_dominator
+	directly.
+	(compute_control_dep_chain): Likewise.
+	(predicate::init_from_phi_def): Likewise.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.h (control_dependences::control_dependence_map):
+	Embed bitmap_head.
+	(control_dependences::m_bitmaps): New.
+	* cfganal.c (control_dependences::set_control_dependence_map_bit):
+	Adjust.
+	(control_dependences::clear_control_dependence_bitmap):
+	Likewise.
+	(control_dependences::find_control_dependence): Do not
+	find_edge for the abnormal edge test.
+	(control_dependences::control_dependences): Instead do not
+	add abnormal edges to the edge list.  Adjust.
+	(control_dependences::~control_dependences): Likewise.
+	(control_dependences::get_edges_dependent_on): Likewise.
+	* function-tests.c: Include bitmap.h.
+
+2021-11-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/invoke.texi: Change references to "future cpu" to "power10",
+	"-mcpu=future" to "-mcpu=power10".  Adjust words for float128.
+
+2021-11-11  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/i386-options.c (m_CORE_AVX2): Remove Alderlake
+	from m_CORE_AVX2.
+	(processor_cost_table): Use alderlake_cost for Alderlake.
+	* config/i386/i386.c (ix86_sched_init_global): Handle Alderlake.
+	* config/i386/x86-tune-costs.h (struct processor_costs): Add alderlake
+	cost.
+	* config/i386/x86-tune-sched.c (ix86_issue_rate): Change Alderlake
+	issue rate to 4.
+	(ix86_adjust_cost): Handle Alderlake.
+	* config/i386/x86-tune.def (X86_TUNE_SCHEDULE): Enable for Alderlake.
+	(X86_TUNE_PARTIAL_REG_DEPENDENCY): Likewise.
+	(X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY): Likewise.
+	(X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY): Likewise.
+	(X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY): Likewise.
+	(X86_TUNE_MEMORY_MISMATCH_STALL): Likewise.
+	(X86_TUNE_USE_LEAVE): Likewise.
+	(X86_TUNE_PUSH_MEMORY): Likewise.
+	(X86_TUNE_USE_INCDEC): Likewise.
+	(X86_TUNE_INTEGER_DFMODE_MOVES): Likewise.
+	(X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Likewise.
+	(X86_TUNE_USE_SAHF): Likewise.
+	(X86_TUNE_USE_BT): Likewise.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BMI): Likewise.
+	(X86_TUNE_ONE_IF_CONV_INSN): Likewise.
+	(X86_TUNE_AVOID_MFENCE): Likewise.
+	(X86_TUNE_USE_SIMODE_FIOP): Likewise.
+	(X86_TUNE_EXT_80387_CONSTANTS): Likewise.
+	(X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Likewise.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Likewise.
+	(X86_TUNE_SSE_TYPELESS_STORES): Likewise.
+	(X86_TUNE_SSE_LOAD0_BY_PXOR): Likewise.
+	(X86_TUNE_AVOID_4BYTE_PREFIXES): Likewise.
+	(X86_TUNE_USE_GATHER): Disable for Alderlake.
+	(X86_TUNE_AVX256_MOVE_BY_PIECES): Likewise.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Likewise.
+
+2021-11-11  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103151
+	* config/i386/sse.md (V_128_256): Extend to V8HF/V16HF.
+	(avxsizesuffix): Ditto.
+
+2021-11-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.c (riscv_subset_list::to_string): Fix
+	wrong marco checking.
+
 2021-11-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/102906

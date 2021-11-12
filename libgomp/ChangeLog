@@ -1,3 +1,25 @@
+2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/teams-1.f90: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_thread): Add num_teams and team_num members.
+	* team.c (struct gomp_thread_start_data): Likewise.
+	(gomp_thread_start): Initialize thr->num_teams and thr->team_num.
+	(gomp_team_start): Initialize start_data->num_teams and
+	start_data->team_num.  Update nthr->num_teams and nthr->team_num.
+	* teams.c (gomp_num_teams, gomp_team_num): Remove.
+	(GOMP_teams_reg): Set and restore thr->num_teams and thr->team_num
+	instead of gomp_num_teams and gomp_team_num.
+	(omp_get_num_teams): Use thr->num_teams + 1 instead of gomp_num_teams.
+	(omp_get_team_num): Use thr->team_num instead of gomp_team_num.
+	* testsuite/libgomp.c/teams-4.c: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/teams-1.c: New test.
+
 2021-11-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* env.c (parse_gomp_openacc_dim): Restore parsing.

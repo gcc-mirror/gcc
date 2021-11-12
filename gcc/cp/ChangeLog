@@ -1,3 +1,22 @@
+2021-11-11  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.c (cp_parser_template_argument_list): Use auto_vec
+	instead of manual memory management.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_num_teams): Parse optional
+	lower-bound and store it into OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR.
+	Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead of
+	OMP_CLAUSE_NUM_TEAMS_EXPR.
+	(cp_parser_omp_target): For OMP_CLAUSE_NUM_TEAMS evaluate before
+	combined target teams even lower-bound expression.
+	* semantics.c (finish_omp_clauses): Handle
+	OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR of OMP_CLAUSE_NUM_TEAMS clause.
+	* pt.c (tsubst_omp_clauses): Likewise.
+	(tsubst_expr): For OMP_CLAUSE_NUM_TEAMS evaluate before
+	combined target teams even lower-bound expression.
+
 2021-11-09  Marek Polacek  <polacek@redhat.com>
 
 	* class.c (default_init_uninitialized_part): Use

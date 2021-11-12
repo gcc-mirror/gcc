@@ -1,3 +1,10 @@
+2021-11-11  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
+
+	PR libgcc/103044
+	* config/rs6000/linux-unwind.h (ppc_backchain_fallback): Check if it's
+	called with a null argument or at the end of the backtrace and return.
+	* unwind.inc (_Unwind_ForcedUnwind_Phase2): Treat _URC_NORMAL_STOP.
+
 2021-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/linux-unwind.h (ppc_back_fallback): Make it static,

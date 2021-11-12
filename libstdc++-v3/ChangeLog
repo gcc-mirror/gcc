@@ -1,3 +1,31 @@
+2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/deque (deque::operator=(const deque&)): Remove
+	definition.
+	* include/debug/list (list::operator=(const list&)): Likewise.
+	* include/debug/map.h (map::operator=(const map&)): Likewise.
+	* include/debug/multimap.h (multimap::operator=(const multimap&)):
+	Likewise.
+	* include/debug/multiset.h (multiset::operator=(const multiset&)):
+	Likewise.
+	* include/debug/set.h (set::operator=(const set&)): Likewise.
+	* include/debug/string (basic_string::operator=(const basic_string&)):
+	Likewise.
+	* include/debug/vector (vector::operator=(const vector&)):
+	Likewise.
+	(_Safe_vector::operator=(const _Safe_vector&)): Define for
+	C++98 as well.
+
+2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (memory_resource::allocate):
+	Implicitly create objects in the returned storage.
+
+2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (vector<bool>::data()): Give
+	protected access, and delete for C++11 and later.
+
 2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/100117
