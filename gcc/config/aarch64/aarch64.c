@@ -14909,6 +14909,7 @@ public:
 			      int misalign,
 			      vect_cost_model_location where) override;
   void finish_cost (const vector_costs *) override;
+  bool better_main_loop_than_p (const vector_costs *other) const override;
 
 private:
   void record_potential_advsimd_unrolling (loop_vec_info);
@@ -14916,19 +14917,15 @@ private:
   void count_ops (unsigned int, vect_cost_for_stmt, stmt_vec_info, tree,
 		  aarch64_vec_op_count *, unsigned int);
   fractional_cost adjust_body_cost_sve (const aarch64_vec_op_count *,
-					fractional_cost, fractional_cost,
-					bool, unsigned int, unsigned int *,
-					bool *);
+					fractional_cost, unsigned int,
+					unsigned int *, bool *);
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
+  bool prefer_unrolled_loop () const;
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
   bool m_analyzed_vinfo = false;
-
-  /* True if we've seen an SVE operation that we cannot currently vectorize
-     using Advanced SIMD.  */
-  bool m_saw_sve_only_op = false;
 
   /* - If M_VEC_FLAGS is zero then we're costing the original scalar code.
      - If M_VEC_FLAGS & VEC_ADVSIMD is nonzero then we're costing Advanced
@@ -15303,42 +15300,6 @@ aarch64_multiply_add_p (vec_info *vinfo, stmt_vec_info stmt_info,
 
       return true;
     }
-  return false;
-}
-
-/* Return true if the vectorized form of STMT_INFO is something that is only
-   possible when using SVE instead of Advanced SIMD.  VECTYPE is the type of
-   the vector that STMT_INFO is operating on.  */
-static bool
-aarch64_sve_only_stmt_p (stmt_vec_info stmt_info, tree vectype)
-{
-  if (!aarch64_sve_mode_p (TYPE_MODE (vectype)))
-    return false;
-
-  if (STMT_VINFO_DATA_REF (stmt_info))
-    {
-      /* Check for true gathers and scatters (rather than just strided accesses
-	 that we've chosen to implement using gathers and scatters).  Although
-	 in principle we could use elementwise accesses for Advanced SIMD,
-	 the vectorizer doesn't yet support that.  */
-      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	return true;
-
-      /* Check for masked loads and stores.  */
-      if (auto *call = dyn_cast<gcall *> (stmt_info->stmt))
-	if (gimple_call_internal_p (call)
-	    && internal_fn_mask_index (gimple_call_internal_fn (call)) >= 0)
-	  return true;
-    }
-
-  /* Check for 64-bit integer multiplications.  */
-  auto *assign = dyn_cast<gassign *> (stmt_info->stmt);
-  if (assign
-      && gimple_assign_rhs_code (assign) == MULT_EXPR
-      && GET_MODE_INNER (TYPE_MODE (vectype)) == DImode
-      && !integer_pow2p (gimple_assign_rhs2 (assign)))
-    return true;
-
   return false;
 }
 
@@ -15866,9 +15827,6 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
      of just looking at KIND.  */
   if (stmt_info && aarch64_use_new_vector_costs_p ())
     {
-      if (vectype && aarch64_sve_only_stmt_p (stmt_info, vectype))
-	m_saw_sve_only_op = true;
-
       /* If we scalarize a strided store, the vectorizer costs one
 	 vec_to_scalar for each element.  However, we can store the first
 	 element using an FP store without a separate extract step.  */
@@ -15924,6 +15882,31 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   return record_stmt_cost (stmt_info, where, (count * stmt_cost).ceil ());
 }
 
+/* Return true if (a) we're applying the Advanced SIMD vs. SVE unrolling
+   heuristic described above m_unrolled_advsimd_niters and (b) the heuristic
+   says that we should prefer the Advanced SIMD loop.  */
+bool
+aarch64_vector_costs::prefer_unrolled_loop () const
+{
+  if (!m_unrolled_advsimd_stmts)
+    return false;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location, "Number of insns in"
+		     " unrolled Advanced SIMD loop = %d\n",
+		     m_unrolled_advsimd_stmts);
+
+  /* The balance here is tricky.  On the one hand, we can't be sure whether
+     the code is vectorizable with Advanced SIMD or not.  However, even if
+     it isn't vectorizable with Advanced SIMD, there's a possibility that
+     the scalar code could also be unrolled.  Some of the code might then
+     benefit from SLP, or from using LDP and STP.  We therefore apply
+     the heuristic regardless of can_use_advsimd_p.  */
+  return (m_unrolled_advsimd_stmts
+	  && (m_unrolled_advsimd_stmts
+	      <= (unsigned int) param_max_completely_peeled_insns));
+}
+
 /* Subroutine of adjust_body_cost for handling SVE.  Use ISSUE_INFO to work out
    how fast the SVE code can be issued and compare it to the equivalent value
    for scalar code (SCALAR_CYCLES_PER_ITER).  If COULD_USE_ADVSIMD is true,
@@ -15938,15 +15921,12 @@ fractional_cost
 aarch64_vector_costs::
 adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 		      fractional_cost scalar_cycles_per_iter,
-		      fractional_cost advsimd_cycles_per_iter,
-		      bool could_use_advsimd, unsigned int orig_body_cost,
-		      unsigned int *body_cost, bool *should_disparage)
+		      unsigned int orig_body_cost, unsigned int *body_cost,
+		      bool *should_disparage)
 {
   if (dump_enabled_p ())
     ops->dump ();
 
-  fractional_cost sve_nonpred_cycles_per_iter
-    = ops->min_nonpred_cycles_per_iter ();
   fractional_cost sve_pred_cycles_per_iter = ops->min_pred_cycles_per_iter ();
   fractional_cost sve_cycles_per_iter = ops->min_cycles_per_iter ();
 
@@ -15978,43 +15958,6 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 	}
     }
 
-  /* If it appears that the Advanced SIMD version of a loop could issue
-     more quickly than the SVE one, increase the SVE cost in proportion
-     to the difference.  The intention is to make Advanced SIMD preferable
-     in cases where an Advanced SIMD version exists, without increasing
-     the costs so much that SVE won't be used at all.
-
-     The reasoning is similar to the scalar vs. predicate comparison above:
-     if the issue rate of the SVE code is limited by predicate operations
-     (i.e. if sve_pred_cycles_per_iter > sve_nonpred_cycles_per_iter),
-     and if the Advanced SIMD code could issue within the limit imposed
-     by the predicate operations, the predicate operations are adding an
-     overhead that the original code didn't have and so we should prefer
-     the Advanced SIMD version.  However, if the predicate operations
-     do not dominate in this way, we should only increase the cost of
-     the SVE code if sve_cycles_per_iter is strictly greater than
-     advsimd_cycles_per_iter.  Given rounding effects, this should mean
-     that Advanced SIMD is either better or at least no worse.  */
-  if (sve_nonpred_cycles_per_iter >= sve_pred_cycles_per_iter)
-    sve_estimate = sve_cycles_per_iter;
-  if (could_use_advsimd && advsimd_cycles_per_iter < sve_estimate)
-    {
-      /* This ensures that min_cost > orig_body_cost * 2.  */
-      unsigned int factor = fractional_cost::scale (1, sve_estimate,
-						    advsimd_cycles_per_iter);
-      unsigned int min_cost = orig_body_cost * factor + 1;
-      if (*body_cost < min_cost)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Increasing body cost to %d because Advanced"
-			     " SIMD code could issue as quickly\n",
-			     min_cost);
-	  *body_cost = min_cost;
-	  *should_disparage = true;
-	}
-    }
-
   return sve_cycles_per_iter;
 }
 
@@ -16039,40 +15982,6 @@ adjust_body_cost (loop_vec_info loop_vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Original vector body cost = %d\n", body_cost);
 
-  if (m_unrolled_advsimd_stmts)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "Number of insns in"
-			 " unrolled Advanced SIMD loop = %d\n",
-			 m_unrolled_advsimd_stmts);
-
-      /* Apply the Advanced SIMD vs. SVE unrolling heuristic described above
-	 m_unrolled_advsimd_niters.
-
-	 The balance here is tricky.  On the one hand, we can't be sure whether
-	 the code is vectorizable with Advanced SIMD or not.  However, even if
-	 it isn't vectorizable with Advanced SIMD, there's a possibility that
-	 the scalar code could also be unrolled.  Some of the code might then
-	 benefit from SLP, or from using LDP and STP.  We therefore apply
-	 the heuristic regardless of can_use_advsimd_p.  */
-      if (m_unrolled_advsimd_stmts
-	  && (m_unrolled_advsimd_stmts
-	      <= (unsigned int) param_max_completely_peeled_insns))
-	{
-	  unsigned int estimated_vq = aarch64_estimated_sve_vq ();
-	  unsigned int min_cost = (orig_body_cost * estimated_vq) + 1;
-	  if (body_cost < min_cost)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Increasing body cost to %d to account for"
-				 " unrolling\n", min_cost);
-	      body_cost = min_cost;
-	      should_disparage = true;
-	    }
-	}
-    }
-
   fractional_cost scalar_cycles_per_iter
     = scalar_ops.min_cycles_per_iter () * estimated_vf;
 
@@ -16094,30 +16003,10 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 
   if (vector_ops.sve_issue_info ())
     {
-      bool could_use_advsimd
-	= (aarch64_autovec_preference != 2
-	   && (aarch64_tune_params.extra_tuning_flags
-	       & AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT)
-	   && !m_saw_sve_only_op);
-
-      fractional_cost advsimd_cycles_per_iter
-	= m_advsimd_ops[0].min_cycles_per_iter ();
       if (dump_enabled_p ())
-	{
-	  if (could_use_advsimd)
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Advanced SIMD issue estimate:\n");
-	      m_advsimd_ops[0].dump ();
-	    }
-	  else
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Loop could not use Advanced SIMD\n");
-	  dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
       vector_cycles_per_iter
 	= adjust_body_cost_sve (&vector_ops, scalar_cycles_per_iter,
-				advsimd_cycles_per_iter, could_use_advsimd,
 				orig_body_cost, &body_cost, &should_disparage);
 
       if (aarch64_tune_params.vec_costs == &neoverse512tvb_vector_cost)
@@ -16130,9 +16019,7 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 			     "Neoverse V1 estimate:\n");
 	  auto vf_factor = m_ops[1].vf_factor ();
 	  adjust_body_cost_sve (&m_ops[1], scalar_cycles_per_iter * vf_factor,
-				advsimd_cycles_per_iter * vf_factor,
-				could_use_advsimd, orig_body_cost,
-				&body_cost, &should_disparage);
+				orig_body_cost, &body_cost, &should_disparage);
 	}
     }
   else
@@ -16214,6 +16101,118 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
 					   m_costs[vect_body]);
 
   vector_costs::finish_cost (scalar_costs);
+}
+
+bool
+aarch64_vector_costs::
+better_main_loop_than_p (const vector_costs *uncast_other) const
+{
+  auto other = static_cast<const aarch64_vector_costs *> (uncast_other);
+
+  auto this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
+  auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "Comparing two main loops (%s at VF %d vs %s at VF %d)\n",
+		     GET_MODE_NAME (this_loop_vinfo->vector_mode),
+		     vect_vf_for_cost (this_loop_vinfo),
+		     GET_MODE_NAME (other_loop_vinfo->vector_mode),
+		     vect_vf_for_cost (other_loop_vinfo));
+
+  /* Apply the unrolling heuristic described above
+     m_unrolled_advsimd_niters.  */
+  if (bool (m_unrolled_advsimd_stmts)
+      != bool (other->m_unrolled_advsimd_stmts))
+    {
+      bool this_prefer_unrolled = this->prefer_unrolled_loop ();
+      bool other_prefer_unrolled = other->prefer_unrolled_loop ();
+      if (this_prefer_unrolled != other_prefer_unrolled)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Preferring Advanced SIMD loop because"
+			     " it can be unrolled\n");
+	  return other_prefer_unrolled;
+	}
+    }
+
+  for (unsigned int i = 0; i < m_ops.length (); ++i)
+    {
+      if (dump_enabled_p ())
+	{
+	  if (i)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Reconsidering with subtuning %d\n", i);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Issue info for %s loop:\n",
+			   GET_MODE_NAME (this_loop_vinfo->vector_mode));
+	  this->m_ops[i].dump ();
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Issue info for %s loop:\n",
+			   GET_MODE_NAME (other_loop_vinfo->vector_mode));
+	  other->m_ops[i].dump ();
+	}
+
+      auto this_estimated_vf = (vect_vf_for_cost (this_loop_vinfo)
+				* this->m_ops[i].vf_factor ());
+      auto other_estimated_vf = (vect_vf_for_cost (other_loop_vinfo)
+				 * other->m_ops[i].vf_factor ());
+
+      /* If it appears that one loop could process the same amount of data
+	 in fewer cycles, prefer that loop over the other one.  */
+      fractional_cost this_cost
+	= this->m_ops[i].min_cycles_per_iter () * other_estimated_vf;
+      fractional_cost other_cost
+	= other->m_ops[i].min_cycles_per_iter () * this_estimated_vf;
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Weighted cycles per iteration of %s loop ~= %f\n",
+			   GET_MODE_NAME (this_loop_vinfo->vector_mode),
+			   this_cost.as_double ());
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Weighted cycles per iteration of %s loop ~= %f\n",
+			   GET_MODE_NAME (other_loop_vinfo->vector_mode),
+			   other_cost.as_double ());
+	}
+      if (this_cost != other_cost)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Preferring loop with lower cycles"
+			     " per iteration\n");
+	  return this_cost < other_cost;
+	}
+
+      /* If the issue rate of SVE code is limited by predicate operations
+	 (i.e. if sve_pred_cycles_per_iter > sve_nonpred_cycles_per_iter),
+	 and if Advanced SIMD code could issue within the limit imposed
+	 by the predicate operations, the predicate operations are adding an
+	 overhead that the original code didn't have and so we should prefer
+	 the Advanced SIMD version.  */
+      auto better_pred_limit_p = [](const aarch64_vec_op_count &a,
+				    const aarch64_vec_op_count &b) -> bool
+	{
+	  if (a.pred_ops == 0
+	      && (b.min_pred_cycles_per_iter ()
+		  > b.min_nonpred_cycles_per_iter ()))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Preferring Advanced SIMD loop since"
+				 " SVE loop is predicate-limited\n");
+	      return true;
+	    }
+	  return false;
+	};
+      if (better_pred_limit_p (this->m_ops[i], other->m_ops[i]))
+	return true;
+      if (better_pred_limit_p (other->m_ops[i], this->m_ops[i]))
+	return false;
+    }
+
+  return vector_costs::better_main_loop_than_p (other);
 }
 
 static void initialize_aarch64_code_model (struct gcc_options *);
