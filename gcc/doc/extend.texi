@@ -2512,7 +2512,8 @@ variable declarations (@pxref{Variable Attributes}),
 labels (@pxref{Label Attributes}),
 enumerators (@pxref{Enumerator Attributes}),
 statements (@pxref{Statement Attributes}),
-and types (@pxref{Type Attributes}).
+types (@pxref{Type Attributes}),
+and on field declarations (for @code{tainted_args}).
 
 There is some overlap between the purposes of attributes and pragmas
 (@pxref{Pragmas,,Pragmas Accepted by GCC}).  It has been
@@ -4008,6 +4009,26 @@ Finally if the parameter is @code{"@var{name2}@@@@@var{nodename}"} then in
 addition to creating a symbol version (as if
 @code{"@var{name2}@@@var{nodename}"} was used) the version will be also used
 to resolve @var{name2} by the linker.
+
+@item tainted_args
+@cindex @code{tainted_args} function attribute
+The @code{tainted_args} attribute is used to specify that a function is called
+in a way that requires sanitization of its arguments, such as a system
+call in an operating system kernel.  Such a function can be considered part
+of the ``attack surface'' of the program.  The attribute can be used both
+on function declarations, and on field declarations containing function
+pointers.  In the latter case, any function used as an initializer of
+such a callback field will be treated as being called with tainted
+arguments.
+
+The analyzer will pay particular attention to such functions when both
+@option{-fanalyzer} and @option{-fanalyzer-checker=taint} are supplied,
+potentially issuing warnings guarded by
+@option{-Wanalyzer-tainted-allocation-size},
+@option{-Wanalyzer-tainted-array-index},
+@option{-Wanalyzer-tainted-divisor},
+@option{-Wanalyzer-tainted-offset},
+and @option{-Wanalyzer-tainted-size}.
 
 @item target_clones (@var{options})
 @cindex @code{target_clones} function attribute

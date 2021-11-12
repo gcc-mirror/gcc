@@ -68,6 +68,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "target.h"
 #include <memory>
+#include "stringpool.h"
+#include "attribs.h"
+#include "tree-dfa.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -2287,6 +2290,116 @@ exploded_graph::~exploded_graph ()
     delete (*iter).second;
 }
 
+/* Subroutine for use when implementing __attribute__((tainted_args))
+   on functions and on function pointer fields in structs.
+
+   Called on STATE representing a call to FNDECL.
+   Mark all params of FNDECL in STATE as "tainted".  Mark the value of all
+   regions pointed to by params of FNDECL as "tainted".
+
+   Return true if successful; return false if the "taint" state machine
+   was not found.  */
+
+static bool
+mark_params_as_tainted (program_state *state, tree fndecl,
+			const extrinsic_state &ext_state)
+{
+  unsigned taint_sm_idx;
+  if (!ext_state.get_sm_idx_by_name ("taint", &taint_sm_idx))
+    return false;
+  sm_state_map *smap = state->m_checker_states[taint_sm_idx];
+
+  const state_machine &sm = ext_state.get_sm (taint_sm_idx);
+  state_machine::state_t tainted = sm.get_state_by_name ("tainted");
+
+  region_model_manager *mgr = ext_state.get_model_manager ();
+
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+  gcc_assert (fun);
+
+  for (tree iter_parm = DECL_ARGUMENTS (fndecl); iter_parm;
+       iter_parm = DECL_CHAIN (iter_parm))
+    {
+      tree param = iter_parm;
+      if (tree parm_default_ssa = ssa_default_def (fun, iter_parm))
+	param = parm_default_ssa;
+      const region *param_reg = state->m_region_model->get_lvalue (param, NULL);
+      const svalue *init_sval = mgr->get_or_create_initial_value (param_reg);
+      smap->set_state (state->m_region_model, init_sval,
+		       tainted, NULL /*origin_new_sval*/, ext_state);
+      if (POINTER_TYPE_P (TREE_TYPE (param)))
+	{
+	  const region *pointee_reg = mgr->get_symbolic_region (init_sval);
+	  /* Mark "*param" as tainted.  */
+	  const svalue *init_pointee_sval
+	    = mgr->get_or_create_initial_value (pointee_reg);
+	  smap->set_state (state->m_region_model, init_pointee_sval,
+			   tainted, NULL /*origin_new_sval*/, ext_state);
+	}
+    }
+
+  return true;
+}
+
+/* Custom event for use by tainted_args_function_info when a function
+   has been marked with __attribute__((tainted_args)).  */
+
+class tainted_args_function_custom_event : public custom_event
+{
+public:
+  tainted_args_function_custom_event (location_t loc, tree fndecl, int depth)
+  : custom_event (loc, fndecl, depth),
+    m_fndecl (fndecl)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+  {
+    return make_label_text
+      (can_colorize,
+       "function %qE marked with %<__attribute__((tainted_args))%>",
+       m_fndecl);
+  }
+
+private:
+  tree m_fndecl;
+};
+
+/* Custom exploded_edge info for top-level calls to a function
+   marked with __attribute__((tainted_args)).  */
+
+class tainted_args_function_info : public custom_edge_info
+{
+public:
+  tainted_args_function_info (tree fndecl)
+  : m_fndecl (fndecl)
+  {}
+
+  void print (pretty_printer *pp) const FINAL OVERRIDE
+  {
+    pp_string (pp, "call to tainted_args function");
+  };
+
+  bool update_model (region_model *,
+		     const exploded_edge *,
+		     region_model_context *) const FINAL OVERRIDE
+  {
+    /* No-op.  */
+    return true;
+  }
+
+  void add_events_to_path (checker_path *emission_path,
+			   const exploded_edge &) const FINAL OVERRIDE
+  {
+    emission_path->add_event
+      (new tainted_args_function_custom_event
+       (DECL_SOURCE_LOCATION (m_fndecl), m_fndecl, 0));
+  }
+
+private:
+  tree m_fndecl;
+};
+
 /* Ensure that there is an exploded_node representing an external call to
    FUN, adding it to the worklist if creating it.
 
@@ -2313,14 +2426,25 @@ exploded_graph::add_function_entry (function *fun)
   program_state state (m_ext_state);
   state.push_frame (m_ext_state, fun);
 
+  custom_edge_info *edge_info = NULL;
+
+  if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun->decl)))
+    {
+      if (mark_params_as_tainted (&state, fun->decl, m_ext_state))
+	edge_info = new tainted_args_function_info (fun->decl);
+    }
+
   if (!state.m_valid)
     return NULL;
 
   exploded_node *enode = get_or_create_node (point, state, NULL);
   if (!enode)
-    return NULL;
+    {
+      delete edge_info;
+      return NULL;
+    }
 
-  add_edge (m_origin, enode, NULL);
+  add_edge (m_origin, enode, NULL, edge_info);
 
   m_functions_with_enodes.add (fun);
 
@@ -2634,6 +2758,187 @@ toplevel_function_p (function *fun, logger *logger)
   return true;
 }
 
+/* Custom event for use by tainted_call_info when a callback field has been
+   marked with __attribute__((tainted_args)), for labelling the field.  */
+
+class tainted_args_field_custom_event : public custom_event
+{
+public:
+  tainted_args_field_custom_event (tree field)
+  : custom_event (DECL_SOURCE_LOCATION (field), NULL_TREE, 0),
+    m_field (field)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+  {
+    return make_label_text (can_colorize,
+			    "field %qE of %qT"
+			    " is marked with %<__attribute__((tainted_args))%>",
+			    m_field, DECL_CONTEXT (m_field));
+  }
+
+private:
+  tree m_field;
+};
+
+/* Custom event for use by tainted_call_info when a callback field has been
+   marked with __attribute__((tainted_args)), for labelling the function used
+   in that callback.  */
+
+class tainted_args_callback_custom_event : public custom_event
+{
+public:
+  tainted_args_callback_custom_event (location_t loc, tree fndecl, int depth,
+				 tree field)
+  : custom_event (loc, fndecl, depth),
+    m_field (field)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+  {
+    return make_label_text (can_colorize,
+			    "function %qE used as initializer for field %qE"
+			    " marked with %<__attribute__((tainted_args))%>",
+			    m_fndecl, m_field);
+  }
+
+private:
+  tree m_field;
+};
+
+/* Custom edge info for use when adding a function used by a callback field
+   marked with '__attribute__((tainted_args))'.   */
+
+class tainted_args_call_info : public custom_edge_info
+{
+public:
+  tainted_args_call_info (tree field, tree fndecl, location_t loc)
+  : m_field (field), m_fndecl (fndecl), m_loc (loc)
+  {}
+
+  void print (pretty_printer *pp) const FINAL OVERRIDE
+  {
+    pp_string (pp, "call to tainted field");
+  };
+
+  bool update_model (region_model *,
+		     const exploded_edge *,
+		     region_model_context *) const FINAL OVERRIDE
+  {
+    /* No-op.  */
+    return true;
+  }
+
+  void add_events_to_path (checker_path *emission_path,
+			   const exploded_edge &) const FINAL OVERRIDE
+  {
+    /* Show the field in the struct declaration, e.g.
+       "(1) field 'store' is marked with '__attribute__((tainted_args))'"  */
+    emission_path->add_event
+      (new tainted_args_field_custom_event (m_field));
+
+    /* Show the callback in the initializer
+       e.g.
+       "(2) function 'gadget_dev_desc_UDC_store' used as initializer
+       for field 'store' marked with '__attribute__((tainted_args))'".  */
+    emission_path->add_event
+      (new tainted_args_callback_custom_event (m_loc, m_fndecl, 0, m_field));
+  }
+
+private:
+  tree m_field;
+  tree m_fndecl;
+  location_t m_loc;
+};
+
+/* Given an initializer at LOC for FIELD marked with
+   '__attribute__((tainted_args))' initialized with FNDECL, add an
+   entrypoint to FNDECL to EG (and to its worklist) where the params to
+   FNDECL are marked as tainted.  */
+
+static void
+add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
+			   location_t loc)
+{
+  logger *logger = eg->get_logger ();
+
+  LOG_SCOPE (logger);
+
+  if (!gimple_has_body_p (fndecl))
+    return;
+
+  const extrinsic_state &ext_state = eg->get_ext_state ();
+
+  function *fun = DECL_STRUCT_FUNCTION (fndecl);
+  gcc_assert (fun);
+
+  program_point point
+    = program_point::from_function_entry (eg->get_supergraph (), fun);
+  program_state state (ext_state);
+  state.push_frame (ext_state, fun);
+
+  if (!mark_params_as_tainted (&state, fndecl, ext_state))
+    return;
+
+  if (!state.m_valid)
+    return;
+
+  exploded_node *enode = eg->get_or_create_node (point, state, NULL);
+  if (logger)
+    {
+      if (enode)
+	logger->log ("created EN %i for tainted_args %qE entrypoint",
+		     enode->m_index, fndecl);
+      else
+	{
+	  logger->log ("did not create enode for tainted_args %qE entrypoint",
+		       fndecl);
+	  return;
+	}
+    }
+
+  tainted_args_call_info *info
+    = new tainted_args_call_info (field, fndecl, loc);
+  eg->add_edge (eg->get_origin (), enode, NULL, info);
+}
+
+/* Callback for walk_tree for finding callbacks within initializers;
+   ensure that any callback initializer where the corresponding field is
+   marked with '__attribute__((tainted_args))' is treated as an entrypoint
+   to the analysis, special-casing that the inputs to the callback are
+   untrustworthy.  */
+
+static tree
+add_any_callbacks (tree *tp, int *, void *data)
+{
+  exploded_graph *eg = (exploded_graph *)data;
+  if (TREE_CODE (*tp) == CONSTRUCTOR)
+    {
+      /* Find fields with the "tainted_args" attribute.
+	 walk_tree only walks the values, not the index values;
+	 look at the index values.  */
+      unsigned HOST_WIDE_INT idx;
+      constructor_elt *ce;
+
+      for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (*tp), idx, &ce);
+	   idx++)
+	if (ce->index && TREE_CODE (ce->index) == FIELD_DECL)
+	  if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (ce->index)))
+	    {
+	      tree value = ce->value;
+	      if (TREE_CODE (value) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (value, 0)) == FUNCTION_DECL)
+		add_tainted_args_callback (eg, ce->index,
+					   TREE_OPERAND (value, 0),
+					   EXPR_LOCATION (value));
+	    }
+    }
+
+  return NULL_TREE;
+}
+
 /* Add initial nodes to EG, with entrypoints for externally-callable
    functions.  */
 
@@ -2659,6 +2964,17 @@ exploded_graph::build_initial_worklist ()
 	  logger->log ("did not create enode for %qE entrypoint", fun->decl);
       }
   }
+
+  /* Find callbacks that are reachable from global initializers.  */
+  varpool_node *vpnode;
+  FOR_EACH_VARIABLE (vpnode)
+    {
+      tree decl = vpnode->decl;
+      tree init = DECL_INITIAL (decl);
+      if (!init)
+	continue;
+      walk_tree (&init, add_any_callbacks, this, NULL);
+    }
 }
 
 /* The main loop of the analysis.

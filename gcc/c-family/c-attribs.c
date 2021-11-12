@@ -117,6 +117,7 @@ static tree handle_no_profile_instrument_function_attribute (tree *, tree,
 							     tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_dealloc_attribute (tree *, tree, tree, int, bool *);
+static tree handle_tainted_args_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_limit_stack_attribute (tree *, tree, tree, int,
 					     bool *);
@@ -548,6 +549,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_objc_nullability_attribute, NULL },
   { "*dealloc",                1, 2, true, false, false, false,
 			      handle_dealloc_attribute, NULL },
+  { "tainted_args",	      0, 0, true,  false, false, false,
+			      handle_tainted_args_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -5770,6 +5773,39 @@ handle_objc_nullability_attribute (tree *node, tree name, tree args,
     *no_add_attrs = false; /* OK */
   else if (val != error_mark_node)
     error ("%qE attribute argument %qE is not recognised", name, val);
+
+  return NULL_TREE;
+}
+
+/* Handle a "tainted_args" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_tainted_args_attribute (tree *node, tree name, tree, int,
+			       bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL
+      && TREE_CODE (*node) != FIELD_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored; valid only "
+	       "for functions and function pointer fields",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*node) == FIELD_DECL
+      && !(TREE_CODE (TREE_TYPE (*node)) == POINTER_TYPE
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (*node))) == FUNCTION_TYPE))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored;"
+	       " field must be a function pointer",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  *no_add_attrs = false; /* OK */
 
   return NULL_TREE;
 }
