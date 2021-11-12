@@ -15220,14 +15220,13 @@ aarch64_sve_only_stmt_p (stmt_vec_info stmt_info, tree vectype)
   return false;
 }
 
-/* We are considering implementing STMT_INFO using SVE vector type VECTYPE.
-   If STMT_INFO is an in-loop reduction that SVE supports directly, return
-   its latency in cycles, otherwise return zero.  SVE_COSTS specifies the
-   latencies of the relevant instructions.  */
+/* We are considering implementing STMT_INFO using SVE.  If STMT_INFO is an
+   in-loop reduction that SVE supports directly, return its latency in cycles,
+   otherwise return zero.  SVE_COSTS specifies the latencies of the relevant
+   instructions.  */
 static unsigned int
 aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
 				       stmt_vec_info stmt_info,
-				       tree vectype,
 				       const sve_vec_cost *sve_costs)
 {
   switch (vect_reduc_type (vinfo, stmt_info))
@@ -15236,7 +15235,7 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
       return sve_costs->clast_cost;
 
     case FOLD_LEFT_REDUCTION:
-      switch (GET_MODE_INNER (TYPE_MODE (vectype)))
+      switch (TYPE_MODE (TREE_TYPE (gimple_get_lhs (stmt_info->stmt))))
 	{
 	case E_HFmode:
 	case E_BFmode:
@@ -15268,14 +15267,10 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
      Advanced SIMD implementation.
 
    - If VEC_FLAGS & VEC_ANY_SVE, return the loop carry latency of the
-     SVE implementation.
-
-   VECTYPE is the type of vector that the vectorizer is considering using
-   for STMT_INFO, which might be different from the type of vector described
-   by VEC_FLAGS.  */
+     SVE implementation.  */
 static unsigned int
 aarch64_in_loop_reduction_latency (vec_info *vinfo, stmt_vec_info stmt_info,
-				   tree vectype, unsigned int vec_flags)
+				   unsigned int vec_flags)
 {
   const cpu_vector_cost *vec_costs = aarch64_tune_params.vec_costs;
   const sve_vec_cost *sve_costs = nullptr;
@@ -15287,16 +15282,16 @@ aarch64_in_loop_reduction_latency (vec_info *vinfo, stmt_vec_info stmt_info,
   if (sve_costs)
     {
       unsigned int latency
-	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, vectype,
-						 sve_costs);
+	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, sve_costs);
       if (latency)
 	return latency;
     }
 
   /* Handle scalar costs.  */
+  bool is_float = FLOAT_TYPE_P (TREE_TYPE (gimple_get_lhs (stmt_info->stmt)));
   if (vec_flags == 0)
     {
-      if (FLOAT_TYPE_P (vectype))
+      if (is_float)
 	return vec_costs->scalar_fp_stmt_cost;
       return vec_costs->scalar_int_stmt_cost;
     }
@@ -15305,7 +15300,7 @@ aarch64_in_loop_reduction_latency (vec_info *vinfo, stmt_vec_info stmt_info,
      with a vector reduction outside the loop.  */
   const simd_vec_cost *simd_costs
     = aarch64_simd_vec_costs_for_flags (vec_flags);
-  if (FLOAT_TYPE_P (vectype))
+  if (is_float)
     return simd_costs->fp_stmt_cost;
   return simd_costs->int_stmt_cost;
 }
@@ -15382,8 +15377,7 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
       && sve_costs)
     {
       unsigned int latency
-	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, vectype,
-						 sve_costs);
+	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, sve_costs);
       if (latency)
 	return latency;
     }
@@ -15570,8 +15564,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       && vect_is_reduction (stmt_info))
     {
       unsigned int base
-	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, vectype,
-					     vec_flags);
+	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, vec_flags);
       if (vect_reduc_type (m_vinfo, stmt_info) == FOLD_LEFT_REDUCTION)
 	{
 	  if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
