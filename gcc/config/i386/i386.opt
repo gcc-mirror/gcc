@@ -404,6 +404,10 @@ momit-leaf-frame-pointer
 Target Mask(OMIT_LEAF_FRAME_POINTER) Save
 Omit the frame pointer in leaf functions.
 
+mrelax-cmpxchg-loop
+Target Mask(RELAX_CMPXCHG_LOOP) Save
+Relax cmpxchg loop for atomic_fetch_{or,xor,and,nand} by adding load and cmp before cmpxchg, execute pause and loop back to load and compare if load value is not expected.
+
 mpc32
 Target RejectNegative
 Set 80387 floating-point precision to 32-bit.

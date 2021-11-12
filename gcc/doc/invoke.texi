@@ -1423,7 +1423,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} @gol
 -mstack-protector-guard-symbol=@var{symbol} @gol
--mgeneral-regs-only  -mcall-ms2sysv-xlogues @gol
+-mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mneeded}
 
@@ -32329,6 +32329,13 @@ The default for those is as specified in the relevant ABI.
 Generate code that uses only the general-purpose registers.  This
 prevents the compiler from using floating-point, vector, mask and bound
 registers.
+
+@item -mrelax-cmpxchg-loop
+@opindex mrelax-cmpxchg-loop
+Relax cmpxchg loop by emitting an early load and compare before cmpxchg,
+execute pause if load value is not expected. This reduces excessive
+cachline bouncing when and works for all atomic logic fetch builtins
+that generates compare and swap loop.
 
 @item -mindirect-branch=@var{choice}
 @opindex mindirect-branch

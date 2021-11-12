@@ -397,7 +397,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mstv",				MASK_STV },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD },
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE },
-    { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES }
+    { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES },
+    { "-mrelax-cmpxchg-loop",		MASK_RELAX_CMPXCHG_LOOP }
   };
 
   /* Additional flag options.  */
@@ -1092,6 +1093,10 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_IX86_YES ("general-regs-only",
 			OPT_mgeneral_regs_only,
 			OPTION_MASK_GENERAL_REGS_ONLY),
+
+    IX86_ATTR_YES ("relax-cmpxchg-loop",
+		   OPT_mrelax_cmpxchg_loop,
+		   MASK_RELAX_CMPXCHG_LOOP),
   };
 
   location_t loc
