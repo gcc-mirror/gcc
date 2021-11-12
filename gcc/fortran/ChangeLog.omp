@@ -1,6 +1,19 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Fix permitting 'nowait' for some
+	combined directives, add missing 'omp end ... loop'.
+	(gfc_ascii_statement): Fix ST_OMP_END_TEAMS_LOOP result.
+	* openmp.c (resolve_omp_clauses): Add missing combined loop constructs
+	case values to the 'if(directive-name: ...)' check.
+	* trans-openmp.c (gfc_split_omp_clauses): Put nowait on target if
+	first leaf construct accepting it.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (struct gfc_omp_clauses): Rename num_teams to
