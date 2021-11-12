@@ -14718,6 +14718,11 @@ public:
   const aarch64_simd_vec_issue_info *simd_issue_info () const;
   const aarch64_sve_vec_issue_info *sve_issue_info () const;
 
+  fractional_cost rename_cycles_per_iter () const;
+  fractional_cost min_nonpred_cycles_per_iter () const;
+  fractional_cost min_pred_cycles_per_iter () const;
+  fractional_cost min_cycles_per_iter () const;
+
   void dump () const;
 
   /* The number of individual "general" operations.  See the comments
@@ -14789,6 +14794,95 @@ aarch64_vec_op_count::sve_issue_info () const
   if (m_vec_flags & VEC_ANY_SVE)
     return m_issue_info->sve;
   return nullptr;
+}
+
+/* Estimate the minimum number of cycles per iteration needed to rename
+   the instructions.
+
+   ??? For now this is done inline rather than via cost tables, since it
+   isn't clear how it should be parameterized for the general case.  */
+fractional_cost
+aarch64_vec_op_count::rename_cycles_per_iter () const
+{
+  if (sve_issue_info () == &neoverse512tvb_sve_issue_info)
+    /* + 1 for an addition.  We've already counted a general op for each
+       store, so we don't need to account for stores separately.  The branch
+       reads no registers and so does not need to be counted either.
+
+       ??? This value is very much on the pessimistic side, but seems to work
+       pretty well in practice.  */
+    return { general_ops + loads + pred_ops + 1, 5 };
+
+  return 0;
+}
+
+/* Like min_cycles_per_iter, but excluding predicate operations.  */
+fractional_cost
+aarch64_vec_op_count::min_nonpred_cycles_per_iter () const
+{
+  auto *issue_info = base_issue_info ();
+
+  fractional_cost cycles = MAX (reduction_latency, 1);
+  cycles = std::max (cycles, { stores, issue_info->stores_per_cycle });
+  cycles = std::max (cycles, { loads + stores,
+			       issue_info->loads_stores_per_cycle });
+  cycles = std::max (cycles, { general_ops,
+			       issue_info->general_ops_per_cycle });
+  cycles = std::max (cycles, rename_cycles_per_iter ());
+  return cycles;
+}
+
+/* Like min_cycles_per_iter, but including only the predicate operations.  */
+fractional_cost
+aarch64_vec_op_count::min_pred_cycles_per_iter () const
+{
+  if (auto *issue_info = sve_issue_info ())
+    return { pred_ops, issue_info->pred_ops_per_cycle };
+  return 0;
+}
+
+/* Estimate the minimum number of cycles needed to issue the operations.
+   This is a very simplistic model!  */
+fractional_cost
+aarch64_vec_op_count::min_cycles_per_iter () const
+{
+  return std::max (min_nonpred_cycles_per_iter (),
+		   min_pred_cycles_per_iter ());
+}
+
+/* Dump information about the structure.  */
+void
+aarch64_vec_op_count::dump () const
+{
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "  load operations = %d\n", loads);
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "  store operations = %d\n", stores);
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "  general operations = %d\n", general_ops);
+  if (sve_issue_info ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "  predicate operations = %d\n", pred_ops);
+  dump_printf_loc (MSG_NOTE, vect_location,
+		   "  reduction latency = %d\n", reduction_latency);
+  if (auto rcpi = rename_cycles_per_iter ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "  estimated cycles per iteration to rename = %f\n",
+		     rcpi.as_double ());
+  if (auto pred_cpi = min_pred_cycles_per_iter ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "  estimated min cycles per iteration"
+		       " without predication = %f\n",
+		       min_nonpred_cycles_per_iter ().as_double ());
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "  estimated min cycles per iteration"
+		       " for predication = %f\n", pred_cpi.as_double ());
+    }
+  if (auto cpi = min_cycles_per_iter ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "  estimated min cycles per iteration = %f\n",
+		     cpi.as_double ());
 }
 
 /* Information about vector code that we're in the process of costing.  */
@@ -15813,38 +15907,6 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   return record_stmt_cost (stmt_info, where, (count * stmt_cost).ceil ());
 }
 
-/* Dump information about the structure.  */
-void
-aarch64_vec_op_count::dump () const
-{
-  dump_printf_loc (MSG_NOTE, vect_location,
-		   "  load operations = %d\n", loads);
-  dump_printf_loc (MSG_NOTE, vect_location,
-		   "  store operations = %d\n", stores);
-  dump_printf_loc (MSG_NOTE, vect_location,
-		   "  general operations = %d\n", general_ops);
-  if (sve_issue_info ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "  predicate operations = %d\n", pred_ops);
-  dump_printf_loc (MSG_NOTE, vect_location,
-		   "  reduction latency = %d\n", reduction_latency);
-}
-
-/* Estimate the minimum number of cycles needed to issue the operations
-   described by OPS.  This is a very simplistic model!  */
-static fractional_cost
-aarch64_estimate_min_cycles_per_iter (const aarch64_vec_op_count *ops)
-{
-  auto *issue_info = ops->base_issue_info ();
-  fractional_cost cycles = MAX (ops->reduction_latency, 1);
-  cycles = std::max (cycles, { ops->stores, issue_info->stores_per_cycle });
-  cycles = std::max (cycles, { ops->loads + ops->stores,
-			       issue_info->loads_stores_per_cycle });
-  cycles = std::max (cycles, { ops->general_ops,
-			       issue_info->general_ops_per_cycle });
-  return cycles;
-}
-
 /* Subroutine of adjust_body_cost for handling SVE.  Use ISSUE_INFO to work out
    how fast the SVE code can be issued and compare it to the equivalent value
    for scalar code (SCALAR_CYCLES_PER_ITER).  If COULD_USE_ADVSIMD is true,
@@ -15863,60 +15925,13 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 		      bool could_use_advsimd, unsigned int orig_body_cost,
 		      unsigned int *body_cost, bool *should_disparage)
 {
-  auto *issue_info = ops->sve_issue_info ();
-
-  /* Estimate the minimum number of cycles per iteration needed to issue
-     non-predicate operations.  */
-  fractional_cost sve_nonpred_issue_cycles_per_iter
-    = aarch64_estimate_min_cycles_per_iter (ops);
-
-  /* Estimate the minimum number of cycles per iteration needed to rename
-     SVE instructions.
-
-     ??? For now this is done inline rather than via cost tables, since it
-     isn't clear how it should be parameterized for the general case.  */
-  fractional_cost sve_rename_cycles_per_iter = 0;
-  if (issue_info == &neoverse512tvb_sve_issue_info)
-    /* + 1 for an addition.  We've already counted a general op for each
-       store, so we don't need to account for stores separately.  The branch
-       reads no registers and so does not need to be counted either.
-
-       ??? This value is very much on the pessimistic side, but seems to work
-       pretty well in practice.  */
-    sve_rename_cycles_per_iter
-      = { ops->general_ops + ops->loads + ops->pred_ops + 1, 5 };
-
-  /* Combine the rename and non-predicate issue limits into a single value.  */
-  fractional_cost sve_nonpred_cycles_per_iter
-    = std::max (sve_nonpred_issue_cycles_per_iter, sve_rename_cycles_per_iter);
-
-  /* Separately estimate the minimum number of cycles per iteration needed
-     to issue the predicate operations.  */
-  fractional_cost sve_pred_issue_cycles_per_iter
-    = { ops->pred_ops, issue_info->pred_ops_per_cycle };
-
-  /* Calculate the overall limit on the number of cycles per iteration.  */
-  fractional_cost sve_cycles_per_iter
-    = std::max (sve_nonpred_cycles_per_iter, sve_pred_issue_cycles_per_iter);
-
   if (dump_enabled_p ())
-    {
-      ops->dump ();
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "  estimated cycles per iteration = %f\n",
-		       sve_cycles_per_iter.as_double ());
-      if (ops->pred_ops)
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "    predicate issue = %f\n",
-			 sve_pred_issue_cycles_per_iter.as_double ());
-      if (ops->pred_ops || sve_rename_cycles_per_iter)
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "    non-predicate issue = %f\n",
-			 sve_nonpred_issue_cycles_per_iter.as_double ());
-      if (sve_rename_cycles_per_iter)
-	dump_printf_loc (MSG_NOTE, vect_location, "    rename = %f\n",
-			 sve_rename_cycles_per_iter.as_double ());
-    }
+    ops->dump ();
+
+  fractional_cost sve_nonpred_cycles_per_iter
+    = ops->min_nonpred_cycles_per_iter ();
+  fractional_cost sve_pred_cycles_per_iter = ops->min_pred_cycles_per_iter ();
+  fractional_cost sve_cycles_per_iter = ops->min_cycles_per_iter ();
 
   /* If the scalar version of the loop could issue at least as
      quickly as the predicate parts of the SVE loop, make the SVE loop
@@ -15928,7 +15943,7 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
      costs would not model.  Adding this kind of cliffedge would be
      too drastic for scalar_cycles_per_iter vs. sve_cycles_per_iter;
      code in the caller handles that case in a more conservative way.  */
-  fractional_cost sve_estimate = sve_pred_issue_cycles_per_iter + 1;
+  fractional_cost sve_estimate = sve_pred_cycles_per_iter + 1;
   if (scalar_cycles_per_iter < sve_estimate)
     {
       unsigned int min_cost
@@ -15954,7 +15969,7 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
 
      The reasoning is similar to the scalar vs. predicate comparison above:
      if the issue rate of the SVE code is limited by predicate operations
-     (i.e. if sve_pred_issue_cycles_per_iter > sve_nonpred_cycles_per_iter),
+     (i.e. if sve_pred_cycles_per_iter > sve_nonpred_cycles_per_iter),
      and if the Advanced SIMD code could issue within the limit imposed
      by the predicate operations, the predicate operations are adding an
      overhead that the original code didn't have and so we should prefer
@@ -15963,7 +15978,7 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
      the SVE code if sve_cycles_per_iter is strictly greater than
      advsimd_cycles_per_iter.  Given rounding effects, this should mean
      that Advanced SIMD is either better or at least no worse.  */
-  if (sve_nonpred_cycles_per_iter >= sve_pred_issue_cycles_per_iter)
+  if (sve_nonpred_cycles_per_iter >= sve_pred_cycles_per_iter)
     sve_estimate = sve_cycles_per_iter;
   if (could_use_advsimd && advsimd_cycles_per_iter < sve_estimate)
     {
@@ -16042,11 +16057,9 @@ adjust_body_cost (loop_vec_info loop_vinfo,
     }
 
   fractional_cost scalar_cycles_per_iter
-    = aarch64_estimate_min_cycles_per_iter (&scalar_ops);
-  scalar_cycles_per_iter *= estimated_vf;
+    = scalar_ops.min_cycles_per_iter () * estimated_vf;
 
-  fractional_cost vector_cycles_per_iter
-    = aarch64_estimate_min_cycles_per_iter (&vector_ops);
+  fractional_cost vector_cycles_per_iter = vector_ops.min_cycles_per_iter ();
 
   if (dump_enabled_p ())
     {
@@ -16071,7 +16084,7 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 	   && !m_saw_sve_only_op);
 
       fractional_cost advsimd_cycles_per_iter
-	= aarch64_estimate_min_cycles_per_iter (&m_advsimd_ops[0]);
+	= m_advsimd_ops[0].min_cycles_per_iter ();
       if (dump_enabled_p ())
 	{
 	  if (could_use_advsimd)
@@ -16079,9 +16092,6 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "Advanced SIMD issue estimate:\n");
 	      m_advsimd_ops[0].dump ();
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "  estimated cycles per iteration = %f\n",
-			       advsimd_cycles_per_iter.as_double ());
 	    }
 	  else
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -16114,9 +16124,6 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Vector issue estimate:\n");
 	  vector_ops.dump ();
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "  estimated cycles per iteration = %f\n",
-			   vector_cycles_per_iter.as_double ());
 	}
     }
 
