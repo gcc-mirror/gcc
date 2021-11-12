@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2019 Free Software Foundation
+//   Copyright 2002-2021 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -493,6 +493,7 @@ dependencies = { module=install-strip-ld; on=install-strip-bfd; };
 dependencies = { module=install-strip-ld; on=install-strip-libctf; };
 
 // libopcodes depends on libbfd
+dependencies = { module=configure-opcodes; on=configure-bfd; hard=true; };
 dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
