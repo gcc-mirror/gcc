@@ -14920,6 +14920,16 @@ aarch64_simd_vec_costs_for_flags (unsigned int flags)
   return costs->advsimd;
 }
 
+/* If STMT_INFO is a memory reference, return the scalar memory type,
+   otherwise return null.  */
+static tree
+aarch64_dr_type (stmt_vec_info stmt_info)
+{
+  if (auto dr = STMT_VINFO_DATA_REF (stmt_info))
+    return TREE_TYPE (DR_REF (dr));
+  return NULL_TREE;
+}
+
 /* Decide whether to use the unrolling heuristic described above
    m_unrolled_advsimd_niters, updating that field if so.  LOOP_VINFO
    describes the loop that we're vectorizing.  */
@@ -15649,7 +15659,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	    prev_count = num_copies;
 	}
       ops->loads += num_copies;
-      if (vec_flags || FLOAT_TYPE_P (vectype))
+      if (vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
 	ops->general_ops += base_issue->fp_simd_load_general_ops * num_copies;
       break;
 
@@ -15657,7 +15667,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     case unaligned_store:
     case scalar_store:
       ops->stores += num_copies;
-      if (vec_flags || FLOAT_TYPE_P (vectype))
+      if (vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
 	ops->general_ops += base_issue->fp_simd_store_general_ops * num_copies;
       break;
     }
