@@ -3366,6 +3366,21 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
       || !gimple_vdef (call))
     return;
 
+  switch (fn)
+    {
+    case IFN_ATOMIC_BIT_TEST_AND_SET:
+      optab = atomic_bit_test_and_set_optab;
+      break;
+    case IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT:
+      optab = atomic_bit_test_and_complement_optab;
+      break;
+    case IFN_ATOMIC_BIT_TEST_AND_RESET:
+      optab = atomic_bit_test_and_reset_optab;
+      break;
+    default:
+      return;
+    }
+
   tree bit = nullptr;
 
   mask = gimple_call_arg (call, 1);
@@ -3382,6 +3397,10 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 
       tree use_rhs = gimple_assign_rhs1 (use_stmt);
       if (lhs != use_rhs)
+	return;
+
+      if (optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)))
+	  == CODE_FOR_nothing)
 	return;
 
       gimple *g;
@@ -3627,23 +3646,8 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	  bit = build_int_cst (TREE_TYPE (lhs), ibit);
 	}
     }
-
-  switch (fn)
-    {
-    case IFN_ATOMIC_BIT_TEST_AND_SET:
-      optab = atomic_bit_test_and_set_optab;
-      break;
-    case IFN_ATOMIC_BIT_TEST_AND_COMPLEMENT:
-      optab = atomic_bit_test_and_complement_optab;
-      break;
-    case IFN_ATOMIC_BIT_TEST_AND_RESET:
-      optab = atomic_bit_test_and_reset_optab;
-      break;
-    default:
-      return;
-    }
-
-  if (optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs))) == CODE_FOR_nothing)
+  else if (optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)))
+	   == CODE_FOR_nothing)
     return;
 
   tree use_lhs = gimple_assign_lhs (use_stmt);
