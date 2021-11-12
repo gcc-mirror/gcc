@@ -133,7 +133,7 @@
 #include <variant>
 #endif
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 #include <barrier>
 #include <bit>
 #include <compare>
@@ -150,4 +150,8 @@
 #include <source_location>
 #include <syncstream>
 #include <version>
+#endif
+
+#if __cplusplus > 202002L
+#include <spanstream>
 #endif

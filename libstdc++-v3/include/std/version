@@ -296,6 +296,9 @@
 # define __cpp_lib_monadic_optional 202110L
 #endif
 #define __cpp_lib_move_only_function 202110L
+#if __cpp_lib_span
+# define __cpp_lib_spanstream 202106L
+#endif
 #define __cpp_lib_string_contains 202011L
 #if _GLIBCXX_USE_CXX11_ABI // Only supported with cxx11-abi
 # define __cpp_lib_string_resize_and_overwrite 202110L
