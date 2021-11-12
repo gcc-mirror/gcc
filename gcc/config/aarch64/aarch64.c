@@ -14813,7 +14813,8 @@ private:
 					fractional_cost, fractional_cost,
 					bool, unsigned int, unsigned int *,
 					bool *);
-  unsigned int adjust_body_cost (unsigned int);
+  unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
+				 unsigned int);
 
   /* True if we have performed one-time initialization based on the
      vec_info.  */
@@ -14850,21 +14851,15 @@ private:
      iterate, otherwise it is zero.  */
   uint64_t m_num_vector_iterations = 0;
 
-  /* Used only when vectorizing loops.  Estimates the number and kind of scalar
-     operations that would be needed to perform the same work as one iteration
-     of the vector loop.  */
-  aarch64_vec_op_count m_scalar_ops;
+  /* Used only when vectorizing loops.  Estimates the number and kind of
+     operations that would be needed by one iteration of the scalar
+     or vector loop.  */
+  aarch64_vec_op_count m_ops;
 
-  /* Used only when vectorizing loops.  If M_VEC_FLAGS & VEC_ADVSIMD,
-     this structure estimates the number and kind of operations that the
-     vector loop would contain.  If M_VEC_FLAGS & VEC_SVE, the structure
-     estimates what the equivalent Advanced SIMD-only code would need in
-     order to perform the same work as one iteration of the SVE loop.  */
+  /* Used only when vectorizing loops for SVE.  It estimates what the
+     equivalent Advanced SIMD-only code would need in order to perform
+     the same work as one iteration of the SVE loop.  */
   aarch64_vec_op_count m_advsimd_ops;
-
-  /* Used only when vectorizing loops with SVE.  It estimates the number and
-     kind of operations that the SVE loop would contain.  */
-  aarch64_vec_op_count m_sve_ops;
 
   /* Used to detect cases in which we end up costing the same load twice,
      once to account for results that are actually used and once to account
@@ -14875,9 +14870,10 @@ private:
 aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
 					    bool costing_for_scalar)
   : vector_costs (vinfo, costing_for_scalar),
-    m_scalar_ops (aarch64_tune_params.vec_costs->issue_info, 0),
-    m_advsimd_ops (aarch64_tune_params.vec_costs->issue_info, VEC_ADVSIMD),
-    m_sve_ops (aarch64_tune_params.vec_costs->issue_info, VEC_ANY_SVE)
+    m_vec_flags (costing_for_scalar ? 0
+		 : aarch64_classify_vector_mode (vinfo->vector_mode)),
+    m_ops (aarch64_tune_params.vec_costs->issue_info, m_vec_flags),
+    m_advsimd_ops (aarch64_tune_params.vec_costs->issue_info, VEC_ADVSIMD)
 {
 }
 
@@ -15016,7 +15012,7 @@ aarch64_vector_costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
       FOR_EACH_VEC_ELT (LOOP_VINFO_MASKS (loop_vinfo), num_vectors_m1, rgm)
 	if (rgm->type)
 	  num_masks += num_vectors_m1 + 1;
-      m_sve_ops.pred_ops += num_masks * issue_info->sve->while_pred_ops;
+      m_ops.pred_ops += num_masks * issue_info->sve->while_pred_ops;
     }
 }
 
@@ -15550,8 +15546,8 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
 /* COUNT, KIND, STMT_INFO and VECTYPE are the same as for
    vector_costs::add_stmt_cost and they describe an operation in the
    body of a vector loop.  Record issue information relating to the vector
-   operation in OPS, where OPS is one of m_scalar_ops, m_advsimd_ops
-   or m_sve_ops; see the comments above those variables for details.
+   operation in OPS, where OPS is one of m_ops or m_advsimd_ops; see the
+   comments above those variables for details.
 
    FACTOR says how many iterations of the loop described by VEC_FLAGS would be
    needed to match one iteration of the vector loop in VINFO.  */
@@ -15570,14 +15566,14 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 
   /* Calculate the minimum cycles per iteration imposed by a reduction
      operation.  */
-  if ((kind == vector_stmt || kind == vec_to_scalar)
+  if ((kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
       && vect_is_reduction (stmt_info))
     {
       unsigned int base
 	= aarch64_in_loop_reduction_latency (m_vinfo, stmt_info, vec_flags);
       if (vect_reduc_type (m_vinfo, stmt_info) == FOLD_LEFT_REDUCTION)
 	{
-	  if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
+	  if (vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
 	    {
 	      /* When costing an SVE FADDA, the vectorizer treats vec_to_scalar
 		 as a single operation, whereas for Advanced SIMD it is a
@@ -15744,11 +15740,6 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
   if (!m_analyzed_vinfo && aarch64_use_new_vector_costs_p ())
     {
-      /* If we're costing the vector code, record whether we're vectorizing
-	 for Advanced SIMD or SVE.  */
-      if (!m_costing_for_scalar)
-	m_vec_flags = aarch64_classify_vector_mode (m_vinfo->vector_mode);
-
       if (loop_vinfo)
 	analyze_loop_vinfo (loop_vinfo);
 
@@ -15793,31 +15784,16 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 innermost loop, also estimate the operations that would need
 	 to be issued by all relevant implementations of the loop.  */
       if (loop_vinfo
-	  && m_vec_flags
-	  && where == vect_body
+	  && (m_costing_for_scalar || where == vect_body)
 	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
-	  && vectype
 	  && stmt_cost != 0)
 	{
-	  /* Record estimates for the scalar code.  */
-	  count_ops (count, kind, stmt_info, vectype, &m_scalar_ops,
-		     vect_nunits_for_cost (vectype));
-
-	  if (aarch64_sve_mode_p (m_vinfo->vector_mode)
-	      && m_sve_ops.base_issue_info ())
-	    {
-	      /* Record estimates for a possible Advanced SIMD version
-		 of the SVE code.  */
-	      count_ops (count, kind, stmt_info, vectype, &m_advsimd_ops,
-			 aarch64_estimated_sve_vq ());
-
-	      /* Record estimates for the SVE code itself.  */
-	      count_ops (count, kind, stmt_info, vectype, &m_sve_ops, 1);
-	    }
-	  else
-	    /* Record estimates for the Advanced SIMD code.  Treat SVE like
-	       Advanced SIMD if the CPU has no specific SVE costs.  */
-	    count_ops (count, kind, stmt_info, vectype, &m_advsimd_ops, 1);
+	  count_ops (count, kind, stmt_info, vectype, &m_ops, 1);
+	  if (aarch64_sve_mode_p (m_vinfo->vector_mode))
+	    /* Record estimates for a possible Advanced SIMD version
+	       of the SVE code.  */
+	    count_ops (count, kind, stmt_info, vectype,
+		       &m_advsimd_ops, aarch64_estimated_sve_vq ());
 	}
 
       /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
@@ -15885,7 +15861,7 @@ adjust_body_cost_sve (const aarch64_vec_issue_info *issue_info,
   /* Estimate the minimum number of cycles per iteration needed to issue
      non-predicate operations.  */
   fractional_cost sve_nonpred_issue_cycles_per_iter
-    = aarch64_estimate_min_cycles_per_iter (&m_sve_ops, issue_info->sve);
+    = aarch64_estimate_min_cycles_per_iter (&m_ops, issue_info->sve);
 
   /* Estimate the minimum number of cycles per iteration needed to rename
      SVE instructions.
@@ -15901,9 +15877,7 @@ adjust_body_cost_sve (const aarch64_vec_issue_info *issue_info,
        ??? This value is very much on the pessimistic side, but seems to work
        pretty well in practice.  */
     sve_rename_cycles_per_iter
-      = { m_sve_ops.general_ops
-	  + m_sve_ops.loads
-	  + m_sve_ops.pred_ops + 1, 5 };
+      = { m_ops.general_ops + m_ops.loads + m_ops.pred_ops + 1, 5 };
 
   /* Combine the rename and non-predicate issue limits into a single value.  */
   fractional_cost sve_nonpred_cycles_per_iter
@@ -15912,7 +15886,7 @@ adjust_body_cost_sve (const aarch64_vec_issue_info *issue_info,
   /* Separately estimate the minimum number of cycles per iteration needed
      to issue the predicate operations.  */
   fractional_cost sve_pred_issue_cycles_per_iter
-    = { m_sve_ops.pred_ops, issue_info->sve->pred_ops_per_cycle };
+    = { m_ops.pred_ops, issue_info->sve->pred_ops_per_cycle };
 
   /* Calculate the overall limit on the number of cycles per iteration.  */
   fractional_cost sve_cycles_per_iter
@@ -15920,15 +15894,15 @@ adjust_body_cost_sve (const aarch64_vec_issue_info *issue_info,
 
   if (dump_enabled_p ())
     {
-      m_sve_ops.dump ();
+      m_ops.dump ();
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "  estimated cycles per iteration = %f\n",
 		       sve_cycles_per_iter.as_double ());
-      if (m_sve_ops.pred_ops)
+      if (m_ops.pred_ops)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "    predicate issue = %f\n",
 			 sve_pred_issue_cycles_per_iter.as_double ());
-      if (m_sve_ops.pred_ops || sve_rename_cycles_per_iter)
+      if (m_ops.pred_ops || sve_rename_cycles_per_iter)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "    non-predicate issue = %f\n",
 			 sve_nonpred_issue_cycles_per_iter.as_double ());
@@ -16008,8 +15982,13 @@ adjust_body_cost_sve (const aarch64_vec_issue_info *issue_info,
 /* BODY_COST is the cost of a vector loop body.  Adjust the cost as necessary
    and return the new cost.  */
 unsigned int
-aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
+aarch64_vector_costs::
+adjust_body_cost (loop_vec_info loop_vinfo,
+		  const aarch64_vector_costs *scalar_costs,
+		  unsigned int body_cost)
 {
+  const auto &scalar_ops = scalar_costs->m_ops;
+  unsigned int estimated_vf = vect_vf_for_cost (loop_vinfo);
   unsigned int orig_body_cost = body_cost;
   bool should_disparage = false;
 
@@ -16056,19 +16035,11 @@ aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
     return body_cost;
 
   fractional_cost scalar_cycles_per_iter
-    = aarch64_estimate_min_cycles_per_iter (&m_scalar_ops,
-					    issue_info->scalar);
+    = aarch64_estimate_min_cycles_per_iter (&scalar_ops, issue_info->scalar);
+  scalar_cycles_per_iter *= estimated_vf;
 
-  fractional_cost advsimd_cycles_per_iter
-    = aarch64_estimate_min_cycles_per_iter (&m_advsimd_ops,
-					    issue_info->advsimd);
-
-  bool could_use_advsimd
-    = ((m_vec_flags & VEC_ADVSIMD)
-       || (aarch64_autovec_preference != 2
-	   && (aarch64_tune_params.extra_tuning_flags
-	       & AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT)
-	   && !m_saw_sve_only_op));
+  fractional_cost vector_cycles_per_iter
+    = aarch64_estimate_min_cycles_per_iter (&m_ops, m_ops.base_issue_info ());
 
   if (dump_enabled_p ())
     {
@@ -16077,32 +16048,40 @@ aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
 			 "Vector loop iterates at most %wd times\n",
 			 m_num_vector_iterations);
       dump_printf_loc (MSG_NOTE, vect_location, "Scalar issue estimate:\n");
-      m_scalar_ops.dump ();
+      scalar_ops.dump ();
       dump_printf_loc (MSG_NOTE, vect_location,
-		       "  estimated cycles per iteration = %f\n",
-		       scalar_cycles_per_iter.as_double ());
-      if (could_use_advsimd)
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Advanced SIMD issue estimate:\n");
-	  m_advsimd_ops.dump ();
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "  estimated cycles per iteration = %f\n",
-			   advsimd_cycles_per_iter.as_double ());
-	}
-      else
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Loop could not use Advanced SIMD\n");
+		       "  estimated cycles per vector iteration"
+		       " (for VF %d) = %f\n",
+		       estimated_vf, scalar_cycles_per_iter.as_double ());
     }
-
-  fractional_cost vector_cycles_per_iter = advsimd_cycles_per_iter;
-  unsigned int vector_reduction_latency = m_advsimd_ops.reduction_latency;
 
   if ((m_vec_flags & VEC_ANY_SVE) && issue_info->sve)
     {
+      bool could_use_advsimd
+	= (aarch64_autovec_preference != 2
+	   && (aarch64_tune_params.extra_tuning_flags
+	       & AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT)
+	   && !m_saw_sve_only_op);
+
+      fractional_cost advsimd_cycles_per_iter
+	= aarch64_estimate_min_cycles_per_iter (&m_advsimd_ops,
+						issue_info->advsimd);
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
-      vector_reduction_latency = m_sve_ops.reduction_latency;
+	{
+	  if (could_use_advsimd)
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "Advanced SIMD issue estimate:\n");
+	      m_advsimd_ops.dump ();
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "  estimated cycles per iteration = %f\n",
+			       advsimd_cycles_per_iter.as_double ());
+	    }
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Loop could not use Advanced SIMD\n");
+	  dump_printf_loc (MSG_NOTE, vect_location, "SVE issue estimate:\n");
+	}
       vector_cycles_per_iter
 	= adjust_body_cost_sve (issue_info, scalar_cycles_per_iter,
 				advsimd_cycles_per_iter, could_use_advsimd,
@@ -16121,6 +16100,18 @@ aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
 				advsimd_cycles_per_iter * 2,
 				could_use_advsimd, orig_body_cost,
 				&body_cost, &should_disparage);
+	}
+    }
+  else
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Vector issue estimate:\n");
+	  m_ops.dump ();
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "  estimated cycles per iteration = %f\n",
+			   vector_cycles_per_iter.as_double ());
 	}
     }
 
@@ -16164,8 +16155,8 @@ aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
      vector code is an improvement, even if adding the other (non-loop-carried)
      latencies tends to hide this saving.  We therefore reduce the cost of the
      vector loop body in proportion to the saving.  */
-  else if (m_scalar_ops.reduction_latency > vector_reduction_latency
-	   && m_scalar_ops.reduction_latency == scalar_cycles_per_iter
+  else if (scalar_ops.reduction_latency > m_ops.reduction_latency
+	   && scalar_ops.reduction_latency == scalar_cycles_per_iter
 	   && scalar_cycles_per_iter > vector_cycles_per_iter
 	   && !should_disparage)
     {
@@ -16181,13 +16172,16 @@ aarch64_vector_costs::adjust_body_cost (unsigned int body_cost)
 }
 
 void
-aarch64_vector_costs::finish_cost (const vector_costs *scalar_costs)
+aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
 {
+  auto *scalar_costs
+    = static_cast<const aarch64_vector_costs *> (uncast_scalar_costs);
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
   if (loop_vinfo
       && m_vec_flags
       && aarch64_use_new_vector_costs_p ())
-    m_costs[vect_body] = adjust_body_cost (m_costs[vect_body]);
+    m_costs[vect_body] = adjust_body_cost (loop_vinfo, scalar_costs,
+					   m_costs[vect_body]);
 
   vector_costs::finish_cost (scalar_costs);
 }
