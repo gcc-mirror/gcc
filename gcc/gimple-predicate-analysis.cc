@@ -2105,67 +2105,6 @@ predicate::normalize (gimple *use_or_def, bool is_use)
     }
 }
 
-/* Add a predicate for the condition or logical assignment STMT to CHAIN.
-   Expand SSA_NAME into constituent subexpressions.  Invert the result
-   if INVERT is true.  Return true if the predicate has been added.  */
-
-static bool
-add_pred (pred_chain *chain, gimple *stmt, bool invert)
-{
-  if (gimple_code (stmt) == GIMPLE_COND)
-    {
-      tree lhs = gimple_cond_lhs (stmt);
-      if (TREE_CODE (lhs) == SSA_NAME)
-	{
-	  gimple *def = SSA_NAME_DEF_STMT (lhs);
-	  if (is_gimple_assign (def)
-	      && add_pred (chain, def, invert))
-	    return true;
-	}
-
-      pred_info pred;
-      pred.pred_lhs = lhs;
-      pred.pred_rhs = gimple_cond_rhs (stmt);
-      pred.cond_code = gimple_cond_code (stmt);
-      pred.invert = invert;
-      chain->safe_push (pred);
-      return true;
-    }
-
-  if (!is_gimple_assign (stmt))
-    return false;
-
-  if (gimple_assign_single_p (stmt))
-    // FIXME: handle this?
-    return false;
-
-  if (TREE_TYPE (gimple_assign_lhs (stmt)) != boolean_type_node)
-    return false;
-
-  tree rhs1 = gimple_assign_rhs1 (stmt);
-  tree rhs2 = gimple_assign_rhs2 (stmt);
-  tree_code code = gimple_assign_rhs_code (stmt);
-  if (code == BIT_AND_EXPR)
-    {
-      if (TREE_CODE (rhs1) == SSA_NAME
-	  && add_pred (chain, SSA_NAME_DEF_STMT (rhs1), invert)
-	  && TREE_CODE (rhs2) == SSA_NAME
-	  /* FIXME: Need to handle failure below! */
-	  && add_pred (chain, SSA_NAME_DEF_STMT (rhs2), invert))
-	return true;
-    }
-  else if (TREE_CODE_CLASS (code) != tcc_comparison)
-    return false;
-
-  pred_info pred;
-  pred.pred_lhs = rhs1;
-  pred.pred_rhs = rhs2;
-  pred.cond_code = code;
-  pred.invert = invert;
-  chain->safe_push (pred);
-  return true;
-}
-
 /* Convert the chains of control dependence edges into a set of predicates.
    A control dependence chain is represented by a vector edges.  DEP_CHAINS
    points to an array of NUM_CHAINS dependence chains. One edge in
