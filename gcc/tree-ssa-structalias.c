@@ -4996,7 +4996,7 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 reachable from their arguments, but they are not an escape
 	 point for reachable memory of their arguments.  */
       else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
-	handle_rhs_call (t, &rhsc, implicit_pure_eaf_flags, true, false);
+	handle_rhs_call (t, &rhsc, implicit_pure_eaf_flags, false, true);
       /* If the call is to a replaceable operator delete and results
 	 from a delete expression as opposed to a direct call to
 	 such operator, then the effects for PTA (in particular
