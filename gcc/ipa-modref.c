@@ -2790,7 +2790,8 @@ analyze_function (function *f, bool ipa)
 
   if (!ipa && flag_ipa_pure_const)
     {
-      if (!summary->stores->every_base && !summary->stores->bases)
+      if (!summary->stores->every_base && !summary->stores->bases
+	  && !summary->side_effects)
 	{
 	  if (!summary->loads->every_base && !summary->loads->bases)
 	    fixup_cfg = ipa_make_function_const
@@ -4380,7 +4381,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	modref_summary_lto *summary_lto = summaries_lto
 					  ? summaries_lto->get (cur)
 					  : NULL;
-	if (summary && !summary->stores->every_base && !summary->stores->bases)
+	if (summary && !summary->stores->every_base && !summary->stores->bases
+	    && !summary->side_effects)
 	  {
 	    if (!summary->loads->every_base && !summary->loads->bases)
 	      pureconst |= ipa_make_function_const
@@ -4390,7 +4392,7 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		     (cur, summary->side_effects, false);
 	  }
 	if (summary_lto && !summary_lto->stores->every_base
-	    && !summary_lto->stores->bases)
+	    && !summary_lto->stores->bases && !summary_lto->side_effects)
 	  {
 	    if (!summary_lto->loads->every_base && !summary_lto->loads->bases)
 	      pureconst |= ipa_make_function_const
