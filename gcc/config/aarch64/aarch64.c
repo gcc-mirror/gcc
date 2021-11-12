@@ -14707,8 +14707,16 @@ aarch64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *insn,
 /* Information about how the CPU would issue the scalar, Advanced SIMD
    or SVE version of a vector loop, using the scheme defined by the
    aarch64_base_vec_issue_info hierarchy of structures.  */
-struct aarch64_vec_op_count
+class aarch64_vec_op_count
 {
+public:
+  aarch64_vec_op_count (const aarch64_vec_issue_info *, unsigned int);
+
+  unsigned int vec_flags () const { return m_vec_flags; }
+  const aarch64_base_vec_issue_info *base_issue_info () const;
+  const aarch64_simd_vec_issue_info *simd_issue_info () const;
+  const aarch64_sve_vec_issue_info *sve_issue_info () const;
+
   void dump () const;
 
   /* The number of individual "general" operations.  See the comments
@@ -14724,23 +14732,71 @@ struct aarch64_vec_op_count
      operations, which in the vector code become associated with
      reductions.  */
   unsigned int reduction_latency = 0;
-};
-
-/* Extends aarch64_vec_op_count with SVE-specific information.  */
-struct aarch64_sve_op_count : aarch64_vec_op_count
-{
-  void dump () const;
 
   /* The number of individual predicate operations.  See the comments
      in aarch64_sve_vec_issue_info for details.  */
   unsigned int pred_ops = 0;
+
+private:
+  /* The issue information for the core.  */
+  const aarch64_vec_issue_info *m_issue_info;
+
+  /* - If M_VEC_FLAGS is zero then this structure describes scalar code
+     - If M_VEC_FLAGS & VEC_ADVSIMD is nonzero then this structure describes
+       Advanced SIMD code.
+     - If M_VEC_FLAGS & VEC_ANY_SVE is nonzero then this structure describes
+       SVE code.  */
+  unsigned int m_vec_flags;
 };
+
+aarch64_vec_op_count::
+aarch64_vec_op_count (const aarch64_vec_issue_info *issue_info,
+		      unsigned int vec_flags)
+  : m_issue_info (issue_info),
+    m_vec_flags (vec_flags)
+{
+}
+
+/* Return the base issue information (i.e. the parts that make sense
+   for both scalar and vector code).  Return null if we have no issue
+   information.  */
+const aarch64_base_vec_issue_info *
+aarch64_vec_op_count::base_issue_info () const
+{
+  if (auto *ret = simd_issue_info ())
+    return ret;
+  if (m_issue_info)
+    return m_issue_info->scalar;
+  return nullptr;
+}
+
+/* If the structure describes vector code and we have associated issue
+   information, return that issue information, otherwise return null.  */
+const aarch64_simd_vec_issue_info *
+aarch64_vec_op_count::simd_issue_info () const
+{
+  if (auto *ret = sve_issue_info ())
+    return ret;
+  if (m_issue_info && m_vec_flags)
+    return m_issue_info->advsimd;
+  return nullptr;
+}
+
+/* If the structure describes SVE code and we have associated issue
+   information, return that issue information, otherwise return null.  */
+const aarch64_sve_vec_issue_info *
+aarch64_vec_op_count::sve_issue_info () const
+{
+  if (m_issue_info && (m_vec_flags & VEC_ANY_SVE))
+    return m_issue_info->sve;
+  return nullptr;
+}
 
 /* Information about vector code that we're in the process of costing.  */
 class aarch64_vector_costs : public vector_costs
 {
 public:
-  using vector_costs::vector_costs;
+  aarch64_vector_costs (vec_info *, bool);
 
   unsigned int add_stmt_cost (int count, vect_cost_for_stmt kind,
 			      stmt_vec_info stmt_info, tree vectype,
@@ -14752,8 +14808,7 @@ private:
   void record_potential_advsimd_unrolling (loop_vec_info);
   void analyze_loop_vinfo (loop_vec_info);
   void count_ops (unsigned int, vect_cost_for_stmt, stmt_vec_info, tree,
-		  unsigned int, aarch64_vec_op_count *,
-		  const aarch64_base_vec_issue_info *, unsigned int);
+		  aarch64_vec_op_count *, unsigned int);
   fractional_cost adjust_body_cost_sve (const aarch64_vec_issue_info *,
 					fractional_cost, fractional_cost,
 					bool, unsigned int, unsigned int *,
@@ -14809,13 +14864,22 @@ private:
 
   /* Used only when vectorizing loops with SVE.  It estimates the number and
      kind of operations that the SVE loop would contain.  */
-  aarch64_sve_op_count m_sve_ops;
+  aarch64_vec_op_count m_sve_ops;
 
   /* Used to detect cases in which we end up costing the same load twice,
      once to account for results that are actually used and once to account
      for unused results.  */
   hash_map<nofree_ptr_hash<_stmt_vec_info>, unsigned int> m_seen_loads;
 };
+
+aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
+					    bool costing_for_scalar)
+  : vector_costs (vinfo, costing_for_scalar),
+    m_scalar_ops (aarch64_tune_params.vec_costs->issue_info, 0),
+    m_advsimd_ops (aarch64_tune_params.vec_costs->issue_info, VEC_ADVSIMD),
+    m_sve_ops (aarch64_tune_params.vec_costs->issue_info, VEC_ANY_SVE)
+{
+}
 
 /* Implement TARGET_VECTORIZE_CREATE_COSTS.  */
 vector_costs *
@@ -15484,36 +15548,21 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
    body of a vector loop.  Record issue information relating to the vector
    operation in OPS, where OPS is one of m_scalar_ops, m_advsimd_ops
    or m_sve_ops; see the comments above those variables for details.
-   In addition:
 
-   - VEC_FLAGS is zero if OPS is m_scalar_ops.
-
-   - VEC_FLAGS & VEC_ADVSIMD is nonzero if OPS is m_advsimd_ops.
-
-   - VEC_FLAGS & VEC_ANY_SVE is nonzero if OPS is m_sve_ops.
-
-   ISSUE_INFO provides the scalar, Advanced SIMD or SVE issue information
-   associated with OPS and VEC_FLAGS.  FACTOR says how many iterations of
-   the loop described by VEC_FLAGS would be needed to match one iteration
-   of the vector loop in VINFO.  */
+   FACTOR says how many iterations of the loop described by VEC_FLAGS would be
+   needed to match one iteration of the vector loop in VINFO.  */
 void
 aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 				 stmt_vec_info stmt_info, tree vectype,
-				 unsigned int vec_flags,
 				 aarch64_vec_op_count *ops,
-				 const aarch64_base_vec_issue_info *issue_info,
 				 unsigned int factor)
 {
-  if (!issue_info)
+  const aarch64_base_vec_issue_info *base_issue = ops->base_issue_info ();
+  if (!base_issue)
     return;
-
-  const aarch64_simd_vec_issue_info *simd_issue = nullptr;
-  if (vec_flags)
-    simd_issue = static_cast<const aarch64_simd_vec_issue_info *> (issue_info);
-
-  const aarch64_sve_vec_issue_info *sve_issue = nullptr;
-  if (vec_flags & VEC_ANY_SVE)
-    sve_issue = static_cast<const aarch64_sve_vec_issue_info *> (issue_info);
+  const aarch64_simd_vec_issue_info *simd_issue = ops->simd_issue_info ();
+  const aarch64_sve_vec_issue_info *sve_issue = ops->sve_issue_info ();
+  unsigned int vec_flags = ops->vec_flags ();
 
   /* Calculate the minimum cycles per iteration imposed by a reduction
      operation.  */
@@ -15608,7 +15657,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	}
       ops->loads += num_copies;
       if (vec_flags || FLOAT_TYPE_P (vectype))
-	ops->general_ops += issue_info->fp_simd_load_general_ops * num_copies;
+	ops->general_ops += base_issue->fp_simd_load_general_ops * num_copies;
       break;
 
     case vector_store:
@@ -15616,7 +15665,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     case scalar_store:
       ops->stores += num_copies;
       if (vec_flags || FLOAT_TYPE_P (vectype))
-	ops->general_ops += issue_info->fp_simd_store_general_ops * num_copies;
+	ops->general_ops += base_issue->fp_simd_store_general_ops * num_copies;
       break;
     }
 
@@ -15644,7 +15693,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 	unsigned int base = (FLOAT_TYPE_P (type)
 			     ? sve_issue->fp_cmp_pred_ops
 			     : sve_issue->int_cmp_pred_ops);
-	m_sve_ops.pred_ops += base * num_copies;
+	ops->pred_ops += base * num_copies;
       }
 
   /* Add any extra overhead associated with LD[234] and ST[234] operations.  */
@@ -15670,7 +15719,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER)
     {
       unsigned int pairs = CEIL (count, 2);
-      m_sve_ops.pred_ops += sve_issue->gather_scatter_pair_pred_ops * pairs;
+      ops->pred_ops += sve_issue->gather_scatter_pair_pred_ops * pairs;
       ops->general_ops += sve_issue->gather_scatter_pair_general_ops * pairs;
     }
 }
@@ -15740,9 +15789,7 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       /* If we're recording a nonzero vector loop body cost for the
 	 innermost loop, also estimate the operations that would need
 	 to be issued by all relevant implementations of the loop.  */
-      auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
       if (loop_vinfo
-	  && issue_info
 	  && m_vec_flags
 	  && where == vect_body
 	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
@@ -15750,26 +15797,24 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  && stmt_cost != 0)
 	{
 	  /* Record estimates for the scalar code.  */
-	  count_ops (count, kind, stmt_info, vectype, 0, &m_scalar_ops,
-		     issue_info->scalar, vect_nunits_for_cost (vectype));
+	  count_ops (count, kind, stmt_info, vectype, &m_scalar_ops,
+		     vect_nunits_for_cost (vectype));
 
-	  if (aarch64_sve_mode_p (m_vinfo->vector_mode) && issue_info->sve)
+	  if (aarch64_sve_mode_p (m_vinfo->vector_mode)
+	      && m_sve_ops.base_issue_info ())
 	    {
 	      /* Record estimates for a possible Advanced SIMD version
 		 of the SVE code.  */
-	      count_ops (count, kind, stmt_info, vectype, VEC_ADVSIMD,
-			 &m_advsimd_ops, issue_info->advsimd,
+	      count_ops (count, kind, stmt_info, vectype, &m_advsimd_ops,
 			 aarch64_estimated_sve_vq ());
 
 	      /* Record estimates for the SVE code itself.  */
-	      count_ops (count, kind, stmt_info, vectype, VEC_ANY_SVE,
-			 &m_sve_ops, issue_info->sve, 1);
+	      count_ops (count, kind, stmt_info, vectype, &m_sve_ops, 1);
 	    }
 	  else
 	    /* Record estimates for the Advanced SIMD code.  Treat SVE like
 	       Advanced SIMD if the CPU has no specific SVE costs.  */
-	    count_ops (count, kind, stmt_info, vectype, VEC_ADVSIMD,
-		       &m_advsimd_ops, issue_info->advsimd, 1);
+	    count_ops (count, kind, stmt_info, vectype, &m_advsimd_ops, 1);
 	}
 
       /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
@@ -15793,17 +15838,11 @@ aarch64_vec_op_count::dump () const
 		   "  store operations = %d\n", stores);
   dump_printf_loc (MSG_NOTE, vect_location,
 		   "  general operations = %d\n", general_ops);
+  if (sve_issue_info ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "  predicate operations = %d\n", pred_ops);
   dump_printf_loc (MSG_NOTE, vect_location,
 		   "  reduction latency = %d\n", reduction_latency);
-}
-
-/* Dump information about the structure.  */
-void
-aarch64_sve_op_count::dump () const
-{
-  aarch64_vec_op_count::dump ();
-  dump_printf_loc (MSG_NOTE, vect_location,
-		   "  predicate operations = %d\n", pred_ops);
 }
 
 /* Use ISSUE_INFO to estimate the minimum number of cycles needed to issue
