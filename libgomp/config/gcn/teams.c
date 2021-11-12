@@ -1,5 +1,4 @@
 /* Copyright (C) 2015-2021 Free Software Foundation, Inc.
-   Contributed by Mentor Embedded.
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).
@@ -29,48 +28,27 @@
 #include "libgomp.h"
 
 void
-omp_set_default_device (int device_num __attribute__((unused)))
+GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
+		unsigned int thread_limit, unsigned int flags)
 {
+  (void) fn;
+  (void) data;
+  (void) flags;
+  (void) num_teams;
+  (void) thread_limit;
 }
 
 int
-omp_get_default_device (void)
+omp_get_num_teams (void)
 {
-  return 0;
+  return gomp_num_teams_var + 1;
 }
 
-int
-omp_get_initial_device (void)
+int __attribute__ ((__optimize__ ("O2")))
+omp_get_team_num (void)
 {
-  return GOMP_DEVICE_HOST_FALLBACK;
+  return __builtin_gcn_dim_pos (0);
 }
 
-int
-omp_get_num_devices (void)
-{
-  return 0;
-}
-
-int
-omp_is_initial_device (void)
-{
-  /* AMD GCN is an accelerator-only target.  */
-  return 0;
-}
-
-/* This is set to the device number of current GPU during device initialization,
-   when the offload image containing this libgomp portion is loaded.  */
-static volatile int GOMP_DEVICE_NUM_VAR;
-
-int
-omp_get_device_num (void)
-{
-  return GOMP_DEVICE_NUM_VAR;
-}
-
-ialias (omp_set_default_device)
-ialias (omp_get_default_device)
-ialias (omp_get_initial_device)
-ialias (omp_get_num_devices)
-ialias (omp_is_initial_device)
-ialias (omp_get_device_num)
+ialias (omp_get_num_teams)
+ialias (omp_get_team_num)
