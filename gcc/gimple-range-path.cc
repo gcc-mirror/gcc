@@ -365,12 +365,23 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 	clear_cache (name);
     }
 
-  // Solve imports defined in this block.
+  // Solve imports defined in this block, starting with the PHIs...
+  for (gphi_iterator iter = gsi_start_phis (bb); !gsi_end_p (iter);
+       gsi_next (&iter))
+    {
+      gphi *phi = iter.phi ();
+      tree name = gimple_phi_result (phi);
+
+      if (import_p (name) && range_defined_in_block (r, name, bb))
+	set_cache (r, name);
+    }
+  // ...and then the rest of the imports.
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
     {
       tree name = ssa_name (i);
 
-      if (range_defined_in_block (r, name, bb))
+      if (gimple_code (SSA_NAME_DEF_STMT (name)) != GIMPLE_PHI
+	  && range_defined_in_block (r, name, bb))
 	set_cache (r, name);
     }
 
