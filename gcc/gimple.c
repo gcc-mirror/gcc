@@ -1567,22 +1567,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
   int flags = 0;
 
   if (fnspec.known_p ())
-    {
-      if (!fnspec.arg_specified_p (arg))
-	;
-      else if (!fnspec.arg_used_p (arg))
-	flags = EAF_UNUSED;
-      else
-	{
-	  if (fnspec.arg_direct_p (arg))
-	    flags |= EAF_NO_INDIRECT_READ | EAF_NO_INDIRECT_ESCAPE
-		     | EAF_NOT_RETURNED_INDIRECTLY | EAF_NO_INDIRECT_CLOBBER;
-	  if (fnspec.arg_noescape_p (arg))
-	    flags |= EAF_NO_DIRECT_ESCAPE | EAF_NO_INDIRECT_ESCAPE;
-	  if (fnspec.arg_readonly_p (arg))
-	    flags |= EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER;
-	}
-    }
+    flags = fnspec.arg_eaf_flags (arg);
   tree callee = gimple_call_fndecl (stmt);
   if (callee)
     {

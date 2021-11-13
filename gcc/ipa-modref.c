@@ -2476,6 +2476,14 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
   /* Do the dataflow.  */
   eaf_analysis.propagate ();
 
+  tree attr = lookup_attribute ("fn spec",
+				TYPE_ATTRIBUTES
+				  (TREE_TYPE (current_function_decl)));
+  attr_fnspec fnspec (attr
+		      ? TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)))
+		      : "");
+
+
   /* Store results to summaries.  */
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm; parm_index++,
        parm = TREE_CHAIN (parm))
@@ -2502,6 +2510,18 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	  continue;
 	}
       int flags = eaf_analysis.get_ssa_name_flags (name);
+      int attr_flags = fnspec.arg_eaf_flags (parm_index);
+
+      if (dump_file && (flags | attr_flags) != flags && !(flags & EAF_UNUSED))
+	{
+	  fprintf (dump_file,
+		   "  Flags for param %i combined with fnspec flags:",
+		   (int)parm_index);
+	  dump_eaf_flags (dump_file, attr_flags, false);
+	  fprintf (dump_file, " determined: ");
+	  dump_eaf_flags (dump_file, flags, true);
+	}
+      flags |= attr_flags;
 
       /* Eliminate useless flags so we do not end up storing unnecessary
 	 summaries.  */
@@ -2522,8 +2542,8 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		       "  Flags for param %i combined with IPA pass:",
 		       (int)parm_index);
 	      dump_eaf_flags (dump_file, past, false);
-	      fprintf (dump_file, " local ");
-	      dump_eaf_flags (dump_file, flags | past, true);
+	      fprintf (dump_file, " determined: ");
+	      dump_eaf_flags (dump_file, flags, true);
 	    }
 	  if (!(flags & EAF_UNUSED))
 	    flags |= past;
@@ -2561,7 +2581,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	  fprintf (dump_file,
 		   "  Retslot flags combined with IPA pass:");
 	  dump_eaf_flags (dump_file, past, false);
-	  fprintf (dump_file, " local ");
+	  fprintf (dump_file, " determined: ");
 	  dump_eaf_flags (dump_file, flags, true);
 	}
       if (!(flags & EAF_UNUSED))
@@ -2591,7 +2611,7 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	  fprintf (dump_file,
 		   "  Static chain flags combined with IPA pass:");
 	  dump_eaf_flags (dump_file, past, false);
-	  fprintf (dump_file, " local ");
+	  fprintf (dump_file, " determined: ");
 	  dump_eaf_flags (dump_file, flags, true);
 	}
       if (!(flags & EAF_UNUSED))
@@ -4503,27 +4523,7 @@ modref_merge_call_site_flags (escape_summary *sum,
       if (fnspec_sum)
 	{
 	  attr_fnspec fnspec (fnspec_sum->fnspec);
-	  int fnspec_flags = 0;
-
-	  if (fnspec.arg_specified_p (ee->arg))
-	    {
-	      if (!fnspec.arg_used_p (ee->arg))
-		fnspec_flags = EAF_UNUSED;
-	      else
-		{
-		  if (fnspec.arg_direct_p (ee->arg))
-		    fnspec_flags |= EAF_NO_INDIRECT_READ
-			     | EAF_NO_INDIRECT_ESCAPE
-			     | EAF_NOT_RETURNED_INDIRECTLY
-			     | EAF_NO_INDIRECT_CLOBBER;
-		  if (fnspec.arg_noescape_p (ee->arg))
-		    fnspec_flags |= EAF_NO_DIRECT_ESCAPE
-				    | EAF_NO_INDIRECT_ESCAPE;
-		  if (fnspec.arg_readonly_p (ee->arg))
-		    flags |= EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER;
-		}
-	    }
-	  implicit_flags |= fnspec_flags;
+	  implicit_flags |= fnspec.arg_eaf_flags (ee->arg);
 	}
       if (!ee->direct)
 	implicit_flags = deref_flags (implicit_flags, ignore_stores);
