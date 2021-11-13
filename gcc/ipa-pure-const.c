@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "symtab-thunks.h"
+#include "dbgcnt.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -1476,8 +1477,10 @@ ipa_make_function_const (struct cgraph_node *node, bool looping, bool local)
     fprintf (dump_file, "Function found to be %sconst: %s\n",
 	     looping ? "looping " : "",
 	     node->dump_name ());
-  if (!local)
+  if (!local && !looping)
     cdtor = node->call_for_symbol_and_aliases (cdtor_p, NULL, true);
+  if (!dbg_cnt (ipa_attr))
+    return false;
   if (node->set_const_flag (true, looping))
     {
       if (dump_file)
@@ -1511,8 +1514,10 @@ ipa_make_function_pure (struct cgraph_node *node, bool looping, bool local)
     fprintf (dump_file, "Function found to be %spure: %s\n",
 	     looping ? "looping " : "",
 	     node->dump_name ());
-  if (!local)
+  if (!local && !looping)
     cdtor = node->call_for_symbol_and_aliases (cdtor_p, NULL, true);
+  if (!dbg_cnt (ipa_attr))
+    return false;
   if (node->set_pure_flag (true, looping))
     {
       if (dump_file)
@@ -1797,11 +1802,11 @@ propagate_pure_const (void)
 	    switch (this_state)
 	      {
 	      case IPA_CONST:
-		remove_p |= ipa_make_function_const (node, this_looping, false);
+		remove_p |= ipa_make_function_const (w, this_looping, false);
 		break;
 
 	      case IPA_PURE:
-		remove_p |= ipa_make_function_pure (node, this_looping, false);
+		remove_p |= ipa_make_function_pure (w, this_looping, false);
 		break;
 
 	      default:
