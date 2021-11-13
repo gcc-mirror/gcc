@@ -3141,8 +3141,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	  modref summaries.  */
        for (tree list = TYPE_ATTRIBUTES (TREE_TYPE (node->decl));
 	    list && !no_signature; list = TREE_CHAIN (list))
-	 if (!flag_ipa_modref
-	     || !is_attribute_p ("fn spec", get_attribute_name (list)))
+	if (!ipa_param_adjustments::type_attribute_allowed_p
+			(get_attribute_name (list)))
 	   {
 	     if (dump_file)
 		{

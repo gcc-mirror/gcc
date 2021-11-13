@@ -279,6 +279,32 @@ fill_vector_of_new_param_types (vec<tree> *new_types, vec<tree> *otypes,
     }
 }
 
+/* Return false if given attribute should prevent type adjustments.  */
+
+bool
+ipa_param_adjustments::type_attribute_allowed_p (tree name)
+{
+  if ((is_attribute_p ("fn spec", name) && flag_ipa_modref)
+      || is_attribute_p ("access", name)
+      || is_attribute_p ("returns_nonnull", name)
+      || is_attribute_p ("assume_aligned", name)
+      || is_attribute_p ("nocf_check", name)
+      || is_attribute_p ("warn_unused_result", name))
+    return true;
+  return false;
+}
+
+/* Return true if attribute should be dropped if parameter changed.  */
+
+static bool
+drop_type_attribute_if_params_changed_p (tree name)
+{
+  if (is_attribute_p ("fn spec", name)
+      || is_attribute_p ("access", name))
+    return true;
+  return false;
+}
+
 /* Build and return a function type just like ORIG_TYPE but with parameter
    types given in NEW_PARAM_TYPES - which can be NULL if, but only if,
    ORIG_TYPE itself has NULL TREE_ARG_TYPEs.  If METHOD2FUNC is true, also make
@@ -337,16 +363,19 @@ build_adjusted_function_type (tree orig_type, vec<tree> *new_param_types,
       if (skip_return)
 	TREE_TYPE (new_type) = void_type_node;
     }
-  /* We only support one fn spec attribute on type.  Be sure to remove it.
-     Once we support multiple attributes we will need to be able to unshare
-     the list.  */
   if (args_modified && TYPE_ATTRIBUTES (new_type))
     {
-      gcc_checking_assert
-	      (!TREE_CHAIN (TYPE_ATTRIBUTES (new_type))
-	       && (is_attribute_p ("fn spec",
-			  get_attribute_name (TYPE_ATTRIBUTES (new_type)))));
+      tree t = TYPE_ATTRIBUTES (new_type);
+      tree *last = &TYPE_ATTRIBUTES (new_type);
       TYPE_ATTRIBUTES (new_type) = NULL;
+      for (;t; t = TREE_CHAIN (t))
+	if (!drop_type_attribute_if_params_changed_p
+		(get_attribute_name (t)))
+	  {
+	    *last = copy_node (t);
+	    TREE_CHAIN (*last) = NULL;
+	    last = &TREE_CHAIN (*last);
+	  }
     }
 
   return new_type;
