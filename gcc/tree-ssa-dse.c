@@ -40,6 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-eh.h"
 #include "cfganal.h"
+#include "cgraph.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 /* This file implements dead store elimination.
 
@@ -1027,6 +1030,101 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
   release_defs (stmt);
 }
 
+/* Try to prove, using modref summary, that all memory written to by a call is
+   dead and remove it.  Assume that if return value is written to memory
+   it is already proved to be dead.  */
+
+static bool
+dse_optimize_call (gimple_stmt_iterator *gsi, sbitmap live_bytes)
+{
+  gcall *stmt = dyn_cast <gcall *> (gsi_stmt (*gsi));
+
+  if (!stmt)
+    return false;
+
+  tree callee = gimple_call_fndecl (stmt);
+
+  if (!callee)
+    return false;
+
+  /* Pure/const functions are optimized by normal DCE
+     or handled as store above.  */
+  int flags = gimple_call_flags (stmt);
+  if ((flags & (ECF_PURE|ECF_CONST|ECF_NOVOPS))
+      && !(flags & (ECF_LOOPING_CONST_OR_PURE)))
+    return false;
+
+  cgraph_node *node = cgraph_node::get (callee);
+  if (!node)
+    return false;
+
+  if (stmt_could_throw_p (cfun, stmt)
+      && !cfun->can_delete_dead_exceptions)
+    return false;
+
+  /* If return value is used the call is not dead.  */
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs && TREE_CODE (lhs) == SSA_NAME)
+    {
+      imm_use_iterator ui;
+      gimple *use_stmt;
+      FOR_EACH_IMM_USE_STMT (use_stmt, ui, lhs)
+	if (!is_gimple_debug (use_stmt))
+	  return false;
+    }
+
+  /* Verify that there are no side-effects except for return value
+     and memory writes tracked by modref.  */
+  modref_summary *summary = get_modref_function_summary (node);
+  if (!summary || !summary->try_dse)
+    return false;
+
+  modref_base_node <alias_set_type> *base_node;
+  modref_ref_node <alias_set_type> *ref_node;
+  modref_access_node *access_node;
+  size_t i, j, k;
+  bool by_clobber_p = false;
+
+  /* Walk all memory writes and verify that they are dead.  */
+  FOR_EACH_VEC_SAFE_ELT (summary->stores->bases, i, base_node)
+    FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+      FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	{
+	  gcc_checking_assert (access_node->parm_offset_known);
+
+	  tree arg;
+	  if (access_node->parm_index == MODREF_STATIC_CHAIN_PARM)
+	    arg = gimple_call_chain (stmt);
+	  else
+	    arg = gimple_call_arg (stmt, access_node->parm_index);
+
+	  ao_ref ref;
+	  poly_offset_int off = (poly_offset_int)access_node->offset
+		+ ((poly_offset_int)access_node->parm_offset
+		   << LOG2_BITS_PER_UNIT);
+	  poly_int64 off2;
+	  if (!off.to_shwi (&off2))
+	    return false;
+	  ao_ref_init_from_ptr_and_range
+		 (&ref, arg, true, off2, access_node->size,
+		  access_node->max_size);
+	  ref.ref_alias_set = ref_node->ref;
+	  ref.base_alias_set = base_node->base;
+
+	  bool byte_tracking_enabled
+	      = setup_live_bytes_from_ref (&ref, live_bytes);
+	  enum dse_store_status store_status;
+
+	  store_status = dse_classify_store (&ref, stmt,
+					     byte_tracking_enabled,
+					     live_bytes, &by_clobber_p);
+	  if (store_status != DSE_STORE_DEAD)
+	    return false;
+	}
+  delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
+  return true;
+}
+
 /* Attempt to eliminate dead stores in the statement referenced by BSI.
 
    A dead store is a store into a memory location which will later be
@@ -1050,8 +1148,13 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
     return;
 
   ao_ref ref;
+  /* If this is not a store we can still remove dead call using
+     modref summary.  */
   if (!initialize_ao_ref_for_dse (stmt, &ref))
-    return;
+    {
+      dse_optimize_call (gsi, live_bytes);
+      return;
+    }
 
   /* We know we have virtual definitions.  We can handle assignments and
      some builtin calls.  */
@@ -1162,6 +1265,9 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	  || (stmt_could_throw_p (fun, stmt)
 	      && !fun->can_delete_dead_exceptions)))
     {
+      /* See if we can remove complete call.  */
+      if (dse_optimize_call (gsi, live_bytes))
+	return;
       /* Make sure we do not remove a return slot we cannot reconstruct
 	 later.  */
       if (gimple_call_return_slot_opt_p (as_a <gcall *>(stmt))

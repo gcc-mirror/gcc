@@ -277,7 +277,7 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 modref_summary::modref_summary ()
   : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
     writes_errno (false), side_effects (false), global_memory_read (false),
-    global_memory_written (false)
+    global_memory_written (false), try_dse (false)
 {
 }
 
@@ -606,6 +606,8 @@ modref_summary::dump (FILE *out)
     fprintf (out, "  Global memory read\n");
   if (global_memory_written)
     fprintf (out, "  Global memory written\n");
+  if (try_dse)
+    fprintf (out, "  Try dse\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -662,12 +664,56 @@ modref_summary_lto::dump (FILE *out)
 }
 
 /* Called after summary is produced and before it is used by local analysis.
-   Can be called multiple times in case summary needs to update signature.  */
+   Can be called multiple times in case summary needs to update signature.
+   FUN is decl of function summary is attached to.  */
 void
-modref_summary::finalize ()
+modref_summary::finalize (tree fun)
 {
   global_memory_read = !loads || loads->global_access_p ();
   global_memory_written = !stores || stores->global_access_p ();
+
+  /* We can do DSE if we know function has no side effects and
+     we can analyse all stores.  Disable dse if there are too many
+     stores to try.  */
+  if (side_effects || global_memory_written || writes_errno)
+    try_dse = false;
+  else
+    {
+      try_dse = true;
+      size_t i, j, k;
+      int num_tests = 0, max_tests
+       	= opt_for_fn (fun, param_modref_max_tests);
+      modref_base_node <alias_set_type> *base_node;
+      modref_ref_node <alias_set_type> *ref_node;
+      modref_access_node *access_node;
+      FOR_EACH_VEC_SAFE_ELT (stores->bases, i, base_node)
+	{
+	  if (base_node->every_ref)
+	    {
+	      try_dse = false;
+	      break;
+	    }
+	  FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	    {
+	      if (base_node->every_ref)
+		{
+		  try_dse = false;
+		  break;
+		}
+	      FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+		if (num_tests++ > max_tests
+		    || !access_node->parm_offset_known)
+		  {
+		    try_dse = false;
+		    break;
+		  }
+	      if (!try_dse)
+		break;
+	    }
+	  if (!try_dse)
+	    break;
+	}
+    }
 }
 
 /* Get function summary for FUNC if it exists, return NULL otherwise.  */
@@ -2832,7 +2878,7 @@ analyze_function (function *f, bool ipa)
       summary = NULL;
     }
   if (summary)
-    summary->finalize ();
+    summary->finalize (current_function_decl);
   if (summary_lto && !summary_lto->useful_p (ecf_flags))
     {
       summaries_lto->remove (fnode);
@@ -3553,7 +3599,7 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	    }
 	}
       if (flag_ltrans)
-	modref_sum->finalize ();
+	modref_sum->finalize (node->decl);
       if (dump_file)
 	{
 	  fprintf (dump_file, "Read modref for %s\n",
@@ -3711,7 +3757,7 @@ update_signature (struct cgraph_node *node)
 	r_lto->dump (dump_file);
     }
   if (r)
-    r->finalize ();
+    r->finalize (node->decl);
   return;
 }
 
@@ -4917,7 +4963,7 @@ pass_ipa_modref::execute (function *)
 	for (struct cgraph_node *cur = component_node; cur;
 	     cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
 	  if (modref_summary *sum = optimization_summaries->get (cur))
-	    sum->finalize ();
+	    sum->finalize (cur->decl);
       if (dump_file)
 	modref_propagate_dump_scc (component_node);
     }

@@ -38,13 +38,14 @@ struct GTY(()) modref_summary
   /* Flags coputed by finalize method.  */
   unsigned global_memory_read : 1;
   unsigned global_memory_written : 1;
+  unsigned try_dse : 1;
 
 
   modref_summary ();
   ~modref_summary ();
   void dump (FILE *);
   bool useful_p (int ecf_flags, bool check_flags = true);
-  void finalize ();
+  void finalize (tree);
 };
 
 modref_summary *get_modref_function_summary (cgraph_node *func);

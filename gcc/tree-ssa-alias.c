@@ -782,7 +782,7 @@ ao_ref_alias_ptr_type (ao_ref *ref)
    The access is assumed to be only to or after of the pointer target adjusted
    by the offset, not before it (even in the case RANGE_KNOWN is false).  */
 
-static void
+void
 ao_ref_init_from_ptr_and_range (ao_ref *ref, tree ptr,
 				bool range_known,
 				poly_int64 offset,
