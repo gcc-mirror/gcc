@@ -26,8 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref-tree.h"
 #include "selftest.h"
 
-#if CHECKING_P
-
 /* Return true if both accesses are the same.  */
 bool
 modref_access_node::operator == (modref_access_node &a) const
@@ -562,6 +560,8 @@ modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
   vec_safe_push (accesses, a);
   return 1;
 }
+
+#if CHECKING_P
 
 namespace selftest {
 
