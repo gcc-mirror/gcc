@@ -7074,6 +7074,19 @@ test -z "$deplibs_check_method" && deplibs_check_method=unknown
 
 
 
+plugin_option=
+plugin_names="liblto_plugin.so liblto_plugin-0.dll cyglto_plugin-0.dll"
+for plugin in $plugin_names; do
+  plugin_so=`${CC} ${CFLAGS} --print-prog-name $plugin`
+  if test x$plugin_so = x$plugin; then
+    plugin_so=`${CC} ${CFLAGS} --print-file-name $plugin`
+  fi
+  if test x$plugin_so != x$plugin; then
+    plugin_option="--plugin $plugin_so"
+    break
+  fi
+done
+
 if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}ar", so it can be a program name with args.
 set dummy ${ac_tool_prefix}ar; ac_word=$2
@@ -7167,6 +7180,11 @@ else
 fi
 
 test -z "$AR" && AR=ar
+if test -n "$plugin_option"; then
+  if $AR --help 2>&1 | grep -q "\--plugin"; then
+    AR="$AR $plugin_option"
+  fi
+fi
 test -z "$AR_FLAGS" && AR_FLAGS=cru
 
 
@@ -7371,6 +7389,11 @@ else
 fi
 
 test -z "$RANLIB" && RANLIB=:
+if test -n "$plugin_option" && test "$RANLIB" != ":"; then
+  if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
+    RANLIB="$RANLIB $plugin_option"
+  fi
+fi
 
 
 
@@ -12187,7 +12210,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12190 "configure"
+#line 12213 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12293,7 +12316,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12296 "configure"
+#line 12319 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16017,7 +16040,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16020 "configure"
+#line 16043 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -16052,7 +16075,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16055 "configure"
+#line 16078 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -16087,7 +16110,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16090 "configure"
+#line 16113 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -16123,7 +16146,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 16126 "configure"
+#line 16149 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -16279,7 +16302,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16282 "configure"
+#line 16305 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16321,7 +16344,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16324 "configure"
+#line 16347 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };

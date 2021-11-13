@@ -129,3 +129,31 @@ AC_DEFUN([GCC_ENABLE_PLUGINS],
      fi
    fi
 ])
+
+dnl
+dnl
+dnl GCC_PLUGIN_OPTION
+dnl    (SHELL-CODE_HANDLER)
+dnl
+AC_DEFUN([GCC_PLUGIN_OPTION],[dnl
+AC_MSG_CHECKING([for -plugin option])
+
+plugin_names="liblto_plugin.so liblto_plugin-0.dll cyglto_plugin-0.dll"
+plugin_option=
+for plugin in $plugin_names; do
+  plugin_so=`${CC} ${CFLAGS} --print-prog-name $plugin`
+  if test x$plugin_so = x$plugin; then
+    plugin_so=`${CC} ${CFLAGS} --print-file-name $plugin`
+  fi
+  if test x$plugin_so != x$plugin; then
+    plugin_option="--plugin $plugin_so"
+    break
+  fi
+done
+if test -n "$plugin_option"; then
+  $1="$plugin_option"
+  AC_MSG_RESULT($plugin_option)
+else
+  AC_MSG_RESULT([no])
+fi
+])
