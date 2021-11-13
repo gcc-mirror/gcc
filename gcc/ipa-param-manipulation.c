@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-clones.h"
 #include "tree-phinodes.h"
 #include "cfgexpand.h"
+#include "attribs.h"
 
 
 /* Actual prefixes of different newly synthetized parameters.  Keep in sync
@@ -281,11 +282,13 @@ fill_vector_of_new_param_types (vec<tree> *new_types, vec<tree> *otypes,
 /* Build and return a function type just like ORIG_TYPE but with parameter
    types given in NEW_PARAM_TYPES - which can be NULL if, but only if,
    ORIG_TYPE itself has NULL TREE_ARG_TYPEs.  If METHOD2FUNC is true, also make
-   it a FUNCTION_TYPE instead of FUNCTION_TYPE.  */
+   it a FUNCTION_TYPE instead of FUNCTION_TYPE.
+   If ARG_MODIFIED is true drop attributes that are no longer up to date.  */
 
 static tree
 build_adjusted_function_type (tree orig_type, vec<tree> *new_param_types,
-			      bool method2func, bool skip_return)
+			      bool method2func, bool skip_return,
+			      bool args_modified)
 {
   tree new_arg_types = NULL;
   if (TYPE_ARG_TYPES (orig_type))
@@ -333,6 +336,17 @@ build_adjusted_function_type (tree orig_type, vec<tree> *new_param_types,
       TYPE_ARG_TYPES (new_type) = new_arg_types;
       if (skip_return)
 	TREE_TYPE (new_type) = void_type_node;
+    }
+  /* We only support one fn spec attribute on type.  Be sure to remove it.
+     Once we support multiple attributes we will need to be able to unshare
+     the list.  */
+  if (args_modified && TYPE_ATTRIBUTES (new_type))
+    {
+      gcc_checking_assert
+	      (!TREE_CHAIN (TYPE_ATTRIBUTES (new_type))
+	       && (is_attribute_p ("fn spec",
+			  get_attribute_name (TYPE_ATTRIBUTES (new_type)))));
+      TYPE_ATTRIBUTES (new_type) = NULL;
     }
 
   return new_type;
@@ -460,8 +474,22 @@ ipa_param_adjustments::build_new_function_type (tree old_type,
   else
     new_param_types_p = NULL;
 
+  /* Check if any params type cares about are modified.  In this case will
+     need to drop some type attributes.  */
+  bool modified = false;
+  size_t index = 0;
+  if (m_adj_params)
+    for (tree t = TYPE_ARG_TYPES (old_type);
+	 t && (int)index < m_always_copy_start && !modified;
+	 t = TREE_CHAIN (t), index++)
+      if (index >= m_adj_params->length ()
+	  || get_original_index (index) != (int)index)
+	modified = true;
+
+
   return build_adjusted_function_type (old_type, new_param_types_p,
-				       method2func_p (old_type), m_skip_return);
+				       method2func_p (old_type), m_skip_return,
+				       modified);
 }
 
 /* Build variant of function decl ORIG_DECL which has no return value if
@@ -1467,12 +1495,23 @@ ipa_param_body_adjustments::modify_formal_parameters ()
   if (fndecl_built_in_p (m_fndecl))
     set_decl_built_in_function (m_fndecl, NOT_BUILT_IN, 0);
 
+  bool modified = false;
+  size_t index = 0;
+  if (m_adj_params)
+    for (tree t = TYPE_ARG_TYPES (orig_type);
+	 t && !modified;
+	 t = TREE_CHAIN (t), index++)
+      if (index >= m_adj_params->length ()
+	  || (*m_adj_params)[index].op != IPA_PARAM_OP_COPY
+	  || (*m_adj_params)[index].base_index != index)
+	modified = true;
+
   /* At this point, removing return value is only implemented when going
      through tree_function_versioning, not when modifying function body
      directly.  */
   gcc_assert (!m_adjustments || !m_adjustments->m_skip_return);
   tree new_type = build_adjusted_function_type (orig_type, &m_new_types,
-						m_method2func, false);
+						m_method2func, false, modified);
 
   TREE_TYPE (m_fndecl) = new_type;
   DECL_VIRTUAL_P (m_fndecl) = 0;

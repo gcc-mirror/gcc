@@ -3135,10 +3135,38 @@ compute_fn_summary (struct cgraph_node *node, bool early)
        else
 	 info->inlinable = tree_inlinable_function_p (node->decl);
 
-       /* Type attributes can use parameter indices to describe them.  */
-       if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl))
-	   /* Likewise for #pragma omp declare simd functions or functions
-	      with simd attribute.  */
+       bool no_signature = false;
+       /* Type attributes can use parameter indices to describe them.
+	  Special case fn spec since we can safely preserve them in
+	  modref summaries.  */
+       for (tree list = TYPE_ATTRIBUTES (TREE_TYPE (node->decl));
+	    list && !no_signature; list = TREE_CHAIN (list))
+	 if (!flag_ipa_modref
+	     || !is_attribute_p ("fn spec", get_attribute_name (list)))
+	   {
+	     if (dump_file)
+		{
+		  fprintf (dump_file, "No signature change:"
+			   " function type has unhandled attribute %s.\n",
+			   IDENTIFIER_POINTER (get_attribute_name (list)));
+		}
+	     no_signature = true;
+	   }
+       for (tree parm = DECL_ARGUMENTS (node->decl);
+	    parm && !no_signature; parm = DECL_CHAIN (parm))
+	 if (variably_modified_type_p (TREE_TYPE (parm), node->decl))
+	   {
+	     if (dump_file)
+		{
+		  fprintf (dump_file, "No signature change:"
+			   " has parameter with variably modified type.\n");
+		}
+	     no_signature = true;
+	   }
+
+       /* Likewise for #pragma omp declare simd functions or functions
+	  with simd attribute.  */
+       if (no_signature
 	   || lookup_attribute ("omp declare simd",
 				DECL_ATTRIBUTES (node->decl)))
 	 node->can_change_signature = false;
