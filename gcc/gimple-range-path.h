@@ -58,6 +58,7 @@ private:
   // Methods to compute ranges for the given path.
   bool range_defined_in_block (irange &, tree name, basic_block bb);
   void compute_ranges_in_block (basic_block bb);
+  void compute_ranges_in_phis (basic_block bb);
   void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
   void compute_outgoing_relations (basic_block bb, basic_block next);
@@ -79,6 +80,8 @@ private:
 
   // Range cache for SSA names.
   ssa_global_cache *m_cache;
+
+  ssa_global_cache m_tmp_phi_cache;
 
   // Set for each SSA that has an active entry in the cache.
   bitmap m_has_cache_entry;

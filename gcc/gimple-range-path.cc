@@ -343,6 +343,38 @@ path_range_query::range_defined_in_block (irange &r, tree name, basic_block bb)
   return true;
 }
 
+// Compute ranges defined in the PHIs in this block.
+
+void
+path_range_query::compute_ranges_in_phis (basic_block bb)
+{
+  int_range_max r;
+  gphi_iterator iter;
+
+  // PHIs must be resolved simultaneously on entry to the block
+  // because any dependencies must be satistifed with values on entry.
+  // Thus, we calculate all PHIs first, and then update the cache at
+  // the end.
+
+  m_tmp_phi_cache.clear ();
+  for (iter = gsi_start_phis (bb); !gsi_end_p (iter); gsi_next (&iter))
+    {
+      gphi *phi = iter.phi ();
+      tree name = gimple_phi_result (phi);
+
+      if (import_p (name) && range_defined_in_block (r, name, bb))
+	m_tmp_phi_cache.set_global_range (name, r);
+    }
+  for (iter = gsi_start_phis (bb); !gsi_end_p (iter); gsi_next (&iter))
+    {
+      gphi *phi = iter.phi ();
+      tree name = gimple_phi_result (phi);
+
+      if (m_tmp_phi_cache.get_global_range (r, name))
+	set_cache (r, name);
+    }
+}
+
 // Compute ranges defined in the current block, or exported to the
 // next block.
 
@@ -369,15 +401,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
     }
 
   // Solve imports defined in this block, starting with the PHIs...
-  for (gphi_iterator iter = gsi_start_phis (bb); !gsi_end_p (iter);
-       gsi_next (&iter))
-    {
-      gphi *phi = iter.phi ();
-      tree name = gimple_phi_result (phi);
-
-      if (import_p (name) && range_defined_in_block (r, name, bb))
-	set_cache (r, name);
-    }
+  compute_ranges_in_phis (bb);
   // ...and then the rest of the imports.
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
     {
