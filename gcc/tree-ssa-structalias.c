@@ -4262,9 +4262,9 @@ determine_global_memory_access (gcall *stmt,
       && (summary = get_modref_function_summary (node)))
     {
       if (writes_global_memory && *writes_global_memory)
-	*writes_global_memory = summary->global_memory_written_p ();
+	*writes_global_memory = summary->global_memory_written;
       if (reads_global_memory && *reads_global_memory)
-	*reads_global_memory = summary->global_memory_read_p ();
+	*reads_global_memory = summary->global_memory_read;
       if (reads_global_memory && uses_global_memory
 	  && !*reads_global_memory && node->binds_to_current_def_p ())
 	*uses_global_memory = false;

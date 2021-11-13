@@ -276,7 +276,8 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 
 modref_summary::modref_summary ()
   : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
-    writes_errno (false), side_effects (false)
+    writes_errno (false), side_effects (false), global_memory_read (false),
+    global_memory_written (false)
 {
 }
 
@@ -338,26 +339,6 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
     return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
-
-/* Return true if global memory is read
-   (that is loads summary contains global memory access).  */
-bool
-modref_summary::global_memory_read_p ()
-{
-  if (!loads)
-    return true;
-  return loads->global_access_p ();
-}
-
-/* Return true if global memory is written.  */
-bool
-modref_summary::global_memory_written_p ()
-{
-  if (!stores)
-    return true;
-  return stores->global_access_p ();
-}
-
 
 /* Single function summary used for LTO.  */
 
@@ -621,6 +602,10 @@ modref_summary::dump (FILE *out)
     fprintf (out, "  Writes errno\n");
   if (side_effects)
     fprintf (out, "  Side effects\n");
+  if (global_memory_read)
+    fprintf (out, "  Global memory read\n");
+  if (global_memory_written)
+    fprintf (out, "  Global memory written\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -674,6 +659,15 @@ modref_summary_lto::dump (FILE *out)
       fprintf (out, "  Static chain flags:");
       dump_eaf_flags (out, static_chain_flags);
     }
+}
+
+/* Called after summary is produced and before it is used by local analysis.
+   Can be called multiple times in case summary needs to update signature.  */
+void
+modref_summary::finalize ()
+{
+  global_memory_read = !loads || loads->global_access_p ();
+  global_memory_written = !stores || stores->global_access_p ();
 }
 
 /* Get function summary for FUNC if it exists, return NULL otherwise.  */
@@ -2809,8 +2803,7 @@ analyze_function (function *f, bool ipa)
 	  first = false;
 	}
     }
-  if (summary && !summary->global_memory_written_p () && !summary->side_effects
-      && !finite_function_p ())
+  if (summary && !summary->side_effects && !finite_function_p ())
     summary->side_effects = true;
   if (summary_lto && !summary_lto->side_effects && !finite_function_p ())
     summary_lto->side_effects = true;
@@ -2838,6 +2831,8 @@ analyze_function (function *f, bool ipa)
 	summaries->remove (fnode);
       summary = NULL;
     }
+  if (summary)
+    summary->finalize ();
   if (summary_lto && !summary_lto->useful_p (ecf_flags))
     {
       summaries_lto->remove (fnode);
@@ -3557,6 +3552,8 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	      modref_read_escape_summary (&bp, e);
 	    }
 	}
+      if (flag_ltrans)
+	modref_sum->finalize ();
       if (dump_file)
 	{
 	  fprintf (dump_file, "Read modref for %s\n",
@@ -3713,6 +3710,8 @@ update_signature (struct cgraph_node *node)
       if (r_lto)
 	r_lto->dump (dump_file);
     }
+  if (r)
+    r->finalize ();
   return;
 }
 
@@ -4914,6 +4913,11 @@ pass_ipa_modref::execute (function *)
 
       pureconst |= modref_propagate_in_scc (component_node);
       modref_propagate_flags_in_scc (component_node);
+      if (optimization_summaries)
+	for (struct cgraph_node *cur = component_node; cur;
+	     cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+	  if (modref_summary *sum = optimization_summaries->get (cur))
+	    sum->finalize ();
       if (dump_file)
 	modref_propagate_dump_scc (component_node);
     }
