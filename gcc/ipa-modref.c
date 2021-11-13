@@ -405,40 +405,6 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
   return stores && !stores->every_base;
 }
 
-/* Dump A to OUT.  */
-
-static void
-dump_access (modref_access_node *a, FILE *out)
-{
-  fprintf (out, "          access:");
-  if (a->parm_index != MODREF_UNKNOWN_PARM)
-    {
-      if (a->parm_index >= 0)
-	fprintf (out, " Parm %i", a->parm_index);
-      else if (a->parm_index == MODREF_STATIC_CHAIN_PARM)
-	fprintf (out, " Static chain");
-      else
-	gcc_unreachable ();
-      if (a->parm_offset_known)
-	{
-	  fprintf (out, " param offset:");
-	  print_dec ((poly_int64_pod)a->parm_offset, out, SIGNED);
-	}
-    }
-  if (a->range_info_useful_p ())
-    {
-      fprintf (out, " offset:");
-      print_dec ((poly_int64_pod)a->offset, out, SIGNED);
-      fprintf (out, " size:");
-      print_dec ((poly_int64_pod)a->size, out, SIGNED);
-      fprintf (out, " max_size:");
-      print_dec ((poly_int64_pod)a->max_size, out, SIGNED);
-      if (a->adjustments)
-	fprintf (out, " adjusted %i times", a->adjustments);
-    }
-  fprintf (out, "\n");
-}
-
 /* Dump records TT to OUT.  */
 
 static void
@@ -474,7 +440,10 @@ dump_records (modref_records *tt, FILE *out)
 	  size_t k;
 	  modref_access_node *a;
 	  FOR_EACH_VEC_SAFE_ELT (r->accesses, k, a)
-	    dump_access (a, out);
+	    {
+	      fprintf (out, "          access:");
+	      a->dump (out);
+	    }
 	}
     }
 }
@@ -520,7 +489,10 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
 	  size_t k;
 	  modref_access_node *a;
 	  FOR_EACH_VEC_SAFE_ELT (r->accesses, k, a)
-	    dump_access (a, out);
+	    {
+	      fprintf (out, "          access:");
+	      a->dump (out);
+	    }
 	}
     }
 }
@@ -801,7 +773,7 @@ record_access (modref_records *tt, ao_ref *ref)
     {
        fprintf (dump_file, "   - Recording base_set=%i ref_set=%i ",
 		base_set, ref_set);
-       dump_access (&a, dump_file);
+       a.dump (dump_file);
     }
   tt->insert (base_set, ref_set, a, false);
 }
@@ -866,7 +838,7 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
       print_generic_expr (dump_file, ref_type);
       fprintf (dump_file, " (alias set %i) ",
 	       ref_type ? get_alias_set (ref_type) : 0);
-       dump_access (&a, dump_file);
+       a.dump (dump_file);
     }
 
   tt->insert (base_type, ref_type, a, false);

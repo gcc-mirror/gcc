@@ -54,7 +54,11 @@ enum modref_special_parms {
   MODREF_LOCAL_MEMORY_PARM = -4
 };
 
-/* Memory access.  */
+/* Modref record accesses relative to function parameters.
+   This is entry for single access specifying its base and access range.
+
+   Accesses can be collected to boundedly sized arrays using
+   modref_access_node::insert.  */
 struct GTY(()) modref_access_node
 {
   /* Access range information (in bits).  */
@@ -78,18 +82,14 @@ struct GTY(()) modref_access_node
     {
       return parm_index != MODREF_UNKNOWN_PARM;
     }
-  /* Return true if range info is useful.  */
-  bool range_info_useful_p () const
-    {
-      return parm_index != MODREF_UNKNOWN_PARM && parm_offset_known
-	     && (known_size_p (size)
-		 || known_size_p (max_size)
-		 || known_ge (offset, 0));
-    }
+  /* Dump range to debug OUT.  */
+  void dump (FILE *out);
   /* Return true if both accesses are the same.  */
   bool operator == (modref_access_node &a) const;
-  /* Insert A into ACCESSES.  Limit size of vector to MAX_ACCESSES and if
-     RECORD_ADJUSTMENT is true keep track of adjustment counts.
+  /* Return true if range info is useful.  */
+  bool range_info_useful_p () const;
+  /* Insert A into vector ACCESSES.  Limit size of vector to MAX_ACCESSES and
+     if RECORD_ADJUSTMENT is true keep track of adjustment counts.
      Return 0 if nothing changed, 1 is insertion suceeded and -1 if
      failed.  */
   static int insert (vec <modref_access_node, va_gc> *&accesses,

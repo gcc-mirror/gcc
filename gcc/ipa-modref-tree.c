@@ -561,6 +561,48 @@ modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
   return 1;
 }
 
+/* Return true if range info is useful.  */
+bool
+modref_access_node::range_info_useful_p () const
+{
+  return parm_index != MODREF_UNKNOWN_PARM && parm_offset_known
+	 && (known_size_p (size)
+	     || known_size_p (max_size)
+	     || known_ge (offset, 0));
+}
+
+/* Dump range to debug OUT.  */
+void
+modref_access_node::dump (FILE *out)
+{
+  if (parm_index != MODREF_UNKNOWN_PARM)
+    {
+      if (parm_index >= 0)
+	fprintf (out, " Parm %i", parm_index);
+      else if (parm_index == MODREF_STATIC_CHAIN_PARM)
+	fprintf (out, " Static chain");
+      else
+	gcc_unreachable ();
+      if (parm_offset_known)
+	{
+	  fprintf (out, " param offset:");
+	  print_dec ((poly_int64_pod)parm_offset, out, SIGNED);
+	}
+    }
+  if (range_info_useful_p ())
+    {
+      fprintf (out, " offset:");
+      print_dec ((poly_int64_pod)offset, out, SIGNED);
+      fprintf (out, " size:");
+      print_dec ((poly_int64_pod)size, out, SIGNED);
+      fprintf (out, " max_size:");
+      print_dec ((poly_int64_pod)max_size, out, SIGNED);
+      if (adjustments)
+	fprintf (out, " adjusted %i times", adjustments);
+    }
+  fprintf (out, "\n");
+}
+
 #if CHECKING_P
 
 namespace selftest {
