@@ -870,7 +870,9 @@ maybe_save_constexpr_fundef (tree fun)
       || (DECL_CLONED_FUNCTION_P (fun) && !DECL_DELETING_DESTRUCTOR_P (fun)))
     return;
 
-  if (!is_valid_constexpr_fn (fun, !DECL_GENERATED_P (fun)))
+  bool complain = !DECL_GENERATED_P (fun);
+
+  if (!is_valid_constexpr_fn (fun, complain))
     return;
 
   tree massaged = massage_constexpr_body (fun, DECL_SAVED_TREE (fun));
@@ -883,15 +885,26 @@ maybe_save_constexpr_fundef (tree fun)
     }
 
   bool potential = potential_rvalue_constant_expression (massaged);
-  if (!potential && !DECL_GENERATED_P (fun))
+  if (!potential && complain)
     require_potential_rvalue_constant_expression (massaged);
 
-  if (DECL_CONSTRUCTOR_P (fun)
-      && cx_check_missing_mem_inits (DECL_CONTEXT (fun),
-				     massaged, !DECL_GENERATED_P (fun)))
-    potential = false;
+  if (DECL_CONSTRUCTOR_P (fun) && potential)
+    {
+      if (cx_check_missing_mem_inits (DECL_CONTEXT (fun),
+				      massaged, complain))
+	potential = false;
+      else if (cxx_dialect > cxx11)
+	{
+	  /* What we got from massage_constexpr_body is pretty much just the
+	     ctor-initializer, also check the body.  */
+	  massaged = DECL_SAVED_TREE (fun);
+	  potential = potential_rvalue_constant_expression (massaged);
+	  if (!potential && complain)
+	    require_potential_rvalue_constant_expression (massaged);
+	}
+    }
 
-  if (!potential && !DECL_GENERATED_P (fun))
+  if (!potential && complain)
     return;
 
   constexpr_fundef entry = {fun, NULL_TREE, NULL_TREE, NULL_TREE};
