@@ -11382,7 +11382,8 @@ is_this_parameter (tree t)
 {
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
-  gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t)
+  gcc_assert (TREE_CODE (t) == PARM_DECL
+	      || (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
 	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
   return true;
 }
