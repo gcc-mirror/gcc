@@ -193,8 +193,16 @@ void init(int** ip, real_t* s1, real_t* s2){
     xx = (real_t*) memalign(ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
     *ip = (int *) memalign(ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
 #else
+# if defined (__APPLE__) \
+    && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1060
+    /* We have no aligned allocator, but malloc is guaranteed to return
+       alignment suitable for the largest vector item.  */
+    xx = (real_t*) malloc (LEN_1D*sizeof(real_t));
+    *ip = (int *) malloc (LEN_1D*sizeof(real_t));
+# else
     posix_memalign ((void*)&xx, ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
     posix_memalign ((void*)ip, ARRAY_ALIGNMENT, LEN_1D*sizeof(real_t));
+# endif
 #endif    
 
     for (int i = 0; i < LEN_1D; i = i+5){
