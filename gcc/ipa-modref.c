@@ -1888,19 +1888,18 @@ callee_to_caller_flags (int call_flags, bool ignore_stores,
      that is not the same as caller returning it.  */
   call_flags |= EAF_NOT_RETURNED_DIRECTLY
 		| EAF_NOT_RETURNED_INDIRECTLY;
-  /* TODO: We miss return value propagation.
-     Be conservative and if value escapes to memory
-     also mark it as escaping.  */
   if (!ignore_stores && !(call_flags & EAF_UNUSED))
     {
+      /* If value escapes we are no longer able to track what happens
+	 with it because we can read it from the escaped location
+	 anytime.  */
       if (!(call_flags & EAF_NO_DIRECT_ESCAPE))
-	lattice.merge (~(EAF_NOT_RETURNED_DIRECTLY
-			 | EAF_NOT_RETURNED_INDIRECTLY
-			 | EAF_NO_DIRECT_READ
-			 | EAF_UNUSED));
-      if (!(call_flags & EAF_NO_INDIRECT_ESCAPE))
+	lattice.merge (0);
+      else if (!(call_flags & EAF_NO_INDIRECT_ESCAPE))
 	lattice.merge (~(EAF_NOT_RETURNED_INDIRECTLY
 			 | EAF_NO_DIRECT_READ
+			 | EAF_NO_INDIRECT_READ
+			 | EAF_NO_INDIRECT_CLOBBER
 			 | EAF_UNUSED));
     }
   else
@@ -2036,18 +2035,17 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 			 not_returned and escape has same meaning.
 			 However passing arg to return slot is different.  If
 			 the callee's return slot is returned it means that
-			 arg is written to itself which is an escape.  */
+			 arg is written to itself which is an escape.
+			 Since we do not track the memory it is written to we
+			 need to give up on analysisng it.  */
 		      if (!isretslot)
 			{
 			  if (!(call_flags & (EAF_NOT_RETURNED_DIRECTLY
 					      | EAF_UNUSED)))
-			    m_lattice[index].merge (~(EAF_NO_DIRECT_ESCAPE
-						      | EAF_UNUSED));
-			  if (!(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
-					      | EAF_UNUSED)))
-			    m_lattice[index].merge (~(EAF_NO_INDIRECT_ESCAPE
-						      | EAF_NO_DIRECT_READ
-						      | EAF_UNUSED));
+			    m_lattice[index].merge (0);
+			  else gcc_checking_assert
+				(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
+					       | EAF_UNUSED));
 			  call_flags = callee_to_caller_flags
 					   (call_flags, false,
 					    m_lattice[index]);
