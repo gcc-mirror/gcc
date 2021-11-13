@@ -1,3 +1,88 @@
+2021-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59675
+	* acinclude.m4 (libtool_VERSION): Bump version.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.30): Add version and
+	export new symbol.
+	* configure: Regenerate.
+	* include/bits/c++config (__replacement_assert): Remove, declare
+	__glibcxx_assert_fail instead.
+	* src/c++11/debug.cc (__glibcxx_assert_fail): New function to
+	replace __replacement_assert, writing to stderr instead of
+	stdout.
+	* testsuite/util/testsuite_abi.cc: Update latest version.
+
+2021-11-12  Jonathan Wakely  <jwakely@redhat.com>
+	    Josh Marshall  <joshua.r.marshall.1991@gmail.com>
+
+	* include/bits/alloc_traits.h (_Destroy): Make constexpr for
+	C++20 mode.
+	* include/bits/allocator.h (__shrink_to_fit::_S_do_it):
+	Likewise.
+	* include/bits/stl_algobase.h (__fill_a1): Declare _Bit_iterator
+	overload constexpr for C++20.
+	* include/bits/stl_bvector.h (_Bit_type, _S_word_bit): Move out
+	of inline namespace.
+	(_Bit_reference, _Bit_iterator_base, _Bit_iterator)
+	(_Bit_const_iterator, _Bvector_impl_data, _Bvector_base)
+	(vector<bool, A>>): Add constexpr to every member function.
+	(_Bvector_base::_M_allocate): Initialize storage during constant
+	evaluation.
+	(vector<bool, A>::_M_initialize_value): Use __fill_bvector_n
+	instead of memset.
+	(__fill_bvector_n): New helper function to replace memset during
+	constant evaluation.
+	* include/bits/stl_uninitialized.h (__uninitialized_copy<false>):
+	Move logic to ...
+	(__do_uninit_copy): New function.
+	(__uninitialized_fill<false>): Move logic to ...
+	(__do_uninit_fill): New function.
+	(__uninitialized_fill_n<false>): Move logic to ...
+	(__do_uninit_fill_n): New function.
+	(__uninitialized_copy_a): Add constexpr. Use __do_uninit_copy.
+	(__uninitialized_move_a, __uninitialized_move_if_noexcept_a):
+	Add constexpr.
+	(__uninitialized_fill_a): Add constexpr. Use __do_uninit_fill.
+	(__uninitialized_fill_n_a): Add constexpr. Use
+	__do_uninit_fill_n.
+	(__uninitialized_default_n, __uninitialized_default_n_a)
+	(__relocate_a_1, __relocate_a): Add constexpr.
+	* include/bits/stl_vector.h (_Vector_impl_data, _Vector_impl)
+	(_Vector_base, vector): Add constexpr to every member function.
+	(_Vector_impl::_S_adjust): Disable ASan annotation during
+	constant evaluation.
+	(_Vector_base::_S_use_relocate): Disable bitwise-relocation
+	during constant evaluation.
+	(vector::_Temporary_value): Use a union for storage.
+	* include/bits/vector.tcc (vector, vector<bool>): Add constexpr
+	to every member function.
+	* include/std/vector (erase_if, erase): Add constexpr.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Add
+	constexpr for C++20 mode.
+	* testsuite/23_containers/vector/bool/cmp_c++20.cc: Change to
+	compile-only test using constant expressions.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust
+	namespace for _S_word_bit.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cmp_c++20.cc: Likewise.
+	* testsuite/23_containers/vector/cons/89164.cc: Adjust errors
+	for C++20 and move C++17 test to ...
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: ... here.
+	* testsuite/23_containers/vector/bool/capacity/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/cons/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/element_access/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/assign/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/swap/constexpr.cc: New test.
+	* testsuite/23_containers/vector/capacity/constexpr.cc: New test.
+	* testsuite/23_containers/vector/cons/constexpr.cc: New test.
+	* testsuite/23_containers/vector/data_access/constexpr.cc: New test.
+	* testsuite/23_containers/vector/element_access/constexpr.cc: New test.
+	* testsuite/23_containers/vector/modifiers/assign/constexpr.cc: New test.
+	* testsuite/23_containers/vector/modifiers/constexpr.cc: New test.
+	* testsuite/23_containers/vector/modifiers/swap/constexpr.cc: New test.
+
 2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/debug/deque (deque::operator=(const deque&)): Remove

@@ -1,3 +1,44 @@
+2021-11-12  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103209
+	* gcc.dg/tree-ssa/pta-callused.c: Update template.
+	* gcc.c-torture/execute/pr103209.c: New test.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/stp_1.c: New test.
+
+2021-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/unexpected-end.f90: Update dg-error.
+	* gfortran.dg/gomp/clauses-1.f90: New test.
+	* gfortran.dg/gomp/nowait-2.f90: New test.
+	* gfortran.dg/gomp/nowait-3.f90: New test.
+
+2021-11-12  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/103051
+	* gcc.dg/vect/tsvc/vect-tsvc-s112.c: Skip test for old Power
+	CPUs.
+
+2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/target-implicit-map-1.c: New test.
+	* c-c++-common/goacc/combined-reduction.c: Adjust scan test pattern.
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Likewise.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+	* g++.dg/goacc/firstprivate-mappings-1.C: Likewise.
+
+2021-11-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/97896
+	* gfortran.dg/index_5.f90: New.
+
+2021-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103204
+	* gcc.dg/torture/pr103204.c: New testcase.
+
 2021-11-11  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/test_mffsl.c: Require Power9.

@@ -1,3 +1,45 @@
+2021-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Fix permitting 'nowait' for some
+	combined directives, add missing 'omp end ... loop'.
+	(gfc_ascii_statement): Fix ST_OMP_END_TEAMS_LOOP result.
+	* openmp.c (resolve_omp_clauses): Add missing combined loop constructs
+	case values to the 'if(directive-name: ...)' check.
+	* trans-openmp.c (gfc_split_omp_clauses): Put nowait on target if
+	first leaf construct accepting it.
+
+2021-11-12  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-types.c (gfc_get_array_descr_info): Use build_debug_expr_decl
+	instead of building DEBUG_EXPR_DECL manually.
+
+2021-11-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/97896
+	* intrinsic.c (add_sym_4ind): Remove.
+	(add_functions): Use add_sym4 instead of add_sym4ind.
+	Don’t special case the index intrinsic.
+	* iresolve.c (gfc_resolve_index_func): Use the individual arguments
+	directly instead of the full argument list.
+	* intrinsic.h (gfc_resolve_index_func): Update the declaration
+	accordingly.
+	* trans-decl.c (gfc_get_extern_function_decl): Don’t modify the
+	list of arguments in the case of the index intrinsic.
+	* trans-array.h (gfc_get_intrinsic_for_expr,
+	gfc_get_proc_ifc_for_expr): New.
+	* trans-array.c (gfc_get_intrinsic_for_expr,
+	arg_evaluated_for_scalarization): New.
+	(gfc_walk_elemental_function_args): Add intrinsic procedure
+	as argument.  Count arguments.  Check arg_evaluated_for_scalarization.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function): Update call.
+	* trans-stmt.c (get_intrinsic_for_code): New.
+	(gfc_trans_call): Update call.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* types.def (BT_FN_VOID_UINT_UINT): Remove.
+	(BT_FN_BOOL_UINT_UINT_UINT_BOOL): New.
+
 2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.h (struct gfc_omp_clauses): Rename num_teams to

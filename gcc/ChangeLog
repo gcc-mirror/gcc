@@ -1,3 +1,229 @@
+2021-11-12  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k-protos.h (or1k_profile_hook): New function.
+	* config/or1k/or1k.h (PROFILE_HOOK): Change macro to reference
+	new function or1k_profile_hook.
+	* config/or1k/or1k.c (struct machine_function): Add new field
+	set_mcount_arg_insn.
+	(or1k_profile_hook): New function.
+	(or1k_init_pic_reg): Update to inject pic rtx after _mcount arg
+	when profiling.
+	(or1k_frame_pointer_required): Frame pointer no longer needed
+	when profiling.
+
+2021-11-12  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103209
+	* tree-ssa-structalias.c (find_func_aliases_for_call): Fix
+	use of handle_rhs_call
+
+2021-11-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103202
+	* gimple-range-path.cc
+	(path_range_query::compute_ranges_in_block): Solve PHI imports first.
+
+2021-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (propagate_pure_const): Remove redundant check;
+	fix call of ipa_make_function_const and ipa_make_function_pure.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vector_op::n_advsimd_ops): Delete.
+	(aarch64_vector_op::m_seen_loads): Likewise.
+	(aarch64_vector_costs::aarch64_vector_costs): Don't push to
+	m_advsimd_ops.
+	(aarch64_vector_op::count_ops): Remove vectype and factor parameters.
+	Remove code that tries to predict different vec_flags from the
+	current loop's.
+	(aarch64_vector_costs::add_stmt_cost): Update accordingly.
+	Remove m_advsimd_ops handling.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vector_costs::m_saw_sve_only_op)
+	(aarch64_sve_only_stmt_p): Delete.
+	(aarch64_vector_costs::prefer_unrolled_loop): New function,
+	extracted from adjust_body_cost.
+	(aarch64_vector_costs::better_main_loop_than_p): New function,
+	using heuristics extracted from adjust_body_cost and
+	adjust_body_cost_sve.
+	(aarch64_vector_costs::adjust_body_cost_sve): Remove
+	advsimd_cycles_per_iter and could_use_advsimd parameters.
+	Update after changes above.
+	(aarch64_vector_costs::adjust_body_cost): Update after changes above.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vec_op_count::m_vf_factor):
+	New member variable.
+	(aarch64_vec_op_count::aarch64_vec_op_count): Add a parameter for it.
+	(aarch64_vec_op_count::vf_factor): New function.
+	(aarch64_vector_costs::aarch64_vector_costs): When costing for
+	neoverse-512tvb, pass a vf_factor of 2 for the Neoverse V1 version
+	of an SVE loop.
+	(aarch64_vector_costs::adjust_body_cost): Read the vf factor
+	instead of hard-coding 2.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_vec_op_count::rename_cycles_per_iter): New function.
+	(aarch64_vec_op_count::min_nonpred_cycles_per_iter): Likewise.
+	(aarch64_vec_op_count::min_pred_cycles_per_iter): Likewise.
+	(aarch64_vec_op_count::min_cycles_per_iter): Likewise.
+	(aarch64_vec_op_count::dump): Move earlier in file.  Dump the
+	above properties too.
+	(aarch64_estimate_min_cycles_per_iter): Delete.
+	(adjust_body_cost): Use aarch64_vec_op_count::min_cycles_per_iter
+	instead of aarch64_estimate_min_cycles_per_iter.  Rely on the dump
+	routine to print CPI estimates.
+	(adjust_body_cost_sve): Likewise.  Use the other functions above
+	instead of doing the work inline.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vec_op_count): Allow default
+	initialization.
+	(aarch64_vec_op_count::base_issue_info): Remove handling of null
+	issue_infos.
+	(aarch64_vec_op_count::simd_issue_info): Likewise.
+	(aarch64_vec_op_count::sve_issue_info): Likewise.
+	(aarch64_vector_costs::m_ops): Turn into a vector.
+	(aarch64_vector_costs::m_advsimd_ops): Likewise.
+	(aarch64_vector_costs::aarch64_vector_costs): Add entries to
+	the vectors based on aarch64_tune_params.
+	(aarch64_vector_costs::analyze_loop_vinfo): Update the pred_ops
+	of all entries in m_ops.
+	(aarch64_vector_costs::add_stmt_cost): Call count_ops for all
+	entries in m_ops.
+	(aarch64_estimate_min_cycles_per_iter): Remove issue_info
+	parameter and get the information from the ops instead.
+	(aarch64_vector_costs::adjust_body_cost_sve): Take a
+	aarch64_vec_issue_info instead of a aarch64_vec_op_count.
+	(aarch64_vector_costs::adjust_body_cost): Update call accordingly.
+	Exit earlier if m_ops is empty for either cost structure.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vector_costs::m_scalar_ops)
+	(aarch64_vector_costs::m_sve_ops): Replace with...
+	(aarch64_vector_costs::m_ops): ...this.
+	(aarch64_vector_costs::analyze_loop_vinfo): Update accordingly.
+	(aarch64_vector_costs::adjust_body_cost_sve): Likewise.
+	(aarch64_vector_costs::aarch64_vector_costs): Likewise.
+	Initialize m_vec_flags here rather than in add_stmt_cost.
+	(aarch64_vector_costs::count_ops): Test for scalar reductions too.
+	Allow vectype to be null.
+	(aarch64_vector_costs::add_stmt_cost): Call count_ops for scalar
+	code too.  Don't require vectype to be nonnull.
+	(aarch64_vector_costs::adjust_body_cost): Take the loop_vec_info
+	and scalar costs as parameters.  Use the scalar costs to determine
+	the cycles per iteration of the scalar loop, then multiply it
+	by the estimated VF.
+	(aarch64_vector_costs::finish_cost): Update call accordingly.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_dr_type): New function.
+	(aarch64_vector_costs::count_ops): Use it rather than the
+	vectype to determine floatness.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_sve_in_loop_reduction_latency):
+	Remove vectype parameter and get floatness from the type of the
+	stmt lhs instead.
+	(arch64_in_loop_reduction_latency): Likewise.
+	(aarch64_detect_vector_stmt_subtype): Update caller.
+	(aarch64_vector_costs::count_ops): Likewise.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_sve_op_count): Fold into...
+	(aarch64_vec_op_count): ...this.  Add a constructor.
+	(aarch64_vec_op_count::vec_flags): New function.
+	(aarch64_vec_op_count::base_issue_info): Likewise.
+	(aarch64_vec_op_count::simd_issue_info): Likewise.
+	(aarch64_vec_op_count::sve_issue_info): Likewise.
+	(aarch64_vec_op_count::m_issue_info): New member variable.
+	(aarch64_vec_op_count::m_vec_flags): Likewise.
+	(aarch64_vector_costs): Add a constructor.
+	(aarch64_vector_costs::m_sve_ops): Change type to aarch64_vec_op_count.
+	(aarch64_vector_costs::aarch64_vector_costs): New function.
+	Initialize m_scalar_ops, m_advsimd_ops and m_sve_ops.
+	(aarch64_vector_costs::count_ops): Remove vec_flags and
+	issue_info parameters, using the new aarch64_vec_op_count
+	functions instead.
+	(aarch64_vector_costs::add_stmt_cost): Update call accordingly.
+	(aarch64_sve_op_count::dump): Fold into...
+	(aarch64_vec_op_count::dump): ..here.
+
+2021-11-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c: Include tree-dfa.h.
+	(aarch64_check_consecutive_mems): New function that takes MEM_EXPR
+	and MEM_OFFSET into account.
+	(aarch64_swap_ldrstr_operands): Use it.
+	(aarch64_operands_ok_for_ldpstp): Likewise.  Check that the
+	address of the second memory doesn't depend on the result of
+	the first load.
+
+2021-11-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-pure-const.c (ipa_make_function_pure): Fix exit condition.
+
+2021-11-12  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103175
+	* ipa-modref.c (modref_lattice::merge): Add sanity check.
+	(callee_to_caller_flags): Make flags adjustment sane.
+	(modref_eaf_analysis::analyze_ssa_name): Likewise.
+
+2021-11-12  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/103200
+	* ipa-modref.c (analyze_function, modref_propagate_in_scc): Do
+	not mark pure/const function if there are side-effects.
+
+2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* tree.h (OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P): New access macro for
+	'implicit' bit, using 'base.deprecated_flag' field of tree_node.
+	* tree-pretty-print.c (dump_omp_clause): Add support for printing
+	implicit attribute in tree dumping.
+	* gimplify.c (gimplify_adjust_omp_clauses_1):
+	Set OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P to 1 if map clause is implicitly
+	created.
+	(gimplify_adjust_omp_clauses): Adjust place of adding implicitly created
+	clauses, from simple append, to starting of list, after non-map clauses.
+	* omp-low.c (lower_omp_target): Add GOMP_MAP_IMPLICIT bits into kind
+	values passed to libgomp for implicit maps.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_TEAMS): Remove.
+	(BUILT_IN_GOMP_TEAMS4): New.
+	* builtin-types.def (BT_FN_VOID_UINT_UINT): Remove.
+	(BT_FN_BOOL_UINT_UINT_UINT_BOOL): New.
+	* omp-low.c (lower_omp_teams): Use GOMP_teams4 instead of
+	GOMP_teams, pass to it also num_teams lower-bound expression
+	or a dup of upper-bound if it is missing and a flag whether
+	it is the first call or not.
+
+2021-11-12  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/102497
+	* gimple-predicate-analysis.cc (add_pred): Remove unused
+	function:
+
+2021-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103204
+	* tree-ssa-sccvn.c (valueize_refs_1): Re-valueize the
+	top operand after folding in an address.
+
 2021-11-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-path.cc (path_range_query::path_range_query): New

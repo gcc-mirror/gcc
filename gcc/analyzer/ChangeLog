@@ -1,3 +1,8 @@
+2021-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt_pre): Return when handling
+	"__analyzer_dump_state".
+
 2021-11-11  Richard Biener  <rguenther@suse.de>
 
 	* supergraph.cc: Include bitmap.h.

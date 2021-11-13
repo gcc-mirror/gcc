@@ -1,3 +1,8 @@
+2021-11-12  Alan Modra  <amodra@gmail.com>
+
+	* Makefile.def (configure-opcodes): Depend on configure-bfd.
+	* Makefile.in: Regenerate.
+
 2021-11-03  Maciej W. Rozycki  <macro@embecosm.com>
 
 	* MAINTAINERS: Clarify the policy WRT the Write After Approval

@@ -1,3 +1,34 @@
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103201
+	* config/gcn/icv-device.c (omp_get_num_teams, omp_get_team_num): Move
+	to ...
+	* config/gcn/teams.c: ... here.  New file.
+
+2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Add 'bool implicit' parameter, add
+	implicit map handling to allow a "superset" existing map as valid case.
+	(get_kind): Adjust to filter out GOMP_MAP_IMPLICIT bits in return value.
+	(get_implicit): New function to extract implicit status.
+	(gomp_map_fields_existing): Adjust arguments in calls to
+	gomp_map_vars_existing, and add uses of get_implicit.
+	(gomp_map_vars_internal): Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-1.c: New test.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp_g.h (GOMP_teams4): Declare.
+	* libgomp.map (GOMP_5.1): Export GOMP_teams4.
+	* target.c (GOMP_teams4): New function.
+	* config/nvptx/target.c (GOMP_teams): Remove.
+	(GOMP_teams4): New function.
+	* config/gcn/target.c (GOMP_teams): Remove.
+	(GOMP_teams4): New function.
+	* testsuite/libgomp.c/teams-4.c (main): Expect exactly 2
+	teams instead of <= 2.
+	* testsuite/libgomp.c-c++-common/teams-2.c: New test.
+
 2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/teams-1.f90: New test.
