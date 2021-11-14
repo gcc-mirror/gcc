@@ -1,3 +1,148 @@
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/103211
+	* dbgcnt.def (ipa_attr): New counters.
+	* ipa-pure-const.c: Include dbgcnt.c
+	(ipa_make_function_const): Use debug counter.
+	(ipa_make_function_pure): Likewise.
+	(propagate_pure_const): Fix bug in my previous change.
+
+2021-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c (modref_access_node::range_info_useful_p):
+	Offline from ipa-modref-tree.h.
+	(modref_access_node::dump): Move from ipa-modref.c; make member
+	function.
+	* ipa-modref-tree.h (modref_access_node::range_info_useful_p.
+	modref_access_node::dump): Declare.
+	* ipa-modref.c (dump_access): Remove.
+	(dump_records): Update.
+	(dump_lto_records): Update.
+	(record_access): Update.
+	(record_access_lto): Update.
+
+2021-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (modref_summary::modref_summary): Clear new flags.
+	(modref_summary::dump): Dump try_dse.
+	(modref_summary::finalize): Add FUN attribute; compute try-dse.
+	(analyze_function): Update.
+	(read_section): Update.
+	(update_signature): Update.
+	(pass_ipa_modref::execute): Update.
+	* ipa-modref.h (struct modref_summary):
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_range): Export.
+	* tree-ssa-alias.h (ao_ref_init_from_ptr_and_range): Declare.
+	* tree-ssa-dse.c (dse_optimize_call): New function.
+	(dse_optimize_stmt): Use it.
+
+2021-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c: Move #if CHECKING_P to proper place.
+
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref-tree.h
+	(struct modref_access_node): Move longer member functions to
+	ipa-modref-tree.c
+	(modref_ref_node::try_merge_with): Turn into modreef_acces_node member
+	function.
+	* ipa-modref-tree.c (modref_access_node::contains): Move here
+	from ipa-modref-tree.h.
+	(modref_access_node::update): Likewise.
+	(modref_access_node::merge): Likewise.
+	(modref_access_node::closer_pair_p): Likewise.
+	(modref_access_node::forced_merge): Likewise.
+	(modref_access_node::update2): Likewise.
+	(modref_access_node::combined_offsets): Likewise.
+	(modref_access_node::try_merge_with): Likewise.
+	(modref_access_node::insert): Likewise.
+
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (modref_summary::global_memory_read_p): Remove.
+	(modref_summary::global_memory_written_p): Remove.
+	(modref_summary::dump): Dump new flags.
+	(modref_summary::finalize): New member function.
+	(analyze_function): Call it.
+	(read_section): Call it.
+	(update_signature): Call it.
+	(pass_ipa_modref::execute): Call it.
+	* ipa-modref.h (struct modref_summary): Remove
+	global_memory_read_p and global_memory_written_p.
+	Add global_memory_read, global_memory_written.
+	* tree-ssa-structalias.c (determine_global_memory_access):
+	Update.
+
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (compute_fn_summary): Use type_attribut_allowed_p
+	* ipa-param-manipulation.c
+	(ipa_param_adjustments::type_attribute_allowed_p):
+	New member function.
+	(drop_type_attribute_if_params_changed_p): New function.
+	(build_adjusted_function_type): Use it.
+	* ipa-param-manipulation.h: Add type_attribute_allowed_p.
+
+2021-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (Static Analyzer Options): Add
+	-Wno-analyzer-tainted-allocation-size,
+	-Wno-analyzer-tainted-divisor, -Wno-analyzer-tainted-offset, and
+	-Wno-analyzer-tainted-size to list.  Add
+	-Wanalyzer-tainted-allocation-size, -Wanalyzer-tainted-divisor,
+	-Wanalyzer-tainted-offset, and -Wanalyzer-tainted-size to list
+	of options effectively enabled by -fanalyzer.
+	(-Wanalyzer-tainted-allocation-size): New.
+	(-Wanalyzer-tainted-array-index): Tweak wording; add link to CWE.
+	(-Wanalyzer-tainted-divisor): New.
+	(-Wanalyzer-tainted-offset): New.
+	(-Wanalyzer-tainted-size): New.
+
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* attr-fnspec.h (attr_fnspec::arg_eaf_flags): Break out from ...
+	* gimple.c (gimple_call_arg_flags): ... here.
+	* ipa-modref.c (analyze_parms): Record flags known from fnspec.
+	(modref_merge_call_site_flags): Use arg_eaf_flags.
+
+2021-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103222
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_phis):
+	New.
+	(path_range_query::compute_ranges_in_block): Call
+	compute_ranges_in_phis.
+	* gimple-range-path.h (path_range_query::compute_ranges_in_phis):
+	New.
+
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-fnsummary.c (compute_fn_summary): Do not give up on signature
+	changes on "fn spec" attribute; give up on varadic types.
+	* ipa-param-manipulation.c: Include attribs.h.
+	(build_adjusted_function_type): New parameter ARG_MODIFIED; if it is
+	true remove "fn spec" attribute.
+	(ipa_param_adjustments::build_new_function_type): Update.
+	(ipa_param_body_adjustments::modify_formal_parameters): update.
+	* ipa-sra.c: Include attribs.h.
+	(ipa_sra_preliminary_function_checks): Do not check for TYPE_ATTRIBUTES.
+
+2021-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::path_range_query): Merge
+	ctors.
+	(path_range_query::import_p): Move from header file.
+	(path_range_query::~path_range_query): Adjust for combined ctors.
+	* gimple-range-path.h: Merge ctors.
+	(path_range_query::import_p): Move to .cc file.
+
+2021-11-13  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103182
+	* ipa-modref.c (callee_to_caller_flags): Fix merging of flags.
+	(modref_eaf_analysis::analyze_ssa_name): Fix merging of flags.
+
 2021-11-12  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/or1k-protos.h (or1k_profile_hook): New function.

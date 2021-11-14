@@ -1,3 +1,28 @@
+2021-11-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/cpp1z/inh-ctor23.C: Fix template
+	* g++.dg/ipa/ipa-icf-4.C: Fix template
+	* gcc.dg/tree-ssa/modref-dse-1.c: New test.
+	* gcc.dg/tree-ssa/modref-dse-2.c: New test.
+
+2021-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/pr93382.c: Tweak expected wording.
+	* gcc.dg/analyzer/taint-alloc-1.c: New test.
+	* gcc.dg/analyzer/taint-alloc-2.c: New test.
+	* gcc.dg/analyzer/taint-divisor-1.c: New test.
+	* gcc.dg/analyzer/taint-1.c: Rename to...
+	* gcc.dg/analyzer/taint-read-index-1.c: ...this.  Tweak expected
+	wording.  Mark some events as xfail.
+	* gcc.dg/analyzer/taint-read-offset-1.c: New test.
+	* gcc.dg/analyzer/taint-size-1.c: New test.
+	* gcc.dg/analyzer/taint-write-index-1.c: New test.
+	* gcc.dg/analyzer/taint-write-offset-1.c: New test.
+
+2021-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr103222.c: New test.
+
 2021-11-12  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/103209

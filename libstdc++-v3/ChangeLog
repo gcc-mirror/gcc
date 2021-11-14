@@ -1,3 +1,20 @@
+2021-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add spanstream header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add spanstream header.
+	* include/std/version (__cpp_lib_spanstream): Define.
+	* include/std/spanstream: New file.
+	* testsuite/27_io/spanstream/1.cc: New test.
+	* testsuite/27_io/spanstream/version.cc: New test.
+
+2021-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++/103166
+	* acinclude.m4 (GLIBCXX_CHECK_GETENTROPY, GLIBCXX_CHECK_ARC4RANDOM):
+	Use GCC_TRY_COMPILE_OR_LINK instead of AC_TRY_COMPILE.
+	* configure: Regenerate.
+
 2021-11-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59675
