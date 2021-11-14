@@ -1,5 +1,3 @@
-/* { dg-do run } */
-/* { dg-options "-O2" } */
 
 unsigned a = 0xFFFFFFFF;
 int b;

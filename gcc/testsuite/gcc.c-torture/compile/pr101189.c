@@ -1,6 +1,4 @@
 /* PR tree-optimization/101189  */
-/* { dg-do compile } */
-/* { dg-options "-O2" } */
 
 static int a, b;
 int main() {

@@ -1,5 +1,3 @@
-/* { dg-do compile } */
-/* { dg-options "-O2" } */
 
 void a()
 {

@@ -1,5 +1,3 @@
-/* { dg-do run } */
-/* { dg-options "-O1" } */
 
 struct a {
   int b : 4;
