@@ -276,7 +276,8 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 
 modref_summary::modref_summary ()
   : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
-    writes_errno (false), side_effects (false), global_memory_read (false),
+    writes_errno (false), side_effects (false), nondeterministic (false),
+    calls_interposable (false), global_memory_read (false),
     global_memory_written (false), try_dse (false)
 {
 }
@@ -332,13 +333,15 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
-    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
   else
     kills.release ();
   if (ecf_flags & ECF_PURE)
-    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
 
@@ -357,8 +360,10 @@ struct GTY(()) modref_summary_lto
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   eaf_flags_t retslot_flags;
   eaf_flags_t static_chain_flags;
-  bool writes_errno;
-  bool side_effects;
+  unsigned writes_errno : 1;
+  unsigned side_effects : 1;
+  unsigned nondeterministic : 1;
+  unsigned calls_interposable : 1;
 
   modref_summary_lto ();
   ~modref_summary_lto ();
@@ -370,7 +375,8 @@ struct GTY(()) modref_summary_lto
 
 modref_summary_lto::modref_summary_lto ()
   : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
-    writes_errno (false), side_effects (false)
+    writes_errno (false), side_effects (false), nondeterministic (false),
+    calls_interposable (false)
 {
 }
 
@@ -400,11 +406,13 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
       && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
     return true;
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
-    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
   if (ecf_flags & ECF_PURE)
-    return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
 
@@ -586,6 +594,10 @@ modref_summary::dump (FILE *out)
     fprintf (out, "  Writes errno\n");
   if (side_effects)
     fprintf (out, "  Side effects\n");
+  if (nondeterministic)
+    fprintf (out, "  Nondeterministic\n");
+  if (calls_interposable)
+    fprintf (out, "  Calls interposable\n");
   if (global_memory_read)
     fprintf (out, "  Global memory read\n");
   if (global_memory_written)
@@ -626,6 +638,10 @@ modref_summary_lto::dump (FILE *out)
     fprintf (out, "  Writes errno\n");
   if (side_effects)
     fprintf (out, "  Side effects\n");
+  if (nondeterministic)
+    fprintf (out, "  Nondeterministic\n");
+  if (calls_interposable)
+    fprintf (out, "  Calls interposable\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -869,6 +885,20 @@ record_access_p (tree expr)
   return true;
 }
 
+/* Return true if ECF flags says that nondeterminsm can be ignored.  */
+
+static bool
+ignore_nondeterminism_p (tree caller, int flags)
+{
+  if ((flags & (ECF_CONST | ECF_PURE))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
+    return true;
+  if ((flags & (ECF_NORETURN | ECF_NOTHROW)) == (ECF_NORETURN | ECF_NOTHROW)
+      || (!opt_for_fn (caller, flag_exceptions) && (flags & ECF_NORETURN)))
+    return true;
+  return false;
+}
+
 /* Return true if ECF flags says that return value can be ignored.  */
 
 static bool
@@ -953,16 +983,36 @@ merge_call_side_effects (modref_summary *cur_summary,
       && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return changed;
 
-  if (!cur_summary->side_effects && callee_summary->side_effects)
+  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (flags & ECF_LOOPING_CONST_OR_PURE))
     {
-      if (dump_file)
-	fprintf (dump_file, " - merging side effects.\n");
-      cur_summary->side_effects = true;
-      changed = true;
-    }
+      if (!cur_summary->side_effects && callee_summary->side_effects)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, " - merging side effects.\n");
+	  cur_summary->side_effects = true;
+	  changed = true;
+	}
+      if (!cur_summary->nondeterministic && callee_summary->nondeterministic
+	  && !ignore_nondeterminism_p (current_function_decl, flags))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, " - merging nondeterministic.\n");
+	  cur_summary->nondeterministic = true;
+	  changed = true;
+	}
+     }
 
   if (flags & (ECF_CONST | ECF_NOVOPS))
     return changed;
+
+  if (!cur_summary->calls_interposable && callee_summary->calls_interposable)
+    {
+      if (dump_file)
+	fprintf (dump_file, " - merging calls interposable.\n");
+      cur_summary->calls_interposable = true;
+      changed = true;
+    }
 
   if (always_executed
       && callee_summary->kills.length ()
@@ -1000,11 +1050,13 @@ merge_call_side_effects (modref_summary *cur_summary,
      not always bind to current def: it is possible that memory load
      was optimized out earlier which may not happen in the interposed
      variant.  */
-  if (!callee_node->binds_to_current_def_p ())
+  if (!callee_node->binds_to_current_def_p ()
+      && !cur_summary->calls_interposable)
     {
       if (dump_file)
-	fprintf (dump_file, " - May be interposed: collapsing loads.\n");
-      cur_summary->loads->collapse ();
+	fprintf (dump_file, " - May be interposed.\n");
+      cur_summary->calls_interposable = true;
+      changed = true;
     }
 
   if (dump_file)
@@ -1161,9 +1213,17 @@ process_fnspec (modref_summary *cur_summary,
 	  && stmt_could_throw_p (cfun, call)))
     {
       if (cur_summary)
-	cur_summary->side_effects = true;
+	{
+	  cur_summary->side_effects = true;
+	  if (!ignore_nondeterminism_p (current_function_decl, flags))
+	    cur_summary->nondeterministic = true;
+	}
       if (cur_summary_lto)
-	cur_summary_lto->side_effects = true;
+	{
+	  cur_summary_lto->side_effects = true;
+	  if (!ignore_nondeterminism_p (current_function_decl, flags))
+	    cur_summary_lto->nondeterministic = true;
+	}
     }
   if (flags & (ECF_CONST | ECF_NOVOPS))
     return true;
@@ -1388,9 +1448,9 @@ analyze_load (gimple *, tree, tree op, void *data)
       if (dump_file)
 	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
       if (summary)
-	summary->side_effects = true;
+	summary->side_effects = summary->nondeterministic = true;
       if (summary_lto)
-	summary_lto->side_effects = true;
+	summary_lto->side_effects = summary_lto->nondeterministic = true;
     }
 
   if (!record_access_p (op))
@@ -1429,9 +1489,9 @@ analyze_store (gimple *stmt, tree, tree op, void *data)
       if (dump_file)
 	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
       if (summary)
-	summary->side_effects = true;
+	summary->side_effects = summary->nondeterministic = true;
       if (summary_lto)
-	summary_lto->side_effects = true;
+	summary_lto->side_effects = summary_lto->nondeterministic = true;
     }
 
   if (!record_access_p (op))
@@ -1497,9 +1557,15 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
   switch (gimple_code (stmt))
    {
    case GIMPLE_ASM:
-      if (gimple_asm_volatile_p (as_a <gasm *> (stmt))
-	  || (cfun->can_throw_non_call_exceptions
-	      && stmt_could_throw_p (cfun, stmt)))
+      if (gimple_asm_volatile_p (as_a <gasm *> (stmt)))
+	{
+	  if (summary)
+	    summary->side_effects = summary->nondeterministic = true;
+	  if (summary_lto)
+	    summary_lto->side_effects = summary_lto->nondeterministic = true;
+	}
+      if (cfun->can_throw_non_call_exceptions
+	  && stmt_could_throw_p (cfun, stmt))
 	{
 	  if (summary)
 	    summary->side_effects = true;
@@ -2826,6 +2892,8 @@ analyze_function (function *f, bool ipa)
 						    param_modref_max_accesses);
       summary->writes_errno = false;
       summary->side_effects = false;
+      summary->nondeterministic = false;
+      summary->calls_interposable = false;
     }
   if (lto)
     {
@@ -2841,6 +2909,8 @@ analyze_function (function *f, bool ipa)
 				  param_modref_max_accesses);
       summary_lto->writes_errno = false;
       summary_lto->side_effects = false;
+      summary_lto->nondeterministic = false;
+      summary_lto->calls_interposable = false;
     }
 
   analyze_parms (summary, summary_lto, ipa,
@@ -2913,9 +2983,10 @@ analyze_function (function *f, bool ipa)
   if (!ipa && flag_ipa_pure_const)
     {
       if (!summary->stores->every_base && !summary->stores->bases
-	  && !summary->side_effects)
+	  && !summary->nondeterministic)
 	{
-	  if (!summary->loads->every_base && !summary->loads->bases)
+	  if (!summary->loads->every_base && !summary->loads->bases
+	      && !summary->calls_interposable)
 	    fixup_cfg = ipa_make_function_const
 		   (cgraph_node::get (current_function_decl),
 		    summary->side_effects, true);
@@ -3149,6 +3220,8 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
   dst_data->kills.splice (src_data->kills);
   dst_data->writes_errno = src_data->writes_errno;
   dst_data->side_effects = src_data->side_effects;
+  dst_data->nondeterministic = src_data->nondeterministic;
+  dst_data->calls_interposable = src_data->calls_interposable;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
@@ -3177,6 +3250,8 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
   dst_data->loads->copy_from (src_data->loads);
   dst_data->writes_errno = src_data->writes_errno;
   dst_data->side_effects = src_data->side_effects;
+  dst_data->nondeterministic = src_data->nondeterministic;
+  dst_data->calls_interposable = src_data->calls_interposable;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
@@ -3506,6 +3581,8 @@ modref_write ()
 	  struct bitpack_d bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, r->writes_errno, 1);
 	  bp_pack_value (&bp, r->side_effects, 1);
+	  bp_pack_value (&bp, r->nondeterministic, 1);
+	  bp_pack_value (&bp, r->calls_interposable, 1);
 	  if (!flag_wpa)
 	    {
 	      for (cgraph_edge *e = cnode->indirect_calls;
@@ -3578,11 +3655,15 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	{
 	  modref_sum->writes_errno = false;
 	  modref_sum->side_effects = false;
+	  modref_sum->nondeterministic = false;
+	  modref_sum->calls_interposable = false;
 	}
       if (modref_sum_lto)
 	{
 	  modref_sum_lto->writes_errno = false;
 	  modref_sum_lto->side_effects = false;
+	  modref_sum_lto->nondeterministic = false;
+	  modref_sum_lto->calls_interposable = false;
 	}
 
       gcc_assert (!modref_sum || (!modref_sum->loads
@@ -3634,6 +3715,20 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	    modref_sum->side_effects = true;
 	  if (modref_sum_lto)
 	    modref_sum_lto->side_effects = true;
+	}
+      if (bp_unpack_value (&bp, 1))
+	{
+	  if (modref_sum)
+	    modref_sum->nondeterministic = true;
+	  if (modref_sum_lto)
+	    modref_sum_lto->nondeterministic = true;
+	}
+      if (bp_unpack_value (&bp, 1))
+	{
+	  if (modref_sum)
+	    modref_sum->calls_interposable = true;
+	  if (modref_sum_lto)
+	    modref_sum_lto->calls_interposable = true;
 	}
       if (!flag_ltrans)
 	{
@@ -4162,6 +4257,18 @@ propagate_unknown_call (cgraph_node *node,
 	  cur_summary_lto->side_effects = true;
 	  changed = true;
 	}
+      if (cur_summary && !cur_summary->nondeterministic
+	  && !ignore_nondeterminism_p (node->decl, ecf_flags))
+	{
+	  cur_summary->nondeterministic = true;
+	  changed = true;
+	}
+      if (cur_summary_lto && !cur_summary_lto->nondeterministic
+	  && !ignore_nondeterminism_p (node->decl, ecf_flags))
+	{
+	  cur_summary_lto->nondeterministic = true;
+	  changed = true;
+	}
     }
   if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
     return changed;
@@ -4421,6 +4528,20 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		  cur_summary_lto->side_effects = true;
 		  changed = true;
 		}
+	      if (callee_summary && !cur_summary->nondeterministic
+		  && callee_summary->nondeterministic
+		  && !ignore_nondeterminism_p (cur->decl, flags))
+		{
+		  cur_summary->nondeterministic = true;
+		  changed = true;
+		}
+	      if (callee_summary_lto && !cur_summary_lto->nondeterministic
+		  && callee_summary_lto->nondeterministic
+		  && !ignore_nondeterminism_p (cur->decl, flags))
+		{
+		  cur_summary_lto->nondeterministic = true;
+		  changed = true;
+		}
 	      if (flags & (ECF_CONST | ECF_NOVOPS))
 		continue;
 
@@ -4430,7 +4551,16 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		 the interposed variant.  */
 	      if (!callee_edge->binds_to_current_def_p ())
 		{
-		  changed |= collapse_loads (cur_summary, cur_summary_lto);
+		  if (cur_summary && !cur_summary->calls_interposable)
+		    {
+		      cur_summary->calls_interposable = true;
+		      changed = true;
+		    }
+		  if (cur_summary_lto && !cur_summary_lto->calls_interposable)
+		    {
+		      cur_summary_lto->calls_interposable = true;
+		      changed = true;
+		    }
 		  if (dump_file)
 		    fprintf (dump_file, "      May not bind local;"
 			     " collapsing loads\n");
@@ -4516,9 +4646,10 @@ modref_propagate_in_scc (cgraph_node *component_node)
 					  ? summaries_lto->get (cur)
 					  : NULL;
 	if (summary && !summary->stores->every_base && !summary->stores->bases
-	    && !summary->side_effects)
+	    && !summary->nondeterministic)
 	  {
-	    if (!summary->loads->every_base && !summary->loads->bases)
+	    if (!summary->loads->every_base && !summary->loads->bases
+		&& !summary->calls_interposable)
 	      pureconst |= ipa_make_function_const
 		     (cur, summary->side_effects, false);
 	    else
@@ -4526,9 +4657,10 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		     (cur, summary->side_effects, false);
 	  }
 	if (summary_lto && !summary_lto->stores->every_base
-	    && !summary_lto->stores->bases && !summary_lto->side_effects)
+	    && !summary_lto->stores->bases && !summary_lto->nondeterministic)
 	  {
-	    if (!summary_lto->loads->every_base && !summary_lto->loads->bases)
+	    if (!summary_lto->loads->every_base && !summary_lto->loads->bases
+		&& !summary_lto->calls_interposable)
 	      pureconst |= ipa_make_function_const
 		     (cur, summary_lto->side_effects, false);
 	    else

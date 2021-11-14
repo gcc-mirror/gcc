@@ -32,11 +32,31 @@ struct GTY(()) modref_summary
   modref_records *stores;
   auto_vec<modref_access_node> GTY((skip)) kills;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
+
   eaf_flags_t retslot_flags;
   eaf_flags_t static_chain_flags;
+
   unsigned writes_errno : 1;
+  /* Side effects does not include memory loads and stores which are
+     expressed using loads, stores and calls_interposable fields.  */
   unsigned side_effects : 1;
+  /* If true function can not be CSE optimized because it may behave
+     differently even if invoked with same inputs.  */
+  unsigned nondeterministic : 1;
+  /* IF true the function may read any reachable memory but not use
+     it for anything useful.  This may happen i.e. when interposing
+     function with optimized out conditional with unoptimized one.
+
+     In this situation the loads summary is not useful for DSE but
+     it is still useful for CSE.  */
+  unsigned calls_interposable : 1;
+
   /* Flags coputed by finalize method.  */
+
+  /* global_memory_read is not set for functions calling functions
+     with !binds_to_current_def which, after interposition, may read global
+     memory but do nothing useful with it (except for crashing if some
+     stores are optimized out.  */
   unsigned global_memory_read : 1;
   unsigned global_memory_written : 1;
   unsigned try_dse : 1;
