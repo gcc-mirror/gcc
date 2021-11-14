@@ -1079,35 +1079,25 @@ dse_optimize_call (gimple_stmt_iterator *gsi, sbitmap live_bytes)
   if (!summary || !summary->try_dse)
     return false;
 
-  modref_base_node <alias_set_type> *base_node;
-  modref_ref_node <alias_set_type> *ref_node;
-  modref_access_node *access_node;
-  size_t i, j, k;
   bool by_clobber_p = false;
 
   /* Walk all memory writes and verify that they are dead.  */
-  FOR_EACH_VEC_SAFE_ELT (summary->stores->bases, i, base_node)
-    FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
-      FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+  for (auto base_node : summary->stores->bases)
+    for (auto ref_node : base_node->refs)
+      for (auto access_node : ref_node->accesses)
 	{
-	  gcc_checking_assert (access_node->parm_offset_known);
+	  tree arg = access_node.get_call_arg (stmt);
 
-	  tree arg;
-	  if (access_node->parm_index == MODREF_STATIC_CHAIN_PARM)
-	    arg = gimple_call_chain (stmt);
-	  else
-	    arg = gimple_call_arg (stmt, access_node->parm_index);
+	  if (!arg)
+	    return false;
+
+	  if (integer_zerop (arg) && flag_delete_null_pointer_checks)
+	    continue;
 
 	  ao_ref ref;
-	  poly_offset_int off = (poly_offset_int)access_node->offset
-		+ ((poly_offset_int)access_node->parm_offset
-		   << LOG2_BITS_PER_UNIT);
-	  poly_int64 off2;
-	  if (!off.to_shwi (&off2))
+
+	  if (!access_node.get_ao_ref (stmt, &ref))
 	    return false;
-	  ao_ref_init_from_ptr_and_range
-		 (&ref, arg, true, off2, access_node->size,
-		  access_node->max_size);
 	  ref.ref_alias_set = ref_node->ref;
 	  ref.base_alias_set = base_node->base;
 

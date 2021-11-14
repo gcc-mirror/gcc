@@ -1,4 +1,5 @@
 /* { dg-shouldfail "tsan" } */
+/* { dg-additional-options "-ldl -fno-ipa-modref" } */
 
 #include <stdlib.h>
 

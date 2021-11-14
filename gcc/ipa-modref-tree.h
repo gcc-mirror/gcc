@@ -77,7 +77,7 @@ struct GTY(()) modref_access_node
      This has to be limited in order to keep dataflow finite.  */
   unsigned char adjustments;
 
-  /* Return true if access node holds no useful info.  */
+  /* Return true if access node holds some useful info.  */
   bool useful_p () const
     {
       return parm_index != MODREF_UNKNOWN_PARM;
@@ -88,10 +88,13 @@ struct GTY(()) modref_access_node
   bool operator == (modref_access_node &a) const;
   /* Return true if range info is useful.  */
   bool range_info_useful_p () const;
+  /* Return tree corresponding to parameter of the range in STMT.  */
+  tree get_call_arg (const gcall *stmt) const;
+  /* Build ao_ref corresponding to the access and return true if succesful.  */
+  bool get_ao_ref (const gcall *stmt, class ao_ref *ref) const;
   /* Insert A into vector ACCESSES.  Limit size of vector to MAX_ACCESSES and
      if RECORD_ADJUSTMENT is true keep track of adjustment counts.
-     Return 0 if nothing changed, 1 is insertion suceeded and -1 if
-     failed.  */
+     Return 0 if nothing changed, 1 is insertion suceeded and -1 if failed.  */
   static int insert (vec <modref_access_node, va_gc> *&accesses,
 		     modref_access_node a, size_t max_accesses,
 		     bool record_adjustments);

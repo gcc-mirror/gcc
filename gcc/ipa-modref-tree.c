@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "ipa-modref-tree.h"
 #include "selftest.h"
+#include "tree-ssa-alias.h"
+#include "gimple.h"
 
 /* Return true if both accesses are the same.  */
 bool
@@ -601,6 +603,39 @@ modref_access_node::dump (FILE *out)
 	fprintf (out, " adjusted %i times", adjustments);
     }
   fprintf (out, "\n");
+}
+
+/* Return tree corresponding to parameter of the range in STMT.  */
+tree
+modref_access_node::get_call_arg (const gcall *stmt) const
+{
+  if (parm_index == MODREF_UNKNOWN_PARM)
+    return NULL;
+  if (parm_index == MODREF_STATIC_CHAIN_PARM)
+    return gimple_call_chain (stmt);
+  /* MODREF_RETSLOT_PARM should not happen in access trees since the store
+     is seen explicitly in the caller.  */
+  gcc_checking_assert (parm_index >= 0);
+  if (parm_index >= (int)gimple_call_num_args (stmt))
+    return NULL;
+  return gimple_call_arg (stmt, parm_index);
+}
+
+/* Return tree corresponding to parameter of the range in STMT.  */
+bool
+modref_access_node::get_ao_ref (const gcall *stmt, ao_ref *ref) const
+{
+  tree arg;
+
+  if (!parm_offset_known || !(arg = get_call_arg (stmt)))
+    return false;
+  poly_offset_int off = (poly_offset_int)offset
+	+ ((poly_offset_int)parm_offset << LOG2_BITS_PER_UNIT);
+  poly_int64 off2;
+  if (!off.to_shwi (&off2))
+    return false;
+  ao_ref_init_from_ptr_and_range (ref, arg, true, off2, size, max_size);
+  return true;
 }
 
 #if CHECKING_P

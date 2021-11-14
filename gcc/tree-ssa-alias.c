@@ -2535,13 +2535,10 @@ refs_output_dependent_p (tree store1, tree store2)
    IF TBAA_P is true, use TBAA oracle.  */
 
 static bool
-modref_may_conflict (const gimple *stmt,
+modref_may_conflict (const gcall *stmt,
 		     modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
 {
   alias_set_type base_set, ref_set;
-  modref_base_node <alias_set_type> *base_node;
-  modref_ref_node <alias_set_type> *ref_node;
-  size_t i, j, k;
 
   if (tt->every_base)
     return true;
@@ -2554,7 +2551,7 @@ modref_may_conflict (const gimple *stmt,
   ref_set = ao_ref_alias_set (ref);
 
   int num_tests = 0, max_tests = param_modref_max_tests;
-  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
+  for (auto base_node : tt->bases)
     {
       if (tbaa_p && flag_strict_aliasing)
 	{
@@ -2569,7 +2566,7 @@ modref_may_conflict (const gimple *stmt,
       if (base_node->every_ref)
 	return true;
 
-      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+      for (auto ref_node : base_node->refs)
 	{
 	  /* Do not repeat same test as before.  */
 	  if ((ref_set != base_set || base_node->base != ref_node->ref)
@@ -2583,66 +2580,43 @@ modref_may_conflict (const gimple *stmt,
 	      num_tests++;
 	    }
 
-	  /* TBAA checks did not disambiguate,  try to use base pointer, for
-	     that we however need to have ref->ref or ref->base.  */
-	  if (ref_node->every_access || (!ref->ref && !ref->base))
+	  if (ref_node->every_access)
 	    return true;
 
-	  modref_access_node *access_node;
-	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	  /* TBAA checks did not disambiguate, try individual accesses.  */
+	  for (auto access_node : ref_node->accesses)
 	    {
 	      if (num_tests >= max_tests)
 		return true;
 
-	      if (access_node->parm_index == MODREF_UNKNOWN_PARM
-		  || access_node->parm_index
-		     >= (int)gimple_call_num_args (stmt))
+	      tree arg = access_node.get_call_arg (stmt);
+	      if (!arg)
 		return true;
 
 	      alias_stats.modref_baseptr_tests++;
-	      tree arg;
-
-	      if (access_node->parm_index == MODREF_STATIC_CHAIN_PARM)
-		arg = gimple_call_chain (stmt);
-	      else
-		arg = gimple_call_arg (stmt, access_node->parm_index);
 
 	      if (integer_zerop (arg) && flag_delete_null_pointer_checks)
 		continue;
 
+	      /* PTA oracle will be unhapy of arg is not an pointer.  */
 	      if (!POINTER_TYPE_P (TREE_TYPE (arg)))
 		return true;
 
-	      /* ao_ref_init_from_ptr_and_range assumes that memory access
-		 starts by the pointed to location.  If we did not track the
-		 offset it is possible that it starts before the actual
-		 pointer.  */
-	      if (!access_node->parm_offset_known)
+	      /* If we don't have base pointer, give up.  */
+	      if (!ref->ref && !ref->base)
+		continue;
+
+	      ao_ref ref2;
+	      if (access_node.get_ao_ref (stmt, &ref2))
 		{
-		  if (ptr_deref_may_alias_ref_p_1 (arg, ref))
+		  ref2.ref_alias_set = ref_node->ref;
+		  ref2.base_alias_set = base_node->base;
+		  if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
 		    return true;
 		}
-	      else
-		{
-		  ao_ref ref2;
-		  poly_offset_int off = (poly_offset_int)access_node->offset
-			+ ((poly_offset_int)access_node->parm_offset
-			   << LOG2_BITS_PER_UNIT);
-		  poly_int64 off2;
-		  if (off.to_shwi (&off2))
-		    {
-		      ao_ref_init_from_ptr_and_range
-			     (&ref2, arg, true, off2,
-			      access_node->size,
-			      access_node->max_size);
-		      ref2.ref_alias_set = ref_set;
-		      ref2.base_alias_set = base_set;
-		      if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
-			return true;
-		    }
-		  else if (ptr_deref_may_alias_ref_p_1 (arg, ref))
-		    return true;
-		}
+	      else if (ptr_deref_may_alias_ref_p_1 (arg, ref))
+		return true;
+
 	      num_tests++;
 	    }
 	}
