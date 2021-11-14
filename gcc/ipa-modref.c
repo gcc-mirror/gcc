@@ -335,6 +335,8 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
     return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
+  else
+    kills.release ();
   if (ecf_flags & ECF_PURE)
     return (!side_effects && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
@@ -351,6 +353,7 @@ struct GTY(()) modref_summary_lto
      more verbose and thus more likely to hit the limits.  */
   modref_records_lto *loads;
   modref_records_lto *stores;
+  auto_vec<modref_access_node> GTY((skip)) kills;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   eaf_flags_t retslot_flags;
   eaf_flags_t static_chain_flags;
@@ -570,6 +573,15 @@ modref_summary::dump (FILE *out)
       fprintf (out, "  stores:\n");
       dump_records (stores, out);
     }
+  if (kills.length ())
+    {
+      fprintf (out, "  kills:\n");
+      for (auto kill : kills)
+	{
+	  fprintf (out, "    ");
+	  kill.dump (out);
+	}
+    }
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
   if (side_effects)
@@ -762,13 +774,12 @@ get_access (ao_ref *ref)
 /* Record access into the modref_records data structure.  */
 
 static void
-record_access (modref_records *tt, ao_ref *ref)
+record_access (modref_records *tt, ao_ref *ref, modref_access_node &a)
 {
   alias_set_type base_set = !flag_strict_aliasing ? 0
 			    : ao_ref_base_alias_set (ref);
   alias_set_type ref_set = !flag_strict_aliasing ? 0
 			    : (ao_ref_alias_set (ref));
-  modref_access_node a = get_access (ref);
   if (dump_file)
     {
        fprintf (dump_file, "   - Recording base_set=%i ref_set=%i ",
@@ -781,7 +792,7 @@ record_access (modref_records *tt, ao_ref *ref)
 /* IPA version of record_access_tree.  */
 
 static void
-record_access_lto (modref_records_lto *tt, ao_ref *ref)
+record_access_lto (modref_records_lto *tt, ao_ref *ref, modref_access_node &a)
 {
   /* get_alias_set sometimes use different type to compute the alias set
      than TREE_TYPE (base).  Do same adjustments.  */
@@ -828,7 +839,6 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
 		       || variably_modified_type_p (ref_type, NULL_TREE)))
 	ref_type = NULL_TREE;
     }
-  modref_access_node a = get_access (ref);
   if (dump_file)
     {
       fprintf (dump_file, "   - Recording base type:");
@@ -932,12 +942,16 @@ bool
 merge_call_side_effects (modref_summary *cur_summary,
 			 gimple *stmt, modref_summary *callee_summary,
 			 bool ignore_stores, cgraph_node *callee_node,
-			 bool record_adjustments)
+			 bool record_adjustments, bool always_executed)
 {
   auto_vec <modref_parm_map, 32> parm_map;
   modref_parm_map chain_map;
   bool changed = false;
   int flags = gimple_call_flags (stmt);
+
+  if ((flags & (ECF_CONST | ECF_NOVOPS))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
+    return changed;
 
   if (!cur_summary->side_effects && callee_summary->side_effects)
     {
@@ -949,6 +963,38 @@ merge_call_side_effects (modref_summary *cur_summary,
 
   if (flags & (ECF_CONST | ECF_NOVOPS))
     return changed;
+
+  if (always_executed
+      && callee_summary->kills.length ()
+      && (!cfun->can_throw_non_call_exceptions
+	  || !stmt_could_throw_p (cfun, stmt)))
+    {
+      /* Watch for self recursive updates.  */
+      auto_vec<modref_access_node, 32> saved_kills;
+
+      saved_kills.reserve_exact (callee_summary->kills.length ());
+      saved_kills.splice (callee_summary->kills);
+      for (auto kill : saved_kills)
+	{
+	  if (kill.parm_index >= (int)parm_map.length ())
+	    continue;
+	  modref_parm_map &m
+		  = kill.parm_index == MODREF_STATIC_CHAIN_PARM
+		    ? chain_map
+		    : parm_map[kill.parm_index];
+	  if (m.parm_index == MODREF_LOCAL_MEMORY_PARM
+	      || m.parm_index == MODREF_UNKNOWN_PARM
+	      || m.parm_index == MODREF_RETSLOT_PARM
+	      || !m.parm_offset_known)
+	    continue;
+	  modref_access_node n = kill;
+	  n.parm_index = m.parm_index;
+	  n.parm_offset += m.parm_offset;
+	  if (modref_access_node::insert_kill (cur_summary->kills, n,
+					       record_adjustments))
+	    changed = true;
+	}
+    }
 
   /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
@@ -1218,7 +1264,8 @@ process_fnspec (modref_summary *cur_summary,
 
 static bool
 analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
-	      gcall *stmt, vec <gimple *> *recursive_calls)
+	      gcall *stmt, vec <gimple *> *recursive_calls,
+	      bool always_executed)
 {
   /* Check flags on the function call.  In certain cases, analysis can be
      simplified.  */
@@ -1305,7 +1352,7 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
     }
 
   merge_call_side_effects (cur_summary, stmt, callee_summary, ignore_stores,
-			   callee_node, false);
+			   callee_node, false, always_executed);
 
   return true;
 }
@@ -1316,6 +1363,7 @@ struct summary_ptrs
 {
   struct modref_summary *nolto;
   struct modref_summary_lto *lto;
+  bool always_executed;
 };
 
 /* Helper for analyze_stmt.  */
@@ -1350,18 +1398,19 @@ analyze_load (gimple *, tree, tree op, void *data)
 
   ao_ref r;
   ao_ref_init (&r, op);
+  modref_access_node a = get_access (&r);
 
   if (summary)
-    record_access (summary->loads, &r);
+    record_access (summary->loads, &r, a);
   if (summary_lto)
-    record_access_lto (summary_lto->loads, &r);
+    record_access_lto (summary_lto->loads, &r, a);
   return false;
 }
 
 /* Helper for analyze_stmt.  */
 
 static bool
-analyze_store (gimple *, tree, tree op, void *data)
+analyze_store (gimple *stmt, tree, tree op, void *data)
 {
   modref_summary *summary = ((summary_ptrs *)data)->nolto;
   modref_summary_lto *summary_lto = ((summary_ptrs *)data)->lto;
@@ -1390,11 +1439,22 @@ analyze_store (gimple *, tree, tree op, void *data)
 
   ao_ref r;
   ao_ref_init (&r, op);
+  modref_access_node a = get_access (&r);
 
   if (summary)
-    record_access (summary->stores, &r);
+    record_access (summary->stores, &r, a);
   if (summary_lto)
-    record_access_lto (summary_lto->stores, &r);
+    record_access_lto (summary_lto->stores, &r, a);
+  if (summary
+      && ((summary_ptrs *)data)->always_executed
+      && a.useful_for_kill_p ()
+      && (!cfun->can_throw_non_call_exceptions
+	  || !stmt_could_throw_p (cfun, stmt)))
+    {
+      if (dump_file)
+	fprintf (dump_file, "   - Recording kill\n");
+      modref_access_node::insert_kill (summary->kills, a, false);
+    }
   return false;
 }
 
@@ -1403,16 +1463,32 @@ analyze_store (gimple *, tree, tree op, void *data)
 
 static bool
 analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
-	      gimple *stmt, bool ipa, vec <gimple *> *recursive_calls)
+	      gimple *stmt, bool ipa, vec <gimple *> *recursive_calls,
+	      bool always_executed)
 {
   /* In general we can not ignore clobbers because they are barriers for code
      motion, however after inlining it is safe to do because local optimization
      passes do not consider clobbers from other functions.
      Similar logic is in ipa-pure-const.c.  */
   if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
-    return true;
+    {
+      if (summary
+	  && always_executed && record_access_p (gimple_assign_lhs (stmt)))
+	{
+	  ao_ref r;
+	  ao_ref_init (&r, gimple_assign_lhs (stmt));
+	  modref_access_node a = get_access (&r);
+	  if (a.useful_for_kill_p ())
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "   - Recording kill\n");
+	      modref_access_node::insert_kill (summary->kills, a, false);
+	    }
+	}
+      return true;
+    }
 
-  struct summary_ptrs sums = {summary, summary_lto};
+  struct summary_ptrs sums = {summary, summary_lto, always_executed};
 
   /* Analyze all loads and stores in STMT.  */
   walk_stmt_load_store_ops (stmt, &sums,
@@ -1441,7 +1517,8 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
    case GIMPLE_CALL:
      if (!ipa || gimple_call_internal_p (stmt))
        return analyze_call (summary, summary_lto,
-			    as_a <gcall *> (stmt), recursive_calls);
+			    as_a <gcall *> (stmt), recursive_calls,
+			    always_executed);
      else
       {
 	attr_fnspec fnspec = gimple_call_fnspec (as_a <gcall *>(stmt));
@@ -2779,11 +2856,15 @@ analyze_function (function *f, bool ipa)
   FOR_EACH_BB_FN (bb, f)
     {
       gimple_stmt_iterator si;
+      bool always_executed
+	      = bb == single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest;
+
       for (si = gsi_start_nondebug_after_labels_bb (bb);
 	   !gsi_end_p (si); gsi_next_nondebug (&si))
 	{
 	  if (!analyze_stmt (summary, summary_lto,
-			     gsi_stmt (si), ipa, &recursive_calls)
+			     gsi_stmt (si), ipa, &recursive_calls,
+			     always_executed)
 	      || ((!summary || !summary->useful_p (ecf_flags, false))
 		  && (!summary_lto
 		      || !summary_lto->useful_p (ecf_flags, false))))
@@ -2792,6 +2873,9 @@ analyze_function (function *f, bool ipa)
 	      collapse_stores (summary, summary_lto);
 	      break;
 	    }
+	  if (always_executed
+	      && stmt_can_throw_external (cfun, gsi_stmt (si)))
+	    always_executed = false;
 	}
     }
 
@@ -2811,7 +2895,7 @@ analyze_function (function *f, bool ipa)
 			   ignore_stores_p (current_function_decl,
 					    gimple_call_flags
 						 (recursive_calls[i])),
-			   fnode, !first);
+			   fnode, !first, false);
 	      if (!summary->useful_p (ecf_flags, false))
 		{
 		  remove_summary (lto, nolto, ipa);
@@ -3061,6 +3145,8 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			 src_data->loads->max_refs,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
+  dst_data->kills.reserve_exact (src_data->kills.length ());
+  dst_data->kills.splice (src_data->kills);
   dst_data->writes_errno = src_data->writes_errno;
   dst_data->side_effects = src_data->side_effects;
   if (src_data->arg_flags.length ())
@@ -3710,6 +3796,8 @@ update_signature (struct cgraph_node *node)
     {
       r->loads->remap_params (&map);
       r->stores->remap_params (&map);
+      /* TODO: One we do IPA kills analysis, update the table here.  */
+      r->kills.release ();
       if (r->arg_flags.length ())
 	remap_arg_flags (r->arg_flags, info);
     }
@@ -3717,6 +3805,8 @@ update_signature (struct cgraph_node *node)
     {
       r_lto->loads->remap_params (&map);
       r_lto->stores->remap_params (&map);
+      /* TODO: One we do IPA kills analysis, update the table here.  */
+      r_lto->kills.release ();
       if (r_lto->arg_flags.length ())
 	remap_arg_flags (r_lto->arg_flags, info);
     }

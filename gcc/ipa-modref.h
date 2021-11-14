@@ -30,6 +30,7 @@ struct GTY(()) modref_summary
   /* Load and stores in function (transitively closed to all callees)  */
   modref_records *loads;
   modref_records *stores;
+  auto_vec<modref_access_node> GTY((skip)) kills;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   eaf_flags_t retslot_flags;
   eaf_flags_t static_chain_flags;

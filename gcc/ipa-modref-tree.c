@@ -638,6 +638,185 @@ modref_access_node::get_ao_ref (const gcall *stmt, ao_ref *ref) const
   return true;
 }
 
+/* Return true A is a subkill.  */
+bool
+modref_access_node::contains_for_kills (const modref_access_node &a) const
+{
+  poly_int64 aoffset_adj = 0;
+
+  gcc_checking_assert (parm_index != MODREF_UNKNOWN_PARM
+		       && a.parm_index != MODREF_UNKNOWN_PARM);
+  if (parm_index != a.parm_index)
+    return false;
+  gcc_checking_assert (parm_offset_known && a.parm_offset_known);
+  aoffset_adj = (a.parm_offset - parm_offset)
+		* BITS_PER_UNIT;
+  gcc_checking_assert (range_info_useful_p () && a.range_info_useful_p ());
+  return known_subrange_p (a.offset + aoffset_adj,
+			   a.max_size, offset, max_size);
+}
+
+/* Merge two ranges both starting at parm_offset1 and update THIS
+   with result.  */
+bool
+modref_access_node::update_for_kills (poly_int64 parm_offset1,
+				      poly_int64 offset1,
+				      poly_int64 max_size1,
+				      poly_int64 offset2,
+				      poly_int64 max_size2,
+				      bool record_adjustments)
+{
+  if (known_le (offset1, offset2))
+    ;
+  else if (known_le (offset2, offset1))
+    {
+      std::swap (offset1, offset2);
+      std::swap (max_size1, max_size2);
+    }
+  else
+    gcc_unreachable ();
+
+  poly_int64 new_max_size = max_size2 + offset2 - offset1;
+  if (known_le (new_max_size, max_size1))
+    new_max_size = max_size1;
+  if (known_eq (parm_offset, parm_offset1)
+      && known_eq (offset, offset1)
+      && known_eq (size, new_max_size)
+      && known_eq (max_size, new_max_size))
+    return false;
+
+  if (!record_adjustments
+      || (++adjustments) < param_modref_max_adjustments)
+    {
+      parm_offset = parm_offset1;
+      offset = offset1;
+      max_size = new_max_size;
+      size = new_max_size;
+      gcc_checking_assert (useful_for_kill_p ());
+      return true;
+    }
+  return false;
+}
+
+/* Merge in access A if it is possible to do without losing
+   precision.  Return true if successful.
+   Unlike merge assume that both accesses are always executed
+   and merge size the same was as max_size.  */
+bool
+modref_access_node::merge_for_kills (const modref_access_node &a,
+				     bool record_adjustments)
+{
+  poly_int64 offset1 = 0;
+  poly_int64 aoffset1 = 0;
+  poly_int64 new_parm_offset = 0;
+
+  /* We assume that containment was tested earlier.  */
+  gcc_checking_assert (!contains_for_kills (a) && !a.contains_for_kills (*this)
+		       && useful_for_kill_p () && a.useful_for_kill_p ());
+
+  if (parm_index != a.parm_index
+      || !combined_offsets (a, &new_parm_offset, &offset1, &aoffset1))
+    return false;
+
+  if (known_le (offset1, aoffset1))
+   {
+     if (!known_size_p (max_size)
+	 || known_ge (offset1 + max_size, aoffset1))
+       return update_for_kills (new_parm_offset, offset1, max_size,
+				aoffset1, a.max_size, record_adjustments);
+   }
+  else if (known_le (aoffset1, offset1))
+   {
+     if (!known_size_p (a.max_size)
+	 || known_ge (aoffset1 + a.max_size, offset1))
+       return update_for_kills (new_parm_offset, offset1, max_size,
+				aoffset1, a.max_size, record_adjustments);
+   }
+  return false;
+}
+
+/* Insert new kill A into KILLS.  If RECORD_ADJUSTMENTS is true limit number
+   of changes to each entry.  Return true if something changed.  */
+
+bool
+modref_access_node::insert_kill (vec<modref_access_node> &kills,
+				 modref_access_node &a, bool record_adjustments)
+{
+  size_t index;
+  modref_access_node *a2;
+  bool merge = false;
+
+  gcc_checking_assert (a.useful_for_kill_p ());
+
+  /* See if we have corresponding entry already or we can merge with
+     neighbouring entry.  */
+  FOR_EACH_VEC_ELT (kills, index, a2)
+    {
+      if (a2->contains_for_kills (a))
+	return false;
+      if (a.contains_for_kills (*a2))
+	{
+	  a.adjustments = 0;
+	  *a2 = a;
+	  merge = true;
+	  break;
+	}
+      if (a2->merge_for_kills (a, record_adjustments))
+	{
+	  merge = true;
+	  break;
+	}
+    }
+  /* If entry was not found, insert it.  */
+  if (!merge)
+    {
+      if ((int)kills.length () >= param_modref_max_accesses)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "--param param=modref-max-accesses limit reached:");
+	  return false;
+	}
+      a.adjustments = 0;
+      kills.safe_push (a);
+      return true;
+    }
+  /* Extending range in an entry may make it possible to merge it with
+     other entries.  */
+  size_t i;
+
+  for (i = 0; i < kills.length ();)
+    if (i != index)
+      {
+	bool found = false, restart = false;
+	modref_access_node *a = &kills[i];
+	modref_access_node *n = &kills[index];
+
+	if (n->contains_for_kills (*a))
+	  found = true;
+	if (!found && n->merge_for_kills (*a, false))
+	  found = restart = true;
+	gcc_checking_assert (found || !a->merge_for_kills (*n, false));
+	if (found)
+	  {
+	    kills.unordered_remove (i);
+	    if (index == kills.length ())
+	      {
+		index = i;
+		i++;
+	      }
+	    if (restart)
+	      i = 0;
+	  }
+	else
+	  i++;
+      }
+    else
+      i++;
+  return true;
+}
+
+
 #if CHECKING_P
 
 namespace selftest {
