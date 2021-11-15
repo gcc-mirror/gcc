@@ -792,6 +792,15 @@ public:
     auto negated_expr_ty
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
+    // check for operator overload
+    auto lang_item_type = Analysis::RustLangItem::NegationOperatorToLangItem (
+      expr.get_expr_type ());
+    bool operator_overloaded
+      = resolve_operator_overload (lang_item_type, expr, negated_expr_ty,
+				   nullptr);
+    if (operator_overloaded)
+      return;
+
     // https://doc.rust-lang.org/reference/expressions/operator-expr.html#negation-operators
     switch (expr.get_expr_type ())
       {
@@ -1380,11 +1389,18 @@ protected:
 	  }
       }
 
-    // type check the arguments
+    // type check the arguments if required
     TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
-    rust_assert (type->num_params () == 2);
-    auto fnparam = type->param_at (1);
-    fnparam.second->unify (rhs); // typecheck the rhs
+    if (rhs == nullptr)
+      {
+	rust_assert (type->num_params () == 1);
+      }
+    else
+      {
+	rust_assert (type->num_params () == 2);
+	auto fnparam = type->param_at (1);
+	fnparam.second->unify (rhs); // typecheck the rhs
+      }
 
     // get the return type
     TyTy::BaseType *function_ret_tyty = fn->get_return_type ()->clone ();
@@ -1481,7 +1497,7 @@ private:
   Location root_array_expr_locus;
 
   bool inside_loop;
-};
+}; // namespace Resolver
 
 } // namespace Resolver
 } // namespace Rust

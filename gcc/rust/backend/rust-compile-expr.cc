@@ -92,6 +92,31 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
   ctx->add_statement (assignment);
 }
 
+void
+CompileExpr::visit (HIR::NegationExpr &expr)
+{
+  auto op = expr.get_expr_type ();
+  auto negated_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+  auto location = expr.get_locus ();
+
+  // this might be an operator overload situation lets check
+  TyTy::FnType *fntype;
+  bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fntype);
+  if (is_op_overload)
+    {
+      auto lang_item_type
+	= Analysis::RustLangItem::NegationOperatorToLangItem (op);
+      translated
+	= resolve_operator_overload (lang_item_type, expr, negated_expr,
+				     nullptr, expr.get_expr ().get (), nullptr);
+      return;
+    }
+
+  translated
+    = ctx->get_backend ()->negation_expression (op, negated_expr, location);
+}
+
 Bexpression *
 CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 					TyTy::BaseType *receiver,
@@ -311,7 +336,8 @@ CompileExpr::resolve_operator_overload (
 	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
 
       std::vector<HIR::Expr *> arguments;
-      arguments.push_back (rhs_expr);
+      if (rhs_expr != nullptr) // can be null for negation_expr (unary ones)
+	arguments.push_back (rhs_expr);
 
       return compile_dyn_dispatch_call (dyn, receiver, fntype, lhs, arguments,
 					expr.get_locus ());
@@ -356,7 +382,8 @@ CompileExpr::resolve_operator_overload (
 
   std::vector<Bexpression *> args;
   args.push_back (self); // adjusted self
-  args.push_back (rhs);
+  if (rhs != nullptr)	 // can be null for negation_expr (unary ones)
+    args.push_back (rhs);
 
   auto fncontext = ctx->peek_fn ();
   return ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,

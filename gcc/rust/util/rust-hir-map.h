@@ -43,6 +43,7 @@ public:
     REMAINDER,
 
     NEGATION,
+    NOT,
 
     ADD_ASSIGN,
     SUB_ASSIGN,
@@ -78,6 +79,10 @@ public:
     else if (item.compare ("neg") == 0)
       {
 	return ItemType::NEGATION;
+      }
+    else if (item.compare ("not") == 0)
+      {
+	return ItemType::NOT;
       }
     else if (item.compare ("add_assign") == 0)
       {
@@ -119,6 +124,8 @@ public:
 	return "rem";
       case NEGATION:
 	return "neg";
+      case NOT:
+	return "not";
       case ADD_ASSIGN:
 	return "add_assign";
       case SUB_ASSIGN:
@@ -151,11 +158,7 @@ public:
       case ArithmeticOrLogicalOperator::MODULUS:
 	return ItemType::REMAINDER;
 
-      case ArithmeticOrLogicalOperator::BITWISE_AND:
-      case ArithmeticOrLogicalOperator::BITWISE_OR:
-      case ArithmeticOrLogicalOperator::BITWISE_XOR:
-      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      default:
 	return ItemType::UNKNOWN;
       }
     return ItemType::UNKNOWN;
@@ -177,11 +180,22 @@ public:
       case ArithmeticOrLogicalOperator::MODULUS:
 	return ItemType::REM_ASSIGN;
 
-      case ArithmeticOrLogicalOperator::BITWISE_AND:
-      case ArithmeticOrLogicalOperator::BITWISE_OR:
-      case ArithmeticOrLogicalOperator::BITWISE_XOR:
-      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
-      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      default:
+	return ItemType::UNKNOWN;
+      }
+    return ItemType::UNKNOWN;
+  }
+
+  static ItemType NegationOperatorToLangItem (NegationOperator op)
+  {
+    switch (op)
+      {
+      case NegationOperator::NEGATE:
+	return ItemType::NEGATION;
+      case NegationOperator::NOT:
+	return ItemType::NOT;
+
+      default:
 	return ItemType::UNKNOWN;
       }
     return ItemType::UNKNOWN;

@@ -474,15 +474,7 @@ public:
       = ctx->get_backend ()->lazy_boolean_expression (op, lhs, rhs, location);
   }
 
-  void visit (HIR::NegationExpr &expr) override
-  {
-    auto op = expr.get_expr_type ();
-    auto negated_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
-    auto location = expr.get_locus ();
-
-    translated
-      = ctx->get_backend ()->negation_expression (op, negated_expr, location);
-  }
+  void visit (HIR::NegationExpr &expr) override;
 
   void visit (HIR::TypeCastExpr &expr) override
   {
