@@ -30,7 +30,7 @@ class CompileFnParam : public HIRCompileBase
 
 public:
   static Bvariable *compile (Context *ctx, Bfunction *fndecl,
-			     HIR::FunctionParam *param, Btype *decl_type,
+			     HIR::FunctionParam *param, tree decl_type,
 			     Location locus)
   {
     CompileFnParam compiler (ctx, fndecl, decl_type, locus);
@@ -51,14 +51,14 @@ public:
   }
 
 private:
-  CompileFnParam (Context *ctx, ::Bfunction *fndecl, ::Btype *decl_type,
+  CompileFnParam (Context *ctx, ::Bfunction *fndecl, tree decl_type,
 		  Location locus)
     : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type),
       locus (locus), translated (nullptr)
   {}
 
   ::Bfunction *fndecl;
-  ::Btype *decl_type;
+  tree decl_type;
   Location locus;
   ::Bvariable *translated;
 };
@@ -67,7 +67,7 @@ class CompileSelfParam : public HIRCompileBase
 {
 public:
   static Bvariable *compile (Context *ctx, Bfunction *fndecl,
-			     HIR::SelfParam &self, Btype *decl_type,
+			     HIR::SelfParam &self, tree decl_type,
 			     Location locus)
   {
     bool is_immutable

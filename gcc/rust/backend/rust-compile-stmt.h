@@ -56,7 +56,7 @@ public:
 					&resolved_type);
     rust_assert (ok);
 
-    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;

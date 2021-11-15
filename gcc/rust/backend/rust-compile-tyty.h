@@ -34,7 +34,7 @@ namespace Compile {
 class TyTyCompile : public TyTy::TyVisitor
 {
 public:
-  static ::Btype *compile (::Backend *backend, TyTy::BaseType *ty)
+  static tree compile (::Backend *backend, TyTy::BaseType *ty)
   {
     TyTyCompile compiler (backend);
     ty->accept_vis (compiler);
@@ -72,15 +72,15 @@ public:
 
   void visit (TyTy::FnType &type) override
   {
-    Backend::Btyped_identifier receiver;
-    std::vector<Backend::Btyped_identifier> parameters;
-    std::vector<Backend::Btyped_identifier> results;
+    Backend::typed_identifier receiver;
+    std::vector<Backend::typed_identifier> parameters;
+    std::vector<Backend::typed_identifier> results;
 
     if (!type.get_return_type ()->is_unit ())
       {
 	auto hir_type = type.get_return_type ();
 	auto ret = TyTyCompile::compile (backend, hir_type);
-	results.push_back (Backend::Btyped_identifier (
+	results.push_back (Backend::typed_identifier (
 	  "_", ret, mappings->lookup_location (hir_type->get_ref ())));
       }
 
@@ -90,7 +90,7 @@ public:
 	auto param_tyty = params.second;
 	auto compiled_param_type = TyTyCompile::compile (backend, param_tyty);
 
-	auto compiled_param = Backend::Btyped_identifier (
+	auto compiled_param = Backend::typed_identifier (
 	  param_pattern->as_string (), compiled_param_type,
 	  mappings->lookup_location (param_tyty->get_ref ()));
 
@@ -227,7 +227,7 @@ public:
 
   void visit (TyTy::StrType &) override
   {
-    Btype *raw_str = backend->raw_str_type ();
+    tree raw_str = backend->raw_str_type ();
     translated
       = backend->named_type ("str", raw_str, Linemap::predeclared_location ());
   }
@@ -248,7 +248,7 @@ private:
   {}
 
   ::Backend *backend;
-  ::Btype *translated;
+  tree translated;
   Analysis::Mappings *mappings;
 };
 

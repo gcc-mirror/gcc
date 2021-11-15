@@ -28,7 +28,7 @@ namespace ConstFold {
 class ConstFoldType : public TyTy::TyVisitor
 {
 public:
-  static Btype *fold (TyTy::BaseType *type, ::Backend *backend)
+  static tree fold (TyTy::BaseType *type, ::Backend *backend)
   {
     ConstFoldType folder (backend);
     type->accept_vis (folder);
@@ -43,13 +43,13 @@ public:
 
   void visit (TyTy::ArrayType &type) override
   {
-    Btype *element_ty = ConstFoldType::fold (type.get_element_type (), backend);
+    tree element_ty = ConstFoldType::fold (type.get_element_type (), backend);
     translated = backend->array_type (element_ty, type.get_capacity ());
   }
 
   void visit (TyTy::ReferenceType &type) override
   {
-    Btype *base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
+    tree base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
     if (type.is_mutable ())
       {
 	translated = backend->reference_type (base_compiled_type);
@@ -63,7 +63,7 @@ public:
 
   void visit (TyTy::PointerType &type) override
   {
-    Btype *base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
+    tree base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
     if (type.is_mutable ())
       {
 	translated = backend->pointer_type (base_compiled_type);
@@ -212,7 +212,7 @@ public:
 
   void visit (TyTy::StrType &) override
   {
-    Btype *raw_str = backend->raw_str_type ();
+    tree raw_str = backend->raw_str_type ();
     translated
       = backend->named_type ("str", raw_str, Linemap::predeclared_location ());
   }
@@ -229,7 +229,7 @@ private:
   {}
 
   ::Backend *backend;
-  ::Btype *translated;
+  ::tree translated;
 };
 
 class ConstFoldItem : public ConstFoldBase
@@ -369,7 +369,7 @@ public:
 	      return;
 	    }
 
-	  Btype *type = ConstFoldType::fold (tyty, ctx->get_backend ());
+	  tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
 	  folded
 	    = ctx->get_backend ()->integer_constant_expression (type, ival);
 	}
@@ -400,7 +400,7 @@ public:
 	      return;
 	    }
 
-	  Btype *type = ConstFoldType::fold (tyty, ctx->get_backend ());
+	  tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
 	  folded = ctx->get_backend ()->float_constant_expression (type, fval);
 	}
 	return;
@@ -480,7 +480,7 @@ public:
 	return;
       }
 
-    Btype *expected_type = ConstFoldType::fold (tyty, ctx->get_backend ());
+    tree expected_type = ConstFoldType::fold (tyty, ctx->get_backend ());
     bool known_valid = true;
     folded = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
 						       known_valid,

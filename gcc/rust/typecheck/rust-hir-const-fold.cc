@@ -85,7 +85,7 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsValues &elems)
       return;
     }
 
-  Btype *btype = ConstFoldType::fold (tyty, ctx->get_backend ());
+  tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
 
   for (auto &value : elems.get_values ())
     {
@@ -94,7 +94,7 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsValues &elems)
     }
 
   folded
-    = ctx->get_backend ()->array_constructor_expression (btype, indices, values,
+    = ctx->get_backend ()->array_constructor_expression (type, indices, values,
 							 expr.get_locus ());
 }
 
@@ -112,7 +112,7 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsCopied &elems)
       return;
     }
 
-  Btype *btype = ConstFoldType::fold (tyty, ctx->get_backend ());
+  tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
   Bexpression *elem = ConstFoldExpr::fold (elems.get_elem_to_copy ());
 
   // num copies expr was already folded in rust-hir-type-check-expr; lookup the
@@ -132,7 +132,7 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsCopied &elems)
     }
 
   folded
-    = ctx->get_backend ()->array_constructor_expression (btype, indices, values,
+    = ctx->get_backend ()->array_constructor_expression (type, indices, values,
 							 expr.get_locus ());
 }
 

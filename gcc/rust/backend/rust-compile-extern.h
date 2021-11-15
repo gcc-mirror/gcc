@@ -55,7 +55,7 @@ public:
     // FIXME this is assuming C ABI
     std::string asm_name = name;
 
-    Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     bool is_external = true;
     bool is_hidden = false;
     bool in_unique_section = false;
@@ -128,7 +128,7 @@ public:
 	return;
       }
 
-    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
     compiled_fn_type
       = ctx->get_backend ()->specify_abi_attribute (compiled_fn_type,
 						    fntype->get_abi ());

@@ -60,7 +60,7 @@ public:
 					&resolved_type);
     rust_assert (ok);
 
-    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
@@ -136,7 +136,7 @@ public:
       }
 
     // convert to the actual function type
-    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
 
@@ -178,7 +178,7 @@ public:
 	    return;
 	  }
 
-	Btype *self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
+	tree self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
 	if (self_type == nullptr)
 	  {
 	    rust_error_at (function.get_self_param ().get_locus (),
@@ -275,7 +275,7 @@ public:
     Bvariable *return_address = nullptr;
     if (function.has_function_return_type ())
       {
-	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
+	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
 	Bstatement *ret_var_stmt = nullptr;
@@ -349,7 +349,7 @@ public:
     rust_assert (concrete != nullptr);
     TyTy::BaseType *resolved_type = concrete;
 
-    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value
       = CompileExpr::Compile (constant.get_expr ().get (), ctx);
 
@@ -404,7 +404,7 @@ public:
       }
 
     // convert to the actual function type
-    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     HIR::TraitFunctionDecl &function = func.get_decl ();
     unsigned int flags = 0;
@@ -440,7 +440,7 @@ public:
 	    return;
 	  }
 
-	Btype *self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
+	tree self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
 	if (self_type == nullptr)
 	  {
 	    rust_error_at (function.get_self ().get_locus (),
@@ -536,7 +536,7 @@ public:
     Bvariable *return_address = nullptr;
     if (function.has_return_type ())
       {
-	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
+	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
 	Bstatement *ret_var_stmt = nullptr;

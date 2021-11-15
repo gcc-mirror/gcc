@@ -70,7 +70,7 @@ private:
   {}
 
   ::Bfunction *fndecl;
-  ::Btype *translated_type;
+  tree translated_type;
   Location locus;
   ::Bvariable *translated;
 };

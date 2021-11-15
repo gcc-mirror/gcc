@@ -150,7 +150,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
     {
       TyTy::ReferenceType *r = static_cast<TyTy::ReferenceType *> (receiver);
       auto indirect_ty = r->get_base ();
-      Btype *indrect_compiled_tyty
+      tree indrect_compiled_tyty
 	= TyTyResolveCompile::compile (ctx, indirect_ty);
 
       Bexpression *indirect
@@ -171,7 +171,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 						    expr_locus);
 
   // cast it to the correct fntype
-  Btype *expected_fntype = TyTyResolveCompile::compile (ctx, fntype, true);
+  tree expected_fntype = TyTyResolveCompile::compile (ctx, fntype, true);
   Bexpression *fn_convert_expr
     = ctx->get_backend ()->convert_expression (expected_fntype,
 					       fn_vtable_access, expr_locus);
@@ -370,7 +370,7 @@ CompileExpr::resolve_operator_overload (
 	  break;
 
 	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  Btype *expected_type
+	  tree expected_type
 	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
 	  self
 	    = ctx->get_backend ()->indirect_expression (expected_type, self,

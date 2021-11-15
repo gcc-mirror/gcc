@@ -61,7 +61,7 @@ public:
 					      &resolved_type);
     rust_assert (ok);
 
-    Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
@@ -97,7 +97,7 @@ public:
 					&resolved_type);
     rust_assert (ok);
 
-    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
@@ -174,7 +174,7 @@ public:
 	fntype->override_context ();
       }
 
-    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
     bool is_main_fn = function.get_function_name ().compare ("main") == 0;
@@ -275,7 +275,7 @@ public:
     Bvariable *return_address = nullptr;
     if (function.has_function_return_type ())
       {
-	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
+	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
 	Bstatement *ret_var_stmt = nullptr;

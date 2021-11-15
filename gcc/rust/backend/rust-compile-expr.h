@@ -58,7 +58,7 @@ public:
 	TyTy::ReferenceType *r
 	  = static_cast<TyTy::ReferenceType *> (tuple_expr_ty);
 	TyTy::BaseType *tuple_type = r->get_base ();
-	Btype *tuple_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
+	tree tuple_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
 
 	Bexpression *indirect
 	  = ctx->get_backend ()->indirect_expression (tuple_tyty, receiver_ref,
@@ -88,7 +88,7 @@ public:
 	return;
       }
 
-    Btype *tuple_type = TyTyResolveCompile::compile (ctx, tyty);
+    tree tuple_type = TyTyResolveCompile::compile (ctx, tyty);
     rust_assert (tuple_type != nullptr);
 
     // this assumes all fields are in order from type resolution
@@ -259,7 +259,7 @@ public:
 	      return;
 	    }
 
-	  Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+	  tree type = TyTyResolveCompile::compile (ctx, tyty);
 	  translated
 	    = ctx->get_backend ()->integer_constant_expression (type, ival);
 	}
@@ -285,7 +285,7 @@ public:
 	      return;
 	    }
 
-	  Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+	  tree type = TyTyResolveCompile::compile (ctx, tyty);
 	  translated
 	    = ctx->get_backend ()->float_constant_expression (type, fval);
 	}
@@ -341,7 +341,7 @@ public:
 	      indexes.push_back (i);
 	    }
 
-	  Btype *array_type = TyTyResolveCompile::compile (ctx, array_tyty);
+	  tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
 	  Bexpression *constructed
 	    = ctx->get_backend ()->array_constructor_expression (
 	      array_type, indexes, vals, expr.get_locus ());
@@ -414,7 +414,7 @@ public:
     TyTy::ArrayType *array_tyty = static_cast<TyTy::ArrayType *> (tyty);
     capacity_expr = array_tyty->get_capacity ();
 
-    Btype *array_type = TyTyResolveCompile::compile (ctx, array_tyty);
+    tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
     rust_assert (array_type != nullptr);
 
     expr.get_internal_elements ()->accept_vis (*this);
@@ -517,7 +517,7 @@ public:
       {
 	fncontext fnctx = ctx->peek_fn ();
 	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-	Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
+	tree block_type = TyTyResolveCompile::compile (ctx, if_type);
 
 	bool is_address_taken = false;
 	Bstatement *ret_var_stmt = nullptr;
@@ -554,7 +554,7 @@ public:
       {
 	fncontext fnctx = ctx->peek_fn ();
 	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-	Btype *block_type = TyTyResolveCompile::compile (ctx, if_type);
+	tree block_type = TyTyResolveCompile::compile (ctx, if_type);
 
 	bool is_address_taken = false;
 	Bstatement *ret_var_stmt = nullptr;
@@ -590,7 +590,7 @@ public:
       {
 	fncontext fnctx = ctx->peek_fn ();
 	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-	Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+	tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
 	bool is_address_taken = false;
 	Bstatement *ret_var_stmt = nullptr;
@@ -640,7 +640,7 @@ public:
 	return;
       }
 
-    Btype *type = TyTyResolveCompile::compile (ctx, tyty);
+    tree type = TyTyResolveCompile::compile (ctx, tyty);
     rust_assert (type != nullptr);
 
     // this assumes all fields are in order from type resolution and if a base
@@ -705,7 +705,7 @@ public:
 					 &field_index);
 	rust_assert (ok);
 
-	Btype *adt_tyty = TyTyResolveCompile::compile (ctx, adt);
+	tree adt_tyty = TyTyResolveCompile::compile (ctx, adt);
 	Bexpression *indirect
 	  = ctx->get_backend ()->indirect_expression (adt_tyty, receiver_ref,
 						      true, expr.get_locus ());
@@ -743,7 +743,7 @@ public:
     if (needs_temp)
       {
 	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-	Btype *block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+	tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
 	bool is_address_taken = false;
 	Bstatement *ret_var_stmt = nullptr;
@@ -975,7 +975,7 @@ public:
 	return;
       }
 
-    Btype *expected_type = TyTyResolveCompile::compile (ctx, tyty);
+    tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
     bool known_valid = true;
     translated
       = ctx->get_backend ()->indirect_expression (expected_type, main_expr,

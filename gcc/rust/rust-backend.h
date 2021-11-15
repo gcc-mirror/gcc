@@ -29,6 +29,8 @@
 #include "operator.h"
 #include "rust-abi.h"
 
+#include "tree.h"
+
 extern bool
 saw_errors (void);
 
@@ -38,9 +40,6 @@ saw_errors (void);
 // Pointers to these types are created by the backend, passed to the
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
-
-// The backend representation of a type.
-class Btype;
 
 // The backend represention of an expression.
 class Bexpression;
@@ -70,24 +69,24 @@ public:
 
   // Name/type/location.  Used for function parameters, struct fields,
   // interface methods.
-  struct Btyped_identifier
+  struct typed_identifier
   {
     std::string name;
-    Btype *btype;
+    tree type;
     Location location;
 
-    Btyped_identifier ()
-      : name (), btype (NULL), location (Linemap::unknown_location ())
+    typed_identifier ()
+      : name (), type (NULL_TREE), location (Linemap::unknown_location ())
     {}
 
-    Btyped_identifier (const std::string &a_name, Btype *a_btype,
+    typed_identifier (const std::string &a_name, tree a_type,
 		       Location a_location)
-      : name (a_name), btype (a_btype), location (a_location)
+      : name (a_name), type (a_type), location (a_location)
     {}
   };
 
   // debug
-  virtual void debug (Btype *) = 0;
+  virtual void debug (tree) = 0;
   virtual void debug (Bexpression *) = 0;
   virtual void debug (Bstatement *) = 0;
   virtual void debug (Bfunction *) = 0;
@@ -147,50 +146,50 @@ public:
 
   // Produce an error type.  Actually the backend could probably just
   // crash if this is called.
-  virtual Btype *error_type () = 0;
+  virtual tree error_type () = 0;
 
   // Get a void type.  This is used in (at least) two ways: 1) as the
   // return type of a function with no result parameters; 2)
   // unsafe.Pointer is represented as *void.
-  virtual Btype *void_type () = 0;
+  virtual tree void_type () = 0;
 
   // get unit-type
-  virtual Btype *unit_type () = 0;
+  virtual tree unit_type () = 0;
 
   // Get the unnamed boolean type.
-  virtual Btype *bool_type () = 0;
+  virtual tree bool_type () = 0;
 
   // Get the char type
-  virtual Btype *char_type () = 0;
+  virtual tree char_type () = 0;
 
   // Get the wchar type
-  virtual Btype *wchar_type () = 0;
+  virtual tree wchar_type () = 0;
 
   // Get the Host pointer size in bits
   virtual int get_pointer_size () = 0;
 
   // Get the raw str type const char*
-  virtual Btype *raw_str_type () = 0;
+  virtual tree raw_str_type () = 0;
 
   // Get an unnamed integer type with the given signedness and number
   // of bits.
-  virtual Btype *integer_type (bool is_unsigned, int bits) = 0;
+  virtual tree integer_type (bool is_unsigned, int bits) = 0;
 
   // Get an unnamed floating point type with the given number of bits
   // (32 or 64).
-  virtual Btype *float_type (int bits) = 0;
+  virtual tree float_type (int bits) = 0;
 
   // Get an unnamed complex type with the given number of bits (64 or 128).
-  virtual Btype *complex_type (int bits) = 0;
+  virtual tree complex_type (int bits) = 0;
 
   // Get a pointer type.
-  virtual Btype *pointer_type (Btype *to_type) = 0;
+  virtual tree pointer_type (tree to_type) = 0;
 
   // Get a reference type.
-  virtual Btype *reference_type (Btype *to_type) = 0;
+  virtual tree reference_type (tree to_type) = 0;
 
   // make type immutable
-  virtual Btype *immutable_type (Btype *base) = 0;
+  virtual tree immutable_type (tree base) = 0;
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
@@ -201,62 +200,62 @@ public:
   // one result, RESULT_STRUCT is a struct type to hold the results,
   // and RESULTS may be ignored; if there are zero or one results,
   // RESULT_STRUCT is NULL.
-  virtual Btype *
-  function_type (const Btyped_identifier &receiver,
-		 const std::vector<Btyped_identifier> &parameters,
-		 const std::vector<Btyped_identifier> &results,
-		 Btype *result_struct, Location location)
+  virtual tree
+  function_type (const typed_identifier &receiver,
+		 const std::vector<typed_identifier> &parameters,
+		 const std::vector<typed_identifier> &results,
+		 tree result_struct, Location location)
     = 0;
 
-  virtual Btype *
-  function_type_varadic (const Btyped_identifier &receiver,
-			 const std::vector<Btyped_identifier> &parameters,
-			 const std::vector<Btyped_identifier> &results,
-			 Btype *result_struct, Location location)
+  virtual tree
+  function_type_varadic (const typed_identifier &receiver,
+			 const std::vector<typed_identifier> &parameters,
+			 const std::vector<typed_identifier> &results,
+			 tree result_struct, Location location)
     = 0;
 
-  virtual Btype *function_ptr_type (Btype *result,
-				    const std::vector<Btype *> &praameters,
-				    Location location)
+  virtual tree function_ptr_type (tree result,
+				  const std::vector<tree> &praameters,
+				  Location location)
     = 0;
 
   // Get a struct type.
-  virtual Btype *struct_type (const std::vector<Btyped_identifier> &fields) = 0;
+  virtual tree struct_type (const std::vector<typed_identifier> &fields) = 0;
 
   // Get a union type.
-  virtual Btype *union_type (const std::vector<Btyped_identifier> &fields) = 0;
+  virtual tree union_type (const std::vector<typed_identifier> &fields) = 0;
 
   // Get an array type.
-  virtual Btype *array_type (Btype *element_type, Bexpression *length) = 0;
+  virtual tree array_type (tree element_type, Bexpression *length) = 0;
 
   // Return a named version of a type.  The location is the location
   // of the type definition.  This will not be called for a type
   // created via placeholder_pointer_type, placeholder_struct_type, or
   // placeholder_array_type..  (It may be called for a pointer,
   // struct, or array type in a case like "type P *byte; type Q P".)
-  virtual Btype *named_type (const std::string &name, Btype *, Location) = 0;
+  virtual tree named_type (const std::string &name, tree, Location) = 0;
 
   // Return the size of a type.
-  virtual int64_t type_size (Btype *) = 0;
+  virtual int64_t type_size (tree) = 0;
 
   // Return the alignment of a type.
-  virtual int64_t type_alignment (Btype *) = 0;
+  virtual int64_t type_alignment (tree) = 0;
 
   // Return the alignment of a struct field of this type.  This is
   // normally the same as type_alignment, but not always.
-  virtual int64_t type_field_alignment (Btype *) = 0;
+  virtual int64_t type_field_alignment (tree) = 0;
 
   // Return the offset of field INDEX in a struct type.  INDEX is the
   // entry in the FIELDS std::vector parameter of struct_type or
   // set_placeholder_struct_type.
-  virtual int64_t type_field_offset (Btype *, size_t index) = 0;
+  virtual int64_t type_field_offset (tree, size_t index) = 0;
 
   // Expressions.
 
   // Return an expression for a zero value of the given type.  This is
   // used for cases such as local variable initialization and
   // converting nil to other types.
-  virtual Bexpression *zero_expression (Btype *) = 0;
+  virtual Bexpression *zero_expression (tree) = 0;
 
   // Create an error expression. This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
@@ -278,27 +277,25 @@ public:
   // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
   // is known to point to a valid memory location.  BTYPE is the expected type
   // of the indirected EXPR.
-  virtual Bexpression *indirect_expression (Btype *btype, Bexpression *expr,
+  virtual Bexpression *indirect_expression (tree btype, Bexpression *expr,
 					    bool known_valid, Location)
     = 0;
 
   // Return an expression that declares a constant named NAME with the
   // constant value VAL in BTYPE.
-  virtual Bexpression *named_constant_expression (Btype *btype,
+  virtual Bexpression *named_constant_expression (tree btype,
 						  const std::string &name,
 						  Bexpression *val, Location)
     = 0;
 
   // Return an expression for the multi-precision integer VAL in BTYPE.
-  virtual Bexpression *integer_constant_expression (Btype *btype, mpz_t val)
-    = 0;
+  virtual Bexpression *integer_constant_expression (tree btype, mpz_t val) = 0;
 
   // Return an expression for the floating point value VAL in BTYPE.
-  virtual Bexpression *float_constant_expression (Btype *btype, mpfr_t val) = 0;
+  virtual Bexpression *float_constant_expression (tree btype, mpfr_t val) = 0;
 
   // Return an expression for the complex value VAL in BTYPE.
-  virtual Bexpression *complex_constant_expression (Btype *btype, mpc_t val)
-    = 0;
+  virtual Bexpression *complex_constant_expression (tree btype, mpc_t val) = 0;
 
   // Return an expression for the string value VAL.
   virtual Bexpression *string_constant_expression (const std::string &val) = 0;
@@ -326,7 +323,7 @@ public:
     = 0;
 
   // Return an expression that converts EXPR to TYPE.
-  virtual Bexpression *convert_expression (Btype *type, Bexpression *expr,
+  virtual Bexpression *convert_expression (tree type, Bexpression *expr,
 					   Location)
     = 0;
 
@@ -350,10 +347,10 @@ public:
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
   // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
   // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
-  virtual Bexpression *
-  conditional_expression (Bfunction *function, Btype *btype,
-			  Bexpression *condition, Bexpression *then_expr,
-			  Bexpression *else_expr, Location)
+  virtual Bexpression *conditional_expression (Bfunction *function, tree btype,
+					       Bexpression *condition,
+					       Bexpression *then_expr,
+					       Bexpression *else_expr, Location)
     = 0;
 
   // Return an expression for the negation operation OP EXPR.
@@ -388,7 +385,7 @@ public:
   // backend representation a of struct.  VALS must be in the same order as the
   // corresponding fields in BTYPE.
   virtual Bexpression *
-  constructor_expression (Btype *btype, const std::vector<Bexpression *> &vals,
+  constructor_expression (tree btype, const std::vector<Bexpression *> &vals,
 			  int, Location)
     = 0;
 
@@ -396,7 +393,7 @@ public:
   // VALS.  INDEXES and VALS must have the same amount of elements. Each index
   // in INDEXES must be in the same order as the corresponding value in VALS.
   virtual Bexpression *array_constructor_expression (
-    Btype *btype, const std::vector<unsigned long> &indexes,
+    tree btype, const std::vector<unsigned long> &indexes,
     const std::vector<Bexpression *> &vals, Location)
     = 0;
 
@@ -535,7 +532,7 @@ public:
   // permit the linker to garbage collect the variable if it is not
   // referenced.  LOCATION is where the variable was defined.
   virtual Bvariable *global_variable (const std::string &name,
-				      const std::string &asm_name, Btype *btype,
+				      const std::string &asm_name, tree btype,
 				      bool is_external, bool is_hidden,
 				      bool in_unique_section, Location location)
     = 0;
@@ -561,7 +558,7 @@ public:
   // LOCATION is where the variable is defined.  For each local variable
   // the frontend will call init_statement to set the initial value.
   virtual Bvariable *
-  local_variable (Bfunction *function, const std::string &name, Btype *type,
+  local_variable (Bfunction *function, const std::string &name, tree type,
 		  Bvariable *decl_var, bool is_address_taken, Location location)
     = 0;
 
@@ -569,14 +566,14 @@ public:
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
   virtual Bvariable *
-  parameter_variable (Bfunction *function, const std::string &name, Btype *type,
+  parameter_variable (Bfunction *function, const std::string &name, tree type,
 		      bool is_address_taken, Location location)
     = 0;
 
   // Create a static chain parameter.  This is the closure parameter.
   virtual Bvariable *static_chain_variable (Bfunction *function,
-					    const std::string &name,
-					    Btype *type, Location location)
+					    const std::string &name, tree type,
+					    Location location)
     = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
@@ -591,7 +588,7 @@ public:
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
   virtual Bvariable *
-  temporary_variable (Bfunction *, Bblock *, Btype *, Bexpression *init,
+  temporary_variable (Bfunction *, Bblock *, tree, Bexpression *init,
 		      bool address_is_taken, Location location,
 		      Bstatement **pstatement)
     = 0;
@@ -622,10 +619,10 @@ public:
   // the zero value.  IS_HIDDEN and IS_COMMON will never both be true.
   //
   // If ALIGNMENT is not zero, it is the desired alignment of the variable.
-  virtual Bvariable *
-  implicit_variable (const std::string &name, const std::string &asm_name,
-		     Btype *type, bool is_hidden, bool is_constant,
-		     bool is_common, int64_t alignment)
+  virtual Bvariable *implicit_variable (const std::string &name,
+					const std::string &asm_name, tree type,
+					bool is_hidden, bool is_constant,
+					bool is_common, int64_t alignment)
     = 0;
 
   // Set the initial value of a variable created by implicit_variable.
@@ -639,7 +636,7 @@ public:
   // If IS_COMMON is true, INIT will be NULL, and the
   // variable should be initialized to all zeros.
   virtual void implicit_variable_set_init (Bvariable *, const std::string &name,
-					   Btype *type, bool is_hidden,
+					   tree type, bool is_hidden,
 					   bool is_constant, bool is_common,
 					   Bexpression *init)
     = 0;
@@ -651,7 +648,7 @@ public:
   // variable in C.
   virtual Bvariable *implicit_variable_reference (const std::string &name,
 						  const std::string &asm_name,
-						  Btype *type)
+						  tree type)
     = 0;
 
   // Create a named immutable initialized data structure.  This is
@@ -684,7 +681,7 @@ public:
   // immutable_struct_set_init.
   virtual Bvariable *
   immutable_struct (const std::string &name, const std::string &asm_name,
-		    bool is_hidden, bool is_common, Btype *type, Location)
+		    bool is_hidden, bool is_common, tree type, Location)
     = 0;
 
   // Set the initial value of a variable created by immutable_struct.
@@ -696,7 +693,7 @@ public:
   // immutable_struct.
   virtual void immutable_struct_set_init (Bvariable *, const std::string &name,
 					  bool is_hidden, bool is_common,
-					  Btype *type, Location,
+					  tree type, Location,
 					  Bexpression *initializer)
     = 0;
 
@@ -707,7 +704,7 @@ public:
   // corresponds to an extern const global variable in C.
   virtual Bvariable *immutable_struct_reference (const std::string &name,
 						 const std::string &asm_name,
-						 Btype *type, Location)
+						 tree type, Location)
     = 0;
 
   // Labels.
@@ -774,12 +771,12 @@ public:
   // string, is the name that should be used in the symbol table; this
   // will be non-empty if a magic extern comment is used.  FLAGS is
   // bit flags described above.
-  virtual Bfunction *function (Btype *fntype, const std::string &name,
+  virtual Bfunction *function (tree fntype, const std::string &name,
 			       const std::string &asm_name, unsigned int flags,
 			       Location)
     = 0;
 
-  virtual Btype *specify_abi_attribute (Btype *type, Rust::ABI abi) = 0;
+  virtual tree specify_abi_attribute (tree type, Rust::ABI abi) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:
@@ -814,7 +811,7 @@ public:
   // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
   // FUNCTION_DECLS, and VARIABLE_DECLS declared globally.
   virtual void
-  write_global_definitions (const std::vector<Btype *> &type_decls,
+  write_global_definitions (const std::vector<tree> &type_decls,
 			    const std::vector<Bexpression *> &constant_decls,
 			    const std::vector<Bfunction *> &function_decls,
 			    const std::vector<Bvariable *> &variable_decls)

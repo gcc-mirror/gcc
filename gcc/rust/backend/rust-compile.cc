@@ -72,7 +72,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
     {
       rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
-      Btype *compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
+      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
       rust_assert (!adt->is_enum ());
       rust_assert (adt->number_of_variants () == 1);
@@ -275,7 +275,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  break;
 
 	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  Btype *expected_type
+	  tree expected_type
 	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
 	  self = ctx->get_backend ()->indirect_expression (
 	    expected_type, self, true, /* known_valid*/
@@ -587,7 +587,7 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
 				      const TyTy::DynamicObjectType *ty,
 				      Location locus)
 {
-  Btype *dynamic_object = TyTyResolveCompile::compile (ctx, ty);
+  tree dynamic_object = TyTyResolveCompile::compile (ctx, ty);
 
   //' this assumes ordering and current the structure is
   // __trait_object_ptr
