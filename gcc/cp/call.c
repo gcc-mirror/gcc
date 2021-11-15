@@ -12549,7 +12549,11 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
-    expr = convert_like (conv, expr, complain);
+    {
+      /* Give a conversion call the same location as expr.  */
+      iloc_sentinel il (loc);
+      expr = convert_like (conv, expr, complain);
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
