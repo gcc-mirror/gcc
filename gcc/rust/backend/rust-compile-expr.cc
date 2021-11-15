@@ -176,7 +176,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 					       fn_vtable_access, expr_locus);
 
   fncontext fnctx = ctx->peek_fn ();
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
   bool is_address_taken = false;
   tree ret_var_stmt = NULL_TREE;
   Bvariable *fn_convert_expr_tmp

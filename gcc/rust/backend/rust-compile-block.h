@@ -30,7 +30,7 @@ class CompileBlock : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bblock *compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
+  static tree compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
   {
     CompileBlock compiler (ctx, result);
     expr->accept_vis (compiler);
@@ -44,7 +44,7 @@ private:
     : HIRCompileBase (ctx), translated (nullptr), result (result)
   {}
 
-  Bblock *translated;
+  tree translated;
   Bvariable *result;
 };
 

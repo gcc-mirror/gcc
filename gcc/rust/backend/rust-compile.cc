@@ -338,10 +338,9 @@ CompileBlock::visit (HIR::BlockExpr &expr)
   bool ok = compile_locals_for_block (*rib, fndecl, locals);
   rust_assert (ok);
 
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-  Bblock *new_block
-    = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				  start_location, end_location);
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree new_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+					       start_location, end_location);
   ctx->push_block (new_block);
 
   for (auto &s : expr.get_statements ())
@@ -395,8 +394,7 @@ CompileConditionalBlocks::visit (HIR::IfExpr &expr)
   fncontext fnctx = ctx->peek_fn ();
   tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block
-    = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
@@ -409,10 +407,8 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
   fncontext fnctx = ctx->peek_fn ();
   tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block
-    = CompileBlock::compile (expr.get_if_block (), ctx, result);
-  Bblock *else_block
-    = CompileBlock::compile (expr.get_else_block (), ctx, result);
+  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  tree else_block = CompileBlock::compile (expr.get_else_block (), ctx, result);
 
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
@@ -425,17 +421,15 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
   fncontext fnctx = ctx->peek_fn ();
   tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block
-    = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   // else block
   std::vector<Bvariable *> locals;
   Location start_location = expr.get_conseq_if_expr ()->get_locus ();
   Location end_location = expr.get_conseq_if_expr ()->get_locus (); // FIXME
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-  Bblock *else_block
-    = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				  start_location, end_location);
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree else_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+						start_location, end_location);
   ctx->push_block (else_block);
 
   tree else_stmt_decl
@@ -610,7 +604,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 						   locus);
 
   fncontext fnctx = ctx->peek_fn ();
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
   bool is_address_taken = false;
   tree ret_var_stmt = NULL_TREE;
 

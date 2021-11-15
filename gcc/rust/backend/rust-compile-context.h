@@ -112,13 +112,13 @@ public:
   Analysis::Mappings *get_mappings () { return mappings; }
   ConstFold::Context *get_const_ctx () { return const_ctx; }
 
-  void push_block (Bblock *scope)
+  void push_block (tree scope)
   {
     scope_stack.push_back (scope);
     statements.push_back ({});
   }
 
-  Bblock *pop_block ()
+  tree pop_block ()
   {
     auto block = scope_stack.back ();
     scope_stack.pop_back ();
@@ -131,7 +131,7 @@ public:
     return block;
   }
 
-  Bblock *peek_enclosing_scope ()
+  tree peek_enclosing_scope ()
   {
     if (scope_stack.size () == 0)
       return nullptr;
@@ -323,7 +323,7 @@ private:
   std::map<HirId, tree> compiled_consts;
   std::map<HirId, ::Blabel *> compiled_labels;
   std::vector<::std::vector<tree>> statements;
-  std::vector<::Bblock *> scope_stack;
+  std::vector<tree> scope_stack;
   std::vector<::Bvariable *> loop_value_stack;
   std::vector<::Blabel *> loop_begin_labels;
   std::map<const TyTy::BaseType *, std::pair<HirId, ::tree >> mono;

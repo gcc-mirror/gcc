@@ -41,9 +41,6 @@ saw_errors (void);
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
 
-// The backend representation of a block.
-class Bblock;
-
 // The backend representation of a variable.
 class Bvariable;
 
@@ -78,7 +75,6 @@ public:
 
   // debug
   virtual void debug (tree) = 0;
-  virtual void debug (Bblock *) = 0;
   virtual void debug (Bvariable *) = 0;
   virtual void debug (Blabel *) = 0;
 
@@ -409,12 +405,12 @@ public:
   virtual tree return_statement (tree, const std::vector<tree> &, Location) = 0;
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
-  virtual tree if_statement (tree, tree condition, Bblock *then_block,
-			     Bblock *else_block, Location)
+  virtual tree if_statement (tree, tree condition, tree then_block,
+			     tree else_block, Location)
     = 0;
 
   // infinite loop expressions
-  virtual tree loop_expression (Bblock *body, Location) = 0;
+  virtual tree loop_expression (tree body, Location) = 0;
 
   // exit expressions
   virtual tree exit_expression (tree condition, Location) = 0;
@@ -458,20 +454,20 @@ public:
   // the initial curly brace.  END_LOCATION is the location of the end
   // of the block, more or less the location of the final curly brace.
   // The statements will be added after the block is created.
-  virtual Bblock *block (tree function, Bblock *enclosing,
-			 const std::vector<Bvariable *> &vars,
-			 Location start_location, Location end_location)
+  virtual tree block (tree function, tree enclosing,
+		      const std::vector<Bvariable *> &vars,
+		      Location start_location, Location end_location)
     = 0;
 
   // Add the statements to a block.  The block is created first.  Then
   // the statements are created.  Then the statements are added to the
   // block.  This will called exactly once per block.  The vector may
   // be empty if there are no statements.
-  virtual void block_add_statements (Bblock *, const std::vector<tree> &) = 0;
+  virtual void block_add_statements (tree, const std::vector<tree> &) = 0;
 
   // Return the block as a statement.  This is used to include a block
   // in a list of statements.
-  virtual tree block_statement (Bblock *) = 0;
+  virtual tree block_statement (tree) = 0;
 
   // Variables.
 
@@ -546,7 +542,7 @@ public:
   // variable, and may not be very useful.  This function should
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
-  virtual Bvariable *temporary_variable (tree, Bblock *, tree, tree init,
+  virtual Bvariable *temporary_variable (tree, tree, tree, tree init,
 					 bool address_is_taken,
 					 Location location, tree *pstatement)
     = 0;

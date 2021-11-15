@@ -514,7 +514,7 @@ public:
     if (needs_temp)
       {
 	fncontext fnctx = ctx->peek_fn ();
-	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	tree enclosing_scope = ctx->peek_enclosing_scope ();
 	tree block_type = TyTyResolveCompile::compile (ctx, if_type);
 
 	bool is_address_taken = false;
@@ -551,7 +551,7 @@ public:
     if (needs_temp)
       {
 	fncontext fnctx = ctx->peek_fn ();
-	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	tree enclosing_scope = ctx->peek_enclosing_scope ();
 	tree block_type = TyTyResolveCompile::compile (ctx, if_type);
 
 	bool is_address_taken = false;
@@ -587,7 +587,7 @@ public:
     if (needs_temp)
       {
 	fncontext fnctx = ctx->peek_fn ();
-	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	tree enclosing_scope = ctx->peek_enclosing_scope ();
 	tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
 	bool is_address_taken = false;
@@ -740,7 +740,7 @@ public:
     bool needs_temp = !block_tyty->is_unit ();
     if (needs_temp)
       {
-	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+	tree enclosing_scope = ctx->peek_enclosing_scope ();
 	tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
 	bool is_address_taken = false;
@@ -773,7 +773,7 @@ public:
     ctx->add_statement (loop_begin_label_decl);
     ctx->push_loop_begin_label (loop_begin_label);
 
-    Bblock *code_block
+    tree code_block
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
     tree loop_expr
       = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
@@ -811,8 +811,8 @@ public:
     Location start_location = expr.get_loop_block ()->get_locus ();
     Location end_location = expr.get_loop_block ()->get_locus (); // FIXME
 
-    Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-    Bblock *loop_block
+    tree enclosing_scope = ctx->peek_enclosing_scope ();
+    tree loop_block
       = ctx->get_backend ()->block (fnctx.fndecl, enclosing_scope, locals,
 				    start_location, end_location);
     ctx->push_block (loop_block);
@@ -832,7 +832,7 @@ public:
       = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
     ctx->add_statement (break_stmt);
 
-    Bblock *code_block
+    tree code_block
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
     tree code_block_stmt = ctx->get_backend ()->block_statement (code_block);
     ctx->add_statement (code_block_stmt);

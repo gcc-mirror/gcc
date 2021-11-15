@@ -70,12 +70,6 @@ private:
 
 // In gcc, types, expressions, and statements are all trees.
 
-class Bblock : public Gcc_tree
-{
-public:
-  Bblock (tree t) : Gcc_tree (t) {}
-};
-
 class Blabel : public Gcc_tree
 {
 public:
@@ -137,7 +131,6 @@ public:
   Gcc_backend ();
 
   void debug (tree t) { debug_tree (t); };
-  void debug (Bblock *t) { debug_tree (t->get_tree ()); };
   void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
   void debug (Blabel *t) { debug_tree (t->get_tree ()); };
 
@@ -343,8 +336,8 @@ public:
 
   tree return_statement (tree, const std::vector<tree> &, Location);
 
-  tree if_statement (tree, tree condition, Bblock *then_block,
-		     Bblock *else_block, Location);
+  tree if_statement (tree, tree condition, tree then_block, tree else_block,
+		     Location);
 
   tree switch_statement (tree function, tree value,
 			 const std::vector<std::vector<tree>> &cases,
@@ -357,18 +350,17 @@ public:
   tree exception_handler_statement (tree bstat, tree except_stmt,
 				    tree finally_stmt, Location);
 
-  tree loop_expression (Bblock *body, Location);
+  tree loop_expression (tree body, Location);
 
   tree exit_expression (tree condition, Location);
 
   // Blocks.
 
-  Bblock *block (tree, Bblock *, const std::vector<Bvariable *> &, Location,
-		 Location);
+  tree block (tree, tree, const std::vector<Bvariable *> &, Location, Location);
 
-  void block_add_statements (Bblock *, const std::vector<tree> &);
+  void block_add_statements (tree, const std::vector<tree> &);
 
-  tree block_statement (Bblock *);
+  tree block_statement (tree);
 
   // Variables.
 
@@ -389,7 +381,7 @@ public:
 
   Bvariable *static_chain_variable (tree, const std::string &, tree, Location);
 
-  Bvariable *temporary_variable (tree, Bblock *, tree, tree, bool, Location,
+  Bvariable *temporary_variable (tree, tree, tree, tree, bool, Location,
 				 tree *);
 
   Bvariable *implicit_variable (const std::string &, const std::string &,
@@ -2194,11 +2186,9 @@ Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
 // If.
 
 tree
-Gcc_backend::if_statement (tree, tree cond_tree, Bblock *then_block,
-			   Bblock *else_block, Location location)
+Gcc_backend::if_statement (tree, tree cond_tree, tree then_tree, tree else_tree,
+			   Location location)
 {
-  tree then_tree = then_block->get_tree ();
-  tree else_tree = else_block == NULL ? NULL_TREE : else_block->get_tree ();
   if (cond_tree == error_mark_node || then_tree == error_mark_node
       || else_tree == error_mark_node)
     return this->error_statement ();
@@ -2210,10 +2200,10 @@ Gcc_backend::if_statement (tree, tree cond_tree, Bblock *then_block,
 // Loops
 
 tree
-Gcc_backend::loop_expression (Bblock *body, Location locus)
+Gcc_backend::loop_expression (tree body, Location locus)
 {
   return fold_build1_loc (locus.gcc_location (), LOOP_EXPR, void_type_node,
-			  body->get_tree ());
+			  body);
 }
 
 tree
@@ -2329,8 +2319,8 @@ Gcc_backend::statement_list (const std::vector<tree> &statements)
 // BIND_EXPR node points to the BLOCK node, we store the BIND_EXPR in
 // the Bblock.
 
-Bblock *
-Gcc_backend::block (tree fndecl, Bblock *enclosing,
+tree
+Gcc_backend::block (tree fndecl, tree enclosing,
 		    const std::vector<Bvariable *> &vars,
 		    Location start_location, Location)
 {
@@ -2359,8 +2349,7 @@ Gcc_backend::block (tree fndecl, Bblock *enclosing,
     }
   else
     {
-      tree superbind_tree = enclosing->get_tree ();
-      tree superblock_tree = BIND_EXPR_BLOCK (superbind_tree);
+      tree superblock_tree = BIND_EXPR_BLOCK (enclosing);
       gcc_assert (TREE_CODE (superblock_tree) == BLOCK);
 
       BLOCK_SUPERCONTEXT (block_tree) = superblock_tree;
@@ -2387,13 +2376,13 @@ Gcc_backend::block (tree fndecl, Bblock *enclosing,
     = build3_loc (start_location.gcc_location (), BIND_EXPR, void_type_node,
 		  BLOCK_VARS (block_tree), NULL_TREE, block_tree);
   TREE_SIDE_EFFECTS (bind_tree) = 1;
-  return new Bblock (bind_tree);
+  return bind_tree;
 }
 
 // Add statements to a block.
 
 void
-Gcc_backend::block_add_statements (Bblock *bblock,
+Gcc_backend::block_add_statements (tree bind_tree,
 				   const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
@@ -2405,7 +2394,6 @@ Gcc_backend::block_add_statements (Bblock *bblock,
 	append_to_statement_list (s, &stmt_list);
     }
 
-  tree bind_tree = bblock->get_tree ();
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   BIND_EXPR_BODY (bind_tree) = stmt_list;
 }
@@ -2413,9 +2401,8 @@ Gcc_backend::block_add_statements (Bblock *bblock,
 // Return a block as a statement.
 
 tree
-Gcc_backend::block_statement (Bblock *bblock)
+Gcc_backend::block_statement (tree bind_tree)
 {
-  tree bind_tree = bblock->get_tree ();
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   return bind_tree;
 }
@@ -2659,7 +2646,7 @@ Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
 // Make a temporary variable.
 
 Bvariable *
-Gcc_backend::temporary_variable (tree fndecl, Bblock *bblock, tree type_tree,
+Gcc_backend::temporary_variable (tree fndecl, tree bind_tree, tree type_tree,
 				 tree init_tree, bool is_address_taken,
 				 Location location, tree *pstatement)
 {
@@ -2685,7 +2672,7 @@ Gcc_backend::temporary_variable (tree fndecl, Bblock *bblock, tree type_tree,
     }
   else
     {
-      gcc_assert (bblock != NULL);
+      gcc_assert (bind_tree != NULL_TREE);
       var = build_decl (location.gcc_location (), VAR_DECL,
 			create_tmp_var_name ("RUSTTMP"), type_tree);
       DECL_ARTIFICIAL (var) = 1;
@@ -2694,7 +2681,6 @@ Gcc_backend::temporary_variable (tree fndecl, Bblock *bblock, tree type_tree,
       DECL_CONTEXT (var) = fndecl;
 
       // We have to add this variable to the BLOCK and the BIND_EXPR.
-      tree bind_tree = bblock->get_tree ();
       gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
       tree block_tree = BIND_EXPR_BLOCK (bind_tree);
       gcc_assert (TREE_CODE (block_tree) == BLOCK);

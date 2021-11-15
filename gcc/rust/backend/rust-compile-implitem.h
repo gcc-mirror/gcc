@@ -262,12 +262,12 @@ public:
     ok = compile_locals_for_block (*rib, fndecl, locals);
     rust_assert (ok);
 
-    Bblock *enclosing_scope = NULL;
+    tree enclosing_scope = NULL_TREE;
     HIR::BlockExpr *function_body = function.get_definition ().get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
 
-    Bblock *code_block
+    tree code_block
       = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 				    start_location, end_location);
     ctx->push_block (code_block);
@@ -522,12 +522,12 @@ public:
     ok = compile_locals_for_block (*rib, fndecl, locals);
     rust_assert (ok);
 
-    Bblock *enclosing_scope = NULL;
+    tree enclosing_scope = NULL_TREE;
     HIR::BlockExpr *function_body = func.get_block_expr ().get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
 
-    Bblock *code_block
+    tree code_block
       = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 				    start_location, end_location);
     ctx->push_block (code_block);
