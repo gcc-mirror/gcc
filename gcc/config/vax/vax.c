@@ -62,6 +62,7 @@ static rtx vax_function_arg (cumulative_args_t, const function_arg_info &);
 static void vax_function_arg_advance (cumulative_args_t,
 				      const function_arg_info &);
 static rtx vax_struct_value_rtx (tree, int);
+static bool vax_lra_p (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
 static poly_int64 vax_return_pops_args (tree, tree, poly_int64);
@@ -114,7 +115,7 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 #define TARGET_STRUCT_VALUE_RTX vax_struct_value_rtx
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P vax_lra_p
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P vax_legitimate_address_p
@@ -1219,6 +1220,14 @@ vax_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 		      int incoming ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (Pmode, VAX_STRUCT_VALUE_REGNUM);
+}
+
+/* Return true if we use LRA instead of reload pass.  */
+
+static bool
+vax_lra_p (void)
+{
+  return TARGET_LRA;
 }
 
 /* Output integer move instructions.  */
