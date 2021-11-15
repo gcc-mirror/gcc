@@ -3088,6 +3088,16 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* Print a message in the dump file recording transformation of FROM to TO.  */
+
+static void
+dump_transformation (gcall *from, gcall *to)
+{
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, from, "simplified %T to %T\n",
+		     gimple_call_fn (from), gimple_call_fn (to));
+}
+
 /* Fold a call to the __st[rp]cpy_chk builtin.
    DEST, SRC, and SIZE are the arguments to the call.
    IGNORE is true if return value can be ignored.  FCODE is the BUILT_IN_*
@@ -3100,7 +3110,7 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
 				tree src, tree size,
 				enum built_in_function fcode)
 {
-  gimple *stmt = gsi_stmt (*gsi);
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
   location_t loc = gimple_location (stmt);
   bool ignore = gimple_call_lhs (stmt) == NULL_TREE;
   tree len, fn;
@@ -3184,12 +3194,13 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
     }
 
   /* If __builtin_st{r,p}cpy_chk is used, assume st{r,p}cpy is available.  */
-  fn = builtin_decl_explicit (fcode == BUILT_IN_STPCPY_CHK
+  fn = builtin_decl_explicit (fcode == BUILT_IN_STPCPY_CHK && !ignore
 			      ? BUILT_IN_STPCPY : BUILT_IN_STRCPY);
   if (!fn)
     return false;
 
-  gimple *repl = gimple_build_call (fn, 2, dest, src);
+  gcall *repl = gimple_build_call (fn, 2, dest, src);
+  dump_transformation (stmt, repl);
   replace_call_with_call_and_fold (gsi, repl);
   return true;
 }
@@ -3205,22 +3216,9 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
 				 tree len, tree size,
 				 enum built_in_function fcode)
 {
-  gimple *stmt = gsi_stmt (*gsi);
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
   bool ignore = gimple_call_lhs (stmt) == NULL_TREE;
   tree fn;
-
-  if (fcode == BUILT_IN_STPNCPY_CHK && ignore)
-    {
-       /* If return value of __stpncpy_chk is ignored,
-          optimize into __strncpy_chk.  */
-       fn = builtin_decl_explicit (BUILT_IN_STRNCPY_CHK);
-       if (fn)
-	 {
-	   gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
-	   replace_call_with_call_and_fold (gsi, repl);
-	   return true;
-	 }
-    }
 
   if (! tree_fits_uhwi_p (size))
     return false;
@@ -3234,7 +3232,23 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
 	     For MAXLEN only allow optimizing into non-_ocs function
 	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
 	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
-	    return false;
+	    {
+	      if (fcode == BUILT_IN_STPNCPY_CHK && ignore)
+		{
+		  /* If return value of __stpncpy_chk is ignored,
+		     optimize into __strncpy_chk.  */
+		  fn = builtin_decl_explicit (BUILT_IN_STRNCPY_CHK);
+		  if (fn)
+		    {
+		      gimple *repl = gimple_build_call (fn, 4, dest, src, len,
+							size);
+		      replace_call_with_call_and_fold (gsi, repl);
+		      return true;
+		    }
+		}
+
+	      return false;
+	    }
 	}
       else
 	maxlen = len;
@@ -3244,12 +3258,13 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
     }
 
   /* If __builtin_st{r,p}ncpy_chk is used, assume st{r,p}ncpy is available.  */
-  fn = builtin_decl_explicit (fcode == BUILT_IN_STPNCPY_CHK
+  fn = builtin_decl_explicit (fcode == BUILT_IN_STPNCPY_CHK && !ignore
 			      ? BUILT_IN_STPNCPY : BUILT_IN_STRNCPY);
   if (!fn)
     return false;
 
-  gimple *repl = gimple_build_call (fn, 3, dest, src, len);
+  gcall *repl = gimple_build_call (fn, 3, dest, src, len);
+  dump_transformation (stmt, repl);
   replace_call_with_call_and_fold (gsi, repl);
   return true;
 }
