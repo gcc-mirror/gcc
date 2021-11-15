@@ -2485,72 +2485,73 @@ gimple_fold_builtin_strncat (gimple_stmt_iterator *gsi)
   tree dst = gimple_call_arg (stmt, 0);
   tree src = gimple_call_arg (stmt, 1);
   tree len = gimple_call_arg (stmt, 2);
-
-  const char *p = c_getstr (src);
+  tree src_len = c_strlen (src, 1);
 
   /* If the requested length is zero, or the src parameter string
      length is zero, return the dst parameter.  */
-  if (integer_zerop (len) || (p && *p == '\0'))
+  if (integer_zerop (len) || (src_len && integer_zerop (src_len)))
     {
       replace_call_with_value (gsi, dst);
       return true;
     }
 
-  if (TREE_CODE (len) != INTEGER_CST || !p)
-    return false;
-
-  unsigned srclen = strlen (p);
-
-  int cmpsrc = compare_tree_int (len, srclen);
-
   /* Return early if the requested len is less than the string length.
      Warnings will be issued elsewhere later.  */
-  if (cmpsrc < 0)
+  if (!src_len || known_lower (stmt, len, src_len, true))
     return false;
 
   unsigned HOST_WIDE_INT dstsize;
+  bool found_dstsize = compute_builtin_object_size (dst, 1, &dstsize);
 
-  bool nowarn = warning_suppressed_p (stmt, OPT_Wstringop_overflow_);
-
-  if (!nowarn && compute_builtin_object_size (dst, 1, &dstsize))
+  /* Warn on constant LEN.  */
+  if (TREE_CODE (len) == INTEGER_CST)
     {
-      int cmpdst = compare_tree_int (len, dstsize);
+      bool nowarn = warning_suppressed_p (stmt, OPT_Wstringop_overflow_);
 
-      if (cmpdst >= 0)
+      if (!nowarn && found_dstsize)
+	{
+	  int cmpdst = compare_tree_int (len, dstsize);
+
+	  if (cmpdst >= 0)
+	    {
+	      tree fndecl = gimple_call_fndecl (stmt);
+
+	      /* Strncat copies (at most) LEN bytes and always appends
+		 the terminating NUL so the specified bound should never
+		 be equal to (or greater than) the size of the destination.
+		 If it is, the copy could overflow.  */
+	      location_t loc = gimple_location (stmt);
+	      nowarn = warning_at (loc, OPT_Wstringop_overflow_,
+				   cmpdst == 0
+				   ? G_("%qD specified bound %E equals "
+					"destination size")
+				   : G_("%qD specified bound %E exceeds "
+					"destination size %wu"),
+				   fndecl, len, dstsize);
+	      if (nowarn)
+		suppress_warning (stmt, OPT_Wstringop_overflow_);
+	    }
+	}
+
+      if (!nowarn && TREE_CODE (src_len) == INTEGER_CST
+	  && tree_int_cst_compare (src_len, len) == 0)
 	{
 	  tree fndecl = gimple_call_fndecl (stmt);
-
-	  /* Strncat copies (at most) LEN bytes and always appends
-	     the terminating NUL so the specified bound should never
-	     be equal to (or greater than) the size of the destination.
-	     If it is, the copy could overflow.  */
 	  location_t loc = gimple_location (stmt);
-	  nowarn = warning_at (loc, OPT_Wstringop_overflow_,
-			       cmpdst == 0
-			       ? G_("%qD specified bound %E equals "
-				    "destination size")
-			       : G_("%qD specified bound %E exceeds "
-				    "destination size %wu"),
-			       fndecl, len, dstsize);
-	  if (nowarn)
+
+	  /* To avoid possible overflow the specified bound should also
+	     not be equal to the length of the source, even when the size
+	     of the destination is unknown (it's not an uncommon mistake
+	     to specify as the bound to strncpy the length of the source).  */
+	  if (warning_at (loc, OPT_Wstringop_overflow_,
+			  "%qD specified bound %E equals source length",
+			  fndecl, len))
 	    suppress_warning (stmt, OPT_Wstringop_overflow_);
 	}
     }
 
-  if (!nowarn && cmpsrc == 0)
-    {
-      tree fndecl = gimple_call_fndecl (stmt);
-      location_t loc = gimple_location (stmt);
-
-      /* To avoid possible overflow the specified bound should also
-	 not be equal to the length of the source, even when the size
-	 of the destination is unknown (it's not an uncommon mistake
-	 to specify as the bound to strncpy the length of the source).  */
-      if (warning_at (loc, OPT_Wstringop_overflow_,
-		      "%qD specified bound %E equals source length",
-		      fndecl, len))
-	suppress_warning (stmt, OPT_Wstringop_overflow_);
-    }
+  if (!known_lower (stmt, src_len, len))
+    return false;
 
   tree fn = builtin_decl_implicit (BUILT_IN_STRCAT);
 
@@ -3624,10 +3625,6 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
   if (gimple_call_num_args (stmt) == 4)
     orig = gimple_call_arg (stmt, 3);
 
-  if (!tree_fits_uhwi_p (destsize))
-    return false;
-  unsigned HOST_WIDE_INT destlen = tree_to_uhwi (destsize);
-
   /* Check whether the format is a literal string constant.  */
   fmt_str = c_getstr (fmt);
   if (fmt_str == NULL)
@@ -3647,6 +3644,8 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
       if (orig)
 	return false;
 
+      tree len = build_int_cstu (TREE_TYPE (destsize), strlen (fmt_str));
+
       /* We could expand this as
 	 memcpy (str, fmt, cst - 1); str[cst - 1] = '\0';
 	 or to
@@ -3654,8 +3653,7 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 	 but in the former case that might increase code size
 	 and in the latter case grow .rodata section too much.
 	 So punt for now.  */
-      size_t len = strlen (fmt_str);
-      if (len >= destlen)
+      if (!known_lower (stmt, len, destsize, true))
 	return false;
 
       gimple_seq stmts = NULL;
@@ -3664,7 +3662,7 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
       if (tree lhs = gimple_call_lhs (stmt))
 	{
 	  repl = gimple_build_assign (lhs,
-				      build_int_cst (TREE_TYPE (lhs), len));
+				      fold_convert (TREE_TYPE (lhs), len));
 	  gimple_seq_add_stmt_without_update (&stmts, repl);
 	  gsi_replace_with_seq_vops (gsi, stmts);
 	  /* gsi now points at the assignment to the lhs, get a
@@ -3695,8 +3693,6 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 	return false;
 
       tree orig_len = get_maxval_strlen (orig, SRK_STRLEN);
-      if (!orig_len || TREE_CODE (orig_len) != INTEGER_CST)
-	return false;
 
       /* We could expand this as
 	 memcpy (str1, str2, cst - 1); str1[cst - 1] = '\0';
@@ -3705,7 +3701,7 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 	 but in the former case that might increase code size
 	 and in the latter case grow .rodata section too much.
 	 So punt for now.  */
-      if (compare_tree_int (orig_len, destlen) >= 0)
+      if (!known_lower (stmt, orig_len, destsize, true))
 	return false;
 
       /* Convert snprintf (str1, cst, "%s", str2) into
