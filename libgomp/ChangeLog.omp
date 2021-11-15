@@ -1,5 +1,10 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.c-c++-common/ind-base-4.c: New test.
+	* testsuite/libgomp.c-c++-common/unary-ptr-1.c: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.c++/declare-mapper-1.C: New test.
 	* testsuite/libgomp.c++/declare-mapper-2.C: New test.
 	* testsuite/libgomp.c++/declare-mapper-3.C: New test.

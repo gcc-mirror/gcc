@@ -5763,6 +5763,8 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
   location_t brace_loc = c_parser_peek_token (parser)->location;
   gcc_obstack_init (&braced_init_obstack);
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
+  bool save_c_omp_array_section_p = c_omp_array_section_p;
+  c_omp_array_section_p = false;
   matching_braces braces;
   braces.consume_open (parser);
   if (nested_p)
@@ -5801,6 +5803,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
 	    break;
 	}
     }
+  c_omp_array_section_p = save_c_omp_array_section_p;
   c_token *next_tok = c_parser_peek_token (parser);
   if (next_tok->type != CPP_CLOSE_BRACE)
     {
@@ -8306,6 +8309,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 {
   struct c_expr cond, exp1, exp2, ret;
   location_t start, cond_loc, colon_loc;
+  bool save_c_omp_array_section_p = c_omp_array_section_p;
 
   gcc_assert (!after || c_dialect_objc ());
 
@@ -8313,6 +8317,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
+  c_omp_array_section_p = false;
   if (cond.value != error_mark_node)
     start = cond.get_start ();
   else
@@ -8365,6 +8370,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
       ret.set_error ();
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
+      c_omp_array_section_p = save_c_omp_array_section_p;
       return ret;
     }
   {
@@ -8411,6 +8417,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
     }
   set_c_expr_source_range (&ret, start, exp2.get_finish ());
   ret.m_decimal = 0;
+  c_omp_array_section_p = save_c_omp_array_section_p;
   return ret;
 }
 
@@ -9852,6 +9859,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  /* A statement expression.  */
 	  tree stmt;
 	  location_t brace_loc;
+	  bool save_c_omp_array_section_p = c_omp_array_section_p;
 	  c_parser_consume_token (parser);
 	  brace_loc = c_parser_peek_token (parser)->location;
 	  c_parser_consume_token (parser);
@@ -9868,6 +9876,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      expr.set_error ();
 	      break;
 	    }
+	  c_omp_array_section_p = false;
 	  stmt = c_begin_stmt_expr ();
 	  c_parser_compound_statement_nostart (parser);
 	  location_t close_loc = c_parser_peek_token (parser)->location;
@@ -9878,6 +9887,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
 	  set_c_expr_source_range (&expr, loc, close_loc);
 	  mark_exp_read (expr.value);
+	  c_omp_array_section_p = save_c_omp_array_section_p;
 	}
       else
 	{
@@ -11336,7 +11346,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					   struct c_expr expr)
 {
   struct c_expr orig_expr;
-  tree ident, idx;
+  tree ident, idx, len;
   location_t sizeof_arg_loc[3], comp_loc;
   tree sizeof_arg[3];
   unsigned int literal_zero_mask;
@@ -11355,16 +11365,44 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_OPEN_SQUARE:
 	  /* Array reference.  */
 	  c_parser_consume_token (parser);
-	  idx = c_parser_expression (parser).value;
-	  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
-				     "expected %<]%>");
-	  start = expr.get_start ();
-	  finish = parser->tokens_buf[0].location;
-	  expr.value = build_array_ref (op_loc, expr.value, idx);
-	  set_c_expr_source_range (&expr, start, finish);
-	  expr.original_code = ERROR_MARK;
-	  expr.original_type = NULL;
-	  expr.m_decimal = 0;
+	  idx = len = NULL_TREE;
+	  if (!c_omp_array_section_p
+	      || c_parser_next_token_is_not (parser, CPP_COLON))
+	    idx = c_parser_expression (parser).value;
+
+	  if (c_omp_array_section_p
+	      && c_parser_next_token_is (parser, CPP_COLON))
+	    {
+	      c_parser_consume_token (parser);
+	      if (c_parser_next_token_is_not (parser, CPP_CLOSE_SQUARE))
+		len = c_parser_expression (parser).value;
+
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
+					 "expected %<]%>");
+
+	     /* NOTE: We are reusing using the type of the whole array as the
+		type of the array section here, which isn't necessarily
+		entirely correct.  Might need revisiting.  */
+	      start = expr.get_start ();
+	      finish = parser->tokens_buf[0].location;
+	      expr.value = build_omp_array_section (op_loc, expr.value, idx,
+						    len);
+	      set_c_expr_source_range (&expr, start, finish);
+	      expr.original_code = ERROR_MARK;
+	      expr.original_type = NULL;
+	    }
+	  else
+	    {
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
+					 "expected %<]%>");
+	      start = expr.get_start ();
+	      finish = parser->tokens_buf[0].location;
+	      expr.value = build_array_ref (op_loc, expr.value, idx);
+	      set_c_expr_source_range (&expr, start, finish);
+	      expr.original_code = ERROR_MARK;
+	      expr.original_type = NULL;
+	      expr.m_decimal = 0;
+	    }
 	  break;
 	case CPP_OPEN_PAREN:
 	  /* Function call.  */
@@ -11655,6 +11693,8 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   vec<tree, va_gc> *orig_types;
   struct c_expr expr;
   unsigned int idx = 0;
+  bool save_c_omp_array_section_p = c_omp_array_section_p;
+  c_omp_array_section_p = false;
 
   ret = make_tree_vector ();
   if (p_orig_types == NULL)
@@ -11708,6 +11748,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
     }
   if (orig_types)
     *p_orig_types = orig_types;
+  c_omp_array_section_p = save_c_omp_array_section_p;
   return ret;
 }
 
@@ -13927,7 +13968,7 @@ c_parser_omp_variable_list (c_parser *parser,
 			    location_t clause_loc,
 			    enum omp_clause_code kind, tree list,
 			    enum c_omp_region_type ort = C_ORT_OMP,
-			    bool allow_deref = false)
+			    bool map_lvalue = false)
 {
   auto_vec<omp_dim> dims;
   bool array_section_p;
@@ -13937,6 +13978,8 @@ c_parser_omp_variable_list (c_parser *parser,
 
   while (1)
     {
+      tree t = NULL_TREE;
+
       if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 	{
 	  if (c_parser_next_token_is_not (parser, CPP_NAME)
@@ -14017,8 +14060,97 @@ c_parser_omp_variable_list (c_parser *parser,
 	  parser->tokens = tokens.address ();
 	  parser->tokens_avail = tokens.length ();
 	}
+      else if (map_lvalue
+	       && (kind == OMP_CLAUSE_MAP
+		   || kind == OMP_CLAUSE_TO
+		   || kind == OMP_CLAUSE_FROM))
+	{
+	  location_t loc = c_parser_peek_token (parser)->location;
+	  bool save_c_omp_array_section_p = c_omp_array_section_p;
+	  c_omp_array_section_p = true;
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  if (expr.value != error_mark_node)
+	    mark_exp_read (expr.value);
+	  c_omp_array_section_p = save_c_omp_array_section_p;
+	  tree decl = expr.value;
 
-      tree t = NULL_TREE;
+	 /* This code rewrites a parsed expression containing various tree
+	    codes used to represent array accesses into a more uniform nest of
+	    OMP_ARRAY_SECTION nodes before it is processed by
+	    c-typeck.cc:handle_omp_array_sections_1.  It might be more
+	    efficient to move this logic to that function instead, analysing
+	    the parsed expression directly rather than this preprocessed
+	    form.  (See also equivalent code in cp/parser.cc,
+	    cp/semantics.cc).  */
+	  dims.truncate (0);
+	  if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+	    {
+	      while (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+		{
+		  tree low_bound = TREE_OPERAND (decl, 1);
+		  tree length = TREE_OPERAND (decl, 2);
+		  dims.safe_push (omp_dim (low_bound, length, loc, false));
+		  decl = TREE_OPERAND (decl, 0);
+		}
+
+	      while (TREE_CODE (decl) == ARRAY_REF
+		     || TREE_CODE (decl) == INDIRECT_REF
+		     || TREE_CODE (decl) == COMPOUND_EXPR)
+		{
+		  if (TREE_CODE (decl) == COMPOUND_EXPR)
+		    {
+		      decl = TREE_OPERAND (decl, 1);
+		      STRIP_NOPS (decl);
+		    }
+		  else if (TREE_CODE (decl) == INDIRECT_REF)
+		    {
+		      dims.safe_push (omp_dim (integer_zero_node,
+					       integer_one_node, loc, true));
+		      decl = TREE_OPERAND (decl, 0);
+		    }
+		  else  /* ARRAY_REF. */
+		    {
+		      tree index = TREE_OPERAND (decl, 1);
+		      dims.safe_push (omp_dim (index, integer_one_node, loc,
+					       true));
+		      decl = TREE_OPERAND (decl, 0);
+		    }
+		}
+
+	      for (int i = dims.length () - 1; i >= 0; i--)
+		decl = build_omp_array_section (loc,  decl, dims[i].low_bound,
+						dims[i].length);
+	    }
+	  else if (TREE_CODE (decl) == INDIRECT_REF)
+	    {
+	      /* Turn *foo into the representation previously used for
+		 foo[0].  */
+	      decl = TREE_OPERAND (decl, 0);
+	      STRIP_NOPS (decl);
+
+	      decl = build_omp_array_section (loc, decl, integer_zero_node,
+					      integer_one_node);
+	    }
+	  else if (TREE_CODE (decl) == ARRAY_REF)
+	    {
+	      tree idx = TREE_OPERAND (decl, 1);
+
+	      decl = TREE_OPERAND (decl, 0);
+	      STRIP_NOPS (decl);
+
+	      decl = build_omp_array_section (loc, decl, idx, integer_one_node);
+	    }
+	  else if (TREE_CODE (decl) == NON_LVALUE_EXPR
+		   || CONVERT_EXPR_P (decl))
+	    decl = TREE_OPERAND (decl, 0);
+
+	  tree u = build_omp_clause (clause_loc, kind);
+	  OMP_CLAUSE_DECL (u) = decl;
+	  OMP_CLAUSE_CHAIN (u) = list;
+	  list = u;
+
+	  goto next_item;
+	}
 
       if (c_parser_next_token_is (parser, CPP_NAME)
 	  && c_parser_peek_token (parser)->id_kind == C_ID_ID)
@@ -14069,8 +14201,7 @@ c_parser_omp_variable_list (c_parser *parser,
 	    case OMP_CLAUSE_TO:
 	    start_component_ref:
 	      while (c_parser_next_token_is (parser, CPP_DOT)
-		     || (allow_deref
-			 && c_parser_next_token_is (parser, CPP_DEREF)))
+		     || c_parser_next_token_is (parser, CPP_DEREF))
 		{
 		  location_t op_loc = c_parser_peek_token (parser)->location;
 		  location_t arrow_loc = UNKNOWN_LOCATION;
@@ -14172,9 +14303,7 @@ c_parser_omp_variable_list (c_parser *parser,
 		       || kind == OMP_CLAUSE_TO)
 		      && !array_section_p
 		      && (c_parser_next_token_is (parser, CPP_DOT)
-			  || (allow_deref
-			      && c_parser_next_token_is (parser,
-							 CPP_DEREF))))
+			  || c_parser_next_token_is (parser, CPP_DEREF)))
 		    {
 		      for (unsigned i = 0; i < dims.length (); i++)
 			{
@@ -14186,7 +14315,9 @@ c_parser_omp_variable_list (c_parser *parser,
 		    }
 		  else
 		    for (unsigned i = 0; i < dims.length (); i++)
-		      t = tree_cons (dims[i].low_bound, dims[i].length, t);
+		      t = build_omp_array_section (clause_loc, t,
+						   dims[i].low_bound,
+						   dims[i].length);
 		}
 
 	      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
@@ -14234,6 +14365,8 @@ c_parser_omp_variable_list (c_parser *parser,
 	  parser->tokens = &parser->tokens_buf[0];
 	  parser->tokens_avail = tokens_avail;
 	}
+
+    next_item:
       if (c_parser_next_token_is_not (parser, CPP_COMMA))
 	break;
 
@@ -14252,7 +14385,7 @@ static tree
 c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
 			      tree list,
 			      enum c_omp_region_type ort = C_ORT_OMP,
-			      bool allow_deref = false)
+			      bool map_lvalue = false)
 {
   /* The clauses location.  */
   location_t loc = c_parser_peek_token (parser)->location;
@@ -14261,7 +14394,7 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
   if (parens.require_open (parser))
     {
       list = c_parser_omp_variable_list (parser, loc, kind, list, ort,
-					 allow_deref);
+					 map_lvalue);
       parens.skip_until_found_close (parser);
     }
   return list;
@@ -14331,7 +14464,7 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
     }
   tree nl, c;
   nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_MAP, list, C_ORT_ACC,
-				     true);
+				     false);
 
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
@@ -15923,13 +16056,15 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	  for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
 	    {
 	      tree d = OMP_CLAUSE_DECL (c), type;
-	      if (TREE_CODE (d) != TREE_LIST)
+	      if (TREE_CODE (d) != OMP_ARRAY_SECTION)
 		type = TREE_TYPE (d);
 	      else
 		{
 		  int cnt = 0;
 		  tree t;
-		  for (t = d; TREE_CODE (t) == TREE_LIST; t = TREE_CHAIN (t))
+		  for (t = d;
+		      TREE_CODE (t) == OMP_ARRAY_SECTION;
+		      t = TREE_OPERAND (t, 0))
 		    cnt++;
 		  type = TREE_TYPE (t);
 		  while (cnt > 0)
@@ -23016,6 +23151,7 @@ check_clauses:
 	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH_DETACH:
+	  case GOMP_MAP_ATTACH:
 	    break;
 	  default:
 	    error_at (OMP_CLAUSE_LOCATION (*pc),

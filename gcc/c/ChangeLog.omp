@@ -1,3 +1,37 @@
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
+	* c-pretty-print.cc (c_pretty_printer::postfix_expression,
+	c_pretty_printer::expression): Add OMP_ARRAY_SECTION support.
+	* c-parser.cc (c_parser_braced_init, c_parser_conditional_expression):
+	Don't allow OpenMP array section.
+	(c_parser_postfix_expression): Don't allow array section in statement
+	expression.
+	(c_parser_postfix_expression_after_primary): Add support
+	for OpenMP array section parsing.
+	(c_parser_expr_list): Don't allow OpenMP array section here.
+	(c_parser_omp_variable_list): Change ALLOW_DEREF parameter to
+	MAP_LVALUE.  Support parsing of general lvalues in "map", "to" and
+	"from" clauses.
+	(c_parser_omp_var_list_parens): Change ALLOW_DEREF parameter to
+	MAP_LVALUE.  Update call to c_parser_omp_variable_list.
+	(c_parser_oacc_data_clause): Update calls to
+	c_parser_omp_var_list_parens.
+	(c_parser_omp_clause_reduction): Use OMP_ARRAY_SECTION tree node
+	instead of TREE_LIST for array sections.
+	(c_parser_omp_target): Allow GOMP_MAP_ATTACH.
+	* c-tree.h (c_omp_array_section_p): Add extern declaration.
+	(build_omp_array_section): Add prototype.
+	* c-typeck.c (c_omp_array_section_p): Add flag.
+	(mark_exp_read): Support OMP_ARRAY_SECTION.
+	(build_omp_array_section): Add function.
+	(build_external_ref): Tweak error path for OpenMP array sections.
+	(handle_omp_array_sections_1): Use OMP_ARRAY_SECTION tree code instead
+	of TREE_LIST.  Handle more kinds of expressions.
+	(c_oacc_check_attachments): Use OMP_ARRAY_SECTION instead of TREE_LIST
+	for array sections.
+	(c_finish_omp_clauses): Use OMP_ARRAY_SECTION instead of TREE_LIST.
+	Check for supported expression types.
+
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	* c-parser.cc (c_parser_oacc_all_clauses): Add TARGET parameter. Use

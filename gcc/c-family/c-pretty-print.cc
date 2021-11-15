@@ -1615,6 +1615,17 @@ c_pretty_printer::postfix_expression (tree e)
       pp_c_right_bracket (this);
       break;
 
+    case OMP_ARRAY_SECTION:
+      postfix_expression (TREE_OPERAND (e, 0));
+      pp_c_left_bracket (this);
+      if (TREE_OPERAND (e, 1))
+	expression (TREE_OPERAND (e, 1));
+      pp_colon (this);
+      if (TREE_OPERAND (e, 2))
+	expression (TREE_OPERAND (e, 2));
+      pp_c_right_bracket (this);
+      break;
+
     case CALL_EXPR:
       {
 	call_expr_arg_iterator iter;
@@ -2664,6 +2675,7 @@ c_pretty_printer::expression (tree e)
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
     case ARRAY_REF:
+    case OMP_ARRAY_SECTION:
     case CALL_EXPR:
     case COMPONENT_REF:
     case BIT_FIELD_REF:

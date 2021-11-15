@@ -1,5 +1,16 @@
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
+	* gcc.dg/gomp/bad-array-section-c-1.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-2.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-3.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-4.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-5.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-6.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-7.c: New test.
+	* gcc.dg/gomp/bad-array-section-c-8.c: New test.
+
+2023-06-30  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-common/gomp/map-6.c: Update error scan output.
 	* c-c++-common/gomp/declare-mapper-3.c: New test (only enabled for C++
 	for now).
