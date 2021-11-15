@@ -274,26 +274,7 @@ public:
 
   Btype *array_type (Btype *, Bexpression *);
 
-  Btype *placeholder_pointer_type (const std::string &, Location, bool);
-
-  bool set_placeholder_pointer_type (Btype *, Btype *);
-
-  bool set_placeholder_function_type (Btype *, Btype *);
-
-  Btype *placeholder_struct_type (const std::string &, Location);
-
-  bool set_placeholder_struct_type (Btype *placeholder,
-				    const std::vector<Btyped_identifier> &);
-
-  Btype *placeholder_array_type (const std::string &, Location);
-
-  bool set_placeholder_array_type (Btype *, Btype *, Bexpression *);
-
   Btype *named_type (const std::string &, Btype *, Location);
-
-  Btype *circular_pointer_type (Btype *, bool);
-
-  bool is_circular_pointer_type (Btype *);
 
   int64_t type_size (Btype *);
 
@@ -1222,136 +1203,6 @@ Gcc_backend::fill_in_array (Btype *fill, Btype *element_type,
   return fill;
 }
 
-// Create a placeholder for a pointer type.
-
-Btype *
-Gcc_backend::placeholder_pointer_type (const std::string &name,
-				       Location location, bool)
-{
-  tree ret = build_distinct_type_copy (ptr_type_node);
-  if (!name.empty ())
-    {
-      tree decl = build_decl (location.gcc_location (), TYPE_DECL,
-			      get_identifier_from_string (name), ret);
-      TYPE_NAME (ret) = decl;
-    }
-  return this->make_type (ret);
-}
-
-// Set the real target type for a placeholder pointer type.
-
-bool
-Gcc_backend::set_placeholder_pointer_type (Btype *placeholder, Btype *to_type)
-{
-  tree pt = placeholder->get_tree ();
-  if (pt == error_mark_node)
-    return false;
-  gcc_assert (TREE_CODE (pt) == POINTER_TYPE);
-  tree tt = to_type->get_tree ();
-  if (tt == error_mark_node)
-    {
-      placeholder->set_tree (error_mark_node);
-      return false;
-    }
-  gcc_assert (TREE_CODE (tt) == POINTER_TYPE);
-  TREE_TYPE (pt) = TREE_TYPE (tt);
-  TYPE_CANONICAL (pt) = TYPE_CANONICAL (tt);
-  if (TYPE_NAME (pt) != NULL_TREE)
-    {
-      // Build the data structure gcc wants to see for a typedef.
-      tree copy = build_variant_type_copy (pt);
-      TYPE_NAME (copy) = NULL_TREE;
-      DECL_ORIGINAL_TYPE (TYPE_NAME (pt)) = copy;
-    }
-  return true;
-}
-
-// Set the real values for a placeholder function type.
-
-bool
-Gcc_backend::set_placeholder_function_type (Btype *placeholder, Btype *ft)
-{
-  return this->set_placeholder_pointer_type (placeholder, ft);
-}
-
-// Create a placeholder for a struct type.
-
-Btype *
-Gcc_backend::placeholder_struct_type (const std::string &name,
-				      Location location)
-{
-  tree ret = make_node (RECORD_TYPE);
-  if (!name.empty ())
-    {
-      tree decl = build_decl (location.gcc_location (), TYPE_DECL,
-			      get_identifier_from_string (name), ret);
-      TYPE_NAME (ret) = decl;
-
-      // The struct type that eventually replaces this placeholder will require
-      // structural equality. The placeholder must too, so that the requirement
-      // for structural equality propagates to references that are constructed
-      // before the replacement occurs.
-      SET_TYPE_STRUCTURAL_EQUALITY (ret);
-    }
-  return this->make_type (ret);
-}
-
-// Fill in the fields of a placeholder struct type.
-
-bool
-Gcc_backend::set_placeholder_struct_type (
-  Btype *placeholder, const std::vector<Btyped_identifier> &fields)
-{
-  tree t = placeholder->get_tree ();
-  gcc_assert (TREE_CODE (t) == RECORD_TYPE && TYPE_FIELDS (t) == NULL_TREE);
-  Btype *r = this->fill_in_fields (placeholder, fields);
-
-  if (TYPE_NAME (t) != NULL_TREE)
-    {
-      // Build the data structure gcc wants to see for a typedef.
-      tree copy = build_distinct_type_copy (t);
-      TYPE_NAME (copy) = NULL_TREE;
-      DECL_ORIGINAL_TYPE (TYPE_NAME (t)) = copy;
-      TYPE_SIZE (copy) = NULL_TREE;
-      Btype *bc = this->make_type (copy);
-      this->fill_in_fields (bc, fields);
-      delete bc;
-    }
-
-  return r->get_tree () != error_mark_node;
-}
-
-// Create a placeholder for an array type.
-
-Btype *
-Gcc_backend::placeholder_array_type (const std::string &name, Location location)
-{
-  tree ret = make_node (ARRAY_TYPE);
-  tree decl = build_decl (location.gcc_location (), TYPE_DECL,
-			  get_identifier_from_string (name), ret);
-  TYPE_NAME (ret) = decl;
-  return this->make_type (ret);
-}
-
-// Fill in the fields of a placeholder array type.
-
-bool
-Gcc_backend::set_placeholder_array_type (Btype *placeholder,
-					 Btype *element_btype,
-					 Bexpression *length)
-{
-  tree t = placeholder->get_tree ();
-  gcc_assert (TREE_CODE (t) == ARRAY_TYPE && TREE_TYPE (t) == NULL_TREE);
-  Btype *r = this->fill_in_array (placeholder, element_btype, length);
-
-  // Build the data structure gcc wants to see for a typedef.
-  tree copy = build_distinct_type_copy (t);
-  TYPE_NAME (copy) = NULL_TREE;
-  DECL_ORIGINAL_TYPE (TYPE_NAME (t)) = copy;
-
-  return r->get_tree () != error_mark_node;
-}
-
 // Return a named version of a type.
 
 Btype *
@@ -1383,22 +1234,6 @@ Gcc_backend::named_type (const std::string &name, Btype *btype,
   DECL_ORIGINAL_TYPE (decl) = type;
   TYPE_NAME (copy) = decl;
   return this->make_type (copy);
-}
-
-// Return a pointer type used as a marker for a circular type.
-
-Btype *
-Gcc_backend::circular_pointer_type (Btype *, bool)
-{
-  return this->make_type (ptr_type_node);
-}
-
-// Return whether we might be looking at a circular type.
-
-bool
-Gcc_backend::is_circular_pointer_type (Btype *btype)
-{
-  return btype->get_tree () == ptr_type_node;
 }
 
 // Return the size of a type.
