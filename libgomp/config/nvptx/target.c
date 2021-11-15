@@ -26,28 +26,41 @@
 #include "libgomp.h"
 #include <limits.h>
 
+extern int __gomp_team_num __attribute__((shared));
+
 bool
 GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
 	     unsigned int thread_limit, bool first)
 {
+  unsigned int num_blocks, block_id;
+  asm ("mov.u32 %0, %%nctaid.x;" : "=r" (num_blocks));
   if (!first)
-    return false;
+    {
+      unsigned int team_num;
+      if (num_blocks > gomp_num_teams_var)
+	return false;
+      team_num = __gomp_team_num;
+      if (team_num > gomp_num_teams_var - num_blocks)
+	return false;
+      __gomp_team_num = team_num + num_blocks;
+      return true;
+    }
   if (thread_limit)
     {
       struct gomp_task_icv *icv = gomp_icv (true);
       icv->thread_limit_var
 	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
     }
-  unsigned int num_blocks, block_id;
-  asm ("mov.u32 %0, %%nctaid.x;" : "=r" (num_blocks));
-  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
-  /* FIXME: If num_teams_lower > num_blocks, we want to loop multiple
-     times for some CTAs.  */
-  (void) num_teams_lower;
-  if (!num_teams_upper || num_teams_upper >= num_blocks)
+  if (!num_teams_upper)
     num_teams_upper = num_blocks;
-  else if (block_id >= num_teams_upper)
+  else if (num_blocks < num_teams_lower)
+    num_teams_upper = num_teams_lower;
+  else if (num_blocks < num_teams_upper)
+    num_teams_upper = num_blocks;
+  asm ("mov.u32 %0, %%ctaid.x;" : "=r" (block_id));
+  if (block_id >= num_teams_upper)
     return false;
+  __gomp_team_num = block_id;
   gomp_num_teams_var = num_teams_upper - 1;
   return true;
 }
