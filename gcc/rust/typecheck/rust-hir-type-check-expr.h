@@ -774,17 +774,15 @@ public:
     // we expect the lhs and rhs must be bools at this point
     TyTy::BoolType elhs (expr.get_mappings ().get_hirid ());
     lhs = elhs.unify (lhs);
-    if (lhs == nullptr || lhs->get_kind () == TyTy::TypeKind::ERROR)
+    if (lhs->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
     TyTy::BoolType rlhs (expr.get_mappings ().get_hirid ());
     rhs = elhs.unify (rhs);
-    if (lhs == nullptr || lhs->get_kind () == TyTy::TypeKind::ERROR)
+    if (lhs->get_kind () == TyTy::TypeKind::ERROR)
       return;
 
     infered = lhs->unify (rhs);
-    infered->append_reference (lhs->get_ref ());
-    infered->append_reference (rhs->get_ref ());
   }
 
   void visit (HIR::NegationExpr &expr) override
