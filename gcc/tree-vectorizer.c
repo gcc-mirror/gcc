@@ -251,11 +251,11 @@ simd_array_to_simduid::equal (const simd_array_to_simduid *p1,
    IFN_GOMP_SIMD_ORDERED_{START,END}.  */
 
 static void
-adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
+adjust_simduid_builtins (hash_table<simduid_to_vf> *htab, function *fun)
 {
   basic_block bb;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     {
       gimple_stmt_iterator i;
 
@@ -383,7 +383,7 @@ note_simd_array_uses_cb (tree *tp, int *walk_subtrees, void *data)
    simduid.  */
 
 static void
-note_simd_array_uses (hash_table<simd_array_to_simduid> **htab)
+note_simd_array_uses (hash_table<simd_array_to_simduid> **htab, function *fun)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
@@ -394,7 +394,7 @@ note_simd_array_uses (hash_table<simd_array_to_simduid> **htab)
   wi.info = &ns;
   ns.htab = htab;
 
-  FOR_EACH_BB_FN (bb, cfun)
+  FOR_EACH_BB_FN (bb, fun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
@@ -879,7 +879,7 @@ vect_loop_vectorized_call (class loop *loop, gcond **cond)
    internal call.  */
 
 static gimple *
-vect_loop_dist_alias_call (class loop *loop)
+vect_loop_dist_alias_call (class loop *loop, function *fun)
 {
   basic_block bb;
   basic_block entry;
@@ -890,7 +890,7 @@ vect_loop_dist_alias_call (class loop *loop)
   if (loop->orig_loop_num == 0)
     return NULL;
 
-  orig = get_loop (cfun, loop->orig_loop_num);
+  orig = get_loop (fun, loop->orig_loop_num);
   if (orig == NULL)
     {
       /* The original loop is somehow destroyed.  Clear the information.  */
@@ -904,7 +904,7 @@ vect_loop_dist_alias_call (class loop *loop)
     bb = loop_preheader_edge (loop)->src;
 
   outer = bb->loop_father;
-  entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  entry = ENTRY_BLOCK_PTR_FOR_FN (fun);
 
   /* Look upward in dominance tree.  */
   for (; bb != entry && flow_bb_inside_loop_p (outer, bb);
@@ -933,12 +933,13 @@ vect_loop_dist_alias_call (class loop *loop)
    represented by LOOP_VINFO. LOOP_VECTORIZED_CALL is the internal
    call guarding the loop which has been if converted.  */
 static void
-set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
+set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call,
+		  function *fun)
 {
   tree arg = gimple_call_arg (loop_vectorized_call, 1);
   basic_block *bbs;
   unsigned int i;
-  class loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+  class loop *scalar_loop = get_loop (fun, tree_to_shwi (arg));
 
   LOOP_VINFO_SCALAR_LOOP (loop_vinfo) = scalar_loop;
   gcc_checking_assert (vect_loop_vectorized_call (scalar_loop)
@@ -953,7 +954,7 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
       if (g)
 	{
 	  arg = gimple_call_arg (g, 0);
-	  get_loop (cfun, tree_to_shwi (arg))->dont_vectorize = true;
+	  get_loop (fun, tree_to_shwi (arg))->dont_vectorize = true;
 	  fold_loop_internal_call (g, boolean_false_node);
 	}
     }
@@ -980,12 +981,13 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 
 static void
 vect_transform_loops (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
-		      loop_p loop, gimple *loop_vectorized_call)
+		      loop_p loop, gimple *loop_vectorized_call,
+		      function *fun)
 {
   loop_vec_info loop_vinfo = loop_vec_info_for_loop (loop);
 
   if (loop_vectorized_call)
-    set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);
+    set_uid_loop_bbs (loop_vinfo, loop_vectorized_call, fun);
 
   unsigned HOST_WIDE_INT bytes;
   if (dump_enabled_p ())
@@ -1017,7 +1019,7 @@ vect_transform_loops (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 
   /* Epilogue of vectorized loop must be vectorized too.  */
   if (new_loop)
-    vect_transform_loops (simduid_to_vf_htab, new_loop, NULL);
+    vect_transform_loops (simduid_to_vf_htab, new_loop, NULL, fun);
 }
 
 /* Try to vectorize LOOP.  */
@@ -1026,7 +1028,8 @@ static unsigned
 try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		      unsigned *num_vectorized_loops, loop_p loop,
 		      gimple *loop_vectorized_call,
-		      gimple *loop_dist_alias_call)
+		      gimple *loop_dist_alias_call,
+		      function *fun)
 {
   unsigned ret = 0;
   vec_info_shared shared;
@@ -1097,7 +1100,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	  if (!require_loop_vectorize)
 	    {
 	      tree arg = gimple_call_arg (loop_vectorized_call, 1);
-	      class loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+	      class loop *scalar_loop = get_loop (fun, tree_to_shwi (arg));
 	      if (vect_slp_if_converted_bb (bb, scalar_loop))
 		{
 		  fold_loop_internal_call (loop_vectorized_call,
@@ -1127,7 +1130,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 
   (*num_vectorized_loops)++;
   /* Transform LOOP and its epilogues.  */
-  vect_transform_loops (simduid_to_vf_htab, loop, loop_vectorized_call);
+  vect_transform_loops (simduid_to_vf_htab, loop, loop_vectorized_call, fun);
 
   if (loop_vectorized_call)
     {
@@ -1148,7 +1151,8 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 
 static unsigned
 try_vectorize_loop (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
-		    unsigned *num_vectorized_loops, loop_p loop)
+		    unsigned *num_vectorized_loops, loop_p loop,
+		    function *fun)
 {
   if (!((flag_tree_loop_vectorize
 	 && optimize_loop_nest_for_speed_p (loop))
@@ -1157,16 +1161,50 @@ try_vectorize_loop (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 
   return try_vectorize_loop_1 (simduid_to_vf_htab, num_vectorized_loops, loop,
 			       vect_loop_vectorized_call (loop),
-			       vect_loop_dist_alias_call (loop));
+			       vect_loop_dist_alias_call (loop, fun), fun);
 }
 
+
+/* Loop autovectorization.  */
+
+namespace {
+
+const pass_data pass_data_vectorize =
+{
+  GIMPLE_PASS, /* type */
+  "vect", /* name */
+  OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
+  TV_TREE_VECTORIZATION, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_vectorize : public gimple_opt_pass
+{
+public:
+  pass_vectorize (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_vectorize, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fun)
+    {
+      return flag_tree_loop_vectorize || fun->has_force_vectorize_loops;
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_vectorize
 
 /* Function vectorize_loops.
 
    Entry point to loop vectorization phase.  */
 
 unsigned
-vectorize_loops (void)
+pass_vectorize::execute (function *fun)
 {
   unsigned int i;
   unsigned int num_vectorized_loops = 0;
@@ -1177,7 +1215,7 @@ vectorize_loops (void)
   bool any_ifcvt_loops = false;
   unsigned ret = 0;
 
-  vect_loops_num = number_of_loops (cfun);
+  vect_loops_num = number_of_loops (fun);
 
   /* Bail out if there are no loops.  */
   if (vect_loops_num <= 1)
@@ -1185,15 +1223,15 @@ vectorize_loops (void)
 
   vect_slp_init ();
 
-  if (cfun->has_simduid_loops)
-    note_simd_array_uses (&simd_array_to_simduid_htab);
+  if (fun->has_simduid_loops)
+    note_simd_array_uses (&simd_array_to_simduid_htab, fun);
 
   /*  ----------- Analyze loops. -----------  */
 
   /* If some loop was duplicated, it gets bigger number
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
-  for (auto loop : loops_list (cfun, 0))
+  for (auto loop : loops_list (fun, 0))
     if (loop->dont_vectorize)
       {
 	any_ifcvt_loops = true;
@@ -1225,25 +1263,25 @@ vectorize_loops (void)
 	      {
 		tree arg = gimple_call_arg (loop_vectorized_call, 0);
 		class loop *vector_loop
-		  = get_loop (cfun, tree_to_shwi (arg));
+		  = get_loop (fun, tree_to_shwi (arg));
 		if (vector_loop && vector_loop != loop)
 		  {
 		    /* Make sure we don't vectorize it twice.  */
 		    vector_loop->dont_vectorize = true;
 		    ret |= try_vectorize_loop (simduid_to_vf_htab,
 					       &num_vectorized_loops,
-					       vector_loop);
+					       vector_loop, fun);
 		  }
 	      }
 	  }
       }
     else
       ret |= try_vectorize_loop (simduid_to_vf_htab, &num_vectorized_loops,
-				 loop);
+				 loop, fun);
 
   vect_location = dump_user_location_t ();
 
-  statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
+  statistics_counter_event (fun, "Vectorized loops", num_vectorized_loops);
   if (dump_enabled_p ()
       || (num_vectorized_loops > 0 && dump_enabled_p ()))
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -1253,9 +1291,9 @@ vectorize_loops (void)
   /*  ----------- Finalize. -----------  */
 
   if (any_ifcvt_loops)
-    for (i = 1; i < number_of_loops (cfun); i++)
+    for (i = 1; i < number_of_loops (fun); i++)
       {
-	loop = get_loop (cfun, i);
+	loop = get_loop (fun, i);
 	if (loop && loop->dont_vectorize)
 	  {
 	    gimple *g = vect_loop_vectorized_call (loop);
@@ -1266,7 +1304,7 @@ vectorize_loops (void)
 		g = NULL;
 	      }
 	    else
-	      g = vect_loop_dist_alias_call (loop);
+	      g = vect_loop_dist_alias_call (loop, fun);
 
 	    if (g)
 	      {
@@ -1277,9 +1315,9 @@ vectorize_loops (void)
       }
 
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
-  if (cfun->has_simduid_loops)
+  if (fun->has_simduid_loops)
     {
-      adjust_simduid_builtins (simduid_to_vf_htab);
+      adjust_simduid_builtins (simduid_to_vf_htab, fun);
       /* Avoid stale SCEV cache entries for the SIMD_LANE defs.  */
       scev_reset ();
     }
@@ -1288,7 +1326,7 @@ vectorize_loops (void)
   if (simd_array_to_simduid_htab)
     shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
   delete simduid_to_vf_htab;
-  cfun->has_simduid_loops = false;
+  fun->has_simduid_loops = false;
 
   if (num_vectorized_loops > 0)
     {
@@ -1299,12 +1337,12 @@ vectorize_loops (void)
       ret |= TODO_cleanup_cfg;
     }
 
-  for (i = 1; i < number_of_loops (cfun); i++)
+  for (i = 1; i < number_of_loops (fun); i++)
     {
       loop_vec_info loop_vinfo;
       bool has_mask_store;
 
-      loop = get_loop (cfun, i);
+      loop = get_loop (fun, i);
       if (!loop || !loop->aux)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;
@@ -1322,7 +1360,7 @@ vectorize_loops (void)
       bitmap_set_bit (exit_bbs, single_exit (loop)->dest->index);
 
       edge entry = EDGE_PRED (loop_preheader_edge (loop)->src, 0);
-      do_rpo_vn (cfun, entry, exit_bbs);
+      do_rpo_vn (fun, entry, exit_bbs);
 
       loop->aux = NULL;
     }
@@ -1332,6 +1370,13 @@ vectorize_loops (void)
   return ret;
 }
 
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_vectorize (gcc::context *ctxt)
+{
+  return new pass_vectorize (ctxt);
+}
 
 /* Entry point to the simduid cleanup pass.  */
 
@@ -1369,10 +1414,10 @@ pass_simduid_cleanup::execute (function *fun)
 {
   hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab = NULL;
 
-  note_simd_array_uses (&simd_array_to_simduid_htab);
+  note_simd_array_uses (&simd_array_to_simduid_htab, fun);
 
   /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE,ORDERED_{START,END}} builtins.  */
-  adjust_simduid_builtins (NULL);
+  adjust_simduid_builtins (NULL, fun);
 
   /* Shrink any "omp array simd" temporary arrays to the
      actual vectorization factors.  */
