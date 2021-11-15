@@ -2925,6 +2925,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	}
     }
 
+  /* When the inner loop of a double reduction ends up with more than
+     one loop-closed PHI we have failed to classify alternate such
+     PHIs as double reduction, leading to wrong code.  See PR103237.  */
+  if (inner_loop_of_double_reduc && lcphis.length () != 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unhandle double reduction\n");
+      return NULL;
+    }
+
   /* If this isn't a nested cycle or if the nested cycle reduction value
      is used ouside of the inner loop we cannot handle uses of the reduction
      value.  */
