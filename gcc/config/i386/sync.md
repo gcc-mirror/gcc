@@ -650,7 +650,7 @@
   rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
   if (operands[4] == const0_rtx)
     result = expand_simple_binop (<MODE>mode, ASHIFT, result,
-				  operands[2], operands[0], 0, OPTAB_DIRECT);
+				  operands[2], operands[0], 0, OPTAB_WIDEN);
   if (result != operands[0])
     emit_move_insn (operands[0], result);
   DONE;
@@ -687,7 +687,7 @@
   rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
   if (operands[4] == const0_rtx)
     result = expand_simple_binop (<MODE>mode, ASHIFT, result,
-				  operands[2], operands[0], 0, OPTAB_DIRECT);
+				  operands[2], operands[0], 0, OPTAB_WIDEN);
   if (result != operands[0])
     emit_move_insn (operands[0], result);
   DONE;
@@ -725,7 +725,7 @@
   rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
   if (operands[4] == const0_rtx)
     result = expand_simple_binop (<MODE>mode, ASHIFT, result,
-				  operands[2], operands[0], 0, OPTAB_DIRECT);
+				  operands[2], operands[0], 0, OPTAB_WIDEN);
   if (result != operands[0])
     emit_move_insn (operands[0], result);
   DONE;
