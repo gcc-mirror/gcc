@@ -1,3 +1,46 @@
+2021-11-15  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/pr100278.c: Move to ...
+	* gcc.c-torture/compile/pr100278.c: Here.
+	Remove dg-do and dg-options.
+	* gcc.dg/tree-ssa/pr101189.c: Move to ...
+	* gcc.c-torture/compile/pr101189.c: Here.
+	Remove dg-do and dg-options.
+	* gcc.dg/tree-ssa/pr100453.c: Move to ...
+	* gcc.c-torture/execute/pr100453.c: Here.
+	Remove dg-do and dg-options.
+	* gcc.dg/tree-ssa/pr101335.c: Move to ...
+	* gcc.c-torture/execute/pr101335.c: Here
+	Remove dg-do and dg-options.
+
+2021-11-14  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* gcc.target/vax/setmem.c: New test.
+
+2021-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-dse-3.c: New test.
+
+2021-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr103229.c: Removed.
+
+2021-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr103229.c: New test.
+
+2021-11-14  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/tsan/free_race.c: Remove unnecessary -ldl.
+	* c-c++-common/tsan/free_race2.c: Likewise.
+
+2021-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* c-c++-common/asan/null-deref-1.c: Update template.
+	* c-c++-common/tsan/free_race.c: Update template.
+	* c-c++-common/tsan/free_race2.c: Update template.
+	* gcc.dg/ipa/ipa-sra-4.c: Update template.
+
 2021-11-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/cpp1z/inh-ctor23.C: Fix template

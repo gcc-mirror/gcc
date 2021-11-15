@@ -1,3 +1,57 @@
+2021-11-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_container.h (_Safe_container<>::_M_safe): Remove.
+	* include/debug/deque (deque::operator=(initializer_list<>)): Replace
+	_M_base() call with _Base:: call.
+	(deque::operator[](size_type)): Likewise.
+	* include/debug/forward_list (forward_list(forward_list&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(forward_list::operator=(initializer_list<>)): Remove _M_base() calls.
+	(forward_list::splice_after, forward_list::merge): Likewise.
+	* include/debug/list (list(list&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(list::operator=(initializer_list<>)): Remove _M_base() calls.
+	(list::splice, list::merge): Likewise.
+	* include/debug/map.h (map(map&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(map::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/multimap.h (multimap(multimap&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(multimap::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/set.h (set(set&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(set::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/multiset.h (multiset(multiset&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(multiset::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/string (basic_string(basic_string&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(basic_string::operator=(initializer_list<>)): Remove _M_base() call.
+	(basic_string::operator=(const _CharT*), basic_string::operator=(_CharT)): Likewise.
+	(basic_string::operator[](size_type), basic_string::operator+=(const basic_string&)):
+	Likewise.
+	(basic_string::operator+=(const _Char*), basic_string::operator+=(_CharT)): Likewise.
+	* include/debug/unordered_map (unordered_map(unordered_map&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_map::operator=(initializer_list<>), unordered_map::merge):
+	Remove _M_base() calls.
+	(unordered_multimap(unordered_multimap&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_multimap::operator=(initializer_list<>), unordered_multimap::merge):
+	Remove _M_base() calls.
+	* include/debug/unordered_set (unordered_set(unordered_set&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_set::operator=(initializer_list<>), unordered_set::merge):
+	Remove _M_base() calls.
+	(unordered_multiset(unordered_multiset&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_multiset::operator=(initializer_list<>), unordered_multiset::merge):
+	Remove _M_base() calls.
+	* include/debug/vector (vector(vector&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(vector::operator=(initializer_list<>)): Remove _M_base() calls.
+	(vector::operator[](size_type)): Likewise.
+
 2021-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add spanstream header.

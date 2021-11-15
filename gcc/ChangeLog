@@ -1,3 +1,87 @@
+2021-11-14  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.h (struct modref_summary): Add nondeterministic
+	and calls_interposable flags.
+	* ipa-modref.c (modref_summary::modref_summary): Initialize new flags.
+	(modref_summary::useful_p): Check new flags.
+	(struct modref_summary_lto): Add nondeterministic and
+	calls_interposable flags.
+	(modref_summary_lto::modref_summary_lto): Initialize new flags.
+	(modref_summary_lto::useful_p): Check new flags.
+	(modref_summary::dump): Dump new flags.
+	(modref_summary_lto::dump): Dump new flags.
+	(ignore_nondeterminism_p): New function.
+	(merge_call_side_effects): Merge new flags.
+	(process_fnspec): Likewise.
+	(analyze_load): Volatile access is nondeterministic.
+	(analyze_store): Liekwise.
+	(analyze_stmt): Volatile ASM is nondeterministic.
+	(analyze_function): Clear new flags.
+	(modref_summaries::duplicate): Duplicate new flags.
+	(modref_summaries_lto::duplicate): Duplicate new flags.
+	(modref_write): Stream new flags.
+	(read_section): Stream new flags.
+	(propagate_unknown_call): Update new flags.
+	(modref_propagate_in_scc): Propagate new flags.
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Check
+	calls_interposable.
+	* tree-ssa-structalias.c (determine_global_memory_access):
+	Likewise.
+
+2021-11-14  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/vax/vax.h (SET_RATIO): New macro.
+	* config/vax/vax.md (UNSPEC_SETMEM_FILL): New constant.
+	(setmemhi): New expander.
+	(setmemhi1): New insn and splitter.
+	(*setmemhi1): New insn.
+
+2021-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c (modref_access_node::update_for_kills): New
+	member function.
+	(modref_access_node::merge_for_kills): Likewise.
+	(modref_access_node::insert_kill): Likewise.
+	* ipa-modref-tree.h (modref_access_node::update_for_kills,
+	modref_access_node::merge_for_kills, modref_access_node::insert_kill):
+	Declare.
+	(modref_access_node::useful_for_kill): New member function.
+	* ipa-modref.c (modref_summary::useful_p): Release useless kills.
+	(lto_modref_summary): Add kills.
+	(modref_summary::dump): Dump kills.
+	(record_access): Add mdoref_access_node parameter.
+	(record_access_lto): Likewise.
+	(merge_call_side_effects): Merge kills.
+	(analyze_call): Add ALWAYS_EXECUTED param and pass it around.
+	(struct summary_ptrs): Add always_executed filed.
+	(analyze_load): Update.
+	(analyze_store): Update; record kills.
+	(analyze_stmt): Add always_executed; record kills in clobbers.
+	(analyze_function): Track always_executed.
+	(modref_summaries::duplicate): Duplicate kills.
+	(update_signature): Release kills.
+	* ipa-modref.h (struct modref_summary): Add kills.
+	* tree-ssa-alias.c (alias_stats): Add kill stats.
+	(dump_alias_stats): Dump kill stats.
+	(store_kills_ref_p): Break out from ...
+	(stmt_kills_ref_p): Use it; handle modref info based kills.
+
+2021-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103229
+	* gimple-range-cache.cc (ssa_global_cache::clear): Do not pass
+	null value to memset.
+
+2021-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c (modref_access_node::get_call_arg): New member
+	function.
+	(modref_access_node::get_ao_ref): Likewise.
+	* ipa-modref-tree.h (modref_access_node::get_call_arg): Declare.
+	(modref_access_node::get_ao_ref): Declare.
+	* tree-ssa-alias.c (modref_may_conflict): Use new accessors.
+	* tree-ssa-dse.c (dse_optimize_call): Use new accessors.
+
 2021-11-13  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/103211
