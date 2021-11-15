@@ -35,7 +35,7 @@ namespace Compile {
 
 struct fncontext
 {
-  ::Bfunction *fndecl;
+  ::tree fndecl;
   ::Bvariable *ret_addr;
 };
 
@@ -161,7 +161,7 @@ public:
     return true;
   }
 
-  void insert_function_decl (const TyTy::FnType *ref, ::Bfunction *fn)
+  void insert_function_decl (const TyTy::FnType *ref, tree fn)
   {
     auto id = ref->get_ty_ref ();
     auto dId = ref->get_id ();
@@ -176,8 +176,7 @@ public:
     mono_fns[dId].push_back ({ref, fn});
   }
 
-  bool lookup_function_decl (HirId id, ::Bfunction **fn,
-			     DefId dId = UNKNOWN_DEFID,
+  bool lookup_function_decl (HirId id, tree *fn, DefId dId = UNKNOWN_DEFID,
 			     const TyTy::BaseType *ref = nullptr)
   {
     // for for any monomorphized fns
@@ -192,7 +191,7 @@ public:
 	for (auto &e : mono_fns[dId])
 	  {
 	    const TyTy::BaseType *r = e.first;
-	    ::Bfunction *f = e.second;
+	    tree f = e.second;
 	    if (ref->is_equal (*r))
 	      {
 		*fn = f;
@@ -237,7 +236,7 @@ public:
     return true;
   }
 
-  void push_fn (::Bfunction *fn, ::Bvariable *ret_addr)
+  void push_fn (tree fn, ::Bvariable *ret_addr)
   {
     fn_stack.push_back (fncontext{fn, ret_addr});
   }
@@ -247,7 +246,7 @@ public:
   void push_type (::tree t) { type_decls.push_back (t); }
   void push_var (::Bvariable *v) { var_decls.push_back (v); }
   void push_const (::tree c) { const_decls.push_back (c); }
-  void push_function (::Bfunction *f) { func_decls.push_back (f); }
+  void push_function (tree f) { func_decls.push_back (f); }
 
   void write_to_backend ()
   {
@@ -255,11 +254,11 @@ public:
 				       var_decls);
   }
 
-  bool function_completed (Bfunction *fn)
+  bool function_completed (tree fn)
   {
     for (auto it = func_decls.begin (); it != func_decls.end (); it++)
       {
-	Bfunction *i = (*it);
+	tree i = (*it);
 	if (i == fn)
 	  {
 	    return true;
@@ -320,7 +319,7 @@ private:
   std::vector<fncontext> fn_stack;
   std::map<HirId, ::Bvariable *> compiled_var_decls;
   std::map<HirId, tree> compiled_type_map;
-  std::map<HirId, ::Bfunction *> compiled_fn_map;
+  std::map<HirId, tree> compiled_fn_map;
   std::map<HirId, tree> compiled_consts;
   std::map<HirId, ::Blabel *> compiled_labels;
   std::vector<::std::vector<tree>> statements;
@@ -328,14 +327,14 @@ private:
   std::vector<::Bvariable *> loop_value_stack;
   std::vector<::Blabel *> loop_begin_labels;
   std::map<const TyTy::BaseType *, std::pair<HirId, ::tree >> mono;
-  std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, ::Bfunction *>>>
+  std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;
 
   // To GCC middle-end
   std::vector<tree> type_decls;
   std::vector<::Bvariable *> var_decls;
   std::vector<tree> const_decls;
-  std::vector<::Bfunction *> func_decls;
+  std::vector<tree> func_decls;
 };
 
 class TyTyResolveCompile : public TyTy::TyConstVisitor

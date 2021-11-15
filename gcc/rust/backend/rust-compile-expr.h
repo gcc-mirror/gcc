@@ -204,7 +204,7 @@ public:
 	gcc_unreachable ();
       }
 
-    Bfunction *fn = nullptr;
+    tree fn = NULL_TREE;
     Bvariable *var = nullptr;
     if (ctx->lookup_const_decl (ref, &translated))
       {

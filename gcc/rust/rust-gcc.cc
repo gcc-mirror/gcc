@@ -70,12 +70,6 @@ private:
 
 // In gcc, types, expressions, and statements are all trees.
 
-class Bfunction : public Gcc_tree
-{
-public:
-  Bfunction (tree t) : Gcc_tree (t) {}
-};
-
 class Bblock : public Gcc_tree
 {
 public:
@@ -143,7 +137,6 @@ public:
   Gcc_backend ();
 
   void debug (tree t) { debug_tree (t); };
-  void debug (Bfunction *t) { debug_tree (t->get_tree ()); };
   void debug (Bblock *t) { debug_tree (t->get_tree ()); };
   void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
   void debug (Blabel *t) { debug_tree (t->get_tree ()); };
@@ -305,7 +298,7 @@ public:
 
   tree convert_expression (tree type, tree expr, Location);
 
-  tree function_code_expression (Bfunction *, Location);
+  tree function_code_expression (tree, Location);
 
   tree address_expression (tree, Location);
 
@@ -313,7 +306,7 @@ public:
 
   tree compound_expression (tree, tree, Location);
 
-  tree conditional_expression (Bfunction *, tree, tree, tree, tree, Location);
+  tree conditional_expression (tree, tree, tree, tree, tree, Location);
 
   tree negation_expression (NegationOperator op, tree expr, Location);
 
@@ -335,26 +328,25 @@ public:
 
   tree array_index_expression (tree array, tree index, Location);
 
-  tree call_expression (Bfunction *caller, tree fn,
-			const std::vector<tree> &args, tree static_chain,
-			Location);
+  tree call_expression (tree caller, tree fn, const std::vector<tree> &args,
+			tree static_chain, Location);
 
   // Statements.
 
   tree error_statement () { return error_mark_node; }
 
-  tree expression_statement (Bfunction *, tree);
+  tree expression_statement (tree, tree);
 
-  tree init_statement (Bfunction *, Bvariable *var, tree init);
+  tree init_statement (tree, Bvariable *var, tree init);
 
-  tree assignment_statement (Bfunction *, tree lhs, tree rhs, Location);
+  tree assignment_statement (tree, tree lhs, tree rhs, Location);
 
-  tree return_statement (Bfunction *, const std::vector<tree> &, Location);
+  tree return_statement (tree, const std::vector<tree> &, Location);
 
-  tree if_statement (Bfunction *, tree condition, Bblock *then_block,
+  tree if_statement (tree, tree condition, Bblock *then_block,
 		     Bblock *else_block, Location);
 
-  tree switch_statement (Bfunction *function, tree value,
+  tree switch_statement (tree function, tree value,
 			 const std::vector<std::vector<tree>> &cases,
 			 const std::vector<tree> &statements, Location);
 
@@ -371,8 +363,8 @@ public:
 
   // Blocks.
 
-  Bblock *block (Bfunction *, Bblock *, const std::vector<Bvariable *> &,
-		 Location, Location);
+  Bblock *block (tree, Bblock *, const std::vector<Bvariable *> &, Location,
+		 Location);
 
   void block_add_statements (Bblock *, const std::vector<tree> &);
 
@@ -389,17 +381,16 @@ public:
 
   void global_variable_set_init (Bvariable *, tree);
 
-  Bvariable *local_variable (Bfunction *, const std::string &, tree,
-			     Bvariable *, bool, Location);
+  Bvariable *local_variable (tree, const std::string &, tree, Bvariable *, bool,
+			     Location);
 
-  Bvariable *parameter_variable (Bfunction *, const std::string &, tree,
-				 bool, Location);
+  Bvariable *parameter_variable (tree, const std::string &, tree, bool,
+				 Location);
 
-  Bvariable *static_chain_variable (Bfunction *, const std::string &, tree,
-				    Location);
+  Bvariable *static_chain_variable (tree, const std::string &, tree, Location);
 
-  Bvariable *temporary_variable (Bfunction *, Bblock *, tree, tree, bool,
-				 Location, tree *);
+  Bvariable *temporary_variable (tree, Bblock *, tree, tree, bool, Location,
+				 tree *);
 
   Bvariable *implicit_variable (const std::string &, const std::string &,
 				tree, bool, bool, bool, int64_t);
@@ -422,7 +413,7 @@ public:
 
   // Labels.
 
-  Blabel *label (Bfunction *, const std::string &name, Location);
+  Blabel *label (tree, const std::string &name, Location);
 
   tree label_definition_statement (Blabel *);
 
@@ -432,34 +423,31 @@ public:
 
   // Functions.
 
-  Bfunction *error_function () { return this->make_function (error_mark_node); }
+  tree error_function () { return error_mark_node; }
 
-  Bfunction *function (tree fntype, const std::string &name,
-		       const std::string &asm_name, unsigned int flags,
-		       Location);
+  tree function (tree fntype, const std::string &name,
+		 const std::string &asm_name, unsigned int flags, Location);
 
-  tree function_defer_statement (Bfunction *function, tree undefer, tree defer,
+  tree function_defer_statement (tree function, tree undefer, tree defer,
 				 Location);
 
-  bool function_set_parameters (Bfunction *function,
+  bool function_set_parameters (tree function,
 				const std::vector<Bvariable *> &);
 
-  bool function_set_body (Bfunction *function, tree code_stmt);
+  bool function_set_body (tree function, tree code_stmt);
 
-  Bfunction *lookup_gcc_builtin (const std::string &);
+  tree lookup_gcc_builtin (const std::string &);
 
-  Bfunction *lookup_builtin_by_rust_name (const std::string &);
+  tree lookup_builtin_by_rust_name (const std::string &);
 
   void write_global_definitions (const std::vector<tree> &,
 				 const std::vector<tree> &,
-				 const std::vector<Bfunction *> &,
+				 const std::vector<tree> &,
 				 const std::vector<Bvariable *> &);
 
   void write_export_data (const char *bytes, unsigned int size);
 
 private:
-
-  Bfunction *make_function (tree t) { return new Bfunction (t); }
 
   tree fill_in_fields (tree, const std::vector<typed_identifier> &);
 
@@ -479,7 +467,7 @@ private:
 		       int flags);
 
   // A mapping of the GCC built-ins exposed to GCCRust.
-  std::map<std::string, Bfunction *> builtin_functions_;
+  std::map<std::string, tree> builtin_functions_;
   std::map<std::string, std::string> rust_intrinsic_to_gcc_builtin;
 };
 
@@ -1458,9 +1446,8 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
 // Get the address of a function.
 
 tree
-Gcc_backend::function_code_expression (Bfunction *bfunc, Location location)
+Gcc_backend::function_code_expression (tree func, Location location)
 {
-  tree func = bfunc->get_tree ();
   if (func == error_mark_node)
     return this->error_expression ();
 
@@ -1527,9 +1514,9 @@ Gcc_backend::compound_expression (tree stat, tree expr, Location location)
 // ELSE_EXPR otherwise.
 
 tree
-Gcc_backend::conditional_expression (Bfunction *, tree type_tree,
-				     tree cond_expr, tree then_expr,
-				     tree else_expr, Location location)
+Gcc_backend::conditional_expression (tree, tree type_tree, tree cond_expr,
+				     tree then_expr, tree else_expr,
+				     Location location)
 {
   if (type_tree == error_mark_node || cond_expr == error_mark_node
       || then_expr == error_mark_node || else_expr == error_mark_node)
@@ -1949,7 +1936,7 @@ Gcc_backend::array_index_expression (tree array_tree, tree index_tree,
 
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
-Gcc_backend::call_expression (Bfunction *, // containing fcn for call
+Gcc_backend::call_expression (tree, // containing fcn for call
 			      tree fn, const std::vector<tree> &fn_args,
 			      tree chain_expr, Location location)
 {
@@ -2025,7 +2012,7 @@ Gcc_backend::call_expression (Bfunction *, // containing fcn for call
 // An expression as a statement.
 
 tree
-Gcc_backend::expression_statement (Bfunction *, tree expr)
+Gcc_backend::expression_statement (tree, tree expr)
 {
   return expr;
 }
@@ -2033,7 +2020,7 @@ Gcc_backend::expression_statement (Bfunction *, tree expr)
 // Variable initialization.
 
 tree
-Gcc_backend::init_statement (Bfunction *, Bvariable *var, tree init_tree)
+Gcc_backend::init_statement (tree, Bvariable *var, tree init_tree)
 {
   tree var_tree = var->get_decl ();
   if (var_tree == error_mark_node || init_tree == error_mark_node)
@@ -2065,7 +2052,7 @@ Gcc_backend::init_statement (Bfunction *, Bvariable *var, tree init_tree)
 // Assignment.
 
 tree
-Gcc_backend::assignment_statement (Bfunction *bfn, tree lhs, tree rhs,
+Gcc_backend::assignment_statement (tree bfn, tree lhs, tree rhs,
 				   Location location)
 {
   if (lhs == error_mark_node || rhs == error_mark_node)
@@ -2093,10 +2080,9 @@ Gcc_backend::assignment_statement (Bfunction *bfn, tree lhs, tree rhs,
 // Return.
 
 tree
-Gcc_backend::return_statement (Bfunction *bfunction,
-			       const std::vector<tree> &vals, Location location)
+Gcc_backend::return_statement (tree fntree, const std::vector<tree> &vals,
+			       Location location)
 {
-  tree fntree = bfunction->get_tree ();
   if (fntree == error_mark_node)
     return this->error_statement ();
   tree result = DECL_RESULT (fntree);
@@ -2208,7 +2194,7 @@ Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
 // If.
 
 tree
-Gcc_backend::if_statement (Bfunction *, tree cond_tree, Bblock *then_block,
+Gcc_backend::if_statement (tree, tree cond_tree, Bblock *then_block,
 			   Bblock *else_block, Location location)
 {
   tree then_tree = then_block->get_tree ();
@@ -2240,14 +2226,13 @@ Gcc_backend::exit_expression (tree cond_tree, Location locus)
 // Switch.
 
 tree
-Gcc_backend::switch_statement (Bfunction *function, tree value,
+Gcc_backend::switch_statement (tree decl, tree value,
 			       const std::vector<std::vector<tree>> &cases,
 			       const std::vector<tree> &statements,
 			       Location switch_location)
 {
   gcc_assert (cases.size () == statements.size ());
 
-  tree decl = function->get_tree ();
   if (DECL_STRUCT_FUNCTION (decl) == NULL)
     push_struct_function (decl);
   else
@@ -2345,14 +2330,13 @@ Gcc_backend::statement_list (const std::vector<tree> &statements)
 // the Bblock.
 
 Bblock *
-Gcc_backend::block (Bfunction *function, Bblock *enclosing,
+Gcc_backend::block (tree fndecl, Bblock *enclosing,
 		    const std::vector<Bvariable *> &vars,
 		    Location start_location, Location)
 {
   tree block_tree = make_node (BLOCK);
   if (enclosing == NULL)
     {
-      tree fndecl = function->get_tree ();
       gcc_assert (fndecl != NULL_TREE);
 
       // We may have already created a block for local variables when
@@ -2599,7 +2583,7 @@ Gcc_backend::global_variable_set_init (Bvariable *var, tree expr_tree)
 // Make a local variable.
 
 Bvariable *
-Gcc_backend::local_variable (Bfunction *function, const std::string &name,
+Gcc_backend::local_variable (tree function, const std::string &name,
 			     tree type_tree, Bvariable *decl_var,
 			     bool is_address_taken, Location location)
 {
@@ -2607,7 +2591,7 @@ Gcc_backend::local_variable (Bfunction *function, const std::string &name,
     return this->error_variable ();
   tree decl = build_decl (location.gcc_location (), VAR_DECL,
 			  get_identifier_from_string (name), type_tree);
-  DECL_CONTEXT (decl) = function->get_tree ();
+  DECL_CONTEXT (decl) = function;
   TREE_USED (decl) = 1;
   if (is_address_taken)
     TREE_ADDRESSABLE (decl) = 1;
@@ -2623,7 +2607,7 @@ Gcc_backend::local_variable (Bfunction *function, const std::string &name,
 // Make a function parameter variable.
 
 Bvariable *
-Gcc_backend::parameter_variable (Bfunction *function, const std::string &name,
+Gcc_backend::parameter_variable (tree function, const std::string &name,
 				 tree type_tree, bool is_address_taken,
 				 Location location)
 {
@@ -2631,7 +2615,7 @@ Gcc_backend::parameter_variable (Bfunction *function, const std::string &name,
     return this->error_variable ();
   tree decl = build_decl (location.gcc_location (), PARM_DECL,
 			  get_identifier_from_string (name), type_tree);
-  DECL_CONTEXT (decl) = function->get_tree ();
+  DECL_CONTEXT (decl) = function;
   DECL_ARG_TYPE (decl) = type_tree;
   TREE_USED (decl) = 1;
   if (is_address_taken)
@@ -2643,15 +2627,13 @@ Gcc_backend::parameter_variable (Bfunction *function, const std::string &name,
 // Make a static chain variable.
 
 Bvariable *
-Gcc_backend::static_chain_variable (Bfunction *function,
-				    const std::string &name, tree type_tree,
-				    Location location)
+Gcc_backend::static_chain_variable (tree fndecl, const std::string &name,
+				    tree type_tree, Location location)
 {
   if (type_tree == error_mark_node)
     return this->error_variable ();
   tree decl = build_decl (location.gcc_location (), PARM_DECL,
 			  get_identifier_from_string (name), type_tree);
-  tree fndecl = function->get_tree ();
   DECL_CONTEXT (decl) = fndecl;
   DECL_ARG_TYPE (decl) = type_tree;
   TREE_USED (decl) = 1;
@@ -2677,15 +2659,13 @@ Gcc_backend::static_chain_variable (Bfunction *function,
 // Make a temporary variable.
 
 Bvariable *
-Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
-				 tree type_tree, tree init_tree,
-				 bool is_address_taken, Location location,
-				 tree *pstatement)
+Gcc_backend::temporary_variable (tree fndecl, Bblock *bblock, tree type_tree,
+				 tree init_tree, bool is_address_taken,
+				 Location location, tree *pstatement)
 {
-  gcc_assert (function != NULL);
-  tree decl = function->get_tree ();
+  gcc_assert (fndecl != NULL_TREE);
   if (type_tree == error_mark_node || init_tree == error_mark_node
-      || decl == error_mark_node)
+      || fndecl == error_mark_node)
     {
       *pstatement = this->error_statement ();
       return this->error_variable ();
@@ -2695,10 +2675,10 @@ Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
   // We can only use create_tmp_var if the type is not addressable.
   if (!TREE_ADDRESSABLE (type_tree))
     {
-      if (DECL_STRUCT_FUNCTION (decl) == NULL)
-	push_struct_function (decl);
+      if (DECL_STRUCT_FUNCTION (fndecl) == NULL)
+	push_struct_function (fndecl);
       else
-	push_cfun (DECL_STRUCT_FUNCTION (decl));
+	push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 
       var = create_tmp_var (type_tree, "RUSTTMP");
       pop_cfun ();
@@ -2711,7 +2691,7 @@ Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
       DECL_ARTIFICIAL (var) = 1;
       DECL_IGNORED_P (var) = 1;
       TREE_USED (var) = 1;
-      DECL_CONTEXT (var) = decl;
+      DECL_CONTEXT (var) = fndecl;
 
       // We have to add this variable to the BLOCK and the BIND_EXPR.
       tree bind_tree = bblock->get_tree ();
@@ -2739,7 +2719,7 @@ Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
       && (this->type_size (type_tree) == 0
 	  || TREE_TYPE (init_tree) == void_type_node))
     *pstatement = this->compound_statement (
-      this->expression_statement (function, init_tree), *pstatement);
+      this->expression_statement (fndecl, init_tree), *pstatement);
 
   return new Bvariable (var);
 }
@@ -2950,13 +2930,11 @@ Gcc_backend::immutable_struct_reference (const std::string &name,
 // Make a label.
 
 Blabel *
-Gcc_backend::label (Bfunction *function, const std::string &name,
-		    Location location)
+Gcc_backend::label (tree func_tree, const std::string &name, Location location)
 {
   tree decl;
   if (name.empty ())
     {
-      tree func_tree = function->get_tree ();
       if (DECL_STRUCT_FUNCTION (func_tree) == NULL)
 	push_struct_function (func_tree);
       else
@@ -2971,7 +2949,7 @@ Gcc_backend::label (Bfunction *function, const std::string &name,
       tree id = get_identifier_from_string (name);
       decl
 	= build_decl (location.gcc_location (), LABEL_DECL, id, void_type_node);
-      DECL_CONTEXT (decl) = function->get_tree ();
+      DECL_CONTEXT (decl) = func_tree;
     }
   return new Blabel (decl);
 }
@@ -3013,7 +2991,7 @@ Gcc_backend::label_address (Blabel *label, Location location)
 
 // Declare or define a new function.
 
-Bfunction *
+tree
 Gcc_backend::function (tree functype, const std::string &name,
 		       const std::string &asm_name, unsigned int flags,
 		       Location location)
@@ -3061,7 +3039,7 @@ Gcc_backend::function (tree functype, const std::string &name,
     TREE_READONLY (decl) = 1;
 
   rust_preserve_from_gc (decl);
-  return new Bfunction (decl);
+  return decl;
 }
 
 // Create a statement that runs all deferred calls for FUNCTION.  This should
@@ -3070,19 +3048,17 @@ Gcc_backend::function (tree functype, const std::string &name,
 //     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
 
 tree
-Gcc_backend::function_defer_statement (Bfunction *function, tree undefer_tree,
+Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
 				       tree defer_tree, Location location)
 {
-  tree fntree = function->get_tree ();
-
   if (undefer_tree == error_mark_node || defer_tree == error_mark_node
-      || fntree == error_mark_node)
+      || function == error_mark_node)
     return this->error_statement ();
 
-  if (DECL_STRUCT_FUNCTION (fntree) == NULL)
-    push_struct_function (fntree);
+  if (DECL_STRUCT_FUNCTION (function) == NULL)
+    push_struct_function (function);
   else
-    push_cfun (DECL_STRUCT_FUNCTION (fntree));
+    push_cfun (DECL_STRUCT_FUNCTION (function));
 
   tree stmt_list = NULL;
   Blabel *blabel = this->label (function, "", location);
@@ -3106,10 +3082,9 @@ Gcc_backend::function_defer_statement (Bfunction *function, tree undefer_tree,
 
 bool
 Gcc_backend::function_set_parameters (
-  Bfunction *function, const std::vector<Bvariable *> &param_vars)
+  tree function, const std::vector<Bvariable *> &param_vars)
 {
-  tree func_tree = function->get_tree ();
-  if (func_tree == error_mark_node)
+  if (function == error_mark_node)
     return false;
 
   tree params = NULL_TREE;
@@ -3122,27 +3097,25 @@ Gcc_backend::function_set_parameters (
       pp = &DECL_CHAIN (*pp);
     }
   *pp = NULL_TREE;
-  DECL_ARGUMENTS (func_tree) = params;
+  DECL_ARGUMENTS (function) = params;
   return true;
 }
 
 // Set the function body for FUNCTION using the code in CODE_BLOCK.
 
 bool
-Gcc_backend::function_set_body (Bfunction *function, tree code_stmt)
+Gcc_backend::function_set_body (tree function, tree code_stmt)
 {
-  tree func_tree = function->get_tree ();
-
-  if (func_tree == error_mark_node || code_stmt == error_mark_node)
+  if (function == error_mark_node || code_stmt == error_mark_node)
     return false;
-  DECL_SAVED_TREE (func_tree) = code_stmt;
+  DECL_SAVED_TREE (function) = code_stmt;
   return true;
 }
 
 // Look up a named built-in function in the current backend implementation.
 // Returns NULL if no built-in function by that name exists.
 
-Bfunction *
+tree
 Gcc_backend::lookup_gcc_builtin (const std::string &name)
 {
   if (this->builtin_functions_.count (name) != 0)
@@ -3150,7 +3123,7 @@ Gcc_backend::lookup_gcc_builtin (const std::string &name)
   return NULL;
 }
 
-Bfunction *
+tree
 Gcc_backend::lookup_builtin_by_rust_name (const std::string &name)
 {
   auto it = rust_intrinsic_to_gcc_builtin.find (name);
@@ -3167,7 +3140,7 @@ Gcc_backend::lookup_builtin_by_rust_name (const std::string &name)
 void
 Gcc_backend::write_global_definitions (
   const std::vector<tree> &type_decls, const std::vector<tree> &constant_decls,
-  const std::vector<Bfunction *> &function_decls,
+  const std::vector<tree> &function_decls,
   const std::vector<Bvariable *> &variable_decls)
 {
   size_t count_definitions = type_decls.size () + constant_decls.size ()
@@ -3211,10 +3184,10 @@ Gcc_backend::write_global_definitions (
 	  ++i;
 	}
     }
-  for (std::vector<Bfunction *>::const_iterator p = function_decls.begin ();
+  for (std::vector<tree>::const_iterator p = function_decls.begin ();
        p != function_decls.end (); ++p)
     {
-      tree decl = (*p)->get_tree ();
+      tree decl = (*p);
       if (decl != error_mark_node)
 	{
 	  rust_preserve_from_gc (decl);
@@ -3262,7 +3235,7 @@ Gcc_backend::define_builtin (const std::string rust_name,
   if ((flags & builtin_novops) != 0)
     DECL_IS_NOVOPS (decl) = 1;
   set_builtin_decl (bcode, decl, true);
-  this->builtin_functions_[name] = this->make_function (decl);
+  this->builtin_functions_[name] = decl;
   if (libname != NULL)
     {
       decl = add_builtin_function (libname, fntype, bcode, BUILT_IN_NORMAL,
@@ -3273,7 +3246,7 @@ Gcc_backend::define_builtin (const std::string rust_name,
 	TREE_THIS_VOLATILE (decl) = 1;
       if ((flags & builtin_novops) != 0)
 	DECL_IS_NOVOPS (decl) = 1;
-      this->builtin_functions_[libname] = this->make_function (decl);
+      this->builtin_functions_[libname] = decl;
     }
 
   rust_intrinsic_to_gcc_builtin[rust_name] = name;

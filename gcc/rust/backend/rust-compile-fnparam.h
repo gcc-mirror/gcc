@@ -29,7 +29,7 @@ class CompileFnParam : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bvariable *compile (Context *ctx, Bfunction *fndecl,
+  static Bvariable *compile (Context *ctx, tree fndecl,
 			     HIR::FunctionParam *param, tree decl_type,
 			     Location locus)
   {
@@ -51,13 +51,12 @@ public:
   }
 
 private:
-  CompileFnParam (Context *ctx, ::Bfunction *fndecl, tree decl_type,
-		  Location locus)
+  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus)
     : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type),
       locus (locus), translated (nullptr)
   {}
 
-  ::Bfunction *fndecl;
+  tree fndecl;
   tree decl_type;
   Location locus;
   ::Bvariable *translated;
@@ -66,9 +65,8 @@ private:
 class CompileSelfParam : public HIRCompileBase
 {
 public:
-  static Bvariable *compile (Context *ctx, Bfunction *fndecl,
-			     HIR::SelfParam &self, tree decl_type,
-			     Location locus)
+  static Bvariable *compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
+			     tree decl_type, Location locus)
   {
     bool is_immutable
       = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM

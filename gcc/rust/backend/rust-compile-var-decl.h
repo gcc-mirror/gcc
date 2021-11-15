@@ -29,8 +29,7 @@ class CompileVarDecl : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static ::Bvariable *compile (::Bfunction *fndecl, HIR::Stmt *stmt,
-			       Context *ctx)
+  static ::Bvariable *compile (tree fndecl, HIR::Stmt *stmt, Context *ctx)
   {
     CompileVarDecl compiler (ctx, fndecl);
     stmt->accept_vis (compiler);
@@ -64,12 +63,12 @@ public:
   }
 
 private:
-  CompileVarDecl (Context *ctx, ::Bfunction *fndecl)
+  CompileVarDecl (Context *ctx, tree fndecl)
     : HIRCompileBase (ctx), fndecl (fndecl), translated_type (nullptr),
       translated (nullptr)
   {}
 
-  ::Bfunction *fndecl;
+  tree fndecl;
   tree translated_type;
   Location locus;
   ::Bvariable *translated;

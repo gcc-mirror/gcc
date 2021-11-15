@@ -41,9 +41,6 @@ saw_errors (void);
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
 
-// The backend representation of a function definition or declaration.
-class Bfunction;
-
 // The backend representation of a block.
 class Bblock;
 
@@ -81,7 +78,6 @@ public:
 
   // debug
   virtual void debug (tree) = 0;
-  virtual void debug (Bfunction *) = 0;
   virtual void debug (Bblock *) = 0;
   virtual void debug (Bvariable *) = 0;
   virtual void debug (Blabel *) = 0;
@@ -314,7 +310,7 @@ public:
 
   // Create an expression for the address of a function.  This is used to
   // get the address of the code for a function.
-  virtual tree function_code_expression (Bfunction *, Location) = 0;
+  virtual tree function_code_expression (tree, Location) = 0;
 
   // Create an expression that takes the address of an expression.
   virtual tree address_expression (tree, Location) = 0;
@@ -329,7 +325,7 @@ public:
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
   // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
   // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
-  virtual tree conditional_expression (Bfunction *function, tree btype,
+  virtual tree conditional_expression (tree function, tree btype,
 				       tree condition, tree then_expr,
 				       tree else_expr, Location)
     = 0;
@@ -385,7 +381,7 @@ public:
 
   // Create an expression for a call to FN with ARGS, taking place within
   // caller CALLER.
-  virtual tree call_expression (Bfunction *caller, tree fn,
+  virtual tree call_expression (tree caller, tree fn,
 				const std::vector<tree> &args,
 				tree static_chain, Location)
     = 0;
@@ -398,25 +394,22 @@ public:
   virtual tree error_statement () = 0;
 
   // Create an expression statement within the specified function.
-  virtual tree expression_statement (Bfunction *, tree) = 0;
+  virtual tree expression_statement (tree, tree) = 0;
 
   // Create a variable initialization statement in the specified
   // function.  This initializes a local variable at the point in the
   // program flow where it is declared.
-  virtual tree init_statement (Bfunction *, Bvariable *var, tree init) = 0;
+  virtual tree init_statement (tree, Bvariable *var, tree init) = 0;
 
   // Create an assignment statement within the specified function.
-  virtual tree assignment_statement (Bfunction *, tree lhs, tree rhs, Location)
-    = 0;
+  virtual tree assignment_statement (tree, tree lhs, tree rhs, Location) = 0;
 
   // Create a return statement, passing the representation of the
   // function and the list of values to return.
-  virtual tree return_statement (Bfunction *, const std::vector<tree> &,
-				 Location)
-    = 0;
+  virtual tree return_statement (tree, const std::vector<tree> &, Location) = 0;
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
-  virtual tree if_statement (Bfunction *, tree condition, Bblock *then_block,
+  virtual tree if_statement (tree, tree condition, Bblock *then_block,
 			     Bblock *else_block, Location)
     = 0;
 
@@ -433,7 +426,7 @@ public:
   // either end with a goto statement or will fall through into
   // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
   // which need not be last.  FUNCTION is the current function.
-  virtual tree switch_statement (Bfunction *function, tree value,
+  virtual tree switch_statement (tree function, tree value,
 				 const std::vector<std::vector<tree> > &cases,
 				 const std::vector<tree> &statements, Location)
     = 0;
@@ -465,7 +458,7 @@ public:
   // the initial curly brace.  END_LOCATION is the location of the end
   // of the block, more or less the location of the final curly brace.
   // The statements will be added after the block is created.
-  virtual Bblock *block (Bfunction *function, Bblock *enclosing,
+  virtual Bblock *block (tree function, Bblock *enclosing,
 			 const std::vector<Bvariable *> &vars,
 			 Location start_location, Location end_location)
     = 0;
@@ -523,21 +516,21 @@ public:
   // the function, as otherwise the variable would be on the heap).
   // LOCATION is where the variable is defined.  For each local variable
   // the frontend will call init_statement to set the initial value.
-  virtual Bvariable *
-  local_variable (Bfunction *function, const std::string &name, tree type,
-		  Bvariable *decl_var, bool is_address_taken, Location location)
+  virtual Bvariable *local_variable (tree function, const std::string &name,
+				     tree type, Bvariable *decl_var,
+				     bool is_address_taken, Location location)
     = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
-  virtual Bvariable *
-  parameter_variable (Bfunction *function, const std::string &name, tree type,
-		      bool is_address_taken, Location location)
+  virtual Bvariable *parameter_variable (tree function, const std::string &name,
+					 tree type, bool is_address_taken,
+					 Location location)
     = 0;
 
   // Create a static chain parameter.  This is the closure parameter.
-  virtual Bvariable *static_chain_variable (Bfunction *function,
+  virtual Bvariable *static_chain_variable (tree function,
 					    const std::string &name, tree type,
 					    Location location)
     = 0;
@@ -553,7 +546,7 @@ public:
   // variable, and may not be very useful.  This function should
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
-  virtual Bvariable *temporary_variable (Bfunction *, Bblock *, tree, tree init,
+  virtual Bvariable *temporary_variable (tree, Bblock *, tree, tree init,
 					 bool address_is_taken,
 					 Location location, tree *pstatement)
     = 0;
@@ -676,7 +669,7 @@ public:
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
   // where the label is defined.
-  virtual Blabel *label (Bfunction *, const std::string &name, Location) = 0;
+  virtual Blabel *label (tree, const std::string &name, Location) = 0;
 
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
@@ -696,7 +689,7 @@ public:
   // Create an error function.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
   // going without crashing.
-  virtual Bfunction *error_function () = 0;
+  virtual tree error_function () = 0;
 
   // Bit flags to pass to the function method.
 
@@ -735,9 +728,9 @@ public:
   // string, is the name that should be used in the symbol table; this
   // will be non-empty if a magic extern comment is used.  FLAGS is
   // bit flags described above.
-  virtual Bfunction *function (tree fntype, const std::string &name,
-			       const std::string &asm_name, unsigned int flags,
-			       Location)
+  virtual tree function (tree fntype, const std::string &name,
+			 const std::string &asm_name, unsigned int flags,
+			 Location)
     = 0;
 
   virtual tree specify_abi_attribute (tree type, Rust::ABI abi) = 0;
@@ -746,7 +739,7 @@ public:
   // be a statement that looks like this in C++:
   //   finish:
   //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
-  virtual tree function_defer_statement (Bfunction *function, tree undefer,
+  virtual tree function_defer_statement (tree function, tree undefer,
 					 tree check_defer, Location)
     = 0;
 
@@ -754,19 +747,19 @@ public:
   // This will only be called for a function definition.  Returns true on
   // success, false on failure.
   virtual bool
-  function_set_parameters (Bfunction *function,
+  function_set_parameters (tree function,
 			   const std::vector<Bvariable *> &param_vars)
     = 0;
 
   // Set the function body for FUNCTION using the code in CODE_STMT.  Returns
   // true on success, false on failure.
-  virtual bool function_set_body (Bfunction *function, tree code_stmt) = 0;
+  virtual bool function_set_body (tree function, tree code_stmt) = 0;
 
   // Look up a named built-in function in the current backend implementation.
   // Returns NULL if no built-in function by that name exists.
-  virtual Bfunction *lookup_gcc_builtin (const std::string &) = 0;
+  virtual tree lookup_gcc_builtin (const std::string &) = 0;
 
-  virtual Bfunction *lookup_builtin_by_rust_name (const std::string &) = 0;
+  virtual tree lookup_builtin_by_rust_name (const std::string &) = 0;
 
   // Utility.
 
@@ -775,7 +768,7 @@ public:
   virtual void
   write_global_definitions (const std::vector<tree> &type_decls,
 			    const std::vector<tree> &constant_decls,
-			    const std::vector<Bfunction *> &function_decls,
+			    const std::vector<tree> &function_decls,
 			    const std::vector<Bvariable *> &variable_decls)
     = 0;
 

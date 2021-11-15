@@ -322,7 +322,7 @@ void
 CompileBlock::visit (HIR::BlockExpr &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
+  tree fndecl = fnctx.fndecl;
   Location start_location = expr.get_locus ();
   Location end_location = expr.get_closing_locus ();
   auto body_mappings = expr.get_mappings ();
@@ -393,7 +393,7 @@ void
 CompileConditionalBlocks::visit (HIR::IfExpr &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
+  tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
   Bblock *then_block
     = CompileBlock::compile (expr.get_if_block (), ctx, result);
@@ -407,7 +407,7 @@ void
 CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
+  tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
   Bblock *then_block
     = CompileBlock::compile (expr.get_if_block (), ctx, result);
@@ -423,7 +423,7 @@ void
 CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
+  tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
   Bblock *then_block
     = CompileBlock::compile (expr.get_if_block (), ctx, result);
@@ -478,7 +478,7 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 
 void
 HIRCompileBase::compile_function_body (
-  Bfunction *fndecl, std::unique_ptr<HIR::BlockExpr> &function_body,
+  tree fndecl, std::unique_ptr<HIR::BlockExpr> &function_body,
   bool has_return_type)
 {
   for (auto &s : function_body->get_statements ())
@@ -523,7 +523,7 @@ HIRCompileBase::compile_function_body (
 }
 
 bool
-HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
+HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
 					  std::vector<Bvariable *> &locals)
 {
   rib.iterate_decls ([&] (NodeId n, Location) mutable -> bool {

@@ -92,7 +92,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   if (lookup->get_kind () == TyTy::TypeKind::FNDEF)
     {
       TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
-      Bfunction *fn = nullptr;
+      tree fn = NULL_TREE;
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
 	  return ctx->get_backend ()->function_code_expression (fn, expr_locus);

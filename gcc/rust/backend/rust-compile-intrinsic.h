@@ -27,7 +27,7 @@ class Intrinsics
 public:
   Intrinsics (Context *ctx);
 
-  Bfunction *compile (TyTy::FnType *fntype);
+  tree compile (TyTy::FnType *fntype);
 
 private:
   Context *ctx;

@@ -209,7 +209,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 				     Location expr_locus)
 {
   // lookup compiled functions since it may have already been compiled
-  Bfunction *fn = nullptr;
+  tree fn = NULL_TREE;
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
     {
       return ctx->get_backend ()->function_code_expression (fn, expr_locus);

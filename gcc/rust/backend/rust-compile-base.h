@@ -193,11 +193,11 @@ protected:
 
   Context *get_context () { return ctx; }
 
-  void compile_function_body (Bfunction *fndecl,
+  void compile_function_body (tree fndecl,
 			      std::unique_ptr<HIR::BlockExpr> &function_body,
 			      bool has_return_type);
 
-  bool compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
+  bool compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
 				 std::vector<Bvariable *> &locals);
 
   tree coercion_site (tree compiled_ref, TyTy::BaseType *actual,
