@@ -65,7 +65,7 @@ public:
     {}
 
     typed_identifier (const std::string &a_name, tree a_type,
-		       Location a_location)
+		      Location a_location)
       : name (a_name), type (a_type), location (a_location)
     {}
   };
@@ -180,11 +180,10 @@ public:
   // one result, RESULT_STRUCT is a struct type to hold the results,
   // and RESULTS may be ignored; if there are zero or one results,
   // RESULT_STRUCT is NULL.
-  virtual tree
-  function_type (const typed_identifier &receiver,
-		 const std::vector<typed_identifier> &parameters,
-		 const std::vector<typed_identifier> &results,
-		 tree result_struct, Location location)
+  virtual tree function_type (const typed_identifier &receiver,
+			      const std::vector<typed_identifier> &parameters,
+			      const std::vector<typed_identifier> &results,
+			      tree result_struct, Location location)
     = 0;
 
   virtual tree

@@ -199,14 +199,14 @@ public:
   tree insert_type_attribute (tree, const std::string &);
 
   tree function_type (const typed_identifier &,
-			const std::vector<typed_identifier> &,
-			const std::vector<typed_identifier> &, tree,
-			const Location);
+		      const std::vector<typed_identifier> &,
+		      const std::vector<typed_identifier> &, tree,
+		      const Location);
 
   tree function_type_varadic (const typed_identifier &,
-				const std::vector<typed_identifier> &,
-				const std::vector<typed_identifier> &, tree,
-				const Location);
+			      const std::vector<typed_identifier> &,
+			      const std::vector<typed_identifier> &, tree,
+			      const Location);
 
   tree function_ptr_type (tree, const std::vector<tree> &, Location);
 
@@ -360,8 +360,8 @@ public:
   Bvariable *temporary_variable (tree, tree, tree, tree, bool, Location,
 				 tree *);
 
-  Bvariable *implicit_variable (const std::string &, const std::string &,
-				tree, bool, bool, bool, int64_t);
+  Bvariable *implicit_variable (const std::string &, const std::string &, tree,
+				bool, bool, bool, int64_t);
 
   void implicit_variable_set_init (Bvariable *, const std::string &, tree, bool,
 				   bool, bool, tree);
@@ -376,8 +376,7 @@ public:
 				  tree, Location, tree);
 
   Bvariable *immutable_struct_reference (const std::string &,
-					 const std::string &, tree,
-					 Location);
+					 const std::string &, tree, Location);
 
   // Labels.
 
@@ -416,7 +415,6 @@ public:
   void write_export_data (const char *bytes, unsigned int size);
 
 private:
-
   tree fill_in_fields (tree, const std::vector<typed_identifier> &);
 
   tree fill_in_array (tree, tree, tree);
@@ -1080,9 +1078,8 @@ Gcc_backend::fill_in_array (tree fill, tree element_type, tree length_tree)
     SET_TYPE_STRUCTURAL_EQUALITY (fill);
   else if (TYPE_CANONICAL (element_type) != element_type
 	   || TYPE_CANONICAL (index_type_tree) != index_type_tree)
-    TYPE_CANONICAL (fill)
-      = build_array_type (TYPE_CANONICAL (element_type),
-			  TYPE_CANONICAL (index_type_tree));
+    TYPE_CANONICAL (fill) = build_array_type (TYPE_CANONICAL (element_type),
+					      TYPE_CANONICAL (index_type_tree));
 
   return fill;
 }
@@ -1387,7 +1384,8 @@ Gcc_backend::convert_expression (tree type_tree, tree expr_tree,
     return this->error_expression ();
 
   tree ret;
-  if (this->type_size (type_tree) == 0 || TREE_TYPE (expr_tree) == void_type_node)
+  if (this->type_size (type_tree) == 0
+      || TREE_TYPE (expr_tree) == void_type_node)
     {
       // Do not convert zero-sized types.
       ret = expr_tree;
