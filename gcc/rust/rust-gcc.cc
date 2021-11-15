@@ -53,29 +53,6 @@
 
 // TODO: this will have to be significantly modified to work with Rust
 
-// A class wrapping a tree.
-
-class Gcc_tree
-{
-public:
-  Gcc_tree (tree t) : t_ (t) {}
-
-  tree get_tree () const { return this->t_; }
-
-  void set_tree (tree t) { this->t_ = t; }
-
-private:
-  tree t_;
-};
-
-// In gcc, types, expressions, and statements are all trees.
-
-class Blabel : public Gcc_tree
-{
-public:
-  Blabel (tree t) : Gcc_tree (t) {}
-};
-
 // Bvariable is a bit more complicated, because of zero-sized types.
 // The GNU linker does not permit dynamic variables with zero size.
 // When we see such a variable, we generate a version of the type with
@@ -132,7 +109,6 @@ public:
 
   void debug (tree t) { debug_tree (t); };
   void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
-  void debug (Blabel *t) { debug_tree (t->get_tree ()); };
 
   // Types.
   tree error_type () { return error_mark_node; }
@@ -405,13 +381,13 @@ public:
 
   // Labels.
 
-  Blabel *label (tree, const std::string &name, Location);
+  tree label (tree, const std::string &name, Location);
 
-  tree label_definition_statement (Blabel *);
+  tree label_definition_statement (tree);
 
-  tree goto_statement (Blabel *, Location);
+  tree goto_statement (tree, Location);
 
-  tree label_address (Blabel *, Location);
+  tree label_address (tree, Location);
 
   // Functions.
 
@@ -2915,7 +2891,7 @@ Gcc_backend::immutable_struct_reference (const std::string &name,
 
 // Make a label.
 
-Blabel *
+tree
 Gcc_backend::label (tree func_tree, const std::string &name, Location location)
 {
   tree decl;
@@ -2937,41 +2913,38 @@ Gcc_backend::label (tree func_tree, const std::string &name, Location location)
 	= build_decl (location.gcc_location (), LABEL_DECL, id, void_type_node);
       DECL_CONTEXT (decl) = func_tree;
     }
-  return new Blabel (decl);
+  return decl;
 }
 
 // Make a statement which defines a label.
 
 tree
-Gcc_backend::label_definition_statement (Blabel *label)
+Gcc_backend::label_definition_statement (tree label)
 {
-  tree lab = label->get_tree ();
-  return fold_build1_loc (DECL_SOURCE_LOCATION (lab), LABEL_EXPR,
-			  void_type_node, lab);
+  return fold_build1_loc (DECL_SOURCE_LOCATION (label), LABEL_EXPR,
+			  void_type_node, label);
 }
 
 // Make a goto statement.
 
 tree
-Gcc_backend::goto_statement (Blabel *label, Location location)
+Gcc_backend::goto_statement (tree label, Location location)
 {
-  tree lab = label->get_tree ();
   return fold_build1_loc (location.gcc_location (), GOTO_EXPR, void_type_node,
-			  lab);
+			  label);
 }
 
 // Get the address of a label.
 
 tree
-Gcc_backend::label_address (Blabel *label, Location location)
+Gcc_backend::label_address (tree label, Location location)
 {
-  tree lab = label->get_tree ();
-  TREE_USED (lab) = 1;
-  TREE_ADDRESSABLE (lab) = 1;
+  TREE_USED (label) = 1;
+  TREE_ADDRESSABLE (label) = 1;
   tree ret
     = fold_convert_loc (location.gcc_location (), ptr_type_node,
 			build_fold_addr_expr_loc (location.gcc_location (),
-						  lab));
+						  label));
   return ret;
 }
 
@@ -3047,11 +3020,11 @@ Gcc_backend::function_defer_statement (tree function, tree undefer_tree,
     push_cfun (DECL_STRUCT_FUNCTION (function));
 
   tree stmt_list = NULL;
-  Blabel *blabel = this->label (function, "", location);
-  tree label_def = this->label_definition_statement (blabel);
+  tree label = this->label (function, "", location);
+  tree label_def = this->label_definition_statement (label);
   append_to_statement_list (label_def, &stmt_list);
 
-  tree jump_stmt = this->goto_statement (blabel, location);
+  tree jump_stmt = this->goto_statement (label, location);
   tree catch_body
     = build2 (COMPOUND_EXPR, void_type_node, defer_tree, jump_stmt);
   catch_body = build2 (CATCH_EXPR, void_type_node, NULL, catch_body);

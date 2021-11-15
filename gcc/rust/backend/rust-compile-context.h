@@ -221,12 +221,9 @@ public:
     return true;
   }
 
-  void insert_label_decl (HirId id, ::Blabel *label)
-  {
-    compiled_labels[id] = label;
-  }
+  void insert_label_decl (HirId id, tree label) { compiled_labels[id] = label; }
 
-  bool lookup_label_decl (HirId id, ::Blabel **label)
+  bool lookup_label_decl (HirId id, tree *label)
   {
     auto it = compiled_labels.find (id);
     if (it == compiled_labels.end ())
@@ -278,16 +275,16 @@ public:
     return back;
   }
 
-  void push_loop_begin_label (Blabel *label)
+  void push_loop_begin_label (tree label)
   {
     loop_begin_labels.push_back (label);
   }
 
-  Blabel *peek_loop_begin_label () { return loop_begin_labels.back (); }
+  tree peek_loop_begin_label () { return loop_begin_labels.back (); }
 
-  Blabel *pop_loop_begin_label ()
+  tree pop_loop_begin_label ()
   {
-    Blabel *pop = loop_begin_labels.back ();
+    tree pop = loop_begin_labels.back ();
     loop_begin_labels.pop_back ();
     return pop;
   }
@@ -321,11 +318,11 @@ private:
   std::map<HirId, tree> compiled_type_map;
   std::map<HirId, tree> compiled_fn_map;
   std::map<HirId, tree> compiled_consts;
-  std::map<HirId, ::Blabel *> compiled_labels;
+  std::map<HirId, tree> compiled_labels;
   std::vector<::std::vector<tree>> statements;
   std::vector<tree> scope_stack;
   std::vector<::Bvariable *> loop_value_stack;
-  std::vector<::Blabel *> loop_begin_labels;
+  std::vector<tree> loop_begin_labels;
   std::map<const TyTy::BaseType *, std::pair<HirId, ::tree >> mono;
   std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;

@@ -755,7 +755,7 @@ public:
     if (expr.has_loop_label ())
       {
 	HIR::LoopLabel &loop_label = expr.get_loop_label ();
-	Blabel *label
+	tree label
 	  = ctx->get_backend ()->label (fnctx.fndecl,
 					loop_label.get_lifetime ().get_name (),
 					loop_label.get_locus ());
@@ -766,7 +766,7 @@ public:
 	  loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
       }
 
-    Blabel *loop_begin_label
+    tree loop_begin_label
       = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
     tree loop_begin_label_decl
       = ctx->get_backend ()->label_definition_statement (loop_begin_label);
@@ -796,7 +796,7 @@ public:
     if (expr.has_loop_label ())
       {
 	HIR::LoopLabel &loop_label = expr.get_loop_label ();
-	Blabel *label
+	tree label
 	  = ctx->get_backend ()->label (fnctx.fndecl,
 					loop_label.get_lifetime ().get_name (),
 					loop_label.get_locus ());
@@ -817,7 +817,7 @@ public:
 				    start_location, end_location);
     ctx->push_block (loop_block);
 
-    Blabel *loop_begin_label
+    tree loop_begin_label
       = ctx->get_backend ()->label (fnctx.fndecl, "", expr.get_locus ());
     tree loop_begin_label_decl
       = ctx->get_backend ()->label_definition_statement (loop_begin_label);
@@ -887,7 +887,7 @@ public:
 	    return;
 	  }
 
-	Blabel *label = nullptr;
+	tree label = NULL_TREE;
 	if (!ctx->lookup_label_decl (ref, &label))
 	  {
 	    rust_error_at (expr.get_label ().get_locus (),
@@ -912,7 +912,7 @@ public:
 
   void visit (HIR::ContinueExpr &expr) override
   {
-    Blabel *label = ctx->peek_loop_begin_label ();
+    tree label = ctx->peek_loop_begin_label ();
     if (expr.has_label ())
       {
 	NodeId resolved_node_id = UNKNOWN_NODEID;

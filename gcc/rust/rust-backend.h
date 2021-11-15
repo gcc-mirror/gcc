@@ -44,9 +44,6 @@ saw_errors (void);
 // The backend representation of a variable.
 class Bvariable;
 
-// The backend representation of a label.
-class Blabel;
-
 // The backend interface.  This is a pure abstract class that a
 // specific backend will implement.
 
@@ -76,7 +73,6 @@ public:
   // debug
   virtual void debug (tree) = 0;
   virtual void debug (Bvariable *) = 0;
-  virtual void debug (Blabel *) = 0;
 
   // const folder helpers
   virtual bool const_size_cast (tree, size_t *) = 0;
@@ -665,20 +661,20 @@ public:
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
   // where the label is defined.
-  virtual Blabel *label (tree, const std::string &name, Location) = 0;
+  virtual tree label (tree, const std::string &name, Location) = 0;
 
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
   // defined.
-  virtual tree label_definition_statement (Blabel *) = 0;
+  virtual tree label_definition_statement (tree) = 0;
 
   // Create a goto statement to a label.
-  virtual tree goto_statement (Blabel *, Location) = 0;
+  virtual tree goto_statement (tree, Location) = 0;
 
   // Create an expression for the address of a label.  This is used to
   // get the return address of a deferred function which may call
   // recover.
-  virtual tree label_address (Blabel *, Location) = 0;
+  virtual tree label_address (tree, Location) = 0;
 
   // Functions.
 
