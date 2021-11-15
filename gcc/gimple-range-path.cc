@@ -202,8 +202,8 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
       return true;
     }
 
-  basic_block bb = stmt ? gimple_bb (stmt) : exit_bb ();
-  if (stmt && range_defined_in_block (r, name, bb))
+  if (stmt
+      && range_defined_in_block (r, name, gimple_bb (stmt)))
     {
       if (TREE_CODE (name) == SSA_NAME)
 	r.intersect (gimple_range_global (name));
@@ -250,36 +250,62 @@ path_range_query::set_path (const vec<basic_block> &path)
   bitmap_clear (m_has_cache_entry);
 }
 
+bool
+path_range_query::ssa_defined_in_bb (tree name, basic_block bb)
+{
+  return (TREE_CODE (name) == SSA_NAME
+	  && SSA_NAME_DEF_STMT (name)
+	  && gimple_bb (SSA_NAME_DEF_STMT (name)) == bb);
+}
+
 // Return the range of the result of PHI in R.
+//
+// Since PHIs are calculated in parallel at the beginning of the
+// block, we must be careful to never save anything to the cache here.
+// It is the caller's responsibility to adjust the cache.  Also,
+// calculating the PHI's range must not trigger additional lookups.
 
 void
 path_range_query::ssa_range_in_phi (irange &r, gphi *phi)
 {
   tree name = gimple_phi_result (phi);
   basic_block bb = gimple_bb (phi);
+  unsigned nargs = gimple_phi_num_args (phi);
 
   if (at_entry ())
     {
       if (m_resolve && m_ranger->range_of_expr (r, name, phi))
 	return;
 
-      // Try fold just in case we can resolve simple things like PHI <5(99), 6(88)>.
-      if (!fold_range (r, phi, this))
-	r.set_varying (TREE_TYPE (name));
-
+      // Try to fold the phi exclusively with global or cached values.
+      // This will get things like PHI <5(99), 6(88)>.  We do this by
+      // calling range_of_expr with no context.
+      int_range_max arg_range;
+      r.set_undefined ();
+      for (size_t i = 0; i < nargs; ++i)
+	{
+	  tree arg = gimple_phi_arg_def (phi, i);
+	  if (range_of_expr (arg_range, arg, /*stmt=*/NULL))
+	    r.union_ (arg_range);
+	  else
+	    {
+	      r.set_varying (TREE_TYPE (name));
+	      return;
+	    }
+	}
       return;
     }
 
   basic_block prev = prev_bb ();
   edge e_in = find_edge (prev, bb);
-  unsigned nargs = gimple_phi_num_args (phi);
 
   for (size_t i = 0; i < nargs; ++i)
     if (e_in == gimple_phi_arg_edge (phi, i))
       {
 	tree arg = gimple_phi_arg_def (phi, i);
-
-	if (!get_cache (r, arg))
+	// Avoid using the cache for ARGs defined in this block, as
+	// that could create an ordering problem.
+	if (ssa_defined_in_bb (arg, bb) || !get_cache (r, arg))
 	  {
 	    if (m_resolve)
 	      {
@@ -393,10 +419,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
   EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
     {
       tree name = ssa_name (i);
-      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-      basic_block def_bb = gimple_bb (def_stmt);
-
-      if (def_bb == bb)
+      if (ssa_defined_in_bb (name, bb))
 	clear_cache (name);
     }
 
@@ -705,8 +728,8 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
   if (!irange::supports_type_p (type))
     return false;
 
-  // If resolving unknowns, fold the statement as it would have
-  // appeared at the end of the path.
+  // If resolving unknowns, fold the statement making use of any
+  // relations along the path.
   if (m_resolve)
     {
       fold_using_range f;
@@ -714,8 +737,7 @@ path_range_query::range_of_stmt (irange &r, gimple *stmt, tree)
       if (!f.fold_stmt (r, stmt, src))
 	r.set_varying (type);
     }
-  // Otherwise, use the global ranger to fold it as it would appear in
-  // the original IL.  This is more conservative, but faster.
+  // Otherwise, fold without relations.
   else if (!fold_range (r, stmt, this))
     r.set_varying (type);
 
@@ -727,11 +749,10 @@ path_range_query::maybe_register_phi_relation (gphi *phi, tree arg)
 {
   basic_block bb = gimple_bb (phi);
   tree result = gimple_phi_result (phi);
-  gimple *def = SSA_NAME_DEF_STMT (arg);
 
   // Avoid recording the equivalence if the arg is defined in this
-  // block, as that would create an ordering problem.
-  if (def && gimple_bb (def) == bb)
+  // block, as that could create an ordering problem.
+  if (ssa_defined_in_bb (arg, bb))
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))

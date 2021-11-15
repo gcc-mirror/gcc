@@ -66,6 +66,7 @@ private:
   void maybe_register_phi_relation (gphi *, tree arg);
   bool add_to_imports (tree name, bitmap imports);
   bool import_p (tree name);
+  bool ssa_defined_in_bb (tree name, basic_block bb);
 
   // Path navigation.
   void set_path (const vec<basic_block> &);
