@@ -5870,6 +5870,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->lists[OMP_LIST_IS_DEVICE_PTR];
 	  clausesa[GFC_OMP_SPLIT_TARGET].device
 	    = code->ext.omp_clauses->device;
+	  clausesa[GFC_OMP_SPLIT_TARGET].thread_limit
+	    = code->ext.omp_clauses->thread_limit;
 	  for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; i++)
 	    clausesa[GFC_OMP_SPLIT_TARGET].defaultmap[i]
 	      = code->ext.omp_clauses->defaultmap[i];
