@@ -55,6 +55,7 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
   if (tid == 0)
     {
       gomp_global_icv.nthreads_var = ntids;
+      gomp_global_icv.thread_limit_var = ntids;
       /* Starting additional threads is not supported.  */
       gomp_global_icv.dyn_var = true;
 

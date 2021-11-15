@@ -13637,10 +13637,13 @@ optimize_target_teams (tree target, gimple_seq *pre_p)
 	if (!DECL_P (expr) && TREE_CODE (expr) != TARGET_EXPR)
 	  OMP_CLAUSE_OPERAND (c, 0) = *p;
       }
-  c = build_omp_clause (thread_limit_loc, OMP_CLAUSE_THREAD_LIMIT);
-  OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = thread_limit;
-  OMP_CLAUSE_CHAIN (c) = OMP_TARGET_CLAUSES (target);
-  OMP_TARGET_CLAUSES (target) = c;
+  if (!omp_find_clause (OMP_TARGET_CLAUSES (target), OMP_CLAUSE_THREAD_LIMIT))
+    {
+      c = build_omp_clause (thread_limit_loc, OMP_CLAUSE_THREAD_LIMIT);
+      OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = thread_limit;
+      OMP_CLAUSE_CHAIN (c) = OMP_TARGET_CLAUSES (target);
+      OMP_TARGET_CLAUSES (target) = c;
+    }
   c = build_omp_clause (num_teams_loc, OMP_CLAUSE_NUM_TEAMS);
   OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = num_teams_upper;
   OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = num_teams_lower;

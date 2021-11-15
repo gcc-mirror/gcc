@@ -1867,7 +1867,6 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  break;
 	case OMP_CLAUSE_NUM_TEAMS:
-	case OMP_CLAUSE_THREAD_LIMIT:
 	  s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
 	case OMP_CLAUSE_DIST_SCHEDULE:
@@ -2530,6 +2529,30 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    s = C_OMP_CLAUSE_SPLIT_TARGET;
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_FOR;
+	  break;
+	  /* thread_limit is allowed on target and teams.  Distribute it
+	     to all.  */
+	case OMP_CLAUSE_THREAD_LIMIT:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
+	      != 0)
+	    {
+	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS))
+		  != 0)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_THREAD_LIMIT);
+		  OMP_CLAUSE_THREAD_LIMIT_EXPR (c)
+		    = OMP_CLAUSE_THREAD_LIMIT_EXPR (clauses);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		  cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;
+		}
+	      else
+		{
+		  s = C_OMP_CLAUSE_SPLIT_TARGET;
+		  break;
+		}
+	    }
+	  s = C_OMP_CLAUSE_SPLIT_TEAMS;
 	  break;
 	/* Allocate clause is allowed on target, teams, distribute, parallel,
 	   for, sections and taskloop.  Distribute it to all.  */

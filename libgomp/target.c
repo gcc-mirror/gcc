@@ -2362,7 +2362,7 @@ gomp_unload_device (struct gomp_device_descr *devicep)
 
 static void
 gomp_target_fallback (void (*fn) (void *), void **hostaddrs,
-		      struct gomp_device_descr *devicep)
+		      struct gomp_device_descr *devicep, void **args)
 {
   struct gomp_thread old_thr, *thr = gomp_thread ();
 
@@ -2378,6 +2378,25 @@ gomp_target_fallback (void (*fn) (void *), void **hostaddrs,
       thr->place = old_thr.place;
       thr->ts.place_partition_len = gomp_places_list_len;
     }
+  if (args)
+    while (*args)
+      {
+	intptr_t id = (intptr_t) *args++, val;
+	if (id & GOMP_TARGET_ARG_SUBSEQUENT_PARAM)
+	  val = (intptr_t) *args++;
+	else
+	  val = id >> GOMP_TARGET_ARG_VALUE_SHIFT;
+	if ((id & GOMP_TARGET_ARG_DEVICE_MASK) != GOMP_TARGET_ARG_DEVICE_ALL)
+	  continue;
+	id &= GOMP_TARGET_ARG_ID_MASK;
+	if (id != GOMP_TARGET_ARG_THREAD_LIMIT)
+	  continue;
+	val = val > INT_MAX ? INT_MAX : val;
+	if (val)
+	  gomp_icv (true)->thread_limit_var = val;
+	break;
+      }
+
   fn (hostaddrs);
   gomp_free_thread (thr);
   *thr = old_thr;
@@ -2478,7 +2497,7 @@ GOMP_target (int device, void (*fn) (void *), const void *unused,
       /* All shared memory devices should use the GOMP_target_ext function.  */
       || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM
       || !(fn_addr = gomp_get_target_fn_addr (devicep, fn)))
-    return gomp_target_fallback (fn, hostaddrs, devicep);
+    return gomp_target_fallback (fn, hostaddrs, devicep, NULL);
 
   htab_t refcount_set = htab_create (mapnum);
   struct target_mem_desc *tgt_vars
@@ -2617,7 +2636,7 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 				      tgt_align, tgt_size);
 	    }
 	}
-      gomp_target_fallback (fn, hostaddrs, devicep);
+      gomp_target_fallback (fn, hostaddrs, devicep, args);
       return;
     }
 
@@ -3052,7 +3071,8 @@ gomp_target_task_fn (void *data)
 	  || (devicep->can_run_func && !devicep->can_run_func (fn_addr)))
 	{
 	  ttask->state = GOMP_TARGET_TASK_FALLBACK;
-	  gomp_target_fallback (ttask->fn, ttask->hostaddrs, devicep);
+	  gomp_target_fallback (ttask->fn, ttask->hostaddrs, devicep,
+				ttask->args);
 	  return false;
 	}
 
