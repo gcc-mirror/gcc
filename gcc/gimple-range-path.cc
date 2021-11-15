@@ -212,7 +212,7 @@ path_range_query::internal_range_of_expr (irange &r, tree name, gimple *stmt)
       return true;
     }
 
-  r.set_varying (TREE_TYPE (name));
+  r = gimple_range_global (name);
   return true;
 }
 
