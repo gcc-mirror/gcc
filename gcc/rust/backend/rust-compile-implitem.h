@@ -34,11 +34,11 @@ class CompileInherentImplItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (const TyTy::BaseType *self, HIR::ImplItem *item,
-			       Context *ctx, bool compile_fns,
-			       TyTy::BaseType *concrete = nullptr,
-			       bool is_query_mode = false,
-			       Location ref_locus = Location ())
+  static tree Compile (const TyTy::BaseType *self, HIR::ImplItem *item,
+		       Context *ctx, bool compile_fns,
+		       TyTy::BaseType *concrete = nullptr,
+		       bool is_query_mode = false,
+		       Location ref_locus = Location ())
   {
     CompileInherentImplItem compiler (self, ctx, compile_fns, concrete,
 				      ref_locus);
@@ -61,7 +61,7 @@ public:
     rust_assert (ok);
 
     tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
+    tree value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -70,7 +70,7 @@ public:
     rust_assert (ok);
 
     std::string ident = canonical_path->get ();
-    Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
+    tree const_expr = ctx->get_backend ()->named_constant_expression (
       type, constant.get_identifier (), value, constant.get_locus ());
 
     ctx->push_const (const_expr);
@@ -319,7 +319,7 @@ private:
   const TyTy::BaseType *self;
   bool compile_fns;
   TyTy::BaseType *concrete;
-  Bexpression *reference;
+  tree reference;
   Location ref_locus;
 };
 
@@ -328,10 +328,10 @@ class CompileTraitItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (const TyTy::BaseType *self, HIR::TraitItem *item,
-			       Context *ctx, TyTy::BaseType *concrete,
-			       bool is_query_mode = false,
-			       Location ref_locus = Location ())
+  static tree Compile (const TyTy::BaseType *self, HIR::TraitItem *item,
+		       Context *ctx, TyTy::BaseType *concrete,
+		       bool is_query_mode = false,
+		       Location ref_locus = Location ())
   {
     CompileTraitItem compiler (self, ctx, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -350,8 +350,7 @@ public:
     TyTy::BaseType *resolved_type = concrete;
 
     tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value
-      = CompileExpr::Compile (constant.get_expr ().get (), ctx);
+    tree value = CompileExpr::Compile (constant.get_expr ().get (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     bool ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -360,7 +359,7 @@ public:
     rust_assert (ok);
 
     std::string ident = canonical_path->get ();
-    Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
+    tree const_expr = ctx->get_backend ()->named_constant_expression (
       type, constant.get_name (), value, constant.get_locus ());
 
     ctx->push_const (const_expr);
@@ -578,7 +577,7 @@ private:
 
   const TyTy::BaseType *self;
   TyTy::BaseType *concrete;
-  Bexpression *reference;
+  tree reference;
   Location ref_locus;
 };
 

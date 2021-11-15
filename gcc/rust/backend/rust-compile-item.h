@@ -37,11 +37,10 @@ protected:
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *compile (HIR::Item *item, Context *ctx,
-			       bool compile_fns = true,
-			       TyTy::BaseType *concrete = nullptr,
-			       bool is_query_mode = false,
-			       Location ref_locus = Location ())
+  static tree compile (HIR::Item *item, Context *ctx, bool compile_fns = true,
+		       TyTy::BaseType *concrete = nullptr,
+		       bool is_query_mode = false,
+		       Location ref_locus = Location ())
   {
     CompileItem compiler (ctx, compile_fns, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -62,7 +61,7 @@ public:
     rust_assert (ok);
 
     tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
+    tree value = CompileExpr::Compile (var.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -98,7 +97,7 @@ public:
     rust_assert (ok);
 
     tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
+    tree value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -107,7 +106,7 @@ public:
     rust_assert (ok);
 
     std::string ident = canonical_path->get ();
-    Bexpression *const_expr
+    tree const_expr
       = ctx->get_backend ()->named_constant_expression (type, ident, value,
 							constant.get_locus ());
 
@@ -347,7 +346,7 @@ protected:
 
   bool compile_fns;
   TyTy::BaseType *concrete;
-  Bexpression *reference;
+  tree reference;
   Location ref_locus;
 };
 

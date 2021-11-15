@@ -33,7 +33,7 @@ class CompileExpr : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (HIR::Expr *expr, Context *ctx)
+  static tree Compile (HIR::Expr *expr, Context *ctx)
   {
     CompileExpr compiler (ctx);
     expr->accept_vis (compiler);
@@ -45,7 +45,7 @@ public:
     HIR::Expr *tuple_expr = expr.get_tuple_expr ().get ();
     TupleIndex index = expr.get_tuple_index ();
 
-    Bexpression *receiver_ref = CompileExpr::Compile (tuple_expr, ctx);
+    tree receiver_ref = CompileExpr::Compile (tuple_expr, ctx);
 
     TyTy::BaseType *tuple_expr_ty = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (
@@ -60,7 +60,7 @@ public:
 	TyTy::BaseType *tuple_type = r->get_base ();
 	tree tuple_tyty = TyTyResolveCompile::compile (ctx, tuple_type);
 
-	Bexpression *indirect
+	tree indirect
 	  = ctx->get_backend ()->indirect_expression (tuple_tyty, receiver_ref,
 						      true, expr.get_locus ());
 	receiver_ref = indirect;
@@ -92,7 +92,7 @@ public:
     rust_assert (tuple_type != nullptr);
 
     // this assumes all fields are in order from type resolution
-    std::vector<Bexpression *> vals;
+    std::vector<tree> vals;
     for (auto &elem : expr.get_tuple_elems ())
       {
 	auto e = CompileExpr::Compile (elem.get (), ctx);
@@ -108,10 +108,10 @@ public:
   {
     auto fncontext = ctx->peek_fn ();
 
-    std::vector<Bexpression *> retstmts;
+    std::vector<tree> retstmts;
     if (expr.has_return_expr ())
       {
-	Bexpression *compiled_expr
+	tree compiled_expr
 	  = CompileExpr::Compile (expr.return_expr.get (), ctx);
 	rust_assert (compiled_expr != nullptr);
 
@@ -330,21 +330,19 @@ public:
 	  auto array_tyty = static_cast<TyTy::ArrayType *> (base_tyty);
 
 	  std::string value_str = expr.get_literal ()->as_string ();
-	  std::vector<Bexpression *> vals;
+	  std::vector<tree> vals;
 	  std::vector<unsigned long> indexes;
 	  for (size_t i = 0; i < value_str.size (); i++)
 	    {
 	      char b = value_str.at (i);
-	      Bexpression *bb
-		= ctx->get_backend ()->char_constant_expression (b);
+	      tree bb = ctx->get_backend ()->char_constant_expression (b);
 	      vals.push_back (bb);
 	      indexes.push_back (i);
 	    }
 
 	  tree array_type = TyTyResolveCompile::compile (ctx, array_tyty);
-	  Bexpression *constructed
-	    = ctx->get_backend ()->array_constructor_expression (
-	      array_type, indexes, vals, expr.get_locus ());
+	  tree constructed = ctx->get_backend ()->array_constructor_expression (
+	    array_type, indexes, vals, expr.get_locus ());
 
 	  translated
 	    = ctx->get_backend ()->address_expression (constructed,
@@ -392,8 +390,8 @@ public:
 
   void visit (HIR::ArrayIndexExpr &expr) override
   {
-    Bexpression *array = CompileExpr::Compile (expr.get_array_expr (), ctx);
-    Bexpression *index = CompileExpr::Compile (expr.get_index_expr (), ctx);
+    tree array = CompileExpr::Compile (expr.get_array_expr (), ctx);
+    tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
     translated
       = ctx->get_backend ()->array_index_expression (array, index,
 						     expr.get_locus ());
@@ -432,14 +430,14 @@ public:
   {
     for (auto &elem : elems.get_values ())
       {
-	Bexpression *translated_expr = CompileExpr::Compile (elem.get (), ctx);
+	tree translated_expr = CompileExpr::Compile (elem.get (), ctx);
 	constructor.push_back (translated_expr);
       }
   }
 
   void visit (HIR::ArrayElemsCopied &elems) override
   {
-    Bexpression *translated_expr
+    tree translated_expr
       = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
 
     size_t capacity;
@@ -645,10 +643,10 @@ public:
 
     // this assumes all fields are in order from type resolution and if a base
     // struct was specified those fields are filed via accesors
-    std::vector<Bexpression *> vals;
+    std::vector<tree> vals;
     for (auto &field : struct_expr.get_fields ())
       {
-	Bexpression *expr = CompileStructExprField::Compile (field.get (), ctx);
+	tree expr = CompileStructExprField::Compile (field.get (), ctx);
 	vals.push_back (expr);
       }
 
@@ -665,7 +663,7 @@ public:
 
   void visit (HIR::FieldAccessExpr &expr) override
   {
-    Bexpression *receiver_ref
+    tree receiver_ref
       = CompileExpr::Compile (expr.get_receiver_expr ().get (), ctx);
 
     // resolve the receiver back to ADT type
@@ -706,7 +704,7 @@ public:
 	rust_assert (ok);
 
 	tree adt_tyty = TyTyResolveCompile::compile (ctx, adt);
-	Bexpression *indirect
+	tree indirect
 	  = ctx->get_backend ()->indirect_expression (adt_tyty, receiver_ref,
 						      true, expr.get_locus ());
 	receiver_ref = indirect;
@@ -777,7 +775,7 @@ public:
 
     Bblock *code_block
       = CompileBlock::compile (expr.get_loop_block ().get (), ctx, nullptr);
-    Bexpression *loop_expr
+    tree loop_expr
       = ctx->get_backend ()->loop_expression (code_block, expr.get_locus ());
     Bstatement *loop_stmt
       = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
@@ -826,9 +824,9 @@ public:
     ctx->add_statement (loop_begin_label_decl);
     ctx->push_loop_begin_label (loop_begin_label);
 
-    Bexpression *condition
+    tree condition
       = CompileExpr::Compile (expr.get_predicate_expr ().get (), ctx);
-    Bexpression *exit_expr
+    tree exit_expr
       = ctx->get_backend ()->exit_expression (condition, expr.get_locus ());
     Bstatement *break_stmt
       = ctx->get_backend ()->expression_statement (fnctx.fndecl, exit_expr);
@@ -843,7 +841,7 @@ public:
     ctx->pop_loop_begin_label ();
     ctx->pop_block ();
 
-    Bexpression *loop_expr
+    tree loop_expr
       = ctx->get_backend ()->loop_expression (loop_block, expr.get_locus ());
     Bstatement *loop_stmt
       = ctx->get_backend ()->expression_statement (fnctx.fndecl, loop_expr);
@@ -855,11 +853,11 @@ public:
     fncontext fnctx = ctx->peek_fn ();
     if (expr.has_break_expr ())
       {
-	Bexpression *compiled_expr
+	tree compiled_expr
 	  = CompileExpr::Compile (expr.get_expr ().get (), ctx);
 
 	Bvariable *loop_result_holder = ctx->peek_loop_context ();
-	Bexpression *result_reference = ctx->get_backend ()->var_expression (
+	tree result_reference = ctx->get_backend ()->var_expression (
 	  loop_result_holder, expr.get_expr ()->get_locus ());
 
 	Bstatement *assignment = ctx->get_backend ()->assignment_statement (
@@ -904,7 +902,7 @@ public:
       }
     else
       {
-	Bexpression *exit_expr = ctx->get_backend ()->exit_expression (
+	tree exit_expr = ctx->get_backend ()->exit_expression (
 	  ctx->get_backend ()->boolean_constant_expression (true),
 	  expr.get_locus ());
 	Bstatement *break_stmt
@@ -954,8 +952,7 @@ public:
 
   void visit (HIR::BorrowExpr &expr) override
   {
-    Bexpression *main_expr
-      = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+    tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
 
     translated
       = ctx->get_backend ()->address_expression (main_expr, expr.get_locus ());
@@ -963,8 +960,7 @@ public:
 
   void visit (HIR::DereferenceExpr &expr) override
   {
-    Bexpression *main_expr
-      = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+    tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
 
     TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -984,33 +980,31 @@ public:
   }
 
 protected:
-  Bexpression *compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
-					  TyTy::BaseType *receiver,
-					  TyTy::FnType *fntype,
-					  Bexpression *receiver_ref,
-					  std::vector<HIR::Expr *> &arguments,
-					  Location expr_locus);
+  tree compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
+				  TyTy::BaseType *receiver,
+				  TyTy::FnType *fntype, tree receiver_ref,
+				  std::vector<HIR::Expr *> &arguments,
+				  Location expr_locus);
 
-  Bexpression *resolve_method_address (TyTy::FnType *fntype, HirId ref,
-				       TyTy::BaseType *receiver,
-				       HIR::PathIdentSegment &segment,
-				       Analysis::NodeMapping expr_mappings,
-				       Location expr_locus);
+  tree resolve_method_address (TyTy::FnType *fntype, HirId ref,
+			       TyTy::BaseType *receiver,
+			       HIR::PathIdentSegment &segment,
+			       Analysis::NodeMapping expr_mappings,
+			       Location expr_locus);
 
-  Bexpression *
+  tree
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
-			     HIR::OperatorExpr &expr, Bexpression *lhs,
-			     Bexpression *rhs, HIR::Expr *lhs_expr,
-			     HIR::Expr *rhs_expr);
+			     HIR::OperatorExpr &expr, tree lhs, tree rhs,
+			     HIR::Expr *lhs_expr, HIR::Expr *rhs_expr);
 
 private:
   CompileExpr (Context *ctx)
     : HIRCompileBase (ctx), translated (nullptr), capacity_expr (nullptr)
   {}
 
-  Bexpression *translated;
-  Bexpression *capacity_expr;
-  std::vector<Bexpression *> constructor;
+  tree translated;
+  tree capacity_expr;
+  std::vector<tree> constructor;
 };
 
 } // namespace Compile

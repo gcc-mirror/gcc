@@ -687,7 +687,7 @@ public:
 						  UNKNOWN_LOCAL_DEFID);
 
 	  /* Capacity is the size of the string (number of chars).
-	     It is a constant, but for fold it to get a Bexpression.  */
+	     It is a constant, but for fold it to get a tree.  */
 	  std::string capacity_str
 	    = std::to_string (expr.get_literal ()->as_string ().size ());
 	  HIR::LiteralExpr literal_capacity (capacity_mapping, capacity_str,
@@ -700,8 +700,7 @@ public:
 				new TyTy::USizeType (
 				  capacity_mapping.get_hirid ()));
 
-	  Bexpression *capacity
-	    = ConstFold::ConstFoldExpr::fold (&literal_capacity);
+	  tree capacity = ConstFold::ConstFoldExpr::fold (&literal_capacity);
 
 	  Analysis::NodeMapping array_mapping (crate_num, UNKNOWN_NODEID,
 					       mappings->get_next_hir_id (
@@ -1491,7 +1490,7 @@ private:
   /* The return value of visit(ArrayElemsValues&) and visit(ArrayElemsCopied&)
      Stores the type of array elements, if `expr` is ArrayExpr. */
   TyTy::BaseType *infered_array_elems;
-  Bexpression *folded_array_capacity;
+  tree folded_array_capacity;
   Location root_array_expr_locus;
 
   bool inside_loop;

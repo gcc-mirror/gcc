@@ -41,7 +41,7 @@ Context::get ()
 }
 
 bool
-Context::lookup_const (HirId id, Bexpression **expr)
+Context::lookup_const (HirId id, tree *expr)
 {
   auto it = ctx.find (id);
   if (it == ctx.end ())
@@ -52,7 +52,7 @@ Context::lookup_const (HirId id, Bexpression **expr)
 }
 
 void
-Context::insert_const (HirId id, Bexpression *expr)
+Context::insert_const (HirId id, tree expr)
 {
   rust_assert (ctx.find (id) == ctx.end ());
   ctx[id] = expr;
@@ -75,7 +75,7 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsValues &elems)
 {
   unsigned long index = 0;
   std::vector<unsigned long> indices;
-  std::vector<Bexpression *> values;
+  std::vector<tree> values;
 
   TyTy::BaseType *tyty = nullptr;
   if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
@@ -102,7 +102,7 @@ void
 ConstFoldArrayElems::visit (HIR::ArrayElemsCopied &elems)
 {
   std::vector<unsigned long> indices;
-  std::vector<Bexpression *> values;
+  std::vector<tree> values;
 
   TyTy::BaseType *tyty = nullptr;
   if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
@@ -113,11 +113,11 @@ ConstFoldArrayElems::visit (HIR::ArrayElemsCopied &elems)
     }
 
   tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
-  Bexpression *elem = ConstFoldExpr::fold (elems.get_elem_to_copy ());
+  tree elem = ConstFoldExpr::fold (elems.get_elem_to_copy ());
 
   // num copies expr was already folded in rust-hir-type-check-expr; lookup the
   // earlier result
-  Bexpression *num_copies_expr = ctx->get_backend ()->error_expression ();
+  tree num_copies_expr = ctx->get_backend ()->error_expression ();
   ctx->lookup_const (elems.get_num_copies_expr ()->get_mappings ().get_hirid (),
 		     &num_copies_expr);
 

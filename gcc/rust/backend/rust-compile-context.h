@@ -210,12 +210,9 @@ public:
     return true;
   }
 
-  void insert_const_decl (HirId id, ::Bexpression *expr)
-  {
-    compiled_consts[id] = expr;
-  }
+  void insert_const_decl (HirId id, ::tree expr) { compiled_consts[id] = expr; }
 
-  bool lookup_const_decl (HirId id, ::Bexpression **expr)
+  bool lookup_const_decl (HirId id, ::tree *expr)
   {
     auto it = compiled_consts.find (id);
     if (it == compiled_consts.end ())
@@ -249,7 +246,7 @@ public:
 
   void push_type (::tree t) { type_decls.push_back (t); }
   void push_var (::Bvariable *v) { var_decls.push_back (v); }
-  void push_const (::Bexpression *c) { const_decls.push_back (c); }
+  void push_const (::tree c) { const_decls.push_back (c); }
   void push_function (::Bfunction *f) { func_decls.push_back (f); }
 
   void write_to_backend ()
@@ -322,9 +319,9 @@ private:
   // state
   std::vector<fncontext> fn_stack;
   std::map<HirId, ::Bvariable *> compiled_var_decls;
-  std::map<HirId, ::tree > compiled_type_map;
+  std::map<HirId, tree> compiled_type_map;
   std::map<HirId, ::Bfunction *> compiled_fn_map;
-  std::map<HirId, ::Bexpression *> compiled_consts;
+  std::map<HirId, tree> compiled_consts;
   std::map<HirId, ::Blabel *> compiled_labels;
   std::vector<::std::vector<Bstatement *>> statements;
   std::vector<::Bblock *> scope_stack;
@@ -337,7 +334,7 @@ private:
   // To GCC middle-end
   std::vector<tree> type_decls;
   std::vector<::Bvariable *> var_decls;
-  std::vector<::Bexpression *> const_decls;
+  std::vector<tree> const_decls;
   std::vector<::Bfunction *> func_decls;
 };
 

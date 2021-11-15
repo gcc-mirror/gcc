@@ -1588,13 +1588,13 @@ private:
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, Bexpression *capacity, TyVar base,
+  ArrayType (HirId ref, tree capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type (base)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, Bexpression *capacity, TyVar base,
+  ArrayType (HirId ref, HirId ty_ref, tree capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type (base)
@@ -1615,7 +1615,7 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  Bexpression *get_capacity () const { return capacity; }
+  tree get_capacity () const { return capacity; }
   std::string capacity_string () const;
 
   BaseType *get_element_type () const;
@@ -1628,7 +1628,7 @@ public:
   }
 
 private:
-  Bexpression *capacity;
+  tree capacity;
   TyVar element_type;
 };
 

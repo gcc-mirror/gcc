@@ -117,11 +117,10 @@ CompileExpr::visit (HIR::NegationExpr &expr)
     = ctx->get_backend ()->negation_expression (op, negated_expr, location);
 }
 
-Bexpression *
+tree
 CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 					TyTy::BaseType *receiver,
-					TyTy::FnType *fntype,
-					Bexpression *receiver_ref,
+					TyTy::FnType *fntype, tree receiver_ref,
 					std::vector<HIR::Expr *> &arguments,
 					Location expr_locus)
 {
@@ -153,7 +152,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
       tree indrect_compiled_tyty
 	= TyTyResolveCompile::compile (ctx, indirect_ty);
 
-      Bexpression *indirect
+      tree indirect
 	= ctx->get_backend ()->indirect_expression (indrect_compiled_tyty,
 						    receiver_ref, true,
 						    expr_locus);
@@ -161,18 +160,18 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
     }
 
   // access the offs + 1 for the fnptr and offs=0 for the reciever obj
-  Bexpression *self_argument
+  tree self_argument
     = ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
 						    expr_locus);
 
   // access the vtable for the fn
-  Bexpression *fn_vtable_access
+  tree fn_vtable_access
     = ctx->get_backend ()->struct_field_expression (receiver_ref, offs + 1,
 						    expr_locus);
 
   // cast it to the correct fntype
   tree expected_fntype = TyTyResolveCompile::compile (ctx, fntype, true);
-  Bexpression *fn_convert_expr
+  tree fn_convert_expr
     = ctx->get_backend ()->convert_expression (expected_fntype,
 					       fn_vtable_access, expr_locus);
 
@@ -187,22 +186,22 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 					       &ret_var_stmt);
   ctx->add_statement (ret_var_stmt);
 
-  std::vector<Bexpression *> args;
+  std::vector<tree> args;
   args.push_back (self_argument);
   for (auto &argument : arguments)
     {
-      Bexpression *compiled_expr = CompileExpr::Compile (argument, ctx);
+      tree compiled_expr = CompileExpr::Compile (argument, ctx);
       args.push_back (compiled_expr);
     }
 
-  Bexpression *fn_expr
+  tree fn_expr
     = ctx->get_backend ()->var_expression (fn_convert_expr_tmp, expr_locus);
 
   return ctx->get_backend ()->call_expression (fnctx.fndecl, fn_expr, args,
 					       nullptr, expr_locus);
 }
 
-Bexpression *
+tree
 CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 				     TyTy::BaseType *receiver,
 				     HIR::PathIdentSegment &segment,
@@ -294,10 +293,10 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
     }
 }
 
-Bexpression *
+tree
 CompileExpr::resolve_operator_overload (
   Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExpr &expr,
-  Bexpression *lhs, Bexpression *rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
+  tree lhs, tree rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
 {
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
@@ -346,7 +345,7 @@ CompileExpr::resolve_operator_overload (
   // lookup compiled functions since it may have already been compiled
   HIR::PathIdentSegment segment_name (
     Analysis::RustLangItem::ToString (lang_item_type));
-  Bexpression *fn_expr
+  tree fn_expr
     = resolve_method_address (fntype, ref, receiver, segment_name,
 			      expr.get_mappings (), expr.get_locus ());
 
@@ -357,7 +356,7 @@ CompileExpr::resolve_operator_overload (
   rust_assert (ok);
 
   // FIXME refactor this out
-  Bexpression *self = lhs;
+  tree self = lhs;
   for (auto &adjustment : *adjustments)
     {
       switch (adjustment.get_type ())
@@ -380,7 +379,7 @@ CompileExpr::resolve_operator_overload (
 	}
     }
 
-  std::vector<Bexpression *> args;
+  std::vector<tree> args;
   args.push_back (self); // adjusted self
   if (rhs != nullptr)	 // can be null for negation_expr (unary ones)
     args.push_back (rhs);

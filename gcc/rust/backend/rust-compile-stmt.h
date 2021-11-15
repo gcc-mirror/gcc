@@ -31,7 +31,7 @@ class CompileStmt : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (HIR::Stmt *stmt, Context *ctx)
+  static tree Compile (HIR::Stmt *stmt, Context *ctx)
   {
     CompileStmt compiler (ctx);
     stmt->accept_vis (compiler);
@@ -57,7 +57,7 @@ public:
     rust_assert (ok);
 
     tree type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
+    tree value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -66,7 +66,7 @@ public:
     rust_assert (ok);
 
     std::string ident = canonical_path->get ();
-    Bexpression *const_expr
+    tree const_expr
       = ctx->get_backend ()->named_constant_expression (type, ident, value,
 							constant.get_locus ());
 
@@ -101,7 +101,7 @@ public:
 	return;
       }
 
-    Bexpression *init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
+    tree init = CompileExpr::Compile (stmt.get_init_expr (), ctx);
     // FIXME use error_mark_node, check that CompileExpr returns error_mark_node
     // on failure and make this an assertion
     if (init == nullptr)
@@ -132,7 +132,7 @@ public:
 private:
   CompileStmt (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
 
-  Bexpression *translated;
+  tree translated;
 };
 
 } // namespace Compile
