@@ -484,6 +484,15 @@ split_nonconstant_init_1 (tree dest, tree init, bool nested)
 	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	  || vla_type_p (type))
 	{
+	  if (!TYPE_DOMAIN (type)
+	      && TREE_CODE (init) == CONSTRUCTOR
+	      && CONSTRUCTOR_NELTS (init))
+	    {
+	      /* Flexible array.  */
+	      cp_complete_array_type (&type, init, /*default*/true);
+	      dest = build1 (VIEW_CONVERT_EXPR, type, dest);
+	    }
+
 	  /* For an array, we only need/want a single cleanup region rather
 	     than one per element.  */
 	  tree code = build_vec_init (dest, NULL_TREE, init, false, 1,
