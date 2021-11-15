@@ -1005,6 +1005,12 @@ protected:
 				       Analysis::NodeMapping expr_mappings,
 				       Location expr_locus);
 
+  Bexpression *
+  resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
+			     HIR::OperatorExpr &expr, Bexpression *lhs,
+			     Bexpression *rhs, HIR::Expr *lhs_expr,
+			     HIR::Expr *rhs_expr);
+
 private:
   CompileExpr (Context *ctx)
     : HIRCompileBase (ctx), translated (nullptr), capacity_expr (nullptr)

@@ -39,100 +39,18 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
     expr.get_mappings ().get_hirid (), &fntype);
-  if (!is_op_overload)
+  if (is_op_overload)
     {
-      translated = ctx->get_backend ()->arithmetic_or_logical_expression (
-	op, lhs, rhs, expr.get_locus ());
+      auto lang_item_type
+	= Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
+      translated = resolve_operator_overload (lang_item_type, expr, lhs, rhs,
+					      expr.get_lhs (), expr.get_rhs ());
       return;
     }
 
-  // lookup the resolved name
-  NodeId resolved_node_id = UNKNOWN_NODEID;
-  if (!ctx->get_resolver ()->lookup_resolved_name (
-	expr.get_mappings ().get_nodeid (), &resolved_node_id))
-    {
-      rust_error_at (expr.get_locus (), "failed to lookup resolved MethodCall");
-      return;
-    }
-
-  // reverse lookup
-  HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (
-	expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
-    {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  TyTy::BaseType *receiver = nullptr;
-  bool ok
-    = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
-					  &receiver);
-  rust_assert (ok);
-
-  bool is_dyn_dispatch
-    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
-  bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
-  if (is_generic_receiver)
-    {
-      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
-      receiver = p->resolve ();
-    }
-
-  if (is_dyn_dispatch)
-    {
-      const TyTy::DynamicObjectType *dyn
-	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
-
-      std::vector<HIR::Expr *> arguments;
-      arguments.push_back (expr.get_rhs ());
-
-      translated = compile_dyn_dispatch_call (dyn, receiver, fntype, lhs,
-					      arguments, expr.get_locus ());
-      return;
-    }
-
-  // lookup compiled functions since it may have already been compiled
-  HIR::PathIdentSegment segment_name ("add");
-  Bexpression *fn_expr
-    = resolve_method_address (fntype, ref, receiver, segment_name,
-			      expr.get_mappings (), expr.get_locus ());
-
-  // lookup the autoderef mappings
-  std::vector<Resolver::Adjustment> *adjustments = nullptr;
-  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
-    expr.get_mappings ().get_hirid (), &adjustments);
-  rust_assert (ok);
-
-  Bexpression *self = lhs;
-  for (auto &adjustment : *adjustments)
-    {
-      switch (adjustment.get_type ())
-	{
-	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	case Resolver::Adjustment::AdjustmentType::MUT_REF:
-	  self = ctx->get_backend ()->address_expression (
-	    self, expr.get_lhs ()->get_locus ());
-	  break;
-
-	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  Btype *expected_type
-	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-	  self = ctx->get_backend ()->indirect_expression (
-	    expected_type, self, true, /* known_valid*/
-	    expr.get_lhs ()->get_locus ());
-	  break;
-	}
-    }
-
-  std::vector<Bexpression *> args;
-  args.push_back (self); // adjusted self
-  args.push_back (rhs);
-
-  auto fncontext = ctx->peek_fn ();
   translated
-    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
-					    nullptr, expr.get_locus ());
+    = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
+							     expr.get_locus ());
 }
 
 void
@@ -148,106 +66,30 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
   TyTy::FnType *fntype;
   bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
     expr.get_mappings ().get_hirid (), &fntype);
-  if (!is_op_overload)
+  if (is_op_overload)
     {
-      auto operator_expr
-	= ctx->get_backend ()->arithmetic_or_logical_expression (
-	  op, lhs, rhs, expr.get_locus ());
-      Bstatement *assignment
-	= ctx->get_backend ()->assignment_statement (fn.fndecl, lhs,
-						     operator_expr,
-						     expr.get_locus ());
+      auto lang_item_type
+	= Analysis::RustLangItem::CompoundAssignmentOperatorToLangItem (
+	  expr.get_expr_type ());
+      auto compound_assignment
+	= resolve_operator_overload (lang_item_type, expr, lhs, rhs,
+				     expr.get_left_expr ().get (),
+				     expr.get_right_expr ().get ());
+      auto assignment
+	= ctx->get_backend ()->expression_statement (fn.fndecl,
+						     compound_assignment);
       ctx->add_statement (assignment);
+
       return;
     }
 
-  // lookup the resolved name
-  NodeId resolved_node_id = UNKNOWN_NODEID;
-  if (!ctx->get_resolver ()->lookup_resolved_name (
-	expr.get_mappings ().get_nodeid (), &resolved_node_id))
-    {
-      rust_error_at (expr.get_locus (), "failed to lookup resolved MethodCall");
-      return;
-    }
-
-  // reverse lookup
-  HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (
-	expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
-    {
-      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  TyTy::BaseType *receiver = nullptr;
-  bool ok
-    = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
-					  &receiver);
-  rust_assert (ok);
-
-  bool is_dyn_dispatch
-    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
-  bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
-  if (is_generic_receiver)
-    {
-      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
-      receiver = p->resolve ();
-    }
-
-  if (is_dyn_dispatch)
-    {
-      const TyTy::DynamicObjectType *dyn
-	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
-
-      std::vector<HIR::Expr *> arguments;
-      arguments.push_back (expr.get_right_expr ().get ());
-
-      translated = compile_dyn_dispatch_call (dyn, receiver, fntype, lhs,
-					      arguments, expr.get_locus ());
-      return;
-    }
-
-  // lookup compiled functions since it may have already been compiled
-  HIR::PathIdentSegment segment_name ("add_assign");
-  Bexpression *fn_expr
-    = resolve_method_address (fntype, ref, receiver, segment_name,
-			      expr.get_mappings (), expr.get_locus ());
-
-  // lookup the autoderef mappings
-  std::vector<Resolver::Adjustment> *adjustments = nullptr;
-  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
-    expr.get_mappings ().get_hirid (), &adjustments);
-  rust_assert (ok);
-
-  Bexpression *self = lhs;
-  for (auto &adjustment : *adjustments)
-    {
-      switch (adjustment.get_type ())
-	{
-	case Resolver::Adjustment::AdjustmentType::IMM_REF:
-	case Resolver::Adjustment::AdjustmentType::MUT_REF:
-	  self = ctx->get_backend ()->address_expression (
-	    self, expr.get_left_expr ()->get_locus ());
-	  break;
-
-	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  Btype *expected_type
-	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
-	  self = ctx->get_backend ()->indirect_expression (
-	    expected_type, self, true, /* known_valid*/
-	    expr.get_left_expr ()->get_locus ());
-	  break;
-	}
-    }
-
-  std::vector<Bexpression *> args;
-  args.push_back (self); // adjusted self
-  args.push_back (rhs);
-
-  auto fncontext = ctx->peek_fn ();
-  translated
-    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
-					    nullptr, expr.get_locus ());
+  auto operator_expr
+    = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
+							     expr.get_locus ());
+  Bstatement *assignment
+    = ctx->get_backend ()->assignment_statement (fn.fndecl, lhs, operator_expr,
+						 expr.get_locus ());
+  ctx->add_statement (assignment);
 }
 
 Bexpression *
@@ -425,6 +267,100 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
       return CompileInherentImplItem::Compile (receiver, impl_item, ctx, true,
 					       fntype);
     }
+}
+
+Bexpression *
+CompileExpr::resolve_operator_overload (
+  Analysis::RustLangItem::ItemType lang_item_type, HIR::OperatorExpr &expr,
+  Bexpression *lhs, Bexpression *rhs, HIR::Expr *lhs_expr, HIR::Expr *rhs_expr)
+{
+  TyTy::FnType *fntype;
+  bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fntype);
+  rust_assert (is_op_overload);
+
+  // lookup the resolved name
+  NodeId resolved_node_id = UNKNOWN_NODEID;
+  bool ok = ctx->get_resolver ()->lookup_resolved_name (
+    expr.get_mappings ().get_nodeid (), &resolved_node_id);
+  rust_assert (ok);
+
+  // reverse lookup
+  HirId ref;
+  ok = ctx->get_mappings ()->lookup_node_to_hir (
+    expr.get_mappings ().get_crate_num (), resolved_node_id, &ref);
+  rust_assert (ok);
+
+  TyTy::BaseType *receiver = nullptr;
+  ok = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
+					   &receiver);
+  rust_assert (ok);
+
+  bool is_dyn_dispatch
+    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
+  bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
+  if (is_generic_receiver)
+    {
+      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
+      receiver = p->resolve ();
+    }
+
+  if (is_dyn_dispatch)
+    {
+      const TyTy::DynamicObjectType *dyn
+	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
+
+      std::vector<HIR::Expr *> arguments;
+      arguments.push_back (rhs_expr);
+
+      return compile_dyn_dispatch_call (dyn, receiver, fntype, lhs, arguments,
+					expr.get_locus ());
+    }
+
+  // lookup compiled functions since it may have already been compiled
+  HIR::PathIdentSegment segment_name (
+    Analysis::RustLangItem::ToString (lang_item_type));
+  Bexpression *fn_expr
+    = resolve_method_address (fntype, ref, receiver, segment_name,
+			      expr.get_mappings (), expr.get_locus ());
+
+  // lookup the autoderef mappings
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
+    expr.get_mappings ().get_hirid (), &adjustments);
+  rust_assert (ok);
+
+  // FIXME refactor this out
+  Bexpression *self = lhs;
+  for (auto &adjustment : *adjustments)
+    {
+      switch (adjustment.get_type ())
+	{
+	case Resolver::Adjustment::AdjustmentType::IMM_REF:
+	case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  self
+	    = ctx->get_backend ()->address_expression (self,
+						       lhs_expr->get_locus ());
+	  break;
+
+	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
+	  Btype *expected_type
+	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+	  self
+	    = ctx->get_backend ()->indirect_expression (expected_type, self,
+							true, /* known_valid*/
+							lhs_expr->get_locus ());
+	  break;
+	}
+    }
+
+  std::vector<Bexpression *> args;
+  args.push_back (self); // adjusted self
+  args.push_back (rhs);
+
+  auto fncontext = ctx->peek_fn ();
+  return ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
+					       nullptr, expr.get_locus ());
 }
 
 } // namespace Compile
