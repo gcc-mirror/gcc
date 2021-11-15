@@ -278,7 +278,7 @@ public:
 	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
-	Bstatement *ret_var_stmt = nullptr;
+	tree ret_var_stmt = NULL_TREE;
 
 	return_address = ctx->get_backend ()->temporary_variable (
 	  fndecl, code_block, return_type, NULL, address_is_taken,
@@ -538,7 +538,7 @@ public:
 	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
-	Bstatement *ret_var_stmt = nullptr;
+	tree ret_var_stmt = NULL_TREE;
 
 	return_address = ctx->get_backend ()->temporary_variable (
 	  fndecl, code_block, return_type, NULL, address_is_taken,

@@ -86,7 +86,7 @@ CompileExpr::visit (HIR::CompoundAssignmentExpr &expr)
   auto operator_expr
     = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
 							     expr.get_locus ());
-  Bstatement *assignment
+  tree assignment
     = ctx->get_backend ()->assignment_statement (fn.fndecl, lhs, operator_expr,
 						 expr.get_locus ());
   ctx->add_statement (assignment);
@@ -178,7 +178,7 @@ CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
   fncontext fnctx = ctx->peek_fn ();
   Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
   bool is_address_taken = false;
-  Bstatement *ret_var_stmt = nullptr;
+  tree ret_var_stmt = NULL_TREE;
   Bvariable *fn_convert_expr_tmp
     = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
 					       expected_fntype, fn_convert_expr,

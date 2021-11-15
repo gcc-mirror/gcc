@@ -349,7 +349,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  Bstatement *compiled_stmt
+	  tree compiled_stmt
 	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
 							 compiled_expr);
 	  ctx->add_statement (compiled_stmt);
@@ -365,7 +365,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 	{
 	  if (result == nullptr)
 	    {
-	      Bstatement *final_stmt
+	      tree final_stmt
 		= ctx->get_backend ()->expression_statement (fnctx.fndecl,
 							     compiled_expr);
 	      ctx->add_statement (final_stmt);
@@ -375,7 +375,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 	      tree result_reference = ctx->get_backend ()->var_expression (
 		result, expr.get_final_expr ()->get_locus ());
 
-	      Bstatement *assignment
+	      tree assignment
 		= ctx->get_backend ()->assignment_statement (fnctx.fndecl,
 							     result_reference,
 							     compiled_expr,
@@ -438,7 +438,7 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
 				  start_location, end_location);
   ctx->push_block (else_block);
 
-  Bstatement *else_stmt_decl
+  tree else_stmt_decl
     = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx,
 					 result);
   ctx->add_statement (else_stmt_decl);
@@ -486,7 +486,7 @@ HIRCompileBase::compile_function_body (
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  Bstatement *compiled_stmt
+	  tree compiled_stmt
 	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
 	  ctx->add_statement (compiled_stmt);
 	}
@@ -513,7 +513,7 @@ HIRCompileBase::compile_function_body (
 	    }
 	  else
 	    {
-	      Bstatement *final_stmt
+	      tree final_stmt
 		= ctx->get_backend ()->expression_statement (fndecl,
 							     compiled_expr);
 	      ctx->add_statement (final_stmt);
@@ -612,7 +612,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
   fncontext fnctx = ctx->peek_fn ();
   Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
   bool is_address_taken = false;
-  Bstatement *ret_var_stmt = nullptr;
+  tree ret_var_stmt = NULL_TREE;
 
   Bvariable *dyn_tmp = ctx->get_backend ()->temporary_variable (
     fnctx.fndecl, enclosing_scope, dynamic_object, constructed_trait_object,

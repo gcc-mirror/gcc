@@ -41,9 +41,6 @@ saw_errors (void);
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
 
-// The backend representation of a statement.
-class Bstatement;
-
 // The backend representation of a function definition or declaration.
 class Bfunction;
 
@@ -84,7 +81,6 @@ public:
 
   // debug
   virtual void debug (tree) = 0;
-  virtual void debug (Bstatement *) = 0;
   virtual void debug (Bfunction *) = 0;
   virtual void debug (Bblock *) = 0;
   virtual void debug (Bvariable *) = 0;
@@ -328,8 +324,7 @@ public:
     = 0;
 
   // Create an expression that executes BSTAT before BEXPR.
-  virtual tree compound_expression (Bstatement *bstat, tree bexpr, Location)
-    = 0;
+  virtual tree compound_expression (tree bstat, tree bexpr, Location) = 0;
 
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
   // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
@@ -400,32 +395,29 @@ public:
   // Create an error statement.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
   // going without crashing.
-  virtual Bstatement *error_statement () = 0;
+  virtual tree error_statement () = 0;
 
   // Create an expression statement within the specified function.
-  virtual Bstatement *expression_statement (Bfunction *, tree) = 0;
+  virtual tree expression_statement (Bfunction *, tree) = 0;
 
   // Create a variable initialization statement in the specified
   // function.  This initializes a local variable at the point in the
   // program flow where it is declared.
-  virtual Bstatement *init_statement (Bfunction *, Bvariable *var, tree init)
-    = 0;
+  virtual tree init_statement (Bfunction *, Bvariable *var, tree init) = 0;
 
   // Create an assignment statement within the specified function.
-  virtual Bstatement *assignment_statement (Bfunction *, tree lhs, tree rhs,
-					    Location)
+  virtual tree assignment_statement (Bfunction *, tree lhs, tree rhs, Location)
     = 0;
 
   // Create a return statement, passing the representation of the
   // function and the list of values to return.
-  virtual Bstatement *return_statement (Bfunction *, const std::vector<tree> &,
-					Location)
+  virtual tree return_statement (Bfunction *, const std::vector<tree> &,
+				 Location)
     = 0;
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
-  virtual Bstatement *if_statement (Bfunction *, tree condition,
-				    Bblock *then_block, Bblock *else_block,
-				    Location)
+  virtual tree if_statement (Bfunction *, tree condition, Bblock *then_block,
+			     Bblock *else_block, Location)
     = 0;
 
   // infinite loop expressions
@@ -441,26 +433,24 @@ public:
   // either end with a goto statement or will fall through into
   // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
   // which need not be last.  FUNCTION is the current function.
-  virtual Bstatement *
-  switch_statement (Bfunction *function, tree value,
-		    const std::vector<std::vector<tree> > &cases,
-		    const std::vector<Bstatement *> &statements, Location)
+  virtual tree switch_statement (Bfunction *function, tree value,
+				 const std::vector<std::vector<tree> > &cases,
+				 const std::vector<tree> &statements, Location)
     = 0;
 
   // Create a single statement from two statements.
-  virtual Bstatement *compound_statement (Bstatement *, Bstatement *) = 0;
+  virtual tree compound_statement (tree, tree) = 0;
 
   // Create a single statement from a list of statements.
-  virtual Bstatement *statement_list (const std::vector<Bstatement *> &) = 0;
+  virtual tree statement_list (const std::vector<tree> &) = 0;
 
   // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if
   // an exception occurs. EXCEPT_STMT may be NULL.  FINALLY_STMT may be NULL and
   // if not NULL, it will always be executed.  This is used for handling defers
   // in Go functions.  In C++, the resulting code is of this form:
   //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
-  virtual Bstatement *
-  exception_handler_statement (Bstatement *bstat, Bstatement *except_stmt,
-			       Bstatement *finally_stmt, Location)
+  virtual tree exception_handler_statement (tree bstat, tree except_stmt,
+					    tree finally_stmt, Location)
     = 0;
 
   // Blocks.
@@ -484,13 +474,11 @@ public:
   // the statements are created.  Then the statements are added to the
   // block.  This will called exactly once per block.  The vector may
   // be empty if there are no statements.
-  virtual void block_add_statements (Bblock *,
-				     const std::vector<Bstatement *> &)
-    = 0;
+  virtual void block_add_statements (Bblock *, const std::vector<tree> &) = 0;
 
   // Return the block as a statement.  This is used to include a block
   // in a list of statements.
-  virtual Bstatement *block_statement (Bblock *) = 0;
+  virtual tree block_statement (Bblock *) = 0;
 
   // Variables.
 
@@ -567,8 +555,7 @@ public:
   // *PSTATEMENT to a statement which initializes the variable.
   virtual Bvariable *temporary_variable (Bfunction *, Bblock *, tree, tree init,
 					 bool address_is_taken,
-					 Location location,
-					 Bstatement **pstatement)
+					 Location location, tree *pstatement)
     = 0;
 
   // Create an implicit variable that is compiler-defined.  This is
@@ -694,10 +681,10 @@ public:
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
   // defined.
-  virtual Bstatement *label_definition_statement (Blabel *) = 0;
+  virtual tree label_definition_statement (Blabel *) = 0;
 
   // Create a goto statement to a label.
-  virtual Bstatement *goto_statement (Blabel *, Location) = 0;
+  virtual tree goto_statement (Blabel *, Location) = 0;
 
   // Create an expression for the address of a label.  This is used to
   // get the return address of a deferred function which may call
@@ -759,9 +746,8 @@ public:
   // be a statement that looks like this in C++:
   //   finish:
   //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
-  virtual Bstatement *function_defer_statement (Bfunction *function,
-						tree undefer, tree check_defer,
-						Location)
+  virtual tree function_defer_statement (Bfunction *function, tree undefer,
+					 tree check_defer, Location)
     = 0;
 
   // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
@@ -774,8 +760,7 @@ public:
 
   // Set the function body for FUNCTION using the code in CODE_STMT.  Returns
   // true on success, false on failure.
-  virtual bool function_set_body (Bfunction *function, Bstatement *code_stmt)
-    = 0;
+  virtual bool function_set_body (Bfunction *function, tree code_stmt) = 0;
 
   // Look up a named built-in function in the current backend implementation.
   // Returns NULL if no built-in function by that name exists.

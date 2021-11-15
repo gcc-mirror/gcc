@@ -70,12 +70,6 @@ private:
 
 // In gcc, types, expressions, and statements are all trees.
 
-class Bstatement : public Gcc_tree
-{
-public:
-  Bstatement (tree t) : Gcc_tree (t) {}
-};
-
 class Bfunction : public Gcc_tree
 {
 public:
@@ -149,7 +143,6 @@ public:
   Gcc_backend ();
 
   void debug (tree t) { debug_tree (t); };
-  void debug (Bstatement *t) { debug_tree (t->get_tree ()); };
   void debug (Bfunction *t) { debug_tree (t->get_tree ()); };
   void debug (Bblock *t) { debug_tree (t->get_tree ()); };
   void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
@@ -318,7 +311,7 @@ public:
 
   tree struct_field_expression (tree, size_t, Location);
 
-  tree compound_expression (Bstatement *, tree, Location);
+  tree compound_expression (tree, tree, Location);
 
   tree conditional_expression (Bfunction *, tree, tree, tree, tree, Location);
 
@@ -348,35 +341,29 @@ public:
 
   // Statements.
 
-  Bstatement *error_statement ()
-  {
-    return this->make_statement (error_mark_node);
-  }
+  tree error_statement () { return error_mark_node; }
 
-  Bstatement *expression_statement (Bfunction *, tree);
+  tree expression_statement (Bfunction *, tree);
 
-  Bstatement *init_statement (Bfunction *, Bvariable *var, tree init);
+  tree init_statement (Bfunction *, Bvariable *var, tree init);
 
-  Bstatement *assignment_statement (Bfunction *, tree lhs, tree rhs, Location);
+  tree assignment_statement (Bfunction *, tree lhs, tree rhs, Location);
 
-  Bstatement *return_statement (Bfunction *, const std::vector<tree> &,
-				Location);
+  tree return_statement (Bfunction *, const std::vector<tree> &, Location);
 
-  Bstatement *if_statement (Bfunction *, tree condition, Bblock *then_block,
-			    Bblock *else_block, Location);
+  tree if_statement (Bfunction *, tree condition, Bblock *then_block,
+		     Bblock *else_block, Location);
 
-  Bstatement *switch_statement (Bfunction *function, tree value,
-				const std::vector<std::vector<tree>> &cases,
-				const std::vector<Bstatement *> &statements,
-				Location);
+  tree switch_statement (Bfunction *function, tree value,
+			 const std::vector<std::vector<tree>> &cases,
+			 const std::vector<tree> &statements, Location);
 
-  Bstatement *compound_statement (Bstatement *, Bstatement *);
+  tree compound_statement (tree, tree);
 
-  Bstatement *statement_list (const std::vector<Bstatement *> &);
+  tree statement_list (const std::vector<tree> &);
 
-  Bstatement *exception_handler_statement (Bstatement *bstat,
-					   Bstatement *except_stmt,
-					   Bstatement *finally_stmt, Location);
+  tree exception_handler_statement (tree bstat, tree except_stmt,
+				    tree finally_stmt, Location);
 
   tree loop_expression (Bblock *body, Location);
 
@@ -387,9 +374,9 @@ public:
   Bblock *block (Bfunction *, Bblock *, const std::vector<Bvariable *> &,
 		 Location, Location);
 
-  void block_add_statements (Bblock *, const std::vector<Bstatement *> &);
+  void block_add_statements (Bblock *, const std::vector<tree> &);
 
-  Bstatement *block_statement (Bblock *);
+  tree block_statement (Bblock *);
 
   // Variables.
 
@@ -412,7 +399,7 @@ public:
 				    Location);
 
   Bvariable *temporary_variable (Bfunction *, Bblock *, tree, tree, bool,
-				 Location, Bstatement **);
+				 Location, tree *);
 
   Bvariable *implicit_variable (const std::string &, const std::string &,
 				tree, bool, bool, bool, int64_t);
@@ -437,9 +424,9 @@ public:
 
   Blabel *label (Bfunction *, const std::string &name, Location);
 
-  Bstatement *label_definition_statement (Blabel *);
+  tree label_definition_statement (Blabel *);
 
-  Bstatement *goto_statement (Blabel *, Location);
+  tree goto_statement (Blabel *, Location);
 
   tree label_address (Blabel *, Location);
 
@@ -451,13 +438,13 @@ public:
 		       const std::string &asm_name, unsigned int flags,
 		       Location);
 
-  Bstatement *function_defer_statement (Bfunction *function, tree undefer,
-					tree defer, Location);
+  tree function_defer_statement (Bfunction *function, tree undefer, tree defer,
+				 Location);
 
   bool function_set_parameters (Bfunction *function,
 				const std::vector<Bvariable *> &);
 
-  bool function_set_body (Bfunction *function, Bstatement *code_stmt);
+  bool function_set_body (Bfunction *function, tree code_stmt);
 
   Bfunction *lookup_gcc_builtin (const std::string &);
 
@@ -471,9 +458,6 @@ public:
   void write_export_data (const char *bytes, unsigned int size);
 
 private:
-
-  // Make a Bstatement from a tree.
-  Bstatement *make_statement (tree t) { return new Bstatement (t); }
 
   Bfunction *make_function (tree t) { return new Bfunction (t); }
 
@@ -1530,10 +1514,8 @@ Gcc_backend::struct_field_expression (tree struct_tree, size_t index,
 // Return an expression that executes BSTAT before BEXPR.
 
 tree
-Gcc_backend::compound_expression (Bstatement *bstat, tree expr,
-				  Location location)
+Gcc_backend::compound_expression (tree stat, tree expr, Location location)
 {
-  tree stat = bstat->get_tree ();
   if (stat == error_mark_node || expr == error_mark_node)
     return this->error_expression ();
   tree ret = fold_build2_loc (location.gcc_location (), COMPOUND_EXPR,
@@ -2042,15 +2024,15 @@ Gcc_backend::call_expression (Bfunction *, // containing fcn for call
 
 // An expression as a statement.
 
-Bstatement *
+tree
 Gcc_backend::expression_statement (Bfunction *, tree expr)
 {
-  return this->make_statement (expr);
+  return expr;
 }
 
 // Variable initialization.
 
-Bstatement *
+tree
 Gcc_backend::init_statement (Bfunction *, Bvariable *var, tree init_tree)
 {
   tree var_tree = var->get_decl ();
@@ -2077,12 +2059,12 @@ Gcc_backend::init_statement (Bfunction *, Bvariable *var, tree init_tree)
     ret = build2_loc (DECL_SOURCE_LOCATION (var_tree), COMPOUND_EXPR,
 		      void_type_node, init_tree, ret);
 
-  return this->make_statement (ret);
+  return ret;
 }
 
 // Assignment.
 
-Bstatement *
+tree
 Gcc_backend::assignment_statement (Bfunction *bfn, tree lhs, tree rhs,
 				   Location location)
 {
@@ -2104,14 +2086,13 @@ Gcc_backend::assignment_statement (Bfunction *bfn, tree lhs, tree rhs,
 
   rhs = this->convert_tree (TREE_TYPE (lhs), rhs, location);
 
-  return this->make_statement (fold_build2_loc (location.gcc_location (),
-						MODIFY_EXPR, void_type_node,
-						lhs, rhs));
+  return fold_build2_loc (location.gcc_location (), MODIFY_EXPR, void_type_node,
+			  lhs, rhs);
 }
 
 // Return.
 
-Bstatement *
+tree
 Gcc_backend::return_statement (Bfunction *bfunction,
 			       const std::vector<tree> &vals, Location location)
 {
@@ -2140,7 +2121,7 @@ Gcc_backend::return_statement (Bfunction *bfunction,
       tree ret = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
 				  void_type_node, NULL_TREE);
       append_to_statement_list (ret, &stmt_list);
-      return this->make_statement (stmt_list);
+      return stmt_list;
     }
 
   tree ret;
@@ -2196,7 +2177,7 @@ Gcc_backend::return_statement (Bfunction *bfunction,
       append_to_statement_list (ret_expr, &stmt_list);
       ret = stmt_list;
     }
-  return this->make_statement (ret);
+  return ret;
 }
 
 // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if an
@@ -2205,35 +2186,28 @@ Gcc_backend::return_statement (Bfunction *bfunction,
 // functions.  In C++, the resulting code is of this form:
 //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
 
-Bstatement *
-Gcc_backend::exception_handler_statement (Bstatement *bstat,
-					  Bstatement *except_stmt,
-					  Bstatement *finally_stmt,
-					  Location location)
+tree
+Gcc_backend::exception_handler_statement (tree try_stmt, tree except_stmt,
+					  tree finally_stmt, Location location)
 {
-  tree stat_tree = bstat->get_tree ();
-  tree except_tree = except_stmt == NULL ? NULL_TREE : except_stmt->get_tree ();
-  tree finally_tree
-    = finally_stmt == NULL ? NULL_TREE : finally_stmt->get_tree ();
-
-  if (stat_tree == error_mark_node || except_tree == error_mark_node
-      || finally_tree == error_mark_node)
+  if (try_stmt == error_mark_node || except_stmt == error_mark_node
+      || finally_stmt == error_mark_node)
     return this->error_statement ();
 
-  if (except_tree != NULL_TREE)
-    stat_tree = build2_loc (location.gcc_location (), TRY_CATCH_EXPR,
-			    void_type_node, stat_tree,
-			    build2_loc (location.gcc_location (), CATCH_EXPR,
-					void_type_node, NULL, except_tree));
-  if (finally_tree != NULL_TREE)
-    stat_tree = build2_loc (location.gcc_location (), TRY_FINALLY_EXPR,
-			    void_type_node, stat_tree, finally_tree);
-  return this->make_statement (stat_tree);
+  if (except_stmt != NULL_TREE)
+    try_stmt = build2_loc (location.gcc_location (), TRY_CATCH_EXPR,
+			   void_type_node, try_stmt,
+			   build2_loc (location.gcc_location (), CATCH_EXPR,
+				       void_type_node, NULL, except_stmt));
+  if (finally_stmt != NULL_TREE)
+    try_stmt = build2_loc (location.gcc_location (), TRY_FINALLY_EXPR,
+			   void_type_node, try_stmt, finally_stmt);
+  return try_stmt;
 }
 
 // If.
 
-Bstatement *
+tree
 Gcc_backend::if_statement (Bfunction *, tree cond_tree, Bblock *then_block,
 			   Bblock *else_block, Location location)
 {
@@ -2244,7 +2218,7 @@ Gcc_backend::if_statement (Bfunction *, tree cond_tree, Bblock *then_block,
     return this->error_statement ();
   tree ret = build3_loc (location.gcc_location (), COND_EXPR, void_type_node,
 			 cond_tree, then_tree, else_tree);
-  return this->make_statement (ret);
+  return ret;
 }
 
 // Loops
@@ -2265,10 +2239,10 @@ Gcc_backend::exit_expression (tree cond_tree, Location locus)
 
 // Switch.
 
-Bstatement *
+tree
 Gcc_backend::switch_statement (Bfunction *function, tree value,
 			       const std::vector<std::vector<tree>> &cases,
-			       const std::vector<Bstatement *> &statements,
+			       const std::vector<tree> &statements,
 			       Location switch_location)
 {
   gcc_assert (cases.size () == statements.size ());
@@ -2281,13 +2255,13 @@ Gcc_backend::switch_statement (Bfunction *function, tree value,
 
   tree stmt_list = NULL_TREE;
   std::vector<std::vector<tree>>::const_iterator pc = cases.begin ();
-  for (std::vector<Bstatement *>::const_iterator ps = statements.begin ();
+  for (std::vector<tree>::const_iterator ps = statements.begin ();
        ps != statements.end (); ++ps, ++pc)
     {
       if (pc->empty ())
 	{
-	  location_t loc = (*ps != NULL ? EXPR_LOCATION ((*ps)->get_tree ())
-					: UNKNOWN_LOCATION);
+	  location_t loc
+	    = (*ps != NULL ? EXPR_LOCATION (*ps) : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label (loc);
 	  tree c = build_case_label (NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list (c, &stmt_list);
@@ -2309,7 +2283,7 @@ Gcc_backend::switch_statement (Bfunction *function, tree value,
 
       if (*ps != NULL)
 	{
-	  tree t = (*ps)->get_tree ();
+	  tree t = (*ps);
 	  if (t == error_mark_node)
 	    return this->error_statement ();
 	  append_to_statement_list (t, &stmt_list);
@@ -2322,20 +2296,20 @@ Gcc_backend::switch_statement (Bfunction *function, tree value,
     return this->error_statement ();
   tree t = build2_loc (switch_location.gcc_location (), SWITCH_EXPR, NULL_TREE,
 		       tv, stmt_list);
-  return this->make_statement (t);
+  return t;
 }
 
 // Pair of statements.
 
-Bstatement *
-Gcc_backend::compound_statement (Bstatement *s1, Bstatement *s2)
+tree
+Gcc_backend::compound_statement (tree s1, tree s2)
 {
   tree stmt_list = NULL_TREE;
-  tree t = s1->get_tree ();
+  tree t = s1;
   if (t == error_mark_node)
     return this->error_statement ();
   append_to_statement_list (t, &stmt_list);
-  t = s2->get_tree ();
+  t = s2;
   if (t == error_mark_node)
     return this->error_statement ();
   append_to_statement_list (t, &stmt_list);
@@ -2345,24 +2319,24 @@ Gcc_backend::compound_statement (Bstatement *s1, Bstatement *s2)
   if (stmt_list == NULL_TREE)
     stmt_list = integer_zero_node;
 
-  return this->make_statement (stmt_list);
+  return stmt_list;
 }
 
 // List of statements.
 
-Bstatement *
-Gcc_backend::statement_list (const std::vector<Bstatement *> &statements)
+tree
+Gcc_backend::statement_list (const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
-  for (std::vector<Bstatement *>::const_iterator p = statements.begin ();
+  for (std::vector<tree>::const_iterator p = statements.begin ();
        p != statements.end (); ++p)
     {
-      tree t = (*p)->get_tree ();
+      tree t = (*p);
       if (t == error_mark_node)
 	return this->error_statement ();
       append_to_statement_list (t, &stmt_list);
     }
-  return this->make_statement (stmt_list);
+  return stmt_list;
 }
 
 // Make a block.  For some reason gcc uses a dual structure for
@@ -2436,13 +2410,13 @@ Gcc_backend::block (Bfunction *function, Bblock *enclosing,
 
 void
 Gcc_backend::block_add_statements (Bblock *bblock,
-				   const std::vector<Bstatement *> &statements)
+				   const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
-  for (std::vector<Bstatement *>::const_iterator p = statements.begin ();
+  for (std::vector<tree>::const_iterator p = statements.begin ();
        p != statements.end (); ++p)
     {
-      tree s = (*p)->get_tree ();
+      tree s = (*p);
       if (s != error_mark_node)
 	append_to_statement_list (s, &stmt_list);
     }
@@ -2454,12 +2428,12 @@ Gcc_backend::block_add_statements (Bblock *bblock,
 
 // Return a block as a statement.
 
-Bstatement *
+tree
 Gcc_backend::block_statement (Bblock *bblock)
 {
   tree bind_tree = bblock->get_tree ();
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
-  return this->make_statement (bind_tree);
+  return bind_tree;
 }
 
 // This is not static because we declare it with GTY(()) in rust-c.h.
@@ -2706,7 +2680,7 @@ Bvariable *
 Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
 				 tree type_tree, tree init_tree,
 				 bool is_address_taken, Location location,
-				 Bstatement **pstatement)
+				 tree *pstatement)
 {
   gcc_assert (function != NULL);
   tree decl = function->get_tree ();
@@ -2756,8 +2730,8 @@ Gcc_backend::temporary_variable (Bfunction *function, Bblock *bblock,
   if (is_address_taken)
     TREE_ADDRESSABLE (var) = 1;
 
-  *pstatement = this->make_statement (
-    build1_loc (location.gcc_location (), DECL_EXPR, void_type_node, var));
+  *pstatement
+    = build1_loc (location.gcc_location (), DECL_EXPR, void_type_node, var);
 
   // For a zero sized type, don't initialize VAR with BINIT, but still
   // evaluate BINIT for its side effects.
@@ -3004,24 +2978,22 @@ Gcc_backend::label (Bfunction *function, const std::string &name,
 
 // Make a statement which defines a label.
 
-Bstatement *
+tree
 Gcc_backend::label_definition_statement (Blabel *label)
 {
   tree lab = label->get_tree ();
-  tree ret = fold_build1_loc (DECL_SOURCE_LOCATION (lab), LABEL_EXPR,
-			      void_type_node, lab);
-  return this->make_statement (ret);
+  return fold_build1_loc (DECL_SOURCE_LOCATION (lab), LABEL_EXPR,
+			  void_type_node, lab);
 }
 
 // Make a goto statement.
 
-Bstatement *
+tree
 Gcc_backend::goto_statement (Blabel *label, Location location)
 {
   tree lab = label->get_tree ();
-  tree ret = fold_build1_loc (location.gcc_location (), GOTO_EXPR,
-			      void_type_node, lab);
-  return this->make_statement (ret);
+  return fold_build1_loc (location.gcc_location (), GOTO_EXPR, void_type_node,
+			  lab);
 }
 
 // Get the address of a label.
@@ -3097,7 +3069,7 @@ Gcc_backend::function (tree functype, const std::string &name,
 //   finish:
 //     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
 
-Bstatement *
+tree
 Gcc_backend::function_defer_statement (Bfunction *function, tree undefer_tree,
 				       tree defer_tree, Location location)
 {
@@ -3114,19 +3086,19 @@ Gcc_backend::function_defer_statement (Bfunction *function, tree undefer_tree,
 
   tree stmt_list = NULL;
   Blabel *blabel = this->label (function, "", location);
-  Bstatement *label_def = this->label_definition_statement (blabel);
-  append_to_statement_list (label_def->get_tree (), &stmt_list);
+  tree label_def = this->label_definition_statement (blabel);
+  append_to_statement_list (label_def, &stmt_list);
 
-  Bstatement *jump_stmt = this->goto_statement (blabel, location);
-  tree jump = jump_stmt->get_tree ();
-  tree catch_body = build2 (COMPOUND_EXPR, void_type_node, defer_tree, jump);
+  tree jump_stmt = this->goto_statement (blabel, location);
+  tree catch_body
+    = build2 (COMPOUND_EXPR, void_type_node, defer_tree, jump_stmt);
   catch_body = build2 (CATCH_EXPR, void_type_node, NULL, catch_body);
   tree try_catch
     = build2 (TRY_CATCH_EXPR, void_type_node, undefer_tree, catch_body);
   append_to_statement_list (try_catch, &stmt_list);
   pop_cfun ();
 
-  return this->make_statement (stmt_list);
+  return stmt_list;
 }
 
 // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
@@ -3157,14 +3129,13 @@ Gcc_backend::function_set_parameters (
 // Set the function body for FUNCTION using the code in CODE_BLOCK.
 
 bool
-Gcc_backend::function_set_body (Bfunction *function, Bstatement *code_stmt)
+Gcc_backend::function_set_body (Bfunction *function, tree code_stmt)
 {
   tree func_tree = function->get_tree ();
-  tree code = code_stmt->get_tree ();
 
-  if (func_tree == error_mark_node || code == error_mark_node)
+  if (func_tree == error_mark_node || code_stmt == error_mark_node)
     return false;
-  DECL_SAVED_TREE (func_tree) = code;
+  DECL_SAVED_TREE (func_tree) = code_stmt;
   return true;
 }
 

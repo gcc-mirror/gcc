@@ -139,12 +139,12 @@ public:
     return scope_stack.back ();
   }
 
-  void add_statement_to_enclosing_scope (Bstatement *stmt)
+  void add_statement_to_enclosing_scope (tree stmt)
   {
     statements.at (statements.size () - 2).push_back (stmt);
   }
 
-  void add_statement (Bstatement *stmt) { statements.back ().push_back (stmt); }
+  void add_statement (tree stmt) { statements.back ().push_back (stmt); }
 
   void insert_var_decl (HirId id, ::Bvariable *decl)
   {
@@ -323,7 +323,7 @@ private:
   std::map<HirId, ::Bfunction *> compiled_fn_map;
   std::map<HirId, tree> compiled_consts;
   std::map<HirId, ::Blabel *> compiled_labels;
-  std::vector<::std::vector<Bstatement *>> statements;
+  std::vector<::std::vector<tree>> statements;
   std::vector<::Bblock *> scope_stack;
   std::vector<::Bvariable *> loop_value_stack;
   std::vector<::Blabel *> loop_begin_labels;

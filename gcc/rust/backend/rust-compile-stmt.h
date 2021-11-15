@@ -118,7 +118,7 @@ public:
     auto fnctx = ctx->peek_fn ();
     if (ty->is_unit ())
       {
-	Bstatement *expr_stmt
+	tree expr_stmt
 	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, init);
 	ctx->add_statement (expr_stmt);
       }
