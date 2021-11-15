@@ -1,6 +1,14 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (optimize_target_teams): Only add OMP_CLAUSE_THREAD_LIMIT
+	to OMP_TARGET_CLAUSES if it isn't there already.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_NUM_TEAMS_EXPR): Rename to ...

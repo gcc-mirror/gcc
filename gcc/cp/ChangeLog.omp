@@ -1,6 +1,14 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (OMP_TARGET_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_num_teams): Parse optional

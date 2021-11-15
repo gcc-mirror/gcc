@@ -1,6 +1,21 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_target_task): Copy args array as well.
+	* target.c (gomp_target_fallback): Add args argument.
+	Set gomp_icv (true)->thread_limit_var if thread_limit is present.
+	(GOMP_target): Adjust gomp_target_fallback caller.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_task_fn): Likewise.
+	* config/nvptx/team.c (gomp_nvptx_main): Set
+	gomp_global_icv.thread_limit_var.
+	* testsuite/libgomp.c-c++-common/thread-limit-1.c: New test.2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-11-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/unexpected-end.f90: Update dg-error.

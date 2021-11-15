@@ -1,3 +1,11 @@
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses) <case OMP_CLAUSE_THREAD_LIMIT>:
+	Duplicate to both OMP_TARGET and OMP_TEAMS.
+
 2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-omp.c (c_omp_expand_metadirective_r): New.
