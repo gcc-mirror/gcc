@@ -2031,6 +2031,28 @@ get_maxval_strlen (tree arg, strlen_range_kind rkind, tree *nonstr = NULL)
   return lendata.decl ? NULL_TREE : lendata.maxlen;
 }
 
+/* Return true if LEN is known to be less than or equal to (or if STRICT is
+   true, strictly less than) the lower bound of SIZE at compile time and false
+   otherwise.  */
+
+static bool
+known_lower (gimple *stmt, tree len, tree size, bool strict = false)
+{
+  if (len == NULL_TREE)
+    return false;
+
+  wide_int size_range[2];
+  wide_int len_range[2];
+  if (get_range (len, stmt, len_range) && get_range (size, stmt, size_range))
+    {
+      if (strict)
+	return wi::ltu_p (len_range[1], size_range[0]);
+      else
+       return wi::leu_p (len_range[1], size_range[0]);
+    }
+
+  return false;
+}
 
 /* Fold function call to builtin strcpy with arguments DEST and SRC.
    If LEN is not NULL, it represents the length of the string to be
@@ -2566,16 +2588,10 @@ gimple_fold_builtin_strncat_chk (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  if (! tree_fits_uhwi_p (size))
-    return false;
-
   if (! integer_all_onesp (size))
     {
       tree src_len = c_strlen (src, 1);
-      if (src_len
-	  && tree_fits_uhwi_p (src_len)
-	  && tree_fits_uhwi_p (len)
-	  && ! tree_int_cst_lt (len, src_len))
+      if (known_lower (stmt, src_len, len))
 	{
 	  /* If LEN >= strlen (SRC), optimize into __strcat_chk.  */
 	  fn = builtin_decl_explicit (BUILT_IN_STRCAT_CHK);
@@ -3024,39 +3040,25 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
 	}
     }
 
-  if (! tree_fits_uhwi_p (size))
-    return false;
-
   tree maxlen = get_maxval_strlen (len, SRK_INT_VALUE);
-  if (! integer_all_onesp (size))
+  if (! integer_all_onesp (size)
+      && !known_lower (stmt, len, size)
+      && !known_lower (stmt, maxlen, size))
     {
-      if (! tree_fits_uhwi_p (len))
+      /* MAXLEN and LEN both cannot be proved to be less than SIZE, at
+	 least try to optimize (void) __mempcpy_chk () into
+	 (void) __memcpy_chk () */
+      if (fcode == BUILT_IN_MEMPCPY_CHK && ignore)
 	{
-	  /* If LEN is not constant, try MAXLEN too.
-	     For MAXLEN only allow optimizing into non-_ocs function
-	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
-	    {
-	      if (fcode == BUILT_IN_MEMPCPY_CHK && ignore)
-		{
-		  /* (void) __mempcpy_chk () can be optimized into
-		     (void) __memcpy_chk ().  */
-		  fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
-		  if (!fn)
-		    return false;
+	  fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
+	  if (!fn)
+	    return false;
 
-		  gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
-		  replace_call_with_call_and_fold (gsi, repl);
-		  return true;
-		}
-	      return false;
-	    }
+	  gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
 	}
-      else
-	maxlen = len;
-
-      if (tree_int_cst_lt (size, maxlen))
-	return false;
+      return false;
     }
 
   fn = NULL_TREE;
@@ -3136,61 +3138,48 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
       return true;
     }
 
-  if (! tree_fits_uhwi_p (size))
-    return false;
-
   tree maxlen = get_maxval_strlen (src, SRK_STRLENMAX);
   if (! integer_all_onesp (size))
     {
       len = c_strlen (src, 1);
-      if (! len || ! tree_fits_uhwi_p (len))
+      if (!known_lower (stmt, len, size, true)
+	  && !known_lower (stmt, maxlen, size, true))
 	{
-	  /* If LEN is not constant, try MAXLEN too.
-	     For MAXLEN only allow optimizing into non-_ocs function
-	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
+	  if (fcode == BUILT_IN_STPCPY_CHK)
 	    {
-	      if (fcode == BUILT_IN_STPCPY_CHK)
-		{
-		  if (! ignore)
-		    return false;
-
-		  /* If return value of __stpcpy_chk is ignored,
-		     optimize into __strcpy_chk.  */
-		  fn = builtin_decl_explicit (BUILT_IN_STRCPY_CHK);
-		  if (!fn)
-		    return false;
-
-		  gimple *repl = gimple_build_call (fn, 3, dest, src, size);
-		  replace_call_with_call_and_fold (gsi, repl);
-		  return true;
-		}
-
-	      if (! len || TREE_SIDE_EFFECTS (len))
+	      if (! ignore)
 		return false;
 
-	      /* If c_strlen returned something, but not a constant,
-		 transform __strcpy_chk into __memcpy_chk.  */
-	      fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
+	      /* If return value of __stpcpy_chk is ignored,
+		 optimize into __strcpy_chk.  */
+	      fn = builtin_decl_explicit (BUILT_IN_STRCPY_CHK);
 	      if (!fn)
 		return false;
 
-	      gimple_seq stmts = NULL;
-	      len = force_gimple_operand (len, &stmts, true, NULL_TREE);
-	      len = gimple_convert (&stmts, loc, size_type_node, len);
-	      len = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node, len,
-				  build_int_cst (size_type_node, 1));
-	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	      gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
+	      gimple *repl = gimple_build_call (fn, 3, dest, src, size);
 	      replace_call_with_call_and_fold (gsi, repl);
 	      return true;
 	    }
-	}
-      else
-	maxlen = len;
 
-      if (! tree_int_cst_lt (maxlen, size))
-	return false;
+	  if (! len || TREE_SIDE_EFFECTS (len))
+	    return false;
+
+	  /* If c_strlen returned something, but not provably less than size,
+	     transform __strcpy_chk into __memcpy_chk.  */
+	  fn = builtin_decl_explicit (BUILT_IN_MEMCPY_CHK);
+	  if (!fn)
+	    return false;
+
+	  gimple_seq stmts = NULL;
+	  len = force_gimple_operand (len, &stmts, true, NULL_TREE);
+	  len = gimple_convert (&stmts, loc, size_type_node, len);
+	  len = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node, len,
+			      build_int_cst (size_type_node, 1));
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
+	  replace_call_with_call_and_fold (gsi, repl);
+	  return true;
+	}
     }
 
   /* If __builtin_st{r,p}cpy_chk is used, assume st{r,p}cpy is available.  */
@@ -3220,41 +3209,23 @@ gimple_fold_builtin_stxncpy_chk (gimple_stmt_iterator *gsi,
   bool ignore = gimple_call_lhs (stmt) == NULL_TREE;
   tree fn;
 
-  if (! tree_fits_uhwi_p (size))
-    return false;
-
   tree maxlen = get_maxval_strlen (len, SRK_INT_VALUE);
-  if (! integer_all_onesp (size))
+  if (! integer_all_onesp (size)
+      && !known_lower (stmt, len, size) && !known_lower (stmt, maxlen, size))
     {
-      if (! tree_fits_uhwi_p (len))
+      if (fcode == BUILT_IN_STPNCPY_CHK && ignore)
 	{
-	  /* If LEN is not constant, try MAXLEN too.
-	     For MAXLEN only allow optimizing into non-_ocs function
-	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
+	  /* If return value of __stpncpy_chk is ignored,
+	     optimize into __strncpy_chk.  */
+	  fn = builtin_decl_explicit (BUILT_IN_STRNCPY_CHK);
+	  if (fn)
 	    {
-	      if (fcode == BUILT_IN_STPNCPY_CHK && ignore)
-		{
-		  /* If return value of __stpncpy_chk is ignored,
-		     optimize into __strncpy_chk.  */
-		  fn = builtin_decl_explicit (BUILT_IN_STRNCPY_CHK);
-		  if (fn)
-		    {
-		      gimple *repl = gimple_build_call (fn, 4, dest, src, len,
-							size);
-		      replace_call_with_call_and_fold (gsi, repl);
-		      return true;
-		    }
-		}
-
-	      return false;
+	      gimple *repl = gimple_build_call (fn, 4, dest, src, len, size);
+	      replace_call_with_call_and_fold (gsi, repl);
+	      return true;
 	    }
 	}
-      else
-	maxlen = len;
-
-      if (tree_int_cst_lt (size, maxlen))
-	return false;
+      return false;
     }
 
   /* If __builtin_st{r,p}ncpy_chk is used, assume st{r,p}ncpy is available.  */
@@ -3374,26 +3345,10 @@ gimple_fold_builtin_snprintf_chk (gimple_stmt_iterator *gsi,
   size = gimple_call_arg (stmt, 3);
   fmt = gimple_call_arg (stmt, 4);
 
-  if (! tree_fits_uhwi_p (size))
+  tree maxlen = get_maxval_strlen (len, SRK_INT_VALUE);
+  if (! integer_all_onesp (size)
+      && !known_lower (stmt, len, size) && !known_lower (stmt, maxlen, size))
     return false;
-
-  if (! integer_all_onesp (size))
-    {
-      tree maxlen = get_maxval_strlen (len, SRK_INT_VALUE);
-      if (! tree_fits_uhwi_p (len))
-	{
-	  /* If LEN is not constant, try MAXLEN too.
-	     For MAXLEN only allow optimizing into non-_ocs function
-	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
-	    return false;
-	}
-      else
-	maxlen = len;
-
-      if (tree_int_cst_lt (size, maxlen))
-	return false;
-    }
 
   if (!init_target_chars ())
     return false;
@@ -3453,9 +3408,6 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
   size = gimple_call_arg (stmt, 2);
   fmt = gimple_call_arg (stmt, 3);
 
-  if (! tree_fits_uhwi_p (size))
-    return false;
-
   len = NULL_TREE;
 
   if (!init_target_chars ())
@@ -3482,20 +3434,13 @@ gimple_fold_builtin_sprintf_chk (gimple_stmt_iterator *gsi,
 	    {
 	      arg = gimple_call_arg (stmt, 4);
 	      if (POINTER_TYPE_P (TREE_TYPE (arg)))
-		{
-		  len = c_strlen (arg, 1);
-		  if (! len || ! tree_fits_uhwi_p (len))
-		    len = NULL_TREE;
-		}
+		len = c_strlen (arg, 1);
 	    }
 	}
     }
 
-  if (! integer_all_onesp (size))
-    {
-      if (! len || ! tree_int_cst_lt (len, size))
-	return false;
-    }
+  if (! integer_all_onesp (size) && !known_lower (stmt, len, size, true))
+    return false;
 
   /* Only convert __{,v}sprintf_chk to {,v}sprintf if flag is 0
      or if format doesn't contain % chars or is "%s".  */
