@@ -312,6 +312,9 @@
 #if __cpp_lib_span
 # define __cpp_lib_spanstream 202106L
 #endif
+#if _GLIBCXX_HAVE_STACKTRACE
+# define __cpp_lib_stacktrace 202011L
+#endif
 #define __cpp_lib_string_contains 202011L
 #if _GLIBCXX_USE_CXX11_ABI // Only supported with cxx11-abi
 # define __cpp_lib_string_resize_and_overwrite 202110L

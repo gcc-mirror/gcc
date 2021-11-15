@@ -80,6 +80,7 @@ std_headers = \
 	${std_srcdir}/sstream \
 	${std_srcdir}/syncstream \
 	${std_srcdir}/stack \
+	${std_srcdir}/stacktrace \
 	${std_srcdir}/stdexcept \
 	${std_srcdir}/stop_token \
 	${std_srcdir}/streambuf \
