@@ -1,3 +1,8 @@
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
+	* tree-cfg.h (gimple_debug_cfg): Change argument type from int
+	to dump_flags_t.
+
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-low.cc (is_oacc_parallel_or_serial): Handle
