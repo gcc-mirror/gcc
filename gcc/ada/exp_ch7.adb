@@ -4629,8 +4629,9 @@ package body Exp_Ch7 is
 
       Comp := First_Component (U_Typ);
       while Present (Comp) loop
-         if Has_Task (Etype (Comp))
-           or else Has_Simple_Protected_Object (Etype (Comp))
+         if Chars (Comp) /= Name_uParent
+           and then (Has_Task (Etype (Comp))
+             or else Has_Simple_Protected_Object (Etype (Comp)))
          then
             Tsk :=
               Make_Selected_Component (Loc,
