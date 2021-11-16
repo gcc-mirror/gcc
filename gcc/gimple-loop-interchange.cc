@@ -2109,7 +2109,7 @@ pass_linterchange::execute (function *fun)
   if (changed_p)
     {
       unsigned todo = TODO_update_ssa_only_virtuals;
-      todo |= loop_invariant_motion_in_fun (cfun, false);
+      todo |= loop_invariant_motion_in_fun (cfun, false, false);
       scev_reset ();
       return todo;
     }

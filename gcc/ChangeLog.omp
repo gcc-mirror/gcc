@@ -1,3 +1,21 @@
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
+	* passes.def: Set restrict_oacc_hoisting to true for the early
+	pass_lim instance.
+	* tree-ssa-loop-im.cc (movement_possibility_1): Add
+	restrict_oacc_hoisting flag to function; restrict movement if set.
+	(movement_possibility): Add restrict_oacc_hoisting parameter.  Forward
+	to movement_possibility_1.
+	(compute_invariantness): Add restrict_oacc_hoisting flag and pass it on.
+	(gather_mem_refs_stmt): Skip IFN_GOACC_LOOP and IFN_UNIQUE
+	calls.
+	(loop_invariant_motion_in_fun): Add restrict_oacc_hoisting flag and
+	pass it on.
+	(pass_lim::execute): Pass on new flags.
+	* tree-ssa-loop-manip.h (loop_invariant_motion_in_fun): Adjust declaration.
+	* gimple-loop-interchange.cc (pass_linterchange::execute): Adjust call to
+	loop_invariant_motion_in_fun.
+
 2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	* common.opt: Add flag Wopenacc-false-independent.

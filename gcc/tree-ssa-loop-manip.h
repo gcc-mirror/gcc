@@ -50,7 +50,7 @@ extern void tree_transform_and_unroll_loop (class loop *, unsigned,
 					    transform_callback, void *);
 extern void tree_unroll_loop (class loop *, unsigned, tree_niter_desc *);
 extern tree canonicalize_loop_ivs (class loop *, tree *, bool);
-extern unsigned int loop_invariant_motion_in_fun (function *, bool);
+extern unsigned int loop_invariant_motion_in_fun (function *, bool, bool);
 
 
 #endif /* GCC_TREE_SSA_LOOP_MANIP_H */
