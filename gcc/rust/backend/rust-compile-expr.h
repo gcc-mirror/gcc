@@ -388,6 +388,8 @@ public:
     ctx->add_statement (assignment);
   }
 
+  void visit (HIR::CompoundAssignmentExpr &expr) override;
+
   void visit (HIR::ArrayIndexExpr &expr) override
   {
     Bexpression *array = CompileExpr::Compile (expr.get_array_expr (), ctx);
@@ -448,17 +450,7 @@ public:
       constructor.push_back (translated_expr);
   }
 
-  void visit (HIR::ArithmeticOrLogicalExpr &expr) override
-  {
-    auto op = expr.get_expr_type ();
-    auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-    auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
-    auto location = expr.get_locus ();
-
-    translated
-      = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
-							       location);
-  }
+  void visit (HIR::ArithmeticOrLogicalExpr &expr) override;
 
   void visit (HIR::ComparisonExpr &expr) override
   {
@@ -482,15 +474,7 @@ public:
       = ctx->get_backend ()->lazy_boolean_expression (op, lhs, rhs, location);
   }
 
-  void visit (HIR::NegationExpr &expr) override
-  {
-    auto op = expr.get_expr_type ();
-    auto negated_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
-    auto location = expr.get_locus ();
-
-    translated
-      = ctx->get_backend ()->negation_expression (op, negated_expr, location);
-  }
+  void visit (HIR::NegationExpr &expr) override;
 
   void visit (HIR::TypeCastExpr &expr) override
   {
@@ -998,6 +982,26 @@ public:
 						  known_valid,
 						  expr.get_locus ());
   }
+
+protected:
+  Bexpression *compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
+					  TyTy::BaseType *receiver,
+					  TyTy::FnType *fntype,
+					  Bexpression *receiver_ref,
+					  std::vector<HIR::Expr *> &arguments,
+					  Location expr_locus);
+
+  Bexpression *resolve_method_address (TyTy::FnType *fntype, HirId ref,
+				       TyTy::BaseType *receiver,
+				       HIR::PathIdentSegment &segment,
+				       Analysis::NodeMapping expr_mappings,
+				       Location expr_locus);
+
+  Bexpression *
+  resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
+			     HIR::OperatorExpr &expr, Bexpression *lhs,
+			     Bexpression *rhs, HIR::Expr *lhs_expr,
+			     HIR::Expr *rhs_expr);
 
 private:
   CompileExpr (Context *ctx)

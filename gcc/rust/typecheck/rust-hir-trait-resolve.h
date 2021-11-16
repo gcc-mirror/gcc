@@ -24,6 +24,7 @@
 #include "rust-tyty-visitor.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-trait-ref.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace Resolver {
@@ -205,6 +206,31 @@ private:
     // resolve the blocks of functions etc because it can end up in a recursive
     // loop of trying to resolve traits as required by the types
     tref->on_resolved ();
+
+    // does this have any lang-item attributes?
+    for (auto &attr : trait_reference->get_outer_attrs ())
+      {
+	bool is_lang_item = attr.get_path ().as_string ().compare ("lang") == 0
+			    && attr.has_attr_input ()
+			    && attr.get_attr_input ().get_attr_input_type ()
+				 == AST::AttrInput::AttrInputType::LITERAL;
+	if (is_lang_item)
+	  {
+	    auto &literal
+	      = static_cast<AST::AttrInputLiteral &> (attr.get_attr_input ());
+	    const auto &lang_item_type_str
+	      = literal.get_literal ().as_string ();
+	    auto lang_item_type
+	      = Analysis::RustLangItem::Parse (lang_item_type_str);
+	    if (lang_item_type == Analysis::RustLangItem::ItemType::UNKNOWN)
+	      {
+		rust_error_at (attr.get_locus (), "unknown lang item");
+		return tref;
+	      }
+	    mappings->insert_lang_item (
+	      lang_item_type, trait_reference->get_mappings ().get_defid ());
+	  }
+      }
 
     return tref;
   }

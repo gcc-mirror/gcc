@@ -1316,6 +1316,67 @@ AssignmentExpr::as_string () const
 }
 
 std::string
+CompoundAssignmentExpr::as_string () const
+{
+  std::string operator_str;
+  operator_str.reserve (1);
+
+  // get operator string
+  switch (expr_type)
+    {
+    case ArithmeticOrLogicalOperator::ADD:
+      operator_str = "+";
+      break;
+    case ArithmeticOrLogicalOperator::SUBTRACT:
+      operator_str = "-";
+      break;
+    case ArithmeticOrLogicalOperator::MULTIPLY:
+      operator_str = "*";
+      break;
+    case ArithmeticOrLogicalOperator::DIVIDE:
+      operator_str = "/";
+      break;
+    case ArithmeticOrLogicalOperator::MODULUS:
+      operator_str = "%";
+      break;
+    case ArithmeticOrLogicalOperator::BITWISE_AND:
+      operator_str = "&";
+      break;
+    case ArithmeticOrLogicalOperator::BITWISE_OR:
+      operator_str = "|";
+      break;
+    case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      operator_str = "^";
+      break;
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      operator_str = "<<";
+      break;
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      operator_str = ">>";
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+
+  operator_str += "=";
+
+  std::string str ("CompoundAssignmentExpr: ");
+  if (main_or_left_expr == nullptr || right_expr == nullptr)
+    {
+      str += "error. this is probably a parsing failure.";
+    }
+  else
+    {
+      str += "\n left: " + main_or_left_expr->as_string ();
+      str += "\n right: " + right_expr->as_string ();
+      str += "\n operator: " + operator_str;
+    }
+
+  return str;
+}
+
+std::string
 AsyncBlockExpr::as_string () const
 {
   std::string str = "AsyncBlockExpr: ";
@@ -3814,6 +3875,12 @@ TypeCastExpr::accept_vis (HIRVisitor &vis)
 
 void
 AssignmentExpr::accept_vis (HIRVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+CompoundAssignmentExpr::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

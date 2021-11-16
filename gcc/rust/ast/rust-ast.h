@@ -542,6 +542,13 @@ protected:
 class AttrInput
 {
 public:
+  enum AttrInputType
+  {
+    LITERAL,
+    META_ITEM,
+    TOKEN_TREE,
+  };
+
   virtual ~AttrInput () {}
 
   // Unique pointer custom clone function
@@ -563,6 +570,8 @@ public:
 
   // Returns whether attr input has been parsed to meta item syntax.
   virtual bool is_meta_item () const = 0;
+
+  virtual AttrInputType get_attr_input_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -649,6 +658,11 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   bool check_cfg_predicate (const Session &session) const override;
+
+  AttrInputType get_attr_input_type () const final override
+  {
+    return AttrInput::AttrInputType::META_ITEM;
+  }
 
   // Clones this object.
   std::unique_ptr<AttrInputMetaItemContainer>
@@ -767,6 +781,11 @@ public:
   }
 
   bool is_meta_item () const override { return false; }
+
+  AttrInputType get_attr_input_type () const final override
+  {
+    return AttrInput::AttrInputType::TOKEN_TREE;
+  }
 };
 
 /* Forward decl - definition moved to rust-expr.h as it requires LiteralExpr to
