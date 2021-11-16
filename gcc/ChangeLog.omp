@@ -1,4 +1,12 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+
+	* graph.cc (oacc_get_fn_attrib): New declaration.
+	(find_loop_location): New declaration.
+	(draw_cfg_nodes_for_loop): Print value of the
+	can_be_parallel flag at the top of loops in OpenACC
+	functions.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
             * Makefile.in: Add graphite-oacc.o
