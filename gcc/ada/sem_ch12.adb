@@ -3278,6 +3278,7 @@ package body Sem_Ch12 is
    procedure Analyze_Formal_Subprogram_Declaration (N : Node_Id) is
       Spec : constant Node_Id   := Specification (N);
       Def  : constant Node_Id   := Default_Name (N);
+      Expr : constant Node_Id   := Expression (N);
       Nam  : constant Entity_Id := Defining_Unit_Name (Spec);
       Subp : Entity_Id;
 
@@ -3310,6 +3311,18 @@ package body Sem_Ch12 is
               ("a formal abstract subprogram cannot default to null", Spec);
          end if;
 
+         --  A formal abstract function cannot have an expression default
+         --  (expression defaults are allowed for nonabstract formal functions
+         --  when extensions are enabled).
+
+         if Nkind (Spec) = N_Function_Specification
+           and then Present (Expr)
+         then
+            Error_Msg_N
+              ("a formal abstract subprogram cannot default to an expression",
+               Spec);
+         end if;
+
          declare
             Ctrl_Type : constant Entity_Id := Find_Dispatching_Type (Nam);
          begin
@@ -3336,7 +3349,7 @@ package body Sem_Ch12 is
       if Box_Present (N) then
          null;
 
-      --  Else default is bound at the point of generic declaration
+      --  Default name is bound at the point of generic declaration
 
       elsif Present (Def) then
          if Nkind (Def) = N_Operator_Symbol then
@@ -3461,6 +3474,16 @@ package body Sem_Ch12 is
                Error_Msg_N ("no visible subprogram matches specification", N);
             end if;
          end if;
+
+      --  When extensions are enabled, an expression can be given as default
+      --  for a formal function. The expression must be of the function result
+      --  type and can reference formal parameters of the function.
+
+      elsif Present (Expr) then
+         Push_Scope (Nam);
+         Install_Formals (Nam);
+         Preanalyze_Spec_Expression (Expr, Etype (Nam));
+         End_Scope;
       end if;
 
    <<Leave>>
@@ -11101,11 +11124,45 @@ package body Sem_Ch12 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (Make_Null_Statement (Loc))));
 
-         --  RM 12.6 (16 2/2): The procedure has convention Intrinsic
+         --  RM 12.6 (16.2/2): The procedure has convention Intrinsic
 
          Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
 
          --  Eliminate the calls to it when optimization is enabled
+
+         Set_Is_Inlined (Defining_Unit_Name (New_Spec));
+         return Decl_Node;
+
+      --  Handle case of a formal function with an expression default (allowed
+      --  when extensions are enabled).
+
+      elsif Nkind (Specification (Formal)) = N_Function_Specification
+        and then Present (Expression (Formal))
+      then
+         --  Generate body for function, for use in the instance
+
+         declare
+            Expr : constant Node_Id := New_Copy (Expression (Formal));
+            Stmt : constant Node_Id := Make_Simple_Return_Statement (Loc);
+         begin
+            Set_Sloc (Expr, Loc);
+            Set_Expression (Stmt, Expr);
+
+            Decl_Node :=
+              Make_Subprogram_Body (Loc,
+                Specification              => New_Spec,
+                Declarations               => New_List,
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Stmt)));
+         end;
+
+         --  RM 12.6 (16.2/2): Like a null procedure default, the function
+         --  has convention Intrinsic.
+
+         Set_Convention (Defining_Unit_Name (New_Spec), Convention_Intrinsic);
+
+         --  Inline calls to it when optimization is enabled
 
          Set_Is_Inlined (Defining_Unit_Name (New_Spec));
          return Decl_Node;

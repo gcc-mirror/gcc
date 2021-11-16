@@ -1136,11 +1136,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Formal_Abstract_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag)));
 
    Cc (N_Formal_Concrete_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag)));
 
    Ab (N_Push_Pop_xxx_Label, Node_Kind);
