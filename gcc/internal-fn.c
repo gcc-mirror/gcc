@@ -2970,6 +2970,8 @@ expand_UNIQUE (internal_fn, gcall *stmt)
 	gcc_unreachable ();
       break;
     case IFN_UNIQUE_OACC_PRIVATE:
+    case IFN_UNIQUE_OACC_PRIVATE_SCALAR:
+    case IFN_UNIQUE_OACC_FIRSTPRIVATE:
       break;
     }
 

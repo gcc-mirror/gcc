@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-options "-cpp" }
+! { dg-additional-options "-O2" } for Graphite
 
 #define N (1024 * 512)
 

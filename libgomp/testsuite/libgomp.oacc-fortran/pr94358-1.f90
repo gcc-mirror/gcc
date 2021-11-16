@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-options "-fopt-info-omp-all" }
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
+! { dg-additional-options "-O2" } for Graphite
 
 ! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
 ! passed to 'incr' may be unset, and in that case, it will be set to [...]",

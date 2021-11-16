@@ -4174,7 +4174,16 @@ public:
   virtual bool gate (function *)
   {
     if (oacc_kernels_p)
-      return flag_openacc;
+      {
+	if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE)
+	  return false;
+
+        gcc_checking_assert (
+            param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+            || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
+        return flag_openacc;
+      }
     else
       return flag_tree_parallelize_loops > 1;
   }
@@ -4193,6 +4202,13 @@ public:
 unsigned
 pass_parallelize_loops::execute (function *fun)
 {
+  if (oacc_kernels_p)
+    {
+      gcc_checking_assert (
+          param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+          || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+    }
+
   tree nthreads = builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS);
   if (nthreads == NULL_TREE)
     return 0;

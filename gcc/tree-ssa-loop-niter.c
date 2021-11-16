@@ -1980,6 +1980,9 @@ simplify_replace_tree (tree expr, tree old, tree new_tree,
   return (ret ? (do_fold ? fold (ret) : ret) : expr);
 }
 
+bool oacc_call_analyzable_p (gimple* stmt);
+tree interpret_gimple_call (class loop *loop, gimple *call);
+
 /* Expand definitions of ssa names in EXPR as long as they are simple
    enough, and return the new expression.  If STOP is specified, stop
    expanding if EXPR equals to it.  */
@@ -1994,6 +1997,9 @@ expand_simple_operations (tree expr, tree stop, hash_map<tree, tree> &cache)
 
   if (expr == NULL_TREE)
     return expr;
+
+  if (oacc_call_analyzable_p (expr))
+    expr = interpret_gimple_call (NULL, SSA_NAME_DEF_STMT (expr));
 
   if (is_gimple_min_invariant (expr))
     return expr;

@@ -213,6 +213,12 @@ public:
   /* True if the loop can be parallel.  */
   unsigned can_be_parallel : 1;
 
+  /* True if the can_be_parallel flag is valid, i.e.  the
+     parallelizability of the loop has been analyzed.  This can be
+     used to distinguish between unparallelizable loops and a failed
+     analysis, e.g. to provide better diagnostic messages. */
+  unsigned can_be_parallel_valid_p : 1;
+
   /* True if -Waggressive-loop-optimizations warned about this loop
      already.  */
   unsigned warned_aggressive_loop_optimizations : 1;

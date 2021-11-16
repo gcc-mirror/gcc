@@ -7,7 +7,7 @@
 program main
   integer :: w, arr(0:31)
 
-  !$acc parallel num_gangs(32) num_workers(32) copyout(arr) ! { dg-warning "region is worker partitioned" }
+  !$acc parallel num_gangs(32) num_workers(32) copyout(arr) ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" }
     !$acc loop gang private(w)
     do j = 0, 31
       w = 0

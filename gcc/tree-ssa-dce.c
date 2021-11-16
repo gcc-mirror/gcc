@@ -256,6 +256,17 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	if (gimple_has_side_effects (stmt))
 	  {
 	    mark_stmt_necessary (stmt, true);
+
+            /* The lhs of the OpenACC loop and reduction calls necessary,
+	       cf. the lowering in omp-offload.c. */
+            if (gimple_call_internal_p (stmt, IFN_UNIQUE)
+                || gimple_call_internal_p (stmt, IFN_GOACC_REDUCTION))
+              {
+		tree lhs = gimple_call_lhs (stmt);
+		if (lhs)
+                  mark_operand_necessary (lhs);
+              }
+
 	    return;
 	  }
 	/* IFN_GOACC_LOOP calls are necessary in that they are used to
@@ -267,6 +278,9 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	if (gimple_call_internal_p (stmt, IFN_GOACC_LOOP))
 	  {
 	    mark_stmt_necessary (stmt, true);
+	    tree lhs = gimple_call_lhs (stmt);
+	    gcc_assert (lhs);
+	    mark_operand_necessary (lhs);
 	    return;
 	  }
 	if (!gimple_call_lhs (stmt))
