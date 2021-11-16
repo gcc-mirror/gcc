@@ -13,6 +13,6 @@ int *ae2 (void)
   return &e2;
 }
 
-/* { dg-final { scan-assembler "add r0,pcl,@.tbss@tlsgd" } } */
-/* { dg-final { scan-assembler "bl @__tls_get_addr@plt" } } */
-/* { dg-final { scan-assembler "add_s r0,r0,@e2@dtpoff" } } */
+/* { dg-final { scan-assembler "add\\s+r0,pcl,@.tbss@tlsgd" } } */
+/* { dg-final { scan-assembler "bl\\s+@__tls_get_addr@plt" } } */
+/* { dg-final { scan-assembler "add_s\\s+r0,r0,@e2@dtpoff" } } */
