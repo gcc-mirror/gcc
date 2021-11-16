@@ -874,6 +874,11 @@ Wtsan
 Common Var(warn_tsan) Init(1) Warning
 Warn about unsupported features in ThreadSanitizer.
 
+Wopenacc-false-independent
+Common Var(warn_openacc_false_independent) Init(1) Warning
+Warn in case a loop in an OpenACC \"kernels\" region has an \"independent\"
+clause but analysis shows that it has loop-carried dependences.
+
 Xassembler
 Driver Separate
 

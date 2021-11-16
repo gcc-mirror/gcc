@@ -2037,6 +2037,51 @@ oacc_loop_transform_auto_into_independent (oacc_loop *loop)
   return true;
 }
 
+/* Emit a warning if LOOP has an "independent" clause but Graphite's
+   analysis shows that it has data dependences. Note that we respect
+   the user's explicit decision to parallelize the loop but we
+   nevertheless warn that this decision could be wrong. */
+
+static void
+oacc_loop_warn_if_false_independent (oacc_loop *loop)
+{
+  if (!optimize)
+    return;
+
+  if (loop->routine)
+    return;
+
+  /* TODO Warn about "auto" & "independent" in "parallel" regions? */
+  if (!oacc_parallel_kernels_graphite_fun_p ())
+    return;
+
+  if (!(loop->flags & OLF_INDEPENDENT))
+    return;
+
+  bool analyzed = false;
+  bool can_be_parallel = oacc_loop_can_be_parallel_p (loop, analyzed);
+  loop_p cfg_loop = oacc_loop_get_cfg_loop (loop);
+
+  if (cfg_loop && cfg_loop->inner && !analyzed)
+    {
+      if (dump_enabled_p ())
+	{
+	  const dump_user_location_t loc
+	    = dump_user_location_t::from_location_t (loop->loc);
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			   "'independent' loop in 'kernels' region has not been "
+			   "analyzed (cf. 'graphite' "
+			   "dumps for more information).\n");
+	}
+      return;
+    }
+
+  if (!can_be_parallel)
+    warning_at (loop->loc, 0,
+		"loop has \"independent\" clause but data dependences were "
+		"found");
+}
+
 /* Walk the OpenACC loop hierarchy checking and assigning the
    programmer-specified partitionings.  OUTER_MASK is the partitioning
    this loop is contained within.  Return mask of partitioning
@@ -2087,6 +2132,10 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	      this_mask = 0;
 	    }
 	}
+
+      /* TODO Is this flag needed? Perhaps use -Wopenacc-parallelism? */
+      if (warn_openacc_false_independent)
+        oacc_loop_warn_if_false_independent (loop);
 
       if (maybe_auto && (loop->flags & OLF_INDEPENDENT))
 	{

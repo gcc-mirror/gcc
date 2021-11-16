@@ -1,5 +1,11 @@
 2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
 
+	* common.opt: Add flag Wopenacc-false-independent.
+	* omp-offload.cc (oacc_loop_warn_if_false_independent): New function.
+	(oacc_loop_fixed_partitions): Call from here.
+
+2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
+
 	* graphite-isl-ast-to-gimple.cc: Include internal-fn.h.
 	(graphite_oacc_analyze_scop): Implement runtime alias checks.
 	* omp-expand.cc (expand_oacc_for): Add an additional "noalias" parameter
