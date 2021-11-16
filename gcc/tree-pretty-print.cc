@@ -1468,6 +1468,17 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     }
 }
 
+/* Print the single clause at the top of the clause chain C to a string and
+   return it. Note that print_generic_expr_to_str prints the whole clause chain
+   instead. The caller must free the returned memory. */
+
+char *
+print_omp_clause_to_str (tree c)
+{
+  pretty_printer pp;
+  dump_omp_clause (&pp, c, 0, TDF_VOPS|TDF_MEMSYMS);
+  return xstrdup (pp_formatted_text (&pp));
+}
 
 /* Dump chain of OMP clauses.
 

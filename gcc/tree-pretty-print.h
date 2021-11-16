@@ -41,6 +41,7 @@ extern void print_generic_expr (FILE *, tree, dump_flags_t = TDF_NONE);
 extern char *print_generic_expr_to_str (tree);
 extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t,
 			      bool = true);
+extern char *print_omp_clause_to_str (tree);
 extern void dump_omp_atomic_memory_order (pretty_printer *,
 					  enum omp_memory_order);
 extern void dump_omp_loop_non_rect_expr (pretty_printer *, tree, int,
