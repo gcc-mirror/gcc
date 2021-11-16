@@ -155,6 +155,13 @@ make_pass_tree_loop (gcc::context *ctxt)
 static bool
 gate_oacc_kernels (function *fn)
 {
+  if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE)
+    return false;
+
+  gcc_checking_assert (param_openacc_kernels
+			   == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+		       || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
   if (!flag_openacc)
     return false;
 
@@ -323,6 +330,10 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
   {
+    if (param_openacc_kernels != OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+	&& param_openacc_kernels != OPENACC_KERNELS_PARLOOPS)
+      return false;
+
     return (optimize
 	    && flag_openacc
 	    /* Don't bother doing anything if the program has errors.  */

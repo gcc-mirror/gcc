@@ -176,8 +176,13 @@ adjust_region_code_walk_stmt_fn (gimple_stmt_iterator *gsi_p,
 	       compiler logic to analyze this, so can't parallelize it here, so
 	       we'd very likely be running into a performance problem if we
 	       were to execute this unparallelized, thus forward the whole loop
-	       nest to 'parloops'.  */
-	    *region_code = GF_OMP_TARGET_KIND_OACC_KERNELS;
+	       nest to Graphite/"parloops".  */
+	    if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE)
+	      *region_code = GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE;
+	    else if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS)
+	      *region_code = GF_OMP_TARGET_KIND_OACC_KERNELS;
+	    else
+	      gcc_unreachable ();
 	    /* Terminate: final decision for this region.  */
 	    *handled_ops_p = true;
 	    return integer_zero_node;
@@ -198,8 +203,13 @@ adjust_region_code_walk_stmt_fn (gimple_stmt_iterator *gsi_p,
 	 the compiler logic to analyze this, so can't parallelize it here, so
 	 we'd very likely be running into a performance problem if we were to
 	 execute this unparallelized, thus forward the whole thing to
-	 'parloops'.  */
-      *region_code = GF_OMP_TARGET_KIND_OACC_KERNELS;
+	 Graphite/"parloops".  */
+      if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE)
+	*region_code = GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE;
+      else if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS)
+	*region_code = GF_OMP_TARGET_KIND_OACC_KERNELS;
+      else
+	gcc_unreachable ();
       /* Terminate: final decision for this region.  */
       *handled_ops_p = true;
       return integer_zero_node;
@@ -316,7 +326,9 @@ make_region_seq (location_t loc, gimple_seq stmts,
   /* Figure out the region code for this region.  */
   /* Optimistic default: assume "setup code", no looping; thus not
      performance-critical.  */
-  int region_code = GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE;
+  int region_code = param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE
+			? GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE
+			: GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE;
   adjust_region_code (stmts, &region_code);
 
   if (region_code == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
@@ -336,6 +348,13 @@ make_region_seq (location_t loc, gimple_seq stmts,
       /* Remove and issue warnings about gang clauses on any OpenACC
 	 loops nested inside this sequentially executed statement.  */
       make_loops_gang_single (stmts);
+    }
+  else if (region_code == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, loc_stmts_first,
+			 "beginning %<Graphite%> part in OpenACC"
+			 " %<kernels%> region\n");
     }
   else if (region_code == GF_OMP_TARGET_KIND_OACC_KERNELS)
     {
@@ -444,21 +463,24 @@ adjust_nested_loop_clauses (gimple_stmt_iterator *gsi_p, bool *,
 	  tree *outer_clause_ptr = NULL;
 	  switch (OMP_CLAUSE_CODE (loop_clause))
 	    {
-	    case OMP_CLAUSE_GANG:
-	      outer_clause_ptr = wi_info->loop_gang_clause_ptr;
-	      break;
-	    case OMP_CLAUSE_WORKER:
-	      outer_clause_ptr = wi_info->loop_worker_clause_ptr;
-	      break;
-	    case OMP_CLAUSE_VECTOR:
-	      outer_clause_ptr = wi_info->loop_vector_clause_ptr;
-	      break;
-	    case OMP_CLAUSE_SEQ:
-	    case OMP_CLAUSE_INDEPENDENT:
-	    case OMP_CLAUSE_AUTO:
-	      add_auto_clause = false;
-	    default:
-	      break;
+	      case OMP_CLAUSE_GANG:
+		outer_clause_ptr = wi_info->loop_gang_clause_ptr;
+		add_auto_clause = false;
+		break;
+	      case OMP_CLAUSE_WORKER:
+		outer_clause_ptr = wi_info->loop_worker_clause_ptr;
+		add_auto_clause = false;
+		break;
+	      case OMP_CLAUSE_VECTOR:
+		outer_clause_ptr = wi_info->loop_vector_clause_ptr;
+		add_auto_clause = false;
+		break;
+	      case OMP_CLAUSE_SEQ:
+	      case OMP_CLAUSE_INDEPENDENT:
+	      case OMP_CLAUSE_AUTO:
+		add_auto_clause = false;
+	      default:
+		break;
 	    }
 	  if (outer_clause_ptr != NULL)
 	    {
@@ -532,30 +554,34 @@ transform_kernels_loop_clauses (gimple *omp_for,
        loop_clause = OMP_CLAUSE_CHAIN (loop_clause))
     {
       bool found_num_clause = false;
-      tree *clause_ptr, clause_to_check;
+      tree *clause_ptr;
+      tree clause_to_check = NULL_TREE;
       switch (OMP_CLAUSE_CODE (loop_clause))
-	{
-	case OMP_CLAUSE_GANG:
-	  found_num_clause = true;
-	  clause_ptr = &loop_gang_clause;
-	  clause_to_check = num_gangs_clause;
-	  break;
-	case OMP_CLAUSE_WORKER:
-	  found_num_clause = true;
-	  clause_ptr = &loop_worker_clause;
-	  clause_to_check = num_workers_clause;
-	  break;
-	case OMP_CLAUSE_VECTOR:
-	  found_num_clause = true;
-	  clause_ptr = &loop_vector_clause;
-	  clause_to_check = vector_length_clause;
-	  break;
-	case OMP_CLAUSE_INDEPENDENT:
-	case OMP_CLAUSE_SEQ:
-	case OMP_CLAUSE_AUTO:
-	  add_auto_clause = false;
-	default:
-	  break;
+	 {
+	  case OMP_CLAUSE_GANG:
+	    found_num_clause = true;
+	    add_auto_clause = false;
+	    clause_ptr = &loop_gang_clause;
+	    clause_to_check = num_gangs_clause;
+	    break;
+	  case OMP_CLAUSE_WORKER:
+	    found_num_clause = true;
+	    add_auto_clause = false;
+	    clause_ptr = &loop_worker_clause;
+	    clause_to_check = num_workers_clause;
+	    break;
+	  case OMP_CLAUSE_VECTOR:
+	    found_num_clause = true;
+	    add_auto_clause = false;
+	    clause_ptr = &loop_vector_clause;
+	    clause_to_check = vector_length_clause;
+	    break;
+	  case OMP_CLAUSE_INDEPENDENT:
+	  case OMP_CLAUSE_SEQ:
+	  case OMP_CLAUSE_AUTO:
+	    add_auto_clause = false;
+	  default:
+	    break;
 	}
       if (found_num_clause && OMP_CLAUSE_OPERAND (loop_clause, 0) != NULL)
 	{
@@ -653,10 +679,13 @@ make_region_loop_nest (gimple *omp_for, gimple_seq stmts,
   clauses = unshare_expr (clauses);
 
   /* Figure out the region code for this region.  */
-  /* Optimistic default: assume that the loop nest is parallelizable
-     (essentially, no GIMPLE_OMP_FOR with (explicit or implicit) 'auto' clause,
-     and no un-annotated loops).  */
-  int region_code = GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED;
+  /* For "parloops", use an optimistic default: assume that the loop nest is
+     parallelizable (essentially, no GIMPLE_OMP_FOR with (explicit or implicit)
+     'auto' clause, and no un-annotated loops).  */
+  int region_code = param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE
+			? GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE
+			: GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED;
+
   adjust_region_code (stmts, &region_code);
 
   if (region_code == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
@@ -667,6 +696,19 @@ make_region_loop_nest (gimple *omp_for, gimple_seq stmts,
 	dump_printf_loc (MSG_NOTE, omp_for,
 			 "parallelized loop nest"
 			 " in OpenACC %<kernels%> region\n");
+
+      clauses = transform_kernels_loop_clauses (omp_for,
+						num_gangs_clause,
+						num_workers_clause,
+						vector_length_clause,
+						clauses);
+    }
+  else if (region_code == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, omp_for,
+			 "forwarded loop nest in OpenACC %<kernels%> region"
+			 " to %<Graphite%> for analysis\n");
 
       clauses = transform_kernels_loop_clauses (omp_for,
 						num_gangs_clause,
@@ -1618,8 +1660,13 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
   {
-    return (flag_openacc
-	    && param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE);
+    if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE
+	|| param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS)
+      return flag_openacc;
+    else if (param_openacc_kernels == OPENACC_KERNELS_PARLOOPS)
+      return false;
+    else
+      gcc_unreachable ();
   }
   unsigned int execute (function *) final override
   {

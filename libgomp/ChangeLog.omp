@@ -1,6 +1,14 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Adjust.
+	* testsuite/libgomp.oacc-fortran/kernels-independent.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/kernels-loop-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Adjust.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c: Adjust
 	expected output to pass name changes due to the pass
 	reordering and cloning.

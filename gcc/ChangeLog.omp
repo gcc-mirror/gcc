@@ -1,3 +1,199 @@
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+            * Makefile.in: Add graphite-oacc.o
+            * cfgloop.cc (alloc_loop): Set can_be_parallel_valid_p to false.
+            * cfgloop.h: Add can_be_parallel_valid_p field.
+            * cfgloopmanip.cc (copy_loop_info): Add assert.
+            * config/nvptx/nvptx.cc (nvptx_goacc_reduction_setup):
+            * doc/invoke.texi: Adjust param openacc-kernels description.
+            * doc/passes.texi: Adjust pass_ipa_oacc_kernels description.
+            * flag-types.h (enum openacc_kernels):Add
+            OPENACC_KERNELS_DECOMPOSE_PARLOOPS.
+            * gimple-pretty-print.cc (dump_gimple_omp_target): Handle
+            GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE.
+            * gimple.h (enum gf_mask): Add
+            GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE and
+            widen GF_OMP_TARGET_KIND_MASK.
+            (is_gimple_omp_oacc): Handle
+            GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE.
+            (is_gimple_omp_offloaded): Likewise.
+            * gimplify.cc (gimplify_omp_for): Enable reduction localization
+            for "kernels" regions.
+            (gimplify_omp_workshare): Likewise.
+            * graphite-dependences.cc (scop_get_reads_and_writes): Handle
+            "kills" and "reduction" PDRs.
+            (apply_schedule_on_deps): Add dump output for intermediate
+            steps of the dependence computation to enable understanding
+            of unexpected dependences.
+            (carries_deps): Likewise.
+            (scop_get_dependences): Handle "kill" operations and add dump
+            output.
+            * graphite-isl-ast-to-gimple.cc (visit_schedule_loop_node): New function.
+            (graphite_oacc_analyze_scop): New function.
+            * graphite-optimize-isl.cc (optimize_isl): Remove "static" and
+            add argument to identify OpenACC use; don't fail on unchanged
+            schedule in this case.
+            * graphite-poly.cc (new_poly_dr): Handle "kills".
+            (print_pdr): Likewise.
+            (new_gimple_poly_bb): Likewise.
+            (free_gimple_poly_bb): Likewise.
+            (new_scop): Handle "reduction", "private", and "firstprivate"
+            hash sets.
+            (free_scop): Likewise.
+            (print_isl_space): New function.
+            (debug_isl_space): New function.
+            * graphite-scop-detection.cc (scop_detection::can_represent_loop):
+            Don't fail if niter is 0 in OpenACC functions.
+            (scop_detection::add_scop): Don't reject regions with only one
+            loop in OpenACC functions.
+            (ignored_oacc_internal_call_p): New function.
+            (scan_tree_for_params): Handle VIEW_CONVERT_EXPR.
+            (stmt_has_side_effects): Ignore internal OpenACC function calls.
+            (add_write): Likewise.
+            (add_read): Likewise.
+            (add_kill): New function.
+            (add_kills): New function.
+            (add_oacc_kills): New function.
+            (try_generate_gimple_bb): Kill false dependences for OpenACC
+            "private"/"firstprivate" vars.
+            (gather_bbs::gather_bbs): Determin OpenACC
+            "private"/"firstprivate" vars in region.
+            (gather_bbs::before_dom_children): Add assert.
+            (determine_openacc_reductions): New function.
+            (build_scops): Determine OpenACC "reduction" vars in SCoP.
+            * graphite-sese-to-poly.cc (oacc_ifn_call_extract): New declaration.
+            (oacc_internal_call_p): New function.
+            (build_poly_dr): Ignore internal OpenACC function calls,
+            handle "reduction" refs.
+            (build_poly_sr): Likewise; handle "kill" operations.
+            * graphite.cc (graphite_transform_loops): Accept functions with
+            only a single loop.
+            (oacc_enable_graphite_p): New function.
+            (gate_graphite_transforms): Enable pass on OpenACC functions.
+            * graphite.h (enum poly_dr_type): Add PDR_KILL.
+            (struct poly_dr): Add "is_reduction" field.
+            (new_poly_dr): Add argument to declaration.
+            (pdr_kill_p): New function.
+            (print_isl_space): New declaration.
+            (debug_isl_space): New declaration.
+            (struct scop): Add fields "reductions_vars",
+            "oacc_firstprivate_vars", and "oacc_private_scalars".
+            (optimize_isl): New declaration.
+            (graphite_oacc_analyze_scop): New declaration.
+            * internal-fn.cc (expand_UNIQUE): Handle
+            IFN_UNIQUE_OACC_PRIVATE_SCALAR and IFN_UNIQUE_OACC_FIRSTPRIVATE
+            * internal-fn.h: Add OACC_PRIVATE_SCALAR and OACC_FIRSTPRIVATE
+            * omp-expand.cc (struct omp_region): Adjust comment.
+            (expand_omp_taskloop_for_inner):
+            (expand_omp_for): Add asserts about expected "kernels" region types.
+            (mark_loops_in_oacc_kernels_region): Likewise.
+            (expand_omp_target): Likewise; handle
+            GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE.
+            (build_omp_regions_1): Handle
+            GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE.
+            Likewise.
+            (omp_make_gimple_edges): Likewise.
+            * omp-general.cc (oacc_get_kernels_attrib): New function.
+            (oacc_get_fn_dim_size): Allow argument to be NULL.
+            * omp-general.h (oacc_get_kernels_attrib): New declaration.
+            * omp-low.cc (struct omp_context): Add fields
+            "oacc_firstprivate_vars" and "oacc_private_scalars".
+            (was_originally_oacc_kernels): New function.
+            (is_oacc_kernels):
+            (is_oacc_kernels_decomposed_graphite_part): New function.
+            (new_omp_context): Allocate "oacc_first_private_vars" and
+            "oacc_private_scalars" ...
+            (delete_omp_context): ... and free from here.
+            (oacc_record_firstprivate_var_clauses): New function.
+            (oacc_record_private_scalars): New function.
+            (scan_sharing_clauses): Call functions to record "private"
+            scalars and "firstprivate" variables.
+            (check_oacc_kernel_gwv): Add assert.
+            (ctx_in_oacc_kernels_region): Handle
+            GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE.
+            (scan_omp_for): Likewise.
+            (check_omp_nesting_restrictions): Likewise.
+            (lower_oacc_head_mark): Likewise.
+            (lower_omp_for): Likewise.
+            (lower_omp_target): Create "private" and "firstprivate" marker
+            call statements.
+            (lower_oacc_head_tail): Adjust "private" and "firstprivate"
+            marker calls.
+            (lower_oacc_reductions): Emit "private" and "firstprivate"
+             marker call statements.
+            (make_oacc_firstprivate_vars_marker): New function.
+            (make_oacc_private_scalars_marker): New function.
+            * omp-oacc-kernels-decompose.cc (adjust_region_code_walk_stmt_fn):
+            Assign GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE to
+            region using the new "kernels" handling.
+            (make_region_seq): Adjust default region type for new
+            "kernels" handling; no more exceptions, let Graphite handle everything.
+            (make_region_loop_nest): Likewise; add dump output and assert.
+            (adjust_nested_loop_clauses): Stop creating "auto" clauses if
+            loop has "independent", "gang" etc.
+            (transform_kernels_loop_clauses): Likewise.
+            * omp-offload.cc (oacc_extract_loop_call): New function.
+            (oacc_loop_get_cfg_loop): New function.
+            (can_be_parallel_str): New function.
+            (oacc_loop_can_be_parallel_p): New function.
+            (oacc_parallel_kernels_graphite_fun_p): New function.
+            (oacc_parallel_fun_p): New function.
+            (oacc_loop_transform_auto_into_independent): New function, ...
+            (oacc_loop_fixed_partitions): ... called from here to transfer
+            the result of Graphite's analysis to the loop.
+            (execute_oacc_loop_designation): Handle "oacc
+            functions with "parallel_kernels_graphite" attribute.
+            (execute_oacc_device_lower): Handle
+            IFN_UNIQUE_OACC_PRIVATE_SCALAR and IFN_UNIQUE_OACC_FIRSTPRIVATE.
+            * omp-offload.h (oacc_extract_loop_call): Add declaration.
+            * params.opt: Add "param=openacc-kernels" value "decompose-parloops".
+            * sese.cc (scalar_evolution_in_region): "Redirect" SCEV
+            analysis to outer loop for IFN_GOACC_LOOP calls.
+            * sese.h: Add field "kill_scalar_refs".
+            * tree-chrec.cc (chrec_fold_plus_1): Handle VIEW_CONVERT_EXPR
+            like CASE_CONVERT.
+            * tree-data-ref.cc (dump_data_reference): Include
+            DR_BASE_ADDRESS and DR_OFFSET in dump output.
+            (get_references_in_stmt): Don't reject OpenACC internal function
+            calls.
+            (graphite_find_data_references_in_stmt): Remove unused variable.
+            * tree-parloops.cc (pass_parallelize_loops::execute): Disable
+            pass with the new kernels handling, enable if requested explicitly.
+            * tree-scalar-evolution.cc (set_scev_analyze_openacc_calls):
+            Set flag to enable the analysis of internal OpenACC function
+            calls (use for Graphite only).
+            (oacc_call_analyzable_p): New function.
+            (oacc_ifn_call_extract): New function.
+            (oacc_simplify): New function.
+            (add_to_evolution): Simplify OpenACC internal function calls
+            if applicable.
+            (follow_ssa_edge_binary): Likewise.
+            (follow_ssa_edge_expr): Likewise.
+            (follow_copies_to_constant): Likewise.
+            (analyze_initial_condition): Likewise.
+            (interpret_loop_phi): Likewise.
+            (interpret_gimple_call): New function.
+            (interpret_rhs_expr): Likewise.
+            (instantiate_scev_name): Likewise.
+            (analyze_scalar_evolution_1): Handle GIMPLE_CALL, handle default definitions.
+            (expression_expensive_p): Consider internal OpenACC calls to
+            be cheap.
+            * tree-scalar-evolution.h (set_scev_analyze_openacc_calls):
+            New declaration.
+            (oacc_call_analyzable_p): New declaration.
+            * tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Mark
+            lhs of internal OpenACC function calls necessary.
+            * tree-ssa-ifcombine.c (recognize_if_then_else):
+            * tree-ssa-loop-niter.cc (oacc_call_analyzable_p):
+            (oacc_ifn_call_extract): New declaration.
+            (interpret_gimple_call): New delcaration.
+            (expand_simple_operations): Handle internal OpenACC function calls.
+            * tree-ssa-loop.cc (gate_oacc_kernels): Disable for new
+            "kernels" handling.
+            * graphite-oacc.cc: New file.
+            * graphite-oacc.h: New file.
+
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
 	* common.opt: Add fgraphite-runtime-alias-checks.

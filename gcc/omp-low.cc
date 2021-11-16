@@ -154,6 +154,12 @@ struct omp_context
   /* True if this construct can be cancelled.  */
   bool cancellable;
 
+  /* "firstprivate" variables in this context */
+  hash_set<tree> *oacc_firstprivate_vars;
+
+  /* Scalar "private" variables in this context. */
+  hash_set<tree> *oacc_private_scalars;
+
   /* True if lower_omp_1 should look up lastprivate conditional in parent
      context.  */
   bool combined_into_simd_safelen1;
@@ -223,7 +229,27 @@ is_oacc_parallel_or_serial (omp_context *ctx)
 	      || (gimple_omp_target_kind (ctx->stmt)
 		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
 	      || (gimple_omp_target_kind (ctx->stmt)
-		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)));
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE)));
+}
+
+/* Return true if CTX corresponds to an oacc region that was generated from
+   an original kernels region that has been lowered to parallel regions.  */
+
+static bool
+was_originally_oacc_kernels (omp_context *ctx)
+{
+  enum gimple_code outer_type = gimple_code (ctx->stmt);
+  return ((outer_type == GIMPLE_OMP_TARGET)
+	  && ((gimple_omp_target_kind (ctx->stmt)
+	       == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS)));
 }
 
 /* Return whether CTX represents an OpenACC 'kernels' construct.
@@ -250,7 +276,20 @@ is_oacc_kernels_decomposed_part (omp_context *ctx)
 	      || (gimple_omp_target_kind (ctx->stmt)
 		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)
 	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE)
+	      || (gimple_omp_target_kind (ctx->stmt)
 		  == GF_OMP_TARGET_KIND_OACC_DATA_KERNELS)));
+}
+
+/* Return whether CTX represents an OpenACC 'kernels' decomposed part that will
+   be analyzed by Graphite.  */
+
+static bool
+is_oacc_kernels_decomposed_graphite_part (omp_context *ctx)
+{
+  return gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
+	 && gimple_omp_target_kind (ctx->stmt)
+		== GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE;
 }
 
 /* Return true if STMT corresponds to an OpenMP target region.  */
@@ -1130,6 +1169,9 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
 
   ctx->cb.decl_map = new hash_map<tree, tree>;
 
+  ctx->oacc_firstprivate_vars = new hash_set<tree> ();
+  ctx->oacc_private_scalars = new hash_set<tree> ();
+
   return ctx;
 }
 
@@ -1210,6 +1252,9 @@ delete_omp_context (splay_tree_value value)
   delete ctx->lastprivate_conditional_map;
   delete ctx->allocate_map;
 
+  delete ctx->oacc_firstprivate_vars;
+  delete ctx->oacc_private_scalars;
+
   XDELETE (ctx);
 }
 
@@ -1269,6 +1314,43 @@ fixup_child_record_type (omp_context *ctx)
 
   TREE_TYPE (ctx->receiver_decl)
     = build_qualified_type (build_reference_type (type), TYPE_QUAL_RESTRICT);
+}
+
+static void
+oacc_record_firstprivate_var_clauses (omp_context *ctx, tree clauses)
+{
+  tree c;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE)
+      {
+	tree decl = OMP_CLAUSE_DECL (c);
+
+	if (TREE_ADDRESSABLE (decl))
+	  continue;
+
+	ctx->oacc_firstprivate_vars->add (decl);
+      }
+}
+
+static void
+oacc_record_private_scalars (omp_context *ctx, tree clauses)
+{
+  tree c;
+
+  for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE)
+      {
+	tree decl = OMP_CLAUSE_DECL (c);
+	if (!(VAR_P (decl)
+	      && !(TREE_READONLY (decl)
+		   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))))
+	  continue;
+
+	if (TREE_ADDRESSABLE (decl))
+	  continue;
+	ctx->oacc_private_scalars->add (decl);
+      }
 }
 
 /* Instantiate decls as necessary in CTX to satisfy the data sharing
@@ -1966,7 +2048,13 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  /* FALLTHRU */
 
 	case OMP_CLAUSE_FIRSTPRIVATE:
+	  if (is_oacc_kernels_decomposed_graphite_part (ctx))
+	    oacc_record_firstprivate_var_clauses (ctx, c);
+	  gcc_fallthrough ();
 	case OMP_CLAUSE_PRIVATE:
+	  if (is_oacc_kernels_decomposed_graphite_part (ctx))
+	    oacc_record_private_scalars (ctx, c);
+	  gcc_fallthrough ();
 	case OMP_CLAUSE_LINEAR:
 	case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
@@ -2844,11 +2932,20 @@ enclosing_target_ctx (omp_context *ctx)
 static bool
 ctx_in_oacc_kernels_region (omp_context *ctx)
 {
+  gcc_checking_assert (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE
+		       || param_openacc_kernels
+			      == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+		       || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
   for (;ctx != NULL; ctx = ctx->outer)
     {
       gimple *stmt = ctx->stmt;
-      if (gimple_code (stmt) == GIMPLE_OMP_TARGET
-	  && gimple_omp_target_kind (stmt) == GF_OMP_TARGET_KIND_OACC_KERNELS)
+      if (gimple_code (stmt) != GIMPLE_OMP_TARGET)
+	continue;
+
+      int target_kind = gimple_omp_target_kind (stmt);
+      if (target_kind == GF_OMP_TARGET_KIND_OACC_KERNELS
+	  || target_kind == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE)
 	return true;
     }
 
@@ -2863,6 +2960,10 @@ ctx_in_oacc_kernels_region (omp_context *ctx)
 static unsigned
 check_oacc_kernel_gwv (gomp_for *stmt, omp_context *ctx)
 {
+  gcc_checking_assert (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+		       || param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE
+		       || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
   bool checking = true;
   unsigned outer_mask = 0;
   unsigned this_mask = 0;
@@ -2934,7 +3035,9 @@ scan_omp_for (gomp_for *stmt, omp_context *outer_ctx)
     {
       omp_context *tgt = enclosing_target_ctx (outer_ctx);
 
-      if (!(tgt && is_oacc_kernels (tgt)))
+      if (!tgt
+	  || (is_oacc_parallel_or_serial (tgt)
+	      && !was_originally_oacc_kernels (tgt)))
 	for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	  {
 	    tree c_op0;
@@ -3475,8 +3578,11 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
       || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE)
     /* ..., except for the atomic codes that OpenACC shares with OpenMP.  */
     ;
-  else if (!(is_gimple_omp (stmt)
-	     && is_gimple_omp_oacc (stmt)))
+  else if (!(is_gimple_omp (stmt) && is_gimple_omp_oacc (stmt))
+	   /* Except for target regions introduced for kernels.  */
+	   && (gimple_code (stmt) != GIMPLE_OMP_TARGET
+	       || gimple_omp_target_kind (stmt)
+		  != GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE))
     {
       if (oacc_get_fn_attrib (cfun->decl) != NULL)
 	{
@@ -3647,6 +3753,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		  case GF_OMP_TARGET_KIND_OACC_SERIAL:
 		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+		  case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
 		    ok = true;
 		    break;
 
@@ -4153,6 +4260,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      break;
 	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
 	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	      /* OpenACC 'kernels' decomposed parts.  */
 	      stmt_name = "kernels"; break;
@@ -4173,6 +4281,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	      ctx_stmt_name = "host_data"; break;
 	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
 	    case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	      /* OpenACC 'kernels' decomposed parts.  */
 	      ctx_stmt_name = "kernels"; break;
@@ -4180,8 +4289,10 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    }
 
 	  /* OpenACC/OpenMP mismatch?  */
-	  if (is_gimple_omp_oacc (stmt)
-	      != is_gimple_omp_oacc (ctx->stmt))
+	  if (is_gimple_omp_oacc (stmt) != is_gimple_omp_oacc (ctx->stmt)
+	      && (gimple_code (stmt) != GIMPLE_OMP_TARGET
+		  || gimple_omp_target_kind (stmt)
+			 != GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE))
 	    {
 	      error_at (gimple_location (stmt),
 			"%s %qs construct inside of %s %qs region",
@@ -7793,7 +7904,9 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
 static void
 lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
-		       gcall *fork, gcall *private_marker, gcall *join,
+		       gcall *fork, gcall *private_marker,
+		       gcall *private_scalars_marker,
+		       gcall *firstprivate_marker, gcall *join,
 		       gimple_seq *fork_seq, gimple_seq *join_seq,
 		       omp_context *ctx)
 {
@@ -7811,7 +7924,9 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	/* No 'reduction' clauses on OpenACC 'kernels'.  */
 	gcc_checking_assert (!is_oacc_kernels (ctx));
 	/* Likewise, on OpenACC 'kernels' decomposed parts.  */
-	gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
+	gcc_checking_assert (
+	    !is_oacc_kernels_decomposed_part (ctx)
+	    || is_oacc_kernels_decomposed_graphite_part (ctx));
 
 	tree orig = OMP_CLAUSE_DECL (c);
 	tree orig_clause;
@@ -8017,7 +8132,12 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
     gimple_seq_add_stmt (fork_seq, fork);
   gimple_seq_add_seq (fork_seq, after_fork);
 
+  if (private_scalars_marker)
+    gimple_seq_add_stmt (join_seq, private_scalars_marker);
+  if (firstprivate_marker)
+    gimple_seq_add_stmt (join_seq, firstprivate_marker);
   gimple_seq_add_seq (join_seq, before_join);
+
   if (join)
     gimple_seq_add_stmt (join_seq, join);
   gimple_seq_add_seq (join_seq, after_join);
@@ -8732,16 +8852,27 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
 
   /* In a parallel region, loops without auto and seq clauses are
      implicitly INDEPENDENT.  */
-  if ((!tgt || is_oacc_parallel_or_serial (tgt))
+  if ((!tgt
+       || (is_oacc_parallel_or_serial (tgt)
+	   && !is_oacc_kernels_decomposed_graphite_part (tgt)))
       && !(tag & (OLF_SEQ | OLF_AUTO)))
-    tag |= OLF_INDEPENDENT;
+    {
+      tag |= OLF_INDEPENDENT;
+    }
 
   /* Loops inside OpenACC 'kernels' decomposed parts' regions are expected to
      have an explicit 'seq' or 'independent' clause, and no 'auto' clause.  */
-  if (tgt && is_oacc_kernels_decomposed_part (tgt))
+  if (tgt && is_oacc_kernels_decomposed_part (tgt)
+      && !is_oacc_kernels_decomposed_graphite_part (tgt))
     {
-      gcc_assert (tag & (OLF_SEQ | OLF_INDEPENDENT));
-      gcc_assert (!(tag & OLF_AUTO));
+      tag |= OLF_INDEPENDENT;
+
+      gcc_checking_assert (
+	  gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET
+	  /* Loops in kernels regions that will be handled by Graphite should
+	     have been made 'auto' by "pass_convert_oacc_kernels". */
+	  || gimple_omp_target_kind (ctx->stmt)
+		 != GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE);
     }
 
   if (tag & OLF_TILE)
@@ -8796,7 +8927,9 @@ lower_oacc_loop_marker (location_t loc, tree ddvar, bool head,
 
 static void
 lower_oacc_head_tail (location_t loc, tree clauses, gcall *private_marker,
-		      gimple_seq *head, gimple_seq *tail, omp_context *ctx)
+		      gcall *private_scalars_marker,
+		      gcall *firstprivate_marker, gimple_seq *head,
+		      gimple_seq *tail, omp_context *ctx)
 {
   bool inner = false;
   tree ddvar = create_tmp_var (integer_type_node, ".data_dep");
@@ -8809,6 +8942,20 @@ lower_oacc_head_tail (location_t loc, tree clauses, gcall *private_marker,
       gimple_set_location (private_marker, loc);
       gimple_call_set_lhs (private_marker, ddvar);
       gimple_call_set_arg (private_marker, 1, ddvar);
+    }
+
+  if (private_scalars_marker)
+    {
+      gimple_set_location (private_scalars_marker, loc);
+      gimple_call_set_lhs (private_scalars_marker, ddvar);
+      gimple_call_set_arg (private_scalars_marker, 1, ddvar);
+    }
+
+  if (firstprivate_marker)
+    {
+      gimple_set_location (firstprivate_marker, loc);
+      gimple_call_set_lhs (firstprivate_marker, ddvar);
+      gimple_call_set_arg (firstprivate_marker, 1, ddvar);
     }
 
   tree fork_kind = build_int_cst (unsigned_type_node, IFN_UNIQUE_OACC_FORK);
@@ -8840,9 +8987,10 @@ lower_oacc_head_tail (location_t loc, tree clauses, gcall *private_marker,
 			      build_int_cst (integer_type_node, done),
 			      &join_seq);
 
-      lower_oacc_reductions (loc, clauses, place, inner,
-			     fork, (count == 1) ? private_marker : NULL,
-			     join, &fork_seq, &join_seq,  ctx);
+      lower_oacc_reductions (loc, clauses, place, inner, fork,
+			     (count == 1) ? private_marker : NULL,
+			     private_scalars_marker, firstprivate_marker, join,
+			     &fork_seq, &join_seq, ctx);
 
       /* Append this level to head. */
       gimple_seq_add_seq (head, fork_seq);
@@ -11992,6 +12140,76 @@ lower_oacc_private_marker (omp_context *ctx)
   return gimple_build_call_internal_vec (IFN_UNIQUE, args);
 }
 
+/* Return an internal function call that contains a list of variables which are
+   "firstprivate" in the compute region representend by CTX. This call is used
+   to help Graphite identify those static. */
+
+static gcall *
+make_oacc_firstprivate_vars_marker (omp_context *ctx)
+{
+  auto_vec<tree, 5> args;
+
+  args.quick_push (
+      build_int_cst (integer_type_node, IFN_UNIQUE_OACC_FIRSTPRIVATE));
+
+  /* TODO Change the data structure/iteration to ensure that the ordering of the
+     variables remains stable between GCC runs. */
+  hash_set<tree>::iterator end = ctx->oacc_firstprivate_vars->end();
+  hash_set<tree>::iterator it = ctx->oacc_firstprivate_vars->begin ();
+  for (; it != end; ++it)
+    {
+      tree decl = *it;
+      for (omp_context *thisctx = ctx; thisctx; thisctx = thisctx->outer)
+	{
+	  tree inner_decl = maybe_lookup_decl (decl, thisctx);
+	  if (inner_decl)
+	    {
+	      decl = inner_decl;
+	      break;
+	    }
+	}
+
+      args.safe_push (decl);
+    }
+
+  return gimple_build_call_internal_vec (IFN_UNIQUE, args);
+}
+
+/* Return an internal function call that contains a list of scalar variables
+   which are "private" in the compute region represented by CTX. This call is
+   used to help Graphite identify those variables. */
+
+static gcall *
+make_oacc_private_scalars_marker (omp_context *ctx)
+{
+  auto_vec<tree, 5> args;
+
+  args.quick_push (
+      build_int_cst (integer_type_node, IFN_UNIQUE_OACC_PRIVATE_SCALAR));
+
+  /* TODO Change the data structure/iteration to ensure that the ordering of
+     the variables remains stable between GCC runs. */
+  hash_set<tree>::iterator end = ctx->oacc_private_scalars->end ();
+  hash_set<tree>::iterator it = ctx->oacc_private_scalars->begin ();
+  for (; it != end; ++it)
+    {
+      tree decl = *it;
+      for (omp_context *thisctx = ctx; thisctx; thisctx = thisctx->outer)
+	{
+	  tree inner_decl = maybe_lookup_decl (decl, thisctx);
+	  if (inner_decl)
+	    {
+	      decl = inner_decl;
+	      break;
+	    }
+	}
+
+      args.safe_push (decl);
+    }
+
+  return gimple_build_call_internal_vec (IFN_UNIQUE, args);
+}
+
 /* Lower code for an OMP loop directive.  */
 
 static void
@@ -12200,11 +12418,16 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   /* Once lowered, extract the bounds and clauses.  */
   omp_extract_for_data (stmt, &fd, NULL);
 
-  if (is_gimple_omp_oacc (ctx->stmt)
-      && !ctx_in_oacc_kernels_region (ctx))
-    lower_oacc_head_tail (gimple_location (stmt),
-			  gimple_omp_for_clauses (stmt), private_marker,
-			  &oacc_head, &oacc_tail, ctx);
+  bool oacc_kernels_parloops = false;
+  if (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+      || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS)
+    oacc_kernels_parloops = ctx_in_oacc_kernels_region (ctx);
+  if (is_gimple_omp_oacc (ctx->stmt) && !oacc_kernels_parloops)
+    {
+      lower_oacc_head_tail (gimple_location (stmt),
+			    gimple_omp_for_clauses (stmt), private_marker,
+			    NULL, NULL, &oacc_head, &oacc_tail, ctx);
+    }
 
   /* Add OpenACC partitioning and reduction markers just before the loop.  */
   if (oacc_head)
@@ -13138,6 +13361,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
       data_region = false;
       break;
     case GF_OMP_TARGET_KIND_DATA:
@@ -13385,8 +13609,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  {
 	    /* No 'firstprivate' clauses on OpenACC 'kernels'.  */
 	    gcc_checking_assert (!is_oacc_kernels (ctx));
-	    /* Likewise, on OpenACC 'kernels' decomposed parts.  */
-	    gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	    goto oacc_firstprivate;
 	  }
@@ -13423,8 +13645,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  {
 	    /* No 'private' clauses on OpenACC 'kernels'.  */
 	    gcc_checking_assert (!is_oacc_kernels (ctx));
-	    /* Likewise, on OpenACC 'kernels' decomposed parts.  */
-	    gcc_checking_assert (!is_oacc_kernels_decomposed_part (ctx));
 
 	    break;
 	  }
@@ -14695,12 +14915,25 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 	  gcall *private_marker = lower_oacc_private_marker (ctx);
 
+	  gcall *firstprivate_marker = NULL;
+	  gcall *private_scalars_marker = NULL;
+
+	  /* The markers for "private" and "firstprivate" scalars are only used
+	     to help "Graphite" identify those variables for which it has to
+	     adjust some dependences. */
+	  if (is_oacc_kernels_decomposed_graphite_part (ctx))
+	    {
+	      firstprivate_marker = make_oacc_firstprivate_vars_marker (ctx);
+	      private_scalars_marker = make_oacc_private_scalars_marker (ctx);
+	    }
+
 	  if (private_marker)
 	    gimple_call_set_arg (private_marker, 2, level);
 
 	  lower_oacc_reductions (gimple_location (ctx->stmt), clauses, level,
-				 false, NULL, private_marker, NULL, &fork_seq,
-				 &join_seq, ctx);
+				 false, NULL, private_marker,
+				 private_scalars_marker, firstprivate_marker,
+				 NULL, &fork_seq, &join_seq, ctx);
 	}
 
       gimple_seq_add_seq (&new_body, fork_seq);

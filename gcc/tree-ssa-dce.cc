@@ -252,6 +252,9 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	if (gimple_call_internal_p (stmt, IFN_GOACC_LOOP))
 	  {
 	    mark_stmt_necessary (stmt, true);
+	    tree lhs = gimple_call_lhs (stmt);
+	    gcc_assert (lhs);
+	    mark_operand_necessary (lhs);
 	    return;
 	  }
 	break;

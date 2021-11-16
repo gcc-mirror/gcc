@@ -1784,6 +1784,9 @@ dump_gimple_omp_target (pretty_printer *buffer, const gomp_target *gs,
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
       kind = " oacc_parallel_kernels_gang_single";
       break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
+      kind = " oacc_parallel_kernels_graphite";
+      break;
     case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
       kind = " oacc_data_kernels";
       break;

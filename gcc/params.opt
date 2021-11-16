@@ -796,13 +796,16 @@ If -ftree-vectorize is used, the minimal loop bound of a loop to be considered f
 
 -param=openacc-kernels=
 Common Joined Enum(openacc_kernels) Var(param_openacc_kernels) Init(OPENACC_KERNELS_DECOMPOSE) Param
---param=openacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
+--param=openacc-kernels=[decompose|decompose-parloops|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
 
 Enum
 Name(openacc_kernels) Type(enum openacc_kernels)
 
 EnumValue
 Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
+
+EnumValue
+Enum(openacc_kernels) String(decompose-parloops) Value(OPENACC_KERNELS_DECOMPOSE_PARLOOPS)
 
 EnumValue
 Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)

@@ -448,8 +448,29 @@ scalar_evolution_in_region (const sese_l &region, loop_p loop, tree t)
   if (!loop_in_sese_p (loop, region))
     loop = NULL;
 
-  return instantiate_scev (region.entry, loop,
-			   analyze_scalar_evolution (loop, t));
+  tree chrec = analyze_scalar_evolution (loop, t);
+
+  /* The IFN_GOACC_LOOP calls may evolve to an ssa name that is defined outside
+     of LOOP. To avoid failing the scev analysis, we need this special
+     handling. */
+  if (TREE_CODE (t) == SSA_NAME)
+    {
+      gimple *def_stmt = SSA_NAME_DEF_STMT (t);
+      basic_block def_bb = def_stmt->bb;
+      if (is_gimple_call (def_stmt)
+	  && gimple_call_internal_p (def_stmt, IFN_GOACC_LOOP)
+	  && TREE_CODE (chrec) == SSA_NAME && def_bb
+	  && SSA_NAME_DEF_STMT (chrec)->bb)
+	{
+	  loop_p outer_loop = SSA_NAME_DEF_STMT (chrec)->bb->loop_father;
+	  loop_p inner_loop = def_bb->loop_father;
+
+	  if (outer_loop != inner_loop)
+	    return scalar_evolution_in_region (region, outer_loop, chrec);
+	}
+    }
+
+  return instantiate_scev (region.entry, loop, chrec);
 }
 
 /* Return true if BB is empty, contains only DEBUG_INSNs.  */

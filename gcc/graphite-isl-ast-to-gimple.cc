@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "tree-vectorizer.h"
 #include "graphite.h"
+#include "graphite-oacc.h"
+#include "stdlib.h"
 
 struct ast_build_info
 {
@@ -1452,8 +1454,8 @@ generate_entry_out_of_ssa_copies (edge false_entry,
     }
 }
 
-/* Create a condition that evaluates to TRUE if all ALIAS_DDRS are free of
-   aliasing. */
+/* Create a condition that evaluates to TRUE if all ALIAS_DDRS
+   are free of aliasing. */
 
 static tree
 generate_alias_cond (vec<ddr_p> &alias_ddrs, loop_p context_loop)
@@ -1611,6 +1613,93 @@ graphite_regenerate_ast_isl (scop_p scop)
   timevar_pop (TV_GRAPHITE_CODE_GEN);
 
   return !t.codegen_error_p ();
+}
+
+/* A callback for traversing a schedule tree that visits the band
+ nodes of a schedule which correspond to loops. Checks if the local
+ schedule carries any dependencies and marks the corresponding CFG
+ loops as being parallelizable accordingly. */
+
+static isl_bool
+visit_schedule_loop_node (__isl_keep isl_schedule_node *node, void *user)
+{
+  isl_bool visit_children = isl_bool_true;
+
+  if (isl_schedule_node_get_type (node) != isl_schedule_node_band)
+    return visit_children;
+
+  isl_union_map *dependences = (isl_union_map *)user;
+  isl_union_map *schedule
+      = isl_schedule_node_band_get_partial_schedule_union_map (node);
+  isl_space *space = isl_schedule_node_band_get_space (node);
+
+  isl_id *id = isl_space_get_tuple_id (space, isl_dim_out);
+  const char *name = isl_id_get_name (id);
+  /* Expect format set by add_loop_schedule, i.e. "L_n" */
+  gcc_checking_assert (name[0] == 'L' && name[1] == '_');
+  int loop_num = atoi (name + 2);
+  isl_id_free (id);
+
+  int dimension = isl_space_dim (space, isl_dim_out);
+  loop_p loop = get_loop (cfun, loop_num);
+
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "CFG loop %d:\n", loop_num);
+      print_isl_union_map (dump_file, schedule);
+      fprintf (dump_file, "Schedule dimension: %d\n", dimension);
+
+      fprintf (dump_file, "Schedule node space:\n");
+      print_isl_space (dump_file, space);
+      fprintf (dump_file, "data dependences (\n");
+      print_isl_union_map (dump_file, dependences);
+      fprintf (dump_file, ")\n");
+    }
+
+  bool has_deps = carries_deps (schedule, dependences, dimension);
+
+  loop->can_be_parallel = !has_deps;
+  loop->can_be_parallel_valid_p = true;
+
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      dump_user_location_t loc = find_loop_location (loop);
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		       "loop %s data-dependences.\n",
+		       has_deps ? "has" : "has no");
+
+      fprintf (dump_file, ")\n");
+    }
+
+  isl_union_map_free (schedule);
+  isl_space_free (space);
+
+
+  return visit_children;
+}
+
+/* This function performs data-dependence analysis on the SCoP without using
+   Graphite's code generation. This is meant for OpenACC use since the code
+   generator is unable to reconstruct the OpenACC loop structure. */
+
+bool
+graphite_oacc_analyze_scop (scop_p scop)
+{
+  timevar_push (TV_GRAPHITE_CODE_GEN);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "[graphite_oacc_analyze_scop] schedule:\n");
+      print_isl_schedule (dump_file, scop->original_schedule);
+    }
+
+  /* Analyze dependences in SCoP and mark loops as parallelizable accordingly. */
+  isl_schedule_foreach_schedule_node_top_down (
+      scop->original_schedule, visit_schedule_loop_node, scop->dependence);
+
+  timevar_pop (TV_GRAPHITE_CODE_GEN);
+
+  return true;
 }
 
 #endif  /* HAVE_isl */

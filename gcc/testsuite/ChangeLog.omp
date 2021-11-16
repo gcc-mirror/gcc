@@ -1,4 +1,17 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels.c: Adjust.
+	* c-c++-common/goacc/note-parallelism-1-kernels-conditional-loop-independent_seq.c: Adjust.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loops.c: Adjust.
+	* c-c++-common/goacc/note-parallelism-kernels-loops.c: Adjust.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Removed.
+	* c-c++-common/goacc/kernels-reduction.c: Removed.
+	* gfortran.dg/goacc/loop-auto-transfer-2.f90: New test.
+	* gfortran.dg/goacc/loop-auto-transfer-3.f90: New test.
+	* gfortran.dg/goacc/loop-auto-transfer-4.f90: New test.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 
 	* gcc.dg/graphite/alias-1.c: New test.
 

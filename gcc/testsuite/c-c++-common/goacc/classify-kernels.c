@@ -31,7 +31,7 @@ void KERNELS ()
   /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute1 } */
   /* { dg-note {variable '[abc]\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute1 } */
   /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute1 } */
-  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  /* { dg-note {beginning 'Graphite' region in OpenACC 'kernels' construct} {} { target *-*-* } .+1 } */
   for (unsigned int i = 0; i < N; i++)
     c[i] = a[i] + b[i];
 }

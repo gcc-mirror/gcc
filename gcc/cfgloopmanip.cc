@@ -951,6 +951,7 @@ copy_loop_info (class loop *loop, class loop *target)
   target->simdlen = loop->simdlen;
   target->constraints = loop->constraints;
   target->can_be_parallel = loop->can_be_parallel;
+  target->can_be_parallel_valid_p = loop->can_be_parallel_valid_p;
   target->warned_aggressive_loop_optimizations
     |= loop->warned_aggressive_loop_optimizations;
   target->dont_vectorize = loop->dont_vectorize;

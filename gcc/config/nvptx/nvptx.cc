@@ -7233,7 +7233,14 @@ nvptx_goacc_reduction_setup (gcall *call, offload_attrs *oa)
     }
 
   if (lhs)
+    {
+      //TODO Earlier check for ICE as reported in <http://mid.mail-archive.com/878s9zgir3.fsf@euler.schwinge.homeip.net>.
+      //TODO Not sure if this makes too much sense to have (just) here -- should probably be moved (way) further up in the pipeline?
+      if (TREE_CODE (TREE_TYPE (lhs)) == REFERENCE_TYPE)
+	gcc_checking_assert (is_gimple_addressable (var));
+
     gimplify_assign (lhs, var, &seq);
+    }
 
   pop_gimplify_context (NULL);
   gsi_replace_with_seq (&gsi, seq, true);

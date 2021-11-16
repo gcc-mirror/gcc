@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimplify-me.h"
 #include "ssa.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
@@ -59,6 +61,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "graphite.h"
+#include "graphite-oacc.h"
+#include "cgraph.h"
+#include "gimple-pretty-print.h"
+#include "print-tree.h"
+#include "tree-pretty-print.h"
+#include "internal-fn.h"
+
+static bool have_isl = true;
 
 /* Print global statistics to FILE.  */
 
@@ -419,9 +429,12 @@ graphite_transform_loops (void)
   vec<scop_p> scops = vNULL;
   isl_ctx *ctx;
 
-  /* If a function is parallel it was most probably already run through graphite
-     once. No need to run again.  */
-  if (parallelized_function_p (cfun->decl))
+  /* If a function is parallel it was most probably already run through
+     graphite once. No need to run again.  This is not true for OpenACC
+     functions. The function was created for offloading, bu we still might have
+     to figure out which loops may be parallelized. */
+
+  if (parallelized_function_p (cfun->decl) && !oacc_function_p (cfun))
     return;
 
   calculate_dominance_info (CDI_DOMINATORS);
@@ -447,6 +460,7 @@ graphite_transform_loops (void)
   seir_cache = new hash_map<sese_scev_hash, tree>;
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
+  set_scev_analyze_openacc_calls (oacc_function_p (cfun));
   build_scops (&scops);
   free_dominance_info (CDI_POST_DOMINATORS);
 
@@ -460,26 +474,50 @@ graphite_transform_loops (void)
       print_global_statistics (dump_file);
     }
 
-  FOR_EACH_VEC_ELT (scops, i, scop)
-    if (dbg_cnt (graphite_scop))
-      {
-	scop->isl_context = ctx;
-	if (!build_poly_scop (scop))
-	  continue;
+  if (oacc_function_p (cfun))
+    {
+      /* OpenACC uses Graphite for dependence analysis only.
+	 Code generation would need not to understand the
+	 OpenACC internal function calls before it could be
+	 enabled. */
 
-	if (!apply_poly_transforms (scop))
-	  continue;
+      FOR_EACH_VEC_ELT (scops, i, scop)
+      if (dbg_cnt (graphite_scop))
+	{
+	  scop->isl_context = ctx;
+	  if (!build_poly_scop (scop))
+	    continue;
 
-	changed = true;
-	if (graphite_regenerate_ast_isl (scop)
-	    && dump_enabled_p ())
-	  {
-	    dump_user_location_t loc = find_loop_location
-	      (scops[i]->scop_info->region.entry->dest->loop_father);
-	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			     "loop nest optimized\n");
-	  }
-      }
+	  if (!optimize_isl (scop, true))
+	    continue;
+
+	  graphite_oacc_analyze_scop (scop);
+	  changed = true;
+	}
+      set_scev_analyze_openacc_calls (false);
+    }
+  else // Non-OpenACC-functions
+    {
+      FOR_EACH_VEC_ELT (scops, i, scop)
+      if (dbg_cnt (graphite_scop))
+	{
+	  scop->isl_context = ctx;
+	  if (!build_poly_scop (scop))
+	    continue;
+
+	  if (!apply_poly_transforms (scop))
+	    continue;
+
+	  changed = true;
+	  if (graphite_regenerate_ast_isl (scop) && dump_enabled_p ())
+	    {
+	      dump_user_location_t loc = find_loop_location (
+		  scops[i]->scop_info->region.entry->dest->loop_father);
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			       "loop nest optimized\n");
+	    }
+	}
+    }
 
   delete seir_cache;
   seir_cache = NULL;
@@ -521,6 +559,8 @@ graphite_transform_loops (void)
 
 #else /* If isl is not available: #ifndef HAVE_isl.  */
 
+static bool have_isl = false;
+
 static void
 graphite_transform_loops (void)
 {
@@ -533,7 +573,10 @@ graphite_transform_loops (void)
 static unsigned int
 graphite_transforms (struct function *fun)
 {
-  if (number_of_loops (fun) <= 1)
+
+  unsigned num_loops = number_of_loops (fun);
+  if (num_loops == 0
+      || (num_loops == 1 && !oacc_function_p (cfun)))
     return 0;
 
   graphite_transform_loops ();
@@ -541,14 +584,35 @@ graphite_transforms (struct function *fun)
   return 0;
 }
 
+/* Return TRUE if fun is an OpenACC outlined function that should be analyzed
+   by Graphite. */
+
+static inline bool oacc_enable_graphite_p (function *fun)
+{
+  if (!flag_openacc || !oacc_get_fn_attrib (fun->decl))
+    return false;
+
+  if (!graphite_analyze_oacc_target_region_type_p (fun))
+    return false;
+
+  bool optimizing = global_options.x_optimize <= 0;
+  /* Enabling Graphite if isl is not available aborts compilation. Prefer to
+     skip it and emit a warning, unless optimizations are enabled. */
+  if (!have_isl && !optimizing)
+    warning (OPT_Wall, "Unable to analyze OpenACC regions with Graphite; isl "
+		       "is not available.");
+  return true;
+}
+
 static bool
-gate_graphite_transforms (void)
+gate_graphite_transforms (function *fun)
 {
   /* Enable -fgraphite pass if any one of the graphite optimization flags
      is turned on.  */
   if (flag_graphite_identity
       || flag_loop_parallelize_all
-      || flag_loop_nest_optimize)
+      || flag_loop_nest_optimize
+      || oacc_enable_graphite_p (fun))
     flag_graphite = 1;
 
   return flag_graphite != 0;
@@ -577,7 +641,10 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate (function *) final override { return gate_graphite_transforms (); }
+  bool gate (function *fun) final override
+  {
+    return gate_graphite_transforms (fun);
+  }
 
 }; // class pass_graphite
 
@@ -612,7 +679,11 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate (function *) final override { return gate_graphite_transforms (); }
+  bool gate (function *fun) final override
+  {
+    return gate_graphite_transforms (fun);
+  }
+
   unsigned int execute (function *fun) final override
   {
     return graphite_transforms (fun);

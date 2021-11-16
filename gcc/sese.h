@@ -280,6 +280,7 @@ typedef struct gimple_poly_bb
   vec<data_reference_p> data_refs;
   vec<scalar_use> read_scalar_refs;
   vec<tree> write_scalar_refs;
+  vec<tree> kill_scalar_refs;
 } *gimple_poly_bb_p;
 
 #define GBB_BB(GBB) (GBB)->bb

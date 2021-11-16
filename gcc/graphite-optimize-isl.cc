@@ -109,8 +109,8 @@ scop_get_domains (scop_p scop)
 /* Compute the schedule for SCOP based on its parameters, domain and set of
    constraints.  Then apply the schedule to SCOP.  */
 
-static bool
-optimize_isl (scop_p scop)
+bool
+optimize_isl (scop_p scop, bool oacc_enabled_graphite)
 {
   int old_err = isl_options_get_on_error (scop->isl_context);
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
@@ -196,7 +196,8 @@ optimize_isl (scop_p scop)
 	print_schedule_ast (dump_file, scop->original_schedule, scop);
       isl_schedule_free (scop->transformed_schedule);
       scop->transformed_schedule = isl_schedule_copy (scop->original_schedule);
-      return flag_graphite_identity || flag_loop_parallelize_all;
+      return flag_graphite_identity || flag_loop_parallelize_all
+	     || oacc_enabled_graphite;
     }
 
   return true;

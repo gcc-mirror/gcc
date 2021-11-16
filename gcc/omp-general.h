@@ -121,6 +121,7 @@ extern int oacc_verify_routine_clauses (tree, tree *, location_t,
 					const char *);
 extern tree oacc_build_routine_dims (tree clauses);
 extern tree oacc_get_fn_attrib (tree fn);
+extern tree oacc_get_kernels_attrib (tree fn);
 extern bool offloading_function_p (tree fn);
 extern int oacc_get_fn_dim_size (tree fn, int axis);
 extern int oacc_get_ifn_dim_arg (const gimple *stmt);

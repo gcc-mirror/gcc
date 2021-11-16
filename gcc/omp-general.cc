@@ -2971,6 +2971,15 @@ oacc_get_fn_attrib (tree fn)
   return lookup_attribute (OACC_FN_ATTRIB, DECL_ATTRIBUTES (fn));
 }
 
+/* Retrieve the oacc kernels attrib and return it.  Non-oacc
+   functions will return NULL.  */
+
+tree
+oacc_get_kernels_attrib (tree fn)
+{
+  return lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn));
+}
+
 /* Return true if FN is an OpenMP or OpenACC offloading function.  */
 
 bool
@@ -2997,10 +3006,16 @@ oacc_get_fn_dim_size (tree fn, int axis)
     dims = TREE_CHAIN (dims);
 
   tree v = TREE_VALUE (dims);
-  /* TODO With 'pass_oacc_device_lower' moved "later", this is necessary to
-     avoid ICE for some OpenACC 'kernels' ("parloops") constructs.  */
+  /* TODO-kernels With 'pass_oacc_device_lower' moved "later", this is necessary
+     to avoid ICE for some OpenACC 'kernels' ("parloops") constructs.  */
   if (v == NULL_TREE)
-    return 0;
+    {
+      gcc_checking_assert (
+	  param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+	  || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
+      return 0;
+    }
 
   int size = TREE_INT_CST_LOW (v);
 

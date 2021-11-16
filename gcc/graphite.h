@@ -42,7 +42,8 @@ enum poly_dr_type
   /* PDR_MAY_READs are represented using PDR_READS.  This does not
      limit the expressiveness.  */
   PDR_WRITE,
-  PDR_MAY_WRITE
+  PDR_MAY_WRITE,
+  PDR_KILL
 };
 
 struct poly_dr
@@ -60,6 +61,9 @@ struct poly_dr
   poly_bb_p pbb;
 
   enum poly_dr_type type;
+
+  /* Indicates that this PDR is part of an OpenACC "reduction" computation. */
+  bool is_reduction;
 
   /* The access polyhedron contains the polyhedral space this data
      reference will access.
@@ -185,7 +189,7 @@ struct poly_dr
 #define PDR_ACCESSES(PDR) (NULL)
 
 void new_poly_dr (poly_bb_p, gimple *, enum poly_dr_type,
-		  isl_map *, isl_set *);
+		  isl_map *, isl_set *, bool);
 void debug_pdr (poly_dr_p);
 void print_pdr (FILE *, poly_dr_p);
 
@@ -209,6 +213,14 @@ inline bool
 pdr_may_write_p (poly_dr_p pdr)
 {
   return PDR_TYPE (pdr) == PDR_MAY_WRITE;
+}
+
+/* Returns true when PDR is a "kill".  */
+
+static inline bool
+pdr_kill_p (poly_dr_p pdr)
+{
+  return PDR_TYPE (pdr) == PDR_KILL;
 }
 
 /* POLY_BB represents a blackbox in the polyhedral model.  */
@@ -281,6 +293,8 @@ extern void print_isl_aff (FILE *, isl_aff *);
 extern void print_isl_constraint (FILE *, isl_constraint *);
 extern void print_isl_schedule (FILE *, isl_schedule *);
 extern void debug_isl_schedule (isl_schedule *);
+extern void print_isl_space (FILE *, isl_space *);
+extern void debug_isl_space (isl_space *);
 extern void print_isl_ast (FILE *, isl_ast_node *);
 extern void debug_isl_ast (isl_ast_node *);
 extern void debug_isl_set (isl_set *);
@@ -380,6 +394,18 @@ struct scop
   /* All the data references in this scop.  */
   vec<dr_info> drs;
 
+  /* This set contains the ssa names that are OpenACC "reduction" variables
+     in the loops from SCOP using them. */
+  hash_set<tree> *reduction_vars;
+
+  /* If SCOP is contained in an OpenACC compute region, this is the set of
+     ssa names that are "firstprivate" in this region. */
+  hash_set<tree> *oacc_firstprivate_vars;
+
+  /* If SCOP is contained in an OpenACC compute region, this is the set of
+     ssa names that are "private" in this region. */
+  hash_set<tree> *oacc_private_scalars;
+
   /* The context describes known restrictions concerning the parameters
      and relations in between the parameters.
 
@@ -411,7 +437,8 @@ struct scop
 extern scop_p new_scop (edge, edge);
 extern void free_scop (scop_p);
 extern gimple_poly_bb_p new_gimple_poly_bb (basic_block, vec<data_reference_p>,
-					    vec<scalar_use>, vec<tree>);
+					    vec<scalar_use>, vec<tree>, vec<tree>);
+extern bool optimize_isl (scop_p, bool = false);
 extern bool apply_poly_transforms (scop_p);
 
 /* Set the region of SCOP to REGION.  */
@@ -447,10 +474,10 @@ carries_deps (__isl_keep isl_union_map *schedule,
 
 extern bool build_poly_scop (scop_p);
 extern bool graphite_regenerate_ast_isl (scop_p);
+extern bool graphite_oacc_analyze_scop (scop_p);
 extern void build_scops (vec<scop_p> *);
 extern tree cached_scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern void dot_all_sese (FILE *, vec<sese_l> &);
 extern void dot_sese (sese_l &);
 extern void dot_cfg ();
-
 #endif

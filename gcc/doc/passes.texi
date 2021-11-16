@@ -248,9 +248,9 @@ constraints in order to generate the points-to sets.  It is located in
 
 This is a pass group for processing OpenACC kernels regions.  It is a
 subpass of the IPA OpenACC pass group that runs on offloaded functions
-containing OpenACC kernels loops.  It is located in
-@file{tree-ssa-loop.cc} and is described by
-@code{pass_ipa_oacc_kernels}.
+containing OpenACC kernels loops if @samp{parloops} based handling of
+kernels regions is used. It is located in @file{tree-ssa-loop.cc} and
+is described by @code{pass_ipa_oacc_kernels}.
 
 @item Target clone
 

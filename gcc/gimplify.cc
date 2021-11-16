@@ -14130,11 +14130,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	     && outer->region_type != ORT_ACC_KERNELS)
 	outer = outer->outer_context;
 
-      /* FIXME: Reductions only work in parallel regions at present.  We avoid
-	 doing the reduction localization transformation in kernels regions
-	 here, because the code to remove reductions in kernels regions cannot
-	 handle that.  */
-      if (outer && outer->region_type == ORT_ACC_PARALLEL)
+      if (outer && (outer->region_type == ORT_ACC_PARALLEL
+		    || (outer->region_type == ORT_ACC_KERNELS
+			&& param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE)))
 	localize_reductions (OMP_FOR_CLAUSES (for_stmt),
 			     OMP_FOR_BODY (for_stmt));
     }
@@ -15749,8 +15747,9 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
     {
       push_gimplify_context ();
 
-      /* FIXME: Reductions are not supported in kernels regions yet.  */
-      if (/*ort == ORT_ACC_KERNELS ||*/ ort == ORT_ACC_PARALLEL)
+      if (ort == ORT_ACC_PARALLEL
+	  || (ort == ORT_ACC_KERNELS
+	      && param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE))
 	localize_reductions (OMP_CLAUSES (expr), OMP_BODY (expr));
 
       gimple *g = gimplify_and_return_first (OMP_BODY (expr), &body);

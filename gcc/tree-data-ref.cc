@@ -100,6 +100,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "range-op.h"
 #include "tree-ssa-loop-ivopts.h"
+#include "print-tree.h"
+#include "graphite-oacc.h"
 
 static struct datadep_stats
 {
@@ -225,7 +227,10 @@ dump_data_reference (FILE *outf,
   print_generic_stmt (outf, DR_REF (dr));
   fprintf (outf, "#  base_object: ");
   print_generic_stmt (outf, DR_BASE_OBJECT (dr));
-
+  fprintf (outf, "#  base_address: ");
+  print_generic_stmt (outf, DR_BASE_ADDRESS (dr));
+  fprintf (outf, "#  loop-invariant offset: ");
+  print_generic_stmt (outf, DR_OFFSET (dr));
   for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
     {
       fprintf (outf, "#  Access function %d: ", i);
@@ -5886,6 +5891,10 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
       if (gimple_call_internal_p (stmt))
 	switch (gimple_call_internal_fn (stmt))
 	  {
+	  case IFN_UNIQUE:
+	  case IFN_GOACC_REDUCTION:
+	  case IFN_GOACC_LOOP:
+	      return false;
 	  case IFN_GOMP_SIMD_LANE:
 	    {
 	      class loop *loop = gimple_bb (stmt)->loop_father;
@@ -6063,7 +6072,6 @@ graphite_find_data_references_in_stmt (edge nest, loop_p loop, gimple *stmt,
 				       vec<data_reference_p> *datarefs)
 {
   auto_vec<data_ref_loc, 2> references;
-  bool ret = true;
   data_reference_p dr;
 
   if (get_references_in_stmt (stmt, &references))
@@ -6077,7 +6085,7 @@ graphite_find_data_references_in_stmt (edge nest, loop_p loop, gimple *stmt,
       datarefs->safe_push (dr);
     }
 
-  return ret;
+  return true;
 }
 
 /* Search the data references in LOOP, and record the information into

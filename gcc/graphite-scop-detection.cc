@@ -49,6 +49,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
 #include "graphite.h"
+#include "omp-general.h"
+#include "graphite-oacc.h"
+#include "print-tree.h"
+#include "internal-fn.h"
 
 class debug_printer
 {
@@ -483,7 +487,7 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 	}
 
       bitmap_set_bit (in_sese_region, bb->index);
-         
+
       basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->src == dom
@@ -632,7 +636,9 @@ scop_detection::can_represent_loop (loop_p loop, sese_l scop)
       DEBUG_PRINT (dp << "[can_represent_loop-fail] Loop niter unknown.\n");
       return false;
     }
-  if (!niter_desc.control.no_overflow)
+  /* TODO The zero niter can probably be allowed in general */
+  if (!niter_desc.control.no_overflow
+      && !(oacc_function_p (cfun) && integer_zerop (niter)))
     {
       DEBUG_PRINT (dp << "[can_represent_loop-fail] Loop niter can overflow.\n");
       return false;
@@ -704,8 +710,7 @@ scop_detection::add_scop (sese_l s)
       s.exit = single_succ_edge (s.exit->dest);
     }
 
-  /* Do not add scops with only one loop.  */
-  if (region_has_one_loop (s))
+  if (!oacc_function_p (cfun) && region_has_one_loop (s))
     {
       DEBUG_PRINT (dp << "[scop-detection-fail] Discarding one loop SCoP: ";
 		   print_sese (dump_file, s));
@@ -1085,6 +1090,17 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
   return true;
 }
 
+/* Check if STMT is a internal OpenACC function call that should be ignored when
+   Graphite checks side effects. */
+
+static inline bool
+ignored_oacc_internal_call_p (gimple *stmt)
+{
+  return is_gimple_call (stmt)
+	 && (gimple_call_internal_p (stmt, IFN_UNIQUE)
+	     || gimple_call_internal_p (stmt, IFN_GOACC_REDUCTION));
+}
+
 /* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
    Calls have side-effects, except those to const or pure
    functions.  */
@@ -1092,6 +1108,9 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 static bool
 stmt_has_side_effects (gimple *stmt)
 {
+  if (ignored_oacc_internal_call_p (stmt))
+    return false;
+
   if (gimple_has_volatile_ops (stmt)
       || (gimple_code (stmt) == GIMPLE_CALL
 	  && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
@@ -1288,6 +1307,7 @@ scan_tree_for_params (sese_info_p s, tree e)
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       scan_tree_for_params (s, TREE_OPERAND (e, 0));
       break;
@@ -1362,6 +1382,9 @@ find_scop_parameters (scop_p scop)
 static void
 add_write (vec<tree> *writes, tree def)
 {
+  if (ignored_oacc_internal_call_p (SSA_NAME_DEF_STMT (def)))
+    return;
+
   writes->safe_push (def);
   DEBUG_PRINT (dp << "Adding scalar write: ";
 	       print_generic_expr (dump_file, def);
@@ -1371,8 +1394,26 @@ add_write (vec<tree> *writes, tree def)
 }
 
 static void
+add_kill (vec<tree> *kills, tree def)
+{
+  if (ignored_oacc_internal_call_p (SSA_NAME_DEF_STMT (def)))
+    return;
+
+  kills->safe_push (def);
+  DEBUG_PRINT (dp << "Adding scalar kill: ";
+	       print_generic_expr (dump_file, def);
+	       dp << "\n");
+}
+
+static void
 add_read (vec<scalar_use> *reads, tree use, gimple *use_stmt)
 {
+  gcc_assert (TREE_CODE (use) == SSA_NAME);
+
+  if ((use_stmt && ignored_oacc_internal_call_p (use_stmt))
+      || ignored_oacc_internal_call_p (SSA_NAME_DEF_STMT (use)))
+    return;
+
   DEBUG_PRINT (dp << "Adding scalar read: ";
 	       print_generic_expr (dump_file, use);
 	       dp << "\nFrom stmt: ";
@@ -1428,6 +1469,58 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
     add_read (reads, use, use_stmt);
 }
 
+/* Add kills for all ssa names in vector FROM to vector KILLS. */
+
+static void add_kills (hash_set<tree>* from, vec<tree> &kills)
+{
+  hash_set<tree>::iterator end = from->end();
+  hash_set<tree>::iterator it = from->begin ();
+  for (; it != end; ++it)
+    {
+      tree var = *it;
+      add_kill (&kills, var);
+    }
+}
+
+/* Add kill operations for the privatized OpenACC variables that have been
+   recorded for SCOP for the basic block BB into the vector KILLS. */
+
+static void
+add_oacc_kills (scop_p scop, basic_block bb, vec<tree> &kills)
+{
+
+  loop_p loop = bb->loop_father;
+
+  /* Right now we only handle "firstprivate" and "private" variables that occur
+     on an OpenACC computer region. Those affect only the outermost and hence -
+     because of the "chunking" loop created in omp-expand.c around the original
+     loop - the two outermost CFG loops. */
+  if (loop_depth (loop) > 2)
+    return;
+
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+  {
+    if (e->src == loop->header)
+      {
+	add_kills (scop->oacc_private_scalars, kills);
+	add_kills (scop->oacc_firstprivate_vars, kills);
+	break;
+      }
+  }
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+  {
+    if (e->dest == loop->header)
+      {
+	add_kills (scop->oacc_private_scalars, kills);
+	add_kills (scop->oacc_firstprivate_vars, kills);
+	break;
+      }
+  }
+}
+
 /* Generates a polyhedral black box only if the bb contains interesting
    information.  */
 
@@ -1436,6 +1529,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 {
   vec<data_reference_p> drs = vNULL;
   vec<tree> writes = vNULL;
+  vec<tree> kills = vNULL;
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
@@ -1500,6 +1594,11 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 	      tree res = gimple_phi_result (phi);
 	      if (virtual_operand_p (res))
 		continue;
+
+	      if (scop->oacc_private_scalars->contains (res)
+		  || scop->oacc_firstprivate_vars->contains (res))
+		continue;
+
 	      /* To simulate out-of-SSA the predecessor of edges into PHI nodes
 		 has a copy from the PHI argument to the PHI destination.  */
 	      if (! scev_analyzable_p (res, scop->scop_info->region))
@@ -1536,10 +1635,15 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 	}
     }
 
-  if (drs.is_empty () && writes.is_empty () && reads.is_empty ())
+  if (loop &&    /* i.e. BB belongs to SCOP. */
+      oacc_function_p (cfun))
+    add_oacc_kills (scop, bb, kills);
+
+  if (drs.is_empty () && writes.is_empty () && reads.is_empty ()
+      && kills.is_empty ())
     return NULL;
 
-  return new_gimple_poly_bb (bb, drs, reads, writes);
+  return new_gimple_poly_bb (bb, drs, reads, writes, kills);
 }
 
 /* Checks if all parts of DR are defined outside of REGION.  This allows an
@@ -1800,10 +1904,21 @@ private:
   auto_vec<gimple *, 3> conditions, cases;
   scop_p scop;
 };
-}
+
 gather_bbs::gather_bbs (cdi_direction direction, scop_p scop, int *bb_to_rpo)
-  : dom_walker (direction, ALL_BLOCKS, bb_to_rpo), scop (scop)
+    : dom_walker (direction, ALL_BLOCKS, bb_to_rpo), scop (scop)
 {
+  if (oacc_function_p (cfun))
+    {
+      edge scop_entry = scop->scop_info->region.entry;
+      loop_p loop = scop_entry->dest->loop_father;
+      gcall *firstprivate_call = get_oacc_firstprivate_call (loop);
+      collect_oacc_privatized_vars (firstprivate_call,
+				    *scop->oacc_firstprivate_vars);
+
+      gcall *private_call = get_oacc_private_scalars_call (loop);
+      collect_oacc_privatized_vars (private_call, *scop->oacc_private_scalars);
+    }
 }
 
 /* Call-back for dom_walk executed before visiting the dominated
@@ -1862,6 +1977,8 @@ gather_bbs::before_dom_children (basic_block bb)
   data_reference_p dr;
   FOR_EACH_VEC_ELT (gbb->data_refs, i, dr)
     {
+      gcc_checking_assert (! ignored_oacc_internal_call_p (DR_STMT (dr)));
+
       DEBUG_PRINT (dp << "Adding memory ";
 		   if (dr->is_read)
 		     dp << "read: ";
@@ -1897,6 +2014,8 @@ gather_bbs::after_dom_children (basic_block bb)
     }
 }
 
+}
+
 /* Compute sth like an execution order, dominator order with first executing
    edges that stay inside the current loop, delaying processing exit edges.  */
 
@@ -1917,6 +2036,21 @@ cmp_pbbs (const void *pa, const void *pb)
     return 1;
   else
     return 0;
+}
+
+/* Analyze the OpenACC loop structure surrounding SCOP to determine the ssa
+   names that belong to OpenACC reduction computations. */
+
+static void
+determine_openacc_reductions (scop_p scop)
+{
+  for (auto loop : loops_list (cfun, 0))
+  {
+    if (!loop_in_sese_p (loop, scop->scop_info->region))
+      continue;
+
+    collect_oacc_reduction_vars (loop, *scop->reduction_vars);
+  }
 }
 
 /* Find Static Control Parts (SCoP) in the current function and pushes
@@ -1954,9 +2088,10 @@ build_scops (vec<scop_p> *scops)
       /* Sort pbbs after execution order for initial schedule generation.  */
       scop->pbbs.qsort (cmp_pbbs);
 
-      if (! build_alias_set (scop))
+      if (!build_alias_set (scop))
 	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot handle dependences\n");
+	  DEBUG_PRINT (dp
+		       << "[scop-detection-fail] cannot handle dependences\n");
 	  free_scop (scop);
 	  continue;
 	}
@@ -1994,6 +2129,9 @@ build_scops (vec<scop_p> *scops)
 	  free_scop (scop);
 	  continue;
 	}
+
+      if (oacc_function_p (cfun))
+	determine_openacc_reductions (scop);
 
       scops->safe_push (scop);
     }

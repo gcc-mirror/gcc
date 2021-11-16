@@ -836,6 +836,202 @@ oacc_xform_loop (gcall *call)
   gsi_replace_with_seq (&gsi, seq, true);
 }
 
+/* This is used for expanding the loop calls to "fake" values that mimic the
+   values used for host execution during scalar evolution analysis in
+   Graphite. The function has been derived from oacc_xform_loop which could not
+   be used because it rewrites the code directly.
+
+   TODO This function can either be simplified significantly (cf. the fixed
+   values for number_of_threads, thread_index, chunking, striding) or unified
+   with oacc_xform_loop. */
+
+tree
+oacc_extract_loop_call (gcall *call)
+{
+  gimple_stmt_iterator gsi = gsi_for_stmt (call);
+  enum ifn_goacc_loop_kind code
+      = (enum ifn_goacc_loop_kind)TREE_INT_CST_LOW (gimple_call_arg (call, 0));
+  tree dir = gimple_call_arg (call, 1);
+  tree range = gimple_call_arg (call, 2);
+  tree step = gimple_call_arg (call, 3);
+  tree chunk_size = NULL_TREE;
+  unsigned mask = (unsigned)TREE_INT_CST_LOW (gimple_call_arg (call, 5));
+  tree lhs = gimple_call_lhs (call);
+  tree type = NULL_TREE;
+  tree diff_type = TREE_TYPE (range);
+  tree r = NULL_TREE;
+  bool chunking = false, striding = true;
+  unsigned outer_mask = mask & (~mask + 1); // Outermost partitioning
+  /* unsigned inner_mask = mask & ~outer_mask; // Inner partitioning (if any)
+   */
+
+  gcc_checking_assert (lhs);
+
+  type = TREE_TYPE (lhs);
+
+  tree number_of_threads = integer_one_node;
+  tree thread_index = integer_zero_node;
+
+  /* striding=true, chunking=true
+       -> invalid.
+     striding=true, chunking=false
+       -> chunks=1
+     striding=false,chunking=true
+       -> chunks=ceil (range/(chunksize*threads*step))
+     striding=false,chunking=false
+       -> chunk_size=ceil(range/(threads*step)),chunks=1  */
+
+  switch (code)
+    {
+    default:
+      gcc_unreachable ();
+
+    case IFN_GOACC_LOOP_CHUNKS:
+      if (!chunking)
+	r = build_int_cst (type, 1);
+      else
+	{
+	  /* chunk_max
+	     = (range - dir) / (chunks * step * num_threads) + dir  */
+	  tree per = number_of_threads;
+	  per = fold_convert (type, per);
+	  chunk_size = fold_convert (type, chunk_size);
+	  per = fold_build2 (MULT_EXPR, type, per, chunk_size);
+	  per = fold_build2 (MULT_EXPR, type, per, step);
+	  r = fold_build2 (MINUS_EXPR, type, range, dir);
+	  r = fold_build2 (PLUS_EXPR, type, r, per);
+	  r = fold_build2 (TRUNC_DIV_EXPR, type, r, per);
+	}
+      break;
+
+    case IFN_GOACC_LOOP_STEP:
+      {
+	/* If striding, step by the entire compute volume, otherwise
+	   step by the inner volume.  */
+	/* unsigned volume = striding ? mask : inner_mask; */
+
+	r = number_of_threads;
+	r = fold_build2 (MULT_EXPR, type, fold_convert (type, r), step);
+      }
+      break;
+
+    case IFN_GOACC_LOOP_OFFSET:
+      /* Enable vectorization on non-SIMT targets.  */
+      if (!targetm.simt.vf
+	  && outer_mask == GOMP_DIM_MASK (GOMP_DIM_VECTOR)
+	  /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
+	     the loop.  */
+	  && (flag_tree_loop_vectorize
+	      || !global_options_set.x_flag_tree_loop_vectorize))
+	{
+	  basic_block bb = gsi_bb (gsi);
+	  class loop *parent = bb->loop_father;
+	  class loop *body = parent->inner;
+
+	  parent->force_vectorize = true;
+	  parent->safelen = INT_MAX;
+
+	  /* "Chunking loops" may have inner loops.  */
+	  if (parent->inner)
+	    {
+	      body->force_vectorize = true;
+	      body->safelen = INT_MAX;
+	    }
+
+	  cfun->has_force_vectorize_loops = true;
+	}
+      if (striding)
+	{
+	  r = thread_index;
+	  r = fold_convert (diff_type, r);
+	}
+      else
+	{
+	  tree inner_size = number_of_threads;
+	  tree outer_size = number_of_threads;
+	  tree volume = fold_build2 (MULT_EXPR, TREE_TYPE (inner_size),
+				     inner_size, outer_size);
+
+	  volume = fold_convert (diff_type, volume);
+	  if (chunking)
+	    chunk_size = fold_convert (diff_type, chunk_size);
+	  else
+	    {
+	      tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+
+	      chunk_size = fold_build2 (MINUS_EXPR, diff_type, range, dir);
+	      chunk_size = fold_build2 (PLUS_EXPR, diff_type, chunk_size, per);
+	      chunk_size
+		  = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
+	    }
+
+	  tree span = fold_build2 (MULT_EXPR, diff_type, chunk_size,
+				   fold_convert (diff_type, inner_size));
+	  r = thread_index;
+	  r = fold_convert (diff_type, r);
+	  r = fold_build2 (MULT_EXPR, diff_type, r, span);
+
+	  tree inner = thread_index;
+	  inner = fold_convert (diff_type, inner);
+	  r = fold_build2 (PLUS_EXPR, diff_type, r, inner);
+
+	  if (chunking)
+	    {
+	      tree chunk = fold_convert (diff_type, gimple_call_arg (call, 6));
+	      tree per
+		  = fold_build2 (MULT_EXPR, diff_type, volume, chunk_size);
+	      per = fold_build2 (MULT_EXPR, diff_type, per, chunk);
+
+	      r = fold_build2 (PLUS_EXPR, diff_type, r, per);
+	    }
+	}
+      r = fold_build2 (MULT_EXPR, diff_type, r, step);
+      if (type != diff_type)
+	r = fold_convert (type, r);
+      break;
+
+    case IFN_GOACC_LOOP_BOUND:
+      if (striding)
+	r = range;
+      else
+	{
+	  tree inner_size = number_of_threads;
+	  tree outer_size = number_of_threads;
+	  tree volume = fold_build2 (MULT_EXPR, TREE_TYPE (inner_size),
+				     inner_size, outer_size);
+
+	  volume = fold_convert (diff_type, volume);
+	  if (chunking)
+	    chunk_size = fold_convert (diff_type, chunk_size);
+	  else
+	    {
+	      tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+
+	      chunk_size = fold_build2 (MINUS_EXPR, diff_type, range, dir);
+	      chunk_size = fold_build2 (PLUS_EXPR, diff_type, chunk_size, per);
+	      chunk_size
+		  = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
+	    }
+
+	  tree span = fold_build2 (MULT_EXPR, diff_type, chunk_size,
+				   fold_convert (diff_type, inner_size));
+
+	  r = fold_build2 (MULT_EXPR, diff_type, span, step);
+
+	  tree offset = gimple_call_arg (call, 6);
+	  r = fold_build2 (PLUS_EXPR, diff_type, r,
+			   fold_convert (diff_type, offset));
+	  r = fold_build2 (integer_onep (dir) ? MIN_EXPR : MAX_EXPR, diff_type,
+			   r, range);
+	}
+      if (diff_type != type)
+	r = fold_convert (type, r);
+      break;
+    }
+
+  return r;
+}
+
 /* Transform a GOACC_TILE call.  Determines the element loop span for
    the specified loop of the nest.  This is 1 if we're not tiling.
    
@@ -1033,7 +1229,8 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
 #endif
   if (check
       && warn_openacc_parallelism
-      && !lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn)))
+      && !lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn))
+      && !lookup_attribute ("oacc parallel_kernels_graphite", DECL_ATTRIBUTES (fn)))
     {
       static char const *const axes[] =
       /* Must be kept in sync with GOMP_DIM enumeration.  */
@@ -1544,7 +1741,219 @@ oacc_loop_process (oacc_loop *loop, int fn_level)
 	      "gang reduction on an orphan loop");
 }
 
-/* Walk the OpenACC loop heirarchy checking and assigning the
+/* Return the outermost CFG loop that is enclosed between the head and
+   tail mark calls for LOOP, or NULL if there is no such CFG loop.
+
+   The outermost CFG loop is a loop that is used for "chunking" the
+   original loop from the user's code.  The lower_omp_for function
+   in omp-low.c which creates the head and tail mark sequence and
+   the expand_oacc_for function in omp-expand.c are relevant for
+   understanding the structure that we expect to find here. But note
+   that the passes implemented in those files do not operate on CFG
+   loops and hence the correspondence to the CFG loop structure is
+   not directly visible there and has to be inferred. */
+
+static loop_p
+oacc_loop_get_cfg_loop (oacc_loop *loop)
+{
+  loop_p enclosed_cfg_loop = NULL;
+  for (unsigned dim = 0; dim < GOMP_DIM_MAX; ++dim)
+    {
+      gcall *tail_mark = loop->tails[dim];
+      gimple *head_mark = loop->heads[dim];
+      if (!tail_mark)
+	continue;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	dump_printf (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_INTERNALS, "%G",
+		     (gimple *) tail_mark);
+
+      loop_p mark_cfg_loop = tail_mark->bb->loop_father;
+      loop_p current_cfg_loop = mark_cfg_loop;
+
+      /* Ascend from TAIL_MARK until a different CFG loop is reached.
+
+	 From the way that OpenACC loops are treated in omp-low.c, we
+	 could expect the tail marker to be immediately preceded by a
+	 loop exit. But loop optimizations (e.g. store-motion in
+	 pass_lim) can change this. */
+      basic_block bb = tail_mark->bb;
+      bool empty_loop = false;
+      while (current_cfg_loop == mark_cfg_loop)
+	{
+	  /* If the OpenACC loop becomes empty due to optimizations,
+	     there is no CFG loop at all enclosed between head and
+	     tail mark */
+	  if (bb == head_mark->bb)
+	    {
+	      empty_loop = true;
+	      break;
+	    }
+
+	  bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+	  current_cfg_loop = bb->loop_father;
+	}
+
+      if (empty_loop)
+	continue;
+
+      /* We expect to find the same CFG loop enclosed between all head
+	 and tail mark pairs. Hence we actually need to look at only
+	 the first available pair. But we consider all for
+	 verification purposes. */
+      if (enclosed_cfg_loop)
+	{
+	  gcc_assert (current_cfg_loop == enclosed_cfg_loop);
+	  continue;
+	}
+
+      enclosed_cfg_loop = current_cfg_loop;
+
+      gcc_checking_assert (dominated_by_p (
+	  CDI_DOMINATORS, enclosed_cfg_loop->header, head_mark->bb));
+    }
+
+  return enclosed_cfg_loop;
+}
+
+static const char*
+can_be_parallel_str (loop_p loop)
+{
+  if (!loop->can_be_parallel_valid_p)
+    return "not analyzed";
+
+  return loop->can_be_parallel ? "can be parallel" : "cannot be parallel";
+}
+
+/* Returns true if LOOP is known to be parallelizable and false
+   otherwise.  The decision is based on the the dependence analysis
+   that must have been previously performed by Graphite on the CFG
+   loops contained in the OpenACC loop LOOP.  The value of ANALYZED is
+   set to true if all relevant CFG loops have been analyzed. */
+
+static bool
+oacc_loop_can_be_parallel_p (oacc_loop *loop, bool& analyzed)
+{
+  /* Graphite will not run without enabled optimizations, so we cannot
+     expect to find any parallelizability information on the CFG loops. */
+  if (!optimize)
+    return false;
+
+  const dump_user_location_t loc
+      = dump_user_location_t::from_location_t (loop->loc);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_INTERNALS, loc,
+		     "Inspecting CFG-loops for OpenACC loop.\n");
+
+  /* Search for the CFG loops that are enclosed between the head and
+     tail mark calls for LOOP. The two outer CFG loops are considered
+     to belong to the OpenACC loop and hence the CAN_BE_PARALLEL flags
+     on those loops will be used to determine the return value. */
+  bool can_be_parallel = false;
+  loop_p enclosed_cfg_loop = oacc_loop_get_cfg_loop (loop);
+
+  if (enclosed_cfg_loop
+      /* The inner loop may have been removed in degenerate cases, e.g.
+	 if an infinite "for (; ;)" gets optimized in an OpenACC loop nest. */
+      && enclosed_cfg_loop->inner)
+    {
+      gcc_assert (enclosed_cfg_loop->inner != NULL);
+      gcc_assert (enclosed_cfg_loop->inner->next == NULL);
+
+      can_be_parallel = enclosed_cfg_loop->can_be_parallel
+			&& enclosed_cfg_loop->inner->can_be_parallel;
+
+      analyzed = enclosed_cfg_loop->can_be_parallel_valid_p
+		 && enclosed_cfg_loop->inner->can_be_parallel_valid_p;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  dump_printf (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_INTERNALS,
+		       "\tOuter loop <%d> preceeding tail mark %s.\n"
+		       "\tInner loop <%d> %s.\n",
+		       enclosed_cfg_loop->num,
+		       can_be_parallel_str (enclosed_cfg_loop),
+		       enclosed_cfg_loop->inner->num,
+		       can_be_parallel_str (enclosed_cfg_loop->inner));
+	}
+    }
+  else if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_INTERNALS, loc,
+		     "Empty OpenACC loop.\n");
+
+  return can_be_parallel;
+}
+
+static bool
+oacc_parallel_kernels_graphite_fun_p ()
+{
+  return lookup_attribute ("oacc parallel_kernels_graphite",
+			   DECL_ATTRIBUTES (cfun->decl));
+}
+
+static bool
+oacc_parallel_fun_p ()
+{
+  return lookup_attribute ("oacc parallel",
+			   DECL_ATTRIBUTES (cfun->decl));
+}
+
+/* If LOOP is an "auto" loop for which dependence analysis has determined that
+   it can be parallelized, make it "independent" by adjusting its FLAGS field
+   and return true. Otherwise, return false. */
+
+static bool
+oacc_loop_transform_auto_into_independent (oacc_loop *loop)
+{
+  if (!optimize)
+    return false;
+
+  /* This function is only relevant on "kernels"
+     regions that have been explicitly designated
+     to be analyzed by Graphite and on "auto"
+     loops in "parallel" regions. */
+  if (!oacc_parallel_kernels_graphite_fun_p () &&
+      !oacc_parallel_fun_p ())
+    return false;
+
+  if (loop->routine)
+    return false;
+
+  if (!(loop->flags & OLF_AUTO))
+    return false;
+
+  bool analyzed = false;
+  bool can_be_parallel = oacc_loop_can_be_parallel_p (loop, analyzed);
+  dump_user_location_t loc = dump_user_location_t::from_location_t (loop->loc);
+
+  if (dump_enabled_p ())
+    {
+      if (!analyzed)
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "'auto' loop has not been analyzed (cf. 'graphite' "
+			 "dumps for more information).\n");
+    }
+  if (!can_be_parallel)
+    return false;
+
+  loop->flags |= OLF_INDEPENDENT;
+
+  /* We need to keep the OLF_AUTO flag for now.
+     oacc_loop_fixed_partitions and oacc_loop_auto_partitions
+     interpret "independent auto" as "this loop can be parallel,
+     please determine the dimensions" which seems to correspond to the
+     meaning of those clauses in an old OpenACC version.  We rely on
+     this behaviour to assign the dimensions for this loop.
+
+     TODO Use a different flag to indicate that the dimensions must be assigned. */
+
+  // loop->flags &= ~OLF_AUTO;
+
+  return true;
+}
+
+/* Walk the OpenACC loop hierarchy checking and assigning the
    programmer-specified partitionings.  OUTER_MASK is the partitioning
    this loop is contained within.  Return mask of partitioning
    encountered.  If any auto loops are discovered, set GOMP_DIM_MAX
@@ -1600,6 +2009,9 @@ oacc_loop_fixed_partitions (oacc_loop *loop, unsigned outer_mask)
 	  loop->flags |= OLF_AUTO;
 	  mask_all |= GOMP_DIM_MASK (GOMP_DIM_MAX);
 	}
+
+      if (oacc_loop_transform_auto_into_independent (loop))
+	  mask_all |= GOMP_DIM_MASK (GOMP_DIM_MAX);
     }
 
   if (this_mask & outer_mask)
@@ -2052,56 +2464,76 @@ execute_oacc_loop_designation ()
       flag_openacc_dims = (char *)&flag_openacc_dims;
     }
 
-  bool is_oacc_parallel
-    = (lookup_attribute ("oacc parallel",
-			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
   bool is_oacc_kernels
     = (lookup_attribute ("oacc kernels",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  bool is_oacc_parallel
+    = (lookup_attribute ("oacc parallel",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
   bool is_oacc_serial
     = (lookup_attribute ("oacc serial",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
-  bool is_oacc_parallel_kernels_parallelized
-    = (lookup_attribute ("oacc parallel_kernels_parallelized",
-			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
-  bool is_oacc_parallel_kernels_gang_single
-    = (lookup_attribute ("oacc parallel_kernels_gang_single",
-			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
-  int fn_level = oacc_fn_attrib_level (attrs);
-  bool is_oacc_routine = (fn_level >= 0);
-  gcc_checking_assert (is_oacc_parallel
-		       + is_oacc_kernels
-		       + is_oacc_serial
-		       + is_oacc_parallel_kernels_parallelized
-		       + is_oacc_parallel_kernels_gang_single
-		       + is_oacc_routine
-		       == 1);
-
   bool is_oacc_kernels_parallelized
     = (lookup_attribute ("oacc kernels parallelized",
 			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
   if (is_oacc_kernels_parallelized)
     gcc_checking_assert (is_oacc_kernels);
+  bool is_oacc_parallel_kernels_parallelized
+    = (lookup_attribute ("oacc parallel_kernels_parallelized",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  if (is_oacc_parallel_kernels_parallelized)
+    gcc_checking_assert (!is_oacc_kernels);
+  bool is_oacc_parallel_kernels_gang_single
+    = (lookup_attribute ("oacc parallel_kernels_gang_single",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  if (is_oacc_parallel_kernels_gang_single)
+    gcc_checking_assert (!is_oacc_kernels);
+  gcc_checking_assert (!(is_oacc_parallel_kernels_parallelized
+			 && is_oacc_parallel_kernels_gang_single));
+  bool is_oacc_parallel_kernels_graphite
+    = (lookup_attribute ("oacc parallel_kernels_graphite",
+			 DECL_ATTRIBUTES (current_function_decl)) != NULL);
+  if (is_oacc_parallel_kernels_graphite)
+      gcc_checking_assert (!is_oacc_kernels
+			   && !is_oacc_parallel_kernels_gang_single);
+
+  /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
+     kernels, so remove the parallelism dimensions function attributes
+     potentially set earlier on.  */
+  if (is_oacc_kernels && !is_oacc_kernels_parallelized)
+    {
+      gcc_checking_assert (!is_oacc_parallel_kernels_graphite);
+      oacc_set_fn_attrib (current_function_decl, NULL, NULL);
+      attrs = oacc_get_fn_attrib (current_function_decl);
+    }
+
+  /* Discover, partition and process the loops.  */
+  oacc_loop *loops = oacc_loop_discovery ();
+  int fn_level = oacc_fn_attrib_level (attrs);
+  bool is_oacc_routine = (fn_level >= 0);
 
   if (dump_file)
     {
-      if (is_oacc_parallel)
-	fprintf (dump_file, "Function is OpenACC parallel offload\n");
+      if (fn_level >= 0)
+	fprintf (dump_file, "Function is OpenACC routine level %d\n",
+		 fn_level);
       else if (is_oacc_kernels)
 	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
 		 (is_oacc_kernels_parallelized
 		  ? "parallelized" : "unparallelized"));
-      else if (is_oacc_serial)
-	fprintf (dump_file, "Function is OpenACC serial offload\n");
       else if (is_oacc_parallel_kernels_parallelized)
 	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
 		 "parallel_kernels_parallelized");
       else if (is_oacc_parallel_kernels_gang_single)
 	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
 		 "parallel_kernels_gang_single");
-      else if (is_oacc_routine)
-	fprintf (dump_file, "Function is OpenACC routine level %d\n",
-		 fn_level);
+      else if (is_oacc_parallel_kernels_graphite)
+	fprintf (dump_file, "Function is %s OpenACC kernels offload\n",
+		 "parallel_kernels_graphite");
+      else if (is_oacc_serial)
+	fprintf (dump_file, "Function is OpenACC serial offload\n");
+      else if (is_oacc_parallel)
+	fprintf (dump_file, "Function is OpenACC parallel offload\n");
       else
 	gcc_unreachable ();
     }
@@ -2144,26 +2576,14 @@ execute_oacc_loop_designation ()
 	}
     }
 
-  /* Unparallelized OpenACC kernels constructs must get launched as 1 x 1 x 1
-     kernels, so remove the parallelism dimensions function attributes
-     potentially set earlier on.  */
-  if (is_oacc_kernels && !is_oacc_kernels_parallelized)
-    {
-      oacc_set_fn_attrib (current_function_decl, NULL, NULL);
-      attrs = oacc_get_fn_attrib (current_function_decl);
-    }
-
-  /* Discover, partition and process the loops.  */
-  oacc_loop *loops = oacc_loop_discovery ();
-
-  unsigned outer_mask = 0;
-  if (is_oacc_routine)
-    outer_mask = GOMP_DIM_MASK (fn_level) - 1;
+  unsigned outer_mask = fn_level >= 0 ? GOMP_DIM_MASK (fn_level) - 1 : 0;
   unsigned used_mask = oacc_loop_partition (loops, outer_mask);
   /* OpenACC kernels constructs are special: they currently don't use the
      generic oacc_loop infrastructure and attribute/dimension processing.  */
   if (is_oacc_kernels && is_oacc_kernels_parallelized)
     {
+      gcc_checking_assert (!is_oacc_parallel_kernels_graphite);
+
       /* Parallelized OpenACC kernels constructs use gang parallelism.  See
 	 also tree-parloops.cc:create_parallel_loop.  */
       used_mask |= GOMP_DIM_MASK (GOMP_DIM_GANG);
@@ -2309,6 +2729,11 @@ execute_oacc_device_lower ()
 
 		case IFN_UNIQUE_OACC_HEAD_MARK:
 		case IFN_UNIQUE_OACC_TAIL_MARK:
+		  remove = true;
+		  break;
+
+		case IFN_UNIQUE_OACC_PRIVATE_SCALAR:
+		case IFN_UNIQUE_OACC_FIRSTPRIVATE:
 		  remove = true;
 		  break;
 

@@ -185,6 +185,9 @@ enum gf_mask {
     /* A 'GF_OMP_TARGET_KIND_OACC_DATA' representing an OpenACC 'kernels'
        decomposed parts' 'data' construct.  */
     GF_OMP_TARGET_KIND_OACC_DATA_KERNELS = 16,
+    /* A GF_OMP_TARGET_KIND_OACC_PARALLEL that originates from a 'kernels'
+       construct, for Graphite to analyze.  */
+    GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE = 17,
     GF_OMP_TEAMS_HOST		= 1 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
@@ -6800,6 +6803,7 @@ is_gimple_omp_oacc (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_OACC_DECLARE:
 	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
 	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	  return true;
@@ -6829,6 +6833,7 @@ is_gimple_omp_offloaded (const gimple *stmt)
 	case GF_OMP_TARGET_KIND_OACC_SERIAL:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
 	  return true;
 	default:
 	  return false;

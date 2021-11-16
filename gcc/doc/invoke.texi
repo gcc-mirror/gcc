@@ -16194,14 +16194,22 @@ Maximum number of relations the oracle will register in a basic block.
 Minimum page size for warning purposes.
 
 @item openacc-kernels
-Specify mode of OpenACC `kernels' constructs handling.
-With @option{--param=openacc-kernels=decompose}, OpenACC `kernels'
+Specify mode of OpenACC `kernels' constructs handling.  With
+@option{--param=openacc-kernels=decompose}, OpenACC `kernels'
 constructs are decomposed into parts, a sequence of compute
-constructs, each then handled individually.
-This is work in progress.
+constructs, each then handled individually. The data dependence
+analysis that is necessary to determine if loops can be parallelized
+is performed by the Graphite pass.
+This is the default.
+With @option{--param=openacc-kernels=decompose-parloops}, OpenACC
+`kernels' constructs are decomposed into parts, a sequence of compute
+constructs, each then handled individually by the @samp{parloops}
+pass.
+This is deprecated.
 With @option{--param=openacc-kernels=parloops}, OpenACC `kernels'
-constructs are handled by the @samp{parloops} pass, en bloc.
-This is the current default.
+constructs are handled by the @samp{parloops} pass, en bloc.  This is
+deprecated.
+This is deprecated.
 
 @item openacc-privatization
 Control whether the @option{-fopt-info-omp-note} and applicable

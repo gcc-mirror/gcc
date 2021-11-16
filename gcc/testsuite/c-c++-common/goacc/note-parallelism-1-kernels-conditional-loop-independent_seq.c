@@ -16,7 +16,7 @@ main ()
 
 #pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
  /* Strangely indented to keep this similar to other test cases.  */
-  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
+  if (c) /* { dg-message "optimized: beginning .Graphite. region in OpenACC .kernels. construct" } */
  {
 #pragma acc loop seq
   /* { dg-message "missed: unparallelized loop nest in OpenACC .kernels. region: it's executed conditionally" "" { target *-*-* } .-1 } */

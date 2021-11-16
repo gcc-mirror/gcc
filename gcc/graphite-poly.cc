@@ -89,7 +89,8 @@ debug_iteration_domains (scop_p scop)
 
 void
 new_poly_dr (poly_bb_p pbb, gimple *stmt, enum poly_dr_type type,
-	     isl_map *acc, isl_set *subscript_sizes)
+	     isl_map *acc, isl_set *subscript_sizes,
+	     bool is_reduction)
 {
   static int id = 0;
   poly_dr_p pdr = XNEW (struct poly_dr);
@@ -102,10 +103,12 @@ new_poly_dr (poly_bb_p pbb, gimple *stmt, enum poly_dr_type type,
   pdr->subscript_sizes = subscript_sizes;
   PDR_TYPE (pdr) = type;
   PBB_DRS (pbb).safe_push (pdr);
+  pdr->is_reduction = is_reduction;
 
   if (dump_file)
     {
-      fprintf (dump_file, "Converting dr: ");
+      fprintf (dump_file, "Converting%sdr: ",
+	       is_reduction ? " reduction " : " ");
       print_pdr (dump_file, pdr);
       fprintf (dump_file, "To polyhedral representation:\n");
       fprintf (dump_file, "  - access functions: ");
@@ -181,6 +184,10 @@ print_pdr (FILE *file, poly_dr_p pdr)
       fprintf (file, "may_write \n");
       break;
 
+    case PDR_KILL:
+      fprintf (file, "kill \n");
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -206,13 +213,15 @@ debug_pdr (poly_dr_p pdr)
 
 gimple_poly_bb_p
 new_gimple_poly_bb (basic_block bb, vec<data_reference_p> drs,
-		    vec<scalar_use> reads, vec<tree> writes)
+		    vec<scalar_use> reads, vec<tree> writes,
+		    vec<tree> kills)
 {
   gimple_poly_bb_p gbb = XNEW (struct gimple_poly_bb);
   GBB_BB (gbb) = bb;
   GBB_DATA_REFS (gbb) = drs;
   gbb->read_scalar_refs = reads;
   gbb->write_scalar_refs = writes;
+  gbb->kill_scalar_refs = kills;
   GBB_CONDITIONS (gbb).create (0);
   GBB_CONDITION_CASES (gbb).create (0);
 
@@ -229,6 +238,7 @@ free_gimple_poly_bb (gimple_poly_bb_p gbb)
   GBB_CONDITION_CASES (gbb).release ();
   gbb->read_scalar_refs.release ();
   gbb->write_scalar_refs.release ();
+  gbb->kill_scalar_refs.release ();
   XDELETE (gbb);
 }
 
@@ -255,6 +265,9 @@ new_scop (edge entry, edge exit)
   scop_set_region (s, region);
   s->pbbs.create (3);
   s->drs.create (3);
+  s->reduction_vars = new hash_set<tree>(1);
+  s->oacc_firstprivate_vars = new hash_set<tree>(1);
+  s->oacc_private_scalars = new hash_set<tree>(1);
   s->unhandled_alias_ddrs.create (1);
   s->dependence = NULL;
   return s;
@@ -273,6 +286,9 @@ free_scop (scop_p scop)
 
   scop->pbbs.release ();
   scop->drs.release ();
+  delete scop->reduction_vars;
+  delete scop->oacc_firstprivate_vars;
+  delete scop->oacc_private_scalars;
   scop->unhandled_alias_ddrs.release ();
 
   isl_set_free (scop->param_context);
@@ -517,6 +533,23 @@ DEBUG_FUNCTION void
 debug_isl_map (__isl_keep isl_map *map)
 {
   print_isl_map (stderr, map);
+}
+
+
+void
+print_isl_space (FILE *f, __isl_keep isl_space *space)
+{
+  isl_printer *p = isl_printer_to_file (the_isl_ctx, f);
+  p = isl_printer_set_yaml_style (p, ISL_YAML_STYLE_BLOCK);
+  p = isl_printer_print_space (p, space);
+  p = isl_printer_print_str (p, "\n");
+  isl_printer_free (p);
+}
+
+DEBUG_FUNCTION void
+debug_isl_space (__isl_keep isl_space *space)
+{
+  print_isl_space (stderr, space);
 }
 
 void

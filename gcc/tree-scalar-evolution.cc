@@ -264,6 +264,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "gimple-pretty-print.h"
+#include "tree-pretty-print.h"
+#include "print-tree.h"
 #include "fold-const.h"
 #include "gimplify.h"
 #include "gimple-iterator.h"
@@ -276,6 +278,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
+#include "internal-fn.h"
+#include "graphite-oacc.h"
 #include "tree-affine.h"
 #include "tree-scalar-evolution.h"
 #include "dumpfile.h"
@@ -284,6 +288,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "builtins.h"
 #include "case-cfn-macros.h"
+#include "omp-offload.h"
+#include "internal-fn.h"
 
 static tree analyze_scalar_evolution_1 (class loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (class loop *loop,
@@ -311,7 +317,19 @@ struct scev_info_hasher : ggc_ptr_hash<scev_info_str>
 
 static GTY (()) hash_table<scev_info_hasher> *scalar_evolution_info;
 
-
+/* This flag indicates that internal OpenACC calls should be analyzed.
+   The analysis is not valid in general. It is used to allow Graphite
+   to analyze the partially lowered OpenACC loops as if it was seeing
+   the unlowered loops. */
+
+static bool analyze_openacc_calls = false;
+
+void set_scev_analyze_openacc_calls (bool analyze)
+{
+  analyze_openacc_calls = analyze;
+}
+
+
 /* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
 
 static inline struct scev_info_str *
@@ -622,6 +640,51 @@ scev_dfs::get_ev (tree *ev_fn, tree arg)
   return follow_ssa_edge_expr (loop_phi_node, arg, ev_fn, 0);
 }
 
+bool
+oacc_call_analyzable_p (gimple *stmt)
+{
+  return analyze_openacc_calls
+	 && gimple_call_internal_p (stmt, IFN_GOACC_LOOP);
+}
+
+bool
+oacc_call_analyzable_p (tree t)
+{
+  return TREE_CODE (t) == SSA_NAME
+	 && oacc_call_analyzable_p (SSA_NAME_DEF_STMT (t));
+}
+
+/* Extract loop information from a OpenACC internal function call. */
+
+tree
+oacc_ifn_call_extract (gimple *stmt)
+{
+  if (oacc_call_analyzable_p (stmt))
+    {
+      gcc_assert (gimple_call_internal_p (stmt, IFN_GOACC_LOOP));
+      return oacc_extract_loop_call (as_a<gcall *> (stmt));
+    }
+
+  return chrec_dont_know;
+}
+
+/* If EXPR is a analyzable internal OpenACC function call,
+   return the result of its analysis; otherwise return EXPR. */
+
+tree
+oacc_simplify (tree expr)
+{
+  if (expr == NULL || TREE_CODE (expr) != SSA_NAME)
+    return expr;
+
+  gimple *def = SSA_NAME_DEF_STMT (expr);
+
+  if (oacc_call_analyzable_p (def))
+    return oacc_ifn_call_extract (def);
+
+  return expr;
+}
+
 /* Helper function for add_to_evolution.  Returns the evolution
    function for an assignment of the form "a = b + c", where "a" and
    "b" are on the strongly connected component.  CHREC_BEFORE is the
@@ -850,6 +913,8 @@ scev_dfs::add_to_evolution (tree chrec_before, enum tree_code code,
   if (to_add == NULL_TREE)
     return chrec_before;
 
+  to_add = oacc_simplify (to_add);
+
   /* TO_ADD is either a scalar, or a parameter.  TO_ADD is not
      instantiated at this point.  */
   if (TREE_CODE (to_add) == POLYNOMIAL_CHREC)
@@ -965,6 +1030,7 @@ scev_dfs::follow_ssa_edge_binary (gimple *at_stmt, tree type, tree rhs0,
       res = t_false;
     }
 
+  *evolution_of_loop = oacc_simplify (*evolution_of_loop);
   return res;
 }
 
@@ -1105,6 +1171,8 @@ scev_dfs::follow_ssa_edge_inner_loop_phi (gphi *loop_phi_node,
   return follow_ssa_edge_expr (loop_phi_node, ev, evolution_of_loop, limit);
 }
 
+tree interpret_gimple_call (class loop *loop, gimple *call);
+
 /* Follow the ssa edge into the expression EXPR.
    Return true if the strongly connected component has been found.  */
 
@@ -1113,8 +1181,10 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
 				tree *evolution_of_loop, int limit)
 {
   gphi *halting_phi = loop_phi_node;
-  enum tree_code code;
-  tree type, rhs0, rhs1 = NULL_TREE;
+  enum tree_code code = LAST_AND_UNUSED_TREE_CODE;
+  tree type = NULL_TREE;
+  tree rhs0 = NULL_TREE;
+  tree rhs1 = NULL_TREE;
 
   /* The EXPR is one of the following cases:
      - an SSA_NAME,
@@ -1127,6 +1197,7 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
   /* For SSA_NAME look at the definition statement, handling
      PHI nodes and otherwise expand appropriately for the expression
      handling below.  */
+  expr = oacc_simplify (expr);
   if (TREE_CODE (expr) == SSA_NAME)
     {
       gimple *def = SSA_NAME_DEF_STMT (expr);
@@ -1176,28 +1247,37 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
 	  return t_false;
 	}
 
-      /* At this level of abstraction, the program is just a set
-	 of GIMPLE_ASSIGNs and PHI_NODEs.  In principle there is no
-	 other def to be handled.  */
-      if (!is_gimple_assign (def))
-	return t_false;
-
-      code = gimple_assign_rhs_code (def);
-      switch (get_gimple_rhs_class (code))
+      /* At this level of abstraction, the program is just a set of
+	 GIMPLE_ASSIGNs and PHI_NODEs.  In principle there is no other def to
+	 be handled except for OpenACC internal function calls. */
+      if (is_gimple_assign (def))
 	{
-	case GIMPLE_BINARY_RHS:
-	  rhs0 = gimple_assign_rhs1 (def);
-	  rhs1 = gimple_assign_rhs2 (def);
-	  break;
-	case GIMPLE_UNARY_RHS:
-	case GIMPLE_SINGLE_RHS:
-	  rhs0 = gimple_assign_rhs1 (def);
-	  break;
-	default:
-	  return t_false;
+	  code = gimple_assign_rhs_code (def);
+
+	  switch (get_gimple_rhs_class (code))
+	    {
+	    case GIMPLE_BINARY_RHS:
+	      rhs0 = gimple_assign_rhs1 (def);
+	      rhs1 = gimple_assign_rhs2 (def);
+	      break;
+	    case GIMPLE_UNARY_RHS:
+	    case GIMPLE_SINGLE_RHS:
+	      rhs0 = gimple_assign_rhs1 (def);
+	      break;
+	    default:
+	      return t_false;
+	    }
+	  type = TREE_TYPE (gimple_assign_lhs (def));
+	  at_stmt = def;
 	}
-      type = TREE_TYPE (gimple_assign_lhs (def));
-      at_stmt = def;
+      else if (oacc_call_analyzable_p (expr)) {
+	// TODO-kernels Is this still needed here?
+	rhs0 = interpret_gimple_call (loop, def);
+	type = TREE_TYPE (gimple_call_lhs (def));
+	at_stmt = def;
+      }
+      else return t_false;
+
     }
   else
     {
@@ -1499,6 +1579,7 @@ follow_copies_to_constant (tree var)
       else
 	break;
     }
+  res = oacc_simplify (res);
   if (CONSTANT_CLASS_P (res))
     return res;
   return var;
@@ -1532,6 +1613,7 @@ analyze_initial_condition (gphi *loop_phi_node)
       tree branch = PHI_ARG_DEF (loop_phi_node, i);
       basic_block bb = gimple_phi_arg_edge (loop_phi_node, i)->src;
 
+      branch = oacc_simplify (branch);
       /* When the branch is oriented to the loop's body, it does
      	 not contribute to the initial condition.  */
       if (flow_bb_inside_loop_p (loop, bb))
@@ -1559,6 +1641,7 @@ analyze_initial_condition (gphi *loop_phi_node)
   /* We may not have fully constant propagated IL.  Handle degenerate PHIs here
      to not miss important early loop unrollings.  */
   init_cond = follow_copies_to_constant (init_cond);
+  init_cond = oacc_simplify (init_cond);
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {
@@ -1636,8 +1719,11 @@ interpret_rhs_expr (class loop *loop, gimple *at_stmt,
 	return chrec_convert (type, rhs1, at_stmt);
 
       if (code == SSA_NAME)
-	return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
-			      at_stmt);
+	{
+	  rhs1 = oacc_simplify (rhs1);
+	  return chrec_convert (type, analyze_scalar_evolution (loop, rhs1),
+				at_stmt);
+	}
     }
 
   switch (code)
@@ -1919,7 +2005,25 @@ interpret_gimple_assign (class loop *loop, gimple *stmt)
 			     gimple_assign_rhs2 (stmt));
 }
 
-
+/* Interpret a gimple call statement. */
+
+tree
+interpret_gimple_call (class loop *loop __attribute__ ((__unused__)), gimple *call)
+{
+
+  /* Information about OpenACC loops is encoded in internal function calls.
+     Extract loop information from those calls. Ignore other calls for now. */
+  if (!oacc_call_analyzable_p (call))
+    return chrec_dont_know;
+
+  tree expr = oacc_ifn_call_extract (call);
+  tree analyzed = expr;
+
+  tree lhs = gimple_call_lhs (call);
+  gcc_assert (lhs);
+
+  return chrec_convert (TREE_TYPE (lhs), analyzed, call);
+}
 
 /* This section contains all the entry points:
    - number_of_iterations_in_loop,
@@ -1942,6 +2046,8 @@ analyze_scalar_evolution_1 (class loop *loop, tree var)
 
   def = SSA_NAME_DEF_STMT (var);
   bb = gimple_bb (def);
+  if (!bb)
+    return chrec_dont_know;
   def_loop = bb->loop_father;
 
   if (!flow_bb_inside_loop_p (loop, bb))
@@ -1966,6 +2072,10 @@ analyze_scalar_evolution_1 (class loop *loop, tree var)
     {
     case GIMPLE_ASSIGN:
       res = interpret_gimple_assign (loop, def);
+      break;
+
+    case GIMPLE_CALL:
+      res = interpret_gimple_call (loop, def);
       break;
 
     case GIMPLE_PHI:
@@ -2259,6 +2369,14 @@ instantiate_scev_name (edge instantiate_below,
   tree res;
   class loop *def_loop;
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (chrec));
+
+  if (oacc_call_analyzable_p (chrec))
+    {
+      tree res
+	  = interpret_gimple_call (evolution_loop, SSA_NAME_DEF_STMT (chrec));
+
+      return res;
+    }
 
   /* A parameter, nothing to do.  */
   if (!def_bb
@@ -3375,6 +3493,9 @@ expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
       if (!integer_pow2p (TREE_OPERAND (expr, 1)))
 	return true;
     }
+
+  if (oacc_call_analyzable_p (expr))
+      return false;
 
   bool visited_p;
   uint64_t &local_cost = cache.get_or_insert (expr, &visited_p);
