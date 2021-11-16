@@ -1,5 +1,12 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* graphite-scop-detection.cc (scop_context_loop): New function.
+	(build_alias_set): Use scop_context_loop instead of find_common_loop.
+	* graphite-isl-ast-to-gimple.cc (graphite_regenerate_ast_isl): Likewise.
+	* graphite.h (scop_context_loop): New declaration.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* graphite-optimize-isl.cc (optimize_isl): Adjust
 	param_max_isl_operations value for OpenACC functions and add
 	special warnings if value gets exceeded.
