@@ -18,4 +18,4 @@ t6 (int qz, int wh)
     qz = jl * wh;
 }
 
-/* { dg-final { scan-tree-dump-times "Replacing" 2 "loopdone"} } */
+/* { dg-final { scan-tree-dump-times "Replacing" 2 "loopdone2"} } */

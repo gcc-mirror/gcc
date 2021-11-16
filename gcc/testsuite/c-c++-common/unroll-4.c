@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -funroll-all-loops -fdump-rtl-loop2_unroll-details -fdump-tree-cunrolli-details" } */
+/* { dg-options "-O2 -funroll-all-loops -fdump-rtl-loop2_unroll-details -fdump-tree-cunrolli1-details" } */
 
 extern void bar (int);
 
@@ -17,6 +17,6 @@ void test (void)
   for (unsigned long i = 1; i <= j; ++i)
     bar(i);
 
-  /* { dg-final { scan-tree-dump "Not unrolling loop .: user didn't want it unrolled completely" "cunrolli" } } */
+  /* { dg-final { scan-tree-dump "Not unrolling loop .: user didn't want it unrolled completely" "cunrolli1" } } */
   /* { dg-final { scan-rtl-dump-times "Not unrolling loop, user didn't want it unrolled" 2 "loop2_unroll" } } */
 }

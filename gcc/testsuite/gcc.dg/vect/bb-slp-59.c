@@ -22,5 +22,5 @@ void foo (void)
 /* We should be able to vectorize the cycle in one SLP attempt including
    both load groups and do only one permutation.  */
 /* { dg-final { scan-tree-dump-times "transform load" 2 "slp1" } } */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "loopdone" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "loopdone2" } } */
 /* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" } } */

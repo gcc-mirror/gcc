@@ -25,4 +25,4 @@ float ADD(float x, float y)
   return x + y;
 }
 
-/* { dg-final { scan-tree-dump-times "Discarding function" 3 "oaccloops" } } */
+/* { dg-final { scan-tree-dump-times "Discarding function" 3 "oaccloops*" } } */

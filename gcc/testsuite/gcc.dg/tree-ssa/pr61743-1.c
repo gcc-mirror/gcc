@@ -50,4 +50,4 @@ int foo1 (e_u8 a[4][N], int b1, int b2, e_u8 b[M+1][4][N])
 
 /* { dg-final { scan-tree-dump-times "loop with 3 iterations completely unrolled" 2 "cunroll" } } */
 /* { dg-final { scan-tree-dump-times "loop with 7 iterations completely unrolled" 2 "cunroll" } } */
-/* { dg-final { scan-tree-dump-not "completely unrolled" "cunrolli" } } */
+/* { dg-final { scan-tree-dump-not "completely unrolled" "cunrolli1" } } */

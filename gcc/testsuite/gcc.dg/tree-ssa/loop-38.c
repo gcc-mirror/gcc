@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli1-details" } */
 int a[10];
 int b[11];
 int q (void);
@@ -15,4 +15,4 @@ t(int n)
 	sum+=b[i];
   return sum;
 }
-/* { dg-final { scan-tree-dump "Loop 1 iterates at most 11 times" "cunrolli" } } */
+/* { dg-final { scan-tree-dump "Loop 1 iterates at most 11 times" "cunrolli1" } } */
