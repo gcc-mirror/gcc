@@ -185,9 +185,6 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASSES_AFTER (all_passes)
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
-  NEXT_PASS (pass_oacc_loop_designation);
-  NEXT_PASS (pass_omp_oacc_neuter_broadcast);
-  NEXT_PASS (pass_oacc_device_lower);
   NEXT_PASS (pass_omp_device_lower);
   NEXT_PASS (pass_omp_target_link);
   NEXT_PASS (pass_adjust_alignment);
@@ -296,6 +293,35 @@ along with GCC; see the file COPYING3.  If not see
 	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_parallelize_loops, false /* oacc_kernels_p */);
 	  NEXT_PASS (pass_expand_omp_ssa);
+
+	  /* Interrupt pass_tree_loop for OpenACC device lowering. */
+	  NEXT_PASS (pass_oacc_only);
+	  PUSH_INSERT_PASSES_WITHIN (pass_oacc_only)
+	    NEXT_PASS (pass_tree_loop_done);
+	    NEXT_PASS (pass_oacc_loop_designation);
+	    NEXT_PASS (pass_omp_oacc_neuter_broadcast);
+	    NEXT_PASS (pass_oacc_device_lower);
+
+	    NEXT_PASS (pass_oacc_functions_only);
+	    PUSH_INSERT_PASSES_WITHIN (pass_oacc_functions_only)
+		/* Repeat some passes on OpenACC functions after device lowering. */
+		/* Lower complex instructions arising from OpenACC
+		reductions. */
+		NEXT_PASS (pass_lower_complex);
+		/* Those passes are necessary here to allow the loop vectorizer to
+		work on the offloading functions which is important for AMD GCN
+		offloading. */
+		NEXT_PASS (pass_ccp, true /* nonzero_p */);
+		NEXT_PASS (pass_complete_unrolli);
+		NEXT_PASS (pass_backprop);
+		NEXT_PASS (pass_phiprop);
+		NEXT_PASS (pass_fix_loops);
+	    POP_INSERT_PASSES ()
+
+          /* Continue pass_tree_loop after OpenACC device lowering. */
+	  NEXT_PASS (pass_tree_loop_init);
+	  POP_INSERT_PASSES ()
+
 	  NEXT_PASS (pass_ch_vect);
 	  NEXT_PASS (pass_if_conversion);
 	  /* pass_vectorize must immediately follow pass_if_conversion.
@@ -324,6 +350,9 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_tree_no_loop);
       PUSH_INSERT_PASSES_WITHIN (pass_tree_no_loop)
 	  NEXT_PASS (pass_slp_vectorize);
+	  NEXT_PASS (pass_oacc_loop_designation);
+	  NEXT_PASS (pass_omp_oacc_neuter_broadcast);
+	  NEXT_PASS (pass_oacc_device_lower);
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
@@ -406,6 +435,12 @@ along with GCC; see the file COPYING3.  If not see
       /* uncprop replaces constants by SSA names.  This makes analysis harder
 	 and thus it should be run last.  */
       NEXT_PASS (pass_uncprop);
+  POP_INSERT_PASSES ()
+  NEXT_PASS (pass_no_loop_optimizations);
+  PUSH_INSERT_PASSES_WITHIN (pass_no_loop_optimizations)
+      NEXT_PASS (pass_oacc_loop_designation);
+      NEXT_PASS (pass_omp_oacc_neuter_broadcast);
+      NEXT_PASS (pass_oacc_device_lower);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_assumptions);
   NEXT_PASS (pass_tm_init);

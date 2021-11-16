@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-backprop-details" }  */
+/* { dg-options "-O -fdump-tree-backprop1-details" }  */
 
 void start (void *);
 void end (void *);
@@ -26,5 +26,5 @@ TEST_FUNCTION (float, f)
 TEST_FUNCTION (double, )
 TEST_FUNCTION (long double, l)
 
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 6 "backprop" } } */
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 3 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 6 "backprop1" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = ABS_EXPR <} 3 "backprop1" } } */

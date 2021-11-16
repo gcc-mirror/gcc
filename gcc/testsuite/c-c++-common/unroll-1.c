@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details -fdump-rtl-loop2_unroll-details" } */
+/* { dg-do compile } *
+/* { dg-options "-O2 -fdump-tree-cunrolli1-details -fdump-rtl-loop2_unroll-details" } */
 
 extern void bar (int);
 
@@ -10,12 +10,12 @@ void test (void)
   #pragma GCC unroll 8
   for (unsigned long i = 1; i <= 8; ++i)
     bar(i);
-  /* { dg-final { scan-tree-dump "11:.*: loop with 8 iterations completely unrolled" "cunrolli" } } */
+  /* { dg-final { scan-tree-dump "11:.*: loop with 8 iterations completely unrolled" "cunrolli1" } } */
 
   #pragma GCC unroll 8
   for (unsigned long i = 1; i <= 7; ++i)
     bar(i);
-  /* { dg-final { scan-tree-dump "16:.*: loop with 7 iterations completely unrolled" "cunrolli" } } */
+  /* { dg-final { scan-tree-dump "16:.*: loop with 7 iterations completely unrolled" "cunrolli1" } } */
 
   #pragma GCC unroll 8
   for (unsigned long i = 1; i <= 15; ++i)

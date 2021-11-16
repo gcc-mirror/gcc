@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details=stderr -fno-peel-loops -fno-tree-vrp  -fdisable-tree-cunroll -fenable-tree-cunrolli" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli-details=stderr -fno-peel-loops -fno-tree-vrp  -fdisable-tree-cunroll -fenable-tree-cunrolli1" } */
 
 /* Blank lines can occur in the output of
    -fdump-tree-cunrolli-details=stderr.  */

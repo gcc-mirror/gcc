@@ -1,3 +1,39 @@
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* gcc.dg/goacc/loop-processing-1.c: Adjust expected output
+	to pass name changes due to the pass reordering and cloning.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Likewise.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/routine-nohost-1.c: Likewise.
+	* c-c++-common/unroll-1.c: Likewise.
+	* c-c++-common/unroll-4.c: Likewise.
+	* gcc.dg/goacc/loop-processing-1.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-1.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-2.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-3.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-4.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-5.c: Likewise.
+	* gcc.dg/tree-ssa/backprop-6.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-1.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-3.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-9.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-17.c: Likewise.
+	* gcc.dg/tree-ssa/loop-38.c: Likewise.
+	* gcc.dg/tree-ssa/pr21463.c: Likewise.
+	* gcc.dg/tree-ssa/pr45427.c: Likewise.
+	* gcc.dg/tree-ssa/pr61743-1.c: Likewise.
+	* gcc.dg/unroll-2.c: Likewise.
+	* gcc.dg/unroll-3.c: Likewise.
+	* gcc.dg/unroll-4.c: Likewise.
+	* gcc.dg/unroll-5.c: Likewise.
+	* gcc.dg/vect/vect-profile-1.c: Likewise.
+	* c-c++-common/goacc/device-lowering-debug-optimization.c: New test.
+	* c-c++-common/goacc/device-lowering-no-loops.c: New test.
+	* c-c++-common/goacc/device-lowering-no-optimization.c: New test.
+
 2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

@@ -1,3 +1,30 @@
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* omp-general.cc (oacc_get_fn_dim_size): Return 0 on
+	missing "dims".
+	* omp-offload.cc (pass_oacc_loop_designation::clone): New
+	member function.
+	(pass_oacc_gimple_workers::clone): Likewise.
+	(pass_oacc_gimple_device_lower::clone): Likewise.
+	* passes.cc (pass_data_no_loop_optimizations): New pass_data.
+	(class pass_no_loop_optimizations): New pass.
+	(make_pass_no_loop_optimizations): New function.
+	* passes.def: Move pass_oacc_{loop_designation,
+	gimple_workers, device_lower} into tree_loop, and add
+	copies to pass_tree_no_loop and to new
+	pass_no_loop_optimizations.  Add copies of passes pass_ccp,
+	pass_ipa_warn, pass_complete_unrolli, pass_backprop,
+	pass_phiprop, pass_fix_loops after the OpenACC passes
+	in pass_tree_loop.
+	* tree-ssa-loop-ivcanon.cc (pass_complete_unroll::clone):
+	New member function.
+	(pass_complete_unrolli::clone): Likewise.
+	* tree-ssa-loop.cc (pass_fix_loops::clone): Likewise.
+	(pass_tree_loop_init::clone): Likewise.
+	(pass_tree_loop_done::clone): Likewise.
+	* tree-ssa-phiprop.cc (pass_phiprop::clone): Likewise.
+
 2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

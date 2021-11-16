@@ -2996,7 +2996,13 @@ oacc_get_fn_dim_size (tree fn, int axis)
   while (axis--)
     dims = TREE_CHAIN (dims);
 
-  int size = TREE_INT_CST_LOW (TREE_VALUE (dims));
+  tree v = TREE_VALUE (dims);
+  /* TODO With 'pass_oacc_device_lower' moved "later", this is necessary to
+     avoid ICE for some OpenACC 'kernels' ("parloops") constructs.  */
+  if (v == NULL_TREE)
+    return 0;
+
+  int size = TREE_INT_CST_LOW (v);
 
   return size;
 }

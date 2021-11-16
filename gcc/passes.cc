@@ -626,6 +626,48 @@ make_pass_all_optimizations_g (gcc::context *ctxt)
 
 namespace {
 
+const pass_data pass_data_no_loop_optimizations =
+{
+  GIMPLE_PASS, /* type */
+  "*no_loop_optimizations", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_OPTIMIZE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+/* This pass runs if loop optimizations are disabled
+   at the current optimization level. */
+
+class pass_no_loop_optimizations : public gimple_opt_pass
+{
+public:
+  pass_no_loop_optimizations (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_no_loop_optimizations, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool
+  gate (function *)
+  {
+    return !optimize || optimize_debug;
+  }
+
+}; // class pass_no_loop_optimizations
+
+} // anon namespace
+
+static gimple_opt_pass *
+make_pass_no_loop_optimizations (gcc::context *ctxt)
+{
+  return new pass_no_loop_optimizations (ctxt);
+}
+
+namespace {
+
 const pass_data pass_data_rest_of_compilation =
 {
   RTL_PASS, /* type */

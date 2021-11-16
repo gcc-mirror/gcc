@@ -70,6 +70,8 @@ public:
   bool gate (function *) final override { return flag_tree_loop_optimize; }
 
   unsigned int execute (function *fn) final override;
+
+  opt_pass * clone () { return new pass_fix_loops (m_ctxt); }
 }; // class pass_fix_loops
 
 unsigned int
@@ -136,6 +138,8 @@ public:
   /* opt_pass methods: */
   bool gate (function *fn) final override { return gate_loop (fn); }
 
+
+  opt_pass * clone () { return new pass_tree_loop (m_ctxt); }
 }; // class pass_tree_loop
 
 } // anon namespace
@@ -200,6 +204,97 @@ make_pass_oacc_kernels (gcc::context *ctxt)
 {
   return new pass_oacc_kernels (ctxt);
 }
+/* A superpass that runs its subpasses on OpenACC functions only.  */
+
+namespace {
+
+const pass_data pass_data_oacc_functions_only =
+{
+  GIMPLE_PASS, /* type */
+  "*oacc_fns_only", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_oacc_functions_only: public gimple_opt_pass
+{
+public:
+  pass_oacc_functions_only (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_oacc_functions_only, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fn) {
+    if (!flag_openacc)
+      return false;
+
+    if (!oacc_get_fn_attrib (fn->decl))
+      return false;
+
+    return true;
+  }
+
+}; // class pass_oacc_functions_only
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_oacc_functions_only (gcc::context *ctxt)
+{
+  return new pass_oacc_functions_only (ctxt);
+}
+
+/* A superpass that runs its subpasses only if compiling for OpenACC.  */
+
+namespace {
+
+const pass_data pass_data_oacc_only =
+{
+  GIMPLE_PASS, /* type */
+  "*oacc_only", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  TV_TREE_LOOP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_oacc_only: public gimple_opt_pass
+{
+public:
+  pass_oacc_only (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_oacc_only, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fn) {
+    if (!flag_openacc)
+      return false;
+
+    if (!oacc_get_fn_attrib (fn->decl))
+      return false;
+
+    return true;
+  }
+
+}; // class pass_oacc_only
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_oacc_only (gcc::context *ctxt)
+{
+  return new pass_oacc_only (ctxt);
+}
+
+
 
 /* The ipa oacc superpass.  */
 
@@ -342,6 +437,8 @@ public:
 
   /* opt_pass methods: */
   unsigned int execute (function *) final override;
+
+  opt_pass * clone () { return new pass_tree_loop_init (m_ctxt); }
 
 }; // class pass_tree_loop_init
 
@@ -507,6 +604,8 @@ public:
   {
     return tree_ssa_loop_done ();
   }
+
+  opt_pass * clone () { return new pass_tree_loop_done (m_ctxt); }
 
 }; // class pass_tree_loop_done
 

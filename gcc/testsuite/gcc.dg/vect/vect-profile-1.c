@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-additional-options "-fdump-tree-vect-details-blocks -fdisable-tree-cunrolli" } */
+/* { dg-additional-options "-fdump-tree-vect-details-blocks -fdisable-tree-cunrolli1" } */
 
 /* At least one of these should correspond to a full vector.  */
 

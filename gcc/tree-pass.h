@@ -494,6 +494,8 @@ extern gimple_opt_pass *make_pass_vtable_verify (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_ubsan (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_sanopt (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_oacc_kernels (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_only (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_oacc_functions_only (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_oacc (gcc::context *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_oacc_kernels (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_warn_nonnull_compare (gcc::context *ctxt);

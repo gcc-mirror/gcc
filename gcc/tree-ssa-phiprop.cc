@@ -479,6 +479,8 @@ public:
   bool gate (function *) final override { return flag_tree_phiprop; }
   unsigned int execute (function *) final override;
 
+  opt_pass * clone () { return new pass_phiprop (m_ctxt); } 
+
 }; // class pass_phiprop
 
 unsigned int

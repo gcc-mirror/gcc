@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -g -fdump-tree-backprop-details" }  */
+/* { dg-options "-O -g -fdump-tree-backprop1-details" }  */
 
 /* Test a simple case of non-looping code in which one use ignores
    the sign but another doesn't.  */
@@ -18,4 +18,4 @@ TEST_FUNCTION (float, f)
 TEST_FUNCTION (double, )
 TEST_FUNCTION (long double, l)
 
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -x} 0 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -x} 0 "backprop1" } } */
