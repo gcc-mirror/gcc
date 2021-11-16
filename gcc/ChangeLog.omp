@@ -1,5 +1,12 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* graphite-sese-to-poly.cc (build_poly_sr_1): Fix a typo and
+	a reference to a variable which does not exist.
+	* graphite-isl-ast-to-gimple.cc (gsi_insert_earliest): Fix typo
+	in comment.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* graphite-sese-to-poly.cc (isl_id_for_ssa_name): Rename to ...
 	(isl_id_for_parameter): ... this new function name.
 	(build_scop_context): Adjust function use.
