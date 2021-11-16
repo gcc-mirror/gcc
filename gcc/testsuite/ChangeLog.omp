@@ -1,4 +1,28 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized-graphite.c:
+	New test.
+	* c-c++-common/goacc/classify-kernels-unparallelized-parloops.c:
+	New test.
+	* c-c++-common/goacc/kernels-decompose-1-parloops.c: New test.
+	* c-c++-common/goacc/kernels-reduction-parloops.c: New test.
+	* c-c++-common/goacc/loop-auto-reductions.c: New test.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto-parloops.c:
+	New test.
+	* c-c++-common/goacc/note-parallelism-kernels-loops-1.c: New test.
+	* c-c++-common/goacc/note-parallelism-kernels-loops-parloops.c:
+	New test.
+	* gfortran.dg/goacc/classify-kernels-unparallelized-parloops.f95:
+	New test.
+	* gfortran.dg/goacc/kernels-conversion.f95: New test.
+	* gfortran.dg/goacc/kernels-decompose-1-parloops.f95: New test.
+	* gfortran.dg/goacc/kernels-decompose-parloops-2.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-data-parloops-2.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-parloops-2.f95: New test.
+	* gfortran.dg/goacc/kernels-loop-parloops.f95: New test.
+	* gfortran.dg/goacc/kernels-reductions.f90: New test.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/classify-kernels.c: Adjust.
