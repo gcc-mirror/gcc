@@ -3638,6 +3638,8 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	      use_stmt = use_nop_stmt;
 	    }
 	}
+      else
+	return;
 
       if (!bit)
 	{
