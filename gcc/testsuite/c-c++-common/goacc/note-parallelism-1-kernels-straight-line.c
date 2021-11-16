@@ -28,7 +28,14 @@ main ()
 {
   int x, y, z;
 
-#pragma acc kernels /* { dg-warning "region contains gang partitioned code but is not gang partitioned" } */
+#pragma acc kernels /* { dg-line l_pragma_kernels } */
+  /* The variables aren't loop variables (on explicit or implicit 'loop' directives), so don't get (implicit) 'private' clauses, but they're (implicit) 'copy' -- which we then see get optimized: */
+  /* { dg-optimized {'map\(force_tofrom:z \[len: [0-9]+\]\[implicit\]\)' optimized to 'map\(to:z \[len: [0-9]+\]\[implicit\]\)'} "" { target *-*-* } l_pragma_kernels } */
+  /* { dg-optimized {'map\(to:z \[len: [0-9]+\]\[implicit\]\)' further optimized to 'private\(z\)'} "" { target *-*-* } l_pragma_kernels } */
+  /* { dg-optimized {'map\(force_tofrom:y \[len: [0-9]+\]\[implicit\]\)' optimized to 'map\(to:y \[len: [0-9]+\]\[implicit\]\)'} "" { target *-*-* } l_pragma_kernels } */
+  /* { dg-optimized {'map\(to:y \[len: [0-9]+\]\[implicit\]\)' further optimized to 'private\(y\)\'} "" { target *-*-* } l_pragma_kernels } */
+  /* { dg-optimized {'map\(force_tofrom:x \[len: [0-9]+\]\[implicit\]\)' optimized to 'map\(to:x \[len: [0-9]+\]\[implicit\]\)'} "" { target *-*-* } l_pragma_kernels } */
+  /* { dg-optimized {'map\(to:x \[len: [0-9]+\]\[implicit\]\)' further optimized to 'private\(x\)'} "" { target *-*-* } l_pragma_kernels } */
   {
     x = 0; /* { dg-message "note: beginning .gang-single. part in OpenACC .kernels. region" } */
     y = x < 10;

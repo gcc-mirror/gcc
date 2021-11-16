@@ -1,3 +1,16 @@
+2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/note-parallelism-1-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/uninit-copy-clause.c: Likewise.
+	* gfortran.dg/goacc/uninit-copy-clause.f95: Likewise.
+	* c-c++-common/goacc/omp_data_optimize-1.c: New test.
+	* g++.dg/goacc/omp_data_optimize-1.C: New test.
+	* gfortran.dg/goacc/omp_data_optimize-1.f90: New test.
+
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 
 	* c-c++-common/goacc/classify-kernels-unparallelized-graphite.c:

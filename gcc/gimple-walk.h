@@ -71,6 +71,12 @@ struct walk_stmt_info
 
   /* True if we've removed the statement that was processed.  */
   BOOL_BITFIELD removed_stmt : 1;
+
+  /*TODO True if we're walking backward instead of forward.  */
+  //TODO This flag is only applicable for 'walk_gimple_seq'.
+  //TODO Instead of this somewhat mis-placed (?) flag here, may be able to factor out the walking logic woult of 'walk_gimple_stmt', and do the backward walking in a separate function?
+  //TODO <http://mid.mail-archive.com/874kh863d6.fsf@euler.schwinge.homeip.net>
+  BOOL_BITFIELD backward : 1;
 };
 
 /* Callback for walk_gimple_stmt.  Called for every statement found

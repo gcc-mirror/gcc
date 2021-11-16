@@ -1,3 +1,14 @@
+2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.in: Add pass.
+	* doc/gimple.texi: TODO.
+	* gimple-walk.cc (walk_gimple_seq_mod): Adjust for backward walking.
+	* gimple-walk.h (struct walk_stmt_info): Add field.
+	* passes.def: Add new pass.
+	* tree-pass.h (make_pass_omp_data_optimize): New declaration.
+	* omp-data-optimize.cc: New file.
+
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 
 	* tree-pretty-print.cc (print_omp_clause_to_str): Add new function.
