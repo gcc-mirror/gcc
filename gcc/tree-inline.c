@@ -193,7 +193,6 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  && id->entry_bb == NULL
 	  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
 	{
-	  tree vexpr = make_node (DEBUG_EXPR_DECL);
 	  gimple *def_temp;
 	  gimple_stmt_iterator gsi;
 	  tree val = SSA_NAME_VAR (name);
@@ -210,10 +209,10 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  n = id->decl_map->get (val);
 	  if (n && TREE_CODE (*n) == DEBUG_EXPR_DECL)
 	    return *n;
-	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (name);
+	  tree vexpr = build_debug_expr_decl (TREE_TYPE (name));
+	  /* FIXME: Is setting the mode really necessary? */
 	  SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (name)));
+	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
 	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
 	  insert_decl_map (id, val, vexpr);
@@ -6450,9 +6449,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      debug_args = decl_debug_args_insert (new_decl);
 	      len = vec_safe_length (*debug_args);
 	    }
-	  ddecl = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (ddecl) = 1;
-	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
+	  ddecl = build_debug_expr_decl (TREE_TYPE (parm));
+	  /* FIXME: Is setting the mode really necessary? */
 	  SET_DECL_MODE (ddecl, DECL_MODE (parm));
 	  vec_safe_push (*debug_args, DECL_ORIGIN (parm));
 	  vec_safe_push (*debug_args, ddecl);
@@ -6488,9 +6486,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 		  vexpr = *d;
 	      if (!vexpr)
 		{
-		  vexpr = make_node (DEBUG_EXPR_DECL);
-		  DECL_ARTIFICIAL (vexpr) = 1;
-		  TREE_TYPE (vexpr) = TREE_TYPE (parm);
+		  vexpr = build_debug_expr_decl (TREE_TYPE (parm));
+		  /* FIXME: Is setting the mode really necessary? */
 		  SET_DECL_MODE (vexpr, DECL_MODE (parm));
 		}
 	      def_temp = gimple_build_debug_bind (var, vexpr, NULL);

@@ -5898,18 +5898,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		       temporary.  */
 		    gimple *debugstmt;
 		    tree value = gimple_assign_rhs_to_tree (def);
-		    tree vexpr = make_node (DEBUG_EXPR_DECL);
+		    tree vexpr = build_debug_expr_decl (TREE_TYPE (value));
 		    rtx val;
 		    machine_mode mode;
 
 		    set_curr_insn_location (gimple_location (def));
 
-		    DECL_ARTIFICIAL (vexpr) = 1;
-		    TREE_TYPE (vexpr) = TREE_TYPE (value);
 		    if (DECL_P (value))
 		      mode = DECL_MODE (value);
 		    else
 		      mode = TYPE_MODE (TREE_TYPE (value));
+		    /* FIXME: Is setting the mode really necessary? */
 		    SET_DECL_MODE (vexpr, mode);
 
 		    val = gen_rtx_VAR_LOCATION

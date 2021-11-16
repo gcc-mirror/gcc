@@ -888,9 +888,8 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
 	      }
 	  if (ddecl == NULL)
 	    {
-	      ddecl = make_node (DEBUG_EXPR_DECL);
-	      DECL_ARTIFICIAL (ddecl) = 1;
-	      TREE_TYPE (ddecl) = TREE_TYPE (origin);
+	      ddecl = build_debug_expr_decl (TREE_TYPE (origin));
+	      /* FIXME: Is setting the mode really necessary? */
 	      SET_DECL_MODE (ddecl, DECL_MODE (origin));
 
 	      vec_safe_push (*debug_args, origin);
@@ -1120,9 +1119,8 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
       return;
     }
 
-  tree dp_ddecl = make_node (DEBUG_EXPR_DECL);
-  DECL_ARTIFICIAL (dp_ddecl) = 1;
-  TREE_TYPE (dp_ddecl) = TREE_TYPE (dead_param);
+  tree dp_ddecl = build_debug_expr_decl (TREE_TYPE (dead_param));
+  /* FIXME: Is setting the mode really necessary? */
   SET_DECL_MODE (dp_ddecl, DECL_MODE (dead_param));
   m_dead_ssa_debug_equiv.put (parm_ddef, dp_ddecl);
 }
@@ -2285,11 +2283,10 @@ ipa_param_body_adjustments::reset_debug_stmts ()
 	    gcc_assert (is_gimple_debug (stmt));
 	    if (vexpr == NULL && gsip != NULL)
 	      {
-		vexpr = make_node (DEBUG_EXPR_DECL);
-		def_temp = gimple_build_debug_source_bind (vexpr, decl, NULL);
-		DECL_ARTIFICIAL (vexpr) = 1;
-		TREE_TYPE (vexpr) = TREE_TYPE (name);
+		vexpr = build_debug_expr_decl (TREE_TYPE (name));
+		/* FIXME: Is setting the mode really necessary? */
 		SET_DECL_MODE (vexpr, DECL_MODE (decl));
+		def_temp = gimple_build_debug_source_bind (vexpr, decl, NULL);
 		gsi_insert_before (gsip, def_temp, GSI_SAME_STMT);
 	      }
 	    if (vexpr)
