@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-dfa.h"
 #include "dbgcnt.h"
+#include "graphite-oacc.h"
+#include "internal-fn.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
 
@@ -320,10 +322,22 @@ enum move_pos
    Otherwise return MOVE_IMPOSSIBLE.  */
 
 enum move_pos
-movement_possibility (gimple *stmt)
+movement_possibility (gimple *stmt, bool restrict_oacc_hoisting)
 {
   tree lhs;
   enum move_pos ret = MOVE_POSSIBLE;
+
+  if (restrict_oacc_hoisting && oacc_get_fn_attrib (cfun->decl)
+      && gimple_code (stmt) == GIMPLE_ASSIGN)
+    {
+      tree rhs = gimple_assign_rhs1 (stmt);
+
+      if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR)
+	rhs = TREE_OPERAND (rhs, 0);
+
+      if (TREE_CODE (rhs) == ARRAY_REF)
+	  return MOVE_IMPOSSIBLE;
+    }
 
   if (flag_unswitch_loops
       && gimple_code (stmt) == GIMPLE_COND)
@@ -974,7 +988,7 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
    statements.  */
 
 static void
-compute_invariantness (basic_block bb)
+compute_invariantness (basic_block bb, bool restrict_oacc_hoisting)
 {
   enum move_pos pos;
   gimple_stmt_iterator bsi;
@@ -1002,7 +1016,7 @@ compute_invariantness (basic_block bb)
       {
 	stmt = gsi_stmt (bsi);
 
-	pos = movement_possibility (stmt);
+	pos = movement_possibility (stmt, restrict_oacc_hoisting);
 	if (pos == MOVE_IMPOSSIBLE)
 	  continue;
 
@@ -1033,7 +1047,7 @@ compute_invariantness (basic_block bb)
     {
       stmt = gsi_stmt (bsi);
 
-      pos = movement_possibility (stmt);
+      pos = movement_possibility (stmt, restrict_oacc_hoisting);
       if (pos == MOVE_IMPOSSIBLE)
 	{
 	  if (nonpure_call_p (stmt))
@@ -1458,7 +1472,15 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
   if (!gimple_vuse (stmt))
     return;
 
+  /* The expansion of those OpenACC internal function calls which occurs in a
+   * later pass does not introduce any memory references. Hence it is safe to
+   * ignore them. */
+  if (gimple_call_internal_p (stmt, IFN_GOACC_LOOP)
+      || gimple_call_internal_p (stmt, IFN_UNIQUE))
+    return;
+
   mem = simple_mem_ref_in_stmt (stmt, &is_stored);
+
   if (!mem)
     {
       /* We use the shared mem_ref for all unanalyzable refs.  */
@@ -1484,7 +1506,7 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
       ao_ref_alias_set (&aor);
       HOST_WIDE_INT offset, size, max_size;
       poly_int64 saved_maxsize = aor.max_size, mem_off;
-      tree mem_base;
+      tree mem_base = NULL;
       bool ref_decomposed;
       if (aor.max_size_known_p ()
 	  && aor.offset.is_constant (&offset)
@@ -3155,7 +3177,8 @@ tree_ssa_lim_finalize (void)
    Only perform store motion if STORE_MOTION is true.  */
 
 unsigned int
-loop_invariant_motion_in_fun (function *fun, bool store_motion)
+loop_invariant_motion_in_fun (function *fun, bool store_motion,
+			      bool restrict_oacc_hoisting)
 {
   unsigned int todo = 0;
 
@@ -3173,7 +3196,7 @@ loop_invariant_motion_in_fun (function *fun, bool store_motion)
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
   for (int i = 0; i < n; ++i)
-    compute_invariantness (BASIC_BLOCK_FOR_FN (fun, rpo[i]));
+    compute_invariantness (BASIC_BLOCK_FOR_FN (fun, rpo[i]), restrict_oacc_hoisting);
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */
@@ -3220,13 +3243,21 @@ class pass_lim : public gimple_opt_pass
 {
 public:
   pass_lim (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_lim, ctxt)
+    : gimple_opt_pass (pass_data_lim, ctxt), restrict_oacc_hoisting (false)
   {}
+
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      restrict_oacc_hoisting = param;
+    }
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_lim (m_ctxt); }
   virtual bool gate (function *) { return flag_tree_loop_im != 0; }
   virtual unsigned int execute (function *);
+private:
+  bool restrict_oacc_hoisting;
 
 }; // class pass_lim
 
@@ -3239,7 +3270,16 @@ pass_lim::execute (function *fun)
 
   if (number_of_loops (fun) <= 1)
     return 0;
-  unsigned int todo = loop_invariant_motion_in_fun (fun, true);
+
+  bool store_motion = true;
+  /* TODO Enabling store motion in OpenACC kernel functions requires further
+     handling of the OpenACC internal function calls.  It can also be harmful
+     to data-dependence analysis. Keep it disabled for now. */
+  if (oacc_function_p (cfun) && graphite_analyze_oacc_target_region_type_p (cfun))
+    store_motion = false;
+
+  unsigned int todo = loop_invariant_motion_in_fun (fun, store_motion,
+						    restrict_oacc_hoisting);
 
   if (!in_loop_pipeline)
     loop_optimizer_finalize ();
