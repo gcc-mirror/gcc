@@ -119,9 +119,10 @@ public:
   static std::vector<PathProbeCandidate>
   Probe (const TyTy::BaseType *receiver,
 	 const HIR::PathIdentSegment &segment_name, bool probe_impls,
-	 bool probe_bounds, bool ignore_mandatory_trait_items)
+	 bool probe_bounds, bool ignore_mandatory_trait_items,
+	 DefId specific_trait_id = UNKNOWN_DEFID)
   {
-    PathProbeType probe (receiver, segment_name);
+    PathProbeType probe (receiver, segment_name, specific_trait_id);
     if (probe_impls)
       {
 	if (receiver->get_kind () == TyTy::TypeKind::ADT)
@@ -145,6 +146,13 @@ public:
 	for (auto &candidate : probed_bounds)
 	  {
 	    const TraitReference *trait_ref = candidate.first;
+	    if (specific_trait_id != UNKNOWN_DEFID)
+	      {
+		if (trait_ref->get_mappings ().get_defid ()
+		    != specific_trait_id)
+		  continue;
+	      }
+
 	    HIR::ImplBlock *impl = candidate.second;
 	    probe.process_associated_trait_for_candidates (
 	      trait_ref, impl, ignore_mandatory_trait_items);
@@ -154,6 +162,13 @@ public:
     for (const TyTy::TypeBoundPredicate &predicate :
 	 receiver->get_specified_bounds ())
       {
+	const TraitReference *trait_ref = predicate.get ();
+	if (specific_trait_id != UNKNOWN_DEFID)
+	  {
+	    if (trait_ref->get_mappings ().get_defid () != specific_trait_id)
+	      continue;
+	  }
+
 	probe.process_predicate_for_candidates (predicate,
 						ignore_mandatory_trait_items);
       }
@@ -221,6 +236,9 @@ public:
 protected:
   void process_enum_item_for_candiates (const TyTy::ADTType *adt)
   {
+    if (specific_trait_id != UNKNOWN_DEFID)
+      return;
+
     TyTy::VariantDef *v;
     if (!adt->lookup_variant (search.as_string (), &v))
       return;
@@ -385,9 +403,9 @@ protected:
 
 protected:
   PathProbeType (const TyTy::BaseType *receiver,
-		 const HIR::PathIdentSegment &query)
+		 const HIR::PathIdentSegment &query, DefId specific_trait_id)
     : TypeCheckBase (), receiver (receiver), search (query),
-      current_impl (nullptr)
+      current_impl (nullptr), specific_trait_id (specific_trait_id)
   {}
 
   std::vector<std::pair<const TraitReference *, HIR::ImplBlock *>>
@@ -427,6 +445,7 @@ protected:
   const HIR::PathIdentSegment &search;
   std::vector<PathProbeCandidate> candidates;
   HIR::ImplBlock *current_impl;
+  DefId specific_trait_id;
 };
 
 class ReportMultipleCandidateError : private TypeCheckBase
@@ -507,7 +526,8 @@ private:
   PathProbeImplTrait (const TyTy::BaseType *receiver,
 		      const HIR::PathIdentSegment &query,
 		      const TraitReference *trait_reference)
-    : PathProbeType (receiver, query), trait_reference (trait_reference)
+    : PathProbeType (receiver, query, UNKNOWN_DEFID),
+      trait_reference (trait_reference)
   {}
 
   const TraitReference *trait_reference;
