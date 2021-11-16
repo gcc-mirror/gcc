@@ -17,6 +17,10 @@ subroutine kernel(lo, hi, a, b, c)
   real, dimension(lo:hi) :: a, b, c
 
   !$acc kernels copyin(lo, hi)
+  ! { dg-optimized {'map\(force_tofrom:offset.[0-9]+ [^)]+\)' optimized to 'map\(to:offset.[0-9]+ [^)]+\)'} "" {target *-*-* } .-1 }
+  ! { dg-missed {'map\(tofrom:\*c [^)]+\)' not optimized: '\*c' is unsuitable for privatization} "" { target *-*-* } .-2 }
+  ! { dg-missed {'map\(tofrom:\*b [^)]+\)' not optimized: '\*b' is unsuitable for privatization} "" { target *-*-* } .-3 }
+  ! { dg-missed {'map\(tofrom:\*a [^)]+\)' not optimized: '\*a' is unsuitable for privatization} "" { target *-*-* } .-4 }
   !$acc loop independent ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }

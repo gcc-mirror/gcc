@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Walk all the statements in the sequence *PSEQ calling walk_gimple_stmt
    on each one.  WI is as in walk_gimple_stmt.
 
+   TODO update for forward vs. backward.
+
    If walk_gimple_stmt returns non-NULL, the walk is stopped, and the
    value is stored in WI->CALLBACK_RESULT.  Also, the statement that
    produced the value is returned if this statement has not been
@@ -44,9 +46,10 @@ gimple *
 walk_gimple_seq_mod (gimple_seq *pseq, walk_stmt_fn callback_stmt,
 		     walk_tree_fn callback_op, struct walk_stmt_info *wi)
 {
-  gimple_stmt_iterator gsi;
+  bool forward = !(wi && wi->backward);
 
-  for (gsi = gsi_start (*pseq); !gsi_end_p (gsi); )
+  gimple_stmt_iterator gsi = forward ? gsi_start (*pseq) : gsi_last (*pseq);
+  for (; !gsi_end_p (gsi); )
     {
       tree ret = walk_gimple_stmt (&gsi, callback_stmt, callback_op, wi);
       if (ret)
@@ -60,7 +63,13 @@ walk_gimple_seq_mod (gimple_seq *pseq, walk_stmt_fn callback_stmt,
 	}
 
       if (!wi->removed_stmt)
-	gsi_next (&gsi);
+	{
+	  if (forward)
+	    gsi_next (&gsi);
+	  else //TODO Correct?  <http://mid.mail-archive.com/CAFiYyc1rFrh1tnCBgKWwLrCpkpLQ4_pXCT8K+dai2UtC0XezKQ@mail.gmail.com>
+	    gsi_prev (&gsi);
+	  //TODO This could do with some unit testing (see other 'gcc/*-tests.c' files for inspiration), to make sure all the corner cases (removing first/last, for example) work correctly.
+	}
     }
 
   if (wi)

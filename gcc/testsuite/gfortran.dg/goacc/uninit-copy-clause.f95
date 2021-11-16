@@ -5,6 +5,8 @@ subroutine foo
   integer :: i
 
   !$acc kernels
+  ! { dg-warning "'i' is used uninitialized in this function" "" { target *-*-* } .-1 }
+  !TODO See discussion in '../../c-c++-common/goacc/uninit-copy-clause.c'.
   i = 1
   !$acc end kernels
 

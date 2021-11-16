@@ -23,6 +23,8 @@ int main()
   int b[N] = { 0 };
 
 #pragma acc kernels
+  /* { dg-missed {'map\(tofrom:b [^)]+\)' not optimized: 'b' is unsuitable for privatization} "" { target *-*-* } .-1 }
+     { dg-missed {'map\(force_tofrom:a [^)]+\)' not optimized: 'a' is unsuitable for privatization} "" { target *-*-* } .-2 } */
   {
     int c = 234; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
 
