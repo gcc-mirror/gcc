@@ -1014,38 +1014,6 @@ merge_call_side_effects (modref_summary *cur_summary,
       changed = true;
     }
 
-  if (always_executed
-      && callee_summary->kills.length ()
-      && (!cfun->can_throw_non_call_exceptions
-	  || !stmt_could_throw_p (cfun, stmt)))
-    {
-      /* Watch for self recursive updates.  */
-      auto_vec<modref_access_node, 32> saved_kills;
-
-      saved_kills.reserve_exact (callee_summary->kills.length ());
-      saved_kills.splice (callee_summary->kills);
-      for (auto kill : saved_kills)
-	{
-	  if (kill.parm_index >= (int)parm_map.length ())
-	    continue;
-	  modref_parm_map &m
-		  = kill.parm_index == MODREF_STATIC_CHAIN_PARM
-		    ? chain_map
-		    : parm_map[kill.parm_index];
-	  if (m.parm_index == MODREF_LOCAL_MEMORY_PARM
-	      || m.parm_index == MODREF_UNKNOWN_PARM
-	      || m.parm_index == MODREF_RETSLOT_PARM
-	      || !m.parm_offset_known)
-	    continue;
-	  modref_access_node n = kill;
-	  n.parm_index = m.parm_index;
-	  n.parm_offset += m.parm_offset;
-	  if (modref_access_node::insert_kill (cur_summary->kills, n,
-					       record_adjustments))
-	    changed = true;
-	}
-    }
-
   /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
      was optimized out earlier which may not happen in the interposed
@@ -1094,6 +1062,38 @@ merge_call_side_effects (modref_summary *cur_summary,
     }
   if (dump_file)
     fprintf (dump_file, "\n");
+
+  if (always_executed
+      && callee_summary->kills.length ()
+      && (!cfun->can_throw_non_call_exceptions
+	  || !stmt_could_throw_p (cfun, stmt)))
+    {
+      /* Watch for self recursive updates.  */
+      auto_vec<modref_access_node, 32> saved_kills;
+
+      saved_kills.reserve_exact (callee_summary->kills.length ());
+      saved_kills.splice (callee_summary->kills);
+      for (auto kill : saved_kills)
+	{
+	  if (kill.parm_index >= (int)parm_map.length ())
+	    continue;
+	  modref_parm_map &m
+		  = kill.parm_index == MODREF_STATIC_CHAIN_PARM
+		    ? chain_map
+		    : parm_map[kill.parm_index];
+	  if (m.parm_index == MODREF_LOCAL_MEMORY_PARM
+	      || m.parm_index == MODREF_UNKNOWN_PARM
+	      || m.parm_index == MODREF_RETSLOT_PARM
+	      || !m.parm_offset_known)
+	    continue;
+	  modref_access_node n = kill;
+	  n.parm_index = m.parm_index;
+	  n.parm_offset += m.parm_offset;
+	  if (modref_access_node::insert_kill (cur_summary->kills, n,
+					       record_adjustments))
+	    changed = true;
+	}
+    }
 
   /* Merge with callee's summary.  */
   changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map,
