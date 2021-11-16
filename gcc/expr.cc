@@ -7743,6 +7743,7 @@ get_inner_reference (tree exp, poly_int64_pod *pbitsize,
 	  break;
 
 	case VIEW_CONVERT_EXPR:
+	case NOP_EXPR:
 	  break;
 
 	case MEM_REF:

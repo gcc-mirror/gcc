@@ -1,3 +1,9 @@
+2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* expr.cc (get_inner_reference): Handle NOP_EXPR like
+	VIEW_CONVERT_EXPR.
+
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
 	* tree-cfg.h (gimple_debug_cfg): Change argument type from int

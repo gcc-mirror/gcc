@@ -1,3 +1,13 @@
+2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* lang.opt (-param=delinearize=): New.
+	* trans-array.cc (get_class_array_vptr): New, split from...
+	(build_array_ref): ...here.
+	(get_array_lbound, get_array_ubound): New, split from...
+	(gfc_conv_array_ref): ...here.  Additional code refactoring
+	plus support for delinearization of the array access.
+
 2021-06-02  Julian Brown  <julian@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Don't create GOMP_MAP_TO_PSET
