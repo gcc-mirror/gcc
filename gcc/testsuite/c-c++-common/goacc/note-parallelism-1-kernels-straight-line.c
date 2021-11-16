@@ -37,7 +37,7 @@ main ()
   /* { dg-optimized {'map\(force_tofrom:x \[len: [0-9]+\]\[implicit\]\)' optimized to 'map\(to:x \[len: [0-9]+\]\[implicit\]\)'} "" { target *-*-* } l_pragma_kernels } */
   /* { dg-optimized {'map\(to:x \[len: [0-9]+\]\[implicit\]\)' further optimized to 'private\(x\)'} "" { target *-*-* } l_pragma_kernels } */
   {
-    x = 0; /* { dg-message "note: beginning .gang-single. part in OpenACC .kernels. region" } */
+    x = 0; /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     y = x < 10;
     z = x++;
     ;

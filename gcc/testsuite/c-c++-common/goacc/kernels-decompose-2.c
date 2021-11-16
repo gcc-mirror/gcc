@@ -2,8 +2,7 @@
 
 /* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */
 /* { dg-additional-options "-fopt-info-omp-all" } */
-
-/* { dg-additional-options "--param=openacc-kernels=decompose" }
+/* { dg-additional-options "--param=openacc-kernels=decompose-parloops" }
 /* { dg-additional-options "-O2" } for 'parloops'.  */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" }

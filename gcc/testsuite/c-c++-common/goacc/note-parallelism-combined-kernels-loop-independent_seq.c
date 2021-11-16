@@ -12,47 +12,38 @@ main ()
   int x, y, z;
 
 #pragma acc kernels loop seq /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent gang /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent worker /* { dg-message "optimized: assigned OpenACC worker loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent vector /* { dg-message "optimized: assigned OpenACC vector loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent gang vector /* { dg-message "optimized: assigned OpenACC gang vector loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent gang worker /* { dg-message "optimized: assigned OpenACC gang worker loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent worker vector /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent gang worker vector /* { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent gang /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop independent worker /* { dg-message "optimized: assigned OpenACC worker loop parallelism" } */
     for (y = 0; y < 10; y++)
@@ -61,19 +52,16 @@ main ()
 	;
 
 #pragma acc kernels loop independent /* { dg-message "optimized: assigned OpenACC gang vector loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc kernels loop independent /* { dg-message "optimized: assigned OpenACC gang worker loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop independent /* { dg-message "optimized: assigned OpenACC vector loop parallelism" } */
     for (y = 0; y < 10; y++)
       ;
 
 #pragma acc kernels loop independent /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop independent /* { dg-message "optimized: assigned OpenACC worker loop parallelism" } */
     for (y = 0; y < 10; y++)
@@ -82,7 +70,6 @@ main ()
 	;
 
 #pragma acc kernels loop seq /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop independent /* { dg-message "optimized: assigned OpenACC gang worker loop parallelism" } */
     for (y = 0; y < 10; y++)
@@ -91,7 +78,6 @@ main ()
 	;
 
 #pragma acc kernels loop independent /* { dg-message "optimized: assigned OpenACC gang worker loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop seq /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
@@ -100,7 +86,6 @@ main ()
 	;
 
 #pragma acc kernels loop independent /* { dg-message "optimized: assigned OpenACC gang worker loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop independent /* { dg-message "optimized: assigned OpenACC vector loop parallelism" } */
     for (y = 0; y < 10; y++)
@@ -109,7 +94,6 @@ main ()
 	;
 
 #pragma acc kernels loop seq /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  /* { dg-message "note: parallelized loop nest in OpenACC .kernels. region" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
 #pragma acc loop independent /* { dg-message "optimized: assigned OpenACC gang vector loop parallelism" } */
     for (y = 0; y < 10; y++)

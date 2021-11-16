@@ -1,3 +1,25 @@
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr84955-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-3.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-2.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486-3.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/pr85486.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-1.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-2.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-3.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-4.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-5.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-6.c: Adjust.
+	* testsuite/libgomp.oacc-c-c++-common/vector-length-128-7.c: Adjust.
+	* testsuite/libgomp.oacc-fortran/kernels-acc-loop-reduction-2.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/parallel-loop-auto-reduction-2.f90: Removed.
+
 2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/runtime-alias-check-1.c: New test.

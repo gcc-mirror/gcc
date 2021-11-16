@@ -18,6 +18,8 @@
    { dg-message dummy {} { target iN-VAl-Id } l_dummy } to avoid
    "WARNING: dg-line var l_dummy defined, but not used".  */
 
+/* { dg-excess-errors ".*insufficient partitioning.*" } */
+
 int main ()
 {
 #define N 100
@@ -59,7 +61,7 @@ int main ()
 	/* { dg-note {variable 'local_j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop$c_loop } */
 	for (local_j = 0; local_j < N; ++local_j)
 	  ;
-#pragma acc loop auto independent tile(1) /* { dg-line l_loop[incr c_loop] } */
+#pragma acc loop auto tile(1) /* { dg-line l_loop[incr c_loop] } */
 	/* { dg-note {variable 'local_j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop$c_loop } */
 	for (local_j = 0; local_j < N; ++local_j)
 	  ;
