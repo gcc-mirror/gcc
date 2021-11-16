@@ -86,7 +86,7 @@ enum strlen_range_kind {
 };
 
 static bool
-get_range_strlen (tree, bitmap *, strlen_range_kind, c_strlen_data *, unsigned);
+get_range_strlen (tree, bitmap, strlen_range_kind, c_strlen_data *, unsigned);
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -1525,7 +1525,7 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 /* Helper of get_range_strlen for ARG that is not an SSA_NAME.  */
 
 static bool
-get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
+get_range_strlen_tree (tree arg, bitmap visited, strlen_range_kind rkind,
 		       c_strlen_data *pdata, unsigned eltsize)
 {
   gcc_assert (TREE_CODE (arg) != SSA_NAME);
@@ -1849,7 +1849,7 @@ get_range_strlen_tree (tree arg, bitmap *visited, strlen_range_kind rkind,
    Return true if *PDATA was successfully populated and false otherwise.  */
 
 static bool
-get_range_strlen (tree arg, bitmap *visited,
+get_range_strlen (tree arg, bitmap visited,
 		  strlen_range_kind rkind,
 		  c_strlen_data *pdata, unsigned eltsize)
 {
@@ -1863,9 +1863,7 @@ get_range_strlen (tree arg, bitmap *visited,
     return false;
 
   /* If we were already here, break the infinite cycle.  */
-  if (!*visited)
-    *visited = BITMAP_ALLOC (NULL);
-  if (!bitmap_set_bit (*visited, SSA_NAME_VERSION (arg)))
+  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (arg)))
     return true;
 
   tree var = arg;
@@ -1962,10 +1960,10 @@ get_range_strlen (tree arg, bitmap *visited,
 bool
 get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
 {
-  bitmap visited = NULL;
+  auto_bitmap visited;
   tree maxbound = pdata->maxbound;
 
-  if (!get_range_strlen (arg, &visited, SRK_LENRANGE, pdata, eltsize))
+  if (!get_range_strlen (arg, visited, SRK_LENRANGE, pdata, eltsize))
     {
       /* On failure extend the length range to an impossible maximum
 	 (a valid MAXLEN must be less than PTRDIFF_MAX - 1).  Other
@@ -1980,9 +1978,6 @@ get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
      MAXBOUND to SIZE_MAX.  Otherwise leave it null (if it is null).  */
   if (maxbound && pdata->maxbound == maxbound)
     pdata->maxbound = build_all_ones_cst (size_type_node);
-
-  if (visited)
-    BITMAP_FREE (visited);
 
   return !integer_all_onesp (pdata->maxlen);
 }
@@ -2005,18 +2000,15 @@ get_maxval_strlen (tree arg, strlen_range_kind rkind, tree *nonstr = NULL)
   /* ARG must have an integral type when RKIND says so.  */
   gcc_assert (rkind != SRK_INT_VALUE || INTEGRAL_TYPE_P (TREE_TYPE (arg)));
 
-  bitmap visited = NULL;
+  auto_bitmap visited;
 
   /* Reset DATA.MAXLEN if the call fails or when DATA.MAXLEN
      is unbounded.  */
   c_strlen_data lendata = { };
-  if (!get_range_strlen (arg, &visited, rkind, &lendata, /* eltsize = */1))
+  if (!get_range_strlen (arg, visited, rkind, &lendata, /* eltsize = */1))
     lendata.maxlen = NULL_TREE;
   else if (lendata.maxlen && integer_all_onesp (lendata.maxlen))
     lendata.maxlen = NULL_TREE;
-
-  if (visited)
-    BITMAP_FREE (visited);
 
   if (nonstr)
     {

@@ -193,6 +193,8 @@ struct laststmt_struct
 } laststmt;
 
 static int get_stridx_plus_constant (strinfo *, unsigned HOST_WIDE_INT, tree);
+static bool get_range_strlen_dynamic (tree, gimple *s, c_strlen_data *,
+				      bitmap, range_query *, unsigned *);
 
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
@@ -1087,6 +1089,76 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
     }
 }
 
+/* Helper of get_range_strlen_dynamic().  See below.  */
+
+static bool
+get_range_strlen_phi (tree src, gphi *phi,
+		      c_strlen_data *pdata, bitmap visited,
+		      range_query *rvals, unsigned *pssa_def_max)
+{
+  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (src)))
+    return true;
+
+  if (*pssa_def_max == 0)
+    return false;
+
+  --*pssa_def_max;
+
+  /* Iterate over the PHI arguments and determine the minimum and maximum
+     length/size of each and incorporate them into the overall result.  */
+  for (unsigned i = 0; i != gimple_phi_num_args (phi); ++i)
+    {
+      tree arg = gimple_phi_arg_def (phi, i);
+      if (arg == gimple_phi_result (phi))
+	continue;
+
+      c_strlen_data argdata = { };
+      if (!get_range_strlen_dynamic (arg, phi, &argdata, visited, rvals,
+				     pssa_def_max))
+	{
+	  pdata->maxlen = build_all_ones_cst (size_type_node);
+	  continue;
+	}
+
+      /* Set the DECL of an unterminated array this argument refers to
+	 if one hasn't been found yet.  */
+      if (!pdata->decl && argdata.decl)
+	pdata->decl = argdata.decl;
+
+      if (!argdata.minlen
+	  || (integer_zerop (argdata.minlen)
+	      && (!argdata.maxbound
+		  || integer_all_onesp (argdata.maxbound))
+	      && integer_all_onesp (argdata.maxlen)))
+	{
+	  /* Set the upper bound of the length to unbounded.  */
+	  pdata->maxlen = build_all_ones_cst (size_type_node);
+	  continue;
+	}
+
+      /* Adjust the minimum and maximum length determined so far and
+	 the upper bound on the array size.  */
+      if (!pdata->minlen
+	  || tree_int_cst_lt (argdata.minlen, pdata->minlen))
+	pdata->minlen = argdata.minlen;
+
+      if (!pdata->maxlen
+	  || (argdata.maxlen
+	      && TREE_CODE (argdata.maxlen) == INTEGER_CST
+	      && tree_int_cst_lt (pdata->maxlen, argdata.maxlen)))
+	pdata->maxlen = argdata.maxlen;
+
+      if (!pdata->maxbound
+	  || TREE_CODE (pdata->maxbound) != INTEGER_CST
+	  || (argdata.maxbound
+	      && tree_int_cst_lt (pdata->maxbound, argdata.maxbound)
+	      && !integer_all_onesp (argdata.maxbound)))
+	pdata->maxbound = argdata.maxbound;
+    }
+
+  return true;
+}
+
 /* Attempt to determine the length of the string SRC.  On success, store
    the length in *PDATA and return true.  Otherwise, return false.
    VISITED is a bitmap of visited PHI nodes.  RVALS points to the valuation
@@ -1095,7 +1167,7 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 
 static bool
 get_range_strlen_dynamic (tree src, gimple *stmt,
-			  c_strlen_data *pdata, bitmap *visited,
+			  c_strlen_data *pdata, bitmap visited,
 			  range_query *rvals, unsigned *pssa_def_max)
 {
   int idx = get_stridx (src, stmt);
@@ -1104,72 +1176,9 @@ get_range_strlen_dynamic (tree src, gimple *stmt,
       if (TREE_CODE (src) == SSA_NAME)
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (src);
-	  if (gimple_code (def_stmt) == GIMPLE_PHI)
-	    {
-	      if (!*visited)
-		*visited = BITMAP_ALLOC (NULL);
-
-	      if (!bitmap_set_bit (*visited, SSA_NAME_VERSION (src)))
-		return true;
-
-	      if (*pssa_def_max == 0)
-		return false;
-
-	      --*pssa_def_max;
-
-	      /* Iterate over the PHI arguments and determine the minimum
-		 and maximum length/size of each and incorporate them into
-		 the overall result.  */
-	      gphi *phi = as_a <gphi *> (def_stmt);
-	      for (unsigned i = 0; i != gimple_phi_num_args (phi); ++i)
-		{
-		  tree arg = gimple_phi_arg_def (phi, i);
-		  if (arg == gimple_phi_result (def_stmt))
-		    continue;
-
-		  c_strlen_data argdata = { };
-		  if (get_range_strlen_dynamic (arg, phi, &argdata, visited,
-						rvals, pssa_def_max))
-		    {
-		      /* Set the DECL of an unterminated array this argument
-			 refers to if one hasn't been found yet.  */
-		      if (!pdata->decl && argdata.decl)
-			pdata->decl = argdata.decl;
-
-		      if (!argdata.minlen
-			  || (integer_zerop (argdata.minlen)
-			      && (!argdata.maxbound
-				  || integer_all_onesp (argdata.maxbound))
-			      && integer_all_onesp (argdata.maxlen)))
-			{
-			  /* Set the upper bound of the length to unbounded.  */
-			  pdata->maxlen = build_all_ones_cst (size_type_node);
-			  continue;
-			}
-
-		      /* Adjust the minimum and maximum length determined
-			 so far and the upper bound on the array size.  */
-		      if (!pdata->minlen
-			  || tree_int_cst_lt (argdata.minlen, pdata->minlen))
-			pdata->minlen = argdata.minlen;
-		      if (!pdata->maxlen
-			  || (argdata.maxlen
-			      && tree_int_cst_lt (pdata->maxlen, argdata.maxlen)))
-			pdata->maxlen = argdata.maxlen;
-		      if (!pdata->maxbound
-			  || TREE_CODE (pdata->maxbound) != INTEGER_CST
-			  || (argdata.maxbound
-			      && tree_int_cst_lt (pdata->maxbound,
-						  argdata.maxbound)
-			      && !integer_all_onesp (argdata.maxbound)))
-			pdata->maxbound = argdata.maxbound;
-		    }
-		  else
-		    pdata->maxlen = build_all_ones_cst (size_type_node);
-		}
-
-	      return true;
-	    }
+	  if (gphi *phi = dyn_cast<gphi *>(def_stmt))
+	    return get_range_strlen_phi (src, phi, pdata, visited, rvals,
+					 pssa_def_max);
 	}
 
       /* Return success regardless of the result and handle *PDATA
@@ -1286,11 +1295,11 @@ void
 get_range_strlen_dynamic (tree src, gimple *stmt, c_strlen_data *pdata,
 			  range_query *rvals)
 {
-  bitmap visited = NULL;
+  auto_bitmap visited;
   tree maxbound = pdata->maxbound;
 
   unsigned limit = param_ssa_name_def_chain_limit;
-  if (!get_range_strlen_dynamic (src, stmt, pdata, &visited, rvals, &limit))
+  if (!get_range_strlen_dynamic (src, stmt, pdata, visited, rvals, &limit))
     {
       /* On failure extend the length range to an impossible maximum
 	 (a valid MAXLEN must be less than PTRDIFF_MAX - 1).  Other
@@ -1305,9 +1314,6 @@ get_range_strlen_dynamic (tree src, gimple *stmt, c_strlen_data *pdata,
      MAXBOUND to SIZE_MAX.  Otherwise leave it null (if it is null).  */
   if (maxbound && pdata->maxbound == maxbound)
     pdata->maxbound = build_all_ones_cst (size_type_node);
-
-  if (visited)
-    BITMAP_FREE (visited);
 }
 
 /* Invalidate string length information for strings whose length might
@@ -5831,7 +5837,7 @@ printf_strlen_execute (function *fun, bool warn_only)
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    walker.ptr_qry.dump (dump_file);
+    walker.ptr_qry.dump (dump_file, true);
 
   ssa_ver_to_stridx.release ();
   strinfo_pool.release ();
