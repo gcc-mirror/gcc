@@ -582,6 +582,9 @@ extern opt_result runtime_alias_check_p (ddr_p, class loop *, bool);
 extern int data_ref_compare_tree (tree, tree);
 extern void prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *,
 					   poly_uint64);
+
+extern void compute_alias_check_pairs (class loop *, vec<ddr_p> *,
+				       vec<dr_with_seg_len_pair_t> *);
 extern void create_runtime_alias_checks (class loop *,
 					 const vec<dr_with_seg_len_pair_t> *,
 					 tree*);
