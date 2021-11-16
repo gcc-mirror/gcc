@@ -2474,10 +2474,16 @@ operation_could_trap_helper_p (enum tree_code op,
       return false;
 
     case RDIV_EXPR:
-      if (honor_snans)
+      if (fp_operation)
+	{
+	  if (honor_snans)
+	    return true;
+	  return flag_trapping_math;
+	}
+      /* Fixed point operations also use RDIV_EXPR.  */
+      if (!TREE_CONSTANT (divisor) || fixed_zerop (divisor))
 	return true;
-      gcc_assert (fp_operation);
-      return flag_trapping_math;
+      return false;
 
     case LT_EXPR:
     case LE_EXPR:
