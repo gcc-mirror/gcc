@@ -1381,6 +1381,9 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
     }
 
+  if (!single_pred_p (middle_bb))
+    return 0;
+
   /* Now optimize (x != 0) ? x + y : y to just x + y.  */
   gsi = gsi_last_nondebug_bb (middle_bb);
   if (gsi_end_p (gsi))
