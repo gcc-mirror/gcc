@@ -853,18 +853,6 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	  return true;
 	}
 
-      /* Check if all loop nests have at least one data reference.
-	 ???  This check is expensive and loops premature at this point.
-	 If important to retain we can pre-compute this for all innermost
-	 loops and reject those when we build a SESE region for a loop
-	 during SESE discovery.  */
-      if (! loop->inner
-	  && ! loop_nest_has_data_refs (loop))
-	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		       << " does not have any data reference.\n");
-	  return true;
-	}
       DEBUG_PRINT (dp << "[scop-detection] loop_" << loop->num << " is harmless.\n");
     }
 
