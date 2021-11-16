@@ -1452,7 +1452,7 @@ package body System.Tasking.Rendezvous is
            "potentially blocking operation";
       end if;
 
-      Initialization.Defer_Abort (Self_Id);
+      Initialization.Defer_Abort_Nestable (Self_Id);
       Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level + 1;
 
       pragma Debug
@@ -1487,7 +1487,7 @@ package body System.Tasking.Rendezvous is
          STPO.Write_Lock (Self_Id);
          Utilities.Exit_One_ATC_Level (Self_Id);
          STPO.Unlock (Self_Id);
-         Initialization.Undefer_Abort (Self_Id);
+         Initialization.Undefer_Abort_Nestable (Self_Id);
 
          raise Tasking_Error;
       end if;
@@ -1500,7 +1500,7 @@ package body System.Tasking.Rendezvous is
       --  ??? Do we need to yield in case Yielded is False
 
       Rendezvous_Successful := Entry_Call.State = Done;
-      Initialization.Undefer_Abort (Self_Id);
+      Initialization.Undefer_Abort_Nestable (Self_Id);
       Entry_Calls.Check_Exception (Self_Id, Entry_Call);
    end Timed_Task_Entry_Call;
 
