@@ -332,8 +332,15 @@ namespace __debug
       erase(const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
-	this->_M_invalidate_if(_Equal(__position.base()));
-	return { _Base::erase(__position.base()), this };
+	return { erase(__position.base()), this };
+      }
+
+      _Base_iterator
+      erase(_Base_const_iterator __position)
+      {
+	__glibcxx_check_erase2(__position);
+	this->_M_invalidate_if(_Equal(__position));
+	return _Base::erase(__position);
       }
 #else
       void
