@@ -1133,6 +1133,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    return false;
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
+	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
 	    impl_call_strcpy (cd);
@@ -1223,6 +1226,12 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  impl_call_memset (cd);
+	  return false;
+	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2161,8 +2170,23 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    bool warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
-			      "write to %<const%> object %qE", m_decl);
+    auto_diagnostic_group d;
+    bool warned;
+    switch (m_reg->get_kind ())
+      {
+      default:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to %<const%> object %qE", m_decl);
+	break;
+      case RK_FUNCTION:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to function %qE", m_decl);
+	break;
+      case RK_LABEL:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to label %qE", m_decl);
+	break;
+      }
     if (warned)
       inform (DECL_SOURCE_LOCATION (m_decl), "declared here");
     return warned;
@@ -2170,7 +2194,15 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+    switch (m_reg->get_kind ())
+      {
+      default:
+	return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+      case RK_FUNCTION:
+	return ev.formatted_print ("write to function %qE here", m_decl);
+      case RK_LABEL:
+	return ev.formatted_print ("write to label %qE here", m_decl);
+      }
   }
 
 private:
@@ -2230,6 +2262,20 @@ region_model::check_for_writable_region (const region* dest_reg,
   switch (base_reg->get_kind ())
     {
     default:
+      break;
+    case RK_FUNCTION:
+      {
+	const function_region *func_reg = as_a <const function_region *> (base_reg);
+	tree fndecl = func_reg->get_fndecl ();
+	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+      }
+      break;
+    case RK_LABEL:
+      {
+	const label_region *label_reg = as_a <const label_region *> (base_reg);
+	tree label = label_reg->get_label ();
+	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+      }
       break;
     case RK_DECL:
       {
