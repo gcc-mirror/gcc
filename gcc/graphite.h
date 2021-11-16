@@ -368,6 +368,10 @@ struct scop
   /* The maximum alias set as assigned to drs by build_alias_sets.  */
   unsigned max_alias_set;
 
+  /* A set of ddrs that were rejected by build_alias_set during scop detection
+     and that must be handled by other means (runtime checking). */
+  vec<ddr_p> unhandled_alias_ddrs;
+
   /* All the basic blocks in this scop that contain memory references
      and that will be represented as statements in the polyhedral
      representation.  */

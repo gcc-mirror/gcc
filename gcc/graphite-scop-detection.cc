@@ -1542,6 +1542,123 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   return new_gimple_poly_bb (bb, drs, reads, writes);
 }
 
+/* Checks if all parts of DR are defined outside of REGION.  This allows an
+   alias check involving DR to be placed in front of the region. */
+
+static opt_result
+dr_defs_outside_region (const sese_l &region, data_reference_p dr)
+{
+  static const char *pre
+      = "cannot create alias check for SCoP. Data reference's";
+  static const char *suf = "uses definitions from SCoP.\n";
+  opt_result res = opt_result::success ();
+
+  if (has_operands_from_region_p (DR_BASE_OBJECT (dr), region))
+    res = opt_result::failure_at (DR_STMT (dr), "%s base %s", pre, suf);
+  else if (has_operands_from_region_p (DR_INIT (dr), region))
+    res = opt_result::failure_at (DR_STMT (dr), "%s constant offset %s", pre,
+				  suf);
+  else if (has_operands_from_region_p (DR_STEP (dr), region))
+    res = opt_result::failure_at (DR_STMT (dr), "%s step %s", pre, suf);
+  else if (has_operands_from_region_p (DR_OFFSET (dr), region))
+    res = opt_result::failure_at (DR_STMT (dr), "%s loop-invariant offset %s",
+				  pre, suf);
+  else if (has_operands_from_region_p (DR_BASE_ADDRESS (dr), region))
+    res = opt_result::failure_at (DR_STMT (dr), "%s base address %s", pre,
+				  suf);
+  else
+    for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
+      if (has_operands_from_region_p (DR_ACCESS_FN (dr, i), region))
+	{
+	  res = opt_result::failure_at (
+	      DR_STMT (dr), "%s %d-th access function  %s", pre, i + 1, pre);
+	  break;
+	}
+
+  return opt_result::success ();
+}
+
+/* Check that all constituents of DR that are used by the
+   "compute_alias_check_pairs" function have been analyzed as required. */
+
+static opt_result
+dr_well_analyzed_for_runtime_alias_check_p (data_reference_p dr)
+{
+  static const char* error =
+    "data-reference not well-analyzed for runtime check.";
+  gimple* stmt = DR_STMT (dr);
+
+  if (! DR_BASE_ADDRESS (dr))
+    return opt_result::failure_at (stmt, "%s no base address.\n", error);
+  else if (! DR_OFFSET (dr))
+    return opt_result::failure_at (stmt, "%s no offset.\n", error);
+  else if (! DR_INIT (dr))
+    return opt_result::failure_at (stmt, "%s no init.\n", error);
+  else if (! DR_STEP (dr))
+    return opt_result::failure_at (stmt, "%s no step.\n", error);
+  else if (! tree_fits_uhwi_p (DR_STEP (dr)))
+    return opt_result::failure_at (stmt, "%s step too large.\n", error);
+
+  DEBUG_PRINT (dump_data_reference (dump_file, dr));
+
+  return opt_result::success ();
+}
+
+/* Return TRUE if it is possible to create a runtime alias check for
+   data-references DR1 and DR2 from LOOP and place it in front of REGION. */
+
+static opt_result
+graphite_runtime_alias_check_p (data_reference_p dr1, data_reference_p dr2,
+				class loop *loop, const sese_l &region)
+{
+  gcc_checking_assert (loop);
+  gcc_checking_assert (dr1);
+  gcc_checking_assert (dr2);
+
+  if (dump_file)
+    {
+      fprintf (dump_file,
+	       "Attempting runtime alias check creation for DRs:\n");
+      dump_data_reference (dump_file, dr1);
+      dump_data_reference (dump_file, dr2);
+    }
+
+  if (!optimize_loop_for_speed_p (loop))
+    return opt_result::failure_at (DR_STMT (dr1),
+				   "runtime alias check not supported when"
+				   " optimizing for size.\n");
+
+  /* Verify that we have enough information about the data-references and
+     context loop to construct a runtime alias check expression with
+     "compute_alias_check_pairs". */
+  tree niters = number_of_latch_executions (loop);
+  if (niters == NULL_TREE || niters == chrec_dont_know)
+    return opt_result::failure_at (DR_STMT (dr1),
+				   "failed to obtain number of iterations of "
+				   "loop %d.\n", loop->num);
+
+  opt_result ok = dr_well_analyzed_for_runtime_alias_check_p (dr1);
+  if (!ok)
+    return ok;
+
+  ok = dr_well_analyzed_for_runtime_alias_check_p (dr2);
+  if (!ok)
+    return ok;
+
+  /* The runtime alias check would be placed before REGION and hence it cannot
+     use definitions made within REGION. */
+
+  ok = dr_defs_outside_region (region, dr1);
+  if (!ok)
+    return ok;
+
+  ok = dr_defs_outside_region (region, dr2);
+  if (!ok)
+    return ok;
+
+  return opt_result::success ();
+}
+
 /* Compute alias-sets for all data references in DRS.  */
 
 static bool 
@@ -1549,7 +1666,7 @@ build_alias_set (scop_p scop)
 {
   int num_vertices = scop->drs.length ();
   struct graph *g = new_graph (num_vertices);
-  dr_info *dr1, *dr2;
+  dr_info *dri1, *dri2;
   int i, j;
   int *all_vertices;
 
@@ -1557,33 +1674,110 @@ build_alias_set (scop_p scop)
     = find_common_loop (scop->scop_info->region.entry->dest->loop_father,
 			scop->scop_info->region.exit->src->loop_father);
 
-  FOR_EACH_VEC_ELT (scop->drs, i, dr1)
-    for (j = i+1; scop->drs.iterate (j, &dr2); j++)
-      if (dr_may_alias_p (dr1->dr, dr2->dr, nest))
+  gcc_checking_assert (nest);
+
+  vec<loop_p> nest_vec;
+  nest_vec.create (1);
+  if (flag_graphite_runtime_alias_checks)
+    nest_vec.safe_push (nest);
+
+  FOR_EACH_VEC_ELT (scop->drs, i, dri1)
+    {
+      data_reference_p dr1 = dri1->dr;
+
+      for (j = i + 1; scop->drs.iterate (j, &dri2); j++)
 	{
-	  /* Dependences in the same alias set need to be handled
-	     by just looking at DR_ACCESS_FNs.  */
-	  if (DR_NUM_DIMENSIONS (dr1->dr) == 0
-	      || DR_NUM_DIMENSIONS (dr1->dr) != DR_NUM_DIMENSIONS (dr2->dr)
-	      || ! operand_equal_p (DR_BASE_OBJECT (dr1->dr),
-				    DR_BASE_OBJECT (dr2->dr),
-				    OEP_ADDRESS_OF)
-	      || ! types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (dr1->dr)),
-				       TREE_TYPE (DR_BASE_OBJECT (dr2->dr))))
+
+	  data_reference_p dr2 = dri2->dr;
+	  if (!(DR_IS_READ (dr1) && DR_IS_READ (dr2))
+	      && dr_may_alias_p (dr1, dr2, nest))
 	    {
-	      free_graph (g);
-	      return false;
+	      /* Dependences in the same alias set need to be handled
+		 by just looking at DR_ACCESS_FNs.  */
+	      bool dimension_zero = DR_NUM_DIMENSIONS (dr1) == 0;
+	      bool different_dimensions
+		  = DR_NUM_DIMENSIONS (dr1) != DR_NUM_DIMENSIONS (dr2);
+	      bool different_base_objects = !operand_equal_p (
+		  DR_BASE_OBJECT (dr1), DR_BASE_OBJECT (dr2), OEP_ADDRESS_OF);
+	      bool incompatible_types
+		  = !types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (dr1)),
+					 TREE_TYPE (DR_BASE_OBJECT (dr2)));
+	      bool ddr_can_be_handled
+		  = !(dimension_zero || different_dimensions
+		      || different_base_objects || incompatible_types);
+
+	      if (!ddr_can_be_handled)
+		{
+		  DEBUG_PRINT (
+		      dp << "[build_alias_set] "
+			    "Cannot handle aliasing between data references:\n";
+		      print_gimple_stmt (dump_file, dr1->stmt, 2, TDF_DETAILS);
+		      print_gimple_stmt (dump_file, dr2->stmt, 2, TDF_DETAILS);
+		      dp << "\n");
+		  if (dimension_zero)
+		    DEBUG_PRINT (dp << "DR1 has dimension 0.\n");
+		  if (different_base_objects)
+		    DEBUG_PRINT (dp << "DRs have different base objects.\n");
+		  if (different_dimensions)
+		    DEBUG_PRINT (dp << "DRs have different dimensions.\n");
+		  if (incompatible_types)
+		    DEBUG_PRINT (dp <<
+				 "DRs have incompatible base object types.\n");
+		}
+
+	      if (ddr_can_be_handled)
+		{
+		  add_edge (g, i, j);
+		  add_edge (g, j, i);
+		  continue;
+		}
+
+	      loop_p common_loop
+		  = find_common_loop ((DR_STMT (dr1))->bb->loop_father,
+				      (DR_STMT (dr2))->bb->loop_father);
+	      edge scop_entry = scop->scop_info->region.entry;
+	      dr1 = create_data_ref (scop_entry, common_loop, DR_REF (dr1),
+				     DR_STMT (dr1), DR_IS_READ (dr1),
+				     DR_IS_CONDITIONAL_IN_STMT (dr1));
+	      dr2 = create_data_ref (scop_entry, common_loop, DR_REF (dr2),
+				     DR_STMT (dr2), DR_IS_READ (dr2),
+				     DR_IS_CONDITIONAL_IN_STMT (dr2));
+
+	      if (flag_graphite_runtime_alias_checks
+		  && graphite_runtime_alias_check_p (dr1, dr2, nest,
+						     scop->scop_info->region))
+		{
+		  ddr_p ddr = initialize_data_dependence_relation (dr1, dr2,
+								   nest_vec);
+		  scop->unhandled_alias_ddrs.safe_push (ddr);
+		}
+	      else
+		{
+		  if (flag_graphite_runtime_alias_checks)
+		    {
+		      unsigned int i;
+		      struct data_dependence_relation *ddr;
+
+		      FOR_EACH_VEC_ELT (scop->unhandled_alias_ddrs, i, ddr)
+		      if (ddr)
+			free_dependence_relation (ddr);
+		      scop->unhandled_alias_ddrs.truncate (0);
+		    }
+
+		  nest_vec.release ();
+		  free_graph (g);
+		  return false;
+		}
 	    }
-	  add_edge (g, i, j);
-	  add_edge (g, j, i);
-	}
+      }
+    }
 
   all_vertices = XNEWVEC (int, num_vertices);
   for (i = 0; i < num_vertices; i++)
     all_vertices[i] = i;
 
   scop->max_alias_set
-    = graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL) + 1;
+      = graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL) + 1;
   free (all_vertices);
 
   for (i = 0; i < g->n_vertices; i++)
@@ -1702,7 +1896,6 @@ gather_bbs::after_dom_children (basic_block bb)
 	}
     }
 }
-
 
 /* Compute sth like an execution order, dominator order with first executing
    edges that stay inside the current loop, delaying processing exit edges.  */

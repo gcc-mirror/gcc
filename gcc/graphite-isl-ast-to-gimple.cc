@@ -1452,6 +1452,34 @@ generate_entry_out_of_ssa_copies (edge false_entry,
     }
 }
 
+/* Create a condition that evaluates to TRUE if all ALIAS_DDRS are free of
+   aliasing. */
+
+static tree
+generate_alias_cond (vec<ddr_p> &alias_ddrs, loop_p context_loop)
+{
+  gcc_checking_assert (flag_graphite_runtime_alias_checks
+		       && alias_ddrs.length () > 0);
+  gcc_checking_assert (context_loop);
+
+  auto_vec<dr_with_seg_len_pair_t> check_pairs;
+  compute_alias_check_pairs (context_loop, &alias_ddrs, &check_pairs);
+  gcc_checking_assert (check_pairs.length () > 0);
+
+  tree alias_cond = NULL_TREE;
+  create_runtime_alias_checks (context_loop, &check_pairs, &alias_cond);
+  gcc_checking_assert (alias_cond);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Generated runtime alias check: ");
+      print_generic_expr (dump_file, alias_cond, dump_flags);
+      fprintf (dump_file, "\n");
+    }
+
+  return alias_cond;
+}
+
 /* GIMPLE Loop Generator: generates loops in GIMPLE form for the given SCOP.
    Return true if code generation succeeded.  */
 
@@ -1492,11 +1520,43 @@ graphite_regenerate_ast_isl (scop_p scop)
   region->if_region = if_region;
 
   loop_p context_loop = region->region.entry->src->loop_father;
+  gcc_checking_assert (context_loop);
   edge e = single_succ_edge (if_region->true_region->region.entry->dest);
   basic_block bb = split_edge (e);
 
   /* Update the true_region exit edge.  */
   region->if_region->true_region->region.exit = single_succ_edge (bb);
+
+  if (flag_graphite_runtime_alias_checks
+      && scop->unhandled_alias_ddrs.length () > 0)
+    {
+      /* SCoP detection has failed to handle the aliasing between some data
+	 references of the SCoP statically. Generate an alias check that selects
+	 the newly generated version of the SCoP in the true-branch of the
+	 conditional if aliasing can be ruled out at runtime and the original
+	 version of the SCoP, otherwise. */
+
+      loop_p loop
+	  = find_common_loop (scop->scop_info->region.entry->dest->loop_father,
+			      scop->scop_info->region.exit->src->loop_father);
+      tree cond = generate_alias_cond (scop->unhandled_alias_ddrs, loop);
+      tree non_alias_cond = build1 (TRUTH_NOT_EXPR, boolean_type_node, cond);
+      set_ifsese_condition (region->if_region, non_alias_cond);
+
+      /* The loop-nest vec is shared by all DDRs. */
+      DDR_LOOP_NEST (scop->unhandled_alias_ddrs[0]).release ();
+
+      unsigned int i;
+      struct data_dependence_relation *ddr;
+
+      FOR_EACH_VEC_ELT (scop->unhandled_alias_ddrs, i, ddr)
+	if (ddr)
+	  free_dependence_relation (ddr);
+      scop->unhandled_alias_ddrs.truncate (0);
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
 
   t.translate_isl_ast (context_loop, root_node, e, ip);
   if (! t.codegen_error_p ())

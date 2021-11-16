@@ -1,4 +1,8 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+
+	* gcc.dg/graphite/alias-1.c: New test.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
 	* gcc.dg/goacc/loop-processing-1.c: Adjust expected output

@@ -153,6 +153,24 @@ defined_in_sese_p (tree name, const sese_l &r)
   return stmt_in_sese_p (SSA_NAME_DEF_STMT (name), r);
 }
 
+/* Returns true if EXPR has operands that are defined in REGION.  */
+
+static bool
+has_operands_from_region_p (tree expr, const sese_l &region)
+{
+  if (!expr || is_gimple_min_invariant (expr))
+    return false;
+
+  if (TREE_CODE (expr) == SSA_NAME)
+    return defined_in_sese_p (expr, region);
+
+  for (int i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
+    if (has_operands_from_region_p (TREE_OPERAND (expr, i), region))
+      return true;
+
+  return false;
+}
+
 /* Returns true when LOOP is in REGION.  */
 
 inline bool

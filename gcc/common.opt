@@ -1731,6 +1731,10 @@ fgraphite-identity
 Common Var(flag_graphite_identity) Optimization
 Enable Graphite Identity transformation.
 
+fgraphite-runtime-alias-checks
+Common Var(flag_graphite_runtime_alias_checks) Optimization Init(1)
+Allow Graphite to add runtime alias checks to loop-nests if aliasing cannot be resolved statically.
+
 fhoist-adjacent-loads
 Common Var(flag_hoist_adjacent_loads) Optimization
 Enable hoisting adjacent loads to encourage generating conditional move
