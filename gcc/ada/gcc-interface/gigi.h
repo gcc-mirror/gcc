@@ -838,10 +838,9 @@ extern tree get_base_type (tree type);
    in bits.  If we don't know anything about the alignment, return 0.  */
 extern unsigned int known_alignment (tree exp);
 
-/* Return true if TYPE, an aggregate type, contains (or is) an array.
-   If SELF_REFERENTIAL is true, then an additional requirement on the
-   array is that it be self-referential.  */
-extern bool aggregate_type_contains_array_p (tree type, bool self_referential);
+/* Return true if TYPE is a type with variable size or a padding type with a
+   field of variable size or a record that has a field with such a type.  */
+extern bool type_has_variable_size (tree type);
 
 /* Return true if VALUE is a multiple of FACTOR. FACTOR must be a power
    of 2.  */

@@ -7221,13 +7221,12 @@ choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 static int
 adjust_packed (tree field_type, tree record_type, int packed)
 {
-  /* If the field contains an array with self-referential size, we'd better
-     not pack it because this would misalign it and, therefore, cause large
-     temporaries to be created in case we need to take the address of the
-     field.  See addressable_p and the notes on the addressability issues
-     for further details.  */
-  if (AGGREGATE_TYPE_P (field_type)
-      && aggregate_type_contains_array_p (field_type, true))
+  /* If the field is an array of variable size, we'd better not pack it because
+     this would misalign it and, therefore, probably cause large temporarie to
+     be created in case we need to take its address.  See addressable_p and the
+     notes on the addressability issues for further details.  */
+  if (TREE_CODE (field_type) == ARRAY_TYPE
+      && type_has_variable_size (field_type))
     return 0;
 
   /* In the other cases, we can honor the packing.  */
