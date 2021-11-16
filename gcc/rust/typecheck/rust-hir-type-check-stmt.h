@@ -424,7 +424,8 @@ public:
 
     TyTy::FnType *resolved_fn_type = fnType;
     auto expected_ret_tyty = resolved_fn_type->get_return_type ();
-    context->push_return_type (expected_ret_tyty);
+    context->push_return_type (TypeCheckContextItem (&function),
+			       expected_ret_tyty);
 
     auto block_expr_ty
       = TypeCheckExpr::Resolve (function.get_definition ().get (), false);

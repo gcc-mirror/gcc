@@ -28,6 +28,68 @@
 namespace Rust {
 namespace Resolver {
 
+class TypeCheckContextItem
+{
+public:
+  enum ItemType
+  {
+    ITEM,
+    IMPL_ITEM,
+    TRAIT_ITEM,
+  };
+
+  TypeCheckContextItem (HIR::Function *item)
+    : type (ItemType::ITEM), item (item)
+  {}
+
+  TypeCheckContextItem (HIR::ImplBlock *impl_block, HIR::Function *item)
+    : type (ItemType::IMPL_ITEM), item (impl_block, item)
+  {}
+
+  TypeCheckContextItem (HIR::TraitItemFunc *trait_item)
+    : type (ItemType::TRAIT_ITEM), item (trait_item)
+  {}
+
+  ItemType get_type () const { return type; }
+
+  HIR::Function *get_item ()
+  {
+    rust_assert (get_type () == ItemType::ITEM);
+    return item.item;
+  }
+
+  std::pair<HIR::ImplBlock *, HIR::Function *> &get_impl_item ()
+  {
+    rust_assert (get_type () == ItemType::IMPL_ITEM);
+    return item.impl_item;
+  };
+
+  HIR::TraitItemFunc *get_trait_item ()
+  {
+    rust_assert (get_type () == ItemType::TRAIT_ITEM);
+    return item.trait_item;
+  }
+
+private:
+  union Item
+  {
+    HIR::Function *item;
+    std::pair<HIR::ImplBlock *, HIR::Function *> impl_item;
+    HIR::TraitItemFunc *trait_item;
+
+    Item (HIR::Function *item) : item (item) {}
+
+    Item (HIR::ImplBlock *impl_block, HIR::Function *item)
+      : impl_item ({impl_block, item})
+    {}
+
+    Item (HIR::TraitItemFunc *trait_item) : trait_item (trait_item) {}
+  };
+
+  ItemType type;
+  Item item;
+};
+
 class TypeCheckContext
 {
 public:
@@ -49,7 +111,9 @@ public:
   bool lookup_type_by_node_id (NodeId ref, HirId *id);
 
   TyTy::BaseType *peek_return_type ();
-  void push_return_type (TyTy::BaseType *return_type);
+  TypeCheckContextItem &peek_context ();
+  void push_return_type (TypeCheckContextItem item,
+			 TyTy::BaseType *return_type);
   void pop_return_type ();
 
   void iterate (std::function<bool (HirId, TyTy::BaseType *)> cb)
@@ -238,7 +302,8 @@ private:
   std::map<NodeId, HirId> node_id_refs;
   std::map<HirId, TyTy::BaseType *> resolved;
   std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
-  std::vector<TyTy::BaseType *> return_type_stack;
+  std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
+    return_type_stack;
   std::vector<TyTy::BaseType *> loop_type_stack;
   std::map<DefId, TraitReference> trait_context;
   std::map<HirId, TyTy::BaseType *> receiver_context;
