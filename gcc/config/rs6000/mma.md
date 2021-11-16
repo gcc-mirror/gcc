@@ -338,8 +338,11 @@
   DONE;
 })
 
+;; We cannot update the two output registers atomically, so mark the output
+;; as an early clobber so we don't accidentally clobber the input operands.  */
+
 (define_insn_and_split "*vsx_assemble_pair"
-  [(set (match_operand:OO 0 "vsx_register_operand" "=wa")
+  [(set (match_operand:OO 0 "vsx_register_operand" "=&wa")
 	(unspec:OO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")]
 		    UNSPEC_MMA_ASSEMBLE))]
@@ -404,8 +407,11 @@
   DONE;
 })
 
+;; We cannot update the four output registers atomically, so mark the output
+;; as an early clobber so we don't accidentally clobber the input operands.  */
+
 (define_insn_and_split "*mma_assemble_acc"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=d")
+  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
 	(unspec:XO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 3 "mma_assemble_input_operand" "mwa")
