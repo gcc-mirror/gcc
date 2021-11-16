@@ -448,17 +448,7 @@ public:
       constructor.push_back (translated_expr);
   }
 
-  void visit (HIR::ArithmeticOrLogicalExpr &expr) override
-  {
-    auto op = expr.get_expr_type ();
-    auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
-    auto rhs = CompileExpr::Compile (expr.get_rhs (), ctx);
-    auto location = expr.get_locus ();
-
-    translated
-      = ctx->get_backend ()->arithmetic_or_logical_expression (op, lhs, rhs,
-							       location);
-  }
+  void visit (HIR::ArithmeticOrLogicalExpr &expr) override;
 
   void visit (HIR::ComparisonExpr &expr) override
   {
@@ -998,6 +988,20 @@ public:
 						  known_valid,
 						  expr.get_locus ());
   }
+
+protected:
+  Bexpression *compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
+					  TyTy::BaseType *receiver,
+					  TyTy::FnType *fntype,
+					  Bexpression *receiver_ref,
+					  std::vector<HIR::Expr *> &arguments,
+					  Location expr_locus);
+
+  Bexpression *resolve_method_address (TyTy::FnType *fntype, HirId ref,
+				       TyTy::BaseType *receiver,
+				       HIR::PathIdentSegment &segment,
+				       Analysis::NodeMapping expr_mappings,
+				       Location expr_locus);
 
 private:
   CompileExpr (Context *ctx)

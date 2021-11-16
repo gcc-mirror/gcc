@@ -699,20 +699,203 @@ public:
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
 
-    bool valid_lhs = validate_arithmetic_type (lhs, expr.get_expr_type ());
-    bool valid_rhs = validate_arithmetic_type (rhs, expr.get_expr_type ());
-    bool valid = valid_lhs && valid_rhs;
-    if (!valid)
+    // in order to probe of the correct type paths we need the root type, which
+    // strips any references
+    const TyTy::BaseType *root = lhs->get_root ();
+
+    // look up lang item for arithmetic type
+    std::vector<PathProbeCandidate> candidates;
+    auto lang_item_type
+      = Analysis::RustLangItem::OperatorToLangItem (expr.get_expr_type ());
+    std::string associated_item_name
+      = Analysis::RustLangItem::ToString (lang_item_type);
+    DefId respective_lang_item_id = UNKNOWN_DEFID;
+    bool lang_item_defined
+      = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+
+    // handle the case where we are within the impl block for this lang_item
+    // otherwise we end up with a recursive operator overload such as the i32
+    // operator overload trait
+    if (lang_item_defined)
       {
-	rust_error_at (expr.get_locus (),
-		       "cannot apply this operator to types %s and %s",
-		       lhs->as_string ().c_str (), rhs->as_string ().c_str ());
+	TypeCheckContextItem &fn_context = context->peek_context ();
+	if (fn_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
+	  {
+	    auto &impl_item = fn_context.get_impl_item ();
+	    HIR::ImplBlock *parent = impl_item.first;
+	    HIR::Function *fn = impl_item.second;
+
+	    if (parent->has_trait_ref ()
+		&& fn->get_function_name ().compare (associated_item_name) == 0)
+	      {
+		TraitReference *trait_reference
+		  = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
+		if (!trait_reference->is_error ())
+		  {
+		    TyTy::BaseType *lookup = nullptr;
+		    bool ok
+		      = context->lookup_type (fn->get_mappings ().get_hirid (),
+					      &lookup);
+		    rust_assert (ok);
+		    rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+
+		    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
+		    rust_assert (fntype->is_method ());
+
+		    bool is_lang_item_impl
+		      = trait_reference->get_mappings ().get_defid ()
+			== respective_lang_item_id;
+		    bool self_is_lang_item_self
+		      = fntype->get_self_type ()->is_equal (*lhs);
+
+		    bool recursive_operator_overload
+		      = is_lang_item_impl && self_is_lang_item_self;
+		    lang_item_defined = !recursive_operator_overload;
+		  }
+	      }
+	  }
+      }
+
+    // probe for the lang-item
+    if (lang_item_defined)
+      {
+	bool receiver_is_type_param
+	  = root->get_kind () == TyTy::TypeKind::PARAM;
+	bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
+
+	bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
+	bool probe_bounds = true;
+	bool probe_impls = !receiver_is_generic;
+	bool ignore_mandatory_trait_items = !receiver_is_generic;
+
+	candidates = PathProbeType::Probe (
+	  root, HIR::PathIdentSegment (associated_item_name), probe_impls,
+	  probe_bounds, ignore_mandatory_trait_items, respective_lang_item_id);
+      }
+
+    bool have_implementation_for_lang_item = candidates.size () > 0;
+    if (!lang_item_defined || !have_implementation_for_lang_item)
+      {
+	bool valid_lhs = validate_arithmetic_type (lhs, expr.get_expr_type ());
+	bool valid_rhs = validate_arithmetic_type (rhs, expr.get_expr_type ());
+	bool valid = valid_lhs && valid_rhs;
+	if (!valid)
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "cannot apply this operator to types %s and %s",
+			   lhs->as_string ().c_str (),
+			   rhs->as_string ().c_str ());
+	    return;
+	  }
+
+	infered = lhs->unify (rhs);
 	return;
       }
 
-    infered = lhs->unify (rhs);
-    infered->append_reference (lhs->get_ref ());
-    infered->append_reference (rhs->get_ref ());
+    // now its just like a method-call-expr
+    context->insert_receiver (expr.get_mappings ().get_hirid (), lhs);
+
+    // autoderef
+    std::vector<Adjustment> adjustments;
+    PathProbeCandidate *resolved_candidate
+      = MethodResolution::Select (candidates, lhs, adjustments);
+    rust_assert (resolved_candidate != nullptr);
+
+    // store the adjustments for code-generation to know what to do
+    context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
+					std::move (adjustments));
+
+    TyTy::BaseType *lookup_tyty = resolved_candidate->ty;
+    NodeId resolved_node_id
+      = resolved_candidate->is_impl_candidate ()
+	  ? resolved_candidate->item.impl.impl_item->get_impl_mappings ()
+	      .get_nodeid ()
+	  : resolved_candidate->item.trait.item_ref->get_mappings ()
+	      .get_nodeid ();
+
+    rust_assert (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF);
+    TyTy::BaseType *lookup = lookup_tyty;
+    TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
+    rust_assert (fn->is_method ());
+
+    if (root->get_kind () == TyTy::TypeKind::ADT)
+      {
+	const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (root);
+	if (adt->has_substitutions () && fn->needs_substitution ())
+	  {
+	    // consider the case where we have:
+	    //
+	    // struct Foo<X,Y>(X,Y);
+	    //
+	    // impl<T> Foo<T, i32> {
+	    //   fn test<X>(self, a:X) -> (T,X) { (self.0, a) }
+	    // }
+	    //
+	    // In this case we end up with an fn type of:
+	    //
+	    // fn <T,X> test(self:Foo<T,i32>, a:X) -> (T,X)
+	    //
+	    // This means the instance or self we are calling this method for
+	    // will be substituted such that we can get the inherited type
+	    // arguments but then need to use the turbo fish if available or
+	    // infer the remaining arguments. Luckily rust does not allow for
+	    // default types GenericParams on impl blocks since these must
+	    // always be at the end of the list
+
+	    auto s = fn->get_self_type ()->get_root ();
+	    rust_assert (s->can_eq (adt, false, false));
+	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
+	    const TyTy::ADTType *self_adt
+	      = static_cast<const TyTy::ADTType *> (s);
+
+	    // we need to grab the Self substitutions as the inherit type
+	    // parameters for this
+	    if (self_adt->needs_substitution ())
+	      {
+		rust_assert (adt->was_substituted ());
+
+		TyTy::SubstitutionArgumentMappings used_args_in_prev_segment
+		  = GetUsedSubstArgs::From (adt);
+
+		TyTy::SubstitutionArgumentMappings inherit_type_args
+		  = self_adt->solve_mappings_from_receiver_for_self (
+		    used_args_in_prev_segment);
+
+		// there may or may not be inherited type arguments
+		if (!inherit_type_args.is_error ())
+		  {
+		    // need to apply the inherited type arguments to the
+		    // function
+		    lookup = fn->handle_substitions (inherit_type_args);
+		  }
+	      }
+	  }
+      }
+
+    // type check the arguments
+    TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
+    rust_assert (type->num_params () == 2);
+    auto fnparam = type->param_at (1);
+    auto resolved_argument_type = fnparam.second->unify (rhs);
+    if (resolved_argument_type->get_kind () == TyTy::TypeKind::ERROR)
+      {
+	rust_error_at (expr.get_locus (),
+		       "Type Resolution failure on parameter");
+	return;
+      }
+
+    // get the return type
+    TyTy::BaseType *function_ret_tyty = fn->get_return_type ()->clone ();
+
+    // store the expected fntype
+    context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);
+
+    // set up the resolved name on the path
+    resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+				    resolved_node_id);
+
+    // return the result of the function back
+    infered = function_ret_tyty;
   }
 
   void visit (HIR::ComparisonExpr &expr) override

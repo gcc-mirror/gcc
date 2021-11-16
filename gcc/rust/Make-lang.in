@@ -90,6 +90,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-path.o \
     rust/rust-compile-intrinsic.o \
     rust/rust-base62.o \
+    rust/rust-compile-expr.o \
     $(END)
 # removed object files from here
 

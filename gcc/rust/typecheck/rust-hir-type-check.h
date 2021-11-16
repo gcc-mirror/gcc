@@ -296,6 +296,24 @@ public:
     return true;
   }
 
+  void insert_operator_overload (HirId id, TyTy::FnType *call_site)
+  {
+    auto it = operator_overloads.find (id);
+    rust_assert (it == operator_overloads.end ());
+
+    operator_overloads[id] = call_site;
+  }
+
+  bool lookup_operator_overload (HirId id, TyTy::FnType **call)
+  {
+    auto it = operator_overloads.find (id);
+    if (it == operator_overloads.end ())
+      return false;
+
+    *call = it->second;
+    return true;
+  }
+
 private:
   TypeCheckContext ();
 
@@ -317,6 +335,9 @@ private:
 
   // adjustment mappings
   std::map<HirId, std::vector<Adjustment>> autoderef_mappings;
+
+  // operator overloads
+  std::map<HirId, TyTy::FnType *> operator_overloads;
 
   // variants
   std::map<HirId, HirId> variants;
