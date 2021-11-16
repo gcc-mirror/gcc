@@ -1,3 +1,39 @@
+2021-11-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/thread-limit-1.f90: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_target_task): Copy args array as well.
+	* target.c (gomp_target_fallback): Add args argument.
+	Set gomp_icv (true)->thread_limit_var if thread_limit is present.
+	(GOMP_target): Adjust gomp_target_fallback caller.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_task_fn): Likewise.
+	* config/nvptx/team.c (gomp_nvptx_main): Set
+	gomp_global_icv.thread_limit_var.
+	* testsuite/libgomp.c-c++-common/thread-limit-1.c: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/team.c (__gomp_team_num): Define as
+	__attribute__((shared)) var.
+	(gomp_nvptx_main): Initialize __gomp_team_num to 0.
+	* config/nvptx/target.c (__gomp_team_num): Declare as
+	extern __attribute__((shared)) var.
+	(GOMP_teams4): Use __gomp_team_num as the team number instead of
+	%ctaid.x.  If first, initialize it to %ctaid.x.  If num_teams_lower
+	is bigger than num_blocks, use num_teams_lower teams and arrange for
+	bumping of __gomp_team_num if !first and returning false once we run
+	out of teams.
+	* config/nvptx/teams.c (__gomp_team_num): Declare as
+	extern __attribute__((shared)) var.
+	(omp_get_team_num): Return __gomp_team_num value instead of %ctaid.x.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/teams-5.c: New test.
+
 2021-11-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/103201

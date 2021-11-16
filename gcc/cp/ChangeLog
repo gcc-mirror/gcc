@@ -1,3 +1,69 @@
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct lang_decl_fn): Add implicit_constexpr.
+	(decl_implicit_constexpr_p): New.
+	* class.c (type_maybe_constexpr_destructor): Use
+	TYPE_HAS_TRIVIAL_DESTRUCTOR and maybe_constexpr_fn.
+	(finalize_literal_type_property): Simplify.
+	* constexpr.c (is_valid_constexpr_fn): Check for dtor.
+	(maybe_save_constexpr_fundef): Try to set DECL_DECLARED_CONSTEXPR_P
+	on inlines.
+	(cxx_eval_call_expression): Use maybe_constexpr_fn.
+	(maybe_constexpr_fn): Handle flag_implicit_constexpr.
+	(var_in_maybe_constexpr_fn): Use maybe_constexpr_fn.
+	(potential_constant_expression_1): Likewise.
+	(decl_implicit_constexpr_p): New.
+	* decl.c (validate_constexpr_redeclaration): Allow change with
+	-fimplicit-constexpr.
+	(grok_special_member_properties): Use maybe_constexpr_fn.
+	* error.c (dump_function_decl): Don't print 'constexpr'
+	if it's implicit.
+	* Make-lang.in (check-c++-all): Update.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (split_nonconstant_init_1): Handle flexarrays better.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (OMP_TARGET_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (perform_implicit_conversion_flags): Use the location of
+	the argument.
+	* lambda.c (build_lambda_object): Set location on the TARGET_EXPR.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (maybe_save_constexpr_fundef): Also check whether the
+	body of a constructor is potentially constant.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (is_this_parameter): Check DECL_HAS_VALUE_EXPR_P
+	instead of is_capture_proxy.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70690
+	* init.c (build_vec_init): Check default_init_uninitialized_part in
+	C++20.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (maybe_constant_value): Don't evaluate
+	in an unevaluated operand unless manifestly const-evaluated.
+	(fold_non_dependent_expr_template): Likewise.
+	* decl.c (compute_array_index_type_loc): This context is
+	manifestly constant-evaluated.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_thunk_call): Error instead of ICE
+	on vbase thunk to constexpr function.
+
 2021-11-11  Patrick Palka  <ppalka@redhat.com>
 
 	* parser.c (cp_parser_template_argument_list): Use auto_vec

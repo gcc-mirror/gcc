@@ -1,3 +1,164 @@
+2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gimple-fold.c (gimple_fold_builtin_strncat): Use ranges to
+	determine if it is safe to transform to strcat.
+	(gimple_fold_builtin_snprintf): Likewise.
+
+2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gimple-fold.c (known_lower): New function.
+	(gimple_fold_builtin_strncat_chk,
+	gimple_fold_builtin_memory_chk, gimple_fold_builtin_stxcpy_chk,
+	gimple_fold_builtin_stxncpy_chk,
+	gimple_fold_builtin_snprintf_chk,
+	gimple_fold_builtin_sprintf_chk): Use it.
+
+2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gimple-fold.c (dump_transformation): New function.
+	(gimple_fold_builtin_stxcpy_chk,
+	gimple_fold_builtin_stxncpy_chk): Use it.  Simplify to
+	BUILT_IN_STRNCPY if return value is not used.
+
+2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/103184
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Check optab
+	before transforming equivalent, but slighly different cases to
+	their canonical forms.
+
+2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR fortran/102992
+	* config/darwin.h (TARGET_DTORS_FROM_CXA_ATEXIT): New.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Add TARGET_DTORS_FROM_CXA_ATEXIT hook.
+	* ipa.c (cgraph_build_static_cdtor_1): Return the built
+	function decl.
+	(build_cxa_atexit_decl): New.
+	(build_dso_handle_decl): New.
+	(build_cxa_dtor_registrations): New.
+	(compare_cdtor_tu_order): New.
+	(build_cxa_atexit_fns): New.
+	(ipa_cdtor_merge): If dtors_from_cxa_atexit is set,
+	process the DTORs/CTORs accordingly.
+	(pass_ipa_cdtor_merge::gate): Also run if
+	dtors_from_cxa_atexit is set.
+	* target.def (dtors_from_cxa_atexit): New hook.
+
+2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Test ld64 for -platform-version support.
+
+2021-11-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* diagnostic-spec.h (typedef xint_hash_t)
+	(typedef xint_hash_map_t): Replace with...
+	(typedef nowarn_map_t): ... this.
+	(nowarn_map): Adjust.
+	* diagnostic-spec.c (nowarn_map, suppress_warning_at): Likewise.
+
+2021-11-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* profile.c (branch_prob): Use 'location_hash' for
+	'seen_locations'.
+
+2021-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103207
+	* value-range.cc (irange::set): Drop overflow.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (optimize_target_teams): Only add OMP_CLAUSE_THREAD_LIMIT
+	to OMP_TARGET_CLAUSES if it isn't there already.
+
+2021-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr):
+	Remove useless code.
+	(path_range_query::ssa_defined_in_bb): New.
+	(path_range_query::ssa_range_in_phi): Avoid fold_range call that
+	could trigger additional lookups.
+	Do not use the cache for ARGs defined in this block.
+	(path_range_query::compute_ranges_in_block): Use ssa_defined_in_bb.
+	(path_range_query::maybe_register_phi_relation): Same.
+	(path_range_query::range_of_stmt): Adjust comment.
+	* gimple-range-path.h (ssa_defined_in_bb): New.
+
+2021-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr):
+	Default to global range if nothing found.
+
+2021-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103237
+	* tree-vect-loop.c (vect_is_simple_reduction): Fail for
+	double reductions with multiple inner loop LC PHI nodes.
+
+2021-11-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/103069
+	* config/i386/i386-expand.c (ix86_expand_atomic_fetch_op_loop):
+	New expand function.
+	* config/i386/i386-options.c (ix86_target_string): Add
+	-mrelax-cmpxchg-loop flag.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	* config/i386/i386-protos.h (ix86_expand_atomic_fetch_op_loop):
+	New expand function prototype.
+	* config/i386/i386.opt: Add -mrelax-cmpxchg-loop.
+	* config/i386/sync.md (atomic_fetch_<logic><mode>): New expander
+	for SI,HI,QI modes.
+	(atomic_<logic>_fetch<mode>): Likewise.
+	(atomic_fetch_nand<mode>): Likewise.
+	(atomic_nand_fetch<mode>): Likewise.
+	(atomic_fetch_<logic><mode>): New expander for DI,TI modes.
+	(atomic_<logic>_fetch<mode>): Likewise.
+	(atomic_fetch_nand<mode>): Likewise.
+	(atomic_nand_fetch<mode>): Likewise.
+	* doc/invoke.texi: Document -mrelax-cmpxchg-loop.
+
+2021-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103219
+	* gimple-loop-jam.c (tree_loop_unroll_and_jam): Use single_exit
+	to determine the exit for the VN region.
+
+2021-11-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-loop.c (pass_vectorize): Move to tree-vectorizer.c.
+	(pass_data_vectorize): Likewise.
+	(make_pass_vectorize): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Merge with
+	pass_vectorize::execute and replace cfun occurences with fun param.
+	(adjust_simduid_builtins): Add fun param, replace cfun occurences with
+	fun, and adjust callers approrpiately.
+	(note_simd_array_uses): Likewise.
+	(vect_loop_dist_alias_call): Likewise.
+	(set_uid_loop_bbs): Likewise.
+	(vect_transform_loops): Likewise.
+	(try_vectorize_loop_1): Likewise.
+	(try_vectorize_loop): Likewise.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103205
+	* config/i386/sync.md (atomic_bit_test_and_set<mode>,
+	atomic_bit_test_and_complement<mode>,
+	atomic_bit_test_and_reset<mode>): Use OPTAB_WIDEN instead of
+	OPTAB_DIRECT.
+
+2021-11-15  Maciej W. Rozycki  <macro@embecosm.com>
+
+	* config/vax/vax.c (vax_lra_p): New prototype and function.
+	(TARGET_LRA_P): Wire it.
+	* config/vax/vax.opt (mlra): New option.
+	* doc/invoke.texi (Option Summary, VAX Options): Document the
+	new option.
+
 2021-11-14  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.h (struct modref_summary): Add nondeterministic

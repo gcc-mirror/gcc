@@ -1,3 +1,12 @@
+2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit a91f844ef44.
+
+2021-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/102874
+	* src/x86/win64.S (epilogue): Use #define instead of .macro.
+
 2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
 
 	* Makefile.am (AM_CFLAGS): Add $(CET_FLAGS).

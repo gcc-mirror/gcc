@@ -1,3 +1,161 @@
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp: Handle "impcx".
+	* lib/target-supports.exp
+	(check_effective_target_implicit_constexpr): New.
+	* g++.dg/abi/abi-tag16.C:
+	* g++.dg/abi/abi-tag18a.C:
+	* g++.dg/abi/guard4.C:
+	* g++.dg/abi/lambda-defarg1.C:
+	* g++.dg/abi/mangle26.C:
+	* g++.dg/cpp0x/constexpr-diag3.C:
+	* g++.dg/cpp0x/constexpr-ex1.C:
+	* g++.dg/cpp0x/constexpr-ice5.C:
+	* g++.dg/cpp0x/constexpr-incomplete2.C:
+	* g++.dg/cpp0x/constexpr-memfn1.C:
+	* g++.dg/cpp0x/constexpr-neg3.C:
+	* g++.dg/cpp0x/constexpr-specialization.C:
+	* g++.dg/cpp0x/inh-ctor19.C:
+	* g++.dg/cpp0x/inh-ctor30.C:
+	* g++.dg/cpp0x/lambda/lambda-mangle3.C:
+	* g++.dg/cpp0x/lambda/lambda-mangle5.C:
+	* g++.dg/cpp1y/auto-fn12.C:
+	* g++.dg/cpp1y/constexpr-loop5.C:
+	* g++.dg/cpp1z/constexpr-lambda7.C:
+	* g++.dg/cpp2a/constexpr-dtor3.C:
+	* g++.dg/cpp2a/constexpr-new13.C:
+	* g++.dg/cpp2a/constinit11.C:
+	* g++.dg/cpp2a/constinit12.C:
+	* g++.dg/cpp2a/constinit14.C:
+	* g++.dg/cpp2a/constinit15.C:
+	* g++.dg/cpp2a/spaceship-constexpr1.C:
+	* g++.dg/cpp2a/spaceship-eq3.C:
+	* g++.dg/cpp2a/udlit-class-nttp-neg2.C:
+	* g++.dg/debug/dwarf2/auto1.C:
+	* g++.dg/debug/dwarf2/cdtor-1.C:
+	* g++.dg/debug/dwarf2/lambda1.C:
+	* g++.dg/debug/dwarf2/pr54508.C:
+	* g++.dg/debug/dwarf2/pubnames-2.C:
+	* g++.dg/debug/dwarf2/pubnames-3.C:
+	* g++.dg/ext/is_literal_type3.C:
+	* g++.dg/ext/visibility/template7.C:
+	* g++.dg/gcov/gcov-12.C:
+	* g++.dg/gcov/gcov-2.C:
+	* g++.dg/ipa/devirt-35.C:
+	* g++.dg/ipa/devirt-36.C:
+	* g++.dg/ipa/devirt-37.C:
+	* g++.dg/ipa/devirt-44.C:
+	* g++.dg/ipa/imm-devirt-1.C:
+	* g++.dg/lookup/builtin5.C:
+	* g++.dg/lto/inline-crossmodule-1_0.C:
+	* g++.dg/modules/enum-1_a.C:
+	* g++.dg/modules/fn-inline-1_c.C:
+	* g++.dg/modules/pmf-1_b.C:
+	* g++.dg/modules/used-1_c.C:
+	* g++.dg/tls/thread_local11.C:
+	* g++.dg/tls/thread_local11a.C:
+	* g++.dg/tm/pr46653.C:
+	* g++.dg/ubsan/pr70035.C:
+	* g++.old-deja/g++.other/delete6.C:
+	* g++.dg/modules/pmf-1_a.H:
+	Adjust for implicit constexpr.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/flexary37.C: Remove expected error.
+
+2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/fold-stringops-2.c: Define size_t.
+	(safe1): Adjust.
+	(safe4): New test.
+	* gcc.dg/fold-stringops-3.c: New test.
+
+2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/Wobjsize-1.c: Make warning change line agnostic.
+	* gcc.dg/fold-stringops-2.c: New test.
+
+2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/fold-stringops-1.c: New test.
+
+2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/103184
+	* gcc.dg/pr103184-1.c: New test.
+	* gcc.dg/pr103184-2.c: Likewise.
+
+2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/vect/tsvc/tsvc.h: Use malloc for Darwin 9 and
+	earlier.
+
+2021-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr103207.c: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100469
+	* g++.dg/opt/pr100469.C: New test.
+
+2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103205
+	* gcc.target/i386/pr103205-2.c: New test.
+
+2021-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/tree-ssa/pr31146-2.C: Add -fno-thread-jumps.
+
+2021-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103237
+	* gcc.dg/torture/pr103237.c: New testcase.
+
+2021-11-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/103069
+	* gcc.target/i386/pr103069-1.c: New test.
+	* gcc.target/i386/pr103069-2.c: Ditto.
+
+2021-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103219
+	* gcc.dg/torture/pr103219.c: New testcase.
+
+2021-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr101346.c: Require dfp support.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103205
+	* gcc.target/i386/pr103205.c: New test.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-switch.C: Adjust expected location.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-89285-2.C: Expect error.
+	* g++.dg/cpp1y/constexpr-89285.C: Adjust error.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70690
+	* g++.dg/init/array41a.C: New test.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/constexpr-virtual20.C: New test.
+
+2021-11-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/uninit-pred-9_b.c: Correct last adjustment, for CRIS.
+
 2021-11-15  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.dg/tree-ssa/pr100278.c: Move to ...

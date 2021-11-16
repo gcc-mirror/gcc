@@ -1,3 +1,14 @@
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fimplicit-constexpr.
+	* c-cppbuiltin.c: Define __cpp_implicit_constexpr.
+	* c-opts.c (c_common_post_options): Disable below C++14.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses) <case OMP_CLAUSE_THREAD_LIMIT>:
+	Duplicate to both OMP_TARGET and OMP_TEAMS.
+
 2021-11-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101940

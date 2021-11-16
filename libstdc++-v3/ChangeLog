@@ -1,3 +1,24 @@
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/to_address/1_neg.cc: Adjust error.
+	* testsuite/26_numerics/random/concept.cc: Adjust asserts.
+
+2021-11-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h:
+	(_Hash_code_base<>::_M_hash_code(const _Hash&, const _Hash_node_value<_Value, true>&)): New.
+	(_Hash_code_base<>::_M_hash_code<_H2>(const _H2&, const _Hash_node_value<>&)): New.
+	* include/bits/hashtable.h (_Hashtable<>::_M_merge_unique): Use latter.
+	(_Hashtable<>::_M_merge_multi): Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/merge.cc (test05): New test.
+	* testsuite/23_containers/unordered_set/modifiers/merge.cc (test04): New test.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* src/c++17/memory_resource.cc: Add missing constexpr.
+	* include/experimental/internet: Only mark copy constructor
+	as constexpr with __cpp_constexpr_dynamic_alloc.
+
 2021-11-14  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_container.h (_Safe_container<>::_M_safe): Remove.

@@ -1,3 +1,8 @@
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_TARGET_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+
 2021-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_num_teams): Parse optional
