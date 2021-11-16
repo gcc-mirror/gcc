@@ -1,8 +1,10 @@
-/* Test the output of "-fopt-info-optimized-omp" for OpenACC 'kernels'
+/* Test the output of "-fopt-info-note-omp" for OpenACC 'kernels'
    constructs containing conditionally executed 'loop' constructs with
    'independent' or 'seq' clauses.  */
 
-/* { dg-additional-options "-fopt-info-all-omp" } */
+/* { dg-additional-options "-fopt-info-note-omp" } */
+/* { dg-additional-options "-fopt-info-missed-omp" } */
+/* { dg-additional-options "--param openacc-kernels=decompose-parloops" } */
 
 //TODO update accordingly
 /* See also "../../gfortran.dg/goacc/note-parallelism.f90".  */
@@ -14,7 +16,7 @@ main ()
 {
   int x, y, z;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -24,7 +26,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -34,7 +36,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -44,7 +46,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -54,7 +56,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -64,7 +66,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -74,7 +76,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -84,7 +86,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -94,7 +96,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -108,7 +110,7 @@ main ()
 	;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -118,7 +120,7 @@ main ()
     ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -130,7 +132,7 @@ main ()
       ;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -144,7 +146,7 @@ main ()
 	;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -158,7 +160,7 @@ main ()
 	;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -172,7 +174,7 @@ main ()
 	;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {
@@ -186,7 +188,7 @@ main ()
 	;
  }
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+#pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  if (c) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
  {

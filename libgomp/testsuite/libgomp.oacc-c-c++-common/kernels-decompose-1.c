@@ -45,21 +45,23 @@ static void f1 ()
   /* { dg-missed {'map\(tofrom:b [^)]+\)' not optimized: b is unsuitable for privatization} "" { target *-*-* } .-1 }
      { dg-missed {'map\(force_tofrom:a [^)]+\)' not optimized: a is unsuitable for privatization} "" { target *-*-* } .-2 } */
   {
-    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    /* { dg-note {beginning 'Graphite' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     int c = 234;
     /* { dg-note {OpenACC 'kernels' decomposition: variable 'c' declared in block requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
        { dg-note {variable 'c' made addressable} {} { target *-*-* } l_compute$c_compute }
        { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
 
+    /*TODO Hopefully, this is the same issue as '../../../gcc/testsuite/c-c++-common/goacc/kernels-decompose-ice-1.c'.  */
+    (volatile int *) &c;
+
 #pragma acc loop independent gang /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; ++i)
       b[i] = c;
 
-    /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+    /* { dg-note {beginning 'Graphite' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     a = c;
 
     /* PR104132, PR104133, PR104774 */

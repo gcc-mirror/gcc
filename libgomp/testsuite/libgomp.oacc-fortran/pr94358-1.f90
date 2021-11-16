@@ -30,14 +30,12 @@ subroutine kernel(lo, hi, a, b, c)
   ! { dg-missed {'map\(tofrom:\*b [^)]+\)' not optimized: \*b is unsuitable for privatization} "" { target *-*-* } .-3 }
   ! { dg-missed {'map\(tofrom:\*a [^)]+\)' not optimized: \*a is unsuitable for privatization} "" { target *-*-* } .-4 }
   !$acc loop independent ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = lo, hi
      b(i) = a(i)
   end do
   !$acc loop independent ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = lo, hi

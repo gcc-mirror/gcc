@@ -1,4 +1,4 @@
-/* { dg-additional-options "--param=openacc-kernels=parloops" } as this is
+/* { dg-additional-options "--param openacc-kernels=decompose-parloops" } as this is
    specifically testing "parloops" handling.  */
 /* { dg-additional-options "-O2" } */
 /* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */

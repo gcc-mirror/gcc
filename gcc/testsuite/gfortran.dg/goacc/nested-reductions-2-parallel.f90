@@ -511,3 +511,180 @@ subroutine acc_parallel_loop_reduction ()
     end do
   end do
 end subroutine acc_parallel_loop_reduction
+
+! The same tests as above, but inside a routine construct.
+subroutine acc_routine ()
+  implicit none (type, external)
+  !$acc routine gang
+  integer :: i, j, k, l, sum, diff
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(+:sum)
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop collapse(2)  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+      do j = 1, 10
+        do k = 1, 10
+          !$acc loop reduction(+:sum)
+          do l = 1, 10
+            sum = 1
+          end do
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+      do j = 1, 10
+        !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+        ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
+        do k = 1, 10
+          !$acc loop reduction(+:sum)
+          do l = 1, 10
+            sum = 1
+          end do
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(+:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(-:sum)
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+      do j = 1, 10
+        !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+        ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
+        do k = 1, 10
+          !$acc loop reduction(*:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+          do l = 1, 10
+            sum = 1
+          end do
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(+:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+        ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
+        do k = 1, 10
+          !$acc loop reduction(*:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
+          do l = 1, 10
+            sum = 1
+          end do
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum) reduction(-:diff)
+    do i = 1, 10
+      !$acc loop reduction(-:diff)  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(+:sum)
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+
+      !$acc loop reduction(+:sum)  ! { dg-warning "nested loop in reduction needs reduction clause for .diff." }
+      do j = 1, 10
+        !$acc loop reduction(-:diff)
+        do k = 1, 10
+            diff = 1
+        end do
+      end do
+    end do
+end subroutine acc_routine
+
+subroutine acc_kernels ()
+  integer :: i, j, k, sum, diff
+
+  ! FIXME:  No diagnostics are produced for these loops because reductions
+  ! in kernels regions are not supported yet.
+  !$acc kernels
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      do j = 1, 10
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop
+      do j = 1, 10
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop reduction(-:diff)
+      do j = 1, 10
+        !$acc loop
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(+:sum)
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+
+    !$acc loop reduction(+:sum)
+    do i = 1, 10
+      !$acc loop reduction(-:sum) ! { dg-warning "conflicting reduction operations for .sum." }
+      do j = 1, 10
+        !$acc loop reduction(+:sum) ! { dg-warning "conflicting reduction operations for .sum." }
+        do k = 1, 10
+          sum = 1
+        end do
+      end do
+    end do
+  !$acc end kernels
+end subroutine acc_kernels

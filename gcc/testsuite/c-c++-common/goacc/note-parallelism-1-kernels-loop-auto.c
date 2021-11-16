@@ -2,6 +2,7 @@
    construct containing 'loop' constructs with explicit or implicit 'auto'
    clause.  */
 
+/* { dg-additional-options "-fopt-info-optimized-omp" } */
 /* { dg-additional-options "-fopt-info-note-omp" } */
 
 //TODO update accordingly
@@ -15,109 +16,136 @@ main ()
 #pragma acc kernels
  /* Strangely indented to keep this similar to other test cases.  */
  {
-#pragma acc loop
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-1 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto gang /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto gang
+  /* { dg-message "optimized: assigned OpenACC gang loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto worker /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto worker
+  /* { dg-message "optimized: assigned OpenACC worker loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto vector /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto vector
+  /* { dg-message "optimized: assigned OpenACC vector loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto gang vector /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto gang vector
+  /* { dg-message "optimized: assigned OpenACC gang vector loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto gang worker /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto gang worker
+  /* { dg-message "optimized: assigned OpenACC gang worker loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto worker vector /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto worker vector
+  /* { dg-message "optimized: assigned OpenACC worker vector loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto gang worker vector /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto gang worker vector
+  /* { dg-message "optimized: assigned OpenACC gang worker vector loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
     ;
 
-#pragma acc loop auto gang /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+#pragma acc loop auto gang
+  /* { dg-message "optimized: assigned OpenACC gang loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-3 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop auto worker /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
+#pragma acc loop auto worker
+  /* { dg-message "optimized: assigned OpenACC worker loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-2 } */
     for (y = 0; y < 10; y++)
-#pragma acc loop auto vector /* { dg-error ".auto. conflicts with other OpenACC loop specifiers" } */
+#pragma acc loop auto vector
+  /* { dg-message "optimized: assigned OpenACC vector loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-bogus ".auto. conflicts with other OpenACC loop specifiers" "" { xfail *-*-*} .-2 } */
       for (z = 0; z < 10; z++)
 	;
 
 #pragma acc loop auto
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
     ;
 
 #pragma acc loop auto
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
       ;
 
 #pragma acc loop auto
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
       for (z = 0; z < 10; z++)
 	;
 
 #pragma acc loop
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
       for (z = 0; z < 10; z++)
 	;
 
 #pragma acc loop auto
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
       for (z = 0; z < 10; z++)
 	;
 
 #pragma acc loop auto
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
       for (z = 0; z < 10; z++)
 	;
 
 #pragma acc loop
-  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .parloops. for analysis" "" { target *-*-* } .-1 } */
+  /* { dg-message "optimized: assigned OpenACC seq loop parallelism" "" { target *-*-*} .-1 } */
+  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" "" { target *-*-* } .-2 } */
   for (x = 0; x < 10; x++)
-#pragma acc loop auto
+#pragma acc loop auto /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
     for (y = 0; y < 10; y++)
-#pragma acc loop
+#pragma acc loop /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
       for (z = 0; z < 10; z++)
 	;
  }

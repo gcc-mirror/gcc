@@ -147,3 +147,5 @@ contains
     !$acc exit data copyout(nonlocal_a) delete(nonlocal_i) finalize
   end subroutine nonlocal
 end program main
+
+! { dg-prune-output ".*insufficient partitioning.*" }

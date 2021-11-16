@@ -1,10 +1,10 @@
 ! Test OpenACC 'kernels' construct decomposition.
 
-! { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
+! { dg-additional-options "-fopenacc-kernels-annotate-loops" }
 ! { dg-additional-options "-fopt-info-omp-all" }
 
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
-! { dg-additional-options "-O2" } for 'parloops'.
+! { dg-additional-options "-O2" } for 'Graphite'.
 
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
 ! Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types):
@@ -41,74 +41,76 @@ program main
   integer, parameter :: N = 10
   integer :: a(N), b(N), c(N)
 
-  !$acc kernels ! { dg-line l_compute[incr c_compute] }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'z' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'z' made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y_l' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'y_l' made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'y' made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'x' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'x' made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
+  !$acc kernels ! { dg-line l_kernels[incr region] }
+  ! { dg-missed {.map\(force_tofrom:y \[len: [0-9]+\]\[implicit\]\). not optimized: .y. used} "" { target *-*-* } l_kernels$region }
+  ! { dg-optimized {.map\(force_tofrom:y_l \[len: [0-9]+\]\[implicit\]\). optimized to .map\(to:y_l \[len: [0-9]+\]\[implicit\]\).} "" { target *-*-* } l_kernels$region }
+  ! { dg-optimized {.map\(to:y_l \[len: [0-9]+\]\[implicit\]\). further optimized to .private\(y_l\).}  "" { target *-*-* } l_kernels$region }
+  ! { dg-optimized {.map\(force_tofrom:x \[len: [0-9]+\]\[implicit\]\). optimized to .map\(to:x \[len: [0-9]+\]\[implicit\]\).} "" { target *-*-* } l_kernels$region }
+  ! { dg-optimized {.map\(to:x \[len: [0-9]+\]\[implicit\]\). further optimized to .private\(x\).}  "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(force_tofrom:z \[len: [0-9]+\]\[implicit\]\). not optimized: .z. used} "" { target *-*-* } l_kernels$region }
   x = 0
   y = 0
   y_l = x < 10
   z = x
   x = x + 1
+
   ;
   !$acc end kernels
 
-  !$acc kernels ! { dg-line l_compute[incr c_compute] }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'i' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'i' made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
-  do i = 1, N
+  !$acc kernels ! { dg-line l_kernels[incr region] }
+  ! { dg-missed {'map\(tofrom:a \[len: [0-9]+\]\[implicit\]\)' not optimized: 'a' is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  do i = 1, N  ! { dg-line l_loop_i[incr c_loop_i] }
+     ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'Graphite' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
+     ! { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
      a(i) = 0
   end do
   !$acc end kernels
 
   !$acc kernels loop ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-missed {.map\(tofrom:b \[len: [0-9]+\]\[implicit\]\). not optimized: .b. is unsuitable for privatization} "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-missed {.map\(tofrom:a \[len: [0-9]+\]\[implicit\]\). not optimized: .a. is unsuitable for privatization} "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'Graphite' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang loop parallelism" "TODO Graphite cannot represent access function" { xfail *-*-* } l_loop_i$c_loop_i }
+  ! { dg-bogus "assigned OpenACC seq loop parallelism" "TODO Graphite cannot represent access function" { xfail *-*-* } l_loop_i$c_loop_i }
+  ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      b(i) = a(N - i + 1)
   end do
 
-  !$acc kernels ! { dg-line l_compute[incr c_compute] }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'z' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'z' already made addressable} {} { target *-*-* } l_compute$c_compute }
+  !$acc kernels ! { dg-line l_kernels[incr region] }
+  ! { dg-missed {.map\(force_tofrom:z \[len: [0-9]+\]\[implicit\]\). not optimized: .z. used} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed    {\.\.\. here}  "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(tofrom:c \[len: [0-9]+\]\[implicit\]\). not optimized: .c. is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(tofrom:b \[len: [0-9]+\]\[implicit\]\). not optimized: .b. is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(tofrom:a \[len: [0-9]+\]\[implicit\]\). not optimized: .a. is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'Graphite' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { xfail *-*-* } l_loop_i$c_loop_i }
+  ! { dg-bogus "assigned OpenACC seq loop parallelism" "TODO Graphite cannot represent access function" { xfail *-*-* } l_loop_i$c_loop_i }
+  ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      b(i) = a(N - i + 1)
   end do
 
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'Graphite' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      c(i) = a(i) * b(i)
   end do
 
-  ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   a(z) = 0
 
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'Graphite' for analysis} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      c(i) = c(i) + a(i)
   end do
 
   !$acc loop seq ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1 + 1, N
@@ -116,24 +118,30 @@ program main
   end do
   !$acc end kernels
 
-  !$acc kernels ! { dg-line l_compute[incr c_compute] }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'y' already made addressable} {} { target *-*-* } l_compute$c_compute }
-  !TODO What does this mean?
-  !TODO { dg-optimized "assigned OpenACC worker vector loop parallelism" "" { target *-*-* } l_compute$c_compute }
+  !$acc kernels ! { dg-line l_kernels[incr region] }
+  ! { dg-missed {.map\(force_tofrom:y \[len: [0-9]+\]\[implicit\]\). not optimized: .y. used} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed    {\.\.\. here}  "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(tofrom:c \[len: [0-9]+\]\[implicit\]\). not optimized: .c. is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(tofrom:b \[len: [0-9]+\]\[implicit\]\). not optimized: .b. is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {.map\(tofrom:a \[len: [0-9]+\]\[implicit\]\). not optimized: .a. is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+
   !$acc loop independent ! { dg-line l_loop_i[incr c_loop_i] }
-  ! { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i }
   ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-bogus "missed: .independent. loop in .kernels. region has not been analyzed .cf. .graphite. dumps for more information.." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_i$c_loop_i }
+  ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      !$acc loop independent ! { dg-line l_loop_j[incr c_loop_j] }
      ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j }
      ! { dg-optimized "assigned OpenACC worker loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j }
+     ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
+     ! { dg-bogus "missed: .independent. loop in .kernels. region has not been analyzed .cf. .graphite. dumps for more information.." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
      do j = 1, N
         !$acc loop independent ! { dg-line l_loop_k[incr c_loop_k] }
         ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_k$c_loop_k }
         ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } l_loop_k$c_loop_k }
         ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_k$c_loop_k }
+        ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_k$c_loop_k }
+        ! { dg-bogus "missed: .independent. loop in .kernels. region has not been analyzed .cf. .graphite. dumps for more information.." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_k$c_loop_k }
         do k = 1, N
            a(1 + mod(i + j + k, N)) &
                 = b(j) &
@@ -142,58 +150,58 @@ program main
      end do
   end do
 
-  !TODO Should the following turn into "gang-single" instead of "parloops"?
-  !TODO The problem is that the first STMT is 'if (y <= 4) goto <D.2547>; else goto <D.2548>;', thus "parloops".
-  ! { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
-  if (y < 5) then
+  if (y < 5) then ! { dg-message "note: beginning 'Graphite' part in OpenACC 'kernels' region" }
      !$acc loop independent ! { dg-line l_loop_j[incr c_loop_j] }
-     ! { dg-missed "unparallelized loop nest in OpenACC 'kernels' region: it's executed conditionally" "" { target *-*-* } l_loop_j$c_loop_j }
-     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j }
+     ! { dg-missed "unparallelized loop nest in OpenACC 'kernels' region: it's executed conditionally" "" { target *-*-* } l_loop_j$c_loop_j } ! TODO-kernels Clarify: should this be unparallelized or should the warning go away?
+     ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
+     ! { dg-bogus "missed: .independent. loop in .kernels. region has not been analyzed .cf. .graphite. dumps for more information.." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
+     ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j }
      do j = 1, N
-        b(j) = f_w (c(j))
+        b(j) = f_w (c(j)) ! { dg-optimized "assigned OpenACC worker vector loop parallelism" }
      end do
   end if
   !$acc end kernels
 
-  !$acc kernels ! { dg-line l_compute[incr c_compute] }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'y' already made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-bogus "\[Ww\]arning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } l_compute$c_compute }
+  !$acc kernels ! { dg-line l_kernels[incr region] }
+  ! { dg-missed {'map\(force_tofrom:y \[len: [0-9]+\]\[implicit\]\)' not optimized: 'y' used} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {'map\(tofrom:c \[len: [0-9]+\]\[implicit\]\)' not optimized: 'c' is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {'map\(tofrom:b \[len: [0-9]+\]\[implicit\]\)' not optimized: 'b' is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
+  ! { dg-missed {'map\(tofrom:a \[len: [0-9]+\]\[implicit\]\)' not optimized: 'a' is unsuitable for privatization} "" { target *-*-* } l_kernels$region }
   y = f_g (a(5)) ! { dg-line l_part[incr c_part] }
-  !TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?
-  ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_part$c_part }
   ! { dg-optimized "assigned OpenACC gang worker vector loop parallelism" "" { target *-*-* } l_part$c_part }
 
   !$acc loop independent ! { dg-line l_loop_j[incr c_loop_j] }
-  ! { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_j$c_loop_j }
-  ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j }
   ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j }
+  ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
+  ! { dg-bogus "missed: .independent. loop in .kernels. region has not been analyzed .cf. .graphite. dumps for more information.." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
   do j = 1, N
      b(j) = y + f_w (c(j)) ! { dg-optimized "assigned OpenACC worker vector loop parallelism" }
   end do
   !$acc end kernels
 
-  !$acc kernels ! { dg-line l_compute[incr c_compute] }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'z' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'z' already made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {OpenACC 'kernels' decomposition: variable 'y' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
-  !   { dg-note {variable 'y' already made addressable} {} { target *-*-* } l_compute$c_compute }
-  ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
+  !$acc kernels ! { dg-line l_kernels[incr region] }
+! { dg-optimized {.map\(force_tofrom:z \[len: [0-9]+\]\[implicit\]\). optimized to .map\(to:z \[len: [0-9]+\]\[implicit\]\).} "" { target *-*-* } l_kernels$region }
+! { dg-optimized {.map\(to:z \[len: [0-9]+\]\[implicit\]\). further optimized to .private\(z\).}  "" { target *-*-* } l_kernels$region }
+! { dg-optimized {.map\(force_tofrom:y \[len: [0-9]+\]\[implicit\]\). optimized to .map\(to:y \[len: [0-9]+\]\[implicit\]\).}  "" { target *-*-* } l_kernels$region }
+! { dg-optimized {.map\(to:y \[len: [0-9]+\]\[implicit\]\). further optimized to .private\(y\).}  "" { target *-*-* } l_kernels$region }
+! { dg-missed    {\.\.\. here}  "" { target *-*-* } l_kernels$region }
+! { dg-missed    {.map\(tofrom:c \[len: [0-9]+\]\[implicit\]\). not optimized: .c. is unsuitable for privatization}  "" { target *-*-* } l_kernels$region }
+! { dg-missed    {.map\(tofrom:b \[len: [0-9]+\]\[implicit\]\). not optimized: .b. is unsuitable for privatization}  "" { target *-*-* } l_kernels$region }
+! { dg-missed    {\.\.\. here}  "" { target *-*-* } l_kernels[expr {$region - 1}] }
+
   y = 3
 
   !$acc loop independent ! { dg-line l_loop_j[incr c_loop_j] }
-  ! { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_j$c_loop_j }
-  ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_j$c_loop_j }
   ! { dg-optimized "assigned OpenACC gang worker loop parallelism" "" { target *-*-* } l_loop_j$c_loop_j }
+  ! { dg-bogus "missed: .auto. loop has not been analyzed .cf. .graphite. dumps for more information." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
+  ! { dg-bogus "missed: .independent. loop in .kernels. region has not been analyzed .cf. .graphite. dumps for more information.." "TODO Inexact representation of access function in Graphite" { xfail *-*-* } l_loop_j$c_loop_j }
   do j = 1, N
      b(j) = y + f_v (c(j)) ! { dg-optimized "assigned OpenACC vector loop parallelism" }
   end do
 
-  ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   z = 2
   !$acc end kernels
 
-  ! { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 }
   !$acc kernels
   !$acc end kernels  
 end program main

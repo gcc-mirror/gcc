@@ -28,19 +28,16 @@ program test
   integer :: i3_5_s, j3_5_s, k3_5_s
 
   !$acc kernels ! Explicit "private(i0_1)" clause cannot be specified here.
-  ! { dg-final { scan-tree-dump-times "private\\(i0_1\\)" 1 "original" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "private\\(i0_1\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i0_1 \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { xfail *-*-* } } } ! PR90067
+  ! The "private" clause gets added in the "omp_data_optimize" pass and is hence
+  ! not there in the "original"
+  ! { dg-final { scan-tree-dump-times "private\\(i0_1\\)" 0 "original"} }
   do i0_1 = 1, 100
   end do
   !$acc end kernels
 
   !$acc kernels ! Explicit "private(i0_2, j0_2)" clause cannot be specified here.
-  ! { dg-final { scan-tree-dump-times "private\\(i0_2\\)" 1 "original" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "private\\(j0_2\\)" 1 "original" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "private\\(i0_2\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "private\\(j0_2\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:j0_2 \\\[len: \[0-9\]+\\\]\\) map\\(force_tofrom:i0_2 \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { xfail *-*-* } } } ! PR90067
+  ! { dg-final { scan-tree-dump-times "private\\(i0_2\\)" 0 "original" } }
+  ! { dg-final { scan-tree-dump-times "private\\(j0_2\\)" 0 "original" } }
   do i0_2 = 1, 100
      do j0_2 = 1, 100
      end do

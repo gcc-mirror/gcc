@@ -23,7 +23,6 @@
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
-/* { dg-additional-options "-O2" } for Graphite/"kernels". */
 
 
 /* See also '../libgomp.oacc-fortran/parallel-dims.f90'.  */
@@ -248,7 +247,6 @@ int main ()
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max) \
   num_gangs (gangs)
     /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_compute$c_compute } */
-    /* { dg-bogus {warning: region is gang partitioned but does not contain gang partitioned code} {TODO 'reduction'} { xfail *-*-* } l_compute$c_compute } */
     {
       if (acc_on_device (acc_device_host))
 	/* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target { c++ && { ! __OPTIMIZE__ } } } .-1 }
@@ -723,6 +721,10 @@ int main ()
       /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l_loop_i$c_loop_i } */
       /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } l_loop_i$c_loop_i } */
+      /* { dg-warning "removed gang worker vector partitioning from 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i } */
       for (int i = N; i > -N; --i)
 	{
 	  /* This is to make the loop unparallelizable.  */
@@ -828,7 +830,7 @@ int main ()
 	__builtin_abort ();
     if (gangs_min != 0 || gangs_max != 1 - 1
 	|| workers_min != 0 || workers_max != 1 - 1
-	|| vectors_min != 0 || vectors_max != vectors_actual - 1)
+	|| vectors_min != 0 || vectors_max >= vectors_actual)
       __builtin_abort ();
   }
 

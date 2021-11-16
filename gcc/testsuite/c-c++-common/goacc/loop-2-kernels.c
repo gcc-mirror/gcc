@@ -37,7 +37,7 @@ void K(void)
 	for (j = 0; j < 10; j++)
 	  { }
       }
-#pragma acc loop seq gang // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc loop seq gang // { dg-error "'seq' overrides" }
     for (i = 0; i < 10; i++)
       { }
 
@@ -59,11 +59,11 @@ void K(void)
 #pragma acc loop worker // { dg-error "inner loop uses same" }
 	for (j = 0; j < 10; j++)
 	  { }
-#pragma acc loop gang
+#pragma acc loop gang /* { dg-bogus "incorrectly nested OpenACC loop parallelism" "TODO-kernels" { xfail *-*-* } } */
 	for (j = 0; j < 10; j++)
 	  { }
       }
-#pragma acc loop seq worker // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc loop seq worker // { dg-error "'seq' overrides" }
     for (i = 0; i < 10; i++)
       { }
 #pragma acc loop gang worker
@@ -85,14 +85,14 @@ void K(void)
 #pragma acc loop vector // { dg-error "inner loop uses same" }
 	for (j = 1; j < 10; j++)
 	  { }
-#pragma acc loop worker
+#pragma acc loop worker /* { dg-bogus "incorrectly nested OpenACC loop parallelism" "TODO-kernels" { xfail *-*-* } } */
 	for (j = 1; j < 10; j++)
 	  { }
-#pragma acc loop gang
+#pragma acc loop gang /* { dg-bogus "incorrectly nested OpenACC loop parallelism" "TODO-kernels" { xfail *-*-* } } */
 	for (j = 1; j < 10; j++)
 	  { }
       }
-#pragma acc loop seq vector // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc loop seq vector // { dg-error "'seq' overrides" }
     for (i = 0; i < 10; i++)
       { }
 #pragma acc loop gang vector
@@ -105,7 +105,7 @@ void K(void)
 #pragma acc loop auto
     for (i = 0; i < 10; i++)
       { }
-#pragma acc loop seq auto // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc loop seq auto // { dg-error "'seq' overrides" }
     for (i = 0; i < 10; i++)
       { }
 #pragma acc loop gang auto // { dg-error "'auto' conflicts" }
@@ -147,7 +147,7 @@ void K(void)
 #pragma acc kernels loop worker(num:5)
   for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop seq worker // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc kernels loop seq worker // { dg-error "'seq' overrides" }
   for (i = 0; i < 10; i++)
     { }
 #pragma acc kernels loop gang worker
@@ -163,7 +163,7 @@ void K(void)
 #pragma acc kernels loop vector(length:5)
   for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop seq vector // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc kernels loop seq vector // { dg-error "'seq' overrides" }
   for (i = 0; i < 10; i++)
     { }
 #pragma acc kernels loop gang vector
@@ -176,7 +176,7 @@ void K(void)
 #pragma acc kernels loop auto
   for (i = 0; i < 10; i++)
     { }
-#pragma acc kernels loop seq auto // { dg-error "'seq' overrides" "TODO" { xfail *-*-* } }
+#pragma acc kernels loop seq auto // { dg-error "'seq' overrides" }
   for (i = 0; i < 10; i++)
     { }
 #pragma acc kernels loop gang auto // { dg-error "'auto' conflicts" }

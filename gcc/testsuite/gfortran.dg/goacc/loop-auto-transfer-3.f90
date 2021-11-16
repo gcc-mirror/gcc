@@ -24,12 +24,10 @@ contains
     !$acc loop auto
     ! { dg-message "assigned OpenACC gang worker loop parallelism" "" {target *-*-*} .-1 }
     ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-2 }
-    ! { dg-message "'auto' loop can be parallel" "" {target *-*-*} .-3 }
     do i=1, n
        !$acc loop auto
        ! { dg-message "assigned OpenACC vector loop parallelism" "" {target *-*-*} .-1 }
        ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-2 }
-       ! { dg-message "'auto' loop can be parallel" "" {target *-*-*} .-3 }
        do j=1, m
           array (1, i, j) = array(2, i, j) ! { dg-message "loop has no data-dependences" }
        end do
@@ -42,13 +40,11 @@ contains
     !$acc loop auto
     ! { dg-message "assigned OpenACC gang worker loop parallelism" "" {target *-*-*} .-1 }
     ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-2 }
-    ! { dg-message "'auto' loop can be parallel" "" {target *-*-*} .-3 }
     do i=1, n
        array (2, i, n) = array(1, i, n) ! { dg-message "loop has no data-dependences" }
        !$acc loop auto
        ! { dg-message "assigned OpenACC vector loop parallelism" "" {target *-*-*} .-1 }
        ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-2 }
-       ! { dg-message "'auto' loop can be parallel" "" {target *-*-*} .-3 }
        do j=1, m
           array (1, i, j) = array (2, i,j) ! { dg-message "loop has no data-dependences" }
        end do
@@ -61,13 +57,11 @@ contains
     !$acc loop auto
     ! { dg-message "assigned OpenACC seq loop parallelism" "" {target *-*-*} .-1 }
     ! { dg-message "loop has no data-dependences" "OpenACC internal chunking loop can be parallel" {target *-*-*} .-2 }
-    ! { dg-message "'auto' loop cannot be parallel" "" {target *-*-*} .-3 }
     do i=1, n-1
        array (1, i+1, 1) = array (2, i, 1) ! { dg-message "loop has data-dependences" }
        !$acc loop auto
        ! { dg-message "assigned OpenACC gang vector loop parallelism" "" {target *-*-*} .-1 }
        ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-2 }
-       ! { dg-message "'auto' loop can be parallel" "" {target *-*-*} .-3 }
        do j=1, m
           array (1, i, j) = array (2, i, j) ! { dg-message "loop has no data-dependences" }
        end do
@@ -81,13 +75,11 @@ contains
     !$acc loop auto
     ! { dg-message "assigned OpenACC gang vector loop parallelism" "" {target *-*-*} .-1 }
     ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-2 }
-    ! { dg-message "'auto' loop can be parallel" "" {target *-*-*} .-3 }
     do i=1, n
        array (2, i, n) = array (1, i, n) ! { dg-message "loop has no data-dependences" }
        !$acc loop auto
        ! { dg-message "assigned OpenACC seq loop parallelism" "" {target *-*-*} .-1 }
        ! { dg-message "loop has no data-dependences" "OpenACC internal chunking loop can be parallel" {target *-*-*} .-2 }
-       ! { dg-message "'auto' loop cannot be parallel" "" {target *-*-*} .-3 }
        do j=1, m-1
           array (1, i, j+1) = array (1, i, j) ! { dg-message "loop has data-dependences" }
        end do

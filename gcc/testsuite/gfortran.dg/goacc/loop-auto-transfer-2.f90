@@ -23,7 +23,6 @@ subroutine test_loop_nest_depth_1 ()
 
   !$acc parallel loop auto copy(array1, array2) ! { dg-message "assigned OpenACC gang vector loop parallelism" }
   ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-1 }
-  ! { dg-message ".auto. loop can be parallel" "" {target *-*-*} .-2 }
   do i=1, n
      array2(i) = array1(i) ! { dg-message "loop has no data-dependences" }
   end do
@@ -31,7 +30,6 @@ subroutine test_loop_nest_depth_1 ()
 
   !$acc parallel loop auto copy(array1, array2) ! { dg-message "assigned OpenACC seq loop parallelism" }
   ! { dg-message "loop has no data-dependences" "" {target *-*-*} .-1 }
-  ! { dg-message "'auto' loop cannot be parallel" "" {target *-*-*} .-2 }
   do i=1, n-1
      array1(i+1) = array1(i) + 10 ! { dg-message "loop has data-dependences" }
      array2(i) = array1(i)

@@ -2,7 +2,6 @@
    OpenACC 'kernels' with Graphite kernles handling (default).  */
 
 /* { dg-additional-options "-O2" }
-   { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
    { dg-additional-options "-fopt-info-optimized-omp" }
    { dg-additional-options "-fopt-info-note-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
@@ -22,7 +21,8 @@ extern unsigned int f (unsigned int);
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N])
-  for (unsigned int i = 0; i < N; i++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
+  for (unsigned int i = 0; i < N; i++)
+    /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } .-1 } */
     /* An "extern"al mapping of loop iterations/array indices makes the loop
        unparallelizable.  */
     c[i] = a[f (i)] + b[f (i)]; /* { dg-optimized "assigned OpenACC seq loop parallelism" } */

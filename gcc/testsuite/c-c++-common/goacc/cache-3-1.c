@@ -31,7 +31,7 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
     ;
   #pragma acc cache(t[2:5]) /* { dg-error "is threadprivate variable" } */
     ;
-  #pragma acc cache(k[0.5:]) /* { dg-error "low bound \[^\n\r]* of array section does not have integral type" } */
+ #pragma acc cache(k[0.5:]) /* { dg-error "low bound \[^\n\r]* of array section does not have integral type" } */
     ;
   #pragma acc cache(l[:7.5f]) /* { dg-error "length \[^\n\r]* of array section does not have integral type" } */
     ;
