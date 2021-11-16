@@ -567,6 +567,7 @@ oacc_xform_loop (gcall *call)
   unsigned outer_mask = mask & (~mask + 1); // Outermost partitioning
   unsigned inner_mask = mask & ~outer_mask; // Inner partitioning (if any)
   tree vf_by_vectorizer = NULL_TREE;
+  tree noalias = NULL_TREE;
 
   /* Skip lowering if return value of IFN_GOACC_LOOP call is not used.  */
   if (!lhs)
@@ -631,202 +632,244 @@ oacc_xform_loop (gcall *call)
 
   switch (code)
     {
-    default: gcc_unreachable ();
+    default:
+      gcc_unreachable ();
 
     case IFN_GOACC_LOOP_CHUNKS:
+      noalias = gimple_call_arg (call, 6);
       if (!chunking)
-	r = build_int_cst (type, 1);
+        r = build_int_cst (type, 1);
       else
-	{
-	  /* chunk_max
-	     = (range - dir) / (chunks * step * num_threads) + dir  */
-	  tree per = oacc_thread_numbers (false, mask, &seq);
-	  per = fold_convert (type, per);
-	  chunk_size = fold_convert (type, chunk_size);
-	  per = fold_build2 (MULT_EXPR, type, per, chunk_size);
-	  per = fold_build2 (MULT_EXPR, type, per, step);
-	  r = fold_build2 (MINUS_EXPR, type, range, dir);
-	  r = fold_build2 (PLUS_EXPR, type, r, per);
-	  r = build2 (TRUNC_DIV_EXPR, type, r, per);
-	}
+        {
+          /* chunk_max
+             = (range - dir) / (chunks * step * num_threads) + dir  */
+          tree per = oacc_thread_numbers (false, mask, &seq);
+          per = fold_convert (type, per);
+          noalias = fold_convert (type, noalias);
+          per = fold_build2 (MULT_EXPR, type, per, noalias);
+          per = fold_build2 (MAX_EXPR, type, per, fold_convert (type, integer_one_node));
+          chunk_size = fold_convert (type, chunk_size);
+          per = fold_build2 (MULT_EXPR, type, per, chunk_size);
+          per = fold_build2 (MULT_EXPR, type, per, step);
+          r = fold_build2 (MINUS_EXPR, type, range, dir);
+          r = fold_build2 (PLUS_EXPR, type, r, per);
+          r = build2 (TRUNC_DIV_EXPR, type, r, per);
+        }
       break;
 
     case IFN_GOACC_LOOP_STEP:
+      noalias = gimple_call_arg (call, 6);
       {
-	if (vf_by_vectorizer)
-	  r = step;
-	else
-	  {
-	    /* If striding, step by the entire compute volume, otherwise
-	       step by the inner volume.  */
-	    unsigned volume = striding ? mask : inner_mask;
+        if (vf_by_vectorizer)
+          r = step;
+        else
+          {
+            /* If striding, step by the entire compute volume, otherwise
+               step by the inner volume.  */
+            unsigned volume = striding ? mask : inner_mask;
 
-	    r = oacc_thread_numbers (false, volume, &seq);
-	    r = build2 (MULT_EXPR, type, fold_convert (type, r), step);
-	  }
+            noalias = fold_convert (type, noalias);
+            r = oacc_thread_numbers (false, volume, &seq);
+            r = fold_convert (type, r);
+            r = build2 (MULT_EXPR, type, r, noalias);
+            r = build2 (MAX_EXPR, type, r, fold_convert (type, fold_convert (type, integer_one_node)));
+            r = build2 (MULT_EXPR, type, fold_convert (type, r), step);
+          }
+        break;
       }
-      break;
 
-    case IFN_GOACC_LOOP_OFFSET:
-      if (vf_by_vectorizer)
-	{
-	  /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
-	     the loop.  */
-	  if (flag_tree_loop_vectorize
-	      || !OPTION_SET_P (flag_tree_loop_vectorize))
-	    {
-	      /* Enable vectorization on non-SIMT targets.  */
-	      basic_block bb = gsi_bb (gsi);
-	      class loop *chunk_loop = bb->loop_father;
-	      class loop *inner_loop = chunk_loop->inner;
+      case IFN_GOACC_LOOP_OFFSET:
+	noalias = gimple_call_arg (call, 7);
+        if (vf_by_vectorizer)
+          {
+            /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
+               the loop.  */
+            if (flag_tree_loop_vectorize
+                || !OPTION_SET_P (flag_tree_loop_vectorize))
+              {
+                /* Enable vectorization on non-SIMT targets.  */
+                basic_block bb = gsi_bb (gsi);
+                class loop *chunk_loop = bb->loop_father;
+                class loop *inner_loop = chunk_loop->inner;
 
-	      /* Chunking isn't supported for VF_BY_VECTORIZER loops yet,
-		 so we know that the outer chunking loop will be executed just
-		 once and the inner loop is the one which must be
-		 vectorized (unless it has been optimized out for some
-		 reason).  */
-	      gcc_assert (!chunking);
+                /* Chunking isn't supported for VF_BY_VECTORIZER loops yet,
+                   so we know that the outer chunking loop will be executed
+                   just once and the inner loop is the one which must be
+                   vectorized (unless it has been optimized out for some
+                   reason).  */
+                gcc_assert (!chunking);
 
-	      if (inner_loop)
-		{
-		  inner_loop->force_vectorize = true;
-		  inner_loop->safelen = INT_MAX;
+                if (inner_loop)
+                  {
+                    inner_loop->force_vectorize = true;
+                    inner_loop->safelen = INT_MAX;
 
-		  cfun->has_force_vectorize_loops = true;
-		}
-	    }
+                    cfun->has_force_vectorize_loops = true;
+                  }
+              }
 
-	  /* ...and expand the abstract loops such that the vectorizer can
-	     work on them more effectively.
+            /* ...and expand the abstract loops such that the vectorizer can
+               work on them more effectively.
 
-	     It might be nicer to merge this code with the "!striding" case
-	     below, particularly if chunking support is added.  */
-	  tree warppos
-	    = oacc_thread_numbers (true, mask, vf_by_vectorizer, &seq);
-	  warppos = fold_convert (diff_type, warppos);
+               It might be nicer to merge this code with the "!striding" case
+               below, particularly if chunking support is added.  */
+            tree warppos
+                = oacc_thread_numbers (true, mask, vf_by_vectorizer, &seq);
+            warppos = fold_convert (diff_type, warppos);
 
-	  tree volume
-	    = oacc_thread_numbers (false, mask, vf_by_vectorizer, &seq);
-	  volume = fold_convert (diff_type, volume);
+            tree volume
+                = oacc_thread_numbers (false, mask, vf_by_vectorizer, &seq);
+            volume = fold_convert (diff_type, volume);
 
-	  tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
-	  chunk_size = fold_build2 (PLUS_EXPR, diff_type, range, per);
-	  chunk_size = fold_build2 (MINUS_EXPR, diff_type, chunk_size, dir);
-	  chunk_size = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size,
-				    per);
+            tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+            chunk_size = fold_build2 (PLUS_EXPR, diff_type, range, per);
+            chunk_size = fold_build2 (MINUS_EXPR, diff_type, chunk_size, dir);
+            chunk_size
+                = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
 
-	  warppos = fold_build2 (MULT_EXPR, diff_type, warppos, chunk_size);
+            warppos = fold_build2 (MULT_EXPR, diff_type, warppos, chunk_size);
 
-	  tree chunk = fold_convert (diff_type, gimple_call_arg (call, 6));
-	  chunk = fold_build2 (MULT_EXPR, diff_type, chunk, volume);
-	  r = fold_build2 (PLUS_EXPR, diff_type, chunk, warppos);
-	}
-      else if (striding)
-	{
-	  r = oacc_thread_numbers (true, mask, &seq);
-	  r = fold_convert (diff_type, r);
-	}
-      else
-	{
-	  tree inner_size = oacc_thread_numbers (false, inner_mask, &seq);
-	  tree outer_size = oacc_thread_numbers (false, outer_mask, &seq);
-	  tree volume = fold_build2 (MULT_EXPR, TREE_TYPE (inner_size),
-				     inner_size, outer_size);
+            tree chunk = fold_convert (diff_type, gimple_call_arg (call, 6));
+            chunk = fold_build2 (MULT_EXPR, diff_type, chunk, volume);
+            r = fold_build2 (PLUS_EXPR, diff_type, chunk, warppos);
+          }
+        else if (striding)
+          {
+            r = oacc_thread_numbers (true, mask, &seq);
+            r = fold_convert (diff_type, r);
+            tree tmp1 = build2 (NE_EXPR, boolean_type_node, r,
+                                fold_convert (diff_type, integer_zero_node));
+            tree tmp2 = build2 (EQ_EXPR, boolean_type_node, noalias,
+                                boolean_false_node);
+            tree tmp3 = build2 (BIT_AND_EXPR, diff_type,
+                                fold_convert (diff_type, tmp1),
+                                fold_convert (diff_type, tmp2));
+            tree tmp4 = build2 (MULT_EXPR, diff_type, tmp3, range);
+            r = build2 (PLUS_EXPR, diff_type, r, tmp4);
+          }
+        else
+          {
+            tree inner_size = oacc_thread_numbers (false, inner_mask, &seq);
+            tree outer_size = oacc_thread_numbers (false, outer_mask, &seq);
+            tree volume = fold_build2 (MULT_EXPR, TREE_TYPE (inner_size),
+                                       inner_size, outer_size);
 
-	  volume = fold_convert (diff_type, volume);
-	  if (chunking)
-	    chunk_size = fold_convert (diff_type, chunk_size);
-	  else
-	    {
-	      tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
-	      /* chunk_size = (range + per - 1) / per.  */
-	      chunk_size = build2 (MINUS_EXPR, diff_type, range, dir);
-	      chunk_size = build2 (PLUS_EXPR, diff_type, chunk_size, per);
-	      chunk_size = build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
-	    }
+            volume = fold_convert (diff_type, volume);
+            if (chunking)
+              chunk_size = fold_convert (diff_type, chunk_size);
+            else
+              {
+                tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+                /* chunk_size = (range + per - 1) / per.  */
+                chunk_size = build2 (MINUS_EXPR, diff_type, range, dir);
+                chunk_size = build2 (PLUS_EXPR, diff_type, chunk_size, per);
+                chunk_size = build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
+              }
 
-	  tree span = build2 (MULT_EXPR, diff_type, chunk_size,
-			      fold_convert (diff_type, inner_size));
-	  r = oacc_thread_numbers (true, outer_mask, &seq);
-	  r = fold_convert (diff_type, r);
-	  r = build2 (MULT_EXPR, diff_type, r, span);
+            /* Curtail the range in all but one thread when there may be
+               aliasing to prevent parallelization.  */
+            tree n = oacc_thread_numbers (true, mask, &seq);
+            n = fold_convert (diff_type, n);
+            tree tmp1 = build2 (NE_EXPR, boolean_type_node, n,
+                                fold_convert (diff_type, integer_zero_node));
+            tree tmp2 = build2 (EQ_EXPR, boolean_type_node, noalias,
+                                boolean_false_node);
+            tree tmp3 = build2 (BIT_AND_EXPR, diff_type,
+                                fold_convert (diff_type, tmp1),
+                                fold_convert (diff_type, tmp2));
+            range = build2 (MULT_EXPR, diff_type, tmp3, range);
 
-	  tree inner = oacc_thread_numbers (true, inner_mask, &seq);
-	  inner = fold_convert (diff_type, inner);
-	  r = fold_build2 (PLUS_EXPR, diff_type, r, inner);
+            tree span = build2 (MULT_EXPR, diff_type, chunk_size,
+                                fold_convert (diff_type, inner_size));
+            r = oacc_thread_numbers (true, outer_mask, &seq);
+            r = fold_convert (diff_type, r);
+            r = build2 (PLUS_EXPR, diff_type, r, range);
+            r = build2 (MULT_EXPR, diff_type, r, span);
 
-	  if (chunking)
-	    {
-	      tree chunk = fold_convert (diff_type, gimple_call_arg (call, 6));
-	      tree per
-		= fold_build2 (MULT_EXPR, diff_type, volume, chunk_size);
-	      per = build2 (MULT_EXPR, diff_type, per, chunk);
+            tree inner = oacc_thread_numbers (true, inner_mask, &seq);
 
-	      r = build2 (PLUS_EXPR, diff_type, r, per);
-	    }
-	}
-      r = fold_build2 (MULT_EXPR, diff_type, r, step);
-      if (type != diff_type)
-	r = fold_convert (type, r);
-      break;
+            inner = fold_convert (diff_type, inner);
+            r = fold_build2 (PLUS_EXPR, diff_type, r, inner);
 
-    case IFN_GOACC_LOOP_BOUND:
-      if (vf_by_vectorizer)
-	{
-	  tree volume
-	    = oacc_thread_numbers (false, mask, vf_by_vectorizer, &seq);
-	  volume = fold_convert (diff_type, volume);
+            if (chunking)
+              {
+                tree chunk
+                    = fold_convert (diff_type, gimple_call_arg (call, 6));
+                tree per
+                    = fold_build2 (MULT_EXPR, diff_type, volume, chunk_size);
+                per = build2 (MULT_EXPR, diff_type, per, chunk);
 
-	  tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
-	  chunk_size = fold_build2 (PLUS_EXPR, diff_type, range, per);
-	  chunk_size = fold_build2 (MINUS_EXPR, diff_type, chunk_size, dir);
-	  chunk_size = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size,
-				    per);
+                r = build2 (PLUS_EXPR, diff_type, r, per);
+              }
+          }
+        r = fold_build2 (MULT_EXPR, diff_type, r, step);
+        if (type != diff_type)
+          r = fold_convert (type, r);
+        break;
 
-	  vf_by_vectorizer = fold_convert (diff_type, vf_by_vectorizer);
-	  tree vecsize = fold_build2 (MULT_EXPR, diff_type, chunk_size,
-				      vf_by_vectorizer);
-	  vecsize = fold_build2 (MULT_EXPR, diff_type, vecsize, step);
-	  tree vecend = fold_convert (diff_type, gimple_call_arg (call, 6));
-	  vecend = fold_build2 (PLUS_EXPR, diff_type, vecend, vecsize);
-	  r = fold_build2 (integer_onep (dir) ? MIN_EXPR : MAX_EXPR, diff_type,
-			   range, vecend);
-	}
-      else if (striding)
-	r = range;
-      else
-	{
-	  tree inner_size = oacc_thread_numbers (false, inner_mask, &seq);
-	  tree outer_size = oacc_thread_numbers (false, outer_mask, &seq);
-	  tree volume = fold_build2 (MULT_EXPR, TREE_TYPE (inner_size),
-				     inner_size, outer_size);
+      case IFN_GOACC_LOOP_BOUND:
+        if (vf_by_vectorizer)
+          {
+            tree volume
+                = oacc_thread_numbers (false, mask, vf_by_vectorizer, &seq);
+            volume = fold_convert (diff_type, volume);
 
-	  volume = fold_convert (diff_type, volume);
-	  if (chunking)
-	    chunk_size = fold_convert (diff_type, chunk_size);
-	  else
-	    {
-	      tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
-	      /* chunk_size = (range + per - 1) / per.  */
-	      chunk_size = build2 (MINUS_EXPR, diff_type, range, dir);
-	      chunk_size = build2 (PLUS_EXPR, diff_type, chunk_size, per);
-	      chunk_size = build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
-	    }
+            tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+            chunk_size = fold_build2 (PLUS_EXPR, diff_type, range, per);
+            chunk_size = fold_build2 (MINUS_EXPR, diff_type, chunk_size, dir);
+            chunk_size
+                = fold_build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
 
-	  tree span = build2 (MULT_EXPR, diff_type, chunk_size,
-			      fold_convert (diff_type, inner_size));
+            vf_by_vectorizer = fold_convert (diff_type, vf_by_vectorizer);
+            tree vecsize = fold_build2 (MULT_EXPR, diff_type, chunk_size,
+                                        vf_by_vectorizer);
+            vecsize = fold_build2 (MULT_EXPR, diff_type, vecsize, step);
+            tree vecend = fold_convert (diff_type, gimple_call_arg (call, 6));
+            vecend = fold_build2 (PLUS_EXPR, diff_type, vecend, vecsize);
+            r = fold_build2 (integer_onep (dir) ? MIN_EXPR : MAX_EXPR,
+                             diff_type, range, vecend);
+          }
+        else if (striding)
+          r = range;
+        else
+          {
+            noalias = fold_convert (diff_type, gimple_call_arg (call, 7));
 
-	  r = fold_build2 (MULT_EXPR, diff_type, span, step);
+            tree inner_size = oacc_thread_numbers (false, inner_mask, &seq);
+            tree outer_size = oacc_thread_numbers (false, outer_mask, &seq);
+            tree volume = fold_build2 (MULT_EXPR, TREE_TYPE (inner_size),
+                                       inner_size, outer_size);
 
-	  tree offset = gimple_call_arg (call, 6);
-	  r = build2 (PLUS_EXPR, diff_type, r,
-		      fold_convert (diff_type, offset));
-	  r = build2 (integer_onep (dir) ? MIN_EXPR : MAX_EXPR,
-		      diff_type, r, range);
-	}
-      if (diff_type != type)
-	r = fold_convert (type, r);
-      break;
+            volume = fold_convert (diff_type, volume);
+            volume = fold_build2 (MULT_EXPR, diff_type, volume, noalias);
+            volume
+                = fold_build2 (MAX_EXPR, diff_type, volume, fold_convert (diff_type, integer_one_node));
+            if (chunking)
+              chunk_size = fold_convert (diff_type, chunk_size);
+            else
+              {
+                tree per = fold_build2 (MULT_EXPR, diff_type, volume, step);
+                /* chunk_size = (range + per - 1) / per.  */
+                chunk_size = build2 (MINUS_EXPR, diff_type, range, dir);
+                chunk_size = build2 (PLUS_EXPR, diff_type, chunk_size, per);
+                chunk_size
+                    = build2 (TRUNC_DIV_EXPR, diff_type, chunk_size, per);
+              }
+
+            tree span = build2 (MULT_EXPR, diff_type, chunk_size,
+                                fold_convert (diff_type, inner_size));
+
+            r = fold_build2 (MULT_EXPR, diff_type, span, step);
+
+            tree offset = gimple_call_arg (call, 6);
+            r = build2 (PLUS_EXPR, diff_type, r,
+                        fold_convert (diff_type, offset));
+            r = build2 (integer_onep (dir) ? MIN_EXPR : MAX_EXPR, diff_type, r,
+                        range);
+          }
+        if (diff_type != type)
+          r = fold_convert (type, r);
+        break;
     }
 
   gimplify_assign (lhs, r, &seq);

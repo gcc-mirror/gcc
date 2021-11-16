@@ -1679,7 +1679,7 @@ dr_defs_outside_region (const sese_l &region, data_reference_p dr)
 	  break;
 	}
 
-  return opt_result::success ();
+  return res;
 }
 
 /* Check that all constituents of DR that are used by the
@@ -1691,21 +1691,23 @@ dr_well_analyzed_for_runtime_alias_check_p (data_reference_p dr)
   static const char* error =
     "data-reference not well-analyzed for runtime check.";
   gimple* stmt = DR_STMT (dr);
+  opt_result res = opt_result::success ();
 
   if (! DR_BASE_ADDRESS (dr))
-    return opt_result::failure_at (stmt, "%s no base address.\n", error);
+    res = opt_result::failure_at (stmt, "%s no base address.\n", error);
   else if (! DR_OFFSET (dr))
-    return opt_result::failure_at (stmt, "%s no offset.\n", error);
+    res = opt_result::failure_at (stmt, "%s no offset.\n", error);
   else if (! DR_INIT (dr))
-    return opt_result::failure_at (stmt, "%s no init.\n", error);
+    res = opt_result::failure_at (stmt, "%s no init.\n", error);
   else if (! DR_STEP (dr))
-    return opt_result::failure_at (stmt, "%s no step.\n", error);
+    res = opt_result::failure_at (stmt, "%s no step.\n", error);
   else if (! tree_fits_uhwi_p (DR_STEP (dr)))
-    return opt_result::failure_at (stmt, "%s step too large.\n", error);
+    res = opt_result::failure_at (stmt, "%s step too large.\n", error);
 
-  DEBUG_PRINT (dump_data_reference (dump_file, dr));
+  if (!res)
+    DEBUG_PRINT (dump_data_reference (dump_file, dr));
 
-  return opt_result::success ();
+  return res;
 }
 
 /* Return TRUE if it is possible to create a runtime alias check for

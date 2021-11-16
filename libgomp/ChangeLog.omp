@@ -1,4 +1,9 @@
 2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/runtime-alias-check-1.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/runtime-alias-check-2.c: New test.
+
+2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:

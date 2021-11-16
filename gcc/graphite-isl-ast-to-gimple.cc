@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite.h"
 #include "graphite-oacc.h"
 #include "stdlib.h"
+#include "internal-fn.h"
 
 struct ast_build_info
 {
@@ -1691,6 +1692,128 @@ graphite_oacc_analyze_scop (scop_p scop)
     {
       fprintf (dump_file, "[graphite_oacc_analyze_scop] schedule:\n");
       print_isl_schedule (dump_file, scop->original_schedule);
+    }
+
+  if (flag_graphite_runtime_alias_checks
+      && scop->unhandled_alias_ddrs.length () > 0)
+    {
+      sese_info_p region = scop->scop_info;
+
+      /* Usually there will be a chunking loop with the actual work loop
+	 inside it.  In some corner cases there may only be one loop.  */
+      loop_p top_loop = region->region.entry->dest->loop_father;
+      loop_p active_loop = top_loop->inner ? top_loop->inner : top_loop;
+      tree cond = generate_alias_cond (scop->unhandled_alias_ddrs, active_loop);
+
+      /* Walk back to GOACC_LOOP block.  */
+      basic_block goacc_loop_block = region->region.entry->src;
+
+      /* Find the GOACC_LOOP calls. If there aren't any then this is not an
+	 OpenACC kernels loop and will need different handling.  */
+      gimple_stmt_iterator gsitop = gsi_start_bb (goacc_loop_block);
+      while (!gsi_end_p (gsitop)
+	     && (!is_gimple_call (gsi_stmt (gsitop))
+		 || !gimple_call_internal_p (gsi_stmt (gsitop))
+		 || (gimple_call_internal_fn (gsi_stmt (gsitop))
+		     != IFN_GOACC_LOOP)))
+	gsi_next (&gsitop);
+
+      if (!gsi_end_p (gsitop))
+	{
+	  /* Move the GOACC_LOOP CHUNK and STEP calls to after any hoisted
+	     statements.  There ought not be any problematic dependencies because
+	     the chunk size and step are only computed for very specific purposes.
+	     They may not be at the very top of the block, but they should be
+	     found together (the asserts test this assuption). */
+	  gimple_stmt_iterator gsibottom = gsi_last_bb (goacc_loop_block);
+	  gsi_move_after (&gsitop, &gsibottom);
+	  gimple_stmt_iterator gsiinsert = gsibottom;
+	  gcc_checking_assert (is_gimple_call (gsi_stmt (gsitop))
+			       && gimple_call_internal_p (gsi_stmt (gsitop))
+			       && (gimple_call_internal_fn (gsi_stmt (gsitop))
+				   == IFN_GOACC_LOOP));
+	  gsi_move_after (&gsitop, &gsibottom);
+
+	  /* Insert "noalias_p = COND" before the GOACC_LOOP statements.
+	     Note that these likely depend on some of the hoisted statements.  */
+	  tree cond_val = force_gimple_operand_gsi (&gsiinsert, cond, true, NULL,
+						    true, GSI_NEW_STMT);
+
+	  /* Insert the cond_val into each GOACC_LOOP call in the region.  */
+	  for (int n = -1; n < (int)region->bbs.length (); n++)
+	    {
+	      /* Cover the region plus goacc_loop_block.  */
+	      basic_block bb = n < 0 ? goacc_loop_block : region->bbs[n];
+
+	      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+		   !gsi_end_p (gsi);
+		   gsi_next (&gsi))
+		{
+		  gimple *stmt = gsi_stmt (gsi);
+		  if (!is_gimple_call (stmt)
+		      || !gimple_call_internal_p (stmt))
+		    continue;
+
+		  gcall *goacc_call = as_a <gcall*> (stmt);
+		  if (gimple_call_internal_fn (goacc_call) != IFN_GOACC_LOOP)
+		    continue;
+
+		  enum ifn_goacc_loop_kind code = (enum ifn_goacc_loop_kind)
+		    TREE_INT_CST_LOW (gimple_call_arg (goacc_call, 0));
+		  int argno = 0;
+		  switch (code)
+		    {
+		    case IFN_GOACC_LOOP_CHUNKS:
+		    case IFN_GOACC_LOOP_STEP:
+		      argno = 6;
+		      break;
+
+		    case IFN_GOACC_LOOP_OFFSET:
+		    case IFN_GOACC_LOOP_BOUND:
+		      argno = 7;
+		      break;
+
+		    default:
+		      gcc_unreachable ();
+		    }
+
+		  gimple_call_set_arg (goacc_call, argno, cond_val);
+		  update_stmt (goacc_call);
+
+		  if (dump_enabled_p () && dump_flags & TDF_DETAILS)
+		    dump_printf (MSG_NOTE,
+				 "Runtime alias condition applied to: %G",
+				 stmt);
+		}
+	    }
+	}
+      else
+	{
+	  /* There wasn't any GOACC_LOOP calls where we expected to find them,
+	     therefore this isn't an OpenACC parallel loop.  If it runs
+	     sequentially then there's no need to worry about aliasing, so
+	     nothing much to do here.  */
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "Runtime alias check *not* inserted for"
+			 " bb %d (GOACC_LOOP not found)",
+			 goacc_loop_block->index);
+
+	  /* Unset can_be_parallel, in case something else might use it.  */
+	  for (unsigned int i = 0; i < region->bbs.length (); i++)
+	    if (region->bbs[i]->loop_father)
+	      region->bbs[i]->loop_father->can_be_parallel = 0;
+	}
+
+      /* The loop-nest vec is shared by all DDRs. */
+      DDR_LOOP_NEST (scop->unhandled_alias_ddrs[0]).release ();
+
+      unsigned int i;
+      struct data_dependence_relation *ddr;
+
+      FOR_EACH_VEC_ELT (scop->unhandled_alias_ddrs, i, ddr)
+      	if (ddr)
+      	  free_dependence_relation (ddr);
+      scop->unhandled_alias_ddrs.truncate (0);
     }
 
   /* Analyze dependences in SCoP and mark loops as parallelizable accordingly. */
