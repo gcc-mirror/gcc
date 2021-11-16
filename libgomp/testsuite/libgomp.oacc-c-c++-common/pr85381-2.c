@@ -15,8 +15,8 @@ main (void)
   return 0;
 }
 
-/* Todo: Boths bar.syncs can be removed.
-   Atm we generate this dead code inbetween forked and joining:
+/* All bar.syncs can be removed.
+   Previously, we generated dead code inbetween forked and joining:
 
                      mov.u32 %r28, %ntid.y;
                      mov.u32 %r29, %tid.y;
@@ -31,6 +31,6 @@ main (void)
              @%r33   bra     $L3;
      $L2:
 
-   so the loop is not recognized as empty loop (which we detect by seeing if
+   so the loop was not recognized as empty loop (which we detect by seeing if
    joining immediately follows forked).  */
-/* { dg-final { scan-offload-rtl-dump-times "nvptx_barsync" 2 "mach" } } */
+/* { dg-final { scan-offload-rtl-dump-times "nvptx_barsync" 0 "mach" } } */

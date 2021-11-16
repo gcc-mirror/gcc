@@ -26,18 +26,17 @@ int main()
   /* { dg-missed {'map\(tofrom:b [^)]+\)' not optimized: 'b' is unsuitable for privatization} "" { target *-*-* } .-1 }
      { dg-missed {'map\(force_tofrom:a [^)]+\)' not optimized: 'a' is unsuitable for privatization} "" { target *-*-* } .-2 } */
   {
-    int c = 234; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    int c = 234; /* { dg-message "note: beginning 'Graphite' part in OpenACC 'kernels' region" } */
 
     /*TODO Hopefully, this is the same issue as '../../../gcc/testsuite/c-c++-common/goacc/kernels-decompose-ice-1.c'.  */
     (volatile int *) &c;
 
 #pragma acc loop independent gang /* { dg-line l_loop_i[incr c_loop_i] } */
-    /* { dg-message "note: parallelized loop nest in OpenACC 'kernels' region" "" { target *-*-* } l_loop_i$c_loop_i } */
     /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; ++i)
       b[i] = c;
 
-    a = c; /* { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" } */
+    a = c; /* { dg-message "note: beginning 'Graphite' part in OpenACC 'kernels' region" } */
   }
 
   for (int i = 0; i < N; ++i)

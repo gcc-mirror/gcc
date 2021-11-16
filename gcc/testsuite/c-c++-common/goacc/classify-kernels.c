@@ -2,10 +2,9 @@
    'kernels' (parloops version).  */
 
 /* { dg-additional-options "-O2" }
-   { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
-   { dg-additional-options "-fopt-info-note-optimized-omp" }
+   { dg-additional-options "-fopt-info-optimized-omp" }
+   { dg-additional-options "-fopt-info-note-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
-   { dg-additional-options "-fdump-tree-parloops1-all" }
    { dg-additional-options "-fdump-tree-oaccloops1" } */
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
@@ -19,22 +18,14 @@ extern unsigned int *__restrict c;
 
 void KERNELS ()
 {
-#pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-message "optimized: assigned OpenACC gang loop parallelism" } */
-  for (unsigned int i = 0; i < N; i++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N])
+  for (unsigned int i = 0; i < N; i++)  /* { dg-message "note: forwarded loop nest in OpenACC .kernels. region to .Graphite. for analysis" } */
+    /* { dg-optimized "assigned OpenACC gang vector loop parallelism" "" { target *-*-* } .-1 } */
     c[i] = a[i] + b[i];
 }
 
-/* Check the offloaded function's attributes.
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels, omp target entrypoint\\)\\)" 1 "ompexp" } } */
-
-/* Check that exactly one OpenACC kernels construct is analyzed, and that it
-   can be parallelized.
-   { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops1" } }
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 1 "parloops1" } }
-   { dg-final { scan-tree-dump-not "FAILED:" "parloops1" } } */
-
 /* Check the offloaded function's classification and compute dimensions (will
    always be 1 x 1 x 1 for non-offloading compilation).
-   { dg-final { scan-tree-dump-times "(?n)Function is parallelized OpenACC kernels offload" 1 "oaccloops1" } }
+   { dg-final { scan-tree-dump-times "(?n)Function is parallel_kernels_graphite OpenACC kernels offload" 1 "oaccloops1" } }
    { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccloops1" } }
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc kernels parallelized, oacc function \\(, , \\), oacc kernels, omp target entrypoint\\)\\)" 1 "oaccloops1" } } */
+   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc parallel_kernels_graphite, omp target entrypoint\\)\\)" 1 "oaccloops1" } } */

@@ -11,11 +11,11 @@ main (void)
   {
     #pragma acc loop worker
     for (int i = 0; i < n; i++)
-      ;
+      asm volatile ("");
 
     #pragma acc loop worker
     for (int i = 0; i < n; i++)
-      ;
+      asm volatile ("");
   }
 
   return 0;

@@ -1,7 +1,7 @@
 /* Test the nohost clause for OpenACC routine directive.  Exercising different
    variants for declaring routines.  */
 
-/* { dg-additional-options "-fdump-tree-oaccloops" } */
+/* { dg-additional-options "-fdump-tree-oaccloops3" } */
 
 #pragma acc routine nohost
 int THREE(void)

@@ -2,6 +2,7 @@
 /* See gcc/testsuite/gfortran.dg/goacc/nested-function-1.f90 for the Fortran
    version.  */
 
+/* { dg-excess-errors ".*insufficient partitioning.*" } */
 int main ()
 {
 #define N 100
@@ -35,7 +36,7 @@ int main ()
 #pragma acc loop seq tile(*)
 	for (local_j = 0; local_j < N; ++local_j)
 	  ;
-#pragma acc loop auto independent tile(1)
+#pragma acc loop auto tile(1)
 	for (local_j = 0; local_j < N; ++local_j)
 	  ;
       }

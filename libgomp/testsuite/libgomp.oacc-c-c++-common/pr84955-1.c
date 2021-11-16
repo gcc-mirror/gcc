@@ -28,4 +28,3 @@ f2 (void)
 
   return i + j;
 }
-/* { dg-final { scan-tree-dump-not "if" "cddce2"} } */

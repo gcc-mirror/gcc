@@ -1,6 +1,7 @@
 ! OpenACC 'routine' directives inside a Fortran module.
 
 ! { dg-additional-options "-fopt-info-optimized-omp" }
+! { dg-additional-options "-O0" }
 
 ! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
 ! aspects of that functionality.
@@ -56,7 +57,6 @@ contains
   subroutine g_1 ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" }
     implicit none
     !$acc routine gang
-    ! { dg-bogus "\[Ww\]arning: region is worker partitioned but does not contain worker partitioned code" "TODO default 'gang' 'vector'" { xfail *-*-* } .-3 }
 
     integer :: i
 

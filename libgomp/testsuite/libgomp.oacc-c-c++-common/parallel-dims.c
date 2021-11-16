@@ -3,7 +3,6 @@
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
-/* { dg-additional-options "-O2" } for Graphite/"kernels". */
 
 
 /* See also '../libgomp.oacc-fortran/parallel-dims.f90'.  */
@@ -108,9 +107,8 @@ int main ()
     int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
     gangs_min = workers_min = vectors_min = INT_MAX;
     gangs_max = workers_max = vectors_max = INT_MIN;
-#pragma acc parallel copy (gangs_actual) /* { dg-warning "region contains gang partitioned code but is not gang partitioned" } */ \
-  num_gangs (GANGS) /* { dg-warning "'num_gangs' value must be positive" "" { target c++ } } */
-    /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } .-2 } */
+#pragma acc parallel copy (gangs_actual) num_gangs (GANGS) /* { dg-warning "'num_gangs' value must be positive" "" { target c++ } } */
+    /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } .-1 } */
     {
       /* We're actually executing with num_gangs (1).  */
       gangs_actual = 1;
@@ -138,8 +136,8 @@ int main ()
     int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
     gangs_min = workers_min = vectors_min = INT_MAX;
     gangs_max = workers_max = vectors_max = INT_MIN;
-#pragma acc parallel copy (workers_actual) /* { dg-warning "region contains worker partitioned code but is not worker partitioned" } */ \
-  num_workers (WORKERS) /* { dg-warning "'num_workers' value must be positive" "" { target c++ } } */
+#pragma acc parallel copy (workers_actual) \
+    num_workers (WORKERS) /* { dg-warning "'num_workers' value must be positive" "" { target c++ } } */
     /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } .-2 } */
     {
       /* We're actually executing with num_workers (1).  */
@@ -168,10 +166,10 @@ int main ()
     int gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max;
     gangs_min = workers_min = vectors_min = INT_MAX;
     gangs_max = workers_max = vectors_max = INT_MIN;
-#pragma acc parallel copy (vectors_actual) /* { dg-warning "region contains vector partitioned code but is not vector partitioned" } */ \
-  /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } 164 } */ \
+#pragma acc parallel copy (vectors_actual) \
   vector_length (VECTORS) /* { dg-warning "'vector_length' value must be positive" "" { target c++ } } */
-    /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } .-2 } */
+    /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } .-2 } */
+    /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } .-3 } */
     {
       /* We're actually executing with vector_length (1), just the GCC nvptx
 	 back end enforces vector_length (32).  */
@@ -217,7 +215,6 @@ int main ()
 #pragma acc parallel copy (gangs_actual) /* { dg-warning "region is gang partitioned but does not contain gang partitioned code" } */ \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max) \
   num_gangs (gangs)
-    /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-3 } */
     {
       if (acc_on_device (acc_device_host))
 	{
@@ -577,12 +574,16 @@ int main ()
       asm volatile ("" : : : "memory");
 
 #pragma acc loop reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max)
+/* { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-1 } */
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-2 } */
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-3 } */
+/* { dg-warning "removed gang worker vector partitioning from 'kernels' region" "" { target *-*-* } .-4 } */
       for (int i = 100; i > -100; --i)
-	{
-	  gangs_min = gangs_max = acc_gang ();
-	  workers_min = workers_max = acc_worker ();
-	  vectors_min = vectors_max = acc_vector ();
-	}
+        {
+          gangs_min = gangs_max = acc_gang ();
+          workers_min = workers_max = acc_worker ();
+          vectors_min = vectors_max = acc_vector ();
+        }
     }
     if (gangs_min != 0 || gangs_max != 1 - 1
 	|| workers_min != 0 || workers_max != 1 - 1
@@ -627,6 +628,7 @@ int main ()
     /* { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } .-2 }
        { dg-bogus "warning: region contains worker partitioned code but is not worker partitioned" "TODO 'serial'" { xfail *-*-* } .-3 }
        { dg-bogus "warning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } .-4 } */
+    /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } .-5 } */
     {
       if (acc_on_device (acc_device_nvidia))
 	{
@@ -658,7 +660,7 @@ int main ()
 	__builtin_abort ();
     if (gangs_min != 0 || gangs_max != 1 - 1
 	|| workers_min != 0 || workers_max != 1 - 1
-	|| vectors_min != 0 || vectors_max != vectors_actual - 1)
+	|| vectors_min != 0 || vectors_max >= vectors_actual)
       __builtin_abort ();
   }
 

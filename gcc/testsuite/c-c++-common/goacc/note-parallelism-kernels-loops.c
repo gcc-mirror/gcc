@@ -1,8 +1,9 @@
 /* Test the output of "-fopt-info-optimized-omp" for an OpenACC 'kernels'
    construct containing loops.  */
 
-/* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */
-/* { dg-additional-options "-fopt-info-note-optimized-omp" } */
+/* { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
+   Normally, loop variables would get (implicit) 'private' clauses on the (implicit) 'loop' directives, but given '-fno-openacc-kernels-annotate-loops' they're (implicit) 'copy' -- which we then see get optimized.  */
+/* { dg-additional-options "-fopt-info-optimized-note-omp" } */
 
 //TODO update accordingly
 /* See also "../../gfortran.dg/goacc/note-parallelism.f90".  */
@@ -12,31 +13,31 @@ main ()
 {
   int x, y, z;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     ;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     ;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     for (y = 0; y < 10; y++)
       for (z = 0; z < 10; z++)
 	;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     ;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     for (y = 0; y < 10; y++)
       ;
 
-#pragma acc kernels /* { dg-message "optimized: assigned OpenACC seq loop parallelism" } */
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+#pragma acc kernels
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     for (y = 0; y < 10; y++)
       for (z = 0; z < 10; z++)
 	;

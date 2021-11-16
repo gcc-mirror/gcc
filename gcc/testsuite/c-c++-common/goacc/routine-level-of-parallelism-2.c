@@ -11,8 +11,6 @@
    { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+1 } */
 void g_1 (void)
 {
-  /* { dg-bogus "region is worker partitioned but does not contain worker partitioned code" "" { xfail *-*-* } .-2 } */
-  /* { dg-bogus "region is vector partitioned but does not contain vector partitioned code" "" { xfail *-*-* } .-3 } */
 }
 #pragma acc routine (g_1) gang
 #pragma acc routine (g_1) gang

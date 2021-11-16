@@ -1,4 +1,4 @@
-! { dg-additional-options "--param=openacc-kernels=parloops" } as this is
+! { dg-additional-options "--param openacc-kernels=decompose-parloops" } as this is
 ! specifically testing "parloops" handling.
 ! { dg-additional-options "-O2" }
 ! { dg-additional-options "-fopt-info-optimized-omp" }
@@ -9,8 +9,8 @@ program main
    integer :: a(100,100), b(100,100)
    integer :: i, j, d
 
-   !$acc kernels ! { dg-message "optimized: assigned OpenACC gang loop parallelism" }
-   do i=1,100
+   !$acc kernels
+   do i=1,10 ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }0
      do j=1,100
        a(i,j) = 1
        b(i,j) = 2

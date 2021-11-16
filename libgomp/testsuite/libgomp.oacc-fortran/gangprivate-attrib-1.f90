@@ -2,7 +2,8 @@
 
 ! { dg-do run }
 ! { dg-additional-options "-fdump-tree-oaccdevlow-details -Wopenacc-parallelism" }
-! { dg-final { scan-tree-dump-times "Decl UID \[0-9\]+ has gang partitioning:  integer\\(kind=4\\) w;" 1 "oaccdevlow" } } */
+! { dg-final { scan-tree-dump-times "Decl UID \[0-9\]+ has gang partitioning:  integer\\(kind=4\\) w;" 1 "oaccdevlow1" { target { any-opts "-O[1,2,3,s]"} } } } */
+! { dg-final { scan-tree-dump-times "Decl UID \[0-9\]+ has gang partitioning:  integer\\(kind=4\\) w;" 1 "oaccdevlow3" { target { no-opts "-O[1,2,3,s]"} } } } */
 
 program main
   integer :: w, arr(0:31)

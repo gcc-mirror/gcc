@@ -2,7 +2,7 @@
    construct containing loops.  */
 
 /* { dg-additional-options "-fno-openacc-kernels-annotate-loops" } */
-/* { dg-additional-options "-fopt-info-optimized-omp-note" } */
+/* { dg-additional-options "-fopt-info-optimized-note-omp" } */
 
 //TODO update accordingly
 /* See also "../../gfortran.dg/goacc/note-parallelism.f90".  */
@@ -20,7 +20,7 @@ main ()
 
  /* Strangely indented to keep this similar to other test cases.  */
  {
-  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. region in OpenACC .kernels. construct" } */
+  for (x = 0; x < 10; x++) /* { dg-message "note: beginning .Graphite. part in OpenACC .kernels. region" } */
     ;
 
   for (x = 0; x < 10; x++)

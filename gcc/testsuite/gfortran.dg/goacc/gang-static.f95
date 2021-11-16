@@ -17,7 +17,7 @@ program main
 
   call test (a, b, 0, n)
 
-  !$acc parallel loop gang (static:1) num_gangs (10)
+  !$acc parallel loop gang (static:1) num_gangs (11)
   do i = 1, n
      a(i) = b(i) + 1
   end do
@@ -25,7 +25,7 @@ program main
 
   call test (a, b, 1, n)
 
-  !$acc parallel loop gang (static:2) num_gangs (10)
+  !$acc parallel loop gang (static:2) num_gangs (12)
   do i = 1, n
      a(i) = b(i) + 2
   end do
@@ -33,7 +33,7 @@ program main
 
   call test (a, b, 2, n)
 
-  !$acc parallel loop gang (static:5) num_gangs (10)
+  !$acc parallel loop gang (static:5) num_gangs (13)
   do i = 1, n
      a(i) = b(i) + 5
   end do
@@ -41,7 +41,7 @@ program main
 
   call test (a, b, 5, n)
 
-  !$acc parallel loop gang (static:20) num_gangs (10)
+  !$acc parallel loop gang (static:20) num_gangs (14)
   do i = 1, n
      a(i) = b(i) + 20
   end do
@@ -73,10 +73,8 @@ subroutine test (a, b, sarg, n)
   end do
 end subroutine test
 
-! { dg-final { scan-tree-dump-times "gang\\(static:\\\*\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "gang\\(static:1\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "gang\\(static:2\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "gang\\(static:5\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(static:20\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(num: 5 static:\\\*\\)" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "gang\\(num: 30 static:20\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:20\\)" 2 "omplower" } }
+! { dg-final { scan-tree-dump-times "gang\\(static:\\\*\\)" 2 "omplower" } }

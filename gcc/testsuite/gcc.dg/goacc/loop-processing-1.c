@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O2 -fdump-tree-oaccdevlow*" } */
+/* { dg-additional-options "-O2 -fdump-tree-oaccdevlow1" } */
 
 extern int place ();
 

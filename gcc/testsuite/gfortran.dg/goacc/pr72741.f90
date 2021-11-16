@@ -6,8 +6,8 @@ SUBROUTINE sub_1
   IMPLICIT NONE
   EXTERNAL :: g_1
   !$ACC ROUTINE (g_1) GANG WORKER ! { dg-error "Multiple loop axes" }
-  !$ACC ROUTINE (ABORT) SEQ VECTOR ! { dg-error "Multiple loop axes" "" { xfail *-*-* } }
-! { dg-bogus "invalid function name abort" "" { xfail *-*-* } .-1 }
+  !$ACC ROUTINE (ABORT) SEQ VECTOR ! { dg-error "Multiple loop axes" "" }
+! { dg-bogus "invalid function name abort" }
 
   CALL v_1
   CALL g_1
@@ -18,8 +18,8 @@ MODULE m_w_1
   IMPLICIT NONE
   EXTERNAL :: w_1
   !$ACC ROUTINE (w_1) WORKER SEQ ! { dg-error "Multiple loop axes" }
-  !$ACC ROUTINE (ABORT) VECTOR GANG ! { dg-error "Multiple loop axes" "" { xfail *-*-* } }
-! { dg-bogus "invalid function name abort" "" { xfail *-*-* } .-1 }
+  !$ACC ROUTINE (ABORT) VECTOR GANG ! { dg-error "Multiple loop axes" }
+! { dg-bogus "invalid function name abort" "" { target *-*-* } .-1 }
 
 CONTAINS
   SUBROUTINE sub_2
