@@ -25,6 +25,8 @@
 
 #include <acc_prof.h>
 
+/* { dg-skip-if "'kernels' not analyzed by Graphite at -O0" { *-*-* } { "-O0" } { "" } } */
+/* { dg-additional-options "-Wopenacc-parallelism" } */
 
 /* Use explicit 'copyin' clauses, to work around "'firstprivate'
    optimizations", which will cause the value at the point of call to be used
@@ -59,6 +61,7 @@ static int state = -1;
 static acc_device_t acc_device_type;
 static int acc_device_num;
 static int num_gangs, num_workers, vector_length;
+static int real_num_workers;
 static int async;
 
 
@@ -114,12 +117,8 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
     assert (event_info->launch_event.num_workers >= 1);
   else
     {
-#ifdef __OPTIMIZE__
-      assert (event_info->launch_event.num_workers == num_workers);
-#else
-      /* See 'num_gangs' above.  */
-      assert (event_info->launch_event.num_workers == 1);
-#endif
+      /* Unused partitioning levels get removed from "kernels" region. */
+      assert (event_info->launch_event.num_workers == real_num_workers);
     }
   if (vector_length < 1)
     assert (event_info->launch_event.vector_length >= 1);
@@ -210,6 +209,7 @@ int main()
   /* Parallelism dimensions: literal.  */
   num_gangs = 30;
   num_workers = 3;
+  real_num_workers = 1;
   vector_length = 5;
   {
 #define N 100
@@ -226,6 +226,8 @@ int main()
     {
       /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
       for (int i = 0; i < N; ++i)
+      /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+      /* { dg-warning "removed worker partitioning from 'kernels' region" "" { target *-*-* } .-2 } */
 	x[i] = i * i;
     }
     if (acc_device_type == acc_device_host)
@@ -244,6 +246,9 @@ int main()
   /* Parallelism dimensions: variable.  */
   num_gangs = 22;
   num_workers = 5;
+  /* No worker loop and hence, in a kernels region, worker partitioning
+     should be removed. */
+  real_num_workers = 1;
   vector_length = 7;
   {
 #define N 100
@@ -260,6 +265,8 @@ int main()
     {
       /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
       for (int i = 0; i < N; ++i)
+      /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+      /* { dg-warning "removed worker partitioning from 'kernels' region" "" { target *-*-* } .-2 } */
 	x[i] = i * i;
     }
     if (acc_device_type == acc_device_host)
