@@ -1880,7 +1880,8 @@ named @file{dir/bar.*}, combining the given @var{dumppfx} with the
 default @var{dumpbase} derived from the primary output name.  Dump
 outputs also take the input name suffix: @file{dir/bar.c.*}.
 
-It defaults to the location of the output file; options
+It defaults to the location of the output file, unless the output
+file is a special file like @code{/dev/null}. Options
 @option{-save-temps=cwd} and @option{-save-temps=obj} override this
 default, just like an explicit @option{-dumpdir} option.  In case
 multiple such options are given, the last one prevails:
