@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "gimplify-me.h"
 #include "tree-cfg.h"
+#include "graphite-oacc.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
@@ -46,6 +47,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "domwalk.h"
 #include "tree-ssa-propagate.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
+#include "internal-fn.h"
 #include "graphite.h"
 
 /* Return an isl identifier for the polyhedral basic block PBB.  */
@@ -200,6 +204,8 @@ parameter_index_in_region (tree name, sese_info_p region)
       return i;
   return -1;
 }
+
+tree oacc_ifn_call_extract (gimple*);
 
 /* Extract an affine expression from the tree E in the scop S.  */
 
@@ -604,6 +610,21 @@ pdr_add_data_dimensions (isl_set *subscript_sizes, scop_p scop,
   return isl_set_coalesce (subscript_sizes);
 }
 
+static inline bool
+oacc_internal_call_p (gimple *stmt)
+{
+  if (!stmt || !is_gimple_call (stmt))
+    return false;
+
+  /* graphite-scop-detection.c should filter out those calls. */
+  gcc_assert (!gimple_call_internal_p (stmt, IFN_UNIQUE));
+
+  /* Should be handled by scalar evolution analysis. */
+  gcc_assert (!gimple_call_internal_p (stmt, IFN_GOACC_LOOP));
+
+  return false;
+}
+
 /* Build data accesses for DRI.  */
 
 static void
@@ -640,13 +661,18 @@ build_poly_dr (dr_info &dri)
     subscript_sizes = pdr_add_data_dimensions (subscript_sizes, scop, dr);
   }
 
-  new_poly_dr (pbb, DR_STMT (dr), DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
-	       acc, subscript_sizes);
+  if (oacc_internal_call_p (DR_STMT (dr)))
+    return;
+
+  bool is_reduction = scop->reduction_vars->contains (DR_BASE_ADDRESS (dr));
+  enum poly_dr_type dr_type = DR_IS_READ (dr) ? PDR_READ : PDR_WRITE;
+
+  new_poly_dr (pbb, DR_STMT (dr), dr_type, acc, subscript_sizes, is_reduction);
 }
 
 static void
 build_poly_sr_1 (poly_bb_p pbb, gimple *stmt, tree var, enum poly_dr_type kind,
-		 isl_map *acc, isl_set *subscript_sizes)
+		 isl_map *acc, isl_set *subscript_sizes, bool is_reduction)
 {
   scop_p scop = PBB_SCOP (pbb);
   /* Each scalar variable has a unique alias set number starting from
@@ -663,7 +689,7 @@ build_poly_sr_1 (poly_bb_p pbb, gimple *stmt, tree var, enum poly_dr_type kind,
   c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
 
   new_poly_dr (pbb, stmt, kind, isl_map_add_constraint (acc, c),
-	       subscript_sizes);
+	       subscript_sizes, is_reduction);
 }
 
 /* Record all cross basic block scalar variables in PBB.  */
@@ -675,6 +701,7 @@ build_poly_sr (poly_bb_p pbb)
   gimple_poly_bb_p gbb = PBB_BLACK_BOX (pbb);
   vec<scalar_use> &reads = gbb->read_scalar_refs;
   vec<tree> &writes = gbb->write_scalar_refs;
+  vec<tree> &kills = gbb->kill_scalar_refs;
 
   isl_space *dc = isl_set_get_space (pbb->domain);
   int nb_out = 1;
@@ -689,13 +716,39 @@ build_poly_sr (poly_bb_p pbb)
   int i;
   tree var;
   FOR_EACH_VEC_ELT (writes, i, var)
+  {
+    if (oacc_internal_call_p (SSA_NAME_DEF_STMT (var)))
+      continue;
+
+    bool is_reduction = scop->reduction_vars->contains (var);
+
     build_poly_sr_1 (pbb, SSA_NAME_DEF_STMT (var), var, PDR_WRITE,
-		     isl_map_copy (acc), isl_set_copy (subscript_sizes));
+		     isl_map_copy (acc), isl_set_copy (subscript_sizes),
+		     is_reduction);
+  }
+
+  FOR_EACH_VEC_ELT (kills, i, var)
+  {
+    build_poly_sr_1 (pbb, NULL, var, PDR_KILL,
+		     isl_map_copy (acc), isl_set_copy (subscript_sizes),
+		     false);
+  }
 
   scalar_use *use;
   FOR_EACH_VEC_ELT (reads, i, use)
+  {
+    tree use_var = use->second;
+    gcc_checking_assert (TREE_CODE (use_var) == SSA_NAME);
+
+    if (oacc_internal_call_p (use->first)
+	|| oacc_internal_call_p (SSA_NAME_DEF_STMT (use->second)))
+      continue;
+
+    bool is_reduction = scop->reduction_vars->contains (use->second);
+
     build_poly_sr_1 (pbb, use->first, use->second, PDR_READ, isl_map_copy (acc),
-		     isl_set_copy (subscript_sizes));
+		     isl_set_copy (subscript_sizes), is_reduction);
+  }
 
   isl_map_free (acc);
   isl_set_free (subscript_sizes);

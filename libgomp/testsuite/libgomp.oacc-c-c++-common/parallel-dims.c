@@ -23,6 +23,8 @@
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
+/* { dg-additional-options "-O2" } for Graphite/"kernels". */
+
 
 /* See also '../libgomp.oacc-fortran/parallel-dims.f90'.  */
 

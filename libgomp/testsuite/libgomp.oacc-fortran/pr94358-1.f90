@@ -4,6 +4,7 @@
 ! { dg-additional-options "-foffload=-fopt-info-all-omp" }
 
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
+! { dg-additional-options "-O2" } for Graphite
 
 ! { dg-additional-options "--param=openacc-privatization=noisy" }
 ! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }

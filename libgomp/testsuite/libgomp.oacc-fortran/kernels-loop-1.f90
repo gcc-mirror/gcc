@@ -1,6 +1,7 @@
 ! Exercise the auto, independent, seq and tile loop clauses inside
 ! kernels regions. 
 
+! { dg-additional-options "-O2" } for Graphite
 ! { dg-do run }
 
 program loops

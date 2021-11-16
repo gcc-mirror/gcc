@@ -38,6 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-data-ref.h"
 #include "graphite.h"
+#include "graphite-oacc.h"
+#include "gimple-pretty-print.h"
+
 
 /* Add the constraints from the set S to the domain of MAP.  */
 
@@ -63,71 +66,106 @@ add_pdr_constraints (poly_dr_p pdr, poly_bb_p pbb)
   return constrain_domain (x, isl_set_copy (pbb->domain));
 }
 
-/* Returns an isl description of all memory operations in SCOP.  The memory
-   reads are returned in READS and writes in MUST_WRITES and MAY_WRITES.  */
+/* Returns an isl description of all memory operations in SCOP.  The
+   memory reads are returned in READS and writes in MUST_WRITES and
+   MAY_WRITES, kills go to KILLS. */
 
 static void
 scop_get_reads_and_writes (scop_p scop, isl_union_map *&reads,
 			   isl_union_map *&must_writes,
-			   isl_union_map *&may_writes)
+			   isl_union_map *&may_writes,
+			   isl_union_map *&kills)
 {
   int i, j;
   poly_bb_p pbb;
   poly_dr_p pdr;
 
   FOR_EACH_VEC_ELT (scop->pbbs, i, pbb)
+  {
+    FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr)
     {
-      FOR_EACH_VEC_ELT (PBB_DRS (pbb), j, pdr) {
-	if (pdr_read_p (pdr))
-	  {
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "Adding read to depedence graph: ");
-		print_pdr (dump_file, pdr);
-	      }
-	    isl_union_map *um
-	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
-	    reads = isl_union_map_union (reads, um);
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "Reads depedence graph: ");
-		print_isl_union_map (dump_file, reads);
-	      }
-	  }
-	else if (pdr_write_p (pdr))
-	  {
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "Adding must write to depedence graph: ");
-		print_pdr (dump_file, pdr);
-	      }
-	    isl_union_map *um
-	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
-	    must_writes = isl_union_map_union (must_writes, um);
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "Must writes depedence graph: ");
-		print_isl_union_map (dump_file, must_writes);
-	      }
-	  }
-	else if (pdr_may_write_p (pdr))
-	  {
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "Adding may write to depedence graph: ");
-		print_pdr (dump_file, pdr);
-	      }
-	    isl_union_map *um
-	      = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
-	    may_writes = isl_union_map_union (may_writes, um);
-	    if (dump_file)
-	      {
-		fprintf (dump_file, "May writes depedence graph: ");
-		print_isl_union_map (dump_file, may_writes);
-	      }
-	  }
-      }
+      isl_union_map *um = NULL;
+
+      if (pdr->is_reduction)
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file,
+		       "Skipped reduction variable %s in statement .\n",
+		       pdr_write_p (pdr) ? "read" : "write");
+	      print_gimple_stmt (dump_file, pdr->stmt, 0, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+	  continue;
+	}
+
+      if (pdr_read_p (pdr))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Adding %sread to dependence graph: ",
+		       pdr->is_reduction ? "reduction " : "");
+	      print_pdr (dump_file, pdr);
+	      isl_map* tmp = add_pdr_constraints (pdr, pbb);
+	      print_isl_map (dump_file, tmp);
+	      isl_map_free (tmp);
+	    }
+	  um = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+
+	  reads = isl_union_map_union (reads, um);
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Reads dependence graph: ");
+	      print_isl_union_map (dump_file, reads);
+	    }
+	}
+      else if (pdr_write_p (pdr))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Adding %smust write to dependence graph: ",
+		       pdr->is_reduction ? "reduction " : "");
+	      print_pdr (dump_file, pdr);
+	    }
+	  um = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+
+	  must_writes = isl_union_map_union (must_writes, um);
+	}
+      else if (pdr_may_write_p (pdr))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Adding %smay write to dependence graph: ",
+		       pdr->is_reduction ? "reduction " : "");
+	      print_pdr (dump_file, pdr);
+	    }
+	  um = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+
+	  may_writes = isl_union_map_union (may_writes, um);
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "May writes dependence graph: ");
+	      print_isl_union_map (dump_file, may_writes);
+	    }
+	}
+      else if (pdr_kill_p (pdr))
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Adding kill to dependence graph: ");
+	      print_pdr (dump_file, pdr);
+	    }
+	  um = isl_union_map_from_map (add_pdr_constraints (pdr, pbb));
+
+	  kills = isl_union_map_union (kills, um);
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Kills: ");
+	      print_isl_union_map (dump_file, kills);
+	    }
+	}
     }
+  }
 }
 
 /* Helper function used on each MAP of a isl_union_map.  Computes the
@@ -203,7 +241,19 @@ apply_schedule_on_deps (__isl_keep isl_union_map *schedule,
   isl_union_map *trans = extend_schedule (isl_union_map_copy (schedule));
   isl_union_map *ux = isl_union_map_copy (deps);
   ux = isl_union_map_apply_domain (ux, isl_union_map_copy (trans));
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "Applied domain map to dependences:\n");
+      print_isl_union_map (dump_file, ux);
+    }
   ux = isl_union_map_apply_range (ux, trans);
+
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "Applied range map:\n");
+      print_isl_union_map (dump_file, ux);
+    }
+
   ux = isl_union_map_coalesce (ux);
 
   if (!isl_union_map_is_empty (ux))
@@ -230,6 +280,12 @@ carries_deps (__isl_keep isl_union_map *schedule,
   if (x == NULL)
     return false;
 
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "Applied schedule on dependences:\n");
+      print_isl_map (dump_file, x);
+    }
+
   isl_space *space = isl_map_get_space (x);
   isl_map *lex = isl_map_lex_le (isl_space_range (space));
   isl_constraint *ineq = isl_inequality_alloc
@@ -244,7 +300,22 @@ carries_deps (__isl_keep isl_union_map *schedule,
   ineq = isl_constraint_set_constant_si (ineq, -1);
   lex = isl_map_add_constraint (lex, ineq);
   lex = isl_map_coalesce (lex);
+
+
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "Lex: \n");
+      print_isl_map (dump_file, lex);
+    }
+
   x = isl_map_intersect (x, lex);
+
+  if (dump_file && dump_flags & TDF_DETAILS)
+    {
+      fprintf (dump_file, "Intersect: \n");
+      print_isl_map (dump_file, x);
+    }
+
   bool res = !isl_map_is_empty (x);
 
   isl_map_free (x);
@@ -265,8 +336,9 @@ scop_get_dependences (scop_p scop)
   isl_space *space = isl_set_get_space (scop->param_context);
   isl_union_map *reads = isl_union_map_empty (isl_space_copy (space));
   isl_union_map *must_writes = isl_union_map_empty (isl_space_copy (space));
-  isl_union_map *may_writes = isl_union_map_empty (space);
-  scop_get_reads_and_writes (scop, reads, must_writes, may_writes);
+  isl_union_map *may_writes = isl_union_map_empty (isl_space_copy (space));
+  isl_union_map *kills = isl_union_map_empty (space);
+  scop_get_reads_and_writes (scop, reads, must_writes, may_writes, kills);
 
   if (dump_file)
     {
@@ -282,10 +354,11 @@ scop_get_dependences (scop_p scop)
       fprintf (dump_file, "  [1, i0] is a 'memref' with alias set 1"
 	       " and first subscript access i0.\n");
       fprintf (dump_file, "  [106] is a 'scalar reference' which is the sum of"
-	       " SSA_NAME_VERSION 6"
-	       " and --param graphite-max-arrays-per-scop=100\n");
+	       " SSA_NAME_VERSION 6 and scop->max_alias_set whose value\n is 100"
+	       " in this example.\n");
       fprintf (dump_file, "-----------------------\n\n");
 
+      fprintf (dump_file, "max_alias_set: %d\n", scop->max_alias_set);
       fprintf (dump_file, "data references (\n");
       fprintf (dump_file, "  reads: ");
       print_isl_union_map (dump_file, reads);
@@ -293,31 +366,59 @@ scop_get_dependences (scop_p scop)
       print_isl_union_map (dump_file, must_writes);
       fprintf (dump_file, "  may_writes: ");
       print_isl_union_map (dump_file, may_writes);
+      fprintf (dump_file, "  kills: ");
+      print_isl_union_map (dump_file, kills);
       fprintf (dump_file, ")\n");
     }
 
   gcc_assert (scop->original_schedule);
 
+
   isl_union_access_info *ai;
   ai = isl_union_access_info_from_sink (isl_union_map_copy (reads));
   ai = isl_union_access_info_set_must_source (ai, isl_union_map_copy (must_writes));
   ai = isl_union_access_info_set_may_source (ai, may_writes);
+  ai = isl_union_access_info_set_kill (ai, isl_union_map_copy (kills));
   ai = isl_union_access_info_set_schedule
     (ai, isl_schedule_copy (scop->original_schedule));
   isl_union_flow *flow = isl_union_access_info_compute_flow (ai);
   isl_union_map *raw = isl_union_flow_get_must_dependence (flow);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "raw dependences (\n");
+      print_isl_union_map (dump_file, raw);
+      fprintf (dump_file, ")\n");
+    }
+
   isl_union_flow_free (flow);
 
   ai = isl_union_access_info_from_sink (isl_union_map_copy (must_writes));
   ai = isl_union_access_info_set_must_source (ai, must_writes);
   ai = isl_union_access_info_set_may_source (ai, reads);
+  ai = isl_union_access_info_set_kill (ai, kills);
   ai = isl_union_access_info_set_schedule
     (ai, isl_schedule_copy (scop->original_schedule));
   flow = isl_union_access_info_compute_flow (ai);
 
   isl_union_map *waw = isl_union_flow_get_must_dependence (flow);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "waw dependences (\n");
+      print_isl_union_map (dump_file, waw);
+      fprintf (dump_file, ")\n");
+    }
   isl_union_map *war = isl_union_flow_get_may_dependence (flow);
   war = isl_union_map_subtract (war, isl_union_map_copy (waw));
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "war dependences (\n");
+      print_isl_union_map (dump_file, war);
+      fprintf (dump_file, ")\n");
+    }
+
   isl_union_flow_free (flow);
 
   raw = isl_union_map_coalesce (raw);
@@ -331,6 +432,9 @@ scop_get_dependences (scop_p scop)
 
   if (dump_file)
     {
+      fprintf (dump_file, "(space: " );
+      print_isl_space (dump_file, space);
+      fprintf (dump_file, ")\n");
       fprintf (dump_file, "data dependences (\n");
       print_isl_union_map (dump_file, dependences);
       fprintf (dump_file, ")\n");

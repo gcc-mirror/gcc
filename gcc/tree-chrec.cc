@@ -249,6 +249,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	  return chrec_fold_plus_poly_poly (code, type, op0, op1);
 
 	CASE_CONVERT:
+	case VIEW_CONVERT_EXPR:
 	  {
 	    /* We can strip sign-conversions to signed by performing the
 	       operation in unsigned.  */
@@ -282,6 +283,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 	}
 
     CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
       {
 	/* We can strip sign-conversions to signed by performing the
 	   operation in unsigned.  */
@@ -323,6 +325,7 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 				    : build_int_cst_type (type, -1)));
 
 	CASE_CONVERT:
+	case VIEW_CONVERT_EXPR:
 	  if (tree_contains_chrecs (op1, NULL))
 	    return chrec_dont_know;
 	  /* FALLTHRU */

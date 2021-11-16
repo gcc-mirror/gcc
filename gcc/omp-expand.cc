@@ -109,7 +109,8 @@ struct omp_region
      a depend clause.  */
   gomp_ordered *ord_stmt;
 
-  /* True if this is nested inside an OpenACC kernels construct.  */
+  /* True if this is nested inside an OpenACC kernels construct that
+     will be handled by the "parloops" pass.  */
   bool inside_kernels_p;
 };
 
@@ -8135,13 +8136,35 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
     loops_state_set (LOOPS_NEED_FIXUP);
 
   if (region->inside_kernels_p)
-    expand_omp_for_generic (region, &fd, BUILT_IN_NONE, BUILT_IN_NONE,
-			    NULL_TREE, inner_stmt);
+    {
+      gcc_checking_assert (param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+			   || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
+      expand_omp_for_generic (region, &fd, BUILT_IN_NONE, BUILT_IN_NONE,
+			      NULL_TREE, inner_stmt);
+    }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
     expand_omp_simd (region, &fd);
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
-      gcc_assert (!inner_stmt && !fd.non_rect);
+      struct omp_region *target_region;
+      for (target_region = region->outer; target_region;
+	   target_region = target_region->outer)
+	{
+	  if (region->type == GIMPLE_OMP_TARGET)
+	    {
+	      gomp_target *entry_stmt
+		  = as_a<gomp_target *> (last_stmt (target_region->entry));
+
+	      if (gimple_omp_target_kind (entry_stmt)
+		  == GF_OMP_TARGET_KIND_OACC_KERNELS)
+		gcc_checking_assert (
+		    param_openacc_kernels != OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+		    && param_openacc_kernels != OPENACC_KERNELS_PARLOOPS);
+	    }
+	}
+
+      gcc_assert (!inner_stmt);
       expand_oacc_for (region, &fd);
     }
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_TASKLOOP)
@@ -9546,6 +9569,10 @@ static void
 mark_loops_in_oacc_kernels_region (basic_block region_entry,
 				   basic_block region_exit)
 {
+  gcc_checking_assert (param_openacc_kernels
+			   == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+		       || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
   class loop *outer = region_entry->loop_father;
   gcc_assert (region_exit == NULL || outer == region_exit->loop_father);
 
@@ -9710,24 +9737,29 @@ expand_omp_target (struct omp_region *region)
 
   entry_stmt = as_a <gomp_target *> (last_stmt (region->entry));
   target_kind = gimple_omp_target_kind (entry_stmt);
+  if (!(param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+	|| param_openacc_kernels == OPENACC_KERNELS_PARLOOPS))
+    gcc_checking_assert (target_kind != GF_OMP_TARGET_KIND_OACC_KERNELS);
+
   new_bb = region->entry;
 
   offloaded = is_gimple_omp_offloaded (entry_stmt);
   switch (target_kind)
     {
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
+    case GF_OMP_TARGET_KIND_OACC_SERIAL:
     case GF_OMP_TARGET_KIND_REGION:
     case GF_OMP_TARGET_KIND_UPDATE:
     case GF_OMP_TARGET_KIND_ENTER_DATA:
     case GF_OMP_TARGET_KIND_EXIT_DATA:
-    case GF_OMP_TARGET_KIND_OACC_PARALLEL:
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
-    case GF_OMP_TARGET_KIND_OACC_SERIAL:
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
     case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
     case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
-    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
-    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
     case GF_OMP_TARGET_KIND_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
@@ -9767,6 +9799,12 @@ expand_omp_target (struct omp_region *region)
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
       break;
     case GF_OMP_TARGET_KIND_OACC_KERNELS:
+      gcc_checking_assert (
+	  param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+	  || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
+
+      mark_loops_in_oacc_kernels_region (region->entry, region->exit);
+
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc kernels"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
@@ -9785,6 +9823,11 @@ expand_omp_target (struct omp_region *region)
       DECL_ATTRIBUTES (child_fn)
 	= tree_cons (get_identifier ("oacc parallel_kernels_gang_single"),
 		     NULL_TREE, DECL_ATTRIBUTES (child_fn));
+      break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
+      DECL_ATTRIBUTES (child_fn)
+	  = tree_cons (get_identifier ("oacc parallel_kernels_graphite"),
+		       NULL_TREE, DECL_ATTRIBUTES (child_fn));
       break;
     default:
       /* Make sure we don't miss any.  */
@@ -9998,6 +10041,7 @@ expand_omp_target (struct omp_region *region)
     case GF_OMP_TARGET_KIND_OACC_SERIAL:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
       start_ix = BUILT_IN_GOACC_PARALLEL;
       break;
     case GF_OMP_TARGET_KIND_OACC_DATA:
@@ -10504,6 +10548,8 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_OACC_SERIAL:
 		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
+		case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 		  break;
 		case GF_OMP_TARGET_KIND_UPDATE:
 		case GF_OMP_TARGET_KIND_ENTER_DATA:
@@ -10511,7 +10557,6 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_DATA:
 		case GF_OMP_TARGET_KIND_OACC_DATA:
 		case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
-		case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 		case GF_OMP_TARGET_KIND_OACC_UPDATE:
 		case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
 		case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
@@ -10694,7 +10739,10 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *fun)
     {
-      return !(fun->curr_properties & PROP_gimple_eomp);
+      return !(fun->curr_properties & PROP_gimple_eomp)
+	     && (!oacc_get_kernels_attrib (cfun->decl)
+		 || param_openacc_kernels == OPENACC_KERNELS_DECOMPOSE_PARLOOPS
+		 || param_openacc_kernels == OPENACC_KERNELS_PARLOOPS);
     }
   virtual unsigned int execute (function *) { return execute_expand_omp (); }
   opt_pass * clone () { return new pass_expand_omp_ssa (m_ctxt); }
@@ -10764,6 +10812,8 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 	case GF_OMP_TARGET_KIND_OACC_SERIAL:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
+	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GRAPHITE:
+	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	  break;
 	case GF_OMP_TARGET_KIND_UPDATE:
 	case GF_OMP_TARGET_KIND_ENTER_DATA:
@@ -10771,7 +10821,6 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 	case GF_OMP_TARGET_KIND_DATA:
 	case GF_OMP_TARGET_KIND_OACC_DATA:
 	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
-	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	case GF_OMP_TARGET_KIND_OACC_UPDATE:
 	case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
 	case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
