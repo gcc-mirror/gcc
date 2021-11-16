@@ -1198,6 +1198,39 @@ oacc_parse_default_dims (const char *dims)
   targetm.goacc.validate_dims (NULL_TREE, oacc_min_dims, -2, 0);
 }
 
+/* Remove parallelism dimensions below LEVEL which are not set in USED
+   from DIMS and emit a warning pointing to the location of FN. */
+
+static void
+oacc_remove_unused_partitioning (tree fn, int *dims, int level, unsigned used)
+{
+
+  bool host_compiler = true;
+#ifdef ACCEL_COMPILER
+  host_compiler = false;
+#endif
+
+  static char const *const axes[] =
+      /* Must be kept in sync with GOMP_DIM enumeration.  */
+      { "gang", "worker", "vector" };
+
+  char removed_partitions[20] = "\0";
+  for (int ix = level >= 0 ? level : 0; ix != GOMP_DIM_MAX; ix++)
+    if (!(used & GOMP_DIM_MASK (ix)) && dims[ix] >= 0)
+      {
+        if (host_compiler)
+          {
+            strcat (removed_partitions, axes[ix]);
+            strcat (removed_partitions, " ");
+          }
+        dims[ix] = -1;
+      }
+  if (removed_partitions[0] != '\0')
+    warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wopenacc_parallelism,
+                "removed %spartitioning from %<kernels%> region",
+                removed_partitions);
+}
+
 /* Validate and update the dimensions for offloaded FN.  ATTRS is the
    raw attribute.  DIMS is an array of dimensions, which is filled in.
    LEVEL is the partitioning level of a routine, or -1 for an offload
@@ -1218,6 +1251,7 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
   for (ix = 0; ix != GOMP_DIM_MAX; ix++)
     {
       purpose[ix] = TREE_PURPOSE (pos);
+
       tree val = TREE_VALUE (pos);
       dims[ix] = val ? TREE_INT_CST_LOW (val) : -1;
       pos = TREE_CHAIN (pos);
@@ -1227,14 +1261,15 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
 #ifdef ACCEL_COMPILER
   check = false;
 #endif
+
+  static char const *const axes[] =
+      /* Must be kept in sync with GOMP_DIM enumeration.  */
+      { "gang", "worker", "vector" };
+
   if (check
       && warn_openacc_parallelism
-      && !lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn))
-      && !lookup_attribute ("oacc parallel_kernels_graphite", DECL_ATTRIBUTES (fn)))
+      && !lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn)))
     {
-      static char const *const axes[] =
-      /* Must be kept in sync with GOMP_DIM enumeration.  */
-	{ "gang", "worker", "vector" };
       for (ix = level >= 0 ? level : 0; ix != GOMP_DIM_MAX; ix++)
 	if (dims[ix] < 0)
 	  ; /* Defaulting axis.  */
@@ -1245,13 +1280,19 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
 		      "region contains %s partitioned code but"
 		      " is not %s partitioned", axes[ix], axes[ix]);
 	else if (!(used & GOMP_DIM_MASK (ix)) && dims[ix] != 1)
+	  {
 	  /* The dimension is explicitly partitioned to non-unity, but
 	     no use is made within the region.  */
 	  warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wopenacc_parallelism,
 		      "region is %s partitioned but"
 		      " does not contain %s partitioned code",
 		      axes[ix], axes[ix]);
+          }
     }
+
+  if (lookup_attribute ("oacc parallel_kernels_graphite",
+                         DECL_ATTRIBUTES (fn)))
+    oacc_remove_unused_partitioning  (fn, dims, level, used);
 
   bool changed = targetm.goacc.validate_dims (fn, dims, level, used);
 

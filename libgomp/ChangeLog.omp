@@ -1,5 +1,10 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Adjust
+	expectations.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+
 	* testsuite/libgomp.oacc-fortran/parallel-loop-auto-reduction-2.f90:
 	New test.
 
