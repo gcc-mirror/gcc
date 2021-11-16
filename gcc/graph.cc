@@ -192,6 +192,10 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
     }
 }
 
+
+extern tree oacc_get_fn_attrib (tree);
+extern dump_user_location_t find_loop_location (class loop *);
+
 /* Draw all the basic blocks in LOOP.  Print the blocks in breath-first
    order to get a good ranking of the nodes.  This function is recursive:
    It first prints inner loops, then the body of LOOP itself.  */
@@ -206,17 +210,26 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 
   if (loop->header != NULL
       && loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    pp_printf (pp,
-	       "\tsubgraph cluster_%d_%d {\n"
-	       "\tstyle=\"filled\";\n"
-	       "\tcolor=\"darkgreen\";\n"
-	       "\tfillcolor=\"%s\";\n"
-	       "\tlabel=\"loop %d\";\n"
-	       "\tlabeljust=l;\n"
-	       "\tpenwidth=2;\n",
-	       funcdef_no, loop->num,
-	       fillcolors[(loop_depth (loop) - 1) % 3],
-	       loop->num);
+    {
+      pp_printf (pp,
+                 "\tsubgraph cluster_%d_%d {\n"
+                 "\tstyle=\"filled\";\n"
+                 "\tcolor=\"darkgreen\";\n"
+                 "\tfillcolor=\"%s\";\n"
+                 "\tlabel=\"loop %d %s\";\n"
+                 "\tlabeljust=l;\n"
+                 "\tpenwidth=2;\n",
+                 funcdef_no, loop->num,
+                 fillcolors[(loop_depth (loop) - 1) % 3], loop->num,
+                 /* This is only meaningful for loops that have been processed
+                    by Graphite.
+
+                    TODO Use can_be_parallel_valid_p? */
+                 !oacc_get_fn_attrib (cfun->decl)
+                     ? ""
+                     : loop->can_be_parallel ? "(can_be_parallel = true)"
+                                             : "(can_be_parallel = false)");
+    }
 
   for (class loop *inner = loop->inner; inner; inner = inner->next)
     draw_cfg_nodes_for_loop (pp, funcdef_no, inner);
