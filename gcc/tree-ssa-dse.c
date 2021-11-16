@@ -209,6 +209,26 @@ normalize_ref (ao_ref *copy, ao_ref *ref)
   return true;
 }
 
+/* Update LIVE_BYTES tracking REF for write to WRITE:
+   Verify we have the same base memory address, the write
+   has a known size and overlaps with REF.  */
+static void
+clear_live_bytes_for_ref (sbitmap live_bytes, ao_ref *ref, ao_ref write)
+{
+  HOST_WIDE_INT start, size;
+
+  if (valid_ao_ref_for_dse (&write)
+      && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
+      && known_eq (write.size, write.max_size)
+      /* normalize_ref modifies write and for that reason write is not
+	 passed by reference.  */
+      && normalize_ref (&write, ref)
+      && (write.offset - ref->offset).is_constant (&start)
+      && write.size.is_constant (&size))
+    bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
+			size / BITS_PER_UNIT);
+}
+
 /* Clear any bytes written by STMT from the bitmap LIVE_BYTES.  The base
    address written by STMT must match the one found in REF, which must
    have its base address previously initialized.
@@ -220,20 +240,21 @@ static void
 clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
 {
   ao_ref write;
+
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    {
+      bool interposed;
+      modref_summary *summary = get_modref_function_summary (call, &interposed);
+
+      if (summary && !interposed)
+	for (auto kill : summary->kills)
+	  if (kill.get_ao_ref (as_a <gcall *> (stmt), &write))
+	    clear_live_bytes_for_ref (live_bytes, ref, write);
+    }
   if (!initialize_ao_ref_for_dse (stmt, &write))
     return;
 
-  /* Verify we have the same base memory address, the write
-     has a known size and overlaps with REF.  */
-  HOST_WIDE_INT start, size;
-  if (valid_ao_ref_for_dse (&write)
-      && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
-      && known_eq (write.size, write.max_size)
-      && normalize_ref (&write, ref)
-      && (write.offset - ref->offset).is_constant (&start)
-      && write.size.is_constant (&size))
-    bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
-			size / BITS_PER_UNIT);
+  clear_live_bytes_for_ref (live_bytes, ref, write);
 }
 
 /* REF is a memory write.  Extract relevant information from it and

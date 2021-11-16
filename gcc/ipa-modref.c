@@ -740,6 +740,28 @@ get_modref_function_summary (cgraph_node *func)
   return r;
 }
 
+/* Get function summary for CALL if it exists, return NULL otherwise.
+   If non-null set interposed to indicate whether function may not
+   bind to current def.  In this case sometimes loads from function
+   needs to be ignored.  */
+
+modref_summary *
+get_modref_function_summary (gcall *call, bool *interposed)
+{
+  tree callee = gimple_call_fndecl (call);
+  if (!callee)
+    return NULL;
+  struct cgraph_node *node = cgraph_node::get (callee);
+  if (!node)
+    return NULL;
+  modref_summary *r = get_modref_function_summary (node);
+  if (interposed && r)
+    *interposed = r->calls_interposable
+	    	  || !node->binds_to_current_def_p ();
+  return r;
+}
+
+
 namespace {
 
 /* Construct modref_access_node from REF.  */
