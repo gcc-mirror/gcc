@@ -1,5 +1,10 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 
+	* tree-pretty-print.cc (print_omp_clause_to_str): Add new function.
+	* tree-pretty-print.h (print_omp_clause_to_str): Add declaration.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+
 	* omp-offload.cc (oacc_remove_unused_partitioning): New function
 	for removing partitioning that is not used by any loop.
 	(oacc_validate_dims): Call oacc_remove_unused_partitioning and
