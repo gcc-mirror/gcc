@@ -1,5 +1,22 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* common.opt: Add fgraphite-runtime-alias-checks.
+	* graphite-isl-ast-to-gimple.cc
+	(generate_alias_cond): New function.
+	(graphite_regenerate_ast_isl): Use from here.
+	* graphite-poly.cc (new_scop): Create unhandled_alias_ddrs vec ...
+	(free_scop): and release here.
+	* graphite-scop-detection.cc (dr_defs_outside_region): New function.
+	(dr_well_analyzed_for_runtime_alias_check_p): New function.
+	(graphite_runtime_alias_check_p): New function.
+	(build_alias_set): Record unhandled alias ddrs for later alias check
+	creation if flag_graphite_runtime_alias_checks is true instead
+	of failing.
+	* graphite.h (struct scop): Add field unhandled_alias_ddrs.
+	* sese.h (has_operands_from_region_p): New function.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* tree-loop-distribution.cc (data_ref_segment_size): Remove function.
 	(latch_dominated_by_data_ref): Likewise.
 	(compute_alias_check_pairs): Likewise.

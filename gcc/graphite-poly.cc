@@ -255,6 +255,7 @@ new_scop (edge entry, edge exit)
   scop_set_region (s, region);
   s->pbbs.create (3);
   s->drs.create (3);
+  s->unhandled_alias_ddrs.create (1);
   s->dependence = NULL;
   return s;
 }
@@ -272,6 +273,7 @@ free_scop (scop_p scop)
 
   scop->pbbs.release ();
   scop->drs.release ();
+  scop->unhandled_alias_ddrs.release ();
 
   isl_set_free (scop->param_context);
   scop->param_context = NULL;
