@@ -297,6 +297,23 @@ single_pred_cond_non_loop_exit (basic_block bb)
   return NULL;
 }
 
+
+/* Return the innermost loop that encloses all loops in SCOP. */
+
+loop_p
+scop_context_loop (scop_p scop)
+{
+  edge scop_entry = scop->scop_info->region.entry;
+  edge scop_exit = scop->scop_info->region.exit;
+  basic_block exit_bb = scop_exit->src;
+
+  while (sese_trivially_empty_bb_p (exit_bb) && single_pred_p (exit_bb))
+    exit_bb = single_pred (exit_bb);
+
+  loop_p entry_loop = scop_entry->dest->loop_father;
+  return find_common_loop (entry_loop, exit_bb->loop_father);
+}
+
 namespace
 {
 
@@ -1776,9 +1793,7 @@ build_alias_set (scop_p scop)
   int i, j;
   int *all_vertices;
 
-  struct loop *nest
-    = find_common_loop (scop->scop_info->region.entry->dest->loop_father,
-			scop->scop_info->region.exit->src->loop_father);
+  struct loop *nest = scop_context_loop (scop);
 
   gcc_checking_assert (nest);
 

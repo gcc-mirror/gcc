@@ -480,4 +480,5 @@ extern tree cached_scalar_evolution_in_region (const sese_l &, loop_p, tree);
 extern void dot_all_sese (FILE *, vec<sese_l> &);
 extern void dot_sese (sese_l &);
 extern void dot_cfg ();
+extern loop_p scop_context_loop (scop_p);
 #endif
