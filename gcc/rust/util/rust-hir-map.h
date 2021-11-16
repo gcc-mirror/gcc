@@ -23,12 +23,142 @@
 #include "rust-location.h"
 #include "rust-mapping-common.h"
 #include "rust-canonical-path.h"
-
 #include "rust-ast-full-decls.h"
 #include "rust-hir-full-decls.h"
+#include "operator.h"
 
 namespace Rust {
 namespace Analysis {
+
+// https://github.com/rust-lang/rust/blob/master/library/core/src/ops/arith.rs
+class RustLangItem
+{
+public:
+  enum ItemType
+  {
+    ADD,
+    SUBTRACT,
+    MULTIPLY,
+    DIVIDE,
+    REMAINDER,
+    NEGATION,
+    ADD_ASSIGN,
+    SUB_ASSIGN,
+    MUL_ASSIGN,
+    DIV_ASSIGN,
+    REM_ASSIGN,
+
+    UNKNOWN,
+  };
+
+  static ItemType Parse (const std::string &item)
+  {
+    if (item.compare ("add") == 0)
+      {
+	return ItemType::ADD;
+      }
+    else if (item.compare ("sub") == 0)
+      {
+	return ItemType::SUBTRACT;
+      }
+    else if (item.compare ("mul") == 0)
+      {
+	return ItemType::MULTIPLY;
+      }
+    else if (item.compare ("div") == 0)
+      {
+	return ItemType::DIVIDE;
+      }
+    else if (item.compare ("rem") == 0)
+      {
+	return ItemType::REMAINDER;
+      }
+    else if (item.compare ("neg") == 0)
+      {
+	return ItemType::NEGATION;
+      }
+    else if (item.compare ("add_assign") == 0)
+      {
+	return ItemType::ADD_ASSIGN;
+      }
+    else if (item.compare ("sub_assign") == 0)
+      {
+	return ItemType::SUB_ASSIGN;
+      }
+    else if (item.compare ("mul_assign") == 0)
+      {
+	return ItemType::MUL_ASSIGN;
+      }
+    else if (item.compare ("div_assign") == 0)
+      {
+	return ItemType::DIV_ASSIGN;
+      }
+    else if (item.compare ("rem_assign") == 0)
+      {
+	return ItemType::REM_ASSIGN;
+      }
+
+    return ItemType::UNKNOWN;
+  }
+
+  static std::string ToString (ItemType type)
+  {
+    switch (type)
+      {
+      case ADD:
+	return "add";
+      case SUBTRACT:
+	return "sub";
+      case MULTIPLY:
+	return "mul";
+      case DIVIDE:
+	return "div";
+      case REMAINDER:
+	return "rem";
+      case NEGATION:
+	return "neg";
+      case ADD_ASSIGN:
+	return "add_assign";
+      case SUB_ASSIGN:
+	return "sub_assign";
+      case MUL_ASSIGN:
+	return "mul_assign";
+      case DIV_ASSIGN:
+	return "div_assign";
+      case REM_ASSIGN:
+	return "rem_assign";
+
+      case UNKNOWN:
+	break;
+      }
+    return "<UNKNOWN>";
+  }
+
+  static ItemType OperatorToLangItem (ArithmeticOrLogicalOperator op)
+  {
+    switch (op)
+      {
+      case ArithmeticOrLogicalOperator::ADD:
+	return ItemType::ADD;
+      case ArithmeticOrLogicalOperator::SUBTRACT:
+	return ItemType::SUBTRACT;
+      case ArithmeticOrLogicalOperator::MULTIPLY:
+	return ItemType::MULTIPLY;
+      case ArithmeticOrLogicalOperator::DIVIDE:
+	return ItemType::DIVIDE;
+      case ArithmeticOrLogicalOperator::MODULUS:
+	return ItemType::REMAINDER;
+
+      case ArithmeticOrLogicalOperator::BITWISE_AND:
+      case ArithmeticOrLogicalOperator::BITWISE_OR:
+      case ArithmeticOrLogicalOperator::BITWISE_XOR:
+      case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+      case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+	return ItemType::UNKNOWN;
+      }
+    return ItemType::UNKNOWN;
+  }
+};
 
 class NodeMapping
 {
@@ -237,9 +367,9 @@ public:
     const Resolver::CanonicalPath *p = nullptr;
     if (lookup_canonical_path (crate, id, &p))
       {
-	// if we have already stored a canonical path this is ok so long as this
-	// new path is equal or is smaller that the existing one but in that
-	// case we ignore it.
+	// if we have already stored a canonical path this is ok so long as
+	// this new path is equal or is smaller that the existing one but in
+	// that case we ignore it.
 	if (p->is_equal (path))
 	  return;
 	else
@@ -264,6 +394,24 @@ public:
       return false;
 
     *path = &iy->second;
+    return true;
+  }
+
+  void insert_lang_item (RustLangItem::ItemType item_type, DefId id)
+  {
+    auto it = lang_item_mappings.find (item_type);
+    rust_assert (it == lang_item_mappings.end ());
+
+    lang_item_mappings[item_type] = id;
+  }
+
+  bool lookup_lang_item (RustLangItem::ItemType item_type, DefId *id)
+  {
+    auto it = lang_item_mappings.find (item_type);
+    if (it == lang_item_mappings.end ())
+      return false;
+
+    *id = it->second;
     return true;
   }
 
@@ -303,6 +451,9 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::GenericParam *> >
     hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
+
+  // this maps the lang=<item_type> to DefId mappings
+  std::map<RustLangItem::ItemType, DefId> lang_item_mappings;
 
   // canonical paths
   std::map<CrateNum, std::map<NodeId, const Resolver::CanonicalPath> > paths;
