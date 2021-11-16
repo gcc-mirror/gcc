@@ -19,5 +19,6 @@ void fun2(int32_t *x, int n)
       x[i] = (-x[i]) >> 30;
 }
 
-/* { dg-final { scan-tree-dump {\s+>\s+\{ 0, 0, 0(, 0)+ \}} optimized } } */
+/* { dg-final { scan-tree-dump {\s+>\s+\{ 0(, 0)+ \}} optimized { target vect_int } } } */
+/* { dg-final { scan-tree-dump {\s+>\s+0} optimized { target { ! vect_int } } } } */
 /* { dg-final { scan-tree-dump-not {\s+>>\s+31} optimized } } */
