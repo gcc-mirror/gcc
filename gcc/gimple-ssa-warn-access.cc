@@ -2335,10 +2335,6 @@ pass_waccess::check_alloca (gcall *stmt)
 void
 pass_waccess::check_alloc_size_call (gcall *stmt)
 {
-  if (gimple_call_num_args (stmt) < 1)
-    /* Avoid invalid calls to functions without a prototype.  */
-    return;
-
   tree fndecl = gimple_call_fndecl (stmt);
   if (fndecl && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {
@@ -2367,13 +2363,19 @@ pass_waccess::check_alloc_size_call (gcall *stmt)
      the actual argument(s) at those indices in ALLOC_ARGS.  */
   int idx[2] = { -1, -1 };
   tree alloc_args[] = { NULL_TREE, NULL_TREE };
+  unsigned nargs = gimple_call_num_args (stmt);
 
   tree args = TREE_VALUE (alloc_size);
   idx[0] = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+  /* Avoid invalid calls to functions without a prototype.  */
+  if ((unsigned) idx[0] >= nargs)
+    return;
   alloc_args[0] = call_arg (stmt, idx[0]);
   if (TREE_CHAIN (args))
     {
       idx[1] = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+      if ((unsigned) idx[1] >= nargs)
+	return;
       alloc_args[1] = call_arg (stmt, idx[1]);
     }
 
