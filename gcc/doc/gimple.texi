@@ -2768,4 +2768,6 @@ calling @code{walk_gimple_stmt} on each one.  @code{WI} is as in
 @code{walk_gimple_stmt}.  If @code{walk_gimple_stmt} returns non-@code{NULL}, the walk
 is stopped and the value returned.  Otherwise, all the statements
 are walked and @code{NULL_TREE} returned.
+
+TODO update for forward vs. backward.
 @end deftypefn

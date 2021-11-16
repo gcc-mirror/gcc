@@ -1546,6 +1546,7 @@ OBJS = \
 	omp-oacc-kernels-decompose.o \
 	omp-oacc-neuter-broadcast.o \
 	omp-simd-clone.o \
+	omp-data-optimize.o \
 	opt-problem.o \
 	optabs.o \
 	optabs-libfuncs.o \

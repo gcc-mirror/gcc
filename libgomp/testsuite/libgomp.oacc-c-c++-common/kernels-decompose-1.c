@@ -42,6 +42,8 @@ static void f1 ()
      { dg-note {variable 'g2' made addressable} {} { target *-*-* } l_compute$c_compute } */
   /* { dg-note {OpenACC 'kernels' decomposition: variable 'g1' in 'copy' clause requested to be made addressable} {} { target *-*-* } l_compute$c_compute }
      { dg-note {variable 'g1' made addressable} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-missed {'map\(tofrom:b [^)]+\)' not optimized: b is unsuitable for privatization} "" { target *-*-* } .-1 }
+     { dg-missed {'map\(force_tofrom:a [^)]+\)' not optimized: a is unsuitable for privatization} "" { target *-*-* } .-2 } */
   {
     /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     int c = 234;

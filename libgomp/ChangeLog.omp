@@ -1,3 +1,10 @@
+2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Expect optimization messages.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Adjust
