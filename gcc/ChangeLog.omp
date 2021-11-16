@@ -1,5 +1,10 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* tree-ssa-pre.cc (insert): Skip any insertions in OpenACC
+	functions that might be processed by Graphite.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* passes.def: Set restrict_oacc_hoisting to true for the early
 	pass_lim instance.
 	* tree-ssa-loop-im.cc (movement_possibility_1): Add

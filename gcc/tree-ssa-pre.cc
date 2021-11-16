@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "alias.h"
 #include "gimple-range.h"
+#include "graphite-oacc.h"
 
 /* Even though this file is called tree-ssa-pre.cc, we actually
    implement a bit more than just PRE here.  All of them piggy-back
@@ -3737,6 +3738,22 @@ do_hoist_insertion (basic_block block)
 static void
 insert (void)
 {
+
+    /* The additional dependences introduced by the code insertions
+     can cause Graphite's dependence analysis to fail .  Without
+     special handling of those dependences in Graphite, it seems
+     better to skip this step if OpenACC loops that need to be handled
+     by Graphite are found.  Note that the full redundancy elimination
+     step of this pass is useful for the purpose of dependence
+     analysis, for instance, because it can remove definitions from
+     SCoPs that would otherwise prevent the creation of runtime alias
+     checks since those may only use definitions that are available
+     before the SCoP. */
+
+  if (oacc_function_p (cfun)
+      && ::graphite_analyze_oacc_function_p (cfun))
+    return;
+
   basic_block bb;
 
   FOR_ALL_BB_FN (bb, cfun)
