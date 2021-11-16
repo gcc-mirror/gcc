@@ -1,5 +1,9 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* predict.cc (pass_profile::execute): Fix dump message.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* graphite-sese-to-poly.cc (build_poly_sr_1): Fix a typo and
 	a reference to a variable which does not exist.
 	* graphite-isl-ast-to-gimple.cc (gsi_insert_earliest): Fix typo
