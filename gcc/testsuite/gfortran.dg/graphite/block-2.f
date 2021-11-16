@@ -1,5 +1,11 @@
 ! { dg-do compile }
 ! { dg-additional-options "-std=legacy" }
+
+! ldist introduces a __builtin_memset for the first loop and hence
+! breaks the testcases's assumption regarding the number of SCoPs
+! because Graphite cannot deal with the call.
+! { dg-additional-options "-fdisable-tree-ldist" }
+
       SUBROUTINE MATRIX_MUL_UNROLLED (A, B, C, L, M, N)
       DIMENSION A(L,M), B(M,N), C(L,N)
 
@@ -18,5 +24,4 @@
       RETURN
       END
 
-! Disabled for now as it requires delinearization.
-! { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite" } }

@@ -9,7 +9,7 @@ program main
    integer :: a(100,100), b(100,100)
    integer :: i, j, d
 
-   !$acc kernels ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+   !$acc kernels ! { dg-message "optimized: assigned OpenACC gang loop parallelism" }
    do i=1,100
      do j=1,100
        a(i,j) = 1
