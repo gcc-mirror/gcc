@@ -31,6 +31,7 @@ DEFINITION MODULE M2Error ;
 
 FROM SYSTEM IMPORT BYTE ;
 FROM DynamicStrings IMPORT String ;
+FROM NameKey IMPORT Name ;
 EXPORT QUALIFIED Error,
                  InternalError,
                  WriteFormat0, WriteFormat1, WriteFormat2, WriteFormat3,
@@ -41,7 +42,10 @@ EXPORT QUALIFIED Error,
                  ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
                  WarnStringAt, WarnStringAt2, WarnStringsAt2,
                  ErrorAbort0,
-                 WarnFormat0, WarnFormat1, MoveError ;
+                 WarnFormat0, WarnFormat1, MoveError,
+                 AnnounceScope, EnterImplementationScope,
+                 EnterModuleScope, EnterDefinitionScope, EnterProgramScope,
+                 EnterProcedureScope, LeaveScope, DepthScope ;
 
 TYPE
    Error ;
@@ -216,6 +220,68 @@ PROCEDURE FlushWarnings ;
 *)
 
 PROCEDURE ErrorAbort0 (a: ARRAY OF CHAR) ;
+
+
+(*
+   AnnounceScope - return the error string s with a scope description prepended
+                   assuming that scope has changed.
+*)
+
+PROCEDURE AnnounceScope (e: Error; s: String) : String ;
+
+
+(*
+   EnterImplementationScope - signifies to the error routines that the front end
+                              has started to compile implementation module scopeName.
+*)
+
+PROCEDURE EnterImplementationScope (scopename: Name) ;
+
+
+(*
+   EnterProgramScope - signifies to the error routines that the front end
+                       has started to compile program module scopeName.
+*)
+
+PROCEDURE EnterProgramScope (scopename: Name) ;
+
+
+(*
+   EnterModuleScope - signifies to the error routines that the front end
+                      has started to compile an inner module scopeName.
+*)
+
+PROCEDURE EnterModuleScope (scopename: Name) ;
+
+
+(*
+   EnterDefinitionScope - signifies to the error routines that the front end
+                          has started to compile definition module scopeName.
+*)
+
+PROCEDURE EnterDefinitionScope (scopename: Name) ;
+
+
+(*
+   EnterProcedureScope - signifies to the error routines that the front end
+                         has started to compile definition module scopeName.
+*)
+
+PROCEDURE EnterProcedureScope (scopename: Name) ;
+
+
+(*
+   LeaveScope - leave the current scope and pop into the previous one.
+*)
+
+PROCEDURE LeaveScope ;
+
+
+(*
+   DepthScope - returns the depth of the scope stack.
+*)
+
+PROCEDURE DepthScope () : CARDINAL ;
 
 
 END M2Error.

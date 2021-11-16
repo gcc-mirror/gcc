@@ -30,17 +30,22 @@ FROM SymbolTable IMPORT IsProcedure, IsDefImp, GetProcedureQuads, GetScope,
                         GetSymName, NulSym ;
 
 FROM M2Options IMPORT DisplayQuadruples ;
-FROM M2Printf IMPORT printf1 ;
+FROM M2Printf IMPORT printf0, printf1 ;
 FROM M2Quads IMPORT QuadOperator, GetFirstQuad, GetNextQuad, GetQuad, DisplayQuadRange ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         PopWord, PushWord, PeepWord ;
+IMPORT M2Error ;
+
 
 CONST
    Debugging = FALSE ;
 
 TYPE
-   ScopeBlock = POINTER TO scopeblock ;
-   scopeblock = RECORD
+   scopeKind = (unsetscope, ignorescope, procedurescope, modulescope, definitionscope, implementationscope, programscope) ;
+
+   ScopeBlock = POINTER TO RECORD
+                   scopeSym : CARDINAL ;
+                   kindScope: scopeKind ;
                    low, high: CARDINAL ;
                    next     : ScopeBlock ;
                 END ;
@@ -55,9 +60,9 @@ VAR
 
 PROCEDURE New (VAR sb: ScopeBlock) ;
 BEGIN
-   IF FreeList=NIL
+   IF FreeList = NIL
    THEN
-      NEW(sb)
+      NEW (sb)
    ELSE
       sb := FreeList ;
       FreeList := FreeList^.next
@@ -78,6 +83,17 @@ END Dispose ;
 
 
 (*
+   SetScope - assigns the scopeSym and kindScope.
+*)
+
+PROCEDURE SetScope (sb: ScopeBlock; sym: CARDINAL; kindScope: scopeKind) ;
+BEGIN
+   sb^.scopeSym := sym ;
+   sb^.kindScope := kindScope
+END SetScope ;
+
+
+(*
    AddToRange - returns a ScopeBlock pointer to the last block. The,
                 quad, will be added to the end of sb or a later block
                 if First is TRUE.
@@ -92,7 +108,7 @@ BEGIN
       THEN
          sb^.high := sb^.low
       END ;
-      sb^.next := InitScopeBlock(0) ;
+      sb^.next := InitScopeBlock (NulSym) ;
       sb := sb^.next
    END ;
    IF sb^.low=0
@@ -100,7 +116,7 @@ BEGIN
       sb^.low := quad
    END ;
    sb^.high := quad ;
-   RETURN( sb )
+   RETURN sb
 END AddToRange ;
 
 
@@ -124,20 +140,20 @@ BEGIN
       (IsProcedure(GetScope(scope)) OR
        (IsModule(scope) AND IsModuleWithinProcedure(scope)))
    THEN
-      GetProcedureQuads(GetProcedureScope(scope), i, start, end) ;
-      GetQuad(i, op, op1, op2, op3) ;
+      GetProcedureQuads (GetProcedureScope (scope), i, start, end) ;
+      GetQuad (i, op, op1, op2, op3) ;
       WHILE (op#ModuleScopeOp) OR (op3#scope) DO
-         i := GetNextQuad(i) ;
-         GetQuad(i, op, op1, op2, op3)
+         i := GetNextQuad (i) ;
+         GetQuad (i, op, op1, op2, op3)
       END ;
       end := i ;
-      GetQuad(end, op, op1, op2, op3) ;
+      GetQuad (end, op, op1, op2, op3) ;
       WHILE (op#FinallyEndOp) OR (op3#scope) DO
-         end := GetNextQuad(end) ;
-         GetQuad(end, op, op1, op2, op3)
+         end := GetNextQuad (end) ;
+         GetQuad (end, op, op1, op2, op3)
       END
    ELSE
-      i := GetFirstQuad() ;
+      i := GetFirstQuad () ;
       end := 0
    END ;
    nb := sb ;
@@ -146,17 +162,17 @@ BEGIN
    LOOP
       IF i=0
       THEN
-         RETURN( sb )
+         RETURN sb
       END ;
-      GetQuad(i, op, op1, op2, op3) ;
+      GetQuad (i, op, op1, op2, op3) ;
       IF op=ProcedureScopeOp
       THEN
-         INC(NestedLevel)
+         INC (NestedLevel)
       ELSIF op=ReturnOp
       THEN
          IF NestedLevel>0
          THEN
-            DEC(NestedLevel)
+            DEC (NestedLevel)
          END ;
          IF NestedLevel=0
          THEN
@@ -165,16 +181,35 @@ BEGIN
       ELSE
          IF NestedLevel=0
          THEN
-            nb := AddToRange(nb, First, i) ;
+            IF op=StartDefFileOp
+            THEN
+               nb := AddToRange (nb, TRUE, i) ;
+               SetScope (nb, op3, definitionscope)
+            ELSIF op=StartModFileOp
+            THEN
+               nb := AddToRange (nb, TRUE, i) ;
+               IF IsDefImp (op3)
+               THEN
+                  SetScope (nb, op3, implementationscope)
+               ELSE
+                  SetScope (nb, op3, programscope)
+               END
+            ELSE
+               nb := AddToRange (nb, First, i) ;
+               IF First
+               THEN
+                  SetScope (nb, NulSym, unsetscope)  (* is this reachable?  *)
+               END
+            END ;
             First := FALSE
          END
       END ;
       (* IF (i=end) *)
       IF (i=end) (*  OR (op=EndFileOp) *)
       THEN
-         RETURN( sb )
+         RETURN sb
       END ;
-      i := GetNextQuad(i)
+      i := GetNextQuad (i)
    END
 END GetGlobalQuads ;
 
@@ -195,10 +230,10 @@ VAR
    s            : StackOfWord ;
    n            : Name ;
 BEGIN
-   s := InitStackWord() ;
+   s := InitStackWord () ;
    IF Debugging
    THEN
-      n := GetSymName(proc) ;
+      n := GetSymName (proc) ;
       printf1("GetProcQuads for %a\n", n)
    END ;
    Assert(IsProcedure(proc)) ;
@@ -217,46 +252,54 @@ BEGIN
    nb := sb ;
    sb^.low := scope ;
    sb^.high := 0 ;
+   SetScope (sb, proc, procedurescope) ;
    WHILE (i<=end) AND (start#0) DO
-      GetQuad(i, op, op1, op2, op3) ;
+      GetQuad (i, op, op1, op2, op3) ;
       IF (op=ProcedureScopeOp) OR (op=ModuleScopeOp)
       THEN
          IF (PeepWord(s, 1)=proc) AND (op3=proc)
          THEN
-            nb := AddToRange(nb, First, last) ;
+            nb := AddToRange (nb, First, last) ;
             First := FALSE
          END ;
-         PushWord(s,  op3)
+         PushWord (s,  op3) ;
+         IF op=ProcedureScopeOp
+         THEN
+            SetScope (nb, proc, procedurescope)
+         ELSE
+            SetScope (nb, proc, modulescope)
+         END
       ELSIF (op=ReturnOp) OR (op=FinallyEndOp)
       THEN
-         op3 := PopWord(s) ;
-         IF PeepWord(s, 1)=proc
+         op3 := PopWord (s) ;
+         IF PeepWord (s, 1) = proc
          THEN
             First := TRUE
          END
       ELSE
-         IF PeepWord(s, 1)=proc
+         IF PeepWord (s, 1) = proc
          THEN
-            nb := AddToRange(nb, First, i) ;
+            nb := AddToRange (nb, First, i) ;
             First := FALSE
          END
       END ;
       last := i ;
-      i := GetNextQuad(i)
+      i := GetNextQuad (i)
    END ;
    IF start<=nb^.high
    THEN
       nb^.high := end
    ELSE
-      nb^.next := InitScopeBlock(0) ;
+      nb^.next := InitScopeBlock (NulSym) ;
       nb := nb^.next ;
+      SetScope (nb, proc, unsetscope) ;
       WITH nb^ DO
          low := start ;
          high := end
       END
    END ;
-   s := KillStackWord(s) ;
-   RETURN( sb )
+   s := KillStackWord (s) ;
+   RETURN sb
 END GetProcQuads ;
 
 
@@ -265,11 +308,33 @@ END GetProcQuads ;
 *)
 
 PROCEDURE DisplayScope (sb: ScopeBlock) ;
+VAR
+   name: Name ;
 BEGIN
-   DisplayQuadRange(sb^.low, sb^.high) ;
-   IF sb^.next#NIL
-   THEN
-      DisplayScope(sb^.next)
+   WITH sb^ DO
+      printf0 ("scope: ") ;
+      CASE sb^.kindScope OF
+
+      unsetscope    :  printf0 ("unset") |
+      ignorescope   :  printf0 ("ignore") |
+      procedurescope     :  name := GetSymName (scopeSym) ;
+                       printf1 ("procedure %a", name) |
+      modulescope        :  name := GetSymName (scopeSym) ;
+                       printf1 ("inner module %a", name) |
+      definitionscope    :  name := GetSymName (scopeSym) ;
+                       printf1 ("definition module %a", name) |
+      implementationscope:  name := GetSymName (scopeSym) ;
+                       printf1 ("implementation module %a", name) |
+      programscope       :  name := GetSymName (scopeSym) ;
+                       printf1 ("program module %a", name)
+
+      END ;
+      printf0 ("\n") ;
+      DisplayQuadRange (low, high) ;
+      IF next#NIL
+      THEN
+         DisplayScope (next)
+      END
    END
 END DisplayScope ;
 
@@ -281,31 +346,29 @@ END DisplayScope ;
 PROCEDURE InitScopeBlock (scope: CARDINAL) : ScopeBlock ;
 VAR
    sb: ScopeBlock ;
-   n : Name ;
 BEGIN
-   New(sb) ;
+   New (sb) ;
    WITH sb^ DO
       next := NIL ;
-      IF scope=0
+      kindScope := unsetscope ;
+      IF scope=NulSym
       THEN
          low := 0 ;
          high := 0
       ELSE
-         IF IsProcedure(scope)
+         IF IsProcedure (scope)
          THEN
-            sb := GetProcQuads(sb, scope)
+            sb := GetProcQuads (sb, scope)
          ELSE
-            sb := GetGlobalQuads(sb, scope) ;
-            IF DisplayQuadruples
-            THEN
-               n := GetSymName (scope) ;
-               printf1("scope %a is defined by\n", n) ;
-               DisplayScope(sb)
-            END
+            sb := GetGlobalQuads (sb, scope) ;
+         END ;
+         IF DisplayQuadruples
+         THEN
+            DisplayScope (sb)
          END
       END
    END ;
-   RETURN( sb )
+   RETURN sb
 END InitScopeBlock ;
 
 
@@ -318,10 +381,10 @@ VAR
    t: ScopeBlock ;
 BEGIN
    t := sb ;
-   WHILE t#NIL DO
+   WHILE t # NIL DO
       sb := t ;
       t := t^.next ;
-      Dispose(sb) ;
+      Dispose (sb) ;
    END ;
    sb := NIL
 END KillScopeBlock ;
@@ -333,16 +396,70 @@ END KillScopeBlock ;
 
 PROCEDURE ForeachScopeBlockDo (sb: ScopeBlock; p: ScopeProcedure) ;
 BEGIN
+   IF DisplayQuadruples
+   THEN
+      printf0 ("ForeachScopeBlockDo\n")
+   END ;
    WHILE sb#NIL DO
       WITH sb^ DO
-         IF (low#0) AND (high#0)
+         IF DisplayQuadruples
          THEN
-            p(low, high)
-         END
+            DisplayScope (sb)
+         END ;
+         enter (sb) ;
+         IF (low # 0) AND (high # 0)
+         THEN
+            p (low, high)
+         END ;
+         leave (sb)
       END ;
       sb := sb^.next
-   END
+   END ;
+   IF DisplayQuadruples
+   THEN
+      printf0 ("end ForeachScopeBlockDo\n\n")
+   END ;
 END ForeachScopeBlockDo ;
+
+
+(*
+   enter -
+*)
+
+PROCEDURE enter (sb: ScopeBlock) ;
+BEGIN
+   WITH sb^ DO
+      CASE kindScope OF
+
+      unsetscope,
+      ignorescope        : |
+      procedurescope     :  M2Error.EnterProcedureScope (GetSymName (scopeSym)) |
+      modulescope        :  M2Error.EnterModuleScope (GetSymName (scopeSym)) |
+      definitionscope    :  M2Error.EnterDefinitionScope (GetSymName (scopeSym)) |
+      implementationscope:  M2Error.EnterImplementationScope (GetSymName (scopeSym)) |
+      programscope       :  M2Error.EnterProgramScope (GetSymName (scopeSym))
+
+      END
+   END
+END enter ;
+
+
+(*
+   leave -
+*)
+
+PROCEDURE leave (sb: ScopeBlock) ;
+BEGIN
+   CASE sb^.kindScope OF
+
+   unsetscope,
+   ignorescope   : |
+
+   ELSE
+      M2Error.LeaveScope
+   END
+END leave ;
+
 
 
 (*

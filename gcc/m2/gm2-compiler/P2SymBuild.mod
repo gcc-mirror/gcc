@@ -140,6 +140,7 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 
 FROM M2Const IMPORT constType ;
 FROM M2Students IMPORT CheckForVariableThatLooksLikeKeyword ;
+IMPORT M2Error ;
 
 
 CONST
@@ -186,7 +187,8 @@ BEGIN
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingDefinitionModule()) ;
    PushT(name) ;
-   Annotate("%1n||definition module name")
+   Annotate("%1n||definition module name") ;
+   M2Error.EnterDefinitionScope (name)
 END P2StartBuildDefModule ;
 
 
@@ -224,7 +226,8 @@ BEGIN
    IF NameStart#NameEnd
    THEN
       WriteFormat2('inconsistant definition module name, module began as (%a) and ended with (%a)', NameStart, NameEnd)
-   END
+   END ;
+   M2Error.LeaveScope
 END P2EndBuildDefModule ;
 
 
@@ -257,7 +260,8 @@ BEGIN
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingImplementationModule()) ;
    PushT(name) ;
-   Annotate("%1n||implementation module name")
+   Annotate("%1n||implementation module name") ;
+   M2Error.EnterImplementationScope (name)
 END P2StartBuildImplementationModule ;
 
 
@@ -290,7 +294,8 @@ BEGIN
    IF NameStart#NameEnd
    THEN
       WriteFormat1('inconsistant implementation module name %a', NameStart)
-   END
+   END ;
+   M2Error.LeaveScope
 END P2EndBuildImplementationModule ;
 
 
@@ -323,7 +328,8 @@ BEGIN
    Assert(CompilingProgramModule()) ;
    Assert(NOT IsDefImp(ModuleSym)) ;
    PushT(name) ;
-   Annotate("%1n||program module name")
+   Annotate("%1n||program module name") ;
+   M2Error.EnterProgramScope (name)
 END P2StartBuildProgramModule ;
 
 
@@ -361,7 +367,8 @@ BEGIN
    IF NameStart#NameEnd
    THEN
       WriteFormat2('inconsistant program module name %a does not match %a', NameStart, NameEnd)
-   END
+   END ;
+   M2Error.LeaveScope
 END P2EndBuildProgramModule ;
 
 
@@ -391,7 +398,8 @@ BEGIN
    StartScope (ModuleSym) ;
    Assert(NOT IsDefImp (ModuleSym)) ;
    PushTtok (name, tok) ;
-   Annotate ("%1n||inner module name")
+   Annotate ("%1n||inner module name") ;
+   M2Error.EnterModuleScope (name)
 END StartBuildInnerModule ;
 
 
@@ -424,7 +432,8 @@ BEGIN
    THEN
       WriteFormat2('inconsistant inner module name %a does not match %a',
                    NameStart, NameEnd)
-   END
+   END ;
+   M2Error.LeaveScope
 END EndBuildInnerModule ;
 
 
@@ -1221,7 +1230,8 @@ BEGIN
    END ;
    PushTtok (ProcSym, tokno) ;
    Annotate ("%1s(%1d)||procedure start symbol") ;
-   StartScope (ProcSym)
+   StartScope (ProcSym) ;
+   M2Error.EnterProcedureScope (name)
 END StartBuildProcedure ;
 
 
@@ -1261,7 +1271,8 @@ BEGIN
    THEN
       WriteFormat2('end procedure name does not match beginning %a name %a', NameStart, NameEnd)
    END ;
-   EndScope
+   EndScope ;
+   M2Error.LeaveScope
 END EndBuildProcedure ;
 
 

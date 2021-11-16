@@ -1903,6 +1903,7 @@ install-dvi-host: maybe-install-dvi-c++tools
 install-dvi-host: maybe-install-dvi-gnattools
 install-dvi-host: maybe-install-dvi-lto-plugin
 install-dvi-host: maybe-install-dvi-libcc1
+install-dvi-host: maybe-install-dvi-gm2tools
 install-dvi-host: maybe-install-dvi-gotools
 install-dvi-host: maybe-install-dvi-libctf
 
@@ -1928,6 +1929,7 @@ install-dvi-target: maybe-install-dvi-target-libffi
 install-dvi-target: maybe-install-dvi-target-zlib
 install-dvi-target: maybe-install-dvi-target-rda
 install-dvi-target: maybe-install-dvi-target-libada
+install-dvi-target: maybe-install-dvi-target-libgm2
 install-dvi-target: maybe-install-dvi-target-libgomp
 install-dvi-target: maybe-install-dvi-target-libitm
 install-dvi-target: maybe-install-dvi-target-libatomic
@@ -42200,6 +42202,33 @@ install-info-gm2tools: \
 
 @endif gm2tools
 
+.PHONY: maybe-install-dvi-gm2tools install-dvi-gm2tools
+maybe-install-dvi-gm2tools:
+@if gm2tools
+maybe-install-dvi-gm2tools: install-dvi-gm2tools
+
+install-dvi-gm2tools: \
+    configure-gm2tools \
+    dvi-gm2tools 
+	@: $(MAKE); $(unstage)
+	@[ -f ./gm2tools/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-dvi in gm2tools"; \
+	(cd $(HOST_SUBDIR)/gm2tools && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-dvi) \
+	  || exit 1
+
+@endif gm2tools
+
 .PHONY: maybe-install-pdf-gm2tools install-pdf-gm2tools
 maybe-install-pdf-gm2tools:
 @if gm2tools
@@ -56956,6 +56985,33 @@ install-info-target-libgm2: \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
 	           install-info) \
+	  || exit 1
+
+@endif target-libgm2
+
+.PHONY: maybe-install-dvi-target-libgm2 install-dvi-target-libgm2
+maybe-install-dvi-target-libgm2:
+@if target-libgm2
+maybe-install-dvi-target-libgm2: install-dvi-target-libgm2
+
+install-dvi-target-libgm2: \
+    configure-target-libgm2 \
+    dvi-target-libgm2 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libgm2/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libgm2"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libgm2 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
 	  || exit 1
 
 @endif target-libgm2

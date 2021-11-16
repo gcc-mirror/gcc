@@ -34,9 +34,11 @@ FROM M2RTS IMPORT ExitOnHalt ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Emit IMPORT EmitError ;
 FROM M2LexBuf IMPORT UnknownTokenNo ;
+FROM M2StackWord IMPORT StackOfWord, InitStackWord, InitStackWord, PushWord, PopWord, NoOfItemsInStackWord ;
+FROM M2Debug IMPORT Assert ;
 
 FROM M2ColorString IMPORT filenameColor, endColor, errorColor, warningColor, noteColor,
-                          range1Color, range2Color ;
+                          range1Color, range2Color, quoteOpen, quoteClose ;
 
 IMPORT M2Emit ;
 
@@ -49,17 +51,26 @@ TYPE
    Error = POINTER TO RECORD
                          parent,
                          child,
-                         next  : Error ;
+                         next     : Error ;
                          note,
-                         fatal : BOOLEAN ;
-                         s     : String ;
-                         token : CARDINAL ;  (* index of token causing the error *)
-                         color : BOOLEAN ;
+                         fatal    : BOOLEAN ;
+                         s        : String ;
+                         (* index of token causing the error *)
+                         token    : CARDINAL ;
+                         color    : BOOLEAN ;
+                         scopeKind: KindScope ;
+                         scopeName: Name ;
                       END ;
 
+   KindScope = (noscope, definition, implementation, program, module, procedure) ;
+
 VAR
-   head      : Error ;
-   InInternal: BOOLEAN ;
+   head        : Error ;
+   InInternal  : BOOLEAN ;
+   scopeName   : Name ;
+   lastKind,
+   scopeKind   : KindScope ;
+   scopeStack  : StackOfWord ;
 
 
 (*
@@ -390,8 +401,10 @@ BEGIN
       child  := NIL ;
       note   := FALSE ;
       fatal  := TRUE ;
-      color  := FALSE
+      color  := FALSE ;
    END ;
+   e^.scopeKind := scopeKind ;
+   e^.scopeName := scopeName ;
    IF (head=NIL) OR (head^.token>AtTokenNo)
    THEN
       e^.next := head ;
@@ -550,7 +563,11 @@ END ErrorString ;
 PROCEDURE Init ;
 BEGIN
    head := NIL ;
-   InInternal := FALSE
+   InInternal := FALSE ;
+   scopeStack := InitStackWord () ;
+   scopeName := NulName ;
+   scopeKind := noscope ;
+   lastKind := noscope
 END Init ;
 
 
@@ -614,7 +631,7 @@ BEGIN
             IF (FatalStatus=fatal) AND (s#NIL)
             THEN
                CheckIncludes (token, 0) ;
-               EmitError (fatal, note, token, s) ;
+               EmitError (fatal, note, token, AnnounceScope (e, s)) ;
                IF (child#NIL) AND FlushAll (child, FatalStatus)
                THEN
                END ;
@@ -667,7 +684,7 @@ END FlushErrors ;
 
 PROCEDURE FlushWarnings ;
 BEGIN
-   IF FlushAll(head, FALSE)
+   IF FlushAll (head, FALSE)
    THEN
    END
 END FlushWarnings ;
@@ -778,16 +795,153 @@ BEGIN
    THEN
       WriteFormat0(a)
    END ;
-   IF NOT FlushAll(head, TRUE)
+   IF NOT FlushAll (head, TRUE)
    THEN
       WriteFormat0('unidentified error') ;
-      IF FlushAll(head, TRUE)
+      IF FlushAll (head, TRUE)
       THEN
       END
    END ;
    ExitOnHalt(1) ;
    HALT
 END ErrorAbort0 ;
+
+
+(*
+   AnnounceScope - return the error string s with a scope description prepended
+                   assuming that scope has changed.
+*)
+
+PROCEDURE AnnounceScope (e: Error; s: String) : String ;
+VAR
+   desc,
+   pre,
+   quoted,
+   filename,
+   fmt     : String ;
+BEGIN
+   IF (scopeKind#e^.scopeKind) OR (scopeName#e^.scopeName) OR (lastKind#e^.scopeKind)
+   THEN
+      lastKind := e^.scopeKind ;
+      scopeKind := e^.scopeKind ;
+      scopeName := e^.scopeName ;
+      Assert (e^.scopeKind # noscope) ;
+      filename := FindFileNameFromToken (e^.token, 0) ;
+      IF filename = NIL
+      THEN
+         pre := InitString ('')
+      ELSE
+         pre := Sprintf1 (Mark (InitString ("%s: ")), filename)
+      END ;
+      quoted := quoteOpen (InitString ('')) ;
+      quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (scopeName)))) ;
+      quoted := quoteClose (quoted) ;
+      CASE scopeKind OF
+
+      definition    :   desc := InitString ("In definition module") |
+      implementation:   desc := InitString ("In implementation module") |
+      program       :   desc := InitString ("In program module") |
+      module        :   desc := InitString ("In inner module") |
+      procedure     :   desc := InitString ("In procedure")
+
+      END ;
+      fmt := ConCat (pre, desc) ;
+      fmt := ConCat (fmt, Sprintf1 (Mark (InitString (" %s:\n")), quoted)) ;
+      s := ConCat (fmt, s)
+   END ;
+   RETURN s
+END AnnounceScope ;
+
+
+(*
+   EnterImplementationScope - signifies to the error routines that the front end
+                              has started to compile implementation module scopeName.
+*)
+
+PROCEDURE EnterImplementationScope (scopename: Name) ;
+BEGIN
+   PushWord (scopeStack, scopeKind) ;
+   PushWord (scopeStack, scopeName) ;
+   scopeKind := implementation ;
+   scopeName := scopename
+END EnterImplementationScope ;
+
+
+(*
+   EnterProgramScope - signifies to the error routines that the front end
+                       has started to compile program module scopeName.
+*)
+
+PROCEDURE EnterProgramScope (scopename: Name) ;
+BEGIN
+   PushWord (scopeStack, scopeKind) ;
+   PushWord (scopeStack, scopeName) ;
+   scopeKind := program ;
+   scopeName := scopename
+END EnterProgramScope ;
+
+
+(*
+   EnterModuleScope - signifies to the error routines that the front end
+                      has started to compile an inner module scopeName.
+*)
+
+PROCEDURE EnterModuleScope (scopename: Name) ;
+BEGIN
+   PushWord (scopeStack, scopeKind) ;
+   PushWord (scopeStack, scopeName) ;
+   scopeKind := module ;
+   scopeName := scopename
+END EnterModuleScope ;
+
+
+(*
+   EnterDefinitionScope - signifies to the error routines that the front end
+                          has started to compile definition module scopeName.
+*)
+
+PROCEDURE EnterDefinitionScope (scopename: Name) ;
+BEGIN
+   PushWord (scopeStack, scopeKind) ;
+   PushWord (scopeStack, scopeName) ;
+   scopeKind := definition ;
+   scopeName := scopename
+END EnterDefinitionScope ;
+
+
+(*
+   EnterProcedureScope - signifies to the error routines that the front end
+                         has started to compile definition module scopeName.
+*)
+
+PROCEDURE EnterProcedureScope (scopename: Name) ;
+BEGIN
+   PushWord (scopeStack, scopeKind) ;
+   PushWord (scopeStack, scopeName) ;
+   scopeKind := procedure ;
+   scopeName := scopename
+END EnterProcedureScope ;
+
+
+(*
+   LeaveScope - leave the current scope and pop into the previous one.
+*)
+
+PROCEDURE LeaveScope ;
+BEGIN
+   scopeName := PopWord (scopeStack) ;
+   scopeKind := PopWord (scopeStack)
+END LeaveScope ;
+
+
+(*
+   DepthScope - returns the depth of the scope stack.
+*)
+
+PROCEDURE DepthScope () : CARDINAL ;
+BEGIN
+   RETURN NoOfItemsInStackWord (scopeStack)
+END DepthScope ;
 
 
 BEGIN

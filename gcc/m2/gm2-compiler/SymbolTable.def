@@ -123,6 +123,7 @@ EXPORT QUALIFIED NulSym,
                  GetReadQuads, GetWriteQuads,
                  GetReadLimitQuads, GetWriteLimitQuads,
                  GetDeclaredDef, GetDeclaredMod, PutDeclared,
+                 GetDeclaredDefinition, GetDeclaredModule,
                  GetFirstUsed,
                  PutProcedureBegin, PutProcedureEnd, GetProcedureBeginEnd,
                  GetGnuAsmInput, GetGnuAsmOutput, GetGnuAsmTrash, GetGnuAsm,
@@ -1703,6 +1704,22 @@ PROCEDURE GetDeclaredDef (Sym: CARDINAL) : CARDINAL ;
 *)
 
 PROCEDURE GetDeclaredMod (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredDefinition - returns the token where this symbol
+                           was declared in the definition module.
+*)
+
+PROCEDURE GetDeclaredDefinition (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredModule - returns the token where this symbol was declared
+                       in an implementation or program module.
+*)
+
+PROCEDURE GetDeclaredModule (Sym: CARDINAL) : CARDINAL ;
 
 
 (*

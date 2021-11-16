@@ -107,6 +107,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PushSize, PushValue, PopValue,
                         GetVariableAtAddress, IsVariableAtAddress,
                         MakeError, UnknownReported,
+                        IsInnerModule,
 
                         GetUnboundedRecordType,
                         GetUnboundedAddressOffset,
@@ -239,8 +240,9 @@ FROM M2Range IMPORT InitAssignmentRangeCheck,
 
 FROM M2CaseList IMPORT PushCase, PopCase, AddRange, BeginCaseList, EndCaseList, ElseCase ;
 FROM PCSymBuild IMPORT SkipConst ;
-
 FROM m2builtins IMPORT GetBuiltinTypeInfoType ;
+
+IMPORT M2Error ;
 
 
 CONST
@@ -442,7 +444,7 @@ END SetOptionProfiling ;
 
 (*
    SetOptionCoding - builds a code quadruple if the profiling
-                        option was given to the compiler.
+                     option was given to the compiler.
 *)
 
 PROCEDURE SetOptionCoding (b: BOOLEAN) ;
@@ -1920,9 +1922,9 @@ PROCEDURE StartBuildDefFile ;
 VAR
    ModuleName: Name ;
 BEGIN
-   PopT(ModuleName) ;
-   PushT(ModuleName) ;
-   GenQuad(StartDefFileOp, GetPreviousTokenLineNo(), NulSym, GetModule(ModuleName))
+   PopT (ModuleName) ;
+   PushT (ModuleName) ;
+   GenQuad (StartDefFileOp, GetPreviousTokenLineNo (), NulSym, GetModule (ModuleName))
 END StartBuildDefFile ;
 
 

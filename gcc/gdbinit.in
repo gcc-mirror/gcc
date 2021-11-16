@@ -383,3 +383,11 @@ skip JUMP_LABEL_AS_INSN
 
 # Restore pagination to the previous state.
 python if __gcc_prev_pagination: gdb.execute("set pagination on")
+
+break lhd_print_error_function
+# run $HOME/Sandpit/chisel/m2/foo.mod
+# run -fq -I/home/gaius/GM2/graft-combine/build-devel-modula2-enabled/x86_64-pc-linux-gnu/./libgm2/libm2pim:/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/testsuite/../m2/gm2-libs -I/home/gaius/GM2/graft-combine/build-devel-modula2-enabled/x86_64-pc-linux-gnu/./libgm2/libm2iso:/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/testsuite/../m2/gm2-libs-iso -I/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/testsuite/gm2/extensions/pass -fpim -fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-color=never    -O /home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/testsuite/gm2/extensions/run/pass/align4.mod
+#
+#
+break M2Error_NewError
+run -g -fm2-g -Wunused-variable -fsoft-check-all -g -fm2-g  -funbounded-by-reference -fpim -fextended-opaque -Wpedantic-cast -Wpedantic-param-names -ffunction-sections -fdata-sections  -I/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-compiler -I/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libs -I/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-gcc -I/home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/m2/gm2-libiberty /home/gaius/GM2/graft-combine/gcc-git-devel-modula2/gcc/testsuite/gm2/pim/pass/program2.mod -o -

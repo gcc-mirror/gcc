@@ -146,8 +146,7 @@ BEGIN
       PushWord (stack, scope) ;
       IF CompilerDebugging
       THEN
-         printf1 ("DiscoverSSA %d\n", scope) ;
-         printf0 ("ForeachScopeBlockDo\n")
+         printf1 ("DiscoverSSA %d\n", scope)
       END ;
 
       IF CompilerDebugging

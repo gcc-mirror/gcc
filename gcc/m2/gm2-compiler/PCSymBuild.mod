@@ -98,6 +98,8 @@ FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         PushWord, PopWord, PeepWord,
                         IsEmptyWord, NoOfItemsInStackWord ;
 
+IMPORT M2Error ;
+
 
 CONST
    Debugging = FALSE ;
@@ -218,7 +220,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingDefinitionModule()) ;
-   PushT(name)
+   PushT(name) ;
+   M2Error.EnterDefinitionScope (name)
 END PCStartBuildDefModule ;
 
 
@@ -252,7 +255,8 @@ BEGIN
    THEN
       WriteFormat2('inconsistant definition module was named (%a) and concluded as (%a)',
                    NameStart, NameEnd)
-   END
+   END ;
+   M2Error.LeaveScope
 END PCEndBuildDefModule ;
 
 
@@ -284,7 +288,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingImplementationModule()) ;
-   PushTtok(name, tok)
+   PushTtok(name, tok) ;
+   M2Error.EnterImplementationScope (name)
 END PCStartBuildImpModule ;
 
 
@@ -321,7 +326,8 @@ BEGIN
       *)
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
-   END
+   END ;
+   M2Error.LeaveScope
 END PCEndBuildImpModule ;
 
 
@@ -355,7 +361,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(CompilingProgramModule()) ;
    Assert(NOT IsDefImp(ModuleSym)) ;
-   PushTtok(name, tok)
+   PushTtok(name, tok) ;
+   M2Error.EnterProgramScope (name)
 END PCStartBuildProgModule ;
 
 
@@ -392,7 +399,8 @@ BEGIN
       *)
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
-   END
+   END ;
+   M2Error.LeaveScope
 END PCEndBuildProgModule ;
 
 
@@ -423,7 +431,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(NOT IsDefImp(ModuleSym)) ;
    SetCurrentModule(ModuleSym) ;
-   PushTtok(name, tok)
+   PushTtok(name, tok) ;
+   M2Error.EnterModuleScope (name)
 END PCStartBuildInnerModule ;
 
 
@@ -460,7 +469,8 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   SetCurrentModule(GetModuleScope(GetCurrentModule()))
+   SetCurrentModule(GetModuleScope(GetCurrentModule())) ;
+   M2Error.LeaveScope
 END PCEndBuildInnerModule ;
 
 
@@ -608,7 +618,8 @@ BEGIN
    ProcSym := RequestSym (tok, name) ;
    Assert (IsProcedure (ProcSym)) ;
    PushTtok (ProcSym, tok) ;
-   StartScope (ProcSym)
+   StartScope (ProcSym) ;
+   M2Error.EnterProcedureScope (name)
 END PCStartBuildProcedure ;
 
 
@@ -651,7 +662,8 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   EndScope
+   EndScope ;
+   M2Error.LeaveScope
 END PCEndBuildProcedure ;
 
 

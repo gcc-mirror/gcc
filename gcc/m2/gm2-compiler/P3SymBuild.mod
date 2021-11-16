@@ -62,6 +62,7 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 
 FROM FifoQueue IMPORT GetSubrangeFromFifoQueue ;
 FROM M2Reserved IMPORT NulTok, ImportTok ;
+IMPORT M2Error ;
 
 
 (*
@@ -85,14 +86,15 @@ VAR
    name     : Name ;
    ModuleSym: CARDINAL ;
 BEGIN
-   PopTtok(name, tok) ;
-   ModuleSym := MakeDefinitionSource(tok, name) ;
-   SetCurrentModule(ModuleSym) ;
-   SetFileModule(ModuleSym) ;
-   StartScope(ModuleSym) ;
-   Assert(IsDefImp(ModuleSym)) ;
-   Assert(CompilingDefinitionModule()) ;
-   PushT(name)
+   PopTtok (name, tok) ;
+   ModuleSym := MakeDefinitionSource (tok, name) ;
+   SetCurrentModule (ModuleSym) ;
+   SetFileModule (ModuleSym) ;
+   StartScope (ModuleSym) ;
+   Assert (IsDefImp (ModuleSym)) ;
+   Assert (CompilingDefinitionModule ()) ;
+   PushT (name) ;
+   M2Error.EnterDefinitionScope (name)
 END P3StartBuildDefModule ;
 
 
@@ -126,7 +128,8 @@ BEGIN
    THEN
       WriteFormat2('inconsistant definition module was named (%a) and concluded as (%a)',
                    NameStart, NameEnd)
-   END
+   END ;
+   M2Error.LeaveScope
 END P3EndBuildDefModule ;
 
 
@@ -151,14 +154,15 @@ VAR
    name     : Name ;
    ModuleSym: CARDINAL ;
 BEGIN
-   PopTtok(name, tok) ;
-   ModuleSym := MakeImplementationSource(tok, name) ;
-   SetCurrentModule(ModuleSym) ;
-   SetFileModule(ModuleSym) ;
-   StartScope(ModuleSym) ;
-   Assert(IsDefImp(ModuleSym)) ;
-   Assert(CompilingImplementationModule()) ;
-   PushT(name)
+   PopTtok (name, tok) ;
+   ModuleSym := MakeImplementationSource (tok, name) ;
+   SetCurrentModule (ModuleSym) ;
+   SetFileModule (ModuleSym) ;
+   StartScope (ModuleSym) ;
+   Assert (IsDefImp(ModuleSym)) ;
+   Assert (CompilingImplementationModule()) ;
+   PushT (name) ;
+   M2Error.EnterImplementationScope (name)
 END P3StartBuildImpModule ;
 
 
@@ -195,7 +199,8 @@ BEGIN
       *)
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
-   END
+   END ;
+   M2Error.LeaveScope
 END P3EndBuildImpModule ;
 
 
@@ -229,7 +234,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(CompilingProgramModule()) ;
    Assert(NOT IsDefImp(ModuleSym)) ;
-   PushT(name)
+   PushT(name) ;
+   M2Error.EnterProgramScope (name)
 END P3StartBuildProgModule ;
 
 
@@ -266,7 +272,8 @@ BEGIN
       *)
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
-   END
+   END ;
+   M2Error.LeaveScope
 END P3EndBuildProgModule ;
 
 
@@ -297,7 +304,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(NOT IsDefImp(ModuleSym)) ;
    SetCurrentModule(ModuleSym) ;
-   PushT(name)
+   PushT(name) ;
+   M2Error.EnterModuleScope (name)
 END StartBuildInnerModule ;
 
 
@@ -334,7 +342,8 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   SetCurrentModule(GetModuleScope(GetCurrentModule()))
+   SetCurrentModule(GetModuleScope(GetCurrentModule())) ;
+   M2Error.LeaveScope
 END EndBuildInnerModule ;
 
 
@@ -457,7 +466,8 @@ BEGIN
    ProcSym := RequestSym (tok, name) ;
    Assert (IsProcedure (ProcSym)) ;
    PushTtok (ProcSym, tok) ;
-   StartScope (ProcSym)
+   StartScope (ProcSym) ;
+   M2Error.EnterProcedureScope (name)
 END StartBuildProcedure ;
 
 
@@ -500,7 +510,8 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   EndScope
+   EndScope ;
+   M2Error.LeaveScope
 END EndBuildProcedure ;
 
 

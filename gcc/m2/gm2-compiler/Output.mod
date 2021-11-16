@@ -132,7 +132,7 @@ BEGIN
    THEN
       KillWriteS (InitStringCharStar (KeyToCharStar (key)))
    ELSE
-      ConCat (buffer, Mark (InitStringCharStar (KeyToCharStar (key))))
+      buffer := ConCat (buffer, Mark (InitStringCharStar (KeyToCharStar (key))))
    END
 END WriteKey ;
 
@@ -175,7 +175,7 @@ BEGIN
    THEN
       buffer := KillString (buffer)
    END ;
-   buffer := InitString (buffer)
+   buffer := InitString ('')
 END StartBuffer ;
 
 

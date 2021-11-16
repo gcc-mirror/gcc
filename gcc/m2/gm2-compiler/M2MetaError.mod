@@ -25,7 +25,7 @@ IMPLEMENTATION MODULE M2MetaError ;
 FROM M2Base IMPORT ZType, RType ;
 FROM NameKey IMPORT Name, KeyToCharStar, NulName ;
 FROM StrLib IMPORT StrLen ;
-FROM M2LexBuf IMPORT GetTokenNo ;
+FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo ;
 FROM M2Error IMPORT Error, NewError, NewWarning, NewNote, ErrorString, InternalError, ChainError, SetColor, FlushErrors ;
 FROM FIO IMPORT StdOut, WriteLine ;
 FROM SFIO IMPORT WriteS ;
@@ -36,7 +36,7 @@ FROM StrCase IMPORT Lower ;
 FROM libc IMPORT printf ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Error IMPORT MoveError ;
-
+FROM M2Debug IMPORT Assert ;
 
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar,
                            ConCat, ConCatChar, Mark, string, KillString,
@@ -54,9 +54,11 @@ FROM SymbolTable IMPORT NulSym,
                         IsSubscript, IsSubrange, IsSet, IsHiddenType,
                         IsError, GetSymName, GetScope, IsExported,
                         GetType, SkipType, GetDeclaredDef, GetDeclaredMod,
+                        GetDeclaredModule, GetDeclaredDefinition, GetScope,
                         GetFirstUsed, IsNameAnonymous ;
 
 IMPORT M2ColorString ;
+IMPORT M2Error ;
 
 
 CONST
@@ -958,6 +960,108 @@ END chooseError ;
 
 
 (*
+   doErrorScopeMod - potentially create an error referring to the definition
+                     module, fall back to the implementation or program module if
+                     there is no declaration in the definition module.
+*)
+
+PROCEDURE doErrorScopeMod (VAR eb: errorBlock; sym: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF scope = NulSym
+   THEN
+      doError (eb, GetDeclaredMod (sym))
+   ELSE
+      IF IsProcedure (scope)
+      THEN
+         M2Error.EnterProcedureScope (GetSymName (scope)) ;
+         doError (eb, GetDeclaredMod (sym)) ;
+      ELSE
+         IF IsModule (scope)
+         THEN
+            IF IsInnerModule (scope)
+            THEN
+               M2Error.EnterModuleScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredMod (sym))
+            ELSE
+               M2Error.EnterProgramScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredMod (sym))
+            END
+         ELSE
+            Assert (IsDefImp (scope)) ;
+            (* if this fails then we need to skip to the outer scope.
+            REPEAT
+             OuterModule := GetScope(OuterModule)
+            UNTIL GetScope(OuterModule)=NulSym ;  *)
+            IF GetDeclaredModule (sym) = UnknownTokenNo
+            THEN
+               M2Error.EnterDefinitionScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredDef (sym))
+            ELSE
+               M2Error.EnterImplementationScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredMod (sym))
+            END
+         END
+      END ;
+      M2Error.LeaveScope
+   END
+END doErrorScopeMod ;
+
+
+(*
+   doErrorScopeDef - potentially create an error referring to the definition
+                     module, fall back to the implementation or program module if
+                     there is no declaration in the definition module.
+*)
+
+PROCEDURE doErrorScopeDef (VAR eb: errorBlock; sym: CARDINAL) ;
+VAR
+   scope: CARDINAL ;
+BEGIN
+   scope := GetScope (sym) ;
+   IF scope = NulSym
+   THEN
+      doError (eb, GetDeclaredDef (sym))
+   ELSE
+      IF IsProcedure (scope)
+      THEN
+         M2Error.EnterProcedureScope (GetSymName (scope)) ;
+         doError (eb, GetDeclaredDef (sym)) ;
+      ELSE
+         IF IsModule (scope)
+         THEN
+            IF IsInnerModule (scope)
+            THEN
+               M2Error.EnterModuleScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredDef (sym))
+            ELSE
+               M2Error.EnterProgramScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredDef (sym))
+            END
+         ELSE
+            Assert (IsDefImp (scope)) ;
+            (* if this fails then we need to skip to the outer scope.
+            REPEAT
+             OuterModule := GetScope(OuterModule)
+            UNTIL GetScope(OuterModule)=NulSym ;  *)
+            IF GetDeclaredDefinition (sym) = UnknownTokenNo
+            THEN
+               M2Error.EnterImplementationScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredMod (sym))
+            ELSE
+               M2Error.EnterDefinitionScope (GetSymName (scope)) ;
+               doError (eb, GetDeclaredDef (sym))
+            END
+         END
+      END ;
+      M2Error.LeaveScope
+   END
+END doErrorScopeDef ;
+
+
+(*
    declaredDef - creates an error note where sym[bol] was declared.
 *)
 
@@ -965,7 +1069,7 @@ PROCEDURE declaredDef (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL
 BEGIN
    IF bol <= HIGH (sym)
    THEN
-      doError (eb, GetDeclaredDef (sym[bol]))
+      doErrorScopeDef (eb, sym[bol])
    END
 END declaredDef ;
 
@@ -978,7 +1082,7 @@ PROCEDURE declaredMod (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL
 BEGIN
    IF bol <= HIGH (sym)
    THEN
-      doError (eb, GetDeclaredMod (sym[bol]))
+      doErrorScopeMod (eb, sym[bol])
    END
 END declaredMod ;
 

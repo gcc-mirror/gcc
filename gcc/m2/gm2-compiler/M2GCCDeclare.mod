@@ -233,7 +233,7 @@ VAR
 
 PROCEDURE mystop ; BEGIN END mystop ;
 
-(* ***************************************************
+(* *************************************************** *)
 (*
    PrintNum -
 *)
@@ -271,7 +271,7 @@ BEGIN
    DebugSet('NilTypedArrays', NilTypedArrays) ;
    DebugSet('ToBeSolvedByQuads', ToBeSolvedByQuads)
 END DebugSets ;
-************************************************ *)
+(* ************************************************ *)
 
 
 (*
@@ -5437,8 +5437,15 @@ END IsVarDependants ;
 *)
 
 PROCEDURE WalkPointerDependants (sym: CARDINAL; p: WalkAction) ;
+VAR
+   align: CARDINAL ;
 BEGIN
-   p(GetSType(sym))
+   p(GetSType(sym)) ;
+   align := GetAlignment(sym) ;
+   IF align#NulSym
+   THEN
+      p(align)
+   END
 END WalkPointerDependants ;
 
 
@@ -5448,8 +5455,24 @@ END WalkPointerDependants ;
 *)
 
 PROCEDURE IsPointerDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
+VAR
+   align: CARDINAL ;
+   final: BOOLEAN ;
 BEGIN
-   RETURN( q(GetSType(sym)) )
+   final := TRUE ;
+   IF NOT q(GetSType(sym))
+   THEN
+      final := FALSE
+   END ;
+   align := GetAlignment (sym) ;
+   IF final AND (align # NulSym)
+   THEN
+      IF NOT q(align)
+      THEN
+         final := FALSE
+      END
+   END ;
+   RETURN final
 END IsPointerDependants ;
 
 
@@ -5784,13 +5807,13 @@ END WalkVarientFieldDependants ;
 PROCEDURE IsArrayDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
    result   : BOOLEAN ;
+   align    : CARDINAL ;
    subscript: CARDINAL ;
    high, low: CARDINAL ;
    type     : CARDINAL ;
 BEGIN
    result := TRUE ;
    Assert(IsArray(sym)) ;
-   result := TRUE ;
    type := GetSType(sym) ;
 
    IF NOT q(type)
@@ -5817,6 +5840,11 @@ BEGIN
       IF NOT q(high)
       THEN
          result := FALSE
+      END ;
+      align := GetAlignment(sym) ;
+      IF (align#NulSym) AND (NOT q(align))
+      THEN
+         result := FALSE
       END
    END ;
    RETURN( result )
@@ -5829,6 +5857,7 @@ END IsArrayDependants ;
 
 PROCEDURE WalkArrayDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
+   align    : CARDINAL ;
    subscript: CARDINAL ;
    high, low: CARDINAL ;
    type     : CARDINAL ;
@@ -5847,7 +5876,12 @@ BEGIN
       low  := GetTypeMin(type) ;
       high := GetTypeMax(type) ;
       p(low) ;
-      p(high)
+      p(high) ;
+      align := GetAlignment (sym) ;
+      IF align#NulSym
+      THEN
+         p(align)
+      END
    END
 END WalkArrayDependants ;
 
@@ -6068,16 +6102,22 @@ END WalkUnboundedDependants ;
 
 PROCEDURE IsTypeDependants (sym: CARDINAL; q: IsAction) : BOOLEAN ;
 VAR
-   type  : CARDINAL ;
-   result: BOOLEAN ;
+   align: CARDINAL ;
+   type : CARDINAL ;
+   final: BOOLEAN ;
 BEGIN
    type := GetSType(sym) ;
-   result := TRUE ;
+   final := TRUE ;
    IF (type#NulSym) AND (NOT q(type))
    THEN
-      result := FALSE
+      final := FALSE
    END ;
-   RETURN( result )
+   align := GetAlignment(sym) ;
+   IF (align#NulSym) AND (NOT q(align))
+   THEN
+      final := FALSE
+   END ;
+   RETURN( final )
 END IsTypeDependants ;
 
 
@@ -6087,12 +6127,18 @@ END IsTypeDependants ;
 
 PROCEDURE WalkTypeDependants (sym: CARDINAL; p: WalkAction) ;
 VAR
-   type: CARDINAL ;
+   align: CARDINAL ;
+   type : CARDINAL ;
 BEGIN
    type := GetSType(sym) ;
    IF type#NulSym
    THEN
       p(type)
+   END ;
+   align := GetAlignment(sym) ;
+   IF align#NulSym
+   THEN
+      p(align)
    END
 END WalkTypeDependants ;
 

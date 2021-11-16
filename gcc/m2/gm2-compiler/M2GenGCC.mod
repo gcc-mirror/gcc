@@ -242,7 +242,6 @@ FROM M2Quads IMPORT QuadOperator, GetQuad, IsReferenced, GetNextQuad,
                     DisplayQuadList ;
 
 FROM M2Check IMPORT ParameterTypeCompatible, AssignmentTypeCompatible ;
-
 FROM M2SSA IMPORT EnableSSA ;
 
 
@@ -385,7 +384,6 @@ BEGIN
 END IsExportedGcc ;
 
 
-
 (*
    ConvertQuadsToTree - runs through the quadruple list and converts it into
                         the GCC tree structure.
@@ -394,9 +392,9 @@ END IsExportedGcc ;
 PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
 BEGIN
    REPEAT
-      CodeStatement(Start) ;
+      CodeStatement (Start) ;
       Start := GetNextQuad (Start)
-   UNTIL (Start > End) OR (Start = 0)
+   UNTIL (Start > End) OR (Start = 0) ;
 END ConvertQuadsToTree ;
 
 
@@ -556,46 +554,45 @@ BEGIN
          tokenno := CurrentQuadToken ;
          IF tokenno=0
          THEN
-            tokenno := QuadToTokenNo(quad)
+            tokenno := QuadToTokenNo (quad)
          END ;
-         GetQuad(quad, op, op1, op2, op3) ;
-
+         GetQuad (quad, op, op1, op2, op3) ;
          CASE op OF
 
-         StandardFunctionOp : FoldStandardFunction(tokenno, p, quad, op1, op2, op3) |
+         StandardFunctionOp : FoldStandardFunction (tokenno, p, quad, op1, op2, op3) |
          BuiltinConstOp     : FoldBuiltinConst (tokenno, p, quad, op1, op3) |
-         BuiltinTypeInfoOp  : FoldBuiltinTypeInfo(tokenno, p, quad, op1, op2, op3) |
-         LogicalOrOp        : FoldSetOr(tokenno, p, quad, op1, op2, op3) |
-         LogicalAndOp       : FoldSetAnd(tokenno, p, quad, op1, op2, op3) |
-         LogicalXorOp       : FoldSymmetricDifference(tokenno, p, quad, op1, op2, op3) |
+         BuiltinTypeInfoOp  : FoldBuiltinTypeInfo (tokenno, p, quad, op1, op2, op3) |
+         LogicalOrOp        : FoldSetOr (tokenno, p, quad, op1, op2, op3) |
+         LogicalAndOp       : FoldSetAnd (tokenno, p, quad, op1, op2, op3) |
+         LogicalXorOp       : FoldSymmetricDifference (tokenno, p, quad, op1, op2, op3) |
          BecomesOp          : FoldBecomes (tokenno, p, quad, op1, op3) |
-         AddOp              : FoldAdd(tokenno, p, quad, op1, op2, op3) |
-         SubOp              : FoldSub(tokenno, p, quad, op1, op2, op3) |
-         MultOp             : FoldMult(tokenno, p, quad, op1, op2, op3) |
-         DivM2Op            : FoldDivM2(tokenno, p, quad, op1, op2, op3) |
-         ModM2Op            : FoldModM2(tokenno, p, quad, op1, op2, op3) |
-         DivTruncOp         : FoldDivTrunc(tokenno, p, quad, op1, op2, op3) |
-         ModTruncOp         : FoldModTrunc(tokenno, p, quad, op1, op2, op3) |
-         DivCeilOp          : FoldDivCeil(tokenno, p, quad, op1, op2, op3) |
-         ModCeilOp          : FoldModCeil(tokenno, p, quad, op1, op2, op3) |
-         DivFloorOp         : FoldDivFloor(tokenno, p, quad, op1, op2, op3) |
-         ModFloorOp         : FoldModFloor(tokenno, p, quad, op1, op2, op3) |
+         AddOp              : FoldAdd (tokenno, p, quad, op1, op2, op3) |
+         SubOp              : FoldSub (tokenno, p, quad, op1, op2, op3) |
+         MultOp             : FoldMult (tokenno, p, quad, op1, op2, op3) |
+         DivM2Op            : FoldDivM2 (tokenno, p, quad, op1, op2, op3) |
+         ModM2Op            : FoldModM2 (tokenno, p, quad, op1, op2, op3) |
+         DivTruncOp         : FoldDivTrunc (tokenno, p, quad, op1, op2, op3) |
+         ModTruncOp         : FoldModTrunc (tokenno, p, quad, op1, op2, op3) |
+         DivCeilOp          : FoldDivCeil (tokenno, p, quad, op1, op2, op3) |
+         ModCeilOp          : FoldModCeil (tokenno, p, quad, op1, op2, op3) |
+         DivFloorOp         : FoldDivFloor (tokenno, p, quad, op1, op2, op3) |
+         ModFloorOp         : FoldModFloor (tokenno, p, quad, op1, op2, op3) |
          NegateOp           : FoldNegate (tokenno, p, quad, op1, op3) |
-         SizeOp             : FoldSize(tokenno, p, quad, op1, op2, op3) |
-         RecordFieldOp      : FoldRecordField(tokenno, p, quad, op1, op2, op3) |
-         HighOp             : FoldHigh(tokenno, p, quad, op1, op2, op3) |
+         SizeOp             : FoldSize (tokenno, p, quad, op1, op2, op3) |
+         RecordFieldOp      : FoldRecordField (tokenno, p, quad, op1, op2, op3) |
+         HighOp             : FoldHigh (tokenno, p, quad, op1, op2, op3) |
          ElementSizeOp      : FoldElementSize (tokenno, p, quad, op1, op2) |
-         ConvertOp          : FoldConvert(tokenno, p, quad, op1, op2, op3) |
-         CoerceOp           : FoldCoerce(tokenno, p, quad, op1, op2, op3) |
-         CastOp             : FoldCast(tokenno, p, quad, op1, op2, op3) |
+         ConvertOp          : FoldConvert (tokenno, p, quad, op1, op2, op3) |
+         CoerceOp           : FoldCoerce (tokenno, p, quad, op1, op2, op3) |
+         CastOp             : FoldCast (tokenno, p, quad, op1, op2, op3) |
          InclOp             : FoldIncl (tokenno, p, quad, op1, op3) |
          ExclOp             : FoldExcl (tokenno, p, quad, op1, op3) |
          IfLessOp           : FoldIfLess (tokenno, quad, op1, op2, op3) |
          IfInOp             : FoldIfIn (tokenno, quad, op1, op2, op3) |
          IfNotInOp          : FoldIfNotIn (tokenno, quad, op1, op2, op3) |
          LogicalShiftOp     : FoldSetShift(tokenno, p, quad, op1, op2, op3) |
-         LogicalRotateOp    : FoldSetRotate(tokenno, p, quad, op1, op2, op3) |
-         ParamOp            : FoldBuiltinFunction(tokenno, p, quad, op1, op2, op3) |
+         LogicalRotateOp    : FoldSetRotate (tokenno, p, quad, op1, op2, op3) |
+         ParamOp            : FoldBuiltinFunction (tokenno, p, quad, op1, op2, op3) |
          RangeCheckOp       : FoldRange (tokenno, quad, op3) |
          StatementNoteOp    : FoldStatementNote (op3)
 
@@ -614,7 +611,7 @@ BEGIN
       printf0('after resolving expressions with gcc\n') ;
       DisplayQuadList
    END ;
-   RETURN( Changed )
+   RETURN Changed
 END ResolveConstantExpressions ;
 
 
