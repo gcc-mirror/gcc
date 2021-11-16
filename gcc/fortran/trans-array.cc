@@ -3844,11 +3844,9 @@ add_to_offset (tree *cst_offset, tree *offset, tree t)
     }
 }
 
-
 static tree
-build_array_ref (tree desc, tree offset, tree decl, tree vptr)
+get_class_array_vptr (tree desc, tree vptr)
 {
-  tree tmp;
   tree type;
   tree cdesc;
 
@@ -3872,7 +3870,14 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
 	  && GFC_CLASS_TYPE_P (TYPE_CANONICAL (type)))
 	vptr = gfc_class_vptr_get (TREE_OPERAND (cdesc, 0));
     }
+  return vptr;
+}
 
+static tree
+build_array_ref (tree desc, tree offset, tree decl, tree vptr)
+{
+  tree tmp;
+  vptr = get_class_array_vptr (desc, vptr);
   tmp = gfc_conv_array_data (desc);
   tmp = build_fold_indirect_ref_loc (input_location, tmp);
   tmp = gfc_build_array_ref (tmp, offset, decl,
@@ -3881,12 +3886,60 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
   return tmp;
 }
 
+/* Get the declared lower bound for rank N of array DECL which might
+   be either a bare array or a descriptor.  This differs from
+   gfc_conv_array_lbound because it gets information for temporary array
+   objects from AR instead of the descriptor (they can differ).  */
+
+static tree
+get_array_lbound (tree decl, int n, gfc_symbol *sym,
+		  gfc_array_ref *ar, gfc_se *se)
+{
+  if (sym->attr.temporary)
+    {
+      gfc_se tmpse;
+      gfc_init_se (&tmpse, se);
+      gfc_conv_expr_type (&tmpse, ar->as->lower[n], gfc_array_index_type);
+      gfc_add_block_to_block (&se->pre, &tmpse.pre);
+      return tmpse.expr;
+    }
+  else
+    return gfc_conv_array_lbound (decl, n);
+}
+
+/* Similarly for the upper bound.  */
+static tree
+get_array_ubound (tree decl, int n, gfc_symbol *sym,
+		  gfc_array_ref *ar, gfc_se *se)
+{
+  if (sym->attr.temporary)
+    {
+      gfc_se tmpse;
+      gfc_init_se (&tmpse, se);
+      gfc_conv_expr_type (&tmpse, ar->as->upper[n], gfc_array_index_type);
+      gfc_add_block_to_block (&se->pre, &tmpse.pre);
+      return tmpse.expr;
+    }
+  else
+    return gfc_conv_array_ubound (decl, n);
+}
+
 
 /* Build an array reference.  se->expr already holds the array descriptor.
    This should be either a variable, indirect variable reference or component
    reference.  For arrays which do not have a descriptor, se->expr will be
    the data pointer.
-   a(i, j, k) = base[offset + i * stride[0] + j * stride[1] + k * stride[2]]*/
+
+   There are two strategies here.  In the traditional case, multidimensional
+   arrays are explicitly linearized into a one-dimensional array, with the
+   index computed as if by
+   a(i, j, k) = base[offset + i * stride[0] + j * stride[1] + k * stride[2]]
+
+   However, we can often get better code using the Graphite framework
+   and scalar evolutions in the middle end, which expects to see
+   multidimensional array accesses represented as nested ARRAY_REFs, similar
+   to what the C/C++ front ends produce.  Delinearization is controlled
+   by flag_delinearize_aref.  */
 
 void
 gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
@@ -3897,11 +3950,16 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   tree tmp;
   tree stride;
   tree decl = NULL_TREE;
+  tree cooked_decl = NULL_TREE;
+  tree vptr = se->class_vptr;
   gfc_se indexse;
   gfc_se tmpse;
   gfc_symbol * sym = expr->symtree->n.sym;
   char *var_name = NULL;
+  tree aref = NULL_TREE;
+  tree atype = NULL_TREE;
 
+  /* Handle coarrays.  */
   if (ar->dimen == 0)
     {
       gcc_assert (ar->codimen || sym->attr.select_rank_temporary
@@ -3961,15 +4019,160 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	}
     }
 
+  /* Per comments above, DECL is not always a declaration.  It may be
+     either a variable, indirect variable reference, or component
+     reference.  It may have array or pointer type, or it may be a
+     descriptor with RECORD_TYPE.  */
   decl = se->expr;
   if (IS_CLASS_ARRAY (sym) && sym->attr.dummy && ar->as->type != AS_DEFERRED)
     decl = sym->backend_decl;
 
-  cst_offset = offset = gfc_index_zero_node;
-  add_to_offset (&cst_offset, &offset, gfc_conv_array_offset (decl));
+  /* A pointer array component can be detected from its field decl. Fix
+     the descriptor, mark the resulting variable decl and store it in
+     COOKED_DECL to pass to gfc_build_array_ref.  */
+  if (get_CFI_desc (sym, expr, &cooked_decl, ar))
+    cooked_decl = build_fold_indirect_ref_loc (input_location, cooked_decl);
+  if (!expr->ts.deferred && !sym->attr.codimension
+      && is_pointer_array (se->expr))
+    {
+      if (TREE_CODE (se->expr) == COMPONENT_REF)
+	cooked_decl = se->expr;
+      else if (TREE_CODE (se->expr) == INDIRECT_REF)
+	cooked_decl = TREE_OPERAND (se->expr, 0);
+      else
+	cooked_decl = se->expr;
+    }
+  else if (expr->ts.deferred
+	   || (sym->ts.type == BT_CHARACTER
+	       && sym->attr.select_type_temporary))
+    {
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
+	{
+	  cooked_decl = se->expr;
+	  if (TREE_CODE (cooked_decl) == INDIRECT_REF)
+	    cooked_decl = TREE_OPERAND (cooked_decl, 0);
+	}
+      else
+	cooked_decl = sym->backend_decl;
+    }
+  else if (sym->ts.type == BT_CLASS)
+    {
+      if (UNLIMITED_POLY (sym))
+	{
+	  gfc_expr *class_expr = gfc_find_and_cut_at_last_class_ref (expr);
+	  gfc_init_se (&tmpse, NULL);
+	  gfc_conv_expr (&tmpse, class_expr);
+	  if (!se->class_vptr)
+	    vptr = gfc_class_vptr_get (tmpse.expr);
+	  gfc_free_expr (class_expr);
+	  cooked_decl = tmpse.expr;
+	}
+      else
+	cooked_decl = NULL_TREE;
+    }
 
-  /* Calculate the offsets from all the dimensions.  Make sure to associate
-     the final offset so that we form a chain of loop invariant summands.  */
+  /* Find the base of the array; this normally has ARRAY_TYPE.  */
+  tree base = build_fold_indirect_ref_loc (input_location,
+					   gfc_conv_array_data (se->expr));
+  tree type = TREE_TYPE (base);
+
+  /* Handle special cases, copied from gfc_build_array_ref.  After we get
+     through this, we know TYPE definitely is an ARRAY_TYPE.  */
+  if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0)
+    {
+      gcc_assert (GFC_TYPE_ARRAY_CORANK (type) > 0);
+      se->expr = fold_convert (TYPE_MAIN_VARIANT (type), base);
+      return;
+    }
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    {
+      gcc_assert (cooked_decl == NULL_TREE);
+      se->expr = base;
+      return;
+    }
+
+  /* Check for cases where we cannot delinearize.  */
+
+  bool delinearize = flag_delinearize_aref;
+
+  /* There is no point in trying to delinearize 1-dimensional arrays.  */
+  if (ar->dimen == 1)
+    delinearize = false;
+
+  if (delinearize
+      && (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr))
+	  || (DECL_P (se->expr)
+	      && DECL_LANG_SPECIFIC (se->expr)
+	      && GFC_DECL_SAVED_DESCRIPTOR (se->expr))))
+    {
+      /* Descriptor arrays that may not be contiguous cannot
+	 be delinearized without using the stride in the descriptor,
+	 which generally involves introducing a division operation.
+	 That's unlikely to produce optimal code, so avoid doing it.  */
+      tree desc = se->expr;
+      if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
+	desc = GFC_DECL_SAVED_DESCRIPTOR (se->expr);
+      tree tmptype = TREE_TYPE (desc);
+      if (POINTER_TYPE_P (tmptype))
+	tmptype = TREE_TYPE (tmptype);
+      enum gfc_array_kind akind = GFC_TYPE_ARRAY_AKIND (tmptype);
+      if (akind != GFC_ARRAY_ASSUMED_SHAPE_CONT
+	  && akind != GFC_ARRAY_ASSUMED_RANK_CONT
+	  && akind != GFC_ARRAY_ALLOCATABLE
+	  && akind != GFC_ARRAY_POINTER_CONT)
+	delinearize = false;
+    }
+
+  /* See gfc_build_array_ref in trans.c.  If we have a cooked_decl or
+     vptr, then we most likely have to do pointer arithmetic using a
+     linearized array offset.  */
+  if (delinearize && cooked_decl)
+    delinearize = false;
+  else if (delinearize && get_class_array_vptr (se->expr, vptr))
+    delinearize = false;
+
+  if (!delinearize)
+    {
+      /* Initialize the offset from the array descriptor.  This accounts
+	 for the array base being something other than zero.  */
+      cst_offset = offset = gfc_index_zero_node;
+      add_to_offset (&cst_offset, &offset, gfc_conv_array_offset (decl));
+    }
+  else
+    {
+      /* If we are delinearizing, build up the nested array type using the
+	 dimension information we have for each rank.  */
+      atype = TREE_TYPE (type);
+      for (n = 0; n < ar->dimen; n++)
+	{
+	  /* We're working from the outermost nested array reference inward
+	     in this step.  ATYPE is the element type for the access in
+	     this rank; build the new array type based on the bounds
+	     information and store it back into ATYPE for the next rank's
+	     processing.  */
+	  tree lbound = get_array_lbound (decl, n, sym, ar, se);
+	  tree ubound = get_array_ubound (decl, n, sym, ar, se);
+	  tree dimen = build_range_type (TREE_TYPE (lbound),
+					 lbound, ubound);
+	  atype = build_array_type (atype, dimen);
+
+	  /* Emit a DECL_EXPR for the array type so the gimplification of
+	     its type sizes works correctly.  */
+	  if (! TYPE_NAME (atype))
+	    TYPE_NAME (atype) = build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+					    NULL_TREE, atype);
+	  gfc_add_expr_to_block (&se->pre,
+				 build1 (DECL_EXPR, atype,
+					 TYPE_NAME (atype)));
+	}
+
+      /* Cast base to the innermost array type.  */
+      if (DECL_P (base))
+	TREE_ADDRESSABLE (base) = 1;
+      aref = build1 (NOP_EXPR, atype, base);
+    }
+
+  /* Process indices in reverse order.  */
   for (n = ar->dimen - 1; n >= 0; n--)
     {
       /* Calculate the index for this dimension.  */
@@ -3987,16 +4190,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	  indexse.expr = save_expr (indexse.expr);
 
 	  /* Lower bound.  */
-	  tmp = gfc_conv_array_lbound (decl, n);
-	  if (sym->attr.temporary)
-	    {
-	      gfc_init_se (&tmpse, se);
-	      gfc_conv_expr_type (&tmpse, ar->as->lower[n],
-				  gfc_array_index_type);
-	      gfc_add_block_to_block (&se->pre, &tmpse.pre);
-	      tmp = tmpse.expr;
-	    }
-
+	  tmp = get_array_lbound (decl, n, sym, ar, se);
 	  cond = fold_build2_loc (input_location, LT_EXPR, logical_type_node,
 				  indexse.expr, tmp);
 	  msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
@@ -4011,16 +4205,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	     arrays.  */
 	  if (n < ar->dimen - 1 || ar->as->type != AS_ASSUMED_SIZE)
 	    {
-	      tmp = gfc_conv_array_ubound (decl, n);
-	      if (sym->attr.temporary)
-		{
-		  gfc_init_se (&tmpse, se);
-		  gfc_conv_expr_type (&tmpse, ar->as->upper[n],
-				      gfc_array_index_type);
-		  gfc_add_block_to_block (&se->pre, &tmpse.pre);
-		  tmp = tmpse.expr;
-		}
-
+	      tmp = get_array_ubound (decl, n, sym, ar, se);
 	      cond = fold_build2_loc (input_location, GT_EXPR,
 				      logical_type_node, indexse.expr, tmp);
 	      msg = xasprintf ("Index '%%ld' of dimension %d of array '%s' "
@@ -4033,65 +4218,41 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 	    }
 	}
 
-      /* Multiply the index by the stride.  */
-      stride = gfc_conv_array_stride (decl, n);
-      tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-			     indexse.expr, stride);
-
-      /* And add it to the total.  */
-      add_to_offset (&cst_offset, &offset, tmp);
-    }
-
-  if (!integer_zerop (cst_offset))
-    offset = fold_build2_loc (input_location, PLUS_EXPR,
-			      gfc_array_index_type, offset, cst_offset);
-
-  /* A pointer array component can be detected from its field decl. Fix
-     the descriptor, mark the resulting variable decl and pass it to
-     build_array_ref.  */
-  decl = NULL_TREE;
-  if (get_CFI_desc (sym, expr, &decl, ar))
-    decl = build_fold_indirect_ref_loc (input_location, decl);
-  if (!expr->ts.deferred && !sym->attr.codimension
-      && is_pointer_array (se->expr))
-    {
-      if (TREE_CODE (se->expr) == COMPONENT_REF)
-	decl = se->expr;
-      else if (TREE_CODE (se->expr) == INDIRECT_REF)
-	decl = TREE_OPERAND (se->expr, 0);
-      else
-	decl = se->expr;
-    }
-  else if (expr->ts.deferred
-	   || (sym->ts.type == BT_CHARACTER
-	       && sym->attr.select_type_temporary))
-    {
-      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
+      if (!delinearize)
 	{
-	  decl = se->expr;
-	  if (TREE_CODE (decl) == INDIRECT_REF)
-	    decl = TREE_OPERAND (decl, 0);
+	  /* Multiply the index by the stride.  */
+	  stride = gfc_conv_array_stride (decl, n);
+	  tmp = fold_build2_loc (input_location, MULT_EXPR,
+				 gfc_array_index_type,
+				 indexse.expr, stride);
+
+	  /* And add it to the total.  */
+	  add_to_offset (&cst_offset, &offset, tmp);
 	}
       else
-	decl = sym->backend_decl;
-    }
-  else if (sym->ts.type == BT_CLASS)
-    {
-      if (UNLIMITED_POLY (sym))
 	{
-	  gfc_expr *class_expr = gfc_find_and_cut_at_last_class_ref (expr);
-	  gfc_init_se (&tmpse, NULL);
-	  gfc_conv_expr (&tmpse, class_expr);
-	  if (!se->class_vptr)
-	    se->class_vptr = gfc_class_vptr_get (tmpse.expr);
-	  gfc_free_expr (class_expr);
-	  decl = tmpse.expr;
+	  /* Peel off a layer of array nesting from ATYPE to
+	     to get the result type of the new ARRAY_REF.  */
+	  atype = TREE_TYPE (atype);
+	  aref = build4 (ARRAY_REF, atype, aref, indexse.expr,
+			 NULL_TREE, NULL_TREE);
 	}
-      else
-	decl = NULL_TREE;
     }
 
-  se->expr = build_array_ref (se->expr, offset, decl, se->class_vptr);
+  if (!delinearize)
+    {
+      /* Build a linearized array reference using the offset from all
+	 dimensions.  */
+      if (!integer_zerop (cst_offset))
+	offset = fold_build2_loc (input_location, PLUS_EXPR,
+				  gfc_array_index_type, offset, cst_offset);
+      se->class_vptr = vptr;
+      vptr = get_class_array_vptr (se->expr, vptr);
+      se->expr = gfc_build_array_ref (base, offset, cooked_decl, false, vptr);
+    }
+  else
+    /* Return the outermost ARRAY_REF we already built.  */
+    se->expr = aref;
 }
 
 

@@ -1,3 +1,13 @@
+2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* lang.opt (-param=delinearize=): New.
+	* trans-array.cc (get_class_array_vptr): New, split from...
+	(build_array_ref): ...here.
+	(get_array_lbound, get_array_ubound): New, split from...
+	(gfc_conv_array_ref): ...here.  Additional code refactoring
+	plus support for delinearization of the array access.
+
 2020-08-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Permit calls to Fortran intrinsics when annotating loops in

@@ -1,3 +1,15 @@
+2021-11-16  Sandra Loosemore <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/assumed_type_2.f90: Adjust patterns.
+	* gfortran.dg/goacc/kernels-loop-inner.f95: Likewise.
+	* gfortran.dg/graphite/block-3.f90: Remove xfails.
+	* gfortran.dg/graphite/block-4.f90: Likewise.
+	* gfortran.dg/inline_matmul_24.f90: Adjust patterns.
+	* gfortran.dg/no_arg_check_2.f90: Likewise.
+	* gfortran.dg/pr32921.f: Likewise.
+	* gfortran.dg/reassoc_4.f: Disable delinearization for this test.
+
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c: Add

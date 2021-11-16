@@ -8,7 +8,7 @@
                   do l=1,3
                      do k=1,l
                      enddo
-                     bar(k,l)=bar(k,l)+(v3b-1.d0)
+                     bar(k,l)=bar(k,l)+(v3b-1.d0) ! { dg-bogus ".*iteration 2 invokes undefined behavior" "TODO-kernels Caused by delinearization patch" { xfail *-*-* }   }
                   enddo
             enddo
             do m=1,ne

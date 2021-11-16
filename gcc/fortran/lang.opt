@@ -530,6 +530,10 @@ fdefault-real-16
 Fortran Var(flag_default_real_16)
 Set the default real kind to an 16 byte wide type.
 
+-param=delinearize=
+Common Joined UInteger Var(flag_delinearize_aref) Init(1) IntegerRange(0,1) Param Optimization
+Delinearize array references.
+
 fdollar-ok
 Fortran Var(flag_dollar_ok)
 Allow dollar signs in entity names.

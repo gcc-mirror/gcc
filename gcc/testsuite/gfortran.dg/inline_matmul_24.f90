@@ -39,4 +39,4 @@ program testMATMUL
       call abort()
     end if
 end program testMATMUL
-! { dg-final { scan-tree-dump-times "gamma5\\\[__var_1_do \\* 4 \\+ __var_2_do\\\]|gamma5\\\[NON_LVALUE_EXPR <__var_1_do> \\* 4 \\+ NON_LVALUE_EXPR <__var_2_do>\\\]" 1 "original" } }
+! { dg-final { scan-tree-dump-times "gamma5.*\\\[NON_LVALUE_EXPR <__var_1_do>\\\]\\\[NON_LVALUE_EXPR <__var_2_do>\\\]" 1 "original" } }
