@@ -102,13 +102,7 @@ protected:
 // Literal expression attribute body (non-macro attribute)
 class AttrInputLiteral : public AttrInput
 {
-  // Literal expression WITHOUT SUFFIX
-  // std::unique_ptr<LiteralExpr> literal_expr;
-  LiteralExpr
-    literal_expr; // as not using polymorphic behaviour, doesn't require pointer
-  // TODO: will require pointer if LiteralExpr is changed to have subclassing
-
-  // TODO: should this store location data?
+  LiteralExpr literal_expr;
 
 public:
   AttrInputLiteral (LiteralExpr lit_expr) : literal_expr (std::move (lit_expr))
@@ -126,6 +120,13 @@ public:
   bool check_cfg_predicate (const Session &) const override { return false; }
 
   bool is_meta_item () const override { return false; }
+
+  LiteralExpr &get_literal () { return literal_expr; }
+
+  AttrInputType get_attr_input_type () const final override
+  {
+    return AttrInput::AttrInputType::LITERAL;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
