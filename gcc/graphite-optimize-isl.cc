@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-vectorizer.h"
 #include "graphite.h"
+#include "graphite-oacc.h"
 
 
 /* get_schedule_for_node_st - Improve schedule for the schedule node.
@@ -115,6 +116,14 @@ optimize_isl (scop_p scop, bool oacc_enabled_graphite)
   int old_err = isl_options_get_on_error (scop->isl_context);
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
   int max_operations = param_max_isl_operations;
+
+  /* The default value for param_max_isl_operations is easily exceeded
+     by "kernels" loops in existing OpenACC codes.  Raise the values
+     significantly since analyzing those loops is crucial. */
+  if (param_max_isl_operations == 350000 /* default value */
+      && oacc_function_p (cfun))
+    max_operations = 2000000;
+
   if (max_operations)
     isl_ctx_set_max_operations (scop->isl_context, max_operations);
   isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
@@ -164,11 +173,27 @@ optimize_isl (scop_p scop, bool oacc_enabled_graphite)
 	  dump_user_location_t loc = find_loop_location
 	    (scop->scop_info->region.entry->dest->loop_father);
 	  if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			     "loop nest not optimized, optimization timed out "
-			     "after %d operations [--param max-isl-operations]\n",
-			     max_operations);
-	  else
+	    {
+              if (oacc_function_p (cfun))
+		{
+		  /* Special casing for OpenACC to unify diagnostic messages
+		     here and in graphite-scop-detection.c. */
+                  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+                                   "data-dependence analysis of OpenACC loop "
+                                   "nest "
+                                   "failed; try increasing the value of "
+                                   "--param="
+                                   "max-isl-operations=%d.\n",
+                                   max_operations);
+                }
+              else
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+                                 "loop nest not optimized, optimization timed "
+                                 "out after %d operations [--param "
+                                 "max-isl-operations]\n",
+                                 max_operations);
+            }
+          else
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
 			     "loop nest not optimized, ISL signalled an error\n");
 	}

@@ -2055,6 +2055,9 @@ determine_openacc_reductions (scop_p scop)
   }
 }
 
+
+extern dump_user_location_t find_loop_location (class loop *);
+
 /* Find Static Control Parts (SCoP) in the current function and pushes
    them to SCOPS.  */
 
@@ -2108,6 +2111,11 @@ build_scops (vec<scop_p> *scops)
 	}
 
       unsigned max_arrays = param_graphite_max_arrays_per_scop;
+
+      if (oacc_function_p (cfun)
+          && param_graphite_max_arrays_per_scop == 100 /* default value */)
+        max_arrays = 200;
+
       if (max_arrays > 0
 	  && scop->drs.length () >= max_arrays)
 	{
@@ -2115,7 +2123,16 @@ build_scops (vec<scop_p> *scops)
 		       << scop->drs.length ()
 		       << " is larger than --param graphite-max-arrays-per-scop="
 		       << max_arrays << ".\n");
-	  free_scop (scop);
+
+          if (dump_enabled_p () && oacc_function_p (cfun))
+            dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+                             find_loop_location (s->entry->dest->loop_father),
+                             "data-dependence analysis of OpenACC loop nest "
+                             "failed; try increasing the value of --param="
+                             "graphite-max-arrays-per-scop=%d.\n",
+                             max_arrays);
+
+          free_scop (scop);
 	  continue;
 	}
 
@@ -2128,6 +2145,15 @@ build_scops (vec<scop_p> *scops)
 			  << scop_nb_params (scop)
 			  << " larger than --param graphite-max-nb-scop-params="
 			  << max_dim << ".\n");
+
+          if (dump_enabled_p () && oacc_function_p (cfun))
+            dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+                             find_loop_location (s->entry->dest->loop_father),
+                             "data-dependence analysis of OpenACC loop nest "
+                             "failed; try increasing the value of --param="
+                             "graphite-max-nb-scop-params=%d.\n",
+                             max_dim);
+
 	  free_scop (scop);
 	  continue;
 	}

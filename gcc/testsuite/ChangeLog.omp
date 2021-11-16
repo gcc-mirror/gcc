@@ -1,3 +1,8 @@
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gcc.dg/goacc/graphite-parameter-1.c: New test.
+	* gcc.dg/goacc/graphite-parameter-2.c: New test.
+
 2021-11-16  Andrew Stubbs  <ams@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 

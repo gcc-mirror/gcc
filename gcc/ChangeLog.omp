@@ -1,5 +1,14 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* graphite-optimize-isl.cc (optimize_isl): Adjust
+	param_max_isl_operations value for OpenACC functions and add
+	special warnings if value gets exceeded.
+
+	* graphite-scop-detection.cc (build_scops): Likewise for
+	param_graphite_max_arrays_per_scop.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* tree-ssa-pre.cc (insert): Skip any insertions in OpenACC
 	functions that might be processed by Graphite.
 
