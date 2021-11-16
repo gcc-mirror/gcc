@@ -1,5 +1,12 @@
 2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
 
+	Backport from master:
+	* config/gcn/mkoffload.c (process_asm): Process the variable table
+	completely differently.
+	(process_obj): Encode the varaible data differently.
+
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/nvptx/nvptx-opts.h (ptx_version): Change PTX_VERSION_3_1 to
 	PTX_VERSION_4_1.
 	* config/nvptx/nvptx.c (nvptx_file_start): Bump minimum PTX version

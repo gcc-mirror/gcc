@@ -495,10 +495,8 @@ static void
 process_asm (FILE *in, FILE *out, FILE *cfile)
 {
   int fn_count = 0, var_count = 0, dims_count = 0, regcount_count = 0;
-  struct obstack fns_os, vars_os, varsizes_os, dims_os, regcounts_os;
+  struct obstack fns_os, dims_os, regcounts_os;
   obstack_init (&fns_os);
-  obstack_init (&vars_os);
-  obstack_init (&varsizes_os);
   obstack_init (&dims_os);
   obstack_init (&regcounts_os);
 
@@ -567,16 +565,11 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	    unsigned varsize;
 	    if (sscanf (buf, " .8byte %ms\n", &varname))
 	      {
-		obstack_ptr_grow (&vars_os, varname);
+		fputs (buf, out);
 		fgets (buf, sizeof (buf), in);
 		if (!sscanf (buf, " .8byte %u\n", &varsize))
 		  abort ();
-		obstack_int_grow (&varsizes_os, varsize);
 		var_count++;
-
-		/* The HSA Runtime cannot locate the symbol if it is not
-		   exported from the kernel.  */
-		fprintf (out, "\t.global %s\n", varname);
 	      }
 	    break;
 	  }
@@ -595,7 +588,19 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 
       char dummy;
       if (sscanf (buf, " .section .gnu.offload_vars%c", &dummy) > 0)
-	state = IN_VARS;
+	{
+	  state = IN_VARS;
+
+	  /* Add a global symbol to allow plugin-gcn.c to locate the table
+	     at runtime.  It can't use the "offload_var_table.N" emitted by
+	     the compiler because a) they're not global, and b) there's one
+	     for each input file combined into the binary.  */
+	  fputs (buf, out);
+	  fputs ("\t.global .offload_var_table\n"
+		 "\t.type .offload_var_table, @object\n"
+		 ".offload_var_table:\n",
+		 out);
+	}
       else if (sscanf (buf, " .section .gnu.offload_funcs%c", &dummy) > 0)
 	state = IN_FUNCS;
       else if (sscanf (buf, " .amdgpu_metadata%c", &dummy) > 0)
@@ -622,7 +627,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	  regcount.sgpr_count = regcount.vgpr_count = -1;
 	}
 
-      if (state == IN_CODE || state == IN_METADATA)
+      if (state == IN_CODE || state == IN_METADATA || state == IN_VARS)
 	fputs (buf, out);
     }
 
@@ -633,24 +638,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fprintf (cfile, "#include <stdlib.h>\n");
   fprintf (cfile, "#include <stdbool.h>\n\n");
 
-  char **vars = XOBFINISH (&vars_os, char **);
-  unsigned *varsizes = XOBFINISH (&varsizes_os, unsigned *);
-  fprintf (cfile,
-	   "static const struct global_var_info {\n"
-	   "  const char *name;\n"
-	   "  void *address;\n"
-	   "} vars[] = {\n");
-  int i;
-  for (i = 0; i < var_count; ++i)
-    {
-      const char *sep = i < var_count - 1 ? "," : " ";
-      fprintf (cfile, "  { \"%s\", NULL }%s /* size: %u */\n", vars[i], sep,
-	       varsizes[i]);
-    }
-  fprintf (cfile, "};\n\n");
-
-  obstack_free (&vars_os, NULL);
-  obstack_free (&varsizes_os, NULL);
+  fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
 
   /* Dump out function idents.  */
   fprintf (cfile, "static const struct hsa_kernel_description {\n"
@@ -661,6 +649,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	   "} gcn_kernels[] = {\n  ");
   dim.d[0] = dim.d[1] = dim.d[2] = 0;
   const char *comma;
+  int i;
   for (comma = "", i = 0; i < fn_count; comma = ",\n  ", i++)
     {
       /* Find if we recorded dimensions for this function.  */
@@ -732,13 +721,11 @@ process_obj (FILE *in, FILE *cfile)
 	   "  unsigned kernel_count;\n"
 	   "  const struct hsa_kernel_description *kernel_infos;\n"
 	   "  unsigned global_variable_count;\n"
-	   "  const struct global_var_info *global_variables;\n"
 	   "} target_data = {\n"
 	   "  &gcn_image,\n"
 	   "  sizeof (gcn_kernels) / sizeof (gcn_kernels[0]),\n"
 	   "  gcn_kernels,\n"
-	   "  sizeof (vars) / sizeof (vars[0]),\n"
-	   "  vars\n"
+	   "  gcn_num_vars\n"
 	   "};\n\n");
 
   fprintf (cfile,

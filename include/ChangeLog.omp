@@ -1,3 +1,8 @@
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from master:
+	* gomp-constants.h (GOMP_VERSION_GCN): Bump.
+
 2021-08-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

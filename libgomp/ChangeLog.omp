@@ -1,5 +1,12 @@
 2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
 
+	Backport from master:
+	* plugin/plugin-gcn.c (struct gcn_image_desc): Remove global_variables.
+	(GOMP_OFFLOAD_load_image): Locate the offload variables via the
+	table, not individual symbols.
+
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
 	* allocator.c (MEMSPACE_ALLOC): New macro.
 	(MEMSPACE_CALLOC): New macro.
 	(MEMSPACE_REALLOC): New macro.
