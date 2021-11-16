@@ -1,3 +1,11 @@
+2021-11-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-11-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/invoke.texi: Change references to "future cpu" to "power10",
+	"-mcpu=future" to "-mcpu=power10".  Adjust words for float128.
+
 2021-11-09  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
