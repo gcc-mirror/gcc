@@ -439,8 +439,10 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
 
   if (!seg.has_generic_args ())
     {
-      result = CanonicalPath::new_seg (seg.get_node_id (),
-				       seg.get_ident_segment ().as_string ());
+      auto ident_segment
+	= CanonicalPath::new_seg (seg.get_node_id (),
+				  seg.get_ident_segment ().as_string ());
+      result = result.append (ident_segment);
       return;
     }
 
@@ -454,14 +456,18 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
     {
       std::string generics
 	= canonicalize_generic_args (seg.get_generic_args ());
-      result = CanonicalPath::new_seg (seg.get_node_id (),
-				       seg.get_ident_segment ().as_string ()
-					 + "::" + generics);
+      auto generic_segment
+	= CanonicalPath::new_seg (seg.get_node_id (),
+				  seg.get_ident_segment ().as_string ()
+				    + "::" + generics);
+      result = result.append (generic_segment);
       return;
     }
 
-  result = CanonicalPath::new_seg (seg.get_node_id (),
-				   seg.get_ident_segment ().as_string ());
+  auto ident_segment
+    = CanonicalPath::new_seg (seg.get_node_id (),
+			      seg.get_ident_segment ().as_string ());
+  result = result.append (ident_segment);
 }
 
 void
