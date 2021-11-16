@@ -1635,17 +1635,12 @@ class MethodCallExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> receiver;
   PathExprSegment method_name;
-  // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
 
 public:
   std::string as_string () const override;
-
-  /*inline std::vector<std::unique_ptr<Expr>> get_params() const {
-      return params;
-  }*/
 
   MethodCallExpr (Analysis::NodeMapping mappings,
 		  std::unique_ptr<Expr> call_receiver,
