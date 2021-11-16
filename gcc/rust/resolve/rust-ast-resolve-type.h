@@ -101,6 +101,7 @@ protected:
   using Rust::Resolver::ResolverBase::visit;
 
 public:
+  // FIXME this should really only take AST::TypeNoBounds&
   static CanonicalPath resolve (AST::Type &type,
 				bool include_generic_args = true,
 				bool type_resolve_generic_args = true)
@@ -120,6 +121,8 @@ public:
 	  return;
       }
   }
+
+  void visit (AST::ReferenceType &ref) override;
 
   void visit (AST::TypePathSegmentGeneric &seg) override;
 

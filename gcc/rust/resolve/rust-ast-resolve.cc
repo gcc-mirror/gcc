@@ -481,6 +481,24 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegment &seg)
   result = result.append (ident_seg);
 }
 
+void
+ResolveTypeToCanonicalPath::visit (AST::ReferenceType &ref)
+{
+  auto inner_type
+    = ResolveTypeToCanonicalPath::resolve (*ref.get_type_referenced ().get (),
+					   include_generic_args_flag,
+					   type_resolve_generic_args_flag);
+
+  std::string segment_string ("&");
+  if (ref.get_has_mut ())
+    segment_string += "mut ";
+
+  segment_string += inner_type.get ();
+
+  auto ident_seg = CanonicalPath::new_seg (ref.get_node_id (), segment_string);
+  result = result.append (ident_seg);
+}
+
 // rust-ast-resolve-expr.h
 
 void
