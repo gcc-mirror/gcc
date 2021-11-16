@@ -1,3 +1,7 @@
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
+	* predict.cc (pass_profile::execute): Fix dump message.
+
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 

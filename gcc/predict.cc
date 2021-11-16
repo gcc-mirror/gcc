@@ -4126,7 +4126,7 @@ pass_profile::execute (function *fun)
    {
      for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
        if (loop->header->count.initialized_p ())
-         fprintf (dump_file, "Loop got predicted %d to iterate %i times.\n",
+         fprintf (dump_file, "Loop %d got predicted to iterate %i times.\n",
        	   loop->num,
        	   (int)expected_loop_iterations_unbounded (loop));
    }
