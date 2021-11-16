@@ -1,13 +1,14 @@
 /* Check offloaded function's attributes and classification for unparallelized
-   OpenACC kernels.  */
-
-/* { dg-additional-options "--param openacc-kernels=parloops" } */
+   OpenACC 'kernels' with "parloops" handling.  */
 
 /* { dg-additional-options "-O2" }
-   { dg-additional-options "-fopt-info-optimized-omp" }
+   { dg-additional-options "--param openacc-kernels=decompose-parloops" }
+   { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
+   { dg-additional-options "-fopt-info-note-optimized-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-parloops1-all" }
-   { dg-additional-options "-fdump-tree-oaccloops" } */
+   { dg-additional-options "-fdump-tree-oaccloops1" }
+   { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose-details" } */
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
@@ -18,15 +19,16 @@ extern unsigned int *__restrict a;
 extern unsigned int *__restrict b;
 extern unsigned int *__restrict c;
 
-/* An "extern"al mapping of loop iterations/array indices makes the loop
-   unparallelizable.  */
 extern unsigned int f (unsigned int);
+#pragma acc routine (f) seq
 
 void KERNELS ()
 {
 #pragma acc kernels copyin (a[0:N], b[0:N]) copyout (c[0:N]) /* { dg-line l_compute1 } */
   /* { dg-optimized {assigned OpenACC seq loop parallelism} {} { target *-*-* } l_compute1 } */
-  for (unsigned int i = 0; i < N; i++)
+  for (unsigned int i = 0; i < N; i++) /* { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" } */
+    /* An "extern"al mapping of loop iterations/array indices makes the loop
+       unparallelizable.  */
     c[i] = a[f (i)] + b[f (i)];
 }
 
@@ -41,6 +43,6 @@ void KERNELS ()
 
 /* Check the offloaded function's classification and compute dimensions (will
    always be 1 x 1 x 1 for non-offloading compilation).
-   { dg-final { scan-tree-dump-times "(?n)Function is unparallelized OpenACC kernels offload" 1 "oaccloops" } }
-   { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccloops" } }
-   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc kernels, omp target entrypoint, noclone\\)\\)" 1 "oaccloops" } } */
+   { dg-final { scan-tree-dump-times "(?n)Function is unparallelized OpenACC kernels offload" 1 "oaccloops1" } }
+   { dg-final { scan-tree-dump-times "(?n)Compute dimensions \\\[1, 1, 1\\\]" 1 "oaccloops1" } }
+   { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(1, 1, 1\\), oacc kernels, omp target entrypoint, noclone\\)\\)" 1 "oaccloops1" } } */

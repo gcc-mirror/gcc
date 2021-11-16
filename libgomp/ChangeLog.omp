@@ -1,4 +1,9 @@
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-loop-auto-reduction-2.f90:
+	New test.
+
+2021-11-16  Frederik Harwath <frederik@codesourcery.com>
 	    Thomas Schwinge <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Adjust.
