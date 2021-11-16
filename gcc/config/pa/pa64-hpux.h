@@ -266,7 +266,6 @@ do {								\
 /* It looks like DWARF2 will be the easiest debug format to handle on this
    platform.  */
 #define DWARF2_DEBUGGING_INFO 1
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* This target uses the ELF object file format.  */
 #define OBJECT_FORMAT_ELF

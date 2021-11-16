@@ -1825,7 +1825,8 @@ struct GTY(()) saved_scope {
      if-statement.  */
   BOOL_BITFIELD discarded_stmt : 1;
   /* Nonzero if we are parsing or instantiating the compound-statement
-     of consteval if statement.  */
+     of consteval if statement.  Also set while processing an immediate
+     invocation.  */
   BOOL_BITFIELD consteval_if_p : 1;
 
   int unevaluated_operand;
@@ -2867,8 +2868,9 @@ struct GTY(()) lang_decl_fn {
   unsigned immediate_fn_p : 1;
   unsigned maybe_deleted : 1;
   unsigned coroutine_p : 1;
+  unsigned implicit_constexpr : 1;
 
-  unsigned spare : 10;
+  unsigned spare : 9;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -6547,6 +6549,7 @@ extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern vec<tree,va_gc> *resolve_args (vec<tree,va_gc>*, tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
+extern bool in_immediate_context		();
 extern tree build_cxx_call			(tree, int, tree *,
 						 tsubst_flags_t,
 						 tree = NULL_TREE);
@@ -8313,6 +8316,7 @@ extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
+extern bool decl_implicit_constexpr_p		(tree);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
    doesn't do anything that causes extra DECL_UID generation.  */

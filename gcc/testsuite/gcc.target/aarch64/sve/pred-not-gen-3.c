@@ -1,5 +1,5 @@
-/* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O3 --save-temps" } */
+/* { dg-do compile } */
+/* { dg-options "-O3" } */
 
 /*
 ** f12:
@@ -19,3 +19,4 @@ void f12(int * restrict z, int * restrict w, int * restrict x, int * restrict y,
 
 /* { dg-final { scan-assembler-not {\tbic\t} } } */
 /* { dg-final { scan-assembler-not {\tnot\tp[0-9]+\.b, p[0-9]+/z, p[0-9]+\.b\n} } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-9]+/z, z[0-9]+\.s, #0} 1 } } */

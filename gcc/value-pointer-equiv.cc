@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
 #include "vr-values.h"
-#include "gimple-ssa-evrp-analyze.h"
 #include "gimple-range.h"
 #include "fold-const.h"
 #include "value-pointer-equiv.h"
@@ -58,7 +57,7 @@ public:
   void enter (basic_block);
   void leave (basic_block);
   void push_replacement (tree name, tree replacement);
-  tree get_replacement (tree name) const;
+  tree get_replacement (tree name);
 
 private:
   auto_vec<std::pair <tree, tree>> m_stack;
@@ -68,7 +67,7 @@ private:
 
 ssa_equiv_stack::ssa_equiv_stack ()
 {
-  m_replacements.safe_grow_cleared (num_ssa_names);
+  m_replacements.safe_grow_cleared (num_ssa_names + 1);
 }
 
 // Pushes a marker at the given point.
@@ -99,29 +98,38 @@ ssa_equiv_stack::leave (basic_block)
 void
 ssa_equiv_stack::push_replacement (tree name, tree replacement)
 {
-  tree old = m_replacements[SSA_NAME_VERSION (name)];
-  m_replacements[SSA_NAME_VERSION (name)] = replacement;
+  unsigned v = SSA_NAME_VERSION (name);
+
+  if (v >= m_replacements.length ())
+    m_replacements.safe_grow_cleared (num_ssa_names + 1);
+
+  tree old = m_replacements[v];
+  m_replacements[v] = replacement;
   m_stack.safe_push (std::make_pair (name, old));
 }
 
 // Return the equivalence of NAME.
 
 tree
-ssa_equiv_stack::get_replacement (tree name) const
+ssa_equiv_stack::get_replacement (tree name)
 {
-  return m_replacements[SSA_NAME_VERSION (name)];
+  unsigned v = SSA_NAME_VERSION (name);
+
+  if (v >= m_replacements.length ())
+    m_replacements.safe_grow_cleared (num_ssa_names + 1);
+
+  return m_replacements[v];
 }
 
 pointer_equiv_analyzer::pointer_equiv_analyzer (gimple_ranger *r)
 {
   m_ranger = r;
-  m_global_points = new tree[num_ssa_names] ();
+  m_global_points.safe_grow_cleared (num_ssa_names + 1);
   m_cond_points = new ssa_equiv_stack;
 }
 
 pointer_equiv_analyzer::~pointer_equiv_analyzer ()
 {
-  delete[] m_global_points;
   delete m_cond_points;
 }
 
@@ -130,7 +138,12 @@ pointer_equiv_analyzer::~pointer_equiv_analyzer ()
 void
 pointer_equiv_analyzer::set_global_equiv (tree ssa, tree pointee)
 {
-  m_global_points[SSA_NAME_VERSION (ssa)] = pointee;
+  unsigned v = SSA_NAME_VERSION (ssa);
+
+  if (v >= m_global_points.length ())
+    m_global_points.safe_grow_cleared (num_ssa_names + 1);
+
+  m_global_points[v] = pointee;
 }
 
 // Set the conditional pointer equivalency for SSA to POINTEE.
@@ -146,9 +159,14 @@ pointer_equiv_analyzer::set_cond_equiv (tree ssa, tree pointee)
 // conditional info.
 
 tree
-pointer_equiv_analyzer::get_equiv (tree ssa) const
+pointer_equiv_analyzer::get_equiv (tree ssa)
 {
-  tree ret = m_global_points[SSA_NAME_VERSION (ssa)];
+  unsigned v = SSA_NAME_VERSION (ssa);
+
+  if (v >= m_global_points.length ())
+    m_global_points.safe_grow_cleared (num_ssa_names + 1);
+
+  tree ret = m_global_points[v];
   if (ret)
     return ret;
   return m_cond_points->get_replacement (ssa);
@@ -211,7 +229,7 @@ pointer_equiv_analyzer::leave (basic_block bb)
 // nor an invariant.
 
 tree
-pointer_equiv_analyzer::get_equiv_expr (tree_code code, tree expr) const
+pointer_equiv_analyzer::get_equiv_expr (tree_code code, tree expr)
 {
   if (code == SSA_NAME)
     return get_equiv (expr);

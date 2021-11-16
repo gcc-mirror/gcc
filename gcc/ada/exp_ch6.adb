@@ -2292,8 +2292,11 @@ package body Exp_Ch6 is
                null;
 
             elsif Is_Build_In_Place_Function_Call (Actual) then
-               Build_Activation_Chain_Entity (N);
-               Build_Master_Entity (Etype (Actual));
+               if Might_Have_Tasks (Etype (Actual)) then
+                  Build_Activation_Chain_Entity (N);
+                  Build_Master_Entity (Etype (Actual));
+               end if;
+
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
 
             --  Ada 2005 (AI-318-02): Specialization of the previous case for
@@ -9707,7 +9710,9 @@ package body Exp_Ch6 is
          --  At this point, Defining_Identifier (Obj_Decl) is no longer equal
          --  to Obj_Def_Id.
 
-         Set_Renamed_Object (Defining_Identifier (Obj_Decl), Call_Deref);
+         pragma Assert (Ekind (Defining_Identifier (Obj_Decl)) = E_Void);
+         Set_Renamed_Object_Of_Possibly_Void
+           (Defining_Identifier (Obj_Decl), Call_Deref);
 
          --  If the original entity comes from source, then mark the new
          --  entity as needing debug information, even though it's defined

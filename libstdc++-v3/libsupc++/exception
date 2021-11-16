@@ -67,9 +67,6 @@ namespace std
   /// If you write a replacement %terminate handler, it must be of this type.
   typedef void (*terminate_handler) ();
 
-  /// If you write a replacement %unexpected handler, it must be of this type.
-  typedef void (*unexpected_handler) ();
-
   /// Takes a new handler function as an argument, returns the old function.
   terminate_handler set_terminate(terminate_handler) _GLIBCXX_USE_NOEXCEPT;
 
@@ -82,17 +79,35 @@ namespace std
    *  abandoned for any reason.  It can also be called by the user.  */
   void terminate() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__noreturn__));
 
-  /// Takes a new handler function as an argument, returns the old function.
+#if __cplusplus < 201703L || _GLIBCXX_USE_DEPRECATED
+  /// If you write a replacement %unexpected handler, it must be of this type.
+  typedef void (*_GLIBCXX11_DEPRECATED unexpected_handler) ();
+
+  /** Takes a new handler function as an argument, returns the old function.
+   *
+   * @deprecated Removed from the C++ standard in C++17
+   */
+  _GLIBCXX11_DEPRECATED
   unexpected_handler set_unexpected(unexpected_handler) _GLIBCXX_USE_NOEXCEPT;
 
 #if __cplusplus >= 201103L
-  /// Return the current unexpected handler.
+  /** Return the current unexpected handler.
+   *
+   * @since C++11
+   * @deprecated Removed from the C++ standard in C++17
+   */
+  _GLIBCXX11_DEPRECATED
   unexpected_handler get_unexpected() noexcept;
 #endif
 
   /** The runtime will call this function if an %exception is thrown which
-   *  violates the function's %exception specification.  */
+   *  violates the function's %exception specification.
+   *
+   * @deprecated Removed from the C++ standard in C++17
+   */
+  _GLIBCXX11_DEPRECATED
   void unexpected() __attribute__ ((__noreturn__));
+#endif
 
   /** [18.6.4]/1:  'Returns true after completing evaluation of a
    *  throw-expression until either completing initialization of the

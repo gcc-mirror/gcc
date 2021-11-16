@@ -253,6 +253,9 @@ dump_jump_thread_path (FILE *dump_file,
 	default:
 	  gcc_unreachable ();
 	}
+
+      if ((path[i]->e->flags & EDGE_DFS_BACK) != 0)
+	fprintf (dump_file, " (back)");
     }
   fprintf (dump_file, "; \n");
 }

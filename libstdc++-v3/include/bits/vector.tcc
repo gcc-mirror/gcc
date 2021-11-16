@@ -62,6 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<_Tp, _Alloc>::
     reserve(size_type __n)
@@ -102,6 +103,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
 #if __cplusplus > 201402L
+      _GLIBCXX20_CONSTEXPR
       typename vector<_Tp, _Alloc>::reference
 #else
       void
@@ -126,6 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::
 #if __cplusplus >= 201103L
@@ -167,6 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::
     _M_erase(iterator __position)
@@ -180,6 +184,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::
     _M_erase(iterator __first, iterator __last)
@@ -194,6 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     vector<_Tp, _Alloc>&
     vector<_Tp, _Alloc>::
     operator=(const vector<_Tp, _Alloc>& __x)
@@ -253,6 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<_Tp, _Alloc>::
     _M_fill_assign(size_t __n, const value_type& __val)
@@ -278,6 +285,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<_Tp, _Alloc>::
       _M_assign_aux(_InputIterator __first, _InputIterator __last,
@@ -296,6 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template<typename _ForwardIterator>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<_Tp, _Alloc>::
       _M_assign_aux(_ForwardIterator __first, _ForwardIterator __last,
@@ -336,6 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     auto
     vector<_Tp, _Alloc>::
     _M_insert_rval(const_iterator __position, value_type&& __v) -> iterator
@@ -360,6 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
+      _GLIBCXX20_CONSTEXPR
       auto
       vector<_Tp, _Alloc>::
       _M_emplace_aux(const_iterator __position, _Args&&... __args)
@@ -391,6 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template<typename _Arg>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<_Tp, _Alloc>::
       _M_insert_aux(iterator __position, _Arg&& __arg)
@@ -422,6 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
     template<typename... _Args>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<_Tp, _Alloc>::
       _M_realloc_insert(iterator __position, _Args&&... __args)
@@ -505,6 +518,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<_Tp, _Alloc>::
     _M_fill_insert(iterator __position, size_type __n, const value_type& __x)
@@ -607,6 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<_Tp, _Alloc>::
     _M_default_append(size_type __n)
@@ -683,6 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     bool
     vector<_Tp, _Alloc>::
     _M_shrink_to_fit()
@@ -696,6 +712,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<_Tp, _Alloc>::
       _M_range_insert(iterator __pos, _InputIterator __first,
@@ -717,6 +734,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     template<typename _ForwardIterator>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<_Tp, _Alloc>::
       _M_range_insert(iterator __position, _ForwardIterator __first,
@@ -806,6 +824,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   // vector<bool>
   template<typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<bool, _Alloc>::
     _M_reallocate(size_type __n)
@@ -820,6 +839,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<bool, _Alloc>::
     _M_fill_insert(iterator __position, size_type __n, bool __x)
@@ -852,6 +872,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Alloc>
     template<typename _ForwardIterator>
+      _GLIBCXX20_CONSTEXPR
       void
       vector<bool, _Alloc>::
       _M_insert_range(iterator __position, _ForwardIterator __first, 
@@ -886,6 +907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
   template<typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     void
     vector<bool, _Alloc>::
     _M_insert_aux(iterator __position, bool __x)
@@ -914,6 +936,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     typename vector<bool, _Alloc>::iterator
     vector<bool, _Alloc>::
     _M_erase(iterator __position)
@@ -925,6 +948,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     typename vector<bool, _Alloc>::iterator
     vector<bool, _Alloc>::
     _M_erase(iterator __first, iterator __last)
@@ -936,6 +960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
   template<typename _Alloc>
+    _GLIBCXX20_CONSTEXPR
     bool
     vector<bool, _Alloc>::
     _M_shrink_to_fit()
@@ -974,9 +999,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>& __b) const noexcept
     {
       size_t __hash = 0;
-      using _GLIBCXX_STD_C::_S_word_bit;
-      using _GLIBCXX_STD_C::_Bit_type;
-
       const size_t __words = __b.size() / _S_word_bit;
       if (__words)
 	{

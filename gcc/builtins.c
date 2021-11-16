@@ -3600,7 +3600,7 @@ check_strncat_sizes (tree exp, tree objsize)
   /* Try to verify that the destination is big enough for the shortest
      string.  */
 
-  access_data data (exp, access_read_write, maxread, true);
+  access_data data (nullptr, exp, access_read_write, maxread, true);
   if (!objsize && warn_stringop_overflow)
     {
       /* If it hasn't been provided by __strncat_chk, try to determine
@@ -4259,12 +4259,6 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
   tree arg1 = CALL_EXPR_ARG (exp, 0);
   tree arg2 = CALL_EXPR_ARG (exp, 1);
   tree len = CALL_EXPR_ARG (exp, 2);
-
-  /* Diagnose calls where the specified length exceeds the size of either
-     object.  */
-  if (!check_read_access (exp, arg1, len, 0)
-      || !check_read_access (exp, arg2, len, 0))
-    return NULL_RTX;
 
   /* Due to the performance benefit, always inline the calls first
      when result_eq is false.  */
@@ -5485,27 +5479,6 @@ expand_builtin_fork_or_exec (tree fn, tree exp, rtx target, int ignore)
 {
   tree id, decl;
   tree call;
-
-  if (DECL_FUNCTION_CODE (fn) != BUILT_IN_FORK)
-    {
-      tree path = CALL_EXPR_ARG (exp, 0);
-      /* Detect unterminated path.  */
-      if (!check_read_access (exp, path))
-	return NULL_RTX;
-
-      /* Also detect unterminated first argument.  */
-      switch (DECL_FUNCTION_CODE (fn))
-	{
-	case BUILT_IN_EXECL:
-	case BUILT_IN_EXECLE:
-	case BUILT_IN_EXECLP:
-	  if (!check_read_access (exp, path))
-	    return NULL_RTX;
-	default:
-	  break;
-	}
-    }
-
 
   /* If we are not profiling, just call the function.  */
   if (!profile_arc_flag)
@@ -10738,6 +10711,7 @@ is_simple_builtin (tree decl)
       case BUILT_IN_VA_END:
       case BUILT_IN_STACK_SAVE:
       case BUILT_IN_STACK_RESTORE:
+      case BUILT_IN_DWARF_CFA:
 	/* Exception state returns or moves registers around.  */
       case BUILT_IN_EH_FILTER:
       case BUILT_IN_EH_POINTER:
@@ -11126,6 +11100,19 @@ builtin_fnspec (tree callee)
       CASE_BUILT_IN_TM_STORE (M256):
 	return ".cO ";
       case BUILT_IN_STACK_SAVE:
+      case BUILT_IN_RETURN:
+      case BUILT_IN_EH_POINTER:
+      case BUILT_IN_EH_FILTER:
+      case BUILT_IN_UNWIND_RESUME:
+      case BUILT_IN_CXA_END_CLEANUP:
+      case BUILT_IN_EH_COPY_VALUES:
+      case BUILT_IN_FRAME_ADDRESS:
+      case BUILT_IN_APPLY_ARGS:
+      case BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT:
+      case BUILT_IN_ASAN_AFTER_DYNAMIC_INIT:
+      case BUILT_IN_PREFETCH:
+      case BUILT_IN_DWARF_CFA:
+      case BUILT_IN_RETURN_ADDRESS:
 	return ".c";
       case BUILT_IN_ASSUME_ALIGNED:
 	return "1cX ";

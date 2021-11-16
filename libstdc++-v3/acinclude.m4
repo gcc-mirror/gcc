@@ -3798,7 +3798,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:29:0
+libtool_VERSION=6:30:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -4829,6 +4829,52 @@ AC_DEFUN([GLIBCXX_CHECK_EXCEPTION_PTR_SYMVER], [
     fi
   fi
 ])
+
+dnl
+dnl Check whether getentropy is present in <unistd.h>.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_GETENTROPY], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING([for getentropy])
+  AC_CACHE_VAL(glibcxx_cv_getentropy, [
+      GCC_TRY_COMPILE_OR_LINK(
+	[#include <unistd.h>],
+	[unsigned i;
+	 ::getentropy(&i, sizeof(i));],
+	[glibcxx_cv_getentropy=yes], [glibcxx_cv_getentropy=no])
+    ])
+
+  if test $glibcxx_cv_getentropy = yes; then
+    AC_DEFINE(HAVE_GETENTROPY, 1, [Define if getentropy is available in <unistd.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_getentropy)
+  AC_LANG_RESTORE
+])
+
+dnl
+dnl Check whether arc4random is present in <stdlib.h>.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_ARC4RANDOM], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING([for arc4random])
+  AC_CACHE_VAL(glibcxx_cv_arc4random, [
+      GCC_TRY_COMPILE_OR_LINK(
+	[#include <stdlib.h>],
+	[unsigned i = ::arc4random();],
+	[glibcxx_cv_arc4random=yes], [glibcxx_cv_arc4random=no])
+    ])
+
+  if test $glibcxx_cv_arc4random = yes; then
+    AC_DEFINE(HAVE_ARC4RANDOM, 1, [Define if arc4random is available in <stdlib.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_arc4random)
+  AC_LANG_RESTORE
+])
+
 
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])

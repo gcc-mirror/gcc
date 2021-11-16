@@ -24,7 +24,7 @@ namespace std {
   class bad_exception;
 
   typedef void (*unexpected_handler)();
-  unexpected_handler set_unexpected(unexpected_handler  f ) throw();
+  unexpected_handler set_unexpected(unexpected_handler  f ) throw(); // { dg-warning "deprecated" { target c++11 } }
   unexpected_handler get_unexpected() noexcept;
   void unexpected();
 

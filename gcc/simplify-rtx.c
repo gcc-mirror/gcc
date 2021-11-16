@@ -899,10 +899,12 @@ simplify_context::simplify_unary_operation (rtx_code code, machine_mode mode,
 static bool
 exact_int_to_float_conversion_p (const_rtx op)
 {
-  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
   machine_mode op0_mode = GET_MODE (XEXP (op, 0));
-  /* Constants shouldn't reach here.  */
-  gcc_assert (op0_mode != VOIDmode);
+  /* Constants can reach here with -frounding-math, if they do then
+     the conversion isn't exact.  */
+  if (op0_mode == VOIDmode)
+    return false;
+  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
   int in_prec = GET_MODE_UNIT_PRECISION (op0_mode);
   int in_bits = in_prec;
   if (HWI_COMPUTABLE_MODE_P (op0_mode))
@@ -1917,6 +1919,19 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
         return 0;
 
       d = real_value_truncate (mode, d);
+
+      /* Avoid the folding if flag_rounding_math is on and the
+	 conversion is not exact.  */
+      if (HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	{
+	  bool fail = false;
+	  wide_int w = real_to_integer (&d, &fail,
+					GET_MODE_PRECISION
+					  (as_a <scalar_int_mode> (op_mode)));
+	  if (fail || wi::ne_p (w, wide_int (rtx_mode_t (op, op_mode))))
+	    return 0;
+	}
+
       return const_double_from_real_value (d, mode);
     }
   else if (code == UNSIGNED_FLOAT && CONST_SCALAR_INT_P (op))
@@ -1941,6 +1956,19 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
         return 0;
 
       d = real_value_truncate (mode, d);
+
+      /* Avoid the folding if flag_rounding_math is on and the
+	 conversion is not exact.  */
+      if (HONOR_SIGN_DEPENDENT_ROUNDING (mode))
+	{
+	  bool fail = false;
+	  wide_int w = real_to_integer (&d, &fail,
+					GET_MODE_PRECISION
+					  (as_a <scalar_int_mode> (op_mode)));
+	  if (fail || wi::ne_p (w, wide_int (rtx_mode_t (op, op_mode))))
+	    return 0;
+	}
+
       return const_double_from_real_value (d, mode);
     }
 
@@ -2067,6 +2095,11 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  /* Don't perform the operation if flag_signaling_nans is on
 	     and the operand is a signaling NaN.  */
 	  if (HONOR_SNANS (mode) && REAL_VALUE_ISSIGNALING_NAN (d))
+	    return NULL_RTX;
+	  /* Or if flag_rounding_math is on and the truncation is not
+	     exact.  */
+	  if (HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+	      && !exact_real_truncate (mode, &d))
 	    return NULL_RTX;
 	  d = real_value_truncate (mode, d);
 	  break;
@@ -4064,9 +4097,25 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	}
       break;
 
-    case ASHIFT:
     case SS_ASHIFT:
+      if (CONST_INT_P (trueop0)
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && (UINTVAL (trueop0) == (GET_MODE_MASK (mode) >> 1)
+	      || mode_signbit_p (mode, trueop0))
+	  && ! side_effects_p (op1))
+	return op0;
+      goto simplify_ashift;
+
     case US_ASHIFT:
+      if (CONST_INT_P (trueop0)
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && UINTVAL (trueop0) == GET_MODE_MASK (mode)
+	  && ! side_effects_p (op1))
+	return op0;
+      /* FALLTHRU */
+
+    case ASHIFT:
+simplify_ashift:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
       if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
@@ -5004,6 +5053,8 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	case LSHIFTRT:
 	case ASHIFTRT:
 	case ASHIFT:
+	case SS_ASHIFT:
+	case US_ASHIFT:
 	  {
 	    wide_int wop1 = pop1;
 	    if (SHIFT_COUNT_TRUNCATED)
@@ -5023,6 +5074,24 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 
 	      case ASHIFT:
 		result = wi::lshift (pop0, wop1);
+		break;
+
+	      case SS_ASHIFT:
+		if (wi::leu_p (wop1, wi::clrsb (pop0)))
+		  result = wi::lshift (pop0, wop1);
+		else if (wi::neg_p (pop0))
+		  result = wi::min_value (int_mode, SIGNED);
+		else
+		  result = wi::max_value (int_mode, SIGNED);
+		break;
+
+	      case US_ASHIFT:
+		if (wi::eq_p (pop0, 0))
+		  result = pop0;
+		else if (wi::leu_p (wop1, wi::clz (pop0)))
+		  result = wi::lshift (pop0, wop1);
+		else
+		  result = wi::max_value (int_mode, UNSIGNED);
 		break;
 
 	      default:
@@ -7552,6 +7621,28 @@ simplify_context::lowpart_subreg (machine_mode outer_mode, rtx expr,
   return simplify_gen_subreg (outer_mode, expr, inner_mode,
 			      subreg_lowpart_offset (outer_mode, inner_mode));
 }
+
+/* Generate RTX to select element at INDEX out of vector OP.  */
+
+rtx
+simplify_context::simplify_gen_vec_select (rtx op, unsigned int index)
+{
+  gcc_assert (VECTOR_MODE_P (GET_MODE (op)));
+
+  scalar_mode imode = GET_MODE_INNER (GET_MODE (op));
+
+  if (known_eq (index * GET_MODE_SIZE (imode),
+		subreg_lowpart_offset (imode, GET_MODE (op))))
+    {
+      rtx res = lowpart_subreg (imode, op, GET_MODE (op));
+      if (res)
+	return res;
+    }
+
+  rtx tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, GEN_INT (index)));
+  return gen_rtx_VEC_SELECT (imode, op, tmp);
+}
+
 
 /* Simplify X, an rtx expression.
 

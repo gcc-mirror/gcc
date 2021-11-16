@@ -31,7 +31,9 @@
 
 with System.Arith_Double;
 
-package body System.Arith_64 is
+package body System.Arith_64
+  with SPARK_Mode
+is
 
    subtype Uns64 is Interfaces.Unsigned_64;
    subtype Uns32 is Interfaces.Unsigned_32;

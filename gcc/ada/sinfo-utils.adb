@@ -189,13 +189,9 @@ package body Sinfo.Utils is
    ------------------
 
    function End_Location (N : Node_Id) return Source_Ptr is
-      L : constant Uint := End_Span (N);
+      L : constant Valid_Uint := End_Span (N);
    begin
-      if No (L) then
-         return No_Location;
-      else
-         return Source_Ptr (Int (Sloc (N)) + UI_To_Int (L));
-      end if;
+      return Source_Ptr (Int (Sloc (N)) + UI_To_Int (L));
    end End_Location;
 
    --------------------
@@ -279,6 +275,8 @@ package body Sinfo.Utils is
             declare
                Desc : Field_Descriptor renames
                  Field_Descriptors (Fields (J));
+               pragma Assert (Desc.Type_Only = No_Type_Only);
+               --  Type_Only is for entities
             begin
                if Is_In_Union_Id (Desc.Kind) then
                   Action (Get_Node_Field_Union (N, Desc.Offset));
@@ -304,6 +302,8 @@ package body Sinfo.Utils is
             declare
                Desc : Field_Descriptor renames
                  Field_Descriptors (Fields (J));
+               pragma Assert (Desc.Type_Only = No_Type_Only);
+               --  Type_Only is for entities
             begin
                if Is_In_Union_Id (Desc.Kind) then
                   Set_Node_Field_Union

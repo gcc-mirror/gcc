@@ -309,6 +309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct __shrink_to_fit_aux<_Tp, true>
     {
+      _GLIBCXX20_CONSTEXPR
       static bool
       _S_do_it(_Tp& __c) noexcept
       {

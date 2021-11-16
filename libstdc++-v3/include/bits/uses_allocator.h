@@ -35,6 +35,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+/// @cond undocumented
 
   // This is used for std::experimental::erased_type from Library Fundamentals.
   struct __erased_type { };
@@ -188,6 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::forward<_Args>(__args)...);
     }
 
+/// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

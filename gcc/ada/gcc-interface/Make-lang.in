@@ -116,7 +116,7 @@ ADA_FLAGS_TO_PASS = \
 
 # List of Ada tools to build and install
 ADA_TOOLS=gnatbind gnatchop gnat gnatkr gnatlink gnatls gnatmake \
-          gnatname gnatprep gnatxref gnatfind gnatclean
+          gnatname gnatprep gnatclean
 
 # Say how to compile Ada programs.
 .SUFFIXES: .ada .adb .ads
@@ -440,6 +440,7 @@ GNAT_ADA_OBJS =	\
  ada/sprint.o	\
  ada/stand.o	\
  ada/stringt.o	\
+ ada/strub.o	\
  ada/style.o	\
  ada/styleg.o	\
  ada/stylesw.o	\
@@ -725,6 +726,14 @@ endif
 # For unwind-pe.h
 CFLAGS-ada/raise-gcc.o += -I$(srcdir)/../libgcc -DEH_MECHANISM_$(EH_MECHANISM)
 
+# Under aarch64 darwin, we need to include the iOS signal trampoline.
+
+ifeq ($(strip $(filter-out aarch64 arm64 darwin%,$(host_cpu) $(host_os))),)
+  EXTRA_HOST_OBJS=ada/sigtramp-ios.o
+else
+  EXTRA_HOST_OBJS =
+endif
+
 ada/libgnat/s-excmac.o: ada/libgnat/s-excmac.ads ada/libgnat/s-excmac.adb
 
 ada/libgnat/s-excmac.ads: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).ads
@@ -738,16 +747,16 @@ ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).adb
 # Needs to be built with CC=gcc
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
-gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a \
-		$(LIBDEPS) $(ada.prev)
+gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(EXTRA_HOST_OBJS) libcommon-target.a \
+		$(EXTRA_HOST_OBJS) $(LIBDEPS) $(ada.prev)
 	@$(call LINK_PROGRESS,$(INDEX.ada),start)
-	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(CFLAGS) \
+	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(EXTRA_HOST_OBJS) $(CFLAGS) \
 	  libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(GNATLIB)
 	$(RM) stamp-gnatlib2-rts stamp-tools
 	@$(call LINK_PROGRESS,$(INDEX.ada),end)
 
-gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
-	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
+gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
+	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink
 gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force
@@ -838,8 +847,20 @@ ada.install-info: $(DESTDIR)$(infodir)/gnat_ugn.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-ada.dvi: doc/gnat_ugn.dvi \
-      doc/gnat_rm.dvi doc/gnat-style.dvi
+ADA_DVIFILES = doc/gnat_ugn.dvi \
+               doc/gnat_rm.dvi doc/gnat-style.dvi
+
+ada.dvi: $(ADA_DVIFILES)
+
+ada.install-dvi: $(ADA_DVIFILES)
+	@$(NORMAL_INSTALL)
+	test -z "$(dvidir)/gcc" || $(mkinstalldirs) "$(DESTDIR)$(dvidir)/gcc"
+	@list='$(ADA_DVIFILES)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(dvi__strip_dir) \
+	  echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(dvidir)/gcc/$$f'"; \
+	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
+	done
 
 ADA_PDFFILES = doc/gnat_ugn.pdf \
                doc/gnat_rm.pdf doc/gnat-style.pdf
@@ -891,8 +912,7 @@ doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 # (cross). $(prefix) comes from the --program-prefix configure option,
 # or from the --target option if the former is not specified.
 # Do the same for the rest of the Ada tools (gnatchop, gnat, gnatkr,
-# gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatxref, gnatfind,
-# gnatclean).
+# gnatlink, gnatls, gnatmake, gnatname, gnatprep, gnatclean).
 # gnatdll is only used on Windows.
 ada.install-common: $(gnat_install_lib) gnat-install-tools
 
@@ -963,8 +983,6 @@ ada.distclean:
 	-$(RM) gnatmake$(exeext)
 	-$(RM) gnatname$(exeext)
 	-$(RM) gnatprep$(exeext)
-	-$(RM) gnatfind$(exeext)
-	-$(RM) gnatxref$(exeext)
 	-$(RM) gnatclean$(exeext)
 	-$(RM) ada/rts/*
 	-$(RMDIR) ada/rts

@@ -63,7 +63,10 @@ _GLIBCXX_NOTHROW
   header->referenceCount = 0;
   header->exc.exceptionType = tinfo;
   header->exc.exceptionDestructor = dest;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   header->exc.unexpectedHandler = std::get_unexpected ();
+#pragma GCC diagnostic pop
   header->exc.terminateHandler = std::get_terminate ();
   __GXX_INIT_PRIMARY_EXCEPTION_CLASS(header->exc.unwindHeader.exception_class);
   header->exc.unwindHeader.exception_cleanup = __gxx_exception_cleanup;

@@ -220,6 +220,24 @@ impl_region_model_context::get_malloc_map (sm_state_map **out_smap,
   return true;
 }
 
+bool
+impl_region_model_context::get_taint_map (sm_state_map **out_smap,
+					  const state_machine **out_sm,
+					  unsigned *out_sm_idx)
+{
+  if (!m_new_state)
+    return false;
+
+  unsigned taint_sm_idx;
+  if (!m_ext_state.get_sm_idx_by_name ("taint", &taint_sm_idx))
+    return false;
+
+  *out_smap = m_new_state->m_checker_states[taint_sm_idx];
+  *out_sm = &m_ext_state.get_sm (taint_sm_idx);
+  *out_sm_idx = taint_sm_idx;
+  return true;
+}
+
 /* struct setjmp_record.  */
 
 int
@@ -1325,8 +1343,11 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 	  return;
 	}
       else if (is_special_named_call_p (call, "__analyzer_dump_state", 2))
-	state->impl_call_analyzer_dump_state (call, eg.get_ext_state (),
-					      ctxt);
+	{
+	  state->impl_call_analyzer_dump_state (call, eg.get_ext_state (),
+						ctxt);
+	  return;
+	}
       else if (is_setjmp_call_p (call))
 	{
 	  state->m_region_model->on_setjmp (call, this, ctxt);

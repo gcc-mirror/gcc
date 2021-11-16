@@ -16,12 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do compile { target c++2a } }
+// { dg-xfail-if "not supported" { debug-mode } }
 
 #include <vector>
 #include <testsuite_hooks.h>
 
-void
+constexpr bool
 test01()
 {
   std::vector<bool> c1{ 1, 0, 1 }, c2{ 1, 0, 1, 0 }, c3{ 1, 1, 1 };
@@ -38,9 +39,11 @@ test01()
 
   static_assert( std::three_way_comparable<std::vector<bool>,
 					   std::strong_ordering> );
+
+  return true;
 }
 
-void
+constexpr bool
 test05()
 {
   // vector<bool> iterators are random access, so should support <=>
@@ -63,11 +66,9 @@ test05()
 
   static_assert( std::same_as<decltype(c.begin() <=> c.begin()),
 			      std::strong_ordering> );
+
+  return true;
 }
 
-int
-main()
-{
-  test01();
-  test05();
-}
+static_assert( test01() );
+static_assert( test05() );

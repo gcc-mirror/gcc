@@ -61,8 +61,8 @@
                   IF( ISYM.EQ.0 ) THEN
                   END IF
                END IF
-               A( I-J+KUU+1, J ) = ZLATM2( M, N, I, J, KL, KU,
-     $              DR, IPVTNG, IWORK, SPARSE )
+               A( I-J+KUU+1, J ) = ZLATM2( M, N, I, J, KL, KU,  ! { dg-warning "More actual than formal" }
+     $              DR, IPVTNG, IWORK, SPARSE )  ! { dg-warning "Type mismatch" }
             END IF
          END IF
       END IF

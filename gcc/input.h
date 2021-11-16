@@ -36,11 +36,36 @@ extern GTY(()) class line_maps *saved_line_table;
    both UNKNOWN_LOCATION and BUILTINS_LOCATION fit into that.  */
 STATIC_ASSERT (BUILTINS_LOCATION < RESERVED_LOCATION_COUNT);
 
+/* Hasher for 'location_t' values satisfying '!RESERVED_LOCATION_P', thus able
+   to use 'UNKNOWN_LOCATION'/'BUILTINS_LOCATION' as spare values for
+   'Empty'/'Deleted'.  */
+/* Per PR103157 "'gengtype': 'typedef' causing infinite-recursion code to be
+   generated", don't use
+       typedef int_hash<location_t, UNKNOWN_LOCATION, BUILTINS_LOCATION>
+         location_hash;
+   here.
+
+   It works for a single-use case, but when using a 'struct'-based variant
+       struct location_hash
+         : int_hash<location_t, UNKNOWN_LOCATION, BUILTINS_LOCATION> {};
+   in more than one place, 'gengtype' generates duplicate functions (thus:
+   "error: redefinition of 'void gt_ggc_mx(location_hash&)'" etc.).
+   Attempting to mark that one up with GTY options, we run into a 'gengtype'
+   "parse error: expected '{', have '<'", which probably falls into category
+   "understanding of C++ is limited", as documented in 'gcc/doc/gty.texi'.
+
+   Thus, use a plain ol' '#define':
+*/
+#define location_hash int_hash<location_t, UNKNOWN_LOCATION, BUILTINS_LOCATION>
+
 extern bool is_location_from_builtin_token (location_t);
 extern expanded_location expand_location (location_t);
 
-extern int location_compute_display_column (expanded_location exploc,
-					    int tabstop);
+class cpp_char_column_policy;
+
+extern int
+location_compute_display_column (expanded_location exploc,
+				 const cpp_char_column_policy &policy);
 
 /* A class capturing the bounds of a buffer, to allow for run-time
    bounds-checking in a checked build.  */
@@ -229,8 +254,6 @@ public:
   int m_num;
   location_t * GTY ((atomic)) m_locs;
 };
-
-struct location_hash : int_hash <location_t, UNKNOWN_LOCATION> { };
 
 class GTY(()) string_concat_db
 {

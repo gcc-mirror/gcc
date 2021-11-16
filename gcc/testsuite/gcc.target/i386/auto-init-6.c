@@ -1,6 +1,8 @@
 /* Verify pattern initialization for complex type automatic variables.  */
+/* Note, _Complex long double is initialized to zeroes due to the current
+   implemenation limitation.  */
 /* { dg-do compile } */
-/* { dg-options "-ftrivial-auto-var-init=pattern -fdump-rtl-expand -march=x86-64 -mtune=generic -msse" } */
+/* { dg-options "-ftrivial-auto-var-init=pattern -march=x86-64 -mtune=generic -msse" } */
 
 
 _Complex long double result;
@@ -15,5 +17,6 @@ _Complex long double foo()
   return result;
 }
 
-/* { dg-final { scan-rtl-dump-times "\\\[0xfefefefefefefefe\\\]" 1 "expand" } } */
-/* { dg-final { scan-rtl-dump-times "0xfffffffffffffffe\\\]\\\) repeated x16" 2 "expand" } } */
+/* { dg-final { scan-assembler-times "long\t0" 8  { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "long\t-16843010" 6  } } */
+

@@ -22,7 +22,14 @@ test01()
       VERIFY( entropy <= max );
     }
 
-  for (auto token : { "rdrand", "rdseed" })
+  for (auto token : { "rdrand", "rdseed", "darn", "hw" })
+    if (__gnu_test::random_device_available(token))
+    {
+      const double entropy = std::random_device(token).entropy();
+      VERIFY( entropy == max );
+    }
+
+    for (auto token : { "getentropy", "arc4random" })
     if (__gnu_test::random_device_available(token))
     {
       const double entropy = std::random_device(token).entropy();

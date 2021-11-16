@@ -420,6 +420,12 @@ class Lex
     std::swap(*embeds, this->embeds_);
   }
 
+  // Clear any go:embed patterns seen so far.  This is used for
+  // erroneous cases.
+  void
+  clear_embeds()
+  { this->embeds_.clear(); }
+
   // Return whether the identifier NAME should be exported.  NAME is a
   // mangled name which includes only ASCII characters.
   static bool

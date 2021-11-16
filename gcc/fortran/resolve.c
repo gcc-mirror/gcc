@@ -1463,8 +1463,15 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  mpz_init (len);
 	  for (int n = 0; n < rank; n++)
 	    {
-	      gcc_assert (comp->as->upper[n]->expr_type == EXPR_CONSTANT
-			  && comp->as->lower[n]->expr_type == EXPR_CONSTANT);
+	      if (comp->as->upper[n]->expr_type != EXPR_CONSTANT
+		  || comp->as->lower[n]->expr_type != EXPR_CONSTANT)
+		{
+		  gfc_error ("Bad array spec of component %qs referenced in "
+			     "structure constructor at %L",
+			     comp->name, &cons->expr->where);
+		  t = false;
+		  break;
+		};
 	      mpz_set_ui (len, 1);
 	      mpz_add (len, len, comp->as->upper[n]->value.integer);
 	      mpz_sub (len, len, comp->as->lower[n]->value.integer);
@@ -2967,6 +2974,19 @@ resolve_unknown_f (gfc_expr *expr)
       return false;
     }
 
+  /* IMPLICIT NONE (external) procedures require an explicit EXTERNAL attr.  */
+  /* Intrinsics were handled above, only non-intrinsics left here.  */
+  if (sym->attr.flavor == FL_PROCEDURE
+      && sym->attr.implicit_type
+      && sym->ns
+      && sym->ns->has_implicit_none_export)
+    {
+	  gfc_error ("Missing explicit declaration with EXTERNAL attribute "
+	      "for symbol %qs at %L", sym->name, &sym->declared_at);
+	  sym->error = 1;
+	  return false;
+    }
+
   /* The reference is to an external name.  */
 
   sym->attr.proc = PROC_EXTERNAL;
@@ -4044,7 +4064,7 @@ resolve_operator (gfc_expr *e)
     {
     default:
       if (!gfc_resolve_expr (e->value.op.op2))
-	return false;
+	t = false;
 
     /* Fall through.  */
 
@@ -4070,6 +4090,9 @@ resolve_operator (gfc_expr *e)
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
   if (op1 == NULL && op2 == NULL)
+    return false;
+  /* Error out if op2 did not resolve. We already diagnosed op1.  */
+  if (t == false)
     return false;
 
   dual_locus_error = false;
@@ -8763,11 +8786,11 @@ resolve_select (gfc_code *code, bool select_type)
 
 	      if (cp->low != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->low))
-		gfc_convert_type_warn (case_expr, &cp->low->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->low->ts, 1, 0);
 
 	      if (cp->high != NULL
 		  && case_expr->ts.kind != gfc_kind_max(case_expr, cp->high))
-		gfc_convert_type_warn (case_expr, &cp->high->ts, 2, 0);
+		gfc_convert_type_warn (case_expr, &cp->high->ts, 1, 0);
 	    }
 	 }
     }
@@ -13172,7 +13195,7 @@ static bool
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
-  bool allocatable_or_pointer;
+  bool allocatable_or_pointer = false;
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))

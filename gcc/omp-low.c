@@ -3942,7 +3942,8 @@ omp_runtime_api_call (const_tree fndecl)
       "target_memcpy",
       "target_memcpy_rect",
       NULL,
-      /* Now omp_* calls that are available as omp_* and omp_*_.  */
+      /* Now omp_* calls that are available as omp_* and omp_*_; however, the
+	 DECL_NAME is always omp_* without tailing underscore.  */
       "capture_affinity",
       "destroy_allocator",
       "destroy_lock",
@@ -3994,7 +3995,8 @@ omp_runtime_api_call (const_tree fndecl)
       "unset_lock",
       "unset_nest_lock",
       NULL,
-      /* And finally calls available as omp_*, omp_*_ and omp_*_8_.  */
+      /* And finally calls available as omp_*, omp_*_ and omp_*_8_; however,
+	 as DECL_NAME only omp_* and omp_*_8 appear.  */
       "display_env",
       "get_ancestor_thread_num",
       "init_allocator",
@@ -4024,11 +4026,7 @@ omp_runtime_api_call (const_tree fndecl)
       size_t len = strlen (omp_runtime_apis[i]);
       if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
 	  && (name[4 + len] == '\0'
-	      || (mode > 0
-		  && name[4 + len] == '_'
-		  && (name[4 + len + 1] == '\0'
-		      || (mode > 1
-			  && strcmp (name + 4 + len + 1, "8_") == 0)))))
+	      || (mode > 1 && strcmp (name + 4 + len, "_8") == 0)))
 	return true;
     }
   return false;
@@ -4095,9 +4093,26 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 			    "OpenMP runtime API call %qD in a region with "
 			    "%<order(concurrent)%> clause", fndecl);
 		}
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS
+		  && omp_runtime_api_call (fndecl)
+		  && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl))
+		       != strlen ("omp_get_num_teams"))
+		      || strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+				 "omp_get_num_teams") != 0)
+		  && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl))
+		       != strlen ("omp_get_team_num"))
+		      || strcmp (IDENTIFIER_POINTER (DECL_NAME (fndecl)),
+				 "omp_get_team_num") != 0))
+		{
+		  remove = true;
+		  error_at (gimple_location (stmt),
+			    "OpenMP runtime API call %qD strictly nested in a "
+			    "%<teams%> region", fndecl);
+		}
 	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
 		  && (gimple_omp_target_kind (ctx->stmt)
-		      == GF_OMP_TARGET_KIND_REGION))
+		      == GF_OMP_TARGET_KIND_REGION)
+		  && omp_runtime_api_call (fndecl))
 		{
 		  tree tgt_clauses = gimple_omp_target_clauses (ctx->stmt);
 		  tree c = omp_find_clause (tgt_clauses, OMP_CLAUSE_DEVICE);
@@ -13153,6 +13168,19 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    else if (integer_nonzerop (s))
 		      tkind_zero = tkind;
 		  }
+		if (tkind_zero == tkind
+		    && OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (c)
+		    && (((tkind & GOMP_MAP_FLAG_SPECIAL_BITS)
+			 & ~GOMP_MAP_IMPLICIT)
+			== 0))
+		  {
+		    /* If this is an implicit map, and the GOMP_MAP_IMPLICIT
+		       bits are not interfered by other special bit encodings,
+		       then turn the GOMP_IMPLICIT_BIT flag on for the runtime
+		       to see.  */
+		    tkind |= GOMP_MAP_IMPLICIT;
+		    tkind_zero = tkind;
+		  }
 		break;
 	      case OMP_CLAUSE_FIRSTPRIVATE:
 		gcc_checking_assert (is_gimple_omp_oacc (ctx->stmt));
@@ -13887,14 +13915,24 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   tree num_teams = omp_find_clause (gimple_omp_teams_clauses (teams_stmt),
 				    OMP_CLAUSE_NUM_TEAMS);
+  tree num_teams_lower = NULL_TREE;
   if (num_teams == NULL_TREE)
     num_teams = build_int_cst (unsigned_type_node, 0);
   else
     {
-      num_teams = OMP_CLAUSE_NUM_TEAMS_EXPR (num_teams);
+      num_teams_lower = OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (num_teams);
+      if (num_teams_lower)
+	{
+	  num_teams_lower = fold_convert (unsigned_type_node, num_teams_lower);
+	  gimplify_expr (&num_teams_lower, &bind_body, NULL, is_gimple_val,
+			 fb_rvalue);
+	}
+      num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
       num_teams = fold_convert (unsigned_type_node, num_teams);
       gimplify_expr (&num_teams, &bind_body, NULL, is_gimple_val, fb_rvalue);
     }
+  if (num_teams_lower == NULL_TREE)
+    num_teams_lower = num_teams;
   tree thread_limit = omp_find_clause (gimple_omp_teams_clauses (teams_stmt),
 				       OMP_CLAUSE_THREAD_LIMIT);
   if (thread_limit == NULL_TREE)
@@ -13906,6 +13944,30 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimplify_expr (&thread_limit, &bind_body, NULL, is_gimple_val,
 		     fb_rvalue);
     }
+  location_t loc = gimple_location (teams_stmt);
+  tree decl = builtin_decl_explicit (BUILT_IN_GOMP_TEAMS4);
+  tree rettype = TREE_TYPE (TREE_TYPE (decl));
+  tree first = create_tmp_var (rettype);
+  gimple_seq_add_stmt (&bind_body,
+		       gimple_build_assign (first, build_one_cst (rettype)));
+  tree llabel = create_artificial_label (loc);
+  gimple_seq_add_stmt (&bind_body, gimple_build_label (llabel));
+  gimple *call
+    = gimple_build_call (decl, 4, num_teams_lower, num_teams, thread_limit,
+			 first);
+  gimple_set_location (call, loc);
+  tree temp = create_tmp_var (rettype);
+  gimple_call_set_lhs (call, temp);
+  gimple_seq_add_stmt (&bind_body, call);
+
+  tree tlabel = create_artificial_label (loc);
+  tree flabel = create_artificial_label (loc);
+  gimple *cond = gimple_build_cond (NE_EXPR, temp, build_zero_cst (rettype),
+				    tlabel, flabel);
+  gimple_seq_add_stmt (&bind_body, cond);
+  gimple_seq_add_stmt (&bind_body, gimple_build_label (tlabel));
+  gimple_seq_add_stmt (&bind_body,
+		       gimple_build_assign (first, build_zero_cst (rettype)));
 
   lower_rec_input_clauses (gimple_omp_teams_clauses (teams_stmt),
 			   &bind_body, &dlist, ctx, NULL);
@@ -13914,17 +13976,13 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			   NULL, ctx);
   gimple_seq_add_stmt (&bind_body, teams_stmt);
 
-  location_t loc = gimple_location (teams_stmt);
-  tree decl = builtin_decl_explicit (BUILT_IN_GOMP_TEAMS);
-  gimple *call = gimple_build_call (decl, 2, num_teams, thread_limit);
-  gimple_set_location (call, loc);
-  gimple_seq_add_stmt (&bind_body, call);
-
   gimple_seq_add_seq (&bind_body, gimple_omp_body (teams_stmt));
   gimple_omp_set_body (teams_stmt, NULL);
   gimple_seq_add_seq (&bind_body, olist);
   gimple_seq_add_seq (&bind_body, dlist);
   gimple_seq_add_stmt (&bind_body, gimple_build_omp_return (true));
+  gimple_seq_add_stmt (&bind_body, gimple_build_goto (llabel));
+  gimple_seq_add_stmt (&bind_body, gimple_build_label (flabel));
   gimple_bind_set_body (bind, bind_body);
 
   pop_gimplify_context (bind);

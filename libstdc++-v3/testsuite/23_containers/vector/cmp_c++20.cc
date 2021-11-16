@@ -16,12 +16,13 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do run { target c++2a } }
+// { dg-do compile { target c++2a } }
+// { dg-xfail-if "not supported" { debug-mode } }
 
 #include <vector>
 #include <testsuite_hooks.h>
 
-void
+constexpr bool
 test01()
 {
   std::vector<int> c1{ 1, 2, 3 }, c2{ 1, 2, 3, 4 }, c3{ 1, 2, 4 };
@@ -47,24 +48,26 @@ test01()
 
   struct E
   {
-    bool operator==(E) { return true; }
+    constexpr bool operator==(E) const { return true; }
   };
   static_assert( ! std::totally_ordered<std::vector<E>> );
   static_assert( ! std::three_way_comparable<E> );
   static_assert( ! std::three_way_comparable<std::vector<E>> );
+
+  return true;
 }
 
-void
+constexpr bool
 test02()
 {
   struct W
   {
     int value = 0;
 
-    bool operator==(W rhs) const noexcept
+    constexpr bool operator==(W rhs) const noexcept
     { return (value | 1) == (rhs.value | 1); }
 
-    std::weak_ordering
+    constexpr std::weak_ordering
     operator<=>(W rhs) const noexcept
     { return (value | 1) <=> (rhs.value | 1); }
   };
@@ -75,23 +78,25 @@ test02()
   static_assert( std::same_as<decltype(c1 <=> c1), std::weak_ordering> );
   VERIFY( c1 == c2 );
   VERIFY( std::is_eq(c1 <=> c2) );
+
+  return true;
 }
 
-void
+constexpr bool
 test03()
 {
   struct P
   {
     int value = 0;
 
-    bool operator==(P rhs) const noexcept
+    constexpr bool operator==(P rhs) const noexcept
     {
       if (value < 0 || rhs.value < 0)
 	return false;
       return value == rhs.value;
     }
 
-    std::partial_ordering
+    constexpr std::partial_ordering
     operator<=>(P rhs) const noexcept
     {
       if (value < 0 || rhs.value < 0)
@@ -106,16 +111,18 @@ test03()
   static_assert( std::three_way_comparable<P> );
   static_assert( std::same_as<decltype(c <=> c), std::partial_ordering> );
   VERIFY( (c <=> c) == std::partial_ordering::unordered );
+
+  return true;
 }
 
-void
+constexpr bool
 test04()
 {
   struct L
   {
     int value = 0;
 
-    bool operator<(L rhs) const noexcept { return value < rhs.value; }
+    constexpr bool operator<(L rhs) const noexcept { return value < rhs.value; }
   };
 
   static_assert( std::totally_ordered<std::vector<L>> );
@@ -123,9 +130,11 @@ test04()
   std::vector<L> c{ {1}, {2}, {3} }, d{ {1}, {2}, {3}, {4} };
   static_assert( std::same_as<decltype(c <=> c), std::weak_ordering> );
   VERIFY( std::is_lt(c <=> d) );
+
+  return true;
 }
 
-void
+constexpr bool
 test05()
 {
   // vector iterators are random access, so should support <=>
@@ -148,14 +157,12 @@ test05()
 
   static_assert( std::same_as<decltype(c.begin() <=> c.begin()),
 			      std::strong_ordering> );
+
+  return true;
 }
 
-int
-main()
-{
-  test01();
-  test02();
-  test03();
-  test04();
-  test05();
-}
+static_assert( test01() );
+static_assert( test02() );
+static_assert( test03() );
+static_assert( test04() );
+static_assert( test05() );

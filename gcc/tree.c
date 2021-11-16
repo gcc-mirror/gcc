@@ -330,7 +330,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_DIST_SCHEDULE  */
   0, /* OMP_CLAUSE_INBRANCH  */
   0, /* OMP_CLAUSE_NOTINBRANCH  */
-  1, /* OMP_CLAUSE_NUM_TEAMS  */
+  2, /* OMP_CLAUSE_NUM_TEAMS  */
   1, /* OMP_CLAUSE_THREAD_LIMIT  */
   0, /* OMP_CLAUSE_PROC_BIND  */
   1, /* OMP_CLAUSE_SAFELEN  */
@@ -5278,6 +5278,18 @@ build_decl (location_t loc, enum tree_code code, tree name,
     layout_decl (t, 0);
 
   return t;
+}
+
+/* Create and return a DEBUG_EXPR_DECL node of the given TYPE.  */
+
+tree
+build_debug_expr_decl (tree type)
+{
+  tree vexpr = make_node (DEBUG_EXPR_DECL);
+  DECL_ARTIFICIAL (vexpr) = 1;
+  TREE_TYPE (vexpr) = type;
+  SET_DECL_MODE (vexpr, TYPE_MODE (type));
+  return vexpr;
 }
 
 /* Builds and returns function declaration with NAME and TYPE.  */

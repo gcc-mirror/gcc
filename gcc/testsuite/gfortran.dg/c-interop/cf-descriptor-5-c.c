@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <alloca.h>
 
 #include <ISO_Fortran_binding.h>
 #include "dump-descriptors.h"
@@ -8,12 +7,18 @@
 extern void ctest (int n);
 extern void ftest (CFI_cdesc_t *a, int n);
 
+#define BUFSIZE 512
+static char adata[BUFSIZE];
+
 void
 ctest (int n)
 {
   CFI_CDESC_T(0) adesc;
   CFI_cdesc_t *a = (CFI_cdesc_t *) &adesc;
-  char *adata = (char *) alloca (n);
+
+  /* Use a fixed-size static buffer instead of allocating one dynamically.  */
+  if (n > BUFSIZE)
+    abort ();
 
   /* Fill in adesc.  */
   check_CFI_status ("CFI_establish",

@@ -95,6 +95,9 @@ foreach flags $VECT_ADDITIONAL_FLAGS {
 	[glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
     et-dg-runtest dg-runtest [lsort \
+	[glob -nocomplain $srcdir/$subdir/tsvc/*.\[cS\]]] \
+	$flags $DEFAULT_VECTCFLAGS
+    et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/slp-*.\[cS\]]] \
 	$flags $DEFAULT_VECTCFLAGS
     et-dg-runtest dg-runtest [lsort \

@@ -3,7 +3,7 @@
 // { dg-add-options tls }
 // { dg-require-alias "" }
 // { dg-require-effective-target tls_runtime }
-// { dg-additional-options "-fdump-tree-gimple" }
+// { dg-additional-options "-fdump-tree-gimple -fno-implicit-constexpr" }
 // { dg-final { scan-tree-dump-times "_ZTH2s1" 1 "gimple" } }
 // { dg-final { scan-tree-dump-times "_ZTH2s2" 1 "gimple" } }
 // { dg-final { scan-tree-dump-times "_ZTH2s3" 1 "gimple" } }

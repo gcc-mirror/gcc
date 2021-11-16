@@ -686,9 +686,9 @@ package body Sem_Util is
                return New_Occurrence_Of
                         (Get_Dynamic_Accessibility (E), Loc);
 
-            --  Initialization procedures have a special extra accessitility
+            --  Initialization procedures have a special extra accessibility
             --  parameter associated with the level at which the object
-            --  begin initialized exists
+            --  being initialized exists
 
             elsif Ekind (E) = E_Record_Type
               and then Is_Limited_Record (E)
@@ -723,17 +723,11 @@ package body Sem_Util is
             --  Note: We check if the original node of the renaming comes
             --  from source because the node may have been rewritten.
 
-            elsif Present (Renamed_Object (E))
-              and then Comes_From_Source (Original_Node (Renamed_Object (E)))
+            elsif Present (Renamed_Entity_Or_Object (E))
+              and then Comes_From_Source
+                (Original_Node (Renamed_Entity_Or_Object (E)))
             then
-               return Accessibility_Level (Renamed_Object (E));
-
-            --  Move up renamed entities
-
-            elsif Present (Renamed_Entity (E))
-              and then Comes_From_Source (Original_Node (Renamed_Entity (E)))
-            then
-               return Accessibility_Level (Renamed_Entity (E));
+               return Accessibility_Level (Renamed_Entity_Or_Object (E));
 
             --  Named access types get their level from their associated type
 
@@ -749,6 +743,13 @@ package body Sem_Util is
               and then Present (Related_Expression (E))
             then
                return Accessibility_Level (Related_Expression (E));
+
+            elsif Level = Dynamic_Level
+               and then Ekind (E) in E_In_Parameter | E_In_Out_Parameter
+               and then Present (Init_Proc_Level_Formal (Scope (E)))
+            then
+               return New_Occurrence_Of
+                        (Init_Proc_Level_Formal (Scope (E)), Loc);
 
             --  Normal object - get the level of the enclosing scope
 
@@ -1605,6 +1606,27 @@ package body Sem_Util is
         and then Scope_Depth (ST) >= Scope_Depth (SCT);
    end Available_Full_View_Of_Component;
 
+   ----------------
+   -- Bad_Aspect --
+   ----------------
+
+   procedure Bad_Aspect
+     (N    : Node_Id;
+      Nam  : Name_Id;
+      Warn : Boolean := False)
+   is
+   begin
+      Error_Msg_Warn := Warn;
+      Error_Msg_N ("<<& is not a valid aspect identifier", N);
+
+      --  Check bad spelling
+      Error_Msg_Name_1 := Aspect_Spell_Check (Nam);
+      if Error_Msg_Name_1 /= No_Name then
+         Error_Msg_N -- CODEFIX
+            ("\<<possible misspelling of %", N);
+      end if;
+   end Bad_Aspect;
+
    -------------------
    -- Bad_Attribute --
    -------------------
@@ -1616,20 +1638,15 @@ package body Sem_Util is
    is
    begin
       Error_Msg_Warn := Warn;
-      Error_Msg_N ("unrecognized attribute&<<", N);
+      Error_Msg_N ("<<unrecognized attribute&", N);
 
       --  Check for possible misspelling
 
-      Error_Msg_Name_1 := First_Attribute_Name;
-      while Error_Msg_Name_1 <= Last_Attribute_Name loop
-         if Is_Bad_Spelling_Of (Nam, Error_Msg_Name_1) then
-            Error_Msg_N -- CODEFIX
-              ("\possible misspelling of %<<", N);
-            exit;
-         end if;
-
-         Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
-      end loop;
+      Error_Msg_Name_1 := Attribute_Spell_Check (Nam);
+      if Error_Msg_Name_1 /= No_Name then
+         Error_Msg_N -- CODEFIX
+            ("\<<possible misspelling of %", N);
+      end if;
    end Bad_Attribute;
 
    --------------------------------
@@ -4860,17 +4877,17 @@ package body Sem_Util is
                if Pragma_Name (Prag) = Name_Contract_Cases then
                   Error_Msg_NE (Adjust_Message
                     ("contract case does not check the outcome of calling "
-                     & "&?T?"), Expr, Subp_Id);
+                     & "&?.t?"), Expr, Subp_Id);
 
                elsif Pragma_Name (Prag) = Name_Refined_Post then
                   Error_Msg_NE (Adjust_Message
                     ("refined postcondition does not check the outcome of "
-                     & "calling &?T?"), Err_Node, Subp_Id);
+                     & "calling &?.t?"), Err_Node, Subp_Id);
 
                else
                   Error_Msg_NE (Adjust_Message
                     ("postcondition does not check the outcome of calling "
-                     & "&?T?"), Err_Node, Subp_Id);
+                     & "&?.t?"), Err_Node, Subp_Id);
                end if;
             end if;
          end Check_Conjunct;
@@ -5138,20 +5155,20 @@ package body Sem_Util is
       then
          Error_Msg_N
            ("neither postcondition nor contract cases mention function "
-            & "result?T?", Post_Prag);
+            & "result?.t?", Post_Prag);
 
       --  The function has contract cases only and they do not mention
       --  attribute 'Result.
 
       elsif Present (Case_Prag) and then not Seen_In_Case then
-         Error_Msg_N ("contract cases do not mention result?T?", Case_Prag);
+         Error_Msg_N ("contract cases do not mention result?.t?", Case_Prag);
 
       --  The function has postconditions only and they do not mention
       --  attribute 'Result.
 
       elsif Present (Post_Prag) and then not Seen_In_Post then
          Error_Msg_N
-           ("postcondition does not mention function result?T?", Post_Prag);
+           ("postcondition does not mention function result?.t?", Post_Prag);
       end if;
    end Check_Result_And_Post_State;
 
@@ -6803,14 +6820,11 @@ package body Sem_Util is
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id is
       Loc    : constant Source_Ptr := Sloc (Subp_Id);
       Plist  : List_Id;
-      Formal : Entity_Id;
+      Formal : Entity_Id := First_Formal (Subp_Id);
 
    begin
-      if No (First_Formal (Subp_Id)) then
-         return No_List;
-      else
-         Plist  := New_List;
-         Formal := First_Formal (Subp_Id);
+      if Present (Formal) then
+         Plist := New_List;
          while Present (Formal) loop
             Append_To (Plist,
               Make_Parameter_Specification (Loc,
@@ -6825,6 +6839,8 @@ package body Sem_Util is
 
             Next_Formal (Formal);
          end loop;
+      else
+         Plist := No_List;
       end if;
 
       return Plist;
@@ -7369,7 +7385,7 @@ package body Sem_Util is
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
       begin
          if Is_Object_Renaming (N)
-           and then not Is_Valid_Renaming (Renamed_Entity (Entity (N)))
+           and then not Is_Valid_Renaming (Renamed_Object (Entity (N)))
          then
             return False;
          end if;
@@ -7561,12 +7577,12 @@ package body Sem_Util is
       elsif Is_Object_Renaming (A1)
         and then Is_Valid_Renaming (A1)
       then
-         return Denotes_Same_Object (Renamed_Entity (Entity (A1)), A2);
+         return Denotes_Same_Object (Renamed_Object (Entity (A1)), A2);
 
       elsif Is_Object_Renaming (A2)
         and then Is_Valid_Renaming (A2)
       then
-         return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
+         return Denotes_Same_Object (A1, Renamed_Object (Entity (A2)));
 
       else
          return False;
@@ -10888,8 +10904,8 @@ package body Sem_Util is
    function Get_Generic_Entity (N : Node_Id) return Entity_Id is
       Ent : constant Entity_Id := Entity (Name (N));
    begin
-      if Present (Renamed_Object (Ent)) then
-         return Renamed_Object (Ent);
+      if Present (Renamed_Entity (Ent)) then
+         return Renamed_Entity (Ent);
       else
          return Ent;
       end if;
@@ -11406,10 +11422,8 @@ package body Sem_Util is
    ------------------------
 
    function Get_Renamed_Entity (E : Entity_Id) return Entity_Id is
-      R : Entity_Id;
-
+      R : Entity_Id := E;
    begin
-      R := E;
       while Present (Renamed_Entity (R)) loop
          R := Renamed_Entity (R);
       end loop;
@@ -16644,7 +16658,8 @@ package body Sem_Util is
             --  Predicate_Failure aspect, for which we do not construct a
             --  wrapper procedure. The subtype will be replaced by the
             --  expression being tested when the corresponding predicate
-            --  check is expanded.
+            --  check is expanded. It may also appear in the pragma Predicate
+            --  expression during legality checking.
 
             elsif Nkind (P) = N_Aspect_Specification
               and then Nkind (Parent (P)) = N_Subtype_Declaration
@@ -16652,7 +16667,8 @@ package body Sem_Util is
                return True;
 
             elsif Nkind (P) = N_Pragma
-              and then Get_Pragma_Id (P) = Pragma_Predicate_Failure
+              and then Get_Pragma_Id (P) in Pragma_Predicate
+                                          | Pragma_Predicate_Failure
             then
                return True;
             end if;
@@ -24095,7 +24111,8 @@ package body Sem_Util is
             --  declaration.
 
             elsif Nkind (N) = N_Object_Renaming_Declaration then
-               Set_Renamed_Object (Defining_Entity (Result), Name (Result));
+               Set_Renamed_Object_Of_Possibly_Void
+                 (Defining_Entity (Result), Name (Result));
 
             --  Update the First_Real_Statement attribute of a replicated
             --  handled sequence of statements.

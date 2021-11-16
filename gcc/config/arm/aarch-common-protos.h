@@ -133,6 +133,9 @@ struct vector_cost_table
 {
   const int alu;
   const int mult;
+  const int movi;
+  const int dup;
+  const int extract;
 };
 
 struct cpu_cost_table

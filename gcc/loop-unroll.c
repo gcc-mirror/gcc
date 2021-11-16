@@ -520,14 +520,11 @@ unroll_loop_constant_iterations (class loop *loop)
       if (exit_mod)
 	{
 	  opt_info_start_duplication (opt_info);
-          ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					      exit_mod,
-					      wont_exit, desc->out_edge,
-					      &remove_edges,
-					      DLTHE_FLAG_UPDATE_FREQ
-					      | (opt_info && exit_mod > 1
-						 ? DLTHE_RECORD_COPY_NUMBER
-						   : 0));
+	  ok = duplicate_loop_body_to_header_edge (
+	    loop, loop_preheader_edge (loop), exit_mod, wont_exit,
+	    desc->out_edge, &remove_edges,
+	    DLTHE_FLAG_UPDATE_FREQ
+	      | (opt_info && exit_mod > 1 ? DLTHE_RECORD_COPY_NUMBER : 0));
 	  gcc_assert (ok);
 
           if (opt_info && exit_mod > 1)
@@ -569,14 +566,11 @@ unroll_loop_constant_iterations (class loop *loop)
 	    bitmap_clear_bit (wont_exit, 1);
 
           opt_info_start_duplication (opt_info);
-	  ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					      exit_mod + 1,
-					      wont_exit, desc->out_edge,
-					      &remove_edges,
-					      DLTHE_FLAG_UPDATE_FREQ
-					      | (opt_info && exit_mod > 0
-						 ? DLTHE_RECORD_COPY_NUMBER
-						   : 0));
+	  ok = duplicate_loop_body_to_header_edge (
+	    loop, loop_preheader_edge (loop), exit_mod + 1, wont_exit,
+	    desc->out_edge, &remove_edges,
+	    DLTHE_FLAG_UPDATE_FREQ
+	      | (opt_info && exit_mod > 0 ? DLTHE_RECORD_COPY_NUMBER : 0));
 	  gcc_assert (ok);
 
           if (opt_info && exit_mod > 0)
@@ -606,14 +600,10 @@ unroll_loop_constant_iterations (class loop *loop)
   /* Now unroll the loop.  */
 
   opt_info_start_duplication (opt_info);
-  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-				      max_unroll,
-				      wont_exit, desc->out_edge,
-				      &remove_edges,
-				      DLTHE_FLAG_UPDATE_FREQ
-				      | (opt_info
-					 ? DLTHE_RECORD_COPY_NUMBER
-					   : 0));
+  ok = duplicate_loop_body_to_header_edge (
+    loop, loop_latch_edge (loop), max_unroll, wont_exit, desc->out_edge,
+    &remove_edges,
+    DLTHE_FLAG_UPDATE_FREQ | (opt_info ? DLTHE_RECORD_COPY_NUMBER : 0));
   gcc_assert (ok);
 
   if (opt_info)
@@ -975,10 +965,10 @@ unroll_loop_runtime_iterations (class loop *loop)
       if (!desc->noloop_assumptions)
 	bitmap_set_bit (wont_exit, 1);
       ezc_swtch = loop_preheader_edge (loop)->src;
-      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					  1, wont_exit, desc->out_edge,
-					  &remove_edges,
-					  DLTHE_FLAG_UPDATE_FREQ);
+      ok = duplicate_loop_body_to_header_edge (loop, loop_preheader_edge (loop),
+					       1, wont_exit, desc->out_edge,
+					       &remove_edges,
+					       DLTHE_FLAG_UPDATE_FREQ);
       gcc_assert (ok);
     }
 
@@ -997,10 +987,10 @@ unroll_loop_runtime_iterations (class loop *loop)
       bitmap_clear (wont_exit);
       if (i != n_peel - 1 || !last_may_exit)
 	bitmap_set_bit (wont_exit, 1);
-      ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					  1, wont_exit, desc->out_edge,
-					  &remove_edges,
-					  DLTHE_FLAG_UPDATE_FREQ);
+      ok = duplicate_loop_body_to_header_edge (loop, loop_preheader_edge (loop),
+					       1, wont_exit, desc->out_edge,
+					       &remove_edges,
+					       DLTHE_FLAG_UPDATE_FREQ);
       gcc_assert (ok);
 
       /* Create item for switch.  */
@@ -1061,14 +1051,10 @@ unroll_loop_runtime_iterations (class loop *loop)
   bitmap_clear_bit (wont_exit, may_exit_copy);
   opt_info_start_duplication (opt_info);
 
-  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-				      max_unroll,
-				      wont_exit, desc->out_edge,
-				      &remove_edges,
-				      DLTHE_FLAG_UPDATE_FREQ
-				      | (opt_info
-					 ? DLTHE_RECORD_COPY_NUMBER
-					   : 0));
+  ok = duplicate_loop_body_to_header_edge (
+    loop, loop_latch_edge (loop), max_unroll, wont_exit, desc->out_edge,
+    &remove_edges,
+    DLTHE_FLAG_UPDATE_FREQ | (opt_info ? DLTHE_RECORD_COPY_NUMBER : 0));
   gcc_assert (ok);
 
   if (opt_info)
@@ -1255,13 +1241,9 @@ unroll_loop_stupid (class loop *loop)
   bitmap_clear (wont_exit);
   opt_info_start_duplication (opt_info);
 
-  ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-				      nunroll, wont_exit,
-				      NULL, NULL,
-				      DLTHE_FLAG_UPDATE_FREQ
-				      | (opt_info
-					 ? DLTHE_RECORD_COPY_NUMBER
-					   : 0));
+  ok = duplicate_loop_body_to_header_edge (
+    loop, loop_latch_edge (loop), nunroll, wont_exit, NULL, NULL,
+    DLTHE_FLAG_UPDATE_FREQ | (opt_info ? DLTHE_RECORD_COPY_NUMBER : 0));
   gcc_assert (ok);
 
   if (opt_info)
@@ -2019,7 +2001,7 @@ apply_opt_in_copies (struct opt_info *opt_info,
       orig_bb = get_bb_original (bb);
 
       /* bb->aux holds position in copy sequence initialized by
-	 duplicate_loop_to_header_edge.  */
+	 duplicate_loop_body_to_header_edge.  */
       delta = determine_split_iv_delta ((size_t)bb->aux, n_copies,
 					unrolling);
       bb->aux = 0;

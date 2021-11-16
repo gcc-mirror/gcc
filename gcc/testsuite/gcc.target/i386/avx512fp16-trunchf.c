@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx512fp16" } */
-/* { dg-final { scan-assembler-times "vcvttsh2si\[ \\t\]+\[^\{\n\]*(?:%xmm\[0-9\]|\\(%esp\\))+, %eax(?:\n|\[ \\t\]+#)" 3 } } */
-/* { dg-final { scan-assembler-times "vcvttsh2usi\[ \\t\]+\[^\{\n\]*(?:%xmm\[0-9\]|\\(%esp\\))+, %eax(?:\n|\[ \\t\]+#)" 2 } } */
+/* { dg-final { scan-assembler-times "vcvttsh2si\[ \\t\]+\[^\{\n\]*(?:%xmm\[0-9\]|\\(%e\[bs\]p\\))+, %eax(?:\n|\[ \\t\]+#)" 3 } } */
+/* { dg-final { scan-assembler-times "vcvttsh2usi\[ \\t\]+\[^\{\n\]*(?:%xmm\[0-9\]|\\(%e\[bs\]p\\))+, %eax(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "vcvttsh2si\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+, %rax(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vcvttsh2usi\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+, %rax(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler "xorl\[ \\t\]+%edx, %edx" { target ia32 } } } */

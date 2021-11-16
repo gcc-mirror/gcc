@@ -327,8 +327,8 @@ package body Inline is
    --    Unreferenced
 
    procedure Reset_Actual_Mapping_For_Inlined_Call (Subp : Entity_Id);
-   --  Reset the Renamed_Object flags on the formals of Subp, which can be set
-   --  by a call to Establish_Actual_Mapping_For_Inlined_Call.
+   --  Reset the Renamed_Object field to Empty on all formals of Subp, which
+   --  can be set by a call to Establish_Actual_Mapping_For_Inlined_Call.
 
    ------------------------------
    -- Deferred Cleanup Actions --
@@ -2894,7 +2894,7 @@ package body Inline is
          if Present (Renamed_Object (F)) then
 
             --  If expander is active, it is an error to try to inline a
-            --  recursive program. In GNATprove mode, just indicate that the
+            --  recursive subprogram. In GNATprove mode, just indicate that the
             --  inlining will not happen, and mark the subprogram as not always
             --  inlined.
 

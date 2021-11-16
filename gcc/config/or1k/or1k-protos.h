@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 extern HOST_WIDE_INT or1k_initial_elimination_offset (int, int);
 extern void or1k_expand_prologue (void);
 extern void or1k_expand_epilogue (void);
+extern void or1k_profile_hook (void);
 extern void or1k_expand_eh_return (rtx);
 extern rtx  or1k_initial_frame_addr (void);
 extern rtx  or1k_dynamic_chain_addr (rtx);

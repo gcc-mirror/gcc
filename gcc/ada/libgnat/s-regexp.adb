@@ -122,7 +122,7 @@ package body System.Regexp is
    is
       S : String := Pattern;
       --  The pattern which is really compiled (when the pattern is case
-      --  insensitive, we convert this string to lower-cases
+      --  insensitive, we convert this string to lower-cases).
 
       Map : Mapping := (others => 0);
       --  Mapping between characters and columns in the tables
@@ -209,8 +209,59 @@ package body System.Regexp is
          --  The last occurrence of an opening parenthesis, if Glob=False,
          --  or the last occurrence of an opening curly brace, if Glob=True.
 
+         procedure Find_Close_Bracket;
+         --  Go through the pattern to find a closing bracket. Raise an
+         --  exception if none is found.
+
          procedure Raise_Exception_If_No_More_Chars (K : Integer := 0);
-         --  If no more characters are raised, call Raise_Exception
+         --  If J + K > S'Last then call Raise_Exception
+
+         ------------------------
+         -- Find_Close_Bracket --
+         ------------------------
+
+         procedure Find_Close_Bracket is
+            Possible_Range_Start : Boolean := True;
+            --  Set True everywhere a range character '-' can occur
+
+         begin
+            loop
+               exit when S (J) = Close_Bracket;
+
+               Raise_Exception_If_No_More_Chars (1);
+               --  The current character is not a close_bracket, thus it should
+               --  be followed by at least one more char. If not, no close
+               --  bracket is present and the pattern is ill-formed.
+
+               if S (J) = '-' and then S (J + 1) /= Close_Bracket then
+                  if not Possible_Range_Start then
+                     Raise_Exception
+                        ("No mix of ranges is allowed in "
+                        & "regular expression", J);
+                  end if;
+
+                  J := J + 1;
+                  Raise_Exception_If_No_More_Chars (1);
+
+                  Possible_Range_Start := False;
+                  --  Range cannot be followed by '-' character,
+                  --  except as last character in the set.
+
+               else
+                  Possible_Range_Start := True;
+               end if;
+
+               if S (J) = '\' then
+                  J := J + 1;
+                  Raise_Exception_If_No_More_Chars (1);
+                  --  We ignore the next character and need to check we have
+                  --  one more available character. This is necessary for
+                  --  the erroneous [\] pattern which stands for [\]] or [\\].
+               end if;
+
+               J := J + 1;
+            end loop;
+         end Find_Close_Bracket;
 
          --------------------------------------
          -- Raise_Exception_If_No_More_Chars --
@@ -240,63 +291,23 @@ package body System.Regexp is
                      end if;
                   end if;
 
-                  --  The first character never has a special meaning
-
+                  --  Characters ']' and '-' are meant as literals when first
+                  --  in the list.  As such, they have no special meaning and
+                  --  we pass them.
                   if S (J) = ']' or else S (J) = '-' then
                      J := J + 1;
                      Raise_Exception_If_No_More_Chars;
                   end if;
 
-                  --  The set of characters cannot be empty
-
                   if S (J) = ']' then
+                     --  ??? This message is misleading since the check forbids
+                     --  the sets []] and [-] but not the empty set [].
                      Raise_Exception
                        ("Set of characters cannot be empty in regular "
                           & "expression", J);
                   end if;
 
-                  declare
-                     Possible_Range_Start : Boolean := True;
-                     --  Set True everywhere a range character '-' can occur
-
-                  begin
-                     loop
-                        exit when S (J) = Close_Bracket;
-
-                        --  The current character should be followed by a
-                        --  closing bracket.
-
-                        Raise_Exception_If_No_More_Chars (1);
-
-                        if S (J) = '-'
-                          and then S (J + 1) /= Close_Bracket
-                        then
-                           if not Possible_Range_Start then
-                              Raise_Exception
-                                ("No mix of ranges is allowed in "
-                                   & "regular expression", J);
-                           end if;
-
-                           J := J + 1;
-                           Raise_Exception_If_No_More_Chars;
-
-                           --  Range cannot be followed by '-' character,
-                           --  except as last character in the set.
-
-                           Possible_Range_Start := False;
-
-                        else
-                           Possible_Range_Start := True;
-                        end if;
-
-                        if S (J) = '\' then
-                           J := J + 1;
-                           Raise_Exception_If_No_More_Chars;
-                        end if;
-
-                        J := J + 1;
-                     end loop;
-                  end;
+                  Find_Close_Bracket;
 
                   --  A closing bracket can end an elmt or term
 
@@ -430,6 +441,9 @@ package body System.Regexp is
                           ("'|' operator must be "
                            & "applied to a term in regular expression", J);
                      end if;
+
+                     --  A second term must follow
+                     Raise_Exception_If_No_More_Chars (K => 1);
 
                      Past_Elmt := False;
                      Past_Term := False;

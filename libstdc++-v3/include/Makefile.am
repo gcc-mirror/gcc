@@ -76,6 +76,7 @@ std_headers = \
 	${std_srcdir}/shared_mutex \
 	${std_srcdir}/source_location \
 	${std_srcdir}/span \
+	${std_srcdir}/spanstream \
 	${std_srcdir}/sstream \
 	${std_srcdir}/syncstream \
 	${std_srcdir}/stack \

@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "fold-const.h"
 #include "value-pointer-equiv.h"
+#include "tree-vrp.h"
 
 // This is the classic EVRP folder which uses a dominator walk and pushes
 // ranges into the next block if it is a single predecessor block.
@@ -108,88 +109,6 @@ protected:
   DISABLE_COPY_AND_ASSIGN (evrp_folder);
   evrp_range_analyzer m_range_analyzer;
   simplify_using_ranges simplifier;
-};
-
-// This is a ranger based folder which continues to use the dominator
-// walk to access the substitute and fold machinery.  Ranges are calculated
-// on demand.
-
-class rvrp_folder : public substitute_and_fold_engine
-{
-public:
-
-  rvrp_folder () : substitute_and_fold_engine (), m_simplifier ()
-  {
-    m_ranger = enable_ranger (cfun);
-    m_simplifier.set_range_query (m_ranger, m_ranger->non_executable_edge_flag);
-    m_pta = new pointer_equiv_analyzer (m_ranger);
-  }
-      
-  ~rvrp_folder ()
-  {
-    if (dump_file && (dump_flags & TDF_DETAILS))
-      m_ranger->dump (dump_file);
-
-    m_ranger->export_global_ranges ();
-    disable_ranger (cfun);
-    delete m_pta;
-  }
-
-  tree value_of_expr (tree name, gimple *s = NULL) OVERRIDE
-  {
-    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
-    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
-      return NULL;
-    tree ret = m_ranger->value_of_expr (name, s);
-    if (!ret && supported_pointer_equiv_p (name))
-      ret = m_pta->get_equiv (name);
-    return ret;
-  }
-
-  tree value_on_edge (edge e, tree name) OVERRIDE
-  {
-    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
-    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
-      return NULL;
-    tree ret = m_ranger->value_on_edge (e, name);
-    if (!ret && supported_pointer_equiv_p (name))
-      ret = m_pta->get_equiv (name);
-    return ret;
-  }
-
-  tree value_of_stmt (gimple *s, tree name = NULL) OVERRIDE
-  {
-    // Shortcircuit subst_and_fold callbacks for abnormal ssa_names.
-    if (TREE_CODE (name) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
-      return NULL;
-    return m_ranger->value_of_stmt (s, name);
-  }
-
-  void pre_fold_bb (basic_block bb) OVERRIDE
-  {
-    m_pta->enter (bb);
-  }
-
-  void post_fold_bb (basic_block bb) OVERRIDE
-  {
-    m_pta->leave (bb);
-  }
-
-  void pre_fold_stmt (gimple *stmt) OVERRIDE
-  {
-    m_pta->visit_stmt (stmt);
-  }
-
-  bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
-  {
-    return m_simplifier.simplify (gsi);
-  }
-
-private:
-  DISABLE_COPY_AND_ASSIGN (rvrp_folder);
-  gimple_ranger *m_ranger;
-  simplify_using_ranges m_simplifier;
-  pointer_equiv_analyzer *m_pta;
 };
 
 // In a hybrid folder, start with an EVRP folder, and add the required
@@ -381,7 +300,7 @@ hybrid_folder::choose_value (tree evrp_val, tree ranger_val)
     return evrp_val;
 
   // If values are different, return the first calculated value.
-  if ((param_evrp_mode & EVRP_MODE_RVRP_FIRST) == EVRP_MODE_RVRP_FIRST)
+  if (param_evrp_mode == EVRP_MODE_RVRP_FIRST)
     return ranger_val;
   return evrp_val;
 }
@@ -393,6 +312,9 @@ hybrid_folder::choose_value (tree evrp_val, tree ranger_val)
 static unsigned int
 execute_early_vrp ()
 {
+  if (param_evrp_mode == EVRP_MODE_RVRP_ONLY)
+    return execute_ranger_vrp (cfun, false);
+
   /* Ideally this setup code would move into the ctor for the folder
      However, this setup can change the number of blocks which
      invalidates the internal arrays that are set up by the dominator
@@ -403,17 +325,11 @@ execute_early_vrp ()
   calculate_dominance_info (CDI_DOMINATORS);
 
   // Only the last 2 bits matter for choosing the folder.
-  switch (param_evrp_mode & EVRP_MODE_RVRP_FIRST)
+  switch (param_evrp_mode)
     {
     case EVRP_MODE_EVRP_ONLY:
       {
 	evrp_folder folder;
-	folder.substitute_and_fold ();
-	break;
-      }
-    case EVRP_MODE_RVRP_ONLY:
-      {
-	rvrp_folder folder;
 	folder.substitute_and_fold ();
 	break;
       }

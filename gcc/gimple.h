@@ -1589,6 +1589,8 @@ gimple_seq gimple_seq_copy (gimple_seq);
 bool gimple_call_same_target_p (const gimple *, const gimple *);
 int gimple_call_flags (const gimple *);
 int gimple_call_arg_flags (const gcall *, unsigned);
+int gimple_call_retslot_flags (const gcall *);
+int gimple_call_static_chain_flags (const gcall *);
 int gimple_call_return_flags (const gcall *);
 bool gimple_call_nonnull_result_p (gcall *);
 tree gimple_call_nonnull_arg (gcall *);

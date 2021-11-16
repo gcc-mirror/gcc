@@ -1052,6 +1052,9 @@ c_common_post_options (const char **pfilename)
       && flag_strong_eval_order == -1)
     flag_strong_eval_order = (cxx_dialect >= cxx17 ? 2 : 1);
 
+  if (flag_implicit_constexpr && cxx_dialect < cxx14)
+    flag_implicit_constexpr = false;
+
   /* Global sized deallocation is new in C++14.  */
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);

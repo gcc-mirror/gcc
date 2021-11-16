@@ -1276,27 +1276,16 @@ gfc_resolve_ior (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 
 
 void
-gfc_resolve_index_func (gfc_expr *f, gfc_actual_arglist *a)
+gfc_resolve_index_func (gfc_expr *f, gfc_expr *str,
+			gfc_expr *sub_str ATTRIBUTE_UNUSED, gfc_expr *back,
+			gfc_expr *kind)
 {
   gfc_typespec ts;
   gfc_clear_ts (&ts);
-  gfc_expr *str, *back, *kind;
-  gfc_actual_arglist *a_sub_str, *a_back, *a_kind;
-
-  if (f->do_not_resolve_again)
-    return;
-
-  a_sub_str = a->next;
-  a_back = a_sub_str->next;
-  a_kind = a_back->next;
-
-  str = a->expr;
-  back = a_back->expr;
-  kind = a_kind->expr;
 
   f->ts.type = BT_INTEGER;
   if (kind)
-    f->ts.kind = mpz_get_si ((kind)->value.integer);
+    f->ts.kind = mpz_get_si (kind->value.integer);
   else
     f->ts.kind = gfc_default_integer_kind;
 
@@ -1311,8 +1300,6 @@ gfc_resolve_index_func (gfc_expr *f, gfc_actual_arglist *a)
 
   f->value.function.name
     = gfc_get_string ("__index_%d_i%d", str->ts.kind, f->ts.kind);
-
-  f->do_not_resolve_again = 1;
 }
 
 

@@ -207,7 +207,7 @@ struct ExceptionHeader
      */
     static void free(ExceptionHeader* eh) @nogc
     {
-        *eh = ExceptionHeader.init;
+        __builtin_memset(eh, 0, ExceptionHeader.sizeof);
         if (eh != &ehstorage)
             __builtin_free(eh);
     }

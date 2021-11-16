@@ -72,6 +72,96 @@ namespace __gnu_debug
 		{ return __it != __local_end; });
       }
 
+#if __cplusplus > 201402L
+      template<typename _ExtractKey, typename _Source>
+	struct _UContInvalidatePred
+	{
+	  template<typename _Iterator>
+	    bool
+	    operator()(_Iterator __it) const
+	    { return _M_source.count(_ExtractKey{}(*__it)) == 0; }
+
+	  const _Source& _M_source;
+	};
+
+      template<typename _ExtractKey, typename _Source>
+	struct _UMContInvalidatePred
+	{
+	  template<typename _Iterator>
+	    bool
+	    operator()(_Iterator __it) const
+	    {
+	      auto __rng =
+		_M_source._M_base().equal_range(_ExtractKey{}(*__it));
+	      for (auto __rit = __rng.first;
+		   __rit != __rng.second; ++__rit)
+		{
+		  if (__it == __rit)
+		    return false;
+		}
+
+	      return true;
+	    }
+
+	  const _Source& _M_source;
+	};
+
+      template<typename _Source, typename _InvalidatePred>
+	struct _UContMergeGuard
+	{
+	  _UContMergeGuard(_Source& __src) noexcept
+	  : _M_source(__src), _M_size(__src.size()), _M_pred { __src }
+	  { }
+
+	  _UContMergeGuard(const _UContMergeGuard&) = delete;
+
+	  ~_UContMergeGuard()
+	  {
+	    const std::size_t __size = _M_source.size();
+	    if (__size == _M_size)
+	      return;
+
+	    __try
+	      {
+		if (__size == 0)
+		  _M_source._M_invalidate_all();
+		else
+		  {
+		    _M_source._M_invalidate_if(_M_pred);
+		    _M_source._M_invalidate_local_if(_M_pred);
+		  }
+	      }
+	    __catch(...)
+	      {
+		_M_source._M_invalidate_all();
+	      }
+	  }
+
+	  _Source& _M_source;
+	  const std::size_t _M_size;
+	  _InvalidatePred _M_pred;
+	};
+
+      template<typename _ExtractKey, typename _Source>
+	static _UContMergeGuard<_Source,
+				_UContInvalidatePred<_ExtractKey, _Source>>
+	_S_uc_guard(_ExtractKey, _Source& __src)
+	{
+	  typedef _UContInvalidatePred<_ExtractKey, _Source> _InvalidatePred;
+	  return _UContMergeGuard<_Source, _InvalidatePred>(__src);
+	}
+
+      template<typename _ExtractKey, typename _Source>
+	static _UContMergeGuard<_Source,
+				_UMContInvalidatePred<_ExtractKey, _Source>>
+	_S_umc_guard(_ExtractKey, _Source& __src)
+	{
+	  typedef _UMContInvalidatePred<_ExtractKey, _Source> _InvalidatePred;
+	  return _UContMergeGuard<_Source, _InvalidatePred>(__src);
+	}
+#endif // C++17
+
+    public:
       void
       _M_invalidate_all()
       {

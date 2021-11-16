@@ -404,7 +404,8 @@ public:
   inline bool
   can_be_discarded_p (void)
   {
-    return (DECL_EXTERNAL (decl)
+    return ((DECL_EXTERNAL (decl)
+	     && !in_other_partition)
 	    || ((get_comdat_group ()
 		 || DECL_COMMON (decl)
 		 || (DECL_SECTION_NAME (decl) && DECL_WEAK (decl)))
@@ -1165,6 +1166,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* SET DECL_IS_MALLOC on cgraph_node's decl and on aliases of the node
      if any.  */
   bool set_malloc_flag (bool malloc_p);
+
+  /* SET TREE_THIS_VOLATILE on cgraph_node's decl and on aliases of the node
+     if any.  */
+  bool set_noreturn_flag (bool noreturn_p);
 
   /* If SET_CONST is true, mark function, aliases and thunks to be ECF_CONST.
     If SET_CONST if false, clear the flag.

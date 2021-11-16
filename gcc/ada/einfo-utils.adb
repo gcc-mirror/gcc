@@ -43,23 +43,86 @@ package body Einfo.Utils is
    --  Determine whether abstract state State_Id has particular option denoted
    --  by the name Option_Nam.
 
-   -----------------------------------
-   -- Renamings of Renamed_Or_Alias --
-   -----------------------------------
+   -------------------------------------------
+   -- Aliases/Renamings of Renamed_Or_Alias --
+   -------------------------------------------
 
    function Alias (N : Entity_Id) return Node_Id is
    begin
-      pragma Assert
-        (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
-      return Renamed_Or_Alias (N);
+      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+         pragma Assert
+           (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
+         pragma Assert (Val in N_Entity_Id | N_Empty_Id);
+      end return;
    end Alias;
 
    procedure Set_Alias (N : Entity_Id; Val : Node_Id) is
    begin
       pragma Assert
         (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
+      pragma Assert (Val in N_Entity_Id | N_Empty_Id);
+
       Set_Renamed_Or_Alias (N, Val);
    end Set_Alias;
+
+   function Renamed_Entity (N : Entity_Id) return Node_Id is
+   begin
+      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+         pragma Assert (not Is_Object (N) or else Etype (N) = Any_Type);
+         pragma Assert (Val in N_Entity_Id | N_Empty_Id);
+      end return;
+   end Renamed_Entity;
+
+   procedure Set_Renamed_Entity (N : Entity_Id; Val : Node_Id) is
+   begin
+      pragma Assert (not Is_Object (N));
+      pragma Assert (Val in N_Entity_Id);
+
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Renamed_Entity;
+
+   function Renamed_Object (N : Entity_Id) return Node_Id is
+   begin
+      return Val : constant Node_Id := Renamed_Or_Alias (N) do
+         --  Formal_Kind uses the entity, not a name of it. This happens
+         --  in front-end inlining, which also sets to Empty. Also in
+         --  Exp_Ch9, where formals are renamed for the benefit of gdb.
+
+         if Ekind (N) not in Formal_Kind then
+            pragma Assert (Is_Object (N));
+            pragma Assert (Val in N_Subexpr_Id | N_Empty_Id);
+            null;
+         end if;
+      end return;
+   end Renamed_Object;
+
+   procedure Set_Renamed_Object (N : Entity_Id; Val : Node_Id) is
+   begin
+      if Ekind (N) not in Formal_Kind then
+         pragma Assert (Is_Object (N));
+         pragma Assert (Val in N_Subexpr_Id | N_Empty_Id);
+         null;
+      end if;
+
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Renamed_Object;
+
+   function Renamed_Entity_Or_Object (N : Entity_Id) return Node_Id is
+   begin
+      if Is_Object (N) then
+         return Renamed_Object (N);
+      else
+         return Renamed_Entity (N);
+      end if;
+   end Renamed_Entity_Or_Object;
+
+   procedure Set_Renamed_Object_Of_Possibly_Void
+     (N : Entity_Id; Val : Node_Id)
+   is
+   begin
+      pragma Assert (Val in N_Subexpr_Id);
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Renamed_Object_Of_Possibly_Void;
 
    ----------------
    -- Has_Option --
@@ -633,6 +696,30 @@ package body Einfo.Utils is
           N_Full_Type_Declaration | N_Subtype_Declaration
       then
          P := Empty;
+      end if;
+
+      --  Declarations are sometimes removed by replacing them with other
+      --  irrelevant nodes. For example, a declare expression can be turned
+      --  into a literal by constant folding. In these cases we want to
+      --  return Empty.
+
+      if Nkind (P) in
+          N_Assignment_Statement
+        | N_Integer_Literal
+        | N_Procedure_Call_Statement
+        | N_Subtype_Indication
+        | N_Type_Conversion
+      then
+         P := Empty;
+      end if;
+
+      --  The following Assert indicates what kinds of nodes can be returned;
+      --  they are not all "declarations".
+
+      if Serious_Errors_Detected = 0 then
+         pragma Assert
+           (Nkind (P) in N_Is_Decl | N_Empty,
+            "Declaration_Node incorrect kind: " & Node_Kind'Image (Nkind (P)));
       end if;
 
       return P;

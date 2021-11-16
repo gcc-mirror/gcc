@@ -2301,6 +2301,8 @@ region_model::check_region_access (const region *reg,
   if (!ctxt)
     return;
 
+  check_region_for_taint (reg, dir, ctxt);
+
   switch (dir)
     {
     default:
@@ -2861,6 +2863,17 @@ region_model::get_representative_path_var_1 (const svalue *sval,
 				   NULL_TREE),
 			   parent_pv.m_stack_depth);
     }
+
+  /* Handle binops.  */
+  if (const binop_svalue *binop_sval = sval->dyn_cast_binop_svalue ())
+    if (path_var lhs_pv
+	= get_representative_path_var (binop_sval->get_arg0 (), visited))
+      if (path_var rhs_pv
+	  = get_representative_path_var (binop_sval->get_arg1 (), visited))
+	return path_var (build2 (binop_sval->get_op (),
+				 sval->get_type (),
+				 lhs_pv.m_tree, rhs_pv.m_tree),
+			 lhs_pv.m_stack_depth);
 
   if (pvs.length () < 1)
     return path_var (NULL_TREE, 0);
@@ -3720,36 +3733,45 @@ region_model::append_ssa_names_cb (const region *base_reg,
     }
 }
 
-/* Return a new region describing a heap-allocated block of memory.  */
+/* Return a new region describing a heap-allocated block of memory.
+   Use CTXT to complain about tainted sizes.  */
 
 const region *
-region_model::create_region_for_heap_alloc (const svalue *size_in_bytes)
+region_model::create_region_for_heap_alloc (const svalue *size_in_bytes,
+					    region_model_context *ctxt)
 {
   const region *reg = m_mgr->create_region_for_heap_alloc ();
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes);
+    set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 
 /* Return a new region describing a block of memory allocated within the
-   current frame.  */
+   current frame.
+   Use CTXT to complain about tainted sizes.  */
 
 const region *
-region_model::create_region_for_alloca (const svalue *size_in_bytes)
+region_model::create_region_for_alloca (const svalue *size_in_bytes,
+					region_model_context *ctxt)
 {
   const region *reg = m_mgr->create_region_for_alloca (m_current_frame);
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes);
+    set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 
-/* Record that the size of REG is SIZE_IN_BYTES.  */
+/* Record that the size of REG is SIZE_IN_BYTES.
+   Use CTXT to complain about tainted sizes.  */
 
 void
 region_model::set_dynamic_extents (const region *reg,
-				   const svalue *size_in_bytes)
+				   const svalue *size_in_bytes,
+				   region_model_context *ctxt)
 {
   assert_compat_types (size_in_bytes->get_type (), size_type_node);
+  if (ctxt)
+    check_dynamic_size_for_taint (reg->get_memory_space (), size_in_bytes,
+				  ctxt);
   m_dynamic_extents.put (reg, size_in_bytes);
 }
 
@@ -5096,7 +5118,8 @@ test_state_merging ()
     region_model model0 (&mgr);
     tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
-    const region *new_reg = model0.create_region_for_heap_alloc (size_sval);
+    const region *new_reg
+      = model0.create_region_for_heap_alloc (size_sval, &ctxt);
     const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
     model0.set_value (model0.get_lvalue (p, &ctxt),
 		      ptr_sval, &ctxt);
@@ -5484,7 +5507,7 @@ test_malloc_constraints ()
 
   const svalue *size_in_bytes
     = mgr.get_or_create_unknown_svalue (size_type_node);
-  const region *reg = model.create_region_for_heap_alloc (size_in_bytes);
+  const region *reg = model.create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *sval = mgr.get_ptr_svalue (ptr_type_node, reg);
   model.set_value (model.get_lvalue (p, NULL), sval, NULL);
   model.set_value (q, p, NULL);
@@ -5705,7 +5728,7 @@ test_malloc ()
 
   /* "p = malloc (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_heap_alloc (size_sval);
+  const region *reg = model.create_region_for_heap_alloc (size_sval, &ctxt);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
   ASSERT_EQ (model.get_capacity (reg), size_sval);
@@ -5739,7 +5762,7 @@ test_alloca ()
 			NULL, &ctxt);
   /* "p = alloca (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_alloca (size_sval);
+  const region *reg = model.create_region_for_alloca (size_sval, &ctxt);
   ASSERT_EQ (reg->get_parent_region (), frame_reg);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);

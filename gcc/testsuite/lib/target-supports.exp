@@ -4848,7 +4848,8 @@ foreach { armfunc armflag armdefs } {
 	v8m_base "-march=armv8-m.base -mthumb -mfloat-abi=soft"
 		__ARM_ARCH_8M_BASE__
 	v8m_main "-march=armv8-m.main -mthumb" __ARM_ARCH_8M_MAIN__
-	v8_1m_main "-march=armv8.1-m.main -mthumb" __ARM_ARCH_8M_MAIN__ } {
+	v8_1m_main "-march=armv8.1-m.main -mthumb" __ARM_ARCH_8M_MAIN__
+	v9a "-march=armv9-a" __ARM_ARCH_9A__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEFS $armdefs ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    return [check_no_compiler_messages arm_arch_FUNC_ok assembly {
@@ -7584,95 +7585,149 @@ proc check_effective_target_vect_element_align_preferred { } {
 # Return zero if the desirable pattern isn't found.
 # It's used by Warray-bounds/Wstringop-overflow testcases which are
 # regressed by O2 vectorization, refer to PR102697/PR102462/PR102706
-proc check_vect_slp_aligned_store_usage { pattern macro } {
+proc check_vect_slp_store_usage { pattern macro } {
     global tool
 
     set result [check_compile slp_aligned_store_usage assembly {
-	char a[16] __attribute__ ((aligned (16)));
-	short b[4] __attribute__((aligned(8)));
-	int c[4] __attribute__((aligned(16)));
-	#ifdef TEST_V8QI
-	void
-	foo ()
-	{
-	    a[0] = 0;
-	    a[1] = 1;
-	    a[2] = 2;
-	    a[3] = 3;
-	    a[4] = 4;
-	    a[5] = 5;
-	    a[6] = 6;
-	    a[7] = 7;
-	}
-	#elif TEST_V16QI
+	extern void sink (void* );
+	#define Ac8 (AC8){ 0, 1, 2, 3, 4, 5, 6, 7 }
+	#define Ac16 (AC16){ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+	#ifdef TEST_V16QI
+	typedef struct AC16 { char a[16]; } AC16;
+	extern char a16[16];
 	void
 	foo1 ()
 	{
-	    a[0] = 0;
-	    a[1] = 1;
-	    a[2] = 2;
-	    a[3] = 3;
-	    a[4] = 4;
-	    a[5] = 5;
-	    a[6] = 6;
-	    a[7] = 7;
-	    a[8] = 8;
-	    a[9] = 9;
-	    a[10] = 10;
-	    a[11] = 11;
-	    a[12] = 12;
-	    a[13] = 13;
-	    a[14] = 14;
-	    a[15] = 15;
+	    *(AC16*)a16 = Ac16;
+	}
+	#elif TEST_V8QI
+	typedef struct AC8 { char a[8]; } AC8;
+	extern char a8[8];
+	void
+	foo ()
+	{
+	    *(AC8*)a8 = Ac8;
 	}
 	#elif TEST_V4QI
+	struct A1
+	{
+	    char n;
+	    char a[3];
+	};
+
+	extern void sink (void*);
 	void
 	foo2 ()
 	{
-	    a[0] = 0;
-	    a[1] = 1;
-	    a[2] = 2;
-	    a[3] = 3;
+	    struct A1 a = { 0, {  } };
+	    a.a[0] = 3;
+	    a.a[1] = 4;
+	    a.a[2] = 5;
+	    sink (&a);
+	}
+	#elif TEST_V4QI_2
+	extern char p[4];
+	void
+	foo2_2 ()
+	{
+	    p[0] = 0;
+	    p[1] = 1;
+	    p[2] = 2;
+	    p[3] = 3;
+	}
+	#elif TEST_V4QI_3
+	#define Ac4 (AC4){ 0, 1, 2, 3 }
+	typedef struct AC4 { char a[4]; } AC4;
+	extern char a[4];
+	void
+	foo ()
+	{
+	    *(AC4*)a = Ac4;
 	}
 	#elif TEST_V2QI
+	struct A2
+	{
+	    char a[2];
+	};
 	void
 	foo3 ()
 	{
-	    a[0] = 0;
-	    a[1] = 1;
+	    struct A2 a;
+	    a.a[0] = 3;
+	    a.a[1] = 4;
+	    sink (&a);
+	}
+	#elif TEST_V4HI
+	struct Ax
+	{
+	    int n;
+	    short a[4];
+	};
+	void
+	foo5 (struct Ax *p)
+	{
+	    p->a[0] = 0;
+	    p->a[1] = 1;
+	    p->a[2] = 2;
+	    p->a[3] = 3;
 	}
 	#elif TEST_V2HI
+	extern char b[4];
 	void
 	foo4 ()
 	{
-	    b[0] = 0;
-	    b[1] = 1;
+	    *(short*) b = 0;
+	    *(short*) (b + 2) = 1;
 	}
-	#elif TEST_V4HI
-	void
-	foo5 ()
+	#elif TEST_V2HI_2
+	struct Ax
 	{
-	    b[0] = 0;
-	    b[1] = 1;
-	    b[2] = 2;
-	    b[3] = 3;
+	    int n;
+	    short a[2];
+	};
+	void
+	foo4_2 (struct Ax *p)
+	{
+	    p->a[0] = 0;
+	    p->a[1] = 1;
 	}
-	#elif TEST_V2SI
+	#elif TEST_V4SI
+	struct A { int i; };
+	struct B { int j; struct A a[4]; };
+
+	struct C
+	{
+	    struct B b1;
+	    struct B b2;
+	};
+	char cbuf2[2 * sizeof (struct C)] = { };
 	void
 	foo6 ()
 	{
-	    c[0] = 0;
-	    c[1] = 1;
+	    struct C *p = (struct C*)&cbuf2;
+	    p->b2.a[0].i = 0;
+	    p->b2.a[1].i = 0;
+	    p->b2.a[2].i = 0;
+	    p->b2.a[3].i = 0;
 	}
-	#elif TEST_V4SI
-	void
-	foo7 ()
+	#elif TEST_V2SI
+	struct A { int i; };
+	struct B { int j; struct A a[2]; };
+
+	struct C
 	{
-	    c[0] = 0;
-	    c[1] = 1;
-	    c[2] = 2;
-	    c[3] = 3;
+	    struct B b1;
+	    struct B b2;
+	};
+	char cbuf2[2 * sizeof (struct C)] = { };
+	void
+	foo6 ()
+	{
+	    struct C *p = (struct C*)&cbuf2;
+	    p->b2.a[0].i = 0;
+	    p->b2.a[1].i = 0;
 	}
+
 	#endif
     } "-O2 -fopt-info-all -D$macro" ]
 
@@ -7691,75 +7746,164 @@ proc check_vect_slp_aligned_store_usage { pattern macro } {
 
 # Return the true if target support vectorization of 2-byte char stores
 # with 2-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v2qi_store { } {
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v2qi_store_align { } {
     set pattern {add new stmt: MEM <vector\(2\) char>}
     set macro "TEST_V2QI"
-    return [check_cached_effective_target vect_slp_v2qi_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro] }]
+    return [check_cached_effective_target vect_slp_v2qi_store_align {
+	expr [check_vect_slp_store_usage $pattern $macro] }]
 
 }
 
 # Return the true if target support vectorization of 4-byte char stores
 # with 4-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v4qi_store { } {
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v4qi_store_align { } {
     set pattern {add new stmt: MEM <vector\(4\) char>}
     set macro "TEST_V4QI"
-    return [check_cached_effective_target vect_slp_v4qi_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    return [check_cached_effective_target vect_slp_v4qi_store_align {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 4-byte char stores
+# with unaligned address at plain O2.
+proc check_effective_target_vect_slp_v4qi_store_unalign { } {
+    set pattern {add new stmt: MEM <vector\(4\) char>}
+    set macro "TEST_V4QI_2"
+    return [check_cached_effective_target vect_slp_v4qi_store_unalign {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support block move for
+# 8-byte aligned 4-byte size struct initialization.
+proc check_effective_target_struct_4char_block_move { } {
+    set pattern {not vectorized: more than one data ref in stmt:}
+    set macro "TEST_V4QI_3"
+    return [check_cached_effective_target struct_4char_block_move {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
+}
+
+# Return the true if target support vectorization of 4-byte char stores
+# with unaligned address or store them with a constant pool at plain O2.
+proc check_effective_target_vect_slp_v4qi_store_unalign_1 { } {
+    set pattern {add new stmt: MEM <vector\(4\) char>}
+    set macro "TEST_V4QI_3"
+    return [check_cached_effective_target vect_slp_v4qi_store_unalign_1 {
+	expr { [check_vect_slp_store_usage $pattern $macro ]
+	       || [check_effective_target_struct_4char_block_move] } }]
+}
+
+# Return the true if target support block move for
+# 8-byte aligned 8-byte size struct initialization.
+proc check_effective_target_struct_8char_block_move { } {
+    set pattern {not vectorized: more than one data ref in stmt:}
+    set macro "TEST_V8QI"
+    return [check_cached_effective_target struct_8char_block_move {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 8-byte char stores
-# with 8-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v8qi_store { } {
+# with unaligned address or store them with a constant pool at plain O2.
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v8qi_store_unalign_1 { } {
     set pattern {add new stmt: MEM <vector\(8\) char>}
     set macro "TEST_V8QI"
-    return [check_cached_effective_target vect_slp_v8qi_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    return [check_cached_effective_target vect_slp_v8qi_store_unalign_1 {
+	expr { [check_vect_slp_store_usage $pattern $macro ]
+	       || [check_effective_target_struct_8char_block_move] } }]
+}
+
+# Return the true if target support block move for
+# 8-byte aligned 16-byte size struct initialization.
+proc check_effective_target_struct_16char_block_move { } {
+    set pattern {not vectorized: more than one data ref in stmt:}
+    set macro "TEST_V16QI"
+    return [check_cached_effective_target struct_16char_block_move {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 16-byte char stores
-# with 16-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v16qi_store { } {
+# with unaligned address or store them with a constant pool at plain O2.
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v16qi_store_unalign_1 { } {
     set pattern {add new stmt: MEM <vector\(16\) char>}
     set macro "TEST_V16QI"
-    return [check_cached_effective_target vect_slp_v16qi_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    return [check_cached_effective_target vect_slp_v16qi_store_unalign_1 {
+	expr { [check_vect_slp_store_usage $pattern $macro ]
+	       || [check_effective_target_struct_16char_block_move] } }]
+}
+
+# Return the true if target support vectorization of 4-byte short stores
+# with unaligned address at plain O2.
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v2hi_store_unalign { } {
+    set pattern {add new stmt: MEM <vector\(2\) short int>}
+    set macro "TEST_V2HI"
+    return [check_cached_effective_target vect_slp_v2hi_store_unalign {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 4-byte short stores
 # with 4-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v2hi_store { } {
+proc check_effective_target_vect_slp_v2hi_store_align { } {
     set pattern {add new stmt: MEM <vector\(2\) short int>}
-    set macro "TEST_V2HI"
-    return [check_cached_effective_target vect_slp_v2hi_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    set macro "TEST_V2HI_2"
+    return [check_cached_effective_target vect_slp_v2hi_store_align {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 8-byte short stores
-# with 8-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v4hi_store { } {
+# with unaligned address at plain O2.
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v4hi_store_unalign { } {
     set pattern {add new stmt: MEM <vector\(4\) short int>}
     set macro "TEST_V4HI"
-    return [check_cached_effective_target vect_slp_v4hi_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    return [check_cached_effective_target vect_slp_v4hi_store_unalign {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 8-byte int stores
 # with 8-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v2si_store { } {
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v2si_store_align { } {
     set pattern {add new stmt: MEM <vector\(2\) int>}
     set macro "TEST_V2SI"
-    return [check_cached_effective_target vect_slp_v2si_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    return [check_cached_effective_target vect_slp_v2si_store_align {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return the true if target support vectorization of 16-byte int stores
-# with 16-byte aligned address at plain O2.
-proc check_effective_target_vect_slp_v4si_store { } {
+# with unaligned address at plain O2.
+# NB: This target should be removed after real issues are fixed for
+# -Wstringop-overflow with O2 vect. Be careful if you want to reuse
+# this target since tests in check_vect_slp_store_usage
+# is the exact match of relative testcases
+proc check_effective_target_vect_slp_v4si_store_unalign { } {
     set pattern {add new stmt: MEM <vector\(4\) int>}
     set macro "TEST_V4SI"
-    return [check_cached_effective_target vect_slp_v4si_store {
-	expr [check_vect_slp_aligned_store_usage $pattern $macro ] }]
+    return [check_cached_effective_target vect_slp_v4si_store_unalign {
+	expr [check_vect_slp_store_usage $pattern $macro ] }]
 }
 
 # Return 1 if we can align stack data to the preferred vector alignment.
@@ -10086,6 +10230,10 @@ proc check_effective_target_concepts { } {
 	return 1
     }
     return [check-flags { "" { } { -fconcepts } }]
+}
+
+proc check_effective_target_implicit_constexpr { } {
+    return [check-flags { "" { } { -fimplicit-constexpr } }]
 }
 
 # Return 1 if expensive testcases should be run.

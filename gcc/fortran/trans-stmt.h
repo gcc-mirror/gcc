@@ -66,7 +66,6 @@ tree gfc_trans_sync_team (gfc_code *);
 tree gfc_trans_where (gfc_code *);
 tree gfc_trans_allocate (gfc_code *);
 tree gfc_trans_deallocate (gfc_code *);
-tree gfc_trans_deallocate_array (tree);
 
 /* trans-openmp.c */
 tree gfc_trans_omp_directive (gfc_code *);

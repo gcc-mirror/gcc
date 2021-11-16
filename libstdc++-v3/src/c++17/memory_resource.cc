@@ -603,7 +603,7 @@ namespace pmr
     void* pointer = nullptr;
     aligned_size<min> _M_size;
 
-    size_t size() const noexcept
+    constexpr size_t size() const noexcept
     {
       if (_M_size.value == size_t(-1)) [[unlikely]]
 	return size_t(-1);

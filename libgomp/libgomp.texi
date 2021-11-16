@@ -189,7 +189,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{requires} directive @tab P
       @tab Only fulfillable requirement is @code{atomic_default_mem_order}
 @item @code{teams} construct outside an enclosing target region @tab Y @tab
-@item Non-rectangular loop nests @tab Y @tab
+@item Non-rectangular loop nests @tab P @tab Only C/C++
 @item @code{!=} as relational-op in canonical loop form for C/C++ @tab Y @tab
 @item @code{nonmonotonic} as default loop schedule modifier for worksharing-loop
       constructs @tab Y @tab
@@ -292,7 +292,7 @@ The OpenMP 4.5 specification is fully supported.
       clauses of the taskloop construct @tab Y @tab
 @item @code{align} clause/modifier in @code{allocate} directive/clause
       and @code{allocator} directive @tab P @tab C/C++ on clause only
-@item @code{thread_limit} clause to @code{target} construct @tab N @tab
+@item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab N @tab
 @item iterators in @code{target update} motion clauses and @code{map}
       clauses @tab N @tab

@@ -1,3 +1,64 @@
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (convert_escape): Use encoding_rich_location when
+	complaining about nonprintable unknown escape sequences.
+	(cpp_display_width_computation::::cpp_display_width_computation):
+	Pass in policy rather than tabstop.
+	(cpp_display_width_computation::process_next_codepoint): Add "out"
+	param and populate *out if non-NULL.
+	(cpp_display_width_computation::advance_display_cols): Pass NULL
+	to process_next_codepoint.
+	(cpp_byte_column_to_display_column): Pass in policy rather than
+	tabstop.  Pass NULL to process_next_codepoint.
+	(cpp_display_column_to_byte_column): Pass in policy rather than
+	tabstop.
+	* errors.c (cpp_diagnostic_get_current_location): New function,
+	splitting out the logic from...
+	(cpp_diagnostic): ...here.
+	(cpp_warning_at): New function.
+	(cpp_pedwarning_at): New function.
+	* include/cpplib.h (cpp_warning_at): New decl for rich_location.
+	(cpp_pedwarning_at): Likewise.
+	(struct cpp_decoded_char): New.
+	(struct cpp_char_column_policy): New.
+	(cpp_display_width_computation::cpp_display_width_computation):
+	Replace "tabstop" param with "policy".
+	(cpp_display_width_computation::process_next_codepoint): Add "out"
+	param.
+	(cpp_display_width_computation::m_tabstop): Replace with...
+	(cpp_display_width_computation::m_policy): ...this.
+	(cpp_byte_column_to_display_column): Replace "tabstop" param with
+	"policy".
+	(cpp_display_width): Likewise.
+	(cpp_display_column_to_byte_column): Likewise.
+	* include/line-map.h (rich_location::escape_on_output_p): New.
+	(rich_location::set_escape_on_output): New.
+	(rich_location::m_escape_on_output): New.
+	* internal.h (cpp_diagnostic_get_current_location): New decl.
+	(class encoding_rich_location): New.
+	* lex.c (skip_whitespace): Use encoding_rich_location when
+	complaining about null characters.
+	(warn_about_normalization): Generate a source range when
+	complaining about improperly normalized tokens, rather than just a
+	point, and use encoding_rich_location so that the source code
+	is escaped on printing.
+	* line-map.c (rich_location::rich_location): Initialize
+	m_escape_on_output.
+
+2021-10-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/102409
+	* directives.c (destringize_and_run): Add PRAGMA_OP to the
+	CPP_PRAGMA token's flags to mark is as coming from _Pragma.
+	* include/cpplib.h (PRAGMA_OP): #define, to be used with token flags.
+	* macro.c (collect_args): Only handle CPP_PRAGMA special if PRAGMA_OP
+	is set.
+
+2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/102663
+	* Makefile.in: Add dummy install-dvi target.
+
 2021-10-18  Martin Liska  <mliska@suse.cz>
 
 	* charset.c (convert_oct): Remove unused but set variable.

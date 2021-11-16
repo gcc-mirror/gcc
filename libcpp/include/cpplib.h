@@ -198,6 +198,7 @@ struct GTY(()) cpp_string {
 				    operator, or before this token
 				    after a # operator.  */
 #define NO_EXPAND	(1 << 10) /* Do not macro-expand this token.  */
+#define PRAGMA_OP	(1 << 11) /* _Pragma token.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -1267,6 +1268,14 @@ extern bool cpp_warning_syshdr (cpp_reader *, enum cpp_warning_reason reason,
 				const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
 
+/* As their counterparts above, but use RICHLOC.  */
+extern bool cpp_warning_at (cpp_reader *, enum cpp_warning_reason,
+			    rich_location *richloc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
+extern bool cpp_pedwarning_at (cpp_reader *, enum cpp_warning_reason,
+			       rich_location *richloc, const char *msgid, ...)
+  ATTRIBUTE_PRINTF_4;
+
 /* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
 extern bool cpp_errno (cpp_reader *, enum cpp_diagnostic_level,
@@ -1441,43 +1450,95 @@ extern const char * cpp_get_userdef_suffix
 
 /* In charset.c */
 
+/* The result of attempting to decode a run of UTF-8 bytes.  */
+
+struct cpp_decoded_char
+{
+  const char *m_start_byte;
+  const char *m_next_byte;
+
+  bool m_valid_ch;
+  cppchar_t m_ch;
+};
+
+/* Information for mapping between code points and display columns.
+
+   This is a tabstop value, along with a callback for getting the
+   widths of characters.  Normally this callback is cpp_wcwidth, but we
+   support other schemes for escaping non-ASCII unicode as a series of
+   ASCII chars when printing the user's source code in diagnostic-show-locus.c
+
+   For example, consider:
+   - the Unicode character U+03C0 "GREEK SMALL LETTER PI" (UTF-8: 0xCF 0x80)
+   - the Unicode character U+1F642 "SLIGHTLY SMILING FACE"
+     (UTF-8: 0xF0 0x9F 0x99 0x82)
+   - the byte 0xBF (a stray trailing byte of a UTF-8 character)
+   Normally U+03C0 would occupy one display column, U+1F642
+   would occupy two display columns, and the stray byte would be
+   printed verbatim as one display column.
+
+   However when escaping them as unicode code points as "<U+03C0>"
+   and "<U+1F642>" they occupy 8 and 9 display columns respectively,
+   and when escaping them as bytes as "<CF><80>" and "<F0><9F><99><82>"
+   they occupy 8 and 16 display columns respectively.  In both cases
+   the stray byte is escaped to <BF> as 4 display columns.  */
+
+struct cpp_char_column_policy
+{
+  cpp_char_column_policy (int tabstop,
+			  int (*width_cb) (cppchar_t c))
+  : m_tabstop (tabstop),
+    m_undecoded_byte_width (1),
+    m_width_cb (width_cb)
+  {}
+
+  int m_tabstop;
+  /* Width in display columns of a stray byte that isn't decodable
+     as UTF-8.  */
+  int m_undecoded_byte_width;
+  int (*m_width_cb) (cppchar_t c);
+};
+
 /* A class to manage the state while converting a UTF-8 sequence to cppchar_t
    and computing the display width one character at a time.  */
 class cpp_display_width_computation {
  public:
   cpp_display_width_computation (const char *data, int data_length,
-				 int tabstop);
+				 const cpp_char_column_policy &policy);
   const char *next_byte () const { return m_next; }
   int bytes_processed () const { return m_next - m_begin; }
   int bytes_left () const { return m_bytes_left; }
   bool done () const { return !bytes_left (); }
   int display_cols_processed () const { return m_display_cols; }
 
-  int process_next_codepoint ();
+  int process_next_codepoint (cpp_decoded_char *out);
   int advance_display_cols (int n);
 
  private:
   const char *const m_begin;
   const char *m_next;
   size_t m_bytes_left;
-  const int m_tabstop;
+  const cpp_char_column_policy &m_policy;
   int m_display_cols;
 };
 
 /* Convenience functions that are simple use cases for class
    cpp_display_width_computation.  Tab characters will be expanded to spaces
-   as determined by TABSTOP.  */
+   as determined by POLICY.m_tabstop, and non-printable-ASCII characters
+   will be escaped as per POLICY.  */
 
 int cpp_byte_column_to_display_column (const char *data, int data_length,
-				       int column, int tabstop);
+				       int column,
+				       const cpp_char_column_policy &policy);
 inline int cpp_display_width (const char *data, int data_length,
-			      int tabstop)
+			      const cpp_char_column_policy &policy)
 {
   return cpp_byte_column_to_display_column (data, data_length, data_length,
-					    tabstop);
+					    policy);
 }
 int cpp_display_column_to_byte_column (const char *data, int data_length,
-				       int display_col, int tabstop);
+				       int display_col,
+				       const cpp_char_column_policy &policy);
 int cpp_wcwidth (cppchar_t c);
 
 bool cpp_input_conversion_is_trivial (const char *input_charset);

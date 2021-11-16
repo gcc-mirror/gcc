@@ -101,6 +101,11 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zifencei", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zifencei", ISA_SPEC_CLASS_20190608, 2, 0},
 
+  {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zbc", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zbs", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -197,7 +202,6 @@ multi_letter_subset_rank (const std::string &subset)
       high_order = 1;
       break;
     case 'z':
-      gcc_assert (subset.length () > 2);
       high_order = 2;
       break;
     case 'x':
@@ -418,7 +422,7 @@ riscv_subset_list::to_string (bool version_p) const
   /* Skip since older binutils doesn't recognize zicsr.  */
   skip_zicsr = true;
 #endif
-#ifndef HAVE_AS_MARCH_ZIFENCE
+#ifndef HAVE_AS_MARCH_ZIFENCEI
   /* Skip since older binutils doesn't recognize zifencei, we made
      a mistake in that binutils 2.35 supports zicsr but not zifencei.  */
   skip_zifencei = true;
@@ -905,6 +909,11 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
   {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
+
+  {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
+  {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
+  {"zbc",    &gcc_options::x_riscv_zb_subext, MASK_ZBC},
+  {"zbs",    &gcc_options::x_riscv_zb_subext, MASK_ZBS},
 
   {NULL, NULL, 0}
 };

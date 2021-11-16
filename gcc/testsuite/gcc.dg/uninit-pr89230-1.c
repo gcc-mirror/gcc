@@ -8,7 +8,8 @@ struct S { int i, j; };
 
 int g (void)
 {
-  struct S *p = f (), *q;
+  struct S *p = f ();
+  struct S *q; // { dg-bogus "may be used uninitialized" "uninitialized" { xfail *-*-* } }
 
   if (p->i || !(q = f ()) || p->j != q->i)
    {

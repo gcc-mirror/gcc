@@ -109,15 +109,13 @@ package System is
    --             hardware priority levels.  Protected Object ceilings can
    --             override these values.
    --  245        is used by the Interrupt_Manager task
-   --  0          is reserved for the RTEMS IDLE task and really should not
-   --             be accessible from Ada but GNAT initializes
-   --             Current_Priority to 0 so it must be valid
+   --  0          is reserved for the RTEMS IDLE task
 
    Max_Priority           : constant Positive := 244;
    Max_Interrupt_Priority : constant Positive := 254;
 
-   subtype Any_Priority       is Integer      range   0 .. 254;
-   subtype Priority           is Any_Priority range   0 .. 244;
+   subtype Any_Priority       is Integer      range   1 .. 254;
+   subtype Priority           is Any_Priority range   1 .. 244;
    subtype Interrupt_Priority is Any_Priority range 245 .. 254;
 
    Default_Priority : constant Priority := 122;

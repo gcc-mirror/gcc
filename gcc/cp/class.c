@@ -5455,10 +5455,9 @@ default_init_uninitialized_part (tree type)
       if (r)
 	return r;
     }
-  for (t = TYPE_FIELDS (type); t; t = DECL_CHAIN (t))
-    if (TREE_CODE (t) == FIELD_DECL
-	&& !DECL_ARTIFICIAL (t)
-	&& !DECL_INITIAL (t))
+  for (t = next_initializable_field (TYPE_FIELDS (type)); t;
+       t = next_initializable_field (DECL_CHAIN (t)))
+    if (!DECL_INITIAL (t) && !DECL_ARTIFICIAL (t))
       {
 	r = default_init_uninitialized_part (TREE_TYPE (t));
 	if (r)
@@ -5548,10 +5547,16 @@ type_has_constexpr_destructor (tree t)
 static bool
 type_maybe_constexpr_destructor (tree t)
 {
+  /* Until C++20, only trivial destruction is constexpr.  */
+  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (t))
+    return true;
+  if (cxx_dialect < cxx20)
+    return false;
   if (CLASS_TYPE_P (t) && CLASSTYPE_LAZY_DESTRUCTOR (t))
     /* Assume it's constexpr.  */
     return true;
-  return type_has_constexpr_destructor (t);
+  tree fn = CLASSTYPE_DESTRUCTOR (t);
+  return (fn && maybe_constexpr_fn (fn));
 }
 
 /* Returns true iff class TYPE has a virtual destructor.  */
@@ -5824,8 +5829,7 @@ finalize_literal_type_property (tree t)
   if (cxx_dialect < cxx11)
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t)
-	   && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-	   && (cxx_dialect < cxx20 || !type_maybe_constexpr_destructor (t)))
+	   && !type_maybe_constexpr_destructor (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
     CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);

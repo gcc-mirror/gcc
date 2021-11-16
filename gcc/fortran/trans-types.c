@@ -61,7 +61,7 @@ tree pvoid_type_node;
 tree prvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
-tree pfunc_type_node;
+static tree pfunc_type_node;
 
 tree logical_type_node;
 tree logical_true_node;
@@ -133,7 +133,7 @@ int gfc_size_kind;
 int gfc_numeric_storage_size;
 int gfc_character_storage_size;
 
-tree dtype_type_node = NULL_TREE;
+static tree dtype_type_node = NULL_TREE;
 
 
 /* Build the dtype_type_node if necessary.  */
@@ -174,25 +174,6 @@ tree get_dtype_type_node (void)
     }
   return dtype_type_node;
 }
-
-bool
-gfc_check_any_c_kind (gfc_typespec *ts)
-{
-  int i;
-
-  for (i = 0; i < ISOCBINDING_NUMBER; i++)
-    {
-      /* Check for any C interoperable kind for the given type/kind in ts.
-         This can be used after verify_c_interop to make sure that the
-         Fortran kind being used exists in at least some form for C.  */
-      if (c_interop_kinds_table[i].f90_type == ts->type &&
-          c_interop_kinds_table[i].value == ts->kind)
-        return true;
-    }
-
-  return false;
-}
-
 
 static int
 get_real_kind_from_node (tree type)
@@ -2470,7 +2451,7 @@ gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
 
 /* Build a tree node for a procedure pointer component.  */
 
-tree
+static tree
 gfc_get_ppc_type (gfc_component* c)
 {
   tree t;
@@ -3436,10 +3417,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   base_decl = GFC_TYPE_ARRAY_BASE_DECL (type, indirect);
   if (!base_decl)
     {
-      base_decl = make_node (DEBUG_EXPR_DECL);
-      DECL_ARTIFICIAL (base_decl) = 1;
-      TREE_TYPE (base_decl) = indirect ? build_pointer_type (ptype) : ptype;
-      SET_DECL_MODE (base_decl, TYPE_MODE (TREE_TYPE (base_decl)));
+      base_decl = build_debug_expr_decl (indirect
+					 ? build_pointer_type (ptype) : ptype);
       GFC_TYPE_ARRAY_BASE_DECL (type, indirect) = base_decl;
     }
   info->base_decl = base_decl;

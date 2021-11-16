@@ -2186,14 +2186,14 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T,?r,?*f")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f,*f,r"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
    && !TARGET_64BIT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2214,14 +2214,14 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && !TARGET_SOFT_FLOAT
    && TARGET_64BIT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2240,14 +2240,14 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && TARGET_SOFT_FLOAT
    && TARGET_64BIT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2381,13 +2381,13 @@
   [(set (match_operand:SI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r")
 	(match_operand:SI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
    && TARGET_SOFT_FLOAT"
   "@
    ldw RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -2909,11 +2909,11 @@
   [(set (match_operand:HI 0 "move_dest_operand"
 	 		  "=r,r,r,r,r,Q,!*q,!r")
 	(match_operand:HI 1 "move_src_operand"
-			  "rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -3069,11 +3069,11 @@
   [(set (match_operand:QI 0 "move_dest_operand"
 			  "=r,r,r,r,r,Q,!*q,!r")
 	(match_operand:QI 1 "move_src_operand"
-			  "rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], QImode)
     || reg_or_0_operand (operands[1], QImode))"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    {zdepi|depwi,z} %Z1,%0
@@ -4221,13 +4221,13 @@
   [(set (match_operand:DI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r,!*f,*f,T")
 	(match_operand:DI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q,!*fM,RT,*f"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && !TARGET_SOFT_FLOAT && TARGET_64BIT"
   "@
    ldd RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    depdi,z %z1,%0
@@ -4246,13 +4246,13 @@
   [(set (match_operand:DI 0 "move_dest_operand"
 			  "=r,r,r,r,r,r,Q,!*q,!r")
 	(match_operand:DI 1 "move_src_operand"
-			  "A,rG,J,N,K,RQ,rM,!rM,!*q"))]
+			  "A,r,J,N,K,RQ,rM,!rM,!*q"))]
   "(register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))
    && TARGET_SOFT_FLOAT && TARGET_64BIT"
   "@
    ldd RT'%A1,%0
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    depdi,z %z1,%0
@@ -5357,6 +5357,88 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,4")])
 
+(define_insn "addti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(plus:TI (match_operand:TI 1 "register_operand" "r")
+		 (match_operand:TI 2 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"add %4,%5,%3\;add,dc %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "addvti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(plus:TI (match_operand:TI 1 "register_operand" "r")
+		 (match_operand:TI 2 "register_operand" "r")))
+   (trap_if (ne (plus:OI (sign_extend:OI (match_dup 1))
+			 (sign_extend:OI (match_dup 2)))
+		(sign_extend:OI (plus:TI (match_dup 1)
+					 (match_dup 2))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"add %4,%5,%3\;add,dc,tsv %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "subti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(minus:TI (match_operand:TI 1 "register_operand" "r")
+		  (match_operand:TI 2 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"sub %4,%5,%3\;sub,db %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "subvti3"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(minus:TI (match_operand:TI 1 "register_operand" "r")
+		  (match_operand:TI 2 "register_operand" "r")))
+   (trap_if (ne (minus:OI (sign_extend:OI (match_dup 1))
+			  (sign_extend:OI (match_dup 2)))
+		(sign_extend:OI (minus:TI (match_dup 1)
+					  (match_dup 2))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[3] = gen_lowpart (DImode, operands[0]);
+  operands[4] = gen_lowpart (DImode, operands[1]);
+  operands[5] = gen_lowpart (DImode, operands[2]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  operands[2] = gen_highpart (DImode, operands[2]);
+  return \"sub %4,%5,%3\;sub,db,tsv %1,%2,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
 ;; Trap instructions.
 
 (define_insn "trap"
@@ -5384,7 +5466,7 @@
   "
 {
   operands[4] = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
-  if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+  if (TARGET_PA_11 && !TARGET_SOFT_FLOAT && !TARGET_SOFT_MULT)
     {
       rtx scratch = gen_reg_rtx (DImode);
       operands[1] = force_reg (SImode, operands[1]);
@@ -5402,7 +5484,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "f"))))]
-  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT && ! TARGET_SOFT_MULT"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -5411,7 +5493,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
-  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && !TARGET_64BIT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT && ! TARGET_SOFT_MULT && !TARGET_64BIT"
   "xmpyu %1,%R2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -5420,7 +5502,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
-  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT && TARGET_64BIT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT && ! TARGET_SOFT_MULT && TARGET_64BIT"
   "xmpyu %1,%2R,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -5457,8 +5539,8 @@
 		 (match_operand:DI 2 "register_operand" "")))]
   "! optimize_size
    && TARGET_PA_11
-   && ! TARGET_DISABLE_FPREGS
-   && ! TARGET_SOFT_FLOAT"
+   && ! TARGET_SOFT_FLOAT
+   && ! TARGET_SOFT_MULT"
   "
 {
   rtx low_product = gen_reg_rtx (DImode);
@@ -5897,7 +5979,7 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   "!TARGET_64BIT"
   "sub %%r0,%R1,%R0\;{subb|sub,b} %%r0,%1,%0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
 (define_insn ""
@@ -5907,6 +5989,21 @@
   "sub %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
+
+(define_insn "negti2"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(neg:TI (match_operand:TI 1 "register_operand" "r")))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = gen_lowpart (DImode, operands[1]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  return \"sub %%r0,%3,%2\;sub,db %%r0,%1,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_expand "negvdi2"
   [(parallel [(set (match_operand:DI 0 "register_operand" "")
@@ -5925,7 +6022,7 @@
 	    (const_int 0))]
   "!TARGET_64BIT"
   "sub %%r0,%R1,%R0\;{subbo|sub,b,tsv} %%r0,%1,%0"
-  [(set_attr "type" "unary")
+  [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
 (define_insn ""
@@ -5938,6 +6035,24 @@
   "sub,tsv %%r0,%1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "4")])
+
+(define_insn "negvti2"
+  [(set (match_operand:TI 0 "register_operand" "=r")
+	(neg:TI (match_operand:TI 1 "register_operand" "r")))
+   (trap_if (ne (neg:OI (sign_extend:OI (match_dup 1)))
+		(sign_extend:OI (neg:TI (match_dup 1))))
+	    (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = gen_lowpart (DImode, operands[1]);
+  operands[0] = gen_highpart (DImode, operands[0]);
+  operands[1] = gen_highpart (DImode, operands[1]);
+  return \"sub %%r0,%3,%2\;sub,db,tsv %%r0,%1,%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -6566,6 +6681,42 @@
   operands[1] = force_reg (DImode, operands[1]);
 }")
 
+(define_expand "ashlti3"
+  [(set (match_operand:TI 0 "register_operand" "")
+	(ashift:TI (match_operand:TI 1 "lhs_lshift_operand" "")
+		   (match_operand:TI 2 "arith32_operand" "")))]
+  "TARGET_64BIT"
+{
+  if (REG_P (operands[0]) && GET_CODE (operands[2]) == CONST_INT)
+    {
+      unsigned HOST_WIDE_INT shift = UINTVAL (operands[2]);
+      rtx dst = operands[0];
+      rtx src = force_reg (TImode, operands[1]);
+      if (shift >= 1 && shift <= 63)
+	{
+	  emit_insn (gen_shrpd_internal (gen_highpart (DImode, dst),
+					 gen_lowpart (DImode, src),
+					 GEN_INT (64-shift),
+					 gen_highpart (DImode, src),
+					 GEN_INT (shift)));
+	  emit_insn (gen_ashldi3 (gen_lowpart (DImode, dst),
+				  gen_lowpart (DImode, src),
+				  GEN_INT (shift)));
+	  DONE;
+	}
+      else if (shift >= 64 && shift <= 127)
+	{
+	  emit_insn (gen_ashldi3 (gen_highpart (DImode, dst),
+				  gen_lowpart (DImode, src),
+				  GEN_INT (shift - 64)));
+	  emit_move_insn (gen_lowpart (DImode, dst), GEN_INT (0));
+	  DONE;
+	}
+    }
+  /* Fallback to using optabs.c's expand_doubleword_shift.  */
+  FAIL;
+})
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (match_operand:DI 1 "register_operand" "r")
@@ -6943,6 +7094,15 @@
 	  (ashift:SI (match_operand:SI 3 "register_operand")
 		     (match_operand:SI 4 "const_int_operand"))))]
   "")
+
+(define_expand "shrpd_internal"
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI
+	  (lshiftrt:DI (match_operand:DI 1 "register_operand")
+		       (match_operand:DI 2 "const_int_operand"))
+	  (ashift:DI (match_operand:DI 3 "register_operand")
+		     (match_operand:DI 4 "const_int_operand"))))]
+  "TARGET_64BIT")
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -7805,7 +7965,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
       if (GET_CODE (op) == SYMBOL_REF)
 	{
 	  /* Handle special call to buggy powf function.  */
-	  if (TARGET_HPUX && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT
+	  if (TARGET_HPUX && !TARGET_SOFT_FLOAT
 	      && !strcmp (targetm.strip_name_encoding (XSTR (op, 0)), "powf"))
 	    call_powf = true;
 
@@ -10260,7 +10420,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   enum memmodel model;
 
-  if (TARGET_64BIT || TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_64BIT || TARGET_SOFT_FLOAT)
     FAIL;
 
   model = memmodel_from_int (INTVAL (operands[2]));
@@ -10276,7 +10436,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (mem:DI (match_operand:SI 1 "register_operand" "r")))
    (clobber (match_scratch:DI 2 "=f"))]
-  "!TARGET_64BIT && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT"
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
   "{fldds|fldd} 0(%1),%2\n\t{fstds|fstd} %2,-16(%%sp)\n\t{ldws|ldw} -16(%%sp),%0\n\t{ldws|ldw} -12(%%sp),%R0"
   [(set_attr "type" "move")
    (set_attr "length" "16")])
@@ -10299,7 +10459,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	DONE;
     }
 
-  if (TARGET_64BIT || TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+  if (TARGET_64BIT || TARGET_SOFT_FLOAT)
     FAIL;
 
   model = memmodel_from_int (INTVAL (operands[2]));
@@ -10317,7 +10477,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (mem:DI (match_operand:SI 0 "register_operand" "r,r"))
         (match_operand:DI 1 "reg_or_0_operand" "M,r"))
    (clobber (match_scratch:DI 2 "=X,f"))]
-  "!TARGET_64BIT && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT"
+  "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
   "@
    {fstds|fstd} %%fr0,0(%0)
    {stws|stw} %1,-16(%%sp)\n\t{stws|stw} %R1,-12(%%sp)\n\t{fldds|fldd} -16(%%sp),%2\n\t{fstds|fstd} %2,0(%0)"

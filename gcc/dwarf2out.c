@@ -3854,7 +3854,7 @@ static void add_AT_location_description	(dw_die_ref, enum dwarf_attribute,
 					 dw_loc_list_ref);
 static void add_data_member_location_attribute (dw_die_ref, tree,
 						struct vlr_context *);
-static bool add_const_value_attribute (dw_die_ref, rtx);
+static bool add_const_value_attribute (dw_die_ref, machine_mode, rtx);
 static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static void insert_wide_int (const wide_int &, unsigned char *, int);
 static unsigned insert_float (const_rtx, unsigned char *);
@@ -19646,6 +19646,7 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
      properly dynamic byte offsets only when PCC bitfield type doesn't
      matter.  */
   if (PCC_BITFIELD_TYPE_MATTERS
+      && DECL_BIT_FIELD_TYPE (decl)
       && TREE_CODE (DECL_FIELD_OFFSET (decl)) == INTEGER_CST)
     {
       offset_int object_offset_in_bits;
@@ -20081,8 +20082,10 @@ insert_float (const_rtx rtl, unsigned char *array)
    constants do not necessarily get memory "homes".  */
 
 static bool
-add_const_value_attribute (dw_die_ref die, rtx rtl)
+add_const_value_attribute (dw_die_ref die, machine_mode mode, rtx rtl)
 {
+  scalar_mode int_mode;
+
   switch (GET_CODE (rtl))
     {
     case CONST_INT:
@@ -20097,15 +20100,15 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       return true;
 
     case CONST_WIDE_INT:
-      {
-	wide_int w1 = rtx_mode_t (rtl, MAX_MODE_INT);
-	unsigned int prec = MIN (wi::min_precision (w1, UNSIGNED),
-				 (unsigned int) CONST_WIDE_INT_NUNITS (rtl)
-				 * HOST_BITS_PER_WIDE_INT);
-	wide_int w = wide_int::from (w1, prec, UNSIGNED);
-	add_AT_wide (die, DW_AT_const_value, w);
-      }
-      return true;
+      if (is_int_mode (mode, &int_mode)
+	  && (GET_MODE_PRECISION (int_mode)
+	      & (HOST_BITS_PER_WIDE_INT - 1)) == 0)
+	{
+	  wide_int w = rtx_mode_t (rtl, int_mode);
+	  add_AT_wide (die, DW_AT_const_value, w);
+	  return true;
+	}
+      return false;
 
     case CONST_DOUBLE:
       /* Note that a CONST_DOUBLE rtx could represent either an integer or a
@@ -20190,7 +20193,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST:
       if (CONSTANT_P (XEXP (rtl, 0)))
-	return add_const_value_attribute (die, XEXP (rtl, 0));
+	return add_const_value_attribute (die, mode, XEXP (rtl, 0));
       /* FALLTHROUGH */
     case SYMBOL_REF:
       if (!const_ok_for_output (rtl))
@@ -20703,7 +20706,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
 
   rtl = rtl_for_decl_location (decl);
   if (rtl && (CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
-      && add_const_value_attribute (die, rtl))
+      && add_const_value_attribute (die, DECL_MODE (decl), rtl))
     return true;
 
   /* See if we have single element location list that is equivalent to
@@ -20724,7 +20727,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
       if (GET_CODE (rtl) == EXPR_LIST)
 	rtl = XEXP (rtl, 0);
       if ((CONSTANT_P (rtl) || GET_CODE (rtl) == CONST_STRING)
-	  && add_const_value_attribute (die, rtl))
+	  && add_const_value_attribute (die, DECL_MODE (decl), rtl))
 	 return true;
     }
   /* If this decl is from BLOCK_NONLOCALIZED_VARS, we might need its
@@ -20799,7 +20802,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
      symbols.  */
   rtl = rtl_for_decl_init (init, type);
   if (rtl && !early_dwarf)
-    return add_const_value_attribute (die, rtl);
+    return add_const_value_attribute (die, TYPE_MODE (type), rtl);
   /* If the host and target are sane, try harder.  */
   if (CHAR_BIT == 8 && BITS_PER_UNIT == 8
       && initializer_constant_valid_p (init, type))

@@ -561,7 +561,7 @@ toyvm_function_compile (toyvm_function *fn)
   /* Create a block per operation.  */
   for (pc = 0; pc < fn->fn_num_ops; pc++)
     {
-      char buf[16];
+      char buf[100];
       sprintf (buf, "instr%i", pc);
       state.op_blocks[pc] = gcc_jit_function_new_block (state.fn, buf);
     }

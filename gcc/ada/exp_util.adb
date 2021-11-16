@@ -315,10 +315,10 @@ package body Exp_Util is
 
          if Present (Msg_Node) then
             Error_Msg_N
-              ("info: atomic synchronization set for &?N?", Msg_Node);
+              ("info: atomic synchronization set for &?.n?", Msg_Node);
          else
             Error_Msg_N
-              ("info: atomic synchronization set?N?", N);
+              ("info: atomic synchronization set?.n?", N);
          end if;
       end if;
    end Activate_Atomic_Synchronization;
@@ -2849,7 +2849,7 @@ package body Exp_Util is
          if Inherited and Opt.List_Inherited_Aspects then
             Error_Msg_Sloc := Sloc (Prag);
             Error_Msg_N
-              ("info: & inherits `Invariant''Class` aspect from #?L?", Typ);
+              ("info: & inherits `Invariant''Class` aspect from #?.l?", Typ);
          end if;
 
          --  Add the pragma to the list of processed pragmas
@@ -10433,6 +10433,14 @@ package body Exp_Util is
          --  inherited ancestor primitive.
 
          elsif Present (Inher_Prim) then
+            --  It is possible that an internally generated alias could be
+            --  set to a subprogram which overrides the same aliased primitive,
+            --  so return Empty in this case.
+
+            if Ancestor_Primitive (Inher_Prim) = Subp then
+               return Empty;
+            end if;
+
             return Inher_Prim;
 
          --  Otherwise the current subprogram is the root of the inheritance or
@@ -11257,6 +11265,7 @@ package body Exp_Util is
 
          when others =>
             if Is_Entity_Name (N)
+              and then Is_Object (Entity (N))
               and then Present (Renamed_Object (Entity (N)))
             then
                return

@@ -490,7 +490,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h smmintrin.h"
-	extra_headers="${extra_headers} nmmintrin.h"
+	extra_headers="${extra_headers} nmmintrin.h immintrin.h x86gprintrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
@@ -681,9 +681,9 @@ case ${target} in
       *-*-darwin[4-9]* | *-*-darwin1[0-9]*)
         macos_min=`expr $darwin_maj - 4`
         ;;
-      *-*-darwin20*)
-        # Darwin 20 corresponds to macOS 11.
-        macos_maj=11
+      *-*-darwin2*)
+        # Darwin 20 corresponds to macOS 11, Darwin 21 to macOS 12.
+        macos_maj=`expr $darwin_maj - 9`
         def_ld64=609.0
         ;;
       *-*-darwin)
@@ -5087,16 +5087,6 @@ case "${target}" in
 			tm_file="$tm_file ./advance-toolchain.h"
 			(at="/opt/$with_advance_toolchain"
 			 echo "/* Use Advance Toolchain $at */"
-			 echo
-			 echo "#undef  LINK_OS_EXTRA_SPEC32"
-			 echo "#define LINK_OS_EXTRA_SPEC32" \
-			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib -rpath $at/lib\""
-			 echo
-			 echo "#undef  LINK_OS_EXTRA_SPEC64"
-			 echo "#define LINK_OS_EXTRA_SPEC64" \
-			      "\"%(link_os_new_dtags)" \
-			      "-rpath $prefix/lib64 -rpath $at/lib64\""
 			 echo
 			 echo "#undef  LINK_OS_NEW_DTAGS_SPEC"
 			 echo "#define LINK_OS_NEW_DTAGS_SPEC" \

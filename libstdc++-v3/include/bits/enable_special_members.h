@@ -37,6 +37,7 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+/// @cond undocumented
 
   struct _Enable_default_constructor_tag
   {
@@ -308,6 +309,7 @@ template<typename _Tag>
     operator=(_Enable_copy_move&&) noexcept                         = delete;
   };
 
+/// @endcond
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

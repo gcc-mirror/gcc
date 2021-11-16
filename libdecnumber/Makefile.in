@@ -178,13 +178,14 @@ html:
 info:
 install-info:
 install-pdf:
+install-dvi:
 install-man:
 install-html:
 install:
 
 .PHONY: installdirs install install-strip mostlyclean clean distclean \
   maintainer-clean check installcheck dvi pdf html info install-info \
-  install-pdf install-man update-po install-html
+  install-pdf install-dvi install-man update-po install-html
 
 COMPILE = source='$<' object='$@' libtool=no $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(ALL_CFLAGS) -c
 

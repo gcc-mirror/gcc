@@ -277,7 +277,9 @@ package body Erroutc is
    begin
       for J in 1 .. Errors.Last loop
          begin
-            if Errors.Table (J).Warn and Errors.Table (J).Compile_Time_Pragma
+            if Errors.Table (J).Warn
+               and then Errors.Table (J).Compile_Time_Pragma
+               and then not Errors.Table (J).Deleted
             then
                Result := Result + 1;
             end if;
@@ -362,20 +364,20 @@ package body Erroutc is
    ---------------------
 
    function Get_Warning_Tag (Id : Error_Msg_Id) return String is
-      Warn     : constant Boolean    := Errors.Table (Id).Warn;
-      Warn_Chr : constant Character  := Errors.Table (Id).Warn_Chr;
+      Warn     : constant Boolean         := Errors.Table (Id).Warn;
+      Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
    begin
-      if Warn and then Warn_Chr /= ' ' then
-         if Warn_Chr = '?' then
+      if Warn and then Warn_Chr /= "  " then
+         if Warn_Chr = "? " then
             return "[enabled by default]";
-         elsif Warn_Chr = '*' then
+         elsif Warn_Chr = "* " then
             return "[restriction warning]";
-         elsif Warn_Chr = '$' then
+         elsif Warn_Chr = "$ " then
             return "[-gnatel]";
-         elsif Warn_Chr in 'a' .. 'z' then
+         elsif Warn_Chr (2) = ' ' then
+            return "[-gnatw" & Warn_Chr (1) & ']';
+         else
             return "[-gnatw" & Warn_Chr & ']';
-         else pragma Assert (Warn_Chr in 'A' .. 'Z');
-            return "[-gnatw." & Fold_Lower (Warn_Chr) & ']';
          end if;
       else
          return "";
@@ -839,6 +841,51 @@ package body Erroutc is
    procedure Prescan_Message (Msg : String) is
       J : Natural;
 
+      function Parse_Message_Class return String;
+      --  Convert the warning insertion sequence to a warning class represented
+      --  as a length-two string padded, if necessary, with spaces.
+      --  Return the Message class and set the iterator J to the character
+      --  following the sequence.
+      --  Raise a Program_Error if the insertion sequence is not valid.
+
+      -------------------------
+      -- Parse_Message_Class --
+      -------------------------
+
+      function Parse_Message_Class return String is
+         C : constant Character := Msg (J - 1);
+         Message_Class : String (1 .. 2) := "  ";
+      begin
+         if J <= Msg'Last and then Msg (J) = C then
+            Message_Class := "? ";
+            J := J + 1;
+
+         elsif J < Msg'Last and then Msg (J + 1) = C
+           and then Msg (J) in 'a' .. 'z' | '*' | '$'
+         then
+            Message_Class := Msg (J) & " ";
+            J := J + 2;
+
+         elsif J + 1 < Msg'Last and then Msg (J + 2) = C
+           and then Msg (J) in '.' | '_'
+           and then Msg (J + 1) in 'a' .. 'z'
+         then
+            Message_Class := Msg (J .. J + 1);
+            J := J + 3;
+         elsif (J < Msg'Last and then Msg (J + 1) = C) or else
+            (J + 1 < Msg'Last and then Msg (J + 2) = C)
+         then
+            raise Program_Error;
+         end if;
+
+         --  In any other cases, this is not a warning insertion sequence
+         --  and the default "  " value is returned.
+
+         return Message_Class;
+      end Parse_Message_Class;
+
+   --  Start of processing for Prescan_Message
+
    begin
       --  Nothing to do for continuation line, unless -gnatdF is set
 
@@ -846,7 +893,7 @@ package body Erroutc is
          return;
 
       --  Some global variables are not set for continuation messages, as they
-      --  only make sense for the initial mesage.
+      --  only make sense for the initial message.
 
       elsif Msg (Msg'First) /= '\' then
 
@@ -898,29 +945,10 @@ package body Erroutc is
 
          elsif Msg (J) = '?' or else Msg (J) = '<' then
             Is_Warning_Msg := Msg (J) = '?' or else Error_Msg_Warn;
-            Warning_Msg_Char := ' ';
             J := J + 1;
 
             if Is_Warning_Msg then
-               declare
-                  C : constant Character := Msg (J - 1);
-               begin
-                  if J <= Msg'Last then
-                     if Msg (J) = C then
-                        Warning_Msg_Char := '?';
-                        J := J + 1;
-
-                     elsif J < Msg'Last and then Msg (J + 1) = C
-                       and then (Msg (J) in 'a' .. 'z' or else
-                                 Msg (J) in 'A' .. 'Z' or else
-                                 Msg (J) = '*'         or else
-                                 Msg (J) = '$')
-                     then
-                        Warning_Msg_Char := Msg (J);
-                        J := J + 2;
-                     end if;
-                  end if;
-               end;
+               Warning_Msg_Char := Parse_Message_Class;
             end if;
 
             --  Bomb if untagged warning message. This code can be uncommented
@@ -1685,7 +1713,7 @@ package body Erroutc is
 
                if SWE.Open then
                   Eproc.all
-                    ("?W?pragma Warnings Off with no matching Warnings On",
+                    ("?.w?pragma Warnings Off with no matching Warnings On",
                      SWE.Start);
 
                --  Warn for ineffective Warnings (Off, ..)
@@ -1700,7 +1728,7 @@ package body Erroutc is
                    (SWE.Msg'Length > 3 and then SWE.Msg (2 .. 3) = "-W")
                then
                   Eproc.all
-                    ("?W?no warning suppressed by this pragma", SWE.Start);
+                    ("?.w?no warning suppressed by this pragma", SWE.Start);
                end if;
             end if;
          end;

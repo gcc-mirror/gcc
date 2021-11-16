@@ -1239,25 +1239,22 @@ lv_flush_pending_stmts (edge e)
     cfg_hooks->flush_pending_stmts (e);
 }
 
-/* Loop versioning uses the duplicate_loop_to_header_edge to create
+/* Loop versioning uses the duplicate_loop_body_to_header_edge to create
    a new version of the loop basic-blocks, the parameters here are
-   exactly the same as in duplicate_loop_to_header_edge or
-   tree_duplicate_loop_to_header_edge; while in tree-ssa there is
+   exactly the same as in duplicate_loop_body_to_header_edge or
+   tree_duplicate_loop_body_to_header_edge; while in tree-ssa there is
    additional work to maintain ssa information that's why there is
-   a need to call the tree_duplicate_loop_to_header_edge rather
-   than duplicate_loop_to_header_edge when we are in tree mode.  */
+   a need to call the tree_duplicate_loop_body_to_header_edge rather
+   than duplicate_loop_body_to_header_edge when we are in tree mode.  */
 bool
-cfg_hook_duplicate_loop_to_header_edge (class loop *loop, edge e,
-					unsigned int ndupl,
-					sbitmap wont_exit, edge orig,
-					vec<edge> *to_remove,
-					int flags)
+cfg_hook_duplicate_loop_body_to_header_edge (class loop *loop, edge e,
+					     unsigned int ndupl,
+					     sbitmap wont_exit, edge orig,
+					     vec<edge> *to_remove, int flags)
 {
-  gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_to_header_edge);
-  return cfg_hooks->cfg_hook_duplicate_loop_to_header_edge (loop, e,
-							    ndupl, wont_exit,
-							    orig, to_remove,
-							    flags);
+  gcc_assert (cfg_hooks->cfg_hook_duplicate_loop_body_to_header_edge);
+  return cfg_hooks->cfg_hook_duplicate_loop_body_to_header_edge (
+    loop, e, ndupl, wont_exit, orig, to_remove, flags);
 }
 
 /* Conditional jumps are represented differently in trees and RTL,

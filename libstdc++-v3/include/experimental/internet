@@ -460,7 +460,9 @@ namespace ip
     // constructors:
     constexpr address() noexcept : _M_v4(), _M_is_v4(true) { }
 
+#if __cpp_constexpr_dynamic_alloc
     constexpr
+#endif
     address(const address& __a) noexcept : _M_uninit(), _M_is_v4(__a._M_is_v4)
     {
       if (_M_is_v4)

@@ -292,7 +292,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
 	    binding_cluster *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
-	    char pfx[24];
+	    char pfx[32];
 	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{

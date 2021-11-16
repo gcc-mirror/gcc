@@ -32,6 +32,12 @@
   VUNSPEC_PEM		    ; 'procedure_entry_mask' insn.
 ])
 
+;; UNSPEC usage:
+
+(define_c_enum "unspec" [
+  UNSPEC_SETMEM_FILL	    ; 'fill' operand to 'setmem' insn.
+])
+
 (define_constants
   [(VAX_AP_REGNUM 12)	    ; Register 12 contains the argument pointer
    (VAX_FP_REGNUM 13)	    ; Register 13 contains the frame pointer
@@ -438,6 +444,64 @@
    (clobber (reg:CC VAX_PSL_REGNUM))]
   "reload_completed"
   "movc3 %2,%1,%0")
+
+;; This is here to accept 4 arguments and pass the first 3 along
+;; to the setmemhi1 pattern that really does the work.
+(define_expand "setmemhi"
+  [(set (match_operand:BLK 0 "memory_operand" "")
+	(match_operand:QI 2 "general_operand" ""))
+   (use (match_operand:HI 1 "general_operand" ""))
+   (match_operand 3 "" "")]
+  ""
+  "
+{
+  emit_insn (gen_setmemhi1 (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+;; The srcaddr operand of MOVC5 is not dereferenced if srclen is zero, so we
+;; set it to (%ap) somewhat arbitrarily chosen for the shortest encoding.
+(define_insn_and_split "setmemhi1"
+  [(set (match_operand:BLK 0 "memory_operand" "=o")
+	(unspec:BLK [(use (match_operand:QI 2 "general_operand" "g"))]
+		    UNSPEC_SETMEM_FILL))
+   (use (match_operand:HI 1 "general_operand" "g"))
+   (clobber (reg:SI 0))
+   (clobber (reg:SI 1))
+   (clobber (reg:SI 2))
+   (clobber (reg:SI 3))
+   (clobber (reg:SI 4))
+   (clobber (reg:SI 5))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (unspec:BLK [(use (match_dup 2))] UNSPEC_SETMEM_FILL))
+      (use (match_dup 1))
+      (clobber (reg:SI 0))
+      (clobber (reg:SI 1))
+      (clobber (reg:SI 2))
+      (clobber (reg:SI 3))
+      (clobber (reg:SI 4))
+      (clobber (reg:SI 5))
+      (clobber (reg:CC VAX_PSL_REGNUM))])]
+  "")
+
+(define_insn "*setmemhi1"
+  [(set (match_operand:BLK 0 "memory_operand" "=o")
+	(unspec:BLK [(use (match_operand:QI 2 "general_operand" "g"))]
+		    UNSPEC_SETMEM_FILL))
+   (use (match_operand:HI 1 "general_operand" "g"))
+   (clobber (reg:SI 0))
+   (clobber (reg:SI 1))
+   (clobber (reg:SI 2))
+   (clobber (reg:SI 3))
+   (clobber (reg:SI 4))
+   (clobber (reg:SI 5))
+   (clobber (reg:CC VAX_PSL_REGNUM))]
+  "reload_completed"
+  "movc5 $0,(%%ap),%2,%1,%0")
 
 ;; Extension and truncation insns.
 

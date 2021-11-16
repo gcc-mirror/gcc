@@ -336,10 +336,18 @@ package body Sem_Aux is
 
    function First_Subtype (Typ : Entity_Id) return Entity_Id is
       B   : constant Entity_Id := Base_Type (Typ);
-      F   : constant Node_Id   := Freeze_Node (B);
+      F   : Node_Id := Freeze_Node (B);
       Ent : Entity_Id;
 
    begin
+      --  The freeze node of a ghost type might have been rewritten in a null
+      --  statement by the time gigi calls First_Subtype on the corresponding
+      --  type.
+
+      if Nkind (F) = N_Null_Statement then
+         F := Original_Node (F);
+      end if;
+
       --  If the base type has no freeze node, it is a type in Standard, and
       --  always acts as its own first subtype, except where it is one of the
       --  predefined integer types. If the type is formal, it is also a first

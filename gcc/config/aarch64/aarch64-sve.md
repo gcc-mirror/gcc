@@ -6288,7 +6288,7 @@
 
 ;; Unpredicated fmax/fmin (the libm functions).  The optabs for the
 ;; smin/smax rtx codes are handled in the generic section above.
-(define_expand "<maxmin_uns><mode>3"
+(define_expand "<fmaxmin><mode>3"
   [(set (match_operand:SVE_FULL_F 0 "register_operand")
 	(unspec:SVE_FULL_F
 	  [(match_dup 3)

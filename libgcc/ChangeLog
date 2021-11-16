@@ -1,3 +1,46 @@
+2021-11-11  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
+
+	PR libgcc/103044
+	* config/rs6000/linux-unwind.h (ppc_backchain_fallback): Check if it's
+	called with a null argument or at the end of the backtrace and return.
+	* unwind.inc (_Unwind_ForcedUnwind_Phase2): Treat _URC_NORMAL_STOP.
+
+2021-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/linux-unwind.h (ppc_back_fallback): Make it static,
+	formatting fix.
+
+2021-11-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin10-unwind-find-enc-func.c: Include libgcc_tm.h.
+	* config/i386/darwin-lib.h: Declare Darwin10 crt function.
+
+2021-11-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libgomp/96661
+	* config.host (hppa*64*-*-linux*): Revise tmake_file.
+	(hppa*64*-*-hpux11*): Likewise.
+	* config/pa/sfp-exceptions.c: New.
+	* config/pa/sfp-machine.h: New.
+	* config/pa/t-dimode: New.
+	* config/pa/t-softfp-sfdftf: New.
+
+2021-10-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config.host (hppa*64*-*-linux*): Don't add pa/t-linux to
+	tmake_file.
+	* config/pa/linux-atomic.c: Define u8, u16 and u64 types.
+	Use them in FETCH_AND_OP_2, OP_AND_FETCH_2, COMPARE_AND_SWAP_2,
+	SYNC_LOCK_TEST_AND_SET_2 and SYNC_LOCK_RELEASE_1 macros.
+	* config/pa/t-linux64 (LIB1ASMSRC): New define.
+	(LIB1ASMFUNCS): Revise.
+	(HOST_LIBGCC2_CFLAGS): Add "-DLINUX=1".
+
+2021-10-22  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/sfp-machine.h (_FP_TININESS_AFTER_ROUNDING):
+	Change to 0.
+
 2021-10-14  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
 
 	* config/rs6000/linux-unwind.h (struct rt_sigframe): Move it to

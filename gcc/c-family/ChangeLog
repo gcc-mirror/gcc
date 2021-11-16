@@ -1,3 +1,67 @@
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fimplicit-constexpr.
+	* c-cppbuiltin.c: Define __cpp_implicit_constexpr.
+	* c-opts.c (c_common_post_options): Disable below C++14.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses) <case OMP_CLAUSE_THREAD_LIMIT>:
+	Duplicate to both OMP_TARGET and OMP_TEAMS.
+
+2021-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101940
+	* c-pragma.c (handle_pragma_diagnostic): Handle #pragma GCC diagnostic
+	ignored_attributes.
+
+2021-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pragma.c (GCC_BAD_AT): New macro.
+	(GCC_BAD2_AT): New macro.
+	(handle_pragma_pack): Use the location of the pertinent token when
+	issuing diagnostics about invalid constants/actions, and trailing
+	junk.
+	(handle_pragma_target): Likewise for non-string "GCC option".
+	(handle_pragma_message): Likewise for trailing junk.
+
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* c-common.c (convert_and_check): Add argument init_const.  Call
+	convert_init if init_const.
+	* c-common.h (convert_and_check): Update prototype.
+	(convert_init): New prototype.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lex.c (c_lex_with_flags): When complaining about non-printable
+	CPP_OTHER tokens, set the "escape on output" flag.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_check_loop_iv_r): Don't clear 3rd bit for
+	POINTER_PLUS_EXPR.
+	(c_omp_check_nonrect_loop_iv): Handle POINTER_PLUS_EXPR.
+	(c_omp_check_loop_iv): Set kind even if the iterator is non-integral.
+
+2021-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102854
+	* c-common.h (c_omp_check_loop_iv_exprs): Add enum tree_code argument.
+	* c-omp.c (c_omp_check_loop_iv_r): For trees other than decls,
+	TREE_VEC, PLUS_EXPR, MINUS_EXPR, MULT_EXPR, POINTER_PLUS_EXPR or
+	conversions temporarily clear the 3rd bit from d->kind while walking
+	subtrees.
+	(c_omp_check_loop_iv_exprs): Add CODE argument.  Or in 4 into data.kind
+	if possibly non-rectangular.
+
+2021-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64888
+	* c-omp.c (c_omp_predefined_variable): Return true also for
+	ubsan_create_data created artificial variables.
+
 2021-10-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-format.c (printf_length_specs, scanf_length_specs)

@@ -1741,10 +1741,15 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fprintf (dumpfile, " BIND(%s)", type);
     }
-  if (omp_clauses->num_teams)
+  if (omp_clauses->num_teams_upper)
     {
       fputs (" NUM_TEAMS(", dumpfile);
-      show_expr (omp_clauses->num_teams);
+      if (omp_clauses->num_teams_lower)
+	{
+	  show_expr (omp_clauses->num_teams_lower);
+	  fputc (':', dumpfile);
+	}
+      show_expr (omp_clauses->num_teams_upper);
       fputc (')', dumpfile);
     }
   if (omp_clauses->device)

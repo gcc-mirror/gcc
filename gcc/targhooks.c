@@ -1474,65 +1474,10 @@ default_empty_mask_is_expensive (unsigned ifn)
    loop body, and epilogue) for a vectorized loop or block.  So allocate an
    array of three unsigned ints, set it to zero, and return its address.  */
 
-void *
-default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED,
-		   bool costing_for_scalar ATTRIBUTE_UNUSED)
+vector_costs *
+default_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
 {
-  unsigned *cost = XNEWVEC (unsigned, 3);
-  cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
-  return cost;
-}
-
-/* By default, the cost model looks up the cost of the given statement
-   kind and mode, multiplies it by the occurrence count, accumulates
-   it into the cost specified by WHERE, and returns the cost added.  */
-
-unsigned
-default_add_stmt_cost (class vec_info *vinfo, void *data, int count,
-		       enum vect_cost_for_stmt kind,
-		       class _stmt_vec_info *stmt_info, tree vectype,
-		       int misalign,
-		       enum vect_cost_model_location where)
-{
-  unsigned *cost = (unsigned *) data;
-  unsigned retval = 0;
-  int stmt_cost = targetm.vectorize.builtin_vectorization_cost (kind, vectype,
-								misalign);
-   /* Statements in an inner loop relative to the loop being
-      vectorized are weighted more heavily.  The value here is
-      arbitrary and could potentially be improved with analysis.  */
-  if (where == vect_body && stmt_info
-      && stmt_in_inner_loop_p (vinfo, stmt_info))
-    {
-      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
-      gcc_assert (loop_vinfo);
-      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
-    }
-
-  retval = (unsigned) (count * stmt_cost);
-  cost[where] += retval;
-
-  return retval;
-}
-
-/* By default, the cost model just returns the accumulated costs.  */
-
-void
-default_finish_cost (void *data, unsigned *prologue_cost,
-		     unsigned *body_cost, unsigned *epilogue_cost)
-{
-  unsigned *cost = (unsigned *) data;
-  *prologue_cost = cost[vect_prologue];
-  *body_cost     = cost[vect_body];
-  *epilogue_cost = cost[vect_epilogue];
-}
-
-/* Free the cost data.  */
-
-void
-default_destroy_cost_data (void *data)
-{
-  free (data);
+  return new vector_costs (vinfo, costing_for_scalar);
 }
 
 /* Determine whether or not a pointer mode is valid. Assume defaults

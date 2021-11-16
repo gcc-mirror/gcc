@@ -2935,7 +2935,7 @@ package body Sem_Ch12 is
 
       --  Check for a formal package that is a package renaming
 
-      if Present (Renamed_Object (Gen_Unit)) then
+      if Present (Renamed_Entity (Gen_Unit)) then
 
          --  Indicate that unit is used, before replacing it with renamed
          --  entity for use below.
@@ -2945,7 +2945,7 @@ package body Sem_Ch12 is
             Generate_Reference  (Gen_Unit, N);
          end if;
 
-         Gen_Unit := Renamed_Object (Gen_Unit);
+         Gen_Unit := Renamed_Entity (Gen_Unit);
       end if;
 
       if Ekind (Gen_Unit) /= E_Generic_Package then
@@ -3117,7 +3117,7 @@ package body Sem_Ch12 is
          Set_Etype (Renaming_In_Par, Standard_Void_Type);
          Set_Scope (Renaming_In_Par, Parent_Instance);
          Set_Parent (Renaming_In_Par, Parent (Formal));
-         Set_Renamed_Object (Renaming_In_Par, Formal);
+         Set_Renamed_Entity (Renaming_In_Par, Formal);
          Append_Entity (Renaming_In_Par, Parent_Instance);
       end if;
 
@@ -4287,9 +4287,9 @@ package body Sem_Ch12 is
          Set_Is_Instantiated (Gen_Unit);
          Generate_Reference  (Gen_Unit, N);
 
-         if Present (Renamed_Object (Gen_Unit)) then
-            Set_Is_Instantiated (Renamed_Object (Gen_Unit));
-            Generate_Reference  (Renamed_Object (Gen_Unit), N);
+         if Present (Renamed_Entity (Gen_Unit)) then
+            Set_Is_Instantiated (Renamed_Entity (Gen_Unit));
+            Generate_Reference  (Renamed_Entity (Gen_Unit), N);
          end if;
       end if;
 
@@ -4312,10 +4312,10 @@ package body Sem_Ch12 is
 
       --  If generic is a renaming, get original generic unit
 
-      if Present (Renamed_Object (Gen_Unit))
-        and then Ekind (Renamed_Object (Gen_Unit)) = E_Generic_Package
+      if Present (Renamed_Entity (Gen_Unit))
+        and then Ekind (Renamed_Entity (Gen_Unit)) = E_Generic_Package
       then
-         Gen_Unit := Renamed_Object (Gen_Unit);
+         Gen_Unit := Renamed_Entity (Gen_Unit);
       end if;
 
       --  Verify that there are no circular instantiations
@@ -5692,10 +5692,10 @@ package body Sem_Ch12 is
 
          --  If renaming, get original unit
 
-         if Present (Renamed_Object (Gen_Unit))
-           and then Is_Generic_Subprogram (Renamed_Object (Gen_Unit))
+         if Present (Renamed_Entity (Gen_Unit))
+           and then Is_Generic_Subprogram (Renamed_Entity (Gen_Unit))
          then
-            Gen_Unit := Renamed_Object (Gen_Unit);
+            Gen_Unit := Renamed_Entity (Gen_Unit);
             Set_Is_Instantiated (Gen_Unit);
             Generate_Reference  (Gen_Unit, N);
          end if;
@@ -6856,9 +6856,9 @@ package body Sem_Ch12 is
          elsif Ekind (E1) = E_Package then
             Check_Mismatch
               (Ekind (E1) /= Ekind (E2)
-                or else (Present (Renamed_Object (E2))
-                          and then Renamed_Object (E1) /=
-                                     Renamed_Object (E2)));
+                or else (Present (Renamed_Entity (E2))
+                          and then Renamed_Entity (E1) /=
+                                     Renamed_Entity (E2)));
 
          elsif Is_Overloadable (E1) then
             --  Verify that the actual subprograms match. Note that actuals
@@ -6929,7 +6929,7 @@ package body Sem_Ch12 is
       E := First_Entity (P_Id);
       while Present (E) loop
          if Ekind (E) = E_Package then
-            if Renamed_Object (E) = P_Id then
+            if Renamed_Entity (E) = P_Id then
                exit;
 
             elsif Nkind (Parent (E)) /= N_Package_Renaming_Declaration then
@@ -7128,7 +7128,7 @@ package body Sem_Ch12 is
             --  formal part are also visible. Otherwise, ignore the entity
             --  created to validate the actuals.
 
-            if Renamed_Object (E) = Instance then
+            if Renamed_Entity (E) = Instance then
                exit;
 
             elsif Nkind (Parent (E)) /= N_Package_Renaming_Declaration then
@@ -7144,10 +7144,10 @@ package body Sem_Ch12 is
               and then not Is_Generic_Formal (E)
             then
                if Box_Present (Parent (Associated_Formal_Package (E))) then
-                  Check_Generic_Actuals (Renamed_Object (E), True);
+                  Check_Generic_Actuals (Renamed_Entity (E), True);
 
                else
-                  Check_Generic_Actuals (Renamed_Object (E), False);
+                  Check_Generic_Actuals (Renamed_Entity (E), False);
                end if;
 
                Set_Is_Hidden (E, False);
@@ -7380,9 +7380,9 @@ package body Sem_Ch12 is
          Inst_Par := Entity (Prefix (Gen_Id));
 
          if Ekind (Inst_Par) = E_Package
-           and then Present (Renamed_Object (Inst_Par))
+           and then Present (Renamed_Entity (Inst_Par))
          then
-            Inst_Par := Renamed_Object (Inst_Par);
+            Inst_Par := Renamed_Entity (Inst_Par);
          end if;
 
          if Ekind (Inst_Par) = E_Package then
@@ -7584,7 +7584,8 @@ package body Sem_Ch12 is
 
                E := First_Entity (Entity (Prefix (Gen_Id)));
                while Present (E) loop
-                  if Present (Renamed_Entity (E))
+                  if not Is_Object (E)
+                    and then Present (Renamed_Entity (E))
                     and then
                       Renamed_Entity (E) = Renamed_Entity (Entity (Gen_Id))
                   then
@@ -7621,8 +7622,8 @@ package body Sem_Ch12 is
 
             if Is_Generic_Unit (E)
               and then Nkind (Parent (E)) in N_Generic_Renaming_Declaration
-              and then Is_Child_Unit (Renamed_Object (E))
-              and then Is_Generic_Unit (Scope (Renamed_Object (E)))
+              and then Is_Child_Unit (Renamed_Entity (E))
+              and then Is_Generic_Unit (Scope (Renamed_Entity (E)))
               and then Nkind (Name (Parent (E))) = N_Expanded_Name
             then
                Rewrite (Gen_Id, New_Copy_Tree (Name (Parent (E))));
@@ -8691,10 +8692,10 @@ package body Sem_Ch12 is
             if Ekind (E1) = E_Package
               and then Nkind (Parent (E1)) = N_Package_Renaming_Declaration
             then
-               if Renamed_Object (E1) = Pack then
+               if Renamed_Entity (E1) = Pack then
                   return True;
 
-               elsif E1 = P or else Renamed_Object (E1) = P then
+               elsif E1 = P or else Renamed_Entity (E1) = P then
                   return False;
 
                elsif Is_Actual_Of_Previous_Formal (E1) then
@@ -8744,10 +8745,10 @@ package body Sem_Ch12 is
             then
                null;
 
-            elsif Renamed_Object (E) = Par then
+            elsif Renamed_Entity (E) = Par then
                return False;
 
-            elsif Renamed_Object (E) = Pack then
+            elsif Renamed_Entity (E) = Pack then
                return True;
 
             elsif Is_Actual_Of_Previous_Formal (E) then
@@ -10079,7 +10080,7 @@ package body Sem_Ch12 is
          then
             --  If this is the renaming for the parent instance, done
 
-            if Renamed_Object (E) = Par then
+            if Renamed_Entity (E) = Par then
                exit;
 
             --  The visibility of a formal of an enclosing generic is already
@@ -10089,7 +10090,7 @@ package body Sem_Ch12 is
                null;
 
             elsif Present (Associated_Formal_Package (E)) then
-               Check_Generic_Actuals (Renamed_Object (E), True);
+               Check_Generic_Actuals (Renamed_Entity (E), True);
                Set_Is_Hidden (E, False);
 
                --  Find formal package in generic unit that corresponds to
@@ -10699,8 +10700,8 @@ package body Sem_Ch12 is
          --  The actual may be a renamed package, or an outer generic formal
          --  package whose instantiation is converted into a renaming.
 
-         if Present (Renamed_Object (Actual_Pack)) then
-            Actual_Pack := Renamed_Object (Actual_Pack);
+         if Present (Renamed_Entity (Actual_Pack)) then
+            Actual_Pack := Renamed_Entity (Actual_Pack);
          end if;
 
          if Nkind (Analyzed_Formal) = N_Formal_Package_Declaration then
@@ -11798,7 +11799,7 @@ package body Sem_Ch12 is
 
                while Present (Actual) loop
                   exit when Ekind (Actual) = E_Package
-                    and then Present (Renamed_Object (Actual));
+                    and then Present (Renamed_Entity (Actual));
 
                   if Chars (Actual) = Chars (Formal)
                     and then not Is_Scalar_Type (Actual)
@@ -14791,7 +14792,7 @@ package body Sem_Ch12 is
                   Set_Instance_Of (Base_Type (E1), Base_Type (E2));
                end if;
 
-               if Ekind (E1) = E_Package and then No (Renamed_Object (E1)) then
+               if Ekind (E1) = E_Package and then No (Renamed_Entity (E1)) then
                   Map_Formal_Package_Entities (E1, E2);
                end if;
             end if;
@@ -15347,11 +15348,11 @@ package body Sem_Ch12 is
       ---------------------------
 
       procedure Restore_Nested_Formal (Formal : Entity_Id) is
+         pragma Assert (Ekind (Formal) = E_Package);
          Ent : Entity_Id;
-
       begin
-         if Present (Renamed_Object (Formal))
-           and then Denotes_Formal_Package (Renamed_Object (Formal), True)
+         if Present (Renamed_Entity (Formal))
+           and then Denotes_Formal_Package (Renamed_Entity (Formal), True)
          then
             return;
 
@@ -15490,20 +15491,20 @@ package body Sem_Ch12 is
             --  visible on exit from the instance, and therefore nothing needs
             --  to be done either, except to keep it accessible.
 
-            if Is_Package and then Renamed_Object (E) = Pack_Id then
+            if Is_Package and then Renamed_Entity (E) = Pack_Id then
                exit;
 
             elsif Nkind (Parent (E)) /= N_Package_Renaming_Declaration then
                null;
 
             elsif
-              Denotes_Formal_Package (Renamed_Object (E), True, Pack_Id)
+              Denotes_Formal_Package (Renamed_Entity (E), True, Pack_Id)
             then
                Set_Is_Hidden (E, False);
 
             else
                declare
-                  Act_P : constant Entity_Id := Renamed_Object (E);
+                  Act_P : constant Entity_Id := Renamed_Entity (E);
                   Id    : Entity_Id;
 
                begin
@@ -15512,7 +15513,7 @@ package body Sem_Ch12 is
                     and then Id /= First_Private_Entity (Act_P)
                   loop
                      exit when Ekind (Id) = E_Package
-                                 and then Renamed_Object (Id) = Act_P;
+                                 and then Renamed_Entity (Id) = Act_P;
 
                      Set_Is_Hidden (Id, True);
                      Set_Is_Potentially_Use_Visible (Id, In_Use (Act_P));

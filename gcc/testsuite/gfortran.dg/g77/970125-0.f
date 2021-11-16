@@ -1,7 +1,6 @@
 c { dg-do compile }
 c
-c Following line added on transfer to gfortran testsuite
-c { dg-excess-errors "" }
+c { dg-additional-options "-w" }
 c
 C JCB comments:
 C g77 doesn't accept the added line "integer(kind=7) ..." --
@@ -35,10 +34,10 @@ c     Frontend bug fixed by JCB 1998-06-01 com.c &c changes.
         print *, max4
         print *, i4, %loc(i4)
         print *, i8, %loc(i8)
-        call foo(i4, %loc(i4), i8, %loc(i8))
+        call foo(i4, %loc(i4), i8, %loc(i8))  ! { dg-error "Type mismatch in argument 'i8a' at .1.; passed INTEGER.8. to INTEGER.4." }
         end
         subroutine foo(i4, i4a, i8, i8a)
-        integer(kind=7) i4a, i8a
+        integer(kind=7) i4a, i8a  ! { dg-error "Kind 7 not supported for type INTEGER" }
         integer(kind=8) i8
         print *, i4, i4a
         print *, i8, i8a

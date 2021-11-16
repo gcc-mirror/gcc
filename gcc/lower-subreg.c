@@ -383,8 +383,10 @@ simple_move (rtx_insn *insn, bool speed_p)
      non-integer mode for which there is no integer mode of the same
      size.  */
   mode = GET_MODE (SET_DEST (set));
+  scalar_int_mode int_mode;
   if (!SCALAR_INT_MODE_P (mode)
-      && !int_mode_for_size (GET_MODE_BITSIZE (mode), 0).exists ())
+      && (!int_mode_for_size (GET_MODE_BITSIZE (mode), 0).exists (&int_mode)
+	  || !targetm.modes_tieable_p (mode, int_mode)))
     return NULL_RTX;
 
   /* Reject PARTIAL_INT modes.  They are used for processor specific

@@ -1502,7 +1502,8 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *chunk_size;
   struct gfc_expr *safelen_expr;
   struct gfc_expr *simdlen_expr;
-  struct gfc_expr *num_teams;
+  struct gfc_expr *num_teams_lower;
+  struct gfc_expr *num_teams_upper;
   struct gfc_expr *device;
   struct gfc_expr *thread_limit;
   struct gfc_expr *grainsize;
@@ -3116,7 +3117,6 @@ struct gfc_vect_builtin_tuple
 extern hash_map<nofree_string_hash, int> *gfc_vectorized_builtins;
 
 /* Handling Parameterized Derived Types  */
-bool gfc_insert_kind_parameter_exprs (gfc_expr *);
 bool gfc_insert_parameter_exprs (gfc_expr *, gfc_actual_arglist *);
 match gfc_get_pdt_instance (gfc_actual_arglist *, gfc_symbol **,
 			    gfc_actual_arglist **);
@@ -3284,7 +3284,6 @@ bool gfc_check_character_range (gfc_char_t, int);
 extern bool gfc_seen_div0;
 
 /* trans-types.c */
-bool gfc_check_any_c_kind (gfc_typespec *);
 int gfc_validate_kind (bt, int, bool);
 int gfc_get_int_kind_from_width_isofortranenv (int size);
 int gfc_get_real_kind_from_width_isofortranenv (int size);
@@ -3349,11 +3348,9 @@ bool gfc_add_threadprivate (symbol_attribute *, const char *, locus *);
 bool gfc_add_omp_declare_target (symbol_attribute *, const char *, locus *);
 bool gfc_add_omp_declare_target_link (symbol_attribute *, const char *,
 				      locus *);
-bool gfc_add_saved_common (symbol_attribute *, locus *);
 bool gfc_add_target (symbol_attribute *, locus *);
 bool gfc_add_dummy (symbol_attribute *, const char *, locus *);
 bool gfc_add_generic (symbol_attribute *, const char *, locus *);
-bool gfc_add_common (symbol_attribute *, locus *);
 bool gfc_add_in_common (symbol_attribute *, const char *, locus *);
 bool gfc_add_in_equivalence (symbol_attribute *, const char *, locus *);
 bool gfc_add_data (symbol_attribute *, const char *, locus *);
@@ -3388,7 +3385,6 @@ bool gfc_copy_attr (symbol_attribute *, symbol_attribute *, locus *);
 int gfc_copy_dummy_sym (gfc_symbol **, gfc_symbol *, int);
 bool gfc_add_component (gfc_symbol *, const char *, gfc_component **);
 gfc_symbol *gfc_use_derived (gfc_symbol *);
-gfc_symtree *gfc_use_derived_tree (gfc_symtree *);
 gfc_component *gfc_find_component (gfc_symbol *, const char *, bool, bool,
                                    gfc_ref **);
 
@@ -3404,8 +3400,8 @@ void gfc_delete_symtree (gfc_symtree **, const char *);
 gfc_symtree *gfc_get_unique_symtree (gfc_namespace *);
 gfc_user_op *gfc_get_uop (const char *);
 gfc_user_op *gfc_find_uop (const char *, gfc_namespace *);
-void gfc_free_symbol (gfc_symbol *);
-void gfc_release_symbol (gfc_symbol *);
+void gfc_free_symbol (gfc_symbol *&);
+void gfc_release_symbol (gfc_symbol *&);
 gfc_symbol *gfc_new_symbol (const char *, gfc_namespace *);
 gfc_symtree* gfc_find_symtree_in_proc (const char *, gfc_namespace *);
 int gfc_find_symbol (const char *, gfc_namespace *, int, gfc_symbol **);
@@ -3429,8 +3425,7 @@ void gfc_undo_symbols (void);
 void gfc_commit_symbols (void);
 void gfc_commit_symbol (gfc_symbol *);
 gfc_charlen *gfc_new_charlen (gfc_namespace *, gfc_charlen *);
-void gfc_free_charlen (gfc_charlen *, gfc_charlen *);
-void gfc_free_namespace (gfc_namespace *);
+void gfc_free_namespace (gfc_namespace *&);
 
 void gfc_symbol_init_2 (void);
 void gfc_symbol_done_2 (void);
@@ -3449,7 +3444,6 @@ void gfc_traverse_gsymbol (gfc_gsymbol *, void (*)(gfc_gsymbol *, void *), void 
 
 gfc_typebound_proc* gfc_get_typebound_proc (gfc_typebound_proc*);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
-gfc_symbol* gfc_get_ultimate_derived_super_type (gfc_symbol*);
 bool gfc_type_is_extension_of (gfc_symbol *, gfc_symbol *);
 bool gfc_type_compatible (gfc_typespec *, gfc_typespec *);
 
@@ -3543,7 +3537,6 @@ void gfc_omp_restore_state (struct gfc_omp_saved_state *);
 void gfc_free_expr_list (gfc_expr_list *);
 void gfc_resolve_oacc_directive (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_declare (gfc_namespace *);
-void gfc_resolve_oacc_parallel_loop_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_oacc_routines (gfc_namespace *);
 
@@ -3600,7 +3593,6 @@ bool gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 bool gfc_check_assign_symbol (gfc_symbol *, gfc_component *, gfc_expr *);
 
 gfc_expr *gfc_build_default_init_expr (gfc_typespec *, locus *);
-gfc_expr *gfc_build_init_expr (gfc_typespec *, locus *, bool);
 void gfc_apply_init (gfc_typespec *, symbol_attribute *, gfc_expr *);
 bool gfc_has_default_initializer (gfc_symbol *);
 gfc_expr *gfc_default_initializer (gfc_typespec *);
@@ -3666,7 +3658,6 @@ bool gfc_resolve_dim_arg (gfc_expr *);
 bool gfc_is_formal_arg (void);
 bool gfc_resolve_substring (gfc_ref *, bool *);
 void gfc_resolve_substring_charlen (gfc_expr *);
-match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
 bool gfc_type_is_extensible (gfc_symbol *);
 bool gfc_resolve_intrinsic (gfc_symbol *, locus *);

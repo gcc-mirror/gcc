@@ -22,7 +22,7 @@
 #define TREE_SSA_SCCVN_H
 
 /* In tree-ssa-sccvn.c  */
-bool expressions_equal_p (tree, tree);
+bool expressions_equal_p (tree, tree, bool = true);
 
 
 /* TOP of the VN lattice.  */

@@ -107,6 +107,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __is_trivial(T) && __is_assignable(T&, U)
 #endif
 
+  template<typename _InputIterator, typename _ForwardIterator>
+    _GLIBCXX20_CONSTEXPR
+    _ForwardIterator
+    __do_uninit_copy(_InputIterator __first, _InputIterator __last,
+		     _ForwardIterator __result)
+    {
+      _ForwardIterator __cur = __result;
+      __try
+	{
+	  for (; __first != __last; ++__first, (void)++__cur)
+	    std::_Construct(std::__addressof(*__cur), *__first);
+	  return __cur;
+	}
+      __catch(...)
+	{
+	  std::_Destroy(__result, __cur);
+	  __throw_exception_again;
+	}
+    }
+
   template<bool _TrivialValueTypes>
     struct __uninitialized_copy
     {
@@ -114,20 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static _ForwardIterator
         __uninit_copy(_InputIterator __first, _InputIterator __last,
 		      _ForwardIterator __result)
-        {
-	  _ForwardIterator __cur = __result;
-	  __try
-	    {
-	      for (; __first != __last; ++__first, (void)++__cur)
-		std::_Construct(std::__addressof(*__cur), *__first);
-	      return __cur;
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__result, __cur);
-	      __throw_exception_again;
-	    }
-	}
+	{ return std::__do_uninit_copy(__first, __last, __result); }
     };
 
   template<>
@@ -180,6 +187,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR void
+    __do_uninit_fill(_ForwardIterator __first, _ForwardIterator __last,
+		     const _Tp& __x)
+    {
+      _ForwardIterator __cur = __first;
+      __try
+	{
+	  for (; __cur != __last; ++__cur)
+	    std::_Construct(std::__addressof(*__cur), __x);
+	}
+      __catch(...)
+	{
+	  std::_Destroy(__first, __cur);
+	  __throw_exception_again;
+	}
+    }
+
   template<bool _TrivialValueType>
     struct __uninitialized_fill
     {
@@ -187,19 +212,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static void
         __uninit_fill(_ForwardIterator __first, _ForwardIterator __last,
 		      const _Tp& __x)
-        {
-	  _ForwardIterator __cur = __first;
-	  __try
-	    {
-	      for (; __cur != __last; ++__cur)
-		std::_Construct(std::__addressof(*__cur), __x);
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__first, __cur);
-	      __throw_exception_again;
-	    }
-	}
+	{ std::__do_uninit_fill(__first, __last, __x); }
     };
 
   template<>
@@ -242,34 +255,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  template<typename _ForwardIterator, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
+    _ForwardIterator
+    __do_uninit_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
+    {
+      _ForwardIterator __cur = __first;
+      __try
+	{
+	  for (; __n > 0; --__n, (void) ++__cur)
+	    std::_Construct(std::__addressof(*__cur), __x);
+	  return __cur;
+	}
+      __catch(...)
+	{
+	  std::_Destroy(__first, __cur);
+	  __throw_exception_again;
+	}
+    }
+
   template<bool _TrivialValueType>
     struct __uninitialized_fill_n
     {
       template<typename _ForwardIterator, typename _Size, typename _Tp>
-        static _ForwardIterator
+	static _ForwardIterator
         __uninit_fill_n(_ForwardIterator __first, _Size __n,
 			const _Tp& __x)
-        {
-	  _ForwardIterator __cur = __first;
-	  __try
-	    {
-	      for (; __n > 0; --__n, (void) ++__cur)
-		std::_Construct(std::__addressof(*__cur), __x);
-	      return __cur;
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__first, __cur);
-	      __throw_exception_again;
-	    }
-	}
+	{ return std::__do_uninit_fill_n(__first, __n, __x); }
     };
 
   template<>
     struct __uninitialized_fill_n<true>
     {
       template<typename _ForwardIterator, typename _Size, typename _Tp>
-        static _ForwardIterator
+	static _ForwardIterator
         __uninit_fill_n(_ForwardIterator __first, _Size __n,
 			const _Tp& __x)
         { return std::fill_n(__first, __n, __x); }
@@ -315,11 +334,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Extensions: versions of uninitialized_copy, uninitialized_fill,
   //  and uninitialized_fill_n that take an allocator parameter.
   //  We dispatch back to the standard versions when we're given the
-  //  default allocator.  For nondefault allocators we do not use 
+  //  default allocator.  For nondefault allocators we do not use
   //  any of the POD optimizations.
 
   template<typename _InputIterator, typename _ForwardIterator,
 	   typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     _ForwardIterator
     __uninitialized_copy_a(_InputIterator __first, _InputIterator __last,
 			   _ForwardIterator __result, _Allocator& __alloc)
@@ -340,13 +360,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _InputIterator, typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     __uninitialized_copy_a(_InputIterator __first, _InputIterator __last,
 			   _ForwardIterator __result, allocator<_Tp>&)
-    { return std::uninitialized_copy(__first, __last, __result); }
+    {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return std::__do_uninit_copy(__first, __last, __result);
+#endif
+      return std::uninitialized_copy(__first, __last, __result);
+    }
 
   template<typename _InputIterator, typename _ForwardIterator,
 	   typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     __uninitialized_move_a(_InputIterator __first, _InputIterator __last,
 			   _ForwardIterator __result, _Allocator& __alloc)
@@ -358,6 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _InputIterator, typename _ForwardIterator,
 	   typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     __uninitialized_move_if_noexcept_a(_InputIterator __first,
 				       _InputIterator __last,
@@ -370,6 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Tp, typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     void
     __uninitialized_fill_a(_ForwardIterator __first, _ForwardIterator __last,
 			   const _Tp& __x, _Allocator& __alloc)
@@ -389,15 +419,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Tp, typename _Tp2>
+    _GLIBCXX20_CONSTEXPR
     inline void
     __uninitialized_fill_a(_ForwardIterator __first, _ForwardIterator __last,
 			   const _Tp& __x, allocator<_Tp2>&)
-    { std::uninitialized_fill(__first, __last, __x); }
+    {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return std::__do_uninit_fill(__first, __last, __x);
+#endif
+      std::uninitialized_fill(__first, __last, __x);
+    }
 
   template<typename _ForwardIterator, typename _Size, typename _Tp,
 	   typename _Allocator>
+     _GLIBCXX20_CONSTEXPR
     _ForwardIterator
-    __uninitialized_fill_n_a(_ForwardIterator __first, _Size __n, 
+    __uninitialized_fill_n_a(_ForwardIterator __first, _Size __n,
 			     const _Tp& __x, _Allocator& __alloc)
     {
       _ForwardIterator __cur = __first;
@@ -417,10 +455,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _ForwardIterator, typename _Size, typename _Tp,
 	   typename _Tp2>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
-    __uninitialized_fill_n_a(_ForwardIterator __first, _Size __n, 
+    __uninitialized_fill_n_a(_ForwardIterator __first, _Size __n,
 			     const _Tp& __x, allocator<_Tp2>&)
-    { return std::uninitialized_fill_n(__first, __n, __x); }
+    {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return std::__do_uninit_fill_n(__first, __n, __x);
+#endif
+      return std::uninitialized_fill_n(__first, __n, __x);
+    }
 
 
   // Extensions: __uninitialized_copy_move, __uninitialized_move_copy,
@@ -483,7 +528,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __throw_exception_again;
 	}
     }
-  
+
   // __uninitialized_fill_move
   // Fills [result, mid) with x, and moves [first, last) into
   //  [mid, mid + (last - first)).
@@ -582,6 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_n_1
     {
       template<typename _ForwardIterator, typename _Size>
+	_GLIBCXX20_CONSTEXPR
         static _ForwardIterator
         __uninit_default_n(_ForwardIterator __first, _Size __n)
         {
@@ -604,6 +650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __uninitialized_default_n_1<true>
     {
       template<typename _ForwardIterator, typename _Size>
+	_GLIBCXX20_CONSTEXPR
         static _ForwardIterator
         __uninit_default_n(_ForwardIterator __first, _Size __n)
         {
@@ -639,6 +686,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __uninitialized_default_n
   // Fills [first, first + n) with value-initialized value_types.
   template<typename _ForwardIterator, typename _Size>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     __uninitialized_default_n(_ForwardIterator __first, _Size __n)
     {
@@ -689,8 +737,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Fills [first, first + n) with value_types constructed by the allocator
   // alloc, with no arguments passed to the construct call.
   template<typename _ForwardIterator, typename _Size, typename _Allocator>
-    _ForwardIterator
-    __uninitialized_default_n_a(_ForwardIterator __first, _Size __n, 
+    _GLIBCXX20_CONSTEXPR _ForwardIterator
+    __uninitialized_default_n_a(_ForwardIterator __first, _Size __n,
 				_Allocator& __alloc)
     {
       _ForwardIterator __cur = __first;
@@ -711,8 +759,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __uninitialized_default_n_a specialization for std::allocator,
   // which ignores the allocator and value-initializes the elements.
   template<typename _ForwardIterator, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
-    __uninitialized_default_n_a(_ForwardIterator __first, _Size __n, 
+    __uninitialized_default_n_a(_ForwardIterator __first, _Size __n,
 				allocator<_Tp>&)
     { return std::__uninitialized_default_n(__first, __n); }
 
@@ -1022,6 +1071,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : is_trivial<_Tp> { };
 
   template <typename _Tp, typename _Up>
+    _GLIBCXX20_CONSTEXPR
     inline __enable_if_t<std::__is_bitwise_relocatable<_Tp>::value, _Tp*>
     __relocate_a_1(_Tp* __first, _Tp* __last,
 		   _Tp* __result, allocator<_Up>&) noexcept
@@ -1034,6 +1084,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <typename _InputIterator, typename _ForwardIterator,
 	    typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     __relocate_a_1(_InputIterator __first, _InputIterator __last,
 		   _ForwardIterator __result, _Allocator& __alloc)
@@ -1056,6 +1107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <typename _InputIterator, typename _ForwardIterator,
 	    typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     __relocate_a(_InputIterator __first, _InputIterator __last,
 		 _ForwardIterator __result, _Allocator& __alloc)

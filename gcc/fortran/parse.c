@@ -924,6 +924,7 @@ decode_omp_directive (void)
       matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
+      matcho ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
       matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
@@ -939,6 +940,8 @@ decode_omp_directive (void)
       matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
       matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel loop", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_LOOP);
       matcho ("end parallel masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD);
       matcho ("end parallel masked taskloop", gfc_match_omp_eos_error,
@@ -960,24 +963,29 @@ decode_omp_directive (void)
       matcho ("end sections", gfc_match_omp_end_nowait, ST_OMP_END_SECTIONS);
       matcho ("end single", gfc_match_omp_end_single, ST_OMP_END_SINGLE);
       matcho ("end target data", gfc_match_omp_eos_error, ST_OMP_END_TARGET_DATA);
-      matchs ("end target parallel do simd", gfc_match_omp_eos_error,
+      matchs ("end target parallel do simd", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_PARALLEL_DO_SIMD);
-      matcho ("end target parallel do", gfc_match_omp_eos_error,
+      matcho ("end target parallel do", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_PARALLEL_DO);
-      matcho ("end target parallel", gfc_match_omp_eos_error,
+      matcho ("end target parallel loop", gfc_match_omp_end_nowait,
+	      ST_OMP_END_TARGET_PARALLEL_LOOP);
+      matcho ("end target parallel", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_PARALLEL);
-      matchs ("end target simd", gfc_match_omp_eos_error, ST_OMP_END_TARGET_SIMD);
+      matchs ("end target simd", gfc_match_omp_end_nowait, ST_OMP_END_TARGET_SIMD);
       matchs ("end target teams distribute parallel do simd",
-	      gfc_match_omp_eos_error,
+	      gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD);
-      matcho ("end target teams distribute parallel do", gfc_match_omp_eos_error,
+      matcho ("end target teams distribute parallel do", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO);
-      matchs ("end target teams distribute simd", gfc_match_omp_eos_error,
+      matchs ("end target teams distribute simd", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD);
-      matcho ("end target teams distribute", gfc_match_omp_eos_error,
+      matcho ("end target teams distribute", gfc_match_omp_end_nowait,
 	      ST_OMP_END_TARGET_TEAMS_DISTRIBUTE);
-      matcho ("end target teams", gfc_match_omp_eos_error, ST_OMP_END_TARGET_TEAMS);
-      matcho ("end target", gfc_match_omp_eos_error, ST_OMP_END_TARGET);
+      matcho ("end target teams loop", gfc_match_omp_end_nowait,
+	      ST_OMP_END_TARGET_TEAMS_LOOP);
+      matcho ("end target teams", gfc_match_omp_end_nowait,
+	      ST_OMP_END_TARGET_TEAMS);
+      matcho ("end target", gfc_match_omp_end_nowait, ST_OMP_END_TARGET);
       matcho ("end taskgroup", gfc_match_omp_eos_error, ST_OMP_END_TASKGROUP);
       matchs ("end taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_TASKLOOP_SIMD);
@@ -991,6 +999,7 @@ decode_omp_directive (void)
 	      ST_OMP_END_TEAMS_DISTRIBUTE_SIMD);
       matcho ("end teams distribute", gfc_match_omp_eos_error,
 	      ST_OMP_END_TEAMS_DISTRIBUTE);
+      matcho ("end teams loop", gfc_match_omp_eos_error, ST_OMP_END_TEAMS_LOOP);
       matcho ("end teams", gfc_match_omp_eos_error, ST_OMP_END_TEAMS);
       matcho ("end workshare", gfc_match_omp_end_nowait,
 	      ST_OMP_END_WORKSHARE);
@@ -2553,7 +2562,7 @@ gfc_ascii_statement (gfc_statement st)
       p = "!$OMP END TEAMS DISTRIBUTE SIMD";
       break;
     case ST_OMP_END_TEAMS_LOOP:
-      p = "!$OMP END TEAMS LOP";
+      p = "!$OMP END TEAMS LOOP";
       break;
     case ST_OMP_END_WORKSHARE:
       p = "!$OMP END WORKSHARE";
@@ -6569,7 +6578,7 @@ resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
 
 
 static void
-clean_up_modules (gfc_gsymbol *gsym)
+clean_up_modules (gfc_gsymbol *&gsym)
 {
   if (gsym == NULL)
     return;
@@ -6577,14 +6586,18 @@ clean_up_modules (gfc_gsymbol *gsym)
   clean_up_modules (gsym->left);
   clean_up_modules (gsym->right);
 
-  if (gsym->type != GSYM_MODULE || !gsym->ns)
+  if (gsym->type != GSYM_MODULE)
     return;
 
-  gfc_current_ns = gsym->ns;
-  gfc_derived_types = gfc_current_ns->derived_types;
-  gfc_done_2 ();
-  gsym->ns = NULL;
-  return;
+  if (gsym->ns)
+    {
+      gfc_current_ns = gsym->ns;
+      gfc_derived_types = gfc_current_ns->derived_types;
+      gfc_done_2 ();
+      gsym->ns = NULL;
+    }
+  free (gsym);
+  gsym = NULL;
 }
 
 

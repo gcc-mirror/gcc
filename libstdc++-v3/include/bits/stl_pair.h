@@ -771,6 +771,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct tuple_element<1, pair<_Tp1, _Tp2>>
     { typedef _Tp2 type; };
 
+#if __cplusplus >= 201703L
+  template<typename _Tp1, typename _Tp2>
+    inline constexpr size_t tuple_size_v<pair<_Tp1, _Tp2>> = 2;
+
+  template<typename _Tp1, typename _Tp2>
+    inline constexpr size_t tuple_size_v<const pair<_Tp1, _Tp2>> = 2;
+#endif
+
   /// @cond undocumented
   template<size_t _Int>
     struct __pair_get;

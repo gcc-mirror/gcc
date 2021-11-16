@@ -1116,6 +1116,12 @@ package body Sprint is
                Write_Char (']');
             end if;
 
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
          when N_And_Then =>
             Sprint_Left_Opnd (Node);
             Write_Str_Sloc (" and then ");
@@ -1785,10 +1791,22 @@ package body Sprint is
             if Present (Handled_Statement_Sequence (Node)) then
                Write_Str_With_Col_Check (" do");
                Sprint_Node (Handled_Statement_Sequence (Node));
-               Write_Indent_Str ("end return;");
-            else
-               Write_Indent_Str (";");
+               Write_Indent_Str ("end return");
             end if;
+
+            if Present (Storage_Pool (Node)) then
+               Write_Str_With_Col_Check ("[storage_pool = ");
+               Sprint_Node (Storage_Pool (Node));
+               Write_Char (']');
+            end if;
+
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
+            Write_Char (';');
 
          when N_Delta_Aggregate =>
             Write_Str_With_Col_Check_Sloc ("(");
@@ -1973,6 +1991,19 @@ package body Sprint is
          when N_Free_Statement =>
             Write_Indent_Str_Sloc ("free ");
             Sprint_Node (Expression (Node));
+
+            if Present (Storage_Pool (Node)) then
+               Write_Str_With_Col_Check ("[storage_pool = ");
+               Sprint_Node (Storage_Pool (Node));
+               Write_Char (']');
+            end if;
+
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
             Write_Char (';');
 
          when N_Freeze_Entity =>
@@ -3170,10 +3201,23 @@ package body Sprint is
             if Present (Expression (Node)) then
                Write_Indent_Str_Sloc ("return ");
                Sprint_Node (Expression (Node));
-               Write_Char (';');
             else
-               Write_Indent_Str_Sloc ("return;");
+               Write_Indent_Str_Sloc ("return");
             end if;
+
+            if Present (Storage_Pool (Node)) then
+               Write_Str_With_Col_Check ("[storage_pool = ");
+               Sprint_Node (Storage_Pool (Node));
+               Write_Char (']');
+            end if;
+
+            if Present (Procedure_To_Call (Node)) then
+               Write_Str_With_Col_Check ("[procedure_to_call = ");
+               Sprint_Node (Procedure_To_Call (Node));
+               Write_Char (']');
+            end if;
+
+            Write_Char (';');
 
          when N_Selective_Accept =>
             Write_Indent_Str_Sloc ("select");

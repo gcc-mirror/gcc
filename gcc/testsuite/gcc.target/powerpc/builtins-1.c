@@ -326,7 +326,7 @@ int main ()
 /* { dg-final { scan-assembler-times {\mvpkudus\M} 1 } } */
 /* { dg-final { scan-assembler-times "vperm" 4 } } */
 /* { dg-final { scan-assembler-times "xvrdpi" 2 } } */
-/* { dg-final { scan-assembler-times "xxsel" 10 } } */
+/* { dg-final { scan-assembler-times "xxsel" 5 } } */
 /* { dg-final { scan-assembler-times "xxlxor" 6 } } */
 /* { dg-final { scan-assembler-times "divd" 8  { target lp64 } } } */
 /* { dg-final { scan-assembler-times "divdu" 2  { target lp64 } } } */

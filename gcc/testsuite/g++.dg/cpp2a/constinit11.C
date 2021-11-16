@@ -39,9 +39,9 @@ constinit thread_local const int &r2 = gl;
 constinit const int &r3 // { dg-error "variable .r3. does not have a constant initializer" }
   = foo (); // { dg-error "call to non-.constexpr. function" }
 constinit const literal &r4 = 42;
-constinit const nonliteral &r5 // { dg-error "variable .r5. does not have a constant initializer" }
-  = 42; // { dg-error "call to non-.constexpr. function" }
-constinit const int &r6 = nonliteral(2).m; // { dg-error "variable .r6. does not have a constant initializer|call to non-.constexpr. function" }
+constinit const nonliteral &r5 // { dg-error "variable .r5. does not have a constant initializer" "" { target { ! implicit_constexpr } } }
+  = 42; // { dg-error "call to non-.constexpr. function" "" { target { ! implicit_constexpr } } }
+constinit const int &r6 = nonliteral(2).m; // { dg-error "variable .r6. does not have a constant initializer|call to non-.constexpr. function" "" { target { ! implicit_constexpr } } }
 
 constinit pod p1;
 constinit pod p2 = { 42 };
@@ -64,8 +64,8 @@ constinit thread_local literal l11{};
 pod S::p;
 constinit pod S::pc(S::p); // { dg-error "variable .S::pc. does not have a constant initializer|not usable" }
 
-constinit const nonliteral S::n(42); // { dg-error "variable .S::n. does not have a constant initializer|call to non-.constexpr. function" }
-constinit int n1 = nonliteral{42}.m; // { dg-error "variable .n1. does not have a constant initializer|temporary of non-literal type" }
+constinit const nonliteral S::n(42); // { dg-error "variable .S::n. does not have a constant initializer|call to non-.constexpr. function" "" { target { ! implicit_constexpr } } }
+constinit int n1 = nonliteral{42}.m; // { dg-error "variable .n1. does not have a constant initializer|temporary of non-literal type" "" { target { ! implicit_constexpr } } }
 constinit int n2 = literal{42}.m;
 
 void

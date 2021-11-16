@@ -720,6 +720,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (pdt_len, pointer)
   conf (pdt_len, dimension)
   conf (pdt_len, codimension)
+  conf (pdt_len, pdt_kind)
 
   if (attr->access == ACCESS_PRIVATE)
     {
@@ -2609,7 +2610,7 @@ free_components (gfc_component *p)
       if (p->param_list)
 	gfc_free_actual_arglist (p->param_list);
       free (p->tb);
-
+      p->tb = NULL;
       free (p);
     }
 }
@@ -3066,7 +3067,7 @@ set_symbol_common_block (gfc_symbol *sym, gfc_common_head *common_block)
 /* Remove a gfc_symbol structure and everything it points to.  */
 
 void
-gfc_free_symbol (gfc_symbol *sym)
+gfc_free_symbol (gfc_symbol *&sym)
 {
 
   if (sym == NULL)
@@ -3096,13 +3097,14 @@ gfc_free_symbol (gfc_symbol *sym)
     gfc_free_actual_arglist (sym->param_list);
 
   free (sym);
+  sym = NULL;
 }
 
 
 /* Decrease the reference counter and free memory when we reach zero.  */
 
 void
-gfc_release_symbol (gfc_symbol *sym)
+gfc_release_symbol (gfc_symbol *&sym)
 {
   if (sym == NULL)
     return;
@@ -3829,9 +3831,9 @@ free_tb_tree (gfc_symtree *t)
   free_tb_tree (t->left);
   free_tb_tree (t->right);
 
-  /* TODO: Free type-bound procedure structs themselves; probably needs some
-     sort of ref-counting mechanism.  */
-
+  /* TODO: Free type-bound procedure u.generic  */
+  free (t->n.tb);
+  t->n.tb = NULL;
   free (t);
 }
 
@@ -3984,7 +3986,7 @@ gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
 /* Free the charlen list from cl to end (end is not freed).
    Free the whole list if end is NULL.  */
 
-void
+static void
 gfc_free_charlen (gfc_charlen *cl, gfc_charlen *end)
 {
   gfc_charlen *cl2;
@@ -4021,7 +4023,7 @@ free_entry_list (gfc_entry_list *el)
    taken care of when a specific name is freed.  */
 
 void
-gfc_free_namespace (gfc_namespace *ns)
+gfc_free_namespace (gfc_namespace *&ns)
 {
   gfc_namespace *p, *q;
   int i;
@@ -4072,6 +4074,7 @@ gfc_free_namespace (gfc_namespace *ns)
 
   p = ns->contained;
   free (ns);
+  ns = NULL;
 
   /* Recursively free any contained namespaces.  */
   while (p != NULL)
@@ -5102,23 +5105,6 @@ gfc_get_derived_super_type (gfc_symbol* derived)
     return gfc_find_dt_in_generic (derived->components->ts.u.derived);
 
   return derived->components->ts.u.derived;
-}
-
-
-/* Get the ultimate super-type of a given derived type.  */
-
-gfc_symbol*
-gfc_get_ultimate_derived_super_type (gfc_symbol* derived)
-{
-  if (!derived->attr.extension)
-    return NULL;
-
-  derived = gfc_get_derived_super_type (derived);
-
-  if (derived->attr.extension)
-    return gfc_get_ultimate_derived_super_type (derived);
-  else
-    return derived;
 }
 
 

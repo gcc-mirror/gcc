@@ -971,6 +971,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			     spc, flags, false);
 	  pp_right_bracket (pp);
 	}
+      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+	  && OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause))
+	pp_string (pp, "[implicit]");
       pp_right_paren (pp);
       break;
 
@@ -994,7 +997,13 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_NUM_TEAMS:
       pp_string (pp, "num_teams(");
-      dump_generic_node (pp, OMP_CLAUSE_NUM_TEAMS_EXPR (clause),
+      if (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (clause))
+	{
+	  dump_generic_node (pp, OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (clause),
+			     spc, flags, false);
+	  pp_colon (pp);
+	}
+      dump_generic_node (pp, OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
       break;

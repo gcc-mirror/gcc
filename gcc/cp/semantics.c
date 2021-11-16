@@ -3079,6 +3079,22 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   return result;
 }
 
+/* Return true if CONSTRUCTOR EXPR after pack expansion could have no
+   elements.  */
+
+static bool
+maybe_zero_constructor_nelts (tree expr)
+{
+  if (CONSTRUCTOR_NELTS (expr) == 0)
+    return true;
+  if (!processing_template_decl)
+    return false;
+  for (constructor_elt &elt : CONSTRUCTOR_ELTS (expr))
+    if (!PACK_EXPANSION_P (elt.value))
+      return false;
+  return true;
+}
+
 /* Finish a compound-literal expression or C++11 functional cast with aggregate
    initializer.  TYPE is the type to which the CONSTRUCTOR in COMPOUND_LITERAL
    is being cast.  */
@@ -3104,9 +3120,20 @@ finish_compound_literal (tree type, tree compound_literal,
 
   if (!TYPE_OBJ_P (type))
     {
-      if (complain & tf_error)
-	error ("compound literal of non-object type %qT", type);
-      return error_mark_node;
+      /* DR2351 */
+      if (VOID_TYPE_P (type) && CONSTRUCTOR_NELTS (compound_literal) == 0)
+	return void_node;
+      else if (VOID_TYPE_P (type)
+	       && processing_template_decl
+	       && maybe_zero_constructor_nelts (compound_literal))
+	/* If there are only packs in compound_literal, it could
+	   be void{} after pack expansion.  */;
+      else
+	{
+	  if (complain & tf_error)
+	    error ("compound literal of non-object type %qT", type);
+	  return error_mark_node;
+	}
     }
 
   if (template_placeholder_p (type))
@@ -7201,6 +7228,53 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      OMP_CLAUSE_OPERAND (c, 0) = t;
 	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+	      && OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+	      && !remove)
+	    {
+	      t = OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c);
+	      if (t == error_mark_node)
+		remove = true;
+	      else if (!type_dependent_expression_p (t)
+		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qs expression must be integral",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      else
+		{
+		  t = mark_rvalue_use (t);
+		  if (!processing_template_decl)
+		    {
+		      t = maybe_constant_value (t);
+		      if (TREE_CODE (t) == INTEGER_CST
+			  && tree_int_cst_sgn (t) != 1)
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%qs value must be positive",
+				      omp_clause_code_name
+				      [OMP_CLAUSE_CODE (c)]);
+			  t = NULL_TREE;
+			}
+		      else
+			t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		      tree upper = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c);
+		      if (t
+			  && TREE_CODE (t) == INTEGER_CST
+			  && TREE_CODE (upper) == INTEGER_CST
+			  && tree_int_cst_lt (upper, t))
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<num_teams%> lower bound %qE bigger "
+				      "than upper bound %qE", t, upper);
+			  t = NULL_TREE;
+			}
+		    }
+		  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = t;
+		}
+	    }
 	  break;
 
 	case OMP_CLAUSE_SCHEDULE:
@@ -9211,7 +9285,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 		TREE_OPERAND (cond, 1), iter);
       return true;
     }
-  if (!c_omp_check_loop_iv_exprs (locus, orig_declv, i,
+  if (!c_omp_check_loop_iv_exprs (locus, code, orig_declv, i,
 				  TREE_VEC_ELT (declv, i), NULL_TREE,
 				  cond, cp_walk_subtrees))
     return true;
@@ -9597,7 +9671,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       tree orig_init;
       FOR_EACH_VEC_ELT (*orig_inits, i, orig_init)
 	if (orig_init
-	    && !c_omp_check_loop_iv_exprs (locus,
+	    && !c_omp_check_loop_iv_exprs (locus, code,
 					   orig_declv ? orig_declv : declv, i,
 					   TREE_VEC_ELT (declv, i), orig_init,
 					   NULL_TREE, cp_walk_subtrees))
@@ -11308,7 +11382,8 @@ is_this_parameter (tree t)
 {
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
-  gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t)
+  gcc_assert (TREE_CODE (t) == PARM_DECL
+	      || (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
 	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
   return true;
 }

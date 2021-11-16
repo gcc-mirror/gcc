@@ -2203,6 +2203,9 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " %soperator_delete",
 	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");
 
+  if (DECL_STATIC_CHAIN (decl))
+    fprintf (f, " static_chain");
+
   fprintf (f, "\n");
 
   if (thunk)
@@ -2606,6 +2609,53 @@ cgraph_node::set_malloc_flag (bool malloc_p)
 	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
 	  if (!malloc_p || alias->get_availability () > AVAIL_INTERPOSABLE)
 	    set_malloc_flag_1 (alias, malloc_p, &changed);
+	}
+    }
+  return changed;
+}
+
+/* Worker to set noreturng flag.  */
+static void
+set_noreturn_flag_1 (cgraph_node *node, bool noreturn_p, bool *changed)
+{
+  if (noreturn_p && !TREE_THIS_VOLATILE (node->decl))
+    {
+      TREE_THIS_VOLATILE (node->decl) = true;
+      *changed = true;
+    }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+      if (!noreturn_p || alias->get_availability () > AVAIL_INTERPOSABLE)
+	set_noreturn_flag_1 (alias, noreturn_p, changed);
+    }
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk
+	&& (!noreturn_p || e->caller->get_availability () > AVAIL_INTERPOSABLE))
+      set_noreturn_flag_1 (e->caller, noreturn_p, changed);
+}
+
+/* Set TREE_THIS_VOLATILE on NODE's decl and on NODE's aliases if any.  */
+
+bool
+cgraph_node::set_noreturn_flag (bool noreturn_p)
+{
+  bool changed = false;
+
+  if (!noreturn_p || get_availability () > AVAIL_INTERPOSABLE)
+    set_noreturn_flag_1 (this, noreturn_p, &changed);
+  else
+    {
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	{
+	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+	  if (!noreturn_p || alias->get_availability () > AVAIL_INTERPOSABLE)
+	    set_noreturn_flag_1 (alias, noreturn_p, &changed);
 	}
     }
   return changed;

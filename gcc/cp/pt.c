@@ -1831,13 +1831,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
     case CONSTRUCTOR:
       {
-	tree field, value;
-	unsigned i;
 	iterative_hash_template_arg (TREE_TYPE (arg), val);
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
+	for (auto &e: CONSTRUCTOR_ELTS (arg))
 	  {
-	    val = iterative_hash_template_arg (field, val);
-	    val = iterative_hash_template_arg (value, val);
+	    val = iterative_hash_template_arg (e.index, val);
+	    val = iterative_hash_template_arg (e.value, val);
 	  }
 	return val;
       }
@@ -5879,12 +5877,19 @@ push_template_decl (tree decl, bool is_friend)
       if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
 	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs (is_typedef_decl (decl)
-					   ? DECL_ORIGINAL_TYPE (decl)
-					   : TREE_TYPE (decl)))
+  else
     {
-      TREE_TYPE (decl) = error_mark_node;
-      return error_mark_node;
+      if (check_for_bare_parameter_packs (is_typedef_decl (decl)
+					  ? DECL_ORIGINAL_TYPE (decl)
+					  : TREE_TYPE (decl)))
+	{
+	  TREE_TYPE (decl) = error_mark_node;
+	  return error_mark_node;
+	}
+
+      if (is_partial && VAR_P (decl)
+	  && check_for_bare_parameter_packs (DECL_TI_ARGS (decl)))
+	return error_mark_node;
     }
 
   if (is_partial)
@@ -7004,9 +7009,8 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 
     case CONSTRUCTOR:
       {
-	unsigned i; tree elt;
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), i, elt)
-	  if (invalid_tparm_referent_p (TREE_TYPE (elt), elt, complain))
+	for (auto &e: CONSTRUCTOR_ELTS (expr))
+	  if (invalid_tparm_referent_p (TREE_TYPE (e.value), e.value, complain))
 	    return true;
       }
       break;
@@ -17433,6 +17437,13 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
 				      in_decl, iterator_cache);
 	  break;
+	case OMP_CLAUSE_NUM_TEAMS:
+	  if (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (oc))
+	    OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (nc)
+	      = tsubst_expr (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (oc), args,
+			     complain, in_decl,
+			     /*integral_constant_expression_p=*/false);
+	  /* FALLTHRU */
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
@@ -17441,7 +17452,6 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
-	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
@@ -18944,31 +18954,32 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	{
 	  tree teams = cp_walk_tree (&stmt, tsubst_find_omp_teams, NULL, NULL);
 	  if (teams)
-	    {
-	      /* For combined target teams, ensure the num_teams and
-		 thread_limit clause expressions are evaluated on the host,
-		 before entering the target construct.  */
-	      tree c;
-	      for (c = OMP_TEAMS_CLAUSES (teams);
-		   c; c = OMP_CLAUSE_CHAIN (c))
-		if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
-		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
-		    && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) != INTEGER_CST)
-		  {
-		    tree expr = OMP_CLAUSE_OPERAND (c, 0);
-		    expr = force_target_expr (TREE_TYPE (expr), expr, tf_none);
-		    if (expr == error_mark_node)
-		      continue;
-		    tmp = TARGET_EXPR_SLOT (expr);
-		    add_stmt (expr);
-		    OMP_CLAUSE_OPERAND (c, 0) = expr;
-		    tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (tc) = tmp;
-		    OMP_CLAUSE_CHAIN (tc) = OMP_TARGET_CLAUSES (t);
-		    OMP_TARGET_CLAUSES (t) = tc;
-		  }
-	    }
+	    /* For combined target teams, ensure the num_teams and
+	       thread_limit clause expressions are evaluated on the host,
+	       before entering the target construct.  */
+	    for (tree c = OMP_TEAMS_CLAUSES (teams);
+		 c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
+		for (int i = 0;
+		     i <= (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS); ++i)
+		  if (OMP_CLAUSE_OPERAND (c, i)
+		      && TREE_CODE (OMP_CLAUSE_OPERAND (c, i)) != INTEGER_CST)
+		    {
+		      tree expr = OMP_CLAUSE_OPERAND (c, i);
+		      expr = force_target_expr (TREE_TYPE (expr), expr,
+						tf_none);
+		      if (expr == error_mark_node)
+			continue;
+		      tmp = TARGET_EXPR_SLOT (expr);
+		      add_stmt (expr);
+		      OMP_CLAUSE_OPERAND (c, i) = expr;
+		      tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_FIRSTPRIVATE);
+		      OMP_CLAUSE_DECL (tc) = tmp;
+		      OMP_CLAUSE_CHAIN (tc) = OMP_TARGET_CLAUSES (t);
+		      OMP_TARGET_CLAUSES (t) = tc;
+		    }
 	}
       add_stmt (t);
       break;
@@ -23605,8 +23616,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      we're dealing with a type. */
   if (BRACE_ENCLOSED_INITIALIZER_P (arg))
     {
-      tree elt, elttype;
-      unsigned i;
+      tree elttype;
       tree orig_parm = parm;
 
       if (!is_std_init_list (parm)
@@ -23633,8 +23643,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	/* If ELTTYPE has no deducible template parms, skip deduction from
 	   the list elements.  */;
       else
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
+	for (auto &e: CONSTRUCTOR_ELTS (arg))
 	  {
+	    tree elt = e.value;
 	    int elt_strict = strict;
 
 	    if (elt == error_mark_node)
@@ -27420,14 +27431,9 @@ type_dependent_expression_p (tree expression)
 
   if (BRACE_ENCLOSED_INITIALIZER_P (expression))
     {
-      tree elt;
-      unsigned i;
-
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), i, elt)
-	{
-	  if (type_dependent_expression_p (elt))
-	    return true;
-	}
+      for (auto &elt : CONSTRUCTOR_ELTS (expression))
+	if (type_dependent_expression_p (elt.value))
+	  return true;
       return false;
     }
 
@@ -28560,7 +28566,7 @@ static int
 extract_autos_r (tree t, void *data)
 {
   hash_table<auto_hash> &hash = *(hash_table<auto_hash>*)data;
-  if (is_auto (t))
+  if (is_auto (t) && !template_placeholder_p (t))
     {
       /* All the autos were built with index 0; fix that up now.  */
       tree *p = hash.find_slot (t, INSERT);
@@ -28594,10 +28600,8 @@ extract_autos (tree type)
   for_each_template_parm (type, extract_autos_r, &hash, &visited, true);
 
   tree tree_vec = make_tree_vec (hash.elements());
-  for (hash_table<auto_hash>::iterator iter = hash.begin();
-       iter != hash.end(); ++iter)
+  for (tree elt : hash)
     {
-      tree elt = *iter;
       unsigned i = TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (elt));
       TREE_VEC_ELT (tree_vec, i)
 	= build_tree_list (NULL_TREE, TYPE_NAME (elt));
@@ -29837,7 +29841,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
       tree parms = build_tree_list (NULL_TREE, type);
       tree tparms;
 
-      if (flag_concepts)
+      if (flag_concepts_ts)
 	tparms = extract_autos (type);
       else
 	{
@@ -30025,7 +30029,7 @@ type_uses_auto (tree type)
 {
   if (type == NULL_TREE)
     return NULL_TREE;
-  else if (flag_concepts)
+  else if (flag_concepts_ts)
     {
       /* The Concepts TS allows multiple autos in one type-specifier; just
 	 return the first one we find, do_auto_deduction will collect all of
@@ -30048,6 +30052,11 @@ type_uses_auto (tree type)
 bool
 check_auto_in_tmpl_args (tree tmpl, tree args)
 {
+  if (!flag_concepts_ts)
+    /* Only the concepts TS allows 'auto' as a type-id; it'd otherwise
+       have already been rejected by the parser more generally.  */
+    return false;
+
   /* If there were previous errors, nevermind.  */
   if (!args || TREE_CODE (args) != TREE_VEC)
     return false;
@@ -30057,11 +30066,10 @@ check_auto_in_tmpl_args (tree tmpl, tree args)
      We'll only be able to tell during template substitution, so we
      expect to be called again then.  If concepts are enabled and we
      know we have a type, we're ok.  */
-  if (flag_concepts
-      && (identifier_p (tmpl)
-	  || (DECL_P (tmpl)
-	      &&  (DECL_TYPE_TEMPLATE_P (tmpl)
-		   || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)))))
+  if (identifier_p (tmpl)
+      || (DECL_P (tmpl)
+	  &&  (DECL_TYPE_TEMPLATE_P (tmpl)
+	       || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))))
     return false;
 
   /* Quickly search for any occurrences of auto; usually there won't

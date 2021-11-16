@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-array.h"
 #include "trans-const.h"
-#include "intrinsic.h" 		/* For gfc_resolve_index_func.  */
 /* Only for gfc_trans_code.  Shouldn't need to include this.  */
 #include "trans-stmt.h"
 #include "gomp-constants.h"
@@ -2267,28 +2266,7 @@ module_sym:
 		{
 		  /* All specific intrinsics take less than 5 arguments.  */
 		  gcc_assert (isym->formal->next->next->next->next == NULL);
-		  if (isym->resolve.f1m == gfc_resolve_index_func)
-		    {
-		      /* gfc_resolve_index_func is special because it takes a
-			 gfc_actual_arglist instead of individual arguments.  */
-		      gfc_actual_arglist *a, *n;
-		      int i;
-		      a = gfc_get_actual_arglist();
-		      n = a;
-
-		      for (i = 0; i < 4; i++)
-			{
-			  n->next = gfc_get_actual_arglist();
-			  n = n->next;
-			}
-
-		      a->expr = &argexpr;
-		      isym->resolve.f1m (&e, a);
-		      a->expr = NULL;
-		      gfc_free_actual_arglist (a);
-		    }
-		  else
-		    isym->resolve.f4 (&e, &argexpr, NULL, NULL, NULL);
+		  isym->resolve.f4 (&e, &argexpr, NULL, NULL, NULL);
 		}
 	    }
 	}
@@ -6668,7 +6646,7 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
   stmtblock_t block;
   gfc_init_block (&block);
   tree cfi = build_fold_indirect_ref_loc (input_location, cfi_desc);
-  tree rank, idx, etype, tmp, tmp2, size_var = NULL_TREE;
+  tree idx, etype, tmp, tmp2, size_var = NULL_TREE, rank = NULL_TREE;
   bool do_copy_inout = false;
 
   /* When allocatable + intent out, free the cfi descriptor.  */
@@ -6835,6 +6813,13 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
 			       build_int_cst (gfc_charlen_type_node,
 					      sym->ts.kind));
       gfc_add_modify (&block, sym->ts.u.cl->backend_decl, tmp);
+    }
+
+  if (sym->ts.type == BT_CHARACTER
+      && !INTEGER_CST_P (sym->ts.u.cl->backend_decl))
+    {
+      gfc_conv_string_length (sym->ts.u.cl, NULL, init);
+      gfc_trans_vla_type_sizes (sym, init);
     }
 
   /* gfc->data = cfi->base_addr - or for scalars: gfc = cfi->base_addr.

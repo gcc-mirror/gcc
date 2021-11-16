@@ -847,7 +847,7 @@ package body Checks is
             else
                Error_Msg_N
                  ("\address value may be incompatible with alignment of "
-                  & "object?X?", AC);
+                  & "object?.x?", AC);
             end if;
          end if;
 
@@ -1388,6 +1388,8 @@ package body Checks is
 
          if Nkind (N) = N_Aggregate
            and then No (Expressions (N))
+           and then Nkind (First (Component_Associations (N))) =
+             N_Component_Association
            and then Nkind
             (First (Choices (First (Component_Associations (N)))))
               = N_Others_Choice
@@ -6676,8 +6678,9 @@ package body Checks is
       elsif not Comes_From_Source (Expr)
         and then not
           (Nkind (Expr) = N_Identifier
-            and then Present (Renamed_Object (Entity (Expr)))
-            and then Comes_From_Source (Renamed_Object (Entity (Expr))))
+            and then Present (Renamed_Entity_Or_Object (Entity (Expr)))
+            and then
+              Comes_From_Source (Renamed_Entity_Or_Object (Entity (Expr))))
         and then not Force_Validity_Checks
         and then (Nkind (Expr) /= N_Unchecked_Type_Conversion
                     or else Kill_Range_Check (Expr))

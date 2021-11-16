@@ -44,6 +44,7 @@ public:
   tree vrp_evaluate_conditional_warnv_with_ops (gimple *stmt, enum tree_code,
 						tree, tree, bool,
 						bool *, bool *);
+  bool simplify_casted_cond (gcond *);
 
 private:
   bool simplify_truth_ops_using_ranges (gimple_stmt_iterator *, gimple *);

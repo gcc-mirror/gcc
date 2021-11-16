@@ -116,10 +116,14 @@ static struct {
   unsigned HOST_WIDE_INT nonoverlapping_refs_since_match_p_may_alias;
   unsigned HOST_WIDE_INT nonoverlapping_refs_since_match_p_must_overlap;
   unsigned HOST_WIDE_INT nonoverlapping_refs_since_match_p_no_alias;
+  unsigned HOST_WIDE_INT stmt_kills_ref_p_no;
+  unsigned HOST_WIDE_INT stmt_kills_ref_p_yes;
   unsigned HOST_WIDE_INT modref_use_may_alias;
   unsigned HOST_WIDE_INT modref_use_no_alias;
   unsigned HOST_WIDE_INT modref_clobber_may_alias;
   unsigned HOST_WIDE_INT modref_clobber_no_alias;
+  unsigned HOST_WIDE_INT modref_kill_no;
+  unsigned HOST_WIDE_INT modref_kill_yes;
   unsigned HOST_WIDE_INT modref_tests;
   unsigned HOST_WIDE_INT modref_baseptr_tests;
 } alias_stats;
@@ -146,6 +150,12 @@ dump_alias_stats (FILE *s)
 	   alias_stats.call_may_clobber_ref_p_no_alias,
 	   alias_stats.call_may_clobber_ref_p_no_alias
 	   + alias_stats.call_may_clobber_ref_p_may_alias);
+  fprintf (s, "  stmt_kills_ref_p: "
+	   HOST_WIDE_INT_PRINT_DEC" kills, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n",
+	   alias_stats.stmt_kills_ref_p_yes + alias_stats.modref_kill_yes,
+	   alias_stats.stmt_kills_ref_p_yes + alias_stats.modref_kill_yes
+	   + alias_stats.stmt_kills_ref_p_no + alias_stats.modref_kill_no);
   fprintf (s, "  nonoverlapping_component_refs_p: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
@@ -169,6 +179,12 @@ dump_alias_stats (FILE *s)
 	   + alias_stats.aliasing_component_refs_p_may_alias);
   dump_alias_stats_in_alias_c (s);
   fprintf (s, "\nModref stats:\n");
+  fprintf (s, "  modref kill: "
+	   HOST_WIDE_INT_PRINT_DEC" kills, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n",
+	   alias_stats.modref_kill_yes,
+	   alias_stats.modref_kill_yes
+	   + alias_stats.modref_kill_no);
   fprintf (s, "  modref use: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
@@ -782,7 +798,7 @@ ao_ref_alias_ptr_type (ao_ref *ref)
    The access is assumed to be only to or after of the pointer target adjusted
    by the offset, not before it (even in the case RANGE_KNOWN is false).  */
 
-static void
+void
 ao_ref_init_from_ptr_and_range (ao_ref *ref, tree ptr,
 				bool range_known,
 				poly_int64 offset,
@@ -2535,13 +2551,10 @@ refs_output_dependent_p (tree store1, tree store2)
    IF TBAA_P is true, use TBAA oracle.  */
 
 static bool
-modref_may_conflict (const gimple *stmt,
+modref_may_conflict (const gcall *stmt,
 		     modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
 {
   alias_set_type base_set, ref_set;
-  modref_base_node <alias_set_type> *base_node;
-  modref_ref_node <alias_set_type> *ref_node;
-  size_t i, j, k;
 
   if (tt->every_base)
     return true;
@@ -2554,7 +2567,7 @@ modref_may_conflict (const gimple *stmt,
   ref_set = ao_ref_alias_set (ref);
 
   int num_tests = 0, max_tests = param_modref_max_tests;
-  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
+  for (auto base_node : tt->bases)
     {
       if (tbaa_p && flag_strict_aliasing)
 	{
@@ -2569,7 +2582,7 @@ modref_may_conflict (const gimple *stmt,
       if (base_node->every_ref)
 	return true;
 
-      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+      for (auto ref_node : base_node->refs)
 	{
 	  /* Do not repeat same test as before.  */
 	  if ((ref_set != base_set || base_node->base != ref_node->ref)
@@ -2583,62 +2596,43 @@ modref_may_conflict (const gimple *stmt,
 	      num_tests++;
 	    }
 
-	  /* TBAA checks did not disambiguate,  try to use base pointer, for
-	     that we however need to have ref->ref or ref->base.  */
-	  if (ref_node->every_access || (!ref->ref && !ref->base))
+	  if (ref_node->every_access)
 	    return true;
 
-	  modref_access_node *access_node;
-	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+	  /* TBAA checks did not disambiguate, try individual accesses.  */
+	  for (auto access_node : ref_node->accesses)
 	    {
 	      if (num_tests >= max_tests)
 		return true;
 
-	      if (access_node->parm_index == -1
-		  || (unsigned)access_node->parm_index
-		     >= gimple_call_num_args (stmt))
+	      tree arg = access_node.get_call_arg (stmt);
+	      if (!arg)
 		return true;
 
 	      alias_stats.modref_baseptr_tests++;
 
-	      tree arg = gimple_call_arg (stmt, access_node->parm_index);
-
 	      if (integer_zerop (arg) && flag_delete_null_pointer_checks)
 		continue;
 
+	      /* PTA oracle will be unhapy of arg is not an pointer.  */
 	      if (!POINTER_TYPE_P (TREE_TYPE (arg)))
 		return true;
 
-	      /* ao_ref_init_from_ptr_and_range assumes that memory access
-		 starts by the pointed to location.  If we did not track the
-		 offset it is possible that it starts before the actual
-		 pointer.  */
-	      if (!access_node->parm_offset_known)
+	      /* If we don't have base pointer, give up.  */
+	      if (!ref->ref && !ref->base)
+		continue;
+
+	      ao_ref ref2;
+	      if (access_node.get_ao_ref (stmt, &ref2))
 		{
-		  if (ptr_deref_may_alias_ref_p_1 (arg, ref))
+		  ref2.ref_alias_set = ref_node->ref;
+		  ref2.base_alias_set = base_node->base;
+		  if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
 		    return true;
 		}
-	      else
-		{
-		  ao_ref ref2;
-		  poly_offset_int off = (poly_offset_int)access_node->offset
-			+ ((poly_offset_int)access_node->parm_offset
-			   << LOG2_BITS_PER_UNIT);
-		  poly_int64 off2;
-		  if (off.to_shwi (&off2))
-		    {
-		      ao_ref_init_from_ptr_and_range
-			     (&ref2, arg, true, off2,
-			      access_node->size,
-			      access_node->max_size);
-		      ref2.ref_alias_set = ref_set;
-		      ref2.base_alias_set = base_set;
-		      if (refs_may_alias_p_1 (&ref2, ref, tbaa_p))
-			return true;
-		    }
-		  else if (ptr_deref_may_alias_ref_p_1 (arg, ref))
-		    return true;
-		}
+	      else if (ptr_deref_may_alias_ref_p_1 (arg, ref))
+		return true;
+
 	      num_tests++;
 	    }
 	}
@@ -2771,7 +2765,7 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
       if (node && node->binds_to_current_def_p ())
 	{
 	  modref_summary *summary = get_modref_function_summary (node);
-	  if (summary)
+	  if (summary && !summary->calls_interposable)
 	    {
 	      if (!modref_may_conflict (call, summary->loads, ref, tbaa_p))
 		{
@@ -2870,7 +2864,7 @@ process_args:
       tree op = gimple_call_arg (call, i);
       int flags = gimple_call_arg_flags (call, i);
 
-      if (flags & (EAF_UNUSED | EAF_NOREAD))
+      if (flags & (EAF_UNUSED | EAF_NO_DIRECT_READ))
 	continue;
 
       if (TREE_CODE (op) == WITH_SIZE_EXPR)
@@ -3242,6 +3236,51 @@ same_addr_size_stores_p (tree base1, poly_int64 offset1, poly_int64 size1,
 	  && known_eq (wi::to_poly_offset (DECL_SIZE (obj)), size1));
 }
 
+/* Return true if REF is killed by an store described by
+   BASE, OFFSET, SIZE and MAX_SIZE.  */
+
+static bool
+store_kills_ref_p (tree base, poly_int64 offset, poly_int64 size,
+		   poly_int64 max_size, ao_ref *ref)
+{
+  poly_int64 ref_offset = ref->offset;
+  /* We can get MEM[symbol: sZ, index: D.8862_1] here,
+     so base == ref->base does not always hold.  */
+  if (base != ref->base)
+    {
+      /* Try using points-to info.  */
+      if (same_addr_size_stores_p (base, offset, size, max_size, ref->base,
+				   ref->offset, ref->size, ref->max_size))
+	return true;
+
+      /* If both base and ref->base are MEM_REFs, only compare the
+	 first operand, and if the second operand isn't equal constant,
+	 try to add the offsets into offset and ref_offset.  */
+      if (TREE_CODE (base) == MEM_REF && TREE_CODE (ref->base) == MEM_REF
+	  && TREE_OPERAND (base, 0) == TREE_OPERAND (ref->base, 0))
+	{
+	  if (!tree_int_cst_equal (TREE_OPERAND (base, 1),
+				   TREE_OPERAND (ref->base, 1)))
+	    {
+	      poly_offset_int off1 = mem_ref_offset (base);
+	      off1 <<= LOG2_BITS_PER_UNIT;
+	      off1 += offset;
+	      poly_offset_int off2 = mem_ref_offset (ref->base);
+	      off2 <<= LOG2_BITS_PER_UNIT;
+	      off2 += ref_offset;
+	      if (!off1.to_shwi (&offset) || !off2.to_shwi (&ref_offset))
+		size = -1;
+	    }
+	}
+      else
+	size = -1;
+    }
+  /* For a must-alias check we need to be able to constrain
+     the access properly.  */
+  return (known_eq (size, max_size)
+	  && known_subrange_p (ref_offset, ref->max_size, offset, size));
+}
+
 /* If STMT kills the memory reference REF return true, otherwise
    return false.  */
 
@@ -3315,7 +3354,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		      && operand_equal_p (lhs, base,
 					  OEP_ADDRESS_OF
 					  | OEP_MATCH_SIDE_EFFECTS))))
-	    return true;
+	    {
+	      ++alias_stats.stmt_kills_ref_p_yes;
+	      return true;
+	    }
 	}
 
       /* Now look for non-literal equal bases with the restriction of
@@ -3323,52 +3365,72 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
       /* For a must-alias check we need to be able to constrain
 	 the access properly.  */
       if (!ref->max_size_known_p ())
-	return false;
-      poly_int64 size, offset, max_size, ref_offset = ref->offset;
+	{
+	  ++alias_stats.stmt_kills_ref_p_no;
+	  return false;
+	}
+      poly_int64 size, offset, max_size;
       bool reverse;
       tree base = get_ref_base_and_extent (lhs, &offset, &size, &max_size,
 					   &reverse);
-      /* We can get MEM[symbol: sZ, index: D.8862_1] here,
-	 so base == ref->base does not always hold.  */
-      if (base != ref->base)
+      if (store_kills_ref_p (base, offset, size, max_size, ref))
 	{
-	  /* Try using points-to info.  */
-	  if (same_addr_size_stores_p (base, offset, size, max_size, ref->base,
-				       ref->offset, ref->size, ref->max_size))
-	    return true;
-
-	  /* If both base and ref->base are MEM_REFs, only compare the
-	     first operand, and if the second operand isn't equal constant,
-	     try to add the offsets into offset and ref_offset.  */
-	  if (TREE_CODE (base) == MEM_REF && TREE_CODE (ref->base) == MEM_REF
-	      && TREE_OPERAND (base, 0) == TREE_OPERAND (ref->base, 0))
-	    {
-	      if (!tree_int_cst_equal (TREE_OPERAND (base, 1),
-				       TREE_OPERAND (ref->base, 1)))
-		{
-		  poly_offset_int off1 = mem_ref_offset (base);
-		  off1 <<= LOG2_BITS_PER_UNIT;
-		  off1 += offset;
-		  poly_offset_int off2 = mem_ref_offset (ref->base);
-		  off2 <<= LOG2_BITS_PER_UNIT;
-		  off2 += ref_offset;
-		  if (!off1.to_shwi (&offset) || !off2.to_shwi (&ref_offset))
-		    size = -1;
-		}
-	    }
-	  else
-	    size = -1;
+	  ++alias_stats.stmt_kills_ref_p_yes;
+	  return true;
 	}
-      /* For a must-alias check we need to be able to constrain
-	 the access properly.  */
-      if (known_eq (size, max_size)
-	  && known_subrange_p (ref_offset, ref->max_size, offset, size))
-	return true;
     }
 
   if (is_gimple_call (stmt))
     {
       tree callee = gimple_call_fndecl (stmt);
+      struct cgraph_node *node;
+      modref_summary *summary;
+
+      /* Try to disambiguate using modref summary.  Modref records a vector
+	 of stores with known offsets relative to function parameters that must
+	 happen every execution of function.  Find if we have a matching
+	 store and verify that function can not use the value.  */
+      if (callee != NULL_TREE
+	  && (node = cgraph_node::get (callee)) != NULL
+	  && node->binds_to_current_def_p ()
+	  && (summary = get_modref_function_summary (node)) != NULL
+	  && summary->kills.length ()
+	  && (!cfun->can_throw_non_call_exceptions
+	      || !stmt_can_throw_internal (cfun, stmt)))
+	{
+	  for (auto kill : summary->kills)
+	    {
+	      ao_ref dref;
+
+	      /* We only can do useful compares if we know the access range
+		 precisely.  */
+	      if (!kill.get_ao_ref (as_a <gcall *> (stmt), &dref))
+		continue;
+	      if (store_kills_ref_p (ao_ref_base (&dref), dref.offset,
+				     dref.size, dref.max_size, ref))
+		{
+		  /* For store to be killed it needs to not be used
+		     earlier.  */
+		  if (ref_maybe_used_by_call_p_1 (as_a <gcall *> (stmt), ref,
+						  true)
+		      || !dbg_cnt (ipa_mod_ref))
+		    break;
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file,
+			       "ipa-modref: call stmt ");
+		      print_gimple_stmt (dump_file, stmt, 0);
+		      fprintf (dump_file,
+			       "ipa-modref: call to %s kills ",
+			       node->dump_name ());
+		      print_generic_expr (dump_file, ref->base);
+		    }
+		    ++alias_stats.modref_kill_yes;
+		    return true;
+		}
+	    }
+	  ++alias_stats.modref_kill_no;
+	}
       if (callee != NULL_TREE
 	  && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (callee))
@@ -3379,7 +3441,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	      tree base = ao_ref_base (ref);
 	      if (base && TREE_CODE (base) == MEM_REF
 		  && TREE_OPERAND (base, 0) == ptr)
-		return true;
+		{
+		  ++alias_stats.stmt_kills_ref_p_yes;
+		  return true;
+		}
 	      break;
 	    }
 
@@ -3398,7 +3463,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	      /* For a must-alias check we need to be able to constrain
 		 the access properly.  */
 	      if (!ref->max_size_known_p ())
-		return false;
+		{
+		  ++alias_stats.stmt_kills_ref_p_no;
+		  return false;
+		}
 	      tree dest;
 	      tree len;
 
@@ -3413,11 +3481,17 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		  tree arg1 = gimple_call_arg (stmt, 1);
 		  if (TREE_CODE (arg0) != INTEGER_CST
 		      || TREE_CODE (arg1) != INTEGER_CST)
-		    return false;
+		    {
+		      ++alias_stats.stmt_kills_ref_p_no;
+		      return false;
+		    }
 
 		  dest = gimple_call_lhs (stmt);
 		  if (!dest)
-		    return false;
+		    {
+		      ++alias_stats.stmt_kills_ref_p_no;
+		      return false;
+		    }
 		  len = fold_build2 (MULT_EXPR, TREE_TYPE (arg0), arg0, arg1);
 		}
 	      else
@@ -3427,29 +3501,14 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		}
 	      if (!poly_int_tree_p (len))
 		return false;
-	      tree rbase = ref->base;
-	      poly_offset_int roffset = ref->offset;
 	      ao_ref dref;
 	      ao_ref_init_from_ptr_and_size (&dref, dest, len);
-	      tree base = ao_ref_base (&dref);
-	      poly_offset_int offset = dref.offset;
-	      if (!base || !known_size_p (dref.size))
-		return false;
-	      if (TREE_CODE (base) == MEM_REF)
+	      if (store_kills_ref_p (ao_ref_base (&dref), dref.offset,
+				     dref.size, dref.max_size, ref))
 		{
-		  if (TREE_CODE (rbase) != MEM_REF)
-		    return false;
-		  // Compare pointers.
-		  offset += mem_ref_offset (base) << LOG2_BITS_PER_UNIT;
-		  roffset += mem_ref_offset (rbase) << LOG2_BITS_PER_UNIT;
-		  base = TREE_OPERAND (base, 0);
-		  rbase = TREE_OPERAND (rbase, 0);
+		  ++alias_stats.stmt_kills_ref_p_yes;
+		  return true;
 		}
-	      if (base == rbase
-		  && known_subrange_p (roffset, ref->max_size, offset,
-				       wi::to_poly_offset (len)
-				       << LOG2_BITS_PER_UNIT))
-		return true;
 	      break;
 	    }
 
@@ -3460,7 +3519,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		{
 		  tree base = ao_ref_base (ref);
 		  if (TREE_OPERAND (ptr, 0) == base)
-		    return true;
+		    {
+		      ++alias_stats.stmt_kills_ref_p_yes;
+		      return true;
+		    }
 		}
 	      break;
 	    }
@@ -3468,6 +3530,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	  default:;
 	  }
     }
+  ++alias_stats.stmt_kills_ref_p_no;
   return false;
 }
 

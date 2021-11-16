@@ -40,7 +40,7 @@ template<typename T>
       a.moved_from = true;
     }
 
-    T* allocate(unsigned n) { return std::allocator<T>{}.allcoate(n); }
+    T* allocate(unsigned n) { return std::allocator<T>{}.allocate(n); }
     void deallocate(T* p, unsigned n) { std::allocator<T>{}.deallocate(p, n); }
 
     bool moved_to;

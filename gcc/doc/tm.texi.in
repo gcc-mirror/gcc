@@ -4182,13 +4182,7 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
 
-@hook TARGET_VECTORIZE_INIT_COST
-
-@hook TARGET_VECTORIZE_ADD_STMT_COST
-
-@hook TARGET_VECTORIZE_FINISH_COST
-
-@hook TARGET_VECTORIZE_DESTROY_COST_DATA
+@hook TARGET_VECTORIZE_CREATE_COSTS
 
 @hook TARGET_VECTORIZE_BUILTIN_GATHER
 
@@ -6020,6 +6014,8 @@ encountering an @code{init_priority} attribute.
 @end defmac
 
 @hook TARGET_HAVE_CTORS_DTORS
+
+@hook TARGET_DTORS_FROM_CXA_ATEXIT
 
 @hook TARGET_ASM_CONSTRUCTOR
 

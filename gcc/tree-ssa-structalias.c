@@ -4060,40 +4060,117 @@ static void
 handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
 		 int callescape_id, bool writes_global_memory)
 {
+  int relevant_indirect_flags = EAF_NO_INDIRECT_CLOBBER | EAF_NO_INDIRECT_READ
+				| EAF_NO_INDIRECT_ESCAPE;
+  int relevant_flags = relevant_indirect_flags
+		       | EAF_NO_DIRECT_CLOBBER
+		       | EAF_NO_DIRECT_READ
+		       | EAF_NO_DIRECT_ESCAPE;
+  if (gimple_call_lhs (stmt))
+    {
+      relevant_flags |= EAF_NOT_RETURNED_DIRECTLY | EAF_NOT_RETURNED_INDIRECTLY;
+      relevant_indirect_flags |= EAF_NOT_RETURNED_INDIRECTLY;
+
+      /* If value is never read from it can not be returned indirectly
+	 (except through the escape solution).
+	 For all flags we get these implications right except for
+	 not_returned because we miss return functions in ipa-prop.  */
+	 
+      if (flags & EAF_NO_DIRECT_READ)
+	flags |= EAF_NOT_RETURNED_INDIRECTLY;
+    }
+
   /* If the argument is not used we can ignore it.
      Similarly argument is invisile for us if it not clobbered, does not
      escape, is not read and can not be returned.  */
-  if ((flags & EAF_UNUSED)
-      || ((flags & (EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOREAD
-		    | EAF_NOT_RETURNED))
-	  == (EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOREAD
-	      | EAF_NOT_RETURNED)))
+  if ((flags & EAF_UNUSED) || ((flags & relevant_flags) == relevant_flags))
     return;
 
+  /* Produce varinfo for direct accesses to ARG.  */
   varinfo_t tem = new_var_info (NULL_TREE, "callarg", true);
   tem->is_reg_var = true;
   make_constraint_to (tem->id, arg);
   make_any_offset_constraints (tem);
 
-  if (!(flags & EAF_DIRECT))
-    make_transitive_closure_constraints (tem);
+  bool callarg_transitive = false;
 
-  if (!(flags & EAF_NOT_RETURNED))
+  /* As an compile time optimization if we make no difference between
+     direct and indirect accesses make arg transitively closed.
+     This avoids the need to build indir arg and do everything twice.  */
+  if (((flags & EAF_NO_INDIRECT_CLOBBER) != 0)
+      == ((flags & EAF_NO_DIRECT_CLOBBER) != 0)
+      && (((flags & EAF_NO_INDIRECT_READ) != 0)
+	  == ((flags & EAF_NO_DIRECT_READ) != 0))
+      && (((flags & EAF_NO_INDIRECT_ESCAPE) != 0)
+	  == ((flags & EAF_NO_DIRECT_ESCAPE) != 0))
+      && (((flags & EAF_NOT_RETURNED_INDIRECTLY) != 0)
+	  == ((flags & EAF_NOT_RETURNED_DIRECTLY) != 0)))
     {
-      struct constraint_expr cexpr;
-      cexpr.var = tem->id;
-      cexpr.type = SCALAR;
-      cexpr.offset = 0;
-      results->safe_push (cexpr);
+      make_transitive_closure_constraints (tem);
+      callarg_transitive = true;
+      gcc_checking_assert (!(flags & EAF_NO_DIRECT_READ));
     }
 
-  if (!(flags & EAF_NOREAD))
+  /* If necessary, produce varinfo for indirect accesses to ARG.  */
+  varinfo_t indir_tem = NULL;
+  if (!callarg_transitive
+      && (flags & relevant_indirect_flags) != relevant_indirect_flags)
+    {
+      struct constraint_expr lhs, rhs;
+      indir_tem = new_var_info (NULL_TREE, "indircallarg", true);
+      indir_tem->is_reg_var = true;
+
+      /* indir_term = *tem.  */
+      lhs.type = SCALAR;
+      lhs.var = indir_tem->id;
+      lhs.offset = 0;
+
+      rhs.type = DEREF;
+      rhs.var = tem->id;
+      rhs.offset = UNKNOWN_OFFSET;
+      process_constraint (new_constraint (lhs, rhs));
+
+      make_any_offset_constraints (indir_tem);
+
+      /* If we do not read indirectly there is no need for transitive closure.
+	 We know there is only one level of indirection.  */
+      if (!(flags & EAF_NO_INDIRECT_READ))
+	make_transitive_closure_constraints (indir_tem);
+      gcc_checking_assert (!(flags & EAF_NO_DIRECT_READ));
+    }
+
+  if (gimple_call_lhs (stmt))
+    {
+      if (!(flags & EAF_NOT_RETURNED_DIRECTLY))
+	{
+	  struct constraint_expr cexpr;
+	  cexpr.var = tem->id;
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	  results->safe_push (cexpr);
+	}
+      if (!callarg_transitive & !(flags & EAF_NOT_RETURNED_INDIRECTLY))
+	{
+	  struct constraint_expr cexpr;
+	  cexpr.var = indir_tem->id;
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	  results->safe_push (cexpr);
+	}
+    }
+
+  if (!(flags & EAF_NO_DIRECT_READ))
     {
       varinfo_t uses = get_call_use_vi (stmt);
       make_copy_constraint (uses, tem->id);
+      if (!callarg_transitive & !(flags & EAF_NO_INDIRECT_READ))
+	make_copy_constraint (uses, indir_tem->id);
     }
+  else
+    /* To read indirectly we need to read directly.  */
+    gcc_checking_assert (flags & EAF_NO_INDIRECT_READ);
 
-  if (!(flags & EAF_NOCLOBBER))
+  if (!(flags & EAF_NO_DIRECT_CLOBBER))
     {
       struct constraint_expr lhs, rhs;
 
@@ -4110,8 +4187,25 @@ handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
       /* callclobbered = arg.  */
       make_copy_constraint (get_call_clobber_vi (stmt), tem->id);
     }
+  if (!callarg_transitive & !(flags & EAF_NO_INDIRECT_CLOBBER))
+    {
+      struct constraint_expr lhs, rhs;
 
-  if (!(flags & (EAF_NOESCAPE | EAF_NODIRECTESCAPE)))
+      /* *indir_arg = callescape.  */
+      lhs.type = DEREF;
+      lhs.var = indir_tem->id;
+      lhs.offset = 0;
+
+      rhs.type = SCALAR;
+      rhs.var = callescape_id;
+      rhs.offset = 0;
+      process_constraint (new_constraint (lhs, rhs));
+
+      /* callclobbered = indir_arg.  */
+      make_copy_constraint (get_call_clobber_vi (stmt), indir_tem->id);
+    }
+
+  if (!(flags & (EAF_NO_DIRECT_ESCAPE | EAF_NO_INDIRECT_ESCAPE)))
     {
       struct constraint_expr lhs, rhs;
 
@@ -4128,18 +4222,18 @@ handle_call_arg (gcall *stmt, tree arg, vec<ce_s> *results, int flags,
       if (writes_global_memory)
 	make_escape_constraint (arg);
     }
-  else if (!(flags & EAF_NOESCAPE))
+  else if (!callarg_transitive & !(flags & EAF_NO_INDIRECT_ESCAPE))
     {
       struct constraint_expr lhs, rhs;
 
-      /* callescape = *(arg + UNKNOWN);  */
+      /* callescape = *(indir_arg + UNKNOWN);  */
       lhs.var = callescape_id;
       lhs.offset = 0;
       lhs.type = SCALAR;
 
-      rhs.var = tem->id;
-      rhs.offset = UNKNOWN_OFFSET;
-      rhs.type = DEREF;
+      rhs.var = indir_tem->id;
+      rhs.offset = 0;
+      rhs.type = SCALAR;
       process_constraint (new_constraint (lhs, rhs));
 
       if (writes_global_memory)
@@ -4168,10 +4262,11 @@ determine_global_memory_access (gcall *stmt,
       && (summary = get_modref_function_summary (node)))
     {
       if (writes_global_memory && *writes_global_memory)
-	*writes_global_memory = summary->global_memory_written_p ();
+	*writes_global_memory = summary->global_memory_written;
       if (reads_global_memory && *reads_global_memory)
-	*reads_global_memory = summary->global_memory_read_p ();
+	*reads_global_memory = summary->global_memory_read;
       if (reads_global_memory && uses_global_memory
+	  && !summary->calls_interposable
 	  && !*reads_global_memory && node->binds_to_current_def_p ())
 	*uses_global_memory = false;
     }
@@ -4246,7 +4341,8 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results,
   /* The static chain escapes as well.  */
   if (gimple_call_chain (stmt))
     handle_call_arg (stmt, gimple_call_chain (stmt), results,
-		     implicit_eaf_flags,
+		     implicit_eaf_flags
+		     | gimple_call_static_chain_flags (stmt),
 		     callescape->id, writes_global_memory);
 
   /* And if we applied NRV the address of the return slot escapes as well.  */
@@ -4254,17 +4350,30 @@ handle_rhs_call (gcall *stmt, vec<ce_s> *results,
       && gimple_call_lhs (stmt) != NULL_TREE
       && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (stmt))))
     {
-      auto_vec<ce_s> tmpc;
-      struct constraint_expr *c;
-      unsigned i;
+      int flags = gimple_call_retslot_flags (stmt);
+      const int relevant_flags = EAF_NO_DIRECT_ESCAPE
+				 | EAF_NOT_RETURNED_DIRECTLY;
 
-      get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+      if (!(flags & EAF_UNUSED) && (flags & relevant_flags) != relevant_flags)
+	{
+	  auto_vec<ce_s> tmpc;
 
-      make_constraints_to (callescape->id, tmpc);
-      if (writes_global_memory)
-	make_constraints_to (escaped_id, tmpc);
-      FOR_EACH_VEC_ELT (tmpc, i, c)
-	results->safe_push (*c);
+	  get_constraint_for_address_of (gimple_call_lhs (stmt), &tmpc);
+
+	  if (!(flags & EAF_NO_DIRECT_ESCAPE))
+	    {
+	      make_constraints_to (callescape->id, tmpc);
+	      if (writes_global_memory)
+		make_constraints_to (escaped_id, tmpc);
+	    }
+	  if (!(flags & EAF_NOT_RETURNED_DIRECTLY))
+	    {
+	      struct constraint_expr *c;
+	      unsigned i;
+	      FOR_EACH_VEC_ELT (tmpc, i, c)
+		results->safe_push (*c);
+	    }
+	}
     }
 }
 
@@ -4888,7 +4997,7 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
 	 reachable from their arguments, but they are not an escape
 	 point for reachable memory of their arguments.  */
       else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
-	handle_rhs_call (t, &rhsc, implicit_pure_eaf_flags, true, false);
+	handle_rhs_call (t, &rhsc, implicit_pure_eaf_flags, false, true);
       /* If the call is to a replaceable operator delete and results
 	 from a delete expression as opposed to a direct call to
 	 such operator, then the effects for PTA (in particular
@@ -7550,8 +7659,8 @@ compute_points_to_sets (void)
 		     always escaped.  */
 		  if (uses_global_memory)
 		    {
-		      pt->nonlocal = uses_global_memory;
-		      pt->escaped = uses_global_memory;
+		      pt->nonlocal = 1;
+		      pt->escaped = 1;
 		    }
 		}
 	      else if (uses_global_memory)
@@ -7561,6 +7670,8 @@ compute_points_to_sets (void)
 		  *pt = cfun->gimple_df->escaped;
 		  pt->nonlocal = 1;
 		}
+	      else
+		memset (pt, 0, sizeof (struct pt_solution));
 	    }
 
 	  pt = gimple_call_clobber_set (stmt);
@@ -7582,8 +7693,8 @@ compute_points_to_sets (void)
 		     always escaped.  */
 		  if (writes_global_memory)
 		    {
-		      pt->nonlocal = writes_global_memory;
-		      pt->escaped = writes_global_memory;
+		      pt->nonlocal = 1;
+		      pt->escaped = 1;
 		    }
 		}
 	      else if (writes_global_memory)
@@ -7593,6 +7704,8 @@ compute_points_to_sets (void)
 		  *pt = cfun->gimple_df->escaped;
 		  pt->nonlocal = 1;
 		}
+	      else
+		memset (pt, 0, sizeof (struct pt_solution));
 	    }
 	}
     }

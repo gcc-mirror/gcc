@@ -768,6 +768,14 @@ struct gomp_thread
   /* User pthread thread pool */
   struct gomp_thread_pool *thread_pool;
 
+#ifdef LIBGOMP_USE_PTHREADS
+  /* omp_get_num_teams () - 1.  */
+  unsigned int num_teams;
+
+  /* omp_get_team_num ().  */
+  unsigned int team_num;
+#endif
+
 #if defined(LIBGOMP_USE_PTHREADS) \
     && (!defined(HAVE_TLS) \
 	|| !defined(__GLIBC__) \

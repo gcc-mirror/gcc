@@ -89,7 +89,7 @@ assert_streq (const location &loc,
 	if (strcmp (val1, val2) == 0)
 	  pass (loc, "ASSERT_STREQ");
 	else
-	  fail_formatted (loc, "ASSERT_STREQ (%s, %s) val1=\"%s\" val2=\"%s\"",
+	  fail_formatted (loc, "ASSERT_STREQ (%s, %s)\n val1=\"%s\"\n val2=\"%s\"\n",
 			  desc_val1, desc_val2, val1, val2);
       }
 }
@@ -189,6 +189,21 @@ temp_source_file::temp_source_file (const location &loc,
   if (!out)
     fail_formatted (loc, "unable to open tempfile: %s", get_filename ());
   fprintf (out, "%s", content);
+  fclose (out);
+}
+
+/* As above, but with a size, to allow for NUL bytes in CONTENT.  */
+
+temp_source_file::temp_source_file (const location &loc,
+				    const char *suffix,
+				    const char *content,
+				    size_t sz)
+: named_temp_file (suffix)
+{
+  FILE *out = fopen (get_filename (), "w");
+  if (!out)
+    fail_formatted (loc, "unable to open tempfile: %s", get_filename ());
+  fwrite (content, sz, 1, out);
   fclose (out);
 }
 

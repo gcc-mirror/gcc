@@ -1784,8 +1784,8 @@ gimple_add_init_for_auto_var (tree decl,
    that padding is initialized to zero. So, we always initialize paddings
    to zeroes regardless INIT_TYPE.
    To do the padding initialization, we insert a call to
-   __BUILTIN_CLEAR_PADDING (&decl, 0, for_auto_init = true).
-   Note, we add an additional dummy argument for __BUILTIN_CLEAR_PADDING,
+   __builtin_clear_padding (&decl, 0, for_auto_init = true).
+   Note, we add an additional dummy argument for __builtin_clear_padding,
    'for_auto_init' to distinguish whether this call is for automatic
    variable initialization or not.
    */
@@ -1954,8 +1954,14 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	     pattern initialization.
 	     In order to make the paddings as zeroes for pattern init, We
 	     should add a call to __builtin_clear_padding to clear the
-	     paddings to zero in compatiple with CLANG.  */
-	  if (flag_auto_var_init == AUTO_INIT_PATTERN)
+	     paddings to zero in compatiple with CLANG.
+	     We cannot insert this call if the variable is a gimple register
+	     since __builtin_clear_padding will take the address of the
+	     variable.  As a result, if a long double/_Complex long double
+	     variable will spilled into stack later, its padding is 0XFE.  */
+	  if (flag_auto_var_init == AUTO_INIT_PATTERN
+	      && !is_gimple_reg (decl)
+	      && clear_padding_type_may_have_padding_p (TREE_TYPE (decl)))
 	    gimple_add_padding_init_for_auto_var (decl, is_vla, seq_p);
 	}
     }
@@ -5384,12 +5390,19 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   /* If the user requests to initialize automatic variables, we
      should initialize paddings inside the variable.  Add a call to
-     __BUILTIN_CLEAR_PADDING (&object, 0, for_auto_init = true) to
+     __builtin_clear_pading (&object, 0, for_auto_init = true) to
      initialize paddings of object always to zero regardless of
      INIT_TYPE.  Note, we will not insert this call if the aggregate
      variable has be completely cleared already or it's initialized
-     with an empty constructor.  */
+     with an empty constructor.  We cannot insert this call if the
+     variable is a gimple register since __builtin_clear_padding will take
+     the address of the variable.  As a result, if a long double/_Complex long
+     double variable will be spilled into stack later, its padding cannot
+     be cleared with __builtin_clear_padding.  We should clear its padding
+     when it is spilled into memory.  */
   if (is_init_expr
+      && !is_gimple_reg (object)
+      && clear_padding_type_may_have_padding_p (type)
       && ((AGGREGATE_TYPE_P (type) && !cleared && !is_empty_ctor)
 	  || !AGGREGATE_TYPE_P (type))
       && is_var_need_auto_init (object))
@@ -10260,9 +10273,24 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    = gimple_boolify (OMP_CLAUSE_OPERAND (c, 0));
 	  /* Fall through.  */
 
+	case OMP_CLAUSE_NUM_TEAMS:
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+	      && OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+	      && !is_gimple_min_invariant (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)))
+	    {
+	      if (error_operand_p (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)))
+		{
+		  remove = true;
+		  break;
+		}
+	      OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+		= get_initialized_tmp_var (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c),
+					   pre_p, NULL, true);
+	    }
+	  /* Fall through.  */
+
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_NUM_THREADS:
-	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEVICE:
@@ -10861,6 +10889,10 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  gcc_unreachable ();
 	}
       OMP_CLAUSE_SET_MAP_KIND (clause, kind);
+      /* Setting of the implicit flag for the runtime is currently disabled for
+	 OpenACC.  */
+      if ((gimplify_omp_ctxp->region_type & ORT_ACC) == 0)
+	OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause) = 1;
       if (DECL_SIZE (decl)
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	{
@@ -11476,9 +11508,15 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	list_p = &OMP_CLAUSE_CHAIN (c);
     }
 
-  /* Add in any implicit data sharing.  */
+  /* Add in any implicit data sharing.  Implicit clauses are added at the start
+     of the clause list, but after any non-map clauses.  */
   struct gimplify_adjust_omp_clauses_data data;
-  data.list_p = list_p;
+  tree *implicit_add_list_p = orig_list_p;
+  while (*implicit_add_list_p
+	 && OMP_CLAUSE_CODE (*implicit_add_list_p) != OMP_CLAUSE_MAP)
+    implicit_add_list_p = &OMP_CLAUSE_CHAIN (*implicit_add_list_p);
+
+  data.list_p = implicit_add_list_p;
   data.pre_p = pre_p;
   splay_tree_foreach (ctx->variables, gimplify_adjust_omp_clauses_1, &data);
 
@@ -12296,6 +12334,24 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  else
 	    gimplify_omp_ctxp->loop_iter_var.quick_push (decl);
 	  gimplify_omp_ctxp->loop_iter_var.quick_push (decl);
+	}
+
+      if (for_stmt == orig_for_stmt)
+	{
+	  tree orig_decl = decl;
+	  if (OMP_FOR_ORIG_DECLS (for_stmt))
+	    {
+	      tree orig_decl = TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (for_stmt), i);
+	      if (TREE_CODE (orig_decl) == TREE_LIST)
+		{
+		  orig_decl = TREE_PURPOSE (orig_decl);
+		  if (!orig_decl)
+		    orig_decl = decl;
+		}
+	    }
+	  if (is_global_var (orig_decl) && DECL_THREAD_LOCAL_P (orig_decl))
+	    error_at (EXPR_LOCATION (for_stmt),
+		      "threadprivate iteration variable %qD", orig_decl);
 	}
 
       /* Make sure the iteration variable is private.  */
@@ -13504,7 +13560,8 @@ optimize_target_teams (tree target, gimple_seq *pre_p)
 {
   tree body = OMP_BODY (target);
   tree teams = walk_tree (&body, find_omp_teams, NULL, NULL);
-  tree num_teams = integer_zero_node;
+  tree num_teams_lower = NULL_TREE;
+  tree num_teams_upper = integer_zero_node;
   tree thread_limit = integer_zero_node;
   location_t num_teams_loc = EXPR_LOCATION (target);
   location_t thread_limit_loc = EXPR_LOCATION (target);
@@ -13512,14 +13569,42 @@ optimize_target_teams (tree target, gimple_seq *pre_p)
   struct gimplify_omp_ctx *target_ctx = gimplify_omp_ctxp;
 
   if (teams == NULL_TREE)
-    num_teams = integer_one_node;
+    num_teams_upper = integer_one_node;
   else
     for (c = OMP_TEAMS_CLAUSES (teams); c; c = OMP_CLAUSE_CHAIN (c))
       {
 	if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS)
 	  {
-	    p = &num_teams;
+	    p = &num_teams_upper;
 	    num_teams_loc = OMP_CLAUSE_LOCATION (c);
+	    if (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c))
+	      {
+		expr = OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c);
+		if (TREE_CODE (expr) == INTEGER_CST)
+		  num_teams_lower = expr;
+		else if (walk_tree (&expr, computable_teams_clause,
+				    NULL, NULL))
+		  num_teams_lower = integer_minus_one_node;
+		else
+		  {
+		    num_teams_lower = expr;
+		    gimplify_omp_ctxp = gimplify_omp_ctxp->outer_context;
+		    if (gimplify_expr (&num_teams_lower, pre_p, NULL,
+				       is_gimple_val, fb_rvalue, false)
+			== GS_ERROR)
+		      {
+			gimplify_omp_ctxp = target_ctx;
+			num_teams_lower = integer_minus_one_node;
+		      }
+		    else
+		      {
+			gimplify_omp_ctxp = target_ctx;
+			if (!DECL_P (expr) && TREE_CODE (expr) != TARGET_EXPR)
+			  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+			    = num_teams_lower;
+		      }
+		  }
+	      }
 	  }
 	else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
 	  {
@@ -13552,12 +13637,16 @@ optimize_target_teams (tree target, gimple_seq *pre_p)
 	if (!DECL_P (expr) && TREE_CODE (expr) != TARGET_EXPR)
 	  OMP_CLAUSE_OPERAND (c, 0) = *p;
       }
-  c = build_omp_clause (thread_limit_loc, OMP_CLAUSE_THREAD_LIMIT);
-  OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = thread_limit;
-  OMP_CLAUSE_CHAIN (c) = OMP_TARGET_CLAUSES (target);
-  OMP_TARGET_CLAUSES (target) = c;
+  if (!omp_find_clause (OMP_TARGET_CLAUSES (target), OMP_CLAUSE_THREAD_LIMIT))
+    {
+      c = build_omp_clause (thread_limit_loc, OMP_CLAUSE_THREAD_LIMIT);
+      OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = thread_limit;
+      OMP_CLAUSE_CHAIN (c) = OMP_TARGET_CLAUSES (target);
+      OMP_TARGET_CLAUSES (target) = c;
+    }
   c = build_omp_clause (num_teams_loc, OMP_CLAUSE_NUM_TEAMS);
-  OMP_CLAUSE_NUM_TEAMS_EXPR (c) = num_teams;
+  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = num_teams_upper;
+  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = num_teams_lower;
   OMP_CLAUSE_CHAIN (c) = OMP_TARGET_CLAUSES (target);
   OMP_TARGET_CLAUSES (target) = c;
 }

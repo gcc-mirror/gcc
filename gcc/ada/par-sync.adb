@@ -172,7 +172,7 @@ package body Sync is
                --  current malformed aspect has been successfully skipped.
 
                if Token = Tok_Identifier
-                 and then Get_Aspect_Id (Token_Name) /= No_Aspect
+                 and then Is_Aspect_Id (Token_Name)
                then
                   Restore_Scan_State (Scan_State);
                   exit;

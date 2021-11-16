@@ -1,4 +1,4 @@
-/* { dg-options "-O2 --param modref-max-adjustments=8 -fdump-tree-modref1"  } */
+/* { dg-options "-O2 --param modref-max-adjustments=8 -fdump-tree-modref1 -fno-optimize-sibling-calls"  } */
 /* { dg-do compile } */
 void
 set (char *p)

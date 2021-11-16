@@ -1027,6 +1027,12 @@ for C++14 and later. The C++11 <function>std::shuffle</function> algorithm
 can be used instead.
 </para>
 
+<para>
+The <function>std::unexpected</function> function and related typedef and
+accessors for the unexpected handler are deprecated for C++11 and later.
+Dynamic exception specifications should be replaced with <code>noexcept</code>.
+</para>
+
 </section>
 
 </section>

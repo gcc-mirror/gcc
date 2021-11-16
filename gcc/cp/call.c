@@ -1070,8 +1070,6 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   conversion *c;
   unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
   tree elttype = TREE_TYPE (type);
-  unsigned i;
-  tree val;
   bool bad = false;
   bool user = false;
   enum conversion_rank rank = cr_exact;
@@ -1089,10 +1087,10 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+  for (auto &e: CONSTRUCTOR_ELTS (ctor))
     {
       conversion *sub
-	= implicit_conversion (elttype, TREE_TYPE (val), val,
+	= implicit_conversion (elttype, TREE_TYPE (e.value), e.value,
 			       false, flags, complain);
       if (sub == NULL)
 	return NULL;
@@ -1124,8 +1122,6 @@ build_complex_conv (tree type, tree ctor, int flags,
   conversion *c;
   unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
   tree elttype = TREE_TYPE (type);
-  unsigned i;
-  tree val;
   bool bad = false;
   bool user = false;
   enum conversion_rank rank = cr_exact;
@@ -1135,10 +1131,10 @@ build_complex_conv (tree type, tree ctor, int flags,
 
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+  for (auto &e: CONSTRUCTOR_ELTS (ctor))
     {
       conversion *sub
-	= implicit_conversion (elttype, TREE_TYPE (val), val,
+	= implicit_conversion (elttype, TREE_TYPE (e.value), e.value,
 			       false, flags, complain);
       if (sub == NULL)
 	return NULL;
@@ -9025,6 +9021,20 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
 		 instance, clobber);
 }
 
+/* Return true if in an immediate function context, or an unevaluated operand,
+   or a subexpression of an immediate invocation.  */
+
+bool
+in_immediate_context ()
+{
+  return (cp_unevaluated_operand != 0
+	  || (current_function_decl != NULL_TREE
+	      && DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	  || (current_binding_level->kind == sk_function_parms
+	      && current_binding_level->immediate_fn_ctx_p)
+	  || in_consteval_if_p);
+}
+
 /* Return true if a call to FN with number of arguments NARGS
    is an immediate invocation.  */
 
@@ -9033,17 +9043,24 @@ immediate_invocation_p (tree fn, int nargs)
 {
   return (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fn)
-	  && cp_unevaluated_operand == 0
-	  && (current_function_decl == NULL_TREE
-	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  && (current_binding_level->kind != sk_function_parms
-	      || !current_binding_level->immediate_fn_ctx_p)
-	  && !in_consteval_if_p
+	  && !in_immediate_context ()
 	  /* As an exception, we defer std::source_location::current ()
 	     invocations until genericization because LWG3396 mandates
 	     special behavior for it.  */
 	  && (nargs > 1 || !source_location_current_p (fn)));
 }
+
+/* temp_override for in_consteval_if_p, which can't use make_temp_override
+   because it is a bitfield.  */
+
+struct in_consteval_if_p_temp_override {
+  bool save_in_consteval_if_p;
+  in_consteval_if_p_temp_override ()
+    : save_in_consteval_if_p (in_consteval_if_p) {}
+  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
+  ~in_consteval_if_p_temp_override ()
+  { reset (); }
+};
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
@@ -9253,6 +9270,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (parmlen > nargs)
     nargs = parmlen;
   argarray = XALLOCAVEC (tree, nargs);
+
+  in_consteval_if_p_temp_override icip;
+  /* If the call is immediate function invocation, make sure
+     taking address of immediate functions is allowed in its arguments.  */
+  if (immediate_invocation_p (STRIP_TEMPLATE (fn), nargs))
+    in_consteval_if_p = true;
 
   /* The implicit parameters to a constructor are not considered by overload
      resolution, and must be of the proper type.  */
@@ -9498,6 +9521,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
   gcc_assert (j <= nargs);
   nargs = j;
+  icip.reset ();
 
   /* Avoid performing argument transformation if warnings are disabled.
      When tf_warning is set and at least one of the warnings is active
@@ -12525,7 +12549,11 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
-    expr = convert_like (conv, expr, complain);
+    {
+      /* Give a conversion call the same location as expr.  */
+      iloc_sentinel il (loc);
+      expr = convert_like (conv, expr, complain);
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

@@ -132,6 +132,9 @@ define feature cmse
 # Architecture rel 8.1-M.
 define feature armv8_1m_main
 
+# Architecture rel 9.0.
+define feature armv9
+
 # Floating point and Neon extensions.
 # VFPv1 is not supported in GCC.
 
@@ -293,6 +296,7 @@ define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
 define fgroup ARMv8_1m_main ARMv8m_main armv8_1m_main
+define fgroup ARMv9a      ARMv8_5a armv9
 
 # Useful combinations.
 define fgroup VFPv2	vfpv2
@@ -750,6 +754,21 @@ begin arch armv8.1-m.main
  option cdecp6 add cdecp6
  option cdecp7 add cdecp7
 end arch armv8.1-m.main
+
+begin arch armv9-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 9A
+ profile A
+ isa ARMv9a
+ option simd add FP_ARMv8 DOTPROD
+ option fp16 add fp16 fp16fml FP_ARMv8 DOTPROD
+ option crypto add FP_ARMv8 CRYPTO DOTPROD
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+ option i8mm add i8mm FP_ARMv8 DOTPROD
+ option bf16 add bf16 FP_ARMv8 DOTPROD
+end arch armv9-a
 
 begin arch iwmmxt
  tune for iwmmxt
@@ -1493,6 +1512,17 @@ begin cpu cortex-a78c
  vendor 41
  part d4b
 end cpu cortex-a78c
+
+begin cpu cortex-a710
+ cname cortexa710
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv9-a+fp16+bf16+i8mm
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d47
+end cpu cortex-a710
 
 begin cpu cortex-x1
  cname cortexx1

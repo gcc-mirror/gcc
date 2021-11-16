@@ -36,12 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "read-md.h"
 #include "gensupport.h"
 
-#ifndef GENERATOR_FILE
-#include "function.h"
-#include "memmodel.h"
-#include "emit-rtl.h"
-#endif
-
 /* One element in a singly-linked list of (integer, string) pairs.  */
 struct map_value {
   struct map_value *next;

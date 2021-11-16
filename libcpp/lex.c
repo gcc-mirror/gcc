@@ -1268,7 +1268,11 @@ skip_whitespace (cpp_reader *pfile, cppchar_t c)
   while (is_nvspace (c));
 
   if (saw_NUL)
-    cpp_error (pfile, CPP_DL_WARNING, "null character(s) ignored");
+    {
+      encoding_rich_location rich_loc (pfile);
+      cpp_error_at (pfile, CPP_DL_WARNING, &rich_loc,
+		    "null character(s) ignored");
+    }
 
   buffer->cur--;
 }
@@ -1297,6 +1301,28 @@ warn_about_normalization (cpp_reader *pfile,
   if (CPP_OPTION (pfile, warn_normalize) < NORMALIZE_STATE_RESULT (s)
       && !pfile->state.skipping)
     {
+      location_t loc = token->src_loc;
+
+      /* If possible, create a location range for the token.  */
+      if (loc >= RESERVED_LOCATION_COUNT
+	  && token->type != CPP_EOF
+	  /* There must be no line notes to process.  */
+	  && (!(pfile->buffer->cur
+		>= pfile->buffer->notes[pfile->buffer->cur_note].pos
+		&& !pfile->overlaid_buffer)))
+	{
+	  source_range tok_range;
+	  tok_range.m_start = loc;
+	  tok_range.m_finish
+	    = linemap_position_for_column (pfile->line_table,
+					   CPP_BUF_COLUMN (pfile->buffer,
+							   pfile->buffer->cur));
+	  loc = COMBINE_LOCATION_DATA (pfile->line_table,
+				       loc, tok_range, NULL);
+	}
+
+      encoding_rich_location rich_loc (pfile, loc);
+
       /* Make sure that the token is printed using UCNs, even
 	 if we'd otherwise happily print UTF-8.  */
       unsigned char *buf = XNEWVEC (unsigned char, cpp_token_len (token));
@@ -1304,14 +1330,14 @@ warn_about_normalization (cpp_reader *pfile,
 
       sz = cpp_spell_token (pfile, token, buf, false) - buf;
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
-	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
-			       "`%.*s' is not in NFKC", (int) sz, buf);
+	cpp_warning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
+			"`%.*s' is not in NFKC", (int) sz, buf);
       else if (CPP_OPTION (pfile, cxx23_identifiers))
-	cpp_pedwarning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+	cpp_pedwarning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
 				  "`%.*s' is not in NFC", (int) sz, buf);
       else
-	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
-			       "`%.*s' is not in NFC", (int) sz, buf);
+	cpp_warning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
+			"`%.*s' is not in NFC", (int) sz, buf);
       free (buf);
     }
 }

@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 static gfc_file *gfc_current_backend_file;
 
 const char gfc_msg_fault[] = N_("Array reference out of bounds");
-const char gfc_msg_wrong_return[] = N_("Incorrect function return value");
 
 
 /* Return a location_t suitable for 'tree' for a gfortran locus.  The way the

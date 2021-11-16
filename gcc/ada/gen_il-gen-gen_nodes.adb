@@ -1675,16 +1675,29 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Union (N_Is_Decl,
           Children =>
-            (N_Declaration,
+            (N_Aggregate,
+             N_Block_Statement,
+             N_Declaration,
              N_Discriminant_Specification,
+             N_Entry_Index_Specification,
              N_Enumeration_Type_Definition,
              N_Exception_Handler,
+             N_Explicit_Dereference,
+             N_Expression_With_Actions,
+             N_Extension_Aggregate,
+             N_Identifier,
+             N_Iterated_Component_Association,
              N_Later_Decl_Item,
+             N_Loop_Statement,
+             N_Null_Statement,
+             N_Number_Declaration,
              N_Package_Specification,
              N_Parameter_Specification,
              N_Renaming_Declaration,
-             N_Subprogram_Specification));
-   --  Nodes that can be returned by Declaration_Node
+             N_Quantified_Expression));
+   --  Nodes that can be returned by Declaration_Node; it can also return
+   --  Empty. Not all of these are true "declarations", but Declaration_Node
+   --  can return them in some cases.
 
    Union (N_Is_Range,
           Children =>
