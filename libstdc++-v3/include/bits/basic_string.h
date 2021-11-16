@@ -3546,8 +3546,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *	       greater than, or incomparable with `__rhs`.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
-    inline auto
+    constexpr auto
     operator<=>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 		const basic_string<_CharT, _Traits, _Alloc>& __rhs) noexcept
     -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))
@@ -3561,8 +3560,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
    *	       greater than, or incomparable with `__rhs`.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
-    inline auto
+    constexpr auto
     operator<=>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 		const _CharT* __rhs) noexcept
     -> decltype(__detail::__char_traits_cmp_cat<_Traits>(0))

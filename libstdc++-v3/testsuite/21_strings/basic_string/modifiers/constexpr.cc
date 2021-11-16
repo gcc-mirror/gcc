@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
+// { dg-require-effective-target cxx11-abi }
 
 #include <string>
 #include <testsuite_hooks.h>
