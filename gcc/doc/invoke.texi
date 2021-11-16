@@ -1394,6 +1394,7 @@ See RS/6000 and PowerPC Options.
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait @gol
 -mrecip  -mrecip=@var{opt} @gol
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt} @gol
+-mmove-max=@var{bits} -mstore-max=@var{bits} @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
@@ -31871,6 +31872,18 @@ This option instructs GCC to use 128-bit AVX instructions instead of
 @opindex mprefer-vector-width
 This option instructs GCC to use @var{opt}-bit vector width in instructions
 instead of default on the selected platform.
+
+@item -mmove-max=@var{bits}
+@opindex mmove-max
+This option instructs GCC to set the maximum number of bits can be
+moved from memory to memory efficiently to @var{bits}.  The valid
+@var{bits} are 128, 256 and 512.
+
+@item -mstore-max=@var{bits}
+@opindex mstore-max
+This option instructs GCC to set the maximum number of bits can be
+stored to memory efficiently to @var{bits}.  The valid @var{bits} are
+128, 256 and 512.
 
 @table @samp
 @item none

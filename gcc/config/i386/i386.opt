@@ -624,6 +624,14 @@ Enum(prefer_vector_width) String(256) Value(PVW_AVX256)
 EnumValue
 Enum(prefer_vector_width) String(512) Value(PVW_AVX512)
 
+mmove-max=
+Target RejectNegative Joined Var(ix86_move_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
+Maximum number of bits that can be moved from memory to memory efficiently.
+
+mstore-max=
+Target RejectNegative Joined Var(ix86_store_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
+Maximum number of bits that can be stored to memory efficiently.
+
 ;; ISA support
 
 m32

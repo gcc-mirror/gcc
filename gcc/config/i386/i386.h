@@ -408,10 +408,6 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_AVOID_LEA_FOR_ADDR]
 #define TARGET_SOFTWARE_PREFETCHING_BENEFICIAL \
 	ix86_tune_features[X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL]
-#define TARGET_AVX256_MOVE_BY_PIECES \
-	ix86_tune_features[X86_TUNE_AVX256_MOVE_BY_PIECES]
-#define TARGET_AVX256_STORE_BY_PIECES \
-	ix86_tune_features[X86_TUNE_AVX256_STORE_BY_PIECES]
 #define TARGET_AVX256_SPLIT_REGS \
 	ix86_tune_features[X86_TUNE_AVX256_SPLIT_REGS]
 #define TARGET_GENERAL_REGS_SSE_SPILL \
@@ -1807,12 +1803,13 @@ typedef struct ix86_args {
    MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
 #define MOVE_MAX \
-  ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+  ((TARGET_AVX512F \
+    && (ix86_move_max == PVW_AVX512 \
+	|| ix86_store_max == PVW_AVX512)) \
    ? 64 \
    : ((TARGET_AVX \
-       && !TARGET_PREFER_AVX128 \
-       && (TARGET_AVX256_MOVE_BY_PIECES \
-	   || TARGET_AVX256_STORE_BY_PIECES)) \
+       && (ix86_move_max >= PVW_AVX256 \
+	   || ix86_store_max >= PVW_AVX256)) \
       ? 32 \
       : ((TARGET_SSE2 \
 	  && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
@@ -1825,11 +1822,10 @@ typedef struct ix86_args {
    store_by_pieces of 16/32/64 bytes.  */
 #define STORE_MAX_PIECES \
   (TARGET_INTER_UNIT_MOVES_TO_VEC \
-   ? ((TARGET_AVX512F && !TARGET_PREFER_AVX256) \
+   ? ((TARGET_AVX512F && ix86_store_max == PVW_AVX512) \
       ? 64 \
       : ((TARGET_AVX \
-	  && !TARGET_PREFER_AVX128 \
-	  && TARGET_AVX256_STORE_BY_PIECES) \
+	  && ix86_store_max >= PVW_AVX256) \
 	  ? 32 \
 	  : ((TARGET_SSE2 \
 	      && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
