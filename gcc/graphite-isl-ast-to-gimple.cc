@@ -1539,9 +1539,7 @@ graphite_regenerate_ast_isl (scop_p scop)
 	 conditional if aliasing can be ruled out at runtime and the original
 	 version of the SCoP, otherwise. */
 
-      loop_p loop
-	  = find_common_loop (scop->scop_info->region.entry->dest->loop_father,
-			      scop->scop_info->region.exit->src->loop_father);
+      loop_p loop = scop_context_loop (scop);
       tree cond = generate_alias_cond (scop->unhandled_alias_ddrs, loop);
       tree non_alias_cond = build1 (TRUTH_NOT_EXPR, boolean_type_node, cond);
       set_ifsese_condition (region->if_region, non_alias_cond);
