@@ -1,5 +1,18 @@
 2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
 
+	* tree-loop-distribution.cc (data_ref_segment_size): Remove function.
+	(latch_dominated_by_data_ref): Likewise.
+	(compute_alias_check_pairs): Likewise.
+
+	* tree-data-ref.cc (data_ref_segment_size): New function,
+	copied from tree-loop-distribution.c
+	(compute_alias_check_pairs): Likewise.
+	(latch_dominated_by_data_ref): Likewise.
+
+	* tree-data-ref.h (compute_alias_check_pairs): New declaration.
+
+2021-11-16  Frederik Harwath  <frederik@codesourcery.com>
+
 	* predict.cc (pass_profile::execute): Fix dump message.
 
 2021-11-16  Frederik Harwath <frederik@codesourcery.com>
