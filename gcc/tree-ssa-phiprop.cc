@@ -479,6 +479,8 @@ public:
   virtual bool gate (function *) { return flag_tree_phiprop; }
   virtual unsigned int execute (function *);
 
+  opt_pass * clone () { return new pass_phiprop (m_ctxt); } 
+
 }; // class pass_phiprop
 
 unsigned int

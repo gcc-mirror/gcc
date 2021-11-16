@@ -2588,6 +2588,8 @@ public:
       return execute_oacc_loop_designation ();
     }
 
+  opt_pass * clone () { return new pass_oacc_loop_designation (m_ctxt); }
+
 }; // class pass_oacc_loop_designation
 
 const pass_data pass_data_oacc_device_lower =
@@ -2611,12 +2613,16 @@ public:
   {}
 
   /* opt_pass methods: */
+  /* TODO If this were gated on something like '!(fun->curr_properties &
+     PROP_gimple_oaccdevlow)', then we could easily have several instances
+     in the pass pipeline? */
   virtual bool gate (function *) { return flag_openacc; };
 
   virtual unsigned int execute (function *)
     {
       return execute_oacc_device_lower ();
     }
+  opt_pass * clone () { return new pass_oacc_device_lower (m_ctxt); }
 
 }; // class pass_oacc_device_lower
 

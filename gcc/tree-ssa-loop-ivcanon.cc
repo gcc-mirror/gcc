@@ -1587,6 +1587,7 @@ public:
 
   /* opt_pass methods: */
   virtual unsigned int execute (function *);
+  opt_pass * clone () { return new pass_complete_unroll (m_ctxt); } 
 
 }; // class pass_complete_unroll
 
@@ -1646,6 +1647,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *) { return optimize >= 2; }
   virtual unsigned int execute (function *);
+  opt_pass * clone () { return new pass_complete_unrolli (m_ctxt); } 
 
 }; // class pass_complete_unrolli
 

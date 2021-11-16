@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -g -fdump-tree-backprop-details" }  */
+/* { dg-options "-O -g -fdump-tree-backprop1-details" }  */
 
 /* Test a simple reduction loop in which all inputs are sign ops and
    the consumer doesn't care about the sign.  */
@@ -17,5 +17,5 @@ TEST_FUNCTION (float, f)
 TEST_FUNCTION (double, )
 TEST_FUNCTION (long double, l)
 
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = __builtin_copysign} 3 "backprop" } } */
-/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 3 "backprop" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = __builtin_copysign} 3 "backprop1" } } */
+/* { dg-final { scan-tree-dump-times {Deleting[^\n]* = -} 3 "backprop1" } } */

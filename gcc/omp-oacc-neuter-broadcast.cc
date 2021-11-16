@@ -1966,6 +1966,8 @@ public:
       return execute_omp_oacc_neuter_broadcast ();
     }
 
+  opt_pass * clone () { return new pass_omp_oacc_neuter_broadcast (m_ctxt); }
+
 }; // class pass_omp_oacc_neuter_broadcast
 
 } // anon namespace

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cunrolli-details" } */
+/* { dg-options "-O2 -fdump-tree-cunrolli1-details" } */
 
 extern void abort (void);
 int __attribute__((noinline,noclone))
@@ -25,4 +25,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "bounded by 0x0\[^0-9a-f\]" 0 "cunrolli"} } */
+/* { dg-final { scan-tree-dump-times "bounded by 0x0\[^0-9a-f\]" 0 "cunrolli1"} } */
