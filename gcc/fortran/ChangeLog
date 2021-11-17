@@ -1,3 +1,28 @@
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2021-11-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/97896
+	* intrinsic.c (add_sym_4ind): Remove.
+	(add_functions): Use add_sym4 instead of add_sym4ind.
+	Don’t special case the index intrinsic.
+	* iresolve.c (gfc_resolve_index_func): Use the individual arguments
+	directly instead of the full argument list.
+	* intrinsic.h (gfc_resolve_index_func): Update the declaration
+	accordingly.
+	* trans-decl.c (gfc_get_extern_function_decl): Don’t modify the
+	list of arguments in the case of the index intrinsic.
+	* trans-array.h (gfc_get_intrinsic_for_expr,
+	gfc_get_proc_ifc_for_expr): New.
+	* trans-array.c (gfc_get_intrinsic_for_expr,
+	arg_evaluated_for_scalarization): New.
+	(gfc_walk_elemental_function_args): Add intrinsic procedure
+	as argument.  Count arguments.  Check arg_evaluated_for_scalarization.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function): Update call.
+	* trans-stmt.c (get_intrinsic_for_code): New.
+	(gfc_trans_call): Update call.
+
 2021-11-11  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

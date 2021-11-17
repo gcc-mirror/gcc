@@ -1,3 +1,16 @@
+2021-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2021-11-03  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New Ampere-1
+	core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64-cost-tables.h: Add extra costs for
+	Ampere-1.
+	* config/aarch64/aarch64.c: Add tuning structures for Ampere-1.
+	* doc/invoke.texi: Add documentation for Ampere-1 core.
+
 2021-11-15  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

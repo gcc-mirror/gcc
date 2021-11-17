@@ -1,3 +1,11 @@
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2021-11-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/97896
+	* gfortran.dg/index_5.f90: New.
+
 2021-11-10  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
