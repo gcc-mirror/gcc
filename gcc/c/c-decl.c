@@ -5866,6 +5866,12 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
       if (pd->u.array.static_p)
 	spec += 's';
 
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
+	/* Avoid invalid NELTS.  */
+	return attrs;
+
+      STRIP_NOPS (nelts);
+      nelts = c_fully_fold (nelts, false, nullptr);
       if (TREE_CODE (nelts) == INTEGER_CST)
 	{
 	  /* Skip all constant bounds except the most significant one.
@@ -5883,13 +5889,9 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  spec += buf;
 	  break;
 	}
-      else if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
-	/* Avoid invalid NELTS.  */
-	return attrs;
 
       /* Each variable VLA bound is represented by a dollar sign.  */
       spec += "$";
-      STRIP_NOPS (nelts);
       vbchain = tree_cons (NULL_TREE, nelts, vbchain);
     }
 
