@@ -3106,6 +3106,13 @@ word as an identifier.  You can use the keyword @code{__typeof__} instead.
 This option is implied by the strict ISO C++ dialects: @option{-ansi},
 @option{-std=c++98}, @option{-std=c++11}, etc.
 
+@item -fimplicit-constexpr
+@opindex fimplicit-constexpr
+Make inline functions implicitly constexpr, if they satisfy the
+requirements for a constexpr function.  This option can be used in
+C++14 mode or later.  This can result in initialization changing from
+dynamic to static and other optimizations.
+
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
 @opindex fimplicit-templates
