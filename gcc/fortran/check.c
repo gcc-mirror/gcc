@@ -5223,6 +5223,12 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 {
   *msg = NULL;
 
+  if (expr->expr_type == EXPR_NULL)
+    {
+      *msg = "NULL() is not interoperable";
+      return false;
+    }
+
   if (expr->ts.type == BT_CLASS)
     {
       *msg = "Expression is polymorphic";
