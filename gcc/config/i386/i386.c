@@ -6115,7 +6115,7 @@ ix86_code_end (void)
       xops[0] = gen_rtx_REG (Pmode, regno);
       xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
       output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
-      output_asm_insn ("%!ret", NULL);
+      fputs ("\tret\n", asm_out_file);
       final_end_function ();
       init_insn_lengths ();
       free_after_compilation (cfun);
@@ -16273,7 +16273,7 @@ ix86_output_function_return (bool long_p)
     }
 
   if (!long_p)
-    return "%!ret";
+    return "ret";
 
   return "rep%; ret";
 }
