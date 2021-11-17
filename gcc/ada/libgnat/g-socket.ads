@@ -1558,8 +1558,10 @@ private
 
    No_Sock_Addr : constant Sock_Addr_Type := (Family_Inet, No_Inet_Addr, 0);
 
-   Max_Name_Length : constant := 64;
-   --  The constant MAXHOSTNAMELEN is usually set to 64
+   Max_Name_Length : constant := SOSC.NI_MAXHOST;
+   --  Most systems don't provide constants that specify the maximum size
+   --  of either a FQDN or a service name. In order to aid applications in
+   --  allocating buffers, the constant NI_MAXHOST is defined in <netdb.h>.
 
    subtype Name_Index is Natural range 1 .. Max_Name_Length;
 
