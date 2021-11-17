@@ -7827,11 +7827,15 @@ package body Sem_Prag is
 
          if Compile_Time_Known_Value (Arg1x) then
             Validate_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
+
          else
             while Present (P) and then Nkind (P) not in N_Generic_Declaration
             loop
-               if Nkind (P) in N_Package_Body | N_Subprogram_Body then
-                  P := Corresponding_Spec (P);
+               if (Nkind (P) = N_Subprogram_Body and then not Acts_As_Spec (P))
+                 or else Nkind (P) = N_Package_Body
+               then
+                  P := Parent (Corresponding_Spec (P));
+
                else
                   P := Parent (P);
                end if;
