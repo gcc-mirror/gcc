@@ -3665,7 +3665,7 @@ zero_all_vector_registers (HARD_REG_SET need_zeroed_hardregs)
     return NULL;
 
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if ((IN_RANGE (regno, FIRST_SSE_REG, LAST_SSE_REG)
+    if ((LEGACY_SSE_REGNO_P (regno)
 	 || (TARGET_64BIT
 	     && (REX_SSE_REGNO_P (regno)
 		 || (TARGET_AVX512F && EXT_REX_SSE_REGNO_P (regno)))))
@@ -19089,15 +19089,13 @@ ix86_register_priority (int hard_regno)
     return 0;
   if (hard_regno == BP_REG)
     return 1;
-  /* New x86-64 int registers result in bigger code size.  Discourage
-     them.  */
-  if (IN_RANGE (hard_regno, FIRST_REX_INT_REG, LAST_REX_INT_REG))
+  /* New x86-64 int registers result in bigger code size.  Discourage them.  */
+  if (REX_INT_REGNO_P (hard_regno))
     return 2;
-  /* New x86-64 SSE registers result in bigger code size.  Discourage
-     them.  */
-  if (IN_RANGE (hard_regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG))
+  /* New x86-64 SSE registers result in bigger code size.  Discourage them.  */
+  if (REX_SSE_REGNO_P (hard_regno))
     return 2;
-  if (IN_RANGE (hard_regno, FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG))
+  if (EXT_REX_SSE_REGNO_P (hard_regno))
     return 1;
   /* Usage of AX register results in smaller code.  Prefer it.  */
   if (hard_regno == AX_REG)
@@ -19974,9 +19972,8 @@ ix86_hard_regno_call_part_clobbered (unsigned int abi_id, unsigned int regno,
   /* Special ABI for vzeroupper which only clobber higher part of sse regs.  */
   if (abi_id == ABI_VZEROUPPER)
       return (GET_MODE_SIZE (mode) > 16
-	      && ((TARGET_64BIT
-		   && (IN_RANGE (regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG)))
-		  || (IN_RANGE (regno, FIRST_SSE_REG, LAST_SSE_REG))));
+	      && ((TARGET_64BIT && REX_SSE_REGNO_P (regno))
+		  || LEGACY_SSE_REGNO_P (regno)));
 
   return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
 }
