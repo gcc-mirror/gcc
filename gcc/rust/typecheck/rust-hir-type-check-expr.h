@@ -265,15 +265,29 @@ public:
     bool probe_impls = !receiver_is_generic;
     bool ignore_mandatory_trait_items = !receiver_is_generic;
 
+    auto probe_type = probe_impls ? receiver_tyty : root;
     auto candidates
-      = PathProbeType::Probe (root, expr.get_method_name ().get_segment (),
+      = PathProbeType::Probe (probe_type,
+			      expr.get_method_name ().get_segment (),
 			      probe_impls, probe_bounds,
 			      ignore_mandatory_trait_items);
     if (candidates.empty ())
       {
-	rust_error_at (expr.get_locus (),
-		       "failed to resolve the PathExprSegment to any item");
-	return;
+	if (probe_impls)
+	  {
+	    candidates
+	      = PathProbeType::Probe (root,
+				      expr.get_method_name ().get_segment (),
+				      probe_impls, probe_bounds,
+				      ignore_mandatory_trait_items);
+	  }
+
+	if (candidates.empty ())
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "failed to resolve the PathExprSegment to any item");
+	    return;
+	  }
       }
 
     std::vector<Adjustment> adjustments;
