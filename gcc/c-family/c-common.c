@@ -3306,7 +3306,19 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 				 TREE_TYPE (result_type)))
     size_exp = integer_one_node;
   else
-    size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
+    {
+      size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
+      /* Wrap the pointer expression in a SAVE_EXPR to make sure it
+	 is evaluated first when the size expression may depend
+	 on it for VM types.  */
+      if (TREE_SIDE_EFFECTS (size_exp)
+	  && TREE_SIDE_EFFECTS (ptrop)
+	  && variably_modified_type_p (TREE_TYPE (ptrop), NULL))
+	{
+	  ptrop = save_expr (ptrop);
+	  size_exp = build2 (COMPOUND_EXPR, TREE_TYPE (intop), ptrop, size_exp);
+	}
+    }
 
   /* We are manipulating pointer values, so we don't need to warn
      about relying on undefined signed overflow.  We disable the

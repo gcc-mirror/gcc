@@ -2964,7 +2964,9 @@ gimplify_var_or_parm_decl (tree *expr_p)
      declaration, for which we've already issued an error.  It would
      be really nice if the front end wouldn't leak these at all.
      Currently the only known culprit is C++ destructors, as seen
-     in g++.old-deja/g++.jason/binding.C.  */
+     in g++.old-deja/g++.jason/binding.C.
+     Another possible culpit are size expressions for variably modified
+     types which are lost in the FE or not gimplified correctly.  */
   if (VAR_P (decl)
       && !DECL_SEEN_IN_BIND_EXPR_P (decl)
       && !TREE_STATIC (decl) && !DECL_EXTERNAL (decl)
@@ -3109,16 +3111,22 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      expression until we deal with any variable bounds, sizes, or
      positions in order to deal with PLACEHOLDER_EXPRs.
 
-     So we do this in three steps.  First we deal with the annotations
-     for any variables in the components, then we gimplify the base,
-     then we gimplify any indices, from left to right.  */
+     The base expression may contain a statement expression that
+     has declarations used in size expressions, so has to be
+     gimplified before gimplifying the size expressions.
+
+     So we do this in three steps.  First we deal with variable
+     bounds, sizes, and positions, then we gimplify the base,
+     then we deal with the annotations for any variables in the
+     components and any indices, from left to right.  */
+
   for (i = expr_stack.length () - 1; i >= 0; i--)
     {
       tree t = expr_stack[i];
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
-	  /* Gimplify the low bound and element type size and put them into
+	  /* Deal with the low bound and element type size and put them into
 	     the ARRAY_REF.  If these values are set, they have already been
 	     gimplified.  */
 	  if (TREE_OPERAND (t, 2) == NULL_TREE)
@@ -3127,17 +3135,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      if (!is_gimple_min_invariant (low))
 		{
 		  TREE_OPERAND (t, 2) = low;
-		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p,
-					post_p, is_gimple_reg,
-					fb_rvalue);
-		  ret = MIN (ret, tret);
 		}
-	    }
-	  else
-	    {
-	      tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
-				    is_gimple_reg, fb_rvalue);
-	      ret = MIN (ret, tret);
 	    }
 
 	  if (TREE_OPERAND (t, 3) == NULL_TREE)
@@ -3155,17 +3153,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 					      elmt_size, factor);
 
 		  TREE_OPERAND (t, 3) = elmt_size;
-		  tret = gimplify_expr (&TREE_OPERAND (t, 3), pre_p,
-					post_p, is_gimple_reg,
-					fb_rvalue);
-		  ret = MIN (ret, tret);
 		}
-	    }
-	  else
-	    {
-	      tret = gimplify_expr (&TREE_OPERAND (t, 3), pre_p, post_p,
-				    is_gimple_reg, fb_rvalue);
-	      ret = MIN (ret, tret);
 	    }
 	}
       else if (TREE_CODE (t) == COMPONENT_REF)
@@ -3186,17 +3174,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 					   offset, factor);
 
 		  TREE_OPERAND (t, 2) = offset;
-		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p,
-					post_p, is_gimple_reg,
-					fb_rvalue);
-		  ret = MIN (ret, tret);
 		}
-	    }
-	  else
-	    {
-	      tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
-				    is_gimple_reg, fb_rvalue);
-	      ret = MIN (ret, tret);
 	    }
 	}
     }
@@ -3208,21 +3186,34 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
 
-  /* And finally, the indices and operands of ARRAY_REF.  During this
-     loop we also remove any useless conversions.  */
+  /* Step 3: gimplify size expressions and the indices and operands of
+     ARRAY_REF.  During this loop we also remove any useless conversions.  */
+
   for (; expr_stack.length () > 0; )
     {
       tree t = expr_stack.pop ();
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
+	  /* Gimplify the low bound and element type size. */
+	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
+				is_gimple_reg, fb_rvalue);
+	  ret = MIN (ret, tret);
+
+	  tret = gimplify_expr (&TREE_OPERAND (t, 3), pre_p, post_p,
+				is_gimple_reg, fb_rvalue);
+	  ret = MIN (ret, tret);
+
 	  /* Gimplify the dimension.  */
-	  if (!is_gimple_min_invariant (TREE_OPERAND (t, 1)))
-	    {
-	      tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
-				    is_gimple_val, fb_rvalue);
-	      ret = MIN (ret, tret);
-	    }
+	  tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
+				is_gimple_val, fb_rvalue);
+	  ret = MIN (ret, tret);
+	}
+      else if (TREE_CODE (t) == COMPONENT_REF)
+	{
+	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
+				is_gimple_reg, fb_rvalue);
+	  ret = MIN (ret, tret);
 	}
 
       STRIP_USELESS_TYPE_CONVERSION (TREE_OPERAND (t, 0));
@@ -6927,6 +6918,8 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	{
 	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (temp)))
 	    gimplify_type_sizes (TREE_TYPE (temp), pre_p);
+	  /* FIXME: this is correct only when the size of the type does
+	     not depend on expressions evaluated in init.  */
 	  gimplify_vla_decl (temp, pre_p);
 	}
       else
