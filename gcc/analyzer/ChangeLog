@@ -1,3 +1,9 @@
+2021-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102662
+	* constraint-manager.cc (bounded_range::operator==): Require the
+	types to be the same for equality.
+
 2021-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.opt (Wanalyzer-tainted-allocation-size): New.

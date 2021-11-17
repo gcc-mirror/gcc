@@ -1,3 +1,134 @@
+2021-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (get_modref_function_summary): Declare.
+	* ipa-modref.h (get_modref_function_summary): New function.
+	* tree-ssa-dse.c (clear_live_bytes_for_ref): Break out from ...
+	(clear_bytes_written_by): ... here; also clear memory killed by
+	calls.
+
+2021-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* ggc-common.c (gt_pch_save): If we cannot find a suitable
+	memory segment for save, then error-out, do not try to
+	continue.
+	(gt_pch_restore): Save the existing line table, and when
+	the replacement is being read, use that when constructing
+	diagnostics.
+
+2021-11-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/102976
+	* config/rs6000/mma.md (*vsx_assemble_pair): Add early-clobber for
+	output operand.
+	(*mma_assemble_acc): Likewise.
+
+2021-11-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102960
+	* gimple-fold.c (get_range_strlen): Take bitmap as an argument rather
+	than a pointer to it.
+	(get_range_strlen_tree): Same.  Remove bitmap allocation.  Use
+	an auto_bitmap.
+	(get_maxval_strlen): Use an auto_bitmap.
+	* tree-ssa-strlen.c (get_range_strlen_dynamic): Factor out PHI
+	handling...
+	(get_range_strlen_phi): ...into this function.
+	Avoid assuming maximum string length is constant
+	(printf_strlen_execute): Dump pointer query cache contents when
+	details are requisted.
+
+2021-11-16  Jason Merrill  <jason@redhat.com>
+
+	* langhooks.h (struct lang_hooks): Adjust comment.
+	* print-tree.c (print_node): Also call print_xnode hook for
+	tcc_constant class.
+
+2021-11-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103218
+	* match.pd: New pattern for "((type)(a<0)) << SIGNBITOFA".
+
+2021-11-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddhisi4): Use a single move to accumulator.
+	(umaddhisi4): Likewise.
+	(machi): Update pattern.
+	(umachi): Likewise.
+
+2021-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102880
+	* tree-ssa-dce.c (sort_phi_args): New function.
+	(make_forwarders_with_degenerate_phis): Likewise.
+	(perform_tree_ssa_dce): Call
+	make_forwarders_with_degenerate_phis.
+
+2021-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102880
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Push
+	single_pred (bb1) condition to places that really need it.
+	(match_simplify_replacement): Likewise.
+	(value_replacement): Likewise.
+	(replace_phi_edge_with_variable): Deal with extra edges
+	into the middle BB.
+
+2021-11-16  Martin Jambor  <mjambor@suse.cz>
+
+	* cfgexpand.c (expand_gimple_basic_block): Use build_debug_expr_decl,
+	add a fixme note about the mode assignment perhaps being unnecessary.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call):
+	Likewise.
+	(ipa_param_body_adjustments::mark_dead_statements): Likewise.
+	(ipa_param_body_adjustments::reset_debug_stmts): Likewise.
+	* tree-inline.c (remap_ssa_name): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-into-ssa.c (rewrite_debug_stmt_uses): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa.c (insert_debug_temp_for_var_def): Likewise.
+
+2021-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103208
+	* omp-expand.c (expand_omp_build_cond): New function.
+	(expand_omp_for_init_counts, expand_omp_for_init_vars,
+	expand_omp_for_static_nochunk, expand_omp_for_static_chunk): Use it.
+
+2021-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102009
+	* gimple-ssa-warn-access.cc (pass_waccess::check_alloc_size_call):
+	Punt if any of alloc_size arguments is out of bounds vs. number of
+	call arguments.
+
+2021-11-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*bmi2_rorx<mode3>_1): Make conditional
+	on !optimize_function_for_size_p.
+	(*<any_rotate><mode>3_1): Add preferred_for_size attribute.
+	(define_splits): Conditionalize on !optimize_function_for_size_p.
+	(*bmi2_rorxsi3_1_zext): Likewise.
+	(*<any_rotate>si2_1_zext): Add preferred_for_size attribute.
+	(define_splits): Conditionalize on !optimize_function_for_size_p.
+
+2021-11-16  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/103262
+	* ipa-modref.c (merge_call_side_effects): Fix uninitialized
+	access.
+
+2021-11-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103245
+	* match.pd: Combine the abs pattern matching using multiplication.
+	Adding optional nop_convert too.
+
+2021-11-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/103268
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Add a missing
+	return.
+
 2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	* gimple-fold.c (gimple_fold_builtin_strncat): Use ranges to

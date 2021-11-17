@@ -1,3 +1,72 @@
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (operator<=>): Use constexpr
+	unconditionally.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc:
+	Require cxx11-abit effective target.
+	* testsuite/21_strings/headers/string/synopsis.cc: Add
+	conditional constexpr to declarations, and adjust relational
+	operators for C++20.
+
+2021-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/MERGE: Update the commit hash.
+	* src/c++17/ryu/d2s_intrinsics.h: Merge from Ryu's master
+	branch.
+
+2021-11-16  Michael de Lang  <kingoipo@gmail.com>
+
+	* include/bits/basic_string.h (basic_string, operator""s): Add
+	constexpr for C++20.
+	(basic_string::basic_string(basic_string&&)): Only copy
+	initialized portion of the buffer.
+	(basic_string::basic_string(basic_string&&, const Alloc&)):
+	Likewise.
+	* include/bits/basic_string.tcc (basic_string): Add constexpr
+	for C++20.
+	(basic_string::swap(basic_string&)): Only copy initialized
+	portions of the buffers.
+	(basic_string::_M_replace): Add constexpr implementation that
+	doesn't depend on pointer comparisons.
+	* include/bits/cow_string.h: Adjust comment.
+	* include/ext/type_traits.h (__is_null_pointer): Add constexpr.
+	* include/std/string (erase, erase_if): Add constexpr.
+	* include/std/version (__cpp_lib_constexpr_string): Update
+	value.
+	* testsuite/21_strings/basic_string/cons/char/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/literals/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string/modifiers/swap/char/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/swap/wchar_t/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/version.cc: New test.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (swap(_Bit_reference, _Bit_reference))
+	(swap(_Bit_reference, bool&), swap(bool&, _Bit_reference)):
+	Define as hidden friends of _Bit_reference.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/1.cc:
+	Fix reads past the end of strings.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/compare/wchar_t/1.cc:
+	Likewise.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/71964.cc: Fix
+	typo.
+	* testsuite/23_containers/set/allocator/71964.cc: Likewise.
+
 2021-11-15  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/to_address/1_neg.cc: Adjust error.

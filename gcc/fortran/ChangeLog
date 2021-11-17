@@ -1,3 +1,63 @@
+2021-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103286
+	* resolve.c (resolve_select): Choose appropriate range limit to
+	avoid NULL pointer dereference when generating error message.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* interface.c (gfc_dummy_arg_get_name): New function.
+	* gfortran.h (gfc_dummy_arg_get_name): Declare it.
+	* trans-array.c (arg_evaluated_for_scalarization): Pass a dummy
+	argument wrapper as argument instead of an actual argument
+	and an index number.  Check it’s non-NULL.  Use its name
+	to identify it.
+	(gfc_walk_elemental_function_args): Update call to
+	arg_evaluated for scalarization.  Remove argument counting.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_actual_arglist::missing_arg_type): Remove.
+	* interface.c (gfc_compare_actual_formal): Remove
+	missing_arg_type initialization.
+	* intrinsic.c (sort_actual): Ditto.
+	* trans-expr.c (gfc_conv_procedure_call): Use associated_dummy
+	and gfc_dummy_arg_get_typespec to get the dummy argument type.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* interface.c (gfc_dummy_arg_get_typespec,
+	gfc_dummy_arg_is_optional): New functions.
+	* gfortran.h (gfc_dummy_arg_get_typespec,
+	gfc_dummy_arg_is_optional): Declare them.
+	* trans.h (gfc_ss_info::dummy_arg): Use the wrapper type
+	as declaration type.
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_reference):
+	use gfc_dummy_arg_get_typespec function to get the type.
+	(gfc_walk_elemental_function_args): Remove proc_ifc argument.
+	Get info about the dummy arg using the associated_dummy field.
+	* trans-array.h (gfc_walk_elemental_function_args): Update declaration.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function):
+	Update call to gfc_walk_elemental_function_args.
+	* trans-stmt.c (gfc_trans_call): Ditto.
+	(get_proc_ifc_for_call): Remove.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_dummy_arg_kind, gfc_dummy_arg): New.
+	(gfc_actual_arglist): New field associated_dummy.
+	(gfc_intrinsic_arg): Remove field actual.
+	* interface.c (get_nonintrinsic_dummy_arg): New.
+	(gfc_compare_actual): Initialize associated_dummy.
+	* intrinsic.c (get_intrinsic_dummy_arg): New.
+	(sort_actual):  Add argument vectors.
+	Use loops with indices on argument vectors.
+	Initialize associated_dummy.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* intrinsic.c (sort_actual): initialise variable and use it earlier.
+
 2021-11-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.c (OMP_TARGET_CLAUSES): Add thread_limit.

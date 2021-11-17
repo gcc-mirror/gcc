@@ -1,3 +1,8 @@
+2021-11-16  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (release_tree_vector): Only cache vecs smaller than
+	16 elements.
+
 2021-11-15  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -fimplicit-constexpr.
