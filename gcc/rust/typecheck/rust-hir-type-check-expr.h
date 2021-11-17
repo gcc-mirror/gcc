@@ -295,6 +295,10 @@ public:
 	return;
       }
 
+    // Get the adjusted self
+    Adjuster adj (receiver_tyty);
+    TyTy::BaseType *adjusted_self = adj.adjust_type (adjustments);
+
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
 					std::move (adjustments));
@@ -401,7 +405,8 @@ public:
       }
 
     TyTy::BaseType *function_ret_tyty
-      = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, context);
+      = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self,
+					   context);
     if (function_ret_tyty == nullptr
 	|| function_ret_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
