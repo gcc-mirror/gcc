@@ -3984,12 +3984,43 @@
   DONE;
 })
 
+;; Vector reverse elements for V16QI V8HI V4SI V4SF
 (define_expand "altivec_vreve<mode>2"
-  [(set (match_operand:VEC_A 0 "register_operand" "=v")
-	(unspec:VEC_A [(match_operand:VEC_A 1 "register_operand" "v")]
+  [(set (match_operand:VEC_K 0 "register_operand" "=v")
+	(unspec:VEC_K [(match_operand:VEC_K 1 "register_operand" "v")]
 		      UNSPEC_VREVEV))]
   "TARGET_ALTIVEC"
 {
+  if (TARGET_P9_VECTOR)
+    {
+      if (<MODE>mode == V16QImode)
+	emit_insn (gen_p9_xxbrq_v16qi (operands[0], operands[1]));
+      else if (<MODE>mode == V8HImode)
+	{
+	  rtx subreg1 = simplify_gen_subreg (V1TImode, operands[1],
+					     <MODE>mode, 0);
+	  rtx temp = gen_reg_rtx (V1TImode);
+	  emit_insn (gen_p9_xxbrq_v1ti (temp, subreg1));
+	  rtx subreg2 = simplify_gen_subreg (<MODE>mode, temp,
+					     V1TImode, 0);
+	  emit_insn (gen_p9_xxbrh_v8hi (operands[0], subreg2));
+	}
+      else /* V4SI and V4SF.  */
+	{
+	  rtx subreg1 = simplify_gen_subreg (V1TImode, operands[1],
+					     <MODE>mode, 0);
+	  rtx temp = gen_reg_rtx (V1TImode);
+	  emit_insn (gen_p9_xxbrq_v1ti (temp, subreg1));
+	  rtx subreg2 = simplify_gen_subreg (<MODE>mode, temp,
+					     V1TImode, 0);
+	  if (<MODE>mode == V4SImode)
+	    emit_insn (gen_p9_xxbrw_v4si (operands[0], subreg2));
+	  else
+	    emit_insn (gen_p9_xxbrw_v4sf (operands[0], subreg2));
+	}
+      DONE;
+    }
+
   int i, j, size, num_elements;
   rtvec v = rtvec_alloc (16);
   rtx mask = gen_reg_rtx (V16QImode);
@@ -4005,6 +4036,17 @@
   emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
 	     operands[1], mask));
+  DONE;
+})
+
+;; Vector reverse elements for V2DI V2DF
+(define_expand "altivec_vreve<mode>2"
+  [(set (match_operand:VEC_64 0 "register_operand" "=v")
+	(unspec:VEC_64 [(match_operand:VEC_64 1 "register_operand" "v")]
+		      UNSPEC_VREVEV))]
+  "TARGET_ALTIVEC"
+{
+  emit_insn (gen_xxswapd_<mode> (operands[0], operands[1]));
   DONE;
 })
 
