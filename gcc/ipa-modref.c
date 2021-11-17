@@ -5123,6 +5123,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
 		     to->dump_name ());
 	  summaries_lto->remove (to);
+	  to_info_lto = NULL;
 	}
       else if (to_info_lto && dump_file)
 	{
@@ -5130,7 +5131,6 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
 		     to->dump_name ());
 	  to_info_lto->dump (dump_file);
-	  to_info_lto = NULL;
 	}
       if (callee_info_lto)
 	summaries_lto->remove (edge->callee);
