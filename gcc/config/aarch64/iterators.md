@@ -1062,7 +1062,7 @@
 (define_mode_attr nunits [(V8QI "8") (V16QI "16")
 			  (V4HI "4") (V8HI "8")
 			  (V2SI "2") (V4SI "4")
-				     (V2DI "2")
+			  (V2DI "2") (V8DI "8")
 			  (V4HF "4") (V8HF "8")
 			  (V4BF "4") (V8BF "8")
 			  (V2SF "2") (V4SF "4")
