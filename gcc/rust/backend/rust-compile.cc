@@ -72,7 +72,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
     {
       rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
-      Btype *compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
+      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
       rust_assert (!adt->is_enum ());
       rust_assert (adt->number_of_variants () == 1);
@@ -80,7 +80,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
       // this assumes all fields are in order from type resolution and if a
       // base struct was specified those fields are filed via accesors
-      std::vector<Bexpression *> vals;
+      std::vector<tree> vals;
       for (size_t i = 0; i < expr.get_arguments ().size (); i++)
 	{
 	  auto &argument = expr.get_arguments ().at (i);
@@ -150,7 +150,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  required_num_args = fn->num_params ();
 	}
 
-      std::vector<Bexpression *> args;
+      std::vector<tree> args;
       for (size_t i = 0; i < expr.get_arguments ().size (); i++)
 	{
 	  auto &argument = expr.get_arguments ().at (i);
@@ -195,7 +195,7 @@ void
 CompileExpr::visit (HIR::MethodCallExpr &expr)
 {
   // method receiver
-  Bexpression *self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
+  tree self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
 
   // lookup the resolved name
   NodeId resolved_node_id = UNKNOWN_NODEID;
@@ -254,7 +254,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   // lookup compiled functions since it may have already been compiled
   HIR::PathExprSegment method_name = expr.get_method_name ();
   HIR::PathIdentSegment segment_name = method_name.get_segment ();
-  Bexpression *fn_expr
+  tree fn_expr
     = resolve_method_address (fntype, ref, receiver, segment_name,
 			      expr.get_mappings (), expr.get_locus ());
 
@@ -275,7 +275,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  break;
 
 	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
-	  Btype *expected_type
+	  tree expected_type
 	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
 	  self = ctx->get_backend ()->indirect_expression (
 	    expected_type, self, true, /* known_valid*/
@@ -284,7 +284,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	}
     }
 
-  std::vector<Bexpression *> args;
+  std::vector<tree> args;
   args.push_back (self); // adjusted self
 
   // normal args
@@ -322,7 +322,7 @@ void
 CompileBlock::visit (HIR::BlockExpr &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
+  tree fndecl = fnctx.fndecl;
   Location start_location = expr.get_locus ();
   Location end_location = expr.get_closing_locus ();
   auto body_mappings = expr.get_mappings ();
@@ -338,10 +338,9 @@ CompileBlock::visit (HIR::BlockExpr &expr)
   bool ok = compile_locals_for_block (*rib, fndecl, locals);
   rust_assert (ok);
 
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-  Bblock *new_block
-    = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				  start_location, end_location);
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree new_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+					       start_location, end_location);
   ctx->push_block (new_block);
 
   for (auto &s : expr.get_statements ())
@@ -349,7 +348,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  Bstatement *compiled_stmt
+	  tree compiled_stmt
 	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
 							 compiled_expr);
 	  ctx->add_statement (compiled_stmt);
@@ -360,23 +359,22 @@ CompileBlock::visit (HIR::BlockExpr &expr)
     {
       // the previous passes will ensure this is a valid return or
       // a valid trailing expression
-      Bexpression *compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
+      tree compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
       if (compiled_expr != nullptr)
 	{
 	  if (result == nullptr)
 	    {
-	      Bstatement *final_stmt
+	      tree final_stmt
 		= ctx->get_backend ()->expression_statement (fnctx.fndecl,
 							     compiled_expr);
 	      ctx->add_statement (final_stmt);
 	    }
 	  else
 	    {
-	      Bexpression *result_reference
-		= ctx->get_backend ()->var_expression (
-		  result, expr.get_final_expr ()->get_locus ());
+	      tree result_reference = ctx->get_backend ()->var_expression (
+		result, expr.get_final_expr ()->get_locus ());
 
-	      Bstatement *assignment
+	      tree assignment
 		= ctx->get_backend ()->assignment_statement (fnctx.fndecl,
 							     result_reference,
 							     compiled_expr,
@@ -394,11 +392,9 @@ void
 CompileConditionalBlocks::visit (HIR::IfExpr &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
-  Bexpression *condition_expr
-    = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block
-    = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  tree fndecl = fnctx.fndecl;
+  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
+  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
@@ -409,13 +405,10 @@ void
 CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
-  Bexpression *condition_expr
-    = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block
-    = CompileBlock::compile (expr.get_if_block (), ctx, result);
-  Bblock *else_block
-    = CompileBlock::compile (expr.get_else_block (), ctx, result);
+  tree fndecl = fnctx.fndecl;
+  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
+  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  tree else_block = CompileBlock::compile (expr.get_else_block (), ctx, result);
 
   translated
     = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
@@ -426,23 +419,20 @@ void
 CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
-  Bfunction *fndecl = fnctx.fndecl;
-  Bexpression *condition_expr
-    = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  Bblock *then_block
-    = CompileBlock::compile (expr.get_if_block (), ctx, result);
+  tree fndecl = fnctx.fndecl;
+  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
+  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   // else block
   std::vector<Bvariable *> locals;
   Location start_location = expr.get_conseq_if_expr ()->get_locus ();
   Location end_location = expr.get_conseq_if_expr ()->get_locus (); // FIXME
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
-  Bblock *else_block
-    = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
-				  start_location, end_location);
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree else_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
+						start_location, end_location);
   ctx->push_block (else_block);
 
-  Bstatement *else_stmt_decl
+  tree else_stmt_decl
     = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx,
 					 result);
   ctx->add_statement (else_stmt_decl);
@@ -482,7 +472,7 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
 
 void
 HIRCompileBase::compile_function_body (
-  Bfunction *fndecl, std::unique_ptr<HIR::BlockExpr> &function_body,
+  tree fndecl, std::unique_ptr<HIR::BlockExpr> &function_body,
   bool has_return_type)
 {
   for (auto &s : function_body->get_statements ())
@@ -490,7 +480,7 @@ HIRCompileBase::compile_function_body (
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
-	  Bstatement *compiled_stmt
+	  tree compiled_stmt
 	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
 	  ctx->add_statement (compiled_stmt);
 	}
@@ -500,14 +490,14 @@ HIRCompileBase::compile_function_body (
     {
       // the previous passes will ensure this is a valid return
       // or a valid trailing expression
-      Bexpression *compiled_expr
+      tree compiled_expr
 	= CompileExpr::Compile (function_body->expr.get (), ctx);
 
       if (compiled_expr != nullptr)
 	{
 	  if (has_return_type)
 	    {
-	      std::vector<Bexpression *> retstmts;
+	      std::vector<tree> retstmts;
 	      retstmts.push_back (compiled_expr);
 
 	      auto ret = ctx->get_backend ()->return_statement (
@@ -517,7 +507,7 @@ HIRCompileBase::compile_function_body (
 	    }
 	  else
 	    {
-	      Bstatement *final_stmt
+	      tree final_stmt
 		= ctx->get_backend ()->expression_statement (fndecl,
 							     compiled_expr);
 	      ctx->add_statement (final_stmt);
@@ -527,7 +517,7 @@ HIRCompileBase::compile_function_body (
 }
 
 bool
-HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
+HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
 					  std::vector<Bvariable *> &locals)
 {
   rib.iterate_decls ([&] (NodeId n, Location) mutable -> bool {
@@ -561,10 +551,9 @@ HIRCompileBase::compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
   return true;
 }
 
-Bexpression *
-HIRCompileBase::coercion_site (Bexpression *compiled_ref,
-			       TyTy::BaseType *actual, TyTy::BaseType *expected,
-			       Location locus)
+tree
+HIRCompileBase::coercion_site (tree compiled_ref, TyTy::BaseType *actual,
+			       TyTy::BaseType *expected, Location locus)
 {
   auto root_actual_kind = actual->get_root ()->get_kind ();
   auto root_expected_kind = expected->get_root ()->get_kind ();
@@ -580,14 +569,14 @@ HIRCompileBase::coercion_site (Bexpression *compiled_ref,
   return compiled_ref;
 }
 
-Bexpression *
-HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
+tree
+HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      const TyTy::BaseType *actual,
 				      const TyTy::BaseType *expected,
 				      const TyTy::DynamicObjectType *ty,
 				      Location locus)
 {
-  Btype *dynamic_object = TyTyResolveCompile::compile (ctx, ty);
+  tree dynamic_object = TyTyResolveCompile::compile (ctx, ty);
 
   //' this assumes ordering and current the structure is
   // __trait_object_ptr
@@ -597,7 +586,7 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
   std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
     probed_bounds_for_receiver = Resolver::TypeBoundsProbe::Probe (root);
 
-  std::vector<Bexpression *> vals;
+  std::vector<tree> vals;
   vals.push_back (compiled_ref);
   for (auto &bound : ty->get_object_items ())
     {
@@ -610,14 +599,14 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
       vals.push_back (address);
     }
 
-  Bexpression *constructed_trait_object
+  tree constructed_trait_object
     = ctx->get_backend ()->constructor_expression (dynamic_object, vals, -1,
 						   locus);
 
   fncontext fnctx = ctx->peek_fn ();
-  Bblock *enclosing_scope = ctx->peek_enclosing_scope ();
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
   bool is_address_taken = false;
-  Bstatement *ret_var_stmt = nullptr;
+  tree ret_var_stmt = NULL_TREE;
 
   Bvariable *dyn_tmp = ctx->get_backend ()->temporary_variable (
     fnctx.fndecl, enclosing_scope, dynamic_object, constructed_trait_object,
@@ -659,7 +648,7 @@ HIRCompileBase::coerce_to_dyn_object (Bexpression *compiled_ref,
   return resulting_dyn_object_ref;
 }
 
-Bexpression *
+tree
 HIRCompileBase::compute_address_for_trait_item (
   const Resolver::TraitItemReference *ref,
   const TyTy::TypeBoundPredicate *predicate,

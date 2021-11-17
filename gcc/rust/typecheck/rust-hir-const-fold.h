@@ -28,7 +28,7 @@ namespace ConstFold {
 class ConstFoldType : public TyTy::TyVisitor
 {
 public:
-  static Btype *fold (TyTy::BaseType *type, ::Backend *backend)
+  static tree fold (TyTy::BaseType *type, ::Backend *backend)
   {
     ConstFoldType folder (backend);
     type->accept_vis (folder);
@@ -43,13 +43,13 @@ public:
 
   void visit (TyTy::ArrayType &type) override
   {
-    Btype *element_ty = ConstFoldType::fold (type.get_element_type (), backend);
+    tree element_ty = ConstFoldType::fold (type.get_element_type (), backend);
     translated = backend->array_type (element_ty, type.get_capacity ());
   }
 
   void visit (TyTy::ReferenceType &type) override
   {
-    Btype *base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
+    tree base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
     if (type.is_mutable ())
       {
 	translated = backend->reference_type (base_compiled_type);
@@ -63,7 +63,7 @@ public:
 
   void visit (TyTy::PointerType &type) override
   {
-    Btype *base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
+    tree base_compiled_type = ConstFoldType::fold (type.get_base (), backend);
     if (type.is_mutable ())
       {
 	translated = backend->pointer_type (base_compiled_type);
@@ -212,7 +212,7 @@ public:
 
   void visit (TyTy::StrType &) override
   {
-    Btype *raw_str = backend->raw_str_type ();
+    tree raw_str = backend->raw_str_type ();
     translated
       = backend->named_type ("str", raw_str, Linemap::predeclared_location ());
   }
@@ -229,7 +229,7 @@ private:
   {}
 
   ::Backend *backend;
-  ::Btype *translated;
+  ::tree translated;
 };
 
 class ConstFoldItem : public ConstFoldBase
@@ -237,7 +237,7 @@ class ConstFoldItem : public ConstFoldBase
   using ConstFoldBase::visit;
 
 public:
-  static Bexpression *fold (HIR::Item &item)
+  static tree fold (HIR::Item &item)
   {
     ConstFoldItem folder;
     item.accept_vis (folder);
@@ -258,7 +258,7 @@ private:
     : ConstFoldBase (), folded (ctx->get_backend ()->error_expression ())
   {}
 
-  Bexpression *folded;
+  tree folded;
 };
 
 class ConstFoldArrayElems : public ConstFoldBase
@@ -266,7 +266,7 @@ class ConstFoldArrayElems : public ConstFoldBase
   using ConstFoldBase::visit;
 
 public:
-  static Bexpression *fold (HIR::ArrayExpr &expr)
+  static tree fold (HIR::ArrayExpr &expr)
   {
     ConstFoldArrayElems folder (expr);
     HIR::ArrayElems *elems = expr.get_internal_elements ();
@@ -283,7 +283,7 @@ private:
       expr (expr)
   {}
 
-  Bexpression *folded;
+  tree folded;
   HIR::ArrayExpr &expr;
 };
 
@@ -292,7 +292,7 @@ class ConstFoldExpr : public ConstFoldBase
   using ConstFoldBase::visit;
 
 public:
-  static Bexpression *fold (HIR::Expr *expr)
+  static tree fold (HIR::Expr *expr)
   {
     ConstFoldExpr folder;
     expr->accept_vis (folder);
@@ -369,7 +369,7 @@ public:
 	      return;
 	    }
 
-	  Btype *type = ConstFoldType::fold (tyty, ctx->get_backend ());
+	  tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
 	  folded
 	    = ctx->get_backend ()->integer_constant_expression (type, ival);
 	}
@@ -400,7 +400,7 @@ public:
 	      return;
 	    }
 
-	  Btype *type = ConstFoldType::fold (tyty, ctx->get_backend ());
+	  tree type = ConstFoldType::fold (tyty, ctx->get_backend ());
 	  folded = ctx->get_backend ()->float_constant_expression (type, fval);
 	}
 	return;
@@ -453,8 +453,8 @@ public:
 
   void visit (HIR::ArrayIndexExpr &expr) override
   {
-    Bexpression *array = ConstFoldExpr::fold (expr.get_array_expr ());
-    Bexpression *index = ConstFoldExpr::fold (expr.get_index_expr ());
+    tree array = ConstFoldExpr::fold (expr.get_array_expr ());
+    tree index = ConstFoldExpr::fold (expr.get_index_expr ());
 
     folded = ctx->get_backend ()->array_index_expression (array, index,
 							  expr.get_locus ());
@@ -462,7 +462,7 @@ public:
 
   void visit (HIR::BorrowExpr &expr) override
   {
-    Bexpression *main_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
+    tree main_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
 
     folded
       = ctx->get_backend ()->address_expression (main_expr, expr.get_locus ());
@@ -470,7 +470,7 @@ public:
 
   void visit (HIR::DereferenceExpr &expr) override
   {
-    Bexpression *main_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
+    tree main_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
 
     TyTy::BaseType *tyty = nullptr;
     if (!tyctx->lookup_type (expr.get_mappings ().get_hirid (), &tyty))
@@ -480,7 +480,7 @@ public:
 	return;
       }
 
-    Btype *expected_type = ConstFoldType::fold (tyty, ctx->get_backend ());
+    tree expected_type = ConstFoldType::fold (tyty, ctx->get_backend ());
     bool known_valid = true;
     folded = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
 						       known_valid,
@@ -497,7 +497,7 @@ private:
     : ConstFoldBase (), folded (ctx->get_backend ()->error_expression ())
   {}
 
-  Bexpression *folded;
+  tree folded;
 };
 
 } // namespace ConstFold

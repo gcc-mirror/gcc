@@ -29,6 +29,8 @@
 #include "operator.h"
 #include "rust-abi.h"
 
+#include "tree.h"
+
 extern bool
 saw_errors (void);
 
@@ -39,26 +41,8 @@ saw_errors (void);
 // frontend, and passed back to the backend.  The types must be
 // defined by the backend using these names.
 
-// The backend representation of a type.
-class Btype;
-
-// The backend represention of an expression.
-class Bexpression;
-
-// The backend representation of a statement.
-class Bstatement;
-
-// The backend representation of a function definition or declaration.
-class Bfunction;
-
-// The backend representation of a block.
-class Bblock;
-
 // The backend representation of a variable.
 class Bvariable;
-
-// The backend representation of a label.
-class Blabel;
 
 // The backend interface.  This is a pure abstract class that a
 // specific backend will implement.
@@ -70,35 +54,30 @@ public:
 
   // Name/type/location.  Used for function parameters, struct fields,
   // interface methods.
-  struct Btyped_identifier
+  struct typed_identifier
   {
     std::string name;
-    Btype *btype;
+    tree type;
     Location location;
 
-    Btyped_identifier ()
-      : name (), btype (NULL), location (Linemap::unknown_location ())
+    typed_identifier ()
+      : name (), type (NULL_TREE), location (Linemap::unknown_location ())
     {}
 
-    Btyped_identifier (const std::string &a_name, Btype *a_btype,
-		       Location a_location)
-      : name (a_name), btype (a_btype), location (a_location)
+    typed_identifier (const std::string &a_name, tree a_type,
+		      Location a_location)
+      : name (a_name), type (a_type), location (a_location)
     {}
   };
 
   // debug
-  virtual void debug (Btype *) = 0;
-  virtual void debug (Bexpression *) = 0;
-  virtual void debug (Bstatement *) = 0;
-  virtual void debug (Bfunction *) = 0;
-  virtual void debug (Bblock *) = 0;
+  virtual void debug (tree) = 0;
   virtual void debug (Bvariable *) = 0;
-  virtual void debug (Blabel *) = 0;
 
   // const folder helpers
-  virtual bool const_size_cast (Bexpression *, size_t *) = 0;
-  virtual std::string const_size_val_to_string (Bexpression *) = 0;
-  virtual bool const_values_equal (Bexpression *, Bexpression *) = 0;
+  virtual bool const_size_cast (tree, size_t *) = 0;
+  virtual std::string const_size_val_to_string (tree) = 0;
+  virtual bool const_values_equal (tree, tree) = 0;
 
   static Rust::ABI get_abi_from_string (const std::string &abi, Location locus)
   {
@@ -147,50 +126,50 @@ public:
 
   // Produce an error type.  Actually the backend could probably just
   // crash if this is called.
-  virtual Btype *error_type () = 0;
+  virtual tree error_type () = 0;
 
   // Get a void type.  This is used in (at least) two ways: 1) as the
   // return type of a function with no result parameters; 2)
   // unsafe.Pointer is represented as *void.
-  virtual Btype *void_type () = 0;
+  virtual tree void_type () = 0;
 
   // get unit-type
-  virtual Btype *unit_type () = 0;
+  virtual tree unit_type () = 0;
 
   // Get the unnamed boolean type.
-  virtual Btype *bool_type () = 0;
+  virtual tree bool_type () = 0;
 
   // Get the char type
-  virtual Btype *char_type () = 0;
+  virtual tree char_type () = 0;
 
   // Get the wchar type
-  virtual Btype *wchar_type () = 0;
+  virtual tree wchar_type () = 0;
 
   // Get the Host pointer size in bits
   virtual int get_pointer_size () = 0;
 
   // Get the raw str type const char*
-  virtual Btype *raw_str_type () = 0;
+  virtual tree raw_str_type () = 0;
 
   // Get an unnamed integer type with the given signedness and number
   // of bits.
-  virtual Btype *integer_type (bool is_unsigned, int bits) = 0;
+  virtual tree integer_type (bool is_unsigned, int bits) = 0;
 
   // Get an unnamed floating point type with the given number of bits
   // (32 or 64).
-  virtual Btype *float_type (int bits) = 0;
+  virtual tree float_type (int bits) = 0;
 
   // Get an unnamed complex type with the given number of bits (64 or 128).
-  virtual Btype *complex_type (int bits) = 0;
+  virtual tree complex_type (int bits) = 0;
 
   // Get a pointer type.
-  virtual Btype *pointer_type (Btype *to_type) = 0;
+  virtual tree pointer_type (tree to_type) = 0;
 
   // Get a reference type.
-  virtual Btype *reference_type (Btype *to_type) = 0;
+  virtual tree reference_type (tree to_type) = 0;
 
   // make type immutable
-  virtual Btype *immutable_type (Btype *base) = 0;
+  virtual tree immutable_type (tree base) = 0;
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
@@ -201,305 +180,201 @@ public:
   // one result, RESULT_STRUCT is a struct type to hold the results,
   // and RESULTS may be ignored; if there are zero or one results,
   // RESULT_STRUCT is NULL.
-  virtual Btype *
-  function_type (const Btyped_identifier &receiver,
-		 const std::vector<Btyped_identifier> &parameters,
-		 const std::vector<Btyped_identifier> &results,
-		 Btype *result_struct, Location location)
+  virtual tree function_type (const typed_identifier &receiver,
+			      const std::vector<typed_identifier> &parameters,
+			      const std::vector<typed_identifier> &results,
+			      tree result_struct, Location location)
     = 0;
 
-  virtual Btype *
-  function_type_varadic (const Btyped_identifier &receiver,
-			 const std::vector<Btyped_identifier> &parameters,
-			 const std::vector<Btyped_identifier> &results,
-			 Btype *result_struct, Location location)
+  virtual tree
+  function_type_varadic (const typed_identifier &receiver,
+			 const std::vector<typed_identifier> &parameters,
+			 const std::vector<typed_identifier> &results,
+			 tree result_struct, Location location)
     = 0;
 
-  virtual Btype *function_ptr_type (Btype *result,
-				    const std::vector<Btype *> &praameters,
-				    Location location)
+  virtual tree function_ptr_type (tree result,
+				  const std::vector<tree> &praameters,
+				  Location location)
     = 0;
 
   // Get a struct type.
-  virtual Btype *struct_type (const std::vector<Btyped_identifier> &fields) = 0;
+  virtual tree struct_type (const std::vector<typed_identifier> &fields) = 0;
 
   // Get a union type.
-  virtual Btype *union_type (const std::vector<Btyped_identifier> &fields) = 0;
+  virtual tree union_type (const std::vector<typed_identifier> &fields) = 0;
 
   // Get an array type.
-  virtual Btype *array_type (Btype *element_type, Bexpression *length) = 0;
-
-  // Create a placeholder pointer type.  This is used for a named
-  // pointer type, since in Go a pointer type may refer to itself.
-  // NAME is the name of the type, and the location is where the named
-  // type is defined.  This function is also used for unnamed function
-  // types with multiple results, in which case the type has no name
-  // and NAME will be empty.  FOR_FUNCTION is true if this is for a C
-  // pointer to function type.  A Go func type is represented as a
-  // pointer to a struct, and the first field of the struct is a C
-  // pointer to function.  The return value will later be passed as
-  // the first parameter to set_placeholder_pointer_type or
-  // set_placeholder_function_type.
-  virtual Btype *placeholder_pointer_type (const std::string &name, Location,
-					   bool for_function)
-    = 0;
-
-  // Fill in a placeholder pointer type as a pointer.  This takes a
-  // type returned by placeholder_pointer_type and arranges for it to
-  // point to the type that TO_TYPE points to (that is, PLACEHOLDER
-  // becomes the same type as TO_TYPE).  Returns true on success,
-  // false on failure.
-  virtual bool set_placeholder_pointer_type (Btype *placeholder, Btype *to_type)
-    = 0;
-
-  // Fill in a placeholder pointer type as a function.  This takes a
-  // type returned by placeholder_pointer_type and arranges for it to
-  // become a real Go function type (which corresponds to a C/C++
-  // pointer to function type).  FT will be something returned by the
-  // function_type method.  Returns true on success, false on failure.
-  virtual bool set_placeholder_function_type (Btype *placeholder, Btype *ft)
-    = 0;
-
-  // Create a placeholder struct type.  This is used for a named
-  // struct type, as with placeholder_pointer_type.  It is also used
-  // for interface types, in which case NAME will be the empty string.
-  virtual Btype *placeholder_struct_type (const std::string &name, Location)
-    = 0;
-
-  // Fill in a placeholder struct type.  This takes a type returned by
-  // placeholder_struct_type and arranges for it to become a real
-  // struct type.  The parameter is as for struct_type.  Returns true
-  // on success, false on failure.
-  virtual bool
-  set_placeholder_struct_type (Btype *placeholder,
-			       const std::vector<Btyped_identifier> &fields)
-    = 0;
-
-  // Create a placeholder array type.  This is used for a named array
-  // type, as with placeholder_pointer_type, to handle cases like
-  // type A []*A.
-  virtual Btype *placeholder_array_type (const std::string &name, Location) = 0;
-
-  // Fill in a placeholder array type.  This takes a type returned by
-  // placeholder_array_type and arranges for it to become a real array
-  // type.  The parameters are as for array_type.  Returns true on
-  // success, false on failure.
-  virtual bool set_placeholder_array_type (Btype *placeholder,
-					   Btype *element_type,
-					   Bexpression *length)
-    = 0;
+  virtual tree array_type (tree element_type, tree length) = 0;
 
   // Return a named version of a type.  The location is the location
   // of the type definition.  This will not be called for a type
   // created via placeholder_pointer_type, placeholder_struct_type, or
   // placeholder_array_type..  (It may be called for a pointer,
   // struct, or array type in a case like "type P *byte; type Q P".)
-  virtual Btype *named_type (const std::string &name, Btype *, Location) = 0;
-
-  // Create a marker for a circular pointer type.  Go pointer and
-  // function types can refer to themselves in ways that are not
-  // permitted in C/C++.  When a circular type is found, this function
-  // is called for the circular reference.  This permits the backend
-  // to decide how to handle such a type.  PLACEHOLDER is the
-  // placeholder type which has already been created; if the backend
-  // is prepared to handle a circular pointer type, it may simply
-  // return PLACEHOLDER.  FOR_FUNCTION is true if this is for a
-  // function type.
-  //
-  // For "type P *P" the sequence of calls will be
-  //   bt1 = placeholder_pointer_type();
-  //   bt2 = circular_pointer_type(bt1, false);
-  //   set_placeholder_pointer_type(bt1, bt2);
-  virtual Btype *circular_pointer_type (Btype *placeholder, bool for_function)
-    = 0;
-
-  // Return whether the argument could be a special type created by
-  // circular_pointer_type.  This is used to introduce explicit type
-  // conversions where needed.  If circular_pointer_type returns its
-  // PLACEHOLDER parameter, this may safely always return false.
-  virtual bool is_circular_pointer_type (Btype *) = 0;
+  virtual tree named_type (const std::string &name, tree, Location) = 0;
 
   // Return the size of a type.
-  virtual int64_t type_size (Btype *) = 0;
+  virtual int64_t type_size (tree) = 0;
 
   // Return the alignment of a type.
-  virtual int64_t type_alignment (Btype *) = 0;
+  virtual int64_t type_alignment (tree) = 0;
 
   // Return the alignment of a struct field of this type.  This is
   // normally the same as type_alignment, but not always.
-  virtual int64_t type_field_alignment (Btype *) = 0;
+  virtual int64_t type_field_alignment (tree) = 0;
 
   // Return the offset of field INDEX in a struct type.  INDEX is the
   // entry in the FIELDS std::vector parameter of struct_type or
   // set_placeholder_struct_type.
-  virtual int64_t type_field_offset (Btype *, size_t index) = 0;
+  virtual int64_t type_field_offset (tree, size_t index) = 0;
 
   // Expressions.
 
   // Return an expression for a zero value of the given type.  This is
   // used for cases such as local variable initialization and
   // converting nil to other types.
-  virtual Bexpression *zero_expression (Btype *) = 0;
+  virtual tree zero_expression (tree) = 0;
 
   // Create an error expression. This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
   // going without crashing.
-  virtual Bexpression *error_expression () = 0;
+  virtual tree error_expression () = 0;
 
   // return whether this is error_mark_node
-  virtual bool is_error_expression (Bexpression *) = 0;
+  virtual bool is_error_expression (tree) = 0;
 
   // Create a nil pointer expression.
-  virtual Bexpression *nil_pointer_expression () = 0;
+  virtual tree nil_pointer_expression () = 0;
 
-  virtual Bexpression *unit_expression () = 0;
+  virtual tree unit_expression () = 0;
 
   // Create a reference to a variable.
-  virtual Bexpression *var_expression (Bvariable *var, Location) = 0;
+  virtual tree var_expression (Bvariable *var, Location) = 0;
 
   // Create an expression that indirects through the pointer expression EXPR
   // (i.e., return the expression for *EXPR). KNOWN_VALID is true if the pointer
   // is known to point to a valid memory location.  BTYPE is the expected type
   // of the indirected EXPR.
-  virtual Bexpression *indirect_expression (Btype *btype, Bexpression *expr,
-					    bool known_valid, Location)
+  virtual tree indirect_expression (tree btype, tree expr, bool known_valid,
+				    Location)
     = 0;
 
   // Return an expression that declares a constant named NAME with the
   // constant value VAL in BTYPE.
-  virtual Bexpression *named_constant_expression (Btype *btype,
-						  const std::string &name,
-						  Bexpression *val, Location)
+  virtual tree named_constant_expression (tree btype, const std::string &name,
+					  tree val, Location)
     = 0;
 
   // Return an expression for the multi-precision integer VAL in BTYPE.
-  virtual Bexpression *integer_constant_expression (Btype *btype, mpz_t val)
-    = 0;
+  virtual tree integer_constant_expression (tree btype, mpz_t val) = 0;
 
   // Return an expression for the floating point value VAL in BTYPE.
-  virtual Bexpression *float_constant_expression (Btype *btype, mpfr_t val) = 0;
+  virtual tree float_constant_expression (tree btype, mpfr_t val) = 0;
 
   // Return an expression for the complex value VAL in BTYPE.
-  virtual Bexpression *complex_constant_expression (Btype *btype, mpc_t val)
-    = 0;
+  virtual tree complex_constant_expression (tree btype, mpc_t val) = 0;
 
   // Return an expression for the string value VAL.
-  virtual Bexpression *string_constant_expression (const std::string &val) = 0;
+  virtual tree string_constant_expression (const std::string &val) = 0;
 
   // Get a char literal
-  virtual Bexpression *char_constant_expression (char c) = 0;
+  virtual tree char_constant_expression (char c) = 0;
 
   // Get a char literal
-  virtual Bexpression *wchar_constant_expression (wchar_t c) = 0;
+  virtual tree wchar_constant_expression (wchar_t c) = 0;
 
   // Return an expression for the boolean value VAL.
-  virtual Bexpression *boolean_constant_expression (bool val) = 0;
+  virtual tree boolean_constant_expression (bool val) = 0;
 
   // Return an expression for the real part of BCOMPLEX.
-  virtual Bexpression *real_part_expression (Bexpression *bcomplex, Location)
-    = 0;
+  virtual tree real_part_expression (tree bcomplex, Location) = 0;
 
   // Return an expression for the imaginary part of BCOMPLEX.
-  virtual Bexpression *imag_part_expression (Bexpression *bcomplex, Location)
-    = 0;
+  virtual tree imag_part_expression (tree bcomplex, Location) = 0;
 
   // Return an expression for the complex number (BREAL, BIMAG).
-  virtual Bexpression *complex_expression (Bexpression *breal,
-					   Bexpression *bimag, Location)
-    = 0;
+  virtual tree complex_expression (tree breal, tree bimag, Location) = 0;
 
   // Return an expression that converts EXPR to TYPE.
-  virtual Bexpression *convert_expression (Btype *type, Bexpression *expr,
-					   Location)
-    = 0;
+  virtual tree convert_expression (tree type, tree expr, Location) = 0;
 
   // Create an expression for the address of a function.  This is used to
   // get the address of the code for a function.
-  virtual Bexpression *function_code_expression (Bfunction *, Location) = 0;
+  virtual tree function_code_expression (tree, Location) = 0;
 
   // Create an expression that takes the address of an expression.
-  virtual Bexpression *address_expression (Bexpression *, Location) = 0;
+  virtual tree address_expression (tree, Location) = 0;
 
   // Return an expression for the field at INDEX in BSTRUCT.
-  virtual Bexpression *struct_field_expression (Bexpression *bstruct,
-						size_t index, Location)
+  virtual tree struct_field_expression (tree bstruct, size_t index, Location)
     = 0;
 
   // Create an expression that executes BSTAT before BEXPR.
-  virtual Bexpression *compound_expression (Bstatement *bstat,
-					    Bexpression *bexpr, Location)
-    = 0;
+  virtual tree compound_expression (tree bstat, tree bexpr, Location) = 0;
 
   // Return an expression that executes THEN_EXPR if CONDITION is true, or
   // ELSE_EXPR otherwise and returns the result as type BTYPE, within the
   // specified function FUNCTION.  ELSE_EXPR may be NULL.  BTYPE may be NULL.
-  virtual Bexpression *
-  conditional_expression (Bfunction *function, Btype *btype,
-			  Bexpression *condition, Bexpression *then_expr,
-			  Bexpression *else_expr, Location)
+  virtual tree conditional_expression (tree function, tree btype,
+				       tree condition, tree then_expr,
+				       tree else_expr, Location)
     = 0;
 
   // Return an expression for the negation operation OP EXPR.
   // Supported values of OP are enumerated in NegationOperator.
-  virtual Bexpression *negation_expression (NegationOperator op,
-					    Bexpression *expr, Location)
+  virtual tree negation_expression (NegationOperator op, tree expr, Location)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ArithmeticOrLogicalOperator.
-  virtual Bexpression *
-  arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
-				    Bexpression *left, Bexpression *right,
-				    Location)
+  virtual tree arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op,
+						 tree left, tree right,
+						 Location)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in ComparisonOperator.
-  virtual Bexpression *comparison_expression (ComparisonOperator op,
-					      Bexpression *left,
-					      Bexpression *right, Location)
+  virtual tree comparison_expression (ComparisonOperator op, tree left,
+				      tree right, Location)
     = 0;
 
   // Return an expression for the operation LEFT OP RIGHT.
   // Supported values of OP are enumerated in LazyBooleanOperator.
-  virtual Bexpression *lazy_boolean_expression (LazyBooleanOperator op,
-						Bexpression *left,
-						Bexpression *right, Location)
+  virtual tree lazy_boolean_expression (LazyBooleanOperator op, tree left,
+					tree right, Location)
     = 0;
 
   // Return an expression that constructs BTYPE with VALS.  BTYPE must be the
   // backend representation a of struct.  VALS must be in the same order as the
   // corresponding fields in BTYPE.
-  virtual Bexpression *
-  constructor_expression (Btype *btype, const std::vector<Bexpression *> &vals,
-			  int, Location)
+  virtual tree constructor_expression (tree btype,
+				       const std::vector<tree> &vals, int,
+				       Location)
     = 0;
 
   // Return an expression that constructs an array of BTYPE with INDEXES and
   // VALS.  INDEXES and VALS must have the same amount of elements. Each index
   // in INDEXES must be in the same order as the corresponding value in VALS.
-  virtual Bexpression *array_constructor_expression (
-    Btype *btype, const std::vector<unsigned long> &indexes,
-    const std::vector<Bexpression *> &vals, Location)
+  virtual tree
+  array_constructor_expression (tree btype,
+				const std::vector<unsigned long> &indexes,
+				const std::vector<tree> &vals, Location)
     = 0;
 
   // Return an expression for the address of BASE[INDEX].
   // BASE has a pointer type.  This is used for slice indexing.
-  virtual Bexpression *pointer_offset_expression (Bexpression *base,
-						  Bexpression *index, Location)
-    = 0;
+  virtual tree pointer_offset_expression (tree base, tree index, Location) = 0;
 
   // Return an expression for ARRAY[INDEX] as an l-value.  ARRAY is a valid
   // fixed-length array, not a slice.
-  virtual Bexpression *array_index_expression (Bexpression *array,
-					       Bexpression *index, Location)
-    = 0;
+  virtual tree array_index_expression (tree array, tree index, Location) = 0;
 
   // Create an expression for a call to FN with ARGS, taking place within
   // caller CALLER.
-  virtual Bexpression *call_expression (Bfunction *caller, Bexpression *fn,
-					const std::vector<Bexpression *> &args,
-					Bexpression *static_chain, Location)
+  virtual tree call_expression (tree caller, tree fn,
+				const std::vector<tree> &args,
+				tree static_chain, Location)
     = 0;
 
   // Statements.
@@ -507,40 +382,33 @@ public:
   // Create an error statement.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
   // going without crashing.
-  virtual Bstatement *error_statement () = 0;
+  virtual tree error_statement () = 0;
 
   // Create an expression statement within the specified function.
-  virtual Bstatement *expression_statement (Bfunction *, Bexpression *) = 0;
+  virtual tree expression_statement (tree, tree) = 0;
 
   // Create a variable initialization statement in the specified
   // function.  This initializes a local variable at the point in the
   // program flow where it is declared.
-  virtual Bstatement *init_statement (Bfunction *, Bvariable *var,
-				      Bexpression *init)
-    = 0;
+  virtual tree init_statement (tree, Bvariable *var, tree init) = 0;
 
   // Create an assignment statement within the specified function.
-  virtual Bstatement *assignment_statement (Bfunction *, Bexpression *lhs,
-					    Bexpression *rhs, Location)
-    = 0;
+  virtual tree assignment_statement (tree, tree lhs, tree rhs, Location) = 0;
 
   // Create a return statement, passing the representation of the
   // function and the list of values to return.
-  virtual Bstatement *
-  return_statement (Bfunction *, const std::vector<Bexpression *> &, Location)
-    = 0;
+  virtual tree return_statement (tree, const std::vector<tree> &, Location) = 0;
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
-  virtual Bstatement *if_statement (Bfunction *, Bexpression *condition,
-				    Bblock *then_block, Bblock *else_block,
-				    Location)
+  virtual tree if_statement (tree, tree condition, tree then_block,
+			     tree else_block, Location)
     = 0;
 
   // infinite loop expressions
-  virtual Bexpression *loop_expression (Bblock *body, Location) = 0;
+  virtual tree loop_expression (tree body, Location) = 0;
 
   // exit expressions
-  virtual Bexpression *exit_expression (Bexpression *condition, Location) = 0;
+  virtual tree exit_expression (tree condition, Location) = 0;
 
   // Create a switch statement where the case values are constants.
   // CASES and STATEMENTS must have the same number of entries.  If
@@ -549,26 +417,24 @@ public:
   // either end with a goto statement or will fall through into
   // STATEMENTS[i + 1].  CASES[i] is empty for the default clause,
   // which need not be last.  FUNCTION is the current function.
-  virtual Bstatement *
-  switch_statement (Bfunction *function, Bexpression *value,
-		    const std::vector<std::vector<Bexpression *> > &cases,
-		    const std::vector<Bstatement *> &statements, Location)
+  virtual tree switch_statement (tree function, tree value,
+				 const std::vector<std::vector<tree> > &cases,
+				 const std::vector<tree> &statements, Location)
     = 0;
 
   // Create a single statement from two statements.
-  virtual Bstatement *compound_statement (Bstatement *, Bstatement *) = 0;
+  virtual tree compound_statement (tree, tree) = 0;
 
   // Create a single statement from a list of statements.
-  virtual Bstatement *statement_list (const std::vector<Bstatement *> &) = 0;
+  virtual tree statement_list (const std::vector<tree> &) = 0;
 
   // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if
   // an exception occurs. EXCEPT_STMT may be NULL.  FINALLY_STMT may be NULL and
   // if not NULL, it will always be executed.  This is used for handling defers
   // in Go functions.  In C++, the resulting code is of this form:
   //   try { BSTAT; } catch { EXCEPT_STMT; } finally { FINALLY_STMT; }
-  virtual Bstatement *
-  exception_handler_statement (Bstatement *bstat, Bstatement *except_stmt,
-			       Bstatement *finally_stmt, Location)
+  virtual tree exception_handler_statement (tree bstat, tree except_stmt,
+					    tree finally_stmt, Location)
     = 0;
 
   // Blocks.
@@ -583,22 +449,20 @@ public:
   // the initial curly brace.  END_LOCATION is the location of the end
   // of the block, more or less the location of the final curly brace.
   // The statements will be added after the block is created.
-  virtual Bblock *block (Bfunction *function, Bblock *enclosing,
-			 const std::vector<Bvariable *> &vars,
-			 Location start_location, Location end_location)
+  virtual tree block (tree function, tree enclosing,
+		      const std::vector<Bvariable *> &vars,
+		      Location start_location, Location end_location)
     = 0;
 
   // Add the statements to a block.  The block is created first.  Then
   // the statements are created.  Then the statements are added to the
   // block.  This will called exactly once per block.  The vector may
   // be empty if there are no statements.
-  virtual void block_add_statements (Bblock *,
-				     const std::vector<Bstatement *> &)
-    = 0;
+  virtual void block_add_statements (tree, const std::vector<tree> &) = 0;
 
   // Return the block as a statement.  This is used to include a block
   // in a list of statements.
-  virtual Bstatement *block_statement (Bblock *) = 0;
+  virtual tree block_statement (tree) = 0;
 
   // Variables.
 
@@ -618,7 +482,7 @@ public:
   // permit the linker to garbage collect the variable if it is not
   // referenced.  LOCATION is where the variable was defined.
   virtual Bvariable *global_variable (const std::string &name,
-				      const std::string &asm_name, Btype *btype,
+				      const std::string &asm_name, tree btype,
 				      bool is_external, bool is_hidden,
 				      bool in_unique_section, Location location)
     = 0;
@@ -629,7 +493,7 @@ public:
   // global_variable_set_init to set the initial value.  If this is
   // not called, the backend should initialize a global variable to 0.
   // The init function may then assign a value to it.
-  virtual void global_variable_set_init (Bvariable *, Bexpression *) = 0;
+  virtual void global_variable_set_init (Bvariable *, tree) = 0;
 
   // Create a local variable.  The frontend will create the local
   // variables first, and then create the block which contains them.
@@ -643,23 +507,23 @@ public:
   // the function, as otherwise the variable would be on the heap).
   // LOCATION is where the variable is defined.  For each local variable
   // the frontend will call init_statement to set the initial value.
-  virtual Bvariable *
-  local_variable (Bfunction *function, const std::string &name, Btype *type,
-		  Bvariable *decl_var, bool is_address_taken, Location location)
+  virtual Bvariable *local_variable (tree function, const std::string &name,
+				     tree type, Bvariable *decl_var,
+				     bool is_address_taken, Location location)
     = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
-  virtual Bvariable *
-  parameter_variable (Bfunction *function, const std::string &name, Btype *type,
-		      bool is_address_taken, Location location)
+  virtual Bvariable *parameter_variable (tree function, const std::string &name,
+					 tree type, bool is_address_taken,
+					 Location location)
     = 0;
 
   // Create a static chain parameter.  This is the closure parameter.
-  virtual Bvariable *static_chain_variable (Bfunction *function,
-					    const std::string &name,
-					    Btype *type, Location location)
+  virtual Bvariable *static_chain_variable (tree function,
+					    const std::string &name, tree type,
+					    Location location)
     = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
@@ -673,10 +537,9 @@ public:
   // variable, and may not be very useful.  This function should
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
-  virtual Bvariable *
-  temporary_variable (Bfunction *, Bblock *, Btype *, Bexpression *init,
-		      bool address_is_taken, Location location,
-		      Bstatement **pstatement)
+  virtual Bvariable *temporary_variable (tree, tree, tree, tree init,
+					 bool address_is_taken,
+					 Location location, tree *pstatement)
     = 0;
 
   // Create an implicit variable that is compiler-defined.  This is
@@ -705,10 +568,10 @@ public:
   // the zero value.  IS_HIDDEN and IS_COMMON will never both be true.
   //
   // If ALIGNMENT is not zero, it is the desired alignment of the variable.
-  virtual Bvariable *
-  implicit_variable (const std::string &name, const std::string &asm_name,
-		     Btype *type, bool is_hidden, bool is_constant,
-		     bool is_common, int64_t alignment)
+  virtual Bvariable *implicit_variable (const std::string &name,
+					const std::string &asm_name, tree type,
+					bool is_hidden, bool is_constant,
+					bool is_common, int64_t alignment)
     = 0;
 
   // Set the initial value of a variable created by implicit_variable.
@@ -722,9 +585,9 @@ public:
   // If IS_COMMON is true, INIT will be NULL, and the
   // variable should be initialized to all zeros.
   virtual void implicit_variable_set_init (Bvariable *, const std::string &name,
-					   Btype *type, bool is_hidden,
+					   tree type, bool is_hidden,
 					   bool is_constant, bool is_common,
-					   Bexpression *init)
+					   tree init)
     = 0;
 
   // Create a reference to a named implicit variable defined in some
@@ -734,7 +597,7 @@ public:
   // variable in C.
   virtual Bvariable *implicit_variable_reference (const std::string &name,
 						  const std::string &asm_name,
-						  Btype *type)
+						  tree type)
     = 0;
 
   // Create a named immutable initialized data structure.  This is
@@ -767,7 +630,7 @@ public:
   // immutable_struct_set_init.
   virtual Bvariable *
   immutable_struct (const std::string &name, const std::string &asm_name,
-		    bool is_hidden, bool is_common, Btype *type, Location)
+		    bool is_hidden, bool is_common, tree type, Location)
     = 0;
 
   // Set the initial value of a variable created by immutable_struct.
@@ -779,8 +642,7 @@ public:
   // immutable_struct.
   virtual void immutable_struct_set_init (Bvariable *, const std::string &name,
 					  bool is_hidden, bool is_common,
-					  Btype *type, Location,
-					  Bexpression *initializer)
+					  tree type, Location, tree initializer)
     = 0;
 
   // Create a reference to a named immutable initialized data
@@ -790,7 +652,7 @@ public:
   // corresponds to an extern const global variable in C.
   virtual Bvariable *immutable_struct_reference (const std::string &name,
 						 const std::string &asm_name,
-						 Btype *type, Location)
+						 tree type, Location)
     = 0;
 
   // Labels.
@@ -798,27 +660,27 @@ public:
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
   // where the label is defined.
-  virtual Blabel *label (Bfunction *, const std::string &name, Location) = 0;
+  virtual tree label (tree, const std::string &name, Location) = 0;
 
   // Create a statement which defines a label.  This statement will be
   // put into the codestream at the point where the label should be
   // defined.
-  virtual Bstatement *label_definition_statement (Blabel *) = 0;
+  virtual tree label_definition_statement (tree) = 0;
 
   // Create a goto statement to a label.
-  virtual Bstatement *goto_statement (Blabel *, Location) = 0;
+  virtual tree goto_statement (tree, Location) = 0;
 
   // Create an expression for the address of a label.  This is used to
   // get the return address of a deferred function which may call
   // recover.
-  virtual Bexpression *label_address (Blabel *, Location) = 0;
+  virtual tree label_address (tree, Location) = 0;
 
   // Functions.
 
   // Create an error function.  This is used for cases which should
   // not occur in a correct program, in order to keep the compilation
   // going without crashing.
-  virtual Bfunction *error_function () = 0;
+  virtual tree error_function () = 0;
 
   // Bit flags to pass to the function method.
 
@@ -857,49 +719,47 @@ public:
   // string, is the name that should be used in the symbol table; this
   // will be non-empty if a magic extern comment is used.  FLAGS is
   // bit flags described above.
-  virtual Bfunction *function (Btype *fntype, const std::string &name,
-			       const std::string &asm_name, unsigned int flags,
-			       Location)
+  virtual tree function (tree fntype, const std::string &name,
+			 const std::string &asm_name, unsigned int flags,
+			 Location)
     = 0;
 
-  virtual Btype *specify_abi_attribute (Btype *type, Rust::ABI abi) = 0;
+  virtual tree specify_abi_attribute (tree type, Rust::ABI abi) = 0;
 
   // Create a statement that runs all deferred calls for FUNCTION.  This should
   // be a statement that looks like this in C++:
   //   finish:
   //     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
-  virtual Bstatement *
-  function_defer_statement (Bfunction *function, Bexpression *undefer,
-			    Bexpression *check_defer, Location)
+  virtual tree function_defer_statement (tree function, tree undefer,
+					 tree check_defer, Location)
     = 0;
 
   // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
   // This will only be called for a function definition.  Returns true on
   // success, false on failure.
   virtual bool
-  function_set_parameters (Bfunction *function,
+  function_set_parameters (tree function,
 			   const std::vector<Bvariable *> &param_vars)
     = 0;
 
   // Set the function body for FUNCTION using the code in CODE_STMT.  Returns
   // true on success, false on failure.
-  virtual bool function_set_body (Bfunction *function, Bstatement *code_stmt)
-    = 0;
+  virtual bool function_set_body (tree function, tree code_stmt) = 0;
 
   // Look up a named built-in function in the current backend implementation.
   // Returns NULL if no built-in function by that name exists.
-  virtual Bfunction *lookup_gcc_builtin (const std::string &) = 0;
+  virtual tree lookup_gcc_builtin (const std::string &) = 0;
 
-  virtual Bfunction *lookup_builtin_by_rust_name (const std::string &) = 0;
+  virtual tree lookup_builtin_by_rust_name (const std::string &) = 0;
 
   // Utility.
 
   // Write the definitions for all TYPE_DECLS, CONSTANT_DECLS,
   // FUNCTION_DECLS, and VARIABLE_DECLS declared globally.
   virtual void
-  write_global_definitions (const std::vector<Btype *> &type_decls,
-			    const std::vector<Bexpression *> &constant_decls,
-			    const std::vector<Bfunction *> &function_decls,
+  write_global_definitions (const std::vector<tree> &type_decls,
+			    const std::vector<tree> &constant_decls,
+			    const std::vector<tree> &function_decls,
 			    const std::vector<Bvariable *> &variable_decls)
     = 0;
 

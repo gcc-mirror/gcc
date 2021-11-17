@@ -55,7 +55,7 @@ public:
     // FIXME this is assuming C ABI
     std::string asm_name = name;
 
-    Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
     bool is_external = true;
     bool is_hidden = false;
     bool in_unique_section = false;
@@ -99,14 +99,14 @@ public:
 
     // items can be forward compiled which means we may not need to invoke this
     // code. We might also have already compiled this generic function as well.
-    Bfunction *lookup = nullptr;
+    tree lookup = NULL_TREE;
     if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
 				   fntype->get_id (), fntype))
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
 	  {
-	    Bfunction *dummy = nullptr;
+	    tree dummy = NULL_TREE;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
 	      ctx->insert_function_decl (fntype, lookup);
 
@@ -123,12 +123,12 @@ public:
     if (fntype->get_abi () == ABI::INTRINSIC)
       {
 	Intrinsics compile (ctx);
-	Bfunction *fndecl = compile.compile (fntype);
+	tree fndecl = compile.compile (fntype);
 	ctx->insert_function_decl (fntype, fndecl);
 	return;
       }
 
-    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
     compiled_fn_type
       = ctx->get_backend ()->specify_abi_attribute (compiled_fn_type,
 						    fntype->get_abi ());
@@ -139,7 +139,7 @@ public:
     std::string ir_symbol_name = function.get_item_name ();
     std::string asm_name = function.get_item_name ();
 
-    Bfunction *fndecl
+    tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
     ctx->insert_function_decl (fntype, fndecl);

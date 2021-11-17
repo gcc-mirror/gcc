@@ -21,7 +21,7 @@ namespace Compile {
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
-Bfunction *
+tree
 Intrinsics::compile (TyTy::FnType *fntype)
 {
   rust_assert (fntype->get_abi () == ABI::INTRINSIC);
@@ -77,7 +77,7 @@ Intrinsics::compile (TyTy::FnType *fntype)
   // };
   // Some(cx.get_intrinsic(&llvm_name))
 
-  Bfunction *builtin = ctx->get_backend ()->lookup_builtin_by_rust_name (
+  tree builtin = ctx->get_backend ()->lookup_builtin_by_rust_name (
     fntype->get_identifier ());
   if (builtin != nullptr)
     return builtin;
