@@ -240,6 +240,7 @@ extern unsigned int ix86_get_callcvt (const_tree);
 #endif
 
 extern rtx ix86_tls_module_base (void);
+extern bool ix86_gpr_tls_address_pattern_p (rtx);
 extern bool ix86_tls_address_pattern_p (rtx);
 extern rtx ix86_rewrite_tls_address (rtx);
 
