@@ -325,6 +325,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_get_allocator() const
       { return _M_dataplus; }
 
+      // Ensure that _M_local_buf is the active member of the union.
+      __attribute__((__always_inline__))
+      _GLIBCXX14_CONSTEXPR
+      pointer
+      _M_use_local_data() _GLIBCXX_NOEXCEPT
+      {
+#if __cpp_lib_is_constant_evaluated
+	if (__builtin_is_constant_evaluated())
+	  _M_local_buf[0] = _CharT();
+#endif
+	return _M_local_data();
+      }
+
     private:
 
 #ifdef _GLIBCXX_DISAMBIGUATE_REPLACE_INST
@@ -1487,7 +1500,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		if (__str.size() <= _S_local_capacity)
 		  {
 		    _M_destroy(_M_allocated_capacity);
-		    _M_data(_M_local_data());
+		    _M_data(_M_use_local_data());
 		    _M_set_length(0);
 		  }
 		else

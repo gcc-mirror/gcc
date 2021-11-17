@@ -170,9 +170,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_type __len = 0;
 	size_type __capacity = size_type(_S_local_capacity);
 
+	pointer __p = _M_use_local_data();
+
 	while (__beg != __end && __len < __capacity)
 	  {
-	    _M_data()[__len++] = *__beg;
+	    __p[__len++] = *__beg;
 	    ++__beg;
 	  }
 
@@ -223,6 +225,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_data(_M_create(__dnew, size_type(0)));
 	    _M_capacity(__dnew);
 	  }
+	else
+	  _M_use_local_data();
 
 	// Check for out_of_range and length_error exceptions.
 	__try
@@ -247,6 +251,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_data(_M_create(__n, size_type(0)));
 	  _M_capacity(__n);
 	}
+      else
+	_M_use_local_data();
 
       if (__n)
 	this->_S_assign(_M_data(), __n, __c);
@@ -355,7 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__length <= size_type(_S_local_capacity))
 	{
-	  this->_S_copy(_M_local_data(), _M_data(), __length + 1);
+	  this->_S_copy(_M_use_local_data(), _M_data(), __length + 1);
 	  _M_destroy(__capacity);
 	  _M_data(_M_local_data());
 	}
