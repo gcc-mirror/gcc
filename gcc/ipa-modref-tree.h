@@ -99,6 +99,10 @@ struct GTY(()) modref_access_node
   tree get_call_arg (const gcall *stmt) const;
   /* Build ao_ref corresponding to the access and return true if succesful.  */
   bool get_ao_ref (const gcall *stmt, class ao_ref *ref) const;
+  /* Stream access to OB.  */
+  void stream_out (struct output_block *ob) const;
+  /* Stream access in from IB.  */
+  static modref_access_node stream_in (struct lto_input_block *ib);
   /* Insert A into vector ACCESSES.  Limit size of vector to MAX_ACCESSES and
      if RECORD_ADJUSTMENT is true keep track of adjustment counts.
      Return 0 if nothing changed, 1 is insertion suceeded and -1 if failed.  */

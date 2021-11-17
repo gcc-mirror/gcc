@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "tree-ssa-alias.h"
 #include "gimple.h"
+#include "cgraph.h"
+#include "tree-streamer.h"
 
 /* Return true if both accesses are the same.  */
 bool
@@ -456,6 +458,50 @@ modref_access_node::try_merge_with (vec <modref_access_node, va_gc> *&accesses,
       }
     else
       i++;
+}
+
+/* Stream out to OB.  */
+
+void
+modref_access_node::stream_out (struct output_block *ob) const
+{
+  streamer_write_hwi (ob, parm_index);
+  if (parm_index != MODREF_UNKNOWN_PARM)
+    {
+      streamer_write_uhwi (ob, parm_offset_known);
+      if (parm_offset_known)
+	{
+	  streamer_write_poly_int64 (ob, parm_offset);
+	  streamer_write_poly_int64 (ob, offset);
+	  streamer_write_poly_int64 (ob, size);
+	  streamer_write_poly_int64 (ob, max_size);
+	}
+    }
+}
+
+modref_access_node
+modref_access_node::stream_in (struct lto_input_block *ib)
+{
+  int parm_index = streamer_read_hwi (ib);
+  bool parm_offset_known = false;
+  poly_int64 parm_offset = 0;
+  poly_int64 offset = 0;
+  poly_int64 size = -1;
+  poly_int64 max_size = -1;
+
+  if (parm_index != MODREF_UNKNOWN_PARM)
+    {
+      parm_offset_known = streamer_read_uhwi (ib);
+      if (parm_offset_known)
+	{
+	  parm_offset = streamer_read_poly_int64 (ib);
+	  offset = streamer_read_poly_int64 (ib);
+	  size = streamer_read_poly_int64 (ib);
+	  max_size = streamer_read_poly_int64 (ib);
+	}
+    }
+  return {offset, size, max_size, parm_offset, parm_index,
+	  parm_offset_known, false};
 }
 
 /* Insert access with OFFSET and SIZE.

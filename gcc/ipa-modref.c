@@ -410,6 +410,8 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
 	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
+  else
+    kills.release ();
   if (ecf_flags & ECF_PURE)
     return ((!side_effects || !nondeterministic)
 	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
@@ -634,6 +636,15 @@ modref_summary_lto::dump (FILE *out)
   dump_lto_records (loads, out);
   fprintf (out, "  stores:\n");
   dump_lto_records (stores, out);
+  if (kills.length ())
+    {
+      fprintf (out, "  kills:\n");
+      for (auto kill : kills)
+	{
+	  fprintf (out, "    ");
+	  kill.dump (out);
+	}
+    }
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
   if (side_effects)
@@ -1527,15 +1538,17 @@ analyze_store (gimple *stmt, tree, tree op, void *data)
     record_access (summary->stores, &r, a);
   if (summary_lto)
     record_access_lto (summary_lto->stores, &r, a);
-  if (summary
-      && ((summary_ptrs *)data)->always_executed
+  if (((summary_ptrs *)data)->always_executed
       && a.useful_for_kill_p ()
       && (!cfun->can_throw_non_call_exceptions
 	  || !stmt_could_throw_p (cfun, stmt)))
     {
       if (dump_file)
 	fprintf (dump_file, "   - Recording kill\n");
-      modref_access_node::insert_kill (summary->kills, a, false);
+      if (summary)
+	modref_access_node::insert_kill (summary->kills, a, false);
+      if (summary_lto)
+	modref_access_node::insert_kill (summary_lto->kills, a, false);
     }
   return false;
 }
@@ -1554,8 +1567,7 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
      Similar logic is in ipa-pure-const.c.  */
   if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
     {
-      if (summary
-	  && always_executed && record_access_p (gimple_assign_lhs (stmt)))
+      if (always_executed && record_access_p (gimple_assign_lhs (stmt)))
 	{
 	  ao_ref r;
 	  ao_ref_init (&r, gimple_assign_lhs (stmt));
@@ -1564,7 +1576,10 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "   - Recording kill\n");
-	      modref_access_node::insert_kill (summary->kills, a, false);
+	      if (summary)
+		modref_access_node::insert_kill (summary->kills, a, false);
+	      if (summary_lto)
+		modref_access_node::insert_kill (summary_lto->kills, a, false);
 	    }
 	}
       return true;
@@ -3270,6 +3285,8 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 			 src_data->loads->max_refs,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
+  dst_data->kills.reserve_exact (src_data->kills.length ());
+  dst_data->kills.splice (src_data->kills);
   dst_data->writes_errno = src_data->writes_errno;
   dst_data->side_effects = src_data->side_effects;
   dst_data->nondeterministic = src_data->nondeterministic;
@@ -3324,40 +3341,21 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
 
   streamer_write_uhwi (ob, tt->every_base);
   streamer_write_uhwi (ob, vec_safe_length (tt->bases));
-  size_t i;
-  modref_base_node <tree> *base_node;
-  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
+  for (auto base_node : tt->bases)
     {
       stream_write_tree (ob, base_node->base, true);
 
       streamer_write_uhwi (ob, base_node->every_ref);
       streamer_write_uhwi (ob, vec_safe_length (base_node->refs));
 
-      size_t j;
-      modref_ref_node <tree> *ref_node;
-      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+      for (auto ref_node : base_node->refs)
 	{
 	  stream_write_tree (ob, ref_node->ref, true);
 	  streamer_write_uhwi (ob, ref_node->every_access);
 	  streamer_write_uhwi (ob, vec_safe_length (ref_node->accesses));
 
-	  size_t k;
-	  modref_access_node *access_node;
-	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	    {
-	      streamer_write_hwi (ob, access_node->parm_index);
-	      if (access_node->parm_index != -1)
-		{
-		  streamer_write_uhwi (ob, access_node->parm_offset_known);
-		  if (access_node->parm_offset_known)
-		    {
-		      streamer_write_poly_int64 (ob, access_node->parm_offset);
-		      streamer_write_poly_int64 (ob, access_node->offset);
-		      streamer_write_poly_int64 (ob, access_node->size);
-		      streamer_write_poly_int64 (ob, access_node->max_size);
-		    }
-		}
-	    }
+	  for (auto access_node : ref_node->accesses)
+	    access_node.stream_out (ob);
 	}
     }
 }
@@ -3469,26 +3467,7 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 
 	  for (size_t k = 0; k < naccesses; k++)
 	    {
-	      int parm_index = streamer_read_hwi (ib);
-	      bool parm_offset_known = false;
-	      poly_int64 parm_offset = 0;
-	      poly_int64 offset = 0;
-	      poly_int64 size = -1;
-	      poly_int64 max_size = -1;
-
-	      if (parm_index != -1)
-		{
-		  parm_offset_known = streamer_read_uhwi (ib);
-		  if (parm_offset_known)
-		    {
-		      parm_offset = streamer_read_poly_int64 (ib);
-		      offset = streamer_read_poly_int64 (ib);
-		      size = streamer_read_poly_int64 (ib);
-		      max_size = streamer_read_poly_int64 (ib);
-		    }
-		}
-	      modref_access_node a = {offset, size, max_size, parm_offset,
-				      parm_index, parm_offset_known, false};
+	      modref_access_node a = modref_access_node::stream_in (ib);
 	      if (nolto_ref_node)
 		nolto_ref_node->insert_access (a, max_accesses, false);
 	      if (lto_ref_node)
@@ -3599,6 +3578,9 @@ modref_write ()
 
 	  write_modref_records (r->loads, ob);
 	  write_modref_records (r->stores, ob);
+	  streamer_write_uhwi (ob, r->kills.length ());
+	  for (auto kill : r->kills)
+	    kill.stream_out (ob);
 
 	  struct bitpack_d bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, r->writes_errno, 1);
@@ -3723,6 +3705,20 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
       read_modref_records (&ib, data_in,
 			   modref_sum ? &modref_sum->stores : NULL,
 			   modref_sum_lto ? &modref_sum_lto->stores : NULL);
+      int j = streamer_read_uhwi (&ib);
+      if (j && modref_sum)
+	modref_sum->kills.reserve_exact (j);
+      if (j && modref_sum_lto)
+	modref_sum_lto->kills.reserve_exact (j);
+      for (int k = 0; k < j; k++)
+	{
+	  modref_access_node a = modref_access_node::stream_in (&ib);
+
+	  if (modref_sum)
+	    modref_sum->kills.quick_push (a);
+	  if (modref_sum_lto)
+	    modref_sum_lto->kills.quick_push (a);
+	}
       struct bitpack_d bp = streamer_read_bitpack (&ib);
       if (bp_unpack_value (&bp, 1))
 	{
@@ -3863,6 +3859,27 @@ remap_arg_flags (auto_vec <eaf_flags_t> &arg_flags, clone_info *info)
     }
 }
 
+/* Update kills accrdoing to the parm map MAP.  */
+
+static void
+remap_kills (vec <modref_access_node> &kills, const vec <int> &map)
+{
+  for (size_t i = 0; i < kills.length ();)
+    if (kills[i].parm_index >= 0)
+      {
+	if (kills[i].parm_index < (int)map.length ()
+	    && map[kills[i].parm_index] != MODREF_UNKNOWN_PARM)
+	  {
+	    kills[i].parm_index = map[kills[i].parm_index];
+	    i++;
+	  }
+	else
+	  kills.unordered_remove (i);
+      }
+    else
+      i++;
+}
+
 /* If signature changed, update the summary.  */
 
 static void
@@ -3913,8 +3930,7 @@ update_signature (struct cgraph_node *node)
     {
       r->loads->remap_params (&map);
       r->stores->remap_params (&map);
-      /* TODO: One we do IPA kills analysis, update the table here.  */
-      r->kills.release ();
+      remap_kills (r->kills, map);
       if (r->arg_flags.length ())
 	remap_arg_flags (r->arg_flags, info);
     }
@@ -3922,8 +3938,7 @@ update_signature (struct cgraph_node *node)
     {
       r_lto->loads->remap_params (&map);
       r_lto->stores->remap_params (&map);
-      /* TODO: One we do IPA kills analysis, update the table here.  */
-      r_lto->kills.release ();
+      remap_kills (r_lto->kills, map);
       if (r_lto->arg_flags.length ())
 	remap_arg_flags (r_lto->arg_flags, info);
     }
