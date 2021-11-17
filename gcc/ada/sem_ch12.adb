@@ -613,6 +613,24 @@ package body Sem_Ch12 is
    --  packages, and the prefix of the formal type may be needed to resolve
    --  the ambiguity in the instance ???
 
+   procedure Freeze_Package_Instance
+     (N        : Node_Id;
+      Gen_Body : Node_Id;
+      Gen_Decl : Node_Id;
+      Act_Id   : Entity_Id);
+   --  If the instantiation happens textually before the body of the generic,
+   --  the instantiation of the body must be analyzed after the generic body,
+   --  and not at the point of instantiation. Such early instantiations can
+   --  happen if the generic and the instance appear in a package declaration
+   --  because the generic body can only appear in the corresponding package
+   --  body. Early instantiations can also appear if generic, instance and
+   --  body are all in the declarative part of a subprogram or entry. Entities
+   --  of packages that are early instantiations are delayed, and their freeze
+   --  node appears after the generic body. This rather complex machinery is
+   --  needed when nested instantiations are present, because the source does
+   --  not carry any indication of where the corresponding instance bodies must
+   --  be installed and frozen.
+
    procedure Freeze_Subprogram_Instance
      (N         : Node_Id;
       Gen_Body  : Node_Id;
@@ -717,24 +735,6 @@ package body Sem_Ch12 is
    --  contains N. This can also be invoked to insert the freeze node of a
    --  package that encloses an instantiation, in which case N may denote an
    --  arbitrary node.
-
-   procedure Freeze_Package_Instance
-     (N        : Node_Id;
-      Gen_Body : Node_Id;
-      Gen_Decl : Node_Id;
-      Act_Id   : Entity_Id);
-   --  If the instantiation happens textually before the body of the generic,
-   --  the instantiation of the body must be analyzed after the generic body,
-   --  and not at the point of instantiation. Such early instantiations can
-   --  happen if the generic and the instance appear in a package declaration
-   --  because the generic body can only appear in the corresponding package
-   --  body. Early instantiations can also appear if generic, instance and
-   --  body are all in the declarative part of a subprogram or entry. Entities
-   --  of packages that are early instantiations are delayed, and their freeze
-   --  node appears after the generic body. This rather complex machinery is
-   --  needed when nested instantiations are present, because the source does
-   --  not carry any indication of where the corresponding instance bodies must
-   --  be installed and frozen.
 
    procedure Install_Formal_Packages (Par : Entity_Id);
    --  Install the visible part of any formal of the parent that is a formal
@@ -9017,6 +9017,254 @@ package body Sem_Ch12 is
       end if;
    end Find_Actual_Type;
 
+   -----------------------------
+   -- Freeze_Package_Instance --
+   -----------------------------
+
+   procedure Freeze_Package_Instance
+     (N        : Node_Id;
+      Gen_Body : Node_Id;
+      Gen_Decl : Node_Id;
+      Act_Id   : Entity_Id)
+   is
+      function In_Same_Scope (Gen_Id, Act_Id : Node_Id) return Boolean;
+      --  Check if the generic definition and the instantiation come from
+      --  a common scope, in which case the instance must be frozen after
+      --  the generic body.
+
+      function True_Sloc (N, Act_Unit : Node_Id) return Source_Ptr;
+      --  If the instance is nested inside a generic unit, the Sloc of the
+      --  instance indicates the place of the original definition, not the
+      --  point of the current enclosing instance. Pending a better usage of
+      --  Slocs to indicate instantiation places, we determine the place of
+      --  origin of a node by finding the maximum sloc of any ancestor node.
+
+      --  Why is this not equivalent to Top_Level_Location ???
+
+      -------------------
+      -- In_Same_Scope --
+      -------------------
+
+      function In_Same_Scope (Gen_Id, Act_Id : Node_Id) return Boolean is
+         Act_Scop : Entity_Id := Scope (Act_Id);
+         Gen_Scop : Entity_Id := Scope (Gen_Id);
+
+      begin
+         while Act_Scop /= Standard_Standard
+           and then Gen_Scop /= Standard_Standard
+         loop
+            if Act_Scop = Gen_Scop then
+               return True;
+            end if;
+
+            Act_Scop := Scope (Act_Scop);
+            Gen_Scop := Scope (Gen_Scop);
+         end loop;
+
+         return False;
+      end In_Same_Scope;
+
+      ---------------
+      -- True_Sloc --
+      ---------------
+
+      function True_Sloc (N, Act_Unit : Node_Id) return Source_Ptr is
+         N1  : Node_Id;
+         Res : Source_Ptr;
+
+      begin
+         Res := Sloc (N);
+         N1  := N;
+         while Present (N1) and then N1 /= Act_Unit loop
+            if Sloc (N1) > Res then
+               Res := Sloc (N1);
+            end if;
+
+            N1 := Parent (N1);
+         end loop;
+
+         return Res;
+      end True_Sloc;
+
+      --  Local variables
+
+      Gen_Id    : constant Entity_Id := Get_Generic_Entity (N);
+      Par_Id    : constant Entity_Id := Scope (Gen_Id);
+      Act_Unit  : constant Node_Id   := Unit (Cunit (Get_Source_Unit (N)));
+      Gen_Unit  : constant Node_Id   :=
+                    Unit (Cunit (Get_Source_Unit (Gen_Decl)));
+
+      Body_Unit  : Node_Id;
+      F_Node     : Node_Id;
+      Must_Delay : Boolean;
+      Orig_Body  : Node_Id;
+
+   --  Start of processing for Freeze_Package_Instance
+
+   begin
+      --  If the body is a subunit, the freeze point is the corresponding stub
+      --  in the current compilation, not the subunit itself.
+
+      if Nkind (Parent (Gen_Body)) = N_Subunit then
+         Orig_Body := Corresponding_Stub (Parent (Gen_Body));
+      else
+         Orig_Body := Gen_Body;
+      end if;
+
+      Body_Unit := Unit (Cunit (Get_Source_Unit (Orig_Body)));
+
+      --  If the instantiation and the generic definition appear in the same
+      --  package declaration, this is an early instantiation. If they appear
+      --  in the same declarative part, it is an early instantiation only if
+      --  the generic body appears textually later, and the generic body is
+      --  also in the main unit.
+
+      --  If instance is nested within a subprogram, and the generic body
+      --  is not, the instance is delayed because the enclosing body is. If
+      --  instance and body are within the same scope, or the same subprogram
+      --  body, indicate explicitly that the instance is delayed.
+
+      Must_Delay :=
+        (Gen_Unit = Act_Unit
+          and then (Nkind (Gen_Unit) in N_Generic_Package_Declaration
+                                      | N_Package_Declaration
+                     or else (Gen_Unit = Body_Unit
+                               and then
+                              True_Sloc (N, Act_Unit) < Sloc (Orig_Body)))
+          and then Is_In_Main_Unit (Original_Node (Gen_Unit))
+          and then In_Same_Scope (Gen_Id, Act_Id));
+
+      --  If this is an early instantiation, the freeze node is placed after
+      --  the generic body. Otherwise, if the generic appears in an instance,
+      --  we cannot freeze the current instance until the outer one is frozen.
+      --  This is only relevant if the current instance is nested within some
+      --  inner scope not itself within the outer instance. If this scope is
+      --  a package body in the same declarative part as the outer instance,
+      --  then that body needs to be frozen after the outer instance. Finally,
+      --  if no delay is needed, we place the freeze node at the end of the
+      --  current declarative part.
+
+      if No (Freeze_Node (Act_Id))
+        or else not Is_List_Member (Freeze_Node (Act_Id))
+      then
+         Ensure_Freeze_Node (Act_Id);
+         F_Node := Freeze_Node (Act_Id);
+
+         if Must_Delay then
+            Insert_After (Orig_Body, F_Node);
+
+         elsif Is_Generic_Instance (Par_Id)
+           and then Present (Freeze_Node (Par_Id))
+           and then Scope (Act_Id) /= Par_Id
+         then
+            --  Freeze instance of inner generic after instance of enclosing
+            --  generic.
+
+            if In_Same_Declarative_Part (Parent (Freeze_Node (Par_Id)), N) then
+
+               --  Handle the following case:
+
+               --    package Parent_Inst is new ...
+               --    freeze Parent_Inst []
+
+               --    procedure P ...  --  this body freezes Parent_Inst
+
+               --    package Inst is new ...
+
+               --  In this particular scenario, the freeze node for Inst must
+               --  be inserted in the same manner as that of Parent_Inst,
+               --  before the next source body or at the end of the declarative
+               --  list (body not available). If body P did not exist and
+               --  Parent_Inst was frozen after Inst, either by a body
+               --  following Inst or at the end of the declarative region,
+               --  the freeze node for Inst must be inserted after that of
+               --  Parent_Inst. This relation is established by comparing
+               --  the Slocs of Parent_Inst freeze node and Inst.
+               --  We examine the parents of the enclosing lists to handle
+               --  the case where the parent instance is in the visible part
+               --  of a package declaration, and the inner instance is in
+               --  the corresponding private part.
+
+               if Parent (List_Containing (Get_Unit_Instantiation_Node
+                                                                     (Par_Id)))
+                    = Parent (List_Containing (N))
+                 and then Sloc (Freeze_Node (Par_Id)) <= Sloc (N)
+               then
+                  Insert_Freeze_Node_For_Instance (N, F_Node);
+               else
+                  Insert_After (Freeze_Node (Par_Id), F_Node);
+               end if;
+
+            --  Freeze package enclosing instance of inner generic after
+            --  instance of enclosing generic.
+
+            elsif Nkind (Parent (N)) in N_Package_Body | N_Subprogram_Body
+              and then In_Same_Declarative_Part
+                         (Parent (Freeze_Node (Par_Id)), Parent (N))
+            then
+               declare
+                  Enclosing :  Entity_Id;
+
+               begin
+                  Enclosing := Corresponding_Spec (Parent (N));
+
+                  if No (Enclosing) then
+                     Enclosing := Defining_Entity (Parent (N));
+                  end if;
+
+                  Insert_Freeze_Node_For_Instance (N, F_Node);
+                  Ensure_Freeze_Node (Enclosing);
+
+                  if not Is_List_Member (Freeze_Node (Enclosing)) then
+
+                     --  The enclosing context is a subunit, insert the freeze
+                     --  node after the stub.
+
+                     if Nkind (Parent (Parent (N))) = N_Subunit then
+                        Insert_Freeze_Node_For_Instance
+                          (Corresponding_Stub (Parent (Parent (N))),
+                           Freeze_Node (Enclosing));
+
+                     --  The enclosing context is a package with a stub body
+                     --  which has already been replaced by the real body.
+                     --  Insert the freeze node after the actual body.
+
+                     elsif Ekind (Enclosing) = E_Package
+                       and then Present (Body_Entity (Enclosing))
+                       and then Was_Originally_Stub
+                                  (Parent (Body_Entity (Enclosing)))
+                     then
+                        Insert_Freeze_Node_For_Instance
+                          (Parent (Body_Entity (Enclosing)),
+                           Freeze_Node (Enclosing));
+
+                     --  The parent instance has been frozen before the body of
+                     --  the enclosing package, insert the freeze node after
+                     --  the body.
+
+                     elsif In_Same_List (Freeze_Node (Par_Id), Parent (N))
+                       and then Sloc (Freeze_Node (Par_Id)) < Sloc (Parent (N))
+                     then
+                        Insert_Freeze_Node_For_Instance
+                          (Parent (N), Freeze_Node (Enclosing));
+
+                     else
+                        Insert_After
+                          (Freeze_Node (Par_Id), Freeze_Node (Enclosing));
+                     end if;
+                  end if;
+               end;
+
+            else
+               Insert_Freeze_Node_For_Instance (N, F_Node);
+            end if;
+
+         else
+            Insert_Freeze_Node_For_Instance (N, F_Node);
+         end if;
+      end if;
+   end Freeze_Package_Instance;
+
    --------------------------------
    -- Freeze_Subprogram_Instance --
    --------------------------------
@@ -9770,254 +10018,6 @@ package body Sem_Ch12 is
          Insert_After (Last (Decls), F_Node);
       end if;
    end Insert_Freeze_Node_For_Instance;
-
-   -----------------------------
-   -- Freeze_Package_Instance --
-   -----------------------------
-
-   procedure Freeze_Package_Instance
-     (N        : Node_Id;
-      Gen_Body : Node_Id;
-      Gen_Decl : Node_Id;
-      Act_Id   : Entity_Id)
-   is
-      function In_Same_Scope (Gen_Id, Act_Id : Node_Id) return Boolean;
-      --  Check if the generic definition and the instantiation come from
-      --  a common scope, in which case the instance must be frozen after
-      --  the generic body.
-
-      function True_Sloc (N, Act_Unit : Node_Id) return Source_Ptr;
-      --  If the instance is nested inside a generic unit, the Sloc of the
-      --  instance indicates the place of the original definition, not the
-      --  point of the current enclosing instance. Pending a better usage of
-      --  Slocs to indicate instantiation places, we determine the place of
-      --  origin of a node by finding the maximum sloc of any ancestor node.
-
-      --  Why is this not equivalent to Top_Level_Location ???
-
-      -------------------
-      -- In_Same_Scope --
-      -------------------
-
-      function In_Same_Scope (Gen_Id, Act_Id : Node_Id) return Boolean is
-         Act_Scop : Entity_Id := Scope (Act_Id);
-         Gen_Scop : Entity_Id := Scope (Gen_Id);
-
-      begin
-         while Act_Scop /= Standard_Standard
-           and then Gen_Scop /= Standard_Standard
-         loop
-            if Act_Scop = Gen_Scop then
-               return True;
-            end if;
-
-            Act_Scop := Scope (Act_Scop);
-            Gen_Scop := Scope (Gen_Scop);
-         end loop;
-
-         return False;
-      end In_Same_Scope;
-
-      ---------------
-      -- True_Sloc --
-      ---------------
-
-      function True_Sloc (N, Act_Unit : Node_Id) return Source_Ptr is
-         N1  : Node_Id;
-         Res : Source_Ptr;
-
-      begin
-         Res := Sloc (N);
-         N1  := N;
-         while Present (N1) and then N1 /= Act_Unit loop
-            if Sloc (N1) > Res then
-               Res := Sloc (N1);
-            end if;
-
-            N1 := Parent (N1);
-         end loop;
-
-         return Res;
-      end True_Sloc;
-
-      --  Local variables
-
-      Gen_Id    : constant Entity_Id := Get_Generic_Entity (N);
-      Par_Id    : constant Entity_Id := Scope (Gen_Id);
-      Act_Unit  : constant Node_Id   := Unit (Cunit (Get_Source_Unit (N)));
-      Gen_Unit  : constant Node_Id   :=
-                    Unit (Cunit (Get_Source_Unit (Gen_Decl)));
-
-      Body_Unit  : Node_Id;
-      F_Node     : Node_Id;
-      Must_Delay : Boolean;
-      Orig_Body  : Node_Id;
-
-   --  Start of processing for Freeze_Package_Instance
-
-   begin
-      --  If the body is a subunit, the freeze point is the corresponding stub
-      --  in the current compilation, not the subunit itself.
-
-      if Nkind (Parent (Gen_Body)) = N_Subunit then
-         Orig_Body := Corresponding_Stub (Parent (Gen_Body));
-      else
-         Orig_Body := Gen_Body;
-      end if;
-
-      Body_Unit := Unit (Cunit (Get_Source_Unit (Orig_Body)));
-
-      --  If the instantiation and the generic definition appear in the same
-      --  package declaration, this is an early instantiation. If they appear
-      --  in the same declarative part, it is an early instantiation only if
-      --  the generic body appears textually later, and the generic body is
-      --  also in the main unit.
-
-      --  If instance is nested within a subprogram, and the generic body
-      --  is not, the instance is delayed because the enclosing body is. If
-      --  instance and body are within the same scope, or the same subprogram
-      --  body, indicate explicitly that the instance is delayed.
-
-      Must_Delay :=
-        (Gen_Unit = Act_Unit
-          and then (Nkind (Gen_Unit) in N_Generic_Package_Declaration
-                                      | N_Package_Declaration
-                     or else (Gen_Unit = Body_Unit
-                               and then
-                              True_Sloc (N, Act_Unit) < Sloc (Orig_Body)))
-          and then Is_In_Main_Unit (Original_Node (Gen_Unit))
-          and then In_Same_Scope (Gen_Id, Act_Id));
-
-      --  If this is an early instantiation, the freeze node is placed after
-      --  the generic body. Otherwise, if the generic appears in an instance,
-      --  we cannot freeze the current instance until the outer one is frozen.
-      --  This is only relevant if the current instance is nested within some
-      --  inner scope not itself within the outer instance. If this scope is
-      --  a package body in the same declarative part as the outer instance,
-      --  then that body needs to be frozen after the outer instance. Finally,
-      --  if no delay is needed, we place the freeze node at the end of the
-      --  current declarative part.
-
-      if No (Freeze_Node (Act_Id))
-        or else not Is_List_Member (Freeze_Node (Act_Id))
-      then
-         Ensure_Freeze_Node (Act_Id);
-         F_Node := Freeze_Node (Act_Id);
-
-         if Must_Delay then
-            Insert_After (Orig_Body, F_Node);
-
-         elsif Is_Generic_Instance (Par_Id)
-           and then Present (Freeze_Node (Par_Id))
-           and then Scope (Act_Id) /= Par_Id
-         then
-            --  Freeze instance of inner generic after instance of enclosing
-            --  generic.
-
-            if In_Same_Declarative_Part (Parent (Freeze_Node (Par_Id)), N) then
-
-               --  Handle the following case:
-
-               --    package Parent_Inst is new ...
-               --    freeze Parent_Inst []
-
-               --    procedure P ...  --  this body freezes Parent_Inst
-
-               --    package Inst is new ...
-
-               --  In this particular scenario, the freeze node for Inst must
-               --  be inserted in the same manner as that of Parent_Inst,
-               --  before the next source body or at the end of the declarative
-               --  list (body not available). If body P did not exist and
-               --  Parent_Inst was frozen after Inst, either by a body
-               --  following Inst or at the end of the declarative region,
-               --  the freeze node for Inst must be inserted after that of
-               --  Parent_Inst. This relation is established by comparing
-               --  the Slocs of Parent_Inst freeze node and Inst.
-               --  We examine the parents of the enclosing lists to handle
-               --  the case where the parent instance is in the visible part
-               --  of a package declaration, and the inner instance is in
-               --  the corresponding private part.
-
-               if Parent (List_Containing (Get_Unit_Instantiation_Node
-                                                                     (Par_Id)))
-                    = Parent (List_Containing (N))
-                 and then Sloc (Freeze_Node (Par_Id)) <= Sloc (N)
-               then
-                  Insert_Freeze_Node_For_Instance (N, F_Node);
-               else
-                  Insert_After (Freeze_Node (Par_Id), F_Node);
-               end if;
-
-            --  Freeze package enclosing instance of inner generic after
-            --  instance of enclosing generic.
-
-            elsif Nkind (Parent (N)) in N_Package_Body | N_Subprogram_Body
-              and then In_Same_Declarative_Part
-                         (Parent (Freeze_Node (Par_Id)), Parent (N))
-            then
-               declare
-                  Enclosing :  Entity_Id;
-
-               begin
-                  Enclosing := Corresponding_Spec (Parent (N));
-
-                  if No (Enclosing) then
-                     Enclosing := Defining_Entity (Parent (N));
-                  end if;
-
-                  Insert_Freeze_Node_For_Instance (N, F_Node);
-                  Ensure_Freeze_Node (Enclosing);
-
-                  if not Is_List_Member (Freeze_Node (Enclosing)) then
-
-                     --  The enclosing context is a subunit, insert the freeze
-                     --  node after the stub.
-
-                     if Nkind (Parent (Parent (N))) = N_Subunit then
-                        Insert_Freeze_Node_For_Instance
-                          (Corresponding_Stub (Parent (Parent (N))),
-                           Freeze_Node (Enclosing));
-
-                     --  The enclosing context is a package with a stub body
-                     --  which has already been replaced by the real body.
-                     --  Insert the freeze node after the actual body.
-
-                     elsif Ekind (Enclosing) = E_Package
-                       and then Present (Body_Entity (Enclosing))
-                       and then Was_Originally_Stub
-                                  (Parent (Body_Entity (Enclosing)))
-                     then
-                        Insert_Freeze_Node_For_Instance
-                          (Parent (Body_Entity (Enclosing)),
-                           Freeze_Node (Enclosing));
-
-                     --  The parent instance has been frozen before the body of
-                     --  the enclosing package, insert the freeze node after
-                     --  the body.
-
-                     elsif In_Same_List (Freeze_Node (Par_Id), Parent (N))
-                       and then Sloc (Freeze_Node (Par_Id)) < Sloc (Parent (N))
-                     then
-                        Insert_Freeze_Node_For_Instance
-                          (Parent (N), Freeze_Node (Enclosing));
-
-                     else
-                        Insert_After
-                          (Freeze_Node (Par_Id), Freeze_Node (Enclosing));
-                     end if;
-                  end if;
-               end;
-
-            else
-               Insert_Freeze_Node_For_Instance (N, F_Node);
-            end if;
-
-         else
-            Insert_Freeze_Node_For_Instance (N, F_Node);
-         end if;
-      end if;
-   end Freeze_Package_Instance;
 
    -----------------------------
    -- Install_Formal_Packages --
