@@ -4891,7 +4891,7 @@ cpp_directive_only_process (cpp_reader *pfile,
 			break;
 
 		      case '*':
-			if (pos > peek && !esc)
+			if (pos > peek)
 			  star = is_block;
 			esc = false;
 			break;
