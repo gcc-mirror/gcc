@@ -5733,7 +5733,7 @@ static bool indirect_thunk_needed = false;
 
 /* Bit masks of integer registers, which contain branch target, used
    by call thunk functions.  */
-static int indirect_thunks_used;
+static HARD_REG_SET indirect_thunks_used;
 
 /* True if return thunk function is needed.  */
 static bool indirect_return_needed = false;
@@ -6030,8 +6030,7 @@ ix86_code_end (void)
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
     {
-      unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
-      if ((indirect_thunks_used & (1 << i)))
+      if (TEST_HARD_REG_BIT (indirect_thunks_used, regno))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
 					regno, false);
     }
@@ -6041,7 +6040,7 @@ ix86_code_end (void)
       char name[32];
       tree decl;
 
-      if ((indirect_thunks_used & (1 << regno)))
+      if (TEST_HARD_REG_BIT (indirect_thunks_used, regno))
 	output_indirect_thunk_function (indirect_thunk_prefix_none,
 					regno, false);
 
@@ -16014,12 +16013,8 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
       != indirect_branch_thunk_inline)
     {
       if (cfun->machine->indirect_branch_type == indirect_branch_thunk)
-	{
-	  int i = regno;
-	  if (i >= FIRST_REX_INT_REG)
-	    i -= (FIRST_REX_INT_REG - LAST_INT_REG - 1);
-	  indirect_thunks_used |= 1 << i;
-	}
+	SET_HARD_REG_BIT (indirect_thunks_used, regno);
+
       indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
     }
@@ -16307,7 +16302,7 @@ ix86_output_indirect_function_return (rtx ret_op)
 	  if (need_thunk)
 	    {
 	      indirect_return_via_cx = true;
-	      indirect_thunks_used |= 1 << CX_REG;
+	      SET_HARD_REG_BIT (indirect_thunks_used, CX_REG);
 	    }
 	  fprintf (asm_out_file, "\tjmp\t");
 	  assemble_name (asm_out_file, thunk_name);
