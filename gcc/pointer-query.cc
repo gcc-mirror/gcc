@@ -2358,3 +2358,33 @@ array_elt_at_offset (tree artype, HOST_WIDE_INT off,
 
   return NULL_TREE;
 }
+
+/* Wrapper around build_array_type_nelts that makes sure the array
+   can be created at all and handles zero sized arrays specially.  */
+
+tree
+build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
+{
+  if (TYPE_SIZE_UNIT (eltype)
+      && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
+      && !integer_zerop (TYPE_SIZE_UNIT (eltype))
+      && TYPE_ALIGN_UNIT (eltype) > 1
+      && wi::zext (wi::to_wide (TYPE_SIZE_UNIT (eltype)),
+		   ffs_hwi (TYPE_ALIGN_UNIT (eltype)) - 1) != 0)
+    eltype = TYPE_MAIN_VARIANT (eltype);
+
+  /* Consider excessive NELTS an array of unknown bound.  */
+  tree idxtype = NULL_TREE;
+  if (nelts < HOST_WIDE_INT_MAX)
+    {
+      if (nelts)
+	return build_array_type_nelts (eltype, nelts);
+      idxtype = build_range_type (sizetype, size_zero_node, NULL_TREE);
+    }
+
+  tree arrtype = build_array_type (eltype, idxtype);
+  arrtype = build_distinct_type_copy (TYPE_MAIN_VARIANT (arrtype));
+  TYPE_SIZE (arrtype) = bitsize_zero_node;
+  TYPE_SIZE_UNIT (arrtype) = size_zero_node;
+  return arrtype;
+}

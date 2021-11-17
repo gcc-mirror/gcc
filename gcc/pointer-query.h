@@ -275,4 +275,7 @@ extern tree array_elt_at_offset (tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT * = nullptr,
 				 HOST_WIDE_INT * = nullptr);
 
+/* Helper to build an array type that can be printed.  */
+extern tree build_printable_array_type (tree, unsigned HOST_WIDE_INT);
+
 #endif   // GCC_POINTER_QUERY_H

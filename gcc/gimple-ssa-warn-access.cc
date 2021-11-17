@@ -2978,10 +2978,16 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	continue;
 
       tree ptrtype = fntype_argno_type (fntype, ptridx);
+      if (!ptrtype)
+	/* A function with a prototype was redeclared without one and
+	   the protype has been lost.  See pr102759.  Avoid dealing
+	   with this pathological case.  */
+	return;
+
       tree argtype = TREE_TYPE (ptrtype);
 
-      /* The size of the access by the call.  */
-      tree access_size;
+      /* The size of the access by the call in elements.  */
+      tree access_nelts;
       if (sizidx == -1)
 	{
 	  /* If only the pointer attribute operand was specified and
@@ -2991,17 +2997,17 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	     if the pointer is also declared with attribute nonnull.  */
 	  if (access.second.minsize
 	      && access.second.minsize != HOST_WIDE_INT_M1U)
-	    access_size = build_int_cstu (sizetype, access.second.minsize);
+	    access_nelts = build_int_cstu (sizetype, access.second.minsize);
 	  else
-	    access_size = size_one_node;
+	    access_nelts = size_one_node;
 	}
       else
-	access_size = rwm->get (sizidx)->size;
+	access_nelts = rwm->get (sizidx)->size;
 
       /* Format the value or range to avoid an explosion of messages.  */
       char sizstr[80];
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
-      if (get_size_range (m_ptr_qry.rvals, access_size, stmt, sizrng, 1))
+      if (get_size_range (m_ptr_qry.rvals, access_nelts, stmt, sizrng, 1))
 	{
 	  char *s0 = print_generic_expr_to_str (sizrng[0]);
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
@@ -3059,6 +3065,8 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	    }
 	}
 
+      /* The size of the access by the call in bytes.  */
+      tree access_size = NULL_TREE;
       if (tree_int_cst_sgn (sizrng[0]) >= 0)
 	{
 	  if (COMPLETE_TYPE_P (argtype))
@@ -3075,9 +3083,9 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 		    access_size = wide_int_to_tree (sizetype, minsize);
 		  }
 	    }
+	  else
+	    access_size = access_nelts;
 	}
-      else
-	access_size = NULL_TREE;
 
       if (integer_zerop (ptr))
 	{
@@ -3172,8 +3180,13 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       if (opt_warned != no_warning)
 	{
 	  if (access.second.internal_p)
-	    inform (loc, "referencing argument %u of type %qT",
-		    ptridx + 1, ptrtype);
+	    {
+	      unsigned HOST_WIDE_INT nelts =
+		access_nelts ? access.second.minsize : HOST_WIDE_INT_M1U;
+	      tree arrtype = build_printable_array_type (argtype, nelts);
+	      inform (loc, "referencing argument %u of type %qT",
+		      ptridx + 1, arrtype);
+	    }
 	  else
 	    /* If check_access issued a warning above, append the relevant
 	       attribute to the string.  */
