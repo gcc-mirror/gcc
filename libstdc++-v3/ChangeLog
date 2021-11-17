@@ -14,7 +14,7 @@
 	* src/c++17/ryu/d2s_intrinsics.h: Merge from Ryu's master
 	branch.
 
-2021-11-16  Michael de Lang  <kingoipo@gmail.com>
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (basic_string, operator""s): Add
 	constexpr for C++20.
