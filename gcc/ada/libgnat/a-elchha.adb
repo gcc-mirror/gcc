@@ -31,8 +31,6 @@
 
 --  Default version for most targets
 
-pragma Compiler_Unit_Warning;
-
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links; use System;
 

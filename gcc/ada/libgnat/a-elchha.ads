@@ -31,8 +31,6 @@
 
 --  Last chance handler. Unhandled exceptions are passed to this routine
 
-pragma Compiler_Unit_Warning;
-
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except :  Exception_Occurrence);
 pragma Export (C,

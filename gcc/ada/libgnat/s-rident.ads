@@ -41,6 +41,9 @@
 --  so we can do the instantiation under control of Discard_Names to remove
 --  the tables.
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 ---------------------------------------------------
 -- Note On Compile/Run-Time Consistency Checking --
 ---------------------------------------------------
@@ -68,8 +71,6 @@
 --  happens at bind time in inconsistent builds is that unrecognized
 --  restrictions are ignored, and the consistency checking for restrictions
 --  might be incomplete, which is no big deal.
-
-pragma Compiler_Unit_Warning;
 
 generic
 package System.Rident is

@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with Interfaces;     use Interfaces;
 with System.WCh_Con; use System.WCh_Con;
 with System.WCh_JIS; use System.WCh_JIS;

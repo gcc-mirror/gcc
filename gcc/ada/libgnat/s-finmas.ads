@@ -33,8 +33,6 @@ with Ada.Finalization;
 with System.Storage_Elements;
 with System.Storage_Pools;
 
-pragma Compiler_Unit_Warning;
-
 package System.Finalization_Masters is
    pragma Preelaborate;
 

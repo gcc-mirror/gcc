@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 package body System.CRC32 is
 
    Init   : constant CRC32 := 16#FFFF_FFFF#;  -- Initial value

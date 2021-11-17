@@ -34,8 +34,6 @@
 --  Note: this unit must be compiled using -fno-optimize-sibling-calls.
 --  See comment below in body of Call_Chain for details on the reason.
 
-pragma Compiler_Unit_Warning;
-
 package body System.Traceback is
 
    procedure Call_Chain

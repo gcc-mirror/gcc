@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 pragma Style_Checks (Off);
 --  Allow long lines in this unit. Note this could be more specific, but we
 --  keep this simple form because of bootstrap constraints ???

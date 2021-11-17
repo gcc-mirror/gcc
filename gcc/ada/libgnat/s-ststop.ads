@@ -63,8 +63,6 @@
 --  handles the XDR implementation of System.Stream_Attributes in particular
 --  which does not permit block io optimization.
 
-pragma Compiler_Unit_Warning;
-
 with Ada.Streams;
 
 with System.Storage_Elements;

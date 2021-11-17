@@ -29,8 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Compiler_Unit_Warning;
-
 with GNAT.Heap_Sort_G;
 
 with Ada.Unchecked_Deallocation;

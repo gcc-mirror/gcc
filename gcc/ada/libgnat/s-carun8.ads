@@ -32,8 +32,6 @@
 --  This package contains functions for runtime comparisons on arrays whose
 --  elements are 8-bit discrete type values to be treated as unsigned.
 
-pragma Compiler_Unit_Warning;
-
 package System.Compare_Array_Unsigned_8 is
 
    --  Note: although the functions in this package are in a sense Pure, the

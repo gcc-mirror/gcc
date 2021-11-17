@@ -31,8 +31,6 @@
 
 --  This package contains functions for runtime comparisons on strings
 
-pragma Compiler_Unit_Warning;
-
 package System.String_Compare is
 
    function Str_Compare

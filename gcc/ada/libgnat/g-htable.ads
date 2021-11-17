@@ -39,8 +39,6 @@
 
 --  See file s-htable.ads for full documentation of the interface
 
-pragma Compiler_Unit_Warning;
-
 with System.HTable;
 
 package GNAT.HTable is

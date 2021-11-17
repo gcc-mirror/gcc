@@ -34,8 +34,6 @@
 --  This package provides a utility routine for checking for bad spellings
 --  for the case of String arguments.
 
-pragma Compiler_Unit_Warning;
-
 package GNAT.Spelling_Checker is
    pragma Pure;
 

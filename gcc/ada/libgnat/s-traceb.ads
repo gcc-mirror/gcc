@@ -33,8 +33,6 @@
 --  execution location. The traceback shows the locations of calls in the call
 --  chain, up to either the top or a designated number of levels.
 
-pragma Compiler_Unit_Warning;
-
 with System.Traceback_Entries;
 
 package System.Traceback is

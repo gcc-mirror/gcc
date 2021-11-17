@@ -48,8 +48,6 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.OS_Lib (file g-os_lib.ads).
 
-pragma Compiler_Unit_Warning;
-
 with System;
 with System.Strings;
 

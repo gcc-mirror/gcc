@@ -33,8 +33,6 @@
 --  It should be compiled without optimization to let debuggers inspect
 --  parameter values reliably from breakpoints on the routines.
 
-pragma Compiler_Unit_Warning;
-
 with System.Standard_Library;
 
 package System.Exceptions_Debug is
