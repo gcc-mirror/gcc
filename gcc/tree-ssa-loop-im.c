@@ -1170,14 +1170,10 @@ move_computations_worker (basic_block bb)
 					  COND_EXPR, t, arg0, arg1);
 	  todo |= TODO_cleanup_cfg;
 	}
-      if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (new_stmt)))
-	  && (!ALWAYS_EXECUTED_IN (bb)
-	      || (ALWAYS_EXECUTED_IN (bb) != level
-		  && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	{
-	  tree lhs = gimple_assign_lhs (new_stmt);
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	}
+      if (!ALWAYS_EXECUTED_IN (bb)
+	  || (ALWAYS_EXECUTED_IN (bb) != level
+	      && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level)))
+	reset_flow_sensitive_info (gimple_assign_lhs (new_stmt));
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
       remove_phi_node (&bsi, false);
     }
@@ -1240,14 +1236,10 @@ move_computations_worker (basic_block bb)
       gsi_remove (&bsi, false);
       if (gimple_has_lhs (stmt)
 	  && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_get_lhs (stmt)))
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	{
-	  tree lhs = gimple_get_lhs (stmt);
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	}
+	reset_flow_sensitive_info (gimple_get_lhs (stmt));
       /* In case this is a stmt that is not unconditionally executed
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
