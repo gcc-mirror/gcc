@@ -873,7 +873,6 @@ visit_bb (basic_block bb, basic_block return_bb,
       gimple *stmt = gsi_stmt (bsi);
       tree op;
       ssa_op_iter iter;
-      tree decl;
 
       if (is_gimple_debug (stmt))
 	continue;
@@ -899,33 +898,52 @@ visit_bb (basic_block bb, basic_block return_bb,
 	  can_split = false;
 	}
 
-      /* Check builtins that prevent splitting.  */
-      if (gimple_code (stmt) == GIMPLE_CALL
-	  && (decl = gimple_call_fndecl (stmt)) != NULL_TREE
-	  && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
-	switch (DECL_FUNCTION_CODE (decl))
-	  {
-	  /* FIXME: once we will allow passing non-parm values to split part,
-	     we need to be sure to handle correct builtin_stack_save and
-	     builtin_stack_restore.  At the moment we are safe; there is no
-	     way to store builtin_stack_save result in non-SSA variable
-	     since all calls to those are compiler generated.  */
-	  case BUILT_IN_APPLY:
-	  case BUILT_IN_APPLY_ARGS:
-	  case BUILT_IN_VA_START:
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      fprintf (dump_file,
-		       "Cannot split: builtin_apply and va_start.\n");
-	    can_split = false;
-	    break;
-	  case BUILT_IN_EH_POINTER:
-	    if (dump_file && (dump_flags & TDF_DETAILS))
-	      fprintf (dump_file, "Cannot split: builtin_eh_pointer.\n");
-	    can_split = false;
-	    break;
-	  default:
-	    break;
-	  }
+      /* Check calls that would prevent splitting.  */
+      if (gimple_code (stmt) == GIMPLE_CALL)
+	{
+	  if (tree decl = gimple_call_fndecl (stmt))
+	    {
+	      /* Check builtins that would prevent splitting.  */
+	      if (fndecl_built_in_p (decl, BUILT_IN_NORMAL))
+		switch (DECL_FUNCTION_CODE (decl))
+		  {
+		  /* FIXME: once we will allow passing non-parm values to
+		     split part, we need to be sure to handle correct
+		     builtin_stack_save and builtin_stack_restore.  At the
+		     moment we are safe; there is no way to store
+		     builtin_stack_save result in non-SSA variable since all
+		     calls to those are compiler generated.  */
+		  case BUILT_IN_APPLY:
+		  case BUILT_IN_APPLY_ARGS:
+		  case BUILT_IN_VA_START:
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      fprintf (dump_file,
+			       "Cannot split: builtin_apply and va_start.\n");
+		    can_split = false;
+		    break;
+		  case BUILT_IN_EH_POINTER:
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      fprintf (dump_file,
+			       "Cannot split: builtin_eh_pointer.\n");
+		    can_split = false;
+		    break;
+		  default:
+		    break;
+		  }
+
+	      /* Calls that function has either the warning or error
+	         attribute on it should not be split off into another
+		 function.  */
+	      if (lookup_attribute ("warning", DECL_ATTRIBUTES (decl))
+		   || lookup_attribute ("error", DECL_ATTRIBUTES (decl)))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "Cannot split: warning or error attribute.\n");
+		  can_split = false;
+		}
+	    }
+	}
 
       FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
 	bitmap_set_bit (set_ssa_names, SSA_NAME_VERSION (op));
