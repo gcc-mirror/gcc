@@ -3460,10 +3460,10 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 	  size_t every_access = streamer_read_uhwi (ib);
 	  size_t naccesses = streamer_read_uhwi (ib);
 
-	  if (nolto_ref_node)
-	    nolto_ref_node->every_access = every_access;
-	  if (lto_ref_node)
-	    lto_ref_node->every_access = every_access;
+	  if (nolto_ref_node && every_access)
+	    nolto_ref_node->collapse ();
+	  if (lto_ref_node && every_access)
+	    lto_ref_node->collapse ();
 
 	  for (size_t k = 0; k < naccesses; k++)
 	    {
