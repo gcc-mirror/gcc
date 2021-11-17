@@ -178,29 +178,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ++__beg;
 	  }
 
-	__try
+	struct _Guard
+	{
+	  _GLIBCXX20_CONSTEXPR
+	  explicit _Guard(basic_string* __s) : _M_guarded(__s) { }
+
+	  _GLIBCXX20_CONSTEXPR
+	  ~_Guard() { if (_M_guarded) _M_guarded->_M_dispose(); }
+
+	  basic_string* _M_guarded;
+	} __guard(this);
+
+	while (__beg != __end)
 	  {
-	    while (__beg != __end)
+	    if (__len == __capacity)
 	      {
-		if (__len == __capacity)
-		  {
-		    // Allocate more space.
-		    __capacity = __len + 1;
-		    pointer __another = _M_create(__capacity, __len);
-		    this->_S_copy(__another, _M_data(), __len);
-		    _M_dispose();
-		    _M_data(__another);
-		    _M_capacity(__capacity);
-		  }
-		_M_data()[__len++] = *__beg;
-		++__beg;
+		// Allocate more space.
+		__capacity = __len + 1;
+		pointer __another = _M_create(__capacity, __len);
+		this->_S_copy(__another, _M_data(), __len);
+		_M_dispose();
+		_M_data(__another);
+		_M_capacity(__capacity);
 	      }
+	    _M_data()[__len++] = *__beg;
+	    ++__beg;
 	  }
-	__catch(...)
-	  {
-	    _M_dispose();
-	    __throw_exception_again;
-	  }
+
+	__guard._M_guarded = 0;
 
 	_M_set_length(__len);
       }
@@ -213,11 +218,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_construct(_InIterator __beg, _InIterator __end,
 		   std::forward_iterator_tag)
       {
-	// NB: Not required, but considered best practice.
-	if (__gnu_cxx::__is_null_pointer(__beg) && __beg != __end)
-	  std::__throw_logic_error(__N("basic_string::"
-				       "_M_construct null not valid"));
-
 	size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
 
 	if (__dnew > size_type(_S_local_capacity))
@@ -229,13 +229,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_use_local_data();
 
 	// Check for out_of_range and length_error exceptions.
-	__try
-	  { this->_S_copy_chars(_M_data(), __beg, __end); }
-	__catch(...)
-	  {
-	    _M_dispose();
-	    __throw_exception_again;
-	  }
+	struct _Guard
+	{
+	  _GLIBCXX20_CONSTEXPR
+	  explicit _Guard(basic_string* __s) : _M_guarded(__s) { }
+
+	  _GLIBCXX20_CONSTEXPR
+	  ~_Guard() { if (_M_guarded) _M_guarded->_M_dispose(); }
+
+	  basic_string* _M_guarded;
+	} __guard(this);
+
+	this->_S_copy_chars(_M_data(), __beg, __end);
+
+	__guard._M_guarded = 0;
 
 	_M_set_length(__dnew);
       }

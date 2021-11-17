@@ -262,10 +262,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_destroy(size_type __size) throw()
       { _Alloc_traits::deallocate(_M_get_allocator(), _M_data(), __size + 1); }
 
+#if __cplusplus < 201103L || defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
       // _M_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIterator is an integral type
       template<typename _InIterator>
-	_GLIBCXX20_CONSTEXPR
         void
         _M_construct_aux(_InIterator __beg, _InIterator __end,
 			 std::__false_type)
@@ -277,24 +277,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
-	_GLIBCXX20_CONSTEXPR
         void
         _M_construct_aux(_Integer __beg, _Integer __end, std::__true_type)
 	{ _M_construct_aux_2(static_cast<size_type>(__beg), __end); }
 
-      _GLIBCXX20_CONSTEXPR
       void
       _M_construct_aux_2(size_type __req, _CharT __c)
       { _M_construct(__req, __c); }
-
-      template<typename _InIterator>
-	_GLIBCXX20_CONSTEXPR
-        void
-        _M_construct(_InIterator __beg, _InIterator __end)
-	{
-	  typedef typename std::__is_integer<_InIterator>::__type _Integral;
-	  _M_construct_aux(__beg, __end, _Integral());
-        }
+#endif
 
       // For Input Iterators, used in istreambuf_iterators, etc.
       template<typename _InIterator>
@@ -514,7 +504,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string(const basic_string& __str)
       : _M_dataplus(_M_local_data(),
 		    _Alloc_traits::_S_select_on_copy(__str._M_get_allocator()))
-      { _M_construct(__str._M_data(), __str._M_data() + __str.length()); }
+      {
+	_M_construct(__str._M_data(), __str._M_data() + __str.length(),
+		     std::forward_iterator_tag());
+      }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2583. no way to supply an allocator for basic_string(str, pos)
@@ -531,7 +524,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	const _CharT* __start = __str._M_data()
 	  + __str._M_check(__pos, "basic_string::basic_string");
-	_M_construct(__start, __start + __str._M_limit(__pos, npos));
+	_M_construct(__start, __start + __str._M_limit(__pos, npos),
+		     std::forward_iterator_tag());
       }
 
       /**
@@ -547,7 +541,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	const _CharT* __start = __str._M_data()
 	  + __str._M_check(__pos, "basic_string::basic_string");
-	_M_construct(__start, __start + __str._M_limit(__pos, __n));
+	_M_construct(__start, __start + __str._M_limit(__pos, __n),
+		     std::forward_iterator_tag());
       }
 
       /**
@@ -564,7 +559,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	const _CharT* __start
 	  = __str._M_data() + __str._M_check(__pos, "string::string");
-	_M_construct(__start, __start + __str._M_limit(__pos, __n));
+	_M_construct(__start, __start + __str._M_limit(__pos, __n),
+		     std::forward_iterator_tag());
       }
 
       /**
@@ -580,7 +576,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string(const _CharT* __s, size_type __n,
 		   const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
-      { _M_construct(__s, __s + __n); }
+      {
+	// NB: Not required, but considered best practice.
+	if (__s == 0 && __n > 0)
+	  std::__throw_logic_error(__N("basic_string: "
+				       "construction from null is not valid"));
+	_M_construct(__s, __s + __n, std::forward_iterator_tag());
+      }
 
       /**
        *  @brief  Construct string as copy of a C string.
@@ -596,10 +598,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
       {
-	const _CharT* __end = __s ? __s + traits_type::length(__s)
-	  // We just need a non-null pointer here to get an exception:
-	  : reinterpret_cast<const _CharT*>(__alignof__(_CharT));
-	_M_construct(__s, __end, random_access_iterator_tag());
+	// NB: Not required, but considered best practice.
+	if (__s == 0)
+	  std::__throw_logic_error(__N("basic_string: "
+				       "construction from null is not valid"));
+	const _CharT* __end = __s + traits_type::length(__s);
+	_M_construct(__s, __end, forward_iterator_tag());
       }
 
       /**
@@ -657,12 +661,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       basic_string(initializer_list<_CharT> __l, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
-      { _M_construct(__l.begin(), __l.end()); }
+      { _M_construct(__l.begin(), __l.end(), std::forward_iterator_tag()); }
 
       _GLIBCXX20_CONSTEXPR
       basic_string(const basic_string& __str, const _Alloc& __a)
       : _M_dataplus(_M_local_data(), __a)
-      { _M_construct(__str.begin(), __str.end()); }
+      { _M_construct(__str.begin(), __str.end(), std::forward_iterator_tag()); }
 
       _GLIBCXX20_CONSTEXPR
       basic_string(basic_string&& __str, const _Alloc& __a)
@@ -686,7 +690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    __str._M_set_length(0);
 	  }
 	else
-	  _M_construct(__str.begin(), __str.end());
+	  _M_construct(__str.begin(), __str.end(), std::forward_iterator_tag());
       }
 
       basic_string(nullptr_t) = delete;
@@ -709,7 +713,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         basic_string(_InputIterator __beg, _InputIterator __end,
 		     const _Alloc& __a = _Alloc())
 	: _M_dataplus(_M_local_data(), __a)
-	{ _M_construct(__beg, __end); }
+	{
+#if __cplusplus >= 201103L
+	  _M_construct(__beg, __end, std::__iterator_category(__beg));
+#else
+	  typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+	  _M_construct_aux(__beg, __end, _Integral());
+#endif
+	}
 
 #if __cplusplus >= 201703L
       /**
