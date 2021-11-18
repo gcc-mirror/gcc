@@ -20439,7 +20439,8 @@ tsubst_copy_and_build (tree t,
 							    (function, 1))))
 	    && !any_type_dependent_arguments_p (call_args))
 	  {
-	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	    bool template_id_p = (TREE_CODE (function) == TEMPLATE_ID_EXPR);
+	    if (template_id_p)
 	      function = TREE_OPERAND (function, 0);
 	    if (koenig_p && (complain & tf_warning_or_error))
 	      {
@@ -20454,20 +20455,21 @@ tsubst_copy_and_build (tree t,
 
 		if (unq != function)
 		  {
-		    /* In a lambda fn, we have to be careful to not
-		       introduce new this captures.  Legacy code can't
-		       be using lambdas anyway, so it's ok to be
-		       stricter.  */
-		    bool in_lambda = (current_class_type
-				      && LAMBDA_TYPE_P (current_class_type));
 		    char const *const msg
 		      = G_("%qD was not declared in this scope, "
 			   "and no declarations were found by "
 			   "argument-dependent lookup at the point "
 			   "of instantiation");
 
+		    bool in_lambda = (current_class_type
+				      && LAMBDA_TYPE_P (current_class_type));
+		    /* In a lambda fn, we have to be careful to not
+		       introduce new this captures.  Legacy code can't
+		       be using lambdas anyway, so it's ok to be
+		       stricter.  Be strict with C++20 template-id ADL too.  */
+		    bool strict = in_lambda || template_id_p;
 		    bool diag = true;
-		    if (in_lambda)
+		    if (strict)
 		      error_at (cp_expr_loc_or_input_loc (t),
 				msg, function);
 		    else
@@ -20503,7 +20505,7 @@ tsubst_copy_and_build (tree t,
 			  inform (DECL_SOURCE_LOCATION (fn),
 				  "%qD declared here, later in the "
 				  "translation unit", fn);
-			if (in_lambda)
+			if (strict)
 			  RETURN (error_mark_node);
 		      }
 
