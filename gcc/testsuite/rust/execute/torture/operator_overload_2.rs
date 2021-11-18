@@ -6,7 +6,6 @@ extern "C" {
 #[lang = "add"]
 pub trait Add<Rhs = Self> {
     type Output;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn add(self, rhs: Rhs) -> Self::Output;
     // { dg-warning "unused name .self." "" { target *-*-* } .-1 }

@@ -1,6 +1,5 @@
 trait Foo {
     type A;
-    // { dg-warning "unused name .Foo::A." "" { target *-*-* } .-1 }
 
     fn baz(a: Self::A) -> Self::A;
     // { dg-warning "unused name .a." "" { target *-*-* } .-1 }

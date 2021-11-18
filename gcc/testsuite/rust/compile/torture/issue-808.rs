@@ -1,6 +1,5 @@
 pub trait Foo {
     type Target;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn bar(&self) -> &Self::Target;
     // { dg-warning "unused name .self." "" { target *-*-* } .-1 }

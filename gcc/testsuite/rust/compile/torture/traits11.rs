@@ -1,6 +1,5 @@
 trait Foo {
     type A;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn test(a: Self::A) -> Self::A {
         a
