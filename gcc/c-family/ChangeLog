@@ -1,3 +1,16 @@
+2021-11-17  Martin Uecker  <uecker@gcc.gnu.org>
+
+	PR c/91038
+	PR c/29970
+	* c-common.c (pointer_int_sum): Make sure pointer expressions
+	are evaluated first when the size expression depends on for
+	variably-modified types.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* c.opt (Wbidi-chars, Wbidi-chars=): New option.
+
 2021-11-16  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (release_tree_vector): Only cache vecs smaller than

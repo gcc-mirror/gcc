@@ -1,3 +1,169 @@
+2021-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103228
+	PR tree-optimization/55177
+	* match.pd ((type) X bitop CST): Also do this
+	transformation for nop conversions.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102759
+	* gimple-array-bounds.cc (build_printable_array_type): Move...
+	* gimple-ssa-warn-access.cc (build_printable_array_type): Avoid
+	pathological function redeclarations that remove a previously
+	declared prototype.
+	Improve formatting of function arguments in informational notes.
+	* pointer-query.cc (build_printable_array_type): ...to here.
+	* pointer-query.h (build_printable_array_type): Declared.
+
+2021-11-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386-opts.h (harden_sls): New enum.
+	* config/i386/i386.c (output_indirect_thunk): Mitigate against
+	SLS for function return.
+	(ix86_output_function_return): Likewise.
+	(ix86_output_jmp_thunk_or_indirect): Mitigate against indirect
+	branch.
+	(ix86_output_indirect_jmp): Likewise.
+	(ix86_output_call_insn): Likewise.
+	* config/i386/i386.opt: Add -mharden-sls=.
+	* doc/invoke.texi: Document -mharden-sls=.
+
+2021-11-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103307
+	* config/i386/i386.c (ix86_code_end): Remove "%!" before ret.
+	(ix86_output_function_return): Likewise.
+	* config/i386/i386.md (simple_return_pop_internal): Likewise.
+
+2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103246
+	* ipa-modref.c (read_modref_records): Fix streaminig in of every_access
+	flag.
+
+2021-11-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (indirect_thunks_used): Redefine as HARD_REG_SET.
+	(ix86_code_end): Use TEST_HARD_REG_BIT on indirect_thunks_used.
+	(ix86_output_indirect_branch_via_reg): Use SET_HARD_REG_BIT
+	on indirect_thunks_used.
+	(ix86_output_indirect_function_return): Ditto.
+
+2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c: Include cgraph.h and tree-streamer.h.
+	(modref_access_node::stream_out): New member function.
+	(modref_access_node::stream_in): New member function.
+	* ipa-modref-tree.h (modref_access_node::stream_out,
+	modref_access_node::stream_in): Declare.
+	* ipa-modref.c (modref_summary_lto::useful_p): Free useless kills.
+	(modref_summary_lto::dump): Dump kills.
+	(analyze_store): Record kills for LTO
+	(analyze_stmt): Likewise.
+	(modref_summaries_lto::duplicate): Duplicate kills.
+	(write_modref_records): Use new stream_out member function.
+	(read_modref_records): Likewise.
+	(modref_write): Stream out kills.
+	(read_section): Stream in kills
+	(remap_kills): New function.
+	(update_signature): Use it.
+
+2021-11-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (LEGACY_SSE_REGNO_P): New predicate.
+	(SSE_REGNO_P): Use LEGACY_SSE_REGNO_P predicate.
+	* config/i386/i386.c (zero_all_vector_registers):
+	Use LEGACY_SSE_REGNO_P predicate.
+	(ix86_register_priority): Use REX_INT_REGNO_P, REX_SSE_REGNO_P
+	and EXT_REG_SSE_REGNO_P predicates.
+	(ix86_hard_regno_call_part_clobbered): Use REX_SSE_REGNO_P
+	and LEGACY_SSE_REGNO_P predicates.
+
+2021-11-17  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Document
+	-fimplicit-constexpr.
+
+2021-11-17  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-modes.def (VECTOR_MODE): New V8DI mode.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Handle
+	V8DImode.
+	* config/aarch64/iterators.md (define_mode_attr nunits): Add entry
+	for V8DI.
+
+2021-11-17  Martin Uecker  <uecker@gcc.gnu.org>
+
+	PR c/91038
+	PR c/29970
+	* gimplify.c (gimplify_var_or_parm_decl): Update comment.
+	(gimplify_compound_lval): Gimplify base expression first.
+	(gimplify_target_expr): Add comment.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103192
+	* tree-ssa-loop-im.c (move_computations_worker): Use
+	reset_flow_sensitive_info instead of manually clearing
+	SSA_NAME_RANGE_INFO and do it for all SSA_NAMEs, not just ones
+	with integral types.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103255
+	* gimple-range-fold.cc (fold_using_range::range_of_address): Return
+	range_nonzero rather than unadjusted base's range.  Formatting fixes.
+
+2021-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi (cond_fmin@var{mode}, cond_fmax@var{mode}): Document.
+	* optabs.def (cond_fmin_optab, cond_fmax_optab): New optabs.
+	* internal-fn.def (COND_FMIN, COND_FMAX): New functions.
+	* internal-fn.c (first_commutative_argument): Handle them.
+	(FOR_EACH_COND_FN_PAIR): Likewise.
+	* match.pd (UNCOND_BINARY, COND_BINARY): Likewise.
+	* config/aarch64/aarch64-sve.md (cond_<fmaxmin><mode>): New
+	pattern.
+
+2021-11-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/i386/i386.md (*add<dwi>3_doubleword, *addv<dwi>4_doubleword,
+	*addv<dwi>4_doubleword_1, *sub<dwi>3_doubleword,
+	*subv<dwi>4_doubleword, *subv<dwi>4_doubleword_1,
+	*add<dwi>3_doubleword_cc_overflow_1, *divmodsi4_const,
+	*neg<dwi>2_doubleword, *tls_dynamic_gnu2_combine_64_<mode>): Fix split
+	condition.
+
+2021-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103288
+	* tree-ssa-phiopt.c (value_replacement): Return early if middle
+	block has more than one pred.
+
+2021-11-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/visium/visium.md (*add<mode>3_insn, *addsi3_insn, *addi3_insn,
+	*sub<mode>3_insn, *subsi3_insn, *subdi3_insn, *neg<mode>2_insn,
+	*negdi2_insn, *and<mode>3_insn, *ior<mode>3_insn, *xor<mode>3_insn,
+	*one_cmpl<mode>2_insn, *ashl<mode>3_insn, *ashr<mode>3_insn,
+	*lshr<mode>3_insn, *trunchiqi2_insn, *truncsihi2_insn,
+	*truncdisi2_insn, *extendqihi2_insn, *extendqisi2_insn,
+	*extendhisi2_insn, *extendsidi2_insn, *zero_extendqihi2_insn,
+	*zero_extendqisi2_insn, *zero_extendsidi2_insn): Fix split condition.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* doc/invoke.texi: Document -Wbidi-chars.
+
+2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103246
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Fix clearing
+	of to_info_lto
+
 2021-11-16  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-modref.c (get_modref_function_summary): Declare.

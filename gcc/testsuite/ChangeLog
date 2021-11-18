@@ -1,3 +1,120 @@
+2021-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103228
+	PR tree-optimization/55177
+	* gcc.dg/tree-ssa/pr103228-1.c: New test.
+	* gcc.dg/tree-ssa/pr55177-1.c: New test.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/103026
+	* c-c++-common/Wbidi-chars-ranges.c: New test.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102759
+	* gcc.dg/Warray-parameter-10.c: New test.
+	* gcc.dg/Wstringop-overflow-82.c: New test.
+
+2021-11-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* gcc.target/i386/harden-sls-1.c: New test.
+	* gcc.target/i386/harden-sls-2.c: Likewise.
+	* gcc.target/i386/harden-sls-3.c: Likewise.
+	* gcc.target/i386/harden-sls-4.c: Likewise.
+	* gcc.target/i386/harden-sls-5.c: Likewise.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101702
+	* gcc.dg/Warray-parameter-11.c: New test.
+
+2021-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/mips/frame-header-1.c (bar): Add noipa attribute.
+	* gcc.target/mips/frame-header-2.c (bar): Likewise.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103130
+	* c-c++-common/cpp/dir-only-9.c: New test.
+
+2021-11-17  Martin Uecker  <uecker@gcc.gnu.org>
+
+	PR c/91038
+	PR c/29970
+	* gcc.dg/vla-stexp-3.c: New test.
+	* gcc.dg/vla-stexp-4.c: New test.
+	* gcc.dg/vla-stexp-5.c: New test.
+	* gcc.dg/vla-stexp-6.c: New test.
+	* gcc.dg/vla-stexp-7.c: New test.
+	* gcc.dg/vla-stexp-8.c: New test.
+	* gcc.dg/vla-stexp-9.c: New test.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103255
+	* gcc.c-torture/execute/pr103255.c: New test.
+
+2021-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/cond_fmaxnm_5.c: New test.
+	* gcc.target/aarch64/sve/cond_fmaxnm_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_8.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_6.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_8.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_8_run.c: Likewise.
+
+2021-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103288
+	* gcc.c-torture/compile/pr103288-1.c: New test.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* c-c++-common/Wbidi-chars-1.c: New test.
+	* c-c++-common/Wbidi-chars-2.c: New test.
+	* c-c++-common/Wbidi-chars-3.c: New test.
+	* c-c++-common/Wbidi-chars-4.c: New test.
+	* c-c++-common/Wbidi-chars-5.c: New test.
+	* c-c++-common/Wbidi-chars-6.c: New test.
+	* c-c++-common/Wbidi-chars-7.c: New test.
+	* c-c++-common/Wbidi-chars-8.c: New test.
+	* c-c++-common/Wbidi-chars-9.c: New test.
+	* c-c++-common/Wbidi-chars-10.c: New test.
+	* c-c++-common/Wbidi-chars-11.c: New test.
+	* c-c++-common/Wbidi-chars-12.c: New test.
+	* c-c++-common/Wbidi-chars-13.c: New test.
+	* c-c++-common/Wbidi-chars-14.c: New test.
+	* c-c++-common/Wbidi-chars-15.c: New test.
+	* c-c++-common/Wbidi-chars-16.c: New test.
+	* c-c++-common/Wbidi-chars-17.c: New test.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102695
+	* gcc.dg/analyzer/pr102695.c: New test.
+	* gcc.dg/analyzer/strchr-1.c: New test.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102779
+	* gcc.dg/analyzer/capacity-1.c: Add dg-require-effective-target
+	alloca.  Use __builtin_alloca rather than alloca.
+	* gcc.dg/analyzer/capacity-3.c: Likewise.
+
 2021-11-16  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/modref-dse-4.c: New test.

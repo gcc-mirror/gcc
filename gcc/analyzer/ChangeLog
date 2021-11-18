@@ -1,3 +1,20 @@
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102695
+	* region-model-impl-calls.cc (region_model::impl_call_strchr): New.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Simplify cast to
+	pointer type of an existing pointer to a region.
+	* region-model.cc (region_model::on_call_pre): Handle
+	BUILT_IN_STRCHR and "strchr".
+	(write_to_const_diagnostic::emit): Add auto_diagnostic_group.  Add
+	alternate wordings for functions and labels.
+	(write_to_const_diagnostic::describe_final_event): Add alternate
+	wordings for functions and labels.
+	(region_model::check_for_writable_region): Handle RK_FUNCTION and
+	RK_LABEL.
+	* region-model.h (region_model::impl_call_strchr): New decl.
+
 2021-11-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102662

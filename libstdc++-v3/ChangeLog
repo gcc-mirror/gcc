@@ -1,3 +1,53 @@
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address): Use std::_Construct
+	to initialize union members.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (_M_construct_aux): Only define
+	for C++98. Remove constexpr.
+	(_M_construct_aux_2): Likewise.
+	(_M_construct(InputIter, InputIter)): Remove.
+	(basic_string(const basic_string&)): Call _M_construct with
+	iterator category argument.
+	(basic_string(const basic_string&, size_type, const Alloc&)):
+	Likewise.
+	(basic_string(const basic_string&, size_type, size_type)):
+	Likewise.
+	(basic_string(const charT*, size_type, const Alloc&)): Likewise.
+	Check for null pointer.
+	(basic_string(const charT*, const Alloc&)): Likewise.
+	(basic_string(initializer_list<charT>, const Alloc&)): Call
+	_M_construct with iterator category argument.
+	(basic_string(const basic_string&, const Alloc&)): Likewise.
+	(basic_string(basic_string&&, const Alloc&)): Likewise.
+	(basic_string(_InputIter, _InputIter, const Alloc&)): Likewise
+	for C++11 and later, call _M_construct_aux for C++98.
+	* include/bits/basic_string.tcc
+	(_M_construct(I, I, input_iterator_tag)): Replace try-block with
+	RAII type.
+	(_M_construct(I, I, forward_iterator_tag)): Likewise. Remove
+	__is_null_pointer check.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_M_use_local_data()): New
+	member function to make local buffer the active member.
+	(assign(const basic_string&)): Use it.
+	* include/bits/basic_string.tcc (_M_construct, reserve()):
+	Likewise.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103240
+	* libsupc++/tinfo2.cc (type_info::before): Use unadjusted name
+	to check for the '*' prefix.
+	* testsuite/util/testsuite_shared.cc: Add type_info object for
+	use in new test.
+	* testsuite/18_support/type_info/103240.cc: New test.
+
 2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h (operator<=>): Use constexpr

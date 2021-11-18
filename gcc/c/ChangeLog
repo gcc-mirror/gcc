@@ -1,3 +1,9 @@
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101702
+	* c-decl.c (get_parm_array_spec): Strip casts earlier and fold array
+	bounds before deciding if they're constant.
+
 2021-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (OMP_TARGET_CLAUSE_MASK): Add
