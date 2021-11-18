@@ -75,7 +75,7 @@ gomp_aligned_alloc (size_t al, size_t size)
 #elif defined(HAVE_POSIX_MEMALIGN)
   if (posix_memalign (&ret, al, size) != 0)
     ret = NULL;
-#lif defined(HAVE_ALIGNED_ALLOC)
+#elif defined(HAVE_ALIGNED_ALLOC)
   {
     size_t sz = (size + al - 1) & ~(al - 1);
     if (__builtin_expect (sz >= size, 1))
