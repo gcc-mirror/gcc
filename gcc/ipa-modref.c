@@ -2882,22 +2882,22 @@ analyze_function (function *f, bool ipa)
 	{
 	  if (dump_file
 	      && (summary
-		  = optimization_summaries->get (cgraph_node::get (f->decl)))
+		  = optimization_summaries->get (fnode))
 		 != NULL
 	      && summary->loads)
 	    {
 	      fprintf (dump_file, "Past summary:\n");
 	      optimization_summaries->get
-		 (cgraph_node::get (f->decl))->dump (dump_file);
+		 (fnode)->dump (dump_file);
 	      past_flags.reserve_exact (summary->arg_flags.length ());
 	      past_flags.splice (summary->arg_flags);
 	      past_retslot_flags = summary->retslot_flags;
 	      past_static_chain_flags = summary->static_chain_flags;
 	      past_flags_known = true;
 	    }
-	  optimization_summaries->remove (cgraph_node::get (f->decl));
+	  optimization_summaries->remove (fnode);
 	}
-      summary = optimization_summaries->get_create (cgraph_node::get (f->decl));
+      summary = optimization_summaries->get_create (fnode);
       gcc_checking_assert (nolto && !lto);
     }
   /* In IPA mode we analyze every function precisely once.  Assert that.  */
@@ -2908,16 +2908,16 @@ analyze_function (function *f, bool ipa)
 	  if (!summaries)
 	    summaries = modref_summaries::create_ggc (symtab);
 	  else
-	    summaries->remove (cgraph_node::get (f->decl));
-	  summary = summaries->get_create (cgraph_node::get (f->decl));
+	    summaries->remove (fnode);
+	  summary = summaries->get_create (fnode);
 	}
       if (lto)
 	{
 	  if (!summaries_lto)
 	    summaries_lto = modref_summaries_lto::create_ggc (symtab);
 	  else
-	    summaries_lto->remove (cgraph_node::get (f->decl));
-	  summary_lto = summaries_lto->get_create (cgraph_node::get (f->decl));
+	    summaries_lto->remove (fnode);
+	  summary_lto = summaries_lto->get_create (fnode);
 	}
       if (!fnspec_summaries)
 	fnspec_summaries = new fnspec_summaries_t (symtab);
@@ -3036,13 +3036,11 @@ analyze_function (function *f, bool ipa)
 	{
 	  if (!summary->loads->every_base && !summary->loads->bases
 	      && !summary->calls_interposable)
-	    fixup_cfg = ipa_make_function_const
-		   (cgraph_node::get (current_function_decl),
-		    summary->side_effects, true);
+	    fixup_cfg = ipa_make_function_const (fnode,
+						 summary->side_effects, true);
 	  else
-	    fixup_cfg = ipa_make_function_pure
-		   (cgraph_node::get (current_function_decl),
-		    summary->side_effects, true);
+	    fixup_cfg = ipa_make_function_pure (fnode,
+						summary->side_effects, true);
 	}
     }
   if (summary && !summary->useful_p (ecf_flags))
