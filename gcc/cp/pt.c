@@ -20434,7 +20434,9 @@ tsubst_copy_and_build (tree t,
 	if (function != NULL_TREE
 	    && (identifier_p (function)
 		|| (TREE_CODE (function) == TEMPLATE_ID_EXPR
-		    && identifier_p (TREE_OPERAND (function, 0))))
+		    && identifier_p (TREE_OPERAND (function, 0))
+		    && !any_dependent_template_arguments_p (TREE_OPERAND
+							    (function, 1))))
 	    && !any_type_dependent_arguments_p (call_args))
 	  {
 	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
