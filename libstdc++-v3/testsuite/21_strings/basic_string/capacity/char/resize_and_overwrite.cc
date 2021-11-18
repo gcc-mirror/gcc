@@ -105,10 +105,24 @@ test04()
   }
 }
 
+constexpr bool
+test05()
+{
+  std::string s;
+  s.resize_and_overwrite(20, [](char* p, auto n) {
+    *p = '!'; // direct assignment should be OK
+    std::char_traits<char>::copy(p, "constexpr", 9);
+    return 9;
+  });
+  VERIFY( s == "constexpr" );
+  return true;
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  static_assert( test05() );
 }
