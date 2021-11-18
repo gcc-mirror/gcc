@@ -949,7 +949,7 @@ complex_mul_pattern::matches (complex_operation_t op,
 
   bool mul0 = vect_match_expression_p (l0node[0], MULT_EXPR);
   bool mul1 = vect_match_expression_p (l0node[1], MULT_EXPR);
-  if (!mul0 && !mul1)
+  if (!mul0 || !mul1)
     return IFN_LAST;
 
   /* Now operand2+4 may lead to another expression.  */
@@ -1204,7 +1204,9 @@ complex_fms_pattern::matches (complex_operation_t op,
 
   /* If these nodes don't have any children then they're
      not ones we're interested in.  */
-  if (left_op.length () != 2 || right_op.length () != 2)
+  if (left_op.length () != 2
+      || right_op.length () != 2
+      || !vect_match_expression_p (l0node[1], MULT_EXPR))
     return IFN_LAST;
 
   bool is_neg = vect_normalize_conj_loc (left_op);
