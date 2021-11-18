@@ -1,5 +1,5 @@
-/* PR target/103068 */
-/* { dg-do compile } */
+/* PR target/103069 */
+/* { dg-do run } */
 /* { dg-additional-options "-O2 -march=x86-64 -mtune=generic" } */ 
 
 #include <stdlib.h>
@@ -37,13 +37,14 @@ FUNC_ATOMIC_RELAX (char, xor)
 #define TEST_ATOMIC_FETCH_LOGIC(TYPE, OP) \
 { \
   TYPE a = 11, b = 101, res, exp; \
+  TYPE c = 11, d = 101;	\
   res = relax_##TYPE##_##OP##_fetch (&a, b); \
-  exp = f_##TYPE##_##OP##_fetch (&a, b);  \
+  exp = f_##TYPE##_##OP##_fetch (&c, d);  \
   if (res != exp) \
     abort (); \
-  a = 21, b = 92; \
+  a = c = 21, b = d = 92; \
   res = relax_##TYPE##_fetch_##OP (&a, b); \
-  exp = f_##TYPE##_fetch_##OP (&a, b);  \
+  exp = f_##TYPE##_fetch_##OP (&c, d);  \
   if (res != exp) \
     abort (); \
 }

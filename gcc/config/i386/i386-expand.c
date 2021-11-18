@@ -23143,13 +23143,14 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
 				       bool doubleword)
 {
   rtx old_reg, new_reg, old_mem, success, oldval, new_mem;
-  rtx_code_label *loop_label, *pause_label;
+  rtx_code_label *loop_label, *pause_label, *done_label;
   machine_mode mode = GET_MODE (target);
 
   old_reg = gen_reg_rtx (mode);
   new_reg = old_reg;
   loop_label = gen_label_rtx ();
   pause_label = gen_label_rtx ();
+  done_label = gen_label_rtx ();
   old_mem = copy_to_reg (mem);
   emit_label (loop_label);
   emit_move_insn (old_reg, old_mem);
@@ -23207,11 +23208,15 @@ void ix86_expand_atomic_fetch_op_loop (rtx target, rtx mem, rtx val,
 			   GET_MODE (success), 1, loop_label,
 			   profile_probability::guessed_never ());
 
+  emit_jump_insn (gen_jump (done_label));
+  emit_barrier ();
+
   /* If mem is not expected, pause and loop back.  */
   emit_label (pause_label);
   emit_insn (gen_pause ());
   emit_jump_insn (gen_jump (loop_label));
   emit_barrier ();
+  emit_label (done_label);
 }
 
 #include "gt-i386-expand.h"
