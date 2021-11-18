@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a } }
+// { dg-options "-std=gnu++20" }
+// { dg-do compile { target c++20 } }
 
 // Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
@@ -25,9 +25,26 @@ template<typename CT>
   test_move()
   {
     using char_type = typename CT::char_type;
+
+    // Overlapping strings
     char_type s1[3] = {1, 2, 3};
     CT::move(s1+1, s1, 2);
-    return s1[0]==char_type{1} && s1[1]==char_type{1} && s1[2]==char_type{2};
+    if (s1[0] != char_type{1} || s1[1] != char_type{1} || s1[2] != char_type{2})
+      throw 1;
+    CT::move(s1, s1+1, 2);
+    if (s1[0] != char_type{1} || s1[1] != char_type{2} || s1[2] != char_type{2})
+      throw 2;
+
+    // Disjoint strings
+    char_type why_is_six_scared_of_seven[] = {4, 5, 6};
+    char_type because789[] = {7, 8, 9};
+    CT::move(why_is_six_scared_of_seven, because789, 3);
+    if (why_is_six_scared_of_seven[0] != char_type{7}
+	|| why_is_six_scared_of_seven[1] != char_type{8}
+	|| why_is_six_scared_of_seven[2] != char_type{9})
+      throw 3;
+
+    return true;
   }
 
 #ifndef __cpp_lib_constexpr_string
