@@ -29,15 +29,27 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with System.Case_Util; use System.Case_Util;
 
-package body System.Val_Util is
+package body System.Val_Util
+  with SPARK_Mode
+is
 
    ---------------
    -- Bad_Value --
    ---------------
 
    procedure Bad_Value (S : String) is
+      pragma Annotate (GNATprove, Intentional, "exception might be raised",
+                       "Intentional exception from Bad_Value");
    begin
       --  Bad_Value might be called with very long strings allocated on the
       --  heap. Limit the size of the message so that we avoid creating a
@@ -62,21 +74,33 @@ package body System.Val_Util is
       F := S'First;
       L := S'Last;
 
+      --  Case of empty string
+
+      if F > L then
+         return;
+      end if;
+
       --  Scan for leading spaces
 
-      while F <= L and then S (F) = ' ' loop
+      while F < L and then S (F) = ' ' loop
+         pragma Loop_Invariant (F in S'First .. L - 1);
+         pragma Loop_Invariant (for all J in S'First .. F => S (J) = ' ');
          F := F + 1;
       end loop;
 
-      --  Case of no nonspace characters found
+      --  Case of no nonspace characters found. Decrease L to ensure L < F
+      --  without risking an overflow if F is Integer'Last.
 
-      if F > L then
+      if S (F) = ' ' then
+         L := L - 1;
          return;
       end if;
 
       --  Scan for trailing spaces
 
       while S (L) = ' ' loop
+         pragma Loop_Invariant (L in F + 1 .. S'Last);
+         pragma Loop_Invariant (for all J in L .. S'Last => S (J) = ' ');
          L := L - 1;
       end loop;
 
@@ -85,6 +109,8 @@ package body System.Val_Util is
       if S (F) /= ''' then
          for J in F .. L loop
             S (J) := To_Upper (S (J));
+            pragma Loop_Invariant
+              (for all K in F .. J => S (K) = To_Upper (S'Loop_Entry (K)));
          end loop;
       end if;
    end Normalize_String;
@@ -98,6 +124,8 @@ package body System.Val_Util is
       Ptr  : not null access Integer;
       Max  : Integer;
       Real : Boolean := False) return Integer
+   with
+     SPARK_Mode => Off  --  Function with side-effect through Ptr
    is
       P : Natural := Ptr.all;
       M : Boolean;
@@ -181,6 +209,8 @@ package body System.Val_Util is
       Ptr   : not null access Integer;
       Max   : Integer;
       Start : out Positive)
+   with
+     SPARK_Mode => Off  --  Not proved yet
    is
       P : Natural := Ptr.all;
 
@@ -226,6 +256,8 @@ package body System.Val_Util is
       Max   : Integer;
       Minus : out Boolean;
       Start : out Positive)
+   with
+     SPARK_Mode => Off  --  Not proved yet
    is
       P : Natural := Ptr.all;
 
@@ -283,7 +315,10 @@ package body System.Val_Util is
    -- Scan_Trailing_Blanks --
    --------------------------
 
-   procedure Scan_Trailing_Blanks (Str : String; P : Positive) is
+   procedure Scan_Trailing_Blanks (Str : String; P : Positive)
+   with
+     SPARK_Mode => Off  --  Not proved yet
+   is
    begin
       for J in P .. Str'Last loop
          if Str (J) /= ' ' then
@@ -302,6 +337,8 @@ package body System.Val_Util is
       Ptr : not null access Integer;
       Max : Integer;
       Ext : Boolean)
+   with
+     SPARK_Mode => Off  --  Not proved yet
    is
       C : Character;
 

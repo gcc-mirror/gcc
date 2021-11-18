@@ -29,7 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Img_Bool is
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
+package body System.Img_Bool
+  with SPARK_Mode
+is
 
    -------------------
    -- Image_Boolean --

@@ -31,16 +31,60 @@
 
 --  This package provides some common utilities used by the s-valxxx files
 
-package System.Val_Util is
-   pragma Pure;
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
 
-   procedure Bad_Value (S : String);
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
+with System.Case_Util;
+
+package System.Val_Util
+  with SPARK_Mode, Pure
+is
+
+   procedure Bad_Value (S : String)
+   with
+     Depends => (null => S);
    pragma No_Return (Bad_Value);
    --  Raises constraint error with message: bad input for 'Value: "xxx"
 
+   function Only_Space_Ghost (S : String; From, To : Integer) return Boolean is
+      (for all J in From .. To => S (J) = ' ')
+   with
+     Ghost,
+     Pre => From > To or else (From >= S'First and then To <= S'Last);
+   --  Ghost function that returns True if S has only space characters from
+   --  index From to index To.
+
    procedure Normalize_String
      (S    : in out String;
-      F, L : out Integer);
+      F, L : out Integer)
+   with
+     Post => (if Only_Space_Ghost (S'Old, S'First, S'Last) then
+                F > L
+              else
+                F >= S'First
+                  and then L <= S'Last
+                  and then F <= L
+                  and then Only_Space_Ghost (S'Old, S'First, F - 1)
+                  and then S'Old (F) /= ' '
+                  and then S'Old (L) /= ' '
+                  and then
+                    (if L < S'Last then
+                      Only_Space_Ghost (S'Old, L + 1, S'Last))
+                  and then
+                    (if S'Old (F) /= ''' then
+                      (for all J in S'Range =>
+                        (if J in F .. L then
+                           S (J) = System.Case_Util.To_Upper (S'Old (J))
+                         else
+                           S (J) = S'Old (J)))));
    --  This procedure scans the string S setting F to be the index of the first
    --  non-blank character of S and L to be the index of the last non-blank
    --  character of S. Any lower case characters present in S will be folded to
@@ -85,7 +129,9 @@ package System.Val_Util is
      (Str  : String;
       Ptr  : not null access Integer;
       Max  : Integer;
-      Real : Boolean := False) return Integer;
+      Real : Boolean := False) return Integer
+   with
+     SPARK_Mode => Off;  --  Function with side-effect through Ptr
    --  Called to scan a possible exponent. Str, Ptr, Max are as described above
    --  for Scan_Sign. If Ptr.all < Max and Str (Ptr.all) = 'E' or 'e', then an
    --  exponent is scanned out, with the exponent value returned in Exp, and
