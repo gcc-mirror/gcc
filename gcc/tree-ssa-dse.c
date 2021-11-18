@@ -88,6 +88,7 @@ static void delete_dead_or_redundant_call (gimple_stmt_iterator *, const char *)
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
+static bitmap need_ab_cleanup;
 
 /* STMT is a statement that may write into memory.  Analyze it and
    initialize WRITE to describe how STMT affects memory.
@@ -758,7 +759,8 @@ dse_optimize_redundant_stores (gimple *stmt)
 			       (ao_ref_base_alias_set (&lhs_ref),
 						  earlier_base_set)))
 		    delete_dead_or_redundant_assignment (&gsi, "redundant",
-							 need_eh_cleanup);
+							 need_eh_cleanup,
+							 need_ab_cleanup);
 		}
 	      else if (is_gimple_call (use_stmt))
 		{
@@ -1027,8 +1029,10 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 /* Delete a dead store at GSI, which is a gimple assignment. */
 
 void
-delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type,
-				     bitmap need_eh_cleanup)
+delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi,
+				     const char *type,
+				     bitmap need_eh_cleanup,
+				     bitmap need_ab_cleanup)
 {
   gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1043,6 +1047,8 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
 
   /* Remove the dead store.  */
   basic_block bb = gimple_bb (stmt);
+  if (need_ab_cleanup && stmt_can_make_abnormal_goto (stmt))
+    bitmap_set_bit (need_ab_cleanup, bb->index);
   if (gsi_remove (gsi, true) && need_eh_cleanup)
     bitmap_set_bit (need_eh_cleanup, bb->index);
 
@@ -1132,7 +1138,8 @@ dse_optimize_call (gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	  if (store_status != DSE_STORE_DEAD)
 	    return false;
 	}
-  delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
+  delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
+				       need_ab_cleanup);
   return true;
 }
 
@@ -1296,7 +1303,8 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
       update_stmt (stmt);
     }
   else
-    delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
+    delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
+					 need_ab_cleanup);
 }
 
 namespace {
@@ -1333,6 +1341,7 @@ pass_dse::execute (function *fun)
 {
   unsigned todo = 0;
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  need_ab_cleanup = BITMAP_ALLOC (NULL);
   auto_sbitmap live_bytes (param_dse_max_object_size);
 
   renumber_gimple_stmt_uids (fun);
@@ -1410,8 +1419,14 @@ pass_dse::execute (function *fun)
       gimple_purge_all_dead_eh_edges (need_eh_cleanup);
       todo |= TODO_cleanup_cfg;
     }
+  if (!bitmap_empty_p (need_ab_cleanup))
+    {
+      gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
+      todo |= TODO_cleanup_cfg;
+    }
 
   BITMAP_FREE (need_eh_cleanup);
+  BITMAP_FREE (need_ab_cleanup);
 
   return todo;
 }
