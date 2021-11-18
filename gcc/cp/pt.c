@@ -20267,7 +20267,10 @@ tsubst_copy_and_build (tree t,
 					    /*done=*/false,
 					    /*address_p=*/false);
 	  }
-	else if (koenig_p && identifier_p (function))
+	else if (koenig_p
+		 && (identifier_p (function)
+		     || (TREE_CODE (function) == TEMPLATE_ID_EXPR
+			 && identifier_p (TREE_OPERAND (function, 0)))))
 	  {
 	    /* Do nothing; calling tsubst_copy_and_build on an identifier
 	       would incorrectly perform unqualified lookup again.
@@ -20280,6 +20283,12 @@ tsubst_copy_and_build (tree t,
 	       FIXME but doing that causes c++/15272, so we need to stop
 	       using IDENTIFIER_NODE in that situation.  */
 	    qualified_p = false;
+
+	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	      /* Use tsubst_copy to substitute through the template arguments
+		 of the template-id without performing unqualified lookup of
+		 the template name.  */
+	      function = tsubst_copy (function, args, complain, in_decl);
 	  }
 	else
 	  {
