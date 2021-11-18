@@ -2033,10 +2033,7 @@ modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
 					   bool indirect)
 {
   int index = SSA_NAME_VERSION (name);
-
-  /* If value is not returned at all, do nothing.  */
-  if (!direct && !indirect)
-    return;
+  bool returned_directly = false;
 
   /* If there is no return value, no flags are affected.  */
   if (!gimple_call_lhs (call))
@@ -2047,10 +2044,23 @@ modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
   if (arg >= 0)
     {
       int flags = gimple_call_return_flags (call);
-      if ((flags & ERF_RETURNS_ARG)
-	  && (flags & ERF_RETURN_ARG_MASK) != arg)
-	return;
+      if (flags & ERF_RETURNS_ARG)
+	{
+	  if ((flags & ERF_RETURN_ARG_MASK) == arg)
+	    returned_directly = true;
+	  else
+	   return;
+	}
     }
+  /* Make ERF_RETURNS_ARG overwrite EAF_UNUSED.  */
+  if (returned_directly)
+    {
+      direct = true;
+      indirect = false;
+    }
+  /* If value is not returned at all, do nothing.  */
+  else if (!direct && !indirect)
+    return;
 
   /* If return value is SSA name determine its flags.  */
   if (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME)
@@ -2273,11 +2283,13 @@ modref_eaf_analysis::analyze_ssa_name (tree name)
 		if (gimple_call_arg (call, i) == name)
 		  {
 		    int call_flags = gimple_call_arg_flags (call, i);
-		    if (!ignore_retval && !(call_flags & EAF_UNUSED))
+		    if (!ignore_retval)
 		      merge_call_lhs_flags
 			      (call, i, name,
-			       !(call_flags & EAF_NOT_RETURNED_DIRECTLY),
-			       !(call_flags & EAF_NOT_RETURNED_INDIRECTLY));
+			       !(call_flags & (EAF_NOT_RETURNED_DIRECTLY
+					       | EAF_UNUSED)),
+			       !(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
+					       | EAF_UNUSED)));
 		    if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
 		      {
 			call_flags = callee_to_caller_flags
