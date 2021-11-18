@@ -1780,6 +1780,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       gimple *assign = last_and_only_stmt (middle_bb);
       tree lhs, op0, op1, bound;
 
+      if (!single_pred_p (middle_bb))
+	return false;
+
       if (!assign
 	  || gimple_code (assign) != GIMPLE_ASSIGN)
 	return false;
