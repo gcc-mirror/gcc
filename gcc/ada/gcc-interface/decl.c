@@ -4426,8 +4426,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  tree size = TYPE_SIZE (gnu_type);
 
 	  /* If the size is self-referential, annotate the maximum value
-	     after saturating it, if need be, to avoid a No_Uint value.  */
-	  if (CONTAINS_PLACEHOLDER_P (size))
+	     after saturating it, if need be, to avoid a No_Uint value.
+	     But do not do it for cases where Analyze_Object_Declaration
+	     in Sem_Ch3 would build a default subtype for objects.  */
+	  if (CONTAINS_PLACEHOLDER_P (size)
+	      && !Is_Limited_Record (gnat_entity)
+	      && !Is_Concurrent_Type (gnat_entity))
 	    {
 	      const unsigned int align
 		= UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT;
