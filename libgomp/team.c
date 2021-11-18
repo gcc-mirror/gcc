@@ -177,7 +177,12 @@ gomp_new_team (unsigned nthreads)
     {
       size_t extra = sizeof (team->ordered_release[0])
 		     + sizeof (team->implicit_task[0]);
+#ifdef GOMP_USE_ALIGNED_WORK_SHARES
+      team = gomp_aligned_alloc (__alignof (struct gomp_team),
+				 sizeof (*team) + nthreads * extra);
+#else
       team = team_malloc (sizeof (*team) + nthreads * extra);
+#endif
 
 #ifndef HAVE_SYNC_BUILTINS
       gomp_mutex_init (&team->work_share_list_free_lock);
