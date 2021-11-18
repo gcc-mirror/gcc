@@ -439,8 +439,10 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
 
   if (!seg.has_generic_args ())
     {
-      result = CanonicalPath::new_seg (seg.get_node_id (),
-				       seg.get_ident_segment ().as_string ());
+      auto ident_segment
+	= CanonicalPath::new_seg (seg.get_node_id (),
+				  seg.get_ident_segment ().as_string ());
+      result = result.append (ident_segment);
       return;
     }
 
@@ -454,14 +456,18 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
     {
       std::string generics
 	= canonicalize_generic_args (seg.get_generic_args ());
-      result = CanonicalPath::new_seg (seg.get_node_id (),
-				       seg.get_ident_segment ().as_string ()
-					 + "::" + generics);
+      auto generic_segment
+	= CanonicalPath::new_seg (seg.get_node_id (),
+				  seg.get_ident_segment ().as_string ()
+				    + "::" + generics);
+      result = result.append (generic_segment);
       return;
     }
 
-  result = CanonicalPath::new_seg (seg.get_node_id (),
-				   seg.get_ident_segment ().as_string ());
+  auto ident_segment
+    = CanonicalPath::new_seg (seg.get_node_id (),
+			      seg.get_ident_segment ().as_string ());
+  result = result.append (ident_segment);
 }
 
 void
@@ -478,6 +484,24 @@ ResolveTypeToCanonicalPath::visit (AST::TypePathSegment &seg)
   CanonicalPath ident_seg
     = CanonicalPath::new_seg (seg.get_node_id (),
 			      seg.get_ident_segment ().as_string ());
+  result = result.append (ident_seg);
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::ReferenceType &ref)
+{
+  auto inner_type
+    = ResolveTypeToCanonicalPath::resolve (*ref.get_type_referenced ().get (),
+					   include_generic_args_flag,
+					   type_resolve_generic_args_flag);
+
+  std::string segment_string ("&");
+  if (ref.get_has_mut ())
+    segment_string += "mut ";
+
+  segment_string += inner_type.get ();
+
+  auto ident_seg = CanonicalPath::new_seg (ref.get_node_id (), segment_string);
   result = result.append (ident_seg);
 }
 

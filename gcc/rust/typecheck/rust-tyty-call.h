@@ -88,9 +88,10 @@ class TypeCheckMethodCallExpr : private TyVisitor
 public:
   // Resolve the Method parameters and return back the return type
   static BaseType *go (BaseType *ref, HIR::MethodCallExpr &call,
+		       TyTy::BaseType *adjusted_self,
 		       Resolver::TypeCheckContext *context)
   {
-    TypeCheckMethodCallExpr checker (call, context);
+    TypeCheckMethodCallExpr checker (call, adjusted_self, context);
     ref->accept_vis (checker);
     return checker.resolved;
   }
@@ -125,13 +126,15 @@ public:
 
 private:
   TypeCheckMethodCallExpr (HIR::MethodCallExpr &c,
+			   TyTy::BaseType *adjusted_self,
 			   Resolver::TypeCheckContext *context)
-    : resolved (nullptr), call (c), context (context),
-      mappings (Analysis::Mappings::get ())
+    : resolved (nullptr), call (c), adjusted_self (adjusted_self),
+      context (context), mappings (Analysis::Mappings::get ())
   {}
 
   BaseType *resolved;
   HIR::MethodCallExpr &call;
+  TyTy::BaseType *adjusted_self;
   Resolver::TypeCheckContext *context;
   Analysis::Mappings *mappings;
 };

@@ -154,13 +154,7 @@ class SubstMapperInternal : public TyTy::TyVisitor
 {
 public:
   static TyTy::BaseType *Resolve (TyTy::BaseType *base,
-				  TyTy::SubstitutionArgumentMappings &mappings)
-  {
-    SubstMapperInternal mapper (base->get_ref (), mappings);
-    base->accept_vis (mapper);
-    rust_assert (mapper.resolved != nullptr);
-    return mapper.resolved;
-  }
+				  TyTy::SubstitutionArgumentMappings &mappings);
 
   void visit (TyTy::FnType &type) override
   {

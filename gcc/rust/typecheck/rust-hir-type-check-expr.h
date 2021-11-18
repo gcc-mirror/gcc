@@ -265,15 +265,29 @@ public:
     bool probe_impls = !receiver_is_generic;
     bool ignore_mandatory_trait_items = !receiver_is_generic;
 
+    auto probe_type = probe_impls ? receiver_tyty : root;
     auto candidates
-      = PathProbeType::Probe (root, expr.get_method_name ().get_segment (),
+      = PathProbeType::Probe (probe_type,
+			      expr.get_method_name ().get_segment (),
 			      probe_impls, probe_bounds,
 			      ignore_mandatory_trait_items);
     if (candidates.empty ())
       {
-	rust_error_at (expr.get_locus (),
-		       "failed to resolve the PathExprSegment to any item");
-	return;
+	if (probe_impls)
+	  {
+	    candidates
+	      = PathProbeType::Probe (root,
+				      expr.get_method_name ().get_segment (),
+				      probe_impls, probe_bounds,
+				      ignore_mandatory_trait_items);
+	  }
+
+	if (candidates.empty ())
+	  {
+	    rust_error_at (expr.get_locus (),
+			   "failed to resolve the PathExprSegment to any item");
+	    return;
+	  }
       }
 
     std::vector<Adjustment> adjustments;
@@ -294,6 +308,10 @@ public:
 	  }
 	return;
       }
+
+    // Get the adjusted self
+    Adjuster adj (receiver_tyty);
+    TyTy::BaseType *adjusted_self = adj.adjust_type (adjustments);
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
@@ -401,7 +419,8 @@ public:
       }
 
     TyTy::BaseType *function_ret_tyty
-      = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, context);
+      = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, adjusted_self,
+					   context);
     if (function_ret_tyty == nullptr
 	|| function_ret_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
