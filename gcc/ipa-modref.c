@@ -2880,15 +2880,15 @@ analyze_function (function *f, bool ipa)
 	optimization_summaries = modref_summaries::create_ggc (symtab);
       else /* Remove existing summary if we are re-running the pass.  */
 	{
-	  if (dump_file
-	      && (summary
-		  = optimization_summaries->get (fnode))
-		 != NULL
+	  summary = optimization_summaries->get (fnode);
+	  if (summary != NULL
 	      && summary->loads)
 	    {
-	      fprintf (dump_file, "Past summary:\n");
-	      optimization_summaries->get
-		 (fnode)->dump (dump_file);
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Past summary:\n");
+		  optimization_summaries->get (fnode)->dump (dump_file);
+		}
 	      past_flags.reserve_exact (summary->arg_flags.length ());
 	      past_flags.splice (summary->arg_flags);
 	      past_retslot_flags = summary->retslot_flags;
