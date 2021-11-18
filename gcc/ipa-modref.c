@@ -5030,8 +5030,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
       auto_vec <modref_parm_map, 32> parm_map;
       modref_parm_map chain_map;
       /* TODO: Once we get jump functions for static chains we could
-	 compute this.  */
-      chain_map.parm_index = MODREF_UNKNOWN_PARM;
+	 compute parm_index.  */
 
       compute_parm_map (edge, &parm_map);
 

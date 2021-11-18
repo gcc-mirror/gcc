@@ -287,6 +287,11 @@ struct GTY((user)) modref_base_node
 
 struct modref_parm_map
 {
+  /* Default constructor.  */
+  modref_parm_map ()
+  : parm_index (MODREF_UNKNOWN_PARM), parm_offset_known (false), parm_offset ()
+  {}
+
   /* Index of parameter we translate to.
      Values from special_params enum are permitted too.  */
   int parm_index;
