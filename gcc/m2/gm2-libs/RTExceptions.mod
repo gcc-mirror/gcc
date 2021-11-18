@@ -288,22 +288,27 @@ VAR
 BEGIN
    currentEHB^.number := number ;
    i := 0 ;
-   addFile(file, i) ;
-   addChar(':', i) ;
-   addNum(line, i) ;
-   addChar(':', i) ;
-   addNum(column, i) ;
-   addChar(':', i) ;
-   addStr(message, i) ;
-   addChar(' ', i) ;
-   addChar('(', i) ;
-   addChar('i', i) ;
-   addChar('n', i) ;
-   addChar(' ', i) ;
-   addStr(function, i) ;
-   addChar(')', i) ;
-   addChar(nl, i) ;
-   addChar(nul, i) ;
+   addFile (file, i) ;
+   addChar (':', i) ;
+   addNum (line, i) ;
+   addChar (':', i) ;
+   addNum (column, i) ;
+   addChar (':', i) ;
+   addChar (' ', i) ;
+   addChar ('I', i) ;
+   addChar ('n', i) ;
+   addChar (' ', i) ;
+   addStr (function, i) ;
+   addChar (nl, i) ;
+   addFile (file, i) ;
+   addChar (':', i) ;
+   addNum (line, i) ;
+   addChar (':', i) ;
+   addNum (column, i) ;
+   addChar (':', i) ;
+   addStr (message, i) ;
+   addChar (nl, i) ;
+   addChar (nul, i) ;
    InvokeHandler
 END Raise ;
 

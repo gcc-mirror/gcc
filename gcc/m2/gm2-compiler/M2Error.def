@@ -45,7 +45,7 @@ EXPORT QUALIFIED Error,
                  WarnFormat0, WarnFormat1, MoveError,
                  AnnounceScope, EnterImplementationScope,
                  EnterModuleScope, EnterDefinitionScope, EnterProgramScope,
-                 EnterProcedureScope, LeaveScope, DepthScope ;
+                 EnterProcedureScope, LeaveScope, DepthScope, GetAnnounceScope ;
 
 TYPE
    Error ;
@@ -223,11 +223,11 @@ PROCEDURE ErrorAbort0 (a: ARRAY OF CHAR) ;
 
 
 (*
-   AnnounceScope - return the error string s with a scope description prepended
+   AnnounceScope - return the error string message with a scope description prepended
                    assuming that scope has changed.
 *)
 
-PROCEDURE AnnounceScope (e: Error; s: String) : String ;
+PROCEDURE AnnounceScope (e: Error; message: String) : String ;
 
 
 (*
@@ -282,6 +282,15 @@ PROCEDURE LeaveScope ;
 *)
 
 PROCEDURE DepthScope () : CARDINAL ;
+
+
+(*
+   GetAnnounceScope - return message with the error scope attached to message.
+                      filename and message are treated as read only by this
+                      procedure function.
+*)
+
+PROCEDURE GetAnnounceScope (filename, message: String) : String ;
 
 
 END M2Error.

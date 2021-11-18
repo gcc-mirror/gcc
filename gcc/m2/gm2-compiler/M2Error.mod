@@ -808,17 +808,52 @@ END ErrorAbort0 ;
 
 
 (*
+   GetAnnounceScope - return message with the error scope attached to message.
+                      filename and message are treated as read only by this
+                      procedure function.
+*)
+
+PROCEDURE GetAnnounceScope (filename, message: String) : String ;
+VAR
+   pre,
+   fmt,
+   desc,
+   quoted: String ;
+BEGIN
+   IF filename = NIL
+   THEN
+      pre := InitString ('')
+   ELSE
+      pre := Sprintf1 (Mark (InitString ("%s: ")), filename)
+   END ;
+
+   quoted := quoteOpen (InitString ('')) ;
+   quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (scopeName)))) ;
+   quoted := quoteClose (quoted) ;
+   CASE scopeKind OF
+
+   definition    :   desc := InitString ("In definition module") |
+   implementation:   desc := InitString ("In implementation module") |
+   program       :   desc := InitString ("In program module") |
+   module        :   desc := InitString ("In inner module") |
+   procedure     :   desc := InitString ("In procedure")
+
+   END ;
+   fmt := ConCat (pre, desc) ;
+   fmt := ConCat (fmt, Sprintf1 (Mark (InitString (" %s:\n")), quoted)) ;
+   RETURN ConCat (fmt, message)
+END GetAnnounceScope ;
+
+
+(*
+
    AnnounceScope - return the error string s with a scope description prepended
                    assuming that scope has changed.
 *)
 
-PROCEDURE AnnounceScope (e: Error; s: String) : String ;
+PROCEDURE AnnounceScope (e: Error; message: String) : String ;
 VAR
-   desc,
-   pre,
-   quoted,
-   filename,
-   fmt     : String ;
+   filename: String ;
 BEGIN
    IF (scopeKind#e^.scopeKind) OR (scopeName#e^.scopeName) OR (lastKind#e^.scopeKind)
    THEN
@@ -827,29 +862,9 @@ BEGIN
       scopeName := e^.scopeName ;
       Assert (e^.scopeKind # noscope) ;
       filename := FindFileNameFromToken (e^.token, 0) ;
-      IF filename = NIL
-      THEN
-         pre := InitString ('')
-      ELSE
-         pre := Sprintf1 (Mark (InitString ("%s: ")), filename)
-      END ;
-      quoted := quoteOpen (InitString ('')) ;
-      quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (scopeName)))) ;
-      quoted := quoteClose (quoted) ;
-      CASE scopeKind OF
-
-      definition    :   desc := InitString ("In definition module") |
-      implementation:   desc := InitString ("In implementation module") |
-      program       :   desc := InitString ("In program module") |
-      module        :   desc := InitString ("In inner module") |
-      procedure     :   desc := InitString ("In procedure")
-
-      END ;
-      fmt := ConCat (pre, desc) ;
-      fmt := ConCat (fmt, Sprintf1 (Mark (InitString (" %s:\n")), quoted)) ;
-      s := ConCat (fmt, s)
+      message := GetAnnounceScope (filename, message)
    END ;
-   RETURN s
+   RETURN message
 END AnnounceScope ;
 
 

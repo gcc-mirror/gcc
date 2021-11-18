@@ -56,8 +56,12 @@ FROM M2Debug IMPORT Assert ;
 FROM Indexing IMPORT Index, InitIndex, InBounds, PutIndice, GetIndice ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2ALU IMPORT PushIntegerTree, PushInt, ConvertToInt, Equ, Gre, Less, GreEqu ;
-FROM M2Error IMPORT Error, InternalError, ErrorFormat0, ErrorFormat1, ErrorFormat2, FlushErrors ;
 FROM M2Options IMPORT VariantValueChecking ;
+
+FROM M2Error IMPORT Error, InternalError, ErrorFormat0, ErrorFormat1, ErrorFormat2, FlushErrors,
+                    GetAnnounceScope ;
+
+FROM M2ColorString IMPORT quoteOpen, quoteClose ;
 
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3,
                         MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
@@ -2320,9 +2324,10 @@ BEGIN
          BuildStringParamLoc (location, errorMessage) ;
          IF function = NIL
          THEN
-            scope := InitString ('the global scope')
+            scope := GetAnnounceScope (filename, NIL)
          ELSE
-            scope := InitStringCharStar (function)
+            scope := quoteOpen (InitString ('')) ;
+            scope := ConCat (InitString ("procedure "), quoteClose (scope))
          END ;
          BuildStringParamLoc (location, scope) ;
          BuildParam (location, BuildIntegerConstant (column)) ;

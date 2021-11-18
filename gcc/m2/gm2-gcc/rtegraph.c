@@ -362,8 +362,8 @@ generate_report (gimple *stmt, const char *report, diagnostic_t kind)
 	  /* continue to use scope as this will survive any
 	     optimization transforms.  */
 	  location_t location = gimple_location (stmt);
-	  rte_error_at (location, kind, "%s, %s (in %s)\n",
-			report, message, scope);
+	  rte_error_at (location, kind, "In %s\n%s, %s",
+			scope, report, message);
 	}
     }
 }
