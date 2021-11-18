@@ -3224,6 +3224,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 		     fma_deferring_state *state, tree mul_cond = NULL_TREE)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
+  /* If there isn't a LHS then this can't be an FMA.  There can be no LHS
+     if the statement was left just for the side-effects.  */
+  if (!mul_result)
+    return false;
   tree type = TREE_TYPE (mul_result);
   gimple *use_stmt, *neguse_stmt;
   use_operand_p use_p;
