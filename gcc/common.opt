@@ -2539,7 +2539,7 @@ Common Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
 Reschedule pipelined regions without pipelining.
 
 fsemantic-interposition
-Common Var(flag_semantic_interposition) Init(1)
+Common Var(flag_semantic_interposition) Init(1) Optimization
 Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker.
 
 ; sched_stalled_insns means that insns can be moved prematurely from the queue

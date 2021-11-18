@@ -17609,7 +17609,8 @@ finish_function (bool inline_p)
   if (!processing_template_decl
       && !cp_function_chain->can_throw
       && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl))
+      && !decl_replaceable_p (fndecl,
+			      opt_for_fn (fndecl, flag_semantic_interposition)))
     TREE_NOTHROW (fndecl) = 1;
 
   /* This must come after expand_function_end because cleanups might
