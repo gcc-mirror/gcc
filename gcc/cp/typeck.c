@@ -4594,9 +4594,11 @@ build_vec_cmp (tree_code code, tree type,
 static void
 warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
 {
+  /* Prevent warnings issued for macro expansion.  */
   if (!warn_address
       || (complain & tf_warning) == 0
       || c_inhibit_evaluation_warnings != 0
+      || from_macro_expansion_at (location)
       || warning_suppressed_p (op, OPT_Waddress))
     return;
 

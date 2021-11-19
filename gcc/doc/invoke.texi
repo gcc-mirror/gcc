@@ -8689,6 +8689,8 @@ suppressed by casting the pointer operand to an integer type such
 as @code{inptr_t} or @code{uinptr_t}.
 Comparisons against string literals result in unspecified behavior
 and are not portable, and suggest the intent was to call @code{strcmp}.
+The warning is suppressed if the suspicious expression is the result
+of macro expansion.
 @option{-Waddress} warning is enabled by @option{-Wall}.
 
 @item -Wno-address-of-packed-member
