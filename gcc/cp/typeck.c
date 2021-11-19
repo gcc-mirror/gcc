@@ -10545,19 +10545,20 @@ check_return_expr (tree retval, bool *no_warning)
      this restriction, anyway.  (jason 2000-11-19)
 
      See finish_function and finalize_nrv for the rest of this optimization.  */
+  tree bare_retval = NULL_TREE;
   if (retval)
     {
       retval = maybe_undo_parenthesized_ref (retval);
-      STRIP_ANY_LOCATION_WRAPPER (retval);
+      bare_retval = tree_strip_any_location_wrapper (retval);
     }
 
-  bool named_return_value_okay_p = can_do_nrvo_p (retval, functype);
+  bool named_return_value_okay_p = can_do_nrvo_p (bare_retval, functype);
   if (fn_returns_value_p && flag_elide_constructors)
     {
       if (named_return_value_okay_p
           && (current_function_return_value == NULL_TREE
-              || current_function_return_value == retval))
-	current_function_return_value = retval;
+	      || current_function_return_value == bare_retval))
+	current_function_return_value = bare_retval;
       else
 	current_function_return_value = error_mark_node;
     }
@@ -10571,7 +10572,7 @@ check_return_expr (tree retval, bool *no_warning)
     maybe_warn_pessimizing_move (retval, functype);
 
   /* Do any required conversions.  */
-  if (retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
+  if (bare_retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
     /* No conversions are required.  */
     ;
   else
