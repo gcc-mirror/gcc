@@ -1470,7 +1470,8 @@ emit_mem_initializers (tree mem_inits)
     for (tree f = next_initializable_field (TYPE_FIELDS (current_class_type));
 	 f != NULL_TREE;
 	 f = next_initializable_field (DECL_CHAIN (f)))
-      if (!DECL_ARTIFICIAL (f))
+      if (!DECL_ARTIFICIAL (f)
+	  && !is_really_empty_class (TREE_TYPE (f), /*ignore_vptr*/false))
 	uninitialized.add (f);
 
   if (mem_inits

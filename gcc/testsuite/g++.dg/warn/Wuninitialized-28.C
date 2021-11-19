@@ -47,6 +47,7 @@ struct F {
 };
 
 struct bar {
+  int a;
   bar() {}
   bar(bar&) {}
 };
