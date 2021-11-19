@@ -63,8 +63,11 @@ proc libstdc++-dg-prune { system text } {
     regsub -all "(^|\n)\[^\n\]*warning: DWARFDebugInfoEntry::AppendDependants\[^\n\]*AT_\[^\n\]*_bound\[^\n\]*FORM_ref4\[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*warning:\[^\n\]*TAG_variable:  AT_location\[^\n\]*didn't have valid function low pc\[^\n\]*" $text "" text
 
-    # Ignore harmless warnings from Xcode 4.0.
+    # Ignore harmless warnings from Xcode 4+.
     regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
+
+    # Ignore dsymutil warning (tool bug is actually in the linker)
+    regsub -all "(^|\n)\[^\n\]*could not find object file symbol for symbol\[^\n\]*" $text "" text
 
     foreach p $additional_prunes {
 	if { [string length $p] > 0 } {
