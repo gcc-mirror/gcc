@@ -2296,7 +2296,9 @@ END IssueWarning ;
 
 
 (*
-   CodeErrorCheckLoc -
+   CodeErrorCheckLoc - generate a runtime error message positioned at location
+                       and in function.  If function is NIL then the error scope
+                       is used.
 *)
 
 PROCEDURE CodeErrorCheckLoc (location: location_t;

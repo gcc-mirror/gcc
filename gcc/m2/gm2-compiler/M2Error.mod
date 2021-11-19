@@ -403,6 +403,7 @@ BEGIN
       fatal  := TRUE ;
       color  := FALSE ;
    END ;
+   Assert (scopeKind # noscope) ;
    e^.scopeKind := scopeKind ;
    e^.scopeName := scopeName ;
    IF (head=NIL) OR (head^.token>AtTokenNo)
@@ -465,20 +466,22 @@ VAR
 BEGIN
    IF e=NIL
    THEN
-      RETURN( NewError(AtTokenNo) )
+      RETURN NewError (AtTokenNo)
    ELSE
-      NEW(f) ;
+      NEW (f) ;
       WITH f^ DO
-         s      := NIL ;
-         token  := AtTokenNo ;
-         next   := e^.child ;
-         parent := e ;
-         child  := NIL ;
-         fatal  := e^.fatal
+         s         := NIL ;
+         token     := AtTokenNo ;
+         next      := e^.child ;
+         parent    := e ;
+         child     := NIL ;
+         fatal     := e^.fatal ;
+         scopeKind := e^.scopeKind ;
+         scopeName := e^.scopeName
       END ;
       e^.child := f
    END ;
-   RETURN( f )
+   RETURN f
 END ChainError ;
 
 

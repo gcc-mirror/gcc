@@ -251,42 +251,15 @@ was released on December 11 2010.
 @section How to get source code using git
 
 GNU Modula-2 is in the process of migrating into the
-@url{https://gcc.gnu.org/git.html, GCC git tree}.  At the time of
-writing this has not completed and therefore the previous two
-repositories can be used to retrieve gm2.
-
-There are two other repositories containing gm2, one on Savannah which
-only contains the Modula-2 front end and one on
-@url{http://floppsie.comp.glam.ac.uk, floppsie} which contains a gcc
-repository with a rebased gm2 applied.  The floppsie repository is
-automatically generated from the gcc repository and the Savannah
-repository.  In effect the floppsie repository rebases gm2 to the gcc
-repository for all supported branches.  At the time of writing all
-developer git pushes are still directed to the Savannah repository
-(although this is about to change).
-
-The combined git repository can be obtained using the following
-commands:
+@url{https://gcc.gnu.org/git.html, GCC git tree}.  The development
+branch is available via git:
 
 @example
-$ git clone http://floppsie.comp.glam.ac.uk/gm2 gm2-floppsie
-$ cd gm2-floppsie
-$ git checkout gm2-master
+$ git clone git://gcc.gnu.org/git/gcc.git gcc-git-devel-modula2
+$ cd gcc-git-devel-modula2
+$ git checkout devel/modula-2
 $ cd ..
 @end example
-
-If you only need the gm2 front end then this can be obtained from
-Savannah using the commands:
-
-@example
-$ git clone https://git.savannah.nongnu.org/git/gm2.git gm2-savannah
-$ cd gm2-savannah
-$ git checkout master
-$ cd ..
-@end example
-
-The source code in the git repository on Savannah can be
-@uref{http://git.savannah.gnu.org/cgit/gm2.git/tree, browsed}.
 
 @node Obtaining, Features, Development, Using
 
