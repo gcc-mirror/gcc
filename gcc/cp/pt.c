@@ -11727,6 +11727,17 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	q = &TREE_CHAIN (*q);
     }
 
+  /* cplus_decl_attributes can add some attributes implicitly.  For templates,
+     those attributes should have been added already when those templates were
+     parsed, and shouldn't be added based on from which context they are
+     first time instantiated.  */
+  auto o1 = make_temp_override (current_optimize_pragma, NULL_TREE);
+  auto o2 = make_temp_override (optimization_current_node,
+				optimization_default_node);
+  auto o3 = make_temp_override (current_target_pragma, NULL_TREE);
+  auto o4 = make_temp_override (scope_chain->omp_declare_target_attribute,
+				NULL);
+
   cplus_decl_attributes (decl_p, late_attrs, attr_flags);
 
   return true;
