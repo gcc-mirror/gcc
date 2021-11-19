@@ -682,6 +682,7 @@ static const struct default_options default_options_table[] =
     /* -Ofast adds optimizations to -O3.  */
     { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },
     { OPT_LEVELS_FAST, OPT_fallow_store_data_races, NULL, 1 },
+    { OPT_LEVELS_FAST, OPT_fsemantic_interposition, NULL, 0 },
 
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
