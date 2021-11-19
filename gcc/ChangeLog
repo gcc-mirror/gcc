@@ -1,3 +1,180 @@
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/predicates.md (current_file_function_operand):
+	Add flag_semantic_interposition to call of decl_replaceable_p.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref.c (analyze_function): Do not execute the code
+	only if dump_file != NULL.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref.c (analyze_function): Use fnode instead of repeated
+	cgraph_node::get (current_function_decl).
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::get_availability): Update call of
+	decl_replaceable_p.
+	(cgraph_node::verify_node): Verify that semantic_interposition flag
+	is set correclty.
+	* cgraph.h: (symtab_node): Add semantic_interposition flag.
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Clear
+	semantic_interposition flag.
+	* cgraphunit.c (cgraph_node::finalize_function): Set
+	semantic_interposition flag.
+	(cgraph_node::add_new_function): Likewise.
+	(varpool_node::finalize_decl): Likewise.
+	(cgraph_node::create_wrapper): Likewise.
+	* common.opt (fsemantic-interposition): Turn to optimization node.
+	* lto-cgraph.c (lto_output_node): Stream semantic_interposition.
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node): Likewise.
+	(input_varpool_node): Likewise.
+	* symtab.c (symtab_node::dump_base): Dump new flag.
+	* varasm.c (decl_replaceable_p): Add semantic_interposition_p
+	parameter.
+	* varasm.h (decl_replaceable_p): Update declaration.
+	* varpool.c (varpool_node::ctor_useable_for_folding_p):
+	Use semantic_interposition flag.
+	(varpool_node::get_availability): Likewise.
+	(varpool_node::create_alias): Copy semantic_interposition flag.
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103266
+	* ipa-modref.c (modref_eaf_analysis::merge_call_lhs_flags): Unused
+	parameter may still be returned.
+	(modref_eaf_analysis::analyze_ssa_name): Call merge_call_lhs_flags
+	even for unused function args.
+
+2021-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103311
+	* tree-vect-slp-patterns.c (complex_mul_pattern::matches,
+	complex_fms_pattern::matches): Check for multiplications.
+
+2021-11-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect): Emit
+	CS prefix for -mindirect-branch-cs-prefix.
+	(ix86_output_indirect_branch_via_reg): Likewise.
+	* config/i386/i386.opt: Add -mindirect-branch-cs-prefix.
+	* doc/invoke.texi: Document -mindirect-branch-cs-prefix.
+
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/driver-rs6000.c (detect_processor_aix): Add
+	power10.
+
+2021-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103253
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Check for LHS.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* doc/extend.texi: Document __builtin_assoc_barrier.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (pass_expand::execute): Use option directly.
+	* function.c (allocate_struct_function): Likewise.
+	* gimple-low.c (lower_function_body): Likewise.
+	(lower_stmt): Likewise.
+	* gimple-ssa-backprop.c (backprop::prepare_change): Likewise.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* sese.c (sese_insert_phis_for_liveouts): Likewise.
+	* ssa-iterators.h (num_imm_uses): Likewise.
+	* tree-cfg.c (make_blocks): Likewise.
+	(gimple_merge_blocks): Likewise.
+	* tree-inline.c (tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	* tree-sra.c (analyze_access_subtree): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa-phiopt.c (spaceship_replacement): Likewise.
+	* tree-ssa-reassoc.c (reassoc_remove_stmt): Likewise.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Likewise.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): Likewise.
+	* tree-ssa.c (gimple_replace_ssa_lhs): Likewise.
+	(target_for_debug_bind): Likewise.
+	(insert_debug_temp_for_var_def): Likewise.
+	(insert_debug_temps_for_defs): Likewise.
+	(reset_debug_uses): Likewise.
+	* tree-ssanames.c (release_ssa_name_fn): Likewise.
+	* tree-vect-loop-manip.c (adjust_vec_debug_stmts): Likewise.
+	(adjust_debug_stmts): Likewise.
+	(adjust_phi_and_debug_stmts): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-loop.c (vect_transform_loop_stmt): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree.h (MAY_HAVE_DEBUG_MARKER_STMTS): Remove
+	(MAY_HAVE_DEBUG_BIND_STMTS): Remove.
+	(MAY_HAVE_DEBUG_STMTS): Use options directly.
+
+2021-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103277
+	* tree-ssa-dse.c (need_ab_cleanup): New.
+	(dse_optimize_redundant_stores): Adjust.
+	(delete_dead_or_redundant_assignment): Get extra
+	need_ab_cleanup argument and set when abnormal cleanup is
+	needed.
+	(dse_optimize_call): Adjust.
+	(dse_optimize_stmt): Likewise.
+	(pass_dse::execute): Allocate and deallocate need_ab_cleanup.
+	Perform abnormal cleanup.
+	* tree-ssa-dse.h (delete_dead_or_redundant_assignment): Adjust.
+
+2021-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.c (ix86_expand_atomic_fetch_op_loop):
+	Adjust generated cfg to avoid infinite loop.
+
+2021-11-18  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_mul_pch): Add alias for _mm512_fmul_pch.
+	(_mm512_mask_mul_pch): Likewise.
+	(_mm512_maskz_mul_pch): Likewise.
+	(_mm512_mul_round_pch): Likewise.
+	(_mm512_mask_mul_round_pch): Likewise.
+	(_mm512_maskz_mul_round_pch): Likewise.
+	(_mm512_cmul_pch): Likewise.
+	(_mm512_mask_cmul_pch): Likewise.
+	(_mm512_maskz_cmul_pch): Likewise.
+	(_mm512_cmul_round_pch): Likewise.
+	(_mm512_mask_cmul_round_pch): Likewise.
+	(_mm512_maskz_cmul_round_pch): Likewise.
+	(_mm_mul_sch): Likewise.
+	(_mm_mask_mul_sch): Likewise.
+	(_mm_maskz_mul_sch): Likewise.
+	(_mm_mul_round_sch): Likewise.
+	(_mm_mask_mul_round_sch): Likewise.
+	(_mm_maskz_mul_round_sch): Likewise.
+	(_mm_cmul_sch): Likewise.
+	(_mm_mask_cmul_sch): Likewise.
+	(_mm_maskz_cmul_sch): Likewise.
+	(_mm_cmul_round_sch): Likewise.
+	(_mm_mask_cmul_round_sch): Likewise.
+	(_mm_maskz_cmul_round_sch): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_mul_pch): Likewise.
+	(_mm_mask_mul_pch): Likewise.
+	(_mm_maskz_mul_pch): Likewise.
+	(_mm256_mul_pch): Likewise.
+	(_mm256_mask_mul_pch): Likewise.
+	(_mm256_maskz_mul_pch): Likewise.
+	(_mm_cmul_pch): Likewise.
+	(_mm_mask_cmul_pch): Likewise.
+	(_mm_maskz_cmul_pch): Likewise.
+	(_mm256_cmul_pch): Likewise.
+	(_mm256_mask_cmul_pch): Likewise.
+	(_mm256_maskz_cmul_pch): Likewise.
+
 2021-11-17  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/103228

@@ -1,3 +1,97 @@
+2021-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103049
+	* g++.dg/cpp0x/auto25.C: Adjust dg-error.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-3.C: Likewise.
+	* g++.dg/cpp23/auto-fncast1.C: New test.
+	* g++.dg/cpp23/auto-fncast2.C: New test.
+	* g++.dg/cpp23/auto-fncast3.C: New test.
+	* g++.dg/cpp23/auto-fncast4.C: New test.
+	* g++.dg/cpp23/auto-fncast5.C: New test.
+	* g++.dg/cpp23/auto-fncast6.C: New test.
+
+2021-11-18  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/101329
+	* gfortran.dg/pr101329.f90: New test.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/fn-template25.C: New test.
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/lto/semantic-interposition-1_0.c: New test.
+	* gcc.dg/lto/semantic-interposition-1_1.c: New test.
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103266
+	* g++.dg/torture/pr103266.C: New test.
+
+2021-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103311
+	* gcc.target/aarch64/pr103311.c: New test.
+
+2021-11-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* gcc.target/i386/indirect-thunk-cs-prefix-1.c: New test.
+	* gcc.target/i386/indirect-thunk-cs-prefix-2.c: Likewise.
+
+2021-11-18  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/mips/octeon-bbit-1.c (f3): Add noipa attribute.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99911
+	* g++.dg/cpp2a/fn-template24.C: New test.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102670
+	* g++.dg/cpp2a/concepts-recursive-sat1.C: Adjust to use ADL
+	proper.
+	* g++.dg/cpp2a/fn-template23.C: New test.
+
+2021-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103253
+	* gcc.dg/vect/pr103253.c: New test.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-c++-common/builtin-assoc-barrier-1.c: New test.
+
+2021-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/103278
+	* gcc.dg/tree-ssa/if-to-switch-3.c: Supply
+	--param case-values-threshold=4.
+
+2021-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103277
+	* gcc.dg/pr103277.c: New testcase.
+
+2021-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/pr103069-2.c: Adjust.
+
+2021-11-18  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512fp16-vfcmulcph-1a.c: Add new test for alias.
+	* gcc.target/i386/avx512fp16-vfcmulcsh-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vfmulcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16-vfmulcsh-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-vfcmulcph-1a.c: Likewise.
+	* gcc.target/i386/avx512fp16vl-vfmulcph-1a.c: Likewise.
+
 2021-11-17  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/103228

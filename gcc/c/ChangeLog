@@ -1,3 +1,12 @@
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_ASSOC_BARRIER.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
 2021-11-17  Martin Sebor  <msebor@redhat.com>
 
 	PR c/101702

@@ -1,3 +1,27 @@
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* alloc.c (gomp_aligned_alloc): Fix typo.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* libgomp.h (GOMP_USE_ALIGNED_WORK_SHARES): Define if
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined and __AMDGCN__ is not.
+	(struct gomp_work_share): Use GOMP_USE_ALIGNED_WORK_SHARES instead of
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC.
+	* work.c (alloc_work_share, gomp_work_share_start): Likewise.
+	* team.c (gomp_new_team): If GOMP_USE_ALIGNED_WORK_SHARES, use
+	gomp_aligned_alloc instead of team_malloc.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* alloc.c (gomp_aligned_alloc): Prefer _aligned_alloc over
+	memalign over posix_memalign over aligned_alloc over fallback
+	with malloc instead of aligned_alloc over _aligned_alloc over
+	posix_memalign over memalign over fallback with malloc.  For
+	aligned_alloc, round up size up to multiple of al.
+
 2021-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi (OpenMP 5.1): Mark thread_limit clause to target

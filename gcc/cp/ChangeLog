@@ -1,3 +1,56 @@
+2021-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103049
+	* semantics.c (finish_compound_literal): Accept C++23 auto{x}.
+	* typeck2.c (build_functional_cast_1): Accept C++23 auto(x).
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Disable the
+	-fpermissive fallback for C++20 template-id ADL, but keep the
+	diagnostic.
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.c (finish_function): Update use of decl_replaceable_p.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99911
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Don't diagnose
+	name lookup failure if the arguments to an unresolved template
+	name are still dependent.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102670
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: When looking
+	for an identifier callee in the koenig_p case, also look through
+	TEMPLATE_ID_EXPR.  Use tsubst_copy to substitute through the
+	template arguments of the template-id.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* constexpr.c (cxx_eval_constant_expression): Handle PAREN_EXPR
+	via cxx_eval_constant_expression.
+	* cp-objcp-common.c (names_builtin_p): Handle
+	RID_BUILTIN_ASSOC_BARRIER.
+	* cp-tree.h: Adjust TREE_LANG_FLAG documentation to include
+	PAREN_EXPR in REF_PARENTHESIZED_P.
+	(REF_PARENTHESIZED_P): Add PAREN_EXPR.
+	* parser.c (cp_parser_postfix_expression): Handle
+	RID_BUILTIN_ASSOC_BARRIER.
+	* pt.c (tsubst_copy_and_build): If the PAREN_EXPR is not a
+	parenthesized initializer, build a new PAREN_EXPR.
+	* semantics.c (force_paren_expr): Simplify conditionals. Set
+	REF_PARENTHESIZED_P on PAREN_EXPR.
+	(maybe_undo_parenthesized_ref): Test PAREN_EXPR for
+	REF_PARENTHESIZED_P.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (add_debug_begin_stmt): Use option directly.
+
 2021-11-16  Jason Merrill  <jason@redhat.com>
 
 	* ptree.c (cxx_print_xnode): Handle PTRMEM_CST.
