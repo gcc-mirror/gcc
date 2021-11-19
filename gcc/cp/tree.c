@@ -5352,13 +5352,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case BIT_CAST_EXPR:
       if (TREE_TYPE (*tp))
 	WALK_SUBTREE (TREE_TYPE (*tp));
-
-      {
-        int i;
-        for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (*tp)); ++i)
-	  WALK_SUBTREE (TREE_OPERAND (*tp, i));
-      }
-      *walk_subtrees_p = 0;
       break;
 
     case CONSTRUCTOR:
