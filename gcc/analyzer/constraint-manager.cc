@@ -432,7 +432,9 @@ bounded_range::intersects_p (const bounded_range &other,
 bool
 bounded_range::operator== (const bounded_range &other) const
 {
-  return (tree_int_cst_equal (m_lower, other.m_lower)
+  return (TREE_TYPE (m_lower) == TREE_TYPE (other.m_lower)
+	  && TREE_TYPE (m_upper) == TREE_TYPE (other.m_upper)
+	  && tree_int_cst_equal (m_lower, other.m_lower)
 	  && tree_int_cst_equal (m_upper, other.m_upper));
 }
 

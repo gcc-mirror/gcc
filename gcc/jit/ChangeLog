@@ -1,3 +1,11 @@
+2021-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/103199
+	* docs/examples/tut04-toyvm/toyvm.c (toyvm_function_compile):
+	Increase size of buffer.
+	* docs/examples/tut04-toyvm/toyvm.cc
+	(compilation_state::create_function): Likewise.
+
 2021-09-10  Petter Tomner  <tomner@kth.se>
 
 	* jit-playback.c: Moved global var processing to after loc handling.

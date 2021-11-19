@@ -1000,7 +1000,7 @@ generate_loops_for_partition (class loop *loop, partition *partition,
   /* Remove stmts not in the PARTITION bitmap.  */
   bbs = get_loop_body_in_dom_order (loop);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     for (i = 0; i < loop->num_nodes; i++)
       {
 	basic_block bb = bbs[i];

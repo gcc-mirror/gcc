@@ -614,7 +614,7 @@ make_blocks (gimple_seq seq)
      latest (earliest we find) label, and moving debug stmts that are
      not separated from it by nondebug nonlabel stmts after the
      label.  */
-  if (MAY_HAVE_DEBUG_MARKER_STMTS)
+  if (debug_nonbind_markers_p)
     {
       gimple_stmt_iterator label = gsi_none ();
 
@@ -2139,7 +2139,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 		gsi_insert_before (&dest_gsi, stmt, GSI_NEW_STMT);
 	    }
 	  /* Other user labels keep around in a form of a debug stmt.  */
-	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_BIND_STMTS)
+	  else if (!DECL_ARTIFICIAL (label) && flag_var_tracking_assignments)
 	    {
 	      gimple *dbg = gimple_build_debug_bind (label,
 						     integer_zero_node,

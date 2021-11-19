@@ -329,14 +329,11 @@ Some basic guidelines for editing this document:
 @node Introduction to Intrinsics
 @section Introduction to intrinsic procedures
 
-The intrinsic procedures provided by GNU Fortran include all of the
-intrinsic procedures required by the Fortran 95 standard, a set of
-intrinsic procedures for backwards compatibility with G77, and a
-selection of intrinsic procedures from the Fortran 2003 and Fortran 2008
-standards.  Any conflict between a description here and a description in
-either the Fortran 95 standard, the Fortran 2003 standard or the Fortran
-2008 standard is unintentional, and the standard(s) should be considered
-authoritative.
+The intrinsic procedures provided by GNU Fortran include procedures required
+by the Fortran 95 and later supported standards, and a set of intrinsic
+procedures for backwards compatibility with G77.  Any conflict between
+a description here and a description in the Fortran standards is
+unintentional, and the standard(s) should be considered authoritative.
 
 The enumeration of the @code{KIND} type parameter is processor defined in
 the Fortran 95 standard.  GNU Fortran defines the default integer type and
@@ -355,7 +352,7 @@ Many of the intrinsic procedures take one or more optional arguments.
 This document follows the convention used in the Fortran 95 standard,
 and denotes such arguments by square brackets.
 
-GNU Fortran offers the @option{-std=f95} and @option{-std=gnu} options,
+GNU Fortran offers the @option{-std=} command-line option,
 which can be used to restrict the set of intrinsic procedures to a 
 given standard.  By default, @command{gfortran} sets the @option{-std=gnu}
 option, and so all intrinsic procedures described here are accepted.  There
@@ -3844,7 +3841,7 @@ end program test
 @table @asis
 @item @emph{Description}:
 @code{CO_REDUCE} determines element-wise the reduction of the value of @var{A}
-on all images of the current team.  The pure function passed as @var{OPERATOR}
+on all images of the current team.  The pure function passed as @var{OPERATION}
 is used to pairwise reduce the values of @var{A} by passing either the value
 of @var{A} of different images or the result values of such a reduction as
 argument.  If @var{A} is an array, the deduction is done element wise. If
@@ -3863,7 +3860,7 @@ Technical Specification (TS) 18508 or later
 Collective subroutine
 
 @item @emph{Syntax}:
-@code{CALL CO_REDUCE(A, OPERATOR, [, RESULT_IMAGE, STAT, ERRMSG])}
+@code{CALL CO_REDUCE(A, OPERATION, [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3872,12 +3869,12 @@ nonpolymorphic. If it is allocatable, it shall be allocated; if it is a pointer,
 it shall be associated.  @var{A} shall have the same type and type parameters on
 all images of the team; if it is an array, it shall have the same shape on all
 images.
-@item @var{OPERATOR}     @tab pure function with two scalar nonallocatable
+@item @var{OPERATION}     @tab pure function with two scalar nonallocatable
 arguments, which shall be nonpolymorphic and have the same type and type
 parameters as @var{A}.  The function shall return a nonallocatable scalar of
 the same type and type parameters as @var{A}.  The function shall be the same on
 all images and with regards to the arguments mathematically commutative and
-associative.  Note that @var{OPERATOR} may not be an elemental function, unless
+associative.  Note that @var{OPERATION} may not be an elemental function, unless
 it is an intrisic function.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
 present, it shall have the same value on all images and refer to an
@@ -3891,7 +3888,7 @@ image of the current team.
 program test
   integer :: val
   val = this_image ()
-  call co_reduce (val, result_image=1, operator=myprod)
+  call co_reduce (val, result_image=1, operation=myprod)
   if (this_image() == 1) then
     write(*,*) "Product value", val  ! prints num_images() factorial
   end if

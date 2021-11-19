@@ -92,13 +92,13 @@ along with GCC; see the file COPYING3.  If not see
           NEXT_PASS (pass_dse);
 	  NEXT_PASS (pass_cd_dce, false /* update_address_taken_p */);
 	  NEXT_PASS (pass_phiopt, true /* early_p */);
-	  NEXT_PASS (pass_modref);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_if_to_switch);
 	  NEXT_PASS (pass_convert_switch);
 	  NEXT_PASS (pass_cleanup_eh);
 	  NEXT_PASS (pass_profile);
 	  NEXT_PASS (pass_local_pure_const);
+	  NEXT_PASS (pass_modref);
 	  /* Split functions creates parts that are not run through
 	     early optimizations again.  It is thus good idea to do this
 	      late.  */
@@ -360,9 +360,11 @@ along with GCC; see the file COPYING3.  If not see
          number of false positives from it.  */
       NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_late_warn_uninitialized);
-      NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
       NEXT_PASS (pass_modref);
+      /* uncprop replaces constants by SSA names.  This makes analysis harder
+	 and thus it should be run last.  */
+      NEXT_PASS (pass_uncprop);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_all_optimizations_g);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
@@ -393,9 +395,11 @@ along with GCC; see the file COPYING3.  If not see
          number of false positives from it.  */
       NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_late_warn_uninitialized);
-      NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
       NEXT_PASS (pass_modref);
+      /* uncprop replaces constants by SSA names.  This makes analysis harder
+	 and thus it should be run last.  */
+      NEXT_PASS (pass_uncprop);
   POP_INSERT_PASSES ()
   NEXT_PASS (pass_tm_init);
   PUSH_INSERT_PASSES_WITHIN (pass_tm_init)

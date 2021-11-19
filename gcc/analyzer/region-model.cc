@@ -1133,6 +1133,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    return false;
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
+	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
 	    impl_call_strcpy (cd);
@@ -1223,6 +1226,12 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  impl_call_memset (cd);
+	  return false;
+	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2161,8 +2170,23 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    bool warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
-			      "write to %<const%> object %qE", m_decl);
+    auto_diagnostic_group d;
+    bool warned;
+    switch (m_reg->get_kind ())
+      {
+      default:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to %<const%> object %qE", m_decl);
+	break;
+      case RK_FUNCTION:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to function %qE", m_decl);
+	break;
+      case RK_LABEL:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to label %qE", m_decl);
+	break;
+      }
     if (warned)
       inform (DECL_SOURCE_LOCATION (m_decl), "declared here");
     return warned;
@@ -2170,7 +2194,15 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+    switch (m_reg->get_kind ())
+      {
+      default:
+	return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+      case RK_FUNCTION:
+	return ev.formatted_print ("write to function %qE here", m_decl);
+      case RK_LABEL:
+	return ev.formatted_print ("write to label %qE here", m_decl);
+      }
   }
 
 private:
@@ -2230,6 +2262,20 @@ region_model::check_for_writable_region (const region* dest_reg,
   switch (base_reg->get_kind ())
     {
     default:
+      break;
+    case RK_FUNCTION:
+      {
+	const function_region *func_reg = as_a <const function_region *> (base_reg);
+	tree fndecl = func_reg->get_fndecl ();
+	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+      }
+      break;
+    case RK_LABEL:
+      {
+	const label_region *label_reg = as_a <const label_region *> (base_reg);
+	tree label = label_reg->get_label ();
+	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+      }
       break;
     case RK_DECL:
       {
@@ -2300,6 +2346,8 @@ region_model::check_region_access (const region *reg,
   /* Fail gracefully if CTXT is NULL.  */
   if (!ctxt)
     return;
+
+  check_region_for_taint (reg, dir, ctxt);
 
   switch (dir)
     {
@@ -2861,6 +2909,17 @@ region_model::get_representative_path_var_1 (const svalue *sval,
 				   NULL_TREE),
 			   parent_pv.m_stack_depth);
     }
+
+  /* Handle binops.  */
+  if (const binop_svalue *binop_sval = sval->dyn_cast_binop_svalue ())
+    if (path_var lhs_pv
+	= get_representative_path_var (binop_sval->get_arg0 (), visited))
+      if (path_var rhs_pv
+	  = get_representative_path_var (binop_sval->get_arg1 (), visited))
+	return path_var (build2 (binop_sval->get_op (),
+				 sval->get_type (),
+				 lhs_pv.m_tree, rhs_pv.m_tree),
+			 lhs_pv.m_stack_depth);
 
   if (pvs.length () < 1)
     return path_var (NULL_TREE, 0);
@@ -3720,36 +3779,45 @@ region_model::append_ssa_names_cb (const region *base_reg,
     }
 }
 
-/* Return a new region describing a heap-allocated block of memory.  */
+/* Return a new region describing a heap-allocated block of memory.
+   Use CTXT to complain about tainted sizes.  */
 
 const region *
-region_model::create_region_for_heap_alloc (const svalue *size_in_bytes)
+region_model::create_region_for_heap_alloc (const svalue *size_in_bytes,
+					    region_model_context *ctxt)
 {
   const region *reg = m_mgr->create_region_for_heap_alloc ();
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes);
+    set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 
 /* Return a new region describing a block of memory allocated within the
-   current frame.  */
+   current frame.
+   Use CTXT to complain about tainted sizes.  */
 
 const region *
-region_model::create_region_for_alloca (const svalue *size_in_bytes)
+region_model::create_region_for_alloca (const svalue *size_in_bytes,
+					region_model_context *ctxt)
 {
   const region *reg = m_mgr->create_region_for_alloca (m_current_frame);
   if (compat_types_p (size_in_bytes->get_type (), size_type_node))
-    set_dynamic_extents (reg, size_in_bytes);
+    set_dynamic_extents (reg, size_in_bytes, ctxt);
   return reg;
 }
 
-/* Record that the size of REG is SIZE_IN_BYTES.  */
+/* Record that the size of REG is SIZE_IN_BYTES.
+   Use CTXT to complain about tainted sizes.  */
 
 void
 region_model::set_dynamic_extents (const region *reg,
-				   const svalue *size_in_bytes)
+				   const svalue *size_in_bytes,
+				   region_model_context *ctxt)
 {
   assert_compat_types (size_in_bytes->get_type (), size_type_node);
+  if (ctxt)
+    check_dynamic_size_for_taint (reg->get_memory_space (), size_in_bytes,
+				  ctxt);
   m_dynamic_extents.put (reg, size_in_bytes);
 }
 
@@ -5096,7 +5164,8 @@ test_state_merging ()
     region_model model0 (&mgr);
     tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
-    const region *new_reg = model0.create_region_for_heap_alloc (size_sval);
+    const region *new_reg
+      = model0.create_region_for_heap_alloc (size_sval, &ctxt);
     const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
     model0.set_value (model0.get_lvalue (p, &ctxt),
 		      ptr_sval, &ctxt);
@@ -5484,7 +5553,7 @@ test_malloc_constraints ()
 
   const svalue *size_in_bytes
     = mgr.get_or_create_unknown_svalue (size_type_node);
-  const region *reg = model.create_region_for_heap_alloc (size_in_bytes);
+  const region *reg = model.create_region_for_heap_alloc (size_in_bytes, NULL);
   const svalue *sval = mgr.get_ptr_svalue (ptr_type_node, reg);
   model.set_value (model.get_lvalue (p, NULL), sval, NULL);
   model.set_value (q, p, NULL);
@@ -5705,7 +5774,7 @@ test_malloc ()
 
   /* "p = malloc (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_heap_alloc (size_sval);
+  const region *reg = model.create_region_for_heap_alloc (size_sval, &ctxt);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
   ASSERT_EQ (model.get_capacity (reg), size_sval);
@@ -5739,7 +5808,7 @@ test_alloca ()
 			NULL, &ctxt);
   /* "p = alloca (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
-  const region *reg = model.create_region_for_alloca (size_sval);
+  const region *reg = model.create_region_for_alloca (size_sval, &ctxt);
   ASSERT_EQ (reg->get_parent_region (), frame_reg);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);

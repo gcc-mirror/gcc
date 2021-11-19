@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "omp-offload.h"  /* For offload_vars.  */
 #include "opts.h"
+#include "langhooks-def.h"  /* For lhd_simulate_record_decl  */
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -1289,6 +1290,12 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     }
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
+      /* With -fimplicit-constexpr, ignore changes in the constexpr
+	 keyword.  */
+      if (flag_implicit_constexpr
+	  && (DECL_IMMEDIATE_FUNCTION_P (new_decl)
+	      == DECL_IMMEDIATE_FUNCTION_P (old_decl)))
+	return true;
       if (fndecl_built_in_p (old_decl))
 	{
 	  /* Hide a built-in declaration.  */
@@ -9537,9 +9544,6 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 
   if (initial_value)
     {
-      unsigned HOST_WIDE_INT i;
-      tree value;
-
       /* An array of character type can be initialized from a
 	 brace-enclosed string constant.
 
@@ -9561,14 +9565,9 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
       /* If any of the elements are parameter packs, we can't actually
 	 complete this type now because the array size is dependent.  */
       if (TREE_CODE (initial_value) == CONSTRUCTOR)
-	{
-	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (initial_value), 
-				      i, value)
-	    {
-	      if (PACK_EXPANSION_P (value))
-		return 0;
-	    }
-	}
+	for (auto &e: CONSTRUCTOR_ELTS (initial_value))
+	  if (PACK_EXPANSION_P (e.value))
+	    return 0;
     }
 
   failure = complete_array_type (ptype, initial_value, do_default);
@@ -11007,7 +11006,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 				    cp_convert (ssizetype, integer_one_node,
 						complain),
 				    complain);
-	itype = maybe_constant_value (itype);
+	itype = maybe_constant_value (itype, NULL_TREE, true);
       }
 
       if (!TREE_CONSTANT (itype))
@@ -14870,7 +14869,7 @@ grok_special_member_properties (tree decl)
       if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
-      if (DECL_DECLARED_CONSTEXPR_P (decl)
+      if (maybe_constexpr_fn (decl)
 	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
@@ -16602,6 +16601,42 @@ cxx_simulate_enum_decl (location_t loc, const char *name,
   input_location = saved_loc;
   return enumtype;
 }
+
+/* Implement LANG_HOOKS_SIMULATE_RECORD_DECL.  */
+
+tree
+cxx_simulate_record_decl (location_t loc, const char *name,
+			  array_slice<const tree> fields)
+{
+  iloc_sentinel ils (loc);
+
+  tree ident = get_identifier (name);
+  tree type = xref_tag (/*tag_code=*/record_type, ident);
+  if (type != error_mark_node
+      && (TREE_CODE (type) != RECORD_TYPE || COMPLETE_TYPE_P (type)))
+    {
+      error ("redefinition of %q#T", type);
+      type = error_mark_node;
+    }
+  if (type == error_mark_node)
+    return lhd_simulate_record_decl (loc, name, fields);
+
+  xref_basetypes (type, NULL_TREE);
+  type = begin_class_definition (type);
+  if (type == error_mark_node)
+    return lhd_simulate_record_decl (loc, name, fields);
+
+  for (tree field : fields)
+    finish_member_declaration (field);
+
+  type = finish_struct (type, NULL_TREE);
+
+  tree decl = build_decl (loc, TYPE_DECL, ident, type);
+  set_underlying_type (decl);
+  lang_hooks.decls.pushdecl (decl);
+
+  return type;
+}
 
 /* We're defining DECL.  Make sure that its type is OK.  */
 
@@ -17574,7 +17609,8 @@ finish_function (bool inline_p)
   if (!processing_template_decl
       && !cp_function_chain->can_throw
       && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl))
+      && !decl_replaceable_p (fndecl,
+			      opt_for_fn (fndecl, flag_semantic_interposition)))
     TREE_NOTHROW (fndecl) = 1;
 
   /* This must come after expand_function_end because cleanups might

@@ -938,7 +938,7 @@ expand_teams_call (basic_block bb, gomp_teams *entry_stmt)
     num_teams = build_int_cst (unsigned_type_node, 0);
   else
     {
-      num_teams = OMP_CLAUSE_NUM_TEAMS_EXPR (num_teams);
+      num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
       num_teams = fold_convert (unsigned_type_node, num_teams);
     }
   tree thread_limit = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
@@ -1206,6 +1206,28 @@ expand_omp_build_assign (gimple_stmt_iterator *gsi_p, tree to, tree from,
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
       gimple_regimplify_operands (stmt, &gsi);
     }
+}
+
+/* Prepend or append LHS CODE RHS condition before or after *GSI_P.  */
+
+static gcond *
+expand_omp_build_cond (gimple_stmt_iterator *gsi_p, enum tree_code code,
+		       tree lhs, tree rhs, bool after = false)
+{
+  gcond *cond_stmt = gimple_build_cond (code, lhs, rhs, NULL_TREE, NULL_TREE);
+  if (after)
+    gsi_insert_after (gsi_p, cond_stmt, GSI_CONTINUE_LINKING);
+  else
+    gsi_insert_before (gsi_p, cond_stmt, GSI_SAME_STMT);
+  if (walk_tree (gimple_cond_lhs_ptr (cond_stmt), expand_omp_regimplify_p,
+		 NULL, NULL)
+      || walk_tree (gimple_cond_rhs_ptr (cond_stmt), expand_omp_regimplify_p,
+		    NULL, NULL))
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (cond_stmt);
+      gimple_regimplify_operands (cond_stmt, &gsi);
+    }
+  return cond_stmt;
 }
 
 /* Expand the OpenMP parallel or task directive starting at REGION.  */
@@ -1868,17 +1890,8 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  n2 = fold_convert (itype, unshare_expr (fd->loops[i].n2));
 	  n2 = force_gimple_operand_gsi (gsi, n2, true, NULL_TREE,
 					 true, GSI_SAME_STMT);
-	  cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
-					 NULL_TREE, NULL_TREE);
-	  gsi_insert_before (gsi, cond_stmt, GSI_SAME_STMT);
-	  if (walk_tree (gimple_cond_lhs_ptr (cond_stmt),
-			 expand_omp_regimplify_p, NULL, NULL)
-	      || walk_tree (gimple_cond_rhs_ptr (cond_stmt),
-			    expand_omp_regimplify_p, NULL, NULL))
-	    {
-	      *gsi = gsi_for_stmt (cond_stmt);
-	      gimple_regimplify_operands (cond_stmt, gsi);
-	    }
+	  cond_stmt = expand_omp_build_cond (gsi, fd->loops[i].cond_code,
+					     n1, n2);
 	  e = split_block (entry_bb, cond_stmt);
 	  basic_block &zero_iter_bb
 	    = i < fd->collapse ? zero_iter1_bb : zero_iter2_bb;
@@ -2075,18 +2088,16 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  n2e = force_gimple_operand_gsi (&gsi2, n2e, true, NULL_TREE,
 					  true, GSI_SAME_STMT);
 	  gcond *cond_stmt
-	    = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
-				 NULL_TREE, NULL_TREE);
-	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	    = expand_omp_build_cond (&gsi2, fd->loops[i].cond_code,
+				     n1, n2);
 	  e = split_block (bb1, cond_stmt);
 	  e->flags = EDGE_TRUE_VALUE;
 	  e->probability = profile_probability::likely ().guessed ();
 	  basic_block bb2 = e->dest;
 	  gsi2 = gsi_after_labels (bb2);
 
-	  cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1e, n2e,
-					 NULL_TREE, NULL_TREE);
-	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	  cond_stmt = expand_omp_build_cond (&gsi2, fd->loops[i].cond_code,
+					     n1e, n2e);
 	  e = split_block (bb2, cond_stmt);
 	  e->flags = EDGE_TRUE_VALUE;
 	  e->probability = profile_probability::likely ().guessed ();
@@ -2137,9 +2148,8 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	  e->probability = profile_probability::unlikely ().guessed ();
 
 	  gsi2 = gsi_after_labels (bb3);
-	  cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1e, n2e,
-					 NULL_TREE, NULL_TREE);
-	  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	  cond_stmt = expand_omp_build_cond (&gsi2, fd->loops[i].cond_code,
+					     n1e, n2e);
 	  e = split_block (bb3, cond_stmt);
 	  e->flags = EDGE_TRUE_VALUE;
 	  e->probability = profile_probability::likely ().guessed ();
@@ -2193,9 +2203,8 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 					     true, GSI_SAME_STMT);
 	      expand_omp_build_assign (&gsi2, j ? n2o : n1o, tem);
 
-	      cond_stmt = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
-					     NULL_TREE, NULL_TREE);
-	      gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	      cond_stmt = expand_omp_build_cond (&gsi2, fd->loops[i].cond_code,
+						 n1, n2);
 	      e = split_block (gsi_bb (gsi2), cond_stmt);
 	      e->flags = j ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE;
 	      e->probability = profile_probability::unlikely ().guessed ();
@@ -2298,9 +2307,8 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      if (i == fd->last_nonrect)
 		{
 		  gcond *cond_stmt
-		    = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
-					 NULL_TREE, NULL_TREE);
-		  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+		    = expand_omp_build_cond (&gsi2, fd->loops[i].cond_code,
+					     n1, n2);
 		  e = split_block (cur_bb, cond_stmt);
 		  e->flags = EDGE_TRUE_VALUE;
 		  ne = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
@@ -2354,10 +2362,7 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      ne = split_block (e->dest, last_stmt (e->dest));
 	      gsi2 = gsi_after_labels (ne->dest);
 
-	      gcond *cond_stmt
-		= gimple_build_cond (fd->loops[i].cond_code, vs[i], n2,
-				     NULL_TREE, NULL_TREE);
-	      gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+	      expand_omp_build_cond (&gsi2, fd->loops[i].cond_code, vs[i], n2);
 	      edge e3, e4;
 	      if (next_bb == entry_bb)
 		{
@@ -2558,10 +2563,8 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      tree first_inner_iterations = fd->first_inner_iterations;
 	      tree factor = fd->factor;
 	      gcond *cond_stmt
-		= gimple_build_cond (NE_EXPR, factor,
-				     build_zero_cst (TREE_TYPE (factor)),
-				     NULL_TREE, NULL_TREE);
-	      gsi_insert_after (gsi, cond_stmt, GSI_CONTINUE_LINKING);
+		= expand_omp_build_cond (gsi, NE_EXPR, factor,
+					 build_zero_cst (TREE_TYPE (factor)));
 	      edge e = split_block (gsi_bb (*gsi), cond_stmt);
 	      basic_block bb0 = e->src;
 	      e->flags = EDGE_TRUE_VALUE;
@@ -2831,9 +2834,8 @@ expand_omp_for_init_vars (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	      if (j == fd->last_nonrect)
 		{
 		  gcond *cond_stmt
-		    = gimple_build_cond (fd->loops[j].cond_code, n1, n2,
-					 NULL_TREE, NULL_TREE);
-		  gsi_insert_before (&gsi2, cond_stmt, GSI_SAME_STMT);
+		    = expand_omp_build_cond (&gsi2, fd->loops[i].cond_code,
+					     n1, n2);
 		  e = split_block (cur_bb, cond_stmt);
 		  e->flags = EDGE_TRUE_VALUE;
 		  edge ne = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
@@ -4909,17 +4911,8 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       n2 = fold_convert (type, unshare_expr (fd->loop.n2));
       n2 = force_gimple_operand_gsi (&gsi, n2, true, NULL_TREE,
 				     true, GSI_SAME_STMT);
-      gcond *cond_stmt = gimple_build_cond (fd->loop.cond_code, n1, n2,
-					    NULL_TREE, NULL_TREE);
-      gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
-      if (walk_tree (gimple_cond_lhs_ptr (cond_stmt),
-		     expand_omp_regimplify_p, NULL, NULL)
-	  || walk_tree (gimple_cond_rhs_ptr (cond_stmt),
-			expand_omp_regimplify_p, NULL, NULL))
-	{
-	  gsi = gsi_for_stmt (cond_stmt);
-	  gimple_regimplify_operands (cond_stmt, &gsi);
-	}
+      gcond *cond_stmt = expand_omp_build_cond (&gsi, fd->loop.cond_code,
+						n1, n2);
       ep = split_block (entry_bb, cond_stmt);
       ep->flags = EDGE_TRUE_VALUE;
       entry_bb = ep->dest;
@@ -5713,17 +5706,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
       n2 = fold_convert (type, unshare_expr (fd->loop.n2));
       n2 = force_gimple_operand_gsi (&gsi, n2, true, NULL_TREE,
 				     true, GSI_SAME_STMT);
-      gcond *cond_stmt = gimple_build_cond (fd->loop.cond_code, n1, n2,
-						 NULL_TREE, NULL_TREE);
-      gsi_insert_before (&gsi, cond_stmt, GSI_SAME_STMT);
-      if (walk_tree (gimple_cond_lhs_ptr (cond_stmt),
-		     expand_omp_regimplify_p, NULL, NULL)
-	  || walk_tree (gimple_cond_rhs_ptr (cond_stmt),
-			expand_omp_regimplify_p, NULL, NULL))
-	{
-	  gsi = gsi_for_stmt (cond_stmt);
-	  gimple_regimplify_operands (cond_stmt, &gsi);
-	}
+      gcond *cond_stmt = expand_omp_build_cond (&gsi, fd->loop.cond_code,
+						n1, n2);
       se = split_block (entry_bb, cond_stmt);
       se->flags = EDGE_TRUE_VALUE;
       entry_bb = se->dest;
@@ -9625,7 +9609,7 @@ get_target_arguments (gimple_stmt_iterator *gsi, gomp_target *tgt_stmt)
   tree clauses = gimple_omp_target_clauses (tgt_stmt);
   tree t, c = omp_find_clause (clauses, OMP_CLAUSE_NUM_TEAMS);
   if (c)
-    t = OMP_CLAUSE_NUM_TEAMS_EXPR (c);
+    t = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c);
   else
     t = integer_minus_one_node;
   push_target_argument_according_to_value (gsi, GOMP_TARGET_ARG_DEVICE_ALL,

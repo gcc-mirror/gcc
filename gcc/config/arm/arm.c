@@ -1189,7 +1189,10 @@ const struct cpu_cost_table cortexa9_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 
@@ -1293,7 +1296,10 @@ const struct cpu_cost_table cortexa8_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 
@@ -1398,7 +1404,10 @@ const struct cpu_cost_table cortexa5_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 
@@ -1504,7 +1513,10 @@ const struct cpu_cost_table cortexa7_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 
@@ -1608,7 +1620,10 @@ const struct cpu_cost_table cortexa12_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 
@@ -1712,7 +1727,10 @@ const struct cpu_cost_table cortexa15_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 
@@ -1816,7 +1834,10 @@ const struct cpu_cost_table v7m_extra_costs =
   /* Vector */
   {
     COSTS_N_INSNS (1),	/* alu.  */
-    COSTS_N_INSNS (4)	/* mult.  */
+    COSTS_N_INSNS (4),	/* mult.  */
+    COSTS_N_INSNS (1),	/* movi.  */
+    COSTS_N_INSNS (2),	/* dup.  */
+    COSTS_N_INSNS (2)	/* extract.  */
   }
 };
 

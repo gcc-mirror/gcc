@@ -2335,10 +2335,6 @@ pass_waccess::check_alloca (gcall *stmt)
 void
 pass_waccess::check_alloc_size_call (gcall *stmt)
 {
-  if (gimple_call_num_args (stmt) < 1)
-    /* Avoid invalid calls to functions without a prototype.  */
-    return;
-
   tree fndecl = gimple_call_fndecl (stmt);
   if (fndecl && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     {
@@ -2367,13 +2363,19 @@ pass_waccess::check_alloc_size_call (gcall *stmt)
      the actual argument(s) at those indices in ALLOC_ARGS.  */
   int idx[2] = { -1, -1 };
   tree alloc_args[] = { NULL_TREE, NULL_TREE };
+  unsigned nargs = gimple_call_num_args (stmt);
 
   tree args = TREE_VALUE (alloc_size);
   idx[0] = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+  /* Avoid invalid calls to functions without a prototype.  */
+  if ((unsigned) idx[0] >= nargs)
+    return;
   alloc_args[0] = call_arg (stmt, idx[0]);
   if (TREE_CHAIN (args))
     {
       idx[1] = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+      if ((unsigned) idx[1] >= nargs)
+	return;
       alloc_args[1] = call_arg (stmt, idx[1]);
     }
 
@@ -2976,10 +2978,16 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	continue;
 
       tree ptrtype = fntype_argno_type (fntype, ptridx);
+      if (!ptrtype)
+	/* A function with a prototype was redeclared without one and
+	   the protype has been lost.  See pr102759.  Avoid dealing
+	   with this pathological case.  */
+	return;
+
       tree argtype = TREE_TYPE (ptrtype);
 
-      /* The size of the access by the call.  */
-      tree access_size;
+      /* The size of the access by the call in elements.  */
+      tree access_nelts;
       if (sizidx == -1)
 	{
 	  /* If only the pointer attribute operand was specified and
@@ -2989,17 +2997,17 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	     if the pointer is also declared with attribute nonnull.  */
 	  if (access.second.minsize
 	      && access.second.minsize != HOST_WIDE_INT_M1U)
-	    access_size = build_int_cstu (sizetype, access.second.minsize);
+	    access_nelts = build_int_cstu (sizetype, access.second.minsize);
 	  else
-	    access_size = size_one_node;
+	    access_nelts = size_one_node;
 	}
       else
-	access_size = rwm->get (sizidx)->size;
+	access_nelts = rwm->get (sizidx)->size;
 
       /* Format the value or range to avoid an explosion of messages.  */
       char sizstr[80];
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
-      if (get_size_range (m_ptr_qry.rvals, access_size, stmt, sizrng, 1))
+      if (get_size_range (m_ptr_qry.rvals, access_nelts, stmt, sizrng, 1))
 	{
 	  char *s0 = print_generic_expr_to_str (sizrng[0]);
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
@@ -3012,7 +3020,7 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	      char *s1 = print_generic_expr_to_str (sizrng[1]);
 	      gcc_checking_assert (strlen (s0) + strlen (s1)
 				   < sizeof sizstr - 4);
-	      sprintf (sizstr, "[%s, %s]", s0, s1);
+	      sprintf (sizstr, "[%.37s, %.37s]", s0, s1);
 	      free (s1);
 	    }
 	  free (s0);
@@ -3057,6 +3065,8 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	    }
 	}
 
+      /* The size of the access by the call in bytes.  */
+      tree access_size = NULL_TREE;
       if (tree_int_cst_sgn (sizrng[0]) >= 0)
 	{
 	  if (COMPLETE_TYPE_P (argtype))
@@ -3073,9 +3083,9 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 		    access_size = wide_int_to_tree (sizetype, minsize);
 		  }
 	    }
+	  else
+	    access_size = access_nelts;
 	}
-      else
-	access_size = NULL_TREE;
 
       if (integer_zerop (ptr))
 	{
@@ -3170,8 +3180,13 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
       if (opt_warned != no_warning)
 	{
 	  if (access.second.internal_p)
-	    inform (loc, "referencing argument %u of type %qT",
-		    ptridx + 1, ptrtype);
+	    {
+	      unsigned HOST_WIDE_INT nelts =
+		access_nelts ? access.second.minsize : HOST_WIDE_INT_M1U;
+	      tree arrtype = build_printable_array_type (argtype, nelts);
+	      inform (loc, "referencing argument %u of type %qT",
+		      ptridx + 1, arrtype);
+	    }
 	  else
 	    /* If check_access issued a warning above, append the relevant
 	       attribute to the string.  */

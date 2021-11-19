@@ -62717,6 +62717,16 @@ install-ld: maybe-install-libctf
 install-strip-libctf: maybe-install-strip-bfd
 install-strip-ld: maybe-install-strip-bfd
 install-strip-ld: maybe-install-strip-libctf
+configure-opcodes: configure-bfd
+configure-stage1-opcodes: configure-stage1-bfd
+configure-stage2-opcodes: configure-stage2-bfd
+configure-stage3-opcodes: configure-stage3-bfd
+configure-stage4-opcodes: configure-stage4-bfd
+configure-stageprofile-opcodes: configure-stageprofile-bfd
+configure-stagetrain-opcodes: configure-stagetrain-bfd
+configure-stagefeedback-opcodes: configure-stagefeedback-bfd
+configure-stageautoprofile-opcodes: configure-stageautoprofile-bfd
+configure-stageautofeedback-opcodes: configure-stageautofeedback-bfd
 install-opcodes: maybe-install-bfd
 install-strip-opcodes: maybe-install-strip-bfd
 configure-gas: maybe-configure-intl

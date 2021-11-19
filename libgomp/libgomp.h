@@ -95,6 +95,10 @@ enum memmodel
 #define GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC 1
 #endif
 
+#if defined(GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC) && !defined(__AMDGCN__)
+#define GOMP_USE_ALIGNED_WORK_SHARES 1
+#endif
+
 extern void *gomp_malloc (size_t) __attribute__((malloc));
 extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
 extern void *gomp_realloc (void *, size_t);
@@ -348,7 +352,7 @@ struct gomp_work_share
      are in a different cache line.  */
 
   /* This lock protects the update of the following members.  */
-#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+#ifdef GOMP_USE_ALIGNED_WORK_SHARES
   gomp_mutex_t lock __attribute__((aligned (64)));
 #else
   char pad[64 - offsetof (struct gomp_work_share_1st_cacheline, pad)];
@@ -767,6 +771,14 @@ struct gomp_thread
 
   /* User pthread thread pool */
   struct gomp_thread_pool *thread_pool;
+
+#ifdef LIBGOMP_USE_PTHREADS
+  /* omp_get_num_teams () - 1.  */
+  unsigned int num_teams;
+
+  /* omp_get_team_num ().  */
+  unsigned int team_num;
+#endif
 
 #if defined(LIBGOMP_USE_PTHREADS) \
     && (!defined(HAVE_TLS) \

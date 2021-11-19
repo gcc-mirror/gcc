@@ -1,3 +1,113 @@
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102695
+	* region-model-impl-calls.cc (region_model::impl_call_strchr): New.
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Simplify cast to
+	pointer type of an existing pointer to a region.
+	* region-model.cc (region_model::on_call_pre): Handle
+	BUILT_IN_STRCHR and "strchr".
+	(write_to_const_diagnostic::emit): Add auto_diagnostic_group.  Add
+	alternate wordings for functions and labels.
+	(write_to_const_diagnostic::describe_final_event): Add alternate
+	wordings for functions and labels.
+	(region_model::check_for_writable_region): Handle RK_FUNCTION and
+	RK_LABEL.
+	* region-model.h (region_model::impl_call_strchr): New decl.
+
+2021-11-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102662
+	* constraint-manager.cc (bounded_range::operator==): Require the
+	types to be the same for equality.
+
+2021-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt (Wanalyzer-tainted-allocation-size): New.
+	(Wanalyzer-tainted-divisor): New.
+	(Wanalyzer-tainted-offset): New.
+	(Wanalyzer-tainted-size): New.
+	* engine.cc (impl_region_model_context::get_taint_map): New.
+	* exploded-graph.h (impl_region_model_context::get_taint_map):
+	New decl.
+	* program-state.cc (sm_state_map::get_state): Call
+	alt_get_inherited_state.
+	(sm_state_map::impl_set_state): Modify states within
+	compound svalues.
+	(program_state::impl_call_analyzer_dump_state): Undo casts.
+	(selftest::test_program_state_1): Update for new context param of
+	create_region_for_heap_alloc.
+	(selftest::test_program_state_merging): Likewise.
+	* region-model-impl-calls.cc (region_model::impl_call_alloca):
+	Likewise.
+	(region_model::impl_call_calloc): Likewise.
+	(region_model::impl_call_malloc): Likewise.
+	(region_model::impl_call_operator_new): Likewise.
+	(region_model::impl_call_realloc): Likewise.
+	* region-model.cc (region_model::check_region_access): Call
+	check_region_for_taint.
+	(region_model::get_representative_path_var_1): Handle binops.
+	(region_model::create_region_for_heap_alloc): Add "ctxt" param and
+	pass it to set_dynamic_extents.
+	(region_model::create_region_for_alloca): Likewise.
+	(region_model::set_dynamic_extents): Add "ctxt" param and use it
+	to call check_dynamic_size_for_taint.
+	(selftest::test_state_merging): Update for new context param of
+	create_region_for_heap_alloc.
+	(selftest::test_malloc_constraints): Likewise.
+	(selftest::test_malloc): Likewise.
+	(selftest::test_alloca): Likewise for create_region_for_alloca.
+	* region-model.h (region_model::create_region_for_heap_alloc): Add
+	"ctxt" param.
+	(region_model::create_region_for_alloca): Likewise.
+	(region_model::set_dynamic_extents): Likewise.
+	(region_model::check_dynamic_size_for_taint): New decl.
+	(region_model::check_region_for_taint): New decl.
+	(region_model_context::get_taint_map): New vfunc.
+	(noop_region_model_context::get_taint_map): New.
+	* sm-taint.cc: Remove include of "diagnostic-event-id.h"; add
+	includes of "gimple-iterator.h", "tristate.h", "selftest.h",
+	"ordered-hash-map.h", "cgraph.h", "cfg.h", "digraph.h",
+	"analyzer/supergraph.h", "analyzer/call-string.h",
+	"analyzer/program-point.h", "analyzer/store.h",
+	"analyzer/region-model.h", and "analyzer/program-state.h".
+	(enum bounds): Move to top of file.
+	(class taint_diagnostic): New.
+	(class tainted_array_index): Convert to subclass of taint_diagnostic.
+	(tainted_array_index::emit): Add CWE-129.  Reword warning to use
+	"attacker-controlled" rather than "tainted".
+	(tainted_array_index::describe_state_change): Move to
+	taint_diagnostic::describe_state_change.
+	(tainted_array_index::describe_final_event): Reword to use
+	"attacker-controlled" rather than "tainted".
+	(class tainted_offset): New.
+	(class tainted_size): New.
+	(class tainted_divisor): New.
+	(class tainted_allocation_size): New.
+	(taint_state_machine::alt_get_inherited_state): New.
+	(taint_state_machine::on_stmt): In assignment handling, remove
+	ARRAY_REF handling in favor of check_region_for_taint.  Add
+	detection of tainted divisors.
+	(taint_state_machine::get_taint): New.
+	(taint_state_machine::combine_states): New.
+	(region_model::check_region_for_taint): New.
+	(region_model::check_dynamic_size_for_taint): New.
+	* sm.h (state_machine::alt_get_inherited_state): New.
+
+2021-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_node::on_stmt_pre): Return when handling
+	"__analyzer_dump_state".
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* supergraph.cc: Include bitmap.h.
+
+2021-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (sm_state_map::dump): Use default_tree_printer
+	as format decoder.
+
 2021-09-16  Maxim Blinov  <maxim.blinov@embecosm.com>
 
 	PR bootstrap/102242

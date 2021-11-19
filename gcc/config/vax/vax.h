@@ -433,6 +433,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    move-instruction pairs, we will do a cpymem or libcall instead.  */
 #define MOVE_RATIO(speed) ((speed) ? 6 : 3)
 #define CLEAR_RATIO(speed) ((speed) ? 6 : 2)
+#define SET_RATIO(speed) ((speed) ? 6 : 2)
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0

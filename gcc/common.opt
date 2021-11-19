@@ -83,13 +83,16 @@ int flag_gen_aux_info = 0
 Variable
 int flag_shlib
 
-; These two are really VEC(char_p,heap) *.
+; These three are really VEC(char_p,heap) *.
 
 Variable
 void *flag_instrument_functions_exclude_functions
 
 Variable
 void *flag_instrument_functions_exclude_files
+
+Variable
+void *flag_ignored_attributes
 
 ; Generic structs (e.g. templates not explicitly specialized)
 ; may not have a compilation unit associated with them, and so
@@ -548,6 +551,10 @@ Warn if an array is accessed out of bounds.
 Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
+
+Wattributes=
+Common Joined
+Do not warn about specified attributes.
 
 Wattribute-alias
 Common Alias(Wattribute_alias=, 1, 0) Warning
@@ -2532,7 +2539,7 @@ Common Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
 Reschedule pipelined regions without pipelining.
 
 fsemantic-interposition
-Common Var(flag_semantic_interposition) Init(1)
+Common Var(flag_semantic_interposition) Init(1) Optimization
 Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker.
 
 ; sched_stalled_insns means that insns can be moved prematurely from the queue

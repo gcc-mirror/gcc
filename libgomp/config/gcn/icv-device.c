@@ -52,18 +52,6 @@ omp_get_num_devices (void)
 }
 
 int
-omp_get_num_teams (void)
-{
-  return gomp_num_teams_var + 1;
-}
-
-int __attribute__ ((__optimize__ ("O2")))
-omp_get_team_num (void)
-{
-  return __builtin_gcn_dim_pos (0);
-}
-
-int
 omp_is_initial_device (void)
 {
   /* AMD GCN is an accelerator-only target.  */
@@ -84,7 +72,5 @@ ialias (omp_set_default_device)
 ialias (omp_get_default_device)
 ialias (omp_get_initial_device)
 ialias (omp_get_num_devices)
-ialias (omp_get_num_teams)
-ialias (omp_get_team_num)
 ialias (omp_is_initial_device)
 ialias (omp_get_device_num)

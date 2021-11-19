@@ -220,7 +220,6 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 
       /* If either bb1's succ or bb2 or bb2's succ is non NULL.  */
       if (EDGE_COUNT (bb1->succs) == 0
-          || bb2 == NULL
 	  || EDGE_COUNT (bb2->succs) == 0)
         continue;
 
@@ -276,14 +275,14 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  || (e1->flags & EDGE_FALLTHRU) == 0)
         continue;
 
-      /* Also make sure that bb1 only have one predecessor and that it
-	 is bb.  */
-      if (!single_pred_p (bb1)
-          || single_pred (bb1) != bb)
-	continue;
-
       if (do_store_elim)
 	{
+	  /* Also make sure that bb1 only have one predecessor and that it
+	     is bb.  */
+	  if (!single_pred_p (bb1)
+	      || single_pred (bb1) != bb)
+	    continue;
+
 	  /* bb1 is the middle block, bb2 the join block, bb the split block,
 	     e1 the fallthrough edge from bb1 to bb2.  We can't do the
 	     optimization if the join block has more than two predecessors.  */
@@ -328,10 +327,11 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	     node.  */
 	  gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
 
-	  gphi *newphi = factor_out_conditional_conversion (e1, e2, phi,
-							    arg0, arg1,
-							    cond_stmt);
-	  if (newphi != NULL)
+	  gphi *newphi;
+	  if (single_pred_p (bb1)
+	      && (newphi = factor_out_conditional_conversion (e1, e2, phi,
+							      arg0, arg1,
+							      cond_stmt)))
 	    {
 	      phi = newphi;
 	      /* factor_out_conditional_conversion may create a new PHI in
@@ -350,12 +350,14 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 					       early_p))
 	    cfgchanged = true;
 	  else if (!early_p
+		   && single_pred_p (bb1)
 		   && cond_removal_in_builtin_zero_pattern (bb, bb1, e1, e2,
 							    phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
-	  else if (spaceship_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	  else if (single_pred_p (bb1)
+		   && spaceship_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	}
     }
@@ -386,7 +388,6 @@ replace_phi_edge_with_variable (basic_block cond_block,
 				edge e, gphi *phi, tree new_tree)
 {
   basic_block bb = gimple_bb (phi);
-  basic_block block_to_remove;
   gimple_stmt_iterator gsi;
   tree phi_result = PHI_RESULT (phi);
 
@@ -422,28 +423,33 @@ replace_phi_edge_with_variable (basic_block cond_block,
   SET_USE (PHI_ARG_DEF_PTR (phi, e->dest_idx), new_tree);
 
   /* Remove the empty basic block.  */
+  edge edge_to_remove;
   if (EDGE_SUCC (cond_block, 0)->dest == bb)
+    edge_to_remove = EDGE_SUCC (cond_block, 1);
+  else
+    edge_to_remove = EDGE_SUCC (cond_block, 0);
+  if (EDGE_COUNT (edge_to_remove->dest->preds) == 1)
     {
-      EDGE_SUCC (cond_block, 0)->flags |= EDGE_FALLTHRU;
-      EDGE_SUCC (cond_block, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      EDGE_SUCC (cond_block, 0)->probability = profile_probability::always ();
+      e->flags |= EDGE_FALLTHRU;
+      e->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      e->probability = profile_probability::always ();
+      delete_basic_block (edge_to_remove->dest);
 
-      block_to_remove = EDGE_SUCC (cond_block, 1)->dest;
+      /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
+      gsi = gsi_last_bb (cond_block);
+      gsi_remove (&gsi, true);
     }
   else
     {
-      EDGE_SUCC (cond_block, 1)->flags |= EDGE_FALLTHRU;
-      EDGE_SUCC (cond_block, 1)->flags
-	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      EDGE_SUCC (cond_block, 1)->probability = profile_probability::always ();
-
-      block_to_remove = EDGE_SUCC (cond_block, 0)->dest;
+      /* If there are other edges into the middle block make
+	 CFG cleanup deal with the edge removal to avoid
+	 updating dominators here in a non-trivial way.  */
+      gcond *cond = as_a <gcond *> (last_stmt (cond_block));
+      if (edge_to_remove->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_false (cond);
+      else
+	gimple_cond_make_true (cond);
     }
-  delete_basic_block (block_to_remove);
-
-  /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
-  gsi = gsi_last_bb (cond_block);
-  gsi_remove (&gsi, true);
 
   statistics_counter_event (cfun, "Replace PHI with variable", 1);
 
@@ -959,6 +965,9 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
      allow it and move it once the transformation is done. */
   if (!empty_block_p (middle_bb))
     {
+      if (!single_pred_p (middle_bb))
+	return false;
+
       stmt_to_move = last_and_only_stmt (middle_bb);
       if (!stmt_to_move)
 	return false;
@@ -1351,7 +1360,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
       else
 	{
-	  statistics_counter_event (cfun, "Replace PHI with variable/value_replacement", 1);
+	  if (!single_pred_p (middle_bb))
+	    return 0;
+	  statistics_counter_event (cfun, "Replace PHI with "
+				    "variable/value_replacement", 1);
 
 	  /* Replace the PHI arguments with arg. */
 	  SET_PHI_ARG_DEF (phi, e0->dest_idx, arg);
@@ -1367,8 +1379,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
             }
           return 1;
 	}
-
     }
+
+  if (!single_pred_p (middle_bb))
+    return 0;
 
   /* Now optimize (x != 0) ? x + y : y to just x + y.  */
   gsi = gsi_last_nondebug_bb (middle_bb);
@@ -1765,6 +1779,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
       gimple *assign = last_and_only_stmt (middle_bb);
       tree lhs, op0, op1, bound;
+
+      if (!single_pred_p (middle_bb))
+	return false;
 
       if (!assign
 	  || gimple_code (assign) != GIMPLE_ASSIGN)
@@ -2389,7 +2406,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
     }
   update_stmt (use_stmt);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     {
       use_operand_p use_p;
       imm_use_iterator iter;
@@ -2429,19 +2446,13 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	     all floating point numbers should be comparable.  */
 	  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (phi));
 	  tree type = TREE_TYPE (phires);
-	  tree temp1 = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (temp1) = 1;
-	  TREE_TYPE (temp1) = type;
-	  SET_DECL_MODE (temp1, TYPE_MODE (type));
+	  tree temp1 = build_debug_expr_decl (type);
 	  tree t = build2 (one_cmp, boolean_type_node, lhs1, rhs2);
 	  t = build3 (COND_EXPR, type, t, build_one_cst (type),
 		      build_int_cst (type, -1));
 	  gimple *g = gimple_build_debug_bind (temp1, t, phi);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-	  tree temp2 = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (temp2) = 1;
-	  TREE_TYPE (temp2) = type;
-	  SET_DECL_MODE (temp2, TYPE_MODE (type));
+	  tree temp2 = build_debug_expr_decl (type);
 	  t = build2 (EQ_EXPR, boolean_type_node, lhs1, rhs2);
 	  t = build3 (COND_EXPR, type, t, build_zero_cst (type), temp1);
 	  g = gimple_build_debug_bind (temp2, t, phi);

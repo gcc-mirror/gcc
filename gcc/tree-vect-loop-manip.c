@@ -201,7 +201,7 @@ adjust_debug_stmts_now (adjust_info *ai)
 static void
 adjust_vec_debug_stmts (void)
 {
-  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+  if (!flag_var_tracking_assignments)
     return;
 
   gcc_assert (adjust_vec.exists ());
@@ -223,7 +223,7 @@ adjust_debug_stmts (tree from, tree to, basic_block bb)
 {
   adjust_info ai;
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS
+  if (flag_var_tracking_assignments
       && TREE_CODE (from) == SSA_NAME
       && ! SSA_NAME_IS_DEFAULT_DEF (from)
       && ! virtual_operand_p (from))
@@ -251,7 +251,7 @@ adjust_phi_and_debug_stmts (gimple *update_phi, edge e, tree new_def)
 
   SET_PHI_ARG_DEF (update_phi, e->dest_idx, new_def);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     adjust_debug_stmts (orig_def, PHI_RESULT (update_phi),
 			gimple_bb (update_phi));
 }
@@ -2696,7 +2696,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       vop_to_rename = create_lcssa_for_virtual_phi (orig_loop);
     }
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     {
       gcc_assert (!adjust_vec.exists ());
       adjust_vec.create (32);
@@ -3562,11 +3562,28 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			 "applying loop versioning to outer loop %d\n",
 			 loop_to_version->num);
 
+      unsigned orig_pe_idx = loop_preheader_edge (loop)->dest_idx;
+
       initialize_original_copy_tables ();
       nloop = loop_version (loop_to_version, cond_expr, &condition_bb,
 			    prob, prob.invert (), prob, prob.invert (), true);
       gcc_assert (nloop);
       nloop = get_loop_copy (loop);
+
+      /* For cycle vectorization with SLP we rely on the PHI arguments
+	 appearing in the same order as the SLP node operands which for the
+	 loop PHI nodes means the preheader edge dest index needs to remain
+	 the same for the analyzed loop which also becomes the vectorized one.
+	 Make it so in case the state after versioning differs by redirecting
+	 the first edge into the header to the same destination which moves
+	 it last.  */
+      if (loop_preheader_edge (loop)->dest_idx != orig_pe_idx)
+	{
+	  edge e = EDGE_PRED (loop->header, 0);
+	  ssa_redirect_edge (e, e->dest);
+	  flush_pending_stmts (e);
+	}
+      gcc_assert (loop_preheader_edge (loop)->dest_idx == orig_pe_idx);
 
       /* Kill off IFN_LOOP_VECTORIZED_CALL in the copy, nobody will
          reap those otherwise;  they also refer to the original

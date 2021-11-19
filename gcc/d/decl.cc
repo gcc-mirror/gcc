@@ -1544,8 +1544,9 @@ d_finish_decl (tree decl)
   if (flag_checking && DECL_INITIAL (decl))
     {
       /* Initializer must never be bigger than symbol size.  */
-      dinteger_t tsize = int_size_in_bytes (TREE_TYPE (decl));
-      dinteger_t dtsize = int_size_in_bytes (TREE_TYPE (DECL_INITIAL (decl)));
+      HOST_WIDE_INT tsize = int_size_in_bytes (TREE_TYPE (decl));
+      HOST_WIDE_INT dtsize =
+	int_size_in_bytes (TREE_TYPE (DECL_INITIAL (decl)));
 
       if (tsize < dtsize)
 	{

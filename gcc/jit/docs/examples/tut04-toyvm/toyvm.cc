@@ -633,7 +633,7 @@ compilation_state::create_function (const char *funcname)
   /* Create a block per operation.  */
   for (int pc = 0; pc < toyvmfn.fn_num_ops; pc++)
     {
-      char buf[16];
+      char buf[100];
       sprintf (buf, "instr%i", pc);
       op_blocks[pc] = fn.new_block (buf);
     }

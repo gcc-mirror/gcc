@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
+#include "tree-ssa.h"
 
 static struct stmt_stats
 {
@@ -1142,7 +1143,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb,
 
   /* If this is a store into a variable that is being optimized away,
      add a debug bind stmt if possible.  */
-  if (MAY_HAVE_DEBUG_BIND_STMTS
+  if (flag_var_tracking_assignments
       && gimple_assign_single_p (stmt)
       && is_gimple_val (gimple_assign_rhs1 (stmt)))
     {
@@ -1612,6 +1613,164 @@ tree_dce_done (bool aggressive)
   worklist.release ();
 }
 
+/* Sort PHI argument values for make_forwarders_with_degenerate_phis.  */
+
+static int
+sort_phi_args (const void *a_, const void *b_)
+{
+  auto *a = (const std::pair<edge, hashval_t> *) a_;
+  auto *b = (const std::pair<edge, hashval_t> *) b_;
+  hashval_t ha = a->second;
+  hashval_t hb = b->second;
+  if (ha < hb)
+    return -1;
+  else if (ha > hb)
+    return 1;
+  else
+    return 0;
+}
+
+/* Look for a non-virtual PHIs and make a forwarder block when all PHIs
+   have the same argument on a set of edges.  This is to not consider
+   control dependences of individual edges for same values but only for
+   the common set.  */
+
+static unsigned
+make_forwarders_with_degenerate_phis (function *fn)
+{
+  unsigned todo = 0;
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fn)
+    {
+      /* Only PHIs with three or more arguments have opportunities.  */
+      if (EDGE_COUNT (bb->preds) < 3)
+	continue;
+      /* Do not touch loop headers.  */
+      if (bb->loop_father->header == bb)
+	continue;
+
+      /* Take one PHI node as template to look for identical
+	 arguments.  Build a vector of candidates forming sets
+	 of argument edges with equal values.  Note optimality
+	 depends on the particular choice of the template PHI
+	 since equal arguments are unordered leaving other PHIs
+	 with more than one set of equal arguments within this
+	 argument range unsorted.  We'd have to break ties by
+	 looking at other PHI nodes.  */
+      gphi_iterator gsi = gsi_start_nonvirtual_phis (bb);
+      if (gsi_end_p (gsi))
+	continue;
+      gphi *phi = gsi.phi ();
+      auto_vec<std::pair<edge, hashval_t>, 8> args;
+      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	{
+	  edge e = gimple_phi_arg_edge (phi, i);
+	  /* Skip abnormal edges since we cannot redirect them.  */
+	  if (e->flags & EDGE_ABNORMAL)
+	    continue;
+	  /* Skip loop exit edges when we are in loop-closed SSA form
+	     since the forwarder we'd create does not have a PHI node.  */
+	  if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
+	      && loop_exit_edge_p (e->src->loop_father, e))
+	    continue;
+	  args.safe_push (std::make_pair (e, iterative_hash_expr
+					     (gimple_phi_arg_def (phi, i), 0)));
+	}
+      if (args.length () < 2)
+	continue;
+      args.qsort (sort_phi_args);
+
+      /* From the candidates vector now verify true candidates for
+	 forwarders and create them.  */
+      gphi *vphi = get_virtual_phi (bb);
+      unsigned start = 0;
+      while (start < args.length () - 1)
+	{
+	  unsigned i;
+	  for (i = start + 1; i < args.length (); ++i)
+	    if (!operand_equal_p (PHI_ARG_DEF_FROM_EDGE (phi, args[start].first),
+				  PHI_ARG_DEF_FROM_EDGE (phi, args[i].first)))
+	      break;
+	  /* args[start]..args[i-1] are equal.  */
+	  if (start != i - 1)
+	    {
+	      /* Check all PHI nodes for argument equality.  */
+	      bool equal = true;
+	      gphi_iterator gsi2 = gsi;
+	      gsi_next (&gsi2);
+	      for (; !gsi_end_p (gsi2); gsi_next (&gsi2))
+		{
+		  gphi *phi2 = gsi2.phi ();
+		  if (virtual_operand_p (gimple_phi_result (phi2)))
+		    continue;
+		  tree start_arg
+		    = PHI_ARG_DEF_FROM_EDGE (phi2, args[start].first);
+		  for (unsigned j = start + 1; j < i; ++j)
+		    {
+		      if (!operand_equal_p (start_arg,
+					    PHI_ARG_DEF_FROM_EDGE
+					      (phi2, args[j].first)))
+			{
+			  /* Another PHI might have a shorter set of
+			     equivalent args.  Go for that.  */
+			  i = j;
+			  if (j == start + 1)
+			    equal = false;
+			  break;
+			}
+		    }
+		  if (!equal)
+		    break;
+		}
+	      if (equal)
+		{
+		  /* If we are asked to forward all edges the block
+		     has all degenerate PHIs.  Do nothing in that case.  */
+		  if (start == 0
+		      && i == args.length ()
+		      && args.length () == gimple_phi_num_args (phi))
+		    break;
+		  /* Instead of using make_forwarder_block we are
+		     rolling our own variant knowing that the forwarder
+		     does not need PHI nodes apart from eventually
+		     a virtual one.  */
+		  auto_vec<tree, 8> vphi_args;
+		  if (vphi)
+		    {
+		      vphi_args.reserve_exact (i - start);
+		      for (unsigned j = start; j < i; ++j)
+			vphi_args.quick_push
+			  (PHI_ARG_DEF_FROM_EDGE (vphi, args[j].first));
+		    }
+		  free_dominance_info (fn, CDI_DOMINATORS);
+		  basic_block forwarder = split_edge (args[start].first);
+		  for (unsigned j = start + 1; j < i; ++j)
+		    {
+		      edge e = args[j].first;
+		      redirect_edge_and_branch_force (e, forwarder);
+		      redirect_edge_var_map_clear (e);
+		    }
+		  if (vphi)
+		    {
+		      tree def = copy_ssa_name (vphi_args[0]);
+		      gphi *vphi_copy = create_phi_node (def, forwarder);
+		      for (unsigned j = start; j < i; ++j)
+			add_phi_arg (vphi_copy, vphi_args[j - start],
+				     args[j].first, UNKNOWN_LOCATION);
+		      SET_PHI_ARG_DEF
+			(vphi, single_succ_edge (forwarder)->dest_idx, def);
+		    }
+		  todo |= TODO_cleanup_cfg;
+		}
+	    }
+	  /* Continue searching for more opportunities.  */
+	  start = i;
+	}
+    }
+  return todo;
+}
+
 /* Main routine to eliminate dead code.
 
    AGGRESSIVE controls the aggressiveness of the algorithm.
@@ -1630,8 +1789,7 @@ static unsigned int
 perform_tree_ssa_dce (bool aggressive)
 {
   bool something_changed = 0;
-
-  calculate_dominance_info (CDI_DOMINATORS);
+  unsigned todo = 0;
 
   /* Preheaders are needed for SCEV to work.
      Simple lateches and recorded exits improve chances that loop will
@@ -1643,6 +1801,11 @@ perform_tree_ssa_dce (bool aggressive)
       loop_optimizer_init (LOOPS_NORMAL
 			   | LOOPS_HAVE_RECORDED_EXITS);
     }
+
+  if (aggressive)
+    todo |= make_forwarders_with_degenerate_phis (cfun);
+
+  calculate_dominance_info (CDI_DOMINATORS);
 
   tree_dce_init (aggressive);
 
@@ -1701,9 +1864,9 @@ perform_tree_ssa_dce (bool aggressive)
       free_numbers_of_iterations_estimates (cfun);
       if (in_loop_pipeline)
 	scev_reset ();
-      return TODO_update_ssa | TODO_cleanup_cfg;
+      todo |= TODO_update_ssa | TODO_cleanup_cfg;
     }
-  return 0;
+  return todo;
 }
 
 /* Pass entry points.  */

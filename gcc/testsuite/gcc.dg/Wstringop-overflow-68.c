@@ -65,11 +65,11 @@ void warn_comp_lit (void)
   // MEM <vector(8) char> [(char *)&a7] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   // MEM <vector(16) char> [(char *)&a15] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
   // and warning should be expected, refer to PR102722.
-  *(AC4*)a2 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 2" "pr101475" { xfail { ! { vect_slp_v4qi_store } } } }
-  *(AC4*)a3 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 3" "pr101475" { xfail { ! { vect_slp_v4qi_store } } } }
-  *(AC8*)a4 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 4" "pr101475" { xfail { ! { vect_slp_v8qi_store } } } }
-  *(AC8*)a7 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 7" "pr101475" { xfail { ! { vect_slp_v8qi_store } } } }
-  *(AC16*)a15 = Ac16;   // { dg-warning "writing 16 bytes into a region of size 15" "pr101475" { xfail { ! { vect_slp_v16qi_store } } } }
+  *(AC4*)a2 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 2" "pr101475" { xfail { ! { vect_slp_v4qi_store_unalign_1 } } } }
+  *(AC4*)a3 = Ac4;      // { dg-warning "writing 4 bytes into a region of size 3" "pr101475" { xfail { ! { vect_slp_v4qi_store_unalign_1 } } } }
+  *(AC8*)a4 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 4" "pr101475" { xfail { ! { vect_slp_v8qi_store_unalign_1 } } } }
+  *(AC8*)a7 = Ac8;      // { dg-warning "writing 8 bytes into a region of size 7" "pr101475" { xfail { ! { vect_slp_v8qi_store_unalign_1 } } } }
+  *(AC16*)a15 = Ac16;   // { dg-warning "writing 16 bytes into a region of size 15" "pr101475" { xfail { ! { vect_slp_v16qi_store_unalign_1 } } } }
 }
 
 void warn_aggr_decl (void)

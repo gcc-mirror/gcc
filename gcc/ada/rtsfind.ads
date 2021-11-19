@@ -60,6 +60,12 @@ package Rtsfind is
    --  the compilation except in the presence of use clauses, which might
    --  result in unexpected ambiguities.
 
+   --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
+   --  this mechanism must not contain private with clauses. This is because
+   --  the special context installation/removal for private with clauses
+   --  only works in a clean environment for compilation, and could lead
+   --  here to removing visibility over lib units in the calling context.
+
    --  NOTE: If RTU_Id is modified, the subtypes of RTU_Id in the package body
    --  might need to be modified. See Get_Unit_Name.
 

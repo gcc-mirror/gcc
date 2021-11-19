@@ -24,7 +24,11 @@
 #include <locale>
 #if __cplusplus >= 201103L
 # include <unordered_map>
+# ifdef _GLIBCXX_DEBUG
+namespace unord = std::_GLIBCXX_STD_C;
+# else
 namespace unord = std;
+# endif
 #else
 # include <tr1/unordered_map>
 namespace unord = std::tr1;

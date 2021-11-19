@@ -4341,11 +4341,8 @@ avoid_deep_ter_for_debug (gimple *stmt, int depth)
 	  tree &vexpr = deep_ter_debug_map->get_or_insert (use);
 	  if (vexpr != NULL)
 	    continue;
-	  vexpr = make_node (DEBUG_EXPR_DECL);
+	  vexpr = build_debug_expr_decl (TREE_TYPE (use));
 	  gimple *def_temp = gimple_build_debug_bind (vexpr, use, g);
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (use);
-	  SET_DECL_MODE (vexpr, TYPE_MODE (TREE_TYPE (use)));
 	  gimple_stmt_iterator gsi = gsi_for_stmt (g);
 	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
 	  avoid_deep_ter_for_debug (def_temp, 0);
@@ -5901,18 +5898,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		       temporary.  */
 		    gimple *debugstmt;
 		    tree value = gimple_assign_rhs_to_tree (def);
-		    tree vexpr = make_node (DEBUG_EXPR_DECL);
+		    tree vexpr = build_debug_expr_decl (TREE_TYPE (value));
 		    rtx val;
 		    machine_mode mode;
 
 		    set_curr_insn_location (gimple_location (def));
 
-		    DECL_ARTIFICIAL (vexpr) = 1;
-		    TREE_TYPE (vexpr) = TREE_TYPE (value);
 		    if (DECL_P (value))
 		      mode = DECL_MODE (value);
 		    else
 		      mode = TYPE_MODE (TREE_TYPE (value));
+		    /* FIXME: Is setting the mode really necessary? */
 		    SET_DECL_MODE (vexpr, mode);
 
 		    val = gen_rtx_VAR_LOCATION
@@ -6591,7 +6587,7 @@ pass_expand::execute (function *fun)
   timevar_pop (TV_OUT_OF_SSA);
   SA.partition_to_pseudo = XCNEWVEC (rtx, SA.map->num_partitions);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS && flag_tree_ter)
+  if (flag_var_tracking_assignments && flag_tree_ter)
     {
       gimple_stmt_iterator gsi;
       FOR_EACH_BB_FN (bb, cfun)

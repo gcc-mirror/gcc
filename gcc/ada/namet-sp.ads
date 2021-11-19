@@ -31,6 +31,20 @@
 
 package Namet.Sp is
 
+   function Aspect_Spell_Check (Name : Name_Id) return Boolean;
+   --  Returns True, if Name is a misspelling of some aspect name
+
+   function Aspect_Spell_Check (Name : Name_Id) return Name_Id;
+   --  Returns a possible correction, if Name is a misspelling of some aspect
+   --  name. If not, return No_Name.
+
+   function Attribute_Spell_Check (N : Name_Id) return Boolean;
+   --  Returns True, if Name is a misspelling of some attribute name
+
+   function Attribute_Spell_Check (N : Name_Id) return Name_Id;
+   --  Returns a possible correction, if Name is a misspelling of some
+   --  attribute name. If not, return No_Name.
+
    function Is_Bad_Spelling_Of (Found, Expect : Name_Id) return Boolean;
    --  Compares two identifier names from the names table, and returns True if
    --  Found is a plausible misspelling of Expect. This function properly deals

@@ -4565,7 +4565,7 @@
 
 ;; V4SI splat support
 (define_insn "vsx_splat_v4si"
-  [(set (match_operand:V4SI 0 "vsx_register_operand" "=we,we")
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa,wa")
 	(vec_duplicate:V4SI
 	 (match_operand:SI 1 "splat_input_operand" "r,Z")))]
   "TARGET_P9_VECTOR"

@@ -1174,14 +1174,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define VL_EXP_OPERAND_LENGTH(NODE) \
   ((int)TREE_INT_CST_LOW (VL_EXP_CHECK (NODE)->exp.operands[0]))
 
-/* Nonzero if gimple_debug_nonbind_marker_p() may possibly hold.  */
-#define MAY_HAVE_DEBUG_MARKER_STMTS debug_nonbind_markers_p
-/* Nonzero if gimple_debug_bind_p() (and thus
-   gimple_debug_source_bind_p()) may possibly hold.  */
-#define MAY_HAVE_DEBUG_BIND_STMTS flag_var_tracking_assignments
 /* Nonzero if is_gimple_debug() may possibly hold.  */
 #define MAY_HAVE_DEBUG_STMTS					\
-  (MAY_HAVE_DEBUG_MARKER_STMTS || MAY_HAVE_DEBUG_BIND_STMTS)
+  (debug_nonbind_markers_p || flag_var_tracking_assignments)
 
 /* In a LOOP_EXPR node.  */
 #define LOOP_EXPR_BODY(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_EXPR, 0)
@@ -1689,6 +1684,11 @@ class auto_suppress_location_wrappers
    map clause.  */
 #define OMP_CLAUSE_MAP_IMPLICIT(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.default_def_flag)
+/* Nonzero if this map clause is to be indicated to the runtime as 'implicit',
+   due to being created through implicit data-mapping rules in the middle-end.
+   NOTE: this is different than OMP_CLAUSE_MAP_IMPLICIT.  */
+#define OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.deprecated_flag)
 
 /* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
    clause.  */
@@ -1803,8 +1803,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_ALLOCATE_COMBINED(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ALLOCATE)->base.public_flag)
 
-#define OMP_CLAUSE_NUM_TEAMS_EXPR(NODE) \
+#define OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 0)
+
+#define OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 1)
 
 #define OMP_CLAUSE_THREAD_LIMIT_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, \
@@ -4567,6 +4570,7 @@ extern tree build_tree_list (tree, tree CXX_MEM_STAT_INFO);
 extern tree build_tree_list_vec (const vec<tree, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_decl (location_t, enum tree_code,
 			tree, tree CXX_MEM_STAT_INFO);
+extern tree build_debug_expr_decl (tree type);
 extern tree build_fn_decl (const char *, tree);
 extern tree build_translation_unit_decl (tree);
 extern tree build_block (tree, tree, tree, tree);

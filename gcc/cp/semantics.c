@@ -2048,24 +2048,17 @@ force_paren_expr (tree expr, bool even_uneval)
   if (cp_unevaluated_operand && !even_uneval)
     return expr;
 
-  if (!DECL_P (tree_strip_any_location_wrapper (expr))
-      && TREE_CODE (expr) != COMPONENT_REF
-      && TREE_CODE (expr) != SCOPE_REF)
-    return expr;
-
-  location_t loc = cp_expr_location (expr);
-
   if (TREE_CODE (expr) == COMPONENT_REF
       || TREE_CODE (expr) == SCOPE_REF)
     REF_PARENTHESIZED_P (expr) = true;
-  else if (processing_template_decl)
-    expr = build1_loc (loc, PAREN_EXPR, TREE_TYPE (expr), expr);
-  else
+  else if (DECL_P (tree_strip_any_location_wrapper (expr)))
     {
-      expr = build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (expr), expr);
+      location_t loc = cp_expr_location (expr);
+      const tree_code code = processing_template_decl ? PAREN_EXPR
+						      : VIEW_CONVERT_EXPR;
+      expr = build1_loc (loc, code, TREE_TYPE (expr), expr);
       REF_PARENTHESIZED_P (expr) = true;
     }
-
   return expr;
 }
 
@@ -2090,10 +2083,8 @@ maybe_undo_parenthesized_ref (tree t)
 		  || TREE_CODE (t) == STATIC_CAST_EXPR);
       t = TREE_OPERAND (t, 0);
     }
-  else if (TREE_CODE (t) == PAREN_EXPR)
-    t = TREE_OPERAND (t, 0);
-  else if (TREE_CODE (t) == VIEW_CONVERT_EXPR
-	   && REF_PARENTHESIZED_P (t))
+  else if ((TREE_CODE (t) == PAREN_EXPR || TREE_CODE (t) == VIEW_CONVERT_EXPR)
+	     && REF_PARENTHESIZED_P (t))
     t = TREE_OPERAND (t, 0);
 
   return t;
@@ -3138,6 +3129,20 @@ finish_compound_literal (tree type, tree compound_literal,
 
   if (template_placeholder_p (type))
     {
+      type = do_auto_deduction (type, compound_literal, type, complain,
+				adc_variable_type);
+      if (type == error_mark_node)
+	return error_mark_node;
+    }
+  /* C++23 auto{x}.  */
+  else if (is_auto (type)
+	   && !AUTO_IS_DECLTYPE (type)
+	   && CONSTRUCTOR_NELTS (compound_literal) == 1)
+    {
+      if (cxx_dialect < cxx23)
+	pedwarn (input_location, OPT_Wc__23_extensions,
+		 "%<auto{x}%> only available with "
+		 "%<-std=c++2b%> or %<-std=gnu++2b%>");
       type = do_auto_deduction (type, compound_literal, type, complain,
 				adc_variable_type);
       if (type == error_mark_node)
@@ -7227,6 +7232,53 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_OPERAND (c, 0) = t;
+	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+	      && OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+	      && !remove)
+	    {
+	      t = OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c);
+	      if (t == error_mark_node)
+		remove = true;
+	      else if (!type_dependent_expression_p (t)
+		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qs expression must be integral",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		}
+	      else
+		{
+		  t = mark_rvalue_use (t);
+		  if (!processing_template_decl)
+		    {
+		      t = maybe_constant_value (t);
+		      if (TREE_CODE (t) == INTEGER_CST
+			  && tree_int_cst_sgn (t) != 1)
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%qs value must be positive",
+				      omp_clause_code_name
+				      [OMP_CLAUSE_CODE (c)]);
+			  t = NULL_TREE;
+			}
+		      else
+			t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		      tree upper = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c);
+		      if (t
+			  && TREE_CODE (t) == INTEGER_CST
+			  && TREE_CODE (upper) == INTEGER_CST
+			  && tree_int_cst_lt (upper, t))
+			{
+			  warning_at (OMP_CLAUSE_LOCATION (c), 0,
+				      "%<num_teams%> lower bound %qE bigger "
+				      "than upper bound %qE", t, upper);
+			  t = NULL_TREE;
+			}
+		    }
+		  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = t;
+		}
 	    }
 	  break;
 
@@ -11335,7 +11387,8 @@ is_this_parameter (tree t)
 {
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
-  gcc_assert (TREE_CODE (t) == PARM_DECL || is_capture_proxy (t)
+  gcc_assert (TREE_CODE (t) == PARM_DECL
+	      || (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
 	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
   return true;
 }

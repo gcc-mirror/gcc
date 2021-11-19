@@ -111,6 +111,9 @@ ao_ref::max_size_known_p () const
 /* In tree-ssa-alias.c  */
 extern void ao_ref_init (ao_ref *, tree);
 extern void ao_ref_init_from_ptr_and_size (ao_ref *, tree, tree);
+extern void ao_ref_init_from_ptr_and_range (ao_ref *, tree, bool,
+					    poly_int64, poly_int64,
+					    poly_int64);
 extern tree ao_ref_base (ao_ref *);
 extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern alias_set_type ao_ref_base_alias_set (ao_ref *);

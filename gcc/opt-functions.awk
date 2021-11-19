@@ -356,7 +356,7 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
     return ""
 }
 
-function integer_range_info(range_option, init, option)
+function integer_range_info(range_option, init, option, uinteger_used)
 {
     if (range_option != "") {
 	ival = init + 0;
@@ -364,6 +364,8 @@ function integer_range_info(range_option, init, option)
 	end = nth_arg(1, range_option) + 0;
 	if (init != "" && init != "-1" && (ival < start || ival > end))
 	  print "#error initial value " init " of '" option "' must be in range [" start "," end "]"
+	if (uinteger_used && start < 0)
+	  print "#error '" option"': negative IntegerRange (" start ", " end ") cannot be combined with UInteger"
 	return start ", " end
     }
     else

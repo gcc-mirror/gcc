@@ -42,6 +42,10 @@ munix
 Target RejectNegative Mask(UNIX_ASM)
 Generate code for UNIX assembler.
 
+mlra
+Target Mask(LRA)
+Enable Local Register Allocation.
+
 mvaxc-alignment
 Target RejectNegative Mask(VAXC_ALIGNMENT)
 Use VAXC structure conventions.

@@ -1183,14 +1183,10 @@ move_computations_worker (basic_block bb)
 					  COND_EXPR, t, arg0, arg1);
 	  todo |= TODO_cleanup_cfg;
 	}
-      if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (new_stmt)))
-	  && (!ALWAYS_EXECUTED_IN (bb)
-	      || (ALWAYS_EXECUTED_IN (bb) != level
-		  && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	{
-	  tree lhs = gimple_assign_lhs (new_stmt);
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	}
+      if (!ALWAYS_EXECUTED_IN (bb)
+	  || (ALWAYS_EXECUTED_IN (bb) != level
+	      && !flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level)))
+	reset_flow_sensitive_info (gimple_assign_lhs (new_stmt));
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
       remove_phi_node (&bsi, false);
     }
@@ -1253,14 +1249,10 @@ move_computations_worker (basic_block bb)
       gsi_remove (&bsi, false);
       if (gimple_has_lhs (stmt)
 	  && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_get_lhs (stmt)))
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
-	{
-	  tree lhs = gimple_get_lhs (stmt);
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
-	}
+	reset_flow_sensitive_info (gimple_get_lhs (stmt));
       /* In case this is a stmt that is not unconditionally executed
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
@@ -1919,10 +1911,13 @@ first_mem_ref_loc (class loop *loop, im_mem_ref *ref)
        }
      }
      if (lsm_flag)	<--
-       MEM = lsm;	<--
+       MEM = lsm;	<-- (X)
+
+  In case MEM and TMP_VAR are NULL the function will return the then
+  block so the caller can insert (X) and other related stmts. 
 */
 
-static void
+static basic_block
 execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 		       edge preheader, hash_set <basic_block> *flag_bbs,
 		       edge &append_cond_position, edge &last_cond_fallthru)
@@ -2017,10 +2012,13 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 			    NULL_TREE, NULL_TREE);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
-  gsi = gsi_start_bb (then_bb);
   /* Insert actual store.  */
-  stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
-  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+  if (mem)
+    {
+      gsi = gsi_start_bb (then_bb);
+      stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+    }
 
   edge e1 = single_succ_edge (new_bb);
   edge e2 = make_edge (new_bb, then_bb,
@@ -2068,6 +2066,8 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 	      update_stmt (phi);
 	    }
       }
+
+  return then_bb;
 }
 
 /* When REF is set on the location, set flag indicating the store.  */
@@ -2125,7 +2125,8 @@ struct sm_aux
 
 static void
 execute_sm (class loop *loop, im_mem_ref *ref,
-	    hash_map<im_mem_ref *, sm_aux *> &aux_map, bool maybe_mt)
+	    hash_map<im_mem_ref *, sm_aux *> &aux_map, bool maybe_mt,
+	    bool use_other_flag_var)
 {
   gassign *load;
   struct fmt_data fmt_data;
@@ -2154,7 +2155,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
 	  || (! flag_store_data_races && ! always_stored)))
     multi_threaded_model_p = true;
 
-  if (multi_threaded_model_p)
+  if (multi_threaded_model_p && !use_other_flag_var)
     aux->store_flag
       = execute_sm_if_changed_flag_set (loop, ref, &aux->flag_bbs);
   else
@@ -2190,7 +2191,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
   lim_data->tgt_loop = loop;
   gsi_insert_before (&gsi, load, GSI_SAME_STMT);
 
-  if (multi_threaded_model_p)
+  if (aux->store_flag)
     {
       load = gimple_build_assign (aux->store_flag, boolean_false_node);
       lim_data = init_lim_data (load);
@@ -2563,6 +2564,140 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
   unsigned  i;
   bitmap_iterator bi;
 
+  /* There's a special case we can use ordered re-materialization for
+     conditionally excuted stores which is when all stores in the loop
+     happen in the same basic-block.  In that case we know we'll reach
+     all stores and thus can simply process that BB and emit a single
+     conditional block of ordered materializations.  See PR102436.  */
+  basic_block single_store_bb = NULL;
+  EXECUTE_IF_SET_IN_BITMAP (&memory_accesses.all_refs_stored_in_loop[loop->num],
+			    0, i, bi)
+    {
+      bool fail = false;
+      ref = memory_accesses.refs_list[i];
+      for (auto loc : ref->accesses_in_loop)
+	if (!gimple_vdef (loc.stmt))
+	  ;
+	else if (!single_store_bb)
+	  {
+	    single_store_bb = gimple_bb (loc.stmt);
+	    bool conditional = false;
+	    for (edge e : exits)
+	      if (!dominated_by_p (CDI_DOMINATORS, e->src, single_store_bb))
+		{
+		  /* Conditional as seen from e.  */
+		  conditional = true;
+		  break;
+		}
+	    if (!conditional)
+	      {
+		fail = true;
+		break;
+	      }
+	  }
+	else if (single_store_bb != gimple_bb (loc.stmt))
+	  {
+	    fail = true;
+	    break;
+	  }
+      if (fail)
+	{
+	  single_store_bb = NULL;
+	  break;
+	}
+    }
+  if (single_store_bb)
+    {
+      /* Analyze the single block with stores.  */
+      auto_bitmap fully_visited;
+      auto_bitmap refs_not_supported;
+      auto_bitmap refs_not_in_seq;
+      auto_vec<seq_entry> seq;
+      bitmap_copy (refs_not_in_seq, mem_refs);
+      int res = sm_seq_valid_bb (loop, single_store_bb, NULL_TREE,
+				 seq, refs_not_in_seq, refs_not_supported,
+				 false, fully_visited);
+      if (res != 1)
+	{
+	  /* Unhandled refs can still fail this.  */
+	  bitmap_clear (mem_refs);
+	  return;
+	}
+
+      /* We cannot handle sm_other since we neither remember the
+	 stored location nor the value at the point we execute them.  */
+      for (unsigned i = 0; i < seq.length (); ++i)
+	{
+	  unsigned new_i;
+	  if (seq[i].second == sm_other
+	      && seq[i].from != NULL_TREE)
+	    seq[i].from = NULL_TREE;
+	  else if ((seq[i].second == sm_ord
+		    || (seq[i].second == sm_other
+			&& seq[i].from != NULL_TREE))
+		   && !sm_seq_push_down (seq, i, &new_i))
+	    {
+	      bitmap_set_bit (refs_not_supported, seq[new_i].first);
+	      seq[new_i].second = sm_other;
+	      seq[new_i].from = NULL_TREE;
+	    }
+	}
+      bitmap_and_compl_into (mem_refs, refs_not_supported);
+      if (bitmap_empty_p (mem_refs))
+	return;
+
+      /* Prune seq.  */
+      while (seq.last ().second == sm_other
+	     && seq.last ().from == NULL_TREE)
+	seq.pop ();
+
+      hash_map<im_mem_ref *, sm_aux *> aux_map;
+
+      /* Execute SM but delay the store materialization for ordered
+	 sequences on exit.  */
+      bool first_p = true;
+      EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
+	{
+	  ref = memory_accesses.refs_list[i];
+	  execute_sm (loop, ref, aux_map, true, !first_p);
+	  first_p = false;
+	}
+
+      /* Get at the single flag variable we eventually produced.  */
+      im_mem_ref *ref
+	= memory_accesses.refs_list[bitmap_first_set_bit (mem_refs)];
+      sm_aux *aux = *aux_map.get (ref);
+
+      /* Materialize ordered store sequences on exits.  */
+      edge e;
+      FOR_EACH_VEC_ELT (exits, i, e)
+	{
+	  edge append_cond_position = NULL;
+	  edge last_cond_fallthru = NULL;
+	  edge insert_e = e;
+	  /* Construct the single flag variable control flow and insert
+	     the ordered seq of stores in the then block.  With
+	     -fstore-data-races we can do the stores unconditionally.  */
+	  if (aux->store_flag)
+	    insert_e
+	      = single_pred_edge
+		  (execute_sm_if_changed (e, NULL_TREE, NULL_TREE,
+					  aux->store_flag,
+					  loop_preheader_edge (loop),
+					  &aux->flag_bbs, append_cond_position,
+					  last_cond_fallthru));
+	  execute_sm_exit (loop, insert_e, seq, aux_map, sm_ord,
+			   append_cond_position, last_cond_fallthru);
+	  gsi_commit_one_edge_insert (insert_e, NULL);
+	}
+
+      for (hash_map<im_mem_ref *, sm_aux *>::iterator iter = aux_map.begin ();
+	   iter != aux_map.end (); ++iter)
+	delete (*iter).second;
+
+      return;
+    }
+
   /* To address PR57359 before actually applying store-motion check
      the candidates found for validity with regards to reordering
      relative to other stores which we until here disambiguated using
@@ -2701,7 +2836,8 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
   EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
     {
       ref = memory_accesses.refs_list[i];
-      execute_sm (loop, ref, aux_map, bitmap_bit_p (refs_not_supported, i));
+      execute_sm (loop, ref, aux_map, bitmap_bit_p (refs_not_supported, i),
+		  false);
     }
 
   /* Materialize ordered store sequences on exits.  */

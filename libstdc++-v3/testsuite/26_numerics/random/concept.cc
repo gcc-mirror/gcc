@@ -227,7 +227,11 @@ struct N12
   static constexpr unsigned max() { return 1; }
 };
 
+#if __cpp_implicit_constexpr
+static_assert( std::uniform_random_bit_generator<N12> ); // LWG 3150
+#else
 static_assert( ! std::uniform_random_bit_generator<N12> ); // LWG 3150
+#endif
 
 struct N13
 {
@@ -236,7 +240,11 @@ struct N13
   static unsigned max() { return 1; } // not constexpr
 };
 
+#if __cpp_implicit_constexpr
+static_assert( std::uniform_random_bit_generator<N13> ); // LWG 3150
+#else
 static_assert( ! std::uniform_random_bit_generator<N13> ); // LWG 3150
+#endif
 
 struct N14
 {

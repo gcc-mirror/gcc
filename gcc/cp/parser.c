@@ -4804,9 +4804,8 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
       else /* if (id_equal (suffix_id, "il")) */
 	type = long_double_type_node;
 
-      value = build_complex (build_complex_type (type),
-			     fold_convert (type, integer_zero_node),
-			     fold_convert (type, value));
+      value = fold_build2 (COMPLEX_EXPR, build_complex_type (type),
+			   build_zero_cst (type), fold_convert (type, value));
     }
 
   if (cp_parser_uncommitted_to_tentative_parse_p (parser))
@@ -7355,6 +7354,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_SHUFFLE:
     case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
+    case RID_BUILTIN_ASSOC_BARRIER:
       {
 	vec<tree, va_gc> *vec;
 
@@ -7393,6 +7393,19 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		error_at (loc, "wrong number of arguments to "
 			       "%<__builtin_launder%>");
+		postfix_expression = error_mark_node;
+	      }
+	    break;
+
+	  case RID_BUILTIN_ASSOC_BARRIER:
+	    if (vec->length () == 1)
+	      postfix_expression = build1_loc (loc, PAREN_EXPR,
+					       TREE_TYPE ((*vec)[0]),
+					       (*vec)[0]);
+	    else
+	      {
+		error_at (loc, "wrong number of arguments to "
+			       "%<__builtin_assoc_barrier%>");
 		postfix_expression = error_mark_node;
 	      }
 	    break;
@@ -11685,7 +11698,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 static void
 add_debug_begin_stmt (location_t loc)
 {
-  if (!MAY_HAVE_DEBUG_MARKER_STMTS)
+  if (!debug_nonbind_markers_p)
     return;
   if (DECL_DECLARED_CONCEPT_P (current_function_decl))
     /* A concept is never expanded normally.  */
@@ -18559,11 +18572,6 @@ cp_parser_template_name (cp_parser* parser,
 static tree
 cp_parser_template_argument_list (cp_parser* parser)
 {
-  tree fixed_args[10];
-  unsigned n_args = 0;
-  unsigned alloced = 10;
-  tree *arg_ary = fixed_args;
-  tree vec;
   bool saved_in_template_argument_list_p;
   bool saved_ice_p;
   bool saved_non_ice_p;
@@ -18582,16 +18590,15 @@ cp_parser_template_argument_list (cp_parser* parser)
   parser->non_integral_constant_expression_p = false;
 
   /* Parse the arguments.  */
+  auto_vec<tree, 10> args;
   do
     {
-      tree argument;
-
-      if (n_args)
+      if (!args.is_empty ())
 	/* Consume the comma.  */
 	cp_lexer_consume_token (parser->lexer);
 
       /* Parse the template-argument.  */
-      argument = cp_parser_template_argument (parser);
+      tree argument = cp_parser_template_argument (parser);
 
       /* If the next token is an ellipsis, we're expanding a template
          argument pack. */
@@ -18611,29 +18618,16 @@ cp_parser_template_argument_list (cp_parser* parser)
           argument = make_pack_expansion (argument);
         }
 
-      if (n_args == alloced)
-	{
-	  alloced *= 2;
-
-	  if (arg_ary == fixed_args)
-	    {
-	      arg_ary = XNEWVEC (tree, alloced);
-	      memcpy (arg_ary, fixed_args, sizeof (tree) * n_args);
-	    }
-	  else
-	    arg_ary = XRESIZEVEC (tree, arg_ary, alloced);
-	}
-      arg_ary[n_args++] = argument;
+      args.safe_push (argument);
     }
   while (cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
 
-  vec = make_tree_vec (n_args);
+  int n_args = args.length ();
+  tree vec = make_tree_vec (n_args);
 
-  while (n_args--)
-    TREE_VEC_ELT (vec, n_args) = arg_ary[n_args];
+  for (int i = 0; i < n_args; i++)
+    TREE_VEC_ELT (vec, i) = args[i];
 
-  if (arg_ary != fixed_args)
-    free (arg_ary);
   parser->non_integral_constant_expression_p = saved_non_ice_p;
   parser->integral_constant_expression_p = saved_ice_p;
   parser->in_template_argument_list_p = saved_in_template_argument_list_p;
@@ -19855,7 +19849,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
   Note that the Concepts TS allows the auto or decltype(auto) to be
   omitted in a constrained-type-specifier.  */
 
-tree
+static tree
 cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
 				      tree tmpl, bool tentative)
 {
@@ -19871,7 +19865,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       args = TREE_OPERAND (tmpl, 1);
       tmpl = TREE_OPERAND (tmpl, 0);
     }
-  if (args == NULL_TREE)
+  else
     /* A concept-name with no arguments can't be an expression.  */
     tentative = false;
 
@@ -19909,8 +19903,11 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
       if (!flag_concepts_ts
 	  || !processing_template_parmlist)
 	{
-	  error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
-	  inform (DECL_SOURCE_LOCATION (con), "concept defined here");
+	  if (!tentative)
+	    {
+	      error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
+	      inform (DECL_SOURCE_LOCATION (con), "concept defined here");
+	    }
 	  return error_mark_node;
 	}
     }
@@ -38273,21 +38270,35 @@ cp_parser_omp_clause_orderedkind (cp_parser * /*parser*/,
 }
 
 /* OpenMP 4.0:
-   num_teams ( expression ) */
+   num_teams ( expression )
+
+   OpenMP 5.1:
+   num_teams ( expression : expression ) */
 
 static tree
 cp_parser_omp_clause_num_teams (cp_parser *parser, tree list,
 				location_t location)
 {
-  tree t, c;
+  tree upper, lower = NULL_TREE, c;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_assignment_expression (parser);
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+  parser->colon_corrects_to_scope_p = false;
+  upper = cp_parser_assignment_expression (parser);
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 
-  if (t == error_mark_node
+  if (upper != error_mark_node
+      && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+    {
+      lower = upper;
+      cp_lexer_consume_token (parser->lexer);
+      upper = cp_parser_assignment_expression (parser);
+    }
+
+  if (upper == error_mark_node
       || !parens.require_close (parser))
     cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					   /*or_comma=*/false,
@@ -38297,7 +38308,8 @@ cp_parser_omp_clause_num_teams (cp_parser *parser, tree list,
 			     "num_teams", location);
 
   c = build_omp_clause (location, OMP_CLAUSE_NUM_TEAMS);
-  OMP_CLAUSE_NUM_TEAMS_EXPR (c) = t;
+  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = upper;
+  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = lower;
   OMP_CLAUSE_CHAIN (c) = list;
 
   return c;
@@ -44017,6 +44029,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULTMAP)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR))
 
 static bool
@@ -44102,32 +44115,33 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  if (ret == NULL_TREE)
 	    return false;
 	  if (ccode == OMP_TEAMS && !processing_template_decl)
-	    {
-	      /* For combined target teams, ensure the num_teams and
-		 thread_limit clause expressions are evaluated on the host,
-		 before entering the target construct.  */
-	      tree c;
-	      for (c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
-		   c; c = OMP_CLAUSE_CHAIN (c))
-		if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
-		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
-		    && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) != INTEGER_CST)
-		  {
-		    tree expr = OMP_CLAUSE_OPERAND (c, 0);
-		    expr = force_target_expr (TREE_TYPE (expr), expr, tf_none);
-		    if (expr == error_mark_node)
-		      continue;
-		    tree tmp = TARGET_EXPR_SLOT (expr);
-		    add_stmt (expr);
-		    OMP_CLAUSE_OPERAND (c, 0) = expr;
-		    tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (tc) = tmp;
-		    OMP_CLAUSE_CHAIN (tc)
-		      = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
-		    cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
-		  }
-	    }
+	    /* For combined target teams, ensure the num_teams and
+	       thread_limit clause expressions are evaluated on the host,
+	       before entering the target construct.  */
+	    for (tree c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+		 c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
+		for (int i = 0;
+		     i <= (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS); ++i)
+		  if (OMP_CLAUSE_OPERAND (c, i)
+		      && TREE_CODE (OMP_CLAUSE_OPERAND (c, i)) != INTEGER_CST)
+		    {
+		      tree expr = OMP_CLAUSE_OPERAND (c, i);
+		      expr = force_target_expr (TREE_TYPE (expr), expr,
+						tf_none);
+		      if (expr == error_mark_node)
+			continue;
+		      tree tmp = TARGET_EXPR_SLOT (expr);
+		      add_stmt (expr);
+		      OMP_CLAUSE_OPERAND (c, i) = expr;
+		      tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_FIRSTPRIVATE);
+		      OMP_CLAUSE_DECL (tc) = tmp;
+		      OMP_CLAUSE_CHAIN (tc)
+			= cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
+		    }
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];

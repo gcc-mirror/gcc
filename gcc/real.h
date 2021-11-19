@@ -178,13 +178,12 @@ struct real_format
    decimal float modes indexed by (MODE - first decimal float mode) +
    the number of float modes.  */
 extern const struct real_format *
-  real_format_for_mode[MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1
-		       + MAX_MODE_DECIMAL_FLOAT - MIN_MODE_DECIMAL_FLOAT + 1];
+  real_format_for_mode[NUM_MODE_FLOAT + NUM_MODE_DECIMAL_FLOAT];
 
 #define REAL_MODE_FORMAT(MODE)						\
   (real_format_for_mode[DECIMAL_FLOAT_MODE_P (MODE)			\
 			? (((MODE) - MIN_MODE_DECIMAL_FLOAT)		\
-			   + (MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1))	\
+			   + NUM_MODE_FLOAT)				\
 			: GET_MODE_CLASS (MODE) == MODE_FLOAT		\
 			? ((MODE) - MIN_MODE_FLOAT)			\
 			: (gcc_unreachable (), 0)])

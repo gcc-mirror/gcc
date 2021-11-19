@@ -693,7 +693,7 @@ static const int def_tabstop = 8;
 
 static cpp_char_column_policy def_policy ()
 {
-  return cpp_char_column_policy (8, cpp_wcwidth);
+  return cpp_char_column_policy (def_tabstop, cpp_wcwidth);
 }
 
 /* Create some expanded locations for testing layout_range.  The filename

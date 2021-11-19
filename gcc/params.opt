@@ -402,7 +402,7 @@ Common Joined UInteger Var(param_lim_expensive) Init(20) Param Optimization
 The minimum cost of an expensive expression in the loop invariant motion.
 
 -param=logical-op-non-short-circuit=
-Common Joined UInteger Var(param_logical_op_non_short_circuit) Init(-1) IntegerRange(-1, 1) Param
+Common Joined UInteger Var(param_logical_op_non_short_circuit) Init(-1) IntegerRange(0, 1) Param
 True if a non-short-circuit operation is optimal.
 
 -param=loop-block-tile-size=
@@ -1036,7 +1036,7 @@ Common Joined UInteger Var(param_modref_max_tests) Init(64) Param Optimization
 Maximum number of tests performed by modref query.
 
 -param=modref-max-depth=
-Common Joined UInteger Var(param_modref_max_depth) Init(256) Param Optimization
+Common Joined UInteger Var(param_modref_max_depth) Init(256) IntegerRange(1, 65536) Param Optimization
 Maximum depth of DFS walk used by modref escape analysis.
 
 -param=modref-max-escape-points=
@@ -1044,8 +1044,21 @@ Common Joined UInteger Var(param_modref_max_escape_points) Init(256) Param Optim
 Maximum number of escape points tracked by modref per SSA-name.
 
 -param=modref-max-adjustments=
-Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange (0, 254) Param Optimization
+Common Joined UInteger Var(param_modref_max_adjustments) Init(8) IntegerRange(0, 254) Param Optimization
 Maximum number of times a given range is adjusted during the dataflow.
+
+-param=threader-debug=
+Common Joined Var(param_threader_debug) Enum(threader_debug) Init(THREADER_DEBUG_NONE) Param Optimization
+--param=threader-debug=[none|all] Enables verbose dumping of the threader solver.
+
+Enum
+Name(threader_debug) Type(enum threader_debug) UnknownError(unknown threader debug mode %qs)
+
+EnumValue
+Enum(threader_debug) String(none) Value(THREADER_DEBUG_NONE)
+
+EnumValue
+Enum(threader_debug) String(all) Value(THREADER_DEBUG_ALL)
 
 -param=tm-max-aggregate-size=
 Common Joined UInteger Var(param_tm_max_aggregate_size) Init(9) Param Optimization
@@ -1132,7 +1145,7 @@ Common Joined UInteger Var(param_vect_epilogues_nomask) Init(1) IntegerRange(0, 
 Enable loop epilogue vectorization using smaller vector size.
 
 -param=vect-max-peeling-for-alignment=
-Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(-1, 64) Param Optimization
+Common Joined UInteger Var(param_vect_max_peeling_for_alignment) Init(-1) IntegerRange(0, 64) Param Optimization
 Maximum number of loop peels to enhance alignment of data references in a loop.
 
 -param=vect-max-version-for-alias-checks=
@@ -1156,7 +1169,7 @@ Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optim
 --param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
 
 -param=vrp2-mode=
-Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization
+Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
 --param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in.
 
 Enum

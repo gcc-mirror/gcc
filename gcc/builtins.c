@@ -10711,6 +10711,7 @@ is_simple_builtin (tree decl)
       case BUILT_IN_VA_END:
       case BUILT_IN_STACK_SAVE:
       case BUILT_IN_STACK_RESTORE:
+      case BUILT_IN_DWARF_CFA:
 	/* Exception state returns or moves registers around.  */
       case BUILT_IN_EH_FILTER:
       case BUILT_IN_EH_POINTER:
@@ -11099,6 +11100,19 @@ builtin_fnspec (tree callee)
       CASE_BUILT_IN_TM_STORE (M256):
 	return ".cO ";
       case BUILT_IN_STACK_SAVE:
+      case BUILT_IN_RETURN:
+      case BUILT_IN_EH_POINTER:
+      case BUILT_IN_EH_FILTER:
+      case BUILT_IN_UNWIND_RESUME:
+      case BUILT_IN_CXA_END_CLEANUP:
+      case BUILT_IN_EH_COPY_VALUES:
+      case BUILT_IN_FRAME_ADDRESS:
+      case BUILT_IN_APPLY_ARGS:
+      case BUILT_IN_ASAN_BEFORE_DYNAMIC_INIT:
+      case BUILT_IN_ASAN_AFTER_DYNAMIC_INIT:
+      case BUILT_IN_PREFETCH:
+      case BUILT_IN_DWARF_CFA:
+      case BUILT_IN_RETURN_ADDRESS:
 	return ".c";
       case BUILT_IN_ASSUME_ALIGNED:
 	return "1cX ";

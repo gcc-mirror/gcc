@@ -983,7 +983,7 @@ bitmap_set_bit (bitmap head, int bit)
 
 /* Return whether a bit is set within a bitmap.  */
 
-int
+bool
 bitmap_bit_p (const_bitmap head, int bit)
 {
   unsigned int indx = bit / BITMAP_ELEMENT_ALL_BITS;

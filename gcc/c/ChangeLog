@@ -1,3 +1,54 @@
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_ASSOC_BARRIER.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101702
+	* c-decl.c (get_parm_array_spec): Strip casts earlier and fold array
+	bounds before deciding if they're constant.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (OMP_TARGET_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_num_teams): Parse optional
+	lower-bound and store it into OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR.
+	Use OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead of
+	OMP_CLAUSE_NUM_TEAMS_EXPR.
+	(c_parser_omp_target): For OMP_CLAUSE_NUM_TEAMS evaluate before
+	combined target teams even lower-bound expression.
+
+2021-11-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c: Shuffle bitmap.h include.
+
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* c-convert.c (c_convert): New function, based on convert.
+	(convert): Make into wrapper of c_convert.
+	(convert_init): New function.
+	* c-typeck.c (enum impl_conv): Add ic_init_const.
+	(convert_for_assignment): Handle ic_init_const like ic_init.  Add
+	new argument to convert_and_check call.
+	(digest_init): Pass ic_init_const to convert_for_assignment for
+	initializers required to be constant.
+
+2021-11-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-tree.h (c_simulate_record_decl): Declare.
+	* c-objc-common.h (LANG_HOOKS_SIMULATE_RECORD_DECL): Override.
+	* c-decl.c (c_simulate_record_decl): New function.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

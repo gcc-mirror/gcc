@@ -929,6 +929,8 @@ symtab_node::dump_base (FILE *f)
     fprintf (f, " forced_by_abi");
   if (externally_visible)
     fprintf (f, " externally_visible");
+  if (semantic_interposition)
+    fprintf (f, " semantic_interposition");
   if (no_reorder)
     fprintf (f, " no_reorder");
   if (resolution != LDPR_UNKNOWN)

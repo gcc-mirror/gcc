@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-add-options arm_v8_1m_mve_fp } */
+/* { dg-require-effective-target vect_int } */
+/* { dg-add-options arm_v8_3a_complex_neon } */
 
 #define TYPE int32_t
 #define N 200

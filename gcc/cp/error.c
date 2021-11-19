@@ -1686,7 +1686,8 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (t));
 
   /* Likewise for the constexpr specifier, in case t is a specialization.  */
-  constexpr_p = DECL_DECLARED_CONSTEXPR_P (t);
+  constexpr_p = (DECL_DECLARED_CONSTEXPR_P (t)
+		 && !decl_implicit_constexpr_p (t));
 
   /* Pretty print template instantiations only.  */
   if (DECL_USE_TEMPLATE (t) && DECL_TEMPLATE_INFO (t)

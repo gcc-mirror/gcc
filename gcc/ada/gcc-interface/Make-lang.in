@@ -440,6 +440,7 @@ GNAT_ADA_OBJS =	\
  ada/sprint.o	\
  ada/stand.o	\
  ada/stringt.o	\
+ ada/strub.o	\
  ada/style.o	\
  ada/styleg.o	\
  ada/stylesw.o	\
@@ -725,6 +726,14 @@ endif
 # For unwind-pe.h
 CFLAGS-ada/raise-gcc.o += -I$(srcdir)/../libgcc -DEH_MECHANISM_$(EH_MECHANISM)
 
+# Under aarch64 darwin, we need to include the iOS signal trampoline.
+
+ifeq ($(strip $(filter-out aarch64 arm64 darwin%,$(host_cpu) $(host_os))),)
+  EXTRA_HOST_OBJS=ada/sigtramp-ios.o
+else
+  EXTRA_HOST_OBJS =
+endif
+
 ada/libgnat/s-excmac.o: ada/libgnat/s-excmac.ads ada/libgnat/s-excmac.adb
 
 ada/libgnat/s-excmac.ads: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).ads
@@ -738,16 +747,16 @@ ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).adb
 # Needs to be built with CC=gcc
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
-gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a \
-		$(LIBDEPS) $(ada.prev)
+gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) $(EXTRA_HOST_OBJS) libcommon-target.a \
+		$(EXTRA_HOST_OBJS) $(LIBDEPS) $(ada.prev)
 	@$(call LINK_PROGRESS,$(INDEX.ada),start)
-	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(CFLAGS) \
+	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) $(EXTRA_HOST_OBJS) $(CFLAGS) \
 	  libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(GNATLIB)
 	$(RM) stamp-gnatlib2-rts stamp-tools
 	@$(call LINK_PROGRESS,$(INDEX.ada),end)
 
-gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
-	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
+gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)
+	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink
 gnattools: $(GCC_PARTS) $(CONFIG_H) prefix.o force

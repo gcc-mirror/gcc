@@ -1791,7 +1791,7 @@ static void
 add_debug_begin_stmt (location_t loc)
 {
   /* Don't add DEBUG_BEGIN_STMTs outside of functions, see PR84721.  */
-  if (!MAY_HAVE_DEBUG_MARKER_STMTS || !building_stmt_list_p ())
+  if (!debug_nonbind_markers_p || !building_stmt_list_p ())
     return;
 
   tree stmt = build0 (DEBUG_BEGIN_STMT, void_type_node);
@@ -8962,6 +8962,7 @@ c_parser_predefined_identifier (c_parser *parser)
 			 assignment-expression ,
 			 assignment-expression, )
      __builtin_convertvector ( assignment-expression , type-name )
+     __builtin_assoc_barrier ( assignment-expression )
 
    offsetof-member-designator:
      identifier
@@ -10105,6 +10106,25 @@ c_parser_postfix_expression (c_parser *parser)
 								NULL));
 		set_c_expr_source_range (&expr, start_loc, end_loc);
 	      }
+	  }
+	  break;
+	case RID_BUILTIN_ASSOC_BARRIER:
+	  {
+	    location_t start_loc = loc;
+	    c_parser_consume_token (parser);
+	    matching_parens parens;
+	    if (!parens.require_open (parser))
+	      {
+		expr.set_error ();
+		break;
+	      }
+	    e1 = c_parser_expr_no_commas (parser, NULL);
+	    mark_exp_read (e1.value);
+	    location_t end_loc = c_parser_peek_token (parser)->get_finish ();
+	    parens.skip_until_found_close (parser);
+	    expr.value = build1_loc (loc, PAREN_EXPR, TREE_TYPE (e1.value),
+				     e1.value);
+	    set_c_expr_source_range (&expr, start_loc, end_loc);
 	  }
 	  break;
 	case RID_AT_SELECTOR:
@@ -15175,7 +15195,10 @@ c_parser_omp_clause_orderedkind (c_parser *parser ATTRIBUTE_UNUSED,
 }
 
 /* OpenMP 4.0:
-   num_teams ( expression ) */
+   num_teams ( expression )
+
+   OpenMP 5.1:
+   num_teams ( expression : expression ) */
 
 static tree
 c_parser_omp_clause_num_teams (c_parser *parser, tree list)
@@ -15184,34 +15207,68 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
   matching_parens parens;
   if (parens.require_open (parser))
     {
-      location_t expr_loc = c_parser_peek_token (parser)->location;
+      location_t upper_loc = c_parser_peek_token (parser)->location;
+      location_t lower_loc = UNKNOWN_LOCATION;
       c_expr expr = c_parser_expr_no_commas (parser, NULL);
-      expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
-      tree c, t = expr.value;
-      t = c_fully_fold (t, false, NULL);
+      expr = convert_lvalue_to_rvalue (upper_loc, expr, false, true);
+      tree c, upper = expr.value, lower = NULL_TREE;
+      upper = c_fully_fold (upper, false, NULL);
+
+      if (c_parser_next_token_is (parser, CPP_COLON))
+	{
+	  c_parser_consume_token (parser);
+	  lower_loc = upper_loc;
+	  lower = upper;
+	  upper_loc = c_parser_peek_token (parser)->location;
+	  expr = c_parser_expr_no_commas (parser, NULL);
+	  expr = convert_lvalue_to_rvalue (upper_loc, expr, false, true);
+	  upper = expr.value;
+	  upper = c_fully_fold (upper, false, NULL);
+	}
 
       parens.skip_until_found_close (parser);
 
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (upper))
+	  || (lower && !INTEGRAL_TYPE_P (TREE_TYPE (lower))))
 	{
 	  c_parser_error (parser, "expected integer expression");
 	  return list;
 	}
 
       /* Attempt to statically determine when the number isn't positive.  */
-      c = fold_build2_loc (expr_loc, LE_EXPR, boolean_type_node, t,
-			   build_int_cst (TREE_TYPE (t), 0));
-      protected_set_expr_location (c, expr_loc);
+      c = fold_build2_loc (upper_loc, LE_EXPR, boolean_type_node, upper,
+			   build_int_cst (TREE_TYPE (upper), 0));
+      protected_set_expr_location (c, upper_loc);
       if (c == boolean_true_node)
 	{
-	  warning_at (expr_loc, 0, "%<num_teams%> value must be positive");
-	  t = integer_one_node;
+	  warning_at (upper_loc, 0, "%<num_teams%> value must be positive");
+	  upper = integer_one_node;
+	}
+      if (lower)
+	{
+	  c = fold_build2_loc (lower_loc, LE_EXPR, boolean_type_node, lower,
+			       build_int_cst (TREE_TYPE (lower), 0));
+	  protected_set_expr_location (c, lower_loc);
+	  if (c == boolean_true_node)
+	    {
+	      warning_at (lower_loc, 0, "%<num_teams%> value must be positive");
+	      lower = NULL_TREE;
+	    }
+	  else if (TREE_CODE (lower) == INTEGER_CST
+		   && TREE_CODE (upper) == INTEGER_CST
+		   && tree_int_cst_lt (upper, lower))
+	    {
+	      warning_at (lower_loc, 0, "%<num_teams%> lower bound %qE bigger "
+					"than upper bound %qE", lower, upper);
+	      lower = NULL_TREE;
+	    }
 	}
 
       check_no_duplicate_clause (list, OMP_CLAUSE_NUM_TEAMS, "num_teams");
 
       c = build_omp_clause (num_teams_loc, OMP_CLAUSE_NUM_TEAMS);
-      OMP_CLAUSE_NUM_TEAMS_EXPR (c) = t;
+      OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = upper;
+      OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = lower;
       OMP_CLAUSE_CHAIN (c) = list;
       list = c;
     }
@@ -20926,6 +20983,7 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULTMAP)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR))
 
 static bool
@@ -21016,31 +21074,31 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
 	  if (ret == NULL_TREE)
 	    return false;
 	  if (ccode == OMP_TEAMS)
-	    {
-	      /* For combined target teams, ensure the num_teams and
-		 thread_limit clause expressions are evaluated on the host,
-		 before entering the target construct.  */
-	      tree c;
-	      for (c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
-		   c; c = OMP_CLAUSE_CHAIN (c))
-		if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
-		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
-		    && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) != INTEGER_CST)
-		  {
-		    tree expr = OMP_CLAUSE_OPERAND (c, 0);
-		    tree tmp = create_tmp_var_raw (TREE_TYPE (expr));
-		    expr = build4 (TARGET_EXPR, TREE_TYPE (expr), tmp,
-				   expr, NULL_TREE, NULL_TREE);
-		    add_stmt (expr);
-		    OMP_CLAUSE_OPERAND (c, 0) = expr;
-		    tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (tc) = tmp;
-		    OMP_CLAUSE_CHAIN (tc)
-		      = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
-		    cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
-		  }
-	    }
+	    /* For combined target teams, ensure the num_teams and
+	       thread_limit clause expressions are evaluated on the host,
+	       before entering the target construct.  */
+	    for (tree c = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+		 c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
+		for (int i = 0;
+		     i <= (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS); ++i)
+		  if (OMP_CLAUSE_OPERAND (c, i)
+		      && TREE_CODE (OMP_CLAUSE_OPERAND (c, i)) != INTEGER_CST)
+		    {
+		      tree expr = OMP_CLAUSE_OPERAND (c, i);
+		      tree tmp = create_tmp_var_raw (TREE_TYPE (expr));
+		      expr = build4 (TARGET_EXPR, TREE_TYPE (expr), tmp,
+				     expr, NULL_TREE, NULL_TREE);
+		      add_stmt (expr);
+		      OMP_CLAUSE_OPERAND (c, i) = expr;
+		      tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_FIRSTPRIVATE);
+		      OMP_CLAUSE_DECL (tc) = tmp;
+		      OMP_CLAUSE_CHAIN (tc)
+			= cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+		      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
+		    }
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];

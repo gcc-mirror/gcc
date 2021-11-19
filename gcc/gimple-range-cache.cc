@@ -210,6 +210,7 @@ protected:
   int_range<2> m_undefined;
   tree m_type;
   irange_allocator *m_irange_allocator;
+  void grow ();
 };
 
 
@@ -229,13 +230,37 @@ sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
   m_undefined.set_undefined ();
 }
 
+// Grow the vector when the CFG has increased in size.
+
+void
+sbr_vector::grow ()
+{
+  int curr_bb_size = last_basic_block_for_fn (cfun);
+  gcc_checking_assert (curr_bb_size > m_tab_size);
+
+  // Increase the max of a)128, b)needed increase * 2, c)10% of current_size.
+  int inc = MAX ((curr_bb_size - m_tab_size) * 2, 128);
+  inc = MAX (inc, curr_bb_size / 10);
+  int new_size = inc + curr_bb_size;
+
+  // Allocate new memory, copy the old vector and clear the new space.
+  irange **t = (irange **)m_irange_allocator->get_memory (new_size
+							  * sizeof (irange *));
+  memcpy (t, m_tab, m_tab_size * sizeof (irange *));
+  memset (t + m_tab_size, 0, (new_size - m_tab_size) * sizeof (irange *));
+
+  m_tab = t;
+  m_tab_size = new_size;
+}
+
 // Set the range for block BB to be R.
 
 bool
 sbr_vector::set_bb_range (const_basic_block bb, const irange &r)
 {
   irange *m;
-  gcc_checking_assert (bb->index < m_tab_size);
+  if (bb->index >= m_tab_size)
+    grow ();
   if (r.varying_p ())
     m = &m_varying;
   else if (r.undefined_p ())
@@ -252,7 +277,8 @@ sbr_vector::set_bb_range (const_basic_block bb, const irange &r)
 bool
 sbr_vector::get_bb_range (irange &r, const_basic_block bb)
 {
-  gcc_checking_assert (bb->index < m_tab_size);
+  if (bb->index >= m_tab_size)
+    return false;
   irange *m = m_tab[bb->index];
   if (m)
     {
@@ -267,8 +293,9 @@ sbr_vector::get_bb_range (irange &r, const_basic_block bb)
 bool
 sbr_vector::bb_range_p (const_basic_block bb)
 {
-  gcc_checking_assert (bb->index < m_tab_size);
-  return m_tab[bb->index] != NULL;
+  if (bb->index < m_tab_size)
+    return m_tab[bb->index] != NULL;
+  return false;
 }
 
 // This class implements the on entry cache via a sparse bitmap.
@@ -624,7 +651,8 @@ ssa_global_cache::clear_global_range (tree name)
 void
 ssa_global_cache::clear ()
 {
-  memset (m_tab.address(), 0, m_tab.length () * sizeof (irange *));
+  if (m_tab.address ())
+    memset (m_tab.address(), 0, m_tab.length () * sizeof (irange *));
 }
 
 // Dump the contents of the global cache to F.
@@ -754,14 +782,96 @@ temporal_cache::set_always_current (tree name)
 
 // --------------------------------------------------------------------------
 
+// This class provides an abstraction of a list of blocks to be updated
+// by the cache.  It is currently a stack but could be changed.  It also
+// maintains a list of blocks which have failed propagation, and does not
+// enter any of those blocks into the list.
+
+// A vector over the BBs is maintained, and an entry of 0 means it is not in
+// a list.  Otherwise, the entry is the next block in the list. -1 terminates
+// the list.  m_head points to the top of the list, -1 if the list is empty.
+
+class update_list
+{
+public:
+  update_list ();
+  ~update_list ();
+  void add (basic_block bb);
+  basic_block pop ();
+  inline bool empty_p () { return m_update_head == -1; }
+  inline void clear_failures () { bitmap_clear (m_propfail); }
+  inline void propagation_failed (basic_block bb)
+				  { bitmap_set_bit (m_propfail, bb->index); }
+private:
+  vec<int> m_update_list;
+  int m_update_head;
+  bitmap m_propfail;
+};
+
+// Create an update list.
+
+update_list::update_list ()
+{
+  m_update_list.create (0);
+  m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun) + 64);
+  m_update_head = -1;
+  m_propfail = BITMAP_ALLOC (NULL);
+}
+
+// Destroy an update list.
+
+update_list::~update_list ()
+{
+  m_update_list.release ();
+  BITMAP_FREE (m_propfail);
+}
+
+// Add BB to the list of blocks to update, unless it's already in the list.
+
+void
+update_list::add (basic_block bb)
+{
+  int i = bb->index;
+  // If propagation has failed for BB, or its already in the list, don't
+  // add it again.
+  if ((unsigned)i >= m_update_list.length ())
+    m_update_list.safe_grow_cleared (i + 64);
+  if (!m_update_list[i] && !bitmap_bit_p (m_propfail, i))
+    {
+      if (empty_p ())
+	{
+	  m_update_head = i;
+	  m_update_list[i] = -1;
+	}
+      else
+	{
+	  gcc_checking_assert (m_update_head > 0);
+	  m_update_list[i] = m_update_head;
+	  m_update_head = i;
+	}
+    }
+}
+
+// Remove a block from the list.
+
+basic_block
+update_list::pop ()
+{
+  gcc_checking_assert (!empty_p ());
+  basic_block bb = BASIC_BLOCK_FOR_FN (cfun, m_update_head);
+  int pop = m_update_head;
+  m_update_head = m_update_list[pop];
+  m_update_list[pop] = 0;
+  return bb;
+}
+
+// --------------------------------------------------------------------------
+
 ranger_cache::ranger_cache (int not_executable_flag)
 						: m_gori (not_executable_flag)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  m_update_list.create (0);
-  m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  m_update_list.truncate (0);
   m_temporal = new temporal_cache;
   // If DOM info is available, spawn an oracle as well.
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -779,17 +889,16 @@ ranger_cache::ranger_cache (int not_executable_flag)
       if (bb)
 	m_gori.exports (bb);
     }
-  m_propfail = BITMAP_ALLOC (NULL);
+  m_update = new update_list ();
 }
 
 ranger_cache::~ranger_cache ()
 {
-  BITMAP_FREE (m_propfail);
+  delete m_update;
   if (m_oracle)
     delete m_oracle;
   delete m_temporal;
   m_workback.release ();
-  m_update_list.release ();
 }
 
 // Dump the global caches to file F.  if GORI_DUMP is true, dump the
@@ -1029,17 +1138,6 @@ ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
   return m_on_entry.get_bb_range (r, name, bb);
 }
 
-// Add BB to the list of blocks to update, unless it's already in the list.
-
-void
-ranger_cache::add_to_update (basic_block bb)
-{
-  // If propagation has failed for BB, or its already in the list, don't
-  // add it again.
-  if (!bitmap_bit_p (m_propfail, bb->index) &&  !m_update_list.contains (bb))
-    m_update_list.quick_push (bb);
-}
-
 // If there is anything in the propagation update_list, continue
 // processing NAME until the list of blocks is empty.
 
@@ -1053,16 +1151,15 @@ ranger_cache::propagate_cache (tree name)
   int_range_max current_range;
   int_range_max e_range;
 
-  gcc_checking_assert (bitmap_empty_p (m_propfail));
   // Process each block by seeing if its calculated range on entry is
   // the same as its cached value. If there is a difference, update
   // the cache to reflect the new value, and check to see if any
   // successors have cache entries which may need to be checked for
   // updates.
 
-  while (m_update_list.length () > 0)
+  while (!m_update->empty_p ())
     {
-      bb = m_update_list.pop ();
+      bb = m_update->pop ();
       gcc_checking_assert (m_on_entry.bb_range_p (name, bb));
       m_on_entry.get_bb_range (current_range, name, bb);
 
@@ -1097,7 +1194,7 @@ ranger_cache::propagate_cache (tree name)
 	  bool ok_p = m_on_entry.set_bb_range (name, bb, new_range);
 	  // If the cache couldn't set the value, mark it as failed.
 	  if (!ok_p)
-	    bitmap_set_bit (m_propfail, bb->index);
+	    m_update->propagation_failed (bb);
 	  if (DEBUG_RANGE_CACHE) 
 	    {
 	      if (!ok_p)
@@ -1119,7 +1216,7 @@ ranger_cache::propagate_cache (tree name)
 	      {
 		if (DEBUG_RANGE_CACHE) 
 		  fprintf (dump_file, " bb%d",e->dest->index);
-		add_to_update (e->dest);
+		m_update->add (e->dest);
 	      }
 	  if (DEBUG_RANGE_CACHE) 
 	    fprintf (dump_file, "\n");
@@ -1131,7 +1228,7 @@ ranger_cache::propagate_cache (tree name)
       print_generic_expr (dump_file, name, TDF_SLIM);
       fprintf (dump_file, "\n");
     }
-  bitmap_clear (m_propfail);
+  m_update->clear_failures ();
 }
 
 // Check to see if an update to the value for NAME in BB has any effect
@@ -1146,7 +1243,7 @@ ranger_cache::propagate_updated_value (tree name, basic_block bb)
   edge_iterator ei;
 
   // The update work list should be empty at this point.
-  gcc_checking_assert (m_update_list.length () == 0);
+  gcc_checking_assert (m_update->empty_p ());
   gcc_checking_assert (bb);
 
   if (DEBUG_RANGE_CACHE)
@@ -1160,12 +1257,12 @@ ranger_cache::propagate_updated_value (tree name, basic_block bb)
       // Only update active cache entries.
       if (m_on_entry.bb_range_p (name, e->dest))
 	{
-	  add_to_update (e->dest);
+	  m_update->add (e->dest);
 	  if (DEBUG_RANGE_CACHE)
 	    fprintf (dump_file, " UPDATE: bb%d", e->dest->index);
 	}
     }
-    if (m_update_list.length () != 0)
+    if (!m_update->empty_p ())
       {
 	if (DEBUG_RANGE_CACHE)
 	  fprintf (dump_file, "\n");
@@ -1205,7 +1302,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   m_workback.quick_push (bb);
   undefined.set_undefined ();
   m_on_entry.set_bb_range (name, bb, undefined);
-  gcc_checking_assert (m_update_list.length () == 0);
+  gcc_checking_assert (m_update->empty_p ());
 
   if (DEBUG_RANGE_CACHE)
     {
@@ -1235,7 +1332,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  // If the pred block is the def block add this BB to update list.
 	  if (pred == def_bb)
 	    {
-	      add_to_update (node);
+	      m_update->add (node);
 	      continue;
 	    }
 
@@ -1255,7 +1352,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	    {
 	      if (DEBUG_RANGE_CACHE)
 		fprintf (dump_file, "nonnull: update ");
-	      add_to_update (node);
+	      m_update->add (node);
 	    }
 
 	  // If the pred block already has a range, or if it can contribute
@@ -1270,7 +1367,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 		}
 	      if (!r.undefined_p () || m_gori.has_edge_range_p (name, e))
 		{
-		  add_to_update (node);
+		  m_update->add (node);
 		  if (DEBUG_RANGE_CACHE)
 		    fprintf (dump_file, "update. ");
 		}

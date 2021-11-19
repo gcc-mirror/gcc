@@ -543,7 +543,7 @@ gfc_free_actual_arglist (gfc_actual_arglist *a1)
     {
       a2 = a1->next;
       if (a1->expr)
-      gfc_free_expr (a1->expr);
+	gfc_free_expr (a1->expr);
       free (a1);
       a1 = a2;
     }
@@ -2128,6 +2128,8 @@ simplify_parameter_variable (gfc_expr *p, int type)
       if (e == NULL)
 	return false;
 
+      gfc_free_shape (&e->shape, e->rank);
+      e->shape = gfc_copy_shape (p->shape, p->rank);
       e->rank = p->rank;
 
       if (e->ts.type == BT_CHARACTER && p->ts.u.cl)
@@ -4587,21 +4589,12 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
   return true;
 }
 
-/* Invoke gfc_build_init_expr to create an initializer expression, but do not
- * require that an expression be built.  */
-
-gfc_expr *
-gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
-{
-  return gfc_build_init_expr (ts, where, false);
-}
-
 /* Build an initializer for a local integer, real, complex, logical, or
    character variable, based on the command line flags finit-local-zero,
    finit-integer=, finit-real=, finit-logical=, and finit-character=.
    With force, an initializer is ALWAYS generated.  */
 
-gfc_expr *
+static gfc_expr *
 gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
 {
   gfc_expr *init_expr;
@@ -4756,6 +4749,15 @@ gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
     }
 
   return init_expr;
+}
+
+/* Invoke gfc_build_init_expr to create an initializer expression, but do not
+ * require that an expression be built.  */
+
+gfc_expr *
+gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
+{
+  return gfc_build_init_expr (ts, where, false);
 }
 
 /* Apply an initialization expression to a typespec. Can be used for symbols or

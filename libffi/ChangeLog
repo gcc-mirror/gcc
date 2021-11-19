@@ -1,3 +1,24 @@
+2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit a91f844ef44.
+
+2021-11-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/102874
+	* src/x86/win64.S (epilogue): Use #define instead of .macro.
+
+2021-11-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.am (AM_CFLAGS): Add $(CET_FLAGS).
+	(AM_CCASFLAGS): Likewise.
+	* configure.ac (CET_FLAGS): Add GCC_CET_FLAGS and AC_SUBST.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* include/Makefile.in: Likewise.
+	* man/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2021-10-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	* LOCAL_PATCHES: Add commit 90454a90082.

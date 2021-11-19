@@ -597,6 +597,13 @@ struct cpp_reader
   /* Location identifying the main source file -- intended to be line
      zero of said file.  */
   location_t main_loc;
+
+  /* Returns true iff we should warn about UTF-8 bidirectional control
+     characters.  */
+  bool warn_bidi_p () const
+  {
+    return CPP_OPTION (this, cpp_warn_bidirectional) != bidirectional_none;
+  }
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.

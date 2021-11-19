@@ -327,7 +327,9 @@ Objective-C and Objective-C++ Dialects}.
 -Warith-conversion @gol
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
--Wno-attribute-warning  -Wbool-compare  -Wbool-operation @gol
+-Wno-attribute-warning  @gol
+-Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]} @gol
+-Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc11-c2x-compat @gol
@@ -449,7 +451,11 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-shift-count-negative @gol
 -Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
+-Wno-analyzer-tainted-allocation-size @gol
 -Wno-analyzer-tainted-array-index @gol
+-Wno-analyzer-tainted-divisor @gol
+-Wno-analyzer-tainted-offset @gol
+-Wno-analyzer-tainted-size @gol
 -Wanalyzer-too-complex @gol
 -Wno-analyzer-unsafe-call-within-signal-handler @gol
 -Wno-analyzer-use-after-free @gol
@@ -1360,7 +1366,7 @@ See RS/6000 and PowerPC Options.
 -mbig-switch}
 
 @emph{VAX Options}
-@gccoptlist{-mg  -mgnu  -munix}
+@gccoptlist{-mg  -mgnu  -munix  -mlra}
 
 @emph{Visium Options}
 @gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float @gol
@@ -1419,9 +1425,10 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} @gol
 -mstack-protector-guard-symbol=@var{symbol} @gol
--mgeneral-regs-only  -mcall-ms2sysv-xlogues @gol
+-mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
--mindirect-branch-register -mneeded}
+-mindirect-branch-register -mharden-sls=@var{choice} @gol
+-mindirect-branch-cs-prefix -mneeded}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -3099,6 +3106,13 @@ Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier.  You can use the keyword @code{__typeof__} instead.
 This option is implied by the strict ISO C++ dialects: @option{-ansi},
 @option{-std=c++98}, @option{-std=c++11}, etc.
+
+@item -fimplicit-constexpr
+@opindex fimplicit-constexpr
+Make inline functions implicitly constexpr, if they satisfy the
+requirements for a constexpr function.  This option can be used in
+C++14 mode or later.  This can result in initialization changing from
+dynamic to static and other optimizations.
 
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
@@ -6982,6 +6996,18 @@ to compute a value that itself is never used, because such
 computations may be deleted by data flow analysis before the warnings
 are printed.
 
+In C++, this warning also warns about using uninitialized objects in
+member-initializer-lists.  For example, GCC warns about @code{b} being
+uninitialized in the following snippet:
+
+@smallexample
+struct A @{
+  int a;
+  int b;
+  A() : a(b) @{ @}
+@};
+@end smallexample
+
 @item -Wno-invalid-memory-model
 @opindex Winvalid-memory-model
 @opindex Wno-invalid-memory-model
@@ -7673,6 +7699,23 @@ Attributes considered include @code{alloc_align}, @code{alloc_size},
 @option{-Wattribute-alias} is equivalent to @option{-Wattribute-alias=1}.
 This is the default.  You can disable these warnings with either
 @option{-Wno-attribute-alias} or @option{-Wattribute-alias=0}.
+
+@item -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]}
+@opindex Wbidi-chars=
+@opindex Wbidi-chars
+@opindex Wno-bidi-chars
+Warn about possibly misleading UTF-8 bidirectional control characters in
+comments, string literals, character constants, and identifiers.  Such
+characters can change left-to-right writing direction into right-to-left
+(and vice versa), which can cause confusion between the logical order and
+visual order.  This may be dangerous; for instance, it may seem that a piece
+of code is not commented out, whereas it in fact is.
+
+There are three levels of warning supported by GCC@.  The default is
+@option{-Wbidi-chars=unpaired}, which warns about improperly terminated
+bidi contexts.  @option{-Wbidi-chars=none} turns the warning off.
+@option{-Wbidi-chars=any} warns about any use of bidirectional control
+characters.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -8707,6 +8750,26 @@ unrecognized attributes, function attributes applied to variables,
 etc.  This does not stop errors for incorrect use of supported
 attributes.
 
+Additionally, using @option{-Wno-attributes=}, it is possible to suppress
+warnings about unknown scoped attributes (in C++11 and C2X).  For example,
+@option{-Wno-attributes=vendor::attr} disables warning about the following
+declaration:
+
+@smallexample
+[[vendor::attr]] void f();
+@end smallexample
+
+It is also possible to disable warning about all attributes in a namespace
+using @option{-Wno-attributes=vendor::} which prevents warning about both
+of these declarations:
+
+@smallexample
+[[vendor::safe]] void f();
+[[vendor::unsafe]] void f2();
+@end smallexample
+
+Note that @option{-Wno-attributes=} does not imply @option{-Wno-attributes}.
+
 @item -Wno-builtin-declaration-mismatch
 @opindex Wno-builtin-declaration-mismatch
 @opindex Wbuiltin-declaration-mismatch
@@ -9380,7 +9443,11 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-shift-count-negative @gol
 -Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
+-Wanalyzer-tainted-allocation-size @gol
 -Wanalyzer-tainted-array-index @gol
+-Wanalyzer-tainted-divisor @gol
+-Wanalyzer-tainted-offset @gol
+-Wanalyzer-tainted-size @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-uninitialized-value @gol
@@ -9563,6 +9630,21 @@ when the function containing the @code{setjmp} call returns.  Attempting
 to rewind to it via @code{longjmp} would reference a stack frame that
 no longer exists, and likely lead to a crash (or worse).
 
+@item -Wno-analyzer-tainted-allocation-size
+@opindex Wanalyzer-tainted-allocation-size
+@opindex Wno-analyzer-tainted-allocation-size
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-allocation-size} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the size
+of an allocation without being sanitized, so that an attacker could
+inject an excessively large allocation and potentially cause a denial
+of service attack.
+
+See @url{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
+
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
 @opindex Wno-analyzer-tainted-array-index
@@ -9572,7 +9654,48 @@ use @option{-Wno-analyzer-tainted-array-index} to disable it.
 
 This diagnostic warns for paths through the code in which a value
 that could be under an attacker's control is used as the index
-of an array access without being sanitized.
+of an array access without being sanitized, so that an attacker
+could inject an out-of-bounds access.
+
+See @url{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
+@item -Wno-analyzer-tainted-divisor
+@opindex Wanalyzer-tainted-divisor
+@opindex Wno-analyzer-tainted-divisor
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-divisor} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the divisor
+in a division or modulus operation without being sanitized, so that
+an attacker could inject a division-by-zero.
+
+@item -Wno-analyzer-tainted-offset
+@opindex Wanalyzer-tainted-offset
+@opindex Wno-analyzer-tainted-offset
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-offset} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as a pointer offset
+without being sanitized, so that an attacker could inject an out-of-bounds
+access.
+
+See @url{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-of-range Pointer Offset}.
+
+@item -Wno-analyzer-tainted-size
+@opindex Wanalyzer-tainted-size
+@opindex Wno-analyzer-tainted-size
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-size} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the size of
+an operation such as @code{memset} without being sanitized, so that an
+attacker could inject an out-of-bounds access.
 
 @item -Wno-analyzer-unsafe-call-within-signal-handler
 @opindex Wanalyzer-unsafe-call-within-signal-handler
@@ -11958,13 +12081,13 @@ and @option{-ftree-slp-vectorize} if not explicitly specified.
 @item -ftree-loop-vectorize
 @opindex ftree-loop-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
-@option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
+@option{-O2} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
 
 @item -ftree-slp-vectorize
 @opindex ftree-slp-vectorize
 Perform basic block vectorization on trees. This flag is enabled by default at
-@option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
+@option{-O2} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
 
 @item -ftrivial-auto-var-init=@var{choice}
@@ -14517,6 +14640,9 @@ finite state automaton jump thread path.
 
 @item max-fsm-thread-length
 Maximum number of basic blocks on a jump thread path.
+
+@item threader-debug
+threader-debug=[none|all] Enables verbose dumping of the threader solver.
 
 @item parloops-chunk-size
 Chunk size of omp schedule for loops parallelized by parloops.
@@ -18737,7 +18863,7 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
 @samp{cortex-a75.cortex-a55}, @samp{cortex-a76.cortex-a55},
 @samp{cortex-r82}, @samp{cortex-x1}, @samp{cortex-x2},
-@samp{cortex-a510}, @samp{cortex-a710}, @samp{native}.
+@samp{cortex-a510}, @samp{cortex-a710}, @samp{ampere1}, @samp{native}.
 
 The values @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
@@ -20119,6 +20245,7 @@ Permissible names are:
 @samp{armv7-m}, @samp{armv7e-m},
 @samp{armv8-m.base}, @samp{armv8-m.main},
 @samp{armv8.1-m.main},
+@samp{armv9-a},
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
@@ -20601,7 +20728,7 @@ Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{cortex-a32}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
 @samp{cortex-a76}, @samp{cortex-a76ae}, @samp{cortex-a77},
-@samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
+@samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c}, @samp{cortex-a710},
 @samp{ares}, @samp{cortex-r4}, @samp{cortex-r4f}, @samp{cortex-r5},
 @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52}, @samp{cortex-r52plus},
 @samp{cortex-m0}, @samp{cortex-m0plus}, @samp{cortex-m1}, @samp{cortex-m3},
@@ -27593,7 +27720,7 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
 @samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8},
-@samp{power9}, @samp{future}, @samp{powerpc}, @samp{powerpc64},
+@samp{power9}, @samp{power10}, @samp{powerpc}, @samp{powerpc64},
 @samp{powerpc64le}, @samp{rs64}, and @samp{native}.
 
 @option{-mcpu=powerpc}, @option{-mcpu=powerpc64}, and
@@ -27775,10 +27902,9 @@ Enable/disable the @var{__float128} keyword for IEEE 128-bit floating point
 and use either software emulation for IEEE 128-bit floating point or
 hardware instructions.
 
-The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7},
-@option{-mcpu=power8}), or @option{-mcpu=power9} must be enabled to
-use the IEEE 128-bit floating point support.  The IEEE 128-bit
-floating point support only works on PowerPC Linux systems.
+The VSX instruction set (@option{-mvsx}) must be enabled to use the IEEE
+128-bit floating point support.  The IEEE 128-bit floating point is only
+supported on Linux.
 
 The default for @option{-mfloat128} is enabled on PowerPC Linux
 systems using the VSX instruction set, and disabled on other systems.
@@ -28608,24 +28734,25 @@ the offset with a symbol reference to a canary in the TLS block.
 @itemx -mno-pcrel
 @opindex mpcrel
 @opindex mno-pcrel
-Generate (do not generate) pc-relative addressing when the option
-@option{-mcpu=future} is used.  The @option{-mpcrel} option requires
-that the medium code model (@option{-mcmodel=medium}) and prefixed
-addressing (@option{-mprefixed}) options are enabled.
+Generate (do not generate) pc-relative addressing.  The @option{-mpcrel}
+option requires that the medium code model (@option{-mcmodel=medium})
+and prefixed addressing (@option{-mprefixed}) options are enabled.
 
 @item -mprefixed
 @itemx -mno-prefixed
 @opindex mprefixed
 @opindex mno-prefixed
 Generate (do not generate) addressing modes using prefixed load and
-store instructions when the option @option{-mcpu=future} is used.
+store instructions.  The @option{-mprefixed} option requires that
+the option @option{-mcpu=power10} (or later) is enabled.
 
 @item -mmma
 @itemx -mno-mma
 @opindex mmma
 @opindex mno-mma
-Generate (do not generate) the MMA instructions when the option
-@option{-mcpu=future} is used.
+Generate (do not generate) the MMA instructions.  The @option{-mma}
+option requires that the option @option{-mcpu=power10} (or later)
+is enabled.
 
 @item -mrop-protect
 @itemx -mno-rop-protect
@@ -30435,6 +30562,13 @@ GNU assembler is being used.
 @item -mg
 @opindex mg
 Output code for G-format floating-point numbers instead of D-format.
+
+@item -mlra
+@itemx -mno-lra
+@opindex mlra
+@opindex mno-lra
+Enable Local Register Allocation.  This is still experimental for the VAX,
+so by default the compiler uses standard reload.
 @end table
 
 @node Visium Options
@@ -32235,6 +32369,13 @@ Generate code that uses only the general-purpose registers.  This
 prevents the compiler from using floating-point, vector, mask and bound
 registers.
 
+@item -mrelax-cmpxchg-loop
+@opindex mrelax-cmpxchg-loop
+Relax cmpxchg loop by emitting an early load and compare before cmpxchg,
+execute pause if load value is not expected. This reduces excessive
+cachline bouncing when and works for all atomic logic fetch builtins
+that generates compare and swap loop.
+
 @item -mindirect-branch=@var{choice}
 @opindex mindirect-branch
 Convert indirect call and jump with @var{choice}.  The default is
@@ -32279,6 +32420,21 @@ not be reachable in the large code model.
 @item -mindirect-branch-register
 @opindex mindirect-branch-register
 Force indirect call and jump via register.
+
+@item -mharden-sls=@var{choice}
+@opindex mharden-sls
+Generate code to mitigate against straight line speculation (SLS) with
+@var{choice}.  The default is @samp{none} which disables all SLS
+hardening.  @samp{return} enables SLS hardening for function return.
+@samp{indirect-branch} enables SLS hardening for indirect branch.
+@samp{all} enables all SLS hardening.
+
+@item -mindirect-branch-cs-prefix
+@opindex mindirect-branch-cs-prefix
+Add CS prefix to call and jmp to indirect thunk with branch target in
+r8-r15 registers so that the call and jmp instruction length is 6 bytes
+to allow them to be replaced with @samp{lfence; call *%r8-r15} or
+@samp{lfence; jmp *%r8-r15} at run-time.
 
 @end table
 

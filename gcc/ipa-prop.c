@@ -1421,8 +1421,6 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   if (TREE_CODE (op1) != ADDR_EXPR)
     return;
   op1 = TREE_OPERAND (op1, 0);
-  if (TREE_CODE (TREE_TYPE (op1)) != RECORD_TYPE)
-    return;
   base = get_ref_base_and_extent_hwi (op1, &offset, &size, &reverse);
   offset_int mem_offset;
   if (!base

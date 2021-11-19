@@ -1,3 +1,121 @@
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/103026
+	* lex.c (struct bidi::context): New.
+	(bidi::vec): Convert to a vec of context rather than unsigned
+	char.
+	(bidi::ctx_at): Rename to...
+	(bidi::pop_kind_at): ...this and reimplement for above change.
+	(bidi::current_ctx): Update for change to vec.
+	(bidi::current_ctx_ucn_p): Likewise.
+	(bidi::current_ctx_loc): New.
+	(bidi::on_char): Update for usage of context struct.  Add "loc"
+	param and pass it when pushing contexts.
+	(get_location_for_byte_range_in_cur_line): New.
+	(get_bidi_utf8): Rename to...
+	(get_bidi_utf8_1): ...this, reintroducing...
+	(get_bidi_utf8): ...as a wrapper, setting *OUT when the result is
+	not NONE.
+	(get_bidi_ucn): Rename to...
+	(get_bidi_ucn_1): ...this, reintroducing...
+	(get_bidi_ucn): ...as a wrapper, setting *OUT when the result is
+	not NONE.
+	(class unpaired_bidi_rich_location): New.
+	(maybe_warn_bidi_on_close): Use unpaired_bidi_rich_location when
+	reporting on unpaired bidi chars.  Split into singular vs plural
+	spellings.
+	(maybe_warn_bidi_on_char): Pass in a location_t rather than a
+	const uchar * and use it when emitting warnings, and when calling
+	bidi::on_char.
+	(_cpp_skip_block_comment): Capture location when kind is not NONE
+	and pass it to maybe_warn_bidi_on_char.
+	(skip_line_comment): Likewise.
+	(forms_identifier_p): Likewise.
+	(lex_raw_string): Likewise.
+	(lex_string): Likewise.
+
+2021-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/103026
+	* lex.c (maybe_warn_bidi_on_close): Use a rich_location
+	and call set_escape_on_output (true) on it.
+	(maybe_warn_bidi_on_char): Likewise.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103130
+	* lex.c (cpp_directive_only_process): Treat even \*/ as end of block
+	comment.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* include/cpplib.h (enum cpp_bidirectional_level): New.
+	(struct cpp_options): Add cpp_warn_bidirectional.
+	(enum cpp_warning_reason): Add CPP_W_BIDIRECTIONAL.
+	* internal.h (struct cpp_reader): Add warn_bidi_p member
+	function.
+	* init.c (cpp_create_reader): Set cpp_warn_bidirectional.
+	* lex.c (bidi): New namespace.
+	(get_bidi_utf8): New function.
+	(get_bidi_ucn): Likewise.
+	(maybe_warn_bidi_on_close): Likewise.
+	(maybe_warn_bidi_on_char): Likewise.
+	(_cpp_skip_block_comment): Implement warning about bidirectional
+	control characters.
+	(skip_line_comment): Likewise.
+	(forms_identifier_p): Likewise.
+	(lex_identifier): Likewise.
+	(lex_string): Likewise.
+	(lex_raw_string): Likewise.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (convert_escape): Use encoding_rich_location when
+	complaining about nonprintable unknown escape sequences.
+	(cpp_display_width_computation::::cpp_display_width_computation):
+	Pass in policy rather than tabstop.
+	(cpp_display_width_computation::process_next_codepoint): Add "out"
+	param and populate *out if non-NULL.
+	(cpp_display_width_computation::advance_display_cols): Pass NULL
+	to process_next_codepoint.
+	(cpp_byte_column_to_display_column): Pass in policy rather than
+	tabstop.  Pass NULL to process_next_codepoint.
+	(cpp_display_column_to_byte_column): Pass in policy rather than
+	tabstop.
+	* errors.c (cpp_diagnostic_get_current_location): New function,
+	splitting out the logic from...
+	(cpp_diagnostic): ...here.
+	(cpp_warning_at): New function.
+	(cpp_pedwarning_at): New function.
+	* include/cpplib.h (cpp_warning_at): New decl for rich_location.
+	(cpp_pedwarning_at): Likewise.
+	(struct cpp_decoded_char): New.
+	(struct cpp_char_column_policy): New.
+	(cpp_display_width_computation::cpp_display_width_computation):
+	Replace "tabstop" param with "policy".
+	(cpp_display_width_computation::process_next_codepoint): Add "out"
+	param.
+	(cpp_display_width_computation::m_tabstop): Replace with...
+	(cpp_display_width_computation::m_policy): ...this.
+	(cpp_byte_column_to_display_column): Replace "tabstop" param with
+	"policy".
+	(cpp_display_width): Likewise.
+	(cpp_display_column_to_byte_column): Likewise.
+	* include/line-map.h (rich_location::escape_on_output_p): New.
+	(rich_location::set_escape_on_output): New.
+	(rich_location::m_escape_on_output): New.
+	* internal.h (cpp_diagnostic_get_current_location): New decl.
+	(class encoding_rich_location): New.
+	* lex.c (skip_whitespace): Use encoding_rich_location when
+	complaining about null characters.
+	(warn_about_normalization): Generate a source range when
+	complaining about improperly normalized tokens, rather than just a
+	point, and use encoding_rich_location so that the source code
+	is escaped on printing.
+	* line-map.c (rich_location::rich_location): Initialize
+	m_escape_on_output.
+
 2021-10-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c++/102409

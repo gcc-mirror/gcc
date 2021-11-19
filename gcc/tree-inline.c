@@ -193,7 +193,6 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  && id->entry_bb == NULL
 	  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (cfun)))
 	{
-	  tree vexpr = make_node (DEBUG_EXPR_DECL);
 	  gimple *def_temp;
 	  gimple_stmt_iterator gsi;
 	  tree val = SSA_NAME_VAR (name);
@@ -210,10 +209,10 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  n = id->decl_map->get (val);
 	  if (n && TREE_CODE (*n) == DEBUG_EXPR_DECL)
 	    return *n;
-	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (name);
+	  tree vexpr = build_debug_expr_decl (TREE_TYPE (name));
+	  /* FIXME: Is setting the mode really necessary? */
 	  SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (name)));
+	  def_temp = gimple_build_debug_source_bind (vexpr, val, NULL);
 	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gsi_insert_before (&gsi, def_temp, GSI_SAME_STMT);
 	  insert_decl_map (id, val, vexpr);
@@ -1529,7 +1528,21 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
   if (!is_gimple_debug (stmt)
       && id->param_body_adjs
       && id->param_body_adjs->m_dead_stmts.contains (stmt))
-    return NULL;
+    {
+      tree *dval = id->param_body_adjs->m_dead_stmt_debug_equiv.get (stmt);
+      if (!dval)
+	return NULL;
+
+      gcc_assert (is_gimple_assign (stmt));
+      tree lhs = gimple_assign_lhs (stmt);
+      tree *dvar = id->param_body_adjs->m_dead_ssa_debug_equiv.get (lhs);
+      gdebug *bind = gimple_build_debug_bind (*dvar, *dval, stmt);
+      if (id->reset_location)
+	gimple_set_location (bind, input_location);
+      id->debug_stmts.safe_push (bind);
+      gimple_seq_add_stmt (&stmts, bind);
+      return stmts;
+    }
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
@@ -1807,15 +1820,16 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
       if (gimple_debug_bind_p (stmt))
 	{
-	  tree value;
+	  tree var = gimple_debug_bind_get_var (stmt);
+	  tree value = gimple_debug_bind_get_value (stmt);
 	  if (id->param_body_adjs
 	      && id->param_body_adjs->m_dead_stmts.contains (stmt))
-	    value = NULL_TREE;
-	  else
-	    value = gimple_debug_bind_get_value (stmt);
-	  gdebug *copy
-	    = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
-				       value, stmt);
+	    {
+	      value = unshare_expr_without_location (value);
+	      id->param_body_adjs->remap_with_debug_expressions (&value);
+	    }
+
+	  gdebug *copy = gimple_build_debug_bind (var, value, stmt);
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
@@ -6418,7 +6432,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	}
     }
 
-  if (param_body_adjs && MAY_HAVE_DEBUG_BIND_STMTS)
+  if (param_body_adjs && flag_var_tracking_assignments)
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned int len = 0;
@@ -6435,9 +6449,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      debug_args = decl_debug_args_insert (new_decl);
 	      len = vec_safe_length (*debug_args);
 	    }
-	  ddecl = make_node (DEBUG_EXPR_DECL);
-	  DECL_ARTIFICIAL (ddecl) = 1;
-	  TREE_TYPE (ddecl) = TREE_TYPE (parm);
+	  ddecl = build_debug_expr_decl (TREE_TYPE (parm));
+	  /* FIXME: Is setting the mode really necessary? */
 	  SET_DECL_MODE (ddecl, DECL_MODE (parm));
 	  vec_safe_push (*debug_args, DECL_ORIGIN (parm));
 	  vec_safe_push (*debug_args, ddecl);
@@ -6452,7 +6465,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	     in the debug info that var (whole DECL_ORIGIN is the parm
 	     PARM_DECL) is optimized away, but could be looked up at the
 	     call site as value of D#X there.  */
-	  tree vexpr;
 	  gimple_stmt_iterator cgsi
 	    = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gimple *def_temp;
@@ -6460,17 +6472,24 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	  i = vec_safe_length (*debug_args);
 	  do
 	    {
+	      tree vexpr = NULL_TREE;
 	      i -= 2;
 	      while (var != NULL_TREE
 		     && DECL_ABSTRACT_ORIGIN (var) != (**debug_args)[i])
 		var = TREE_CHAIN (var);
 	      if (var == NULL_TREE)
 		break;
-	      vexpr = make_node (DEBUG_EXPR_DECL);
 	      tree parm = (**debug_args)[i];
-	      DECL_ARTIFICIAL (vexpr) = 1;
-	      TREE_TYPE (vexpr) = TREE_TYPE (parm);
-	      SET_DECL_MODE (vexpr, DECL_MODE (parm));
+	      if (tree parm_ddef = ssa_default_def (id.src_cfun, parm))
+		if (tree *d
+		    = param_body_adjs->m_dead_ssa_debug_equiv.get (parm_ddef))
+		  vexpr = *d;
+	      if (!vexpr)
+		{
+		  vexpr = build_debug_expr_decl (TREE_TYPE (parm));
+		  /* FIXME: Is setting the mode really necessary? */
+		  SET_DECL_MODE (vexpr, DECL_MODE (parm));
+		}
 	      def_temp = gimple_build_debug_bind (var, vexpr, NULL);
 	      gsi_insert_before (&cgsi, def_temp, GSI_NEW_STMT);
 	      def_temp = gimple_build_debug_source_bind (vexpr, parm, NULL);

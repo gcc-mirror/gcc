@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-clones.h"
+#include "tree-phinodes.h"
+#include "cfgexpand.h"
+#include "attribs.h"
 
 
 /* Actual prefixes of different newly synthetized parameters.  Keep in sync
@@ -276,14 +279,42 @@ fill_vector_of_new_param_types (vec<tree> *new_types, vec<tree> *otypes,
     }
 }
 
+/* Return false if given attribute should prevent type adjustments.  */
+
+bool
+ipa_param_adjustments::type_attribute_allowed_p (tree name)
+{
+  if ((is_attribute_p ("fn spec", name) && flag_ipa_modref)
+      || is_attribute_p ("access", name)
+      || is_attribute_p ("returns_nonnull", name)
+      || is_attribute_p ("assume_aligned", name)
+      || is_attribute_p ("nocf_check", name)
+      || is_attribute_p ("warn_unused_result", name))
+    return true;
+  return false;
+}
+
+/* Return true if attribute should be dropped if parameter changed.  */
+
+static bool
+drop_type_attribute_if_params_changed_p (tree name)
+{
+  if (is_attribute_p ("fn spec", name)
+      || is_attribute_p ("access", name))
+    return true;
+  return false;
+}
+
 /* Build and return a function type just like ORIG_TYPE but with parameter
    types given in NEW_PARAM_TYPES - which can be NULL if, but only if,
    ORIG_TYPE itself has NULL TREE_ARG_TYPEs.  If METHOD2FUNC is true, also make
-   it a FUNCTION_TYPE instead of FUNCTION_TYPE.  */
+   it a FUNCTION_TYPE instead of FUNCTION_TYPE.
+   If ARG_MODIFIED is true drop attributes that are no longer up to date.  */
 
 static tree
 build_adjusted_function_type (tree orig_type, vec<tree> *new_param_types,
-			      bool method2func, bool skip_return)
+			      bool method2func, bool skip_return,
+			      bool args_modified)
 {
   tree new_arg_types = NULL;
   if (TYPE_ARG_TYPES (orig_type))
@@ -331,6 +362,20 @@ build_adjusted_function_type (tree orig_type, vec<tree> *new_param_types,
       TYPE_ARG_TYPES (new_type) = new_arg_types;
       if (skip_return)
 	TREE_TYPE (new_type) = void_type_node;
+    }
+  if (args_modified && TYPE_ATTRIBUTES (new_type))
+    {
+      tree t = TYPE_ATTRIBUTES (new_type);
+      tree *last = &TYPE_ATTRIBUTES (new_type);
+      TYPE_ATTRIBUTES (new_type) = NULL;
+      for (;t; t = TREE_CHAIN (t))
+	if (!drop_type_attribute_if_params_changed_p
+		(get_attribute_name (t)))
+	  {
+	    *last = copy_node (t);
+	    TREE_CHAIN (*last) = NULL;
+	    last = &TREE_CHAIN (*last);
+	  }
     }
 
   return new_type;
@@ -458,8 +503,22 @@ ipa_param_adjustments::build_new_function_type (tree old_type,
   else
     new_param_types_p = NULL;
 
+  /* Check if any params type cares about are modified.  In this case will
+     need to drop some type attributes.  */
+  bool modified = false;
+  size_t index = 0;
+  if (m_adj_params)
+    for (tree t = TYPE_ARG_TYPES (old_type);
+	 t && (int)index < m_always_copy_start && !modified;
+	 t = TREE_CHAIN (t), index++)
+      if (index >= m_adj_params->length ()
+	  || get_original_index (index) != (int)index)
+	modified = true;
+
+
   return build_adjusted_function_type (old_type, new_param_types_p,
-				       method2func_p (old_type), m_skip_return);
+				       method2func_p (old_type), m_skip_return,
+				       modified);
 }
 
 /* Build variant of function decl ORIG_DECL which has no return value if
@@ -773,7 +832,7 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
      vector to say for debug info that if parameter parm had been passed,
      it would have value parm_Y(D).  */
   tree old_decl = gimple_call_fndecl (stmt);
-  if (MAY_HAVE_DEBUG_BIND_STMTS && old_decl && callee_decl)
+  if (flag_var_tracking_assignments && old_decl && callee_decl)
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0;
@@ -829,9 +888,8 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
 	      }
 	  if (ddecl == NULL)
 	    {
-	      ddecl = make_node (DEBUG_EXPR_DECL);
-	      DECL_ARTIFICIAL (ddecl) = 1;
-	      TREE_TYPE (ddecl) = TREE_TYPE (origin);
+	      ddecl = build_debug_expr_decl (TREE_TYPE (origin));
+	      /* FIXME: Is setting the mode really necessary? */
 	      SET_DECL_MODE (ddecl, DECL_MODE (origin));
 
 	      vec_safe_push (*debug_args, origin);
@@ -972,10 +1030,12 @@ ipa_param_body_adjustments::carry_over_param (tree t)
 
 /* Populate m_dead_stmts given that DEAD_PARAM is going to be removed without
    any replacement or splitting.  REPL is the replacement VAR_SECL to base any
-   remaining uses of a removed parameter on.  */
+   remaining uses of a removed parameter on.  Push all removed SSA names that
+   are used within debug statements to DEBUGSTACK.  */
 
 void
-ipa_param_body_adjustments::mark_dead_statements (tree dead_param)
+ipa_param_body_adjustments::mark_dead_statements (tree dead_param,
+						  vec<tree> *debugstack)
 {
   /* Current IPA analyses which remove unused parameters never remove a
      non-gimple register ones which have any use except as parameters in other
@@ -987,6 +1047,7 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param)
     return;
 
   auto_vec<tree, 4> stack;
+  hash_set<tree> used_in_debug;
   m_dead_ssas.add (parm_ddef);
   stack.safe_push (parm_ddef);
   while (!stack.is_empty ())
@@ -1014,6 +1075,11 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param)
 	    {
 	      m_dead_stmts.add (stmt);
 	      gcc_assert (gimple_debug_bind_p (stmt));
+	      if (!used_in_debug.contains (t))
+		{
+		  used_in_debug.add (t);
+		  debugstack->safe_push (t);
+		}
 	    }
 	  else if (gimple_code (stmt) == GIMPLE_PHI)
 	    {
@@ -1046,6 +1112,156 @@ ipa_param_body_adjustments::mark_dead_statements (tree dead_param)
 	    gcc_unreachable ();
 	}
     }
+
+  if (!MAY_HAVE_DEBUG_STMTS)
+    {
+      gcc_assert (debugstack->is_empty ());
+      return;
+    }
+
+  tree dp_ddecl = build_debug_expr_decl (TREE_TYPE (dead_param));
+  /* FIXME: Is setting the mode really necessary? */
+  SET_DECL_MODE (dp_ddecl, DECL_MODE (dead_param));
+  m_dead_ssa_debug_equiv.put (parm_ddef, dp_ddecl);
+}
+
+/* Callback to walk_tree.  If REMAP is an SSA_NAME that is present in hash_map
+   passed in DATA, replace it with unshared version of what it was mapped to.
+   If an SSA argument would be remapped to NULL, the whole operation needs to
+   abort which is signaled by returning error_mark_node.  */
+
+static tree
+replace_with_mapped_expr (tree *remap, int *walk_subtrees, void *data)
+{
+  if (TYPE_P (*remap))
+    {
+      *walk_subtrees = 0;
+      return 0;
+    }
+  if (TREE_CODE (*remap) != SSA_NAME)
+    return 0;
+
+  *walk_subtrees = 0;
+
+  hash_map<tree, tree> *equivs = (hash_map<tree, tree> *) data;
+  if (tree *p = equivs->get (*remap))
+    {
+      if (!*p)
+	return error_mark_node;
+      *remap = unshare_expr (*p);
+    }
+  return 0;
+}
+
+/* Replace all occurances of SSAs in m_dead_ssa_debug_equiv in t with what they
+   are mapped to.  */
+
+void
+ipa_param_body_adjustments::remap_with_debug_expressions (tree *t)
+{
+  /* If *t is an SSA_NAME which should have its debug statements reset, it is
+     mapped to NULL in the hash_map.
+
+     It is perhaps simpler to handle the SSA_NAME cases directly and only
+     invoke walk_tree on more complex expressions.  When
+     remap_with_debug_expressions is called from tree-inline.c, a to-be-reset
+     SSA_NAME can be an operand to such expressions and the entire debug
+     variable we are remapping should be reset.  This is signaled by walk_tree
+     returning error_mark_node and done by setting *t to NULL.  */
+  if (TREE_CODE (*t) == SSA_NAME)
+    {
+      if (tree *p = m_dead_ssa_debug_equiv.get (*t))
+	*t = *p;
+    }
+  else if (walk_tree (t, replace_with_mapped_expr,
+		      &m_dead_ssa_debug_equiv, NULL) == error_mark_node)
+    *t = NULL_TREE;
+}
+
+/* For an SSA_NAME DEAD_SSA which is about to be DCEd because it is based on a
+   useless parameter, prepare an expression that should represent it in
+   debug_binds in the cloned function and add a mapping from DEAD_SSA to
+   m_dead_ssa_debug_equiv.  That mapping is to NULL when the associated
+   debug_statement has to be reset instead.  In such case return false,
+   ottherwise return true.  If DEAD_SSA comes from a basic block which is not
+   about to be copied, ignore it and return true.  */
+
+bool
+ipa_param_body_adjustments::prepare_debug_expressions (tree dead_ssa)
+{
+  gcc_checking_assert (m_dead_ssas.contains (dead_ssa));
+  if (tree *d = m_dead_ssa_debug_equiv.get (dead_ssa))
+    return (*d != NULL_TREE);
+
+  gcc_assert (!SSA_NAME_IS_DEFAULT_DEF (dead_ssa));
+  gimple *def = SSA_NAME_DEF_STMT (dead_ssa);
+  if (m_id->blocks_to_copy
+      && !bitmap_bit_p (m_id->blocks_to_copy, gimple_bb (def)->index))
+    return true;
+
+  if (gimple_code (def) == GIMPLE_PHI)
+    {
+      /* In theory, we could ignore all SSAs coming from BBs not in
+	 m_id->blocks_to_copy but at the time of the writing this code that
+	 should never really be the case because only fnsplit uses that bitmap,
+	 so don't bother.  */
+      tree value = degenerate_phi_result (as_a <gphi *> (def));
+      if (!value
+	  || (m_dead_ssas.contains (value)
+	      && !prepare_debug_expressions (value)))
+	{
+	  m_dead_ssa_debug_equiv.put (dead_ssa, NULL_TREE);
+	  return false;
+	}
+
+      gcc_assert (TREE_CODE (value) == SSA_NAME);
+      tree *d = m_dead_ssa_debug_equiv.get (value);
+      m_dead_ssa_debug_equiv.put (dead_ssa, *d);
+      return true;
+    }
+
+  bool lost = false;
+  use_operand_p use_p;
+  ssa_op_iter oi;
+  FOR_EACH_PHI_OR_STMT_USE (use_p, def, oi, SSA_OP_USE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+      if (m_dead_ssas.contains (use)
+	  && !prepare_debug_expressions (use))
+	{
+	  lost = true;
+	  break;
+	}
+    }
+
+  if (lost)
+    {
+      m_dead_ssa_debug_equiv.put (dead_ssa, NULL_TREE);
+      return false;
+    }
+
+  if (is_gimple_assign (def))
+    {
+      gcc_assert (!gimple_clobber_p (def));
+      if (gimple_assign_copy_p (def)
+	  && TREE_CODE (gimple_assign_rhs1 (def)) == SSA_NAME)
+	{
+	  tree *d = m_dead_ssa_debug_equiv.get (gimple_assign_rhs1 (def));
+	  m_dead_ssa_debug_equiv.put (dead_ssa, *d);
+	  return (*d != NULL_TREE);
+	}
+
+      tree val
+	= unshare_expr_without_location (gimple_assign_rhs_to_tree (def));
+      remap_with_debug_expressions (&val);
+
+      tree vexpr = build_debug_expr_decl (TREE_TYPE (val));
+      m_dead_stmt_debug_equiv.put (def, val);
+      m_dead_ssa_debug_equiv.put (dead_ssa, vexpr);
+      return true;
+    }
+  else
+    gcc_unreachable ();
 }
 
 /* Common initialization performed by all ipa_param_body_adjustments
@@ -1137,65 +1353,21 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	gcc_unreachable ();
     }
 
-
-  /* As part of body modifications, we will also have to replace remaining uses
-     of remaining uses of removed PARM_DECLs (which do not however use the
-     initial value) with their VAR_DECL copies.
-
-     We do this differently with and without m_id.  With m_id, we rely on its
-     mapping and create a replacement straight away.  Without it, we have our
-     own mechanism for which we have to populate m_removed_decls vector.  Just
-     don't mix them, that is why you should not call
-     replace_removed_params_ssa_names or perform_cfun_body_modifications when
-     you construct with ID not equal to NULL.  */
-
-  unsigned op_len = m_oparms.length ();
-  for (unsigned i = 0; i < op_len; i++)
-    if (!kept[i])
-      {
-	if (m_id)
-	  {
-	    if (!m_id->decl_map->get (m_oparms[i]))
-	      {
-		tree var = copy_decl_to_var (m_oparms[i], m_id);
-		insert_decl_map (m_id, m_oparms[i], var);
-		/* Declare this new variable.  */
-		DECL_CHAIN (var) = *vars;
-		*vars = var;
-
-		/* If this is not a split but a real removal, init hash sets
-		   that will guide what not to copy to the new body.  */
-		if (!split[i])
-		  mark_dead_statements (m_oparms[i]);
-	      }
-	  }
-	else
-	  {
-	    m_removed_decls.safe_push (m_oparms[i]);
-	    m_removed_map.put (m_oparms[i], m_removed_decls.length () - 1);
-	  }
-      }
-
-  if (!MAY_HAVE_DEBUG_STMTS)
-    return;
-
-  /* Finally, when generating debug info, we fill vector m_reset_debug_decls
-    with removed parameters declarations.  We do this in order to re-map their
-    debug bind statements and create debug decls for them.  */
-
   if (tree_map)
     {
-      /* Do not output debuginfo for parameter declarations as if they vanished
-	 when they were in fact replaced by a constant.  */
+      /* Do not treat parameters which were replaced with a constant as
+	 completely vanished.  */
       auto_vec <int, 16> index_mapping;
       bool need_remap = false;
-      clone_info *info = clone_info::get (m_id->src_node);
 
-      if (m_id && info && info->param_adjustments)
+      if (m_id)
 	{
-	  ipa_param_adjustments *prev_adjustments = info->param_adjustments;
-	  prev_adjustments->get_updated_indices (&index_mapping);
-	  need_remap = true;
+	  clone_info *cinfo = clone_info::get (m_id->src_node);
+	  if (cinfo && cinfo->param_adjustments)
+	    {
+	      cinfo->param_adjustments->get_updated_indices (&index_mapping);
+	      need_remap = true;
+	    }
 	}
 
       for (unsigned i = 0; i < tree_map->length (); i++)
@@ -1208,9 +1380,52 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 	}
     }
 
+  /* As part of body modifications, we will also have to replace remaining uses
+     of remaining uses of removed PARM_DECLs (which do not however use the
+     initial value) with their VAR_DECL copies.
+
+     We do this differently with and without m_id.  With m_id, we rely on its
+     mapping and create a replacement straight away.  Without it, we have our
+     own mechanism for which we have to populate m_removed_decls vector.  Just
+     don't mix them, that is why you should not call
+     replace_removed_params_ssa_names or perform_cfun_body_modifications when
+     you construct with ID not equal to NULL.  */
+
+  auto_vec<tree, 8> ssas_to_process_debug;
+  unsigned op_len = m_oparms.length ();
   for (unsigned i = 0; i < op_len; i++)
-    if (!kept[i] && is_gimple_reg (m_oparms[i]))
-      m_reset_debug_decls.safe_push (m_oparms[i]);
+    if (!kept[i])
+      {
+	if (m_id)
+	  {
+	    gcc_assert (!m_id->decl_map->get (m_oparms[i]));
+	    tree var = copy_decl_to_var (m_oparms[i], m_id);
+	    insert_decl_map (m_id, m_oparms[i], var);
+	    /* Declare this new variable.  */
+	    DECL_CHAIN (var) = *vars;
+	    *vars = var;
+
+	    /* If this is not a split but a real removal, init hash sets
+	       that will guide what not to copy to the new body.  */
+	    if (!split[i])
+	      mark_dead_statements (m_oparms[i], &ssas_to_process_debug);
+	    if (MAY_HAVE_DEBUG_STMTS
+		&& is_gimple_reg (m_oparms[i]))
+	      m_reset_debug_decls.safe_push (m_oparms[i]);
+	  }
+	else
+	  {
+	    m_removed_decls.safe_push (m_oparms[i]);
+	    m_removed_map.put (m_oparms[i], m_removed_decls.length () - 1);
+	    if (MAY_HAVE_DEBUG_STMTS
+		&& !kept[i]
+		&& is_gimple_reg (m_oparms[i]))
+	      m_reset_debug_decls.safe_push (m_oparms[i]);
+	  }
+      }
+
+  while (!ssas_to_process_debug.is_empty ())
+    prepare_debug_expressions (ssas_to_process_debug.pop ());
 }
 
 /* Constructor of ipa_param_body_adjustments from a simple list of
@@ -1224,9 +1439,9 @@ ipa_param_body_adjustments
 			      tree fndecl)
   : m_adj_params (adj_params), m_adjustments (NULL), m_reset_debug_decls (),
     m_split_modifications_p (false), m_dead_stmts (), m_dead_ssas (),
-    m_fndecl (fndecl), m_id (NULL), m_oparms (), m_new_decls (),
-    m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
-    m_method2func (false)
+    m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (), m_fndecl (fndecl),
+    m_id (NULL), m_oparms (), m_new_decls (), m_new_types (), m_replacements (),
+    m_removed_decls (), m_removed_map (), m_method2func (false)
 {
   common_initialization (fndecl, NULL, NULL);
 }
@@ -1241,7 +1456,8 @@ ipa_param_body_adjustments
 			      tree fndecl)
   : m_adj_params (adjustments->m_adj_params), m_adjustments (adjustments),
     m_reset_debug_decls (), m_split_modifications_p (false), m_dead_stmts (),
-    m_dead_ssas (), m_fndecl (fndecl), m_id (NULL), m_oparms (), m_new_decls (),
+    m_dead_ssas (), m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (),
+    m_fndecl (fndecl), m_id (NULL), m_oparms (), m_new_decls (),
     m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
     m_method2func (false)
 {
@@ -1264,8 +1480,9 @@ ipa_param_body_adjustments
 			      vec<ipa_replace_map *, va_gc> *tree_map)
   : m_adj_params (adjustments->m_adj_params), m_adjustments (adjustments),
     m_reset_debug_decls (), m_split_modifications_p (false), m_dead_stmts (),
-    m_dead_ssas (),m_fndecl (fndecl), m_id (id), m_oparms (), m_new_decls (),
-    m_new_types (), m_replacements (), m_removed_decls (), m_removed_map (),
+    m_dead_ssas (), m_dead_ssa_debug_equiv (), m_dead_stmt_debug_equiv (),
+    m_fndecl (fndecl), m_id (id), m_oparms (), m_new_decls (), m_new_types (),
+    m_replacements (), m_removed_decls (), m_removed_map (),
     m_method2func (false)
 {
   common_initialization (old_fndecl, vars, tree_map);
@@ -1305,12 +1522,23 @@ ipa_param_body_adjustments::modify_formal_parameters ()
   if (fndecl_built_in_p (m_fndecl))
     set_decl_built_in_function (m_fndecl, NOT_BUILT_IN, 0);
 
+  bool modified = false;
+  size_t index = 0;
+  if (m_adj_params)
+    for (tree t = TYPE_ARG_TYPES (orig_type);
+	 t && !modified;
+	 t = TREE_CHAIN (t), index++)
+      if (index >= m_adj_params->length ()
+	  || (*m_adj_params)[index].op != IPA_PARAM_OP_COPY
+	  || (*m_adj_params)[index].base_index != index)
+	modified = true;
+
   /* At this point, removing return value is only implemented when going
      through tree_function_versioning, not when modifying function body
      directly.  */
   gcc_assert (!m_adjustments || !m_adjustments->m_skip_return);
   tree new_type = build_adjusted_function_type (orig_type, &m_new_types,
-						m_method2func, false);
+						m_method2func, false, modified);
 
   TREE_TYPE (m_fndecl) = new_type;
   DECL_VIRTUAL_P (m_fndecl) = 0;
@@ -2055,11 +2283,10 @@ ipa_param_body_adjustments::reset_debug_stmts ()
 	    gcc_assert (is_gimple_debug (stmt));
 	    if (vexpr == NULL && gsip != NULL)
 	      {
-		vexpr = make_node (DEBUG_EXPR_DECL);
-		def_temp = gimple_build_debug_source_bind (vexpr, decl, NULL);
-		DECL_ARTIFICIAL (vexpr) = 1;
-		TREE_TYPE (vexpr) = TREE_TYPE (name);
+		vexpr = build_debug_expr_decl (TREE_TYPE (name));
+		/* FIXME: Is setting the mode really necessary? */
 		SET_DECL_MODE (vexpr, DECL_MODE (decl));
+		def_temp = gimple_build_debug_source_bind (vexpr, decl, NULL);
 		gsi_insert_before (gsip, def_temp, GSI_SAME_STMT);
 	      }
 	    if (vexpr)

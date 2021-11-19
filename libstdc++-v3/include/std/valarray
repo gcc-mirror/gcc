@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	// _lib.valarray.cons_ construct/destroy:
       ///  Construct an empty array.
-      valarray();
+      valarray() _GLIBCXX_NOTHROW;
 
       ///  Construct an array with @a n elements.
       explicit valarray(size_t);
@@ -270,11 +270,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __i  Index of element to return.
        *  @return  Reference to the i'th element.
        */
-      _Tp&                operator[](size_t __i);
+      _Tp&                operator[](size_t __i) _GLIBCXX_NOTHROW;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 389. Const overload of valarray::operator[] returns by value.
-      const _Tp&          operator[](size_t) const;
+      const _Tp&          operator[](size_t) const _GLIBCXX_NOTHROW;
 
       // _lib.valarray.sub_ subset operations:
       /**
@@ -581,7 +581,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline const _Tp&
-    valarray<_Tp>::operator[](size_t __i) const
+    valarray<_Tp>::operator[](size_t __i) const _GLIBCXX_NOTHROW
     {
       __glibcxx_requires_subscript(__i);
       return _M_data[__i];
@@ -589,7 +589,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline _Tp&
-    valarray<_Tp>::operator[](size_t __i)
+    valarray<_Tp>::operator[](size_t __i) _GLIBCXX_NOTHROW
     {
       __glibcxx_requires_subscript(__i);
       return _M_data[__i];
@@ -618,7 +618,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline
-    valarray<_Tp>::valarray() : _M_size(0), _M_data(0) {}
+    valarray<_Tp>::valarray() _GLIBCXX_NOTHROW : _M_size(0), _M_data(0) {}
 
   template<typename _Tp>
     inline

@@ -6550,17 +6550,15 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
-   the arithmetic is supported.
-
-   Currently, TImode is not valid as the HP 64-bit runtime documentation
-   doesn't document the alignment and calling conventions for this type. 
-   Thus, we return false when PRECISION is 2 * BITS_PER_WORD and
-   2 * BITS_PER_WORD isn't equal LONG_LONG_TYPE_SIZE.  */
+   the arithmetic is supported.  */
 
 static bool
 pa_scalar_mode_supported_p (scalar_mode mode)
 {
   int precision = GET_MODE_PRECISION (mode);
+
+  if (TARGET_64BIT && mode == TImode)
+    return true;
 
   switch (GET_MODE_CLASS (mode))
     {

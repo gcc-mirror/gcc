@@ -45,6 +45,8 @@ pragma Assertion_Policy (Pre => Ignore);
 
 --  This version is supported on:
 --    - all Alpha platforms
+--    - all AARCH64 platforms
+--    - all ARM platforms
 --    - all ia64 platforms
 --    - all PowerPC platforms
 --    - all SPARC V9 platforms

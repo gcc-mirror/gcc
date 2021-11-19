@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "alloc-pool.h"
 #include "vr-values.h"
-#include "gimple-ssa-evrp-analyze.h"
 #include "gimple-range.h"
 #include "gimple-range-path.h"
 
@@ -646,7 +645,7 @@ jump_threader::simplify_control_stmt_condition_1
 void
 propagate_threaded_block_debug_into (basic_block dest, basic_block src)
 {
-  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+  if (!flag_var_tracking_assignments)
     return;
 
   if (!single_pred_p (dest))
@@ -1334,25 +1333,19 @@ jt_state::register_equivs_stmt (gimple *stmt, basic_block bb,
      to expose more context sensitive equivalences which in turn may
      allow us to simplify the condition at the end of the loop.
 
-     Handle simple copy operations as well as implied copies from
-     ASSERT_EXPRs.  */
+     Handle simple copy operations.  */
   tree cached_lhs = NULL;
   if (gimple_assign_single_p (stmt)
       && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
     cached_lhs = gimple_assign_rhs1 (stmt);
-  else if (gimple_assign_single_p (stmt)
-	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == ASSERT_EXPR)
-    cached_lhs = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
   else
     {
-      /* A statement that is not a trivial copy or ASSERT_EXPR.
+      /* A statement that is not a trivial copy.
 	 Try to fold the new expression.  Inserting the
 	 expression into the hash table is unlikely to help.  */
       /* ???  The DOM callback below can be changed to setting
 	 the mprts_hook around the call to thread_across_edge,
-	 avoiding the use substitution.  The VRP hook should be
-	 changed to properly valueize operands itself using
-	 SSA_NAME_VALUE in addition to its own lattice.  */
+	 avoiding the use substitution.  */
       cached_lhs = gimple_fold_stmt_to_constant_1 (stmt,
 						   threadedge_valueize);
       if (NUM_SSA_OPERANDS (stmt, SSA_OP_ALL_USES) != 0

@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-propagate.h"
-#include "tree-ssa-threadedge.h"
 #include "domwalk.h"
 #include "vr-values.h"
 #include "gimple-array-bounds.h"
@@ -3684,9 +3683,7 @@ vrp_asserts::all_imm_uses_in_stmt_or_feed_cond (tree var,
 
    However, by converting the assertion into the implied copy
    operation N_i = N_j, we will then copy-propagate N_j into the uses
-   of N_i and lose the range information.  We may want to hold on to
-   ASSERT_EXPRs a little while longer as the ranges could be used in
-   things like jump threading.
+   of N_i and lose the range information.
 
    The problem with keeping ASSERT_EXPRs around is that passes after
    VRP need to handle them appropriately.
@@ -4121,11 +4118,7 @@ vrp_folder::fold_stmt (gimple_stmt_iterator *si)
 /* A comparison of an SSA_NAME against a constant where the SSA_NAME
    was set by a type conversion can often be rewritten to use the RHS
    of the type conversion.  Do this optimization for all conditionals
-   in FUN.
-
-   However, doing so inhibits jump threading through the comparison.
-   So that transformation is not performed until after jump threading
-   is complete.  */
+   in FUN.  */
 
 void
 vrp_folder::simplify_casted_conds (function *fun)
@@ -4244,9 +4237,6 @@ execute_vrp (struct function *fun, bool warn_array_bounds_p)
 
   free_numbers_of_iterations_estimates (fun);
 
-  /* ASSERT_EXPRs must be removed before finalizing jump threads
-     as finalizing jump threads calls the CFG cleanup code which
-     does not properly handle ASSERT_EXPRs.  */
   assert_engine.remove_range_assertions ();
 
   scev_finalize ();
@@ -4323,7 +4313,7 @@ public:
   {
     if (m_simplifier.simplify (gsi))
       return true;
-    return ::fold_stmt (gsi, follow_single_use_edges);
+    return m_ranger->fold_stmt (gsi, follow_single_use_edges);
   }
 
 private:
@@ -4428,127 +4418,4 @@ gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
   return new pass_vrp (ctxt);
-}
-
-// This is the dom walker for the hybrid threader.  The reason this is
-// here, as opposed to the generic threading files, is because the
-// other client would be DOM, and they have their own custom walker.
-
-class hybrid_threader : public dom_walker
-{
-public:
-  hybrid_threader ();
-  ~hybrid_threader ();
-
-  void thread_jumps (function *fun)
-  {
-    walk (fun->cfg->x_entry_block_ptr);
-  }
-  bool thread_through_all_blocks ()
-  {
-    return m_threader->thread_through_all_blocks (false);
-  }
-
-private:
-  edge before_dom_children (basic_block) override;
-  void after_dom_children (basic_block bb) override;
-
-  hybrid_jt_simplifier *m_simplifier;
-  jump_threader *m_threader;
-  jt_state *m_state;
-  gimple_ranger *m_ranger;
-  path_range_query *m_query;
-};
-
-hybrid_threader::hybrid_threader () : dom_walker (CDI_DOMINATORS, REACHABLE_BLOCKS)
-{
-  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
-  scev_initialize ();
-  calculate_dominance_info (CDI_DOMINATORS);
-  mark_dfs_back_edges ();
-
-  m_ranger = new gimple_ranger;
-  m_query = new path_range_query (*m_ranger, /*resolve=*/true);
-  m_simplifier = new hybrid_jt_simplifier (m_ranger, m_query);
-  m_state = new hybrid_jt_state;
-  m_threader = new jump_threader (m_simplifier, m_state);
-}
-
-hybrid_threader::~hybrid_threader ()
-{
-  delete m_simplifier;
-  delete m_threader;
-  delete m_state;
-  delete m_ranger;
-  delete m_query;
-
-  scev_finalize ();
-  loop_optimizer_finalize ();
-}
-
-edge
-hybrid_threader::before_dom_children (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-  int_range<2> r;
-
-  for (gsi = gsi_start_nondebug_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      m_ranger->range_of_stmt (r, stmt);
-    }
-  return NULL;
-}
-
-void
-hybrid_threader::after_dom_children (basic_block bb)
-{
-  m_threader->thread_outgoing_edges (bb);
-}
-
-static unsigned int
-execute_vrp_threader (function *fun)
-{
-  hybrid_threader threader;
-  threader.thread_jumps (fun);
-  if (threader.thread_through_all_blocks ())
-    return (TODO_cleanup_cfg | TODO_update_ssa);
-  return 0;
-}
-
-namespace {
-
-const pass_data pass_data_vrp_threader =
-{
-  GIMPLE_PASS, /* type */
-  "vrp-thread", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_VRP_THREADER, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0 /* todo_flags_finish */
-};
-
-class pass_vrp_threader : public gimple_opt_pass
-{
-public:
-  pass_vrp_threader (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_vrp_threader, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  opt_pass * clone () { return new pass_vrp_threader (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_vrp != 0; }
-  virtual unsigned int execute (function *fun)
-    { return execute_vrp_threader (fun); }
-};
-
-} // namespace {
-
-gimple_opt_pass *
-make_pass_vrp_threader (gcc::context *ctxt)
-{
-  return new pass_vrp_threader (ctxt);
 }

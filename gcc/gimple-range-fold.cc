@@ -720,14 +720,20 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
 	}
       /* If &X->a is equal to X, the range of X is the result.  */
       if (off_cst && known_eq (off, 0))
-	  return true;
+	return true;
       else if (flag_delete_null_pointer_checks
 	       && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr)))
 	{
-	 /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
-	 allow going from non-NULL pointer to NULL.  */
-	   if(!range_includes_zero_p (&r))
-	    return true;
+	  /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
+	     allow going from non-NULL pointer to NULL.  */
+	  if (!range_includes_zero_p (&r))
+	    {
+	      /* We could here instead adjust r by off >> LOG2_BITS_PER_UNIT
+		 using POINTER_PLUS_EXPR if off_cst and just fall back to
+		 this.  */
+	      r = range_nonzero (TREE_TYPE (gimple_assign_rhs1 (stmt)));
+	      return true;
+	    }
 	}
       /* If MEM_REF has a "positive" offset, consider it non-NULL
 	 always, for -fdelete-null-pointer-checks also "negative"
@@ -779,6 +785,10 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       tree arg = gimple_phi_arg_def (phi, x);
+      // An argument that is the same as the def provides no new range.
+      if (arg == phi_def)
+	continue;
+
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Get the range of the argument on its edge.
@@ -960,16 +970,16 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
   switch (func)
     {
     case CFN_BUILT_IN_CONSTANT_P:
-      if (cfun->after_inlining)
-	{
-	  r.set_zero (type);
-	  // r.equiv_clear ();
-	  return true;
-	}
       arg = gimple_call_arg (call, 0);
       if (src.get_operand (r, arg) && r.singleton_p ())
 	{
 	  r.set (build_one_cst (type), build_one_cst (type));
+	  return true;
+	}
+      if (cfun->after_inlining)
+	{
+	  r.set_zero (type);
+	  // r.equiv_clear ();
 	  return true;
 	}
       break;

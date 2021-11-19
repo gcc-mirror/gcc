@@ -1086,7 +1086,9 @@
        (match_test "(DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))
 		    && (SYMBOL_REF_LOCAL_P (op)
 			|| (op == XEXP (DECL_RTL (current_function_decl), 0)
-			    && !decl_replaceable_p (current_function_decl)))
+			    && !decl_replaceable_p (current_function_decl,
+						    opt_for_fn (current_function_decl,
+								flag_semantic_interposition))))
 		    && !((DEFAULT_ABI == ABI_AIX
 			  || DEFAULT_ABI == ABI_ELFv2)
 			 && (SYMBOL_REF_EXTERNAL_P (op)

@@ -30,6 +30,6 @@ int main()
 		linker_error ();
 	return 0;
 }
-/* { dg-final { scan-tree-dump "Function found to be const: {anonymous}::B::genB" "local-pure-const1"  } } */
-/* { dg-final { scan-tree-dump "Retslot flags: direct noescape nodirectescape not_returned noread" "modref1" } } */
+/* { dg-final { scan-tree-dump "Function found to be const: static {anonymous}::B {anonymous}::B::genB" "local-pure-const1"  } } */
+/* { dg-final { scan-tree-dump "Retslot flags: not_returned_directly" "modref1" } } */
   

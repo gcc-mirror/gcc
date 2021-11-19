@@ -3010,7 +3010,8 @@ gfc_scalar_elemental_arg_saved_as_reference (gfc_ss_info * ss_info)
   /* If the expression is of polymorphic type, it's actual size is not known,
      so we avoid copying it anywhere.  */
   if (ss_info->data.scalar.dummy_arg
-      && ss_info->data.scalar.dummy_arg->ts.type == BT_CLASS
+      && gfc_dummy_arg_get_typespec (*ss_info->data.scalar.dummy_arg).type
+	 == BT_CLASS
       && ss_info->expr->ts.type == BT_CLASS)
     return true;
 
@@ -11460,6 +11461,57 @@ gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
 }
 
 
+/* Given an expression referring to an intrinsic function call,
+   return the intrinsic symbol.  */
+
+gfc_intrinsic_sym *
+gfc_get_intrinsic_for_expr (gfc_expr *call)
+{
+  if (call == NULL)
+    return NULL;
+
+  /* Normal procedure case.  */
+  if (call->expr_type == EXPR_FUNCTION)
+    return call->value.function.isym;
+  else
+    return NULL;
+}
+
+
+/* Indicates whether an argument to an intrinsic function should be used in
+   scalarization.  It is usually the case, except for some intrinsics
+   requiring the value to be constant, and using the value at compile time only.
+   As the value is not used at runtime in those cases, we don’t produce code
+   for it, and it should not be visible to the scalarizer.
+   FUNCTION is the intrinsic function being called, ACTUAL_ARG is the actual
+   argument being examined in that call, and ARG_NUM the index number
+   of ACTUAL_ARG in the list of arguments.
+   The intrinsic procedure’s dummy argument associated with ACTUAL_ARG is
+   identified using the name in ACTUAL_ARG if it is present (that is: if it’s
+   a keyword argument), otherwise using ARG_NUM.  */
+
+static bool
+arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
+				 gfc_dummy_arg *dummy_arg)
+{
+  if (function != NULL && dummy_arg != NULL)
+    {
+      switch (function->id)
+	{
+	  case GFC_ISYM_INDEX:
+	    if (strcmp ("kind", gfc_dummy_arg_get_name (*dummy_arg)) == 0)
+	      return false;
+	  /* Fallthrough.  */
+
+	  default:
+	    break;
+	}
+    }
+
+  return true;
+}
+
+
 /* Walk the arguments of an elemental function.
    PROC_EXPR is used to check whether an argument is permitted to be absent.  If
    it is NULL, we don't do the check and the argument is assumed to be present.
@@ -11467,9 +11519,9 @@ gfc_get_proc_ifc_for_expr (gfc_expr *procedure_ref)
 
 gfc_ss *
 gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
-				  gfc_symbol *proc_ifc, gfc_ss_type type)
+				  gfc_intrinsic_sym *intrinsic_sym,
+				  gfc_ss_type type)
 {
-  gfc_formal_arglist *dummy_arg;
   int scalar;
   gfc_ss *head;
   gfc_ss *tail;
@@ -11478,16 +11530,14 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   head = gfc_ss_terminator;
   tail = NULL;
 
-  if (proc_ifc)
-    dummy_arg = gfc_sym_get_dummy_args (proc_ifc);
-  else
-    dummy_arg = NULL;
-
   scalar = 1;
   for (; arg; arg = arg->next)
     {
-      if (!arg->expr || arg->expr->expr_type == EXPR_NULL)
-	goto loop_continue;
+      gfc_dummy_arg * const dummy_arg = arg->associated_dummy;
+      if (!arg->expr
+	  || arg->expr->expr_type == EXPR_NULL
+	  || !arg_evaluated_for_scalarization (intrinsic_sym, dummy_arg))
+	continue;
 
       newss = gfc_walk_subexpr (head, arg->expr);
       if (newss == head)
@@ -11497,13 +11547,13 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->info->type = type;
 	  if (dummy_arg)
-	    newss->info->data.scalar.dummy_arg = dummy_arg->sym;
+	    newss->info->data.scalar.dummy_arg = dummy_arg;
 	}
       else
 	scalar = 0;
 
       if (dummy_arg != NULL
-	  && dummy_arg->sym->attr.optional
+	  && gfc_dummy_arg_is_optional (*dummy_arg)
 	  && arg->expr->expr_type == EXPR_VARIABLE
 	  && (gfc_expr_attr (arg->expr).optional
 	      || gfc_expr_attr (arg->expr).allocatable
@@ -11517,10 +11567,6 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
           while (tail->next != gfc_ss_terminator)
             tail = tail->next;
         }
-
-loop_continue:
-      if (dummy_arg != NULL)
-	dummy_arg = dummy_arg->next;
     }
 
   if (scalar)
@@ -11579,7 +11625,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
 
       ss = gfc_walk_elemental_function_args (old_ss,
 					     expr->value.function.actual,
-					     gfc_get_proc_ifc_for_expr (expr),
+					     gfc_get_intrinsic_for_expr (expr),
 					     GFC_SS_REFERENCE);
       if (ss != old_ss
 	  && (comp

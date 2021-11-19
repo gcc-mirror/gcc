@@ -57,7 +57,8 @@ proc g++-dg-runtest { testcases flags default-extra-flags } {
 	    set option_list { }
 	    foreach x $std_list {
 		# Handle "concepts" as C++17 plus Concepts TS.
-		if { $x eq "concepts" } then { set x "17 -fconcepts" }
+		if { $x eq "concepts" } then { set x "17 -fconcepts"
+		} elseif { $x eq "impcx" } then { set x "23 -fimplicit-constexpr" }
 		lappend option_list "${std_prefix}$x"
 	    }
 	} else {

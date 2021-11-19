@@ -220,7 +220,7 @@ flush_pending_stmts (edge e)
 void
 gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 {
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     {
       tree lhs = gimple_get_lhs (stmt);
 
@@ -242,7 +242,7 @@ gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 tree
 target_for_debug_bind (tree var)
 {
-  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+  if (!flag_var_tracking_assignments)
     return NULL_TREE;
 
   if (TREE_CODE (var) == SSA_NAME)
@@ -307,7 +307,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
   int usecount = 0;
   tree value = NULL;
 
-  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+  if (!flag_var_tracking_assignments)
     return;
 
   /* If this name has already been registered for replacement, do nothing
@@ -434,14 +434,13 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
       else
 	{
 	  gdebug *def_temp;
-	  tree vexpr = make_node (DEBUG_EXPR_DECL);
+	  tree vexpr = build_debug_expr_decl (TREE_TYPE (value));
 
 	  def_temp = gimple_build_debug_bind (vexpr,
 					      unshare_expr (value),
 					      def_stmt);
 
-	  DECL_ARTIFICIAL (vexpr) = 1;
-	  TREE_TYPE (vexpr) = TREE_TYPE (value);
+	  /* FIXME: Is setting the mode really necessary? */
 	  if (DECL_P (value))
 	    SET_DECL_MODE (vexpr, DECL_MODE (value));
 	  else
@@ -500,7 +499,7 @@ insert_debug_temps_for_defs (gimple_stmt_iterator *gsi)
   ssa_op_iter op_iter;
   def_operand_p def_p;
 
-  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+  if (!flag_var_tracking_assignments)
     return;
 
   stmt = gsi_stmt (*gsi);
@@ -526,7 +525,7 @@ reset_debug_uses (gimple *stmt)
   imm_use_iterator imm_iter;
   gimple *use_stmt;
 
-  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+  if (!flag_var_tracking_assignments)
     return;
 
   FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)
@@ -649,10 +648,8 @@ verify_vssa (basic_block bb, tree current_vdef, sbitmap visited)
 {
   bool err = false;
 
-  if (bitmap_bit_p (visited, bb->index))
+  if (!bitmap_set_bit (visited, bb->index))
     return false;
-
-  bitmap_set_bit (visited, bb->index);
 
   /* Pick up the single virtual PHI def.  */
   gphi *phi = NULL;

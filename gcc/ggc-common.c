@@ -440,6 +440,10 @@ gt_pch_save (FILE *f)
      (The extra work goes in HOST_HOOKS_GT_PCH_GET_ADDRESS and
      HOST_HOOKS_GT_PCH_USE_ADDRESS.)  */
   mmi.preferred_base = host_hooks.gt_pch_get_address (mmi.size, fileno (f));
+  /* If the host cannot supply any suitable address for this, we are stuck.  */
+  if (mmi.preferred_base == NULL)
+    fatal_error (input_location,
+		 "cannot write PCH file: required memory segment unavailable");
 
   ggc_pch_this_base (state.d, mmi.preferred_base);
 
@@ -589,6 +593,13 @@ gt_pch_restore (FILE *f)
   struct mmap_info mmi;
   int result;
 
+  /* We are about to reload the line maps along with the rest of the PCH
+     data, which means that the (loaded) ones cannot be guaranteed to be
+     in any valid state for reporting diagnostics that happen during the
+     load.  Save the current table (and use it during the loading process
+     below).  */
+  class line_maps *save_line_table = line_table;
+
   /* Delete any deletable objects.  This makes ggc_pch_read much
      faster, as it can be sure that no GCable objects remain other
      than the ones just read in.  */
@@ -603,20 +614,40 @@ gt_pch_restore (FILE *f)
 	fatal_error (input_location, "cannot read PCH file: %m");
 
   /* Read in all the global pointers, in 6 easy loops.  */
+  bool error_reading_pointers = false;
   for (rt = gt_ggc_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       for (i = 0; i < rti->nelt; i++)
 	if (fread ((char *)rti->base + rti->stride * i,
 		   sizeof (void *), 1, f) != 1)
-	  fatal_error (input_location, "cannot read PCH file: %m");
+	  error_reading_pointers = true;
+
+  /* Stash the newly read-in line table pointer - it does not point to
+     anything meaningful yet, so swap the old one back in.  */
+  class line_maps *new_line_table = line_table;
+  line_table = save_line_table;
+  if (error_reading_pointers)
+    fatal_error (input_location, "cannot read PCH file: %m");
 
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
     fatal_error (input_location, "cannot read PCH file: %m");
 
   result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
 					  fileno (f), mmi.offset);
+
+  /* We could not mmap or otherwise allocate the required memory at the
+     address needed.  */
   if (result < 0)
-    fatal_error (input_location, "had to relocate PCH");
+    {
+      sorry_at (input_location, "PCH relocation is not yet supported");
+      /* There is no point in continuing from here, we will only end up
+	 with a crashed (most likely hanging) compiler.  */
+      exit (-1);
+    }
+
+  /* (0) We allocated memory, but did not mmap the file, so we need to read
+     the data in manually.  (>0) Otherwise the mmap succeed for the address
+     we wanted.  */
   if (result == 0)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
@@ -629,6 +660,10 @@ gt_pch_restore (FILE *f)
   ggc_pch_read (f, mmi.preferred_base);
 
   gt_pch_restore_stringpool ();
+
+  /* Barring corruption of the PCH file, the restored line table should be
+     complete and usable.  */
+  line_table = new_line_table;
 }
 
 /* Default version of HOST_HOOKS_GT_PCH_GET_ADDRESS when mmap is not present.

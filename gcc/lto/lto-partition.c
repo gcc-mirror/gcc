@@ -852,7 +852,9 @@ must_not_rename (symtab_node *node, const char *name)
   /* Avoid mangling of already mangled clones. 
      ???  should have a flag whether a symbol has a 'private' name already,
      since we produce some symbols like that i.e. for global constructors
-     that are not really clones.  */
+     that are not really clones.
+     ???  it is what unique_name means.  We only need to set it when doing
+     private symbols.  */
   if (node->unique_name)
     {
       if (dump_file)
@@ -995,6 +997,11 @@ promote_symbol (symtab_node *node)
      defined by the non-LTO part.  */
   privatize_symbol_name (node);
   TREE_PUBLIC (node->decl) = 1;
+  /* After privatization the node should not conflict with any other symbol,
+     so it is prevailing.  This is important to keep binds_to_current_def_p
+     to work across partitions.  */
+  node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+  node->semantic_interposition = false;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
   if (dump_file)

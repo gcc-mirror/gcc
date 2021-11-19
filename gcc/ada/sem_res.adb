@@ -82,6 +82,7 @@ with Sinfo.CN;       use Sinfo.CN;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Style;          use Style;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
@@ -3179,6 +3180,27 @@ package body Sem_Res is
       --  Only one interpretation
 
       else
+         --  Prevent implicit conversions between access-to-subprogram types
+         --  with different strub modes. Explicit conversions are acceptable in
+         --  some circumstances. We don't have to be concerned about data or
+         --  access-to-data types. Conversions between data types can safely
+         --  drop or add strub attributes from types, because strub effects are
+         --  associated with the locations rather than values. E.g., converting
+         --  a hypothetical Strub_Integer variable to Integer would load the
+         --  value from the variable, enabling stack scrabbing for the
+         --  enclosing subprogram, and then convert the value to Integer. As
+         --  for conversions between access-to-data types, that's no different
+         --  from any other case of type punning.
+
+         if Is_Access_Type (Typ)
+           and then Ekind (Designated_Type (Typ)) = E_Subprogram_Type
+           and then Is_Access_Type (Expr_Type)
+           and then Ekind (Designated_Type (Expr_Type)) = E_Subprogram_Type
+         then
+            Check_Same_Strub_Mode
+              (Designated_Type (Typ), Designated_Type (Expr_Type));
+         end if;
+
          --  In Ada 2005, if we have something like "X : T := 2 + 2;", where
          --  the "+" on T is abstract, and the operands are of universal type,
          --  the above code will have (incorrectly) resolved the "+" to the
@@ -14154,7 +14176,15 @@ package body Sem_Res is
             end;
          end if;
 
-         return True;
+         --  Check that the strub modes are compatible.
+         --  We wish to reject explicit conversions only for
+         --  incompatible modes.
+
+         return Conversion_Check
+                  (Compatible_Strub_Modes
+                     (Designated_Type (Target_Type),
+                      Designated_Type (Opnd_Type)),
+                   "incompatible `strub` modes");
 
       --  Remote access to subprogram types
 
@@ -14180,7 +14210,16 @@ package body Sem_Res is
               Designated_Type (Corresponding_Remote_Type (Opnd_Type)),
             Err_Loc =>
               N);
-         return True;
+
+         --  Check that the strub modes are compatible.
+         --  We wish to reject explicit conversions only for
+         --  incompatible modes.
+
+         return Conversion_Check
+                  (Compatible_Strub_Modes
+                     (Designated_Type (Target_Type),
+                      Designated_Type (Opnd_Type)),
+                   "incompatible `strub` modes");
 
       --  If it was legal in the generic, it's legal in the instance
 

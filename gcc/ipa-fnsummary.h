@@ -76,11 +76,11 @@ class size_time_entry
 {
 public:
   /* Predicate for code to be executed.  */
-  predicate exec_predicate;
+  ipa_predicate exec_predicate;
   /* Predicate for value to be constant and optimized out in a specialized copy.
      When deciding on specialization this makes it possible to see how much
      the executed code paths will simplify.  */
-  predicate nonconst_predicate;
+  ipa_predicate nonconst_predicate;
   int size;
   sreal time;
 };
@@ -114,7 +114,7 @@ struct GTY(()) ipa_freqcounting_predicate
   /* The described event happens with this frequency... */
   sreal freq;
   /* ...when this predicate evaluates to false. */
-  class predicate * GTY((skip)) predicate;
+  ipa_predicate * GTY((skip)) predicate;
 };
 
 /* Function inlining information.  */
@@ -203,7 +203,8 @@ public:
   int scc_no;
 
   /* Record time and size under given predicates.  */
-  void account_size_time (int, sreal, const predicate &, const predicate &,
+  void account_size_time (int, sreal, const ipa_predicate &,
+			  const ipa_predicate &,
 		  	  bool call = false);
 
   /* We keep values scaled up, so fractional sizes can be accounted.  */
@@ -286,7 +287,7 @@ public:
   /* Default destructor.  */
   ~ipa_call_summary ();
 
-  class predicate *predicate;
+  ipa_predicate *predicate;
   /* Vector indexed by parameters.  */
   vec<inline_param_summary> param;
   /* Estimated size and time of the call statement.  */

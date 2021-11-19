@@ -392,13 +392,7 @@ do {                                                    \
 
 /* Emit rtl for profiling.  Output assembler code to call "_mcount" for
    profiling a function entry.  */
-#define PROFILE_HOOK(LABEL)						\
-  {									\
-    rtx fun, ra;							\
-    ra = get_hard_reg_initial_val (Pmode, LR_REGNUM);			\
-    fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
-    emit_library_call (fun, LCT_NORMAL, VOIDmode, ra, Pmode);		\
-  }
+#define PROFILE_HOOK(LABEL)  or1k_profile_hook()
 
 /* All the work is done in PROFILE_HOOK, but this is still required.  */
 #define FUNCTION_PROFILER(STREAM, LABELNO) do { } while (0)

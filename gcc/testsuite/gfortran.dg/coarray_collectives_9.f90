@@ -26,10 +26,10 @@ program test
   end interface
 
   call co_broadcast("abc") ! { dg-error "Missing actual argument 'source_image' in call to 'co_broadcast'" }
-  call co_reduce("abc") ! { dg-error "Missing actual argument 'operator' in call to 'co_reduce'" }
+  call co_reduce("abc") ! { dg-error "Missing actual argument 'operation' in call to 'co_reduce'" }
   call co_broadcast(1, source_image=1) ! { dg-error "'a' argument of 'co_broadcast' intrinsic at .1. must be a variable" }
-  call co_reduce(a=1, operator=red_f) ! { dg-error "'a' argument of 'co_reduce' intrinsic at .1. must be a variable" }
-  call co_reduce(a=val, operator=red_f2) ! { dg-error "OPERATOR argument at \\(1\\) must be a PURE function" }
+  call co_reduce(a=1, operation=red_f) ! { dg-error "'a' argument of 'co_reduce' intrinsic at .1. must be a variable" }
+  call co_reduce(a=val, operation=red_f2) ! { dg-error "OPERATION argument at \\(1\\) must be a PURE function" }
 
   call co_broadcast(val, source_image=[1,2]) ! { dg-error "must be a scalar" }
   call co_broadcast(val, source_image=1.0) ! { dg-error "must be INTEGER" }

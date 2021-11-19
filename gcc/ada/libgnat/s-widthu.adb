@@ -29,8 +29,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Numerics.Big_Numbers.Big_Integers;
-use Ada.Numerics.Big_Numbers.Big_Integers;
+with Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
+use Ada.Numerics.Big_Numbers.Big_Integers_Ghost;
 
 function System.Width_U (Lo, Hi : Uns) return Natural is
 

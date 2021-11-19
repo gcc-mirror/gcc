@@ -67,7 +67,7 @@ struct __cxa_exception
 
   // The C++ standard has entertaining rules wrt calling set_terminate
   // and set_unexpected in the middle of the exception cleanup process.
-  std::unexpected_handler unexpectedHandler;
+  std::terminate_handler unexpectedHandler;
   std::terminate_handler terminateHandler;
 
   // The caught exception stack threads through here.
@@ -121,7 +121,7 @@ struct __cxa_dependent_exception
 
   // The C++ standard has entertaining rules wrt calling set_terminate
   // and set_unexpected in the middle of the exception cleanup process.
-  std::unexpected_handler unexpectedHandler;
+  std::terminate_handler unexpectedHandler;
   std::terminate_handler terminateHandler;
 
   // The caught exception stack threads through here.
@@ -191,12 +191,12 @@ extern "C" void __cxa_tm_cleanup (void *, void *, unsigned int) throw();
 // so inconsiderate as to return.
 extern void __terminate(std::terminate_handler) throw () 
   __attribute__((__noreturn__));
-extern void __unexpected(std::unexpected_handler)
+extern void __unexpected(std::terminate_handler)
   __attribute__((__noreturn__));
 
 // The current installed user handlers.
 extern std::terminate_handler __terminate_handler;
-extern std::unexpected_handler __unexpected_handler;
+extern std::terminate_handler __unexpected_handler;
 
 // These are explicitly GNU C++ specific.
 

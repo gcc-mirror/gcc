@@ -593,7 +593,7 @@ tree_loop_unroll_and_jam (void)
 	  todo |= TODO_cleanup_cfg;
 
 	  auto_bitmap exit_bbs;
-	  bitmap_set_bit (exit_bbs, single_dom_exit (outer)->dest->index);
+	  bitmap_set_bit (exit_bbs, single_exit (outer)->dest->index);
 	  todo |= do_rpo_vn (cfun, loop_preheader_edge (outer), exit_bbs);
 	}
 

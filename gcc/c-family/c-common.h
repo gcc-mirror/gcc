@@ -108,7 +108,7 @@ enum rid
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
-  RID_BUILTIN_HAS_ATTRIBUTE,
+  RID_BUILTIN_HAS_ATTRIBUTE,   RID_BUILTIN_ASSOC_BARRIER,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
   /* TS 18661-3 keywords, in the same sequence as the TI_* values.  */
@@ -886,7 +886,7 @@ extern tree c_alignof_expr (location_t, tree);
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error (rich_location *, enum tree_code, tree, tree);
 extern tree fix_string_type (tree);
-extern tree convert_and_check (location_t, tree, tree);
+extern tree convert_and_check (location_t, tree, tree, bool = false);
 extern bool c_determine_visibility (tree);
 extern bool vector_types_compatible_elements_p (tree, tree);
 extern void mark_valid_location_for_stdc_pragma (bool);
@@ -908,6 +908,8 @@ extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
 
+/* Used by convert_and_check; in front ends.  */
+extern tree convert_init (tree, tree);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, false, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, false, 1)

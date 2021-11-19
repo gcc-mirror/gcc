@@ -412,10 +412,10 @@ package Sinput is
    --  Initialized so that some tools (such as gprbuild) can be built with
    --  -gnatVa and pragma Initialize_Scalars without problems.
 
-   Current_Source_Unit : Unit_Number_Type;
-   --  Unit number of source file currently being scanned. The special value
-   --  of No_Unit indicates that the configuration pragma file is currently
-   --  being scanned (this has no entry in the unit table).
+   Current_Source_Unit : Unit_Number_Type := No_Unit;
+   --  Unit number of source file currently being scanned. Initialized to
+   --  No_Unit for pre-processing and the configuration pragma file scanning,
+   --  since both stages have no corresponding entry in the unit table.
 
    Source_gnat_adc : Source_File_Index := No_Source_File;
    --  This is set if a gnat.adc file is present to reference this file

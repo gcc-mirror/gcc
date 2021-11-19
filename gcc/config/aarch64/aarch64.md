@@ -1262,8 +1262,8 @@
 )
 
 (define_insn_and_split "*movsi_aarch64"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m, m,  r,  r, w,r,w, w")
-	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,w,Usa,Ush,rZ,w,w,Ds"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,k,r,r,r,r, r,w, m, m,  r,  r,  r, w,r,w, w")
+	(match_operand:SI 1 "aarch64_mov_operand"  " r,r,k,M,n,Usv,m,m,rZ,w,Usw,Usa,Ush,rZ,w,w,Ds"))]
   "(register_operand (operands[0], SImode)
     || aarch64_reg_or_zero (operands[1], SImode))"
   "@
@@ -1277,6 +1277,7 @@
    ldr\\t%s0, %1
    str\\t%w1, %0
    str\\t%s1, %0
+   adrp\\t%x0, %A1\;ldr\\t%w0, [%x0, %L1]
    adr\\t%x0, %c1
    adrp\\t%x0, %A1
    fmov\\t%s0, %w1
@@ -1292,13 +1293,15 @@
     }"
   ;; The "mov_imm" type for CNT is just a placeholder.
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,load_4,
-		    load_4,store_4,store_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
-   (set_attr "arch" "*,*,*,*,*,sve,*,fp,*,fp,*,*,fp,fp,fp,simd")]
+		    load_4,store_4,store_4,load_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
+   (set_attr "arch"   "*,*,*,*,*,sve,*,fp,*,fp,*,*,*,fp,fp,fp,simd")
+   (set_attr "length" "4,4,4,4,*,  4,4, 4,4, 4,8,4,4, 4, 4, 4,   4")
+]
 )
 
 (define_insn_and_split "*movdi_aarch64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,r,r, r,w, m,m,  r,  r, w,r,w, w")
-	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,M,n,Usv,m,m,rZ,w,Usa,Ush,rZ,w,w,Dd"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,r,r, r,w, m,m,   r,  r,  r, w,r,w, w")
+	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,M,n,Usv,m,m,rZ,w,Usw,Usa,Ush,rZ,w,w,Dd"))]
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   "@
@@ -1313,13 +1316,14 @@
    ldr\\t%d0, %1
    str\\t%x1, %0
    str\\t%d1, %0
+   * return TARGET_ILP32 ? \"adrp\\t%0, %A1\;ldr\\t%w0, [%0, %L1]\" : \"adrp\\t%0, %A1\;ldr\\t%0, [%0, %L1]\";
    adr\\t%x0, %c1
    adrp\\t%x0, %A1
    fmov\\t%d0, %x1
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    * return aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);"
-   "(CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode))
+   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode)
     && REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
    [(const_int 0)]
    "{
@@ -1328,9 +1332,10 @@
     }"
   ;; The "mov_imm" type for CNTD is just a placeholder.
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,mov_imm,
-		     load_8,load_8,store_8,store_8,adr,adr,f_mcr,f_mrc,fmov,
-		     neon_move")
-   (set_attr "arch" "*,*,*,*,*,*,sve,*,fp,*,fp,*,*,fp,fp,fp,simd")]
+		     load_8,load_8,store_8,store_8,load_8,adr,adr,f_mcr,f_mrc,
+		     fmov,neon_move")
+   (set_attr "arch"   "*,*,*,*,*,*,sve,*,fp,*,fp,*,*,*,fp,fp,fp,simd")
+   (set_attr "length" "4,4,4,4,4,*,  4,4, 4,4, 4,8,4,4, 4, 4, 4,   4")]
 )
 
 (define_insn "insv_imm<mode>"
@@ -6470,7 +6475,7 @@
 ;; Scalar forms for fmax, fmin, fmaxnm, fminnm.
 ;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
 ;; which implement the IEEE fmax ()/fmin () functions.
-(define_insn "<maxmin_uns><mode>3"
+(define_insn "<fmaxmin><mode>3"
   [(set (match_operand:GPF_F16 0 "register_operand" "=w")
 	(unspec:GPF_F16 [(match_operand:GPF_F16 1 "register_operand" "w")
 		     (match_operand:GPF_F16 2 "register_operand" "w")]
@@ -6704,29 +6709,6 @@
   ""
   "add\\t%<w>0, %<w>1, :lo12:%c2"
   [(set_attr "type" "alu_imm")]
-)
-
-(define_insn "ldr_got_small_<mode>"
-  [(set (match_operand:PTR 0 "register_operand" "=r")
-	(unspec:PTR [(mem:PTR (lo_sum:PTR
-			      (match_operand:PTR 1 "register_operand" "r")
-			      (match_operand:PTR 2 "aarch64_valid_symref" "S")))]
-		    UNSPEC_GOTSMALLPIC))]
-  ""
-  "ldr\\t%<w>0, [%1, #:got_lo12:%c2]"
-  [(set_attr "type" "load_<ldst_sz>")]
-)
-
-(define_insn "ldr_got_small_sidi"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI
-	 (unspec:SI [(mem:SI (lo_sum:DI
-			     (match_operand:DI 1 "register_operand" "r")
-			     (match_operand:DI 2 "aarch64_valid_symref" "S")))]
-		    UNSPEC_GOTSMALLPIC)))]
-  "TARGET_ILP32"
-  "ldr\\t%w0, [%1, #:got_lo12:%c2]"
-  [(set_attr "type" "load_4")]
 )
 
 (define_insn "ldr_got_small_28k_<mode>"

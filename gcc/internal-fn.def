@@ -188,6 +188,8 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
 			      cond_smin, cond_umin, cond_binary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,
 			      cond_smax, cond_umax, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_FMIN, ECF_CONST, cond_fmin, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_FMAX, ECF_CONST, cond_fmax, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_AND, ECF_CONST | ECF_NOTHROW,
 		       cond_and, cond_binary)
 DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,

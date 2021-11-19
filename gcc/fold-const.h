@@ -44,6 +44,7 @@ extern void shift_bytes_in_array_right (unsigned char *, unsigned int,
    subexpressions are not changed.  */
 
 extern tree fold (tree);
+extern tree fold_init (tree);
 #define fold_unary(CODE,T1,T2)\
    fold_unary_loc (UNKNOWN_LOCATION, CODE, T1, T2)
 extern tree fold_unary_loc (location_t, enum tree_code, tree, tree);

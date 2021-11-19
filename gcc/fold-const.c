@@ -8791,6 +8791,7 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
     case BOOLEAN_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+    case OFFSET_TYPE:
       return native_interpret_int (type, ptr, len);
 
     case REAL_TYPE:
@@ -8827,6 +8828,7 @@ can_native_interpret_type_p (tree type)
     case REAL_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
+    case OFFSET_TYPE:
       return true;
     default:
       return false;
@@ -13937,6 +13939,18 @@ fold_build_call_array_loc (location_t loc, tree type, tree fn,
   flag_rounding_math = saved_rounding_math;\
   flag_trapv = saved_trapv;\
   folding_initializer = saved_folding_initializer;
+
+tree
+fold_init (tree expr)
+{
+  tree result;
+  START_FOLD_INIT;
+
+  result = fold (expr);
+
+  END_FOLD_INIT;
+  return result;
+}
 
 tree
 fold_build1_initializer_loc (location_t loc, enum tree_code code,

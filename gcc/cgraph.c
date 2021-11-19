@@ -2203,6 +2203,9 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " %soperator_delete",
 	     DECL_IS_REPLACEABLE_OPERATOR (decl) ? "replaceable_" : "");
 
+  if (DECL_STATIC_CHAIN (decl))
+    fprintf (f, " static_chain");
+
   fprintf (f, "\n");
 
   if (thunk)
@@ -2387,7 +2390,8 @@ cgraph_node::get_availability (symtab_node *ref)
      to code cp_cannot_inline_tree_fn and probably shall be shared and
      the inlinability hooks completely eliminated).  */
 
-  else if (decl_replaceable_p (decl) && !DECL_EXTERNAL (decl))
+  else if (decl_replaceable_p (decl, semantic_interposition)
+	   && !DECL_EXTERNAL (decl))
     avail = AVAIL_INTERPOSABLE;
   else avail = AVAIL_AVAILABLE;
 
@@ -2606,6 +2610,53 @@ cgraph_node::set_malloc_flag (bool malloc_p)
 	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
 	  if (!malloc_p || alias->get_availability () > AVAIL_INTERPOSABLE)
 	    set_malloc_flag_1 (alias, malloc_p, &changed);
+	}
+    }
+  return changed;
+}
+
+/* Worker to set noreturng flag.  */
+static void
+set_noreturn_flag_1 (cgraph_node *node, bool noreturn_p, bool *changed)
+{
+  if (noreturn_p && !TREE_THIS_VOLATILE (node->decl))
+    {
+      TREE_THIS_VOLATILE (node->decl) = true;
+      *changed = true;
+    }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+      if (!noreturn_p || alias->get_availability () > AVAIL_INTERPOSABLE)
+	set_noreturn_flag_1 (alias, noreturn_p, changed);
+    }
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk
+	&& (!noreturn_p || e->caller->get_availability () > AVAIL_INTERPOSABLE))
+      set_noreturn_flag_1 (e->caller, noreturn_p, changed);
+}
+
+/* Set TREE_THIS_VOLATILE on NODE's decl and on NODE's aliases if any.  */
+
+bool
+cgraph_node::set_noreturn_flag (bool noreturn_p)
+{
+  bool changed = false;
+
+  if (!noreturn_p || get_availability () > AVAIL_INTERPOSABLE)
+    set_noreturn_flag_1 (this, noreturn_p, &changed);
+  else
+    {
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	{
+	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+	  if (!noreturn_p || alias->get_availability () > AVAIL_INTERPOSABLE)
+	    set_noreturn_flag_1 (alias, noreturn_p, &changed);
 	}
     }
   return changed;
@@ -3434,6 +3485,13 @@ cgraph_node::verify_node (void)
     {
       error ("malloc attribute should be used for a function that "
 	     "returns a pointer");
+      error_found = true;
+    }
+  if (definition && externally_visible
+      && semantic_interposition
+	 != opt_for_fn (decl, flag_semantic_interposition))
+    {
+      error ("semantic interposition mismatch");
       error_found = true;
     }
   for (e = indirect_calls; e; e = e->next_callee)

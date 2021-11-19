@@ -1,8 +1,9 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
-/* { dg-additional-options "-fno-tree-loop-vectorize -funroll-loops" } */
-/* { dg-add-options arm_v8_1m_mve_fp } */
+/* { dg-additional-options "-fno-tree-loop-vectorize" } */
+
+#define UNROLL
 
 #define TYPE double
 #define N 16

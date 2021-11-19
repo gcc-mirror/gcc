@@ -1,3 +1,636 @@
+2021-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::move):
+	Do not compare unrelated pointers during constant evaluation.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Improve tests for char_traits::move.
+
+2021-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4: Replace AC_CACHE_VAL with AC_CACHE_CHECK.
+	* configure: Regenerate.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address): Use std::_Construct
+	to initialize union members.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (_M_construct_aux): Only define
+	for C++98. Remove constexpr.
+	(_M_construct_aux_2): Likewise.
+	(_M_construct(InputIter, InputIter)): Remove.
+	(basic_string(const basic_string&)): Call _M_construct with
+	iterator category argument.
+	(basic_string(const basic_string&, size_type, const Alloc&)):
+	Likewise.
+	(basic_string(const basic_string&, size_type, size_type)):
+	Likewise.
+	(basic_string(const charT*, size_type, const Alloc&)): Likewise.
+	Check for null pointer.
+	(basic_string(const charT*, const Alloc&)): Likewise.
+	(basic_string(initializer_list<charT>, const Alloc&)): Call
+	_M_construct with iterator category argument.
+	(basic_string(const basic_string&, const Alloc&)): Likewise.
+	(basic_string(basic_string&&, const Alloc&)): Likewise.
+	(basic_string(_InputIter, _InputIter, const Alloc&)): Likewise
+	for C++11 and later, call _M_construct_aux for C++98.
+	* include/bits/basic_string.tcc
+	(_M_construct(I, I, input_iterator_tag)): Replace try-block with
+	RAII type.
+	(_M_construct(I, I, forward_iterator_tag)): Likewise. Remove
+	__is_null_pointer check.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_M_use_local_data()): New
+	member function to make local buffer the active member.
+	(assign(const basic_string&)): Use it.
+	* include/bits/basic_string.tcc (_M_construct, reserve()):
+	Likewise.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103240
+	* libsupc++/tinfo2.cc (type_info::before): Use unadjusted name
+	to check for the '*' prefix.
+	* testsuite/util/testsuite_shared.cc: Add type_info object for
+	use in new test.
+	* testsuite/18_support/type_info/103240.cc: New test.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (operator<=>): Use constexpr
+	unconditionally.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc:
+	Require cxx11-abit effective target.
+	* testsuite/21_strings/headers/string/synopsis.cc: Add
+	conditional constexpr to declarations, and adjust relational
+	operators for C++20.
+
+2021-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/MERGE: Update the commit hash.
+	* src/c++17/ryu/d2s_intrinsics.h: Merge from Ryu's master
+	branch.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string, operator""s): Add
+	constexpr for C++20.
+	(basic_string::basic_string(basic_string&&)): Only copy
+	initialized portion of the buffer.
+	(basic_string::basic_string(basic_string&&, const Alloc&)):
+	Likewise.
+	* include/bits/basic_string.tcc (basic_string): Add constexpr
+	for C++20.
+	(basic_string::swap(basic_string&)): Only copy initialized
+	portions of the buffers.
+	(basic_string::_M_replace): Add constexpr implementation that
+	doesn't depend on pointer comparisons.
+	* include/bits/cow_string.h: Adjust comment.
+	* include/ext/type_traits.h (__is_null_pointer): Add constexpr.
+	* include/std/string (erase, erase_if): Add constexpr.
+	* include/std/version (__cpp_lib_constexpr_string): Update
+	value.
+	* testsuite/21_strings/basic_string/cons/char/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/literals/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string/modifiers/swap/char/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/swap/wchar_t/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/version.cc: New test.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (swap(_Bit_reference, _Bit_reference))
+	(swap(_Bit_reference, bool&), swap(bool&, _Bit_reference)):
+	Define as hidden friends of _Bit_reference.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/1.cc:
+	Fix reads past the end of strings.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/compare/wchar_t/1.cc:
+	Likewise.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/71964.cc: Fix
+	typo.
+	* testsuite/23_containers/set/allocator/71964.cc: Likewise.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/to_address/1_neg.cc: Adjust error.
+	* testsuite/26_numerics/random/concept.cc: Adjust asserts.
+
+2021-11-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h:
+	(_Hash_code_base<>::_M_hash_code(const _Hash&, const _Hash_node_value<_Value, true>&)): New.
+	(_Hash_code_base<>::_M_hash_code<_H2>(const _H2&, const _Hash_node_value<>&)): New.
+	* include/bits/hashtable.h (_Hashtable<>::_M_merge_unique): Use latter.
+	(_Hashtable<>::_M_merge_multi): Likewise.
+	* testsuite/23_containers/unordered_multiset/modifiers/merge.cc (test05): New test.
+	* testsuite/23_containers/unordered_set/modifiers/merge.cc (test04): New test.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* src/c++17/memory_resource.cc: Add missing constexpr.
+	* include/experimental/internet: Only mark copy constructor
+	as constexpr with __cpp_constexpr_dynamic_alloc.
+
+2021-11-14  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_container.h (_Safe_container<>::_M_safe): Remove.
+	* include/debug/deque (deque::operator=(initializer_list<>)): Replace
+	_M_base() call with _Base:: call.
+	(deque::operator[](size_type)): Likewise.
+	* include/debug/forward_list (forward_list(forward_list&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(forward_list::operator=(initializer_list<>)): Remove _M_base() calls.
+	(forward_list::splice_after, forward_list::merge): Likewise.
+	* include/debug/list (list(list&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(list::operator=(initializer_list<>)): Remove _M_base() calls.
+	(list::splice, list::merge): Likewise.
+	* include/debug/map.h (map(map&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(map::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/multimap.h (multimap(multimap&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(multimap::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/set.h (set(set&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(set::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/multiset.h (multiset(multiset&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(multiset::operator=(initializer_list<>)): Remove _M_base() calls.
+	* include/debug/string (basic_string(basic_string&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(basic_string::operator=(initializer_list<>)): Remove _M_base() call.
+	(basic_string::operator=(const _CharT*), basic_string::operator=(_CharT)): Likewise.
+	(basic_string::operator[](size_type), basic_string::operator+=(const basic_string&)):
+	Likewise.
+	(basic_string::operator+=(const _Char*), basic_string::operator+=(_CharT)): Likewise.
+	* include/debug/unordered_map (unordered_map(unordered_map&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_map::operator=(initializer_list<>), unordered_map::merge):
+	Remove _M_base() calls.
+	(unordered_multimap(unordered_multimap&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_multimap::operator=(initializer_list<>), unordered_multimap::merge):
+	Remove _M_base() calls.
+	* include/debug/unordered_set (unordered_set(unordered_set&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_set::operator=(initializer_list<>), unordered_set::merge):
+	Remove _M_base() calls.
+	(unordered_multiset(unordered_multiset&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(unordered_multiset::operator=(initializer_list<>), unordered_multiset::merge):
+	Remove _M_base() calls.
+	* include/debug/vector (vector(vector&&, const allocator_type&)):
+	Remove _M_safe() and _M_base() calls.
+	(vector::operator=(initializer_list<>)): Remove _M_base() calls.
+	(vector::operator[](size_type)): Likewise.
+
+2021-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add spanstream header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add spanstream header.
+	* include/std/version (__cpp_lib_spanstream): Define.
+	* include/std/spanstream: New file.
+	* testsuite/27_io/spanstream/1.cc: New test.
+	* testsuite/27_io/spanstream/version.cc: New test.
+
+2021-11-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++/103166
+	* acinclude.m4 (GLIBCXX_CHECK_GETENTROPY, GLIBCXX_CHECK_ARC4RANDOM):
+	Use GCC_TRY_COMPILE_OR_LINK instead of AC_TRY_COMPILE.
+	* configure: Regenerate.
+
+2021-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59675
+	* acinclude.m4 (libtool_VERSION): Bump version.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.30): Add version and
+	export new symbol.
+	* configure: Regenerate.
+	* include/bits/c++config (__replacement_assert): Remove, declare
+	__glibcxx_assert_fail instead.
+	* src/c++11/debug.cc (__glibcxx_assert_fail): New function to
+	replace __replacement_assert, writing to stderr instead of
+	stdout.
+	* testsuite/util/testsuite_abi.cc: Update latest version.
+
+2021-11-12  Jonathan Wakely  <jwakely@redhat.com>
+	    Josh Marshall  <joshua.r.marshall.1991@gmail.com>
+
+	* include/bits/alloc_traits.h (_Destroy): Make constexpr for
+	C++20 mode.
+	* include/bits/allocator.h (__shrink_to_fit::_S_do_it):
+	Likewise.
+	* include/bits/stl_algobase.h (__fill_a1): Declare _Bit_iterator
+	overload constexpr for C++20.
+	* include/bits/stl_bvector.h (_Bit_type, _S_word_bit): Move out
+	of inline namespace.
+	(_Bit_reference, _Bit_iterator_base, _Bit_iterator)
+	(_Bit_const_iterator, _Bvector_impl_data, _Bvector_base)
+	(vector<bool, A>>): Add constexpr to every member function.
+	(_Bvector_base::_M_allocate): Initialize storage during constant
+	evaluation.
+	(vector<bool, A>::_M_initialize_value): Use __fill_bvector_n
+	instead of memset.
+	(__fill_bvector_n): New helper function to replace memset during
+	constant evaluation.
+	* include/bits/stl_uninitialized.h (__uninitialized_copy<false>):
+	Move logic to ...
+	(__do_uninit_copy): New function.
+	(__uninitialized_fill<false>): Move logic to ...
+	(__do_uninit_fill): New function.
+	(__uninitialized_fill_n<false>): Move logic to ...
+	(__do_uninit_fill_n): New function.
+	(__uninitialized_copy_a): Add constexpr. Use __do_uninit_copy.
+	(__uninitialized_move_a, __uninitialized_move_if_noexcept_a):
+	Add constexpr.
+	(__uninitialized_fill_a): Add constexpr. Use __do_uninit_fill.
+	(__uninitialized_fill_n_a): Add constexpr. Use
+	__do_uninit_fill_n.
+	(__uninitialized_default_n, __uninitialized_default_n_a)
+	(__relocate_a_1, __relocate_a): Add constexpr.
+	* include/bits/stl_vector.h (_Vector_impl_data, _Vector_impl)
+	(_Vector_base, vector): Add constexpr to every member function.
+	(_Vector_impl::_S_adjust): Disable ASan annotation during
+	constant evaluation.
+	(_Vector_base::_S_use_relocate): Disable bitwise-relocation
+	during constant evaluation.
+	(vector::_Temporary_value): Use a union for storage.
+	* include/bits/vector.tcc (vector, vector<bool>): Add constexpr
+	to every member function.
+	* include/std/vector (erase_if, erase): Add constexpr.
+	* testsuite/23_containers/headers/vector/synopsis.cc: Add
+	constexpr for C++20 mode.
+	* testsuite/23_containers/vector/bool/cmp_c++20.cc: Change to
+	compile-only test using constant expressions.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust
+	namespace for _S_word_bit.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cmp_c++20.cc: Likewise.
+	* testsuite/23_containers/vector/cons/89164.cc: Adjust errors
+	for C++20 and move C++17 test to ...
+	* testsuite/23_containers/vector/cons/89164_c++17.cc: ... here.
+	* testsuite/23_containers/vector/bool/capacity/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/cons/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/element_access/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/assign/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/constexpr.cc: New test.
+	* testsuite/23_containers/vector/bool/modifiers/swap/constexpr.cc: New test.
+	* testsuite/23_containers/vector/capacity/constexpr.cc: New test.
+	* testsuite/23_containers/vector/cons/constexpr.cc: New test.
+	* testsuite/23_containers/vector/data_access/constexpr.cc: New test.
+	* testsuite/23_containers/vector/element_access/constexpr.cc: New test.
+	* testsuite/23_containers/vector/modifiers/assign/constexpr.cc: New test.
+	* testsuite/23_containers/vector/modifiers/constexpr.cc: New test.
+	* testsuite/23_containers/vector/modifiers/swap/constexpr.cc: New test.
+
+2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/deque (deque::operator=(const deque&)): Remove
+	definition.
+	* include/debug/list (list::operator=(const list&)): Likewise.
+	* include/debug/map.h (map::operator=(const map&)): Likewise.
+	* include/debug/multimap.h (multimap::operator=(const multimap&)):
+	Likewise.
+	* include/debug/multiset.h (multiset::operator=(const multiset&)):
+	Likewise.
+	* include/debug/set.h (set::operator=(const set&)): Likewise.
+	* include/debug/string (basic_string::operator=(const basic_string&)):
+	Likewise.
+	* include/debug/vector (vector::operator=(const vector&)):
+	Likewise.
+	(_Safe_vector::operator=(const _Safe_vector&)): Define for
+	C++98 as well.
+
+2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (memory_resource::allocate):
+	Implicitly create objects in the returned storage.
+
+2021-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (vector<bool>::data()): Give
+	protected access, and delete for C++11 and later.
+
+2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100117
+	* testsuite/17_intro/headers/c++1998/49745.cc: Explicitly list
+	all C++ headers instead of including <bits/stdc++.h>
+
+2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100748
+	PR libstdc++/103133
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK):
+	Define for glibc 2.34 and later.
+
+2021-11-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (__distance_fw): Replace class keyword with
+	typename.
+	* include/bits/hashtable.h (_Hashtable<>::_M_merge_unique): Remove noexcept
+	qualification. Use const_iterator for node extraction/reinsert.
+	(_Hashtable<>::_M_merge_multi): Likewise. Compute new hash code before extract.
+	* include/debug/safe_container.h (_Safe_container<>): Make all methods
+	protected.
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container<>::_UContInvalidatePred<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_UMContInvalidatePred<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_UContMergeGuard<_Source, _InvalidatePred>): New.
+	(_Safe_unordered_container<>::_S_uc_guard<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_S_umc_guard<_ExtractKey, _Source>): New.
+	(_Safe_unordered_container<>::_M_invalide_all): Make public.
+	(_Safe_unordered_container<>::_M_invalide_if): Likewise.
+	(_Safe_unordered_container<>::_M_invalide_local_if): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_map<>::reference, const_reference, difference_type): New typedef.
+	(unordered_map<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_map<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_map<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_map<>::operator[], at, rehash, reserve): Add usings.
+	(unordered_map<>::merge): New.
+	(unordered_multimap<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_multimap<>::reference, const_reference, difference_type): New typedef.
+	(unordered_multimap<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_multimap<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_multimap<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_multimap<>::rehash, reserve): Add usings.
+	(unordered_multimap<>::merge): New.
+	* include/debug/unordered_set
+	(unordered_set<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_set<>::reference, const_reference, difference_type): New typedef.
+	(unordered_set<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_set<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_set<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_set<>::rehash, reserve): Add usings.
+	(unordered_set<>::merge): New.
+	(unordered_multiset<>::mapped_type, pointer, const_pointer): New typedef.
+	(unordered_multiset<>::reference, const_reference, difference_type): New typedef.
+	(unordered_multiset<>::get_allocator, empty, size, max_size): Add usings.
+	(unordered_multiset<>::bucket_count, max_bucket_count, bucket): Add usings.
+	(unordered_multiset<>::hash_function, key_equal, count, contains): Add usings.
+	(unordered_multiset<>::rehash, reserve): Add usings.
+	(unordered_multiset<>::merge): New.
+	* testsuite/23_containers/unordered_map/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_map/debug/merge4_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multimap/debug/merge4_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_multiset/debug/merge4_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge1_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge2_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge3_neg.cc: New test.
+	* testsuite/23_containers/unordered_set/debug/merge4_neg.cc: New test.
+	* testsuite/util/testsuite_abi.h: [_GLIBCXX_DEBUG] Use normal unordered
+	container implementation.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Print results of random_device_available checks.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103146
+	* src/c++11/random.cc: Check __powerpc64__ not __powerpc__.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_GETENTROPY, GLIBCXX_CHECK_ARC4RANDOM):
+	Define.
+	* configure.ac (GLIBCXX_CHECK_GETENTROPY, GLIBCXX_CHECK_ARC4RANDOM):
+	Use them.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/c++11/random.cc (random_device): Add getentropy and
+	arc4random as sources.
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Check new tokens.
+	* testsuite/26_numerics/random/random_device/entropy.cc:
+	Likewise.
+
+2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Retry if random devices produce the same value.
+
+2021-11-09  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/os/vxworks/os_defines.h (_GLIBCXX_HAVE_TLS): Only
+	define for VxWorks >= 6.6.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(valarray), end(valarray)):
+	Add noexcept.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (tuple_size_v): Fix pack expansion.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (__x86_rdrand, __x86_rdseed): Add
+	[[unlikely]] attribute.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc [__powerpc__] (USE_DARN): Define.
+	(__ppc_darn): New function to use POWER9 DARN instruction.
+	(Which): Add 'darn' enumerator.
+	(which_source): Check for __ppc_darn.
+	(random_device::_M_init): Support "darn" and "hw" tokens.
+	(random_device::_M_getentropy): Add darn to switch.
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Check "darn" token.
+	* testsuite/26_numerics/random/random_device/entropy.cc:
+	Likewise.
+
+2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/gdb-test.exp: Add target selector support to the
+	dg-final directives.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for
+	C++20.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Tweak
+	comment.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103086
+	* python/libstdcxx/v6/printers.py (_tuple_impl_get): New helper
+	for accessing the tuple element stored in a _Tuple_impl node.
+	(tuple_get): New function for accessing a tuple element.
+	(unique_ptr_get): New function for accessing a unique_ptr.
+	(UniquePointerPrinter, StdPathPrinter): Use unique_ptr_get.
+	* python/libstdcxx/v6/xmethods.py (UniquePtrGetWorker): Cast
+	tuple to its base class before accessing _M_head_impl.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document deprecations.
+	* doc/html/*: Regenerate.
+	* libsupc++/exception (unexpected_handler, unexpected)
+	(get_unexpected, set_unexpected): Add deprecated attribute.
+	Do not define without _GLIBCXX_USE_DEPRECATED for C++17 and up.
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Disable
+	deprecated warnings.
+	* libsupc++/eh_ptr.cc (std::rethrow_exception): Likewise.
+	* libsupc++/eh_terminate.cc: Likewise.
+	* libsupc++/eh_throw.cc (__cxa_init_primary_exception):
+	Likewise.
+	* libsupc++/unwind-cxx.h (struct __cxa_exception): Use
+	terminate_handler instead of unexpected_handler.
+	(struct __cxa_dependent_exception): Likewise.
+	(__unexpected): Likewise.
+	* testsuite/18_support/headers/exception/synopsis.cc: Add
+	dg-warning for deprecated warning.
+	* testsuite/18_support/exception_ptr/60612-unexpected.cc:
+	Disable deprecated warnings.
+	* testsuite/18_support/set_unexpected.cc: Likewise.
+	* testsuite/18_support/unexpected_handler.cc: Likewise.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/utility.h (__find_uniq_type_in_pack): Move
+	definition to here, ...
+	* include/std/tuple (__find_uniq_type_in_pack): ... from here.
+	* include/std/variant (__detail__variant::__index_of): Remove.
+	(__detail::__variant::__exactly_once): Define using
+	__find_uniq_type_in_pack instead of __index_of.
+	(get<T>, get_if<T>, variant::__index_of): Likewise.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (tuple_size_v): Define partial
+	specializations for std::pair.
+	* include/bits/utility.h (_Nth_type): Move definition here
+	and define primary template.
+	(tuple_size_v): Move definition here.
+	* include/std/array (tuple_size_v): Define partial
+	specializations for std::array.
+	* include/std/tuple (tuple_size_v): Move primary template to
+	<bits/utility.h>.  Define partial specializations for
+	std::tuple.
+	(tuple_element): Change definition to use _Nth_type.
+	* include/std/variant (_Nth_type): Move to <bits/utility.h>.
+	(variant_alternative, variant): Adjust qualification of
+	_Nth_type.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Prune
+	additional errors from _Nth_type.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__emplace): New
+	function template.
+	(_Copy_assign_base::operator=): Reorder conditions to match
+	bulleted list of effects in the standard. Use __emplace instead
+	of _M_reset followed by _Construct.
+	(_Move_assign_base::operator=): Likewise.
+	(__construct_by_index): Remove.
+	(variant::emplace): Use __emplace instead of _M_reset followed
+	by __construct_by_index.
+	(variant::swap): Hoist valueless cases out of visitor. Use
+	__emplace to replace _M_reset followed by _Construct.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_Nth_type): Define partial
+	specializations to reduce number of instantiations.
+	(variant_size_v): Define partial specializations to avoid
+	instantiations.
+	(variant_alternative): Use _Nth_type. Add static assert.
+	(__tuple_count, __tuple_count_v): Replace with ...
+	(__count): New variable template.
+	(_Variant_union): Add deleted constructor.
+	(variant::__to_type): Use _Nth_type.
+	(variant::emplace): Use _Nth_type. Add deleted overloads for
+	invalid types and indices.
+
+2021-11-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102912
+	* include/std/variant (_Variant_storage::__index_of): Remove.
+	(__variant_construct_single): Remove.
+	(__variant_construct): Remove.
+	(_Copy_ctor_base::_Copy_ctor_base(const _Copy_ctor_base&)): Do
+	construction directly instead of using __variant_construct.
+	(_Move_ctor_base::_Move_ctor_base(_Move_ctor_base&&)): Likewise.
+	(_Move_ctor_base::_M_destructive_move()): Remove.
+	(_Move_ctor_base::_M_destructive_copy()): Remove.
+	(_Copy_assign_base::operator=(const _Copy_assign_base&)): Do
+	construction directly instead of using _M_destructive_copy.
+	(variant::swap): Do construction directly instead of using
+	_M_destructive_move.
+	* testsuite/20_util/variant/102912.cc: New test.
+
+2021-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66742
+	* include/bits/list.tcc (list::sort): Use mutable iterators for
+	comparisons.
+	* include/bits/stl_list.h (_Scratch_list::_Ptr_cmp): Likewise.
+	* testsuite/23_containers/list/operations/66742.cc: Check
+	non-const comparisons.
+
+2021-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/valarray (valarray::valarray()): Add noexcept.
+	(valarray::operator[]): Likewise.
+
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/stl_iterator.h (__valid_range): Add constexpr
+	for C++20. Qualify call to avoid ADL.
+	(__get_distance, __can_advance, __unsafe, __base): Likewise.
+	* testsuite/25_algorithms/move/constexpr.cc: Also check with
+	std::reverse_iterator arguments.
+
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span(Range&&)): Reorder constraints.
+
+2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103022
+	* include/std/valarray (begin, end): Do not dereference an empty
+	valarray. Add noexcept and [[nodiscard]].
+	* testsuite/26_numerics/valarray/range_access.cc: Check empty
+	valarray. Check iterator properties. Run as well as compiling.
+	* testsuite/26_numerics/valarray/range_access2.cc: Likewise.
+	* testsuite/26_numerics/valarray/103022.cc: New test.
+
 2021-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/stack/deduction.cc: Fix typo.

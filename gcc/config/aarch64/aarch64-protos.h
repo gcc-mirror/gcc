@@ -743,6 +743,7 @@ unsigned HOST_WIDE_INT aarch64_and_split_imm2 (HOST_WIDE_INT val_in);
 bool aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode);
 int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type aarch64_classify_symbolic_expression (rtx);
+bool aarch64_advsimd_struct_mode_p (machine_mode mode);
 opt_machine_mode aarch64_vq_mode (scalar_mode);
 opt_machine_mode aarch64_full_sve_mode (scalar_mode);
 bool aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode);
@@ -968,6 +969,7 @@ rtx aarch64_general_expand_builtin (unsigned int, tree, rtx, int);
 tree aarch64_general_builtin_decl (unsigned, bool);
 tree aarch64_general_builtin_rsqrt (unsigned int);
 tree aarch64_builtin_vectorized_function (unsigned int, tree, tree);
+void handle_arm_neon_h (void);
 
 namespace aarch64_sve {
   void init_builtins ();

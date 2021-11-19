@@ -131,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
 		       | m_TIGERLAKE | m_COOPERLAKE | m_SAPPHIRERAPIDS \
 		       | m_ROCKETLAKE)
-#define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_ALDERLAKE | m_CORE_AVX512)
+#define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
 #define m_GOLDMONT_PLUS (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT_PLUS)
@@ -397,7 +397,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mstv",				MASK_STV },
     { "-mavx256-split-unaligned-load",	MASK_AVX256_SPLIT_UNALIGNED_LOAD },
     { "-mavx256-split-unaligned-store",	MASK_AVX256_SPLIT_UNALIGNED_STORE },
-    { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES }
+    { "-mcall-ms2sysv-xlogues",		MASK_CALL_MS2SYSV_XLOGUES },
+    { "-mrelax-cmpxchg-loop",		MASK_RELAX_CMPXCHG_LOOP }
   };
 
   /* Additional flag options.  */
@@ -736,7 +737,7 @@ static const struct processor_costs *processor_cost_table[] =
   &icelake_cost,
   &skylake_cost,
   &icelake_cost,
-  &icelake_cost,
+  &alderlake_cost,
   &icelake_cost,
   &intel_cost,
   &geode_cost,
@@ -1092,6 +1093,10 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_IX86_YES ("general-regs-only",
 			OPT_mgeneral_regs_only,
 			OPTION_MASK_GENERAL_REGS_ONLY),
+
+    IX86_ATTR_YES ("relax-cmpxchg-loop",
+		   OPT_mrelax_cmpxchg_loop,
+		   MASK_RELAX_CMPXCHG_LOOP),
   };
 
   location_t loc

@@ -814,13 +814,15 @@ bb_in_loop_p (const_basic_block bb, const void *data)
    stmt_vec_info structs for all the stmts in LOOP_IN.  */
 
 _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
-  : vec_info (vec_info::loop, init_cost (loop_in, false), shared),
+  : vec_info (vec_info::loop, shared),
     loop (loop_in),
     bbs (XCNEWVEC (basic_block, loop->num_nodes)),
     num_itersm1 (NULL_TREE),
     num_iters (NULL_TREE),
     num_iters_unchanged (NULL_TREE),
     num_iters_assumptions (NULL_TREE),
+    vector_costs (nullptr),
+    scalar_costs (nullptr),
     th (0),
     versioning_threshold (0),
     vectorization_factor (0),
@@ -838,9 +840,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     ivexpr_map (NULL),
     scan_map (NULL),
     slp_unrolling_factor (1),
-    single_scalar_iteration_cost (0),
-    vec_outside_cost (0),
-    vec_inside_cost (0),
     inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
@@ -932,6 +931,8 @@ _loop_vec_info::~_loop_vec_info ()
   delete ivexpr_map;
   delete scan_map;
   epilogue_vinfos.release ();
+  delete scalar_costs;
+  delete vector_costs;
 
   /* When we release an epiloge vinfo that we do not intend to use
      avoid clearing AUX of the main loop which should continue to
@@ -1292,24 +1293,19 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
     }
 
   /* Now accumulate cost.  */
-  void *target_cost_data = init_cost (loop, true);
+  loop_vinfo->scalar_costs = init_cost (loop_vinfo, true);
   stmt_info_for_cost *si;
   int j;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 		    j, si)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, si->count,
+    (void) add_stmt_cost (loop_vinfo->scalar_costs, si->count,
 			  si->kind, si->stmt_info, si->vectype,
 			  si->misalign, si->where);
-  unsigned prologue_cost = 0, body_cost = 0, epilogue_cost = 0;
-  finish_cost (target_cost_data, &prologue_cost, &body_cost,
-	       &epilogue_cost);
-  destroy_cost_data (target_cost_data);
-  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
-    = prologue_cost + body_cost + epilogue_cost;
+  loop_vinfo->scalar_costs->finish_cost (nullptr);
 }
 
 
-/* Function vect_analyze_loop_form_1.
+/* Function vect_analyze_loop_form.
 
    Verify that certain CFG restrictions hold, including:
    - the loop has a pre-header
@@ -1319,9 +1315,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
      niter could be analyzed under some assumptions.  */
 
 opt_result
-vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
-			  tree *assumptions, tree *number_of_iterationsm1,
-			  tree *number_of_iterations, gcond **inner_loop_cond)
+vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 {
   DUMP_VECT_SCOPE ("vect_analyze_loop_form");
 
@@ -1329,6 +1323,7 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
      vs. an outer (nested) loop.
      (FORNOW. May want to relax some of these restrictions in the future).  */
 
+  info->inner_loop_cond = NULL;
   if (!loop->inner)
     {
       /* Inner-most loop.  We currently require that the number of BBs is
@@ -1393,11 +1388,8 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 				       " unsupported outerloop form.\n");
 
       /* Analyze the inner-loop.  */
-      tree inner_niterm1, inner_niter, inner_assumptions;
-      opt_result res
-	= vect_analyze_loop_form_1 (loop->inner, inner_loop_cond,
-				    &inner_assumptions, &inner_niterm1,
-				    &inner_niter, NULL);
+      vect_loop_form_info inner;
+      opt_result res = vect_analyze_loop_form (loop->inner, &inner);
       if (!res)
 	{
 	  if (dump_enabled_p ())
@@ -1408,11 +1400,11 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 
       /* Don't support analyzing niter under assumptions for inner
 	 loop.  */
-      if (!integer_onep (inner_assumptions))
+      if (!integer_onep (inner.assumptions))
 	return opt_result::failure_at (vect_location,
 				       "not vectorized: Bad inner loop.\n");
 
-      if (!expr_invariant_in_loop_p (loop, inner_niter))
+      if (!expr_invariant_in_loop_p (loop, inner.number_of_iterations))
 	return opt_result::failure_at (vect_location,
 				       "not vectorized: inner-loop count not"
 				       " invariant.\n");
@@ -1420,6 +1412,7 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
 			 "Considering outer-loop vectorization.\n");
+      info->inner_loop_cond = inner.loop_cond;
     }
 
   if (!single_exit (loop))
@@ -1446,78 +1439,65 @@ vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 				   "not vectorized:"
 				   " abnormal loop exit edge.\n");
 
-  *loop_cond = vect_get_loop_niters (loop, assumptions, number_of_iterations,
-				     number_of_iterationsm1);
-  if (!*loop_cond)
+  info->loop_cond
+    = vect_get_loop_niters (loop, &info->assumptions,
+			    &info->number_of_iterations,
+			    &info->number_of_iterationsm1);
+  if (!info->loop_cond)
     return opt_result::failure_at
       (vect_location,
        "not vectorized: complicated exit condition.\n");
 
-  if (integer_zerop (*assumptions)
-      || !*number_of_iterations
-      || chrec_contains_undetermined (*number_of_iterations))
+  if (integer_zerop (info->assumptions)
+      || !info->number_of_iterations
+      || chrec_contains_undetermined (info->number_of_iterations))
     return opt_result::failure_at
-      (*loop_cond,
+      (info->loop_cond,
        "not vectorized: number of iterations cannot be computed.\n");
 
-  if (integer_zerop (*number_of_iterations))
+  if (integer_zerop (info->number_of_iterations))
     return opt_result::failure_at
-      (*loop_cond,
+      (info->loop_cond,
        "not vectorized: number of iterations = 0.\n");
+
+  if (!(tree_fits_shwi_p (info->number_of_iterations)
+	&& tree_to_shwi (info->number_of_iterations) > 0))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Symbolic number of iterations is ");
+	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, info->number_of_iterations);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+    }
 
   return opt_result::success ();
 }
 
-/* Analyze LOOP form and return a loop_vec_info if it is of suitable form.  */
+/* Create a loop_vec_info for LOOP with SHARED and the
+   vect_analyze_loop_form result.  */
 
-opt_loop_vec_info
-vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
+loop_vec_info
+vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
+			const vect_loop_form_info *info,
+			loop_vec_info main_loop_info)
 {
-  tree assumptions, number_of_iterations, number_of_iterationsm1;
-  gcond *loop_cond, *inner_loop_cond = NULL;
-
-  opt_result res
-    = vect_analyze_loop_form_1 (loop, &loop_cond,
-				&assumptions, &number_of_iterationsm1,
-				&number_of_iterations, &inner_loop_cond);
-  if (!res)
-    return opt_loop_vec_info::propagate_failure (res);
-
   loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared);
-  LOOP_VINFO_NITERSM1 (loop_vinfo) = number_of_iterationsm1;
-  LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
-  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = number_of_iterations;
-  if (!integer_onep (assumptions))
-    {
-      /* We consider to vectorize this loop by versioning it under
-	 some assumptions.  In order to do this, we need to clear
-	 existing information computed by scev and niter analyzer.  */
-      scev_reset_htab ();
-      free_numbers_of_iterations_estimates (loop);
-      /* Also set flag for this loop so that following scev and niter
-	 analysis are done under the assumptions.  */
-      loop_constraint_set (loop, LOOP_C_FINITE);
-      /* Also record the assumptions for versioning.  */
-      LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = assumptions;
-    }
+  LOOP_VINFO_NITERSM1 (loop_vinfo) = info->number_of_iterationsm1;
+  LOOP_VINFO_NITERS (loop_vinfo) = info->number_of_iterations;
+  LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = info->number_of_iterations;
+  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = main_loop_info;
+  /* Also record the assumptions for versioning.  */
+  if (!integer_onep (info->assumptions) && !main_loop_info)
+    LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
 
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    {
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-			   "Symbolic number of iterations is ");
-	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, number_of_iterations);
-          dump_printf (MSG_NOTE, "\n");
-        }
-    }
-
-  stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (loop_cond);
+  stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (info->loop_cond);
   STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
-  if (inner_loop_cond)
+  if (info->inner_loop_cond)
     {
       stmt_vec_info inner_loop_cond_info
-	= loop_vinfo->lookup_stmt (inner_loop_cond);
+	= loop_vinfo->lookup_stmt (info->inner_loop_cond);
       STMT_VINFO_TYPE (inner_loop_cond_info) = loop_exit_ctrl_vec_info_type;
       /* If we have an estimate on the number of iterations of the inner
 	 loop use that to limit the scale for costing, otherwise use
@@ -1528,9 +1508,7 @@ vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
 	  = wi::smin (nit, param_vect_inner_loop_cost_factor).to_uhwi ();
     }
 
-  gcc_assert (!loop->aux);
-  loop->aux = loop_vinfo;
-  return opt_loop_vec_info::success (loop_vinfo);
+  return loop_vinfo;
 }
 
 
@@ -1783,7 +1761,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
         }
     } /* bbs */
 
-  add_stmt_costs (loop_vinfo, loop_vinfo->target_cost_data, &cost_vec);
+  add_stmt_costs (loop_vinfo->vector_costs, &cost_vec);
 
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
@@ -2217,7 +2195,7 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo,
    for it.  The different analyses will record information in the
    loop_vec_info struct.  */
 static opt_result
-vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
+vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 {
   opt_result ok = opt_result::success ();
   int res;
@@ -2252,7 +2230,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
       opt_result res
 	= vect_get_datarefs_in_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
 				     &LOOP_VINFO_DATAREFS (loop_vinfo),
-				     n_stmts);
+				     &LOOP_VINFO_N_STMTS (loop_vinfo));
       if (!res)
 	{
 	  if (dump_enabled_p ())
@@ -2349,7 +2327,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
   poly_uint64 saved_vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
   /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
-  ok = vect_analyze_slp (loop_vinfo, *n_stmts);
+  ok = vect_analyze_slp (loop_vinfo, LOOP_VINFO_N_STMTS (loop_vinfo));
   if (!ok)
     return ok;
 
@@ -2392,6 +2370,8 @@ start_over:
       dump_printf (MSG_NOTE, ", niters = %wd\n",
 		   LOOP_VINFO_INT_NITERS (loop_vinfo));
     }
+
+  loop_vinfo->vector_costs = init_cost (loop_vinfo, false);
 
   /* Analyze the alignment of the data-refs in the loop.
      Fail if a data reference is found that cannot be vectorized.  */
@@ -2647,6 +2627,7 @@ start_over:
 			LOOP_VINFO_VECT_FACTOR (loop_vinfo)));
 
   /* Ok to vectorize!  */
+  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
   return opt_result::success ();
 
 again:
@@ -2757,9 +2738,8 @@ again:
   LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).release ();
   LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).release ();
   /* Reset target cost data.  */
-  destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
-  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo)
-    = init_cost (LOOP_VINFO_LOOP (loop_vinfo), false);
+  delete loop_vinfo->vector_costs;
+  loop_vinfo->vector_costs = nullptr;
   /* Reset accumulated rgroup information.  */
   release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo));
   release_vec_loop_controls (&LOOP_VINFO_LENS (loop_vinfo));
@@ -2800,84 +2780,12 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 	return new_simdlen_p;
     }
 
-  /* Limit the VFs to what is likely to be the maximum number of iterations,
-     to handle cases in which at least one loop_vinfo is fully-masked.  */
-  HOST_WIDE_INT estimated_max_niter;
-  loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo);
-  unsigned HOST_WIDE_INT main_vf;
-  if (main_loop
-      && LOOP_VINFO_NITERS_KNOWN_P (main_loop)
-      && LOOP_VINFO_VECT_FACTOR (main_loop).is_constant (&main_vf))
-    estimated_max_niter = LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
-  else
-    estimated_max_niter = likely_max_stmt_executions_int (loop);
-  if (estimated_max_niter != -1)
-    {
-      if (known_le (estimated_max_niter, new_vf))
-	new_vf = estimated_max_niter;
-      if (known_le (estimated_max_niter, old_vf))
-	old_vf = estimated_max_niter;
-    }
+  const auto *old_costs = old_loop_vinfo->vector_costs;
+  const auto *new_costs = new_loop_vinfo->vector_costs;
+  if (loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo))
+    return new_costs->better_epilogue_loop_than_p (old_costs, main_loop);
 
-  /* Check whether the (fractional) cost per scalar iteration is lower
-     or higher: new_inside_cost / new_vf vs. old_inside_cost / old_vf.  */
-  poly_int64 rel_new = new_loop_vinfo->vec_inside_cost * old_vf;
-  poly_int64 rel_old = old_loop_vinfo->vec_inside_cost * new_vf;
-
-  HOST_WIDE_INT est_rel_new_min
-    = estimated_poly_value (rel_new, POLY_VALUE_MIN);
-  HOST_WIDE_INT est_rel_new_max
-    = estimated_poly_value (rel_new, POLY_VALUE_MAX);
-
-  HOST_WIDE_INT est_rel_old_min
-    = estimated_poly_value (rel_old, POLY_VALUE_MIN);
-  HOST_WIDE_INT est_rel_old_max
-    = estimated_poly_value (rel_old, POLY_VALUE_MAX);
-
-  /* Check first if we can make out an unambigous total order from the minimum
-     and maximum estimates.  */
-  if (est_rel_new_min < est_rel_old_min
-      && est_rel_new_max < est_rel_old_max)
-    return true;
-  else if (est_rel_old_min < est_rel_new_min
-	   && est_rel_old_max < est_rel_new_max)
-    return false;
-  /* When old_loop_vinfo uses a variable vectorization factor,
-     we know that it has a lower cost for at least one runtime VF.
-     However, we don't know how likely that VF is.
-
-     One option would be to compare the costs for the estimated VFs.
-     The problem is that that can put too much pressure on the cost
-     model.  E.g. if the estimated VF is also the lowest possible VF,
-     and if old_loop_vinfo is 1 unit worse than new_loop_vinfo
-     for the estimated VF, we'd then choose new_loop_vinfo even
-     though (a) new_loop_vinfo might not actually be better than
-     old_loop_vinfo for that VF and (b) it would be significantly
-     worse at larger VFs.
-
-     Here we go for a hacky compromise: pick new_loop_vinfo if it is
-     no more expensive than old_loop_vinfo even after doubling the
-     estimated old_loop_vinfo VF.  For all but trivial loops, this
-     ensures that we only pick new_loop_vinfo if it is significantly
-     better than old_loop_vinfo at the estimated VF.  */
-
-  if (est_rel_old_min != est_rel_new_min
-      || est_rel_old_max != est_rel_new_max)
-    {
-      HOST_WIDE_INT est_rel_new_likely
-	= estimated_poly_value (rel_new, POLY_VALUE_LIKELY);
-      HOST_WIDE_INT est_rel_old_likely
-	= estimated_poly_value (rel_old, POLY_VALUE_LIKELY);
-
-      return est_rel_new_likely * 2 <= est_rel_old_likely;
-    }
-
-  /* If there's nothing to choose between the loop bodies, see whether
-     there's a difference in the prologue and epilogue costs.  */
-  if (new_loop_vinfo->vec_outside_cost != old_loop_vinfo->vec_outside_cost)
-    return new_loop_vinfo->vec_outside_cost < old_loop_vinfo->vec_outside_cost;
-
-  return false;
+  return new_costs->better_main_loop_than_p (old_costs);
 }
 
 /* Decide whether to replace OLD_LOOP_VINFO with NEW_LOOP_VINFO.  Return
@@ -2898,43 +2806,78 @@ vect_joust_loop_vinfos (loop_vec_info new_loop_vinfo,
   return true;
 }
 
-/* If LOOP_VINFO is already a main loop, return it unmodified.  Otherwise
-   try to reanalyze it as a main loop.  Return the loop_vinfo on success
-   and null on failure.  */
+/* Analyze LOOP with VECTOR_MODES[MODE_I] and as epilogue if MAIN_LOOP_VINFO is
+   not NULL.  Set AUTODETECTED_VECTOR_MODE if VOIDmode and advance
+   MODE_I to the next mode useful to analyze.
+   Return the loop_vinfo on success and wrapped null on failure.  */
 
-static loop_vec_info
-vect_reanalyze_as_main_loop (loop_vec_info loop_vinfo, unsigned int *n_stmts)
+static opt_loop_vec_info
+vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
+		     const vect_loop_form_info *loop_form_info,
+		     loop_vec_info main_loop_vinfo,
+		     const vector_modes &vector_modes, unsigned &mode_i,
+		     machine_mode &autodetected_vector_mode,
+		     bool &fatal)
 {
-  if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
-    return loop_vinfo;
+  loop_vec_info loop_vinfo
+    = vect_create_loop_vinfo (loop, shared, loop_form_info, main_loop_vinfo);
 
+  machine_mode vector_mode = vector_modes[mode_i];
+  loop_vinfo->vector_mode = vector_mode;
+
+  /* Run the main analysis.  */
+  opt_result res = vect_analyze_loop_2 (loop_vinfo, fatal);
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-		     "***** Reanalyzing as a main loop with vector mode %s\n",
+		     "***** Analysis %s with vector mode %s\n",
+		     res ? "succeeded" : " failed",
 		     GET_MODE_NAME (loop_vinfo->vector_mode));
 
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  vec_info_shared *shared = loop_vinfo->shared;
-  opt_loop_vec_info main_loop_vinfo = vect_analyze_loop_form (loop, shared);
-  gcc_assert (main_loop_vinfo);
+  /* Remember the autodetected vector mode.  */
+  if (vector_mode == VOIDmode)
+    autodetected_vector_mode = loop_vinfo->vector_mode;
 
-  main_loop_vinfo->vector_mode = loop_vinfo->vector_mode;
-
-  bool fatal = false;
-  bool res = vect_analyze_loop_2 (main_loop_vinfo, fatal, n_stmts);
-  loop->aux = NULL;
-  if (!res)
+  /* Advance mode_i, first skipping modes that would result in the
+     same analysis result.  */
+  while (mode_i + 1 < vector_modes.length ()
+	 && vect_chooses_same_modes_p (loop_vinfo,
+				       vector_modes[mode_i + 1]))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Failed to analyze main loop with vector"
-			 " mode %s\n",
-			 GET_MODE_NAME (loop_vinfo->vector_mode));
-      delete main_loop_vinfo;
-      return NULL;
+			 "***** The result for vector mode %s would"
+			 " be the same\n",
+			 GET_MODE_NAME (vector_modes[mode_i + 1]));
+      mode_i += 1;
     }
-  LOOP_VINFO_VECTORIZABLE_P (main_loop_vinfo) = 1;
-  return main_loop_vinfo;
+  if (mode_i + 1 < vector_modes.length ()
+      && VECTOR_MODE_P (autodetected_vector_mode)
+      && (related_vector_mode (vector_modes[mode_i + 1],
+			       GET_MODE_INNER (autodetected_vector_mode))
+	  == autodetected_vector_mode)
+      && (related_vector_mode (autodetected_vector_mode,
+			       GET_MODE_INNER (vector_modes[mode_i + 1]))
+	  == vector_modes[mode_i + 1]))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Skipping vector mode %s, which would"
+			 " repeat the analysis for %s\n",
+			 GET_MODE_NAME (vector_modes[mode_i + 1]),
+			 GET_MODE_NAME (autodetected_vector_mode));
+      mode_i += 1;
+    }
+  mode_i++;
+
+  if (!res)
+    {
+      delete loop_vinfo;
+      if (fatal)
+	gcc_checking_assert (main_loop_vinfo == NULL);
+      return opt_loop_vec_info::propagate_failure (res);
+    }
+
+  return opt_loop_vec_info::success (loop_vinfo);
 }
 
 /* Function vect_analyze_loop.
@@ -2945,14 +2888,6 @@ vect_reanalyze_as_main_loop (loop_vec_info loop_vinfo, unsigned int *n_stmts)
 opt_loop_vec_info
 vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 {
-  auto_vector_modes vector_modes;
-
-  /* Autodetect first vector size we try.  */
-  unsigned int autovec_flags
-    = targetm.vectorize.autovectorize_vector_modes (&vector_modes,
-						    loop->simdlen != 0);
-  unsigned int mode_i = 0;
-
   DUMP_VECT_SCOPE ("analyze_loop_nest");
 
   if (loop_outer (loop)
@@ -2967,99 +2902,60 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
        "not vectorized: loop nest containing two or more consecutive inner"
        " loops cannot be vectorized\n");
 
-  unsigned n_stmts = 0;
-  machine_mode autodetected_vector_mode = VOIDmode;
-  opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
-  machine_mode next_vector_mode = VOIDmode;
-  poly_uint64 lowest_th = 0;
-  unsigned vectorized_loops = 0;
+  /* Analyze the loop form.  */
+  vect_loop_form_info loop_form_info;
+  opt_result res = vect_analyze_loop_form (loop, &loop_form_info);
+  if (!res)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "bad loop form.\n");
+      return opt_loop_vec_info::propagate_failure (res);
+    }
+  if (!integer_onep (loop_form_info.assumptions))
+    {
+      /* We consider to vectorize this loop by versioning it under
+	 some assumptions.  In order to do this, we need to clear
+	 existing information computed by scev and niter analyzer.  */
+      scev_reset_htab ();
+      free_numbers_of_iterations_estimates (loop);
+      /* Also set flag for this loop so that following scev and niter
+	 analysis are done under the assumptions.  */
+      loop_constraint_set (loop, LOOP_C_FINITE);
+    }
+
+  auto_vector_modes vector_modes;
+  /* Autodetect first vector size we try.  */
+  vector_modes.safe_push (VOIDmode);
+  unsigned int autovec_flags
+    = targetm.vectorize.autovectorize_vector_modes (&vector_modes,
+						    loop->simdlen != 0);
   bool pick_lowest_cost_p = ((autovec_flags & VECT_COMPARE_COSTS)
 			     && !unlimited_cost_model (loop));
-
-  bool vect_epilogues = false;
-  opt_result res = opt_result::success ();
+  machine_mode autodetected_vector_mode = VOIDmode;
+  opt_loop_vec_info first_loop_vinfo = opt_loop_vec_info::success (NULL);
+  unsigned int mode_i = 0;
+  unsigned int first_loop_i = 0;
+  unsigned int first_loop_next_i = 0;
   unsigned HOST_WIDE_INT simdlen = loop->simdlen;
+
+  /* First determine the main loop vectorization mode, either the first
+     one that works, starting with auto-detecting the vector mode and then
+     following the targets order of preference, or the one with the
+     lowest cost if pick_lowest_cost_p.  */
   while (1)
     {
-      /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
-      opt_loop_vec_info loop_vinfo = vect_analyze_loop_form (loop, shared);
-      if (!loop_vinfo)
+      unsigned int loop_vinfo_i = mode_i;
+      bool fatal;
+      opt_loop_vec_info loop_vinfo
+	= vect_analyze_loop_1 (loop, shared, &loop_form_info,
+			       NULL, vector_modes, mode_i,
+			       autodetected_vector_mode, fatal);
+      if (fatal)
+	break;
+
+      if (loop_vinfo)
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "bad loop form.\n");
-	  gcc_checking_assert (first_loop_vinfo == NULL);
-	  return loop_vinfo;
-	}
-      loop_vinfo->vector_mode = next_vector_mode;
-
-      bool fatal = false;
-
-      /* When pick_lowest_cost_p is true, we should in principle iterate
-	 over all the loop_vec_infos that LOOP_VINFO could replace and
-	 try to vectorize LOOP_VINFO under the same conditions.
-	 E.g. when trying to replace an epilogue loop, we should vectorize
-	 LOOP_VINFO as an epilogue loop with the same VF limit.  When trying
-	 to replace the main loop, we should vectorize LOOP_VINFO as a main
-	 loop too.
-
-	 However, autovectorize_vector_modes is usually sorted as follows:
-
-	 - Modes that naturally produce lower VFs usually follow modes that
-	   naturally produce higher VFs.
-
-	 - When modes naturally produce the same VF, maskable modes
-	   usually follow unmaskable ones, so that the maskable mode
-	   can be used to vectorize the epilogue of the unmaskable mode.
-
-	 This order is preferred because it leads to the maximum
-	 epilogue vectorization opportunities.  Targets should only use
-	 a different order if they want to make wide modes available while
-	 disparaging them relative to earlier, smaller modes.  The assumption
-	 in that case is that the wider modes are more expensive in some
-	 way that isn't reflected directly in the costs.
-
-	 There should therefore be few interesting cases in which
-	 LOOP_VINFO fails when treated as an epilogue loop, succeeds when
-	 treated as a standalone loop, and ends up being genuinely cheaper
-	 than FIRST_LOOP_VINFO.  */
-      if (vect_epilogues)
-	LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = first_loop_vinfo;
-
-      res = vect_analyze_loop_2 (loop_vinfo, fatal, &n_stmts);
-      if (mode_i == 0)
-	autodetected_vector_mode = loop_vinfo->vector_mode;
-      if (dump_enabled_p ())
-	{
-	  if (res)
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Analysis succeeded with vector mode %s\n",
-			     GET_MODE_NAME (loop_vinfo->vector_mode));
-	  else
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Analysis failed with vector mode %s\n",
-			     GET_MODE_NAME (loop_vinfo->vector_mode));
-	}
-
-      loop->aux = NULL;
-
-      if (!fatal)
-	while (mode_i < vector_modes.length ()
-	       && vect_chooses_same_modes_p (loop_vinfo, vector_modes[mode_i]))
-	  {
-	    if (dump_enabled_p ())
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "***** The result for vector mode %s would"
-			       " be the same\n",
-			       GET_MODE_NAME (vector_modes[mode_i]));
-	    mode_i += 1;
-	  }
-
-      if (res)
-	{
-	  LOOP_VINFO_VECTORIZABLE_P (loop_vinfo) = 1;
-	  vectorized_loops++;
-
 	  /* Once we hit the desired simdlen for the first time,
 	     discard any previous attempts.  */
 	  if (simdlen
@@ -3067,10 +2963,105 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	    {
 	      delete first_loop_vinfo;
 	      first_loop_vinfo = opt_loop_vec_info::success (NULL);
-	      LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = NULL;
 	      simdlen = 0;
 	    }
-	  else if (pick_lowest_cost_p && first_loop_vinfo)
+	  else if (pick_lowest_cost_p
+		   && first_loop_vinfo
+		   && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
+	    {
+	      /* Pick loop_vinfo over first_loop_vinfo.  */
+	      delete first_loop_vinfo;
+	      first_loop_vinfo = opt_loop_vec_info::success (NULL);
+	    }
+	  if (first_loop_vinfo == NULL)
+	    {
+	      first_loop_vinfo = loop_vinfo;
+	      first_loop_i = loop_vinfo_i;
+	      first_loop_next_i = mode_i;
+	    }
+	  else
+	    {
+	      delete loop_vinfo;
+	      loop_vinfo = opt_loop_vec_info::success (NULL);
+	    }
+
+	  /* Commit to first_loop_vinfo if we have no reason to try
+	     alternatives.  */
+	  if (!simdlen && !pick_lowest_cost_p)
+	    break;
+	}
+      if (mode_i == vector_modes.length ()
+	  || autodetected_vector_mode == VOIDmode)
+	break;
+
+      /* Try the next biggest vector size.  */
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis with vector mode %s\n",
+			 GET_MODE_NAME (vector_modes[mode_i]));
+    }
+  if (!first_loop_vinfo)
+    return opt_loop_vec_info::propagate_failure (res);
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "***** Choosing vector mode %s\n",
+		     GET_MODE_NAME (first_loop_vinfo->vector_mode));
+
+  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is
+     enabled, SIMDUID is not set, it is the innermost loop and we have
+     either already found the loop's SIMDLEN or there was no SIMDLEN to
+     begin with.
+     TODO: Enable epilogue vectorization for loops with SIMDUID set.  */
+  bool vect_epilogues = (!simdlen
+			 && loop->inner == NULL
+			 && param_vect_epilogues_nomask
+			 && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
+			 && !loop->simduid);
+  if (!vect_epilogues)
+    return first_loop_vinfo;
+
+  /* Now analyze first_loop_vinfo for epilogue vectorization.  */
+  poly_uint64 lowest_th = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
+
+  /* Handle the case that the original loop can use partial
+     vectorization, but want to only adopt it for the epilogue.
+     The retry should be in the same mode as original.  */
+  if (LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (first_loop_vinfo))
+    {
+      gcc_assert (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (first_loop_vinfo)
+		  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (first_loop_vinfo));
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "***** Re-trying analysis with same vector mode"
+			 " %s for epilogue with partial vectors.\n",
+			 GET_MODE_NAME (first_loop_vinfo->vector_mode));
+      mode_i = first_loop_i;
+    }
+  else
+    {
+      mode_i = first_loop_next_i;
+      if (mode_i == vector_modes.length ())
+	return first_loop_vinfo;
+    }
+
+  /* ???  If first_loop_vinfo was using VOIDmode then we probably
+     want to instead search for the corresponding mode in vector_modes[].  */
+
+  while (1)
+    {
+      bool fatal;
+      opt_loop_vec_info loop_vinfo
+	= vect_analyze_loop_1 (loop, shared, &loop_form_info,
+			       first_loop_vinfo,
+			       vector_modes, mode_i,
+			       autodetected_vector_mode, fatal);
+      if (fatal)
+	break;
+
+      if (loop_vinfo)
+	{
+	  if (pick_lowest_cost_p)
 	    {
 	      /* Keep trying to roll back vectorization attempts while the
 		 loop_vec_infos they produced were worse than this one.  */
@@ -3081,48 +3072,9 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 		  gcc_assert (vect_epilogues);
 		  delete vinfos.pop ();
 		}
-	      if (vinfos.is_empty ()
-		  && vect_joust_loop_vinfos (loop_vinfo, first_loop_vinfo))
-		{
-		  loop_vec_info main_loop_vinfo
-		    = vect_reanalyze_as_main_loop (loop_vinfo, &n_stmts);
-		  if (main_loop_vinfo == loop_vinfo)
-		    {
-		      delete first_loop_vinfo;
-		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		    }
-		  else if (main_loop_vinfo
-			   && vect_joust_loop_vinfos (main_loop_vinfo,
-						      first_loop_vinfo))
-		    {
-		      delete first_loop_vinfo;
-		      first_loop_vinfo = opt_loop_vec_info::success (NULL);
-		      delete loop_vinfo;
-		      loop_vinfo
-			= opt_loop_vec_info::success (main_loop_vinfo);
-		    }
-		  else
-		    {
-		      if (dump_enabled_p ())
-			dump_printf_loc (MSG_NOTE, vect_location,
-					 "***** No longer preferring vector"
-					 " mode %s after reanalyzing the loop"
-					 " as a main loop\n",
-					 GET_MODE_NAME
-					   (main_loop_vinfo->vector_mode));
-		      delete main_loop_vinfo;
-		    }
-		}
 	    }
-
-	  if (first_loop_vinfo == NULL)
-	    {
-	      first_loop_vinfo = loop_vinfo;
-	      lowest_th = LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo);
-	    }
-	  else if (vect_epilogues
-		   /* For now only allow one epilogue loop.  */
-		   && first_loop_vinfo->epilogue_vinfos.is_empty ())
+	  /* For now only allow one epilogue loop.  */
+	  if (first_loop_vinfo->epilogue_vinfos.is_empty ())
 	    {
 	      first_loop_vinfo->epilogue_vinfos.safe_push (loop_vinfo);
 	      poly_uint64 th = LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
@@ -3139,96 +3091,34 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	      loop_vinfo = opt_loop_vec_info::success (NULL);
 	    }
 
-	  /* Only vectorize epilogues if PARAM_VECT_EPILOGUES_NOMASK is
-	     enabled, SIMDUID is not set, it is the innermost loop and we have
-	     either already found the loop's SIMDLEN or there was no SIMDLEN to
-	     begin with.
-	     TODO: Enable epilogue vectorization for loops with SIMDUID set.  */
-	  vect_epilogues = (!simdlen
-			    && loop->inner == NULL
-			    && param_vect_epilogues_nomask
-			    && LOOP_VINFO_PEELING_FOR_NITER (first_loop_vinfo)
-			    && !loop->simduid
-			    /* For now only allow one epilogue loop, but allow
-			       pick_lowest_cost_p to replace it.  */
-			    && (first_loop_vinfo->epilogue_vinfos.is_empty ()
-				|| pick_lowest_cost_p));
-
-	  /* Commit to first_loop_vinfo if we have no reason to try
-	     alternatives.  */
-	  if (!simdlen && !vect_epilogues && !pick_lowest_cost_p)
+	  /* For now only allow one epilogue loop, but allow
+	     pick_lowest_cost_p to replace it, so commit to the
+	     first epilogue if we have no reason to try alternatives.  */
+	  if (!pick_lowest_cost_p)
 	    break;
 	}
-      else
-	{
-	  delete loop_vinfo;
-	  loop_vinfo = opt_loop_vec_info::success (NULL);
-	  if (fatal)
-	    {
-	      gcc_checking_assert (first_loop_vinfo == NULL);
-	      break;
-	    }
-	}
 
-      /* Handle the case that the original loop can use partial
-	 vectorization, but want to only adopt it for the epilogue.
-	 The retry should be in the same mode as original.  */
-      if (vect_epilogues
-	  && loop_vinfo
-	  && LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo))
-	{
-	  gcc_assert (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-		      && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo));
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Re-trying analysis with same vector mode"
-			     " %s for epilogue with partial vectors.\n",
-			     GET_MODE_NAME (loop_vinfo->vector_mode));
-	  continue;
-	}
-
-      if (mode_i < vector_modes.length ()
-	  && VECTOR_MODE_P (autodetected_vector_mode)
-	  && (related_vector_mode (vector_modes[mode_i],
-				   GET_MODE_INNER (autodetected_vector_mode))
-	      == autodetected_vector_mode)
-	  && (related_vector_mode (autodetected_vector_mode,
-				   GET_MODE_INNER (vector_modes[mode_i]))
-	      == vector_modes[mode_i]))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Skipping vector mode %s, which would"
-			     " repeat the analysis for %s\n",
-			     GET_MODE_NAME (vector_modes[mode_i]),
-			     GET_MODE_NAME (autodetected_vector_mode));
-	  mode_i += 1;
-	}
-
-      if (mode_i == vector_modes.length ()
-	  || autodetected_vector_mode == VOIDmode)
+      if (mode_i == vector_modes.length ())
 	break;
 
       /* Try the next biggest vector size.  */
-      next_vector_mode = vector_modes[mode_i++];
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Re-trying analysis with vector mode %s\n",
-			 GET_MODE_NAME (next_vector_mode));
+			 "***** Re-trying epilogue analysis with vector "
+			 "mode %s\n", GET_MODE_NAME (vector_modes[mode_i]));
     }
 
-  if (first_loop_vinfo)
+  if (!first_loop_vinfo->epilogue_vinfos.is_empty ())
     {
-      loop->aux = (loop_vec_info) first_loop_vinfo;
+      LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Choosing vector mode %s\n",
-			 GET_MODE_NAME (first_loop_vinfo->vector_mode));
-      LOOP_VINFO_VERSIONING_THRESHOLD (first_loop_vinfo) = lowest_th;
-      return first_loop_vinfo;
+			 "***** Choosing epilogue vector mode %s\n",
+			 GET_MODE_NAME
+			   (first_loop_vinfo->epilogue_vinfos[0]->vector_mode));
     }
 
-  return opt_loop_vec_info::propagate_failure (res);
+  return first_loop_vinfo;
 }
 
 /* Return true if there is an in-order reduction function for CODE, storing
@@ -3306,7 +3196,7 @@ reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
    of the scalar elements.  If the reduction has just a single initial value
    then INITIAL_VALUE is that value, otherwise it is null.  */
 
-static tree
+tree
 neutral_op_for_reduction (tree scalar_type, tree_code code, tree initial_value)
 {
   switch (code)
@@ -3677,6 +3567,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return def_stmt_info;
     }
 
+  /* When the inner loop of a double reduction ends up with more than
+     one loop-closed PHI we have failed to classify alternate such
+     PHIs as double reduction, leading to wrong code.  See PR103237.  */
+  if (inner_loop_of_double_reduc && lcphis.length () != 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unhandle double reduction\n");
+      return NULL;
+    }
+
   /* If this isn't a nested cycle or if the nested cycle reduction value
      is used ouside of the inner loop we cannot handle uses of the reduction
      value.  */
@@ -3895,7 +3796,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   int scalar_outside_cost = 0;
   int assumed_vf = vect_vf_for_cost (loop_vinfo);
   int npeel = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
-  void *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+  vector_costs *target_cost_data = loop_vinfo->vector_costs;
 
   /* Cost model disabled.  */
   if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
@@ -3912,7 +3813,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       unsigned len = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).length ();
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, len, vector_stmt,
+      (void) add_stmt_cost (target_cost_data, len, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
@@ -3925,12 +3826,12 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       unsigned len = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).length ();
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, len, vector_stmt,
+      (void) add_stmt_cost (target_cost_data, len, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_prologue);
       len = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).length ();
       if (len)
 	/* Count LEN - 1 ANDs and LEN comparisons.  */
-	(void) add_stmt_cost (loop_vinfo, target_cost_data, len * 2 - 1,
+	(void) add_stmt_cost (target_cost_data, len * 2 - 1,
 			      scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
       len = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo).length ();
       if (len)
@@ -3941,7 +3842,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	  for (unsigned int i = 0; i < len; ++i)
 	    if (!LOOP_VINFO_LOWER_BOUNDS (loop_vinfo)[i].unsigned_p)
 	      nstmts += 1;
-	  (void) add_stmt_cost (loop_vinfo, target_cost_data, nstmts,
+	  (void) add_stmt_cost (target_cost_data, nstmts,
 				scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
 	}
       if (dump_enabled_p ())
@@ -3954,7 +3855,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo))
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, vector_stmt,
+      (void) add_stmt_cost (target_cost_data, 1, vector_stmt,
 			    NULL, NULL_TREE, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
@@ -3963,7 +3864,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+    (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken,
 			  NULL, NULL_TREE, 0, vect_prologue);
 
   /* Count statements in scalar loop.  Using this as scalar cost for a single
@@ -3974,8 +3875,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Consider assigning different costs to different scalar
      statements.  */
 
-  scalar_single_iter_cost
-    = LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo);
+  scalar_single_iter_cost = loop_vinfo->scalar_costs->total_cost ();
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.  (For fully-masked loops there will be no peeling.)
@@ -4051,7 +3951,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (peel_iters_prologue)
     FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
       {
-	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+	(void) add_stmt_cost (target_cost_data,
 			      si->count * peel_iters_prologue, si->kind,
 			      si->stmt_info, si->vectype, si->misalign,
 			      vect_prologue);
@@ -4061,7 +3961,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (peel_iters_epilogue)
     FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
       {
-	(void) add_stmt_cost (loop_vinfo, target_cost_data,
+	(void) add_stmt_cost (target_cost_data,
 			      si->count * peel_iters_epilogue, si->kind,
 			      si->stmt_info, si->vectype, si->misalign,
 			      vect_epilogue);
@@ -4070,20 +3970,20 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* Add possible cond_branch_taken/cond_branch_not_taken cost.  */
 
   if (prologue_need_br_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+    (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken,
 			  NULL, NULL_TREE, 0, vect_prologue);
 
   if (prologue_need_br_not_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+    (void) add_stmt_cost (target_cost_data, 1,
 			  cond_branch_not_taken, NULL, NULL_TREE, 0,
 			  vect_prologue);
 
   if (epilogue_need_br_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1, cond_branch_taken,
+    (void) add_stmt_cost (target_cost_data, 1, cond_branch_taken,
 			  NULL, NULL_TREE, 0, vect_epilogue);
 
   if (epilogue_need_br_not_taken_cost)
-    (void) add_stmt_cost (loop_vinfo, target_cost_data, 1,
+    (void) add_stmt_cost (target_cost_data, 1,
 			  cond_branch_not_taken, NULL, NULL_TREE, 0,
 			  vect_epilogue);
 
@@ -4111,9 +4011,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	 simpler and safer to use the worst-case cost; if this ends up
 	 being the tie-breaker between vectorizing or not, then it's
 	 probably better not to vectorize.  */
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks,
+      (void) add_stmt_cost (target_cost_data, num_masks,
 			    vector_stmt, NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, num_masks - 1,
+      (void) add_stmt_cost (target_cost_data, num_masks - 1,
 			    vector_stmt, NULL, NULL_TREE, 0, vect_body);
     }
   else if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
@@ -4163,9 +4063,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	      body_stmts += 3 * num_vectors;
 	  }
 
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, prologue_stmts,
+      (void) add_stmt_cost (target_cost_data, prologue_stmts,
 			    scalar_stmt, NULL, NULL_TREE, 0, vect_prologue);
-      (void) add_stmt_cost (loop_vinfo, target_cost_data, body_stmts,
+      (void) add_stmt_cost (target_cost_data, body_stmts,
 			    scalar_stmt, NULL, NULL_TREE, 0, vect_body);
     }
 
@@ -4241,14 +4141,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   /* Complete the target-specific cost calculations.  */
-  finish_cost (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo), &vec_prologue_cost,
-	       &vec_inside_cost, &vec_epilogue_cost);
+  finish_cost (loop_vinfo->vector_costs, loop_vinfo->scalar_costs,
+	       &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost);
 
   vec_outside_cost = (int)(vec_prologue_cost + vec_epilogue_cost);
-
-  /* Stash the costs so that we can compare two loop_vec_infos.  */
-  loop_vinfo->vec_inside_cost = vec_inside_cost;
-  loop_vinfo->vec_outside_cost = vec_outside_cost;
 
   if (dump_enabled_p ())
     {
@@ -9332,7 +9228,7 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "------>vectorizing statement: %G", stmt_info->stmt);
 
-  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+  if (flag_var_tracking_assignments && !STMT_VINFO_LIVE_P (stmt_info))
     vect_loop_kill_debug_uses (loop, stmt_info);
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info)
@@ -9706,7 +9602,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	  if (!stmt_info)
 	    continue;
 
-	  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
+	  if (flag_var_tracking_assignments && !STMT_VINFO_LIVE_P (stmt_info))
 	    vect_loop_kill_debug_uses (loop, stmt_info);
 
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)

@@ -57,14 +57,13 @@ build_lambda_object (tree lambda_expr)
      - cp_parser_functional_cast  */
   vec<constructor_elt, va_gc> *elts = NULL;
   tree node, expr, type;
-  location_t saved_loc;
 
   if (processing_template_decl || lambda_expr == error_mark_node)
     return lambda_expr;
 
   /* Make sure any error messages refer to the lambda-introducer.  */
-  saved_loc = input_location;
-  input_location = LAMBDA_EXPR_LOCATION (lambda_expr);
+  location_t loc = LAMBDA_EXPR_LOCATION (lambda_expr);
+  iloc_sentinel il (loc);
 
   for (node = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr);
        node;
@@ -117,10 +116,10 @@ build_lambda_object (tree lambda_expr)
   type = LAMBDA_EXPR_CLOSURE (lambda_expr);
   CLASSTYPE_NON_AGGREGATE (type) = 0;
   expr = finish_compound_literal (type, expr, tf_warning_or_error);
+  protected_set_expr_location (expr, loc);
   CLASSTYPE_NON_AGGREGATE (type) = 1;
 
  out:
-  input_location = saved_loc;
   return expr;
 }
 

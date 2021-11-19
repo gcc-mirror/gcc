@@ -9,6 +9,9 @@
 /* Define to 1 if you have the `aligned_alloc' function. */
 #undef HAVE_ALIGNED_ALLOC
 
+/* Define if arc4random is available in <stdlib.h>. */
+#undef HAVE_ARC4RANDOM
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
@@ -131,6 +134,9 @@
 
 /* Define to 1 if you have the `frexpl' function. */
 #undef HAVE_FREXPL
+
+/* Define if getentropy is available in <unistd.h>. */
+#undef HAVE_GETENTROPY
 
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO

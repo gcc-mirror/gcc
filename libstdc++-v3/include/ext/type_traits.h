@@ -148,17 +148,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // For use in string and vstring.
   template<typename _Type>
+    _GLIBCXX_CONSTEXPR
     inline bool
     __is_null_pointer(_Type* __ptr)
     { return __ptr == 0; }
 
   template<typename _Type>
+    _GLIBCXX_CONSTEXPR
     inline bool
     __is_null_pointer(_Type)
     { return false; }
 
 #if __cplusplus >= 201103L
-  inline bool
+  constexpr bool
   __is_null_pointer(std::nullptr_t)
   { return true; }
 #endif

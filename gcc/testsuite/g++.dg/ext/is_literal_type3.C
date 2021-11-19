@@ -6,7 +6,11 @@ struct S {
   int n;
 };
 
+#if __cpp_implicit_constexpr
+static_assert(__is_literal_type(S), "");
+#else
 static_assert(!__is_literal_type(S), "");
+#endif
 
 #ifdef __cpp_constexpr_dynamic_alloc
 struct T {

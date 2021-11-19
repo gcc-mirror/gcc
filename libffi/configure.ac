@@ -48,6 +48,10 @@ m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)
 
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+AC_SUBST(CET_FLAGS)
+
 AM_PROG_AS
 AM_PROG_CC_C_O
 AC_PROG_LIBTOOL

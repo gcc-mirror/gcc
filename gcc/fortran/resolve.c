@@ -2974,6 +2974,19 @@ resolve_unknown_f (gfc_expr *expr)
       return false;
     }
 
+  /* IMPLICIT NONE (external) procedures require an explicit EXTERNAL attr.  */
+  /* Intrinsics were handled above, only non-intrinsics left here.  */
+  if (sym->attr.flavor == FL_PROCEDURE
+      && sym->attr.implicit_type
+      && sym->ns
+      && sym->ns->has_implicit_none_export)
+    {
+	  gfc_error ("Missing explicit declaration with EXTERNAL attribute "
+	      "for symbol %qs at %L", sym->name, &sym->declared_at);
+	  sym->error = 1;
+	  return false;
+    }
+
   /* The reference is to an external name.  */
 
   sym->attr.proc = PROC_EXTERNAL;
@@ -4051,7 +4064,7 @@ resolve_operator (gfc_expr *e)
     {
     default:
       if (!gfc_resolve_expr (e->value.op.op2))
-	return false;
+	t = false;
 
     /* Fall through.  */
 
@@ -4077,6 +4090,9 @@ resolve_operator (gfc_expr *e)
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
   if (op1 == NULL && op2 == NULL)
+    return false;
+  /* Error out if op2 did not resolve. We already diagnosed op1.  */
+  if (t == false)
     return false;
 
   dual_locus_error = false;
@@ -8830,7 +8846,8 @@ resolve_select (gfc_code *code, bool select_type)
 		  || cp->low != cp->high))
 	    {
 	      gfc_error ("Logical range in CASE statement at %L is not "
-			 "allowed", &cp->low->where);
+			 "allowed",
+			 cp->low ? &cp->low->where : &cp->high->where);
 	      t = false;
 	      break;
 	    }

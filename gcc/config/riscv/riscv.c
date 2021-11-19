@@ -2014,8 +2014,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	      (TARGET_64BIT && (mode == DImode)))
 	  && (GET_CODE (XEXP (x, 0)) == ASHIFT)
 	  && REG_P (XEXP (XEXP (x, 0), 0))
-	  && CONST_INT_P (XEXP (XEXP (x, 0), 0))
-	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 0)), 1, 3))
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  && IN_RANGE (INTVAL (XEXP (XEXP (x, 0), 1)), 1, 3))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;
@@ -2044,7 +2044,6 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	    if (!CONST_INT_P (and_rhs))
 	      break;
 
-	    rtx ashift_lhs = XEXP (and_lhs, 0);
 	    rtx ashift_rhs = XEXP (and_lhs, 1);
 
 	    if (!CONST_INT_P (ashift_rhs)
@@ -4811,10 +4810,10 @@ riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 static unsigned char
 riscv_class_max_nregs (reg_class_t rclass, machine_mode mode)
 {
-  if (reg_class_subset_p (FP_REGS, rclass))
+  if (reg_class_subset_p (rclass, FP_REGS))
     return riscv_hard_regno_nregs (FP_REG_FIRST, mode);
 
-  if (reg_class_subset_p (GR_REGS, rclass))
+  if (reg_class_subset_p (rclass, GR_REGS))
     return riscv_hard_regno_nregs (GP_REG_FIRST, mode);
 
   return 0;

@@ -1,3 +1,25 @@
+2021-11-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py (class BadYear): Derive from 'Exception'.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite-management/validate_failures.py: 2to3
+
+2021-11-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Add -v option.
+	* gcc-changelog/git_commit.py: Print verbose diff for wrong
+	filename.
+
+2021-11-02  Martin Liska  <mliska@suse.cz>
+
+	* check-internal-format-escaping.py: Fix flake8 errors.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* unicode/utf8-dump.py: New file.
+
 2021-10-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc-changelog/git_commit.py (ignored_prefixes): Add libffi/.

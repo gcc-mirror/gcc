@@ -71,6 +71,10 @@
 
 /* sigtramp stub providing unwind info for common registers.  */
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 extern void __gnat_sigtramp_common
   (int signo, void *siginfo, void *sigcontext,
    __sigtramphandler_t * handler);
@@ -86,6 +90,10 @@ void __gnat_sigtramp (int signo, void *si, void *ucontext,
 
   __gnat_sigtramp_common (signo, si, mcontext, handler);
 }
+
+#if defined(__cplusplus)
+}
+#endif
 
 /* asm string construction helpers.  */
 

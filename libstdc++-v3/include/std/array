@@ -481,6 +481,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using type = _Tp;
     };
 
+#if __cplusplus >= 201703L
+  template<typename _Tp, size_t _Nm>
+    inline constexpr size_t tuple_size_v<array<_Tp, _Nm>> = _Nm;
+
+  template<typename _Tp, size_t _Nm>
+    inline constexpr size_t tuple_size_v<const array<_Tp, _Nm>> = _Nm;
+#endif
+
   template<typename _Tp, size_t _Nm>
     struct __is_tuple_like_impl<array<_Tp, _Nm>> : true_type
     { };

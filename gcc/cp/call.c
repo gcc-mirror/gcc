@@ -1070,8 +1070,6 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
   conversion *c;
   unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
   tree elttype = TREE_TYPE (type);
-  unsigned i;
-  tree val;
   bool bad = false;
   bool user = false;
   enum conversion_rank rank = cr_exact;
@@ -1089,10 +1087,10 @@ build_array_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+  for (auto &e: CONSTRUCTOR_ELTS (ctor))
     {
       conversion *sub
-	= implicit_conversion (elttype, TREE_TYPE (val), val,
+	= implicit_conversion (elttype, TREE_TYPE (e.value), e.value,
 			       false, flags, complain);
       if (sub == NULL)
 	return NULL;
@@ -1124,8 +1122,6 @@ build_complex_conv (tree type, tree ctor, int flags,
   conversion *c;
   unsigned HOST_WIDE_INT len = CONSTRUCTOR_NELTS (ctor);
   tree elttype = TREE_TYPE (type);
-  unsigned i;
-  tree val;
   bool bad = false;
   bool user = false;
   enum conversion_rank rank = cr_exact;
@@ -1135,10 +1131,10 @@ build_complex_conv (tree type, tree ctor, int flags,
 
   flags = LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING;
 
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
+  for (auto &e: CONSTRUCTOR_ELTS (ctor))
     {
       conversion *sub
-	= implicit_conversion (elttype, TREE_TYPE (val), val,
+	= implicit_conversion (elttype, TREE_TYPE (e.value), e.value,
 			       false, flags, complain);
       if (sub == NULL)
 	return NULL;
@@ -12553,7 +12549,11 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	IMPLICIT_CONV_EXPR_BRACED_INIT (expr) = true;
     }
   else
-    expr = convert_like (conv, expr, complain);
+    {
+      /* Give a conversion call the same location as expr.  */
+      iloc_sentinel il (loc);
+      expr = convert_like (conv, expr, complain);
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);

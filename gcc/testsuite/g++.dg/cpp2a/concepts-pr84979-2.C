@@ -6,7 +6,8 @@ void foo1(T& t) {
   typename T::template C<void> tcv = t;
   typename T::template C<auto> u = tcv; // { dg-error "not permitted" "" { target c++20 } }
   T::template C<auto>::f (tcv, u); // { dg-error "incomplete|not permitted" }
-  (typename T::template D<auto> (t)); // { dg-error "invalid|not permitted" }
+  (typename T::template D<auto> (t)); // { dg-error "invalid|not permitted|unable" }
+// { dg-warning "only available" "" { target c++17_down } .-1 }
 }
 
 struct T1 {

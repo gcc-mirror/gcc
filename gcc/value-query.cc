@@ -435,14 +435,6 @@ gimple_range_global (tree name)
 
 global_range_query global_ranges;
 
-// Like get_range_query, but for accessing global ranges.
-
-range_query *
-get_global_range_query ()
-{
-  return &global_ranges;
-}
-
 bool
 global_range_query::range_of_expr (irange &r, tree expr, gimple *stmt)
 {

@@ -7670,7 +7670,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 
 	  tree def = info->iv->ssa_name;
 
-	  if (MAY_HAVE_DEBUG_BIND_STMTS && SSA_NAME_DEF_STMT (def))
+	  if (flag_var_tracking_assignments && SSA_NAME_DEF_STMT (def))
 	    {
 	      imm_use_iterator imm_iter;
 	      use_operand_p use_p;
@@ -7742,9 +7742,8 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 	      comp = unshare_expr (comp);
 	      if (count > 1)
 		{
-		  tree vexpr = make_node (DEBUG_EXPR_DECL);
-		  DECL_ARTIFICIAL (vexpr) = 1;
-		  TREE_TYPE (vexpr) = TREE_TYPE (comp);
+		  tree vexpr = build_debug_expr_decl (TREE_TYPE (comp));
+		  /* FIXME: Is setting the mode really necessary? */
 		  if (SSA_NAME_VAR (def))
 		    SET_DECL_MODE (vexpr, DECL_MODE (SSA_NAME_VAR (def)));
 		  else

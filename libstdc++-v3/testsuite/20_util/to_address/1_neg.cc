@@ -32,5 +32,5 @@ struct P
 void test01()
 {
   P p;
-  std::to_address(p); // { dg-error "required from here" }
+  std::to_address(p); // { dg-error "" }
 }

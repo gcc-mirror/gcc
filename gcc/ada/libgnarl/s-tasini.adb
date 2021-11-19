@@ -126,6 +126,7 @@ package body System.Tasking.Initialization is
       if Self_ID /= null
         and then Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
+        and then not Self_ID.Aborting
       then
          return 1;
       else

@@ -899,10 +899,12 @@ simplify_context::simplify_unary_operation (rtx_code code, machine_mode mode,
 static bool
 exact_int_to_float_conversion_p (const_rtx op)
 {
-  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
   machine_mode op0_mode = GET_MODE (XEXP (op, 0));
-  /* Constants shouldn't reach here.  */
-  gcc_assert (op0_mode != VOIDmode);
+  /* Constants can reach here with -frounding-math, if they do then
+     the conversion isn't exact.  */
+  if (op0_mode == VOIDmode)
+    return false;
+  int out_bits = significand_size (GET_MODE_INNER (GET_MODE (op)));
   int in_prec = GET_MODE_UNIT_PRECISION (op0_mode);
   int in_bits = in_prec;
   if (HWI_COMPUTABLE_MODE_P (op0_mode))
@@ -7622,15 +7624,15 @@ simplify_context::lowpart_subreg (machine_mode outer_mode, rtx expr,
 
 /* Generate RTX to select element at INDEX out of vector OP.  */
 
-rtx simplify_context::simplify_gen_vec_select (rtx op, unsigned int index)
+rtx
+simplify_context::simplify_gen_vec_select (rtx op, unsigned int index)
 {
+  gcc_assert (VECTOR_MODE_P (GET_MODE (op)));
 
-  if (!VECTOR_MODE_P (GET_MODE (op)))
-    return NULL_RTX;
+  scalar_mode imode = GET_MODE_INNER (GET_MODE (op));
 
-  machine_mode imode = GET_MODE_INNER (GET_MODE (op));
-
-  if (index == 0)
+  if (known_eq (index * GET_MODE_SIZE (imode),
+		subreg_lowpart_offset (imode, GET_MODE (op))))
     {
       rtx res = lowpart_subreg (imode, op, GET_MODE (op));
       if (res)

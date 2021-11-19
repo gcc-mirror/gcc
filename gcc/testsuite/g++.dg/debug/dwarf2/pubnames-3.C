@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-skip-if "" { powerpc-ibm-aix* } }
-// { dg-options "-gpubnames -gdwarf-4 -fdebug-types-section -dA" }
+// { dg-options "-gpubnames -gdwarf-4 -fdebug-types-section -dA -fno-inline" }
 // { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 1 } }
 // { dg-final { scan-assembler "\"\\(anonymous namespace\\)\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"one\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }

@@ -1,3 +1,14 @@
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (promote_symbol): Clear semantic_interposition flag.
+
+2021-11-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103070
+	PR ipa/103058
+	* lto-partition.c (must_not_rename): Update comment.
+	(promote_symbol): Set resolution to LDPR_PREVAILING_DEF_IRONLY.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

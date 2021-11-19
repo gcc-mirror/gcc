@@ -99,7 +99,9 @@ subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/asmcfi.m4 \
+	$(top_srcdir)/../config/cet.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
+	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -320,6 +322,7 @@ CCAS = @CCAS@
 CCASDEPMODE = @CCASDEPMODE@
 CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
+CET_FLAGS = @CET_FLAGS@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -586,7 +589,7 @@ libffi_convenience_la_LIBADD = $(libffi_la_LIBADD)
 libffi_convenience_la_DEPENDENCIES = $(libffi_la_DEPENDENCIES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
-AM_CFLAGS = -Wall -g -fexceptions $(am__append_2)
+AM_CFLAGS = -Wall -g -fexceptions $(CET_FLAGS) $(am__append_2)
 @LIBFFI_BUILD_VERSIONED_SHLIB_FALSE@libffi_version_script = 
 @LIBFFI_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,--version-script,libffi.map
 @LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_script = -Wl,-M,libffi.map-sun
@@ -597,7 +600,7 @@ libffi_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
 libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
-AM_CCASFLAGS = $(AM_CPPFLAGS)
+AM_CCASFLAGS = $(AM_CPPFLAGS) $(CET_FLAGS)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 

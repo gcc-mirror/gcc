@@ -54,6 +54,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define DO_GLOBAL_DTORS_BODY
 
+/* Register static destructors to run from __cxa_atexit instead of putting
+   them into a .mod_term_funcs section.  */
+
+#define TARGET_DTORS_FROM_CXA_ATEXIT true
+
 /* The string value for __SIZE_TYPE__.  */
 
 #ifndef SIZE_TYPE
@@ -921,6 +926,8 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
       sprintf (LABEL, "*%s%ld", "lubsan_type", (long)(NUM));\
     else if (strcmp ("LASAN", PREFIX) == 0)	\
       sprintf (LABEL, "*%s%ld", "lASAN", (long)(NUM));\
+    else if (strcmp ("LTRAMP", PREFIX) == 0)	\
+      sprintf (LABEL, "*%s%ld", "lTRAMP", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
   } while (0)

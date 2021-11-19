@@ -84,6 +84,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Sinfo.CN;       use Sinfo.CN;
 with Sinput;         use Sinput;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Stylesw;        use Stylesw;
 with Table;
 with Targparm;       use Targparm;
@@ -1684,7 +1685,15 @@ package body Sem_Prag is
                --  States and global objects are not used properly only when
                --  the subprogram is subject to pragma Global.
 
-               elsif Global_Seen then
+               elsif Global_Seen
+                 and then Ekind (Item_Id) in E_Abstract_State
+                                           | E_Constant
+                                           | E_Loop_Parameter
+                                           | E_Protected_Type
+                                           | E_Task_Type
+                                           | E_Variable
+                                           | Formal_Kind
+               then
                   Usage_Error (Item_Id);
                end if;
             end if;
@@ -10435,6 +10444,49 @@ package body Sem_Prag is
          Expr  : Node_Id;
          Val   : Uint;
 
+         procedure Process_No_Specification_of_Aspect;
+         --  Process the No_Specification_of_Aspect restriction
+
+         procedure Process_No_Use_Of_Attribute;
+         --  Process the No_Use_Of_Attribute restriction
+
+         ----------------------------------------
+         -- Process_No_Specification_of_Aspect --
+         ----------------------------------------
+
+         procedure Process_No_Specification_of_Aspect is
+            Name : constant Name_Id := Chars (Expr);
+         begin
+            if Nkind (Expr) = N_Identifier
+               and then Is_Aspect_Id (Name)
+            then
+               Set_Restriction_No_Specification_Of_Aspect (Expr, Warn);
+            else
+               Bad_Aspect (Expr, Name, Warn => True);
+
+               raise Pragma_Exit;
+            end if;
+         end Process_No_Specification_of_Aspect;
+
+         ---------------------------------
+         -- Process_No_Use_Of_Attribute --
+         ---------------------------------
+
+         procedure Process_No_Use_Of_Attribute is
+            Name : constant Name_Id := Chars (Expr);
+         begin
+            if Nkind (Expr) = N_Identifier
+               and then Is_Attribute_Name (Name)
+            then
+               Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
+            else
+               Bad_Attribute (Expr, Name, Warn => True);
+            end if;
+
+         end Process_No_Use_Of_Attribute;
+
+      --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
+
       begin
          --  Ignore all Restrictions pragmas in CodePeer mode
 
@@ -10659,34 +10711,12 @@ package body Sem_Prag is
             --  Case of No_Specification_Of_Aspect => aspect-identifier
 
             elsif Id = Name_No_Specification_Of_Aspect then
-               declare
-                  A_Id : Aspect_Id;
-
-               begin
-                  if Nkind (Expr) /= N_Identifier then
-                     A_Id := No_Aspect;
-                  else
-                     A_Id := Get_Aspect_Id (Chars (Expr));
-                  end if;
-
-                  if A_Id = No_Aspect then
-                     Error_Pragma_Arg ("invalid restriction name", Arg);
-                  else
-                     Set_Restriction_No_Specification_Of_Aspect (Expr, Warn);
-                  end if;
-               end;
+               Process_No_Specification_of_Aspect;
 
             --  Case of No_Use_Of_Attribute => attribute-identifier
 
             elsif Id = Name_No_Use_Of_Attribute then
-               if Nkind (Expr) /= N_Identifier
-                 or else not Is_Attribute_Name (Chars (Expr))
-               then
-                  Error_Msg_N ("unknown attribute name??", Expr);
-
-               else
-                  Set_Restriction_No_Use_Of_Attribute (Expr, Warn);
-               end if;
+               Process_No_Use_Of_Attribute;
 
             --  Case of No_Use_Of_Entity => fully-qualified-name
 
@@ -11479,7 +11509,7 @@ package body Sem_Prag is
 
       Check_Restriction_No_Use_Of_Pragma (N);
 
-      if Get_Aspect_Id (Chars (Pragma_Identifier (N))) /= No_Aspect then
+      if Is_Aspect_Id (Chars (Pragma_Identifier (N))) then
          --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.
@@ -19438,7 +19468,29 @@ package body Sem_Prag is
             Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
             Def_Id := Entity (Get_Pragma_Arg (Arg1));
 
-            if Is_Access_Type (Def_Id) then
+            --  Apply the pragma to the designated type, rather than to the
+            --  access type, unless it's a strub annotation.  We wish to enable
+            --  objects of access type, as well as access types themselves, to
+            --  be annotated, so that reading the access objects (as oposed to
+            --  the designated data) automatically enables stack
+            --  scrubbing. That said, as in the attribute handler that
+            --  processes the pragma turned into a compiler attribute, a strub
+            --  annotation that must be associated with a subprogram type (for
+            --  holding an explicit strub mode), when applied to an
+            --  access-to-subprogram, gets promoted to the subprogram type. We
+            --  might be tempted to leave it alone here, since the C attribute
+            --  handler will adjust it, but then GNAT would convert the
+            --  annotated subprogram types to naked ones before using them,
+            --  cancelling out their intended effects.
+
+            if Is_Access_Type (Def_Id)
+              and then (not Strub_Pragma_P (N)
+                          or else
+                          (Present (Arg3)
+                             and then
+                             Ekind (Designated_Type
+                                      (Def_Id)) = E_Subprogram_Type))
+            then
                Def_Id := Designated_Type (Def_Id);
             end if;
 
@@ -19456,7 +19508,7 @@ package body Sem_Prag is
             if Rep_Item_Too_Late (Def_Id, N) then
                return;
             else
-               Set_Has_Gigi_Rep_Item (Entity (Get_Pragma_Arg (Arg1)));
+               Set_Has_Gigi_Rep_Item (Def_Id);
             end if;
          end Machine_Attribute;
 

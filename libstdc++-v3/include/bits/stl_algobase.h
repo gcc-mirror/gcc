@@ -956,6 +956,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	      const _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>&,
 	      const _VTp&);
 
+  _GLIBCXX20_CONSTEXPR
   void
   __fill_a1(_GLIBCXX_STD_C::_Bit_iterator, _GLIBCXX_STD_C::_Bit_iterator,
 	    const bool&);

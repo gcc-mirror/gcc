@@ -7981,7 +7981,7 @@ Bound_method_expression::do_check_types(Gogo*)
 Bound_method_expression::Method_value_thunks
   Bound_method_expression::method_value_thunks;
 
-// Find or create the thunk for METHOD.
+// Find or create the thunk for FN.
 
 Named_object*
 Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
@@ -8078,12 +8078,26 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
   gogo->add_statement(s);
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);
+
+  // This is called after lowering but before determine_types.
   gogo->lower_block(new_no, b);
-  gogo->flatten_block(new_no, b);
+
   gogo->finish_function(loc);
 
   ins.first->second = new_no;
   return new_no;
+}
+
+// Look up a thunk for FN.
+
+Named_object*
+Bound_method_expression::lookup_thunk(Named_object* fn)
+{
+  Method_value_thunks::const_iterator p =
+    Bound_method_expression::method_value_thunks.find(fn);
+  if (p == Bound_method_expression::method_value_thunks.end())
+    return NULL;
+  return p->second;
 }
 
 // Return an expression to check *REF for nil while dereferencing
@@ -8129,10 +8143,11 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
 {
   Location loc = this->location();
 
-  Named_object* thunk = Bound_method_expression::create_thunk(gogo,
-							      this->method_,
-							      this->function_);
-  if (thunk->is_erroneous())
+  Named_object* thunk = Bound_method_expression::lookup_thunk(this->function_);
+
+  // The thunk should have been created during the
+  // create_function_descriptors pass.
+  if (thunk == NULL || thunk->is_erroneous())
     {
       go_assert(saw_errors());
       return Expression::make_error(loc);
@@ -14757,12 +14772,32 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
   gogo->add_statement(s);
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);
+
+  // This is called after lowering but before determine_types.
   gogo->lower_block(new_no, b);
-  gogo->flatten_block(new_no, b);
+
   gogo->finish_function(loc);
 
   ins.first->second->push_back(std::make_pair(name, new_no));
   return new_no;
+}
+
+// Lookup a thunk to call method NAME on TYPE.
+
+Named_object*
+Interface_field_reference_expression::lookup_thunk(Interface_type* type,
+						   const std::string& name)
+{
+  Interface_method_thunks::const_iterator p =
+    Interface_field_reference_expression::interface_method_thunks.find(type);
+  if (p == Interface_field_reference_expression::interface_method_thunks.end())
+    return NULL;
+  for (Method_thunks::const_iterator pm = p->second->begin();
+       pm != p->second->end();
+       ++pm)
+    if (pm->first == name)
+      return pm->second;
+  return NULL;
 }
 
 // Get the backend representation for a method value.
@@ -14778,9 +14813,11 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
     }
 
   Named_object* thunk =
-    Interface_field_reference_expression::create_thunk(context->gogo(),
-						       type, this->name_);
-  if (thunk->is_erroneous())
+    Interface_field_reference_expression::lookup_thunk(type, this->name_);
+
+  // The thunk should have been created during the
+  // create_function_descriptors pass.
+  if (thunk == NULL || thunk->is_erroneous())
     {
       go_assert(saw_errors());
       return context->backend()->error_expression();

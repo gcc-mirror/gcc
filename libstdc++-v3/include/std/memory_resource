@@ -33,6 +33,7 @@
 
 #if __cplusplus >= 201703L
 
+#include <new>
 #include <vector>			// vector
 #include <cstddef>			// size_t, max_align_t, byte
 #include <shared_mutex>			// shared_mutex
@@ -103,7 +104,7 @@ namespace pmr
     void*
     allocate(size_t __bytes, size_t __alignment = _S_max_align)
     __attribute__((__returns_nonnull__,__alloc_size__(2),__alloc_align__(3)))
-    { return do_allocate(__bytes, __alignment); }
+    { return ::operator new(__bytes, do_allocate(__bytes, __alignment)); }
 
     void
     deallocate(void* __p, size_t __bytes, size_t __alignment = _S_max_align)

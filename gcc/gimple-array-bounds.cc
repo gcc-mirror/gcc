@@ -372,31 +372,6 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   return warned;
 }
 
-/* Wrapper around build_array_type_nelts that makes sure the array
-   can be created at all and handles zero sized arrays specially.  */
-
-static tree
-build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
-{
-  if (TYPE_SIZE_UNIT (eltype)
-      && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
-      && !integer_zerop (TYPE_SIZE_UNIT (eltype))
-      && TYPE_ALIGN_UNIT (eltype) > 1
-      && wi::zext (wi::to_wide (TYPE_SIZE_UNIT (eltype)),
-		   ffs_hwi (TYPE_ALIGN_UNIT (eltype)) - 1) != 0)
-    eltype = TYPE_MAIN_VARIANT (eltype);
-
-  if (nelts)
-    return build_array_type_nelts (eltype, nelts);
-
-  tree idxtype = build_range_type (sizetype, size_zero_node, NULL_TREE);
-  tree arrtype = build_array_type (eltype, idxtype);
-  arrtype = build_distinct_type_copy (TYPE_MAIN_VARIANT (arrtype));
-  TYPE_SIZE (arrtype) = bitsize_zero_node;
-  TYPE_SIZE_UNIT (arrtype) = size_zero_node;
-  return arrtype;
-}
-
 /* Checks one MEM_REF in REF, located at LOCATION, for out-of-bounds
    references to string constants.  If VRP can determine that the array
    subscript is a constant, check if it is outside valid range.

@@ -1,3 +1,280 @@
+2021-11-18  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/101329
+	* check.c (is_c_interoperable): Reject NULL() as it is not
+	interoperable.
+
+2021-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103286
+	* resolve.c (resolve_select): Choose appropriate range limit to
+	avoid NULL pointer dereference when generating error message.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* interface.c (gfc_dummy_arg_get_name): New function.
+	* gfortran.h (gfc_dummy_arg_get_name): Declare it.
+	* trans-array.c (arg_evaluated_for_scalarization): Pass a dummy
+	argument wrapper as argument instead of an actual argument
+	and an index number.  Check it’s non-NULL.  Use its name
+	to identify it.
+	(gfc_walk_elemental_function_args): Update call to
+	arg_evaluated for scalarization.  Remove argument counting.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_actual_arglist::missing_arg_type): Remove.
+	* interface.c (gfc_compare_actual_formal): Remove
+	missing_arg_type initialization.
+	* intrinsic.c (sort_actual): Ditto.
+	* trans-expr.c (gfc_conv_procedure_call): Use associated_dummy
+	and gfc_dummy_arg_get_typespec to get the dummy argument type.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* interface.c (gfc_dummy_arg_get_typespec,
+	gfc_dummy_arg_is_optional): New functions.
+	* gfortran.h (gfc_dummy_arg_get_typespec,
+	gfc_dummy_arg_is_optional): Declare them.
+	* trans.h (gfc_ss_info::dummy_arg): Use the wrapper type
+	as declaration type.
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_reference):
+	use gfc_dummy_arg_get_typespec function to get the type.
+	(gfc_walk_elemental_function_args): Remove proc_ifc argument.
+	Get info about the dummy arg using the associated_dummy field.
+	* trans-array.h (gfc_walk_elemental_function_args): Update declaration.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function):
+	Update call to gfc_walk_elemental_function_args.
+	* trans-stmt.c (gfc_trans_call): Ditto.
+	(get_proc_ifc_for_call): Remove.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_dummy_arg_kind, gfc_dummy_arg): New.
+	(gfc_actual_arglist): New field associated_dummy.
+	(gfc_intrinsic_arg): Remove field actual.
+	* interface.c (get_nonintrinsic_dummy_arg): New.
+	(gfc_compare_actual): Initialize associated_dummy.
+	* intrinsic.c (get_intrinsic_dummy_arg): New.
+	(sort_actual):  Add argument vectors.
+	Use loops with indices on argument vectors.
+	Initialize associated_dummy.
+
+2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* intrinsic.c (sort_actual): initialise variable and use it earlier.
+
+2021-11-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (OMP_TARGET_CLAUSES): Add thread_limit.
+	* trans-openmp.c (gfc_split_omp_clauses): Add thread_limit also to
+	teams.
+
+2021-11-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parse.c (decode_omp_directive): Fix permitting 'nowait' for some
+	combined directives, add missing 'omp end ... loop'.
+	(gfc_ascii_statement): Fix ST_OMP_END_TEAMS_LOOP result.
+	* openmp.c (resolve_omp_clauses): Add missing combined loop constructs
+	case values to the 'if(directive-name: ...)' check.
+	* trans-openmp.c (gfc_split_omp_clauses): Put nowait on target if
+	first leaf construct accepting it.
+
+2021-11-12  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-types.c (gfc_get_array_descr_info): Use build_debug_expr_decl
+	instead of building DEBUG_EXPR_DECL manually.
+
+2021-11-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/97896
+	* intrinsic.c (add_sym_4ind): Remove.
+	(add_functions): Use add_sym4 instead of add_sym4ind.
+	Don’t special case the index intrinsic.
+	* iresolve.c (gfc_resolve_index_func): Use the individual arguments
+	directly instead of the full argument list.
+	* intrinsic.h (gfc_resolve_index_func): Update the declaration
+	accordingly.
+	* trans-decl.c (gfc_get_extern_function_decl): Don’t modify the
+	list of arguments in the case of the index intrinsic.
+	* trans-array.h (gfc_get_intrinsic_for_expr,
+	gfc_get_proc_ifc_for_expr): New.
+	* trans-array.c (gfc_get_intrinsic_for_expr,
+	arg_evaluated_for_scalarization): New.
+	(gfc_walk_elemental_function_args): Add intrinsic procedure
+	as argument.  Count arguments.  Check arg_evaluated_for_scalarization.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function): Update call.
+	* trans-stmt.c (get_intrinsic_for_code): New.
+	(gfc_trans_call): Update call.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* types.def (BT_FN_VOID_UINT_UINT): Remove.
+	(BT_FN_BOOL_UINT_UINT_UINT_BOOL): New.
+
+2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.h (struct gfc_omp_clauses): Rename num_teams to
+	num_teams_upper, add num_teams_upper.
+	* dump-parse-tree.c (show_omp_clauses): Update to handle
+	lower-bound num_teams clause.
+	* frontend-passes.c (gfc_code_walker): Likewise
+	* openmp.c (gfc_free_omp_clauses, gfc_match_omp_clauses,
+	resolve_omp_clauses): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses, gfc_split_omp_clauses,
+	gfc_trans_omp_target): Likewise.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Use
+	OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR instead of OMP_CLAUSE_NUM_TEAMS_EXPR.
+
+2021-11-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103137
+	PR fortran/103138
+	* check.c (gfc_check_shape): Avoid NULL pointer dereference on
+	missing ref.
+	* simplify.c (gfc_simplify_cshift): Avoid NULL pointer dereference
+	when shape not set.
+	(gfc_simplify_transpose): Likewise.
+
+2021-11-09  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/68800
+	* class.c (generate_finalization_wrapper): Do not leak
+	finalization wrappers if they will not be used.
+	* expr.c (gfc_free_actual_arglist): Formatting fix.
+	* gfortran.h (gfc_free_symbol): Pass argument by reference.
+	(gfc_release_symbol): Likewise.
+	(gfc_free_namespace): Likewise.
+	* symbol.c (gfc_release_symbol): Adjust acordingly.
+	(free_components): Set procedure pointer components
+	of derived types to NULL after freeing.
+	(free_tb_tree): Likewise.
+	(gfc_free_symbol): Set sym to NULL after freeing.
+	(gfc_free_namespace): Set namespace to NULL after freeing.
+
+2021-11-09  Martin Liska  <mliska@suse.cz>
+
+	* symbol.c (gfc_get_ultimate_derived_super_type): Remove.
+
+2021-11-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* misc.c (gfc_dummy_typename): Make sure ts->kind is
+	non-negative.
+
+2021-11-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.c (add_subroutines): Change keyword "operator"
+	to the correct one, "operation".
+	* check.c (gfc_check_co_reduce): Change OPERATOR to
+	OPERATION in error messages.
+	* intrinsic.texi: Change OPERATOR to OPERATION in
+	documentation.
+
+2021-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* interface.c (gfc_compare_actual_formal): Continue checking
+	all arguments after encountering an error.
+	* intrinsic.c (do_ts29113_check): Likewise.
+	* resolve.c (resolve_operator): Continue resolving on op2 error.
+
+2021-11-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102715
+	* decl.c (add_init_expr_to_sym): Reject rank mismatch between
+	array and its initializer.
+
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102817
+	* expr.c (simplify_parameter_variable): Copy shape of referenced
+	subobject when simplifying.
+
+2021-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/69419
+	* match.c (gfc_match_common): Check array spec of a symbol in a
+	COMMON object list and reject it if it is a coarray.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/100972
+	* decl.c (gfc_match_implicit_none): Fix typo in warning.
+	* resolve.c (resolve_unknown_f): Reject external procedures
+	without explicit EXTERNAL attribute whe IMPLICIT none (external)
+	is in effect.
+
+2021-11-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* decl.c (gfc_insert_kind_parameter_exprs): Make static.
+	* expr.c (gfc_build_init_expr): Make static
+	(gfc_build_default_init_expr): Move below its static helper.
+	* gfortran.h (gfc_insert_kind_parameter_exprs, gfc_add_saved_common,
+	gfc_add_common, gfc_use_derived_tree, gfc_free_charlen,
+	gfc_get_ultimate_derived_super_type,
+	gfc_resolve_oacc_parallel_loop_blocks, gfc_build_init_expr,
+	gfc_iso_c_sub_interface): Delete.
+	* symbol.c (gfc_new_charlen, gfc_get_derived_super_type): Make
+	static.
+
+2021-11-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR fortran/35276
+	* gfortran.texi (Mixed-Language Programming): Talk about C++,
+	and how to link.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Projects): Add bullet for helping with
+	incomplete standards compliance.
+	(Proposed Extensions): Delete section.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* intrinsic.texi (Introduction to Intrinsics): Genericize
+	references to standard versions.
+	* invoke.texi (-fall-intrinsics): Likewise.
+	(-fmax-identifier-length=): Likewise.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Interoperability with C): Copy-editing.  Add
+	more index entries.
+	(Intrinsic Types): Likewise.
+	(Derived Types and struct): Likewise.
+	(Interoperable Global Variables): Likewise.
+	(Interoperable Subroutines and Functions): Likewise.
+	(Working with C Pointers): Likewise.
+	(Further Interoperability of Fortran with C): Likewise.  Rewrite
+	to reflect that this is now fully supported by gfortran.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (About GNU Fortran): Consolidate material
+	formerly in other sections.  Copy-editing.
+	(Preprocessing and conditional compilation): Delete, moving
+	most material to invoke.texi.
+	(GNU Fortran and G77): Delete.
+	(Project Status): Delete.
+	(Standards): Update.
+	(Fortran 95 status): Mention conditional compilation here.
+	(Fortran 2003 status): Rewrite to mention the 1 missing feature
+	instead of all the ones implemented.
+	(Fortran 2008 status): Similarly for the 2 missing features.
+	(Fortran 2018 status): Rewrite to reflect completion of TS29113
+	feature support.
+	* invoke.texi (Preprocessing Options): Move material formerly
+	in introductory chapter here.
+
+2021-11-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.texi (Standards): Move discussion of specific
+	standard versions here....
+	(Fortran standards status): ...from here, and delete this node.
+
 2021-10-31  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* symbol.c (gfc_get_typebound_proc): Revert memcpy.

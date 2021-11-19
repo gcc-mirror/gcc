@@ -117,6 +117,7 @@ public:
       refuse_visibility_changes (false), externally_visible (false),
       no_reorder (false), force_output (false), forced_by_abi (false),
       unique_name (false), implicit_section (false), body_removed (false),
+      semantic_interposition (flag_semantic_interposition),
       used_from_other_partition (false), in_other_partition (false),
       address_taken (false), in_init_priority_hash (false),
       need_lto_streaming (false), offloadable (false), ifunc_resolver (false),
@@ -404,7 +405,8 @@ public:
   inline bool
   can_be_discarded_p (void)
   {
-    return (DECL_EXTERNAL (decl)
+    return ((DECL_EXTERNAL (decl)
+	     && !in_other_partition)
 	    || ((get_comdat_group ()
 		 || DECL_COMMON (decl)
 		 || (DECL_SECTION_NAME (decl) && DECL_WEAK (decl)))
@@ -556,6 +558,8 @@ public:
   /* True when body and other characteristics have been removed by
      symtab_remove_unreachable_nodes. */
   unsigned body_removed : 1;
+  /* True when symbol should comply to -fsemantic-interposition flag.  */
+  unsigned semantic_interposition : 1;
 
   /*** WHOPR Partitioning flags.
        These flags are used at ltrans stage when only part of the callgraph is
@@ -1165,6 +1169,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* SET DECL_IS_MALLOC on cgraph_node's decl and on aliases of the node
      if any.  */
   bool set_malloc_flag (bool malloc_p);
+
+  /* SET TREE_THIS_VOLATILE on cgraph_node's decl and on aliases of the node
+     if any.  */
+  bool set_noreturn_flag (bool noreturn_p);
 
   /* If SET_CONST is true, mark function, aliases and thunks to be ECF_CONST.
     If SET_CONST if false, clear the flag.

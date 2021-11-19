@@ -1352,11 +1352,10 @@ process (void)
 
   if (access (pz_curr_file, R_OK) != 0)
     {
-      int erno = errno;
-      fprintf (stderr, "Cannot access %s from %s\n\terror %d (%s)\n",
-               pz_curr_file, getcwd ((char *) NULL, MAXPATHLEN),
-               erno, xstrerror (erno));
-      return;
+      /* Some really strange error happened.  */
+      fprintf (stderr, "Cannot access %s: %s\n", pz_curr_file,
+	       xstrerror (errno));
+      abort ();
     }
 
   pz_curr_data = load_file (pz_curr_file);

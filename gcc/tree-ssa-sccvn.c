@@ -427,7 +427,7 @@ static vn_nary_op_t vn_nary_op_insert_stmt (gimple *, tree);
 static unsigned int vn_nary_length_from_stmt (gimple *);
 static vn_nary_op_t alloc_vn_nary_op_noinit (unsigned int, obstack *);
 static vn_nary_op_t vn_nary_op_insert_into (vn_nary_op_t,
-					    vn_nary_op_table_type *, bool);
+					    vn_nary_op_table_type *);
 static void init_vn_nary_op_from_stmt (vn_nary_op_t, gassign *);
 static void init_vn_nary_op_from_pieces (vn_nary_op_t, unsigned int,
 					 enum tree_code, tree, tree *);
@@ -490,7 +490,7 @@ VN_INFO (tree name)
 					 boolean_type_node, ops);
 	    nary->predicated_values = 0;
 	    nary->u.result = boolean_true_node;
-	    vn_nary_op_insert_into (nary, valid_info->nary, true);
+	    vn_nary_op_insert_into (nary, valid_info->nary);
 	    gcc_assert (nary->unwind_to == NULL);
 	    /* Also do not link it into the undo chain.  */
 	    last_inserted_nary = nary->next;
@@ -500,7 +500,7 @@ VN_INFO (tree name)
 					 boolean_type_node, ops);
 	    nary->predicated_values = 0;
 	    nary->u.result = boolean_false_node;
-	    vn_nary_op_insert_into (nary, valid_info->nary, true);
+	    vn_nary_op_insert_into (nary, valid_info->nary);
 	    gcc_assert (nary->unwind_to == NULL);
 	    last_inserted_nary = nary->next;
 	    nary->next = (vn_nary_op_t)(void *)-1;
@@ -1640,13 +1640,12 @@ static void
 valueize_refs_1 (vec<vn_reference_op_s> *orig, bool *valueized_anything,
 		 bool with_avail = false)
 {
-  vn_reference_op_t vro;
-  unsigned int i;
-
   *valueized_anything = false;
 
-  FOR_EACH_VEC_ELT (*orig, i, vro)
+  for (unsigned i = 0; i < orig->length (); ++i)
     {
+re_valueize:
+      vn_reference_op_t vro = &(*orig)[i];
       if (vro->opcode == SSA_NAME
 	  || (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME))
 	{
@@ -1694,7 +1693,11 @@ valueize_refs_1 (vec<vn_reference_op_s> *orig, bool *valueized_anything,
 	       && (*orig)[i - 1].opcode == MEM_REF)
 	{
 	  if (vn_reference_maybe_forwprop_address (orig, &i))
-	    *valueized_anything = true;
+	    {
+	      *valueized_anything = true;
+	      /* Re-valueize the current operand.  */
+	      goto re_valueize;
+	    }
 	}
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */
@@ -2440,7 +2443,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
 	  vno1->predicated_values = 0;
 	  vno1->u.result = result;
 	  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (new_stmt));
-	  vn_nary_op_insert_into (vno1, valid_info->nary, true);
+	  vn_nary_op_insert_into (vno1, valid_info->nary);
 	  /* Also do not link it into the undo chain.  */
 	  last_inserted_nary = vno1->next;
 	  vno1->next = (vn_nary_op_t)(void *)-1;
@@ -3855,10 +3858,6 @@ vn_nary_op_compute_hash (const vn_nary_op_t vno1)
   inchash::hash hstate;
   unsigned i;
 
-  for (i = 0; i < vno1->length; ++i)
-    if (TREE_CODE (vno1->op[i]) == SSA_NAME)
-      vno1->op[i] = SSA_VAL (vno1->op[i]);
-
   if (((vno1->length == 2
 	&& commutative_tree_code (vno1->opcode))
        || (vno1->length == 3
@@ -4000,6 +3999,10 @@ vn_nary_op_lookup_1 (vn_nary_op_t vno, vn_nary_op_t *vnresult)
   if (vnresult)
     *vnresult = NULL;
 
+  for (unsigned i = 0; i < vno->length; ++i)
+    if (TREE_CODE (vno->op[i]) == SSA_NAME)
+      vno->op[i] = SSA_VAL (vno->op[i]);
+
   vno->hashcode = vn_nary_op_compute_hash (vno);
   slot = valid_info->nary->find_slot_with_hash (vno, vno->hashcode, NO_INSERT);
   if (!slot)
@@ -4064,23 +4067,22 @@ alloc_vn_nary_op (unsigned int length, tree result, unsigned int value_id)
   return vno1;
 }
 
-/* Insert VNO into TABLE.  If COMPUTE_HASH is true, then compute
-   VNO->HASHCODE first.  */
+/* Insert VNO into TABLE.  */
 
 static vn_nary_op_t
-vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table,
-			bool compute_hash)
+vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 {
   vn_nary_op_s **slot;
 
-  if (compute_hash)
-    {
-      vno->hashcode = vn_nary_op_compute_hash (vno);
-      gcc_assert (! vno->predicated_values
-		  || (! vno->u.values->next
-		      && vno->u.values->n == 1));
-    }
+  gcc_assert (! vno->predicated_values
+	      || (! vno->u.values->next
+		  && vno->u.values->n == 1));
 
+  for (unsigned i = 0; i < vno->length; ++i)
+    if (TREE_CODE (vno->op[i]) == SSA_NAME)
+      vno->op[i] = SSA_VAL (vno->op[i]);
+
+  vno->hashcode = vn_nary_op_compute_hash (vno);
   slot = table->find_slot_with_hash (vno, vno->hashcode, INSERT);
   vno->unwind_to = *slot;
   if (*slot)
@@ -4211,7 +4213,7 @@ vn_nary_op_insert_pieces (unsigned int length, enum tree_code code,
 {
   vn_nary_op_t vno1 = alloc_vn_nary_op (length, result, value_id);
   init_vn_nary_op_from_pieces (vno1, length, code, type, ops);
-  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
+  return vn_nary_op_insert_into (vno1, valid_info->nary);
 }
 
 static vn_nary_op_t
@@ -4257,7 +4259,7 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
   vno1->u.values->result = result;
   vno1->u.values->n = 1;
   vno1->u.values->valid_dominated_by_p[0] = pred_e->dest->index;
-  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
+  return vn_nary_op_insert_into (vno1, valid_info->nary);
 }
 
 static bool
@@ -4290,7 +4292,7 @@ vn_nary_op_insert_stmt (gimple *stmt, tree result)
     = alloc_vn_nary_op (vn_nary_length_from_stmt (stmt),
 			result, VN_INFO (result)->value_id);
   init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (stmt));
-  return vn_nary_op_insert_into (vno1, valid_info->nary, true);
+  return vn_nary_op_insert_into (vno1, valid_info->nary);
 }
 
 /* Compute a hashcode for PHI operation VP1 and return it.  */

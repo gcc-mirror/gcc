@@ -40,6 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-eh.h"
 #include "cfganal.h"
+#include "cgraph.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 
 /* This file implements dead store elimination.
 
@@ -85,6 +88,7 @@ static void delete_dead_or_redundant_call (gimple_stmt_iterator *, const char *)
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
+static bitmap need_ab_cleanup;
 
 /* STMT is a statement that may write into memory.  Analyze it and
    initialize WRITE to describe how STMT affects memory.
@@ -206,6 +210,26 @@ normalize_ref (ao_ref *copy, ao_ref *ref)
   return true;
 }
 
+/* Update LIVE_BYTES tracking REF for write to WRITE:
+   Verify we have the same base memory address, the write
+   has a known size and overlaps with REF.  */
+static void
+clear_live_bytes_for_ref (sbitmap live_bytes, ao_ref *ref, ao_ref write)
+{
+  HOST_WIDE_INT start, size;
+
+  if (valid_ao_ref_for_dse (&write)
+      && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
+      && known_eq (write.size, write.max_size)
+      /* normalize_ref modifies write and for that reason write is not
+	 passed by reference.  */
+      && normalize_ref (&write, ref)
+      && (write.offset - ref->offset).is_constant (&start)
+      && write.size.is_constant (&size))
+    bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
+			size / BITS_PER_UNIT);
+}
+
 /* Clear any bytes written by STMT from the bitmap LIVE_BYTES.  The base
    address written by STMT must match the one found in REF, which must
    have its base address previously initialized.
@@ -217,20 +241,21 @@ static void
 clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
 {
   ao_ref write;
+
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    {
+      bool interposed;
+      modref_summary *summary = get_modref_function_summary (call, &interposed);
+
+      if (summary && !interposed)
+	for (auto kill : summary->kills)
+	  if (kill.get_ao_ref (as_a <gcall *> (stmt), &write))
+	    clear_live_bytes_for_ref (live_bytes, ref, write);
+    }
   if (!initialize_ao_ref_for_dse (stmt, &write))
     return;
 
-  /* Verify we have the same base memory address, the write
-     has a known size and overlaps with REF.  */
-  HOST_WIDE_INT start, size;
-  if (valid_ao_ref_for_dse (&write)
-      && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
-      && known_eq (write.size, write.max_size)
-      && normalize_ref (&write, ref)
-      && (write.offset - ref->offset).is_constant (&start)
-      && write.size.is_constant (&size))
-    bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
-			size / BITS_PER_UNIT);
+  clear_live_bytes_for_ref (live_bytes, ref, write);
 }
 
 /* REF is a memory write.  Extract relevant information from it and
@@ -734,7 +759,8 @@ dse_optimize_redundant_stores (gimple *stmt)
 			       (ao_ref_base_alias_set (&lhs_ref),
 						  earlier_base_set)))
 		    delete_dead_or_redundant_assignment (&gsi, "redundant",
-							 need_eh_cleanup);
+							 need_eh_cleanup,
+							 need_ab_cleanup);
 		}
 	      else if (is_gimple_call (use_stmt))
 		{
@@ -1003,8 +1029,10 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 /* Delete a dead store at GSI, which is a gimple assignment. */
 
 void
-delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type,
-				     bitmap need_eh_cleanup)
+delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi,
+				     const char *type,
+				     bitmap need_eh_cleanup,
+				     bitmap need_ab_cleanup)
 {
   gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1019,12 +1047,100 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
 
   /* Remove the dead store.  */
   basic_block bb = gimple_bb (stmt);
+  if (need_ab_cleanup && stmt_can_make_abnormal_goto (stmt))
+    bitmap_set_bit (need_ab_cleanup, bb->index);
   if (gsi_remove (gsi, true) && need_eh_cleanup)
     bitmap_set_bit (need_eh_cleanup, bb->index);
 
   /* And release any SSA_NAMEs set in this statement back to the
      SSA_NAME manager.  */
   release_defs (stmt);
+}
+
+/* Try to prove, using modref summary, that all memory written to by a call is
+   dead and remove it.  Assume that if return value is written to memory
+   it is already proved to be dead.  */
+
+static bool
+dse_optimize_call (gimple_stmt_iterator *gsi, sbitmap live_bytes)
+{
+  gcall *stmt = dyn_cast <gcall *> (gsi_stmt (*gsi));
+
+  if (!stmt)
+    return false;
+
+  tree callee = gimple_call_fndecl (stmt);
+
+  if (!callee)
+    return false;
+
+  /* Pure/const functions are optimized by normal DCE
+     or handled as store above.  */
+  int flags = gimple_call_flags (stmt);
+  if ((flags & (ECF_PURE|ECF_CONST|ECF_NOVOPS))
+      && !(flags & (ECF_LOOPING_CONST_OR_PURE)))
+    return false;
+
+  cgraph_node *node = cgraph_node::get (callee);
+  if (!node)
+    return false;
+
+  if (stmt_could_throw_p (cfun, stmt)
+      && !cfun->can_delete_dead_exceptions)
+    return false;
+
+  /* If return value is used the call is not dead.  */
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs && TREE_CODE (lhs) == SSA_NAME)
+    {
+      imm_use_iterator ui;
+      gimple *use_stmt;
+      FOR_EACH_IMM_USE_STMT (use_stmt, ui, lhs)
+	if (!is_gimple_debug (use_stmt))
+	  return false;
+    }
+
+  /* Verify that there are no side-effects except for return value
+     and memory writes tracked by modref.  */
+  modref_summary *summary = get_modref_function_summary (node);
+  if (!summary || !summary->try_dse)
+    return false;
+
+  bool by_clobber_p = false;
+
+  /* Walk all memory writes and verify that they are dead.  */
+  for (auto base_node : summary->stores->bases)
+    for (auto ref_node : base_node->refs)
+      for (auto access_node : ref_node->accesses)
+	{
+	  tree arg = access_node.get_call_arg (stmt);
+
+	  if (!arg)
+	    return false;
+
+	  if (integer_zerop (arg) && flag_delete_null_pointer_checks)
+	    continue;
+
+	  ao_ref ref;
+
+	  if (!access_node.get_ao_ref (stmt, &ref))
+	    return false;
+	  ref.ref_alias_set = ref_node->ref;
+	  ref.base_alias_set = base_node->base;
+
+	  bool byte_tracking_enabled
+	      = setup_live_bytes_from_ref (&ref, live_bytes);
+	  enum dse_store_status store_status;
+
+	  store_status = dse_classify_store (&ref, stmt,
+					     byte_tracking_enabled,
+					     live_bytes, &by_clobber_p);
+	  if (store_status != DSE_STORE_DEAD)
+	    return false;
+	}
+  delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
+				       need_ab_cleanup);
+  return true;
 }
 
 /* Attempt to eliminate dead stores in the statement referenced by BSI.
@@ -1050,8 +1166,13 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
     return;
 
   ao_ref ref;
+  /* If this is not a store we can still remove dead call using
+     modref summary.  */
   if (!initialize_ao_ref_for_dse (stmt, &ref))
-    return;
+    {
+      dse_optimize_call (gsi, live_bytes);
+      return;
+    }
 
   /* We know we have virtual definitions.  We can handle assignments and
      some builtin calls.  */
@@ -1162,6 +1283,9 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	  || (stmt_could_throw_p (fun, stmt)
 	      && !fun->can_delete_dead_exceptions)))
     {
+      /* See if we can remove complete call.  */
+      if (dse_optimize_call (gsi, live_bytes))
+	return;
       /* Make sure we do not remove a return slot we cannot reconstruct
 	 later.  */
       if (gimple_call_return_slot_opt_p (as_a <gcall *>(stmt))
@@ -1179,7 +1303,8 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
       update_stmt (stmt);
     }
   else
-    delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
+    delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup,
+					 need_ab_cleanup);
 }
 
 namespace {
@@ -1216,6 +1341,7 @@ pass_dse::execute (function *fun)
 {
   unsigned todo = 0;
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  need_ab_cleanup = BITMAP_ALLOC (NULL);
   auto_sbitmap live_bytes (param_dse_max_object_size);
 
   renumber_gimple_stmt_uids (fun);
@@ -1293,8 +1419,14 @@ pass_dse::execute (function *fun)
       gimple_purge_all_dead_eh_edges (need_eh_cleanup);
       todo |= TODO_cleanup_cfg;
     }
+  if (!bitmap_empty_p (need_ab_cleanup))
+    {
+      gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
+      todo |= TODO_cleanup_cfg;
+    }
 
   BITMAP_FREE (need_eh_cleanup);
+  BITMAP_FREE (need_ab_cleanup);
 
   return todo;
 }

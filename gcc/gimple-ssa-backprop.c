@@ -737,7 +737,7 @@ strip_sign_op (tree rhs)
 void
 backprop::prepare_change (tree var)
 {
-  if (MAY_HAVE_DEBUG_BIND_STMTS)
+  if (flag_var_tracking_assignments)
     insert_debug_temp_for_var_def (NULL, var);
   reset_flow_sensitive_info (var);
 }

@@ -220,7 +220,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     ;
   [[omp::sequence (omp::directive (target teams distribute,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
-    shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),order(concurrent),
+    shared(s),default(shared),reduction(+:r),num_teams(nte-1:nte),thread_limit(tl),order(concurrent),
     collapse(1),dist_schedule(static, 16),nowait depend(inout: dd[0]),allocate (omp_default_mem_alloc:f),in_reduction(+:r2)))]]
   for (int i = 0; i < 64; i++)
     ;
@@ -235,7 +235,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     ll++;
   [[omp::directive (target teams distribute parallel for simd,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
-    shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    shared(s),default(shared),reduction(+:r),num_teams(2:nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),
     if (parallel: i2),num_threads (nth),proc_bind(spread),
     lastprivate (l),schedule(static, 4),order(concurrent),
@@ -304,7 +304,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   [[omp::directive (taskwait)]];
   [[omp::sequence (directive (target, nowait,depend(inout: dd[0]),in_reduction(+:r2)),
     directive (teams distribute,
-    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    private(p),firstprivate(f),shared(s),default(shared),reduction(+:r),num_teams(nte - 1 : nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),allocate (omp_default_mem_alloc: f),order(concurrent)))]]
   for (int i = 0; i < 64; i++)
     ;
@@ -314,7 +314,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     ;
   [[omp::sequence (omp::directive (target),
     omp::directive (teams distribute parallel for,
-    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    private(p),firstprivate(f),shared(s),default(shared),reduction(+:r),num_teams(16:nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),
     if (parallel: i2),num_threads (nth),proc_bind(spread),
     lastprivate (l),schedule(static, 4),order(concurrent),allocate (omp_default_mem_alloc: f)))]]
@@ -332,7 +332,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     ll++;
   [[omp::sequence (directive (target),
     directive (teams distribute simd,
-    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    private(p),firstprivate(f),shared(s),default(shared),reduction(+:r),num_teams(nte-1:nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),order(concurrent),
     safelen(8),simdlen(4),aligned(q: 32),if(i3),nontemporal(ntm),
     allocate (omp_default_mem_alloc: f)))]]
@@ -346,7 +346,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (teams distribute parallel for,
-    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte-1:nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),order(concurrent),
     if (parallel: i2),num_threads (nth),proc_bind(spread),
     lastprivate (l),schedule(static, 4),allocate (f))]]
@@ -362,7 +362,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   [[omp::directive (teams distribute parallel for simd,
-    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte-1:nte),thread_limit(tl),
     collapse(1),dist_schedule(static, 16),
     if (parallel: i2),num_threads (nth),proc_bind(spread),
     lastprivate (l),schedule(static, 4),order(concurrent),
@@ -502,7 +502,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
   for (l = 0; l < 64; l++)
     ll++;
   [[omp::directive (teams loop,
-    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),
+    private(p),firstprivate (f),shared(s),default(shared),reduction(+:r),num_teams(nte-1:nte),thread_limit(tl),
     collapse(1),lastprivate (l),bind(teams),allocate (f))]]
   for (l = 0; l < 64; ++l)
     ;
@@ -527,7 +527,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int s,
     ;
   [[omp::directive (target teams loop,
     device(d),map (tofrom: m),if (target: i1),private (p),firstprivate (f),defaultmap(tofrom: scalar),is_device_ptr (idp),
-    shared(s),default(shared),reduction(+:r),num_teams(nte),thread_limit(tl),nowait,depend(inout: dd[0]),
+    shared(s),default(shared),reduction(+:r),num_teams(nte-1:nte),thread_limit(tl),nowait,depend(inout: dd[0]),
     lastprivate (l),bind(teams),collapse(1),
     allocate (omp_default_mem_alloc: f),in_reduction(+:r2))]]
   for (l = 0; l < 64; ++l)

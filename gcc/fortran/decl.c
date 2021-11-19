@@ -2105,6 +2105,14 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	    }
 	}
 
+      if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension && sym->as
+	  && sym->as->rank && init->rank && init->rank != sym->as->rank)
+	{
+	  gfc_error ("Rank mismatch of array at %L and its initializer "
+		     "(%d/%d)", &sym->declared_at, sym->as->rank, init->rank);
+	  return false;
+	}
+
       /* If sym is implied-shape, set its upper bounds from init.  */
       if (sym->attr.flavor == FL_PARAMETER && sym->attr.dimension
 	  && sym->as->type == AS_IMPLIED_SHAPE)
@@ -3713,7 +3721,7 @@ insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
 }
 
 
-bool
+static bool
 gfc_insert_kind_parameter_exprs (gfc_expr *e)
 {
   return gfc_traverse_expr (e, NULL, &insert_parameter_exprs, 0);
@@ -4715,7 +4723,7 @@ gfc_match_implicit_none (void)
   if (c == '(')
     {
       (void) gfc_next_ascii_char ();
-      if (!gfc_notify_std (GFC_STD_F2018, "IMPORT NONE with spec list at %C"))
+      if (!gfc_notify_std (GFC_STD_F2018, "IMPLICIT NONE with spec list at %C"))
 	return MATCH_ERROR;
 
       gfc_gobble_whitespace ();

@@ -15400,7 +15400,10 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 		  || (GET_CODE (SET_SRC (set)) == COMPARE
 		      && GET_MODE (XEXP (SET_SRC (set), 0)) == BLKmode
 		      && GET_MODE (XEXP (SET_SRC (set), 1)) == BLKmode)))
-	    return 1;
+	    {
+	      free (bbs);
+	      return 1;
+	    }
 
 	  FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
 	    if (MEM_P (*iter))

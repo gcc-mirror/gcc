@@ -9864,10 +9864,9 @@ package body Exp_Ch3 is
              Expression =>
                Expand_Record_Equality
                  (Typ,
-                  Typ    => Typ,
-                  Lhs    => Make_Identifier (Loc, Name_X),
-                  Rhs    => Make_Identifier (Loc, Name_Y),
-                  Bodies => Declarations (Decl))));
+                  Typ => Typ,
+                  Lhs => Make_Identifier (Loc, Name_X),
+                  Rhs => Make_Identifier (Loc, Name_Y))));
       end if;
 
       Set_Handled_Statement_Sequence

@@ -233,7 +233,7 @@ reassoc_remove_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
-  if (!MAY_HAVE_DEBUG_BIND_STMTS || gimple_code (stmt) == GIMPLE_PHI)
+  if (!flag_var_tracking_assignments || gimple_code (stmt) == GIMPLE_PHI)
     return gsi_remove (gsi, true);
 
   gimple_stmt_iterator prev = *gsi;
@@ -1259,15 +1259,12 @@ make_new_ssa_for_def (gimple *stmt, enum tree_code opcode, tree op)
 	{
 	  if (new_debug_lhs == NULL_TREE)
 	    {
-	      new_debug_lhs = make_node (DEBUG_EXPR_DECL);
+	      new_debug_lhs = build_debug_expr_decl (TREE_TYPE (lhs));
 	      gdebug *def_temp
 		= gimple_build_debug_bind (new_debug_lhs,
 					   build2 (opcode, TREE_TYPE (lhs),
 						   new_lhs, op),
 					   stmt);
-	      DECL_ARTIFICIAL (new_debug_lhs) = 1;
-	      TREE_TYPE (new_debug_lhs) = TREE_TYPE (lhs);
-	      SET_DECL_MODE (new_debug_lhs, TYPE_MODE (TREE_TYPE (lhs)));
 	      gimple_set_uid (def_temp, gimple_uid (stmt));
 	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
 	      gsi_insert_after (&gsi, def_temp, GSI_SAME_STMT);
@@ -1518,7 +1515,8 @@ insert_stmt_after (gimple *stmt, gimple *insert_point)
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
       return;
     }
-  else if (gimple_code (insert_point) == GIMPLE_ASM)
+  else if (gimple_code (insert_point) == GIMPLE_ASM
+	   && gimple_asm_nlabels (as_a <gasm *> (insert_point)) != 0)
     /* We have no idea where to insert - it depends on where the
        uses will be placed.  */
     gcc_unreachable ();

@@ -1,3 +1,11 @@
+2021-11-13  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR other/21823
+	PR bootstrap/80047
+	* fixincl.c (process): Simplify the handling for highly
+	  unlikely access() failure, to avoid using non-standard
+	  extensions.
+
 2021-08-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	* inclhack.def (hpux_c99_inttypes5): New hack to define PRIdPTR, etc.

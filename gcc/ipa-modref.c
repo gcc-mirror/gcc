@@ -87,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssanames.h"
 #include "attribs.h"
 #include "tree-cfg.h"
+#include "tree-eh.h"
 
 
 namespace {
@@ -148,20 +149,24 @@ struct escape_entry
 static void
 dump_eaf_flags (FILE *out, int flags, bool newline = true)
 {
-  if (flags & EAF_DIRECT)
-    fprintf (out, " direct");
-  if (flags & EAF_NOCLOBBER)
-    fprintf (out, " noclobber");
-  if (flags & EAF_NOESCAPE)
-    fprintf (out, " noescape");
-  if (flags & EAF_NODIRECTESCAPE)
-    fprintf (out, " nodirectescape");
   if (flags & EAF_UNUSED)
     fprintf (out, " unused");
-  if (flags & EAF_NOT_RETURNED)
-    fprintf (out, " not_returned");
-  if (flags & EAF_NOREAD)
-    fprintf (out, " noread");
+  if (flags & EAF_NO_DIRECT_CLOBBER)
+    fprintf (out, " no_direct_clobber");
+  if (flags & EAF_NO_INDIRECT_CLOBBER)
+    fprintf (out, " no_indirect_clobber");
+  if (flags & EAF_NO_DIRECT_ESCAPE)
+    fprintf (out, " no_direct_escape");
+  if (flags & EAF_NO_INDIRECT_ESCAPE)
+    fprintf (out, " no_indirect_escape");
+  if (flags & EAF_NOT_RETURNED_DIRECTLY)
+    fprintf (out, " not_returned_directly");
+  if (flags & EAF_NOT_RETURNED_INDIRECTLY)
+    fprintf (out, " not_returned_indirectly");
+  if (flags & EAF_NO_DIRECT_READ)
+    fprintf (out, " no_direct_read");
+  if (flags & EAF_NO_INDIRECT_READ)
+    fprintf (out, " no_indirect_read");
   if (newline)
   fprintf (out, "\n");
 }
@@ -270,7 +275,10 @@ static GTY(()) fast_function_summary <modref_summary_lto *, va_gc>
 /* Summary for a single function which this pass produces.  */
 
 modref_summary::modref_summary ()
-  : loads (NULL), stores (NULL), retslot_flags (0), writes_errno (false)
+  : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
+    writes_errno (false), side_effects (false), nondeterministic (false),
+    calls_interposable (false), global_memory_read (false),
+    global_memory_written (false), try_dse (false)
 {
 }
 
@@ -288,14 +296,12 @@ modref_summary::~modref_summary ()
 static int
 remove_useless_eaf_flags (int eaf_flags, int ecf_flags, bool returns_void)
 {
-  if (ecf_flags & ECF_NOVOPS)
-    return 0;
-  if (ecf_flags & ECF_CONST)
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
     eaf_flags &= ~implicit_const_eaf_flags;
   else if (ecf_flags & ECF_PURE)
     eaf_flags &= ~implicit_pure_eaf_flags;
   else if ((ecf_flags & ECF_NORETURN) || returns_void)
-    eaf_flags &= ~EAF_NOT_RETURNED;
+    eaf_flags &= ~(EAF_NOT_RETURNED_DIRECTLY | EAF_NOT_RETURNED_INDIRECTLY);
   return eaf_flags;
 }
 
@@ -316,8 +322,6 @@ eaf_flags_useful_p (vec <eaf_flags_t> &flags, int ecf_flags)
 bool
 modref_summary::useful_p (int ecf_flags, bool check_flags)
 {
-  if (ecf_flags & ECF_NOVOPS)
-    return false;
   if (arg_flags.length () && !check_flags)
     return true;
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
@@ -325,34 +329,21 @@ modref_summary::useful_p (int ecf_flags, bool check_flags)
   arg_flags.release ();
   if (check_flags && remove_useless_eaf_flags (retslot_flags, ecf_flags, false))
     return true;
-  if (ecf_flags & ECF_CONST)
-    return false;
+  if (check_flags
+      && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
+    return true;
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
+  else
+    kills.release ();
   if (ecf_flags & ECF_PURE)
-    return false;
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
 }
-
-/* Return true if global memory is read
-   (that is loads summary contains global memory access).  */
-bool
-modref_summary::global_memory_read_p ()
-{
-  if (!loads)
-    return true;
-  return loads->global_access_p ();
-}
-
-/* Return true if global memory is written.  */
-bool
-modref_summary::global_memory_written_p ()
-{
-  if (!stores)
-    return true;
-  return stores->global_access_p ();
-}
-
 
 /* Single function summary used for LTO.  */
 
@@ -365,9 +356,14 @@ struct GTY(()) modref_summary_lto
      more verbose and thus more likely to hit the limits.  */
   modref_records_lto *loads;
   modref_records_lto *stores;
+  auto_vec<modref_access_node> GTY((skip)) kills;
   auto_vec<eaf_flags_t> GTY((skip)) arg_flags;
   eaf_flags_t retslot_flags;
-  bool writes_errno;
+  eaf_flags_t static_chain_flags;
+  unsigned writes_errno : 1;
+  unsigned side_effects : 1;
+  unsigned nondeterministic : 1;
+  unsigned calls_interposable : 1;
 
   modref_summary_lto ();
   ~modref_summary_lto ();
@@ -378,7 +374,9 @@ struct GTY(()) modref_summary_lto
 /* Summary for a single function which this pass produces.  */
 
 modref_summary_lto::modref_summary_lto ()
-  : loads (NULL), stores (NULL), retslot_flags (0), writes_errno (false)
+  : loads (NULL), stores (NULL), retslot_flags (0), static_chain_flags (0),
+    writes_errno (false), side_effects (false), nondeterministic (false),
+    calls_interposable (false)
 {
 }
 
@@ -397,8 +395,6 @@ modref_summary_lto::~modref_summary_lto ()
 bool
 modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
 {
-  if (ecf_flags & ECF_NOVOPS)
-    return false;
   if (arg_flags.length () && !check_flags)
     return true;
   if (check_flags && eaf_flags_useful_p (arg_flags, ecf_flags))
@@ -406,42 +402,20 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
   arg_flags.release ();
   if (check_flags && remove_useless_eaf_flags (retslot_flags, ecf_flags, false))
     return true;
-  if (ecf_flags & ECF_CONST)
-    return false;
+  if (check_flags
+      && remove_useless_eaf_flags (static_chain_flags, ecf_flags, false))
+    return true;
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   if (loads && !loads->every_base)
     return true;
+  else
+    kills.release ();
   if (ecf_flags & ECF_PURE)
-    return false;
+    return ((!side_effects || !nondeterministic)
+	    && (ecf_flags & ECF_LOOPING_CONST_OR_PURE));
   return stores && !stores->every_base;
-}
-
-/* Dump A to OUT.  */
-
-static void
-dump_access (modref_access_node *a, FILE *out)
-{
-  fprintf (out, "          access:");
-  if (a->parm_index != -1)
-    {
-      fprintf (out, " Parm %i", a->parm_index);
-      if (a->parm_offset_known)
-	{
-	  fprintf (out, " param offset:");
-	  print_dec ((poly_int64_pod)a->parm_offset, out, SIGNED);
-	}
-    }
-  if (a->range_info_useful_p ())
-    {
-      fprintf (out, " offset:");
-      print_dec ((poly_int64_pod)a->offset, out, SIGNED);
-      fprintf (out, " size:");
-      print_dec ((poly_int64_pod)a->size, out, SIGNED);
-      fprintf (out, " max_size:");
-      print_dec ((poly_int64_pod)a->max_size, out, SIGNED);
-      if (a->adjustments)
-	fprintf (out, " adjusted %i times", a->adjustments);
-    }
-  fprintf (out, "\n");
 }
 
 /* Dump records TT to OUT.  */
@@ -479,7 +453,10 @@ dump_records (modref_records *tt, FILE *out)
 	  size_t k;
 	  modref_access_node *a;
 	  FOR_EACH_VEC_SAFE_ELT (r->accesses, k, a)
-	    dump_access (a, out);
+	    {
+	      fprintf (out, "          access:");
+	      a->dump (out);
+	    }
 	}
     }
 }
@@ -525,7 +502,10 @@ dump_lto_records (modref_records_lto *tt, FILE *out)
 	  size_t k;
 	  modref_access_node *a;
 	  FOR_EACH_VEC_SAFE_ELT (r->accesses, k, a)
-	    dump_access (a, out);
+	    {
+	      fprintf (out, "          access:");
+	      a->dump (out);
+	    }
 	}
     }
 }
@@ -603,8 +583,29 @@ modref_summary::dump (FILE *out)
       fprintf (out, "  stores:\n");
       dump_records (stores, out);
     }
+  if (kills.length ())
+    {
+      fprintf (out, "  kills:\n");
+      for (auto kill : kills)
+	{
+	  fprintf (out, "    ");
+	  kill.dump (out);
+	}
+    }
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
+  if (side_effects)
+    fprintf (out, "  Side effects\n");
+  if (nondeterministic)
+    fprintf (out, "  Nondeterministic\n");
+  if (calls_interposable)
+    fprintf (out, "  Calls interposable\n");
+  if (global_memory_read)
+    fprintf (out, "  Global memory read\n");
+  if (global_memory_written)
+    fprintf (out, "  Global memory written\n");
+  if (try_dse)
+    fprintf (out, "  Try dse\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -618,6 +619,11 @@ modref_summary::dump (FILE *out)
     {
       fprintf (out, "  Retslot flags:");
       dump_eaf_flags (out, retslot_flags);
+    }
+  if (static_chain_flags)
+    {
+      fprintf (out, "  Static chain flags:");
+      dump_eaf_flags (out, static_chain_flags);
     }
 }
 
@@ -630,8 +636,23 @@ modref_summary_lto::dump (FILE *out)
   dump_lto_records (loads, out);
   fprintf (out, "  stores:\n");
   dump_lto_records (stores, out);
+  if (kills.length ())
+    {
+      fprintf (out, "  kills:\n");
+      for (auto kill : kills)
+	{
+	  fprintf (out, "    ");
+	  kill.dump (out);
+	}
+    }
   if (writes_errno)
     fprintf (out, "  Writes errno\n");
+  if (side_effects)
+    fprintf (out, "  Side effects\n");
+  if (nondeterministic)
+    fprintf (out, "  Nondeterministic\n");
+  if (calls_interposable)
+    fprintf (out, "  Calls interposable\n");
   if (arg_flags.length ())
     {
       for (unsigned int i = 0; i < arg_flags.length (); i++)
@@ -645,6 +666,64 @@ modref_summary_lto::dump (FILE *out)
     {
       fprintf (out, "  Retslot flags:");
       dump_eaf_flags (out, retslot_flags);
+    }
+  if (static_chain_flags)
+    {
+      fprintf (out, "  Static chain flags:");
+      dump_eaf_flags (out, static_chain_flags);
+    }
+}
+
+/* Called after summary is produced and before it is used by local analysis.
+   Can be called multiple times in case summary needs to update signature.
+   FUN is decl of function summary is attached to.  */
+void
+modref_summary::finalize (tree fun)
+{
+  global_memory_read = !loads || loads->global_access_p ();
+  global_memory_written = !stores || stores->global_access_p ();
+
+  /* We can do DSE if we know function has no side effects and
+     we can analyse all stores.  Disable dse if there are too many
+     stores to try.  */
+  if (side_effects || global_memory_written || writes_errno)
+    try_dse = false;
+  else
+    {
+      try_dse = true;
+      size_t i, j, k;
+      int num_tests = 0, max_tests
+       	= opt_for_fn (fun, param_modref_max_tests);
+      modref_base_node <alias_set_type> *base_node;
+      modref_ref_node <alias_set_type> *ref_node;
+      modref_access_node *access_node;
+      FOR_EACH_VEC_SAFE_ELT (stores->bases, i, base_node)
+	{
+	  if (base_node->every_ref)
+	    {
+	      try_dse = false;
+	      break;
+	    }
+	  FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+	    {
+	      if (base_node->every_ref)
+		{
+		  try_dse = false;
+		  break;
+		}
+	      FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
+		if (num_tests++ > max_tests
+		    || !access_node->parm_offset_known)
+		  {
+		    try_dse = false;
+		    break;
+		  }
+	      if (!try_dse)
+		break;
+	    }
+	  if (!try_dse)
+	    break;
+	}
     }
 }
 
@@ -672,6 +751,30 @@ get_modref_function_summary (cgraph_node *func)
   return r;
 }
 
+/* Get function summary for CALL if it exists, return NULL otherwise.
+   If non-null set interposed to indicate whether function may not
+   bind to current def.  In this case sometimes loads from function
+   needs to be ignored.  */
+
+modref_summary *
+get_modref_function_summary (gcall *call, bool *interposed)
+{
+  tree callee = gimple_call_fndecl (call);
+  if (!callee)
+    return NULL;
+  struct cgraph_node *node = cgraph_node::get (callee);
+  if (!node)
+    return NULL;
+  modref_summary *r = get_modref_function_summary (node);
+  if (interposed && r)
+    *interposed = r->calls_interposable
+	    	  || !node->binds_to_current_def_p ();
+  return r;
+}
+
+
+namespace {
+
 /* Construct modref_access_node from REF.  */
 static modref_access_node
 get_access (ao_ref *ref)
@@ -680,57 +783,57 @@ get_access (ao_ref *ref)
 
   base = ao_ref_base (ref);
   modref_access_node a = {ref->offset, ref->size, ref->max_size,
-			  0, -1, false, 0};
+			  0, MODREF_UNKNOWN_PARM, false, 0};
   if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
     {
       tree memref = base;
       base = TREE_OPERAND (base, 0);
+
       if (TREE_CODE (base) == SSA_NAME
 	  && SSA_NAME_IS_DEFAULT_DEF (base)
 	  && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL)
 	{
 	  a.parm_index = 0;
-	  for (tree t = DECL_ARGUMENTS (current_function_decl);
-	       t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
-	    {
-	      if (!t)
-		{
-		  a.parm_index = -1;
-		  break;
-		}
-	      a.parm_index++;
-	    }
-	  if (TREE_CODE (memref) == MEM_REF)
-	    {
-	      a.parm_offset_known
-		 = wi::to_poly_wide (TREE_OPERAND
-					 (memref, 1)).to_shwi (&a.parm_offset);
-	    }
+	  if (cfun->static_chain_decl
+	      && base == ssa_default_def (cfun, cfun->static_chain_decl))
+	    a.parm_index = MODREF_STATIC_CHAIN_PARM;
 	  else
-	    a.parm_offset_known = false;
+	    for (tree t = DECL_ARGUMENTS (current_function_decl);
+		 t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
+	      a.parm_index++;
 	}
       else
-	a.parm_index = -1;
+	a.parm_index = MODREF_UNKNOWN_PARM;
+
+      if (a.parm_index != MODREF_UNKNOWN_PARM
+	  && TREE_CODE (memref) == MEM_REF)
+	{
+	  a.parm_offset_known
+	     = wi::to_poly_wide (TREE_OPERAND
+				     (memref, 1)).to_shwi (&a.parm_offset);
+	}
+      else
+	a.parm_offset_known = false;
     }
   else
-    a.parm_index = -1;
+    a.parm_index = MODREF_UNKNOWN_PARM;
   return a;
 }
 
 /* Record access into the modref_records data structure.  */
 
 static void
-record_access (modref_records *tt, ao_ref *ref)
+record_access (modref_records *tt, ao_ref *ref, modref_access_node &a)
 {
   alias_set_type base_set = !flag_strict_aliasing ? 0
 			    : ao_ref_base_alias_set (ref);
   alias_set_type ref_set = !flag_strict_aliasing ? 0
 			    : (ao_ref_alias_set (ref));
-  modref_access_node a = get_access (ref);
   if (dump_file)
     {
-       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i parm=%i\n",
-		base_set, ref_set, a.parm_index);
+       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i ",
+		base_set, ref_set);
+       a.dump (dump_file);
     }
   tt->insert (base_set, ref_set, a, false);
 }
@@ -738,7 +841,7 @@ record_access (modref_records *tt, ao_ref *ref)
 /* IPA version of record_access_tree.  */
 
 static void
-record_access_lto (modref_records_lto *tt, ao_ref *ref)
+record_access_lto (modref_records_lto *tt, ao_ref *ref, modref_access_node &a)
 {
   /* get_alias_set sometimes use different type to compute the alias set
      than TREE_TYPE (base).  Do same adjustments.  */
@@ -785,7 +888,6 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
 		       || variably_modified_type_p (ref_type, NULL_TREE)))
 	ref_type = NULL_TREE;
     }
-  modref_access_node a = get_access (ref);
   if (dump_file)
     {
       fprintf (dump_file, "   - Recording base type:");
@@ -793,9 +895,9 @@ record_access_lto (modref_records_lto *tt, ao_ref *ref)
       fprintf (dump_file, " (alias set %i) ref type:",
 	       base_type ? get_alias_set (base_type) : 0);
       print_generic_expr (dump_file, ref_type);
-      fprintf (dump_file, " (alias set %i) parm:%i\n",
-	       ref_type ? get_alias_set (ref_type) : 0,
-	       a.parm_index);
+      fprintf (dump_file, " (alias set %i) ",
+	       ref_type ? get_alias_set (ref_type) : 0);
+       a.dump (dump_file);
     }
 
   tt->insert (base_type, ref_type, a, false);
@@ -814,6 +916,20 @@ record_access_p (tree expr)
       return false;
     }
   return true;
+}
+
+/* Return true if ECF flags says that nondeterminsm can be ignored.  */
+
+static bool
+ignore_nondeterminism_p (tree caller, int flags)
+{
+  if ((flags & (ECF_CONST | ECF_PURE))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
+    return true;
+  if ((flags & (ECF_NORETURN | ECF_NOTHROW)) == (ECF_NORETURN | ECF_NOTHROW)
+      || (!opt_for_fn (caller, flag_exceptions) && (flags & ECF_NORETURN)))
+    return true;
+  return false;
 }
 
 /* Return true if ECF flags says that return value can be ignored.  */
@@ -840,12 +956,11 @@ ignore_stores_p (tree caller, int flags)
   return false;
 }
 
-/* Determine parm_map for argument I of STMT.  */
+/* Determine parm_map for argument OP.  */
 
 modref_parm_map
-parm_map_for_arg (gimple *stmt, int i)
+parm_map_for_arg (tree op)
 {
-  tree op = gimple_call_arg (stmt, i);
   bool offset_known;
   poly_int64 offset;
   struct modref_parm_map parm_map;
@@ -864,7 +979,7 @@ parm_map_for_arg (gimple *stmt, int i)
 	{
 	  if (!t)
 	    {
-	      index = -1;
+	      index = MODREF_UNKNOWN_PARM;
 	      break;
 	    }
 	  index++;
@@ -874,9 +989,9 @@ parm_map_for_arg (gimple *stmt, int i)
       parm_map.parm_offset = offset;
     }
   else if (points_to_local_or_readonly_memory_p (op))
-    parm_map.parm_index = -2;
+    parm_map.parm_index = MODREF_LOCAL_MEMORY_PARM;
   else
-    parm_map.parm_index = -1;
+    parm_map.parm_index = MODREF_UNKNOWN_PARM;
   return parm_map;
 }
 
@@ -890,20 +1005,59 @@ bool
 merge_call_side_effects (modref_summary *cur_summary,
 			 gimple *stmt, modref_summary *callee_summary,
 			 bool ignore_stores, cgraph_node *callee_node,
-			 bool record_adjustments)
+			 bool record_adjustments, bool always_executed)
 {
   auto_vec <modref_parm_map, 32> parm_map;
+  modref_parm_map chain_map;
   bool changed = false;
+  int flags = gimple_call_flags (stmt);
+
+  if ((flags & (ECF_CONST | ECF_NOVOPS))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
+    return changed;
+
+  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (flags & ECF_LOOPING_CONST_OR_PURE))
+    {
+      if (!cur_summary->side_effects && callee_summary->side_effects)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, " - merging side effects.\n");
+	  cur_summary->side_effects = true;
+	  changed = true;
+	}
+      if (!cur_summary->nondeterministic && callee_summary->nondeterministic
+	  && !ignore_nondeterminism_p (current_function_decl, flags))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, " - merging nondeterministic.\n");
+	  cur_summary->nondeterministic = true;
+	  changed = true;
+	}
+     }
+
+  if (flags & (ECF_CONST | ECF_NOVOPS))
+    return changed;
+
+  if (!cur_summary->calls_interposable && callee_summary->calls_interposable)
+    {
+      if (dump_file)
+	fprintf (dump_file, " - merging calls interposable.\n");
+      cur_summary->calls_interposable = true;
+      changed = true;
+    }
 
   /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
      was optimized out earlier which may not happen in the interposed
      variant.  */
-  if (!callee_node->binds_to_current_def_p ())
+  if (!callee_node->binds_to_current_def_p ()
+      && !cur_summary->calls_interposable)
     {
       if (dump_file)
-	fprintf (dump_file, " - May be interposed: collapsing loads.\n");
-      cur_summary->loads->collapse ();
+	fprintf (dump_file, " - May be interposed.\n");
+      cur_summary->calls_interposable = true;
+      changed = true;
     }
 
   if (dump_file)
@@ -913,7 +1067,7 @@ merge_call_side_effects (modref_summary *cur_summary,
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
-      parm_map[i] = parm_map_for_arg (stmt, i);
+      parm_map[i] = parm_map_for_arg (gimple_call_arg (stmt, i));
       if (dump_file)
 	{
 	  fprintf (dump_file, " %i", parm_map[i].parm_index);
@@ -925,16 +1079,62 @@ merge_call_side_effects (modref_summary *cur_summary,
 	    }
 	}
     }
+  if (gimple_call_chain (stmt))
+    {
+      chain_map = parm_map_for_arg (gimple_call_chain (stmt));
+      if (dump_file)
+	{
+	  fprintf (dump_file, "static chain %i", chain_map.parm_index);
+	  if (chain_map.parm_offset_known)
+	    {
+	      fprintf (dump_file, " offset:");
+	      print_dec ((poly_int64_pod)chain_map.parm_offset,
+			 dump_file, SIGNED);
+	    }
+	}
+    }
   if (dump_file)
     fprintf (dump_file, "\n");
 
+  if (always_executed
+      && callee_summary->kills.length ()
+      && (!cfun->can_throw_non_call_exceptions
+	  || !stmt_could_throw_p (cfun, stmt)))
+    {
+      /* Watch for self recursive updates.  */
+      auto_vec<modref_access_node, 32> saved_kills;
+
+      saved_kills.reserve_exact (callee_summary->kills.length ());
+      saved_kills.splice (callee_summary->kills);
+      for (auto kill : saved_kills)
+	{
+	  if (kill.parm_index >= (int)parm_map.length ())
+	    continue;
+	  modref_parm_map &m
+		  = kill.parm_index == MODREF_STATIC_CHAIN_PARM
+		    ? chain_map
+		    : parm_map[kill.parm_index];
+	  if (m.parm_index == MODREF_LOCAL_MEMORY_PARM
+	      || m.parm_index == MODREF_UNKNOWN_PARM
+	      || m.parm_index == MODREF_RETSLOT_PARM
+	      || !m.parm_offset_known)
+	    continue;
+	  modref_access_node n = kill;
+	  n.parm_index = m.parm_index;
+	  n.parm_offset += m.parm_offset;
+	  if (modref_access_node::insert_kill (cur_summary->kills, n,
+					       record_adjustments))
+	    changed = true;
+	}
+    }
+
   /* Merge with callee's summary.  */
   changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map,
-					record_adjustments);
+					&chain_map, record_adjustments);
   if (!ignore_stores)
     {
       changed |= cur_summary->stores->merge (callee_summary->stores,
-					     &parm_map,
+					     &parm_map, &chain_map,
 					     record_adjustments);
       if (!cur_summary->writes_errno
 	  && callee_summary->writes_errno)
@@ -1038,6 +1238,28 @@ process_fnspec (modref_summary *cur_summary,
 		gcall *call, bool ignore_stores)
 {
   attr_fnspec fnspec = gimple_call_fnspec (call);
+  int flags = gimple_call_flags (call);
+
+  if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (flags & ECF_LOOPING_CONST_OR_PURE)
+      || (cfun->can_throw_non_call_exceptions
+	  && stmt_could_throw_p (cfun, call)))
+    {
+      if (cur_summary)
+	{
+	  cur_summary->side_effects = true;
+	  if (!ignore_nondeterminism_p (current_function_decl, flags))
+	    cur_summary->nondeterministic = true;
+	}
+      if (cur_summary_lto)
+	{
+	  cur_summary_lto->side_effects = true;
+	  if (!ignore_nondeterminism_p (current_function_decl, flags))
+	    cur_summary_lto->nondeterministic = true;
+	}
+    }
+  if (flags & (ECF_CONST | ECF_NOVOPS))
+    return true;
   if (!fnspec.known_p ())
     {
       if (dump_file && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
@@ -1060,11 +1282,12 @@ process_fnspec (modref_summary *cur_summary,
 	else if (!fnspec.arg_specified_p (i)
 		 || fnspec.arg_maybe_read_p (i))
 	  {
-	    modref_parm_map map = parm_map_for_arg (call, i);
+	    modref_parm_map map = parm_map_for_arg
+					(gimple_call_arg (call, i));
 
-	    if (map.parm_index == -2)
+	    if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 	      continue;
-	    if (map.parm_index == -1)
+	    if (map.parm_index == MODREF_UNKNOWN_PARM)
 	      {
 		collapse_loads (cur_summary, cur_summary_lto);
 		break;
@@ -1095,11 +1318,12 @@ process_fnspec (modref_summary *cur_summary,
 	else if (!fnspec.arg_specified_p (i)
 		 || fnspec.arg_maybe_written_p (i))
 	  {
-	    modref_parm_map map = parm_map_for_arg (call, i);
+	    modref_parm_map map = parm_map_for_arg
+					 (gimple_call_arg (call, i));
 
-	    if (map.parm_index == -2)
+	    if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 	      continue;
-	    if (map.parm_index == -1)
+	    if (map.parm_index == MODREF_UNKNOWN_PARM)
 	      {
 		collapse_stores (cur_summary, cur_summary_lto);
 		break;
@@ -1133,12 +1357,14 @@ process_fnspec (modref_summary *cur_summary,
 
 static bool
 analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
-	      gcall *stmt, vec <gimple *> *recursive_calls)
+	      gcall *stmt, vec <gimple *> *recursive_calls,
+	      bool always_executed)
 {
   /* Check flags on the function call.  In certain cases, analysis can be
      simplified.  */
   int flags = gimple_call_flags (stmt);
-  if (flags & (ECF_CONST | ECF_NOVOPS))
+  if ((flags & (ECF_CONST | ECF_NOVOPS))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (dump_file)
 	fprintf (dump_file,
@@ -1173,6 +1399,10 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   if (recursive_call_p (current_function_decl, callee))
     {
       recursive_calls->safe_push (stmt);
+      if (cur_summary)
+	cur_summary->side_effects = true;
+      if (cur_summary_lto)
+	cur_summary_lto->side_effects = true;
       if (dump_file)
 	fprintf (dump_file, " - Skipping recursive call.\n");
       return true;
@@ -1183,6 +1413,20 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   /* Get the function symbol and its availability.  */
   enum availability avail;
   callee_node = callee_node->function_symbol (&avail);
+  bool looping;
+  if (builtin_safe_for_const_function_p (&looping, callee))
+    {
+      if (looping)
+	{
+	  if (cur_summary)
+	    cur_summary->side_effects = true;
+	  if (cur_summary_lto)
+	    cur_summary_lto->side_effects = true;
+	}
+      if (dump_file)
+	fprintf (dump_file, " - Bulitin is safe for const.\n");
+      return true;
+    }
   if (avail <= AVAIL_INTERPOSABLE)
     {
       if (dump_file)
@@ -1201,7 +1445,7 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
     }
 
   merge_call_side_effects (cur_summary, stmt, callee_summary, ignore_stores,
-			   callee_node, false);
+			   callee_node, false, always_executed);
 
   return true;
 }
@@ -1212,6 +1456,7 @@ struct summary_ptrs
 {
   struct modref_summary *nolto;
   struct modref_summary_lto *lto;
+  bool always_executed;
 };
 
 /* Helper for analyze_stmt.  */
@@ -1229,23 +1474,36 @@ analyze_load (gimple *, tree, tree op, void *data)
       fprintf (dump_file, "\n");
     }
 
+  if (TREE_THIS_VOLATILE (op)
+      || (cfun->can_throw_non_call_exceptions
+	  && tree_could_throw_p (op)))
+    {
+      if (dump_file)
+	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
+      if (summary)
+	summary->side_effects = summary->nondeterministic = true;
+      if (summary_lto)
+	summary_lto->side_effects = summary_lto->nondeterministic = true;
+    }
+
   if (!record_access_p (op))
     return false;
 
   ao_ref r;
   ao_ref_init (&r, op);
+  modref_access_node a = get_access (&r);
 
   if (summary)
-    record_access (summary->loads, &r);
+    record_access (summary->loads, &r, a);
   if (summary_lto)
-    record_access_lto (summary_lto->loads, &r);
+    record_access_lto (summary_lto->loads, &r, a);
   return false;
 }
 
 /* Helper for analyze_stmt.  */
 
 static bool
-analyze_store (gimple *, tree, tree op, void *data)
+analyze_store (gimple *stmt, tree, tree op, void *data)
 {
   modref_summary *summary = ((summary_ptrs *)data)->nolto;
   modref_summary_lto *summary_lto = ((summary_ptrs *)data)->lto;
@@ -1257,16 +1515,41 @@ analyze_store (gimple *, tree, tree op, void *data)
       fprintf (dump_file, "\n");
     }
 
+  if (TREE_THIS_VOLATILE (op)
+      || (cfun->can_throw_non_call_exceptions
+	  && tree_could_throw_p (op)))
+    {
+      if (dump_file)
+	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
+      if (summary)
+	summary->side_effects = summary->nondeterministic = true;
+      if (summary_lto)
+	summary_lto->side_effects = summary_lto->nondeterministic = true;
+    }
+
   if (!record_access_p (op))
     return false;
 
   ao_ref r;
   ao_ref_init (&r, op);
+  modref_access_node a = get_access (&r);
 
   if (summary)
-    record_access (summary->stores, &r);
+    record_access (summary->stores, &r, a);
   if (summary_lto)
-    record_access_lto (summary_lto->stores, &r);
+    record_access_lto (summary_lto->stores, &r, a);
+  if (((summary_ptrs *)data)->always_executed
+      && a.useful_for_kill_p ()
+      && (!cfun->can_throw_non_call_exceptions
+	  || !stmt_could_throw_p (cfun, stmt)))
+    {
+      if (dump_file)
+	fprintf (dump_file, "   - Recording kill\n");
+      if (summary)
+	modref_access_node::insert_kill (summary->kills, a, false);
+      if (summary_lto)
+	modref_access_node::insert_kill (summary_lto->kills, a, false);
+    }
   return false;
 }
 
@@ -1275,16 +1558,34 @@ analyze_store (gimple *, tree, tree op, void *data)
 
 static bool
 analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
-	      gimple *stmt, bool ipa, vec <gimple *> *recursive_calls)
+	      gimple *stmt, bool ipa, vec <gimple *> *recursive_calls,
+	      bool always_executed)
 {
   /* In general we can not ignore clobbers because they are barriers for code
      motion, however after inlining it is safe to do because local optimization
      passes do not consider clobbers from other functions.
      Similar logic is in ipa-pure-const.c.  */
   if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
-    return true;
+    {
+      if (always_executed && record_access_p (gimple_assign_lhs (stmt)))
+	{
+	  ao_ref r;
+	  ao_ref_init (&r, gimple_assign_lhs (stmt));
+	  modref_access_node a = get_access (&r);
+	  if (a.useful_for_kill_p ())
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "   - Recording kill\n");
+	      if (summary)
+		modref_access_node::insert_kill (summary->kills, a, false);
+	      if (summary_lto)
+		modref_access_node::insert_kill (summary_lto->kills, a, false);
+	    }
+	}
+      return true;
+    }
 
-  struct summary_ptrs sums = {summary, summary_lto};
+  struct summary_ptrs sums = {summary, summary_lto, always_executed};
 
   /* Analyze all loads and stores in STMT.  */
   walk_stmt_load_store_ops (stmt, &sums,
@@ -1293,6 +1594,21 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
   switch (gimple_code (stmt))
    {
    case GIMPLE_ASM:
+      if (gimple_asm_volatile_p (as_a <gasm *> (stmt)))
+	{
+	  if (summary)
+	    summary->side_effects = summary->nondeterministic = true;
+	  if (summary_lto)
+	    summary_lto->side_effects = summary_lto->nondeterministic = true;
+	}
+      if (cfun->can_throw_non_call_exceptions
+	  && stmt_could_throw_p (cfun, stmt))
+	{
+	  if (summary)
+	    summary->side_effects = true;
+	  if (summary_lto)
+	    summary_lto->side_effects = true;
+	}
      /* If the ASM statement does not read nor write memory, there's nothing
 	to do.  Otherwise just give up.  */
      if (!gimple_asm_clobbers_memory_p (as_a <gasm *> (stmt)))
@@ -1304,7 +1620,8 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
    case GIMPLE_CALL:
      if (!ipa || gimple_call_internal_p (stmt))
        return analyze_call (summary, summary_lto,
-			    as_a <gcall *> (stmt), recursive_calls);
+			    as_a <gcall *> (stmt), recursive_calls,
+			    always_executed);
      else
       {
 	attr_fnspec fnspec = gimple_call_fnspec (as_a <gcall *>(stmt));
@@ -1324,7 +1641,14 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
       }
      return true;
    default:
-     /* Nothing to do for other types of statements.  */
+     if (cfun->can_throw_non_call_exceptions
+	 && stmt_could_throw_p (cfun, stmt))
+	{
+	  if (summary)
+	    summary->side_effects = true;
+	  if (summary_lto)
+	    summary_lto->side_effects = true;
+	}
      return true;
    }
 }
@@ -1373,50 +1697,41 @@ memory_access_to (tree op, tree ssa_name)
 static int
 deref_flags (int flags, bool ignore_stores)
 {
-  int ret = EAF_NODIRECTESCAPE;
+  /* Dereference is also a direct read but dereferenced value does not
+     yield any other direct use.  */
+  int ret = EAF_NO_DIRECT_CLOBBER | EAF_NO_DIRECT_ESCAPE
+	    | EAF_NOT_RETURNED_DIRECTLY;
   /* If argument is unused just account for
      the read involved in dereference.  */
   if (flags & EAF_UNUSED)
-    ret |= EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_NOT_RETURNED;
+    ret |= EAF_NO_INDIRECT_READ | EAF_NO_INDIRECT_CLOBBER
+	   | EAF_NO_INDIRECT_ESCAPE;
   else
     {
-      if ((flags & EAF_NOCLOBBER) || ignore_stores)
-	ret |= EAF_NOCLOBBER;
-      if ((flags & EAF_NOESCAPE) || ignore_stores)
-	ret |= EAF_NOESCAPE;
-      /* If the value dereferenced is not used for another load or store
-	 we can still consider ARG as used only directly.
-
-	 Consider
-
-	 int
-	 test (int *a)
-	   {
-	     return *a!=0;
-	   }
-
-	*/
-      if ((flags & (EAF_NOREAD | EAF_NOT_RETURNED | EAF_NOESCAPE | EAF_DIRECT))
-	  == (EAF_NOREAD | EAF_NOT_RETURNED | EAF_NOESCAPE | EAF_DIRECT)
-	  && ((flags & EAF_NOCLOBBER) || ignore_stores))
-	ret |= EAF_DIRECT;
-      if (flags & EAF_NOT_RETURNED)
-	ret |= EAF_NOT_RETURNED;
+      /* Direct or indirect accesses leads to indirect accesses.  */
+      if (((flags & EAF_NO_DIRECT_CLOBBER)
+	   && (flags & EAF_NO_INDIRECT_CLOBBER))
+	  || ignore_stores)
+	ret |= EAF_NO_INDIRECT_CLOBBER;
+      if (((flags & EAF_NO_DIRECT_ESCAPE)
+	   && (flags & EAF_NO_INDIRECT_ESCAPE))
+	  || ignore_stores)
+	ret |= EAF_NO_INDIRECT_ESCAPE;
+      if ((flags & EAF_NO_DIRECT_READ)
+	   && (flags & EAF_NO_INDIRECT_READ))
+	ret |= EAF_NO_INDIRECT_READ;
+      if ((flags & EAF_NOT_RETURNED_DIRECTLY)
+	  && (flags & EAF_NOT_RETURNED_INDIRECTLY))
+	ret |= EAF_NOT_RETURNED_INDIRECTLY;
     }
   return ret;
 }
 
-namespace {
 
 /* Description of an escape point.  */
 
 struct escape_point
 {
-  /* Extra hidden args we keep track of.  */
-  enum hidden_args
-  {
-    retslot_arg = -1
-  };
   /* Value escapes to this call.  */
   gcall *call;
   /* Argument it escapes to.  */
@@ -1433,13 +1748,31 @@ class modref_lattice
 public:
   /* EAF flags of the SSA name.  */
   eaf_flags_t flags;
-  /* DFS bookkkeeping: we don't do real dataflow yet.  */
+  /* Used during DFS walk to mark names where final value was determined
+     without need for dataflow.  */
   bool known;
+  /* Used during DFS walk to mark open vertices (for cycle detection).  */
   bool open;
+  /* Set during DFS walk for names that needs dataflow propagation.  */
+  bool do_dataflow;
+  /* Used during the iterative dataflow.  */
+  bool changed;
 
   /* When doing IPA analysis we can not merge in callee escape points;
      Only remember them and do the merging at IPA propagation time.  */
   vec <escape_point, va_heap, vl_ptr> escape_points;
+
+  /* Representation of a graph for dataaflow.  This graph is built on-demand
+     using modref_eaf_analysis::analyze_ssa and later solved by
+     modref_eaf_analysis::propagate.
+     Each edge represents the fact that flags of current lattice should be
+     propagated to lattice of SSA_NAME.  */
+  struct propagate_edge
+  {
+    int ssa_name;
+    bool deref;
+  };
+  vec <propagate_edge, va_heap, vl_ptr> propagate_to;
 
   void init ();
   void release ();
@@ -1457,8 +1790,11 @@ void
 modref_lattice::init ()
 {
   /* All flags we track.  */
-  int f = EAF_DIRECT | EAF_NOCLOBBER | EAF_NOESCAPE | EAF_UNUSED
-	  | EAF_NODIRECTESCAPE | EAF_NOT_RETURNED | EAF_NOREAD;
+  int f = EAF_NO_DIRECT_CLOBBER | EAF_NO_INDIRECT_CLOBBER
+	  | EAF_NO_DIRECT_ESCAPE | EAF_NO_INDIRECT_ESCAPE
+	  | EAF_NO_DIRECT_READ | EAF_NO_INDIRECT_READ
+	  | EAF_NOT_RETURNED_DIRECTLY | EAF_NOT_RETURNED_INDIRECTLY
+	  | EAF_UNUSED;
   flags = f;
   /* Check that eaf_flags_t is wide enough to hold all flags.  */
   gcc_checking_assert (f == flags);
@@ -1471,6 +1807,7 @@ void
 modref_lattice::release ()
 {
   escape_points.release ();
+  propagate_to.release ();
 }
 
 /* Dump lattice to OUT; indent with INDENT spaces.  */
@@ -1536,10 +1873,13 @@ modref_lattice::merge (int f)
 {
   if (f & EAF_UNUSED)
     return false;
-  /* Noescape implies that value also does not escape directly.
-     Fnspec machinery does set both so compensate for this.  */
-  if (f & EAF_NOESCAPE)
-    f |= EAF_NODIRECTESCAPE;
+  /* Check that flags seems sane: if function does not read the parameter
+     it can not access it indirectly.  */
+  gcc_checking_assert (!(f & EAF_NO_DIRECT_READ)
+		       || ((f & EAF_NO_INDIRECT_READ)
+			   && (f & EAF_NO_INDIRECT_CLOBBER)
+			   && (f & EAF_NO_INDIRECT_ESCAPE)
+			   && (f & EAF_NOT_RETURNED_INDIRECTLY)));
   if ((flags & f) != flags)
     {
       flags &= f;
@@ -1561,7 +1901,7 @@ bool
 modref_lattice::merge (const modref_lattice &with)
 {
   if (!with.known)
-    return merge (0);
+    do_dataflow = true;
 
   bool changed = merge (with.flags);
 
@@ -1582,7 +1922,7 @@ bool
 modref_lattice::merge_deref (const modref_lattice &with, bool ignore_stores)
 {
   if (!with.known)
-    return merge (0);
+    do_dataflow = true;
 
   bool changed = merge (deref_flags (with.flags, ignore_stores));
 
@@ -1609,7 +1949,7 @@ modref_lattice::merge_deref (const modref_lattice &with, bool ignore_stores)
 bool
 modref_lattice::merge_direct_load ()
 {
-  return merge (~(EAF_UNUSED | EAF_NOREAD));
+  return merge (~(EAF_UNUSED | EAF_NO_DIRECT_READ));
 }
 
 /* Merge in flags for direct store.  */
@@ -1617,52 +1957,156 @@ modref_lattice::merge_direct_load ()
 bool
 modref_lattice::merge_direct_store ()
 {
-  return merge (~(EAF_UNUSED | EAF_NOCLOBBER));
+  return merge (~(EAF_UNUSED | EAF_NO_DIRECT_CLOBBER));
 }
 
-}  /* ANON namespace.  */
+/* Analyzer of EAF flags.
+   This is genrally dataflow problem over the SSA graph, however we only
+   care about flags of few selected ssa names (arguments, return slot and
+   static chain).  So we first call analyze_ssa_name on all relevant names
+   and perform a DFS walk to discover SSA names where flags needs to be
+   determined.  For acyclic graphs we try to determine final flags during
+   this walk.  Once cycles or recursin depth is met we enlist SSA names
+   for dataflow which is done by propagate call.
 
-static void analyze_ssa_name_flags (tree name,
-				    vec<modref_lattice> &lattice,
-				    int depth, bool ipa);
+   After propagation the flags can be obtained using get_ssa_name_flags.  */
 
-/* Call statements may return their parameters.  Consider argument number
+class modref_eaf_analysis
+{
+public:
+  /* Mark NAME as relevant for analysis.  */
+  void analyze_ssa_name (tree name);
+  /* Dataflow slover.  */
+  void propagate ();
+  /* Return flags computed earlier for NAME.  */
+  int get_ssa_name_flags (tree name)
+  {
+    int version = SSA_NAME_VERSION (name);
+    gcc_checking_assert (m_lattice[version].known);
+    return m_lattice[version].flags;
+  }
+  /* In IPA mode this will record all escape points
+     determined for NAME to PARM_IDNEX.  Flags are minimal
+     flags known.  */
+  void record_escape_points (tree name, int parm_index, int flags);
+  modref_eaf_analysis (bool ipa)
+  {
+    m_ipa = ipa;
+    m_depth = 0;
+    m_lattice.safe_grow_cleared (num_ssa_names, true);
+  }
+  ~modref_eaf_analysis ()
+  {
+    gcc_checking_assert (!m_depth);
+    if (m_ipa || m_names_to_propagate.length ())
+      for (unsigned int i = 0; i < num_ssa_names; i++)
+	m_lattice[i].release ();
+  }
+private:
+  /* If true, we produce analysis for IPA mode.  In this case escape points ar
+     collected.  */
+  bool m_ipa;
+  /* Depth of recursion of analyze_ssa_name.  */
+  int m_depth;
+  /* Propagation lattice for individual ssa names.  */
+  auto_vec<modref_lattice> m_lattice;
+  auto_vec<tree> m_deferred_names;
+  auto_vec<int> m_names_to_propagate;
+
+  void merge_with_ssa_name (tree dest, tree src, bool deref);
+  void merge_call_lhs_flags (gcall *call, int arg, tree name, bool direct,
+			     bool deref);
+};
+
+
+/* Call statements may return tgeir parameters.  Consider argument number
    ARG of USE_STMT and determine flags that can needs to be cleared
    in case pointer possibly indirectly references from ARG I is returned.
-   LATTICE, DEPTH and ipa are same as in analyze_ssa_name_flags.  */
+   If DIRECT is true consider direct returns and if INDIRECT consider
+   indirect returns.
+   LATTICE, DEPTH and ipa are same as in analyze_ssa_name.
+   ARG is set to -1 for static chain.  */
 
-static void
-merge_call_lhs_flags (gcall *call, int arg, int index, bool deref,
-		      vec<modref_lattice> &lattice,
-		      int depth, bool ipa)
+void
+modref_eaf_analysis::merge_call_lhs_flags (gcall *call, int arg,
+					   tree name, bool direct,
+					   bool indirect)
 {
+  int index = SSA_NAME_VERSION (name);
+  bool returned_directly = false;
+
   /* If there is no return value, no flags are affected.  */
   if (!gimple_call_lhs (call))
     return;
 
   /* If we know that function returns given argument and it is not ARG
      we can still be happy.  */
-  int flags = gimple_call_return_flags (call);
-  if ((flags & ERF_RETURNS_ARG)
-      && (flags & ERF_RETURN_ARG_MASK) != arg)
-    return;
-
-  if (gimple_call_arg_flags (call, arg) & (EAF_NOT_RETURNED | EAF_UNUSED))
+  if (arg >= 0)
+    {
+      int flags = gimple_call_return_flags (call);
+      if (flags & ERF_RETURNS_ARG)
+	{
+	  if ((flags & ERF_RETURN_ARG_MASK) == arg)
+	    returned_directly = true;
+	  else
+	   return;
+	}
+    }
+  /* Make ERF_RETURNS_ARG overwrite EAF_UNUSED.  */
+  if (returned_directly)
+    {
+      direct = true;
+      indirect = false;
+    }
+  /* If value is not returned at all, do nothing.  */
+  else if (!direct && !indirect)
     return;
 
   /* If return value is SSA name determine its flags.  */
   if (TREE_CODE (gimple_call_lhs (call)) == SSA_NAME)
     {
       tree lhs = gimple_call_lhs (call);
-      analyze_ssa_name_flags (lhs, lattice, depth + 1, ipa);
-      if (deref)
-	lattice[index].merge_deref (lattice[SSA_NAME_VERSION (lhs)], false);
-      else
-	lattice[index].merge (lattice[SSA_NAME_VERSION (lhs)]);
+      if (direct)
+	merge_with_ssa_name (name, lhs, false);
+      if (indirect)
+	merge_with_ssa_name (name, lhs, true);
     }
   /* In the case of memory store we can do nothing.  */
+  else if (!direct)
+    m_lattice[index].merge (deref_flags (0, false));
   else
-    lattice[index].merge (0);
+    m_lattice[index].merge (0);
+}
+
+/* CALL_FLAGS are EAF_FLAGS of the argument.  Turn them
+   into flags for caller, update LATTICE of corresponding
+   argument if needed.  */
+
+static int
+callee_to_caller_flags (int call_flags, bool ignore_stores,
+			modref_lattice &lattice)
+{
+  /* call_flags is about callee returning a value
+     that is not the same as caller returning it.  */
+  call_flags |= EAF_NOT_RETURNED_DIRECTLY
+		| EAF_NOT_RETURNED_INDIRECTLY;
+  if (!ignore_stores && !(call_flags & EAF_UNUSED))
+    {
+      /* If value escapes we are no longer able to track what happens
+	 with it because we can read it from the escaped location
+	 anytime.  */
+      if (!(call_flags & EAF_NO_DIRECT_ESCAPE))
+	lattice.merge (0);
+      else if (!(call_flags & EAF_NO_INDIRECT_ESCAPE))
+	lattice.merge (~(EAF_NOT_RETURNED_INDIRECTLY
+			 | EAF_NO_DIRECT_READ
+			 | EAF_NO_INDIRECT_READ
+			 | EAF_NO_INDIRECT_CLOBBER
+			 | EAF_UNUSED));
+    }
+  else
+    call_flags |= ignore_stores_eaf_flags;
+  return call_flags;
 }
 
 /* Analyze EAF flags for SSA name NAME and store result to LATTICE.
@@ -1671,56 +2115,58 @@ merge_call_lhs_flags (gcall *call, int arg, int index, bool deref,
    If IPA is true we analyze for IPA propagation (and thus call escape points
    are processed later)  */
 
-static void
-analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
-			bool ipa)
+void
+modref_eaf_analysis::analyze_ssa_name (tree name)
 {
   imm_use_iterator ui;
   gimple *use_stmt;
   int index = SSA_NAME_VERSION (name);
 
   /* See if value is already computed.  */
-  if (lattice[index].known)
+  if (m_lattice[index].known || m_lattice[index].do_dataflow)
    return;
-  if (lattice[index].open)
+  if (m_lattice[index].open)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "%*sGiving up on a cycle in SSA graph\n", depth * 4, "");
-      return;
-    }
-  if (depth == param_modref_max_depth)
-    {
-      if (dump_file)
-	fprintf (dump_file,
-		 "%*sGiving up on max depth\n", depth * 4, "");
+		 "%*sCycle in SSA graph\n",
+		 m_depth * 4, "");
       return;
     }
   /* Recursion guard.  */
-  lattice[index].init ();
+  m_lattice[index].init ();
+  if (m_depth == param_modref_max_depth)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "%*sMax recursion depth reached; postponing\n",
+		 m_depth * 4, "");
+      m_deferred_names.safe_push (name);
+      return;
+    }
 
   if (dump_file)
     {
       fprintf (dump_file,
-	       "%*sAnalyzing flags of ssa name: ", depth * 4, "");
+	       "%*sAnalyzing flags of ssa name: ", m_depth * 4, "");
       print_generic_expr (dump_file, name);
       fprintf (dump_file, "\n");
     }
 
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
     {
-      if (lattice[index].flags == 0)
+      if (m_lattice[index].flags == 0)
 	break;
       if (is_gimple_debug (use_stmt))
 	continue;
       if (dump_file)
 	{
-	  fprintf (dump_file, "%*s  Analyzing stmt: ", depth * 4, "");
+	  fprintf (dump_file, "%*s  Analyzing stmt: ", m_depth * 4, "");
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
       /* If we see a direct non-debug use, clear unused bit.
 	 All dereferneces should be accounted below using deref_flags.  */
-      lattice[index].merge (~EAF_UNUSED);
+      m_lattice[index].merge (~EAF_UNUSED);
 
       /* Gimple return may load the return value.
 	 Returning name counts as an use by tree-ssa-structalias.c  */
@@ -1731,11 +2177,13 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	      && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 	    ;
 	  else if (gimple_return_retval (ret) == name)
-	    lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED));
+	    m_lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED_DIRECTLY
+				      | EAF_NOT_RETURNED_DIRECTLY));
 	  else if (memory_access_to (gimple_return_retval (ret), name))
 	    {
-	      lattice[index].merge_direct_load ();
-	      lattice[index].merge (~(EAF_UNUSED | EAF_NOT_RETURNED));
+	      m_lattice[index].merge_direct_load ();
+	      m_lattice[index].merge (~(EAF_UNUSED
+					| EAF_NOT_RETURNED_INDIRECTLY));
 	    }
 	}
       /* Account for LHS store, arg loads and flags from callee function.  */
@@ -1749,12 +2197,12 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	     is on since that would allow propagation of this from -fno-ipa-pta
 	     to -fipa-pta functions.  */
 	  if (gimple_call_fn (use_stmt) == name)
-	    lattice[index].merge (~(EAF_NOCLOBBER | EAF_UNUSED));
+	    m_lattice[index].merge (~(EAF_NO_DIRECT_CLOBBER | EAF_UNUSED));
 
 	  /* Recursion would require bit of propagation; give up for now.  */
-	  if (callee && !ipa && recursive_call_p (current_function_decl,
+	  if (callee && !m_ipa && recursive_call_p (current_function_decl,
 						  callee))
-	    lattice[index].merge (0);
+	    m_lattice[index].merge (0);
 	  else
 	    {
 	      int ecf_flags = gimple_call_flags (call);
@@ -1767,66 +2215,115 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	      if (gimple_call_lhs (call)
 		  && memory_access_to (gimple_call_lhs (call), name))
 		{
-		  lattice[index].merge_direct_store ();
+		  m_lattice[index].merge_direct_store ();
 		  /* Return slot optimization passes address of
 		     LHS to callee via hidden parameter and this
 		     may make LHS to escape.  See PR 98499.  */
 		  if (gimple_call_return_slot_opt_p (call)
 		      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
-		    lattice[index].merge (gimple_call_retslot_flags (call));
+		    {
+		      int call_flags = gimple_call_retslot_flags (call);
+		      bool isretslot = false;
+
+		      if (DECL_RESULT (current_function_decl)
+			  && DECL_BY_REFERENCE
+				(DECL_RESULT (current_function_decl)))
+			isretslot = ssa_default_def
+					 (cfun,
+					  DECL_RESULT (current_function_decl))
+					 == name;
+
+		      /* Passing returnslot to return slot is special because
+			 not_returned and escape has same meaning.
+			 However passing arg to return slot is different.  If
+			 the callee's return slot is returned it means that
+			 arg is written to itself which is an escape.
+			 Since we do not track the memory it is written to we
+			 need to give up on analysisng it.  */
+		      if (!isretslot)
+			{
+			  if (!(call_flags & (EAF_NOT_RETURNED_DIRECTLY
+					      | EAF_UNUSED)))
+			    m_lattice[index].merge (0);
+			  else gcc_checking_assert
+				(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
+					       | EAF_UNUSED));
+			  call_flags = callee_to_caller_flags
+					   (call_flags, false,
+					    m_lattice[index]);
+			}
+		      m_lattice[index].merge (call_flags);
+		    }
 		}
 
-	      /* We do not track accesses to the static chain (we could)
-		 so give up.  */
 	      if (gimple_call_chain (call)
 		  && (gimple_call_chain (call) == name))
-		lattice[index].merge (0);
+		{
+		  int call_flags = gimple_call_static_chain_flags (call);
+		  if (!ignore_retval && !(call_flags & EAF_UNUSED))
+		    merge_call_lhs_flags
+			 (call, -1, name,
+			  !(call_flags & EAF_NOT_RETURNED_DIRECTLY),
+			  !(call_flags & EAF_NOT_RETURNED_INDIRECTLY));
+		  call_flags = callee_to_caller_flags
+				   (call_flags, ignore_stores,
+				    m_lattice[index]);
+		  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
+		    m_lattice[index].merge (call_flags);
+		}
 
 	      /* Process internal functions and right away.  */
-	      bool record_ipa = ipa && !gimple_call_internal_p (call);
+	      bool record_ipa = m_ipa && !gimple_call_internal_p (call);
 
 	      /* Handle all function parameters.  */
 	      for (unsigned i = 0;
-		   i < gimple_call_num_args (call) && lattice[index].flags; i++)
+		   i < gimple_call_num_args (call)
+		   && m_lattice[index].flags; i++)
 		/* Name is directly passed to the callee.  */
 		if (gimple_call_arg (call, i) == name)
 		  {
+		    int call_flags = gimple_call_arg_flags (call, i);
+		    if (!ignore_retval)
+		      merge_call_lhs_flags
+			      (call, i, name,
+			       !(call_flags & (EAF_NOT_RETURNED_DIRECTLY
+					       | EAF_UNUSED)),
+			       !(call_flags & (EAF_NOT_RETURNED_INDIRECTLY
+					       | EAF_UNUSED)));
 		    if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS)))
 		      {
-			int call_flags = gimple_call_arg_flags (call, i)
-					 | EAF_NOT_RETURNED;
-			if (ignore_stores)
-			  call_flags |= ignore_stores_eaf_flags;
-
+			call_flags = callee_to_caller_flags
+					 (call_flags, ignore_stores,
+					  m_lattice[index]);
 			if (!record_ipa)
-			  lattice[index].merge (call_flags);
+			  m_lattice[index].merge (call_flags);
 			else
-			  lattice[index].add_escape_point (call, i,
+			  m_lattice[index].add_escape_point (call, i,
 							   call_flags, true);
 		      }
-		    if (!ignore_retval)
-		      merge_call_lhs_flags (call, i, index, false,
-					    lattice, depth, ipa);
 		  }
 		/* Name is dereferenced and passed to a callee.  */
 		else if (memory_access_to (gimple_call_arg (call, i), name))
 		  {
+		    int call_flags = deref_flags
+			    (gimple_call_arg_flags (call, i), ignore_stores);
+		    if (!ignore_retval && !(call_flags & EAF_UNUSED)
+			&& !(call_flags & EAF_NOT_RETURNED_DIRECTLY)
+			&& !(call_flags & EAF_NOT_RETURNED_INDIRECTLY))
+		      merge_call_lhs_flags (call, i, name, false, true);
 		    if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
-		      lattice[index].merge_direct_load ();
+		      m_lattice[index].merge_direct_load ();
 		    else
 		      {
-			int call_flags = deref_flags
-			   (gimple_call_arg_flags (call, i)
-			    | EAF_NOT_RETURNED, ignore_stores);
+			call_flags = callee_to_caller_flags
+					 (call_flags, ignore_stores,
+					  m_lattice[index]);
 			if (!record_ipa)
-			  lattice[index].merge (call_flags);
+			  m_lattice[index].merge (call_flags);
 			else
-			  lattice[index].add_escape_point (call, i,
-							   call_flags, false);
+			  m_lattice[index].add_escape_point (call, i,
+							     call_flags, false);
 		      }
-		    if (!ignore_retval)
-		      merge_call_lhs_flags (call, i, index, true,
-					    lattice, depth, ipa);
 		  }
 	    }
 	}
@@ -1841,18 +2338,16 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		 We do not track memory locations, so assume that value
 		 is used arbitrarily.  */
 	      if (memory_access_to (gimple_assign_rhs1 (assign), name))
-		lattice[index].merge (deref_flags (0, false));
+		m_lattice[index].merge (deref_flags (0, false));
 	      /* Handle *name = *exp.  */
 	      else if (memory_access_to (gimple_assign_lhs (assign), name))
-		lattice[index].merge_direct_store ();
+		m_lattice[index].merge_direct_store ();
 	    }
 	  /* Handle lhs = *name.  */
 	  else if (memory_access_to (gimple_assign_rhs1 (assign), name))
 	    {
 	      tree lhs = gimple_assign_lhs (assign);
-	      analyze_ssa_name_flags (lhs, lattice, depth + 1, ipa);
-	      lattice[index].merge_deref (lattice[SSA_NAME_VERSION (lhs)],
-					  false);
+	      merge_with_ssa_name (name, lhs, true);
 	    }
 	}
       else if (gimple_store_p (use_stmt))
@@ -1864,8 +2359,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "%*s  ssa name saved to memory\n",
-			 depth * 4, "");
-	      lattice[index].merge (0);
+			 m_depth * 4, "");
+	      m_lattice[index].merge (0);
 	    }
 	  /* Handle *name = exp.  */
 	  else if (assign
@@ -1874,17 +2369,17 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 	      /* In general we can not ignore clobbers because they are
 		 barriers for code motion, however after inlining it is safe to
 		 do because local optimization passes do not consider clobbers
-		 from other functions.  Similar logic is in ipa-pure-const.c.  */
+		 from other functions.
+		 Similar logic is in ipa-pure-const.c.  */
 	      if (!cfun->after_inlining || !gimple_clobber_p (assign))
-		lattice[index].merge_direct_store ();
+		m_lattice[index].merge_direct_store ();
 	    }
 	  /* ASM statements etc.  */
 	  else if (!assign)
 	    {
 	      if (dump_file)
-		fprintf (dump_file, "%*s  Unhandled store\n",
-			 depth * 4, "");
-	      lattice[index].merge (0);
+		fprintf (dump_file, "%*s  Unhandled store\n", m_depth * 4, "");
+	      m_lattice[index].merge (0);
 	    }
 	}
       else if (gassign *assign = dyn_cast <gassign *> (use_stmt))
@@ -1899,15 +2394,13 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 		  || gimple_assign_rhs1 (assign) == name))
 	    {
 	      tree lhs = gimple_assign_lhs (assign);
-	      analyze_ssa_name_flags (lhs, lattice, depth + 1, ipa);
-	      lattice[index].merge (lattice[SSA_NAME_VERSION (lhs)]);
+	      merge_with_ssa_name (name, lhs, false);
 	    }
 	}
       else if (gphi *phi = dyn_cast <gphi *> (use_stmt))
 	{
 	  tree result = gimple_phi_result (phi);
-	  analyze_ssa_name_flags (result, lattice, depth + 1, ipa);
-	  lattice[index].merge (lattice[SSA_NAME_VERSION (result)]);
+	  merge_with_ssa_name (name, result, false);
 	}
       /* Conditions are not considered escape points
 	 by tree-ssa-structalias.  */
@@ -1916,38 +2409,214 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
       else
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "%*s  Unhandled stmt\n", depth * 4, "");
-	  lattice[index].merge (0);
+	    fprintf (dump_file, "%*s  Unhandled stmt\n", m_depth * 4, "");
+	  m_lattice[index].merge (0);
 	}
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "%*s  current flags of ", depth * 4, "");
+	  fprintf (dump_file, "%*s  current flags of ", m_depth * 4, "");
 	  print_generic_expr (dump_file, name);
-	  lattice[index].dump (dump_file, depth * 4 + 4);
+	  m_lattice[index].dump (dump_file, m_depth * 4 + 4);
 	}
     }
   if (dump_file)
     {
-      fprintf (dump_file, "%*sflags of ssa name ", depth * 4, "");
+      fprintf (dump_file, "%*sflags of ssa name ", m_depth * 4, "");
       print_generic_expr (dump_file, name);
-      lattice[index].dump (dump_file, depth * 4 + 2);
+      m_lattice[index].dump (dump_file, m_depth * 4 + 2);
     }
-  lattice[index].open = false;
-  lattice[index].known = true;
+  m_lattice[index].open = false;
+  if (!m_lattice[index].do_dataflow)
+    m_lattice[index].known = true;
+}
+
+/* Propagate info from SRC to DEST.  If DEREF it true, assume that SRC
+   is dereferenced.  */
+
+void
+modref_eaf_analysis::merge_with_ssa_name (tree dest, tree src, bool deref)
+{
+  int index = SSA_NAME_VERSION (dest);
+  int src_index = SSA_NAME_VERSION (src);
+
+  /* Merging lattice with itself is a no-op.  */
+  if (!deref && src == dest)
+    return;
+
+  m_depth++;
+  analyze_ssa_name (src);
+  m_depth--;
+  if (deref)
+    m_lattice[index].merge_deref (m_lattice[src_index], false);
+  else
+    m_lattice[index].merge (m_lattice[src_index]);
+
+  /* If we failed to produce final solution add an edge to the dataflow
+     graph.  */
+  if (!m_lattice[src_index].known)
+    {
+      modref_lattice::propagate_edge e = {index, deref};
+
+      if (!m_lattice[src_index].propagate_to.length ())
+	m_names_to_propagate.safe_push (src_index);
+      m_lattice[src_index].propagate_to.safe_push (e);
+      m_lattice[src_index].changed = true;
+      m_lattice[src_index].do_dataflow = true;
+      if (dump_file)
+	fprintf (dump_file,
+		 "%*sWill propgate from ssa_name %i to %i%s\n",
+		 m_depth * 4 + 4,
+		 "", src_index, index, deref ? " (deref)" : "");
+    }
+}
+
+/* In the case we deferred some SSA names, reprocess them.  In the case some
+   dataflow edges were introduced, do the actual iterative dataflow.  */
+
+void
+modref_eaf_analysis::propagate ()
+{
+  int iterations = 0;
+  size_t i;
+  int index;
+  bool changed = true;
+
+  while (m_deferred_names.length ())
+    {
+      tree name = m_deferred_names.pop ();
+      m_lattice[SSA_NAME_VERSION (name)].open = false;
+      if (dump_file)
+	fprintf (dump_file, "Analyzing deferred SSA name\n");
+      analyze_ssa_name (name);
+    }
+
+  if (!m_names_to_propagate.length ())
+    return;
+  if (dump_file)
+    fprintf (dump_file, "Propagating EAF flags\n");
+
+  /* Compute reverse postorder.  */
+  auto_vec <int> rpo;
+  struct stack_entry
+  {
+    int name;
+    unsigned pos;
+  };
+  auto_vec <struct stack_entry> stack;
+  int pos = m_names_to_propagate.length () - 1;
+
+  rpo.safe_grow (m_names_to_propagate.length (), true);
+  stack.reserve_exact (m_names_to_propagate.length ());
+
+  /* We reuse known flag for RPO DFS walk bookeeping.  */
+  if (flag_checking)
+    FOR_EACH_VEC_ELT (m_names_to_propagate, i, index)
+      gcc_assert (!m_lattice[index].known && m_lattice[index].changed);
+
+  FOR_EACH_VEC_ELT (m_names_to_propagate, i, index)
+    {
+      if (!m_lattice[index].known)
+	{
+	  stack_entry e = {index, 0};
+
+	  stack.quick_push (e);
+	  m_lattice[index].known = true;
+	}
+      while (stack.length ())
+	{
+	  bool found = false;
+	  int index1 = stack.last ().name;
+
+	  while (stack.last ().pos < m_lattice[index1].propagate_to.length ())
+	    {
+	      int index2 = m_lattice[index1]
+		      .propagate_to[stack.last ().pos].ssa_name;
+
+	      stack.last ().pos++;
+	      if (!m_lattice[index2].known
+		  && m_lattice[index2].propagate_to.length ())
+		{
+		  stack_entry e = {index2, 0};
+
+		  stack.quick_push (e);
+		  m_lattice[index2].known = true;
+		  found = true;
+		  break;
+		}
+	    }
+	  if (!found
+	      && stack.last ().pos == m_lattice[index1].propagate_to.length ())
+	    {
+	      rpo[pos--] = index1;
+	      stack.pop ();
+	    }
+	}
+    }
+
+  /* Perform itrative dataflow.  */
+  while (changed)
+    {
+      changed = false;
+      iterations++;
+      if (dump_file)
+	fprintf (dump_file, " iteration %i\n", iterations);
+      FOR_EACH_VEC_ELT (rpo, i, index)
+	{
+	  if (m_lattice[index].changed)
+	    {
+	      size_t j;
+
+	      m_lattice[index].changed = false;
+	      if (dump_file)
+		fprintf (dump_file, "  Visiting ssa name %i\n", index);
+	      for (j = 0; j < m_lattice[index].propagate_to.length (); j++)
+		{
+		  bool ch;
+		  int target = m_lattice[index].propagate_to[j].ssa_name;
+		  bool deref = m_lattice[index].propagate_to[j].deref;
+
+		  if (dump_file)
+		    fprintf (dump_file, "   Propagating flags of ssa name"
+			     " %i to %i%s\n",
+			     index, target, deref ? " (deref)" : "");
+		  m_lattice[target].known = true;
+		  if (!m_lattice[index].propagate_to[j].deref)
+		    ch = m_lattice[target].merge (m_lattice[index]);
+		  else
+		    ch = m_lattice[target].merge_deref (m_lattice[index],
+							false);
+		  if (!ch)
+		    continue;
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "   New lattice: ");
+		      m_lattice[target].dump (dump_file);
+		    }
+		  changed = true;
+		  m_lattice[target].changed = true;
+		}
+	    }
+	}
+    }
+  if (dump_file)
+    fprintf (dump_file, "EAF flags propagated in %i iterations\n", iterations);
 }
 
 /* Record escape points of PARM_INDEX according to LATTICE.  */
 
-static void
-record_escape_points (modref_lattice &lattice, int parm_index, int flags)
+void
+modref_eaf_analysis::record_escape_points (tree name, int parm_index, int flags)
 {
+  modref_lattice &lattice = m_lattice[SSA_NAME_VERSION (name)];
+
   if (lattice.escape_points.length ())
     {
       escape_point *ep;
       unsigned int ip;
       cgraph_node *node = cgraph_node::get (current_function_decl);
 
+      gcc_assert (m_ipa);
       FOR_EACH_VEC_ELT (lattice.escape_points, ip, ep)
 	if ((ep->min_flags & flags) != flags)
 	  {
@@ -1960,36 +2629,66 @@ record_escape_points (modref_lattice &lattice, int parm_index, int flags)
     }
 }
 
-/* Determine EAF flags for function parameters.  */
+/* Determine EAF flags for function parameters
+   and fill in SUMMARY/SUMMARY_LTO.  If IPA is true work in IPA mode
+   where we also collect scape points.
+   PAST_FLAGS, PAST_RETSLOT_FLAGS, PAST_STATIC_CHAIN_FLAGS can be
+   used to preserve flags from prevoius (IPA) run for cases where
+   late optimizations changed code in a way we can no longer analyze
+   it easily.  */
 
 static void
 analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
-	       bool ipa)
+	       bool ipa, vec<eaf_flags_t> &past_flags,
+	       int past_retslot_flags, int past_static_chain_flags)
 {
   unsigned int parm_index = 0;
   unsigned int count = 0;
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
   tree retslot = NULL;
-
-  /* For novops functions we have nothing to gain by EAF flags.  */
-  if (ecf_flags & ECF_NOVOPS)
-    return;
+  tree static_chain = NULL;
 
   /* If there is return slot, look up its SSA name.  */
   if (DECL_RESULT (current_function_decl)
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
     retslot = ssa_default_def (cfun, DECL_RESULT (current_function_decl));
+  if (cfun->static_chain_decl)
+    static_chain = ssa_default_def (cfun, cfun->static_chain_decl);
 
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
        parm = TREE_CHAIN (parm))
     count++;
 
-  if (!count && !retslot)
+  if (!count && !retslot && !static_chain)
     return;
 
-  auto_vec<modref_lattice> lattice;
-  lattice.safe_grow_cleared (num_ssa_names, true);
+  modref_eaf_analysis eaf_analysis (ipa);
 
+  /* Determine all SSA names we need to know flags for.  */
+  for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
+       parm = TREE_CHAIN (parm))
+    {
+      tree name = ssa_default_def (cfun, parm);
+      if (name)
+	eaf_analysis.analyze_ssa_name (name);
+    }
+  if (retslot)
+    eaf_analysis.analyze_ssa_name (retslot);
+  if (static_chain)
+    eaf_analysis.analyze_ssa_name (static_chain);
+
+  /* Do the dataflow.  */
+  eaf_analysis.propagate ();
+
+  tree attr = lookup_attribute ("fn spec",
+				TYPE_ATTRIBUTES
+				  (TREE_TYPE (current_function_decl)));
+  attr_fnspec fnspec (attr
+		      ? TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)))
+		      : "");
+
+
+  /* Store results to summaries.  */
   for (tree parm = DECL_ARGUMENTS (current_function_decl); parm; parm_index++,
        parm = TREE_CHAIN (parm))
     {
@@ -2014,8 +2713,19 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 	    }
 	  continue;
 	}
-      analyze_ssa_name_flags (name, lattice, 0, ipa);
-      int flags = lattice[SSA_NAME_VERSION (name)].flags;
+      int flags = eaf_analysis.get_ssa_name_flags (name);
+      int attr_flags = fnspec.arg_eaf_flags (parm_index);
+
+      if (dump_file && (flags | attr_flags) != flags && !(flags & EAF_UNUSED))
+	{
+	  fprintf (dump_file,
+		   "  Flags for param %i combined with fnspec flags:",
+		   (int)parm_index);
+	  dump_eaf_flags (dump_file, attr_flags, false);
+	  fprintf (dump_file, " determined: ");
+	  dump_eaf_flags (dump_file, flags, true);
+	}
+      flags |= attr_flags;
 
       /* Eliminate useless flags so we do not end up storing unnecessary
 	 summaries.  */
@@ -2023,6 +2733,25 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
       flags = remove_useless_eaf_flags
 		 (flags, ecf_flags,
 		  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+      if (past_flags.length () > parm_index)
+	{
+	  int past = past_flags[parm_index];
+	  past = remove_useless_eaf_flags
+		     (past, ecf_flags,
+		      VOID_TYPE_P (TREE_TYPE
+			  (TREE_TYPE (current_function_decl))));
+	  if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
+	    {
+	      fprintf (dump_file,
+		       "  Flags for param %i combined with IPA pass:",
+		       (int)parm_index);
+	      dump_eaf_flags (dump_file, past, false);
+	      fprintf (dump_file, " determined: ");
+	      dump_eaf_flags (dump_file, flags, true);
+	    }
+	  if (!(flags & EAF_UNUSED))
+	    flags |= past;
+	}
 
       if (flags)
 	{
@@ -2038,37 +2767,80 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
 		summary_lto->arg_flags.safe_grow_cleared (count, true);
 	      summary_lto->arg_flags[parm_index] = flags;
 	    }
-	  record_escape_points (lattice[SSA_NAME_VERSION (name)],
-				parm_index, flags);
+	  eaf_analysis.record_escape_points (name, parm_index, flags);
 	}
     }
   if (retslot)
     {
-      analyze_ssa_name_flags (retslot, lattice, 0, ipa);
-      int flags = lattice[SSA_NAME_VERSION (retslot)].flags;
+      int flags = eaf_analysis.get_ssa_name_flags (retslot);
+      int past = past_retslot_flags;
 
       flags = remove_useless_eaf_flags (flags, ecf_flags, false);
+      past = remove_useless_eaf_flags
+		 (past, ecf_flags,
+		  VOID_TYPE_P (TREE_TYPE
+		      (TREE_TYPE (current_function_decl))));
+      if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
+	{
+	  fprintf (dump_file,
+		   "  Retslot flags combined with IPA pass:");
+	  dump_eaf_flags (dump_file, past, false);
+	  fprintf (dump_file, " determined: ");
+	  dump_eaf_flags (dump_file, flags, true);
+	}
+      if (!(flags & EAF_UNUSED))
+	flags |= past;
       if (flags)
 	{
 	  if (summary)
 	    summary->retslot_flags = flags;
 	  if (summary_lto)
 	    summary_lto->retslot_flags = flags;
-	  record_escape_points (lattice[SSA_NAME_VERSION (retslot)],
-				escape_point::retslot_arg, flags);
+	  eaf_analysis.record_escape_points (retslot,
+					     MODREF_RETSLOT_PARM, flags);
 	}
     }
-  if (ipa)
-    for (unsigned int i = 0; i < num_ssa_names; i++)
-      lattice[i].release ();
+  if (static_chain)
+    {
+      int flags = eaf_analysis.get_ssa_name_flags (static_chain);
+      int past = past_static_chain_flags;
+
+      flags = remove_useless_eaf_flags (flags, ecf_flags, false);
+      past = remove_useless_eaf_flags
+		 (past, ecf_flags,
+		  VOID_TYPE_P (TREE_TYPE
+		      (TREE_TYPE (current_function_decl))));
+      if (dump_file && (flags | past) != flags && !(flags & EAF_UNUSED))
+	{
+	  fprintf (dump_file,
+		   "  Static chain flags combined with IPA pass:");
+	  dump_eaf_flags (dump_file, past, false);
+	  fprintf (dump_file, " determined: ");
+	  dump_eaf_flags (dump_file, flags, true);
+	}
+      if (!(flags & EAF_UNUSED))
+	flags |= past;
+      if (flags)
+	{
+	  if (summary)
+	    summary->static_chain_flags = flags;
+	  if (summary_lto)
+	    summary_lto->static_chain_flags = flags;
+	  eaf_analysis.record_escape_points (static_chain,
+					     MODREF_STATIC_CHAIN_PARM,
+					     flags);
+	}
+    }
 }
 
 /* Analyze function F.  IPA indicates whether we're running in local mode
-   (false) or the IPA mode (true).  */
+   (false) or the IPA mode (true).
+   Return true if fixup cfg is needed after the pass.  */
 
-static void
+static bool
 analyze_function (function *f, bool ipa)
 {
+  bool fixup_cfg = false;
   if (dump_file)
     fprintf (dump_file, "modref analyzing '%s' (ipa=%i)%s%s\n",
 	     function_name (f), ipa,
@@ -2078,7 +2850,7 @@ analyze_function (function *f, bool ipa)
   /* Don't analyze this function if it's compiled with -fno-strict-aliasing.  */
   if (!flag_ipa_modref
       || lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
-    return;
+    return false;
 
   /* Compute no-LTO summaries when local optimization is going to happen.  */
   bool nolto = (!ipa || ((!flag_lto || flag_fat_lto_objects) && !in_lto_p)
@@ -2093,6 +2865,11 @@ analyze_function (function *f, bool ipa)
   modref_summary *summary = NULL;
   modref_summary_lto *summary_lto = NULL;
 
+  bool past_flags_known = false;
+  auto_vec <eaf_flags_t> past_flags;
+  int past_retslot_flags = 0;
+  int past_static_chain_flags = 0;
+
   /* Initialize the summary.
      If we run in local mode there is possibly pre-existing summary from
      IPA pass.  Dump it so it is easy to compare if mod-ref info has
@@ -2103,19 +2880,24 @@ analyze_function (function *f, bool ipa)
 	optimization_summaries = modref_summaries::create_ggc (symtab);
       else /* Remove existing summary if we are re-running the pass.  */
 	{
-	  if (dump_file
-	      && (summary
-		  = optimization_summaries->get (cgraph_node::get (f->decl)))
-		 != NULL
+	  summary = optimization_summaries->get (fnode);
+	  if (summary != NULL
 	      && summary->loads)
 	    {
-	      fprintf (dump_file, "Past summary:\n");
-	      optimization_summaries->get
-		 (cgraph_node::get (f->decl))->dump (dump_file);
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Past summary:\n");
+		  optimization_summaries->get (fnode)->dump (dump_file);
+		}
+	      past_flags.reserve_exact (summary->arg_flags.length ());
+	      past_flags.splice (summary->arg_flags);
+	      past_retslot_flags = summary->retslot_flags;
+	      past_static_chain_flags = summary->static_chain_flags;
+	      past_flags_known = true;
 	    }
-	  optimization_summaries->remove (cgraph_node::get (f->decl));
+	  optimization_summaries->remove (fnode);
 	}
-      summary = optimization_summaries->get_create (cgraph_node::get (f->decl));
+      summary = optimization_summaries->get_create (fnode);
       gcc_checking_assert (nolto && !lto);
     }
   /* In IPA mode we analyze every function precisely once.  Assert that.  */
@@ -2126,16 +2908,16 @@ analyze_function (function *f, bool ipa)
 	  if (!summaries)
 	    summaries = modref_summaries::create_ggc (symtab);
 	  else
-	    summaries->remove (cgraph_node::get (f->decl));
-	  summary = summaries->get_create (cgraph_node::get (f->decl));
+	    summaries->remove (fnode);
+	  summary = summaries->get_create (fnode);
 	}
       if (lto)
 	{
 	  if (!summaries_lto)
 	    summaries_lto = modref_summaries_lto::create_ggc (symtab);
 	  else
-	    summaries_lto->remove (cgraph_node::get (f->decl));
-	  summary_lto = summaries_lto->get_create (cgraph_node::get (f->decl));
+	    summaries_lto->remove (fnode);
+	  summary_lto = summaries_lto->get_create (fnode);
 	}
       if (!fnspec_summaries)
 	fnspec_summaries = new fnspec_summaries_t (symtab);
@@ -2158,6 +2940,9 @@ analyze_function (function *f, bool ipa)
 						    param_modref_max_refs,
 						    param_modref_max_accesses);
       summary->writes_errno = false;
+      summary->side_effects = false;
+      summary->nondeterministic = false;
+      summary->calls_interposable = false;
     }
   if (lto)
     {
@@ -2172,9 +2957,13 @@ analyze_function (function *f, bool ipa)
 				  param_modref_max_refs,
 				  param_modref_max_accesses);
       summary_lto->writes_errno = false;
+      summary_lto->side_effects = false;
+      summary_lto->nondeterministic = false;
+      summary_lto->calls_interposable = false;
     }
 
-  analyze_parms (summary, summary_lto, ipa);
+  analyze_parms (summary, summary_lto, ipa,
+		 past_flags, past_retslot_flags, past_static_chain_flags);
 
   int ecf_flags = flags_from_decl_or_type (current_function_decl);
   auto_vec <gimple *, 32> recursive_calls;
@@ -2186,11 +2975,15 @@ analyze_function (function *f, bool ipa)
   FOR_EACH_BB_FN (bb, f)
     {
       gimple_stmt_iterator si;
+      bool always_executed
+	      = bb == single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest;
+
       for (si = gsi_start_nondebug_after_labels_bb (bb);
 	   !gsi_end_p (si); gsi_next_nondebug (&si))
 	{
 	  if (!analyze_stmt (summary, summary_lto,
-			     gsi_stmt (si), ipa, &recursive_calls)
+			     gsi_stmt (si), ipa, &recursive_calls,
+			     always_executed)
 	      || ((!summary || !summary->useful_p (ecf_flags, false))
 		  && (!summary_lto
 		      || !summary_lto->useful_p (ecf_flags, false))))
@@ -2199,6 +2992,9 @@ analyze_function (function *f, bool ipa)
 	      collapse_stores (summary, summary_lto);
 	      break;
 	    }
+	  if (always_executed
+	      && stmt_can_throw_external (cfun, gsi_stmt (si)))
+	    always_executed = false;
 	}
     }
 
@@ -2218,14 +3014,33 @@ analyze_function (function *f, bool ipa)
 			   ignore_stores_p (current_function_decl,
 					    gimple_call_flags
 						 (recursive_calls[i])),
-			   fnode, !first);
+			   fnode, !first, false);
 	      if (!summary->useful_p (ecf_flags, false))
 		{
 		  remove_summary (lto, nolto, ipa);
-		  return;
+		  return false;
 		}
 	    }
 	  first = false;
+	}
+    }
+  if (summary && !summary->side_effects && !finite_function_p ())
+    summary->side_effects = true;
+  if (summary_lto && !summary_lto->side_effects && !finite_function_p ())
+    summary_lto->side_effects = true;
+
+  if (!ipa && flag_ipa_pure_const)
+    {
+      if (!summary->stores->every_base && !summary->stores->bases
+	  && !summary->nondeterministic)
+	{
+	  if (!summary->loads->every_base && !summary->loads->bases
+	      && !summary->calls_interposable)
+	    fixup_cfg = ipa_make_function_const (fnode,
+						 summary->side_effects, true);
+	  else
+	    fixup_cfg = ipa_make_function_pure (fnode,
+						summary->side_effects, true);
 	}
     }
   if (summary && !summary->useful_p (ecf_flags))
@@ -2236,11 +3051,14 @@ analyze_function (function *f, bool ipa)
 	summaries->remove (fnode);
       summary = NULL;
     }
+  if (summary)
+    summary->finalize (current_function_decl);
   if (summary_lto && !summary_lto->useful_p (ecf_flags))
     {
       summaries_lto->remove (fnode);
       summary_lto = NULL;
     }
+
   if (ipa && !summary && !summary_lto)
     remove_modref_edge_summaries (fnode);
 
@@ -2252,7 +3070,104 @@ analyze_function (function *f, bool ipa)
       if (summary_lto)
 	summary_lto->dump (dump_file);
       dump_modref_edge_summaries (dump_file, fnode, 2);
+      /* To simplify debugging, compare IPA and local solutions.  */
+      if (past_flags_known && summary)
+	{
+	  size_t len = summary->arg_flags.length ();
+
+	  if (past_flags.length () > len)
+	    len = past_flags.length ();
+	  for (size_t i = 0; i < len; i++)
+	    {
+	      int old_flags = i < past_flags.length () ? past_flags[i] : 0;
+	      int new_flags = i < summary->arg_flags.length ()
+			      ? summary->arg_flags[i] : 0;
+	      old_flags = remove_useless_eaf_flags
+		(old_flags, flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	      if (old_flags != new_flags)
+		{
+		  if ((old_flags & ~new_flags) == 0
+		      || (new_flags & EAF_UNUSED))
+		    fprintf (dump_file, "  Flags for param %i improved:",
+			     (int)i);
+		  else
+		    gcc_unreachable ();
+		  dump_eaf_flags (dump_file, old_flags, false);
+		  fprintf (dump_file, " -> ");
+		  dump_eaf_flags (dump_file, new_flags, true);
+		}
+	    }
+	  past_retslot_flags = remove_useless_eaf_flags
+		(past_retslot_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_retslot_flags != summary->retslot_flags)
+	    {
+	      if ((past_retslot_flags & ~summary->retslot_flags) == 0
+		  || (summary->retslot_flags & EAF_UNUSED))
+		fprintf (dump_file, "  Flags for retslot improved:");
+	      else
+		gcc_unreachable ();
+	      dump_eaf_flags (dump_file, past_retslot_flags, false);
+	      fprintf (dump_file, " -> ");
+	      dump_eaf_flags (dump_file, summary->retslot_flags, true);
+	    }
+	  past_static_chain_flags = remove_useless_eaf_flags
+		(past_static_chain_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_static_chain_flags != summary->static_chain_flags)
+	    {
+	      if ((past_static_chain_flags & ~summary->static_chain_flags) == 0
+		  || (summary->static_chain_flags & EAF_UNUSED))
+		fprintf (dump_file, "  Flags for static chain improved:");
+	      else
+		gcc_unreachable ();
+	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
+	      fprintf (dump_file, " -> ");
+	      dump_eaf_flags (dump_file, summary->static_chain_flags, true);
+	    }
+	}
+      else if (past_flags_known && !summary)
+	{
+	  for (size_t i = 0; i < past_flags.length (); i++)
+	    {
+	      int old_flags = past_flags[i];
+	      old_flags = remove_useless_eaf_flags
+		(old_flags, flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	      if (old_flags)
+		{
+		  fprintf (dump_file, "  Flags for param %i worsened:",
+			   (int)i);
+		  dump_eaf_flags (dump_file, old_flags, false);
+		  fprintf (dump_file, " -> \n");
+		}
+	    }
+	  past_retslot_flags = remove_useless_eaf_flags
+		(past_retslot_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_retslot_flags)
+	    {
+	      fprintf (dump_file, "  Flags for retslot worsened:");
+	      dump_eaf_flags (dump_file, past_retslot_flags, false);
+	      fprintf (dump_file, " ->\n");
+	    }
+	  past_static_chain_flags = remove_useless_eaf_flags
+		(past_static_chain_flags,
+		 flags_from_decl_or_type (current_function_decl),
+		 VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))));
+	  if (past_static_chain_flags)
+	    {
+	      fprintf (dump_file, "  Flags for static chain worsened:");
+	      dump_eaf_flags (dump_file, past_static_chain_flags, false);
+	      fprintf (dump_file, " ->\n");
+	    }
+	}
     }
+  return fixup_cfg;
 }
 
 /* Callback for generate_summary.  */
@@ -2270,6 +3185,16 @@ modref_generate (void)
       analyze_function (f, true);
       pop_cfun ();
     }
+}
+
+}  /* ANON namespace.  */
+
+/* Debugging helper.  */
+
+void
+debug_eaf_flags (int flags)
+{
+   dump_eaf_flags (stderr, flags, true);
 }
 
 /* Called when a new function is inserted to callgraph late.  */
@@ -2338,10 +3263,16 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
 			 src_data->loads->max_refs,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
+  dst_data->kills.reserve_exact (src_data->kills.length ());
+  dst_data->kills.splice (src_data->kills);
   dst_data->writes_errno = src_data->writes_errno;
+  dst_data->side_effects = src_data->side_effects;
+  dst_data->nondeterministic = src_data->nondeterministic;
+  dst_data->calls_interposable = src_data->calls_interposable;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
+  dst_data->static_chain_flags = src_data->static_chain_flags;
 }
 
 /* Called when new clone is inserted to callgraph late.  */
@@ -2364,10 +3295,16 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
 			 src_data->loads->max_refs,
 			 src_data->loads->max_accesses);
   dst_data->loads->copy_from (src_data->loads);
+  dst_data->kills.reserve_exact (src_data->kills.length ());
+  dst_data->kills.splice (src_data->kills);
   dst_data->writes_errno = src_data->writes_errno;
+  dst_data->side_effects = src_data->side_effects;
+  dst_data->nondeterministic = src_data->nondeterministic;
+  dst_data->calls_interposable = src_data->calls_interposable;
   if (src_data->arg_flags.length ())
     dst_data->arg_flags = src_data->arg_flags.copy ();
   dst_data->retslot_flags = src_data->retslot_flags;
+  dst_data->static_chain_flags = src_data->static_chain_flags;
 }
 
 namespace
@@ -2414,40 +3351,21 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
 
   streamer_write_uhwi (ob, tt->every_base);
   streamer_write_uhwi (ob, vec_safe_length (tt->bases));
-  size_t i;
-  modref_base_node <tree> *base_node;
-  FOR_EACH_VEC_SAFE_ELT (tt->bases, i, base_node)
+  for (auto base_node : tt->bases)
     {
       stream_write_tree (ob, base_node->base, true);
 
       streamer_write_uhwi (ob, base_node->every_ref);
       streamer_write_uhwi (ob, vec_safe_length (base_node->refs));
 
-      size_t j;
-      modref_ref_node <tree> *ref_node;
-      FOR_EACH_VEC_SAFE_ELT (base_node->refs, j, ref_node)
+      for (auto ref_node : base_node->refs)
 	{
 	  stream_write_tree (ob, ref_node->ref, true);
 	  streamer_write_uhwi (ob, ref_node->every_access);
 	  streamer_write_uhwi (ob, vec_safe_length (ref_node->accesses));
 
-	  size_t k;
-	  modref_access_node *access_node;
-	  FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	    {
-	      streamer_write_hwi (ob, access_node->parm_index);
-	      if (access_node->parm_index != -1)
-		{
-		  streamer_write_uhwi (ob, access_node->parm_offset_known);
-		  if (access_node->parm_offset_known)
-		    {
-		      streamer_write_poly_int64 (ob, access_node->parm_offset);
-		      streamer_write_poly_int64 (ob, access_node->offset);
-		      streamer_write_poly_int64 (ob, access_node->size);
-		      streamer_write_poly_int64 (ob, access_node->max_size);
-		    }
-		}
-	    }
+	  for (auto access_node : ref_node->accesses)
+	    access_node.stream_out (ob);
 	}
     }
 }
@@ -2457,7 +3375,7 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
    Either nolto_ret or lto_ret is initialized by the tree depending whether
    LTO streaming is expected or not.  */
 
-void
+static void
 read_modref_records (lto_input_block *ib, struct data_in *data_in,
 		     modref_records **nolto_ret,
 		     modref_records_lto **lto_ret)
@@ -2552,33 +3470,14 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
 	  size_t every_access = streamer_read_uhwi (ib);
 	  size_t naccesses = streamer_read_uhwi (ib);
 
-	  if (nolto_ref_node)
-	    nolto_ref_node->every_access = every_access;
-	  if (lto_ref_node)
-	    lto_ref_node->every_access = every_access;
+	  if (nolto_ref_node && every_access)
+	    nolto_ref_node->collapse ();
+	  if (lto_ref_node && every_access)
+	    lto_ref_node->collapse ();
 
 	  for (size_t k = 0; k < naccesses; k++)
 	    {
-	      int parm_index = streamer_read_hwi (ib);
-	      bool parm_offset_known = false;
-	      poly_int64 parm_offset = 0;
-	      poly_int64 offset = 0;
-	      poly_int64 size = -1;
-	      poly_int64 max_size = -1;
-
-	      if (parm_index != -1)
-		{
-		  parm_offset_known = streamer_read_uhwi (ib);
-		  if (parm_offset_known)
-		    {
-		      parm_offset = streamer_read_poly_int64 (ib);
-		      offset = streamer_read_poly_int64 (ib);
-		      size = streamer_read_poly_int64 (ib);
-		      max_size = streamer_read_poly_int64 (ib);
-		    }
-		}
-	      modref_access_node a = {offset, size, max_size, parm_offset,
-				      parm_index, parm_offset_known, false};
+	      modref_access_node a = modref_access_node::stream_in (ib);
 	      if (nolto_ref_node)
 		nolto_ref_node->insert_access (a, max_accesses, false);
 	      if (lto_ref_node)
@@ -2685,12 +3584,19 @@ modref_write ()
 	  for (unsigned int i = 0; i < r->arg_flags.length (); i++)
 	    streamer_write_uhwi (ob, r->arg_flags[i]);
 	  streamer_write_uhwi (ob, r->retslot_flags);
+	  streamer_write_uhwi (ob, r->static_chain_flags);
 
 	  write_modref_records (r->loads, ob);
 	  write_modref_records (r->stores, ob);
+	  streamer_write_uhwi (ob, r->kills.length ());
+	  for (auto kill : r->kills)
+	    kill.stream_out (ob);
 
 	  struct bitpack_d bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, r->writes_errno, 1);
+	  bp_pack_value (&bp, r->side_effects, 1);
+	  bp_pack_value (&bp, r->nondeterministic, 1);
+	  bp_pack_value (&bp, r->calls_interposable, 1);
 	  if (!flag_wpa)
 	    {
 	      for (cgraph_edge *e = cnode->indirect_calls;
@@ -2760,9 +3666,19 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	modref_sum = optimization_summaries->get_create (node);
 
       if (modref_sum)
-	modref_sum->writes_errno = false;
+	{
+	  modref_sum->writes_errno = false;
+	  modref_sum->side_effects = false;
+	  modref_sum->nondeterministic = false;
+	  modref_sum->calls_interposable = false;
+	}
       if (modref_sum_lto)
-	modref_sum_lto->writes_errno = false;
+	{
+	  modref_sum_lto->writes_errno = false;
+	  modref_sum_lto->side_effects = false;
+	  modref_sum_lto->nondeterministic = false;
+	  modref_sum_lto->calls_interposable = false;
+	}
 
       gcc_assert (!modref_sum || (!modref_sum->loads
 				  && !modref_sum->stores));
@@ -2786,12 +3702,33 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	modref_sum->retslot_flags = flags;
       if (modref_sum_lto)
 	modref_sum_lto->retslot_flags = flags;
+
+      flags = streamer_read_uhwi (&ib);
+      if (modref_sum)
+	modref_sum->static_chain_flags = flags;
+      if (modref_sum_lto)
+	modref_sum_lto->static_chain_flags = flags;
+
       read_modref_records (&ib, data_in,
 			   modref_sum ? &modref_sum->loads : NULL,
 			   modref_sum_lto ? &modref_sum_lto->loads : NULL);
       read_modref_records (&ib, data_in,
 			   modref_sum ? &modref_sum->stores : NULL,
 			   modref_sum_lto ? &modref_sum_lto->stores : NULL);
+      int j = streamer_read_uhwi (&ib);
+      if (j && modref_sum)
+	modref_sum->kills.reserve_exact (j);
+      if (j && modref_sum_lto)
+	modref_sum_lto->kills.reserve_exact (j);
+      for (int k = 0; k < j; k++)
+	{
+	  modref_access_node a = modref_access_node::stream_in (&ib);
+
+	  if (modref_sum)
+	    modref_sum->kills.quick_push (a);
+	  if (modref_sum_lto)
+	    modref_sum_lto->kills.quick_push (a);
+	}
       struct bitpack_d bp = streamer_read_bitpack (&ib);
       if (bp_unpack_value (&bp, 1))
 	{
@@ -2799,6 +3736,27 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	    modref_sum->writes_errno = true;
 	  if (modref_sum_lto)
 	    modref_sum_lto->writes_errno = true;
+	}
+      if (bp_unpack_value (&bp, 1))
+	{
+	  if (modref_sum)
+	    modref_sum->side_effects = true;
+	  if (modref_sum_lto)
+	    modref_sum_lto->side_effects = true;
+	}
+      if (bp_unpack_value (&bp, 1))
+	{
+	  if (modref_sum)
+	    modref_sum->nondeterministic = true;
+	  if (modref_sum_lto)
+	    modref_sum_lto->nondeterministic = true;
+	}
+      if (bp_unpack_value (&bp, 1))
+	{
+	  if (modref_sum)
+	    modref_sum->calls_interposable = true;
+	  if (modref_sum_lto)
+	    modref_sum_lto->calls_interposable = true;
 	}
       if (!flag_ltrans)
 	{
@@ -2821,6 +3779,8 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
 	      modref_read_escape_summary (&bp, e);
 	    }
 	}
+      if (flag_ltrans)
+	modref_sum->finalize (node->decl);
       if (dump_file)
 	{
 	  fprintf (dump_file, "Read modref for %s\n",
@@ -2909,6 +3869,27 @@ remap_arg_flags (auto_vec <eaf_flags_t> &arg_flags, clone_info *info)
     }
 }
 
+/* Update kills accrdoing to the parm map MAP.  */
+
+static void
+remap_kills (vec <modref_access_node> &kills, const vec <int> &map)
+{
+  for (size_t i = 0; i < kills.length ();)
+    if (kills[i].parm_index >= 0)
+      {
+	if (kills[i].parm_index < (int)map.length ()
+	    && map[kills[i].parm_index] != MODREF_UNKNOWN_PARM)
+	  {
+	    kills[i].parm_index = map[kills[i].parm_index];
+	    i++;
+	  }
+	else
+	  kills.unordered_remove (i);
+      }
+    else
+      i++;
+}
+
 /* If signature changed, update the summary.  */
 
 static void
@@ -2948,7 +3929,7 @@ update_signature (struct cgraph_node *node)
 
   map.reserve (max + 1);
   for (i = 0; i <= max; i++)
-    map.quick_push (-1);
+    map.quick_push (MODREF_UNKNOWN_PARM);
   FOR_EACH_VEC_SAFE_ELT (info->param_adjustments->m_adj_params, i, p)
     {
       int idx = info->param_adjustments->get_original_index (i);
@@ -2959,6 +3940,7 @@ update_signature (struct cgraph_node *node)
     {
       r->loads->remap_params (&map);
       r->stores->remap_params (&map);
+      remap_kills (r->kills, map);
       if (r->arg_flags.length ())
 	remap_arg_flags (r->arg_flags, info);
     }
@@ -2966,6 +3948,7 @@ update_signature (struct cgraph_node *node)
     {
       r_lto->loads->remap_params (&map);
       r_lto->stores->remap_params (&map);
+      remap_kills (r_lto->kills, map);
       if (r_lto->arg_flags.length ())
 	remap_arg_flags (r_lto->arg_flags, info);
     }
@@ -2977,6 +3960,8 @@ update_signature (struct cgraph_node *node)
       if (r_lto)
 	r_lto->dump (dump_file);
     }
+  if (r)
+    r->finalize (node->decl);
   return;
 }
 
@@ -3024,7 +4009,8 @@ public:
 
 unsigned int pass_modref::execute (function *f)
 {
-  analyze_function (f, false);
+  if (analyze_function (f, false))
+    return execute_fixup_cfg ();
   return 0;
 }
 
@@ -3039,6 +4025,8 @@ make_pass_ipa_modref (gcc::context *ctxt)
 {
   return new pass_ipa_modref (ctxt);
 }
+
+namespace {
 
 /* Skip edges from and to nodes without ipa_pure_const enabled.
    Ignore not available symbols.  */
@@ -3057,9 +4045,7 @@ ignore_edge (struct cgraph_edge *e)
 
   return (avail <= AVAIL_INTERPOSABLE
 	  || ((!optimization_summaries || !optimization_summaries->get (callee))
-	      && (!summaries_lto || !summaries_lto->get (callee)))
-	  || flags_from_decl_or_type (e->callee->decl)
-	     & (ECF_CONST | ECF_NOVOPS));
+	      && (!summaries_lto || !summaries_lto->get (callee))));
 }
 
 /* Compute parm_map for CALLEE_EDGE.  */
@@ -3092,7 +4078,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 	{
 	  if (es && es->param[i].points_to_local_or_readonly_memory)
 	    {
-	      (*parm_map)[i].parm_index = -2;
+	      (*parm_map)[i].parm_index = MODREF_LOCAL_MEMORY_PARM;
 	      continue;
 	    }
 
@@ -3106,7 +4092,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 						 (callee_pi, i));
 	      if (cst && points_to_local_or_readonly_memory_p (cst))
 		{
-		  (*parm_map)[i].parm_index = -2;
+		  (*parm_map)[i].parm_index = MODREF_LOCAL_MEMORY_PARM;
 		  continue;
 		}
 	    }
@@ -3219,184 +4205,6 @@ update_escape_summary (cgraph_node *node,
     }
 }
 
-/* Call EDGE was inlined; merge summary from callee to the caller.  */
-
-void
-ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
-{
-  if (!summaries && !summaries_lto)
-    return;
-
-  struct cgraph_node *to = (edge->caller->inlined_to
-			    ? edge->caller->inlined_to : edge->caller);
-  class modref_summary *to_info = summaries ? summaries->get (to) : NULL;
-  class modref_summary_lto *to_info_lto = summaries_lto
-					  ? summaries_lto->get (to) : NULL;
-
-  if (!to_info && !to_info_lto)
-    {
-      if (summaries)
-	summaries->remove (edge->callee);
-      if (summaries_lto)
-	summaries_lto->remove (edge->callee);
-      remove_modref_edge_summaries (edge->callee);
-      return;
-    }
-
-  class modref_summary *callee_info = summaries ? summaries->get (edge->callee)
-				      : NULL;
-  class modref_summary_lto *callee_info_lto
-		 = summaries_lto ? summaries_lto->get (edge->callee) : NULL;
-  int flags = flags_from_decl_or_type (edge->callee->decl);
-  bool ignore_stores = ignore_stores_p (edge->caller->decl, flags);
-
-  if (!callee_info && to_info)
-    {
-      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
-	to_info->loads->collapse ();
-      if (!ignore_stores)
-	to_info->stores->collapse ();
-    }
-  if (!callee_info_lto && to_info_lto)
-    {
-      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
-	to_info_lto->loads->collapse ();
-      if (!ignore_stores)
-	to_info_lto->stores->collapse ();
-    }
-  if (callee_info || callee_info_lto)
-    {
-      auto_vec <modref_parm_map, 32> parm_map;
-
-      compute_parm_map (edge, &parm_map);
-
-      if (!ignore_stores)
-	{
-	  if (to_info && callee_info)
-	    to_info->stores->merge (callee_info->stores, &parm_map, false);
-	  if (to_info_lto && callee_info_lto)
-	    to_info_lto->stores->merge (callee_info_lto->stores, &parm_map,
-					false);
-	}
-      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
-	{
-	  if (to_info && callee_info)
-	    to_info->loads->merge (callee_info->loads, &parm_map, false);
-	  if (to_info_lto && callee_info_lto)
-	    to_info_lto->loads->merge (callee_info_lto->loads, &parm_map,
-				       false);
-	}
-    }
-
-  /* Now merge escape summaries.
-     For every escape to the callee we need to merge calle flags
-     and remap calees escapes.  */
-  class escape_summary *sum = escape_summaries->get (edge);
-  int max_escape = -1;
-  escape_entry *ee;
-  unsigned int i;
-
-  if (sum && !(flags & (ECF_CONST | ECF_NOVOPS)))
-    FOR_EACH_VEC_ELT (sum->esc, i, ee)
-      if ((int)ee->arg > max_escape)
-	max_escape = ee->arg;
-
-  auto_vec <vec <struct escape_map>, 32> emap (max_escape + 1);
-  emap.safe_grow (max_escape + 1, true);
-  for (i = 0; (int)i < max_escape + 1; i++)
-    emap[i] = vNULL;
-
-  if (sum && !(flags & (ECF_CONST | ECF_NOVOPS)))
-    FOR_EACH_VEC_ELT (sum->esc, i, ee)
-      {
-	bool needed = false;
-	/* TODO: We do not have jump functions for return slots, so we
-	   never propagate them to outer function.  */
-	if (ee->parm_index < 0)
-	  continue;
-	if (to_info && (int)to_info->arg_flags.length () > ee->parm_index)
-	  {
-	    int flags = callee_info
-			&& callee_info->arg_flags.length () > ee->arg
-			? callee_info->arg_flags[ee->arg] : 0;
-	    if (!ee->direct)
-	      flags = deref_flags (flags, ignore_stores);
-	    else if (ignore_stores)
-	      flags |= ignore_stores_eaf_flags;
-	    flags |= ee->min_flags;
-	    to_info->arg_flags[ee->parm_index] &= flags;
-	    if (to_info->arg_flags[ee->parm_index])
-	      needed = true;
-	  }
-	if (to_info_lto && (int)to_info_lto->arg_flags.length () > ee->parm_index)
-	  {
-	    int flags = callee_info_lto
-			&& callee_info_lto->arg_flags.length () > ee->arg
-			? callee_info_lto->arg_flags[ee->arg] : 0;
-	    if (!ee->direct)
-	      flags = deref_flags (flags, ignore_stores);
-	    else if (ignore_stores)
-	      flags |= ignore_stores_eaf_flags;
-	    flags |= ee->min_flags;
-	    to_info_lto->arg_flags[ee->parm_index] &= flags;
-	    if (to_info_lto->arg_flags[ee->parm_index])
-	      needed = true;
-	  }
-	struct escape_map entry = {ee->parm_index, ee->direct};
-	if (needed)
-	  emap[ee->arg].safe_push (entry);
-      }
-  update_escape_summary (edge->callee, emap, ignore_stores);
-  for (i = 0; (int)i < max_escape + 1; i++)
-    emap[i].release ();
-  if (sum)
-    escape_summaries->remove (edge);
-
-  if (summaries)
-    {
-      if (to_info && !to_info->useful_p (flags))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
-		     to->dump_name ());
-	  summaries->remove (to);
-	  to_info = NULL;
-	}
-      else if (to_info && dump_file)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
-		     to->dump_name ());
-	  to_info->dump (dump_file);
-	}
-      if (callee_info)
-	summaries->remove (edge->callee);
-    }
-  if (summaries_lto)
-    {
-      if (to_info_lto && !to_info_lto->useful_p (flags))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
-		     to->dump_name ());
-	  summaries_lto->remove (to);
-	}
-      else if (to_info_lto && dump_file)
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
-		     to->dump_name ());
-	  to_info_lto->dump (dump_file);
-	  to_info_lto = NULL;
-	}
-      if (callee_info_lto)
-	summaries_lto->remove (edge->callee);
-    }
-  if (!to_info && !to_info_lto)
-    remove_modref_edge_summaries (to);
-  return;
-}
-
 /* Get parameter type from DECL.  This is only safe for special cases
    like builtins we create fnspec for because the type match is checked
    at fnspec creation time.  */
@@ -3458,11 +4266,60 @@ static bool
 propagate_unknown_call (cgraph_node *node,
 			cgraph_edge *e, int ecf_flags,
 			modref_summary *cur_summary,
-			modref_summary_lto *cur_summary_lto)
+			modref_summary_lto *cur_summary_lto,
+			bool nontrivial_scc)
 {
   bool changed = false;
   class fnspec_summary *fnspec_sum = fnspec_summaries->get (e);
   auto_vec <modref_parm_map, 32> parm_map;
+  bool looping;
+
+  if (e->callee
+      && builtin_safe_for_const_function_p (&looping, e->callee->decl))
+    {
+      if (looping && cur_summary && !cur_summary->side_effects)
+	{
+	  cur_summary->side_effects = true;
+	  changed = true;
+	}
+      if (looping && cur_summary_lto && !cur_summary_lto->side_effects)
+	{
+	  cur_summary_lto->side_effects = true;
+	  changed = true;
+	}
+      return changed;
+    }
+
+  if (!(ecf_flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
+      || (ecf_flags & ECF_LOOPING_CONST_OR_PURE)
+      || nontrivial_scc)
+    {
+      if (cur_summary && !cur_summary->side_effects)
+	{
+	  cur_summary->side_effects = true;
+	  changed = true;
+	}
+      if (cur_summary_lto && !cur_summary_lto->side_effects)
+	{
+	  cur_summary_lto->side_effects = true;
+	  changed = true;
+	}
+      if (cur_summary && !cur_summary->nondeterministic
+	  && !ignore_nondeterminism_p (node->decl, ecf_flags))
+	{
+	  cur_summary->nondeterministic = true;
+	  changed = true;
+	}
+      if (cur_summary_lto && !cur_summary_lto->nondeterministic
+	  && !ignore_nondeterminism_p (node->decl, ecf_flags))
+	{
+	  cur_summary_lto->nondeterministic = true;
+	  changed = true;
+	}
+    }
+  if (ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    return changed;
+
   if (fnspec_sum
       && compute_parm_map (e, &parm_map))
     {
@@ -3482,9 +4339,9 @@ propagate_unknown_call (cgraph_node *node,
 		   || fnspec.arg_maybe_read_p (i))
 	    {
 	      modref_parm_map map = parm_map[i];
-	      if (map.parm_index == -2)
+	      if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 		continue;
-	      if (map.parm_index == -1)
+	      if (map.parm_index == MODREF_UNKNOWN_PARM)
 		{
 		  collapse_loads (cur_summary, cur_summary_lto);
 		  break;
@@ -3512,9 +4369,9 @@ propagate_unknown_call (cgraph_node *node,
 		   || fnspec.arg_maybe_written_p (i))
 	    {
 	      modref_parm_map map = parm_map[i];
-	      if (map.parm_index == -2)
+	      if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
 		continue;
-	      if (map.parm_index == -1)
+	      if (map.parm_index == MODREF_UNKNOWN_PARM)
 		{
 		  collapse_stores (cur_summary, cur_summary_lto);
 		  break;
@@ -3579,7 +4436,7 @@ remove_useless_summaries (cgraph_node *node,
 /* Perform iterative dataflow on SCC component starting in COMPONENT_NODE
    and propagate loads/stores.  */
 
-static void
+static bool
 modref_propagate_in_scc (cgraph_node *component_node)
 {
   bool changed = true;
@@ -3588,6 +4445,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
   while (changed)
     {
+      bool nontrivial_scc
+		 = ((struct ipa_dfs_info *) component_node->aux)->next_cycle;
       changed = false;
       for (struct cgraph_node *cur = component_node; cur;
 	   cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
@@ -3613,14 +4472,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
 	  for (cgraph_edge *e = cur->indirect_calls; e; e = e->next_callee)
 	    {
-	      if (e->indirect_info->ecf_flags & (ECF_CONST | ECF_NOVOPS))
-		continue;
 	      if (dump_file)
-		fprintf (dump_file, "    Indirect call"
-			 "collapsing loads\n");
+		fprintf (dump_file, "    Indirect call\n");
 	      if (propagate_unknown_call
 			   (node, e, e->indirect_info->ecf_flags,
-			    cur_summary, cur_summary_lto))
+			    cur_summary, cur_summary_lto,
+			    nontrivial_scc))
 		{
 		  changed = true;
 		  remove_useless_summaries (node, &cur_summary,
@@ -3642,8 +4499,9 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      modref_summary_lto *callee_summary_lto = NULL;
 	      struct cgraph_node *callee;
 
-	      if (flags & (ECF_CONST | ECF_NOVOPS)
-		  || !callee_edge->inline_failed)
+	      if (!callee_edge->inline_failed
+		 || ((flags & (ECF_CONST | ECF_NOVOPS))
+		     && !(flags & ECF_LOOPING_CONST_OR_PURE)))
 		continue;
 
 	      /* Get the callee and its summary.  */
@@ -3672,7 +4530,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 			     " or not available\n");
 		  changed |= propagate_unknown_call
 			       (node, callee_edge, flags,
-				cur_summary, cur_summary_lto);
+				cur_summary, cur_summary_lto,
+				nontrivial_scc);
 		  if (!cur_summary && !cur_summary_lto)
 		    break;
 		  continue;
@@ -3688,7 +4547,8 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		    fprintf (dump_file, "      No call target summary\n");
 		  changed |= propagate_unknown_call
 			       (node, callee_edge, flags,
-				cur_summary, NULL);
+				cur_summary, NULL,
+				nontrivial_scc);
 		}
 	      if (cur_summary_lto
 		  && !(callee_summary_lto = summaries_lto->get (callee)))
@@ -3697,8 +4557,40 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		    fprintf (dump_file, "      No call target summary\n");
 		  changed |= propagate_unknown_call
 			       (node, callee_edge, flags,
-				NULL, cur_summary_lto);
+				NULL, cur_summary_lto,
+				nontrivial_scc);
 		}
+
+	      if (callee_summary && !cur_summary->side_effects
+		  && (callee_summary->side_effects
+		      || callee_edge->recursive_p ()))
+		{
+		  cur_summary->side_effects = true;
+		  changed = true;
+		}
+	      if (callee_summary_lto && !cur_summary_lto->side_effects
+		  && (callee_summary_lto->side_effects
+		      || callee_edge->recursive_p ()))
+		{
+		  cur_summary_lto->side_effects = true;
+		  changed = true;
+		}
+	      if (callee_summary && !cur_summary->nondeterministic
+		  && callee_summary->nondeterministic
+		  && !ignore_nondeterminism_p (cur->decl, flags))
+		{
+		  cur_summary->nondeterministic = true;
+		  changed = true;
+		}
+	      if (callee_summary_lto && !cur_summary_lto->nondeterministic
+		  && callee_summary_lto->nondeterministic
+		  && !ignore_nondeterminism_p (cur->decl, flags))
+		{
+		  cur_summary_lto->nondeterministic = true;
+		  changed = true;
+		}
+	      if (flags & (ECF_CONST | ECF_NOVOPS))
+		continue;
 
 	      /* We can not safely optimize based on summary of callee if it
 		 does not always bind to current def: it is possible that
@@ -3706,7 +4598,16 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		 the interposed variant.  */
 	      if (!callee_edge->binds_to_current_def_p ())
 		{
-		  changed |= collapse_loads (cur_summary, cur_summary_lto);
+		  if (cur_summary && !cur_summary->calls_interposable)
+		    {
+		      cur_summary->calls_interposable = true;
+		      changed = true;
+		    }
+		  if (cur_summary_lto && !cur_summary_lto->calls_interposable)
+		    {
+		      cur_summary_lto->calls_interposable = true;
+		      changed = true;
+		    }
 		  if (dump_file)
 		    fprintf (dump_file, "      May not bind local;"
 			     " collapsing loads\n");
@@ -3714,6 +4615,10 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
 
 	      auto_vec <modref_parm_map, 32> parm_map;
+	      modref_parm_map chain_map;
+	      /* TODO: Once we get jump functions for static chains we could
+		 compute this.  */
+	      chain_map.parm_index = MODREF_UNKNOWN_PARM;
 
 	      compute_parm_map (callee_edge, &parm_map);
 
@@ -3721,12 +4626,13 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      if (callee_summary)
 		{
 		  changed |= cur_summary->loads->merge
-				  (callee_summary->loads, &parm_map, !first);
+				  (callee_summary->loads, &parm_map,
+				   &chain_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary->stores->merge
 				      (callee_summary->stores, &parm_map,
-				       !first);
+				       &chain_map, !first);
 		      if (!cur_summary->writes_errno
 			  && callee_summary->writes_errno)
 			{
@@ -3739,12 +4645,12 @@ modref_propagate_in_scc (cgraph_node *component_node)
 		{
 		  changed |= cur_summary_lto->loads->merge
 				  (callee_summary_lto->loads, &parm_map,
-				   !first);
+				   &chain_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary_lto->stores->merge
 				      (callee_summary_lto->stores, &parm_map,
-				       !first);
+				       &chain_map, !first);
 		      if (!cur_summary_lto->writes_errno
 			  && callee_summary_lto->writes_errno)
 			{
@@ -3775,6 +4681,41 @@ modref_propagate_in_scc (cgraph_node *component_node)
   if (dump_file)
     fprintf (dump_file,
 	     "Propagation finished in %i iterations\n", iteration);
+  bool pureconst = false;
+  for (struct cgraph_node *cur = component_node; cur;
+       cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+    if (!cur->inlined_to && opt_for_fn (cur->decl, flag_ipa_pure_const))
+      {
+	modref_summary *summary = optimization_summaries
+				  ? optimization_summaries->get (cur)
+				  : NULL;
+	modref_summary_lto *summary_lto = summaries_lto
+					  ? summaries_lto->get (cur)
+					  : NULL;
+	if (summary && !summary->stores->every_base && !summary->stores->bases
+	    && !summary->nondeterministic)
+	  {
+	    if (!summary->loads->every_base && !summary->loads->bases
+		&& !summary->calls_interposable)
+	      pureconst |= ipa_make_function_const
+		     (cur, summary->side_effects, false);
+	    else
+	      pureconst |= ipa_make_function_pure
+		     (cur, summary->side_effects, false);
+	  }
+	if (summary_lto && !summary_lto->stores->every_base
+	    && !summary_lto->stores->bases && !summary_lto->nondeterministic)
+	  {
+	    if (!summary_lto->loads->every_base && !summary_lto->loads->bases
+		&& !summary_lto->calls_interposable)
+	      pureconst |= ipa_make_function_const
+		     (cur, summary_lto->side_effects, false);
+	    else
+	      pureconst |= ipa_make_function_pure
+		     (cur, summary_lto->side_effects, false);
+	  }
+     }
+  return pureconst;
 }
 
 /* Dump results of propagation in SCC rooted in COMPONENT_NODE.  */
@@ -3825,12 +4766,15 @@ modref_merge_call_site_flags (escape_summary *sum,
 			      modref_summary *summary,
 			      modref_summary_lto *summary_lto,
 			      tree caller,
-			      int ecf_flags)
+			      cgraph_edge *e,
+			      int caller_ecf_flags,
+			      int callee_ecf_flags,
+			      bool binds_to_current_def)
 {
   escape_entry *ee;
   unsigned int i;
   bool changed = false;
-  bool ignore_stores = ignore_stores_p (caller, ecf_flags);
+  bool ignore_stores = ignore_stores_p (caller, callee_ecf_flags);
 
   /* If we have no useful info to propagate.  */
   if ((!cur_summary || !cur_summary->arg_flags.length ())
@@ -3841,6 +4785,9 @@ modref_merge_call_site_flags (escape_summary *sum,
     {
       int flags = 0;
       int flags_lto = 0;
+      /* Returning the value is already accounted to at local propagation.  */
+      int implicit_flags = EAF_NOT_RETURNED_DIRECTLY
+			   | EAF_NOT_RETURNED_INDIRECTLY;
 
       if (summary && ee->arg < summary->arg_flags.length ())
 	flags = summary->arg_flags[ee->arg];
@@ -3852,30 +4799,39 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  flags = deref_flags (flags, ignore_stores);
 	  flags_lto = deref_flags (flags_lto, ignore_stores);
 	}
-      else if (ignore_stores)
+      if (ignore_stores)
+	 implicit_flags |= ignore_stores_eaf_flags;
+      if (callee_ecf_flags & ECF_PURE)
+	implicit_flags |= implicit_pure_eaf_flags;
+      if (callee_ecf_flags & (ECF_CONST | ECF_NOVOPS))
+	implicit_flags |= implicit_const_eaf_flags;
+      class fnspec_summary *fnspec_sum = fnspec_summaries->get (e);
+      if (fnspec_sum)
 	{
-	  flags |= ignore_stores_eaf_flags;
-	  flags_lto |= ignore_stores_eaf_flags;
+	  attr_fnspec fnspec (fnspec_sum->fnspec);
+	  implicit_flags |= fnspec.arg_eaf_flags (ee->arg);
 	}
-      /* Returning the value is already accounted to at local propagation.  */
-      flags |= ee->min_flags | EAF_NOT_RETURNED;
-      flags_lto |= ee->min_flags | EAF_NOT_RETURNED;
-      /* Noescape implies that value also does not escape directly.
-	 Fnspec machinery does set both so compensate for this.  */
-      if (flags & EAF_NOESCAPE)
-	flags |= EAF_NODIRECTESCAPE;
-      if (flags_lto & EAF_NOESCAPE)
-	flags_lto |= EAF_NODIRECTESCAPE;
+      if (!ee->direct)
+	implicit_flags = deref_flags (implicit_flags, ignore_stores);
+      flags |= implicit_flags;
+      flags_lto |= implicit_flags;
+      if (!binds_to_current_def && (flags || flags_lto))
+	{
+	  flags = interposable_eaf_flags (flags, implicit_flags);
+	  flags_lto = interposable_eaf_flags (flags_lto, implicit_flags);
+	}
       if (!(flags & EAF_UNUSED)
 	  && cur_summary && ee->parm_index < (int)cur_summary->arg_flags.length ())
 	{
-	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
+	  eaf_flags_t &f = ee->parm_index == MODREF_RETSLOT_PARM
 			   ? cur_summary->retslot_flags
+			   : ee->parm_index == MODREF_STATIC_CHAIN_PARM
+			   ? cur_summary->static_chain_flags
 			   : cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
 	    {
 	      f = remove_useless_eaf_flags
-			 (f & flags, ecf_flags,
+			 (f & flags, caller_ecf_flags,
 			  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (caller))));
 	      changed = true;
 	    }
@@ -3884,13 +4840,15 @@ modref_merge_call_site_flags (escape_summary *sum,
 	  && cur_summary_lto
 	  && ee->parm_index < (int)cur_summary_lto->arg_flags.length ())
 	{
-	  eaf_flags_t &f = ee->parm_index == escape_point::retslot_arg
+	  eaf_flags_t &f = ee->parm_index == MODREF_RETSLOT_PARM
 			   ? cur_summary_lto->retslot_flags
+			   : ee->parm_index == MODREF_STATIC_CHAIN_PARM
+			   ? cur_summary_lto->static_chain_flags
 			   : cur_summary_lto->arg_flags[ee->parm_index];
 	  if ((f & flags_lto) != f)
 	    {
 	      f = remove_useless_eaf_flags
-			 (f & flags_lto, ecf_flags,
+			 (f & flags_lto, caller_ecf_flags,
 			  VOID_TYPE_P (TREE_TYPE (TREE_TYPE (caller))));
 	      changed = true;
 	    }
@@ -3924,6 +4882,7 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 
 	  if (!cur_summary && !cur_summary_lto)
 	    continue;
+	  int caller_ecf_flags = flags_from_decl_or_type (cur->decl);
 
 	  if (dump_file)
 	    fprintf (dump_file, "  Processing %s%s%s\n",
@@ -3942,7 +4901,11 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	      changed |= modref_merge_call_site_flags
 				(sum, cur_summary, cur_summary_lto,
 				 NULL, NULL,
-				 node->decl, e->indirect_info->ecf_flags);
+				 node->decl,
+				 e,
+				 caller_ecf_flags,
+				 e->indirect_info->ecf_flags,
+				 false);
 	    }
 
 	  if (!cur_summary && !cur_summary_lto)
@@ -3994,7 +4957,11 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	      changed |= modref_merge_call_site_flags
 				(sum, cur_summary, cur_summary_lto,
 				 callee_summary, callee_summary_lto,
-				 node->decl, ecf_flags);
+				 node->decl,
+				 callee_edge,
+				 caller_ecf_flags,
+				 ecf_flags,
+				 callee->binds_to_current_def_p ());
 	      if (dump_file && changed)
 		{
 		  if (cur_summary)
@@ -4011,6 +4978,193 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	     "Propagation of flags finished in %i iterations\n", iteration);
 }
 
+}  /* ANON namespace.  */
+
+/* Call EDGE was inlined; merge summary from callee to the caller.  */
+
+void
+ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
+{
+  if (!summaries && !summaries_lto)
+    return;
+
+  struct cgraph_node *to = (edge->caller->inlined_to
+			    ? edge->caller->inlined_to : edge->caller);
+  class modref_summary *to_info = summaries ? summaries->get (to) : NULL;
+  class modref_summary_lto *to_info_lto = summaries_lto
+					  ? summaries_lto->get (to) : NULL;
+
+  if (!to_info && !to_info_lto)
+    {
+      if (summaries)
+	summaries->remove (edge->callee);
+      if (summaries_lto)
+	summaries_lto->remove (edge->callee);
+      remove_modref_edge_summaries (edge->callee);
+      return;
+    }
+
+  class modref_summary *callee_info = summaries ? summaries->get (edge->callee)
+				      : NULL;
+  class modref_summary_lto *callee_info_lto
+		 = summaries_lto ? summaries_lto->get (edge->callee) : NULL;
+  int flags = flags_from_decl_or_type (edge->callee->decl);
+  bool ignore_stores = ignore_stores_p (edge->caller->decl, flags);
+
+  if (!callee_info && to_info)
+    {
+      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
+	to_info->loads->collapse ();
+      if (!ignore_stores)
+	to_info->stores->collapse ();
+    }
+  if (!callee_info_lto && to_info_lto)
+    {
+      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
+	to_info_lto->loads->collapse ();
+      if (!ignore_stores)
+	to_info_lto->stores->collapse ();
+    }
+  if (callee_info || callee_info_lto)
+    {
+      auto_vec <modref_parm_map, 32> parm_map;
+      modref_parm_map chain_map;
+      /* TODO: Once we get jump functions for static chains we could
+	 compute this.  */
+      chain_map.parm_index = MODREF_UNKNOWN_PARM;
+
+      compute_parm_map (edge, &parm_map);
+
+      if (!ignore_stores)
+	{
+	  if (to_info && callee_info)
+	    to_info->stores->merge (callee_info->stores, &parm_map,
+				    &chain_map, false);
+	  if (to_info_lto && callee_info_lto)
+	    to_info_lto->stores->merge (callee_info_lto->stores, &parm_map,
+					&chain_map, false);
+	}
+      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
+	{
+	  if (to_info && callee_info)
+	    to_info->loads->merge (callee_info->loads, &parm_map,
+				   &chain_map, false);
+	  if (to_info_lto && callee_info_lto)
+	    to_info_lto->loads->merge (callee_info_lto->loads, &parm_map,
+				       &chain_map, false);
+	}
+    }
+
+  /* Now merge escape summaries.
+     For every escape to the callee we need to merge calle flags
+     and remap calees escapes.  */
+  class escape_summary *sum = escape_summaries->get (edge);
+  int max_escape = -1;
+  escape_entry *ee;
+  unsigned int i;
+
+  if (sum && !(flags & (ECF_CONST | ECF_NOVOPS)))
+    FOR_EACH_VEC_ELT (sum->esc, i, ee)
+      if ((int)ee->arg > max_escape)
+	max_escape = ee->arg;
+
+  auto_vec <vec <struct escape_map>, 32> emap (max_escape + 1);
+  emap.safe_grow (max_escape + 1, true);
+  for (i = 0; (int)i < max_escape + 1; i++)
+    emap[i] = vNULL;
+
+  if (sum && !(flags & (ECF_CONST | ECF_NOVOPS)))
+    FOR_EACH_VEC_ELT (sum->esc, i, ee)
+      {
+	bool needed = false;
+	/* TODO: We do not have jump functions for return slots, so we
+	   never propagate them to outer function.  */
+	if (ee->parm_index < 0)
+	  continue;
+	if (to_info && (int)to_info->arg_flags.length () > ee->parm_index)
+	  {
+	    int flags = callee_info
+			&& callee_info->arg_flags.length () > ee->arg
+			? callee_info->arg_flags[ee->arg] : 0;
+	    if (!ee->direct)
+	      flags = deref_flags (flags, ignore_stores);
+	    else if (ignore_stores)
+	      flags |= ignore_stores_eaf_flags;
+	    flags |= ee->min_flags;
+	    to_info->arg_flags[ee->parm_index] &= flags;
+	    if (to_info->arg_flags[ee->parm_index])
+	      needed = true;
+	  }
+	if (to_info_lto
+	    && (int)to_info_lto->arg_flags.length () > ee->parm_index)
+	  {
+	    int flags = callee_info_lto
+			&& callee_info_lto->arg_flags.length () > ee->arg
+			? callee_info_lto->arg_flags[ee->arg] : 0;
+	    if (!ee->direct)
+	      flags = deref_flags (flags, ignore_stores);
+	    else if (ignore_stores)
+	      flags |= ignore_stores_eaf_flags;
+	    flags |= ee->min_flags;
+	    to_info_lto->arg_flags[ee->parm_index] &= flags;
+	    if (to_info_lto->arg_flags[ee->parm_index])
+	      needed = true;
+	  }
+	struct escape_map entry = {ee->parm_index, ee->direct};
+	if (needed)
+	  emap[ee->arg].safe_push (entry);
+      }
+  update_escape_summary (edge->callee, emap, ignore_stores);
+  for (i = 0; (int)i < max_escape + 1; i++)
+    emap[i].release ();
+  if (sum)
+    escape_summaries->remove (edge);
+
+  if (summaries)
+    {
+      if (to_info && !to_info->useful_p (flags))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
+		     to->dump_name ());
+	  summaries->remove (to);
+	  to_info = NULL;
+	}
+      else if (to_info && dump_file)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
+		     to->dump_name ());
+	  to_info->dump (dump_file);
+	}
+      if (callee_info)
+	summaries->remove (edge->callee);
+    }
+  if (summaries_lto)
+    {
+      if (to_info_lto && !to_info_lto->useful_p (flags))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Removed mod-ref summary for %s\n",
+		     to->dump_name ());
+	  summaries_lto->remove (to);
+	  to_info_lto = NULL;
+	}
+      else if (to_info_lto && dump_file)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Updated mod-ref summary for %s\n",
+		     to->dump_name ());
+	  to_info_lto->dump (dump_file);
+	}
+      if (callee_info_lto)
+	summaries_lto->remove (edge->callee);
+    }
+  if (!to_info && !to_info_lto)
+    remove_modref_edge_summaries (to);
+  return;
+}
+
 /* Run the IPA pass.  This will take a function's summaries and calls and
    construct new summaries which represent a transitive closure.  So that
    summary of an analyzed function contains information about the loads and
@@ -4021,6 +5175,7 @@ pass_ipa_modref::execute (function *)
 {
   if (!summaries && !summaries_lto)
     return 0;
+  bool pureconst = false;
 
   if (optimization_summaries)
     ggc_delete (optimization_summaries);
@@ -4043,8 +5198,13 @@ pass_ipa_modref::execute (function *)
       if (dump_file)
 	fprintf (dump_file, "\n\nStart of SCC component\n");
 
-      modref_propagate_in_scc (component_node);
+      pureconst |= modref_propagate_in_scc (component_node);
       modref_propagate_flags_in_scc (component_node);
+      if (optimization_summaries)
+	for (struct cgraph_node *cur = component_node; cur;
+	     cur = ((struct ipa_dfs_info *) cur->aux)->next_cycle)
+	  if (modref_summary *sum = optimization_summaries->get (cur))
+	    sum->finalize (cur->decl);
       if (dump_file)
 	modref_propagate_dump_scc (component_node);
     }
@@ -4059,7 +5219,10 @@ pass_ipa_modref::execute (function *)
   fnspec_summaries = NULL;
   delete escape_summaries;
   escape_summaries = NULL;
-  return 0;
+
+  /* If we posibly made constructors const/pure we may need to remove
+     them.  */
+  return pureconst ? TODO_remove_functions : 0;
 }
 
 /* Summaries must stay alive until end of compilation.  */
@@ -4070,8 +5233,6 @@ ipa_modref_c_finalize ()
   if (optimization_summaries)
     ggc_delete (optimization_summaries);
   optimization_summaries = NULL;
-  gcc_checking_assert (!summaries
-		       || flag_incremental_link == INCREMENTAL_LINK_LTO);
   if (summaries_lto)
     ggc_delete (summaries_lto);
   summaries_lto = NULL;

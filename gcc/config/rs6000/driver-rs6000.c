@@ -418,6 +418,9 @@ detect_processor_aix (void)
     case 0x20000:
       return "power9";
 
+    case 0x40000:
+      return "power10";
+
     default:
       return "powerpc";
     }

@@ -1567,21 +1567,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
   int flags = 0;
 
   if (fnspec.known_p ())
-    {
-      if (!fnspec.arg_specified_p (arg))
-	;
-      else if (!fnspec.arg_used_p (arg))
-	flags = EAF_UNUSED;
-      else
-	{
-	  if (fnspec.arg_direct_p (arg))
-	    flags |= EAF_DIRECT;
-	  if (fnspec.arg_noescape_p (arg))
-	    flags |= EAF_NOESCAPE | EAF_NODIRECTESCAPE;
-	  if (fnspec.arg_readonly_p (arg))
-	    flags |= EAF_NOCLOBBER;
-	}
-    }
+    flags = fnspec.arg_eaf_flags (arg);
   tree callee = gimple_call_fndecl (stmt);
   if (callee)
     {
@@ -1595,17 +1581,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 
 	  /* We have possibly optimized out load.  Be conservative here.  */
 	  if (!node->binds_to_current_def_p ())
-	    {
-	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
-		{
-		  modref_flags &= ~EAF_UNUSED;
-		  modref_flags |= EAF_NOESCAPE;
-		}
-	      if ((modref_flags & EAF_NOREAD) && !(flags & EAF_NOREAD))
-		modref_flags &= ~EAF_NOREAD;
-	      if ((modref_flags & EAF_DIRECT) && !(flags & EAF_DIRECT))
-		modref_flags &= ~EAF_DIRECT;
-	    }
+	    modref_flags = interposable_eaf_flags (modref_flags, flags);
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}
@@ -1618,7 +1594,7 @@ gimple_call_arg_flags (const gcall *stmt, unsigned arg)
 int
 gimple_call_retslot_flags (const gcall *stmt)
 {
-  int flags = EAF_DIRECT | EAF_NOREAD;
+  int flags = implicit_retslot_eaf_flags;
 
   tree callee = gimple_call_fndecl (stmt);
   if (callee)
@@ -1633,13 +1609,35 @@ gimple_call_retslot_flags (const gcall *stmt)
 
 	  /* We have possibly optimized out load.  Be conservative here.  */
 	  if (!node->binds_to_current_def_p ())
-	    {
-	      if ((modref_flags & EAF_UNUSED) && !(flags & EAF_UNUSED))
-		{
-		  modref_flags &= ~EAF_UNUSED;
-		  modref_flags |= EAF_NOESCAPE;
-		}
-	    }
+	    modref_flags = interposable_eaf_flags (modref_flags, flags);
+	  if (dbg_cnt (ipa_mod_ref_pta))
+	    flags |= modref_flags;
+	}
+    }
+  return flags;
+}
+
+/* Detects argument flags for static chain on call STMT.  */
+
+int
+gimple_call_static_chain_flags (const gcall *stmt)
+{
+  int flags = 0;
+
+  tree callee = gimple_call_fndecl (stmt);
+  if (callee)
+    {
+      cgraph_node *node = cgraph_node::get (callee);
+      modref_summary *summary = node ? get_modref_function_summary (node)
+				: NULL;
+
+      /* Nested functions should always bind to current def since
+	 there is no public ABI for them.  */
+      gcc_checking_assert (node->binds_to_current_def_p ());
+      if (summary)
+	{
+	  int modref_flags = summary->static_chain_flags;
+
 	  if (dbg_cnt (ipa_mod_ref_pta))
 	    flags |= modref_flags;
 	}

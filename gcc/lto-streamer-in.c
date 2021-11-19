@@ -1454,8 +1454,8 @@ input_function (tree fn_decl, class data_in *data_in,
 	    {
 	      if (is_gimple_debug (stmt)
 		  && (gimple_debug_nonbind_marker_p (stmt)
-		      ? !MAY_HAVE_DEBUG_MARKER_STMTS
-		      : !MAY_HAVE_DEBUG_BIND_STMTS))
+		      ? !debug_nonbind_markers_p
+		      : !flag_var_tracking_assignments))
 		remove = true;
 	      /* In case the linemap overflows locations can be dropped
 		 to zero.  Thus do not keep nonsensical inline entry markers

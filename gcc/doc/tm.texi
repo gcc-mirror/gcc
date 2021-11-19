@@ -6218,7 +6218,7 @@ type @code{internal_fn}) should be considered expensive when the mask is
 all zeros.  GCC can then try to branch around the instruction instead.
 @end deftypefn
 
-@deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (class loop *@var{loop_info}, bool @var{costing_for_scalar})
+@deftypefn {Target Hook} {class vector_costs *} TARGET_VECTORIZE_CREATE_COSTS (vec_info *@var{vinfo}, bool @var{costing_for_scalar})
 This hook should initialize target-specific data structures in preparation
 for modeling the costs of vectorizing a loop or basic block.  The default
 allocates three unsigned integers for accumulating costs for the prologue,
@@ -6227,29 +6227,6 @@ non-NULL, it identifies the loop being vectorized; otherwise a single block
 is being vectorized.  If @var{costing_for_scalar} is true, it indicates the
 current cost model is for the scalar version of a loop or block; otherwise
 it is for the vector version.
-@end deftypefn
-
-@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (class vec_info *@var{}, void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, class _stmt_vec_info *@var{stmt_info}, tree @var{vectype}, int @var{misalign}, enum vect_cost_model_location @var{where})
-This hook should update the target-specific @var{data} in response to
-adding @var{count} copies of the given @var{kind} of statement to a
-loop or basic block.  The default adds the builtin vectorizer cost for
-the copies of the statement to the accumulator specified by @var{where},
-(the prologue, body, or epilogue) and returns the amount added.  The
-return value should be viewed as a tentative cost that may later be
-revised.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_VECTORIZE_FINISH_COST (void *@var{data}, unsigned *@var{prologue_cost}, unsigned *@var{body_cost}, unsigned *@var{epilogue_cost})
-This hook should complete calculations of the cost of vectorizing a loop
-or basic block based on @var{data}, and return the prologue, body, and
-epilogue costs as unsigned integers.  The default returns the value of
-the three accumulators.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_VECTORIZE_DESTROY_COST_DATA (void *@var{data})
-This hook should release @var{data} and any related data structures
-allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the
-accumulator.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_GATHER (const_tree @var{mem_vectype}, const_tree @var{index_type}, int @var{scale})
@@ -9231,6 +9208,14 @@ encountering an @code{init_priority} attribute.
 This value is true if the target supports some ``native'' method of
 collecting constructors and destructors to be run at startup and exit.
 It is false if we must use @command{collect2}.
+@end deftypevr
+
+@deftypevr {Target Hook} bool TARGET_DTORS_FROM_CXA_ATEXIT
+This value is true if the target wants destructors to be queued to be
+run from __cxa_atexit.  If this is the case then, for each priority level,
+a new constructor will be entered that registers the destructors for that
+level with __cxa_atexit (and there will be no destructors emitted).
+It is false the method implied by @code{have_ctors_dtors} is used.
 @end deftypevr
 
 @deftypefn {Target Hook} void TARGET_ASM_CONSTRUCTOR (rtx @var{symbol}, int @var{priority})

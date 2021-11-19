@@ -34,11 +34,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"
+#include "gimple-fold.h"
 
 gimple_ranger::gimple_ranger () :
 	non_executable_edge_flag (cfun),
 	m_cache (non_executable_edge_flag),
-	tracer ("")
+	tracer (""),
+	current_bb (NULL)
 {
   // If the cache has a relation oracle, use it.
   m_oracle = m_cache.oracle ();
@@ -82,8 +84,19 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   // If there is no statement, just get the global value.
   if (!stmt)
     {
+      int_range_max tmp;
       if (!m_cache.get_global_range (r, expr))
         r = gimple_range_global (expr);
+      // Pick up implied context information from the on-entry cache
+      // if current_bb is set.  Do not attempt any new calculations.
+      if (current_bb && m_cache.block_range (tmp, current_bb, expr, false))
+	{
+	  r.intersect (tmp);
+	  char str[80];
+	  sprintf (str, "picked up range from bb %d\n",current_bb->index);
+	  if (idx)
+	    tracer.print (idx, str);
+	}
     }
   // For a debug stmt, pick the best value currently available, do not
   // trigger new value calculations.  PR 100781.
@@ -295,6 +308,19 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   return res;
 }
 
+// This routine will invoke the gimple fold_stmt routine, providing context to
+// range_of_expr calls via an private interal API.
+
+bool
+gimple_ranger::fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  current_bb = gimple_bb (stmt);
+  bool ret = ::fold_stmt (gsi, valueize);
+  current_bb = NULL;
+  return ret;
+}
+
 // This routine will export whatever global ranges are known to GCC
 // SSA_RANGE_NAME_INFO and SSA_NAME_PTR_INFO fields.
 
@@ -441,6 +467,7 @@ enable_ranger (struct function *fun)
 {
   gimple_ranger *r;
 
+  gcc_checking_assert (!fun->x_range_query);
   r = new gimple_ranger;
   fun->x_range_query = r;
 
@@ -453,7 +480,7 @@ enable_ranger (struct function *fun)
 void
 disable_ranger (struct function *fun)
 {
+  gcc_checking_assert (fun->x_range_query);
   delete fun->x_range_query;
-
-  fun->x_range_query = &global_ranges;
+  fun->x_range_query = NULL;
 }

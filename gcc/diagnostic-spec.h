@@ -130,10 +130,9 @@ operator!= (const nowarn_spec_t &lhs, const nowarn_spec_t &rhs)
   return !(lhs == rhs);
 }
 
-typedef int_hash <location_t, 0, UINT_MAX> xint_hash_t;
-typedef hash_map<xint_hash_t, nowarn_spec_t> xint_hash_map_t;
+typedef hash_map<location_hash, nowarn_spec_t> nowarn_map_t;
 
 /* A mapping from a 'location_t' to the warning spec set for it.  */
-extern GTY(()) xint_hash_map_t *nowarn_map;
+extern GTY(()) nowarn_map_t *nowarn_map;
 
 #endif // DIAGNOSTIC_SPEC_H_INCLUDED

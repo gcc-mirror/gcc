@@ -1831,13 +1831,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 
     case CONSTRUCTOR:
       {
-	tree field, value;
-	unsigned i;
 	iterative_hash_template_arg (TREE_TYPE (arg), val);
-	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg), i, field, value)
+	for (auto &e: CONSTRUCTOR_ELTS (arg))
 	  {
-	    val = iterative_hash_template_arg (field, val);
-	    val = iterative_hash_template_arg (value, val);
+	    val = iterative_hash_template_arg (e.index, val);
+	    val = iterative_hash_template_arg (e.value, val);
 	  }
 	return val;
       }
@@ -5879,12 +5877,19 @@ push_template_decl (tree decl, bool is_friend)
       if (check_for_bare_parameter_packs (TYPE_RAISES_EXCEPTIONS (type)))
 	TYPE_RAISES_EXCEPTIONS (type) = NULL_TREE;
     }
-  else if (check_for_bare_parameter_packs (is_typedef_decl (decl)
-					   ? DECL_ORIGINAL_TYPE (decl)
-					   : TREE_TYPE (decl)))
+  else
     {
-      TREE_TYPE (decl) = error_mark_node;
-      return error_mark_node;
+      if (check_for_bare_parameter_packs (is_typedef_decl (decl)
+					  ? DECL_ORIGINAL_TYPE (decl)
+					  : TREE_TYPE (decl)))
+	{
+	  TREE_TYPE (decl) = error_mark_node;
+	  return error_mark_node;
+	}
+
+      if (is_partial && VAR_P (decl)
+	  && check_for_bare_parameter_packs (DECL_TI_ARGS (decl)))
+	return error_mark_node;
     }
 
   if (is_partial)
@@ -7004,9 +7009,8 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 
     case CONSTRUCTOR:
       {
-	unsigned i; tree elt;
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), i, elt)
-	  if (invalid_tparm_referent_p (TREE_TYPE (elt), elt, complain))
+	for (auto &e: CONSTRUCTOR_ELTS (expr))
+	  if (invalid_tparm_referent_p (TREE_TYPE (e.value), e.value, complain))
 	    return true;
       }
       break;
@@ -10759,6 +10763,11 @@ any_template_parm_r (tree t, void *data)
     case IDENTIFIER_NODE:
       if (IDENTIFIER_CONV_OP_P (t))
 	/* The conversion-type-id of a conversion operator may be dependent.  */
+	WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
+    case CONVERT_EXPR:
+      if (is_dummy_object (t))
 	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
@@ -17245,6 +17254,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case INTEGER_CST:
     case REAL_CST:
     case COMPLEX_CST:
+    case VECTOR_CST:
       {
 	/* Instantiate any typedefs in the type.  */
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
@@ -17433,6 +17443,13 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	    = tsubst_omp_clause_decl (OMP_CLAUSE_DECL (oc), args, complain,
 				      in_decl, iterator_cache);
 	  break;
+	case OMP_CLAUSE_NUM_TEAMS:
+	  if (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (oc))
+	    OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (nc)
+	      = tsubst_expr (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (oc), args,
+			     complain, in_decl,
+			     /*integral_constant_expression_p=*/false);
+	  /* FALLTHRU */
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
@@ -17441,7 +17458,6 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
-	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
@@ -18944,31 +18960,32 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	{
 	  tree teams = cp_walk_tree (&stmt, tsubst_find_omp_teams, NULL, NULL);
 	  if (teams)
-	    {
-	      /* For combined target teams, ensure the num_teams and
-		 thread_limit clause expressions are evaluated on the host,
-		 before entering the target construct.  */
-	      tree c;
-	      for (c = OMP_TEAMS_CLAUSES (teams);
-		   c; c = OMP_CLAUSE_CHAIN (c))
-		if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
-		     || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
-		    && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) != INTEGER_CST)
-		  {
-		    tree expr = OMP_CLAUSE_OPERAND (c, 0);
-		    expr = force_target_expr (TREE_TYPE (expr), expr, tf_none);
-		    if (expr == error_mark_node)
-		      continue;
-		    tmp = TARGET_EXPR_SLOT (expr);
-		    add_stmt (expr);
-		    OMP_CLAUSE_OPERAND (c, 0) = expr;
-		    tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						OMP_CLAUSE_FIRSTPRIVATE);
-		    OMP_CLAUSE_DECL (tc) = tmp;
-		    OMP_CLAUSE_CHAIN (tc) = OMP_TARGET_CLAUSES (t);
-		    OMP_TARGET_CLAUSES (t) = tc;
-		  }
-	    }
+	    /* For combined target teams, ensure the num_teams and
+	       thread_limit clause expressions are evaluated on the host,
+	       before entering the target construct.  */
+	    for (tree c = OMP_TEAMS_CLAUSES (teams);
+		 c; c = OMP_CLAUSE_CHAIN (c))
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_THREAD_LIMIT)
+		for (int i = 0;
+		     i <= (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NUM_TEAMS); ++i)
+		  if (OMP_CLAUSE_OPERAND (c, i)
+		      && TREE_CODE (OMP_CLAUSE_OPERAND (c, i)) != INTEGER_CST)
+		    {
+		      tree expr = OMP_CLAUSE_OPERAND (c, i);
+		      expr = force_target_expr (TREE_TYPE (expr), expr,
+						tf_none);
+		      if (expr == error_mark_node)
+			continue;
+		      tmp = TARGET_EXPR_SLOT (expr);
+		      add_stmt (expr);
+		      OMP_CLAUSE_OPERAND (c, i) = expr;
+		      tree tc = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						  OMP_CLAUSE_FIRSTPRIVATE);
+		      OMP_CLAUSE_DECL (tc) = tmp;
+		      OMP_CLAUSE_CHAIN (tc) = OMP_TARGET_CLAUSES (t);
+		      OMP_TARGET_CLAUSES (t) = tc;
+		    }
 	}
       add_stmt (t);
       break;
@@ -20256,7 +20273,10 @@ tsubst_copy_and_build (tree t,
 					    /*done=*/false,
 					    /*address_p=*/false);
 	  }
-	else if (koenig_p && identifier_p (function))
+	else if (koenig_p
+		 && (identifier_p (function)
+		     || (TREE_CODE (function) == TEMPLATE_ID_EXPR
+			 && identifier_p (TREE_OPERAND (function, 0)))))
 	  {
 	    /* Do nothing; calling tsubst_copy_and_build on an identifier
 	       would incorrectly perform unqualified lookup again.
@@ -20269,6 +20289,12 @@ tsubst_copy_and_build (tree t,
 	       FIXME but doing that causes c++/15272, so we need to stop
 	       using IDENTIFIER_NODE in that situation.  */
 	    qualified_p = false;
+
+	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	      /* Use tsubst_copy to substitute through the template arguments
+		 of the template-id without performing unqualified lookup of
+		 the template name.  */
+	      function = tsubst_copy (function, args, complain, in_decl);
 	  }
 	else
 	  {
@@ -20414,10 +20440,13 @@ tsubst_copy_and_build (tree t,
 	if (function != NULL_TREE
 	    && (identifier_p (function)
 		|| (TREE_CODE (function) == TEMPLATE_ID_EXPR
-		    && identifier_p (TREE_OPERAND (function, 0))))
+		    && identifier_p (TREE_OPERAND (function, 0))
+		    && !any_dependent_template_arguments_p (TREE_OPERAND
+							    (function, 1))))
 	    && !any_type_dependent_arguments_p (call_args))
 	  {
-	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	    bool template_id_p = (TREE_CODE (function) == TEMPLATE_ID_EXPR);
+	    if (template_id_p)
 	      function = TREE_OPERAND (function, 0);
 	    if (koenig_p && (complain & tf_warning_or_error))
 	      {
@@ -20432,20 +20461,21 @@ tsubst_copy_and_build (tree t,
 
 		if (unq != function)
 		  {
-		    /* In a lambda fn, we have to be careful to not
-		       introduce new this captures.  Legacy code can't
-		       be using lambdas anyway, so it's ok to be
-		       stricter.  */
-		    bool in_lambda = (current_class_type
-				      && LAMBDA_TYPE_P (current_class_type));
 		    char const *const msg
 		      = G_("%qD was not declared in this scope, "
 			   "and no declarations were found by "
 			   "argument-dependent lookup at the point "
 			   "of instantiation");
 
+		    bool in_lambda = (current_class_type
+				      && LAMBDA_TYPE_P (current_class_type));
+		    /* In a lambda fn, we have to be careful to not
+		       introduce new this captures.  Legacy code can't
+		       be using lambdas anyway, so it's ok to be
+		       stricter.  Be strict with C++20 template-id ADL too.  */
+		    bool strict = in_lambda || template_id_p;
 		    bool diag = true;
-		    if (in_lambda)
+		    if (strict)
 		      error_at (cp_expr_loc_or_input_loc (t),
 				msg, function);
 		    else
@@ -20481,7 +20511,7 @@ tsubst_copy_and_build (tree t,
 			  inform (DECL_SOURCE_LOCATION (fn),
 				  "%qD declared here, later in the "
 				  "translation unit", fn);
-			if (in_lambda)
+			if (strict)
 			  RETURN (error_mark_node);
 		      }
 
@@ -20999,7 +21029,15 @@ tsubst_copy_and_build (tree t,
 	     integral_constant_expression_p));
 
     case PAREN_EXPR:
-      RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+      if (REF_PARENTHESIZED_P (t))
+	RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+      else
+	/* Recreate the PAREN_EXPR from __builtin_assoc_barrier.  */
+	{
+	  tree op0 = RECUR (TREE_OPERAND (t, 0));
+	  RETURN (build1_loc (input_location, PAREN_EXPR,
+			      TREE_TYPE (op0), op0));
+	}
 
     case VEC_PERM_EXPR:
       {
@@ -23605,8 +23643,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
      we're dealing with a type. */
   if (BRACE_ENCLOSED_INITIALIZER_P (arg))
     {
-      tree elt, elttype;
-      unsigned i;
+      tree elttype;
       tree orig_parm = parm;
 
       if (!is_std_init_list (parm)
@@ -23633,8 +23670,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	/* If ELTTYPE has no deducible template parms, skip deduction from
 	   the list elements.  */;
       else
-	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (arg), i, elt)
+	for (auto &e: CONSTRUCTOR_ELTS (arg))
 	  {
+	    tree elt = e.value;
 	    int elt_strict = strict;
 
 	    if (elt == error_mark_node)
@@ -27420,14 +27458,9 @@ type_dependent_expression_p (tree expression)
 
   if (BRACE_ENCLOSED_INITIALIZER_P (expression))
     {
-      tree elt;
-      unsigned i;
-
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expression), i, elt)
-	{
-	  if (type_dependent_expression_p (elt))
-	    return true;
-	}
+      for (auto &elt : CONSTRUCTOR_ELTS (expression))
+	if (type_dependent_expression_p (elt.value))
+	  return true;
       return false;
     }
 

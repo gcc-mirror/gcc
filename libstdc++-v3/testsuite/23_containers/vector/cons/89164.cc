@@ -31,20 +31,18 @@ void test01()
 {
   X x[1];
   // Should not be able to create vector using uninitialized_copy:
-  std::vector<X> v1{x, x+1};	// { dg-error "here" }
-
-  // Should not be able to create vector using uninitialized_fill_n:
-  std::vector<X> v2{2u, X{}};	// { dg-error "here" }
+  std::vector<X> v1{x, x+1};	// { dg-error "here" "" { target c++17_down } }
+  // { dg-error "deleted function 'X::X" "" { target c++20 } 0 }
 }
 
 void test02()
 {
-#if __cplusplus >= 201703L
   struct Y : X { };
-  // Can create initializer_list<Y> with C++17 guaranteed copy elision,
-  // but shouldn't be able to copy from it with uninitialized_copy:
-  std::vector<Y> v3{Y{}, Y{}, Y{}};   // { dg-error "here" "" { target c++17 } }
-#endif
+
+  // Should not be able to create vector using uninitialized_fill_n:
+  std::vector<Y> v2{2u, Y{}};	// { dg-error "here" "" { target c++17_down } }
+  // { dg-error "deleted function .*Y::Y" "" { target c++20 } 0 }
 }
 
 // { dg-error "must be constructible from input type" "" { target *-*-* } 0 }
+// { dg-prune-output "construct_at" }

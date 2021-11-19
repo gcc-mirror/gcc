@@ -2912,7 +2912,6 @@ read_line (FILE *file)
   static char *string;
   static size_t string_len;
   size_t pos = 0;
-  char *ptr;
 
   if (!string_len)
     {
@@ -2920,7 +2919,7 @@ read_line (FILE *file)
       string = XNEWVEC (char, string_len);
     }
 
-  while ((ptr = fgets (string + pos, string_len - pos, file)))
+  while (fgets (string + pos, string_len - pos, file))
     {
       size_t len = strlen (string + pos);
 

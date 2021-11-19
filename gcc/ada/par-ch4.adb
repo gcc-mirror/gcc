@@ -2892,8 +2892,10 @@ package body Ch4 is
                if Token_Is_At_Start_Of_Line
                  and then not
                    (Ada_Version >= Ada_2012
-                     and then Style_Check_Indentation /= 0
-                     and then Start_Column rem Style_Check_Indentation /= 0)
+                      and then
+                        (Style_Check_Indentation = 0
+                           or else
+                             Start_Column rem Style_Check_Indentation /= 0))
                then
                   Error_Msg_AP ("missing operand");
                   return Error;

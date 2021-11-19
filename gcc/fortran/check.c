@@ -2265,7 +2265,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
   attr = gfc_expr_attr (op);
   if (!attr.pure || !attr.function)
     {
-      gfc_error ("OPERATOR argument at %L must be a PURE function",
+      gfc_error ("OPERATION argument at %L must be a PURE function",
 		 &op->where);
       return false;
     }
@@ -2292,7 +2292,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!formal || !formal->next || formal->next->next)
     {
-      gfc_error ("The function passed as OPERATOR at %L shall have two "
+      gfc_error ("The function passed as OPERATION at %L shall have two "
 		 "arguments", &op->where);
       return false;
     }
@@ -2303,7 +2303,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
       gfc_error ("The A argument at %L has type %s but the function passed as "
-		 "OPERATOR at %L returns %s",
+		 "OPERATION at %L returns %s",
 		 &a->where, gfc_typename (a), &op->where,
 		 gfc_typename (&sym->result->ts));
       return false;
@@ -2311,7 +2311,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
   if (!gfc_compare_types (&a->ts, &formal->sym->ts)
       || !gfc_compare_types (&a->ts, &formal->next->sym->ts))
     {
-      gfc_error ("The function passed as OPERATOR at %L has arguments of type "
+      gfc_error ("The function passed as OPERATION at %L has arguments of type "
 		 "%s and %s but shall have type %s", &op->where,
 		 gfc_typename (&formal->sym->ts),
 		 gfc_typename (&formal->next->sym->ts), gfc_typename (a));
@@ -2322,7 +2322,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
       || formal->next->sym->attr.allocatable || formal->sym->attr.pointer
       || formal->next->sym->attr.pointer)
     {
-      gfc_error ("The function passed as OPERATOR at %L shall have scalar "
+      gfc_error ("The function passed as OPERATION at %L shall have scalar "
 		 "nonallocatable nonpointer arguments and return a "
 		 "nonallocatable nonpointer scalar", &op->where);
       return false;
@@ -2330,21 +2330,21 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (formal->sym->attr.value != formal->next->sym->attr.value)
     {
-      gfc_error ("The function passed as OPERATOR at %L shall have the VALUE "
+      gfc_error ("The function passed as OPERATION at %L shall have the VALUE "
 		 "attribute either for none or both arguments", &op->where);
       return false;
     }
 
   if (formal->sym->attr.target != formal->next->sym->attr.target)
     {
-      gfc_error ("The function passed as OPERATOR at %L shall have the TARGET "
+      gfc_error ("The function passed as OPERATION at %L shall have the TARGET "
 		 "attribute either for none or both arguments", &op->where);
       return false;
     }
 
   if (formal->sym->attr.asynchronous != formal->next->sym->attr.asynchronous)
     {
-      gfc_error ("The function passed as OPERATOR at %L shall have the "
+      gfc_error ("The function passed as OPERATION at %L shall have the "
 		 "ASYNCHRONOUS attribute either for none or both arguments",
 		 &op->where);
       return false;
@@ -2352,7 +2352,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (formal->sym->attr.optional || formal->next->sym->attr.optional)
     {
-      gfc_error ("The function passed as OPERATOR at %L shall not have the "
+      gfc_error ("The function passed as OPERATION at %L shall not have the "
 		 "OPTIONAL attribute for either of the arguments", &op->where);
       return false;
     }
@@ -2383,14 +2383,14 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 	       || (formal_size2 && actual_size != formal_size2)))
 	{
 	  gfc_error ("The character length of the A argument at %L and of the "
-		     "arguments of the OPERATOR at %L shall be the same",
+		     "arguments of the OPERATION at %L shall be the same",
 		     &a->where, &op->where);
 	  return false;
 	}
       if (actual_size && result_size && actual_size != result_size)
 	{
 	  gfc_error ("The character length of the A argument at %L and of the "
-		     "function result of the OPERATOR at %L shall be the same",
+		     "function result of the OPERATION at %L shall be the same",
 		     &a->where, &op->where);
 	  return false;
 	}
@@ -5096,6 +5096,9 @@ gfc_check_shape (gfc_expr *source, gfc_expr *kind)
   if (source->rank == 0 || source->expr_type != EXPR_VARIABLE)
     return true;
 
+  if (source->ref == NULL)
+    return false;
+
   ar = gfc_find_array_ref (source);
 
   if (ar->as && ar->as->type == AS_ASSUMED_SIZE && ar->type == AR_FULL)
@@ -5219,6 +5222,12 @@ static bool
 is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 {
   *msg = NULL;
+
+  if (expr->expr_type == EXPR_NULL)
+    {
+      *msg = "NULL() is not interoperable";
+      return false;
+    }
 
   if (expr->ts.type == BT_CLASS)
     {

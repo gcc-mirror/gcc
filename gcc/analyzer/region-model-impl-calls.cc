@@ -221,7 +221,7 @@ void
 region_model::impl_call_alloca (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_alloca (size_sval);
+  const region *new_reg = create_region_for_alloca (size_sval, cd.get_ctxt ());
   const svalue *ptr_sval
     = m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
   cd.maybe_set_lhs (ptr_sval);
@@ -302,7 +302,8 @@ region_model::impl_call_calloc (const call_details &cd)
   const svalue *prod_sval
     = m_mgr->get_or_create_binop (size_type_node, MULT_EXPR,
 				  nmemb_sval, size_sval);
-  const region *new_reg = create_region_for_heap_alloc (prod_sval);
+  const region *new_reg
+    = create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   zero_fill_region (new_reg);
   if (cd.get_lhs_type ())
     {
@@ -408,7 +409,8 @@ void
 region_model::impl_call_malloc (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_heap_alloc (size_sval);
+  const region *new_reg
+    = create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -471,7 +473,8 @@ void
 region_model::impl_call_operator_new (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_heap_alloc (size_sval);
+  const region *new_reg
+    = create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -579,7 +582,7 @@ region_model::impl_call_realloc (const call_details &cd)
       const svalue *size_sval = cd.get_arg_svalue (1);
       if (const region *buffer_reg = ptr_sval->maybe_get_region ())
 	if (compat_types_p (size_sval->get_type (), size_type_node))
-	  model->set_dynamic_extents (buffer_reg, size_sval);
+	  model->set_dynamic_extents (buffer_reg, size_sval, ctxt);
       if (cd.get_lhs_region ())
 	{
 	  model->set_value (cd.get_lhs_region (), ptr_sval, cd.get_ctxt ());
@@ -619,7 +622,7 @@ region_model::impl_call_realloc (const call_details &cd)
 
       /* Create the new region.  */
       const region *new_reg
-	= model->create_region_for_heap_alloc (new_size_sval);
+	= model->create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
 	= model->m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       if (cd.get_lhs_type ())
@@ -673,6 +676,75 @@ region_model::impl_call_realloc (const call_details &cd)
       cd.get_ctxt ()->bifurcate (new success_with_move (cd));
       cd.get_ctxt ()->terminate_path ();
     }
+}
+
+/* Handle the on_call_pre part of "strchr" and "__builtin_strchr".  */
+
+void
+region_model::impl_call_strchr (const call_details &cd)
+{
+  class strchr_call_info : public call_info
+  {
+  public:
+    strchr_call_info (const call_details &cd, bool found)
+    : call_info (cd), m_found (found)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    {
+      if (m_found)
+	return make_label_text (can_colorize,
+				"when %qE returns non-NULL",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE returns NULL",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const FINAL OVERRIDE
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      if (tree lhs_type = cd.get_lhs_type ())
+	{
+	  region_model_manager *mgr = model->get_manager ();
+	  const svalue *result;
+	  if (m_found)
+	    {
+	      const svalue *str_sval = cd.get_arg_svalue (0);
+	      const region *str_reg
+		= model->deref_rvalue (str_sval, cd.get_arg_tree (0),
+				       cd.get_ctxt ());
+	      /* We want str_sval + OFFSET for some unknown OFFSET.
+		 Use a conjured_svalue to represent the offset,
+		 using the str_reg as the id of the conjured_svalue.  */
+	      const svalue *offset
+		= mgr->get_or_create_conjured_svalue (size_type_node,
+						      cd.get_call_stmt (),
+						      str_reg);
+	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
+						 str_sval, offset);
+	    }
+	  else
+	    result = mgr->get_or_create_int_cst (lhs_type, 0);
+	  cd.maybe_set_lhs (result);
+	}
+      return true;
+    }
+  private:
+    bool m_found;
+  };
+
+  /* Bifurcate state, creating a "not found" out-edge.  */
+  if (cd.get_ctxt ())
+    cd.get_ctxt ()->bifurcate (new strchr_call_info (cd, false));
+
+  /* The "unbifurcated" state is the "found" case.  */
+  strchr_call_info found (cd, true);
+  found.update_model (this, NULL, cd.get_ctxt ());
 }
 
 /* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */

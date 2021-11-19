@@ -69,6 +69,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
@@ -1790,6 +1791,10 @@ package body Freeze is
          return Result;
       end Needs_Wrapper;
 
+      Ifaces_List    : Elist_Id := No_Elist;
+      Ifaces_Listed  : Boolean := False;
+      --  Cache the list of interface operations inherited by R
+
    --  Start of processing for Check_Inherited_Conditions
 
    begin
@@ -1823,11 +1828,10 @@ package body Freeze is
       while Present (Op_Node) loop
          Prim := Node (Op_Node);
 
-         if Present (Overridden_Operation (Prim))
+         Par_Prim := Overridden_Operation (Prim);
+         if Present (Par_Prim)
            and then Comes_From_Source (Prim)
          then
-            Par_Prim := Overridden_Operation (Prim);
-
             --  When the primitive is an LSP wrapper we climb to the parent
             --  primitive that has the inherited contract.
 
@@ -1836,6 +1840,11 @@ package body Freeze is
             then
                Par_Prim := LSP_Subprogram (Par_Prim);
             end if;
+
+            --  Check that overrider and overridden operations have
+            --  the same strub mode.
+
+            Check_Same_Strub_Mode (Prim, Par_Prim);
 
             --  Analyze the contract items of the overridden operation, before
             --  they are rewritten as pragmas.
@@ -1850,6 +1859,54 @@ package body Freeze is
             if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
             end if;
+         end if;
+
+         --  Go over operations inherited from interfaces and check
+         --  them for strub mode compatibility as well.
+
+         if Has_Interfaces (R)
+           and then Is_Dispatching_Operation (Prim)
+           and then Find_Dispatching_Type (Prim) = R
+         then
+            declare
+               Elmt        : Elmt_Id;
+               Iface_Elmt  : Elmt_Id;
+               Iface       : Entity_Id;
+               Iface_Prim  : Entity_Id;
+
+            begin
+               --  Collect the interfaces only once. We haven't
+               --  finished freezing yet, so we can't use the faster
+               --  search from Sem_Disp.Covered_Interface_Primitives.
+
+               if not Ifaces_Listed then
+                  Collect_Interfaces (R, Ifaces_List);
+                  Ifaces_Listed := True;
+               end if;
+
+               Iface_Elmt := First_Elmt (Ifaces_List);
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
+
+                  Elmt := First_Elmt (Primitive_Operations (Iface));
+                  while Present (Elmt) loop
+                     Iface_Prim := Node (Elmt);
+
+                     if Iface_Prim /= Par_Prim
+                       and then Chars (Iface_Prim) = Chars (Prim)
+                       and then Comes_From_Source (Iface_Prim)
+                       and then (Is_Interface_Conformant
+                                   (R, Iface_Prim, Prim))
+                     then
+                        Check_Same_Strub_Mode (Prim, Iface_Prim);
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+            end;
          end if;
 
          Next_Elmt (Op_Node);
@@ -2502,6 +2559,18 @@ package body Freeze is
          if Is_Subprogram (E) then
             if not Default_Expressions_Processed (E) then
                Process_Default_Expressions (E, After);
+            end if;
+
+            --  Check subprogram renamings for the same strub-mode.
+            --  Avoid rechecking dispatching operations, that's taken
+            --  care of in Check_Inherited_Conditions, that covers
+            --  inherited interface operations.
+
+            Item := Alias (E);
+            if Present (Item)
+              and then not Is_Dispatching_Operation (E)
+            then
+               Check_Same_Strub_Mode (E, Item);
             end if;
 
             if not Has_Completion (E) then

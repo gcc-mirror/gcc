@@ -1235,6 +1235,7 @@ path_oracle::path_oracle (relation_oracle *oracle)
   m_equiv.m_next = NULL;
   m_relations.m_names = BITMAP_ALLOC (&m_bitmaps);
   m_relations.m_head = NULL;
+  m_killed_defs = BITMAP_ALLOC (&m_bitmaps);
 }
 
 path_oracle::~path_oracle ()
@@ -1304,6 +1305,8 @@ path_oracle::killing_def (tree ssa)
     }
 
   unsigned v = SSA_NAME_VERSION (ssa);
+
+  bitmap_set_bit (m_killed_defs, v);
 
   // Walk the equivalency list and remove SSA from any equivalencies.
   if (bitmap_bit_p (m_equiv.m_names, v))
@@ -1389,6 +1392,12 @@ path_oracle::query_relation (basic_block bb, const_bitmap b1, const_bitmap b2)
 
   relation_kind k = m_relations.find_relation (b1, b2);
 
+  // Do not look at the root oracle for names that have been killed
+  // along the path.
+  if (bitmap_intersect_p (m_killed_defs, b1)
+      || bitmap_intersect_p (m_killed_defs, b2))
+    return k;
+
   if (k == VREL_NONE && m_root)
     k = m_root->query_relation (bb, b1, b2);
 
@@ -1439,10 +1448,14 @@ void
 path_oracle::dump (FILE *f) const
 {
   equiv_chain *ptr = m_equiv.m_next;
+  relation_chain *ptr2 = m_relations.m_head;
+
+  if (ptr || ptr2)
+    fprintf (f, "\npath_oracle:\n");
+
   for (; ptr; ptr = ptr->m_next)
     ptr->dump (f);
 
-  relation_chain *ptr2 = m_relations.m_head;
   for (; ptr2; ptr2 = ptr2->m_next)
     {
       fprintf (f, "Relational : ");

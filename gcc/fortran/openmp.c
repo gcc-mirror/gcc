@@ -85,7 +85,8 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->chunk_size);
   gfc_free_expr (c->safelen_expr);
   gfc_free_expr (c->simdlen_expr);
-  gfc_free_expr (c->num_teams);
+  gfc_free_expr (c->num_teams_lower);
+  gfc_free_expr (c->num_teams_upper);
   gfc_free_expr (c->device);
   gfc_free_expr (c->thread_limit);
   gfc_free_expr (c->dist_chunk_size);
@@ -2420,10 +2421,21 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_NUM_TEAMS)
-	      && (m = gfc_match_dupl_check (!c->num_teams, "num_teams", true,
-					    &c->num_teams)) != MATCH_NO)
+	      && (m = gfc_match_dupl_check (!c->num_teams_upper, "num_teams",
+					    true)) != MATCH_NO)
 	    {
 	      if (m == MATCH_ERROR)
+		goto error;
+	      if (gfc_match ("%e ", &c->num_teams_upper) != MATCH_YES)
+		goto error;
+	      if (gfc_peek_ascii_char () == ':')
+		{
+		  c->num_teams_lower = c->num_teams_upper;
+		  c->num_teams_upper = NULL;
+		  if (gfc_match (": %e ", &c->num_teams_upper) != MATCH_YES)
+		    goto error;
+		}
+	      if (gfc_match (") ") != MATCH_YES)
 		goto error;
 	      continue;
 	    }
@@ -3551,7 +3563,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_NOWAIT | OMP_CLAUSE_PRIVATE		\
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
-   | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION)
+   | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
+   | OMP_CLAUSE_THREAD_LIMIT)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -6220,6 +6233,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
+	    case EXEC_OMP_PARALLEL_LOOP:
 	    case EXEC_OMP_PARALLEL_MASKED:
 	    case EXEC_OMP_PARALLEL_MASTER:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
@@ -6273,6 +6287,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    case EXEC_OMP_TARGET:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
 	      ok = ifc == OMP_IF_TARGET;
 	      break;
 
@@ -6300,6 +6315,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	      ok = ifc == OMP_IF_TARGET || ifc == OMP_IF_PARALLEL;
 	      break;
 
@@ -7293,8 +7309,18 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     resolve_positive_int_expr (omp_clauses->safelen_expr, "SAFELEN");
   if (omp_clauses->simdlen_expr)
     resolve_positive_int_expr (omp_clauses->simdlen_expr, "SIMDLEN");
-  if (omp_clauses->num_teams)
-    resolve_positive_int_expr (omp_clauses->num_teams, "NUM_TEAMS");
+  if (omp_clauses->num_teams_lower)
+    resolve_positive_int_expr (omp_clauses->num_teams_lower, "NUM_TEAMS");
+  if (omp_clauses->num_teams_upper)
+    resolve_positive_int_expr (omp_clauses->num_teams_upper, "NUM_TEAMS");
+  if (omp_clauses->num_teams_lower
+      && omp_clauses->num_teams_lower->expr_type == EXPR_CONSTANT
+      && omp_clauses->num_teams_upper->expr_type == EXPR_CONSTANT
+      && mpz_cmp (omp_clauses->num_teams_lower->value.integer,
+		  omp_clauses->num_teams_upper->value.integer) > 0)
+    gfc_warning (0, "NUM_TEAMS lower bound at %L larger than upper bound at %L",
+		 &omp_clauses->num_teams_lower->where,
+		 &omp_clauses->num_teams_upper->where);
   if (omp_clauses->device)
     resolve_nonnegative_int_expr (omp_clauses->device, "DEVICE");
   if (omp_clauses->filter)

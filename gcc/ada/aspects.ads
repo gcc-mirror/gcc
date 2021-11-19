@@ -773,6 +773,14 @@ package Aspects is
    --  Given an aspect specification, return the corresponding aspect_id value.
    --  If the name does not match any aspect, return No_Aspect.
 
+   function Is_Aspect_Id (Aspect : Name_Id) return Boolean;
+   pragma Inline (Is_Aspect_Id);
+   --  Return True if a corresponding aspect id exists
+
+   function Is_Aspect_Id (Aspect : Node_Id) return Boolean;
+   pragma Inline (Is_Aspect_Id);
+   --  Return True if a corresponding aspect id exists
+
    ------------------------------------
    -- Delaying Evaluation of Aspects --
    ------------------------------------

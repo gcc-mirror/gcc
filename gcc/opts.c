@@ -1377,6 +1377,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   if (flag_gtoggle)
     {
+      /* Make sure to process -gtoggle only once.  */
+      flag_gtoggle = false;
       if (debug_info_level == DINFO_LEVEL_NONE)
 	{
 	  debug_info_level = DINFO_LEVEL_NORMAL;
@@ -2607,6 +2609,26 @@ common_handle_option (struct gcc_options *opts,
     case OPT_Ofast:
     case OPT_Og:
       /* Currently handled in a prescan.  */
+      break;
+
+    case OPT_Wattributes_:
+      if (lang_mask == CL_DRIVER)
+	break;
+
+      if (value)
+	{
+	  error_at (loc, "arguments ignored for %<-Wattributes=%>; use "
+		    "%<-Wno-attributes=%> instead");
+	  break;
+	}
+      else if (arg[strlen (arg) - 1] == ',')
+	{
+	  error_at (loc, "trailing %<,%> in arguments for "
+		    "%<-Wno-attributes=%>");
+	  break;
+	}
+
+      add_comma_separated_to_vector (&opts->x_flag_ignored_attributes, arg);
       break;
 
     case OPT_Werror:

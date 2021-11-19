@@ -41,7 +41,6 @@ static tree finish_init_stmts (bool, tree, tree);
 static void construct_virtual_base (tree, tree);
 static bool expand_aggr_init_1 (tree, tree, tree, tree, int, tsubst_flags_t);
 static bool expand_default_init (tree, tree, tree, tree, int, tsubst_flags_t);
-static void perform_member_init (tree, tree);
 static int member_init_ok_or_else (tree, tree, tree);
 static void expand_virtual_init (tree, tree);
 static tree sort_mem_initializers (tree, tree);
@@ -525,19 +524,19 @@ build_value_init_noctor (tree type, tsubst_flags_t complain)
   return build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
 }
 
-/* Initialize current class with INIT, a TREE_LIST of
-   arguments for a target constructor. If TREE_LIST is void_type_node,
-   an empty initializer list was given.  */
+/* Initialize current class with INIT, a TREE_LIST of arguments for
+   a target constructor.  If TREE_LIST is void_type_node, an empty
+   initializer list was given.  Return the target constructor.  */
 
-static void
+static tree
 perform_target_ctor (tree init)
 {
   tree decl = current_class_ref;
   tree type = current_class_type;
 
-  finish_expr_stmt (build_aggr_init (decl, init,
-				     LOOKUP_NORMAL|LOOKUP_DELEGATING_CONS,
-				     tf_warning_or_error));
+  init = build_aggr_init (decl, init, LOOKUP_NORMAL|LOOKUP_DELEGATING_CONS,
+			  tf_warning_or_error);
+  finish_expr_stmt (init);
   if (type_build_dtor_call (type))
     {
       tree expr = build_delete (input_location,
@@ -550,6 +549,7 @@ perform_target_ctor (tree init)
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	finish_eh_cleanup (expr);
     }
+  return init;
 }
 
 /* Return the non-static data initializer for FIELD_DECL MEMBER.  */
@@ -775,12 +775,148 @@ maybe_warn_list_ctor (tree member, tree init)
 	     "of the underlying array", member, begin);
 }
 
-/* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
-   arguments.  If TREE_LIST is void_type_node, an empty initializer
-   list was given; if NULL_TREE no initializer was given.  */
+/* Data structure for find_uninit_fields_r, below.  */
+
+struct find_uninit_data {
+  /* The set tracking the yet-uninitialized members.  */
+  hash_set<tree> *uninitialized;
+  /* The data member we are currently initializing.  It can be either
+     a type (initializing a base class/delegating constructors), or
+     a COMPONENT_REF.  */
+  tree member;
+};
+
+/* walk_tree callback that warns about using uninitialized data in
+   a member-initializer-list.  */
+
+static tree
+find_uninit_fields_r (tree *tp, int *walk_subtrees, void *data)
+{
+  find_uninit_data *d = static_cast<find_uninit_data *>(data);
+  hash_set<tree> *uninitialized = d->uninitialized;
+  tree init = *tp;
+  const tree_code code = TREE_CODE (init);
+
+  /* No need to look into types or unevaluated operands.  */
+  if (TYPE_P (init) || unevaluated_p (code))
+    {
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  switch (code)
+    {
+    /* We'd need data flow info to avoid false positives.  */
+    case COND_EXPR:
+    case VEC_COND_EXPR:
+    case BIND_EXPR:
+    /* We might see a MODIFY_EXPR in cases like S() : a((b = 42)), c(b) { }
+       where the initializer for 'a' surreptitiously initializes 'b'.  Let's
+       not bother with these complicated scenarios in the front end.  */
+    case MODIFY_EXPR:
+    /* Don't attempt to handle statement-expressions, either.  */
+    case STATEMENT_LIST:
+      uninitialized->empty ();
+      gcc_fallthrough ();
+    /* If we're just taking the address of an object, it doesn't matter
+       whether it's been initialized.  */
+    case ADDR_EXPR:
+      *walk_subtrees = false;
+      return NULL_TREE;
+    default:
+      break;
+    }
+
+  /* We'd need data flow info to avoid false positives.  */
+  if (truth_value_p (code))
+    goto give_up;
+  /* Attempt to handle a simple a{b}, but no more.  */
+  else if (BRACE_ENCLOSED_INITIALIZER_P (init))
+    {
+      if (CONSTRUCTOR_NELTS (init) == 1
+	  && !BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (init, 0)->value))
+	init = CONSTRUCTOR_ELT (init, 0)->value;
+      else
+	goto give_up;
+    }
+  /* Warn about uninitialized 'this'.  */
+  else if (code == CALL_EXPR)
+    {
+      tree fn = get_callee_fndecl (init);
+      if (fn && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	{
+	  tree op = CALL_EXPR_ARG (init, 0);
+	  if (TREE_CODE (op) == ADDR_EXPR)
+	    op = TREE_OPERAND (op, 0);
+	  temp_override<tree> ovr (d->member, DECL_ARGUMENTS (fn));
+	  cp_walk_tree_without_duplicates (&op, find_uninit_fields_r, data);
+	}
+      /* Functions (whether static or nonstatic member) may have side effects
+	 and initialize other members; it's not the front end's job to try to
+	 figure it out.  But don't give up for constructors: we still want to
+	 warn when initializing base classes:
+
+	   struct D : public B {
+	     int x;
+	     D() : B(x) {}
+	   };
+
+	 so carry on to detect that 'x' is used uninitialized.  */
+      if (!fn || !DECL_CONSTRUCTOR_P (fn))
+	goto give_up;
+    }
+
+  /* If we find FIELD in the uninitialized set, we warn.  */
+  if (code == COMPONENT_REF)
+    {
+      tree field = TREE_OPERAND (init, 1);
+      tree type = TYPE_P (d->member) ? d->member : TREE_TYPE (d->member);
+
+      /* We're initializing a reference member with itself.  */
+      if (TYPE_REF_P (type) && cp_tree_equal (d->member, init))
+	warning_at (EXPR_LOCATION (init), OPT_Winit_self,
+		    "%qD is initialized with itself", field);
+      else if (cp_tree_equal (TREE_OPERAND (init, 0), current_class_ref)
+	       && uninitialized->contains (field))
+	{
+	  if (TYPE_REF_P (TREE_TYPE (field)))
+	    warning_at (EXPR_LOCATION (init), OPT_Wuninitialized,
+			"reference %qD is not yet bound to a value when used "
+			"here", field);
+	  else if (!INDIRECT_TYPE_P (type) || is_this_parameter (d->member))
+	    warning_at (EXPR_LOCATION (init), OPT_Wuninitialized,
+			"member %qD is used uninitialized", field);
+	  *walk_subtrees = false;
+	}
+    }
+
+  return NULL_TREE;
+
+give_up:
+  *walk_subtrees = false;
+  uninitialized->empty ();
+  return integer_zero_node;
+}
+
+/* Wrapper around find_uninit_fields_r above.  */
 
 static void
-perform_member_init (tree member, tree init)
+find_uninit_fields (tree *t, hash_set<tree> *uninitialized, tree member)
+{
+  if (!uninitialized->is_empty ())
+    {
+      find_uninit_data data = { uninitialized, member };
+      cp_walk_tree_without_duplicates (t, find_uninit_fields_r, &data);
+    }
+}
+
+/* Initialize MEMBER, a FIELD_DECL, with INIT, a TREE_LIST of
+   arguments.  If TREE_LIST is void_type_node, an empty initializer
+   list was given; if NULL_TREE no initializer was given.  UNINITIALIZED
+   is the hash set that tracks uninitialized fields.  */
+
+static void
+perform_member_init (tree member, tree init, hash_set<tree> &uninitialized)
 {
   tree decl;
   tree type = TREE_TYPE (member);
@@ -808,7 +944,9 @@ perform_member_init (tree member, tree init)
   if (decl == error_mark_node)
     return;
 
-  if (warn_init_self && init && TREE_CODE (init) == TREE_LIST
+  if ((warn_init_self || warn_uninitialized)
+      && init
+      && TREE_CODE (init) == TREE_LIST
       && TREE_CHAIN (init) == NULL_TREE)
     {
       tree val = TREE_VALUE (init);
@@ -820,6 +958,8 @@ perform_member_init (tree member, tree init)
 	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
 		    OPT_Winit_self, "%qD is initialized with itself",
 		    member);
+      else
+	find_uninit_fields (&val, &uninitialized, decl);
     }
 
   if (array_of_unknown_bound_p (type))
@@ -847,6 +987,9 @@ perform_member_init (tree member, tree init)
 	 alone: we might call an appropriate constructor, or (in C++20)
 	 do aggregate-initialization.  */
     }
+
+  /* Assume we are initializing the member.  */
+  bool member_initialized_p = true;
 
   if (init == void_type_node)
     {
@@ -988,6 +1131,9 @@ perform_member_init (tree member, tree init)
 	    diagnose_uninitialized_cst_or_ref_member (core_type,
 						      /*using_new=*/false,
 						      /*complain=*/true);
+
+	  /* We left the member uninitialized.  */
+	  member_initialized_p = false;
 	}
 
       maybe_warn_list_ctor (member, init);
@@ -997,6 +1143,11 @@ perform_member_init (tree member, tree init)
 						INIT_EXPR, init,
 						tf_warning_or_error));
     }
+
+  if (member_initialized_p && warn_uninitialized)
+    /* This member is now initialized, remove it from the uninitialized
+       set.  */
+    uninitialized.remove (member);
 
   if (type_build_dtor_call (type))
     {
@@ -1311,13 +1462,25 @@ emit_mem_initializers (tree mem_inits)
   if (!COMPLETE_TYPE_P (current_class_type))
     return;
 
+  /* Keep a set holding fields that are not initialized.  */
+  hash_set<tree> uninitialized;
+
+  /* Initially that is all of them.  */
+  if (warn_uninitialized)
+    for (tree f = next_initializable_field (TYPE_FIELDS (current_class_type));
+	 f != NULL_TREE;
+	 f = next_initializable_field (DECL_CHAIN (f)))
+      if (!DECL_ARTIFICIAL (f))
+	uninitialized.add (f);
+
   if (mem_inits
       && TYPE_P (TREE_PURPOSE (mem_inits))
       && same_type_p (TREE_PURPOSE (mem_inits), current_class_type))
     {
       /* Delegating constructor. */
       gcc_assert (TREE_CHAIN (mem_inits) == NULL_TREE);
-      perform_target_ctor (TREE_VALUE (mem_inits));
+      tree ctor = perform_target_ctor (TREE_VALUE (mem_inits));
+      find_uninit_fields (&ctor, &uninitialized, current_class_type);
       return;
     }
 
@@ -1378,6 +1541,9 @@ emit_mem_initializers (tree mem_inits)
 			      flags,
                               tf_warning_or_error);
 	  expand_cleanup_for_base (subobject, NULL_TREE);
+	  if (STATEMENT_LIST_TAIL (cur_stmt_list))
+	    find_uninit_fields (&STATEMENT_LIST_TAIL (cur_stmt_list)->stmt,
+				&uninitialized, BINFO_TYPE (subobject));
 	}
       else if (!ABSTRACT_CLASS_TYPE_P (current_class_type))
 	/* C++14 DR1658 Means we do not have to construct vbases of
@@ -1405,7 +1571,9 @@ emit_mem_initializers (tree mem_inits)
       iloc_sentinel ils (EXPR_LOCATION (TREE_TYPE (mem_inits)));
 
       perform_member_init (TREE_PURPOSE (mem_inits),
-			   TREE_VALUE (mem_inits));
+			   TREE_VALUE (mem_inits),
+			   uninitialized);
+
       mem_inits = TREE_CHAIN (mem_inits);
     }
 }
@@ -4470,11 +4638,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 
      We do need to keep going if we're copying an array.  */
 
-  if (try_const && !init)
+  if (try_const && !init
+      && (cxx_dialect < cxx20
+	  || !default_init_uninitialized_part (inner_elt_type)))
     /* With a constexpr default constructor, which we checked for when
        setting try_const above, default-initialization is equivalent to
        value-initialization, and build_value_init gives us something more
-       friendly to maybe_constant_init.  */
+       friendly to maybe_constant_init.  Except in C++20 and up a constexpr
+       constructor need not initialize all the members.  */
     explicit_value_init_p = true;
   if (from_array
       || ((type_build_ctor_call (type) || init || explicit_value_init_p)

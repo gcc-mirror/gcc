@@ -1,3 +1,70 @@
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-common.c (c_common_reswords): Add __builtin_assoc_barrier.
+	* c-common.h (enum rid): Add RID_BUILTIN_ASSOC_BARRIER.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-gimplify.c (genericize_c_loop): Use option directly.
+
+2021-11-17  Martin Uecker  <uecker@gcc.gnu.org>
+
+	PR c/91038
+	PR c/29970
+	* c-common.c (pointer_int_sum): Make sure pointer expressions
+	are evaluated first when the size expression depends on for
+	variably-modified types.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* c.opt (Wbidi-chars, Wbidi-chars=): New option.
+
+2021-11-16  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (release_tree_vector): Only cache vecs smaller than
+	16 elements.
+
+2021-11-15  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -fimplicit-constexpr.
+	* c-cppbuiltin.c: Define __cpp_implicit_constexpr.
+	* c-opts.c (c_common_post_options): Disable below C++14.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses) <case OMP_CLAUSE_THREAD_LIMIT>:
+	Duplicate to both OMP_TARGET and OMP_TEAMS.
+
+2021-11-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101940
+	* c-pragma.c (handle_pragma_diagnostic): Handle #pragma GCC diagnostic
+	ignored_attributes.
+
+2021-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pragma.c (GCC_BAD_AT): New macro.
+	(GCC_BAD2_AT): New macro.
+	(handle_pragma_pack): Use the location of the pertinent token when
+	issuing diagnostics about invalid constants/actions, and trailing
+	junk.
+	(handle_pragma_target): Likewise for non-string "GCC option".
+	(handle_pragma_message): Likewise for trailing junk.
+
+2021-11-03  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/103031
+	* c-common.c (convert_and_check): Add argument init_const.  Call
+	convert_init if init_const.
+	* c-common.h (convert_and_check): Update prototype.
+	(convert_init): New prototype.
+
+2021-11-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lex.c (c_lex_with_flags): When complaining about non-printable
+	CPP_OTHER tokens, set the "escape on output" flag.
+
 2021-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_omp_check_loop_iv_r): Don't clear 3rd bit for

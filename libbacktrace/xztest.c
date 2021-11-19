@@ -172,7 +172,7 @@ test_samples (struct backtrace_state *state)
 		       tests[i].name, uncompressed_len, v);
 	      ++failures;
 	    }
-	  else if (memcmp (tests[i].uncompressed, uncompressed, v) != 0)
+	  else if (v > 0 && memcmp (tests[i].uncompressed, uncompressed, v) != 0)
 	    {
 	      size_t j;
 
