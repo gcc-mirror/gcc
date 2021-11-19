@@ -216,7 +216,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 
   bool res = true;
   if (!gimple_range_ssa_p (name))
-    return get_tree_range (r, name, NULL);
+    res = get_tree_range (r, name, NULL);
   else
     {
       range_on_exit (r, e->src, name);
@@ -230,7 +230,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 
   if (idx)
     tracer.trailer (idx, "range_on_edge", res, name, r);
-  return true;
+  return res;
 }
 
 // fold_range wrapper for range_of_stmt to use as an internal client.
