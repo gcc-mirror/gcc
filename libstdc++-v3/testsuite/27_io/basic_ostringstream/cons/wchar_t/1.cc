@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// C++20 29.8.2.2  basic_stringbuf constructors  [stringbuf.cons
+// C++20 29.8.4.2  basic_ostringstream constructors  [ostringstream.cons]
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
@@ -49,32 +49,122 @@ test02()
 void
 test03()
 {
-  using alloc_type = __gnu_test::tracker_allocator<wchar_t>;
-  using str_type = std::basic_string<wchar_t, std::char_traits<wchar_t>, alloc_type>;
+  using C = wchar_t;
+  using alloc_type = __gnu_test::uneq_allocator<C>;
+  using traits_type = std::char_traits<C>;
+  using string = std::basic_string<C, traits_type, alloc_type>;
+  using ostringstream = std::basic_ostringstream<C, traits_type, alloc_type>;
 
-  auto const mode = std::ios_base::out;
-  str_type s1(cstr);
+  auto const mode = std::ios_base::in;
+  alloc_type a1(1);
+  const string s1(cstr, a1);
 
+  // basic_ostringstream()
   {
-    std::wostringstream::allocator_type a;
-    std::wostringstream sbuf(s1, mode, a);
-    std::wstring s2(cstr);
-    VERIFY( sbuf.str() == s2 );
+    alloc_type a0;
+    ostringstream ss;
+    VERIFY( ss.str().empty() );
+    VERIFY( ss.rdbuf()->get_allocator() == a0 );
+    VERIFY( ss.str().get_allocator() == a0 );
   }
 
+  // basic_ostringstream(openmode)
   {
-    std::wostringstream sbuf(s1, mode);
-    std::wstring s2(cstr);
-    VERIFY( sbuf.str() == s2 );
+    alloc_type a0;
+    ostringstream ss(mode);
+    VERIFY( ss.str().empty() );
+    VERIFY( ss.rdbuf()->get_allocator() == a0 );
+    VERIFY( ss.str().get_allocator() == a0 );
   }
 
+  // basic_ostringstream(const basic_string<C,T,A>&, openmode = in)
   {
-    std::wostringstream sbuf(s1);
-    std::wstring s2(cstr);
-    VERIFY( sbuf.str() == s2 );
+    ostringstream ss(s1);
+    VERIFY( ss.str() == cstr );
+    VERIFY( ss.rdbuf()->get_allocator() == a1 );
+    VERIFY( ss.str().get_allocator() == a1 );
+  }
+
+  // basic_ostringstream(const basic_string<C,T,A>&, openmode = in)
+  {
+    ostringstream ss(s1, mode);
+    VERIFY( ss.str() == cstr );
+    VERIFY( ss.rdbuf()->get_allocator() == a1 );
+    VERIFY( ss.str().get_allocator() == a1 );
+  }
+
+  // basic_ostringstream(openmode, const A&)
+  {
+    ostringstream ss(mode, a1);
+    VERIFY( ss.str().empty() );
+    VERIFY( ss.rdbuf()->get_allocator() == a1 );
+    VERIFY( ss.str().get_allocator() == a1 );
+  }
+
+  // basic_ostringstream(basic_string<C,T,A>&&, openmode = in)
+  {
+    ostringstream ss(string{s1});
+    VERIFY( ss.str() == s1 );
+    VERIFY( ss.rdbuf()->get_allocator() == a1 );
+    VERIFY( ss.str().get_allocator() == a1 );
+  }
+
+  // basic_ostringstream(basic_string<C,T,A>&&, openmode = in)
+  {
+    ostringstream ss(string(s1), mode);
+    VERIFY( ss.str() == s1 );
+    VERIFY( ss.rdbuf()->get_allocator() == a1 );
+    VERIFY( ss.str().get_allocator() == a1 );
+  }
+
+  // basic_ostringstream(const basic_string<C,T,SA>&, const A&)
+  {
+    alloc_type a2(2);
+    ostringstream ss(s1, a2);
+    VERIFY( ss.str() == s1 );
+    VERIFY( ss.rdbuf()->get_allocator() == a2 );
+    VERIFY( ss.str().get_allocator() == a2 );
+  }
+
+  // basic_ostringstream(const basic_string<C,T,SA>&, const A&)
+  {
+    alloc_type a2(2);
+    const std::wstring s2 = cstr;
+    ostringstream ss(s2, a2);
+    VERIFY( ss.str() == cstr );
+    VERIFY( ss.rdbuf()->get_allocator() == a2 );
+    VERIFY( ss.str().get_allocator() == a2 );
+  }
+
+  // basic_ostringstream(const basic_string<C,T,SA>&, openmode, const A&)
+  {
+    alloc_type a2(2);
+    ostringstream ss(s1, mode, a2);
+    VERIFY( ss.str() == s1 );
+    VERIFY( ss.rdbuf()->get_allocator() == a2 );
+    VERIFY( ss.str().get_allocator() == a2 );
+  }
+
+  // basic_ostringstream(const basic_string<C,T,SA>&, openmode, const A&)
+  {
+    alloc_type a2(2);
+    const std::wstring s2 = cstr;
+    ostringstream ss(s2, mode, a2);
+    VERIFY( ss.str() == cstr );
+    VERIFY( ss.rdbuf()->get_allocator() == a2 );
+    VERIFY( ss.str().get_allocator() == a2 );
+  }
+
+  // basic_ostringstream(const basic_string<C,T,SA>&, openmode = in)
+  {
+    alloc_type a0;
+    const std::wstring s2 = cstr;
+    ostringstream ss(s2, mode);
+    VERIFY( ss.str() == cstr );
+    VERIFY( ss.rdbuf()->get_allocator() == a0 );
+    VERIFY( ss.str().get_allocator() == a0 );
   }
 }
-
 int
 main()
 {
