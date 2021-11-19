@@ -832,7 +832,7 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
      vector to say for debug info that if parameter parm had been passed,
      it would have value parm_Y(D).  */
   tree old_decl = gimple_call_fndecl (stmt);
-  if (flag_var_tracking_assignments && old_decl && callee_decl)
+  if (MAY_HAVE_DEBUG_BIND_STMTS && old_decl && callee_decl)
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0;

@@ -6432,7 +6432,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	}
     }
 
-  if (param_body_adjs && flag_var_tracking_assignments)
+  if (param_body_adjs && MAY_HAVE_DEBUG_BIND_STMTS)
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned int len = 0;

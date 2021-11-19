@@ -6587,7 +6587,7 @@ pass_expand::execute (function *fun)
   timevar_pop (TV_OUT_OF_SSA);
   SA.partition_to_pseudo = XCNEWVEC (rtx, SA.map->num_partitions);
 
-  if (flag_var_tracking_assignments && flag_tree_ter)
+  if (MAY_HAVE_DEBUG_BIND_STMTS && flag_tree_ter)
     {
       gimple_stmt_iterator gsi;
       FOR_EACH_BB_FN (bb, cfun)
