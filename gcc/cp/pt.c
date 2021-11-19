@@ -10766,6 +10766,11 @@ any_template_parm_r (tree t, void *data)
 	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
+    case CONVERT_EXPR:
+      if (is_dummy_object (t))
+	WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     default:
       break;
     }
