@@ -62,6 +62,41 @@ is
       end if;
    end Bad_Value;
 
+   ---------------------------
+   -- First_Non_Space_Ghost --
+   ---------------------------
+
+   function First_Non_Space_Ghost (S : String) return Positive is
+   begin
+      for J in S'Range loop
+         if S (J) /= ' ' then
+            return J;
+         end if;
+
+         pragma Loop_Invariant (for all K in S'First .. J => S (K) = ' ');
+      end loop;
+
+      raise Program_Error;
+   end First_Non_Space_Ghost;
+
+   -----------------------
+   -- Last_Number_Ghost --
+   -----------------------
+
+   function Last_Number_Ghost (Str : String) return Positive is
+   begin
+      for J in Str'Range loop
+         if Str (J) not in '0' .. '9' | '_' then
+            return J - 1;
+         end if;
+
+         pragma Loop_Invariant
+           (for all K in Str'First .. J => Str (K) in '0' .. '9' | '_');
+      end loop;
+
+      return Str'Last;
+   end Last_Number_Ghost;
+
    ----------------------
    -- Normalize_String --
    ----------------------
@@ -119,15 +154,14 @@ is
    -- Scan_Exponent --
    -------------------
 
-   function Scan_Exponent
+   procedure Scan_Exponent
      (Str  : String;
       Ptr  : not null access Integer;
       Max  : Integer;
-      Real : Boolean := False) return Integer
-   with
-     SPARK_Mode => Off  --  Function with side-effect through Ptr
+      Exp  : out Integer;
+      Real : Boolean := False)
    is
-      P : Natural := Ptr.all;
+      P : Integer := Ptr.all;
       M : Boolean;
       X : Integer;
 
@@ -135,7 +169,8 @@ is
       if P >= Max
         or else (Str (P) /= 'E' and then Str (P) /= 'e')
       then
-         return 0;
+         Exp := 0;
+         return;
       end if;
 
       --  We have an E/e, see if sign follows
@@ -146,7 +181,8 @@ is
          P := P + 1;
 
          if P > Max then
-            return 0;
+            Exp := 0;
+            return;
          else
             M := False;
          end if;
@@ -155,7 +191,8 @@ is
          P := P + 1;
 
          if P > Max or else not Real then
-            return 0;
+            Exp := 0;
+            return;
          else
             M := True;
          end if;
@@ -165,7 +202,8 @@ is
       end if;
 
       if Str (P) not in '0' .. '9' then
-         return 0;
+         Exp := 0;
+         return;
       end if;
 
       --  Scan out the exponent value as an unsigned integer. Values larger
@@ -176,28 +214,52 @@ is
 
       X := 0;
 
-      loop
-         if X < (Integer'Last / 10) then
-            X := X * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
-         end if;
+      declare
+         Rest : constant String := Str (P .. Max) with Ghost;
+         Last : constant Natural := Last_Number_Ghost (Rest) with Ghost;
 
-         P := P + 1;
+      begin
+         pragma Assert (Is_Natural_Format_Ghost (Rest));
 
-         exit when P > Max;
+         loop
+            pragma Assert (Str (P) = Rest (P));
+            pragma Assert (Str (P) in '0' .. '9');
 
-         if Str (P) = '_' then
-            Scan_Underscore (Str, P, Ptr, Max, False);
-         else
-            exit when Str (P) not in '0' .. '9';
-         end if;
-      end loop;
+            if X < (Integer'Last / 10) then
+               X := X * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
+            end if;
+
+            pragma Loop_Invariant (X >= 0);
+            pragma Loop_Invariant (P in P'Loop_Entry .. Last);
+            pragma Loop_Invariant (Str (P) in '0' .. '9');
+            pragma Loop_Invariant
+              (Scan_Natural_Ghost (Rest, P'Loop_Entry, 0)
+               = (if P = Max
+                    or else Rest (P + 1) not in '0' .. '9' | '_'
+                    or else X >= Integer'Last / 10
+                  then
+                    X
+                  else
+                    Scan_Natural_Ghost (Rest, P + 1, X)));
+
+            P := P + 1;
+
+            exit when P > Max;
+
+            if Str (P) = '_' then
+               Scan_Underscore (Str, P, Ptr, Max, False);
+            else
+               exit when Str (P) not in '0' .. '9';
+            end if;
+         end loop;
+      end;
 
       if M then
          X := -X;
       end if;
 
       Ptr.all := P;
-      return X;
+      Exp := X;
    end Scan_Exponent;
 
    --------------------
@@ -209,10 +271,8 @@ is
       Ptr   : not null access Integer;
       Max   : Integer;
       Start : out Positive)
-   with
-     SPARK_Mode => Off  --  Not proved yet
    is
-      P : Natural := Ptr.all;
+      P : Integer := Ptr.all;
 
    begin
       if P > Max then
@@ -224,6 +284,12 @@ is
       while Str (P) = ' ' loop
          P := P + 1;
 
+         pragma Loop_Invariant (Ptr.all = Ptr.all'Loop_Entry);
+         pragma Loop_Invariant (P in Ptr.all .. Max);
+         pragma Loop_Invariant (for some J in P .. Max => Str (J) /= ' ');
+         pragma Loop_Invariant
+           (for all J in Ptr.all .. P - 1 => Str (J) = ' ');
+
          if P > Max then
             Ptr.all := P;
             Bad_Value (Str);
@@ -231,6 +297,8 @@ is
       end loop;
 
       Start := P;
+
+      pragma Assert (Start = First_Non_Space_Ghost (Str (Ptr.all .. Max)));
 
       --  Skip past an initial plus sign
 
@@ -256,10 +324,8 @@ is
       Max   : Integer;
       Minus : out Boolean;
       Start : out Positive)
-   with
-     SPARK_Mode => Off  --  Not proved yet
    is
-      P : Natural := Ptr.all;
+      P : Integer := Ptr.all;
 
    begin
       --  Deal with case of null string (all blanks). As per spec, we raise
@@ -274,6 +340,12 @@ is
       while Str (P) = ' ' loop
          P := P + 1;
 
+         pragma Loop_Invariant (Ptr.all = Ptr.all'Loop_Entry);
+         pragma Loop_Invariant (P in Ptr.all .. Max);
+         pragma Loop_Invariant (for some J in P .. Max => Str (J) /= ' ');
+         pragma Loop_Invariant
+           (for all J in Ptr.all .. P - 1 => Str (J) = ' ');
+
          if P > Max then
             Ptr.all := P;
             Bad_Value (Str);
@@ -281,6 +353,8 @@ is
       end loop;
 
       Start := P;
+
+      pragma Assert (Start = First_Non_Space_Ghost (Str (Ptr.all .. Max)));
 
       --  Remember an initial minus sign
 
@@ -315,15 +389,14 @@ is
    -- Scan_Trailing_Blanks --
    --------------------------
 
-   procedure Scan_Trailing_Blanks (Str : String; P : Positive)
-   with
-     SPARK_Mode => Off  --  Not proved yet
-   is
+   procedure Scan_Trailing_Blanks (Str : String; P : Positive) is
    begin
       for J in P .. Str'Last loop
          if Str (J) /= ' ' then
             Bad_Value (Str);
          end if;
+
+         pragma Loop_Invariant (for all K in P .. J => Str (K) = ' ');
       end loop;
    end Scan_Trailing_Blanks;
 
@@ -337,8 +410,6 @@ is
       Ptr : not null access Integer;
       Max : Integer;
       Ext : Boolean)
-   with
-     SPARK_Mode => Off  --  Not proved yet
    is
       C : Character;
 

@@ -511,6 +511,8 @@ package body System.Value_R is
       Value : Uns;
       --  Mantissa as an Integer
 
+      Expon : Integer;
+
    begin
       --  The default base is 10
 
@@ -643,7 +645,8 @@ package body System.Value_R is
       --  Update pointer and scan exponent
 
       Ptr.all := Index;
-      Scale := Scale + Scan_Exponent (Str, Ptr, Max, Real => True);
+      Scan_Exponent (Str, Ptr, Max, Expon, Real => True);
+      Scale := Scale + Expon;
 
       --  Here is where we check for a bad based number
 

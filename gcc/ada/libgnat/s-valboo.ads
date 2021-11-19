@@ -47,22 +47,11 @@ package System.Val_Bool
 is
    pragma Preelaborate;
 
-   function First_Non_Space_Ghost (S : String) return Positive
-   with
-     Ghost,
-     Pre  => not System.Val_Util.Only_Space_Ghost (S, S'First, S'Last),
-     Post => First_Non_Space_Ghost'Result in S'Range
-       and then S (First_Non_Space_Ghost'Result) /= ' '
-       and then System.Val_Util.Only_Space_Ghost
-         (S, S'First, First_Non_Space_Ghost'Result - 1);
-   --  Ghost function that returns the index of the first non-space character
-   --  in S, which necessarily exists given the precondition on S.
-
    function Is_Boolean_Image_Ghost (Str : String) return Boolean is
      (not System.Val_Util.Only_Space_Ghost (Str, Str'First, Str'Last)
         and then
       (declare
-         F : constant Positive := First_Non_Space_Ghost (Str);
+         F : constant Positive := System.Val_Util.First_Non_Space_Ghost (Str);
        begin
          (F <= Str'Last - 3
           and then Str (F)     in 't' | 'T'
@@ -92,7 +81,8 @@ is
    with
      Pre  => Is_Boolean_Image_Ghost (Str),
      Post =>
-       Value_Boolean'Result = (Str (First_Non_Space_Ghost (Str)) in 't' | 'T');
+       Value_Boolean'Result =
+         (Str (System.Val_Util.First_Non_Space_Ghost (Str)) in 't' | 'T');
    --  Computes Boolean'Value (Str)
 
 end System.Val_Bool;

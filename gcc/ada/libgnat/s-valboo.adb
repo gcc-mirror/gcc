@@ -43,19 +43,6 @@ package body System.Val_Bool
   with SPARK_Mode
 is
 
-   function First_Non_Space_Ghost (S : String) return Positive is
-   begin
-      for J in S'Range loop
-         if S (J) /= ' ' then
-            return J;
-         end if;
-
-         pragma Loop_Invariant (for all K in S'First .. J => S (K) = ' ');
-      end loop;
-
-      raise Program_Error;
-   end First_Non_Space_Ghost;
-
    -------------------
    -- Value_Boolean --
    -------------------
@@ -68,7 +55,7 @@ is
    begin
       Normalize_String (S, F, L);
 
-      pragma Assert (F = First_Non_Space_Ghost (S));
+      pragma Assert (F = System.Val_Util.First_Non_Space_Ghost (S));
 
       if S (F .. L) = "TRUE" then
          return True;
