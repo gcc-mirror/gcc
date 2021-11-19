@@ -45,36 +45,6 @@
 
 #define DEBUG_PREDICATE_ANALYZER 1
 
-/* Find the immediate postdominator of the specified basic block BB.  */
-
-static inline basic_block
-find_pdom (basic_block bb)
-{
-  basic_block exit_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
-  if (bb == exit_bb)
-    return exit_bb;
-
-  if (basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb))
-    return pdom;
-
-  return exit_bb;
-}
-
-/* Find the immediate dominator of the specified basic block BB.  */
-
-static inline basic_block
-find_dom (basic_block bb)
-{
-  basic_block entry_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-  if (bb == entry_bb)
-    return entry_bb;
-
-  if (basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb))
-    return dom;
-
-  return entry_bb;
-}
-
 /* Return true if BB1 is postdominating BB2 and BB1 is not a loop exit
    bb.  The loop exit bb check is simple and does not cover all cases.  */
 
@@ -96,7 +66,7 @@ is_non_loop_exit_postdominating (basic_block bb1, basic_block bb2)
 static inline basic_block
 find_control_equiv_block (basic_block bb)
 {
-  basic_block pdom = find_pdom (bb);
+  basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
 
   /* Skip the postdominating bb that is also a loop exit.  */
   if (!is_non_loop_exit_postdominating (pdom, bb))
@@ -1167,7 +1137,7 @@ compute_control_dep_chain (basic_block dom_bb, const_basic_block dep_bb,
 	      break;
 	    }
 
-	  cd_bb = find_pdom (cd_bb);
+	  cd_bb = get_immediate_dominator (CDI_POST_DOMINATORS, cd_bb);
 	  post_dom_check++;
 	  if (cd_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	      || post_dom_check > MAX_POSTDOM_CHECK)
@@ -1788,7 +1758,7 @@ predicate::init_from_phi_def (gphi *phi)
 
   basic_block phi_bb = gimple_bb (phi);
   /* Find the closest dominating bb to be the control dependence root.  */
-  basic_block cd_root = find_dom (phi_bb);
+  basic_block cd_root = get_immediate_dominator (CDI_DOMINATORS, phi_bb);
   if (!cd_root)
     return false;
 
@@ -2133,67 +2103,6 @@ predicate::normalize (gimple *use_or_def, bool is_use)
       fprintf (dump_file, "After normalization ");
       dump (use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
-}
-
-/* Add a predicate for the condition or logical assignment STMT to CHAIN.
-   Expand SSA_NAME into constituent subexpressions.  Invert the result
-   if INVERT is true.  Return true if the predicate has been added.  */
-
-static bool
-add_pred (pred_chain *chain, gimple *stmt, bool invert)
-{
-  if (gimple_code (stmt) == GIMPLE_COND)
-    {
-      tree lhs = gimple_cond_lhs (stmt);
-      if (TREE_CODE (lhs) == SSA_NAME)
-	{
-	  gimple *def = SSA_NAME_DEF_STMT (lhs);
-	  if (is_gimple_assign (def)
-	      && add_pred (chain, def, invert))
-	    return true;
-	}
-
-      pred_info pred;
-      pred.pred_lhs = lhs;
-      pred.pred_rhs = gimple_cond_rhs (stmt);
-      pred.cond_code = gimple_cond_code (stmt);
-      pred.invert = invert;
-      chain->safe_push (pred);
-      return true;
-    }
-
-  if (!is_gimple_assign (stmt))
-    return false;
-
-  if (gimple_assign_single_p (stmt))
-    // FIXME: handle this?
-    return false;
-
-  if (TREE_TYPE (gimple_assign_lhs (stmt)) != boolean_type_node)
-    return false;
-
-  tree rhs1 = gimple_assign_rhs1 (stmt);
-  tree rhs2 = gimple_assign_rhs2 (stmt);
-  tree_code code = gimple_assign_rhs_code (stmt);
-  if (code == BIT_AND_EXPR)
-    {
-      if (TREE_CODE (rhs1) == SSA_NAME
-	  && add_pred (chain, SSA_NAME_DEF_STMT (rhs1), invert)
-	  && TREE_CODE (rhs2) == SSA_NAME
-	  /* FIXME: Need to handle failure below! */
-	  && add_pred (chain, SSA_NAME_DEF_STMT (rhs2), invert))
-	return true;
-    }
-  else if (TREE_CODE_CLASS (code) != tcc_comparison)
-    return false;
-
-  pred_info pred;
-  pred.pred_lhs = rhs1;
-  pred.pred_rhs = rhs2;
-  pred.cond_code = code;
-  pred.invert = invert;
-  chain->safe_push (pred);
-  return true;
 }
 
 /* Convert the chains of control dependence edges into a set of predicates.

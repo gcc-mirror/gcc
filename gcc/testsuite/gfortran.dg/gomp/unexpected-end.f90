@@ -16,12 +16,12 @@
 
 !$omp end DO SIMD  ! { dg-error "Unexpected !.OMP END DO SIMD" }
 
-!$omp end LOOP  ! { dg-error "Unclassifiable OpenMP directive" }
+!$omp end LOOP  ! { dg-error "Unexpected !.OMP END LOOP" }
 
 !$omp parallel loop
 do i = 1, 5
 end do
-!$omp end LOOP  ! { dg-error "Unclassifiable OpenMP directive" }
+!$omp end LOOP  ! { dg-error "Unexpected !.OMP END LOOP" }
 
 !$omp end MASKED  ! { dg-error "Unexpected !.OMP END MASKED" }
 
@@ -44,7 +44,7 @@ end do
 !$omp end PARALLEL DO SIMD  ! { dg-error "Unexpected !.OMP END PARALLEL DO SIMD" }
 
 !$omp loop
-!$omp end PARALLEL LOOP  ! { dg-error "Unexpected junk" }
+!$omp end PARALLEL LOOP  ! { dg-error "Unexpected !.OMP END PARALLEL LOOP" }
 
 !$omp end PARALLEL MASKED  ! { dg-error "Unexpected !.OMP END PARALLEL MASKED" }
 
@@ -80,7 +80,7 @@ end do
 
 !$omp end TARGET PARALLEL DO SIMD  ! { dg-error "Unexpected !.OMP END TARGET PARALLEL DO SIMD" }
 
-!$omp end TARGET PARALLEL LOOP  ! { dg-error "Unexpected junk" }
+!$omp end TARGET PARALLEL LOOP  ! { dg-error "Unexpected !.OMP END TARGET PARALLEL LOOP" }
 
 !$omp end TARGET SIMD  ! { dg-error "Unexpected !.OMP END TARGET SIMD" }
 
@@ -94,7 +94,7 @@ end do
 
 !$omp end TARGET TEAMS DISTRIBUTE SIMD  ! { dg-error "Unexpected !.OMP END TARGET TEAMS DISTRIBUTE SIMD" }
 
-!$omp end TARGET TEAMS LOOP  ! { dg-error "Unexpected junk" }
+!$omp end TARGET TEAMS LOOP  ! { dg-error "Unexpected !.OMP END TARGET TEAMS LOOP" }
 
 !$omp end TASK  ! { dg-error "Unexpected !.OMP END TASK" }
 
@@ -114,7 +114,7 @@ end do
 
 !$omp end TEAMS DISTRIBUTE SIMD  ! { dg-error "Unexpected !.OMP END TEAMS DISTRIBUTE SIMD" }
 
-!$omp end TEAMS LOOP  ! { dg-error "Unexpected junk" }
+!$omp end TEAMS LOOP  ! { dg-error "Unexpected !.OMP END TEAMS LOOP" }
 
 !$omp end WORKSHARE  ! { dg-error "Unexpected !.OMP END WORKSHARE" }
 

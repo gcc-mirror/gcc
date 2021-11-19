@@ -64,6 +64,14 @@ The parser understands simple typedefs such as
 @code{typedef int @var{name};}.
 These don't need to be marked.
 
+However, in combination with GTY, avoid using typedefs such as
+@code{typedef int_hash<@dots{}> @var{name};}
+for these generate infinite-recursion code.
+See @uref{https://gcc.gnu.org/PR103157,PR103157}.
+Instead, you may use
+@code{struct @var{name} : int_hash<@dots{}> @{@};},
+for example.
+
 Since @code{gengtype}'s understanding of C++ is limited, there are
 several constructs and declarations that are not supported inside
 classes/structures marked for automatic GC code generation.  The

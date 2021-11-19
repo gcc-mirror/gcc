@@ -104,7 +104,7 @@ pru port		Dimitar Dimitrov	<dimitar@dinux.eu>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
 riscv port		Palmer Dabbelt		<palmer@dabbelt.com>
 riscv port		Andrew Waterman		<andrew@sifive.com>
-riscv port		Jim Wilson		<jimw@sifive.com>
+riscv port		Jim Wilson		<jim.wilson.gcc@gmail.com>
 rs6000/powerpc port	David Edelsohn		<dje.gcc@gmail.com>
 rs6000/powerpc port	Segher Boessenkool	<segher@kernel.crashing.org>
 rs6000 vector extns	Aldy Hernandez		<aldyh@redhat.com>
@@ -646,7 +646,7 @@ Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
 Sergei Trofimovich				<slyfox@gcc.gnu.org>
 Igor Tsimbalist					<igor.v.tsimbalist@intel.com>
-Martin Uecker					<muecker@gwdg.de>
+Martin Uecker					<uecker@gcc.gnu.org>
 David Ung					<davidu@mips.com>
 Neil Vachharajani				<nvachhar@gmail.com>
 Kris Van Hees					<kris.van.hees@oracle.com>
@@ -717,3 +717,4 @@ information.
  Siddhesh Poyarekar				<siddhesh@gotplt.org>
  Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>
  Petter Tomner					<tomner@kth.se>
+ Martin Uecker					<uecker@gcc.gnu.org>

@@ -66,6 +66,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with SCIL_LL;        use SCIL_LL;
 with Tbuild;         use Tbuild;
 
@@ -846,6 +847,7 @@ package body Exp_Disp is
       end if;
 
       Subp_Typ     := Create_Itype (E_Subprogram_Type, Call_Node);
+      Copy_Strub_Mode (Subp_Typ, Subp);
       Subp_Ptr_Typ := Create_Itype (E_Access_Subprogram_Type, Call_Node);
       Set_Etype          (Subp_Typ, Res_Typ);
       Set_Returns_By_Ref (Subp_Typ, Returns_By_Ref (Subp));

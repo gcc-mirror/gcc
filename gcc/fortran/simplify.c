@@ -2109,6 +2109,9 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
   else
     which = 0;
 
+  if (array->shape == NULL)
+    return NULL;
+
   gfc_array_size (array, &size);
   arraysize = mpz_get_ui (size);
   mpz_clear (size);
@@ -8173,6 +8176,9 @@ gfc_simplify_transpose (gfc_expr *matrix)
     return NULL;
 
   gcc_assert (matrix->rank == 2);
+
+  if (matrix->shape == NULL)
+    return NULL;
 
   result = gfc_get_array_expr (matrix->ts.type, matrix->ts.kind,
 			       &matrix->where);

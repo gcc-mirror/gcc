@@ -1567,19 +1567,17 @@ verify_loop_structure (void)
   /* Check irreducible loops.  */
   if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     {
-      auto_edge_flag saved_irr_mask (cfun);
-      /* Record old info.  */
-      auto_sbitmap irreds (last_basic_block_for_fn (cfun));
+      auto_edge_flag saved_edge_irr (cfun);
+      auto_bb_flag saved_bb_irr (cfun);
+      /* Save old info.  */
       FOR_EACH_BB_FN (bb, cfun)
 	{
 	  edge_iterator ei;
 	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
-	    bitmap_set_bit (irreds, bb->index);
-	  else
-	    bitmap_clear_bit (irreds, bb->index);
+	    bb->flags |= saved_bb_irr;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (e->flags & EDGE_IRREDUCIBLE_LOOP)
-	      e->flags |= saved_irr_mask;
+	      e->flags |= saved_edge_irr;
 	}
 
       /* Recount it.  */
@@ -1591,34 +1589,35 @@ verify_loop_structure (void)
 	  edge_iterator ei;
 
 	  if ((bb->flags & BB_IRREDUCIBLE_LOOP)
-	      && !bitmap_bit_p (irreds, bb->index))
+	      && !(bb->flags & saved_bb_irr))
 	    {
 	      error ("basic block %d should be marked irreducible", bb->index);
 	      err = 1;
 	    }
 	  else if (!(bb->flags & BB_IRREDUCIBLE_LOOP)
-	      && bitmap_bit_p (irreds, bb->index))
+		   && (bb->flags & saved_bb_irr))
 	    {
 	      error ("basic block %d should not be marked irreducible", bb->index);
 	      err = 1;
 	    }
+	  bb->flags &= ~saved_bb_irr;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      if ((e->flags & EDGE_IRREDUCIBLE_LOOP)
-		  && !(e->flags & saved_irr_mask))
+		  && !(e->flags & saved_edge_irr))
 		{
 		  error ("edge from %d to %d should be marked irreducible",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
 	      else if (!(e->flags & EDGE_IRREDUCIBLE_LOOP)
-		       && (e->flags & saved_irr_mask))
+		       && (e->flags & saved_edge_irr))
 		{
 		  error ("edge from %d to %d should not be marked irreducible",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
-	      e->flags &= ~saved_irr_mask;
+	      e->flags &= ~saved_edge_irr;
 	    }
 	}
     }

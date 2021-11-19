@@ -1,6 +1,11 @@
 /* { dg-do run } */
 /* { dg-options "-O3" } */
 
+/* This test does not work when the truth type does not match vector type.  */
+/* { dg-additional-options "-mno-avx512f" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-additional-options "-march=armv8-a" { target aarch64_sve } } */
+
+
 #include <stdint.h>
 #include <limits.h>
 #include <stdio.h>

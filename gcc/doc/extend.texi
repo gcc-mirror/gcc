@@ -14043,6 +14043,24 @@ int g (int c)
 
 @end deftypefn
 
+@deftypefn {Built-in Function} @var{type} __builtin_assoc_barrier (@var{type} @var{expr})
+This built-in inhibits re-association of the floating-point expression
+@var{expr} with expressions consuming the return value of the built-in. The
+expression @var{expr} itself can be reordered, and the whole expression
+@var{expr} can be reordered with operands after the barrier. The barrier is
+only relevant when @code{-fassociative-math} is active, since otherwise
+floating-point is not treated as associative.
+
+@smallexample
+float x0 = a + b - b;
+float x1 = __builtin_assoc_barrier(a + b) - b;
+@end smallexample
+
+@noindent
+means that, with @code{-fassociative-math}, @code{x0} can be optimized to
+@code{x0 = a} but @code{x1} cannot.
+@end deftypefn
+
 @deftypefn {Built-in Function} {void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
 This function returns its first argument, and allows the compiler
 to assume that the returned pointer is at least @var{align} bytes
@@ -23765,6 +23783,25 @@ restored.
   foo(c);                       /* error is given for this one */
 #pragma GCC diagnostic pop
   foo(d);                       /* depends on command-line options */
+@end smallexample
+
+@item #pragma GCC diagnostic ignored_attributes
+
+Similarly to @option{-Wno-attributes=}, this pragma allows users to suppress
+warnings about unknown scoped attributes (in C++11 and C2X).  For example,
+@code{#pragma GCC diagnostic ignored_attributes "vendor::attr"} disables
+warning about the following declaration:
+
+@smallexample
+[[vendor::attr]] void f();
+@end smallexample
+
+whereas @code{#pragma GCC diagnostic ignored_attributes "vendor::"} prevents
+warning about both of these declarations:
+
+@smallexample
+[[vendor::safe]] void f();
+[[vendor::unsafe]] void f2();
 @end smallexample
 
 @end table

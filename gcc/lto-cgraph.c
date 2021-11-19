@@ -516,6 +516,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
   bp_pack_value (&bp, node->body_removed, 1);
+  bp_pack_value (&bp, node->semantic_interposition, 1);
   bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->address_taken, 1);
   bp_pack_value (&bp, tag == LTO_symtab_analyzed_node
@@ -604,6 +605,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
 		 node->body_removed
 		 || (!encode_initializer_p && !node->alias && node->definition),
 		 1);
+  bp_pack_value (&bp, node->semantic_interposition, 1);
   bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->writeonly, 1);
   bp_pack_value (&bp, node->definition && (encode_initializer_p || node->alias),
@@ -1167,6 +1169,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->forced_by_abi = bp_unpack_value (bp, 1);
   node->unique_name = bp_unpack_value (bp, 1);
   node->body_removed = bp_unpack_value (bp, 1);
+  node->semantic_interposition = bp_unpack_value (bp, 1);
   node->implicit_section = bp_unpack_value (bp, 1);
   node->address_taken = bp_unpack_value (bp, 1);
   node->used_from_other_partition = bp_unpack_value (bp, 1);
@@ -1373,6 +1376,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->forced_by_abi = bp_unpack_value (&bp, 1);
   node->unique_name = bp_unpack_value (&bp, 1);
   node->body_removed = bp_unpack_value (&bp, 1);
+  node->semantic_interposition = bp_unpack_value (&bp, 1);
   node->implicit_section = bp_unpack_value (&bp, 1);
   node->writeonly = bp_unpack_value (&bp, 1);
   node->definition = bp_unpack_value (&bp, 1);

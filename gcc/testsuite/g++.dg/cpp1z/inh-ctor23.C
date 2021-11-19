@@ -1,6 +1,6 @@
 // Testcase from P0136
 // { dg-do compile { target c++11 } }
-// { dg-options "-fnew-inheriting-ctors -fdump-tree-gimple -O2 -fno-inline" }
+// { dg-options "-fnew-inheriting-ctors -fdump-tree-gimple -O2 -fno-inline -fno-ipa-modref" }
 
 struct W { W(int); };
 struct V: W { using W::W; };

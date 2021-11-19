@@ -56,13 +56,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "cfg.h"
 #include "cfghooks.h"
+#include "bitmap.h"
 #include "cfganal.h"
 #include "tree-cfg.h"
 #include "gimple-iterator.h"
 #include "cfgloop.h"
 #include "tree-phinodes.h"
 #include "tree-into-ssa.h"
-#include "bitmap.h"
 
 
 /* GIMPLE parser state.  */

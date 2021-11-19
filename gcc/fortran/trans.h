@@ -266,8 +266,8 @@ typedef struct gfc_ss_info
     struct
     {
       /* If the scalar is passed as actual argument to an (elemental) procedure,
-	 this is the symbol of the corresponding dummy argument.  */
-      gfc_symbol *dummy_arg;
+	 this is the corresponding dummy argument.  */
+      gfc_dummy_arg *dummy_arg;
       tree value;
       /* Tells that the scalar is a reference to a variable that might
 	 be present on the lhs, so that we should evaluate the value

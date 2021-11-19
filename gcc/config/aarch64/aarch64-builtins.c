@@ -353,17 +353,6 @@ aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_immediate };
 #define TYPES_USHIFTACC (aarch64_types_unsigned_shiftacc_qualifiers)
 
-
-static enum aarch64_type_qualifiers
-aarch64_types_combine_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_none };
-#define TYPES_COMBINE (aarch64_types_combine_qualifiers)
-
-static enum aarch64_type_qualifiers
-aarch64_types_combine_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_poly, qualifier_poly, qualifier_poly };
-#define TYPES_COMBINEP (aarch64_types_combine_p_qualifiers)
-
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode };
@@ -372,10 +361,12 @@ aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum aarch64_type_qualifiers
 aarch64_types_load1_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_const_pointer_map_mode };
+#define TYPES_LOAD1_U (aarch64_types_load1_u_qualifiers)
 #define TYPES_LOADSTRUCT_U (aarch64_types_load1_u_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_load1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_const_pointer_map_mode };
+#define TYPES_LOAD1_P (aarch64_types_load1_p_qualifiers)
 #define TYPES_LOADSTRUCT_P (aarch64_types_load1_p_qualifiers)
 
 static enum aarch64_type_qualifiers
@@ -423,11 +414,12 @@ aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum aarch64_type_qualifiers
 aarch64_types_store1_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_unsigned };
+#define TYPES_STORE1_U (aarch64_types_store1_u_qualifiers)
 #define TYPES_STORESTRUCT_U (aarch64_types_store1_u_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_store1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode, qualifier_poly };
-#define TYPES_STORE1P (aarch64_types_store1_p_qualifiers)
+#define TYPES_STORE1_P (aarch64_types_store1_p_qualifiers)
 #define TYPES_STORESTRUCT_P (aarch64_types_store1_p_qualifiers)
 
 static enum aarch64_type_qualifiers
@@ -2590,47 +2582,83 @@ get_mem_type_for_load_store (unsigned int fcode)
 {
   switch (fcode)
   {
-    VAR1 (LOAD1, ld1 , 0, LOAD, v8qi)
-    VAR1 (STORE1, st1 , 0, STORE, v8qi)
+    VAR1 (LOAD1, ld1, 0, LOAD, v8qi)
+    VAR1 (STORE1, st1, 0, STORE, v8qi)
       return Int8x8_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v16qi)
-    VAR1 (STORE1, st1 , 0, STORE, v16qi)
+    VAR1 (LOAD1, ld1, 0, LOAD, v16qi)
+    VAR1 (STORE1, st1, 0, STORE, v16qi)
       return Int8x16_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v4hi)
-    VAR1 (STORE1, st1 , 0, STORE, v4hi)
+    VAR1 (LOAD1, ld1, 0, LOAD, v4hi)
+    VAR1 (STORE1, st1, 0, STORE, v4hi)
       return Int16x4_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v8hi)
-    VAR1 (STORE1, st1 , 0, STORE, v8hi)
+    VAR1 (LOAD1, ld1, 0, LOAD, v8hi)
+    VAR1 (STORE1, st1, 0, STORE, v8hi)
       return Int16x8_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v2si)
-    VAR1 (STORE1, st1 , 0, STORE, v2si)
+    VAR1 (LOAD1, ld1, 0, LOAD, v2si)
+    VAR1 (STORE1, st1, 0, STORE, v2si)
       return Int32x2_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v4si)
-    VAR1 (STORE1, st1 , 0, STORE, v4si)
+    VAR1 (LOAD1, ld1, 0, LOAD, v4si)
+    VAR1 (STORE1, st1, 0, STORE, v4si)
       return Int32x4_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v2di)
-    VAR1 (STORE1, st1 , 0, STORE, v2di)
+    VAR1 (LOAD1, ld1, 0, LOAD, v2di)
+    VAR1 (STORE1, st1, 0, STORE, v2di)
       return Int64x2_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v4hf)
-    VAR1 (STORE1, st1 , 0, STORE, v4hf)
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v8qi)
+    VAR1 (STORE1_U, st1, 0, STORE, v8qi)
+      return Uint8x8_t;
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v16qi)
+    VAR1 (STORE1_U, st1, 0, STORE, v16qi)
+      return Uint8x16_t;
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v4hi)
+    VAR1 (STORE1_U, st1, 0, STORE, v4hi)
+      return Uint16x4_t;
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v8hi)
+    VAR1 (STORE1_U, st1, 0, STORE, v8hi)
+      return Uint16x8_t;
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v2si)
+    VAR1 (STORE1_U, st1, 0, STORE, v2si)
+      return Uint32x2_t;
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v4si)
+    VAR1 (STORE1_U, st1, 0, STORE, v4si)
+      return Uint32x4_t;
+    VAR1 (LOAD1_U, ld1, 0, LOAD, v2di)
+    VAR1 (STORE1_U, st1, 0, STORE, v2di)
+      return Uint64x2_t;
+    VAR1 (LOAD1_P, ld1, 0, LOAD, v8qi)
+    VAR1 (STORE1_P, st1, 0, STORE, v8qi)
+      return Poly8x8_t;
+    VAR1 (LOAD1_P, ld1, 0, LOAD, v16qi)
+    VAR1 (STORE1_P, st1, 0, STORE, v16qi)
+      return Poly8x16_t;
+    VAR1 (LOAD1_P, ld1, 0, LOAD, v4hi)
+    VAR1 (STORE1_P, st1, 0, STORE, v4hi)
+      return Poly16x4_t;
+    VAR1 (LOAD1_P, ld1, 0, LOAD, v8hi)
+    VAR1 (STORE1_P, st1, 0, STORE, v8hi)
+      return Poly16x8_t;
+    VAR1 (LOAD1_P, ld1, 0, LOAD, v2di)
+    VAR1 (STORE1_P, st1, 0, STORE, v2di)
+      return Poly64x2_t;
+    VAR1 (LOAD1, ld1, 0, LOAD, v4hf)
+    VAR1 (STORE1, st1, 0, STORE, v4hf)
       return Float16x4_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v8hf)
-    VAR1 (STORE1, st1 , 0, STORE, v8hf)
+    VAR1 (LOAD1, ld1, 0, LOAD, v8hf)
+    VAR1 (STORE1, st1, 0, STORE, v8hf)
       return Float16x8_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v4bf)
-    VAR1 (STORE1, st1 , 0, STORE, v4bf)
+    VAR1 (LOAD1, ld1, 0, LOAD, v4bf)
+    VAR1 (STORE1, st1, 0, STORE, v4bf)
       return Bfloat16x4_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v8bf)
-    VAR1 (STORE1, st1 , 0, STORE, v8bf)
+    VAR1 (LOAD1, ld1, 0, LOAD, v8bf)
+    VAR1 (STORE1, st1, 0, STORE, v8bf)
       return Bfloat16x8_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v2sf)
-    VAR1 (STORE1, st1 , 0, STORE, v2sf)
+    VAR1 (LOAD1, ld1, 0, LOAD, v2sf)
+    VAR1 (STORE1, st1, 0, STORE, v2sf)
       return Float32x2_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v4sf)
-    VAR1 (STORE1, st1 , 0, STORE, v4sf)
+    VAR1 (LOAD1, ld1, 0, LOAD, v4sf)
+    VAR1 (STORE1, st1, 0, STORE, v4sf)
       return Float32x4_t;
-    VAR1 (LOAD1, ld1 , 0, LOAD, v2df)
-    VAR1 (STORE1, st1 , 0, STORE, v2df)
+    VAR1 (LOAD1, ld1, 0, LOAD, v2df)
+    VAR1 (STORE1, st1, 0, STORE, v2df)
       return Float64x2_t;
     default:
       gcc_unreachable ();
@@ -2643,7 +2671,7 @@ get_mem_type_for_load_store (unsigned int fcode)
    failure.  */
 gimple *
 aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
-				     gimple_stmt_iterator *gsi)
+				     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED)
 {
   gimple *new_stmt = NULL;
   unsigned nargs = gimple_call_num_args (stmt);
@@ -2664,46 +2692,49 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 
      /*lower store and load neon builtins to gimple.  */
      BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
+     BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
+     BUILTIN_VALLP_NO_DI (LOAD1_P, ld1, 0, LOAD)
 	if (!BYTES_BIG_ENDIAN)
 	  {
 	    enum aarch64_simd_type mem_type
 	      = get_mem_type_for_load_store(fcode);
 	    aarch64_simd_type_info simd_type
 	      = aarch64_simd_types[mem_type];
-	    tree elt_ptr_type = build_pointer_type (simd_type.eltype);
+	    tree elt_ptr_type = build_pointer_type_for_mode (simd_type.eltype,
+							     VOIDmode, true);
 	    tree zero = build_zero_cst (elt_ptr_type);
-	    gimple_seq stmts = NULL;
-	    tree base = gimple_convert (&stmts, elt_ptr_type,
-					args[0]);
-	    if (stmts)
-	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	    /* Use element type alignment.  */
+	    tree access_type
+	      = build_aligned_type (simd_type.itype,
+				    TYPE_ALIGN (simd_type.eltype));
 	    new_stmt
 	      = gimple_build_assign (gimple_get_lhs (stmt),
 				     fold_build2 (MEM_REF,
-						  simd_type.itype,
-						  base, zero));
+						  access_type,
+						  args[0], zero));
 	  }
 	break;
 
       BUILTIN_VALL_F16 (STORE1, st1, 0, STORE)
+      BUILTIN_VDQ_I (STORE1_U, st1, 0, STORE)
+      BUILTIN_VALLP_NO_DI (STORE1_P, st1, 0, STORE)
 	if (!BYTES_BIG_ENDIAN)
 	  {
 	    enum aarch64_simd_type mem_type
 	      = get_mem_type_for_load_store(fcode);
 	    aarch64_simd_type_info simd_type
 	      = aarch64_simd_types[mem_type];
-	    tree elt_ptr_type = build_pointer_type (simd_type.eltype);
+	    tree elt_ptr_type = build_pointer_type_for_mode (simd_type.eltype,
+							     VOIDmode, true);
 	    tree zero = build_zero_cst (elt_ptr_type);
-	    gimple_seq stmts = NULL;
-	    tree base = gimple_convert (&stmts, elt_ptr_type,
-					args[0]);
-	    if (stmts)
-	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	    /* Use element type alignment.  */
+	    tree access_type
+	      = build_aligned_type (simd_type.itype,
+				    TYPE_ALIGN (simd_type.eltype));
 	    new_stmt
-	      = gimple_build_assign (fold_build2 (MEM_REF,
-				     simd_type.itype,
-				     base,
-				     zero), args[1]);
+	      = gimple_build_assign (fold_build2 (MEM_REF, access_type,
+						  args[0], zero),
+				     args[1]);
 	  }
 	break;
 

@@ -146,20 +146,17 @@ enum dump_flag : uint32_t
   /* Dump folding details.  */
   TDF_FOLDING = (1 << 21),
 
-  /* Dumping for range path solver.  */
-  TDF_THREADING = (1 << 22),
-
   /* MSG_* flags for expressing the kinds of message to
      be emitted by -fopt-info.  */
 
   /* -fopt-info optimized sources.  */
-  MSG_OPTIMIZED_LOCATIONS = (1 << 23),
+  MSG_OPTIMIZED_LOCATIONS = (1 << 22),
 
   /* Missed opportunities.  */
-  MSG_MISSED_OPTIMIZATION = (1 << 24),
+  MSG_MISSED_OPTIMIZATION = (1 << 23),
 
   /* General optimization info.  */
-  MSG_NOTE = (1 << 25),
+  MSG_NOTE = (1 << 24),
 
   /* Mask for selecting MSG_-kind flags.  */
   MSG_ALL_KINDS = (MSG_OPTIMIZED_LOCATIONS
@@ -178,16 +175,16 @@ enum dump_flag : uint32_t
      sub-option of -fopt-info to show the internal messages.  */
 
   /* Implicitly supplied for messages at the top-level dump scope.  */
-  MSG_PRIORITY_USER_FACING = (1 << 26),
+  MSG_PRIORITY_USER_FACING = (1 << 25),
 
   /* Implicitly supplied for messages within nested dump scopes.  */
-  MSG_PRIORITY_INTERNALS = (1 << 27),
+  MSG_PRIORITY_INTERNALS = (1 << 26),
 
   /* Supplied when an opt_problem generated in a nested scope is re-emitted
      at the top-level.   We want to default to showing these in -fopt-info
      output, but to *not* show them in dump files, as the message would be
      shown twice, messing up "scan-tree-dump-times" in DejaGnu tests.  */
-  MSG_PRIORITY_REEMITTED = (1 << 28),
+  MSG_PRIORITY_REEMITTED = (1 << 27),
 
   /* Mask for selecting MSG_PRIORITY_* flags.  */
   MSG_ALL_PRIORITIES = (MSG_PRIORITY_USER_FACING
@@ -195,16 +192,16 @@ enum dump_flag : uint32_t
 			| MSG_PRIORITY_REEMITTED),
 
   /* All -fdump- flags.  */
-  TDF_ALL_VALUES = (1 << 29) - 1,
+  TDF_ALL_VALUES = (1 << 28) - 1,
 
   /* Dumping for -fcompare-debug.  */
-  TDF_COMPARE_DEBUG = (1 << 29),
+  TDF_COMPARE_DEBUG = (1 << 28),
 
   /* Dump a GIMPLE value which means wrapping certain things with _Literal.  */
-  TDF_GIMPLE_VAL = (1 << 30),
+  TDF_GIMPLE_VAL = (1 << 29),
 
   /* For error.  */
-  TDF_ERROR = ((uint32_t)1 << 31),
+  TDF_ERROR = ((uint32_t)1 << 30),
 };
 
 /* Dump flags type.  */

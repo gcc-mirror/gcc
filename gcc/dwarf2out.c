@@ -19646,6 +19646,7 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
      properly dynamic byte offsets only when PCC bitfield type doesn't
      matter.  */
   if (PCC_BITFIELD_TYPE_MATTERS
+      && DECL_BIT_FIELD_TYPE (decl)
       && TREE_CODE (DECL_FIELD_OFFSET (decl)) == INTEGER_CST)
     {
       offset_int object_offset_in_bits;

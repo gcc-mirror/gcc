@@ -223,6 +223,7 @@ static bool
 do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 {
   gfc_actual_arglist *a;
+  bool ok = true;
 
   for (a = arg; a; a = a->next)
     {
@@ -238,7 +239,7 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	  gfc_error ("Variable with NO_ARG_CHECK attribute at %L is only "
 		     "permitted as argument to the intrinsic functions "
 		     "C_LOC and PRESENT", &a->expr->where);
-	  return false;
+	  ok = false;
 	}
       else if (a->expr->ts.type == BT_ASSUMED
 	       && specific->id != GFC_ISYM_LBOUND
@@ -254,32 +255,32 @@ do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	  gfc_error ("Assumed-type argument at %L is not permitted as actual"
 		     " argument to the intrinsic %s", &a->expr->where,
 		     gfc_current_intrinsic);
-	  return false;
+	  ok = false;
 	}
       else if (a->expr->ts.type == BT_ASSUMED && a != arg)
 	{
 	  gfc_error ("Assumed-type argument at %L is only permitted as "
 		     "first actual argument to the intrinsic %s",
 		     &a->expr->where, gfc_current_intrinsic);
-	  return false;
+	  ok = false;
 	}
-      if (a->expr->rank == -1 && !specific->inquiry)
+      else if (a->expr->rank == -1 && !specific->inquiry)
 	{
 	  gfc_error ("Assumed-rank argument at %L is only permitted as actual "
 		     "argument to intrinsic inquiry functions",
 		     &a->expr->where);
-	  return false;
+	  ok = false;
 	}
-      if (a->expr->rank == -1 && arg != a)
+      else if (a->expr->rank == -1 && arg != a)
 	{
 	  gfc_error ("Assumed-rank argument at %L is only permitted as first "
 		     "actual argument to the intrinsic inquiry function %s",
 		     &a->expr->where, gfc_current_intrinsic);
-	  return false;
+	  ok = false;
 	}
     }
 
-  return true;
+  return ok;
 }
 
 
@@ -879,39 +880,6 @@ add_sym_4 (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt ty
   cf.f4 = check;
   sf.f4 = simplify;
   rf.f4 = resolve;
-
-  add_sym (name, id, cl, actual_ok, type, kind, standard, cf, sf, rf,
-	   a1, type1, kind1, optional1, INTENT_IN,
-	   a2, type2, kind2, optional2, INTENT_IN,
-	   a3, type3, kind3, optional3, INTENT_IN,
-	   a4, type4, kind4, optional4, INTENT_IN,
-	   (void *) 0);
-}
-
-/* Add a symbol to the function list where the function takes 4
-   arguments and resolution may need to change the number or
-   arrangement of arguments. This is the case for INDEX, which needs
-   its KIND argument removed.  */
-
-static void
-add_sym_4ind (const char *name, gfc_isym_id id, enum klass cl, int actual_ok,
-	      bt type, int kind, int standard,
-	      bool (*check) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *),
-	      gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
-				     gfc_expr *),
-	      void (*resolve) (gfc_expr *, gfc_actual_arglist *),
-	      const char *a1, bt type1, int kind1, int optional1,
-	      const char *a2, bt type2, int kind2, int optional2,
-	      const char *a3, bt type3, int kind3, int optional3,
-	      const char *a4, bt type4, int kind4, int optional4 )
-{
-  gfc_check_f cf;
-  gfc_simplify_f sf;
-  gfc_resolve_f rf;
-
-  cf.f4 = check;
-  sf.f4 = simplify;
-  rf.f1m = resolve;
 
   add_sym (name, id, cl, actual_ok, type, kind, standard, cf, sf, rf,
 	   a1, type1, kind1, optional1, INTENT_IN,
@@ -2223,11 +2191,11 @@ add_functions (void)
 
   /* The resolution function for INDEX is called gfc_resolve_index_func
      because the name gfc_resolve_index is already used in resolve.c.  */
-  add_sym_4ind ("index", GFC_ISYM_INDEX, CLASS_ELEMENTAL, ACTUAL_YES,
-		BT_INTEGER, di, GFC_STD_F77,
-		gfc_check_index, gfc_simplify_index, gfc_resolve_index_func,
-		stg, BT_CHARACTER, dc, REQUIRED, ssg, BT_CHARACTER, dc, REQUIRED,
-		bck, BT_LOGICAL, dl, OPTIONAL, kind, BT_INTEGER, di, OPTIONAL);
+  add_sym_4 ("index", GFC_ISYM_INDEX, CLASS_ELEMENTAL, ACTUAL_YES,
+	     BT_INTEGER, di, GFC_STD_F77,
+	     gfc_check_index, gfc_simplify_index, gfc_resolve_index_func,
+	     stg, BT_CHARACTER, dc, REQUIRED, ssg, BT_CHARACTER, dc, REQUIRED,
+	     bck, BT_LOGICAL, dl, OPTIONAL, kind, BT_INTEGER, di, OPTIONAL);
 
   make_generic ("index", GFC_ISYM_INDEX, GFC_STD_F77);
 
@@ -3805,7 +3773,7 @@ add_subroutines (void)
 	      BT_UNKNOWN, 0, GFC_STD_F2018,
 	      gfc_check_co_reduce, NULL, NULL,
 	      a, BT_REAL, dr, REQUIRED, INTENT_INOUT,
-	      "operator", BT_INTEGER, di, REQUIRED, INTENT_IN,
+	      "operation", BT_INTEGER, di, REQUIRED, INTENT_IN,
 	      result_image, BT_INTEGER, di, OPTIONAL, INTENT_IN,
 	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      errmsg, BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
@@ -4269,6 +4237,18 @@ remove_nullargs (gfc_actual_arglist **ap)
 }
 
 
+static gfc_dummy_arg *
+get_intrinsic_dummy_arg (gfc_intrinsic_arg *intrinsic)
+{
+  gfc_dummy_arg * const dummy_arg = gfc_get_dummy_arg ();
+
+  dummy_arg->intrinsicness = GFC_INTRINSIC_DUMMY_ARG;
+  dummy_arg->u.intrinsic = intrinsic;
+
+  return dummy_arg;
+}
+
+
 /* Given an actual arglist and a formal arglist, sort the actual
    arglist so that its arguments are in a one-to-one correspondence
    with the format arglist.  Arguments that are not present are given
@@ -4286,8 +4266,14 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
   remove_nullargs (ap);
   actual = *ap;
 
+  auto_vec<gfc_intrinsic_arg *> dummy_args;
+  auto_vec<gfc_actual_arglist *> ordered_actual_args;
+
   for (f = formal; f; f = f->next)
-    f->actual = NULL;
+    dummy_args.safe_push (f);
+
+  ordered_actual_args.safe_grow_cleared (dummy_args.length (),
+					 /* exact = */true);
 
   f = formal;
   a = actual;
@@ -4339,7 +4325,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
 	}
     }
 
-  for (;;)
+  for (int i = 0;; i++)
     {		/* Put the nonkeyword arguments in a 1:1 correspondence */
       if (f == NULL)
 	break;
@@ -4349,7 +4335,7 @@ sort_actual (const char *name, gfc_actual_arglist **ap,
       if (a->name != NULL)
 	goto keywords;
 
-      f->actual = a;
+      ordered_actual_args[i] = a;
 
       f = f->next;
       a = a->next;
@@ -4367,7 +4353,8 @@ keywords:
      to be keyword arguments.  */
   for (; a; a = a->next)
     {
-      for (f = formal; f; f = f->next)
+      int idx;
+      FOR_EACH_VEC_ELT (dummy_args, idx, f)
 	if (strcmp (a->name, f->name) == 0)
 	  break;
 
@@ -4382,21 +4369,21 @@ keywords:
 	  return false;
 	}
 
-      if (f->actual != NULL)
+      if (ordered_actual_args[idx] != NULL)
 	{
 	  gfc_error ("Argument %qs appears twice in call to %qs at %L",
 		     f->name, name, where);
 	  return false;
 	}
-
-      f->actual = a;
+      ordered_actual_args[idx] = a;
     }
 
 optional:
   /* At this point, all unmatched formal args must be optional.  */
-  for (f = formal; f; f = f->next)
+  int idx;
+  FOR_EACH_VEC_ELT (dummy_args, idx, f)
     {
-      if (f->actual == NULL && f->optional == 0)
+      if (ordered_actual_args[idx] == NULL && f->optional == 0)
 	{
 	  gfc_error ("Missing actual argument %qs in call to %qs at %L",
 		     f->name, name, where);
@@ -4409,21 +4396,19 @@ do_sort:
      together in a way that corresponds with the formal list.  */
   actual = NULL;
 
-  for (f = formal; f; f = f->next)
+  FOR_EACH_VEC_ELT (dummy_args, idx, f)
     {
-      if (f->actual && f->actual->label != NULL && f->ts.type)
+      a = ordered_actual_args[idx];
+      if (a && a->label != NULL && f->ts.type)
 	{
 	  gfc_error ("ALTERNATE RETURN not permitted at %L", where);
 	  return false;
 	}
 
-      if (f->actual == NULL)
-	{
-	  a = gfc_get_actual_arglist ();
-	  a->missing_arg_type = f->ts.type;
-	}
-      else
-	a = f->actual;
+      if (a == NULL)
+	a = gfc_get_actual_arglist ();
+
+      a->associated_dummy = get_intrinsic_dummy_arg (f);
 
       if (actual == NULL)
 	*ap = a;
@@ -4530,10 +4515,9 @@ resolve_intrinsic (gfc_intrinsic_sym *specific, gfc_expr *e)
 
   arg = e->value.function.actual;
 
-  /* Special case hacks for MIN, MAX and INDEX.  */
+  /* Special case hacks for MIN and MAX.  */
   if (specific->resolve.f1m == gfc_resolve_max
-      || specific->resolve.f1m == gfc_resolve_min
-      || specific->resolve.f1m == gfc_resolve_index_func)
+      || specific->resolve.f1m == gfc_resolve_min)
     {
       (*specific->resolve.f1m) (e, arg);
       return;

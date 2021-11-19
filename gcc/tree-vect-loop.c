@@ -821,6 +821,8 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     num_iters (NULL_TREE),
     num_iters_unchanged (NULL_TREE),
     num_iters_assumptions (NULL_TREE),
+    vector_costs (nullptr),
+    scalar_costs (nullptr),
     th (0),
     versioning_threshold (0),
     vectorization_factor (0),
@@ -838,9 +840,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     ivexpr_map (NULL),
     scan_map (NULL),
     slp_unrolling_factor (1),
-    single_scalar_iteration_cost (0),
-    vec_outside_cost (0),
-    vec_inside_cost (0),
     inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
@@ -932,6 +931,8 @@ _loop_vec_info::~_loop_vec_info ()
   delete ivexpr_map;
   delete scan_map;
   epilogue_vinfos.release ();
+  delete scalar_costs;
+  delete vector_costs;
 
   /* When we release an epiloge vinfo that we do not intend to use
      avoid clearing AUX of the main loop which should continue to
@@ -1292,20 +1293,15 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
     }
 
   /* Now accumulate cost.  */
-  vector_costs *target_cost_data = init_cost (loop_vinfo, true);
+  loop_vinfo->scalar_costs = init_cost (loop_vinfo, true);
   stmt_info_for_cost *si;
   int j;
   FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 		    j, si)
-    (void) add_stmt_cost (target_cost_data, si->count,
+    (void) add_stmt_cost (loop_vinfo->scalar_costs, si->count,
 			  si->kind, si->stmt_info, si->vectype,
 			  si->misalign, si->where);
-  unsigned prologue_cost = 0, body_cost = 0, epilogue_cost = 0;
-  finish_cost (target_cost_data, &prologue_cost, &body_cost,
-	       &epilogue_cost);
-  delete target_cost_data;
-  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
-    = prologue_cost + body_cost + epilogue_cost;
+  loop_vinfo->scalar_costs->finish_cost (nullptr);
 }
 
 
@@ -1464,6 +1460,18 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
       (info->loop_cond,
        "not vectorized: number of iterations = 0.\n");
 
+  if (!(tree_fits_shwi_p (info->number_of_iterations)
+	&& tree_to_shwi (info->number_of_iterations) > 0))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Symbolic number of iterations is ");
+	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, info->number_of_iterations);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+    }
+
   return opt_result::success ();
 }
 
@@ -1472,36 +1480,17 @@ vect_analyze_loop_form (class loop *loop, vect_loop_form_info *info)
 
 loop_vec_info
 vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
-			const vect_loop_form_info *info)
+			const vect_loop_form_info *info,
+			loop_vec_info main_loop_info)
 {
   loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared);
   LOOP_VINFO_NITERSM1 (loop_vinfo) = info->number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = info->number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = info->number_of_iterations;
-  if (!integer_onep (info->assumptions))
-    {
-      /* We consider to vectorize this loop by versioning it under
-	 some assumptions.  In order to do this, we need to clear
-	 existing information computed by scev and niter analyzer.  */
-      scev_reset_htab ();
-      free_numbers_of_iterations_estimates (loop);
-      /* Also set flag for this loop so that following scev and niter
-	 analysis are done under the assumptions.  */
-      loop_constraint_set (loop, LOOP_C_FINITE);
-      /* Also record the assumptions for versioning.  */
-      LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
-    }
-
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    {
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-			   "Symbolic number of iterations is ");
-	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, info->number_of_iterations);
-          dump_printf (MSG_NOTE, "\n");
-        }
-    }
+  LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = main_loop_info;
+  /* Also record the assumptions for versioning.  */
+  if (!integer_onep (info->assumptions) && !main_loop_info)
+    LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo) = info->assumptions;
 
   stmt_vec_info loop_cond_info = loop_vinfo->lookup_stmt (info->loop_cond);
   STMT_VINFO_TYPE (loop_cond_info) = loop_exit_ctrl_vec_info_type;
@@ -1772,7 +1761,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
         }
     } /* bbs */
 
-  add_stmt_costs (loop_vinfo->target_cost_data, &cost_vec);
+  add_stmt_costs (loop_vinfo->vector_costs, &cost_vec);
 
   /* All operations in the loop are either irrelevant (deal with loop
      control, or dead), or only used outside the loop and can be moved
@@ -2382,7 +2371,7 @@ start_over:
 		   LOOP_VINFO_INT_NITERS (loop_vinfo));
     }
 
-  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo) = init_cost (loop_vinfo, false);
+  loop_vinfo->vector_costs = init_cost (loop_vinfo, false);
 
   /* Analyze the alignment of the data-refs in the loop.
      Fail if a data reference is found that cannot be vectorized.  */
@@ -2749,8 +2738,8 @@ again:
   LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).release ();
   LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).release ();
   /* Reset target cost data.  */
-  delete LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
-  LOOP_VINFO_TARGET_COST_DATA (loop_vinfo) = nullptr;
+  delete loop_vinfo->vector_costs;
+  loop_vinfo->vector_costs = nullptr;
   /* Reset accumulated rgroup information.  */
   release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo));
   release_vec_loop_controls (&LOOP_VINFO_LENS (loop_vinfo));
@@ -2791,84 +2780,12 @@ vect_better_loop_vinfo_p (loop_vec_info new_loop_vinfo,
 	return new_simdlen_p;
     }
 
-  /* Limit the VFs to what is likely to be the maximum number of iterations,
-     to handle cases in which at least one loop_vinfo is fully-masked.  */
-  HOST_WIDE_INT estimated_max_niter;
-  loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo);
-  unsigned HOST_WIDE_INT main_vf;
-  if (main_loop
-      && LOOP_VINFO_NITERS_KNOWN_P (main_loop)
-      && LOOP_VINFO_VECT_FACTOR (main_loop).is_constant (&main_vf))
-    estimated_max_niter = LOOP_VINFO_INT_NITERS (main_loop) % main_vf;
-  else
-    estimated_max_niter = likely_max_stmt_executions_int (loop);
-  if (estimated_max_niter != -1)
-    {
-      if (known_le (estimated_max_niter, new_vf))
-	new_vf = estimated_max_niter;
-      if (known_le (estimated_max_niter, old_vf))
-	old_vf = estimated_max_niter;
-    }
+  const auto *old_costs = old_loop_vinfo->vector_costs;
+  const auto *new_costs = new_loop_vinfo->vector_costs;
+  if (loop_vec_info main_loop = LOOP_VINFO_ORIG_LOOP_INFO (old_loop_vinfo))
+    return new_costs->better_epilogue_loop_than_p (old_costs, main_loop);
 
-  /* Check whether the (fractional) cost per scalar iteration is lower
-     or higher: new_inside_cost / new_vf vs. old_inside_cost / old_vf.  */
-  poly_int64 rel_new = new_loop_vinfo->vec_inside_cost * old_vf;
-  poly_int64 rel_old = old_loop_vinfo->vec_inside_cost * new_vf;
-
-  HOST_WIDE_INT est_rel_new_min
-    = estimated_poly_value (rel_new, POLY_VALUE_MIN);
-  HOST_WIDE_INT est_rel_new_max
-    = estimated_poly_value (rel_new, POLY_VALUE_MAX);
-
-  HOST_WIDE_INT est_rel_old_min
-    = estimated_poly_value (rel_old, POLY_VALUE_MIN);
-  HOST_WIDE_INT est_rel_old_max
-    = estimated_poly_value (rel_old, POLY_VALUE_MAX);
-
-  /* Check first if we can make out an unambigous total order from the minimum
-     and maximum estimates.  */
-  if (est_rel_new_min < est_rel_old_min
-      && est_rel_new_max < est_rel_old_max)
-    return true;
-  else if (est_rel_old_min < est_rel_new_min
-	   && est_rel_old_max < est_rel_new_max)
-    return false;
-  /* When old_loop_vinfo uses a variable vectorization factor,
-     we know that it has a lower cost for at least one runtime VF.
-     However, we don't know how likely that VF is.
-
-     One option would be to compare the costs for the estimated VFs.
-     The problem is that that can put too much pressure on the cost
-     model.  E.g. if the estimated VF is also the lowest possible VF,
-     and if old_loop_vinfo is 1 unit worse than new_loop_vinfo
-     for the estimated VF, we'd then choose new_loop_vinfo even
-     though (a) new_loop_vinfo might not actually be better than
-     old_loop_vinfo for that VF and (b) it would be significantly
-     worse at larger VFs.
-
-     Here we go for a hacky compromise: pick new_loop_vinfo if it is
-     no more expensive than old_loop_vinfo even after doubling the
-     estimated old_loop_vinfo VF.  For all but trivial loops, this
-     ensures that we only pick new_loop_vinfo if it is significantly
-     better than old_loop_vinfo at the estimated VF.  */
-
-  if (est_rel_old_min != est_rel_new_min
-      || est_rel_old_max != est_rel_new_max)
-    {
-      HOST_WIDE_INT est_rel_new_likely
-	= estimated_poly_value (rel_new, POLY_VALUE_LIKELY);
-      HOST_WIDE_INT est_rel_old_likely
-	= estimated_poly_value (rel_old, POLY_VALUE_LIKELY);
-
-      return est_rel_new_likely * 2 <= est_rel_old_likely;
-    }
-
-  /* If there's nothing to choose between the loop bodies, see whether
-     there's a difference in the prologue and epilogue costs.  */
-  if (new_loop_vinfo->vec_outside_cost != old_loop_vinfo->vec_outside_cost)
-    return new_loop_vinfo->vec_outside_cost < old_loop_vinfo->vec_outside_cost;
-
-  return false;
+  return new_costs->better_main_loop_than_p (old_costs);
 }
 
 /* Decide whether to replace OLD_LOOP_VINFO with NEW_LOOP_VINFO.  Return
@@ -2903,9 +2820,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
 		     bool &fatal)
 {
   loop_vec_info loop_vinfo
-    = vect_create_loop_vinfo (loop, shared, loop_form_info);
-  if (main_loop_vinfo)
-    LOOP_VINFO_ORIG_LOOP_INFO (loop_vinfo) = main_loop_vinfo;
+    = vect_create_loop_vinfo (loop, shared, loop_form_info, main_loop_vinfo);
 
   machine_mode vector_mode = vector_modes[mode_i];
   loop_vinfo->vector_mode = vector_mode;
@@ -2996,6 +2911,17 @@ vect_analyze_loop (class loop *loop, vec_info_shared *shared)
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "bad loop form.\n");
       return opt_loop_vec_info::propagate_failure (res);
+    }
+  if (!integer_onep (loop_form_info.assumptions))
+    {
+      /* We consider to vectorize this loop by versioning it under
+	 some assumptions.  In order to do this, we need to clear
+	 existing information computed by scev and niter analyzer.  */
+      scev_reset_htab ();
+      free_numbers_of_iterations_estimates (loop);
+      /* Also set flag for this loop so that following scev and niter
+	 analysis are done under the assumptions.  */
+      loop_constraint_set (loop, LOOP_C_FINITE);
     }
 
   auto_vector_modes vector_modes;
@@ -3270,7 +3196,7 @@ reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
    of the scalar elements.  If the reduction has just a single initial value
    then INITIAL_VALUE is that value, otherwise it is null.  */
 
-static tree
+tree
 neutral_op_for_reduction (tree scalar_type, tree_code code, tree initial_value)
 {
   switch (code)
@@ -3641,6 +3567,17 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return def_stmt_info;
     }
 
+  /* When the inner loop of a double reduction ends up with more than
+     one loop-closed PHI we have failed to classify alternate such
+     PHIs as double reduction, leading to wrong code.  See PR103237.  */
+  if (inner_loop_of_double_reduc && lcphis.length () != 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unhandle double reduction\n");
+      return NULL;
+    }
+
   /* If this isn't a nested cycle or if the nested cycle reduction value
      is used ouside of the inner loop we cannot handle uses of the reduction
      value.  */
@@ -3859,7 +3796,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   int scalar_outside_cost = 0;
   int assumed_vf = vect_vf_for_cost (loop_vinfo);
   int npeel = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
-  vector_costs *target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+  vector_costs *target_cost_data = loop_vinfo->vector_costs;
 
   /* Cost model disabled.  */
   if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
@@ -3938,8 +3875,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
      TODO: Consider assigning different costs to different scalar
      statements.  */
 
-  scalar_single_iter_cost
-    = LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo);
+  scalar_single_iter_cost = loop_vinfo->scalar_costs->total_cost ();
 
   /* Add additional cost for the peeled instructions in prologue and epilogue
      loop.  (For fully-masked loops there will be no peeling.)
@@ -4205,14 +4141,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     }
 
   /* Complete the target-specific cost calculations.  */
-  finish_cost (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo), &vec_prologue_cost,
-	       &vec_inside_cost, &vec_epilogue_cost);
+  finish_cost (loop_vinfo->vector_costs, loop_vinfo->scalar_costs,
+	       &vec_prologue_cost, &vec_inside_cost, &vec_epilogue_cost);
 
   vec_outside_cost = (int)(vec_prologue_cost + vec_epilogue_cost);
-
-  /* Stash the costs so that we can compare two loop_vec_infos.  */
-  loop_vinfo->vec_inside_cost = vec_inside_cost;
-  loop_vinfo->vec_outside_cost = vec_outside_cost;
 
   if (dump_enabled_p ())
     {

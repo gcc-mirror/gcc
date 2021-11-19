@@ -127,6 +127,22 @@ public:
 };
 
 extern global_range_query global_ranges;
+
+inline range_query *
+get_global_range_query ()
+{
+  return &global_ranges;
+}
+
+/* Returns the currently active range access class.  When there is no active
+   range class, global ranges are used.  Never returns null.  */
+
+ATTRIBUTE_RETURNS_NONNULL inline range_query *
+get_range_query (const struct function *fun)
+{
+  return fun->x_range_query ? fun->x_range_query : &global_ranges;
+}
+
 extern value_range gimple_range_global (tree name);
 extern bool update_global_range (irange &r, tree name);
 

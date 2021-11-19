@@ -1,3 +1,125 @@
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* alloc.c (gomp_aligned_alloc): Fix typo.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* libgomp.h (GOMP_USE_ALIGNED_WORK_SHARES): Define if
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined and __AMDGCN__ is not.
+	(struct gomp_work_share): Use GOMP_USE_ALIGNED_WORK_SHARES instead of
+	GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC.
+	* work.c (alloc_work_share, gomp_work_share_start): Likewise.
+	* team.c (gomp_new_team): If GOMP_USE_ALIGNED_WORK_SHARES, use
+	gomp_aligned_alloc instead of team_malloc.
+
+2021-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/102838
+	* alloc.c (gomp_aligned_alloc): Prefer _aligned_alloc over
+	memalign over posix_memalign over aligned_alloc over fallback
+	with malloc instead of aligned_alloc over _aligned_alloc over
+	posix_memalign over memalign over fallback with malloc.  For
+	aligned_alloc, round up size up to multiple of al.
+
+2021-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1): Mark thread_limit clause to target
+	construct as implemented.
+
+2021-11-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/thread-limit-1.f90: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* task.c (gomp_create_target_task): Copy args array as well.
+	* target.c (gomp_target_fallback): Add args argument.
+	Set gomp_icv (true)->thread_limit_var if thread_limit is present.
+	(GOMP_target): Adjust gomp_target_fallback caller.
+	(GOMP_target_ext): Likewise.
+	(gomp_target_task_fn): Likewise.
+	* config/nvptx/team.c (gomp_nvptx_main): Set
+	gomp_global_icv.thread_limit_var.
+	* testsuite/libgomp.c-c++-common/thread-limit-1.c: New test.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/team.c (__gomp_team_num): Define as
+	__attribute__((shared)) var.
+	(gomp_nvptx_main): Initialize __gomp_team_num to 0.
+	* config/nvptx/target.c (__gomp_team_num): Declare as
+	extern __attribute__((shared)) var.
+	(GOMP_teams4): Use __gomp_team_num as the team number instead of
+	%ctaid.x.  If first, initialize it to %ctaid.x.  If num_teams_lower
+	is bigger than num_blocks, use num_teams_lower teams and arrange for
+	bumping of __gomp_team_num if !first and returning false once we run
+	out of teams.
+	* config/nvptx/teams.c (__gomp_team_num): Declare as
+	extern __attribute__((shared)) var.
+	(omp_get_team_num): Return __gomp_team_num value instead of %ctaid.x.
+
+2021-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/teams-5.c: New test.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/103201
+	* config/gcn/icv-device.c (omp_get_num_teams, omp_get_team_num): Move
+	to ...
+	* config/gcn/teams.c: ... here.  New file.
+
+2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Add 'bool implicit' parameter, add
+	implicit map handling to allow a "superset" existing map as valid case.
+	(get_kind): Adjust to filter out GOMP_MAP_IMPLICIT bits in return value.
+	(get_implicit): New function to extract implicit status.
+	(gomp_map_fields_existing): Adjust arguments in calls to
+	gomp_map_vars_existing, and add uses of get_implicit.
+	(gomp_map_vars_internal): Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-1.c: New test.
+
+2021-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp_g.h (GOMP_teams4): Declare.
+	* libgomp.map (GOMP_5.1): Export GOMP_teams4.
+	* target.c (GOMP_teams4): New function.
+	* config/nvptx/target.c (GOMP_teams): Remove.
+	(GOMP_teams4): New function.
+	* config/gcn/target.c (GOMP_teams): Remove.
+	(GOMP_teams4): New function.
+	* testsuite/libgomp.c/teams-4.c (main): Expect exactly 2
+	teams instead of <= 2.
+	* testsuite/libgomp.c-c++-common/teams-2.c: New test.
+
+2021-11-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/teams-1.f90: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (struct gomp_thread): Add num_teams and team_num members.
+	* team.c (struct gomp_thread_start_data): Likewise.
+	(gomp_thread_start): Initialize thr->num_teams and thr->team_num.
+	(gomp_team_start): Initialize start_data->num_teams and
+	start_data->team_num.  Update nthr->num_teams and nthr->team_num.
+	* teams.c (gomp_num_teams, gomp_team_num): Remove.
+	(GOMP_teams_reg): Set and restore thr->num_teams and thr->team_num
+	instead of gomp_num_teams and gomp_team_num.
+	(omp_get_num_teams): Use thr->num_teams + 1 instead of gomp_num_teams.
+	(omp_get_team_num): Use thr->team_num instead of gomp_team_num.
+	* testsuite/libgomp.c/teams-4.c: New test.
+
+2021-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/teams-1.c: New test.
+
+2021-11-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* env.c (parse_gomp_openacc_dim): Restore parsing.
+
 2021-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/102972

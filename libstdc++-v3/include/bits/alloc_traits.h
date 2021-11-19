@@ -833,6 +833,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   template<typename _ForwardIterator, typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
 	     _Allocator& __alloc)
@@ -847,6 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
 	     allocator<_Tp>&)

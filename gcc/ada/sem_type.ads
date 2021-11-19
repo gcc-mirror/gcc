@@ -186,11 +186,17 @@ package Sem_Type is
    --  right operand, which has one interpretation compatible with that of L.
    --  Return the type intersection of the two.
 
-   function Has_Compatible_Type (N : Node_Id; Typ : Entity_Id) return Boolean;
+   function Has_Compatible_Type
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      For_Comparison : Boolean := False) return Boolean;
    --  Verify that some interpretation of the node N has a type compatible with
    --  Typ. If N is not overloaded, then its unique type must be compatible
    --  with Typ. Otherwise iterate through the interpretations of N looking for
-   --  a compatible one.
+   --  a compatible one. If For_Comparison is true, the function is invoked for
+   --  a comparison (or equality) operator and also needs to verify the reverse
+   --  compatibility, because the implementation of type resolution for these
+   --  operators is not fully symmetrical.
 
    function Hides_Op (F : Entity_Id; Op : Entity_Id) return Boolean;
    --  A user-defined function hides a predefined operator if it matches the

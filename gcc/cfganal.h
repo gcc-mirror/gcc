@@ -44,8 +44,9 @@ private:
   void set_control_dependence_map_bit (basic_block, int);
   void clear_control_dependence_bitmap (basic_block);
   void find_control_dependence (int);
-  vec<bitmap> control_dependence_map;
+  vec<bitmap_head> control_dependence_map;
   vec<std::pair<int, int> > m_el;
+  bitmap_obstack m_bitmaps;
 };
 
 extern bool mark_dfs_back_edges (void);

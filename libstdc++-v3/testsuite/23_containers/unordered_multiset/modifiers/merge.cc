@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++17 } }
 
+#include <string>
 #include <unordered_set>
 #include <algorithm>
 #include <testsuite_hooks.h>
@@ -105,6 +106,26 @@ test04()
   VERIFY( c2.empty() );
 }
 
+void
+test05()
+{
+  const std::unordered_multiset<std::string> c0{ "abcd", "abcd", "efgh", "efgh", "ijkl", "ijkl" };
+  std::unordered_multiset<std::string> c1 = c0;
+  std::unordered_set<std::string> c2( c0.begin(), c0.end() );
+
+  c1.merge(c2);
+  VERIFY( c1.size() == (1.5 * c0.size()) );
+  for (auto& i : c1)
+    VERIFY( c1.count(i) == (1.5 * c0.count(i)) );
+  VERIFY( c2.empty() );
+
+  c1.clear();
+  c2.insert( c0.begin(), c0.end() );
+  c1.merge(std::move(c2));
+  VERIFY( c1.size() == (0.5 * c0.size()) );
+  VERIFY( c2.empty() );
+}
+
 int
 main()
 {
@@ -112,4 +133,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

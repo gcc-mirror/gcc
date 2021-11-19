@@ -462,6 +462,13 @@ enum ranger_debug
 		      | RANGER_DEBUG_TRACE)
 };
 
+/* Jump threader verbose dumps.  */
+enum threader_debug
+{
+  THREADER_DEBUG_NONE = 0,
+  THREADER_DEBUG_ALL = 1
+};
+
 /* EVRP mode.  */
 enum evrp_mode
 {

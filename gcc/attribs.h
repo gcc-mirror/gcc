@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ATTRIBS_H
 
 extern const struct attribute_spec *lookup_attribute_spec (const_tree);
+extern void free_attr_data ();
 extern void init_attributes (void);
 
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
@@ -40,12 +41,14 @@ extern void apply_tm_attr (tree, tree);
 extern tree make_attribute (const char *, const char *, tree);
 
 extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
-							     const char *);
+							     const char *,
+							     bool = false);
 
 extern char *sorted_attr_string (tree);
 extern bool common_function_versions (tree, tree);
 extern tree make_dispatcher_decl (const tree);
 extern bool is_function_default_version (const tree);
+extern void handle_ignored_attributes_option (vec<char *> *);
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTES
    is ATTRIBUTE.
@@ -114,17 +117,34 @@ extern unsigned decls_mismatched_attributes (tree, tree, tree,
 
 extern void maybe_diag_alias_attributes (tree, tree);
 
+/* For a given string S of length L, strip leading and trailing '_' characters
+   so that we have a canonical form of attribute names.  NB: This function may
+   change S and L.  */
+
+template <typename T>
+inline bool
+canonicalize_attr_name (const char *&s, T &l)
+{
+  if (l > 4 && s[0] == '_' && s[1] == '_' && s[l - 1] == '_' && s[l - 2] == '_')
+    {
+      s += 2;
+      l -= 4;
+      return true;
+    }
+  return false;
+}
+
 /* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
    so that we have a canonical form of attribute names.  */
 
 static inline tree
 canonicalize_attr_name (tree attr_name)
 {
-  const size_t l = IDENTIFIER_LENGTH (attr_name);
+  size_t l = IDENTIFIER_LENGTH (attr_name);
   const char *s = IDENTIFIER_POINTER (attr_name);
 
-  if (l > 4 && s[0] == '_' && s[1] == '_' && s[l - 1] == '_' && s[l - 2] == '_')
-    return get_identifier_with_length (s + 2, l - 4);
+  if (canonicalize_attr_name (s, l))
+    return get_identifier_with_length (s, l);
 
   return attr_name;
 }

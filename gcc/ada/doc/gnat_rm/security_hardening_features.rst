@@ -73,20 +73,52 @@ Note that Ada secondary stacks are not scrubbed.  The restriction
 ``No_Secondary_Stack`` avoids their use, and thus their accidental
 preservation of data that should be scrubbed.
 
-Also note that the machine attribute is not integrated in the Ada type
-system.  Though it may modify subprogram and variable interfaces, it
-is not fully reflected in Ada types, ``Access`` attributes, renaming
-and overriding.  Every access type, renaming, and overriding and
-overridden dispatching operations that may refer to an entity with an
-attribute-modified interface must be annotated with the same
-interface-modifying attribute, or with an interface-compatible one.
+Attributes ``Access`` and ``Unconstrained_Access`` of variables and
+constants with ``strub`` enabled require types with ``strub`` enabled;
+there is no way to express an access-to-strub type otherwise.
+``Unchecked_Access`` bypasses this constraint, but the resulting
+access type designates a non-strub type.
 
-Even then, the pragma is currently only functional when applied to
-subprograms and scalar variables; other uses, such as directly on
-types and subtypes, may be silently ignored.  Specifically, it is not
-currently recommended to rely on any effects this pragma might be
-expected to have when calling subprograms through access-to-subprogram
-variables.
+.. code-block:: ada
+
+     VI : Integer;
+     XsVI : access Integer := VI'Access; -- Error.
+     UXsVI : access Integer := VI'Unchecked_Access; -- OK,
+     -- UXsVI.all does not enable strub in the enclosing subprogram.
+
+     type Strub_Int is new Integer;
+     pragma Machine_Attribute (Strub_Int, "strub");
+     VSI : Strub_Int;
+     XsVSI : access Strub_Int := VSI'Access; -- OK.
+     -- XsVSI.all enables strub in the enclosing subprogram.
+
+
+Every access-to-subprogram type, renaming, and overriding and
+overridden dispatching operations that may refer to a subprogram with
+an attribute-modified interface must be annotated with the same
+interface-modifying attribute.  Access-to-subprogram types can be
+explicitly converted to different strub modes, as long as they are
+interface-compatible (i.e., adding or removing ``at-calls`` is not
+allowed).  For example, a ``strub``-``disabled`` subprogram can be
+turned ``callable`` through such an explicit conversion:
+
+.. code-block:: ada
+
+     type TBar is access procedure;
+
+     type TBar_Callable is access procedure;
+     pragma Machine_Attribute (TBar_Callable, "strub", "callable");
+
+     Bar_Callable_Ptr : constant TBar_Callable
+		:= TBar_Callable (TBar'(Bar'Access));
+
+     procedure Bar_Callable renames Bar_Callable_Ptr.all;
+     pragma Machine_Attribute (Bar_Callable, "strub", "callable");
+
+Note that the renaming declaration is expanded to a full subprogram
+body, it won't be just an alias.  Only if it is inlined will it be as
+efficient as a call by dereferencing the access-to-subprogram constant
+Bar_Callable_Ptr.
 
 
 .. Hardened Conditionals:

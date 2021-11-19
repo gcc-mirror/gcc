@@ -374,6 +374,30 @@ Wbad-function-cast
 C ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types.
 
+Wbidi-chars
+C ObjC C++ ObjC++ Warning Alias(Wbidi-chars=,any,none)
+;
+
+Wbidi-chars=
+C ObjC C++ ObjC++ RejectNegative Joined Warning CPP(cpp_warn_bidirectional) CppReason(CPP_W_BIDIRECTIONAL) Var(warn_bidirectional) Init(bidirectional_unpaired) Enum(cpp_bidirectional_level)
+-Wbidi-chars=[none|unpaired|any] Warn about UTF-8 bidirectional control characters.
+
+; Required for these enum values.
+SourceInclude
+cpplib.h
+
+Enum
+Name(cpp_bidirectional_level) Type(int) UnknownError(argument %qs to %<-Wbidi-chars%> not recognized)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(none) Value(bidirectional_none)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(unpaired) Value(bidirectional_unpaired)
+
+EnumValue
+Enum(cpp_bidirectional_level) String(any) Value(bidirectional_any)
+
 Wbool-compare
 C ObjC C++ ObjC++ Var(warn_bool_compare) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about boolean expression compared with an integer value different from true/false.
@@ -1711,6 +1735,10 @@ No longer supported.
 fimplement-inlines
 C++ ObjC++ Var(flag_implement_inlines) Init(1)
 Export functions even if they can be inlined.
+
+fimplicit-constexpr
+C++ ObjC++ Var(flag_implicit_constexpr)
+Make inline functions constexpr by default.
 
 fimplicit-inline-templates
 C++ ObjC++ Var(flag_implicit_inline_templates) Init(1)

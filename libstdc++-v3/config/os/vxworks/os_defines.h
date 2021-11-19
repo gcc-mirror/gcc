@@ -45,8 +45,10 @@
 #define _GLIBCXX_USE_WEAK_REF 0
 #endif
 
-// We support TLS on VxWorks (either directly or with emutls)
+// We support TLS on VxWorks >= 6.6 (either directly or with emutls)
+#if !_VXWORKS_PRE(6, 6)
 #define _GLIBCXX_HAVE_TLS 1
+#endif
 
 // VxWorks7 comes with a DinkumWare library and the system headers which we
 // are going to include for libstdc++ have a few related intrinsic

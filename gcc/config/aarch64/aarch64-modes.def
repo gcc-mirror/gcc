@@ -81,6 +81,11 @@ INT_MODE (OI, 32);
 INT_MODE (CI, 48);
 INT_MODE (XI, 64);
 
+/* V8DI mode.  */
+VECTOR_MODE_WITH_PREFIX (V, INT, DI, 8, 5);
+
+ADJUST_ALIGNMENT (V8DI, 8);
+
 /* Define Advanced SIMD modes for structures of 2, 3 and 4 d-registers.  */
 #define ADV_SIMD_D_REG_STRUCT_MODES(NVECS, VB, VH, VS, VD) \
   VECTOR_MODES_WITH_PREFIX (V##NVECS##x, INT, 8, 3); \

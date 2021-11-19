@@ -2438,8 +2438,9 @@ package body Sem_Type is
    -------------------------
 
    function Has_Compatible_Type
-     (N   : Node_Id;
-      Typ : Entity_Id) return Boolean
+     (N              : Node_Id;
+      Typ            : Entity_Id;
+      For_Comparison : Boolean := False) return Boolean
    is
       I  : Interp_Index;
       It : Interp;
@@ -2449,11 +2450,8 @@ package body Sem_Type is
          return False;
       end if;
 
-      if Nkind (N) = N_Subtype_Indication
-        or else not Is_Overloaded (N)
-      then
-         return
-           Covers (Typ, Etype (N))
+      if Nkind (N) = N_Subtype_Indication or else not Is_Overloaded (N) then
+         if Covers (Typ, Etype (N))
 
             --  Ada 2005 (AI-345): The context may be a synchronized interface.
             --  If the type is already frozen use the corresponding_record
@@ -2472,11 +2470,6 @@ package body Sem_Type is
                and then Covers (Corresponding_Record_Type (Typ), Etype (N)))
 
            or else
-             (not Is_Tagged_Type (Typ)
-               and then Ekind (Typ) /= E_Anonymous_Access_Type
-               and then Covers (Etype (N), Typ))
-
-           or else
              (Nkind (N) = N_Integer_Literal
                and then Present (Find_Aspect (Typ, Aspect_Integer_Literal)))
 
@@ -2486,7 +2479,16 @@ package body Sem_Type is
 
            or else
              (Nkind (N) = N_String_Literal
-               and then Present (Find_Aspect (Typ, Aspect_String_Literal)));
+               and then Present (Find_Aspect (Typ, Aspect_String_Literal)))
+
+           or else
+             (For_Comparison
+               and then not Is_Tagged_Type (Typ)
+               and then Ekind (Typ) /= E_Anonymous_Access_Type
+               and then Covers (Etype (N), Typ))
+         then
+            return True;
+         end if;
 
       --  Overloaded case
 
@@ -2501,24 +2503,27 @@ package body Sem_Type is
                --  Ada 2005 (AI-345)
 
               or else
-                (Is_Concurrent_Type (It.Typ)
+                (Is_Record_Type (Typ)
+                  and then Is_Concurrent_Type (It.Typ)
                   and then Present (Corresponding_Record_Type
                                                              (Etype (It.Typ)))
                   and then Covers (Typ, Corresponding_Record_Type
                                                              (Etype (It.Typ))))
 
-              or else (not Is_Tagged_Type (Typ)
-                         and then Ekind (Typ) /= E_Anonymous_Access_Type
-                         and then Covers (It.Typ, Typ))
+             or else
+               (For_Comparison
+                 and then not Is_Tagged_Type (Typ)
+                 and then Ekind (Typ) /= E_Anonymous_Access_Type
+                 and then Covers (It.Typ, Typ))
             then
                return True;
             end if;
 
             Get_Next_Interp (I, It);
          end loop;
-
-         return False;
       end if;
+
+      return False;
    end Has_Compatible_Type;
 
    ---------------------

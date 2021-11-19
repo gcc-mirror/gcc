@@ -2397,6 +2397,12 @@ GLIBCXX_3.4.29 {
 
 } GLIBCXX_3.4.28;
 
+GLIBCXX_3.4.30 {
+
+    _ZSt21__glibcxx_assert_fail*;
+
+} GLIBCXX_3.4.29;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

@@ -473,7 +473,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
       FNDECL_USED_AUTO (in FUNCTION_DECL)
       DECLTYPE_FOR_LAMBDA_PROXY (in DECLTYPE_TYPE)
-      REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF, VIEW_CONVERT_EXPR)
+      REF_PARENTHESIZED_P (in COMPONENT_REF, INDIRECT_REF, SCOPE_REF,
+			   VIEW_CONVERT_EXPR, PAREN_EXPR)
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
@@ -2868,8 +2869,9 @@ struct GTY(()) lang_decl_fn {
   unsigned immediate_fn_p : 1;
   unsigned maybe_deleted : 1;
   unsigned coroutine_p : 1;
+  unsigned implicit_constexpr : 1;
 
-  unsigned spare : 10;
+  unsigned spare : 9;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -4040,12 +4042,13 @@ struct GTY(()) lang_decl {
 #define PAREN_STRING_LITERAL_P(NODE) \
   TREE_LANG_FLAG_0 (STRING_CST_CHECK (NODE))
 
-/* Indicates whether a COMPONENT_REF or a SCOPE_REF has been parenthesized, or
-   an INDIRECT_REF comes from parenthesizing a _DECL.  Currently only set some
-   of the time in C++14 mode.  */
+/* Indicates whether a COMPONENT_REF or a SCOPE_REF has been parenthesized, an
+   INDIRECT_REF comes from parenthesizing a _DECL, or a PAREN_EXPR identifies a
+   parenthesized initializer relevant for decltype(auto).  Currently only set
+   some of the time in C++14 mode.  */
 
 #define REF_PARENTHESIZED_P(NODE) \
-  TREE_LANG_FLAG_2 (TREE_CHECK4 ((NODE), COMPONENT_REF, INDIRECT_REF, SCOPE_REF, VIEW_CONVERT_EXPR))
+  TREE_LANG_FLAG_2 (TREE_CHECK5 ((NODE), COMPONENT_REF, INDIRECT_REF, SCOPE_REF, VIEW_CONVERT_EXPR, PAREN_EXPR))
 
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */
@@ -8315,6 +8318,7 @@ extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
 extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
+extern bool decl_implicit_constexpr_p		(tree);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
    doesn't do anything that causes extra DECL_UID generation.  */

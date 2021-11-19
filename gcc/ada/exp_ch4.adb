@@ -146,18 +146,14 @@ package body Exp_Ch4 is
    --  where we allow comparison of "out of range" values.
 
    function Expand_Composite_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id;
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id;
    --  Local recursive function used to expand equality for nested composite
-   --  types. Used by Expand_Record/Array_Equality, Bodies is a list on which
-   --  to attach bodies of local functions that are created in the process. It
-   --  is the responsibility of the caller to insert those bodies at the right
-   --  place. Nod provides the Sloc value for generated code. Lhs and Rhs are
-   --  the left and right sides for the comparison, and Typ is the type of the
-   --  objects to compare.
+   --  types. Used by Expand_Record/Array_Equality. Nod provides the Sloc value
+   --  for generated code. Lhs and Rhs are the left and right sides for the
+   --  comparison, and Typ is the type of the objects to compare.
 
    procedure Expand_Concatenate (Cnode : Node_Id; Opnds : List_Id);
    --  Routine to expand concatenation of a sequence of two or more operands
@@ -1545,14 +1541,14 @@ package body Exp_Ch4 is
    --          and then
    --        (B'length (1) = 0 or else B'length (2) = 0)
    --     then
-   --        return True;    -- RM 4.5.2(22)
+   --        return true;    -- RM 4.5.2(22)
    --     end if;
 
    --     if A'length (1) /= B'length (1)
    --               or else
    --           A'length (2) /= B'length (2)
    --     then
-   --        return False;   -- RM 4.5.2(23)
+   --        return false;   -- RM 4.5.2(23)
    --     end if;
 
    --     declare
@@ -1625,8 +1621,8 @@ package body Exp_Ch4 is
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
-         Num : Int) return Node_Id;
-      --  This builds the attribute reference Arr'Nam (Expr)
+         Dim : Pos) return Node_Id;
+      --  This builds the attribute reference Arr'Nam (Dim)
 
       function Component_Equality (Typ : Entity_Id) return Node_Id;
       --  Create one statement to compare corresponding components, designated
@@ -1637,11 +1633,12 @@ package body Exp_Ch4 is
       --  for that argument in the corresponding function formal
 
       function Handle_One_Dimension
-        (N     : Int;
+        (N     : Pos;
          Index : Node_Id) return Node_Id;
       --  This procedure returns the following code
       --
       --    declare
+      --       An : Index_T := A'First (N);
       --       Bn : Index_T := B'First (N);
       --    begin
       --       loop
@@ -1691,14 +1688,14 @@ package body Exp_Ch4 is
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
-         Num : Int) return Node_Id
+         Dim : Pos) return Node_Id
       is
       begin
          return
            Make_Attribute_Reference (Loc,
              Attribute_Name => Nam,
              Prefix         => New_Occurrence_Of (Arr, Loc),
-             Expressions    => New_List (Make_Integer_Literal (Loc, Num)));
+             Expressions    => New_List (Make_Integer_Literal (Loc, Dim)));
       end Arr_Attr;
 
       ------------------------
@@ -1722,8 +1719,7 @@ package body Exp_Ch4 is
              Prefix      => Make_Identifier (Loc, Chars (B)),
              Expressions => Index_List2);
 
-         Test := Expand_Composite_Equality
-                   (Nod, Component_Type (Typ), L, R, Decls);
+         Test := Expand_Composite_Equality (Nod, Component_Type (Typ), L, R);
 
          --  If some (sub)component is an unchecked_union, the whole operation
          --  will raise program error.
@@ -1786,7 +1782,7 @@ package body Exp_Ch4 is
       ---------------------------
 
       function Handle_One_Dimension
-        (N     : Int;
+        (N     : Pos;
          Index : Node_Id) return Node_Id
       is
          Need_Separate_Indexes : constant Boolean :=
@@ -1902,41 +1898,20 @@ package body Exp_Ch4 is
       -----------------------
 
       function Test_Empty_Arrays return Node_Id is
-         Alist : Node_Id;
-         Blist : Node_Id;
-
-         Atest : Node_Id;
-         Btest : Node_Id;
+         Alist : Node_Id := Empty;
+         Blist : Node_Id := Empty;
 
       begin
-         Alist := Empty;
-         Blist := Empty;
          for J in 1 .. Number_Dimensions (Ltyp) loop
-            Atest :=
+            Evolve_Or_Else (Alist,
               Make_Op_Eq (Loc,
                 Left_Opnd  => Arr_Attr (A, Name_Length, J),
-                Right_Opnd => Make_Integer_Literal (Loc, 0));
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_0)));
 
-            Btest :=
+            Evolve_Or_Else (Blist,
               Make_Op_Eq (Loc,
                 Left_Opnd  => Arr_Attr (B, Name_Length, J),
-                Right_Opnd => Make_Integer_Literal (Loc, 0));
-
-            if No (Alist) then
-               Alist := Atest;
-               Blist := Btest;
-
-            else
-               Alist :=
-                 Make_Or_Else (Loc,
-                   Left_Opnd  => Relocate_Node (Alist),
-                   Right_Opnd => Atest);
-
-               Blist :=
-                 Make_Or_Else (Loc,
-                   Left_Opnd  => Relocate_Node (Blist),
-                   Right_Opnd => Btest);
-            end if;
+                Right_Opnd => Make_Integer_Literal (Loc, Uint_0)));
          end loop;
 
          return
@@ -1950,25 +1925,14 @@ package body Exp_Ch4 is
       -----------------------------
 
       function Test_Lengths_Correspond return Node_Id is
-         Result : Node_Id;
-         Rtest  : Node_Id;
+         Result : Node_Id := Empty;
 
       begin
-         Result := Empty;
          for J in 1 .. Number_Dimensions (Ltyp) loop
-            Rtest :=
+            Evolve_Or_Else (Result,
               Make_Op_Ne (Loc,
                 Left_Opnd  => Arr_Attr (A, Name_Length, J),
-                Right_Opnd => Arr_Attr (B, Name_Length, J));
-
-            if No (Result) then
-               Result := Rtest;
-            else
-               Result :=
-                 Make_Or_Else (Loc,
-                   Left_Opnd  => Relocate_Node (Result),
-                   Right_Opnd => Rtest);
-            end if;
+                Right_Opnd => Arr_Attr (B, Name_Length, J)));
          end loop;
 
          return Result;
@@ -2020,14 +1984,16 @@ package body Exp_Ch4 is
         and then Ltyp = Rtyp
         and then Is_Constrained (Ltyp)
         and then Number_Dimensions (Ltyp) = 1
-        and then Nkind (First_Idx) = N_Range
-        and then Compile_Time_Known_Value (Low_Bound (First_Idx))
-        and then Compile_Time_Known_Value (High_Bound (First_Idx))
-        and then Expr_Value (High_Bound (First_Idx)) =
-                                         Expr_Value (Low_Bound (First_Idx)) + 1
+        and then Compile_Time_Known_Bounds (Ltyp)
+        and then Expr_Value (Type_High_Bound (Etype (First_Idx))) =
+                   Expr_Value (Type_Low_Bound (Etype (First_Idx))) + 1
       then
          declare
             Ctyp         : constant Entity_Id := Component_Type (Ltyp);
+            Low_B        : constant Node_Id :=
+              Type_Low_Bound (Etype (First_Idx));
+            High_B       : constant Node_Id :=
+              Type_High_Bound (Etype (First_Idx));
             L, R         : Node_Id;
             TestL, TestH : Node_Id;
 
@@ -2035,30 +2001,26 @@ package body Exp_Ch4 is
             L :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Copy_Tree (New_Lhs),
-                Expressions =>
-                  New_List (New_Copy_Tree (Low_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (Low_B)));
 
             R :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Copy_Tree (New_Rhs),
-                Expressions =>
-                  New_List (New_Copy_Tree (Low_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (Low_B)));
 
-            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+            TestL := Expand_Composite_Equality (Nod, Ctyp, L, R);
 
             L :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Lhs,
-                Expressions =>
-                  New_List (New_Copy_Tree (High_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (High_B)));
 
             R :=
               Make_Indexed_Component (Loc,
                 Prefix      => New_Rhs,
-                Expressions =>
-                  New_List (New_Copy_Tree (High_Bound (First_Idx))));
+                Expressions => New_List (New_Copy_Tree (High_B)));
 
-            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R, Bodies);
+            TestH := Expand_Composite_Equality (Nod, Ctyp, L, R);
 
             return
               Make_And_Then (Loc, Left_Opnd => TestL, Right_Opnd => TestH);
@@ -2471,17 +2433,14 @@ package body Exp_Ch4 is
    --  case because it is not possible to respect normal Ada visibility rules.
 
    function Expand_Composite_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id
    is
       Loc       : constant Source_Ptr := Sloc (Nod);
       Full_Type : Entity_Id;
       Eq_Op     : Entity_Id;
-
-   --  Start of processing for Expand_Composite_Equality
 
    begin
       if Is_Private_Type (Typ) then
@@ -2509,75 +2468,9 @@ package body Exp_Ch4 is
          Full_Type := Underlying_Type (Full_Type);
       end if;
 
-      --  Case of array types
-
-      if Is_Array_Type (Full_Type) then
-
-         --  If the operand is an elementary type other than a floating-point
-         --  type, then we can simply use the built-in block bitwise equality,
-         --  since the predefined equality operators always apply and bitwise
-         --  equality is fine for all these cases.
-
-         if Is_Elementary_Type (Component_Type (Full_Type))
-           and then not Is_Floating_Point_Type (Component_Type (Full_Type))
-         then
-            return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
-
-         --  For composite component types, and floating-point types, use the
-         --  expansion. This deals with tagged component types (where we use
-         --  the applicable equality routine) and floating-point (where we
-         --  need to worry about negative zeroes), and also the case of any
-         --  composite type recursively containing such fields.
-
-         else
-            declare
-               Comp_Typ : Entity_Id;
-               Hi       : Node_Id;
-               Indx     : Node_Id;
-               Ityp     : Entity_Id;
-               Lo       : Node_Id;
-
-            begin
-               --  Do the comparison in the type (or its full view) and not in
-               --  its unconstrained base type, because the latter operation is
-               --  more complex and would also require an unchecked conversion.
-
-               if Is_Private_Type (Typ) then
-                  Comp_Typ := Underlying_Type (Typ);
-               else
-                  Comp_Typ := Typ;
-               end if;
-
-               --  Except for the case where the bounds of the type depend on a
-               --  discriminant, or else we would run into scoping issues.
-
-               Indx := First_Index (Comp_Typ);
-               while Present (Indx) loop
-                  Ityp := Etype (Indx);
-
-                  Lo := Type_Low_Bound (Ityp);
-                  Hi := Type_High_Bound (Ityp);
-
-                  if (Nkind (Lo) = N_Identifier
-                       and then Ekind (Entity (Lo)) = E_Discriminant)
-                    or else
-                     (Nkind (Hi) = N_Identifier
-                       and then Ekind (Entity (Hi)) = E_Discriminant)
-                  then
-                     Comp_Typ := Full_Type;
-                     exit;
-                  end if;
-
-                  Next_Index (Indx);
-               end loop;
-
-               return Expand_Array_Equality (Nod, Lhs, Rhs, Bodies, Comp_Typ);
-            end;
-         end if;
-
       --  Case of tagged record types
 
-      elsif Is_Tagged_Type (Full_Type) then
+      if Is_Tagged_Type (Full_Type) then
          Eq_Op := Find_Primitive_Eq (Typ);
          pragma Assert (Present (Eq_Op));
 
@@ -2765,10 +2658,10 @@ package body Exp_Ch4 is
             end;
 
          else
-            return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs, Bodies);
+            return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs);
          end if;
 
-      --  Non-composite types (always use predefined equality)
+      --  Case of non-record types (always use predefined equality)
 
       else
          return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
@@ -8740,10 +8633,8 @@ package body Exp_Ch4 is
          else
             Remove_Side_Effects (Lhs);
             Remove_Side_Effects (Rhs);
-            Rewrite (N,
-              Expand_Record_Equality (N, Typl, Lhs, Rhs, Bodies));
+            Rewrite (N, Expand_Record_Equality (N, Typl, Lhs, Rhs));
 
-            Insert_Actions      (N, Bodies,           Suppress => All_Checks);
             Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
          end if;
 
@@ -8766,10 +8657,8 @@ package body Exp_Ch4 is
          Rewrite (N,
            Expand_Record_Equality (N, Typl,
              Unchecked_Convert_To (Typl, Lhs),
-             Unchecked_Convert_To (Typl, Rhs),
-             Bodies));
+             Unchecked_Convert_To (Typl, Rhs)));
 
-         Insert_Actions      (N, Bodies,           Suppress => All_Checks);
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end if;
 
@@ -13094,11 +12983,10 @@ package body Exp_Ch4 is
    --  otherwise the primitive "=" is used directly.
 
    function Expand_Record_Equality
-     (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      Lhs    : Node_Id;
-      Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id
+     (Nod : Node_Id;
+      Typ : Entity_Id;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Nod);
 
@@ -13185,8 +13073,7 @@ package body Exp_Ch4 is
                Rhs =>
                  Make_Selected_Component (Loc,
                    Prefix        => New_Rhs,
-                   Selector_Name => New_Occurrence_Of (C, Loc)),
-               Bodies => Bodies);
+                   Selector_Name => New_Occurrence_Of (C, Loc)));
 
             --  If some (sub)component is an unchecked_union, the whole
             --  operation will raise program error.
@@ -15377,6 +15264,17 @@ package body Exp_Ch4 is
 
    begin
       SCIL_Node := Empty;
+
+      --  We have to examine the corresponding record type when dealing with
+      --  protected types instead of the original, unexpanded, type.
+
+      if Ekind (Right_Type) = E_Protected_Type then
+         Right_Type := Corresponding_Record_Type (Right_Type);
+      end if;
+
+      if Ekind (Left_Type) = E_Protected_Type then
+         Left_Type := Corresponding_Record_Type (Left_Type);
+      end if;
 
       --  In the case where the type is an access type, the test is applied
       --  using the designated types (needed in Ada 2012 for implicit anonymous

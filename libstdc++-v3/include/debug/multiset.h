@@ -118,9 +118,9 @@ namespace __debug
       : _Base(__m, __a) { }
 
       multiset(multiset&& __m, const __type_identity_t<allocator_type>& __a)
-      noexcept( noexcept(_Base(std::move(__m._M_base()), __a)) )
-      : _Safe(std::move(__m._M_safe()), __a),
-	_Base(std::move(__m._M_base()), __a) { }
+      noexcept( noexcept(_Base(std::move(__m), __a)) )
+      : _Safe(std::move(__m), __a),
+	_Base(std::move(__m), __a) { }
 
       multiset(initializer_list<value_type> __l, const allocator_type& __a)
 	: _Base(__l, __a)
@@ -152,15 +152,7 @@ namespace __debug
       multiset(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
-#if __cplusplus < 201103L
-      multiset&
-      operator=(const multiset& __x)
-      {
-	this->_M_safe() = __x;
-	_M_base() = __x;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       multiset&
       operator=(const multiset&) = default;
 
@@ -170,7 +162,7 @@ namespace __debug
       multiset&
       operator=(initializer_list<value_type> __l)
       {
-	_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }

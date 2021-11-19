@@ -1,3 +1,7 @@
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (promote_symbol): Clear semantic_interposition flag.
+
 2021-11-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103070

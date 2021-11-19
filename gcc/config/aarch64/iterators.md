@@ -119,6 +119,9 @@
 ;; VQMOV without 2-element modes.
 (define_mode_iterator VQMOV_NO2E [V16QI V8HI V4SI V8HF V8BF V4SF])
 
+;; Double integer vector modes.
+(define_mode_iterator VD_I [V8QI V4HI V2SI DI])
+
 ;; Quad integer vector modes.
 (define_mode_iterator VQ_I [V16QI V8HI V4SI V2DI])
 
@@ -207,6 +210,9 @@
 ;; All Advanced SIMD polynomial modes and DI.
 (define_mode_iterator VALLP [V8QI V16QI V4HI V8HI V2DI DI])
 
+;; All Advanced SIMD polynomial modes.
+(define_mode_iterator VALLP_NO_DI [V8QI V16QI V4HI V8HI V2DI])
+
 ;; Advanced SIMD modes for Integer reduction across lanes.
 (define_mode_iterator VDQV [V8QI V16QI V4HI V8HI V4SI V2DI])
 
@@ -234,6 +240,9 @@
 
 ;; Double vector modes for combines.
 (define_mode_iterator VDC [V8QI V4HI V4BF V4HF V2SI V2SF DI DF])
+
+;; Polynomial modes for vector combines.
+(define_mode_iterator VDC_P [V8QI V4HI DI])
 
 ;; Advanced SIMD modes except double int.
 (define_mode_iterator VDQIF [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
@@ -1053,7 +1062,7 @@
 (define_mode_attr nunits [(V8QI "8") (V16QI "16")
 			  (V4HI "4") (V8HI "8")
 			  (V2SI "2") (V4SI "4")
-				     (V2DI "2")
+			  (V2DI "2") (V8DI "8")
 			  (V4HF "4") (V8HF "8")
 			  (V4BF "4") (V8BF "8")
 			  (V2SF "2") (V4SF "4")
@@ -3189,9 +3198,9 @@
 			(UNSPEC_COND_FCVTZS "fix_trunc")
 			(UNSPEC_COND_FCVTZU "fixuns_trunc")
 			(UNSPEC_COND_FDIV "div")
-			(UNSPEC_COND_FMAX "smax_nan")
+			(UNSPEC_COND_FMAX "fmax_nan")
 			(UNSPEC_COND_FMAXNM "smax")
-			(UNSPEC_COND_FMIN "smin_nan")
+			(UNSPEC_COND_FMIN "fmin_nan")
 			(UNSPEC_COND_FMINNM "smin")
 			(UNSPEC_COND_FMLA "fma")
 			(UNSPEC_COND_FMLS "fnma")
@@ -3214,22 +3223,12 @@
 			(UNSPEC_COND_SCVTF "float")
 			(UNSPEC_COND_UCVTF "floatuns")])
 
-(define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
-			      (UNSPEC_UMINV "umin")
-			      (UNSPEC_SMAXV "smax")
-			      (UNSPEC_SMINV "smin")
-			      (UNSPEC_FMAX  "smax_nan")
-			      (UNSPEC_FMAXNMV "smax")
-			      (UNSPEC_FMAXV "smax_nan")
-			      (UNSPEC_FMIN "smin_nan")
-			      (UNSPEC_FMINNMV "smin")
-			      (UNSPEC_FMINV "smin_nan")
-			      (UNSPEC_FMAXNM "fmax")
-			      (UNSPEC_FMINNM "fmin")
-			      (UNSPEC_COND_FMAX "fmax_nan")
-			      (UNSPEC_COND_FMAXNM "fmax")
-			      (UNSPEC_COND_FMIN "fmin_nan")
-			      (UNSPEC_COND_FMINNM "fmin")])
+(define_int_attr fmaxmin [(UNSPEC_FMAX "fmax_nan")
+			  (UNSPEC_FMAXNM "fmax")
+			  (UNSPEC_FMIN "fmin_nan")
+			  (UNSPEC_FMINNM "fmin")
+			  (UNSPEC_COND_FMAXNM "fmax")
+			  (UNSPEC_COND_FMINNM "fmin")])
 
 (define_int_attr  maxmin_uns_op [(UNSPEC_UMAXV "umax")
 				 (UNSPEC_UMINV "umin")

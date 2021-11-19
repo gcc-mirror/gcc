@@ -292,7 +292,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
 	    binding_cluster *cluster = &BINDING_VECTOR_CLUSTER (node, ix);
-	    char pfx[24];
+	    char pfx[32];
 	    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{
@@ -378,6 +378,9 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "condition", STATIC_ASSERT_CONDITION (node), indent+4);
       if (tree message = STATIC_ASSERT_MESSAGE (node))
 	print_node (file, "message", message, indent+4);
+      break;
+    case PTRMEM_CST:
+      print_node (file, "member", PTRMEM_CST_MEMBER (node), indent+4);
       break;
     default:
       break;

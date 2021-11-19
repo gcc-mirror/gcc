@@ -117,9 +117,9 @@ namespace __debug
       : _Base(__x, __a) { }
 
       set(set&& __x, const __type_identity_t<allocator_type>& __a)
-      noexcept( noexcept(_Base(std::move(__x._M_base()), __a)) )
-      : _Safe(std::move(__x._M_safe()), __a),
-	_Base(std::move(__x._M_base()), __a) { }
+      noexcept( noexcept(_Base(std::move(__x), __a)) )
+      : _Safe(std::move(__x), __a),
+	_Base(std::move(__x), __a) { }
 
       set(initializer_list<value_type> __l, const allocator_type& __a)
       : _Base(__l, __a) { }
@@ -150,15 +150,7 @@ namespace __debug
       set(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
-#if __cplusplus < 201103L
-      set&
-      operator=(const set& __x)
-      {
-	this->_M_safe() = __x;
-	_M_base() = __x;
-	return *this;
-      }
-#else
+#if __cplusplus >= 201103L
       set&
       operator=(const set&) = default;
 
@@ -168,7 +160,7 @@ namespace __debug
       set&
       operator=(initializer_list<value_type> __l)
       {
-	_M_base() = __l;
+	_Base::operator=(__l);
 	this->_M_invalidate_all();
 	return *this;
       }

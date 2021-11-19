@@ -192,18 +192,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__n == 0)
 	return __s1;
-#ifdef __cpp_lib_is_constant_evaluated
+#if __cpp_lib_is_constant_evaluated
       if (std::is_constant_evaluated())
 	{
-	  if (__s1 > __s2 && __s1 < __s2 + __n)
-	    std::copy_backward(__s2, __s2 + __n, __s1 + __n);
+	  if (__s1 == __s2) // unlikely, but saves a lot of work
+	    return __s1;
+#if __cpp_constexpr_dynamic_alloc
+	  // The overlap detection below fails due to PR c++/89074,
+	  // so use a temporary buffer instead.
+	  char_type* __tmp = new char_type[__n];
+	  copy(__tmp, __s2, __n);
+	  copy(__s1, __tmp, __n);
+	  delete[] __tmp;
+#else
+	  const auto __end = __s2 + __n - 1;
+	  bool __overlap = false;
+	  for (std::size_t __i = 0; __i < __n - 1; ++__i)
+	    {
+	      if (__s1 + __i == __end)
+		{
+		  __overlap = true;
+		  break;
+		}
+	    }
+	  if (__overlap)
+	    {
+	      do
+		{
+		  --__n;
+		  assign(__s1[__n], __s2[__n]);
+		}
+	      while (__n > 0);
+	    }
 	  else
-	    std::copy(__s2, __s2 + __n, __s1);
+	    copy(__s1, __s2, __n);
+#endif
 	  return __s1;
 	}
 #endif
-      return static_cast<_CharT*>(__builtin_memmove(__s1, __s2,
-						    __n * sizeof(char_type)));
+      __builtin_memmove(__s1, __s2, __n * sizeof(char_type));
+      return __s1;
     }
 
   template<typename _CharT>

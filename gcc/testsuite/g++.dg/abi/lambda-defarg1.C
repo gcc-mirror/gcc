@@ -1,5 +1,6 @@
 // PR c++/91241
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fkeep-inline-functions }
 
 struct A {
   int *b(const int & = []() -> int { return 0; }(),

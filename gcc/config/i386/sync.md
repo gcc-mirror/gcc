@@ -525,6 +525,123 @@
 	      (set (reg:CCZ FLAGS_REG)
 		   (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))])])
 
+(define_expand "atomic_fetch_<logic><mode>"
+  [(match_operand:SWI124 0 "register_operand")
+   (any_logic:SWI124
+    (match_operand:SWI124 1 "memory_operand")
+    (match_operand:SWI124 2 "register_operand"))
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], <CODE>, false,
+				    false);
+  DONE;
+})
+
+(define_expand "atomic_<logic>_fetch<mode>"
+  [(match_operand:SWI124 0 "register_operand")
+   (any_logic:SWI124
+    (match_operand:SWI124 1 "memory_operand")
+    (match_operand:SWI124 2 "register_operand"))
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], <CODE>, true,
+				    false);
+  DONE;
+})
+
+(define_expand "atomic_fetch_nand<mode>"
+  [(match_operand:SWI124 0 "register_operand")
+   (match_operand:SWI124 1 "memory_operand")
+   (match_operand:SWI124 2 "register_operand")
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], NOT, false,
+				    false);
+  DONE;
+})
+
+(define_expand "atomic_nand_fetch<mode>"
+  [(match_operand:SWI124 0 "register_operand")
+   (match_operand:SWI124 1 "memory_operand")
+   (match_operand:SWI124 2 "register_operand")
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], NOT, true,
+				    false);
+  DONE;
+})
+
+(define_expand "atomic_fetch_<logic><mode>"
+  [(match_operand:CASMODE 0 "register_operand")
+   (any_logic:CASMODE
+    (match_operand:CASMODE 1 "memory_operand")
+    (match_operand:CASMODE 2 "register_operand"))
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  bool doubleword = (<MODE>mode == DImode && !TARGET_64BIT)
+		    || (<MODE>mode == TImode);
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], <CODE>, false,
+				    doubleword);
+  DONE;
+})
+
+(define_expand "atomic_<logic>_fetch<mode>"
+  [(match_operand:CASMODE 0 "register_operand")
+   (any_logic:CASMODE
+    (match_operand:CASMODE 1 "memory_operand")
+    (match_operand:CASMODE 2 "register_operand"))
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  bool doubleword = (<MODE>mode == DImode && !TARGET_64BIT)
+		    || (<MODE>mode == TImode);
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], <CODE>, true,
+				    doubleword);
+  DONE;
+})
+
+(define_expand "atomic_fetch_nand<mode>"
+  [(match_operand:CASMODE 0 "register_operand")
+   (match_operand:CASMODE 1 "memory_operand")
+   (match_operand:CASMODE 2 "register_operand")
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  bool doubleword = (<MODE>mode == DImode && !TARGET_64BIT)
+		    || (<MODE>mode == TImode);
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], NOT, false,
+				    doubleword);
+  DONE;
+})
+
+(define_expand "atomic_nand_fetch<mode>"
+  [(match_operand:CASMODE 0 "register_operand")
+   (match_operand:CASMODE 1 "memory_operand")
+   (match_operand:CASMODE 2 "register_operand")
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_CMPXCHG && TARGET_RELAX_CMPXCHG_LOOP"
+{
+  bool doubleword = (<MODE>mode == DImode && !TARGET_64BIT)
+		    || (<MODE>mode == TImode);
+  ix86_expand_atomic_fetch_op_loop (operands[0], operands[1],
+				    operands[2], NOT, true,
+				    doubleword);
+  DONE;
+})
+
+
 ;; For operand 2 nonmemory_operand predicate is used instead of
 ;; register_operand to allow combiner to better optimize atomic
 ;; additions of constants.
@@ -726,7 +843,7 @@
   rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
   if (operands[4] == const0_rtx)
     result = expand_simple_binop (<MODE>mode, ASHIFT, result,
-				  operands[2], operands[0], 0, OPTAB_DIRECT);
+				  operands[2], operands[0], 0, OPTAB_WIDEN);
   if (result != operands[0])
     emit_move_insn (operands[0], result);
   DONE;
@@ -763,7 +880,7 @@
   rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
   if (operands[4] == const0_rtx)
     result = expand_simple_binop (<MODE>mode, ASHIFT, result,
-				  operands[2], operands[0], 0, OPTAB_DIRECT);
+				  operands[2], operands[0], 0, OPTAB_WIDEN);
   if (result != operands[0])
     emit_move_insn (operands[0], result);
   DONE;
@@ -801,7 +918,7 @@
   rtx result = convert_modes (<MODE>mode, QImode, tem, 1);
   if (operands[4] == const0_rtx)
     result = expand_simple_binop (<MODE>mode, ASHIFT, result,
-				  operands[2], operands[0], 0, OPTAB_DIRECT);
+				  operands[2], operands[0], 0, OPTAB_WIDEN);
   if (result != operands[0])
     emit_move_insn (operands[0], result);
   DONE;

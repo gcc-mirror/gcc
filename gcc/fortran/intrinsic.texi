@@ -3841,7 +3841,7 @@ end program test
 @table @asis
 @item @emph{Description}:
 @code{CO_REDUCE} determines element-wise the reduction of the value of @var{A}
-on all images of the current team.  The pure function passed as @var{OPERATOR}
+on all images of the current team.  The pure function passed as @var{OPERATION}
 is used to pairwise reduce the values of @var{A} by passing either the value
 of @var{A} of different images or the result values of such a reduction as
 argument.  If @var{A} is an array, the deduction is done element wise. If
@@ -3860,7 +3860,7 @@ Technical Specification (TS) 18508 or later
 Collective subroutine
 
 @item @emph{Syntax}:
-@code{CALL CO_REDUCE(A, OPERATOR, [, RESULT_IMAGE, STAT, ERRMSG])}
+@code{CALL CO_REDUCE(A, OPERATION, [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3869,12 +3869,12 @@ nonpolymorphic. If it is allocatable, it shall be allocated; if it is a pointer,
 it shall be associated.  @var{A} shall have the same type and type parameters on
 all images of the team; if it is an array, it shall have the same shape on all
 images.
-@item @var{OPERATOR}     @tab pure function with two scalar nonallocatable
+@item @var{OPERATION}     @tab pure function with two scalar nonallocatable
 arguments, which shall be nonpolymorphic and have the same type and type
 parameters as @var{A}.  The function shall return a nonallocatable scalar of
 the same type and type parameters as @var{A}.  The function shall be the same on
 all images and with regards to the arguments mathematically commutative and
-associative.  Note that @var{OPERATOR} may not be an elemental function, unless
+associative.  Note that @var{OPERATION} may not be an elemental function, unless
 it is an intrisic function.
 @item @var{RESULT_IMAGE} @tab (optional) a scalar integer expression; if
 present, it shall have the same value on all images and refer to an
@@ -3888,7 +3888,7 @@ image of the current team.
 program test
   integer :: val
   val = this_image ()
-  call co_reduce (val, result_image=1, operator=myprod)
+  call co_reduce (val, result_image=1, operation=myprod)
   if (this_image() == 1) then
     write(*,*) "Product value", val  ! prints num_images() factorial
   end if

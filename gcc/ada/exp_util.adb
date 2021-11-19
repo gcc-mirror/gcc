@@ -10433,6 +10433,14 @@ package body Exp_Util is
          --  inherited ancestor primitive.
 
          elsif Present (Inher_Prim) then
+            --  It is possible that an internally generated alias could be
+            --  set to a subprogram which overrides the same aliased primitive,
+            --  so return Empty in this case.
+
+            if Ancestor_Primitive (Inher_Prim) = Subp then
+               return Empty;
+            end if;
+
             return Inher_Prim;
 
          --  Otherwise the current subprogram is the root of the inheritance or

@@ -84,10 +84,12 @@ int flag_dump_unnumbered_links = 0;
 /* Constructor for rtx_writer.  */
 
 rtx_writer::rtx_writer (FILE *outf, int ind, bool simple, bool compact,
-			rtx_reuse_manager *reuse_manager)
+			rtx_reuse_manager *reuse_manager ATTRIBUTE_UNUSED)
 : m_outfile (outf), m_sawclose (0), m_indent (ind),
-  m_in_call_function_usage (false), m_simple (simple), m_compact (compact),
-  m_rtx_reuse_manager (reuse_manager)
+  m_in_call_function_usage (false), m_simple (simple), m_compact (compact)
+#ifndef GENERATOR_FILE
+  , m_rtx_reuse_manager (reuse_manager)
+#endif
 {
 }
 

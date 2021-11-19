@@ -254,6 +254,7 @@ public:
   /* If true, make the function not return any value.  */
   bool m_skip_return;
 
+  static bool type_attribute_allowed_p (tree);
 private:
   ipa_param_adjustments () {}
 

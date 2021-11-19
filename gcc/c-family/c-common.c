@@ -384,6 +384,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
+  { "__builtin_assoc_barrier", RID_BUILTIN_ASSOC_BARRIER, 0 },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
   { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
@@ -3306,7 +3307,19 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 				 TREE_TYPE (result_type)))
     size_exp = integer_one_node;
   else
-    size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
+    {
+      size_exp = size_in_bytes_loc (loc, TREE_TYPE (result_type));
+      /* Wrap the pointer expression in a SAVE_EXPR to make sure it
+	 is evaluated first when the size expression may depend
+	 on it for VM types.  */
+      if (TREE_SIDE_EFFECTS (size_exp)
+	  && TREE_SIDE_EFFECTS (ptrop)
+	  && variably_modified_type_p (TREE_TYPE (ptrop), NULL))
+	{
+	  ptrop = save_expr (ptrop);
+	  size_exp = build2 (COMPOUND_EXPR, TREE_TYPE (intop), ptrop, size_exp);
+	}
+    }
 
   /* We are manipulating pointer values, so we don't need to warn
      about relying on undefined signed overflow.  We disable the
@@ -8213,8 +8226,16 @@ release_tree_vector (vec<tree, va_gc> *vec)
 {
   if (vec != NULL)
     {
-      vec->truncate (0);
-      vec_safe_push (tree_vector_cache, vec);
+      if (vec->allocated () >= 16)
+	/* Don't cache vecs that have expanded more than once.  On a p64
+	   target, vecs double in alloc size with each power of 2 elements, e.g
+	   at 16 elements the alloc increases from 128 to 256 bytes.  */
+	vec_free (vec);
+      else
+	{
+	  vec->truncate (0);
+	  vec_safe_push (tree_vector_cache, vec);
+	}
     }
 }
 

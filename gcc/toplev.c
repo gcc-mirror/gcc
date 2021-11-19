@@ -457,6 +457,8 @@ compile_file (void)
   if (flag_dump_locations)
     dump_location_info (stderr);
 
+  free_attr_data ();
+
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
 

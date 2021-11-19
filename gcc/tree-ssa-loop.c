@@ -370,57 +370,6 @@ make_pass_tree_loop_init (gcc::context *ctxt)
   return new pass_tree_loop_init (ctxt);
 }
 
-/* Loop autovectorization.  */
-
-namespace {
-
-const pass_data pass_data_vectorize =
-{
-  GIMPLE_PASS, /* type */
-  "vect", /* name */
-  OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
-  TV_TREE_VECTORIZATION, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_vectorize : public gimple_opt_pass
-{
-public:
-  pass_vectorize (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_vectorize, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *fun)
-    {
-      return flag_tree_loop_vectorize || fun->has_force_vectorize_loops;
-    }
-
-  virtual unsigned int execute (function *);
-
-}; // class pass_vectorize
-
-unsigned int
-pass_vectorize::execute (function *fun)
-{
-  if (number_of_loops (fun) <= 1)
-    return 0;
-
-  return vectorize_loops ();
-}
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_vectorize (gcc::context *ctxt)
-{
-  return new pass_vectorize (ctxt);
-}
-
 /* Propagation of constants using scev.  */
 
 namespace {

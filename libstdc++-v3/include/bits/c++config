@@ -526,22 +526,17 @@ namespace std
   // Avoid the use of assert, because we're trying to keep the <cassert>
   // include out of the mix.
   extern "C++" _GLIBCXX_NORETURN
-  inline void
-  __replacement_assert(const char* __file, int __line,
-		       const char* __function, const char* __condition)
-  _GLIBCXX_NOEXCEPT
-  {
-    __builtin_printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
-		     __function, __condition);
-    __builtin_abort();
-  }
+  void
+  __glibcxx_assert_fail(const char* __file, int __line,
+			const char* __function, const char* __condition)
+  _GLIBCXX_NOEXCEPT;
 }
-#define __glibcxx_assert_impl(_Condition)			       \
-  if (__builtin_expect(!bool(_Condition), false))		       \
-  {								       \
-    __glibcxx_constexpr_assert(false);				       \
-    std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
-			      #_Condition);			       \
+#define __glibcxx_assert_impl(_Condition)				\
+  if (__builtin_expect(!bool(_Condition), false))			\
+  {									\
+    __glibcxx_constexpr_assert(false);					\
+    std::__glibcxx_assert_fail(__FILE__, __LINE__, __PRETTY_FUNCTION__,	\
+			       #_Condition);				\
   }
 # else // ! VERBOSE_ASSERT
 # define __glibcxx_assert_impl(_Condition)		\
@@ -550,7 +545,7 @@ namespace std
     __glibcxx_constexpr_assert(false);			\
     __builtin_abort();					\
   }
-#endif
+# endif
 #endif
 
 #if defined(_GLIBCXX_ASSERTIONS)

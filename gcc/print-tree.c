@@ -1004,8 +1004,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  break;
 
 	default:
-	  if (EXCEPTIONAL_CLASS_P (node))
-	    lang_hooks.print_xnode (file, node, indent);
+	  lang_hooks.print_xnode (file, node, indent);
 	  break;
 	}
 

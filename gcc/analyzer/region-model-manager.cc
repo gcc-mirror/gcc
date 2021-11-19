@@ -380,6 +380,13 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 		    == boolean_true_node))
 	      return maybe_fold_unaryop (type, op, innermost_arg);
 	  }
+	/* Avoid creating symbolic regions for pointer casts by
+	   simplifying (T*)(&REGION) to ((T*)&REGION).  */
+	if (const region_svalue *region_sval = arg->dyn_cast_region_svalue ())
+	  if (POINTER_TYPE_P (type)
+	      && region_sval->get_type ()
+	      && POINTER_TYPE_P (region_sval->get_type ()))
+	    return get_ptr_svalue (type, region_sval->get_pointee ());
       }
       break;
     case TRUTH_NOT_EXPR:

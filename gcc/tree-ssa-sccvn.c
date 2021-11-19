@@ -1640,13 +1640,12 @@ static void
 valueize_refs_1 (vec<vn_reference_op_s> *orig, bool *valueized_anything,
 		 bool with_avail = false)
 {
-  vn_reference_op_t vro;
-  unsigned int i;
-
   *valueized_anything = false;
 
-  FOR_EACH_VEC_ELT (*orig, i, vro)
+  for (unsigned i = 0; i < orig->length (); ++i)
     {
+re_valueize:
+      vn_reference_op_t vro = &(*orig)[i];
       if (vro->opcode == SSA_NAME
 	  || (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME))
 	{
@@ -1694,7 +1693,11 @@ valueize_refs_1 (vec<vn_reference_op_s> *orig, bool *valueized_anything,
 	       && (*orig)[i - 1].opcode == MEM_REF)
 	{
 	  if (vn_reference_maybe_forwprop_address (orig, &i))
-	    *valueized_anything = true;
+	    {
+	      *valueized_anything = true;
+	      /* Re-valueize the current operand.  */
+	      goto re_valueize;
+	    }
 	}
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */

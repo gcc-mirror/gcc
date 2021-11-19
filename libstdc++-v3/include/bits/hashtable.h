@@ -1065,18 +1065,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Merge from a compatible container into one with unique keys.
       template<typename _Compatible_Hashtable>
 	void
-	_M_merge_unique(_Compatible_Hashtable& __src) noexcept
+	_M_merge_unique(_Compatible_Hashtable& __src)
 	{
 	  static_assert(is_same_v<typename _Compatible_Hashtable::node_type,
 	      node_type>, "Node types are compatible");
 	  __glibcxx_assert(get_allocator() == __src.get_allocator());
 
 	  auto __n_elt = __src.size();
-	  for (auto __i = __src.begin(), __end = __src.end(); __i != __end;)
+	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
 	      auto __pos = __i++;
 	      const key_type& __k = _ExtractKey{}(*__pos);
-	      __hash_code __code = this->_M_hash_code(__k);
+	      __hash_code __code
+		= this->_M_hash_code(__src.hash_function(), *__pos._M_cur);
 	      size_type __bkt = _M_bucket_index(__code);
 	      if (_M_find_node(__bkt, __k, __code) == nullptr)
 		{
@@ -1093,15 +1094,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Merge from a compatible container into one with equivalent keys.
       template<typename _Compatible_Hashtable>
 	void
-	_M_merge_multi(_Compatible_Hashtable& __src) noexcept
+	_M_merge_multi(_Compatible_Hashtable& __src)
 	{
 	  static_assert(is_same_v<typename _Compatible_Hashtable::node_type,
 	      node_type>, "Node types are compatible");
 	  __glibcxx_assert(get_allocator() == __src.get_allocator());
 
+	  __node_ptr __hint = nullptr;
 	  this->reserve(size() + __src.size());
-	  for (auto __i = __src.begin(), __end = __src.end(); __i != __end;)
-	    _M_reinsert_node_multi(cend(), __src.extract(__i++));
+	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
+	    {
+	      auto __pos = __i++;
+	      __hash_code __code
+		= this->_M_hash_code(__src.hash_function(), *__pos._M_cur);
+	      auto __nh = __src.extract(__pos);
+	      __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
+	      __nh._M_ptr = nullptr;
+	    }
 	}
 #endif // C++17
 

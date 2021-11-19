@@ -35,11 +35,47 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "value-range.h"
+#include "gimple-range.h"
+#include "gimple-range-path.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
    in the loop body are always executed when the loop is entered.  This
    increases effectiveness of code motion optimizations, and reduces the need
    for loop preconditioning.  */
+
+/* Return true if the condition on the first iteration of the loop can
+   be statically determined.  */
+
+static bool
+entry_loop_condition_is_static (class loop *l, path_range_query *query)
+{
+  edge e = loop_preheader_edge (l);
+  gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
+
+  if (!last
+      || !irange::supports_type_p (TREE_TYPE (gimple_cond_lhs (last))))
+    return false;
+
+  edge true_e, false_e;
+  extract_true_false_edges_from_block (e->dest, &true_e, &false_e);
+
+  /* If neither edge is the exit edge, this is not a case we'd like to
+     special-case.  */
+  if (!loop_exit_edge_p (l, true_e) && !loop_exit_edge_p (l, false_e))
+    return false;
+
+  tree desired_static_value;
+  if (loop_exit_edge_p (l, true_e))
+    desired_static_value = boolean_false_node;
+  else
+    desired_static_value = boolean_true_node;
+
+  int_range<2> r;
+  query->compute_ranges (e);
+  query->range_of_stmt (r, last);
+  return r == int_range<2> (desired_static_value, desired_static_value);
+}
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
    instructions should be duplicated, limit is decreased by the actual
@@ -52,20 +88,6 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
   gimple_stmt_iterator bsi;
 
   gcc_assert (!header->aux);
-
-  /* Loop header copying usually increases size of the code.  This used not to
-     be true, since quite often it is possible to verify that the condition is
-     satisfied in the first iteration and therefore to eliminate it.  Jump
-     threading handles these cases now.  */
-  if (optimize_loop_for_size_p (loop)
-      && !loop->force_vectorize)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "  Not duplicating bb %i: optimizing for size.\n",
-		 header->index);
-      return false;
-    }
 
   gcc_assert (EDGE_COUNT (header->succs) > 0);
   if (single_succ_p (header))
@@ -201,8 +223,6 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       return false;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "    Will duplicate bb %i\n", header->index); 
   return true;
 }
 
@@ -361,8 +381,10 @@ ch_base::copy_headers (function *fun)
   copied_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
   bbs_size = n_basic_blocks_for_fn (fun);
 
+  auto_vec<loop_p> candidates;
   auto_vec<std::pair<edge, loop_p> > copied;
 
+  path_range_query *query = new path_range_query;
   for (auto loop : loops_list (cfun, 0))
     {
       int initial_limit = param_max_loop_header_insns;
@@ -381,6 +403,36 @@ ch_base::copy_headers (function *fun)
 	  || !process_loop_p (loop))
 	continue;
 
+      /* Avoid loop header copying when optimizing for size unless we can
+	 determine that the loop condition is static in the first
+	 iteration.  */
+      if (optimize_loop_for_size_p (loop)
+	  && !loop->force_vectorize
+	  && !entry_loop_condition_is_static (loop, query))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "  Not duplicating bb %i: optimizing for size.\n",
+		     header->index);
+	  continue;
+	}
+
+      if (should_duplicate_loop_header_p (header, loop, &remaining_limit))
+	candidates.safe_push (loop);
+    }
+  /* Do not use ranger after we change the IL and not have updated SSA.  */
+  delete query;
+
+  for (auto loop : candidates)
+    {
+      int initial_limit = param_max_loop_header_insns;
+      int remaining_limit = initial_limit;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Copying headers of loop %i\n", loop->num);
+
+      header = loop->header;
+
       /* Iterate the header copying up to limit; this takes care of the cases
 	 like while (a && b) {...}, where we want to have both of the conditions
 	 copied.  TODO -- handle while (a || b) - like cases, by not requiring
@@ -391,6 +443,9 @@ ch_base::copy_headers (function *fun)
       n_bbs = 0;
       while (should_duplicate_loop_header_p (header, loop, &remaining_limit))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "    Will duplicate bb %i\n", header->index);
+
 	  /* Find a successor of header that is inside a loop; i.e. the new
 	     header after the condition is copied.  */
 	  if (flow_bb_inside_loop_p (loop, EDGE_SUCC (header, 0)->dest))

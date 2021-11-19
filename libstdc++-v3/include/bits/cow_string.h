@@ -35,7 +35,7 @@
 #if ! _GLIBCXX_USE_CXX11_ABI
 
 #ifdef __cpp_lib_is_constant_evaluated
-// Support P1032R1 in C++20 (but not P0980R1 yet).
+// Support P1032R1 in C++20 (but not P0980R1 for COW strings).
 # define __cpp_lib_constexpr_string 201811L
 #elif __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 // Support P0426R1 changes to char_traits in C++17.

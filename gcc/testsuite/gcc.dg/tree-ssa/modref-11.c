@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-modref1"  } */
+/* { dg-options "-O2 -fdump-tree-modref1 -fno-ipa-pure-const"  } */
 struct linkedlist {
   struct linkedlist *next;
 };
@@ -10,4 +10,4 @@ find_last (struct linkedlist *l)
    l = l->next;
   return l;
 }
-/* { dg-final { scan-tree-dump "noclobber noescape nodirectescape" "modref1"} } */
+/* { dg-final { scan-tree-dump "parm 0 flags: no_direct_clobber no_indirect_clobber no_direct_escape no_indirect_escape" "modref1"} } */

@@ -97,32 +97,29 @@ struct die_struct;
 #define ECF_COLD		  (1 << 15)
 
 /* Call argument flags.  */
-/* Nonzero if the argument is not dereferenced recursively, thus only
-   directly reachable memory is read or written.  */
-#define EAF_DIRECT		(1 << 0)
-
-/* Nonzero if memory reached by the argument is not clobbered.  */
-#define EAF_NOCLOBBER		(1 << 1)
-
-/* Nonzero if the argument does not escape.  */
-#define EAF_NOESCAPE		(1 << 2)
 
 /* Nonzero if the argument is not used by the function.  */
-#define EAF_UNUSED		(1 << 3)
+#define EAF_UNUSED		(1 << 1)
 
-/* Nonzero if the argument itself does not escape but memory
-   referenced by it can escape.  */
-#define EAF_NODIRECTESCAPE	(1 << 4)
+/* Following flags come in pairs.  First one is about direct dereferences
+   from the parameter, while the second is about memory reachable by
+   recursive dereferences.  */
+
+/* Nonzero if memory reached by the argument is not clobbered.  */
+#define EAF_NO_DIRECT_CLOBBER	(1 << 2)
+#define EAF_NO_INDIRECT_CLOBBER	(1 << 3)
+
+/* Nonzero if the argument does not escape.  */
+#define EAF_NO_DIRECT_ESCAPE	(1 << 4)
+#define EAF_NO_INDIRECT_ESCAPE	(1 << 5)
 
 /* Nonzero if the argument does not escape to return value.  */
-#define EAF_NOT_RETURNED	(1 << 5)
-
-/* Nonzero if the argument itself does not escape
-   to return value but memory referenced by it may escape.  */
 #define EAF_NOT_RETURNED_DIRECTLY (1 << 6)
+#define EAF_NOT_RETURNED_INDIRECTLY (1 << 7)
 
 /* Nonzero if the argument is not read.  */
-#define EAF_NOREAD		(1 << 7)
+#define EAF_NO_DIRECT_READ	(1 << 8)
+#define EAF_NO_INDIRECT_READ	(1 << 9)
 
 /* Call return flags.  */
 /* Mask for the argument number that is returned.  Lower two bits of

@@ -6249,7 +6249,7 @@ package body Sem_Ch13 is
 
       Check_Restriction_No_Use_Of_Attribute (N);
 
-      if Get_Aspect_Id (Chars (N)) /= No_Aspect then
+      if Is_Aspect_Id (Chars (N)) then
          --  6.1/3 No_Specification_of_Aspect: Identifies an aspect for which
          --    no aspect_specification, attribute_definition_clause, or pragma
          --    is given.
@@ -12618,9 +12618,11 @@ package body Sem_Ch13 is
       end if;
 
       --  Skip the following warnings if overlap was detected; programmer
-      --  should fix the errors first.
+      --  should fix the errors first. Also skip the warnings for types in
+      --  generics, because their representation information is not fully
+      --  computed.
 
-      if not Overlap_Detected then
+      if not Overlap_Detected and then not In_Generic_Scope (Rectype) then
          --  Check for record holes (gaps)
 
          if Warn_On_Record_Holes then
@@ -13162,6 +13164,7 @@ package body Sem_Ch13 is
                   if Get_Aspect_Id (Ritem) in Aspect_CPU
                                             | Aspect_Dynamic_Predicate
                                             | Aspect_Predicate
+                                            | Aspect_Static_Predicate
                                             | Aspect_Priority
                   then
                     --  Retrieve the visibility to components and discriminants
@@ -13169,6 +13172,34 @@ package body Sem_Ch13 is
 
                      Push_Type (E);
                      Check_Aspect_At_Freeze_Point (Ritem);
+
+                     --  In the case of predicate aspects, there will be
+                     --  a corresponding Predicate pragma associated with
+                     --  the aspect, and the expression of the pragma also
+                     --  needs to be analyzed at this point, to ensure that
+                     --  Save_Global_References will capture global refs in
+                     --  expressions that occur in generic bodies, for proper
+                     --  later resolution of the pragma in instantiations.
+
+                     if Is_Type (E)
+                       and then Inside_A_Generic
+                       and then Has_Predicates (E)
+                       and then Present (Aspect_Rep_Item (Ritem))
+                     then
+                        declare
+                           Pragma_Args : constant List_Id :=
+                             Pragma_Argument_Associations
+                               (Aspect_Rep_Item (Ritem));
+                           Pragma_Expr : constant Node_Id :=
+                             Expression (Next (First (Pragma_Args)));
+                        begin
+                           if Present (Pragma_Expr) then
+                              Analyze_And_Resolve
+                                (Pragma_Expr, Standard_Boolean);
+                           end if;
+                        end;
+                     end if;
+
                      Pop_Type (E);
 
                   else

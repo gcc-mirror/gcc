@@ -2976,10 +2976,7 @@ package body Sem_Ch4 is
 
       procedure Find_Interpretation;
       function Find_Interpretation return Boolean;
-      --  Routine and wrapper to find a matching interpretation in case
-      --  of overloading. The wrapper returns True iff a matching
-      --  interpretation is found. Beware, in absence of overloading,
-      --  using this function will break gnat's bootstrapping.
+      --  Routine and wrapper to find a matching interpretation
 
       procedure Try_One_Interp (T1 : Entity_Id);
       --  Routine to try one proposed interpretation. Note that the context
@@ -3091,11 +3088,16 @@ package body Sem_Ch4 is
 
       procedure Find_Interpretation is
       begin
-         Get_First_Interp (L, Index, It);
-         while Present (It.Typ) loop
-            Try_One_Interp (It.Typ);
-            Get_Next_Interp (Index, It);
-         end loop;
+         if not Is_Overloaded (L) then
+            Try_One_Interp (Etype (L));
+
+         else
+            Get_First_Interp (L, Index, It);
+            while Present (It.Typ) loop
+               Try_One_Interp (It.Typ);
+               Get_Next_Interp (Index, It);
+            end loop;
+         end if;
       end Find_Interpretation;
 
       function Find_Interpretation return Boolean is
@@ -3111,7 +3113,7 @@ package body Sem_Ch4 is
 
       procedure Try_One_Interp (T1 : Entity_Id) is
       begin
-         if Has_Compatible_Type (R, T1) then
+         if Has_Compatible_Type (R, T1, For_Comparison => True) then
             if Found
               and then Base_Type (T1) /= Base_Type (T_F)
             then
@@ -3156,12 +3158,7 @@ package body Sem_Ch4 is
       then
          Analyze (R);
 
-         if not Is_Overloaded (L) then
-            Try_One_Interp (Etype (L));
-
-         else
-            Find_Interpretation;
-         end if;
+         Find_Interpretation;
 
       --  If not a range, it can be a subtype mark, or else it is a degenerate
       --  membership test with a singleton value, i.e. a test for equality,
@@ -3170,16 +3167,11 @@ package body Sem_Ch4 is
       else
          Analyze (R);
 
-         if Is_Entity_Name (R)
-           and then Is_Type (Entity (R))
-         then
+         if Is_Entity_Name (R) and then Is_Type (Entity (R)) then
             Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
 
-         elsif Ada_Version >= Ada_2012 and then
-           ((Is_Overloaded (L) and then Find_Interpretation) or else
-           (not Is_Overloaded (L) and then Has_Compatible_Type (R, Etype (L))))
-         then
+         elsif Ada_Version >= Ada_2012 and then Find_Interpretation then
             if Nkind (N) = N_In then
                Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);
             else
@@ -5918,14 +5910,16 @@ package body Sem_Ch4 is
       begin
          --  Verify that Op_Id is a visible binary function. Note that since
          --  we know Op_Id is overloaded, potentially use visible means use
-         --  visible for sure (RM 9.4(11)).
+         --  visible for sure (RM 9.4(11)). Be prepared for previous errors.
 
          if Ekind (Op_Id) = E_Function
            and then Present (F2)
            and then (Is_Immediately_Visible (Op_Id)
                       or else Is_Potentially_Use_Visible (Op_Id))
-           and then Has_Compatible_Type (Left_Opnd (N), Etype (F1))
-           and then Has_Compatible_Type (Right_Opnd (N), Etype (F2))
+           and then (Has_Compatible_Type (Left_Opnd (N), Etype (F1))
+                      or else Etype (F1) = Any_Type)
+           and then (Has_Compatible_Type (Right_Opnd (N), Etype (F2))
+                      or else Etype (F2) = Any_Type)
          then
             Add_One_Interp (N, Op_Id, Etype (Op_Id));
 
@@ -6612,7 +6606,9 @@ package body Sem_Ch4 is
             return;
          end if;
 
-         if Valid_Comparison_Arg (T1) and then Has_Compatible_Type (R, T1) then
+         if Valid_Comparison_Arg (T1)
+           and then Has_Compatible_Type (R, T1, For_Comparison => True)
+         then
             if Found and then Base_Type (T1) /= Base_Type (T_F) then
                It := Disambiguate (L, I_F, Index, Any_Type);
 
@@ -6688,6 +6684,12 @@ package body Sem_Ch4 is
       It    : Interp;
 
    begin
+      --  Defend against previous error
+
+      if Nkind (R) = N_Error then
+         return;
+      end if;
+
       if T1 = Universal_Integer or else T1 = Universal_Real
 
         --  If the left operand of an equality operator is null, the visibility
@@ -6710,6 +6712,7 @@ package body Sem_Ch4 is
                Get_Next_Interp (Index, It);
             end loop;
          end if;
+
       elsif Has_Compatible_Type (R, T1) or else Covers (Etype (R), T1) then
          Add_One_Interp (N, Op_Id, Standard_Boolean, Base_Type (T1));
       end if;
@@ -7100,7 +7103,9 @@ package body Sem_Ch4 is
          --  Finally, also check for RM 4.5.2 (9.6/2).
 
          if T1 /= Standard_Void_Type
-           and then (Universal_Access or else Has_Compatible_Type (R, T1))
+           and then (Universal_Access
+                      or else
+                     Has_Compatible_Type (R, T1, For_Comparison => True))
 
            and then
              ((not Is_Limited_Type (T1)
@@ -7161,9 +7166,7 @@ package body Sem_Ch4 is
       --  If left operand is aggregate, the right operand has to
       --  provide a usable type for it.
 
-      if Nkind (L) = N_Aggregate
-        and then Nkind (R) /= N_Aggregate
-      then
+      if Nkind (L) = N_Aggregate and then Nkind (R) /= N_Aggregate then
          Find_Equality_Types (L => R, R => L, Op_Id => Op_Id, N => N);
          return;
       end if;

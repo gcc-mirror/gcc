@@ -67,6 +67,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
+with Strub;          use Strub;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
@@ -2162,6 +2163,7 @@ package body Exp_Attr is
 
                   begin
                      Subp_Typ := Create_Itype (E_Subprogram_Type, N);
+                     Copy_Strub_Mode (Subp_Typ, Subp);
                      Set_Etype (Subp_Typ, Etype (Subp));
                      Set_Returns_By_Ref (Subp_Typ, Returns_By_Ref (Subp));
 

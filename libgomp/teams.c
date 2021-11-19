@@ -28,14 +28,12 @@
 #include "libgomp.h"
 #include <limits.h>
 
-static unsigned gomp_num_teams = 1, gomp_team_num = 0;
-
 void
 GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
 		unsigned int thread_limit, unsigned int flags)
 {
+  struct gomp_thread *thr = gomp_thread ();
   (void) flags;
-  (void) num_teams;
   unsigned old_thread_limit_var = 0;
   if (thread_limit == 0)
     thread_limit = gomp_teams_thread_limit_var;
@@ -48,11 +46,11 @@ GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
     }
   if (num_teams == 0)
     num_teams = gomp_nteams_var ? gomp_nteams_var : 3;
-  gomp_num_teams = num_teams;
-  for (gomp_team_num = 0; gomp_team_num < num_teams; gomp_team_num++)
+  thr->num_teams = num_teams - 1;
+  for (thr->team_num = 0; thr->team_num < num_teams; thr->team_num++)
     fn (data);
-  gomp_num_teams = 1;
-  gomp_team_num = 0;
+  thr->num_teams = 0;
+  thr->team_num = 0;
   if (thread_limit)
     {
       struct gomp_task_icv *icv = gomp_icv (true);
@@ -63,13 +61,15 @@ GOMP_teams_reg (void (*fn) (void *), void *data, unsigned int num_teams,
 int
 omp_get_num_teams (void)
 {
-  return gomp_num_teams;
+  struct gomp_thread *thr = gomp_thread ();
+  return thr->num_teams + 1;
 }
 
 int
 omp_get_team_num (void)
 {
-  return gomp_team_num;
+  struct gomp_thread *thr = gomp_thread ();
+  return thr->team_num;
 }
 
 ialias (omp_get_num_teams)

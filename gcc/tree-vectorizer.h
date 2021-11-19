@@ -266,6 +266,7 @@ struct scalar_cond_masked_key
   void get_cond_ops_from_tree (tree);
 
   unsigned ncopies;
+  bool inverted_p;
   tree_code code;
   tree op0;
   tree op1;
@@ -285,6 +286,7 @@ struct default_hash_traits<scalar_cond_masked_key>
     inchash::add_expr (v.op0, h, 0);
     inchash::add_expr (v.op1, h, 0);
     h.add_int (v.ncopies);
+    h.add_flag (v.inverted_p);
     return h.end ();
   }
 
@@ -292,9 +294,10 @@ struct default_hash_traits<scalar_cond_masked_key>
   equal (value_type existing, value_type candidate)
   {
     return (existing.ncopies == candidate.ncopies
-           && existing.code == candidate.code
-           && operand_equal_p (existing.op0, candidate.op0, 0)
-           && operand_equal_p (existing.op1, candidate.op1, 0));
+	    && existing.code == candidate.code
+	    && existing.inverted_p == candidate.inverted_p
+	    && operand_equal_p (existing.op0, candidate.op0, 0)
+	    && operand_equal_p (existing.op1, candidate.op1, 0));
   }
 
   static const bool empty_zero_p = true;
@@ -303,6 +306,7 @@ struct default_hash_traits<scalar_cond_masked_key>
   mark_empty (value_type &v)
   {
     v.ncopies = 0;
+    v.inverted_p = false;
   }
 
   static inline bool
@@ -407,9 +411,6 @@ public:
   /* All interleaving chains of stores, represented by the first
      stmt in the chain.  */
   auto_vec<stmt_vec_info> grouped_stores;
-
-  /* Cost data used by the target cost model.  */
-  class vector_costs *target_cost_data;
 
   /* The set of vector modes used in the vectorized region.  */
   mode_set used_vector_modes;
@@ -590,6 +591,12 @@ public:
   /* Condition under which this loop is analyzed and versioned.  */
   tree num_iters_assumptions;
 
+  /* The cost of the vector code.  */
+  class vector_costs *vector_costs;
+
+  /* The cost of the scalar code.  */
+  class vector_costs *scalar_costs;
+
   /* Threshold of number of iterations below which vectorization will not be
      performed. It is calculated from MIN_PROFITABLE_ITERS and
      param_min_vect_loop_bound.  */
@@ -721,16 +728,6 @@ public:
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
   poly_uint64 slp_unrolling_factor;
 
-  /* Cost of a single scalar iteration.  */
-  int single_scalar_iteration_cost;
-
-  /* The cost of the vector prologue and epilogue, including peeled
-     iterations and set-up code.  */
-  int vec_outside_cost;
-
-  /* The cost of the vector loop body.  */
-  int vec_inside_cost;
-
   /* The factor used to over weight those statements in an inner loop
      relative to the loop being vectorized.  */
   unsigned int inner_loop_cost_factor;
@@ -843,7 +840,6 @@ public:
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
-#define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
@@ -851,7 +847,6 @@ public:
 #define LOOP_VINFO_SCALAR_LOOP_SCALING(L)  (L)->scalar_loop_scaling
 #define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
-#define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
 #define LOOP_VINFO_ORIG_LOOP_INFO(L)       (L)->orig_loop_info
 #define LOOP_VINFO_SIMD_IF_COND(L)         (L)->simd_if_cond
 #define LOOP_VINFO_INNER_LOOP_COST_FACTOR(L) (L)->inner_loop_cost_factor
@@ -1424,18 +1419,40 @@ public:
 				      vect_cost_model_location where);
 
   /* Finish calculating the cost of the code.  The results can be
-     read back using the functions below.  */
-  virtual void finish_cost ();
+     read back using the functions below.
+
+     If the costs describe vector code, SCALAR_COSTS gives the costs
+     of the corresponding scalar code, otherwise it is null.  */
+  virtual void finish_cost (const vector_costs *scalar_costs);
+
+  /* The costs in THIS and OTHER both describe ways of vectorizing
+     a main loop.  Return true if the costs described by THIS are
+     cheaper than the costs described by OTHER.  Return false if any
+     of the following are true:
+
+     - THIS and OTHER are of equal cost
+     - OTHER is better than THIS
+     - we can't be sure about the relative costs of THIS and OTHER.  */
+  virtual bool better_main_loop_than_p (const vector_costs *other) const;
+
+  /* Likewise, but the costs in THIS and OTHER both describe ways of
+     vectorizing an epilogue loop of MAIN_LOOP.  */
+  virtual bool better_epilogue_loop_than_p (const vector_costs *other,
+					    loop_vec_info main_loop) const;
 
   unsigned int prologue_cost () const;
   unsigned int body_cost () const;
   unsigned int epilogue_cost () const;
+  unsigned int outside_cost () const;
+  unsigned int total_cost () const;
 
 protected:
   unsigned int record_stmt_cost (stmt_vec_info, vect_cost_model_location,
 				 unsigned int);
   unsigned int adjust_cost_for_freq (stmt_vec_info, vect_cost_model_location,
 				     unsigned int);
+  int compare_inside_loop_cost (const vector_costs *) const;
+  int compare_outside_loop_cost (const vector_costs *) const;
 
   /* The region of code that we're considering vectorizing.  */
   vec_info *m_vinfo;
@@ -1488,6 +1505,23 @@ vector_costs::epilogue_cost () const
 {
   gcc_checking_assert (m_finished);
   return m_costs[vect_epilogue];
+}
+
+/* Return the cost of the prologue and epilogue code (in abstract units).  */
+
+inline unsigned int
+vector_costs::outside_cost () const
+{
+  return prologue_cost () + epilogue_cost ();
+}
+
+/* Return the cost of the prologue, body and epilogue code
+   (in abstract units).  */
+
+inline unsigned int
+vector_costs::total_cost () const
+{
+  return body_cost () + outside_cost ();
 }
 
 #define VECT_MAX_COST 1000
@@ -1664,10 +1698,11 @@ add_stmt_cost (vector_costs *costs, stmt_info_for_cost *i)
 /* Alias targetm.vectorize.finish_cost.  */
 
 static inline void
-finish_cost (vector_costs *costs, unsigned *prologue_cost,
-	     unsigned *body_cost, unsigned *epilogue_cost)
+finish_cost (vector_costs *costs, const vector_costs *scalar_costs,
+	     unsigned *prologue_cost, unsigned *body_cost,
+	     unsigned *epilogue_cost)
 {
-  costs->finish_cost ();
+  costs->finish_cost (scalar_costs);
   *prologue_cost = costs->prologue_cost ();
   *body_cost = costs->body_cost ();
   *epilogue_cost = costs->epilogue_cost ();
@@ -2120,6 +2155,7 @@ extern tree vect_create_addr_base_for_vector_ref (vec_info *,
 						  tree);
 
 /* In tree-vect-loop.c.  */
+extern tree neutral_op_for_reduction (tree, tree_code, tree);
 extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
 bool vect_rgroup_iv_might_wrap_p (loop_vec_info, rgroup_controls *);
 /* Used in tree-vect-loop-manip.c */
@@ -2160,7 +2196,8 @@ struct vect_loop_form_info
 };
 extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
 extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
-					     const vect_loop_form_info *);
+					     const vect_loop_form_info *,
+					     loop_vec_info = nullptr);
 extern bool vectorizable_live_operation (vec_info *,
 					 stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, slp_instance, int,

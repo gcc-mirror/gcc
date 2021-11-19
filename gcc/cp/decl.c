@@ -1290,6 +1290,12 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
     }
   if (TREE_CODE (old_decl) == FUNCTION_DECL)
     {
+      /* With -fimplicit-constexpr, ignore changes in the constexpr
+	 keyword.  */
+      if (flag_implicit_constexpr
+	  && (DECL_IMMEDIATE_FUNCTION_P (new_decl)
+	      == DECL_IMMEDIATE_FUNCTION_P (old_decl)))
+	return true;
       if (fndecl_built_in_p (old_decl))
 	{
 	  /* Hide a built-in declaration.  */
@@ -11000,7 +11006,7 @@ compute_array_index_type_loc (location_t name_loc, tree name, tree size,
 				    cp_convert (ssizetype, integer_one_node,
 						complain),
 				    complain);
-	itype = maybe_constant_value (itype);
+	itype = maybe_constant_value (itype, NULL_TREE, true);
       }
 
       if (!TREE_CONSTANT (itype))
@@ -14863,7 +14869,7 @@ grok_special_member_properties (tree decl)
       if (is_list_ctor (decl))
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
-      if (DECL_DECLARED_CONSTEXPR_P (decl)
+      if (maybe_constexpr_fn (decl)
 	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
@@ -17603,7 +17609,8 @@ finish_function (bool inline_p)
   if (!processing_template_decl
       && !cp_function_chain->can_throw
       && !flag_non_call_exceptions
-      && !decl_replaceable_p (fndecl))
+      && !decl_replaceable_p (fndecl,
+			      opt_for_fn (fndecl, flag_semantic_interposition)))
     TREE_NOTHROW (fndecl) = 1;
 
   /* This must come after expand_function_end because cleanups might

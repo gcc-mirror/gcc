@@ -324,6 +324,16 @@ package body Aspects is
    end Has_Aspect;
 
    ------------------
+   -- Is_Aspect_Id --
+   ------------------
+
+   function Is_Aspect_Id (Aspect : Name_Id) return Boolean is
+     (Get_Aspect_Id (Aspect) /= No_Aspect);
+
+   function Is_Aspect_Id (Aspect : Node_Id) return Boolean is
+     (Get_Aspect_Id (Aspect) /= No_Aspect);
+
+   ------------------
    -- Move_Aspects --
    ------------------
 

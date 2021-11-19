@@ -223,6 +223,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
       = ENABLE_CANONICAL_SYSTEM_HEADERS;
   CPP_OPTION (pfile, ext_numeric_literals) = 1;
   CPP_OPTION (pfile, warn_date_time) = 0;
+  CPP_OPTION (pfile, cpp_warn_bidirectional) = bidirectional_unpaired;
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */

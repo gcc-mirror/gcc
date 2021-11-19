@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++17 } }
 
+#include <string>
 #include <unordered_set>
 #include <algorithm>
 #include <testsuite_hooks.h>
@@ -125,10 +126,52 @@ test03()
   VERIFY( c2.empty() );
 }
 
+void
+test04()
+{
+  const std::unordered_set<std::string> c0{ "abcd", "efgh", "ijkl", };
+  std::unordered_set<std::string> c1 = c0;
+  std::unordered_multiset<std::string> c2( c0.begin(), c0.end() );
+  c1.merge(c2);
+  VERIFY( c1 == c0 );
+  VERIFY( equal_elements(c2, c0) );
+
+  c1.clear();
+  c1.merge(c2);
+  VERIFY( c1 == c0 );
+  VERIFY( c2.empty() );
+
+  c2.merge(c1);
+  VERIFY( c1.empty() );
+  VERIFY( equal_elements(c2, c0) );
+
+  c1 = c0;
+  c2.merge(c1);
+  VERIFY( c1.empty() );
+  VERIFY( c2.size() == (2 * c0.size()) );
+  VERIFY( c2.count("abcd") == 2 );
+  VERIFY( c2.count("efgh") == 2 );
+  VERIFY( c2.count("ijkl") == 2 );
+
+  c1.merge(c2);
+  VERIFY( c1 == c0 );
+  VERIFY( equal_elements(c2, c0) );
+
+  c1.merge(std::move(c2));
+  VERIFY( c1 == c0 );
+  VERIFY( equal_elements(c2, c0) );
+
+  c1.clear();
+  c1.merge(std::move(c2));
+  VERIFY( c1 == c0 );
+  VERIFY( c2.empty() );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target stdint_types } */
-/* { dg-require-effective-target vect_long } */
 /* { dg-add-options arm_v8_3a_complex_neon } */
 
 #define UNROLL
@@ -12,5 +11,5 @@
 
 /* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT90" 1 "vect" { target { vect_complex_add_long } } } } */
 /* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT270" 1 "vect" { target { vect_complex_add_long } } } } */
-/* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT270" "vect" } } */
-/* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT90" "vect" } } */
+/* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT270" "vect" { target { vect_long_long } } } } */
+/* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT90" "vect" { target { vect_long_long } } } } */

@@ -15,9 +15,9 @@ program test
   character(len=99) :: val3
   integer :: res
 
-  call co_reduce(val1, operator=fr, result_image=num_images(), stat=stat1, errmsg=errmesg1)
-  call co_reduce(val2, operator=gz, result_image=4, stat=stat2, errmsg=errmesg2)
-  call co_reduce(val3, operator=hc, result_image=res,stat=stat3, errmsg=errmesg3)
+  call co_reduce(val1, operation=fr, result_image=num_images(), stat=stat1, errmsg=errmesg1)
+  call co_reduce(val2, operation=gz, result_image=4, stat=stat2, errmsg=errmesg2)
+  call co_reduce(val3, operation=hc, result_image=res,stat=stat3, errmsg=errmesg3)
 contains
   pure real function fr(x,y)
     real, value :: x, y

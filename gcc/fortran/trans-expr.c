@@ -6157,7 +6157,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		{
 		  /* Pass a NULL pointer for an absent arg.  */
 		  parmse.expr = null_pointer_node;
-		  if (arg->missing_arg_type == BT_CHARACTER)
+		  gfc_dummy_arg * const dummy_arg = arg->associated_dummy;
+		  if (dummy_arg
+		      && gfc_dummy_arg_get_typespec (*dummy_arg).type
+			 == BT_CHARACTER)
 		    parmse.string_length = build_int_cst (gfc_charlen_type_node,
 							  0);
 		}
@@ -6174,7 +6177,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			  || !CLASS_DATA (fsym)->attr.allocatable));
 	  gfc_init_se (&parmse, NULL);
 	  parmse.expr = null_pointer_node;
-	  if (arg->missing_arg_type == BT_CHARACTER)
+	  if (arg->associated_dummy
+	      && gfc_dummy_arg_get_typespec (*arg->associated_dummy).type
+		 == BT_CHARACTER)
 	    parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	}
       else if (fsym && fsym->ts.type == BT_CLASS

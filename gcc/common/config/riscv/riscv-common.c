@@ -202,7 +202,6 @@ multi_letter_subset_rank (const std::string &subset)
       high_order = 1;
       break;
     case 'z':
-      gcc_assert (subset.length () > 2);
       high_order = 2;
       break;
     case 'x':
@@ -423,7 +422,7 @@ riscv_subset_list::to_string (bool version_p) const
   /* Skip since older binutils doesn't recognize zicsr.  */
   skip_zicsr = true;
 #endif
-#ifndef HAVE_AS_MARCH_ZIFENCE
+#ifndef HAVE_AS_MARCH_ZIFENCEI
   /* Skip since older binutils doesn't recognize zifencei, we made
      a mistake in that binutils 2.35 supports zicsr but not zifencei.  */
   skip_zifencei = true;

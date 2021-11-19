@@ -6287,8 +6287,8 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated fmax/fmin (the libm functions).  The optabs for the
-;; smin/smax rtx codes are handled in the generic section above.
-(define_expand "<maxmin_uns><mode>3"
+;; smax/smin rtx codes are handled in the generic section above.
+(define_expand "<fmaxmin><mode>3"
   [(set (match_operand:SVE_FULL_F 0 "register_operand")
 	(unspec:SVE_FULL_F
 	  [(match_dup 3)
@@ -6300,6 +6300,23 @@
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
+)
+
+;; Predicated fmax/fmin (the libm functions).  The optabs for the
+;; smax/smin rtx codes are handled in the generic section above.
+(define_expand "cond_<fmaxmin><mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<VPRED> 1 "register_operand")
+	   (unspec:SVE_FULL_F
+	     [(match_dup 1)
+	      (const_int SVE_RELAXED_GP)
+	      (match_operand:SVE_FULL_F 2 "register_operand")
+	      (match_operand:SVE_FULL_F 3 "aarch64_sve_float_maxmin_operand")]
+	     SVE_COND_FP_MAXMIN_PUBLIC)
+	   (match_operand:SVE_FULL_F 4 "aarch64_simd_reg_or_zero")]
+	  UNSPEC_SEL))]
+  "TARGET_SVE"
 )
 
 ;; Predicated floating-point maximum/minimum.

@@ -79,6 +79,7 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;
 with Snames;         use Snames;
+with Strub;          use Strub;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
@@ -3506,6 +3507,15 @@ package body Sem_Ch3 is
          Set_Is_Tagged_Type (T, True);
          Set_No_Tagged_Streams_Pragma (T, No_Tagged_Streams);
          Make_Class_Wide_Type (T);
+      end if;
+
+      --  For tagged types, or when prefixed-call syntax is allowed for
+      --  untagged types, initialize the list of primitive operations to
+      --  an empty list.
+
+      if Tagged_Present (N)
+        or else Extensions_Allowed
+      then
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
       end if;
 
@@ -5746,6 +5756,15 @@ package body Sem_Ch3 is
                   if Is_Tagged_Type (Id) then
                      Set_No_Tagged_Streams_Pragma
                        (Id, No_Tagged_Streams_Pragma (T));
+                  end if;
+
+                  --  For tagged types, or when prefixed-call syntax is allowed
+                  --  for untagged types, initialize the list of primitive
+                  --  operations to an empty list.
+
+                  if Is_Tagged_Type (Id)
+                    or else Extensions_Allowed
+                  then
                      Set_Direct_Primitive_Operations (Id, New_Elmt_List);
                   end if;
 
@@ -16047,6 +16066,8 @@ package body Sem_Ch3 is
          Set_Alias (New_Subp, Actual_Subp);
       end if;
 
+      Copy_Strub_Mode (New_Subp, Alias (New_Subp));
+
       --  Derived subprograms of a tagged type must inherit the convention
       --  of the parent subprogram (a requirement of AI-117). Derived
       --  subprograms of untagged types simply get convention Ada by default.
@@ -17190,8 +17211,12 @@ package body Sem_Ch3 is
          Set_Etype        (T, Any_Type);
          Set_Scalar_Range (T, Scalar_Range (Any_Type));
 
-         if Is_Tagged_Type (T)
-           and then Is_Record_Type (T)
+         --  For tagged types, or when prefixed-call syntax is allowed for
+         --  untagged types, initialize the list of primitive operations to
+         --  an empty list.
+
+         if (Is_Tagged_Type (T) and then Is_Record_Type (T))
+           or else Extensions_Allowed
          then
             Set_Direct_Primitive_Operations (T, New_Elmt_List);
          end if;
@@ -17233,10 +17258,46 @@ package body Sem_Ch3 is
         and then Is_Interface (Parent_Type)
       then
          declare
-            Iface               : Node_Id;
             Partial_View        : Entity_Id;
             Partial_View_Parent : Entity_Id;
-            New_Iface           : Node_Id;
+
+            function Reorder_Interfaces return Boolean;
+            --  Look for an interface in the full view's interface list that
+            --  matches the parent type of the partial view, and when found,
+            --  rewrite the full view's parent with the partial view's parent,
+            --  append the full view's original parent to the interface list,
+            --  recursively call Derived_Type_Definition on the full type, and
+            --  return True. If a match is not found, return False.
+            --  ??? This seems broken in the case of generic packages.
+
+            ------------------------
+            -- Reorder_Interfaces --
+            ------------------------
+
+            function Reorder_Interfaces return Boolean is
+               Iface     : Node_Id;
+               New_Iface : Node_Id;
+            begin
+               Iface := First (Interface_List (Def));
+               while Present (Iface) loop
+                  if Etype (Iface) = Etype (Partial_View) then
+                     Rewrite (Subtype_Indication (Def),
+                       New_Copy (Subtype_Indication (Parent (Partial_View))));
+
+                     New_Iface :=
+                       Make_Identifier (Sloc (N), Chars (Parent_Type));
+                     Append (New_Iface, Interface_List (Def));
+
+                     --  Analyze the transformed code
+
+                     Derived_Type_Declaration (T, N, Is_Completion);
+                     return True;
+                  end if;
+
+                  Next (Iface);
+               end loop;
+               return False;
+            end Reorder_Interfaces;
 
          begin
             --  Look for the associated private type declaration
@@ -17257,30 +17318,26 @@ package body Sem_Ch3 is
                then
                   null;
 
-               --  Traverse the list of interfaces of the full-view to look
-               --  for the parent of the partial-view and perform the tree
-               --  transformation.
+               --  Traverse the list of interfaces of the full view to look
+               --  for the parent of the partial view and reorder the
+               --  interfaces to match the order in the partial view,
+               --  if needed.
 
                else
-                  Iface := First (Interface_List (Def));
-                  while Present (Iface) loop
-                     if Etype (Iface) = Etype (Partial_View) then
-                        Rewrite (Subtype_Indication (Def),
-                          New_Copy (Subtype_Indication
-                                     (Parent (Partial_View))));
 
-                        New_Iface :=
-                          Make_Identifier (Sloc (N), Chars (Parent_Type));
-                        Append (New_Iface, Interface_List (Def));
+                  if Reorder_Interfaces then
+                     --  Having the interfaces listed in any order is legal.
+                     --  However, the compiler does not properly handle
+                     --  different orders between partial and full views in
+                     --  generic units. We give a warning about the order
+                     --  mismatch, so the user can work around this problem.
 
-                        --  Analyze the transformed code
+                     Error_Msg_N ("??full declaration does not respect " &
+                                  "partial declaration order", T);
+                     Error_Msg_N ("\??consider reordering", T);
 
-                        Derived_Type_Declaration (T, N, Is_Completion);
-                        return;
-                     end if;
-
-                     Next (Iface);
-                  end loop;
+                     return;
+                  end if;
                end if;
             end if;
          end;

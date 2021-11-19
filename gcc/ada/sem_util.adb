@@ -686,9 +686,9 @@ package body Sem_Util is
                return New_Occurrence_Of
                         (Get_Dynamic_Accessibility (E), Loc);
 
-            --  Initialization procedures have a special extra accessitility
+            --  Initialization procedures have a special extra accessibility
             --  parameter associated with the level at which the object
-            --  begin initialized exists
+            --  being initialized exists
 
             elsif Ekind (E) = E_Record_Type
               and then Is_Limited_Record (E)
@@ -743,6 +743,13 @@ package body Sem_Util is
               and then Present (Related_Expression (E))
             then
                return Accessibility_Level (Related_Expression (E));
+
+            elsif Level = Dynamic_Level
+               and then Ekind (E) in E_In_Parameter | E_In_Out_Parameter
+               and then Present (Init_Proc_Level_Formal (Scope (E)))
+            then
+               return New_Occurrence_Of
+                        (Init_Proc_Level_Formal (Scope (E)), Loc);
 
             --  Normal object - get the level of the enclosing scope
 
@@ -1599,6 +1606,27 @@ package body Sem_Util is
         and then Scope_Depth (ST) >= Scope_Depth (SCT);
    end Available_Full_View_Of_Component;
 
+   ----------------
+   -- Bad_Aspect --
+   ----------------
+
+   procedure Bad_Aspect
+     (N    : Node_Id;
+      Nam  : Name_Id;
+      Warn : Boolean := False)
+   is
+   begin
+      Error_Msg_Warn := Warn;
+      Error_Msg_N ("<<& is not a valid aspect identifier", N);
+
+      --  Check bad spelling
+      Error_Msg_Name_1 := Aspect_Spell_Check (Nam);
+      if Error_Msg_Name_1 /= No_Name then
+         Error_Msg_N -- CODEFIX
+            ("\<<possible misspelling of %", N);
+      end if;
+   end Bad_Aspect;
+
    -------------------
    -- Bad_Attribute --
    -------------------
@@ -1610,20 +1638,15 @@ package body Sem_Util is
    is
    begin
       Error_Msg_Warn := Warn;
-      Error_Msg_N ("unrecognized attribute&<<", N);
+      Error_Msg_N ("<<unrecognized attribute&", N);
 
       --  Check for possible misspelling
 
-      Error_Msg_Name_1 := First_Attribute_Name;
-      while Error_Msg_Name_1 <= Last_Attribute_Name loop
-         if Is_Bad_Spelling_Of (Nam, Error_Msg_Name_1) then
-            Error_Msg_N -- CODEFIX
-              ("\possible misspelling of %<<", N);
-            exit;
-         end if;
-
-         Error_Msg_Name_1 := Error_Msg_Name_1 + 1;
-      end loop;
+      Error_Msg_Name_1 := Attribute_Spell_Check (Nam);
+      if Error_Msg_Name_1 /= No_Name then
+         Error_Msg_N -- CODEFIX
+            ("\<<possible misspelling of %", N);
+      end if;
    end Bad_Attribute;
 
    --------------------------------
@@ -6797,14 +6820,11 @@ package body Sem_Util is
    function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id is
       Loc    : constant Source_Ptr := Sloc (Subp_Id);
       Plist  : List_Id;
-      Formal : Entity_Id;
+      Formal : Entity_Id := First_Formal (Subp_Id);
 
    begin
-      if No (First_Formal (Subp_Id)) then
-         return No_List;
-      else
-         Plist  := New_List;
-         Formal := First_Formal (Subp_Id);
+      if Present (Formal) then
+         Plist := New_List;
          while Present (Formal) loop
             Append_To (Plist,
               Make_Parameter_Specification (Loc,
@@ -6819,6 +6839,8 @@ package body Sem_Util is
 
             Next_Formal (Formal);
          end loop;
+      else
+         Plist := No_List;
       end if;
 
       return Plist;

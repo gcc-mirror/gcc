@@ -115,7 +115,7 @@ package System.Tasking.Initialization is
 
    function Check_Abort_Status return Integer;
    --  Returns Boolean'Pos (True) iff abort signal should raise
-   --  Standard'Abort_Signal. Only used by IRIX currently.
+   --  Standard'Abort_Signal. Only used by RTEMS currently.
 
    --------------------------
    -- Change Base Priority --

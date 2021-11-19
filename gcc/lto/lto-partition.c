@@ -1001,6 +1001,7 @@ promote_symbol (symtab_node *node)
      so it is prevailing.  This is important to keep binds_to_current_def_p
      to work across partitions.  */
   node->resolution = LDPR_PREVAILING_DEF_IRONLY;
+  node->semantic_interposition = false;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->decl) = true;
   if (dump_file)

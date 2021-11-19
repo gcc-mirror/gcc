@@ -275,7 +275,7 @@ package Errout is
    --      contain subprograms to be inlined in the main program. It is also
    --      used by the Compiler_Unit_Warning pragma for similar reasons.
 
-   --    Insertion character ? (Question: warning message)
+   --    Insertion character ? (Question: warning message -- OBSOLETE)
    --      The character ? appearing anywhere in a message makes the message
    --      warning instead of a normal error message, and the text of the
    --      message will be preceded by "warning:" in the normal case. The
@@ -302,7 +302,7 @@ package Errout is
    --      clear that the continuation is part of a warning message, but it is
    --      not necessary to go through any computational effort to include it.
    --
-   --      Note: this usage is obsolete, use ?? ?*? ?$? ?x? ?.x? ?_x? to
+   --      Note: this usage is obsolete; use ?? ?*? ?$? ?x? ?.x? ?_x? to
    --      specify the string to be added when Warn_Doc_Switch is set to True.
    --      If this switch is True, then for simple ? messages it has no effect.
    --      This simple form is to ease transition and may be removed later

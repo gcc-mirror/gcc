@@ -800,8 +800,8 @@ gnatlib-shared-darwin:
 		libgnat$(soext)
 	cd $(RTSDIR); $(LN_S) libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		libgnarl$(soext)
-	cd $(RTSDIR); dsymutil libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
-	cd $(RTSDIR); dsymutil libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext)
+	cd $(RTSDIR); $(DSYMUTIL_FOR_TARGET) libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
+	cd $(RTSDIR); $(DSYMUTIL_FOR_TARGET) libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext)
 
 gnatlib-shared:
 	$(MAKE) $(FLAGS_TO_PASS) \

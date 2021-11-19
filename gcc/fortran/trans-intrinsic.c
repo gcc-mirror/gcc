@@ -11084,7 +11084,8 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 
   if (isym->elemental)
     return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
-					     NULL, GFC_SS_SCALAR);
+					     expr->value.function.isym,
+					     GFC_SS_SCALAR);
 
   if (expr->rank == 0)
     return ss;

@@ -86,6 +86,9 @@ class impl_region_model_context : public region_model_context
   bool get_malloc_map (sm_state_map **out_smap,
 		       const state_machine **out_sm,
 		       unsigned *out_sm_idx) FINAL OVERRIDE;
+  bool get_taint_map (sm_state_map **out_smap,
+		       const state_machine **out_sm,
+		       unsigned *out_sm_idx) FINAL OVERRIDE;
 
   exploded_graph *m_eg;
   log_user m_logger;

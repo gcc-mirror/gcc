@@ -1375,7 +1375,7 @@ branch_prob (bool thunk)
       /* Initialize the output.  */
       output_location (&streamed_locations, NULL, 0, NULL, NULL);
 
-      hash_set<int_hash <location_t, 0, 2> > seen_locations;
+      hash_set<location_hash> seen_locations;
 
       FOR_EACH_BB_FN (bb, cfun)
 	{
@@ -1385,6 +1385,7 @@ branch_prob (bool thunk)
 	  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb)
 	    {
 	      location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
+	      gcc_checking_assert (!RESERVED_LOCATION_P (loc));
 	      seen_locations.add (loc);
 	      expanded_location curr_location = expand_location (loc);
 	      output_location (&streamed_locations, curr_location.file,
