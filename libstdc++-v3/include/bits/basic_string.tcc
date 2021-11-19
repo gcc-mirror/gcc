@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_M_data(__another);
 		_M_capacity(__capacity);
 	      }
-	    _M_data()[__len++] = *__beg;
+	    traits_type::assign(_M_data()[__len++], *__beg);
 	    ++__beg;
 	  }
 
