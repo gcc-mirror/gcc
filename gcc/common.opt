@@ -3446,6 +3446,10 @@ static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
 
+static-libphobos
+Driver
+; Documented for D, but always accepted by driver.
+
 static-libstdc++
 Driver
 
