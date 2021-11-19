@@ -85,8 +85,7 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
   if (!stmt)
     {
       int_range_max tmp;
-      if (!m_cache.get_global_range (r, expr))
-        r = gimple_range_global (expr);
+      m_cache.get_global_range (r, expr);
       // Pick up implied context information from the on-entry cache
       // if current_bb is set.  Do not attempt any new calculations.
       if (current_bb && m_cache.block_range (tmp, current_bb, expr, false))
@@ -282,15 +281,19 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
     }
   else if (!gimple_range_ssa_p (name))
     res = get_tree_range (r, name, NULL);
-  // Check if the stmt has already been processed, and is not stale.
-  else if (m_cache.get_non_stale_global_range (r, name))
-    {
-      if (idx)
-	tracer.trailer (idx, " cached", true, name, r);
-      return true;
-    }
   else
     {
+      bool current;
+      // Check if the stmt has already been processed, and is not stale.
+      if (m_cache.get_global_range (r, name, current))
+	{
+	  if (current)
+	    {
+	      if (idx)
+		tracer.trailer (idx, " cached", true, name, r);
+	      return true;
+	    }
+	}
       // Otherwise calculate a new value.
       int_range_max tmp;
       fold_range_internal (tmp, s, name);
