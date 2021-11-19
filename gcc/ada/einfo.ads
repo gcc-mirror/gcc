@@ -5353,7 +5353,7 @@ package Einfo is
    --    Size_Clause                           (synth)
 
    --  E_Decimal_Fixed_Point_Type
-   --  E_Decimal_Fixed_Subtype$$$no such thing
+   --  E_Decimal_Fixed_Point_Subtype
    --    Scale_Value
    --    Digits_Value
    --    Scalar_Range
