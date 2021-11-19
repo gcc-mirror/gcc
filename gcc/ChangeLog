@@ -1,3 +1,25 @@
+2021-11-18  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103246
+	* ipa-modref.c (read_modref_records): Fix streaminig in of every_access
+	flag.
+
+2021-11-18  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Fix
+	handling of ignore_stores.
+
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/driver-rs6000.c (detect_processor_aix): Add
+	power10.
+
 2021-11-16  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:
