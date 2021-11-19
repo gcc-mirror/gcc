@@ -6,7 +6,6 @@ extern "C" {
 #[lang = "not"]
 pub trait Not {
     type Output;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn not(self) -> Self::Output;
     // { dg-warning "unused name .self." "" { target *-*-* } .-1 }

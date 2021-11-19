@@ -35,29 +35,14 @@ class ResolveTraitItems : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::TraitItem *item, const CanonicalPath &self)
+  static void go (AST::TraitItem *item)
   {
-    ResolveTraitItems resolver (self);
+    ResolveTraitItems resolver;
     item->accept_vis (resolver);
   };
 
   void visit (AST::TraitItemType &type) override
   {
-    // insert Self::type_alias for TypePath lookup
-    auto path
-      = self.append (ResolveTraitItemTypeToCanonicalPath::resolve (type));
-    resolver->get_type_scope ().insert (
-      path, type.get_node_id (), type.get_locus (), false,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
-	RichLocation r (type.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
-
-    // FIXME this stops the erronious unused decls which will be fixed later on
-    resolver->get_type_scope ().append_reference_for_def (type.get_node_id (),
-							  type.get_node_id ());
-
     for (auto &bound : type.get_type_param_bounds ())
       ResolveTypeBound::go (bound.get (), type.get_node_id ());
   }
@@ -189,11 +174,7 @@ public:
   }
 
 private:
-  ResolveTraitItems (const CanonicalPath &self)
-    : ResolverBase (UNKNOWN_NODEID), self (self)
-  {}
-
-  const CanonicalPath &self;
+  ResolveTraitItems () : ResolverBase (UNKNOWN_NODEID) {}
 };
 
 class ResolveItem : public ResolverBase
@@ -649,7 +630,7 @@ public:
 
     for (auto &item : trait.get_trait_items ())
       {
-	ResolveTraitItems::go (item.get (), Self);
+	ResolveTraitItems::go (item.get ());
       }
 
     resolver->get_type_scope ().pop ();
