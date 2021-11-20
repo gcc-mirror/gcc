@@ -923,8 +923,7 @@ record_access_p (tree expr)
 static bool
 ignore_nondeterminism_p (tree caller, int flags)
 {
-  if ((flags & (ECF_CONST | ECF_PURE))
-      && !(flags & ECF_LOOPING_CONST_OR_PURE))
+  if (flags & (ECF_CONST | ECF_PURE))
     return true;
   if ((flags & (ECF_NORETURN | ECF_NOTHROW)) == (ECF_NORETURN | ECF_NOTHROW)
       || (!opt_for_fn (caller, flag_exceptions) && (flags & ECF_NORETURN)))
@@ -1016,6 +1015,10 @@ merge_call_side_effects (modref_summary *cur_summary,
       && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return changed;
 
+  if (dump_file)
+    fprintf (dump_file, " - Merging side effects of %s\n",
+	     callee_node->dump_name ());
+
   if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE))
     {
@@ -1061,8 +1064,7 @@ merge_call_side_effects (modref_summary *cur_summary,
     }
 
   if (dump_file)
-    fprintf (dump_file, " - Merging side effects of %s with parm map:",
-	     callee_node->dump_name ());
+    fprintf (dump_file, "   Parm map:");
 
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
