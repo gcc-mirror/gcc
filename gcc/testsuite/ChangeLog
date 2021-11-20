@@ -1,3 +1,8 @@
+2021-11-19  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	* gcc.dg/devnull-dump.c: New.
+	(cherry-picked from commit c7381debe4c5dd7878338f38db98face1cfa6f90)
+
 2021-11-16  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:

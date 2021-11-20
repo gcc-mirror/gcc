@@ -1,3 +1,9 @@
+2021-11-19  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	* gcc.c (process_command): Skip dumpdir override if file is a
+	not_actual_file_p.
+	* doc/invoke.texi: Update -dumpdir documentation.
+
 2021-11-18  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:

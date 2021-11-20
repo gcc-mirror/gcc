@@ -1,3 +1,20 @@
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/fiber.d (defaultStackPages): Increase size
+	on OSX X86_64 targets.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Don't remove entry
+	from global array.
+	(_d_emutls_destroy): Don't call __gthread_key_delete.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.
