@@ -1,3 +1,70 @@
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istringstream/cons/char/1.cc: Check all
+	constructors.
+	* testsuite/27_io/basic_istringstream/cons/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/wchar_t/1.cc:
+	Likewise.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale_init.cc (_S_initialize_once): Check if
+	initialization has already been done.
+	(_S_initialize): Replace __gthread_active_p with
+	__is_single_threaded. Use __builtin_expect.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.tcc (_M_construct): Use the
+	traits assign member to write into allcoated memory.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/prune.exp: Prune dsymutil (ld64) warning.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103332
+	PR libstdc++/102958
+	* testsuite/21_strings/basic_string/capacity/char/1.cc: Add
+	-Wno-stringop-overflow.
+	* testsuite/21_strings/basic_string/operators/char/1.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/factory/u8path-char8_t.cc:
+	Add -Wno-stringop-overread.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_Alloc_traits): Replace typedef
+	with struct for C++20 mode.
+	* include/bits/basic_string.tcc (_M_replace): Use _Alloc_traits
+	for allocation.
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::assign):
+	Use std::_Construct during constant evaluation.
+	(__gnu_cxx::char_traits::assign(CharT*, const CharT*, size_t)):
+	Likewise. Replace std::fill_n with memset or manual loop.
+	(__gnu_cxx::char_traits::copy): Likewise, replacing std::copy
+	with memcpy.
+	* include/ext/vstring.h: Include <bits/stl_algobase.h> for
+	std::min.
+	* include/std/string_view: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Add constexpr test.
+
+2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/103305
+	* config/os/newlib/ctype_base.h (upper, lower, alpha, digit, xdigit,
+	space, print, graph, cntrl, punct, alnum, blank): Use short or long
+	names depending on if short ones are defined.
+
 2021-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/char_traits.h (__gnu_cxx::char_traits::move):

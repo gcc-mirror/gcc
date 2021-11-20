@@ -1,3 +1,74 @@
+2021-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* pt.c (apply_late_template_attributes): Temporarily override
+	current_optimize_pragma, optimization_current_node,
+	current_target_pragma and scope_chain->omp_declare_target_attribute,
+	so that cplus_decl_attributes doesn't add implicit attributes.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* typeck.c (warn_for_null_address): Suppress warnings for code
+	resulting from macro expansion.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.c (cp_walk_subtrees) <case *_CAST_EXPR>: Don't explicitly
+	walk the operands.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* lambda.c (lambda_capture_field_type): Simplify by handling the
+	is_this case first.  When capturing by-value a capture proxy,
+	consider the type of the corresponding field instead.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/103326
+	* pt.c (tsubst_copy): Handle VECTOR_CST.
+
+2021-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70796
+	* cp-gimplify.c (cp_gimplify_arg): New function.
+	(cp_gimplify_expr): Use cp_gimplify_arg instead of gimplify_arg,
+	pass true as last argument to it if there are any following
+	arguments in strong evaluation order with side-effects.
+
+2021-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	PR c++/96121
+	* init.c (perform_member_init): Remove a forward declaration.
+	Walk the initializer using find_uninit_fields_r.  New parameter
+	to track uninitialized fields.  If a member is initialized,
+	remove it from the hash set.
+	(perform_target_ctor): Return the initializer.
+	(struct find_uninit_data): New class.
+	(find_uninit_fields_r): New function.
+	(find_uninit_fields): New function.
+	(emit_mem_initializers): Keep and initialize a set holding fields
+	that are not initialized.  When handling delegating constructors,
+	walk the constructor tree using find_uninit_fields_r.  Also when
+	initializing base clases.  Pass uninitialized down to
+	perform_member_init.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103198
+	* pt.c (any_template_parm_r): Walk the TREE_TYPE of a dummy
+	object.
+
 2021-11-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103049

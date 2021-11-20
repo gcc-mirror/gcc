@@ -1,3 +1,138 @@
+2021-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* g++.target/i386/pr101180.C: New test.
+
+2021-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* gcc.dg/analyzer/explode-1.c: Update for improvement to location
+	of leak warning.
+	* gcc.dg/analyzer/pr103217.c: New test.
+	* gcc.dg/analyzer/pr94858-1.c: Add -Wno-analyzer-too-complex.
+
+2021-11-19  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/lambda/lambda-nested9.C: Adjust dg-error.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: Remove XFAIL.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
+2021-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-dse-6.c: New test.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* g++.dg/warn/Walways-true-2.C: Adjust to avoid a valid warning.
+	* c-c++-common/Waddress-5.c: New test.
+	* c-c++-common/Waddress-6.c: New test.
+	* g++.dg/warn/Waddress-7.C: New test.
+	* gcc.dg/Walways-true-2.c: Adjust to avoid a valid warning.
+	* gcc.dg/weak/weak-3.c: Expect a warning.
+
+2021-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr103254.c: New.
+
+2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/20211119.c: New test.
+
+2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103311
+	PR target/103330
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-double.c: Fix it.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-float.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_vect_complex_add_double): Add Adv. SIMD.
+
+2021-11-19  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	* gcc.dg/devnull-dump.c: New.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* g++.dg/cpp0x/lambda/lambda-nested9.C: New test.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103314
+	* gcc.c-torture/compile/pr103314-1.c: New test.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/103326
+	* g++.dg/pr103326.C: New testcase.
+
+2021-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70796
+	* g++.dg/cpp1z/eval-order11.C: New test.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103248
+	* gcc.dg/pr103248.c: New testcase.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102436
+	* gcc.dg/torture/20211118-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-lim-18.c: Likewise.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103317
+	* gcc.c-torture/compile/pr103317-1.c: New test.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103257
+	* gcc.dg/tree-ssa/vrp116.c: Check optimized instead of vrp1.
+	* gcc.dg/tree-ssa/pr103257-1.c: New test.
+
+2021-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	PR c++/96121
+	* g++.dg/warn/Wuninitialized-14.C: New test.
+	* g++.dg/warn/Wuninitialized-15.C: New test.
+	* g++.dg/warn/Wuninitialized-16.C: New test.
+	* g++.dg/warn/Wuninitialized-17.C: New test.
+	* g++.dg/warn/Wuninitialized-18.C: New test.
+	* g++.dg/warn/Wuninitialized-19.C: New test.
+	* g++.dg/warn/Wuninitialized-20.C: New test.
+	* g++.dg/warn/Wuninitialized-21.C: New test.
+	* g++.dg/warn/Wuninitialized-22.C: New test.
+	* g++.dg/warn/Wuninitialized-23.C: New test.
+	* g++.dg/warn/Wuninitialized-24.C: New test.
+	* g++.dg/warn/Wuninitialized-25.C: New test.
+	* g++.dg/warn/Wuninitialized-26.C: New test.
+	* g++.dg/warn/Wuninitialized-27.C: New test.
+	* g++.dg/warn/Wuninitialized-28.C: New test.
+	* g++.dg/warn/Wuninitialized-29.C: New test.
+	* g++.dg/warn/Wuninitialized-30.C: New test.
+
+2021-11-19  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102543.c: New test.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103198
+	* g++.dg/cpp2a/concepts-this1.C: New test.
+
 2021-11-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103049

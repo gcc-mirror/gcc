@@ -1,3 +1,17 @@
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-common.c (decl_with_nonnull_addr_p): Call maybe_nonzero_address
+	and improve handling tof defined symbols.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-gimplify.c (genericize_c_loop): Use option directly.
+
 2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
 
 	* c-common.c (c_common_reswords): Add __builtin_assoc_barrier.

@@ -1,3 +1,169 @@
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/invoke.texi: Remove whitespace after an @option.
+
+2021-11-19  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/emmintrin.h (_mm_sad_epu8): Use vec_absd when
+	_ARCH_PWR9, optimize vec_sum2s when LE.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/80556
+	* config/darwin-driver.c (darwin_driver_init): Handle exported
+	symbols and symbol lists (suppress automatic export of the TLS
+	symbols).
+	* config/darwin.c (darwin_rename_builtins): Remove workaround.
+	* config/darwin.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(REAL_LIBGCC_SPEC): Handle revised library uses.
+	* config/darwin.opt (nodefaultexport): New.
+	* config/i386/darwin.h (PR80556_WORKAROUND): Remove.
+	* config/i386/darwin32-biarch.h (PR80556_WORKAROUND): Likewise.
+	* config/i386/darwin64-biarch.h (PR80556_WORKAROUND): Likewise.
+
+2021-11-19  Martin Jambor  <mjambor@suse.cz>
+
+	* opts.c (default_options_table): Switch off
+	flag_semantic_interposition at Ofast.
+	* doc/invoke.texi (Optimize Options): Document that Ofast switches off
+	-fsemantic-interposition.
+
+2021-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Do not guard modref
+	by !gimple_call_chain.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* doc/invoke.texi (-Waddress): Update.
+
+2021-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103254
+	* gimple-range-gori.cc (range_def_chain::get_def_chain): Limit the
+	depth for all statements with multple ssa names.
+
+2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md (define_peephole2): Variable insn points
+	to the first matched insn.  Use peep2_next_insn(1) to refer to
+	the second matched insn.
+
+2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103311
+	PR target/103330
+	* tree-vect-slp-patterns.c (vect_validate_multiplication): Fix CONJ
+	test to new codegen.
+	(complex_mul_pattern::matches): Move check downwards.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (pass_expand::execute): Use option directly.
+	* function.c (allocate_struct_function): Likewise.
+	* gimple-low.c (lower_function_body): Likewise.
+	(lower_stmt): Likewise.
+	* gimple-ssa-backprop.c (backprop::prepare_change): Likewise.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* sese.c (sese_insert_phis_for_liveouts): Likewise.
+	* ssa-iterators.h (num_imm_uses): Likewise.
+	* tree-cfg.c (make_blocks): Likewise.
+	(gimple_merge_blocks): Likewise.
+	* tree-inline.c (tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	* tree-sra.c (analyze_access_subtree): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa-phiopt.c (spaceship_replacement): Likewise.
+	* tree-ssa-reassoc.c (reassoc_remove_stmt): Likewise.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Likewise.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): Likewise.
+	* tree-ssa.c (gimple_replace_ssa_lhs): Likewise.
+	(target_for_debug_bind): Likewise.
+	(insert_debug_temp_for_var_def): Likewise.
+	(insert_debug_temps_for_defs): Likewise.
+	(reset_debug_uses): Likewise.
+	* tree-ssanames.c (release_ssa_name_fn): Likewise.
+	* tree-vect-loop-manip.c (adjust_vec_debug_stmts): Likewise.
+	(adjust_debug_stmts): Likewise.
+	(adjust_phi_and_debug_stmts): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-loop.c (vect_transform_loop_stmt): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree.h (MAY_HAVE_DEBUG_MARKER_STMTS): Remove
+	(MAY_HAVE_DEBUG_BIND_STMTS): Remove.
+	(MAY_HAVE_DEBUG_STMTS): Use options directly.
+
+2021-11-19  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	* gcc.c (process_command): Skip dumpdir override if file is a
+	not_actual_file_p.
+	* doc/invoke.texi: Update -dumpdir documentation.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103314
+	* match.pd ((type) X op CST): Restrict the equal
+	TYPE_PRECISION case to GIMPLE only.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/103230
+	* ipa-modref-tree.h (struct modref_parm_map): Add default
+	constructor.
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Use it.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103248
+	* tree-eh.c (operation_could_trap_helper_p): Properly handle
+	fixed-point RDIV_EXPR.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102436
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Add mode
+	to just create the if structure and return the then block.
+	(execute_sm): Add flag to indicate the var will re-use
+	another flag var.
+	(hoist_memory_references): Support a single conditional
+	block with all stores as special case.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103317
+	* tree-ssa-phiopt.c (minmax_replacement): For the non empty
+	middle bb case, check to make sure it has a single predecessor.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103257
+	* match.pd
+	((m1 >/</>=/<= m2) * d -> (m1 >/</>=/<= m2) ? d : 0):
+	Disable until !canonicalize_math_p ().
+
+2021-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	PR c++/96121
+	* doc/invoke.texi: Update documentation for -Wuninitialized.
+	* tree.c (stabilize_reference): Set location.
+
+2021-11-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102543
+	* config/i386/x86-tune-costs.h (skylake_cost): Reduce cost of
+	storing 256/512-bit SSE register to be equal to cost of
+	unaligned store to avoid odd alignment peeling.
+	(icelake_cost): Ditto.
+
 2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/predicates.md (current_file_function_operand):
