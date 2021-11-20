@@ -123,7 +123,14 @@ detach_value (location_t loc, gimple_stmt_iterator *gsip, tree val)
       return val;
     }
 
-  tree ret = copy_ssa_name (val);
+  /* Create a SSA "copy" of VAL.  This could be an anonymous
+     temporary, but it's nice to have it named after the corresponding
+     variable.  Alas, when VAL is a DECL_BY_REFERENCE RESULT_DECL,
+     setting (a copy of) it would be flagged by checking, so we don't
+     use copy_ssa_name: we create an anonymous SSA name, and then give
+     it the same identifier (rather than decl) as VAL.  */
+  tree ret = make_ssa_name (TREE_TYPE (val));
+  SET_SSA_NAME_VAR_OR_IDENTIFIER (ret, SSA_NAME_IDENTIFIER (val));
 
   /* Output asm ("" : "=g" (ret) : "0" (val));  */
   vec<tree, va_gc> *inputs = NULL;
