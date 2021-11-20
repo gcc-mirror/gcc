@@ -1665,9 +1665,9 @@ propagate_pure_const (void)
 	  if (w_l->state_previously_known != IPA_NEITHER
 	      && this_state > w_l->state_previously_known)
 	    {
-              this_state = w_l->state_previously_known;
 	      if (this_state == IPA_NEITHER)
-	        this_looping = w_l->looping_previously_known;
+		this_looping = w_l->looping_previously_known;
+	      this_state = w_l->state_previously_known;
 	    }
 	  if (!this_looping && self_recursive_p (w))
 	    this_looping = true;
