@@ -40,7 +40,7 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
 		      expr.get_mappings (), expr.get_locus (), false);
 }
 
-Bexpression *
+tree
 ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			 const Analysis::NodeMapping &mappings,
 			 Location expr_locus, bool is_qualified_path)
@@ -76,7 +76,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     }
 
   // might be a constant
-  Bexpression *constant_expr;
+  tree constant_expr;
   if (ctx->lookup_const_decl (ref, &constant_expr))
     return constant_expr;
 
@@ -92,7 +92,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   if (lookup->get_kind () == TyTy::TypeKind::FNDEF)
     {
       TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
-      Bfunction *fn = nullptr;
+      tree fn = NULL_TREE;
       if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
 	  return ctx->get_backend ()->function_code_expression (fn, expr_locus);
@@ -104,7 +104,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			is_qualified_path);
 }
 
-Bexpression *
+tree
 ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       const HIR::PathIdentSegment &final_segment,
 			       const Analysis::NodeMapping &mappings,

@@ -35,7 +35,7 @@ namespace Compile {
 
 struct fncontext
 {
-  ::Bfunction *fndecl;
+  tree fndecl;
   ::Bvariable *ret_addr;
 };
 
@@ -60,20 +60,20 @@ public:
 	ok = tyctx->lookup_type (ref, &lookup);
 	rust_assert (ok);
 
-	Btype *compiled = TyTyCompile::compile (backend, lookup);
-	compiled_type_map.insert (std::pair<HirId, Btype *> (ref, compiled));
+	tree compiled = TyTyCompile::compile (backend, lookup);
+	compiled_type_map.insert (std::pair<HirId, tree> (ref, compiled));
 	builtin_range.insert (ref);
       }
   }
 
-  bool lookup_compiled_types (HirId id, ::Btype **type,
+  bool lookup_compiled_types (HirId id, tree *type,
 			      const TyTy::BaseType *ref = nullptr)
   {
     if (ref != nullptr)
       {
 	for (auto it = mono.begin (); it != mono.end (); it++)
 	  {
-	    std::pair<HirId, ::Btype *> &val = it->second;
+	    std::pair<HirId, tree> &val = it->second;
 	    const TyTy::BaseType *r = it->first;
 
 	    if (ref->is_equal (*r))
@@ -94,14 +94,14 @@ public:
     return true;
   }
 
-  void insert_compiled_type (HirId id, ::Btype *type,
+  void insert_compiled_type (HirId id, tree type,
 			     const TyTy::BaseType *ref = nullptr)
   {
     rust_assert (builtin_range.find (id) == builtin_range.end ());
-    compiled_type_map.insert (std::pair<HirId, Btype *> (id, type));
+    compiled_type_map.insert (std::pair<HirId, tree> (id, type));
     if (ref != nullptr)
       {
-	std::pair<HirId, ::Btype *> elem (id, type);
+	std::pair<HirId, tree> elem (id, type);
 	mono[ref] = std::move (elem);
       }
   }
@@ -112,13 +112,13 @@ public:
   Analysis::Mappings *get_mappings () { return mappings; }
   ConstFold::Context *get_const_ctx () { return const_ctx; }
 
-  void push_block (Bblock *scope)
+  void push_block (tree scope)
   {
     scope_stack.push_back (scope);
     statements.push_back ({});
   }
 
-  Bblock *pop_block ()
+  tree pop_block ()
   {
     auto block = scope_stack.back ();
     scope_stack.pop_back ();
@@ -131,7 +131,7 @@ public:
     return block;
   }
 
-  Bblock *peek_enclosing_scope ()
+  tree peek_enclosing_scope ()
   {
     if (scope_stack.size () == 0)
       return nullptr;
@@ -139,12 +139,12 @@ public:
     return scope_stack.back ();
   }
 
-  void add_statement_to_enclosing_scope (Bstatement *stmt)
+  void add_statement_to_enclosing_scope (tree stmt)
   {
     statements.at (statements.size () - 2).push_back (stmt);
   }
 
-  void add_statement (Bstatement *stmt) { statements.back ().push_back (stmt); }
+  void add_statement (tree stmt) { statements.back ().push_back (stmt); }
 
   void insert_var_decl (HirId id, ::Bvariable *decl)
   {
@@ -161,7 +161,7 @@ public:
     return true;
   }
 
-  void insert_function_decl (const TyTy::FnType *ref, ::Bfunction *fn)
+  void insert_function_decl (const TyTy::FnType *ref, tree fn)
   {
     auto id = ref->get_ty_ref ();
     auto dId = ref->get_id ();
@@ -176,8 +176,7 @@ public:
     mono_fns[dId].push_back ({ref, fn});
   }
 
-  bool lookup_function_decl (HirId id, ::Bfunction **fn,
-			     DefId dId = UNKNOWN_DEFID,
+  bool lookup_function_decl (HirId id, tree *fn, DefId dId = UNKNOWN_DEFID,
 			     const TyTy::BaseType *ref = nullptr)
   {
     // for for any monomorphized fns
@@ -192,7 +191,7 @@ public:
 	for (auto &e : mono_fns[dId])
 	  {
 	    const TyTy::BaseType *r = e.first;
-	    ::Bfunction *f = e.second;
+	    tree f = e.second;
 	    if (ref->is_equal (*r))
 	      {
 		*fn = f;
@@ -210,12 +209,9 @@ public:
     return true;
   }
 
-  void insert_const_decl (HirId id, ::Bexpression *expr)
-  {
-    compiled_consts[id] = expr;
-  }
+  void insert_const_decl (HirId id, tree expr) { compiled_consts[id] = expr; }
 
-  bool lookup_const_decl (HirId id, ::Bexpression **expr)
+  bool lookup_const_decl (HirId id, tree *expr)
   {
     auto it = compiled_consts.find (id);
     if (it == compiled_consts.end ())
@@ -225,12 +221,9 @@ public:
     return true;
   }
 
-  void insert_label_decl (HirId id, ::Blabel *label)
-  {
-    compiled_labels[id] = label;
-  }
+  void insert_label_decl (HirId id, tree label) { compiled_labels[id] = label; }
 
-  bool lookup_label_decl (HirId id, ::Blabel **label)
+  bool lookup_label_decl (HirId id, tree *label)
   {
     auto it = compiled_labels.find (id);
     if (it == compiled_labels.end ())
@@ -240,17 +233,17 @@ public:
     return true;
   }
 
-  void push_fn (::Bfunction *fn, ::Bvariable *ret_addr)
+  void push_fn (tree fn, ::Bvariable *ret_addr)
   {
     fn_stack.push_back (fncontext{fn, ret_addr});
   }
   void pop_fn () { fn_stack.pop_back (); }
   fncontext peek_fn () { return fn_stack.back (); }
 
-  void push_type (::Btype *t) { type_decls.push_back (t); }
+  void push_type (tree t) { type_decls.push_back (t); }
   void push_var (::Bvariable *v) { var_decls.push_back (v); }
-  void push_const (::Bexpression *c) { const_decls.push_back (c); }
-  void push_function (::Bfunction *f) { func_decls.push_back (f); }
+  void push_const (tree c) { const_decls.push_back (c); }
+  void push_function (tree f) { func_decls.push_back (f); }
 
   void write_to_backend ()
   {
@@ -258,11 +251,11 @@ public:
 				       var_decls);
   }
 
-  bool function_completed (Bfunction *fn)
+  bool function_completed (tree fn)
   {
     for (auto it = func_decls.begin (); it != func_decls.end (); it++)
       {
-	Bfunction *i = (*it);
+	tree i = (*it);
 	if (i == fn)
 	  {
 	    return true;
@@ -282,16 +275,16 @@ public:
     return back;
   }
 
-  void push_loop_begin_label (Blabel *label)
+  void push_loop_begin_label (tree label)
   {
     loop_begin_labels.push_back (label);
   }
 
-  Blabel *peek_loop_begin_label () { return loop_begin_labels.back (); }
+  tree peek_loop_begin_label () { return loop_begin_labels.back (); }
 
-  Blabel *pop_loop_begin_label ()
+  tree pop_loop_begin_label ()
   {
-    Blabel *pop = loop_begin_labels.back ();
+    tree pop = loop_begin_labels.back ();
     loop_begin_labels.pop_back ();
     return pop;
   }
@@ -322,30 +315,30 @@ private:
   // state
   std::vector<fncontext> fn_stack;
   std::map<HirId, ::Bvariable *> compiled_var_decls;
-  std::map<HirId, ::Btype *> compiled_type_map;
-  std::map<HirId, ::Bfunction *> compiled_fn_map;
-  std::map<HirId, ::Bexpression *> compiled_consts;
-  std::map<HirId, ::Blabel *> compiled_labels;
-  std::vector<::std::vector<Bstatement *>> statements;
-  std::vector<::Bblock *> scope_stack;
+  std::map<HirId, tree> compiled_type_map;
+  std::map<HirId, tree> compiled_fn_map;
+  std::map<HirId, tree> compiled_consts;
+  std::map<HirId, tree> compiled_labels;
+  std::vector<::std::vector<tree>> statements;
+  std::vector<tree> scope_stack;
   std::vector<::Bvariable *> loop_value_stack;
-  std::vector<::Blabel *> loop_begin_labels;
-  std::map<const TyTy::BaseType *, std::pair<HirId, ::Btype *>> mono;
-  std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, ::Bfunction *>>>
+  std::vector<tree> loop_begin_labels;
+  std::map<const TyTy::BaseType *, std::pair<HirId, tree>> mono;
+  std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;
 
   // To GCC middle-end
-  std::vector<::Btype *> type_decls;
+  std::vector<tree> type_decls;
   std::vector<::Bvariable *> var_decls;
-  std::vector<::Bexpression *> const_decls;
-  std::vector<::Bfunction *> func_decls;
+  std::vector<tree> const_decls;
+  std::vector<tree> func_decls;
 };
 
 class TyTyResolveCompile : public TyTy::TyConstVisitor
 {
 public:
-  static ::Btype *compile (Context *ctx, const TyTy::BaseType *ty,
-			   bool trait_object_mode = false)
+  static tree compile (Context *ctx, const TyTy::BaseType *ty,
+		       bool trait_object_mode = false)
   {
     TyTyResolveCompile compiler (ctx, trait_object_mode);
     ty->accept_vis (compiler);
@@ -375,16 +368,16 @@ public:
 
   void visit (const TyTy::FnType &type) override
   {
-    Backend::Btyped_identifier receiver;
-    std::vector<Backend::Btyped_identifier> parameters;
-    std::vector<Backend::Btyped_identifier> results;
+    Backend::typed_identifier receiver;
+    std::vector<Backend::typed_identifier> parameters;
+    std::vector<Backend::typed_identifier> results;
 
     if (!type.get_return_type ()->is_unit ())
       {
 	auto hir_type = type.get_return_type ();
 	auto ret
 	  = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
-	results.push_back (Backend::Btyped_identifier (
+	results.push_back (Backend::typed_identifier (
 	  "_", ret,
 	  ctx->get_mappings ()->lookup_location (hir_type->get_ref ())));
       }
@@ -395,7 +388,7 @@ public:
 	auto compiled_param_type
 	  = TyTyResolveCompile::compile (ctx, param_tyty, trait_object_mode);
 
-	auto compiled_param = Backend::Btyped_identifier (
+	auto compiled_param = Backend::typed_identifier (
 	  param_pair.first->as_string (), compiled_param_type,
 	  ctx->get_mappings ()->lookup_location (param_tyty->get_ref ()));
 
@@ -414,12 +407,12 @@ public:
 
   void visit (const TyTy::FnPtr &type) override
   {
-    Btype *result_type
+    tree result_type
       = TyTyResolveCompile::compile (ctx, type.get_return_type ());
 
-    std::vector<Btype *> parameters;
+    std::vector<tree> parameters;
     type.iterate_params ([&] (TyTy::BaseType *p) mutable -> bool {
-      Btype *pty = TyTyResolveCompile::compile (ctx, p);
+      tree pty = TyTyResolveCompile::compile (ctx, p);
       parameters.push_back (pty);
       return true;
     });
@@ -439,25 +432,25 @@ public:
     rust_assert (type.number_of_variants () == 1);
 
     TyTy::VariantDef &variant = *type.get_variants ().at (0);
-    std::vector<Backend::Btyped_identifier> fields;
+    std::vector<Backend::typed_identifier> fields;
     for (size_t i = 0; i < variant.num_fields (); i++)
       {
 	const TyTy::StructFieldType *field = variant.get_field_at_index (i);
-	Btype *compiled_field_ty
+	tree compiled_field_ty
 	  = TyTyResolveCompile::compile (ctx, field->get_field_type ());
 
-	Backend::Btyped_identifier f (field->get_name (), compiled_field_ty,
-				      ctx->get_mappings ()->lookup_location (
-					type.get_ty_ref ()));
+	Backend::typed_identifier f (field->get_name (), compiled_field_ty,
+				     ctx->get_mappings ()->lookup_location (
+				       type.get_ty_ref ()));
 	fields.push_back (std::move (f));
       }
 
-    Btype *type_record;
+    tree type_record;
     if (type.is_union ())
       type_record = ctx->get_backend ()->union_type (fields);
     else
       type_record = ctx->get_backend ()->struct_type (fields);
-    Btype *named_struct
+    tree named_struct
       = ctx->get_backend ()->named_type (type.get_name (), type_record,
 					 ctx->get_mappings ()->lookup_location (
 					   type.get_ty_ref ()));
@@ -482,11 +475,11 @@ public:
       return;
 
     // create implicit struct
-    std::vector<Backend::Btyped_identifier> fields;
+    std::vector<Backend::typed_identifier> fields;
     for (size_t i = 0; i < type.num_fields (); i++)
       {
 	TyTy::BaseType *field = type.get_field (i);
-	Btype *compiled_field_ty = TyTyResolveCompile::compile (ctx, field);
+	tree compiled_field_ty = TyTyResolveCompile::compile (ctx, field);
 
 	// rustc uses the convention __N, where N is an integer, to
 	// name the fields of a tuple.  We follow this as well,
@@ -494,15 +487,15 @@ public:
 	// this, rather than simply emitting the integer, is that this
 	// approach makes it simpler to use a C-only debugger, or
 	// GDB's C mode, when debugging Rust.
-	Backend::Btyped_identifier f ("__" + std::to_string (i),
-				      compiled_field_ty,
-				      ctx->get_mappings ()->lookup_location (
-					type.get_ty_ref ()));
+	Backend::typed_identifier f ("__" + std::to_string (i),
+				     compiled_field_ty,
+				     ctx->get_mappings ()->lookup_location (
+				       type.get_ty_ref ()));
 	fields.push_back (std::move (f));
       }
 
-    Btype *struct_type_record = ctx->get_backend ()->struct_type (fields);
-    Btype *named_struct
+    tree struct_type_record = ctx->get_backend ()->struct_type (fields);
+    tree named_struct
       = ctx->get_backend ()->named_type (type.as_string (), struct_type_record,
 					 ctx->get_mappings ()->lookup_location (
 					   type.get_ty_ref ()));
@@ -514,7 +507,7 @@ public:
 
   void visit (const TyTy::ArrayType &type) override
   {
-    Btype *element_type
+    tree element_type
       = TyTyResolveCompile::compile (ctx, type.get_element_type ());
     translated
       = ctx->get_backend ()->array_type (element_type, type.get_capacity ());
@@ -522,7 +515,7 @@ public:
 
   void visit (const TyTy::BoolType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -530,7 +523,7 @@ public:
 
   void visit (const TyTy::IntType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -538,7 +531,7 @@ public:
 
   void visit (const TyTy::UintType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -546,7 +539,7 @@ public:
 
   void visit (const TyTy::FloatType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -554,7 +547,7 @@ public:
 
   void visit (const TyTy::USizeType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -562,7 +555,7 @@ public:
 
   void visit (const TyTy::ISizeType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -570,7 +563,7 @@ public:
 
   void visit (const TyTy::CharType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -578,7 +571,7 @@ public:
 
   void visit (const TyTy::ReferenceType &type) override
   {
-    Btype *base_compiled_type
+    tree base_compiled_type
       = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
     if (type.is_mutable ())
       {
@@ -593,7 +586,7 @@ public:
 
   void visit (const TyTy::PointerType &type) override
   {
-    Btype *base_compiled_type
+    tree base_compiled_type
       = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
     if (type.is_mutable ())
       {
@@ -608,7 +601,7 @@ public:
 
   void visit (const TyTy::StrType &type) override
   {
-    ::Btype *compiled_type = nullptr;
+    tree compiled_type = nullptr;
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &compiled_type);
     rust_assert (ok);
     translated = compiled_type;
@@ -633,32 +626,32 @@ public:
 
     // create implicit struct
     auto items = type.get_object_items ();
-    std::vector<Backend::Btyped_identifier> fields;
+    std::vector<Backend::typed_identifier> fields;
 
-    Btype *uint = ctx->get_backend ()->integer_type (
+    tree uint = ctx->get_backend ()->integer_type (
       true, ctx->get_backend ()->get_pointer_size ());
-    Btype *uintptr_ty = ctx->get_backend ()->pointer_type (uint);
+    tree uintptr_ty = ctx->get_backend ()->pointer_type (uint);
 
-    Backend::Btyped_identifier f ("__receiver_trait_obj_ptr", uintptr_ty,
-				  ctx->get_mappings ()->lookup_location (
-				    type.get_ty_ref ()));
+    Backend::typed_identifier f ("__receiver_trait_obj_ptr", uintptr_ty,
+				 ctx->get_mappings ()->lookup_location (
+				   type.get_ty_ref ()));
     fields.push_back (std::move (f));
 
     for (size_t i = 0; i < items.size (); i++)
       {
 	// mrustc seems to make a vtable consisting of uintptr's
-	Btype *uint = ctx->get_backend ()->integer_type (
+	tree uint = ctx->get_backend ()->integer_type (
 	  true, ctx->get_backend ()->get_pointer_size ());
-	Btype *uintptr_ty = ctx->get_backend ()->pointer_type (uint);
+	tree uintptr_ty = ctx->get_backend ()->pointer_type (uint);
 
-	Backend::Btyped_identifier f ("__" + std::to_string (i), uintptr_ty,
-				      ctx->get_mappings ()->lookup_location (
-					type.get_ty_ref ()));
+	Backend::typed_identifier f ("__" + std::to_string (i), uintptr_ty,
+				     ctx->get_mappings ()->lookup_location (
+				       type.get_ty_ref ()));
 	fields.push_back (std::move (f));
       }
 
-    Btype *type_record = ctx->get_backend ()->struct_type (fields);
-    Btype *named_struct
+    tree type_record = ctx->get_backend ()->struct_type (fields);
+    tree named_struct
       = ctx->get_backend ()->named_type (type.get_name (), type_record,
 					 ctx->get_mappings ()->lookup_location (
 					   type.get_ty_ref ()));
@@ -679,7 +672,7 @@ private:
 
   Context *ctx;
   bool trait_object_mode;
-  ::Btype *translated;
+  tree translated;
   size_t recursion_count;
 
   static const size_t kDefaultRecusionLimit = 5;

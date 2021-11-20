@@ -193,23 +193,21 @@ protected:
 
   Context *get_context () { return ctx; }
 
-  void compile_function_body (Bfunction *fndecl,
+  void compile_function_body (tree fndecl,
 			      std::unique_ptr<HIR::BlockExpr> &function_body,
 			      bool has_return_type);
 
-  bool compile_locals_for_block (Resolver::Rib &rib, Bfunction *fndecl,
+  bool compile_locals_for_block (Resolver::Rib &rib, tree fndecl,
 				 std::vector<Bvariable *> &locals);
 
-  Bexpression *coercion_site (Bexpression *compiled_ref, TyTy::BaseType *actual,
-			      TyTy::BaseType *expected, Location locus);
+  tree coercion_site (tree compiled_ref, TyTy::BaseType *actual,
+		      TyTy::BaseType *expected, Location locus);
 
-  Bexpression *coerce_to_dyn_object (Bexpression *compiled_ref,
-				     const TyTy::BaseType *actual,
-				     const TyTy::BaseType *expected,
-				     const TyTy::DynamicObjectType *ty,
-				     Location locus);
+  tree coerce_to_dyn_object (tree compiled_ref, const TyTy::BaseType *actual,
+			     const TyTy::BaseType *expected,
+			     const TyTy::DynamicObjectType *ty, Location locus);
 
-  Bexpression *compute_address_for_trait_item (
+  tree compute_address_for_trait_item (
     const Resolver::TraitItemReference *ref,
     const TyTy::TypeBoundPredicate *predicate,
     std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>

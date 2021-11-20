@@ -118,11 +118,12 @@ public:
     for (auto &impl_item : impl_block.get_impl_items ())
       {
 	if (!is_trait_impl_block)
-	  TypeCheckImplItem::Resolve (impl_item.get (), self);
+	  TypeCheckImplItem::Resolve (&impl_block, impl_item.get (), self);
 	else
 	  {
 	    auto &trait_item_ref
-	      = TypeCheckImplItemWithTrait::Resolve (impl_item.get (), self,
+	      = TypeCheckImplItemWithTrait::Resolve (&impl_block,
+						     impl_item.get (), self,
 						     *trait_reference,
 						     substitutions);
 	    trait_item_refs.push_back (trait_item_ref);
@@ -210,7 +211,8 @@ public:
     // need to get the return type from this
     TyTy::FnType *resolved_fn_type = static_cast<TyTy::FnType *> (lookup);
     auto expected_ret_tyty = resolved_fn_type->get_return_type ();
-    context->push_return_type (expected_ret_tyty);
+    context->push_return_type (TypeCheckContextItem (&function),
+			       expected_ret_tyty);
 
     auto block_expr_ty
       = TypeCheckExpr::Resolve (function.get_definition ().get (), false);

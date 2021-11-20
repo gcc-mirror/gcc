@@ -75,6 +75,13 @@ public:
       }
   }
 
+  void visit (AST::DereferenceExpr &expr) override
+  {
+    expr.get_dereferenced_expr ()->accept_vis (*this);
+  }
+
+  void visit (AST::PathInExpression &expr) override { ok = true; }
+
 private:
   VerifyAsignee (NodeId parent) : ResolverBase (parent), ok (false) {}
 

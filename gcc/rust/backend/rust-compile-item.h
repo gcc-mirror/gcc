@@ -37,11 +37,10 @@ protected:
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *compile (HIR::Item *item, Context *ctx,
-			       bool compile_fns = true,
-			       TyTy::BaseType *concrete = nullptr,
-			       bool is_query_mode = false,
-			       Location ref_locus = Location ())
+  static tree compile (HIR::Item *item, Context *ctx, bool compile_fns = true,
+		       TyTy::BaseType *concrete = nullptr,
+		       bool is_query_mode = false,
+		       Location ref_locus = Location ())
   {
     CompileItem compiler (ctx, compile_fns, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -61,8 +60,8 @@ public:
 					      &resolved_type);
     rust_assert (ok);
 
-    Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree value = CompileExpr::Compile (var.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -97,8 +96,8 @@ public:
 					&resolved_type);
     rust_assert (ok);
 
-    ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
-    Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
+    tree type = TyTyResolveCompile::compile (ctx, resolved_type);
+    tree value = CompileExpr::Compile (constant.get_expr (), ctx);
 
     const Resolver::CanonicalPath *canonical_path = nullptr;
     ok = ctx->get_mappings ()->lookup_canonical_path (
@@ -107,7 +106,7 @@ public:
     rust_assert (ok);
 
     std::string ident = canonical_path->get ();
-    Bexpression *const_expr
+    tree const_expr
       = ctx->get_backend ()->named_constant_expression (type, ident, value,
 							constant.get_locus ());
 
@@ -148,14 +147,14 @@ public:
 
     // items can be forward compiled which means we may not need to invoke this
     // code. We might also have already compiled this generic function as well.
-    Bfunction *lookup = nullptr;
+    tree lookup = NULL_TREE;
     if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
 				   fntype->get_id (), fntype))
       {
 	// has this been added to the list then it must be finished
 	if (ctx->function_completed (lookup))
 	  {
-	    Bfunction *dummy = nullptr;
+	    tree dummy = NULL_TREE;
 	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
 	      {
 		ctx->insert_function_decl (fntype, lookup);
@@ -174,7 +173,7 @@ public:
 	fntype->override_context ();
       }
 
-    ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
     bool is_main_fn = function.get_function_name ().compare ("main") == 0;
@@ -202,7 +201,7 @@ public:
 	asm_name = ctx->mangle_item (fntype, *canonical_path);
       }
 
-    Bfunction *fndecl
+    tree fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
 				       asm_name, flags, function.get_locus ());
     ctx->insert_function_decl (fntype, fndecl);
@@ -262,12 +261,12 @@ public:
     ok = compile_locals_for_block (*rib, fndecl, locals);
     rust_assert (ok);
 
-    Bblock *enclosing_scope = NULL;
+    tree enclosing_scope = NULL_TREE;
     HIR::BlockExpr *function_body = function.get_definition ().get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
 
-    Bblock *code_block
+    tree code_block
       = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 				    start_location, end_location);
     ctx->push_block (code_block);
@@ -275,10 +274,10 @@ public:
     Bvariable *return_address = nullptr;
     if (function.has_function_return_type ())
       {
-	Btype *return_type = TyTyResolveCompile::compile (ctx, tyret);
+	tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
 	bool address_is_taken = false;
-	Bstatement *ret_var_stmt = nullptr;
+	tree ret_var_stmt = NULL_TREE;
 
 	return_address = ctx->get_backend ()->temporary_variable (
 	  fndecl, code_block, return_type, NULL, address_is_taken,
@@ -347,7 +346,7 @@ protected:
 
   bool compile_fns;
   TyTy::BaseType *concrete;
-  Bexpression *reference;
+  tree reference;
   Location ref_locus;
 };
 

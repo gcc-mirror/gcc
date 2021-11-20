@@ -666,6 +666,80 @@ protected:
   }
 };
 
+class CompoundAssignmentExpr : public OperatorExpr
+{
+public:
+  using ExprType = ArithmeticOrLogicalOperator;
+
+private:
+  // Note: overloading trait specified in comments
+  ExprType expr_type;
+  std::unique_ptr<Expr> right_expr;
+
+public:
+  std::string as_string () const override;
+
+  ExprType get_expr_type () const { return expr_type; }
+
+  // Use pointers in constructor to enable polymorphism
+  CompoundAssignmentExpr (Analysis::NodeMapping mappings,
+			  std::unique_ptr<Expr> value_to_assign_to,
+			  std::unique_ptr<Expr> value_to_assign,
+			  ExprType expr_kind, Location locus)
+    : OperatorExpr (std::move (mappings), std::move (value_to_assign_to),
+		    AST::AttrVec (), locus),
+      expr_type (expr_kind), right_expr (std::move (value_to_assign))
+  {}
+  // outer attributes not allowed
+
+  // Have clone in copy constructor
+  CompoundAssignmentExpr (CompoundAssignmentExpr const &other)
+    : OperatorExpr (other), expr_type (other.expr_type),
+      right_expr (other.right_expr->clone_expr ())
+  {}
+
+  // Overload assignment operator to clone
+  CompoundAssignmentExpr &operator= (CompoundAssignmentExpr const &other)
+  {
+    OperatorExpr::operator= (other);
+    // main_or_left_expr = other.main_or_left_expr->clone_expr();
+    right_expr = other.right_expr->clone_expr ();
+    expr_type = other.expr_type;
+    // outer_attrs = other.outer_attrs;
+
+    return *this;
+  }
+
+  // move constructors
+  CompoundAssignmentExpr (CompoundAssignmentExpr &&other) = default;
+  CompoundAssignmentExpr &operator= (CompoundAssignmentExpr &&other) = default;
+
+  void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_left_expr ()
+  {
+    rust_assert (main_or_left_expr != nullptr);
+    return main_or_left_expr;
+  }
+
+  std::unique_ptr<Expr> &get_right_expr ()
+  {
+    rust_assert (right_expr != nullptr);
+    return right_expr;
+  }
+
+  void visit_lhs (HIRVisitor &vis) { main_or_left_expr->accept_vis (vis); }
+  void visit_rhs (HIRVisitor &vis) { right_expr->accept_vis (vis); }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  CompoundAssignmentExpr *clone_expr_without_block_impl () const override
+  {
+    return new CompoundAssignmentExpr (*this);
+  }
+};
+
 // Expression in parentheses (i.e. like literally just any 3 + (2 * 6))
 class GroupedExpr : public ExprWithoutBlock
 {
@@ -1635,17 +1709,12 @@ class MethodCallExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> receiver;
   PathExprSegment method_name;
-  // inlined form of CallParams
   std::vector<std::unique_ptr<Expr> > params;
 
   Location locus;
 
 public:
   std::string as_string () const override;
-
-  /*inline std::vector<std::unique_ptr<Expr>> get_params() const {
-      return params;
-  }*/
 
   MethodCallExpr (Analysis::NodeMapping mappings,
 		  std::unique_ptr<Expr> call_receiver,

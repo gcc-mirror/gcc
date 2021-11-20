@@ -36,15 +36,15 @@ public:
 
   ::Backend *get_backend () { return backend; }
 
-  bool lookup_const (HirId id, Bexpression **expr);
+  bool lookup_const (HirId id, tree *expr);
 
-  void insert_const (HirId, Bexpression *expr);
+  void insert_const (HirId, tree expr);
 
 private:
   Context (::Backend *backend);
 
   ::Backend *backend;
-  std::map<HirId, Bexpression *> ctx;
+  std::map<HirId, tree> ctx;
 };
 
 } // namespace ConstFold

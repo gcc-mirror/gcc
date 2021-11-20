@@ -1,8 +1,6 @@
 trait Foo {
     type A;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     type B;
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     fn new(a: Self::A, b: Self::B) -> Self;
     // { dg-warning "unused name .a." "" { target *-*-* } .-1 }

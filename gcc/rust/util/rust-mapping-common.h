@@ -31,17 +31,32 @@ typedef uint32_t NodeId;
 typedef uint32_t HirId;
 // refers to any top-level decl in HIR
 typedef uint32_t LocalDefId;
-// refers to <Crate><DefId>
-typedef uint64_t DefId;
 
-#define DEF_ID_CRATE_MASK 0xFFFFFFFF00000000
-#define DEF_ID_LOCAL_DEF_MASK 0x00000000FFFFFFFF
+struct DefId
+{
+  CrateNum crateNum;
+  LocalDefId localDefId;
+
+  bool operator== (const DefId &other) const
+  {
+    return this->crateNum == other.crateNum
+	   && this->localDefId == other.localDefId;
+  }
+
+  bool operator!= (const DefId &other) const { return !(*this == other); }
+
+  bool operator< (const DefId &other) const
+  {
+    return ((uint64_t) this->crateNum << 32 | this->localDefId)
+	   < ((uint64_t) other.crateNum << 32 | other.localDefId);
+  }
+};
 
 #define UNKNOWN_CREATENUM ((uint32_t) (0))
 #define UNKNOWN_NODEID ((uint32_t) (0))
 #define UNKNOWN_HIRID ((uint32_t) (0))
 #define UNKNOWN_LOCAL_DEFID ((uint32_t) (0))
-#define UNKNOWN_DEFID ((uint64_t) (0))
+#define UNKNOWN_DEFID (DefId{0, 0})
 
 } // namespace Rust
 

@@ -30,15 +30,14 @@ class ResolvePathRef : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (HIR::QualifiedPathInExpression &expr,
-			       Context *ctx)
+  static tree Compile (HIR::QualifiedPathInExpression &expr, Context *ctx)
   {
     ResolvePathRef resolver (ctx);
     expr.accept_vis (resolver);
     return resolver.resolved;
   }
 
-  static Bexpression *Compile (HIR::PathInExpression &expr, Context *ctx)
+  static tree Compile (HIR::PathInExpression &expr, Context *ctx)
   {
     ResolvePathRef resolver (ctx);
     expr.accept_vis (resolver);
@@ -54,16 +53,16 @@ private:
     : HIRCompileBase (ctx), resolved (ctx->get_backend ()->error_expression ())
   {}
 
-  Bexpression *resolve (const HIR::PathIdentSegment &final_segment,
-			const Analysis::NodeMapping &mappings, Location locus,
-			bool is_qualified_path);
+  tree resolve (const HIR::PathIdentSegment &final_segment,
+		const Analysis::NodeMapping &mappings, Location locus,
+		bool is_qualified_path);
 
-  Bexpression *query_compile (HirId ref, TyTy::BaseType *lookup,
-			      const HIR::PathIdentSegment &final_segment,
-			      const Analysis::NodeMapping &mappings,
-			      Location expr_locus, bool is_qualified_path);
+  tree query_compile (HirId ref, TyTy::BaseType *lookup,
+		      const HIR::PathIdentSegment &final_segment,
+		      const Analysis::NodeMapping &mappings,
+		      Location expr_locus, bool is_qualified_path);
 
-  Bexpression *resolved;
+  tree resolved;
 };
 
 } // namespace Compile

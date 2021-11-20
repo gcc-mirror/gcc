@@ -310,9 +310,10 @@ class TypeCheckImplItem : public TypeCheckBase
 public:
   using Rust::Resolver::TypeCheckBase::visit;
 
-  static void Resolve (HIR::ImplItem *item, TyTy::BaseType *self)
+  static void Resolve (HIR::ImplBlock *parent, HIR::ImplItem *item,
+		       TyTy::BaseType *self)
   {
-    TypeCheckImplItem resolver (self);
+    TypeCheckImplItem resolver (parent, self);
     item->accept_vis (resolver);
   }
 
@@ -336,7 +337,8 @@ public:
     // need to get the return type from this
     TyTy::FnType *resolve_fn_type = static_cast<TyTy::FnType *> (lookup);
     auto expected_ret_tyty = resolve_fn_type->get_return_type ();
-    context->push_return_type (expected_ret_tyty);
+    context->push_return_type (TypeCheckContextItem (parent, &function),
+			       expected_ret_tyty);
 
     auto block_expr_ty
       = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
@@ -346,8 +348,11 @@ public:
   }
 
 protected:
-  TypeCheckImplItem (TyTy::BaseType *self) : TypeCheckBase (), self (self) {}
+  TypeCheckImplItem (HIR::ImplBlock *parent, TyTy::BaseType *self)
+    : TypeCheckBase (), parent (parent), self (self)
+  {}
 
+  HIR::ImplBlock *parent;
   TyTy::BaseType *self;
 };
 
@@ -357,11 +362,12 @@ class TypeCheckImplItemWithTrait : public TypeCheckImplItem
 
 public:
   static const TraitItemReference &
-  Resolve (HIR::ImplItem *item, TyTy::BaseType *self,
+  Resolve (HIR::ImplBlock *parent, HIR::ImplItem *item, TyTy::BaseType *self,
 	   TraitReference &trait_reference,
 	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
   {
-    TypeCheckImplItemWithTrait resolver (self, trait_reference, substitutions);
+    TypeCheckImplItemWithTrait resolver (parent, self, trait_reference,
+					 substitutions);
     item->accept_vis (resolver);
     return resolver.resolved_trait_item;
   }
@@ -514,9 +520,10 @@ public:
 
 private:
   TypeCheckImplItemWithTrait (
-    TyTy::BaseType *self, TraitReference &trait_reference,
+    HIR::ImplBlock *parent, TyTy::BaseType *self,
+    TraitReference &trait_reference,
     std::vector<TyTy::SubstitutionParamMapping> substitutions)
-    : TypeCheckImplItem (self), trait_reference (trait_reference),
+    : TypeCheckImplItem (parent, self), trait_reference (trait_reference),
       resolved_trait_item (TraitItemReference::error_node ()),
       substitutions (substitutions)
   {

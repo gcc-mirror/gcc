@@ -30,7 +30,7 @@ class CompileBlock : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bblock *compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
+  static tree compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
   {
     CompileBlock compiler (ctx, result);
     expr->accept_vis (compiler);
@@ -44,7 +44,7 @@ private:
     : HIRCompileBase (ctx), translated (nullptr), result (result)
   {}
 
-  Bblock *translated;
+  tree translated;
   Bvariable *result;
 };
 
@@ -53,8 +53,7 @@ class CompileConditionalBlocks : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bstatement *compile (HIR::IfExpr *expr, Context *ctx,
-			      Bvariable *result)
+  static tree compile (HIR::IfExpr *expr, Context *ctx, Bvariable *result)
   {
     CompileConditionalBlocks resolver (ctx, result);
     expr->accept_vis (resolver);
@@ -72,7 +71,7 @@ private:
     : HIRCompileBase (ctx), translated (nullptr), result (result)
   {}
 
-  Bstatement *translated;
+  tree translated;
   Bvariable *result;
 };
 
@@ -81,8 +80,8 @@ class CompileExprWithBlock : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bstatement *compile (HIR::ExprWithBlock *expr, Context *ctx,
-			      Bvariable *result)
+  static tree compile (HIR::ExprWithBlock *expr, Context *ctx,
+		       Bvariable *result)
   {
     CompileExprWithBlock resolver (ctx, result);
     expr->accept_vis (resolver);
@@ -109,7 +108,7 @@ private:
     : HIRCompileBase (ctx), translated (nullptr), result (result)
   {}
 
-  Bstatement *translated;
+  tree translated;
   Bvariable *result;
 };
 

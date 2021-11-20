@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # If updating these steps, please also correspondingly update '../../CONTRIBUTING.md', "Running `clang-format` locally".
     - uses: actions/checkout@v2
     - name: Copy .clang-format file
       run: cp contrib/clang-format .clang-format
