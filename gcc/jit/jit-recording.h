@@ -378,6 +378,7 @@ private:
    it lives until the context is released, at which
    point it itself is cleaned up.  */
 
+// TODO: implement equality based on https://zpz.github.io/blog/overloading-equality-operator-in-cpp-class-hierarchy/
 class memento
 {
 public:
@@ -541,6 +542,7 @@ public:
   virtual function_type *as_a_function_type() { gcc_unreachable (); return NULL; }
   virtual struct_ *dyn_cast_struct () { return NULL; }
   virtual vector_type *dyn_cast_vector_type () { return NULL; }
+  virtual array_type *dyn_cast_array_type () FINAL OVERRIDE { return NULL; }
 
   /* Is it typesafe to copy to this type from rtype?  */
   virtual bool accepts_writes_from (type *rtype)
@@ -866,6 +868,24 @@ class array_type : public type
   {}
 
   type *dereference () FINAL OVERRIDE;
+
+  array_type *dyn_cast_array_type () FINAL OVERRIDE { return this; }
+
+  bool accepts_writes_from (type *rtype) FINAL OVERRIDE
+  {
+    type *relement_type = rtype->is_array();
+    // FIXME: this condition might not be necessary.
+    if (!relement_type)
+    {
+      return false;
+    }
+    array_type *rarray_type = rtype->dyn_cast_array_type ();
+    if (!rarray_type)
+    {
+      return false;
+    }
+    return is_array () == relement_type && m_num_elements == rarray_type->num_elements ();
+  }
 
   bool is_int () const FINAL OVERRIDE { return false; }
   bool is_float () const FINAL OVERRIDE { return false; }
