@@ -230,7 +230,7 @@ entrypoints:
 .. _LIBGCCJIT_ABI_15:
 
 ``LIBGCCJIT_ABI_15``
------------------------
+--------------------
 ``LIBGCCJIT_ABI_15`` covers the addition of API entrypoints for directly
 embedding assembler instructions:
 
@@ -243,3 +243,44 @@ embedding assembler instructions:
   * :func:`gcc_jit_extended_asm_add_input_operand`
   * :func:`gcc_jit_extended_asm_add_clobber`
   * :func:`gcc_jit_context_add_top_level_asm`
+
+.. _LIBGCCJIT_ABI_16:
+
+``LIBGCCJIT_ABI_16``
+--------------------
+``LIBGCCJIT_ABI_16`` covers the addition of reflection functions via API
+entrypoints:
+
+  * :func:`gcc_jit_function_get_return_type`
+
+  * :func:`gcc_jit_function_get_param_count`
+
+  * :func:`gcc_jit_type_dyncast_array`
+
+  * :func:`gcc_jit_type_is_bool`
+
+  * :func:`gcc_jit_type_is_integral`
+
+  * :func:`gcc_jit_type_is_pointer`
+
+  * :func:`gcc_jit_type_is_struct`
+
+  * :func:`gcc_jit_type_dyncast_vector`
+
+  * :func:`gcc_jit_type_unqualified`
+
+  * :func:`gcc_jit_type_dyncast_function_ptr_type`
+
+  * :func:`gcc_jit_function_type_get_return_type`
+
+  * :func:`gcc_jit_function_type_get_param_count`
+
+  * :func:`gcc_jit_function_type_get_param_type`
+
+  * :func:`gcc_jit_vector_type_get_num_units`
+
+  * :func:`gcc_jit_vector_type_get_element_type`
+
+  * :func:`gcc_jit_struct_get_field`
+
+  * :func:`gcc_jit_struct_get_field_count`
