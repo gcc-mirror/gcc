@@ -812,14 +812,15 @@ ignore_stores_p (tree caller, int flags)
   return false;
 }
 
-/* Determine parm_map for argument OP.  */
+/* Determine parm_map for PTR which is supposed to be a pointer.  */
 
 modref_parm_map
-parm_map_for_arg (tree op)
+parm_map_for_ptr (tree op)
 {
   bool offset_known;
   poly_int64 offset;
   struct modref_parm_map parm_map;
+  gcall *call;
 
   parm_map.parm_offset_known = false;
   parm_map.parm_offset = 0;
@@ -830,21 +831,25 @@ parm_map_for_arg (tree op)
       && TREE_CODE (SSA_NAME_VAR (op)) == PARM_DECL)
     {
       int index = 0;
-      for (tree t = DECL_ARGUMENTS (current_function_decl);
-	   t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
-	{
-	  if (!t)
-	    {
-	      index = MODREF_UNKNOWN_PARM;
-	      break;
-	    }
+
+      if (cfun->static_chain_decl
+	  && op == ssa_default_def (cfun, cfun->static_chain_decl))
+	index = MODREF_STATIC_CHAIN_PARM;
+      else
+	for (tree t = DECL_ARGUMENTS (current_function_decl);
+	     t != SSA_NAME_VAR (op); t = DECL_CHAIN (t))
 	  index++;
-	}
       parm_map.parm_index = index;
       parm_map.parm_offset_known = offset_known;
       parm_map.parm_offset = offset;
     }
   else if (points_to_local_or_readonly_memory_p (op))
+    parm_map.parm_index = MODREF_LOCAL_MEMORY_PARM;
+  /* Memory allocated in the function is not visible to caller before the
+     call and thus we do not need to record it as load/stores/kills.  */
+  else if (TREE_CODE (op) == SSA_NAME
+	   && (call = dyn_cast<gcall *>(SSA_NAME_DEF_STMT (op))) != NULL
+	   && gimple_call_flags (call) & ECF_MALLOC)
     parm_map.parm_index = MODREF_LOCAL_MEMORY_PARM;
   else
     parm_map.parm_index = MODREF_UNKNOWN_PARM;
@@ -955,33 +960,19 @@ modref_access_analysis::get_access (ao_ref *ref)
   if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
     {
       tree memref = base;
-      base = TREE_OPERAND (base, 0);
+      modref_parm_map m = parm_map_for_ptr (TREE_OPERAND (base, 0));
 
-      if (TREE_CODE (base) == SSA_NAME
-	  && SSA_NAME_IS_DEFAULT_DEF (base)
-	  && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL)
-	{
-	  a.parm_index = 0;
-	  if (cfun->static_chain_decl
-	      && base == ssa_default_def (cfun, cfun->static_chain_decl))
-	    a.parm_index = MODREF_STATIC_CHAIN_PARM;
-	  else
-	    for (tree t = DECL_ARGUMENTS (current_function_decl);
-		 t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
-	      a.parm_index++;
-	}
-      else
-	a.parm_index = MODREF_UNKNOWN_PARM;
-
-      if (a.parm_index != MODREF_UNKNOWN_PARM
-	  && TREE_CODE (memref) == MEM_REF)
+      a.parm_index = m.parm_index;
+      if (a.parm_index != MODREF_UNKNOWN_PARM && TREE_CODE (memref) == MEM_REF)
 	{
 	  a.parm_offset_known
 	     = wi::to_poly_wide (TREE_OPERAND
 				     (memref, 1)).to_shwi (&a.parm_offset);
+	  if (a.parm_offset_known && m.parm_offset_known)
+	    a.parm_offset += m.parm_offset;
+	  else
+	    a.parm_offset_known = false;
 	}
-      else
-	a.parm_offset_known = false;
     }
   else
     a.parm_index = MODREF_UNKNOWN_PARM;
@@ -1220,7 +1211,7 @@ modref_access_analysis::merge_call_side_effects
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
-      parm_map[i] = parm_map_for_arg (gimple_call_arg (stmt, i));
+      parm_map[i] = parm_map_for_ptr (gimple_call_arg (stmt, i));
       if (dump_file)
 	{
 	  fprintf (dump_file, " %i", parm_map[i].parm_index);
@@ -1236,7 +1227,7 @@ modref_access_analysis::merge_call_side_effects
   modref_parm_map chain_map;
   if (gimple_call_chain (stmt))
     {
-      chain_map = parm_map_for_arg (gimple_call_chain (stmt));
+      chain_map = parm_map_for_ptr (gimple_call_chain (stmt));
       if (dump_file)
 	{
 	  fprintf (dump_file, "static chain %i", chain_map.parm_index);
@@ -1390,7 +1381,7 @@ modref_access_analysis::process_fnspec (gcall *call)
 	else if (!fnspec.arg_specified_p (i)
 		 || fnspec.arg_maybe_read_p (i))
 	  {
-	    modref_parm_map map = parm_map_for_arg
+	    modref_parm_map map = parm_map_for_ptr
 					(gimple_call_arg (call, i));
 
 	    if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
@@ -1401,6 +1392,8 @@ modref_access_analysis::process_fnspec (gcall *call)
 		break;
 	      }
 	    modref_access_node a = get_access_for_fnspec (call, fnspec, i, map);
+	    if (a.parm_index == MODREF_LOCAL_MEMORY_PARM)
+	      continue;
 	    if (m_summary)
 	      m_summary->loads->insert (0, 0, a, false);
 	    if (m_summary_lto)
@@ -1419,7 +1412,7 @@ modref_access_analysis::process_fnspec (gcall *call)
 	else if (!fnspec.arg_specified_p (i)
 		 || fnspec.arg_maybe_written_p (i))
 	  {
-	    modref_parm_map map = parm_map_for_arg
+	    modref_parm_map map = parm_map_for_ptr
 					 (gimple_call_arg (call, i));
 
 	    if (map.parm_index == MODREF_LOCAL_MEMORY_PARM)
@@ -1430,6 +1423,8 @@ modref_access_analysis::process_fnspec (gcall *call)
 		break;
 	      }
 	    modref_access_node a = get_access_for_fnspec (call, fnspec, i, map);
+	    if (a.parm_index == MODREF_LOCAL_MEMORY_PARM)
+	      continue;
 	    if (m_summary)
 	      m_summary->stores->insert (0, 0, a, false);
 	    if (m_summary_lto)
@@ -1553,6 +1548,8 @@ modref_access_analysis::analyze_load (gimple *, tree, tree op, void *data)
   ao_ref r;
   ao_ref_init (&r, op);
   modref_access_node a = get_access (&r);
+  if (a.parm_index == MODREF_LOCAL_MEMORY_PARM)
+    return false;
 
   if (t->m_summary)
     t->record_access (t->m_summary->loads, &r, a);
@@ -1581,6 +1578,8 @@ modref_access_analysis::analyze_store (gimple *stmt, tree, tree op, void *data)
   ao_ref r;
   ao_ref_init (&r, op);
   modref_access_node a = get_access (&r);
+  if (a.parm_index == MODREF_LOCAL_MEMORY_PARM)
+    return false;
 
   if (t->m_summary)
     t->record_access (t->m_summary->stores, &r, a);
