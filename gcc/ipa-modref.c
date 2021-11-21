@@ -775,149 +775,6 @@ get_modref_function_summary (gcall *call, bool *interposed)
 
 namespace {
 
-/* Construct modref_access_node from REF.  */
-static modref_access_node
-get_access (ao_ref *ref)
-{
-  tree base;
-
-  base = ao_ref_base (ref);
-  modref_access_node a = {ref->offset, ref->size, ref->max_size,
-			  0, MODREF_UNKNOWN_PARM, false, 0};
-  if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
-    {
-      tree memref = base;
-      base = TREE_OPERAND (base, 0);
-
-      if (TREE_CODE (base) == SSA_NAME
-	  && SSA_NAME_IS_DEFAULT_DEF (base)
-	  && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL)
-	{
-	  a.parm_index = 0;
-	  if (cfun->static_chain_decl
-	      && base == ssa_default_def (cfun, cfun->static_chain_decl))
-	    a.parm_index = MODREF_STATIC_CHAIN_PARM;
-	  else
-	    for (tree t = DECL_ARGUMENTS (current_function_decl);
-		 t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
-	      a.parm_index++;
-	}
-      else
-	a.parm_index = MODREF_UNKNOWN_PARM;
-
-      if (a.parm_index != MODREF_UNKNOWN_PARM
-	  && TREE_CODE (memref) == MEM_REF)
-	{
-	  a.parm_offset_known
-	     = wi::to_poly_wide (TREE_OPERAND
-				     (memref, 1)).to_shwi (&a.parm_offset);
-	}
-      else
-	a.parm_offset_known = false;
-    }
-  else
-    a.parm_index = MODREF_UNKNOWN_PARM;
-  return a;
-}
-
-/* Record access into the modref_records data structure.  */
-
-static void
-record_access (modref_records *tt, ao_ref *ref, modref_access_node &a)
-{
-  alias_set_type base_set = !flag_strict_aliasing ? 0
-			    : ao_ref_base_alias_set (ref);
-  alias_set_type ref_set = !flag_strict_aliasing ? 0
-			    : (ao_ref_alias_set (ref));
-  if (dump_file)
-    {
-       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i ",
-		base_set, ref_set);
-       a.dump (dump_file);
-    }
-  tt->insert (base_set, ref_set, a, false);
-}
-
-/* IPA version of record_access_tree.  */
-
-static void
-record_access_lto (modref_records_lto *tt, ao_ref *ref, modref_access_node &a)
-{
-  /* get_alias_set sometimes use different type to compute the alias set
-     than TREE_TYPE (base).  Do same adjustments.  */
-  tree base_type = NULL_TREE, ref_type = NULL_TREE;
-  if (flag_strict_aliasing)
-    {
-      tree base;
-
-      base = ref->ref;
-      while (handled_component_p (base))
-	base = TREE_OPERAND (base, 0);
-
-      base_type = reference_alias_ptr_type_1 (&base);
-
-      if (!base_type)
-	base_type = TREE_TYPE (base);
-      else
-	base_type = TYPE_REF_CAN_ALIAS_ALL (base_type)
-		    ? NULL_TREE : TREE_TYPE (base_type);
-
-      tree ref_expr = ref->ref;
-      ref_type = reference_alias_ptr_type_1 (&ref_expr);
-
-      if (!ref_type)
-	ref_type = TREE_TYPE (ref_expr);
-      else
-	ref_type = TYPE_REF_CAN_ALIAS_ALL (ref_type)
-		   ? NULL_TREE : TREE_TYPE (ref_type);
-
-      /* Sanity check that we are in sync with what get_alias_set does.  */
-      gcc_checking_assert ((!base_type && !ao_ref_base_alias_set (ref))
-			   || get_alias_set (base_type)
-			      == ao_ref_base_alias_set (ref));
-      gcc_checking_assert ((!ref_type && !ao_ref_alias_set (ref))
-			   || get_alias_set (ref_type)
-			      == ao_ref_alias_set (ref));
-
-      /* Do not bother to record types that have no meaningful alias set.
-	 Also skip variably modified types since these go to local streams.  */
-      if (base_type && (!get_alias_set (base_type)
-			|| variably_modified_type_p (base_type, NULL_TREE)))
-	base_type = NULL_TREE;
-      if (ref_type && (!get_alias_set (ref_type)
-		       || variably_modified_type_p (ref_type, NULL_TREE)))
-	ref_type = NULL_TREE;
-    }
-  if (dump_file)
-    {
-      fprintf (dump_file, "   - Recording base type:");
-      print_generic_expr (dump_file, base_type);
-      fprintf (dump_file, " (alias set %i) ref type:",
-	       base_type ? get_alias_set (base_type) : 0);
-      print_generic_expr (dump_file, ref_type);
-      fprintf (dump_file, " (alias set %i) ",
-	       ref_type ? get_alias_set (ref_type) : 0);
-       a.dump (dump_file);
-    }
-
-  tt->insert (base_type, ref_type, a, false);
-}
-
-/* Returns true if and only if we should store the access to EXPR.
-   Some accesses, e.g. loads from automatic variables, are not interesting.  */
-
-static bool
-record_access_p (tree expr)
-{
-  if (refs_local_or_readonly_memory_p (expr))
-    {
-      if (dump_file)
-	fprintf (dump_file, "   - Read-only or local, ignoring.\n");
-      return false;
-    }
-  return true;
-}
-
 /* Return true if ECF flags says that nondeterminsm can be ignored.  */
 
 static bool
@@ -994,78 +851,372 @@ parm_map_for_arg (tree op)
   return parm_map;
 }
 
-/* Merge side effects of call STMT to function with CALLEE_SUMMARY
-   int CUR_SUMMARY.  Return true if something changed.
+/* Analyze memory accesses (loads, stores and kills) performed
+   by the function.  Set also side_effects, calls_interposable
+   and nondeterminism flags.  */
+
+class modref_access_analysis
+{
+public:
+  modref_access_analysis (bool ipa, modref_summary *summary,
+			  modref_summary_lto *summary_lto)
+  : m_summary (summary), m_summary_lto (summary_lto), m_ipa (ipa)
+  {
+  }
+  void analyze ();
+private:
+  bool set_side_effects ();
+  bool set_nondeterministic ();
+  static modref_access_node get_access (ao_ref *ref);
+  static void record_access (modref_records *, ao_ref *, modref_access_node &);
+  static void record_access_lto (modref_records_lto *, ao_ref *,
+				 modref_access_node &a);
+  bool record_access_p (tree);
+  bool record_unknown_load ();
+  bool record_unknown_store ();
+  bool merge_call_side_effects (gimple *, modref_summary *,
+				cgraph_node *, bool);
+  modref_access_node get_access_for_fnspec (gcall *, attr_fnspec &,
+					    unsigned int, modref_parm_map &);
+  void process_fnspec (gcall *);
+  void analyze_call (gcall *);
+  static bool analyze_load (gimple *, tree, tree, void *);
+  static bool analyze_store (gimple *, tree, tree, void *);
+  void analyze_stmt (gimple *, bool);
+  void propagate ();
+
+  /* Summary being computed.
+     We work eitehr with m_summary or m_summary_lto.  Never on both.  */
+  modref_summary *m_summary;
+  modref_summary_lto *m_summary_lto;
+  /* Recursive calls needs simplisitc dataflow after analysis finished.
+     Collect all calls into this vector during analysis and later process
+     them in propagate.  */
+  auto_vec <gimple *, 32> m_recursive_calls;
+  /* ECF flags of function being analysed.  */
+  int m_ecf_flags;
+  /* True if IPA propagation will be done later.  */
+  bool m_ipa;
+  /* Set true if statement currently analysed is known to be
+     executed each time function is called.  */
+  bool m_always_executed;
+};
+
+/* Set side_effects flag and return if someting changed.  */
+
+bool
+modref_access_analysis::set_side_effects ()
+{
+  bool changed = false;
+
+  if (m_summary && !m_summary->side_effects)
+    {
+      m_summary->side_effects = true;
+      changed = true;
+    }
+  if (m_summary_lto && !m_summary_lto->side_effects)
+    {
+      m_summary_lto->side_effects = true;
+      changed = true;
+    }
+  return changed;
+}
+
+/* Set nondeterministic flag and return if someting changed.  */
+
+bool
+modref_access_analysis::set_nondeterministic ()
+{
+  bool changed = false;
+
+  if (m_summary && !m_summary->nondeterministic)
+    {
+      m_summary->side_effects = m_summary->nondeterministic = true;
+      changed = true;
+    }
+  if (m_summary_lto && !m_summary_lto->nondeterministic)
+    {
+      m_summary_lto->side_effects = m_summary_lto->nondeterministic = true;
+      changed = true;
+    }
+  return changed;
+}
+
+/* Construct modref_access_node from REF.  */
+
+modref_access_node
+modref_access_analysis::get_access (ao_ref *ref)
+{
+  tree base;
+
+  base = ao_ref_base (ref);
+  modref_access_node a = {ref->offset, ref->size, ref->max_size,
+			  0, MODREF_UNKNOWN_PARM, false, 0};
+  if (TREE_CODE (base) == MEM_REF || TREE_CODE (base) == TARGET_MEM_REF)
+    {
+      tree memref = base;
+      base = TREE_OPERAND (base, 0);
+
+      if (TREE_CODE (base) == SSA_NAME
+	  && SSA_NAME_IS_DEFAULT_DEF (base)
+	  && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL)
+	{
+	  a.parm_index = 0;
+	  if (cfun->static_chain_decl
+	      && base == ssa_default_def (cfun, cfun->static_chain_decl))
+	    a.parm_index = MODREF_STATIC_CHAIN_PARM;
+	  else
+	    for (tree t = DECL_ARGUMENTS (current_function_decl);
+		 t != SSA_NAME_VAR (base); t = DECL_CHAIN (t))
+	      a.parm_index++;
+	}
+      else
+	a.parm_index = MODREF_UNKNOWN_PARM;
+
+      if (a.parm_index != MODREF_UNKNOWN_PARM
+	  && TREE_CODE (memref) == MEM_REF)
+	{
+	  a.parm_offset_known
+	     = wi::to_poly_wide (TREE_OPERAND
+				     (memref, 1)).to_shwi (&a.parm_offset);
+	}
+      else
+	a.parm_offset_known = false;
+    }
+  else
+    a.parm_index = MODREF_UNKNOWN_PARM;
+  return a;
+}
+
+/* Record access into the modref_records data structure.  */
+
+void
+modref_access_analysis::record_access (modref_records *tt,
+				       ao_ref *ref,
+				       modref_access_node &a)
+{
+  alias_set_type base_set = !flag_strict_aliasing ? 0
+			    : ao_ref_base_alias_set (ref);
+  alias_set_type ref_set = !flag_strict_aliasing ? 0
+			    : (ao_ref_alias_set (ref));
+  if (dump_file)
+    {
+       fprintf (dump_file, "   - Recording base_set=%i ref_set=%i ",
+		base_set, ref_set);
+       a.dump (dump_file);
+    }
+  tt->insert (base_set, ref_set, a, false);
+}
+
+/* IPA version of record_access_tree.  */
+
+void
+modref_access_analysis::record_access_lto (modref_records_lto *tt, ao_ref *ref,
+					   modref_access_node &a)
+{
+  /* get_alias_set sometimes use different type to compute the alias set
+     than TREE_TYPE (base).  Do same adjustments.  */
+  tree base_type = NULL_TREE, ref_type = NULL_TREE;
+  if (flag_strict_aliasing)
+    {
+      tree base;
+
+      base = ref->ref;
+      while (handled_component_p (base))
+	base = TREE_OPERAND (base, 0);
+
+      base_type = reference_alias_ptr_type_1 (&base);
+
+      if (!base_type)
+	base_type = TREE_TYPE (base);
+      else
+	base_type = TYPE_REF_CAN_ALIAS_ALL (base_type)
+		    ? NULL_TREE : TREE_TYPE (base_type);
+
+      tree ref_expr = ref->ref;
+      ref_type = reference_alias_ptr_type_1 (&ref_expr);
+
+      if (!ref_type)
+	ref_type = TREE_TYPE (ref_expr);
+      else
+	ref_type = TYPE_REF_CAN_ALIAS_ALL (ref_type)
+		   ? NULL_TREE : TREE_TYPE (ref_type);
+
+      /* Sanity check that we are in sync with what get_alias_set does.  */
+      gcc_checking_assert ((!base_type && !ao_ref_base_alias_set (ref))
+			   || get_alias_set (base_type)
+			      == ao_ref_base_alias_set (ref));
+      gcc_checking_assert ((!ref_type && !ao_ref_alias_set (ref))
+			   || get_alias_set (ref_type)
+			      == ao_ref_alias_set (ref));
+
+      /* Do not bother to record types that have no meaningful alias set.
+	 Also skip variably modified types since these go to local streams.  */
+      if (base_type && (!get_alias_set (base_type)
+			|| variably_modified_type_p (base_type, NULL_TREE)))
+	base_type = NULL_TREE;
+      if (ref_type && (!get_alias_set (ref_type)
+		       || variably_modified_type_p (ref_type, NULL_TREE)))
+	ref_type = NULL_TREE;
+    }
+  if (dump_file)
+    {
+      fprintf (dump_file, "   - Recording base type:");
+      print_generic_expr (dump_file, base_type);
+      fprintf (dump_file, " (alias set %i) ref type:",
+	       base_type ? get_alias_set (base_type) : 0);
+      print_generic_expr (dump_file, ref_type);
+      fprintf (dump_file, " (alias set %i) ",
+	       ref_type ? get_alias_set (ref_type) : 0);
+       a.dump (dump_file);
+    }
+
+  tt->insert (base_type, ref_type, a, false);
+}
+
+/* Returns true if and only if we should store the access to EXPR.
+   Some accesses, e.g. loads from automatic variables, are not interesting.  */
+
+bool
+modref_access_analysis::record_access_p (tree expr)
+{
+  if (TREE_THIS_VOLATILE (expr))
+    {
+      if (dump_file)
+	fprintf (dump_file, " (volatile; marking nondeterministic) ");
+      set_nondeterministic ();
+    }
+  if (cfun->can_throw_non_call_exceptions
+      && tree_could_throw_p (expr))
+    {
+      if (dump_file)
+	fprintf (dump_file, " (can throw; marking side effects) ");
+      set_side_effects ();
+    }
+
+  if (refs_local_or_readonly_memory_p (expr))
+    {
+      if (dump_file)
+	fprintf (dump_file, "   - Read-only or local, ignoring.\n");
+      return false;
+    }
+  return true;
+}
+
+/* Collapse loads and return true if something changed.  */
+
+bool
+modref_access_analysis::record_unknown_load ()
+{
+  bool changed = false;
+
+  if (m_summary && !m_summary->loads->every_base)
+    {
+      m_summary->loads->collapse ();
+      changed = true;
+    }
+  if (m_summary_lto && !m_summary_lto->loads->every_base)
+    {
+      m_summary_lto->loads->collapse ();
+      changed = true;
+    }
+  return changed;
+}
+
+/* Collapse loads and return true if something changed.  */
+
+bool
+modref_access_analysis::record_unknown_store ()
+{
+  bool changed = false;
+
+  if (m_summary && !m_summary->stores->every_base)
+    {
+      m_summary->stores->collapse ();
+      changed = true;
+    }
+  if (m_summary_lto && !m_summary_lto->stores->every_base)
+    {
+      m_summary_lto->stores->collapse ();
+      changed = true;
+    }
+  return changed;
+}
+
+/* Merge side effects of call STMT to function with CALLEE_SUMMARY.
+   Return true if something changed.
    If IGNORE_STORES is true, do not merge stores.
    If RECORD_ADJUSTMENTS is true cap number of adjustments to
    a given access to make dataflow finite.  */
 
 bool
-merge_call_side_effects (modref_summary *cur_summary,
-			 gimple *stmt, modref_summary *callee_summary,
-			 bool ignore_stores, cgraph_node *callee_node,
-			 bool record_adjustments, bool always_executed)
+modref_access_analysis::merge_call_side_effects
+	 (gimple *stmt, modref_summary *callee_summary,
+	  cgraph_node *callee_node, bool record_adjustments)
 {
-  auto_vec <modref_parm_map, 32> parm_map;
-  modref_parm_map chain_map;
-  bool changed = false;
   int flags = gimple_call_flags (stmt);
 
+  /* Nothing to do for non-looping cont functions.  */
   if ((flags & (ECF_CONST | ECF_NOVOPS))
       && !(flags & ECF_LOOPING_CONST_OR_PURE))
-    return changed;
+    return false;
+
+  bool changed = false;
 
   if (dump_file)
     fprintf (dump_file, " - Merging side effects of %s\n",
 	     callee_node->dump_name ());
 
+  /* Merge side effects and non-determinism.
+     PURE/CONST flags makes functions deterministic and if there is
+     no LOOPING_CONST_OR_PURE they also have no side effects.  */
   if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE))
     {
-      if (!cur_summary->side_effects && callee_summary->side_effects)
+      if (!m_summary->side_effects && callee_summary->side_effects)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " - merging side effects.\n");
-	  cur_summary->side_effects = true;
+	  m_summary->side_effects = true;
 	  changed = true;
 	}
-      if (!cur_summary->nondeterministic && callee_summary->nondeterministic
+      if (!m_summary->nondeterministic && callee_summary->nondeterministic
 	  && !ignore_nondeterminism_p (current_function_decl, flags))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " - merging nondeterministic.\n");
-	  cur_summary->nondeterministic = true;
+	  m_summary->nondeterministic = true;
 	  changed = true;
 	}
      }
 
+  /* For const functions we are done.  */
   if (flags & (ECF_CONST | ECF_NOVOPS))
     return changed;
 
-  if (!cur_summary->calls_interposable && callee_summary->calls_interposable)
+  /* Merge calls_interposable flags.  */
+  if (!m_summary->calls_interposable && callee_summary->calls_interposable)
     {
       if (dump_file)
 	fprintf (dump_file, " - merging calls interposable.\n");
-      cur_summary->calls_interposable = true;
+      m_summary->calls_interposable = true;
       changed = true;
     }
 
-  /* We can not safely optimize based on summary of callee if it does
-     not always bind to current def: it is possible that memory load
-     was optimized out earlier which may not happen in the interposed
-     variant.  */
-  if (!callee_node->binds_to_current_def_p ()
-      && !cur_summary->calls_interposable)
+  if (!callee_node->binds_to_current_def_p () && !m_summary->calls_interposable)
     {
       if (dump_file)
 	fprintf (dump_file, " - May be interposed.\n");
-      cur_summary->calls_interposable = true;
+      m_summary->calls_interposable = true;
       changed = true;
     }
 
+  /* Now merge the actual load, store and kill vectors.  For this we need
+     to compute map translating new parameters to old.  */
   if (dump_file)
     fprintf (dump_file, "   Parm map:");
 
+  auto_vec <modref_parm_map, 32> parm_map;
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
     {
@@ -1081,6 +1232,8 @@ merge_call_side_effects (modref_summary *cur_summary,
 	    }
 	}
     }
+
+  modref_parm_map chain_map;
   if (gimple_call_chain (stmt))
     {
       chain_map = parm_map_for_arg (gimple_call_chain (stmt));
@@ -1098,7 +1251,9 @@ merge_call_side_effects (modref_summary *cur_summary,
   if (dump_file)
     fprintf (dump_file, "\n");
 
-  if (always_executed
+  /* Kills can me merged in only if we know the function is going to be
+     always executed.  */
+  if (m_always_executed
       && callee_summary->kills.length ()
       && (!cfun->can_throw_non_call_exceptions
 	  || !stmt_could_throw_p (cfun, stmt)))
@@ -1124,24 +1279,25 @@ merge_call_side_effects (modref_summary *cur_summary,
 	  modref_access_node n = kill;
 	  n.parm_index = m.parm_index;
 	  n.parm_offset += m.parm_offset;
-	  if (modref_access_node::insert_kill (cur_summary->kills, n,
+	  if (modref_access_node::insert_kill (m_summary->kills, n,
 					       record_adjustments))
 	    changed = true;
 	}
     }
 
-  /* Merge with callee's summary.  */
-  changed |= cur_summary->loads->merge (callee_summary->loads, &parm_map,
-					&chain_map, record_adjustments);
-  if (!ignore_stores)
+  /* Merge in loads.  */
+  changed |= m_summary->loads->merge (callee_summary->loads, &parm_map,
+				      &chain_map, record_adjustments);
+  /* Merge in stores.  */
+  if (!ignore_stores_p (current_function_decl, flags))
     {
-      changed |= cur_summary->stores->merge (callee_summary->stores,
-					     &parm_map, &chain_map,
-					     record_adjustments);
-      if (!cur_summary->writes_errno
+      changed |= m_summary->stores->merge (callee_summary->stores,
+					   &parm_map, &chain_map,
+					   record_adjustments);
+      if (!m_summary->writes_errno
 	  && callee_summary->writes_errno)
 	{
-	  cur_summary->writes_errno = true;
+	  m_summary->writes_errno = true;
 	  changed = true;
 	}
     }
@@ -1150,9 +1306,10 @@ merge_call_side_effects (modref_summary *cur_summary,
 
 /* Return access mode for argument I of call STMT with FNSPEC.  */
 
-static modref_access_node
-get_access_for_fnspec (gcall *call, attr_fnspec &fnspec,
-		       unsigned int i, modref_parm_map &map)
+modref_access_node
+modref_access_analysis::get_access_for_fnspec (gcall *call, attr_fnspec &fnspec,
+					       unsigned int i,
+					       modref_parm_map &map)
 {
   tree size = NULL_TREE;
   unsigned int size_arg;
@@ -1185,97 +1342,46 @@ get_access_for_fnspec (gcall *call, attr_fnspec &fnspec,
   return a;
 }
 
-/* Collapse loads and return true if something changed.  */
-
-static bool
-collapse_loads (modref_summary *cur_summary,
-		modref_summary_lto *cur_summary_lto)
-{
-  bool changed = false;
-
-  if (cur_summary && !cur_summary->loads->every_base)
-    {
-      cur_summary->loads->collapse ();
-      changed = true;
-    }
-  if (cur_summary_lto
-      && !cur_summary_lto->loads->every_base)
-    {
-      cur_summary_lto->loads->collapse ();
-      changed = true;
-    }
-  return changed;
-}
-
-/* Collapse loads and return true if something changed.  */
-
-static bool
-collapse_stores (modref_summary *cur_summary,
-		modref_summary_lto *cur_summary_lto)
-{
-  bool changed = false;
-
-  if (cur_summary && !cur_summary->stores->every_base)
-    {
-      cur_summary->stores->collapse ();
-      changed = true;
-    }
-  if (cur_summary_lto
-      && !cur_summary_lto->stores->every_base)
-    {
-      cur_summary_lto->stores->collapse ();
-      changed = true;
-    }
-  return changed;
-}
-
-
 /* Apply side effects of call STMT to CUR_SUMMARY using FNSPEC.
    If IGNORE_STORES is true ignore them.
    Return false if no useful summary can be produced.   */
 
-static bool
-process_fnspec (modref_summary *cur_summary,
-		modref_summary_lto *cur_summary_lto,
-		gcall *call, bool ignore_stores)
+void
+modref_access_analysis::process_fnspec (gcall *call)
 {
-  attr_fnspec fnspec = gimple_call_fnspec (call);
   int flags = gimple_call_flags (call);
 
+  /* PURE/CONST flags makes functions deterministic and if there is
+     no LOOPING_CONST_OR_PURE they also have no side effects.  */
   if (!(flags & (ECF_CONST | ECF_NOVOPS | ECF_PURE))
       || (flags & ECF_LOOPING_CONST_OR_PURE)
       || (cfun->can_throw_non_call_exceptions
 	  && stmt_could_throw_p (cfun, call)))
     {
-      if (cur_summary)
-	{
-	  cur_summary->side_effects = true;
-	  if (!ignore_nondeterminism_p (current_function_decl, flags))
-	    cur_summary->nondeterministic = true;
-	}
-      if (cur_summary_lto)
-	{
-	  cur_summary_lto->side_effects = true;
-	  if (!ignore_nondeterminism_p (current_function_decl, flags))
-	    cur_summary_lto->nondeterministic = true;
-	}
+      set_side_effects ();
+      if (!ignore_nondeterminism_p (current_function_decl, flags))
+	set_nondeterministic ();
     }
+
+  /* For const functions we are done.  */
   if (flags & (ECF_CONST | ECF_NOVOPS))
-    return true;
+    return;
+
+  attr_fnspec fnspec = gimple_call_fnspec (call);
+  /* If there is no fnpec we know nothing about loads & stores.  */
   if (!fnspec.known_p ())
     {
       if (dump_file && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
 	fprintf (dump_file, "      Builtin with no fnspec: %s\n",
 		 IDENTIFIER_POINTER (DECL_NAME (gimple_call_fndecl (call))));
-      if (ignore_stores)
-	{
-	  collapse_loads (cur_summary, cur_summary_lto);
-	  return true;
-	}
-      return false;
+      record_unknown_load ();
+      if (!ignore_stores_p (current_function_decl, flags))
+	record_unknown_store ();
+      return;
     }
+  /* Process fnspec.  */
   if (fnspec.global_memory_read_p ())
-    collapse_loads (cur_summary, cur_summary_lto);
+    record_unknown_load ();
   else
     {
       for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
@@ -1291,27 +1397,20 @@ process_fnspec (modref_summary *cur_summary,
 	      continue;
 	    if (map.parm_index == MODREF_UNKNOWN_PARM)
 	      {
-		collapse_loads (cur_summary, cur_summary_lto);
+		record_unknown_load ();
 		break;
 	      }
-	    if (cur_summary)
-	      cur_summary->loads->insert (0, 0,
-					  get_access_for_fnspec (call,
-								 fnspec, i,
-								 map),
-					  false);
-	    if (cur_summary_lto)
-	      cur_summary_lto->loads->insert (0, 0,
-					      get_access_for_fnspec (call,
-								     fnspec, i,
-								     map),
-					      false);
+	    modref_access_node a = get_access_for_fnspec (call, fnspec, i, map);
+	    if (m_summary)
+	      m_summary->loads->insert (0, 0, a, false);
+	    if (m_summary_lto)
+	      m_summary_lto->loads->insert (0, 0, a, false);
 	  }
     }
-  if (ignore_stores)
-    return true;
+  if (ignore_stores_p (current_function_decl, flags))
+    return;
   if (fnspec.global_memory_written_p ())
-    collapse_stores (cur_summary, cur_summary_lto);
+    record_unknown_store ();
   else
     {
       for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
@@ -1327,44 +1426,35 @@ process_fnspec (modref_summary *cur_summary,
 	      continue;
 	    if (map.parm_index == MODREF_UNKNOWN_PARM)
 	      {
-		collapse_stores (cur_summary, cur_summary_lto);
+		record_unknown_store ();
 		break;
 	      }
-	    if (cur_summary)
-	      cur_summary->stores->insert (0, 0,
-					   get_access_for_fnspec (call,
-								  fnspec, i,
-								  map),
-					   false);
-	    if (cur_summary_lto)
-	      cur_summary_lto->stores->insert (0, 0,
-					       get_access_for_fnspec (call,
-								      fnspec, i,
-								      map),
-					       false);
+	    modref_access_node a = get_access_for_fnspec (call, fnspec, i, map);
+	    if (m_summary)
+	      m_summary->stores->insert (0, 0, a, false);
+	    if (m_summary_lto)
+	      m_summary_lto->stores->insert (0, 0, a, false);
 	  }
       if (fnspec.errno_maybe_written_p () && flag_errno_math)
 	{
-	  if (cur_summary)
-	    cur_summary->writes_errno = true;
-	  if (cur_summary_lto)
-	    cur_summary_lto->writes_errno = true;
+	  if (m_summary)
+	    m_summary->writes_errno = true;
+	  if (m_summary_lto)
+	    m_summary_lto->writes_errno = true;
 	}
     }
-  return true;
 }
 
 /* Analyze function call STMT in function F.
    Remember recursive calls in RECURSIVE_CALLS.  */
 
-static bool
-analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
-	      gcall *stmt, vec <gimple *> *recursive_calls,
-	      bool always_executed)
+void
+modref_access_analysis::analyze_call (gcall *stmt)
 {
   /* Check flags on the function call.  In certain cases, analysis can be
      simplified.  */
   int flags = gimple_call_flags (stmt);
+
   if ((flags & (ECF_CONST | ECF_NOVOPS))
       && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
@@ -1372,12 +1462,8 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
 	fprintf (dump_file,
 		 " - ECF_CONST | ECF_NOVOPS, ignoring all stores and all loads "
 		 "except for args.\n");
-      return true;
+      return;
     }
-
-  /* Pure functions do not affect global memory.  Stores by functions which are
-     noreturn and do not throw can safely be ignored.  */
-  bool ignore_stores = ignore_stores_p (current_function_decl, flags);
 
   /* Next, we try to get the callee's function declaration.  The goal is to
      merge their summary with ours.  */
@@ -1389,10 +1475,11 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
       if (dump_file)
 	fprintf (dump_file, gimple_call_internal_p (stmt)
 		 ? " - Internal call" : " - Indirect call.\n");
-      return process_fnspec (cur_summary, cur_summary_lto, stmt, ignore_stores);
+      process_fnspec (stmt);
+      return;
     }
   /* We only need to handle internal calls in IPA mode.  */
-  gcc_checking_assert (!cur_summary_lto);
+  gcc_checking_assert (!m_summary_lto && !m_ipa);
 
   struct cgraph_node *callee_node = cgraph_node::get_create (callee);
 
@@ -1400,14 +1487,11 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
      there's nothing to do.  */
   if (recursive_call_p (current_function_decl, callee))
     {
-      recursive_calls->safe_push (stmt);
-      if (cur_summary)
-	cur_summary->side_effects = true;
-      if (cur_summary_lto)
-	cur_summary_lto->side_effects = true;
+      m_recursive_calls.safe_push (stmt);
+      set_side_effects ();
       if (dump_file)
 	fprintf (dump_file, " - Skipping recursive call.\n");
-      return true;
+      return;
     }
 
   gcc_assert (callee_node != NULL);
@@ -1419,21 +1503,18 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
   if (builtin_safe_for_const_function_p (&looping, callee))
     {
       if (looping)
-	{
-	  if (cur_summary)
-	    cur_summary->side_effects = true;
-	  if (cur_summary_lto)
-	    cur_summary_lto->side_effects = true;
-	}
+	set_side_effects ();
       if (dump_file)
-	fprintf (dump_file, " - Bulitin is safe for const.\n");
-      return true;
+	fprintf (dump_file, " - Builtin is safe for const.\n");
+      return;
     }
   if (avail <= AVAIL_INTERPOSABLE)
     {
       if (dump_file)
-	fprintf (dump_file, " - Function availability <= AVAIL_INTERPOSABLE.\n");
-      return process_fnspec (cur_summary, cur_summary_lto, stmt, ignore_stores);
+	fprintf (dump_file,
+		 " - Function availability <= AVAIL_INTERPOSABLE.\n");
+      process_fnspec (stmt);
+      return;
     }
 
   /* Get callee's modref summary.  As above, if there's no summary, we either
@@ -1443,31 +1524,21 @@ analyze_call (modref_summary *cur_summary, modref_summary_lto *cur_summary_lto,
     {
       if (dump_file)
 	fprintf (dump_file, " - No modref summary available for callee.\n");
-      return process_fnspec (cur_summary, cur_summary_lto, stmt, ignore_stores);
+      process_fnspec (stmt);
+      return;
     }
 
-  merge_call_side_effects (cur_summary, stmt, callee_summary, ignore_stores,
-			   callee_node, false, always_executed);
+  merge_call_side_effects (stmt, callee_summary, callee_node, false);
 
-  return true;
+  return;
 }
-
-/* Support analysis in non-lto and lto mode in parallel.  */
-
-struct summary_ptrs
-{
-  struct modref_summary *nolto;
-  struct modref_summary_lto *lto;
-  bool always_executed;
-};
 
 /* Helper for analyze_stmt.  */
 
-static bool
-analyze_load (gimple *, tree, tree op, void *data)
+bool
+modref_access_analysis::analyze_load (gimple *, tree, tree op, void *data)
 {
-  modref_summary *summary = ((summary_ptrs *)data)->nolto;
-  modref_summary_lto *summary_lto = ((summary_ptrs *)data)->lto;
+  modref_access_analysis *t = (modref_access_analysis *)data;
 
   if (dump_file)
     {
@@ -1476,39 +1547,26 @@ analyze_load (gimple *, tree, tree op, void *data)
       fprintf (dump_file, "\n");
     }
 
-  if (TREE_THIS_VOLATILE (op)
-      || (cfun->can_throw_non_call_exceptions
-	  && tree_could_throw_p (op)))
-    {
-      if (dump_file)
-	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
-      if (summary)
-	summary->side_effects = summary->nondeterministic = true;
-      if (summary_lto)
-	summary_lto->side_effects = summary_lto->nondeterministic = true;
-    }
-
-  if (!record_access_p (op))
+  if (!t->record_access_p (op))
     return false;
 
   ao_ref r;
   ao_ref_init (&r, op);
   modref_access_node a = get_access (&r);
 
-  if (summary)
-    record_access (summary->loads, &r, a);
-  if (summary_lto)
-    record_access_lto (summary_lto->loads, &r, a);
+  if (t->m_summary)
+    t->record_access (t->m_summary->loads, &r, a);
+  if (t->m_summary_lto)
+    t->record_access_lto (t->m_summary_lto->loads, &r, a);
   return false;
 }
 
 /* Helper for analyze_stmt.  */
 
-static bool
-analyze_store (gimple *stmt, tree, tree op, void *data)
+bool
+modref_access_analysis::analyze_store (gimple *stmt, tree, tree op, void *data)
 {
-  modref_summary *summary = ((summary_ptrs *)data)->nolto;
-  modref_summary_lto *summary_lto = ((summary_ptrs *)data)->lto;
+  modref_access_analysis *t = (modref_access_analysis *)data;
 
   if (dump_file)
     {
@@ -1517,40 +1575,28 @@ analyze_store (gimple *stmt, tree, tree op, void *data)
       fprintf (dump_file, "\n");
     }
 
-  if (TREE_THIS_VOLATILE (op)
-      || (cfun->can_throw_non_call_exceptions
-	  && tree_could_throw_p (op)))
-    {
-      if (dump_file)
-	fprintf (dump_file, " (volatile or can throw; marking side effects) ");
-      if (summary)
-	summary->side_effects = summary->nondeterministic = true;
-      if (summary_lto)
-	summary_lto->side_effects = summary_lto->nondeterministic = true;
-    }
-
-  if (!record_access_p (op))
+  if (!t->record_access_p (op))
     return false;
 
   ao_ref r;
   ao_ref_init (&r, op);
   modref_access_node a = get_access (&r);
 
-  if (summary)
-    record_access (summary->stores, &r, a);
-  if (summary_lto)
-    record_access_lto (summary_lto->stores, &r, a);
-  if (((summary_ptrs *)data)->always_executed
+  if (t->m_summary)
+    t->record_access (t->m_summary->stores, &r, a);
+  if (t->m_summary_lto)
+    t->record_access_lto (t->m_summary_lto->stores, &r, a);
+  if (t->m_always_executed
       && a.useful_for_kill_p ()
       && (!cfun->can_throw_non_call_exceptions
 	  || !stmt_could_throw_p (cfun, stmt)))
     {
       if (dump_file)
 	fprintf (dump_file, "   - Recording kill\n");
-      if (summary)
-	modref_access_node::insert_kill (summary->kills, a, false);
-      if (summary_lto)
-	modref_access_node::insert_kill (summary_lto->kills, a, false);
+      if (t->m_summary)
+	modref_access_node::insert_kill (t->m_summary->kills, a, false);
+      if (t->m_summary_lto)
+	modref_access_node::insert_kill (t->m_summary_lto->kills, a, false);
     }
   return false;
 }
@@ -1558,16 +1604,15 @@ analyze_store (gimple *stmt, tree, tree op, void *data)
 /* Analyze statement STMT of function F.
    If IPA is true do not merge in side effects of calls.  */
 
-static bool
-analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
-	      gimple *stmt, bool ipa, vec <gimple *> *recursive_calls,
-	      bool always_executed)
+void
+modref_access_analysis::analyze_stmt (gimple *stmt, bool always_executed)
 {
+  m_always_executed = always_executed;
   /* In general we can not ignore clobbers because they are barriers for code
      motion, however after inlining it is safe to do because local optimization
      passes do not consider clobbers from other functions.
      Similar logic is in ipa-pure-const.c.  */
-  if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
+  if ((m_ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
     {
       if (always_executed && record_access_p (gimple_assign_lhs (stmt)))
 	{
@@ -1578,104 +1623,145 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "   - Recording kill\n");
-	      if (summary)
-		modref_access_node::insert_kill (summary->kills, a, false);
-	      if (summary_lto)
-		modref_access_node::insert_kill (summary_lto->kills, a, false);
+	      if (m_summary)
+		modref_access_node::insert_kill (m_summary->kills, a, false);
+	      if (m_summary_lto)
+		modref_access_node::insert_kill (m_summary_lto->kills,
+						 a, false);
 	    }
 	}
-      return true;
+      return;
     }
 
-  struct summary_ptrs sums = {summary, summary_lto, always_executed};
-
   /* Analyze all loads and stores in STMT.  */
-  walk_stmt_load_store_ops (stmt, &sums,
+  walk_stmt_load_store_ops (stmt, this,
 			    analyze_load, analyze_store);
 
   switch (gimple_code (stmt))
    {
    case GIMPLE_ASM:
       if (gimple_asm_volatile_p (as_a <gasm *> (stmt)))
-	{
-	  if (summary)
-	    summary->side_effects = summary->nondeterministic = true;
-	  if (summary_lto)
-	    summary_lto->side_effects = summary_lto->nondeterministic = true;
-	}
+	set_nondeterministic ();
       if (cfun->can_throw_non_call_exceptions
 	  && stmt_could_throw_p (cfun, stmt))
-	{
-	  if (summary)
-	    summary->side_effects = true;
-	  if (summary_lto)
-	    summary_lto->side_effects = true;
-	}
+	set_side_effects ();
      /* If the ASM statement does not read nor write memory, there's nothing
 	to do.  Otherwise just give up.  */
      if (!gimple_asm_clobbers_memory_p (as_a <gasm *> (stmt)))
-       return true;
+       return;
      if (dump_file)
        fprintf (dump_file, " - Function contains GIMPLE_ASM statement "
 	       "which clobbers memory.\n");
-     return false;
+     record_unknown_load ();
+     record_unknown_store ();
+     return;
    case GIMPLE_CALL:
-     if (!ipa || gimple_call_internal_p (stmt))
-       return analyze_call (summary, summary_lto,
-			    as_a <gcall *> (stmt), recursive_calls,
-			    always_executed);
+     if (!m_ipa || gimple_call_internal_p (stmt))
+       analyze_call (as_a <gcall *> (stmt));
      else
-      {
-	attr_fnspec fnspec = gimple_call_fnspec (as_a <gcall *>(stmt));
+       {
+	 attr_fnspec fnspec = gimple_call_fnspec (as_a <gcall *>(stmt));
 
-	if (fnspec.known_p ()
-	    && (!fnspec.global_memory_read_p ()
-		|| !fnspec.global_memory_written_p ()))
-	  {
-	    cgraph_edge *e = cgraph_node::get (current_function_decl)->get_edge (stmt);
-	    if (e->callee)
-	      {
-		fnspec_summaries->get_create (e)->fnspec = xstrdup (fnspec.get_str ());
-		if (dump_file)
-		  fprintf (dump_file, "  Recorded fnspec %s\n", fnspec.get_str ());
-	      }
-	  }
-      }
-     return true;
+	 if (fnspec.known_p ()
+	     && (!fnspec.global_memory_read_p ()
+		 || !fnspec.global_memory_written_p ()))
+	   {
+	     cgraph_edge *e = cgraph_node::get
+				  (current_function_decl)->get_edge (stmt);
+	     if (e->callee)
+	       {
+		 fnspec_summaries->get_create (e)->fnspec
+			  = xstrdup (fnspec.get_str ());
+		 if (dump_file)
+		   fprintf (dump_file, "  Recorded fnspec %s\n",
+			    fnspec.get_str ());
+	       }
+	   }
+       }
+     return;
    default:
      if (cfun->can_throw_non_call_exceptions
 	 && stmt_could_throw_p (cfun, stmt))
-	{
-	  if (summary)
-	    summary->side_effects = true;
-	  if (summary_lto)
-	    summary_lto->side_effects = true;
-	}
-     return true;
+	set_side_effects ();
+     return;
    }
 }
 
-/* Remove summary of current function because during the function body
-   scan we determined it is not useful.  LTO, NOLTO and IPA determines the
-   mode of scan.  */
+/* Propagate load/stres acress recursive calls.  */
 
-static void
-remove_summary (bool lto, bool nolto, bool ipa)
+void
+modref_access_analysis::propagate ()
 {
+  if (m_ipa && m_summary)
+    return;
+
+  bool changed = true;
+  bool first = true;
   cgraph_node *fnode = cgraph_node::get (current_function_decl);
-  if (!ipa)
-    optimization_summaries->remove (fnode);
-  else
+
+  m_always_executed = false;
+  while (changed && m_summary->useful_p (m_ecf_flags, false))
     {
-      if (nolto)
-	summaries->remove (fnode);
-      if (lto)
-	summaries_lto->remove (fnode);
-      remove_modref_edge_summaries (fnode);
+      changed = false;
+      for (unsigned i = 0; i < m_recursive_calls.length (); i++)
+	{
+	  changed |= merge_call_side_effects (m_recursive_calls[i], m_summary,
+					      fnode, !first);
+	}
+      first = false;
     }
-  if (dump_file)
-    fprintf (dump_file,
-	     " - modref done with result: not tracked.\n");
+}
+
+/* Analyze function.  */
+
+void
+modref_access_analysis::analyze ()
+{
+  m_ecf_flags = flags_from_decl_or_type (current_function_decl);
+  bool summary_useful = true;
+
+  /* Analyze each statement in each basic block of the function.  If the
+     statement cannot be analyzed (for any reason), the entire function cannot
+     be analyzed by modref.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gimple_stmt_iterator si;
+      bool always_executed
+	      = bb == single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest;
+
+      for (si = gsi_start_nondebug_after_labels_bb (bb);
+	   !gsi_end_p (si); gsi_next_nondebug (&si))
+	{
+	  analyze_stmt (gsi_stmt (si), always_executed);
+
+	  /* Avoid doing useles work.  */
+	  if ((!m_summary || !m_summary->useful_p (m_ecf_flags, false))
+	      && (!m_summary_lto
+		  || !m_summary_lto->useful_p (m_ecf_flags, false)))
+	    {
+	      summary_useful = false;
+	      break;
+	    }
+	  if (always_executed
+	      && stmt_can_throw_external (cfun, gsi_stmt (si)))
+	    always_executed = false;
+	}
+      if (!summary_useful)
+	break;
+    }
+  /* In non-IPA mode we need to perform iterative datafow on recursive calls.
+     This needs to be done after all other side effects are computed.  */
+  if (summary_useful)
+    {
+      if (!m_ipa)
+	propagate ();
+      if (m_summary && !m_summary->side_effects && !finite_function_p ())
+	m_summary->side_effects = true;
+      if (m_summary_lto && !m_summary_lto->side_effects
+	  && !finite_function_p ())
+	m_summary_lto->side_effects = true;
+    }
 }
 
 /* Return true if OP accesses memory pointed to by SSA_NAME.  */
@@ -1730,7 +1816,8 @@ deref_flags (int flags, bool ignore_stores)
 }
 
 
-/* Description of an escape point.  */
+/* Description of an escape point: a call which affects flags of a given
+   SSA name.  */
 
 struct escape_point
 {
@@ -1744,6 +1831,10 @@ struct escape_point
   /* Does value escape directly or indiretly?  */
   bool direct;
 };
+
+/* Lattice used during the eaf flags analsysis dataflow.  For a given SSA name
+   we aim to compute its flags and escape points.  We also use the lattice
+   to dynamically build dataflow graph to propagate on.  */
 
 class modref_lattice
 {
@@ -2967,69 +3058,10 @@ analyze_function (function *f, bool ipa)
   analyze_parms (summary, summary_lto, ipa,
 		 past_flags, past_retslot_flags, past_static_chain_flags);
 
-  int ecf_flags = flags_from_decl_or_type (current_function_decl);
-  auto_vec <gimple *, 32> recursive_calls;
-
-  /* Analyze each statement in each basic block of the function.  If the
-     statement cannot be analyzed (for any reason), the entire function cannot
-     be analyzed by modref.  */
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, f)
-    {
-      gimple_stmt_iterator si;
-      bool always_executed
-	      = bb == single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest;
-
-      for (si = gsi_start_nondebug_after_labels_bb (bb);
-	   !gsi_end_p (si); gsi_next_nondebug (&si))
-	{
-	  if (!analyze_stmt (summary, summary_lto,
-			     gsi_stmt (si), ipa, &recursive_calls,
-			     always_executed)
-	      || ((!summary || !summary->useful_p (ecf_flags, false))
-		  && (!summary_lto
-		      || !summary_lto->useful_p (ecf_flags, false))))
-	    {
-	      collapse_loads (summary, summary_lto);
-	      collapse_stores (summary, summary_lto);
-	      break;
-	    }
-	  if (always_executed
-	      && stmt_can_throw_external (cfun, gsi_stmt (si)))
-	    always_executed = false;
-	}
-    }
-
-  /* In non-IPA mode we need to perform iterative datafow on recursive calls.
-     This needs to be done after all other side effects are computed.  */
-  if (!ipa)
-    {
-      bool changed = true;
-      bool first = true;
-      while (changed)
-	{
-	  changed = false;
-	  for (unsigned i = 0; i < recursive_calls.length (); i++)
-	    {
-	      changed |= merge_call_side_effects
-			  (summary, recursive_calls[i], summary,
-			   ignore_stores_p (current_function_decl,
-					    gimple_call_flags
-						 (recursive_calls[i])),
-			   fnode, !first, false);
-	      if (!summary->useful_p (ecf_flags, false))
-		{
-		  remove_summary (lto, nolto, ipa);
-		  return false;
-		}
-	    }
-	  first = false;
-	}
-    }
-  if (summary && !summary->side_effects && !finite_function_p ())
-    summary->side_effects = true;
-  if (summary_lto && !summary_lto->side_effects && !finite_function_p ())
-    summary_lto->side_effects = true;
+  {
+    modref_access_analysis analyzer (ipa, summary, summary_lto);
+    analyzer.analyze ();
+  }
 
   if (!ipa && flag_ipa_pure_const)
     {
@@ -3045,6 +3077,7 @@ analyze_function (function *f, bool ipa)
 						summary->side_effects, true);
 	}
     }
+  int ecf_flags = flags_from_decl_or_type (current_function_decl);
   if (summary && !summary->useful_p (ecf_flags))
     {
       if (!ipa)
@@ -4259,6 +4292,49 @@ get_access_for_fnspec (cgraph_edge *e, attr_fnspec &fnspec,
       a.max_size = size_hwi << LOG2_BITS_PER_UNIT;
     }
   return a;
+}
+
+ /* Collapse loads and return true if something changed.  */
+static bool
+collapse_loads (modref_summary *cur_summary,
+		modref_summary_lto *cur_summary_lto)
+{
+  bool changed = false;
+
+  if (cur_summary && !cur_summary->loads->every_base)
+    {
+      cur_summary->loads->collapse ();
+      changed = true;
+    }
+  if (cur_summary_lto
+      && !cur_summary_lto->loads->every_base)
+    {
+      cur_summary_lto->loads->collapse ();
+      changed = true;
+    }
+  return changed;
+}
+
+/* Collapse loads and return true if something changed.  */
+
+static bool
+collapse_stores (modref_summary *cur_summary,
+		modref_summary_lto *cur_summary_lto)
+{
+  bool changed = false;
+
+  if (cur_summary && !cur_summary->stores->every_base)
+    {
+      cur_summary->stores->collapse ();
+      changed = true;
+    }
+  if (cur_summary_lto
+      && !cur_summary_lto->stores->every_base)
+    {
+      cur_summary_lto->stores->collapse ();
+      changed = true;
+    }
+  return changed;
 }
 
 /* Call E in NODE with ECF_FLAGS has no summary; update MODREF_SUMMARY and
