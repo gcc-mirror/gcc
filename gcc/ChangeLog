@@ -1,3 +1,32 @@
+2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103052
+	* ipa-modref.c (ignore_nondeterminism_p): Allow looping pure/cont.
+	(merge_call_side_effects): Improve debug output.
+
+2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103052
+	* ipa-pure-const.c (propagate_pure_const): Fix merging of loping flag.
+
+2021-11-20  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/103226
+	* config/bfin/bfin.md (doloop pattern, splitter and expander): Clobber
+	CC.
+
+2021-11-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103220
+	* match.pd ((type) X bitop CST): Don't check if CST
+	fits into the type if only the sign changes.
+
+2021-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/102988
+	* gimple-harden-conditionals.cc (detach_value): Copy SSA_NAME
+	without decl sharing.
+
 2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* doc/invoke.texi: Remove whitespace after an @option.

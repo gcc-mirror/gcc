@@ -1,3 +1,29 @@
+2021-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/erase_if.h (__erase_nodes_if): Add _UnsafeContainer template
+	parameter. Use it to get iterators to work with.
+	* include/debug/macros.h (__glibcxx_check_erase2): New.
+	* include/debug/map.h (map<>::erase(_Base_const_iterator)): New.
+	(map<>::erase(const_iterator)): Use latter.
+	* include/debug/multimap.h (multimap<>::erase(_Base_const_iterator)): New.
+	(multimap<>::erase(const_iterator)): Use latter.
+	* include/debug/multiset.h (multiset<>::erase(_Base_const_iterator)): New.
+	(multiset<>::erase(const_iterator)): Use latter.
+	* include/debug/set.h (set<>::erase(_Base_const_iterator)): New.
+	(set<>::erase(const_iterator)): Use latter.
+	* include/debug/unordered_map (unordered_map<>::erase(_Base_const_iterator)): New.
+	(unordered_multimap<>::erase(const_iterator)): New.
+	* include/debug/unordered_set (unordered_set<>::erase(_Base_const_iterator)): New.
+	(unordered_multiset<>::erase(const_iterator)): New.
+	* include/experimental/map (erase_if): Adapt.
+	* include/experimental/set (erase_if): Adapt.
+	* include/experimental/unordered_map (erase_if): Adapt.
+	* include/experimental/unordered_set (erase_if): Adapt.
+	* include/std/map (erase_if): Adapt.
+	* include/std/set (erase_if): Adapt.
+	* include/std/unordered_map (erase_if): Adapt.
+	* include/std/unordered_set (erase_if): Adapt.
+
 2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/basic_istringstream/cons/char/1.cc: Check all

@@ -1,3 +1,27 @@
+2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103052
+	* gcc.c-torture/execute/pr103052.c: New test.
+
+2021-11-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103220
+	* gcc.dg/tree-ssa/pr103220-1.c: New test.
+	* gcc.dg/tree-ssa/pr103220-2.c: New test.
+	* gcc.dg/pr25530.c: Update test to check for
+	4294967294 in the case -2 is not matched.
+
+2021-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/102988
+	* g++.dg/pr102988.C: New.
+
+2021-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96889
+	* jit.dg/all-non-failing-tests.h: Add test-reflection.c.
+	* jit.dg/test-reflection.c: New test.
+
 2021-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101180
