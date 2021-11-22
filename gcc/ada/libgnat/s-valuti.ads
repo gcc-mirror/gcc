@@ -218,21 +218,6 @@ is
       P   : Natural;
       Acc : Natural)
       return Natural
-   is
-     (if Str (P) = '_' then
-        Scan_Natural_Ghost (Str, P + 1, Acc)
-      else
-        (declare
-           Shift_Acc : constant Natural :=
-             Acc * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
-         begin
-           (if P = Str'Last
-              or else Str (P + 1) not in '0' .. '9' | '_'
-              or else Shift_Acc >= Integer'Last / 10
-            then
-              Shift_Acc
-            else
-              Scan_Natural_Ghost (Str, P + 1, Shift_Acc))))
    with
      Ghost,
      Subprogram_Variant => (Increases => P),
@@ -351,5 +336,32 @@ is
    --  This routine must not be called with Str'Last = Positive'Last. There is
    --  no check for this case, the caller must ensure this condition is met.
    pragma Warnings (GNATprove, On, """Ptr"" is not modified");
+
+private
+
+   ------------------------
+   -- Scan_Natural_Ghost --
+   ------------------------
+
+   function Scan_Natural_Ghost
+     (Str : String;
+      P   : Natural;
+      Acc : Natural)
+      return Natural
+   is
+     (if Str (P) = '_' then
+        Scan_Natural_Ghost (Str, P + 1, Acc)
+      else
+        (declare
+           Shift_Acc : constant Natural :=
+             Acc * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
+         begin
+           (if P = Str'Last
+              or else Str (P + 1) not in '0' .. '9' | '_'
+              or else Shift_Acc >= Integer'Last / 10
+            then
+              Shift_Acc
+            else
+              Scan_Natural_Ghost (Str, P + 1, Shift_Acc))));
 
 end System.Val_Util;
