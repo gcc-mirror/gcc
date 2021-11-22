@@ -33,7 +33,8 @@ public:
   // Rust uses local_def_ids assigned by def_collector on the AST
   // lets use NodeId instead
   Rib (CrateNum crateNum, NodeId node_id)
-    : crate_num (crateNum), node_id (node_id)
+    : crate_num (crateNum), node_id (node_id),
+      mappings (Analysis::Mappings::get ())
   {}
 
   ~Rib () {}
@@ -59,8 +60,6 @@ public:
     reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
-
-    auto mappings = Analysis::Mappings::get ();
     mappings->insert_canonical_path (mappings->get_current_crate (), id, path);
   }
 
@@ -155,6 +154,7 @@ private:
   std::map<NodeId, CanonicalPath> reverse_path_mappings;
   std::map<NodeId, Location> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
+  Analysis::Mappings *mappings;
 };
 
 class Scope
