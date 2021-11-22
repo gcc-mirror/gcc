@@ -14709,10 +14709,6 @@ by the RTL if-conversion pass for a branch that is considered unpredictable.
 If @option{-fvariable-expansion-in-unroller} is used, the maximum number
 of times that an individual variable will be expanded during loop unrolling.
 
-@item tracer-min-branch-probability-feedback
-Stop forward growth if the probability of best edge is less than
-this threshold (in percent). Used when profile feedback is available.
-
 @item partial-inlining-entry-probability
 Maximum probability of the entry BB of split region
 (in percent relative to entry BB of the function)
@@ -14762,10 +14758,6 @@ A threshold on the average loop count considered by the swing modulo scheduler.
 The number of cycles the swing modulo scheduler considers when checking
 conflicts using DFA.
 
-@item max-inline-insns-recursive-auto
-The maximum number of instructions non-inline function
-can grow to via recursive inlining.
-
 @item graphite-allow-codegen-errors
 Whether codegen errors should be ICEs when @option{-fchecking}.
 
@@ -14814,10 +14806,6 @@ when comparing to the number of (scaled) blocks.
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
-
-@item sra-max-scalarization-size-Osize
-Maximum size, in storage units, of an aggregate
-which should be considered for scalarization when compiling for size.
 
 @item fsm-scale-path-blocks
 Scale factor to apply to the number of blocks in a threading path
