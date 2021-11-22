@@ -43,18 +43,15 @@ public:
     std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
   {
     auto it = path_mappings.find (path);
-    bool already_exists = it != path_mappings.end ();
-    if (already_exists && !shadow)
+    bool path_already_exists = it != path_mappings.end ();
+    if (path_already_exists && !shadow)
       {
-	for (auto &decl : decls_within_rib)
-	  {
-	    if (decl.first == it->second)
-	      {
-		dup_cb (path, it->second, decl.second);
-		return;
-	      }
-	  }
-	dup_cb (path, it->second, locus);
+	const auto &decl = decls_within_rib.find (it->second);
+	if (decl != decls_within_rib.end ())
+	  dup_cb (path, it->second, decl->second);
+	else
+	  dup_cb (path, it->second, locus);
+
 	return;
       }
 
@@ -89,17 +86,17 @@ public:
 
   void clear_name (const CanonicalPath &ident, NodeId id)
   {
-    path_mappings.erase (ident);
-    reverse_path_mappings.erase (id);
+    auto ii = path_mappings.find (ident);
+    if (ii != path_mappings.end ())
+      path_mappings.erase (ii);
 
-    for (auto &it : decls_within_rib)
-      {
-	if (it.first == id)
-	  {
-	    decls_within_rib.erase (it);
-	    break;
-	  }
-      }
+    auto ij = reverse_path_mappings.find (id);
+    if (ij != reverse_path_mappings.end ())
+      reverse_path_mappings.erase (ij);
+
+    auto ik = decls_within_rib.find (id);
+    if (ik != decls_within_rib.end ())
+      decls_within_rib.erase (ik);
   }
 
   CrateNum get_crate_num () const { return crate_num; }
@@ -156,7 +153,7 @@ private:
   NodeId node_id;
   std::map<CanonicalPath, NodeId> path_mappings;
   std::map<NodeId, CanonicalPath> reverse_path_mappings;
-  std::set<std::pair<NodeId, Location>> decls_within_rib;
+  std::map<NodeId, Location> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
 };
 
