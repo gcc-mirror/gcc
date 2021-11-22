@@ -1286,7 +1286,7 @@ namespace bidi {
       case kind::RTL:
 	/* These aren't popped by a PDF/PDI.  */
 	break;
-      [[likely]] case kind::NONE:
+      ATTR_LIKELY case kind::NONE:
 	break;
       default:
 	abort ();
