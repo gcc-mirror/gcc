@@ -42,8 +42,8 @@ public:
     const CanonicalPath &path, NodeId id, Location locus, bool shadow,
     std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
   {
-    auto it = mappings.find (path);
-    bool already_exists = it != mappings.end ();
+    auto it = path_mappings.find (path);
+    bool already_exists = it != path_mappings.end ();
     if (already_exists && !shadow)
       {
 	for (auto &decl : decls_within_rib)
@@ -58,8 +58,8 @@ public:
 	return;
       }
 
-    mappings[path] = id;
-    reverse_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
+    path_mappings[path] = id;
+    reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
 
@@ -69,8 +69,8 @@ public:
 
   bool lookup_name (const CanonicalPath &ident, NodeId *id)
   {
-    auto it = mappings.find (ident);
-    if (it == mappings.end ())
+    auto it = path_mappings.find (ident);
+    if (it == path_mappings.end ())
       return false;
 
     *id = it->second;
@@ -79,8 +79,8 @@ public:
 
   bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident)
   {
-    auto it = reverse_mappings.find (id);
-    if (it == reverse_mappings.end ())
+    auto it = reverse_path_mappings.find (id);
+    if (it == reverse_path_mappings.end ())
       return false;
 
     *ident = it->second;
@@ -89,8 +89,8 @@ public:
 
   void clear_name (const CanonicalPath &ident, NodeId id)
   {
-    mappings.erase (ident);
-    reverse_mappings.erase (id);
+    path_mappings.erase (ident);
+    reverse_path_mappings.erase (id);
 
     for (auto &it : decls_within_rib)
       {
@@ -154,8 +154,8 @@ public:
 private:
   CrateNum crate_num;
   NodeId node_id;
-  std::map<CanonicalPath, NodeId> mappings;
-  std::map<NodeId, CanonicalPath> reverse_mappings;
+  std::map<CanonicalPath, NodeId> path_mappings;
+  std::map<NodeId, CanonicalPath> reverse_path_mappings;
   std::set<std::pair<NodeId, Location>> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
 };
