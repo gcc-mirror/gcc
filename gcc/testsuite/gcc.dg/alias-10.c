@@ -28,4 +28,4 @@ void foo (bitmap head, bitmap_element *elt)
 }
 
 
-/* { dg-final { scan-tree-dump-times "Unswitching" 1 "unswitch"} } */
+/* { dg-final { scan-tree-dump-times "unswitching" 1 "unswitch"} } */
