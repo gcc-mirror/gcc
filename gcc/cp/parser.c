@@ -1542,6 +1542,7 @@ make_declarator (cp_declarator_kind kind)
   declarator->declarator = NULL;
   declarator->parameter_pack_p = false;
   declarator->id_loc = UNKNOWN_LOCATION;
+  declarator->init_loc = UNKNOWN_LOCATION;
 
   return declarator;
 }
@@ -13286,6 +13287,7 @@ cp_parser_condition (cp_parser* parser)
 			     attributes, prefix_attributes,
 			     &pushed_scope);
 
+	  declarator->init_loc = cp_lexer_peek_token (parser->lexer)->location;
 	  /* Parse the initializer.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	    {
@@ -22492,6 +22494,7 @@ cp_parser_init_declarator (cp_parser* parser,
     {
       is_initialized = SD_INITIALIZED;
       initialization_kind = token->type;
+      declarator->init_loc = token->location;
       if (maybe_range_for_decl)
 	*maybe_range_for_decl = error_mark_node;
       tmp_init_loc = token->location;
@@ -24751,6 +24754,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
     {
       tree type = decl_specifiers.type;
       token = cp_lexer_peek_token (parser->lexer);
+      if (declarator)
+	declarator->init_loc = token->location;
       /* If we are defining a class, then the tokens that make up the
 	 default argument must be saved and processed later.  */
       if (!template_parm_p && at_class_scope_p ()
@@ -27143,6 +27148,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		     constant-initializer.  When we call `grokfield', it will
 		     perform more stringent semantics checks.  */
 		  initializer_token_start = cp_lexer_peek_token (parser->lexer);
+		  declarator->init_loc = initializer_token_start->location;
 		  if (function_declarator_p (declarator)
 		      || (decl_specifiers.type
 			  && TREE_CODE (decl_specifiers.type) == TYPE_DECL
@@ -27171,6 +27177,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		       && !function_declarator_p (declarator))
 		{
 		  bool x;
+		  declarator->init_loc
+		    = cp_lexer_peek_token (parser->lexer)->location;
 		  if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
 		  else

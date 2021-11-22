@@ -11507,14 +11507,18 @@ grokdeclarator (const cp_declarator *declarator,
   if (initialized == SD_DEFAULTED || initialized == SD_DELETED)
     funcdef_flag = true;
 
-  location_t typespec_loc = smallest_type_location (type_quals,
-						    declspecs->locations);
-  if (typespec_loc == UNKNOWN_LOCATION)
-    typespec_loc = input_location;
-
-  location_t id_loc = declarator ? declarator->id_loc : input_location;
-  if (id_loc == UNKNOWN_LOCATION)
-    id_loc = input_location;
+  location_t typespec_loc = loc_or_input_loc (smallest_type_location
+					      (type_quals,
+					       declspecs->locations));
+  location_t id_loc;
+  location_t init_loc;
+  if (declarator)
+    {
+      id_loc = loc_or_input_loc (declarator->id_loc);
+      init_loc = loc_or_input_loc (declarator->init_loc);
+    }
+  else
+    init_loc = id_loc = input_location;
 
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
@@ -14027,7 +14031,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    /* An attempt is being made to initialize a non-static
 		       member.  This is new in C++11.  */
-		    maybe_warn_cpp0x (CPP0X_NSDMI);
+		    maybe_warn_cpp0x (CPP0X_NSDMI, init_loc);
 
 		    /* If this has been parsed with static storage class, but
 		       errors forced staticp to be cleared, ensure NSDMI is

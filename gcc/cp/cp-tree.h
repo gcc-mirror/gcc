@@ -6231,9 +6231,11 @@ struct cp_declarator {
   /* If this declarator is parenthesized, this the open-paren.  It is
      UNKNOWN_LOCATION when not parenthesized.  */
   location_t parenthesized;
-
-  location_t id_loc; /* Currently only set for cdk_id, cdk_decomp and
-			cdk_function. */
+  /* Currently only set for cdk_id, cdk_decomp and cdk_function.  */
+  location_t id_loc;
+  /* If this declarator is part of an init-declarator, the location of the
+     initializer.  */
+  location_t init_loc;
   /* GNU Attributes that apply to this declarator.  If the declarator
      is a pointer or a reference, these attribute apply to the type
      pointed to.  */
@@ -6878,7 +6880,8 @@ extern const char *lang_decl_dwarf_name		(tree, int, bool);
 extern const char *language_to_string		(enum languages);
 extern const char *class_key_or_enum_as_string	(tree);
 extern void maybe_warn_variadic_templates       (void);
-extern void maybe_warn_cpp0x			(cpp0x_warn_str str);
+extern void maybe_warn_cpp0x			(cpp0x_warn_str str,
+						 location_t = input_location);
 extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 extern location_t location_of                   (tree);
 extern void qualified_name_lookup_error		(tree, tree, tree,
@@ -7996,6 +7999,11 @@ extern bool decl_in_std_namespace_p	     (tree);
 extern void require_complete_eh_spec_types	(tree, tree);
 extern void cxx_incomplete_type_diagnostic	(location_t, const_tree,
 						 const_tree, diagnostic_t);
+inline location_t
+loc_or_input_loc (location_t loc)
+{
+  return loc == UNKNOWN_LOCATION ? input_location : loc;
+}
 
 inline location_t
 cp_expr_loc_or_loc (const_tree t, location_t or_loc)
