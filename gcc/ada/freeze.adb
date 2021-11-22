@@ -6328,11 +6328,9 @@ package body Freeze is
             --  to the components of Rec.
 
          begin
-            Comp := First_Entity (E);
+            Comp := First_Component (E);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Has_Delayed_Aspects (Comp)
-               then
+               if Has_Delayed_Aspects (Comp) then
                   if not Rec_Pushed then
                      Push_Scope (E);
                      Rec_Pushed := True;
@@ -6348,7 +6346,7 @@ package body Freeze is
                   Analyze_Aspects_At_Freeze_Point (Comp);
                end if;
 
-               Next_Entity (Comp);
+               Next_Component (Comp);
             end loop;
 
             --  Pop the scope if Rec scope has been pushed on the scope stack

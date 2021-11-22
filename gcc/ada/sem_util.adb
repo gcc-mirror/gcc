@@ -17803,15 +17803,14 @@ package body Sem_Util is
          --  Otherwise see if all record components are initialized
 
          declare
-            Ent : Entity_Id;
+            Comp : Entity_Id;
 
          begin
-            Ent := First_Entity (Typ);
-            while Present (Ent) loop
-               if Ekind (Ent) = E_Component
-                 and then (No (Parent (Ent))
-                            or else No (Expression (Parent (Ent))))
-                 and then not Is_Fully_Initialized_Type (Etype (Ent))
+            Comp := First_Component (Typ);
+            while Present (Comp) loop
+               if (No (Parent (Comp))
+                    or else No (Expression (Parent (Comp))))
+                 and then not Is_Fully_Initialized_Type (Etype (Comp))
 
                   --  Special VM case for tag components, which need to be
                   --  defined in this case, but are never initialized as VMs
@@ -17819,12 +17818,12 @@ package body Sem_Util is
                   --  uninitialized case. Note that this applies both to the
                   --  uTag entry and the main vtable pointer (CPP_Class case).
 
-                 and then (Tagged_Type_Expansion or else not Is_Tag (Ent))
+                 and then (Tagged_Type_Expansion or else not Is_Tag (Comp))
                then
                   return False;
                end if;
 
-               Next_Entity (Ent);
+               Next_Component (Comp);
             end loop;
          end;
 

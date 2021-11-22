@@ -1548,18 +1548,17 @@ package body Sem_Warn is
                               Comp : Entity_Id;
 
                            begin
-                              Comp := First_Entity (E1T);
+                              Comp := First_Component (E1T);
                               while Present (Comp) loop
-                                 if Ekind (Comp) = E_Component
-                                   and then Nkind (Parent (Comp)) =
-                                              N_Component_Declaration
+                                 if Nkind (Parent (Comp)) =
+                                      N_Component_Declaration
                                    and then No (Expression (Parent (Comp)))
                                  then
                                     Error_Msg_Node_2 := Comp;
                                     exit;
                                  end if;
 
-                                 Next_Entity (Comp);
+                                 Next_Component (Comp);
                               end loop;
                            end;
                         end if;
