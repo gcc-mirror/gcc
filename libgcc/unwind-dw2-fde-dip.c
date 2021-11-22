@@ -104,7 +104,6 @@ static const fde * _Unwind_Find_registered_FDE (void *pc, struct dwarf_eh_bases 
 struct unw_eh_callback_data
 {
   _Unwind_Ptr pc;
-  void *tbase;
   void *dbase;
   void *func;
   const fde *ret;
@@ -154,7 +153,7 @@ base_from_cb_data (unsigned char encoding, struct unw_eh_callback_data *data)
       return 0;
 
     case DW_EH_PE_textrel:
-      return (_Unwind_Ptr) data->tbase;
+      return 0;
     case DW_EH_PE_datarel:
       return (_Unwind_Ptr) data->dbase;
     default:
@@ -431,7 +430,7 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
      As soon as GLIBC will provide API so to notify that a library has been
      removed, we could cache this (and thus use search_object).  */
   ob.pc_begin = NULL;
-  ob.tbase = data->tbase;
+  ob.tbase = NULL;
   ob.dbase = data->dbase;
   ob.u.single = (fde *) eh_frame;
   ob.s.i = 0;
@@ -461,7 +460,6 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
     return ret;
 
   data.pc = (_Unwind_Ptr) pc;
-  data.tbase = NULL;
   data.dbase = NULL;
   data.func = NULL;
   data.ret = NULL;
@@ -472,7 +470,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 
   if (data.ret)
     {
-      bases->tbase = data.tbase;
+      bases->tbase = NULL;
       bases->dbase = data.dbase;
       bases->func = data.func;
     }
