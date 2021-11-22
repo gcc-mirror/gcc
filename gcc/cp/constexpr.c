@@ -8686,6 +8686,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_SINGLE:
     case OMP_SECTION:
     case OMP_MASTER:
+    case OMP_MASKED:
     case OMP_TASKGROUP:
     case OMP_TARGET_UPDATE:
     case OMP_TARGET_ENTER_DATA:
