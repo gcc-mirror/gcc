@@ -771,17 +771,15 @@ ResolveType::visit (AST::TraitObjectType &type)
 // rust-ast-resolve-item.h
 
 void
-ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
-				const CanonicalPath &self)
+ResolveItem::resolve_impl_item (AST::TraitImplItem *item)
 {
-  ResolveImplItems::go (item, self);
+  ResolveImplItems::go (item);
 }
 
 void
-ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
-				const CanonicalPath &self)
+ResolveItem::resolve_impl_item (AST::InherentImplItem *item)
 {
-  ResolveImplItems::go (item, self);
+  ResolveImplItems::go (item);
 }
 
 void

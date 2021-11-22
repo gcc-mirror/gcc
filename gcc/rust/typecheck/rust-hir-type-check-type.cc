@@ -220,7 +220,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   bool fully_resolved = path.get_segments ().empty ();
   if (fully_resolved)
     {
-      resolver->insert_resolved_name (path.get_mappings ().get_nodeid (),
+      resolver->insert_resolved_type (path.get_mappings ().get_nodeid (),
 				      root_resolved_node_id);
       context->insert_receiver (path.get_mappings ().get_hirid (), root);
       return;
@@ -517,7 +517,7 @@ TypeCheckType::resolve_segments (
     }
   else
     {
-      resolver->insert_resolved_name (expr_mappings.get_nodeid (),
+      resolver->insert_resolved_type (expr_mappings.get_nodeid (),
 				      resolved_node_id);
     }
 
