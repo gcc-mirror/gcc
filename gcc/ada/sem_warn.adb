@@ -4237,8 +4237,7 @@ package body Sem_Warn is
      (Return_Node : Node_Id;
       Scope_Id    : Entity_Id)
    is
-      Form  : Entity_Id;
-      Form2 : Entity_Id;
+      Form : Entity_Id;
 
    begin
       --  Ignore if procedure or return statement does not come from source
@@ -4248,6 +4247,26 @@ package body Sem_Warn is
       then
          return;
       end if;
+
+      --  Before we issue the warning, add an ad hoc defence against the most
+      --  common case of false positives with this warning which is the case
+      --  where there is a Boolean OUT parameter that has been set, and whose
+      --  meaning is "ignore the values of the other parameters". We can't of
+      --  course reliably tell this case at compile time, but the following
+      --  test kills a lot of false positives, without generating a significant
+      --  number of false negatives (missed real warnings).
+
+      Form := First_Formal (Scope_Id);
+      while Present (Form) loop
+         if Ekind (Form) = E_Out_Parameter
+           and then Root_Type (Etype (Form)) = Standard_Boolean
+           and then not Never_Set_In_Source_Check_Spec (Form)
+         then
+            return;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
 
       --  Loop through formals
 
@@ -4263,27 +4282,6 @@ package body Sem_Warn is
            and then Is_Scalar_Type (Etype (Form))
            and then not Present (Unset_Reference (Form))
          then
-            --  Before we issue the warning, an add ad hoc defence against the
-            --  most common case of false positives with this warning which is
-            --  the case where there is a Boolean OUT parameter that has been
-            --  set, and whose meaning is "ignore the values of the other
-            --  parameters". We can't of course reliably tell this case at
-            --  compile time, but the following test kills a lot of false
-            --  positives, without generating a significant number of false
-            --  negatives (missed real warnings).
-
-            Form2 := First_Formal (Scope_Id);
-            while Present (Form2) loop
-               if Ekind (Form2) = E_Out_Parameter
-                 and then Root_Type (Etype (Form2)) = Standard_Boolean
-                 and then not Never_Set_In_Source_Check_Spec (Form2)
-               then
-                  return;
-               end if;
-
-               Next_Formal (Form2);
-            end loop;
-
             --  Here all conditions are met, record possible unset reference
 
             Set_Unset_Reference (Form, Return_Node);
