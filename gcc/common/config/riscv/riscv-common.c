@@ -50,6 +50,20 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
+  {"zk", "zkn"},
+  {"zk", "zkr"},
+  {"zk", "zkt"},
+  {"zkn", "zbkb"},
+  {"zkn", "zbkc"},
+  {"zkn", "zbkx"},
+  {"zkn", "zkne"},
+  {"zkn", "zknd"},
+  {"zkn", "zknh"},
+  {"zks", "zbkb"},
+  {"zks", "zbkc"},
+  {"zks", "zbkx"},
+  {"zks", "zksed"},
+  {"zks", "zksh"},
   {NULL, NULL}
 };
 
@@ -502,7 +516,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbjtpvn";
+  return "mafdqlcbjktpvn";
 }
 
 /* Parsing subset version.
