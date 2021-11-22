@@ -46,6 +46,9 @@ gimple_ranger::gimple_ranger () :
   m_oracle = m_cache.oracle ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_TRACE))
     tracer.enable_trace ();
+  m_stmt_list.create (0);
+  m_stmt_list.safe_grow (num_ssa_names);
+  m_stmt_list.truncate (0);
 
   // Ensure the not_executable flag is clear everywhere.
   if (flag_checking)
@@ -59,6 +62,11 @@ gimple_ranger::gimple_ranger () :
 	    gcc_checking_assert ((e->flags & non_executable_edge_flag) == 0);
 	}
     }
+}
+
+gimple_ranger::~gimple_ranger ()
+{
+  m_stmt_list.release ();
 }
 
 bool
@@ -284,9 +292,10 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   else
     {
       bool current;
-      // Check if the stmt has already been processed, and is not stale.
+      // Check if the stmt has already been processed.
       if (m_cache.get_global_range (r, name, current))
 	{
+	  // If it isn't stale, use this cached value.
 	  if (current)
 	    {
 	      if (idx)
@@ -294,7 +303,10 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 	      return true;
 	    }
 	}
-      // Otherwise calculate a new value.
+      else
+	prefill_stmt_dependencies (name);
+
+      // Calculate a new value.
       int_range_max tmp;
       fold_range_internal (tmp, s, name);
 
@@ -310,6 +322,97 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
     tracer.trailer (idx, "range_of_stmt", res, name, r);
   return res;
 }
+
+
+// Check if NAME is a dependency that needs resolving, and push it on the
+// stack if so.  R is a scratch range.
+
+inline void
+gimple_ranger::prefill_name (irange &r, tree name)
+{
+  if (!gimple_range_ssa_p (name))
+    return;
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
+  if (!gimple_range_handler (stmt))
+    return;
+
+  bool current;
+  // If this op has not been processed yet, then push it on the stack
+  if (!m_cache.get_global_range (r, name, current))
+    m_stmt_list.safe_push (name);
+}
+
+// This routine will seed the global cache with most of the depnedencies of
+// NAME.  This prevents excessive call depth through the normal API.
+
+void
+gimple_ranger::prefill_stmt_dependencies (tree ssa)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (ssa))
+    return;
+
+  int_range_max r;
+  unsigned idx;
+  gimple *stmt = SSA_NAME_DEF_STMT (ssa);
+  gcc_checking_assert (stmt && gimple_bb (stmt));
+
+  // Only pre-process range-ops.
+  if (!gimple_range_handler (stmt))
+    return;
+
+  // Mark where on the stack we are starting.
+  unsigned start = m_stmt_list.length ();
+  m_stmt_list.safe_push (ssa);
+
+  idx = tracer.header ("ROS dependence fill\n");
+
+  // Loop until back at the start point.
+  while (m_stmt_list.length () > start)
+    {
+      tree name = m_stmt_list.last ();
+      // NULL is a marker which indicates the next name in the stack has now
+      // been fully resolved, so we can fold it.
+      if (!name)
+	{
+	  // Pop the NULL, then pop the name.
+	  m_stmt_list.pop ();
+	  name = m_stmt_list.pop ();
+	  // Don't fold initial request, it will be calculated upon return.
+	  if (m_stmt_list.length () > start)
+	    {
+	      // Fold and save the value for NAME.
+	      stmt = SSA_NAME_DEF_STMT (name);
+	      fold_range_internal (r, stmt, name);
+	      m_cache.set_global_range (name, r);
+	    }
+	  continue;
+	}
+
+      // Add marker indicating previous NAME in list should be folded
+      // when we get to this NULL.
+      m_stmt_list.safe_push (NULL_TREE);
+      stmt = SSA_NAME_DEF_STMT (name);
+
+      if (idx)
+	{
+	  tracer.print (idx, "ROS dep fill (");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fputs (") at stmt ", dump_file);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+
+      gcc_checking_assert (gimple_range_handler (stmt));
+      tree op = gimple_range_operand2 (stmt);
+      if (op)
+	prefill_name (r, op);
+      op = gimple_range_operand1 (stmt);
+      if (op)
+	prefill_name (r, op);
+    }
+  if (idx)
+    tracer.trailer (idx, "ROS ", false, ssa, r);
+}
+
 
 // This routine will invoke the gimple fold_stmt routine, providing context to
 // range_of_expr calls via an private interal API.
