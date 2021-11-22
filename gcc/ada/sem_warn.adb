@@ -1569,15 +1569,13 @@ package body Sem_Warn is
                         --  For access types, UR was only set for dereferences,
                         --  so the issue is that the value may be null.
 
-                        if not Is_Trivial_Subprogram (Scope (E1)) then
-                           if not Warnings_Off_E1 then
-                              if Is_Access_Type (Etype (Parent (UR))) then
-                                 Error_Msg_N ("??`&.&` may be null!", UR);
-                              else
-                                 Error_Msg_N
-                                   ("??`&.&` may be referenced before "
-                                    & "it has a value!", UR);
-                              end if;
+                        if not Warnings_Off_E1 then
+                           if Is_Access_Type (Etype (Parent (UR))) then
+                              Error_Msg_N ("??`&.&` may be null!", UR);
+                           else
+                              Error_Msg_N
+                                ("??`&.&` may be referenced before "
+                                 & "it has a value!", UR);
                            end if;
                         end if;
 
