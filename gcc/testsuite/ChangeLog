@@ -1,3 +1,31 @@
+2021-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* gcc.target/i386/pr101180.c: New test.
+
+2021-11-21  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99061
+	* gfortran.dg/dec_math_5.f90: New test.
+
+2021-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103227
+	* gcc.dg/tree-ssa/modref-15.c: New test.
+
+2021-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103264
+	* gcc.dg/tree-prof/merge_block.c: Add -fno-ipa-modref
+
+2021-11-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/102117
+	* gcc.target/s390/mul-wide.c: New test case.
+	* gcc.target/s390/umul-wide.c: New test case.
+
 2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103052

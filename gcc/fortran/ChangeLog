@@ -1,3 +1,20 @@
+2021-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103315
+	* trans-types.c (gfc_get_array_descr_info): Use DW_OP_deref_size 1
+	instead of DW_OP_deref for DW_AT_rank.
+
+2021-11-21  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99061
+	* trans-intrinsic.c (gfc_lookup_intrinsic): Helper function for
+	looking up gfortran builtin intrinsics.
+	(gfc_conv_intrinsic_atrigd): Use it.
+	(gfc_conv_intrinsic_cotan): Likewise.
+	(gfc_conv_intrinsic_cotand): Likewise.
+	(gfc_conv_intrinsic_atan2d): Likewise.
+
 2021-11-18  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

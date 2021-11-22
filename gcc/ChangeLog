@@ -1,3 +1,70 @@
+2021-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* config/i386/i386-options.c (ix86_valid_target_attribute_p): If
+	fndecl already has DECL_FUNCTION_SPECIFIC_TARGET, use that as base
+	instead of target_option_default_node.
+
+2021-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103227
+	* ipa-modref.c (parm_map_for_arg): Rename to ...
+	(parm_map_for_ptr): .. this one; handle static chain and calls to
+	malloc functions.
+	(modref_access_analysis::get_access): Use parm_map_for_ptr.
+	(modref_access_analysis::process_fnspec): Update.
+	(modref_access_analysis::analyze_load): Update.
+	(modref_access_analysis::analyze_store): Update.
+
+2021-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (ignore_nondeterminism_p): Move earlier in source
+	code.
+	(ignore_retval_p): Likewise.
+	(ignore_stores_p): Likewise.
+	(parm_map_for_arg): Likewise.
+	(class modref_access_analysis): New class.
+	(modref_access_analysis::set_side_effects): New member function.
+	(modref_access_analysis::set_nondeterministic): New member function.
+	(get_access): Turn to ...
+	(modref_access_analysis::get_access): ... this one.
+	(record_access): Turn to ...
+	(modref_access_analysis::record_access): ... this one.
+	(record_access_lto): Turn to ...
+	(modref_access_analysis::record_access_lto): ... This one.
+	(record_access_p): Turn to ...
+	(modref_access_analysis::record_access_p): ... This one
+	(modref_access_analysis::record_unknown_load): New member function.
+	(modref_access_analysis::record_unknown_store): New member function.
+	(get_access_for_fnspec): Turn to ...
+	(modref_access_analysis::get_access_for_fnspec): ... this one.
+	(merge_call_side_effects): Turn to ...
+	(moderf_access_analysis::merge_call_side_effects): Turn to ...
+	(collapse_loads): Move later in source code.
+	(collapse_stores): Move later in source code.
+	(process_fnspec): Turn to ...
+	(modref_access_analysis::process_fnspec): ... this one.
+	(analyze_call): Turn to ...
+	(modref_access_analysis::analyze_call): ... this one.
+	(struct summary_ptrs): Remove.
+	(analyze_load): Turn to ...
+	(modref_access_analysis::analyze_load): ... this one.
+	(analyze_store): Turn to ...
+	(modref_access_analysis::analyze_store): ... this one.
+	(analyze_stmt): Turn to ...
+	(modref_access_analysis::analyze_stmt): ... This one.
+	(remove_summary): Remove.
+	(modref_access_analysis::propagate): Break out from ...
+	(modref_access_analysis::analyze): Break out from ...
+	(analyze_function): ... here.
+
+2021-11-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/102117
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Recognize
+	signed WIDEN_MULT_EXPR if the target supports umul_widen_optab.
+
 2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103052
