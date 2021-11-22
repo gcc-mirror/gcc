@@ -1,3 +1,131 @@
+2021-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* pt.c (apply_late_template_attributes): Temporarily override
+	current_optimize_pragma, optimization_current_node,
+	current_target_pragma and scope_chain->omp_declare_target_attribute,
+	so that cplus_decl_attributes doesn't add implicit attributes.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* typeck.c (warn_for_null_address): Suppress warnings for code
+	resulting from macro expansion.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.c (cp_walk_subtrees) <case *_CAST_EXPR>: Don't explicitly
+	walk the operands.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* lambda.c (lambda_capture_field_type): Simplify by handling the
+	is_this case first.  When capturing by-value a capture proxy,
+	consider the type of the corresponding field instead.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR c++/103326
+	* pt.c (tsubst_copy): Handle VECTOR_CST.
+
+2021-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/70796
+	* cp-gimplify.c (cp_gimplify_arg): New function.
+	(cp_gimplify_expr): Use cp_gimplify_arg instead of gimplify_arg,
+	pass true as last argument to it if there are any following
+	arguments in strong evaluation order with side-effects.
+
+2021-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	PR c++/96121
+	* init.c (perform_member_init): Remove a forward declaration.
+	Walk the initializer using find_uninit_fields_r.  New parameter
+	to track uninitialized fields.  If a member is initialized,
+	remove it from the hash set.
+	(perform_target_ctor): Return the initializer.
+	(struct find_uninit_data): New class.
+	(find_uninit_fields_r): New function.
+	(find_uninit_fields): New function.
+	(emit_mem_initializers): Keep and initialize a set holding fields
+	that are not initialized.  When handling delegating constructors,
+	walk the constructor tree using find_uninit_fields_r.  Also when
+	initializing base clases.  Pass uninitialized down to
+	perform_member_init.
+
+2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103198
+	* pt.c (any_template_parm_r): Walk the TREE_TYPE of a dummy
+	object.
+
+2021-11-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103049
+	* semantics.c (finish_compound_literal): Accept C++23 auto{x}.
+	* typeck2.c (build_functional_cast_1): Accept C++23 auto(x).
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Disable the
+	-fpermissive fallback for C++20 template-id ADL, but keep the
+	diagnostic.
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* decl.c (finish_function): Update use of decl_replaceable_p.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99911
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Don't diagnose
+	name lookup failure if the arguments to an unresolved template
+	name are still dependent.
+
+2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102670
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: When looking
+	for an identifier callee in the koenig_p case, also look through
+	TEMPLATE_ID_EXPR.  Use tsubst_copy to substitute through the
+	template arguments of the template-id.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* constexpr.c (cxx_eval_constant_expression): Handle PAREN_EXPR
+	via cxx_eval_constant_expression.
+	* cp-objcp-common.c (names_builtin_p): Handle
+	RID_BUILTIN_ASSOC_BARRIER.
+	* cp-tree.h: Adjust TREE_LANG_FLAG documentation to include
+	PAREN_EXPR in REF_PARENTHESIZED_P.
+	(REF_PARENTHESIZED_P): Add PAREN_EXPR.
+	* parser.c (cp_parser_postfix_expression): Handle
+	RID_BUILTIN_ASSOC_BARRIER.
+	* pt.c (tsubst_copy_and_build): If the PAREN_EXPR is not a
+	parenthesized initializer, build a new PAREN_EXPR.
+	* semantics.c (force_paren_expr): Simplify conditionals. Set
+	REF_PARENTHESIZED_P on PAREN_EXPR.
+	(maybe_undo_parenthesized_ref): Test PAREN_EXPR for
+	REF_PARENTHESIZED_P.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-16  Jason Merrill  <jason@redhat.com>
+
+	* ptree.c (cxx_print_xnode): Handle PTRMEM_CST.
+
 2021-11-15  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (struct lang_decl_fn): Add implicit_constexpr.

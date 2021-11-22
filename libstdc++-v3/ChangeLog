@@ -1,3 +1,227 @@
+2021-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/erase_if.h (__erase_nodes_if): Add _UnsafeContainer template
+	parameter. Use it to get iterators to work with.
+	* include/debug/macros.h (__glibcxx_check_erase2): New.
+	* include/debug/map.h (map<>::erase(_Base_const_iterator)): New.
+	(map<>::erase(const_iterator)): Use latter.
+	* include/debug/multimap.h (multimap<>::erase(_Base_const_iterator)): New.
+	(multimap<>::erase(const_iterator)): Use latter.
+	* include/debug/multiset.h (multiset<>::erase(_Base_const_iterator)): New.
+	(multiset<>::erase(const_iterator)): Use latter.
+	* include/debug/set.h (set<>::erase(_Base_const_iterator)): New.
+	(set<>::erase(const_iterator)): Use latter.
+	* include/debug/unordered_map (unordered_map<>::erase(_Base_const_iterator)): New.
+	(unordered_multimap<>::erase(const_iterator)): New.
+	* include/debug/unordered_set (unordered_set<>::erase(_Base_const_iterator)): New.
+	(unordered_multiset<>::erase(const_iterator)): New.
+	* include/experimental/map (erase_if): Adapt.
+	* include/experimental/set (erase_if): Adapt.
+	* include/experimental/unordered_map (erase_if): Adapt.
+	* include/experimental/unordered_set (erase_if): Adapt.
+	* include/std/map (erase_if): Adapt.
+	* include/std/set (erase_if): Adapt.
+	* include/std/unordered_map (erase_if): Adapt.
+	* include/std/unordered_set (erase_if): Adapt.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_istringstream/cons/char/1.cc: Check all
+	constructors.
+	* testsuite/27_io/basic_istringstream/cons/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/cons/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/basic_stringstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/cons/wchar_t/1.cc:
+	Likewise.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++98/locale_init.cc (_S_initialize_once): Check if
+	initialization has already been done.
+	(_S_initialize): Replace __gthread_active_p with
+	__is_single_threaded. Use __builtin_expect.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.tcc (_M_construct): Use the
+	traits assign member to write into allcoated memory.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/prune.exp: Prune dsymutil (ld64) warning.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103332
+	PR libstdc++/102958
+	* testsuite/21_strings/basic_string/capacity/char/1.cc: Add
+	-Wno-stringop-overflow.
+	* testsuite/21_strings/basic_string/operators/char/1.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/factory/u8path-char8_t.cc:
+	Add -Wno-stringop-overread.
+
+2021-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_Alloc_traits): Replace typedef
+	with struct for C++20 mode.
+	* include/bits/basic_string.tcc (_M_replace): Use _Alloc_traits
+	for allocation.
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::assign):
+	Use std::_Construct during constant evaluation.
+	(__gnu_cxx::char_traits::assign(CharT*, const CharT*, size_t)):
+	Likewise. Replace std::fill_n with memset or manual loop.
+	(__gnu_cxx::char_traits::copy): Likewise, replacing std::copy
+	with memcpy.
+	* include/ext/vstring.h: Include <bits/stl_algobase.h> for
+	std::min.
+	* include/std/string_view: Likewise.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Add constexpr test.
+
+2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/103305
+	* config/os/newlib/ctype_base.h (upper, lower, alpha, digit, xdigit,
+	space, print, graph, cntrl, punct, alnum, blank): Use short or long
+	names depending on if short ones are defined.
+
+2021-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (__gnu_cxx::char_traits::move):
+	Do not compare unrelated pointers during constant evaluation.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	Improve tests for char_traits::move.
+
+2021-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4: Replace AC_CACHE_VAL with AC_CACHE_CHECK.
+	* configure: Regenerate.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address): Use std::_Construct
+	to initialize union members.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (_M_construct_aux): Only define
+	for C++98. Remove constexpr.
+	(_M_construct_aux_2): Likewise.
+	(_M_construct(InputIter, InputIter)): Remove.
+	(basic_string(const basic_string&)): Call _M_construct with
+	iterator category argument.
+	(basic_string(const basic_string&, size_type, const Alloc&)):
+	Likewise.
+	(basic_string(const basic_string&, size_type, size_type)):
+	Likewise.
+	(basic_string(const charT*, size_type, const Alloc&)): Likewise.
+	Check for null pointer.
+	(basic_string(const charT*, const Alloc&)): Likewise.
+	(basic_string(initializer_list<charT>, const Alloc&)): Call
+	_M_construct with iterator category argument.
+	(basic_string(const basic_string&, const Alloc&)): Likewise.
+	(basic_string(basic_string&&, const Alloc&)): Likewise.
+	(basic_string(_InputIter, _InputIter, const Alloc&)): Likewise
+	for C++11 and later, call _M_construct_aux for C++98.
+	* include/bits/basic_string.tcc
+	(_M_construct(I, I, input_iterator_tag)): Replace try-block with
+	RAII type.
+	(_M_construct(I, I, forward_iterator_tag)): Likewise. Remove
+	__is_null_pointer check.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103295
+	* include/bits/basic_string.h (_M_use_local_data()): New
+	member function to make local buffer the active member.
+	(assign(const basic_string&)): Use it.
+	* include/bits/basic_string.tcc (_M_construct, reserve()):
+	Likewise.
+
+2021-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103240
+	* libsupc++/tinfo2.cc (type_info::before): Use unadjusted name
+	to check for the '*' prefix.
+	* testsuite/util/testsuite_shared.cc: Add type_info object for
+	use in new test.
+	* testsuite/18_support/type_info/103240.cc: New test.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (operator<=>): Use constexpr
+	unconditionally.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc:
+	Require cxx11-abit effective target.
+	* testsuite/21_strings/headers/string/synopsis.cc: Add
+	conditional constexpr to declarations, and adjust relational
+	operators for C++20.
+
+2021-11-16  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/MERGE: Update the commit hash.
+	* src/c++17/ryu/d2s_intrinsics.h: Merge from Ryu's master
+	branch.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string, operator""s): Add
+	constexpr for C++20.
+	(basic_string::basic_string(basic_string&&)): Only copy
+	initialized portion of the buffer.
+	(basic_string::basic_string(basic_string&&, const Alloc&)):
+	Likewise.
+	* include/bits/basic_string.tcc (basic_string): Add constexpr
+	for C++20.
+	(basic_string::swap(basic_string&)): Only copy initialized
+	portions of the buffers.
+	(basic_string::_M_replace): Add constexpr implementation that
+	doesn't depend on pointer comparisons.
+	* include/bits/cow_string.h: Adjust comment.
+	* include/ext/type_traits.h (__is_null_pointer): Add constexpr.
+	* include/std/string (erase, erase_if): Add constexpr.
+	* include/std/version (__cpp_lib_constexpr_string): Update
+	value.
+	* testsuite/21_strings/basic_string/cons/char/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/literals/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/constexpr.cc: New test.
+	* testsuite/21_strings/basic_string/modifiers/swap/char/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/swap/wchar_t/constexpr.cc:
+	New test.
+	* testsuite/21_strings/basic_string/version.cc: New test.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (swap(_Bit_reference, _Bit_reference))
+	(swap(_Bit_reference, bool&), swap(bool&, _Bit_reference)):
+	Define as hidden friends of _Bit_reference.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/1.cc:
+	Fix reads past the end of strings.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/compare/wchar_t/1.cc:
+	Likewise.
+
+2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/allocator/71964.cc: Fix
+	typo.
+	* testsuite/23_containers/set/allocator/71964.cc: Likewise.
+
 2021-11-15  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/to_address/1_neg.cc: Adjust error.

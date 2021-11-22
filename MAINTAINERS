@@ -646,7 +646,7 @@ Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
 Sergei Trofimovich				<slyfox@gcc.gnu.org>
 Igor Tsimbalist					<igor.v.tsimbalist@intel.com>
-Martin Uecker					<muecker@gwdg.de>
+Martin Uecker					<uecker@gcc.gnu.org>
 David Ung					<davidu@mips.com>
 Neil Vachharajani				<nvachhar@gmail.com>
 Kris Van Hees					<kris.van.hees@oracle.com>
@@ -717,3 +717,4 @@ information.
  Siddhesh Poyarekar				<siddhesh@gotplt.org>
  Trevor Saunders				<tbsaunde+gcc@tbsaunde.org>
  Petter Tomner					<tomner@kth.se>
+ Martin Uecker					<uecker@gcc.gnu.org>

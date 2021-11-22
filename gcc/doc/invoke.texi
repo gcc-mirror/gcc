@@ -290,7 +290,9 @@ Objective-C and Objective-C++ Dialects}.
 -Warith-conversion @gol
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare @gol
 -Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias @gol
--Wno-attribute-warning  -Wbool-compare  -Wbool-operation @gol
+-Wno-attribute-warning  @gol
+-Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]} @gol
+-Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc11-c2x-compat @gol
@@ -1388,7 +1390,8 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-symbol=@var{symbol} @gol
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop @gol
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
--mindirect-branch-register -mneeded}
+-mindirect-branch-register -mharden-sls=@var{choice} @gol
+-mindirect-branch-cs-prefix -mneeded}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -1840,7 +1843,8 @@ named @file{dir/bar.*}, combining the given @var{dumppfx} with the
 default @var{dumpbase} derived from the primary output name.  Dump
 outputs also take the input name suffix: @file{dir/bar.c.*}.
 
-It defaults to the location of the output file; options
+It defaults to the location of the output file, unless the output
+file is a special file like @code{/dev/null}. Options
 @option{-save-temps=cwd} and @option{-save-temps=obj} override this
 default, just like an explicit @option{-dumpdir} option.  In case
 multiple such options are given, the last one prevails:
@@ -3066,6 +3070,13 @@ Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier.  You can use the keyword @code{__typeof__} instead.
 This option is implied by the strict ISO C++ dialects: @option{-ansi},
 @option{-std=c++98}, @option{-std=c++11}, etc.
+
+@item -fimplicit-constexpr
+@opindex fimplicit-constexpr
+Make inline functions implicitly constexpr, if they satisfy the
+requirements for a constexpr function.  This option can be used in
+C++14 mode or later.  This can result in initialization changing from
+dynamic to static and other optimizations.
 
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
@@ -6949,6 +6960,18 @@ to compute a value that itself is never used, because such
 computations may be deleted by data flow analysis before the warnings
 are printed.
 
+In C++, this warning also warns about using uninitialized objects in
+member-initializer-lists.  For example, GCC warns about @code{b} being
+uninitialized in the following snippet:
+
+@smallexample
+struct A @{
+  int a;
+  int b;
+  A() : a(b) @{ @}
+@};
+@end smallexample
+
 @item -Wno-invalid-memory-model
 @opindex Winvalid-memory-model
 @opindex Wno-invalid-memory-model
@@ -7640,6 +7663,23 @@ Attributes considered include @code{alloc_align}, @code{alloc_size},
 @option{-Wattribute-alias} is equivalent to @option{-Wattribute-alias=1}.
 This is the default.  You can disable these warnings with either
 @option{-Wno-attribute-alias} or @option{-Wattribute-alias=0}.
+
+@item -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{]}
+@opindex Wbidi-chars=
+@opindex Wbidi-chars
+@opindex Wno-bidi-chars
+Warn about possibly misleading UTF-8 bidirectional control characters in
+comments, string literals, character constants, and identifiers.  Such
+characters can change left-to-right writing direction into right-to-left
+(and vice versa), which can cause confusion between the logical order and
+visual order.  This may be dangerous; for instance, it may seem that a piece
+of code is not commented out, whereas it in fact is.
+
+There are three levels of warning supported by GCC@.  The default is
+@option{-Wbidi-chars=unpaired}, which warns about improperly terminated
+bidi contexts.  @option{-Wbidi-chars=none} turns the warning off.
+@option{-Wbidi-chars=any} warns about any use of bidirectional control
+characters.
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -8612,6 +8652,8 @@ suppressed by casting the pointer operand to an integer type such
 as @code{inptr_t} or @code{uinptr_t}.
 Comparisons against string literals result in unspecified behavior
 and are not portable, and suggest the intent was to call @code{strcmp}.
+The warning is suppressed if the suspicious expression is the result
+of macro expansion.
 @option{-Waddress} warning is enabled by @option{-Wall}.
 
 @item -Wno-address-of-packed-member
@@ -10598,6 +10640,7 @@ valid for all standard-compliant programs.
 It turns on @option{-ffast-math}, @option{-fallow-store-data-races}
 and the Fortran-specific @option{-fstack-arrays}, unless
 @option{-fmax-stack-var-size} is specified, and @option{-fno-protect-parens}.
+It turns off @option{-fsemantic-interposition}.
 
 @item -Og
 @opindex Og
@@ -32340,6 +32383,21 @@ not be reachable in the large code model.
 @item -mindirect-branch-register
 @opindex mindirect-branch-register
 Force indirect call and jump via register.
+
+@item -mharden-sls=@var{choice}
+@opindex mharden-sls
+Generate code to mitigate against straight line speculation (SLS) with
+@var{choice}.  The default is @samp{none} which disables all SLS
+hardening.  @samp{return} enables SLS hardening for function return.
+@samp{indirect-branch} enables SLS hardening for indirect branch.
+@samp{all} enables all SLS hardening.
+
+@item -mindirect-branch-cs-prefix
+@opindex mindirect-branch-cs-prefix
+Add CS prefix to call and jmp to indirect thunk with branch target in
+r8-r15 registers so that the call and jmp instruction length is 6 bytes
+to allow them to be replaced with @samp{lfence; call *%r8-r15} or
+@samp{lfence; jmp *%r8-r15} at run-time.
 
 @end table
 

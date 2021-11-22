@@ -1,3 +1,739 @@
+2021-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* config/i386/i386-options.c (ix86_valid_target_attribute_p): If
+	fndecl already has DECL_FUNCTION_SPECIFIC_TARGET, use that as base
+	instead of target_option_default_node.
+
+2021-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103227
+	* ipa-modref.c (parm_map_for_arg): Rename to ...
+	(parm_map_for_ptr): .. this one; handle static chain and calls to
+	malloc functions.
+	(modref_access_analysis::get_access): Use parm_map_for_ptr.
+	(modref_access_analysis::process_fnspec): Update.
+	(modref_access_analysis::analyze_load): Update.
+	(modref_access_analysis::analyze_store): Update.
+
+2021-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (ignore_nondeterminism_p): Move earlier in source
+	code.
+	(ignore_retval_p): Likewise.
+	(ignore_stores_p): Likewise.
+	(parm_map_for_arg): Likewise.
+	(class modref_access_analysis): New class.
+	(modref_access_analysis::set_side_effects): New member function.
+	(modref_access_analysis::set_nondeterministic): New member function.
+	(get_access): Turn to ...
+	(modref_access_analysis::get_access): ... this one.
+	(record_access): Turn to ...
+	(modref_access_analysis::record_access): ... this one.
+	(record_access_lto): Turn to ...
+	(modref_access_analysis::record_access_lto): ... This one.
+	(record_access_p): Turn to ...
+	(modref_access_analysis::record_access_p): ... This one
+	(modref_access_analysis::record_unknown_load): New member function.
+	(modref_access_analysis::record_unknown_store): New member function.
+	(get_access_for_fnspec): Turn to ...
+	(modref_access_analysis::get_access_for_fnspec): ... this one.
+	(merge_call_side_effects): Turn to ...
+	(moderf_access_analysis::merge_call_side_effects): Turn to ...
+	(collapse_loads): Move later in source code.
+	(collapse_stores): Move later in source code.
+	(process_fnspec): Turn to ...
+	(modref_access_analysis::process_fnspec): ... this one.
+	(analyze_call): Turn to ...
+	(modref_access_analysis::analyze_call): ... this one.
+	(struct summary_ptrs): Remove.
+	(analyze_load): Turn to ...
+	(modref_access_analysis::analyze_load): ... this one.
+	(analyze_store): Turn to ...
+	(modref_access_analysis::analyze_store): ... this one.
+	(analyze_stmt): Turn to ...
+	(modref_access_analysis::analyze_stmt): ... This one.
+	(remove_summary): Remove.
+	(modref_access_analysis::propagate): Break out from ...
+	(modref_access_analysis::analyze): Break out from ...
+	(analyze_function): ... here.
+
+2021-11-21  Roger Sayle  <roger@nextmovesoftware.com>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	PR target/102117
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Recognize
+	signed WIDEN_MULT_EXPR if the target supports umul_widen_optab.
+
+2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103052
+	* ipa-modref.c (ignore_nondeterminism_p): Allow looping pure/cont.
+	(merge_call_side_effects): Improve debug output.
+
+2021-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103052
+	* ipa-pure-const.c (propagate_pure_const): Fix merging of loping flag.
+
+2021-11-20  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/103226
+	* config/bfin/bfin.md (doloop pattern, splitter and expander): Clobber
+	CC.
+
+2021-11-20  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103220
+	* match.pd ((type) X bitop CST): Don't check if CST
+	fits into the type if only the sign changes.
+
+2021-11-20  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/102988
+	* gimple-harden-conditionals.cc (detach_value): Copy SSA_NAME
+	without decl sharing.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/invoke.texi: Remove whitespace after an @option.
+
+2021-11-19  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/emmintrin.h (_mm_sad_epu8): Use vec_absd when
+	_ARCH_PWR9, optimize vec_sum2s when LE.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/80556
+	* config/darwin-driver.c (darwin_driver_init): Handle exported
+	symbols and symbol lists (suppress automatic export of the TLS
+	symbols).
+	* config/darwin.c (darwin_rename_builtins): Remove workaround.
+	* config/darwin.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	(REAL_LIBGCC_SPEC): Handle revised library uses.
+	* config/darwin.opt (nodefaultexport): New.
+	* config/i386/darwin.h (PR80556_WORKAROUND): Remove.
+	* config/i386/darwin32-biarch.h (PR80556_WORKAROUND): Likewise.
+	* config/i386/darwin64-biarch.h (PR80556_WORKAROUND): Likewise.
+
+2021-11-19  Martin Jambor  <mjambor@suse.cz>
+
+	* opts.c (default_options_table): Switch off
+	flag_semantic_interposition at Ofast.
+	* doc/invoke.texi (Optimize Options): Document that Ofast switches off
+	-fsemantic-interposition.
+
+2021-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Do not guard modref
+	by !gimple_call_chain.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* doc/invoke.texi (-Waddress): Update.
+
+2021-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103254
+	* gimple-range-gori.cc (range_def_chain::get_def_chain): Limit the
+	depth for all statements with multple ssa names.
+
+2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md (define_peephole2): Variable insn points
+	to the first matched insn.  Use peep2_next_insn(1) to refer to
+	the second matched insn.
+
+2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103311
+	PR target/103330
+	* tree-vect-slp-patterns.c (vect_validate_multiplication): Fix CONJ
+	test to new codegen.
+	(complex_mul_pattern::matches): Move check downwards.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (pass_expand::execute): Use option directly.
+	* function.c (allocate_struct_function): Likewise.
+	* gimple-low.c (lower_function_body): Likewise.
+	(lower_stmt): Likewise.
+	* gimple-ssa-backprop.c (backprop::prepare_change): Likewise.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* sese.c (sese_insert_phis_for_liveouts): Likewise.
+	* ssa-iterators.h (num_imm_uses): Likewise.
+	* tree-cfg.c (make_blocks): Likewise.
+	(gimple_merge_blocks): Likewise.
+	* tree-inline.c (tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	* tree-sra.c (analyze_access_subtree): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa-phiopt.c (spaceship_replacement): Likewise.
+	* tree-ssa-reassoc.c (reassoc_remove_stmt): Likewise.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Likewise.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): Likewise.
+	* tree-ssa.c (gimple_replace_ssa_lhs): Likewise.
+	(target_for_debug_bind): Likewise.
+	(insert_debug_temp_for_var_def): Likewise.
+	(insert_debug_temps_for_defs): Likewise.
+	(reset_debug_uses): Likewise.
+	* tree-ssanames.c (release_ssa_name_fn): Likewise.
+	* tree-vect-loop-manip.c (adjust_vec_debug_stmts): Likewise.
+	(adjust_debug_stmts): Likewise.
+	(adjust_phi_and_debug_stmts): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-loop.c (vect_transform_loop_stmt): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree.h (MAY_HAVE_DEBUG_MARKER_STMTS): Remove
+	(MAY_HAVE_DEBUG_BIND_STMTS): Remove.
+	(MAY_HAVE_DEBUG_STMTS): Use options directly.
+
+2021-11-19  Giuliano Belinassi  <gbelinassi@suse.de>
+
+	* gcc.c (process_command): Skip dumpdir override if file is a
+	not_actual_file_p.
+	* doc/invoke.texi: Update -dumpdir documentation.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103314
+	* match.pd ((type) X op CST): Restrict the equal
+	TYPE_PRECISION case to GIMPLE only.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/103230
+	* ipa-modref-tree.h (struct modref_parm_map): Add default
+	constructor.
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Use it.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103248
+	* tree-eh.c (operation_could_trap_helper_p): Properly handle
+	fixed-point RDIV_EXPR.
+
+2021-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102436
+	* tree-ssa-loop-im.c (execute_sm_if_changed): Add mode
+	to just create the if structure and return the then block.
+	(execute_sm): Add flag to indicate the var will re-use
+	another flag var.
+	(hoist_memory_references): Support a single conditional
+	block with all stores as special case.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103317
+	* tree-ssa-phiopt.c (minmax_replacement): For the non empty
+	middle bb case, check to make sure it has a single predecessor.
+
+2021-11-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103257
+	* match.pd
+	((m1 >/</>=/<= m2) * d -> (m1 >/</>=/<= m2) ? d : 0):
+	Disable until !canonicalize_math_p ().
+
+2021-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	PR c++/96121
+	* doc/invoke.texi: Update documentation for -Wuninitialized.
+	* tree.c (stabilize_reference): Set location.
+
+2021-11-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102543
+	* config/i386/x86-tune-costs.h (skylake_cost): Reduce cost of
+	storing 256/512-bit SSE register to be equal to cost of
+	unaligned store to avoid odd alignment peeling.
+	(icelake_cost): Ditto.
+
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/predicates.md (current_file_function_operand):
+	Add flag_semantic_interposition to call of decl_replaceable_p.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref.c (analyze_function): Do not execute the code
+	only if dump_file != NULL.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref.c (analyze_function): Use fnode instead of repeated
+	cgraph_node::get (current_function_decl).
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::get_availability): Update call of
+	decl_replaceable_p.
+	(cgraph_node::verify_node): Verify that semantic_interposition flag
+	is set correclty.
+	* cgraph.h: (symtab_node): Add semantic_interposition flag.
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Clear
+	semantic_interposition flag.
+	* cgraphunit.c (cgraph_node::finalize_function): Set
+	semantic_interposition flag.
+	(cgraph_node::add_new_function): Likewise.
+	(varpool_node::finalize_decl): Likewise.
+	(cgraph_node::create_wrapper): Likewise.
+	* common.opt (fsemantic-interposition): Turn to optimization node.
+	* lto-cgraph.c (lto_output_node): Stream semantic_interposition.
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node): Likewise.
+	(input_varpool_node): Likewise.
+	* symtab.c (symtab_node::dump_base): Dump new flag.
+	* varasm.c (decl_replaceable_p): Add semantic_interposition_p
+	parameter.
+	* varasm.h (decl_replaceable_p): Update declaration.
+	* varpool.c (varpool_node::ctor_useable_for_folding_p):
+	Use semantic_interposition flag.
+	(varpool_node::get_availability): Likewise.
+	(varpool_node::create_alias): Copy semantic_interposition flag.
+
+2021-11-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103266
+	* ipa-modref.c (modref_eaf_analysis::merge_call_lhs_flags): Unused
+	parameter may still be returned.
+	(modref_eaf_analysis::analyze_ssa_name): Call merge_call_lhs_flags
+	even for unused function args.
+
+2021-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103311
+	* tree-vect-slp-patterns.c (complex_mul_pattern::matches,
+	complex_fms_pattern::matches): Check for multiplications.
+
+2021-11-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect): Emit
+	CS prefix for -mindirect-branch-cs-prefix.
+	(ix86_output_indirect_branch_via_reg): Likewise.
+	* config/i386/i386.opt: Add -mindirect-branch-cs-prefix.
+	* doc/invoke.texi: Document -mindirect-branch-cs-prefix.
+
+2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/driver-rs6000.c (detect_processor_aix): Add
+	power10.
+
+2021-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103253
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Check for LHS.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* doc/extend.texi: Document __builtin_assoc_barrier.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* cfgexpand.c (pass_expand::execute): Use option directly.
+	* function.c (allocate_struct_function): Likewise.
+	* gimple-low.c (lower_function_body): Likewise.
+	(lower_stmt): Likewise.
+	* gimple-ssa-backprop.c (backprop::prepare_change): Likewise.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* sese.c (sese_insert_phis_for_liveouts): Likewise.
+	* ssa-iterators.h (num_imm_uses): Likewise.
+	* tree-cfg.c (make_blocks): Likewise.
+	(gimple_merge_blocks): Likewise.
+	* tree-inline.c (tree_function_versioning): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	* tree-sra.c (analyze_access_subtree): Likewise.
+	* tree-ssa-dce.c (remove_dead_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa-phiopt.c (spaceship_replacement): Likewise.
+	* tree-ssa-reassoc.c (reassoc_remove_stmt): Likewise.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Likewise.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_into): Likewise.
+	* tree-ssa.c (gimple_replace_ssa_lhs): Likewise.
+	(target_for_debug_bind): Likewise.
+	(insert_debug_temp_for_var_def): Likewise.
+	(insert_debug_temps_for_defs): Likewise.
+	(reset_debug_uses): Likewise.
+	* tree-ssanames.c (release_ssa_name_fn): Likewise.
+	* tree-vect-loop-manip.c (adjust_vec_debug_stmts): Likewise.
+	(adjust_debug_stmts): Likewise.
+	(adjust_phi_and_debug_stmts): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-loop.c (vect_transform_loop_stmt): Likewise.
+	(vect_transform_loop): Likewise.
+	* tree.h (MAY_HAVE_DEBUG_MARKER_STMTS): Remove
+	(MAY_HAVE_DEBUG_BIND_STMTS): Remove.
+	(MAY_HAVE_DEBUG_STMTS): Use options directly.
+
+2021-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103277
+	* tree-ssa-dse.c (need_ab_cleanup): New.
+	(dse_optimize_redundant_stores): Adjust.
+	(delete_dead_or_redundant_assignment): Get extra
+	need_ab_cleanup argument and set when abnormal cleanup is
+	needed.
+	(dse_optimize_call): Adjust.
+	(dse_optimize_stmt): Likewise.
+	(pass_dse::execute): Allocate and deallocate need_ab_cleanup.
+	Perform abnormal cleanup.
+	* tree-ssa-dse.h (delete_dead_or_redundant_assignment): Adjust.
+
+2021-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.c (ix86_expand_atomic_fetch_op_loop):
+	Adjust generated cfg to avoid infinite loop.
+
+2021-11-18  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/avx512fp16intrin.h (_mm512_mul_pch): Add alias for _mm512_fmul_pch.
+	(_mm512_mask_mul_pch): Likewise.
+	(_mm512_maskz_mul_pch): Likewise.
+	(_mm512_mul_round_pch): Likewise.
+	(_mm512_mask_mul_round_pch): Likewise.
+	(_mm512_maskz_mul_round_pch): Likewise.
+	(_mm512_cmul_pch): Likewise.
+	(_mm512_mask_cmul_pch): Likewise.
+	(_mm512_maskz_cmul_pch): Likewise.
+	(_mm512_cmul_round_pch): Likewise.
+	(_mm512_mask_cmul_round_pch): Likewise.
+	(_mm512_maskz_cmul_round_pch): Likewise.
+	(_mm_mul_sch): Likewise.
+	(_mm_mask_mul_sch): Likewise.
+	(_mm_maskz_mul_sch): Likewise.
+	(_mm_mul_round_sch): Likewise.
+	(_mm_mask_mul_round_sch): Likewise.
+	(_mm_maskz_mul_round_sch): Likewise.
+	(_mm_cmul_sch): Likewise.
+	(_mm_mask_cmul_sch): Likewise.
+	(_mm_maskz_cmul_sch): Likewise.
+	(_mm_cmul_round_sch): Likewise.
+	(_mm_mask_cmul_round_sch): Likewise.
+	(_mm_maskz_cmul_round_sch): Likewise.
+	* config/i386/avx512fp16vlintrin.h (_mm_mul_pch): Likewise.
+	(_mm_mask_mul_pch): Likewise.
+	(_mm_maskz_mul_pch): Likewise.
+	(_mm256_mul_pch): Likewise.
+	(_mm256_mask_mul_pch): Likewise.
+	(_mm256_maskz_mul_pch): Likewise.
+	(_mm_cmul_pch): Likewise.
+	(_mm_mask_cmul_pch): Likewise.
+	(_mm_maskz_cmul_pch): Likewise.
+	(_mm256_cmul_pch): Likewise.
+	(_mm256_mask_cmul_pch): Likewise.
+	(_mm256_maskz_cmul_pch): Likewise.
+
+2021-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103228
+	PR tree-optimization/55177
+	* match.pd ((type) X bitop CST): Also do this
+	transformation for nop conversions.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102759
+	* gimple-array-bounds.cc (build_printable_array_type): Move...
+	* gimple-ssa-warn-access.cc (build_printable_array_type): Avoid
+	pathological function redeclarations that remove a previously
+	declared prototype.
+	Improve formatting of function arguments in informational notes.
+	* pointer-query.cc (build_printable_array_type): ...to here.
+	* pointer-query.h (build_printable_array_type): Declared.
+
+2021-11-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/102952
+	* config/i386/i386-opts.h (harden_sls): New enum.
+	* config/i386/i386.c (output_indirect_thunk): Mitigate against
+	SLS for function return.
+	(ix86_output_function_return): Likewise.
+	(ix86_output_jmp_thunk_or_indirect): Mitigate against indirect
+	branch.
+	(ix86_output_indirect_jmp): Likewise.
+	(ix86_output_call_insn): Likewise.
+	* config/i386/i386.opt: Add -mharden-sls=.
+	* doc/invoke.texi: Document -mharden-sls=.
+
+2021-11-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103307
+	* config/i386/i386.c (ix86_code_end): Remove "%!" before ret.
+	(ix86_output_function_return): Likewise.
+	* config/i386/i386.md (simple_return_pop_internal): Likewise.
+
+2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103246
+	* ipa-modref.c (read_modref_records): Fix streaminig in of every_access
+	flag.
+
+2021-11-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (indirect_thunks_used): Redefine as HARD_REG_SET.
+	(ix86_code_end): Use TEST_HARD_REG_BIT on indirect_thunks_used.
+	(ix86_output_indirect_branch_via_reg): Use SET_HARD_REG_BIT
+	on indirect_thunks_used.
+	(ix86_output_indirect_function_return): Ditto.
+
+2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref-tree.c: Include cgraph.h and tree-streamer.h.
+	(modref_access_node::stream_out): New member function.
+	(modref_access_node::stream_in): New member function.
+	* ipa-modref-tree.h (modref_access_node::stream_out,
+	modref_access_node::stream_in): Declare.
+	* ipa-modref.c (modref_summary_lto::useful_p): Free useless kills.
+	(modref_summary_lto::dump): Dump kills.
+	(analyze_store): Record kills for LTO
+	(analyze_stmt): Likewise.
+	(modref_summaries_lto::duplicate): Duplicate kills.
+	(write_modref_records): Use new stream_out member function.
+	(read_modref_records): Likewise.
+	(modref_write): Stream out kills.
+	(read_section): Stream in kills
+	(remap_kills): New function.
+	(update_signature): Use it.
+
+2021-11-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (LEGACY_SSE_REGNO_P): New predicate.
+	(SSE_REGNO_P): Use LEGACY_SSE_REGNO_P predicate.
+	* config/i386/i386.c (zero_all_vector_registers):
+	Use LEGACY_SSE_REGNO_P predicate.
+	(ix86_register_priority): Use REX_INT_REGNO_P, REX_SSE_REGNO_P
+	and EXT_REG_SSE_REGNO_P predicates.
+	(ix86_hard_regno_call_part_clobbered): Use REX_SSE_REGNO_P
+	and LEGACY_SSE_REGNO_P predicates.
+
+2021-11-17  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Document
+	-fimplicit-constexpr.
+
+2021-11-17  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-modes.def (VECTOR_MODE): New V8DI mode.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Handle
+	V8DImode.
+	* config/aarch64/iterators.md (define_mode_attr nunits): Add entry
+	for V8DI.
+
+2021-11-17  Martin Uecker  <uecker@gcc.gnu.org>
+
+	PR c/91038
+	PR c/29970
+	* gimplify.c (gimplify_var_or_parm_decl): Update comment.
+	(gimplify_compound_lval): Gimplify base expression first.
+	(gimplify_target_expr): Add comment.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103192
+	* tree-ssa-loop-im.c (move_computations_worker): Use
+	reset_flow_sensitive_info instead of manually clearing
+	SSA_NAME_RANGE_INFO and do it for all SSA_NAMEs, not just ones
+	with integral types.
+
+2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103255
+	* gimple-range-fold.cc (fold_using_range::range_of_address): Return
+	range_nonzero rather than unadjusted base's range.  Formatting fixes.
+
+2021-11-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi (cond_fmin@var{mode}, cond_fmax@var{mode}): Document.
+	* optabs.def (cond_fmin_optab, cond_fmax_optab): New optabs.
+	* internal-fn.def (COND_FMIN, COND_FMAX): New functions.
+	* internal-fn.c (first_commutative_argument): Handle them.
+	(FOR_EACH_COND_FN_PAIR): Likewise.
+	* match.pd (UNCOND_BINARY, COND_BINARY): Likewise.
+	* config/aarch64/aarch64-sve.md (cond_<fmaxmin><mode>): New
+	pattern.
+
+2021-11-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/i386/i386.md (*add<dwi>3_doubleword, *addv<dwi>4_doubleword,
+	*addv<dwi>4_doubleword_1, *sub<dwi>3_doubleword,
+	*subv<dwi>4_doubleword, *subv<dwi>4_doubleword_1,
+	*add<dwi>3_doubleword_cc_overflow_1, *divmodsi4_const,
+	*neg<dwi>2_doubleword, *tls_dynamic_gnu2_combine_64_<mode>): Fix split
+	condition.
+
+2021-11-17  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103288
+	* tree-ssa-phiopt.c (value_replacement): Return early if middle
+	block has more than one pred.
+
+2021-11-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/visium/visium.md (*add<mode>3_insn, *addsi3_insn, *addi3_insn,
+	*sub<mode>3_insn, *subsi3_insn, *subdi3_insn, *neg<mode>2_insn,
+	*negdi2_insn, *and<mode>3_insn, *ior<mode>3_insn, *xor<mode>3_insn,
+	*one_cmpl<mode>2_insn, *ashl<mode>3_insn, *ashr<mode>3_insn,
+	*lshr<mode>3_insn, *trunchiqi2_insn, *truncsihi2_insn,
+	*truncdisi2_insn, *extendqihi2_insn, *extendqisi2_insn,
+	*extendhisi2_insn, *extendsidi2_insn, *zero_extendqihi2_insn,
+	*zero_extendqisi2_insn, *zero_extendsidi2_insn): Fix split condition.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* doc/invoke.texi: Document -Wbidi-chars.
+
+2021-11-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103246
+	* ipa-modref.c (ipa_merge_modref_summary_after_inlining): Fix clearing
+	of to_info_lto
+
+2021-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref.c (get_modref_function_summary): Declare.
+	* ipa-modref.h (get_modref_function_summary): New function.
+	* tree-ssa-dse.c (clear_live_bytes_for_ref): Break out from ...
+	(clear_bytes_written_by): ... here; also clear memory killed by
+	calls.
+
+2021-11-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* ggc-common.c (gt_pch_save): If we cannot find a suitable
+	memory segment for save, then error-out, do not try to
+	continue.
+	(gt_pch_restore): Save the existing line table, and when
+	the replacement is being read, use that when constructing
+	diagnostics.
+
+2021-11-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/102976
+	* config/rs6000/mma.md (*vsx_assemble_pair): Add early-clobber for
+	output operand.
+	(*mma_assemble_acc): Likewise.
+
+2021-11-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/102960
+	* gimple-fold.c (get_range_strlen): Take bitmap as an argument rather
+	than a pointer to it.
+	(get_range_strlen_tree): Same.  Remove bitmap allocation.  Use
+	an auto_bitmap.
+	(get_maxval_strlen): Use an auto_bitmap.
+	* tree-ssa-strlen.c (get_range_strlen_dynamic): Factor out PHI
+	handling...
+	(get_range_strlen_phi): ...into this function.
+	Avoid assuming maximum string length is constant
+	(printf_strlen_execute): Dump pointer query cache contents when
+	details are requisted.
+
+2021-11-16  Jason Merrill  <jason@redhat.com>
+
+	* langhooks.h (struct lang_hooks): Adjust comment.
+	* print-tree.c (print_node): Also call print_xnode hook for
+	tcc_constant class.
+
+2021-11-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103218
+	* match.pd: New pattern for "((type)(a<0)) << SIGNBITOFA".
+
+2021-11-16  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddhisi4): Use a single move to accumulator.
+	(umaddhisi4): Likewise.
+	(machi): Update pattern.
+	(umachi): Likewise.
+
+2021-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102880
+	* tree-ssa-dce.c (sort_phi_args): New function.
+	(make_forwarders_with_degenerate_phis): Likewise.
+	(perform_tree_ssa_dce): Call
+	make_forwarders_with_degenerate_phis.
+
+2021-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102880
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Push
+	single_pred (bb1) condition to places that really need it.
+	(match_simplify_replacement): Likewise.
+	(value_replacement): Likewise.
+	(replace_phi_edge_with_variable): Deal with extra edges
+	into the middle BB.
+
+2021-11-16  Martin Jambor  <mjambor@suse.cz>
+
+	* cfgexpand.c (expand_gimple_basic_block): Use build_debug_expr_decl,
+	add a fixme note about the mode assignment perhaps being unnecessary.
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call):
+	Likewise.
+	(ipa_param_body_adjustments::mark_dead_statements): Likewise.
+	(ipa_param_body_adjustments::reset_debug_stmts): Likewise.
+	* tree-inline.c (remap_ssa_name): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-into-ssa.c (rewrite_debug_stmt_uses): Likewise.
+	* tree-ssa-loop-ivopts.c (remove_unused_ivs): Likewise.
+	* tree-ssa.c (insert_debug_temp_for_var_def): Likewise.
+
+2021-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103208
+	* omp-expand.c (expand_omp_build_cond): New function.
+	(expand_omp_for_init_counts, expand_omp_for_init_vars,
+	expand_omp_for_static_nochunk, expand_omp_for_static_chunk): Use it.
+
+2021-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/102009
+	* gimple-ssa-warn-access.cc (pass_waccess::check_alloc_size_call):
+	Punt if any of alloc_size arguments is out of bounds vs. number of
+	call arguments.
+
+2021-11-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*bmi2_rorx<mode3>_1): Make conditional
+	on !optimize_function_for_size_p.
+	(*<any_rotate><mode>3_1): Add preferred_for_size attribute.
+	(define_splits): Conditionalize on !optimize_function_for_size_p.
+	(*bmi2_rorxsi3_1_zext): Likewise.
+	(*<any_rotate>si2_1_zext): Add preferred_for_size attribute.
+	(define_splits): Conditionalize on !optimize_function_for_size_p.
+
+2021-11-16  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/103262
+	* ipa-modref.c (merge_call_side_effects): Fix uninitialized
+	access.
+
+2021-11-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/103245
+	* match.pd: Combine the abs pattern matching using multiplication.
+	Adding optional nop_convert too.
+
+2021-11-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/103268
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Add a missing
+	return.
+
 2021-11-15  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	* gimple-fold.c (gimple_fold_builtin_strncat): Use ranges to

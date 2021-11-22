@@ -2390,7 +2390,8 @@ cgraph_node::get_availability (symtab_node *ref)
      to code cp_cannot_inline_tree_fn and probably shall be shared and
      the inlinability hooks completely eliminated).  */
 
-  else if (decl_replaceable_p (decl) && !DECL_EXTERNAL (decl))
+  else if (decl_replaceable_p (decl, semantic_interposition)
+	   && !DECL_EXTERNAL (decl))
     avail = AVAIL_INTERPOSABLE;
   else avail = AVAIL_AVAILABLE;
 
@@ -3484,6 +3485,13 @@ cgraph_node::verify_node (void)
     {
       error ("malloc attribute should be used for a function that "
 	     "returns a pointer");
+      error_found = true;
+    }
+  if (definition && externally_visible
+      && semantic_interposition
+	 != opt_for_fn (decl, flag_semantic_interposition))
+    {
+      error ("semantic interposition mismatch");
       error_found = true;
     }
   for (e = indirect_calls; e; e = e->next_callee)

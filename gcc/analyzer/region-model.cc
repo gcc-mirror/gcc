@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
+#include "analyzer/program-state.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "tree-object-size.h"
@@ -1133,6 +1134,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	    break;
 	  case BUILT_IN_REALLOC:
 	    return false;
+	  case BUILT_IN_STRCHR:
+	    impl_call_strchr (cd);
+	    return false;
 	  case BUILT_IN_STRCPY:
 	  case BUILT_IN_STRCPY_CHK:
 	    impl_call_strcpy (cd);
@@ -1223,6 +1227,12 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt,
 	       && POINTER_TYPE_P (cd.get_arg_type (0)))
 	{
 	  impl_call_memset (cd);
+	  return false;
+	}
+      else if (is_named_call_p (callee_fndecl, "strchr", call, 2)
+	       && POINTER_TYPE_P (cd.get_arg_type (0)))
+	{
+	  impl_call_strchr (cd);
 	  return false;
 	}
       else if (is_named_call_p (callee_fndecl, "strlen", call, 1)
@@ -2161,8 +2171,23 @@ public:
 
   bool emit (rich_location *rich_loc) FINAL OVERRIDE
   {
-    bool warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
-			      "write to %<const%> object %qE", m_decl);
+    auto_diagnostic_group d;
+    bool warned;
+    switch (m_reg->get_kind ())
+      {
+      default:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to %<const%> object %qE", m_decl);
+	break;
+      case RK_FUNCTION:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to function %qE", m_decl);
+	break;
+      case RK_LABEL:
+	warned = warning_at (rich_loc, OPT_Wanalyzer_write_to_const,
+			     "write to label %qE", m_decl);
+	break;
+      }
     if (warned)
       inform (DECL_SOURCE_LOCATION (m_decl), "declared here");
     return warned;
@@ -2170,7 +2195,15 @@ public:
 
   label_text describe_final_event (const evdesc::final_event &ev) FINAL OVERRIDE
   {
-    return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+    switch (m_reg->get_kind ())
+      {
+      default:
+	return ev.formatted_print ("write to %<const%> object %qE here", m_decl);
+      case RK_FUNCTION:
+	return ev.formatted_print ("write to function %qE here", m_decl);
+      case RK_LABEL:
+	return ev.formatted_print ("write to label %qE here", m_decl);
+      }
   }
 
 private:
@@ -2230,6 +2263,20 @@ region_model::check_for_writable_region (const region* dest_reg,
   switch (base_reg->get_kind ())
     {
     default:
+      break;
+    case RK_FUNCTION:
+      {
+	const function_region *func_reg = as_a <const function_region *> (base_reg);
+	tree fndecl = func_reg->get_fndecl ();
+	ctxt->warn (new write_to_const_diagnostic (func_reg, fndecl));
+      }
+      break;
+    case RK_LABEL:
+      {
+	const label_region *label_reg = as_a <const label_region *> (base_reg);
+	tree label = label_reg->get_label ();
+	ctxt->warn (new write_to_const_diagnostic (label_reg, label));
+      }
       break;
     case RK_DECL:
       {
@@ -3637,7 +3684,10 @@ region_model::poison_any_pointers_to_descendents (const region *reg,
 bool
 region_model::can_merge_with_p (const region_model &other_model,
 				const program_point &point,
-				region_model *out_model) const
+				region_model *out_model,
+				const extrinsic_state *ext_state,
+				const program_state *state_a,
+				const program_state *state_b) const
 {
   gcc_assert (out_model);
   gcc_assert (m_mgr == other_model.m_mgr);
@@ -3647,7 +3697,8 @@ region_model::can_merge_with_p (const region_model &other_model,
     return false;
   out_model->m_current_frame = m_current_frame;
 
-  model_merger m (this, &other_model, point, out_model);
+  model_merger m (this, &other_model, point, out_model,
+		  ext_state, state_a, state_b);
 
   if (!store::can_merge_p (&m_store, &other_model.m_store,
 			   &out_model->m_store, m_mgr->get_store_manager (),
@@ -3849,6 +3900,30 @@ DEBUG_FUNCTION void
 model_merger::dump (bool simple) const
 {
   dump (stderr, simple);
+}
+
+/* Return true if it's OK to merge SVAL with other svalues.  */
+
+bool
+model_merger::mergeable_svalue_p (const svalue *sval) const
+{
+  if (m_ext_state)
+    {
+      /* Reject merging svalues that have non-purgable sm-state,
+	 to avoid falsely reporting memory leaks by merging them
+	 with something else.  For example, given a local var "p",
+	 reject the merger of a:
+	   store_a mapping "p" to a malloc-ed ptr
+	 with:
+	   store_b mapping "p" to a NULL ptr.  */
+      if (m_state_a)
+	if (!m_state_a->can_purge_p (*m_ext_state, sval))
+	  return false;
+      if (m_state_b)
+	if (!m_state_b->can_purge_p (*m_ext_state, sval))
+	  return false;
+    }
+  return true;
 }
 
 } // namespace ana

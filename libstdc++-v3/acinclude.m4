@@ -342,7 +342,8 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
     GLIBCXX_CHECK_SETRLIMIT_ancilliary(FSIZE)
 
     # Check for rlimit, setrlimit.
-    AC_CACHE_VAL(glibcxx_cv_setrlimit, [
+    AC_CACHE_CHECK([for testsuite resource limits support],
+      glibcxx_cv_setrlimit, [
       AC_TRY_COMPILE(
 	[#include <unistd.h>
 	 #include <sys/time.h>
@@ -352,19 +353,14 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
 	 setrlimit(0, &r);],
 	[glibcxx_cv_setrlimit=yes], [glibcxx_cv_setrlimit=no])
     ])
-  fi
 
-  AC_MSG_CHECKING([for testsuite resource limits support])
-  if test $setrlimit_have_headers = yes && test $glibcxx_cv_setrlimit = yes; then
-    ac_res_limits=yes
-    AC_DEFINE(_GLIBCXX_RES_LIMITS, 1,
-	      [Define if using setrlimit to set resource limits during
-	      "make check"])
-  else
-    ac_res_limits=no
+    if test $glibcxx_cv_setrlimit = yes; then
+      AC_DEFINE(_GLIBCXX_RES_LIMITS, 1,
+		[Define if using setrlimit to set resource limits during
+		"make check"])
+    fi
   fi
   AC_LANG_RESTORE
-  AC_MSG_RESULT($ac_res_limits)
 ])
 
 
@@ -425,8 +421,7 @@ AC_DEFUN([GLIBCXX_CHECK_POLL], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for poll])
-  AC_CACHE_VAL(glibcxx_cv_POLL, [
+  AC_CACHE_CHECK([for poll], glibcxx_cv_POLL, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <poll.h>],
       [struct pollfd pfd[1];
@@ -438,7 +433,6 @@ AC_DEFUN([GLIBCXX_CHECK_POLL], [
   if test $glibcxx_cv_POLL = yes; then
     AC_DEFINE(HAVE_POLL, 1, [Define if poll is available in <poll.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_POLL)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -455,8 +449,7 @@ AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for writev])
-  AC_CACHE_VAL(glibcxx_cv_WRITEV, [
+  AC_CACHE_CHECK([for writev], glibcxx_cv_WRITEV, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <sys/uio.h>],
       [struct iovec iov[2];
@@ -467,7 +460,6 @@ AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
   if test $glibcxx_cv_WRITEV = yes; then
     AC_DEFINE(HAVE_WRITEV, 1, [Define if writev is available in <sys/uio.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_WRITEV)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -482,8 +474,7 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
-  AC_MSG_CHECKING([for LFS support])
-  AC_CACHE_VAL(glibcxx_cv_LFS, [
+  AC_CACHE_CHECK([for LFS support], glibcxx_cv_LFS, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>
        #include <stdio.h>
@@ -502,7 +493,6 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS, 1, [Define if LFS support is available.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_LFS)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
@@ -870,8 +860,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     fi
 
     # Check for the existence of <math.h> functions used if C99 is enabled.
-    AC_MSG_CHECKING([for ISO C99 support in <math.h> for C++98])
-    AC_CACHE_VAL(glibcxx_cv_c99_math_cxx98, [
+    AC_CACHE_CHECK([for ISO C99 support in <math.h> for C++98],
+      glibcxx_cv_c99_math_cxx98, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <math.h>
          volatile double d1, d2;
@@ -891,7 +881,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
          i = isunordered(d1, d2);
         ], [glibcxx_cv_c99_math_cxx98=yes], [glibcxx_cv_c99_math_cxx98=no])
     ])
-    AC_MSG_RESULT($glibcxx_cv_c99_math_cxx98)
     if test x"$glibcxx_cv_c99_math_cxx98" = x"yes"; then
       AC_DEFINE(_GLIBCXX98_USE_C99_MATH, 1,
         [Define if C99 functions or macros in <math.h> should be imported
@@ -905,8 +894,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     AC_CHECK_HEADERS(tgmath.h, ac_has_tgmath_h=yes, ac_has_tgmath_h=no)
     AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
     if test x"$ac_has_complex_h" = x"yes"; then
-      AC_MSG_CHECKING([for ISO C99 support in <complex.h> for C++98])
-      AC_CACHE_VAL(glibcxx_cv_c99_complex_cxx98, [
+      AC_CACHE_CHECK([for ISO C99 support in <complex.h> for C++98],
+	glibcxx_cv_c99_complex_cxx98, [
         GCC_TRY_COMPILE_OR_LINK(
           [#include <complex.h>
            typedef __complex__ float float_type;
@@ -960,7 +949,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
           ], [glibcxx_cv_c99_complex_cxx98=yes], [glibcxx_cv_c99_complex_cxx98=no])
       ])
     fi
-    AC_MSG_RESULT($glibcxx_cv_c99_complex_cxx98)
     if test x"$glibcxx_cv_c99_complex_cxx98" = x"yes"; then
       AC_DEFINE(_GLIBCXX98_USE_C99_COMPLEX, 1,
         [Define if C99 functions in <complex.h> should be used in
@@ -969,8 +957,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     fi
 
     # Check for the existence in <stdio.h> of vscanf, et. al.
-    AC_MSG_CHECKING([for ISO C99 support in <stdio.h> for C++98])
-    AC_CACHE_VAL(glibcxx_cv_c99_stdio_cxx98, [
+    AC_CACHE_CHECK([for ISO C99 support in <stdio.h> for C++98],
+      glibcxx_cv_c99_stdio_cxx98, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <stdio.h>
          #include <stdarg.h>
@@ -985,7 +973,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
          }], [],
         [glibcxx_cv_c99_stdio_cxx98=yes], [glibcxx_cv_c99_stdio_cxx98=no])
     ])
-    AC_MSG_RESULT($glibcxx_cv_c99_stdio_cxx98)
     if test x"$glibcxx_cv_c99_stdio_cxx98" = x"yes"; then
       AC_DEFINE(_GLIBCXX98_USE_C99_STDIO, 1,
         [Define if C99 functions or macros in <stdio.h> should be imported
@@ -993,8 +980,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     fi
 
     # Check for the existence in <stdlib.h> of lldiv_t, et. al.
-    AC_MSG_CHECKING([for ISO C99 support in <stdlib.h> for C++98])
-    AC_CACHE_VAL(glibcxx_cv_c99_stdlib_cxx98, [
+    AC_CACHE_CHECK([for ISO C99 support in <stdlib.h> for C++98],
+      glibcxx_cv_c99_stdlib_cxx98, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <stdlib.h>
          volatile float f;
@@ -1014,7 +1001,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
          _Exit(0);
         ], [glibcxx_cv_c99_stdlib_cxx98=yes], [glibcxx_cv_c99_stdlib_cxx98=no])
     ])
-    AC_MSG_RESULT($glibcxx_cv_c99_stdlib_cxx98)
     if test x"$glibcxx_cv_c99_stdlib_cxx98" = x"yes"; then
       AC_DEFINE(_GLIBCXX98_USE_C99_STDLIB, 1,
         [Define if C99 functions or macros in <stdlib.h> should be imported
@@ -1024,8 +1010,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     # Check for the existence in <wchar.h> of wcstold, etc.
     if test x"$ac_has_wchar_h" = xyes &&
        test x"$ac_has_wctype_h" = xyes; then
-      AC_MSG_CHECKING([for ISO C99 support in <wchar.h> for C++98])
-      AC_CACHE_VAL(glibcxx_cv_c99_wchar_cxx98, [
+      AC_CACHE_CHECK([for ISO C99 support in <wchar.h> for C++98],
+	glibcxx_cv_c99_wchar_cxx98, [
         AC_TRY_COMPILE([#include <wchar.h>
           namespace test
           {
@@ -1060,7 +1046,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
         [wint_t t; int i = iswblank(t);],
         [AC_DEFINE(HAVE_ISWBLANK, 1, [Defined if iswblank exists.])], [])
 
-      AC_MSG_RESULT($glibcxx_cv_c99_wchar_cxx98)
       if test x"$glibcxx_cv_c99_wchar_cxx98" = x"yes"; then
         AC_DEFINE(_GLIBCXX98_USE_C99_WCHAR, 1,
           [Define if C99 functions or macros in <wchar.h> should be imported
@@ -1107,8 +1092,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     fi
 
     # Check for the existence of <math.h> functions used if C99 is enabled.
-    AC_MSG_CHECKING([for ISO C99 support in <math.h> for C++11])
-    AC_CACHE_VAL(glibcxx_cv_c99_math_cxx11, [
+    AC_CACHE_CHECK([for ISO C99 support in <math.h> for C++11],
+    glibcxx_cv_c99_math_cxx11, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <math.h>
          volatile double d1, d2;
@@ -1128,7 +1113,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
          i = isunordered(d1, d2);
         ], [glibcxx_cv_c99_math_cxx11=yes], [glibcxx_cv_c99_math_cxx11=no])
     ])
-    AC_MSG_RESULT($glibcxx_cv_c99_math_cxx11)
     if test x"$glibcxx_cv_c99_math_cxx11" = x"yes"; then
       AC_DEFINE(_GLIBCXX11_USE_C99_MATH, 1,
         [Define if C99 functions or macros in <math.h> should be imported
@@ -1142,8 +1126,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     AC_CHECK_HEADERS(tgmath.h, ac_has_tgmath_h=yes, ac_has_tgmath_h=no)
     AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
     if test x"$ac_has_complex_h" = x"yes"; then
-      AC_MSG_CHECKING([for ISO C99 support in <complex.h> for C++11])
-      AC_CACHE_VAL(glibcxx_cv_c99_complex_cxx11, [
+      AC_CACHE_CHECK([for ISO C99 support in <complex.h> for C++11],
+	glibcxx_cv_c99_complex_cxx11, [
         GCC_TRY_COMPILE_OR_LINK(
           [#include <complex.h>
            typedef __complex__ float float_type;
@@ -1197,7 +1181,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
           ], [glibcxx_cv_c99_complex_cxx11=yes], [glibcxx_cv_c99_complex_cxx11=no])
       ])
     fi
-    AC_MSG_RESULT($glibcxx_cv_c99_complex_cxx11)
     if test x"$glibcxx_cv_c99_complex_cxx11" = x"yes"; then
       AC_DEFINE(_GLIBCXX11_USE_C99_COMPLEX, 1,
         [Define if C99 functions in <complex.h> should be used in
@@ -1206,8 +1189,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     fi
 
     # Check for the existence in <stdio.h> of vscanf, et. al.
-    AC_MSG_CHECKING([for ISO C99 support in <stdio.h> for C++11])
-    AC_CACHE_VAL(glibcxx_cv_c99_stdio_cxx11, [
+    AC_CACHE_CHECK([for ISO C99 support in <stdio.h> for C++11],
+      glibcxx_cv_c99_stdio_cxx11, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <stdio.h>
          #include <stdarg.h>
@@ -1222,7 +1205,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
          }], [],
         [glibcxx_cv_c99_stdio_cxx11=yes], [glibcxx_cv_c99_stdio_cxx11=no])
     ])
-    AC_MSG_RESULT($glibcxx_cv_c99_stdio_cxx11)
     if test x"$glibcxx_cv_c99_stdio_cxx11" = x"yes"; then
       AC_DEFINE(_GLIBCXX11_USE_C99_STDIO, 1,
         [Define if C99 functions or macros in <stdio.h> should be imported
@@ -1230,8 +1212,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     fi
 
     # Check for the existence in <stdlib.h> of lldiv_t, et. al.
-    AC_MSG_CHECKING([for ISO C99 support in <stdlib.h> for C++11])
-    AC_CACHE_VAL(glibcxx_cv_c99_stdlib_cxx11, [
+    AC_CACHE_CHECK([for ISO C99 support in <stdlib.h> for C++11],
+      glibcxx_cv_c99_stdlib_cxx11, [
       GCC_TRY_COMPILE_OR_LINK(
         [#include <stdlib.h>
          volatile float f;
@@ -1251,7 +1233,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
          _Exit(0);
         ], [glibcxx_cv_c99_stdlib_cxx11=yes], [glibcxx_cv_c99_stdlib_cxx11=no])
     ])
-    AC_MSG_RESULT($glibcxx_cv_c99_stdlib_cxx11)
     if test x"$glibcxx_cv_c99_stdlib_cxx11" = x"yes"; then
       AC_DEFINE(_GLIBCXX11_USE_C99_STDLIB, 1,
         [Define if C99 functions or macros in <stdlib.h> should be imported
@@ -1261,8 +1242,8 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     # Check for the existence in <wchar.h> of wcstold, etc.
     if test x"$ac_has_wchar_h" = xyes &&
        test x"$ac_has_wctype_h" = xyes; then
-      AC_MSG_CHECKING([for ISO C99 support in <wchar.h> for C++11])
-      AC_CACHE_VAL(glibcxx_cv_c99_wchar_cxx11, [
+      AC_CACHE_CHECK([for ISO C99 support in <wchar.h> for C++11],
+	glibcxx_cv_c99_wchar_cxx11, [
         AC_TRY_COMPILE([#include <wchar.h>
           namespace test
           {
@@ -1297,7 +1278,6 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
         [wint_t t; int i = iswblank(t);],
         [AC_DEFINE(HAVE_ISWBLANK, 1, [Defined if iswblank exists.])], [])
 
-      AC_MSG_RESULT($glibcxx_cv_c99_wchar_cxx11)
       if test x"$glibcxx_cv_c99_wchar_cxx11" = x"yes"; then
         AC_DEFINE(_GLIBCXX11_USE_C99_WCHAR, 1,
           [Define if C99 functions or macros in <wchar.h> should be imported
@@ -1678,8 +1658,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   fi
 
   # Check for the existence of <ctype.h> functions.
-  AC_MSG_CHECKING([for ISO C99 support to TR1 in <ctype.h>])
-  AC_CACHE_VAL(glibcxx_cv_c99_ctype_tr1, [
+  AC_CACHE_CHECK([for ISO C99 support to TR1 in <ctype.h>],
+  glibcxx_cv_c99_ctype_tr1, [
   AC_TRY_COMPILE([#include <ctype.h>],
 		 [int ch;
 		  int ret;
@@ -1687,7 +1667,6 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		 ],[glibcxx_cv_c99_ctype_tr1=yes],
 		   [glibcxx_cv_c99_ctype_tr1=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_c99_ctype_tr1)
   if test x"$glibcxx_cv_c99_ctype_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_CTYPE_TR1, 1,
 	      [Define if C99 functions in <ctype.h> should be imported in
@@ -1716,8 +1695,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		    ret = fesetenv(penv);
 		    ret = feupdateenv(penv);
 		   ],[ac_c99_fenv_tr1=yes], [ac_c99_fenv_tr1=no])
+    AC_MSG_RESULT($ac_c99_fenv_tr1)
   fi
-  AC_MSG_RESULT($ac_c99_fenv_tr1)
   if test x"$ac_c99_fenv_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_FENV_TR1, 1,
 	      [Define if C99 functions in <fenv.h> should be imported in
@@ -1725,8 +1704,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   fi
 
   # Check for the existence of <stdint.h> types.
-  AC_MSG_CHECKING([for ISO C99 support to TR1 in <stdint.h>])
-  AC_CACHE_VAL(glibcxx_cv_c99_stdint_tr1, [
+  AC_CACHE_CHECK([for ISO C99 support to TR1 in <stdint.h>],
+  glibcxx_cv_c99_stdint_tr1, [
   AC_TRY_COMPILE([#define __STDC_LIMIT_MACROS
 		  #define __STDC_CONSTANT_MACROS
 		  #include <stdint.h>],
@@ -1817,7 +1796,6 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		 ],[glibcxx_cv_c99_stdint_tr1=yes],
 		   [glibcxx_cv_c99_stdint_tr1=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_c99_stdint_tr1)
   if test x"$glibcxx_cv_c99_stdint_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_STDINT_TR1, 1,
 	      [Define if C99 types in <stdint.h> should be imported in
@@ -1825,8 +1803,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   fi
 
   # Check for the existence of <math.h> functions.
-  AC_MSG_CHECKING([for ISO C99 support to TR1 in <math.h>])
-  AC_CACHE_VAL(glibcxx_cv_c99_math_tr1, [
+  AC_CACHE_CHECK([for ISO C99 support to TR1 in <math.h>],
+  glibcxx_cv_c99_math_tr1, [
   AC_TRY_COMPILE([#include <math.h>],
 		 [typedef double_t  my_double_t;
 		  typedef float_t   my_float_t;
@@ -1939,7 +1917,6 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  truncl(0.0l);
 		 ],[glibcxx_cv_c99_math_tr1=yes], [glibcxx_cv_c99_math_tr1=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_c99_math_tr1)
   if test x"$glibcxx_cv_c99_math_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_MATH_TR1, 1,
 	      [Define if C99 functions or macros in <math.h> should be imported
@@ -1947,8 +1924,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 
     case "${target_os}" in
       darwin*)
-        AC_MSG_CHECKING([for ISO C99 rounding functions in <math.h>])
-        AC_CACHE_VAL(glibcxx_cv_c99_math_llround, [
+	AC_CACHE_CHECK([for ISO C99 rounding functions in <math.h>],
+	  glibcxx_cv_c99_math_llround, [
           AC_TRY_COMPILE([#include <math.h>],
 		 [llrint(0.0);
 		  llrintf(0.0f);
@@ -1960,7 +1937,6 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		 [glibcxx_cv_c99_math_llround=yes],
 		 [glibcxx_cv_c99_math_llround=no])
           ])
-	AC_MSG_RESULT($glibcxx_cv_c99_math_llround)
         ;;
     esac
     if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
@@ -1983,8 +1959,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		    ret = strtoimax(s, endptr, base);
 		    uintmax_t uret = strtoumax(s, endptr, base);
 		   ],[ac_c99_inttypes_tr1=yes], [ac_c99_inttypes_tr1=no])
+    AC_MSG_RESULT($ac_c99_inttypes_tr1)
   fi
-  AC_MSG_RESULT($ac_c99_inttypes_tr1)
   if test x"$ac_c99_inttypes_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_INTTYPES_TR1, 1,
 	      [Define if C99 functions in <inttypes.h> should be imported in
@@ -2004,8 +1980,8 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		    uintmax_t uret = wcstoumax(s, endptr, base);
 		   ],[ac_c99_inttypes_wchar_t_tr1=yes],
 		     [ac_c99_inttypes_wchar_t_tr1=no])
+    AC_MSG_RESULT($ac_c99_inttypes_wchar_t_tr1)
   fi
-  AC_MSG_RESULT($ac_c99_inttypes_wchar_t_tr1)
   if test x"$ac_c99_inttypes_wchar_t_tr1" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1, 1,
 	      [Define if wchar_t C99 functions in <inttypes.h> should be
@@ -2053,10 +2029,10 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 		    }
 		   ],
 		   [], [ac_c11_uchar_cxx11=yes], [ac_c11_uchar_cxx11=no])
+    AC_MSG_RESULT($ac_c11_uchar_cxx11)
   else
     ac_c11_uchar_cxx11=no
   fi
-  AC_MSG_RESULT($ac_c11_uchar_cxx11)
   if test x"$ac_c11_uchar_cxx11" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_C11_UCHAR_CXX11, 1,
 	      [Define if C11 functions in <uchar.h> should be imported into
@@ -2075,8 +2051,8 @@ dnl random_device of "TR1" (Chapter 5.1, "Random number generation").
 dnl
 AC_DEFUN([GLIBCXX_CHECK_DEV_RANDOM], [
 
-  AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for std::random_device])
-  AC_CACHE_VAL(glibcxx_cv_dev_random, [
+  AC_CACHE_CHECK([for "/dev/random" and "/dev/urandom" for std::random_device],
+    glibcxx_cv_dev_random, [
     if test -r /dev/random && test -r /dev/urandom; then
   ## For MSys environment the test above is detected as false-positive
   ## on mingw-targets.  So disable it explicitly for them.
@@ -2088,7 +2064,6 @@ AC_DEFUN([GLIBCXX_CHECK_DEV_RANDOM], [
       glibcxx_cv_dev_random=no;
     fi
   ])
-  AC_MSG_RESULT($glibcxx_cv_dev_random)
 
   if test x"$glibcxx_cv_dev_random" = x"yes"; then
     AC_DEFINE(_GLIBCXX_USE_DEV_RANDOM, 1,
@@ -2143,8 +2118,7 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=gnu++11"
 
-  AC_MSG_CHECKING([for gets declaration])
-  AC_CACHE_VAL(glibcxx_cv_gets, [
+  AC_CACHE_CHECK([for gets declaration], glibcxx_cv_gets, [
   AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <stdio.h>
 	   namespace test
@@ -2159,7 +2133,6 @@ AC_DEFUN([GLIBCXX_CHECK_STDIO_PROTO], [
   if test $glibcxx_cv_gets = yes; then
     AC_DEFINE(HAVE_GETS, 1, [Define if gets is available in <stdio.h> before C++14.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_gets)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -2180,8 +2153,8 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
     *-*-solaris2.*)
       # Solaris 12 Build 86, Solaris 11.3 SRU 3.6, and Solaris 10 Patch
       # 11996[67]-02 introduced the C++11 <math.h> floating point overloads.
-      AC_MSG_CHECKING([for C++11 <math.h> floating point overloads])
-      AC_CACHE_VAL(glibcxx_cv_math11_fp_overload, [
+      AC_CACHE_CHECK([for C++11 <math.h> floating point overloads],
+	glibcxx_cv_math11_fp_overload, [
 	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <math.h>
 	   #undef isfinite
@@ -2204,12 +2177,11 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       if test $glibcxx_cv_math11_fp_overload = yes; then
         AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_FP)
       fi
-      AC_MSG_RESULT([$glibcxx_cv_math11_fp_overload])
 
       # Solaris 12 Build 90, Solaris 11.3 SRU 5.6, and Solaris 10 Patch
       # 11996[67]-02 introduced the C++11 <math.h> integral type overloads.
-      AC_MSG_CHECKING([for C++11 <math.h> integral type overloads])
-      AC_CACHE_VAL(glibcxx_cv_math11_int_overload, [
+      AC_CACHE_CHECK([for C++11 <math.h> integral type overloads],
+	glibcxx_cv_math11_int_overload, [
 	AC_COMPILE_IFELSE([AC_LANG_SOURCE(
 	  [#include <math.h>
 	   namespace std {
@@ -2256,15 +2228,14 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
       if test $glibcxx_cv_math11_int_overload = yes; then
         AC_DEFINE(__CORRECT_ISO_CPP11_MATH_H_PROTO_INT)
       fi
-      AC_MSG_RESULT([$glibcxx_cv_math11_int_overload])
       ;;
     *)
       # If <math.h> defines the obsolete isinf(double) and isnan(double)
       # functions (instead of or as well as the C99 generic macros) then we
       # can't define std::isinf(double) and std::isnan(double) in <cmath>
       # and must use the ones from <math.h> instead.
-      AC_MSG_CHECKING([for obsolete isinf function in <math.h>])
-        AC_CACHE_VAL(glibcxx_cv_obsolete_isinf, [
+	AC_CACHE_CHECK([for obsolete isinf function in <math.h>],
+	  glibcxx_cv_obsolete_isinf, [
           AC_COMPILE_IFELSE([AC_LANG_SOURCE(
             [#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
              #include <math.h>
@@ -2280,14 +2251,13 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
           [glibcxx_cv_obsolete_isinf=yes],
           [glibcxx_cv_obsolete_isinf=no]
         )])
-      AC_MSG_RESULT([$glibcxx_cv_obsolete_isinf])
       if test $glibcxx_cv_obsolete_isinf = yes; then
         AC_DEFINE(HAVE_OBSOLETE_ISINF, 1,
                   [Define if <math.h> defines obsolete isinf function.])
       fi
 
-      AC_MSG_CHECKING([for obsolete isnan function in <math.h>])
-        AC_CACHE_VAL(glibcxx_cv_obsolete_isnan, [
+	AC_CACHE_CHECK([for obsolete isnan function in <math.h>],
+	  glibcxx_cv_obsolete_isnan, [
           AC_COMPILE_IFELSE([AC_LANG_SOURCE(
             [#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
              #include <math.h>
@@ -2303,7 +2273,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
           [glibcxx_cv_obsolete_isnan=yes],
           [glibcxx_cv_obsolete_isnan=no]
         )])
-      AC_MSG_RESULT([$glibcxx_cv_obsolete_isnan])
       if test $glibcxx_cv_obsolete_isnan = yes; then
         AC_DEFINE(HAVE_OBSOLETE_ISNAN, 1,
                   [Define if <math.h> defines obsolete isnan function.])
@@ -3316,8 +3285,8 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
 
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for atomic builtins for bool])
-  AC_CACHE_VAL(glibcxx_cv_atomic_bool, [
+  AC_CACHE_CHECK([for atomic builtins for bool],
+    glibcxx_cv_atomic_bool, [
     AC_TRY_LINK(
       [ ],
       [typedef bool atomic_type;
@@ -3333,10 +3302,9 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
       [glibcxx_cv_atomic_bool=yes],
       [glibcxx_cv_atomic_bool=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_atomic_bool)
 
-  AC_MSG_CHECKING([for atomic builtins for short])
-  AC_CACHE_VAL(glibcxx_cv_atomic_short, [
+  AC_CACHE_CHECK([for atomic builtins for short],
+    glibcxx_cv_atomic_short, [
     AC_TRY_LINK(
       [ ],
       [typedef short atomic_type;
@@ -3352,10 +3320,9 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
       [glibcxx_cv_atomic_short=yes],
       [glibcxx_cv_atomic_short=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_atomic_short)
 
-  AC_MSG_CHECKING([for atomic builtins for int])
-  AC_CACHE_VAL(glibcxx_cv_atomic_int, [
+  AC_CACHE_CHECK([for atomic builtins for int],
+    glibcxx_cv_atomic_int, [
     AC_TRY_LINK(
       [ ],
       [typedef int atomic_type;
@@ -3371,10 +3338,9 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
       [glibcxx_cv_atomic_int=yes],
       [glibcxx_cv_atomic_int=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_atomic_int)
 
-  AC_MSG_CHECKING([for atomic builtins for long long])
-  AC_CACHE_VAL(glibcxx_cv_atomic_long_long, [
+  AC_CACHE_CHECK([for atomic builtins for long long],
+    glibcxx_cv_atomic_long_long, [
     AC_TRY_LINK(
       [ ],
       [typedef long long atomic_type;
@@ -3390,7 +3356,6 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
       [glibcxx_cv_atomic_long_long=yes],
       [glibcxx_cv_atomic_long_long=no])
   ])
-  AC_MSG_RESULT($glibcxx_cv_atomic_long_long)
 
   else
 
@@ -4063,8 +4028,8 @@ AC_DEFUN([AC_LC_MESSAGES], [
 dnl
 dnl Check whether rdrand is supported in the assembler.
 AC_DEFUN([GLIBCXX_CHECK_X86_RDRAND], [
-  AC_MSG_CHECKING([for rdrand support in assembler])
-  AC_CACHE_VAL(ac_cv_x86_rdrand, [
+  AC_CACHE_CHECK([for rdrand support in assembler],
+  ac_cv_x86_rdrand, [
   ac_cv_x86_rdrand=no
   case "$target" in
     i?86-*-* | \
@@ -4077,14 +4042,13 @@ AC_DEFUN([GLIBCXX_CHECK_X86_RDRAND], [
     AC_DEFINE(_GLIBCXX_X86_RDRAND, 1,
 		[ Defined if as can handle rdrand. ])
   fi
-  AC_MSG_RESULT($ac_cv_x86_rdrand)
 ])
 
 dnl
 dnl Check whether rdseed is supported in the assembler.
 AC_DEFUN([GLIBCXX_CHECK_X86_RDSEED], [
-  AC_MSG_CHECKING([for rdseed support in assembler])
-  AC_CACHE_VAL(ac_cv_x86_rdseed, [
+  AC_CACHE_CHECK([for rdseed support in assembler],
+  ac_cv_x86_rdseed, [
   ac_cv_x86_rdseed=no
   case "$target" in
     i?86-*-* | \
@@ -4097,7 +4061,6 @@ AC_DEFUN([GLIBCXX_CHECK_X86_RDSEED], [
     AC_DEFINE(_GLIBCXX_X86_RDSEED, 1,
 		[ Defined if as can handle rdseed. ])
   fi
-  AC_MSG_RESULT($ac_cv_x86_rdseed)
 ])
 
 dnl
@@ -4110,8 +4073,8 @@ AC_DEFUN([GLIBCXX_CHECK_GET_NPROCS], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for get_nprocs])
-  AC_CACHE_VAL(glibcxx_cv_GET_NPROCS, [
+  AC_CACHE_CHECK([for get_nprocs],
+    glibcxx_cv_GET_NPROCS, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <sys/sysinfo.h>],
       [int n = get_nprocs();],
@@ -4121,7 +4084,6 @@ AC_DEFUN([GLIBCXX_CHECK_GET_NPROCS], [
   if test $glibcxx_cv_GET_NPROCS = yes; then
     AC_DEFINE(_GLIBCXX_USE_GET_NPROCS, 1, [Define if get_nprocs is available in <sys/sysinfo.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_GET_NPROCS)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4137,8 +4099,8 @@ AC_DEFUN([GLIBCXX_CHECK_SC_NPROCESSORS_ONLN], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for _SC_NPROCESSORS_ONLN])
-  AC_CACHE_VAL(glibcxx_cv_SC_NPROCESSORS_ONLN, [
+  AC_CACHE_CHECK([for _SC_NPROCESSORS_ONLN],
+    glibcxx_cv_SC_NPROCESSORS_ONLN, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>],
       [int n = sysconf(_SC_NPROCESSORS_ONLN);],
@@ -4148,7 +4110,6 @@ AC_DEFUN([GLIBCXX_CHECK_SC_NPROCESSORS_ONLN], [
   if test $glibcxx_cv_SC_NPROCESSORS_ONLN = yes; then
     AC_DEFINE(_GLIBCXX_USE_SC_NPROCESSORS_ONLN, 1, [Define if _SC_NPROCESSORS_ONLN  is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_SC_NPROCESSORS_ONLN)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4164,8 +4125,8 @@ AC_DEFUN([GLIBCXX_CHECK_SC_NPROC_ONLN], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for _SC_NPROC_ONLN])
-  AC_CACHE_VAL(glibcxx_cv_SC_NPROC_ONLN, [
+  AC_CACHE_CHECK([for _SC_NPROC_ONLN],
+    glibcxx_cv_SC_NPROC_ONLN, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>],
       [int n = sysconf(_SC_NPROC_ONLN);],
@@ -4175,7 +4136,6 @@ AC_DEFUN([GLIBCXX_CHECK_SC_NPROC_ONLN], [
   if test $glibcxx_cv_SC_NPROC_ONLN = yes; then
     AC_DEFINE(_GLIBCXX_USE_SC_NPROC_ONLN, 1, [Define if _SC_NPROC_ONLN  is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_SC_NPROC_ONLN)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4191,8 +4151,8 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREADS_NUM_PROCESSORS_NP], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for pthreads_num_processors_np])
-  AC_CACHE_VAL(glibcxx_cv_PTHREADS_NUM_PROCESSORS_NP, [
+  AC_CACHE_CHECK([for pthreads_num_processors_np],
+    glibcxx_cv_PTHREADS_NUM_PROCESSORS_NP, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <pthread.h>],
       [int n = pthread_num_processors_np();],
@@ -4202,7 +4162,6 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREADS_NUM_PROCESSORS_NP], [
   if test $glibcxx_cv_PTHREADS_NUM_PROCESSORS_NP = yes; then
     AC_DEFINE(_GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP, 1, [Define if pthreads_num_processors_np is available in <pthread.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_PTHREADS_NUM_PROCESSORS_NP)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4221,8 +4180,8 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT], [
   ac_save_LIBS="$LIBS"
   LIBS="$LIBS -lpthread"
 
-  AC_MSG_CHECKING([for pthread_cond_clockwait])
-  AC_CACHE_VAL(glibcxx_cv_PTHREAD_COND_CLOCKWAIT, [
+  AC_CACHE_CHECK([for pthread_cond_clockwait],
+    glibcxx_cv_PTHREAD_COND_CLOCKWAIT, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <pthread.h>],
       [pthread_mutex_t mutex; pthread_cond_t cond; struct timespec ts; int n = pthread_cond_clockwait(&cond, &mutex, 0, &ts);],
@@ -4232,7 +4191,6 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_COND_CLOCKWAIT], [
   if test $glibcxx_cv_PTHREAD_COND_CLOCKWAIT = yes; then
     AC_DEFINE(_GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT, 1, [Define if pthread_cond_clockwait is available in <pthread.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_PTHREAD_COND_CLOCKWAIT)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
@@ -4252,8 +4210,8 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK], [
   ac_save_LIBS="$LIBS"
   LIBS="$LIBS -lpthread"
 
-  AC_MSG_CHECKING([for pthread_mutex_clocklock])
-  AC_CACHE_VAL(glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK, [
+  AC_CACHE_CHECK([for pthread_mutex_clocklock],
+    glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <pthread.h>],
       [pthread_mutex_t mutex; struct timespec ts; int n = pthread_mutex_clocklock(&mutex, CLOCK_REALTIME, &ts);],
@@ -4263,7 +4221,6 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK], [
   if test $glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK = yes; then
     AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, 1, [Define if pthread_mutex_clocklock is available in <pthread.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
@@ -4283,8 +4240,8 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK], [
   ac_save_LIBS="$LIBS"
   LIBS="$LIBS -lpthread"
 
-  AC_MSG_CHECKING([for pthread_rwlock_clockrdlock, pthread_wlock_clockwrlock])
-  AC_CACHE_VAL(glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK, [
+  AC_CACHE_CHECK([for pthread_rwlock_clockrdlock, pthread_wlock_clockwrlock],
+    glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK, [
     GCC_TRY_COMPILE_OR_LINK(
       [#include <pthread.h>],
       [pthread_rwlock_t rwl; struct timespec ts;]
@@ -4296,7 +4253,6 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_RWLOCK_CLOCKLOCK], [
   if test $glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK = yes; then
     AC_DEFINE(_GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK, 1, [Define if pthread_rwlock_clockrdlock and pthread_rwlock_clockwrlock are available in <pthread.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_PTHREAD_RWLOCK_CLOCKLOCK)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
@@ -4313,8 +4269,8 @@ AC_DEFUN([GLIBCXX_CHECK_SYSCTL_HW_NCPU], [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_MSG_CHECKING([for hw.ncpu sysctl])
-  AC_CACHE_VAL(glibcxx_cv_SYSCTL_HW_NCPU, [
+  AC_CACHE_CHECK([for hw.ncpu sysctl],
+    glibcxx_cv_SYSCTL_HW_NCPU, [
     GCC_TRY_COMPILE_OR_LINK(
       [
        #include <stddef.h>
@@ -4332,7 +4288,6 @@ AC_DEFUN([GLIBCXX_CHECK_SYSCTL_HW_NCPU], [
   if test $glibcxx_cv_SYSCTL_HW_NCPU = yes; then
     AC_DEFINE(_GLIBCXX_USE_SYSCTL_HW_NCPU, 1, [Define if sysctl(), CTL_HW and HW_NCPU are available in <sys/sysctl.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_SYSCTL_HW_NCPU)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4380,8 +4335,7 @@ dnl
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 dnl
-  AC_MSG_CHECKING([for tmpnam])
-  AC_CACHE_VAL(glibcxx_cv_TMPNAM, [dnl
+  AC_CACHE_CHECK([for tmpnam], glibcxx_cv_TMPNAM, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <stdio.h>],
       [char *tmp = tmpnam(NULL);],
@@ -4391,7 +4345,6 @@ dnl
   if test $glibcxx_cv_TMPNAM = yes; then
     AC_DEFINE(_GLIBCXX_USE_TMPNAM, 1, [Define if obsolescent tmpnam is available in <stdio.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_TMPNAM)
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4402,13 +4355,13 @@ dnl Check to see if sys/sdt.h exists and that it is suitable for use.
 dnl Some versions of sdt.h were not compatible with C++11.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SDT_H], [
-  AC_MSG_CHECKING([for suitable sys/sdt.h])
   # Note that this test has to be run with the C language.
   # Otherwise, sdt.h will try to include some headers from
   # libstdc++ itself.
   AC_LANG_SAVE
   AC_LANG_C
-  AC_CACHE_VAL(glibcxx_cv_sys_sdt_h, [
+  AC_CACHE_CHECK([for suitable sys/sdt.h],
+    glibcxx_cv_sys_sdt_h, [
     # Because we have to run the test in C, we use grep rather
     # than the compiler to check for the bug.  The bug is that
     # were strings without trailing whitespace, causing g++
@@ -4424,7 +4377,6 @@ AC_DEFUN([GLIBCXX_CHECK_SDT_H], [
     AC_DEFINE(HAVE_SYS_SDT_H, 1,
               [Define to 1 if you have a suitable <sys/sdt.h> header file])
   fi
-  AC_MSG_RESULT($glibcxx_cv_sys_sdt_h)
 ])
 
 dnl
@@ -4546,8 +4498,7 @@ dnl
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 dnl
-  AC_MSG_CHECKING([for struct dirent.d_type])
-  AC_CACHE_VAL(glibcxx_cv_dirent_d_type, [dnl
+  AC_CACHE_CHECK([for struct dirent.d_type], glibcxx_cv_dirent_d_type, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <dirent.h>],
       [
@@ -4560,10 +4511,8 @@ dnl
   if test $glibcxx_cv_dirent_d_type = yes; then
     AC_DEFINE(HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
 dnl
-  AC_MSG_CHECKING([for realpath])
-  AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
+  AC_CACHE_CHECK([for realpath], glibcxx_cv_realpath, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
        #include <limits.h>
@@ -4585,10 +4534,8 @@ dnl
   if test $glibcxx_cv_realpath = yes; then
     AC_DEFINE(_GLIBCXX_USE_REALPATH, 1, [Define if usable realpath is available in <stdlib.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_realpath)
 dnl
-  AC_MSG_CHECKING([for utimensat])
-  AC_CACHE_VAL(glibcxx_cv_utimensat, [dnl
+  AC_CACHE_CHECK([for utimensat], glibcxx_cv_utimensat, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
 	#include <fcntl.h>
@@ -4604,10 +4551,8 @@ dnl
   if test $glibcxx_cv_utimensat = yes; then
     AC_DEFINE(_GLIBCXX_USE_UTIMENSAT, 1, [Define if utimensat and UTIME_OMIT are available in <sys/stat.h> and AT_FDCWD in <fcntl.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_utimensat)
 dnl
-  AC_MSG_CHECKING([for utime])
-  AC_CACHE_VAL(glibcxx_cv_utime, [dnl
+  AC_CACHE_CHECK([for utime], glibcxx_cv_utime, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
 	#include <utime.h>
@@ -4622,10 +4567,8 @@ dnl
   if test $glibcxx_cv_utime = yes; then
     AC_DEFINE(_GLIBCXX_USE_UTIME, 1, [Define if utime is available in <utime.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_utime)
 dnl
-  AC_MSG_CHECKING([for lstat])
-  AC_CACHE_VAL(glibcxx_cv_lstat, [dnl
+  AC_CACHE_CHECK([for lstat], glibcxx_cv_lstat, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [ #include <sys/stat.h> ],
       [
@@ -4638,10 +4581,9 @@ dnl
   if test $glibcxx_cv_lstat = yes; then
     AC_DEFINE(_GLIBCXX_USE_LSTAT, 1, [Define if lstat is available in <sys/stat.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_lstat)
 dnl
-  AC_MSG_CHECKING([for struct stat.st_mtim.tv_nsec])
-  AC_CACHE_VAL(glibcxx_cv_st_mtim, [dnl
+  AC_CACHE_CHECK([for struct stat.st_mtim.tv_nsec],
+    glibcxx_cv_st_mtim, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [ #include <sys/stat.h> ],
       [
@@ -4654,10 +4596,9 @@ dnl
   if test $glibcxx_cv_st_mtim = yes; then
     AC_DEFINE(_GLIBCXX_USE_ST_MTIM, 1, [Define if struct stat has timespec members.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_st_mtim)
 dnl
-  AC_MSG_CHECKING([for fchmod])
-  AC_CACHE_VAL(glibcxx_cv_fchmod, [dnl
+  AC_CACHE_CHECK([for fchmod],
+    glibcxx_cv_fchmod, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <sys/stat.h>],
       [fchmod(1, S_IWUSR);],
@@ -4667,10 +4608,9 @@ dnl
   if test $glibcxx_cv_fchmod = yes; then
     AC_DEFINE(_GLIBCXX_USE_FCHMOD, 1, [Define if fchmod is available in <sys/stat.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_fchmod)
 dnl
-  AC_MSG_CHECKING([for fchmodat])
-  AC_CACHE_VAL(glibcxx_cv_fchmodat, [dnl
+  AC_CACHE_CHECK([for fchmodat],
+    glibcxx_cv_fchmodat, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [
 	#include <fcntl.h>
@@ -4683,10 +4623,9 @@ dnl
   if test $glibcxx_cv_fchmodat = yes; then
     AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_fchmodat)
 dnl
-  AC_MSG_CHECKING([for sendfile that can copy files])
-  AC_CACHE_VAL(glibcxx_cv_sendfile, [dnl
+  AC_CACHE_CHECK([for sendfile that can copy files],
+    glibcxx_cv_sendfile, [dnl
     case "${target_os}" in
       gnu* | linux* | solaris* | uclinux*)
 	GCC_TRY_COMPILE_OR_LINK(
@@ -4703,10 +4642,9 @@ dnl
   if test $glibcxx_cv_sendfile = yes; then
     AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_sendfile)
 dnl
-  AC_MSG_CHECKING([for link])
-  AC_CACHE_VAL(glibcxx_cv_link, [dnl
+  AC_CACHE_CHECK([for link],
+    glibcxx_cv_link, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>],
       [link("", "");],
@@ -4716,10 +4654,9 @@ dnl
   if test $glibcxx_cv_link = yes; then
     AC_DEFINE(HAVE_LINK, 1, [Define if link is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_link)
 dnl
-  AC_MSG_CHECKING([for readlink])
-  AC_CACHE_VAL(glibcxx_cv_readlink, [dnl
+  AC_CACHE_CHECK([for readlink],
+    glibcxx_cv_readlink, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>],
       [char buf[32]; readlink("", buf, sizeof(buf));],
@@ -4729,10 +4666,9 @@ dnl
   if test $glibcxx_cv_readlink = yes; then
     AC_DEFINE(HAVE_READLINK, 1, [Define if readlink is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_readlink)
 dnl
-  AC_MSG_CHECKING([for symlink])
-  AC_CACHE_VAL(glibcxx_cv_symlink, [dnl
+  AC_CACHE_CHECK([for symlink],
+    glibcxx_cv_symlink, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>],
       [symlink("", "");],
@@ -4742,10 +4678,9 @@ dnl
   if test $glibcxx_cv_symlink = yes; then
     AC_DEFINE(HAVE_SYMLINK, 1, [Define if symlink is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_symlink)
 dnl
-  AC_MSG_CHECKING([for truncate])
-  AC_CACHE_VAL(glibcxx_cv_truncate, [dnl
+  AC_CACHE_CHECK([for truncate],
+    glibcxx_cv_truncate, [dnl
     GCC_TRY_COMPILE_OR_LINK(
       [#include <unistd.h>],
       [truncate("", 99);],
@@ -4755,7 +4690,6 @@ dnl
   if test $glibcxx_cv_truncate = yes; then
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_truncate)
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
@@ -4837,8 +4771,7 @@ AC_DEFUN([GLIBCXX_CHECK_GETENTROPY], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
-  AC_MSG_CHECKING([for getentropy])
-  AC_CACHE_VAL(glibcxx_cv_getentropy, [
+  AC_CACHE_CHECK([for getentropy], glibcxx_cv_getentropy, [
       GCC_TRY_COMPILE_OR_LINK(
 	[#include <unistd.h>],
 	[unsigned i;
@@ -4849,7 +4782,6 @@ AC_DEFUN([GLIBCXX_CHECK_GETENTROPY], [
   if test $glibcxx_cv_getentropy = yes; then
     AC_DEFINE(HAVE_GETENTROPY, 1, [Define if getentropy is available in <unistd.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_getentropy)
   AC_LANG_RESTORE
 ])
 
@@ -4860,8 +4792,7 @@ AC_DEFUN([GLIBCXX_CHECK_ARC4RANDOM], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
-  AC_MSG_CHECKING([for arc4random])
-  AC_CACHE_VAL(glibcxx_cv_arc4random, [
+  AC_CACHE_CHECK([for arc4random], glibcxx_cv_arc4random, [
       GCC_TRY_COMPILE_OR_LINK(
 	[#include <stdlib.h>],
 	[unsigned i = ::arc4random();],
@@ -4871,7 +4802,6 @@ AC_DEFUN([GLIBCXX_CHECK_ARC4RANDOM], [
   if test $glibcxx_cv_arc4random = yes; then
     AC_DEFINE(HAVE_ARC4RANDOM, 1, [Define if arc4random is available in <stdlib.h>.])
   fi
-  AC_MSG_RESULT($glibcxx_cv_arc4random)
   AC_LANG_RESTORE
 ])
 

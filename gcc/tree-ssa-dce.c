@@ -1626,6 +1626,10 @@ sort_phi_args (const void *a_, const void *b_)
     return -1;
   else if (ha > hb)
     return 1;
+  else if (a->first->dest_idx < b->first->dest_idx)
+    return -1;
+  else if (a->first->dest_idx > b->first->dest_idx)
+    return 1;
   else
     return 0;
 }

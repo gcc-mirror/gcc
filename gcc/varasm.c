@@ -7625,6 +7625,8 @@ decl_binds_to_current_def_p (const_tree decl)
    at link-time with an entirely different definition, provided that the
    replacement has the same type.  For example, functions declared
    with __attribute__((weak)) on most systems are replaceable.
+   If SEMANTIC_INTERPOSITION_P is false allow interposition only on
+   symbols explicitly declared weak.
 
    COMDAT functions are not replaceable, since all definitions of the
    function must be equivalent.  It is important that COMDAT functions
@@ -7632,12 +7634,12 @@ decl_binds_to_current_def_p (const_tree decl)
    instantiations is not penalized.  */
 
 bool
-decl_replaceable_p (tree decl)
+decl_replaceable_p (tree decl, bool semantic_interposition_p)
 {
   gcc_assert (DECL_P (decl));
   if (!TREE_PUBLIC (decl) || DECL_COMDAT (decl))
     return false;
-  if (!flag_semantic_interposition
+  if (!semantic_interposition_p
       && !DECL_WEAK (decl))
     return false;
   return !decl_binds_to_current_def_p (decl);

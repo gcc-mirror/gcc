@@ -1,3 +1,19 @@
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libphobos.exp: Prune warnings from external
+	tool bugs.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/fiber.d (defaultStackPages): Increase size
+	on OSX X86_64 targets.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Don't remove entry
+	from global array.
+	(_d_emutls_destroy): Don't call __gthread_key_delete.
+
 2021-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/102837

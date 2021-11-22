@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-lstdc++fs -fchar8_t" }
+// { dg-options "-lstdc++fs -fchar8_t -Wno-stringop-overread" }
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
@@ -36,10 +36,12 @@ test01()
   p = fs::u8path(u8"\xf0\x9d\x84\x9e");
   VERIFY( p.u8string() == u8"\U0001D11E" );
 
+  // The following triggers -Wstringop-overread.  See PR 103332.
   std::u8string s1 = u8"filename2";
   p = fs::u8path(s1);
   VERIFY( p.u8string() == u8"filename2" );
 
+  // The following triggers -Wstringop-overread.  See PR 103332.
   std::u8string s2 = u8"filename3";
   p = fs::u8path(s2.begin(), s2.end());
   VERIFY( p.u8string() == u8"filename3" );

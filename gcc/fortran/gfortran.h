@@ -1199,6 +1199,9 @@ gfc_formal_arglist;
 #define gfc_get_formal_arglist() XCNEW (gfc_formal_arglist)
 
 
+struct gfc_dummy_arg;
+
+
 /* The gfc_actual_arglist structure is for actual arguments and
    for type parameter specification lists.  */
 typedef struct gfc_actual_arglist
@@ -1207,14 +1210,14 @@ typedef struct gfc_actual_arglist
   /* Alternate return label when the expr member is null.  */
   struct gfc_st_label *label;
 
-  /* This is set to the type of an eventual omitted optional
-     argument. This is used to determine if a hidden string length
-     argument has to be added to a function call.  */
-  bt missing_arg_type;
-
   gfc_param_spec_type spec_type;
 
   struct gfc_expr *expr;
+
+  /*  The dummy arg this actual arg is associated with, if the interface
+      is explicit.  NULL otherwise.  */
+  gfc_dummy_arg *associated_dummy;
+
   struct gfc_actual_arglist *next;
 }
 gfc_actual_arglist;
@@ -2299,12 +2302,36 @@ typedef struct gfc_intrinsic_arg
   gfc_typespec ts;
   unsigned optional:1, value:1;
   ENUM_BITFIELD (sym_intent) intent:2;
-  gfc_actual_arglist *actual;
 
   struct gfc_intrinsic_arg *next;
-
 }
 gfc_intrinsic_arg;
+
+
+typedef enum {
+  GFC_UNDEFINED_DUMMY_ARG = 0,
+  GFC_INTRINSIC_DUMMY_ARG,
+  GFC_NON_INTRINSIC_DUMMY_ARG
+}
+gfc_dummy_arg_intrinsicness;
+
+/* dummy arg of either an intrinsic or a user-defined procedure.  */
+struct gfc_dummy_arg
+{
+  gfc_dummy_arg_intrinsicness intrinsicness;
+
+  union {
+    gfc_intrinsic_arg *intrinsic;
+    gfc_formal_arglist *non_intrinsic;
+  } u;
+};
+
+#define gfc_get_dummy_arg() XCNEW (gfc_dummy_arg)
+
+
+const char * gfc_dummy_arg_get_name (gfc_dummy_arg &);
+const gfc_typespec & gfc_dummy_arg_get_typespec (gfc_dummy_arg &);
+bool gfc_dummy_arg_is_optional (gfc_dummy_arg &);
 
 
 /* Specifies the various kinds of check functions used to verify the

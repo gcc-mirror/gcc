@@ -3632,8 +3632,10 @@ proc check_effective_target_vect_complex_add_float { } {
 proc check_effective_target_vect_complex_add_double { } {
     return [check_cached_effective_target_indexed vect_complex_add_double {
       expr {
-	 ([check_effective_target_aarch64_sve2]
-	      && [check_effective_target_aarch64_little_endian])
+	 (([check_effective_target_arm_v8_3a_complex_neon_ok]
+	  && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_aarch64_sve2]
+	      && [check_effective_target_aarch64_little_endian]))
 	}}]
 }
 

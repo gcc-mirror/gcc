@@ -265,6 +265,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-reflection.c */
+#define create_code create_code_reflection
+#define verify_code verify_code_reflection
+#include "test-reflection.c"
+#undef create_code
+#undef verify_code
+
 /* test-string-literal.c */
 #define create_code create_code_string_literal
 #define verify_code verify_code_string_literal
@@ -434,6 +441,9 @@ const struct testcase testcases[] = {
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },
+  {"reflection",
+   create_code_reflection ,
+   verify_code_reflection },
   {"string_literal",
    create_code_string_literal,
    verify_code_string_literal},

@@ -5098,7 +5098,8 @@ process_command (unsigned int decoded_options_count,
 
   bool explicit_dumpdir = dumpdir;
 
-  if (!save_temps_overrides_dumpdir && explicit_dumpdir)
+  if ((!save_temps_overrides_dumpdir && explicit_dumpdir)
+      || (output_file && not_actual_file_p (output_file)))
     {
       /* Do nothing.  */
     }

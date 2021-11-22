@@ -8846,7 +8846,8 @@ resolve_select (gfc_code *code, bool select_type)
 		  || cp->low != cp->high))
 	    {
 	      gfc_error ("Logical range in CASE statement at %L is not "
-			 "allowed", &cp->low->where);
+			 "allowed",
+			 cp->low ? &cp->low->where : &cp->high->where);
 	      t = false;
 	      break;
 	    }

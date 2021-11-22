@@ -1,3 +1,32 @@
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-typeck.c (maybe_warn_for_null_address): Suppress warnings for
+	code resulting from macro expansion.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_ASSOC_BARRIER.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
+2021-11-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101702
+	* c-decl.c (get_parm_array_spec): Strip casts earlier and fold array
+	bounds before deciding if they're constant.
+
 2021-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (OMP_TARGET_CLAUSE_MASK): Add

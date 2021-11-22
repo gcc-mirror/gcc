@@ -46,12 +46,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
-    template<typename _Container, typename _Predicate>
+    template<typename _Container, typename _UnsafeContainer,
+	     typename _Predicate>
       typename _Container::size_type
-      __erase_nodes_if(_Container& __cont, _Predicate __pred)
+      __erase_nodes_if(_Container& __cont, const _UnsafeContainer& __ucont,
+		       _Predicate __pred)
       {
 	typename _Container::size_type __num = 0;
-	for (auto __iter = __cont.begin(), __last = __cont.end();
+	for (auto __iter = __ucont.begin(), __last = __ucont.end();
 	     __iter != __last;)
 	  {
 	    if (__pred(*__iter))

@@ -2755,7 +2755,7 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 
   callee = gimple_call_fndecl (call);
 
-  if (!gimple_call_chain (call) && callee != NULL_TREE)
+  if (callee != NULL_TREE)
     {
       struct cgraph_node *node = cgraph_node::get (callee);
       /* We can not safely optimize based on summary of calle if it does

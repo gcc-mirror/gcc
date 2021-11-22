@@ -1,3 +1,44 @@
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-common.c (decl_with_nonnull_addr_p): Call maybe_nonzero_address
+	and improve handling tof defined symbols.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-gimplify.c (genericize_c_loop): Use option directly.
+
+2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	* c-common.c (c_common_reswords): Add __builtin_assoc_barrier.
+	* c-common.h (enum rid): Add RID_BUILTIN_ASSOC_BARRIER.
+
+2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-gimplify.c (genericize_c_loop): Use option directly.
+
+2021-11-17  Martin Uecker  <uecker@gcc.gnu.org>
+
+	PR c/91038
+	PR c/29970
+	* c-common.c (pointer_int_sum): Make sure pointer expressions
+	are evaluated first when the size expression depends on for
+	variably-modified types.
+
+2021-11-17  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/103026
+	* c.opt (Wbidi-chars, Wbidi-chars=): New option.
+
+2021-11-16  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (release_tree_vector): Only cache vecs smaller than
+	16 elements.
+
 2021-11-15  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add -fimplicit-constexpr.

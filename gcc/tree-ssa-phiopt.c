@@ -1381,6 +1381,9 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	}
     }
 
+  if (!single_pred_p (middle_bb))
+    return 0;
+
   /* Now optimize (x != 0) ? x + y : y to just x + y.  */
   gsi = gsi_last_nondebug_bb (middle_bb);
   if (gsi_end_p (gsi))
@@ -1776,6 +1779,9 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
       gimple *assign = last_and_only_stmt (middle_bb);
       tree lhs, op0, op1, bound;
+
+      if (!single_pred_p (middle_bb))
+	return false;
 
       if (!assign
 	  || gimple_code (assign) != GIMPLE_ASSIGN)

@@ -379,6 +379,9 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       if (tree message = STATIC_ASSERT_MESSAGE (node))
 	print_node (file, "message", message, indent+4);
       break;
+    case PTRMEM_CST:
+      print_node (file, "member", PTRMEM_CST_MEMBER (node), indent+4);
+      break;
     default:
       break;
     }

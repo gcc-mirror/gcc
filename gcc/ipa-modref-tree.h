@@ -99,6 +99,10 @@ struct GTY(()) modref_access_node
   tree get_call_arg (const gcall *stmt) const;
   /* Build ao_ref corresponding to the access and return true if succesful.  */
   bool get_ao_ref (const gcall *stmt, class ao_ref *ref) const;
+  /* Stream access to OB.  */
+  void stream_out (struct output_block *ob) const;
+  /* Stream access in from IB.  */
+  static modref_access_node stream_in (struct lto_input_block *ib);
   /* Insert A into vector ACCESSES.  Limit size of vector to MAX_ACCESSES and
      if RECORD_ADJUSTMENT is true keep track of adjustment counts.
      Return 0 if nothing changed, 1 is insertion suceeded and -1 if failed.  */
@@ -283,6 +287,11 @@ struct GTY((user)) modref_base_node
 
 struct modref_parm_map
 {
+  /* Default constructor.  */
+  modref_parm_map ()
+  : parm_index (MODREF_UNKNOWN_PARM), parm_offset_known (false), parm_offset ()
+  {}
+
   /* Index of parameter we translate to.
      Values from special_params enum are permitted too.  */
   int parm_index;

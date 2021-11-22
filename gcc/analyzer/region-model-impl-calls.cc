@@ -678,6 +678,75 @@ region_model::impl_call_realloc (const call_details &cd)
     }
 }
 
+/* Handle the on_call_pre part of "strchr" and "__builtin_strchr".  */
+
+void
+region_model::impl_call_strchr (const call_details &cd)
+{
+  class strchr_call_info : public call_info
+  {
+  public:
+    strchr_call_info (const call_details &cd, bool found)
+    : call_info (cd), m_found (found)
+    {
+    }
+
+    label_text get_desc (bool can_colorize) const FINAL OVERRIDE
+    {
+      if (m_found)
+	return make_label_text (can_colorize,
+				"when %qE returns non-NULL",
+				get_fndecl ());
+      else
+	return make_label_text (can_colorize,
+				"when %qE returns NULL",
+				get_fndecl ());
+    }
+
+    bool update_model (region_model *model,
+		       const exploded_edge *,
+		       region_model_context *ctxt) const FINAL OVERRIDE
+    {
+      const call_details cd (get_call_details (model, ctxt));
+      if (tree lhs_type = cd.get_lhs_type ())
+	{
+	  region_model_manager *mgr = model->get_manager ();
+	  const svalue *result;
+	  if (m_found)
+	    {
+	      const svalue *str_sval = cd.get_arg_svalue (0);
+	      const region *str_reg
+		= model->deref_rvalue (str_sval, cd.get_arg_tree (0),
+				       cd.get_ctxt ());
+	      /* We want str_sval + OFFSET for some unknown OFFSET.
+		 Use a conjured_svalue to represent the offset,
+		 using the str_reg as the id of the conjured_svalue.  */
+	      const svalue *offset
+		= mgr->get_or_create_conjured_svalue (size_type_node,
+						      cd.get_call_stmt (),
+						      str_reg);
+	      result = mgr->get_or_create_binop (lhs_type, POINTER_PLUS_EXPR,
+						 str_sval, offset);
+	    }
+	  else
+	    result = mgr->get_or_create_int_cst (lhs_type, 0);
+	  cd.maybe_set_lhs (result);
+	}
+      return true;
+    }
+  private:
+    bool m_found;
+  };
+
+  /* Bifurcate state, creating a "not found" out-edge.  */
+  if (cd.get_ctxt ())
+    cd.get_ctxt ()->bifurcate (new strchr_call_info (cd, false));
+
+  /* The "unbifurcated" state is the "found" case.  */
+  strchr_call_info found (cd, true);
+  found.update_model (this, NULL, cd.get_ctxt ());
+}
+
 /* Handle the on_call_pre part of "strcpy" and "__builtin_strcpy_chk".  */
 
 void

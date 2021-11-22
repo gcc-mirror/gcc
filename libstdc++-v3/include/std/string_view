@@ -39,9 +39,11 @@
 
 #include <iosfwd>
 #include <bits/char_traits.h>
+#include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/range_access.h>
 #include <bits/ostream_insert.h>
+#include <bits/stl_algobase.h>
 #include <ext/numeric_traits.h>
 
 #if __cplusplus >= 202002L

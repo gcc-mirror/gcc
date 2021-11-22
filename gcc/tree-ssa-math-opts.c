@@ -2723,7 +2723,16 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
 	  from_unsigned1 = from_unsigned2 = false;
 	}
       else
-	return false;
+	{
+	  /* Expand can synthesize smul_widen_optab if the target
+	     supports umul_widen_optab.  */
+	  op = umul_widen_optab;
+	  handler = find_widening_optab_handler_and_mode (op, to_mode,
+							  from_mode,
+							  &actual_mode);
+	  if (handler == CODE_FOR_nothing)
+	    return false;
+	}
     }
 
   /* Ensure that the inputs to the handler are in the correct precison
@@ -3224,6 +3233,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 		     fma_deferring_state *state, tree mul_cond = NULL_TREE)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
+  /* If there isn't a LHS then this can't be an FMA.  There can be no LHS
+     if the statement was left just for the side-effects.  */
+  if (!mul_result)
+    return false;
   tree type = TREE_TYPE (mul_result);
   gimple *use_stmt, *neguse_stmt;
   use_operand_p use_p;

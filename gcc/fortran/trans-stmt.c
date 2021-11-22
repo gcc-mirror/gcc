@@ -375,27 +375,6 @@ get_intrinsic_for_code (gfc_code *code)
 }
 
 
-/* Get the interface symbol for the procedure corresponding to the given call.
-   We can't get the procedure symbol directly as we have to handle the case
-   of (deferred) type-bound procedures.  */
-
-static gfc_symbol *
-get_proc_ifc_for_call (gfc_code *c)
-{
-  gfc_symbol *sym;
-
-  gcc_assert (c->op == EXEC_ASSIGN_CALL || c->op == EXEC_CALL);
-
-  sym = gfc_get_proc_ifc_for_expr (c->expr1);
-
-  /* Fall back/last resort try.  */
-  if (sym == NULL)
-    sym = c->resolved_sym;
-
-  return sym;
-}
-
-
 /* Translate the CALL statement.  Builds a call to an F95 subroutine.  */
 
 tree
@@ -422,7 +401,6 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
   if (code->resolved_sym->attr.elemental)
     ss = gfc_walk_elemental_function_args (ss, code->ext.actual,
 					   get_intrinsic_for_code (code),
-					   get_proc_ifc_for_call (code),
 					   GFC_SS_REFERENCE);
 
   /* MVBITS is inlined but needs the dependency checking found here.  */

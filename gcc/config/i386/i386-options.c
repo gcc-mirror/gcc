@@ -1443,8 +1443,11 @@ ix86_valid_target_attribute_p (tree fndecl,
 
   /* Initialize func_options to the default before its target options can
      be set.  */
+  tree old_target = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+  if (old_target == NULL_TREE)
+    old_target = target_option_default_node;
   cl_target_option_restore (&func_options, &func_options_set,
-			    TREE_TARGET_OPTION (target_option_default_node));
+			    TREE_TARGET_OPTION (old_target));
 
   /* FLAGS == 1 is used for target_clones attribute.  */
   new_target

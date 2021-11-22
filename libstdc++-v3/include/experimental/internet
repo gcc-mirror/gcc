@@ -466,9 +466,9 @@ namespace ip
     address(const address& __a) noexcept : _M_uninit(), _M_is_v4(__a._M_is_v4)
     {
       if (_M_is_v4)
-	::new (std::addressof(_M_v4)) address_v4(__a.to_v4());
+	std::_Construct(std::addressof(_M_v4), __a.to_v4());
       else
-	::new (std::addressof(_M_v6)) address_v6(__a.to_v6());
+	std::_Construct(std::addressof(_M_v6), __a.to_v6());
     }
 
     constexpr
@@ -491,7 +491,7 @@ namespace ip
     address&
     operator=(const address_v4& __a) noexcept
     {
-      ::new (std::addressof(_M_v4)) address_v4(__a);
+      std::_Construct(std::addressof(_M_v4), __a);
       _M_is_v4 = true;
       return *this;
     }
@@ -499,7 +499,7 @@ namespace ip
     address&
     operator=(const address_v6& __a) noexcept
     {
-      ::new (std::addressof(_M_v6)) address_v6(__a);
+      std::_Construct(std::addressof(_M_v6), __a);
       _M_is_v4 = false;
       return *this;
     }

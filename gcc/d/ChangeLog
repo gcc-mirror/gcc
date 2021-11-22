@@ -1,3 +1,8 @@
+2021-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (d_finish_decl): Use HOST_WIDE_INT for type size
+	temporaries.
+
 2021-10-22  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/102663

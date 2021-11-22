@@ -8962,6 +8962,7 @@ c_parser_predefined_identifier (c_parser *parser)
 			 assignment-expression ,
 			 assignment-expression, )
      __builtin_convertvector ( assignment-expression , type-name )
+     __builtin_assoc_barrier ( assignment-expression )
 
    offsetof-member-designator:
      identifier
@@ -10105,6 +10106,25 @@ c_parser_postfix_expression (c_parser *parser)
 								NULL));
 		set_c_expr_source_range (&expr, start_loc, end_loc);
 	      }
+	  }
+	  break;
+	case RID_BUILTIN_ASSOC_BARRIER:
+	  {
+	    location_t start_loc = loc;
+	    c_parser_consume_token (parser);
+	    matching_parens parens;
+	    if (!parens.require_open (parser))
+	      {
+		expr.set_error ();
+		break;
+	      }
+	    e1 = c_parser_expr_no_commas (parser, NULL);
+	    mark_exp_read (e1.value);
+	    location_t end_loc = c_parser_peek_token (parser)->get_finish ();
+	    parens.skip_until_found_close (parser);
+	    expr.value = build1_loc (loc, PAREN_EXPR, TREE_TYPE (e1.value),
+				     e1.value);
+	    set_c_expr_source_range (&expr, start_loc, end_loc);
 	  }
 	  break;
 	case RID_AT_SELECTOR:

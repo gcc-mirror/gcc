@@ -1,3 +1,24 @@
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add weak emutls crt to the extra_parts.
+	* config/i386/darwin-lib.h (DECLARE_LIBRARY_RENAMES): Remove
+	workaround.
+	* config/libgcc-libsystem.ver: Add exclude list for the system-
+	provided unwinder.
+	* config/t-slibgcc-darwin: Bump SO version, remove stubs code.
+	* config/i386/libgcc-darwin.10.4.ver: Removed.
+	* config/i386/libgcc-darwin.10.5.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.4.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.5.ver: Removed.
+	* config/t-darwin-noeh: New file.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-darwin: Build weak-defined emutls objects.
+	* emutls.c (__emutls_get_address): Add optional attributes.
+	(__emutls_register_common): Likewise.
+	(EMUTLS_ATTR): New.
+
 2021-11-11  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
 
 	PR libgcc/103044

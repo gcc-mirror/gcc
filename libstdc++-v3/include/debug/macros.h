@@ -211,13 +211,21 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First,_Last),\
 */
 #define __glibcxx_check_erase(_Position)				\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_dereferenceable(),			\
-		      _M_message(__gnu_debug::__msg_erase_bad)	        \
-                      ._M_sequence(*this, "this")			\
+		      _M_message(__gnu_debug::__msg_erase_bad)		\
+		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position));		\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 		      _M_message(__gnu_debug::__msg_erase_different)    \
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
+
+#if __cplusplus >= 201103L
+# define __glibcxx_check_erase2(_CPosition)				\
+_GLIBCXX_DEBUG_VERIFY(_CPosition != _M_base().cend(),			\
+		      _M_message(__gnu_debug::__msg_erase_bad)		\
+		      ._M_sequence(*this, "this")			\
+		      ._M_iterator(_CPosition, #_CPosition));
+#endif
 
 /** Verify that we can erase the element after the iterator
  * _Position. We can erase the element if the _Position iterator is
@@ -241,7 +249,7 @@ _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
 __glibcxx_check_valid_range(_First,_Last);				\
 _GLIBCXX_DEBUG_VERIFY(_First._M_attached_to(this),			\
 		      _M_message(__gnu_debug::__msg_erase_different)    \
-                      ._M_sequence(*this, "this")			\
+		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
@@ -284,7 +292,7 @@ _GLIBCXX_DEBUG_VERIFY(!_Last._M_is_before_begin(),			\
 #define __glibcxx_check_subscript(_N)					\
 _GLIBCXX_DEBUG_VERIFY(_N < this->size(),				\
 		      _M_message(__gnu_debug::__msg_subscript_oob)	\
-                      ._M_sequence(*this, "this")			\
+		      ._M_sequence(*this, "this")			\
 		      ._M_integer(_N, #_N)				\
 		      ._M_integer(this->size(), "size"))
 
@@ -292,15 +300,15 @@ _GLIBCXX_DEBUG_VERIFY(_N < this->size(),				\
 #define __glibcxx_check_bucket_index(_N)				\
 _GLIBCXX_DEBUG_VERIFY(_N < this->bucket_count(),			\
 		      _M_message(__gnu_debug::__msg_bucket_index_oob)	\
-                      ._M_sequence(*this, "this")			\
+		      ._M_sequence(*this, "this")			\
 		      ._M_integer(_N, #_N)				\
 		      ._M_integer(this->bucket_count(), "size"))
 
 // Verify that the container is nonempty
 #define __glibcxx_check_nonempty()					\
 _GLIBCXX_DEBUG_VERIFY(! this->empty(),					\
-		      _M_message(__gnu_debug::__msg_empty)	        \
-                      ._M_sequence(*this, "this"))
+		      _M_message(__gnu_debug::__msg_empty)		\
+		      ._M_sequence(*this, "this"))
 
 // Verify that a predicate is irreflexive
 #define __glibcxx_check_irreflexive(_First,_Last)			\
@@ -342,8 +350,8 @@ __glibcxx_check_irreflexive(_First,_Last);				\
  _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(			\
 			__gnu_debug::__base(_First),			\
 			__gnu_debug::__base(_Last)),			\
-		      _M_message(__gnu_debug::__msg_unsorted)	        \
-                      ._M_iterator(_First, #_First)			\
+		      _M_message(__gnu_debug::__msg_unsorted)		\
+		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
 /** Verify that the iterator range [_First, _Last) is sorted by the
@@ -355,14 +363,14 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(			\
 			__gnu_debug::__base(_First),			\
 			__gnu_debug::__base(_Last), _Pred),		\
 		      _M_message(__gnu_debug::__msg_unsorted_pred)      \
-                      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred))
 
 // Special variant for std::merge, std::includes, std::set_*
 #define __glibcxx_check_sorted_set(_First1,_Last1,_First2)		\
 __glibcxx_check_valid_range(_First1,_Last1);				\
-_GLIBCXX_DEBUG_VERIFY(                                                  \
+_GLIBCXX_DEBUG_VERIFY(							\
   __gnu_debug::__check_sorted_set(__gnu_debug::__base(_First1),		\
 				  __gnu_debug::__base(_Last1), _First2),\
   _M_message(__gnu_debug::__msg_unsorted)				\
@@ -371,7 +379,7 @@ _GLIBCXX_DEBUG_VERIFY(                                                  \
 
 // Likewise with a _Pred.
 #define __glibcxx_check_sorted_set_pred(_First1,_Last1,_First2,_Pred)	\
-__glibcxx_check_valid_range(_First1,_Last1);        			\
+__glibcxx_check_valid_range(_First1,_Last1);				\
 _GLIBCXX_DEBUG_VERIFY(							\
   __gnu_debug::__check_sorted_set(__gnu_debug::__base(_First1),		\
 				  __gnu_debug::__base(_Last1),		\
@@ -414,7 +422,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(		\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred)				\
-                      ._M_string(#_Value))
+		      ._M_string(#_Value))
 
 /** Verify that the iterator range [_First, _Last) is partitioned
     w.r.t. the value _Value and predicate _Pred. */
@@ -427,13 +435,13 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(		\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred)				\
-                      ._M_string(#_Value))
+		      ._M_string(#_Value))
 
 // Verify that the iterator range [_First, _Last) is a heap
 #define __glibcxx_check_heap(_First,_Last)				\
   _GLIBCXX_DEBUG_VERIFY(std::__is_heap(__gnu_debug::__base(_First),	\
 				       __gnu_debug::__base(_Last)),	\
-		      _M_message(__gnu_debug::__msg_not_heap)	        \
+		      _M_message(__gnu_debug::__msg_not_heap)		\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
 
@@ -444,7 +452,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(		\
 				       __gnu_debug::__base(_Last),	\
 				       _Pred),				\
 		      _M_message(__gnu_debug::__msg_not_heap_pred)      \
-                      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
 		      ._M_string(#_Pred))
 
@@ -452,7 +460,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(		\
 #define __glibcxx_check_max_load_factor(_F)				\
 _GLIBCXX_DEBUG_VERIFY(_F > 0.0f,					\
 		      _M_message(__gnu_debug::__msg_valid_load_factor)	\
-                      ._M_sequence(*this, "this"))
+		      ._M_sequence(*this, "this"))
 
 #define __glibcxx_check_equal_allocs(_This, _Other)			\
 _GLIBCXX_DEBUG_VERIFY(_This.get_allocator() == _Other.get_allocator(),	\

@@ -720,14 +720,20 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
 	}
       /* If &X->a is equal to X, the range of X is the result.  */
       if (off_cst && known_eq (off, 0))
-	  return true;
+	return true;
       else if (flag_delete_null_pointer_checks
 	       && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (expr)))
 	{
-	 /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
-	 allow going from non-NULL pointer to NULL.  */
-	   if(!range_includes_zero_p (&r))
-	    return true;
+	  /* For -fdelete-null-pointer-checks -fno-wrapv-pointer we don't
+	     allow going from non-NULL pointer to NULL.  */
+	  if (!range_includes_zero_p (&r))
+	    {
+	      /* We could here instead adjust r by off >> LOG2_BITS_PER_UNIT
+		 using POINTER_PLUS_EXPR if off_cst and just fall back to
+		 this.  */
+	      r = range_nonzero (TREE_TYPE (gimple_assign_rhs1 (stmt)));
+	      return true;
+	    }
 	}
       /* If MEM_REF has a "positive" offset, consider it non-NULL
 	 always, for -fdelete-null-pointer-checks also "negative"

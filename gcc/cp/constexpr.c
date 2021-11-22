@@ -6901,6 +6901,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 				       non_constant_p, overflow_p);
       break;
 
+    case PAREN_EXPR:
+      gcc_assert (!REF_PARENTHESIZED_P (t));
+      /* A PAREN_EXPR resulting from __builtin_assoc_barrier has no effect in
+         constant expressions since it's unaffected by -fassociative-math.  */
+      r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), lval,
+					non_constant_p, overflow_p);
+      break;
+
     case NOP_EXPR:
       if (REINTERPRET_CAST_P (t))
 	{
@@ -8678,6 +8686,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_SINGLE:
     case OMP_SECTION:
     case OMP_MASTER:
+    case OMP_MASKED:
     case OMP_TASKGROUP:
     case OMP_TARGET_UPDATE:
     case OMP_TARGET_ENTER_DATA:

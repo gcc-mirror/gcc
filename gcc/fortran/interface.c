@@ -3043,6 +3043,18 @@ lookup_arg_fuzzy (const char *arg, gfc_formal_arglist *arguments)
 }
 
 
+static gfc_dummy_arg *
+get_nonintrinsic_dummy_arg (gfc_formal_arglist *formal)
+{
+  gfc_dummy_arg * const dummy_arg = gfc_get_dummy_arg ();
+
+  dummy_arg->intrinsicness = GFC_NON_INTRINSIC_DUMMY_ARG;
+  dummy_arg->u.non_intrinsic = formal;
+
+  return dummy_arg;
+}
+
+
 /* Given formal and actual argument lists, see if they are compatible.
    If they are compatible, the actual argument list is sorted to
    correspond with the formal list, and elements for missing optional
@@ -3151,6 +3163,8 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			   "call at %L", where);
 	  return false;
 	}
+      else
+	a->associated_dummy = get_nonintrinsic_dummy_arg (f);
 
       if (a->expr == NULL)
 	{
@@ -3680,9 +3694,12 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
   /* The argument lists are compatible.  We now relink a new actual
      argument list with null arguments in the right places.  The head
      of the list remains the head.  */
-  for (i = 0; i < n; i++)
+  for (f = formal, i = 0; f; f = f->next, i++)
     if (new_arg[i] == NULL)
-      new_arg[i] = gfc_get_actual_arglist ();
+      {
+	new_arg[i] = gfc_get_actual_arglist ();
+	new_arg[i]->associated_dummy = get_nonintrinsic_dummy_arg (f);
+      }
 
   if (na != 0)
     {
@@ -3697,11 +3714,6 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
   if (*ap == NULL && n > 0)
     *ap = new_arg[0];
-
-  /* Note the types of omitted optional arguments.  */
-  for (a = *ap, f = formal; a; a = a->next, f = f->next)
-    if (a->expr == NULL && a->label == NULL)
-      a->missing_arg_type = f->sym->ts.type;
 
   return true;
 }
@@ -5518,5 +5530,56 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	(*f)->sym = NULL;
 
       f = &((*f)->next);
+    }
+}
+
+
+const char *
+gfc_dummy_arg_get_name (gfc_dummy_arg & dummy_arg)
+{
+  switch (dummy_arg.intrinsicness)
+    {
+    case GFC_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.intrinsic->name;
+
+    case GFC_NON_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.non_intrinsic->sym->name;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
+const gfc_typespec &
+gfc_dummy_arg_get_typespec (gfc_dummy_arg & dummy_arg)
+{
+  switch (dummy_arg.intrinsicness)
+    {
+    case GFC_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.intrinsic->ts;
+
+    case GFC_NON_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.non_intrinsic->sym->ts;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
+bool
+gfc_dummy_arg_is_optional (gfc_dummy_arg & dummy_arg)
+{
+  switch (dummy_arg.intrinsicness)
+    {
+    case GFC_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.intrinsic->optional;
+
+    case GFC_NON_INTRINSIC_DUMMY_ARG:
+      return dummy_arg.u.non_intrinsic->sym->attr.optional;
+
+    default:
+      gcc_unreachable ();
     }
 }

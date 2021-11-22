@@ -195,7 +195,9 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
   tree type;
   bool is_this = is_this_parameter (tree_strip_nop_conversions (expr));
 
-  if (!is_this && explicit_init_p)
+  if (is_this)
+    type = TREE_TYPE (expr);
+  else if (explicit_init_p)
     {
       tree auto_node = make_auto ();
       
@@ -209,7 +211,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
       else
 	type = do_auto_deduction (type, expr, auto_node);
     }
-  else if (!is_this && type_dependent_expression_p (expr))
+  else if (type_dependent_expression_p (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -219,10 +221,19 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
     }
   else
     {
+      if (!by_reference_p && is_capture_proxy (expr))
+	{
+	  /* When capturing by-value another capture proxy from an enclosing
+	     lambda, consider the type of the corresponding field instead,
+	     as the proxy may be additionally const-qualifed if the enclosing
+	     lambda is non-mutable (PR94376).  */
+	  gcc_assert (TREE_CODE (DECL_VALUE_EXPR (expr)) == COMPONENT_REF);
+	  expr = TREE_OPERAND (DECL_VALUE_EXPR (expr), 1);
+	}
+
       type = non_reference (unlowered_expr_type (expr));
 
-      if (!is_this
-	  && (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE))
+      if (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE)
 	type = build_reference_type (type);
     }
 

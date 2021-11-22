@@ -1409,9 +1409,12 @@ enum reg_class
 
 #define SSE_REG_P(X) (REG_P (X) && SSE_REGNO_P (REGNO (X)))
 #define SSE_REGNO_P(N)						\
-  (IN_RANGE ((N), FIRST_SSE_REG, LAST_SSE_REG)			\
+  (LEGACY_SSE_REGNO_P (N)					\
    || REX_SSE_REGNO_P (N)					\
    || EXT_REX_SSE_REGNO_P (N))
+
+#define LEGACY_SSE_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_SSE_REG, LAST_SSE_REG)
 
 #define REX_SSE_REGNO_P(N) \
   IN_RANGE ((N), FIRST_REX_SSE_REG, LAST_REX_SSE_REG)

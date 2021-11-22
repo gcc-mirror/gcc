@@ -22,7 +22,9 @@ f2 (int i)
     foo ();
 }
 
-NOMIPS16 void
+/* f3 and f4 are equivalent and may be subject to ICF.  The attribute
+   is supposed to prevent that.  */
+NOMIPS16 void __attribute__ ((noipa))
 f3 (int i)
 {
   if (i % 2)

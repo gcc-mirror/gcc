@@ -36,11 +36,11 @@
 
 #pragma GCC system_header
 
-#include <bits/stl_algobase.h>  // std::copy, std::fill_n
 #include <bits/postypes.h>      // For streampos
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 # include <compare>
+# include <bits/stl_construct.h>
 #endif
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
@@ -100,7 +100,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX14_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2)
-      { __c1 = __c2; }
+      {
+#if __cpp_constexpr_dynamic_alloc && __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  std::construct_at(__builtin_addressof(__c1), __c2);
+	else
+#endif
+	__c1 = __c2;
+      }
 
       static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2)
@@ -192,18 +199,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__n == 0)
 	return __s1;
-#ifdef __cpp_lib_is_constant_evaluated
+#if __cpp_lib_is_constant_evaluated
       if (std::is_constant_evaluated())
 	{
-	  if (__s1 > __s2 && __s1 < __s2 + __n)
-	    std::copy_backward(__s2, __s2 + __n, __s1 + __n);
+	  if (__s1 == __s2) // unlikely, but saves a lot of work
+	    return __s1;
+#if __cpp_constexpr_dynamic_alloc
+	  // The overlap detection below fails due to PR c++/89074,
+	  // so use a temporary buffer instead.
+	  char_type* __tmp = new char_type[__n];
+	  copy(__tmp, __s2, __n);
+	  copy(__s1, __tmp, __n);
+	  delete[] __tmp;
+#else
+	  const auto __end = __s2 + __n - 1;
+	  bool __overlap = false;
+	  for (std::size_t __i = 0; __i < __n - 1; ++__i)
+	    {
+	      if (__s1 + __i == __end)
+		{
+		  __overlap = true;
+		  break;
+		}
+	    }
+	  if (__overlap)
+	    {
+	      do
+		{
+		  --__n;
+		  assign(__s1[__n], __s2[__n]);
+		}
+	      while (__n > 0);
+	    }
 	  else
-	    std::copy(__s2, __s2 + __n, __s1);
+	    copy(__s1, __s2, __n);
+#endif
 	  return __s1;
 	}
 #endif
-      return static_cast<_CharT*>(__builtin_memmove(__s1, __s2,
-						    __n * sizeof(char_type)));
+      __builtin_memmove(__s1, __s2, __n * sizeof(char_type));
+      return __s1;
     }
 
   template<typename _CharT>
@@ -212,8 +247,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     char_traits<_CharT>::
     copy(char_type* __s1, const char_type* __s2, std::size_t __n)
     {
-      // NB: Inline std::copy so no recursive dependencies.
-      std::copy(__s2, __s2 + __n, __s1);
+#if __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	{
+	  for (std::size_t __i = 0; __i < __n; ++__i)
+	    std::construct_at(__s1 + __i, __s2[__i]);
+	  return __s1;
+	}
+#endif
+
+      __builtin_memcpy(__s1, __s2, __n * sizeof(char_type));
       return __s1;
     }
 
@@ -223,8 +266,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     char_traits<_CharT>::
     assign(char_type* __s, std::size_t __n, char_type __a)
     {
-      // NB: Inline std::fill_n so no recursive dependencies.
-      std::fill_n(__s, __n, __a);
+#if __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	{
+	  for (std::size_t __i = 0; __i < __n; ++__i)
+	    std::construct_at(__s + __i, __a);
+	  return __s;
+	}
+#endif
+
+      if _GLIBCXX17_CONSTEXPR (sizeof(_CharT) == 1 && __is_trivial(_CharT))
+	{
+	  unsigned char __c;
+	  __builtin_memcpy(&__c, __builtin_addressof(__a), 1);
+	  __builtin_memset(__s, __c, __n);
+	}
+      else
+	{
+	  for (std::size_t __i = 0; __i < __n; ++__i)
+	    __s[__i] = __a;
+	}
       return __s;
     }
 
@@ -276,7 +337,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
-      { __c1 = __c2; }
+      {
+#if __cpp_constexpr_dynamic_alloc && __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  std::construct_at(__builtin_addressof(__c1), __c2);
+	else
+#endif
+	__c1 = __c2;
+      }
 
       static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
@@ -407,7 +475,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
-      { __c1 = __c2; }
+      {
+#if __cpp_constexpr_dynamic_alloc && __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  std::construct_at(__builtin_addressof(__c1), __c2);
+	else
+#endif
+	__c1 = __c2;
+      }
 
       static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
@@ -528,7 +603,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
-      { __c1 = __c2; }
+      {
+#if __cpp_constexpr_dynamic_alloc && __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  std::construct_at(__builtin_addressof(__c1), __c2);
+	else
+#endif
+	__c1 = __c2;
+      }
 
       static _GLIBCXX_CONSTEXPR bool
       eq(const char_type& __c1, const char_type& __c2) _GLIBCXX_NOEXCEPT
@@ -664,7 +746,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) noexcept
-      { __c1 = __c2; }
+      {
+#if __cpp_constexpr_dynamic_alloc && __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  std::construct_at(__builtin_addressof(__c1), __c2);
+	else
+#endif
+	__c1 = __c2;
+      }
 
       static constexpr bool
       eq(const char_type& __c1, const char_type& __c2) noexcept
@@ -778,7 +867,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       static _GLIBCXX17_CONSTEXPR void
       assign(char_type& __c1, const char_type& __c2) noexcept
-      { __c1 = __c2; }
+      {
+#if __cpp_constexpr_dynamic_alloc && __cpp_lib_is_constant_evaluated
+	if (std::is_constant_evaluated())
+	  std::construct_at(__builtin_addressof(__c1), __c2);
+	else
+#endif
+	__c1 = __c2;
+      }
 
       static constexpr bool
       eq(const char_type& __c1, const char_type& __c2) noexcept

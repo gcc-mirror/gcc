@@ -90,12 +90,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   plus minus
   mult trunc_div trunc_mod rdiv
   min max
+  IFN_FMIN IFN_FMAX
   bit_and bit_ior bit_xor
   lshift rshift)
 (define_operator_list COND_BINARY
   IFN_COND_ADD IFN_COND_SUB
   IFN_COND_MUL IFN_COND_DIV IFN_COND_MOD IFN_COND_RDIV
   IFN_COND_MIN IFN_COND_MAX
+  IFN_COND_FMIN IFN_COND_FMAX
   IFN_COND_AND IFN_COND_IOR IFN_COND_XOR
   IFN_COND_SHL IFN_COND_SHR)
 
@@ -865,6 +867,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     { tree utype = unsigned_type_for (type); }
     (convert (rshift (lshift (convert:utype @0) @2) @3))))))
 
+/* Fold ((type)(a<0)) << SIGNBITOFA into ((type)a) & signbit. */
+(simplify
+ (lshift (convert (lt @0 integer_zerop@1)) INTEGER_CST@2)
+ (if (TYPE_SIGN (TREE_TYPE (@0)) == SIGNED
+      && wi::eq_p (wi::to_wide (@2), TYPE_PRECISION (TREE_TYPE (@0)) - 1))
+  (with { wide_int wone = wi::one (TYPE_PRECISION (type)); }
+   (bit_and (convert @0)
+            { wide_int_to_tree (type,
+				wi::lshift (wone, wi::to_wide (@2))); }))))
+
 /* Fold (-x >> C) into -(x > 0) where C = precision(type) - 1.  */
 (for cst (INTEGER_CST VECTOR_CST)
  (simplify
@@ -1595,7 +1607,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bitop (convert@2 @0) (convert?@3 @1))
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	 && int_fits_type_p (@1, TREE_TYPE (@0)))
+	 && (int_fits_type_p (@1, TREE_TYPE (@0))
+	     || tree_nop_conversion_p (TREE_TYPE (@0), type)))
 	|| types_match (@0, @1))
        /* ???  This transform conflicts with fold-const.c doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
@@ -1604,8 +1617,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  Restrict it to GIMPLE to avoid endless recursions.  */
        && (bitop != BIT_AND_EXPR || GIMPLE)
        && (/* That's a good idea if the conversion widens the operand, thus
-	      after hoisting the conversion the operation will be narrower.  */
+	      after hoisting the conversion the operation will be narrower.
+	      It is also a good if the conversion is a nop as moves the
+	      conversion to one side; allowing for combining of the conversions.  */
 	   TYPE_PRECISION (TREE_TYPE (@0)) < TYPE_PRECISION (type)
+	   /* The conversion check for being a nop can only be done at the gimple
+	      level as fold_binary has some re-association code which can conflict
+	      with this if there is a "constant" which is not a full INTEGER_CST.  */
+	   || (GIMPLE && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
 	   /* It's also a good idea if the conversion is to a non-integer
 	      mode.  */
 	   || GET_MODE_CLASS (TYPE_MODE (type)) != MODE_INT
@@ -1771,10 +1790,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (convert (bit_and (bit_not @1) @0))))
 
 /* (m1 CMP m2) * d -> (m1 CMP m2) ? d : 0  */
-(for cmp (gt lt ge le)
-(simplify
- (mult (convert (cmp @0 @1)) @2)
-  (if (GIMPLE || !TREE_SIDE_EFFECTS (@2))
+(if (!canonicalize_math_p ())
+ (for cmp (gt lt ge le)
+  (simplify
+   (mult (convert (cmp @0 @1)) @2)
    (cond (cmp @0 @1) @2 { build_zero_cst (type); }))))
 
 /* For integral types with undefined overflow and C != 0 fold

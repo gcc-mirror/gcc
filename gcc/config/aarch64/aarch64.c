@@ -3394,6 +3394,10 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
 static bool
 aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 {
+  if (mode == V8DImode)
+    return IN_RANGE (regno, R0_REGNUM, R23_REGNUM)
+           && multiple_p (regno - R0_REGNUM, 2);
+
   if (GET_MODE_CLASS (mode) == MODE_CC)
     return regno == CC_REGNUM;
 

@@ -23,6 +23,9 @@
 #include <map>
 #include <ext/mt_allocator.h>
 #include <bits/functexcept.h>
+#if __cpp_rtti
+# include <typeinfo>
+#endif
 
 namespace __gnu_test
 {
@@ -128,6 +131,15 @@ try_function_random_fail()
     iterator_type iter = s.begin();
     s.erase(iter, ++iter);
   }
+#endif
+
+#if __cpp_rtti
+// PR libstdc++/103240
+namespace
+{
+  struct S { };
+}
+const std::type_info& pr103240_private_S = typeid(S);
 #endif
 
 } // end namepace __gnu_test

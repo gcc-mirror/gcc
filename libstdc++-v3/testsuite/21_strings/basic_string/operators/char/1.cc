@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-Wno-stringop-overflow" }
+
 // 21.3.6 string operations
 
 #include <string>
@@ -31,6 +33,7 @@ int test01(void)
   // Should get this:
   // 1:8-chars_8-chars_
   // 2:8-chars_8-chars_
+  // The following triggers -Wstringop-overread.  See PR 103332.
   str1 = std::string("8-chars_") + "8-chars_";
   str1.c_str();
   // printf("1:%s\n", str1.c_str());

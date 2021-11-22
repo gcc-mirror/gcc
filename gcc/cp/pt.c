@@ -10766,6 +10766,11 @@ any_template_parm_r (tree t, void *data)
 	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
+    case CONVERT_EXPR:
+      if (is_dummy_object (t))
+	WALK_SUBTREE (TREE_TYPE (t));
+      break;
+
     default:
       break;
     }
@@ -11721,6 +11726,17 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
       while (*q)
 	q = &TREE_CHAIN (*q);
     }
+
+  /* cplus_decl_attributes can add some attributes implicitly.  For templates,
+     those attributes should have been added already when those templates were
+     parsed, and shouldn't be added based on from which context they are
+     first time instantiated.  */
+  auto o1 = make_temp_override (current_optimize_pragma, NULL_TREE);
+  auto o2 = make_temp_override (optimization_current_node,
+				optimization_default_node);
+  auto o3 = make_temp_override (current_target_pragma, NULL_TREE);
+  auto o4 = make_temp_override (scope_chain->omp_declare_target_attribute,
+				NULL);
 
   cplus_decl_attributes (decl_p, late_attrs, attr_flags);
 
@@ -17249,6 +17265,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case INTEGER_CST:
     case REAL_CST:
     case COMPLEX_CST:
+    case VECTOR_CST:
       {
 	/* Instantiate any typedefs in the type.  */
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
@@ -20267,7 +20284,10 @@ tsubst_copy_and_build (tree t,
 					    /*done=*/false,
 					    /*address_p=*/false);
 	  }
-	else if (koenig_p && identifier_p (function))
+	else if (koenig_p
+		 && (identifier_p (function)
+		     || (TREE_CODE (function) == TEMPLATE_ID_EXPR
+			 && identifier_p (TREE_OPERAND (function, 0)))))
 	  {
 	    /* Do nothing; calling tsubst_copy_and_build on an identifier
 	       would incorrectly perform unqualified lookup again.
@@ -20280,6 +20300,12 @@ tsubst_copy_and_build (tree t,
 	       FIXME but doing that causes c++/15272, so we need to stop
 	       using IDENTIFIER_NODE in that situation.  */
 	    qualified_p = false;
+
+	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	      /* Use tsubst_copy to substitute through the template arguments
+		 of the template-id without performing unqualified lookup of
+		 the template name.  */
+	      function = tsubst_copy (function, args, complain, in_decl);
 	  }
 	else
 	  {
@@ -20425,10 +20451,13 @@ tsubst_copy_and_build (tree t,
 	if (function != NULL_TREE
 	    && (identifier_p (function)
 		|| (TREE_CODE (function) == TEMPLATE_ID_EXPR
-		    && identifier_p (TREE_OPERAND (function, 0))))
+		    && identifier_p (TREE_OPERAND (function, 0))
+		    && !any_dependent_template_arguments_p (TREE_OPERAND
+							    (function, 1))))
 	    && !any_type_dependent_arguments_p (call_args))
 	  {
-	    if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
+	    bool template_id_p = (TREE_CODE (function) == TEMPLATE_ID_EXPR);
+	    if (template_id_p)
 	      function = TREE_OPERAND (function, 0);
 	    if (koenig_p && (complain & tf_warning_or_error))
 	      {
@@ -20443,20 +20472,21 @@ tsubst_copy_and_build (tree t,
 
 		if (unq != function)
 		  {
-		    /* In a lambda fn, we have to be careful to not
-		       introduce new this captures.  Legacy code can't
-		       be using lambdas anyway, so it's ok to be
-		       stricter.  */
-		    bool in_lambda = (current_class_type
-				      && LAMBDA_TYPE_P (current_class_type));
 		    char const *const msg
 		      = G_("%qD was not declared in this scope, "
 			   "and no declarations were found by "
 			   "argument-dependent lookup at the point "
 			   "of instantiation");
 
+		    bool in_lambda = (current_class_type
+				      && LAMBDA_TYPE_P (current_class_type));
+		    /* In a lambda fn, we have to be careful to not
+		       introduce new this captures.  Legacy code can't
+		       be using lambdas anyway, so it's ok to be
+		       stricter.  Be strict with C++20 template-id ADL too.  */
+		    bool strict = in_lambda || template_id_p;
 		    bool diag = true;
-		    if (in_lambda)
+		    if (strict)
 		      error_at (cp_expr_loc_or_input_loc (t),
 				msg, function);
 		    else
@@ -20492,7 +20522,7 @@ tsubst_copy_and_build (tree t,
 			  inform (DECL_SOURCE_LOCATION (fn),
 				  "%qD declared here, later in the "
 				  "translation unit", fn);
-			if (in_lambda)
+			if (strict)
 			  RETURN (error_mark_node);
 		      }
 
@@ -21010,7 +21040,15 @@ tsubst_copy_and_build (tree t,
 	     integral_constant_expression_p));
 
     case PAREN_EXPR:
-      RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+      if (REF_PARENTHESIZED_P (t))
+	RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+      else
+	/* Recreate the PAREN_EXPR from __builtin_assoc_barrier.  */
+	{
+	  tree op0 = RECUR (TREE_OPERAND (t, 0));
+	  RETURN (build1_loc (input_location, PAREN_EXPR,
+			      TREE_TYPE (op0), op0));
+	}
 
     case VEC_PERM_EXPR:
       {
