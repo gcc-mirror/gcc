@@ -1,4 +1,5 @@
 // { dg-do run { target c++17 } }
+// { dg-require-effective-target std_allocator_new }
 
 // Copyright (C) 2021 Free Software Foundation, Inc.
 //

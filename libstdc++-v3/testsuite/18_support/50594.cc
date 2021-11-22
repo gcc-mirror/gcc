@@ -1,5 +1,6 @@
 // { dg-options "-fwhole-program" }
 // { dg-additional-options "-static-libstdc++" { target *-*-mingw* } }
+// { dg-require-effective-target std_allocator_new }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 // Copyright (C) 2011-2021 Free Software Foundation, Inc.

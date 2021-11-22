@@ -18,6 +18,7 @@
 
 // { dg-require-time "" }
 // { dg-require-cstdint "" }
+// { dg-require-effective-target std_allocator_new }
 
 #include <cstdlib>
 #include <ext/throw_allocator.h>
