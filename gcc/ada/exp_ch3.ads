@@ -114,6 +114,9 @@ package Exp_Ch3 is
    --  delete the node if it is present just for front end purpose and we don't
    --  want Gigi to see the node. This function can't delete the node itself
    --  since it would confuse any remaining processing of the freeze node.
+   --
+   --  Note: for GNATprove we have a minimal variant of this routine in
+   --  Exp_SPARK.SPARK_Freeze_Type. They need to be kept in sync.
 
    function Get_Simple_Init_Val
      (Typ  : Entity_Id;
