@@ -1899,7 +1899,7 @@ package body Exp_Ch6 is
 
          Reset_Packed_Prefix;
 
-         Temp := Make_Temporary (Loc, 'T', Actual);
+         Temp   := Make_Temporary (Loc, 'T', Actual);
          Incod  := Relocate_Node (Actual);
          Outcod := New_Copy_Tree (Incod);
 
@@ -1921,7 +1921,10 @@ package body Exp_Ch6 is
 
          elsif Inside_Init_Proc then
 
-            --  Could use a comment here to match comment below ???
+            --  Skip using the actual as the expression in Decl if we are in
+            --  an init proc and it is not a component which depends on a
+            --  discriminant, because, in this case, we need to use the actual
+            --  type of the component instead.
 
             if Nkind (Actual) /= N_Selected_Component
               or else
@@ -1930,8 +1933,9 @@ package body Exp_Ch6 is
             then
                Incod := Empty;
 
-            --  Otherwise, keep the component in order to generate the proper
-            --  actual subtype, that depends on enclosing discriminants.
+            --  Otherwise, keep the component so we can generate the proper
+            --  actual subtype - since the subtype depends on enclosing
+            --  discriminants.
 
             else
                null;

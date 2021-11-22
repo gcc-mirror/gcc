@@ -649,9 +649,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  procedure more than once for the same pragma. All parse-time pragma
       --  handling must be prepared to handle such multiple calls correctly.
 
-      function P_Identifier (C : Id_Check := None) return Node_Id;
+      function P_Identifier
+        (C         : Id_Check := None;
+         Force_Msg : Boolean  := False) return Node_Id;
       --  Scans out an identifier. The parameter C determines the treatment
       --  of reserved identifiers. See declaration of Id_Check for details.
+
+      --  An appropriate error message, pointing to the token, is also issued
+      --  if either this is the first occurrence of misuse of this identifier,
+      --  or if Force_Msg is True.
 
       function P_Pragmas_Opt return List_Id;
       --  This function scans for a sequence of pragmas in other than a

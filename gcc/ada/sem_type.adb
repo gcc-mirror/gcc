@@ -235,7 +235,9 @@ package body Sem_Type is
          if Ada_Version >= Ada_2005 then
             if Nkind (N) in N_Binary_Op then
                Abstr_Op := Binary_Op_Interp_Has_Abstract_Op (N, Name);
-            elsif Nkind (N) = N_Function_Call then
+            elsif Nkind (N) = N_Function_Call
+              and then Ekind (Name) = E_Function
+            then
                Abstr_Op := Function_Interp_Has_Abstract_Op (N, Name);
             end if;
          end if;
@@ -2357,18 +2359,23 @@ package body Sem_Type is
       Form_Parm : Node_Id;
 
    begin
-      --  Why is check on E needed below ???
-      --  In any case this para needs comments ???
+      if Is_Overloaded (N) then
+         --  Move through the formals and actuals of the call to
+         --  determine if an abstract interpretation exists.
 
-      if Is_Overloaded (N) and then Is_Overloadable (E) then
          Act_Parm  := First_Actual (N);
          Form_Parm := First_Formal (E);
          while Present (Act_Parm) and then Present (Form_Parm) loop
             Act := Act_Parm;
 
+            --  Extract the actual from a parameter association
+
             if Nkind (Act) = N_Parameter_Association then
                Act := Explicit_Actual_Parameter (Act);
             end if;
+
+            --  Use the actual and the type of its correponding formal to test
+            --  for an abstract interpretation and return it when found.
 
             Abstr_Op := Has_Abstract_Op (Act, Etype (Form_Parm));
 
@@ -2380,6 +2387,8 @@ package body Sem_Type is
             Next_Formal (Form_Parm);
          end loop;
       end if;
+
+      --  Otherwise, return empty
 
       return Empty;
    end Function_Interp_Has_Abstract_Op;

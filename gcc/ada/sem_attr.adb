@@ -12555,19 +12555,28 @@ package body Sem_Attr is
    is
       Etyp : Entity_Id := Typ;
 
+      Real_Rep : Node_Id;
+
    --  Start of processing for Stream_Attribute_Available
 
    begin
-      --  We need some comments in this body ???
+      --  Test if the attribute is specified directly on the type
 
-      if Has_Stream_Attribute_Definition (Typ, Nam) then
+      if Has_Stream_Attribute_Definition (Typ, Nam, Real_Rep) then
          return True;
       end if;
+
+      --  We assume class-wide types have stream attributes
+      --  when they are not limited. Otherwise we recurse on the
+      --  parent type.
 
       if Is_Class_Wide_Type (Typ) then
          return not Is_Limited_Type (Typ)
            or else Stream_Attribute_Available (Etype (Typ), Nam);
       end if;
+
+      --  Non-class-wide abstract types cannot have Input streams
+      --  specified.
 
       if Nam = TSS_Stream_Input
         and then Is_Abstract_Type (Typ)
@@ -12575,6 +12584,8 @@ package body Sem_Attr is
       then
          return False;
       end if;
+
+      --  Otherwise, nonlimited types have stream attributes
 
       if not (Is_Limited_Type (Typ)
         or else (Present (Partial_View)
@@ -12587,13 +12598,13 @@ package body Sem_Attr is
 
       if Nam = TSS_Stream_Input
         and then Ada_Version >= Ada_2005
-        and then Stream_Attribute_Available (Etyp, TSS_Stream_Read)
+        and then Stream_Attribute_Available (Etyp, TSS_Stream_Read, Real_Rep)
       then
          return True;
 
       elsif Nam = TSS_Stream_Output
         and then Ada_Version >= Ada_2005
-        and then Stream_Attribute_Available (Etyp, TSS_Stream_Write)
+        and then Stream_Attribute_Available (Etyp, TSS_Stream_Write, Real_Rep)
       then
          return True;
       end if;
@@ -12607,7 +12618,7 @@ package body Sem_Attr is
          begin
             Etyp := Etype (Etyp);
 
-            if Has_Stream_Attribute_Definition (Etyp, Nam) then
+            if Has_Stream_Attribute_Definition (Etyp, Nam, Real_Rep) then
                if not Derivation_Too_Early_To_Inherit (Derived_Type, Nam) then
                   return True;
                end if;
