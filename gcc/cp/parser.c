@@ -46852,8 +46852,8 @@ cp_parser_late_parsing_oacc_routine (cp_parser *parser, tree attrs)
      emission easier.  */
   parser->oacc_routine->clauses = nreverse (parser->oacc_routine->clauses);
   cp_parser_pop_lexer (parser);
-  /* Later, cp_finalize_oacc_routine will process the clauses, and then set
-     fndecl_seen.  */
+  /* Later, cp_finalize_oacc_routine will process the clauses.  */
+  parser->oacc_routine->fndecl_seen = true;
 
   return attrs;
 }
@@ -46871,16 +46871,17 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
 	  || fndecl == error_mark_node)
 	return;
 
-      if (parser->oacc_routine->fndecl_seen)
-	{
-	  error_at (parser->oacc_routine->loc,
-		    "%<#pragma acc routine%> not immediately followed by"
-		    " a single function declaration or definition");
-	  parser->oacc_routine = NULL;
-	  return;
-	}
       if (TREE_CODE (fndecl) != FUNCTION_DECL)
 	{
+	  if (parser->oacc_routine->fndecl_seen)
+	    {
+	      error_at (parser->oacc_routine->loc,
+			"%<#pragma acc routine%> not immediately followed by"
+			" a single function declaration or definition");
+	      parser->oacc_routine = NULL;
+	      return;
+	    }
+
 	  cp_ensure_no_oacc_routine (parser);
 	  return;
 	}
@@ -46921,11 +46922,6 @@ cp_finalize_oacc_routine (cp_parser *parser, tree fndecl, bool is_defn)
 			 parser->oacc_routine->clauses,
 			 DECL_ATTRIBUTES (fndecl));
 	}
-
-      /* Don't unset parser->oacc_routine here: we may still need it to
-	 diagnose wrong usage.  But, remember that we've used this "#pragma acc
-	 routine".  */
-      parser->oacc_routine->fndecl_seen = true;
     }
 }
 
