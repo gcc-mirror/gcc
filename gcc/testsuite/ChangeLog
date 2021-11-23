@@ -1,3 +1,49 @@
+2021-11-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/crash106.C: Adjust.
+	* g++.dg/diagnostic/ptrtomem3.C: New test.
+
+2021-11-22  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/pr65327.C: Adjust location.
+	* g++.dg/cpp23/constexpr-nonlit4.C: Likewise.
+	* g++.dg/cpp23/constexpr-nonlit5.C: Likewise.
+	* g++.dg/cpp2a/constexpr-init1.C: Likewise.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR preprocessor/103165
+	* c-c++-common/gomp/pragma-3.c: New test.
+	* c-c++-common/gomp/pragma-4.c: New test.
+	* c-c++-common/gomp/pragma-5.c: New test.
+
+2021-11-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98953
+	PR tree-optimization/103345
+	* gcc.dg/tree-ssa/pr98953.c: New test case.
+	* gcc.dg/tree-ssa/pr103345.c: New test case.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101731
+	* c-c++-common/goacc/routine-6.c: New test.
+
+2021-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103351
+	* g++.dg/torture/pr103351.C: New testcase.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103349
+	* g++.dg/gomp/masked-1.C: New test.
+
+2021-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr103275.c: New test.
+
 2021-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101180

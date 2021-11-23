@@ -742,10 +742,7 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
       struct symbolic_number n1, n2;
       gimple *source_stmt, *source_stmt2;
 
-      if (code != BIT_IOR_EXPR)
-	return NULL;
-
-      if (TREE_CODE (rhs2) != SSA_NAME)
+      if (!rhs2 || TREE_CODE (rhs2) != SSA_NAME)
 	return NULL;
 
       rhs2_stmt = SSA_NAME_DEF_STMT (rhs2);
@@ -753,6 +750,8 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
       switch (code)
 	{
 	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	case PLUS_EXPR:
 	  source_stmt1 = find_bswap_or_nop_1 (rhs1_stmt, &n1, limit - 1);
 
 	  if (!source_stmt1)
@@ -1495,6 +1494,8 @@ pass_optimize_bswap::execute (function *fun)
 		continue;
 	      /* Fall through.  */
 	    case BIT_IOR_EXPR:
+	    case BIT_XOR_EXPR:
+	    case PLUS_EXPR:
 	      break;
 	    case CONSTRUCTOR:
 	      {

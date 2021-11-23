@@ -1,3 +1,27 @@
+2021-11-22  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (build_x_unary_op): Set address location.
+	(convert_member_func_to_ptr): Handle location wrapper.
+	* pt.c (convert_nontype_argument): Likewise.
+
+2021-11-22  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (check_return_expr): Only strip location wrapper during
+	NRV handling.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101731
+	* parser.c (cp_parser_late_parsing_oacc_routine): Set
+	parser->oacc_routine->fndecl_seen here, rather than ...
+	(cp_finalize_oacc_routine): ... here.  Don't error if
+	parser->oacc_routine->fndecl_seen is set for FUNCTION_DECLs.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103349
+	* constexpr.c (potential_constant_expression_1): Punt on OMP_MASKED.
+
 2021-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101180

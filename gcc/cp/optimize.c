@@ -103,7 +103,6 @@ clone_body (tree clone, tree fn, void *arg_map)
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = NULL;
 
   /* We're not inside any EH region.  */
   id.eh_lp_nr = 0;

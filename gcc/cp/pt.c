@@ -7267,6 +7267,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   const bool val_dep_p = value_dependent_expression_p (expr);
   if (val_dep_p)
     expr = canonicalize_expr_argument (expr, complain);
+  else
+    STRIP_ANY_LOCATION_WRAPPER (expr);
 
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
      to a non-type argument of "nullptr".  */

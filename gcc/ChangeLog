@@ -1,3 +1,39 @@
+2021-11-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/98953
+	PR tree-optimization/103345
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_1): Handle
+	BIT_XOR_EXPR and PLUS_EXPR the same as BIT_IOR_EXPR.
+	(pass_optimize_bswap::execute): Likewise.
+
+2021-11-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Remove duplicate documentation for 3 params.
+
+2021-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103351
+	* tree-ssa-dce.c (sort_phi_args): Sort after e->dest_idx as
+	second key.
+
+2021-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103275
+	* config/i386/constraints.md (Bk): New
+	define_memory_constraint.
+	* config/i386/i386-protos.h (ix86_gpr_tls_address_pattern_p):
+	Declare.
+	* config/i386/i386.c (ix86_gpr_tls_address_pattern_p): New
+	function.
+	* config/i386/i386.md (*movsi_internal): Don't allow
+	mask/sse/mmx move in TLS code sequences.
+	(*movdi_internal): Ditto.
+
+2021-11-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/xtensa/xtensa.md (movdi_internal, movdf_internal): Fix split
+	condition.
+
 2021-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101180

@@ -6061,6 +6061,28 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (REFERENCE_CLASS_P (*lhs)
 	      && maybe_canonicalize_mem_ref_addr (lhs))
 	    changed = true;
+	  /* Canonicalize &MEM[ssa_n, CST] to ssa_n p+ CST.
+	     This cannot be done in maybe_canonicalize_mem_ref_addr
+	     as the gimple now has two operands rather than one.
+	     The same reason why this can't be done in
+	     maybe_canonicalize_mem_ref_addr is the same reason why
+	     this can't be done inplace.  */
+	  if (!inplace && TREE_CODE (*rhs) == ADDR_EXPR)
+	    {
+	      tree inner = TREE_OPERAND (*rhs, 0);
+	      if (TREE_CODE (inner) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (inner, 0)) == SSA_NAME
+		  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
+		{
+		  tree ptr = TREE_OPERAND (inner, 0);
+		  tree addon = TREE_OPERAND (inner, 1);
+		  addon = fold_convert (sizetype, addon);
+		  gimple_assign_set_rhs_with_ops (gsi, POINTER_PLUS_EXPR,
+						  ptr, addon);
+		  changed = true;
+		  stmt = gsi_stmt (*gsi);
+		}
+	    }
 	}
       else
 	{
