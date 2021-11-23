@@ -560,7 +560,7 @@ public:
 
   Type *get_type () { return type.get (); }
 
-  Analysis::NodeMapping &get_mappings () { return mappings; }
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
 // Visibility of item - if the item has it, then it is some form of public

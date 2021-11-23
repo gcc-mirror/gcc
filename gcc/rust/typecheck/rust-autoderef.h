@@ -73,32 +73,51 @@ class Adjuster
 public:
   Adjuster (const TyTy::BaseType *ty) : base (ty) {}
 
-  TyTy::BaseType *adjust_type (std::vector<Adjustment> adjustments)
+  static bool needs_address (const std::vector<Adjustment> &adjustments)
+  {
+    for (auto &adjustment : adjustments)
+      {
+	switch (adjustment.get_type ())
+	  {
+	  case Adjustment::AdjustmentType::IMM_REF:
+	  case Adjustment::AdjustmentType::MUT_REF:
+	    return true;
+
+	  default:
+	    break;
+	  }
+      }
+
+    return false;
+  }
+
+  TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments)
   {
     TyTy::BaseType *ty = base->clone ();
     for (auto &adjustment : adjustments)
       {
 	switch (adjustment.get_type ())
 	  {
-	  case Resolver::Adjustment::AdjustmentType::IMM_REF:
+	  case Adjustment::AdjustmentType::IMM_REF:
 	    ty = new TyTy::ReferenceType (ty->get_ref (),
 					  TyTy::TyVar (ty->get_ref ()),
 					  Mutability::Imm);
 	    break;
 
-	  case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  case Adjustment::AdjustmentType::MUT_REF:
 	    ty = new TyTy::ReferenceType (ty->get_ref (),
 					  TyTy::TyVar (ty->get_ref ()),
 					  Mutability::Mut);
 	    break;
 
-	  case Resolver::Adjustment::AdjustmentType::DEREF_REF:
+	  case Adjustment::AdjustmentType::DEREF_REF:
 	    // FIXME this really needs to support deref lang-item operator
 	    // overloads
 	    rust_assert (ty->get_kind () == TyTy::TypeKind::REF);
 	    const TyTy::ReferenceType *rr
 	      = static_cast<const TyTy::ReferenceType *> (ty);
 	    ty = rr->get_base ();
+
 	    break;
 	  }
       }
