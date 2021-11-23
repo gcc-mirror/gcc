@@ -1,3 +1,61 @@
+2021-11-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md (define_peephole2): Variable insn points
+	to the first matched insn.  Use peep2_next_insn(1) to refer to
+	the second matched insn.
+
+2021-11-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103237
+	* tree-vect-loop.c (vect_is_simple_reduction): Fail for
+	double reductions with multiple inner loop LC PHI nodes.
+
+2021-11-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103204
+	* tree-ssa-sccvn.c (valueize_refs_1): Re-valueize the
+	top operand after folding in an address.
+
+2021-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103181
+	PR middle-end/103248
+	* tree-eh.c (operation_could_trap_helper_p): Properly
+	check vector constants for a zero element for integer
+	division.  Separate floating point and integer division code.
+	Properly handle fixed-point RDIV_EXPR.
+
+2021-11-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/102970
+	* tree-ssa-pre.c (phi_translate_1): Drop clique and base
+	when translating a MEM_REF over a backedge.
+
+2021-11-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103275
+	* config/i386/constraints.md (Bk): New
+	define_memory_constraint.
+	* config/i386/i386-protos.h (ix86_gpr_tls_address_pattern_p):
+	Declare.
+	* config/i386/i386.c (ix86_gpr_tls_address_pattern_p): New
+	function.
+	* config/i386/i386.md (*movsi_internal): Don't allow
+	mask/sse/mmx move in TLS code sequences.
+	(*movdi_internal): Ditto.
+
 2021-11-19  Giuliano Belinassi  <gbelinassi@suse.de>
 
 	* gcc.c (process_command): Skip dumpdir override if file is a

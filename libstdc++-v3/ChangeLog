@@ -1,3 +1,11 @@
+2021-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(valarray), end(valarray)):
+	Add noexcept.
+
 2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
