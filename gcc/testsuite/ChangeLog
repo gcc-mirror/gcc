@@ -1,3 +1,19 @@
+2021-11-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-21  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/99061
+	* gfortran.dg/dec_math_5.f90: New test.
+
+2021-11-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/20211119.c: New test.
+
 2021-11-13  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
