@@ -13413,7 +13413,6 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 		id.transform_call_graph_edges = CB_CGE_DUPLICATE;
 		id.transform_new_cfg = true;
 		id.transform_return_to_modify = false;
-		id.transform_lang_insert_block = NULL;
 		id.eh_lp_nr = 0;
 		walk_tree (&OMP_CLAUSE_REDUCTION_INIT (*pc), copy_tree_body_r,
 			   &id, NULL);
