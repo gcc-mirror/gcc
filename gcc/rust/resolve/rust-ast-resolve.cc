@@ -313,14 +313,12 @@ NameResolution::Resolve (AST::Crate &crate)
 void
 NameResolution::go (AST::Crate &crate)
 {
-  // setup parent scoping for names
-  resolver->get_name_scope ().push (crate.get_node_id ());
+  NodeId scope_node_id = crate.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
   resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
-  // setup parent scoping for new types
-  resolver->get_type_scope ().push (mappings->get_next_node_id ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
-  // setup label scope
-  resolver->get_label_scope ().push (mappings->get_next_node_id ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
   // first gather the top-level namespace names then we drill down
@@ -773,17 +771,15 @@ ResolveType::visit (AST::TraitObjectType &type)
 // rust-ast-resolve-item.h
 
 void
-ResolveItem::resolve_impl_item (AST::TraitImplItem *item,
-				const CanonicalPath &self)
+ResolveItem::resolve_impl_item (AST::TraitImplItem *item)
 {
-  ResolveImplItems::go (item, self);
+  ResolveImplItems::go (item);
 }
 
 void
-ResolveItem::resolve_impl_item (AST::InherentImplItem *item,
-				const CanonicalPath &self)
+ResolveItem::resolve_impl_item (AST::InherentImplItem *item)
 {
-  ResolveImplItems::go (item, self);
+  ResolveImplItems::go (item);
 }
 
 void

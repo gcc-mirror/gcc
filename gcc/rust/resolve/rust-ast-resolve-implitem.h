@@ -54,9 +54,6 @@ public:
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (type.get_node_id (),
-				     Definition{type.get_node_id (),
-						type.get_node_id ()});
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -181,16 +178,13 @@ public:
   {
     auto path
       = prefix.append (ResolveTraitItemTypeToCanonicalPath::resolve (type));
-    resolver->get_name_scope ().insert (
+    resolver->get_type_scope ().insert (
       path, type.get_node_id (), type.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (type.get_locus ());
 	r.add_range (locus);
 	rust_error_at (r, "redefined multiple times");
       });
-    resolver->insert_new_definition (type.get_node_id (),
-				     Definition{type.get_node_id (),
-						type.get_node_id ()});
   }
 
 private:

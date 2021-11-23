@@ -453,7 +453,7 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	resolve_impl_item (impl_item.get (), Self);
+	resolve_impl_item (impl_item.get ());
       }
 
     resolver->get_type_scope ().peek ()->clear_name (
@@ -584,7 +584,7 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       {
-	resolve_impl_item (impl_item.get (), Self);
+	resolve_impl_item (impl_item.get ());
       }
 
     resolver->get_type_scope ().peek ()->clear_name (
@@ -646,9 +646,8 @@ public:
   }
 
 protected:
-  void resolve_impl_item (AST::TraitImplItem *item, const CanonicalPath &self);
-  void resolve_impl_item (AST::InherentImplItem *item,
-			  const CanonicalPath &self);
+  void resolve_impl_item (AST::TraitImplItem *item);
+  void resolve_impl_item (AST::InherentImplItem *item);
   void resolve_extern_item (AST::ExternalItem *item);
 
   ResolveItem () : ResolverBase (UNKNOWN_NODEID) {}
@@ -659,15 +658,15 @@ class ResolveImplItems : public ResolveItem
   using Rust::Resolver::ResolveItem::visit;
 
 public:
-  static void go (AST::InherentImplItem *item, const CanonicalPath &self)
+  static void go (AST::InherentImplItem *item)
   {
-    ResolveImplItems resolver (self);
+    ResolveImplItems resolver;
     item->accept_vis (resolver);
   };
 
-  static void go (AST::TraitImplItem *item, const CanonicalPath &self)
+  static void go (AST::TraitImplItem *item)
   {
-    ResolveImplItems resolver (self);
+    ResolveImplItems resolver;
     item->accept_vis (resolver);
   };
 
@@ -675,26 +674,13 @@ public:
   {
     ResolveItem::visit (alias);
 
-    auto path
-      = self.append (CanonicalPath::new_seg (alias.get_node_id (),
-					     alias.get_new_type_name ()));
-    resolver->get_type_scope ().insert (
-      path, alias.get_node_id (), alias.get_locus (), false,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
-	RichLocation r (alias.get_locus ());
-	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
-      });
-
     // FIXME this stops the erronious unused decls which will be fixed later on
     resolver->get_type_scope ().append_reference_for_def (alias.get_node_id (),
 							  alias.get_node_id ());
   }
 
 private:
-  ResolveImplItems (const CanonicalPath &self) : ResolveItem (), self (self) {}
-
-  const CanonicalPath &self;
+  ResolveImplItems () : ResolveItem () {}
 };
 
 class ResolveExternItem : public ResolverBase

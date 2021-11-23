@@ -33,7 +33,8 @@ public:
   // Rust uses local_def_ids assigned by def_collector on the AST
   // lets use NodeId instead
   Rib (CrateNum crateNum, NodeId node_id)
-    : crate_num (crateNum), node_id (node_id)
+    : crate_num (crateNum), node_id (node_id),
+      mappings (Analysis::Mappings::get ())
   {}
 
   ~Rib () {}
@@ -42,35 +43,30 @@ public:
     const CanonicalPath &path, NodeId id, Location locus, bool shadow,
     std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
   {
-    auto it = mappings.find (path);
-    bool already_exists = it != mappings.end ();
-    if (already_exists && !shadow)
+    auto it = path_mappings.find (path);
+    bool path_already_exists = it != path_mappings.end ();
+    if (path_already_exists && !shadow)
       {
-	for (auto &decl : decls_within_rib)
-	  {
-	    if (decl.first == it->second)
-	      {
-		dup_cb (path, it->second, decl.second);
-		return;
-	      }
-	  }
-	dup_cb (path, it->second, locus);
+	const auto &decl = decls_within_rib.find (it->second);
+	if (decl != decls_within_rib.end ())
+	  dup_cb (path, it->second, decl->second);
+	else
+	  dup_cb (path, it->second, locus);
+
 	return;
       }
 
-    mappings[path] = id;
-    reverse_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
+    path_mappings[path] = id;
+    reverse_path_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
-
-    auto mappings = Analysis::Mappings::get ();
     mappings->insert_canonical_path (mappings->get_current_crate (), id, path);
   }
 
   bool lookup_name (const CanonicalPath &ident, NodeId *id)
   {
-    auto it = mappings.find (ident);
-    if (it == mappings.end ())
+    auto it = path_mappings.find (ident);
+    if (it == path_mappings.end ())
       return false;
 
     *id = it->second;
@@ -79,8 +75,8 @@ public:
 
   bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident)
   {
-    auto it = reverse_mappings.find (id);
-    if (it == reverse_mappings.end ())
+    auto it = reverse_path_mappings.find (id);
+    if (it == reverse_path_mappings.end ())
       return false;
 
     *ident = it->second;
@@ -89,17 +85,17 @@ public:
 
   void clear_name (const CanonicalPath &ident, NodeId id)
   {
-    mappings.erase (ident);
-    reverse_mappings.erase (id);
+    auto ii = path_mappings.find (ident);
+    if (ii != path_mappings.end ())
+      path_mappings.erase (ii);
 
-    for (auto &it : decls_within_rib)
-      {
-	if (it.first == id)
-	  {
-	    decls_within_rib.erase (it);
-	    break;
-	  }
-      }
+    auto ij = reverse_path_mappings.find (id);
+    if (ij != reverse_path_mappings.end ())
+      reverse_path_mappings.erase (ij);
+
+    auto ik = decls_within_rib.find (id);
+    if (ik != decls_within_rib.end ())
+      decls_within_rib.erase (ik);
   }
 
   CrateNum get_crate_num () const { return crate_num; }
@@ -154,10 +150,11 @@ public:
 private:
   CrateNum crate_num;
   NodeId node_id;
-  std::map<CanonicalPath, NodeId> mappings;
-  std::map<NodeId, CanonicalPath> reverse_mappings;
-  std::set<std::pair<NodeId, Location>> decls_within_rib;
+  std::map<CanonicalPath, NodeId> path_mappings;
+  std::map<NodeId, CanonicalPath> reverse_path_mappings;
+  std::map<NodeId, Location> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
+  Analysis::Mappings *mappings;
 };
 
 class Scope
