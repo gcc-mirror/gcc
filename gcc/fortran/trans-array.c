@@ -11223,6 +11223,7 @@ arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
       switch (function->id)
 	{
 	  case GFC_ISYM_INDEX:
+	  case GFC_ISYM_LEN_TRIM:
 	    if ((actual_arg.name == NULL && arg_num == 3)
 		|| (actual_arg.name != NULL
 		    && strcmp ("kind", actual_arg.name) == 0))
