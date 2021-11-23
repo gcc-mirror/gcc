@@ -359,6 +359,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wno-implicit-function-declaration  -Wno-implicit-int @gol
+-Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
 -Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
@@ -6193,6 +6194,14 @@ undefined behavior due to dereferencing a null pointer.  This option
 is only active when @option{-fdelete-null-pointer-checks} is active,
 which is enabled by optimizations in most targets.  The precision of
 the warnings depends on the optimization options used.
+
+@item -Winfinite-recursion
+@opindex Winfinite-recursion
+@opindex Wno-infinite-recursion
+Warn about infinitely recursive calls.  The warning is effective at all
+optimization levels but requires optimization in order to detect infinite
+recursion in calls between two or more functions.
+@option{-Winfinite-recursion} is included in @option{-Wall}.
 
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
