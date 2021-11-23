@@ -1,3 +1,8 @@
+2021-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX14_DEPRECATED): Fix condition
+	checking for C++14.
+
 2021-11-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/erase_if.h (__erase_nodes_if): Add _UnsafeContainer template

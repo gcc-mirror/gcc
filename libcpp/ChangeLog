@@ -1,3 +1,12 @@
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR preprocessor/103165
+	* internal.h (struct lexer_state): Add ignore__Pragma field.
+	* macro.c (builtin_macro): Don't interpret _Pragma if
+	pfile->state.ignore__Pragma.
+	(expand_arg): Temporarily set pfile->state.ignore__Pragma to 1.
+
 2021-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/103026

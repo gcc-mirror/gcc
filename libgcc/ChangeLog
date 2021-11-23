@@ -1,3 +1,20 @@
+2021-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (NEED_DBASE_MEMBER): Define.
+	(struct unw_eh_callback_data): Make dbase member conditional.
+	(unw_eh_callback_data_dbase): New function.
+	(base_from_cb_data): Simplify for the non-dbase case.
+	(_Unwind_IteratePhdrCallback): Adjust.
+	(_Unwind_Find_FDE): Likewise.
+
+2021-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Remove
+	tbase member.
+	(base_from_cb_data): Adjust.
+	(_Unwind_IteratePhdrCallback): Likewise.
+	(_Unwind_Find_FDE): Likewise.
+
 2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host: Add weak emutls crt to the extra_parts.
