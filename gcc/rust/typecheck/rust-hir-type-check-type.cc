@@ -140,29 +140,16 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 
   // does this type actually implement this type-bound?
   if (!TypeBoundsProbe::is_bound_satisfied_for_type (root, trait_ref))
-    return;
-
-  // we need resolve to the impl block
-  NodeId impl_resolved_id = UNKNOWN_NODEID;
-  bool ok = resolver->lookup_resolved_name (
-    qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
-  rust_assert (ok);
-
-  HirId impl_block_id;
-  ok = mappings->lookup_node_to_hir (path.get_mappings ().get_crate_num (),
-				     impl_resolved_id, &impl_block_id);
-  rust_assert (ok);
-
-  AssociatedImplTrait *lookup_associated = nullptr;
-  bool found_impl_trait
-    = context->lookup_associated_trait_impl (impl_block_id, &lookup_associated);
-  rust_assert (found_impl_trait);
+    {
+      rust_error_at (qual_path_type.get_locus (),
+		     "root does not satisfy specified trait-bound");
+      return;
+    }
 
   std::unique_ptr<HIR::TypePathSegment> &item_seg
     = path.get_associated_segment ();
-
   const TraitItemReference *trait_item_ref = nullptr;
-  ok
+  bool ok
     = trait_ref->lookup_trait_item (item_seg->get_ident_segment ().as_string (),
 				    &trait_item_ref);
   if (!ok)
@@ -171,16 +158,39 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       return;
     }
 
-  // project
-  lookup_associated->setup_associated_types ();
+  // this will be the placeholder from the trait but we may be able to project
+  // it based on the impl block
+  translated = trait_item_ref->get_tyty ();
 
+  // this is the associated generics we need to potentially apply
   HIR::GenericArgs trait_generics = qual_path_type.trait_has_generic_args ()
 				      ? qual_path_type.get_trait_generic_args ()
 				      : HIR::GenericArgs::create_empty ();
 
-  translated = lookup_associated->get_projected_type (
-    trait_item_ref, root, item_seg->get_mappings ().get_hirid (),
-    trait_generics, item_seg->get_locus ());
+  // we need resolve to the impl block
+  NodeId impl_resolved_id = UNKNOWN_NODEID;
+  bool have_associated_impl = resolver->lookup_resolved_name (
+    qual_path_type.get_mappings ().get_nodeid (), &impl_resolved_id);
+  if (have_associated_impl)
+    {
+      HirId impl_block_id;
+      bool ok
+	= mappings->lookup_node_to_hir (path.get_mappings ().get_crate_num (),
+					impl_resolved_id, &impl_block_id);
+      rust_assert (ok);
+
+      AssociatedImplTrait *lookup_associated = nullptr;
+      bool found_impl_trait
+	= context->lookup_associated_trait_impl (impl_block_id,
+						 &lookup_associated);
+      rust_assert (found_impl_trait);
+
+      // project
+      lookup_associated->setup_associated_types ();
+      translated = lookup_associated->get_projected_type (
+	trait_item_ref, root, item_seg->get_mappings ().get_hirid (),
+	trait_generics, item_seg->get_locus ());
+    }
 
   if (translated->get_kind () == TyTy::TypeKind::PLACEHOLDER)
     {
