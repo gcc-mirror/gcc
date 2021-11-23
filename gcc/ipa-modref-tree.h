@@ -304,16 +304,10 @@ template <typename T>
 struct GTY((user)) modref_tree
 {
   vec <modref_base_node <T> *, va_gc> *bases;
-  size_t max_bases;
-  size_t max_refs;
-  size_t max_accesses;
   bool every_base;
 
-  modref_tree (size_t max_bases, size_t max_refs, size_t max_accesses):
+  modref_tree ():
     bases (NULL),
-    max_bases (max_bases),
-    max_refs (max_refs),
-    max_accesses (max_accesses),
     every_base (false) {}
 
   /* Insert BASE; collapse tree if there are more than MAX_REFS.
@@ -321,7 +315,9 @@ struct GTY((user)) modref_tree
      something changed.
      If table gets full, try to insert REF instead.  */
 
-  modref_base_node <T> *insert_base (T base, T ref, bool *changed = NULL)
+  modref_base_node <T> *insert_base (T base, T ref,
+				     unsigned int max_bases,
+				     bool *changed = NULL)
   {
     modref_base_node <T> *base_node;
 
@@ -367,7 +363,10 @@ struct GTY((user)) modref_tree
 
   /* Insert memory access to the tree.
      Return true if something changed.  */
-  bool insert (T base, T ref, modref_access_node a,
+  bool insert (unsigned int max_bases,
+	       unsigned int max_refs,
+	       unsigned int max_accesses,
+	       T base, T ref, modref_access_node a,
 	       bool record_adjustments)
   {
     if (every_base)
@@ -412,7 +411,8 @@ struct GTY((user)) modref_tree
 	return true;
       }
 
-    modref_base_node <T> *base_node = insert_base (base, ref, &changed);
+    modref_base_node <T> *base_node
+      = insert_base (base, ref, max_bases, &changed);
     base = base_node->base;
     /* If table got full we may end up with useless base.  */
     if (!base && !ref && !a.useful_p ())
@@ -431,8 +431,8 @@ struct GTY((user)) modref_tree
 	return true;
       }
 
-    modref_ref_node <T> *ref_node = base_node->insert_ref (ref, max_refs,
-							   &changed);
+    modref_ref_node <T> *ref_node
+	    = base_node->insert_ref (ref, max_refs, &changed);
     ref = ref_node->ref;
 
     if (ref_node->every_access)
@@ -456,6 +456,18 @@ struct GTY((user)) modref_tree
 	  }
       }
     return changed;
+  }
+
+  /* Insert memory access to the tree.
+     Return true if something changed.  */
+  bool insert (tree fndecl,
+	       T base, T ref, const modref_access_node &a,
+	       bool record_adjustments)
+  {
+     return insert (opt_for_fn (fndecl, param_modref_max_bases),
+		    opt_for_fn (fndecl, param_modref_max_refs),
+		    opt_for_fn (fndecl, param_modref_max_accesses),
+		    base, ref, a, record_adjustments);
   }
 
  /* Remove tree branches that are not useful (i.e. they will always pass).  */
@@ -506,7 +518,10 @@ struct GTY((user)) modref_tree
      PARM_MAP, if non-NULL, maps parm indexes of callee to caller.
      Similar CHAIN_MAP, if non-NULL, maps static chain of callee to caller.
      Return true if something has changed.  */
-  bool merge (modref_tree <T> *other, vec <modref_parm_map> *parm_map,
+  bool merge (unsigned int max_bases,
+	      unsigned int max_refs,
+	      unsigned int max_accesses,
+	      modref_tree <T> *other, vec <modref_parm_map> *parm_map,
 	      modref_parm_map *static_chain_map,
 	      bool record_accesses)
   {
@@ -530,7 +545,7 @@ struct GTY((user)) modref_tree
     if (other == this)
       {
 	release = true;
-	other = modref_tree<T>::create_ggc (max_bases, max_refs, max_accesses);
+	other = modref_tree<T>::create_ggc ();
 	other->copy_from (this);
       }
 
@@ -538,7 +553,8 @@ struct GTY((user)) modref_tree
       {
 	if (base_node->every_ref)
 	  {
-	    my_base_node = insert_base (base_node->base, 0, &changed);
+	    my_base_node = insert_base (base_node->base, 0,
+					max_bases, &changed);
 	    if (my_base_node && !my_base_node->every_ref)
 	      {
 		my_base_node->collapse ();
@@ -551,7 +567,8 @@ struct GTY((user)) modref_tree
 	    {
 	      if (ref_node->every_access)
 		{
-		  changed |= insert (base_node->base,
+		  changed |= insert (max_bases, max_refs, max_accesses,
+				     base_node->base,
 				     ref_node->ref,
 				     unspecified_modref_access_node,
 				     record_accesses);
@@ -578,8 +595,9 @@ struct GTY((user)) modref_tree
 			    a.parm_index = m.parm_index;
 			  }
 		      }
-		    changed |= insert (base_node->base, ref_node->ref, a,
-				       record_accesses);
+		    changed |= insert (max_bases, max_refs, max_accesses,
+				       base_node->base, ref_node->ref,
+				       a, record_accesses);
 		  }
 	    }
       }
@@ -588,10 +606,25 @@ struct GTY((user)) modref_tree
     return changed;
   }
 
+  /* Merge OTHER into the tree.
+     PARM_MAP, if non-NULL, maps parm indexes of callee to caller.
+     Similar CHAIN_MAP, if non-NULL, maps static chain of callee to caller.
+     Return true if something has changed.  */
+  bool merge (tree fndecl,
+	      modref_tree <T> *other, vec <modref_parm_map> *parm_map,
+	      modref_parm_map *static_chain_map,
+	      bool record_accesses)
+  {
+     return merge (opt_for_fn (fndecl, param_modref_max_bases),
+		   opt_for_fn (fndecl, param_modref_max_refs),
+		   opt_for_fn (fndecl, param_modref_max_accesses),
+		   other, parm_map, static_chain_map, record_accesses);
+  }
+
   /* Copy OTHER to THIS.  */
   void copy_from (modref_tree <T> *other)
   {
-    merge (other, NULL, NULL, false);
+    merge (INT_MAX, INT_MAX, INT_MAX, other, NULL, NULL, false);
   }
 
   /* Search BASE in tree; return NULL if failed.  */
@@ -633,11 +666,10 @@ struct GTY((user)) modref_tree
   /* Return ggc allocated instance.  We explicitly call destructors via
      ggc_delete and do not want finalizers to be registered and
      called at the garbage collection time.  */
-  static modref_tree<T> *create_ggc (size_t max_bases, size_t max_refs,
-				     size_t max_accesses)
+  static modref_tree<T> *create_ggc ()
   {
     return new (ggc_alloc_no_dtor<modref_tree<T>> ())
-	 modref_tree<T> (max_bases, max_refs, max_accesses);
+	 modref_tree<T> ();
   }
 
   /* Remove all records and mark tree to alias with everything.  */

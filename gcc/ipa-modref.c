@@ -423,8 +423,6 @@ modref_summary_lto::useful_p (int ecf_flags, bool check_flags)
 static void
 dump_records (modref_records *tt, FILE *out)
 {
-  fprintf (out, "    Limits: %i bases, %i refs\n",
-	   (int)tt->max_bases, (int)tt->max_refs);
   if (tt->every_base)
     {
       fprintf (out, "    Every base\n");
@@ -466,8 +464,6 @@ dump_records (modref_records *tt, FILE *out)
 static void
 dump_lto_records (modref_records_lto *tt, FILE *out)
 {
-  fprintf (out, "    Limits: %i bases, %i refs\n",
-	   (int)tt->max_bases, (int)tt->max_refs);
   if (tt->every_base)
     {
       fprintf (out, "    Every base\n");
@@ -693,7 +689,7 @@ modref_summary::finalize (tree fun)
       try_dse = true;
       size_t i, j, k;
       int num_tests = 0, max_tests
-       	= opt_for_fn (fun, param_modref_max_tests);
+	= opt_for_fn (fun, param_modref_max_tests);
       modref_base_node <alias_set_type> *base_node;
       modref_ref_node <alias_set_type> *ref_node;
       modref_access_node *access_node;
@@ -768,7 +764,7 @@ get_modref_function_summary (gcall *call, bool *interposed)
   modref_summary *r = get_modref_function_summary (node);
   if (interposed && r)
     *interposed = r->calls_interposable
-	    	  || !node->binds_to_current_def_p ();
+		  || !node->binds_to_current_def_p ();
   return r;
 }
 
@@ -996,7 +992,7 @@ modref_access_analysis::record_access (modref_records *tt,
 		base_set, ref_set);
        a.dump (dump_file);
     }
-  tt->insert (base_set, ref_set, a, false);
+  tt->insert (current_function_decl, base_set, ref_set, a, false);
 }
 
 /* IPA version of record_access_tree.  */
@@ -1062,7 +1058,7 @@ modref_access_analysis::record_access_lto (modref_records_lto *tt, ao_ref *ref,
        a.dump (dump_file);
     }
 
-  tt->insert (base_type, ref_type, a, false);
+  tt->insert (current_function_decl, base_type, ref_type, a, false);
 }
 
 /* Returns true if and only if we should store the access to EXPR.
@@ -1277,12 +1273,15 @@ modref_access_analysis::merge_call_side_effects
     }
 
   /* Merge in loads.  */
-  changed |= m_summary->loads->merge (callee_summary->loads, &parm_map,
-				      &chain_map, record_adjustments);
+  changed |= m_summary->loads->merge (current_function_decl,
+				      callee_summary->loads,
+				      &parm_map, &chain_map,
+				      record_adjustments);
   /* Merge in stores.  */
   if (!ignore_stores_p (current_function_decl, flags))
     {
-      changed |= m_summary->stores->merge (callee_summary->stores,
+      changed |= m_summary->stores->merge (current_function_decl,
+					   callee_summary->stores,
 					   &parm_map, &chain_map,
 					   record_adjustments);
       if (!m_summary->writes_errno
@@ -1395,9 +1394,10 @@ modref_access_analysis::process_fnspec (gcall *call)
 	    if (a.parm_index == MODREF_LOCAL_MEMORY_PARM)
 	      continue;
 	    if (m_summary)
-	      m_summary->loads->insert (0, 0, a, false);
+	      m_summary->loads->insert (current_function_decl, 0, 0, a, false);
 	    if (m_summary_lto)
-	      m_summary_lto->loads->insert (0, 0, a, false);
+	      m_summary_lto->loads->insert (current_function_decl, 0, 0, a,
+					    false);
 	  }
     }
   if (ignore_stores_p (current_function_decl, flags))
@@ -1426,9 +1426,10 @@ modref_access_analysis::process_fnspec (gcall *call)
 	    if (a.parm_index == MODREF_LOCAL_MEMORY_PARM)
 	      continue;
 	    if (m_summary)
-	      m_summary->stores->insert (0, 0, a, false);
+	      m_summary->stores->insert (current_function_decl, 0, 0, a, false);
 	    if (m_summary_lto)
-	      m_summary_lto->stores->insert (0, 0, a, false);
+	      m_summary_lto->stores->insert (current_function_decl,
+					     0, 0, a, false);
 	  }
       if (fnspec.errno_maybe_written_p () && flag_errno_math)
 	{
@@ -3024,13 +3025,9 @@ analyze_function (function *f, bool ipa)
   if (nolto)
     {
       gcc_assert (!summary->loads);
-      summary->loads = modref_records::create_ggc (param_modref_max_bases,
-						   param_modref_max_refs,
-						   param_modref_max_accesses);
+      summary->loads = modref_records::create_ggc ();
       gcc_assert (!summary->stores);
-      summary->stores = modref_records::create_ggc (param_modref_max_bases,
-						    param_modref_max_refs,
-						    param_modref_max_accesses);
+      summary->stores = modref_records::create_ggc ();
       summary->writes_errno = false;
       summary->side_effects = false;
       summary->nondeterministic = false;
@@ -3039,15 +3036,9 @@ analyze_function (function *f, bool ipa)
   if (lto)
     {
       gcc_assert (!summary_lto->loads);
-      summary_lto->loads = modref_records_lto::create_ggc
-				 (param_modref_max_bases,
-				  param_modref_max_refs,
-				  param_modref_max_accesses);
+      summary_lto->loads = modref_records_lto::create_ggc ();
       gcc_assert (!summary_lto->stores);
-      summary_lto->stores = modref_records_lto::create_ggc
-				 (param_modref_max_bases,
-				  param_modref_max_refs,
-				  param_modref_max_accesses);
+      summary_lto->stores = modref_records_lto::create_ggc ();
       summary_lto->writes_errno = false;
       summary_lto->side_effects = false;
       summary_lto->nondeterministic = false;
@@ -3287,15 +3278,9 @@ modref_summaries::duplicate (cgraph_node *, cgraph_node *dst,
       optimization_summaries->remove (dst);
       return;
     }
-  dst_data->stores = modref_records::create_ggc
-			(src_data->stores->max_bases,
-			 src_data->stores->max_refs,
-			 src_data->stores->max_accesses);
+  dst_data->stores = modref_records::create_ggc ();
   dst_data->stores->copy_from (src_data->stores);
-  dst_data->loads = modref_records::create_ggc
-			(src_data->loads->max_bases,
-			 src_data->loads->max_refs,
-			 src_data->loads->max_accesses);
+  dst_data->loads = modref_records::create_ggc ();
   dst_data->loads->copy_from (src_data->loads);
   dst_data->kills.reserve_exact (src_data->kills.length ());
   dst_data->kills.splice (src_data->kills);
@@ -3319,15 +3304,9 @@ modref_summaries_lto::duplicate (cgraph_node *, cgraph_node *,
   /* Be sure that no further cloning happens after ipa-modref.  If it does
      we will need to update signatures for possible param changes.  */
   gcc_checking_assert (!((modref_summaries_lto *)summaries_lto)->propagated);
-  dst_data->stores = modref_records_lto::create_ggc
-			(src_data->stores->max_bases,
-			 src_data->stores->max_refs,
-			 src_data->stores->max_accesses);
+  dst_data->stores = modref_records_lto::create_ggc ();
   dst_data->stores->copy_from (src_data->stores);
-  dst_data->loads = modref_records_lto::create_ggc
-			(src_data->loads->max_bases,
-			 src_data->loads->max_refs,
-			 src_data->loads->max_accesses);
+  dst_data->loads = modref_records_lto::create_ggc ();
   dst_data->loads->copy_from (src_data->loads);
   dst_data->kills.reserve_exact (src_data->kills.length ());
   dst_data->kills.splice (src_data->kills);
@@ -3379,10 +3358,6 @@ class pass_modref : public gimple_opt_pass
 static void
 write_modref_records (modref_records_lto *tt, struct output_block *ob)
 {
-  streamer_write_uhwi (ob, tt->max_bases);
-  streamer_write_uhwi (ob, tt->max_refs);
-  streamer_write_uhwi (ob, tt->max_accesses);
-
   streamer_write_uhwi (ob, tt->every_base);
   streamer_write_uhwi (ob, vec_safe_length (tt->bases));
   for (auto base_node : tt->bases)
@@ -3410,20 +3385,19 @@ write_modref_records (modref_records_lto *tt, struct output_block *ob)
    LTO streaming is expected or not.  */
 
 static void
-read_modref_records (lto_input_block *ib, struct data_in *data_in,
+read_modref_records (tree decl,
+		     lto_input_block *ib, struct data_in *data_in,
 		     modref_records **nolto_ret,
 		     modref_records_lto **lto_ret)
 {
-  size_t max_bases = streamer_read_uhwi (ib);
-  size_t max_refs = streamer_read_uhwi (ib);
-  size_t max_accesses = streamer_read_uhwi (ib);
+  size_t max_bases = opt_for_fn (decl, param_modref_max_bases);
+  size_t max_refs = opt_for_fn (decl, param_modref_max_refs);
+  size_t max_accesses = opt_for_fn (decl, param_modref_max_accesses);
 
   if (lto_ret)
-    *lto_ret = modref_records_lto::create_ggc (max_bases, max_refs,
-					       max_accesses);
+    *lto_ret = modref_records_lto::create_ggc ();
   if (nolto_ret)
-    *nolto_ret = modref_records::create_ggc (max_bases, max_refs,
-					     max_accesses);
+    *nolto_ret = modref_records::create_ggc ();
   gcc_checking_assert (lto_ret || nolto_ret);
 
   size_t every_base = streamer_read_uhwi (ib);
@@ -3461,9 +3435,9 @@ read_modref_records (lto_input_block *ib, struct data_in *data_in,
       if (nolto_ret)
 	nolto_base_node = (*nolto_ret)->insert_base (base_tree
 						     ? get_alias_set (base_tree)
-						     : 0, 0);
+						     : 0, 0, INT_MAX);
       if (lto_ret)
-	lto_base_node = (*lto_ret)->insert_base (base_tree, 0);
+	lto_base_node = (*lto_ret)->insert_base (base_tree, 0, max_bases);
       size_t every_ref = streamer_read_uhwi (ib);
       size_t nref = streamer_read_uhwi (ib);
 
@@ -3743,10 +3717,10 @@ read_section (struct lto_file_decl_data *file_data, const char *data,
       if (modref_sum_lto)
 	modref_sum_lto->static_chain_flags = flags;
 
-      read_modref_records (&ib, data_in,
+      read_modref_records (node->decl, &ib, data_in,
 			   modref_sum ? &modref_sum->loads : NULL,
 			   modref_sum_lto ? &modref_sum_lto->loads : NULL);
-      read_modref_records (&ib, data_in,
+      read_modref_records (node->decl, &ib, data_in,
 			   modref_sum ? &modref_sum->stores : NULL,
 			   modref_sum_lto ? &modref_sum_lto->stores : NULL);
       int j = streamer_read_uhwi (&ib);
@@ -4425,10 +4399,12 @@ propagate_unknown_call (cgraph_node *node,
 		}
 	      if (cur_summary)
 		changed |= cur_summary->loads->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
+		  (node->decl, 0, 0,
+		   get_access_for_fnspec (e, fnspec, i, map), false);
 	      if (cur_summary_lto)
 		changed |= cur_summary_lto->loads->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
+		  (node->decl, 0, 0,
+		   get_access_for_fnspec (e, fnspec, i, map), false);
 	    }
 	}
       if (ignore_stores_p (node->decl, ecf_flags))
@@ -4455,10 +4431,12 @@ propagate_unknown_call (cgraph_node *node,
 		}
 	      if (cur_summary)
 		changed |= cur_summary->stores->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
+		  (node->decl, 0, 0,
+		   get_access_for_fnspec (e, fnspec, i, map), false);
 	      if (cur_summary_lto)
 		changed |= cur_summary_lto->stores->insert
-		  (0, 0, get_access_for_fnspec (e, fnspec, i, map), false);
+		  (node->decl, 0, 0,
+		   get_access_for_fnspec (e, fnspec, i, map), false);
 	    }
 	}
       if (fnspec.errno_maybe_written_p () && flag_errno_math)
@@ -4703,13 +4681,13 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      if (callee_summary)
 		{
 		  changed |= cur_summary->loads->merge
-				  (callee_summary->loads, &parm_map,
-				   &chain_map, !first);
+				  (node->decl, callee_summary->loads,
+				   &parm_map, &chain_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary->stores->merge
-				      (callee_summary->stores, &parm_map,
-				       &chain_map, !first);
+				      (node->decl, callee_summary->stores,
+				       &parm_map, &chain_map, !first);
 		      if (!cur_summary->writes_errno
 			  && callee_summary->writes_errno)
 			{
@@ -4721,13 +4699,13 @@ modref_propagate_in_scc (cgraph_node *component_node)
 	      if (callee_summary_lto)
 		{
 		  changed |= cur_summary_lto->loads->merge
-				  (callee_summary_lto->loads, &parm_map,
-				   &chain_map, !first);
+				  (node->decl, callee_summary_lto->loads,
+				   &parm_map, &chain_map, !first);
 		  if (!ignore_stores)
 		    {
 		      changed |= cur_summary_lto->stores->merge
-				      (callee_summary_lto->stores, &parm_map,
-				       &chain_map, !first);
+				      (node->decl, callee_summary_lto->stores,
+				       &parm_map, &chain_map, !first);
 		      if (!cur_summary_lto->writes_errno
 			  && callee_summary_lto->writes_errno)
 			{
@@ -5114,20 +5092,20 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
       if (!ignore_stores)
 	{
 	  if (to_info && callee_info)
-	    to_info->stores->merge (callee_info->stores, &parm_map,
+	    to_info->stores->merge (to->decl, callee_info->stores, &parm_map,
 				    &chain_map, false);
 	  if (to_info_lto && callee_info_lto)
-	    to_info_lto->stores->merge (callee_info_lto->stores, &parm_map,
-					&chain_map, false);
+	    to_info_lto->stores->merge (to->decl, callee_info_lto->stores,
+					&parm_map, &chain_map, false);
 	}
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	{
 	  if (to_info && callee_info)
-	    to_info->loads->merge (callee_info->loads, &parm_map,
+	    to_info->loads->merge (to->decl, callee_info->loads, &parm_map,
 				   &chain_map, false);
 	  if (to_info_lto && callee_info_lto)
-	    to_info_lto->loads->merge (callee_info_lto->loads, &parm_map,
-				       &chain_map, false);
+	    to_info_lto->loads->merge (to->decl, callee_info_lto->loads,
+				       &parm_map, &chain_map, false);
 	}
     }
 
