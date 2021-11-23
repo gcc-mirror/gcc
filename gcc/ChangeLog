@@ -1,3 +1,12 @@
+2021-11-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md (define_peephole2): Variable insn points
+	to the first matched insn.  Use peep2_next_insn(1) to refer to
+	the second matched insn.
+
 2021-11-09  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

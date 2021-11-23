@@ -1,3 +1,10 @@
+2021-11-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2021-11-19  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/20211119.c: New test.
+
 2021-11-09  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
