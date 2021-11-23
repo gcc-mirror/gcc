@@ -14791,14 +14791,6 @@ Maximum number of arrays per scop.
 @item max-vartrack-reverse-op-size
 Max. size of loc list for which reverse ops should be added.
 
-@item tracer-dynamic-coverage-feedback
-The percentage of function, weighted by execution frequency,
-that must be covered by trace formation.
-Used when profile feedback is available.
-
-@item max-inline-recursive-depth-auto
-The maximum depth of recursive inlining for non-inline functions.
-
 @item fsm-scale-path-stmts
 Scale factor to apply to the number of statements in a threading path
 when comparing to the number of (scaled) blocks.
