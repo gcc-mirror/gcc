@@ -42,14 +42,22 @@ public:
   static bool is_bound_satisfied_for_type (TyTy::BaseType *receiver,
 					   TraitReference *ref)
   {
+    for (auto &bound : receiver->get_specified_bounds ())
+      {
+	const TraitReference *b = bound.get ();
+	if (b->is_equal (*ref))
+	  return true;
+      }
+
     std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> bounds
       = Probe (receiver);
     for (auto &bound : bounds)
       {
-	TraitReference *b = bound.first;
-	if (b == ref)
+	const TraitReference *b = bound.first;
+	if (b->is_equal (*ref))
 	  return true;
       }
+
     return false;
   }
 
