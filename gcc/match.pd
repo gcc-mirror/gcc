@@ -651,6 +651,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
   (convert (trunc_mod @0 @1))))
 
+/* x * (1 + y / x) - y -> x - y % x */
+(simplify
+ (minus (mult:cs @0 (plus:s (trunc_div:s @1 @0) integer_onep)) @1)
+ (if (INTEGRAL_TYPE_P (type))
+  (minus @0 (trunc_mod @1 @0))))
+
 /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
    i.e. "X % C" into "X & (C - 1)", if X and C are positive.
    Also optimize A % (C << N)  where C is a power of 2,
