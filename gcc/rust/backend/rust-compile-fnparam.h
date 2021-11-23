@@ -20,6 +20,7 @@
 #define RUST_COMPILE_FNPARAM
 
 #include "rust-compile-base.h"
+#include "rust-hir-address-taken.h"
 
 namespace Rust {
 namespace Compile {
@@ -33,9 +34,9 @@ public:
 			     HIR::FunctionParam *param, tree decl_type,
 			     Location locus)
   {
-    CompileFnParam compiler (ctx, fndecl, decl_type, locus);
+    CompileFnParam compiler (ctx, fndecl, decl_type, locus, *param);
     param->get_param_name ()->accept_vis (compiler);
-    return compiler.translated;
+    return compiler.compiled_param;
   }
 
   void visit (HIR::IdentifierPattern &pattern) override
@@ -43,23 +44,31 @@ public:
     if (!pattern.is_mut ())
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
-    translated
+    bool address_taken = false;
+    address_taken_context->lookup_addess_taken (
+      param.get_mappings ().get_hirid (), &address_taken);
+
+    compiled_param
       = ctx->get_backend ()->parameter_variable (fndecl, pattern.variable_ident,
-						 decl_type,
-						 false /* address_taken */,
+						 decl_type, address_taken,
 						 locus);
   }
 
 private:
-  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus)
+  CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus,
+		  const HIR::FunctionParam &param)
     : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type),
-      locus (locus), translated (nullptr)
+      locus (locus), param (param),
+      compiled_param (ctx->get_backend ()->error_variable ()),
+      address_taken_context (Resolver::AddressTakenContext::get ())
   {}
 
   tree fndecl;
   tree decl_type;
   Location locus;
-  ::Bvariable *translated;
+  const HIR::FunctionParam &param;
+  Bvariable *compiled_param;
+  const Resolver::AddressTakenContext *address_taken_context;
 };
 
 class CompileSelfParam : public HIRCompileBase
@@ -74,9 +83,13 @@ public:
     if (is_immutable)
       decl_type = ctx->get_backend ()->immutable_type (decl_type);
 
+    const auto &address_taken_context = Resolver::AddressTakenContext::get ();
+    bool address_taken = false;
+    address_taken_context->lookup_addess_taken (
+      self.get_mappings ().get_hirid (), &address_taken);
+
     return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
-						    false /* address_taken */,
-						    locus);
+						    address_taken, locus);
   }
 };
 

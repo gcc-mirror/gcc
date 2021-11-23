@@ -31,6 +31,7 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
+#include "rust-hir-address-taken.h"
 
 namespace Rust {
 namespace Resolver {
@@ -312,6 +313,10 @@ public:
     // Get the adjusted self
     Adjuster adj (receiver_tyty);
     TyTy::BaseType *adjusted_self = adj.adjust_type (adjustments);
+
+    // mark the required tree addressable
+    if (Adjuster::needs_address (adjustments))
+      AddressTakenResolver::SetAddressTaken (*expr.get_receiver ().get ());
 
     // store the adjustments for code-generation to know what to do
     context->insert_autoderef_mappings (expr.get_mappings ().get_hirid (),
@@ -1191,11 +1196,18 @@ public:
     TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
-    // FIXME double_reference
+    if (expr.get_is_double_borrow ())
+      {
+	// FIXME double_reference
+	gcc_unreachable ();
+      }
 
     infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 				       TyTy::TyVar (resolved_base->get_ref ()),
 				       expr.get_mut ());
+
+    // mark the borrowed as address_taken
+    AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
   }
 
   void visit (HIR::DereferenceExpr &expr) override
@@ -1276,6 +1288,10 @@ protected:
     std::vector<Adjustment> adjustments;
     PathProbeCandidate *resolved_candidate
       = MethodResolution::Select (candidates, lhs, adjustments);
+
+    // mark the required tree addressable
+    if (Adjuster::needs_address (adjustments))
+      AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
 
     // is this the case we are recursive
     // handle the case where we are within the impl block for this lang_item
