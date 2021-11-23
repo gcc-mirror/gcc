@@ -15550,7 +15550,7 @@ package body Sem_Ch13 is
             Add_Unnamed_Subp := Subp;
 
          elsif Op_Name = Name_New_Indexed then
-            New_Indexed_Subp :=  Subp;
+            New_Indexed_Subp := Subp;
 
          elsif Op_Name = Name_Assign_Indexed then
             Assign_Indexed_Subp := Subp;

@@ -3482,7 +3482,7 @@ package body Ch4 is
            New_Node (N_Loop_Parameter_Specification, Prev_Token_Ptr);
          Set_Defining_Identifier (Loop_Spec, Id);
 
-         Choice :=  First (Discrete_Choices (Assoc_Node));
+         Choice := First (Discrete_Choices (Assoc_Node));
          Assoc_Node :=
            New_Node (N_Iterated_Element_Association, Prev_Token_Ptr);
          Set_Loop_Parameter_Specification (Assoc_Node, Loop_Spec);
