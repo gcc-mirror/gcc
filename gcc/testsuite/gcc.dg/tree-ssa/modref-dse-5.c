@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dse2-details"  } */
+/* { dg-options "-O2 -fdump-tree-dse1-details"  } */
 struct a {int a,b,c;};
 __attribute__ ((noinline))
 void
@@ -36,8 +36,7 @@ set (struct a *a)
 {
   wrap (0, a);
   int ret = wrap2 (0, a);
-  //int ret = my_pleasure (a);
   a->b=1;
   return ret;
 }
-/* { dg-final { scan-tree-dump "Deleted dead store: wrap" "dse2" } } */
+/* { dg-final { scan-tree-dump "Deleted dead store: wrap" "dse1" } } */
