@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 // PR libstdc++/83328
 
