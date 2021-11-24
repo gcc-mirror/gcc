@@ -721,6 +721,23 @@ modref_summary::finalize (tree fun)
 	    break;
 	}
     }
+  if (loads->every_base)
+    load_accesses = 1;
+  else
+    {
+      load_accesses = 0;
+      for (auto base_node : loads->bases)
+	{
+	  if (base_node->every_ref)
+	    load_accesses++;
+	  else
+	    for (auto ref_node : base_node->refs)
+	      if (ref_node->every_access)
+		load_accesses++;
+	      else
+		load_accesses += ref_node->accesses->length ();
+	}
+    }
 }
 
 /* Get function summary for FUNC if it exists, return NULL otherwise.  */
