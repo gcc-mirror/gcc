@@ -294,17 +294,6 @@ package body Exp_Ch3 is
    --  inherited. If the result is false, the init_proc and the discriminant
    --  checking functions of the parent can be reused by a derived type.
 
-   procedure Make_Controlling_Function_Wrappers
-     (Tag_Typ   : Entity_Id;
-      Decl_List : out List_Id;
-      Body_List : out List_Id);
-   --  Ada 2005 (AI-391): Makes specs and bodies for the wrapper functions
-   --  associated with inherited functions with controlling results which
-   --  are not overridden. The body of each wrapper function consists solely
-   --  of a return statement whose expression is an extension aggregate
-   --  invoking the inherited subprogram's parent subprogram and extended
-   --  with a null association list.
-
    function Make_Null_Procedure_Specs (Tag_Typ : Entity_Id) return List_Id;
    --  Ada 2005 (AI-251): Makes specs for null procedures associated with any
    --  null procedures inherited from an interface type that have not been
