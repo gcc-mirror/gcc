@@ -932,16 +932,22 @@ omp_context_selector_matches (tree ctx)
 		      continue;
 		    if (!strcmp (prop, "host"))
 		      {
+#ifdef ACCEL_COMPILER
+			return 0;
+#else
 			if (omp_maybe_offloaded ())
 			  ret = -1;
 			continue;
+#endif
 		      }
 		    if (!strcmp (prop, "nohost"))
 		      {
+#ifndef ACCEL_COMPILER
 			if (omp_maybe_offloaded ())
 			  ret = -1;
 			else
 			  return 0;
+#endif
 			continue;
 		      }
 		    int r = 0;
