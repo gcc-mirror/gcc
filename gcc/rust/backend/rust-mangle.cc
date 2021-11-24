@@ -18,7 +18,26 @@ Mangler::MangleVersion Mangler::version = MangleVersion::LEGACY;
 static std::string
 legacy_mangle_name (const std::string &name)
 {
-  return std::to_string (name.size ()) + name;
+  // example
+  //  <&T as core::fmt::Debug>::fmt:
+  //  _ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17h6dac924c0051eef7E
+  // replace all white space with $ and & with RF
+
+  std::string buffer;
+  for (const auto &c : name)
+    {
+      std::string m;
+      if (c == ' ')
+	m = "$";
+      else if (c == '&')
+	m = "RF";
+      else
+	m.push_back (c);
+
+      buffer += m;
+    }
+
+  return std::to_string (buffer.size ()) + buffer;
 }
 
 static std::string
