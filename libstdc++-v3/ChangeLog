@@ -1,3 +1,29 @@
+2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103086
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check unique_ptr
+	with non-empty pointer and non-empty deleter.
+
+2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/50594.cc: Check effective target.
+	* testsuite/20_util/allocator/1.cc: Likewise.
+	* testsuite/20_util/allocator/overaligned.cc: Likewise.
+	* testsuite/23_containers/unordered_map/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+	* testsuite/ext/throw_allocator/check_delete.cc: Likewise.
+	* testsuite/ext/throw_allocator/check_new.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_std_allocator_new):
+	Define new proc.
+
+2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103381
+	* include/ext/bitmap_allocator.h: Include <bits/stl_function.h>
+	instead of <functional>.
+
 2021-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX14_DEPRECATED): Fix condition

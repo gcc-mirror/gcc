@@ -1,3 +1,20 @@
+2021-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96507
+	* typeck.c (warn_for_null_address): Handle reference members.
+
+2021-11-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	* init.c (emit_mem_initializers): Don't add is_really_empty_class
+	members into uninitialized.
+
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (clone_omp_udr): Don't initialize
+	id.transform_lang_insert_block.
+	* optimize.c (clone_body): Likewise.
+
 2021-11-22  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (build_x_unary_op): Set address location.

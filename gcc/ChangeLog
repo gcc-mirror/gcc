@@ -1,3 +1,141 @@
+2021-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/88232
+	* Makefile.in (OBJS): Add gimple-warn-recursion.o.
+	* common.opt: Add -Winfinite-recursion.
+	* doc/invoke.texi (-Winfinite-recursion): Document.
+	* passes.def (pass_warn_recursion): Schedule a new pass.
+	* tree-pass.h (make_pass_warn_recursion): Declare.
+	* gimple-warn-recursion.c: New file.
+
+2021-11-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_invalid_new_builtin): Change
+	error messages for ENB_P8V and ENB_P9V.
+
+2021-11-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Add power6-64 stanza.  Move
+	CMPB to power6-64 stanza.
+	* config/rs6000/rs6000-call.c (rs6000_invalid_new_builtin): Handle
+	ENB_P6_64 case.
+	(rs6000_new_builtin_is_supported): Likewise.
+	(rs6000_expand_new_builtin): Likewise.  Clean up formatting.
+	(rs6000_init_builtins): Handle ENB_P6_64 case.
+	* config/rs6000/rs6000-gen-builtins.c (bif_stanza): Add	BSTZ_P6_64.
+	(stanza_map): Add entry mapping power6-64 to BSTZ_P6_64.
+	(enable_string): Add "ENB_P6_64".
+	(write_decls): Add ENB_P6_64 to bif_enable enum.
+
+2021-11-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-modref-tree.h (struct modref_tree): Remove max_bases, max_refs
+	and max_accesses.
+	(modref_tree::modref_tree): Remove parametr.
+	(modref_tree::insert_base): Add max_bases parameter.
+	(modref_tree::insert): Add max_bases, max_refs, max_accesses
+	parameters.
+	(modref_tree::insert): New member function.
+	(modref_tree::merge): Add max_bases, max_refs, max_accesses
+	parameters.
+	(modref_tree::insert): New member function.
+	* ipa-modref-tree.c (test_insert_search_collapse): Update.
+	(test_merge): Update.
+	* ipa-modref.c (dump_records): Don't dump max_refs and max_bases.
+	(dump_lto_records): Likewise.
+	(modref_summary::finalize): Fix whitespace.
+	(get_modref_function_summary): Likewise.
+	(modref_access_analysis::record_access): Update.
+	(modref_access_analysis::record_access_lto): Update.
+	(modref_access_analysis::process_fnspec): Update.
+	(analyze_function): Update.
+	(modref_summaries::duplicate): Update.
+	(modref_summaries_lto::duplicate): Update.
+	(write_modref_records): Update.
+	(read_modref_records): Update.
+	(read_section): Update.
+	(propagate_unknown_call): Update.
+	(modref_propagate_in_scc): Update.
+	(ipa_merge_modref_summary_after_inlining): Update.
+
+2021-11-23  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Remove 2 more duplicite param descriptions.
+
+2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* gimple-loop-jam.c (adjust_unroll_factor): Use lambda_int
+	for the dependence distance.
+	* tree-data-ref.c (print_lambda_vector): Properly print a lambda_int.
+
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-inline.h (struct copy_body_data): Remove
+	transform_lang_insert_block member.
+	* tree-inline.c (remap_block): Don't call
+	id->transform_lang_insert_block.
+	(optimize_inline_calls, copy_gimple_seq_and_replace_locals,
+	tree_function_versioning, maybe_inline_call_in_expr,
+	copy_fn): Don't initialize id.transform_lang_insert_block.
+	* gimplify.c (gimplify_omp_loop): Likewise.
+
+2021-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/103335
+	* tree-ssa-dse.c (valid_ao_ref_for_dse): Rename to ...
+	(valid_ao_ref_kill_for_dse): ... this; do not check that boundaries
+	are divisible by BITS_PER_UNIT.
+	(get_byte_aligned_range_containing_ref): New function.
+	(get_byte_aligned_range_contained_in_ref): New function.
+	(normalize_ref): Rename to ...
+	(get_byte_range): ... this one; handle accesses not aligned to byte
+	boundary; return range in bytes rater than updating ao_ref.
+	(clear_live_bytes_for_ref): Take write ref by reference; simplify using
+	get_byte_access.
+	(setup_live_bytes_from_ref): Likewise.
+	(clear_bytes_written_by): Update.
+	(live_bytes_read): Update.
+	(dse_classify_store): Simplify tech before live_bytes_read checks.
+
+2021-11-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102216
+	* gimple-fold.c (fold_stmt_1): Add canonicalization
+	of "&MEM[ssa_n, CST]" to "ssa_n p+ CST", note this
+	can only be done if !in_place.
+
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102431
+	* gimplify.c (replace_reduction_placeholders): Remove.
+	(note_no_context_vars): New function.
+	(gimplify_omp_loop): For OMP_PARALLEL's BIND_EXPR create a new
+	BLOCK.  Use copy_tree_body_r with walk_tree instead of unshare_expr
+	and replace_reduction_placeholders for duplication of
+	OMP_CLAUSE_REDUCTION_{INIT,MERGE} expressions.  Ensure all mentioned
+	automatic vars have DECL_CONTEXT set to non-NULL before doing so
+	and reset it afterwards for those vars and their corresponding
+	vars.
+
+2021-11-23  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100868
+	* config/rs6000/altivec.md (altivec_vreve<mode>2 for VEC_K): Use
+	xxbrq for v16qi, xxbrq + xxbrh for v8hi and xxbrq + xxbrw for v4si
+	or v4sf when p9_vector is set.
+	(altivec_vreve<mode>2 for VEC_64): Defined. Implemented by xxswapd.
+
+2021-11-23  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	PR tree-optimization/102232
+	* match.pd (x * (1 + y / x) - y) -> (x - y % x): New optimization.
+
+2021-11-23  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	PR tree-optimization/96779
+	* match.pd (-x == x) -> (x == 0): New optimization.
+
 2021-11-22  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR tree-optimization/98953

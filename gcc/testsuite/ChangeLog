@@ -1,3 +1,88 @@
+2021-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/96507
+	* g++.dg/warn/Waddress-8.C: New test.
+
+2021-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/88232
+	* c-c++-common/attr-used-5.c: Suppress valid warning.
+	* c-c++-common/attr-used-6.c: Same.
+	* c-c++-common/attr-used-9.c: Same.
+	* g++.dg/warn/Winfinite-recursion-2.C: New test.
+	* g++.dg/warn/Winfinite-recursion-3.C: New test.
+	* g++.dg/warn/Winfinite-recursion.C: New test.
+	* gcc.dg/Winfinite-recursion-2.c: New test.
+	* gcc.dg/Winfinite-recursion.c: New test.
+
+2021-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103392
+	* gfortran.dg/bound_simplification_7.f90: New test.
+
+2021-11-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/19808
+	* g++.dg/warn/Wuninitialized-28.C: Make a class nonempty.
+	* g++.dg/warn/Wuninitialized-29.C: Likewise.
+	* g++.dg/warn/Wuninitialized-31.C: New test.
+
+2021-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Waddress-5.C: Make sf static.
+
+2021-11-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/test_mffsl.c: Change effective target to
+	a run-time check.  Fix a typo in a debug print statement.
+
+2021-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87711
+	PR fortran/87851
+	* gfortran.dg/len_trim.f90: New test.
+
+2021-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103361
+	* g++.dg/torture/pr103361.C: New testcase.
+
+2021-11-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/modref-dse-4.c: Update template.
+	* gcc.dg/tree-ssa/modref-dse-5.c: Update template.
+
+2021-11-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/102216
+	* g++.dg/tree-ssa/pr102216-1.C: New test.
+	* g++.dg/tree-ssa/pr102216-2.C: New test.
+
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102431
+	* c-c++-common/gomp/pr102431.c: New test.
+	* g++.dg/gomp/pr102431.C: New test.
+	* gfortran.dg/gomp/pr102431.f90: New test.
+
+2021-11-23  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/100868
+	* gcc.target/powerpc/vec_reve_1.c: New test.
+	* gcc.target/powerpc/vec_reve_2.c: Likewise.
+
+2021-11-23  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	PR tree-optimization/102232
+	* gcc.dg/tree-ssa/pr102232.c: Testcase for this optimization.
+
+2021-11-23  Navid Rahimi  <navidrahimi@microsoft.com>
+
+	PR tree-optimization/96779
+	* gcc.dg/tree-ssa/pr96779.c: Testcase for this optimization.
+	* gcc.dg/tree-ssa/pr96779-disabled.c: Testcase for this optimization
+	when -fwrapv passed.
+
 2021-11-22  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/crash106.C: Adjust.
