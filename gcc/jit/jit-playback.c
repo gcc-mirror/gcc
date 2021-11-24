@@ -1357,7 +1357,8 @@ function (context *ctxt,
 : m_ctxt(ctxt),
   m_inner_fndecl (fndecl),
   m_inner_bind_expr (NULL),
-  m_kind (kind)
+  m_kind (kind),
+  m_blocks ()
 {
   if (m_kind != GCC_JIT_FUNCTION_IMPORTED)
     {
