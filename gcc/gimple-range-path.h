@@ -58,6 +58,7 @@ private:
   // Methods to compute ranges for the given path.
   bool range_defined_in_block (irange &, tree name, basic_block bb);
   void compute_ranges_in_block (basic_block bb);
+  void compute_ranges_defined (basic_block bb);
   void compute_ranges_in_phis (basic_block bb);
   void adjust_for_non_null_uses (basic_block bb);
   void ssa_range_in_phi (irange &r, gphi *phi);
