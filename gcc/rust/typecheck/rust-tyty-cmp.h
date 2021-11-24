@@ -1169,9 +1169,23 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    ok = base_type->can_eq (other_base_type, emit_error_flag,
-			    autoderef_mode_flag)
-	 && (base->is_mutable () == type.is_mutable ());
+    // rust is permissive about mutablity here you can always go from mutable to
+    // immutable but not the otherway round
+    bool mutability_ok = base->is_mutable () ? type.is_mutable () : true;
+    if (!mutability_ok)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    if (!base_type->can_eq (other_base_type, emit_error_flag,
+			    autoderef_mode_flag))
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
   }
 
 private:
@@ -1193,9 +1207,23 @@ public:
     auto base_type = base->get_base ();
     auto other_base_type = type.get_base ();
 
-    ok = base_type->can_eq (other_base_type, emit_error_flag,
-			    autoderef_mode_flag)
-	 && (base->is_mutable () == type.is_mutable ());
+    // rust is permissive about mutablity here you can always go from mutable to
+    // immutable but not the otherway round
+    bool mutability_ok = base->is_mutable () ? type.is_mutable () : true;
+    if (!mutability_ok)
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    if (!base_type->can_eq (other_base_type, emit_error_flag,
+			    autoderef_mode_flag))
+      {
+	BaseCmp::visit (type);
+	return;
+      }
+
+    ok = true;
   }
 
 private:
@@ -1275,6 +1303,8 @@ public:
   void visit (const StrType &) override { ok = true; }
 
   void visit (const NeverType &) override { ok = true; }
+
+  void visit (const DynamicObjectType &) override { ok = true; }
 
   void visit (const PlaceholderType &type) override
   {

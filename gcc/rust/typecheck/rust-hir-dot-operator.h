@@ -115,7 +115,7 @@ private:
 	    if (fn->is_method ())
 	      {
 		TyTy::BaseType *fn_self = fn->get_self_type ();
-		if (receiver->can_eq (fn_self, false, true))
+		if (fn_self->can_eq (receiver, false, true))
 		  {
 		    return &c;
 		  }
@@ -143,7 +143,7 @@ private:
 	    if (fn->is_method ())
 	      {
 		TyTy::BaseType *fn_self = fn->get_self_type ();
-		if (receiver->can_eq (fn_self, false, true))
+		if (fn_self->can_eq (receiver, false, true))
 		  {
 		    return &c;
 		  }
@@ -165,7 +165,7 @@ private:
 	    if (fn->is_method ())
 	      {
 		TyTy::BaseType *fn_self = fn->get_self_type ();
-		if (receiver->can_eq (fn_self, false, true))
+		if (fn_self->can_eq (receiver, false, true))
 		  {
 		    return &c;
 		  }
