@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++23" }
-// { dg-do run { target { c++23 && cxx11-abi } } }
+// { dg-do run { target { c++23 && cxx11_abi } } }
 
 #include <string>
 

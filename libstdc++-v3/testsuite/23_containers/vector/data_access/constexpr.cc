@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
-// { dg-xfail-if "not supported" { debug-mode } }
+// { dg-xfail-if "not supported" { debug_mode } }
 
 #include <vector>
 #include <testsuite_hooks.h>

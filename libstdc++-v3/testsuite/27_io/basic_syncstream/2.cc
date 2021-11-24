@@ -17,7 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 #include <version>
 

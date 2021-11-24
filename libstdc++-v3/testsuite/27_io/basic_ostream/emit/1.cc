@@ -18,7 +18,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-do run { target c++2a } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 // { dg-xfail-run-if "cannot catch forced_unwind" { *-*-* } { "-fno-rtti" } }
 
 #include <syncstream>

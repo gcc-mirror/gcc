@@ -1,5 +1,5 @@
 // { dg-do run { target c++11 } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 // 2019-05-27  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 //
