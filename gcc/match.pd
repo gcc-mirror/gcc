@@ -38,7 +38,8 @@ along with GCC; see the file COPYING3.  If not see
    uniform_integer_cst_p
    HONOR_NANS
    uniform_vector_p
-   expand_vec_cmp_expr_p)
+   expand_vec_cmp_expr_p
+   bitmask_inv_cst_vector_p)
 
 /* Operator lists.  */
 (define_operator_list tcc_comparison
@@ -5206,6 +5207,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && (rhs & (rhs + 1)) == 0 && wi::ge_p (mask, rhs, sgn))
       (eqcmp (bit_and @1 { wide_int_to_tree (ty, mask - rhs); })
 	     { build_zero_cst (ty); }))))))
+
+/* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
+   where ~Y + 1 == pow2 and Z = ~Y.  */
+(for cst (VECTOR_CST INTEGER_CST)
+ (for cmp (le eq ne ge gt)
+      icmp (le le gt le gt)
+ (simplify
+  (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
+   (with { tree csts = bitmask_inv_cst_vector_p (@1); }
+     (switch
+      (if (csts && TYPE_UNSIGNED (TREE_TYPE (@1))
+	   && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+       (icmp @0 { csts; }))
+      (if (csts && !TYPE_UNSIGNED (TREE_TYPE (@1))
+	   && (cmp == EQ_EXPR || cmp == NE_EXPR)
+	   && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
+	(icmp (convert:utype @0) { csts; }))))))))
 
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
