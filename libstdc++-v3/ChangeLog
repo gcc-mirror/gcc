@@ -1,3 +1,12 @@
+2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103381
+	* include/ext/bitmap_allocator.h: Include <bits/stl_function.h>
+	instead of <functional>.
+
 2021-11-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

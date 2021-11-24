@@ -1,3 +1,9 @@
+2021-11-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101985
+	* gcc.target/powerpc/pr101985-1.c: New.
+	* gcc.target/powerpc/pr101985-2.c: New.
+
 2021-11-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
