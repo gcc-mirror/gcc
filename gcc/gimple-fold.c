@@ -2993,7 +2993,6 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
     default:
       gcc_unreachable ();
     }
-  return false;
 }
 
 /* Fold a call to the __mem{cpy,pcpy,move,set}_chk builtin.

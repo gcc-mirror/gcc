@@ -2059,7 +2059,6 @@ df_ref_equal_p (df_ref ref1, df_ref ref2)
     default:
       gcc_unreachable ();
     }
-  return false;
 }
 
 

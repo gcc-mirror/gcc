@@ -13359,8 +13359,6 @@ is_base_type (tree type)
 	return 0;
       gcc_unreachable ();
     }
-
-  return 0;
 }
 
 /* Given a pointer to a tree node, assumed to be some kind of a ..._TYPE
@@ -20240,7 +20238,6 @@ add_const_value_attribute (dw_die_ref die, machine_mode mode, rtx rtl)
       /* No other kinds of rtx should be possible here.  */
       gcc_unreachable ();
     }
-  return false;
 }
 
 /* Determine whether the evaluation of EXPR references any variables

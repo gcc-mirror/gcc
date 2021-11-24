@@ -916,10 +916,7 @@ handle_pragma_target(cpp_reader *ARG_UNUSED(dummy))
     }
 
   if (token != CPP_STRING)
-    {
-      GCC_BAD_AT (loc, "%<#pragma GCC option%> is not a string");
-      return;
-    }
+    GCC_BAD_AT (loc, "%<#pragma GCC option%> is not a string");
 
   /* Strings are user options.  */
   else
@@ -991,10 +988,7 @@ handle_pragma_optimize (cpp_reader *ARG_UNUSED(dummy))
     }
 
   if (token != CPP_STRING && token != CPP_NUMBER)
-    {
-      GCC_BAD ("%<#pragma GCC optimize%> is not a string or number");
-      return;
-    }
+    GCC_BAD ("%<#pragma GCC optimize%> is not a string or number");
 
   /* Strings/numbers are user options.  */
   else

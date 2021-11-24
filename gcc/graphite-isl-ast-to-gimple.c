@@ -526,8 +526,6 @@ gcc_expression_from_isl_expr_op (tree type, __isl_take isl_ast_expr *expr,
     default:
       gcc_unreachable ();
     }
-
-  return NULL_TREE;
 }
 
 /* Converts an isl AST expression E back to a GCC expression tree of
@@ -557,8 +555,6 @@ gcc_expression_from_isl_expression (tree type, __isl_take isl_ast_expr *expr,
     default:
       gcc_unreachable ();
     }
-
-  return NULL_TREE;
 }
 
 /* Creates a new LOOP corresponding to isl_ast_node_for.  Inserts an

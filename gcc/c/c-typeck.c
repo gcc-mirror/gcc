@@ -15984,8 +15984,6 @@ c_tree_equal (tree t1, tree t2)
     default:
       gcc_unreachable ();
     }
-  /* We can get here with --disable-checking.  */
-  return false;
 }
 
 /* Returns true when the function declaration FNDECL is implicit,

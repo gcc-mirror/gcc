@@ -1109,10 +1109,7 @@ c_common_post_options (const char **pfilename)
 	out_stream = fopen (out_fname, "w");
 
       if (out_stream == NULL)
-	{
-	  fatal_error (input_location, "opening output file %s: %m", out_fname);
-	  return false;
-	}
+	fatal_error (input_location, "opening output file %s: %m", out_fname);
 
       init_pp_output (out_stream);
     }
