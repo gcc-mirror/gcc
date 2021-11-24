@@ -256,7 +256,6 @@ thread_jump (edge e, basic_block b)
   unsigned i;
   regset nonequal;
   bool failed = false;
-  reg_set_iterator rsi;
 
   /* Jump threading may cause fixup_partitions to introduce new crossing edges,
      which is not allowed after reload.  */
@@ -379,7 +378,7 @@ thread_jump (edge e, basic_block b)
       goto failed_exit;
     }
 
-  EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
+  if (!REG_SET_EMPTY_P (nonequal))
     goto failed_exit;
 
   BITMAP_FREE (nonequal);
