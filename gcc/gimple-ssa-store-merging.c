@@ -4867,8 +4867,6 @@ lhs_valid_for_store_merging_p (tree lhs)
     default:
       return false;
     }
-
-  gcc_unreachable ();
 }
 
 /* Return true if the tree RHS is a constant we want to consider
