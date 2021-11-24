@@ -4827,6 +4827,30 @@ modref_propagate_dump_scc (cgraph_node *component_node)
       }
 }
 
+/* Determine EAF flags know for call E with CALLEE_ECF_FLAGS and ARG.  */
+
+int
+implicit_eaf_flags_for_edge_and_arg (cgraph_edge *e, int callee_ecf_flags,
+				     bool ignore_stores, int arg)
+{
+  /* Returning the value is already accounted to at local propagation.  */
+  int implicit_flags = EAF_NOT_RETURNED_DIRECTLY
+		       | EAF_NOT_RETURNED_INDIRECTLY;
+  if (ignore_stores)
+     implicit_flags |= ignore_stores_eaf_flags;
+  if (callee_ecf_flags & ECF_PURE)
+    implicit_flags |= implicit_pure_eaf_flags;
+  if (callee_ecf_flags & (ECF_CONST | ECF_NOVOPS))
+    implicit_flags |= implicit_const_eaf_flags;
+  class fnspec_summary *fnspec_sum = fnspec_summaries->get (e);
+  if (fnspec_sum)
+    {
+      attr_fnspec fnspec (fnspec_sum->fnspec);
+      implicit_flags |= fnspec.arg_eaf_flags (arg);
+    }
+  return implicit_flags;
+}
+
 /* Process escapes in SUM and merge SUMMARY to CUR_SUMMARY
    and SUMMARY_LTO to CUR_SUMMARY_LTO.
    Return true if something changed.  */
@@ -4857,9 +4881,8 @@ modref_merge_call_site_flags (escape_summary *sum,
     {
       int flags = 0;
       int flags_lto = 0;
-      /* Returning the value is already accounted to at local propagation.  */
-      int implicit_flags = EAF_NOT_RETURNED_DIRECTLY
-			   | EAF_NOT_RETURNED_INDIRECTLY;
+      int implicit_flags = implicit_eaf_flags_for_edge_and_arg
+				(e, callee_ecf_flags, ignore_stores, ee->arg);
 
       if (summary && ee->arg < summary->arg_flags.length ())
 	flags = summary->arg_flags[ee->arg];
@@ -4995,6 +5018,7 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 	      if (ecf_flags & (ECF_CONST | ECF_NOVOPS)
 		  || !callee_edge->inline_failed)
 		continue;
+
 	      /* Get the callee and its summary.  */
 	      enum availability avail;
 	      callee = callee_edge->callee->function_or_virtual_thunk_symbol
@@ -5081,6 +5105,9 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
   class modref_summary_lto *callee_info_lto
 		 = summaries_lto ? summaries_lto->get (edge->callee) : NULL;
   int flags = flags_from_decl_or_type (edge->callee->decl);
+  /* Combine in outer flags.  */
+  for (cgraph_node *n = edge->caller; n->inlined_to; n = n->callers->caller)
+    flags |= flags_from_decl_or_type (edge->callee->decl);
   bool ignore_stores = ignore_stores_p (edge->caller->decl, flags);
 
   if (!callee_info && to_info)
@@ -5148,10 +5175,11 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     FOR_EACH_VEC_ELT (sum->esc, i, ee)
       {
 	bool needed = false;
-	/* TODO: We do not have jump functions for return slots, so we
-	   never propagate them to outer function.  */
-	if (ee->parm_index < 0)
-	  continue;
+	int implicit_flags = implicit_eaf_flags_for_edge_and_arg
+				(edge, flags, ignore_stores,
+				 ee->arg);
+	if (!ee->direct)
+	  implicit_flags = deref_flags (implicit_flags, ignore_stores);
 	if (to_info && (int)to_info->arg_flags.length () > ee->parm_index)
 	  {
 	    int flags = callee_info
@@ -5159,11 +5187,14 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 			? callee_info->arg_flags[ee->arg] : 0;
 	    if (!ee->direct)
 	      flags = deref_flags (flags, ignore_stores);
-	    else if (ignore_stores)
-	      flags |= ignore_stores_eaf_flags;
-	    flags |= ee->min_flags;
-	    to_info->arg_flags[ee->parm_index] &= flags;
-	    if (to_info->arg_flags[ee->parm_index])
+	    flags |= ee->min_flags | implicit_flags;
+	    eaf_flags_t &f = ee->parm_index == MODREF_RETSLOT_PARM
+			     ? to_info->retslot_flags
+			     : ee->parm_index == MODREF_STATIC_CHAIN_PARM
+			     ? to_info->static_chain_flags
+			     : to_info->arg_flags[ee->parm_index];
+	    f &= flags;
+	    if (f)
 	      needed = true;
 	  }
 	if (to_info_lto
@@ -5174,11 +5205,14 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 			? callee_info_lto->arg_flags[ee->arg] : 0;
 	    if (!ee->direct)
 	      flags = deref_flags (flags, ignore_stores);
-	    else if (ignore_stores)
-	      flags |= ignore_stores_eaf_flags;
-	    flags |= ee->min_flags;
-	    to_info_lto->arg_flags[ee->parm_index] &= flags;
-	    if (to_info_lto->arg_flags[ee->parm_index])
+	    flags |= ee->min_flags | implicit_flags;
+	    eaf_flags_t &f = ee->parm_index == MODREF_RETSLOT_PARM
+			     ? to_info_lto->retslot_flags
+			     : ee->parm_index == MODREF_STATIC_CHAIN_PARM
+			     ? to_info_lto->static_chain_flags
+			     : to_info_lto->arg_flags[ee->parm_index];
+	    f &= flags;
+	    if (f)
 	      needed = true;
 	  }
 	struct escape_map entry = {ee->parm_index, ee->direct};
