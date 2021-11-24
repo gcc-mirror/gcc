@@ -465,7 +465,7 @@ public:
 	  = HIR::FunctionParam (mapping, std::move (translated_pattern),
 				std::move (translated_type),
 				param.get_locus ());
-	function_params.push_back (hir_param);
+	function_params.push_back (std::move (hir_param));
       }
 
     bool terminated = false;
