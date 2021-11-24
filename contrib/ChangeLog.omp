@@ -1,0 +1,10 @@
+2021-11-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	Backport from master:
+	2021-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* download_prerequisites: Update to gmp-6.2.1, mpfr-4.1.0,
+	mpc-1.2.1 and isl-0.24.
+	* prerequisites.md5: Update hash.
+	* prerequisites.sha512: Likewise.
+
