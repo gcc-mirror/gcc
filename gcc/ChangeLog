@@ -1,3 +1,8 @@
+2021-11-23  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/101985
+	* config/rs6000/altivec.h (vec_cpsgn): Swap operand order.
+
 2021-11-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:
