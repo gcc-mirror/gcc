@@ -42,14 +42,14 @@ function System.Width_U (Lo, Hi : Uns) return Natural is
                             Loop_Invariant => Ignore,
                             Assert         => Ignore);
 
-   W : Natural;
-   T : Uns;
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    package Unsigned_Conversion is new Unsigned_Conversions (Int => Uns);
 
-   function Big (Arg : Uns) return Big_Integer is
-     (Unsigned_Conversion.To_Big_Integer (Arg))
-   with Ghost;
+   function Big (Arg : Uns) return Big_Integer renames
+     Unsigned_Conversion.To_Big_Integer;
 
    --  Maximum value of exponent for 10 that fits in Uns'Base
    function Max_Log10 return Natural is
@@ -62,8 +62,9 @@ function System.Width_U (Lo, Hi : Uns) return Natural is
         when others => raise Program_Error)
    with Ghost;
 
-   Max_W  : constant Natural := Max_Log10 with Ghost;
-   Big_10 : constant Big_Integer := Big (10) with Ghost;
+   ------------------
+   -- Local Lemmas --
+   ------------------
 
    procedure Lemma_Lower_Mult (A, B, C : Big_Natural)
    with
@@ -82,15 +83,21 @@ function System.Width_U (Lo, Hi : Uns) return Natural is
      Ghost,
      Post => X / Y / Z = X / (Y * Z);
 
-   procedure Lemma_Lower_Mult (A, B, C : Big_Natural) is
-   begin
-      null;
-   end Lemma_Lower_Mult;
+   ----------------------
+   -- Lemma_Lower_Mult --
+   ----------------------
 
-   procedure Lemma_Div_Commutation (X, Y : Uns) is
-   begin
-      null;
-   end Lemma_Div_Commutation;
+   procedure Lemma_Lower_Mult (A, B, C : Big_Natural) is null;
+
+   ---------------------------
+   -- Lemma_Div_Commutation --
+   ---------------------------
+
+   procedure Lemma_Div_Commutation (X, Y : Uns) is null;
+
+   ---------------------
+   -- Lemma_Div_Twice --
+   ---------------------
 
    procedure Lemma_Div_Twice (X : Big_Natural; Y, Z : Big_Positive) is
       XY  : constant Big_Natural := X / Y;
@@ -107,20 +114,31 @@ function System.Width_U (Lo, Hi : Uns) return Natural is
       pragma Assert (X / YZ = XYZ + R / YZ);
    end Lemma_Div_Twice;
 
+   --  Local variables
+
+   W : Natural;
+   T : Uns;
+
+   --  Local ghost variables
+
+   Max_W  : constant Natural := Max_Log10 with Ghost;
+   Big_10 : constant Big_Integer := Big (10) with Ghost;
+
    Pow    : Big_Integer := 1 with Ghost;
    T_Init : constant Uns := Uns'Max (Lo, Hi) with Ghost;
+
+--  Start of processing for System.Width_U
 
 begin
    if Lo > Hi then
       return 0;
 
    else
-      --  Minimum value is 2, one for sign, one for digit
+      --  Minimum value is 2, one for space, one for digit
 
       W := 2;
 
-      --  Get max of absolute values, but avoid bomb if we have the maximum
-      --  negative number (note that First + 1 has same digits as First)
+      --  Get max of absolute values
 
       T := Uns'Max (Lo, Hi);
 

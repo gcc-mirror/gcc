@@ -36,4 +36,9 @@ generic
 
    type Int is range <>;
 
-function System.Width_I (Lo, Hi : Int) return Natural;
+function System.Width_I (Lo, Hi : Int) return Natural
+with
+  Post => (if Lo > Hi then
+             System.Width_I'Result = 0
+           else
+             System.Width_I'Result > 0);
