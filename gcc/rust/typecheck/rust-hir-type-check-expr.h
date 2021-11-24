@@ -929,24 +929,27 @@ public:
 
     auto resolved_index_expr
       = size_ty->unify (TypeCheckExpr::Resolve (expr.get_index_expr (), false));
-    if (resolved_index_expr == nullptr)
+    if (resolved_index_expr->get_kind () != TyTy::TypeKind::ERROR)
       {
-	rust_error_at (expr.get_index_expr ()->get_locus (),
-		       "Type Resolver failure in Index for ArrayIndexExpr");
-	return;
+	// allow the index expr to fail lets just continue on
+	context->insert_type (expr.get_index_expr ()->get_mappings (),
+			      resolved_index_expr);
       }
-    context->insert_type (expr.get_index_expr ()->get_mappings (),
-			  resolved_index_expr);
 
-    // resolve the array reference
-    expr.get_array_expr ()->accept_vis (*this);
-    if (infered == nullptr)
+    auto array_expr_ty
+      = TypeCheckExpr::Resolve (expr.get_array_expr (), inside_loop);
+    if (array_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+    else if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
       {
-	rust_error_at (expr.get_index_expr ()->get_locus (),
-		       "failed to resolve array reference expression");
-	return;
+	// lets try and deref it since rust allows this
+	auto ref = static_cast<TyTy::ReferenceType *> (array_expr_ty);
+	auto base = ref->get_base ();
+	if (base->get_kind () == TyTy::TypeKind::ARRAY)
+	  array_expr_ty = base;
       }
-    else if (infered->get_kind () != TyTy::TypeKind::ARRAY)
+
+    if (array_expr_ty->get_kind () != TyTy::TypeKind::ARRAY)
       {
 	rust_error_at (expr.get_index_expr ()->get_locus (),
 		       "expected an ArrayType got [%s]",
@@ -955,7 +958,8 @@ public:
 	return;
       }
 
-    TyTy::ArrayType *array_type = static_cast<TyTy::ArrayType *> (infered);
+    TyTy::ArrayType *array_type
+      = static_cast<TyTy::ArrayType *> (array_expr_ty);
     infered = array_type->get_element_type ()->clone ();
   }
 
