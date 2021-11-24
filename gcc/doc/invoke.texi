@@ -3035,6 +3035,20 @@ users are likely to want to adjust it, but if your code does heavy
 constexpr calculations you might want to experiment to find which
 value works best for you.
 
+@item -fconstexpr-fp-except
+@opindex fconstexpr-fp-except
+Annex F of the C standard specifies that IEC559 floating point
+exceptions encountered at compile time should not stop compilation.
+C++ compilers have historically not followed this guidance, instead
+treating floating point division by zero as non-constant even though
+it has a well defined value.  This flag tells the compiler to give
+Annex F priority over other rules saying that a particular operation
+is undefined.
+
+@smallexample
+constexpr float inf = 1./0.; // OK with -fconstexpr-fp-except
+@end smallexample
+
 @item -fconstexpr-loop-limit=@var{n}
 @opindex fconstexpr-loop-limit
 Set the maximum number of iterations for a loop in C++14 constexpr functions
