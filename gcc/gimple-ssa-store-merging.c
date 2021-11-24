@@ -434,14 +434,14 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
   return true;
 }
 
-/* Compute the symbolic number N representing the result of a bitwise OR on 2
-   symbolic number N1 and N2 whose source statements are respectively
-   SOURCE_STMT1 and SOURCE_STMT2.  */
+/* Compute the symbolic number N representing the result of a bitwise OR,
+   bitwise XOR or plus on 2 symbolic number N1 and N2 whose source statements
+   are respectively SOURCE_STMT1 and SOURCE_STMT2.  CODE is the operation.  */
 
 gimple *
 perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 			gimple *source_stmt2, struct symbolic_number *n2,
-			struct symbolic_number *n)
+			struct symbolic_number *n, enum tree_code code)
 {
   int i, size;
   uint64_t mask;
@@ -563,7 +563,9 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 
       masked1 = n1->n & mask;
       masked2 = n2->n & mask;
-      if (masked1 && masked2 && masked1 != masked2)
+      /* For BIT_XOR_EXPR or PLUS_EXPR, at least one of masked1 and masked2
+	 has to be 0, for BIT_IOR_EXPR x | x is still x.  */
+      if (masked1 && masked2 && (code != BIT_IOR_EXPR || masked1 != masked2))
 	return NULL;
     }
   n->n = n1->n | n2->n;
@@ -769,7 +771,8 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 	    return NULL;
 
 	  source_stmt
-	    = perform_symbolic_merge (source_stmt1, &n1, source_stmt2, &n2, n);
+	    = perform_symbolic_merge (source_stmt1, &n1, source_stmt2, &n2, n,
+				      code);
 
 	  if (!source_stmt)
 	    return NULL;
@@ -943,7 +946,8 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
 	      else if (!do_shift_rotate (LSHIFT_EXPR, &n0, eltsz))
 		return NULL;
 	      ins_stmt
-		= perform_symbolic_merge (ins_stmt, &n0, source_stmt, &n1, n);
+		= perform_symbolic_merge (ins_stmt, &n0, source_stmt, &n1, n,
+					  BIT_IOR_EXPR);
 
 	      if (!ins_stmt)
 		return NULL;
@@ -2881,7 +2885,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
 	  end = MAX (end, info->bitpos + info->bitsize);
 
 	  ins_stmt = perform_symbolic_merge (ins_stmt, &n, info->ins_stmt,
-					     &this_n, &n);
+					     &this_n, &n, BIT_IOR_EXPR);
 	  if (ins_stmt == NULL)
 	    return false;
 	}
