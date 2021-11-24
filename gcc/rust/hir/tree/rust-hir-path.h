@@ -317,7 +317,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   bool opening_scope_resolution () { return has_opening_scope_resolution; }
 
@@ -420,7 +420,7 @@ public:
   Location get_locus () const { return locus; }
 
   // not pure virtual as class not abstract
-  virtual void accept_vis (HIRVisitor &vis);
+  virtual void accept_vis (HIRFullVisitor &vis);
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
@@ -469,7 +469,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   GenericArgs &get_generic_args () { return generic_args; }
 
@@ -597,7 +597,7 @@ public:
 
   bool is_ident_only () const override { return false; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   virtual SegmentType get_type () const override final
   {
@@ -700,7 +700,7 @@ public:
 
   Location get_locus () const { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   size_t get_num_segments () const { return segments.size (); }
 
@@ -823,7 +823,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   QualifiedPathType &get_path_type () { return path_type; }
 
@@ -921,7 +921,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   QualifiedPathType &get_path_type () { return path_type; }
 

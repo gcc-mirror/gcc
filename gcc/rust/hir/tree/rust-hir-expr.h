@@ -93,7 +93,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Literal *get_literal () { return &literal; }
 
@@ -186,7 +186,7 @@ public:
       mut (mut), double_borrow (is_double_borrow)
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Mutability get_mut () const { return mut; }
   bool is_mut () const { return mut == Mutability::Mut; }
@@ -222,7 +222,7 @@ public:
 		    std::move (outer_attribs), locus)
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -254,7 +254,7 @@ public:
 		    std::move (outer_attribs), locus)
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -298,7 +298,7 @@ public:
       expr_type (expr_kind)
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -366,10 +366,10 @@ public:
   ArithmeticOrLogicalExpr &operator= (ArithmeticOrLogicalExpr &&other)
     = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
-  void visit_lhs (HIRVisitor &vis) { main_or_left_expr->accept_vis (vis); }
-  void visit_rhs (HIRVisitor &vis) { right_expr->accept_vis (vis); }
+  void visit_lhs (HIRFullVisitor &vis) { main_or_left_expr->accept_vis (vis); }
+  void visit_rhs (HIRFullVisitor &vis) { right_expr->accept_vis (vis); }
 
   Expr *get_lhs () { return main_or_left_expr.get (); }
   Expr *get_rhs () { return right_expr.get (); }
@@ -440,7 +440,7 @@ public:
   ComparisonExpr (ComparisonExpr &&other) = default;
   ComparisonExpr &operator= (ComparisonExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_lhs () { return main_or_left_expr.get (); }
   Expr *get_rhs () { return right_expr.get (); }
@@ -513,7 +513,7 @@ public:
 
   ExprType get_expr_type () const { return expr_type; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_lhs () { return main_or_left_expr.get (); }
 
@@ -574,7 +574,7 @@ public:
   TypeCastExpr (TypeCastExpr &&other) = default;
   TypeCastExpr &operator= (TypeCastExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_casted_expr ()
   {
@@ -642,10 +642,10 @@ public:
   AssignmentExpr (AssignmentExpr &&other) = default;
   AssignmentExpr &operator= (AssignmentExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
-  void visit_lhs (HIRVisitor &vis) { main_or_left_expr->accept_vis (vis); }
-  void visit_rhs (HIRVisitor &vis) { right_expr->accept_vis (vis); }
+  void visit_lhs (HIRFullVisitor &vis) { main_or_left_expr->accept_vis (vis); }
+  void visit_rhs (HIRFullVisitor &vis) { right_expr->accept_vis (vis); }
 
   Expr *get_lhs () { return main_or_left_expr.get (); }
   Expr *get_rhs () { return right_expr.get (); }
@@ -714,7 +714,7 @@ public:
   CompoundAssignmentExpr (CompoundAssignmentExpr &&other) = default;
   CompoundAssignmentExpr &operator= (CompoundAssignmentExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_left_expr ()
   {
@@ -728,8 +728,8 @@ public:
     return right_expr;
   }
 
-  void visit_lhs (HIRVisitor &vis) { main_or_left_expr->accept_vis (vis); }
-  void visit_rhs (HIRVisitor &vis) { right_expr->accept_vis (vis); }
+  void visit_lhs (HIRFullVisitor &vis) { main_or_left_expr->accept_vis (vis); }
+  void visit_rhs (HIRFullVisitor &vis) { right_expr->accept_vis (vis); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -786,7 +786,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_expr_in_parens ()
   {
@@ -825,7 +825,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
 protected:
   // pure virtual clone implementation
@@ -868,7 +868,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   size_t get_num_elements () const { return values.size (); }
 
@@ -916,7 +916,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_elem_to_copy () { return elem_to_copy.get (); }
 
@@ -983,7 +983,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   ArrayElems *get_internal_elements () { return internal_elements.get (); };
 
@@ -1048,7 +1048,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_array_expr () { return array_expr.get (); }
   Expr *get_index_expr () { return index_expr.get (); }
@@ -1126,7 +1126,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   const std::vector<std::unique_ptr<Expr> > &get_tuple_elems () const
   {
@@ -1200,7 +1200,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_tuple_expr ()
   {
@@ -1266,7 +1266,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1346,7 +1346,7 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
   Analysis::NodeMapping &get_mappings () { return mappings; }
 
@@ -1380,7 +1380,7 @@ public:
 
   std::string as_string () const override { return field_name; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_field_name () const { return field_name; }
 
@@ -1449,7 +1449,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1477,7 +1477,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   TupleIndex get_tuple_index () const { return index; };
 
@@ -1549,7 +1549,7 @@ public:
   StructExprStructFields (StructExprStructFields &&other) = default;
   StructExprStructFields &operator= (StructExprStructFields &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::vector<std::unique_ptr<StructExprField> > &get_fields ()
   {
@@ -1605,7 +1605,7 @@ public:
       struct_base (std::move (base_struct))
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
   StructBase *get_struct_base () { return &struct_base; }
 
 protected:
@@ -1678,7 +1678,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_fnexpr () { return function.get (); }
 
@@ -1760,7 +1760,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_receiver () { return receiver; }
 
@@ -1836,7 +1836,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_receiver_expr ()
   {
@@ -1980,7 +1980,7 @@ public:
   ClosureExprInner (ClosureExprInner &&other) = default;
   ClosureExprInner &operator= (ClosureExprInner &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2074,7 +2074,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   bool is_final_stmt (Stmt *stmt) { return statements.back ().get () == stmt; }
 
@@ -2159,7 +2159,7 @@ public:
   ClosureExprInnerTyped (ClosureExprInnerTyped &&other) = default;
   ClosureExprInnerTyped &operator= (ClosureExprInnerTyped &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2199,7 +2199,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Lifetime &get_label () { return label; }
 
@@ -2278,7 +2278,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Lifetime &get_label () { return label; }
 
@@ -2349,7 +2349,7 @@ public:
   RangeFromToExpr (RangeFromToExpr &&other) = default;
   RangeFromToExpr &operator= (RangeFromToExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2399,7 +2399,7 @@ public:
   RangeFromExpr (RangeFromExpr &&other) = default;
   RangeFromExpr &operator= (RangeFromExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2450,7 +2450,7 @@ public:
   RangeToExpr (RangeToExpr &&other) = default;
   RangeToExpr &operator= (RangeToExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2480,7 +2480,7 @@ public:
   {}
   // outer attributes not allowed
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2536,7 +2536,7 @@ public:
   RangeFromToInclExpr (RangeFromToInclExpr &&other) = default;
   RangeFromToInclExpr &operator= (RangeFromToInclExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2587,7 +2587,7 @@ public:
   RangeToInclExpr (RangeToInclExpr &&other) = default;
   RangeToInclExpr &operator= (RangeToInclExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2653,7 +2653,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   Expr *get_expr () { return return_expr.get (); }
 
@@ -2714,7 +2714,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<BlockExpr> &get_block_expr () { return expr; }
 
@@ -2831,7 +2831,7 @@ public:
 		    std::move (loop_label), std::move (outer_attribs))
   {}
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2886,7 +2886,7 @@ public:
   WhileLoopExpr (WhileLoopExpr &&other) = default;
   WhileLoopExpr &operator= (WhileLoopExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_predicate_expr () { return condition; }
 
@@ -2961,7 +2961,7 @@ public:
   WhileLetLoopExpr (WhileLetLoopExpr &&other) = default;
   WhileLetLoopExpr &operator= (WhileLetLoopExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_cond () { return condition; }
 
@@ -3026,7 +3026,7 @@ public:
   ForLoopExpr (ForLoopExpr &&other) = default;
   ForLoopExpr &operator= (ForLoopExpr &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_iterator_expr () { return iterator_expr; }
 
@@ -3101,10 +3101,10 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
-  void vis_if_condition (HIRVisitor &vis) { condition->accept_vis (vis); }
-  void vis_if_block (HIRVisitor &vis) { if_block->accept_vis (vis); }
+  void vis_if_condition (HIRFullVisitor &vis) { condition->accept_vis (vis); }
+  void vis_if_block (HIRFullVisitor &vis) { if_block->accept_vis (vis); }
 
   Expr *get_if_condition () { return condition.get (); }
   BlockExpr *get_if_block () { return if_block.get (); }
@@ -3163,9 +3163,9 @@ public:
   IfExprConseqElse (IfExprConseqElse &&other) = default;
   IfExprConseqElse &operator= (IfExprConseqElse &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
-  void vis_else_block (HIRVisitor &vis) { else_block->accept_vis (vis); }
+  void vis_else_block (HIRFullVisitor &vis) { else_block->accept_vis (vis); }
 
   BlockExpr *get_else_block () { return else_block.get (); }
 
@@ -3230,9 +3230,9 @@ public:
   IfExprConseqIf (IfExprConseqIf &&other) = default;
   IfExprConseqIf &operator= (IfExprConseqIf &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
-  void vis_conseq_if_expr (HIRVisitor &vis)
+  void vis_conseq_if_expr (HIRFullVisitor &vis)
   {
     conseq_if_expr->accept_vis (vis);
   }
@@ -3325,7 +3325,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3385,7 +3385,7 @@ public:
   IfExprConseqIfLet (IfExprConseqIfLet &&other) = default;
   IfExprConseqIfLet &operator= (IfExprConseqIfLet &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3452,7 +3452,7 @@ public:
   IfLetExprConseqElse (IfLetExprConseqElse &&other) = default;
   IfLetExprConseqElse &operator= (IfLetExprConseqElse &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3518,7 +3518,7 @@ public:
   IfLetExprConseqIf (IfLetExprConseqIf &&other) = default;
   IfLetExprConseqIf &operator= (IfLetExprConseqIf &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3584,7 +3584,7 @@ public:
   IfLetExprConseqIfLet (IfLetExprConseqIfLet &&other) = default;
   IfLetExprConseqIfLet &operator= (IfLetExprConseqIfLet &&other) = default;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3756,7 +3756,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3800,7 +3800,7 @@ public:
 
   std::string as_string () const override;
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3868,7 +3868,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::unique_ptr<Expr> &get_scrutinee_expr ()
   {
@@ -3931,7 +3931,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3984,7 +3984,7 @@ public:
 
   Location get_locus () const override final { return locus; }
 
-  void accept_vis (HIRVisitor &vis) override;
+  void accept_vis (HIRFullVisitor &vis) override;
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
