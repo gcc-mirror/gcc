@@ -5495,7 +5495,7 @@ package body Exp_Ch3 is
       Comp_Typ    : Entity_Id;
       Predef_List : List_Id;
 
-      Wrapper_Decl_List : List_Id := No_List;
+      Wrapper_Decl_List : List_Id;
       Wrapper_Body_List : List_Id := No_List;
 
       Renamed_Eq : Node_Id := Empty;
@@ -5906,9 +5906,7 @@ package body Exp_Ch3 is
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
          --  inherited functions, then add their bodies to the freeze actions.
 
-         if Present (Wrapper_Body_List) then
-            Append_Freeze_Actions (Typ, Wrapper_Body_List);
-         end if;
+         Append_Freeze_Actions (Typ, Wrapper_Body_List);
 
          --  Create extra formals for the primitive operations of the type.
          --  This must be done before analyzing the body of the initialization

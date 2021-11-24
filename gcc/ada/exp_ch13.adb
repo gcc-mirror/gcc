@@ -491,7 +491,7 @@ package body Exp_Ch13 is
       --  a constrained type extension with inherited discriminants.
 
       if Is_Type (E_Scope)
-        and then Ekind (E_Scope) not in Concurrent_Kind
+        and then not Is_Concurrent_Type (E_Scope)
       then
          E_Scope := Scope (E_Scope);
 
