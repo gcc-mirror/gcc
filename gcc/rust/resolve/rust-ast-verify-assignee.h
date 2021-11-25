@@ -65,14 +65,6 @@ public:
     ok = true;
     // mark the assignment to the name
     resolver->mark_assignment_to_decl (resolved_node, parent);
-
-    // check is mutable
-    if (!resolver->decl_is_mutable (resolved_node))
-      {
-	// we only allow a single assignment to immutable decls
-	if (resolver->get_num_assignments_to_decl (resolved_node) > 1)
-	  rust_error_at (expr.get_locus (), "cannot assign to immutable");
-      }
   }
 
   void visit (AST::DereferenceExpr &expr) override
