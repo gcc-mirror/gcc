@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fdump-ipa-cp-details -fno-inline -fwhole-program" }
+! { dg-options "-O3 -fdump-ipa-cp-details -fno-ipa-sra -fno-inline -fwhole-program" }
 
   real x(10)
   n = 10

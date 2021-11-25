@@ -236,6 +236,13 @@ public:
   void get_surviving_params (vec<bool> *surviving_params);
   /* Fill a vector with new indices of surviving original parameters.  */
   void get_updated_indices (vec<int> *new_indices);
+  /* If a parameter with original INDEX has survived intact, return its new
+     index.  Otherwise return -1.  In that case, if it has been split and there
+     is a new parameter representing a portion at UNIT_OFFSET for which a value
+     of a TYPE can be substituted, store its new index into SPLIT_INDEX,
+     otherwise store -1 there.  */
+  int get_updated_index_or_split (int index, unsigned unit_offset, tree type,
+				  int *split_index);
   /* Return the original index for the given new parameter index.  Return a
      negative number if not available.  */
   int get_original_index (int newidx);

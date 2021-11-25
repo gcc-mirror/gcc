@@ -449,6 +449,39 @@ ipa_param_adjustments::get_updated_indices (vec<int> *new_indices)
     }
 }
 
+/* If a parameter with original INDEX has survived intact, return its new
+   index.  Otherwise return -1.  In that case, if it has been split and there
+   is a new parameter representing a portion at unit OFFSET for which a value
+   of a TYPE can be substituted, store its new index into SPLIT_INDEX,
+   otherwise store -1 there.  */
+int
+ipa_param_adjustments::get_updated_index_or_split (int index,
+						   unsigned unit_offset,
+						   tree type, int *split_index)
+{
+  unsigned adj_len = vec_safe_length (m_adj_params);
+  for (unsigned i = 0; i < adj_len ; i++)
+    {
+      ipa_adjusted_param *apm = &(*m_adj_params)[i];
+      if (apm->base_index != index)
+	continue;
+      if (apm->op == IPA_PARAM_OP_COPY)
+	return i;
+      if (apm->op == IPA_PARAM_OP_SPLIT
+	  && apm->unit_offset == unit_offset)
+	{
+	  if (useless_type_conversion_p (apm->type, type))
+	    *split_index = i;
+	  else
+	    *split_index = -1;
+	  return -1;
+	}
+    }
+
+  *split_index = -1;
+  return -1;
+}
+
 /* Return the original index for the given new parameter index.  Return a
    negative number if not available.  */
 
