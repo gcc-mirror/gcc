@@ -2897,9 +2897,8 @@ arc_compute_frame_size (void)
 			      cfun, TARGET_DPFP))
     reg_size += UNITS_PER_WORD * 2;
 
-  /* Check for special MLO/MHI case used by ARC600' MUL64
-     extension.  */
-  if (arc_must_save_register (R58_REG, cfun, TARGET_MUL64_SET))
+  /* Check if R58 is used.  */
+  if (arc_must_save_register (R58_REG, cfun, true))
     reg_size += UNITS_PER_WORD * 2;
 
   /* 4) Calculate extra size made up of the blink + fp size.  */
@@ -3878,7 +3877,7 @@ arc_expand_prologue (void)
 	}
     }
 
-  /* Save ARC600' MUL64 registers.  */
+  /* Save accumulator registers.  */
   if (arc_must_save_register (R58_REG, cfun, true))
     frame_size_to_allocate -= arc_save_callee_saves (3ULL << 58,
 						     false, false, 0, false);
@@ -3971,7 +3970,7 @@ arc_expand_epilogue (int sibcall_p)
       first_offset = 0;
     }
 
-  /* Restore ARC600' MUL64 registers.  */
+  /* Restore accumulator registers.  */
   if (arc_must_save_register (R58_REG, cfun, true))
     {
       rtx insn;
