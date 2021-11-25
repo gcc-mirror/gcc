@@ -2743,9 +2743,7 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
   unsigned i;
   int flags = gimple_call_flags (call);
 
-  /* Const functions without a static chain do not implicitly use memory.  */
-  if (!gimple_call_chain (call)
-      && (flags & (ECF_CONST|ECF_NOVOPS)))
+  if (flags & (ECF_CONST|ECF_NOVOPS))
     goto process_args;
 
   /* A call that is not without side-effects might involve volatile
