@@ -45,19 +45,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   class __undefined;
 
-  // Given Template<T, ...> return T, otherwise invalid.
-  template<typename _Tp>
-    struct __get_first_arg
-    { using type = __undefined; };
-
-  template<template<typename, typename...> class _Template, typename _Tp,
-           typename... _Types>
-    struct __get_first_arg<_Template<_Tp, _Types...>>
-    { using type = _Tp; };
-
-  template<typename _Tp>
-    using __get_first_arg_t = typename __get_first_arg<_Tp>::type;
-
   // Given Template<T, ...> and U return Template<U, ...>, otherwise invalid.
   template<typename _Tp, typename _Up>
     struct __replace_first_arg
@@ -75,17 +62,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __make_not_void
       = typename conditional<is_void<_Tp>::value, __undefined, _Tp>::type;
 
+  template<typename _Ptr>
+    struct __ptr_traits_elem_1
+    { };
+
+  template<template<typename, typename...> class _SomePointer, typename _Tp,
+	   typename... _Args>
+    struct __ptr_traits_elem_1<_SomePointer<_Tp, _Args...>>
+    {
+      using element_type = _Tp;
+      using pointer = _SomePointer<_Tp, _Args...>;
+
+      static pointer
+      pointer_to(__make_not_void<element_type>& __e)
+      { return pointer::pointer_to(__e); }
+    };
+
+  template<typename _Ptr, typename = void>
+    struct __ptr_traits_elem : __ptr_traits_elem_1<_Ptr>
+    { };
+
+  template<typename _Ptr>
+    struct __ptr_traits_elem<_Ptr, __void_t<typename _Ptr::element_type>>
+    {
+      using element_type = typename _Ptr::element_type;
+
+      static _Ptr
+      pointer_to(__make_not_void<element_type>& __e)
+      { return _Ptr::pointer_to(__e); }
+    };
+
   /**
    * @brief  Uniform interface to all pointer-like types
    * @ingroup pointer_abstractions
   */
   template<typename _Ptr>
-    struct pointer_traits
+    struct pointer_traits : __ptr_traits_elem<_Ptr>
     {
     private:
-      template<typename _Tp>
-	using __element_type = typename _Tp::element_type;
-
       template<typename _Tp>
 	using __difference_type = typename _Tp::difference_type;
 
@@ -100,10 +114,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// The pointer type.
       using pointer = _Ptr;
 
-      /// The type pointed to.
-      using element_type
-	= __detected_or_t<__get_first_arg_t<_Ptr>, __element_type, _Ptr>;
-
       /// The type used to represent the difference between two pointers.
       using difference_type
 	= __detected_or_t<ptrdiff_t, __difference_type, _Ptr>;
@@ -111,13 +121,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// A pointer to a different type.
       template<typename _Up>
         using rebind = typename __rebind<_Ptr, _Up>::type;
-
-      static _Ptr
-      pointer_to(__make_not_void<element_type>& __e)
-      { return _Ptr::pointer_to(__e); }
-
-      static_assert(!is_same<element_type, __undefined>::value,
-	  "pointer type defines element_type or is like SomePointer<T, Args>");
     };
 
   /**
@@ -165,6 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __to_address(const _Ptr& __ptr)
     { return std::__to_address(__ptr.operator->()); }
 #else
+
   template<typename _Ptr>
     constexpr auto
     __to_address(const _Ptr& __ptr) noexcept
