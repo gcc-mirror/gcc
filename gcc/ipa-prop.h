@@ -623,8 +623,8 @@ ipa_node_params::ipa_node_params ()
 : descriptors (NULL), lattices (NULL), ipcp_orig_node (NULL),
   known_csts (vNULL), known_contexts (vNULL), analysis_done (0),
   node_enqueued (0), do_clone_for_all_contexts (0), is_all_contexts_clone (0),
-  node_dead (0), node_within_scc (0), node_calling_single_call (0),
-  versionable (0)
+  node_dead (0), node_within_scc (0), node_is_self_scc (0),
+  node_calling_single_call (0), versionable (0)
 {
 }
 
