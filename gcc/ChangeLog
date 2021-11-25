@@ -1,3 +1,138 @@
+2021-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (implicit_eaf_flags_for_edge_and_arg): Break out from...
+	(modref_merge_call_site_flags): ... here.
+	(ipa_merge_modref_summary_after_inlining): Use it.
+
+2021-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cfgloop.c (verify_loop_structure): Reduce scope of
+	'class loop *loop' variable.
+	* ipa-fnsummary.c (analyze_function_body): Likewise.
+	* loop-init.c (fix_loop_structure): Likewise.
+	* loop-invariant.c (calculate_loop_reg_pressure): Likewise.
+	* predict.c (predict_loops): Likewise.
+	* tree-loop-distribution.c (loop_distribution::execute): Likewise.
+	* tree-vectorizer.c (pass_vectorize::execute): Likewise.
+
+2021-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103231
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Create stmt stack.
+	(gimple_ranger::gimple_ranger): Delete stmt stack.
+	(gimple_ranger::range_of_stmt): Process depenedencies if they have no
+	global cache entry.
+	(gimple_ranger::prefill_name): New.
+	(gimple_ranger::prefill_stmt_dependencies): New.
+	* gimple-range.h (class gimple_ranger): Add prototypes.
+
+2021-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::get_global_range): Always
+	return a range, return if it came from the cache or not.
+	(get_non_stale_global_range): Rename to get_global_range, and return
+	the temporal state in a flag.
+	* gimple-range-cache.h (get_non_stale_global_range): Rename and adjust.
+	* gimple-range.cc (gimple_ranger::range_of_expr): No need to query
+	get_global_range.
+	(gimple_ranger::range_of_stmt): Adjust for global cache temporal state
+	returned in a flag.
+
+2021-11-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_on_edge): Call trailer when
+	a constant is encountered to terminate the trace.
+
+2021-11-24  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR middle-end/103059
+	* reload.c (find_reloads_address_1): Also accept the ASHIFT form
+	of indexed addressing.
+	(find_reloads): Adjust accordingly.
+
+2021-11-24  Richard Biener  <rguenther@suse.de>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103168
+	* ipa-modref.h (struct modref_summary): Add load_accesses.
+	* ipa-modref.c (modref_summary::finalize): Initialize load_accesses.
+	* tree-ssa-sccvn.c (visit_reference_op_call): Use modref
+	info to walk the virtual use->def chain to CSE const/pure
+	function calls possibly reading from memory.
+
+2021-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/103244
+	* gimplify.c (gimplify_adjust_omp_clauses): Restore previous
+	OpenACC behavior.
+
+2021-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103193
+	* match.pd: Avoid canonicalizing (le/ge @0 @0) to (eq @0 @0)
+	with NaNs and -ftrapping-math.
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103384
+	* omp-general.c (omp_context_selector_matches): For ACCEL_COMPILER,
+	return 0 for kind(host) and continue for kind(nohost).
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103365
+	* attribs.h (lookup_attribute): Allow attr_name to start with
+	underscore, as long as canonicalize_attr_name returns false.
+	(lookup_attribute_by_prefix): Don't call get_attribute_name twice.
+	* attribs.c (extract_attribute_substring): Reimplement using
+	canonicalize_attr_name.
+	(register_scoped_attribute): Change gcc_assert into
+	gcc_checking_assert, verify !canonicalize_attr_name rather than
+	that str.str doesn't start with '_'.
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103376
+	* gimple-ssa-store-merging.c (perform_symbolic_merge): Add CODE
+	argument.  If CODE is not BIT_IOR_EXPR, ensure that one of masked1
+	or masked2 is 0.
+	(find_bswap_or_nop_1, find_bswap_or_nop,
+	imm_store_chain_info::try_coalesce_bswap): Adjust
+	perform_symbolic_merge callers.
+
+2021-11-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.c (find_givs): Take loop body as
+	argument instead of re-computing it.
+	(find_interesting_uses): Likewise.
+	(find_induction_variables): Pass through loop body.
+	(tree_ssa_iv_optimize_loop): Pass down loop body.
+
+2021-11-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-ssa-phiopt.c (spaceship_replacement): Handle new canonical
+	codegen.
+
+2021-11-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree.c (bitmask_inv_cst_vector_p): New.
+	* tree.h (bitmask_inv_cst_vector_p): New.
+	* match.pd: Use it in new bitmask compare pattern.
+
+2021-11-24  Jason Merrill  <jason@redhat.com>
+
+	* timevar.h (class auto_cond_timevar): New.
+
+2021-11-24  Hongtao Liu  <hongtao.liu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/103194
+	* match.pd (gimple_nop_atomic_bit_test_and_p): Extended to
+	match truncation.
+	* tree-ssa-ccp.c (gimple_nop_convert): Declare.
+	(optimize_atomic_bit_test_and): Enhance
+	optimize_atomic_bit_test_and to handle truncation.
+
 2021-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/88232

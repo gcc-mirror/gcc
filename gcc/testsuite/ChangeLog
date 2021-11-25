@@ -1,3 +1,78 @@
+2021-11-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/execute/pr103405.c: New test.
+
+2021-11-24  Richard Biener  <rguenther@suse.de>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/103168
+	* g++.dg/tree-ssa/pr103168.C: New testcase.
+
+2021-11-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/103244
+	* c-c++-common/goacc/combined-reduction.c: Revert/expect previous
+	OpenACC behavior.
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Likewise.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+	* g++.dg/goacc/firstprivate-mappings-1.C: Likewise.
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103365
+	* c-c++-common/Wno-attributes-1.c: Require effective target
+	c || c++11 and drop dg-additional-options.
+	* c-c++-common/Wno-attributes-2.c: Likewise.
+	* c-c++-common/Wno-attributes-4.c: New test.
+	* c-c++-common/Wno-attributes-5.c: New test.
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103376
+	* gcc.c-torture/execute/pr103376.c: New test.
+
+2021-11-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/bic-bitmask-10.c: New test.
+	* gcc.dg/bic-bitmask-11.c: New test.
+	* gcc.dg/bic-bitmask-12.c: New test.
+	* gcc.dg/bic-bitmask-13.c: New test.
+	* gcc.dg/bic-bitmask-14.c: New test.
+	* gcc.dg/bic-bitmask-15.c: New test.
+	* gcc.dg/bic-bitmask-16.c: New test.
+	* gcc.dg/bic-bitmask-17.c: New test.
+	* gcc.dg/bic-bitmask-18.c: New test.
+	* gcc.dg/bic-bitmask-19.c: New test.
+	* gcc.dg/bic-bitmask-2.c: New test.
+	* gcc.dg/bic-bitmask-20.c: New test.
+	* gcc.dg/bic-bitmask-21.c: New test.
+	* gcc.dg/bic-bitmask-22.c: New test.
+	* gcc.dg/bic-bitmask-23.c: New test.
+	* gcc.dg/bic-bitmask-3.c: New test.
+	* gcc.dg/bic-bitmask-4.c: New test.
+	* gcc.dg/bic-bitmask-5.c: New test.
+	* gcc.dg/bic-bitmask-6.c: New test.
+	* gcc.dg/bic-bitmask-7.c: New test.
+	* gcc.dg/bic-bitmask-8.c: New test.
+	* gcc.dg/bic-bitmask-9.c: New test.
+	* gcc.dg/bic-bitmask.h: New test.
+	* gcc.target/aarch64/bic-bitmask-1.c: New test.
+
+2021-11-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103347
+	* g++.dg/cpp0x/nsdmi-warn1.C: New test.
+	* g++.dg/cpp0x/nsdmi-warn1.h: New file.
+
+2021-11-24  Hongtao Liu  <hongtao.liu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr103194-2.c: New test.
+	* gcc.target/i386/pr103194-3.c: New test.
+	* gcc.target/i386/pr103194-4.c: New test.
+	* gcc.target/i386/pr103194-5.c: New test.
+	* gcc.target/i386/pr103194.c: New test.
+
 2021-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/96507

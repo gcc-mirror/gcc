@@ -1,3 +1,26 @@
+2021-11-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103347
+	* cp-tree.h (struct cp_declarator): Add a location_t member.
+	(maybe_warn_cpp0x): Add a location_t parameter with a default argument.
+	(loc_or_input_loc): New.
+	* decl.c (grokdeclarator): Use loc_or_input_loc.  Pass init_loc down
+	to maybe_warn_cpp0x.
+	* error.c (maybe_warn_cpp0x): Add a location_t parameter.  Use it.
+	* parser.c (make_declarator): Initialize init_loc.
+	(cp_parser_member_declaration): Set init_loc.
+	(cp_parser_condition): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+
+2021-11-24  Jason Merrill  <jason@redhat.com>
+
+	* call.c
+	* decl.c
+	* name-lookup.c:
+	Use auto_cond_timevar instead of timevar_cond_start/stop.
+	Remove wrapper functions.
+
 2021-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/96507

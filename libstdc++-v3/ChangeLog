@@ -1,3 +1,15 @@
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for
+	debug mode.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Rename effective target keywords
+	to avoid dashes in the name.
+	* testsuite/*: Update effective targe keywords.
+
 2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103086

@@ -1,3 +1,10 @@
+2021-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* download_prerequisites: Update to gmp-6.2.1, mpfr-4.1.0,
+	mpc-1.2.1 and isl-0.24.
+	* prerequisites.md5: Update hash.
+	* prerequisites.sha512: Likewise.
+
 2021-11-23  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Filter -Wc++20-extensions as it does
