@@ -556,6 +556,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
   n->bytepos = n_start->bytepos;
   n->type = n_start->type;
   size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+  uint64_t res_n = n1->n | n2->n;
 
   for (i = 0, mask = MARKER_MASK; i < size; i++, mask <<= BITS_PER_MARKER)
     {
@@ -563,12 +564,33 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 
       masked1 = n1->n & mask;
       masked2 = n2->n & mask;
-      /* For BIT_XOR_EXPR or PLUS_EXPR, at least one of masked1 and masked2
-	 has to be 0, for BIT_IOR_EXPR x | x is still x.  */
-      if (masked1 && masked2 && (code != BIT_IOR_EXPR || masked1 != masked2))
-	return NULL;
+      /* If at least one byte is 0, all of 0 | x == 0 ^ x == 0 + x == x.  */
+      if (masked1 && masked2)
+	{
+	  /* + can carry into upper bits, just punt.  */
+	  if (code == PLUS_EXPR)
+	    return NULL;
+	  /* x | x is still x.  */
+	  if (code == BIT_IOR_EXPR && masked1 == masked2)
+	    continue;
+	  if (code == BIT_XOR_EXPR)
+	    {
+	      /* x ^ x is 0, but MARKER_BYTE_UNKNOWN stands for
+		 unknown values and unknown ^ unknown is unknown.  */
+	      if (masked1 == masked2
+		  && masked1 != ((uint64_t) MARKER_BYTE_UNKNOWN
+				 << i * BITS_PER_MARKER))
+		{
+		  res_n &= ~mask;
+		  continue;
+		}
+	    }
+	  /* Otherwise set the byte to unknown, it might still be
+	     later masked off.  */
+	  res_n |= mask;
+	}
     }
-  n->n = n1->n | n2->n;
+  n->n = res_n;
   n->n_ops = n1->n_ops + n2->n_ops;
 
   return source_stmt;
