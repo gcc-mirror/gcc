@@ -368,7 +368,7 @@ public:
 
   virtual bool needs_generic_substitutions () const { return false; }
 
-  virtual bool contains_type_parameters () const { return false; }
+  bool contains_type_parameters () const { return !is_concrete (); }
 
   std::string mappings_str () const
   {
@@ -555,19 +555,13 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  bool contains_type_parameters () const override final
-  {
-    if (can_resolve ())
-      {
-	auto r = resolve ();
-	return r->contains_type_parameters ();
-      }
-    return true;
-  }
-
   bool is_concrete () const override final
   {
-    return !contains_type_parameters ();
+    if (!can_resolve ())
+      return false;
+
+    auto r = resolve ();
+    return r->is_concrete ();
   }
 
   ParamType *handle_substitions (SubstitutionArgumentMappings mappings);
@@ -658,16 +652,6 @@ public:
   const std::vector<TyVar> &get_fields () const { return fields; }
 
   std::string get_name () const override final { return as_string (); }
-
-  bool contains_type_parameters () const override final
-  {
-    for (auto &f : fields)
-      {
-	if (f.get_tyty ()->contains_type_parameters ())
-	  return true;
-      }
-    return false;
-  }
 
   TupleType *handle_substitions (SubstitutionArgumentMappings mappings);
 
@@ -1909,14 +1893,9 @@ public:
 
   BaseType *clone () const final override;
 
-  bool contains_type_parameters () const override final
-  {
-    return get_base ()->contains_type_parameters ();
-  }
-
   bool is_concrete () const override final
   {
-    return !contains_type_parameters ();
+    return get_base ()->is_concrete ();
   }
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
@@ -1962,14 +1941,9 @@ public:
 
   BaseType *clone () const final override;
 
-  bool contains_type_parameters () const override final
-  {
-    return get_base ()->contains_type_parameters ();
-  }
-
   bool is_concrete () const override final
   {
-    return !contains_type_parameters ();
+    return get_base ()->is_concrete ();
   }
 
   PointerType *handle_substitions (SubstitutionArgumentMappings mappings);
@@ -2104,17 +2078,12 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  bool contains_type_parameters () const override
-  {
-    if (!can_resolve ())
-      return false;
-
-    return resolve ()->contains_type_parameters ();
-  }
-
   bool is_concrete () const override final
   {
-    return !contains_type_parameters ();
+    if (!can_resolve ())
+      return true;
+
+    return resolve ()->is_concrete ();
   }
 
 private:
@@ -2177,15 +2146,7 @@ public:
   const BaseType *get () const { return base; }
   BaseType *get () { return base; }
 
-  bool contains_type_parameters () const override
-  {
-    return base->contains_type_parameters ();
-  }
-
-  bool is_concrete () const override final
-  {
-    return !contains_type_parameters ();
-  }
+  bool is_concrete () const override final { return base->is_concrete (); }
 
   ProjectionType *
   handle_substitions (SubstitutionArgumentMappings mappings) override final;

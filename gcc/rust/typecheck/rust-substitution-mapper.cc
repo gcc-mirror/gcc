@@ -31,10 +31,8 @@ SubstMapperInternal::Resolve (TyTy::BaseType *base,
   rust_assert (mapper.resolved != nullptr);
 
   // insert these new implict types into the context
-  bool is_fn = mapper.resolved->get_kind () == TyTy::TypeKind::FNDEF;
-  bool is_adt = mapper.resolved->get_kind () == TyTy::TypeKind::ADT;
   bool is_param = mapper.resolved->get_kind () == TyTy::TypeKind::PARAM;
-  if (!is_fn && !is_adt && !is_param)
+  if (!is_param)
     {
       auto context = TypeCheckContext::get ();
       context->insert_type (
