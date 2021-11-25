@@ -2,6 +2,7 @@
 /* { dg-options "-O2" } */
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define FOO(RTYPE,TYPE)							\
   __attribute__((noinline,noclone)) RTYPE				\
@@ -53,7 +54,7 @@
     return __sync_fetch_and_and (a, ~mask) & mask;			\
   }									\
 
-FOO(int, long);
+FOO(int, int64_t);
 
 /* { dg-final { scan-assembler-times "lock;?\[ \t\]*bts" 2 } } */
 /* { dg-final { scan-assembler-times "lock;?\[ \t\]*btc" 4 } } */
