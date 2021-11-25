@@ -1209,7 +1209,6 @@ pass_vectorize::execute (function *fun)
   unsigned int i;
   unsigned int num_vectorized_loops = 0;
   unsigned int vect_loops_num;
-  class loop *loop;
   hash_table<simduid_to_vf> *simduid_to_vf_htab = NULL;
   hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab = NULL;
   bool any_ifcvt_loops = false;
@@ -1293,7 +1292,7 @@ pass_vectorize::execute (function *fun)
   if (any_ifcvt_loops)
     for (i = 1; i < number_of_loops (fun); i++)
       {
-	loop = get_loop (fun, i);
+	class loop *loop = get_loop (fun, i);
 	if (loop && loop->dont_vectorize)
 	  {
 	    gimple *g = vect_loop_vectorized_call (loop);
@@ -1342,7 +1341,7 @@ pass_vectorize::execute (function *fun)
       loop_vec_info loop_vinfo;
       bool has_mask_store;
 
-      loop = get_loop (fun, i);
+      class loop *loop = get_loop (fun, i);
       if (!loop || !loop->aux)
 	continue;
       loop_vinfo = (loop_vec_info) loop->aux;

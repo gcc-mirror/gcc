@@ -4677,9 +4677,12 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       return;
     }
   else if (CONVERT_EXPR_P (op)
-      && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (op, 0))))
+	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (op, 0))))
     {
       STRIP_NOPS (op);
+
+      if (TREE_CODE (op) == COMPONENT_REF)
+	op = TREE_OPERAND (op, 1);
 
       if (DECL_P (op))
 	warned = warning_at (location, OPT_Waddress,

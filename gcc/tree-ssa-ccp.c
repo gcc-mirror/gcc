@@ -3326,6 +3326,7 @@ convert_atomic_bit_not (enum internal_fn fn, gimple *use_stmt,
  */
 extern bool gimple_nop_atomic_bit_test_and_p (tree, tree *,
 					      tree (*) (tree));
+extern bool gimple_nop_convert (tree, tree*, tree (*) (tree));
 
 /* Optimize
      mask_2 = 1 << cnt_1;
@@ -3462,16 +3463,16 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	  ibit = 0;
 	}
       else if (TYPE_PRECISION (TREE_TYPE (use_lhs))
-	       == TYPE_PRECISION (TREE_TYPE (use_rhs)))
+	       <= TYPE_PRECISION (TREE_TYPE (use_rhs)))
 	{
 	  gimple *use_nop_stmt;
 	  if (!single_imm_use (use_lhs, &use_p, &use_nop_stmt)
 	      || !is_gimple_assign (use_nop_stmt))
 	    return;
+	  tree use_nop_lhs = gimple_assign_lhs (use_nop_stmt);
 	  rhs_code = gimple_assign_rhs_code (use_nop_stmt);
 	  if (rhs_code != BIT_AND_EXPR)
 	    {
-	      tree use_nop_lhs = gimple_assign_lhs (use_nop_stmt);
 	      if (TREE_CODE (use_nop_lhs) == SSA_NAME
 		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (use_nop_lhs))
 		return;
@@ -3584,24 +3585,23 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	    }
 	  else
 	    {
-	      tree and_expr = gimple_assign_lhs (use_nop_stmt);
 	      tree match_op[3];
 	      gimple *g;
-	      if (!gimple_nop_atomic_bit_test_and_p (and_expr,
+	      if (!gimple_nop_atomic_bit_test_and_p (use_nop_lhs,
 						     &match_op[0], NULL)
 		  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (match_op[2])
 		  || !single_imm_use (match_op[2], &use_p, &g)
 		  || !is_gimple_assign (g))
 		return;
-	      mask = match_op[1];
-	      if (TREE_CODE (mask) == INTEGER_CST)
+	      mask = match_op[0];
+	      if (TREE_CODE (match_op[1]) == INTEGER_CST)
 		{
-		  ibit = tree_log2 (mask);
+		  ibit = tree_log2 (match_op[1]);
 		  gcc_assert (ibit >= 0);
 		}
 	      else
 		{
-		  g = SSA_NAME_DEF_STMT (mask);
+		  g = SSA_NAME_DEF_STMT (match_op[1]);
 		  gcc_assert (is_gimple_assign (g));
 		  bit = gimple_assign_rhs2 (g);
 		}
@@ -3623,19 +3623,30 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 		 _1 = __atomic_fetch_and_* (ptr_6, ~mask_7, _3);
 		 _12 = _3 & mask_7;
 		 _5 = (int) _12;
-	       */
-	      replace_uses_by (use_lhs, lhs);
-	      tree use_nop_lhs = gimple_assign_lhs (use_nop_stmt);
-	      var = make_ssa_name (TREE_TYPE (use_nop_lhs));
-	      gimple_assign_set_lhs (use_nop_stmt, var);
+
+		 and Convert
+		 _1 = __atomic_fetch_and_4 (ptr_6, ~mask, _3);
+		 _2 = (short int) _1;
+		 _5 = _2 & mask;
+		 to
+		 _1 = __atomic_fetch_and_4 (ptr_6, ~mask, _3);
+		 _8 = _1 & mask;
+		 _5 = (short int) _8;
+	      */
+	      gimple_seq stmts = NULL;
+	      match_op[1] = gimple_convert (&stmts,
+					    TREE_TYPE (use_rhs),
+					    match_op[1]);
+	      var = gimple_build (&stmts, BIT_AND_EXPR,
+				  TREE_TYPE (use_rhs), use_rhs, match_op[1]);
 	      gsi = gsi_for_stmt (use_stmt);
 	      gsi_remove (&gsi, true);
 	      release_defs (use_stmt);
-	      gsi_remove (gsip, true);
-	      g = gimple_build_assign (use_nop_lhs, NOP_EXPR, var);
+	      use_stmt = gimple_seq_last_stmt (stmts);
 	      gsi = gsi_for_stmt (use_nop_stmt);
-	      gsi_insert_after (&gsi, g, GSI_NEW_STMT);
-	      use_stmt = use_nop_stmt;
+	      gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+	      gimple_assign_set_rhs_with_ops (&gsi, CONVERT_EXPR, var);
+	      update_stmt (use_nop_stmt);
 	    }
 	}
       else
@@ -3671,55 +3682,47 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
       else if (TREE_CODE (mask) == SSA_NAME)
 	{
 	  gimple *g = SSA_NAME_DEF_STMT (mask);
-	  if (fn == IFN_ATOMIC_BIT_TEST_AND_RESET)
+	  tree match_op;
+	  if (gimple_nop_convert (mask, &match_op, NULL))
 	    {
-	      if (!is_gimple_assign (g)
-		  || gimple_assign_rhs_code (g) != BIT_NOT_EXPR)
-		return;
-	      mask = gimple_assign_rhs1 (g);
+	      mask = match_op;
 	      if (TREE_CODE (mask) != SSA_NAME)
 		return;
 	      g = SSA_NAME_DEF_STMT (mask);
 	    }
 	  if (!is_gimple_assign (g))
 	    return;
-	  rhs_code = gimple_assign_rhs_code (g);
-	  if (rhs_code != LSHIFT_EXPR)
-	    {
-	      if (rhs_code != NOP_EXPR)
-		return;
 
-	      /* Handle
-		 _1 = 1 << bit_4(D);
-		 mask_5 = (unsigned int) _1;
-		 _2 = __atomic_fetch_or_4 (v_7(D), mask_5, 0);
-		 _3 = _2 & mask_5;
-		 */
-	      tree nop_lhs = gimple_assign_lhs (g);
-	      tree nop_rhs = gimple_assign_rhs1 (g);
-	      if (TYPE_PRECISION (TREE_TYPE (nop_lhs))
-		  != TYPE_PRECISION (TREE_TYPE (nop_rhs)))
+	  if (fn == IFN_ATOMIC_BIT_TEST_AND_RESET)
+	    {
+	      if (gimple_assign_rhs_code (g) != BIT_NOT_EXPR)
 		return;
-	      g = SSA_NAME_DEF_STMT (nop_rhs);
-	      if (!is_gimple_assign (g)
-		  || gimple_assign_rhs_code (g) != LSHIFT_EXPR)
+	      mask = gimple_assign_rhs1 (g);
+	      if (TREE_CODE (mask) != SSA_NAME)
 		return;
+	      g = SSA_NAME_DEF_STMT (mask);
 	    }
-	  if (!integer_onep (gimple_assign_rhs1 (g)))
+
+	  rhs_code = gimple_assign_rhs_code (g);
+	  if (rhs_code != LSHIFT_EXPR
+	      || !integer_onep (gimple_assign_rhs1 (g)))
 	    return;
 	  bit = gimple_assign_rhs2 (g);
 	}
       else
 	return;
 
+      tree cmp_mask;
       if (gimple_assign_rhs1 (use_stmt) == lhs)
-	{
-	  if (!operand_equal_p (gimple_assign_rhs2 (use_stmt), mask, 0))
-	    return;
-	}
-      else if (gimple_assign_rhs2 (use_stmt) != lhs
-	       || !operand_equal_p (gimple_assign_rhs1 (use_stmt),
-				    mask, 0))
+	cmp_mask = gimple_assign_rhs2 (use_stmt);
+      else
+	cmp_mask = gimple_assign_rhs1 (use_stmt);
+
+      tree match_op;
+      if (gimple_nop_convert (cmp_mask, &match_op, NULL))
+	cmp_mask = match_op;
+
+      if (!operand_equal_p (cmp_mask, mask, 0))
 	return;
     }
 

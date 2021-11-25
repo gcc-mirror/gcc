@@ -401,6 +401,27 @@ path_range_query::compute_ranges_in_phis (basic_block bb)
     }
 }
 
+// Compute ranges defined in block.
+
+void
+path_range_query::compute_ranges_defined (basic_block bb)
+{
+  int_range_max r;
+
+  compute_ranges_in_phis (bb);
+
+  // Iterate in gimple order to minimize recursion.
+  for (auto gsi = gsi_start_nondebug_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    if (gimple_has_lhs (gsi_stmt (gsi)))
+      {
+	tree name = gimple_get_lhs (gsi_stmt (gsi));
+	if (TREE_CODE (name) == SSA_NAME
+	    && bitmap_bit_p (m_imports, SSA_NAME_VERSION (name))
+	    && range_defined_in_block (r, name, bb))
+	  set_cache (r, name);
+      }
+}
+
 // Compute ranges defined in the current block, or exported to the
 // next block.
 
@@ -423,17 +444,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 	clear_cache (name);
     }
 
-  // Solve imports defined in this block, starting with the PHIs...
-  compute_ranges_in_phis (bb);
-  // ...and then the rest of the imports.
-  EXECUTE_IF_SET_IN_BITMAP (m_imports, 0, i, bi)
-    {
-      tree name = ssa_name (i);
-
-      if (gimple_code (SSA_NAME_DEF_STMT (name)) != GIMPLE_PHI
-	  && range_defined_in_block (r, name, bb))
-	set_cache (r, name);
-    }
+  compute_ranges_defined (bb);
 
   if (at_exit ())
     return;
@@ -526,7 +537,8 @@ void
 path_range_query::compute_imports (bitmap imports, basic_block exit)
 {
   // Start with the imports from the exit block...
-  bitmap r_imports = m_ranger->gori ().imports (exit);
+  gori_compute &gori = m_ranger->gori ();
+  bitmap r_imports = gori.imports (exit);
   bitmap_copy (imports, r_imports);
 
   auto_vec<tree> worklist (bitmap_count_bits (imports));
@@ -568,6 +580,16 @@ path_range_query::compute_imports (bitmap imports, basic_block exit)
 	    }
 	}
     }
+  // Exported booleans along the path, may help conditionals.
+  if (m_resolve)
+    for (i = 0; i < m_path.length (); ++i)
+      {
+	basic_block bb = m_path[i];
+	tree name;
+	FOR_EACH_GORI_EXPORT_NAME (gori, bb, name)
+	  if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
+	    bitmap_set_bit (imports, SSA_NAME_VERSION (name));
+      }
 }
 
 // Compute the ranges for IMPORTS along PATH.
@@ -610,18 +632,6 @@ path_range_query::compute_ranges (const vec<basic_block> &path,
   while (1)
     {
       basic_block bb = curr_bb ();
-
-      if (m_resolve)
-	{
-	  gori_compute &gori = m_ranger->gori ();
-	  tree name;
-
-	  // Exported booleans along the path, may help conditionals.
-	  // Add them as interesting imports.
-	  FOR_EACH_GORI_EXPORT_NAME (gori, bb, name)
-	    if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
-	      bitmap_set_bit (m_imports, SSA_NAME_VERSION (name));
-	}
 
       compute_ranges_in_block (bb);
       adjust_for_non_null_uses (bb);

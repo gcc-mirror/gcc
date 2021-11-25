@@ -322,6 +322,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wno-implicit-function-declaration  -Wno-implicit-int @gol
+-Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
 -Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
@@ -3441,19 +3442,27 @@ about ABI tags.
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 Warn about uses of a comma expression within a subscripting expression.
-This usage was deprecated in C++20.  However, a comma expression wrapped
-in @code{( )} is not deprecated.  Example:
+This usage was deprecated in C++20 and is going to be removed in C++23.
+However, a comma expression wrapped in @code{( )} is not deprecated.  Example:
 
 @smallexample
 @group
 void f(int *a, int b, int c) @{
-    a[b,c];     // deprecated
+    a[b,c];     // deprecated in C++20, invalid in C++23
     a[(b,c)];   // OK
 @}
 @end group
 @end smallexample
 
-Enabled by default with @option{-std=c++20}.
+In C++23 it is valid to have comma separated expressions in a subscript
+when an overloaded subscript operator is found and supports the right
+number and types of arguments.  G++ will accept the formerly valid syntax
+for code that is not valid in C++23 but used to be valid but deprecated
+in C++20 with a pedantic warning that can be disabled with
+@option{-Wno-comma-subscript}.
+
+Enabled by default with @option{-std=c++20} unless @option{-Wno-deprecated},
+and with @option{-std=c++23} regardless of @option{-Wno-deprecated}.
 
 @item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
 @opindex Wctad-maybe-unsupported
@@ -6156,6 +6165,14 @@ undefined behavior due to dereferencing a null pointer.  This option
 is only active when @option{-fdelete-null-pointer-checks} is active,
 which is enabled by optimizations in most targets.  The precision of
 the warnings depends on the optimization options used.
+
+@item -Winfinite-recursion
+@opindex Winfinite-recursion
+@opindex Wno-infinite-recursion
+Warn about infinitely recursive calls.  The warning is effective at all
+optimization levels but requires optimization in order to detect infinite
+recursion in calls between two or more functions.
+@option{-Winfinite-recursion} is included in @option{-Wall}.
 
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
@@ -12063,8 +12080,8 @@ Initialize automatic variables with either a pattern or with zeroes to increase
 the security and predictability of a program by preventing uninitialized memory
 disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
-initializer as uninitialized, -Wuninitialized will still report warning messages
-on such automatic variables.
+initializer as uninitialized, @option{-Wuninitialized} will still report
+warning messages on such automatic variables.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
 

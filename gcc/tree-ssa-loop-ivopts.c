@@ -1462,22 +1462,20 @@ find_givs_in_bb (struct ivopts_data *data, basic_block bb)
 /* Finds general ivs.  */
 
 static void
-find_givs (struct ivopts_data *data)
+find_givs (struct ivopts_data *data, basic_block *body)
 {
   class loop *loop = data->current_loop;
-  basic_block *body = get_loop_body_in_dom_order (loop);
   unsigned i;
 
   for (i = 0; i < loop->num_nodes; i++)
     find_givs_in_bb (data, body[i]);
-  free (body);
 }
 
 /* For each ssa name defined in LOOP determines whether it is an induction
    variable and if so, its initial value and step.  */
 
 static bool
-find_induction_variables (struct ivopts_data *data)
+find_induction_variables (struct ivopts_data *data, basic_block *body)
 {
   unsigned i;
   bitmap_iterator bi;
@@ -1485,7 +1483,7 @@ find_induction_variables (struct ivopts_data *data)
   if (!find_bivs (data))
     return false;
 
-  find_givs (data);
+  find_givs (data, body);
   mark_bivs (data);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2736,11 +2734,10 @@ split_address_groups (struct ivopts_data *data)
 /* Finds uses of the induction variables that are interesting.  */
 
 static void
-find_interesting_uses (struct ivopts_data *data)
+find_interesting_uses (struct ivopts_data *data, basic_block *body)
 {
   basic_block bb;
   gimple_stmt_iterator bsi;
-  basic_block *body = get_loop_body (data->current_loop);
   unsigned i;
   edge e;
 
@@ -2760,7 +2757,6 @@ find_interesting_uses (struct ivopts_data *data)
 	if (!is_gimple_debug (gsi_stmt (bsi)))
 	  find_interesting_uses_stmt (data, gsi_stmt (bsi));
     }
-  free (body);
 
   split_address_groups (data);
 
@@ -8077,11 +8073,11 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, class loop *loop,
 
   /* For each ssa name determines whether it behaves as an induction variable
      in some loop.  */
-  if (!find_induction_variables (data))
+  if (!find_induction_variables (data, body))
     goto finish;
 
   /* Finds interesting uses (item 1).  */
-  find_interesting_uses (data);
+  find_interesting_uses (data, body);
   if (data->vgroups.length () > MAX_CONSIDERED_GROUPS)
     goto finish;
 

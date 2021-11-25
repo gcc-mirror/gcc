@@ -1,6 +1,6 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
 /* { dg-options "-O2 -std=c99 -mcpu=power9" } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target p9vector_hw } */
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -28,7 +28,7 @@ int main ()
   if (mffs_val.ll != mffsl_val.ll)
     {
 #ifdef DEBUG
-      printf("ERROR, __builtin_mffsl() returned 0x%llx, not the expecected value 0x%llx\n",
+      printf("ERROR, __builtin_mffsl() returned 0x%llx, not the expected value 0x%llx\n",
 	     mffsl_val.ll, mffs_val.ll);
 #else
       abort();

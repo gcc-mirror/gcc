@@ -53,6 +53,8 @@ struct GTY(()) modref_summary
 
   /* Flags coputed by finalize method.  */
 
+  /* Total number of accesses in loads tree.  */
+  unsigned int load_accesses;
   /* global_memory_read is not set for functions calling functions
      with !binds_to_current_def which, after interposition, may read global
      memory but do nothing useful with it (except for crashing if some

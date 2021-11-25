@@ -874,11 +874,11 @@ test_insert_search_collapse ()
   modref_ref_node<alias_set_type> *ref_node;
   modref_access_node a = unspecified_modref_access_node;
 
-  modref_tree<alias_set_type> *t = new modref_tree<alias_set_type>(1, 2, 2);
+  modref_tree<alias_set_type> *t = new modref_tree<alias_set_type>();
   ASSERT_FALSE (t->every_base);
 
   /* Insert into an empty tree.  */
-  t->insert (1, 2, a, false);
+  t->insert (1, 2, 2, 1, 2, a, false);
   ASSERT_NE (t->bases, NULL);
   ASSERT_EQ (t->bases->length (), 1);
   ASSERT_FALSE (t->every_base);
@@ -896,7 +896,7 @@ test_insert_search_collapse ()
   ASSERT_EQ (ref_node->ref, 2);
 
   /* Insert when base exists but ref does not.  */
-  t->insert (1, 3, a, false);
+  t->insert (1, 2, 2, 1, 3, a, false);
   ASSERT_NE (t->bases, NULL);
   ASSERT_EQ (t->bases->length (), 1);
   ASSERT_EQ (t->search (1), base_node);
@@ -909,7 +909,7 @@ test_insert_search_collapse ()
 
   /* Insert when base and ref exist, but access is not dominated by nor
      dominates other accesses.  */
-  t->insert (1, 2, a, false);
+  t->insert (1, 2, 2, 1, 2, a, false);
   ASSERT_EQ (t->bases->length (), 1);
   ASSERT_EQ (t->search (1), base_node);
 
@@ -917,12 +917,12 @@ test_insert_search_collapse ()
   ASSERT_NE (ref_node, NULL);
 
   /* Insert when base and ref exist and access is dominated.  */
-  t->insert (1, 2, a, false);
+  t->insert (1, 2, 2, 1, 2, a, false);
   ASSERT_EQ (t->search (1), base_node);
   ASSERT_EQ (base_node->search (2), ref_node);
 
   /* Insert ref to trigger ref list collapse for base 1.  */
-  t->insert (1, 4, a, false);
+  t->insert (1, 2, 2, 1, 4, a, false);
   ASSERT_EQ (t->search (1), base_node);
   ASSERT_EQ (base_node->refs, NULL);
   ASSERT_EQ (base_node->search (2), NULL);
@@ -930,7 +930,7 @@ test_insert_search_collapse ()
   ASSERT_TRUE (base_node->every_ref);
 
   /* Further inserts to collapsed ref list are ignored.  */
-  t->insert (1, 5, a, false);
+  t->insert (1, 2, 2, 1, 5, a, false);
   ASSERT_EQ (t->search (1), base_node);
   ASSERT_EQ (base_node->refs, NULL);
   ASSERT_EQ (base_node->search (2), NULL);
@@ -938,13 +938,13 @@ test_insert_search_collapse ()
   ASSERT_TRUE (base_node->every_ref);
 
   /* Insert base to trigger base list collapse.  */
-  t->insert (5, 0, a, false);
+  t->insert (1, 2, 2, 5, 0, a, false);
   ASSERT_TRUE (t->every_base);
   ASSERT_EQ (t->bases, NULL);
   ASSERT_EQ (t->search (1), NULL);
 
   /* Further inserts to collapsed base list are ignored.  */
-  t->insert (7, 8, a, false);
+  t->insert (1, 2, 2, 7, 8, a, false);
   ASSERT_TRUE (t->every_base);
   ASSERT_EQ (t->bases, NULL);
   ASSERT_EQ (t->search (1), NULL);
@@ -959,23 +959,23 @@ test_merge ()
   modref_base_node<alias_set_type> *base_node;
   modref_access_node a = unspecified_modref_access_node;
 
-  t1 = new modref_tree<alias_set_type>(3, 4, 1);
-  t1->insert (1, 1, a, false);
-  t1->insert (1, 2, a, false);
-  t1->insert (1, 3, a, false);
-  t1->insert (2, 1, a, false);
-  t1->insert (3, 1, a, false);
+  t1 = new modref_tree<alias_set_type>();
+  t1->insert (3, 4, 1, 1, 1, a, false);
+  t1->insert (3, 4, 1, 1, 2, a, false);
+  t1->insert (3, 4, 1, 1, 3, a, false);
+  t1->insert (3, 4, 1, 2, 1, a, false);
+  t1->insert (3, 4, 1, 3, 1, a, false);
 
-  t2 = new modref_tree<alias_set_type>(10, 10, 10);
-  t2->insert (1, 2, a, false);
-  t2->insert (1, 3, a, false);
-  t2->insert (1, 4, a, false);
-  t2->insert (3, 2, a, false);
-  t2->insert (3, 3, a, false);
-  t2->insert (3, 4, a, false);
-  t2->insert (3, 5, a, false);
+  t2 = new modref_tree<alias_set_type>();
+  t2->insert (10, 10, 10, 1, 2, a, false);
+  t2->insert (10, 10, 10, 1, 3, a, false);
+  t2->insert (10, 10, 10, 1, 4, a, false);
+  t2->insert (10, 10, 10, 3, 2, a, false);
+  t2->insert (10, 10, 10, 3, 3, a, false);
+  t2->insert (10, 10, 10, 3, 4, a, false);
+  t2->insert (10, 10, 10, 3, 5, a, false);
 
-  t1->merge (t2, NULL, NULL, false);
+  t1->merge (3, 4, 1, t2, NULL, NULL, false);
 
   ASSERT_FALSE (t1->every_base);
   ASSERT_NE (t1->bases, NULL);

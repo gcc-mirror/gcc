@@ -71,6 +71,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "builtins.h"
 #include "fold-const-call.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -5084,12 +5086,136 @@ visit_reference_op_call (tree lhs, gcall *stmt)
   struct vn_reference_s vr1;
   vn_reference_t vnresult = NULL;
   tree vdef = gimple_vdef (stmt);
+  modref_summary *summary;
 
   /* Non-ssa lhs is handled in copy_reference_ops_from_call.  */
   if (lhs && TREE_CODE (lhs) != SSA_NAME)
     lhs = NULL_TREE;
 
   vn_reference_lookup_call (stmt, &vnresult, &vr1);
+
+  /* If the lookup did not succeed for pure functions try to use
+     modref info to find a candidate to CSE to.  */
+  const unsigned accesses_limit = 8;
+  if (!vnresult
+      && !vdef
+      && lhs
+      && gimple_vuse (stmt)
+      && (((summary = get_modref_function_summary (stmt, NULL))
+	   && !summary->global_memory_read
+	   && summary->load_accesses < accesses_limit)
+	  || gimple_call_flags (stmt) & ECF_CONST))
+    {
+      /* First search if we can do someting useful and build a
+	 vector of all loads we have to check.  */
+      bool unknown_memory_access = false;
+      auto_vec<ao_ref, accesses_limit> accesses;
+      unsigned load_accesses = summary ? summary->load_accesses : 0;
+      if (!unknown_memory_access)
+	/* Add loads done as part of setting up the call arguments.
+	   That's also necessary for CONST functions which will
+	   not have a modref summary.  */
+	for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
+	  {
+	    tree arg = gimple_call_arg (stmt, i);
+	    if (TREE_CODE (arg) != SSA_NAME
+		&& !is_gimple_min_invariant (arg))
+	      {
+		if (accesses.length () >= accesses_limit - load_accesses)
+		  {
+		    unknown_memory_access = true;
+		    break;
+		  }
+		accesses.quick_grow (accesses.length () + 1);
+		ao_ref_init (&accesses.last (), arg);
+	      }
+	  }
+      if (summary && !unknown_memory_access)
+	{
+	  /* Add loads as analyzed by IPA modref.  */
+	  for (auto base_node : summary->loads->bases)
+	    if (unknown_memory_access)
+	      break;
+	    else for (auto ref_node : base_node->refs)
+	      if (unknown_memory_access)
+		break;
+	      else for (auto access_node : ref_node->accesses)
+		{
+		  accesses.quick_grow (accesses.length () + 1);
+		  ao_ref *r = &accesses.last ();
+		  if (!access_node.get_ao_ref (stmt, r))
+		    {
+		      /* Initialize a ref based on the argument and
+			 unknown offset if possible.  */
+		      tree arg = access_node.get_call_arg (stmt);
+		      if (arg && TREE_CODE (arg) == SSA_NAME)
+			arg = SSA_VAL (arg);
+		      if (arg
+			  && TREE_CODE (arg) == ADDR_EXPR
+			  && (arg = get_base_address (arg))
+			  && DECL_P (arg))
+			{
+			  ao_ref_init (r, arg);
+			  r->ref = NULL_TREE;
+			  r->base = arg;
+			}
+		      else
+			{
+			  unknown_memory_access = true;
+			  break;
+			}
+		    }
+		  r->base_alias_set = base_node->base;
+		  r->ref_alias_set = ref_node->ref;
+		}
+	}
+
+      /* Walk the VUSE->VDEF chain optimistically trying to find an entry
+	 for the call in the hashtable.  */
+      unsigned limit = (unknown_memory_access
+			? 0
+			: (param_sccvn_max_alias_queries_per_access
+			   / (accesses.length () + 1)));
+      tree saved_vuse = vr1.vuse;
+      hashval_t saved_hashcode = vr1.hashcode;
+      while (limit > 0 && !vnresult && !SSA_NAME_IS_DEFAULT_DEF (vr1.vuse))
+	{
+	  vr1.hashcode = vr1.hashcode - SSA_NAME_VERSION (vr1.vuse);
+	  gimple *def = SSA_NAME_DEF_STMT (vr1.vuse);
+	  /* ???  We could use fancy stuff like in walk_non_aliased_vuses, but
+	     do not bother for now.  */
+	  if (is_a <gphi *> (def))
+	    break;
+	  vr1.vuse = vuse_ssa_val (gimple_vuse (def));
+	  vr1.hashcode = vr1.hashcode + SSA_NAME_VERSION (vr1.vuse);
+	  vn_reference_lookup_1 (&vr1, &vnresult);
+	  limit--;
+	}
+
+      /* If we found a candidate to CSE to verify it is valid.  */
+      if (vnresult && !accesses.is_empty ())
+	{
+	  tree vuse = vuse_ssa_val (gimple_vuse (stmt));
+	  while (vnresult && vuse != vr1.vuse)
+	    {
+	      gimple *def = SSA_NAME_DEF_STMT (vuse);
+	      for (auto &ref : accesses)
+		{
+		  /* ???  stmt_may_clobber_ref_p_1 does per stmt constant
+		     analysis overhead that we might be able to cache.  */
+		  if (stmt_may_clobber_ref_p_1 (def, &ref, true))
+		    {
+		      vnresult = NULL;
+		      break;
+		    }
+		}
+	      vuse = vuse_ssa_val (gimple_vuse (def));
+	    }
+	}
+      vr1.vuse = saved_vuse;
+      vr1.hashcode = saved_hashcode;
+    }
+
   if (vnresult)
     {
       if (vnresult->result_vdef && vdef)

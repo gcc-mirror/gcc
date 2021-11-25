@@ -17,7 +17,7 @@
 
 // { dg-do run { target c++11 } }
 // COW strings don't support C++11 allocator propagation:
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 #include <string>
 #include <testsuite_hooks.h>

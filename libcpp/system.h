@@ -430,6 +430,8 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 # else
 #  define ATTR_LIKELY
 # endif
+#else
+# define ATTR_LIKELY
 #endif
 
 /* Poison identifiers we do not want to use.  */

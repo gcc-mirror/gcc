@@ -1,3 +1,17 @@
+2021-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103392
+	* simplify.c (simplify_bound): Do not try to simplify
+	LBOUND/UBOUND for arrays with POINTER or ALLOCATABLE attribute.
+
+2021-11-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/87711
+	PR fortran/87851
+	* trans-array.c (arg_evaluated_for_scalarization): Add LEN_TRIM to
+	list of intrinsics for which an optional KIND argument needs to be
+	removed before scalarization.
+
 2021-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/103315

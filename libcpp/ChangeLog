@@ -1,3 +1,15 @@
+2021-11-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR preprocessor/103355
+	* system.h (ATTR_LIKELY): Fix definition.
+
+2021-11-23  Marek Polacek  <polacek@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/103355
+	* lex.c: Use ATTR_LIKELY instead of [[likely]].
+	* system.h (ATTR_LIKELY): Define.
+
 2021-11-22  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

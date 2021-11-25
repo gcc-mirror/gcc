@@ -1542,6 +1542,7 @@ make_declarator (cp_declarator_kind kind)
   declarator->declarator = NULL;
   declarator->parameter_pack_p = false;
   declarator->id_loc = UNKNOWN_LOCATION;
+  declarator->init_loc = UNKNOWN_LOCATION;
 
   return declarator;
 }
@@ -7897,11 +7898,62 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
   return error_mark_node;
 }
 
+/* Helper function for cp_parser_parenthesized_expression_list and
+   cp_parser_postfix_open_square_expression.  Parse a single element
+   of parenthesized expression list.  */
+
+static cp_expr
+cp_parser_parenthesized_expression_list_elt (cp_parser *parser, bool cast_p,
+					     bool allow_expansion_p,
+					     bool fold_expr_p,
+					     bool *non_constant_p)
+{
+  cp_expr expr (NULL_TREE);
+  bool expr_non_constant_p;
+
+  /* Parse the next assignment-expression.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      /* A braced-init-list.  */
+      cp_lexer_set_source_position (parser->lexer);
+      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
+      expr = cp_parser_braced_list (parser, &expr_non_constant_p);
+      if (non_constant_p && expr_non_constant_p)
+	*non_constant_p = true;
+    }
+  else if (non_constant_p)
+    {
+      expr = cp_parser_constant_expression (parser,
+					    /*allow_non_constant_p=*/true,
+					    &expr_non_constant_p);
+      if (expr_non_constant_p)
+	*non_constant_p = true;
+    }
+  else
+    expr = cp_parser_assignment_expression (parser, /*pidk=*/NULL, cast_p);
+
+  if (fold_expr_p)
+    expr = instantiate_non_dependent_expr (expr);
+
+  /* If we have an ellipsis, then this is an expression expansion.  */
+  if (allow_expansion_p
+      && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+    {
+      /* Consume the `...'.  */
+      cp_lexer_consume_token (parser->lexer);
+
+      /* Build the argument pack.  */
+      expr = make_pack_expansion (expr);
+    }
+  return expr;
+}
+
 /* A subroutine of cp_parser_postfix_expression that also gets hijacked
    by cp_parser_builtin_offsetof.  We're looking for
 
      postfix-expression [ expression ]
      postfix-expression [ braced-init-list ] (C++11)
+     postfix-expression [ expression-list[opt] ] (C++23)
 
    FOR_OFFSETOF is set if we're being called in that context, which
    changes how we deal with integer constant expressions.  */
@@ -7913,6 +7965,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 					  bool decltype_p)
 {
   tree index = NULL_TREE;
+  releasing_vec expression_list = NULL;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
   bool saved_greater_than_is_operator_p;
 
@@ -7934,7 +7987,49 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
     index = cp_parser_constant_expression (parser);
   else
     {
-      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+      if (cxx_dialect >= cxx23
+	  && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
+	*&expression_list = make_tree_vector ();
+      else if (cxx_dialect >= cxx23)
+	{
+	  while (true)
+	    {
+	      cp_expr expr
+		= cp_parser_parenthesized_expression_list_elt (parser,
+							       /*cast_p=*/
+							       false,
+							       /*allow_exp_p=*/
+							       true,
+							       /*fold_expr_p=*/
+							       false,
+							       /*non_cst_p=*/
+							       NULL);
+
+	      if (expr == error_mark_node)
+		index = error_mark_node;
+	      else if (expression_list.get () == NULL
+		       && !PACK_EXPANSION_P (expr.get_value ()))
+		index = expr.get_value ();
+	      else
+		vec_safe_push (expression_list, expr.get_value ());
+
+	      /* If the next token isn't a `,', then we are done.  */
+	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+		break;
+
+	      if (expression_list.get () == NULL && index != error_mark_node)
+		{
+		  *&expression_list = make_tree_vector_single (index);
+		  index = NULL_TREE;
+		}
+
+	      /* Otherwise, consume the `,' and keep going.  */
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  if (expression_list.get () && index == error_mark_node)
+	    expression_list.release ();
+	}
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	{
 	  bool expr_nonconst_p;
 	  cp_lexer_set_source_position (parser->lexer);
@@ -7954,7 +8049,9 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 
   /* Build the ARRAY_REF.  */
   postfix_expression = grok_array_decl (loc, postfix_expression,
-					index, decltype_p);
+					index, &expression_list,
+					tf_warning_or_error
+					| (decltype_p ? tf_decltype : 0));
 
   /* When not doing offsetof, array references are not permitted in
      constant-expressions.  */
@@ -8314,44 +8411,11 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	  }
 	else
 	  {
-	    bool expr_non_constant_p;
-
-	    /* Parse the next assignment-expression.  */
-	    if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
-	      {
-		/* A braced-init-list.  */
-		cp_lexer_set_source_position (parser->lexer);
-		maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
-		expr = cp_parser_braced_list (parser, &expr_non_constant_p);
-		if (non_constant_p && expr_non_constant_p)
-		  *non_constant_p = true;
-	      }
-	    else if (non_constant_p)
-	      {
-		expr = (cp_parser_constant_expression
-			(parser, /*allow_non_constant_p=*/true,
-			 &expr_non_constant_p));
-		if (expr_non_constant_p)
-		  *non_constant_p = true;
-	      }
-	    else
-	      expr = cp_parser_assignment_expression (parser, /*pidk=*/NULL,
-						      cast_p);
-
-	    if (fold_expr_p)
-	      expr = instantiate_non_dependent_expr (expr);
-
-            /* If we have an ellipsis, then this is an expression
-	       expansion.  */
-            if (allow_expansion_p
-                && cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
-              {
-                /* Consume the `...'.  */
-                cp_lexer_consume_token (parser->lexer);
-
-                /* Build the argument pack.  */
-                expr = make_pack_expansion (expr);
-              }
+	    expr
+	      = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
+							     allow_expansion_p,
+							     fold_expr_p,
+							     non_constant_p);
 
 	    if (wrap_locations_p)
 	      expr.maybe_add_location_wrapper ();
@@ -10624,8 +10688,8 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 
 	case CPP_DEREF:
 	  /* offsetof-member-designator "->" identifier */
-	  expr = grok_array_decl (token->location, expr,
-				  integer_zero_node, false);
+	  expr = grok_array_decl (token->location, expr, integer_zero_node,
+				  NULL, tf_warning_or_error);
 	  /* FALLTHRU */
 
 	case CPP_DOT:
@@ -13286,6 +13350,7 @@ cp_parser_condition (cp_parser* parser)
 			     attributes, prefix_attributes,
 			     &pushed_scope);
 
+	  declarator->init_loc = cp_lexer_peek_token (parser->lexer)->location;
 	  /* Parse the initializer.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	    {
@@ -22492,6 +22557,7 @@ cp_parser_init_declarator (cp_parser* parser,
     {
       is_initialized = SD_INITIALIZED;
       initialization_kind = token->type;
+      declarator->init_loc = token->location;
       if (maybe_range_for_decl)
 	*maybe_range_for_decl = error_mark_node;
       tmp_init_loc = token->location;
@@ -24751,6 +24817,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
     {
       tree type = decl_specifiers.type;
       token = cp_lexer_peek_token (parser->lexer);
+      if (declarator)
+	declarator->init_loc = token->location;
       /* If we are defining a class, then the tokens that make up the
 	 default argument must be saved and processed later.  */
       if (!template_parm_p && at_class_scope_p ()
@@ -27143,6 +27211,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		     constant-initializer.  When we call `grokfield', it will
 		     perform more stringent semantics checks.  */
 		  initializer_token_start = cp_lexer_peek_token (parser->lexer);
+		  declarator->init_loc = initializer_token_start->location;
 		  if (function_declarator_p (declarator)
 		      || (decl_specifiers.type
 			  && TREE_CODE (decl_specifiers.type) == TYPE_DECL
@@ -27171,6 +27240,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		       && !function_declarator_p (declarator))
 		{
 		  bool x;
+		  declarator->init_loc
+		    = cp_lexer_peek_token (parser->lexer)->location;
 		  if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
 		  else

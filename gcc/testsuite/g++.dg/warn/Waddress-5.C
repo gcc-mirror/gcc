@@ -12,7 +12,7 @@ struct A
   virtual void vf ();
   virtual void pvf () = 0;
 
-  void sf ();
+  static void sf ();
 
   int *p;
   int a[2];
