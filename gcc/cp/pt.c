@@ -11712,6 +11712,9 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
   /* Apply any non-dependent attributes.  */
   *p = nondep;
 
+  if (nondep == attributes)
+    return true;
+
   /* And then any dependent ones.  */
   tree late_attrs = NULL_TREE;
   tree *q = &late_attrs;
