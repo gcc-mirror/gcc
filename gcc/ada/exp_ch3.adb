@@ -580,8 +580,7 @@ package body Exp_Ch3 is
 
       --  Place body in list of freeze actions for the type.
 
-      Ensure_Freeze_Node (Type_Id);
-      Append_Freeze_Actions (Type_Id, New_List (Body_Node));
+      Append_Freeze_Action (Type_Id, Body_Node);
    end Build_Access_Subprogram_Wrapper_Body;
 
    ---------------------------

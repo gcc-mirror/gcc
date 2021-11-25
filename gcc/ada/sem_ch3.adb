@@ -6815,8 +6815,7 @@ package body Sem_Ch3 is
       --  in a dispatch table.
 
       if not GNATprove_Mode then
-         Ensure_Freeze_Node (Id);
-         Append_Freeze_Actions (Id, New_List (New_Decl));
+         Append_Freeze_Action (Id, New_Decl);
 
       --  Under GNATprove mode there is no such problem but we do not declare
       --  it in the freezing actions since they are not analyzed under this

@@ -3761,7 +3761,6 @@ package body Contracts is
 
          ICW_Decl := Build_ICW_Decl;
 
-         Ensure_Freeze_Node (Tagged_Type);
          Append_Freeze_Action (Tagged_Type, ICW_Decl);
          Analyze (ICW_Decl);
 
@@ -4034,7 +4033,6 @@ package body Contracts is
 
          --  Add the helper to the freezing actions of the tagged type
 
-         Ensure_Freeze_Node   (Tagged_Type);
          Append_Freeze_Action (Tagged_Type, Helper_Decl);
          Analyze (Helper_Decl);
 

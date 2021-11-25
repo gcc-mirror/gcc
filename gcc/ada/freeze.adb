@@ -2044,9 +2044,8 @@ package body Freeze is
                --  node of the record type declaration to ensure that it will
                --  override the internal primitive built by Derive_Subprogram.
 
-               Ensure_Freeze_Node (R);
-
                if Late_Overriding then
+                  Ensure_Freeze_Node (R);
                   Insert_Before_And_Analyze (Freeze_Node (R), DTW_Decl);
                else
                   Append_Freeze_Action (R, DTW_Decl);
