@@ -1293,6 +1293,8 @@ protected:
       return false;
 
     // mark the required tree addressable
+    Adjuster adj (lhs);
+    TyTy::BaseType *receiver_adjusted_self_ty = adj.adjust_type (adjustments);
     if (Adjuster::needs_address (adjustments))
       AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
 
@@ -1324,14 +1326,12 @@ protected:
 		TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
 		rust_assert (fntype->is_method ());
 
-		Adjuster adj (lhs);
-		TyTy::BaseType *adjusted = adj.adjust_type (adjustments);
-
 		bool is_lang_item_impl
 		  = trait_reference->get_mappings ().get_defid ()
 		    == respective_lang_item_id;
 		bool self_is_lang_item_self
-		  = fntype->get_self_type ()->is_equal (*adjusted);
+		  = fntype->get_self_type ()->is_equal (
+		    *receiver_adjusted_self_ty);
 		bool recursive_operator_overload
 		  = is_lang_item_impl && self_is_lang_item_self;
 
@@ -1415,8 +1415,20 @@ protected:
 	  }
       }
 
+    // handle generics
+    if (!receiver_is_type_param)
+      {
+	if (lookup->needs_generic_substitutions ())
+	  {
+	    lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
+	  }
+      }
+
     // type check the arguments if required
     TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
+    rust_assert (type->num_params () > 0);
+    auto fnparam = type->param_at (0);
+    fnparam.second->unify (receiver_adjusted_self_ty); // typecheck the self
     if (rhs == nullptr)
       {
 	rust_assert (type->num_params () == 1);
@@ -1429,7 +1441,7 @@ protected:
       }
 
     // get the return type
-    TyTy::BaseType *function_ret_tyty = fn->get_return_type ()->clone ();
+    TyTy::BaseType *function_ret_tyty = type->get_return_type ()->clone ();
 
     // store the expected fntype
     context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);
