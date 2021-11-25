@@ -166,11 +166,8 @@ genericize_if_stmt (tree *stmt_p)
      can contain unfolded immediate function calls, we have to discard
      the then_ block regardless of whether else_ has side-effects or not.  */
   if (IF_STMT_CONSTEVAL_P (stmt))
-    stmt = else_;
-  else if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
-    stmt = then_;
-  else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
-    stmt = else_;
+    stmt = build3 (COND_EXPR, void_type_node, boolean_false_node,
+		   void_node, else_);
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
   protected_set_expr_location_if_unset (stmt, locus);
