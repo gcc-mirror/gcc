@@ -1,3 +1,13 @@
+2021-11-24  Maciej W. Rozycki  <macro@embecosm.com>
+
+	Backported from master:
+	2021-11-24  Maciej W. Rozycki  <macro@embecosm.com>
+
+	PR middle-end/103059
+	* reload.c (find_reloads_address_1): Also accept the ASHIFT form
+	of indexed addressing.
+	(find_reloads): Adjust accordingly.
+
 2021-11-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/101985

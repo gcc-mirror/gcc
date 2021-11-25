@@ -1,3 +1,7 @@
+2021-11-24  Martin Liska  <mliska@suse.cz>
+
+	* jit-playback.c (function): Initialize m_blocks vector.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

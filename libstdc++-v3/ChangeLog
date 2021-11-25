@@ -1,3 +1,356 @@
+2021-11-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2021-08-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Replace 'failed_assertion'
+	dg-prune-output reason with 'builtin_unreachable'.
+	* testsuite/25_algorithms/copy_backward/debug/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc: Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/cons/default.cc: Add
+	equality comparison operators to allocator.
+	* testsuite/23_containers/unordered_set/cons/default.cc:
+	Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility (__is_in_place_type_v): Define
+	variable template to detect in_place_type_t specializations.
+	(__is_in_place_type): Replace class template with alias
+	template using __is_in_place_type_v.
+	* include/std/any (any(T&&)): Check __is_in_place_type first and
+	avoid instantiating is_copy_constructible unnecessarily.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Suppress doxygen documentation.
+	* include/bits/allocated_ptr.h: Likewise.
+	* include/bits/enable_special_members.h: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/uses_allocator.h: Likewise.
+	* include/bits/node_handle.h: Document node handles and suppress
+	documentation for protected members.
+	* include/std/any: Suppress documentation for implementation
+	details.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100748
+	PR libstdc++/103133
+	* config/os/gnu-linux/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK):
+	Define for glibc 2.34 and later.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Print results of random_device_available checks.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/random_device/cons/token.cc:
+	Retry if random devices produce the same value.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_construct.h (_Construct): Use
+	std::construct_at when constant evaluated.
+	* include/std/optional (_Storage, _Optional_payload, optional):
+	Add constexpr as specified by P2231R1.
+	* include/std/version (__cpp_lib_optional): Update value for
+	C++20.
+	* testsuite/20_util/optional/requirements.cc: Check feature test
+	macro.
+	* testsuite/20_util/optional/constexpr/assign.cc: New test.
+	* testsuite/20_util/optional/constexpr/cons/conv.cc: New test.
+	* testsuite/20_util/optional/constexpr/modifiers.cc: New test.
+	* testsuite/20_util/optional/constexpr/swap.cc: New test.
+	* testsuite/20_util/optional/version.cc: New test.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional (__throw_bad_optional_access):
+	Replace GNU attribute with C++11 attribute.
+	(optional::value, optional::value_or): Use if statements
+	instead of conditional expressions.
+	* include/std/optional (__throw_bad_optional_access)
+	(optional::value, optional::value_or): Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (nullptr_t): Make constructor noexcept.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98725
+	* include/std/ostream (operator<<(basic_ostream<char, Tr>&, wchar_t))
+	(operator<<(basic_ostream<char, Tr>&, const wchar_t*)): Always
+	define as deleted. Do not check _GLIBCXX_USE_WCHAR_T.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (operator<<(const volatile void*)):
+	Add new overload, as per P1147R1.
+	* testsuite/27_io/basic_ostream/inserters_other/char/volatile_ptr.cc:
+	New test.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102894
+	* include/std/any (make_any): Add SFINAE constraint.
+	* testsuite/20_util/any/102894.cc: New test.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/system_error.cc (generic_error_category): Define
+	class and virtual functions as 'final'.
+	(generic_error_category::equivalent(int, const error_condition&)):
+	Override.
+	(system_error_category): Define class and virtual functions as
+	'final'.
+	(system_error_category::equivalent(int, const error_condition&)):
+	Override.
+	(generic_category_instance, system_category_instance): Use
+	constinit union to make the objects immortal.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98421
+	* include/std/span (span(Iter, size_type), span(Iter, Iter)):
+	Add valid range checks.
+	* testsuite/23_containers/span/cons_1_assert_neg.cc: New test.
+	* testsuite/23_containers/span/cons_2_assert_neg.cc: New test.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function::function(F&&)): Give
+	name to defaulted template parameter, to improve diagnostics.
+	Use markdown for more doxygen comments.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_function_base::_Base_manager):
+	Replace _M_init_functor with a function template using a
+	forwarding reference, and a pair of _M_create function
+	templates. Reuse _M_create for the clone operation.
+	(function::_Decay_t): New alias template.
+	(function::_Callable): Simplify by using _Decay.
+	(function::function(F)): Change parameter to forwarding
+	reference, as per LWG 2447. Add noexcept-specifier. Simplify
+	constraints.
+	(function::operator=(F&&)): Add noexcept-specifier.
+	* testsuite/20_util/function/cons/lwg2774.cc: New test.
+	* testsuite/20_util/function/cons/noexcept.cc: New test.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.9.2
+
+2021-11-24  Antony Polukhin  <antoshkka@gmail.com>
+
+	Backported from master:
+	2021-08-17  Antony Polukhin  <antoshkka@gmail.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (seed_seq::seed_seq): Reserve capacity
+	if distance is O(1).
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (function::function(F)): Add
+	static assertions to check constructibility requirements.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Function_base): Add
+	default member initializers and define constructor as defaulted.
+	(function::_M_invoker): Add default member initializer.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_function.h: Improve doxygen comments.
+
+2021-11-24  Tim Adye  <Tim.Adye@cern.ch>
+
+	Backported from master:
+	2021-06-04  Tim Adye  <Tim.Adye@cern.ch>
+
+	* include/std/any (any::_Manager::_S_access): New static
+	function to access the contained value.
+	(any::emplace, __any_caster): Use _S_access member of the
+	manager type.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/syncstream (basic_syncbuf::swap()): Remove
+	noexcept, as per LWG 3498.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100153
+	* include/bits/vector.tcc (vector<bool>::_M_shrink_to_fit()):
+	When size() is zero just deallocate and reset.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward(remove_reference_t<T>&&)):
+	Improve text of static_assert.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/conversions/buffer/1.cc: Check
+	_GLIBCXX_USE_WCHAR_T.
+	* testsuite/22_locale/conversions/buffer/3.cc: Likewise. Add
+	test using char16_t.
+	* testsuite/22_locale/conversions/string/1.cc: Check
+	_GLIBCXX_USE_WCHAR_T.
+	* testsuite/27_io/filesystem/path/generic/generic_string.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/modifiers/make_preferred.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/native/alloc.cc: Likewise.
+	* testsuite/27_io/filesystem/path/native/string-char8_t.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/native/string.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/generic/generic_string.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/native/alloc.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/native/string-char8_t.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/path/native/string.cc:
+	Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/gdb-test.exp: Add target selector support to the
+	dg-final directives.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for
+	C++20.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Tweak
+	comment.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100117
+	* testsuite/17_intro/headers/c++1998/49745.cc: Explicitly list
+	all C++ headers instead of including <bits/stdc++.h>
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/modifiers/append/wchar_t/1.cc:
+	Fix reads past the end of strings.
+	* testsuite/21_strings/basic_string/operations/compare/wchar_t/1.cc:
+	Likewise.
+	* testsuite/experimental/string_view/operations/compare/wchar_t/1.cc:
+	Likewise.
+
+2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103086
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check unique_ptr
+	with non-empty pointer and non-empty deleter.
+
 2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
