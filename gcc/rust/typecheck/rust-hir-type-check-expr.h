@@ -1264,7 +1264,6 @@ protected:
     const TyTy::BaseType *root = lhs->get_root ();
 
     // look up lang item for arithmetic type
-    std::vector<PathProbeCandidate> candidates;
     std::string associated_item_name
       = Analysis::RustLangItem::ToString (lang_item_type);
     DefId respective_lang_item_id = UNKNOWN_DEFID;
@@ -1272,28 +1271,34 @@ protected:
       = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
     // probe for the lang-item
-    if (lang_item_defined)
-      {
-	bool receiver_is_type_param
-	  = root->get_kind () == TyTy::TypeKind::PARAM;
-	bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
+    if (!lang_item_defined)
+      return false;
 
-	bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
-	bool probe_bounds = true;
-	bool probe_impls = !receiver_is_generic;
-	bool ignore_mandatory_trait_items = !receiver_is_generic;
+    bool receiver_is_type_param = root->get_kind () == TyTy::TypeKind::PARAM;
+    bool receiver_is_dyn = root->get_kind () == TyTy::TypeKind::DYNAMIC;
+    bool receiver_is_generic = receiver_is_type_param || receiver_is_dyn;
+    bool probe_bounds = true;
+    bool probe_impls = !receiver_is_generic;
+    bool ignore_mandatory_trait_items = !receiver_is_generic;
 
-	candidates = PathProbeType::Probe (
-	  root, HIR::PathIdentSegment (associated_item_name), probe_impls,
-	  probe_bounds, ignore_mandatory_trait_items, respective_lang_item_id);
-      }
+    auto candidates = PathProbeType::Probe (
+      root, HIR::PathIdentSegment (associated_item_name), probe_impls,
+      probe_bounds, ignore_mandatory_trait_items, respective_lang_item_id);
 
-    // autoderef
+    // autoderef to find the relevant method
     std::vector<Adjustment> adjustments;
     PathProbeCandidate *resolved_candidate
       = MethodResolution::Select (candidates, lhs, adjustments);
+    if (resolved_candidate == nullptr)
+      return false;
+
+    bool have_implementation_for_lang_item = resolved_candidate != nullptr;
+    if (!have_implementation_for_lang_item)
+      return false;
 
     // mark the required tree addressable
+    Adjuster adj (lhs);
+    TyTy::BaseType *receiver_adjusted_self_ty = adj.adjust_type (adjustments);
     if (Adjuster::needs_address (adjustments))
       AddressTakenResolver::SetAddressTaken (*expr.get_expr ().get ());
 
@@ -1301,54 +1306,43 @@ protected:
     // handle the case where we are within the impl block for this lang_item
     // otherwise we end up with a recursive operator overload such as the i32
     // operator overload trait
-    if (lang_item_defined && resolved_candidate != nullptr)
+    TypeCheckContextItem &fn_context = context->peek_context ();
+    if (fn_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
       {
-	TypeCheckContextItem &fn_context = context->peek_context ();
-	if (fn_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
+	auto &impl_item = fn_context.get_impl_item ();
+	HIR::ImplBlock *parent = impl_item.first;
+	HIR::Function *fn = impl_item.second;
+
+	if (parent->has_trait_ref ()
+	    && fn->get_function_name ().compare (associated_item_name) == 0)
 	  {
-	    auto &impl_item = fn_context.get_impl_item ();
-	    HIR::ImplBlock *parent = impl_item.first;
-	    HIR::Function *fn = impl_item.second;
-
-	    if (parent->has_trait_ref ()
-		&& fn->get_function_name ().compare (associated_item_name) == 0)
+	    TraitReference *trait_reference
+	      = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
+	    if (!trait_reference->is_error ())
 	      {
-		TraitReference *trait_reference
-		  = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
-		if (!trait_reference->is_error ())
-		  {
-		    TyTy::BaseType *lookup = nullptr;
-		    bool ok
-		      = context->lookup_type (fn->get_mappings ().get_hirid (),
-					      &lookup);
-		    rust_assert (ok);
-		    rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+		TyTy::BaseType *lookup = nullptr;
+		bool ok
+		  = context->lookup_type (fn->get_mappings ().get_hirid (),
+					  &lookup);
+		rust_assert (ok);
+		rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
 
-		    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
-		    rust_assert (fntype->is_method ());
+		TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
+		rust_assert (fntype->is_method ());
 
-		    Adjuster adj (lhs);
-		    TyTy::BaseType *adjusted = adj.adjust_type (adjustments);
+		bool is_lang_item_impl
+		  = trait_reference->get_mappings ().get_defid ()
+		    == respective_lang_item_id;
+		bool self_is_lang_item_self
+		  = fntype->get_self_type ()->is_equal (
+		    *receiver_adjusted_self_ty);
+		bool recursive_operator_overload
+		  = is_lang_item_impl && self_is_lang_item_self;
 
-		    bool is_lang_item_impl
-		      = trait_reference->get_mappings ().get_defid ()
-			== respective_lang_item_id;
-		    bool self_is_lang_item_self
-		      = fntype->get_self_type ()->is_equal (*adjusted);
-		    bool recursive_operator_overload
-		      = is_lang_item_impl && self_is_lang_item_self;
-
-		    lang_item_defined = !recursive_operator_overload;
-		  }
+		if (recursive_operator_overload)
+		  return false;
 	      }
 	  }
-      }
-
-    bool have_implementation_for_lang_item = resolved_candidate != nullptr;
-    if (!lang_item_defined || !have_implementation_for_lang_item)
-      {
-	// no operator overload exists for this
-	return false;
       }
 
     // now its just like a method-call-expr
@@ -1425,8 +1419,20 @@ protected:
 	  }
       }
 
+    // handle generics
+    if (!receiver_is_type_param)
+      {
+	if (lookup->needs_generic_substitutions ())
+	  {
+	    lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
+	  }
+      }
+
     // type check the arguments if required
     TyTy::FnType *type = static_cast<TyTy::FnType *> (lookup);
+    rust_assert (type->num_params () > 0);
+    auto fnparam = type->param_at (0);
+    fnparam.second->unify (receiver_adjusted_self_ty); // typecheck the self
     if (rhs == nullptr)
       {
 	rust_assert (type->num_params () == 1);
@@ -1439,7 +1445,7 @@ protected:
       }
 
     // get the return type
-    TyTy::BaseType *function_ret_tyty = fn->get_return_type ()->clone ();
+    TyTy::BaseType *function_ret_tyty = type->get_return_type ()->clone ();
 
     // store the expected fntype
     context->insert_operator_overload (expr.get_mappings ().get_hirid (), type);
