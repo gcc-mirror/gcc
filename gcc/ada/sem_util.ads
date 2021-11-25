@@ -2440,10 +2440,6 @@ package Sem_Util is
    --  Determine whether arbitrary subprogram Subp_Id may act as a primitive of
    --  an arbitrary tagged type.
 
-   function Is_Suspension_Object (Id : Entity_Id) return Boolean;
-   --  Determine whether arbitrary entity Id denotes Suspension_Object defined
-   --  in Ada.Synchronous_Task_Control.
-
    function Is_Synchronized_Object (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes an object and if it does, whether
    --  this object is synchronized as specified in SPARK RM 9.1. To qualify as

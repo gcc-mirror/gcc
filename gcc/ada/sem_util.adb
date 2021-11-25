@@ -17236,7 +17236,7 @@ package body Sem_Util is
 
          --  The current type is a match
 
-         if Is_Suspension_Object (Cur_Typ) then
+         if Is_RTE (Cur_Typ, RE_Suspension_Object) then
             return True;
 
          --  Stop the traversal once the root of the derivation chain has been
@@ -21122,28 +21122,6 @@ package body Sem_Util is
 
       return True;
    end Is_Suitable_Primitive;
-
-   --------------------------
-   -- Is_Suspension_Object --
-   --------------------------
-
-   function Is_Suspension_Object (Id : Entity_Id) return Boolean is
-   begin
-      --  This approach does an exact name match rather than to rely on
-      --  RTSfind. Routine Is_Effectively_Volatile is used by clients of the
-      --  front end at point where all auxiliary tables are locked and any
-      --  modifications to them are treated as violations. Do not tamper with
-      --  the tables, instead examine the Chars fields of all the scopes of Id.
-
-      return
-        Chars (Id) = Name_Suspension_Object
-          and then Present (Scope (Id))
-          and then Chars (Scope (Id)) = Name_Synchronous_Task_Control
-          and then Present (Scope (Scope (Id)))
-          and then Chars (Scope (Scope (Id))) = Name_Ada
-          and then Present (Scope (Scope (Scope (Id))))
-          and then Scope (Scope (Scope (Id))) = Standard_Standard;
-   end Is_Suspension_Object;
 
    ----------------------------
    -- Is_Synchronized_Object --

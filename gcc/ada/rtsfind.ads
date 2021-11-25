@@ -626,6 +626,7 @@ package Rtsfind is
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
      RE_Suspend_Until_True,              -- Ada.Synchronous_Task_Control
+     RE_Suspension_Object,               -- Ada.Synchronous_Task_Control
 
      RE_Access_Level,                    -- Ada.Tags
      RE_Alignment,                       -- Ada.Tags
@@ -2311,6 +2312,7 @@ package Rtsfind is
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 
      RE_Suspend_Until_True               => Ada_Synchronous_Task_Control,
+     RE_Suspension_Object                => Ada_Synchronous_Task_Control,
 
      RE_Access_Level                     => Ada_Tags,
      RE_Alignment                        => Ada_Tags,
