@@ -2786,7 +2786,7 @@ TypeCheckCallExpr::visit (FnPtr &type)
 void
 TypeCheckMethodCallExpr::visit (FnType &type)
 {
-  adjusted_self->unify (type.get_self_type ());
+  type.get_self_type ()->unify (adjusted_self);
 
   // +1 for the receiver self
   size_t num_args_to_call = call.num_params () + 1;

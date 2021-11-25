@@ -1209,7 +1209,10 @@ public:
 	return;
       }
 
-    if (base->is_mutable () != type.is_mutable ())
+    // rust is permissive about mutablity here you can always go from mutable to
+    // immutable but not the otherway round
+    bool mutability_ok = base->is_mutable () ? type.is_mutable () : true;
+    if (!mutability_ok)
       {
 	BaseRules::visit (type);
 	return;
@@ -1246,7 +1249,10 @@ public:
 	return;
       }
 
-    if (base->is_mutable () != type.is_mutable ())
+    // rust is permissive about mutablity here you can always go from mutable to
+    // immutable but not the otherway round
+    bool mutability_ok = base->is_mutable () ? type.is_mutable () : true;
+    if (!mutability_ok)
       {
 	BaseRules::visit (type);
 	return;
