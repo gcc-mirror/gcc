@@ -5214,20 +5214,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
    where ~Y + 1 == pow2 and Z = ~Y.  */
 (for cst (VECTOR_CST INTEGER_CST)
- (for cmp (le eq ne ge gt)
-      icmp (le le gt le gt)
- (simplify
-  (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
-   (with { tree csts = bitmask_inv_cst_vector_p (@1); }
-     (switch
-      (if (csts && TYPE_UNSIGNED (TREE_TYPE (@1))
-	   && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
-       (icmp @0 { csts; }))
-      (if (csts && !TYPE_UNSIGNED (TREE_TYPE (@1))
-	   && (cmp == EQ_EXPR || cmp == NE_EXPR)
-	   && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+ (for cmp (eq ne)
+      icmp (le gt)
+  (simplify
+   (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
+    (with { tree csts = bitmask_inv_cst_vector_p (@1); }
+     (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
+       (icmp @0 { csts; })
        (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
-	(icmp (convert:utype @0) { csts; }))))))))
+	 (icmp (convert:utype @0) { csts; }))))))))
 
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
