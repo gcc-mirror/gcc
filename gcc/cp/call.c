@@ -6283,7 +6283,7 @@ op_is_ordered (tree_code code)
     }
 }
 
-/* Subroutine of build_new_op_1: Add to CANDIDATES all candidates for the
+/* Subroutine of build_new_op: Add to CANDIDATES all candidates for the
    operator indicated by CODE/CODE2.  This function calls itself recursively to
    handle C++20 rewritten comparison operator candidates.  */
 
@@ -6930,6 +6930,117 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
       gcc_unreachable ();
     }
   return NULL_TREE;
+}
+
+/* Build a new call to operator[].  This may change ARGS.  */
+
+tree
+build_op_subscript (const op_location_t &loc, tree obj,
+		    vec<tree, va_gc> **args, tree *overload,
+		    tsubst_flags_t complain)
+{
+  struct z_candidate *candidates = 0, *cand;
+  tree fns, first_mem_arg = NULL_TREE;
+  bool any_viable_p;
+  tree result = NULL_TREE;
+  void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
+
+  obj = mark_lvalue_use (obj);
+
+  if (error_operand_p (obj))
+    return error_mark_node;
+
+  tree type = TREE_TYPE (obj);
+
+  obj = prep_operand (obj);
+
+  if (TYPE_BINFO (type))
+    {
+      fns = lookup_fnfields (TYPE_BINFO (type), ovl_op_identifier (ARRAY_REF),
+			     1, complain);
+      if (fns == error_mark_node)
+	return error_mark_node;
+    }
+  else
+    fns = NULL_TREE;
+
+  if (args != NULL && *args != NULL)
+    {
+      *args = resolve_args (*args, complain);
+      if (*args == NULL)
+	return error_mark_node;
+    }
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  p = conversion_obstack_alloc (0);
+
+  if (fns)
+    {
+      first_mem_arg = obj;
+
+      add_candidates (BASELINK_FUNCTIONS (fns),
+		      first_mem_arg, *args, NULL_TREE,
+		      NULL_TREE, false,
+		      BASELINK_BINFO (fns), BASELINK_ACCESS_BINFO (fns),
+		      LOOKUP_NORMAL, &candidates, complain);
+    }
+
+  /* Be strict here because if we choose a bad conversion candidate, the
+     errors we get won't mention the call context.  */
+  candidates = splice_viable (candidates, true, &any_viable_p);
+  if (!any_viable_p)
+    {
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error ("no match for call to %<%T::operator[] (%A)%>",
+		 TREE_TYPE (obj), build_tree_list_vec (*args));
+	  print_z_candidates (loc, candidates);
+	}
+      result = error_mark_node;
+    }
+  else
+    {
+      cand = tourney (candidates, complain);
+      if (cand == 0)
+	{
+	  if (complain & tf_error)
+	    {
+	      auto_diagnostic_group d;
+	      error ("call of %<%T::operator[] (%A)%> is ambiguous",
+		     TREE_TYPE (obj), build_tree_list_vec (*args));
+	      print_z_candidates (loc, candidates);
+	    }
+	  result = error_mark_node;
+	}
+      else if (TREE_CODE (cand->fn) == FUNCTION_DECL
+	       && DECL_OVERLOADED_OPERATOR_P (cand->fn)
+	       && DECL_OVERLOADED_OPERATOR_IS (cand->fn, ARRAY_REF))
+	{
+	  if (overload)
+	    *overload = cand->fn;
+	  result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	  if (trivial_fn_p (cand->fn) || DECL_IMMEDIATE_FUNCTION_P (cand->fn))
+	    /* There won't be a CALL_EXPR.  */;
+	  else if (result && result != error_mark_node)
+	    {
+	      tree call = extract_call_expr (result);
+	      CALL_EXPR_OPERATOR_SYNTAX (call) = true;
+
+	      /* Specify evaluation order as per P0145R2.  */
+	      CALL_EXPR_ORDERED_ARGS (call) = op_is_ordered (ARRAY_REF) == 1;
+	    }
+	}
+      else
+	gcc_unreachable ();
+    }
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return result;
 }
 
 /* CALL was returned by some call-building function; extract the actual
@@ -9748,7 +9859,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (cand->flags & LOOKUP_LIST_INIT_CTOR)
     {
       tree c = extract_call_expr (call);
-      /* build_new_op_1 will clear this when appropriate.  */
+      /* build_new_op will clear this when appropriate.  */
       CALL_EXPR_ORDERED_ARGS (c) = true;
     }
   if (warned_p)

@@ -3479,19 +3479,27 @@ about ABI tags.
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 Warn about uses of a comma expression within a subscripting expression.
-This usage was deprecated in C++20.  However, a comma expression wrapped
-in @code{( )} is not deprecated.  Example:
+This usage was deprecated in C++20 and is going to be removed in C++23.
+However, a comma expression wrapped in @code{( )} is not deprecated.  Example:
 
 @smallexample
 @group
 void f(int *a, int b, int c) @{
-    a[b,c];     // deprecated
+    a[b,c];     // deprecated in C++20, invalid in C++23
     a[(b,c)];   // OK
 @}
 @end group
 @end smallexample
 
-Enabled by default with @option{-std=c++20}.
+In C++23 it is valid to have comma separated expressions in a subscript
+when an overloaded subscript operator is found and supports the right
+number and types of arguments.  G++ will accept the formerly valid syntax
+for code that is not valid in C++23 but used to be valid but deprecated
+in C++20 with a pedantic warning that can be disabled with
+@option{-Wno-comma-subscript}.
+
+Enabled by default with @option{-std=c++20} unless @option{-Wno-deprecated},
+and with @option{-std=c++23} regardless of @option{-Wno-deprecated}.
 
 @item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
 @opindex Wctad-maybe-unsupported

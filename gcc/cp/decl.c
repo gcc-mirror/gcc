@@ -15140,6 +15140,8 @@ grok_op_properties (tree decl, bool complain)
     case OVL_OP_FLAG_BINARY:
       if (arity != 2)
 	{
+	  if (operator_code == ARRAY_REF && cxx_dialect >= cxx23)
+	    break;
 	  error_at (loc,
 		    methodp
 		    ? G_("%qD must have exactly one argument")
