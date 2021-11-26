@@ -1,3 +1,61 @@
+2021-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inline10.c: New test.
+
+2021-11-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/103406
+	* gcc.dg/pr103406.c: New test case.
+
+2021-11-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103227
+	* gcc.dg/ipa/pr103227-1.c: New test.
+	* gcc.dg/ipa/pr103227-3.c: Likewise.
+	* gcc.dg/ipa/pr103227-2.c: Likewise.
+	* gfortran.dg/pr53787.f90: Disable IPA-SRA.
+
+2021-11-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/102648
+	* gcc.dg/pr102648.c: New.
+
+2021-11-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103359
+	* gcc.dg/pr103359.c: New.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103417
+	* gcc.c-torture/execute/pr103417.c: New test.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103376
+	* gcc.dg/optimize-bswapsi-7.c: New test.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102611
+	* g++.dg/cpp2a/comma1.C: Expect different diagnostics for C++23.
+	* g++.dg/cpp2a/comma3.C: Likewise.
+	* g++.dg/cpp2a/comma4.C: Expect diagnostics for C++23.
+	* g++.dg/cpp2a/comma5.C: Expect different diagnostics for C++23.
+	* g++.dg/cpp23/feat-cxx2b.C: Test __cpp_multidimensional_subscript
+	predefined macro.
+	* g++.dg/cpp23/subscript1.C: New test.
+	* g++.dg/cpp23/subscript2.C: New test.
+	* g++.dg/cpp23/subscript3.C: New test.
+	* g++.dg/cpp23/subscript4.C: New test.
+	* g++.dg/cpp23/subscript5.C: New test.
+	* g++.dg/cpp23/subscript6.C: New test.
+
+2021-11-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr103194-5.c: Include <stdint.h>.
+	Replace long with int64_t.
+
 2021-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.c-torture/execute/pr103405.c: New test.

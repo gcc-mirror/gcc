@@ -1,3 +1,11 @@
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102611
+	* c-opts.c (c_common_post_options): Enable -Wcomma-subscript by
+	default for C++23 regardless of warn_deprecated.
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_multidimensional_subscript=202110L for C++23.
+
 2021-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/88232

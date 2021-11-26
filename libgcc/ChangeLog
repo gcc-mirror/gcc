@@ -1,3 +1,12 @@
+2021-11-25  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Add hdr.
+	Remove func, ret.
+	(find_fde_tail): New function.  Split from
+	_Unwind_IteratePhdrCallback.  Move the result initialization
+	from _Unwind_Find_FDE.
+	(_Unwind_Find_FDE): Updated to call find_fde_tail.
+
 2021-11-22  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-fde-dip.c (NEED_DBASE_MEMBER): Define.

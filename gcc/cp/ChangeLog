@@ -1,3 +1,44 @@
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/101180
+	* pt.c (apply_late_template_attributes): Return early if there are no
+	dependent attributes.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102611
+	* cp-tree.h (build_op_subscript): Implement P2128R6
+	- Multidimensional subscript operator.  Declare.
+	(class releasing_vec): Add release method.
+	(grok_array_decl): Remove bool argument, add vec<tree, va_gc> **
+	and tsubst_flags_t arguments.
+	(build_min_non_dep_op_overload): Declare another overload.
+	* parser.c (cp_parser_parenthesized_expression_list_elt): New function.
+	(cp_parser_postfix_open_square_expression): Mention C++23 syntax in
+	function comment.  For C++23 parse zero or more than one initializer
+	clauses in expression list, adjust grok_array_decl caller.
+	(cp_parser_parenthesized_expression_list): Use
+	cp_parser_parenthesized_expression_list_elt.
+	(cp_parser_builtin_offsetof): Adjust grok_array_decl caller.
+	* decl.c (grok_op_properties): For C++23 don't check number
+	of arguments of operator[].
+	* decl2.c (grok_array_decl): Remove decltype_p argument, add
+	index_exp_list and complain arguments.  If index_exp is NULL,
+	handle *index_exp_list as the subscript expression list.
+	* tree.c (build_min_non_dep_op_overload): New overload.
+	* call.c (add_operator_candidates, build_over_call): Adjust comments
+	for removal of build_new_op_1.
+	(build_op_subscript): New function.
+	* pt.c (tsubst_copy_and_build_call_args): New function.
+	(tsubst_copy_and_build) <case ARRAY_REF>: If second
+	operand is magic CALL_EXPR with ovl_op_identifier (ARRAY_REF)
+	as CALL_EXPR_FN, tsubst CALL_EXPR arguments including expanding
+	pack expressions in it and call grok_array_decl instead of
+	build_x_array_ref.
+	<case CALL_EXPR>: Use tsubst_copy_and_build_call_args.
+	* semantics.c (handle_omp_array_sections_1): Adjust grok_array_decl
+	caller.
+
 2021-11-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103347

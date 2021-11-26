@@ -1,3 +1,25 @@
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:
+	Remove dg-error for C++11_only error.
+
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96416
+	* include/bits/ptr_traits.h (pointer_traits): Reimplement to be
+	SFINAE-friendly (LWG 3545).
+	* testsuite/20_util/pointer_traits/lwg3545.cc: New test.
+	* testsuite/20_util/to_address/1_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/to_address/lwg3545.cc: New test.
+
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101608
+	* include/bits/ranges_algobase.h (__fill_n_fn): Check for
+	constant evaluation before using memset.
+	* testsuite/25_algorithms/fill_n/constrained.cc: Check
+	byte-sized values as well.
+
 2021-11-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for

@@ -1,3 +1,118 @@
+2021-11-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipa_value_range_from_jfunc): Remove forgotten early return.
+
+2021-11-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/103406
+	* match.pd (minus @0 @0): Check tree_expr_maybe_infinite_p.
+
+2021-11-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103227
+	* ipa-prop.h (ipa_get_param): New overload.  Move bits of the existing
+	one to the new one.
+	* ipa-param-manipulation.h (ipa_param_adjustments): New member
+	function get_updated_index_or_split.
+	* ipa-param-manipulation.c
+	(ipa_param_adjustments::get_updated_index_or_split): New function.
+	* ipa-prop.c (adjust_agg_replacement_values): Reimplement, add
+	capability to identify scalarized parameters and perform substitution
+	on them.
+	(ipcp_transform_function): Create descriptors earlier, handle new
+	return values of adjust_agg_replacement_values.
+
+2021-11-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-path.cc (path_range_query::compute_ranges_defined): Remove.
+	(path_range_query::compute_ranges_in_block): Revert to bitmap order.
+	* gimple-range-path.h: Remove compute_ranges_defined.
+
+2021-11-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR target/103396
+	* config/gcn/gcn.c (move_callee_saved_registers): Ensure that the
+	number of spilled registers is counted correctly.
+
+2021-11-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.h (ipa_node_params::ipa_node_params): Initialize
+	node_is_self_scc.
+
+2021-11-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103359
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): If arg is
+	equivalent to def, don't initially include it's range.
+
+2021-11-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Do not check
+	gimple_static_chain.
+
+2021-11-25  Richard Biener  <rguenther@suse.de>
+
+	* cgraphunit.c (symbol_table::output_weakrefs): Remove
+	unreachable init.
+	(get_alias_symbol): Remove now unused function.
+
+2021-11-25  Richard Biener  <rguenther@suse.de>
+
+	* cfgrtl.c (rtl_verify_fallthru): Do not stop verifying
+	with fatal_insn.
+	(skip_insns_after_block): Remove unreachable break and continue.
+
+2021-11-25  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.c (label_rtx_for_bb): Remove dead loop construct.
+
+2021-11-25  Richard Biener  <rguenther@suse.de>
+
+	* regset.h (REG_SET_EMPTY_P): New macro.
+	* cfgcleanup.c (thread_jump): Use REG_SET_EMPTY_P.
+
+2021-11-25  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Use @option for -Wuninitialized.
+
+2021-11-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103254
+	* gimple-range-path.cc (path_range_query::compute_ranges): Move
+	exported boolean code...
+	(path_range_query::compute_imports): ...here.
+
+2021-11-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103254
+	* gimple-range-path.cc (path_range_query::compute_ranges_defined): New
+	(path_range_query::compute_ranges_in_block): Move to
+	compute_ranges_defined.
+	* gimple-range-path.h (compute_ranges_defined): New.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103417
+	* match.pd ((X & Y) CMP 0): Only handle eq and ne.  Commonalize
+	common tests.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103376
+	* gimple-ssa-store-merging.c (perform_symbolic_merge): For
+	BIT_IOR_EXPR, if masked1 && masked2 && masked1 != masked2, don't
+	punt, but set the corresponding result byte to MARKER_BYTE_UNKNOWN.
+	For BIT_XOR_EXPR similarly and if masked1 == masked2 and the
+	byte isn't MARKER_BYTE_UNKNOWN, set the corresponding result byte to
+	0.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102611
+	* doc/invoke.texi (-Wcomma-subscript): Document that for
+	-std=c++20 the option isn't enabled by default with -Wno-deprecated
+	but for -std=c++23 it is.
+
 2021-11-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-modref.c (implicit_eaf_flags_for_edge_and_arg): Break out from...
