@@ -60,7 +60,7 @@ is
 
    subtype Big_Integer is
      Ada.Numerics.Big_Numbers.Big_Integers_Ghost.Big_Integer
-     with Ghost;
+   with Ghost;
 
    package Signed_Conversion is new
      Ada.Numerics.Big_Numbers.Big_Integers_Ghost.Signed_Conversions
@@ -91,7 +91,6 @@ is
 
    function Multiply_With_Ovflo_Check64 (X, Y : Int64) return Int64
    with
-     Pure_Function,
      Pre  => In_Int64_Range (Big (X) * Big (Y)),
      Post => Multiply_With_Ovflo_Check64'Result = X * Y;
    pragma Export (C, Multiply_With_Ovflo_Check64, "__gnat_mulv64");
