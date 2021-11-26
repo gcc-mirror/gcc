@@ -4,7 +4,7 @@
 subroutine p0
    integer, parameter :: sh(2) = [2, 3]
    integer, parameter :: &
-   & a(2,2) = reshape([1, 2, 3, 4], sh)   ! { dg-error "Different shape" }
+   & a(2,2) = reshape([1, 2, 3, 4], sh)   ! { dg-error "not enough elements" }
    if (a(1,1) /= 0) STOP 1
 end subroutine p0
 
