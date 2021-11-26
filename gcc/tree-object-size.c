@@ -45,6 +45,13 @@ struct object_size_info
   unsigned int *stack, *tos;
 };
 
+enum
+{
+  OST_SUBOBJECT = 1,
+  OST_MINIMUM = 2,
+  OST_END = 4,
+};
+
 static tree compute_object_offset (const_tree, const_tree);
 static bool addr_object_size (struct object_size_info *,
 			      const_tree, int, unsigned HOST_WIDE_INT *);
@@ -67,10 +74,10 @@ static void check_for_plus_in_loops_1 (struct object_size_info *, tree,
    the subobject (innermost array or field with address taken).
    object_sizes[2] is lower bound for number of bytes till the end of
    the object and object_sizes[3] lower bound for subobject.  */
-static vec<unsigned HOST_WIDE_INT> object_sizes[4];
+static vec<unsigned HOST_WIDE_INT> object_sizes[OST_END];
 
 /* Bitmaps what object sizes have been computed already.  */
-static bitmap computed[4];
+static bitmap computed[OST_END];
 
 /* Maximum value of offset we consider to be addition.  */
 static unsigned HOST_WIDE_INT offset_limit;
@@ -227,11 +234,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
     {
       unsigned HOST_WIDE_INT sz;
 
-      if (!osi || (object_size_type & 1) != 0
+      if (!osi || (object_size_type & OST_SUBOBJECT) != 0
 	  || TREE_CODE (TREE_OPERAND (pt_var, 0)) != SSA_NAME)
 	{
 	  compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
-				       object_size_type & ~1, &sz);
+				       object_size_type & ~OST_SUBOBJECT, &sz);
 	}
       else
 	{
@@ -266,7 +273,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
     }
   else if (DECL_P (pt_var))
     {
-      pt_var_size = decl_init_size (pt_var, object_size_type & 2);
+      pt_var_size = decl_init_size (pt_var, object_size_type & OST_MINIMUM);
       if (!pt_var_size)
 	return false;
     }
@@ -287,7 +294,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
     {
       tree var;
 
-      if (object_size_type & 1)
+      if (object_size_type & OST_SUBOBJECT)
 	{
 	  var = TREE_OPERAND (ptr, 0);
 
@@ -528,7 +535,7 @@ bool
 compute_builtin_object_size (tree ptr, int object_size_type,
 			     unsigned HOST_WIDE_INT *psize)
 {
-  gcc_assert (object_size_type >= 0 && object_size_type <= 3);
+  gcc_assert (object_size_type >= 0 && object_size_type < OST_END);
 
   /* Set to unknown and overwrite just before returning if the size
      could be determined.  */
@@ -546,7 +553,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 
   if (computed[object_size_type] == NULL)
     {
-      if (optimize || object_size_type & 1)
+      if (optimize || object_size_type & OST_SUBOBJECT)
 	return false;
 
       /* When not optimizing, rather than failing, make a small effort
@@ -586,8 +593,8 @@ compute_builtin_object_size (tree ptr, int object_size_type,
       if (dump_file)
 	{
 	  fprintf (dump_file, "Computing %s %sobject size for ",
-		   (object_size_type & 2) ? "minimum" : "maximum",
-		   (object_size_type & 1) ? "sub" : "");
+		   (object_size_type & OST_MINIMUM) ? "minimum" : "maximum",
+		   (object_size_type & OST_SUBOBJECT) ? "sub" : "");
 	  print_generic_expr (dump_file, ptr, dump_flags);
 	  fprintf (dump_file, ":\n");
 	}
@@ -620,7 +627,7 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 	     terminate, it could take a long time.  If a pointer is
 	     increasing this way, we need to assume 0 object size.
 	     E.g. p = &buf[0]; while (cond) p = p + 4;  */
-	  if (object_size_type & 2)
+	  if (object_size_type & OST_MINIMUM)
 	    {
 	      osi.depths = XCNEWVEC (unsigned int, num_ssa_names);
 	      osi.stack = XNEWVEC (unsigned int, num_ssa_names);
@@ -679,8 +686,9 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 		fprintf (dump_file,
 			 ": %s %sobject size "
 			 HOST_WIDE_INT_PRINT_UNSIGNED "\n",
-			 (object_size_type & 2) ? "minimum" : "maximum",
-			 (object_size_type & 1) ? "sub" : "",
+			 ((object_size_type & OST_MINIMUM) ? "minimum"
+			  : "maximum"),
+			 (object_size_type & OST_SUBOBJECT) ? "sub" : "",
 			 object_sizes[object_size_type][i]);
 	      }
 	}
@@ -718,7 +726,7 @@ expr_object_size (struct object_size_info *osi, tree ptr, tree value)
   else
     bytes = unknown (object_size_type);
 
-  if ((object_size_type & 2) == 0)
+  if ((object_size_type & OST_MINIMUM) == 0)
     {
       if (object_sizes[object_size_type][varno] < bytes)
 	object_sizes[object_size_type][varno] = bytes;
@@ -748,7 +756,7 @@ call_object_size (struct object_size_info *osi, tree ptr, gcall *call)
 
   bytes = alloc_object_size (call, object_size_type);
 
-  if ((object_size_type & 2) == 0)
+  if ((object_size_type & OST_MINIMUM) == 0)
     {
       if (object_sizes[object_size_type][varno] < bytes)
 	object_sizes[object_size_type][varno] = bytes;
@@ -804,7 +812,7 @@ merge_object_sizes (struct object_size_info *osi, tree dest, tree orig,
     orig_bytes = (offset > orig_bytes)
 		 ? HOST_WIDE_INT_0U : orig_bytes - offset;
 
-  if ((object_size_type & 2) == 0)
+  if ((object_size_type & OST_MINIMUM) == 0)
     {
       if (object_sizes[object_size_type][varno] < orig_bytes)
 	{
@@ -882,7 +890,7 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
   else
     bytes = unknown (object_size_type);
 
-  if ((object_size_type & 2) == 0)
+  if ((object_size_type & OST_MINIMUM) == 0)
     {
       if (object_sizes[object_size_type][varno] < bytes)
 	object_sizes[object_size_type][varno] = bytes;
@@ -968,7 +976,7 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
       if (bitmap_set_bit (osi->visited, varno))
 	{
 	  object_sizes[object_size_type][varno]
-	    = (object_size_type & 2) ? -1 : 0;
+	    = (object_size_type & OST_MINIMUM) ? -1 : 0;
 	}
       else
 	{
@@ -1238,7 +1246,7 @@ init_object_sizes (void)
   if (computed[0])
     return;
 
-  for (object_size_type = 0; object_size_type <= 3; object_size_type++)
+  for (object_size_type = 0; object_size_type < OST_END; object_size_type++)
     {
       object_sizes[object_size_type].safe_grow (num_ssa_names, true);
       computed[object_size_type] = BITMAP_ALLOC (NULL);
@@ -1255,7 +1263,7 @@ fini_object_sizes (void)
 {
   int object_size_type;
 
-  for (object_size_type = 0; object_size_type <= 3; object_size_type++)
+  for (object_size_type = 0; object_size_type < OST_END; object_size_type++)
     {
       object_sizes[object_size_type].release ();
       BITMAP_FREE (computed[object_size_type]);
@@ -1302,7 +1310,7 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 		{
 		  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
 		  tree ptr = gimple_call_arg (call, 0);
-		  if ((object_size_type == 1 || object_size_type == 3)
+		  if ((object_size_type & OST_SUBOBJECT)
 		      && (TREE_CODE (ptr) == ADDR_EXPR
 			  || TREE_CODE (ptr) == SSA_NAME))
 		    {
@@ -1315,7 +1323,8 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 			  tree tem = make_ssa_name (type);
 			  gimple_call_set_lhs (call, tem);
 			  enum tree_code code
-			    = object_size_type == 1 ? MIN_EXPR : MAX_EXPR;
+			    = (object_size_type & OST_MINIMUM
+			       ? MAX_EXPR : MIN_EXPR);
 			  tree cst = build_int_cstu (type, bytes);
 			  gimple *g
 			    = gimple_build_assign (lhs, code, tem, cst);
@@ -1336,11 +1345,11 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 		{
 		  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
 
-		  if (object_size_type < 2)
+		  if (object_size_type & OST_MINIMUM)
+		    result = build_zero_cst (size_type_node);
+		  else if (object_size_type < OST_END)
 		    result = fold_convert (size_type_node,
 					   integer_minus_one_node);
-		  else if (object_size_type < 4)
-		    result = build_zero_cst (size_type_node);
 		}
 
 	      if (!result)
