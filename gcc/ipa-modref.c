@@ -2943,17 +2943,17 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
     }
 }
 
-/* Analyze function F.  IPA indicates whether we're running in local mode
+/* Analyze function.  IPA indicates whether we're running in local mode
    (false) or the IPA mode (true).
    Return true if fixup cfg is needed after the pass.  */
 
 static bool
-analyze_function (function *f, bool ipa)
+analyze_function (bool ipa)
 {
   bool fixup_cfg = false;
   if (dump_file)
-    fprintf (dump_file, "modref analyzing '%s' (ipa=%i)%s%s\n",
-	     function_name (f), ipa,
+    fprintf (dump_file, "\n\nmodref analyzing '%s' (ipa=%i)%s%s\n",
+	     cgraph_node::get (current_function_decl)->dump_name (), ipa,
 	     TREE_READONLY (current_function_decl) ? " (const)" : "",
 	     DECL_PURE_P (current_function_decl) ? " (pure)" : "");
 
@@ -3224,7 +3224,7 @@ modref_generate (void)
       if (!f)
 	continue;
       push_cfun (f);
-      analyze_function (f, true);
+      analyze_function (true);
       pop_cfun ();
     }
 }
@@ -3257,7 +3257,7 @@ modref_summaries::insert (struct cgraph_node *node, modref_summary *)
       return;
     }
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-  analyze_function (DECL_STRUCT_FUNCTION (node->decl), true);
+  analyze_function (true);
   pop_cfun ();
 }
 
@@ -3277,7 +3277,7 @@ modref_summaries_lto::insert (struct cgraph_node *node, modref_summary_lto *)
       return;
     }
   push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-  analyze_function (DECL_STRUCT_FUNCTION (node->decl), true);
+  analyze_function (true);
   pop_cfun ();
 }
 
@@ -4032,9 +4032,9 @@ public:
 
 }
 
-unsigned int pass_modref::execute (function *f)
+unsigned int pass_modref::execute (function *)
 {
-  if (analyze_function (f, false))
+  if (analyze_function (false))
     return execute_fixup_cfg ();
   return 0;
 }
@@ -5106,8 +5106,10 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 		 = summaries_lto ? summaries_lto->get (edge->callee) : NULL;
   int flags = flags_from_decl_or_type (edge->callee->decl);
   /* Combine in outer flags.  */
-  for (cgraph_node *n = edge->caller; n->inlined_to; n = n->callers->caller)
-    flags |= flags_from_decl_or_type (edge->callee->decl);
+  cgraph_node *n;
+  for (n = edge->caller; n->inlined_to; n = n->callers->caller)
+    flags |= flags_from_decl_or_type (n->decl);
+  flags |= flags_from_decl_or_type (n->decl);
   bool ignore_stores = ignore_stores_p (edge->caller->decl, flags);
 
   if (!callee_info && to_info)
