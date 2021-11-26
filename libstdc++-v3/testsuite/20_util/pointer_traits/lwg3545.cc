@@ -99,22 +99,3 @@ static_assert( is_same<pointer<Ctraits>, clever_ptr<char>>::value, "" );
 static_assert( is_same<difference_type<Ctraits>, std::ptrdiff_t>::value, "" );
 static_assert( is_same<rebind<Ctraits>, clever_ptr<short>>::value, "" );
 static_assert( is_same<pointer_to<Ctraits>, clever_ptr<char>>::value, "" );
-
-#if __cplusplus >= 202002L
-static_assert( std::to_address(clever_ptr<char>{}) == &clever_ptr<char>::obj, "" );
-
-int the_int;
-
-template<>
-struct std::pointer_traits<clever_ptr<int>>
-{
-  using element_type = int;
-  using difference_type = std::ptrdiff_t;
-  using pointer = clever_ptr<int>;
-
-  static constexpr int* to_address(pointer p) { return &the_int; }
-};
-
-// Should use pointer_traits<clever_ptr<int>>::to_address
-static_assert( std::to_address(clever_ptr<int>{}) == &the_int, "" );
-#endif
