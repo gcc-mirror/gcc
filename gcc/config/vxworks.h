@@ -28,45 +28,70 @@ along with GCC; see the file COPYING3.  If not see
    like a traditional Unix, with more external files.  Most of our specs
    must be aware of the difference.  */
 
-/* We look for the VxWorks header files using the environment
-   variables that are set in VxWorks to indicate the location of the
-   system header files.  We use -idirafter so that the GCC's own
-   header-file directories (containing <stddef.h>, etc.) come before
-   the VxWorks system header directories.  */
+/* Help locate system headers, assuming $sysroot set to $VSB_DIR on vx7 and
+   $WIND_BASE/target prior to that.  Specs allow tailoring for RTP vs kernel,
+   and -idirafter allows putting system directories after GCC's own directories
+   for standard headers such as <stddef.h> or fixed include.
+
+   Regarding fixed includes, note the effect of sysroot_headers_suffix_spec:
+
+   For the case of VxWorks prior to 7 below, we have:
+
+     #define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/h}"
+
+   This results in
+
+     $build_sysroot/h     ---> $prefix/include-fixed
+     $build_sysroot/usr/h ---> $prefix/include-fixed/mrtp for -mrtp
+
+   This is very different from what we'd get without a headers_suffix,
+   which would be:
+
+     $build_sysroot     ---> $prefix/include-fixed/h
+                                                  /usr/h
+
+   From (say) #include <assert.h>, we would find the fixed version
+   in the first case, not in the second.  */
 
 /* Since we provide a default -isystem, expand -isystem on the command
-   line early.  */
+   line early.  Then restrict the amount of references we add when compiling
+   self-tests, as these may be run in contexts where the VxWorks environment
+   isn't available.  */
 
-/* Self-tests may be run in contexts where the VxWorks environment isn't
-   available.  Prevent attempts at designating the location of runtime header
-   files, libraries or startfiles, which would fail on unset environment
-   variables and aren't needed for such tests.  */
 #if TARGET_VXWORKS7
+
+/* We arrange not rely on fixed includes for vx7 and the headers spread over
+   common kernel/rtp directories in addition to specific ones for each mode.
+   Setup sysroot_headers_suffix_spec to deal with kernel/rtp distinction.  */
+
+#undef SYSROOT_HEADERS_SUFFIX_SPEC
+#define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/krnl/h}"
 
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC                     \
  "%{!nostdinc:%{!fself-test=*:                          \
     %{isystem*}                                         \
-    %{mrtp: -idirafter %:getenv(VSB_DIR /h)             \
-            -idirafter %:getenv(VSB_DIR /share/h)       \
-            -idirafter %:getenv(VSB_DIR /usr/h/public)  \
-            -idirafter %:getenv(VSB_DIR /usr/h)         \
-      ;:    -idirafter %:getenv(VSB_DIR /h)             \
-            -idirafter %:getenv(VSB_DIR /share/h)       \
-            -idirafter %:getenv(VSB_DIR /krnl/h/system) \
-            -idirafter %:getenv(VSB_DIR /krnl/h/public)}}}"
+    -idirafter %:getenv(VSB_DIR /h)  \
+    -idirafter %:getenv(VSB_DIR /share/h)  \
+    -idirafter =/system \
+    -idirafter =/public \
+  }}"
 
 #else /* TARGET_VXWORKS7 */
+
+/* Prior to vx7, rtp and kernel headers are fairly segregated and fixincludes
+   is needed on each set of headers to cope with expectations of not so old
+   libstdc++.  A perfect use case for sysroot_headers_suffix.  */
+
+#undef SYSROOT_HEADERS_SUFFIX_SPEC
+#define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/h}"
 
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC		\
  "%{!nostdinc:%{!fself-test=*:			\
     %{isystem*}					\
-    %{mrtp: -idirafter %:getenv(WIND_USR /h)	\
-	    -idirafter %:getenv(WIND_USR /h/wrn/coreip) \
-      ;:    -idirafter %:getenv(WIND_BASE /target/h) \
-	    -idirafter %:getenv(WIND_BASE /target/h/wrn/coreip) \
-}}}"
+    -idirafter =/wrn/coreip \
+  }}"
 
 #endif
 
@@ -119,8 +144,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #if TARGET_VXWORKS7
 #undef  STARTFILE_PREFIX_SPEC
-#define STARTFILE_PREFIX_SPEC \
-  "%{!fself-test=*:%:getenv(VSB_DIR /usr/lib/common)}"
+#define STARTFILE_PREFIX_SPEC "/usr/lib/common"
 #define TLS_SYM "-u __tls__"
 #else
 #define TLS_SYM ""

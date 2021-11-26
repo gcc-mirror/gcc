@@ -24,6 +24,14 @@ vxworks-c.o: $(srcdir)/config/vxworks-c.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+# We leverage $sysroot to find target system headers only, distributed
+# in a VxWorks (a)typical fashion with a different set of headers for
+# rtp vs kernel mode.  We setup SYSROOT_HEADERS_SUFFIX_SPEC to handle
+# this, and need to clear NATIVE_SYSTEM_HEADER_DIR to prevent it from
+# interfering.
+
+NATIVE_SYSTEM_HEADER_DIR =
+
 # Both the kernel and RTP headers provide limits.h.  They embed VxWorks
 # specificities and are dated on some configurations so we both need to
 # provide our own version and make sure the system one gets exposed.
