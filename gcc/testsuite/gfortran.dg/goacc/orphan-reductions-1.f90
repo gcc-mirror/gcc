@@ -30,7 +30,7 @@ end subroutine s1
 
 subroutine s2
   implicit none
-  !$acc routine worker
+  !$acc routine gang
 
   integer, parameter :: n = 100
   integer :: i, j, sum
@@ -80,7 +80,7 @@ end function f1
 
 integer function f2 ()
   implicit none
-  !$acc routine worker
+  !$acc routine gang
 
   integer, parameter :: n = 100
   integer :: i, j, sum
@@ -132,7 +132,7 @@ contains
 
   subroutine s4
     implicit none
-    !$acc routine worker
+    !$acc routine gang
 
     integer, parameter :: n = 100
     integer :: i, j, sum
@@ -182,7 +182,7 @@ contains
 
   integer function f4 ()
     implicit none
-    !$acc routine worker
+    !$acc routine gang
 
     integer, parameter :: n = 100
     integer :: i, j, sum
