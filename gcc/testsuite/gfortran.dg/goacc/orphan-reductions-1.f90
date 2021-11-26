@@ -42,6 +42,7 @@ subroutine s2
   end do
 
   !$acc loop reduction(+:sum)
+  ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
   do i = 1, n
      !$acc loop gang reduction(+:sum) ! { dg-error "gang reduction on an orphan loop" }
      do j = 1, n
@@ -92,6 +93,7 @@ integer function f2 ()
   end do
 
   !$acc loop reduction(+:sum)
+  ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
   do i = 1, n
      !$acc loop gang reduction(+:sum) ! { dg-error "gang reduction on an orphan loop" }
      do j = 1, n
@@ -144,6 +146,7 @@ contains
     end do
 
     !$acc loop reduction(+:sum)
+    ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
     do i = 1, n
        !$acc loop gang reduction(+:sum) ! { dg-error "gang reduction on an orphan loop" }
        do j = 1, n
@@ -194,6 +197,7 @@ contains
     end do
 
     !$acc loop reduction(+:sum)
+    ! { dg-warning "insufficient partitioning available to parallelize loop" "" { target *-*-* } .-1 }
     do i = 1, n
        !$acc loop gang reduction(+:sum) ! { dg-error "gang reduction on an orphan loop" }
        do j = 1, n
