@@ -1181,6 +1181,10 @@ ada/mdll-utl.o : ada/mdll-utl.adb ada/mdll.ads ada/mdll-utl.ads ada/sdefault.ads
 
 # All generated files.  Perhaps we should build all of these in the same
 # subdirectory, and get rid of ada/bldtools.
+# Warning: the files starting with ada/gnat.ads are not really generated,
+# instead they are copied from the libgnat subdirectory of the source tree
+# during all the stages of the bootstrap, i.e. including stage #1, which
+# means that they still need to be compilable by the base compiler.
 ADA_GENERATED_FILES = \
   ada/sinfo.h ada/einfo.h ada/nmake.adb ada/nmake.ads \
   ada/snames.ads ada/snames.adb ada/snames.h \
