@@ -310,14 +310,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr __detail::__synth3way_t<_Tp>
     operator<=>(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
     {
-#ifdef __cpp_lib_is_constant_evaluated
       if constexpr (_Nm && __is_memcmp_ordered<_Tp>::__value)
-	if (!std::is_constant_evaluated())
+	if (!std::__is_constant_evaluated())
 	  {
 	    constexpr size_t __n = _Nm * sizeof(_Tp);
 	    return __builtin_memcmp(__a.data(), __b.data(), __n) <=> 0;
 	  }
-#endif
 
       for (size_t __i = 0; __i < _Nm; ++__i)
 	{

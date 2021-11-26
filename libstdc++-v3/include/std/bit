@@ -315,12 +315,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // representable as a value of _Tp, and so the result is undefined.
       // Want that undefined behaviour to be detected in constant expressions,
       // by UBSan, and by debug assertions.
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-      if (!__builtin_is_constant_evaluated())
+      if (!std::__is_constant_evaluated())
 	{
 	  __glibcxx_assert( __shift_exponent != __int_traits<_Tp>::__digits );
 	}
-#endif
+
       using __promoted_type = decltype(__x << 1);
       if _GLIBCXX17_CONSTEXPR (!is_same<__promoted_type, _Tp>::value)
 	{

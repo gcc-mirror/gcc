@@ -195,8 +195,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    static _GLIBCXX20_CONSTEXPR void
 	    _S_adjust(_Vector_impl& __impl, pointer __prev, pointer __curr)
 	    {
-#if __has_builtin(__builtin_is_constant_evaluated)
-	      if (!__builtin_is_constant_evaluated())
+#if __cpp_lib_is_constant_evaluated
+	      if (std::is_constant_evaluated())
+		return;
 #endif
 	      __sanitizer_annotate_contiguous_container(__impl._M_start,
 		  __impl._M_end_of_storage, __prev, __curr);

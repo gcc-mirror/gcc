@@ -178,10 +178,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr _Tp*
       allocate(size_t __n)
       {
-#ifdef __cpp_lib_is_constant_evaluated
-	if (std::is_constant_evaluated())
+	if (std::__is_constant_evaluated())
 	  return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
-#endif
 	return __allocator_base<_Tp>::allocate(__n, 0);
       }
 
@@ -189,13 +187,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr void
       deallocate(_Tp* __p, size_t __n)
       {
-#ifdef __cpp_lib_is_constant_evaluated
-	if (std::is_constant_evaluated())
+	if (std::__is_constant_evaluated())
 	  {
 	    ::operator delete(__p);
 	    return;
 	  }
-#endif
 	__allocator_base<_Tp>::deallocate(__p, __n);
       }
 #endif // C++20

@@ -3510,15 +3510,20 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
 #endif // C++23
 
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-
+#if _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 #define __cpp_lib_is_constant_evaluated 201811L
 
   /// Returns true only when called during constant evaluation.
   /// @since C++20
   constexpr inline bool
   is_constant_evaluated() noexcept
-  { return __builtin_is_constant_evaluated(); }
+  {
+#if __cpp_if_consteval >= 202106L
+    if consteval { return true; } else { return false; }
+#else
+    return __builtin_is_constant_evaluated();
+#endif
+  }
 #endif
 
   /// @cond undocumented
