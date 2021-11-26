@@ -51,6 +51,8 @@ public:
     DIV_ASSIGN,
     REM_ASSIGN,
 
+    DEREF,
+
     UNKNOWN,
   };
 
@@ -104,6 +106,10 @@ public:
       {
 	return ItemType::REM_ASSIGN;
       }
+    else if (item.compare ("deref") == 0)
+      {
+	return ItemType::DEREF;
+      }
 
     return ItemType::UNKNOWN;
   }
@@ -136,6 +142,8 @@ public:
 	return "div_assign";
       case REM_ASSIGN:
 	return "rem_assign";
+      case DEREF:
+	return "deref";
 
       case UNKNOWN:
 	break;

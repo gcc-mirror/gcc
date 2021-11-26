@@ -117,6 +117,43 @@ CompileExpr::visit (HIR::NegationExpr &expr)
     = ctx->get_backend ()->negation_expression (op, negated_expr, location);
 }
 
+void
+CompileExpr::visit (HIR::DereferenceExpr &expr)
+{
+  TyTy::BaseType *tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+				       &tyty))
+    {
+      rust_fatal_error (expr.get_locus (),
+			"did not resolve type for this TupleExpr");
+      return;
+    }
+
+  tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
+
+  // this might be an operator overload situation lets check
+  TyTy::FnType *fntype;
+  bool is_op_overload = ctx->get_tyctx ()->lookup_operator_overload (
+    expr.get_mappings ().get_hirid (), &fntype);
+  if (is_op_overload)
+    {
+      auto lang_item_type = Analysis::RustLangItem::ItemType::DEREF;
+      tree operator_overload_call
+	= resolve_operator_overload (lang_item_type, expr, main_expr, nullptr,
+				     expr.get_expr ().get (), nullptr);
+
+      // rust deref always returns a reference from this overload then we can
+      // actually do the indirection
+      main_expr = operator_overload_call;
+    }
+
+  tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
+  bool known_valid = true;
+  translated
+    = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
+						known_valid, expr.get_locus ());
+}
+
 tree
 CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 					TyTy::BaseType *receiver,

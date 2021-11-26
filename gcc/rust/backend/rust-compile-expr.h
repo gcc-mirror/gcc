@@ -979,26 +979,7 @@ public:
       = ctx->get_backend ()->address_expression (main_expr, expr.get_locus ());
   }
 
-  void visit (HIR::DereferenceExpr &expr) override
-  {
-    tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
-
-    TyTy::BaseType *tyty = nullptr;
-    if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
-					 &tyty))
-      {
-	rust_fatal_error (expr.get_locus (),
-			  "did not resolve type for this TupleExpr");
-	return;
-      }
-
-    tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
-    bool known_valid = true;
-    translated
-      = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
-						  known_valid,
-						  expr.get_locus ());
-  }
+  void visit (HIR::DereferenceExpr &expr) override;
 
 protected:
   tree compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,

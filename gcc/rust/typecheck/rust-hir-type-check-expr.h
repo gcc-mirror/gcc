@@ -1219,6 +1219,18 @@ public:
     TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
 
+    auto lang_item_type = Analysis::RustLangItem::ItemType::DEREF;
+    bool operator_overloaded
+      = resolve_operator_overload (lang_item_type, expr, resolved_base,
+				   nullptr);
+    if (operator_overloaded)
+      {
+	// operator overloaded deref always refurns a reference type lets assert
+	// this
+	rust_assert (infered->get_kind () == TyTy::TypeKind::REF);
+	resolved_base = infered;
+      }
+
     bool is_valid_type
       = resolved_base->get_kind () == TyTy::TypeKind::REF
 	|| resolved_base->get_kind () == TyTy::TypeKind::POINTER;
@@ -1281,9 +1293,24 @@ protected:
     bool probe_impls = !receiver_is_generic;
     bool ignore_mandatory_trait_items = !receiver_is_generic;
 
-    auto candidates = PathProbeType::Probe (
-      root, HIR::PathIdentSegment (associated_item_name), probe_impls,
-      probe_bounds, ignore_mandatory_trait_items, respective_lang_item_id);
+    auto probe_type = probe_impls ? lhs : root;
+    auto candidates
+      = PathProbeType::Probe (probe_type,
+			      HIR::PathIdentSegment (associated_item_name),
+			      probe_impls, probe_bounds,
+			      ignore_mandatory_trait_items);
+    if (candidates.empty ())
+      {
+	if (probe_impls)
+	  {
+	    candidates = PathProbeType::Probe (
+	      root, HIR::PathIdentSegment (associated_item_name), probe_impls,
+	      probe_bounds, ignore_mandatory_trait_items);
+	  }
+
+	if (candidates.empty ())
+	  return false;
+      }
 
     // autoderef to find the relevant method
     std::vector<Adjustment> adjustments;
