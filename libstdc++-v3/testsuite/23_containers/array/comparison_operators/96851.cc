@@ -17,6 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-require-normal-mode "" }
 
 #include <array>
 #include <testsuite_hooks.h>
