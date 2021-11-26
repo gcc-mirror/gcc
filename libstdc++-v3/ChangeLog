@@ -1,3 +1,40 @@
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101608
+	* include/bits/ranges_algobase.h (__fill_n_fn): Check for
+	constant evaluation before using memset.
+	* testsuite/25_algorithms/fill_n/constrained.cc: Check
+	byte-sized values as well.
+
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdBitReferencePrinter): Use
+	'std::vector<bool>::reference' as type name, not _Bit_reference.
+	(build_libstdcxx_dictionary): Register printers for vector<bool>
+	types in debug mode too.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Adjust expected
+	output for invalid _Bit_reference. Use vector<bool>::reference
+	instead of _Bit_reference.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add xfail for
+	debug mode.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+
+2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Rename effective target keywords
+	to avoid dashes in the name.
+	* testsuite/*: Update effective targe keywords.
+
 2021-11-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	Backported from master:
