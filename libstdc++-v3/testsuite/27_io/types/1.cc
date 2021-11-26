@@ -27,14 +27,14 @@
 // Annex D, deprecated.
 void test01()
 {
-  typedef std::ios_base::streampos streampos_type; // { dg-warning "is deprecated: use 'std::streampos' instead" }
-  typedef std::ios_base::streamoff streamoff_type; // { dg-warning "is deprecated: use 'std::streamoff' instead" }
+  typedef std::ios_base::streampos streampos_type; // { dg-warning "is deprecated: use 'std::streampos' instead" "" { target c++11 } }
+  typedef std::ios_base::streamoff streamoff_type; // { dg-warning "is deprecated: use 'std::streamoff' instead" "" { target c++11 } }
 }
 
 // Annex D, deprecated.
 void test02()
 {
-  typedef std::ios_base::io_state iostate_type; // { dg-warning "is deprecated: use 'std::iostate' instead" }
-  typedef std::ios_base::open_mode openmode_type; // { dg-warning "is deprecated: use 'std::openmode' instead" }
-  typedef std::ios_base::seek_dir seekdir_type; // { dg-warning "is deprecated: use 'std::seekdir' instead" }
+  typedef std::ios_base::io_state iostate_type; // { dg-warning "is deprecated: use 'std::iostate' instead" "" { target c++11 } }
+  typedef std::ios_base::open_mode openmode_type; // { dg-warning "is deprecated: use 'std::openmode' instead" "" { target c++11 } }
+  typedef std::ios_base::seek_dir seekdir_type; // { dg-warning "is deprecated: use 'std::seekdir' instead" "" { target c++11 } }
 }
