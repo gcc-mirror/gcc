@@ -4201,7 +4201,7 @@ update_escape_summary_1 (cgraph_edge *e,
 	  if (ee->direct && !em->direct)
 	    min_flags = deref_flags (min_flags, ignore_stores);
 	  struct escape_entry entry = {em->parm_index, ee->arg,
-				       ee->min_flags,
+				       min_flags,
 				       ee->direct & em->direct};
 	  sum->esc.safe_push (entry);
 	}
