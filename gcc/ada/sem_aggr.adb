@@ -1807,6 +1807,7 @@ package body Sem_Aggr is
         and then not Is_Enum_Array_Aggregate (N)
         and then Is_Parenthesis_Aggregate (N)
         and then Nkind (Parent (N)) /= N_Qualified_Expression
+        and then Comes_From_Source (N)
       then
          Error_Msg_N
            ("?j?array aggregate using () is an" &
