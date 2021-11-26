@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-do run { target c++11 } }
 
 #include <iterator>
 
@@ -27,18 +27,18 @@ struct Iter
   using reference = int&;
   using difference_type = std::ptrdiff_t;
 
-  Iter();
+  Iter() { }
 
-  // Construction from int* is not valid:
-  Iter(int*) = delete;
+  // Construction from int* should not be used:
+  Iter(int*) { throw 1; }
 
-  // Assignment from int* is valid:
-  Iter& operator=(int*);
+  // Assignment from int* is OK:
+  Iter& operator=(int*) { return *this; }
 
-  Iter& operator++();
-  Iter operator++(int);
-  int& operator*() const;
-  int* operator->() const;
+  Iter& operator++() { return *this; }
+  Iter operator++(int) { return *this; }
+  int& operator*() const { static int i; return i; }
+  int* operator->() const { return &**this; }
 
   template<int N> friend bool operator==(Iter, Iter);
 };
@@ -48,4 +48,9 @@ void test01()
   std::move_iterator<Iter> m;
   int i = 0;
   m = std::make_move_iterator(&i); // Should use assignment not construction
+}
+
+int main()
+{
+  test01();
 }
