@@ -923,44 +923,45 @@ ranger_cache::dump_bb (FILE *f, basic_block bb)
 }
 
 // Get the global range for NAME, and return in R.  Return false if the
-// global range is not set.
+// global range is not set, and return the legacy global value in R.
 
 bool
 ranger_cache::get_global_range (irange &r, tree name) const
 {
-  return m_globals.get_global_range (r, name);
-}
-
-// Get the global range for NAME, and return in R if the value is not stale.
-// If the range is set, but is stale, mark it current and return false.
-// If it is not set pick up the legacy global value, mark it current, and
-// return false.
-// Note there is always a value returned in R. The return value indicates
-// whether that value is an up-to-date calculated value or not..
-
-bool
-ranger_cache::get_non_stale_global_range (irange &r, tree name)
-{
   if (m_globals.get_global_range (r, name))
-    {
-      // Use this value if the range is constant or current.
-      if (r.singleton_p ()
-	  || m_temporal->current_p (name, m_gori.depend1 (name),
-				    m_gori.depend2 (name)))
-	return true;
-    }
-  else
-    {
-      // Global has never been accessed, so pickup the legacy global value.
-      r = gimple_range_global (name);
-      m_globals.set_global_range (name, r);
-    }
-  // After a stale check failure, mark the value as always current until a
-  // new one is set.
-  m_temporal->set_always_current (name);
+    return true;
+  r = gimple_range_global (name);
   return false;
 }
-//  Set the global range of NAME to R.
+
+// Get the global range for NAME, and return in R.  Return false if the
+// global range is not set, and R will contain the legacy global value.
+// CURRENT_P is set to true if the value was in cache and not stale.
+// Otherwise, set CURRENT_P to false and mark as it always current.
+// If the global cache did not have a value, initialize it as well.
+// After this call, the global cache will have a value.
+
+bool
+ranger_cache::get_global_range (irange &r, tree name, bool &current_p)
+{
+  bool had_global = get_global_range (r, name);
+
+  // If there was a global value, set current flag, otherwise set a value.
+  current_p = false;
+  if (had_global)
+    current_p = r.singleton_p ()
+		|| m_temporal->current_p (name, m_gori.depend1 (name),
+					  m_gori.depend2 (name));
+  else
+    m_globals.set_global_range (name, r);
+
+  // If the existing value was not current, mark it as always current.
+  if (!current_p)
+    m_temporal->set_always_current (name);
+  return current_p;
+}
+
+//  Set the global range of NAME to R and give it a timestamp.
 
 void
 ranger_cache::set_global_range (tree name, const irange &r)

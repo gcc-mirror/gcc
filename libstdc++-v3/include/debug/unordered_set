@@ -564,6 +564,13 @@ namespace __debug
 	return { _M_erase(__it.base()), this };
       }
 
+      _Base_iterator
+      erase(_Base_const_iterator __it)
+      {
+	__glibcxx_check_erase2(__it);
+	return _M_erase(__it);
+      }
+
       iterator
       erase(iterator __it)
       {
@@ -1232,6 +1239,13 @@ namespace __debug
       {
 	__glibcxx_check_erase(__it);
 	return { _M_erase(__it.base()), this };
+      }
+
+      _Base_iterator
+      erase(_Base_const_iterator __it)
+      {
+	__glibcxx_check_erase2(__it);
+	return _M_erase(__it);
       }
 
       iterator

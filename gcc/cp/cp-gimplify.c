@@ -900,8 +900,39 @@ struct cp_genericize_data
 static tree
 cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 {
-  tree stmt;
-  enum tree_code code;
+  tree stmt = *stmt_p;
+  enum tree_code code = TREE_CODE (stmt);
+
+  switch (code)
+    {
+    case PTRMEM_CST:
+      if (TREE_CODE (PTRMEM_CST_MEMBER (stmt)) == FUNCTION_DECL
+	  && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (stmt)))
+	{
+	  if (!((hash_set<tree> *) data)->add (stmt))
+	    error_at (PTRMEM_CST_LOCATION (stmt),
+		      "taking address of an immediate function %qD",
+		      PTRMEM_CST_MEMBER (stmt));
+	  stmt = *stmt_p = build_zero_cst (TREE_TYPE (stmt));
+	  break;
+	}
+      break;
+
+    case ADDR_EXPR:
+      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == FUNCTION_DECL
+	  && DECL_IMMEDIATE_FUNCTION_P (TREE_OPERAND (stmt, 0)))
+	{
+	  error_at (EXPR_LOCATION (stmt),
+		    "taking address of an immediate function %qD",
+		    TREE_OPERAND (stmt, 0));
+	  stmt = *stmt_p = build_zero_cst (TREE_TYPE (stmt));
+	  break;
+	}
+      break;
+
+    default:
+      break;
+    }
 
   *stmt_p = stmt = cp_fold (*stmt_p);
 
@@ -917,12 +948,16 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
     }
 
   code = TREE_CODE (stmt);
-  if (code == OMP_FOR || code == OMP_SIMD || code == OMP_DISTRIBUTE
-      || code == OMP_LOOP || code == OMP_TASKLOOP || code == OACC_LOOP)
+  switch (code)
     {
       tree x;
       int i, n;
-
+    case OMP_FOR:
+    case OMP_SIMD:
+    case OMP_DISTRIBUTE:
+    case OMP_LOOP:
+    case OMP_TASKLOOP:
+    case OACC_LOOP:
       cp_walk_tree (&OMP_FOR_BODY (stmt), cp_fold_r, data, NULL);
       cp_walk_tree (&OMP_FOR_CLAUSES (stmt), cp_fold_r, data, NULL);
       cp_walk_tree (&OMP_FOR_INIT (stmt), cp_fold_r, data, NULL);
@@ -961,6 +996,22 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 	}
       cp_walk_tree (&OMP_FOR_PRE_BODY (stmt), cp_fold_r, data, NULL);
       *walk_subtrees = 0;
+      return NULL;
+
+    case IF_STMT:
+      if (IF_STMT_CONSTEVAL_P (stmt))
+	{
+	  /* Don't walk THEN_CLAUSE (stmt) for consteval if.  IF_COND is always
+	     boolean_false_node.  */
+	  cp_walk_tree (&ELSE_CLAUSE (stmt), cp_fold_r, data, NULL);
+	  cp_walk_tree (&IF_SCOPE (stmt), cp_fold_r, data, NULL);
+	  *walk_subtrees = 0;
+	  return NULL;
+	}
+      break;
+
+    default:
+      break;
     }
 
   return NULL;
@@ -1475,14 +1526,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  * walk_subtrees = 0;
 	  break;
 	}
-
-      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
-	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
-	  {
-	    gcc_assert (source_location_current_p (fndecl));
-	    *stmt_p = cxx_constant_value (stmt);
-	    break;
-	  }
 
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p ((SANITIZE_NULL
@@ -2628,6 +2671,14 @@ cp_fold (tree x)
       {
 	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
+
+	if (tree fndecl = cp_get_callee_fndecl_nofold (x))
+	  if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
+	      && source_location_current_p (fndecl))
+	    {
+	      x = cxx_constant_value (x);
+	      break;
+	    }
 
 	/* Some built-in function calls will be evaluated at compile-time in
 	   fold ().  Set optimize to 1 when folding __builtin_constant_p inside

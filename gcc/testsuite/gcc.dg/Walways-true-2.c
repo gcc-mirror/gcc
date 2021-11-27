@@ -9,7 +9,7 @@
 
 extern int foo (int) __attribute__ ((weak));
 
-int i __attribute__ ((weak));
+extern int i __attribute__ ((weak));
 
 void
 bar (int a)

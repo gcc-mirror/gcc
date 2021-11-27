@@ -133,9 +133,6 @@ struct copy_body_data
      and only in that case will actually remap the type.  */
   bool dont_remap_vla_if_no_change;
 
-  /* A function to be called when duplicating BLOCK nodes.  */
-  void (*transform_lang_insert_block) (tree);
-
   /* Statements that might be possibly folded.  */
   hash_set<gimple *> *statements_to_fold;
 

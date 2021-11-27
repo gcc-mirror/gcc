@@ -946,7 +946,8 @@ c_common_post_options (const char **pfilename)
   /* -Wcomma-subscript is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       warn_comma_subscript,
-		       cxx_dialect >= cxx20 && warn_deprecated);
+		       cxx_dialect >= cxx23
+		       || (cxx_dialect == cxx20 && warn_deprecated));
 
   /* -Wvolatile is enabled by default in C++20.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set, warn_volatile,

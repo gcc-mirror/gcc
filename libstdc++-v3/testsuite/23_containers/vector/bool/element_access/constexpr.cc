@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
-// { dg-xfail-if "not supported" { debug-mode } }
+// { dg-xfail-if "not supported" { debug_mode } }
 
 #include <vector>
 #include <testsuite_hooks.h>
@@ -99,4 +99,4 @@ template<typename T = bool>
   constexpr std::true_type
   access_empty_front() { return {}; }
 
-static_assert( ! access_empty_front() ); // { dg-error "ambiguous" "PR 103191" { target { ! debug-mode } } }
+static_assert( ! access_empty_front() ); // { dg-error "ambiguous" "PR 103191" { target { ! debug_mode } } }

@@ -11628,6 +11628,36 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   return dest;
 }
 
+/* Return true if the TLS address requires insn using integer registers.
+   It's used to prevent KMOV/VMOV in TLS code sequences which require integer
+   MOV instructions, refer to PR103275.  */
+bool
+ix86_gpr_tls_address_pattern_p (rtx mem)
+{
+  gcc_assert (MEM_P (mem));
+
+  rtx addr = XEXP (mem, 0);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, addr, ALL)
+    {
+      rtx op = *iter;
+      if (GET_CODE (op) == UNSPEC)
+	switch (XINT (op, 1))
+	  {
+	  case UNSPEC_GOTNTPOFF:
+	    return true;
+	  case UNSPEC_TPOFF:
+	    if (!TARGET_64BIT)
+	      return true;
+	    break;
+	  default:
+	    break;
+	  }
+    }
+
+  return false;
+}
+
 /* Return true if OP refers to a TLS address.  */
 bool
 ix86_tls_address_pattern_p (rtx op)
@@ -19492,9 +19522,8 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
 	 disallow a change to these modes, reload will assume it's ok to
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
 	 the vec_dupv4hi pattern.
-	 NB: AVX512FP16 supports vmovw which can load 16bit data to sse
-	 register.  */
-      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_AVX512FP16 ? 2 : 4;
+	 NB: SSE2 can load 16bit data to sse register via pinsrw.  */
+      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_SSE2 ? 2 : 4;
       if (GET_MODE_SIZE (from) < mov_size)
 	return false;
     }

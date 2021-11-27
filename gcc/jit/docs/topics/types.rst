@@ -345,3 +345,125 @@ Function pointer types
 
 Function pointer types can be created using
 :c:func:`gcc_jit_context_new_function_ptr_type`.
+
+Reflection API
+--------------
+
+.. function::  gcc_jit_type *\
+               gcc_jit_type_dyncast_array (gcc_jit_type *type)
+
+     Get the element type of an array type or NULL if it's not an array.
+
+.. function::  int\
+               gcc_jit_type_is_bool (gcc_jit_type *type)
+
+     Return non-zero if the type is a bool.
+
+.. function::  gcc_jit_function_type *\
+               gcc_jit_type_dyncast_function_ptr_type (gcc_jit_type *type)
+
+     Return the function type if it is one or NULL.
+
+.. function::  gcc_jit_type *\
+               gcc_jit_function_type_get_return_type (gcc_jit_function_type *function_type)
+
+     Given a function type, return its return type.
+
+.. function::  size_t\
+               gcc_jit_function_type_get_param_count (gcc_jit_function_type *function_type)
+
+     Given a function type, return its number of parameters.
+
+.. function::  gcc_jit_type *\
+               gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,
+                                                     size_t index)
+
+     Given a function type, return the type of the specified parameter.
+
+.. function::  int\
+               gcc_jit_type_is_integral (gcc_jit_type *type)
+
+     Return non-zero if the type is an integral.
+
+.. function::  gcc_jit_type *\
+               gcc_jit_type_is_pointer (gcc_jit_type *type)
+
+     Return the type pointed by the pointer type or NULL if it's not a pointer.
+
+.. function::  gcc_jit_vector_type *\
+               gcc_jit_type_dyncast_vector (gcc_jit_type *type)
+
+     Given a type, return a dynamic cast to a vector type or NULL.
+
+.. function::  gcc_jit_struct *\
+               gcc_jit_type_is_struct (gcc_jit_type *type)
+
+     Given a type, return a dynamic cast to a struct type or NULL.
+
+.. function::  size_t\
+               gcc_jit_vector_type_get_num_units (gcc_jit_vector_type *vector_type)
+
+     Given a vector type, return the number of units it contains.
+
+.. function::  gcc_jit_type *\
+               gcc_jit_vector_type_get_element_type (gcc_jit_vector_type * vector_type)
+
+     Given a vector type, return the type of its elements.
+
+.. function::  gcc_jit_type *\
+               gcc_jit_type_unqualified (gcc_jit_type *type)
+
+     Given a type, return the unqualified type, removing "const", "volatile" and
+     alignment qualifiers.
+
+.. function::  gcc_jit_field *\
+               gcc_jit_struct_get_field (gcc_jit_struct *struct_type,
+                                         size_t index)
+
+     Get a struct field by index.
+
+.. function::  size_t\
+               gcc_jit_struct_get_field_count (gcc_jit_struct *struct_type)
+
+     Get the number of fields in the struct.
+
+   The API entrypoints related to the reflection API:
+
+      * :c:func:`gcc_jit_function_type_get_return_type`
+
+      * :c:func:`gcc_jit_function_type_get_param_count`
+
+      * :c:func:`gcc_jit_function_type_get_param_type`
+
+      * :c:func:`gcc_jit_type_unqualified`
+
+      * :c:func:`gcc_jit_type_dyncast_array`
+
+      * :c:func:`gcc_jit_type_is_bool`
+
+      * :c:func:`gcc_jit_type_dyncast_function_ptr_type`
+
+      * :c:func:`gcc_jit_type_is_integral`
+
+      * :c:func:`gcc_jit_type_is_pointer`
+
+      * :c:func:`gcc_jit_type_dyncast_vector`
+
+      * :c:func:`gcc_jit_vector_type_get_element_type`
+
+      * :c:func:`gcc_jit_vector_type_get_num_units`
+
+      * :c:func:`gcc_jit_struct_get_field`
+
+      * :c:func:`gcc_jit_type_is_struct`
+
+      * :c:func:`gcc_jit_struct_get_field_count`
+
+   were added in :ref:`LIBGCCJIT_ABI_16`; you can test for their presence
+   using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_REFLECTION
+
+   .. type:: gcc_jit_case

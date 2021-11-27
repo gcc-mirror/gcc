@@ -4266,6 +4266,12 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	     || (as->type == AS_ASSUMED_SHAPE && upper)))
     return NULL;
 
+  /* 'array' shall not be an unallocated allocatable variable or a pointer that
+     is not associated.  */
+  if (array->expr_type == EXPR_VARIABLE
+      && (gfc_expr_attr (array).allocatable || gfc_expr_attr (array).pointer))
+    return NULL;
+
   gcc_assert (!as
 	      || (as->type != AS_DEFERRED
 		  && array->expr_type == EXPR_VARIABLE

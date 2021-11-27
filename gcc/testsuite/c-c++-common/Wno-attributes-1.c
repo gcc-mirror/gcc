@@ -1,6 +1,5 @@
 /* PR c++/101940 */
-/* { dg-do compile } */
-/* { dg-additional-options "-std=c++11" { target c++ } } */
+/* { dg-do compile { target { c || c++11 } } } */
 /* { dg-additional-options "-Wno-attributes=company::,yoyodyne::attr" } */
 /* { dg-additional-options "-Wno-attributes=c1::attr,c1::attr,c1::__attr__" } */
 /* { dg-additional-options "-Wno-attributes=c2::,c2::attr" } */

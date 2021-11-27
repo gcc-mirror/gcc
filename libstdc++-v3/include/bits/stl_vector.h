@@ -475,10 +475,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static constexpr bool
       _S_use_relocate()
       {
-#if __cplusplus >= 202002L && __has_builtin(__builtin_is_constant_evaluated)
-	if (__builtin_is_constant_evaluated())
-	  return false; // Cannot use memcpy in constant evaluation contexts.
-#endif
 	// Instantiating std::__relocate_a might cause an error outside the
 	// immediate context (in __relocate_object_a's noexcept-specifier),
 	// so only do it if we know the type can be move-inserted into *this.

@@ -188,7 +188,11 @@ is_attribute_p (const char *attr_name, const_tree ident)
 static inline tree
 lookup_attribute (const char *attr_name, tree list)
 {
-  gcc_checking_assert (attr_name[0] != '_');
+  if (CHECKING_P && attr_name[0] != '_')
+    {
+      size_t attr_len = strlen (attr_name);
+      gcc_checking_assert (!canonicalize_attr_name (attr_name, attr_len));
+    }
   /* In most cases, list is NULL_TREE.  */
   if (list == NULL_TREE)
     return NULL_TREE;
@@ -219,7 +223,8 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
       size_t attr_len = strlen (attr_name);
       while (list)
 	{
-	  size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
+	  tree name = get_attribute_name (list);
+	  size_t ident_len = IDENTIFIER_LENGTH (name);
 
 	  if (attr_len > ident_len)
 	    {
@@ -227,7 +232,7 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
 	      continue;
 	    }
 
-	  const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
+	  const char *p = IDENTIFIER_POINTER (name);
 	  gcc_checking_assert (attr_len == 0 || p[0] != '_');
 
 	  if (strncmp (attr_name, p, attr_len) == 0)

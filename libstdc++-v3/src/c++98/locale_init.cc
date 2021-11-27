@@ -31,6 +31,7 @@
 #include <cctype>
 #include <cwctype>     // For towupper, etc.
 #include <locale>
+#include <ext/atomicity.h>
 #include <ext/concurrence.h>
 
 #if _GLIBCXX_USE_DUAL_ABI
@@ -321,6 +322,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   locale::_S_initialize_once() throw()
   {
+    // Need to check this because we could get called once from _S_initialize()
+    // when the program is single-threaded, and then again (via __gthread_once)
+    // when it's multi-threaded.
+    if (_S_classic)
+      return;
+
     // 2 references.
     // One reference for _S_classic, one for _S_global
     _S_classic = new (&c_locale_impl) _Impl(2);
@@ -332,10 +339,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   locale::_S_initialize()
   {
 #ifdef __GTHREADS
-    if (__gthread_active_p())
+    if (!__gnu_cxx::__is_single_threaded())
       __gthread_once(&_S_once, _S_initialize_once);
 #endif
-    if (!_S_classic)
+    if (__builtin_expect(!_S_classic, 0))
       _S_initialize_once();
   }
 

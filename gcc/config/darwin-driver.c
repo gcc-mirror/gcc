@@ -281,6 +281,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
   const char *vers_string = NULL;
   bool seen_version_min = false;
   bool seen_sysroot_p = false;
+  bool noexport_p = true;
 
   for (i = 1; i < *decoded_options_count; i++)
     {
@@ -347,6 +348,13 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	case OPT__sysroot_:
 	case OPT_isysroot:
 	  seen_sysroot_p = true;
+	  break;
+
+	case OPT_Xlinker:
+	case OPT_Wl_:
+	  gcc_checking_assert ((*decoded_options)[i].arg);
+	  if (startswith ((*decoded_options)[i].arg, "-exported_symbol"))
+	    noexport_p = false;
 	  break;
 
 	default:
@@ -473,5 +481,15 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  generate_option (OPT_asm_macosx_version_min_, asm_major, 1, CL_DRIVER,
 			  &(*decoded_options)[*decoded_options_count - 1]);
         }
+    }
+
+  if (noexport_p)
+    {
+      ++*decoded_options_count;
+      *decoded_options = XRESIZEVEC (struct cl_decoded_option,
+				     *decoded_options,
+				     *decoded_options_count);
+      generate_option (OPT_nodefaultexport, NULL, 1, CL_DRIVER,
+		       &(*decoded_options)[*decoded_options_count - 1]);
     }
 }

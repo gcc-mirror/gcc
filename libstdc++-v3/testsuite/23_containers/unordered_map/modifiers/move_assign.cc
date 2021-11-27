@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-do run { target c++11 } }
 
 // Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //

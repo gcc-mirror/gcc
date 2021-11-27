@@ -1,3 +1,8 @@
+2021-11-26  Martin Liska  <mliska@suse.cz>
+
+	* d-attribs.cc (parse_optimize_options): Check index before
+	accessing cl_options.
+
 2021-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* decl.cc (d_finish_decl): Use HOST_WIDE_INT for type size

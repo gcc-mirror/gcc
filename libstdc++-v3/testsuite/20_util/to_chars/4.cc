@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do link { target c++17 } }
-// { dg-require-effective-target ieee-floats }
+// { dg-require-effective-target ieee_floats }
 // { dg-require-static-libstdcxx }
 // { dg-additional-options "-static-libstdc++" }
 

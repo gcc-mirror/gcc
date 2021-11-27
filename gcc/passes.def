@@ -71,6 +71,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_local_fn_summary);
       NEXT_PASS (pass_early_inline);
+      NEXT_PASS (pass_warn_recursion);
       NEXT_PASS (pass_all_early_optimizations);
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);

@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-faligned-new" }
-// { dg-do run { target c++11 } }
+// { dg-do run { target { c++11 && { c++17 || std_allocator_new } } } }
 // { dg-require-cstdint "" }
 
 #include <memory>

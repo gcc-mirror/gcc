@@ -266,11 +266,14 @@
 
 ; Power6 builtins (ISA 2.05).
 [power6]
-  const signed long __builtin_p6_cmpb (signed long, signed long);
-    CMPB cmpbdi3 {}
-
   const signed int __builtin_p6_cmpb_32 (signed int, signed int);
     CMPB_32 cmpbsi3 {}
+
+
+; Power6 builtins requiring 64-bit GPRs (even with 32-bit addressing).
+[power6-64]
+  const signed long __builtin_p6_cmpb (signed long, signed long);
+    CMPB cmpbdi3 {}
 
 
 ; AltiVec builtins.

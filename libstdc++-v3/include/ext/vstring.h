@@ -38,6 +38,7 @@
 #include <ext/vstring_util.h>
 #include <ext/rc_string_base.h>
 #include <ext/sso_string_base.h>
+#include <bits/stl_algobase.h> // std::min
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {

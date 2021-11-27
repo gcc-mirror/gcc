@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/region-model-reachability.h"
 #include "analyzer/analyzer-selftests.h"
+#include "analyzer/program-state.h"
 #include "stor-layout.h"
 #include "attribs.h"
 #include "tree-object-size.h"
@@ -3683,7 +3684,10 @@ region_model::poison_any_pointers_to_descendents (const region *reg,
 bool
 region_model::can_merge_with_p (const region_model &other_model,
 				const program_point &point,
-				region_model *out_model) const
+				region_model *out_model,
+				const extrinsic_state *ext_state,
+				const program_state *state_a,
+				const program_state *state_b) const
 {
   gcc_assert (out_model);
   gcc_assert (m_mgr == other_model.m_mgr);
@@ -3693,7 +3697,8 @@ region_model::can_merge_with_p (const region_model &other_model,
     return false;
   out_model->m_current_frame = m_current_frame;
 
-  model_merger m (this, &other_model, point, out_model);
+  model_merger m (this, &other_model, point, out_model,
+		  ext_state, state_a, state_b);
 
   if (!store::can_merge_p (&m_store, &other_model.m_store,
 			   &out_model->m_store, m_mgr->get_store_manager (),
@@ -3895,6 +3900,30 @@ DEBUG_FUNCTION void
 model_merger::dump (bool simple) const
 {
   dump (stderr, simple);
+}
+
+/* Return true if it's OK to merge SVAL with other svalues.  */
+
+bool
+model_merger::mergeable_svalue_p (const svalue *sval) const
+{
+  if (m_ext_state)
+    {
+      /* Reject merging svalues that have non-purgable sm-state,
+	 to avoid falsely reporting memory leaks by merging them
+	 with something else.  For example, given a local var "p",
+	 reject the merger of a:
+	   store_a mapping "p" to a malloc-ed ptr
+	 with:
+	   store_b mapping "p" to a NULL ptr.  */
+      if (m_state_a)
+	if (!m_state_a->can_purge_p (*m_ext_state, sval))
+	  return false;
+      if (m_state_b)
+	if (!m_state_b->can_purge_p (*m_ext_state, sval))
+	  return false;
+    }
+  return true;
 }
 
 } // namespace ana

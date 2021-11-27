@@ -34,7 +34,7 @@ int main() {
 #if __cpp_init_captures
   [j=0] () {
     [&] () mutable {
-      ++j; // { dg-error "read-only" }
+      ++j; // { dg-error "read-only" "" { target c++14 } }
     };
   };
 #endif

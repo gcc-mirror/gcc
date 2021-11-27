@@ -186,6 +186,11 @@
   (and (match_operand 0 "memory_operand")
        (match_test "constant_address_p (XEXP (op, 0))")))
 
+(define_memory_constraint "Bk"
+  "@internal TLS address that allows insn using non-integer registers."
+  (and (match_operand 0 "memory_operand")
+       (not (match_test "ix86_gpr_tls_address_pattern_p (op)"))))
+
 (define_special_memory_constraint "Bn"
   "@internal Memory operand without REX prefix."
   (match_operand 0 "norex_memory_operand"))

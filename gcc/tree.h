@@ -4922,6 +4922,11 @@ extern bool integer_minus_onep (const_tree);
 
 extern bool integer_pow2p (const_tree);
 
+/* Checks to see if T is a constant or a constant vector and if each element E
+   adheres to ~E + 1 == pow2 then return ~E otherwise NULL_TREE.  */
+
+extern tree bitmask_inv_cst_vector_p (tree);
+
 /* integer_nonzerop (tree x) is nonzero if X is an integer constant
    with a nonzero value.  */
 

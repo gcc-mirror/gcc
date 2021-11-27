@@ -1,3 +1,22 @@
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_clone_omp_udr): Don't initialize
+	id.transform_lang_insert_block.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-typeck.c (maybe_warn_for_null_address): Suppress warnings for
+	code resulting from macro expansion.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
 2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
 
 	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_ASSOC_BARRIER.

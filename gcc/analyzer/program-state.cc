@@ -1197,6 +1197,7 @@ program_state::get_representative_tree (const svalue *sval) const
 
 bool
 program_state::can_merge_with_p (const program_state &other,
+				 const extrinsic_state &ext_state,
 				 const program_point &point,
 				 program_state *out) const
 {
@@ -1213,7 +1214,9 @@ program_state::can_merge_with_p (const program_state &other,
   /* Attempt to merge the region_models.  */
   if (!m_region_model->can_merge_with_p (*other.m_region_model,
 					  point,
-					  out->m_region_model))
+					 out->m_region_model,
+					 &ext_state,
+					 this, &other))
     return false;
 
   /* Copy m_checker_states to OUT.  */
@@ -1645,7 +1648,7 @@ test_program_state_merging ()
      with the given sm-state.
      They ought to be mergeable, preserving the sm-state.  */
   program_state merged (ext_state);
-  ASSERT_TRUE (s0.can_merge_with_p (s1, point, &merged));
+  ASSERT_TRUE (s0.can_merge_with_p (s1, ext_state, point, &merged));
   merged.validate (ext_state);
 
   /* Verify that the merged state has the sm-state for "p".  */
@@ -1703,7 +1706,7 @@ test_program_state_merging_2 ()
 
   /* They ought to not be mergeable.  */
   program_state merged (ext_state);
-  ASSERT_FALSE (s0.can_merge_with_p (s1, point, &merged));
+  ASSERT_FALSE (s0.can_merge_with_p (s1, ext_state, point, &merged));
 }
 
 /* Run all of the selftests within this file.  */

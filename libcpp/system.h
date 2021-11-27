@@ -422,6 +422,18 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
+#ifdef __has_cpp_attribute
+# if __has_cpp_attribute(likely)
+#  define ATTR_LIKELY [[likely]]
+# elif __has_cpp_attribute(__likely__)
+#  define ATTR_LIKELY [[__likely__]]
+# else
+#  define ATTR_LIKELY
+# endif
+#else
+# define ATTR_LIKELY
+#endif
+
 /* Poison identifiers we do not want to use.  */
 #if (GCC_VERSION >= 3000)
 #undef calloc

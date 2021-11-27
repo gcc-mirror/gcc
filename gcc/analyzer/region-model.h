@@ -721,7 +721,10 @@ class region_model
 
   bool can_merge_with_p (const region_model &other_model,
 			 const program_point &point,
-			 region_model *out_model) const;
+			 region_model *out_model,
+			 const extrinsic_state *ext_state = NULL,
+			 const program_state *state_a = NULL,
+			 const program_state *state_b = NULL) const;
 
   tree get_fndecl_for_call (const gcall *call,
 			    region_model_context *ctxt);
@@ -987,10 +990,15 @@ struct model_merger
   model_merger (const region_model *model_a,
 		const region_model *model_b,
 		const program_point &point,
-		region_model *merged_model)
+		region_model *merged_model,
+		const extrinsic_state *ext_state,
+		const program_state *state_a,
+		const program_state *state_b)
   : m_model_a (model_a), m_model_b (model_b),
     m_point (point),
-    m_merged_model (merged_model)
+    m_merged_model (merged_model),
+    m_ext_state (ext_state),
+    m_state_a (state_a), m_state_b (state_b)
   {
   }
 
@@ -1003,10 +1011,16 @@ struct model_merger
     return m_model_a->get_manager ();
   }
 
+  bool mergeable_svalue_p (const svalue *) const;
+
   const region_model *m_model_a;
   const region_model *m_model_b;
   const program_point &m_point;
   region_model *m_merged_model;
+
+  const extrinsic_state *m_ext_state;
+  const program_state *m_state_a;
+  const program_state *m_state_b;
 };
 
 /* A record that can (optionally) be written out when

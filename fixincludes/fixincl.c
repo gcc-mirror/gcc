@@ -1352,10 +1352,19 @@ process (void)
 
   if (access (pz_curr_file, R_OK) != 0)
     {
-      /* Some really strange error happened.  */
-      fprintf (stderr, "Cannot access %s: %s\n", pz_curr_file,
+      /* It may happens if for e. g. the distro ships some broken symlinks
+	 in /usr/include.  */
+
+      /* "INPUT" is exported in fixinc.sh, which is the pwd where fixincl
+	 runs.  It's used instead of getcwd to avoid allocating a buffer
+	 with unknown length.  */
+      const char *cwd = getenv ("INPUT");
+      if (!cwd)
+	cwd = "the working directory";
+
+      fprintf (stderr, "Cannot access %s from %s: %s\n", pz_curr_file, cwd,
 	       xstrerror (errno));
-      abort ();
+      return;
     }
 
   pz_curr_data = load_file (pz_curr_file);

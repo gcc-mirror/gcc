@@ -8,4 +8,4 @@ f (unsigned t)
   return (t / 2) * 2;
 }
 
-/* { dg-final { scan-tree-dump "\& -2" "optimized" } } */
+/* { dg-final { scan-tree-dump "\& -2|4294967294" "optimized" } } */

@@ -17,7 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
-// { dg-xfail-if "not supported" { debug-mode } }
+// { dg-xfail-if "not supported" { debug_mode } }
 
 #include <vector>
 #include <testsuite_hooks.h>

@@ -3459,8 +3459,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
       if (!integer_zerop (dtype_off))
 	t = fold_build_pointer_plus (t, rank_off);
 
-      t = build1 (NOP_EXPR, build_pointer_type (gfc_array_index_type), t);
-      t = build1 (INDIRECT_REF, gfc_array_index_type, t);
+      t = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (field)), t);
+      t = build1 (INDIRECT_REF, TREE_TYPE (field), t);
       info->rank = t;
       t = build0 (PLACEHOLDER_EXPR, TREE_TYPE (dim_off));
       t = size_binop (MULT_EXPR, t, dim_size);

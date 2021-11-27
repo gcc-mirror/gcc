@@ -1,7 +1,7 @@
 // { dg-options "-O2" }
 // { dg-do run { target c++11 } }
 // { dg-require-normal-mode "" }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 // Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //

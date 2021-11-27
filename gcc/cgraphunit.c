@@ -2222,17 +2222,6 @@ ipa_passes (void)
 }
 
 
-/* Return string alias is alias of.  */
-
-static tree
-get_alias_symbol (tree decl)
-{
-  tree alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));
-  return get_identifier (TREE_STRING_POINTER
-			  (TREE_VALUE (TREE_VALUE (alias))));
-}
-
-
 /* Weakrefs may be associated to external decls and thus not output
    at expansion time.  Emit all necessary aliases.  */
 
@@ -2259,10 +2248,7 @@ symbol_table::output_weakrefs (void)
 	else if (node->analyzed)
 	  target = DECL_ASSEMBLER_NAME (node->get_alias_target ()->decl);
 	else
-	  {
-	    gcc_unreachable ();
-	    target = get_alias_symbol (node->decl);
-	  }
+	  gcc_unreachable ();
         do_assemble_alias (node->decl, target);
       }
 }

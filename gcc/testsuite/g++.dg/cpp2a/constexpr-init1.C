@@ -73,11 +73,11 @@ fn7 (bool b)
   int a; // { dg-message ".int a. is not const" }
   if (b)
     a = 42;
-  return a;
+  return a;		       // { dg-error "the value of .a. is not usable" }
 }
 
 static_assert (fn7 (true) == 42);
-static_assert (fn7 (false) == 42); // { dg-error "non-constant condition|the value of .a. is not usable" }
+static_assert (fn7 (false) == 42); // { dg-error "non-constant condition" }
 // { dg-message "in .constexpr. expansion of" "" { target *-*-* } .-1 }
 
 constexpr int
