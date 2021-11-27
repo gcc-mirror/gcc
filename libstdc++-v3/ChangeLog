@@ -1,3 +1,151 @@
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101571
+	* include/bits/ranges_uninitialized.h (_DestroyGuard): Change
+	constructor parameter to reference and use addressof.
+	* testsuite/util/testsuite_iterators.h: Define deleted operator&
+	overloads for test iterators.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101965
+	* include/std/charconv (__to_chars_i): Remove redundant check.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102894
+	* include/std/any (make_any): Add SFINAE constraint.
+	* testsuite/20_util/any/102894.cc: New test.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102270
+	* include/std/tuple (_Head_base, _Tuple_impl): Add
+	_GLIBCXX20_CONSTEXPR to allocator-extended constructors.
+	(tuple<>::swap(tuple&)): Add _GLIBCXX20_CONSTEXPR.
+	* testsuite/20_util/tuple/cons/102270.cc: New test.
+	* testsuite/util/testsuite_allocator.h (SimpleAllocator): Add
+	constexpr to constructor so it can be used for C++20 tests.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/cons/default.cc: Add
+	equality comparison operators to allocator.
+	* testsuite/23_containers/unordered_set/cons/default.cc:
+	Likewise.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100863
+	* include/bits/hashtable.h (_Hashtable): Conditionally delete
+	default constructor by deriving from _Enable_default_constructor.
+	Construct that base-class explicitly in all non-forwarding,
+	non-defaulted constructors.
+	* testsuite/23_containers/unordered_map/cons/default.cc: New test.
+	* testsuite/23_containers/unordered_set/cons/default.cc: New test.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100863
+	PR libstdc++/65816
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper):
+	Value-initialize subobject.
+	* testsuite/23_containers/unordered_map/allocator/default_init.cc:
+	Remove XFAIL.
+	* testsuite/23_containers/unordered_set/allocator/default_init.cc:
+	Remove XFAIL.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward(remove_reference_t<T>&&)):
+	Improve text of static_assert.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+
+2021-11-26  Antony Polukhin  <antoshkka@gmail.com>
+
+	Backported from master:
+	2021-08-17  Antony Polukhin  <antoshkka@gmail.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (seed_seq::seed_seq): Reserve capacity
+	if distance is O(1).
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-08-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101870
+	* include/c_global/cmath (hypot): Use __promoted_t.
+	(lerp): Add new overload accepting any arithmetic types.
+	* include/ext/type_traits.h (__promoted_t): New alias template.
+	* testsuite/26_numerics/lerp.cc: Moved to...
+	* testsuite/26_numerics/lerp/1.cc: ...here.
+	* testsuite/26_numerics/lerp/constexpr.cc: New test.
+	* testsuite/26_numerics/lerp/version.cc: New test.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/types/1.cc: Add c++11 target selector to
+	warnings.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/headers/memory/synopsis.cc: Define C++98
+	alternative for macro.
+	* testsuite/20_util/shared_ptr/creation/99006.cc: Add effective
+	target keyword.
+	* testsuite/25_algorithms/copy/debug/99402.cc: Avoid C++11
+	syntax.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/array/comparison_operators/96851.cc:
+	Skip test in debug mode.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h: Include required header for
+	std::iterator class template and iterator category tags.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101608
+	* include/bits/ranges_algobase.h (__fill_n_fn): Check for
+	constant evaluation before using memset.
+	* testsuite/25_algorithms/fill_n/constrained.cc: Check
+	byte-sized values as well.
+
 2021-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
