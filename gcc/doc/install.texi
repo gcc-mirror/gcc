@@ -747,9 +747,9 @@ Here are the possible CPU types:
 @quotation
 aarch64, aarch64_be, alpha, alpha64, amdgcn, arc, arceb, arm, armeb, avr, bfin,
 bpf, cr16, cris, csky, epiphany, fido, fr30, frv, ft32, h8300, hppa, hppa2.0,
-hppa64, i486, i686, ia64, iq2000, lm32, m32c, m32r, m32rle, m68k, mcore,
-microblaze, microblazeel, mips, mips64, mips64el, mips64octeon, mips64orion,
-mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
+hppa64, i486, i686, ia64, iq2000, lm32, loongarch64, m32c, m32r, m32rle, m68k,
+mcore, microblaze, microblazeel, mips, mips64, mips64el, mips64octeon,
+mips64orion, mips64vr, mipsel, mipsisa32, mipsisa32r2, mipsisa64, mipsisa64r2,
 mipsisa64r2el, mipsisa64sb1, mipsisa64sr71k, mipstx39, mmix, mn10300, moxie,
 msp430, nds32be, nds32le, nios2, nvptx, or1k, pdp11, powerpc, powerpc64,
 powerpc64le, powerpcle, pru, riscv32, riscv32be, riscv64, riscv64be, rl78, rx,
@@ -1166,8 +1166,9 @@ sysv, aix.
 @itemx --without-multilib-list
 Specify what multilibs to build.  @var{list} is a comma separated list of
 values, possibly consisting of a single value.  Currently only implemented
-for aarch64*-*-*, arm*-*-*, riscv*-*-*, sh*-*-* and x86-64-*-linux*.  The
-accepted values and meaning for each target is given below.
+for aarch64*-*-*, arm*-*-*, loongarch64-*-*, riscv*-*-*, sh*-*-* and
+x86-64-*-linux*.  The accepted values and meaning for each target is given
+below.
 
 @table @code
 @item aarch64*-*-*
@@ -1253,6 +1254,14 @@ profile.  The union of these options is considered when specifying both
 @code{-mfloat-abi=softfp}@*
 @code{-mfloat-abi=hard}
 @end multitable
+
+@item loongarch*-*-*
+@var{list} is a comma-separated list of the following ABI identifiers:
+@code{lp64d[/base]} @code{lp64f[/base]} @code{lp64d[/base]}, where the
+@code{/base} suffix may be omitted, to enable their respective run-time
+libraries.  If @var{list} is empty or @code{default},
+or if @option{--with-multilib-list} is not specified, then the default ABI
+as specified by @option{--with-abi} or implied by @option{--target} is selected.
 
 @item riscv*-*-*
 @var{list} is a single ABI name.  The target architecture must be either
@@ -4438,6 +4447,34 @@ This configuration is intended for embedded systems.
 @heading lm32-*-uclinux
 Lattice Mico32 processor.
 This configuration is intended for embedded systems running uClinux.
+
+@html
+<hr />
+@end html
+@anchor{loongarch}
+@heading LoongArch
+LoongArch processor.
+The following LoongArch targets are available:
+@table @code
+@item loongarch64-linux-gnu*
+LoongArch processor running GNU/Linux.  This target triplet may be coupled
+with a small set of possible suffixes to identify their default ABI type:
+@table @code
+@item f64
+Uses @code{lp64d/base} ABI by default.
+@item f32
+Uses @code{lp64f/base} ABI by default.
+@item sf
+Uses @code{lp64s/base} ABI by default.
+@end table
+
+@item loongarch64-linux-gnu
+Same as @code{loongarch64-linux-gnuf64}, but may be used with
+@option{--with-abi=*} to configure the default ABI type.
+@end table
+
+More information about LoongArch can be found at
+@uref{https://github.com/loongson/LoongArch-Documentation}.
 
 @html
 <hr />
