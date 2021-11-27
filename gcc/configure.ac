@@ -951,6 +951,9 @@ AC_ARG_ENABLE(fixed-point,
     mips*-*-*)
       enable_fixed_point=yes
       ;;
+    loongarch*-*-*)
+      enable_fixed_point=yes
+      ;;
     *)
       AC_MSG_WARN([fixed-point is not supported for this target, ignored])
       enable_fixed_point=no
@@ -3838,6 +3841,17 @@ foo:	data8	25
 	movl	r24 = @tprel(foo#)'
 	tls_as_opt=--fatal-warnings
 	;;
+  loongarch*-*-*)
+    conftest_s='
+	.section .tdata,"awT",@progbits
+x:	.word 2
+	.text
+	la.tls.gd $a0,x
+	bl __tls_get_addr'
+	tls_first_major=0
+	tls_first_minor=0
+	tls_as_opt='--fatal-warnings'
+	;;
   microblaze*-*-*)
     conftest_s='
 	.section .tdata,"awT",@progbits
@@ -5300,6 +5314,17 @@ configured with --enable-newlib-nano-formatted-io.])
       [AC_DEFINE(HAVE_AS_MARCH_ZIFENCEI, 1,
 		 [Define if the assembler understands -march=rv*_zifencei.])])
     ;;
+  loongarch*-*-*)
+    gcc_GAS_CHECK_FEATURE([.dtprelword support],
+      gcc_cv_as_loongarch_dtprelword, [2,18,0],,
+      [.section .tdata,"awT",@progbits
+x:
+	.word 2
+	.text
+	.dtprelword x+0x8000],,
+      [AC_DEFINE(HAVE_AS_DTPRELWORD, 1,
+	  [Define if your assembler supports .dtprelword.])])
+    ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
       gcc_cv_as_s390_gnu_attribute,,
@@ -5333,11 +5358,11 @@ configured with --enable-newlib-nano-formatted-io.])
     ;;
 esac
 
-# Mips and HP-UX need the GNU assembler.
+# Mips, LoongArch and HP-UX need the GNU assembler.
 # Linux on IA64 might be able to use the Intel assembler.
 
 case "$target" in
-  mips*-*-* | *-*-hpux* )
+  mips*-*-* | loongarch*-*-* | *-*-hpux* )
     if test x$gas_flag = xyes \
        || test x"$host" != x"$build" \
        || test ! -x "$gcc_cv_as" \
@@ -5494,8 +5519,8 @@ esac
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$cpu_type" in
-  aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | m32c | m68k \
-  | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
+  aarch64 | alpha | arc | arm | avr | bfin | cris | csky | i386 | loongarch | m32c \
+  | m68k | microblaze | mips | nds32 | nios2 | pa | riscv | rs6000 | score | sparc \
   | tilegx | tilepro | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
