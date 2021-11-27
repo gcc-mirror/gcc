@@ -2403,6 +2403,9 @@ case "${host}" in
 	# sets the default TLS model and affects inlining.
 	PICFLAG=-fPIC
 	;;
+    loongarch*-*-*)
+	PICFLAG=-fpic
+	;;
     mips-sgi-irix6*)
 	# PIC is the default.
 	;;
@@ -5073,7 +5076,7 @@ $as_echo "$libgcc_cv_cfi" >&6; }
 # word size rather than the address size.
 cat > conftest.c <<EOF
 #if defined(__x86_64__) || (!defined(__i386__) && defined(__LP64__)) \
-    || defined(__mips64)
+    || defined(__mips64) || defined(__loongarch64)
 host_address=64
 #else
 host_address=32
