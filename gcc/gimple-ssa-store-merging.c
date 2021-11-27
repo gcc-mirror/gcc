@@ -826,12 +826,18 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
 	{
 	  mask = ((uint64_t) 1 << (rsize * BITS_PER_MARKER)) - 1;
 	  *cmpxchg &= mask;
-	  *cmpnop >>= (n->range - rsize) * BITS_PER_MARKER;
+	  if (n->range - rsize == sizeof (int64_t))
+	    *cmpnop = 0;
+	  else
+	    *cmpnop >>= (n->range - rsize) * BITS_PER_MARKER;
 	}
       else
 	{
 	  mask = ((uint64_t) 1 << (rsize * BITS_PER_MARKER)) - 1;
-	  *cmpxchg >>= (n->range - rsize) * BITS_PER_MARKER;
+	  if (n->range - rsize == sizeof (int64_t))
+	    *cmpxchg = 0;
+	  else
+	    *cmpxchg >>= (n->range - rsize) * BITS_PER_MARKER;
 	  *cmpnop &= mask;
 	}
       n->range = rsize;
