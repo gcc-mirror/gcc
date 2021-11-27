@@ -1,3 +1,34 @@
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_float/1.cc: Reorder directives.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/modifiers/move_assign.cc:
+	Change dg-do compile to run.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499.cc:
+	Likewise.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96416
+	* include/bits/ptr_traits.h (pointer_traits): Remove
+	static_assert checking for valid element_type.
+	(pointer_traits::element_type, pointer_traits::pointer_to):
+	Do not define when element type cannot be deduced.
+	* testsuite/20_util/pointer_traits/lwg3545.cc: New test.
+	* testsuite/20_util/to_address/1_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/to_address/lwg3545.cc: New test.
+
 2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
