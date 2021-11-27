@@ -1,3 +1,11 @@
+2021-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103411
+	* check.c (gfc_check_reshape): Improve check of size of source
+	array for the RESHAPE intrinsic against the given shape when pad
+	is not given, and shape is a parameter.  Try other simplifications
+	of shape.
+
 2021-11-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103392

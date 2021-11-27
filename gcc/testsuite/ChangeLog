@@ -1,3 +1,38 @@
+2021-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103411
+	* gfortran.dg/pr68153.f90: Adjust test to improved check.
+	* gfortran.dg/reshape_7.f90: Likewise.
+	* gfortran.dg/reshape_9.f90: New test.
+
+2021-11-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/wrapped-binop-simplify.c: Update expected test result.
+	* gcc.dg/tree-ssa/ivopts-5.c: New test case.
+	* gcc.dg/tree-ssa/ivopts-6.c: New test case.
+	* gcc.dg/tree-ssa/ivopts-7.c: New test case.
+	* gcc.dg/tree-ssa/ivopts-8.c: New test case.
+	* gcc.dg/tree-ssa/ivopts-9.c: New test case.
+
+2021-11-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/inline-9.c: Update template.c
+
+2021-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102753
+	* g++.dg/cpp2a/consteval20.C: Add some extra tests.
+	* g++.dg/cpp2a/consteval23.C: Likewise.
+	* g++.dg/cpp2a/consteval25.C: New test.
+	* g++.dg/cpp2a/srcloc20.C: New test.
+
+2021-11-26  konglin1  <lingling.kong@intel.com>
+
+	PR target/102811
+	* gcc.target/i386/pr90773-21.c: Allow pextrw instead of movw.
+	* gcc.target/i386/pr90773-23.c: Ditto.
+	* gcc.target/i386/avx512vl-vcvtps2ph-pr102811.c: New test.
+
 2021-11-25  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inline10.c: New test.

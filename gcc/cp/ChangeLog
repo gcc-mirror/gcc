@@ -1,3 +1,29 @@
+2021-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102753
+	* cp-tree.h (struct ptrmem_cst): Add locus member.
+	(PTRMEM_CST_LOCATION): Define.
+	* tree.c (make_ptrmem_cst): Set PTRMEM_CST_LOCATION to input_location.
+	(cp_expr_location): Return PTRMEM_CST_LOCATION for PTRMEM_CST.
+	* typeck.c (build_x_unary_op): Overwrite PTRMEM_CST_LOCATION for
+	PTRMEM_CST instead of calling maybe_wrap_with_location.
+	(cp_build_addr_expr_1): Don't diagnose taking address of
+	immediate functions here.  Instead when taking their address make
+	sure the returned ADDR_EXPR has EXPR_LOCATION set.
+	(expand_ptrmemfunc_cst): Copy over PTRMEM_CST_LOCATION to ADDR_EXPR's
+	EXPR_LOCATION.
+	(convert_for_assignment): Use cp_expr_loc_or_input_loc instead of
+	EXPR_LOC_OR_LOC.
+	* pt.c (tsubst_copy): Use build1_loc instead of build1.  Ensure
+	ADDR_EXPR of immediate function has EXPR_LOCATION set.
+	* cp-gimplify.c (cp_fold_r): Diagnose taking address of immediate
+	functions here.  For consteval if don't walk THEN_CLAUSE.
+	(cp_genericize_r): Move evaluation of calls to
+	std::source_location::current from here to...
+	(cp_fold): ... here.  Don't assert calls to immediate functions must
+	be source_location_current_p, instead only constant evaluate
+	calls to source_location_current_p.
+
 2021-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/101180

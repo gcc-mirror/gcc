@@ -1,3 +1,72 @@
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/move_iterator/dr3265.cc: Fix test to
+	account for LWG 3435 resolution.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (__relocate_a_1): Do not use
+	memmove during constant evaluation.
+	* include/bits/stl_vector.h (vector::_S_use_relocate()): Do not
+	check is_constant_evaluated in always-constexpr function.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96592
+	* include/std/tuple (tuple::is_constructible): Remove.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_float/1.cc: Reorder directives.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/modifiers/move_assign.cc:
+	Change dg-do compile to run.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499.cc:
+	Likewise.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/element_access/char/back_constexpr_neg.cc:
+	Remove xfail selector.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr_neg.cc:
+	Likewise.
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/back_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_constexpr_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/101411.cc: Likewise.
+	* testsuite/25_algorithms/copy/debug/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/debug/constexpr_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/equal/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/equal/debug/constexpr_neg.cc: Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_partitioned_pred_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/debug/constexpr_valid_range_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_partitioned_pred_neg.cc:
+	Likewise.
+	* testsuite/25_algorithms/upper_bound/debug/constexpr_valid_range_neg.cc:
+	Likewise.
+
+2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/pointer_traits/lwg3545.cc: Move to_address
+	tests to ...
+	* testsuite/20_util/to_address/lwg3545.cc: ... here. Add -std
+	option before checking effective target.
+
 2021-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:

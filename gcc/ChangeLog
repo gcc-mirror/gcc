@@ -1,3 +1,74 @@
+2021-11-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103441
+	* ipa-prop.c (ipcp_transform_function): Call
+	delete_unreachable_blocks_update_callgraph instead of returning
+	TODO_cleanup_cfg.
+
+2021-11-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.c (object_sizes_grow, object_sizes_release,
+	object_sizes_unknown_p, object_sizes_get, object_size_set_force,
+	object_sizes_set): New functions.
+	(addr_object_size, compute_builtin_object_size,
+	expr_object_size, call_object_size, unknown_object_size,
+	merge_object_sizes, plus_stmt_object_size,
+	cond_expr_object_size, collect_object_sizes_for,
+	check_for_plus_in_loops_1, init_object_sizes,
+	fini_object_sizes): Adjust.
+
+2021-11-26  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.c: New enum.
+	(object_sizes, computed, addr_object_size,
+	compute_builtin_object_size, expr_object_size, call_object_size,
+	merge_object_sizes, plus_stmt_object_size,
+	collect_object_sizes_for, init_object_sizes, fini_object_sizes,
+	object_sizes_execute): Replace magic numbers with enums.
+
+2021-11-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* tree-ssa-loop-ivopts.c (cand_value_at): Take a class
+	tree_niter_desc* argument instead of just a tree for NITER.
+	If we require the iv candidate value at the end of the final
+	loop iteration, try using the original loop bound as the
+	NITER for sufficiently simple loops.
+	(may_eliminate_iv): Update (only) call to cand_value_at.
+
+2021-11-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (analyze_function): Drop parameter F and dump
+	cgraph node name rather than cfun name.
+	(modref_generate): Update.
+	(modref_summaries::insert):Update.
+	(modref_summaries_lto::insert):Update.
+	(pass_modref::execute):Update.
+	(ipa_merge_modref_summary_after_inlining): Improve combining of
+	ECF_FLAGS.
+
+2021-11-26  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/102943
+	* ipa-modref.c (update_escape_summary_1): Fix handling of min_flags.
+
+2021-11-26  konglin1  <lingling.kong@intel.com>
+
+	PR target/102811
+	* config/i386/i386.c (ix86_can_change_mode_class): Allow 16 bit data in XMM register
+	for TARGET_SSE2.
+	* config/i386/i386.md (extendhfsf2): Add extenndhfsf2 for TARGET_F16C.
+	(extendhfdf2): Restrict extendhfdf for TARGET_AVX512FP16 only.
+	(*extendhf<mode>2): Rename from extendhf<mode>2.
+	(truncsfhf2): Likewise.
+	(truncdfhf2): Likewise.
+	(*trunc<mode>2): Likewise.
+
+2021-11-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/103419
+	* match.pd: Fix typo, use the type of second parameter, not
+	first one.
+
 2021-11-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipa_value_range_from_jfunc): Remove forgotten early return.
