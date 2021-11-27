@@ -6001,7 +6001,6 @@ ipcp_transform_function (struct cgraph_node *node)
   struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
-  bool something_changed = false;
 
   gcc_checking_assert (cfun);
   gcc_checking_assert (current_function_decl);
@@ -6022,14 +6021,16 @@ ipcp_transform_function (struct cgraph_node *node)
   ipa_populate_param_decls (node, *descriptors);
   std::pair<bool, bool> rr
     = adjust_agg_replacement_values (node, aggval, *descriptors);
-  int retval = rr.second ? TODO_cleanup_cfg : 0;
+  bool cfg_changed = rr.second;
   if (!rr.first)
     {
       vec_free (descriptors);
       if (dump_file)
 	fprintf (dump_file, "  All affected aggregate parameters were either "
 		 "removed or converted into scalars, phase done.\n");
-      return retval;
+      if (cfg_changed)
+	delete_unreachable_blocks_update_callgraph (node, false);
+      return 0;
     }
   if (dump_file)
     ipa_dump_agg_replacement_values (dump_file, aggval);
@@ -6041,11 +6042,12 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.param_count = param_count;
   fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
+  bool modified_mem_access = false;
   calculate_dominance_info (CDI_DOMINATORS);
-  ipcp_modif_dom_walker walker (&fbi, descriptors, aggval, &something_changed);
+  ipcp_modif_dom_walker walker (&fbi, descriptors, aggval, &modified_mem_access);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   free_dominance_info (CDI_DOMINATORS);
-  bool cfg_changed = walker.cleanup_eh ();
+  cfg_changed |= walker.cleanup_eh ();
 
   int i;
   struct ipa_bb_info *bi;
@@ -6059,14 +6061,10 @@ ipcp_transform_function (struct cgraph_node *node)
   s->m_vr = NULL;
 
   vec_free (descriptors);
-
-  if (!something_changed)
-    return retval;
-
   if (cfg_changed)
     delete_unreachable_blocks_update_callgraph (node, false);
 
-  return retval | TODO_update_ssa_only_virtuals;
+  return modified_mem_access ? TODO_update_ssa_only_virtuals : 0;
 }
 
 
