@@ -854,7 +854,7 @@ parse_optimize_options (tree args)
     {
       unsigned opt_index = decoded_options[i].opt_index;
       if (opt_index >= cl_options_count
-	  && ! (cl_options[opt_index].flags & CL_OPTIMIZATION))
+	  || ! (cl_options[opt_index].flags & CL_OPTIMIZATION))
 	{
 	  ret = false;
 	  warning (OPT_Wattributes,
