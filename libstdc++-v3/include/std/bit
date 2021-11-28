@@ -78,6 +78,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
+#if __cplusplus > 202002L
+#define __cpp_lib_byteswap 202110L
+
+  /// Reverse order of bytes in the object representation of `value`.
+  template<typename _Tp>
+    constexpr enable_if_t<is_integral<_Tp>::value, _Tp>
+    byteswap(_Tp __value) noexcept
+    {
+      if constexpr (sizeof(_Tp) == 1)
+	return __value;
+#if __cpp_if_consteval >= 202106L && __CHAR_BIT__ == 8
+      if !consteval
+	{
+	  if constexpr (sizeof(_Tp) == 2)
+	    return __builtin_bswap16(__value);
+	  if constexpr (sizeof(_Tp) == 4)
+	    return __builtin_bswap32(__value);
+	  if constexpr (sizeof(_Tp) == 8)
+	    return __builtin_bswap64(__value);
+	  if constexpr (sizeof(_Tp) == 16)
+#if __has_builtin(__builtin_bswap128)
+	    return __builtin_bswap128(__value);
+#else
+	    return (__builtin_bswap64(__value >> 64)
+		    | (static_cast<_Tp>(__builtin_bswap64(__value)) << 64));
+#endif
+	}
+#endif
+
+      // Fallback implementation that handles even __int24 etc.
+      using _Up = typename __make_unsigned<__remove_cv_t<_Tp>>::__type;
+      size_t __diff = __CHAR_BIT__ * (sizeof(_Tp) - 1);
+      _Up __mask1 = static_cast<unsigned char>(~0);
+      _Up __mask2 = __mask1 << __diff;
+      _Up __val = __value;
+      for (size_t __i = 0; __i < sizeof(_Tp) / 2; ++__i)
+	{
+	  _Up __byte1 = __val & __mask1;
+	  _Up __byte2 = __val & __mask2;
+	  __val = (__val ^ __byte1 ^ __byte2
+		   ^ (__byte1 << __diff) ^ (__byte2 >> __diff));
+	  __mask1 <<= __CHAR_BIT__;
+	  __mask2 >>= __CHAR_BIT__;
+	  __diff -= 2 * __CHAR_BIT__;
+	}
+      return __val;
+    }
+#endif
+
   /// @cond undoc
 
   template<typename _Tp>
