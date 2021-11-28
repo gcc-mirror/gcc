@@ -1,3 +1,24 @@
+2021-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103431
+	* config/i386/i386.md (x86_64_shld, x86_shld, x86_64_shrd, x86_shrd):
+	Change insn pattern to accurately describe the instructions.
+	(*x86_64_shld_1, *x86_shld_1, *x86_64_shrd_1, *x86_shrd_1): New
+	define_insn patterns.
+	(*x86_64_shld_2, *x86_shld_2, *x86_64_shrd_2, *x86_shrd_2): New
+	define_insn_and_split patterns.
+	(*ashl<dwi>3_doubleword_mask, *ashl<dwi>3_doubleword_mask_1,
+	*<insn><dwi>3_doubleword_mask, *<insn><dwi>3_doubleword_mask_1,
+	ix86_rotl<dwi>3_doubleword, ix86_rotr<dwi>3_doubleword): Adjust
+	splitters for x86_{,64_}sh{l,r}d pattern changes.
+
+2021-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103435
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_finalize): Avoid UB if
+	n->range - rsize == 8, just clear both *cmpnop and *cmpxchg in that
+	case.
+
 2021-11-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/103441

@@ -1,3 +1,13 @@
+2021-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103431
+	* gcc.dg/pr103431.c: New test.
+
+2021-11-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/tree-ssa/ivopts-8.c: Fix new test case for -m32.
+	* gcc.dg/tree-ssa/ivopts-9.c: Likewise.
+
 2021-11-26  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103411

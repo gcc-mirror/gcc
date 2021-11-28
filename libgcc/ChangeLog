@@ -1,3 +1,7 @@
+2021-11-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/t-dimode (lib2difuncs): Fix typo.
+
 2021-11-25  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Add hdr.
