@@ -1,3 +1,7 @@
+2021-11-28  Martin Liska  <mliska@suse.cz>
+
+	* d-attribs.cc (parse_optimize_options): Fix thinko.
+
 2021-11-26  Martin Liska  <mliska@suse.cz>
 
 	* d-attribs.cc (parse_optimize_options): Check index before

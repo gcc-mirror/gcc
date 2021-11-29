@@ -1,3 +1,30 @@
+2021-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile.c: Include sreal.h
+	(struct bb_stats): New.
+	(cmp_stats): New function.
+	(compute_branch_probabilities): Output bb stats.
+
+2021-11-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfghooks.c: Include sreal.h, profile.h.
+	(profile_record_check_consistency): Fix checking of count counsistency;
+	record also dynamic mismatches.
+	* cfgrtl.c (rtl_account_profile_record): Similarly.
+	* tree-cfg.c (gimple_account_profile_record): Likewise.
+	* cfghooks.h (struct profile_record): Remove num_mismatched_freq_in,
+	num_mismatched_freq_out, turn time to double, add
+	dyn_mismatched_prob_out, dyn_mismatched_count_in,
+	num_mismatched_prob_out; remove num_mismatched_count_out.
+	* passes.c (account_profile_1): New function.
+	(account_profile_in_list): New function.
+	(pass_manager::dump_profile_report): Rewrite.
+	(execute_one_ipa_transform_pass): Check profile consistency after
+	running all passes.
+	(execute_all_ipa_transforms): Remove cfun test; record all transform
+	methods.
+	(execute_one_pass): Fix collecting of profile stats.
+
 2021-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/103431

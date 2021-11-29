@@ -1,3 +1,10 @@
+2021-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/bit (__cpp_lib_byteswap, byteswap): Define.
+	* include/std/version (__cpp_lib_byteswap): Define.
+	* testsuite/26_numerics/bit/bit.byteswap/byteswap.cc: New test.
+	* testsuite/26_numerics/bit/bit.byteswap/version.cc: New test.
+
 2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/24_iterators/move_iterator/dr3265.cc: Fix test to
