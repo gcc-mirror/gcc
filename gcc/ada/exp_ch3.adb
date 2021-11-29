@@ -9800,9 +9800,9 @@ package body Exp_Ch3 is
    begin
       Decl :=
         Predef_Spec_Or_Body (Loc,
-          Tag_Typ => Typ,
-          Name    => Eq_Name,
-          Profile => New_List (
+          Tag_Typ  => Typ,
+          Name     => Eq_Name,
+          Profile  => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Name_X),
@@ -10193,9 +10193,9 @@ package body Exp_Ch3 is
 
       Decl :=
         Predef_Spec_Or_Body (Loc,
-          Tag_Typ => Tag_Typ,
-          Name    => Chars (Renaming_Prim),
-          Profile => New_List (
+          Tag_Typ  => Tag_Typ,
+          Name     => Chars (Renaming_Prim),
+          Profile  => New_List (
             Make_Parameter_Specification (Loc,
               Defining_Identifier =>
                 Make_Defining_Identifier (Loc, Chars (Left_Op)),
@@ -10450,9 +10450,9 @@ package body Exp_Ch3 is
 
       if Eq_Needed then
          Eq_Spec := Predef_Spec_Or_Body (Loc,
-           Tag_Typ => Tag_Typ,
-           Name    => Eq_Name,
-           Profile => New_List (
+           Tag_Typ  => Tag_Typ,
+           Name     => Eq_Name,
+           Profile  => New_List (
              Make_Parameter_Specification (Loc,
                Defining_Identifier =>
                  Make_Defining_Identifier (Loc, Name_X),
@@ -10462,7 +10462,7 @@ package body Exp_Ch3 is
                Defining_Identifier =>
                  Make_Defining_Identifier (Loc, Name_Y),
                Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
-             Ret_Type => Standard_Boolean);
+           Ret_Type => Standard_Boolean);
          Append_To (Predef_List, Eq_Spec);
 
          if Has_Predef_Eq_Renaming then
@@ -10514,9 +10514,9 @@ package body Exp_Ch3 is
       --  Spec of _Size
 
       Append_To (Res, Predef_Spec_Or_Body (Loc,
-        Tag_Typ => Tag_Typ,
-        Name    => Name_uSize,
-        Profile => New_List (
+        Tag_Typ  => Tag_Typ,
+        Name     => Name_uSize,
+        Profile  => New_List (
           Make_Parameter_Specification (Loc,
             Defining_Identifier => Make_Defining_Identifier (Loc, Name_X),
             Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
