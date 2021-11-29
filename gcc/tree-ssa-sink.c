@@ -696,7 +696,9 @@ sink_code_in_bb (basic_block bb)
 	  /* If we face a dead stmt remove it as it possibly blocks
 	     sinking of uses.  */
 	  if (zero_uses_p
-	      && ! gimple_vdef (stmt))
+	      && !gimple_vdef (stmt)
+	      && (cfun->can_delete_dead_exceptions
+		  || !stmt_could_throw_p (cfun, stmt)))
 	    {
 	      gsi_remove (&saved, true);
 	      release_defs (stmt);
