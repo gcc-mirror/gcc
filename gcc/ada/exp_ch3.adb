@@ -1045,10 +1045,10 @@ package body Exp_Ch3 is
         (Case_Id : Entity_Id;
          Variant : Node_Id) return Entity_Id
       is
-         Body_Node           : Node_Id;
-         Func_Id             : Entity_Id;
-         Parameter_List      : List_Id;
-         Spec_Node           : Node_Id;
+         Body_Node      : Node_Id;
+         Func_Id        : Entity_Id;
+         Parameter_List : List_Id;
+         Spec_Node      : Node_Id;
 
       begin
          Body_Node := New_Node (N_Subprogram_Body, Loc);
