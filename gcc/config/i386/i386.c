@@ -19437,8 +19437,9 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (msize > UNITS_PER_WORD)
 	return true;
 
-      /* In addition to SImode moves, AVX512FP16 also enables HImode moves.  */
-      int minsize = GET_MODE_SIZE (TARGET_AVX512FP16 ? HImode : SImode);
+      /* In addition to SImode moves, HImode moves are supported for SSE2 and above,
+	 Use vmovw with AVX512FP16, or pinsrw/pextrw without AVX512FP16.  */
+      int minsize = GET_MODE_SIZE (TARGET_SSE2 ? HImode : SImode);
 
       if (msize < minsize)
 	return true;
