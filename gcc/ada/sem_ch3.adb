@@ -6780,7 +6780,7 @@ package body Sem_Ch3 is
       Append (
          Make_Parameter_Specification (Loc,
            Defining_Identifier => Make_Temporary (Loc, 'P'),
-           Parameter_Type  =>  New_Occurrence_Of (Id, Loc)),
+           Parameter_Type      => New_Occurrence_Of (Id, Loc)),
          Profile);
 
       if Nkind (Type_Def) = N_Access_Procedure_Definition then
