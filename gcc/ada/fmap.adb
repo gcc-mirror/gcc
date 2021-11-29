@@ -301,7 +301,7 @@ package body Fmap is
       Read_Source_File (Name_Enter (File_Name), 1, Hi, Src, FD, Config);
 
       if Null_Source_Buffer_Ptr (Src) then
-         if FD = Null_FD then
+         if FD = Osint.Null_FD then
             Write_Str ("warning: could not locate mapping file """);
          else
             Write_Str ("warning: no read access for mapping file """);

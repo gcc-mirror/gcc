@@ -1059,6 +1059,21 @@ package body Osint is
    ----------------------
 
    function File_Names_Equal (File1, File2 : String) return Boolean is
+
+      function To_Lower (A : String) return String;
+      --  For bootstrap reasons, we cannot use To_Lower from System.Case_Util
+
+      --------------
+      -- To_Lower --
+      --------------
+
+      function To_Lower (A : String) return String is
+         Result : String := A;
+      begin
+         To_Lower (Result);
+         return Result;
+      end To_Lower;
+
    begin
       if File_Names_Case_Sensitive then
          return File1 = File2;

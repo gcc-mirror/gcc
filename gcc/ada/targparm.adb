@@ -165,7 +165,7 @@ package body Targparm is
       if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
 
-         if FD = Null_FD then
+         if FD = Osint.Null_FD then
             Write_Line ("cannot locate file system.ads");
          else
             Write_Line ("no read access for file system.ads");

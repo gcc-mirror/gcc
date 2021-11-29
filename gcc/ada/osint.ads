@@ -52,6 +52,10 @@ package Osint is
    Project_Include_Path_File : constant String := "ADA_PRJ_INCLUDE_FILE";
    Project_Objects_Path_File : constant String := "ADA_PRJ_OBJECTS_FILE";
 
+   Null_FD : constant File_Descriptor := -2;
+   --  Uninitialized file descriptor. Copied from System.OS_Lib for bootstrap
+   --  reasons.
+
    Output_FD : File_Descriptor;
    --  File descriptor for current library info, list, tree, C, H, or binder
    --  output. Only one of these is open at a time, so we need only one FD.
