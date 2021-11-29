@@ -714,6 +714,9 @@ gcc_tooldir
 enable_lto
 DO_LINK_SERIALIZATION
 DO_LINK_MUTEX
+CSCOPE
+ETAGS
+CTAGS
 MAINT
 zlibinc
 zlibdir
@@ -19455,7 +19458,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19458 "configure"
+#line 19461 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19561,7 +19564,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19564 "configure"
+#line 19567 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31378,6 +31381,19 @@ else
   MAINT='#'
 fi
 
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+
+if test -z "$CSCOPE"; then
+  CSCOPE=cscope
+fi
+
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to avoid linking multiple front-ends at once" >&5
 $as_echo_n "checking whether to avoid linking multiple front-ends at once... " >&6; }
@@ -33941,3 +33957,4 @@ $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
 
+_AC_FINALIZE

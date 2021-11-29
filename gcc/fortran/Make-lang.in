@@ -113,8 +113,8 @@ fortran.srcinfo: doc/gfortran.info
 	-cp -p $^ $(srcdir)/fortran
 
 fortran.tags: force
-	cd $(srcdir)/fortran; etags -o TAGS.sub *.c *.h; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/fortran; $(ETAGS) -o TAGS.sub *.c *.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 fortran.info: doc/gfortran.info doc/gfc-internals.info
 

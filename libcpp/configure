@@ -652,6 +652,7 @@ noexception_flags
 WARN_PEDANTIC
 c_warn
 warn
+ETAGS
 AUTOHEADER
 AUTOCONF
 ACLOCAL
@@ -4894,6 +4895,11 @@ fi
   test -n "$AUTOHEADER" && break
 done
 test -n "$AUTOHEADER" || AUTOHEADER="$MISSING autoheader"
+
+
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
 
 
 # Figure out what compiler warnings we can enable.

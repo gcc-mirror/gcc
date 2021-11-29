@@ -7040,6 +7040,20 @@ else
 fi
 AC_SUBST(MAINT)dnl
 
+dnl Variables for tags utilities; copied from automake 1.16.4+'s init.m4
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+AC_SUBST([CTAGS])
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+if test -z "$CSCOPE"; then
+  CSCOPE=cscope
+fi
+AC_SUBST([CSCOPE])
+
 dnl Whether to prevent multiple front-ends from linking at the same time
 
 AC_MSG_CHECKING([whether to avoid linking multiple front-ends at once])
