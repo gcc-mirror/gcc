@@ -404,8 +404,6 @@ package body Exp_Attr is
               Parameter_Specifications => New_List (
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier => Obj_Id,
-                  In_Present          => True,
-                  Out_Present         => False,
                   Parameter_Type      => New_Occurrence_Of (Formal_Typ, Loc))),
               Result_Definition        =>
                 New_Occurrence_Of (Standard_Boolean, Loc)),
