@@ -5955,6 +5955,13 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
       return false;
     }
 
+  if (sub->ts.type != BT_INTEGER)
+    {
+      gfc_error ("Type of %s argument of IMAGE_INDEX at %L shall be INTEGER",
+		 gfc_current_intrinsic_arg[1]->name, &sub->where);
+      return false;
+    }
+
   if (gfc_array_size (sub, &nelems))
     {
       int corank = gfc_get_corank (coarray);
