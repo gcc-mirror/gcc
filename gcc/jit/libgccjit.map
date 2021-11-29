@@ -236,3 +236,10 @@ LIBGCCJIT_ABI_18 {
   global:
     gcc_jit_lvalue_set_link_section;
 } LIBGCCJIT_ABI_17;
+
+LIBGCCJIT_ABI_19 {
+    gcc_jit_context_new_array_constructor;
+    gcc_jit_context_new_struct_constructor;
+    gcc_jit_context_new_union_constructor;
+    gcc_jit_global_set_initializer_rvalue;
+} LIBGCCJIT_ABI_18;

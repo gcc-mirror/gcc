@@ -126,6 +126,147 @@ Simple expressions
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
 
+Constructor expressions
+***********************
+
+   The following functions make constructors for array, struct and union
+   types.
+
+   The constructor rvalue can be used for assignment to locals.
+   It can be used to initialize global variables with
+   :func:`gcc_jit_global_set_initializer_rvalue`. It can also be used as a
+   temporary value for function calls and return values, but its address
+   can't be taken.
+
+   Note that arrays in libgccjit do not collapse to pointers like in
+   C. I.e. if an array constructor is used as e.g. a return value, the whole
+   array would be returned by value - array constructors can be assigned to
+   array variables.
+
+   The constructor can contain nested constructors.
+
+   Note that a string literal rvalue can't be used to construct a char array;
+   the latter needs one rvalue for each char.
+
+   These entrypoints were added in :ref:`LIBGCCJIT_ABI_19`; you can test for
+   their presence using:
+
+   .. code-block:: c
+     #ifdef LIBGCCJIT_HAVE_CTORS
+
+.. function:: gcc_jit_rvalue *\
+	      gcc_jit_context_new_array_constructor (gcc_jit_context *ctxt,\
+						     gcc_jit_location *loc,\
+						     gcc_jit_type *type,\
+						     size_t num_values,\
+						     gcc_jit_rvalue **values)
+
+   Create a constructor for an array as an rvalue.
+
+   Returns NULL on error. ``values`` are copied and
+   do not have to outlive the context.
+
+   ``type`` specifies what the constructor will build and has to be
+   an array.
+
+   ``num_values`` specifies the number of elements in ``values`` and
+   it can't have more elements than the array type.
+
+   Each value in ``values`` sets the corresponding value in the array.
+   If the array type itself has more elements than ``values``, the
+   left-over elements will be zeroed.
+
+   Each value in ``values`` need to be the same unqualified type as the
+   array type's element type.
+
+   If ``num_values`` is 0, the ``values`` parameter will be
+   ignored and zero initialization will be used.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_19`; you can test for its
+   presence using:
+
+   .. code-block:: c
+     #ifdef LIBGCCJIT_HAVE_CTORS
+
+.. function:: gcc_jit_rvalue *\
+	      gcc_jit_context_new_struct_constructor (gcc_jit_context *ctxt,\
+						      gcc_jit_location *loc,\
+						      gcc_jit_type *type,\
+						      size_t num_values,\
+						      gcc_jit_field **fields,\
+						      gcc_jit_rvalue **value)
+
+
+   Create a constructor for a struct as an rvalue.
+
+   Returns NULL on error. The two parameter arrays are copied and
+   do not have to outlive the context.
+
+   ``type`` specifies what the constructor will build and has to be
+   a struct.
+
+   ``num_values`` specifies the number of elements in ``values``.
+
+   ``fields`` need to have the same length as ``values``, or be NULL.
+
+   If ``fields`` is null, the values are applied in definition order.
+
+   Otherwise, each field in ``fields`` specifies which field in the struct to
+   set to the corresponding value in ``values``. ``fields`` and ``values``
+   are paired by index.
+
+   The fields in ``fields`` have to be in definition order, but there
+   can be gaps. Any field in the struct that is not specified in
+   ``fields`` will be zeroed.
+
+   The fields in ``fields`` need to be the same objects that were used
+   to create the struct.
+
+   Each value has to have have the same unqualified type as the field
+   it is applied to.
+
+   A NULL value element  in ``values`` is a shorthand for zero initialization
+   of the corresponding field.
+
+   If ``num_values`` is 0, the array parameters will be
+   ignored and zero initialization will be used.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_19`; you can test for its
+   presence using:
+
+   .. code-block:: c
+     #ifdef LIBGCCJIT_HAVE_CTORS
+
+.. function:: gcc_jit_rvalue *\
+	      gcc_jit_context_new_union_constructor (gcc_jit_context *ctxt,\
+						     gcc_jit_location *loc,\
+						     gcc_jit_type *type,\
+						     gcc_jit_field *field,\
+						     gcc_jit_rvalue *value)
+
+   Create a constructor for a union as an rvalue.
+
+   Returns NULL on error.
+
+   ``type`` specifies what the constructor will build and has to be
+   an union.
+
+   ``field`` specifies which field to set. If it is NULL, the first
+   field in the union will be set.``field`` need to be the same object
+   that were used to create the union.
+
+   ``value`` specifies what value to set the corresponding field to.
+   If ``value`` is NULL, zero initialization will be used.
+
+   Each value has to have have the same unqualified type as the field
+   it is applied to.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_19`; you can test for its
+   presence using:
+
+   .. code-block:: c
+     #ifdef LIBGCCJIT_HAVE_CTORS
+
 Vector expressions
 ******************
 
@@ -660,6 +801,38 @@ Global variables
    .. code-block:: c
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
+
+.. function:: gcc_jit_lvalue *\
+	      gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
+	                                             gcc_jit_rvalue *init_value)
+
+   Set the initial value of a global with an rvalue.
+
+   The rvalue needs to be a constant expression, e.g. no function calls.
+
+   The global can't have the ``kind`` :ref:`GCC_JIT_GLOBAL_IMPORTED`.
+
+   As a non-comprehensive example it is OK to do the equivalent of:
+
+   .. code-block:: c
+
+       int foo = 3 * 2; /* rvalue from gcc_jit_context_new_binary_op.  */
+       int arr[] = {1,2,3,4}; /* rvalue from gcc_jit_context_new_constructor.  */
+       int *bar = &arr[2] + 1; /* rvalue from nested "get address" of "array access".  */
+       const int baz = 3; /* rvalue from gcc_jit_context_rvalue_from_int.  */
+       int boz = baz; /* rvalue from gcc_jit_lvalue_as_rvalue.  */
+
+   Use together with :ref:`gcc_jit_context_new_constructor` to
+   initialize structs, unions and arrays.
+
+   On success, returns the ``global`` parameter unchanged. Otherwise, ``NULL``.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_19`; you can test for its
+   presence using:
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_CTORS
 
 Working with pointers, structs and unions
 -----------------------------------------

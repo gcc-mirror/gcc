@@ -1386,6 +1386,393 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
   return (gcc_jit_lvalue *)ctxt->new_global (loc, kind, type, name);
 }
 
+extern gcc_jit_rvalue *
+gcc_jit_context_new_struct_constructor (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *type,
+					size_t num_values,
+					gcc_jit_field **fields,
+					gcc_jit_rvalue **values)
+{
+  using namespace gcc::jit::recording;
+
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (type->is_struct (),
+			       ctxt, loc,
+			       "constructor type is not a struct: %s",
+			       type->get_debug_string ());
+
+  compound_type *ct = reinterpret_cast<compound_type *>(type);
+  gcc::jit::recording::fields *fields_struct = ct->get_fields ();
+  size_t n_fields = fields_struct->length ();
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (ct->has_known_size (),
+			       ctxt, loc,
+			       "struct can't be opaque: %s",
+			       type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (n_fields,
+			       ctxt, loc,
+			       "no fields in struct: %s",
+			       type->get_debug_string ());
+
+  /* If there is no array input we just short circuit to zero the struct.  */
+  if (!num_values)
+    return (gcc_jit_rvalue *)ctxt->new_ctor (loc, type, 0, NULL, NULL);
+
+  RETURN_NULL_IF_FAIL_PRINTF3 (n_fields >= num_values,
+			       ctxt, loc,
+			       "more values in constructor (n=%zu) than fields"
+			       " in target %s (n=%zu)",
+			       num_values,
+			       type->get_debug_string (),
+			       n_fields);
+
+  /* It is OK if fields are null here, indicating definiton order,
+     but there has to be a values array.  */
+  RETURN_NULL_IF_FAIL (values,
+		       ctxt, loc,
+		       "'values' NULL with non-zero 'num_values'");
+
+  size_t idx = 0; /* Runner index for fields in the type object.  */
+
+  for (size_t i = 0; i < num_values; i++)
+    {
+      gcc::jit::recording::rvalue *rv = values[i];
+
+      /* rv kan be NULL, which would indicate zero init for the field.  */
+      gcc::jit::recording::type *rv_type = rv ? rv->get_type () : nullptr;
+
+      /* If fields are specified we need to check that they are in
+	 definition order.  */
+      if (fields)
+	{
+	  gcc::jit::recording::field *f = fields[i];
+
+	  RETURN_NULL_IF_FAIL_PRINTF1 (
+	    f,
+	    ctxt, loc,
+	    "NULL field in 'fields', at index %zu", i);
+
+	  RETURN_NULL_IF_FAIL_PRINTF3 (
+	    f->get_container () ==
+	    static_cast<gcc::jit::recording::type*>(type),
+	    ctxt, loc,
+	    "field object at index %zu (%s), was not used when creating "
+	    "the %s",
+	    i,
+	    f->get_debug_string (),
+	    type->get_debug_string ());
+
+	  /* Fields in the constructor need to be in struct definition
+	     order, but there can be gaps.  */
+	  size_t j;
+	  for (j = idx; j < n_fields; j++)
+	    {
+	      field *fs = fields_struct->get_field (j);
+	      if (fs == f)
+		{
+		  idx = j; /* Advance runner index for next iteration.  */
+		  break;
+		}
+	    }
+
+	  RETURN_NULL_IF_FAIL_PRINTF3 (
+	    j != n_fields,
+	    ctxt, loc,
+	    "field at index %zu in 'fields' is not in definition order "
+	    "(struct: %s) (ctor field: %s)",
+	    i,
+	    type->get_debug_string (),
+	    f->get_debug_string ());
+
+	  /* Check that the specified field has the same type as the
+	     value, unless the value is null (a zero value init).  */
+	  RETURN_NULL_IF_FAIL_PRINTF5 (
+	    !rv || gcc::jit::types_kinda_same (rv_type,
+					       f->get_type ()),
+	    ctxt, loc,
+	    "value and field not the same unqualified type, at index %zu"
+	    " (%s.%s: %s)(value type: %s)",
+	    i,
+	    type->get_debug_string (),
+	    f->get_debug_string (),
+	    f->get_type ()->get_debug_string (),
+	    rv_type->get_debug_string ());
+	}
+
+      /* If no fields are specified, check that the value has the same type
+	 as the field in the definition of the struct.  */
+      if (rv && !fields)
+	{
+	  RETURN_NULL_IF_FAIL_PRINTF5 (
+	    gcc::jit::types_kinda_same (rv_type,
+					fields_struct->
+					  get_field (i)->get_type ()),
+	    ctxt, loc,
+	    "value and field not the same unqualified type, at index %zu"
+	    " (%s.%s: %s)(value type: %s)",
+	    i,
+	    type->get_debug_string (),
+	    fields_struct->get_field (i)->get_debug_string (),
+	    fields_struct->get_field (i)->get_type ()->get_debug_string (),
+	    rv_type->get_debug_string ());
+	}
+
+      if (rv)
+	{
+	  RETURN_NULL_IF_FAIL_PRINTF1 (
+	    !rv_type->is_void (),
+	    ctxt, loc,
+	    "can't construct the void type, at index %zu", i);
+	}
+    }
+
+  return (gcc_jit_rvalue *)ctxt->new_ctor (
+    loc,
+    type,
+    num_values,
+    reinterpret_cast<gcc::jit::recording::field**>(fields),
+    reinterpret_cast<gcc::jit::recording::rvalue**>(values));
+}
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_union_constructor (gcc_jit_context *ctxt,
+				       gcc_jit_location *loc,
+				       gcc_jit_type *type,
+				       gcc_jit_field *field,
+				       gcc_jit_rvalue *value)
+{
+  using namespace gcc::jit::recording;
+
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (type->is_union (),
+			       ctxt, loc,
+			       "constructor type is not an union: %s",
+			       type->get_debug_string ());
+
+  compound_type *ct = reinterpret_cast<compound_type *>(type);
+  gcc::jit::recording::fields *fields_union = ct->get_fields ();
+  size_t n_fields = fields_union->length ();
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (ct->has_known_size (),
+			       ctxt, loc,
+			       "union can't be opaque: %s",
+			       type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF1 (n_fields,
+			       ctxt, loc,
+			       "no fields in union: %s",
+			       type->get_debug_string ());
+
+  /* If value is NULL we are just supposed to zero the whole union.  */
+  if (!value)
+    return (gcc_jit_rvalue *)ctxt->new_ctor (loc, type, 0, NULL, NULL);
+
+  gcc::jit::recording::type *rv_type = value->get_type ();
+
+  RETURN_NULL_IF_FAIL (
+    !rv_type->is_void (),
+    ctxt, loc,
+    "can't construct the void type");
+
+  if (field)
+    {
+      RETURN_NULL_IF_FAIL_PRINTF2 (
+	field->get_container () ==
+	static_cast<gcc::jit::recording::type*>(type),
+	ctxt, loc,
+	"field object (%s) was not used when creating "
+	"the type %s",
+	field->get_debug_string (),
+	type->get_debug_string ());
+
+      RETURN_NULL_IF_FAIL_PRINTF4 (
+	gcc::jit::types_kinda_same (rv_type,
+				    field->get_type ()),
+	ctxt, loc,
+	"value and field are not the same unqualified type"
+	" (%s.%s: %s)(value type: %s)",
+	type->get_debug_string (),
+	field->get_debug_string (),
+	field->get_type ()->get_debug_string (),
+	rv_type->get_debug_string ());
+    }
+  /* If no field is specified, check that the value has the same type
+     as the first field in the definition of the union.  */
+  if (!field)
+    RETURN_NULL_IF_FAIL_PRINTF2 (
+      gcc::jit::types_kinda_same (rv_type,
+				  fields_union->
+				    get_field (0)->get_type ()),
+      ctxt, loc,
+      "value and first union field not the same unqualified type"
+      " (field type: %s)(value type: %s)",
+      fields_union->get_field (0)->get_type ()->get_debug_string (),
+      rv_type->get_debug_string ());
+
+
+  return (gcc_jit_rvalue *)ctxt->new_ctor (
+    loc,
+    type,
+    1,
+    /* A NULL fields array tells new_ctor to take fields from the type obj.  */
+    reinterpret_cast<gcc::jit::recording::field**>(field ? &field : NULL),
+    reinterpret_cast<gcc::jit::recording::rvalue**>(&value));
+}
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_array_constructor (gcc_jit_context *ctxt,
+				       gcc_jit_location *loc,
+				       gcc_jit_type *type,
+				       size_t num_values,
+				       gcc_jit_rvalue **values)
+{
+  using namespace gcc::jit::recording;
+
+  RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+
+  RETURN_NULL_IF_FAIL (type->is_array () != NULL,
+		       ctxt, loc,
+		       "constructor type not an array");
+
+  if (!num_values)
+    values = NULL;
+
+  if (num_values)
+    {
+      RETURN_NULL_IF_FAIL (
+	values,
+	ctxt, loc,
+	"'values' NULL with non-zero 'num_values'");
+
+      gcc::jit::recording::array_type *arr_type =
+	reinterpret_cast<gcc::jit::recording::array_type*>(type);
+      size_t n_el = arr_type->num_elements ();
+
+      RETURN_NULL_IF_FAIL_PRINTF2 (
+	n_el >= num_values,
+	ctxt, loc,
+	"array constructor has more values than the array type's length"
+	" (array type length: %zu, constructor length: %zu)",
+	n_el,
+	num_values);
+
+      /* For arrays, all values need to be the same base type.  */
+      gcc::jit::recording::type *type0 = NULL;
+      size_t i = 0;
+      /* Find first non-null value.  */
+      for (;i < num_values; i++)
+	{
+	  if (values[i])
+	    break;
+	}
+
+      if (i < num_values) /* All values might be null and i == num_values.  */
+	type0 = values[i]->get_type ();
+
+      /* If we got a type0, check that all other values have
+	 the same type.  */
+      for (; i < num_values; i++)
+	{
+	  if (values[i])
+	    RETURN_NULL_IF_FAIL_PRINTF3 (
+	      gcc::jit::types_kinda_same (type0,
+					  values[i]->get_type ()),
+	      ctxt, loc,
+	      "value type at index %zu differ from first value type"
+	      " (first type: %s)(different type: %s)",
+	      i,
+	      type0->get_debug_string (),
+	      values[i]->get_type ()->get_debug_string ());
+	}
+
+      /* Compare type0 with the element type specified in the
+	 type of the array.  */
+      if (type0)
+	{
+	  gcc::jit::recording::type *el_type =
+	    type->is_array ();
+
+	  RETURN_NULL_IF_FAIL_PRINTF2 (
+	    gcc::jit::types_kinda_same (type0, el_type),
+	    ctxt, loc,
+	    "array element value types differ from types in 'values'"
+	    " (element type: %s)('values' type: %s)",
+	    el_type->get_debug_string (),
+	    type0->get_debug_string ());
+	}
+    }
+
+  return (gcc_jit_rvalue *)ctxt->new_ctor (
+    loc,
+    type,
+    num_values,
+    NULL,
+    reinterpret_cast<gcc::jit::recording::rvalue**>(values));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.  */
+
+extern gcc_jit_lvalue *
+gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
+				       gcc_jit_rvalue *init_rvalue)
+{
+  RETURN_NULL_IF_FAIL (global, NULL, NULL,"NULL global");
+
+  gcc::jit::recording::context *ctxt = global->get_context ();
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL,"NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_NULL_IF_FAIL (init_rvalue, ctxt, NULL,"NULL init_rvalue");
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (global->is_global (),
+			       ctxt, NULL,
+			       "lvalue \"%s\" not a global",
+			       global->get_debug_string ());
+
+  gcc::jit::recording::global *gbl =
+    reinterpret_cast<gcc::jit::recording::global *> (global);
+
+  RETURN_NULL_IF_FAIL_PRINTF1 (gbl->get_kind () !=
+			       GCC_JIT_GLOBAL_IMPORTED,
+			       ctxt, NULL,
+			       "can't initialize \"%s\", it is imported",
+			       global->get_debug_string ());
+
+  RETURN_NULL_IF_FAIL_PRINTF4 (gcc::jit::types_kinda_same (
+				 global->get_type (),
+				 init_rvalue->get_type ()),
+			       ctxt, NULL,
+			       "mismatching types:"
+			       " initializing %s (type: %s) with %s (type: %s)",
+			       global->get_debug_string (),
+			       global->get_type ()->get_debug_string (),
+			       init_rvalue->get_debug_string (),
+			       init_rvalue->get_type ()->get_debug_string ());
+
+  /* Check that there are no initializers set for the global yet.  */
+  RETURN_NULL_IF_FAIL_PRINTF1 (!gbl->test_flags_anyof (
+				  gcc::jit::GLOBAL_VAR_FLAGS_WILL_BE_RVAL_INIT |
+				  gcc::jit::GLOBAL_VAR_FLAGS_WILL_BE_BLOB_INIT),
+			       ctxt, NULL,
+			       "global variable already initialized: %s",
+			       global->get_debug_string ());
+
+  /* The global need to know during playback that it will be
+     initialized.  */
+  gbl->set_flags (gcc::jit::GLOBAL_VAR_FLAGS_WILL_BE_RVAL_INIT);
+
+  ctxt->new_global_init_rvalue (global, init_rvalue);
+
+  return global;
+}
+
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
@@ -1419,8 +1806,22 @@ gcc_jit_global_set_initializer (gcc_jit_lvalue *global,
     " global \"%s\" has size %zu whereas initializer has size %zu",
     global->get_debug_string (), lvalue_size, num_bytes);
 
-  reinterpret_cast <gcc::jit::recording::global *> (global)
-    ->set_initializer (blob, num_bytes);
+  /* Check that the rvalue initializer is not set for this global.
+     Note that we do not check if this blob type initializer is
+     already set, since that check was not present when the entrypoint
+     was initially written.  */
+  gcc::jit::recording::global *gbl =
+    reinterpret_cast<gcc::jit::recording::global *> (global);
+  RETURN_NULL_IF_FAIL_PRINTF1 (!gbl->test_flags_anyof (
+				  gcc::jit::GLOBAL_VAR_FLAGS_WILL_BE_RVAL_INIT),
+			       NULL, NULL,
+			       "global variable already initialized: %s",
+			       global->get_debug_string ());
+
+  gbl->set_initializer (blob, num_bytes);
+  /* The global need to know during playback that it will be
+     initialized.  */
+  gbl->set_flags (gcc::jit::GLOBAL_VAR_FLAGS_WILL_BE_BLOB_INIT);
 
   return global;
 }

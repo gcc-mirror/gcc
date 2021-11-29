@@ -822,6 +822,159 @@ gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    gcc_jit_type *type,
 			    const char *name);
 
+#define LIBGCCJIT_HAVE_CTORS
+
+/* Create a constructor for a struct as an rvalue.
+
+   Returns NULL on error.  The two parameter arrays are copied and
+   do not have to outlive the context.
+
+   `type` specifies what the constructor will build and has to be
+   a struct.
+
+   `num_values` specifies the number of elements in `values`.
+
+   `fields` need to have the same length as `values`, or be NULL.
+
+   If `fields` is null, the values are applied in definition order.
+
+   Otherwise, each field in `fields` specifies which field in the struct to
+   set to the corresponding value in `values`.  `fields` and `values`
+   are paired by index.
+
+   Each value has to have have the same unqualified type as the field
+   it is applied to.
+
+   A NULL value element  in `values` is a shorthand for zero initialization
+   of the corresponding field.
+
+   The fields in `fields` have to be in definition order, but there
+   can be gaps.  Any field in the struct that is not specified in
+   `fields` will be zeroed.
+
+   The fields in `fields` need to be the same objects that were used
+   to create the struct.
+
+   If `num_values` is 0, the array parameters will be
+   ignored and zero initialization will be used.
+
+   The constructor rvalue can be used for assignment to locals.
+   It can be used to initialize global variables with
+   gcc_jit_global_set_initializer_rvalue.  It can also be used as a
+   temporary value for function calls and return values.
+
+   The constructor can contain nested constructors.
+
+   This entrypoint was added in LIBGCCJIT_ABI_19; you can test for its
+   presence using:
+   #ifdef LIBGCCJIT_HAVE_CTORS
+*/
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_struct_constructor (gcc_jit_context *ctxt,
+					gcc_jit_location *loc,
+					gcc_jit_type *type,
+					size_t num_values,
+					gcc_jit_field **fields,
+					gcc_jit_rvalue **values);
+
+/* Create a constructor for a union as an rvalue.
+
+   Returns NULL on error.
+
+   `type` specifies what the constructor will build and has to be
+   an union.
+
+   `field` specifies which field to set.  If it is NULL, the first
+   field in the union will be set.  `field` need to be the same
+   object that were used to create the union.
+
+   `value` specifies what value to set the corresponding field to.
+   If `value` is NULL, zero initialization will be used.
+
+   Each value has to have have the same unqualified type as the field
+   it is applied to.
+
+   `field` need to be the same objects that were used
+   to create the union.
+
+   The constructor rvalue can be used for assignment to locals.
+   It can be used to initialize global variables with
+   gcc_jit_global_set_initializer_rvalue.  It can also be used as a
+   temporary value for function calls and return values.
+
+   The constructor can contain nested constructors.
+
+   This entrypoint was added in LIBGCCJIT_ABI_19; you can test for its
+   presence using:
+   #ifdef LIBGCCJIT_HAVE_CTORS
+*/
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_union_constructor (gcc_jit_context *ctxt,
+				       gcc_jit_location *loc,
+				       gcc_jit_type *type,
+				       gcc_jit_field *field,
+				       gcc_jit_rvalue *value);
+
+/* Create a constructor for an array as an rvalue.
+
+   Returns NULL on error.  `values` are copied and
+   do not have to outlive the context.
+
+   `type` specifies what the constructor will build and has to be
+   an array.
+
+   `num_values` specifies the number of elements in `values` and
+   it can't have more elements than the array type.
+
+   Each value in `values` sets the corresponding value in the array.
+   If the array type itself has more elements than `values`, the
+   left-over elements will be zeroed.
+
+   Each value in `values` need to be the same unqualified type as the
+   array type's element type.
+
+   If `num_values` is 0, the `values` parameter will be
+   ignored and zero initialization will be used.
+
+   Note that a string literal rvalue can't be used to construct a char
+   array.  It needs one rvalue for each char.
+
+   This entrypoint was added in LIBGCCJIT_ABI_19; you can test for its
+   presence using:
+   #ifdef LIBGCCJIT_HAVE_CTORS
+*/
+
+extern gcc_jit_rvalue *
+gcc_jit_context_new_array_constructor (gcc_jit_context *ctxt,
+				       gcc_jit_location *loc,
+				       gcc_jit_type *type,
+				       size_t num_values,
+				       gcc_jit_rvalue **values);
+
+/* Set the initial value of a global of any type with an rvalue.
+
+   The rvalue needs to be a constant expression, e.g. no function calls.
+
+   The global can't have the 'kind' GCC_JIT_GLOBAL_IMPORTED.
+
+   Use together with gcc_jit_context_new_constructor () to
+   initialize structs, unions and arrays.
+
+   On success, returns the 'global' parameter unchanged.  Otherwise, NULL.
+
+   'values' is copied and does not have to outlive the context.
+
+   This entrypoint was added in LIBGCCJIT_ABI_19; you can test for its
+   presence using:
+     #ifdef LIBGCCJIT_HAVE_CTORS
+*/
+
+extern gcc_jit_lvalue *
+gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
+				       gcc_jit_rvalue *init_value);
+
 #define LIBGCCJIT_HAVE_gcc_jit_global_set_initializer
 
 /* Set an initial value for a global, which must be an array of
