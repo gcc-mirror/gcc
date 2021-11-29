@@ -271,8 +271,7 @@ GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
 # Languages-specific object files for Ada.
 
 # Object files from C sources that are used by gnat1
-# Most of the non-gigi files are needed because of s-crtl.o and s-os_lib.o
-# But adadecode.o should not be needed with sufficiently recent compilers
+# adadecode.o should not be needed with sufficiently recent compilers
 GNAT1_C_OBJS =   \
  ada/cuintp.o    \
  ada/decl.o      \
@@ -281,15 +280,9 @@ GNAT1_C_OBJS =   \
  ada/utils2.o    \
  ada/trans.o     \
  ada/targtyps.o  \
- ada/adadecode.o \
- ada/adaint.o    \
- ada/argv.o      \
- ada/cio.o       \
- ada/cstreams.o  \
- ada/env.o       \
- ada/errno.o     \
+ ada/version.o   \
  ada/targext.o   \
- ada/version.o
+ ada/adadecode.o
 
 # Object files from Ada sources that are used by gnat1
 GNAT_ADA_OBJS =	\
@@ -465,14 +458,17 @@ GNAT_ADA_OBJS =	\
  ada/g-graphs.o	\
  ada/g-lists.o	\
  ada/g-sets.o	\
- ada/s-casuti.o	\
- ada/s-crtl.o	\
- ada/s-os_lib.o	\
  ada/s-pehage.o	\
  ada/s-utf_32.o
 
 ifeq ($(STAGE1),False)
 GNAT1_C_OBJS+=    \
+ ada/adaint.o     \
+ ada/argv.o       \
+ ada/cio.o        \
+ ada/cstreams.o   \
+ ada/env.o        \
+ ada/errno.o      \
  ada/init.o       \
  ada/initialize.o \
  ada/raise.o      \
@@ -504,6 +500,8 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-assert.o	\
  ada/libgnat/s-bitops.o	\
  ada/libgnat/s-carun8.o	\
+ ada/libgnat/s-casuti.o \
+ ada/libgnat/s-crtl.o	\
  ada/libgnat/s-conca2.o	\
  ada/libgnat/s-conca3.o	\
  ada/libgnat/s-conca4.o	\
@@ -521,6 +519,7 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-imgint.o	\
  ada/libgnat/s-mastop.o	\
  ada/libgnat/s-memory.o	\
+ ada/libgnat/s-os_lib.o	\
  ada/libgnat/s-parame.o	\
  ada/libgnat/s-purexc.o	\
  ada/libgnat/s-restri.o	\
@@ -621,6 +620,7 @@ GNATBIND_OBJS = \
  ada/switch-b.o   \
  ada/switch.o     \
  ada/table.o      \
+ ada/targext.o    \
  ada/targparm.o   \
  ada/types.o      \
  ada/uintp.o      \
@@ -632,18 +632,9 @@ GNATBIND_OBJS = \
  ada/g-lists.o    \
  ada/g-graphs.o   \
  ada/g-sets.o     \
- ada/s-casuti.o   \
- ada/s-os_lib.o   \
  ada/s-resfil.o   \
- ada/s-utf_32.o   \
- ada/adaint.o     \
- ada/argv.o       \
- ada/cio.o        \
- ada/cstreams.o   \
- ada/env.o        \
- ada/errno.o      \
- ada/targext.o    \
- ada/version.o
+ ada/version.o    \
+ ada/s-utf_32.o
 
 ifeq ($(STAGE1),False)
 GNATBIND_OBJS +=  \
@@ -666,6 +657,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/s-addope.o   \
  ada/libgnat/s-assert.o   \
  ada/libgnat/s-carun8.o   \
+ ada/libgnat/s-casuti.o   \
  ada/libgnat/s-conca2.o   \
  ada/libgnat/s-conca3.o   \
  ada/libgnat/s-conca4.o   \
@@ -683,6 +675,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/s-imgint.o   \
  ada/libgnat/s-mastop.o   \
  ada/libgnat/s-memory.o   \
+ ada/libgnat/s-os_lib.o   \
  ada/libgnat/s-parame.o   \
  ada/libgnat/s-restri.o   \
  ada/libgnat/s-secsta.o   \
@@ -699,7 +692,13 @@ GNATBIND_OBJS +=  \
  ada/libgnat/s-wchcnv.o   \
  ada/libgnat/s-wchcon.o   \
  ada/libgnat/s-wchjis.o   \
- ada/libgnat/s-wchstw.o
+ ada/libgnat/s-wchstw.o   \
+ ada/adaint.o     \
+ ada/argv.o       \
+ ada/cio.o        \
+ ada/cstreams.o   \
+ ada/env.o        \
+ ada/errno.o
 endif
 
 # Language-independent object files.
@@ -1186,10 +1185,8 @@ ADA_GENERATED_FILES = \
   ada/gnat.ads ada/g-dynhta.ads ada/g-dynhta.adb \
   ada/g-dyntab.ads ada/g-dyntab.adb ada/g-graphs.ads ada/g-graphs.adb \
   ada/g-lists.ads ada/g-lists.adb ada/g-sets.ads ada/g-sets.adb \
-  ada/s-casuti.ads ada/s-casuti.adb \
-  ada/s-crtl.ads ada/s-rident.ads ada/s-pehage.ads ada/s-pehage.adb \
-  ada/s-os_lib.ads ada/s-os_lib.adb ada/s-resfil.ads ada/s-resfil.adb \
-  ada/s-utf_32.ads ada/s-utf_32.adb
+  ada/s-rident.ads ada/s-pehage.ads ada/s-pehage.adb \
+  ada/s-resfil.ads ada/s-resfil.adb ada/s-utf_32.ads ada/s-utf_32.adb
 
 # Only used to manually trigger the creation of the generated files.
 .PHONY:
