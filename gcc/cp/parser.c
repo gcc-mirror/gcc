@@ -11184,10 +11184,12 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_THIS))
 	{
 	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
-	  if (cxx_dialect < cxx20
+	  if (cxx_dialect < cxx20 && pedantic
 	      && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) == CPLD_COPY)
-	    pedwarn (loc, 0, "explicit by-copy capture of %<this%> redundant "
-		     "with by-copy capture default");
+	    pedwarn (loc, OPT_Wc__20_extensions,
+		     "explicit by-copy capture of %<this%> "
+		     "with by-copy capture default only available with "
+		     "%<-std=c++20%> or %<-std=gnu++20%>");
 	  cp_lexer_consume_token (parser->lexer);
 	  if (LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
 	    pedwarn (input_location, 0,
