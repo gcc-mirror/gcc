@@ -541,7 +541,8 @@ is
    procedure Lemma_Word_Commutation (X : Single_Uns)
    with
      Ghost,
-     Post => Big_2xx32 * Big (Double_Uns (X)) = Big (2**32 * Double_Uns (X));
+     Post => Big_2xx32 * Big (Double_Uns (X))
+       = Big (2**Single_Size * Double_Uns (X));
 
    -----------------------------
    -- Local lemma null bodies --
