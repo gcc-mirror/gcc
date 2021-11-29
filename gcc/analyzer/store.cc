@@ -1729,6 +1729,7 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
   for (hash_set<const binding_key *>::iterator iter = keys.begin ();
        iter != keys.end (); ++iter)
     {
+      region_model_manager *sval_mgr = mgr->get_svalue_manager ();
       const binding_key *key = *iter;
       const svalue *sval_a = cluster_a->get_any_value (key);
       const svalue *sval_b = cluster_b->get_any_value (key);
@@ -1746,7 +1747,6 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 	}
       else if (sval_a && sval_b)
 	{
-	  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
 	  if (const svalue *merged_sval
 	      = sval_a->can_merge_p (sval_b, sval_mgr, merger))
 	    {
@@ -1760,9 +1760,19 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
       /* If we get here, then one cluster binds this key and the other
 	 doesn't; merge them as "UNKNOWN".  */
       gcc_assert (sval_a || sval_b);
-      tree type = sval_a ? sval_a->get_type () : sval_b->get_type ();
+
+      const svalue *bound_sval = sval_a ? sval_a : sval_b;
+      tree type = bound_sval->get_type ();
       const svalue *unknown_sval
 	= mgr->get_svalue_manager ()->get_or_create_unknown_svalue (type);
+
+      /* ...but reject the merger if this sval shouldn't be mergeable
+	 (e.g. reject merging svalues that have non-purgable sm-state,
+	 to avoid falsely reporting memory leaks by merging them
+	 with something else).  */
+      if (!bound_sval->can_merge_p (unknown_sval, sval_mgr, merger))
+	return false;
+
       out_cluster->m_map.put (key, unknown_sval);
     }
 
