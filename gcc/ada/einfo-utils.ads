@@ -42,10 +42,10 @@ package Einfo.Utils is
    --  expressions, but those use different mechanisms; the fields here are not
    --  used.
 
-   function Alias (N : Entity_Id) return Node_Id;
-   procedure Set_Alias (N : Entity_Id; Val : Node_Id);
-   function Renamed_Entity (N : Entity_Id) return Node_Id;
-   procedure Set_Renamed_Entity (N : Entity_Id; Val : Node_Id);
+   function Alias (N : Entity_Id) return Entity_Id;
+   procedure Set_Alias (N : Entity_Id; Val : Entity_Id);
+   function Renamed_Entity (N : Entity_Id) return Entity_Id;
+   procedure Set_Renamed_Entity (N : Entity_Id; Val : Entity_Id);
    function Renamed_Object (N : Entity_Id) return Node_Id;
    procedure Set_Renamed_Object (N : Entity_Id; Val : Node_Id);
 
