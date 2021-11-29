@@ -10067,7 +10067,7 @@ package body Exp_Ch4 is
               Make_Op_Not (Loc,
                 Right_Opnd =>
                   Make_Op_Eq (Loc,
-                    Left_Opnd =>  Left_Opnd (N),
+                    Left_Opnd  => Left_Opnd (N),
                     Right_Opnd => Right_Opnd (N)));
 
             --  The level of parentheses is useless in GNATprove mode, and
