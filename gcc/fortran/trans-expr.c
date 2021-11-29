@@ -11079,14 +11079,9 @@ gfc_expr_is_variable (gfc_expr *expr)
 	  func_ifc = expr->value.function.esym;
 	  goto found_ifc;
 	}
-      else
-	{
-	  gcc_assert (expr->symtree);
-	  func_ifc = expr->symtree->n.sym;
-	  goto found_ifc;
-	}
-
-      gcc_unreachable ();
+      gcc_assert (expr->symtree);
+      func_ifc = expr->symtree->n.sym;
+      goto found_ifc;
     }
 
   comp = gfc_get_proc_ptr_comp (expr);

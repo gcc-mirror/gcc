@@ -11127,7 +11127,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
     case TREE_LIST:
       WALK_SUBTREE (TREE_VALUE (*tp));
       WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
-      break;
 
     case TREE_VEC:
       {
@@ -11206,7 +11205,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
 	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
       }
-      break;
 
     case TARGET_EXPR:
       {

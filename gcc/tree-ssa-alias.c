@@ -1800,9 +1800,6 @@ nonoverlapping_refs_since_match_p (tree match1, tree ref1,
 	  return 1;
 	}
     }
-
-  ++alias_stats.nonoverlapping_refs_since_match_p_must_overlap;
-  return 0;
 }
 
 /* Return TYPE_UID which can be used to match record types we consider

@@ -1698,13 +1698,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 	    }
 	  break;
 	}
-      else
-	{
-	  c_parser_error (parser, "expected expression");
-	  expr.set_error ();
-	  break;
-	}
-      break;
+      /* Fallthru.  */
     default:
       c_parser_error (parser, "expected expression");
       expr.set_error ();

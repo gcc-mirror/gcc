@@ -3539,14 +3539,8 @@ skip_insns_after_block (basic_block bb)
 	  continue;
 
 	case NOTE:
-	  switch (NOTE_KIND (insn))
-	    {
-	    case NOTE_INSN_BLOCK_END:
-	      gcc_unreachable ();
-	    default:
-	      continue;
-	    }
-	  break;
+	  gcc_assert (NOTE_KIND (insn) != NOTE_INSN_BLOCK_END);
+	  continue;
 
 	case CODE_LABEL:
 	  if (NEXT_INSN (insn)

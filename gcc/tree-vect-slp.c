@@ -7311,20 +7311,14 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
     {
       if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
 	{
-	  gimple *child_stmt;
-	  int j;
-
-	  FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt)
-	    {
-	      tree vect_lhs = gimple_get_lhs (child_stmt);
-	      tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
-	      if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
-					      TREE_TYPE (vect_lhs)))
-		vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
-				   vect_lhs);
-	      rstmt = gimple_build_assign (root_lhs, vect_lhs);
-	      break;
-	    }
+	  gimple *child_stmt = SLP_TREE_VEC_STMTS (node)[0];
+	  tree vect_lhs = gimple_get_lhs (child_stmt);
+	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
+	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
+					  TREE_TYPE (vect_lhs)))
+	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
+			       vect_lhs);
+	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	}
       else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
 	{

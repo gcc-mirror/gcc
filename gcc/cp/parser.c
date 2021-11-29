@@ -7892,10 +7892,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
             return postfix_expression;
 	}
     }
-
-  /* We should never get here.  */
-  gcc_unreachable ();
-  return error_mark_node;
 }
 
 /* Helper function for cp_parser_parenthesized_expression_list and
