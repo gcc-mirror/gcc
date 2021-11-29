@@ -3415,8 +3415,6 @@ compare_constant (const tree t1, const tree t2)
     default:
       return 0;
     }
-
-  gcc_unreachable ();
 }
 
 /* Return the section into which constant EXP should be placed.  */

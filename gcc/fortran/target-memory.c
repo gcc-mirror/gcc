@@ -138,7 +138,6 @@ gfc_element_size (gfc_expr *e, size_t *siz)
       *siz = 0;
       return false;
     }
-  return true;
 }
 
 

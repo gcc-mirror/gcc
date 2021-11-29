@@ -1904,9 +1904,6 @@ objc_build_setter_call (tree lhs, tree rhs)
 					 setter_argument, NULL);
       return setter;
     }
-
-  /* Unreachable, but the compiler may not realize.  */
-  return error_mark_node;
 }
 
 /* This hook routine is called when a MODIFY_EXPR is being built.  We

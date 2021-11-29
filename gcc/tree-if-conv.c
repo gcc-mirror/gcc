@@ -1110,8 +1110,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	}
       return false;
     }
-
-  return true;
 }
 
 /* Assumes that BB has more than 1 predecessors.

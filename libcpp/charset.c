@@ -1534,7 +1534,6 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     case 'x':
       return convert_hex (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
-      break;
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':

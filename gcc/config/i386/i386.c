@@ -20366,7 +20366,6 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
       else
 	return cost->shift_var;
     }
-  return cost->shift_const;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete

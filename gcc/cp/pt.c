@@ -1969,9 +1969,6 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
       return val;
     }
-
-  gcc_unreachable ();
-  return 0;
 }
 
 /* Unregister the specialization SPEC as a specialization of TMPL.
