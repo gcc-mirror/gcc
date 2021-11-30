@@ -623,10 +623,13 @@ package Sem_Util is
    --  aspect specifications. If From has no aspects, the routine has no
    --  effect.
 
-   function Copy_Subprogram_Spec (Spec : Node_Id) return Node_Id;
+   function Copy_Subprogram_Spec
+     (Spec     : Node_Id;
+      New_Sloc : Source_Ptr := No_Location) return Node_Id;
    --  Replicate a function or a procedure specification denoted by Spec. The
    --  resulting tree is an exact duplicate of the original tree. New entities
-   --  are created for the unit name and the formal parameters.
+   --  are created for the unit name and the formal parameters. For definition
+   --  of New_Sloc, see the comment for New_Copy_Tree.
 
    function Corresponding_Generic_Type (T : Entity_Id) return Entity_Id;
    --  If a type is a generic actual type, return the corresponding formal in

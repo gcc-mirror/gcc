@@ -10265,8 +10265,8 @@ package body Exp_Ch3 is
       Decl_List      : constant List_Id    := New_List;
       Loc            : constant Source_Ptr := Sloc (Tag_Typ);
       Formal         : Entity_Id;
-      Formal_List    : List_Id;
       New_Param_Spec : Node_Id;
+      New_Spec       : Node_Id;
       Parent_Subp    : Entity_Id;
       Prim_Elmt      : Elmt_Id;
       Subp           : Entity_Id;
@@ -10285,59 +10285,47 @@ package body Exp_Ch3 is
          if Present (Parent_Subp)
            and then Is_Null_Interface_Primitive (Parent_Subp)
          then
+            --  The null procedure spec is copied from the inherited procedure,
+            --  except for the IS NULL (which must be added) and the overriding
+            --  indicators (which must be removed, if present).
+
+            New_Spec :=
+              Copy_Subprogram_Spec (Subprogram_Specification (Subp), Loc);
+
+            Set_Null_Present      (New_Spec, True);
+            Set_Must_Override     (New_Spec, False);
+            Set_Must_Not_Override (New_Spec, False);
+
             Formal := First_Formal (Subp);
+            New_Param_Spec := First (Parameter_Specifications (New_Spec));
 
-            if Present (Formal) then
-               Formal_List := New_List;
+            while Present (Formal) loop
 
-               while Present (Formal) loop
+               --  For controlling arguments we must change their parameter
+               --  type to reference the tagged type (instead of the interface
+               --  type).
 
-                  --  Copy the parameter spec including default expressions
+               if Is_Controlling_Formal (Formal) then
+                  if Nkind (Parameter_Type (Parent (Formal))) = N_Identifier
+                  then
+                     Set_Parameter_Type (New_Param_Spec,
+                       New_Occurrence_Of (Tag_Typ, Loc));
 
-                  New_Param_Spec :=
-                    New_Copy_Tree (Parent (Formal), New_Sloc => Loc);
-
-                  --  Generate a new defining identifier for the new formal.
-                  --  Required because New_Copy_Tree does not duplicate
-                  --  semantic fields (except itypes).
-
-                  Set_Defining_Identifier (New_Param_Spec,
-                    Make_Defining_Identifier (Sloc (Formal),
-                      Chars => Chars (Formal)));
-
-                  --  For controlling arguments we must change their parameter
-                  --  type to reference the tagged type (instead of the
-                  --  interface type).
-
-                  if Is_Controlling_Formal (Formal) then
-                     if Nkind (Parameter_Type (Parent (Formal))) = N_Identifier
-                     then
-                        Set_Parameter_Type (New_Param_Spec,
-                          New_Occurrence_Of (Tag_Typ, Loc));
-
-                     else pragma Assert
-                            (Nkind (Parameter_Type (Parent (Formal))) =
-                                                        N_Access_Definition);
-                        Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
-                          New_Occurrence_Of (Tag_Typ, Loc));
-                     end if;
+                  else pragma Assert
+                         (Nkind (Parameter_Type (Parent (Formal))) =
+                                                     N_Access_Definition);
+                     Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
+                       New_Occurrence_Of (Tag_Typ, Loc));
                   end if;
+               end if;
 
-                  Append (New_Param_Spec, Formal_List);
-
-                  Next_Formal (Formal);
-               end loop;
-            else
-               Formal_List := No_List;
-            end if;
+               Next_Formal (Formal);
+               Next (New_Param_Spec);
+            end loop;
 
             Append_To (Decl_List,
               Make_Subprogram_Declaration (Loc,
-                Make_Procedure_Specification (Loc,
-                  Defining_Unit_Name       =>
-                    Make_Defining_Identifier (Loc, Chars (Subp)),
-                  Parameter_Specifications => Formal_List,
-                  Null_Present             => True)));
+                Specification => New_Spec));
          end if;
 
          Next_Elmt (Prim_Elmt);
