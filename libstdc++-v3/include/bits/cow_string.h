@@ -621,14 +621,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @a __str is a valid, but unspecified string.
        */
       basic_string(basic_string&& __str) noexcept
-#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
       : _M_dataplus(std::move(__str._M_dataplus))
       {
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
+	// Make __str use the shared empty string rep.
 	__str._M_data(_S_empty_rep()._M_refdata());
-      }
 #else
-      : _M_dataplus(__str._M_rep())
-      {
 	// Rather than allocate an empty string for the rvalue string,
 	// just share ownership with it by incrementing the reference count.
 	// If the rvalue string was "leaked" then it was the unique owner,
@@ -637,8 +635,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 2);
 	else
 	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 1);
-      }
 #endif
+      }
 
       /**
        *  @brief  Construct string from an initializer %list.
