@@ -930,6 +930,13 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 	}
       break;
 
+    case CALL_EXPR:
+      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
+	if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
+	    && source_location_current_p (fndecl))
+	  *stmt_p = stmt = cxx_constant_value (stmt);
+      break;
+
     default:
       break;
     }
@@ -2671,14 +2678,6 @@ cp_fold (tree x)
       {
 	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
-
-	if (tree fndecl = cp_get_callee_fndecl_nofold (x))
-	  if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
-	      && source_location_current_p (fndecl))
-	    {
-	      x = cxx_constant_value (x);
-	      break;
-	    }
 
 	/* Some built-in function calls will be evaluated at compile-time in
 	   fold ().  Set optimize to 1 when folding __builtin_constant_p inside
