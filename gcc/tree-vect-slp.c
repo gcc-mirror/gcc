@@ -876,17 +876,13 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 {
   unsigned int i;
   stmt_vec_info first_stmt_info = stmts[0];
-  enum tree_code first_stmt_code = ERROR_MARK;
-  enum tree_code alt_stmt_code = ERROR_MARK;
-  enum tree_code rhs_code = ERROR_MARK;
-  enum tree_code first_cond_code = ERROR_MARK;
+  code_helper first_stmt_code = ERROR_MARK;
+  code_helper alt_stmt_code = ERROR_MARK;
+  code_helper rhs_code = ERROR_MARK;
+  code_helper first_cond_code = ERROR_MARK;
   tree lhs;
   bool need_same_oprnds = false;
   tree vectype = NULL_TREE, first_op1 = NULL_TREE;
-  optab optab;
-  int icode;
-  machine_mode optab_op2_mode;
-  machine_mode vec_mode;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_load_p = false, load_p = false;
   bool first_stmt_phi_p = false, phi_p = false;
@@ -966,13 +962,16 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       gcall *call_stmt = dyn_cast <gcall *> (stmt);
       if (call_stmt)
 	{
-	  rhs_code = CALL_EXPR;
+	  combined_fn cfn = gimple_call_combined_fn (call_stmt);
+	  if (cfn != CFN_LAST)
+	    rhs_code = cfn;
+	  else
+	    rhs_code = CALL_EXPR;
 
-	  if (gimple_call_internal_p (stmt, IFN_MASK_LOAD))
+	  if (cfn == CFN_MASK_LOAD)
 	    load_p = true;
-	  else if ((gimple_call_internal_p (call_stmt)
-		    && (!vectorizable_internal_fn_p
-			(gimple_call_internal_fn (call_stmt))))
+	  else if ((internal_fn_p (cfn)
+		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
 		   || gimple_call_tail_p (call_stmt)
 		   || gimple_call_noreturn_p (call_stmt)
 		   || gimple_call_chain (call_stmt))
@@ -1013,32 +1012,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      || rhs_code == LROTATE_EXPR
 	      || rhs_code == RROTATE_EXPR)
 	    {
-	      vec_mode = TYPE_MODE (vectype);
-
 	      /* First see if we have a vector/vector shift.  */
-	      optab = optab_for_tree_code (rhs_code, vectype,
-					   optab_vector);
-
-	      if (!optab
-		  || optab_handler (optab, vec_mode) == CODE_FOR_nothing)
+	      if (!directly_supported_p (rhs_code, vectype, optab_vector))
 		{
 		  /* No vector/vector shift, try for a vector/scalar shift.  */
-		  optab = optab_for_tree_code (rhs_code, vectype,
-					       optab_scalar);
-
-		  if (!optab)
-		    {
-		      if (dump_enabled_p ())
-			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-					 "Build SLP failed: no optab.\n");
-		      if (is_a <bb_vec_info> (vinfo) && i != 0)
-			continue;
-		      /* Fatal mismatch.  */
-		      matches[0] = false;
-		      return false;
-		    }
-		  icode = (int) optab_handler (optab, vec_mode);
-		  if (icode == CODE_FOR_nothing)
+		  if (!directly_supported_p (rhs_code, vectype, optab_scalar))
 		    {
 		      if (dump_enabled_p ())
 			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1050,12 +1028,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		      matches[0] = false;
 		      return false;
 		    }
-		  optab_op2_mode = insn_data[icode].operand[2].mode;
-		  if (!VECTOR_MODE_P (optab_op2_mode))
-		    {
-		      need_same_oprnds = true;
-		      first_op1 = gimple_assign_rhs2 (stmt);
-		    }
+		  need_same_oprnds = true;
+		  first_op1 = gimple_assign_rhs2 (stmt);
 		}
 	    }
 	  else if (rhs_code == WIDEN_LSHIFT_EXPR)
@@ -1081,8 +1055,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		  return false;
 		}
 	    }
-	  else if (call_stmt
-		   && gimple_call_internal_p (call_stmt, IFN_DIV_POW2))
+	  else if (rhs_code == CFN_DIV_POW2)
 	    {
 	      need_same_oprnds = true;
 	      first_op1 = gimple_call_arg (call_stmt, 1);
@@ -1139,10 +1112,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (!load_p && rhs_code == CALL_EXPR)
+	  if (!load_p && call_stmt)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
-				       as_a <gcall *> (stmt)))
+				       call_stmt))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1243,10 +1216,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
 	  /* Not memory operation.  */
 	  if (!phi_p
-	      && TREE_CODE_CLASS (rhs_code) != tcc_binary
-	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
-	      && TREE_CODE_CLASS (rhs_code) != tcc_expression
-	      && TREE_CODE_CLASS (rhs_code) != tcc_comparison
+	      && rhs_code.is_tree_code ()
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_binary
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_unary
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_expression
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_comparison
 	      && rhs_code != VIEW_CONVERT_EXPR
 	      && rhs_code != CALL_EXPR
 	      && rhs_code != BIT_FIELD_REF)
@@ -1308,7 +1282,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   /* If we allowed a two-operation SLP node verify the target can cope
      with the permute we are going to use.  */
   if (alt_stmt_code != ERROR_MARK
-      && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
+      && (!alt_stmt_code.is_tree_code ()
+	  || TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_reference))
     {
       *two_operators = true;
     }
