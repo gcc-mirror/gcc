@@ -1611,7 +1611,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree stype = TREE_TYPE (@0);
 	  tree ntype = TYPE_UNSIGNED (stype) ? signed_type_for (stype)
 					     : unsigned_type_for (stype); }
-   (convert (rshift:ntype (convert:ntype @0) @1)))))
+   (if (VECTOR_TYPE_P (type))
+    (view_convert (rshift (view_convert:ntype @0) @1))
+    (convert (rshift (convert:ntype @0) @1))))))
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
