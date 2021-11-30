@@ -16438,8 +16438,10 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 	    break;
 
 	  /* If we get to the epilogue note, prevent a catch region from
-	     being adjacent to the standard epilogue sequence.  If non-
-	     call-exceptions, we'll have done this during epilogue emission. */
+	     being adjacent to the standard epilogue sequence.  Note that,
+	     if non-call exceptions are enabled, we already did it during
+	     epilogue expansion, or else, if the insn can throw internally,
+	     we already did it during the reorg pass.  */
 	  if (NOTE_P (i) && NOTE_KIND (i) == NOTE_INSN_EPILOGUE_BEG
 	      && !flag_non_call_exceptions
 	      && !can_throw_internal (insn))
