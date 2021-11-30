@@ -1639,6 +1639,10 @@ Target supports vector masked loads.
 @item vect_masked_store
 Target supports vector masked stores.
 
+@item vect_gather_load_ifn
+Target supports vector gather loads using internal functions
+(rather than via built-in functions or emulation).
+
 @item vect_scatter_store
 Target supports vector scatter stores.
 

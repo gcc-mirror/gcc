@@ -459,6 +459,7 @@ static const int cond_expr_maps[3][5] = {
   { 4, -2, -1, 1, 2 },
   { 4, -1, -2, 2, 1 }
 };
+static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
 
 /* For most SLP statements, there is a one-to-one mapping between
@@ -489,6 +490,9 @@ vect_get_operand_map (const gimple *stmt, unsigned char swap = 0)
 	  {
 	  case IFN_MASK_LOAD:
 	    return arg2_map;
+
+	  case IFN_GATHER_LOAD:
+	    return arg1_map;
 
 	  default:
 	    break;
@@ -825,6 +829,20 @@ compatible_calls_p (gcall *call1, gcall *call2)
       if (gimple_call_fntype (call1) != gimple_call_fntype (call2))
 	return false;
     }
+
+  /* Check that any unvectorized arguments are equal.  */
+  if (const int *map = vect_get_operand_map (call1))
+    {
+      unsigned int nkept = *map++;
+      unsigned int mapi = 0;
+      for (unsigned int i = 0; i < nargs; ++i)
+	if (mapi < nkept && map[mapi] == int (i))
+	  mapi += 1;
+	else if (!operand_equal_p (gimple_call_arg (call1, i),
+				   gimple_call_arg (call2, i)))
+	  return false;
+    }
+
   return true;
 }
 
@@ -982,7 +1000,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  else
 	    rhs_code = CALL_EXPR;
 
-	  if (cfn == CFN_MASK_LOAD)
+	  if (cfn == CFN_MASK_LOAD || cfn == CFN_GATHER_LOAD)
 	    load_p = true;
 	  else if ((internal_fn_p (cfn)
 		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
@@ -1126,7 +1144,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (!load_p && call_stmt)
+	  if (call_stmt && first_stmt_code != CFN_MASK_LOAD)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
 				       call_stmt))
@@ -1211,7 +1229,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
         } /* Grouped access.  */
       else
 	{
-	  if (load_p)
+	  if (load_p && rhs_code != CFN_GATHER_LOAD)
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
@@ -1692,7 +1710,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
       if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
-	gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD));
+	gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD)
+		    || gimple_call_internal_p (stmt, IFN_GATHER_LOAD));
       else
 	{
 	  *max_nunits = this_max_nunits;
@@ -4408,7 +4427,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
      calculated by the recursive call).  Otherwise it is the number of
      scalar elements in one scalar iteration (DR_GROUP_SIZE) multiplied by
      VF divided by the number of elements in a vector.  */
-  if (!STMT_VINFO_GROUPED_ACCESS (stmt_info)
+  if (!STMT_VINFO_DATA_REF (stmt_info)
       && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       for (unsigned i = 0; i < SLP_TREE_CHILDREN (node).length (); ++i)

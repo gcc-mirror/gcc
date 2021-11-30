@@ -7987,6 +7987,12 @@ proc check_effective_target_vect_masked_store { } {
 		   || [istarget amdgcn*-*-*] }]
 }
 
+# Return 1 if the target supports vector gather loads via internal functions.
+
+proc check_effective_target_vect_gather_load_ifn { } {
+    return [expr { [check_effective_target_aarch64_sve] }]
+}
+
 # Return 1 if the target supports vector scatter stores.
 
 proc check_effective_target_vect_scatter_store { } {
