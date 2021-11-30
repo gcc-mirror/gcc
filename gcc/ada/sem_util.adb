@@ -16680,7 +16680,18 @@ package body Sem_Util is
                           | N_Private_Type_Declaration
                           | N_Subtype_Declaration
               and then Comes_From_Source (P)
-              and then Defining_Entity (P) = Typ
+
+              --  If the type has a previous incomplete declaration, the
+              --  reference in the type definition may have the incomplete
+              --  view. So, here we detect if this incomplete view is a current
+              --  instance by checking if its full view is the entity of the
+              --  full declaration begin analyzed.
+
+              and then
+                (Defining_Entity (P) = Typ
+                  or else
+                   (Ekind (Typ) = E_Incomplete_Type
+                     and then Full_View (Typ) = Defining_Entity (P)))
             then
                return True;
 

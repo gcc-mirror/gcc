@@ -3727,6 +3727,24 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  A current instance used as an actual of a function,
+               --  whose body has not been seen, may include a formal
+               --  whose type is an incomplete view of an enclosing
+               --  type declaration containing the current call (e.g.
+               --  in the Expression for a component declaration).
+
+               --  In this case, update the signature of the subprogram
+               --  so the formal has the type of the full view.
+
+               elsif Inside_Init_Proc
+                 and then Nkind (Actual) = N_Identifier
+                 and then Ekind (Etype (Formal)) = E_Incomplete_Type
+                 and then Etype (Actual) = Full_View (Etype (Formal))
+               then
+                  Set_Etype (Formal, Etype (Actual));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
                --  Handle failed type check
 
                else

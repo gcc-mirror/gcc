@@ -2022,6 +2022,25 @@ package body Exp_Ch3 is
                          Elmt2 => Defining_Identifier (First
                                    (Parameter_Specifications
                                       (Parent (Proc_Id)))));
+
+               --  If the type has an incomplete view, a current instance
+               --  may have an incomplete type. In that case, it must also be
+               --  replaced by the formal of the Init_Proc.
+
+               if Nkind (Parent (Rec_Type)) = N_Full_Type_Declaration
+                 and then Present (Incomplete_View (Parent (Rec_Type)))
+               then
+                  Append_Elmt (
+                    N  => Defining_Identifier
+                            (Incomplete_View (Parent (Rec_Type))),
+                    To => Map);
+                  Append_Elmt (
+                    N  => Defining_Identifier
+                            (First
+                              (Parameter_Specifications
+                                (Parent (Proc_Id)))),
+                    To => Map);
+               end if;
             end if;
 
             Exp := New_Copy_Tree (Exp, New_Scope => Proc_Id, Map => Map);

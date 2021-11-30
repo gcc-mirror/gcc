@@ -989,7 +989,15 @@ package body Sem_Attr is
                   Set_Etype  (P, Typ);
                end if;
 
-               if Typ = Scop then
+               --  A current instance typically appears immediately within
+               --  the type declaration, but may be nested within an internally
+               --  generated temporary scope - as for an aggregate of a
+               --  discriminated component.
+
+               if Typ = Scop
+                 or else (In_Open_Scopes (Typ)
+                           and then not Comes_From_Source (Scop))
+               then
                   declare
                      Q : Node_Id := Parent (N);
 
