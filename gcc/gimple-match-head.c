@@ -294,18 +294,16 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
 
   /* Canonicalize operand order.  */
   bool canonicalized = false;
-  if (res_op->code.is_tree_code ())
+  bool is_comparison
+    = (res_op->code.is_tree_code ()
+       && TREE_CODE_CLASS (tree_code (res_op->code)) == tcc_comparison);
+  if ((is_comparison || commutative_binary_op_p (res_op->code, res_op->type))
+      && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
     {
-      auto code = tree_code (res_op->code);
-      if ((TREE_CODE_CLASS (code) == tcc_comparison
-	   || commutative_tree_code (code))
-	  && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
-	{
-	  std::swap (res_op->ops[0], res_op->ops[1]);
-	  if (TREE_CODE_CLASS (code) == tcc_comparison)
-	    res_op->code = swap_tree_comparison (code);
-	  canonicalized = true;
-	}
+      std::swap (res_op->ops[0], res_op->ops[1]);
+      if (is_comparison)
+	res_op->code = swap_tree_comparison (tree_code (res_op->code));
+      canonicalized = true;
     }
 
   /* Limit recursion, see gimple_resimplify1.  */
@@ -376,11 +374,11 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
 
   /* Canonicalize operand order.  */
   bool canonicalized = false;
-  if (res_op->code.is_tree_code ()
-      && commutative_ternary_tree_code (tree_code (res_op->code))
-      && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
     {
-      std::swap (res_op->ops[0], res_op->ops[1]);
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
       canonicalized = true;
     }
 
@@ -424,6 +422,16 @@ gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
 {
   /* No constant folding is defined for four-operand functions.  */
 
+  /* Canonicalize operand order.  */
+  bool canonicalized = false;
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
+    {
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
+      canonicalized = true;
+    }
+
   /* Limit recursion, see gimple_resimplify1.  */
   static unsigned depth;
   if (depth > 10)
@@ -450,7 +458,7 @@ gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
   if (maybe_resimplify_conditional_op (seq, res_op, valueize))
     return true;
 
-  return false;
+  return canonicalized;
 }
 
 /* Helper that matches and simplifies the toplevel result from
@@ -465,6 +473,16 @@ gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
 {
   /* No constant folding is defined for five-operand functions.  */
 
+  /* Canonicalize operand order.  */
+  bool canonicalized = false;
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
+    {
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
+      canonicalized = true;
+    }
+
   gimple_match_op res_op2 (*res_op);
   if (gimple_simplify (&res_op2, seq, valueize,
 		       res_op->code, res_op->type,
@@ -478,7 +496,7 @@ gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
   if (maybe_resimplify_conditional_op (seq, res_op, valueize))
     return true;
 
-  return false;
+  return canonicalized;
 }
 
 /* Match and simplify the toplevel valueized operation THIS.

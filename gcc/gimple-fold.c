@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "memmodel.h"
 #include "optabs.h"
+#include "internal-fn.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -6109,18 +6110,36 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
       break;
     case GIMPLE_CALL:
       {
-	for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	gcall *call = as_a<gcall *> (stmt);
+	for (i = 0; i < gimple_call_num_args (call); ++i)
 	  {
-	    tree *arg = gimple_call_arg_ptr (stmt, i);
+	    tree *arg = gimple_call_arg_ptr (call, i);
 	    if (REFERENCE_CLASS_P (*arg)
 		&& maybe_canonicalize_mem_ref_addr (arg))
 	      changed = true;
 	  }
-	tree *lhs = gimple_call_lhs_ptr (stmt);
+	tree *lhs = gimple_call_lhs_ptr (call);
 	if (*lhs
 	    && REFERENCE_CLASS_P (*lhs)
 	    && maybe_canonicalize_mem_ref_addr (lhs))
 	  changed = true;
+	if (*lhs)
+	  {
+	    combined_fn cfn = gimple_call_combined_fn (call);
+	    internal_fn ifn = associated_internal_fn (cfn, TREE_TYPE (*lhs));
+	    int opno = first_commutative_argument (ifn);
+	    if (opno >= 0)
+	      {
+		tree arg1 = gimple_call_arg (call, opno);
+		tree arg2 = gimple_call_arg (call, opno + 1);
+		if (tree_swap_operands_p (arg1, arg2))
+		  {
+		    gimple_call_set_arg (call, opno, arg2);
+		    gimple_call_set_arg (call, opno + 1, arg1);
+		    changed = true;
+		  }
+	      }
+	  }
 	break;
       }
     case GIMPLE_ASM:
