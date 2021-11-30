@@ -10185,7 +10185,7 @@ package body Sem_Res is
                        ("\\interpretation as call yields&", Arg, Typ);
                      Error_Msg_NE
                        ("\\interpretation as indexing of call yields&",
-                         Arg, Component_Type (Typ));
+                         Arg, Ctyp);
 
                   else
                      Error_Msg_N ("ambiguous operand for concatenation!", Arg);
@@ -10208,10 +10208,30 @@ package body Sem_Res is
                end;
             end if;
 
-            Resolve (Arg, Component_Type (Typ));
+            Resolve (Arg, Ctyp);
 
             if Nkind (Arg) = N_String_Literal then
-               Set_Etype (Arg, Component_Type (Typ));
+               Set_Etype (Arg, Ctyp);
+
+            elsif Is_Scalar_Type (Etype (Arg))
+              and then Compile_Time_Known_Value (Arg)
+            then
+               --  Determine if the out-of-range violation constitutes a
+               --  warning or an error according to the expression base type,
+               --  according to Ada 2022 RM 4.9 (35/2).
+
+               if Is_Out_Of_Range (Arg, Base_Type (Ctyp)) then
+                  Apply_Compile_Time_Constraint_Error
+                    (Arg, "value not in range of}", CE_Range_Check_Failed,
+                     Ent => Base_Type (Ctyp),
+                     Typ => Base_Type (Ctyp));
+
+               elsif Is_Out_Of_Range (Arg, Ctyp) then
+                  Apply_Compile_Time_Constraint_Error
+                    (Arg, "value not in range of}??", CE_Range_Check_Failed,
+                     Ent => Ctyp,
+                     Typ => Ctyp);
+               end if;
             end if;
 
             if Arg = Left_Opnd (N) then
