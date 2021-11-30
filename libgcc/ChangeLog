@@ -1,3 +1,8 @@
+2021-11-29  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config.host (powerpc-wrs-vxworks): Do not add crtbegin.o and
+	crtend.o to extra_parts.
+
 2021-11-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/t-dimode (lib2difuncs): Fix typo.

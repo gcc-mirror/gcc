@@ -1,3 +1,45 @@
+2021-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* gcc.dg/analyzer/pr103217-2.c: New test.
+	* gcc.dg/analyzer/pr103217-3.c: New test.
+	* gcc.dg/analyzer/pr103217-4.c: New test.
+	* gcc.dg/analyzer/pr103217-5.c: New test.
+
+2021-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/103469
+	* c-c++-common/attr-retain-5.c: Prune out valid warning.
+	* c-c++-common/attr-retain-6.c: Same.
+	* c-c++-common/attr-retain-9.c: Same.
+
+2021-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100493
+	* g++.dg/cpp1z/lambda-this1.C: Adjust expected diagnostics.
+	* g++.dg/cpp1z/lambda-this8.C: New test.
+	* g++.dg/cpp2a/lambda-this3.C: Compile with -pedantic in C++17
+	to continue to diagnose redundant 'this' captures.
+
+2021-11-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse2-v1ti-rotate.c: New test case.
+
+2021-11-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr102811-2.c: New test.
+	* gcc.target/i386/avx512vl-vcvtps2ph-pr102811.c: Add new
+	scan-assembler-times.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103458
+	* gcc.dg/torture/pr103458.c: New testcase.
+
+2021-11-29  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/vect-gather-1.c: New test.
+
 2021-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/103431

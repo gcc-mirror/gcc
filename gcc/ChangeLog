@@ -1,3 +1,110 @@
+2021-11-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102811
+	* config/i386/i386.md (*movhi_internal): Introduce (*v,C) alternative.
+	Do not allocate non-GPR registers.  Optimize xmm->xmm moves when
+	optimizing for size.  Fix vpinsrw insn template.
+	(*movhf_internal): Fix pinsrw and pextrw insn templates for
+	AVX targets. Use sselog1 type instead of sselog.  Optimize GPR moves.
+	Optimize xmm->xmm moves for TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	and TARGET_SSE_SPLIT_REGS targets.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* configure: Re-regenerate.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Makefile.in: Substitute CTAGS, ETAGS, and CSCOPE
+	variables. Use ETAGS variable in TAGS target.
+	* configure: Regenerate.
+	* configure.ac: Allow CTAGS, ETAGS, and CSCOPE
+	variables to be overridden.
+
+2021-11-29  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/xmmintrin.h (_mm_movemask_ps): Use vec_extractm
+	when _ARCH_PWR10.
+	* config/rs6000/emmintrin.h (_mm_movemask_pd): Likewise.
+	(_mm_movemask_epi8): Likewise.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* read-rtl-function.c (function_reader::read_rtx_operand):
+	Return only after resetting m_in_call_function_usage.
+
+2021-11-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.c (ix86_expand_v1ti_to_ti): Perform the
+	conversion via V2DImode using vec_extractv2didi on TARGET_SSE2.
+	* config/i386/sse.md (rotlv1ti3, rotrv1ti3): Change constraint
+	on QImode shift amounts from const_int_operand to general_operand.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (reverse_storage_order_for_component_p): Remove
+	spurious gcc_unreachable.
+	* cfganal.c (dfs_find_deadend): Likewise.
+	* fold-const-call.c (fold_const_logb): Likewise.
+	(fold_const_significand): Likewise.
+	* gimple-ssa-store-merging.c (lhs_valid_for_store_merging_p):
+	Likewise.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* vec.c (qsort_chk): Do not return the void return value
+	from the noreturn qsort_chk_error.
+	* ccmp.c (expand_ccmp_expr_1): Remove unreachable return.
+	* df-scan.c (df_ref_equal_p): Likewise.
+	* dwarf2out.c (is_base_type): Likewise.
+	(add_const_value_attribute): Likewise.
+	* fixed-value.c (fixed_arithmetic): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_fputs): Likewise.
+	* gimple-ssa-strength-reduction.c (stmt_cost): Likewise.
+	* graphite-isl-ast-to-gimple.c
+	(gcc_expression_from_isl_expr_op): Likewise.
+	(gcc_expression_from_isl_expression): Likewise.
+	* ipa-fnsummary.c (will_be_nonconstant_expr_predicate):
+	Likewise.
+	* lto-streamer-in.c (lto_input_mode_table): Likewise.
+
+2021-11-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102811
+	* config/i386/i386.c (inline_secondary_memory_needed): HImode
+	move between GPR and SSE registers is supported under
+	TARGET_SSE2 and above.
+	* config/i386/i386.md (extendhfsf2): Optimize expander.
+	(truncsfhf2): Ditto.
+	* config/i386/sse.md (sse2p4_1): Adjust attr for V8HFmode to
+	align with V8HImode.
+
+2021-11-29  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/102811
+	PR target/103463
+	* config/i386/i386.c (ix86_secondary_reload): Without
+	TARGET_SSE4_1, General register is needed to move HImode from
+	sse register to memory.
+	* config/i386/sse.md (*vec_extrachf): Use %vpextrw instead of
+	pextrw in output templates.
+	* config/i386/i386.md (movhi_internal): Ditto, also fix typo of
+	MEM_P (operands[1]) and adjust mode/prefix/type attribute for
+	alternatives related to sse register.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103458
+	* tree-ssa-dce.c (make_forwarders_with_degenerate_phis): Do not
+	create forwarders for blocks with abnormal predecessors.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* gimple-predicate-analysis.cc (can_be_invalidated_p):
+	Restore semantics to the one before the split from
+	tree-ssa-uninit.c.
+
 2021-11-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* profile.c: Include sreal.h

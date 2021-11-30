@@ -1,3 +1,13 @@
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Makefile.in: Use ETAGS variable in TAGS target,
+	CTAGS variable in CTAGS target, and MKID variable
+	in ID target.
+	* configure: Regenerate.
+	* configure.ac: Allow CTAGS, ETAGS, and MKID
+	variables to be overridden.
+
 2021-06-14  Michael Forney  <mforney@mforney.org>
 
 	* configure: Regenerated.

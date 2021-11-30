@@ -1,3 +1,16 @@
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100493
+	* parser.c (cp_parser_lambda_introducer): In C++17, don't
+	diagnose a redundant 'this' capture alongside a by-copy
+	capture default unless -pedantic.  Move the diagnostic into
+	-Wc++20-extensions and adjust wording accordingly.
+
 2021-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102753

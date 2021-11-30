@@ -1,3 +1,14 @@
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* c-format.c (check_format_string): Remove spurious
+	gcc_unreachable.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* c-opts.c (c_common_post_options): Remove unreachable return.
+	* c-pragma.c (handle_pragma_target): Likewise.
+	(handle_pragma_optimize): Likewise.
+
 2021-11-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102611
