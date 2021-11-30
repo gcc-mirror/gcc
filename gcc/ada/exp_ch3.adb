@@ -9591,18 +9591,40 @@ package body Exp_Ch3 is
       Decl_List : out List_Id;
       Body_List : out List_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (Tag_Typ);
+      Loc : constant Source_Ptr := Sloc (Tag_Typ);
+
+      function Make_Wrapper_Specification (Subp : Entity_Id) return Node_Id;
+      --  Returns a function specification with the same profile as Subp
+
+      --------------------------------
+      -- Make_Wrapper_Specification --
+      --------------------------------
+
+      function Make_Wrapper_Specification (Subp : Entity_Id) return Node_Id is
+      begin
+         return
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       =>
+               Make_Defining_Identifier (Loc,
+                 Chars => Chars (Subp)),
+             Parameter_Specifications =>
+               Copy_Parameter_List (Subp),
+             Result_Definition        =>
+               New_Occurrence_Of (Etype (Subp), Loc));
+      end Make_Wrapper_Specification;
+
       Prim_Elmt   : Elmt_Id;
       Subp        : Entity_Id;
       Actual_List : List_Id;
-      Formal_List : List_Id;
       Formal      : Entity_Id;
       Par_Formal  : Entity_Id;
       Formal_Node : Node_Id;
       Func_Body   : Node_Id;
       Func_Decl   : Node_Id;
-      Func_Spec   : Node_Id;
+      Func_Id     : Entity_Id;
       Return_Stmt : Node_Id;
+
+   --  Start of processing for Make_Controlling_Function_Wrappers
 
    begin
       Decl_List := New_List;
@@ -9674,43 +9696,10 @@ package body Exp_Ch3 is
                end;
             end if;
 
-            Formal_List := No_List;
-            Formal := First_Formal (Subp);
+            Func_Decl :=
+              Make_Subprogram_Declaration (Loc,
+                Specification => Make_Wrapper_Specification (Subp));
 
-            if Present (Formal) then
-               Formal_List := New_List;
-
-               while Present (Formal) loop
-                  Append
-                    (Make_Parameter_Specification
-                       (Loc,
-                        Defining_Identifier =>
-                          Make_Defining_Identifier (Sloc (Formal),
-                            Chars => Chars (Formal)),
-                        In_Present  => In_Present (Parent (Formal)),
-                        Out_Present => Out_Present (Parent (Formal)),
-                        Null_Exclusion_Present =>
-                          Null_Exclusion_Present (Parent (Formal)),
-                        Parameter_Type =>
-                          New_Occurrence_Of (Etype (Formal), Loc),
-                        Expression =>
-                          New_Copy_Tree (Expression (Parent (Formal)))),
-                     Formal_List);
-
-                  Next_Formal (Formal);
-               end loop;
-            end if;
-
-            Func_Spec :=
-              Make_Function_Specification (Loc,
-                Defining_Unit_Name       =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Chars (Subp)),
-                Parameter_Specifications => Formal_List,
-                Result_Definition        =>
-                  New_Occurrence_Of (Etype (Subp), Loc));
-
-            Func_Decl := Make_Subprogram_Declaration (Loc, Func_Spec);
             Append_To (Decl_List, Func_Decl);
 
             --  Build a wrapper body that calls the parent function. The body
@@ -9723,34 +9712,35 @@ package body Exp_Ch3 is
 
             Formal      := First_Formal (Subp);
             Par_Formal  := First_Formal (Alias (Subp));
-            Formal_Node := First (Formal_List);
+            Formal_Node :=
+              First (Parameter_Specifications (Specification (Func_Decl)));
 
             if Present (Formal) then
                Actual_List := New_List;
+
+               while Present (Formal) loop
+                  if Is_Controlling_Formal (Formal) then
+                     Append_To (Actual_List,
+                       Make_Type_Conversion (Loc,
+                         Subtype_Mark =>
+                           New_Occurrence_Of (Etype (Par_Formal), Loc),
+                         Expression   =>
+                           New_Occurrence_Of
+                             (Defining_Identifier (Formal_Node), Loc)));
+                  else
+                     Append_To
+                       (Actual_List,
+                        New_Occurrence_Of
+                          (Defining_Identifier (Formal_Node), Loc));
+                  end if;
+
+                  Next_Formal (Formal);
+                  Next_Formal (Par_Formal);
+                  Next (Formal_Node);
+               end loop;
             else
                Actual_List := No_List;
             end if;
-
-            while Present (Formal) loop
-               if Is_Controlling_Formal (Formal) then
-                  Append_To (Actual_List,
-                    Make_Type_Conversion (Loc,
-                      Subtype_Mark =>
-                        New_Occurrence_Of (Etype (Par_Formal), Loc),
-                      Expression   =>
-                        New_Occurrence_Of
-                          (Defining_Identifier (Formal_Node), Loc)));
-               else
-                  Append_To
-                    (Actual_List,
-                     New_Occurrence_Of
-                       (Defining_Identifier (Formal_Node), Loc));
-               end if;
-
-               Next_Formal (Formal);
-               Next_Formal (Par_Formal);
-               Next (Formal_Node);
-            end loop;
 
             Return_Stmt :=
               Make_Simple_Return_Statement (Loc,
@@ -9765,15 +9755,12 @@ package body Exp_Ch3 is
 
             Func_Body :=
               Make_Subprogram_Body (Loc,
-                Specification              => New_Copy_Tree (Func_Spec),
+                Specification              =>
+                  Make_Wrapper_Specification (Subp),
                 Declarations               => Empty_List,
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements => New_List (Return_Stmt)));
-
-            Set_Defining_Unit_Name
-              (Specification (Func_Body),
-                Make_Defining_Identifier (Loc, Chars (Subp)));
 
             Append_To (Body_List, Func_Body);
 
@@ -9781,11 +9768,12 @@ package body Exp_Ch3 is
             --  primitive operations list. We add the minimum decoration needed
             --  to override interface primitives.
 
-            Mutate_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
-            Set_Is_Wrapper (Defining_Unit_Name (Func_Spec));
+            Func_Id := Defining_Unit_Name (Specification (Func_Decl));
 
-            Override_Dispatching_Operation
-              (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec));
+            Mutate_Ekind (Func_Id, E_Function);
+            Set_Is_Wrapper (Func_Id);
+
+            Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;
 
       <<Next_Prim>>
@@ -10297,7 +10285,6 @@ package body Exp_Ch3 is
          if Present (Parent_Subp)
            and then Is_Null_Interface_Primitive (Parent_Subp)
          then
-            Formal_List := No_List;
             Formal := First_Formal (Subp);
 
             if Present (Formal) then
@@ -10311,16 +10298,16 @@ package body Exp_Ch3 is
                     New_Copy_Tree (Parent (Formal), New_Sloc => Loc);
 
                   --  Generate a new defining identifier for the new formal.
-                  --  required because New_Copy_Tree does not duplicate
+                  --  Required because New_Copy_Tree does not duplicate
                   --  semantic fields (except itypes).
 
                   Set_Defining_Identifier (New_Param_Spec,
                     Make_Defining_Identifier (Sloc (Formal),
                       Chars => Chars (Formal)));
 
-                  --  For controlling arguments we must change their
-                  --  parameter type to reference the tagged type (instead
-                  --  of the interface type)
+                  --  For controlling arguments we must change their parameter
+                  --  type to reference the tagged type (instead of the
+                  --  interface type).
 
                   if Is_Controlling_Formal (Formal) then
                      if Nkind (Parameter_Type (Parent (Formal))) = N_Identifier
@@ -10340,6 +10327,8 @@ package body Exp_Ch3 is
 
                   Next_Formal (Formal);
                end loop;
+            else
+               Formal_List := No_List;
             end if;
 
             Append_To (Decl_List,
