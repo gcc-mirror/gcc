@@ -10866,7 +10866,6 @@ package body Sem_Ch12 is
         and then Expander_Active
       then
          New_Subp := Make_Temporary (Sloc (Actual), 'S');
-         Set_Defining_Unit_Name (New_Spec, New_Subp);
       else
          New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
       end if;
