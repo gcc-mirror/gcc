@@ -2891,8 +2891,10 @@ pp_cxx_parameter_mapping (cxx_pretty_printer *pp, tree map)
 
       if (TYPE_P (parm))
 	pp->type_id (parm);
+      else if (tree name = DECL_NAME (TEMPLATE_PARM_DECL (parm)))
+	pp_cxx_tree_identifier (pp, name);
       else
-	pp_cxx_tree_identifier (pp, DECL_NAME (TEMPLATE_PARM_DECL (parm)));
+	pp->translate_string ("<unnamed>");
 
       pp_cxx_whitespace (pp);
       pp_equal (pp);
