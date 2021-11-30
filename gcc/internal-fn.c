@@ -3832,6 +3832,8 @@ commutative_binary_fn_p (internal_fn fn)
     case IFN_FMIN:
     case IFN_FMAX:
     case IFN_COMPLEX_MUL:
+    case IFN_UBSAN_CHECK_ADD:
+    case IFN_UBSAN_CHECK_MUL:
       return true;
 
     default:
