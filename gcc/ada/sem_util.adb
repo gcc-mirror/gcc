@@ -22062,6 +22062,13 @@ package body Sem_Util is
 
          Get_Current_Value_Condition (N, Op, Val);
 
+         --  If Get_Current_Value_Condition were to return Val = N, then the
+         --  recursion below could be infinite.
+
+         if Val = N then
+            raise Program_Error;
+         end if;
+
          if Known_Null (Val) then
             if Op = N_Op_Eq then
                return True;
