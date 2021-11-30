@@ -16323,6 +16323,38 @@
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
+;; PR target/100711: Split notl; vpbroadcastd; vpand as vpbroadcastd; vpandn
+(define_split
+  [(set (match_operand:VI48_128 0 "register_operand")
+	(and:VI48_128
+	  (vec_duplicate:VI48_128
+	    (not:<ssescalarmode>
+	      (match_operand:<ssescalarmode> 1 "register_operand")))
+	  (match_operand:VI48_128 2 "vector_operand")))]
+  "TARGET_SSE"
+  [(set (match_dup 3)
+	(vec_duplicate:VI48_128 (match_dup 1)))
+   (set (match_dup 0)
+	(and:VI48_128 (not:VI48_128 (match_dup 3))
+		      (match_dup 2)))]
+  "operands[3] = gen_reg_rtx (<MODE>mode);")
+
+;; PR target/100711: Split notl; vpbroadcastd; vpand as vpbroadcastd; vpandn
+(define_split
+  [(set (match_operand:VI124_AVX2 0 "register_operand")
+	(and:VI124_AVX2
+	  (vec_duplicate:VI124_AVX2
+	    (not:<ssescalarmode>
+	      (match_operand:<ssescalarmode> 1 "register_operand")))
+	  (match_operand:VI124_AVX2 2 "vector_operand")))]
+  "TARGET_AVX2"
+  [(set (match_dup 3)
+	(vec_duplicate:VI124_AVX2 (match_dup 1)))
+   (set (match_dup 0)
+	(and:VI124_AVX2 (not:VI124_AVX2 (match_dup 3))
+			(match_dup 2)))]
+  "operands[3] = gen_reg_rtx (<MODE>mode);")
+
 (define_insn "*andnot<mode>3_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VI48_AVX512VL
