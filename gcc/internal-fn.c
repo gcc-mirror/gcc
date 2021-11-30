@@ -3831,6 +3831,7 @@ commutative_binary_fn_p (internal_fn fn)
     case IFN_MULHRS:
     case IFN_FMIN:
     case IFN_FMAX:
+    case IFN_COMPLEX_MUL:
       return true;
 
     default:
