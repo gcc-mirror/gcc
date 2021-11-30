@@ -461,6 +461,7 @@ static const int cond_expr_maps[3][5] = {
 };
 static const int arg1_map[] = { 1, 1 };
 static const int arg2_map[] = { 1, 2 };
+static const int arg1_arg4_map[] = { 2, 1, 4 };
 
 /* For most SLP statements, there is a one-to-one mapping between
    gimple arguments and child nodes.  If that is not true for STMT,
@@ -493,6 +494,9 @@ vect_get_operand_map (const gimple *stmt, unsigned char swap = 0)
 
 	  case IFN_GATHER_LOAD:
 	    return arg1_map;
+
+	  case IFN_MASK_GATHER_LOAD:
+	    return arg1_arg4_map;
 
 	  default:
 	    break;
@@ -1000,7 +1004,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  else
 	    rhs_code = CALL_EXPR;
 
-	  if (cfn == CFN_MASK_LOAD || cfn == CFN_GATHER_LOAD)
+	  if (cfn == CFN_MASK_LOAD
+	      || cfn == CFN_GATHER_LOAD
+	      || cfn == CFN_MASK_GATHER_LOAD)
 	    load_p = true;
 	  else if ((internal_fn_p (cfn)
 		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
@@ -1229,7 +1235,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
         } /* Grouped access.  */
       else
 	{
-	  if (load_p && rhs_code != CFN_GATHER_LOAD)
+	  if (load_p
+	      && rhs_code != CFN_GATHER_LOAD
+	      && rhs_code != CFN_MASK_GATHER_LOAD)
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
@@ -1711,7 +1719,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
     {
       if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
 	gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD)
-		    || gimple_call_internal_p (stmt, IFN_GATHER_LOAD));
+		    || gimple_call_internal_p (stmt, IFN_GATHER_LOAD)
+		    || gimple_call_internal_p (stmt, IFN_MASK_GATHER_LOAD));
       else
 	{
 	  *max_nunits = this_max_nunits;

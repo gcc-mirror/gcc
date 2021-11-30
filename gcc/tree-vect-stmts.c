@@ -8595,6 +8595,7 @@ vectorizable_load (vec_info *vinfo,
     return false;
 
   tree mask = NULL_TREE, mask_vectype = NULL_TREE;
+  int mask_index = -1;
   if (gassign *assign = dyn_cast <gassign *> (stmt_info->stmt))
     {
       scalar_dest = gimple_assign_lhs (assign);
@@ -8626,12 +8627,12 @@ vectorizable_load (vec_info *vinfo,
       if (!scalar_dest)
 	return false;
 
-      int mask_index = internal_fn_mask_index (ifn);
+      mask_index = internal_fn_mask_index (ifn);
+      /* ??? For SLP the mask operand is always last.  */
+      if (mask_index >= 0 && slp_node)
+	mask_index = SLP_TREE_CHILDREN (slp_node).length () - 1;
       if (mask_index >= 0
-	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node,
-				      /* ??? For SLP we only have operands for
-					 the mask operand.  */
-				      slp_node ? 0 : mask_index,
+	  && !vect_check_scalar_mask (vinfo, stmt_info, slp_node, mask_index,
 				      &mask, NULL, &mask_dt, &mask_vectype))
 	return false;
     }
@@ -9393,8 +9394,14 @@ vectorizable_load (vec_info *vinfo,
   vec<tree> vec_offsets = vNULL;
   auto_vec<tree> vec_masks;
   if (mask)
-    vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
-		       mask, &vec_masks, mask_vectype, NULL_TREE);
+    {
+      if (slp_node)
+	vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[mask_index],
+			   &vec_masks);
+      else
+	vect_get_vec_defs_for_operand (vinfo, stmt_info, ncopies, mask,
+				       &vec_masks, mask_vectype);
+    }
   tree vec_mask = NULL_TREE;
   poly_uint64 group_elt = 0;
   for (j = 0; j < ncopies; j++)
