@@ -278,11 +278,12 @@ range_def_chain::register_dependency (tree name, tree dep, basic_block bb)
     {
       // Get the def chain for the operand.
       b = get_def_chain (dep);
-      // If there was one, copy it into result.
+      // If there was one, copy it into result.  Access def_chain directly
+      // as the get_def_chain request above could reallocate the vector.
       if (b)
-	bitmap_ior_into (src.bm, b);
+	bitmap_ior_into (m_def_chain[v].bm, b);
       // And copy the import list.
-      set_import (src, NULL_TREE, get_imports (dep));
+      set_import (m_def_chain[v], NULL_TREE, get_imports (dep));
     }
   else
     // Originated outside the block, so it is an import.
