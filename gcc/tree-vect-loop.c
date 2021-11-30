@@ -3185,9 +3185,22 @@ reduction_fn_for_scalar_code (code_helper code, internal_fn *reduc_fn)
 	return true;
 
       default:
-	break;
-    }
-  return false;
+	return false;
+      }
+  else
+    switch (combined_fn (code))
+      {
+      CASE_CFN_FMAX:
+	*reduc_fn = IFN_REDUC_FMAX;
+	return true;
+
+      CASE_CFN_FMIN:
+	*reduc_fn = IFN_REDUC_FMIN;
+	return true;
+
+      default:
+	return false;
+      }
 }
 
 /* If there is a neutral value X such that a reduction would not be affected
@@ -3223,9 +3236,18 @@ neutral_op_for_reduction (tree scalar_type, code_helper code,
 	return initial_value;
 
       default:
-	break;
+	return NULL_TREE;
       }
-  return NULL_TREE;
+  else
+    switch (combined_fn (code))
+      {
+      CASE_CFN_FMIN:
+      CASE_CFN_FMAX:
+	return initial_value;
+
+      default:
+	return NULL_TREE;
+      }
 }
 
 /* Error reporting helper for vect_is_simple_reduction below.  GIMPLE statement
@@ -3255,9 +3277,18 @@ needs_fold_left_reduction_p (tree type, code_helper code)
 	    return false;
 
 	  default:
-	    break;
+	    return !flag_associative_math;
 	  }
-      return !flag_associative_math;
+      else
+	switch (combined_fn (code))
+	  {
+	  CASE_CFN_FMIN:
+	  CASE_CFN_FMAX:
+	    return false;
+
+	  default:
+	    return !flag_associative_math;
+	  }
     }
 
   if (INTEGRAL_TYPE_P (type))

@@ -2519,6 +2519,8 @@
 (define_int_iterator FMAXMINV [UNSPEC_FMAXV UNSPEC_FMINV
 			       UNSPEC_FMAXNMV UNSPEC_FMINNMV])
 
+(define_int_iterator FMAXMINNMV [UNSPEC_FMAXNMV UNSPEC_FMINNMV])
+
 (define_int_iterator SVE_INT_ADDV [UNSPEC_SADDV UNSPEC_UADDV])
 
 (define_int_iterator USADDLP [UNSPEC_SADDLP UNSPEC_UADDLP])
@@ -3225,8 +3227,10 @@
 
 (define_int_attr fmaxmin [(UNSPEC_FMAX "fmax_nan")
 			  (UNSPEC_FMAXNM "fmax")
+			  (UNSPEC_FMAXNMV "fmax")
 			  (UNSPEC_FMIN "fmin_nan")
 			  (UNSPEC_FMINNM "fmin")
+			  (UNSPEC_FMINNMV "fmin")
 			  (UNSPEC_COND_FMAXNM "fmax")
 			  (UNSPEC_COND_FMINNM "fmin")])
 

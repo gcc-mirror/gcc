@@ -3592,8 +3592,8 @@
 ;; gimple_fold'd to the IFN_REDUC_(MAX|MIN) function.  (This is FP smax/smin).
 (define_expand "reduc_<optab>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
-   (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")]
-		  FMAXMINV)]
+   (unspec:<VEL> [(match_operand:VHSDF 1 "register_operand")]
+		 FMAXMINV)]
   "TARGET_SIMD"
   {
     rtx elt = aarch64_endian_lane_rtx (<MODE>mode, 0);
@@ -3601,6 +3601,17 @@
     emit_insn (gen_aarch64_reduc_<optab>_internal<mode> (scratch,
 							 operands[1]));
     emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
+    DONE;
+  }
+)
+
+(define_expand "reduc_<fmaxmin>_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (unspec:<VEL> [(match_operand:VHSDF 1 "register_operand")]
+		 FMAXMINNMV)]
+  "TARGET_SIMD"
+  {
+    emit_insn (gen_reduc_<optab>_scal_<mode> (operands[0], operands[1]));
     DONE;
   }
 )

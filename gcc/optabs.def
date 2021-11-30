@@ -335,6 +335,8 @@ OPTAB_D (fmax_optab, "fmax$a3")
 OPTAB_D (fmin_optab, "fmin$a3")
 
 /* Vector reduction to a scalar.  */
+OPTAB_D (reduc_fmax_scal_optab, "reduc_fmax_scal_$a")
+OPTAB_D (reduc_fmin_scal_optab, "reduc_fmin_scal_$a")
 OPTAB_D (reduc_smax_scal_optab, "reduc_smax_scal_$a")
 OPTAB_D (reduc_smin_scal_optab, "reduc_smin_scal_$a")
 OPTAB_D (reduc_plus_scal_optab, "reduc_plus_scal_$a")

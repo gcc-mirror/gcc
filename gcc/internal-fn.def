@@ -216,6 +216,10 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (REDUC_MAX, ECF_CONST | ECF_NOTHROW, first,
 			      reduc_smax_scal, reduc_umax_scal, unary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (REDUC_MIN, ECF_CONST | ECF_NOTHROW, first,
 			      reduc_smin_scal, reduc_umin_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_FMAX, ECF_CONST | ECF_NOTHROW,
+		       reduc_fmax_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_FMIN, ECF_CONST | ECF_NOTHROW,
+		       reduc_fmin_scal, unary)
 DEF_INTERNAL_OPTAB_FN (REDUC_AND, ECF_CONST | ECF_NOTHROW,
 		       reduc_and_scal, unary)
 DEF_INTERNAL_OPTAB_FN (REDUC_IOR, ECF_CONST | ECF_NOTHROW,
