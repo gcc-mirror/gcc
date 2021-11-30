@@ -2372,8 +2372,7 @@ vect_is_store_elt_extraction (vect_cost_for_stmt kind, stmt_vec_info stmt_info)
 inline bool
 vect_is_reduction (stmt_vec_info stmt_info)
 {
-  return (STMT_VINFO_REDUC_DEF (stmt_info)
-	  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)));
+  return STMT_VINFO_REDUC_IDX (stmt_info) >= 0;
 }
 
 /* If STMT_INFO describes a reduction, return the vect_reduction_type
