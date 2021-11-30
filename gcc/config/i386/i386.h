@@ -1279,6 +1279,8 @@ enum reg_class
   reg_class_subset_p ((CLASS), FLOAT_REGS)
 #define SSE_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), ALL_SSE_REGS)
+#define INT_SSE_CLASS_P(CLASS) \
+  reg_class_subset_p ((CLASS), INT_SSE_REGS)
 #define MMX_CLASS_P(CLASS) \
   ((CLASS) == MMX_REGS)
 #define MASK_CLASS_P(CLASS) \

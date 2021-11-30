@@ -19214,9 +19214,17 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
       return NO_REGS;
     }
 
-  /* Prefer SSE regs only, if we can use them for math.  */
+  /* Prefer SSE if we can use them for math.  Also allow integer regs
+     when moves between register units are cheap.  */
   if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-    return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
+    {
+      if (TARGET_INTER_UNIT_MOVES_FROM_VEC
+	  && TARGET_INTER_UNIT_MOVES_TO_VEC
+	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode))
+	return INT_SSE_CLASS_P (regclass) ? regclass : NO_REGS;
+      else
+	return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
+    }
 
   /* Generally when we see PLUS here, it's the function invariant
      (plus soft-fp const_int).  Which can only be computed into general
