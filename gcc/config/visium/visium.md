@@ -792,7 +792,7 @@
 		  (match_operand:QHI 2 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (plus:QHI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -850,7 +850,7 @@
 		 (match_operand:SI 2 "add_operand"      " L,r,J")))]
   "ok_for_simple_arith_logic_operands (operands, SImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (plus:SI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -912,7 +912,7 @@
 		 (match_operand:DI 2 "add_operand"      " L,J, r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(const_int 0)]
 {
   visium_split_double_add (PLUS, operands[0], operands[1], operands[2]);
@@ -1007,7 +1007,7 @@
 		   (match_operand:QHI 2 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (minus:QHI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1064,7 +1064,7 @@
 		  (match_operand:SI 2 "add_operand"      " L,r, J")))]
   "ok_for_simple_arith_logic_operands (operands, SImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (minus:SI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1125,7 +1125,7 @@
 		  (match_operand:DI 2 "add_operand"      " L,J, r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(const_int 0)]
 {
   visium_split_double_add (MINUS, operands[0], operands[1], operands[2]);
@@ -1209,7 +1209,7 @@
 	(neg:I (match_operand:I 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (neg:I (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1253,7 +1253,7 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(const_int 0)]
 {
   visium_split_double_add (MINUS, operands[0], const0_rtx, operands[1]);
@@ -1415,7 +1415,7 @@
 	       (match_operand:I 2 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (and:I (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1453,7 +1453,7 @@
 	       (match_operand:I 2 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ior:I (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1491,7 +1491,7 @@
 	       (match_operand:I 2 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (xor:I (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1527,7 +1527,7 @@
 	(not:I (match_operand:I 1 "reg_or_0_operand" "rO")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (not:I (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1563,7 +1563,7 @@
 		  (match_operand:QI 2 "reg_or_shift_operand" "r,K")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ashift:I (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1622,7 +1622,7 @@
 		    (match_operand:QI 2 "reg_or_shift_operand" "r,K")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ashiftrt:I (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1683,7 +1683,7 @@
 		    (match_operand:QI 2 "reg_or_shift_operand" "r,K")))]
   "ok_for_simple_arith_logic_operands (operands, <MODE>mode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (lshiftrt:I (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1740,7 +1740,7 @@
 	(truncate:QI (match_operand:HI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, QImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (truncate:QI (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1764,7 +1764,7 @@
 	(truncate:HI (match_operand:SI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, HImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (truncate:HI (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1788,7 +1788,7 @@
 	(truncate:SI (match_operand:DI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, SImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (truncate:SI (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1822,7 +1822,7 @@
 	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, HImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (sign_extend:HI (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1846,7 +1846,7 @@
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, SImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
 	      (clobber (reg:CC R_FLAGS))])]
   ""
@@ -1870,7 +1870,7 @@
 	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, SImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_operand:SI 0 "register_operand" "")
 		   (sign_extend:SI (match_operand:HI 1 "register_operand" "")))
 	      (clobber (reg:CC R_FLAGS))])]
@@ -1895,7 +1895,7 @@
         (sign_extend:DI (match_operand:SI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 3) (match_dup 1))
 	      (clobber (reg:CC R_FLAGS))])
    (parallel [(set (match_dup 2)
@@ -1931,7 +1931,7 @@
         (zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, HImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ashift:HI (match_dup 2) (const_int 8)))
 	      (clobber (reg:CC R_FLAGS))])
@@ -1953,7 +1953,7 @@
         (zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, SImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 0)
 		   (ashift:SI (match_dup 2) (const_int 24)))
 	      (clobber (reg:CC R_FLAGS))])
@@ -1982,7 +1982,7 @@
         (zero_extend:DI (match_operand:SI 1 "register_operand" "r")))]
   "ok_for_simple_arith_logic_operands (operands, DImode)"
   "#"
-  "&& reload_completed"
+  "reload_completed"
   [(parallel [(set (match_dup 3) (match_dup 1))
 	      (clobber (reg:CC R_FLAGS))])
    (set (match_dup 2) (const_int 0))]
