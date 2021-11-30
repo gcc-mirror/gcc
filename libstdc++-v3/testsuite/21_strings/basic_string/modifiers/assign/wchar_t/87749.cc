@@ -72,8 +72,8 @@ int main()
 
   string s = L"PR libstdc++/87749 a string that is longer than a short string";
   const auto ptr = s.c_str();
-  oom = true;
   string ss;
+  oom = true;
   ss = std::move(s); // allocators are equal, should not allocate new storage
   VERIFY( ss.c_str() == ptr );
 }

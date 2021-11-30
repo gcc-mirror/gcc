@@ -42,7 +42,9 @@ void test01()
 
   tstring c(std::move(b));
   VERIFY( c.size() == 1 && c[0] == '1' );
-  VERIFY( b.size() == 0 );
+#if ! _GLIBCXX_FULLY_DYNAMIC_STRING
+  VERIFY( b.size() == 0 ); // not guaranteed by the standard
+#endif
 }
 
 int main()
