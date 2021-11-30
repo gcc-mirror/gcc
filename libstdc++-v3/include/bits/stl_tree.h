@@ -1669,6 +1669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_move_data(__x, true_type());
       else
 	{
+	  constexpr bool __move = !__move_if_noexcept_cond<value_type>::value;
 	  _Alloc_node __an(*this);
 	  auto __lbd =
 	    [&__an](const value_type& __cval)
@@ -1677,6 +1678,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return __an(std::move_if_noexcept(__val));
 	    };
 	  _M_root() = _M_copy(__x, __lbd);
+	  if _GLIBCXX17_CONSTEXPR (__move)
+	    __x.clear();
 	}
     }
 
