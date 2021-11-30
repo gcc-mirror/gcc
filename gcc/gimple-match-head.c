@@ -96,7 +96,7 @@ convert_conditional_op (gimple_match_op *orig_op,
     ifn = get_conditional_internal_fn ((tree_code) orig_op->code);
   else
     {
-      combined_fn cfn = orig_op->code;
+      auto cfn = combined_fn (orig_op->code);
       if (!internal_fn_p (cfn))
 	return false;
       ifn = get_conditional_internal_fn (as_internal_fn (cfn));
@@ -206,10 +206,10 @@ gimple_resimplify1 (gimple_seq *seq, gimple_match_op *res_op,
       tree tem = NULL_TREE;
       if (res_op->code.is_tree_code ())
 	{
-	  tree_code code = res_op->code;
+	  auto code = tree_code (res_op->code);
 	  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
 	      && TREE_CODE_LENGTH (code) == 1)
-	    tem = const_unop (res_op->code, res_op->type, res_op->ops[0]);
+	    tem = const_unop (code, res_op->type, res_op->ops[0]);
 	}
       else
 	tem = fold_const_call (combined_fn (res_op->code), res_op->type,
@@ -272,10 +272,10 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
       tree tem = NULL_TREE;
       if (res_op->code.is_tree_code ())
 	{
-	  tree_code code = res_op->code;
+	  auto code = tree_code (res_op->code);
 	  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
 	      && TREE_CODE_LENGTH (code) == 2)
-	    tem = const_binop (res_op->code, res_op->type,
+	    tem = const_binop (code, res_op->type,
 			       res_op->ops[0], res_op->ops[1]);
 	}
       else
@@ -294,15 +294,18 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
 
   /* Canonicalize operand order.  */
   bool canonicalized = false;
-  if (res_op->code.is_tree_code ()
-      && (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison
-	  || commutative_tree_code (res_op->code))
-      && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
+  if (res_op->code.is_tree_code ())
     {
-      std::swap (res_op->ops[0], res_op->ops[1]);
-      if (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison)
-	res_op->code = swap_tree_comparison (res_op->code);
-      canonicalized = true;
+      auto code = tree_code (res_op->code);
+      if ((TREE_CODE_CLASS (code) == tcc_comparison
+	   || commutative_tree_code (code))
+	  && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
+	{
+	  std::swap (res_op->ops[0], res_op->ops[1]);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison)
+	    res_op->code = swap_tree_comparison (code);
+	  canonicalized = true;
+	}
     }
 
   /* Limit recursion, see gimple_resimplify1.  */
@@ -350,10 +353,10 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
       tree tem = NULL_TREE;
       if (res_op->code.is_tree_code ())
 	{
-	  tree_code code = res_op->code;
+	  auto code = tree_code (res_op->code);
 	  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
 	      && TREE_CODE_LENGTH (code) == 3)
-	    tem = fold_ternary/*_to_constant*/ (res_op->code, res_op->type,
+	    tem = fold_ternary/*_to_constant*/ (code, res_op->type,
 						res_op->ops[0], res_op->ops[1],
 						res_op->ops[2]);
 	}
@@ -374,7 +377,7 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
   /* Canonicalize operand order.  */
   bool canonicalized = false;
   if (res_op->code.is_tree_code ()
-      && commutative_ternary_tree_code (res_op->code)
+      && commutative_ternary_tree_code (tree_code (res_op->code))
       && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
     {
       std::swap (res_op->ops[0], res_op->ops[1]);
@@ -599,6 +602,7 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 
   if (res_op->code.is_tree_code ())
     {
+      auto code = tree_code (res_op->code);
       if (!res)
 	{
 	  if (gimple_in_ssa_p (cfun))
@@ -607,7 +611,7 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	    res = create_tmp_reg (res_op->type);
 	}
       maybe_build_generic_op (res_op);
-      gimple *new_stmt = gimple_build_assign (res, res_op->code,
+      gimple *new_stmt = gimple_build_assign (res, code,
 					      res_op->op_or_null (0),
 					      res_op->op_or_null (1),
 					      res_op->op_or_null (2));
@@ -617,7 +621,7 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
   else
     {
       gcc_assert (num_ops != 0);
-      combined_fn fn = res_op->code;
+      auto fn = combined_fn (res_op->code);
       gcall *new_stmt = NULL;
       if (internal_fn_p (fn))
 	{
@@ -1058,15 +1062,16 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	   || cond_valueized)
 	  && res_op2.code.is_tree_code ())
 	{
-	  if (TREE_CODE_CLASS ((tree_code) res_op2.code) == tcc_comparison)
+	  auto code = tree_code (res_op2.code);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison)
 	    {
 	      valueized = true;
-	      return build2 (res_op2.code, TREE_TYPE (op),
+	      return build2 (code, TREE_TYPE (op),
 			     res_op2.ops[0], res_op2.ops[1]);
 	    }
-	  else if (res_op2.code == SSA_NAME
-		   || res_op2.code == INTEGER_CST
-		   || res_op2.code == VECTOR_CST)
+	  else if (code == SSA_NAME
+		   || code == INTEGER_CST
+		   || code == VECTOR_CST)
 	    {
 	      valueized = true;
 	      return res_op2.ops[0];

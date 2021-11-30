@@ -5775,18 +5775,19 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
       gcc_assert (res_op->code.is_tree_code ());
-      if (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison
+      auto code = tree_code (res_op->code);
+      if (TREE_CODE_CLASS (code) == tcc_comparison
 	  /* GIMPLE_CONDs condition may not throw.  */
 	  && (!flag_exceptions
 	      || !cfun->can_throw_non_call_exceptions
-	      || !operation_could_trap_p (res_op->code,
+	      || !operation_could_trap_p (code,
 					  FLOAT_TYPE_P (TREE_TYPE (ops[0])),
 					  false, NULL_TREE)))
-	gimple_cond_set_condition (cond_stmt, res_op->code, ops[0], ops[1]);
-      else if (res_op->code == SSA_NAME)
+	gimple_cond_set_condition (cond_stmt, code, ops[0], ops[1]);
+      else if (code == SSA_NAME)
 	gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
 				   build_zero_cst (TREE_TYPE (ops[0])));
-      else if (res_op->code == INTEGER_CST)
+      else if (code == INTEGER_CST)
 	{
 	  if (integer_zerop (ops[0]))
 	    gimple_cond_make_false (cond_stmt);
@@ -5817,11 +5818,12 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
   else if (is_gimple_assign (stmt)
 	   && res_op->code.is_tree_code ())
     {
+      auto code = tree_code (res_op->code);
       if (!inplace
-	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (res_op->code))
+	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (code))
 	{
 	  maybe_build_generic_op (res_op);
-	  gimple_assign_set_rhs_with_ops (gsi, res_op->code,
+	  gimple_assign_set_rhs_with_ops (gsi, code,
 					  res_op->op_or_null (0),
 					  res_op->op_or_null (1),
 					  res_op->op_or_null (2));
@@ -5838,7 +5840,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
     }
   else if (res_op->code.is_fn_code ()
-	   && gimple_call_combined_fn (stmt) == res_op->code)
+	   && gimple_call_combined_fn (stmt) == combined_fn (res_op->code))
     {
       gcc_assert (num_ops == gimple_call_num_args (stmt));
       for (unsigned int i = 0; i < num_ops; ++i)

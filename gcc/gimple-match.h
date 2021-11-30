@@ -31,8 +31,8 @@ public:
   code_helper () {}
   code_helper (tree_code code) : rep ((int) code) {}
   code_helper (combined_fn fn) : rep (-(int) fn) {}
-  operator tree_code () const { return (tree_code) rep; }
-  operator combined_fn () const { return (combined_fn) -rep; }
+  explicit operator tree_code () const { return (tree_code) rep; }
+  explicit operator combined_fn () const { return (combined_fn) -rep; }
   explicit operator internal_fn () const;
   explicit operator built_in_function () const;
   bool is_tree_code () const { return rep > 0; }
@@ -40,6 +40,11 @@ public:
   bool is_internal_fn () const;
   bool is_builtin_fn () const;
   int get_rep () const { return rep; }
+  bool operator== (const code_helper &other) { return rep == other.rep; }
+  bool operator!= (const code_helper &other) { return rep != other.rep; }
+  bool operator== (tree_code c) { return rep == code_helper (c).rep; }
+  bool operator!= (tree_code c) { return rep != code_helper (c).rep; }
+
 private:
   int rep;
 };
