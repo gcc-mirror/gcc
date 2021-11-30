@@ -1,3 +1,12 @@
+2021-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103130
+	* lex.c (cpp_directive_only_process): Treat even \*/ as end of block
+	comment.
+
 2021-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
