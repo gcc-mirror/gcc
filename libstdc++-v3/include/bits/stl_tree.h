@@ -1644,9 +1644,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_move_data(__x, true_type());
       else
 	{
+	  constexpr bool __move = !__move_if_noexcept_cond<value_type>::value;
 	  _Alloc_node __an(*this);
-	  _M_root() =
-	    _M_copy<!__move_if_noexcept_cond<value_type>::value>(__x, __an);
+	  _M_root() = _M_copy<__move>(__x, __an);
+	  if _GLIBCXX17_CONSTEXPR (__move)
+	    __x.clear();
 	}
     }
 
