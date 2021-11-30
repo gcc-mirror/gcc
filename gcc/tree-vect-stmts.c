@@ -3202,7 +3202,6 @@ vectorizable_call (vec_info *vinfo,
   int ndts = ARRAY_SIZE (dt);
   int ncopies, j;
   auto_vec<tree, 8> vargs;
-  auto_vec<tree, 8> orig_vargs;
   enum { NARROW, NONE, WIDEN } modifier;
   size_t i, nargs;
   tree lhs;
@@ -3426,6 +3425,8 @@ vectorizable_call (vec_info *vinfo,
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
 
+  int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
+  internal_fn cond_fn = get_conditional_internal_fn (ifn);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -3446,14 +3447,33 @@ vectorizable_call (vec_info *vinfo,
 	record_stmt_cost (cost_vec, ncopies / 2,
 			  vec_promote_demote, stmt_info, 0, vect_body);
 
-      if (loop_vinfo && mask_opno >= 0)
+      if (loop_vinfo
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	  && (reduc_idx >= 0 || mask_opno >= 0))
 	{
-	  unsigned int nvectors = (slp_node
-				   ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node)
-				   : ncopies);
-	  tree scalar_mask = gimple_call_arg (stmt_info->stmt, mask_opno);
-	  vect_record_loop_mask (loop_vinfo, masks, nvectors,
-				 vectype_out, scalar_mask);
+	  if (reduc_idx >= 0
+	      && (cond_fn == IFN_LAST
+		  || !direct_internal_fn_supported_p (cond_fn, vectype_out,
+						      OPTIMIZE_FOR_SPEED)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop because no"
+				 " conditional operation is available.\n");
+	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	    }
+	  else
+	    {
+	      unsigned int nvectors
+		= (slp_node
+		   ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node)
+		   : ncopies);
+	      tree scalar_mask = NULL_TREE;
+	      if (mask_opno >= 0)
+		scalar_mask = gimple_call_arg (stmt_info->stmt, mask_opno);
+	      vect_record_loop_mask (loop_vinfo, masks, nvectors,
+				     vectype_out, scalar_mask);
+	    }
 	}
       return true;
     }
@@ -3468,12 +3488,17 @@ vectorizable_call (vec_info *vinfo,
   vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   bool masked_loop_p = loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+  unsigned int vect_nargs = nargs;
+  if (masked_loop_p && reduc_idx >= 0)
+    {
+      ifn = cond_fn;
+      vect_nargs += 2;
+    }
 
   if (modifier == NONE || ifn != IFN_LAST)
     {
       tree prev_res = NULL_TREE;
-      vargs.safe_grow (nargs, true);
-      orig_vargs.safe_grow (nargs, true);
+      vargs.safe_grow (vect_nargs, true);
       auto_vec<vec<tree> > vec_defs (nargs);
       for (j = 0; j < ncopies; ++j)
 	{
@@ -3488,12 +3513,23 @@ vectorizable_call (vec_info *vinfo,
 	      /* Arguments are ready.  Create the new vector stmt.  */
 	      FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_oprnd0)
 		{
+		  int varg = 0;
+		  if (masked_loop_p && reduc_idx >= 0)
+		    {
+		      unsigned int vec_num = vec_oprnds0.length ();
+		      /* Always true for SLP.  */
+		      gcc_assert (ncopies == 1);
+		      vargs[varg++] = vect_get_loop_mask (gsi, masks, vec_num,
+							  vectype_out, i);
+		    }
 		  size_t k;
 		  for (k = 0; k < nargs; k++)
 		    {
 		      vec<tree> vec_oprndsk = vec_defs[k];
-		      vargs[k] = vec_oprndsk[i];
+		      vargs[varg++] = vec_oprndsk[i];
 		    }
+		  if (masked_loop_p && reduc_idx >= 0)
+		    vargs[varg++] = vargs[reduc_idx + 1];
 		  gimple *new_stmt;
 		  if (modifier == NARROW)
 		    {
@@ -3546,6 +3582,10 @@ vectorizable_call (vec_info *vinfo,
 	      continue;
 	    }
 
+	  int varg = 0;
+	  if (masked_loop_p && reduc_idx >= 0)
+	    vargs[varg++] = vect_get_loop_mask (gsi, masks, ncopies,
+						vectype_out, j);
 	  for (i = 0; i < nargs; i++)
 	    {
 	      op = gimple_call_arg (stmt, i);
@@ -3556,8 +3596,10 @@ vectorizable_call (vec_info *vinfo,
 						 op, &vec_defs[i],
 						 vectypes[i]);
 		}
-	      orig_vargs[i] = vargs[i] = vec_defs[i][j];
+	      vargs[varg++] = vec_defs[i][j];
 	    }
+	  if (masked_loop_p && reduc_idx >= 0)
+	    vargs[varg++] = vargs[reduc_idx + 1];
 
 	  if (mask_opno >= 0 && masked_loop_p)
 	    {

@@ -1267,3 +1267,110 @@ optimize_successive_divisions_p (tree divisor, tree inner_div)
     }
   return true;
 }
+
+/* Return a canonical form for CODE when operating on TYPE.  The idea
+   is to remove redundant ways of representing the same operation so
+   that code_helpers can be hashed and compared for equality.
+
+   The only current canonicalization is to replace built-in functions
+   with internal functions, in cases where internal-fn.def defines
+   such an internal function.
+
+   Note that the new code_helper cannot necessarily be used in place of
+   the original code_helper.  For example, the new code_helper might be
+   an internal function that the target does not support.  */
+
+code_helper
+canonicalize_code (code_helper code, tree type)
+{
+  if (code.is_fn_code ())
+    return associated_internal_fn (combined_fn (code), type);
+  return code;
+}
+
+/* Return true if CODE is a binary operation and if CODE is commutative when
+   operating on type TYPE.  */
+
+bool
+commutative_binary_op_p (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return commutative_tree_code (tree_code (code));
+  auto cfn = combined_fn (code);
+  return commutative_binary_fn_p (associated_internal_fn (cfn, type));
+}
+
+/* Return true if CODE represents a ternary operation and if the first two
+   operands are commutative when CODE is operating on TYPE.  */
+
+bool
+commutative_ternary_op_p (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return commutative_ternary_tree_code (tree_code (code));
+  auto cfn = combined_fn (code);
+  return commutative_ternary_fn_p (associated_internal_fn (cfn, type));
+}
+
+/* If CODE is commutative in two consecutive operands, return the
+   index of the first, otherwise return -1.  */
+
+int
+first_commutative_argument (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    {
+      auto tcode = tree_code (code);
+      if (commutative_tree_code (tcode)
+	  || commutative_ternary_tree_code (tcode))
+	return 0;
+      return -1;
+    }
+  auto cfn = combined_fn (code);
+  return first_commutative_argument (associated_internal_fn (cfn, type));
+}
+
+/* Return true if CODE is a binary operation that is associative when
+   operating on type TYPE.  */
+
+bool
+associative_binary_op_p (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return associative_tree_code (tree_code (code));
+  auto cfn = combined_fn (code);
+  return associative_binary_fn_p (associated_internal_fn (cfn, type));
+}
+
+/* Return true if the target directly supports operation CODE on type TYPE.
+   QUERY_TYPE acts as for optab_for_tree_code.  */
+
+bool
+directly_supported_p (code_helper code, tree type, optab_subtype query_type)
+{
+  if (code.is_tree_code ())
+    {
+      direct_optab optab = optab_for_tree_code (tree_code (code), type,
+						query_type);
+      return (optab != unknown_optab
+	      && optab_handler (optab, TYPE_MODE (type)) != CODE_FOR_nothing);
+    }
+  gcc_assert (query_type == optab_default
+	      || (query_type == optab_vector && VECTOR_TYPE_P (type))
+	      || (query_type == optab_scalar && !VECTOR_TYPE_P (type)));
+  internal_fn ifn = associated_internal_fn (combined_fn (code), type);
+  return (direct_internal_fn_p (ifn)
+	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
+}
+
+/* A wrapper around the internal-fn.c versions of get_conditional_internal_fn
+   for a code_helper CODE operating on type TYPE.  */
+
+internal_fn
+get_conditional_internal_fn (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return get_conditional_internal_fn (tree_code (code));
+  auto cfn = combined_fn (code);
+  return get_conditional_internal_fn (associated_internal_fn (cfn, type));
+}

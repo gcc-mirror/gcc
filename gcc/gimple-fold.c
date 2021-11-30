@@ -8777,6 +8777,48 @@ gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
   return res;
 }
 
+/* Build CODE (OP0) with a result of type TYPE (or no result if TYPE is
+   void) with location LOC, simplifying it first if possible.  Returns the
+   built expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+	      tree type, tree op0)
+{
+  if (code.is_tree_code ())
+    return gimple_build (seq, loc, tree_code (code), type, op0);
+  return gimple_build (seq, loc, combined_fn (code), type, op0);
+}
+
+/* Build CODE (OP0, OP1) with a result of type TYPE (or no result if TYPE is
+   void) with location LOC, simplifying it first if possible.  Returns the
+   built expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+	      tree type, tree op0, tree op1)
+{
+  if (code.is_tree_code ())
+    return gimple_build (seq, loc, tree_code (code), type, op0, op1);
+  return gimple_build (seq, loc, combined_fn (code), type, op0, op1);
+}
+
+/* Build CODE (OP0, OP1, OP2) with a result of type TYPE (or no result if TYPE
+   is void) with location LOC, simplifying it first if possible.  Returns the
+   built expression value (or NULL_TREE if TYPE is void) and appends statements
+   possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+	      tree type, tree op0, tree op1, tree op2)
+{
+  if (code.is_tree_code ())
+    return gimple_build (seq, loc, tree_code (code), type, op0, op1, op2);
+  return gimple_build (seq, loc, combined_fn (code), type, op0, op1, op2);
+}
+
 /* Build the conversion (TYPE) OP with a result of type TYPE
    with location LOC if such conversion is neccesary in GIMPLE,
    simplifying it first.
