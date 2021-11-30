@@ -7846,6 +7846,24 @@ vectorizable_phi (vec_info *,
 			       "incompatible vector types for invariants\n");
 	    return false;
 	  }
+	else if (SLP_TREE_DEF_TYPE (child) == vect_internal_def
+		 && !useless_type_conversion_p (vectype,
+						SLP_TREE_VECTYPE (child)))
+	  {
+	    /* With bools we can have mask and non-mask precision vectors,
+	       while pattern recog is supposed to guarantee consistency here
+	       bugs in it can cause mismatches (PR103489 for example).
+	       Deal with them here instead of ICEing later.  */
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "incompatible vector type setup from "
+			       "bool pattern detection\n");
+	    gcc_checking_assert
+	      (VECTOR_BOOLEAN_TYPE_P (SLP_TREE_VECTYPE (child))
+	       != VECTOR_BOOLEAN_TYPE_P (vectype));
+	    return false;
+	  }
+
       /* For single-argument PHIs assume coalescing which means zero cost
 	 for the scalar and the vector PHIs.  This avoids artificially
 	 favoring the vector path (but may pessimize it in some cases).  */
