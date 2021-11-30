@@ -45,22 +45,22 @@ ASM_SYMBOL(__tsan_trace_switch_thunk):
   # All XMM registers are caller-saved.
   sub $0x100, %rsp
   CFI_ADJUST_CFA_OFFSET(0x100)
-  vmovdqu %xmm0, 0x0(%rsp)
-  vmovdqu %xmm1, 0x10(%rsp)
-  vmovdqu %xmm2, 0x20(%rsp)
-  vmovdqu %xmm3, 0x30(%rsp)
-  vmovdqu %xmm4, 0x40(%rsp)
-  vmovdqu %xmm5, 0x50(%rsp)
-  vmovdqu %xmm6, 0x60(%rsp)
-  vmovdqu %xmm7, 0x70(%rsp)
-  vmovdqu %xmm8, 0x80(%rsp)
-  vmovdqu %xmm9, 0x90(%rsp)
-  vmovdqu %xmm10, 0xa0(%rsp)
-  vmovdqu %xmm11, 0xb0(%rsp)
-  vmovdqu %xmm12, 0xc0(%rsp)
-  vmovdqu %xmm13, 0xd0(%rsp)
-  vmovdqu %xmm14, 0xe0(%rsp)
-  vmovdqu %xmm15, 0xf0(%rsp)
+  movdqu %xmm0, 0x0(%rsp)
+  movdqu %xmm1, 0x10(%rsp)
+  movdqu %xmm2, 0x20(%rsp)
+  movdqu %xmm3, 0x30(%rsp)
+  movdqu %xmm4, 0x40(%rsp)
+  movdqu %xmm5, 0x50(%rsp)
+  movdqu %xmm6, 0x60(%rsp)
+  movdqu %xmm7, 0x70(%rsp)
+  movdqu %xmm8, 0x80(%rsp)
+  movdqu %xmm9, 0x90(%rsp)
+  movdqu %xmm10, 0xa0(%rsp)
+  movdqu %xmm11, 0xb0(%rsp)
+  movdqu %xmm12, 0xc0(%rsp)
+  movdqu %xmm13, 0xd0(%rsp)
+  movdqu %xmm14, 0xe0(%rsp)
+  movdqu %xmm15, 0xf0(%rsp)
   # Align stack frame.
   push %rbx  # non-scratch
   CFI_ADJUST_CFA_OFFSET(8)
@@ -78,22 +78,22 @@ ASM_SYMBOL(__tsan_trace_switch_thunk):
   pop %rbx
   CFI_ADJUST_CFA_OFFSET(-8)
   # Restore scratch registers.
-  vmovdqu 0x0(%rsp), %xmm0
-  vmovdqu 0x10(%rsp), %xmm1
-  vmovdqu 0x20(%rsp), %xmm2
-  vmovdqu 0x30(%rsp), %xmm3
-  vmovdqu 0x40(%rsp), %xmm4
-  vmovdqu 0x50(%rsp), %xmm5
-  vmovdqu 0x60(%rsp), %xmm6
-  vmovdqu 0x70(%rsp), %xmm7
-  vmovdqu 0x80(%rsp), %xmm8
-  vmovdqu 0x90(%rsp), %xmm9
-  vmovdqu 0xa0(%rsp), %xmm10
-  vmovdqu 0xb0(%rsp), %xmm11
-  vmovdqu 0xc0(%rsp), %xmm12
-  vmovdqu 0xd0(%rsp), %xmm13
-  vmovdqu 0xe0(%rsp), %xmm14
-  vmovdqu 0xf0(%rsp), %xmm15
+  movdqu 0x0(%rsp), %xmm0
+  movdqu 0x10(%rsp), %xmm1
+  movdqu 0x20(%rsp), %xmm2
+  movdqu 0x30(%rsp), %xmm3
+  movdqu 0x40(%rsp), %xmm4
+  movdqu 0x50(%rsp), %xmm5
+  movdqu 0x60(%rsp), %xmm6
+  movdqu 0x70(%rsp), %xmm7
+  movdqu 0x80(%rsp), %xmm8
+  movdqu 0x90(%rsp), %xmm9
+  movdqu 0xa0(%rsp), %xmm10
+  movdqu 0xb0(%rsp), %xmm11
+  movdqu 0xc0(%rsp), %xmm12
+  movdqu 0xd0(%rsp), %xmm13
+  movdqu 0xe0(%rsp), %xmm14
+  movdqu 0xf0(%rsp), %xmm15
   add $0x100, %rsp
   CFI_ADJUST_CFA_OFFSET(-0x100)
   pop %r11
@@ -163,22 +163,22 @@ ASM_SYMBOL(__tsan_report_race_thunk):
   # All XMM registers are caller-saved.
   sub $0x100, %rsp
   CFI_ADJUST_CFA_OFFSET(0x100)
-  vmovdqu %xmm0, 0x0(%rsp)
-  vmovdqu %xmm1, 0x10(%rsp)
-  vmovdqu %xmm2, 0x20(%rsp)
-  vmovdqu %xmm3, 0x30(%rsp)
-  vmovdqu %xmm4, 0x40(%rsp)
-  vmovdqu %xmm5, 0x50(%rsp)
-  vmovdqu %xmm6, 0x60(%rsp)
-  vmovdqu %xmm7, 0x70(%rsp)
-  vmovdqu %xmm8, 0x80(%rsp)
-  vmovdqu %xmm9, 0x90(%rsp)
-  vmovdqu %xmm10, 0xa0(%rsp)
-  vmovdqu %xmm11, 0xb0(%rsp)
-  vmovdqu %xmm12, 0xc0(%rsp)
-  vmovdqu %xmm13, 0xd0(%rsp)
-  vmovdqu %xmm14, 0xe0(%rsp)
-  vmovdqu %xmm15, 0xf0(%rsp)
+  movdqu %xmm0, 0x0(%rsp)
+  movdqu %xmm1, 0x10(%rsp)
+  movdqu %xmm2, 0x20(%rsp)
+  movdqu %xmm3, 0x30(%rsp)
+  movdqu %xmm4, 0x40(%rsp)
+  movdqu %xmm5, 0x50(%rsp)
+  movdqu %xmm6, 0x60(%rsp)
+  movdqu %xmm7, 0x70(%rsp)
+  movdqu %xmm8, 0x80(%rsp)
+  movdqu %xmm9, 0x90(%rsp)
+  movdqu %xmm10, 0xa0(%rsp)
+  movdqu %xmm11, 0xb0(%rsp)
+  movdqu %xmm12, 0xc0(%rsp)
+  movdqu %xmm13, 0xd0(%rsp)
+  movdqu %xmm14, 0xe0(%rsp)
+  movdqu %xmm15, 0xf0(%rsp)
   # Align stack frame.
   push %rbx  # non-scratch
   CFI_ADJUST_CFA_OFFSET(8)
@@ -196,22 +196,22 @@ ASM_SYMBOL(__tsan_report_race_thunk):
   pop %rbx
   CFI_ADJUST_CFA_OFFSET(-8)
   # Restore scratch registers.
-  vmovdqu 0x0(%rsp), %xmm0
-  vmovdqu 0x10(%rsp), %xmm1
-  vmovdqu 0x20(%rsp), %xmm2
-  vmovdqu 0x30(%rsp), %xmm3
-  vmovdqu 0x40(%rsp), %xmm4
-  vmovdqu 0x50(%rsp), %xmm5
-  vmovdqu 0x60(%rsp), %xmm6
-  vmovdqu 0x70(%rsp), %xmm7
-  vmovdqu 0x80(%rsp), %xmm8
-  vmovdqu 0x90(%rsp), %xmm9
-  vmovdqu 0xa0(%rsp), %xmm10
-  vmovdqu 0xb0(%rsp), %xmm11
-  vmovdqu 0xc0(%rsp), %xmm12
-  vmovdqu 0xd0(%rsp), %xmm13
-  vmovdqu 0xe0(%rsp), %xmm14
-  vmovdqu 0xf0(%rsp), %xmm15
+  movdqu 0x0(%rsp), %xmm0
+  movdqu 0x10(%rsp), %xmm1
+  movdqu 0x20(%rsp), %xmm2
+  movdqu 0x30(%rsp), %xmm3
+  movdqu 0x40(%rsp), %xmm4
+  movdqu 0x50(%rsp), %xmm5
+  movdqu 0x60(%rsp), %xmm6
+  movdqu 0x70(%rsp), %xmm7
+  movdqu 0x80(%rsp), %xmm8
+  movdqu 0x90(%rsp), %xmm9
+  movdqu 0xa0(%rsp), %xmm10
+  movdqu 0xb0(%rsp), %xmm11
+  movdqu 0xc0(%rsp), %xmm12
+  movdqu 0xd0(%rsp), %xmm13
+  movdqu 0xe0(%rsp), %xmm14
+  movdqu 0xf0(%rsp), %xmm15
   add $0x100, %rsp
   CFI_ADJUST_CFA_OFFSET(-0x100)
   pop %r11
