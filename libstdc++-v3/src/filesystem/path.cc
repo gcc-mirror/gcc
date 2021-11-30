@@ -337,15 +337,18 @@ path::_M_split_cmpts()
   _M_type = _Type::_Multi;
   _M_cmpts.clear();
 
-  if (_M_pathname.empty())
+  // Use const-reference to access _M_pathname, to avoid "leaking" COW string.
+  const auto& pathname = _M_pathname;
+
+  if (pathname.empty())
     return;
 
   {
     // Approximate count of components, to reserve space in _M_cmpts vector:
     int count = 1;
-    bool saw_sep_last = _S_is_dir_sep(_M_pathname[0]);
+    bool saw_sep_last = _S_is_dir_sep(pathname[0]);
     bool saw_non_sep = !saw_sep_last;
-    for (value_type c : _M_pathname)
+    for (value_type c : pathname)
       {
        if (_S_is_dir_sep(c))
          saw_sep_last = true;
@@ -363,13 +366,13 @@ path::_M_split_cmpts()
   }
 
   size_t pos = 0;
-  const size_t len = _M_pathname.size();
+  const size_t len = pathname.size();
 
   // look for root name or root directory
-  if (_S_is_dir_sep(_M_pathname[0]))
+  if (_S_is_dir_sep(pathname[0]))
     {
       // look for root name, such as "//" or "//foo"
-      if (len > 1 && _M_pathname[1] == _M_pathname[0])
+      if (len > 1 && pathname[1] == pathname[0])
 	{
 	  if (len == 2)
 	    {
@@ -378,11 +381,11 @@ path::_M_split_cmpts()
 	      return;
 	    }
 
-	  if (!_S_is_dir_sep(_M_pathname[2]))
+	  if (!_S_is_dir_sep(pathname[2]))
 	    {
 	      // got root name, find its end
 	      pos = 3;
-	      while (pos < len && !_S_is_dir_sep(_M_pathname[pos]))
+	      while (pos < len && !_S_is_dir_sep(pathname[pos]))
 		++pos;
 	      if (pos == len)
 		{
@@ -409,7 +412,7 @@ path::_M_split_cmpts()
       ++pos;
     }
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  else if (len > 1 && _M_pathname[1] == L':')
+  else if (len > 1 && pathname[1] == L':')
     {
       // got disk designator
       if (len == 2)
@@ -418,7 +421,7 @@ path::_M_split_cmpts()
 	  return;
 	}
       _M_add_root_name(2);
-      if (len > 2 && _S_is_dir_sep(_M_pathname[2]))
+      if (len > 2 && _S_is_dir_sep(pathname[2]))
 	_M_add_root_dir(2);
       pos = 2;
     }
@@ -426,9 +429,9 @@ path::_M_split_cmpts()
   else
     {
       size_t n = 1;
-      for (; n < _M_pathname.size() && !_S_is_dir_sep(_M_pathname[n]); ++n)
+      for (; n < pathname.size() && !_S_is_dir_sep(pathname[n]); ++n)
 	{ }
-      if (n == _M_pathname.size())
+      if (n == pathname.size())
 	{
 	  _M_type = _Type::_Filename;
 	  return;
@@ -438,7 +441,7 @@ path::_M_split_cmpts()
   size_t back = pos;
   while (pos < len)
     {
-      if (_S_is_dir_sep(_M_pathname[pos]))
+      if (_S_is_dir_sep(pathname[pos]))
 	{
 	  if (back != pos)
 	    _M_add_filename(back, pos - back);
@@ -450,7 +453,7 @@ path::_M_split_cmpts()
 
   if (back != pos)
     _M_add_filename(back, pos - back);
-  else if (_S_is_dir_sep(_M_pathname.back()))
+  else if (_S_is_dir_sep(pathname.back()))
     {
       // [path.itr]/8
       // "Dot, if one or more trailing non-root slash characters are present."
