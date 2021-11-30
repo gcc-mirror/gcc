@@ -33,12 +33,38 @@ public:
   code_helper (combined_fn fn) : rep (-(int) fn) {}
   operator tree_code () const { return (tree_code) rep; }
   operator combined_fn () const { return (combined_fn) -rep; }
+  explicit operator internal_fn () const;
+  explicit operator built_in_function () const;
   bool is_tree_code () const { return rep > 0; }
   bool is_fn_code () const { return rep < 0; }
+  bool is_internal_fn () const;
+  bool is_builtin_fn () const;
   int get_rep () const { return rep; }
 private:
   int rep;
 };
+
+inline code_helper::operator internal_fn () const
+{
+  return as_internal_fn (combined_fn (*this));
+}
+
+inline code_helper::operator built_in_function () const
+{
+  return as_builtin_fn (combined_fn (*this));
+}
+
+inline bool
+code_helper::is_internal_fn () const
+{
+  return is_fn_code () && internal_fn_p (combined_fn (*this));
+}
+
+inline bool
+code_helper::is_builtin_fn () const
+{
+  return is_fn_code () && builtin_fn_p (combined_fn (*this));
+}
 
 /* Represents the condition under which an operation should happen,
    and the value to use otherwise.  The condition applies elementwise
@@ -333,6 +359,7 @@ gimple_simplified_result_is_gimple_val (const gimple_match_op *op)
 
 extern tree (*mprts_hook) (gimple_match_op *);
 
+bool gimple_extract_op (gimple *, gimple_match_op *);
 bool gimple_simplify (gimple *, gimple_match_op *, gimple_seq *,
 		      tree (*)(tree), tree (*)(tree));
 tree maybe_push_res_to_seq (gimple_match_op *, gimple_seq *,

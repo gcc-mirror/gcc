@@ -890,12 +890,20 @@ try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
   return true;
 }
 
-/* The main STMT based simplification entry.  It is used by the fold_stmt
-   and the fold_stmt_to_constant APIs.  */
+/* Common subroutine of gimple_extract_op and gimple_simplify.  Try to
+   describe STMT in RES_OP, returning true on success.  Before recording
+   an operand, call:
 
-bool
-gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
-		 tree (*valueize)(tree), tree (*top_valueize)(tree))
+   - VALUEIZE_CONDITION for a COND_EXPR condition
+   - VALUEIZE_OP for every other top-level operand
+
+   Both routines take a tree argument and returns a tree.  */
+
+template<typename ValueizeOp, typename ValueizeCondition>
+inline bool
+gimple_extract (gimple *stmt, gimple_match_op *res_op,
+		ValueizeOp valueize_op,
+		ValueizeCondition valueize_condition)
 {
   switch (gimple_code (stmt))
     {
@@ -911,100 +919,50 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 		|| code == VIEW_CONVERT_EXPR)
 	      {
 		tree op0 = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-		bool valueized = false;
-		op0 = do_valueize (op0, top_valueize, valueized);
-		res_op->set_op (code, type, op0);
-		return (gimple_resimplify1 (seq, res_op, valueize)
-			|| valueized);
+		res_op->set_op (code, type, valueize_op (op0));
+		return true;
 	      }
 	    else if (code == BIT_FIELD_REF)
 	      {
 		tree rhs1 = gimple_assign_rhs1 (stmt);
-		tree op0 = TREE_OPERAND (rhs1, 0);
-		bool valueized = false;
-		op0 = do_valueize (op0, top_valueize, valueized);
+		tree op0 = valueize_op (TREE_OPERAND (rhs1, 0));
 		res_op->set_op (code, type, op0,
 				TREE_OPERAND (rhs1, 1),
 				TREE_OPERAND (rhs1, 2),
 				REF_REVERSE_STORAGE_ORDER (rhs1));
-		if (res_op->reverse)
-		  return valueized;
-		return (gimple_resimplify3 (seq, res_op, valueize)
-			|| valueized);
+		return true;
 	      }
-	    else if (code == SSA_NAME
-		     && top_valueize)
+	    else if (code == SSA_NAME)
 	      {
 		tree op0 = gimple_assign_rhs1 (stmt);
-		tree valueized = top_valueize (op0);
-		if (!valueized || op0 == valueized)
-		  return false;
-		res_op->set_op (TREE_CODE (op0), type, valueized);
+		res_op->set_op (TREE_CODE (op0), type, valueize_op (op0));
 		return true;
 	      }
 	    break;
 	  case GIMPLE_UNARY_RHS:
 	    {
 	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      bool valueized = false;
-	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
-	      res_op->set_op (code, type, rhs1);
-	      return (gimple_resimplify1 (seq, res_op, valueize)
-		      || valueized);
+	      res_op->set_op (code, type, valueize_op (rhs1));
+	      return true;
 	    }
 	  case GIMPLE_BINARY_RHS:
 	    {
-	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      tree rhs2 = gimple_assign_rhs2 (stmt);
-	      bool valueized = false;
-	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
-	      rhs2 = do_valueize (rhs2, top_valueize, valueized);
+	      tree rhs1 = valueize_op (gimple_assign_rhs1 (stmt));
+	      tree rhs2 = valueize_op (gimple_assign_rhs2 (stmt));
 	      res_op->set_op (code, type, rhs1, rhs2);
-	      return (gimple_resimplify2 (seq, res_op, valueize)
-		      || valueized);
+	      return true;
 	    }
 	  case GIMPLE_TERNARY_RHS:
 	    {
-	      bool valueized = false;
 	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      /* If this is a COND_EXPR first try to simplify an
-		 embedded GENERIC condition.  */
-	      if (code == COND_EXPR)
-		{
-		  if (COMPARISON_CLASS_P (rhs1))
-		    {
-		      tree lhs = TREE_OPERAND (rhs1, 0);
-		      tree rhs = TREE_OPERAND (rhs1, 1);
-		      lhs = do_valueize (lhs, top_valueize, valueized);
-		      rhs = do_valueize (rhs, top_valueize, valueized);
-		      gimple_match_op res_op2 (res_op->cond, TREE_CODE (rhs1),
-					       TREE_TYPE (rhs1), lhs, rhs);
-		      if ((gimple_resimplify2 (seq, &res_op2, valueize)
-			   || valueized)
-			  && res_op2.code.is_tree_code ())
-			{
-			  valueized = true;
-			  if (TREE_CODE_CLASS ((enum tree_code) res_op2.code)
-			      == tcc_comparison)
-			    rhs1 = build2 (res_op2.code, TREE_TYPE (rhs1),
-					   res_op2.ops[0], res_op2.ops[1]);
-			  else if (res_op2.code == SSA_NAME
-				   || res_op2.code == INTEGER_CST
-				   || res_op2.code == VECTOR_CST)
-			    rhs1 = res_op2.ops[0];
-			  else
-			    valueized = false;
-			}
-		    }
-		}
-	      tree rhs2 = gimple_assign_rhs2 (stmt);
-	      tree rhs3 = gimple_assign_rhs3 (stmt);
-	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
-	      rhs2 = do_valueize (rhs2, top_valueize, valueized);
-	      rhs3 = do_valueize (rhs3, top_valueize, valueized);
+	      if (code == COND_EXPR && COMPARISON_CLASS_P (rhs1))
+		rhs1 = valueize_condition (rhs1);
+	      else
+		rhs1 = valueize_op (rhs1);
+	      tree rhs2 = valueize_op (gimple_assign_rhs2 (stmt));
+	      tree rhs3 = valueize_op (gimple_assign_rhs3 (stmt));
 	      res_op->set_op (code, type, rhs1, rhs2, rhs3);
-	      return (gimple_resimplify3 (seq, res_op, valueize)
-		      || valueized);
+	      return true;
 	    }
 	  default:
 	    gcc_unreachable ();
@@ -1018,7 +976,6 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	  && gimple_call_num_args (stmt) >= 1
 	  && gimple_call_num_args (stmt) <= 5)
 	{
-	  bool valueized = false;
 	  combined_fn cfn;
 	  if (gimple_call_internal_p (stmt))
 	    cfn = as_combined_fn (gimple_call_internal_fn (stmt));
@@ -1028,7 +985,7 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	      if (!fn)
 		return false;
 
-	      fn = do_valueize (fn, top_valueize, valueized);
+	      fn = valueize_op (fn);
 	      if (TREE_CODE (fn) != ADDR_EXPR
 		  || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
 		return false;
@@ -1044,47 +1001,17 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	  unsigned int num_args = gimple_call_num_args (stmt);
 	  res_op->set_op (cfn, TREE_TYPE (gimple_call_lhs (stmt)), num_args);
 	  for (unsigned i = 0; i < num_args; ++i)
-	    {
-	      tree arg = gimple_call_arg (stmt, i);
-	      res_op->ops[i] = do_valueize (arg, top_valueize, valueized);
-	    }
-	  if (internal_fn_p (cfn)
-	      && try_conditional_simplification (as_internal_fn (cfn),
-						 res_op, seq, valueize))
-	    return true;
-	  switch (num_args)
-	    {
-	    case 1:
-	      return (gimple_resimplify1 (seq, res_op, valueize)
-		      || valueized);
-	    case 2:
-	      return (gimple_resimplify2 (seq, res_op, valueize)
-		      || valueized);
-	    case 3:
-	      return (gimple_resimplify3 (seq, res_op, valueize)
-		      || valueized);
-	    case 4:
-	      return (gimple_resimplify4 (seq, res_op, valueize)
-		      || valueized);
-	    case 5:
-	      return (gimple_resimplify5 (seq, res_op, valueize)
-		      || valueized);
-	    default:
-	     gcc_unreachable ();
-	    }
+	    res_op->ops[i] = valueize_op (gimple_call_arg (stmt, i));
+	  return true;
 	}
       break;
 
     case GIMPLE_COND:
       {
-	tree lhs = gimple_cond_lhs (stmt);
-	tree rhs = gimple_cond_rhs (stmt);
-	bool valueized = false;
-	lhs = do_valueize (lhs, top_valueize, valueized);
-	rhs = do_valueize (rhs, top_valueize, valueized);
+	tree lhs = valueize_op (gimple_cond_lhs (stmt));
+	tree rhs = valueize_op (gimple_cond_rhs (stmt));
 	res_op->set_op (gimple_cond_code (stmt), boolean_type_node, lhs, rhs);
-	return (gimple_resimplify2 (seq, res_op, valueize)
-		|| valueized);
+	return true;
       }
 
     default:
@@ -1094,6 +1021,77 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
   return false;
 }
 
+/* Try to describe STMT in RES_OP, returning true on success.
+   For GIMPLE_CONDs, describe the condition that is being tested.
+   For GIMPLE_ASSIGNs, describe the rhs of the assignment.
+   For GIMPLE_CALLs, describe the call.  */
+
+bool
+gimple_extract_op (gimple *stmt, gimple_match_op *res_op)
+{
+  auto nop = [](tree op) { return op; };
+  return gimple_extract (stmt, res_op, nop, nop);
+}
+
+/* The main STMT based simplification entry.  It is used by the fold_stmt
+   and the fold_stmt_to_constant APIs.  */
+
+bool
+gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
+		 tree (*valueize)(tree), tree (*top_valueize)(tree))
+{
+  bool valueized = false;
+  auto valueize_op = [&](tree op)
+    {
+      return do_valueize (op, top_valueize, valueized);
+    };
+  auto valueize_condition = [&](tree op) -> tree
+    {
+      bool cond_valueized = false;
+      tree lhs = do_valueize (TREE_OPERAND (op, 0), top_valueize,
+			      cond_valueized);
+      tree rhs = do_valueize (TREE_OPERAND (op, 1), top_valueize,
+			      cond_valueized);
+      gimple_match_op res_op2 (res_op->cond, TREE_CODE (op),
+			       TREE_TYPE (op), lhs, rhs);
+      if ((gimple_resimplify2 (seq, &res_op2, valueize)
+	   || cond_valueized)
+	  && res_op2.code.is_tree_code ())
+	{
+	  if (TREE_CODE_CLASS ((tree_code) res_op2.code) == tcc_comparison)
+	    {
+	      valueized = true;
+	      return build2 (res_op2.code, TREE_TYPE (op),
+			     res_op2.ops[0], res_op2.ops[1]);
+	    }
+	  else if (res_op2.code == SSA_NAME
+		   || res_op2.code == INTEGER_CST
+		   || res_op2.code == VECTOR_CST)
+	    {
+	      valueized = true;
+	      return res_op2.ops[0];
+	    }
+	}
+      return valueize_op (op);
+    };
+
+  if (!gimple_extract (stmt, res_op, valueize_op, valueize_condition))
+    return false;
+
+  if (res_op->code.is_internal_fn ())
+    {
+      internal_fn ifn = internal_fn (res_op->code);
+      if (try_conditional_simplification (ifn, res_op, seq, valueize))
+	return true;
+    }
+
+  if (!res_op->reverse
+      && res_op->num_ops
+      && res_op->resimplify (seq, valueize))
+    return true;
+
+  return valueized;
+}
 
 /* Helper for the autogenerated code, valueize OP.  */
 
