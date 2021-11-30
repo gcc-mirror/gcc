@@ -2962,8 +2962,7 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
 static void
 vect_get_gather_scatter_ops (loop_vec_info loop_vinfo,
 			     class loop *loop, stmt_vec_info stmt_info,
-			     slp_tree slp_node, unsigned int ncopies,
-			     gather_scatter_info *gs_info,
+			     slp_tree slp_node, gather_scatter_info *gs_info,
 			     tree *dataref_ptr, vec<tree> *vec_offset)
 {
   gimple_seq stmts = NULL;
@@ -2978,9 +2977,13 @@ vect_get_gather_scatter_ops (loop_vec_info loop_vinfo,
   if (slp_node)
     vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[0], vec_offset);
   else
-    vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, ncopies,
-				   gs_info->offset, vec_offset,
-				   gs_info->offset_vectype);
+    {
+      unsigned ncopies
+	= vect_get_num_copies (loop_vinfo, gs_info->offset_vectype);
+      vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, ncopies,
+				     gs_info->offset, vec_offset,
+				     gs_info->offset_vectype);
+    }
 }
 
 /* Prepare to implement a grouped or strided load or store using
@@ -8149,8 +8152,8 @@ vectorizable_store (vec_info *vinfo,
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    {
 	      vect_get_gather_scatter_ops (loop_vinfo, loop, stmt_info,
-					   slp_node, ncopies, &gs_info,
-					   &dataref_ptr, &vec_offsets);
+					   slp_node, &gs_info, &dataref_ptr,
+					   &vec_offsets);
 	      vec_offset = vec_offsets[0];
 	    }
 	  else
@@ -9454,8 +9457,8 @@ vectorizable_load (vec_info *vinfo,
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    {
 	      vect_get_gather_scatter_ops (loop_vinfo, loop, stmt_info,
-					   slp_node, ncopies, &gs_info,
-					   &dataref_ptr, &vec_offsets);
+					   slp_node, &gs_info, &dataref_ptr,
+					   &vec_offsets);
 	    }
 	  else
 	    dataref_ptr
