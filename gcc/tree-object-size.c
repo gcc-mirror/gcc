@@ -854,7 +854,8 @@ merge_object_sizes (struct object_size_info *osi, tree dest, tree orig,
     orig_bytes = (offset > orig_bytes)
 		 ? HOST_WIDE_INT_0U : orig_bytes - offset;
 
-  osi->changed = object_sizes_set (osi, varno, orig_bytes);
+  if (object_sizes_set (osi, varno, orig_bytes))
+    osi->changed = true;
 
   return bitmap_bit_p (osi->reexamine, SSA_NAME_VERSION (orig));
 }
