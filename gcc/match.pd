@@ -5215,20 +5215,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (eqcmp (bit_and @1 { wide_int_to_tree (ty, mask - rhs); })
 	     { build_zero_cst (ty); }))))))
 
-/* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
-   where ~Y + 1 == pow2 and Z = ~Y.  */
-(for cst (VECTOR_CST INTEGER_CST)
- (for cmp (eq ne)
-      icmp (le gt)
-  (simplify
-   (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
-    (with { tree csts = bitmask_inv_cst_vector_p (@1); }
-     (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
-      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
-       (icmp @0 { csts; })
-       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
-	 (icmp (convert:utype @0) { csts; }))))))))
-
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
      scmp (swapped_tcc_comparison)
@@ -5714,6 +5700,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    as we require a tcc_comparison in GIMPLE_CONDs where we'd
    replace if (x == 0) with tem = ~x; if (tem != 0) which is
    clearly less optimal and which we'll transform again in forwprop.  */
+
+/* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
+   where ~Y + 1 == pow2 and Z = ~Y.  */
+(for cst (VECTOR_CST INTEGER_CST)
+ (for cmp (eq ne)
+      icmp (le gt)
+  (simplify
+   (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
+    (with { tree csts = bitmask_inv_cst_vector_p (@1); }
+     (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
+       (icmp @0 { csts; })
+       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
+	 (icmp (convert:utype @0) { csts; }))))))))
 
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with

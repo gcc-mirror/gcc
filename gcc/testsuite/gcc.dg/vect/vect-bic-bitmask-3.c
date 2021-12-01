@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -save-temps -fdump-tree-dce" } */
+/* { dg-additional-options "-O3 -save-temps -fdump-tree-dce -w" } */
 
 #include <stdint.h>
 
@@ -17,7 +17,7 @@ void fun2(uint32_t *x, int n)
       x[i] = (x[i]&(~255)) == 0;
 }
 
-#include "bic-bitmask.h"
+#include "../bic-bitmask.h"
 
 /* { dg-final { scan-tree-dump-times {<=\s*.+\{ 255,.+\}} 1 dce7 { target vect_int } } } */
 /* { dg-final { scan-tree-dump-not {&\s*.+\{ 4294967040,.+\}} dce7 { target vect_int } } } */

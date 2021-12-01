@@ -10306,22 +10306,24 @@ bitmask_inv_cst_vector_p (tree t)
 
   tree ty = unsigned_type_for (TREE_TYPE (cst));
 
-  do {
-    if (idx > 0)
-      cst = vector_cst_elt (t, idx);
-    wide_int icst = wi::to_wide (cst);
-    wide_int inv =  wi::bit_not (icst);
-    icst = wi::add (1, inv);
-    if (wi::popcount (icst) != 1)
-      return NULL_TREE;
+  do
+    {
+      if (idx > 0)
+	cst = vector_cst_elt (t, idx);
+      wide_int icst = wi::to_wide (cst);
+      wide_int inv =  wi::bit_not (icst);
+      icst = wi::add (1, inv);
+      if (wi::popcount (icst) != 1)
+	return NULL_TREE;
 
-    tree newcst = wide_int_to_tree (ty, inv);
+      tree newcst = wide_int_to_tree (ty, inv);
 
-    if (uniform)
-      return build_uniform_cst (newtype, newcst);
+      if (uniform)
+	return build_uniform_cst (newtype, newcst);
 
-    builder.quick_push (newcst);
-  } while (++idx < nelts);
+      builder.quick_push (newcst);
+    }
+  while (++idx < nelts);
 
   return builder.build ();
 }

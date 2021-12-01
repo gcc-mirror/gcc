@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O1 -fdump-tree-dce" } */
+/* { dg-additional-options "-O1 -fdump-tree-dce -w" } */
 
 #include <stdint.h>
 
