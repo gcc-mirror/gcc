@@ -1,3 +1,11 @@
+2021-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* store.cc (binding_cluster::can_merge_p): For the "key is bound"
+	vs "key is not bound" merger case, check that the bound svalue
+	is mergeable before merging it to "unknown", rejecting the merger
+	otherwise.
+
 2021-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103217

@@ -113,8 +113,7 @@ struct unw_eh_callback_data
 #if NEED_DBASE_MEMBER
   void *dbase;
 #endif
-  void *func;
-  const fde *ret;
+  const struct unw_eh_frame_hdr *hdr;
   int check_cache;
 };
 
@@ -197,10 +196,6 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 #else
   _Unwind_Ptr load_base;
 #endif
-  const unsigned char *p;
-  const struct unw_eh_frame_hdr *hdr;
-  _Unwind_Ptr eh_frame;
-  struct object ob;
   _Unwind_Ptr pc_low = 0, pc_high = 0;
 
   struct ext_dl_phdr_info
@@ -348,10 +343,8 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
     return 0;
 
   /* Read .eh_frame_hdr header.  */
-  hdr = (const struct unw_eh_frame_hdr *)
+  data->hdr = (const struct unw_eh_frame_hdr *)
     __RELOC_POINTER (p_eh_frame_hdr->p_vaddr, load_base);
-  if (hdr->version != 1)
-    return 1;
 
 #ifdef CRT_GET_RFIB_DATA
 # if defined __i386__ || defined __nios2__
@@ -383,12 +376,30 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 # endif
 #endif
 
-  _Unwind_Ptr dbase = unw_eh_callback_data_dbase (data);
+  return 1;
+}
+
+/* Find the FDE for the program counter PC, in a previously located
+   PT_GNU_EH_FRAME data region.  *BASES is updated if an FDE to return is
+   found.  */
+
+static const fde *
+find_fde_tail (_Unwind_Ptr pc,
+	       const struct unw_eh_frame_hdr *hdr,
+	       _Unwind_Ptr dbase,
+	       struct dwarf_eh_bases *bases)
+{
+  const unsigned char *p = (const unsigned char *) (hdr + 1);
+  _Unwind_Ptr eh_frame;
+  struct object ob;
+
+  if (hdr->version != 1)
+    return NULL;
+
   p = read_encoded_value_with_base (hdr->eh_frame_ptr_enc,
 				    base_from_cb_data (hdr->eh_frame_ptr_enc,
 						       dbase),
-				    (const unsigned char *) (hdr + 1),
-				    &eh_frame);
+				    p, &eh_frame);
 
   /* We require here specific table encoding to speed things up.
      Also, DW_EH_PE_datarel here means using PT_GNU_EH_FRAME start
@@ -404,7 +415,7 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 					p, &fde_count);
       /* Shouldn't happen.  */
       if (fde_count == 0)
-	return 1;
+	return NULL;
       if ((((_Unwind_Ptr) p) & 3) == 0)
 	{
 	  struct fde_table {
@@ -419,9 +430,9 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	  _Unwind_Ptr range;
 
 	  mid = fde_count - 1;
-	  if (data->pc < table[0].initial_loc + data_base)
-	    return 1;
-	  else if (data->pc < table[mid].initial_loc + data_base)
+	  if (pc < table[0].initial_loc + data_base)
+	    return NULL;
+	  else if (pc < table[mid].initial_loc + data_base)
 	    {
 	      lo = 0;
 	      hi = mid;
@@ -429,9 +440,9 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	      while (lo < hi)
 		{
 		  mid = (lo + hi) / 2;
-		  if (data->pc < table[mid].initial_loc + data_base)
+		  if (pc < table[mid].initial_loc + data_base)
 		    hi = mid;
-		  else if (data->pc >= table[mid + 1].initial_loc + data_base)
+		  else if (pc >= table[mid + 1].initial_loc + data_base)
 		    lo = mid + 1;
 		  else
 		    break;
@@ -445,10 +456,16 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	  f_enc_size = size_of_encoded_value (f_enc);
 	  read_encoded_value_with_base (f_enc & 0x0f, 0,
 					&f->pc_begin[f_enc_size], &range);
-	  if (data->pc < table[mid].initial_loc + data_base + range)
-	    data->ret = f;
-	  data->func = (void *) (table[mid].initial_loc + data_base);
-	  return 1;
+	  _Unwind_Ptr func = table[mid].initial_loc + data_base;
+	  if (pc < table[mid].initial_loc + data_base + range)
+	    {
+	      bases->tbase = NULL;
+	      bases->dbase = (void *) dbase;
+	      bases->func = (void *) func;
+	      return f;
+	    }
+	  else
+	    return NULL;
 	}
     }
 
@@ -461,18 +478,20 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
   ob.u.single = (fde *) eh_frame;
   ob.s.i = 0;
   ob.s.b.mixed_encoding = 1;  /* Need to assume worst case.  */
-  data->ret = linear_search_fdes (&ob, (fde *) eh_frame, (void *) data->pc);
-  if (data->ret != NULL)
+  const fde *entry = linear_search_fdes (&ob, (fde *) eh_frame, (void *) pc);
+  if (entry != NULL)
     {
       _Unwind_Ptr func;
-      unsigned int encoding = get_fde_encoding (data->ret);
+      unsigned int encoding = get_fde_encoding (entry);
 
       read_encoded_value_with_base (encoding,
 				    base_from_cb_data (encoding, dbase),
-				    data->ret->pc_begin, &func);
-      data->func = (void *) func;
+				    entry->pc_begin, &func);
+      bases->tbase = NULL;
+      bases->dbase = (void *) dbase;
+      bases->func = (void *) func;
     }
-  return 1;
+  return entry;
 }
 
 const fde *
@@ -489,24 +508,13 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 #if NEED_DBASE_MEMBER
   data.dbase = NULL;
 #endif
-  data.func = NULL;
-  data.ret = NULL;
   data.check_cache = 1;
 
-  if (dl_iterate_phdr (_Unwind_IteratePhdrCallback, &data) < 0)
+  if (dl_iterate_phdr (_Unwind_IteratePhdrCallback, &data) <= 0)
     return NULL;
 
-  if (data.ret)
-    {
-      bases->tbase = NULL;
-#if NEED_DBASE_MEMBER
-      bases->dbase = data.dbase;
-#else
-      bases->dbase = NULL;
-#endif
-      bases->func = data.func;
-    }
-  return data.ret;
+  _Unwind_Ptr dbase = unw_eh_callback_data_dbase (&data);
+  return find_fde_tail ((_Unwind_Ptr) pc, data.hdr, dbase, bases);
 }
 
 #else

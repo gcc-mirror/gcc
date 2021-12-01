@@ -1,6 +1,6 @@
-// 7932
+// https://issues.dlang.org/show_bug.cgi?id=7932
 
-import std.stdio;
+import core.stdc.stdio;
 
 size_t N;
 
@@ -13,7 +13,7 @@ class C
                 cast(void*) this, &n, n);
         assert (N == n);
     }
-    body
+    do
     {
         int dummy;
         //printf("\n");

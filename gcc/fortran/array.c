@@ -1804,6 +1804,12 @@ expand_constructor (gfc_constructor_base base)
       if (empty_constructor)
 	empty_ts = e->ts;
 
+      /* Simplify constant array expression/section within constructor.  */
+      if (e->expr_type == EXPR_VARIABLE && e->rank > 0 && e->ref
+	  && e->symtree && e->symtree->n.sym
+	  && e->symtree->n.sym->attr.flavor == FL_PARAMETER)
+	gfc_simplify_expr (e, 0);
+
       if (e->expr_type == EXPR_ARRAY)
 	{
 	  if (!expand_constructor (e->value.constructor))

@@ -703,6 +703,7 @@ struct GTY(()) template_parm_index {
 struct GTY(()) ptrmem_cst {
   struct tree_common common;
   tree member;
+  location_t locus;
 };
 typedef struct ptrmem_cst * ptrmem_cst_t;
 
@@ -4725,6 +4726,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    `Y'.  */
 #define PTRMEM_CST_MEMBER(NODE) \
   (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
+
+/* For a pointer-to-member constant `X::Y' this is a location where
+   the address of the member has been taken.  */
+#define PTRMEM_CST_LOCATION(NODE) \
+  (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->locus)
 
 /* The expression in question for a TYPEOF_TYPE.  */
 #define TYPEOF_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (TYPEOF_TYPE_CHECK (NODE)))

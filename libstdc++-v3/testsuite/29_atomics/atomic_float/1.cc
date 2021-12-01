@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-add-options ieee }
 // { dg-options "-std=gnu++2a" }
+// { dg-add-options ieee }
 // { dg-do run { target c++2a } }
 
 #include <atomic>

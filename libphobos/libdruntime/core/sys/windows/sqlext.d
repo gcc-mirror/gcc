@@ -535,7 +535,7 @@ enum SQL_U_UNION_ALL = 2;
 
 enum SQL_UB_OFF = 0UL;
 enum SQL_UB_DEFAULT = SQL_UB_OFF;
-enum SQL_UB_ON = 01UL;
+enum SQL_UB_ON = 1UL;
 
 enum SQL_UNION = 96;
 enum SQL_UNSEARCHABLE = 0;

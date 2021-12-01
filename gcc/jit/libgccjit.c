@@ -707,7 +707,7 @@ gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,
   gcc::jit::recording::context *ctxt = function_type->m_ctxt;
   RETURN_NULL_IF_FAIL_PRINTF3 (index < num_params,
 			       ctxt, NULL,
-			       "index of %ld is too large (%s has %ld params)",
+			       "index of %zu is too large (%s has %zu params)",
 			       index,
 			       function_type->get_debug_string (),
 			       num_params);
@@ -951,7 +951,7 @@ gcc_jit_struct_get_field (gcc_jit_struct *struct_type,
   size_t num_fields = struct_type->get_fields ()->length ();
   RETURN_NULL_IF_FAIL_PRINTF3 (index < num_fields,
 			       NULL, NULL,
-			       "index of %ld is too large (%s has %ld fields)",
+			       "index of %zu is too large (%s has %zu fields)",
 			       index,
 			       struct_type->get_debug_string (),
 			       num_fields);

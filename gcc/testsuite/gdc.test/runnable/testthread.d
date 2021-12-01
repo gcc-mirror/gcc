@@ -49,7 +49,7 @@ int main()
     assert(f.x == 3);
 
     int i;
-    Thread tx[5];
+    Thread[5] tx;
     for (i = 0; i < tx.length; i++)
         tx[i] = new Thread(&f.bar);
     for (i = 0; i < tx.length; i++)

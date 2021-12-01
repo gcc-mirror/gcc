@@ -756,7 +756,6 @@ fixed_arithmetic (FIXED_VALUE_TYPE *f, int icode, const FIXED_VALUE_TYPE *op0,
     default:
       gcc_unreachable ();
     }
-  return false;
 }
 
 /* Compare fixed-point values by tree_code.

@@ -475,24 +475,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static constexpr bool
       _S_use_relocate()
       {
-#if __cplusplus >= 202002L && __has_builtin(__builtin_is_constant_evaluated)
-	if (__builtin_is_constant_evaluated())
-	  return false; // Cannot use memcpy in constant evaluation contexts.
-#endif
 	// Instantiating std::__relocate_a might cause an error outside the
 	// immediate context (in __relocate_object_a's noexcept-specifier),
 	// so only do it if we know the type can be move-inserted into *this.
 	return _S_nothrow_relocate(__is_move_insertable<_Tp_alloc_type>{});
       }
 
-      static _GLIBCXX20_CONSTEXPR pointer
+      static pointer
       _S_do_relocate(pointer __first, pointer __last, pointer __result,
 		     _Tp_alloc_type& __alloc, true_type) noexcept
       {
 	return std::__relocate_a(__first, __last, __result, __alloc);
       }
 
-      static _GLIBCXX20_CONSTEXPR pointer
+      static pointer
       _S_do_relocate(pointer, pointer, pointer __result,
 		     _Tp_alloc_type&, false_type) noexcept
       { return __result; }
@@ -501,8 +497,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_relocate(pointer __first, pointer __last, pointer __result,
 		  _Tp_alloc_type& __alloc) noexcept
       {
+#if __cpp_if_constexpr
+	// All callers have already checked _S_use_relocate() so just do it.
+	return std::__relocate_a(__first, __last, __result, __alloc);
+#else
 	using __do_it = __bool_constant<_S_use_relocate()>;
 	return _S_do_relocate(__first, __last, __result, __alloc, __do_it{});
+#endif
       }
 #endif // C++11
 

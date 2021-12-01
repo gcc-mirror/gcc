@@ -1,3 +1,9 @@
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* gcc-interface/Make-lang.in: Use ETAGS variable in
+	TAGS target.
+
 2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc-interface/Makefile.in: Use DSYMUTIL_FOR_TARGET in

@@ -20,4 +20,4 @@ main()
   for (int i=0;i<100;i++)
     test(i);
 }
-/* { dg-final { scan-ipa-dump "Inlined 1 calls" "inline" } } */
+/* { dg-final { scan-ipa-dump "Inlined 2 calls" "inline" } } */

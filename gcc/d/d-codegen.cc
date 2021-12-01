@@ -76,7 +76,7 @@ d_decl_context (Dsymbol *dsym)
 	 but only for extern(D) symbols.  */
       if (parent->isModule ())
 	{
-	  if ((decl != NULL && decl->linkage != LINKd)
+	  if ((decl != NULL && decl->linkage != LINK::d)
 	      || (ad != NULL && ad->classKind != ClassKind::d))
 	    return NULL_TREE;
 
@@ -131,7 +131,7 @@ declaration_reference_p (Declaration *decl)
   Type *tb = decl->type->toBasetype ();
 
   /* Declaration is a reference type.  */
-  if (tb->ty == Treference || decl->storage_class & (STCout | STCref))
+  if (tb->ty == TY::Treference || decl->storage_class & (STCout | STCref))
     return true;
 
   return false;
@@ -146,7 +146,7 @@ declaration_type (Declaration *decl)
   if (decl->storage_class & STClazy)
     {
       TypeFunction *tf = TypeFunction::create (NULL, decl->type,
-					       VARARGnone, LINKd);
+					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
       return build_ctype (t->merge2 ());
     }
@@ -181,7 +181,7 @@ parameter_reference_p (Parameter *arg)
   Type *tb = arg->type->toBasetype ();
 
   /* Parameter is a reference type.  */
-  if (tb->ty == Treference || arg->storageClass & (STCout | STCref))
+  if (tb->ty == TY::Treference || arg->storageClass & (STCout | STCref))
     return true;
 
   return false;
@@ -196,7 +196,7 @@ parameter_type (Parameter *arg)
   if (arg->storageClass & STClazy)
     {
       TypeFunction *tf = TypeFunction::create (NULL, arg->type,
-					       VARARGnone, LINKd);
+					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
       return build_ctype (t->merge2 ());
     }
@@ -319,10 +319,10 @@ get_array_length (tree exp, Type *type)
 
   switch (tb->ty)
     {
-    case Tsarray:
+    case TY::Tsarray:
       return size_int (tb->isTypeSArray ()->dim->toUInteger ());
 
-    case Tarray:
+    case TY::Tarray:
       return d_array_length (exp);
 
     default:
@@ -411,7 +411,7 @@ build_delegate_cst (tree method, tree object, Type *type)
   tree ctype;
 
   Type *tb = type->toBasetype ();
-  if (tb->ty == Tdelegate)
+  if (tb->ty == TY::Tdelegate)
     ctype = build_ctype (type);
   else
     {
@@ -464,11 +464,11 @@ build_typeof_null_value (Type *type)
   tree value;
 
   /* For dynamic arrays, set length and pointer fields to zero.  */
-  if (tb->ty == Tarray)
+  if (tb->ty == TY::Tarray)
     value = d_array_value (build_ctype (type), size_int (0), null_pointer_node);
 
   /* For associative arrays, set the pointer field to null.  */
-  else if (tb->ty == Taarray)
+  else if (tb->ty == TY::Taarray)
     {
       tree ctype = build_ctype (type);
       gcc_assert (TYPE_ASSOCIATIVE_ARRAY (ctype));
@@ -478,7 +478,7 @@ build_typeof_null_value (Type *type)
     }
 
   /* For delegates, set the frame and function pointer fields to null.  */
-  else if (tb->ty == Tdelegate)
+  else if (tb->ty == TY::Tdelegate)
     value = build_delegate_cst (null_pointer_node, null_pointer_node, type);
 
   /* Simple zero constant for all other types.  */
@@ -882,7 +882,9 @@ identity_compare_p (StructDeclaration *sd)
 	}
 
       /* Check for types that may have padding.  */
-      if ((tb->ty == Tcomplex80 || tb->ty == Tfloat80 || tb->ty == Timaginary80)
+      if ((tb->ty == TY::Tcomplex80
+	   || tb->ty == TY::Tfloat80
+	   || tb->ty == TY::Timaginary80)
 	  && target.realpad != 0)
 	return false;
 
@@ -960,12 +962,12 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	  /* Compare inner data structures.  */
 	  tcmp = lower_struct_comparison (code, ts->sym, t1ref, t2ref);
 	}
-      else if (type->ty != Tvector && type->isintegral ())
+      else if (type->ty != TY::Tvector && type->isintegral ())
 	{
 	  /* Integer comparison, no special handling required.  */
 	  tcmp = build_boolop (code, t1ref, t2ref);
 	}
-      else if (type->ty != Tvector && type->isfloating ())
+      else if (type->ty != TY::Tvector && type->isfloating ())
 	{
 	  /* Floating-point comparison, don't compare padding in type.  */
 	  if (!type->iscomplex ())
@@ -1839,7 +1841,7 @@ static tree
 build_filename_from_loc (const Loc &loc)
 {
   const char *filename = loc.filename
-    ? loc.filename : d_function_chain->module->srcfile->toChars ();
+    ? loc.filename : d_function_chain->module->srcfile.toChars ();
 
   unsigned length = strlen (filename);
   tree str = build_string (length, filename);
@@ -1862,7 +1864,6 @@ build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
     {
     case LIBCALL_ASSERT_MSG:
     case LIBCALL_UNITTEST_MSG:
-    case LIBCALL_SWITCH_ERROR:
       /* File location is passed as a D string.  */
       if (loc.filename)
 	{
@@ -1912,7 +1913,7 @@ build_array_bounds_call (const Loc &loc)
 
 /* Builds a bounds condition checking that INDEX is between 0 and LENGTH
    in the index expression IE.  The condition returns the INDEX if true, or
-   throws a `RangeError`.  */
+   throws a `ArrayIndexError`.  */
 
 tree
 build_bounds_index_condition (IndexExp *ie, tree index, tree length)
@@ -1927,7 +1928,16 @@ build_bounds_index_condition (IndexExp *ie, tree index, tree length)
      No need to check whether INDEX >= 0 as the front-end should
      have already taken care of implicit casts to unsigned.  */
   tree condition = fold_build2 (GE_EXPR, d_bool_type, index, length);
-  tree boundserr = build_array_bounds_call (ie->e2->loc);
+  tree boundserr;
+
+  if (checkaction_trap_p ())
+    boundserr = build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+  else
+    {
+      boundserr = build_libcall (LIBCALL_ARRAYBOUNDS_INDEXP, Type::tvoid, 4,
+				 build_filename_from_loc (ie->e2->loc),
+				 size_int (ie->e2->loc.linnum), index, length);
+    }
 
   return build_condition (TREE_TYPE (index), condition, boundserr, index);
 }
@@ -1963,7 +1973,22 @@ build_bounds_slice_condition (SliceExp *se, tree lower, tree upper, tree length)
 
       if (condition != NULL_TREE)
 	{
-	  tree boundserr = build_array_bounds_call (se->loc);
+	  tree boundserr;
+
+	  if (checkaction_trap_p ())
+	    {
+	      boundserr =
+		build_call_expr (builtin_decl_explicit (BUILT_IN_TRAP), 0);
+	    }
+	  else
+	    {
+	      boundserr = build_libcall (LIBCALL_ARRAYBOUNDS_SLICEP,
+					 Type::tvoid, 5,
+					 build_filename_from_loc (se->loc),
+					 size_int (se->loc.linnum),
+					 lower, upper, length);
+	    }
+
 	  upper = build_condition (TREE_TYPE (upper), condition,
 				   boundserr, upper);
 	}
@@ -1993,9 +2018,9 @@ array_bounds_check (void)
     case CHECKENABLEsafeonly:
       /* For D2 safe functions only.  */
       fd = d_function_chain->function;
-      if (fd && fd->type->ty == Tfunction)
+      if (fd && fd->type->ty == TY::Tfunction)
 	{
-	  if (fd->type->isTypeFunction ()->trust == TRUSTsafe)
+	  if (fd->type->isTypeFunction ()->trust == TRUST::safe)
 	    return true;
 	}
       return false;
@@ -2014,6 +2039,7 @@ checkaction_trap_p (void)
   switch (global.params.checkAction)
     {
     case CHECKACTION_D:
+    case CHECKACTION_context:
       return false;
 
     case CHECKACTION_C:
@@ -2032,11 +2058,11 @@ TypeFunction *
 get_function_type (Type *t)
 {
   TypeFunction *tf = NULL;
-  if (t->ty == Tpointer)
+  if (t->ty == TY::Tpointer)
     t = t->nextOf ()->toBasetype ();
-  if (t->ty == Tfunction)
+  if (t->ty == TY::Tfunction)
     tf = t->isTypeFunction ();
-  else if (t->ty == Tdelegate)
+  else if (t->ty == TY::Tdelegate)
     tf = t->isTypeDelegate ()->next->isTypeFunction ();
   return tf;
 }
@@ -2096,7 +2122,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
   gcc_assert (FUNC_OR_METHOD_TYPE_P (ctype));
   gcc_assert (tf != NULL);
-  gcc_assert (tf->ty == Tfunction);
+  gcc_assert (tf->ty == TY::Tfunction);
 
   if (TREE_CODE (ctype) != FUNCTION_TYPE && object == NULL_TREE)
     {
@@ -2195,7 +2221,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
   SET_EXPR_LOCATION (result, input_location);
 
   /* Enforce left to right evaluation.  */
-  if (tf->linkage == LINKd)
+  if (tf->linkage == LINK::d)
     CALL_EXPR_ARGS_ORDERED (result) = 1;
 
   result = maybe_expand_intrinsic (result);

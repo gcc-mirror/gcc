@@ -2,7 +2,7 @@
 TEST_OUTPUT:
 ---
 fail_compilation/ice10016.d(33): Error: undefined identifier `unknownIdentifier`
-fail_compilation/ice10016.d(47): Error: template instance ice10016.RefCounted!(S) error instantiating
+fail_compilation/ice10016.d(47): Error: template instance `ice10016.RefCounted!(S)` error instantiating
 ---
 */
 

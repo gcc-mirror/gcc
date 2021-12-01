@@ -3,7 +3,7 @@ This module contains some common utilities used by containers.
 
 This module is a submodule of $(MREF std, container).
 
-Source: $(PHOBOSSRC std/container/_util.d)
+Source: $(PHOBOSSRC std/container/util.d)
 
 Copyright: 2010- Andrei Alexandrescu. All rights reserved by the respective holders.
 
@@ -32,7 +32,7 @@ if (is(T == struct) || is(T == class))
         // does not initialize its payload and is equivalent
         // to a null reference. We therefore construct an empty container
         // by passing an empty array to its constructor.
-        // Issue #13872.
+        // https://issues.dlang.org/show_bug.cgi?id=13872.
         static if (arguments.length == 0)
         {
             import std.range.primitives : ElementType;
@@ -84,7 +84,7 @@ if (is(T == struct) || is(T == class))
     assert(equal(rtb2[], "ehlo"d));
 }
 
-// Issue 8895
+// https://issues.dlang.org/show_bug.cgi?id=8895
 @safe unittest
 {
     import std.algorithm.comparison : equal;
@@ -162,7 +162,7 @@ if (!is(Container))
     assert(equal(rbtmin[], [1, 2, 3]));
 }
 
-// Issue 13872
+// https://issues.dlang.org/show_bug.cgi?id=13872
 @system unittest
 {
     import std.container;

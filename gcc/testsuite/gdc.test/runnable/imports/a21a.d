@@ -1,6 +1,6 @@
 module imports.a21a;
 
-import std.stdio;
+import core.stdc.stdio;
 import a21;
 
 template GoodMixin()

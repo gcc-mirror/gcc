@@ -4699,6 +4699,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
   mpz_t size;
   mpz_t nelems;
   int shape_size;
+  bool shape_is_const;
 
   if (!array_check (source, 0))
     return false;
@@ -4732,7 +4733,11 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 		 "than %d elements", &shape->where, GFC_MAX_DIMENSIONS);
       return false;
     }
-  else if (shape->expr_type == EXPR_ARRAY && gfc_is_constant_expr (shape))
+
+  gfc_simplify_expr (shape, 0);
+  shape_is_const = gfc_is_constant_expr (shape);
+
+  if (shape->expr_type == EXPR_ARRAY && shape_is_const)
     {
       gfc_expr *e;
       int i, extent;
@@ -4748,38 +4753,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	      gfc_error ("%qs argument of %qs intrinsic at %L has "
 			 "negative element (%d)",
 			 gfc_current_intrinsic_arg[1]->name,
-			 gfc_current_intrinsic, &e->where, extent);
-	      return false;
-	    }
-	}
-    }
-  else if (shape->expr_type == EXPR_VARIABLE && shape->ref
-	   && shape->ref->u.ar.type == AR_FULL && shape->ref->u.ar.dimen == 1
-	   && shape->ref->u.ar.as
-	   && shape->ref->u.ar.as->lower[0]->expr_type == EXPR_CONSTANT
-	   && shape->ref->u.ar.as->lower[0]->ts.type == BT_INTEGER
-	   && shape->ref->u.ar.as->upper[0]->expr_type == EXPR_CONSTANT
-	   && shape->ref->u.ar.as->upper[0]->ts.type == BT_INTEGER
-	   && shape->symtree->n.sym->attr.flavor == FL_PARAMETER
-	   && shape->symtree->n.sym->value)
-    {
-      int i, extent;
-      gfc_expr *e, *v;
-
-      v = shape->symtree->n.sym->value;
-
-      for (i = 0; i < shape_size; i++)
-	{
-	  e = gfc_constructor_lookup_expr (v->value.constructor, i);
-	  if (e == NULL)
-	     break;
-
-	  gfc_extract_int (e, &extent);
-
-	  if (extent < 0)
-	    {
-	      gfc_error ("Element %d of actual argument of RESHAPE at %L "
-			 "cannot be negative", i + 1, &shape->where);
+			 gfc_current_intrinsic, &shape->where, extent);
 	      return false;
 	    }
 	}
@@ -4856,8 +4830,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 	}
     }
 
-  if (pad == NULL && shape->expr_type == EXPR_ARRAY
-      && gfc_is_constant_expr (shape)
+  if (pad == NULL && shape->expr_type == EXPR_ARRAY && shape_is_const
       && !(source->expr_type == EXPR_VARIABLE && source->symtree->n.sym->as
 	   && source->symtree->n.sym->as->type == AS_ASSUMED_SIZE))
     {
@@ -5979,6 +5952,13 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
     {
       gfc_error ("%s argument to IMAGE_INDEX must be a rank one array at %L",
                 gfc_current_intrinsic_arg[1]->name, &sub->where);
+      return false;
+    }
+
+  if (sub->ts.type != BT_INTEGER)
+    {
+      gfc_error ("Type of %s argument of IMAGE_INDEX at %L shall be INTEGER",
+		 gfc_current_intrinsic_arg[1]->name, &sub->where);
       return false;
     }
 

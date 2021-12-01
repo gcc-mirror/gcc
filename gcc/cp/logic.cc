@@ -495,7 +495,6 @@ cnf_size_r (tree t)
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (0, false);
-	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{
@@ -536,7 +535,6 @@ cnf_size_r (tree t)
 	  else
 	    /* Neither LHS nor RHS is a conjunction.  */
 	    return std::make_pair (2, false);
-	  gcc_unreachable ();
 	}
       if (conjunction_p (lhs))
 	{

@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-D_GLIBCXX_ASSERTIONS" }
-// { dg-do compile { target c++17 xfail *-*-* } }
+// { dg-do compile { target c++17 } }
 
 #include <string_view>
 

@@ -6602,11 +6602,10 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 	return (rtx_equal_p (x, in)
 		|| reg_overlap_mentioned_for_reload_p (x, XEXP (in, 0))
 		|| reg_overlap_mentioned_for_reload_p (x, XEXP (in, 1)));
-      else return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
-		   || reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
+      else
+	return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
+		|| reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
     }
-
-  gcc_unreachable ();
 }
 
 /* Return nonzero if anything in X contains a MEM.  Look also for pseudo

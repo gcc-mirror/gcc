@@ -1,3 +1,9 @@
+2021-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* eh_cpp.cc (GTM::gtm_thread::init_cpp_exceptions): If the
+	target does not support HAVE_ELF_STYLE_WEAKREF then do not
+	try to test the __cxa_get_globals against NULL.
+
 2021-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91488

@@ -5229,7 +5229,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	  case EXPR_OP:
 	    WALK_SUBEXPR ((*e)->value.op.op1);
 	    WALK_SUBEXPR_TAIL ((*e)->value.op.op2);
-	    break;
+	    /* No fallthru because of the tail recursion above.  */
 	  case EXPR_FUNCTION:
 	    for (a = (*e)->value.function.actual; a; a = a->next)
 	      WALK_SUBEXPR (a->expr);

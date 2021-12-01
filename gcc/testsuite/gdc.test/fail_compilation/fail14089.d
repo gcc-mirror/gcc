@@ -1,16 +1,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail14089.d(41): Error: `long` has no effect in expression `1`
-fail_compilation/fail14089.d(41): Error: `long` has no effect in expression `1`
-fail_compilation/fail14089.d(42): Error: `long` has no effect in expression `1`
-fail_compilation/fail14089.d(42): Error: `var` has no effect in expression `n`
-fail_compilation/fail14089.d(43): Error: `long` has no effect in expression `1`
-fail_compilation/fail14089.d(43): Error: `dotvar` has no effect in expression `s.val`
-fail_compilation/fail14089.d(44): Error: `var` has no effect in expression `n`
-fail_compilation/fail14089.d(44): Error: `long` has no effect in expression `1`
-fail_compilation/fail14089.d(45): Error: `dotvar` has no effect in expression `s.val`
-fail_compilation/fail14089.d(45): Error: `long` has no effect in expression `1`
+fail_compilation/fail14089.d(41): Error: `1` has no effect
+fail_compilation/fail14089.d(41): Error: `1` has no effect
+fail_compilation/fail14089.d(42): Error: `1` has no effect
+fail_compilation/fail14089.d(42): Error: `n` has no effect
+fail_compilation/fail14089.d(43): Error: `1` has no effect
+fail_compilation/fail14089.d(43): Error: `s.val` has no effect
+fail_compilation/fail14089.d(44): Error: `n` has no effect
+fail_compilation/fail14089.d(44): Error: `1` has no effect
+fail_compilation/fail14089.d(45): Error: `s.val` has no effect
+fail_compilation/fail14089.d(45): Error: `1` has no effect
 ---
 */
 

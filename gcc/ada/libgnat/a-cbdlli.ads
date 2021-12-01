@@ -56,8 +56,8 @@ is
       Variable_Indexing => Reference,
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
-      Aggregate         => (Empty        => Empty,
-                            Add_Unnamed  => Append),
+      Aggregate         => (Empty       => Empty,
+                            Add_Unnamed => Append),
       Preelaborable_Initialization
                         => Element_Type'Preelaborable_Initialization;
 

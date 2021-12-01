@@ -5196,6 +5196,7 @@ make_ptrmem_cst (tree type, tree member)
   tree ptrmem_cst = make_node (PTRMEM_CST);
   TREE_TYPE (ptrmem_cst) = type;
   PTRMEM_CST_MEMBER (ptrmem_cst) = member;
+  PTRMEM_CST_LOCATION (ptrmem_cst) = input_location;
   return ptrmem_cst;
 }
 
@@ -6040,6 +6041,8 @@ cp_expr_location (const_tree t_)
       return STATIC_ASSERT_SOURCE_LOCATION (t);
     case TRAIT_EXPR:
       return TRAIT_EXPR_LOCATION (t);
+    case PTRMEM_CST:
+      return PTRMEM_CST_LOCATION (t);
     default:
       return EXPR_LOCATION (t);
     }

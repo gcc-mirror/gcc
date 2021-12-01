@@ -2785,7 +2785,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 		int start = (regno == VGPR_REGNO (7) ? 64 : 0);
 		int count = MIN (saved_scalars - start, 64);
 		int add_lr = (regno == VGPR_REGNO (6)
-			      && df_regs_ever_live_p (LINK_REGNUM));
+			      && offsets->lr_needs_saving);
 		int lrdest = -1;
 		rtvec seq = rtvec_alloc (count + add_lr);
 

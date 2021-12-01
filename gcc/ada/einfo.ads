@@ -946,16 +946,17 @@ package Einfo is
 
 --    Direct_Primitive_Operations
 --       Defined in tagged types and subtypes (including synchronized types),
---       in tagged private types, and in tagged incomplete types. However, when
---       Extensions_Allowed is True (-gnatX), also defined for untagged types
---       (for support of the extension feature of prefixed calls for untagged
---       types). This field is an element list of entities for primitive
---       operations of the type. For incomplete types the list is always empty.
---       In order to follow the C++ ABI, entities of primitives that come from
---       source must be stored in this list in the order of their occurrence in
---       the sources. When expansion is disabled, the corresponding record type
---       of a synchronized type is not constructed. In that case, such types
---       carry this attribute directly.
+--       in tagged private types, and in tagged incomplete types. Moreover, it
+--       is also defined for untagged types, both when Extensions_Allowed is
+--       True (-gnatX) to support the extension feature of prefixed calls for
+--       untagged types, and when Extensions_Allowed is False to get better
+--       error messages. This field is an element list of entities for
+--       primitive operations of the type. For incomplete types the list is
+--       always empty. In order to follow the C++ ABI, entities of primitives
+--       that come from source must be stored in this list in the order of
+--       their occurrence in the sources. When expansion is disabled, the
+--       corresponding record type of a synchronized type is not constructed.
+--       In that case, such types carry this attribute directly.
 
 --    Directly_Designated_Type
 --       Defined in access types. This field points to the type that is
@@ -5352,7 +5353,7 @@ package Einfo is
    --    Size_Clause                           (synth)
 
    --  E_Decimal_Fixed_Point_Type
-   --  E_Decimal_Fixed_Subtype$$$no such thing
+   --  E_Decimal_Fixed_Point_Subtype
    --    Scale_Value
    --    Digits_Value
    --    Scalar_Range

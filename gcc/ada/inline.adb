@@ -1087,9 +1087,14 @@ package body Inline is
          --  subprograms for the unit.
 
          for Index in Inlined.First .. Inlined.Last loop
-            if Is_Called (Inlined.Table (Index).Name) then
-               Add_Inlined_Subprogram (Inlined.Table (Index).Name);
-            end if;
+            declare
+               E : constant Subprogram_Kind_Id := Inlined.Table (Index).Name;
+
+            begin
+               if Is_Called (E) and then not Is_Ignored_Ghost_Entity (E) then
+                  Add_Inlined_Subprogram (E);
+               end if;
+            end;
          end loop;
 
          Pop_Scope;

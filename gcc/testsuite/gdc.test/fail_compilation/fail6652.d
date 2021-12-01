@@ -1,15 +1,15 @@
 // PERMUTE_ARGS: -w -dw -de -d
 
 /******************************************/
-// 6652
+// https://issues.dlang.org/show_bug.cgi?id=6652
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail6652.d(20): Error: cannot modify const expression i
-fail_compilation/fail6652.d(25): Error: cannot modify const expression i
-fail_compilation/fail6652.d(30): Error: cannot modify const expression i
-fail_compilation/fail6652.d(35): Error: cannot modify const expression i
+fail_compilation/fail6652.d(20): Error: cannot modify `const` expression `i`
+fail_compilation/fail6652.d(25): Error: cannot modify `const` expression `i`
+fail_compilation/fail6652.d(30): Error: cannot modify `const` expression `i`
+fail_compilation/fail6652.d(35): Error: cannot modify `const` expression `i`
 ---
 */
 

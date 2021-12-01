@@ -5578,32 +5578,55 @@ ipcp_read_transformation_summaries (void)
 }
 
 /* Adjust the aggregate replacements in AGGVAL to reflect parameters skipped in
-   NODE.  */
+   NODE but also if any parameter was IPA-SRAed into a scalar go ahead with
+   substitution of the default_definitions of that new param with the
+   appropriate constant.
 
-static void
-adjust_agg_replacement_values (struct cgraph_node *node,
-			       struct ipa_agg_replacement_value *aggval)
+   Return two bools.  the first it true if at least one item in AGGVAL still
+   exists and function body walk should go ahead.  The second is true if any
+   values were already substituted for scalarized parameters and update_cfg
+   shuld be run after replace_uses_by.  */
+
+static std::pair<bool, bool>
+adjust_agg_replacement_values (cgraph_node *node,
+			       ipa_agg_replacement_value *aggval,
+			       const vec<ipa_param_descriptor, va_gc>
+			         &descriptors)
 {
   struct ipa_agg_replacement_value *v;
   clone_info *cinfo = clone_info::get (node);
-
   if (!cinfo || !cinfo->param_adjustments)
-    return;
+    return std::pair<bool, bool> (true, false);
 
-  auto_vec<int, 16> new_indices;
-  cinfo->param_adjustments->get_updated_indices (&new_indices);
+  bool anything_left = false;
+  bool done_replacement = false;
   for (v = aggval; v; v = v->next)
     {
       gcc_checking_assert (v->index >= 0);
 
-      if ((unsigned) v->index < new_indices.length ())
-	v->index = new_indices[v->index];
-      else
-	/* This can happen if we know about a constant passed by reference by
-	   an argument which is never actually used for anything, let alone
-	   loading that constant.  */
-	v->index = -1;
+      unsigned unit_offset = v->offset / BITS_PER_UNIT;
+      tree cst_type = TREE_TYPE (v->value);
+      int split_idx;
+      int new_idx
+	= cinfo->param_adjustments->get_updated_index_or_split (v->index,
+								unit_offset,
+								cst_type,
+								&split_idx);
+      v->index = new_idx;
+      if (new_idx >= 0)
+	anything_left = true;
+      else if (split_idx >= 0)
+	{
+	  tree parm = ipa_get_param (descriptors, split_idx);
+	  tree ddef = ssa_default_def (cfun, parm);
+	  if (ddef)
+	    {
+	      replace_uses_by (ddef, v->value);
+	      done_replacement = true;
+	    }
+	}
     }
+   return std::pair<bool, bool> (anything_left, done_replacement);
 }
 
 /* Dominator walker driving the ipcp modification phase.  */
@@ -5978,7 +6001,6 @@ ipcp_transform_function (struct cgraph_node *node)
   struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
-  bool something_changed = false;
 
   gcc_checking_assert (cfun);
   gcc_checking_assert (current_function_decl);
@@ -5995,7 +6017,21 @@ ipcp_transform_function (struct cgraph_node *node)
   param_count = count_formal_params (node->decl);
   if (param_count == 0)
     return 0;
-  adjust_agg_replacement_values (node, aggval);
+  vec_safe_grow_cleared (descriptors, param_count, true);
+  ipa_populate_param_decls (node, *descriptors);
+  std::pair<bool, bool> rr
+    = adjust_agg_replacement_values (node, aggval, *descriptors);
+  bool cfg_changed = rr.second;
+  if (!rr.first)
+    {
+      vec_free (descriptors);
+      if (dump_file)
+	fprintf (dump_file, "  All affected aggregate parameters were either "
+		 "removed or converted into scalars, phase done.\n");
+      if (cfg_changed)
+	delete_unreachable_blocks_update_callgraph (node, false);
+      return 0;
+    }
   if (dump_file)
     ipa_dump_agg_replacement_values (dump_file, aggval);
 
@@ -6006,13 +6042,12 @@ ipcp_transform_function (struct cgraph_node *node)
   fbi.param_count = param_count;
   fbi.aa_walk_budget = opt_for_fn (node->decl, param_ipa_max_aa_steps);
 
-  vec_safe_grow_cleared (descriptors, param_count, true);
-  ipa_populate_param_decls (node, *descriptors);
+  bool modified_mem_access = false;
   calculate_dominance_info (CDI_DOMINATORS);
-  ipcp_modif_dom_walker walker (&fbi, descriptors, aggval, &something_changed);
+  ipcp_modif_dom_walker walker (&fbi, descriptors, aggval, &modified_mem_access);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   free_dominance_info (CDI_DOMINATORS);
-  bool cfg_changed = walker.cleanup_eh ();
+  cfg_changed |= walker.cleanup_eh ();
 
   int i;
   struct ipa_bb_info *bi;
@@ -6026,14 +6061,10 @@ ipcp_transform_function (struct cgraph_node *node)
   s->m_vr = NULL;
 
   vec_free (descriptors);
-
-  if (!something_changed)
-    return 0;
-
   if (cfg_changed)
     delete_unreachable_blocks_update_callgraph (node, false);
 
-  return TODO_update_ssa_only_virtuals;
+  return modified_mem_access ? TODO_update_ssa_only_virtuals : 0;
 }
 
 

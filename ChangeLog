@@ -1,3 +1,15 @@
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.def: Add bootstrap to libbacktrace, libphobos, zlib, and
+	libatomic.
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Fix command for GDC.
+	(STAGE1_CONFIGURE_FLAGS): Add --with-libphobos-druntime-only if
+	target-libphobos-bootstrap.
+	(STAGE2_CONFIGURE_FLAGS): Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add support for bootstrapping D front-end.
+
 2021-11-16  Martin Uecker  <uecker@gcc.gnu.org>
 
 	* MAINTAINERS: Add myself to DCO section and update email address.

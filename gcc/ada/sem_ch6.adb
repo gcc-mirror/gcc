@@ -11380,11 +11380,11 @@ package body Sem_Ch6 is
          if not Comes_From_Source (S) then
 
             --  Add an inherited primitive for an untagged derived type to
-            --  Derived_Type's list of primitives. Tagged primitives are dealt
-            --  with in Check_Dispatching_Operation.
+            --  Derived_Type's list of primitives. Tagged primitives are
+            --  dealt with in Check_Dispatching_Operation. Do this even when
+            --  Extensions_Allowed is False to issue better error messages.
 
             if Present (Derived_Type)
-              and then Extensions_Allowed
               and then not Is_Tagged_Type (Derived_Type)
             then
                Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
@@ -11418,13 +11418,13 @@ package body Sem_Ch6 is
                   Set_Has_Primitive_Operations (B_Typ);
                   Set_Is_Primitive (S);
 
-                  --  Add a primitive for an untagged type to B_Typ's list
-                  --  of primitives. Tagged primitives are dealt with in
-                  --  Check_Dispatching_Operation.
+                  --  Add a primitive for an untagged type to B_Typ's
+                  --  list of primitives. Tagged primitives are dealt with
+                  --  in Check_Dispatching_Operation. Do this even when
+                  --  Extensions_Allowed is False to issue better error
+                  --  messages.
 
-                  if Extensions_Allowed
-                    and then not Is_Tagged_Type (B_Typ)
-                  then
+                  if not Is_Tagged_Type (B_Typ) then
                      Add_Or_Replace_Untagged_Primitive (B_Typ);
                   end if;
 
@@ -11463,11 +11463,11 @@ package body Sem_Ch6 is
 
                   --  Add a primitive for an untagged type to B_Typ's list
                   --  of primitives. Tagged primitives are dealt with in
-                  --  Check_Dispatching_Operation.
+                  --  Check_Dispatching_Operation. Do this even when
+                  --  Extensions_Allowed is False to issue better error
+                  --  messages.
 
-                  if Extensions_Allowed
-                    and then not Is_Tagged_Type (B_Typ)
-                  then
+                  if not Is_Tagged_Type (B_Typ) then
                      Add_Or_Replace_Untagged_Primitive (B_Typ);
                   end if;
 

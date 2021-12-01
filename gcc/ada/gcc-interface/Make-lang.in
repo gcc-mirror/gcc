@@ -805,8 +805,8 @@ ada.srcextra:
 ada.srcman:
 
 ada.tags: force
-	cd $(srcdir)/ada && etags -o TAGS.sub *.c *.h *.ads *.adb && \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/ada && $(ETAGS) -o TAGS.sub *.c *.h *.ads *.adb && \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 
 # Generate documentation.

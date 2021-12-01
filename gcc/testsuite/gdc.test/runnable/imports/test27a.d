@@ -1,10 +1,17 @@
 module imports.test27a;
 
-import std.variant;
+struct Variant
+{
+    this(T)(T)
+    {
+    }
+}
 
-class myClass(T) {
+class myClass(T)
+{
 public:
-    void func(T v) {
+    void func(T v)
+    {
         Variant b = Variant(v);
     }
 }

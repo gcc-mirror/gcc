@@ -1,3 +1,4 @@
+// Written in the D programming language.
 /**
 $(SCRIPT inhibitQuickIndex = 1;)
 
@@ -185,14 +186,20 @@ $(TR $(TD `onUpperBound`) $(TD If defined, $(D hook.onUpperBound(value, bound))
 binary operators `+=`,  `-=`, `*=`, `/=`, `%=`, `^^=`, `&=`, `|=`, `^=`, `<<=`, `>>=`,
 and `>>>=` is larger than the largest value representable by `T`.)
 )
+$(TR $(TD `hookToHash`) $(TD If defined, $(D hook.hookToHash(payload))
+(where `payload` is a reference to the value wrapped by Checked) is forwarded
+to when `toHash` is called on a Checked type. Custom hashing can be implemented
+in a `Hook`, otherwise the built-in hashing is used.)
+)
 )
 
+Source: $(PHOBOSSRC std/experimental/checkedint.d)
 */
 module std.experimental.checkedint;
 import std.traits : isFloatingPoint, isIntegral, isNumeric, isUnsigned, Unqual;
 
 ///
-@system unittest
+@safe unittest
 {
     int[] concatAndAdd(int[] a, int[] b, int offset)
     {
@@ -208,6 +215,44 @@ import std.traits : isFloatingPoint, isIntegral, isNumeric, isUnsigned, Unqual;
     assert(concatAndAdd([1, 2, 3], [4, 5], -1) == [0, 1, 2, 3, 4]);
 }
 
+
+/// `Saturate` stops at an overflow
+@safe unittest
+{
+    auto x = (cast(byte) 127).checked!Saturate;
+    assert(x == 127);
+    x++;
+    assert(x == 127);
+}
+
+/// `WithNaN` has a special "Not a Number" (NaN) value akin to the homonym value reserved for floating-point values
+@safe unittest
+{
+    auto x = 100.checked!WithNaN;
+    assert(x == 100);
+    x /= 0;
+    assert(x.isNaN);
+}
+
+/// `ProperCompare` fixes the comparison operators ==, !=, <, <=, >, and >= to return correct results
+@safe unittest
+{
+    uint x = 1;
+    auto y = x.checked!ProperCompare;
+    assert(x < -1); // built-in comparison
+    assert(y > -1); // ProperCompare
+}
+
+/// `Throw` fails every incorrect operation by throwing an exception
+@safe unittest
+{
+    import std.exception : assertThrown;
+    auto x = -1.checked!Throw;
+    assertThrown(x / 0);
+    assertThrown(x + int.min);
+    assertThrown(x == uint.max);
+}
+
 /**
 Checked integral type wraps an integral `T` and customizes its behavior with the
 help of a `Hook` type. The type wrapped must be one of the predefined integrals
@@ -218,7 +263,9 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
 {
     import std.algorithm.comparison : among;
     import std.experimental.allocator.common : stateSize;
-    import std.traits : hasMember;
+    import std.format.spec : FormatSpec;
+    import std.range.primitives : isInputRange, ElementType;
+    import std.traits : hasMember, isSomeChar;
 
     /**
     The type of the integral subject to checking.
@@ -262,7 +309,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
     {
         enum Checked!(T, Hook) min = Checked!(T, Hook)(Hook.min!T);
         ///
-        @system unittest
+        @safe unittest
         {
             assert(Checked!short.min == -32768);
             assert(Checked!(short, WithNaN).min == -32767);
@@ -295,7 +342,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
             payload = rhs.payload;
     }
     ///
-    @system unittest
+    @safe unittest
     {
         auto a = checked(42L);
         assert(a == 42);
@@ -306,21 +353,59 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
     /**
     Assignment operator. Has the same constraints as the constructor.
     */
-    void opAssign(U)(U rhs) if (is(typeof(Checked!(T, Hook)(rhs))))
+    ref Checked opAssign(U)(U rhs) return
+    if (is(typeof(Checked!(T, Hook)(rhs))))
     {
         static if (isIntegral!U)
             payload = rhs;
         else
             payload = rhs.payload;
+        return this;
     }
     ///
-    @system unittest
+    @safe unittest
     {
         Checked!long a;
         a = 42L;
         assert(a == 42);
         a = 4242;
         assert(a == 4242);
+    }
+
+    ///
+    @safe unittest
+    {
+        Checked!long a, b;
+        a = b = 3;
+        assert(a == 3 && b == 3);
+    }
+
+    /**
+    Construct from a decimal string. The conversion follows the same rules as
+    $(REF to, std, conv) converting a string to the wrapped `T` type.
+
+    Params:
+        str = an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+              of characters
+    */
+    this(Range)(Range str)
+    if (isInputRange!Range && isSomeChar!(ElementType!Range))
+    {
+        import std.conv : to;
+
+        this(to!T(str));
+    }
+
+    /**
+    $(REF to, std, conv) can convert a string to a `Checked!T`:
+    */
+    @system unittest
+    {
+        import std.conv : to;
+
+        const a = to!long("1234");
+        const b = to!(Checked!long)("1234");
+        assert(a == b);
     }
 
     // opCast
@@ -379,7 +464,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
         }
     }
     ///
-    @system unittest
+    @safe unittest
     {
         assert(cast(uint) checked(42) == 42);
         assert(cast(uint) checked!WithNaN(-42) == uint.max);
@@ -435,6 +520,8 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
     ///
     static if (is(T == int) && is(Hook == void)) @safe unittest
     {
+        import std.traits : isUnsigned;
+
         static struct MyHook
         {
             static bool thereWereErrors;
@@ -468,6 +555,110 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
         assert(checked!MyHook2(uint(-42)) == a);
         // Hook on left hand side takes precedence, so no errors
         assert(!MyHook.thereWereErrors);
+    }
+
+    // toHash
+    /**
+    Generates a hash for `this`. If `Hook` defines `hookToHash`, the call
+    immediately returns `hook.hookToHash(payload)`. If `Hook` does not
+    implement `hookToHash`, but it has state, a hash will be generated for
+    the `Hook` using the built-in function and it will be xored with the
+    hash of the `payload`.
+    */
+    size_t toHash() const nothrow @safe
+    {
+        static if (hasMember!(Hook, "hookToHash"))
+        {
+            return hook.hookToHash(payload);
+        }
+        else static if (stateSize!Hook > 0)
+        {
+            static if (hasMember!(typeof(payload), "toHash"))
+            {
+                return payload.toHash() ^ hashOf(hook);
+            }
+            else
+            {
+                return hashOf(payload) ^ hashOf(hook);
+            }
+        }
+        else static if (hasMember!(typeof(payload), "toHash"))
+        {
+            return payload.toHash();
+        }
+        else
+        {
+            return .hashOf(payload);
+        }
+    }
+
+    /// ditto
+    size_t toHash(this _)() shared const nothrow @safe
+    {
+        import core.atomic : atomicLoad, MemoryOrder;
+        static if (is(typeof(this.payload.atomicLoad!(MemoryOrder.acq)) P))
+        {
+            auto payload = __ctfe ? cast(P) this.payload
+                                  : this.payload.atomicLoad!(MemoryOrder.acq);
+        }
+        else
+        {
+            alias payload = this.payload;
+        }
+
+        static if (hasMember!(Hook, "hookToHash"))
+        {
+            return hook.hookToHash(payload);
+        }
+        else static if (stateSize!Hook > 0)
+        {
+            static if (hasMember!(typeof(payload), "toHash"))
+            {
+                return payload.toHash() ^ hashOf(hook);
+            }
+            else
+            {
+                return hashOf(payload) ^ hashOf(hook);
+            }
+        }
+        else static if (hasMember!(typeof(payload), "toHash"))
+        {
+            return payload.toHash();
+        }
+        else
+        {
+            return .hashOf(payload);
+        }
+    }
+
+    /**
+    Writes a string representation of this to a `sink`.
+
+    Params:
+      sink = A `Char` accepting
+             $(REF_ALTTEXT output range, isOutputRange, std,range,primitives).
+      fmt  = A $(REF FormatSpec, std, format) which controls how this
+             is formatted.
+    */
+    void toString(Writer, Char)(scope ref Writer sink, scope const ref FormatSpec!Char fmt) const
+    {
+        import std.format.write : formatValue;
+        if (fmt.spec == 's')
+            return formatValue(sink, this, fmt);
+        else
+            return formatValue(sink, payload, fmt);
+    }
+
+    /**
+    `toString` is rarely directly invoked; the usual way of using it is via
+    $(REF format, std, format):
+    */
+    @system unittest
+    {
+        import std.format;
+
+        assert(format("%04d", checked(15)) == "0015");
+        assert(format("0x%02x", checked(15)) == "0x0f");
     }
 
     // opCmp
@@ -536,6 +727,8 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
     ///
     static if (is(T == int) && is(Hook == void)) @safe unittest
     {
+        import std.traits : isUnsigned;
+
         static struct MyHook
         {
             static bool thereWereErrors;
@@ -576,7 +769,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
     }
 
     // For coverage
-    static if (is(T == int) && is(Hook == void)) @system unittest
+    static if (is(T == int) && is(Hook == void)) @safe unittest
     {
         assert(checked(42) <= checked!void(42));
         assert(checked!void(42) <= checked(42u));
@@ -787,7 +980,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
         }
     }
 
-    static if (is(T == int) && is(Hook == void)) @system unittest
+    static if (is(T == int) && is(Hook == void)) @safe unittest
     {
         const a = checked(42);
         assert(a + 1 == 43);
@@ -854,7 +1047,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
         {
             bool overflow;
             auto r = opChecked!op(lhs, T(payload), overflow);
-            if (overflow) r = hook.onOverflow!op(42);
+            if (overflow) r = hook.onOverflow!op(lhs, payload);
             return Checked!(typeof(r), Hook)(r);
         }
         else
@@ -865,7 +1058,7 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
         }
     }
 
-    static if (is(T == int) && is(Hook == void)) @system unittest
+    static if (is(T == int) && is(Hook == void)) @safe unittest
     {
         assert(1 + checked(1) == 2);
         static uint tally;
@@ -904,6 +1097,10 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
     hook.onLowerBound(result, min)). If `result` is greater than $(D Checked!(T,
     Hook).max) and if `Hook` defines `onUpperBound`, the payload is assigned
     from $(D hook.onUpperBound(result, min)).
+
+    If the right-hand side is also a Checked but with a different hook or
+    underlying type, the hook and underlying type of this Checked takes
+    precedence.
 
     In all other cases, the built-in behavior is carried out.
 
@@ -953,6 +1150,13 @@ if (isIntegral!T || is(T == Checked!(U, H), U, H))
         return this;
     }
 
+    /// ditto
+    ref Checked opOpAssign(string op, Rhs)(const Rhs rhs) return
+    if (is(Rhs == Checked!(RhsT, RhsHook), RhsT, RhsHook))
+    {
+        return opOpAssign!(op, typeof(rhs.payload))(rhs.payload);
+    }
+
     ///
     static if (is(T == int) && is(Hook == void)) @safe unittest
     {
@@ -994,7 +1198,7 @@ if (is(typeof(Checked!(T, Hook)(value))))
 }
 
 ///
-@system unittest
+@safe unittest
 {
     static assert(is(typeof(checked(42)) == Checked!int));
     assert(checked(42) == Checked!int(42));
@@ -1012,6 +1216,18 @@ if (is(typeof(Checked!(T, Hook)(value))))
     test!ubyte;
     test!(const ubyte);
     test!(immutable ubyte);
+}
+
+@system unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=21758
+    assert(4 * checked(5L) == 20);
+    assert(20 / checked(5L) == 4);
+    assert(2 ^^ checked(3L) == 8);
+    assert(12 % checked(5L) == 2);
+    assert((0xff & checked(3L)) == 3);
+    assert((0xf0 | checked(3L)) == 0xf3);
+    assert((0xff ^ checked(3L)) == 0xfc);
 }
 
 // Abort
@@ -1157,7 +1373,7 @@ static:
     }
 }
 
-@system unittest
+@safe unittest
 {
     void test(T)()
     {
@@ -1366,7 +1582,7 @@ default behavior.
 */
 struct Warn
 {
-    import std.stdio : stderr;
+    import std.stdio : writefln;
 static:
     /**
 
@@ -1383,7 +1599,7 @@ static:
     */
     Dst onBadCast(Dst, Src)(Src src)
     {
-        stderr.writefln("Erroneous cast: cast(%s) %s(%s)",
+        trustedStderr.writefln("Erroneous cast: cast(%s) %s(%s)",
             Dst.stringof, Src.stringof, src);
         return cast(Dst) src;
     }
@@ -1402,14 +1618,14 @@ static:
     */
     Lhs onLowerBound(Rhs, T)(Rhs rhs, T bound)
     {
-        stderr.writefln("Lower bound error: %s(%s) < %s(%s)",
+        trustedStderr.writefln("Lower bound error: %s(%s) < %s(%s)",
             Rhs.stringof, rhs, T.stringof, bound);
         return cast(T) rhs;
     }
     /// ditto
     T onUpperBound(Rhs, T)(Rhs rhs, T bound)
     {
-        stderr.writefln("Upper bound error: %s(%s) > %s(%s)",
+        trustedStderr.writefln("Upper bound error: %s(%s) > %s(%s)",
             Rhs.stringof, rhs, T.stringof, bound);
         return cast(T) rhs;
     }
@@ -1436,7 +1652,7 @@ static:
         auto result = opChecked!"=="(lhs, rhs, error);
         if (error)
         {
-            stderr.writefln("Erroneous comparison: %s(%s) == %s(%s)",
+            trustedStderr.writefln("Erroneous comparison: %s(%s) == %s(%s)",
                 Lhs.stringof, lhs, Rhs.stringof, rhs);
             return lhs == rhs;
         }
@@ -1444,7 +1660,7 @@ static:
     }
 
     ///
-    @system unittest
+    @safe unittest
     {
         auto x = checked!Warn(-42);
         // Passes
@@ -1475,7 +1691,7 @@ static:
         auto result = opChecked!"cmp"(lhs, rhs, error);
         if (error)
         {
-            stderr.writefln("Erroneous ordering comparison: %s(%s) and %s(%s)",
+            trustedStderr.writefln("Erroneous ordering comparison: %s(%s) and %s(%s)",
                 Lhs.stringof, lhs, Rhs.stringof, rhs);
             return lhs < rhs ? -1 : lhs > rhs;
         }
@@ -1483,7 +1699,7 @@ static:
     }
 
     ///
-    @system unittest
+    @safe unittest
     {
         auto x = checked!Warn(-42);
         // Passes
@@ -1508,27 +1724,73 @@ static:
     */
     typeof(~Lhs()) onOverflow(string x, Lhs)(ref Lhs lhs)
     {
-        stderr.writefln("Overflow on unary operator: %s%s(%s)",
+        trustedStderr.writefln("Overflow on unary operator: %s%s(%s)",
             x, Lhs.stringof, lhs);
         return mixin(x ~ "lhs");
     }
     /// ditto
     typeof(Lhs() + Rhs()) onOverflow(string x, Lhs, Rhs)(Lhs lhs, Rhs rhs)
     {
-        stderr.writefln("Overflow on binary operator: %s(%s) %s %s(%s)",
+        trustedStderr.writefln("Overflow on binary operator: %s(%s) %s %s(%s)",
             Lhs.stringof, lhs, x, Rhs.stringof, rhs);
-        return mixin("lhs" ~ x ~ "rhs");
+        static if (x == "/")               // Issue 20743: mixin below would cause SIGFPE on POSIX
+            return typeof(lhs / rhs).min;  // or EXCEPTION_INT_OVERFLOW on Windows
+        else
+            return mixin("lhs" ~ x ~ "rhs");
+    }
+
+    // This is safe because we do not assign to the reference returned by
+    // `stderr`. The ability for the caller to do that is why `stderr` is not
+    // safe in the general case.
+    private @property auto ref trustedStderr() @trusted
+    {
+        import std.stdio : stderr;
+
+        return stderr;
     }
 }
 
 ///
-@system unittest
+@safe unittest
 {
     auto x = checked!Warn(42);
     short x1 = cast(short) x;
     //x += long(int.max);
     auto y = checked!Warn(cast(const int) 42);
     short y1 = cast(const byte) y;
+}
+
+@system unittest
+{
+    auto a = checked!Warn(int.min);
+    auto b = checked!Warn(-1);
+    auto x = checked!Abort(int.min);
+    auto y = checked!Abort(-1);
+
+    // Temporarily redirect output to stderr to make sure we get the right output.
+    import std.file : exists, remove;
+    import std.process : uniqueTempPath;
+    import std.stdio : stderr;
+    auto tmpname = uniqueTempPath;
+    scope(exit) if (exists(tmpname)) remove(tmpname);
+    auto t = stderr;
+    stderr.open(tmpname, "w");
+    // Open a new scope to minimize code ran with stderr redirected.
+    {
+        scope(exit) stderr = t;
+        assert(a / b == a * b);
+        import std.exception : assertThrown;
+        import core.exception : AssertError;
+        assertThrown!AssertError(x / y);
+    }
+    import std.file : readText;
+    import std.ascii : newline;
+    auto witness = readText(tmpname);
+    auto expected =
+"Overflow on binary operator: int(-2147483648) / const(int)(-1)" ~ newline ~
+"Overflow on binary operator: int(-2147483648) * const(int)(-1)" ~ newline ~
+"Overflow on binary operator: int(-2147483648) / const(int)(-1)" ~ newline;
+    assert(witness == expected, "'" ~ witness ~ "'");
 }
 
 // ProperCompare
@@ -1668,7 +1930,7 @@ struct ProperCompare
     assert(opCmpProper(42, 42.0) == 0);
     assert(opCmpProper(41, 42.0) < 0);
     assert(opCmpProper(42, 41.0) > 0);
-    import std.math : isNaN;
+    import std.math.traits : isNaN;
     assert(isNaN(opCmpProper(41, double.init)));
     assert(opCmpProper(42u, 42) == 0);
     assert(opCmpProper(42, 42u) == 0);
@@ -1707,9 +1969,9 @@ static:
     */
     enum T defaultValue(T) = T.min == 0 ? T.max : T.min;
     /**
-    The maximum value representable is $(D T.max) for signed integrals, $(D
+    The maximum value representable is `T.max` for signed integrals, $(D
     T.max - 1) for unsigned integrals. The minimum value representable is $(D
-    T.min + 1) for signed integrals, $(D 0) for unsigned integrals.
+    T.min + 1) for signed integrals, `0` for unsigned integrals.
     */
     enum T max(T) = cast(T) (T.min == 0 ? T.max - 1 : T.max);
     /// ditto
@@ -1893,8 +2155,8 @@ static:
     left-hand side operand. If $(D lhs == WithNaN.defaultValue!Lhs), returns
     $(D WithNaN.defaultValue!(typeof(lhs + rhs))) without evaluating the
     operand. Otherwise, evaluates the operand. If evaluation does not overflow,
-    returns the result. Otherwise, returns $(D WithNaN.defaultValue!(typeof(lhs
-    + rhs))).
+    returns the result. Otherwise, returns $(D WithNaN.defaultValue!(typeof(lhs +
+    rhs))).
 
     Params:
     x = The operator symbol
@@ -1932,8 +2194,8 @@ static:
     right-hand side operand. If $(D rhs == WithNaN.defaultValue!Rhs), returns
     $(D WithNaN.defaultValue!(typeof(lhs + rhs))) without evaluating the
     operand. Otherwise, evaluates the operand. If evaluation does not overflow,
-    returns the result. Otherwise, returns $(D WithNaN.defaultValue!(typeof(lhs
-    + rhs))).
+    returns the result. Otherwise, returns $(D WithNaN.defaultValue!(typeof(lhs +
+    rhs))).
 
     Params:
     x = The operator symbol
@@ -2179,7 +2441,7 @@ static:
     Returns: The saturated result of the operator.
 
     */
-    typeof(~Lhs()) onOverflow(string x, Lhs)(Lhs lhs)
+    auto onOverflow(string x, Lhs)(Lhs lhs)
     {
         static assert(x == "-" || x == "++" || x == "--");
         return x == "--" ? Lhs.min : Lhs.max;
@@ -2618,7 +2880,7 @@ if (isIntegral!T && T.sizeof >= 4)
     testPow!ulong(3, 41);
 }
 
-version (unittest) private struct CountOverflows
+version (StdUnittest) private struct CountOverflows
 {
     uint calls;
     auto onOverflow(string op, Lhs)(Lhs lhs)
@@ -2643,19 +2905,18 @@ version (unittest) private struct CountOverflows
     }
 }
 
-version (unittest) private struct CountOpBinary
-{
-    uint calls;
-    auto hookOpBinary(string op, Lhs, Rhs)(Lhs lhs, Rhs rhs)
-    {
-        ++calls;
-        return mixin("lhs" ~ op ~ "rhs");
-    }
-}
-
 // opBinary
 @nogc nothrow pure @safe unittest
 {
+    static struct CountOpBinary
+    {
+        uint calls;
+        auto hookOpBinary(string op, Lhs, Rhs)(Lhs lhs, Rhs rhs)
+        {
+            ++calls;
+            return mixin("lhs" ~ op ~ "rhs");
+        }
+    }
     auto x = Checked!(const int, void)(42), y = Checked!(immutable int, void)(142);
     assert(x + y == 184);
     assert(x + 100 == 142);
@@ -3060,4 +3321,141 @@ version (unittest) private struct CountOpBinary
     assert(y < x);
     x = -1;
     assert(x > y);
+}
+
+@nogc nothrow pure @safe unittest
+{
+    alias cint = Checked!(int, void);
+    cint a = 1, b = 2;
+    a += b;
+    assert(a == cint(3));
+
+    alias ccint = Checked!(cint, Saturate);
+    ccint c = 14;
+    a += c;
+    assert(a == cint(17));
+}
+
+// toHash
+@safe unittest
+{
+    assert(checked(42).toHash() == checked(42).toHash());
+    assert(checked(12).toHash() != checked(19).toHash());
+
+    static struct Hook1
+    {
+        static size_t hookToHash(T)(T payload) nothrow @trusted
+        {
+            static if (size_t.sizeof == 4)
+            {
+                return typeid(payload).getHash(&payload) ^ 0xFFFF_FFFF;
+            }
+            else
+            {
+                return typeid(payload).getHash(&payload) ^ 0xFFFF_FFFF_FFFF_FFFF;
+            }
+
+        }
+    }
+
+    auto a = checked!Hook1(78);
+    auto b = checked!Hook1(78);
+    assert(a.toHash() == b.toHash());
+
+    assert(checked!Hook1(12).toHash() != checked!Hook1(13).toHash());
+
+    static struct Hook2
+    {
+        static if (size_t.sizeof == 4)
+        {
+            static size_t hashMask = 0xFFFF_0000;
+        }
+        else
+        {
+            static size_t hashMask = 0xFFFF_0000_FFFF_0000;
+        }
+
+        static size_t hookToHash(T)(T payload) nothrow @trusted
+        {
+            return typeid(payload).getHash(&payload) ^ hashMask;
+        }
+    }
+
+    auto x = checked!Hook2(1901);
+    auto y = checked!Hook2(1989);
+
+    assert((() nothrow @safe => x.toHash() == x.toHash())());
+
+    assert(x.toHash() == x.toHash());
+    assert(x.toHash() != y.toHash());
+    assert(checked!Hook1(1901).toHash() != x.toHash());
+
+    immutable z = checked!Hook1(1901);
+    immutable t = checked!Hook1(1901);
+    immutable w = checked!Hook2(1901);
+
+    assert(z.toHash() == t.toHash());
+    assert(z.toHash() != x.toHash());
+    assert(z.toHash() != w.toHash());
+
+    const long c = 0xF0F0F0F0;
+    const long d = 0xF0F0F0F0;
+
+    assert(checked!Hook1(c).toHash() != checked!Hook2(c));
+    assert(checked!Hook1(c).toHash() != checked!Hook1(d));
+
+    // Hook with state, does not implement hookToHash
+    static struct Hook3
+    {
+        ulong var1 = ulong.max;
+        uint var2 = uint.max;
+    }
+
+    assert(checked!Hook3(12).toHash() != checked!Hook3(13).toHash());
+    assert(checked!Hook3(13).toHash() == checked!Hook3(13).toHash());
+
+    // Hook with no state and no hookToHash, payload has its own hashing function
+    auto x1 = Checked!(Checked!int, ProperCompare)(123);
+    auto x2 = Checked!(Checked!int, ProperCompare)(123);
+    auto x3 = Checked!(Checked!int, ProperCompare)(144);
+
+    assert(x1.toHash() == x2.toHash());
+    assert(x1.toHash() != x3.toHash());
+    assert(x2.toHash() != x3.toHash());
+
+    // Check shared.
+    {
+        shared shared0 = checked(12345678);
+        shared shared1 = checked!Hook1(123456789);
+        shared shared2 = checked!Hook2(234567891);
+        shared shared3 = checked!Hook3(345678912);
+        assert(shared0.toHash() == hashOf(shared0));
+        assert(shared1.toHash() == hashOf(shared1));
+        assert(shared2.toHash() == hashOf(shared2));
+        assert(shared3.toHash() == hashOf(shared3));
+    }
+}
+
+///
+@safe unittest
+{
+    struct MyHook
+    {
+        static size_t hookToHash(T)(const T payload) nothrow @trusted
+        {
+            return .hashOf(payload);
+        }
+    }
+
+    int[Checked!(int, MyHook)] aa;
+    Checked!(int, MyHook) var = 42;
+    aa[var] = 100;
+
+    assert(aa[var] == 100);
+
+    int[Checked!(int, Abort)] bb;
+    Checked!(int, Abort) var2 = 42;
+    bb[var2] = 100;
+
+    assert(bb[var2] == 100);
 }

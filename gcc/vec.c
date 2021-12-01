@@ -229,23 +229,23 @@ qsort_chk (void *base, size_t n, size_t size, sort_r_cmp_fn *cmp, void *data)
 	if (CMP (i1, i2))
 	  break;
 	else if (CMP (i2, i1))
-	  return ERR2 (i1, i2);
+	  ERR2 (i1, i2);
       size_t lim1 = LIM (i2 - i1), lim2 = LIM (n - i2);
       /* Verify that other pairs within current span compare equal.  */
       for (i = i1 + 1; i + 1 < i2; i++)
 	for (j = i + 1; j < i1 + lim1; j++)
 	  if (CMP (i, j))
-	    return ERR3 (i, i1, j);
+	    ERR3 (i, i1, j);
 	  else if (CMP (j, i))
-	    return ERR2 (i, j);
+	    ERR2 (i, j);
       /* Verify that elements within this span compare less than
          elements beyond the span.  */
       for (i = i1; i < i2; i++)
 	for (j = i2; j < i2 + lim2; j++)
 	  if (CMP (i, j) >= 0)
-	    return ERR3 (i, i1, j);
+	    ERR3 (i, i1, j);
 	  else if (CMP (j, i) <= 0)
-	    return ERR2 (i, j);
+	    ERR2 (i, j);
     }
 #undef ERR3
 #undef ERR2

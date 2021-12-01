@@ -136,8 +136,8 @@ obj-c++.man:
 obj-c++.install-plugin:
 
 obj-c++.tags: force
-	cd $(srcdir)/objcp; etags -o TAGS.sub *.c *.h; \
-	etags --include TAGS.sub --include ../TAGS.sub
+	cd $(srcdir)/objcp; $(ETAGS) -o TAGS.sub *.c *.h; \
+	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 lang_checks += check-obj-c++
 

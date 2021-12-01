@@ -1234,7 +1234,6 @@ fully_constant_expression (pre_expr e)
     default:
       return e;
     }
-  return e;
 }
 
 /* Translate the VUSE backwards through phi nodes in E->dest, so that

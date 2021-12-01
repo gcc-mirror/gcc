@@ -617,7 +617,6 @@ extern void add_import_paths (const char *, const char *, bool);
 
 /* In d-lang.cc.  */
 extern void d_add_builtin_module (Module *);
-extern void d_add_entrypoint_module (Module *, Module *);
 extern d_tree_node_structure_enum d_tree_node_structure (lang_tree_node *);
 extern struct lang_type *build_lang_type (Type *);
 extern struct lang_decl *build_lang_decl (Declaration *);

@@ -1,14 +1,13 @@
 // REQUIRED_ARGS: -o-
-// PERMUTE_ARGS:
 
 /***************** AssignExp *******************/
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(16): Error: setting 'length' in @nogc function 'nogc3.testArrayLength' may cause GC allocation
-fail_compilation/nogc3.d(17): Error: setting 'length' in @nogc function 'nogc3.testArrayLength' may cause GC allocation
-fail_compilation/nogc3.d(18): Error: setting 'length' in @nogc function 'nogc3.testArrayLength' may cause GC allocation
+fail_compilation/nogc3.d(15): Error: setting `length` in `@nogc` function `nogc3.testArrayLength` may cause a GC allocation
+fail_compilation/nogc3.d(16): Error: setting `length` in `@nogc` function `nogc3.testArrayLength` may cause a GC allocation
+fail_compilation/nogc3.d(17): Error: setting `length` in `@nogc` function `nogc3.testArrayLength` may cause a GC allocation
 ---
 */
 @nogc void testArrayLength(int[] a)
@@ -25,8 +24,8 @@ void barCall();
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(35): Error: @nogc function 'nogc3.testCall' cannot call non-@nogc function pointer 'fp'
-fail_compilation/nogc3.d(36): Error: @nogc function 'nogc3.testCall' cannot call non-@nogc function 'nogc3.barCall'
+fail_compilation/nogc3.d(34): Error: `@nogc` function `nogc3.testCall` cannot call non-@nogc function pointer `fp`
+fail_compilation/nogc3.d(35): Error: `@nogc` function `nogc3.testCall` cannot call non-@nogc function `nogc3.barCall`
 ---
 */
 @nogc void testCall()
@@ -44,10 +43,10 @@ fail_compilation/nogc3.d(36): Error: @nogc function 'nogc3.testCall' cannot call
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(53): Error: function nogc3.testClosure1 is @nogc yet allocates closures with the GC
-fail_compilation/nogc3.d(56):        nogc3.testClosure1.bar closes over variable x at fail_compilation/nogc3.d(55)
-fail_compilation/nogc3.d(65): Error: function nogc3.testClosure3 is @nogc yet allocates closures with the GC
-fail_compilation/nogc3.d(68):        nogc3.testClosure3.bar closes over variable x at fail_compilation/nogc3.d(67)
+fail_compilation/nogc3.d(52): Error: function `nogc3.testClosure1` is `@nogc` yet allocates closures with the GC
+fail_compilation/nogc3.d(55):        nogc3.testClosure1.bar closes over variable x at fail_compilation/nogc3.d(54)
+fail_compilation/nogc3.d(64): Error: function `nogc3.testClosure3` is `@nogc` yet allocates closures with the GC
+fail_compilation/nogc3.d(67):        nogc3.testClosure3.bar closes over variable x at fail_compilation/nogc3.d(66)
 ---
 */
 @nogc auto testClosure1()
@@ -74,10 +73,10 @@ fail_compilation/nogc3.d(68):        nogc3.testClosure3.bar closes over variable
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/nogc3.d(86): Error: array literal in @nogc function 'nogc3.foo13702' may cause GC allocation
-fail_compilation/nogc3.d(87): Error: array literal in @nogc function 'nogc3.foo13702' may cause GC allocation
-fail_compilation/nogc3.d(93): Error: array literal in @nogc function 'nogc3.bar13702' may cause GC allocation
-fail_compilation/nogc3.d(92): Error: array literal in @nogc function 'nogc3.bar13702' may cause GC allocation
+fail_compilation/nogc3.d(85): Error: array literal in `@nogc` function `nogc3.foo13702` may cause a GC allocation
+fail_compilation/nogc3.d(86): Error: array literal in `@nogc` function `nogc3.foo13702` may cause a GC allocation
+fail_compilation/nogc3.d(92): Error: array literal in `@nogc` function `nogc3.bar13702` may cause a GC allocation
+fail_compilation/nogc3.d(91): Error: array literal in `@nogc` function `nogc3.bar13702` may cause a GC allocation
 ---
 */
 int[] foo13702(bool b) @nogc

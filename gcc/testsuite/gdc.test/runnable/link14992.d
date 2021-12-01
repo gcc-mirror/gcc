@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/a14992.d
 import imports.a14992;  // do not link
 
 int test()

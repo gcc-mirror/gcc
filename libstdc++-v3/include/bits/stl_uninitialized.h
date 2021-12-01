@@ -1051,6 +1051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @cond undocumented
 
   template<typename _Tp, typename _Up, typename _Allocator>
+    _GLIBCXX20_CONSTEXPR
     inline void
     __relocate_object_a(_Tp* __restrict __dest, _Up* __restrict __orig,
 			_Allocator& __alloc)
@@ -1069,18 +1070,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename = void>
     struct __is_bitwise_relocatable
     : is_trivial<_Tp> { };
-
-  template <typename _Tp, typename _Up>
-    _GLIBCXX20_CONSTEXPR
-    inline __enable_if_t<std::__is_bitwise_relocatable<_Tp>::value, _Tp*>
-    __relocate_a_1(_Tp* __first, _Tp* __last,
-		   _Tp* __result, allocator<_Up>&) noexcept
-    {
-      ptrdiff_t __count = __last - __first;
-      if (__count > 0)
-	__builtin_memmove(__result, __first, __count * sizeof(_Tp));
-      return __result + __count;
-    }
 
   template <typename _InputIterator, typename _ForwardIterator,
 	    typename _Allocator>
@@ -1105,6 +1094,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __cur;
     }
 
+  template <typename _Tp, typename _Up>
+    _GLIBCXX20_CONSTEXPR
+    inline __enable_if_t<std::__is_bitwise_relocatable<_Tp>::value, _Tp*>
+    __relocate_a_1(_Tp* __first, _Tp* __last,
+		   _Tp* __result,
+		   [[__maybe_unused__]] allocator<_Up>& __alloc) noexcept
+    {
+      ptrdiff_t __count = __last - __first;
+      if (__count > 0)
+	{
+#ifdef __cpp_lib_is_constant_evaluated
+	  if (std::is_constant_evaluated())
+	    {
+	      // Can't use memmove. Wrap the pointer so that __relocate_a_1
+	      // resolves to the non-trivial overload above.
+	      __gnu_cxx::__normal_iterator<_Tp*, void> __out(__result);
+	      __out = std::__relocate_a_1(__first, __last, __out, __alloc);
+	      return __out.base();
+	    }
+#endif
+	  __builtin_memmove(__result, __first, __count * sizeof(_Tp));
+	}
+      return __result + __count;
+    }
+
+
   template <typename _InputIterator, typename _ForwardIterator,
 	    typename _Allocator>
     _GLIBCXX20_CONSTEXPR
@@ -1115,9 +1130,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     std::__niter_base(__last),
 				     std::__niter_base(__result), __alloc)))
     {
-      return __relocate_a_1(std::__niter_base(__first),
-			    std::__niter_base(__last),
-			    std::__niter_base(__result), __alloc);
+      return std::__relocate_a_1(std::__niter_base(__first),
+				 std::__niter_base(__last),
+				 std::__niter_base(__result), __alloc);
     }
 
   /// @endcond

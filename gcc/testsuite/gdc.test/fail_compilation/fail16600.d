@@ -1,9 +1,9 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/fail16600.d(22): Error: fail16600.S.__ctor called with argument types (string) const matches both:
-fail_compilation/fail16600.d(16):     fail16600.S.this(string _param_0)
+fail_compilation/fail16600.d(22): Error: `fail16600.S.__ctor` called with argument types `(string) const` matches both:
+fail_compilation/fail16600.d(16):     `fail16600.S.this(string _param_0)`
 and:
-fail_compilation/fail16600.d(17):     fail16600.S.this(string _param_0) immutable
+fail_compilation/fail16600.d(17):     `fail16600.S.this(string _param_0) immutable`
 ---
 */
 

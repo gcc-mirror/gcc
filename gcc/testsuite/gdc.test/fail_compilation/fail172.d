@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail172.d(25): Error: cannot modify const expression c1.x
-fail_compilation/fail172.d(26): Error: cannot modify const expression c2.x
-fail_compilation/fail172.d(30): Error: cannot modify const expression s1.x
-fail_compilation/fail172.d(31): Error: cannot modify const expression s2.x
+fail_compilation/fail172.d(25): Error: cannot modify `const` expression `c1.x`
+fail_compilation/fail172.d(26): Error: cannot modify `const` expression `c2.x`
+fail_compilation/fail172.d(30): Error: cannot modify `const` expression `s1.x`
+fail_compilation/fail172.d(31): Error: cannot modify `const` expression `s2.x`
 ---
 */
 

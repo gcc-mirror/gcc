@@ -1132,7 +1132,6 @@ get_matching_symbol (enum cpp_ttype type)
     {
     default:
       gcc_unreachable ();
-      return "";
     case CPP_CLOSE_PAREN:
       return "(";
     case CPP_CLOSE_BRACE:

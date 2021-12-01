@@ -257,7 +257,7 @@ enum CurlChunkBgnFunc {
 /** if splitting of data transfer is enabled, this callback is called before
    download of an individual chunk started. Note that parameter "remains" works
    only for FTP wildcard downloading (for now), otherwise is not used */
-alias curl_chunk_bgn_callback = c_long function(void *transfer_info, void *ptr, int remains);
+alias curl_chunk_bgn_callback = c_long function(const(void) *transfer_info, void *ptr, int remains);
 
 /** return codes for CURLOPT_CHUNK_END_FUNCTION */
 enum CurlChunkEndFunc {
@@ -281,7 +281,7 @@ enum CurlFnMAtchFunc {
 
 /** callback type for wildcard downloading pattern matching. If the
    string matches the pattern, return CURL_FNMATCHFUNC_MATCH value, etc. */
-alias curl_fnmatch_callback = int function(void *ptr, in char *pattern, in char *string);
+alias curl_fnmatch_callback = int function(void *ptr, in const(char) *pattern, in const(char) *string);
 
 /// seek whence...
 enum CurlSeekPos {
@@ -378,7 +378,7 @@ alias curl_free_callback = void function(void *ptr);
 /// ditto
 alias curl_realloc_callback = void* function(void *ptr, size_t size);
 /// ditto
-alias curl_strdup_callback = char * function(in char *str);
+alias curl_strdup_callback = char * function(in const(char) *str);
 /// ditto
 alias curl_calloc_callback = void* function(size_t nmemb, size_t size);
 
@@ -615,8 +615,8 @@ enum CurlKHMatch {
 ///
 alias curl_sshkeycallback =
         int function(CURL *easy,            /** easy handle */
-                     curl_khkey *knownkey,  /** known */
-                     curl_khkey *foundkey,  /** found */
+                     const(curl_khkey) *knownkey,  /** known */
+                     const(curl_khkey) *foundkey,  /** found */
                      CurlKHMatch m,         /** libcurl's view on the keys */
                      void *clientp          /** custom pointer passed from app */
                     );
@@ -867,7 +867,7 @@ enum CurlOption {
   /** We want the referrer field set automatically when following locations */
   autoreferer = 58,
   /** Port of the proxy, can be set in the proxy string as well with:
-     "[host]:[port]" */
+     `[host]:[port]` */
   proxyport,
   /** size of the POST input data, if strlen() is not good to use */
   postfieldsize,
@@ -1136,7 +1136,7 @@ enum CurlOption {
   ftp_ssl_ccc = 154,
   /** Same as TIMEOUT and CONNECTTIMEOUT, but with ms resolution */
   timeout_ms,
-  connecttimeout_ms,
+  connecttimeout_ms, /// ditto
   /** set to zero to disable the libcurl's decoding and thus pass the raw body
      data to the application even when it is encoded/compressed */
   http_transfer_decoding,
@@ -1365,9 +1365,9 @@ alias curl_TimeCond = int;
 /** curl_strequal() and curl_strnequal() are subject for removal in a future
    libcurl, see lib/README.curlx for details */
 extern (C) {
-int  curl_strequal(in char *s1, in char *s2);
+int  curl_strequal(in const(char) *s1, in const(char) *s2);
 /// ditto
-int  curl_strnequal(in char *s1, in char *s2, size_t n);
+int  curl_strnequal(in const(char) *s1, in const(char) *s2, size_t n);
 }
 enum CurlForm {
     nothing, /********** the first one is unused ************/
@@ -1457,7 +1457,7 @@ CURLFORMcode  curl_formadd(curl_httppost **httppost, curl_httppost **last_post,.
  * Should return the buffer length passed to it as the argument "len" on
  *   success.
  */
-alias curl_formget_callback = size_t function(void *arg, in char *buf, size_t len);
+alias curl_formget_callback = size_t function(void *arg, in const(char) *buf, size_t len);
 
 /**
  * Name: curl_formget()
@@ -1487,7 +1487,7 @@ void  curl_formfree(curl_httppost *form);
  * Returns a malloc()'ed string that MUST be curl_free()ed after usage is
  * complete. DEPRECATED - see lib/README.curlx
  */
-char * curl_getenv(in char *variable);
+char * curl_getenv(in const(char) *variable);
 
 /**
  * Name: curl_version()
@@ -1507,10 +1507,10 @@ char * curl_version();
  * %XX versions). This function returns a new allocated string or NULL if an
  * error occurred.
  */
-char * curl_easy_escape(CURL *handle, in char *string, int length);
+char * curl_easy_escape(CURL *handle, in const(char) *string, int length);
 
 /** the previous version: */
-char * curl_escape(in char *string, int length);
+char * curl_escape(in const(char) *string, int length);
 
 
 /**
@@ -1524,10 +1524,10 @@ char * curl_escape(in char *string, int length);
  * Conversion Note: On non-ASCII platforms the ASCII %XX codes are
  * converted into the host encoding.
  */
-char * curl_easy_unescape(CURL *handle, in char *string, int length, int *outlength);
+char * curl_easy_unescape(CURL *handle, in const(char) *string, int length, int *outlength);
 
 /** the previous version */
-char * curl_unescape(in char *string, int length);
+char * curl_unescape(in const(char) *string, int length);
 
 /**
  * Name: curl_free()
@@ -1601,7 +1601,7 @@ struct curl_slist
  * Appends a string to a linked list. If no list exists, it will be created
  * first. Returns the new list, after appending.
  */
-curl_slist * curl_slist_append(curl_slist *, in char *);
+curl_slist * curl_slist_append(curl_slist *, in const(char) *);
 
 /**
  * Name: curl_slist_free_all()
@@ -1621,7 +1621,7 @@ void  curl_slist_free_all(curl_slist *);
  * the first argument. The time argument in the second parameter is unused
  * and should be set to NULL.
  */
-time_t  curl_getdate(char *p, time_t *unused);
+time_t  curl_getdate(const(char) *p, const(time_t) *unused);
 
 /** info about the certificate chain, only for OpenSSL builds. Asked
    for with CURLOPT_CERTINFO / CURLINFO_CERTINFO */

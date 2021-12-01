@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail179.d(11): Error: variable fail179.main.px cannot be final, perhaps you meant const?
+fail_compilation/fail179.d(11): Error: variable `fail179.main.px` cannot be `final`, perhaps you meant `const`?
 ---
 */
 

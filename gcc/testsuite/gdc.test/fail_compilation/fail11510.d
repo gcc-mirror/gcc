@@ -1,10 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11510.d(25): Error: reinterpretation through overlapped field y is not allowed in CTFE
-fail_compilation/fail11510.d(29):        called from here: test11510a()
-fail_compilation/fail11510.d(36): Error: reinterpretation through overlapped field y is not allowed in CTFE
-fail_compilation/fail11510.d(40):        called from here: test11510b()
+fail_compilation/fail11510.d(25): Error: reinterpretation through overlapped field `y` is not allowed in CTFE
+fail_compilation/fail11510.d(29):        called from here: `test11510a()`
+fail_compilation/fail11510.d(36): Error: reinterpretation through overlapped field `y` is not allowed in CTFE
+fail_compilation/fail11510.d(40):        called from here: `test11510b()`
 ---
 */
 

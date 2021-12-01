@@ -1199,14 +1199,16 @@ can_be_invalidated_p (const pred_chain_union &preds, const pred_chain &guard)
   for (unsigned i = 0; i < preds.length (); ++i)
     {
       const pred_chain &chain = preds[i];
-      for (unsigned j = 0; j < chain.length (); ++j)
+      unsigned j;
+      for (j = 0; j < chain.length (); ++j)
 	if (can_be_invalidated_p (chain[j], guard))
-	  return true;
+	  break;
 
       /* If we were unable to invalidate any predicate in C, then there
 	 is a viable path from entry to the PHI where the PHI takes
 	 an interesting value and continues to a use of the PHI.  */
-      return false;
+      if (j == chain.length ())
+	return false;
     }
   return true;
 }

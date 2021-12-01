@@ -19,29 +19,28 @@ private template CustomFloatParams(uint precision, uint exponentWidth)
     ) CustomFloatParams;
 }
 
+private union ToBinary(F)
+if (is(typeof(CustomFloatParams!(F.sizeof*8))) || is(F == real))
+{
+    F set;
+
+    // If on Linux or Mac, where 80-bit reals are padded, ignore the
+    // padding.
+    CustomFloat!(CustomFloatParams!(min(F.sizeof*8, 80))) get;
+
+    // Convert F to the correct binary type.
+    static typeof(get) opCall(F value)
+    {
+        ToBinary r;
+        r.set = value;
+        return r.get;
+    }
+    alias get this;
+}
+
 struct CustomFloat(uint precision, uint exponentWidth)
 if ((1 + precision + exponentWidth) % 8 == 0 && precision + exponentWidth > 0)
 {
-private:
-    union ToBinary(F)
-    if (is(typeof(CustomFloatParams!(F.sizeof*8))) || is(F == real))
-    {
-        F set;
-
-        // If on Linux or Mac, where 80-bit reals are padded, ignore the
-        // padding.
-        CustomFloat!(CustomFloatParams!(min(F.sizeof*8, 80))) get;
-
-        // Convert F to the correct binary type.
-        static typeof(get) opCall(F value)
-        {
-            ToBinary r;
-            r.set = value;
-            return r.get;
-        }
-        alias get this;
-    }
-
 public:
     @property bool sign() { return 1; }
     @property void sign(bool) {}
@@ -65,7 +64,7 @@ public:
     @property F get(F)()
     if (is(F == float) || is(F == double) || is(F == real))
     {
-        ToBinary!F result;
+        ToBinary result;
         return F.init;
     }
 

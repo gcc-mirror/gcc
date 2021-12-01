@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 // REQUIRED_ARGS:
 
 // Test array bounds checking
@@ -179,44 +185,63 @@ void test1()
 }
 
 /******************************************/
-// 13976
+// https://issues.dlang.org/show_bug.cgi?id=13976
 
 void test13976()
 {
     int[] da = new int[](10);
     int[10] sa;
-    size_t l = 0;               // upperInRange
-    size_t u = 9;               // | lowerLessThan
-                                // | |  check code
-    { auto s = da[l .. u];   }  // 0 0  (u <= 10 && l <= u  )
-    { auto s = da[1 .. u];   }  // 0 0  (u <= 10 && l <= u  )
-    { auto s = da[l .. 10];  }  // 0 0  (u <= 10 && l <= u  )
-    { auto s = da[1 .. u%5]; }  // 0 0  (u <= 10 && l <= u%5)
+    enum size_t two = 2;
+    enum size_t five = 5;
+    size_t lb = 0;                    // upperInRange
+    size_t ub = 9;                    // | lowerLessThan
+                                      // | |  check code
+    { auto s = da[lb .. ub];        } // 0 0  (ub   <= $  && lb <= ub  )
+    { auto s = da[1 .. ub];         } // 0 0  (ub   <= $  && 1  <= ub  )
+    { auto s = da[lb .. 10];        } // 0 0  (10   <= $  && lb <= 10  )
+    { auto s = da[1 .. ub%5];       } // 0 0  (ub%5 <= $  && 1  <= ub%5)
 
-    { auto s = da[l .. u];   }  // 0 0  (u   <= 10 && l <= u)
-    { auto s = da[0 .. u];   }  // 0 1  (u   <= 10          )
-    { auto s = da[l .. 10];  }  // 0 0  (u   <= 10 && l <= u)
-    { auto s = da[0 .. u%5]; }  // 0 1  (u%5 <= 10          )
+    { auto s = da[lb .. ub];        } // 0 0  (ub   <= $  && lb <= ub  )
+    { auto s = da[0 .. ub];         } // 0 1  (ub   <= $               )
+    { auto s = da[lb .. 10];        } // 0 0  (10   <= $  && lb <= 10  )
+    { auto s = da[0 .. ub%5];       } // 0 1  (ub%5 <= $               )
 
-    { auto s = sa[l .. u];   }  // 0 0  (u <= 10 && l <= u  )
-    { auto s = sa[1 .. u];   }  // 0 0  (u <= 10 && l <= u  )
-    { auto s = sa[l .. 10];  }  // 1 0  (           l <= u  )
-    { auto s = sa[1 .. u%5]; }  // 1 0  (           l <= u%5)
+    { auto s = da[0 .. 0];          } // 1 1  NULL
+    { auto s = da[0 .. $];          } // 1 1  NULL
+    { auto s = da[1 .. $];          } // 1 0  (              1   <= $  )
+    { auto s = da[$ .. $];          } // 1 0  (              $   <= $  )
+    { auto s = da[0 .. $/two];      } // 0 1  ($/2  <= $               )
+    { auto s = da[$/two .. $];      } // 1 0  (              $/2 <= $  )
+    { auto s = da[$/five .. $/two]; } // 0 0  ($/2  <= $  && $/5 <= $/2)
 
-    { auto s = sa[l .. u];   }  // 0 0  (u <= 10 && l <= u )
-    { auto s = sa[0 .. u];   }  // 0 1  (u <= 10           )
-    { auto s = sa[l .. 10];  }  // 1 0  (           l <= 10)
-    { auto s = sa[0 .. u%5]; }  // 1 1  NULL
+    { auto s = sa[lb .. ub];        } // 0 0  (ub   <= 10 && lb <= ub  )
+    { auto s = sa[1 .. ub];         } // 0 0  (ub   <= 10 && 1  <= ub  )
+    { auto s = sa[lb .. 10];        } // 1 0  (              lb <= 10  )
+    { auto s = sa[1 .. ub%5];       } // 1 0  (              1  <= ub%5)
+
+    { auto s = sa[lb .. ub];        } // 0 0  (ub   <= 10 && lb <= ub  )
+    { auto s = sa[0 .. ub];         } // 0 1  (ub   <= 10              )
+    { auto s = sa[lb .. 10];        } // 1 0  (              lb <= 10  )
+    { auto s = sa[0 .. ub%5];       } // 1 1  NULL
+
+    { auto s = sa[0 .. 0];          } // 1 1  NULL
+    { auto s = sa[0 .. $];          } // 1 1  NULL
+    { auto s = sa[1 .. $];          } // 1 1  NULL
+    { auto s = sa[$ .. $];          } // 1 1  NULL
+    { auto s = sa[0 .. $/two];      } // 1 1  NULL
+    { auto s = sa[$/two .. $];      } // 1 1  NULL
+    { auto s = sa[$/five .. $/two]; } // 1 1  NULL
 
     int* p = new int[](10).ptr;
-    { auto s = p[0 .. u];    }  // 1 1  NULL
-    { auto s = p[l .. u];    }  // 1 0  (l <= u)
-    { auto s = p[0 .. u%5];  }  // 1 1  NULL
-    { auto s = p[1 .. u%5];  }  // 1 0  (l <= u%5)
+    { auto s = p[0 .. ub];          } // 1 1  NULL
+    { auto s = p[lb .. ub];         } // 1 0  (lb <= ub  )
+    { auto s = p[0 .. ub%5];        } // 1 1  NULL
+    { auto s = p[1 .. ub%5];        } // 1 0  (1  <= ub%5)
+    { auto s = p[0 .. 0];           } // 1 1  NULL
 }
 
 /******************************************/
-// 3652
+// https://issues.dlang.org/show_bug.cgi?id=3652
 
 void test3652()
 {
@@ -340,7 +365,7 @@ void test3652b() @safe
 }
 
 /**********************************/
-// 9654
+// https://issues.dlang.org/show_bug.cgi?id=9654
 
 auto foo9654a(ref           char[8] str) { return str; }
 auto foo9654b(ref     const char[8] str) { return str; }
@@ -364,7 +389,7 @@ static assert( is(typeof(baz9654b("testinfo")) ==     const char[8]));
 static assert( is(typeof(baz9654c("testinfo")) == immutable char[8]));
 
 /******************************************/
-// 9712
+// https://issues.dlang.org/show_bug.cgi?id=9712
 
 auto func9712(T)(T[2] arg) { return arg; }
 static assert(is(typeof(func9712([1,2])) == int[2]));
@@ -373,7 +398,7 @@ auto deduceLength9712(T,size_t n)(T[n] a) { return a; }
 static assert(is(typeof(deduceLength9712([1,2,3])) == int[3]));
 
 /******************************************/
-// 9743
+// https://issues.dlang.org/show_bug.cgi?id=9743
 
 void test9743()
 {
@@ -436,7 +461,7 @@ void test9743()
 }
 
 /******************************************/
-// 9747
+// https://issues.dlang.org/show_bug.cgi?id=9747
 
 void foo9747A(T)(T[4]) {}
 void foo9747C(size_t dim)(char[dim]) {}
@@ -454,7 +479,7 @@ void test9747()
 }
 
 /******************************************/
-// 12876
+// https://issues.dlang.org/show_bug.cgi?id=12876
 
 void test12876()
 {
@@ -467,29 +492,52 @@ void test12876()
 }
 
 /******************************************/
-// 13775
+// https://issues.dlang.org/show_bug.cgi?id=13775
 
 void test13775()
 {
     ubyte[4] ubytes = [1,2,3,4];
 
-    // CT-known slicing (issue 3652)
+    // CT-known slicing (https://issues.dlang.org/show_bug.cgi?id=3652)
     auto ok1 = cast(ubyte[2]) ubytes[0 .. 2];
     assert(ok1 == [1, 2]);
 
-    // CT-known slicing with implicit conversion of SliceExp::e1 (issue 13154)
+    // CT-known slicing with implicit conversion of SliceExp::e1 (https://issues.dlang.org/show_bug.cgi?id=13154)
     enum double[] arr = [1.0, 2.0, 3.0];
     auto ok2 = cast(float[2]) [1.0, 2.0, 3.0][0..2];
     auto ok3 = cast(float[2]) arr[1..3];    // currently this is accepted
     assert(ok2 == [1f, 2f]);
     assert(ok3 == [2f, 3f]);
 
-    // CT-known slicing with type coercing (issue 13775)
+    // CT-known slicing with type coercing (https://issues.dlang.org/show_bug.cgi?id=13775)
     auto ok4 = cast( byte[2]) ubytes[0 .. 2];   // CT-known slicing + type coercing
     auto ok5 = cast(short[1]) ubytes[0 .. 2];   // CT-known slicing + type coercing
     assert(ok4 == [1, 2]);
     version(LittleEndian) assert(ok5 == [0x0201]);
     version(   BigEndian) assert(ok5 == [0x0102]);
+}
+
+/******************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15889
+// Array bounds check should report index and length
+void test15889()
+{
+    int[] a = new int[2];
+
+    try {
+        a[3] = 40;
+    } catch (ArrayIndexError e) {
+        assert(e.index == 3);
+        assert(e.length == 2);
+    }
+
+    try {
+        a[1 .. 4] = 50;
+    } catch (ArraySliceError e) {
+        assert(e.lower == 1);
+        assert(e.upper == 4);
+        assert(e.length == 2);
+    }
 }
 
 /******************************************/
@@ -504,6 +552,7 @@ int main()
     test9743();
     test9747();
     test13775();
+    test15889();
 
     printf("Success\n");
     return 0;

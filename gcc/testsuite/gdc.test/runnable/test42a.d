@@ -1,4 +1,10 @@
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 module test42;
 
@@ -312,4 +318,3 @@ int main()
     printf("Success\n");
     return 0;
 }
-

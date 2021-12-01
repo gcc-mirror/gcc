@@ -1969,9 +1969,6 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
       return val;
     }
-
-  gcc_unreachable ();
-  return 0;
 }
 
 /* Unregister the specialization SPEC as a specialization of TMPL.
@@ -17012,9 +17009,16 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-	r = build1 (code, type, op0);
+	r = build1_loc (EXPR_LOCATION (t), code, type, op0);
 	if (code == ALIGNOF_EXPR)
 	  ALIGNOF_EXPR_STD_P (r) = ALIGNOF_EXPR_STD_P (t);
+	/* For addresses of immediate functions ensure we have EXPR_LOCATION
+	   set for possible later diagnostics.  */
+	if (code == ADDR_EXPR
+	    && EXPR_LOCATION (r) == UNKNOWN_LOCATION
+	    && TREE_CODE (op0) == FUNCTION_DECL
+	    && DECL_IMMEDIATE_FUNCTION_P (op0))
+	  SET_EXPR_LOCATION (r, input_location);
 	return r;
       }
 
@@ -18238,13 +18242,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       stmt = finish_co_yield_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
-      break;
 
     case CO_AWAIT_EXPR:
       stmt = finish_co_await_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
-      break;
 
     case EXPR_STMT:
       tmp = RECUR (EXPR_STMT_EXPR (t));

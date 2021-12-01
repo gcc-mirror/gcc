@@ -1243,9 +1243,9 @@ i386_pe_seh_unwind_emit (FILE *out_file, rtx_insn *insn)
   seh = cfun->machine->seh;
   if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
     {
-      /* See ix86_seh_fixup_eh_fallthru for the rationale.  */
+      /* See ix86_output_call_insn/seh_fixup_eh_fallthru for the rationale.  */
       rtx_insn *prev = prev_active_insn (insn);
-      if (prev && !insn_nothrow_p (prev))
+      if (prev && (CALL_P (prev) || !insn_nothrow_p (prev)))
 	fputs ("\tnop\n", out_file);
       fputs ("\t.seh_endproc\n", out_file);
       seh->in_cold_section = true;

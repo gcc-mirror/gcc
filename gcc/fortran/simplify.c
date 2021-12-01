@@ -5280,6 +5280,9 @@ simplify_minmaxloc_nodim (gfc_expr *result, gfc_expr *extremum,
       && !mask->value.logical)
     goto finish;
 
+  if (array->shape == NULL)
+    goto finish;
+
   for (i = 0; i < array->rank; i++)
     {
       count[i] = 0;

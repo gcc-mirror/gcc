@@ -5594,8 +5594,10 @@ vect_mark_pattern_stmts (vec_info *vinfo,
   /* Transfer reduction path info to the pattern.  */
   if (STMT_VINFO_REDUC_IDX (orig_stmt_info_saved) != -1)
     {
-      tree lookfor = gimple_op (orig_stmt_info_saved->stmt,
-				1 + STMT_VINFO_REDUC_IDX (orig_stmt_info));
+      gimple_match_op op;
+      if (!gimple_extract_op (orig_stmt_info_saved->stmt, &op))
+	gcc_unreachable ();
+      tree lookfor = op.ops[STMT_VINFO_REDUC_IDX (orig_stmt_info)];
       /* Search the pattern def sequence and the main pattern stmt.  Note
          we may have inserted all into a containing pattern def sequence
 	 so the following is a bit awkward.  */
@@ -5615,14 +5617,15 @@ vect_mark_pattern_stmts (vec_info *vinfo,
       do
 	{
 	  bool found = false;
-	  for (unsigned i = 1; i < gimple_num_ops (s); ++i)
-	    if (gimple_op (s, i) == lookfor)
-	      {
-		STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i - 1;
-		lookfor = gimple_get_lhs (s);
-		found = true;
-		break;
-	      }
+	  if (gimple_extract_op (s, &op))
+	    for (unsigned i = 0; i < op.num_ops; ++i)
+	      if (op.ops[i] == lookfor)
+		{
+		  STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
+		  lookfor = gimple_get_lhs (s);
+		  found = true;
+		  break;
+		}
 	  if (s == pattern_stmt)
 	    {
 	      if (!found && dump_enabled_p ())

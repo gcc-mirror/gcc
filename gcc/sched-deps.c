@@ -3816,7 +3816,6 @@ sched_analyze (class deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 
   for (insn = head;; insn = NEXT_INSN (insn))
     {
-
       if (INSN_P (insn))
 	{
 	  /* And initialize deps_lists.  */
@@ -3836,7 +3835,6 @@ sched_analyze (class deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 	  return;
 	}
     }
-  gcc_unreachable ();
 }
 
 /* Helper for sched_free_deps ().

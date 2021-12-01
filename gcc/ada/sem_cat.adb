@@ -807,7 +807,7 @@ package body Sem_Cat is
       end if;
 
       if not Is_Remote_Call_Interface (E) then
-         if Ekind (E) in Subprogram_Kind then
+         if Is_Subprogram (E) then
             Declaration := Unit_Declaration_Node (E);
 
             if Nkind (Declaration) in

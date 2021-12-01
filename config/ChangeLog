@@ -1,3 +1,7 @@
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* acx.m4 (ACX_PROG_GDC): New m4 function.
+
 2021-09-19  Andrew Pinski  <apinski@marvell.com>
 
 	PR bootstrap/102389

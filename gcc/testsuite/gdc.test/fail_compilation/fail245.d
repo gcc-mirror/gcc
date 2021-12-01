@@ -2,16 +2,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail245.d(27): Deprecation: variable fail245.ClassWithDeps.value is deprecated
-fail_compilation/fail245.d(28): Deprecation: variable fail245.ClassWithDeps.value is deprecated
-fail_compilation/fail245.d(29): Deprecation: variable fail245.ClassWithDeps.value is deprecated
-fail_compilation/fail245.d(30): Deprecation: variable fail245.ClassWithDeps.value is deprecated
-fail_compilation/fail245.d(32): Deprecation: variable fail245.ClassWithDeps.staticValue is deprecated
-fail_compilation/fail245.d(33): Deprecation: variable fail245.ClassWithDeps.staticValue is deprecated
-fail_compilation/fail245.d(34): Deprecation: variable fail245.ClassWithDeps.staticValue is deprecated
-fail_compilation/fail245.d(35): Deprecation: variable fail245.ClassWithDeps.staticValue is deprecated
-fail_compilation/fail245.d(36): Deprecation: variable fail245.ClassWithDeps.staticValue is deprecated
-fail_compilation/fail245.d(37): Deprecation: variable fail245.ClassWithDeps.staticValue is deprecated
+fail_compilation/fail245.d(27): Deprecation: variable `fail245.ClassWithDeps.value` is deprecated
+fail_compilation/fail245.d(28): Deprecation: variable `fail245.ClassWithDeps.value` is deprecated
+fail_compilation/fail245.d(29): Deprecation: variable `fail245.ClassWithDeps.value` is deprecated
+fail_compilation/fail245.d(30): Deprecation: variable `fail245.ClassWithDeps.value` is deprecated
+fail_compilation/fail245.d(32): Deprecation: variable `fail245.ClassWithDeps.staticValue` is deprecated
+fail_compilation/fail245.d(33): Deprecation: variable `fail245.ClassWithDeps.staticValue` is deprecated
+fail_compilation/fail245.d(34): Deprecation: variable `fail245.ClassWithDeps.staticValue` is deprecated
+fail_compilation/fail245.d(35): Deprecation: variable `fail245.ClassWithDeps.staticValue` is deprecated
+fail_compilation/fail245.d(36): Deprecation: variable `fail245.ClassWithDeps.staticValue` is deprecated
+fail_compilation/fail245.d(37): Deprecation: variable `fail245.ClassWithDeps.staticValue` is deprecated
 ---
 */
 

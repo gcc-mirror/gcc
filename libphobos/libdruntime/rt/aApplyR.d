@@ -4,8 +4,9 @@
  * of those.
  *
  * Copyright: Copyright Digital Mars 2004 - 2010.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Walter Bright, Sean Kelly
+ * Source: $(DRUNTIMESRC rt/_aApplyR.d)
  */
 
 /*          Copyright Digital Mars 2004 - 2010.
@@ -20,7 +21,7 @@ module rt.aApplyR;
  * and dchar, and 2 of each of those.
  */
 
-private import rt.util.utf;
+import core.internal.utf;
 
 /**********************************************/
 /* 1 argument versions */

@@ -3308,33 +3308,41 @@ package body Sem_Ch3 is
       --  needed. T may be E_Void in cases of earlier errors, and in that
       --  case we bypass this.
 
-      if Ekind (T) /= E_Void
-        and then not Present (Direct_Primitive_Operations (T))
-      then
-         if Etype (T) = T then
-            Set_Direct_Primitive_Operations (T, New_Elmt_List);
+      if Ekind (T) /= E_Void then
+         if not Present (Direct_Primitive_Operations (T)) then
+            if Etype (T) = T then
+               Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
-         --  If Etype of T is the base type (as opposed to a parent type) and
-         --  already has an associated list of primitive operations, then set
-         --  T's primitive list to the base type's list. Otherwise, create a
-         --  new empty primitives list and share the list between T and its
-         --  base type. The lists need to be shared in common between the two.
+            --  If Etype of T is the base type (as opposed to a parent type)
+            --  and already has an associated list of primitive operations,
+            --  then set T's primitive list to the base type's list. Otherwise,
+            --  create a new empty primitives list and share the list between
+            --  T and its base type. The lists need to be shared in common.
 
-         elsif Etype (T) = Base_Type (T) then
+            elsif Etype (T) = Base_Type (T) then
 
-            if not Present (Direct_Primitive_Operations (Base_Type (T))) then
+               if not Present (Direct_Primitive_Operations (Base_Type (T)))
+               then
+                  Set_Direct_Primitive_Operations
+                    (Base_Type (T), New_Elmt_List);
+               end if;
+
                Set_Direct_Primitive_Operations
-                 (Base_Type (T), New_Elmt_List);
+                 (T, Direct_Primitive_Operations (Base_Type (T)));
+
+            --  Case where the Etype is a parent type, so we need a new
+            --  primitives list for T.
+
+            else
+               Set_Direct_Primitive_Operations (T, New_Elmt_List);
             end if;
 
+         --  If T already has a Direct_Primitive_Operations list but its
+         --  base type doesn't then set the base type's list to T's list.
+
+         elsif not Present (Direct_Primitive_Operations (Base_Type (T))) then
             Set_Direct_Primitive_Operations
-              (T, Direct_Primitive_Operations (Base_Type (T)));
-
-         --  Case where the Etype is a parent type, so we need a new primitives
-         --  list for T.
-
-         else
-            Set_Direct_Primitive_Operations (T, New_Elmt_List);
+              (Base_Type (T), Direct_Primitive_Operations (T));
          end if;
       end if;
 
@@ -3509,15 +3517,13 @@ package body Sem_Ch3 is
          Make_Class_Wide_Type (T);
       end if;
 
-      --  For tagged types, or when prefixed-call syntax is allowed for
-      --  untagged types, initialize the list of primitive operations to
-      --  an empty list.
+      --  Initialize the list of primitive operations to an empty list,
+      --  to cover tagged types as well as untagged types. For untagged
+      --  types this is used either to analyze the call as legal when
+      --  Extensions_Allowed is True, or to issue a better error message
+      --  otherwise.
 
-      if Tagged_Present (N)
-        or else Extensions_Allowed
-      then
-         Set_Direct_Primitive_Operations (T, New_Elmt_List);
-      end if;
+      Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
       Set_Stored_Constraint (T, No_Elist);
 
@@ -5802,17 +5808,16 @@ package body Sem_Ch3 is
          Inherit_Predicate_Flags (Id, T);
       end if;
 
-      --  When prefixed calls are enabled for untagged types, the subtype
-      --  shares the primitive operations of its base type.
-
-      if Extensions_Allowed then
-         Set_Direct_Primitive_Operations
-           (Id, Direct_Primitive_Operations (Base_Type (T)));
-      end if;
-
       if Etype (Id) = Any_Type then
          goto Leave;
       end if;
+
+      --  When prefixed calls are enabled for untagged types, the subtype
+      --  shares the primitive operations of its base type. Do this even
+      --  when Extensions_Allowed is False to issue better error messages.
+
+      Set_Direct_Primitive_Operations
+        (Id, Direct_Primitive_Operations (Base_Type (T)));
 
       --  Some common processing on all types
 
@@ -8290,6 +8295,14 @@ package body Sem_Ch3 is
          Set_Etype (Base_Type (Derived_Type), Base_Type (Parent_Type));
 
          if Derive_Subps then
+            --  Initialize the list of primitive operations to an empty list,
+            --  to cover tagged types as well as untagged types. For untagged
+            --  types this is used either to analyze the call as legal when
+            --  Extensions_Allowed is True, or to issue a better error message
+            --  otherwise.
+
+            Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
+
             Derive_Subprograms (Parent_Type, Derived_Type);
          end if;
 
@@ -9640,18 +9653,17 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  When prefixed-call syntax is allowed for untagged types, initialize
-      --  the list of primitive operations to an empty list.
+      --  Initialize the list of primitive operations to an empty list,
+      --  to cover tagged types as well as untagged types. For untagged
+      --  types this is used either to analyze the call as legal when
+      --  Extensions_Allowed is True, or to issue a better error message
+      --  otherwise.
 
-      if Extensions_Allowed and then not Is_Tagged then
-         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
-      end if;
+      Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
 
       --  Set fields for tagged types
 
       if Is_Tagged then
-         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
-
          --  All tagged types defined in Ada.Finalization are controlled
 
          if Chars (Scope (Derived_Type)) = Name_Finalization
@@ -17211,15 +17223,13 @@ package body Sem_Ch3 is
          Set_Etype        (T, Any_Type);
          Set_Scalar_Range (T, Scalar_Range (Any_Type));
 
-         --  For tagged types, or when prefixed-call syntax is allowed for
-         --  untagged types, initialize the list of primitive operations to
-         --  an empty list.
+         --  Initialize the list of primitive operations to an empty list,
+         --  to cover tagged types as well as untagged types. For untagged
+         --  types this is used either to analyze the call as legal when
+         --  Extensions_Allowed is True, or to issue a better error message
+         --  otherwise.
 
-         if (Is_Tagged_Type (T) and then Is_Record_Type (T))
-           or else Extensions_Allowed
-         then
-            Set_Direct_Primitive_Operations (T, New_Elmt_List);
-         end if;
+         Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
          return;
       end if;
@@ -21440,10 +21450,10 @@ package body Sem_Ch3 is
             end if;
 
          --  For untagged types, copy the primitives across from the private
-         --  view to the full view (when extensions are allowed), for support
-         --  of prefixed calls (when extensions are enabled).
+         --  view to the full view, for support of prefixed calls when
+         --  extensions are enabled, and better error messages otherwise.
 
-         elsif Extensions_Allowed then
+         else
             Priv_List := Primitive_Operations (Priv_T);
             Prim_Elmt := First_Elmt (Priv_List);
 

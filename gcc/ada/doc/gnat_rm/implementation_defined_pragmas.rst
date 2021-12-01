@@ -2401,6 +2401,30 @@ of GNAT specific extensions are recognized as follows:
   name, preference is given to the component in a selected_component
   (as is currently the case for tagged types with such component names).
 
+* Expression defaults for generic formal functions
+
+  The declaration of a generic formal function is allowed to specify
+  an expression as a default, using the syntax of an expression function.
+
+  Here is an example of this feature:
+
+  .. code-block:: ada
+
+      generic
+         type T is private;
+         with function Copy (Item : T) return T is (Item); -- Defaults to Item
+      package Stacks is
+
+         type Stack is limited private;
+
+         procedure Push (S : in out Stack; X : T); -- Calls Copy on X
+
+         function Pop (S : in out Stack) return T; -- Calls Copy to return item
+
+      private
+         -- ...
+      end Stacks;
+
 .. _Pragma-Extensions_Visible:
 
 Pragma Extensions_Visible

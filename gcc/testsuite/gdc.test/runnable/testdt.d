@@ -2,7 +2,7 @@
 
 /******************************************/
 
-static int bigarray[100][100];
+static int[100][100] bigarray;
 
 void test1()
 {
@@ -17,7 +17,7 @@ void test1()
 }
 
 /******************************************/
-// 10629
+// https://issues.dlang.org/show_bug.cgi?id=10629
 
 class Foo10629 {}
 
@@ -27,7 +27,7 @@ struct Bar10629
 }
 
 /******************************************/
-// 11233
+// https://issues.dlang.org/show_bug.cgi?id=11233
 
 struct S11233
 {
@@ -35,7 +35,7 @@ struct S11233
 }
 
 /******************************************/
-// 11672
+// https://issues.dlang.org/show_bug.cgi?id=11672
 
 void test11672()
 {
@@ -50,7 +50,7 @@ void test11672()
 }
 
 /******************************************/
-// 12509
+// https://issues.dlang.org/show_bug.cgi?id=12509
 
 struct A12509
 {
@@ -62,7 +62,7 @@ struct B12509
 }
 
 /******************************************/
-// 13505
+// https://issues.dlang.org/show_bug.cgi?id=13505
 
 class C13505 { void[10] x; }
 struct S13505 { void[10] x; }
@@ -74,7 +74,7 @@ void test13505()
 }
 
 /******************************************/
-// 14699
+// https://issues.dlang.org/show_bug.cgi?id=14699
 
 struct S14699a { ubyte[0][10] values; }
 struct S14699b { S14699a tbl; }
@@ -88,7 +88,7 @@ void test14699()
 }
 
 /******************************************/
-// 14805
+// https://issues.dlang.org/show_bug.cgi?id=14805
 
 struct S14805
 {
@@ -97,7 +97,7 @@ struct S14805
 auto a14805 = new S14805[513*513];
 
 /******************************************/
-// 15664
+// https://issues.dlang.org/show_bug.cgi?id=15664
 
 struct Data15664A
 {

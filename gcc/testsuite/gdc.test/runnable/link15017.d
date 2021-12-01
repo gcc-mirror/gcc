@@ -1,5 +1,11 @@
 // COMPILE_SEPARATELY
 // EXTRA_SOURCES: imports/std15017variant.d
+/*
+TEST_OUTPUT:
+---
+runnable/link15017.d(48): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+---
+*/
 
 import imports.std15017variant;
 
@@ -40,6 +46,7 @@ void test()
     // OK <- in DeleteExp::semantic
     Variant10* p10;
     delete p10;
+    static assert(Variant10.__dtor.mangleof == "_D7imports15std15017variant__T8VariantNVki10ZQp6__dtorMFNaNbNiNfZv");
 }
 
 void main() {}

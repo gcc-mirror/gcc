@@ -1946,7 +1946,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	       non-overloaded function has already been issued.  Add
 	       clarification of the previous message.  */
 	    rich_location richloc (line_table, input_location);
-	    inform (&richloc, "builtin %qs requires builtin %qs",
+	    inform (&richloc,
+		    "overloaded builtin %qs is implemented by builtin %qs",
 		    name, internal_name);
 	  }
 	else
@@ -2992,7 +2993,8 @@ altivec_resolve_new_overloaded_builtin (location_t loc, tree fndecl,
 	       non-overloaded function has already been issued.  Add
 	       clarification of the previous message.  */
 	    rich_location richloc (line_table, input_location);
-	    inform (&richloc, "builtin %qs requires builtin %qs",
+	    inform (&richloc,
+		    "overloaded builtin %qs is implemented by builtin %qs",
 		    name, internal_name);
 	  }
 	else

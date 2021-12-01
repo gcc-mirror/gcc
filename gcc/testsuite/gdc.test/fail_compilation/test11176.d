@@ -1,9 +1,8 @@
 /*
-REQUIRED_ARGS: -de
 TEST_OUTPUT:
 ---
-fail_compilation/test11176.d(12): Deprecation: b.ptr cannot be used in @safe code, use &b[0] instead
-fail_compilation/test11176.d(16): Deprecation: b.ptr cannot be used in @safe code, use &b[0] instead
+fail_compilation/test11176.d(12): Error: `b.ptr` cannot be used in `@safe` code, use `&b[0]` instead
+fail_compilation/test11176.d(16): Error: `b.ptr` cannot be used in `@safe` code, use `&b[0]` instead
 ---
 */
 

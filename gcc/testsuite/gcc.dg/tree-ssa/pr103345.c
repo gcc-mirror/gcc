@@ -42,10 +42,10 @@ uint32_t load_le_32_xor(const uint8_t *ptr)
          ((uint32_t)ptr[2] << 16) ^
          ((uint32_t)ptr[3] << 24);
 #else
-  return ((uint32_t)ptr[0]) ^
-         ((uint32_t)ptr[1] << 8) ^
-         ((uint32_t)ptr[2] << 16) ^
-         ((uint32_t)ptr[3] << 24);
+  return ((uint32_t)ptr[3]) ^
+         ((uint32_t)ptr[2] << 8) ^
+         ((uint32_t)ptr[1] << 16) ^
+         ((uint32_t)ptr[0] << 24);
 #endif
 }
 

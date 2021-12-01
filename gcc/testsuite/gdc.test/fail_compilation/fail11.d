@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail11.d(12): Error: `type` has no effect in expression `int*`
+fail_compilation/fail11.d(12): Error: `int*` has no effect
 ---
 */
 

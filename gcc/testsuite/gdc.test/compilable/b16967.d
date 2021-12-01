@@ -1,4 +1,4 @@
-/* 
+/*
  * REQUIRED_ARGS: -c
  * TEST_OUTPUT:
 ---
@@ -27,7 +27,7 @@ out(v)
             break;
     }
 }
-body
+do
 {
     return 42;
 }

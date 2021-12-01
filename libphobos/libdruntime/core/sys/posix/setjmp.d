@@ -261,6 +261,10 @@ else version (OpenBSD)
     {
         enum _JBLEN = 64;
     }
+    else version (AArch64)
+    {
+        enum _JBLEN = 64;
+    }
     else version (PPC)
     {
         enum _JBLEN = 100;

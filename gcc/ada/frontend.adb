@@ -473,12 +473,6 @@ begin
                Check_Elaboration_Scenarios;
             end if;
 
-            --  At this stage we can unnest subprogram bodies if required
-
-            if Total_Errors_Detected = 0 then
-               Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
-            end if;
-
             --  List library units if requested
 
             if List_Units then
@@ -494,12 +488,19 @@ begin
             Sem_Warn.Output_Unused_Warnings_Off_Warnings;
 
             --  Remove any ignored Ghost code as it must not appear in the
-            --  executable. This action must be performed last because it
+            --  executable. This action must be performed very late because it
             --  heavily alters the tree.
 
             if Operating_Mode = Generate_Code or else GNATprove_Mode then
                Remove_Ignored_Ghost_Code;
             end if;
+
+            --  At this stage we can unnest subprogram bodies if required
+
+            if Total_Errors_Detected = 0 then
+               Exp_Unst.Unnest_Subprograms (Cunit (Main_Unit));
+            end if;
+
          end if;
       end if;
    end;

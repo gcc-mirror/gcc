@@ -32,6 +32,20 @@ else
 fi
 AC_SUBST(MAINT)
 
+dnl Variables for tags utilities; based on automake 1.16.4+'s init.m4
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+AC_SUBST([CTAGS])
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+if test -z "$MKID"; then
+  MKID=mkid
+fi
+AC_SUBST([MKID])
+
 # Additional info for config.intl.
 AC_SUBST(LIBINTL_DEP)
 AC_SUBST(INCINTL)

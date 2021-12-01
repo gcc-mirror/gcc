@@ -752,8 +752,6 @@ dfs_find_deadend (basic_block bb)
 	  next = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
 	}
     }
-
-  gcc_unreachable ();
 }
 
 

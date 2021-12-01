@@ -228,7 +228,6 @@ vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
 
       out_base += out_step;
     }
-  return true;
 }
 
 /* Return true if all elements of the permutation vector are in the range

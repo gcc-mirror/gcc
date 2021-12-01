@@ -6162,7 +6162,17 @@ static rtx
 ix86_expand_v1ti_to_ti (rtx x)
 {
   rtx result = gen_reg_rtx (TImode);
-  emit_move_insn (result, gen_lowpart (TImode, x));
+  if (TARGET_SSE2)
+    {
+      rtx temp = gen_reg_rtx (V2DImode);
+      emit_move_insn (temp, gen_lowpart (V2DImode, x));
+      rtx lo = gen_lowpart (DImode, result);
+      emit_insn (gen_vec_extractv2didi (lo, temp, const0_rtx));
+      rtx hi = gen_highpart (DImode, result);
+      emit_insn (gen_vec_extractv2didi (hi, temp, const1_rtx));
+    }
+  else
+    emit_move_insn (result, gen_lowpart (TImode, x));
   return result;
 }
 

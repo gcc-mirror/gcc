@@ -5030,28 +5030,57 @@ determine_group_iv_cost_address (struct ivopts_data *data,
   return !sum_cost.infinite_cost_p ();
 }
 
-/* Computes value of candidate CAND at position AT in iteration NITER, and
-   stores it to VAL.  */
+/* Computes value of candidate CAND at position AT in iteration DESC->NITER,
+   and stores it to VAL.  */
 
 static void
-cand_value_at (class loop *loop, struct iv_cand *cand, gimple *at, tree niter,
-	       aff_tree *val)
+cand_value_at (class loop *loop, struct iv_cand *cand, gimple *at,
+	       class tree_niter_desc *desc, aff_tree *val)
 {
   aff_tree step, delta, nit;
   struct iv *iv = cand->iv;
   tree type = TREE_TYPE (iv->base);
+  tree niter = desc->niter;
+  bool after_adjust = stmt_after_increment (loop, cand, at);
   tree steptype;
+
   if (POINTER_TYPE_P (type))
     steptype = sizetype;
   else
     steptype = unsigned_type_for (type);
+
+  /* If AFTER_ADJUST is required, the code below generates the equivalent
+     of BASE + NITER * STEP + STEP, when ideally we'd prefer the expression
+     BASE + (NITER + 1) * STEP, especially when NITER is often of the form
+     SSA_NAME - 1.  Unfortunately, guaranteeing that adding 1 to NITER
+     doesn't overflow is tricky, so we peek inside the TREE_NITER_DESC
+     class for common idioms that we know are safe.  */
+  if (after_adjust
+      && desc->control.no_overflow
+      && integer_onep (desc->control.step)
+      && (desc->cmp == LT_EXPR
+	  || desc->cmp == NE_EXPR)
+      && TREE_CODE (desc->bound) == SSA_NAME)
+    {
+      if (integer_onep (desc->control.base))
+	{
+	  niter = desc->bound;
+	  after_adjust = false;
+	}
+      else if (TREE_CODE (niter) == MINUS_EXPR
+	       && integer_onep (TREE_OPERAND (niter, 1)))
+	{
+	  niter = TREE_OPERAND (niter, 0);
+	  after_adjust = false;
+	}
+    }
 
   tree_to_aff_combination (iv->step, TREE_TYPE (iv->step), &step);
   aff_combination_convert (&step, steptype);
   tree_to_aff_combination (niter, TREE_TYPE (niter), &nit);
   aff_combination_convert (&nit, steptype);
   aff_combination_mult (&nit, &step, &delta);
-  if (stmt_after_increment (loop, cand, at))
+  if (after_adjust)
     aff_combination_add (&delta, &step);
 
   tree_to_aff_combination (iv->base, type, val);
@@ -5402,7 +5431,7 @@ may_eliminate_iv (struct ivopts_data *data,
       return true;
     }
 
-  cand_value_at (loop, cand, use->stmt, desc->niter, &bnd);
+  cand_value_at (loop, cand, use->stmt, desc, &bnd);
 
   *bound = fold_convert (TREE_TYPE (cand->iv->base),
 			 aff_combination_to_tree (&bnd));

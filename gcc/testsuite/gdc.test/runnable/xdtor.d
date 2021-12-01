@@ -79,8 +79,34 @@ void test2() @safe @nogc nothrow
     assert(Counter.cnt == 1);
 }
 
+struct Bar17257(E)
+{
+    ~this() @safe @nogc nothrow
+    {
+        assert(__traits(hasMember, E, "__xdtor"));
+    }
+}
+
+struct Foo17257A
+{
+    Bar17257!Foo17257A foo;
+    ~this() @safe @nogc nothrow {}
+}
+
+struct Foo17257B
+{
+    Bar17257!Foo17257B foo;
+}
+
+void test3() @safe @nogc nothrow
+{
+    Foo17257A foo17257A;
+    Foo17257B foo17257B;
+}
+
 void main()
 {
     test1();
     test2();
+    test3();
 }

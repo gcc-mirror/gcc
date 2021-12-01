@@ -1159,7 +1159,6 @@ skip_fixed_comments (void)
 	  skip_comment_line ();
 	  continue;
 
-	  gcc_unreachable ();
 check_for_digits:
 	  {
 	    /* Required for OpenMP's conditional compilation sentinel. */

@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS: -dip1000
+REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
 fail_compilation/test17422.d(23): Error: scope variable `p` may not be returned

@@ -136,7 +136,7 @@ int main(){
         return 0;
 }
 
-// Bug 5221
+// https://issues.dlang.org/show_bug.cgi?id=5221
 static assert('\&check;'==10003);
 static assert('\&lsim;'==8818);
 static assert('\&numero;'==8470);

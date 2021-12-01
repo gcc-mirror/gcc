@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++2a" }
-// { dg-do compile { target c++2a xfail *-*-* } }
+// { dg-do compile { target c++2a } }
 // { dg-require-debug-mode ""  }
 
 #include <algorithm>

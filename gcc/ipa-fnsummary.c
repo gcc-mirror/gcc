@@ -2042,7 +2042,6 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
       debug_tree (expr);
       gcc_unreachable ();
     }
-  return false;
 }
 
 

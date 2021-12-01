@@ -1925,7 +1925,8 @@ scan_function (cgraph_node *node, struct function *fun)
 		if (lhs)
 		  scan_expr_access (lhs, stmt, ISRA_CTX_STORE, bb);
 		int flags = gimple_call_flags (stmt);
-		if ((flags & (ECF_CONST | ECF_PURE)) == 0)
+		if (((flags & (ECF_CONST | ECF_PURE)) == 0)
+		    || (flags & ECF_LOOPING_CONST_OR_PURE))
 		  bitmap_set_bit (final_bbs, bb->index);
 	      }
 	      break;
