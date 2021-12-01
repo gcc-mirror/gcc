@@ -1530,7 +1530,8 @@ scan_function (void)
 		    }
 
 		  if (final_bbs
-		      && (flags & (ECF_CONST | ECF_PURE)) == 0)
+		      && ((flags & (ECF_CONST | ECF_PURE)) == 0
+			  || (flags & ECF_LOOPING_CONST_OR_PURE)))
 		    bitmap_set_bit (final_bbs, bb->index);
 		}
 
