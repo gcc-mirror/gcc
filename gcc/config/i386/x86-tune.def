@@ -42,7 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
           m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
 	  | m_INTEL | m_KNL | m_KNM | m_K6_GEODE | m_AMD_MULTIPLE | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE |m_GENERIC)
+	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
    on modern chips.  Preffer stores affecting whole integer register
@@ -70,7 +70,7 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency",
 DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY,
 	  "sse_partial_reg_fp_converts_dependency",
 	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_AMDFAM10
-	  | m_BDVER | m_ZNVER | m_ALDERLAKE| m_GENERIC)
+	  | m_BDVER | m_ZNVER | m_ALDERLAKE | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY: This knob avoids partial
    write to the destination in scalar SSE conversion from integer to FP.  */
@@ -298,7 +298,7 @@ DEF_TUNE (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB,
 DEF_TUNE (X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES,
 	  "misaligned_move_string_pro_epilogues",
 	  m_386 | m_486 | m_CORE_ALL | m_AMD_MULTIPLE | m_TREMONT
-	  | m_ALDERLAKE |m_GENERIC)
+	  | m_ALDERLAKE | m_GENERIC)
 
 /* X86_TUNE_USE_SAHF: Controls use of SAHF.  */
 DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
@@ -460,7 +460,7 @@ DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
 
 /* X86_TUNE_USE_GATHER: Use gather instructions.  */
 DEF_TUNE (X86_TUNE_USE_GATHER, "use_gather",
-	  ~(m_ZNVER1 | m_ZNVER2 | m_GENERIC | m_ALDERLAKE))
+	  ~(m_ZNVER1 | m_ZNVER2 | m_ALDERLAKE | m_GENERIC))
 
 /* X86_TUNE_AVOID_128FMA_CHAINS: Avoid creating loops with tight 128bit or
    smaller FMA chain.  */
