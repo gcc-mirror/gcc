@@ -1,3 +1,12 @@
+2021-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/103274
+	* config/i386/i386.c (ix86_output_call_insn): Beef up comment about
+	nops emitted with SEH.
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to
+	the cold section, emit a nop before the directive if the previous
+	active instruction is a call.
+
 2021-11-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
