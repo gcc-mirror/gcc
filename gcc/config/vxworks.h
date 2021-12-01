@@ -306,4 +306,4 @@ extern void vxworks_emit_call_builtin___clear_cache (rtx begin, rtx end);
    further incremental LTO linking.  We do not do repeated incremental linking
    so silence the warning (instead of passing -flinker-output=nolto-rel).  */
 #undef LTO_PLUGIN_SPEC
-#define LTO_PLUGIN_SPEC "%{!mrtp:-plugin-opt=-linker-output-auto-notlo-rel}"
+#define LTO_PLUGIN_SPEC "%{!mrtp:-plugin-opt=-linker-output-auto-nolto-rel}"
