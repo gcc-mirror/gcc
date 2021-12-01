@@ -16204,18 +16204,8 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	}
       return;
 
-    case E_V8HFmode:
-      if (TARGET_AVX2)
-	{
-	  mmode = SImode;
-	  gen_blendm = gen_sse4_1_pblendph;
-	  blendm_const = true;
-	}
-      else
-	use_vec_merge = true;
-      break;
-
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V2HImode:
       use_vec_merge = TARGET_SSE2;
       break;
