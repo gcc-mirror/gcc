@@ -8065,19 +8065,17 @@ package body Exp_Disp is
                Out_Present         => True,
                Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
-         if Present (Parameter_Specifications (Parent (E))) then
-            P := First (Parameter_Specifications (Parent (E)));
-            while Present (P) loop
-               Append_To (Parms,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc,
-                       Chars => Chars (Defining_Identifier (P))),
-                   Parameter_Type      => New_Copy_Tree (Parameter_Type (P)),
-                   Expression          => New_Copy_Tree (Expression (P))));
-               Next (P);
-            end loop;
-         end if;
+         P := First (Parameter_Specifications (Parent (E)));
+         while Present (P) loop
+            Append_To (Parms,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier =>
+                  Make_Defining_Identifier (Loc,
+                    Chars => Chars (Defining_Identifier (P))),
+                Parameter_Type      => New_Copy_Tree (Parameter_Type (P)),
+                Expression          => New_Copy_Tree (Expression (P))));
+            Next (P);
+         end loop;
 
          return Parms;
       end Gen_Parameters_Profile;
