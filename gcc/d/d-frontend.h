@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 /* These functions are defined in D runtime.  */
 extern "C" int rt_init (void);
 extern "C" int rt_term (void);
-//extern "C" void gc_disable (void);
+extern "C" void gc_disable (void);
 extern "C" void *gc_malloc (size_t sz, unsigned ba = 0, const void *ti = NULL);
 extern "C" void gc_free (void *);
 extern "C" void gc_collect (void);

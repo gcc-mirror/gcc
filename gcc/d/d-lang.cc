@@ -288,7 +288,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
 {
   /* Initialize the D runtime.  */
   rt_init ();
-//  gc_disable ();
+  gc_disable ();
 
   /* Set default values.  */
   global._init ();
