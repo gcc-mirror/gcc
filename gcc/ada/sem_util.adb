@@ -28978,7 +28978,7 @@ package body Sem_Util is
                   Source_Text (Get_Source_File_Index (Loc));
       Src_Ptr : Source_Ptr := Loc;
 
-      C : Character  := Sbuffer (Src_Ptr);
+      C : Character := Sbuffer (Src_Ptr);
       --  Current source program character
 
       function Belongs_To_Numeric_Literal (C : Character) return Boolean;
@@ -28991,9 +28991,7 @@ package body Sem_Util is
       function Belongs_To_Numeric_Literal (C : Character) return Boolean is
       begin
          case C is
-            when '0' .. '9'
-               | '_' | '.' | 'e' | '#' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
-            =>
+            when '0' .. '9' | '_' | '.' | 'e' | '#' | 'A' .. 'F' =>
                return True;
 
             --  Make sure '+' or '-' is part of an exponent
@@ -29002,7 +29000,7 @@ package body Sem_Util is
                declare
                   Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
                begin
-                  return Prev_C = 'e' or else Prev_C = 'E';
+                  return Prev_C in 'e' | 'E';
                end;
 
             --  Other characters cannot belong to a numeric literal
