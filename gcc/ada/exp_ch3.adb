@@ -9607,11 +9607,11 @@ package body Exp_Ch3 is
       Actual_List : List_Id;
       Formal      : Entity_Id;
       Par_Formal  : Entity_Id;
+      Ext_Aggr    : Node_Id;
       Formal_Node : Node_Id;
       Func_Body   : Node_Id;
       Func_Decl   : Node_Id;
       Func_Id     : Entity_Id;
-      Return_Stmt : Node_Id;
 
    --  Start of processing for Make_Controlling_Function_Wrappers
 
@@ -9731,25 +9731,38 @@ package body Exp_Ch3 is
                Actual_List := No_List;
             end if;
 
-            Return_Stmt :=
-              Make_Simple_Return_Statement (Loc,
-                Expression =>
-                  Make_Extension_Aggregate (Loc,
-                    Ancestor_Part       =>
-                      Make_Function_Call (Loc,
-                        Name                   =>
-                          New_Occurrence_Of (Alias (Subp), Loc),
-                        Parameter_Associations => Actual_List),
-                    Null_Record_Present => True));
+            Ext_Aggr :=
+              Make_Extension_Aggregate (Loc,
+                Ancestor_Part       =>
+                  Make_Function_Call (Loc,
+                    Name                   =>
+                      New_Occurrence_Of (Alias (Subp), Loc),
+                    Parameter_Associations => Actual_List),
+                Null_Record_Present => True);
 
-            Func_Body :=
-              Make_Subprogram_Body (Loc,
-                Specification              =>
-                  Make_Wrapper_Specification (Subp),
-                Declarations               => Empty_List,
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => New_List (Return_Stmt)));
+            --  GNATprove will use expression of an expression function as an
+            --  implicit postcondition. GNAT will not benefit from expression
+            --  function (and would struggle if we add an expression function
+            --  to freezing actions).
+
+            if GNATprove_Mode then
+               Func_Body :=
+                 Make_Expression_Function (Loc,
+                   Specification =>
+                     Make_Wrapper_Specification (Subp),
+                   Expression => Ext_Aggr);
+            else
+               Func_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification              =>
+                     Make_Wrapper_Specification (Subp),
+                   Declarations               => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Simple_Return_Statement (Loc,
+                           Expression => Ext_Aggr))));
+            end if;
 
             Append_To (Body_List, Func_Body);
 
