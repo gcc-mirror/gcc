@@ -154,8 +154,9 @@
    </para>
 
    <para>
-     The base class that <classname>allocator</classname> is derived from
-     may not be user-configurable.
+     The choice of base class that <classname>allocator</classname>
+     is derived from is fixed at the time when GCC is built,
+     and the different choices are not ABI compatible.
 </para>
 
   </section>
@@ -314,6 +315,13 @@
    <classname>new_allocator</classname>.
    </para>
 
+   <para>
+     Since C++11 the minimal interface require for an allocator is
+     much smaller, as <classname>std::allocator_traits</classname>
+     can provide default for much of the interface.
+   </para>
+
+
 </section>
 
 <section xml:id="allocator.ext"><info><title>Extension Allocators</title></info>
@@ -359,9 +367,10 @@
        <classname>debug_allocator</classname>
        </para>
        <para>
-	 A wrapper around an arbitrary allocator A.  It passes on
-	 slightly increased size requests to A, and uses the extra
-	 memory to store size information.  When a pointer is passed
+	 A wrapper around an arbitrary allocator <classname>A</classname>.
+	 It passes on slightly increased size requests to <classname>A</classname>,
+	 and uses the extra memory to store size information.
+	 When a pointer is passed
 	 to <function>deallocate()</function>, the stored size is
 	 checked, and <function>assert()</function> is used to
 	 guarantee they match.
@@ -393,52 +402,16 @@
        </para>
 
        <para>
-	 Older versions of this class take a boolean template
-	 parameter, called <varname>thr</varname>, and an integer template
-	 parameter, called <varname>inst</varname>.
+	 For thread-enabled configurations, the pool is locked with a
+	 single big lock. In some situations, this implementation detail
+	 may result in severe performance degradation.
        </para>
 
        <para>
-	 The <varname>inst</varname> number is used to track additional memory
-      pools.  The point of the number is to allow multiple
-      instantiations of the classes without changing the semantics at
-      all.  All three of
+	 (Note that the GCC thread abstraction layer allows us to provide
+	 safe zero-overhead stubs for the threading routines, if threads
+	 were disabled at configuration time.)
        </para>
-
-   <programlisting>
-    typedef  __pool_alloc&lt;true,0&gt;    normal;
-    typedef  __pool_alloc&lt;true,1&gt;    private;
-    typedef  __pool_alloc&lt;true,42&gt;   also_private;
-   </programlisting>
-   <para>
-     behave exactly the same way.  However, the memory pool for each type
-      (and remember that different instantiations result in different types)
-      remains separate.
-   </para>
-   <para>
-     The library uses <emphasis>0</emphasis> in all its instantiations.  If you
-      wish to keep separate free lists for a particular purpose, use a
-      different number.
-   </para>
-   <para>The <varname>thr</varname> boolean determines whether the
-   pool should be manipulated atomically or not.  When
-   <varname>thr</varname> = <constant>true</constant>, the allocator
-   is thread-safe, while <varname>thr</varname> =
-   <constant>false</constant>, is slightly faster but unsafe for
-   multiple threads.
-   </para>
-
-   <para>
-     For thread-enabled configurations, the pool is locked with a
-     single big lock. In some situations, this implementation detail
-     may result in severe performance degradation.
-   </para>
-
-   <para>
-     (Note that the GCC thread abstraction layer allows us to provide
-     safe zero-overhead stubs for the threading routines, if threads
-     were disabled at configuration time.)
-   </para>
      </listitem>
 
      <listitem>
