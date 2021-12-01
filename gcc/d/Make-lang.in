@@ -74,19 +74,16 @@ endif
 
 # D Frontend object files.
 D_FRONTEND_OBJS = \
-	d/aav.o \
 	d/access.o \
 	d/aggregate.o \
 	d/aliasthis.o \
 	d/apply.o \
-	d/array.o \
 	d/arrayop.o \
 	d/arraytypes.o \
 	d/attrib.o \
 	d/ast_node.o \
 	d/astcodegen.o \
 	d/astenums.o \
-	d/bitarray.o \
 	d/blockexit.o \
 	d/builtin.o \
 	d/canthrow.o \
@@ -99,7 +96,6 @@ D_FRONTEND_OBJS = \
 	d/cparse.o \
 	d/cppmangle.o \
 	d/ctfeexpr.o \
-	d/ctfloat.o \
 	d/ctorflow.o \
 	d/dcast.o \
 	d/dclass.o \
@@ -124,13 +120,10 @@ D_FRONTEND_OBJS = \
 	d/escape.o \
 	d/expression.o \
 	d/expressionsem.o \
-	d/file.o \
-	d/filename.o \
 	d/foreachvar.o \
 	d/func.o \
 	d/globals.o \
 	d/gluelayer.o \
-	d/hash.o \
 	d/hdrgen.o \
 	d/iasm.o \
 	d/iasmgcc.o \
@@ -145,7 +138,6 @@ D_FRONTEND_OBJS = \
 	d/json.o \
 	d/lambdacomp.o \
 	d/lexer.o \
-	d/longdouble.o \
 	d/mtype.o \
 	d/nogc.o \
 	d/nspace.o \
@@ -153,29 +145,37 @@ D_FRONTEND_OBJS = \
 	d/objc.o \
 	d/opover.o \
 	d/optimize.o \
-	d/outbuffer.o \
 	d/parse.o \
 	d/parsetimevisitor.o \
 	d/permissivevisitor.o \
-	d/port.o \
 	d/printast.o \
-	d/region.o \
-	d/rmem.o \
-	d/rootobject.o \
+	d/root-aav.o \
+	d/root-array.o \
+	d/root-bitarray.o \
+	d/root-ctfloat.o \
+	d/root-file.o \
+	d/root-filename.o \
+	d/root-hash.o \
+	d/root-longdouble.o \
+	d/root-outbuffer.o \
+	d/root-port.o \
+	d/root-region.o \
+	d/root-rmem.o \
+	d/root-rootobject.o \
+	d/root-speller.o \
+	d/root-string.o \
+	d/root-stringtable.o \
 	d/safe.o \
 	d/sapply.o \
 	d/semantic2.o \
 	d/semantic3.o \
 	d/sideeffect.o \
-	d/speller.o \
 	d/statement.o \
 	d/statement_rewrite_walker.o \
 	d/statementsem.o \
 	d/staticassert.o \
 	d/staticcond.o \
 	d/stmtstate.o \
-	d/string.o \
-	d/stringtable.o \
 	d/target.o \
 	d/templateparamsem.o \
 	d/tokens.o \
@@ -393,6 +393,6 @@ d/%.o: d/dmd/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)
 
-d/%.o: d/dmd/root/%.d
+d/root-%.o: d/dmd/root/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)
