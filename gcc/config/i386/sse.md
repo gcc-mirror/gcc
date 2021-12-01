@@ -15287,6 +15287,20 @@
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
 
+;; PR target/101796: Transfrom movl+vpbranchcastw+vpsravw to vpsraw
+;; when COUNT is immediate.
+(define_split
+  [(set (match_operand:VI248_AVX512BW 0 "register_operand")
+	(any_shift:VI248_AVX512BW
+	  (match_operand:VI248_AVX512BW 1 "nonimmediate_operand")
+	  (match_operand:VI248_AVX512BW 2 "const_vector_duplicate_operand")))]
+  "TARGET_AVX512F && GET_MODE_UNIT_BITSIZE (<MODE>mode)
+   > INTVAL (XVECEXP (operands[2], 0, 0))"
+  [(set (match_dup 0)
+	(any_shift:VI248_AVX512BW
+	  (match_dup 1)
+	  (match_dup 3)))]
+  "operands[3] = XVECEXP (operands[2], 0, 0);")
 
 (define_expand "vec_shl_<mode>"
   [(set (match_dup 3)

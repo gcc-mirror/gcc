@@ -1844,6 +1844,19 @@
   return true;
 })
 
+;; Return true if OP is a const vector with duplicate value.
+(define_predicate "const_vector_duplicate_operand"
+  (match_code "const_vector")
+{
+  rtx elt = XVECEXP (op, 0, 0);
+  int i, nelt = XVECLEN (op, 0);
+
+  for (i = 1; i < nelt; ++i)
+    if (!rtx_equal_p (elt, XVECEXP (op, 0, i)))
+      return false;
+  return true;
+})
+
 ;; Return true if OP is a parallel for a vbroadcast permute.
 (define_predicate "avx_vbroadcast_operand"
   (and (match_code "parallel")
