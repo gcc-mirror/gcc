@@ -1478,7 +1478,7 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
    The number of iterations is stored to NITER.  */
 
 static bool
-number_of_iterations_until_wrap (class loop *, tree type, affine_iv *iv0,
+number_of_iterations_until_wrap (class loop *loop, tree type, affine_iv *iv0,
 				 affine_iv *iv1, class tree_niter_desc *niter)
 {
   tree niter_type = unsigned_type_for (type);
@@ -1506,6 +1506,23 @@ number_of_iterations_until_wrap (class loop *, tree type, affine_iv *iv0,
 
       num = fold_build2 (MINUS_EXPR, niter_type, wide_int_to_tree (type, max),
 			 iv1->base);
+
+      /* When base has the form iv + 1, if we know iv >= n, then iv + 1 < n
+	 only when iv + 1 overflows, i.e. when iv == TYPE_VALUE_MAX.  */
+      if (sgn == UNSIGNED
+	  && integer_onep (step)
+	  && TREE_CODE (iv1->base) == PLUS_EXPR
+	  && integer_onep (TREE_OPERAND (iv1->base, 1)))
+	{
+	  tree cond = fold_build2 (GE_EXPR, boolean_type_node,
+				   TREE_OPERAND (iv1->base, 0), iv0->base);
+	  cond = simplify_using_initial_conditions (loop, cond);
+	  if (integer_onep (cond))
+	    may_be_zero = fold_build2 (EQ_EXPR, boolean_type_node,
+				       TREE_OPERAND (iv1->base, 0),
+				       TYPE_MAX_VALUE (type));
+	}
+
       high = max;
       if (TREE_CODE (iv1->base) == INTEGER_CST)
 	low = wi::to_wide (iv1->base) - 1;
