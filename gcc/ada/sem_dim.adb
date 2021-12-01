@@ -2759,7 +2759,7 @@ package body Sem_Dim is
 
       --  Insert a blank between the literal and the symbol
 
-      Add_Str_To_Name_Buffer (" ");
+      Add_Char_To_Name_Buffer (' ');
       Append (Global_Name_Buffer, Symbol_Of (Typ));
 
       Error_Msg_Name_1 := Name_Find;
