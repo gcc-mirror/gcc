@@ -2049,7 +2049,8 @@ force_paren_expr (tree expr, bool even_uneval)
     return expr;
 
   if (TREE_CODE (expr) == COMPONENT_REF
-      || TREE_CODE (expr) == SCOPE_REF)
+      || TREE_CODE (expr) == SCOPE_REF
+      || REFERENCE_REF_P (expr))
     REF_PARENTHESIZED_P (expr) = true;
   else if (DECL_P (tree_strip_any_location_wrapper (expr)))
     {
@@ -2072,19 +2073,8 @@ maybe_undo_parenthesized_ref (tree t)
   if (cxx_dialect < cxx14)
     return t;
 
-  if (INDIRECT_REF_P (t) && REF_PARENTHESIZED_P (t))
-    {
-      t = TREE_OPERAND (t, 0);
-      while (TREE_CODE (t) == NON_LVALUE_EXPR
-	     || TREE_CODE (t) == NOP_EXPR)
-	t = TREE_OPERAND (t, 0);
-
-      gcc_assert (TREE_CODE (t) == ADDR_EXPR
-		  || TREE_CODE (t) == STATIC_CAST_EXPR);
-      t = TREE_OPERAND (t, 0);
-    }
-  else if ((TREE_CODE (t) == PAREN_EXPR || TREE_CODE (t) == VIEW_CONVERT_EXPR)
-	     && REF_PARENTHESIZED_P (t))
+  if ((TREE_CODE (t) == PAREN_EXPR || TREE_CODE (t) == VIEW_CONVERT_EXPR)
+      && REF_PARENTHESIZED_P (t))
     t = TREE_OPERAND (t, 0);
 
   return t;

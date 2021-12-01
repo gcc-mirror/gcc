@@ -2421,7 +2421,8 @@ cp_fold (tree x)
       if (REF_PARENTHESIZED_P (x))
 	{
 	  tree p = maybe_undo_parenthesized_ref (x);
-	  return cp_fold (p);
+	  if (p != x)
+	    return cp_fold (p);
 	}
       goto unary;
 

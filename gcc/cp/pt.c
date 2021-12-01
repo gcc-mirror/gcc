@@ -29889,13 +29889,18 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     }
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
+      /* Figure out if INIT is an unparenthesized id-expression or an
+	 unparenthesized class member access.  */
       tree stripped_init = tree_strip_any_location_wrapper (init);
-      if (REFERENCE_REF_P (stripped_init))
+      /* We need to be able to tell '(r)' and 'r' apart (when it's of
+	 reference type).  Only the latter is an id-expression.  */
+      if (REFERENCE_REF_P (stripped_init)
+	  && !REF_PARENTHESIZED_P (stripped_init))
 	stripped_init = TREE_OPERAND (stripped_init, 0);
-      bool id = (DECL_P (stripped_init)
-		 || ((TREE_CODE (init) == COMPONENT_REF
-		      || TREE_CODE (init) == SCOPE_REF)
-		     && !REF_PARENTHESIZED_P (init)));
+      const bool id = (DECL_P (stripped_init)
+		       || ((TREE_CODE (stripped_init) == COMPONENT_REF
+			    || TREE_CODE (stripped_init) == SCOPE_REF)
+			   && !REF_PARENTHESIZED_P (stripped_init)));
       tree deduced = finish_decltype_type (init, id, complain);
       deduced = canonicalize_type_argument (deduced, complain);
       if (deduced == error_mark_node)
