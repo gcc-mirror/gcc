@@ -1121,7 +1121,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			|| first_stmt_code == BIT_FIELD_REF
 			|| first_stmt_code == INDIRECT_REF
 			|| first_stmt_code == COMPONENT_REF
-			|| first_stmt_code == MEM_REF)))
+			|| first_stmt_code == MEM_REF)
+		    && (rhs_code == ARRAY_REF
+			|| rhs_code == BIT_FIELD_REF
+			|| rhs_code == INDIRECT_REF
+			|| rhs_code == COMPONENT_REF
+			|| rhs_code == MEM_REF)))
 	      || first_stmt_load_p != load_p
 	      || first_stmt_phi_p != phi_p)
 	    {
