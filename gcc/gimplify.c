@@ -1829,6 +1829,7 @@ is_var_need_auto_init (tree decl)
 	  || !DECL_HARD_REGISTER (decl))
       && (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
       && (!lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl)))
+      && !OPAQUE_TYPE_P (TREE_TYPE (decl))
       && !is_empty_type (TREE_TYPE (decl)))
     return true;
   return false;
