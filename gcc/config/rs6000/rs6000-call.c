@@ -69,7 +69,6 @@
 #include "opts.h"
 
 #include "rs6000-internal.h"
-#include "rs6000-builtins.h"
 
 #if TARGET_MACHO
 #include "gstab.h"  /* for N_SLINE */
@@ -11905,7 +11904,7 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 /* Raise an error message for a builtin function that is called without the
    appropriate target options being set.  */
 
-static void
+void
 rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
 {
   size_t j = (size_t) fncode;
@@ -16623,12 +16622,6 @@ rs6000_new_builtin_decl (unsigned code, bool /* initialize_p */)
 
   if (fcode >= RS6000_OVLD_MAX)
     return error_mark_node;
-
-  if (!rs6000_new_builtin_is_supported (fcode))
-    {
-      rs6000_invalid_new_builtin (fcode);
-      return error_mark_node;
-    }
 
   return rs6000_builtin_decls_x[code];
 }

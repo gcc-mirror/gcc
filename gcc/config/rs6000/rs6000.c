@@ -78,7 +78,6 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
-#include "rs6000-builtins.h"
 #include "opts.h"
 
 /* This file should be included last.  */
