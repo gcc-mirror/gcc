@@ -16363,6 +16363,15 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     do_binop:
       op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
+      if (XEXP (rtl, 0) == XEXP (rtl, 1))
+	{
+	  if (op0 == 0)
+	    break;
+	  mem_loc_result = op0;
+	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_dup, 0, 0));
+	  add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
+	  break;
+	}
       op1 = mem_loc_descriptor (XEXP (rtl, 1), mode, mem_mode,
 				VAR_INIT_STATUS_INITIALIZED);
 

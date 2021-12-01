@@ -2263,6 +2263,16 @@ simplify_context::simplify_associative_operation (rtx_code code,
 {
   rtx tem;
 
+  /* Normally expressions simplified by simplify-rtx.c are combined
+     at most from a few machine instructions and therefore the
+     expressions should be fairly small.  During var-tracking
+     we can see arbitrarily large expressions though and reassociating
+     those can be quadratic, so punt after encountering max_assoc_count
+     simplify_associative_operation calls during outermost simplify_*
+     call.  */
+  if (++assoc_count >= max_assoc_count)
+    return NULL_RTX;
+
   /* Linearize the operator to the left.  */
   if (GET_CODE (op1) == code)
     {
