@@ -1036,6 +1036,9 @@ Dynamic exception specifications should be replaced with <code>noexcept</code>.
 <para>
 The <literal>bitmap</literal>, <literal>mt</literal>, and <literal>pool</literal>
 options for <option>--enable-libstdcxx-allocator</option> were removed.
+For the <literal>new</literal> option, <classname>std::allocator</classname>
+no longer derives from <classname>__gnu_cxx::new_allocator</classname>;
+they both derive from <classname>std::__new_allocator</classname> instead.
 </para>
 
 </section>

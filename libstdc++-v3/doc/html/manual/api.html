@@ -447,4 +447,7 @@ Dynamic exception specifications should be replaced with <code class="code">noex
 </p><p>
 The <code class="literal">bitmap</code>, <code class="literal">mt</code>, and <code class="literal">pool</code>
 options for <code class="option">--enable-libstdcxx-allocator</code> were removed.
+For the <code class="literal">new</code> option, <code class="classname">std::allocator</code>
+no longer derives from <code class="classname">__gnu_cxx::new_allocator</code>;
+they both derive from <code class="classname">std::__new_allocator</code> instead.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>
