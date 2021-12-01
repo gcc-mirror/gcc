@@ -3423,6 +3423,14 @@ public:
      inside a MEM than outside.  */
   unsigned int mem_depth = 0;
 
+  /* Tracks number of simplify_associative_operation calls performed during
+     outermost simplify* call.  */
+  unsigned int assoc_count = 0;
+
+  /* Limit for the above number, return NULL from
+     simplify_associative_operation after we reach that assoc_count.  */
+  static const unsigned int max_assoc_count = 64;
+
 private:
   rtx simplify_truncation (machine_mode, rtx, machine_mode);
   rtx simplify_byte_swapping_operation (rtx_code, machine_mode, rtx, rtx);
