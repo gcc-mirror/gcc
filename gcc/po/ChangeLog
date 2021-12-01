@@ -1,3 +1,7 @@
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* EXCLUDES: Remove d/dmd sources from list.
+
 2021-08-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

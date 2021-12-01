@@ -1,3 +1,77 @@
+2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102787
+	* array.c (expand_constructor): When encountering a constant array
+	expression or array section within a constructor, simplify it to
+	enable better expansion.
+
+2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103473
+	* simplify.c (simplify_minmaxloc_nodim): Avoid NULL pointer
+	dereference when shape is not set.
+
+2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/101565
+	* check.c (gfc_check_image_index): Verify that SUB argument to
+	IMAGE_INDEX is of type integer.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* frontend-passes.c (gfc_expr_walker): Add comment to
+	indicate tail recursion.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* target-memory.c (gfc_element_size): Remove unreachable return.
+
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (resolve_oacc_loop_blocks): Remove "gang reduction on
+	an orphan loop" checking.
+	(oacc_is_parallel, oacc_is_kernels, oacc_is_serial)
+	(oacc_is_compute_construct): Remove.
+
+2021-11-30  Frederik Harwath  <frederik@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (oacc_is_parallel_or_serial): Evolve into...
+	(oacc_is_compute_construct): ... this function.
+	(resolve_oacc_loop_blocks): Use "oacc_is_compute_construct"
+	instead of "oacc_is_parallel_or_serial" for checking that a
+	loop is not orphaned.
+
+2021-11-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (oacc_is_serial, oacc_is_parallel_or_serial): New.
+	(resolve_oacc_loop_blocks): Use oacc_is_parallel_or_serial instead of
+	oacc_is_parallel.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (oacc_is_parallel, oacc_is_kernels): New 'static'
+	functions.
+	(resolve_oacc_loop_blocks): Emit an error on orphan OpenACC gang
+	reductions.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* decl.c (gfc_insert_parameter_exprs): Only return after
+	resetting type_param_spec_list.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* frontend-passes.c (gfc_expr_walker): Remove unreachable
+	break.
+	* scanner.c (skip_fixed_comments): Remove unreachable
+	gcc_unreachable.
+	* trans-expr.c (gfc_expr_is_variable): Refactor to make
+	control flow more obvious.
+
 2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/103021

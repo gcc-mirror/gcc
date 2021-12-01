@@ -1,3 +1,15 @@
+2021-11-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Remove
+	temporary skip.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Temporarily
+	skip.
+
 2021-11-29  Richard Biener  <rguenther@suse.de>
 
 	* oacc-plugin.c (GOMP_PLUGIN_acc_default_dim): Remove unreachable

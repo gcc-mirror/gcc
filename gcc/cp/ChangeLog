@@ -1,3 +1,37 @@
+2021-11-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (genericize_if_stmt): Always build a COND_EXPR.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* logic.cc (cnf_size_r): Remove unreachable and inconsistently
+	placed gcc_unreachable ()s.
+	* pt.c (iterative_hash_template_arg): Remove unreachable
+	gcc_unreachable and return.
+
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Remove "gang reduction on an
+	orphan loop" checking.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Emit an error on orphan
+	OpenACC gang reductions.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_fold_r): Perform folding of
+	std::source_location::current() calls here...
+	(cp_fold): ... rather than here.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* parser.c (cp_parser_postfix_expression): Remove
+	unreachable code.
+	* pt.c (tsubst_expr): Remove unreachable breaks.
+
 2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/103021

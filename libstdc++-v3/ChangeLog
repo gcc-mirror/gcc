@@ -1,3 +1,60 @@
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/moveable.cc: Allow
+	moved-from string to be non-empty.
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/moveable2_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/87749.cc:
+	Construct empty string before setting oom flag.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/87749.cc:
+	Likewise.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string(basic_string&&)): Fix
+	mem-initializer for _GLIBCXX_FULLY_DYNAMIC_STRING==0 case.
+	* testsuite/21_strings/basic_string/cons/char/noexcept_move_construct.cc:
+	Remove outdated comment.
+	* testsuite/21_strings/basic_string/cons/wchar_t/noexcept_move_construct.cc:
+	Likewise.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/sstream-inst.cc (_GLIBCXX_USE_CXX11_ABI): Define to
+	select new ABI.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector::_S_do_relocate): Remove
+	C++20 constexpr specifier.
+	(vector::_S_relocate) [__cpp_if_constexpr]: Call __relocate_a
+	directly without tag dispatching.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103453
+	* config/allocator/malloc_allocator_base.h
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Define for Clang.
+	* config/allocator/new_allocator_base.h
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Likewise.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/debug_mode.xml: Replace "his or her" with "they".
+	* doc/html/manual/debug_mode_design.html: Regenerate.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/bit (byteswap): Add [[nodiscard]].
+
 2021-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/bit (__cpp_lib_byteswap, byteswap): Define.

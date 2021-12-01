@@ -1,3 +1,385 @@
+2021-11-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103463
+	PR target/103484
+	* config/i386/i386.md (*x86_64_shld_1): Set_attr
+	length_immediate to 1.
+	(*x86_shld_1): Ditto.
+	(*x86_64_shrd_1): Ditto.
+	(*x86_shrd_1): Ditto.
+
+2021-11-30  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Clarify diagnostic.
+	(altivec_resolve_new_overloaded_builtin): Likewise.
+
+2021-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103267
+	* ipa-sra.c (scan_function): Also check ECF_LOOPING_CONST_OR_PURE flag.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103494
+	* tree-vect-stmts.c (vect_get_gather_scatter_ops): Remove ncopies
+	argument and calculate ncopies from gs_info->offset_vectype
+	where necessary.
+	(vectorizable_store, vectorizable_load): Update accordingly.
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (GDC): New variable.
+	(GDCFLAGS): New variable.
+	* configure: Regenerate.
+	* configure.ac: Add call to ACX_PROG_GDC.  Substitute GDCFLAGS.
+
+2021-11-30  Martin Liska  <mliska@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103449
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::prepare_debug_expressions): Be
+	careful about hash_map reallocating itself.  Simpify a return
+	which always returns true.
+
+2021-11-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103440
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Continue
+	normal param processing for equiv params.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_shift_rotate_cost): Remove
+	unreachable return.
+	* tree-chrec.c (evolution_function_is_invariant_rec_p):
+	Likewise.
+	* tree-if-conv.c (if_convertible_stmt_p): Likewise.
+	* tree-ssa-pre.c (fully_constant_expression): Likewise.
+	* tree-vrp.c (operand_less_p): Likewise.
+	* reload.c (reg_overlap_mentioned_for_reload_p): Remove
+	unreachable gcc_unreachable ().
+	* sel-sched-ir.h (bb_next_bb): Likewise.
+	* varasm.c (compare_constant): Likewise.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103489
+	* tree-vect-loop.c (vectorizable_phi): Verify argument
+	vector type compatibility to mitigate bool pattern recog
+	bug.
+
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-offload.c (oacc_loop_auto_partitions): Remove erroneous
+	"Orphan reductions cannot have gang partitioning" handling.
+
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-offload.c (oacc_loop_process): Implement "gang reduction on
+	an orphan loop" checking.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-general.h (enum oacc_loop_flags): Add OLF_REDUCTION enum.
+	* omp-low.c (lower_oacc_head_mark): Use it to mark OpenACC
+	reductions.
+	* omp-offload.c (oacc_loop_auto_partitions): Don't assign gang
+	level parallelism to orphan reductions.
+
+2021-11-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103451
+	* range-op.cc (operator_div::wi_fold): Remove
+	can_throw_non_call_exceptions special case.
+	* tree-ssa-sink.c (sink_code_in_bb): Same.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (arg1_arg4_map): New variable.
+	(vect_get_operand_map): Handle IFN_MASK_GATHER_LOAD.
+	(vect_build_slp_tree_1): Likewise.
+	(vect_build_slp_tree_2): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Expect the mask to be
+	the last SLP child node rather than the first.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-if-conv.c: Include tree-eh.h.
+	(predicate_statements): Remove pe argument.  Don't hoist
+	statements here.
+	(combine_blocks): Remove pe argument.
+	(ifcvt_available_on_edge_p, ifcvt_can_hoist): New functions.
+	(ifcvt_hoist_invariants): Likewise.
+	(tree_if_conversion): Update call to combine_blocks.  Call
+	ifcvt_hoist_invariants after VN.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/102467
+	* doc/sourcebuild.texi (vect_gather_load_ifn): Document.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence):
+	Commonize safelen handling.  Punt for anything involving
+	gathers and scatters unless safelen says otherwise.
+	* tree-vect-slp.c (arg1_map): New variable.
+	(vect_get_operand_map): Handle IFN_GATHER_LOAD.
+	(vect_build_slp_tree_1): Likewise.
+	(vect_build_slp_tree_2): Likewise.
+	(compatible_calls_p): If vect_get_operand_map returns nonnull,
+	check that any skipped arguments are equal.
+	(vect_slp_analyze_node_operations_1): Tighten reduction check.
+	* tree-vect-stmts.c (check_load_store_for_partial_vectors): Take
+	an ncopies argument.
+	(vect_get_gather_scatter_ops): Take slp_node and ncopies arguments.
+	Handle SLP nodes.
+	(vectorizable_store, vectorizable_load): Adjust accordingly.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple.h (gimple_num_args, gimple_arg, gimple_arg_ptr): New
+	functions.
+	* tree-vect-slp.c (cond_expr_maps, arg2_map): New variables.
+	(vect_get_operand_map): New function.
+	(vect_get_and_check_slp_defs): Fix outdated comment.
+	Use vect_get_operand_map and new gimple argument accessors.
+	(vect_build_slp_tree_2): Likewise.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): Use code_helper
+	to record the operations performed by statements, only using
+	CALL_EXPR for things that don't map to built-in or internal
+	functions.  For shifts, require all shift amounts to be equal
+	if optab_vector is not supported but optab_scalar is.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Continue
+	processing conversions if the current offset is a pointer.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vectorizer.h (vect_is_reduction): Use STMT_VINFO_REDUC_IDX.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genopinit.c (main): Turn supports_vec_gather_load and
+	supports_vec_scatter_store into signed char arrays and remove
+	supports_vec_gather_load_cached and supports_vec_scatter_store_cached.
+	* optabs-query.c (supports_vec_convert_optab_p): Add a mode parameter.
+	If the mode is not VOIDmode, test only for that mode.
+	(supports_vec_gather_load_p): Likewise.
+	(supports_vec_scatter_store_p): Likewise.
+	* optabs-query.h (supports_vec_gather_load_p): Likewise.
+	(supports_vec_scatter_store_p): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Pass the
+	vector mode to supports_vec_gather_load_p and
+	supports_vec_scatter_store_p.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.c (commutative_binary_fn_p): Handle IFN_ADD_OVERFLOW
+	and IFN_MUL_OVERFLOW.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.c (commutative_binary_fn_p): Handle IFN_UBSAN_CHECK_ADD
+	and IFN_UBSAN_CHECK_MUL.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* internal-fn.c (commutative_binary_fn_p): Handle IFN_COMPLEX_MUL.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-fold.c: Include internal-fn.h.
+	(fold_stmt_1): If a function maps to an internal one, use
+	first_commutative_argument to canonicalize the order of
+	commutative arguments.
+	* gimple-match-head.c (gimple_resimplify2, gimple_resimplify3)
+	(gimple_resimplify4, gimple_resimplify5): Extend commutativity
+	checks to functions.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi (reduc_fmin_scal_@var{m}): Document.
+	(reduc_fmax_scal_@var{m}): Likewise.
+	* optabs.def (reduc_fmax_scal_optab): New optab.
+	(reduc_fmin_scal_optab): Likewise
+	* internal-fn.def (REDUC_FMAX, REDUC_FMIN): New functions.
+	* tree-vect-loop.c (reduction_fn_for_scalar_code): Handle
+	CASE_CFN_FMAX and CASE_CFN_FMIN.
+	(neutral_op_for_reduction): Likewise.
+	(needs_fold_left_reduction_p): Likewise.
+	* config/aarch64/iterators.md (FMAXMINV): New iterator.
+	(fmaxmin): Handle UNSPEC_FMAXNMV and UNSPEC_FMINNMV.
+	* config/aarch64/aarch64-simd.md (reduc_<optab>_scal_<mode>): Fix
+	unspec mode.
+	(reduc_<fmaxmin>_scal_<mode>): New pattern.
+	* config/aarch64/aarch64-sve.md (reduc_<fmaxmin>_scal_<mode>):
+	Likewise.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.h (associated_internal_fn): Declare overload that
+	takes a (combined_cfn, return type) pair.
+	* builtins.c (associated_internal_fn): Split new overload out
+	of original fndecl version.  Also provide an overload that takes
+	a (combined_cfn, return type) pair.
+	* internal-fn.h (commutative_binary_fn_p): Declare.
+	(commutative_ternary_fn_p): Likewise.
+	(associative_binary_fn_p): Likewise.
+	* internal-fn.c (commutative_binary_fn_p, commutative_ternary_fn_p):
+	New functions, split out from...
+	(first_commutative_argument): ...here.
+	(associative_binary_fn_p): New function.
+	* gimple-match.h (code_helper): Add a constructor that takes
+	internal functions.
+	(commutative_binary_op_p): Declare.
+	(commutative_ternary_op_p): Likewise.
+	(first_commutative_argument): Likewise.
+	(associative_binary_op_p): Likewise.
+	(canonicalize_code): Likewise.
+	(directly_supported_p): Likewise.
+	(get_conditional_internal_fn): Likewise.
+	(gimple_build): New overloads that takes a code_helper.
+	* gimple-fold.c (gimple_build): Likewise.
+	* gimple-match-head.c (commutative_binary_op_p): New function.
+	(commutative_ternary_op_p): Likewise.
+	(first_commutative_argument): Likewise.
+	(associative_binary_op_p): Likewise.
+	(canonicalize_code): Likewise.
+	(directly_supported_p): Likewise.
+	(get_conditional_internal_fn): Likewise.
+	* tree-vectorizer.h: Include gimple-match.h.
+	(neutral_op_for_reduction): Take a code_helper instead of a tree_code.
+	(needs_fold_left_reduction_p): Likewise.
+	(reduction_fn_for_scalar_code): Likewise.
+	(vect_can_vectorize_without_simd_p): Declare a nNew overload that takes
+	a code_helper.
+	* tree-vect-loop.c: Include case-cfn-macros.h.
+	(fold_left_reduction_fn): Take a code_helper instead of a tree_code.
+	(reduction_fn_for_scalar_code): Likewise.
+	(neutral_op_for_reduction): Likewise.
+	(needs_fold_left_reduction_p): Likewise.
+	(use_mask_by_cond_expr_p): Likewise.
+	(build_vect_cond_expr): Likewise.
+	(vect_create_partial_epilog): Likewise.  Use gimple_build rather
+	than gimple_build_assign.
+	(check_reduction_path): Handle calls and operate on code_helpers
+	rather than tree_codes.
+	(vect_is_simple_reduction): Likewise.
+	(vect_model_reduction_cost): Likewise.
+	(vect_find_reusable_accumulator): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_reduction): Likewise.  Make more use of
+	lane_reduc_code_p.
+	(vect_transform_reduction): Use gimple_extract_op but expect
+	a tree_code for now.
+	(vect_can_vectorize_without_simd_p): New overload that takes
+	a code_helper.
+	* tree-vect-stmts.c (vectorizable_call): Handle reductions in
+	fully-masked loops.
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Use
+	gimple_extract_op when updating STMT_VINFO_REDUC_IDX.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-match.h (code_helper): Provide == and != overloads.
+	(code_helper::operator tree_code): Make explicit.
+	(code_helper::operator combined_fn): Likewise.
+	* gimple-match-head.c (convert_conditional_op): Use explicit
+	conversions where necessary.
+	(gimple_resimplify1, gimple_resimplify2, gimple_resimplify3): Likewise.
+	(maybe_push_res_to_seq, gimple_simplify): Likewise.
+	* gimple-fold.c (replace_stmt_with_simplification): Likewise.
+
+2021-11-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-match.h (code_helper): Add functions for querying whether
+	the code represents an internal_fn or a built_in_function.
+	Provide explicit conversion operators for both cases.
+	(gimple_extract_op): Declare.
+	* gimple-match-head.c (gimple_extract): New function, extracted from...
+	(gimple_simplify): ...here.
+	(gimple_extract_op): New function.
+
+2021-11-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/103274
+	* config/i386/i386.c (ix86_output_call_insn): Beef up comment about
+	nops emitted with SEH.
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): When switching to
+	the cold section, emit a nop before the directive if the previous
+	active instruction is a call.
+
+2021-11-30  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100711
+	* config/i386/sse.md (define_split): New splitters to simplify
+	not;vec_duplicate;and as vec_duplicate;andn.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103485
+	* match.pd (-((int)x >> (prec - 1)) to (unsigned)x >> (prec - 1)):
+	Use VIEW_CONVERT_EXPR for vectors.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* cfgrtl.c (skip_insns_after_block): Refactor code to
+	be more easily readable.
+	* expr.c (op_by_pieces_d::run): Remove unreachable
+	assert.
+	* sched-deps.c (sched_analyze): Remove unreachable
+	gcc_unreachable.
+	* sel-sched-ir.c (in_same_ebb_p): Likewise.
+	* tree-ssa-alias.c (nonoverlapping_refs_since_match_p):
+	Remove unreachable code.
+	* tree-vect-slp.c (vectorize_slp_instance_root_stmt):
+	Refactor to avoid unreachable loop iteration.
+	* tree.c (walk_tree_1): Remove unreachable break.
+	* vec-perm-indices.c (vec_perm_indices::series_p): Remove
+	unreachable return.
+
+2021-11-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102347
+	* config/rs6000/rs6000-call.c (rs6000_builtin_decl): Remove builtin mask
+	check.
+
+2021-11-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c
+	(rs6000_cost_data::update_target_cost_per_stmt): Adjust the way to
+	compute extra penalized cost.  Remove useless parameter.
+	(rs6000_cost_data::rs6000_add_stmt_cost): Adjust the call to function
+	update_target_cost_per_stmt.
+
+2021-11-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	Revert:
+	2021-11-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/visium/visium.md (*add<mode>3_insn, *addsi3_insn, *addi3_insn,
+	*sub<mode>3_insn, *subsi3_insn, *subdi3_insn, *neg<mode>2_insn,
+	*negdi2_insn, *and<mode>3_insn, *ior<mode>3_insn, *xor<mode>3_insn,
+	*one_cmpl<mode>2_insn, *ashl<mode>3_insn, *ashr<mode>3_insn,
+	*lshr<mode>3_insn, *trunchiqi2_insn, *truncsihi2_insn,
+	*truncdisi2_insn, *extendqihi2_insn, *extendqisi2_insn,
+	*extendhisi2_insn, *extendsidi2_insn, *zero_extendqihi2_insn,
+	*zero_extendqisi2_insn, *zero_extendsidi2_insn): Fix split condition.
+
+2021-11-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103467
+	* gimple-range-gori.cc (range_def_chain::register_dependency): Don't
+	use an object reference after a potential resize.
+
 2021-11-29  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/102811

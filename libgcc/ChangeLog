@@ -1,3 +1,8 @@
+2021-11-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Undefine caddr_t, pid_t, rlim_t,
+	ssize_t and vfork after including auto-host.h.
+
 2021-11-29  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* config.host (powerpc-wrs-vxworks): Do not add crtbegin.o and

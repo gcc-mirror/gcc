@@ -1,3 +1,13 @@
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* charset.c (convert_escape): Remove unreachable break.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (lang_defaults): Enable cxx23_identifiers for
+	-std={gnu,c}++{11,14,17,20} too.
+
 2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
 
 	PR other/103021
