@@ -31,8 +31,22 @@
 
 --  Modular integer exponentiation
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced
+--  by setting the corresponding assertion policy to Ignore. Postconditions
+--  and contract cases should not be executed at runtime as well, in order
+--  not to slow down the execution of these functions.
+
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
 generic
 
    type Int is mod <>;
 
-function System.Exponu (Left : Int; Right : Natural) return Int;
+function System.Exponu (Left : Int; Right : Natural) return Int
+with
+  SPARK_Mode,
+  Post => System.Exponu'Result = Left ** Right;
