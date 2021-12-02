@@ -2797,7 +2797,6 @@ static void
 setup_allocno_priorities (ira_allocno_t *consideration_allocnos, int n)
 {
   int i, length, nrefs, priority, max_priority, mult, diff;
-  bool overflow_backup_p = true;
   ira_allocno_t a;
 
   max_priority = 0;
@@ -2810,27 +2809,27 @@ setup_allocno_priorities (ira_allocno_t *consideration_allocnos, int n)
       ira_assert (mult >= 0);
       mult *= ira_reg_class_max_nregs[ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)];
       diff = ALLOCNO_MEMORY_COST (a) - ALLOCNO_CLASS_COST (a);
-      /* Multiplication can overflow for very large functions.
-	 Check the overflow and constrain the result if necessary: */
 #ifdef __has_builtin
 #if __has_builtin(__builtin_smul_overflow)
-      overflow_backup_p = false;
+#define HAS_SMUL_OVERFLOW
+#endif
+#endif
+      /* Multiplication can overflow for very large functions.
+	 Check the overflow and constrain the result if necessary: */
+#ifdef HAS_SMUL_OVERFLOW
       if (__builtin_smul_overflow (mult, diff, &priority)
-	  || priority <= -INT_MAX)
+	  || priority < -INT_MAX)
 	priority = diff >= 0 ? INT_MAX : -INT_MAX;
+#else
+      static_assert
+	(sizeof (long long) >= 2 * sizeof (int),
+	 "overflow code does not work for such int and long long sizes");
+      long long priorityll = (long long) mult * diff;
+      if (priorityll < -INT_MAX || priorityll > INT_MAX)
+	priority = diff >= 0 ? INT_MAX : -INT_MAX;
+      else
+	priority = priorityll;
 #endif
-#endif
-      if (overflow_backup_p)
-	{
-	  static_assert
-	    (sizeof (long long) >= 2 * sizeof (int),
-	     "overflow code does not work for such int and long long sizes");
-	  long long priorityll = (long long) mult * diff;
-	  if (priorityll < -INT_MAX || priorityll > INT_MAX)
-	    priority = diff >= 0 ? INT_MAX : -INT_MAX;
-	  else
-	    priority = priorityll;
-	}
       allocno_priorities[ALLOCNO_NUM (a)] = priority;
       if (priority < 0)
 	priority = -priority;
