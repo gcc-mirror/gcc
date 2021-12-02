@@ -1564,7 +1564,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       if (present)
 	ptr = gfc_build_cond_assign_expr (&block, present, ptr,
 					  null_pointer_node);
-      ptr = fold_convert (build_pointer_type (char_type_node), ptr);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
       ptr = build_fold_indirect_ref (ptr);
       OMP_CLAUSE_DECL (c) = ptr;
       c2 = build_omp_clause (input_location, OMP_CLAUSE_MAP);
@@ -2381,7 +2381,7 @@ gfc_trans_omp_array_section (stmtblock_t *block, gfc_omp_namelist *n,
 					    OMP_CLAUSE_SIZE (node), elemsz);
     }
   gcc_assert (se.post.head == NULL_TREE);
-  ptr = fold_convert (build_pointer_type (char_type_node), ptr);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
   OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (ptr);
   ptr = fold_convert (ptrdiff_type_node, ptr);
 
@@ -2849,8 +2849,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 		    {
 		      decl = gfc_conv_descriptor_data_get (decl);
-		      decl = fold_convert (build_pointer_type (char_type_node),
-					   decl);
+		      gcc_assert (POINTER_TYPE_P (TREE_TYPE (decl)));
 		      decl = build_fold_indirect_ref (decl);
 		    }
 		  else if (DECL_P (decl))
@@ -2873,8 +2872,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    }
 		  gfc_add_block_to_block (&iter_block, &se.pre);
 		  gfc_add_block_to_block (&iter_block, &se.post);
-		  ptr = fold_convert (build_pointer_type (char_type_node),
-				      ptr);
+		  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 		  OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (ptr);
 		}
 	      if (list == OMP_LIST_DEPEND)
@@ -3117,8 +3115,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      if (present)
 			ptr = gfc_build_cond_assign_expr (block, present, ptr,
 							  null_pointer_node);
-		      ptr = fold_convert (build_pointer_type (char_type_node),
-					  ptr);
+		      gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 		      ptr = build_fold_indirect_ref (ptr);
 		      OMP_CLAUSE_DECL (node) = ptr;
 		      node2 = build_omp_clause (input_location,
@@ -3555,8 +3552,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    {
 		      tree type = TREE_TYPE (decl);
 		      tree ptr = gfc_conv_descriptor_data_get (decl);
-		      ptr = fold_convert (build_pointer_type (char_type_node),
-					  ptr);
+		      gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 		      ptr = build_fold_indirect_ref (ptr);
 		      OMP_CLAUSE_DECL (node) = ptr;
 		      OMP_CLAUSE_SIZE (node)
@@ -3606,8 +3602,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 				       OMP_CLAUSE_SIZE (node), elemsz);
 		    }
 		  gfc_add_block_to_block (block, &se.post);
-		  ptr = fold_convert (build_pointer_type (char_type_node),
-				      ptr);
+		  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 		  OMP_CLAUSE_DECL (node) = build_fold_indirect_ref (ptr);
 		}
 	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
