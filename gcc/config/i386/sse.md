@@ -20767,6 +20767,33 @@
    (set_attr "btver2_decode" "vector,vector,vector") 
    (set_attr "mode" "<ssefltvecmode>")])
 
+;; PR target/100738: Transform vpcmpeqd + vpxor + vblendvps to vblendvps for inverted mask;
+(define_insn_and_split "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_not_ltint"
+  [(set (match_operand:<ssebytemode> 0 "register_operand")
+	(unspec:<ssebytemode>
+	  [(match_operand:<ssebytemode> 1 "register_operand")
+	   (match_operand:<ssebytemode> 2 "vector_operand")
+	   (subreg:<ssebytemode>
+	     (lt:VI48_AVX
+	       (subreg:VI48_AVX
+	       (not:<ssebytemode>
+		 (match_operand:<ssebytemode> 3 "register_operand")) 0)
+	       (match_operand:VI48_AVX 4 "const0_operand")) 0)]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<ssefltvecmode>
+	 [(match_dup 2) (match_dup 1) (match_dup 3)] UNSPEC_BLENDV))]
+{
+  operands[0] = gen_lowpart (<ssefltvecmode>mode, operands[0]);
+  operands[1] = gen_lowpart (<ssefltvecmode>mode, operands[1]);
+  operands[2] = force_reg (<ssefltvecmode>mode,
+			   gen_lowpart (<ssefltvecmode>mode, operands[2]));
+  operands[3] = gen_lowpart (<ssefltvecmode>mode, operands[3]);
+})
+
 (define_insn "<sse4_1>_dp<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256
