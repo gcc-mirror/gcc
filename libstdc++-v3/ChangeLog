@@ -1,3 +1,78 @@
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103501
+	* include/bits/stl_tree.h (_Rb_tree(_Rb_tree&&, false_type)):
+	Clear container if elements have been moved-from.
+	* testsuite/23_containers/map/allocator/move_cons.cc: Expect
+	moved-from container to be empty.
+	* testsuite/23_containers/multimap/allocator/move_cons.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/allocator/103501.cc: New test.
+	* testsuite/23_containers/set/allocator/103501.cc: New test.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Change macro name.
+	* include/bits/allocator.h (allocate, deallocate): Use
+	std::__is_constant_evaluated() unconditionally, instead of
+	checking whether std::is_constant_evaluated() (or the built-in)
+	can be used.
+	* include/bits/basic_string.h: Check new macro. call
+	std::is_constant_evaluated() directly in C++20-only code that is
+	guarded by a suitable macro.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/c++config (__is_constant_evaluated): Define.
+	(_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED): Replace with ...
+	(_GLIBCXX_HAVE_IS_CONSTANT_EVALUATED): New macro.
+	* include/bits/char_traits.h (char_traits): Replace conditional
+	calls to std::is_constant_evaluated with unconditional calls to
+	std::__is_constant_evaluated.
+	* include/bits/cow_string.h: Use new macro.
+	* include/bits/ranges_algobase.h (__copy_or_move): Replace
+	conditional calls to std::is_constant_evaluated with unconditional
+	calls to std::__is_constant_evaluated.
+	(__copy_or_move_backward, __fill_n_fn): Likewise.
+	* include/bits/ranges_cmp.h (ranges::less): Likewise.
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Likewise.
+	* include/bits/stl_bvector.h: Call std::is_constant_evaluated
+	directly in C++20-only code that is guarded by a suitable macro.
+	* include/bits/stl_construct.h (_Construct, _Destroy, _Destroy_n):
+	Replace is_constant_evaluated with __is_constant_evaluated.
+	* include/bits/stl_function.h (greater, less, greater_equal)
+	(less_equal): Replace __builtin_is_constant_evaluated and
+	__builtin_constant_p with __is_constant_evaluated.
+	* include/bits/stl_vector.h: Call std::is_constant_evaluated()
+	in C++20-only code.
+	* include/debug/helper_functions.h (__check_singular): Use
+	__is_constant_evaluated instead of built-in, or remove check
+	entirely.
+	* include/std/array (operator<=>): Use __is_constant_evaluated
+	unconditionally.
+	* include/std/bit (__bit_ceil): Likewise.
+	* include/std/type_traits (is_constant_evaluated): Define using
+	'if consteval' if possible.
+	* include/std/version: Use new macro.
+	* libsupc++/compare: Use __is_constant_evaluated instead of
+	__builtin_is_constant_evaluated.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error lines.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string::_M_is_leaked): Use
+	non-atomic load when __is_single_threaded() is true.
+	(basic_string::_M_is_shared): Likewise.
+	(basic_string::(basic_string&&)) [_GLIBCXX_FULLY_DYNAMIC_STRING]:
+	Use non-atomic store when rvalue is not shared.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_path.cc (path::_M_split_cmpts()): Remove
+	micro-optimization for "/" path.
+	* src/filesystem/path.cc (path::_M_split_cmpts()): Only access
+	the contents of _M_pathname using const member functions.
+
 2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/cons/char/moveable.cc: Allow

@@ -1,3 +1,121 @@
+2021-12-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102811
+	* config/i386/sse.md (VI2F): Remove mode iterator.
+	(VI2F_256_512): New mode iterator.
+	(vec_set<V8_128:mode>_0): New insn pattern.
+	(vec_set<VI2F_256_512:mode>_0>): Rename from vec_set<VI2F:mode>mode.
+	Use VI2F_256_512 mode iterator instead of VI2F.
+	(*axv512fp16_movsh): Remove.
+	(<sse2p4_1>_pinsr<ssemodesuffix>): Add (x,x,x) AVX2 alternative.
+	Do not disable V8HF mode insn on AVX2 targets.
+	(pinsrw -> pbroadcast + pblendw peephole2): New peephole.
+	(pinsrw -> pbroadcast + pblendw splitter): New post-reload splitter.
+	* config/i386/i386.md (extendhfsf): Call gen_vec_setv8hf_0.
+	* config/i386/i386-expand.c (ix86_expand_vector_set)
+	<case E_V8HFmode>: Use vec_merge path for TARGET_AVX2.
+
+2021-12-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_until_wrap):
+	Check if simplify_using_initial_conditions allows us to
+	simplify the expression for may_be_zero.
+	* match.pd (X != C ? -X : -C -> -X): New transform.
+	(X != C ? ~X : ~C -> ~X): Likewise.
+	((X+1) > Y ? -X : 1 -> X >= Y ? -X : 1): Likewise.
+
+2021-12-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR middle-end/103127
+	* gimplify.c (is_var_need_auto_init): Handle opaque types.
+
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* common.opt (static-libphobos): Add option.
+	* config/darwin.h (LINK_SPEC): Substitute -lgphobos with libgphobos.a
+	when linking statically.
+	* gcc.c (driver_handle_option): Set -static-libphobos as always valid.
+
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103310
+	* fold-const.c (maybe_nonzero_address): Use get_create or get
+	depending on folding_initializer.
+	(fold_binary_initializer_loc): New.
+	* fold-const.h (fold_binary_initializer_loc): Declare.
+	* varasm.c (mark_weak): Don't use the decl location.
+	* doc/invoke.texi: Document -fconstexpr-fp-except.
+
+2021-12-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/102347
+	* config/rs6000/rs6000-c.c (rs6000-builtins.h): Stop including.
+	(rs6000-internal.h): Include.
+	(altivec_resolve_new_overloaded_builtin): Move call to
+	rs6000_invalid_new_builtin here from rs6000_new_builtin_decl.
+	* config/rs6000/rs6000-call.c (rs6000-builtins.h): Stop including.
+	(rs6000_invalid_new_builtin): Remove static qualifier.
+	(rs6000_new_builtin_decl): Remove test for supported builtin.
+	* config/rs6000/rs6000-internal.h (rs6000-builtins.h): Include.
+	(rs6000_invalid_new_builtin): Declare.
+	* config/rs6000/rs6000.c (rs6000-builtins.h): Don't include.
+
+2021-12-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/103409
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_phis):
+	Do all the work with just one ssa_global_cache.
+	* gimple-range-path.h: Remove m_tmp_phi_cache.
+
+2021-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103517
+	* tree-vect-slp.c (vect_build_slp_tree_1): When allowing two
+	different component references, check the codes of both them,
+	rather than just the first.
+
+2021-12-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/103464
+	* gimple-range.cc (gimple_ranger::prefill_name): Process phis also.
+	(gimple_ranger::prefill_stmt_dependencies): Ditto.
+
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/install.texi (Prerequisites): Add note that D front end now
+	requires GDC installed in order to bootstrap.
+	(Building): Add D compiler section, referencing prerequisites.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_SCHEDULE,
+	X86_TUNE_SSE_PARTIAL_REG_FP_CONVERTS_DEPENDENCY,
+	X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES): Formatting fixes.
+	(X86_TUNE_USE_GATHER): Put m_GENERIC last for consistency.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102356
+	* rtl.h (simplify_context): Add assoc_count member and
+	max_assoc_count static member.
+	* simplify-rtx.c (simplify_associative_operation): Don't reassociate
+	more than max_assoc_count times within one outermost simplify_* call.
+	* dwarf2out.c (mem_loc_descriptor): Optimize binary operation
+	with both operands the same using DW_OP_dup.
+
+2021-12-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* match.pd: Move below pattern that rewrites to EQ, NE.
+	* tree.c (bitmask_inv_cst_vector_p): Correct do .. while indentation.
+
+2021-12-01  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Martin Liška  <mliska@suse.cz>
+
+	PR tree-optimization/103456
+	* tree-object-size.c (merge_object_sizes): Update osi->changed
+	only if object_sizes_set succeeded.
+
 2021-11-30  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/103463

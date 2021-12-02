@@ -1,3 +1,10 @@
+2021-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102471
+	* region-model-reachability.cc (reachable_regions::handle_parm):
+	Treat all svalues within a compound parm has reachable, and those
+	wrapped in a cast.
+
 2021-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103217

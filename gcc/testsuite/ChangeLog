@@ -1,3 +1,98 @@
+2021-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102471
+	* gcc.dg/analyzer/leak-3.c: New test.
+
+2021-12-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/102881
+	* gcc.target/i386/pr102811-1.c: New test.
+	* gcc.target/i386/avx512fp16-1c.c (dg-final): Update
+	scan-assembler-times scan strings for ia32 targets.
+	* gcc.target/i386/pr102327-1.c (dg-final): Ditto.
+	* gcc.target/i386/pr102811.c: Rename from ...
+	* gcc.target/i386/avx512vl-vcvtps2ph-pr102811.c: ... this.
+
+2021-12-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/fold-condneg-1.c: New test case.
+	* gcc.dg/fold-condneg-2.c: New test case.
+	* gcc.dg/fold-condnot-1.c: New test case.
+	* gcc.dg/pr101145-1.c: New test case.
+	* gcc.dg/pr101145-2.c: New test case.
+
+2021-12-01  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR middle-end/103127
+	* gcc.target/powerpc/pr103127.c: New test.
+
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103310
+	* g++.dg/cpp0x/constexpr-fp-except1.C: New test.
+	* g++.dg/cpp1z/constexpr-if36.C: New test.
+	* gcc.dg/tree-ssa/nonzero-1.c: Now well-formed.
+	* gcc.dg/tree-ssa/nonzero-1a.c: New test.
+
+2021-12-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103517
+	* gcc.dg/vect/pr103517.c: New test.
+
+2021-12-01  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.target/aarch64/aapcs64/macro-def.h (PTR): Fix typo in
+	comment.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* g++.dg/cpp/ucnid-1.C: Adjust expected diagnostics.
+	* g++.dg/cpp/ucnid-1-utf8.C: Likewise.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102356
+	* gcc.dg/pr102356.c: New test.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103415
+	* c-c++-common/cpp/va-opt-8.c: New test.
+	* c-c++-common/Wimplicit-fallthrough-38.c: New test.
+
+2021-12-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/bic-bitmask-10.c: Moved to gcc.dg/vect/vect-bic-bitmask-10.c.
+	* gcc.dg/bic-bitmask-11.c: Moved to gcc.dg/vect/vect-bic-bitmask-11.c.
+	* gcc.dg/bic-bitmask-12.c: Moved to gcc.dg/vect/vect-bic-bitmask-12.c.
+	* gcc.dg/bic-bitmask-3.c: Moved to gcc.dg/vect/vect-bic-bitmask-3.c.
+	* gcc.dg/bic-bitmask-23.c: Moved to gcc.dg/vect/vect-bic-bitmask-23.c.
+	* gcc.dg/bic-bitmask-2.c: Moved to gcc.dg/vect/vect-bic-bitmask-2.c.
+	* gcc.dg/bic-bitmask-4.c: Moved to gcc.dg/vect/vect-bic-bitmask-4.c.
+	* gcc.dg/bic-bitmask-5.c: Moved to gcc.dg/vect/vect-bic-bitmask-5.c.
+	* gcc.dg/bic-bitmask-6.c: Moved to gcc.dg/vect/vect-bic-bitmask-6.c.
+	* gcc.dg/bic-bitmask-8.c: Moved to gcc.dg/vect/vect-bic-bitmask-8.c.
+	* gcc.dg/bic-bitmask-9.c: Moved to gcc.dg/vect/vect-bic-bitmask-9.c.
+	* gcc.dg/vect/vect-bic-bitmask-10.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-11.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-12.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-2.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-23.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-3.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-4.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-5.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-6.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-8.c: New file.
+	* gcc.dg/vect/vect-bic-bitmask-9.c: New file.
+
+2021-12-01  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+	    Martin Liška  <mliska@suse.cz>
+
+	PR tree-optimization/103456
+	* gcc.dg/ubsan/pr103456.c: New test.
+
 2021-11-30  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr103463.c: New test.

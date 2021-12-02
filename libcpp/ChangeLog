@@ -1,3 +1,24 @@
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (struct lang_flags): Remove cxx23_identifiers.
+	(lang_defaults): Remove cxx23_identifiers initializers.
+	(cpp_set_lang): Don't copy cxx23_identifiers.
+	* include/cpplib.h (struct cpp_options): Adjust comment about
+	c11_identifiers.  Remove cxx23_identifiers field.
+	* lex.c (warn_about_normalization): Use cplusplus instead of
+	cxx23_identifiers.
+	* charset.c (ucn_valid_in_identifier): Likewise.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103415
+	* macro.c (stringify_arg): Remove va_opt argument and va_opt handling.
+	(paste_tokens): On successful paste or in PREV_WHITE and
+	PREV_FALLTHROUGH flags from the *plhs token to the new token.
+	(replace_args): Adjust stringify_arg callers.  For #__VA_OPT__,
+	perform token pasting in a separate loop before stringify_arg call.
+
 2021-11-30  Richard Biener  <rguenther@suse.de>
 
 	* charset.c (convert_escape): Remove unreachable break.

@@ -1,3 +1,8 @@
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/testsuite_flags.in: Add libphobos library directory as
+	search path to --gdcldflags.
+
 2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime e6caaab9.

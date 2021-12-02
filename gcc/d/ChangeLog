@@ -1,3 +1,17 @@
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.cc (lang_specific_driver): Set SKIPOPT on -static-libstdc++
+	and -static-libphobos only when target supports LD_STATIC_DYNAMIC.
+	Remove generate_option to re-add -static-libstdc++.
+
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi (Runtime Options): Document -fcheckaction=, -fextern-std=,
+	-fpreview=, -frevert=.
+	(Code Generation): Document -fdump-c++-spec=, -fdump-c++-spec-verbose,
+	-fsave-mixins=.
+	(Warnings): Update list of supported -ftransitions=.
+
 2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd b8384668f.

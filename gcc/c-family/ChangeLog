@@ -1,3 +1,8 @@
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103310
+	* c.opt: Add -fconstexpr-fp-except.
+
 2021-11-29  Richard Biener  <rguenther@suse.de>
 
 	* c-format.c (check_format_string): Remove spurious
