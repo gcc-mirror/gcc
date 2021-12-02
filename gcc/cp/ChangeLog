@@ -1,3 +1,8 @@
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (is_this_parameter): Check DECL_HAS_VALUE_EXPR_P
+	instead of is_capture_proxy.
+
 2021-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

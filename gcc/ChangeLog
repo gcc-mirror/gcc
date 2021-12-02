@@ -1,3 +1,22 @@
+2021-12-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-11-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103267
+	* ipa-sra.c (scan_function): Also check ECF_LOOPING_CONST_OR_PURE flag.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102356
+	* rtl.h (simplify_context): Add assoc_count member and
+	max_assoc_count static member.
+	* simplify-rtx.c (simplify_associative_operation): Don't reassociate
+	more than max_assoc_count times within one outermost simplify_* call.
+
 2021-11-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/103274

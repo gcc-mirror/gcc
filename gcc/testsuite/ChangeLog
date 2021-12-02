@@ -1,3 +1,11 @@
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/102356
+	* gcc.dg/pr102356.c: New test.
+
 2021-11-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
