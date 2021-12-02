@@ -54,6 +54,11 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#pragma GCC diagnostic ignored "-Wstringop-overread"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
   /**
    *  @brief  Mapping from character type to associated types.
    *
@@ -989,6 +994,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   } // namespace __detail
 #endif // C++20
+
+#pragma GCC diagnostic push
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
