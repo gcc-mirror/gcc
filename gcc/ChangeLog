@@ -1,3 +1,9 @@
+2021-12-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/103267
+	* tree-sra.c (scan_function): Also check ECF_LOOPING_CONST_OR_PURE
+	flag.
+
 2021-11-25  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:
