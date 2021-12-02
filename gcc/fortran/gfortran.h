@@ -3307,6 +3307,7 @@ void gfc_free_ref_list (gfc_ref *);
 void gfc_type_convert_binary (gfc_expr *, int);
 bool gfc_is_constant_expr (gfc_expr *);
 bool gfc_simplify_expr (gfc_expr *, int);
+bool gfc_try_simplify_expr (gfc_expr *, int);
 int gfc_has_vector_index (gfc_expr *);
 
 gfc_expr *gfc_get_expr (void);
