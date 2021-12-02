@@ -15736,9 +15736,10 @@ rs6000_expand_new_builtin (tree exp, rtx target,
     }
 
   if (bif_is_no32bit (*bifaddr) && TARGET_32BIT)
-    fatal_error (input_location,
-		 "%<%s%> is not supported in 32-bit mode",
-		 bifaddr->bifname);
+    {
+      error ("%<%s%> is not supported in 32-bit mode", bifaddr->bifname);
+      return const0_rtx;
+    }
 
   if (bif_is_cpu (*bifaddr))
     return new_cpu_expand_builtin (fcode, exp, target);
@@ -15762,6 +15763,8 @@ rs6000_expand_new_builtin (tree exp, rtx target,
     {
       if (fcode == RS6000_BIF_MFTB)
 	icode = CODE_FOR_rs6000_mftb_si;
+      else if (fcode == RS6000_BIF_BPERMD)
+	icode = CODE_FOR_bpermd_si;
       else
 	gcc_unreachable ();
     }
