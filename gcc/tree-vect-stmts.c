@@ -2740,7 +2740,7 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
 		       && (!mask
 			   || TREE_CODE (masktype) == INTEGER_TYPE
 			   || types_compatible_p (srctype, masktype)));
-  if (mask && TREE_CODE (masktype) == INTEGER_TYPE)
+  if (mask)
     masktype = truth_type_for (srctype);
 
   tree mask_halftype = masktype;
@@ -2893,7 +2893,8 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
       if (masktype != real_masktype)
 	{
 	  tree utype, optype = TREE_TYPE (mask_op);
-	  if (TYPE_MODE (real_masktype) == TYPE_MODE (optype))
+	  if (VECTOR_TYPE_P (real_masktype)
+	      || TYPE_MODE (real_masktype) == TYPE_MODE (optype))
 	    utype = real_masktype;
 	  else
 	    utype = lang_hooks.types.type_for_mode (TYPE_MODE (optype), 1);
