@@ -2331,6 +2331,31 @@ gfc_simplify_expr (gfc_expr *p, int type)
 }
 
 
+/* Try simplification of an expression via gfc_simplify_expr.
+   When an error occurs (arithmetic or otherwise), roll back.  */
+
+bool
+gfc_try_simplify_expr (gfc_expr *e, int type)
+{
+  gfc_expr *n;
+  bool t, saved_div0;
+
+  if (e == NULL || e->expr_type == EXPR_CONSTANT)
+    return true;
+
+  saved_div0 = gfc_seen_div0;
+  gfc_seen_div0 = false;
+  n = gfc_copy_expr (e);
+  t = gfc_simplify_expr (n, type) && !gfc_seen_div0;
+  if (t)
+    gfc_replace_expr (e, n);
+  else
+    gfc_free_expr (n);
+  gfc_seen_div0 = saved_div0;
+  return t;
+}
+
+
 /* Returns the type of an expression with the exception that iterator
    variables are automatically integers no matter what else they may
    be declared as.  */
