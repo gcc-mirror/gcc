@@ -23,32 +23,32 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;        use Aspects;
-with Atree;          use Atree;
-with Csets;          use Csets;
-with Debug;          use Debug;
-with Einfo;          use Einfo;
-with Einfo.Entities; use Einfo.Entities;
-with Einfo.Utils;    use Einfo.Utils;
-with Elists;         use Elists;
-with Lib;            use Lib;
-with Namet;          use Namet;
-with Nlists;         use Nlists;
-with Output;         use Output;
-with Seinfo;         use Seinfo;
-with Sinfo;          use Sinfo;
-with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo.Utils;    use Sinfo.Utils;
-with Snames;         use Snames;
-with Sinput;         use Sinput;
-with Stand;          use Stand;
-with Stringt;        use Stringt;
-with SCIL_LL;        use SCIL_LL;
-with Uintp;          use Uintp;
-with Urealp;         use Urealp;
-with Uname;          use Uname;
+with Aspects;              use Aspects;
+with Atree;                use Atree;
+with Csets;                use Csets;
+with Debug;                use Debug;
+with Einfo;                use Einfo;
+with Einfo.Entities;       use Einfo.Entities;
+with Einfo.Utils;          use Einfo.Utils;
+with Elists;               use Elists;
+with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
+with Lib;                  use Lib;
+with Namet;                use Namet;
+with Nlists;               use Nlists;
+with Output;               use Output;
+with Seinfo;               use Seinfo;
+with Sinfo;                use Sinfo;
+with Sinfo.Nodes;          use Sinfo.Nodes;
+with Sinfo.Utils;          use Sinfo.Utils;
+with Snames;               use Snames;
+with Sinput;               use Sinput;
+with Stand;                use Stand;
+with Stringt;              use Stringt;
+with SCIL_LL;              use SCIL_LL;
+with Uintp;                use Uintp;
+with Urealp;               use Urealp;
+with Uname;                use Uname;
 with Unchecked_Conversion;
-with Unchecked_Deallocation;
 
 package body Treepr is
 
@@ -80,23 +80,29 @@ package body Treepr is
    --  Set True to print low-level information useful for debugging Atree and
    --  the like.
 
-   type Hash_Record is record
-      Serial : Nat;
-      --  Serial number for hash table entry. A value of zero means that
-      --  the entry is currently unused.
+   function Hash (Key : Int) return GNAT.Bucket_Range_Type;
+   --  Simple Hash function for Node_Ids, List_Ids and Elist_Ids
 
-      Id : Int;
-      --  If serial number field is non-zero, contains corresponding Id value
-   end record;
+   procedure Destroy (Value : in out Nat) is null;
+   --  Dummy routine for destroing hashed values
 
-   type Hash_Table_Type is array (Nat range <>) of Hash_Record;
-   type Access_Hash_Table_Type is access Hash_Table_Type;
-   Hash_Table : Access_Hash_Table_Type;
+   package Serial_Numbers is new Dynamic_Hash_Tables
+     (Key_Type              => Int,
+      Value_Type            => Nat,
+      No_Value              => 0,
+      Expansion_Threshold   => 1.5,
+      Expansion_Factor      => 2,
+      Compression_Threshold => 0.3,
+      Compression_Factor    => 2,
+      "="                   => "=",
+      Destroy_Value         => Destroy,
+      Hash                  => Hash);
+   --  Hash tables with dynamic resizing based on load factor. They provide
+   --  reasonable performance both when the printed AST is small (e.g. when
+   --  printing from debugger) and large (e.g. when printing with -gnatdt).
+
+   Hash_Table : Serial_Numbers.Dynamic_Hash_Table;
    --  The hash table itself, see Serial_Number function for details of use
-
-   Hash_Table_Len : Nat;
-   --  Range of Hash_Table is from 0 .. Hash_Table_Len - 1 so that dividing
-   --  by Hash_Table_Len gives a remainder that is in Hash_Table'Range.
 
    Next_Serial_Number : Nat;
    --  Number of last visited node or list. Used during the marking phase to
@@ -274,6 +280,17 @@ package body Treepr is
          Capitalize (Result);
       end return;
    end Capitalize;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (Key : Int) return GNAT.Bucket_Range_Type is
+      function Cast is new Unchecked_Conversion
+        (Source => Int, Target => GNAT.Bucket_Range_Type);
+   begin
+      return Cast (Key);
+   end Hash;
 
    -----------
    -- Image --
@@ -794,6 +811,10 @@ package body Treepr is
       procedure Print_Initial;
       --  Print the initial stuff that goes before the value
 
+      -------------------
+      -- Print_Initial --
+      -------------------
+
       procedure Print_Initial is
       begin
          Printed := True;
@@ -807,6 +828,8 @@ package body Treepr is
 
          Write_Str (" = ");
       end Print_Initial;
+
+   --  Start of processing for Print_Field
 
    begin
       if Phase /= Printing then
@@ -1068,23 +1091,12 @@ package body Treepr is
    ----------------
 
    procedure Print_Init is
-      Max_Hash_Entries : constant Nat :=
-        Approx_Num_Nodes_And_Entities + Num_Lists + Num_Elists;
    begin
       Printing_Descendants := True;
       Write_Eol;
 
-      --  Allocate and clear serial number hash table. The size is 150% of
-      --  the maximum possible number of entries, so that the hash table
-      --  cannot get significantly overloaded.
-
-      Hash_Table_Len := (150 * Max_Hash_Entries) / 100;
-      Hash_Table := new Hash_Table_Type  (0 .. Hash_Table_Len - 1);
-
-      for J in Hash_Table'Range loop
-         Hash_Table (J).Serial := 0;
-      end loop;
-
+      pragma Assert (not Serial_Numbers.Present (Hash_Table));
+      Hash_Table := Serial_Numbers.Create (512);
    end Print_Init;
 
    ---------------
@@ -1703,11 +1715,8 @@ package body Treepr is
    ----------------
 
    procedure Print_Term is
-      procedure Free is new Unchecked_Deallocation
-        (Hash_Table_Type, Access_Hash_Table_Type);
-
    begin
-      Free (Hash_Table);
+      Serial_Numbers.Destroy (Hash_Table);
    end Print_Term;
 
    ---------------------
@@ -1812,40 +1821,14 @@ package body Treepr is
    -- Serial_Number --
    -------------------
 
-   --  The hashing algorithm is to use the remainder of the ID value divided
-   --  by the hash table length as the starting point in the table, and then
-   --  handle collisions by serial searching wrapping at the end of the table.
-
-   Hash_Slot : Nat;
+   Hash_Id : Int;
    --  Set by an unsuccessful call to Serial_Number (one which returns zero)
-   --  to save the slot that should be used if Set_Serial_Number is called.
+   --  to save the Id that should be used if Set_Serial_Number is called.
 
    function Serial_Number (Id : Int) return Nat is
-      H : Int := Id mod Hash_Table_Len;
-
    begin
-      while Hash_Table (H).Serial /= 0 loop
-
-         if Id = Hash_Table (H).Id then
-            return Hash_Table (H).Serial;
-         end if;
-
-         H := H + 1;
-
-         if H > Hash_Table'Last then
-            H := 0;
-         end if;
-      end loop;
-
-      --  Entry was not found, save slot number for possible subsequent call
-      --  to Set_Serial_Number, and unconditionally save the Id in this slot
-      --  in case of such a call (the Id field is never read if the serial
-      --  number of the slot is zero, so this is harmless in the case where
-      --  Set_Serial_Number is not subsequently called).
-
-      Hash_Slot := H;
-      Hash_Table (H).Id := Id;
-      return 0;
+      Hash_Id := Id;
+      return Serial_Numbers.Get (Hash_Table, Id);
    end Serial_Number;
 
    -----------------------
@@ -1854,7 +1837,7 @@ package body Treepr is
 
    procedure Set_Serial_Number is
    begin
-      Hash_Table (Hash_Slot).Serial := Next_Serial_Number;
+      Serial_Numbers.Put (Hash_Table, Hash_Id, Next_Serial_Number);
       Next_Serial_Number := Next_Serial_Number + 1;
    end Set_Serial_Number;
 
