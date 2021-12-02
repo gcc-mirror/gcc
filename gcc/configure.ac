@@ -6963,6 +6963,9 @@ fi
 # Check if the target LIBC handles PT_GNU_STACK.
 gcc_cv_libc_gnustack=unknown
 case "$target" in
+  mips*-*-linux-musl*)
+    gcc_cv_libc_gnustack=yes
+    ;;
   mips*-*-linux*)
     GCC_GLIBC_VERSION_GTE_IFELSE([2], [31], [gcc_cv_libc_gnustack=yes], )
     ;;
