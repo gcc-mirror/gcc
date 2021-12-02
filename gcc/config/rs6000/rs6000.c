@@ -22745,7 +22745,7 @@ rs6000_builtin_reciprocal (tree fndecl)
 {
   switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
-    case VSX_BUILTIN_XVSQRTDP:
+    case RS6000_BIF_XVSQRTDP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
 
@@ -22753,7 +22753,7 @@ rs6000_builtin_reciprocal (tree fndecl)
 	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
       return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
-    case VSX_BUILTIN_XVSQRTSP:
+    case RS6000_BIF_XVSQRTSP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
 
