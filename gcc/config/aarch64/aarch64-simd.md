@@ -1956,20 +1956,32 @@
    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>")]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
-						 INTVAL (operands[2]));
-    rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_rshrn<mode>_insn_be (tmp, operands[1],
-				operands[2], CONST0_RTX (<VNARROWQ>mode)));
+    if (INTVAL (operands[2]) == GET_MODE_UNIT_BITSIZE (<VNARROWQ>mode))
+      {
+	rtx tmp0 = aarch64_gen_shareable_zero (<MODE>mode);
+	emit_insn (gen_aarch64_raddhn<mode> (operands[0], operands[1], tmp0));
+      }
     else
-      emit_insn (gen_aarch64_rshrn<mode>_insn_le (tmp, operands[1],
-				operands[2], CONST0_RTX (<VNARROWQ>mode)));
+      {
+	rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
+	operands[2] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+						         INTVAL (operands[2]));
+	if (BYTES_BIG_ENDIAN)
+	  emit_insn (
+		gen_aarch64_rshrn<mode>_insn_be (tmp, operands[1],
+						 operands[2],
+						 CONST0_RTX (<VNARROWQ>mode)));
+	else
+	  emit_insn (
+		gen_aarch64_rshrn<mode>_insn_le (tmp, operands[1],
+						 operands[2],
+						 CONST0_RTX (<VNARROWQ>mode)));
 
-    /* The intrinsic expects a narrow result, so emit a subreg that will get
-       optimized away as appropriate.  */
-    emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
-						 <VNARROWQ2>mode));
+	/* The intrinsic expects a narrow result, so emit a subreg that will
+	   get optimized away as appropriate.  */
+	emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
+						     <VNARROWQ2>mode));
+      }
     DONE;
   }
 )
@@ -2049,14 +2061,27 @@
    (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<vn_mode>")]
   "TARGET_SIMD"
   {
-    operands[3] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
-						 INTVAL (operands[3]));
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_rshrn2<mode>_insn_be (operands[0], operands[1],
-						  operands[2], operands[3]));
+    if (INTVAL (operands[3]) == GET_MODE_UNIT_BITSIZE (<VNARROWQ2>mode))
+      {
+	rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
+	emit_insn (gen_aarch64_raddhn2<mode> (operands[0], operands[1],
+					      operands[2], tmp));
+      }
     else
-      emit_insn (gen_aarch64_rshrn2<mode>_insn_le (operands[0], operands[1],
-						  operands[2], operands[3]));
+      {
+	operands[3] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+							 INTVAL (operands[3]));
+	if (BYTES_BIG_ENDIAN)
+	  emit_insn (gen_aarch64_rshrn2<mode>_insn_be (operands[0],
+						       operands[1],
+						       operands[2],
+						       operands[3]));
+	else
+	  emit_insn (gen_aarch64_rshrn2<mode>_insn_le (operands[0],
+						       operands[1],
+						       operands[2],
+						       operands[3]));
+      }
     DONE;
   }
 )
