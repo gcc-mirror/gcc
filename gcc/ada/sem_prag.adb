@@ -398,14 +398,12 @@ package body Sem_Prag is
             CC := Get_String_Char (Strval (N), J);
 
             if Opt.External_Name_Exp_Casing = Uppercase
-              and then CC >= Get_Char_Code ('a')
-              and then CC <= Get_Char_Code ('z')
+              and then CC in Get_Char_Code ('a') .. Get_Char_Code ('z')
             then
                Store_String_Char (CC - 32);
 
             elsif Opt.External_Name_Exp_Casing = Lowercase
-              and then CC >= Get_Char_Code ('A')
-              and then CC <= Get_Char_Code ('Z')
+              and then CC in Get_Char_Code ('A') .. Get_Char_Code ('Z')
             then
                Store_String_Char (CC + 32);
 
