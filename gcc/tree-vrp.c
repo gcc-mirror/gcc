@@ -330,8 +330,6 @@ operand_less_p (tree val, tree val2)
       else
 	return -2;
     }
-
-  return 0;
 }
 
 /* Compare two values VAL1 and VAL2.  Return

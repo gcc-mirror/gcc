@@ -738,6 +738,10 @@ Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.
 
+Winfinite-recursion
+C ObjC C++ LTO ObjC++ Var(warn_infinite_recursion) Warning LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
+Warn for infinitely recursive calls.
+
 Waddress-of-packed-member
 C ObjC C++ ObjC++ Var(warn_address_of_packed_member) Init(1) Warning
 Warn when the address of packed member of struct or union is taken.
@@ -1610,6 +1614,10 @@ C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
 fconstexpr-cache-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_cache_depth) Init(8)
 -fconstexpr-cache-depth=<number>	Specify maximum constexpr recursion cache depth.
+
+fconstexpr-fp-except
+C++ ObjC++ Var(flag_constexpr_fp_except) Init(0)
+Allow IEC559 floating point exceptions in constant expressions.
 
 fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)

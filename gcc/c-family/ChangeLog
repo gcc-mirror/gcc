@@ -1,3 +1,46 @@
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103310
+	* c.opt: Add -fconstexpr-fp-except.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* c-format.c (check_format_string): Remove spurious
+	gcc_unreachable.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* c-opts.c (c_common_post_options): Remove unreachable return.
+	* c-pragma.c (handle_pragma_target): Likewise.
+	(handle_pragma_optimize): Likewise.
+
+2021-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102611
+	* c-opts.c (c_common_post_options): Enable -Wcomma-subscript by
+	default for C++23 regardless of warn_deprecated.
+	* c-cppbuiltin.c (c_cpp_builtins): Predefine
+	__cpp_multidimensional_subscript=202110L for C++23.
+
+2021-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/88232
+	* c.opt: Add -Winfinite-recursion.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-common.c (decl_with_nonnull_addr_p): Call maybe_nonzero_address
+	and improve handling tof defined symbols.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-18  Martin Liska  <mliska@suse.cz>
+
+	* c-gimplify.c (genericize_c_loop): Use option directly.
+
 2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
 
 	* c-common.c (c_common_reswords): Add __builtin_assoc_barrier.

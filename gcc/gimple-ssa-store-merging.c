@@ -434,14 +434,14 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
   return true;
 }
 
-/* Compute the symbolic number N representing the result of a bitwise OR on 2
-   symbolic number N1 and N2 whose source statements are respectively
-   SOURCE_STMT1 and SOURCE_STMT2.  */
+/* Compute the symbolic number N representing the result of a bitwise OR,
+   bitwise XOR or plus on 2 symbolic number N1 and N2 whose source statements
+   are respectively SOURCE_STMT1 and SOURCE_STMT2.  CODE is the operation.  */
 
 gimple *
 perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 			gimple *source_stmt2, struct symbolic_number *n2,
-			struct symbolic_number *n)
+			struct symbolic_number *n, enum tree_code code)
 {
   int i, size;
   uint64_t mask;
@@ -556,6 +556,7 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
   n->bytepos = n_start->bytepos;
   n->type = n_start->type;
   size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
+  uint64_t res_n = n1->n | n2->n;
 
   for (i = 0, mask = MARKER_MASK; i < size; i++, mask <<= BITS_PER_MARKER)
     {
@@ -563,10 +564,33 @@ perform_symbolic_merge (gimple *source_stmt1, struct symbolic_number *n1,
 
       masked1 = n1->n & mask;
       masked2 = n2->n & mask;
-      if (masked1 && masked2 && masked1 != masked2)
-	return NULL;
+      /* If at least one byte is 0, all of 0 | x == 0 ^ x == 0 + x == x.  */
+      if (masked1 && masked2)
+	{
+	  /* + can carry into upper bits, just punt.  */
+	  if (code == PLUS_EXPR)
+	    return NULL;
+	  /* x | x is still x.  */
+	  if (code == BIT_IOR_EXPR && masked1 == masked2)
+	    continue;
+	  if (code == BIT_XOR_EXPR)
+	    {
+	      /* x ^ x is 0, but MARKER_BYTE_UNKNOWN stands for
+		 unknown values and unknown ^ unknown is unknown.  */
+	      if (masked1 == masked2
+		  && masked1 != ((uint64_t) MARKER_BYTE_UNKNOWN
+				 << i * BITS_PER_MARKER))
+		{
+		  res_n &= ~mask;
+		  continue;
+		}
+	    }
+	  /* Otherwise set the byte to unknown, it might still be
+	     later masked off.  */
+	  res_n |= mask;
+	}
     }
-  n->n = n1->n | n2->n;
+  n->n = res_n;
   n->n_ops = n1->n_ops + n2->n_ops;
 
   return source_stmt;
@@ -742,10 +766,7 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
       struct symbolic_number n1, n2;
       gimple *source_stmt, *source_stmt2;
 
-      if (code != BIT_IOR_EXPR)
-	return NULL;
-
-      if (TREE_CODE (rhs2) != SSA_NAME)
+      if (!rhs2 || TREE_CODE (rhs2) != SSA_NAME)
 	return NULL;
 
       rhs2_stmt = SSA_NAME_DEF_STMT (rhs2);
@@ -753,6 +774,8 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
       switch (code)
 	{
 	case BIT_IOR_EXPR:
+	case BIT_XOR_EXPR:
+	case PLUS_EXPR:
 	  source_stmt1 = find_bswap_or_nop_1 (rhs1_stmt, &n1, limit - 1);
 
 	  if (!source_stmt1)
@@ -770,7 +793,8 @@ find_bswap_or_nop_1 (gimple *stmt, struct symbolic_number *n, int limit)
 	    return NULL;
 
 	  source_stmt
-	    = perform_symbolic_merge (source_stmt1, &n1, source_stmt2, &n2, n);
+	    = perform_symbolic_merge (source_stmt1, &n1, source_stmt2, &n2, n,
+				      code);
 
 	  if (!source_stmt)
 	    return NULL;
@@ -847,12 +871,18 @@ find_bswap_or_nop_finalize (struct symbolic_number *n, uint64_t *cmpxchg,
 	{
 	  mask = ((uint64_t) 1 << (rsize * BITS_PER_MARKER)) - 1;
 	  *cmpxchg &= mask;
-	  *cmpnop >>= (n->range - rsize) * BITS_PER_MARKER;
+	  if (n->range - rsize == sizeof (int64_t))
+	    *cmpnop = 0;
+	  else
+	    *cmpnop >>= (n->range - rsize) * BITS_PER_MARKER;
 	}
       else
 	{
 	  mask = ((uint64_t) 1 << (rsize * BITS_PER_MARKER)) - 1;
-	  *cmpxchg >>= (n->range - rsize) * BITS_PER_MARKER;
+	  if (n->range - rsize == sizeof (int64_t))
+	    *cmpxchg = 0;
+	  else
+	    *cmpxchg >>= (n->range - rsize) * BITS_PER_MARKER;
 	  *cmpnop &= mask;
 	}
       n->range = rsize;
@@ -944,7 +974,8 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
 	      else if (!do_shift_rotate (LSHIFT_EXPR, &n0, eltsz))
 		return NULL;
 	      ins_stmt
-		= perform_symbolic_merge (ins_stmt, &n0, source_stmt, &n1, n);
+		= perform_symbolic_merge (ins_stmt, &n0, source_stmt, &n1, n,
+					  BIT_IOR_EXPR);
 
 	      if (!ins_stmt)
 		return NULL;
@@ -1495,6 +1526,8 @@ pass_optimize_bswap::execute (function *fun)
 		continue;
 	      /* Fall through.  */
 	    case BIT_IOR_EXPR:
+	    case BIT_XOR_EXPR:
+	    case PLUS_EXPR:
 	      break;
 	    case CONSTRUCTOR:
 	      {
@@ -2880,7 +2913,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
 	  end = MAX (end, info->bitpos + info->bitsize);
 
 	  ins_stmt = perform_symbolic_merge (ins_stmt, &n, info->ins_stmt,
-					     &this_n, &n);
+					     &this_n, &n, BIT_IOR_EXPR);
 	  if (ins_stmt == NULL)
 	    return false;
 	}
@@ -4834,8 +4867,6 @@ lhs_valid_for_store_merging_p (tree lhs)
     default:
       return false;
     }
-
-  gcc_unreachable ();
 }
 
 /* Return true if the tree RHS is a constant we want to consider

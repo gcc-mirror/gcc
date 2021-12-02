@@ -61,6 +61,8 @@ typedef struct gcc_jit_result gcc_jit_result;
 	 +- gcc_jit_location
 	 +- gcc_jit_type
 	    +- gcc_jit_struct
+	    +- gcc_jit_function_type
+	    +- gcc_jit_vector_type
 	 +- gcc_jit_field
 	 +- gcc_jit_function
 	 +- gcc_jit_block
@@ -96,6 +98,12 @@ typedef struct gcc_jit_field gcc_jit_field;
 /* A gcc_jit_struct encapsulates a struct type, either one that we have
    the layout for, or an opaque type.  */
 typedef struct gcc_jit_struct gcc_jit_struct;
+
+/* A gcc_jit_function_type encapsulates a function type.  */
+typedef struct gcc_jit_function_type gcc_jit_function_type;
+
+/* A gcc_jit_vector_type encapsulates a vector type.  */
+typedef struct gcc_jit_vector_type gcc_jit_vector_type;
 
 /* A gcc_jit_function encapsulates a function: either one that you're
    creating yourself, or a reference to one that you're dynamically
@@ -653,6 +661,15 @@ gcc_jit_struct_set_fields (gcc_jit_struct *struct_type,
 			   gcc_jit_location *loc,
 			   int num_fields,
 			   gcc_jit_field **fields);
+
+/* Get a field by index.  */
+extern gcc_jit_field *
+gcc_jit_struct_get_field (gcc_jit_struct *struct_type,
+			   size_t index);
+
+/* Get the number of fields.  */
+extern size_t
+gcc_jit_struct_get_field_count (gcc_jit_struct *struct_type);
 
 /* Unions work similarly to structs.  */
 extern gcc_jit_type *
@@ -1620,6 +1637,78 @@ extern void
 gcc_jit_context_add_top_level_asm (gcc_jit_context *ctxt,
 				   gcc_jit_location *loc,
 				   const char *asm_stmts);
+
+#define LIBGCCJIT_HAVE_REFLECTION
+
+/* Reflection functions to get the number of parameters, return type of
+   a function and whether a type is a bool from the C API.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_16; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_REFLECTION
+*/
+/* Get the return type of a function.  */
+extern gcc_jit_type *
+gcc_jit_function_get_return_type (gcc_jit_function *func);
+
+/* Get the number of params of a function.  */
+extern size_t
+gcc_jit_function_get_param_count (gcc_jit_function *func);
+
+/* Get the element type of an array type or NULL if it's not an array.  */
+extern gcc_jit_type *
+gcc_jit_type_dyncast_array (gcc_jit_type *type);
+
+/* Return non-zero if the type is a bool.  */
+extern int
+gcc_jit_type_is_bool (gcc_jit_type *type);
+
+/* Return the function type if it is one or NULL.  */
+extern gcc_jit_function_type *
+gcc_jit_type_dyncast_function_ptr_type (gcc_jit_type *type);
+
+/* Given a function type, return its return type.  */
+extern gcc_jit_type *
+gcc_jit_function_type_get_return_type (gcc_jit_function_type *function_type);
+
+/* Given a function type, return its number of parameters.  */
+extern size_t
+gcc_jit_function_type_get_param_count (gcc_jit_function_type *function_type);
+
+/* Given a function type, return the type of the specified parameter.  */
+extern gcc_jit_type *
+gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,
+				size_t index);
+
+/* Return non-zero if the type is an integral.  */
+extern int
+gcc_jit_type_is_integral (gcc_jit_type *type);
+
+/* Return the type pointed by the pointer type or NULL if it's not a
+ * pointer.  */
+extern gcc_jit_type *
+gcc_jit_type_is_pointer (gcc_jit_type *type);
+
+/* Given a type, return a dynamic cast to a vector type or NULL.  */
+extern gcc_jit_vector_type *
+gcc_jit_type_dyncast_vector (gcc_jit_type *type);
+
+/* Given a type, return a dynamic cast to a struct type or NULL.  */
+extern gcc_jit_struct *
+gcc_jit_type_is_struct (gcc_jit_type *type);
+
+/* Given a vector type, return the number of units it contains.  */
+extern size_t
+gcc_jit_vector_type_get_num_units (gcc_jit_vector_type *vector_type);
+
+/* Given a vector type, return the type of its elements.  */
+extern gcc_jit_type *
+gcc_jit_vector_type_get_element_type (gcc_jit_vector_type *vector_type);
+
+/* Given a type, return the unqualified type, removing "const", "volatile"
+ * and alignment qualifiers.  */
+extern gcc_jit_type *
+gcc_jit_type_unqualified (gcc_jit_type *type);
 
 #ifdef __cplusplus
 }

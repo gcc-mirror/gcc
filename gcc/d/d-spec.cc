@@ -253,13 +253,23 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 
 	case OPT_static_libstdc__:
 	  saw_static_libcxx = true;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  /* Remove -static-libstdc++ from the command only if target supports
+	     LD_STATIC_DYNAMIC.  When not supported, it is left in so that a
+	     back-end target can use outfile substitution.  */
 	  args[i] |= SKIPOPT;
+#endif
 	  break;
 
 	case OPT_static_libphobos:
 	  if (phobos_library != PHOBOS_NOLINK)
 	    phobos_library = PHOBOS_STATIC;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+	  /* Remove -static-libphobos from the command only if target supports
+	     LD_STATIC_DYNAMIC.  When not supported, it is left in so that a
+	     back-end target can use outfile substitution.  */
 	  args[i] |= SKIPOPT;
+#endif
 	  break;
 
 	case OPT_shared_libphobos:
@@ -460,7 +470,7 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 #endif
     }
 
-  if (saw_libcxx || need_stdcxx)
+  if (saw_libcxx || saw_static_libcxx || need_stdcxx)
     {
 #ifdef HAVE_LD_STATIC_DYNAMIC
       if (saw_static_libcxx && !static_link)
@@ -468,12 +478,6 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 	  generate_option (OPT_Wl_, LD_STATIC_OPTION, 1, CL_DRIVER,
 			   &new_decoded_options[j++]);
 	}
-#else
-      /* Push the -static-libstdc++ option back onto the command so that
-	 a target without LD_STATIC_DYNAMIC can use outfile substitution.  */
-      if (saw_static_libcxx && !static_link)
-	generate_option (OPT_static_libstdc__, NULL, 1, CL_DRIVER,
-			 &new_decoded_options[j++]);
 #endif
       if (saw_libcxx)
 	new_decoded_options[j++] = *saw_libcxx;

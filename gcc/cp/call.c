@@ -4432,7 +4432,7 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   struct z_candidate *cand;
   tree ret;
 
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
+  auto_cond_timevar tv (TV_OVERLOAD);
   cand = build_user_type_conversion_1 (totype, expr, flags, complain);
 
   if (cand)
@@ -4448,7 +4448,6 @@ build_user_type_conversion (tree totype, tree expr, int flags,
   else
     ret = NULL_TREE;
 
-  timevar_cond_stop (TV_OVERLOAD, subtime);
   return ret;
 }
 
@@ -4688,7 +4687,7 @@ perform_overload_resolution (tree fn,
   tree explicit_targs;
   int template_only;
 
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   explicit_targs = NULL_TREE;
   template_only = 0;
@@ -4720,7 +4719,6 @@ perform_overload_resolution (tree fn,
   else
     cand = NULL;
 
-  timevar_cond_stop (TV_OVERLOAD, subtime);
   return cand;
 }
 
@@ -4985,14 +4983,16 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 
 /* Build a new call to operator().  This may change ARGS.  */
 
-static tree
-build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
+tree
+build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree fns, convs, first_mem_arg = NULL_TREE;
   bool any_viable_p;
   tree result = NULL_TREE;
   void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   obj = mark_lvalue_use (obj);
 
@@ -5121,18 +5121,6 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
   obstack_free (&conversion_obstack, p);
 
   return result;
-}
-
-/* Wrapper for above.  */
-
-tree
-build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_op_call_1 (obj, args, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
 }
 
 /* Called by op_error to prepare format strings suitable for the error
@@ -5326,10 +5314,10 @@ conditional_conversion (tree e1, tree e2, tsubst_flags_t complain)
 /* Implement [expr.cond].  ARG1, ARG2, and ARG3 are the three
    arguments to the conditional expression.  */
 
-static tree
-build_conditional_expr_1 (const op_location_t &loc,
-			  tree arg1, tree arg2, tree arg3,
-                          tsubst_flags_t complain)
+tree
+build_conditional_expr (const op_location_t &loc,
+			tree arg1, tree arg2, tree arg3,
+			tsubst_flags_t complain)
 {
   tree arg2_type;
   tree arg3_type;
@@ -5340,6 +5328,8 @@ build_conditional_expr_1 (const op_location_t &loc,
   struct z_candidate *cand;
   void *p;
   tree orig_arg2, orig_arg3;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   /* As a G++ extension, the second argument to the conditional can be
      omitted.  (So that `a ? : c' is roughly equivalent to `a ? a :
@@ -5406,8 +5396,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	  && !VECTOR_TYPE_P (arg3_type))
 	{
 	  /* Rely on the error messages of the scalar version.  */
-	  tree scal = build_conditional_expr_1 (loc, integer_one_node,
-						orig_arg2, orig_arg3, complain);
+	  tree scal = build_conditional_expr (loc, integer_one_node,
+					      orig_arg2, orig_arg3, complain);
 	  if (scal == error_mark_node)
 	    return error_mark_node;
 	  tree stype = TREE_TYPE (scal);
@@ -5964,20 +5954,6 @@ build_conditional_expr_1 (const op_location_t &loc,
   return result;
 }
 
-/* Wrapper for above.  */
-
-tree
-build_conditional_expr (const op_location_t &loc,
-			tree arg1, tree arg2, tree arg3,
-                        tsubst_flags_t complain)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_conditional_expr_1 (loc, arg1, arg2, arg3, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
-}
-
 /* OPERAND is an operand to an expression.  Perform necessary steps
    required before using it.  If OPERAND is NULL_TREE, NULL_TREE is
    returned.  */
@@ -6307,7 +6283,7 @@ op_is_ordered (tree_code code)
     }
 }
 
-/* Subroutine of build_new_op_1: Add to CANDIDATES all candidates for the
+/* Subroutine of build_new_op: Add to CANDIDATES all candidates for the
    operator indicated by CODE/CODE2.  This function calls itself recursively to
    handle C++20 rewritten comparison operator candidates.  */
 
@@ -6479,10 +6455,10 @@ add_operator_candidates (z_candidate **candidates,
   return NULL_TREE;
 }
 
-static tree
-build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
-		tree arg1, tree arg2, tree arg3, tree *overload,
-		tsubst_flags_t complain)
+tree
+build_new_op (const op_location_t &loc, enum tree_code code, int flags,
+	      tree arg1, tree arg2, tree arg3, tree *overload,
+	      tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   vec<tree, va_gc> *arglist;
@@ -6495,6 +6471,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   void *p;
   bool strict_p;
   bool any_viable_p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   if (error_operand_p (arg1)
       || error_operand_p (arg2)
@@ -6631,8 +6609,8 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	    code = PREINCREMENT_EXPR;
 	  else
 	    code = PREDECREMENT_EXPR;
-	  result = build_new_op_1 (loc, code, flags, arg1, NULL_TREE,
-				   NULL_TREE, overload, complain);
+	  result = build_new_op (loc, code, flags, arg1, NULL_TREE,
+				 NULL_TREE, overload, complain);
 	  break;
 
 	  /* The caller will deal with these.  */
@@ -6954,19 +6932,115 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
   return NULL_TREE;
 }
 
-/* Wrapper for above.  */
+/* Build a new call to operator[].  This may change ARGS.  */
 
 tree
-build_new_op (const op_location_t &loc, enum tree_code code, int flags,
-	      tree arg1, tree arg2, tree arg3,
-	      tree *overload, tsubst_flags_t complain)
+build_op_subscript (const op_location_t &loc, tree obj,
+		    vec<tree, va_gc> **args, tree *overload,
+		    tsubst_flags_t complain)
 {
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_new_op_1 (loc, code, flags, arg1, arg2, arg3,
-			overload, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
+  struct z_candidate *candidates = 0, *cand;
+  tree fns, first_mem_arg = NULL_TREE;
+  bool any_viable_p;
+  tree result = NULL_TREE;
+  void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
+
+  obj = mark_lvalue_use (obj);
+
+  if (error_operand_p (obj))
+    return error_mark_node;
+
+  tree type = TREE_TYPE (obj);
+
+  obj = prep_operand (obj);
+
+  if (TYPE_BINFO (type))
+    {
+      fns = lookup_fnfields (TYPE_BINFO (type), ovl_op_identifier (ARRAY_REF),
+			     1, complain);
+      if (fns == error_mark_node)
+	return error_mark_node;
+    }
+  else
+    fns = NULL_TREE;
+
+  if (args != NULL && *args != NULL)
+    {
+      *args = resolve_args (*args, complain);
+      if (*args == NULL)
+	return error_mark_node;
+    }
+
+  /* Get the high-water mark for the CONVERSION_OBSTACK.  */
+  p = conversion_obstack_alloc (0);
+
+  if (fns)
+    {
+      first_mem_arg = obj;
+
+      add_candidates (BASELINK_FUNCTIONS (fns),
+		      first_mem_arg, *args, NULL_TREE,
+		      NULL_TREE, false,
+		      BASELINK_BINFO (fns), BASELINK_ACCESS_BINFO (fns),
+		      LOOKUP_NORMAL, &candidates, complain);
+    }
+
+  /* Be strict here because if we choose a bad conversion candidate, the
+     errors we get won't mention the call context.  */
+  candidates = splice_viable (candidates, true, &any_viable_p);
+  if (!any_viable_p)
+    {
+      if (complain & tf_error)
+	{
+	  auto_diagnostic_group d;
+	  error ("no match for call to %<%T::operator[] (%A)%>",
+		 TREE_TYPE (obj), build_tree_list_vec (*args));
+	  print_z_candidates (loc, candidates);
+	}
+      result = error_mark_node;
+    }
+  else
+    {
+      cand = tourney (candidates, complain);
+      if (cand == 0)
+	{
+	  if (complain & tf_error)
+	    {
+	      auto_diagnostic_group d;
+	      error ("call of %<%T::operator[] (%A)%> is ambiguous",
+		     TREE_TYPE (obj), build_tree_list_vec (*args));
+	      print_z_candidates (loc, candidates);
+	    }
+	  result = error_mark_node;
+	}
+      else if (TREE_CODE (cand->fn) == FUNCTION_DECL
+	       && DECL_OVERLOADED_OPERATOR_P (cand->fn)
+	       && DECL_OVERLOADED_OPERATOR_IS (cand->fn, ARRAY_REF))
+	{
+	  if (overload)
+	    *overload = cand->fn;
+	  result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	  if (trivial_fn_p (cand->fn) || DECL_IMMEDIATE_FUNCTION_P (cand->fn))
+	    /* There won't be a CALL_EXPR.  */;
+	  else if (result && result != error_mark_node)
+	    {
+	      tree call = extract_call_expr (result);
+	      CALL_EXPR_OPERATOR_SYNTAX (call) = true;
+
+	      /* Specify evaluation order as per P0145R2.  */
+	      CALL_EXPR_ORDERED_ARGS (call) = op_is_ordered (ARRAY_REF) == 1;
+	    }
+	}
+      else
+	gcc_unreachable ();
+    }
+
+  /* Free all the conversions we allocated.  */
+  obstack_free (&conversion_obstack, p);
+
+  return result;
 }
 
 /* CALL was returned by some call-building function; extract the actual
@@ -9785,7 +9859,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (cand->flags & LOOKUP_LIST_INIT_CTOR)
     {
       tree c = extract_call_expr (call);
-      /* build_new_op_1 will clear this when appropriate.  */
+      /* build_new_op will clear this when appropriate.  */
       CALL_EXPR_ORDERED_ARGS (c) = true;
     }
   if (warned_p)
@@ -10694,10 +10768,10 @@ complain_about_no_candidates_for_method_call (tree instance,
    be set, upon return, to the function called.  ARGS may be NULL.
    This may change ARGS.  */
 
-static tree
-build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
-		         tree conversion_path, int flags,
-		         tree *fn_p, tsubst_flags_t complain)
+tree
+build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
+		       tree conversion_path, int flags,
+		       tree *fn_p, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
@@ -10716,6 +10790,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   tree orig_fns;
   vec<tree, va_gc> *orig_args = NULL;
   void *p;
+
+  auto_cond_timevar tv (TV_OVERLOAD);
 
   gcc_assert (instance != NULL_TREE);
 
@@ -11094,21 +11170,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
     release_tree_vector (orig_args);
 
   return call;
-}
-
-/* Wrapper for above.  */
-
-tree
-build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
-		       tree conversion_path, int flags,
-		       tree *fn_p, tsubst_flags_t complain)
-{
-  tree ret;
-  bool subtime = timevar_cond_start (TV_OVERLOAD);
-  ret = build_new_method_call_1 (instance, fns, args, conversion_path, flags,
-                                 fn_p, complain);
-  timevar_cond_stop (TV_OVERLOAD, subtime);
-  return ret;
 }
 
 /* Returns true iff standard conversion sequence ICS1 is a proper

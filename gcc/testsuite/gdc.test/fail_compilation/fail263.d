@@ -6,8 +6,8 @@ fail_compilation/fail263.d(19):        cannot pass argument `cast(const(byte)*)A
 ---
 */
 
-// Issue 2766 - DMD hangs with 0%cpu
-
+// https://issues.dlang.org/show_bug.cgi?id=2766
+// DMD hangs with 0%cpu
 const byte[] A = [ cast(byte)0 ];
 
 void f(byte* p)

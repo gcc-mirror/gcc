@@ -1829,6 +1829,7 @@ is_var_need_auto_init (tree decl)
 	  || !DECL_HARD_REGISTER (decl))
       && (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
       && (!lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl)))
+      && !OPAQUE_TYPE_P (TREE_TYPE (decl))
       && !is_empty_type (TREE_TYPE (decl)))
     return true;
   return false;
@@ -11501,15 +11502,21 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	list_p = &OMP_CLAUSE_CHAIN (c);
     }
 
-  /* Add in any implicit data sharing.  Implicit clauses are added at the start
-     of the clause list, but after any non-map clauses.  */
+  /* Add in any implicit data sharing.  */
   struct gimplify_adjust_omp_clauses_data data;
-  tree *implicit_add_list_p = orig_list_p;
-  while (*implicit_add_list_p
-	 && OMP_CLAUSE_CODE (*implicit_add_list_p) != OMP_CLAUSE_MAP)
-    implicit_add_list_p = &OMP_CLAUSE_CHAIN (*implicit_add_list_p);
-
-  data.list_p = implicit_add_list_p;
+  if ((gimplify_omp_ctxp->region_type & ORT_ACC) == 0)
+    {
+      /* OpenMP.  Implicit clauses are added at the start of the clause list,
+	 but after any non-map clauses.  */
+      tree *implicit_add_list_p = orig_list_p;
+      while (*implicit_add_list_p
+	     && OMP_CLAUSE_CODE (*implicit_add_list_p) != OMP_CLAUSE_MAP)
+	implicit_add_list_p = &OMP_CLAUSE_CHAIN (*implicit_add_list_p);
+      data.list_p = implicit_add_list_p;
+    }
+  else
+    /* OpenACC.  */
+    data.list_p = list_p;
   data.pre_p = pre_p;
   splay_tree_foreach (ctx->variables, gimplify_adjust_omp_clauses_1, &data);
 
@@ -13128,21 +13135,15 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 /* Helper for gimplify_omp_loop, called through walk_tree.  */
 
 static tree
-replace_reduction_placeholders (tree *tp, int *walk_subtrees, void *data)
+note_no_context_vars (tree *tp, int *, void *data)
 {
-  if (DECL_P (*tp))
+  if (VAR_P (*tp)
+      && DECL_CONTEXT (*tp) == NULL_TREE
+      && !is_global_var (*tp))
     {
-      tree *d = (tree *) data;
-      if (*tp == OMP_CLAUSE_REDUCTION_PLACEHOLDER (d[0]))
-	{
-	  *tp = OMP_CLAUSE_REDUCTION_PLACEHOLDER (d[1]);
-	  *walk_subtrees = 0;
-	}
-      else if (*tp == OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (d[0]))
-	{
-	  *tp = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (d[1]);
-	  *walk_subtrees = 0;
-	}
+      vec<tree> *d = (vec<tree> *) data;
+      d->safe_push (*tp);
+      DECL_CONTEXT (*tp) = current_function_decl;
     }
   return NULL_TREE;
 }
@@ -13312,7 +13313,8 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
     {
       if (pass == 2)
 	{
-	  tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+	  tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL,
+			      make_node (BLOCK));
 	  append_to_statement_list (*expr_p, &BIND_EXPR_BODY (bind));
 	  *expr_p = make_node (OMP_PARALLEL);
 	  TREE_TYPE (*expr_p) = void_type_node;
@@ -13379,25 +13381,63 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 	    *pc = copy_node (c);
 	    OMP_CLAUSE_DECL (*pc) = unshare_expr (OMP_CLAUSE_DECL (c));
 	    TREE_TYPE (*pc) = unshare_expr (TREE_TYPE (c));
-	    OMP_CLAUSE_REDUCTION_INIT (*pc)
-	      = unshare_expr (OMP_CLAUSE_REDUCTION_INIT (c));
-	    OMP_CLAUSE_REDUCTION_MERGE (*pc)
-	      = unshare_expr (OMP_CLAUSE_REDUCTION_MERGE (c));
 	    if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (*pc))
 	      {
+		auto_vec<tree> no_context_vars;
+		int walk_subtrees = 0;
+		note_no_context_vars (&OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
+				      &walk_subtrees, &no_context_vars);
+		if (tree p = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c))
+		  note_no_context_vars (&p, &walk_subtrees, &no_context_vars);
+		walk_tree_without_duplicates (&OMP_CLAUSE_REDUCTION_INIT (c),
+					      note_no_context_vars,
+					      &no_context_vars);
+		walk_tree_without_duplicates (&OMP_CLAUSE_REDUCTION_MERGE (c),
+					      note_no_context_vars,
+					      &no_context_vars);
+
 		OMP_CLAUSE_REDUCTION_PLACEHOLDER (*pc)
 		  = copy_node (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c));
 		if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (*pc))
 		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (*pc)
 		    = copy_node (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c));
-		tree nc = *pc;
-		tree data[2] = { c, nc };
-		walk_tree_without_duplicates (&OMP_CLAUSE_REDUCTION_INIT (nc),
-					      replace_reduction_placeholders,
-					      data);
-		walk_tree_without_duplicates (&OMP_CLAUSE_REDUCTION_MERGE (nc),
-					      replace_reduction_placeholders,
-					      data);
+
+		hash_map<tree, tree> decl_map;
+		decl_map.put (OMP_CLAUSE_DECL (c), OMP_CLAUSE_DECL (c));
+		decl_map.put (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c),
+			      OMP_CLAUSE_REDUCTION_PLACEHOLDER (*pc));
+		if (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (*pc))
+		  decl_map.put (OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c),
+				OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (*pc));
+
+		copy_body_data id;
+		memset (&id, 0, sizeof (id));
+		id.src_fn = current_function_decl;
+		id.dst_fn = current_function_decl;
+		id.src_cfun = cfun;
+		id.decl_map = &decl_map;
+		id.copy_decl = copy_decl_no_change;
+		id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+		id.transform_new_cfg = true;
+		id.transform_return_to_modify = false;
+		id.eh_lp_nr = 0;
+		walk_tree (&OMP_CLAUSE_REDUCTION_INIT (*pc), copy_tree_body_r,
+			   &id, NULL);
+		walk_tree (&OMP_CLAUSE_REDUCTION_MERGE (*pc), copy_tree_body_r,
+			   &id, NULL);
+
+		for (tree d : no_context_vars)
+		  {
+		    DECL_CONTEXT (d) = NULL_TREE;
+		    DECL_CONTEXT (*decl_map.get (d)) = NULL_TREE;
+		  }
+	      }
+	    else
+	      {
+		OMP_CLAUSE_REDUCTION_INIT (*pc)
+		  = unshare_expr (OMP_CLAUSE_REDUCTION_INIT (c));
+		OMP_CLAUSE_REDUCTION_MERGE (*pc)
+		  = unshare_expr (OMP_CLAUSE_REDUCTION_MERGE (c));
 	      }
 	    pc = &OMP_CLAUSE_CHAIN (*pc);
 	    break;

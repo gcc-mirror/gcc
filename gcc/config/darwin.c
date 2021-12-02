@@ -3637,30 +3637,6 @@ darwin_fold_builtin (tree fndecl, int n_args, tree *argp,
 void
 darwin_rename_builtins (void)
 {
-  /* The system ___divdc3 routine in libSystem on darwin10 is not
-     accurate to 1ulp, ours is, so we avoid ever using the system name
-     for this routine and instead install a non-conflicting name that
-     is accurate.
-
-     When -ffast-math or -funsafe-math-optimizations is given, we can
-     use the faster version.  */
-  if (!flag_unsafe_math_optimizations)
-    {
-      enum built_in_function dcode
-	= (enum built_in_function)(BUILT_IN_COMPLEX_DIV_MIN
-				   + DCmode - MIN_MODE_COMPLEX_FLOAT);
-      tree fn = builtin_decl_explicit (dcode);
-      /* Fortran and c call TARGET_INIT_BUILTINS and
-	 TARGET_INIT_LIBFUNCS at different times, so we have to put a
-	 call into each to ensure that at least one of them is called
-	 after build_common_builtin_nodes.  A better fix is to add a
-	 new hook to run after build_common_builtin_nodes runs.  */
-      if (fn)
-	set_user_assembler_name (fn, "___ieee_divdc3");
-      fn = builtin_decl_implicit (dcode);
-      if (fn)
-	set_user_assembler_name (fn, "___ieee_divdc3");
-    }
 }
 
 /* Implementation for the TARGET_LIBC_HAS_FUNCTION hook.  */

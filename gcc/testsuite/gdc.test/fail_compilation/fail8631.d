@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail8631.d(14): Error: function fail8631.D.foo does not override any function, did you mean to override 'fail8631.B.foo'?
+fail_compilation/fail8631.d(14): Error: function `shared const int fail8631.D.foo()` does not override any function, did you mean to override `immutable int fail8631.B.foo()`?
 ---
 */
 

@@ -809,14 +809,20 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
       if (linear_loads_p (perm_cache, left_op[index2]) == PERM_EVENODD)
 	return true;
     }
-  else if (kind == PERM_EVENODD)
+  else if (kind == PERM_EVENODD && !neg_first)
     {
-      if ((kind = linear_loads_p (perm_cache, left_op[index2])) == PERM_EVENODD)
+      if ((kind = linear_loads_p (perm_cache, left_op[index2])) != PERM_EVENEVEN)
 	return false;
       return true;
     }
-  else if (!neg_first)
-    *conj_first_operand = true;
+  else if (kind == PERM_EVENEVEN && neg_first)
+    {
+      if ((kind = linear_loads_p (perm_cache, left_op[index2])) != PERM_EVENODD)
+	return false;
+
+      *conj_first_operand = true;
+      return true;
+    }
   else
     return false;
 
@@ -949,7 +955,7 @@ complex_mul_pattern::matches (complex_operation_t op,
 
   bool mul0 = vect_match_expression_p (l0node[0], MULT_EXPR);
   bool mul1 = vect_match_expression_p (l0node[1], MULT_EXPR);
-  if (!mul0 || !mul1)
+  if (!mul0 && !mul1)
     return IFN_LAST;
 
   /* Now operand2+4 may lead to another expression.  */
@@ -962,7 +968,7 @@ complex_mul_pattern::matches (complex_operation_t op,
     {
       auto vals = SLP_TREE_CHILDREN (l0node[0]);
       /* Check if it's a multiply, otherwise no idea what this is.  */
-      if (!vect_match_expression_p (vals[1], MULT_EXPR))
+      if (!(mul0 = vect_match_expression_p (vals[1], MULT_EXPR)))
 	return IFN_LAST;
 
       /* Check if the ADD is linear, otherwise it's not valid complex FMA.  */
@@ -979,6 +985,8 @@ complex_mul_pattern::matches (complex_operation_t op,
 
   if (left_op.length () != 2
       || right_op.length () != 2
+      || !mul0
+      || !mul1
       || linear_loads_p (perm_cache, left_op[1]) == PERM_ODDEVEN)
     return IFN_LAST;
 
@@ -993,7 +1001,7 @@ complex_mul_pattern::matches (complex_operation_t op,
       if (!vect_validate_multiplication (perm_cache, left_op, PERM_EVENEVEN)
 	  || vect_normalize_conj_loc (left_op))
 	return IFN_LAST;
-      if (!mul0)
+      if (add0)
 	ifn = IFN_COMPLEX_FMA;
       else
 	ifn = IFN_COMPLEX_MUL;
@@ -1005,7 +1013,7 @@ complex_mul_pattern::matches (complex_operation_t op,
 					 false))
 	return IFN_LAST;
 
-      if(!mul0)
+      if(add0)
 	ifn = IFN_COMPLEX_FMA_CONJ;
       else
 	ifn = IFN_COMPLEX_MUL_CONJ;

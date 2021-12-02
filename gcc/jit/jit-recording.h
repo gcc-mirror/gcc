@@ -546,7 +546,9 @@ public:
   virtual bool is_bool () const = 0;
   virtual type *is_pointer () = 0;
   virtual type *is_array () = 0;
+  virtual struct_ *is_struct () { return NULL; }
   virtual bool is_void () const { return false; }
+  virtual vector_type *is_vector () { return NULL; }
   virtual bool has_known_size () const { return true; }
 
   bool is_numeric () const
@@ -663,6 +665,7 @@ public:
   bool is_bool () const FINAL OVERRIDE { return m_other_type->is_bool (); }
   type *is_pointer () FINAL OVERRIDE { return m_other_type->is_pointer (); }
   type *is_array () FINAL OVERRIDE { return m_other_type->is_array (); }
+  struct_ *is_struct () FINAL OVERRIDE { return m_other_type->is_struct (); }
 
 protected:
   type *m_other_type;
@@ -744,6 +747,8 @@ public:
   type *get_element_type () { return m_other_type; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
+
+  vector_type *is_vector () FINAL OVERRIDE { return this; }
 
 private:
   string * make_debug_string () FINAL OVERRIDE;
@@ -950,6 +955,8 @@ public:
   void replay_into (replayer *r) FINAL OVERRIDE;
 
   const char *access_as_type (reproducer &r) FINAL OVERRIDE;
+
+  struct_ *is_struct () FINAL OVERRIDE { return this; }
 
 private:
   string * make_debug_string () FINAL OVERRIDE;

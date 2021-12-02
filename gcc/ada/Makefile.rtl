@@ -56,6 +56,9 @@ GNATRTL_TASKING_OBJS= \
   s-putaim$(objext) \
   s-solita$(objext) \
   s-stusta$(objext) \
+  s-taasde$(objext) \
+  s-tadeca$(objext) \
+  s-tadert$(objext) \
   s-taenca$(objext) \
   s-taprob$(objext) \
   s-taprop$(objext) \
@@ -66,13 +69,10 @@ GNATRTL_TASKING_OBJS= \
   s-taskin$(objext) \
   s-taspri$(objext) \
   s-tasque$(objext) \
-  s-tasres$(objext) \
   s-tasren$(objext) \
+  s-tasres$(objext) \
   s-tassta$(objext) \
   s-tasuti$(objext) \
-  s-taasde$(objext) \
-  s-tadeca$(objext) \
-  s-tadert$(objext) \
   s-tataat$(objext) \
   s-tpinop$(objext) \
   s-tpoben$(objext) \
@@ -91,7 +91,7 @@ GNATRTL_ALTIVEC_OBJS= \
   g-alvety$(objext) \
   g-alvevi$(objext)
 
-# Objects needed for non-tasking.
+# Objects needed for non-tasking
 GNATRTL_NONTASKING_OBJS= \
   a-assert$(objext) \
   a-btgbso$(objext) \
@@ -211,6 +211,11 @@ GNATRTL_NONTASKING_OBJS= \
   a-lllwti$(objext) \
   a-lllzti$(objext) \
   a-locale$(objext) \
+  a-nagefl$(objext) \
+  a-naliop$(objext) \
+  a-nallfl$(objext) \
+  a-nalofl$(objext) \
+  a-nashfl$(objext) \
   a-nbnbig$(objext) \
   a-nbnbin$(objext) \
   a-nbnbre$(objext) \
@@ -233,19 +238,14 @@ GNATRTL_NONTASKING_OBJS= \
   a-nscefu$(objext) \
   a-nscoty$(objext) \
   a-nselfu$(objext) \
+  a-nuauco$(objext) \
+  a-nuaufl$(objext) \
   a-nubinu$(objext) \
   a-nucoar$(objext) \
   a-nucoty$(objext) \
   a-nudira$(objext) \
   a-nuelfu$(objext) \
   a-nuflra$(objext) \
-  a-nagefl$(objext) \
-  a-nallfl$(objext) \
-  a-nalofl$(objext) \
-  a-nuaufl$(objext) \
-  a-nashfl$(objext) \
-  a-nuauco$(objext) \
-  a-naliop$(objext) \
   a-numaux$(objext) \
   a-numeri$(objext) \
   a-nurear$(objext) \
@@ -275,28 +275,28 @@ GNATRTL_NONTASKING_OBJS= \
   a-ssiwti$(objext) \
   a-ssizti$(objext) \
   a-stboha$(objext) \
+  a-stbubo$(objext) \
+  a-stbufi$(objext) \
+  a-stbufo$(objext) \
+  a-stbuun$(objext) \
+  a-stbuut$(objext) \
   a-stfiha$(objext) \
   a-stmaco$(objext) \
   a-storio$(objext) \
   a-strbou$(objext) \
   a-stream$(objext) \
-  a-strsto$(objext) \
-  a-ststbo$(objext) \
-  a-ststun$(objext) \
   a-strfix$(objext) \
   a-strhas$(objext) \
   a-string$(objext) \
   a-strmap$(objext) \
   a-strsea$(objext) \
+  a-strsto$(objext) \
   a-strsup$(objext) \
   a-strunb$(objext) \
+  a-ststbo$(objext) \
   a-ststio$(objext) \
+  a-ststun$(objext) \
   a-sttebu$(objext) \
-  a-stbuun$(objext) \
-  a-stbubo$(objext) \
-  a-stbuut$(objext) \
-  a-stbufi$(objext) \
-  a-stbufo$(objext) \
   a-stunau$(objext) \
   a-stunha$(objext) \
   a-stuten$(objext) \
@@ -583,8 +583,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-except$(objext) \
   s-exctab$(objext) \
   s-exctra$(objext) \
-  s-exnint$(objext) \
   s-exnflt$(objext) \
+  s-exnint$(objext) \
   s-exnlfl$(objext) \
   s-exnllf$(objext) \
   s-exnlli$(objext) \
@@ -640,8 +640,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-imgflt$(objext) \
   s-imgint$(objext) \
   s-imglfl$(objext) \
-  s-imgllf$(objext) \
   s-imgllb$(objext) \
+  s-imgllf$(objext) \
   s-imglli$(objext) \
   s-imgllu$(objext) \
   s-imgllw$(objext) \
@@ -747,12 +747,12 @@ GNATRTL_NONTASKING_OBJS= \
   s-spsufi$(objext) \
   s-stache$(objext) \
   s-stalib$(objext) \
+  s-statxd$(objext) \
   s-stausa$(objext) \
   s-stoele$(objext) \
   s-stopoo$(objext) \
   s-stposu$(objext) \
   s-stratt$(objext) \
-  s-statxd$(objext) \
   s-strhas$(objext) \
   s-string$(objext) \
   s-ststop$(objext) \
@@ -762,8 +762,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-trasym$(objext) \
   s-unstyp$(objext) \
   s-utf_32$(objext) \
-  s-valboo$(objext) \
-  s-valcha$(objext) \
   s-vade32$(objext) \
   s-vade64$(objext) \
   s-vaen16$(objext) \
@@ -771,6 +769,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-vaenu8$(objext) \
   s-vafi32$(objext) \
   s-vafi64$(objext) \
+  s-valboo$(objext) \
+  s-valcha$(objext) \
   s-valflt$(objext) \
   s-valint$(objext) \
   s-vallfl$(objext) \
@@ -2970,7 +2970,7 @@ setup-rts: force
 
 ADA_TARGET_PROPERTIES = -gnatet=ada_target_properties
 
-system.o  : system.ads
+system.o: system.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< \
 	  $(ADA_TARGET_PROPERTIES) \
 	  $(OUTPUT_OPTION)
@@ -2979,7 +2979,7 @@ system.o  : system.ads
 # frames to be skipped when computing a call chain is not modified by
 # optimization. We don't want inlining, either.
 
-s-traceb.o  : s-traceb.adb s-traceb.ads
+s-traceb.o: s-traceb.adb s-traceb.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
 	  $(NO_INLINE_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< \
 	  $(OUTPUT_OPTION)
@@ -2987,7 +2987,7 @@ s-traceb.o  : s-traceb.adb s-traceb.ads
 # Compile s-tasdeb.o without optimization and with debug info so that it is
 # always possible to set conditional breakpoints on tasks.
 
-s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
+s-tasdeb.o: s-tasdeb.adb s-tasdeb.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
@@ -2997,7 +2997,7 @@ s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 # possible to set conditional breakpoints on exceptions.
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
-a-except.o  : a-except.adb a-except.ads
+a-except.o: a-except.adb a-except.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) -O1 $(FORCE_DEBUG_ADAFLAGS) \
 	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
@@ -3006,28 +3006,28 @@ a-except.o  : a-except.adb a-except.ads
 # debugger set breakpoints and inspect subprogram parameters on exception
 # related events.
 
-s-excdeb.o  : s-excdeb.adb s-excdeb.ads s-except.ads
+s-excdeb.o: s-excdeb.adb s-excdeb.ads s-except.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	  $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # Force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
 
-s-assert.o  : s-assert.adb s-assert.ads
+s-assert.o: s-assert.adb s-assert.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
 # Force debugging information on a-tags.o so that the debugger can find
 # the description of Ada.Tags.Type_Specific_Data.
 
-a-tags.o  : a-tags.adb a-tags.ads
+a-tags.o: a-tags.adb a-tags.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
 # Force no sibling call optimization on s-memory.o to avoid turning the
 # tail recursion in Alloc into a loop that confuses branch prediction.
 
-s-memory.o  : s-memory.adb s-memory.ads
+s-memory.o: s-memory.adb s-memory.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 

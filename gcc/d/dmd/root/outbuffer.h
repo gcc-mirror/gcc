@@ -1,5 +1,6 @@
 
 /* Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
+ * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -16,14 +17,16 @@ class RootObject;
 
 struct OutBuffer
 {
+    // IMPORTANT: PLEASE KEEP STATE AND DESTRUCTOR IN SYNC WITH DEFINITION IN ./outbuffer.d.
 private:
     DArray<unsigned char> data;
-    size_t offset;
+    d_size_t offset;
     bool notlinehead;
+    void* fileMapping;  // pointer to a file mapping object not used on the C++ side
 public:
-
-    int level;
     bool doindent;
+    bool spaces;
+    int level;
 
     OutBuffer()
     {
@@ -33,17 +36,18 @@ public:
         doindent = 0;
         level = 0;
         notlinehead = 0;
+        fileMapping = 0;
     }
     ~OutBuffer()
     {
         mem.xfree(data.ptr);
     }
-    const DArray<unsigned char> slice() const { return data; }
-    size_t length() const { return offset; }
+    d_size_t length() const { return offset; }
     char *extractData();
+    void destroy();
 
-    void reserve(size_t nbytes);
-    void setsize(size_t size);
+    void reserve(d_size_t nbytes);
+    void setsize(d_size_t size);
     void reset();
     void write(const void *data, size_t nbytes);
     void writestring(const char *string);
@@ -56,17 +60,16 @@ public:
     void writeword(unsigned w);
     void writeUTF16(unsigned w);
     void write4(unsigned w);
-    void write(OutBuffer *buf);
+    void write(const OutBuffer *buf);
     void write(RootObject *obj);
-    void fill0(size_t nbytes);
+    void fill0(d_size_t nbytes);
     void vprintf(const char *format, va_list args);
     void printf(const char *format, ...);
-    void print(unsigned long long u);
     void bracket(char left, char right);
-    size_t bracket(size_t i, const char *left, size_t j, const char *right);
-    void spread(size_t offset, size_t nbytes);
-    size_t insert(size_t offset, const void *data, size_t nbytes);
-    void remove(size_t offset, size_t nbytes);
+    d_size_t bracket(d_size_t i, const char *left, d_size_t j, const char *right);
+    void spread(d_size_t offset, d_size_t nbytes);
+    d_size_t insert(d_size_t offset, const void *data, d_size_t nbytes);
+    void remove(d_size_t offset, d_size_t nbytes);
     // Append terminating null if necessary and get view of internal buffer
     char *peekChars();
     // Append terminating null if necessary and take ownership of data

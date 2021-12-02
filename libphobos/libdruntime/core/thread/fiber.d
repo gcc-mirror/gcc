@@ -595,6 +595,16 @@ class Fiber
         // the existence of debug symbols and other conditions. Avoid causing
         // stack overflows by defaulting to a larger stack size
         enum defaultStackPages = 8;
+    else version (OSX)
+    {
+        version (X86_64)
+            // libunwind on macOS 11 now requires more stack space than 16k, so
+            // default to a larger stack size. This is only applied to X86 as
+            // the PAGESIZE is still 4k, however on AArch64 it is 16k.
+            enum defaultStackPages = 8;
+        else
+            enum defaultStackPages = 4;
+    }
     else
         enum defaultStackPages = 4;
 
@@ -1700,7 +1710,7 @@ unittest {
     assert( composed.state == Fiber.State.TERM );
 }
 
-version (unittest)
+version (CoreUnittest)
 {
     class TestFiber : Fiber
     {

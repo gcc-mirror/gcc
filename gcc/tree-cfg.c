@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "asan.h"
 #include "profile.h"
+#include "sreal.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -614,7 +615,7 @@ make_blocks (gimple_seq seq)
      latest (earliest we find) label, and moving debug stmts that are
      not separated from it by nondebug nonlabel stmts after the
      label.  */
-  if (debug_nonbind_markers_p)
+  if (MAY_HAVE_DEBUG_MARKER_STMTS)
     {
       gimple_stmt_iterator label = gsi_none ();
 
@@ -2139,7 +2140,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 		gsi_insert_before (&dest_gsi, stmt, GSI_NEW_STMT);
 	    }
 	  /* Other user labels keep around in a form of a debug stmt.  */
-	  else if (!DECL_ARTIFICIAL (label) && flag_var_tracking_assignments)
+	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_BIND_STMTS)
 	    {
 	      gimple *dbg = gimple_build_debug_bind (label,
 						     integer_zero_node,
@@ -9084,18 +9085,32 @@ gimple_account_profile_record (basic_block bb,
 			       struct profile_record *record)
 {
   gimple_stmt_iterator i;
-  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+  for (i = gsi_start_nondebug_after_labels_bb (bb); !gsi_end_p (i);
+       gsi_next_nondebug (&i))
     {
       record->size
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-      if (bb->count.initialized_p ())
+      if (profile_info)
+	{
+	  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().initialized_p ()
+	      && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().nonzero_p ()
+	      && bb->count.ipa ().initialized_p ())
+	    record->time
+	      += estimate_num_insns (gsi_stmt (i),
+				     &eni_time_weights)
+				     * bb->count.ipa ().to_gcov_type ();
+	}
+      else if (bb->count.initialized_p ()
+	       && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ())
 	record->time
-	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->count.to_gcov_type ();
-      else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
-	record->time
-	  += estimate_num_insns (gsi_stmt (i),
-				 &eni_time_weights) * bb->count.to_frequency (cfun);
+	  += estimate_num_insns
+		(gsi_stmt (i),
+		 &eni_time_weights)
+		 * bb->count.to_sreal_scale
+			(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count).to_double ();
+     else
+      record->time
+	+= estimate_num_insns (gsi_stmt (i), &eni_time_weights);
     }
 }
 

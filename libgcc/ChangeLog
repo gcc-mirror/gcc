@@ -1,3 +1,64 @@
+2021-11-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Undefine caddr_t, pid_t, rlim_t,
+	ssize_t and vfork after including auto-host.h.
+
+2021-11-29  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config.host (powerpc-wrs-vxworks): Do not add crtbegin.o and
+	crtend.o to extra_parts.
+
+2021-11-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/t-dimode (lib2difuncs): Fix typo.
+
+2021-11-25  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Add hdr.
+	Remove func, ret.
+	(find_fde_tail): New function.  Split from
+	_Unwind_IteratePhdrCallback.  Move the result initialization
+	from _Unwind_Find_FDE.
+	(_Unwind_Find_FDE): Updated to call find_fde_tail.
+
+2021-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (NEED_DBASE_MEMBER): Define.
+	(struct unw_eh_callback_data): Make dbase member conditional.
+	(unw_eh_callback_data_dbase): New function.
+	(base_from_cb_data): Simplify for the non-dbase case.
+	(_Unwind_IteratePhdrCallback): Adjust.
+	(_Unwind_Find_FDE): Likewise.
+
+2021-11-22  Florian Weimer  <fweimer@redhat.com>
+
+	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Remove
+	tbase member.
+	(base_from_cb_data): Adjust.
+	(_Unwind_IteratePhdrCallback): Likewise.
+	(_Unwind_Find_FDE): Likewise.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add weak emutls crt to the extra_parts.
+	* config/i386/darwin-lib.h (DECLARE_LIBRARY_RENAMES): Remove
+	workaround.
+	* config/libgcc-libsystem.ver: Add exclude list for the system-
+	provided unwinder.
+	* config/t-slibgcc-darwin: Bump SO version, remove stubs code.
+	* config/i386/libgcc-darwin.10.4.ver: Removed.
+	* config/i386/libgcc-darwin.10.5.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.4.ver: Removed.
+	* config/rs6000/libgcc-darwin.10.5.ver: Removed.
+	* config/t-darwin-noeh: New file.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-darwin: Build weak-defined emutls objects.
+	* emutls.c (__emutls_get_address): Add optional attributes.
+	(__emutls_register_common): Likewise.
+	(EMUTLS_ATTR): New.
+
 2021-11-11  Raphael Moreira Zinsly  <rzinsly@linux.ibm.com>
 
 	PR libgcc/103044

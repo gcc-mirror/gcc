@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 #include <string>
 

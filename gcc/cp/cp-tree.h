@@ -703,6 +703,7 @@ struct GTY(()) template_parm_index {
 struct GTY(()) ptrmem_cst {
   struct tree_common common;
   tree member;
+  location_t locus;
 };
 typedef struct ptrmem_cst * ptrmem_cst_t;
 
@@ -1007,7 +1008,9 @@ public:
      (bootstrap/91828).  */
   tree& operator[] (ptrdiff_t i) const { return (*v)[i]; }
 
-  ~releasing_vec() { release_tree_vector (v); }
+  void release () { release_tree_vector (v); v = NULL; }
+
+  ~releasing_vec () { release_tree_vector (v); }
 private:
   vec_t *v;
 };
@@ -4724,6 +4727,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define PTRMEM_CST_MEMBER(NODE) \
   (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
 
+/* For a pointer-to-member constant `X::Y' this is a location where
+   the address of the member has been taken.  */
+#define PTRMEM_CST_LOCATION(NODE) \
+  (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->locus)
+
 /* The expression in question for a TYPEOF_TYPE.  */
 #define TYPEOF_TYPE_EXPR(NODE) (TYPE_VALUES_RAW (TYPEOF_TYPE_CHECK (NODE)))
 
@@ -6231,9 +6239,11 @@ struct cp_declarator {
   /* If this declarator is parenthesized, this the open-paren.  It is
      UNKNOWN_LOCATION when not parenthesized.  */
   location_t parenthesized;
-
-  location_t id_loc; /* Currently only set for cdk_id, cdk_decomp and
-			cdk_function. */
+  /* Currently only set for cdk_id, cdk_decomp and cdk_function.  */
+  location_t id_loc;
+  /* If this declarator is part of an init-declarator, the location of the
+     initializer.  */
+  location_t init_loc;
   /* GNU Attributes that apply to this declarator.  If the declarator
      is a pointer or a reference, these attribute apply to the type
      pointed to.  */
@@ -6468,6 +6478,9 @@ inline tree build_new_op (const op_location_t &loc, enum tree_code code,
   return build_new_op (loc, code, flags, arg1, arg2, NULL_TREE, NULL, complain);
 }
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
+						 tsubst_flags_t);
+extern tree build_op_subscript			(const op_location_t &, tree,
+						 vec<tree, va_gc> **, tree *,
 						 tsubst_flags_t);
 extern bool aligned_allocation_fn_p		(tree);
 extern tree destroying_delete_p			(tree);
@@ -6811,7 +6824,8 @@ extern void maybe_make_one_only			(tree);
 extern bool vague_linkage_p			(tree);
 extern void grokclassfn				(tree, tree,
 						 enum overload_flags);
-extern tree grok_array_decl			(location_t, tree, tree, bool);
+extern tree grok_array_decl			(location_t, tree, tree,
+						 vec<tree, va_gc> **, tsubst_flags_t);
 extern tree delete_sanity			(location_t, tree, tree, bool,
 						 int, tsubst_flags_t);
 extern tree check_classfn			(tree, tree, tree);
@@ -6878,7 +6892,8 @@ extern const char *lang_decl_dwarf_name		(tree, int, bool);
 extern const char *language_to_string		(enum languages);
 extern const char *class_key_or_enum_as_string	(tree);
 extern void maybe_warn_variadic_templates       (void);
-extern void maybe_warn_cpp0x			(cpp0x_warn_str str);
+extern void maybe_warn_cpp0x			(cpp0x_warn_str str,
+						 location_t = input_location);
 extern bool pedwarn_cxx98                       (location_t, int, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 extern location_t location_of                   (tree);
 extern void qualified_name_lookup_error		(tree, tree, tree,
@@ -7708,6 +7723,8 @@ extern tree build_min_nt_loc			(location_t, enum tree_code,
 						 ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
 extern tree build_min_non_dep_op_overload	(enum tree_code, tree, tree, ...);
+extern tree build_min_non_dep_op_overload	(tree, tree, tree,
+						 vec<tree, va_gc> *);
 extern tree build_min_nt_call_vec (tree, vec<tree, va_gc> *);
 extern tree build_min_non_dep_call_vec		(tree, tree, vec<tree, va_gc> *);
 extern vec<tree, va_gc>* vec_copy_and_insert    (vec<tree, va_gc>*, tree, unsigned);
@@ -7996,6 +8013,11 @@ extern bool decl_in_std_namespace_p	     (tree);
 extern void require_complete_eh_spec_types	(tree, tree);
 extern void cxx_incomplete_type_diagnostic	(location_t, const_tree,
 						 const_tree, diagnostic_t);
+inline location_t
+loc_or_input_loc (location_t loc)
+{
+  return loc == UNKNOWN_LOCATION ? input_location : loc;
+}
 
 inline location_t
 cp_expr_loc_or_loc (const_tree t, location_t or_loc)

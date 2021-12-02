@@ -526,6 +526,16 @@ else version (CRuntime_Musl)
     int    putc_unlocked(int, FILE*);
     int    putchar_unlocked(int);
 }
+else version (CRuntime_Bionic)
+{
+    void   flockfile(FILE*);
+    int    ftrylockfile(FILE*);
+    void   funlockfile(FILE*);
+    int    getc_unlocked(FILE*);
+    int    getchar_unlocked();
+    int    putc_unlocked(int, FILE*);
+    int    putchar_unlocked(int);
+}
 else version (Darwin)
 {
     void   flockfile(FILE*);

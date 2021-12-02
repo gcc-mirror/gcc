@@ -193,6 +193,14 @@ svalue::can_merge_p (const svalue *other,
 	return NULL;
     }
 
+  /* Reject merging svalues that have non-purgable sm-state,
+     to avoid falsely reporting memory leaks by merging them
+     with something else.  */
+  if (!merger->mergeable_svalue_p (this))
+    return NULL;
+  if (!merger->mergeable_svalue_p (other))
+    return NULL;
+
   /* Widening.  */
   /* Merge: (new_cst, existing_cst) -> widen (existing, new).  */
   if (maybe_get_constant () && other->maybe_get_constant ())

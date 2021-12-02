@@ -1233,6 +1233,9 @@ _mm_loadl_pd (__m128d __A, double const *__B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_pd (__m128d  __A)
 {
+#ifdef _ARCH_PWR10
+  return vec_extractm ((__v2du) __A);
+#else
   __vector unsigned long long result;
   static const __vector unsigned int perm_mask =
     {
@@ -1252,6 +1255,7 @@ _mm_movemask_pd (__m128d  __A)
 #else
   return result[0];
 #endif
+#endif /* !_ARCH_PWR10 */
 }
 #endif /* _ARCH_PWR8 */
 
@@ -2030,6 +2034,9 @@ _mm_min_epu8 (__m128i __A, __m128i __B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_epi8 (__m128i __A)
 {
+#ifdef _ARCH_PWR10
+  return vec_extractm ((__v16qu) __A);
+#else
   __vector unsigned long long result;
   static const __vector unsigned char perm_mask =
     {
@@ -2046,6 +2053,7 @@ _mm_movemask_epi8 (__m128i __A)
 #else
   return result[0];
 #endif
+#endif /* !_ARCH_PWR10 */
 }
 #endif /* _ARCH_PWR8 */
 
@@ -2189,27 +2197,37 @@ extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __arti
 _mm_sad_epu8 (__m128i __A, __m128i __B)
 {
   __v16qu a, b;
-  __v16qu vmin, vmax, vabsdiff;
+  __v16qu vabsdiff;
   __v4si vsum;
   const __v4su zero = { 0, 0, 0, 0 };
   __v4si result;
 
   a = (__v16qu) __A;
   b = (__v16qu) __B;
-  vmin = vec_min (a, b);
-  vmax = vec_max (a, b);
+#ifndef _ARCH_PWR9
+  __v16qu vmin = vec_min (a, b);
+  __v16qu vmax = vec_max (a, b);
   vabsdiff = vec_sub (vmax, vmin);
+#else
+  vabsdiff = vec_absd (a, b);
+#endif
   /* Sum four groups of bytes into integers.  */
   vsum = (__vector signed int) vec_sum4s (vabsdiff, zero);
+#ifdef __LITTLE_ENDIAN__
+  /* Sum across four integers with two integer results.  */
+  asm ("vsum2sws %0,%1,%2" : "=v" (result) : "v" (vsum), "v" (zero));
+  /* Note: vec_sum2s could be used here, but on little-endian, vector
+     shifts are added that are not needed for this use-case.
+     A vector shift to correctly position the 32-bit integer results
+     (currently at [0] and [2]) to [1] and [3] would then need to be
+     swapped back again since the desired results are two 64-bit
+     integers ([1]|[0] and [3]|[2]).  Thus, no shift is performed.  */
+#else
   /* Sum across four integers with two integer results.  */
   result = vec_sum2s (vsum, (__vector signed int) zero);
   /* Rotate the sums into the correct position.  */
-#ifdef __LITTLE_ENDIAN__
-  result = vec_sld (result, result, 4);
-#else
   result = vec_sld (result, result, 6);
 #endif
-  /* Rotate the sums into the correct position.  */
   return (__m128i) result;
 }
 

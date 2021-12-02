@@ -1165,6 +1165,7 @@ package body Ch12 is
    --      [ASPECT_SPECIFICATIONS];
 
    --  SUBPROGRAM_DEFAULT ::= DEFAULT_NAME | <>
+   --                       | ( EXPRESSION )  -- Allowed as extension (-gnatX)
 
    --  DEFAULT_NAME ::= NAME | null
 
@@ -1218,6 +1219,29 @@ package body Ch12 is
             end if;
 
             Scan;  --  past NULL
+
+         --  When extensions are enabled, a formal function can have a default
+         --  given by a parenthesized expression (expression function syntax).
+
+         elsif Token = Tok_Left_Paren then
+            Error_Msg_GNAT_Extension
+              ("expression default for formal subprograms");
+
+            if Nkind (Spec_Node) = N_Function_Specification then
+               Scan;  --  past "("
+
+               Set_Expression (Def_Node, P_Expression);
+
+               if Token /= Tok_Right_Paren then
+                  Error_Msg_SC ("missing "")"" at end of expression default");
+               else
+                  Scan;  --  past ")"
+               end if;
+
+            else
+               Error_Msg_SP
+                 ("only functions can specify a default expression");
+            end if;
 
          else
             Set_Default_Name (Def_Node, P_Name);

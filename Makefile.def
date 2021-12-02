@@ -169,14 +169,14 @@ target_modules = { module= newlib; };
 target_modules = { module= libgcc; bootstrap=true; no_check=true;
 		  missing=TAGS;
 		  missing=install-dvi; };
-target_modules = { module= libbacktrace; };
+target_modules = { module= libbacktrace; bootstrap=true; };
 target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc;
 		  missing=TAGS;
 		  missing=install-dvi; };
 target_modules = { module= libgo; };
-target_modules = { module= libphobos;
+target_modules = { module= libphobos; bootstrap=true;
 		   lib_path=src/.libs; };
 target_modules = { module= libtermcap; no_check=true;
                    missing=mostlyclean;
@@ -186,12 +186,12 @@ target_modules = { module= libtermcap; no_check=true;
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
 target_modules = { module= libffi; no_install=true; };
-target_modules = { module= zlib; };
+target_modules = { module= zlib; bootstrap=true; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
-target_modules = { module= libatomic; lib_path=.libs; };
+target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
 
 // These are (some of) the make targets to be done in each subdirectory.
 // Not all; these are the ones which don't have special options.

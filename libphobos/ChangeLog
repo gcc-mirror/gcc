@@ -1,3 +1,121 @@
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/testsuite_flags.in: Add libphobos library directory as
+	search path to --gdcldflags.
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e6caaab9.
+	* libdruntime/Makefile.am (D_EXTRA_FLAGS): Build libdruntime with
+	-fpreview=dip1000, -fpreview=fieldwise, and -fpreview=dtorfields.
+	(ALL_DRUNTIME_SOURCES): Add DRUNTIME_DSOURCES_STDCXX.
+	(DRUNTIME_DSOURCES): Update list of C binding modules.
+	(DRUNTIME_DSOURCES_STDCXX): Likewise.
+	(DRUNTIME_DSOURCES_LINUX): Likewise.
+	(DRUNTIME_DSOURCES_OPENBSD): Likewise.
+	(DRUNTIME_DISOURCES): Remove __entrypoint.di.
+	* libdruntime/Makefile.in: Regenerated.
+	* libdruntime/__entrypoint.di: Removed.
+	* libdruntime/gcc/deh.d (_d_isbaseof): Update signature.
+	(_d_createTrace): Likewise.
+	(__gdc_begin_catch): Remove reference to the exception.
+	(_d_throw): Increment reference count of thrown object before unwind.
+	(__gdc_personality): Chain exceptions with  Throwable.chainTogether.
+	* libdruntime/gcc/emutls.d: Update imports.
+	* libdruntime/gcc/sections/elf.d: Update imports.
+	(DSO.moduleGroup): Update signature.
+	* libdruntime/gcc/sections/macho.d: Update imports.
+	(DSO.moduleGroup): Update signature.
+	* libdruntime/gcc/sections/pecoff.d: Update imports.
+	(DSO.moduleGroup): Update signature.
+	* src/MERGE: Merge upstream phobos 5ab9ad256.
+	* src/Makefile.am (D_EXTRA_DFLAGS): Add -fpreview=dip1000 and
+	-fpreview=dtorfields flags.
+	(PHOBOS_DSOURCES): Update list of std modules.
+	* src/Makefile.in: Regenerate.
+	* testsuite/lib/libphobos.exp (libphobos-dg-test): Handle assembly
+	compile types.
+	(dg-test): Override.
+	(additional_prunes): Define.
+	(libphobos-dg-prune): Filter any additional_prunes set by tests.
+	* testsuite/libphobos.aa/test_aa.d: Update test.
+	* testsuite/libphobos.druntime/druntime.exp (version_flags): Add
+	-fversion=CoreUnittest.
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp
+	(version_flags): Add -fversion=CoreUnittest -fversion=Shared.
+	* testsuite/libphobos.exceptions/unknown_gc.d: Update test.
+	* testsuite/libphobos.hash/test_hash.d: Update test.
+	* testsuite/libphobos.phobos/phobos.exp (version_flags): Add
+	-fversion=StdUnittest
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp (version_flags):
+	Likewise.
+	* testsuite/libphobos.shared/host.c: Update test.
+	* testsuite/libphobos.shared/load.d: Update test.
+	* testsuite/libphobos.shared/load_13414.d: Update test.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Update test.
+	* testsuite/libphobos.thread/tlsgc_sections.d: Update test.
+	* testsuite/testsuite_flags.in: Add -fpreview=dip1000 to --gdcflags.
+	* testsuite/libphobos.shared/link_mod_collision.d: Removed.
+	* testsuite/libphobos.shared/load_mod_collision.d: Removed.
+	* testsuite/libphobos.betterc/betterc.exp: New test.
+	* testsuite/libphobos.config/config.exp: New test.
+	* testsuite/libphobos.gc/gc.exp: New test.
+	* testsuite/libphobos.imports/imports.exp: New test.
+	* testsuite/libphobos.lifetime/lifetime.exp: New test.
+	* testsuite/libphobos.unittest/unittest.exp: New test.
+	* testsuite/libphobos.allocations/alloc_from_assert.d: New file.
+	* testsuite/libphobos.betterc/test18828.d: New file.
+	* testsuite/libphobos.betterc/test19416.d: New file.
+	* testsuite/libphobos.betterc/test19421.d: New file.
+	* testsuite/libphobos.betterc/test19561.d: New file.
+	* testsuite/libphobos.betterc/test19924.d: New file.
+	* testsuite/libphobos.betterc/test20088.d: New file.
+	* testsuite/libphobos.betterc/test20613.d: New file.
+	* testsuite/libphobos.config/test19433.d: New file.
+	* testsuite/libphobos.config/test20459.d: New file.
+	* testsuite/libphobos.exceptions/assert_fail.d: New file.
+	* testsuite/libphobos.exceptions/catch_in_finally.d: New file.
+	* testsuite/libphobos.exceptions/future_message.d: New file.
+	* testsuite/libphobos.exceptions/long_backtrace_trunc.d: New file.
+	* testsuite/libphobos.exceptions/refcounted.d: New file.
+	* testsuite/libphobos.exceptions/rt_trap_exceptions.d: New file.
+	* testsuite/libphobos.exceptions/rt_trap_exceptions_drt.d: New file.
+	* testsuite/libphobos.gc/attributes.d: New file.
+	* testsuite/libphobos.gc/forkgc.d: New file.
+	* testsuite/libphobos.gc/forkgc2.d: New file.
+	* testsuite/libphobos.gc/nocollect.d: New file.
+	* testsuite/libphobos.gc/precisegc.d: New file.
+	* testsuite/libphobos.gc/recoverfree.d: New file.
+	* testsuite/libphobos.gc/sigmaskgc.d: New file.
+	* testsuite/libphobos.gc/startbackgc.d: New file.
+	* testsuite/libphobos.imports/bug18193.d: New file.
+	* testsuite/libphobos.init_fini/custom_gc.d: New file.
+	* testsuite/libphobos.init_fini/test18996.d: New file.
+	* testsuite/libphobos.lifetime/large_aggregate_destroy_21097.d: New file.
+	* testsuite/libphobos.thread/external_threads.d: New file.
+	* testsuite/libphobos.thread/join_detach.d: New file.
+	* testsuite/libphobos.thread/test_import.d: New file.
+	* testsuite/libphobos.thread/tlsstack.d: New file.
+	* testsuite/libphobos.typeinfo/enum_.d: New file.
+	* testsuite/libphobos.typeinfo/isbaseof.d: New file.
+	* testsuite/libphobos.unittest/customhandler.d: New file.
+
+2021-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libphobos.exp: Prune warnings from external
+	tool bugs.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/fiber.d (defaultStackPages): Increase size
+	on OSX X86_64 targets.
+
+2021-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/emutls.d (emutlsDestroyThread): Don't remove entry
+	from global array.
+	(_d_emutls_destroy): Don't call __gthread_key_delete.
+
 2021-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/102837

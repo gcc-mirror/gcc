@@ -714,6 +714,9 @@ gcc_tooldir
 enable_lto
 DO_LINK_SERIALIZATION
 DO_LINK_MUTEX
+CSCOPE
+ETAGS
+CTAGS
 MAINT
 zlibinc
 zlibdir
@@ -855,6 +858,8 @@ EGREP
 GREP
 CXXCPP
 PICFLAG_FOR_TARGET
+GDCFLAGS
+GDC
 GNATMAKE
 GNATBIND
 ac_ct_CXX
@@ -5254,6 +5259,106 @@ else
 fi
 
 
+
+if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}gdc", so it can be a program name with args.
+set dummy ${ac_tool_prefix}gdc; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_GDC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$GDC"; then
+  ac_cv_prog_GDC="$GDC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GDC="${ac_tool_prefix}gdc"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GDC=$ac_cv_prog_GDC
+if test -n "$GDC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GDC" >&5
+$as_echo "$GDC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_GDC"; then
+  ac_ct_GDC=$GDC
+  # Extract the first word of "gdc", so it can be a program name with args.
+set dummy gdc; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_GDC+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_GDC"; then
+  ac_cv_prog_ac_ct_GDC="$ac_ct_GDC" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_GDC="gdc"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GDC=$ac_cv_prog_ac_ct_GDC
+if test -n "$ac_ct_GDC"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GDC" >&5
+$as_echo "$ac_ct_GDC" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_ct_GDC" = x; then
+    GDC="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GDC=$ac_ct_GDC
+  fi
+else
+  GDC="$ac_cv_prog_GDC"
+fi
+
+if test "x$GDC" != xno; then
+  have_gdc=yes
+else
+  have_gdc=no
+fi
+
+
 # Do configure tests with the C++ compiler, since that's what we build with.
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -5269,6 +5374,7 @@ case "$CC" in
   *) CFLAGS=`echo "$CFLAGS " | sed -e "s/-Ofast[ 	]//" -e "s/-O[gs][ 	]//" -e "s/-O[0-9]*[ 	]//" `
      CXXFLAGS=`echo "$CXXFLAGS " | sed -e "s/-Ofast[ 	]//" -e "s/-O[gs][ 	]//" -e "s/-O[0-9]*[ 	]//" ` ;;
 esac
+
 
 
 
@@ -19457,7 +19563,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19458 "configure"
+#line 19564 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19563,7 +19669,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19564 "configure"
+#line 19670 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -31379,6 +31485,19 @@ if test "$maintainer_mode" = "yes"; then
 else
   MAINT='#'
 fi
+
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+
+if test -z "$CSCOPE"; then
+  CSCOPE=cscope
+fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to avoid linking multiple front-ends at once" >&5

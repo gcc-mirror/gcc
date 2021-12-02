@@ -1,3 +1,25 @@
+2021-11-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Remove
+	temporary skip.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Temporarily
+	skip.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* oacc-plugin.c (GOMP_PLUGIN_acc_default_dim): Remove unreachable
+	return.
+
+2021-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/103384
+	* testsuite/libgomp.c/declare-variant-2.c: New test.
+
 2021-11-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* alloc.c (gomp_aligned_alloc): Fix typo.

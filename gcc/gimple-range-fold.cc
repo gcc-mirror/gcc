@@ -771,6 +771,7 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
   tree phi_def = gimple_phi_result (phi);
   tree type = gimple_range_type (phi);
   int_range_max arg_range;
+  int_range_max equiv_range;
   unsigned x;
 
   if (!type)
@@ -797,7 +798,14 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       if (!arg_range.undefined_p ())
 	{
 	  // Register potential dependencies for stale value tracking.
-	  r.union_ (arg_range);
+	  // Likewise, if the incoming PHI argument is equivalent to this
+	  // PHI definition, it provides no new info.  Accumulate these ranges
+	  // in case all arguments are equivalences.
+	  if (src.query ()->query_relation (e, arg, phi_def, false) == EQ_EXPR)
+	    equiv_range.union_(arg_range);
+	  else
+	    r.union_ (arg_range);
+
 	  if (gimple_range_ssa_p (arg) && src.gori ())
 	    src.gori ()->register_dependency (phi_def, arg);
 
@@ -815,6 +823,11 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       if (r.varying_p () && single_arg == NULL_TREE)
 	break;
     }
+
+    // If all arguments were equivalences, use the equivalence ranges as no
+    // arguments were processed.
+    if (r.undefined_p () && !equiv_range.undefined_p ())
+      r = equiv_range;
 
     // If the PHI boils down to a single effective argument, look at it.
     if (single_arg)

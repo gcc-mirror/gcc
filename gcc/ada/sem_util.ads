@@ -1521,6 +1521,25 @@ package Sem_Util is
    --  integer for use in compile-time checking. Note: Level is restricted to
    --  be non-dynamic.
 
+   function Is_Newly_Constructed
+     (Exp : Node_Id; Context_Requires_NC : Boolean) return Boolean;
+   --  Indicates whether a given expression is "newly constructed" (RM 4.4).
+   --  Context_Requires_NC determines the result returned for cases like a
+   --  raise expression or a conditional expression where some-but-not-all
+   --  operative constituents are newly constructed. Thus, this is a
+   --  somewhat unusual predicate in that the result required in order to
+   --  satisfy whatever legality rule is being checked can influence the
+   --  result of the predicate. Context_Requires_NC might be True for
+   --  something like the "newly constructed" rule for a limited expression
+   --  of a return statement, and False for something like the
+   --  "newly constructed" rule pertaining to a limited object renaming in a
+   --  declare expression. Eventually, the code to implement every
+   --  RM legality rule requiring/prohibiting a "newly constructed" expression
+   --  should be implemented by calling this function; that's not done yet.
+   --  The function name doesn't quite match the RM definition of the term if
+   --  Context_Requires_NC = False; in that case, "Might_Be_Newly_Constructed"
+   --  might be a more accurate name.
+
    function Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post
      (Subp : Entity_Id) return Boolean;
    --  Return True if Subp is a primitive of an abstract type, where the
@@ -2045,6 +2064,15 @@ package Sem_Util is
    --  Determine whether subprogram [body] Subp denotes an expression function
    --  or is completed by an expression function body.
 
+   function Is_Extended_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean;
+   --  Return whether E is an extended precision floating point type,
+   --  characterized by:
+   --  . machine_radix = 2
+   --  . machine_mantissa = 64
+   --  . machine_emax = 2**14
+   --  . machine_emin = 3 - machine_emax
+
    function Is_EVF_Expression (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a reference to a formal parameter of
    --  a specific tagged type whose related subprogram is subject to pragma
@@ -2275,6 +2303,10 @@ package Sem_Util is
    --  preelaborable constructs as defined in ARM 10.2.1(5-9). Routine
    --  Is_Non_Preelaborable_Construct takes into account the syntactic
    --  and semantic properties of N for a more accurate diagnostic.
+
+   function Is_Private_Library_Unit (Unit : Entity_Id) return Boolean;
+   --  Returns True if and only if the library unit is declared with an
+   --  explicit designation of private.
 
    function Is_Protected_Self_Reference (N : Node_Id) return Boolean;
    --  Return True if node N denotes a protected type name which represents

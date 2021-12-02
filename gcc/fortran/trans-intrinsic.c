@@ -4555,6 +4555,18 @@ rad2deg (int kind)
 }
 
 
+static gfc_intrinsic_map_t *
+gfc_lookup_intrinsic (gfc_isym_id id)
+{
+  gfc_intrinsic_map_t *m = gfc_intrinsic_map;
+  for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
+    if (id == m->id)
+      break;
+  gcc_assert (id == m->id);
+  return m;
+}
+
+
 /* ACOSD(x) is translated into ACOS(x) * 180 / pi.
    ASIND(x) is translated into ASIN(x) * 180 / pi.
    ATAND(x) is translated into ATAN(x) * 180 / pi.  */
@@ -4565,20 +4577,27 @@ gfc_conv_intrinsic_atrigd (gfc_se * se, gfc_expr * expr, gfc_isym_id id)
   tree arg;
   tree atrigd;
   tree type;
+  gfc_intrinsic_map_t *m;
 
   type = gfc_typenode_for_spec (&expr->ts);
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
 
-  if (id == GFC_ISYM_ACOSD)
-    atrigd = gfc_builtin_decl_for_float_kind (BUILT_IN_ACOS, expr->ts.kind);
-  else if (id == GFC_ISYM_ASIND)
-    atrigd = gfc_builtin_decl_for_float_kind (BUILT_IN_ASIN, expr->ts.kind);
-  else if (id == GFC_ISYM_ATAND)
-    atrigd = gfc_builtin_decl_for_float_kind (BUILT_IN_ATAN, expr->ts.kind);
-  else
-    gcc_unreachable ();
-
+  switch (id)
+    {
+    case GFC_ISYM_ACOSD:
+      m = gfc_lookup_intrinsic (GFC_ISYM_ACOS);
+      break;
+    case GFC_ISYM_ASIND:
+      m = gfc_lookup_intrinsic (GFC_ISYM_ASIN);
+      break;
+    case GFC_ISYM_ATAND:
+      m = gfc_lookup_intrinsic (GFC_ISYM_ATAN);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  atrigd = gfc_get_intrinsic_lib_fndecl (m, expr);
   atrigd = build_call_expr_loc (input_location, atrigd, 1, arg);
 
   se->expr = fold_build2_loc (input_location, MULT_EXPR, type, atrigd,
@@ -4614,13 +4633,9 @@ gfc_conv_intrinsic_cotan (gfc_se *se, gfc_expr *expr)
       mpfr_clear (pio2);
 
       /* Find tan builtin function.  */
-      m = gfc_intrinsic_map;
-      for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
-	if (GFC_ISYM_TAN == m->id)
-	  break;
-
-      tmp = fold_build2_loc (input_location, PLUS_EXPR, type, arg, tmp);
+      m = gfc_lookup_intrinsic (GFC_ISYM_TAN);
       tan = gfc_get_intrinsic_lib_fndecl (m, expr);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, type, arg, tmp);
       tan = build_call_expr_loc (input_location, tan, 1, tmp);
       se->expr = fold_build1_loc (input_location, NEGATE_EXPR, type, tan);
     }
@@ -4630,20 +4645,12 @@ gfc_conv_intrinsic_cotan (gfc_se *se, gfc_expr *expr)
       tree cos;
 
       /* Find cos builtin function.  */
-      m = gfc_intrinsic_map;
-      for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
-	if (GFC_ISYM_COS == m->id)
-	  break;
-
+      m = gfc_lookup_intrinsic (GFC_ISYM_COS);
       cos = gfc_get_intrinsic_lib_fndecl (m, expr);
       cos = build_call_expr_loc (input_location, cos, 1, arg);
 
       /* Find sin builtin function.  */
-      m = gfc_intrinsic_map;
-      for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
-	if (GFC_ISYM_SIN == m->id)
-	  break;
-
+      m = gfc_lookup_intrinsic (GFC_ISYM_SIN);
       sin = gfc_get_intrinsic_lib_fndecl (m, expr);
       sin = build_call_expr_loc (input_location, sin, 1, arg);
 
@@ -4675,11 +4682,7 @@ gfc_conv_intrinsic_cotand (gfc_se *se, gfc_expr *expr)
   mpfr_clear (ninety);
 
   /* Find tand.  */
-  gfc_intrinsic_map_t *m = gfc_intrinsic_map;
-  for (; m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
-    if (GFC_ISYM_TAND == m->id)
-      break;
-
+  gfc_intrinsic_map_t *m = gfc_lookup_intrinsic (GFC_ISYM_TAND);
   tree tand = gfc_get_intrinsic_lib_fndecl (m, expr);
   tand = build_call_expr_loc (input_location, tand, 1, arg);
 
@@ -4699,7 +4702,8 @@ gfc_conv_intrinsic_atan2d (gfc_se *se, gfc_expr *expr)
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   type = TREE_TYPE (args[0]);
 
-  atan2d = gfc_builtin_decl_for_float_kind (BUILT_IN_ATAN2, expr->ts.kind);
+  gfc_intrinsic_map_t *m = gfc_lookup_intrinsic (GFC_ISYM_ATAN2);
+  atan2d = gfc_get_intrinsic_lib_fndecl (m, expr);
   atan2d = build_call_expr_loc (input_location, atan2d, 2, args[0], args[1]);
 
   se->expr = fold_build2_loc (input_location, MULT_EXPR, type, atan2d,

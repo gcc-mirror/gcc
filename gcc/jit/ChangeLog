@@ -1,3 +1,62 @@
+2021-11-27  Petter Tomner  <tomner@kth.se>
+
+	* libgccjit.c: %ld -> %zu
+
+2021-11-24  Martin Liska  <mliska@suse.cz>
+
+	* jit-playback.c (function): Initialize m_blocks vector.
+
+2021-11-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96889
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_16): New ABI tag.
+	* docs/topics/functions.rst: Add documentation for the
+	functions gcc_jit_function_get_return_type and
+	gcc_jit_function_get_param_count
+	* docs/topics/types.rst: Add documentation for the functions
+	gcc_jit_function_type_get_return_type,
+	gcc_jit_function_type_get_param_count,
+	gcc_jit_function_type_get_param_type,
+	gcc_jit_type_unqualified, gcc_jit_type_dyncast_array,
+	gcc_jit_type_is_bool,
+	gcc_jit_type_dyncast_function_ptr_type,
+	gcc_jit_type_is_integral, gcc_jit_type_is_pointer,
+	gcc_jit_type_dyncast_vector,
+	gcc_jit_vector_type_get_element_type,
+	gcc_jit_vector_type_get_num_units,
+	gcc_jit_struct_get_field, gcc_jit_type_is_struct,
+	and gcc_jit_struct_get_field_count
+	* libgccjit.c:
+	(gcc_jit_function_get_return_type, gcc_jit_function_get_param_count,
+	gcc_jit_function_type_get_return_type,
+	gcc_jit_function_type_get_param_count,
+	gcc_jit_function_type_get_param_type, gcc_jit_type_unqualified,
+	gcc_jit_type_dyncast_array, gcc_jit_type_is_bool,
+	gcc_jit_type_dyncast_function_ptr_type, gcc_jit_type_is_integral,
+	gcc_jit_type_is_pointer, gcc_jit_type_dyncast_vector,
+	gcc_jit_vector_type_get_element_type,
+	gcc_jit_vector_type_get_num_units, gcc_jit_struct_get_field,
+	gcc_jit_type_is_struct, gcc_jit_struct_get_field_count): New
+	functions.
+	(struct gcc_jit_function_type, struct gcc_jit_vector_type):
+	New types.
+	* libgccjit.h:
+	(gcc_jit_function_get_return_type, gcc_jit_function_get_param_count,
+	gcc_jit_function_type_get_return_type,
+	gcc_jit_function_type_get_param_count,
+	gcc_jit_function_type_get_param_type, gcc_jit_type_unqualified,
+	gcc_jit_type_dyncast_array, gcc_jit_type_is_bool,
+	gcc_jit_type_dyncast_function_ptr_type, gcc_jit_type_is_integral,
+	gcc_jit_type_is_pointer, gcc_jit_type_dyncast_vector,
+	gcc_jit_vector_type_get_element_type,
+	gcc_jit_vector_type_get_num_units, gcc_jit_struct_get_field,
+	gcc_jit_type_is_struct, gcc_jit_struct_get_field_count): New
+	function declarations.
+	(struct gcc_jit_function_type, struct gcc_jit_vector_type):
+	New types.
+	* jit-recording.h: New functions (is_struct and is_vector)
+	* libgccjit.map (LIBGCCJIT_ABI_16): New ABI tag.
+
 2021-11-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/103199

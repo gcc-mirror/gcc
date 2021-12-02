@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "rtl-iter.h"
 #include "gimplify.h"
+#include "profile.h"
+#include "sreal.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics.  */
 #if __GNUC__ >= 10
@@ -3001,7 +3003,8 @@ rtl_verify_fallthru (void)
 		{
 		  error ("verify_flow_info: Incorrect fallthru %i->%i",
 			 e->src->index, e->dest->index);
-		  fatal_insn ("wrong insn in the fallthru edge", insn);
+		  error ("wrong insn in the fallthru edge");
+		  debug_rtx (insn);
 		  err = 1;
 		}
 	}
@@ -3536,16 +3539,8 @@ skip_insns_after_block (basic_block bb)
 	  continue;
 
 	case NOTE:
-	  switch (NOTE_KIND (insn))
-	    {
-	    case NOTE_INSN_BLOCK_END:
-	      gcc_unreachable ();
-	      continue;
-	    default:
-	      continue;
-	      break;
-	    }
-	  break;
+	  gcc_assert (NOTE_KIND (insn) != NOTE_INSN_BLOCK_END);
+	  continue;
 
 	case CODE_LABEL:
 	  if (NEXT_INSN (insn)
@@ -5265,12 +5260,22 @@ rtl_account_profile_record (basic_block bb, struct profile_record *record)
     if (INSN_P (insn))
       {
 	record->size += insn_cost (insn, false);
-	if (bb->count.initialized_p ())
+	if (profile_info)
+	  {
+	    if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().initialized_p ()
+		&& ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa ().nonzero_p ()
+		&& bb->count.ipa ().initialized_p ())
+	      record->time
+		+= insn_cost (insn, true) * bb->count.ipa ().to_gcov_type ();
+	  }
+	else if (bb->count.initialized_p ()
+		 && ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.initialized_p ())
 	  record->time
-	    += insn_cost (insn, true) * bb->count.to_gcov_type ();
-	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
-	  record->time
-	    += insn_cost (insn, true) * bb->count.to_frequency (cfun);
+	    += insn_cost (insn, true)
+	       * bb->count.to_sreal_scale
+		      (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count).to_double ();
+	else
+	  record->time += insn_cost (insn, true);
       }
 }
 

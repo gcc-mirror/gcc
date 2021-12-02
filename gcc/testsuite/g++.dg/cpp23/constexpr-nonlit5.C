@@ -34,7 +34,7 @@ baz (int x)
     {
       static int v = 6;	// { dg-message "int v' is not const" }
     case 12:
-      return v;
+      return v;	// { dg-error "the value of 'v' is not usable in a constant expression" }
     }
   return 0;
 }
@@ -46,12 +46,12 @@ corge (int x)
     {
       thread_local int v = 6;	// { dg-message "int v' is not const" }
     case 12:
-      return v;
+      return v;	// { dg-error "the value of 'v' is not usable in a constant expression" }
     }
   return 0;
 }
 
 constexpr int a = foo (12);
 constexpr int b = bar (12);
-constexpr int c = baz (12);		// { dg-error "the value of 'v' is not usable in a constant expression" }
-constexpr int d = corge (12);		// { dg-error "the value of 'v' is not usable in a constant expression" }
+constexpr int c = baz (12);
+constexpr int d = corge (12);

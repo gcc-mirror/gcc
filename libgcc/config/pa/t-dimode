@@ -1,5 +1,5 @@
 # Extra DImode libgcc2 functions to build.
-lib2difuncs = _muldi3 _negdi2 _lshrdi _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2
+lib2difuncs = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _cmpdi2 _ucmpdi2
 
 # Build lib2difuncs.
 lib2difuncs-o = $(patsubst %,%_di$(objext),$(lib2difuncs))

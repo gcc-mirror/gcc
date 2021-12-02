@@ -6965,6 +6965,11 @@ package body Sem_Elab is
          --  Determine whether arbitrary node N denotes a suitable construct
          --  for inclusion into the early call region.
 
+         function Previous_Suitable_Construct (N : Node_Id) return Node_Id;
+         pragma Inline (Previous_Suitable_Construct);
+         --  Return the previous node suitable for inclusion into the early
+         --  call region.
+
          procedure Transition_Body_Declarations
            (Bod  : Node_Id;
             Curr : out Node_Id);
@@ -7209,7 +7214,7 @@ package body Sem_Elab is
          begin
             --  The early call region starts at N
 
-            Curr  := Prev (N);
+            Curr  := Previous_Suitable_Construct (N);
             Start := N;
 
             --  Inspect each node in reverse declarative order while going in
@@ -7286,7 +7291,7 @@ package body Sem_Elab is
             --  Otherwise the input node is still within some list
 
             else
-               Curr := Prev (Start);
+               Curr := Previous_Suitable_Construct (Start);
             end if;
          end Include;
 
@@ -7377,6 +7382,23 @@ package body Sem_Elab is
                   return True;
             end case;
          end Is_Suitable_Construct;
+
+         ---------------------------------
+         -- Previous_Suitable_Construct --
+         ---------------------------------
+
+         function Previous_Suitable_Construct (N : Node_Id) return Node_Id is
+            P : Node_Id;
+
+         begin
+            P := Prev (N);
+
+            while Present (P) and then not Is_Suitable_Construct (P) loop
+               Prev (P);
+            end loop;
+
+            return P;
+         end Previous_Suitable_Construct;
 
          ----------------------------------
          -- Transition_Body_Declarations --

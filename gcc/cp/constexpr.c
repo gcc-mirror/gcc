@@ -3366,7 +3366,14 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
     }
 
   if (r == NULL_TREE)
-    r = fold_binary_loc (loc, code, type, lhs, rhs);
+    {
+      if (ctx->manifestly_const_eval
+	  && (flag_constexpr_fp_except
+	      || TREE_CODE (type) != REAL_TYPE))
+	r = fold_binary_initializer_loc (loc, code, type, lhs, rhs);
+      else
+	r = fold_binary_loc (loc, code, type, lhs, rhs);
+    }
 
   if (r == NULL_TREE
       && (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
@@ -8686,6 +8693,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_SINGLE:
     case OMP_SECTION:
     case OMP_MASTER:
+    case OMP_MASKED:
     case OMP_TASKGROUP:
     case OMP_TARGET_UPDATE:
     case OMP_TARGET_ENTER_DATA:

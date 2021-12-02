@@ -78,7 +78,6 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
-#include "rs6000-builtins.h"
 #include "opts.h"
 
 /* This file should be included last.  */
@@ -5272,8 +5271,7 @@ public:
 
 protected:
   void update_target_cost_per_stmt (vect_cost_for_stmt, stmt_vec_info,
-				    vect_cost_model_location, int,
-				    unsigned int);
+				    vect_cost_model_location, unsigned int);
   void density_test (loop_vec_info);
   void adjust_vect_cost_per_loop (loop_vec_info);
 
@@ -5414,7 +5412,6 @@ void
 rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 					       stmt_vec_info stmt_info,
 					       vect_cost_model_location where,
-					       int stmt_cost,
 					       unsigned int orig_count)
 {
 
@@ -5456,17 +5453,23 @@ rs6000_cost_data::update_target_cost_per_stmt (vect_cost_for_stmt kind,
 	{
 	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 	  unsigned int nunits = vect_nunits_for_cost (vectype);
-	  unsigned int extra_cost = nunits * stmt_cost;
-	  /* As function rs6000_builtin_vectorization_cost shows, we have
-	     priced much on V16QI/V8HI vector construction as their units,
-	     if we penalize them with nunits * stmt_cost, it can result in
-	     an unreliable body cost, eg: for V16QI on Power8, stmt_cost
-	     is 20 and nunits is 16, the extra cost is 320 which looks
-	     much exaggerated.  So let's use one maximum bound for the
-	     extra penalized cost for vector construction here.  */
-	  const unsigned int MAX_PENALIZED_COST_FOR_CTOR = 12;
-	  if (extra_cost > MAX_PENALIZED_COST_FOR_CTOR)
-	    extra_cost = MAX_PENALIZED_COST_FOR_CTOR;
+	  /* We don't expect strided/elementwise loads for just 1 nunit.  */
+	  gcc_assert (nunits > 1);
+	  /* i386 port adopts nunits * stmt_cost as the penalized cost
+	     for this kind of penalization, we used to follow it but
+	     found it could result in an unreliable body cost especially
+	     for V16QI/V8HI modes.  To make it better, we choose this
+	     new heuristic: for each scalar load, we use 2 as penalized
+	     cost for the case with 2 nunits and use 1 for the other
+	     cases.  It's without much supporting theory, mainly
+	     concluded from the broad performance evaluations on Power8,
+	     Power9 and Power10.  One possibly related point is that:
+	     vector construction for more units would use more insns,
+	     it has more chances to schedule them better (even run in
+	     parallelly when enough available units at that time), so
+	     it seems reasonable not to penalize that much for them.  */
+	  unsigned int adjusted_cost = (nunits == 2) ? 2 : 1;
+	  unsigned int extra_cost = nunits * adjusted_cost;
 	  m_extra_ctor_cost += extra_cost;
 	}
     }
@@ -5491,8 +5494,7 @@ rs6000_cost_data::add_stmt_cost (int count, vect_cost_for_stmt kind,
       retval = adjust_cost_for_freq (stmt_info, where, count * stmt_cost);
       m_costs[where] += retval;
 
-      update_target_cost_per_stmt (kind, stmt_info, where,
-				   stmt_cost, orig_count);
+      update_target_cost_per_stmt (kind, stmt_info, where, orig_count);
     }
 
   return retval;

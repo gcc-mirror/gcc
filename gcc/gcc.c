@@ -4576,10 +4576,12 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgcc:
     case OPT_shared_libgcc:
     case OPT_static_libgfortran:
+    case OPT_static_libphobos:
     case OPT_static_libstdc__:
       /* These are always valid, since gcc.c itself understands the
-	 first two, gfortranspec.c understands -static-libgfortran and
-	 g++spec.c understands -static-libstdc++ */
+	 first two, gfortranspec.c understands -static-libgfortran,
+	 d-spec.cc understands -static-libphobos, and g++spec.c
+	 understands -static-libstdc++ */
       validated = true;
       break;
 
@@ -5098,7 +5100,8 @@ process_command (unsigned int decoded_options_count,
 
   bool explicit_dumpdir = dumpdir;
 
-  if (!save_temps_overrides_dumpdir && explicit_dumpdir)
+  if ((!save_temps_overrides_dumpdir && explicit_dumpdir)
+      || (output_file && not_actual_file_p (output_file)))
     {
       /* Do nothing.  */
     }

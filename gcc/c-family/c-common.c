@@ -3413,16 +3413,43 @@ c_wrap_maybe_const (tree expr, bool non_const)
 
 /* Return whether EXPR is a declaration whose address can never be NULL.
    The address of the first struct member could be NULL only if it were
-   accessed through a NULL pointer, and such an access would be invalid.  */
+   accessed through a NULL pointer, and such an access would be invalid.
+   The address of a weak symbol may be null unless it has a definition.  */
 
 bool
 decl_with_nonnull_addr_p (const_tree expr)
 {
-  return (DECL_P (expr)
-	  && (TREE_CODE (expr) == FIELD_DECL
-	      || TREE_CODE (expr) == PARM_DECL
-	      || TREE_CODE (expr) == LABEL_DECL
-	      || !DECL_WEAK (expr)));
+  if (!DECL_P (expr))
+    return false;
+
+  if (TREE_CODE (expr) == FIELD_DECL
+      || TREE_CODE (expr) == PARM_DECL
+      || TREE_CODE (expr) == LABEL_DECL)
+    return true;
+
+  if (!VAR_OR_FUNCTION_DECL_P (expr))
+    return false;
+
+  if (!DECL_WEAK (expr))
+    /* Ordinary (non-weak) symbols have nonnull addresses.  */
+    return true;
+
+  if (DECL_INITIAL (expr) && DECL_INITIAL (expr) != error_mark_node)
+    /* Initialized weak symbols have nonnull addresses.  */
+    return true;
+
+  if (DECL_EXTERNAL (expr) || !TREE_STATIC (expr))
+    /* Uninitialized extern weak symbols and weak symbols with no
+       allocated storage might have a null address.  */
+    return false;
+
+  tree attribs = DECL_ATTRIBUTES (expr);
+  if (lookup_attribute ("weakref", attribs))
+    /* Weakref symbols might have a null address unless their referent
+       is known not to.  Don't bother following weakref targets here.  */
+    return false;
+
+  return true;
 }
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,

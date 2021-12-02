@@ -359,6 +359,20 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   lambda_vector dist_v;
   unsigned int loop_depth;
 
+  /* If user asserted safelen consecutive iterations can be
+     executed concurrently, assume independence.  */
+  auto apply_safelen = [&]()
+    {
+      if (loop->safelen >= 2)
+	{
+	  if ((unsigned int) loop->safelen < *max_vf)
+	    *max_vf = loop->safelen;
+	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
+	  return true;
+	}
+      return false;
+    };
+
   /* In loop analysis all data references should be vectorizable.  */
   if (!STMT_VINFO_VECTORIZABLE (stmtinfo_a)
       || !STMT_VINFO_VECTORIZABLE (stmtinfo_b))
@@ -393,26 +407,23 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 				 get_alias_set (DR_REF (drb))))
     return opt_result::success ();
 
+  if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
+      || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
+    {
+      if (apply_safelen ())
+	return opt_result::success ();
+
+      return opt_result::failure_at
+	(stmtinfo_a->stmt,
+	 "possible alias involving gather/scatter between %T and %T\n",
+	 DR_REF (dra), DR_REF (drb));
+    }
+
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
-      /* If user asserted safelen consecutive iterations can be
-	 executed concurrently, assume independence.  */
-      if (loop->safelen >= 2)
-	{
-	  if ((unsigned int) loop->safelen < *max_vf)
-	    *max_vf = loop->safelen;
-	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
-	  return opt_result::success ();
-	}
-
-      if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
-	  || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
-	return opt_result::failure_at
-	  (stmtinfo_a->stmt,
-	   "versioning for alias not supported for: "
-	   "can't determine dependence between %T and %T\n",
-	   DR_REF (dra), DR_REF (drb));
+      if (apply_safelen ())
+	return opt_result::success ();
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmtinfo_a->stmt,
@@ -427,23 +438,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
-      /* If user asserted safelen consecutive iterations can be
-	 executed concurrently, assume independence.  */
-      if (loop->safelen >= 2)
-	{
-	  if ((unsigned int) loop->safelen < *max_vf)
-	    *max_vf = loop->safelen;
-	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
-	  return opt_result::success ();
-	}
-
-      if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
-	  || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
-	return opt_result::failure_at
-	  (stmtinfo_a->stmt,
-	   "versioning for alias not supported for: "
-	   "bad dist vector for %T and %T\n",
-	   DR_REF (dra), DR_REF (drb));
+      if (apply_safelen ())
+	return opt_result::success ();
 
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmtinfo_a->stmt,
@@ -3969,8 +3965,8 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   /* True if we should aim to use internal functions rather than
      built-in functions.  */
   bool use_ifn_p = (DR_IS_READ (dr)
-		    ? supports_vec_gather_load_p ()
-		    : supports_vec_scatter_store_p ());
+		    ? supports_vec_gather_load_p (TYPE_MODE (vectype))
+		    : supports_vec_scatter_store_p (TYPE_MODE (vectype)));
 
   base = DR_REF (dr);
   /* For masked loads/stores, DR_REF (dr) is an artificial MEM_REF,
@@ -4139,6 +4135,7 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	  /* Don't include the conversion if the target is happy with
 	     the current offset type.  */
 	  if (use_ifn_p
+	      && !POINTER_TYPE_P (TREE_TYPE (off))
 	      && vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 					   masked_p, vectype, memory_type,
 					   TREE_TYPE (off), scale, &ifn,

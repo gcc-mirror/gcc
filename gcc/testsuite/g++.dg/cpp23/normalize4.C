@@ -1,4 +1,4 @@
-// { dg-do preprocess { target { c++23 } } }
+// { dg-do preprocess { target { c++11 } } }
 // { dg-options "" }
 
 \u00AA

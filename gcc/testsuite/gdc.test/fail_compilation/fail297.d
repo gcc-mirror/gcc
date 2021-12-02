@@ -1,13 +1,13 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail297.d(30): Error: incompatible types for ((Bar()) + (baz())): 'Bar' and 'const(Bar)'
+fail_compilation/fail297.d(30): Error: incompatible types for `(Bar()) + (baz())`: `Bar` and `const(Bar)`
 ---
 */
 
-// Issue 1969 - ICE(cod1.c) using undefined operator with one const operand
-
-// 1969  ICE or wrong-code. D2 only. Internal error: backend\cod1.c 1673
+// https://issues.dlang.org/show_bug.cgi?id=1969
+// ICE(cod1.c) using undefined operator with one const operand
+// ICE or wrong-code. D2 only. Internal error: backend\cod1.c 1673
 /* Root cause: BinExp::typeCombine() is checking for an _exact_ match, but
 typeMerge() will return success.
 

@@ -121,6 +121,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-dse.h"
 #include "tree-vectorizer.h"
+#include "tree-eh.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -1109,8 +1110,6 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	}
       return false;
     }
-
-  return true;
 }
 
 /* Assumes that BB has more than 1 predecessors.
@@ -2496,7 +2495,7 @@ predicate_rhs_code (gassign *stmt, tree mask, tree cond,
 */
 
 static void
-predicate_statements (loop_p loop, edge pe)
+predicate_statements (loop_p loop)
 {
   unsigned int i, orig_loop_num_nodes = loop->num_nodes;
   auto_vec<int, 1> vect_sizes;
@@ -2597,13 +2596,7 @@ predicate_statements (loop_p loop, edge pe)
 		{
 		  gassign *stmt2 = as_a <gassign *> (gsi_stmt (gsi2));
 		  gsi_remove (&gsi2, false);
-		  /* Make sure to move invariant conversions out of the
-		     loop.  */
-		  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt2))
-		      && expr_invariant_in_loop_p (loop,
-						   gimple_assign_rhs1 (stmt2)))
-		    gsi_insert_on_edge_immediate (pe, stmt2);
-		  else if (first)
+		  if (first)
 		    {
 		      gsi_insert_before (&gsi, stmt2, GSI_NEW_STMT);
 		      first = false;
@@ -2684,7 +2677,7 @@ remove_conditions_and_labels (loop_p loop)
    blocks.  Replace PHI nodes with conditional modify expressions.  */
 
 static void
-combine_blocks (class loop *loop, edge pe)
+combine_blocks (class loop *loop)
 {
   basic_block bb, exit_bb, merge_target_bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -2697,7 +2690,7 @@ combine_blocks (class loop *loop, edge pe)
   predicate_all_scalar_phis (loop);
 
   if (need_to_predicate || need_to_rewrite_undefined)
-    predicate_statements (loop, pe);
+    predicate_statements (loop);
 
   /* Merge basic blocks.  */
   exit_bb = NULL;
@@ -3181,6 +3174,99 @@ ifcvt_local_dce (class loop *loop)
     }
 }
 
+/* Return true if VALUE is already available on edge PE.  */
+
+static bool
+ifcvt_available_on_edge_p (edge pe, tree value)
+{
+  if (is_gimple_min_invariant (value))
+    return true;
+
+  if (TREE_CODE (value) == SSA_NAME)
+    {
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (value));
+      if (!def_bb || dominated_by_p (CDI_DOMINATORS, pe->dest, def_bb))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if STMT can be hoisted from if-converted loop LOOP to
+   edge PE.  */
+
+static bool
+ifcvt_can_hoist (class loop *loop, edge pe, gimple *stmt)
+{
+  if (auto *call = dyn_cast<gcall *> (stmt))
+    {
+      if (gimple_call_internal_p (call)
+	  && internal_fn_mask_index (gimple_call_internal_fn (call)) >= 0)
+	return false;
+    }
+  else if (auto *assign = dyn_cast<gassign *> (stmt))
+    {
+      if (gimple_assign_rhs_code (assign) == COND_EXPR)
+	return false;
+    }
+  else
+    return false;
+
+  if (gimple_has_side_effects (stmt)
+      || gimple_could_trap_p (stmt)
+      || stmt_could_throw_p (cfun, stmt)
+      || gimple_vdef (stmt)
+      || gimple_vuse (stmt))
+    return false;
+
+  int num_args = gimple_num_args (stmt);
+  if (pe != loop_preheader_edge (loop))
+    {
+      for (int i = 0; i < num_args; ++i)
+	if (!ifcvt_available_on_edge_p (pe, gimple_arg (stmt, i)))
+	  return false;
+    }
+  else
+    {
+      for (int i = 0; i < num_args; ++i)
+	if (!expr_invariant_in_loop_p (loop, gimple_arg (stmt, i)))
+	  return false;
+    }
+
+  return true;
+}
+
+/* Hoist invariant statements from LOOP to edge PE.  */
+
+static void
+ifcvt_hoist_invariants (class loop *loop, edge pe)
+{
+  gimple_stmt_iterator hoist_gsi = {};
+  unsigned int num_blocks = loop->num_nodes;
+  basic_block *body = get_loop_body (loop);
+  for (unsigned int i = 0; i < num_blocks; ++i)
+    for (gimple_stmt_iterator gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (ifcvt_can_hoist (loop, pe, stmt))
+	  {
+	    /* Once we've hoisted one statement, insert other statements
+	       after it.  */
+	    gsi_remove (&gsi, false);
+	    if (hoist_gsi.ptr)
+	      gsi_insert_after (&hoist_gsi, stmt, GSI_NEW_STMT);
+	    else
+	      {
+		gsi_insert_on_edge_immediate (pe, stmt);
+		hoist_gsi = gsi_for_stmt (stmt);
+	      }
+	    continue;
+	  }
+	gsi_next (&gsi);
+      }
+  free (body);
+}
+
 /* If-convert LOOP when it is legal.  For the moment this pass has no
    profitability analysis.  Returns non-zero todo flags when something
    changed.  */
@@ -3275,7 +3361,7 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   /* Now all statements are if-convertible.  Combine all the basic
      blocks into one huge basic block doing the if-conversion
      on-the-fly.  */
-  combine_blocks (loop, pe);
+  combine_blocks (loop);
 
   /* Perform local CSE, this esp. helps the vectorizer analysis if loads
      and stores are involved.  CSE only the loop body, not the entry
@@ -3296,6 +3382,8 @@ tree_if_conversion (class loop *loop, vec<gimple *> *preds)
   /* Delete dead predicate computations.  */
   ifcvt_local_dce (loop);
   BITMAP_FREE (exit_bbs);
+
+  ifcvt_hoist_invariants (loop, pe);
 
   todo |= TODO_cleanup_cfg;
 

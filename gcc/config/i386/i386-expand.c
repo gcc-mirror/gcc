@@ -6162,7 +6162,17 @@ static rtx
 ix86_expand_v1ti_to_ti (rtx x)
 {
   rtx result = gen_reg_rtx (TImode);
-  emit_move_insn (result, gen_lowpart (TImode, x));
+  if (TARGET_SSE2)
+    {
+      rtx temp = gen_reg_rtx (V2DImode);
+      emit_move_insn (temp, gen_lowpart (V2DImode, x));
+      rtx lo = gen_lowpart (DImode, result);
+      emit_insn (gen_vec_extractv2didi (lo, temp, const0_rtx));
+      rtx hi = gen_highpart (DImode, result);
+      emit_insn (gen_vec_extractv2didi (hi, temp, const1_rtx));
+    }
+  else
+    emit_move_insn (result, gen_lowpart (TImode, x));
   return result;
 }
 
@@ -16194,18 +16204,8 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	}
       return;
 
-    case E_V8HFmode:
-      if (TARGET_AVX2)
-	{
-	  mmode = SImode;
-	  gen_blendm = gen_sse4_1_pblendph;
-	  blendm_const = true;
-	}
-      else
-	use_vec_merge = true;
-      break;
-
     case E_V8HImode:
+    case E_V8HFmode:
     case E_V2HImode:
       use_vec_merge = TARGET_SSE2;
       break;

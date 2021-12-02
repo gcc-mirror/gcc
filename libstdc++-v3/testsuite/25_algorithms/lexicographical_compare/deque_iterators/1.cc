@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-timeout-factor 2 { target debug-mode } }
+// { dg-timeout-factor 2 { target debug_mode } }
 
 #include <algorithm>
 #include <vector>

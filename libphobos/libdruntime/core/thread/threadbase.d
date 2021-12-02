@@ -573,11 +573,9 @@ package(core.thread):
 
     static void initLocks() @nogc
     {
-        _slock[] = typeid(Mutex).initializer[];
-        (cast(Mutex)_slock.ptr).__ctor();
-
-        _criticalRegionLock[] = typeid(Mutex).initializer[];
-        (cast(Mutex)_criticalRegionLock.ptr).__ctor();
+        import core.lifetime : emplace;
+        emplace!Mutex(_slock[]);
+        emplace!Mutex(_criticalRegionLock[]);
     }
 
     static void termLocks() @nogc
@@ -1338,8 +1336,8 @@ package
 
     void initLowlevelThreads() @nogc
     {
-        ll_lock[] = typeid(Mutex).initializer[];
-        lowlevelLock.__ctor();
+        import core.lifetime : emplace;
+        emplace(lowlevelLock());
     }
 
     void termLowlevelThreads() @nogc

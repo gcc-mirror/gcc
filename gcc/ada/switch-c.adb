@@ -451,7 +451,6 @@ package body Switch.C is
 
                Debug_Generated_Code := True;
                Xref_Active := False;
-               Set_Debug_Flag ('g');
 
             --  -gnate? (extended switches)
 

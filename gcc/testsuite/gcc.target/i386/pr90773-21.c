@@ -10,4 +10,4 @@ foo (int c)
 }
 
 /* { dg-final { scan-assembler-times "vmovdqu\[\\t \]%ymm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
-/* { dg-final { scan-assembler-times "movw\[\\t \]%.*, 32\\(%\[\^,\]+\\)" 1 } } */
+/* { dg-final { scan-assembler-times "(?:movw|pextrw)\[\\t \].*, 32\\(%\[\^,\]+\\)" 1 } } */

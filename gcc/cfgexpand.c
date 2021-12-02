@@ -2461,9 +2461,6 @@ static hash_map<basic_block, rtx_code_label *> *lab_rtx_for_bb;
 static rtx_code_label *
 label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
 {
-  gimple_stmt_iterator gsi;
-  tree lab;
-
   if (bb->flags & BB_RTL)
     return block_label (bb);
 
@@ -2472,21 +2469,12 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
     return *elt;
 
   /* Find the tree label if it is present.  */
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      glabel *lab_stmt;
-
-      lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
-      if (!lab_stmt)
-	break;
-
-      lab = gimple_label_label (lab_stmt);
-      if (DECL_NONLOCAL (lab))
-	break;
-
-      return jump_target_rtx (lab);
-    }
+  gimple_stmt_iterator gsi = gsi_start_bb (bb);
+  glabel *lab_stmt;
+  if (!gsi_end_p (gsi)
+      && (lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi)))
+      && !DECL_NONLOCAL (gimple_label_label (lab_stmt)))
+    return jump_target_rtx (gimple_label_label (lab_stmt));
 
   rtx_code_label *l = gen_label_rtx ();
   lab_rtx_for_bb->put (bb, l);
@@ -6587,7 +6575,7 @@ pass_expand::execute (function *fun)
   timevar_pop (TV_OUT_OF_SSA);
   SA.partition_to_pseudo = XCNEWVEC (rtx, SA.map->num_partitions);
 
-  if (flag_var_tracking_assignments && flag_tree_ter)
+  if (MAY_HAVE_DEBUG_BIND_STMTS && flag_tree_ter)
     {
       gimple_stmt_iterator gsi;
       FOR_EACH_BB_FN (bb, cfun)

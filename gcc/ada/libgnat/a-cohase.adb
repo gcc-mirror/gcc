@@ -1876,25 +1876,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
-         Node : constant Node_Access := Key_Keys.Find (HT, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         declare
-            TC : constant Tamper_Counts_Access :=
-              HT.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Node.Element'Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -2087,30 +2076,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.HT, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "key not in set";
          end if;
 
-         declare
-            HT : Hash_Table_Type renames Container.HT;
-            P  : constant Cursor := Find (Container, Key);
-         begin
-            return R : constant Reference_Type :=
-                         (Element => Node.Element'Access,
-                          Control =>
-                            (Controlled with
-                              HT.TC'Unrestricted_Access,
-                              Container'Unrestricted_Access,
-                              Index    => HT_Ops.Index (HT, P.Node),
-                              Old_Pos  => P,
-                              Old_Hash => Hash (Key)))
-            do
-               Busy (HT.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -------------

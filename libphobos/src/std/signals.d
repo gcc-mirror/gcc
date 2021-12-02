@@ -37,25 +37,25 @@
  *      $(LINK2 http://www.digitalmars.com/d/archives/16368.html, signals and slots)$(BR)
  *
  * Bugs:
- *      Slots can only be delegates formed from class objects or
- *      interfaces to class objects. If a delegate to something else
+ *      $(RED Slots can only be delegates referring directly to
+ *      class or interface member functions. If a delegate to something else
  *      is passed to connect(), such as a struct member function,
- *      a nested function or a COM interface, undefined behavior
- *      will result.
+ *      a nested function, a COM interface, a closure, undefined behavior
+ *      will result.)
  *
  *      Not safe for multiple threads operating on the same signals
  *      or slots.
  * Macros:
  *      SIGNALS=signals
  *
- * Copyright: Copyright Digital Mars 2000 - 2009.
+ * Copyright: Copyright The D Language Foundation 2000 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
- * Source:    $(PHOBOSSRC std/_signals.d)
+ * Source:    $(PHOBOSSRC std/signals.d)
  *
  * $(SCRIPT inhibitQuickIndex = 1;)
  */
-/*          Copyright Digital Mars 2000 - 2009.
+/*          Copyright The D Language Foundation 2000 - 2009.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
@@ -93,7 +93,8 @@ mixin template Signal(T1...)
      * The delegate must be to an instance of a class or an interface
      * to a class instance.
      * Delegates to struct instances or nested functions must not be
-     * used as slots.
+     * used as slots. This applies even if the nested function does not access
+     * it's parent function variables.
      */
     alias slot_t = void delegate(T1);
 
@@ -221,6 +222,17 @@ mixin template Signal(T1...)
         }
      }
 
+    /***
+     * Disconnect all the slots.
+     */
+    final void disconnectAll()
+    {
+        debug (signal) writefln("Signal.disconnectAll");
+        __dtor();
+        slots_idx = 0;
+        status = ST.idle;
+    }
+
     /* **
      * Special function called when o is destroyed.
      * It causes any slots dependent on o to be removed from the list
@@ -228,7 +240,8 @@ mixin template Signal(T1...)
      */
     final void unhook(Object o)
     in { assert( status == ST.idle ); }
-    body {
+    do
+    {
         debug (signal) writefln("Signal.unhook(o = %s)", cast(void*) o);
         for (size_t i = 0; i < slots_idx; )
         {
@@ -639,7 +652,7 @@ void linkin() { }
    a.emit(); // should not raise segfault since &o.watch2 is no longer connected
 }
 
-version (none) // Disabled because of dmd @@@BUG5028@@@
+version (none) // Disabled because of https://issues.dlang.org/show_bug.cgi?id=5028
 @system unittest
 {
     class A
@@ -706,3 +719,58 @@ version (none) // Disabled because of dmd @@@BUG5028@@@
     assert( dot2.value == -22 );
 }
 
+@system unittest
+{
+    import std.signals;
+
+    class Observer
+    {   // our slot
+        void watch(string msg, int value)
+        {
+            if (value != 0)
+            {
+                assert(msg == "setting new value");
+                assert(value == 1);
+            }
+        }
+    }
+
+    class Foo
+    {
+        int value() { return _value; }
+
+        int value(int v)
+        {
+            if (v != _value)
+            {
+                _value = v;
+                // call all the connected slots with the parameters
+                emit("setting new value", v);
+            }
+            return v;
+        }
+
+        // Mix in all the code we need to make Foo into a signal
+        mixin Signal!(string, int);
+
+      private :
+        int _value;
+    }
+
+    Foo a = new Foo;
+    Observer o = new Observer;
+    auto o2 = new Observer;
+
+    a.value = 3;                // should not call o.watch()
+    a.connect(&o.watch);        // o.watch is the slot
+    a.connect(&o2.watch);
+    a.value = 1;                // should call o.watch()
+    a.disconnectAll();
+    a.value = 5;                // so should not call o.watch()
+    a.connect(&o.watch);        // connect again
+    a.connect(&o2.watch);
+    a.value = 1;                // should call o.watch()
+    destroy(o);                 // destroying o should automatically disconnect it
+    destroy(o2);
+    a.value = 7;                // should not call o.watch()
+}

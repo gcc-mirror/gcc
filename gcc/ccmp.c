@@ -273,8 +273,6 @@ expand_ccmp_expr_1 (gimple *g, rtx_insn **prep_seq, rtx_insn **gen_seq)
 	return NULL_RTX;
       return expand_ccmp_next (op1, code, tmp, prep_seq, gen_seq);
     }
-
-  return NULL_RTX;
 }
 
 /* Main entry to expand conditional compare statement G.

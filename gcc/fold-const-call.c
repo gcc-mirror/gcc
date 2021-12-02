@@ -429,7 +429,6 @@ fold_const_logb (real_value *result, const real_value *arg,
 	}
       return false;
     }
-  gcc_unreachable ();
 }
 
 /* Try to evaluate:
@@ -463,7 +462,6 @@ fold_const_significand (real_value *result, const real_value *arg,
 	}
       return false;
     }
-  gcc_unreachable ();
 }
 
 /* Try to evaluate:

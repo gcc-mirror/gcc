@@ -38,7 +38,7 @@ def skip_warning(filename, message):
                  'when in C++ mode, this behavior is deprecated',
                  '-Wignored-attributes', '-Wgnu-zero-variadic-macro-arguments',
                  '-Wformat-security', '-Wundefined-internal',
-                 '-Wunknown-warning-option'],
+                 '-Wunknown-warning-option', '-Wc++20-extensions'],
             'insn-modes.c': ['-Wshift-count-overflow'],
             'insn-emit.c': ['-Wtautological-compare'],
             'insn-attrtab.c': ['-Wparentheses-equality'],

@@ -1,3 +1,52 @@
+2021-12-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/102471
+	* region-model-reachability.cc (reachable_regions::handle_parm):
+	Treat all svalues within a compound parm has reachable, and those
+	wrapped in a cast.
+
+2021-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* store.cc (binding_cluster::can_merge_p): For the "key is bound"
+	vs "key is not bound" merger case, check that the bound svalue
+	is mergeable before merging it to "unknown", rejecting the merger
+	otherwise.
+
+2021-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103217
+	* engine.cc (exploded_graph::get_or_create_node): Pass in
+	m_ext_state to program_state::can_merge_with_p.
+	(exploded_graph::process_worklist): Likewise.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Likewise.
+	(exploded_graph::process_node): Add missing call to detect_leaks
+	when handling phi nodes.
+	* program-state.cc (program_state::can_merge_with_p): Add
+	"ext_state" param.  Pass it and state ptrs to
+	region_model::can_merge_with_p.
+	(selftest::test_program_state_merging): Update for new ext_state
+	param of program_state::can_merge_with_p.
+	(selftest::test_program_state_merging_2): Likewise.
+	* program-state.h (program_state::can_purge_p): Make const.
+	(program_state::can_merge_with_p): Add "ext_state" param.
+	* region-model.cc: Include "analyzer/program-state.h".
+	(region_model::can_merge_with_p): Add params "ext_state",
+	"state_a", and "state_b", use them when creating model_merger
+	object.
+	(model_merger::mergeable_svalue_p): New.
+	* region-model.h (region_model::can_merge_with_p): Add params
+	"ext_state", "state_a", and "state_b".
+	(model_merger::model_merger) Likewise, initializing new fields.
+	(model_merger::mergeable_svalue_p): New decl.
+	(model_merger::m_ext_state): New field.
+	(model_merger::m_state_a): New field.
+	(model_merger::m_state_b): New field.
+	* svalue.cc (svalue::can_merge_p): Call
+	model_merger::mergeable_svalue_p on both states and reject the
+	merger accordingly.
+
 2021-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102695

@@ -151,6 +151,17 @@ main()
   std::unique_ptr<int, Deleter>& rempty_ptr = empty_ptr;
 // { dg-final { note-test rempty_ptr {std::unique_ptr<int> = {get() = {<No data fields>}}} } }
 
+  struct Deleter_pr103086
+  {
+    int deleter_member = -1;
+    void operator()(int*) const noexcept { }
+  };
+
+  std::unique_ptr<int, Deleter_pr103086> uniq_ptr;
+// { dg-final { note-test uniq_ptr {std::unique_ptr<int> = {get() = 0x0}} } }
+  std::unique_ptr<int, Deleter_pr103086>& runiq_ptr = uniq_ptr;
+// { dg-final { note-test runiq_ptr {std::unique_ptr<int> = {get() = 0x0}} } }
+
   ExTuple tpl(6,7);
 // { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
   ExTuple &rtpl = tpl;

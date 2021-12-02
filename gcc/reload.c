@@ -2846,10 +2846,11 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 				    i, operand_type[i], ind_levels, insn);
 
 	  /* If we now have a simple operand where we used to have a
-	     PLUS or MULT, re-recognize and try again.  */
+	     PLUS or MULT or ASHIFT, re-recognize and try again.  */
 	  if ((OBJECT_P (*recog_data.operand_loc[i])
 	       || GET_CODE (*recog_data.operand_loc[i]) == SUBREG)
 	      && (GET_CODE (recog_data.operand[i]) == MULT
+		  || GET_CODE (recog_data.operand[i]) == ASHIFT
 		  || GET_CODE (recog_data.operand[i]) == PLUS))
 	    {
 	      INSN_CODE (insn) = -1;
@@ -5562,7 +5563,8 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
 	    return 1;
 	  }
 
-	if (code0 == MULT || code0 == SIGN_EXTEND || code0 == TRUNCATE
+	if (code0 == MULT || code0 == ASHIFT
+	    || code0 == SIGN_EXTEND || code0 == TRUNCATE
 	    || code0 == ZERO_EXTEND || code1 == MEM)
 	  {
 	    find_reloads_address_1 (mode, as, orig_op0, 1, PLUS, SCRATCH,
@@ -5573,7 +5575,8 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
 				    insn);
 	  }
 
-	else if (code1 == MULT || code1 == SIGN_EXTEND || code1 == TRUNCATE
+	else if (code1 == MULT || code1 == ASHIFT
+		 || code1 == SIGN_EXTEND || code1 == TRUNCATE
 		 || code1 == ZERO_EXTEND || code0 == MEM)
 	  {
 	    find_reloads_address_1 (mode, as, orig_op0, 0, PLUS, code1,
@@ -6599,11 +6602,10 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 	return (rtx_equal_p (x, in)
 		|| reg_overlap_mentioned_for_reload_p (x, XEXP (in, 0))
 		|| reg_overlap_mentioned_for_reload_p (x, XEXP (in, 1)));
-      else return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
-		   || reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
+      else
+	return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
+		|| reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
     }
-
-  gcc_unreachable ();
 }
 
 /* Return nonzero if anything in X contains a MEM.  Look also for pseudo

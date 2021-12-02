@@ -1148,8 +1148,6 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
     default:
       return false;
     }
-
-  return false;
 }
 
 /* Return true if CHREC is invariant in loop LOOPNUM, false otherwise. */

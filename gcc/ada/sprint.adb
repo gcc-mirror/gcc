@@ -588,7 +588,7 @@ package body Sprint is
                              Print_Generated_Code or
                              Debug_Generated_Code;
       Dump_Original_Only  := Debug_Flag_O;
-      Dump_Freeze_Null    := Debug_Flag_S or Debug_Flag_G;
+      Dump_Freeze_Null    := Debug_Flag_S or Dump_Generated_Only;
 
       --  Note that we turn off the tree dump flags immediately, before
       --  starting the dump. This avoids generating two copies of the dump

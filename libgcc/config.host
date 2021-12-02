@@ -214,8 +214,11 @@ esac
 case ${host} in
 *-*-darwin*)
   asm_hidden_op=.private_extern
-  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic t-slibgcc-darwin"
-  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o"
+  tmake_file="$tmake_file t-darwin ${cpu_type}/t-darwin t-libgcc-pic"
+  extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
+  # The unwinder is provided by the system shared libraries, do not add one
+  # to the shared libgcc.
+  tmake_file="$tmake_file t-darwin-noeh t-slibgcc-darwin"
   ;;
 *-*-dragonfly*)
   tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
@@ -1246,7 +1249,6 @@ powerpc*-wrs-vxworks7*)
         ;;
 powerpc-wrs-vxworks*)
 	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
-	extra_parts="$extra_parts crtbegin.o crtend.o"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"

@@ -2139,17 +2139,17 @@ mathfn_built_in_type (combined_fn fn)
 #undef SEQ_OF_CASE_MATHFN
 }
 
-/* If BUILT_IN_NORMAL function FNDECL has an associated internal function,
-   return its code, otherwise return IFN_LAST.  Note that this function
-   only tests whether the function is defined in internals.def, not whether
-   it is actually available on the target.  */
+/* Check whether there is an internal function associated with function FN
+   and return type RETURN_TYPE.  Return the function if so, otherwise return
+   IFN_LAST.
 
-internal_fn
-associated_internal_fn (tree fndecl)
+   Note that this function only tests whether the function is defined in
+   internals.def, not whether it is actually available on the target.  */
+
+static internal_fn
+associated_internal_fn (built_in_function fn, tree return_type)
 {
-  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
-  tree return_type = TREE_TYPE (TREE_TYPE (fndecl));
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (fn)
     {
 #define DEF_INTERNAL_FLT_FN(NAME, FLAGS, OPTAB, TYPE) \
     CASE_FLT_FN (BUILT_IN_##NAME): return IFN_##NAME;
@@ -2175,6 +2175,34 @@ associated_internal_fn (tree fndecl)
     default:
       return IFN_LAST;
     }
+}
+
+/* If BUILT_IN_NORMAL function FNDECL has an associated internal function,
+   return its code, otherwise return IFN_LAST.  Note that this function
+   only tests whether the function is defined in internals.def, not whether
+   it is actually available on the target.  */
+
+internal_fn
+associated_internal_fn (tree fndecl)
+{
+  gcc_checking_assert (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL);
+  return associated_internal_fn (DECL_FUNCTION_CODE (fndecl),
+				 TREE_TYPE (TREE_TYPE (fndecl)));
+}
+
+/* Check whether there is an internal function associated with function CFN
+   and return type RETURN_TYPE.  Return the function if so, otherwise return
+   IFN_LAST.
+
+   Note that this function only tests whether the function is defined in
+   internals.def, not whether it is actually available on the target.  */
+
+internal_fn
+associated_internal_fn (combined_fn cfn, tree return_type)
+{
+  if (internal_fn_p (cfn))
+    return as_internal_fn (cfn);
+  return associated_internal_fn (as_builtin_fn (cfn), return_type);
 }
 
 /* If CALL is a call to a BUILT_IN_NORMAL function that could be replaced

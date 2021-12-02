@@ -60,6 +60,14 @@ struct gcc_jit_struct : public gcc::jit::recording::struct_
 {
 };
 
+struct gcc_jit_function_type : public gcc::jit::recording::function_type
+{
+};
+
+struct gcc_jit_vector_type : public gcc::jit::recording::vector_type
+{
+};
+
 struct gcc_jit_field : public gcc::jit::recording::field
 {
 };
@@ -518,6 +526,197 @@ gcc_jit_type_get_volatile (gcc_jit_type *type)
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::type::is_array method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_type_dyncast_array (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+
+  return (gcc_jit_type *)type->is_array ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::is_bool method, in
+   jit-recording.c.  */
+
+int
+gcc_jit_type_is_bool (gcc_jit_type *type)
+{
+  RETURN_VAL_IF_FAIL (type, FALSE, NULL, NULL, "NULL type");
+
+  return type->is_bool ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::is_pointer method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_type_is_pointer (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+
+  return (gcc_jit_type *)type->is_pointer ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::is_int method, in
+   jit-recording.c.  */
+
+int
+gcc_jit_type_is_integral (gcc_jit_type *type)
+{
+  RETURN_VAL_IF_FAIL (type, FALSE, NULL, NULL, "NULL type");
+
+  return type->is_int ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::is_vector method, in
+   jit-recording.c.  */
+
+gcc_jit_vector_type *
+gcc_jit_type_dyncast_vector (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+  gcc::jit::recording::vector_type *vector_type = type->is_vector ();
+  return (gcc_jit_vector_type *)vector_type;
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::is_struct method, in
+   jit-recording.c.  */
+
+gcc_jit_struct *
+gcc_jit_type_is_struct (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+  gcc::jit::recording::struct_ *struct_type = type->is_struct ();
+  return (gcc_jit_struct *)struct_type;
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::vector_type::get_num_units method, in
+   jit-recording.c.  */
+
+size_t
+gcc_jit_vector_type_get_num_units (gcc_jit_vector_type *vector_type)
+{
+  RETURN_VAL_IF_FAIL (vector_type, 0, NULL, NULL, "NULL vector_type");
+  return vector_type->get_num_units ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::vector_type::get_element_type method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_vector_type_get_element_type (gcc_jit_vector_type *vector_type)
+{
+  RETURN_NULL_IF_FAIL (vector_type, NULL, NULL, "NULL vector_type");
+  return (gcc_jit_type *)vector_type->get_element_type ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::unqualified method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_type_unqualified (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+
+  return (gcc_jit_type *)type->unqualified ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::dyn_cast_function_type method, in
+   jit-recording.c.  */
+
+gcc_jit_function_type *
+gcc_jit_type_dyncast_function_ptr_type (gcc_jit_type *type)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+  gcc::jit::recording::type *func_ptr_type = type->dereference ();
+  if (!func_ptr_type)
+  {
+    return NULL;
+  }
+
+  return (gcc_jit_function_type *)func_ptr_type->dyn_cast_function_type ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function_type::get_return_type method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_function_type_get_return_type (gcc_jit_function_type *function_type)
+{
+  RETURN_NULL_IF_FAIL (function_type, NULL, NULL, "NULL function_type");
+  return (gcc_jit_type *)function_type->get_return_type ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function_type::get_param_types method, in
+   jit-recording.c.  */
+
+size_t
+gcc_jit_function_type_get_param_count (gcc_jit_function_type *function_type)
+{
+  RETURN_VAL_IF_FAIL (function_type, 0, NULL, NULL, "NULL function_type");
+  return function_type->get_param_types ().length ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function_type::get_param_types method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_function_type_get_param_type (gcc_jit_function_type *function_type,
+				size_t index)
+{
+  RETURN_NULL_IF_FAIL (function_type, NULL, NULL, "NULL function_type");
+  size_t num_params = function_type->get_param_types ().length ();
+  gcc::jit::recording::context *ctxt = function_type->m_ctxt;
+  RETURN_NULL_IF_FAIL_PRINTF3 (index < num_params,
+			       ctxt, NULL,
+			       "index of %zu is too large (%s has %zu params)",
+			       index,
+			       function_type->get_debug_string (),
+			       num_params);
+  return (gcc_jit_type *)function_type->get_param_types ()[index];
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::new_array_type method, in
    jit-recording.c.  */
 
@@ -734,6 +933,42 @@ gcc_jit_struct_set_fields (gcc_jit_struct *struct_type,
 
   struct_type->set_fields (loc, num_fields,
 			   (gcc::jit::recording::field **)fields);
+}
+
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::fields::get_field method in
+   jit-recording.c.  */
+extern gcc_jit_field *
+gcc_jit_struct_get_field (gcc_jit_struct *struct_type,
+			   size_t index)
+{
+  RETURN_NULL_IF_FAIL (struct_type, NULL, NULL, "NULL struct type");
+  RETURN_NULL_IF_FAIL (struct_type->get_fields (), NULL, NULL,
+				"NULL struct fields");
+  size_t num_fields = struct_type->get_fields ()->length ();
+  RETURN_NULL_IF_FAIL_PRINTF3 (index < num_fields,
+			       NULL, NULL,
+			       "index of %zu is too large (%s has %zu fields)",
+			       index,
+			       struct_type->get_debug_string (),
+			       num_fields);
+  return (gcc_jit_field *)struct_type->get_fields ()->get_field (index);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, this calls the trivial
+   gcc::jit::recording::struct_::get_fields method in
+   jit-recording.h.  */
+
+size_t
+gcc_jit_struct_get_field_count (gcc_jit_struct *struct_type)
+{
+  RETURN_VAL_IF_FAIL (struct_type, 0, NULL, NULL, "NULL struct type");
+  return struct_type->get_fields ()->length ();
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1015,6 +1250,35 @@ gcc_jit_function_get_param (gcc_jit_function *func, int index)
 			       num_params);
 
   return static_cast <gcc_jit_param *> (func->get_param (index));
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function::get_params method, in
+   jit-recording.h.
+  */
+
+size_t
+gcc_jit_function_get_param_count (gcc_jit_function *func)
+{
+  RETURN_VAL_IF_FAIL (func, 0, NULL, NULL, "NULL function");
+  gcc::jit::recording::context *ctxt = func->m_ctxt;
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  return func->get_params ().length ();
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function::get_return_type method, in
+   jit-recording.h.  */
+
+gcc_jit_type *
+gcc_jit_function_get_return_type (gcc_jit_function *func)
+{
+    RETURN_NULL_IF_FAIL (func, NULL, NULL, "NULL function_type");
+    return (gcc_jit_type *)func->get_return_type ();
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

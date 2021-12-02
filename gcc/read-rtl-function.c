@@ -886,8 +886,9 @@ function_reader::read_rtx_operand (rtx x, int idx)
       if (idx == 7 && CALL_P (x))
 	{
 	  m_in_call_function_usage = true;
-	  return rtx_reader::read_rtx_operand (x, idx);
+	  rtx tem = rtx_reader::read_rtx_operand (x, idx);
 	  m_in_call_function_usage = false;
+	  return tem;
 	}
       else
 	return rtx_reader::read_rtx_operand (x, idx);

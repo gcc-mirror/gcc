@@ -278,11 +278,12 @@ range_def_chain::register_dependency (tree name, tree dep, basic_block bb)
     {
       // Get the def chain for the operand.
       b = get_def_chain (dep);
-      // If there was one, copy it into result.
+      // If there was one, copy it into result.  Access def_chain directly
+      // as the get_def_chain request above could reallocate the vector.
       if (b)
-	bitmap_ior_into (src.bm, b);
+	bitmap_ior_into (m_def_chain[v].bm, b);
       // And copy the import list.
-      set_import (src, NULL_TREE, get_imports (dep));
+      set_import (m_def_chain[v], NULL_TREE, get_imports (dep));
     }
   else
     // Originated outside the block, so it is an import.
@@ -331,7 +332,6 @@ range_def_chain::get_def_chain (tree name)
 {
   tree ssa1, ssa2, ssa3;
   unsigned v = SSA_NAME_VERSION (name);
-  bool is_logical = false;
 
   // If it has already been processed, just return the cached value.
   if (has_def_chain (name))
@@ -348,15 +348,6 @@ range_def_chain::get_def_chain (tree name)
   gimple *stmt = SSA_NAME_DEF_STMT (name);
   if (gimple_range_handler (stmt))
     {
-      is_logical = is_gimple_logical_p (stmt);
-      // Terminate the def chains if we see too many cascading logical stmts.
-      if (is_logical)
-	{
-	  if (m_logical_depth == param_ranger_logical_depth)
-	    return NULL;
-	  m_logical_depth++;
-	}
-
       ssa1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
       ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
       ssa3 = NULL_TREE;
@@ -376,6 +367,14 @@ range_def_chain::get_def_chain (tree name)
       return NULL;
     }
 
+  // Terminate the def chains if we see too many cascading stmts.
+  if (m_logical_depth == param_ranger_logical_depth)
+    return NULL;
+
+  // Increase the depth if we have a pair of ssa-names.
+  if (ssa1 && ssa2)
+    m_logical_depth++;
+
   register_dependency (name, ssa1, gimple_bb (stmt));
   register_dependency (name, ssa2, gimple_bb (stmt));
   register_dependency (name, ssa3, gimple_bb (stmt));
@@ -383,7 +382,7 @@ range_def_chain::get_def_chain (tree name)
   if (!ssa1 && !ssa2 & !ssa3)
     set_import (m_def_chain[v], name, NULL);
 
-  if (is_logical)
+  if (ssa1 && ssa2)
     m_logical_depth--;
 
   return m_def_chain[v].bm;

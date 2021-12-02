@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail284.d(19): Error: pure function 'fail284.foo' cannot call impure function pointer 'a'
+fail_compilation/fail284.d(19): Error: `pure` function `fail284.foo` cannot call impure function pointer `a`
 ---
 */
 

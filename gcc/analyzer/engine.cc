@@ -2417,7 +2417,7 @@ exploded_graph::get_or_create_node (const program_point &point,
 	  /* This merges successfully within the loop.  */
 
 	  program_state merged_state (m_ext_state);
-	  if (pruned_state.can_merge_with_p (existing_state, point,
+	  if (pruned_state.can_merge_with_p (existing_state, m_ext_state, point,
 					     &merged_state))
 	    {
 	      merged_state.validate (m_ext_state);
@@ -2717,7 +2717,8 @@ exploded_graph::process_worklist ()
 		gcc_assert (state != state_2);
 
 		program_state merged_state (m_ext_state);
-		if (state.can_merge_with_p (state_2, point, &merged_state))
+		if (state.can_merge_with_p (state_2, m_ext_state,
+					    point, &merged_state))
 		  {
 		    if (logger)
 		      logger->log ("merging EN: %i and EN: %i",
@@ -2973,7 +2974,8 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
 	{
 	  merged_state->validate (m_ext_state);
 	  program_state merge (m_ext_state);
-	  if (it_state.can_merge_with_p (*merged_state, next_point, &merge))
+	  if (it_state.can_merge_with_p (*merged_state, m_ext_state,
+					 next_point, &merge))
 	    {
 	      *merged_state = merge;
 	      merged_state->validate (m_ext_state);
@@ -3305,6 +3307,8 @@ exploded_graph::process_node (exploded_node *node)
 		(node->get_supernode (),
 		 last_cfg_superedge,
 		 &ctxt);
+	    program_state::detect_leaks (state, next_state, NULL,
+					 get_ext_state (), &ctxt);
 	  }
 
 	program_point next_point (point.get_next ());

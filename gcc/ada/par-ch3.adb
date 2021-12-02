@@ -4201,14 +4201,6 @@ package body Ch3 is
    function P_Access_Type_Definition
      (Header_Already_Parsed : Boolean := False) return Node_Id
    is
-      Access_Loc       : constant Source_Ptr := Token_Ptr;
-      Prot_Flag        : Boolean;
-      Not_Null_Present : Boolean := False;
-      Not_Null_Subtype : Boolean := False;
-      Type_Def_Node    : Node_Id;
-      Result_Not_Null  : Boolean;
-      Result_Node      : Node_Id;
-
       procedure Check_Junk_Subprogram_Name;
       --  Used in access to subprogram definition cases to check for an
       --  identifier or operator symbol that does not belong.
@@ -4235,22 +4227,32 @@ package body Ch3 is
          end if;
       end Check_Junk_Subprogram_Name;
 
+      Access_Loc           : constant Source_Ptr := Token_Ptr;
+      Prot_Flag            : Boolean;
+      Not_Null_Present     : Boolean := False;
+      Not_Null_Subtype     : Boolean := False;
+      Not_Null_Subtype_Loc : Source_Ptr; -- loc of second "not null"
+      Type_Def_Node        : Node_Id;
+      Result_Not_Null      : Boolean;
+      Result_Node          : Node_Id;
+
    --  Start of processing for P_Access_Type_Definition
 
    begin
       if not Header_Already_Parsed then
+         --  NOT NULL ACCESS... is a common form of access definition. ACCESS
+         --  NOT NULL... is certainly rare, but syntactically legal. NOT NULL
+         --  ACCESS NOT NULL... is rarer yet, and also legal. The last two
+         --  cases are only meaningful if the following subtype indication
+         --  denotes an access type. We check below for "not null procedure"
+         --  and "not null function"; in the access-to-object case it is a
+         --  semantic check. The flag Not_Null_Subtype indicates that this
+         --  second null exclusion is present in the access type definition.
 
-         --  NOT NULL ACCESS .. is a common form of access definition.
-         --  ACCESS NOT NULL ..  is certainly rare, but syntactically legal.
-         --  NOT NULL ACCESS NOT NULL .. is rarer yet, and also legal.
-         --  The last two cases are only meaningful if the following subtype
-         --  indication denotes an access type (semantic check). The flag
-         --  Not_Null_Subtype indicates that this second null exclusion is
-         --  present in the access type definition.
-
-         Not_Null_Present := P_Null_Exclusion;     --  Ada 2005 (AI-231)
+         Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
          Scan; -- past ACCESS
-         Not_Null_Subtype := P_Null_Exclusion;     --  Might also appear
+         Not_Null_Subtype_Loc := Token_Ptr;
+         Not_Null_Subtype := P_Null_Exclusion; --  Might also appear
       end if;
 
       if Token_Name = Name_Protected then
@@ -4266,6 +4268,20 @@ package body Ch3 is
          if Token /= Tok_Procedure and then Token /= Tok_Function then
             Error_Msg_SC -- CODEFIX
               ("FUNCTION or PROCEDURE expected");
+         end if;
+      end if;
+
+      --  Access-to-subprogram case
+
+      if Token in Tok_Procedure | Tok_Function then
+
+         --  Check for "not null [protected] procedure" and "not null
+         --  [protected] function".
+
+         if Not_Null_Subtype then
+            Error_Msg
+              ("null exclusion must apply to access type",
+               Not_Null_Subtype_Loc);
          end if;
       end if;
 
@@ -4317,9 +4333,10 @@ package body Ch3 is
 
          Set_Result_Definition (Type_Def_Node, Result_Node);
 
+      --  Access-to-object case
+
       else
-         Type_Def_Node :=
-           New_Node (N_Access_To_Object_Definition, Access_Loc);
+         Type_Def_Node := New_Node (N_Access_To_Object_Definition, Access_Loc);
          Set_Null_Exclusion_Present (Type_Def_Node, Not_Null_Present);
          Set_Null_Excluding_Subtype (Type_Def_Node, Not_Null_Subtype);
 

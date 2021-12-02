@@ -1415,18 +1415,19 @@ begin
 
       if Back_End_Mode = Skip then
 
-         --  An ignored Ghost unit is rewritten into a null statement because
-         --  it must not produce an ALI or object file. Do not emit any errors
-         --  related to code generation because the unit does not exist.
+         --  An ignored Ghost unit is rewritten into a null statement. Do
+         --  not emit any errors related to code generation because the
+         --  unit does not exist.
 
          if Is_Ignored_Ghost_Unit (Main_Unit_Node) then
 
             --  Exit the gnat driver with success, otherwise external builders
             --  such as gnatmake and gprbuild will treat the compilation of an
-            --  ignored Ghost unit as a failure. Note that this will produce
-            --  an empty object file for the unit.
+            --  ignored Ghost unit as a failure. Be sure we produce an empty
+            --  object file for the unit.
 
             Ecode := E_Success;
+            Back_End.Gen_Or_Update_Object_File;
 
          --  Otherwise the unit is missing a crucial piece that prevents code
          --  generation.

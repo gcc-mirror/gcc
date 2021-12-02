@@ -11628,6 +11628,36 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   return dest;
 }
 
+/* Return true if the TLS address requires insn using integer registers.
+   It's used to prevent KMOV/VMOV in TLS code sequences which require integer
+   MOV instructions, refer to PR103275.  */
+bool
+ix86_gpr_tls_address_pattern_p (rtx mem)
+{
+  gcc_assert (MEM_P (mem));
+
+  rtx addr = XEXP (mem, 0);
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, addr, ALL)
+    {
+      rtx op = *iter;
+      if (GET_CODE (op) == UNSPEC)
+	switch (XINT (op, 1))
+	  {
+	  case UNSPEC_GOTNTPOFF:
+	    return true;
+	  case UNSPEC_TPOFF:
+	    if (!TARGET_64BIT)
+	      return true;
+	    break;
+	  default:
+	    break;
+	  }
+    }
+
+  return false;
+}
+
 /* Return true if OP refers to a TLS address.  */
 bool
 ix86_tls_address_pattern_p (rtx op)
@@ -16408,8 +16438,10 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 	    break;
 
 	  /* If we get to the epilogue note, prevent a catch region from
-	     being adjacent to the standard epilogue sequence.  If non-
-	     call-exceptions, we'll have done this during epilogue emission. */
+	     being adjacent to the standard epilogue sequence.  Note that,
+	     if non-call exceptions are enabled, we already did it during
+	     epilogue expansion, or else, if the insn can throw internally,
+	     we already did it during the reorg pass.  */
 	  if (NOTE_P (i) && NOTE_KIND (i) == NOTE_INSN_EPILOGUE_BEG
 	      && !flag_non_call_exceptions
 	      && !can_throw_internal (insn))
@@ -19247,7 +19279,7 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
     }
 
   /* Require movement to gpr, and then store to memory.  */
-  if (mode == HFmode
+  if ((mode == HFmode || mode == HImode)
       && !TARGET_SSE4_1
       && SSE_CLASS_P (rclass)
       && !in_p && MEM_P (x))
@@ -19407,8 +19439,9 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
       if (msize > UNITS_PER_WORD)
 	return true;
 
-      /* In addition to SImode moves, AVX512FP16 also enables HImode moves.  */
-      int minsize = GET_MODE_SIZE (TARGET_AVX512FP16 ? HImode : SImode);
+      /* In addition to SImode moves, HImode moves are supported for SSE2 and above,
+	 Use vmovw with AVX512FP16, or pinsrw/pextrw without AVX512FP16.  */
+      int minsize = GET_MODE_SIZE (TARGET_SSE2 ? HImode : SImode);
 
       if (msize < minsize)
 	return true;
@@ -19492,9 +19525,8 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
 	 disallow a change to these modes, reload will assume it's ok to
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
 	 the vec_dupv4hi pattern.
-	 NB: AVX512FP16 supports vmovw which can load 16bit data to sse
-	 register.  */
-      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_AVX512FP16 ? 2 : 4;
+	 NB: SSE2 can load 16bit data to sse register via pinsrw.  */
+      int mov_size = MAYBE_SSE_CLASS_P (regclass) && TARGET_SSE2 ? 2 : 4;
       if (GET_MODE_SIZE (from) < mov_size)
 	return false;
     }
@@ -20334,7 +20366,6 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
       else
 	return cost->shift_var;
     }
-  return cost->shift_const;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete

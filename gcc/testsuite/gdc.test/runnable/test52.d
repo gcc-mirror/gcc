@@ -1,29 +1,36 @@
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+count = 3
+---
+*/
 
-// 2311
+// https://issues.dlang.org/show_bug.cgi?id=2311
 
-extern(C)
+extern(C) int printf(const char*, ...);
+
+__gshared ulong count;
+
+shared static ~this()
 {
-    void exit(int);
-    int printf(const char*, ...);
+    printf("count = %llu\n", count);
+    assert(count == 3);
 }
 
-struct X()
+template X(uint idx)
 {
-  static this()
-  {
-     printf("this()\n");
-  }
-  static ~this()
-  {
-     printf("~this()\n");
-     exit(0);
-  }
+    static ~this()
+    {
+        assert(count == idx);
+        ++count;
+    }
 }
 
-static ~this()
+void main()
 {
-     printf("g: ~this()\n");
+    // Instantiate module destructors in reverse order
+    alias x = X!(2);
+    alias y = X!(1);
+    alias z = X!(0);
 }
-
-int main() { alias X!() x; return 1; }

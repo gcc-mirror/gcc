@@ -85,8 +85,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "gimple-range.h"
 
-/* Nonzero if we are folding constants inside an initializer; zero
-   otherwise.  */
+/* Nonzero if we are folding constants inside an initializer or a C++
+   manifestly-constant-evaluated context; zero otherwise.  */
 int folding_initializer = 0;
 
 /* The following constants represent a bit based encoding of GCC's
@@ -9924,8 +9924,15 @@ pointer_may_wrap_p (tree base, tree offset, poly_int64 bitpos)
 static int
 maybe_nonzero_address (tree decl)
 {
+  /* Normally, don't do anything for variables and functions before symtab is
+     built; it is quite possible that DECL will be declared weak later.
+     But if folding_initializer, we need a constant answer now, so create
+     the symtab entry and prevent later weak declaration.  */
   if (DECL_P (decl) && decl_in_symtab_p (decl))
-    if (struct symtab_node *symbol = symtab_node::get_create (decl))
+    if (struct symtab_node *symbol
+	= (folding_initializer
+	   ? symtab_node::get_create (decl)
+	   : symtab_node::get (decl)))
       return symbol->nonzero_address ();
 
   /* Function local objects are never NULL.  */
@@ -13986,6 +13993,19 @@ fold_build_call_array_initializer_loc (location_t loc, tree type, tree fn,
   START_FOLD_INIT;
 
   result = fold_build_call_array_loc (loc, type, fn, nargs, argarray);
+
+  END_FOLD_INIT;
+  return result;
+}
+
+tree
+fold_binary_initializer_loc (location_t loc, tree_code code, tree type,
+			     tree lhs, tree rhs)
+{
+  tree result;
+  START_FOLD_INIT;
+
+  result = fold_binary_loc (loc, code, type, lhs, rhs);
 
   END_FOLD_INIT;
   return result;

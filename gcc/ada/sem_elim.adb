@@ -247,7 +247,7 @@ package body Sem_Elim is
 
       --  Elimination of objects and types is not implemented yet
 
-      elsif Ekind (E) not in Subprogram_Kind then
+      elsif not Is_Subprogram (E) then
          return;
       end if;
 

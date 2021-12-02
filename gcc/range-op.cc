@@ -1832,13 +1832,6 @@ operator_div::wi_fold (irange &r, tree type,
       return;
     }
 
-  // If flag_non_call_exceptions, we must not eliminate a division by zero.
-  if (cfun->can_throw_non_call_exceptions)
-    {
-      r.set_varying (type);
-      return;
-    }
-
   // If we're definitely dividing by zero, there's nothing to do.
   if (wi_zero_p (type, divisor_min, divisor_max))
     {

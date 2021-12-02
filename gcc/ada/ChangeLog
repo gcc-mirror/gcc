@@ -1,3 +1,280 @@
+2021-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (E_Decimal_Fixed_Point_Subtype): Fix pasto.
+	* freeze.adb (Freeze_Fixed_Point_Type): Retrieve the underlying type
+	of the first subtype and do not use a stale value of Small_Value.
+	* sem_res.adb (Resolve_Real_Literal): In the case of a fixed-point
+	type, make sure that the base type is frozen and use its Small_Value
+	to compute the corresponding integer value of the literal.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-cbdlli.ads (List): Remove extra space in Aggregate
+	aspect.
+
+2021-12-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add
+	documentation of the new form of formal subprogram default in
+	the section on language extensions (pragma Extensions_Allowed).
+	* gnat_rm.texi: Regenerate.
+	* gen_il-gen-gen_nodes.adb: Add Expression as a syntactic field
+	of N_Formal_(Abstract|Concrete)_Subprogram_Declaration nodes.
+	* par-ch12.adb (P_Formal_Subprogram_Declaration): Add parsing
+	support for the new default of a parenthesized expression for
+	formal functions. Issue an error when extensions are not
+	allowed, suggesting use of -gnatX. Update comment with extended
+	syntax for SUBPROGRAM_DEFAULT.
+	* sem_ch12.adb (Analyze_Formal_Subprogram_Declaration): Issue an
+	error when an expression default is given for an abstract formal
+	function. When a default expression is present for a formal
+	function, install the function's formals and preanalyze the
+	expression.
+	(Instantiate_Formal_Subprogram): Fix typo in RM paragraph in a
+	comment.  When a formal function has a default expression,
+	create a body for the function that will evaluate the expression
+	and will be called when the default applies in an instantiation.
+	The implicit function is marked as inlined and as having
+	convention Intrinsic.
+
+2021-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_elab.adb (Previous_Suitable_Construct): New function declared
+	in the Early_Call_Region_Processor package.
+	(Find_ECR): Call it to get the previous node at the start.
+	(Include): Call it to get the previous node during the traversal.
+
+2021-12-01  Bob Duff  <duff@adacore.com>
+
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Do not
+	follow the Corresponding_Spec pointer if Acts_As_Spec is True,
+	because Corresponding_Spec is Empty in that case, so we would
+	exit the loop prematurely, and incorrectly think we are not
+	inside a generic unit when we are.
+
+2021-12-01  Bob Duff  <duff@adacore.com>
+
+	* par-ch3.adb (P_Access_Type_Definition): If Not_Null_Subtype is
+	True, give an error in the access-to-subprogram cases.
+
+2021-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Freeze_Package_Instance): Move up.
+
+2021-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Freeze_Subprogram_Body): Rename into...
+	(Freeze_Subprogram_Instance): ...this and change the name of the
+	first parameter and local variables for the sake of consistency.
+	(Insert_Freeze_Node_For_Instance): Use local variable Par_Inst.
+	(Install_Body): Rename into...
+	(Freeze_Package_Instance): ...this, remove first parameter and
+	change the name of local variables for the sake of consistency.
+	Do not deal with the special case of incomplete actual types here
+	and do not insert the body.
+	(Instantiate_Package_Body): Deal with the special case of incomplete
+	actual types here and insert the body.  Call Freeze_Package_Instance
+	only if expansion is done.
+	(Instantiate_Subprogram_Body): Minor consistency tweak.
+
+2021-12-01  Etienne Servais  <servais@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Fix typo in comment.
+
+2021-12-01  Steve Baird  <baird@adacore.com>
+
+	* sem_case.adb (Check_Bindings): Provide a second strategy for
+	implementing bindings and choose which strategy to use for a
+	given binding. The previous approach was to introduce a new
+	object and assign the bound value to the object.  The new
+	approach is to introduce a renaming of a dereference of an
+	access value that references the appropriate subcomponent, so no
+	copies are made.  The original strategy is still used if the
+	type of the object is elementary.  When the renaming approach is
+	used, the initialization of the access value is not generated
+	until expansion. Until this missing initialization is added, the
+	tree looks like a known-at-compile-time dereference of a null
+	access value: Temp : Some_Access_Type; Obj : Designated_Type
+	renames Temp.all; This leads to problems, so a bogus initial
+	value is provided here and then later deleted during expansion.
+	(Check_Composite_Case_Selector): Disallow a case selector
+	expression that requires finalization. Note that it is ok if the
+	selector's type requires finalization, as long as the expression
+	itself doesn't have any "newly constructed" parts.
+	* exp_ch5.adb (Pattern_Match): Detect the case where analysis of
+	a general (i.e., composite selector type) case statement chose
+	to implement a binding as a renaming rather than by making a
+	copy. In that case, generate the assignments to initialize the
+	access-valued object whose designated value is later renamed
+	(and remove the bogus initial value for that object that was
+	added during analysis).
+	* sem_util.ads, sem_util.adb: Add new function
+	Is_Newly_Constructed corresponding to RM 4.4 term.
+
+2021-12-01  Richard Kenner  <kenner@adacore.com>
+
+	* frontend.adb (Frontend): Do unnesting after ignored ghost code
+	has been removed.
+	* inline.adb (Analyze_Inlined_Bodies): Don't put ignored ghost
+	entities on inlined subprogram list.
+
+2021-12-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* libgnarl/s-tasren.adb (Timed_Task_Entry_Call): Replace
+	Defer_Abort and Undefer_Abort with Defer_Abort_Nestable and
+	Undefer_Abort_Nestable.
+
+2021-12-01  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch7.adb (Cleanup_Record): Don't process parent.
+
+2021-12-01  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb (Type_Key): Avoid premature use warnings when the
+	prefix is a generic actual.
+
+2021-12-01  Richard Kenner  <kenner@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Force generation of object file if
+	compilation unit is an ignored ghost.
+
+2021-12-01  Patrick Bernardi  <bernardi@adacore.com>
+
+	* tracebak.c: Add AArch64 RTEMS support.
+
+2021-12-01  Patrick Bernardi  <bernardi@adacore.com>
+
+	* init.c: Add __gnat_error_handler and __gnat_install_handler
+	for RTEMS.
+
+2021-12-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sprint.ads (Source_Dump): Fix typo in comment.
+	* sprint.adb (Source_Dump): Set Dump_Freeze_Null for both -gnatG
+	and -gnatD.
+	* switch-c.adb (Scan_Front_End_Switches) <'D'>: Remove obsolete
+	kludge.
+
+2021-12-01  Yannick Moy  <moy@adacore.com>
+
+	* einfo.ads (Direct_Primitive_Operations): Update the doc to
+	indicate that this field is used for all types now.
+	* sem_ch4.adb (Try_Object_Operation): Add parameter
+	Allow_Extensions set to True to pretend that extensions are
+	allowed.
+	* sem_ch4.ads: Same.
+	* sem_ch6.adb: Do not require Extensions_Allowed.
+	* sem_ch8.adb (Find_Selected_Component): Remove duplicate
+	"where" in comment.  Improve the error messages regarding use of
+	prefixed calls.
+
+2021-12-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_Extended_Precision_Floating_Point_Type): New
+	function.
+	* sem_util.ads (Is_Extended_Precision_Floating_Point_Type): New
+	function.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb, sem_cat.adb, sem_ch10.adb, sem_ch12.adb,
+	sem_elim.adb, sem_util.adb: Replace uses of Subprogram_Kind with
+	Is_Subprogram.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-coinho.ads: Sync whitespace with
+	a-coinho__shared.ads.
+	* libgnat/a-coinho__shared.ads: Sync whitespace with
+	a-coinho.ads.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* Makefile.rtl (GNATRTL_TASKING_OBJS): Sort.
+	(GNATRTL_NONTASKING_OBJS): Sort.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* Makefile.rtl: Remove extra whitespace in special compilation
+	rules.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst (System.Atomic_Counters):
+	Sync description with comment in s-atocou.ads.
+	* gnat-style.texi, gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2021-12-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch10.adb (Is_Private_Library_Unit): Move query to
+	Sem_Util for sharing.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Add continuation
+	message.
+	* sem_prag.adb (Analyze_Part_Of): Call new function
+	Is_Private_Library_Unit.
+	(Check_Valid_Library_Unit_Pragma): Specialize error messages on
+	misplaced pragmas.
+	(Analyze_Refined_State_In_Decl_Part): Recognize missing Part_Of
+	on object in private part.
+	* sem_util.adb (Check_State_Refinements): Add continuation
+	message.
+	(Find_Placement_In_State_Space): Fix detection of placement,
+	which relied wrongly on queries In_Package_Body/In_Private_Part
+	which do not provide the right information here for all cases.
+	(Is_Private_Library_Unit): Move query here for sharing.
+	* sem_util.ads (Is_Private_Library_Unit): Move query here for
+	sharing.
+
+2021-12-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): If the full type
+	has a primitives list but its base type doesn't, set the base
+	type's list to the full type's list (covers certain constrained
+	cases, such as for arrays).
+	(Analyze_Incomplete_Type_Decl): Unconditionally initialize an
+	incomplete type's primitives list.
+	(Analyze_Subtype_Declaration): Unconditionally set a subtype's
+	primitives list to the base type's list, so the lists are
+	shared.
+	(Build_Derived_Private_Type): Unconditionally initialize a
+	derived private type's list to a new empty list.
+	(Build_Derived_Record_Type): Unconditionally initialize a
+	derived record type's list to a new empty list (now a single
+	call for tagged and untagged cases).
+	(Derived_Type_Declaration): Unconditionally initialize a derived
+	type's list to a new empty list in error cases (when Parent_Type
+	is undefined or illegal).
+	(Process_Full_View): Unconditionally copy the primitive
+	operations from the private view to the full view (rather than
+	conditioning it on whether extensions are enabled).
+	* sem_ch7.adb (New_Private_Type): Unconditionally initialize an
+	untagged private type's primitives list to a new empty list.
+
+2021-12-01  Etienne Servais  <servais@adacore.com>
+
+	* libgnat/a-cbhase.adb, libgnat/a-cborse.adb,
+	libgnat/a-cihase.adb, libgnat/a-ciorse.adb,
+	libgnat/a-cohase.adb, libgnat/a-coorse.adb
+	(Constant_Reference,Reference_Preserving_Key): Refactor using
+	the equivalence stated in the RM.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Eq_Body): Refactor to avoid appending to an
+	empty list; also, when exiting early we will not create any
+	list; fix style in comment.
+
+2021-12-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* repinfo.adb (List_Entities): Simplify detection of entries;
+	refactor potentially redundant comparison.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* gcc-interface/Make-lang.in: Use ETAGS variable in
+	TAGS target.
+
 2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc-interface/Makefile.in: Use DSYMUTIL_FOR_TARGET in

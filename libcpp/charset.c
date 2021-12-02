@@ -955,14 +955,12 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   valid_flags = C99 | CXX | C11 | CXX23;
   if (CPP_PEDANTIC (pfile))
     {
-      if (CPP_OPTION (pfile, cxx23_identifiers))
+      if (CPP_OPTION (pfile, cplusplus))
 	valid_flags = CXX23;
       else if (CPP_OPTION (pfile, c11_identifiers))
 	valid_flags = C11;
       else if (CPP_OPTION (pfile, c99))
 	valid_flags = C99;
-      else if (CPP_OPTION (pfile, cplusplus))
-	valid_flags = CXX;
     }
   if (! (ucnranges[mn].flags & valid_flags))
       return 0;
@@ -1021,7 +1019,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
       return 2;
     }
 
-  if (CPP_OPTION (pfile, cxx23_identifiers))
+  if (CPP_OPTION (pfile, cplusplus))
     invalid_start_flags = NXX23;
   else if (CPP_OPTION (pfile, c11_identifiers))
     invalid_start_flags = N11;
@@ -1534,7 +1532,6 @@ convert_escape (cpp_reader *pfile, const uchar *from, const uchar *limit,
     case 'x':
       return convert_hex (pfile, from, limit, tbuf, cvt,
 			  char_range, loc_reader, ranges);
-      break;
 
     case '0':  case '1':  case '2':  case '3':
     case '4':  case '5':  case '6':  case '7':

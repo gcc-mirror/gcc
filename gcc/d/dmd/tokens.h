@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "root/dcompat.h"
 #include "root/port.h"
 #include "globals.h"
 
@@ -31,7 +32,8 @@ class Identifier;
         ?       &&      ||
  */
 
-enum TOK
+typedef unsigned short TOK;
+enum
 {
         TOKreserved,
 
@@ -76,15 +78,10 @@ enum TOK
         TOKindex,       TOKis,
 
 // 64
-        // NCEG floating point compares
-        // !<>=     <>    <>=    !>     !>=   !<     !<=   !<>
-        TOKunord,TOKlg,TOKleg,TOKule,TOKul,TOKuge,TOKug,TOKue,
-
-// 72
         TOKshl,         TOKshr,
         TOKshlass,      TOKshrass,
         TOKushr,        TOKushrass,
-        TOKcat,         TOKcatass,      // ~ ~=
+        TOKcat,         TOKcatass,      TOKcatelemass,  TOKcatdcharass,     // ~ ~=
         TOKadd,         TOKmin,         TOKaddass,      TOKminass,
         TOKmul,         TOKdiv,         TOKmod,
         TOKmulass,      TOKdivass,      TOKmodass,
@@ -92,11 +89,11 @@ enum TOK
         TOKandass,      TOKorass,       TOKxorass,
         TOKassign,      TOKnot,         TOKtilde,
         TOKplusplus,    TOKminusminus,  TOKconstruct,   TOKblit,
-        TOKdot,         TOKarrow,       TOKcomma,
+        TOKdot,         TOKcomma,
         TOKquestion,    TOKandand,      TOKoror,
         TOKpreplusplus, TOKpreminusminus,
 
-// 111
+// 105
         // Numeric literals
         TOKint32v, TOKuns32v,
         TOKint64v, TOKuns64v,
@@ -125,7 +122,7 @@ enum TOK
         TOKcomplex32, TOKcomplex64, TOKcomplex80,
         TOKchar, TOKwchar, TOKdchar, TOKbool,
 
-// 158
+// 152
         // Aggregates
         TOKstruct, TOKclass, TOKinterface, TOKunion, TOKenum, TOKimport,
         TOKalias, TOKoverride, TOKdelegate, TOKfunction,
@@ -134,8 +131,9 @@ enum TOK
         TOKalign, TOKextern, TOKprivate, TOKprotected, TOKpublic, TOKexport,
         TOKstatic, TOKfinal, TOKconst, TOKabstract,
         TOKdebug, TOKdeprecated, TOKin, TOKout, TOKinout, TOKlazy,
-        TOKauto, TOKpackage, TOKmanifest, TOKimmutable,
+        TOKauto, TOKpackage, TOKimmutable,
 
+// 182
         // Statements
         TOKif, TOKelse, TOKwhile, TOKfor, TOKdo, TOKswitch,
         TOKcase, TOKdefault, TOKbreak, TOKcontinue, TOKwith,
@@ -144,6 +142,7 @@ enum TOK
         TOKscope,
         TOKon_scope_exit, TOKon_scope_failure, TOKon_scope_success,
 
+// 206
         // Contracts
         TOKinvariant,
 
@@ -155,6 +154,7 @@ enum TOK
         TOKref,
         TOKmacro,
 
+// 211
         TOKparameters,
         TOKtraits,
         TOKoverloadset,
@@ -175,11 +175,41 @@ enum TOK
         TOKvector,
         TOKpound,
 
+// 230
         TOKinterval,
         TOKvoidexp,
         TOKcantexp,
+        TOKshowctfecontext,
 
+        TOKobjc_class_reference,
         TOKvectorarray,
+
+        TOKarrow,
+        TOKcolonColon,
+        TOKwchar_tLiteral,
+
+        TOKinline,
+        TOKregister,
+        TOKrestrict,
+        TOKsigned,
+        TOKsizeof_,
+        TOKtypedef_,
+        TOKunsigned,
+        TOKvolatile,
+        TOK_Alignas,
+        TOK_Alignof,
+        TOK_Atomic,
+        TOK_Bool,
+        TOK_Complex,
+        TOK_Generic,
+        TOK_Imaginary,
+        TOK_Noreturn,
+        TOK_Static_assert,
+        TOK_Thread_local,
+
+        TOK__cdecl,
+        TOK__declspec,
+        TOK__attribute__,
 
         TOKMAX
 };
@@ -196,15 +226,15 @@ struct Token
 {
     Token *next;
     Loc loc;
-    const utf8_t *ptr;         // pointer to first character of this token within buffer
+    const utf8_t *ptr;    // pointer to first character of this token within buffer
     TOK value;
-    const utf8_t *blockComment; // doc comment string prior to this token
-    const utf8_t *lineComment;  // doc comment for previous token
+    DString blockComment; // doc comment string prior to this token
+    DString lineComment;  // doc comment for previous token
     union
     {
         // Integers
-        d_int64 int64value;
-        d_uns64 uns64value;
+        sinteger_t intvalue;
+        uinteger_t unsvalue;
 
         // Floats
         real_t floatvalue;
@@ -218,16 +248,13 @@ struct Token
         Identifier *ident;
     };
 
-    static const char *tochars[TOKMAX];
-
-    static Token *freelist;
-    static Token *alloc();
     void free();
 
     Token() : next(NULL) {}
     int isKeyword();
     const char *toChars() const;
-    static const char *toChars(TOK);
+
+    static const char *toChars(unsigned value);
 };
 
 #if defined(__GNUC__)

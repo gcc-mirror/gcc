@@ -295,7 +295,7 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   finish_bc_block (&stmt_list, bc_continue, clab);
   if (incr)
     {
-      if (debug_nonbind_markers_p && incr_locus != UNKNOWN_LOCATION)
+      if (MAY_HAVE_DEBUG_MARKER_STMTS && incr_locus != UNKNOWN_LOCATION)
 	{
 	  tree d = build0 (DEBUG_BEGIN_STMT, void_type_node);
 	  SET_EXPR_LOCATION (d, expr_loc_or_loc (incr, start_locus));
@@ -305,7 +305,7 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
     }
   append_to_statement_list (entry, &stmt_list);
 
-  if (debug_nonbind_markers_p && cond_locus != UNKNOWN_LOCATION)
+  if (MAY_HAVE_DEBUG_MARKER_STMTS && cond_locus != UNKNOWN_LOCATION)
     {
       tree d = build0 (DEBUG_BEGIN_STMT, void_type_node);
       SET_EXPR_LOCATION (d, cond_locus);

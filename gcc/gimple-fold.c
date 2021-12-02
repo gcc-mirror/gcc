@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "memmodel.h"
 #include "optabs.h"
+#include "internal-fn.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -2993,7 +2994,6 @@ gimple_fold_builtin_fputs (gimple_stmt_iterator *gsi,
     default:
       gcc_unreachable ();
     }
-  return false;
 }
 
 /* Fold a call to the __mem{cpy,pcpy,move,set}_chk builtin.
@@ -5776,18 +5776,19 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
   if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
     {
       gcc_assert (res_op->code.is_tree_code ());
-      if (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison
+      auto code = tree_code (res_op->code);
+      if (TREE_CODE_CLASS (code) == tcc_comparison
 	  /* GIMPLE_CONDs condition may not throw.  */
 	  && (!flag_exceptions
 	      || !cfun->can_throw_non_call_exceptions
-	      || !operation_could_trap_p (res_op->code,
+	      || !operation_could_trap_p (code,
 					  FLOAT_TYPE_P (TREE_TYPE (ops[0])),
 					  false, NULL_TREE)))
-	gimple_cond_set_condition (cond_stmt, res_op->code, ops[0], ops[1]);
-      else if (res_op->code == SSA_NAME)
+	gimple_cond_set_condition (cond_stmt, code, ops[0], ops[1]);
+      else if (code == SSA_NAME)
 	gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
 				   build_zero_cst (TREE_TYPE (ops[0])));
-      else if (res_op->code == INTEGER_CST)
+      else if (code == INTEGER_CST)
 	{
 	  if (integer_zerop (ops[0]))
 	    gimple_cond_make_false (cond_stmt);
@@ -5818,11 +5819,12 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
   else if (is_gimple_assign (stmt)
 	   && res_op->code.is_tree_code ())
     {
+      auto code = tree_code (res_op->code);
       if (!inplace
-	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (res_op->code))
+	  || gimple_num_ops (stmt) > get_gimple_rhs_num_ops (code))
 	{
 	  maybe_build_generic_op (res_op);
-	  gimple_assign_set_rhs_with_ops (gsi, res_op->code,
+	  gimple_assign_set_rhs_with_ops (gsi, code,
 					  res_op->op_or_null (0),
 					  res_op->op_or_null (1),
 					  res_op->op_or_null (2));
@@ -5839,7 +5841,7 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
     }
   else if (res_op->code.is_fn_code ()
-	   && gimple_call_combined_fn (stmt) == res_op->code)
+	   && gimple_call_combined_fn (stmt) == combined_fn (res_op->code))
     {
       gcc_assert (num_ops == gimple_call_num_args (stmt));
       for (unsigned int i = 0; i < num_ops; ++i)
@@ -6061,6 +6063,28 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (REFERENCE_CLASS_P (*lhs)
 	      && maybe_canonicalize_mem_ref_addr (lhs))
 	    changed = true;
+	  /* Canonicalize &MEM[ssa_n, CST] to ssa_n p+ CST.
+	     This cannot be done in maybe_canonicalize_mem_ref_addr
+	     as the gimple now has two operands rather than one.
+	     The same reason why this can't be done in
+	     maybe_canonicalize_mem_ref_addr is the same reason why
+	     this can't be done inplace.  */
+	  if (!inplace && TREE_CODE (*rhs) == ADDR_EXPR)
+	    {
+	      tree inner = TREE_OPERAND (*rhs, 0);
+	      if (TREE_CODE (inner) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (inner, 0)) == SSA_NAME
+		  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
+		{
+		  tree ptr = TREE_OPERAND (inner, 0);
+		  tree addon = TREE_OPERAND (inner, 1);
+		  addon = fold_convert (sizetype, addon);
+		  gimple_assign_set_rhs_with_ops (gsi, POINTER_PLUS_EXPR,
+						  ptr, addon);
+		  changed = true;
+		  stmt = gsi_stmt (*gsi);
+		}
+	    }
 	}
       else
 	{
@@ -6086,18 +6110,36 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
       break;
     case GIMPLE_CALL:
       {
-	for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	gcall *call = as_a<gcall *> (stmt);
+	for (i = 0; i < gimple_call_num_args (call); ++i)
 	  {
-	    tree *arg = gimple_call_arg_ptr (stmt, i);
+	    tree *arg = gimple_call_arg_ptr (call, i);
 	    if (REFERENCE_CLASS_P (*arg)
 		&& maybe_canonicalize_mem_ref_addr (arg))
 	      changed = true;
 	  }
-	tree *lhs = gimple_call_lhs_ptr (stmt);
+	tree *lhs = gimple_call_lhs_ptr (call);
 	if (*lhs
 	    && REFERENCE_CLASS_P (*lhs)
 	    && maybe_canonicalize_mem_ref_addr (lhs))
 	  changed = true;
+	if (*lhs)
+	  {
+	    combined_fn cfn = gimple_call_combined_fn (call);
+	    internal_fn ifn = associated_internal_fn (cfn, TREE_TYPE (*lhs));
+	    int opno = first_commutative_argument (ifn);
+	    if (opno >= 0)
+	      {
+		tree arg1 = gimple_call_arg (call, opno);
+		tree arg2 = gimple_call_arg (call, opno + 1);
+		if (tree_swap_operands_p (arg1, arg2))
+		  {
+		    gimple_call_set_arg (call, opno, arg2);
+		    gimple_call_set_arg (call, opno + 1, arg1);
+		    changed = true;
+		  }
+	      }
+	  }
 	break;
       }
     case GIMPLE_ASM:
@@ -8752,6 +8794,48 @@ gimple_build (gimple_seq *seq, location_t loc, combined_fn fn,
       gimple_seq_add_stmt_without_update (seq, stmt);
     }
   return res;
+}
+
+/* Build CODE (OP0) with a result of type TYPE (or no result if TYPE is
+   void) with location LOC, simplifying it first if possible.  Returns the
+   built expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+	      tree type, tree op0)
+{
+  if (code.is_tree_code ())
+    return gimple_build (seq, loc, tree_code (code), type, op0);
+  return gimple_build (seq, loc, combined_fn (code), type, op0);
+}
+
+/* Build CODE (OP0, OP1) with a result of type TYPE (or no result if TYPE is
+   void) with location LOC, simplifying it first if possible.  Returns the
+   built expression value (or NULL_TREE if TYPE is void) and appends
+   statements possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+	      tree type, tree op0, tree op1)
+{
+  if (code.is_tree_code ())
+    return gimple_build (seq, loc, tree_code (code), type, op0, op1);
+  return gimple_build (seq, loc, combined_fn (code), type, op0, op1);
+}
+
+/* Build CODE (OP0, OP1, OP2) with a result of type TYPE (or no result if TYPE
+   is void) with location LOC, simplifying it first if possible.  Returns the
+   built expression value (or NULL_TREE if TYPE is void) and appends statements
+   possibly defining it to SEQ.  */
+
+tree
+gimple_build (gimple_seq *seq, location_t loc, code_helper code,
+	      tree type, tree op0, tree op1, tree op2)
+{
+  if (code.is_tree_code ())
+    return gimple_build (seq, loc, tree_code (code), type, op0, op1, op2);
+  return gimple_build (seq, loc, combined_fn (code), type, op0, op1, op2);
 }
 
 /* Build the conversion (TYPE) OP with a result of type TYPE

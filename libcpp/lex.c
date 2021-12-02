@@ -1286,7 +1286,7 @@ namespace bidi {
       case kind::RTL:
 	/* These aren't popped by a PDF/PDI.  */
 	break;
-      [[likely]] case kind::NONE:
+      ATTR_LIKELY case kind::NONE:
 	break;
       default:
 	abort ();
@@ -1838,7 +1838,7 @@ warn_about_normalization (cpp_reader *pfile,
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
 	cpp_warning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
 			"`%.*s' is not in NFKC", (int) sz, buf);
-      else if (CPP_OPTION (pfile, cxx23_identifiers))
+      else if (CPP_OPTION (pfile, cplusplus))
 	cpp_pedwarning_at (pfile, CPP_W_NORMALIZE, &rich_loc,
 				  "`%.*s' is not in NFC", (int) sz, buf);
       else

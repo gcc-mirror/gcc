@@ -1,6 +1,5 @@
 /* PR c++/101940 */
-/* { dg-do compile } */
-/* { dg-additional-options "-std=c++11" { target c++ } } */
+/* { dg-do compile { target { c || c++11 } } } */
 
 #pragma GCC diagnostic ignored_attributes "company::,yoyodyne::attr"
 #pragma GCC diagnostic ignored_attributes "c1::attr,c1::attr,c1::__attr__"

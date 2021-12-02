@@ -25,7 +25,8 @@
 module gcc.emutls;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string, core.sync.mutex;
-import rt.util.container.array, rt.util.container.hashtab;
+import core.internal.container.array;
+import core.internal.container.hashtab;
 import core.internal.traits : classInstanceAlignment;
 import gcc.builtins, gcc.gthread;
 
@@ -229,9 +230,6 @@ void** emutlsAlloc(shared __emutls_object* obj) nothrow @nogc
 extern (C) void emutlsDestroyThread(void* ptr) nothrow @nogc
 {
     auto arr = cast(TlsArray*) ptr;
-    emutlsMutex.lock_nothrow();
-    emutlsArrays.remove(arr);
-    emutlsMutex.unlock_nothrow();
 
     foreach (entry; *arr)
     {
@@ -308,9 +306,6 @@ void _d_emutls_scan(scope void delegate(void* pbeg, void* pend) nothrow cb) noth
 // Call this after druntime has been unloaded
 void _d_emutls_destroy() nothrow @nogc
 {
-    if (__gthread_key_delete(emutlsKey) != 0)
-        abort();
-
     (cast(Mutex) _emutlsMutex.ptr).__dtor();
     destroy(emutlsArrays);
 }

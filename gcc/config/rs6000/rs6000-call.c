@@ -69,7 +69,6 @@
 #include "opts.h"
 
 #include "rs6000-internal.h"
-#include "rs6000-builtins.h"
 
 #if TARGET_MACHO
 #include "gstab.h"  /* for N_SLINE */
@@ -11905,7 +11904,7 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 /* Raise an error message for a builtin function that is called without the
    appropriate target options being set.  */
 
-static void
+void
 rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
 {
   size_t j = (size_t) fncode;
@@ -11918,6 +11917,10 @@ rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
       break;
     case ENB_P6:
       error ("%qs requires the %qs option", name, "-mcpu=power6");
+      break;
+    case ENB_P6_64:
+      error ("%qs requires the %qs option and either the %qs or %qs option",
+	     name, "-mcpu=power6", "-m64", "-mpowerpc64");
       break;
     case ENB_ALTIVEC:
       error ("%qs requires the %qs option", name, "-maltivec");
@@ -11939,7 +11942,8 @@ rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
       error ("%qs requires the %qs option", name, "-mcpu=power8");
       break;
     case ENB_P8V:
-      error ("%qs requires the %qs option", name, "-mpower8-vector");
+      error ("%qs requires the %qs and %qs options", name, "-mcpu=power8",
+	     "-mvsx");
       break;
     case ENB_P9:
       error ("%qs requires the %qs option", name, "-mcpu=power9");
@@ -11949,7 +11953,8 @@ rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
 	     name, "-mcpu=power9", "-m64", "-mpowerpc64");
       break;
     case ENB_P9V:
-      error ("%qs requires the %qs option", name, "-mpower9-vector");
+      error ("%qs requires the %qs and %qs options", name, "-mcpu=power9",
+	     "-mvsx");
       break;
     case ENB_IEEE128_HW:
       error ("%qs requires ISA 3.0 IEEE 128-bit floating point", name);
@@ -13346,6 +13351,8 @@ rs6000_new_builtin_is_supported (enum rs6000_gen_builtins fncode)
       return TARGET_POPCNTB;
     case ENB_P6:
       return TARGET_CMPB;
+    case ENB_P6_64:
+      return TARGET_CMPB && TARGET_POWERPC64;
     case ENB_P7:
       return TARGET_POPCNTD;
     case ENB_P7_64:
@@ -15695,29 +15702,26 @@ rs6000_expand_new_builtin (tree exp, rtx target,
   bif_enable e = bifaddr->enable;
 
   if (!(e == ENB_ALWAYS
-	|| (e == ENB_P5         && TARGET_POPCNTB)
-	|| (e == ENB_P6         && TARGET_CMPB)
-	|| (e == ENB_ALTIVEC    && TARGET_ALTIVEC)
-	|| (e == ENB_CELL       && TARGET_ALTIVEC
-				&& rs6000_cpu == PROCESSOR_CELL)
-	|| (e == ENB_VSX        && TARGET_VSX)
-	|| (e == ENB_P7         && TARGET_POPCNTD)
-	|| (e == ENB_P7_64      && TARGET_POPCNTD
-				&& TARGET_POWERPC64)
-	|| (e == ENB_P8         && TARGET_DIRECT_MOVE)
-	|| (e == ENB_P8V        && TARGET_P8_VECTOR)
-	|| (e == ENB_P9         && TARGET_MODULO)
-	|| (e == ENB_P9_64      && TARGET_MODULO
-				&& TARGET_POWERPC64)
-	|| (e == ENB_P9V        && TARGET_P9_VECTOR)
+	|| (e == ENB_P5 && TARGET_POPCNTB)
+	|| (e == ENB_P6 && TARGET_CMPB)
+	|| (e == ENB_P6_64 && TARGET_CMPB && TARGET_POWERPC64)
+	|| (e == ENB_ALTIVEC && TARGET_ALTIVEC)
+	|| (e == ENB_CELL && TARGET_ALTIVEC && rs6000_cpu == PROCESSOR_CELL)
+	|| (e == ENB_VSX && TARGET_VSX)
+	|| (e == ENB_P7 && TARGET_POPCNTD)
+	|| (e == ENB_P7_64 && TARGET_POPCNTD && TARGET_POWERPC64)
+	|| (e == ENB_P8 && TARGET_DIRECT_MOVE)
+	|| (e == ENB_P8V && TARGET_P8_VECTOR)
+	|| (e == ENB_P9 && TARGET_MODULO)
+	|| (e == ENB_P9_64 && TARGET_MODULO && TARGET_POWERPC64)
+	|| (e == ENB_P9V && TARGET_P9_VECTOR)
 	|| (e == ENB_IEEE128_HW && TARGET_FLOAT128_HW)
-	|| (e == ENB_DFP        && TARGET_DFP)
-	|| (e == ENB_CRYPTO     && TARGET_CRYPTO)
-	|| (e == ENB_HTM        && TARGET_HTM)
-	|| (e == ENB_P10        && TARGET_POWER10)
-	|| (e == ENB_P10_64     && TARGET_POWER10
-				&& TARGET_POWERPC64)
-	|| (e == ENB_MMA        && TARGET_MMA)))
+	|| (e == ENB_DFP && TARGET_DFP)
+	|| (e == ENB_CRYPTO && TARGET_CRYPTO)
+	|| (e == ENB_HTM && TARGET_HTM)
+	|| (e == ENB_P10 && TARGET_POWER10)
+	|| (e == ENB_P10_64 && TARGET_POWER10 && TARGET_POWERPC64)
+	|| (e == ENB_MMA && TARGET_MMA)))
     {
       rs6000_invalid_new_builtin (fcode);
       return expand_call (exp, target, ignore);
@@ -16419,6 +16423,8 @@ rs6000_init_builtins (void)
 	    continue;
 	  if (e == ENB_P6 && !TARGET_CMPB)
 	    continue;
+	  if (e == ENB_P6_64 && !(TARGET_CMPB && TARGET_POWERPC64))
+	    continue;
 	  if (e == ENB_ALTIVEC && !TARGET_ALTIVEC)
 	    continue;
 	  if (e == ENB_VSX && !TARGET_VSX)
@@ -16617,16 +16623,13 @@ rs6000_new_builtin_decl (unsigned code, bool /* initialize_p */)
   if (fcode >= RS6000_OVLD_MAX)
     return error_mark_node;
 
-  if (!rs6000_new_builtin_is_supported (fcode))
-    {
-      rs6000_invalid_new_builtin (fcode);
-      return error_mark_node;
-    }
-
   return rs6000_builtin_decls_x[code];
 }
 
-/* Returns the rs6000 builtin decl for CODE.  */
+/* Returns the rs6000 builtin decl for CODE.  Note that we don't check
+   the builtin mask here since there could be some #pragma/attribute
+   target functions and the rs6000_builtin_mask could be wrong when
+   this checking happens, though it will be updated properly later.  */
 
 tree
 rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
@@ -16634,17 +16637,8 @@ rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
   if (new_builtins_are_live)
     return rs6000_new_builtin_decl (code, initialize_p);
 
-  HOST_WIDE_INT fnmask;
-
   if (code >= RS6000_BUILTIN_COUNT)
     return error_mark_node;
-
-  fnmask = rs6000_builtin_info[code].mask;
-  if ((fnmask & rs6000_builtin_mask) != fnmask)
-    {
-      rs6000_invalid_builtin ((enum rs6000_builtins)code);
-      return error_mark_node;
-    }
 
   return rs6000_builtin_decls[code];
 }

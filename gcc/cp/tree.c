@@ -3671,10 +3671,39 @@ build_min_non_dep_op_overload (enum tree_code op,
 	}
     }
   else
-   gcc_unreachable ();
+    gcc_unreachable ();
 
   va_end (p);
   call = build_min_non_dep_call_vec (non_dep, fn, args);
+
+  tree call_expr = extract_call_expr (call);
+  KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
+  CALL_EXPR_OPERATOR_SYNTAX (call_expr) = true;
+  CALL_EXPR_ORDERED_ARGS (call_expr) = CALL_EXPR_ORDERED_ARGS (non_dep);
+  CALL_EXPR_REVERSE_ARGS (call_expr) = CALL_EXPR_REVERSE_ARGS (non_dep);
+
+  return call;
+}
+
+/* Similar to above build_min_non_dep_op_overload, but arguments
+   are taken from ARGS vector.  */
+
+tree
+build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
+			       vec<tree, va_gc> *args)
+{
+  non_dep = extract_call_expr (non_dep);
+
+  unsigned int nargs = call_expr_nargs (non_dep);
+  gcc_assert (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE);
+  tree binfo = TYPE_BINFO (TREE_TYPE (object));
+  tree method = build_baselink (binfo, binfo, overload, NULL_TREE);
+  tree fn = build_min (COMPONENT_REF, TREE_TYPE (overload),
+		       object, method, NULL_TREE);
+  nargs--;
+  gcc_assert (vec_safe_length (args) == nargs);
+
+  tree call = build_min_non_dep_call_vec (non_dep, fn, args);
 
   tree call_expr = extract_call_expr (call);
   KOENIG_LOOKUP_P (call_expr) = KOENIG_LOOKUP_P (non_dep);
@@ -5167,6 +5196,7 @@ make_ptrmem_cst (tree type, tree member)
   tree ptrmem_cst = make_node (PTRMEM_CST);
   TREE_TYPE (ptrmem_cst) = type;
   PTRMEM_CST_MEMBER (ptrmem_cst) = member;
+  PTRMEM_CST_LOCATION (ptrmem_cst) = input_location;
   return ptrmem_cst;
 }
 
@@ -5352,13 +5382,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case BIT_CAST_EXPR:
       if (TREE_TYPE (*tp))
 	WALK_SUBTREE (TREE_TYPE (*tp));
-
-      {
-        int i;
-        for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (*tp)); ++i)
-	  WALK_SUBTREE (TREE_OPERAND (*tp, i));
-      }
-      *walk_subtrees_p = 0;
       break;
 
     case CONSTRUCTOR:
@@ -6018,6 +6041,8 @@ cp_expr_location (const_tree t_)
       return STATIC_ASSERT_SOURCE_LOCATION (t);
     case TRAIT_EXPR:
       return TRAIT_EXPR_LOCATION (t);
+    case PTRMEM_CST:
+      return PTRMEM_CST_LOCATION (t);
     default:
       return EXPR_LOCATION (t);
     }

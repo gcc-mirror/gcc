@@ -1,5 +1,5 @@
-/* REQUIRED_ARGS:
-PERMUTE_ARGS:
+/*
+EXTRA_FILES: imports/imp15925.d
 TEST_OUTPUT:
 ---
 fail_compilation/test15925.d(18): Error: undefined identifier `X`

@@ -1969,9 +1969,6 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
       return val;
     }
-
-  gcc_unreachable ();
-  return 0;
 }
 
 /* Unregister the specialization SPEC as a specialization of TMPL.
@@ -7267,6 +7264,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
   const bool val_dep_p = value_dependent_expression_p (expr);
   if (val_dep_p)
     expr = canonicalize_expr_argument (expr, complain);
+  else
+    STRIP_ANY_LOCATION_WRAPPER (expr);
 
   /* 14.3.2/5: The null pointer{,-to-member} conversion is applied
      to a non-type argument of "nullptr".  */
@@ -11710,6 +11709,9 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
   /* Apply any non-dependent attributes.  */
   *p = nondep;
 
+  if (nondep == attributes)
+    return true;
+
   /* And then any dependent ones.  */
   tree late_attrs = NULL_TREE;
   tree *q = &late_attrs;
@@ -11726,6 +11728,17 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
       while (*q)
 	q = &TREE_CHAIN (*q);
     }
+
+  /* cplus_decl_attributes can add some attributes implicitly.  For templates,
+     those attributes should have been added already when those templates were
+     parsed, and shouldn't be added based on from which context they are
+     first time instantiated.  */
+  auto o1 = make_temp_override (current_optimize_pragma, NULL_TREE);
+  auto o2 = make_temp_override (optimization_current_node,
+				optimization_default_node);
+  auto o3 = make_temp_override (current_target_pragma, NULL_TREE);
+  auto o4 = make_temp_override (scope_chain->omp_declare_target_attribute,
+				NULL);
 
   cplus_decl_attributes (decl_p, late_attrs, attr_flags);
 
@@ -16996,9 +17009,16 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	tree op0 = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
-	r = build1 (code, type, op0);
+	r = build1_loc (EXPR_LOCATION (t), code, type, op0);
 	if (code == ALIGNOF_EXPR)
 	  ALIGNOF_EXPR_STD_P (r) = ALIGNOF_EXPR_STD_P (t);
+	/* For addresses of immediate functions ensure we have EXPR_LOCATION
+	   set for possible later diagnostics.  */
+	if (code == ADDR_EXPR
+	    && EXPR_LOCATION (r) == UNKNOWN_LOCATION
+	    && TREE_CODE (op0) == FUNCTION_DECL
+	    && DECL_IMMEDIATE_FUNCTION_P (op0))
+	  SET_EXPR_LOCATION (r, input_location);
 	return r;
       }
 
@@ -18222,13 +18242,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       stmt = finish_co_yield_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
-      break;
 
     case CO_AWAIT_EXPR:
       stmt = finish_co_await_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
-      break;
 
     case EXPR_STMT:
       tmp = RECUR (EXPR_STMT_EXPR (t));
@@ -19641,6 +19659,49 @@ maybe_fold_fn_template_args (tree fn, tsubst_flags_t complain)
   return fold_targs_r (targs, complain);
 }
 
+/* Helper function for tsubst_copy_and_build CALL_EXPR and ARRAY_REF
+   handling.  */
+
+static void
+tsubst_copy_and_build_call_args (tree t, tree args, tsubst_flags_t complain,
+				 tree in_decl,
+				 bool integral_constant_expression_p,
+				 releasing_vec &call_args)
+{
+  unsigned int nargs = call_expr_nargs (t);
+  for (unsigned int i = 0; i < nargs; ++i)
+    {
+      tree arg = CALL_EXPR_ARG (t, i);
+
+      if (!PACK_EXPANSION_P (arg))
+	vec_safe_push (call_args,
+		       tsubst_copy_and_build (arg, args, complain, in_decl,
+					      /*function_p=*/false,
+					      integral_constant_expression_p));
+      else
+	{
+	  /* Expand the pack expansion and push each entry onto CALL_ARGS.  */
+	  arg = tsubst_pack_expansion (arg, args, complain, in_decl);
+	  if (TREE_CODE (arg) == TREE_VEC)
+	    {
+	      unsigned int len, j;
+
+	      len = TREE_VEC_LENGTH (arg);
+	      for (j = 0; j < len; ++j)
+		{
+		  tree value = TREE_VEC_ELT (arg, j);
+		  if (value != NULL_TREE)
+		    value = convert_from_reference (value);
+		  vec_safe_push (call_args, value);
+		}
+	    }
+	  else
+	    /* A partial substitution.  Add one entry.  */
+	    vec_safe_push (call_args, arg);
+	}
+    }
+}
+
 /* Like tsubst but deals with expressions and performs semantic
    analysis.  FUNCTION_P is true if T is the "F" in "F (ARGS)" or
    "F<TARGS> (ARGS)".  */
@@ -20040,6 +20101,28 @@ tsubst_copy_and_build (tree t,
     case ARRAY_REF:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == CALL_EXPR
+	  && (CALL_EXPR_FN (TREE_OPERAND (t, 1))
+	      == ovl_op_identifier (ARRAY_REF)))
+	{
+	  tree c = TREE_OPERAND (t, 1);
+	  releasing_vec index_exp_list;
+	  tsubst_copy_and_build_call_args (c, args, complain, in_decl,
+					   integral_constant_expression_p,
+					   index_exp_list);
+
+	  tree r;
+	  if (vec_safe_length (index_exp_list) == 1
+	      && !PACK_EXPANSION_P (index_exp_list[0]))
+	    r = grok_array_decl (EXPR_LOCATION (t), op1,
+				 index_exp_list[0], NULL,
+				 complain | decltype_flag);
+	  else
+	    r = grok_array_decl (EXPR_LOCATION (t), op1,
+				 NULL_TREE, &index_exp_list,
+				 complain | decltype_flag);
+	  RETURN (r);
+	}
       RETURN (build_x_array_ref (EXPR_LOCATION (t), op1,
 				 RECUR (TREE_OPERAND (t, 1)),
 				 complain|decltype_flag));
@@ -20248,7 +20331,7 @@ tsubst_copy_and_build (tree t,
     case CALL_EXPR:
       {
 	tree function;
-	unsigned int nargs, i;
+	unsigned int nargs;
 	bool qualified_p;
 	bool koenig_p;
 	tree ret;
@@ -20331,37 +20414,9 @@ tsubst_copy_and_build (tree t,
 
 	nargs = call_expr_nargs (t);
 	releasing_vec call_args;
-	for (i = 0; i < nargs; ++i)
-	  {
-	    tree arg = CALL_EXPR_ARG (t, i);
-
-	    if (!PACK_EXPANSION_P (arg))
-	      vec_safe_push (call_args, RECUR (CALL_EXPR_ARG (t, i)));
-	    else
-	      {
-		/* Expand the pack expansion and push each entry onto
-		   CALL_ARGS.  */
-		arg = tsubst_pack_expansion (arg, args, complain, in_decl);
-		if (TREE_CODE (arg) == TREE_VEC)
-		  {
-		    unsigned int len, j;
-
-		    len = TREE_VEC_LENGTH (arg);
-		    for (j = 0; j < len; ++j)
-		      {
-			tree value = TREE_VEC_ELT (arg, j);
-			if (value != NULL_TREE)
-			  value = convert_from_reference (value);
-			vec_safe_push (call_args, value);
-		      }
-		  }
-		else
-		  {
-		    /* A partial substitution.  Add one entry.  */
-		    vec_safe_push (call_args, arg);
-		  }
-	      }
-	  }
+	tsubst_copy_and_build_call_args (t, args, complain, in_decl,
+					 integral_constant_expression_p,
+					 call_args);
 
 	/* Stripped-down processing for a call in a thunk.  Specifically, in
 	   the thunk template for a generic lambda.  */

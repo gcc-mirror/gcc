@@ -1143,7 +1143,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb,
 
   /* If this is a store into a variable that is being optimized away,
      add a debug bind stmt if possible.  */
-  if (flag_var_tracking_assignments
+  if (MAY_HAVE_DEBUG_BIND_STMTS
       && gimple_assign_single_p (stmt)
       && is_gimple_val (gimple_assign_rhs1 (stmt)))
     {
@@ -1626,6 +1626,10 @@ sort_phi_args (const void *a_, const void *b_)
     return -1;
   else if (ha > hb)
     return 1;
+  else if (a->first->dest_idx < b->first->dest_idx)
+    return -1;
+  else if (a->first->dest_idx > b->first->dest_idx)
+    return 1;
   else
     return 0;
 }
@@ -1646,8 +1650,12 @@ make_forwarders_with_degenerate_phis (function *fn)
       /* Only PHIs with three or more arguments have opportunities.  */
       if (EDGE_COUNT (bb->preds) < 3)
 	continue;
-      /* Do not touch loop headers.  */
-      if (bb->loop_father->header == bb)
+      /* Do not touch loop headers or blocks with abnormal predecessors.
+	 ???  This is to avoid creating valid loops here, see PR103458.
+	 We might want to improve things to either explicitely add those
+	 loops or at least consider blocks with no backedges.  */
+      if (bb->loop_father->header == bb
+	  || bb_has_abnormal_pred (bb))
 	continue;
 
       /* Take one PHI node as template to look for identical

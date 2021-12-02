@@ -1,10 +1,9 @@
 // PERMUTE_ARGS:
-
 import core.stdc.stdarg;
 
 struct ABC
 {
-	int x[4];
+	int[4] x;
 }
 
 ABC abc;

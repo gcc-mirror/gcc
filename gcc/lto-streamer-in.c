@@ -1454,8 +1454,8 @@ input_function (tree fn_decl, class data_in *data_in,
 	    {
 	      if (is_gimple_debug (stmt)
 		  && (gimple_debug_nonbind_marker_p (stmt)
-		      ? !debug_nonbind_markers_p
-		      : !flag_var_tracking_assignments))
+		      ? !MAY_HAVE_DEBUG_MARKER_STMTS
+		      : !MAY_HAVE_DEBUG_BIND_STMTS))
 		remove = true;
 	      /* In case the linemap overflows locations can be dropped
 		 to zero.  Thus do not keep nonsensical inline entry markers
@@ -1963,11 +1963,8 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
   const char *data
     = lto_get_summary_section_data (file_data, LTO_section_mode_table, &len);
   if (! data)
-    {
-      internal_error ("cannot read LTO mode table from %s",
-		      file_data->file_name);
-      return;
-    }
+    internal_error ("cannot read LTO mode table from %s",
+		    file_data->file_name);
 
   unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << 8);
   file_data->mode_table = table;

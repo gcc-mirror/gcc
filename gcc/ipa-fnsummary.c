@@ -2042,7 +2042,6 @@ will_be_nonconstant_expr_predicate (ipa_func_body_info *fbi,
       debug_tree (expr);
       gcc_unreachable ();
     }
-  return false;
 }
 
 
@@ -2934,7 +2933,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
   if (nonconstant_names.exists () && !early)
     {
       ipa_fn_summary *s = ipa_fn_summaries->get (node);
-      class loop *loop;
       unsigned max_loop_predicates = opt_for_fn (node->decl,
 						 param_ipa_max_loop_predicates);
 
@@ -2978,7 +2976,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
       /* To avoid quadratic behavior we analyze stride predicates only
          with respect to the containing loop.  Thus we simply iterate
 	 over all defs in the outermost loop body.  */
-      for (loop = loops_for_fn (cfun)->tree_root->inner;
+      for (class loop *loop = loops_for_fn (cfun)->tree_root->inner;
 	   loop != NULL; loop = loop->next)
 	{
 	  ipa_predicate loop_stride = true;

@@ -296,8 +296,6 @@ check_format_string (const_tree fntype, unsigned HOST_WIDE_INT format_num,
       *no_add_attrs = true;
       return false;
     }
-
-  gcc_unreachable ();
 }
 
 /* Under the control of FLAGS, verify EXPR is a valid constant that

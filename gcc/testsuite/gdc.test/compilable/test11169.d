@@ -47,7 +47,7 @@ void main()
 class B : A
 {
     // __traits(isAbstractClass) is not usable in static if condition.
-       static assert (!__traits(isAbstractClass, typeof(this)));
+	static assert (!__traits(isAbstractClass, typeof(this)));
 
     override void foo()
     {

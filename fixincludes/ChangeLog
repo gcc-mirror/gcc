@@ -1,3 +1,8 @@
+2021-11-23  Xi Ruoyao  <xry111@mengyan1223.wang>
+
+	PR bootstrap/103306
+	* fixincl.c (process): Don't call abort().
+
 2021-11-13  Xi Ruoyao  <xry111@mengyan1223.wang>
 
 	PR other/21823

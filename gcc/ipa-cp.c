@@ -1620,7 +1620,6 @@ ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
 			    ipa_jump_func *jfunc, tree parm_type)
 {
   value_range vr;
-  return vr;
   if (jfunc->m_vr)
     ipa_vr_operation_and_type_effects (&vr,
 				       jfunc->m_vr,

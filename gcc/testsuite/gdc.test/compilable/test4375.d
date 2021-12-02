@@ -1,5 +1,6 @@
 // REQUIRED_ARGS: -unittest
-// 4375: disallow dangling else
+// https://issues.dlang.org/show_bug.cgi?id=4375
+// disallow dangling else
 
 void main() {
 
@@ -368,7 +369,7 @@ class C {
         else
             assert(63);
     }
-    body {
+    do {
         if (true)
             assert(64);
         else

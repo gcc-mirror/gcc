@@ -10273,6 +10273,61 @@ uniform_integer_cst_p (tree t)
   return NULL_TREE;
 }
 
+/* Checks to see if T is a constant or a constant vector and if each element E
+   adheres to ~E + 1 == pow2 then return ~E otherwise NULL_TREE.  */
+
+tree
+bitmask_inv_cst_vector_p (tree t)
+{
+
+  tree_code code = TREE_CODE (t);
+  tree type = TREE_TYPE (t);
+
+  if (!INTEGRAL_TYPE_P (type)
+      && !VECTOR_INTEGER_TYPE_P (type))
+    return NULL_TREE;
+
+  unsigned HOST_WIDE_INT nelts = 1;
+  tree cst;
+  unsigned int idx = 0;
+  bool uniform = uniform_integer_cst_p (t);
+  tree newtype = unsigned_type_for (type);
+  tree_vector_builder builder;
+  if (code == INTEGER_CST)
+    cst = t;
+  else
+    {
+      if (!VECTOR_CST_NELTS (t).is_constant (&nelts))
+	return NULL_TREE;
+
+      cst = vector_cst_elt (t, 0);
+      builder.new_vector (newtype, nelts, 1);
+    }
+
+  tree ty = unsigned_type_for (TREE_TYPE (cst));
+
+  do
+    {
+      if (idx > 0)
+	cst = vector_cst_elt (t, idx);
+      wide_int icst = wi::to_wide (cst);
+      wide_int inv =  wi::bit_not (icst);
+      icst = wi::add (1, inv);
+      if (wi::popcount (icst) != 1)
+	return NULL_TREE;
+
+      tree newcst = wide_int_to_tree (ty, inv);
+
+      if (uniform)
+	return build_uniform_cst (newtype, newcst);
+
+      builder.quick_push (newcst);
+    }
+  while (++idx < nelts);
+
+  return builder.build ();
+}
+
 /* If VECTOR_CST T has a single nonzero element, return the index of that
    element, otherwise return -1.  */
 
@@ -11074,7 +11129,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
     case TREE_LIST:
       WALK_SUBTREE (TREE_VALUE (*tp));
       WALK_SUBTREE_TAIL (TREE_CHAIN (*tp));
-      break;
 
     case TREE_VEC:
       {
@@ -11153,7 +11207,6 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, i));
 	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
       }
-      break;
 
     case TARGET_EXPR:
       {

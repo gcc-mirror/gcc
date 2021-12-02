@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag15209.d(18): Error: need 'this' for 'x' of type 'int'
-fail_compilation/diag15209.d(21): Error: need 'this' for 'x' of type 'int'
+fail_compilation/diag15209.d(18): Error: need `this` for `x` of type `int`
+fail_compilation/diag15209.d(21): Error: need `this` for `x` of type `int`
 ---
 */
 

@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice7645.d(28): Error: need 'this' for 't' of type 'char'
-fail_compilation/ice7645.d(31): Error: need 'this' for 'fn' of type 'pure nothrow @nogc @safe void()'
+fail_compilation/ice7645.d(28): Error: need `this` for `t` of type `char`
+fail_compilation/ice7645.d(31): Error: need `this` for `fn` of type `pure nothrow @nogc @safe void()`
 ---
 */
 

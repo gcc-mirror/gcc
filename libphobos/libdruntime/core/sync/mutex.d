@@ -20,13 +20,13 @@ public import core.sync.exception;
 
 version (Windows)
 {
-    private import core.sys.windows.winbase /+: CRITICAL_SECTION, DeleteCriticalSection,
+    import core.sys.windows.winbase /+: CRITICAL_SECTION, DeleteCriticalSection,
         EnterCriticalSection, InitializeCriticalSection, LeaveCriticalSection,
         TryEnterCriticalSection+/;
 }
 else version (Posix)
 {
-    private import core.sys.posix.pthread;
+    import core.sys.posix.pthread;
 }
 else
 {
@@ -129,7 +129,7 @@ class Mutex :
         assert(obj.__monitor is null,
             "The provided object has a monitor already set!");
     }
-    body
+    do
     {
         this();
         obj.__monitor = cast(void*) &m_proxy;
@@ -345,14 +345,10 @@ unittest
 @system @nogc nothrow unittest
 {
     import core.stdc.stdlib : malloc, free;
+    import core.lifetime : emplace;
 
-    void* p = malloc(__traits(classInstanceSize, Mutex));
-
-    auto ti = typeid(Mutex);
-    p[0 .. ti.initializer.length] = ti.initializer[];
-
-    shared Mutex mtx = cast(shared(Mutex)) p;
-    mtx.__ctor();
+    auto mtx = cast(shared Mutex) malloc(__traits(classInstanceSize, Mutex));
+    emplace(mtx);
 
     mtx.lock_nothrow();
 

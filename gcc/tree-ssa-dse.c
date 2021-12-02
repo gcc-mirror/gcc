@@ -156,57 +156,137 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
 }
 
 /* Given REF from the alias oracle, return TRUE if it is a valid
-   memory reference for dead store elimination, false otherwise.
+   kill memory reference for dead store elimination, false otherwise.
 
    In particular, the reference must have a known base, known maximum
    size, start at a byte offset and have a size that is one or more
    bytes.  */
 
 static bool
-valid_ao_ref_for_dse (ao_ref *ref)
+valid_ao_ref_kill_for_dse (ao_ref *ref)
 {
   return (ao_ref_base (ref)
 	  && known_size_p (ref->max_size)
 	  && maybe_ne (ref->size, 0)
 	  && known_eq (ref->max_size, ref->size)
-	  && known_ge (ref->offset, 0)
-	  && multiple_p (ref->offset, BITS_PER_UNIT)
-	  && multiple_p (ref->size, BITS_PER_UNIT));
+	  && known_ge (ref->offset, 0));
 }
 
-/* Try to normalize COPY (an ao_ref) relative to REF.  Essentially when we are
-   done COPY will only refer bytes found within REF.  Return true if COPY
-   is known to intersect at least one byte of REF.  */
+/* Given REF from the alias oracle, return TRUE if it is a valid
+   load or store memory reference for dead store elimination, false otherwise.
+
+   Unlike for valid_ao_ref_kill_for_dse we can accept writes where max_size
+   is not same as size since we can handle conservatively the larger range.  */
 
 static bool
-normalize_ref (ao_ref *copy, ao_ref *ref)
+valid_ao_ref_for_dse (ao_ref *ref)
 {
-  if (!ordered_p (copy->offset, ref->offset))
+  return (ao_ref_base (ref)
+	  && known_size_p (ref->max_size)
+	  && known_ge (ref->offset, 0));
+}
+
+/* Initialize OFFSET and SIZE to a range known to contain REF
+   where the boundaries are divisible by BITS_PER_UNIT (bit still in bits).
+   Return false if this is impossible.  */
+
+static bool
+get_byte_aligned_range_containing_ref (ao_ref *ref, poly_int64 *offset,
+				       HOST_WIDE_INT *size)
+{
+  if (!known_size_p (ref->max_size))
     return false;
+  *offset = aligned_lower_bound (ref->offset, BITS_PER_UNIT);
+  poly_int64 end = aligned_upper_bound (ref->offset + ref->max_size,
+					BITS_PER_UNIT);
+  return (end - *offset).is_constant (size);
+}
+
+/* Initialize OFFSET and SIZE to a range known to be contained REF
+   where the boundaries are divisible by BITS_PER_UNIT (but still in bits).
+   Return false if this is impossible.  */
+
+static bool
+get_byte_aligned_range_contained_in_ref (ao_ref *ref, poly_int64 *offset,
+					 HOST_WIDE_INT *size)
+{
+  if (!known_size_p (ref->size)
+      || !known_eq (ref->size, ref->max_size))
+    return false;
+  *offset = aligned_upper_bound (ref->offset, BITS_PER_UNIT);
+  poly_int64 end = aligned_lower_bound (ref->offset + ref->max_size,
+					BITS_PER_UNIT);
+  /* For bit accesses we can get -1 here, but also 0 sized kill is not
+     useful.  */
+  if (!known_gt (end, *offset))
+    return false;
+  return (end - *offset).is_constant (size);
+}
+
+/* Compute byte range (returned iN REF_OFFSET and RET_SIZE) for access COPY
+   inside REF.  If KILL is true, then COPY represent a kill and the byte range
+   needs to be fully contained in bit range given by COPY.  If KILL is false
+   then the byte range returned must contain the range of COPY.  */
+
+static bool
+get_byte_range (ao_ref *copy, ao_ref *ref, bool kill,
+		HOST_WIDE_INT *ret_offset, HOST_WIDE_INT *ret_size)
+{
+  HOST_WIDE_INT copy_size, ref_size;
+  poly_int64 copy_offset, ref_offset;
+  HOST_WIDE_INT diff;
+
+  /* First translate from bits to bytes, rounding to bigger or smaller ranges
+     as needed.  Kills needs to be always rounded to smaller ranges while
+     uses and stores to larger ranges.  */
+  if (kill)
+    {
+      if (!get_byte_aligned_range_contained_in_ref (copy, &copy_offset,
+						    &copy_size))
+	return false;
+    }
+  else
+    {
+      if (!get_byte_aligned_range_containing_ref (copy, &copy_offset,
+						  &copy_size))
+	return false;
+    }
+
+  if (!get_byte_aligned_range_containing_ref (ref, &ref_offset, &ref_size)
+      || !ordered_p (copy_offset, ref_offset))
+    return false;
+
+  /* Switch sizes from bits to bytes so we do not need to care about
+     overflows.  Offset calculation needs to stay in bits until we compute
+     the difference and can switch to HOST_WIDE_INT.  */
+  copy_size /= BITS_PER_UNIT;
+  ref_size /= BITS_PER_UNIT;
 
   /* If COPY starts before REF, then reset the beginning of
      COPY to match REF and decrease the size of COPY by the
      number of bytes removed from COPY.  */
-  if (maybe_lt (copy->offset, ref->offset))
+  if (maybe_lt (copy_offset, ref_offset))
     {
-      poly_int64 diff = ref->offset - copy->offset;
-      if (maybe_le (copy->size, diff))
+      if (!(ref_offset - copy_offset).is_constant (&diff)
+	  || copy_size < diff / BITS_PER_UNIT)
 	return false;
-      copy->size -= diff;
-      copy->offset = ref->offset;
+      copy_size -= diff / BITS_PER_UNIT;
+      copy_offset = ref_offset;
     }
 
-  poly_int64 diff = copy->offset - ref->offset;
-  if (maybe_le (ref->size, diff))
+  if (!(copy_offset - ref_offset).is_constant (&diff)
+      || ref_size <= diff / BITS_PER_UNIT)
     return false;
 
   /* If COPY extends beyond REF, chop off its size appropriately.  */
-  poly_int64 limit = ref->size - diff;
-  if (!ordered_p (limit, copy->size))
-    return false;
+  HOST_WIDE_INT limit = ref_size - diff / BITS_PER_UNIT;
 
-  if (maybe_gt (copy->size, limit))
-    copy->size = limit;
+  if (copy_size > limit)
+    copy_size = limit;
+  *ret_size = copy_size;
+  if (!(copy_offset - ref_offset).is_constant (ret_offset))
+    return false;
+  *ret_offset /= BITS_PER_UNIT;
   return true;
 }
 
@@ -214,20 +294,14 @@ normalize_ref (ao_ref *copy, ao_ref *ref)
    Verify we have the same base memory address, the write
    has a known size and overlaps with REF.  */
 static void
-clear_live_bytes_for_ref (sbitmap live_bytes, ao_ref *ref, ao_ref write)
+clear_live_bytes_for_ref (sbitmap live_bytes, ao_ref *ref, ao_ref *write)
 {
   HOST_WIDE_INT start, size;
 
-  if (valid_ao_ref_for_dse (&write)
-      && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
-      && known_eq (write.size, write.max_size)
-      /* normalize_ref modifies write and for that reason write is not
-	 passed by reference.  */
-      && normalize_ref (&write, ref)
-      && (write.offset - ref->offset).is_constant (&start)
-      && write.size.is_constant (&size))
-    bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
-			size / BITS_PER_UNIT);
+  if (valid_ao_ref_kill_for_dse (write)
+      && operand_equal_p (write->base, ref->base, OEP_ADDRESS_OF)
+      && get_byte_range (write, ref, true, &start, &size))
+    bitmap_clear_range (live_bytes, start, size);
 }
 
 /* Clear any bytes written by STMT from the bitmap LIVE_BYTES.  The base
@@ -250,12 +324,12 @@ clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
       if (summary && !interposed)
 	for (auto kill : summary->kills)
 	  if (kill.get_ao_ref (as_a <gcall *> (stmt), &write))
-	    clear_live_bytes_for_ref (live_bytes, ref, write);
+	    clear_live_bytes_for_ref (live_bytes, ref, &write);
     }
   if (!initialize_ao_ref_for_dse (stmt, &write))
     return;
 
-  clear_live_bytes_for_ref (live_bytes, ref, write);
+  clear_live_bytes_for_ref (live_bytes, ref, &write);
 }
 
 /* REF is a memory write.  Extract relevant information from it and
@@ -267,9 +341,11 @@ setup_live_bytes_from_ref (ao_ref *ref, sbitmap live_bytes)
 {
   HOST_WIDE_INT const_size;
   if (valid_ao_ref_for_dse (ref)
-      && ref->size.is_constant (&const_size)
-      && (const_size / BITS_PER_UNIT
-	  <= param_dse_max_object_size))
+      && ((aligned_upper_bound (ref->offset + ref->max_size, BITS_PER_UNIT)
+	   - aligned_lower_bound (ref->offset,
+				  BITS_PER_UNIT)).is_constant (&const_size))
+      && (const_size / BITS_PER_UNIT <= param_dse_max_object_size)
+      && const_size > 1)
     {
       bitmap_clear (live_bytes);
       bitmap_set_range (live_bytes, 0, const_size / BITS_PER_UNIT);
@@ -645,24 +721,21 @@ maybe_trim_partially_dead_store (ao_ref *ref, sbitmap live, gimple *stmt)
    location.  So callers do not see those modifications.  */
 
 static bool
-live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
+live_bytes_read (ao_ref *use_ref, ao_ref *ref, sbitmap live)
 {
   /* We have already verified that USE_REF and REF hit the same object.
      Now verify that there's actually an overlap between USE_REF and REF.  */
   HOST_WIDE_INT start, size;
-  if (normalize_ref (&use_ref, ref)
-      && (use_ref.offset - ref->offset).is_constant (&start)
-      && use_ref.size.is_constant (&size))
+  if (get_byte_range (use_ref, ref, false, &start, &size))
     {
       /* If USE_REF covers all of REF, then it will hit one or more
 	 live bytes.   This avoids useless iteration over the bitmap
 	 below.  */
-      if (start == 0 && known_eq (size, ref->size))
+      if (start == 0 && known_eq (size * 8, ref->size))
 	return true;
 
       /* Now check if any of the remaining bits in use_ref are set in LIVE.  */
-      return bitmap_bit_in_range_p (live, start / BITS_PER_UNIT,
-				    (start + size - 1) / BITS_PER_UNIT);
+      return bitmap_bit_in_range_p (live, start, (start + size - 1));
     }
   return true;
 }
@@ -861,16 +934,18 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    {
 	      /* Handle common cases where we can easily build an ao_ref
 		 structure for USE_STMT and in doing so we find that the
-		 references hit non-live bytes and thus can be ignored.  */
+		 references hit non-live bytes and thus can be ignored.
+
+		 TODO: We can also use modref summary to handle calls.  */
 	      if (byte_tracking_enabled
 		  && is_gimple_assign (use_stmt))
 		{
 		  ao_ref use_ref;
 		  ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
 		  if (valid_ao_ref_for_dse (&use_ref)
-		      && use_ref.base == ref->base
-		      && known_eq (use_ref.size, use_ref.max_size)
-		      && !live_bytes_read (use_ref, ref, live_bytes))
+		      && operand_equal_p (use_ref.base, ref->base,
+					  OEP_ADDRESS_OF)
+		      && !live_bytes_read (&use_ref, ref, live_bytes))
 		    {
 		      /* If this is a store, remember it as we possibly
 			 need to walk the defs uses.  */

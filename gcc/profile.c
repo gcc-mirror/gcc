@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
+#include "sreal.h"
 
 #include "profile.h"
 
@@ -383,6 +384,30 @@ read_profile_edge_counts (gcov_type *exec_counts)
     }
 
     return num_edges;
+}
+
+/* BB statistics comparing guessed frequency of BB with feedback.  */
+
+struct bb_stats
+{
+  basic_block bb;
+  double guessed, feedback;
+  int64_t count;
+};
+
+/* Compare limit_tuple intervals by first item in descending order.  */
+
+static int
+cmp_stats (const void *ptr1, const void *ptr2)
+{
+  const bb_stats *p1 = (const bb_stats *)ptr1;
+  const bb_stats *p2 = (const bb_stats *)ptr2;
+
+  if (p1->feedback < p2->feedback)
+    return 1;
+  else if (p1->feedback > p2->feedback)
+    return -1;
+  return 0;
 }
 
 
@@ -716,11 +741,52 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
   /* If we have real data, use them!  */
   if (bb_gcov_count (ENTRY_BLOCK_PTR_FOR_FN (cfun))
       || !flag_guess_branch_prob)
-    FOR_ALL_BB_FN (bb, cfun)
-      if (bb_gcov_count (bb) || !flag_profile_partial_training)
-        bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
-      else
-	bb->count = profile_count::guessed_zero ();
+    {
+      profile_count old_entry_cnt = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
+      auto_vec <bb_stats> stats;
+      double sum1 = 0, sum2 = 0;
+
+      FOR_ALL_BB_FN (bb, cfun)
+	{
+	  profile_count cnt = bb->count;
+	  if (bb_gcov_count (bb) || !flag_profile_partial_training)
+	    bb->count = profile_count::from_gcov_type (bb_gcov_count (bb));
+	  else
+	    bb->count = profile_count::guessed_zero ();
+	  if (dump_file && bb->index >= 0)
+	    {
+	      double freq1 = cnt.to_sreal_scale (old_entry_cnt).to_double ();
+	      double freq2 = bb->count.to_sreal_scale
+					(ENTRY_BLOCK_PTR_FOR_FN (cfun)->count).
+				  to_double ();
+	      bb_stats stat = {bb, freq1, freq2,
+			       (int64_t) bb_gcov_count (bb)};
+	      stats.safe_push (stat);
+	      sum1 += freq1;
+	      sum2 += freq2;
+	    }
+	}
+      if (dump_file)
+	{
+	  double nsum1 = 0, nsum2 = 0;
+	  stats.qsort (cmp_stats);
+	  for (auto stat : stats)
+	    {
+	      nsum1 += stat.guessed;
+	      nsum2 += stat.feedback;
+	      fprintf (dump_file,
+		       " Basic block %4i guessed freq: %12.3f"
+		       " cummulative:%6.2f%% "
+		       " feedback freq: %12.3f cummulative:%7.2f%%"
+		       " cnt: 10%" PRId64 "\n", stat.bb->index,
+		       stat.guessed,
+		       nsum1 * 100 / sum1,
+		       stat.feedback,
+		       nsum2 * 100 / sum2,
+		       stat.count);
+	    }
+	}
+    }
   /* If function was not trained, preserve local estimates including statically
      determined zero counts.  */
   else if (profile_status_for_fn (cfun) == PROFILE_READ
@@ -755,6 +821,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
       fputc ('\n', dump_file);
       fputc ('\n', dump_file);
+
+      gimple_dump_cfg (dump_file, TDF_BLOCKS);
     }
 
   free_aux_for_blocks ();

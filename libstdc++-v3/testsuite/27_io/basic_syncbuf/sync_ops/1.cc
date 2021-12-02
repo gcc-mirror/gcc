@@ -17,7 +17,7 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 // { dg-require-gthreads "" }
 // { dg-add-options libatomic }
 // { dg-additional-options "-pthread" { target pthread } }

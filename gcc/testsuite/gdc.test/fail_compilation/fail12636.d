@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12636.d(13): Error: C++ class 'fail12636.C' cannot implement D interface 'fail12636.D'
+fail_compilation/fail12636.d(13): Error: C++ class `fail12636.C` cannot implement D interface `fail12636.D`
 ---
 */
 

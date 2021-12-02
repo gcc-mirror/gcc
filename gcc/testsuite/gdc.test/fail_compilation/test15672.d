@@ -1,8 +1,8 @@
 /*
  * TEST_OUTPUT:
 ---
-fail_compilation/test15672.d(15): Error: cast from void[] to byte[] not allowed in safe code
-fail_compilation/test15672.d(25): Error: cast from void* to byte* not allowed in safe code
+fail_compilation/test15672.d(15): Error: cast from `void[]` to `byte[]` not allowed in safe code
+fail_compilation/test15672.d(25): Error: cast from `void*` to `byte*` not allowed in safe code
 ---
 */
 // https://issues.dlang.org/show_bug.cgi?id=15672

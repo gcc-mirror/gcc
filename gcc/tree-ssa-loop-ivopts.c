@@ -1462,22 +1462,20 @@ find_givs_in_bb (struct ivopts_data *data, basic_block bb)
 /* Finds general ivs.  */
 
 static void
-find_givs (struct ivopts_data *data)
+find_givs (struct ivopts_data *data, basic_block *body)
 {
   class loop *loop = data->current_loop;
-  basic_block *body = get_loop_body_in_dom_order (loop);
   unsigned i;
 
   for (i = 0; i < loop->num_nodes; i++)
     find_givs_in_bb (data, body[i]);
-  free (body);
 }
 
 /* For each ssa name defined in LOOP determines whether it is an induction
    variable and if so, its initial value and step.  */
 
 static bool
-find_induction_variables (struct ivopts_data *data)
+find_induction_variables (struct ivopts_data *data, basic_block *body)
 {
   unsigned i;
   bitmap_iterator bi;
@@ -1485,7 +1483,7 @@ find_induction_variables (struct ivopts_data *data)
   if (!find_bivs (data))
     return false;
 
-  find_givs (data);
+  find_givs (data, body);
   mark_bivs (data);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2736,11 +2734,10 @@ split_address_groups (struct ivopts_data *data)
 /* Finds uses of the induction variables that are interesting.  */
 
 static void
-find_interesting_uses (struct ivopts_data *data)
+find_interesting_uses (struct ivopts_data *data, basic_block *body)
 {
   basic_block bb;
   gimple_stmt_iterator bsi;
-  basic_block *body = get_loop_body (data->current_loop);
   unsigned i;
   edge e;
 
@@ -2760,7 +2757,6 @@ find_interesting_uses (struct ivopts_data *data)
 	if (!is_gimple_debug (gsi_stmt (bsi)))
 	  find_interesting_uses_stmt (data, gsi_stmt (bsi));
     }
-  free (body);
 
   split_address_groups (data);
 
@@ -5034,28 +5030,57 @@ determine_group_iv_cost_address (struct ivopts_data *data,
   return !sum_cost.infinite_cost_p ();
 }
 
-/* Computes value of candidate CAND at position AT in iteration NITER, and
-   stores it to VAL.  */
+/* Computes value of candidate CAND at position AT in iteration DESC->NITER,
+   and stores it to VAL.  */
 
 static void
-cand_value_at (class loop *loop, struct iv_cand *cand, gimple *at, tree niter,
-	       aff_tree *val)
+cand_value_at (class loop *loop, struct iv_cand *cand, gimple *at,
+	       class tree_niter_desc *desc, aff_tree *val)
 {
   aff_tree step, delta, nit;
   struct iv *iv = cand->iv;
   tree type = TREE_TYPE (iv->base);
+  tree niter = desc->niter;
+  bool after_adjust = stmt_after_increment (loop, cand, at);
   tree steptype;
+
   if (POINTER_TYPE_P (type))
     steptype = sizetype;
   else
     steptype = unsigned_type_for (type);
+
+  /* If AFTER_ADJUST is required, the code below generates the equivalent
+     of BASE + NITER * STEP + STEP, when ideally we'd prefer the expression
+     BASE + (NITER + 1) * STEP, especially when NITER is often of the form
+     SSA_NAME - 1.  Unfortunately, guaranteeing that adding 1 to NITER
+     doesn't overflow is tricky, so we peek inside the TREE_NITER_DESC
+     class for common idioms that we know are safe.  */
+  if (after_adjust
+      && desc->control.no_overflow
+      && integer_onep (desc->control.step)
+      && (desc->cmp == LT_EXPR
+	  || desc->cmp == NE_EXPR)
+      && TREE_CODE (desc->bound) == SSA_NAME)
+    {
+      if (integer_onep (desc->control.base))
+	{
+	  niter = desc->bound;
+	  after_adjust = false;
+	}
+      else if (TREE_CODE (niter) == MINUS_EXPR
+	       && integer_onep (TREE_OPERAND (niter, 1)))
+	{
+	  niter = TREE_OPERAND (niter, 0);
+	  after_adjust = false;
+	}
+    }
 
   tree_to_aff_combination (iv->step, TREE_TYPE (iv->step), &step);
   aff_combination_convert (&step, steptype);
   tree_to_aff_combination (niter, TREE_TYPE (niter), &nit);
   aff_combination_convert (&nit, steptype);
   aff_combination_mult (&nit, &step, &delta);
-  if (stmt_after_increment (loop, cand, at))
+  if (after_adjust)
     aff_combination_add (&delta, &step);
 
   tree_to_aff_combination (iv->base, type, val);
@@ -5406,7 +5431,7 @@ may_eliminate_iv (struct ivopts_data *data,
       return true;
     }
 
-  cand_value_at (loop, cand, use->stmt, desc->niter, &bnd);
+  cand_value_at (loop, cand, use->stmt, desc, &bnd);
 
   *bound = fold_convert (TREE_TYPE (cand->iv->base),
 			 aff_combination_to_tree (&bnd));
@@ -7670,7 +7695,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 
 	  tree def = info->iv->ssa_name;
 
-	  if (flag_var_tracking_assignments && SSA_NAME_DEF_STMT (def))
+	  if (MAY_HAVE_DEBUG_BIND_STMTS && SSA_NAME_DEF_STMT (def))
 	    {
 	      imm_use_iterator imm_iter;
 	      use_operand_p use_p;
@@ -8077,11 +8102,11 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, class loop *loop,
 
   /* For each ssa name determines whether it behaves as an induction variable
      in some loop.  */
-  if (!find_induction_variables (data))
+  if (!find_induction_variables (data, body))
     goto finish;
 
   /* Finds interesting uses (item 1).  */
-  find_interesting_uses (data);
+  find_interesting_uses (data, body);
   if (data->vgroups.length () > MAX_CONSIDERED_GROUPS)
     goto finish;
 

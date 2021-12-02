@@ -1000,7 +1000,7 @@ generate_loops_for_partition (class loop *loop, partition *partition,
   /* Remove stmts not in the PARTITION bitmap.  */
   bbs = get_loop_body_in_dom_order (loop);
 
-  if (flag_var_tracking_assignments)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     for (i = 0; i < loop->num_nodes; i++)
       {
 	basic_block bb = bbs[i];
@@ -3737,7 +3737,6 @@ prepare_perfect_loop_nest (class loop *loop)
 unsigned int
 loop_distribution::execute (function *fun)
 {
-  class loop *loop;
   bool changed = false;
   basic_block bb;
   control_dependences *cd = NULL;
@@ -3845,6 +3844,7 @@ loop_distribution::execute (function *fun)
       /* Destroy loop bodies that could not be reused.  Do this late as we
 	 otherwise can end up refering to stale data in control dependences.  */
       unsigned i;
+      class loop *loop;
       FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)
 	destroy_loop (loop);
 

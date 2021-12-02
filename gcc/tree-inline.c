@@ -823,9 +823,6 @@ remap_block (tree *block, copy_body_data *id)
   					&BLOCK_NONLOCALIZED_VARS (new_block),
 					id);
 
-  if (id->transform_lang_insert_block)
-    id->transform_lang_insert_block (new_block);
-
   /* Remember the remapped block.  */
   insert_decl_map (id, old_block, new_block);
 }
@@ -5473,7 +5470,6 @@ optimize_inline_calls (tree fn)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = true;
   id.transform_parameter = true;
-  id.transform_lang_insert_block = NULL;
   id.statements_to_fold = new hash_set<gimple *>;
 
   push_gimplify_context ();
@@ -5857,7 +5853,6 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
   id.transform_parameter = false;
-  id.transform_lang_insert_block = NULL;
 
   /* Walk the tree once to find local labels.  */
   memset (&wi, 0, sizeof (wi));
@@ -6252,7 +6247,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
   id.transform_parameter = false;
-  id.transform_lang_insert_block = NULL;
 
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FN
     (DECL_STRUCT_FUNCTION (old_decl));
@@ -6432,7 +6426,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	}
     }
 
-  if (param_body_adjs && flag_var_tracking_assignments)
+  if (param_body_adjs && MAY_HAVE_DEBUG_BIND_STMTS)
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned int len = 0;
@@ -6541,7 +6535,6 @@ maybe_inline_call_in_expr (tree exp)
       id.transform_new_cfg = false;
       id.transform_return_to_modify = true;
       id.transform_parameter = true;
-      id.transform_lang_insert_block = NULL;
 
       /* Make sure not to unshare trees behind the front-end's back
 	 since front-end specific mechanisms may rely on sharing.  */
@@ -6613,7 +6606,6 @@ copy_fn (tree fn, tree& parms, tree& result)
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
   id.transform_parameter = true;
-  id.transform_lang_insert_block = NULL;
 
   /* Make sure not to unshare trees behind the front-end's back
      since front-end specific mechanisms may rely on sharing.  */

@@ -7,6 +7,7 @@ subroutine acc_routine ()
   !$acc routine gang
   integer :: i, j, k, l, sum, diff
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
@@ -18,6 +19,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop collapse(2)  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
@@ -31,6 +33,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }
@@ -46,6 +49,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
@@ -57,6 +61,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
@@ -68,6 +73,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
@@ -83,6 +89,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum)
     do i = 1, 10
       !$acc loop reduction(-:sum)  ! { dg-warning "conflicting reduction operations for .sum." }
@@ -98,6 +105,7 @@ subroutine acc_routine ()
       end do
     end do
 
+    ! { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 }
     !$acc loop reduction(+:sum) reduction(-:diff)
     do i = 1, 10
       !$acc loop reduction(-:diff)  ! { dg-warning "nested loop in reduction needs reduction clause for .sum." }

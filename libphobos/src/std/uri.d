@@ -9,14 +9,14 @@
  * Escape sequences consist of $(B %) followed by two hex digits.
  *
  * See_Also:
- *  $(LINK2 http://www.ietf.org/rfc/rfc3986.txt, RFC 3986)<br>
+ *  $(LINK2 https://www.ietf.org/rfc/rfc3986.txt, RFC 3986)<br>
  *  $(LINK2 http://en.wikipedia.org/wiki/Uniform_resource_identifier, Wikipedia)
- * Copyright: Copyright Digital Mars 2000 - 2009.
+ * Copyright: Copyright The D Language Foundation 2000 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
- * Source:    $(PHOBOSSRC std/_uri.d)
+ * Source:    $(PHOBOSSRC std/uri.d)
  */
-/*          Copyright Digital Mars 2000 - 2009.
+/*          Copyright The D Language Foundation 2000 - 2009.
  * Distributed under the Boost Software License, Version 1.0.
  *    (See accompanying file LICENSE_1_0.txt or copy at
  *          http://www.boost.org/LICENSE_1_0.txt)
@@ -34,6 +34,13 @@ class URIException : Exception
 {
     import std.exception : basicExceptionCtors;
     mixin basicExceptionCtors;
+}
+
+///
+@safe unittest
+{
+    import std.exception : assertThrown;
+    assertThrown!URIException("%ab".decode);
 }
 
 private enum
@@ -65,11 +72,8 @@ private immutable ubyte[128] uri_flags =      // indexed by character
         return uflags;
     })();
 
-private string URI_Encode(dstring str, uint unescapedSet)
+private string URI_Encode(dstring str, uint unescapedSet) @safe pure
 {
-    import core.exception : OutOfMemoryError;
-    import core.stdc.stdlib : alloca;
-
     uint j;
     uint k;
     dchar V;
@@ -77,13 +81,13 @@ private string URI_Encode(dstring str, uint unescapedSet)
 
     // result buffer
     char[50] buffer = void;
-    char* R;
+    char[] R;
     uint Rlen;
     uint Rsize; // alloc'd size
 
     immutable len = str.length;
 
-    R = buffer.ptr;
+    R = buffer[];
     Rsize = buffer.length;
     Rlen = 0;
 
@@ -95,19 +99,10 @@ private string URI_Encode(dstring str, uint unescapedSet)
         {
             if (Rlen == Rsize)
             {
-                char* R2;
+                char[] R2;
 
                 Rsize *= 2;
-                if (Rsize > 1024)
-                {
-                    R2 = (new char[Rsize]).ptr;
-                }
-                else
-                {
-                    R2 = cast(char *) alloca(Rsize * char.sizeof);
-                    if (!R2)
-                        throw new OutOfMemoryError("Alloca failure");
-                }
+                R2 = new char[Rsize];
                 R2[0 .. Rlen] = R[0 .. Rlen];
                 R = R2;
             }
@@ -155,19 +150,10 @@ private string URI_Encode(dstring str, uint unescapedSet)
 
             if (Rlen + L * 3 > Rsize)
             {
-                char *R2;
+                char[] R2;
 
                 Rsize = 2 * (Rlen + L * 3);
-                if (Rsize > 1024)
-                {
-                    R2 = (new char[Rsize]).ptr;
-                }
-                else
-                {
-                    R2 = cast(char *) alloca(Rsize * char.sizeof);
-                    if (!R2)
-                        throw new OutOfMemoryError("Alloca failure");
-                }
+                R2 = new char[Rsize];
                 R2[0 .. Rlen] = R[0 .. Rlen];
                 R = R2;
             }
@@ -186,6 +172,18 @@ private string URI_Encode(dstring str, uint unescapedSet)
     return R[0 .. Rlen].idup;
 }
 
+@safe pure unittest
+{
+    import std.exception : assertThrown;
+
+    assert(URI_Encode("", 0) == "");
+    assert(URI_Encode(URI_Decode("%F0%BF%BF%BF", 0), 0) == "%F0%BF%BF%BF");
+    dstring a;
+    a ~= cast(dchar) 0xFFFFFFFF;
+    assertThrown(URI_Encode(a, 0));
+    assert(URI_Encode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 0).length == 3 * 60);
+}
+
 private uint ascii2hex(dchar c) @nogc @safe pure nothrow
 {
     return (c <= '9') ? c - '0' :
@@ -193,11 +191,9 @@ private uint ascii2hex(dchar c) @nogc @safe pure nothrow
         c - 'a' + 10;
 }
 
-private dstring URI_Decode(Char)(in Char[] uri, uint reservedSet)
+private dstring URI_Decode(Char)(scope const(Char)[] uri, uint reservedSet)
 if (isSomeChar!Char)
 {
-    import core.exception : OutOfMemoryError;
-    import core.stdc.stdlib : alloca;
     import std.ascii : isHexDigit;
 
     uint j;
@@ -205,25 +201,12 @@ if (isSomeChar!Char)
     uint V;
     dchar C;
 
-    // Result array, allocated on stack
-    dchar* R;
     uint Rlen;
-
     immutable len = uri.length;
-    auto s = uri.ptr;
+    auto s = uri;
 
-    // Preallocate result buffer R guaranteed to be large enough for result
     auto Rsize = len;
-    if (Rsize > 1024 / dchar.sizeof)
-    {
-        R = (new dchar[Rsize]).ptr;
-    }
-    else
-    {
-        R = cast(dchar *) alloca(Rsize * dchar.sizeof);
-        if (!R)
-            throw new OutOfMemoryError("Alloca failure");
-    }
+    dchar[] R = new dchar[Rsize];
     Rlen = 0;
 
     for (k = 0; k != len; k++)
@@ -307,13 +290,28 @@ if (isSomeChar!Char)
     return R[0 .. Rlen].idup;
 }
 
+@safe pure unittest
+{
+    import std.exception : assertThrown;
+
+    assert(URI_Decode("", 0) == "");
+    assertThrown!URIException(URI_Decode("%", 0));
+    assertThrown!URIException(URI_Decode("%xx", 0));
+    assertThrown!URIException(URI_Decode("%FF", 0));
+    assertThrown!URIException(URI_Decode("%C0", 0));
+    assertThrown!URIException(URI_Decode("%C0000000", 0));
+    assertThrown!URIException(URI_Decode("%C0%xx0000", 0));
+    assertThrown!URIException(URI_Decode("%C0%C00000", 0));
+    assertThrown!URIException(URI_Decode("%F7%BF%BF%BF", 0));
+    assert(URI_Decode("%23", URI_Hash) == "%23");
+}
+
 /*************************************
  * Decodes the URI string encodedURI into a UTF-8 string and returns it.
  * Escape sequences that resolve to reserved URI characters are not replaced.
  * Escape sequences that resolve to the '#' character are not replaced.
  */
-
-string decode(Char)(in Char[] encodedURI)
+string decode(Char)(scope const(Char)[] encodedURI)
 if (isSomeChar!Char)
 {
     import std.algorithm.iteration : each;
@@ -324,12 +322,20 @@ if (isSomeChar!Char)
     return r;
 }
 
+///
+@safe unittest
+{
+    assert("foo%20bar".decode == "foo bar");
+    assert("%3C%3E.@.%E2%84%A2".decode == "<>.@.™");
+    assert("foo&/".decode == "foo&/");
+    assert("!@#$&*(".decode == "!@#$&*(");
+}
+
 /*******************************
  * Decodes the URI string encodedURI into a UTF-8 string and returns it. All
  * escape sequences are decoded.
  */
-
-string decodeComponent(Char)(in Char[] encodedURIComponent)
+string decodeComponent(Char)(scope const(Char)[] encodedURIComponent)
 if (isSomeChar!Char)
 {
     import std.algorithm.iteration : each;
@@ -340,12 +346,19 @@ if (isSomeChar!Char)
     return r;
 }
 
+///
+@safe unittest
+{
+    assert("foo%2F%26".decodeComponent == "foo/&");
+    assert("dl%C3%A4ng%20r%C3%B6cks".decodeComponent == "dläng röcks");
+    assert("!%40%23%24%25%5E%26*(".decodeComponent == "!@#$%^&*(");
+}
+
 /*****************************
  * Encodes the UTF-8 string uri into a URI and returns that URI. Any character
  * not a valid URI character is escaped. The '#' character is not escaped.
  */
-
-string encode(Char)(in Char[] uri)
+string encode(Char)(scope const(Char)[] uri)
 if (isSomeChar!Char)
 {
     import std.utf : toUTF32;
@@ -353,17 +366,36 @@ if (isSomeChar!Char)
     return URI_Encode(s, URI_Reserved | URI_Hash | URI_Alpha | URI_Digit | URI_Mark);
 }
 
+///
+@safe unittest
+{
+    assert("foo bar".encode == "foo%20bar");
+    assert("<>.@.™".encode == "%3C%3E.@.%E2%84%A2");
+    assert("foo/#?a=1&b=2".encode == "foo/#?a=1&b=2");
+    assert("dlang+rocks!".encode == "dlang+rocks!");
+    assert("!@#$%^&*(".encode == "!@#$%25%5E&*(");
+}
+
 /********************************
  * Encodes the UTF-8 string uriComponent into a URI and returns that URI.
  * Any character not a letter, digit, or one of -_.!~*'() is escaped.
  */
-
-string encodeComponent(Char)(in Char[] uriComponent)
+string encodeComponent(Char)(scope const(Char)[] uriComponent)
 if (isSomeChar!Char)
 {
     import std.utf : toUTF32;
     auto s = toUTF32(uriComponent);
     return URI_Encode(s, URI_Alpha | URI_Digit | URI_Mark);
+}
+
+///
+@safe unittest
+{
+    assert("!@#$%^&*(".encodeComponent == "!%40%23%24%25%5E%26*(");
+    assert("<>.@.™".encodeComponent == "%3C%3E.%40.%E2%84%A2");
+    assert("foo/&".encodeComponent == "foo%2F%26");
+    assert("dläng röcks".encodeComponent == "dl%C3%A4ng%20r%C3%B6cks");
+    assert("dlang+rocks!".encodeComponent == "dlang%2Brocks!");
 }
 
 /* Encode associative array using www-form-urlencoding
@@ -374,13 +406,13 @@ if (isSomeChar!Char)
  * Returns:
  *      A string encoded using www-form-urlencoding.
  */
-package string urlEncode(in string[string] values)
+package string urlEncode(scope string[string] values) @safe pure
 {
     if (values.length == 0)
         return "";
 
     import std.array : Appender;
-    import std.format : formattedWrite;
+    import std.format.write : formattedWrite;
 
     Appender!string enc;
     enc.reserve(values.length * 128);
@@ -396,7 +428,7 @@ package string urlEncode(in string[string] values)
     return enc.data;
 }
 
-@system unittest
+@safe pure unittest
 {
     // @system because urlEncode -> encodeComponent -> URI_Encode
     // URI_Encode uses alloca and pointer slicing
@@ -414,7 +446,7 @@ package string urlEncode(in string[string] values)
  *  len  it does, and s[0 .. len] is the slice of s[] that is that URL
  */
 
-ptrdiff_t uriLength(Char)(in Char[] s)
+ptrdiff_t uriLength(Char)(scope const(Char)[] s)
 if (isSomeChar!Char)
 {
     /* Must start with one of:
@@ -467,7 +499,7 @@ if (isSomeChar!Char)
 }
 
 ///
-@safe unittest
+@safe pure unittest
 {
     string s1 = "http://www.digitalmars.com/~fred/fredsRX.html#foo end!";
     assert(uriLength(s1) == 49);
@@ -476,6 +508,11 @@ if (isSomeChar!Char)
     assert(uriLength("issue 14924") < 0);
 }
 
+@safe pure nothrow @nogc unittest
+{
+    assert(uriLength("") == -1);
+    assert(uriLength("https://www") == -1);
+}
 
 /***************************
  * Does string s[] start with an email address?
@@ -485,12 +522,15 @@ if (isSomeChar!Char)
  * References:
  *  RFC2822
  */
-ptrdiff_t emailLength(Char)(in Char[] s)
+ptrdiff_t emailLength(Char)(scope const(Char)[] s)
 if (isSomeChar!Char)
 {
     import std.ascii : isAlpha, isAlphaNum;
 
     ptrdiff_t i;
+
+    if (s.length == 0)
+        return -1;
 
     if (!isAlpha(s[0]))
         return -1;
@@ -534,7 +574,7 @@ if (isSomeChar!Char)
 }
 
 ///
-@safe unittest
+@safe pure unittest
 {
     string s1 = "my.e-mail@www.example-domain.com with garbage added";
     assert(emailLength(s1) == 32);
@@ -543,8 +583,7 @@ if (isSomeChar!Char)
     assert(emailLength("issue 14924") < 0);
 }
 
-
-@system unittest
+@safe pure unittest
 {
     //@system because of encode -> URI_Encode
     debug(uri) writeln("uri.encodeURI.unittest");
@@ -575,8 +614,8 @@ if (isSomeChar!Char)
     debug(uri) writeln(result);
 
     import std.meta : AliasSeq;
-    foreach (StringType; AliasSeq!(char[], wchar[], dchar[], string, wstring, dstring))
-    {
+    static foreach (StringType; AliasSeq!(char[], wchar[], dchar[], string, wstring, dstring))
+    {{
         import std.conv : to;
         StringType decoded1 = source.to!StringType;
         string encoded1 = encode(decoded1);
@@ -589,5 +628,15 @@ if (isSomeChar!Char)
         assert(encoded2 == target.to!StringType); // check that `encoded2` wasn't changed
         assert(decoded2 == source);
         assert(encoded2 == encode(decoded2).to!StringType);
-    }
+    }}
+}
+
+@safe pure nothrow @nogc unittest
+{
+    assert(emailLength("") == -1);
+    assert(emailLength("@") == -1);
+    assert(emailLength("abcd") == -1);
+    assert(emailLength("blah@blub") == -1);
+    assert(emailLength("blah@blub.") == -1);
+    assert(emailLength("blah@blub.domain") == -1);
 }

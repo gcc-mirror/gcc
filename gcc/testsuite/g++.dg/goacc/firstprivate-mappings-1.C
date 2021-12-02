@@ -416,7 +416,7 @@ vla (int &array_li)
   copyout (array_so)
   /* The gimplifier has created an implicit 'firstprivate' clause for the array
      length.
-     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel firstprivate\([^)]+\) map\(from:array_so \[len: 4\]\)} omplower } }
+     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel map\(from:array_so \[len: 4\]\) firstprivate\(} omplower } }
      (C++ computes an intermediate value, so can't scan for 'firstprivate(array_li)'.)  */
   {
     array_so = sizeof array;

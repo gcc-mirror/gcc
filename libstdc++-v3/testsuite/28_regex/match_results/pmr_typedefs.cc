@@ -17,7 +17,7 @@
 
 // { dg-do compile { target c++17 } }
 // { dg-timeout-factor 2 }
-// { dg-require-effective-target cxx11-abi }
+// { dg-require-effective-target cxx11_abi }
 
 #include <regex>
 #include <memory_resource>

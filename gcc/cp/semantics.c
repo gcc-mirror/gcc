@@ -5394,7 +5394,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION);
-  ret = grok_array_decl (OMP_CLAUSE_LOCATION (c), ret, low_bound, false);
+  ret = grok_array_decl (OMP_CLAUSE_LOCATION (c), ret, low_bound, NULL,
+			 tf_warning_or_error);
   return ret;
 }
 
@@ -6066,7 +6067,6 @@ clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = NULL;
   id.eh_lp_nr = 0;
   walk_tree (&stmt, copy_tree_body_r, &id, NULL);
   return stmt;

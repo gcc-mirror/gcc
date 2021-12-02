@@ -1,48 +1,48 @@
 // Written in the D programming language.
 /**
 This is a submodule of $(MREF std, algorithm).
-It contains generic _comparison algorithms.
+It contains generic comparison algorithms.
 
 $(SCRIPT inhibitQuickIndex = 1;)
 $(BOOKTABLE Cheat Sheet,
 $(TR $(TH Function Name) $(TH Description))
 $(T2 among,
         Checks if a value is among a set of values, e.g.
-        $(D if (v.among(1, 2, 3)) // `v` is 1, 2 or 3))
+        `if (v.among(1, 2, 3)) // `v` is 1, 2 or 3`)
 $(T2 castSwitch,
-        $(D (new A()).castSwitch((A a)=>1,(B b)=>2)) returns $(D 1).)
+        `(new A()).castSwitch((A a)=>1,(B b)=>2)` returns `1`.)
 $(T2 clamp,
-        $(D clamp(1, 3, 6)) returns $(D 3). $(D clamp(4, 3, 6)) returns $(D 4).)
+        `clamp(1, 3, 6)` returns `3`. `clamp(4, 3, 6)` returns `4`.)
 $(T2 cmp,
-        $(D cmp("abc", "abcd")) is $(D -1), $(D cmp("abc", "aba")) is $(D 1),
-        and $(D cmp("abc", "abc")) is $(D 0).)
+        `cmp("abc", "abcd")` is `-1`, `cmp("abc", "aba")` is `1`,
+        and `cmp("abc", "abc")` is `0`.)
 $(T2 either,
-        Return first parameter $(D p) that passes an $(D if (p)) test, e.g.
-        $(D either(0, 42, 43)) returns $(D 42).)
+        Return first parameter `p` that passes an `if (p)` test, e.g.
+        `either(0, 42, 43)` returns `42`.)
 $(T2 equal,
         Compares ranges for element-by-element equality, e.g.
-        $(D equal([1, 2, 3], [1.0, 2.0, 3.0])) returns $(D true).)
+        `equal([1, 2, 3], [1.0, 2.0, 3.0])` returns `true`.)
 $(T2 isPermutation,
-        $(D isPermutation([1, 2], [2, 1])) returns $(D true).)
+        `isPermutation([1, 2], [2, 1])` returns `true`.)
 $(T2 isSameLength,
-        $(D isSameLength([1, 2, 3], [4, 5, 6])) returns $(D true).)
+        `isSameLength([1, 2, 3], [4, 5, 6])` returns `true`.)
 $(T2 levenshteinDistance,
-        $(D levenshteinDistance("kitten", "sitting")) returns $(D 3) by using
+        `levenshteinDistance("kitten", "sitting")` returns `3` by using
         the $(LINK2 https://en.wikipedia.org/wiki/Levenshtein_distance,
-        Levenshtein distance _algorithm).)
+        Levenshtein distance algorithm).)
 $(T2 levenshteinDistanceAndPath,
-        $(D levenshteinDistanceAndPath("kitten", "sitting")) returns
-        $(D tuple(3, "snnnsni")) by using the
+        `levenshteinDistanceAndPath("kitten", "sitting")` returns
+        `tuple(3, "snnnsni")` by using the
         $(LINK2 https://en.wikipedia.org/wiki/Levenshtein_distance,
-        Levenshtein distance _algorithm).)
+        Levenshtein distance algorithm).)
 $(T2 max,
-        $(D max(3, 4, 2)) returns $(D 4).)
+        `max(3, 4, 2)` returns `4`.)
 $(T2 min,
-        $(D min(3, 4, 2)) returns $(D 2).)
+        `min(3, 4, 2)` returns `2`.)
 $(T2 mismatch,
-        $(D mismatch("oh hi", "ohayo")) returns $(D tuple(" hi", "ayo")).)
+        `mismatch("oh hi", "ohayo")` returns `tuple(" hi", "ayo")`.)
 $(T2 predSwitch,
-        $(D 2.predSwitch(1, "one", 2, "two", 3, "three")) returns $(D "two").)
+        `2.predSwitch(1, "one", 2, "two", 3, "three")` returns `"two"`.)
 )
 
 Copyright: Andrei Alexandrescu 2008-.
@@ -51,25 +51,25 @@ License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 
 Authors: $(HTTP erdani.com, Andrei Alexandrescu)
 
-Source: $(PHOBOSSRC std/algorithm/_comparison.d)
+Source: $(PHOBOSSRC std/algorithm/comparison.d)
 
 Macros:
 T2=$(TR $(TDNW $(LREF $1)) $(TD $+))
  */
 module std.algorithm.comparison;
 
-// FIXME
-import std.functional; // : unaryFun, binaryFun;
+import std.functional : unaryFun, binaryFun;
 import std.range.primitives;
 import std.traits;
-// FIXME
 import std.meta : allSatisfy;
-import std.typecons; // : tuple, Tuple, Flag, Yes;
+import std.typecons : tuple, Tuple, Flag, Yes;
+
+import std.internal.attributes : betterC;
 
 /**
-Find $(D value) _among $(D values), returning the 1-based index
-of the first matching value in $(D values), or $(D 0) if $(D value)
-is not _among $(D values). The predicate $(D pred) is used to
+Find `value` _among `values`, returning the 1-based index
+of the first matching value in `values`, or `0` if `value`
+is not _among `values`. The predicate `pred` is used to
 compare values, and uses equality by default.
 
 Params:
@@ -116,7 +116,7 @@ if (isExpressionTuple!values)
 }
 
 ///
-@safe unittest
+@safe @nogc @betterC unittest
 {
     assert(3.among(1, 42, 24, 3, 2));
 
@@ -130,10 +130,10 @@ if (isExpressionTuple!values)
 }
 
 /**
-Alternatively, $(D values) can be passed at compile-time, allowing for a more
+Alternatively, `values` can be passed at compile-time, allowing for a more
 efficient search, but one that only supports matching on equality:
 */
-@safe unittest
+@safe @nogc @betterC unittest
 {
     assert(3.among!(2, 3, 4));
     assert("bar".among!("foo", "bar", "baz") == 2);
@@ -214,19 +214,19 @@ private template indexOfFirstOvershadowingChoiceOnLast(choices...)
 Executes and returns one of a collection of handlers based on the type of the
 switch object.
 
-The first choice that $(D switchObject) can be casted to the type
-of argument it accepts will be called with $(D switchObject) casted to that
-type, and the value it'll return will be returned by $(D castSwitch).
+The first choice that `switchObject` can be casted to the type
+of argument it accepts will be called with `switchObject` casted to that
+type, and the value it'll return will be returned by `castSwitch`.
 
 If a choice's return type is void, the choice must throw an exception, unless
 all the choices are void. In that case, castSwitch itself will return void.
 
-Throws: If none of the choice matches, a $(D SwitchError) will be thrown.  $(D
+Throws: If none of the choice matches, a `SwitchError` will be thrown.  $(D
 SwitchError) will also be thrown if not all the choices are void and a void
 choice was executed without throwing anything.
 
 Params:
-    choices = The $(D choices) needs to be composed of function or delegate
+    choices = The `choices` needs to be composed of function or delegate
         handlers that accept one argument. There can also be a choice that
         accepts zero arguments. That choice will be invoked if the $(D
         switchObject) is null.
@@ -235,7 +235,7 @@ Params:
 Returns:
     The value of the selected choice.
 
-Note: $(D castSwitch) can only be used with object types.
+Note: `castSwitch` can only be used with object types.
 */
 auto castSwitch(choices...)(Object switchObject)
 {
@@ -254,7 +254,6 @@ auto castSwitch(choices...)(Object switchObject)
 
     if (switchObject !is null)
     {
-
         // Checking for exact matches:
         const classInfo = typeid(switchObject);
         foreach (index, choice; choices)
@@ -517,7 +516,7 @@ auto castSwitch(choices...)(Object switchObject)
 
 /** Clamps a value into the given bounds.
 
-This functions is equivalent to $(D max(lower, min(upper,val))).
+This function is equivalent to `max(lower, min(upper, val))`.
 
 Params:
     val = The value to _clamp.
@@ -525,23 +524,24 @@ Params:
     upper = The _upper bound of the _clamp.
 
 Returns:
-    Returns $(D val), if it is between $(D lower) and $(D upper).
+    Returns `val`, if it is between `lower` and `upper`.
     Otherwise returns the nearest of the two.
 
 */
 auto clamp(T1, T2, T3)(T1 val, T2 lower, T3 upper)
+if (is(typeof(max(min(val, upper), lower))))
 in
 {
     import std.functional : greaterThan;
-    assert(!lower.greaterThan(upper));
+    assert(!lower.greaterThan(upper), "Lower can't be greater than upper.");
 }
-body
+do
 {
-    return max(lower, min(upper, val));
+    return max(min(val, upper), lower);
 }
 
 ///
-@safe unittest
+@safe @nogc @betterC unittest
 {
     assert(clamp(2, 1, 3) == 2);
     assert(clamp(0, 1, 3) == 1);
@@ -576,121 +576,160 @@ body
     // UFCS style
     assert(Date(1982, 1, 4).clamp(Date.min, Date.max) == Date(1982, 1, 4));
 
+    // Stability
+    struct A {
+        int x, y;
+        int opCmp(ref const A rhs) const { return (x > rhs.x) - (x < rhs.x); }
+    }
+    A x, lo, hi;
+    x.y = 42;
+    assert(x.clamp(lo, hi).y == 42);
 }
 
 // cmp
 /**********************************
-Performs three-way lexicographical comparison on two
-$(REF_ALTTEXT input ranges, isInputRange, std,range,primitives)
-according to predicate $(D pred). Iterating $(D r1) and $(D r2) in
-lockstep, $(D cmp) compares each element $(D e1) of $(D r1) with the
-corresponding element $(D e2) in $(D r2). If one of the ranges has been
-finished, $(D cmp) returns a negative value if $(D r1) has fewer
-elements than $(D r2), a positive value if $(D r1) has more elements
-than $(D r2), and $(D 0) if the ranges have the same number of
-elements.
+Performs a lexicographical comparison on two
+$(REF_ALTTEXT input ranges, isInputRange, std,range,primitives).
+Iterating `r1` and `r2` in lockstep, `cmp` compares each element
+`e1` of `r1` with the corresponding element `e2` in `r2`. If one
+of the ranges has been finished, `cmp` returns a negative value
+if `r1` has fewer elements than `r2`, a positive value if `r1`
+has more elements than `r2`, and `0` if the ranges have the same
+number of elements.
 
-If the ranges are strings, $(D cmp) performs UTF decoding
+If the ranges are strings, `cmp` performs UTF decoding
 appropriately and compares the ranges one code point at a time.
 
+A custom predicate may be specified, in which case `cmp` performs
+a three-way lexicographical comparison using `pred`. Otherwise
+the elements are compared using `opCmp`.
+
 Params:
-    pred = The predicate used for comparison.
+    pred = Predicate used for comparison. Without a predicate
+        specified the ordering implied by `opCmp` is used.
     r1 = The first range.
     r2 = The second range.
 
 Returns:
-    0 if both ranges compare equal. -1 if the first differing element of $(D
-    r1) is less than the corresponding element of $(D r2) according to $(D
-    pred). 1 if the first differing element of $(D r2) is less than the
-    corresponding element of $(D r1) according to $(D pred).
+    `0` if the ranges compare equal. A negative value if `r1` is a prefix of `r2` or
+    the first differing element of `r1` is less than the corresponding element of `r2`
+    according to `pred`. A positive value if `r2` is a prefix of `r1` or the first
+    differing element of `r2` is less than the corresponding element of `r1`
+    according to `pred`.
 
+Note:
+    An earlier version of the documentation incorrectly stated that `-1` is the
+    only negative value returned and `1` is the only positive value returned.
+    Whether that is true depends on the types being compared.
 */
-int cmp(alias pred = "a < b", R1, R2)(R1 r1, R2 r2)
-if (isInputRange!R1 && isInputRange!R2 && !(isSomeString!R1 && isSomeString!R2))
+auto cmp(R1, R2)(R1 r1, R2 r2)
+if (isInputRange!R1 && isInputRange!R2)
 {
-    for (;; r1.popFront(), r2.popFront())
+    alias E1 = ElementEncodingType!R1;
+    alias E2 = ElementEncodingType!R2;
+
+    static if (isDynamicArray!R1 && isDynamicArray!R2
+        && __traits(isUnsigned, E1) && __traits(isUnsigned, E2)
+        && E1.sizeof == 1 && E2.sizeof == 1
+        // Both or neither must auto-decode.
+        && (is(immutable E1 == immutable char) == is(immutable E2 == immutable char)))
     {
-        if (r1.empty) return -cast(int)!r2.empty;
-        if (r2.empty) return !r1.empty;
-        auto a = r1.front, b = r2.front;
-        if (binaryFun!pred(a, b)) return -1;
-        if (binaryFun!pred(b, a)) return 1;
+        // dstrcmp algorithm is correct for both ubyte[] and for char[].
+        import core.internal.string : dstrcmp;
+        return dstrcmp(cast(const char[]) r1, cast(const char[]) r2);
+    }
+    else static if (!(isSomeString!R1 && isSomeString!R2))
+    {
+        for (;; r1.popFront(), r2.popFront())
+        {
+            static if (is(typeof(r1.front.opCmp(r2.front)) R))
+                alias Result = R;
+            else
+                alias Result = int;
+            if (r2.empty) return Result(!r1.empty);
+            if (r1.empty) return Result(-1);
+            static if (is(typeof(r1.front.opCmp(r2.front))))
+            {
+                auto c = r1.front.opCmp(r2.front);
+                if (c != 0) return c;
+            }
+            else
+            {
+                auto a = r1.front, b = r2.front;
+                if (auto result = (b < a) - (a < b)) return result;
+            }
+        }
+    }
+    else
+    {
+        static if (typeof(r1[0]).sizeof == typeof(r2[0]).sizeof)
+        {
+            return () @trusted
+            {
+                auto p1 = r1.ptr, p2 = r2.ptr,
+                    pEnd = p1 + min(r1.length, r2.length);
+                for (; p1 != pEnd; ++p1, ++p2)
+                {
+                    if (*p1 != *p2) return cast(int) *p1 - cast(int) *p2;
+                }
+                static if (typeof(r1[0]).sizeof >= 2 && size_t.sizeof <= uint.sizeof)
+                    return cast(int) r1.length - cast(int) r2.length;
+                else
+                    return int(r1.length > r2.length) - int(r1.length < r2.length);
+            }();
+        }
+        else
+        {
+            import std.utf : decode;
+
+            for (size_t i1, i2;;)
+            {
+                if (i1 == r1.length) return -int(i2 < r2.length);
+                if (i2 == r2.length) return int(1);
+                immutable c1 = decode(r1, i1),
+                    c2 = decode(r2, i2);
+                if (c1 != c2) return cast(int) c1 - cast(int) c2;
+            }
+        }
     }
 }
 
 /// ditto
-int cmp(alias pred = "a < b", R1, R2)(R1 r1, R2 r2)
-if (isSomeString!R1 && isSomeString!R2)
+int cmp(alias pred, R1, R2)(R1 r1, R2 r2)
+if (isInputRange!R1 && isInputRange!R2)
 {
-    import core.stdc.string : memcmp;
-    import std.utf : decode;
-
-    static if (is(typeof(pred) : string))
-        enum isLessThan = pred == "a < b";
-    else
-        enum isLessThan = false;
-
-    // For speed only
-    static int threeWay(size_t a, size_t b)
+    static if (!(isSomeString!R1 && isSomeString!R2))
     {
-        static if (size_t.sizeof == int.sizeof && isLessThan)
-            return a - b;
-        else
-            return binaryFun!pred(b, a) ? 1 : binaryFun!pred(a, b) ? -1 : 0;
-    }
-    // For speed only
-    // @@@BUG@@@ overloading should be allowed for nested functions
-    static int threeWayInt(int a, int b)
-    {
-        static if (isLessThan)
-            return a - b;
-        else
-            return binaryFun!pred(b, a) ? 1 : binaryFun!pred(a, b) ? -1 : 0;
-    }
-
-    static if (typeof(r1[0]).sizeof == typeof(r2[0]).sizeof && isLessThan)
-    {
-        static if (typeof(r1[0]).sizeof == 1)
+        for (;; r1.popFront(), r2.popFront())
         {
-            immutable len = min(r1.length, r2.length);
-            immutable result = __ctfe ?
-                {
-                    foreach (i; 0 .. len)
-                    {
-                        if (r1[i] != r2[i])
-                            return threeWayInt(r1[i], r2[i]);
-                    }
-                    return 0;
-                }()
-                : () @trusted { return memcmp(r1.ptr, r2.ptr, len); }();
-            if (result) return result;
+            if (r2.empty) return !r1.empty;
+            if (r1.empty) return -1;
+            auto a = r1.front, b = r2.front;
+            if (binaryFun!pred(a, b)) return -1;
+            if (binaryFun!pred(b, a)) return 1;
         }
-        else
-        {
-            auto p1 = r1.ptr, p2 = r2.ptr,
-                pEnd = p1 + min(r1.length, r2.length);
-            for (; p1 != pEnd; ++p1, ++p2)
-            {
-                if (*p1 != *p2) return threeWayInt(cast(int) *p1, cast(int) *p2);
-            }
-        }
-        return threeWay(r1.length, r2.length);
     }
     else
     {
+        import std.utf : decode;
+
         for (size_t i1, i2;;)
         {
-            if (i1 == r1.length) return threeWay(i2, r2.length);
-            if (i2 == r2.length) return threeWay(r1.length, i1);
+            if (i1 == r1.length) return -int(i2 < r2.length);
+            if (i2 == r2.length) return 1;
             immutable c1 = decode(r1, i1),
                 c2 = decode(r2, i2);
-            if (c1 != c2) return threeWayInt(cast(int) c1, cast(int) c2);
+            if (c1 != c2)
+            {
+                if (binaryFun!pred(c2, c1)) return 1;
+                if (binaryFun!pred(c1, c2)) return -1;
+            }
         }
     }
 }
 
 ///
-@safe unittest
+pure @safe unittest
 {
     int result;
 
@@ -712,6 +751,8 @@ if (isSomeString!R1 && isSomeString!R2)
     assert(result > 0);
     result = cmp("aaa", "aaa"d);
     assert(result == 0);
+    result = cmp("aaa"d, "aaa"d);
+    assert(result == 0);
     result = cmp(cast(int[])[], cast(int[])[]);
     assert(result == 0);
     result = cmp([1, 2, 3], [1, 2, 3]);
@@ -724,129 +765,237 @@ if (isSomeString!R1 && isSomeString!R2)
     assert(result > 0);
 }
 
+/// Example predicate that compares individual elements in reverse lexical order
+pure @safe unittest
+{
+    int result;
+
+    result = cmp!"a > b"("abc", "abc");
+    assert(result == 0);
+    result = cmp!"a > b"("", "");
+    assert(result == 0);
+    result = cmp!"a > b"("abc", "abcd");
+    assert(result < 0);
+    result = cmp!"a > b"("abcd", "abc");
+    assert(result > 0);
+    result = cmp!"a > b"("abc"d, "abd");
+    assert(result > 0);
+    result = cmp!"a > b"("bbc", "abc"w);
+    assert(result < 0);
+    result = cmp!"a > b"("aaa", "aaaa"d);
+    assert(result < 0);
+    result = cmp!"a > b"("aaaa", "aaa"d);
+    assert(result > 0);
+    result = cmp!"a > b"("aaa", "aaa"d);
+    assert(result == 0);
+    result = cmp("aaa"d, "aaa"d);
+    assert(result == 0);
+    result = cmp!"a > b"(cast(int[])[], cast(int[])[]);
+    assert(result == 0);
+    result = cmp!"a > b"([1, 2, 3], [1, 2, 3]);
+    assert(result == 0);
+    result = cmp!"a > b"([1, 3, 2], [1, 2, 3]);
+    assert(result < 0);
+    result = cmp!"a > b"([1, 2, 3], [1L, 2, 3, 4]);
+    assert(result < 0);
+    result = cmp!"a > b"([1L, 2, 3], [1, 2]);
+    assert(result > 0);
+}
+
+// cmp for string with custom predicate fails if distinct chars can compare equal
+// https://issues.dlang.org/show_bug.cgi?id=18286
+@nogc nothrow pure @safe unittest
+{
+    static bool ltCi(dchar a, dchar b)// less than, case insensitive
+    {
+        import std.ascii : toUpper;
+        return toUpper(a) < toUpper(b);
+    }
+    static assert(cmp!ltCi("apple2", "APPLE1") > 0);
+    static assert(cmp!ltCi("apple1", "APPLE2") < 0);
+    static assert(cmp!ltCi("apple", "APPLE1") < 0);
+    static assert(cmp!ltCi("APPLE", "apple1") < 0);
+    static assert(cmp!ltCi("apple", "APPLE") == 0);
+}
+
+// for non-string ranges check that opCmp is evaluated only once per pair.
+// https://issues.dlang.org/show_bug.cgi?id=18280
+@nogc nothrow @safe unittest
+{
+    static int ctr = 0;
+    struct S
+    {
+        int opCmp(ref const S rhs) const
+        {
+            ++ctr;
+            return 0;
+        }
+        bool opEquals(T)(T o) const { return false; }
+        size_t toHash() const { return 0; }
+    }
+    immutable S[4] a;
+    immutable S[4] b;
+    immutable result = cmp(a[], b[]);
+    assert(result == 0, "neither should compare greater than the other!");
+    assert(ctr == a.length, "opCmp should be called exactly once per pair of items!");
+}
+
+nothrow pure @safe @nogc unittest
+{
+    import std.array : staticArray;
+    // Test cmp when opCmp returns float.
+    struct F
+    {
+        float value;
+        float opCmp(const ref F rhs) const
+        {
+            return value - rhs.value;
+        }
+        bool opEquals(T)(T o) const { return false; }
+        size_t toHash() const { return 0; }
+    }
+    auto result = cmp([F(1), F(2), F(3)].staticArray[], [F(1), F(2), F(3)].staticArray[]);
+    assert(result == 0);
+    assert(is(typeof(result) == float));
+    result = cmp([F(1), F(3), F(2)].staticArray[], [F(1), F(2), F(3)].staticArray[]);
+    assert(result > 0);
+    result = cmp([F(1), F(2), F(3)].staticArray[], [F(1), F(2), F(3), F(4)].staticArray[]);
+    assert(result < 0);
+    result = cmp([F(1), F(2), F(3)].staticArray[], [F(1), F(2)].staticArray[]);
+    assert(result > 0);
+}
+
+nothrow pure @safe unittest
+{
+    // Parallelism (was broken by inferred return type "immutable int")
+    import std.parallelism : task;
+    auto t = task!cmp("foo", "bar");
+}
+
 // equal
 /**
-Compares two ranges for equality, as defined by predicate $(D pred)
-(which is $(D ==) by default).
+Compares two ranges for equality, as defined by predicate `pred`
+(which is `==` by default).
 */
 template equal(alias pred = "a == b")
 {
-    enum isEmptyRange(R) =
-        isInputRange!R && __traits(compiles, {static assert(R.empty);});
-
-    enum hasFixedLength(T) = hasLength!T || isNarrowString!T;
-
     /++
     Compares two ranges for equality. The ranges may have
-    different element types, as long as $(D pred(r1.front, r2.front))
-    evaluates to $(D bool).
-    Performs $(BIGOH min(r1.length, r2.length)) evaluations of $(D pred).
+    different element types, as long as `pred(r1.front, r2.front)`
+    evaluates to `bool`.
+    Performs $(BIGOH min(r1.length, r2.length)) evaluations of `pred`.
+
+    At least one of the ranges must be finite. If one range involved is infinite, the result is
+    (statically known to be) `false`.
+
+    If the two ranges are different kinds of UTF code unit (`char`, `wchar`, or
+    `dchar`), then the arrays are compared using UTF decoding to avoid
+    accidentally integer-promoting units.
 
     Params:
         r1 = The first range to be compared.
         r2 = The second range to be compared.
 
     Returns:
-        $(D true) if and only if the two ranges compare _equal element
-        for element, according to binary predicate $(D pred).
-
-    See_Also:
-        $(HTTP sgi.com/tech/stl/_equal.html, STL's _equal)
+        `true` if and only if the two ranges compare _equal element
+        for element, according to binary predicate `pred`.
     +/
     bool equal(Range1, Range2)(Range1 r1, Range2 r2)
     if (isInputRange!Range1 && isInputRange!Range2 &&
+        !(isInfinite!Range1 && isInfinite!Range2) &&
         is(typeof(binaryFun!pred(r1.front, r2.front))))
     {
-        static assert(!(isInfinite!Range1 && isInfinite!Range2),
-            "Both ranges are known to be infinite");
+        // Use code points when comparing two ranges of UTF code units that aren't
+        // the same type. This is for backwards compatibility with autodecode
+        // strings.
+        enum useCodePoint =
+            isSomeChar!(ElementEncodingType!Range1) && isSomeChar!(ElementEncodingType!Range2) &&
+            ElementEncodingType!Range1.sizeof != ElementEncodingType!Range2.sizeof;
 
-        //No pred calls necessary
-        static if (isEmptyRange!Range1 || isEmptyRange!Range2)
+        static if (useCodePoint)
         {
-            return r1.empty && r2.empty;
-        }
-        else static if ((isInfinite!Range1 && hasFixedLength!Range2) ||
-            (hasFixedLength!Range1 && isInfinite!Range2))
-        {
-            return false;
-        }
-        //Detect default pred and compatible dynamic array
-        else static if (is(typeof(pred) == string) && pred == "a == b" &&
-            isArray!Range1 && isArray!Range2 && is(typeof(r1 == r2)))
-        {
-            return r1 == r2;
-        }
-        // if one of the arguments is a string and the other isn't, then auto-decoding
-        // can be avoided if they have the same ElementEncodingType
-        else static if (is(typeof(pred) == string) && pred == "a == b" &&
-            isAutodecodableString!Range1 != isAutodecodableString!Range2 &&
-            is(ElementEncodingType!Range1 == ElementEncodingType!Range2))
-        {
-            import std.utf : byCodeUnit;
-
-            static if (isAutodecodableString!Range1)
-            {
-                return equal(r1.byCodeUnit, r2);
-            }
-            else
-            {
-                return equal(r2.byCodeUnit, r1);
-            }
-        }
-        //Try a fast implementation when the ranges have comparable lengths
-        else static if (hasLength!Range1 && hasLength!Range2 && is(typeof(r1.length == r2.length)))
-        {
-            immutable len1 = r1.length;
-            immutable len2 = r2.length;
-            if (len1 != len2) return false; //Short circuit return
-
-            //Lengths are the same, so we need to do an actual comparison
-            //Good news is we can squeeze out a bit of performance by not checking if r2 is empty
-            for (; !r1.empty; r1.popFront(), r2.popFront())
-            {
-                if (!binaryFun!(pred)(r1.front, r2.front)) return false;
-            }
-            return true;
+            import std.utf : byDchar;
+            return equal(r1.byDchar, r2.byDchar);
         }
         else
         {
-            //Generic case, we have to walk both ranges making sure neither is empty
-            for (; !r1.empty; r1.popFront(), r2.popFront())
+            static if (isInfinite!Range1 || isInfinite!Range2)
             {
-                if (r2.empty) return false;
-                if (!binaryFun!(pred)(r1.front, r2.front)) return false;
+                // No finite range can be ever equal to an infinite range.
+                return false;
             }
-            static if (!isInfinite!Range1)
+            // Detect default pred and compatible dynamic arrays.
+            else static if (is(typeof(pred) == string) && pred == "a == b" &&
+                isArray!Range1 && isArray!Range2 && is(typeof(r1 == r2)))
+            {
+                return r1 == r2;
+            }
+            // If one of the arguments is a string and the other isn't, then auto-decoding
+            // can be avoided if they have the same ElementEncodingType.
+            else static if (is(typeof(pred) == string) && pred == "a == b" &&
+                isAutodecodableString!Range1 != isAutodecodableString!Range2 &&
+                is(immutable ElementEncodingType!Range1 == immutable ElementEncodingType!Range2))
+            {
+                import std.utf : byCodeUnit;
+
+                static if (isAutodecodableString!Range1)
+                    return equal(r1.byCodeUnit, r2);
+                else
+                    return equal(r2.byCodeUnit, r1);
+            }
+            // Try a fast implementation when the ranges have comparable lengths.
+            else static if (hasLength!Range1 && hasLength!Range2 && is(typeof(r1.length == r2.length)))
+            {
+                immutable len1 = r1.length;
+                immutable len2 = r2.length;
+                if (len1 != len2) return false; //Short circuit return
+
+                // Lengths are the same, so we need to do an actual comparison.
+                // Good news is we can squeeze out a bit of performance by not checking if r2 is empty.
+                for (; !r1.empty; r1.popFront(), r2.popFront())
+                {
+                    if (!binaryFun!(pred)(r1.front, r2.front)) return false;
+                }
+                return true;
+            }
+            else
+            {
+                //Generic case, we have to walk both ranges making sure neither is empty
+                for (; !r1.empty; r1.popFront(), r2.popFront())
+                {
+                    if (r2.empty || !binaryFun!(pred)(r1.front, r2.front)) return false;
+                }
                 return r2.empty;
+            }
         }
     }
 }
 
 ///
-@safe unittest
+@safe @nogc unittest
 {
     import std.algorithm.comparison : equal;
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
-    int[] a = [ 1, 2, 4, 3 ];
-    assert(!equal(a, a[1..$]));
-    assert(equal(a, a));
-    assert(equal!((a, b) => a == b)(a, a));
+    int[4] a = [ 1, 2, 4, 3 ];
+    assert(!equal(a[], a[1..$]));
+    assert(equal(a[], a[]));
+    assert(equal!((a, b) => a == b)(a[], a[]));
 
     // different types
-    double[] b = [ 1.0, 2, 4, 3];
-    assert(!equal(a, b[1..$]));
-    assert(equal(a, b));
+    double[4] b = [ 1.0, 2, 4, 3];
+    assert(!equal(a[], b[1..$]));
+    assert(equal(a[], b[]));
 
     // predicated: ensure that two vectors are approximately equal
-    double[] c = [ 1.005, 2, 4, 3];
-    assert(equal!approxEqual(b, c));
+    double[4] c = [ 1.0000000005, 2, 4, 3];
+    assert(equal!isClose(b[], c[]));
 }
 
 /++
-Tip: $(D equal) can itself be used as a predicate to other functions.
+Tip: `equal` can itself be used as a predicate to other functions.
 This can be very useful when the element type of a range is itself a
-range. In particular, $(D equal) can be its own predicate, allowing
+range. In particular, `equal` can be its own predicate, allowing
 range of range (of range...) comparisons.
  +/
 @safe unittest
@@ -864,7 +1013,7 @@ range of range (of range...) comparisons.
     import std.algorithm.iteration : map;
     import std.internal.test.dummyrange : ReferenceForwardRange,
         ReferenceInputRange, ReferenceInfiniteForwardRange;
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
     // various strings
     assert(equal("æøå", "æøå")); //UTF8 vs UTF8
@@ -898,11 +1047,11 @@ range of range (of range...) comparisons.
     int[] a = [ 1, 2, 4, 3 ];
     assert(equal([2, 4, 8, 6], map!"a*2"(a)));
     double[] b = [ 1.0, 2, 4, 3];
-    double[] c = [ 1.005, 2, 4, 3];
-    assert(equal!approxEqual(map!"a*2"(b), map!"a*2"(c)));
+    double[] c = [ 1.0000000005, 2, 4, 3];
+    assert(equal!isClose(map!"a*2"(b), map!"a*2"(c)));
     assert(!equal([2, 4, 1, 3], map!"a*2"(a)));
     assert(!equal([2, 4, 1], map!"a*2"(a)));
-    assert(!equal!approxEqual(map!"a*3"(b), map!"a*2"(c)));
+    assert(!equal!isClose(map!"a*3"(b), map!"a*2"(c)));
 
     //Tests with some fancy reference ranges.
     ReferenceInputRange!int cir = new ReferenceInputRange!int([1, 2, 4, 3]);
@@ -923,19 +1072,33 @@ range of range (of range...) comparisons.
     assert(!equal(cir, ifr));
 }
 
-@safe pure unittest
+@safe @nogc pure unittest
 {
-    import std.utf : byChar, byWchar, byDchar;
+    import std.utf : byChar, byDchar, byWchar;
 
     assert(equal("æøå".byChar, "æøå"));
+    assert(equal("æøå".byChar, "æøå"w));
+    assert(equal("æøå".byChar, "æøå"d));
     assert(equal("æøå", "æøå".byChar));
+    assert(equal("æøå"w, "æøå".byChar));
+    assert(equal("æøå"d, "æøå".byChar));
+
+    assert(equal("æøå".byWchar, "æøå"));
     assert(equal("æøå".byWchar, "æøå"w));
+    assert(equal("æøå".byWchar, "æøå"d));
+    assert(equal("æøå", "æøå".byWchar));
     assert(equal("æøå"w, "æøå".byWchar));
+    assert(equal("æøå"d, "æøå".byWchar));
+
+    assert(equal("æøå".byDchar, "æøå"));
+    assert(equal("æøå".byDchar, "æøå"w));
     assert(equal("æøå".byDchar, "æøå"d));
+    assert(equal("æøå", "æøå".byDchar));
+    assert(equal("æøå"w, "æøå".byDchar));
     assert(equal("æøå"d, "æøå".byDchar));
 }
 
-@safe pure unittest
+@safe @nogc pure unittest
 {
     struct R(bool _empty) {
         enum empty = _empty;
@@ -956,37 +1119,14 @@ range of range (of range...) comparisons.
     assert(!"bar".equal(E()));
 }
 
-// MaxType
-private template MaxType(T...)
-if (T.length >= 1)
-{
-    static if (T.length == 1)
-    {
-        alias MaxType = T[0];
-    }
-    else static if (T.length == 2)
-    {
-        static if (!is(typeof(T[0].min)))
-            alias MaxType = CommonType!T;
-        else static if (T[1].max > T[0].max)
-            alias MaxType = T[1];
-        else
-            alias MaxType = T[0];
-    }
-    else
-    {
-        alias MaxType = MaxType!(MaxType!(T[0 .. ($+1)/2]), MaxType!(T[($+1)/2 .. $]));
-    }
-}
-
 // levenshteinDistance
 /**
 Encodes $(HTTP realityinteractive.com/rgrzywinski/archives/000249.html,
 edit operations) necessary to transform one sequence into
-another. Given sequences $(D s) (source) and $(D t) (target), a
-sequence of $(D EditOp) encodes the steps that need to be taken to
-convert $(D s) into $(D t). For example, if $(D s = "cat") and $(D
-"cars"), the minimal sequence that transforms $(D s) into $(D t) is:
+another. Given sequences `s` (source) and `t` (target), a
+sequence of `EditOp` encodes the steps that need to be taken to
+convert `s` into `t`. For example, if `s = "cat"` and $(D
+"cars"), the minimal sequence that transforms `s` into `t` is:
 skip two characters, replace 't' with 'r', and insert an 's'. Working
 with edit operations is useful in applications such as spell-checkers
 (to find the closest word to a given misspelled word), approximate
@@ -1074,7 +1214,8 @@ private:
         import core.checkedint : mulu;
         bool overflow;
         const rc = mulu(r, c, overflow);
-        if (overflow) assert(0);
+        assert(!overflow, "Overflow during multiplication to determine number "
+                ~ " of matrix elements");
         rows = r;
         cols = c;
         if (_matrix.length < rc)
@@ -1082,7 +1223,8 @@ private:
             import core.exception : onOutOfMemoryError;
             import core.stdc.stdlib : realloc;
             const nbytes = mulu(rc, _matrix[0].sizeof, overflow);
-            if (overflow) assert(0);
+            assert(!overflow, "Overflow during multiplication to determine "
+                ~ " number of bytes of matrix");
             auto m = cast(CostType *) realloc(_matrix.ptr, nbytes);
             if (!m)
                 onOutOfMemoryError();
@@ -1193,10 +1335,10 @@ private:
 
 /**
 Returns the $(HTTP wikipedia.org/wiki/Levenshtein_distance, Levenshtein
-distance) between $(D s) and $(D t). The Levenshtein distance computes
-the minimal amount of edit operations necessary to transform $(D s)
-into $(D t).  Performs $(BIGOH s.length * t.length) evaluations of $(D
-equals) and occupies $(BIGOH s.length * t.length) storage.
+distance) between `s` and `t`. The Levenshtein distance computes
+the minimal amount of edit operations necessary to transform `s`
+into `t`.  Performs $(BIGOH s.length * t.length) evaluations of $(D
+equals) and occupies $(BIGOH min(s.length, t.length)) storage.
 
 Params:
     equals = The binary predicate to compare the elements of the two ranges.
@@ -1244,7 +1386,7 @@ if (isForwardRange!(Range1) && isForwardRange!(Range2))
         return eq(s.front, t.front) ? 0 : 1;
     }
 
-    if (slen > tlen)
+    if (slen < tlen)
     {
         Levenshtein!(Range1, eq, size_t) lev;
         return lev.distanceLowMem(s, t, slen, tlen);
@@ -1305,8 +1447,8 @@ if (isConvertibleToString!Range1 || isConvertibleToString!Range2)
 }
 
 /**
-Returns the Levenshtein distance and the edit path between $(D s) and
-$(D t).
+Returns the Levenshtein distance and the edit path between `s` and
+`t`.
 
 Params:
     equals = The binary predicate to compare the elements of the two ranges.
@@ -1367,50 +1509,73 @@ if (isConvertibleToString!Range1 || isConvertibleToString!Range2)
     assert(levenshteinDistanceAndPath(S("cat"), "rat")[0] == 1);
 }
 
+
 // max
 /**
-Iterates the passed arguments and return the maximum value.
+Iterates the passed arguments and returns the maximum value.
 
 Params:
     args = The values to select the maximum from. At least two arguments must
-    be passed.
+    be passed, and they must be comparable with `<`.
 
 Returns:
-    The maximum of the passed-in args. The type of the returned value is
+    The maximum of the passed-in values. The type of the returned value is
     the type among the passed arguments that is able to store the largest value.
+    If at least one of the arguments is NaN, the result is an unspecified value.
+    See $(REF maxElement, std,algorithm,searching) for examples on how to cope
+    with NaNs.
 
 See_Also:
     $(REF maxElement, std,algorithm,searching)
 */
-MaxType!T max(T...)(T args)
-if (T.length >= 2)
+auto max(T...)(T args)
+if (T.length >= 2 && !is(CommonType!T == void))
 {
-    //Get "a"
-    static if (T.length <= 2)
+    // Get left-hand side of the comparison.
+    static if (T.length == 2)
         alias a = args[0];
     else
-        auto a = max(args[0 .. ($+1)/2]);
+        auto a = max(args[0 .. ($ + 1) / 2]);
     alias T0 = typeof(a);
 
-    //Get "b"
+    // Get right-hand side.
     static if (T.length <= 3)
-        alias b = args[$-1];
+        alias b = args[$ - 1];
     else
-        auto b = max(args[($+1)/2 .. $]);
+        auto b = max(args[($ + 1) / 2 .. $]);
     alias T1 = typeof(b);
 
-    import std.algorithm.internal : algoFormat;
     static assert(is(typeof(a < b)),
-        algoFormat("Invalid arguments: Cannot compare types %s and %s.", T0.stringof, T1.stringof));
+        "Invalid arguments: Cannot compare types " ~ T0.stringof ~
+        " and " ~ T1.stringof ~ " for ordering.");
 
-    //Do the "max" proper with a and b
+    // Compute the returned type.
+    static if (is(typeof(mostNegative!T0 < mostNegative!T1)))
+        // Both are numeric (or character or Boolean), so we choose the one with the highest maximum.
+        // (We use mostNegative for num/bool/char testing purposes even if it's not used otherwise.)
+        alias Result = Select!(T1.max > T0.max, T1, T0);
+    else
+        // At least one is non-numeric, so just go with the common type.
+        alias Result = CommonType!(T0, T1);
+
+    // Perform the computation.
     import std.functional : lessThan;
     immutable chooseB = lessThan!(T0, T1)(a, b);
-    return cast(typeof(return)) (chooseB ? b : a);
+    return cast(Result) (chooseB ? b : a);
+}
+
+/// ditto
+T max(T, U)(T a, U b)
+if (is(T == U) && is(typeof(a < b)))
+{
+   /* Handle the common case without all the template expansions
+    * of the general case
+    */
+    return a < b ? b : a;
 }
 
 ///
-@safe unittest
+@safe @betterC @nogc unittest
 {
     int a = 5;
     short b = 6;
@@ -1423,7 +1588,7 @@ if (T.length >= 2)
     assert(e == 2);
 }
 
-@safe unittest
+@safe unittest  // not @nogc due to `Date`
 {
     int a = 5;
     short b = 6;
@@ -1452,77 +1617,76 @@ if (T.length >= 2)
     assert(max(Date.max, Date.min) == Date.max);
 }
 
-// MinType
-private template MinType(T...)
-if (T.length >= 1)
-{
-    static if (T.length == 1)
-    {
-        alias MinType = T[0];
-    }
-    else static if (T.length == 2)
-    {
-        static if (!is(typeof(T[0].min)))
-            alias MinType = CommonType!T;
-        else
-        {
-            enum hasMostNegative = is(typeof(mostNegative!(T[0]))) &&
-                                   is(typeof(mostNegative!(T[1])));
-            static if (hasMostNegative && mostNegative!(T[1]) < mostNegative!(T[0]))
-                alias MinType = T[1];
-            else static if (hasMostNegative && mostNegative!(T[1]) > mostNegative!(T[0]))
-                alias MinType = T[0];
-            else static if (T[1].max < T[0].max)
-                alias MinType = T[1];
-            else
-                alias MinType = T[0];
-        }
-    }
-    else
-    {
-        alias MinType = MinType!(MinType!(T[0 .. ($+1)/2]), MinType!(T[($+1)/2 .. $]));
-    }
-}
-
 // min
 /**
 Iterates the passed arguments and returns the minimum value.
 
-Params: args = The values to select the minimum from. At least two arguments
-    must be passed, and they must be comparable with `<`.
-Returns: The minimum of the passed-in values.
+Params:
+    args = The values to select the minimum from. At least two arguments must
+    be passed, and they must be comparable with `<`.
+
+Returns:
+    The minimum of the passed-in values. The type of the returned value is
+    the type among the passed arguments that is able to store the smallest value.
+    If at least one of the arguments is NaN, the result is an unspecified value.
+    See $(REF minElement, std,algorithm,searching) for examples on how to cope
+    with NaNs.
+
 See_Also:
     $(REF minElement, std,algorithm,searching)
 */
-MinType!T min(T...)(T args)
-if (T.length >= 2)
+auto min(T...)(T args)
+if (T.length >= 2 && !is(CommonType!T == void))
 {
-    //Get "a"
+    // Get the left-hand side of the comparison.
     static if (T.length <= 2)
         alias a = args[0];
     else
-        auto a = min(args[0 .. ($+1)/2]);
+        auto a = min(args[0 .. ($ + 1) / 2]);
     alias T0 = typeof(a);
 
-    //Get "b"
+    // Get the right-hand side.
     static if (T.length <= 3)
-        alias b = args[$-1];
+        alias b = args[$ - 1];
     else
-        auto b = min(args[($+1)/2 .. $]);
+        auto b = min(args[($ + 1) / 2 .. $]);
     alias T1 = typeof(b);
 
-    import std.algorithm.internal : algoFormat;
     static assert(is(typeof(a < b)),
-        algoFormat("Invalid arguments: Cannot compare types %s and %s.", T0.stringof, T1.stringof));
+        "Invalid arguments: Cannot compare types " ~ T0.stringof ~
+        " and " ~ T1.stringof ~ " for ordering.");
 
-    //Do the "min" proper with a and b
+    // Compute the returned type.
+    static if (is(typeof(mostNegative!T0 < mostNegative!T1)))
+        // Both are numeric (or character or Boolean), so we choose the one with the lowest minimum.
+        // If they have the same minimum, choose the one with the smallest size.
+        // If both mostNegative and sizeof are equal, go for stability: pick the type of the first one.
+        alias Result = Select!(mostNegative!T1 < mostNegative!T0 ||
+                mostNegative!T1 == mostNegative!T0 && T1.sizeof < T0.sizeof,
+            T1, T0);
+    else
+        // At least one is non-numeric, so just go with the common type.
+        alias Result = CommonType!(T0, T1);
+
+    // Engage!
     import std.functional : lessThan;
-    immutable chooseA = lessThan!(T0, T1)(a, b);
-    return cast(typeof(return)) (chooseA ? a : b);
+    immutable chooseB = lessThan!(T1, T0)(b, a);
+    return cast(Result) (chooseB ? b : a);
 }
 
+/// ditto
+T min(T, U)(T a, U b)
+if (is(T == U) && is(typeof(a < b)))
+{
+   /* Handle the common case without all the template expansions
+    * of the general case
+    */
+    return b < a ? b : a;
+}
+
+
 ///
-@safe unittest
+@safe @nogc @betterC unittest
 {
     int a = 5;
     short b = 6;
@@ -1533,15 +1697,31 @@ if (T.length >= 2)
     auto e = min(a, b, c);
     static assert(is(typeof(e) == double));
     assert(e == 2);
+    ulong f = 0xffff_ffff_ffff;
+    const uint g = min(f, 0xffff_0000);
+    assert(g == 0xffff_0000);
+    dchar h = 100;
+    uint i = 101;
+    static assert(is(typeof(min(h, i)) == dchar));
+    static assert(is(typeof(min(i, h)) == uint));
+    assert(min(h, i) == 100);
+}
 
-    // With arguments of mixed signedness, the return type is the one that can
-    // store the lowest values.
-    a = -10;
+/**
+With arguments of mixed signedness, the return type is the one that can
+store the lowest values.
+*/
+@safe @nogc @betterC unittest
+{
+    int a = -10;
     uint f = 10;
     static assert(is(typeof(min(a, f)) == int));
     assert(min(a, f) == -10);
+}
 
-    // User-defined types that support comparison with < are supported.
+/// User-defined types that support comparison with < are supported.
+@safe unittest  // not @nogc due to `Date`
+{
     import std.datetime;
     assert(min(Date(2012, 12, 21), Date(1982, 1, 4)) == Date(1982, 1, 4));
     assert(min(Date(1982, 1, 4), Date(2012, 12, 21)) == Date(1982, 1, 4));
@@ -1553,16 +1733,26 @@ if (T.length >= 2)
     assert(min(Date.max, Date.min) == Date.min);
 }
 
+// min must be stable: when in doubt, return the first argument.
+@safe unittest
+{
+    assert(min(1.0, double.nan) == 1.0);
+    assert(min(double.nan, 1.0) is double.nan);
+    static struct A {
+        int x;
+        string y;
+        int opCmp(const A a) const { return int(x > a.x) - int(x < a.x); }
+    }
+    assert(min(A(1, "first"), A(1, "second")) == A(1, "first"));
+}
+
 // mismatch
 /**
-Sequentially compares elements in $(D r1) and $(D r2) in lockstep, and
-stops at the first mismatch (according to $(D pred), by default
+Sequentially compares elements in `r1` and `r2` in lockstep, and
+stops at the first mismatch (according to `pred`, by default
 equality). Returns a tuple with the reduced ranges that start with the
 two mismatched values. Performs $(BIGOH min(r1.length, r2.length))
-evaluations of $(D pred).
-
-See_Also:
-    $(HTTP sgi.com/tech/stl/_mismatch.html, STL's _mismatch)
+evaluations of `pred`.
 */
 Tuple!(Range1, Range2)
 mismatch(alias pred = "a == b", Range1, Range2)(Range1 r1, Range2 r2)
@@ -1576,32 +1766,34 @@ if (isInputRange!(Range1) && isInputRange!(Range2))
 }
 
 ///
-@safe unittest
+@safe @nogc unittest
 {
-    int[]    x = [ 1,  5, 2, 7,   4, 3 ];
-    double[] y = [ 1.0, 5, 2, 7.3, 4, 8 ];
-    auto m = mismatch(x, y);
+    int[6] x = [ 1,   5, 2, 7,   4, 3 ];
+    double[6] y = [ 1.0, 5, 2, 7.3, 4, 8 ];
+    auto m = mismatch(x[], y[]);
     assert(m[0] == x[3 .. $]);
     assert(m[1] == y[3 .. $]);
 }
 
-@safe unittest
+@safe @nogc unittest
 {
-    int[] a = [ 1, 2, 3 ];
-    int[] b = [ 1, 2, 4, 5 ];
-    auto mm = mismatch(a, b);
-    assert(mm[0] == [3]);
-    assert(mm[1] == [4, 5]);
+    import std.range : only;
+
+    int[3] a = [ 1, 2, 3 ];
+    int[4] b = [ 1, 2, 4, 5 ];
+    auto mm = mismatch(a[], b[]);
+    assert(equal(mm[0], only(3)));
+    assert(equal(mm[1], only(4, 5)));
 }
 
 /**
 Returns one of a collection of expressions based on the value of the switch
 expression.
 
-$(D choices) needs to be composed of pairs of test expressions and return
-expressions. Each test-expression is compared with $(D switchExpression) using
-$(D pred)($(D switchExpression) is the first argument) and if that yields true
-- the return expression is returned.
+`choices` needs to be composed of pairs of test expressions and return
+expressions. Each test-expression is compared with `switchExpression` using
+`pred`(`switchExpression` is the first argument) and if that yields true -
+the return expression is returned.
 
 Both the test and the return expressions are lazily evaluated.
 
@@ -1622,7 +1814,7 @@ made the predicate yield true, or the default return expression if no test
 expression matched.
 
 Throws: If there is no default return expression and the predicate does not
-yield true with any test expression - $(D SwitchError) is thrown. $(D
+yield true with any test expression - `SwitchError` is thrown. $(D
 SwitchError) is also thrown if a void return expression was executed without
 throwing anything.
 */
@@ -1734,74 +1926,48 @@ auto predSwitch(alias pred = "a == b", T, R ...)(T switchExpression, lazy R choi
 
 /**
 Checks if the two ranges have the same number of elements. This function is
-optimized to always take advantage of the $(D length) member of either range
+optimized to always take advantage of the `length` member of either range
 if it exists.
 
 If both ranges have a length member, this function is $(BIGOH 1). Otherwise,
 this function is $(BIGOH min(r1.length, r2.length)).
+
+Infinite ranges are considered of the same length. An infinite range has never the same length as a
+finite range.
 
 Params:
     r1 = a finite $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
     r2 = a finite $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
 
 Returns:
-    $(D true) if both ranges have the same length, $(D false) otherwise.
+    `true` if both ranges have the same length, `false` otherwise.
 */
 bool isSameLength(Range1, Range2)(Range1 r1, Range2 r2)
-if (isInputRange!Range1 &&
-    isInputRange!Range2 &&
-    !isInfinite!Range1 &&
-    !isInfinite!Range2)
+if (isInputRange!Range1 && isInputRange!Range2)
 {
-    static if (hasLength!(Range1) && hasLength!(Range2))
+    static if (isInfinite!Range1 || isInfinite!Range2)
+    {
+        return isInfinite!Range1 && isInfinite!Range2;
+    }
+    else static if (hasLength!(Range1) && hasLength!(Range2))
     {
         return r1.length == r2.length;
     }
     else static if (hasLength!(Range1) && !hasLength!(Range2))
     {
-        size_t length;
-
-        while (!r2.empty)
-        {
-            r2.popFront;
-
-            if (++length > r1.length)
-            {
-                return false;
-            }
-        }
-
-        return !(length < r1.length);
+        return r2.walkLength(r1.length + 1) == r1.length;
     }
     else static if (!hasLength!(Range1) && hasLength!(Range2))
     {
-        size_t length;
-
-        while (!r1.empty)
-        {
-            r1.popFront;
-
-            if (++length > r2.length)
-            {
-                return false;
-            }
-        }
-
-        return !(length < r2.length);
+        return r1.walkLength(r2.length + 1) == r2.length;
     }
     else
     {
-        while (!r1.empty)
+        for (; !r1.empty; r1.popFront, r2.popFront)
         {
            if (r2.empty)
-           {
               return false;
-           }
-
-           r1.popFront;
-           r2.popFront;
         }
-
         return r2.empty;
     }
 }
@@ -1823,13 +1989,21 @@ if (isInputRange!Range1 &&
 }
 
 // Test CTFE
-@safe pure unittest
+@safe @nogc pure @betterC unittest
 {
     enum result1 = isSameLength([1, 2, 3], [4, 5, 6]);
     static assert(result1);
 
     enum result2 = isSameLength([0.3, 90.4, 23.7], [42.6, 23.6, 95.5, 6.3]);
     static assert(!result2);
+}
+
+@safe @nogc pure unittest
+{
+    import std.range : only;
+    assert(isSameLength(only(1, 2, 3), only(4, 5, 6)));
+    assert(isSameLength(only(0.3, 90.4, 23.7, 119.2), only(42.6, 23.6, 95.5, 6.3)));
+    assert(!isSameLength(only(1, 3, 3), only(4, 5)));
 }
 
 @safe nothrow pure unittest
@@ -1861,38 +2035,38 @@ if (isInputRange!Range1 &&
     assert(!isSameLength(r11, r12));
 }
 
-/// For convenience
+// Still functional but not documented anymore.
 alias AllocateGC = Flag!"allocateGC";
 
 /**
 Checks if both ranges are permutations of each other.
 
-This function can allocate if the $(D Yes.allocateGC) flag is passed. This has
-the benefit of have better complexity than the $(D Yes.allocateGC) option. However,
+This function can allocate if the `Yes.allocateGC` flag is passed. This has
+the benefit of have better complexity than the `Yes.allocateGC` option. However,
 this option is only available for ranges whose equality can be determined via each
-element's $(D toHash) method. If customized equality is needed, then the $(D pred)
+element's `toHash` method. If customized equality is needed, then the `pred`
 template parameter can be passed, and the function will automatically switch to
 the non-allocating algorithm. See $(REF binaryFun, std,functional) for more details on
-how to define $(D pred).
+how to define `pred`.
 
 Non-allocating forward range option: $(BIGOH n^2)
-Non-allocating forward range option with custom $(D pred): $(BIGOH n^2)
+Non-allocating forward range option with custom `pred`: $(BIGOH n^2)
 Allocating forward range option: amortized $(BIGOH r1.length) + $(BIGOH r2.length)
 
 Params:
     pred = an optional parameter to change how equality is defined
-    allocate_gc = $(D Yes.allocateGC)/$(D No.allocateGC)
+    allocateGC = `Yes.allocateGC`/`No.allocateGC`
     r1 = A finite $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
     r2 = A finite $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
 
 Returns:
-    $(D true) if all of the elements in $(D r1) appear the same number of times in $(D r2).
-    Otherwise, returns $(D false).
+    `true` if all of the elements in `r1` appear the same number of times in `r2`.
+    Otherwise, returns `false`.
 */
 
-bool isPermutation(AllocateGC allocate_gc, Range1, Range2)
+bool isPermutation(Flag!"allocateGC" allocateGC, Range1, Range2)
 (Range1 r1, Range2 r2)
-if (allocate_gc == Yes.allocateGC &&
+if (allocateGC == Yes.allocateGC &&
     isForwardRange!Range1 &&
     isForwardRange!Range2 &&
     !isInfinite!Range1 &&
@@ -2111,7 +2285,7 @@ if (alternatives.length >= 1 &&
 }
 
 ///
-@safe pure unittest
+@safe pure @betterC unittest
 {
     const a = 1;
     const b = 2;
@@ -2130,7 +2304,11 @@ if (alternatives.length >= 1 &&
     auto ef = either(e, f);
     static assert(is(typeof(ef) == int));
     assert(ef == f);
+}
 
+///
+@safe pure unittest
+{
     immutable p = 1;
     immutable q = 2;
     auto pq = either(p, q);
@@ -2141,7 +2319,11 @@ if (alternatives.length >= 1 &&
     assert(either(0, 4) == 4);
     assert(either(0, 0) == 0);
     assert(either("", "a") == "");
+}
 
+///
+@safe pure unittest
+{
     string r = null;
     assert(either(r, "a") == "a");
     assert(either("a", "") == "a");

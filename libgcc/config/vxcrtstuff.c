@@ -26,7 +26,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define IN_LIBGCC2
 
+/* FIXME: Including auto-host is incorrect, but until we have
+   identified the set of defines that need to go into auto-target.h,
+   this will have to do.  */
 #include "auto-host.h"
+#undef caddr_t
+#undef pid_t
+#undef rlim_t
+#undef ssize_t
+#undef vfork
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"

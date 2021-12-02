@@ -449,6 +449,39 @@ ipa_param_adjustments::get_updated_indices (vec<int> *new_indices)
     }
 }
 
+/* If a parameter with original INDEX has survived intact, return its new
+   index.  Otherwise return -1.  In that case, if it has been split and there
+   is a new parameter representing a portion at unit OFFSET for which a value
+   of a TYPE can be substituted, store its new index into SPLIT_INDEX,
+   otherwise store -1 there.  */
+int
+ipa_param_adjustments::get_updated_index_or_split (int index,
+						   unsigned unit_offset,
+						   tree type, int *split_index)
+{
+  unsigned adj_len = vec_safe_length (m_adj_params);
+  for (unsigned i = 0; i < adj_len ; i++)
+    {
+      ipa_adjusted_param *apm = &(*m_adj_params)[i];
+      if (apm->base_index != index)
+	continue;
+      if (apm->op == IPA_PARAM_OP_COPY)
+	return i;
+      if (apm->op == IPA_PARAM_OP_SPLIT
+	  && apm->unit_offset == unit_offset)
+	{
+	  if (useless_type_conversion_p (apm->type, type))
+	    *split_index = i;
+	  else
+	    *split_index = -1;
+	  return -1;
+	}
+    }
+
+  *split_index = -1;
+  return -1;
+}
+
 /* Return the original index for the given new parameter index.  Return a
    negative number if not available.  */
 
@@ -832,7 +865,7 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
      vector to say for debug info that if parameter parm had been passed,
      it would have value parm_Y(D).  */
   tree old_decl = gimple_call_fndecl (stmt);
-  if (flag_var_tracking_assignments && old_decl && callee_decl)
+  if (MAY_HAVE_DEBUG_BIND_STMTS && old_decl && callee_decl)
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0;
@@ -1246,9 +1279,10 @@ ipa_param_body_adjustments::prepare_debug_expressions (tree dead_ssa)
       if (gimple_assign_copy_p (def)
 	  && TREE_CODE (gimple_assign_rhs1 (def)) == SSA_NAME)
 	{
-	  tree *d = m_dead_ssa_debug_equiv.get (gimple_assign_rhs1 (def));
-	  m_dead_ssa_debug_equiv.put (dead_ssa, *d);
-	  return (*d != NULL_TREE);
+	  tree d = *m_dead_ssa_debug_equiv.get (gimple_assign_rhs1 (def));
+	  gcc_assert (d);
+	  m_dead_ssa_debug_equiv.put (dead_ssa, d);
+	  return true;
 	}
 
       tree val

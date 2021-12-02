@@ -3632,8 +3632,10 @@ proc check_effective_target_vect_complex_add_float { } {
 proc check_effective_target_vect_complex_add_double { } {
     return [check_cached_effective_target_indexed vect_complex_add_double {
       expr {
-	 ([check_effective_target_aarch64_sve2]
-	      && [check_effective_target_aarch64_little_endian])
+	 (([check_effective_target_arm_v8_3a_complex_neon_ok]
+	  && [check_effective_target_aarch64_little_endian])
+	 || ([check_effective_target_aarch64_sve2]
+	      && [check_effective_target_aarch64_little_endian]))
 	}}]
 }
 
@@ -7983,6 +7985,12 @@ proc check_effective_target_vect_masked_load { } {
 proc check_effective_target_vect_masked_store { } {
     return [expr { [check_effective_target_aarch64_sve]
 		   || [istarget amdgcn*-*-*] }]
+}
+
+# Return 1 if the target supports vector gather loads via internal functions.
+
+proc check_effective_target_vect_gather_load_ifn { } {
+    return [expr { [check_effective_target_aarch64_sve] }]
 }
 
 # Return 1 if the target supports vector scatter stores.

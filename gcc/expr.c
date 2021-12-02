@@ -1342,9 +1342,6 @@ op_by_pieces_d::run ()
 	}
     }
   while (1);
-
-  /* The code above should have handled everything.  */
-  gcc_assert (!length);
 }
 
 /* Derived class from op_by_pieces_d, providing support for block move

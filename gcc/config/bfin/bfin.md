@@ -1959,7 +1959,8 @@
 		   (plus:SI (match_dup 0)
 			    (const_int -1)))
 	      (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-	      (clobber (match_dup 2))])] ; match_scratch
+	      (clobber (match_dup 2))
+	      (clobber (reg:BI REG_CC))])] ; match_scratch
   ""
 {
   /* The loop optimizer doesn't check the predicates... */
@@ -1979,7 +1980,8 @@
 	(plus (match_dup 2)
 	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-   (clobber (match_scratch:SI 3 "=X,&r,&r"))]
+   (clobber (match_scratch:SI 3 "=X,&r,&r"))
+   (clobber (reg:BI REG_CC))]
   ""
   "@
    /* loop end %0 %l1 */
@@ -1997,7 +1999,8 @@
 	(plus (match_dup 0)
 	      (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-   (clobber (match_scratch:SI 2))]
+   (clobber (match_scratch:SI 2))
+   (clobber (reg:BI REG_CC))]
   "memory_operand (operands[0], SImode) || splitting_loops"
   [(set (match_dup 2) (match_dup 0))
    (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))

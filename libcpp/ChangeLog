@@ -1,3 +1,62 @@
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (struct lang_flags): Remove cxx23_identifiers.
+	(lang_defaults): Remove cxx23_identifiers initializers.
+	(cpp_set_lang): Don't copy cxx23_identifiers.
+	* include/cpplib.h (struct cpp_options): Adjust comment about
+	c11_identifiers.  Remove cxx23_identifiers field.
+	* lex.c (warn_about_normalization): Use cplusplus instead of
+	cxx23_identifiers.
+	* charset.c (ucn_valid_in_identifier): Likewise.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103415
+	* macro.c (stringify_arg): Remove va_opt argument and va_opt handling.
+	(paste_tokens): On successful paste or in PREV_WHITE and
+	PREV_FALLTHROUGH flags from the *plhs token to the new token.
+	(replace_args): Adjust stringify_arg callers.  For #__VA_OPT__,
+	perform token pasting in a separate loop before stringify_arg call.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* charset.c (convert_escape): Remove unreachable break.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (lang_defaults): Enable cxx23_identifiers for
+	-std={gnu,c}++{11,14,17,20} too.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Makefile.in: Use ETAGS variable in TAGS target.
+	* configure: Regenerate.
+	* configure.ac: Allow ETAGS variable to be overridden.
+
+2021-11-23  Christophe Lyon  <christophe.lyon@foss.st.com>
+
+	PR preprocessor/103355
+	* system.h (ATTR_LIKELY): Fix definition.
+
+2021-11-23  Marek Polacek  <polacek@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/103355
+	* lex.c: Use ATTR_LIKELY instead of [[likely]].
+	* system.h (ATTR_LIKELY): Define.
+
+2021-11-22  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR preprocessor/103165
+	* internal.h (struct lexer_state): Add ignore__Pragma field.
+	* macro.c (builtin_macro): Don't interpret _Pragma if
+	pfile->state.ignore__Pragma.
+	(expand_arg): Temporarily set pfile->state.ignore__Pragma to 1.
+
 2021-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/103026

@@ -1,3 +1,17 @@
+2021-11-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR sanitizer/62157
+	* Makefile.am: Force DIST_SUBDIRS to be SUBDIRS.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Likewise.
+	* hwasan/Makefile.in: Likewise.
+	* interception/Makefile.in: Likewise.
+	* libbacktrace/Makefile.in: Likewise.
+	* lsan/Makefile.in: Likewise.
+	* sanitizer_common/Makefile.in: Likewise.
+	* tsan/Makefile.in: Likewise.
+	* ubsan/Makefile.in: Likewise.
+
 2021-11-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/102675

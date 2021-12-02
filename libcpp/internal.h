@@ -287,6 +287,9 @@ struct lexer_state
 
   /* Nonzero if the deferred pragma being handled allows macro expansion.  */
   unsigned char pragma_allow_expansion;
+
+  /* Nonzero if _Pragma should not be interpreted.  */
+  unsigned char ignore__Pragma;
 };
 
 /* Special nodes - identifiers with predefined significance.  */

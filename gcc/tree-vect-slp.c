@@ -454,15 +454,65 @@ vect_def_types_match (enum vect_def_type dta, enum vect_def_type dtb)
 	      && (dtb == vect_external_def || dtb == vect_constant_def)));
 }
 
+static const int cond_expr_maps[3][5] = {
+  { 4, -1, -2, 1, 2 },
+  { 4, -2, -1, 1, 2 },
+  { 4, -1, -2, 2, 1 }
+};
+static const int arg1_map[] = { 1, 1 };
+static const int arg2_map[] = { 1, 2 };
+static const int arg1_arg4_map[] = { 2, 1, 4 };
+
+/* For most SLP statements, there is a one-to-one mapping between
+   gimple arguments and child nodes.  If that is not true for STMT,
+   return an array that contains:
+
+   - the number of child nodes, followed by
+   - for each child node, the index of the argument associated with that node.
+     The special index -1 is the first operand of an embedded comparison and
+     the special index -2 is the second operand of an embedded comparison.
+
+   SWAP is as for vect_get_and_check_slp_defs.  */
+
+static const int *
+vect_get_operand_map (const gimple *stmt, unsigned char swap = 0)
+{
+  if (auto assign = dyn_cast<const gassign *> (stmt))
+    {
+      if (gimple_assign_rhs_code (assign) == COND_EXPR
+	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (assign)))
+	return cond_expr_maps[swap];
+    }
+  gcc_assert (!swap);
+  if (auto call = dyn_cast<const gcall *> (stmt))
+    {
+      if (gimple_call_internal_p (call))
+	switch (gimple_call_internal_fn (call))
+	  {
+	  case IFN_MASK_LOAD:
+	    return arg2_map;
+
+	  case IFN_GATHER_LOAD:
+	    return arg1_map;
+
+	  case IFN_MASK_GATHER_LOAD:
+	    return arg1_arg4_map;
+
+	  default:
+	    break;
+	  }
+    }
+  return nullptr;
+}
+
 /* Get the defs for the rhs of STMT (collect them in OPRNDS_INFO), check that
    they are of a valid type and that they match the defs of the first stmt of
    the SLP group (stored in OPRNDS_INFO).  This function tries to match stmts
-   by swapping operands of STMTS[STMT_NUM] when possible.  Non-zero *SWAP
-   indicates swap is required for cond_expr stmts.  Specifically, *SWAP
+   by swapping operands of STMTS[STMT_NUM] when possible.  Non-zero SWAP
+   indicates swap is required for cond_expr stmts.  Specifically, SWAP
    is 1 if STMT is cond and operands of comparison need to be swapped;
-   *SWAP is 2 if STMT is cond and code of comparison needs to be inverted.
-   If there is any operand swap in this function, *SWAP is set to non-zero
-   value.
+   SWAP is 2 if STMT is cond and code of comparison needs to be inverted.
+
    If there was a fatal error return -1; if the error could be corrected by
    swapping operands of father node of this one, return 1; if everything is
    ok return 0.  */
@@ -477,76 +527,48 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
   unsigned int i, number_of_oprnds;
   enum vect_def_type dt = vect_uninitialized_def;
   slp_oprnd_info oprnd_info;
-  int first_op_idx = 1;
   unsigned int commutative_op = -1U;
-  bool first_op_cond = false;
   bool first = stmt_num == 0;
 
+  if (!is_a<gcall *> (stmt_info->stmt)
+      && !is_a<gassign *> (stmt_info->stmt)
+      && !is_a<gphi *> (stmt_info->stmt))
+    return -1;
+
+  number_of_oprnds = gimple_num_args (stmt_info->stmt);
+  const int *map = vect_get_operand_map (stmt_info->stmt, swap);
+  if (map)
+    number_of_oprnds = *map++;
   if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
     {
-      number_of_oprnds = gimple_call_num_args (stmt);
-      first_op_idx = 3;
       if (gimple_call_internal_p (stmt))
 	{
 	  internal_fn ifn = gimple_call_internal_fn (stmt);
 	  commutative_op = first_commutative_argument (ifn);
-
-	  /* Masked load, only look at mask.  */
-	  if (ifn == IFN_MASK_LOAD)
-	    {
-	      number_of_oprnds = 1;
-	      /* Mask operand index.  */
-	      first_op_idx = 5;
-	    }
 	}
     }
   else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
     {
-      enum tree_code code = gimple_assign_rhs_code (stmt);
-      number_of_oprnds = gimple_num_ops (stmt) - 1;
-      /* Swap can only be done for cond_expr if asked to, otherwise we
-	 could result in different comparison code to the first stmt.  */
-      if (code == COND_EXPR
-	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (stmt)))
-	{
-	  first_op_cond = true;
-	  number_of_oprnds++;
-	}
-      else
-	commutative_op = commutative_tree_code (code) ? 0U : -1U;
+      if (commutative_tree_code (gimple_assign_rhs_code (stmt)))
+	commutative_op = 0;
     }
-  else if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
-    number_of_oprnds = gimple_phi_num_args (stmt);
-  else
-    return -1;
 
   bool swapped = (swap != 0);
   bool backedge = false;
-  gcc_assert (!swapped || first_op_cond);
   enum vect_def_type *dts = XALLOCAVEC (enum vect_def_type, number_of_oprnds);
   for (i = 0; i < number_of_oprnds; i++)
     {
-      if (first_op_cond)
-	{
-	  /* Map indicating how operands of cond_expr should be swapped.  */
-	  int maps[3][4] = {{0, 1, 2, 3}, {1, 0, 2, 3}, {0, 1, 3, 2}};
-	  int *map = maps[swap];
-
-	  if (i < 2)
-	    oprnd = TREE_OPERAND (gimple_op (stmt_info->stmt,
-					     first_op_idx), map[i]);
-	  else
-	    oprnd = gimple_op (stmt_info->stmt, map[i]);
-	}
-      else if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
-	{
-	  oprnd = gimple_phi_arg_def (stmt, i);
-	  backedge = dominated_by_p (CDI_DOMINATORS,
-				     gimple_phi_arg_edge (stmt, i)->src,
-				     gimple_bb (stmt_info->stmt));
-	}
+      int opno = map ? map[i] : int (i);
+      if (opno < 0)
+	oprnd = TREE_OPERAND (gimple_arg (stmt_info->stmt, 0), -1 - opno);
       else
-	oprnd = gimple_op (stmt_info->stmt, first_op_idx + (swapped ? !i : i));
+	{
+	  oprnd = gimple_arg (stmt_info->stmt, opno);
+	  if (gphi *stmt = dyn_cast <gphi *> (stmt_info->stmt))
+	    backedge = dominated_by_p (CDI_DOMINATORS,
+				       gimple_phi_arg_edge (stmt, opno)->src,
+				       gimple_bb (stmt_info->stmt));
+	}
       if (TREE_CODE (oprnd) == VIEW_CONVERT_EXPR)
 	oprnd = TREE_OPERAND (oprnd, 0);
 
@@ -811,6 +833,20 @@ compatible_calls_p (gcall *call1, gcall *call2)
       if (gimple_call_fntype (call1) != gimple_call_fntype (call2))
 	return false;
     }
+
+  /* Check that any unvectorized arguments are equal.  */
+  if (const int *map = vect_get_operand_map (call1))
+    {
+      unsigned int nkept = *map++;
+      unsigned int mapi = 0;
+      for (unsigned int i = 0; i < nargs; ++i)
+	if (mapi < nkept && map[mapi] == int (i))
+	  mapi += 1;
+	else if (!operand_equal_p (gimple_call_arg (call1, i),
+				   gimple_call_arg (call2, i)))
+	  return false;
+    }
+
   return true;
 }
 
@@ -876,17 +912,13 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 {
   unsigned int i;
   stmt_vec_info first_stmt_info = stmts[0];
-  enum tree_code first_stmt_code = ERROR_MARK;
-  enum tree_code alt_stmt_code = ERROR_MARK;
-  enum tree_code rhs_code = ERROR_MARK;
-  enum tree_code first_cond_code = ERROR_MARK;
+  code_helper first_stmt_code = ERROR_MARK;
+  code_helper alt_stmt_code = ERROR_MARK;
+  code_helper rhs_code = ERROR_MARK;
+  code_helper first_cond_code = ERROR_MARK;
   tree lhs;
   bool need_same_oprnds = false;
   tree vectype = NULL_TREE, first_op1 = NULL_TREE;
-  optab optab;
-  int icode;
-  machine_mode optab_op2_mode;
-  machine_mode vec_mode;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_load_p = false, load_p = false;
   bool first_stmt_phi_p = false, phi_p = false;
@@ -966,13 +998,18 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       gcall *call_stmt = dyn_cast <gcall *> (stmt);
       if (call_stmt)
 	{
-	  rhs_code = CALL_EXPR;
+	  combined_fn cfn = gimple_call_combined_fn (call_stmt);
+	  if (cfn != CFN_LAST)
+	    rhs_code = cfn;
+	  else
+	    rhs_code = CALL_EXPR;
 
-	  if (gimple_call_internal_p (stmt, IFN_MASK_LOAD))
+	  if (cfn == CFN_MASK_LOAD
+	      || cfn == CFN_GATHER_LOAD
+	      || cfn == CFN_MASK_GATHER_LOAD)
 	    load_p = true;
-	  else if ((gimple_call_internal_p (call_stmt)
-		    && (!vectorizable_internal_fn_p
-			(gimple_call_internal_fn (call_stmt))))
+	  else if ((internal_fn_p (cfn)
+		    && !vectorizable_internal_fn_p (as_internal_fn (cfn)))
 		   || gimple_call_tail_p (call_stmt)
 		   || gimple_call_noreturn_p (call_stmt)
 		   || gimple_call_chain (call_stmt))
@@ -1013,32 +1050,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      || rhs_code == LROTATE_EXPR
 	      || rhs_code == RROTATE_EXPR)
 	    {
-	      vec_mode = TYPE_MODE (vectype);
-
 	      /* First see if we have a vector/vector shift.  */
-	      optab = optab_for_tree_code (rhs_code, vectype,
-					   optab_vector);
-
-	      if (!optab
-		  || optab_handler (optab, vec_mode) == CODE_FOR_nothing)
+	      if (!directly_supported_p (rhs_code, vectype, optab_vector))
 		{
 		  /* No vector/vector shift, try for a vector/scalar shift.  */
-		  optab = optab_for_tree_code (rhs_code, vectype,
-					       optab_scalar);
-
-		  if (!optab)
-		    {
-		      if (dump_enabled_p ())
-			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-					 "Build SLP failed: no optab.\n");
-		      if (is_a <bb_vec_info> (vinfo) && i != 0)
-			continue;
-		      /* Fatal mismatch.  */
-		      matches[0] = false;
-		      return false;
-		    }
-		  icode = (int) optab_handler (optab, vec_mode);
-		  if (icode == CODE_FOR_nothing)
+		  if (!directly_supported_p (rhs_code, vectype, optab_scalar))
 		    {
 		      if (dump_enabled_p ())
 			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1050,12 +1066,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		      matches[0] = false;
 		      return false;
 		    }
-		  optab_op2_mode = insn_data[icode].operand[2].mode;
-		  if (!VECTOR_MODE_P (optab_op2_mode))
-		    {
-		      need_same_oprnds = true;
-		      first_op1 = gimple_assign_rhs2 (stmt);
-		    }
+		  need_same_oprnds = true;
+		  first_op1 = gimple_assign_rhs2 (stmt);
 		}
 	    }
 	  else if (rhs_code == WIDEN_LSHIFT_EXPR)
@@ -1081,8 +1093,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		  return false;
 		}
 	    }
-	  else if (call_stmt
-		   && gimple_call_internal_p (call_stmt, IFN_DIV_POW2))
+	  else if (rhs_code == CFN_DIV_POW2)
 	    {
 	      need_same_oprnds = true;
 	      first_op1 = gimple_call_arg (call_stmt, 1);
@@ -1110,7 +1121,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			|| first_stmt_code == BIT_FIELD_REF
 			|| first_stmt_code == INDIRECT_REF
 			|| first_stmt_code == COMPONENT_REF
-			|| first_stmt_code == MEM_REF)))
+			|| first_stmt_code == MEM_REF)
+		    && (rhs_code == ARRAY_REF
+			|| rhs_code == BIT_FIELD_REF
+			|| rhs_code == INDIRECT_REF
+			|| rhs_code == COMPONENT_REF
+			|| rhs_code == MEM_REF)))
 	      || first_stmt_load_p != load_p
 	      || first_stmt_phi_p != phi_p)
 	    {
@@ -1139,10 +1155,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 
-	  if (!load_p && rhs_code == CALL_EXPR)
+	  if (call_stmt && first_stmt_code != CFN_MASK_LOAD)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
-				       as_a <gcall *> (stmt)))
+				       call_stmt))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1167,9 +1183,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
 	  if (need_same_oprnds)
 	    {
-	      tree other_op1 = (call_stmt
-				? gimple_call_arg (call_stmt, 1)
-				: gimple_assign_rhs2 (stmt));
+	      tree other_op1 = gimple_arg (stmt, 1);
 	      if (!operand_equal_p (first_op1, other_op1, 0))
 		{
 		  if (dump_enabled_p ())
@@ -1226,7 +1240,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
         } /* Grouped access.  */
       else
 	{
-	  if (load_p)
+	  if (load_p
+	      && rhs_code != CFN_GATHER_LOAD
+	      && rhs_code != CFN_MASK_GATHER_LOAD)
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
@@ -1243,10 +1259,11 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
 	  /* Not memory operation.  */
 	  if (!phi_p
-	      && TREE_CODE_CLASS (rhs_code) != tcc_binary
-	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
-	      && TREE_CODE_CLASS (rhs_code) != tcc_expression
-	      && TREE_CODE_CLASS (rhs_code) != tcc_comparison
+	      && rhs_code.is_tree_code ()
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_binary
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_unary
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_expression
+	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_comparison
 	      && rhs_code != VIEW_CONVERT_EXPR
 	      && rhs_code != CALL_EXPR
 	      && rhs_code != BIT_FIELD_REF)
@@ -1308,7 +1325,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   /* If we allowed a two-operation SLP node verify the target can cope
      with the permute we are going to use.  */
   if (alt_stmt_code != ERROR_MARK
-      && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
+      && (!alt_stmt_code.is_tree_code ()
+	  || TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_reference))
     {
       *two_operators = true;
     }
@@ -1626,18 +1644,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
   matches[0] = false;
 
   stmt_vec_info stmt_info = stmts[0];
-  if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
-    nops = gimple_call_num_args (stmt);
-  else if (gassign *stmt = dyn_cast <gassign *> (stmt_info->stmt))
-    {
-      nops = gimple_num_ops (stmt) - 1;
-      if (gimple_assign_rhs_code (stmt) == COND_EXPR)
-	nops++;
-    }
-  else if (gphi *phi = dyn_cast <gphi *> (stmt_info->stmt))
-    nops = gimple_phi_num_args (phi);
-  else
+  if (!is_a<gcall *> (stmt_info->stmt)
+      && !is_a<gassign *> (stmt_info->stmt)
+      && !is_a<gphi *> (stmt_info->stmt))
     return NULL;
+
+  nops = gimple_num_args (stmt_info->stmt);
+  if (const int *map = vect_get_operand_map (stmt_info->stmt))
+    nops = map[0];
 
   /* If the SLP node is a PHI (induction or reduction), terminate
      the recursion.  */
@@ -1709,11 +1723,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
       if (gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt))
-	{
-	  /* Masked load.  */
-	  gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD));
-	  nops = 1;
-	}
+	gcc_assert (gimple_call_internal_p (stmt, IFN_MASK_LOAD)
+		    || gimple_call_internal_p (stmt, IFN_GATHER_LOAD)
+		    || gimple_call_internal_p (stmt, IFN_MASK_GATHER_LOAD));
       else
 	{
 	  *max_nunits = this_max_nunits;
@@ -4429,7 +4441,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
      calculated by the recursive call).  Otherwise it is the number of
      scalar elements in one scalar iteration (DR_GROUP_SIZE) multiplied by
      VF divided by the number of elements in a vector.  */
-  if (!STMT_VINFO_GROUPED_ACCESS (stmt_info)
+  if (!STMT_VINFO_DATA_REF (stmt_info)
       && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
     {
       for (unsigned i = 0; i < SLP_TREE_CHILDREN (node).length (); ++i)
@@ -7311,20 +7323,14 @@ vectorize_slp_instance_root_stmt (slp_tree node, slp_instance instance)
     {
       if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
 	{
-	  gimple *child_stmt;
-	  int j;
-
-	  FOR_EACH_VEC_ELT (SLP_TREE_VEC_STMTS (node), j, child_stmt)
-	    {
-	      tree vect_lhs = gimple_get_lhs (child_stmt);
-	      tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
-	      if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
-					      TREE_TYPE (vect_lhs)))
-		vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
-				   vect_lhs);
-	      rstmt = gimple_build_assign (root_lhs, vect_lhs);
-	      break;
-	    }
+	  gimple *child_stmt = SLP_TREE_VEC_STMTS (node)[0];
+	  tree vect_lhs = gimple_get_lhs (child_stmt);
+	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
+	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
+					  TREE_TYPE (vect_lhs)))
+	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
+			       vect_lhs);
+	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	}
       else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
 	{

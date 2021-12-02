@@ -3348,6 +3348,13 @@ package body Exp_Ch5 is
             Alt          : Node_Id;
             Suppress_Choice_Index_Update : Boolean := False) return Node_Id
          is
+            procedure Finish_Binding_Object_Declaration
+              (Component_Assoc : Node_Id; Subobject : Node_Id);
+            --  Finish the work that was started during analysis to
+            --  declare a binding object. If we are generating a copy,
+            --  then initialize it. If we are generating a renaming, then
+            --  initialize the access value designating the renamed object.
+
             function Update_Choice_Index return Node_Id is (
               Make_Assignment_Statement (Loc,
                 Name       =>
@@ -3367,6 +3374,130 @@ package body Exp_Ch5 is
 
             function Indexed_Element (Idx : Pos) return Node_Id;
             --  Returns the Nth (well, ok, the Idxth) element of Object
+
+            ---------------------------------------
+            -- Finish_Binding_Object_Declaration --
+            ---------------------------------------
+
+            procedure Finish_Binding_Object_Declaration
+              (Component_Assoc : Node_Id; Subobject : Node_Id)
+            is
+               Decl_Chars   : constant Name_Id :=
+                 Binding_Chars (Component_Assoc);
+
+               Block_Stmt   : constant Node_Id := First (Statements (Alt));
+               pragma Assert (Nkind (Block_Stmt) = N_Block_Statement);
+               pragma Assert (No (Next (Block_Stmt)));
+
+               Decl         : Node_Id := First (Declarations (Block_Stmt));
+               Def_Id       : Node_Id := Empty;
+
+               --  Declare_Copy indicates which of the two approaches
+               --  was chosen during analysis: declare (and initialize)
+               --  a new variable, or use access values to declare a renaming
+               --  of the appropriate subcomponent of the selector value.
+               Declare_Copy : constant Boolean :=
+                 Nkind (Decl) = N_Object_Declaration;
+
+               function Make_Conditional (Stmt : Node_Id) return Node_Id;
+               --  If there is only one choice for this alternative, then
+               --  simply return the argument. If there is more than one
+               --  choice, then wrap an if-statement around the argument
+               --  so that it is only executed if the current choice matches.
+
+               ----------------------
+               -- Make_Conditional --
+               ----------------------
+
+               function Make_Conditional (Stmt : Node_Id) return Node_Id
+               is
+                  Condition : Node_Id;
+               begin
+                  if Present (Choice_Index_Decl) then
+                     Condition :=
+                       Make_Op_Eq (Loc,
+                         New_Occurrence_Of
+                           (Defining_Identifier (Choice_Index_Decl), Loc),
+                         Make_Integer_Literal (Loc, Int (Choice_Index)));
+
+                     return Make_If_Statement (Loc,
+                              Condition       => Condition,
+                              Then_Statements => New_List (Stmt));
+                  else
+                     --  execute Stmt unconditionally
+                     return Stmt;
+                  end if;
+               end Make_Conditional;
+
+            begin
+               --  find the variable to be modified (and its declaration)
+               loop
+                  if Nkind (Decl) in N_Object_Declaration
+                    | N_Object_Renaming_Declaration
+                  then
+                     Def_Id := Defining_Identifier (Decl);
+                     exit when Chars (Def_Id) = Decl_Chars;
+                  end if;
+                  Next (Decl);
+                  pragma Assert (Present (Decl));
+               end loop;
+
+               --  For a binding object, we sometimes make a copy and
+               --  sometimes introduce  a renaming. That decision is made
+               --  elsewhere. The renaming case involves dereferencing an
+               --  access value because of the possibility of multiple
+               --  choices (with multiple binding definitions) for a single
+               --  alternative. In the copy case, we initialize the copy
+               --  here (conditionally if there are multiple choices); in the
+               --  renaming case, we initialize (again, maybe conditionally)
+               --  the access value.
+
+               if Declare_Copy then
+                  declare
+                     Assign_Value : constant Node_Id  :=
+                       Make_Assignment_Statement (Loc,
+                         Name       => New_Occurrence_Of (Def_Id, Loc),
+                         Expression => Subobject);
+
+                     HSS : constant Node_Id :=
+                       Handled_Statement_Sequence (Block_Stmt);
+                  begin
+                     Prepend (Make_Conditional (Assign_Value),
+                              Statements (HSS));
+                     Set_Analyzed (HSS, False);
+                  end;
+               else
+                  pragma Assert (Nkind (Name (Decl)) = N_Explicit_Dereference);
+
+                  declare
+                     Ptr_Obj  : constant Entity_Id :=
+                       Entity (Prefix (Name (Decl)));
+                     Ptr_Decl : constant Node_Id := Parent (Ptr_Obj);
+
+                     Assign_Reference : constant Node_Id :=
+                       Make_Assignment_Statement (Loc,
+                         Name       => New_Occurrence_Of (Ptr_Obj, Loc),
+                         Expression =>
+                           Make_Attribute_Reference (Loc,
+                             Prefix => Subobject,
+                             Attribute_Name => Name_Unrestricted_Access));
+                  begin
+                     Insert_After
+                       (After => Ptr_Decl,
+                        Node  => Make_Conditional (Assign_Reference));
+
+                     if Present (Expression (Ptr_Decl)) then
+                        --  Delete bogus initial value built during analysis.
+                        --  Look for "5432" in sem_case.adb.
+                        pragma Assert (Nkind (Expression (Ptr_Decl)) =
+                                       N_Unchecked_Type_Conversion);
+                        Set_Expression (Ptr_Decl, Empty);
+                     end if;
+                  end;
+               end if;
+
+               Set_Analyzed (Block_Stmt, False);
+            end Finish_Binding_Object_Declaration;
 
             ---------------------
             -- Indexed_Element --
@@ -3519,70 +3650,9 @@ package body Exp_Ch5 is
 
                               if Binding_Chars (Component_Assoc) /= No_Name
                               then
-                                 declare
-                                    Decl_Chars : constant Name_Id :=
-                                      Binding_Chars (Component_Assoc);
-
-                                    Block_Stmt : constant Node_Id :=
-                                      First (Statements (Alt));
-                                    pragma Assert
-                                      (Nkind (Block_Stmt) = N_Block_Statement);
-                                    pragma Assert (No (Next (Block_Stmt)));
-                                    Decl : Node_Id
-                                      := First (Declarations (Block_Stmt));
-                                    Def_Id : Node_Id := Empty;
-
-                                    Assignment_Stmt : Node_Id;
-                                    Condition       : Node_Id;
-                                    Prepended_Stmt  : Node_Id;
-                                 begin
-                                    --  find the variable to be modified
-                                    while No (Def_Id) or else
-                                      Chars (Def_Id) /= Decl_Chars
-                                    loop
-                                       Def_Id := Defining_Identifier (Decl);
-                                       Next (Decl);
-                                    end loop;
-
-                                    Assignment_Stmt :=
-                                      Make_Assignment_Statement (Loc,
-                                        Name       => New_Occurrence_Of
-                                                        (Def_Id, Loc),
-                                        Expression => Subobject);
-
-                                    --  conditional if multiple choices
-
-                                    if Present (Choice_Index_Decl) then
-                                       Condition :=
-                                         Make_Op_Eq (Loc,
-                                           New_Occurrence_Of
-                                             (Defining_Identifier
-                                                (Choice_Index_Decl), Loc),
-                                          Make_Integer_Literal
-                                            (Loc, Int (Choice_Index)));
-
-                                       Prepended_Stmt :=
-                                         Make_If_Statement (Loc,
-                                           Condition       => Condition,
-                                           Then_Statements =>
-                                             New_List (Assignment_Stmt));
-                                    else
-                                       --  assignment is unconditional
-                                       Prepended_Stmt := Assignment_Stmt;
-                                    end if;
-
-                                    declare
-                                       HSS : constant Node_Id :=
-                                         Handled_Statement_Sequence
-                                           (Block_Stmt);
-                                    begin
-                                       Prepend (Prepended_Stmt,
-                                                Statements (HSS));
-
-                                       Set_Analyzed (Block_Stmt, False);
-                                       Set_Analyzed (HSS, False);
-                                    end;
-                                 end;
+                                 Finish_Binding_Object_Declaration
+                                   (Component_Assoc => Component_Assoc,
+                                    Subobject => Subobject);
                               end if;
 
                               Next (Choice);

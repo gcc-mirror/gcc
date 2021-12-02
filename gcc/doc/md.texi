@@ -5400,6 +5400,14 @@ Find the unsigned minimum/maximum of the elements of a vector. The vector is
 operand 1, and operand 0 is the scalar result, with mode equal to the mode of
 the elements of the input vector.
 
+@cindex @code{reduc_fmin_scal_@var{m}} instruction pattern
+@cindex @code{reduc_fmax_scal_@var{m}} instruction pattern
+@item @samp{reduc_fmin_scal_@var{m}}, @samp{reduc_fmax_scal_@var{m}}
+Find the floating-point minimum/maximum of the elements of a vector,
+using the same rules as @code{fmin@var{m}3} and @code{fmax@var{m}3}.
+Operand 1 is a vector of mode @var{m} and operand 0 is the scalar
+result, which has mode @code{GET_MODE_INNER (@var{m})}.
+
 @cindex @code{reduc_plus_scal_@var{m}} instruction pattern
 @item @samp{reduc_plus_scal_@var{m}}
 Compute the sum of the elements of a vector. The vector is operand 1, and

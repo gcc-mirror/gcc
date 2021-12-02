@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail213.d(18): Error: template instance Foo!int does not match template declaration Foo(T : immutable(T))
-fail_compilation/fail213.d(25): Error: template instance Foo!(const(int)) does not match template declaration Foo(T : immutable(T))
+fail_compilation/fail213.d(18): Error: template instance `Foo!int` does not match template declaration `Foo(T : immutable(T))`
+fail_compilation/fail213.d(25): Error: template instance `Foo!(const(int))` does not match template declaration `Foo(T : immutable(T))`
 ---
 */
 

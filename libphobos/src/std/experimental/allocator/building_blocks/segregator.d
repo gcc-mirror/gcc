@@ -1,21 +1,24 @@
-///
+// Written in the D programming language.
+/**
+Source: $(PHOBOSSRC std/experimental/allocator/building_blocks/segregator.d)
+*/
 module std.experimental.allocator.building_blocks.segregator;
 
 import std.experimental.allocator.common;
 
 /**
 Dispatches allocations (and deallocations) between two allocators ($(D
-SmallAllocator) and $(D LargeAllocator)) depending on the size allocated, as
-follows. All allocations smaller than or equal to $(D threshold) will be
-dispatched to $(D SmallAllocator). The others will go to $(D LargeAllocator).
+SmallAllocator) and `LargeAllocator`) depending on the size allocated, as
+follows. All allocations smaller than or equal to `threshold` will be
+dispatched to `SmallAllocator`. The others will go to `LargeAllocator`.
 
-If both allocators are $(D shared), the $(D Segregator) will also offer $(D
+If both allocators are `shared`, the `Segregator` will also offer $(D
 shared) methods.
 */
 struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
 {
     import std.algorithm.comparison : min;
-    import std.traits : hasMember;
+    import std.traits : hasMember, ReturnType;
     import std.typecons : Ternary;
 
     static if (stateSize!SmallAllocator) private SmallAllocator _small;
@@ -31,73 +34,73 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
         enum uint alignment;
         /**
         This method is defined only if at least one of the allocators defines
-        it. The good allocation size is obtained from $(D SmallAllocator) if $(D
-        s <= threshold), or $(D LargeAllocator) otherwise. (If one of the
-        allocators does not define $(D goodAllocSize), the default
+        it. The good allocation size is obtained from `SmallAllocator` if $(D
+        s <= threshold), or `LargeAllocator` otherwise. (If one of the
+        allocators does not define `goodAllocSize`, the default
         implementation in this module applies.)
         */
         static size_t goodAllocSize(size_t s);
         /**
-        The memory is obtained from $(D SmallAllocator) if $(D s <= threshold),
-        or $(D LargeAllocator) otherwise.
+        The memory is obtained from `SmallAllocator` if $(D s <= threshold),
+        or `LargeAllocator` otherwise.
         */
         void[] allocate(size_t);
         /**
         This method is defined if both allocators define it, and forwards to
-        $(D SmallAllocator) or $(D LargeAllocator) appropriately.
+        `SmallAllocator` or `LargeAllocator` appropriately.
         */
         void[] alignedAllocate(size_t, uint);
         /**
         This method is defined only if at least one of the allocators defines
-        it. If $(D SmallAllocator) defines $(D expand) and $(D b.length +
-        delta <= threshold), the call is forwarded to $(D SmallAllocator). If $(D
-        LargeAllocator) defines $(D expand) and $(D b.length > threshold), the
-        call is forwarded to $(D LargeAllocator). Otherwise, the call returns
-        $(D false).
+        it. If `SmallAllocator` defines `expand` and $(D b.length +
+        delta <= threshold), the call is forwarded to `SmallAllocator`. If $(D
+        LargeAllocator) defines `expand` and $(D b.length > threshold), the
+        call is forwarded to `LargeAllocator`. Otherwise, the call returns
+        `false`.
         */
         bool expand(ref void[] b, size_t delta);
         /**
         This method is defined only if at least one of the allocators defines
-        it. If $(D SmallAllocator) defines $(D reallocate) and $(D b.length <=
+        it. If `SmallAllocator` defines `reallocate` and $(D b.length <=
         threshold && s <= threshold), the call is forwarded to $(D
-        SmallAllocator). If $(D LargeAllocator) defines $(D expand) and $(D
+        SmallAllocator). If `LargeAllocator` defines `expand` and $(D
         b.length > threshold && s > threshold), the call is forwarded to $(D
-        LargeAllocator). Otherwise, the call returns $(D false).
+        LargeAllocator). Otherwise, the call returns `false`.
         */
         bool reallocate(ref void[] b, size_t s);
         /**
         This method is defined only if at least one of the allocators defines
-        it, and work similarly to $(D reallocate).
+        it, and work similarly to `reallocate`.
         */
-        bool alignedReallocate(ref void[] b, size_t s);
+        bool alignedReallocate(ref void[] b, size_t s, uint a);
         /**
         This method is defined only if both allocators define it. The call is
-        forwarded to $(D SmallAllocator) if $(D b.length <= threshold), or $(D
+        forwarded to `SmallAllocator` if $(D b.length <= threshold), or $(D
         LargeAllocator) otherwise.
         */
         Ternary owns(void[] b);
         /**
         This function is defined only if both allocators define it, and forwards
-        appropriately depending on $(D b.length).
+        appropriately depending on `b.length`.
         */
         bool deallocate(void[] b);
         /**
         This function is defined only if both allocators define it, and calls
-        $(D deallocateAll) for them in turn.
+        `deallocateAll` for them in turn.
         */
         bool deallocateAll();
         /**
         This function is defined only if both allocators define it, and returns
-        the conjunction of $(D empty) calls for the two.
+        the conjunction of `empty` calls for the two.
         */
         Ternary empty();
     }
 
     /**
-    Composite allocators involving nested instantiations of $(D Segregator) make
+    Composite allocators involving nested instantiations of `Segregator` make
     it difficult to access individual sub-allocators stored within. $(D
     allocatorForSize) simplifies the task by supplying the allocator nested
-    inside a $(D Segregator) that is responsible for a specific size $(D s).
+    inside a `Segregator` that is responsible for a specific size `s`.
 
     Example:
     ----
@@ -195,22 +198,50 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
 
         static if (hasMember!(SmallAllocator, "alignedReallocate")
                 || hasMember!(LargeAllocator, "alignedReallocate"))
-        bool reallocate(ref void[] b, size_t s)
+        bool alignedReallocate(ref void[] b, size_t s, uint a)
         {
             static if (hasMember!(SmallAllocator, "alignedReallocate"))
                 if (b.length <= threshold && s <= threshold)
                 {
                     // Old and new allocations handled by _small
-                    return _small.alignedReallocate(b, s);
+                    return _small.alignedReallocate(b, s, a);
                 }
             static if (hasMember!(LargeAllocator, "alignedReallocate"))
                 if (b.length > threshold && s > threshold)
                 {
                     // Old and new allocations handled by _large
-                    return _large.alignedReallocate(b, s);
+                    return _large.alignedReallocate(b, s, a);
                 }
             // Cross-allocator transgression
-            return .alignedReallocate(this, b, s);
+            return .alignedReallocate(this, b, s, a);
+        }
+
+        static if (hasMember!(SmallAllocator, "allocateZeroed")
+                || hasMember!(LargeAllocator, "allocateZeroed"))
+        package(std) void[] allocateZeroed()(size_t s)
+        {
+            if (s <= threshold)
+            {
+                static if (hasMember!(SmallAllocator, "allocateZeroed"))
+                    return _small.allocateZeroed(s);
+                else
+                {
+                    auto b = _small.allocate(s);
+                    (() @trusted => (cast(ubyte[]) b)[] = 0)(); // OK even if b is null.
+                    return b;
+                }
+            }
+            else
+            {
+                static if (hasMember!(LargeAllocator, "allocateZeroed"))
+                    return _large.allocateZeroed(s);
+                else
+                {
+                    auto b = _large.allocate(s);
+                    (() @trusted => (cast(ubyte[]) b)[] = 0)(); // OK even if b is null.
+                    return b;
+                }
+            }
         }
 
         static if (hasMember!(SmallAllocator, "owns")
@@ -242,7 +273,7 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
                 && hasMember!(LargeAllocator, "empty"))
         Ternary empty()
         {
-            return _small.empty && _large.empty;
+            return _small.empty & _large.empty;
         }
 
         static if (hasMember!(SmallAllocator, "resolveInternalPointer")
@@ -268,7 +299,7 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
     else
     {
         static if (!stateSize!SmallAllocator && !stateSize!LargeAllocator)
-            static __gshared Segregator instance;
+            __gshared Segregator instance;
         mixin Impl!();
     }
 }
@@ -296,8 +327,8 @@ struct Segregator(size_t threshold, SmallAllocator, LargeAllocator)
 }
 
 /**
-A $(D Segregator) with more than three arguments expands to a composition of
-elemental $(D Segregator)s, as illustrated by the following example:
+A `Segregator` with more than three arguments expands to a composition of
+elemental `Segregator`s, as illustrated by the following example:
 
 ----
 alias A =
@@ -309,11 +340,11 @@ alias A =
     );
 ----
 
-With this definition, allocation requests for $(D n1) bytes or less are directed
-to $(D A1); requests between $(D n1 + 1) and $(D n2) bytes (inclusive) are
-directed to $(D A2); requests between $(D n2 + 1) and $(D n3) bytes (inclusive)
-are directed to $(D A3); and requests for more than $(D n3) bytes are directed
-to $(D A4). If some particular range should not be handled, $(D NullAllocator)
+With this definition, allocation requests for `n1` bytes or less are directed
+to `A1`; requests between $(D n1 + 1) and `n2` bytes (inclusive) are
+directed to `A2`; requests between $(D n2 + 1) and `n3` bytes (inclusive)
+are directed to `A3`; and requests for more than `n3` bytes are directed
+to `A4`. If some particular range should not be handled, `NullAllocator`
 may be used appropriately.
 
 */
@@ -358,4 +389,132 @@ if (Args.length > 3)
     auto b = a.allocate(201);
     assert(b.length == 201);
     a.deallocate(b);
+}
+
+@system unittest
+{
+    import std.experimental.allocator.gc_allocator : GCAllocator;
+    import std.experimental.allocator.building_blocks.kernighan_ritchie : KRRegion;
+    Segregator!(128, GCAllocator, KRRegion!GCAllocator) alloc;
+    assert((() nothrow @safe @nogc => alloc.goodAllocSize(1))()
+            == GCAllocator.instance.goodAllocSize(1));
+
+    // Note: we infer `shared` from GCAllocator.goodAllocSize so we need a
+    // shared object in order to be able to use the function
+    shared Segregator!(128, GCAllocator, GCAllocator) sharedAlloc;
+    assert((() nothrow @safe @nogc => sharedAlloc.goodAllocSize(1))()
+            == GCAllocator.instance.goodAllocSize(1));
+}
+
+@system unittest
+{
+    import std.experimental.allocator.building_blocks.bitmapped_block : BitmappedBlock;
+    import std.typecons : Ternary;
+
+    alias A =
+        Segregator!(
+            128, BitmappedBlock!(4096),
+            BitmappedBlock!(4096)
+        );
+
+    A a = A(
+            BitmappedBlock!(4096)(new ubyte[4096 * 1024]),
+            BitmappedBlock!(4096)(new ubyte[4096 * 1024])
+    );
+
+    assert(a.empty == Ternary.yes);
+    auto b = a.allocate(42);
+    assert(b.length == 42);
+    assert(a.empty == Ternary.no);
+    assert(a.alignedReallocate(b, 256, 512));
+    assert(b.length == 256);
+    assert(a.alignedReallocate(b, 42, 512));
+    assert(b.length == 42);
+    assert((() pure nothrow @safe @nogc => a.owns(b))() == Ternary.yes);
+    assert((() pure nothrow @safe @nogc => a.owns(null))() == Ternary.no);
+    // Ensure deallocate inherits from parent allocators
+    assert((() nothrow @nogc => a.deallocate(b))());
+    assert(a.empty == Ternary.yes);
+
+    // Test that deallocateAll inherits from parents
+    auto c = a.allocate(42);
+    assert(c.length == 42);
+    assert((() pure nothrow @safe @nogc => a.expand(c, 58))());
+    assert(c.length == 100);
+    assert(a.empty == Ternary.no);
+    assert((() nothrow @nogc => a.deallocateAll())());
+    assert(a.empty == Ternary.yes);
+}
+
+@system unittest
+{
+    import std.experimental.allocator.gc_allocator : GCAllocator;
+    import std.typecons : Ternary;
+
+    shared Segregator!(1024 * 4, GCAllocator, GCAllocator) a;
+
+    auto b = a.allocate(201);
+    assert(b.length == 201);
+
+    void[] p;
+    assert((() nothrow @safe @nogc => a.resolveInternalPointer(&b[0], p))() == Ternary.yes);
+    assert((() nothrow @safe @nogc => a.resolveInternalPointer(null, p))() == Ternary.no);
+
+    // Ensure deallocate inherits from parent allocators
+    assert((() nothrow @nogc => a.deallocate(b))());
+}
+
+@system unittest
+{
+    import std.experimental.allocator.building_blocks.bitmapped_block : BitmappedBlockWithInternalPointers;
+    import std.typecons : Ternary;
+
+    alias A =
+        Segregator!(
+            10_240, BitmappedBlockWithInternalPointers!(4096),
+            BitmappedBlockWithInternalPointers!(4096)
+        );
+
+    A a = A(
+            BitmappedBlockWithInternalPointers!(4096)(new ubyte[4096 * 1024]),
+            BitmappedBlockWithInternalPointers!(4096)(new ubyte[4096 * 1024])
+    );
+
+    assert((() nothrow @safe @nogc => a.empty)() == Ternary.yes);
+    auto b = a.allocate(201);
+    assert(b.length == 201);
+    assert((() nothrow @safe @nogc => a.empty)() == Ternary.no);
+    assert((() nothrow @nogc => a.deallocate(b))());
+}
+
+// Test that reallocate infers from parent
+@system unittest
+{
+    import std.experimental.allocator.mallocator : Mallocator;
+
+    alias a = Segregator!(10_240, Mallocator, Mallocator).instance;
+
+    auto b = a.allocate(42);
+    assert(b.length == 42);
+    assert((() nothrow @nogc => a.reallocate(b, 100))());
+    assert(b.length == 100);
+    assert((() nothrow @nogc => a.deallocate(b))());
+}
+
+@system unittest
+{
+    import std.experimental.allocator.building_blocks.region : Region;
+    import std.typecons : Ternary;
+
+    auto a = Segregator!(10_240, Region!(), Region!())(
+                Region!()(new ubyte[4096 * 1024]),
+                Region!()(new ubyte[4096 * 1024]));
+
+    assert((() nothrow @safe @nogc => a.empty)() == Ternary.yes);
+    auto b = a.alignedAllocate(42, 8);
+    assert(b.length == 42);
+    assert((() nothrow @nogc => a.alignedReallocate(b, 100, 8))());
+    assert(b.length == 100);
+    assert((() nothrow @safe @nogc => a.empty)() == Ternary.no);
+    assert((() nothrow @nogc => a.deallocate(b))());
 }

@@ -11588,7 +11588,10 @@ build_vec_cmp (tree_code code, tree type,
 static void
 maybe_warn_for_null_address (location_t loc, tree op, tree_code code)
 {
-  if (!warn_address || warning_suppressed_p (op, OPT_Waddress))
+  /* Prevent warnings issued for macro expansion.  */
+  if (!warn_address
+      || warning_suppressed_p (op, OPT_Waddress)
+      || from_macro_expansion_at (loc))
     return;
 
   if (TREE_CODE (op) == NOP_EXPR)
@@ -13845,7 +13848,6 @@ c_clone_omp_udr (tree stmt, tree omp_decl1, tree omp_decl2,
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
-  id.transform_lang_insert_block = NULL;
   id.eh_lp_nr = 0;
   walk_tree (&stmt, copy_tree_body_r, &id, NULL);
   return stmt;
@@ -15982,8 +15984,6 @@ c_tree_equal (tree t1, tree t2)
     default:
       gcc_unreachable ();
     }
-  /* We can get here with --disable-checking.  */
-  return false;
 }
 
 /* Returns true when the function declaration FNDECL is implicit,

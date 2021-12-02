@@ -359,6 +359,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wignored-qualifiers  -Wno-incompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wno-implicit-function-declaration  -Wno-implicit-int @gol
+-Winfinite-recursion @gol
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Wno-invalid-memory-model @gol
 -Winvalid-pch  -Wjump-misses-init  -Wlarger-than=@var{byte-size} @gol
@@ -1880,7 +1881,8 @@ named @file{dir/bar.*}, combining the given @var{dumppfx} with the
 default @var{dumpbase} derived from the primary output name.  Dump
 outputs also take the input name suffix: @file{dir/bar.c.*}.
 
-It defaults to the location of the output file; options
+It defaults to the location of the output file, unless the output
+file is a special file like @code{/dev/null}. Options
 @option{-save-temps=cwd} and @option{-save-temps=obj} override this
 default, just like an explicit @option{-dumpdir} option.  In case
 multiple such options are given, the last one prevails:
@@ -3033,6 +3035,20 @@ users are likely to want to adjust it, but if your code does heavy
 constexpr calculations you might want to experiment to find which
 value works best for you.
 
+@item -fconstexpr-fp-except
+@opindex fconstexpr-fp-except
+Annex F of the C standard specifies that IEC559 floating point
+exceptions encountered at compile time should not stop compilation.
+C++ compilers have historically not followed this guidance, instead
+treating floating point division by zero as non-constant even though
+it has a well defined value.  This flag tells the compiler to give
+Annex F priority over other rules saying that a particular operation
+is undefined.
+
+@smallexample
+constexpr float inf = 1./0.; // OK with -fconstexpr-fp-except
+@end smallexample
+
 @item -fconstexpr-loop-limit=@var{n}
 @opindex fconstexpr-loop-limit
 Set the maximum number of iterations for a loop in C++14 constexpr functions
@@ -3477,19 +3493,27 @@ about ABI tags.
 @opindex Wcomma-subscript
 @opindex Wno-comma-subscript
 Warn about uses of a comma expression within a subscripting expression.
-This usage was deprecated in C++20.  However, a comma expression wrapped
-in @code{( )} is not deprecated.  Example:
+This usage was deprecated in C++20 and is going to be removed in C++23.
+However, a comma expression wrapped in @code{( )} is not deprecated.  Example:
 
 @smallexample
 @group
 void f(int *a, int b, int c) @{
-    a[b,c];     // deprecated
+    a[b,c];     // deprecated in C++20, invalid in C++23
     a[(b,c)];   // OK
 @}
 @end group
 @end smallexample
 
-Enabled by default with @option{-std=c++20}.
+In C++23 it is valid to have comma separated expressions in a subscript
+when an overloaded subscript operator is found and supports the right
+number and types of arguments.  G++ will accept the formerly valid syntax
+for code that is not valid in C++23 but used to be valid but deprecated
+in C++20 with a pedantic warning that can be disabled with
+@option{-Wno-comma-subscript}.
+
+Enabled by default with @option{-std=c++20} unless @option{-Wno-deprecated},
+and with @option{-std=c++23} regardless of @option{-Wno-deprecated}.
 
 @item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
 @opindex Wctad-maybe-unsupported
@@ -6193,6 +6217,14 @@ is only active when @option{-fdelete-null-pointer-checks} is active,
 which is enabled by optimizations in most targets.  The precision of
 the warnings depends on the optimization options used.
 
+@item -Winfinite-recursion
+@opindex Winfinite-recursion
+@opindex Wno-infinite-recursion
+Warn about infinitely recursive calls.  The warning is effective at all
+optimization levels but requires optimization in order to detect infinite
+recursion in calls between two or more functions.
+@option{-Winfinite-recursion} is included in @option{-Wall}.
+
 @item -Winit-self @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Winit-self
 @opindex Wno-init-self
@@ -8688,6 +8720,8 @@ suppressed by casting the pointer operand to an integer type such
 as @code{inptr_t} or @code{uinptr_t}.
 Comparisons against string literals result in unspecified behavior
 and are not portable, and suggest the intent was to call @code{strcmp}.
+The warning is suppressed if the suspicious expression is the result
+of macro expansion.
 @option{-Waddress} warning is enabled by @option{-Wall}.
 
 @item -Wno-address-of-packed-member
@@ -10674,6 +10708,7 @@ valid for all standard-compliant programs.
 It turns on @option{-ffast-math}, @option{-fallow-store-data-races}
 and the Fortran-specific @option{-fstack-arrays}, unless
 @option{-fmax-stack-var-size} is specified, and @option{-fno-protect-parens}.
+It turns off @option{-fsemantic-interposition}.
 
 @item -Og
 @opindex Og
@@ -12096,8 +12131,8 @@ Initialize automatic variables with either a pattern or with zeroes to increase
 the security and predictability of a program by preventing uninitialized memory
 disclosure and use.
 GCC still considers an automatic variable that doesn't have an explicit
-initializer as uninitialized, -Wuninitialized will still report warning messages
-on such automatic variables.
+initializer as uninitialized, @option{-Wuninitialized} will still report
+warning messages on such automatic variables.
 With this option, GCC will also initialize any padding of automatic variables
 that have structure or union types to zeroes.
 
@@ -14705,10 +14740,6 @@ by the RTL if-conversion pass for a branch that is considered unpredictable.
 If @option{-fvariable-expansion-in-unroller} is used, the maximum number
 of times that an individual variable will be expanded during loop unrolling.
 
-@item tracer-min-branch-probability-feedback
-Stop forward growth if the probability of best edge is less than
-this threshold (in percent). Used when profile feedback is available.
-
 @item partial-inlining-entry-probability
 Maximum probability of the entry BB of split region
 (in percent relative to entry BB of the function)
@@ -14758,10 +14789,6 @@ A threshold on the average loop count considered by the swing modulo scheduler.
 The number of cycles the swing modulo scheduler considers when checking
 conflicts using DFA.
 
-@item max-inline-insns-recursive-auto
-The maximum number of instructions non-inline function
-can grow to via recursive inlining.
-
 @item graphite-allow-codegen-errors
 Whether codegen errors should be ICEs when @option{-fchecking}.
 
@@ -14795,14 +14822,6 @@ Maximum number of arrays per scop.
 @item max-vartrack-reverse-op-size
 Max. size of loc list for which reverse ops should be added.
 
-@item tracer-dynamic-coverage-feedback
-The percentage of function, weighted by execution frequency,
-that must be covered by trace formation.
-Used when profile feedback is available.
-
-@item max-inline-recursive-depth-auto
-The maximum depth of recursive inlining for non-inline functions.
-
 @item fsm-scale-path-stmts
 Scale factor to apply to the number of statements in a threading path
 when comparing to the number of (scaled) blocks.
@@ -14810,10 +14829,6 @@ when comparing to the number of (scaled) blocks.
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
-
-@item sra-max-scalarization-size-Osize
-Maximum size, in storage units, of an aggregate
-which should be considered for scalarization when compiling for size.
 
 @item fsm-scale-path-blocks
 Scale factor to apply to the number of blocks in a threading path

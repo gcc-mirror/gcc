@@ -11499,6 +11499,7 @@ arg_evaluated_for_scalarization (gfc_intrinsic_sym *function,
       switch (function->id)
 	{
 	  case GFC_ISYM_INDEX:
+	  case GFC_ISYM_LEN_TRIM:
 	    if (strcmp ("kind", gfc_dummy_arg_get_name (*dummy_arg)) == 0)
 	      return false;
 	  /* Fallthrough.  */

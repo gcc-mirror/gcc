@@ -1,4 +1,10 @@
-// PERMUTE_ARGS:
+/*
+PERMUTE_ARGS:
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 module testgc2;
 
@@ -7,30 +13,34 @@ import core.exception : OutOfMemoryError;
 
 /*******************************************/
 
+__gshared ulong counter;
+
 void test1()
 {
-    printf("This should not take a while\n");
     try
     {
         long[] l = new long[ptrdiff_t.max];
-        printf("%lu\n", cast(ulong)l.capacity); // Make sure l is not optimized out.
+        counter += l.capacity; // Make sure l is not optimized out.
         assert(0);
     }
     catch (OutOfMemoryError o)
     {
     }
 
-    printf("This may take a while\n");
+    assert(counter == 0);
+
     try
     {
         byte[] b = new byte[size_t.max / 3];
-        printf("%lu\n", cast(ulong)b.capacity); // Make sure b is not optimized out.
+        counter += b.capacity; // Make sure b is not optimized out.
         version (Windows)
             assert(0);
     }
     catch (OutOfMemoryError o)
     {
     }
+
+    assert(counter >= 0);
 }
 
 /*******************************************/
@@ -41,5 +51,3 @@ void main()
 
     printf("Success\n");
 }
-
-

@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail4448.d(19): Error: label `L1` has no break
-fail_compilation/fail4448.d(26):        called from here: bug4448()
+fail_compilation/fail4448.d(19): Error: label `L1` has no `break`
+fail_compilation/fail4448.d(26):        called from here: `bug4448()`
 fail_compilation/fail4448.d(26):        while evaluating: `static assert(bug4448() == 3)`
 ---
 */

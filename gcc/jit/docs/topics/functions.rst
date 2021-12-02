@@ -171,6 +171,32 @@ Functions
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
 
+.. function::  size_t \
+               gcc_jit_function_get_param_count (gcc_jit_function *func)
+
+   Get the number of parameters of the function.
+
+.. function::  gcc_jit_type *\
+               gcc_jit_function_get_return_type (gcc_jit_function *func)
+
+   Get the return type of the function.
+
+   The API entrypoints relating to getting info about parameters and return
+   types:
+
+      * :c:func:`gcc_jit_function_get_return_type`
+
+      * :c:func:`gcc_jit_function_get_param_count`
+
+   were added in :ref:`LIBGCCJIT_ABI_16`; you can test for their presence
+   using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_REFLECTION
+
+   .. type:: gcc_jit_case
+
 Blocks
 ------
 .. type:: gcc_jit_block

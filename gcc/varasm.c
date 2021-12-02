@@ -3415,8 +3415,6 @@ compare_constant (const tree t1, const tree t2)
     default:
       return 0;
     }
-
-  gcc_unreachable ();
 }
 
 /* Return the section into which constant EXP should be placed.  */
@@ -5871,7 +5869,7 @@ mark_weak (tree decl)
 
   struct symtab_node *n = symtab_node::get (decl);
   if (n && n->refuse_visibility_changes)
-    error ("%+qD declared weak after being used", decl);
+    error ("%qD declared weak after being used", decl);
   DECL_WEAK (decl) = 1;
 
   if (DECL_RTL_SET_P (decl)

@@ -1,3 +1,20 @@
+2021-11-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* download_prerequisites: Update to gmp-6.2.1, mpfr-4.1.0,
+	mpc-1.2.1 and isl-0.24.
+	* prerequisites.md5: Update hash.
+	* prerequisites.sha512: Likewise.
+
+2021-11-23  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter -Wc++20-extensions as it does
+	not respect proper attribute detection.
+
+2021-11-23  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: Support @itemx in param documentation
+	and support multi-line documentation for parameters.
+
 2021-11-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* update-copyright.py (class BadYear): Derive from 'Exception'.

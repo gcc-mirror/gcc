@@ -636,6 +636,10 @@ Wimplicit-fallthrough=
 Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning IntegerRange(0, 5)
 Warn when a switch case falls through.
 
+Winfinite-recursion
+Var(warn_infinite_recursion) Warning
+Warn for infinitely recursive calls.
+
 Winline
 Common Var(warn_inline) Warning Optimization
 Warn when an inlined function cannot be inlined.
@@ -3526,6 +3530,10 @@ Driver
 static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
+
+static-libphobos
+Driver
+; Documented for D, but always accepted by driver.
 
 static-libstdc++
 Driver

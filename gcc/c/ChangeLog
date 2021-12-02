@@ -1,3 +1,48 @@
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Remove "gang reduction on an
+	orphan loop" checking.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Emit an error on orphan
+	OpenACC gang reductions.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression):
+	avoid unreachable code after break.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-11-29  Richard Biener  <rguenther@suse.de>
+
+	* c-typeck.c (c_tree_equal): Remove unreachable return.
+	* c-parser.c (get_matching_symbol): Likewise.
+
+2021-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_clone_omp_udr): Don't initialize
+	id.transform_lang_insert_block.
+
+2021-11-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/33925
+	PR c/102867
+	* c-typeck.c (maybe_warn_for_null_address): Suppress warnings for
+	code resulting from macro expansion.
+
+2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-11-19  Martin Liska  <mliska@suse.cz>
+
+	* c-parser.c (add_debug_begin_stmt): Use option directly.
+
 2021-11-18  Matthias Kretz  <m.kretz@gsi.de>
 
 	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_ASSOC_BARRIER.

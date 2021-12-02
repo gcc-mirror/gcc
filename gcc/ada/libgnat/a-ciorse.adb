@@ -771,29 +771,14 @@ is
         (Container : aliased Set;
          Key       : Key_Type) return Constant_Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         if Checks and then Node.Element = null then
-            raise Program_Error with "Node has no element";
-         end if;
-
-         declare
-            Tree : Tree_Type renames Container'Unrestricted_Access.all.Tree;
-            TC : constant Tamper_Counts_Access :=
-              Tree.TC'Unrestricted_Access;
-         begin
-            return R : constant Constant_Reference_Type :=
-              (Element => Node.Element.all'Access,
-               Control => (Controlled with TC))
-            do
-               Busy (TC.all);
-            end return;
-         end;
+         return Constant_Reference (Container, Position);
       end Constant_Reference;
 
       --------------
@@ -1029,32 +1014,14 @@ is
         (Container : aliased in out Set;
          Key       : Key_Type) return Reference_Type
       is
-         Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
+         Position : constant Cursor := Find (Container, Key);
 
       begin
-         if Checks and then Node = null then
+         if Checks and then Position = No_Element then
             raise Constraint_Error with "Key not in set";
          end if;
 
-         if Checks and then Node.Element = null then
-            raise Program_Error with "Node has no element";
-         end if;
-
-         declare
-            Tree : Tree_Type renames Container.Tree;
-         begin
-            return R : constant Reference_Type :=
-              (Element  => Node.Element.all'Unchecked_Access,
-               Control =>
-                 (Controlled with
-                    Tree.TC'Unrestricted_Access,
-                    Container => Container'Unchecked_Access,
-                    Pos       => Find (Container, Key),
-                    Old_Key   => new Key_Type'(Key)))
-            do
-               Busy (Tree.TC);
-            end return;
-         end;
+         return Reference_Preserving_Key (Container, Position);
       end Reference_Preserving_Key;
 
       -----------------------------------

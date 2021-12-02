@@ -1132,7 +1132,6 @@ get_matching_symbol (enum cpp_ttype type)
     {
     default:
       gcc_unreachable ();
-      return "";
     case CPP_CLOSE_PAREN:
       return "(";
     case CPP_CLOSE_BRACE:
@@ -1791,7 +1790,7 @@ static void
 add_debug_begin_stmt (location_t loc)
 {
   /* Don't add DEBUG_BEGIN_STMTs outside of functions, see PR84721.  */
-  if (!debug_nonbind_markers_p || !building_stmt_list_p ())
+  if (!MAY_HAVE_DEBUG_MARKER_STMTS || !building_stmt_list_p ())
     return;
 
   tree stmt = build0 (DEBUG_BEGIN_STMT, void_type_node);

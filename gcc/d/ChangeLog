@@ -1,3 +1,272 @@
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-spec.cc (lang_specific_driver): Set SKIPOPT on -static-libstdc++
+	and -static-libphobos only when target supports LD_STATIC_DYNAMIC.
+	Remove generate_option to re-add -static-libstdc++.
+
+2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.texi (Runtime Options): Document -fcheckaction=, -fextern-std=,
+	-fpreview=, -frevert=.
+	(Code Generation): Document -fdump-c++-spec=, -fdump-c++-spec-verbose,
+	-fsave-mixins=.
+	(Warnings): Update list of supported -ftransitions=.
+
+2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd b8384668f.
+	* Make-lang.in (d-warn): Use strict warnings.
+	(DMD_WARN_CXXFLAGS): Remove.
+	(DMD_COMPILE): Remove.
+	(CHECKING_DFLAGS): Define.
+	(WARN_DFLAGS): Define.
+	(ALL_DFLAGS): Define.
+	(DCOMPILE.base): Define.
+	(DCOMPILE): Define.
+	(DPOSTCOMPILE): Define.
+	(DLINKER): Define.
+	(DLLINKER): Define.
+	(D_FRONTEND_OBJS): Add new dmd front-end objects.
+	(D_GENERATED_SRCS): Remove.
+	(D_GENERATED_OBJS): Remove.
+	(D_ALL_OBJS): Remove D_GENERATED_OBJS.
+	(d21$(exeext)): Build using DLLINKER and -static-libphobos.
+	(d.tags): Remove dmd/*.c and dmd/root/*.c.
+	(d.mostlyclean): Remove D_GENERATED_SRCS, d/idgen$(build_exeext),
+	d/impcnvgen$(build_exeext).
+	(D_INCLUDES): Include $(srcdir)/d/dmd/res.
+	(CFLAGS-d/id.o): Remove.
+	(CFLAGS-d/impcnvtab.o): Remove.
+	(d/%.o): Build using DCOMPILE and DPOSTCOMPILE.  Update dependencies
+	from d/dmd/%.c to d/dmd/%.d.
+	(d/idgen$(build_exeext)): Remove.
+	(d/impcnvgen$(build_exeext)): Remove.
+	(d/id.c): Remove.
+	(d/id.h): Remove.
+	(d/impcnvtab.c): Remove.
+	(d/%.dmdgen.o): Remove.
+	(D_SYSTEM_H): Remove.
+	(d/idgen.dmdgen.o): Remove.
+	(d/impcnvgen.dmdgen.o): Remove.
+	* config-lang.in (boot_language): New variable.
+	* d-attribs.cc: Include dmd/expression.h.
+	* d-builtins.cc: Include d-frontend.h.
+	(build_frontend_type): Update for new front-end interface.
+	(d_eval_constant_expression): Likewise.
+	(d_build_builtins_module): Likewise.
+	(maybe_set_builtin_1): Likewise.
+	(d_build_d_type_nodes): Likewise.
+	* d-codegen.cc (d_decl_context): Likewise.
+	(declaration_reference_p): Likewise.
+	(declaration_type): Likewise.
+	(parameter_reference_p): Likewise.
+	(parameter_type): Likewise.
+	(get_array_length): Likewise.
+	(build_delegate_cst): Likewise.
+	(build_typeof_null_value): Likewise.
+	(identity_compare_p): Likewise.
+	(lower_struct_comparison): Likewise.
+	(build_filename_from_loc): Likewise.
+	(build_assert_call): Remove LIBCALL_SWITCH_ERROR.
+	(build_bounds_index_condition): Call LIBCALL_ARRAYBOUNDS_INDEXP on
+	bounds error.
+	(build_bounds_slice_condition): Call LIBCALL_ARRAYBOUNDS_SLICEP on
+	bounds error.
+	(array_bounds_check): Update for new front-end interface.
+	(checkaction_trap_p): Handle CHECKACTION_context.
+	(get_function_type): Update for new front-end interface.
+	(d_build_call): Likewise.
+	* d-compiler.cc: Remove include of dmd/scope.h.
+	(Compiler::genCmain): Remove.
+	(Compiler::paintAsType): Update for new front-end interface.
+	(Compiler::onParseModule): Likewise.
+	* d-convert.cc (convert_expr): Remove call to LIBCALL_ARRAYCAST.
+	(convert_for_rvalue): Update for new front-end interface.
+	(convert_for_assignment): Likewise.
+	(convert_for_condition): Likewise.
+	(d_array_convert): Likewise.
+	* d-diagnostic.cc (error): Remove.
+	(errorSupplemental): Remove.
+	(warning): Remove.
+	(warningSupplemental): Remove.
+	(deprecation): Remove.
+	(deprecationSupplemental): Remove.
+	(message): Remove.
+	(vtip): New.
+	* d-frontend.cc (global): Remove.
+	(Global::_init): Remove.
+	(Global::startGagging): Remove.
+	(Global::endGagging): Remove.
+	(Global::increaseErrorCount): Remove.
+	(Loc::Loc): Remove.
+	(Loc::toChars): Remove.
+	(Loc::equals): Remove.
+	(isBuiltin): Update for new front-end interface.
+	(eval_builtin): Likewise.
+	(getTypeInfoType): Likewise.
+	(inlineCopy): Remove.
+	* d-incpath.cc: Include d-frontend.h.
+	(add_globalpaths): Call d_gc_malloc to allocate Strings.
+	(add_filepaths): Likewise.
+	* d-lang.cc: Include dmd/id.h, dmd/root/file.h, d-frontend.h.  Remove
+	include of dmd/mars.h, id.h.
+	(entrypoint_module): Remove.
+	(entrypoint_root_module): Remove.
+	(deps_write_string): Update for new front-end interface.
+	(deps_write): Likewise.
+	(d_init_options): Call rt_init.  Remove setting global params that are
+	default initialized by the front-end.
+	(d_handle_option): Handle OPT_fcheckaction_, OPT_fdump_c___spec_,
+	OPT_fdump_c___spec_verbose, OPT_fextern_std_, OPT_fpreview,
+	OPT_revert, OPT_fsave_mixins_, and OPT_ftransition.
+	(d_post_options): Propagate dip1021 and dip1000 preview flags to
+	dip25, and flag_diagnostics_show_caret to printErrorContext.
+	(d_add_entrypoint_module): Remove.
+	(d_parse_file): Update for new front-end interface.
+	(d_type_promotes_to): Likewise.
+	(d_types_compatible_p): Likewise.
+	* d-longdouble.cc (CTFloat::zero): Remove.
+	(CTFloat::one): Remove.
+	(CTFloat::minusone): Remove.
+	(CTFloat::half): Remove.
+	* d-system.h (POSIX): Remove.
+	(realpath): Remove.
+	(isalpha): Remove.
+	(isalnum): Remove.
+	(isdigit): Remove.
+	(islower): Remove.
+	(isprint): Remove.
+	(isspace): Remove.
+	(isupper): Remove.
+	(isxdigit): Remove.
+	(tolower): Remove.
+	(_mkdir): Remove.
+	(INT32_MAX): Remove.
+	(INT32_MIN): Remove.
+	(INT64_MIN): Remove.
+	(UINT32_MAX): Remove.
+	(UINT64_MAX): Remove.
+	* d-target.cc: Include calls.h.
+	(target): Remove.
+	(define_float_constants): Remove initialization of snan.
+	(Target::_init): Update for new front-end interface.
+	(Target::isVectorTypeSupported): Likewise.
+	(Target::isVectorOpSupported): Remove cases for unordered operators.
+	(TargetCPP::typeMangle): Update for new front-end interface.
+	(TargetCPP::parameterType): Likewise.
+	(Target::systemLinkage): Likewise.
+	(Target::isReturnOnStack): Likewise.
+	(Target::isCalleeDestroyingArgs): Define.
+	(Target::preferPassByRef): Define.
+	* d-tree.h (d_add_entrypoint_module): Remove.
+	* decl.cc (gcc_attribute_p): Update for new front-end interface.
+	(apply_pragma_crt): Define.
+	(DeclVisitor::visit(PragmaDeclaration *)): Handle pragmas
+	crt_constructor and crt_destructor.
+	(DeclVisitor::visit(TemplateDeclaration *)): Update for new front-end
+	interface.
+	(DeclVisitor::visit): Likewise.
+	(DeclVisitor::finish_vtable): Likewise.
+	(get_symbol_decl): Error if template has more than one nesting
+	context.  Update for new front-end interface.
+	(make_thunk): Update for new front-end interface.
+	(get_vtable_decl): Likewise.
+	* expr.cc (ExprVisitor::visit): Likewise.
+	(build_return_dtor): Likewise.
+	* imports.cc (ImportVisitor::visit): Likewise.
+	* intrinsics.cc: Include dmd/expression.h.  Remove include of
+	dmd/mangle.h.
+	(maybe_set_intrinsic): Update for new front-end interface.
+	* intrinsics.def (INTRINSIC_ROL): Update intrinsic signature.
+	(INTRINSIC_ROR): Likewise.
+	(INTRINSIC_ROR_TIARG): Likewise.
+	(INTRINSIC_TOPREC): Likewise.
+	(INTRINSIC_TOPRECL): Likewise.
+	(INTRINSIC_TAN): Update intrinsic module and signature.
+	(INTRINSIC_ISNAN): Likewise.
+	(INTRINSIC_ISFINITE): Likewise.
+	(INTRINSIC_COPYSIGN): Define intrinsic.
+	(INTRINSIC_COPYSIGNI): Define intrinsic.
+	(INTRINSIC_EXP): Update intrinsic module.
+	(INTRINSIC_EXPM1): Likewise.
+	(INTRINSIC_EXP2): Likewise.
+	(INTRINSIC_LOG): Likewise.
+	(INTRINSIC_LOG2): Likewise.
+	(INTRINSIC_LOG10): Likewise.
+	(INTRINSIC_POW): Likewise.
+	(INTRINSIC_ROUND): Likewise.
+	(INTRINSIC_FLOORF): Likewise.
+	(INTRINSIC_FLOOR): Likewise.
+	(INTRINSIC_FLOORL): Likewise.
+	(INTRINSIC_CEILF): Likewise.
+	(INTRINSIC_CEIL): Likewise.
+	(INTRINSIC_CEILL): Likewise.
+	(INTRINSIC_TRUNC): Likewise.
+	(INTRINSIC_FMIN): Likewise.
+	(INTRINSIC_FMAX): Likewise.
+	(INTRINSIC_FMA): Likewise.
+	(INTRINSIC_VA_ARG): Update intrinsic signature.
+	(INTRINSIC_VASTART): Likewise.
+	* lang.opt (fcheck=): Add alternate aliases for contract switches.
+	(fcheckaction=): New option.
+	(check_action): New Enum and EnumValue entries.
+	(fdump-c++-spec-verbose): New option.
+	(fdump-c++-spec=): New option.
+	(fextern-std=): New option.
+	(extern_stdcpp): New Enum and EnumValue entries
+	(fpreview=): New options.
+	(frevert=): New options.
+	(fsave-mixins): New option.
+	(ftransition=): Update options.
+	* modules.cc (get_internal_fn): Replace Prot with Visibility.
+	(build_internal_fn): Likewise.
+	(build_dso_cdtor_fn): Likewise.
+	(build_module_tree): Remove check for __entrypoint module.
+	* runtime.def (P5): Define.
+	(ARRAYBOUNDS_SLICEP): Define.
+	(ARRAYBOUNDS_INDEXP): Define.
+	(NEWTHROW): Define.
+	(ADCMP2): Remove.
+	(ARRAYCAST): Remove.
+	(SWITCH_STRING): Remove.
+	(SWITCH_USTRING): Remove.
+	(SWITCH_DSTRING): Remove.
+	(SWITCH_ERROR): Remove.
+	* toir.cc (IRVisitor::visit): Update for new front-end interface.
+	(IRVisitor::check_previous_goto): Remove checks for case and default
+	statements.
+	(IRVisitor::visit(SwitchStatement *)): Remove handling of string
+	switch conditions.
+	* typeinfo.cc: Include d-frontend.h.
+	(get_typeinfo_kind): Update for new front-end interface.
+	(make_frontend_typeinfo): Likewise.
+	(TypeInfoVisitor::visit): Likewise.
+	(builtin_typeinfo_p): Likewise.
+	(get_typeinfo_decl): Likewise.
+	(build_typeinfo): Likewise.
+	* types.cc (valist_array_p): Likewise.
+	(make_array_type): Likewise.
+	(merge_aggregate_types): Likewise.
+	(TypeVisitor::visit(TypeBasic *)): Likewise.
+	(TypeVisitor::visit(TypeFunction *)): Likewise.
+	(TypeVisitor::visit(TypeStruct *)): Update comment.
+	* verstr.h: Removed.
+	* d-frontend.h: New file.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-11-28  Martin Liska  <mliska@suse.cz>
+
+	* d-attribs.cc (parse_optimize_options): Fix thinko.
+
+2021-11-26  Martin Liska  <mliska@suse.cz>
+
+	* d-attribs.cc (parse_optimize_options): Check index before
+	accessing cl_options.
+
 2021-11-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* decl.cc (d_finish_decl): Use HOST_WIDE_INT for type size

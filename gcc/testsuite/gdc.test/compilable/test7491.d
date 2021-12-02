@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/test7491a.d imports/test7491b.d
 struct Struct
 {
     import object;

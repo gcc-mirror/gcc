@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10082.d(24): Error: cannot infer type from overloaded function symbol &foo
+fail_compilation/fail10082.d(24): Error: cannot infer type from overloaded function symbol `&foo`
 ---
 */
 

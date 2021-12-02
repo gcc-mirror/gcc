@@ -96,7 +96,7 @@ convert_conditional_op (gimple_match_op *orig_op,
     ifn = get_conditional_internal_fn ((tree_code) orig_op->code);
   else
     {
-      combined_fn cfn = orig_op->code;
+      auto cfn = combined_fn (orig_op->code);
       if (!internal_fn_p (cfn))
 	return false;
       ifn = get_conditional_internal_fn (as_internal_fn (cfn));
@@ -206,10 +206,10 @@ gimple_resimplify1 (gimple_seq *seq, gimple_match_op *res_op,
       tree tem = NULL_TREE;
       if (res_op->code.is_tree_code ())
 	{
-	  tree_code code = res_op->code;
+	  auto code = tree_code (res_op->code);
 	  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
 	      && TREE_CODE_LENGTH (code) == 1)
-	    tem = const_unop (res_op->code, res_op->type, res_op->ops[0]);
+	    tem = const_unop (code, res_op->type, res_op->ops[0]);
 	}
       else
 	tem = fold_const_call (combined_fn (res_op->code), res_op->type,
@@ -272,10 +272,10 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
       tree tem = NULL_TREE;
       if (res_op->code.is_tree_code ())
 	{
-	  tree_code code = res_op->code;
+	  auto code = tree_code (res_op->code);
 	  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
 	      && TREE_CODE_LENGTH (code) == 2)
-	    tem = const_binop (res_op->code, res_op->type,
+	    tem = const_binop (code, res_op->type,
 			       res_op->ops[0], res_op->ops[1]);
 	}
       else
@@ -294,14 +294,15 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
 
   /* Canonicalize operand order.  */
   bool canonicalized = false;
-  if (res_op->code.is_tree_code ()
-      && (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison
-	  || commutative_tree_code (res_op->code))
+  bool is_comparison
+    = (res_op->code.is_tree_code ()
+       && TREE_CODE_CLASS (tree_code (res_op->code)) == tcc_comparison);
+  if ((is_comparison || commutative_binary_op_p (res_op->code, res_op->type))
       && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
     {
       std::swap (res_op->ops[0], res_op->ops[1]);
-      if (TREE_CODE_CLASS ((enum tree_code) res_op->code) == tcc_comparison)
-	res_op->code = swap_tree_comparison (res_op->code);
+      if (is_comparison)
+	res_op->code = swap_tree_comparison (tree_code (res_op->code));
       canonicalized = true;
     }
 
@@ -350,10 +351,10 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
       tree tem = NULL_TREE;
       if (res_op->code.is_tree_code ())
 	{
-	  tree_code code = res_op->code;
+	  auto code = tree_code (res_op->code);
 	  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code))
 	      && TREE_CODE_LENGTH (code) == 3)
-	    tem = fold_ternary/*_to_constant*/ (res_op->code, res_op->type,
+	    tem = fold_ternary/*_to_constant*/ (code, res_op->type,
 						res_op->ops[0], res_op->ops[1],
 						res_op->ops[2]);
 	}
@@ -373,11 +374,11 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
 
   /* Canonicalize operand order.  */
   bool canonicalized = false;
-  if (res_op->code.is_tree_code ()
-      && commutative_ternary_tree_code (res_op->code)
-      && tree_swap_operands_p (res_op->ops[0], res_op->ops[1]))
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
     {
-      std::swap (res_op->ops[0], res_op->ops[1]);
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
       canonicalized = true;
     }
 
@@ -421,6 +422,16 @@ gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
 {
   /* No constant folding is defined for four-operand functions.  */
 
+  /* Canonicalize operand order.  */
+  bool canonicalized = false;
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
+    {
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
+      canonicalized = true;
+    }
+
   /* Limit recursion, see gimple_resimplify1.  */
   static unsigned depth;
   if (depth > 10)
@@ -447,7 +458,7 @@ gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
   if (maybe_resimplify_conditional_op (seq, res_op, valueize))
     return true;
 
-  return false;
+  return canonicalized;
 }
 
 /* Helper that matches and simplifies the toplevel result from
@@ -462,6 +473,16 @@ gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
 {
   /* No constant folding is defined for five-operand functions.  */
 
+  /* Canonicalize operand order.  */
+  bool canonicalized = false;
+  int argno = first_commutative_argument (res_op->code, res_op->type);
+  if (argno >= 0
+      && tree_swap_operands_p (res_op->ops[argno], res_op->ops[argno + 1]))
+    {
+      std::swap (res_op->ops[argno], res_op->ops[argno + 1]);
+      canonicalized = true;
+    }
+
   gimple_match_op res_op2 (*res_op);
   if (gimple_simplify (&res_op2, seq, valueize,
 		       res_op->code, res_op->type,
@@ -475,7 +496,7 @@ gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
   if (maybe_resimplify_conditional_op (seq, res_op, valueize))
     return true;
 
-  return false;
+  return canonicalized;
 }
 
 /* Match and simplify the toplevel valueized operation THIS.
@@ -599,6 +620,7 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 
   if (res_op->code.is_tree_code ())
     {
+      auto code = tree_code (res_op->code);
       if (!res)
 	{
 	  if (gimple_in_ssa_p (cfun))
@@ -607,7 +629,7 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
 	    res = create_tmp_reg (res_op->type);
 	}
       maybe_build_generic_op (res_op);
-      gimple *new_stmt = gimple_build_assign (res, res_op->code,
+      gimple *new_stmt = gimple_build_assign (res, code,
 					      res_op->op_or_null (0),
 					      res_op->op_or_null (1),
 					      res_op->op_or_null (2));
@@ -617,7 +639,7 @@ maybe_push_res_to_seq (gimple_match_op *res_op, gimple_seq *seq, tree res)
   else
     {
       gcc_assert (num_ops != 0);
-      combined_fn fn = res_op->code;
+      auto fn = combined_fn (res_op->code);
       gcall *new_stmt = NULL;
       if (internal_fn_p (fn))
 	{
@@ -890,12 +912,20 @@ try_conditional_simplification (internal_fn ifn, gimple_match_op *res_op,
   return true;
 }
 
-/* The main STMT based simplification entry.  It is used by the fold_stmt
-   and the fold_stmt_to_constant APIs.  */
+/* Common subroutine of gimple_extract_op and gimple_simplify.  Try to
+   describe STMT in RES_OP, returning true on success.  Before recording
+   an operand, call:
 
-bool
-gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
-		 tree (*valueize)(tree), tree (*top_valueize)(tree))
+   - VALUEIZE_CONDITION for a COND_EXPR condition
+   - VALUEIZE_OP for every other top-level operand
+
+   Both routines take a tree argument and returns a tree.  */
+
+template<typename ValueizeOp, typename ValueizeCondition>
+inline bool
+gimple_extract (gimple *stmt, gimple_match_op *res_op,
+		ValueizeOp valueize_op,
+		ValueizeCondition valueize_condition)
 {
   switch (gimple_code (stmt))
     {
@@ -911,100 +941,50 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 		|| code == VIEW_CONVERT_EXPR)
 	      {
 		tree op0 = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-		bool valueized = false;
-		op0 = do_valueize (op0, top_valueize, valueized);
-		res_op->set_op (code, type, op0);
-		return (gimple_resimplify1 (seq, res_op, valueize)
-			|| valueized);
+		res_op->set_op (code, type, valueize_op (op0));
+		return true;
 	      }
 	    else if (code == BIT_FIELD_REF)
 	      {
 		tree rhs1 = gimple_assign_rhs1 (stmt);
-		tree op0 = TREE_OPERAND (rhs1, 0);
-		bool valueized = false;
-		op0 = do_valueize (op0, top_valueize, valueized);
+		tree op0 = valueize_op (TREE_OPERAND (rhs1, 0));
 		res_op->set_op (code, type, op0,
 				TREE_OPERAND (rhs1, 1),
 				TREE_OPERAND (rhs1, 2),
 				REF_REVERSE_STORAGE_ORDER (rhs1));
-		if (res_op->reverse)
-		  return valueized;
-		return (gimple_resimplify3 (seq, res_op, valueize)
-			|| valueized);
+		return true;
 	      }
-	    else if (code == SSA_NAME
-		     && top_valueize)
+	    else if (code == SSA_NAME)
 	      {
 		tree op0 = gimple_assign_rhs1 (stmt);
-		tree valueized = top_valueize (op0);
-		if (!valueized || op0 == valueized)
-		  return false;
-		res_op->set_op (TREE_CODE (op0), type, valueized);
+		res_op->set_op (TREE_CODE (op0), type, valueize_op (op0));
 		return true;
 	      }
 	    break;
 	  case GIMPLE_UNARY_RHS:
 	    {
 	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      bool valueized = false;
-	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
-	      res_op->set_op (code, type, rhs1);
-	      return (gimple_resimplify1 (seq, res_op, valueize)
-		      || valueized);
+	      res_op->set_op (code, type, valueize_op (rhs1));
+	      return true;
 	    }
 	  case GIMPLE_BINARY_RHS:
 	    {
-	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      tree rhs2 = gimple_assign_rhs2 (stmt);
-	      bool valueized = false;
-	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
-	      rhs2 = do_valueize (rhs2, top_valueize, valueized);
+	      tree rhs1 = valueize_op (gimple_assign_rhs1 (stmt));
+	      tree rhs2 = valueize_op (gimple_assign_rhs2 (stmt));
 	      res_op->set_op (code, type, rhs1, rhs2);
-	      return (gimple_resimplify2 (seq, res_op, valueize)
-		      || valueized);
+	      return true;
 	    }
 	  case GIMPLE_TERNARY_RHS:
 	    {
-	      bool valueized = false;
 	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      /* If this is a COND_EXPR first try to simplify an
-		 embedded GENERIC condition.  */
-	      if (code == COND_EXPR)
-		{
-		  if (COMPARISON_CLASS_P (rhs1))
-		    {
-		      tree lhs = TREE_OPERAND (rhs1, 0);
-		      tree rhs = TREE_OPERAND (rhs1, 1);
-		      lhs = do_valueize (lhs, top_valueize, valueized);
-		      rhs = do_valueize (rhs, top_valueize, valueized);
-		      gimple_match_op res_op2 (res_op->cond, TREE_CODE (rhs1),
-					       TREE_TYPE (rhs1), lhs, rhs);
-		      if ((gimple_resimplify2 (seq, &res_op2, valueize)
-			   || valueized)
-			  && res_op2.code.is_tree_code ())
-			{
-			  valueized = true;
-			  if (TREE_CODE_CLASS ((enum tree_code) res_op2.code)
-			      == tcc_comparison)
-			    rhs1 = build2 (res_op2.code, TREE_TYPE (rhs1),
-					   res_op2.ops[0], res_op2.ops[1]);
-			  else if (res_op2.code == SSA_NAME
-				   || res_op2.code == INTEGER_CST
-				   || res_op2.code == VECTOR_CST)
-			    rhs1 = res_op2.ops[0];
-			  else
-			    valueized = false;
-			}
-		    }
-		}
-	      tree rhs2 = gimple_assign_rhs2 (stmt);
-	      tree rhs3 = gimple_assign_rhs3 (stmt);
-	      rhs1 = do_valueize (rhs1, top_valueize, valueized);
-	      rhs2 = do_valueize (rhs2, top_valueize, valueized);
-	      rhs3 = do_valueize (rhs3, top_valueize, valueized);
+	      if (code == COND_EXPR && COMPARISON_CLASS_P (rhs1))
+		rhs1 = valueize_condition (rhs1);
+	      else
+		rhs1 = valueize_op (rhs1);
+	      tree rhs2 = valueize_op (gimple_assign_rhs2 (stmt));
+	      tree rhs3 = valueize_op (gimple_assign_rhs3 (stmt));
 	      res_op->set_op (code, type, rhs1, rhs2, rhs3);
-	      return (gimple_resimplify3 (seq, res_op, valueize)
-		      || valueized);
+	      return true;
 	    }
 	  default:
 	    gcc_unreachable ();
@@ -1018,7 +998,6 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	  && gimple_call_num_args (stmt) >= 1
 	  && gimple_call_num_args (stmt) <= 5)
 	{
-	  bool valueized = false;
 	  combined_fn cfn;
 	  if (gimple_call_internal_p (stmt))
 	    cfn = as_combined_fn (gimple_call_internal_fn (stmt));
@@ -1028,7 +1007,7 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	      if (!fn)
 		return false;
 
-	      fn = do_valueize (fn, top_valueize, valueized);
+	      fn = valueize_op (fn);
 	      if (TREE_CODE (fn) != ADDR_EXPR
 		  || TREE_CODE (TREE_OPERAND (fn, 0)) != FUNCTION_DECL)
 		return false;
@@ -1044,47 +1023,17 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	  unsigned int num_args = gimple_call_num_args (stmt);
 	  res_op->set_op (cfn, TREE_TYPE (gimple_call_lhs (stmt)), num_args);
 	  for (unsigned i = 0; i < num_args; ++i)
-	    {
-	      tree arg = gimple_call_arg (stmt, i);
-	      res_op->ops[i] = do_valueize (arg, top_valueize, valueized);
-	    }
-	  if (internal_fn_p (cfn)
-	      && try_conditional_simplification (as_internal_fn (cfn),
-						 res_op, seq, valueize))
-	    return true;
-	  switch (num_args)
-	    {
-	    case 1:
-	      return (gimple_resimplify1 (seq, res_op, valueize)
-		      || valueized);
-	    case 2:
-	      return (gimple_resimplify2 (seq, res_op, valueize)
-		      || valueized);
-	    case 3:
-	      return (gimple_resimplify3 (seq, res_op, valueize)
-		      || valueized);
-	    case 4:
-	      return (gimple_resimplify4 (seq, res_op, valueize)
-		      || valueized);
-	    case 5:
-	      return (gimple_resimplify5 (seq, res_op, valueize)
-		      || valueized);
-	    default:
-	     gcc_unreachable ();
-	    }
+	    res_op->ops[i] = valueize_op (gimple_call_arg (stmt, i));
+	  return true;
 	}
       break;
 
     case GIMPLE_COND:
       {
-	tree lhs = gimple_cond_lhs (stmt);
-	tree rhs = gimple_cond_rhs (stmt);
-	bool valueized = false;
-	lhs = do_valueize (lhs, top_valueize, valueized);
-	rhs = do_valueize (rhs, top_valueize, valueized);
+	tree lhs = valueize_op (gimple_cond_lhs (stmt));
+	tree rhs = valueize_op (gimple_cond_rhs (stmt));
 	res_op->set_op (gimple_cond_code (stmt), boolean_type_node, lhs, rhs);
-	return (gimple_resimplify2 (seq, res_op, valueize)
-		|| valueized);
+	return true;
       }
 
     default:
@@ -1094,6 +1043,78 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
   return false;
 }
 
+/* Try to describe STMT in RES_OP, returning true on success.
+   For GIMPLE_CONDs, describe the condition that is being tested.
+   For GIMPLE_ASSIGNs, describe the rhs of the assignment.
+   For GIMPLE_CALLs, describe the call.  */
+
+bool
+gimple_extract_op (gimple *stmt, gimple_match_op *res_op)
+{
+  auto nop = [](tree op) { return op; };
+  return gimple_extract (stmt, res_op, nop, nop);
+}
+
+/* The main STMT based simplification entry.  It is used by the fold_stmt
+   and the fold_stmt_to_constant APIs.  */
+
+bool
+gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
+		 tree (*valueize)(tree), tree (*top_valueize)(tree))
+{
+  bool valueized = false;
+  auto valueize_op = [&](tree op)
+    {
+      return do_valueize (op, top_valueize, valueized);
+    };
+  auto valueize_condition = [&](tree op) -> tree
+    {
+      bool cond_valueized = false;
+      tree lhs = do_valueize (TREE_OPERAND (op, 0), top_valueize,
+			      cond_valueized);
+      tree rhs = do_valueize (TREE_OPERAND (op, 1), top_valueize,
+			      cond_valueized);
+      gimple_match_op res_op2 (res_op->cond, TREE_CODE (op),
+			       TREE_TYPE (op), lhs, rhs);
+      if ((gimple_resimplify2 (seq, &res_op2, valueize)
+	   || cond_valueized)
+	  && res_op2.code.is_tree_code ())
+	{
+	  auto code = tree_code (res_op2.code);
+	  if (TREE_CODE_CLASS (code) == tcc_comparison)
+	    {
+	      valueized = true;
+	      return build2 (code, TREE_TYPE (op),
+			     res_op2.ops[0], res_op2.ops[1]);
+	    }
+	  else if (code == SSA_NAME
+		   || code == INTEGER_CST
+		   || code == VECTOR_CST)
+	    {
+	      valueized = true;
+	      return res_op2.ops[0];
+	    }
+	}
+      return valueize_op (op);
+    };
+
+  if (!gimple_extract (stmt, res_op, valueize_op, valueize_condition))
+    return false;
+
+  if (res_op->code.is_internal_fn ())
+    {
+      internal_fn ifn = internal_fn (res_op->code);
+      if (try_conditional_simplification (ifn, res_op, seq, valueize))
+	return true;
+    }
+
+  if (!res_op->reverse
+      && res_op->num_ops
+      && res_op->resimplify (seq, valueize))
+    return true;
+
+  return valueized;
+}
 
 /* Helper for the autogenerated code, valueize OP.  */
 
@@ -1263,4 +1284,111 @@ optimize_successive_divisions_p (tree divisor, tree inner_div)
       return false;
     }
   return true;
+}
+
+/* Return a canonical form for CODE when operating on TYPE.  The idea
+   is to remove redundant ways of representing the same operation so
+   that code_helpers can be hashed and compared for equality.
+
+   The only current canonicalization is to replace built-in functions
+   with internal functions, in cases where internal-fn.def defines
+   such an internal function.
+
+   Note that the new code_helper cannot necessarily be used in place of
+   the original code_helper.  For example, the new code_helper might be
+   an internal function that the target does not support.  */
+
+code_helper
+canonicalize_code (code_helper code, tree type)
+{
+  if (code.is_fn_code ())
+    return associated_internal_fn (combined_fn (code), type);
+  return code;
+}
+
+/* Return true if CODE is a binary operation and if CODE is commutative when
+   operating on type TYPE.  */
+
+bool
+commutative_binary_op_p (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return commutative_tree_code (tree_code (code));
+  auto cfn = combined_fn (code);
+  return commutative_binary_fn_p (associated_internal_fn (cfn, type));
+}
+
+/* Return true if CODE represents a ternary operation and if the first two
+   operands are commutative when CODE is operating on TYPE.  */
+
+bool
+commutative_ternary_op_p (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return commutative_ternary_tree_code (tree_code (code));
+  auto cfn = combined_fn (code);
+  return commutative_ternary_fn_p (associated_internal_fn (cfn, type));
+}
+
+/* If CODE is commutative in two consecutive operands, return the
+   index of the first, otherwise return -1.  */
+
+int
+first_commutative_argument (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    {
+      auto tcode = tree_code (code);
+      if (commutative_tree_code (tcode)
+	  || commutative_ternary_tree_code (tcode))
+	return 0;
+      return -1;
+    }
+  auto cfn = combined_fn (code);
+  return first_commutative_argument (associated_internal_fn (cfn, type));
+}
+
+/* Return true if CODE is a binary operation that is associative when
+   operating on type TYPE.  */
+
+bool
+associative_binary_op_p (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return associative_tree_code (tree_code (code));
+  auto cfn = combined_fn (code);
+  return associative_binary_fn_p (associated_internal_fn (cfn, type));
+}
+
+/* Return true if the target directly supports operation CODE on type TYPE.
+   QUERY_TYPE acts as for optab_for_tree_code.  */
+
+bool
+directly_supported_p (code_helper code, tree type, optab_subtype query_type)
+{
+  if (code.is_tree_code ())
+    {
+      direct_optab optab = optab_for_tree_code (tree_code (code), type,
+						query_type);
+      return (optab != unknown_optab
+	      && optab_handler (optab, TYPE_MODE (type)) != CODE_FOR_nothing);
+    }
+  gcc_assert (query_type == optab_default
+	      || (query_type == optab_vector && VECTOR_TYPE_P (type))
+	      || (query_type == optab_scalar && !VECTOR_TYPE_P (type)));
+  internal_fn ifn = associated_internal_fn (combined_fn (code), type);
+  return (direct_internal_fn_p (ifn)
+	  && direct_internal_fn_supported_p (ifn, type, OPTIMIZE_FOR_SPEED));
+}
+
+/* A wrapper around the internal-fn.c versions of get_conditional_internal_fn
+   for a code_helper CODE operating on type TYPE.  */
+
+internal_fn
+get_conditional_internal_fn (code_helper code, tree type)
+{
+  if (code.is_tree_code ())
+    return get_conditional_internal_fn (tree_code (code));
+  auto cfn = combined_fn (code);
+  return get_conditional_internal_fn (associated_internal_fn (cfn, type));
 }
