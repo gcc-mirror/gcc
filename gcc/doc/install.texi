@@ -3935,10 +3935,6 @@ This configuration is intended for embedded systems.
 @end html
 @anchor{x-x-freebsd}
 @heading *-*-freebsd*
-Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
-FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
-discontinued in GCC 4.0.
-
 In order to better utilize FreeBSD base system functionality and match
 the configuration of the system compiler, GCC 4.5 and above as well as
 GCC 4.4 past 2010-06-20 leverage SSP support in libc (which is present
