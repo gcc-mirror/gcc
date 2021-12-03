@@ -1,3 +1,31 @@
+2021-12-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* allocator.c (MEMSPACE_ALLOC): New macro.
+	(MEMSPACE_CALLOC): New macro.
+	(MEMSPACE_REALLOC): New macro.
+	(MEMSPACE_FREE): New macro.
+	(dynamic_smem_size): New constants.
+	(omp_alloc): Use MEMSPACE_ALLOC.
+	Implement fall-backs for predefined allocators.
+	(omp_free): Use MEMSPACE_FREE.
+	(omp_calloc): Use MEMSPACE_CALLOC.
+	Implement fall-backs for predefined allocators.
+	(omp_realloc): Use MEMSPACE_REALLOC and MEMSPACE_ALLOC..
+	Implement fall-backs for predefined allocators.
+	* config/nvptx/team.c (__nvptx_lowlat_heap_root): New variable.
+	(__nvptx_lowlat_pool): New asm variable.
+	(gomp_nvptx_main): Initialize the low-latency heap.
+	* plugin/plugin-nvptx.c (lowlat_pool_size): New variable.
+	(GOMP_OFFLOAD_init_device): Read the GOMP_NVPTX_LOWLAT_POOL envvar.
+	(GOMP_OFFLOAD_run): Apply lowlat_pool_size.
+	* config/nvptx/allocator.c: New file.
+	* testsuite/libgomp.c/allocators-1.c: New test.
+	* testsuite/libgomp.c/allocators-2.c: New test.
+	* testsuite/libgomp.c/allocators-3.c: New test.
+	* testsuite/libgomp.c/allocators-4.c: New test.
+	* testsuite/libgomp.c/allocators-5.c: New test.
+	* testsuite/libgomp.c/allocators-6.c: New test.
+
 2022-06-21  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* plugin/cuda-lib.def (cuMemAllocManaged): Add new call.
