@@ -1,6 +1,6 @@
 2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
-	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULY_DYNAMIC_STRING]
+	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULLY_DYNAMIC_STRING]
 	(logic_error, runtime_error): Remove custom definitions.
 
 2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
@@ -151,7 +151,7 @@
 
 2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
-	* doc/xml/manual/debug_mode.xml: Replace "his or her" with "they".
+	* doc/xml/manual/debug_mode.xml: Replace "his or her" with "their".
 	* doc/html/manual/debug_mode_design.html: Regenerate.
 
 2021-11-30  Jakub Jelinek  <jakub@redhat.com>
