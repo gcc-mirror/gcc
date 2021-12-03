@@ -169,9 +169,9 @@ package body Exp_Aggr is
    --  Subsidiary to the expansion of array and record aggregates. Generate
    --  part of the necessary code to finalize a transient component. Aggr is
    --  the related aggregate. Fin_Clear is the finalization call used to clean
-   --  up the transient component. Hook_Clear is the hook reset statment. Stmts
-   --  is the initialization statement list for the component. All generated
-   --  code is added to Stmts.
+   --  up the transient component. Hook_Clear is the hook reset statement.
+   --  Stmts is the initialization statement list for the component. All
+   --  generated code is added to Stmts.
 
    procedure Sort_Case_Table (Case_Table : in out Case_Table_Type);
    --  Sort the Case Table using the Lower Bound of each Choice as the key.
@@ -6932,7 +6932,7 @@ package body Exp_Aggr is
 
       --  In the remaining cases the aggregate appears in the RHS of an
       --  assignment, which may be part of the expansion of an object
-      --  delaration. If the aggregate is an actual in a call, itself
+      --  declaration. If the aggregate is an actual in a call, itself
       --  possibly in a RHS, building it in the target is not possible.
 
       elsif Maybe_In_Place_OK
@@ -7271,7 +7271,7 @@ package body Exp_Aggr is
       --  overestimate if a filter is present, but is a safe approximation.
       --  If bounds are dynamic the aggregate is created in two passes, and
       --  the first generates a loop for the sole purpose of computing the
-      --  number of elements that will be generated on the seocnd pass.
+      --  number of elements that will be generated on the second pass.
 
       procedure Expand_Iterated_Component (Comp : Node_Id);
       --  Handle iterated_component_association and iterated_Element
@@ -7495,7 +7495,7 @@ package body Exp_Aggr is
                    Iterator_Specification => Iterator_Specification (Comp));
 
             else
-               --  Loop_Parameter_Specifcation is parsed with a choice list.
+               --  Loop_Parameter_Specification is parsed with a choice list.
                --  where the range is the first (and only) choice.
 
                L_Range := Relocate_Node (First (Discrete_Choices (Comp)));

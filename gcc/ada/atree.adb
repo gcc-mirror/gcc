@@ -93,7 +93,7 @@ package body Atree is
    --------------------------
 
    --  The Small_Paren_Count field has range 0 .. 3. If the Paren_Count is
-   --  in the range 0 .. 2, then it is stoed as Small_Paren_Count. Otherwise,
+   --  in the range 0 .. 2, then it is stored as Small_Paren_Count. Otherwise,
    --  Small_Paren_Count = 3, and the actual Paren_Count is stored in the
    --  Paren_Counts table.
    --

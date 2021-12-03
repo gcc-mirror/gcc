@@ -3192,7 +3192,7 @@ package body Sem_Ch12 is
 
    <<Leave>>
       if Has_Aspects (N) then
-         --  Unclear that any other aspects may appear here, snalyze them
+         --  Unclear that any other aspects may appear here, analyze them
          --  for completion, given that the grammar allows their appearance.
 
          Analyze_Aspect_Specifications (N, Pack_Id);

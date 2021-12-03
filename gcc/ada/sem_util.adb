@@ -503,7 +503,7 @@ package body Sem_Util is
                              (Scope (Defining_Identifier (Par))));
 
                when N_Assignment_Statement =>
-                  --  Return the accessiblity level of the left-hand part
+                  --  Return the accessibility level of the left-hand part
 
                   return Accessibility_Level
                            (Expr              => Name (Par),
@@ -25132,7 +25132,7 @@ package body Sem_Util is
       --    * Semantic fields of nodes such as First_Real_Statement must be
       --      updated to reference the proper replicated nodes.
 
-      --  Finally, quantified expressions contain an implicit delaration for
+      --  Finally, quantified expressions contain an implicit declaration for
       --  the bound variable. Given that quantified expressions appearing
       --  in contracts are copied to create pragmas and eventually checking
       --  procedures, a new bound variable must be created for each copy, to

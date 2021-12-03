@@ -10120,7 +10120,7 @@ package body Sem_Ch8 is
             return;
          end if;
 
-         --  Set P back to the non-renamed package so that visiblilty of the
+         --  Set P back to the non-renamed package so that visibility of the
          --  entities within the package can be properly set below.
 
          P := Entity (Pack_Name);

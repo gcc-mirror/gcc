@@ -1422,7 +1422,7 @@ package body Exp_Util is
       --  Add a runtime check to verify assertion expression DIC_Expr of
       --  inherited pragma DIC_Prag. This routine applies class-wide pre-
       --  and postcondition-like runtime semantics to the check. Expr is
-      --  the assertion expression after substitition has been performed
+      --  the assertion expression after substitution has been performed
       --  (via Replace_References). All generated code is added to list Stmts.
 
       procedure Add_Inherited_DICs

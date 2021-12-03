@@ -5040,7 +5040,7 @@ package body Sem_Ch6 is
       --  object representing the minimum of the accessibility level value that
       --  is passed in and the accessibility level of the callee's parameter
       --  and locals and use it in the case of a call to a nested subprogram.
-      --  This generated object is refered to as a "minimum accessiblity
+      --  This generated object is referred to as a "minimum accessibility
       --  level."
 
       if Present (Spec_Id) or else Present (Body_Id) then
@@ -11637,7 +11637,7 @@ package body Sem_Ch6 is
             E : Entity_Id;
 
          begin
-            --  Search for entities in the enclosing scope of this synchonized
+            --  Search for entities in the enclosing scope of this synchronized
             --  type.
 
             pragma Assert (Is_Concurrent_Type (Conc_Typ));

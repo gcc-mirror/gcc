@@ -302,7 +302,7 @@ package body Sem_Res is
    --  of the context, or the type of the other operand has a user-defined
    --  literal aspect that can be applied to the literal to resolve the node.
    --  If such aspect exists, replace literal with a call to the
-   --  corresponing function and return True, return false otherwise.
+   --  corresponding function and return True, return false otherwise.
 
    -------------------------
    -- Ambiguous_Character --
@@ -3439,7 +3439,7 @@ package body Sem_Res is
          end case;
 
          --  Mark relevant use-type and use-package clauses as effective using
-         --  the original node because constant folding may have occured and
+         --  the original node because constant folding may have occurred and
          --  removed references that need to be examined.
 
          if Nkind (Original_Node (N)) in N_Op then
@@ -10574,7 +10574,7 @@ package body Sem_Res is
       end if;
 
       --  AI12-0100: Once the qualified expression is resolved, check whether
-      --  operand statisfies a static predicate of the target subtype, if any.
+      --  operand satisfies a static predicate of the target subtype, if any.
       --  In the static expression case, a predicate check failure is an error.
 
       if Has_Predicates (Target_Typ) then
@@ -12172,7 +12172,7 @@ package body Sem_Res is
       end if;
 
       --  Ada 2012: Once the type conversion is resolved, check whether the
-      --  operand statisfies a static predicate of the target subtype, if any.
+      --  operand satisfies a static predicate of the target subtype, if any.
       --  In the static expression case, a predicate check failure is an error.
 
       if Has_Predicates (Target_Typ) then
@@ -13128,7 +13128,7 @@ package body Sem_Res is
       function In_Instance_Code return Boolean;
       --  Return True if expression is within an instance but is not in one of
       --  the actuals of the instantiation. Type conversions within an instance
-      --  are not rechecked because type visbility may lead to spurious errors,
+      --  are not rechecked because type visibility may lead to spurious errors
       --  but conversions in an actual for a formal object must be checked.
 
       function Is_Discrim_Of_Bad_Access_Conversion_Argument

@@ -4059,7 +4059,7 @@ package body Exp_Ch7 is
          end if;
 
          --  Call _postconditions when no general finalization exceptions have
-         --  occured taking care to enable the postconditions and save any
+         --  occurred taking care to enable the postconditions and save any
          --  exception occurrences.
 
          --  Generate:

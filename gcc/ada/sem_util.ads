@@ -2615,7 +2615,7 @@ package Sem_Util is
    --  follows:
    --
    --    Checks   - Save the status of Elaboration_Check
-   --    Level    - Save the declaration level of N_Id (if appicable)
+   --    Level    - Save the declaration level of N_Id (if applicable)
    --    Modes    - Save the Ghost and SPARK modes in effect (if applicable)
    --    Warnings - Save the status of Elab_Warnings
 

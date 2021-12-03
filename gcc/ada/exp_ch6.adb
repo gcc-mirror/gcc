@@ -2817,7 +2817,7 @@ package body Exp_Ch6 is
 
       procedure Check_Subprogram_Variant;
       --  Emit a call to the internally generated procedure with checks for
-      --  aspect Subprogrgram_Variant, if present and enabled.
+      --  aspect Subprogram_Variant, if present and enabled.
 
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived

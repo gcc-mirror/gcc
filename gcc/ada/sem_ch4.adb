@@ -1497,7 +1497,7 @@ package body Sem_Ch4 is
             while Present (Form) and then Present (Act) loop
                --  Check whether the formal is aliased and if the accessibility
                --  level of the actual is deeper than the accessibility level
-               --  of the enclosing subprogam to which the current return
+               --  of the enclosing subprogram to which the current return
                --  statement applies.
 
                --  Should we be checking Is_Entity_Name on Act? Won't this miss

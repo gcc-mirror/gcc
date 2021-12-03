@@ -3745,7 +3745,7 @@ package Einfo is
 
 --    No_Dynamic_Predicate_On_Actual
 --       Defined in discrete types. Set for generic formal types that are used
---       in loops and quantified expressions. The corresponing actual cannot
+--       in loops and quantified expressions. The corresponding actual cannot
 --       have dynamic predicates.
 
 --    No_Pool_Assigned [root type only]

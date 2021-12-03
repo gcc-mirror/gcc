@@ -484,11 +484,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  This field is used to provide the name of the construct being parsed
       --  and indirectly its kind. For loops and blocks, the field contains the
       --  source name or the generated one. For package specifications, bodies,
-      --  subprogram specifications and bodies the field holds the correponding
-      --  program unit name. For task declarations and bodies, protected types
-      --  and bodies, and accept statements the field hold the name of the type
-      --  or operation. For if-statements, case-statements, return statements,
-      --  and selects, the field is initialized to Error.
+      --  subprogram specifications and bodies the field holds the
+      --  corresponding program unit name. For task declarations and bodies,
+      --  protected types and bodies, and accept statements the field hold the
+      --  name of the type or operation. For if-statements, case-statements,
+      --  return statements, and selects, the field is initialized to Error.
 
       --  Note: this is a bit of an odd (mis)use of Error, since there is no
       --  Error, but we use this value as a place holder to indicate that it
@@ -564,7 +564,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -- Table for Handling Suspicious Labels --
    ------------------------------------------
 
-   --  This is a special data structure which is used to deal very spefifically
+   --  This is a special data structure which is used to deal very specifically
    --  with the following error case
 
    --     label;

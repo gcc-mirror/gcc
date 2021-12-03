@@ -3670,7 +3670,7 @@ package body Sem_Ch13 is
 
                begin
                   --  When aspect Abstract_State appears on a generic package,
-                  --  it is propageted to the package instance. The context in
+                  --  it is propagated to the package instance. The context in
                   --  this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
@@ -3903,7 +3903,7 @@ package body Sem_Ch13 is
 
                begin
                   --  When aspect Initial_Condition appears on a generic
-                  --  package, it is propageted to the package instance. The
+                  --  package, it is propagated to the package instance. The
                   --  context in this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
@@ -3951,7 +3951,7 @@ package body Sem_Ch13 is
 
                begin
                   --  When aspect Initializes appears on a generic package,
-                  --  it is propageted to the package instance. The context
+                  --  it is propagated to the package instance. The context
                   --  in this case is the instance spec.
 
                   if Nkind (Context) = N_Package_Instantiation then
@@ -7404,7 +7404,7 @@ package body Sem_Ch13 is
                else False); -- can't happen
             --  For X'Size, X can be a type or object; for X'Value_Size,
             --  X can be a type. Note that we already checked that 'Size
-            --  can be specified only for a first subytype.
+            --  can be specified only for a first subtype.
 
          begin
             FOnly := True;
@@ -13675,7 +13675,7 @@ package body Sem_Ch13 is
       function Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
         (Rep_Item : Node_Id) return Boolean;
       --  This routine checks if Rep_Item is either a pragma or an aspect
-      --  specification node whose correponding pragma (if any) is present in
+      --  specification node whose corresponding pragma (if any) is present in
       --  the Rep Item chain of the entity it has been specified to.
 
       --------------------------------------------------
