@@ -1,3 +1,12 @@
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94490
+	* pt.c (expand_integer_pack): Call
+	instantiate_non_dependent_expr_sfinae.
+
 2021-12-01  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (is_this_parameter): Check DECL_HAS_VALUE_EXPR_P

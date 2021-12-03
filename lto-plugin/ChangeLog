@@ -1,3 +1,13 @@
+2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	Backported from master:
+	2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* lto-plugin.c: Fix -linker-output-auto-notlo-rel ->
+	-linker-output-auto-nolto-rel typo.
+	(process_option): Adjust accordingly, accepting both old and
+	new spelling.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.

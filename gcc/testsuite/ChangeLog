@@ -1,3 +1,11 @@
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94490
+	* g++.dg/ext/integer-pack5.C: New test.
+
 2021-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

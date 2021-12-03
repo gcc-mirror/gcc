@@ -1,3 +1,11 @@
+2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	Backported from master:
+	2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxworks.h (LTO_PLUGIN_SPEC): Adapt to corrected
+	spelling of -linker-output-auto-nolto-rel.
+
 2021-12-01  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
