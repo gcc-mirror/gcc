@@ -2305,8 +2305,8 @@ package body Treepr is
             begin
                Nod := N;
                while Present (Nod) loop
-                  Visit_Descendant (Union_Id (Next_Entity (Nod)));
                   Next_Entity (Nod);
+                  Visit_Descendant (Union_Id (Nod));
                end loop;
             end;
          end if;
