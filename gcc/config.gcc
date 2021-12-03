@@ -5518,6 +5518,15 @@ case "${target}" in
 		;;
 esac
 
+# VxWorks support for shared libraries has to be requested explicitly,
+# so we can factor this part here:
+
+case "${target}-${enable_shared}" in
+  *-*-vxworks*-yes)
+    tmake_file="${tmake_file} t-slibgcc"
+    ;;
+esac
+
 # Targets for which there is at least one VxWorks port should include
 # vxworks-dummy.h to allow safe references to various TARGET_VXWORKS kinds
 # of markers from other files in the port, including the vxworks*.h files to
