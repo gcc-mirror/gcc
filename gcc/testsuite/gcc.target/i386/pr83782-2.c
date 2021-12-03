@@ -21,6 +21,6 @@ bar(void)
 }
 
 /* { dg-final { scan-assembler {leal[ \t]foo@GOTOFF\(%[^,]*\),[ \t]%eax} { target ia32 } } } */
-/* { dg-final { scan-assembler {leaq[ \t]foo\(%rip\),[ \t]%rax} { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler {lea(?:l|q)[ \t]foo\(%rip\),[ \t]%(?:e|r)ax} { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-not "foo@GOT\\\(" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "foo@GOTPCREL\\\(" { target { ! ia32 } } } } */
