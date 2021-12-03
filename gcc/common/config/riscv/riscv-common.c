@@ -785,24 +785,58 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
       bool explicit_version_p = false;
       char *ext;
       char backup;
+      size_t len;
+      size_t end_of_version_pos, i;
+      bool found_any_number = false;
+      bool found_minor_version = false;
 
-      while (*++q != '\0' && *q != '_' && !ISDIGIT (*q))
+      /* Parse until end of this extension including version number.  */
+      while (*++q != '\0' && *q != '_')
 	;
 
       backup = *q;
       *q = '\0';
-      ext = xstrdup (subset);
+      len = q - subset;
       *q = backup;
 
+      end_of_version_pos = len;
+      /* Find the begin of version string.  */
+      for (i = len -1; i > 0; --i)
+	{
+	  if (ISDIGIT (subset[i]))
+	    {
+	      found_any_number = true;
+	      continue;
+	    }
+	  /* Might be version seperator, but need to check one more char,
+	     we only allow <major>p<minor>, so we could stop parsing if found
+	     any more `p`.  */
+	  if (subset[i] == 'p' &&
+	      !found_minor_version &&
+	      found_any_number && ISDIGIT (subset[i-1]))
+	    {
+	      found_minor_version = true;
+	      continue;
+	    }
+
+	  end_of_version_pos = i + 1;
+	  break;
+	}
+
+      backup = subset[end_of_version_pos];
+      subset[end_of_version_pos] = '\0';
+      ext = xstrdup (subset);
+      subset[end_of_version_pos] = backup;
+
       end_of_version
-	= parsing_subset_version (ext, q, &major_version, &minor_version,
+	= parsing_subset_version (ext, subset + end_of_version_pos, &major_version, &minor_version,
 				  /* std_ext_p= */ false, &explicit_version_p);
       free (ext);
 
       if (end_of_version == NULL)
 	return NULL;
 
-      *q = '\0';
+      subset[end_of_version_pos] = '\0';
 
       if (strlen (subset) == 1)
 	{
