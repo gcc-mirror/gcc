@@ -1,3 +1,9 @@
+2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/90030
+	* testsuite/libgomp.oacc-fortran/pr90030.f90: New test.
+	* testsuite/libgomp.fortran/pr90030.f90: New test.
+
 2021-11-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 

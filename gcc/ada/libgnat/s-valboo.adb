@@ -29,21 +29,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
 with System.Val_Util; use System.Val_Util;
 
-package body System.Val_Bool is
+package body System.Val_Bool
+  with SPARK_Mode
+is
 
    -------------------
    -- Value_Boolean --
    -------------------
 
    function Value_Boolean (Str : String) return Boolean is
-      F : Natural;
-      L : Natural;
+      F : Integer;
+      L : Integer;
       S : String (Str'Range) := Str;
 
    begin
       Normalize_String (S, F, L);
+
+      pragma Assert (F = System.Val_Util.First_Non_Space_Ghost (S));
 
       if S (F .. L) = "TRUE" then
          return True;

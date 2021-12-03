@@ -92,7 +92,9 @@ is
 
    function Activation_Is_Complete (T : Task_Id) return Boolean with
      Volatile_Function,
+     Pre    => T /= Null_Task_Id,
      Global => Tasking_State;
+   pragma Inline (Activation_Is_Complete);
 
 private
    pragma SPARK_Mode (Off);

@@ -72,40 +72,40 @@ package body System.Stream_Attributes.XDR is
 
    type Precision is (Single, Double, Quadruple);
 
-   Fields : constant array (Precision) of Field_Type := (
+   Fields : constant array (Precision) of Field_Type := [
 
                --  Single precision
 
-              (E_Size  => 8,
+              [E_Size  => 8,
                E_Bias  => 127,
                F_Size  => 23,
                E_Last  => 2 ** 8 - 1,
                F_Mask  => 16#7F#,                  --  2 ** 7 - 1,
                E_Bytes => 2,
                F_Bytes => 3,
-               F_Bits  => 23 mod US),
+               F_Bits  => 23 mod US],
 
                --  Double precision
 
-              (E_Size  => 11,
+              [E_Size  => 11,
                E_Bias  => 1023,
                F_Size  => 52,
                E_Last  => 2 ** 11 - 1,
                F_Mask  => 16#0F#,                  --  2 ** 4 - 1,
                E_Bytes => 2,
                F_Bytes => 7,
-               F_Bits  => 52 mod US),
+               F_Bits  => 52 mod US],
 
                --  Quadruple precision
 
-              (E_Size  => 15,
+              [E_Size  => 15,
                E_Bias  => 16383,
                F_Size  => 112,
                E_Last  => 2 ** 8 - 1,
                F_Mask  => 16#FF#,                  --  2 ** 8 - 1,
                E_Bytes => 2,
                F_Bytes => 14,
-               F_Bits  => 112 mod US));
+               F_Bits  => 112 mod US]];
 
    --  The representation of all items requires a multiple of four bytes
    --  (or 32 bits) of data. The bytes are numbered 0 through n-1. The bytes
@@ -1244,7 +1244,7 @@ package body System.Stream_Attributes.XDR is
       Is_Positive : Boolean;
       E           : Integer;
       F           : Float;
-      S           : SEA (1 .. F_L) := (others => 0);
+      S           : SEA (1 .. F_L) := [others => 0];
 
    begin
       if not Item'Valid then
@@ -1390,7 +1390,7 @@ package body System.Stream_Attributes.XDR is
       Is_Positive : Boolean;
       E           : Integer;
       F           : Long_Float;
-      S           : SEA (1 .. LF_L) := (others => 0);
+      S           : SEA (1 .. LF_L) := [others => 0];
 
    begin
       if not Item'Valid then
@@ -1519,7 +1519,7 @@ package body System.Stream_Attributes.XDR is
       Is_Positive : Boolean;
       E           : Integer;
       F           : Long_Long_Float := Item;
-      S           : SEA (1 .. LLF_L) := (others => 0);
+      S           : SEA (1 .. LLF_L) := [others => 0];
 
    begin
       if not Item'Valid then
@@ -1737,7 +1737,7 @@ package body System.Stream_Attributes.XDR is
       Is_Positive : Boolean;
       E           : Integer;
       F           : Short_Float;
-      S           : SEA (1 .. SF_L) := (others => 0);
+      S           : SEA (1 .. SF_L) := [others => 0];
 
    begin
       if not Item'Valid then

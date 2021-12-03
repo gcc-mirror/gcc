@@ -4315,6 +4315,13 @@ case "${target}" in
 		fi
 		;;
 
+	avr-*-*)
+		# Handle --with-multilib-list.
+		if test "x${with_multilib_list}" != xdefault; then
+			TM_MULTILIB_CONFIG="${with_multilib_list}"
+		fi
+	;;
+
     csky-*-*)
 	supported_defaults="cpu endian float"
 	;;

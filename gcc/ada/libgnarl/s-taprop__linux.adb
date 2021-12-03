@@ -973,8 +973,8 @@ package body System.Task_Primitives.Operations is
       elsif T.Common.Domain /= null and then
         (T.Common.Domain /= ST.System_Domain
           or else T.Common.Domain.all /=
-                    (Multiprocessors.CPU'First ..
-                     Multiprocessors.Number_Of_CPUs => True))
+                    [Multiprocessors.CPU'First ..
+                     Multiprocessors.Number_Of_CPUs => True])
       then
          declare
             CPUs    : constant size_t :=
@@ -1494,8 +1494,8 @@ package body System.Task_Primitives.Operations is
             elsif T.Common.Domain /= null and then
               (T.Common.Domain /= ST.System_Domain
                 or else T.Common.Domain.all /=
-                          (Multiprocessors.CPU'First ..
-                           Multiprocessors.Number_Of_CPUs => True))
+                          [Multiprocessors.CPU'First ..
+                           Multiprocessors.Number_Of_CPUs => True])
             then
                --  Set the affinity to all the processors belonging to the
                --  dispatching domain. To avoid changing CPU affinities when

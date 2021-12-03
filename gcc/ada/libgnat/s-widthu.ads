@@ -36,4 +36,9 @@ generic
 
    type Uns is mod <>;
 
-function System.Width_U (Lo, Hi : Uns) return Natural;
+function System.Width_U (Lo, Hi : Uns) return Natural
+with
+  Post => (if Lo > Hi then
+             System.Width_U'Result = 0
+           else
+             System.Width_U'Result > 0);

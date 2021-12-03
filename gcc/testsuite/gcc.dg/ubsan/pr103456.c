@@ -1,6 +1,6 @@
 /* PR tree-optimization/103456 */
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=undefined -O -fdump-tree-objsz" } */
+/* { dg-options "-fsanitize=undefined -O -fdump-tree-objsz -ffat-lto-objects" } */
 
 static char *multilib_options = "m64/m32";
 

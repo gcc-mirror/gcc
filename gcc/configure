@@ -1831,8 +1831,8 @@ Optional Packages:
                           Root for documentation URLs
   --with-changes-root-url=URL
                           Root for GCC changes URLs
-  --with-multilib-list    select multilibs (AArch64, ARM, OR1K, RISC-V, SH and
-                          x86-64 only)
+  --with-multilib-list    select multilibs (AArch64, ARM, AVR, OR1K, RISC-V,
+                          SH and x86-64 only)
   --with-multilib-generator
                           Multi-libs configuration string (RISC-V only)
   --with-zstd=PATH        specify prefix directory for installed zstd library.
@@ -31383,6 +31383,9 @@ fi
 # Check if the target LIBC handles PT_GNU_STACK.
 gcc_cv_libc_gnustack=unknown
 case "$target" in
+  mips*-*-linux-musl*)
+    gcc_cv_libc_gnustack=yes
+    ;;
   mips*-*-linux*)
 
 if test $glibc_version_major -gt 2 \

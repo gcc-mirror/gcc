@@ -9133,7 +9133,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	 it an indirect call.  */
       if (flag_pic
 	  && GET_CODE (addr) == SYMBOL_REF
-	  && !SYMBOL_REF_LOCAL_P (addr))
+	  && ix86_call_use_plt_p (addr))
 	{
 	  if (flag_plt
 	      && (SYMBOL_REF_DECL (addr) == NULL_TREE

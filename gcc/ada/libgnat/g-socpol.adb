@@ -36,7 +36,7 @@ with GNAT.Sockets.Thin;
 package body GNAT.Sockets.Poll is
 
    To_C : constant array (Wait_Event_Type) of Events_Type :=
-            (Input => SOC.POLLIN or SOC.POLLPRI, Output => SOC.POLLOUT);
+            [Input => SOC.POLLIN or SOC.POLLPRI, Output => SOC.POLLOUT];
    --  To convert Wait_Event_Type to C I/O events flags
 
    procedure Set_Mode (Item : out Pollfd; Mode : Wait_Event_Set);
@@ -50,11 +50,11 @@ package body GNAT.Sockets.Poll is
    --  raise Constraint_Error if Index is more than number of sockets in Self
 
    function Status (Item : Pollfd) return Event_Set is
-     (Input           => (Item.REvents and To_C (Input)) /= 0,
-      Output          => (Item.REvents and To_C (Output)) /= 0,
-      Error           => (Item.REvents and SOC.POLLERR) /= 0,
-      Hang_Up         => (Item.REvents and SOC.POLLHUP) /= 0,
-      Invalid_Request => (Item.REvents and SOC.POLLNVAL) /= 0);
+     ([Input           => (Item.REvents and To_C (Input)) /= 0,
+       Output          => (Item.REvents and To_C (Output)) /= 0,
+       Error           => (Item.REvents and SOC.POLLERR) /= 0,
+       Hang_Up         => (Item.REvents and SOC.POLLHUP) /= 0,
+       Invalid_Request => (Item.REvents and SOC.POLLNVAL) /= 0]);
    --  Get I/O events from C word
 
    procedure Wait
@@ -188,8 +188,8 @@ package body GNAT.Sockets.Poll is
    begin
       Check_Range (Self, Index);
       return
-        (Input  => (Self.Fds (Index).Events and To_C (Input)) /= 0,
-         Output => (Self.Fds (Index).Events and To_C (Output)) /= 0);
+        [Input  => (Self.Fds (Index).Events and To_C (Input)) /= 0,
+         Output => (Self.Fds (Index).Events and To_C (Output)) /= 0];
    end Get_Events;
 
    ------------

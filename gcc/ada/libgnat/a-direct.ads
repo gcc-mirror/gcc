@@ -366,7 +366,7 @@ package Ada.Directories is
      (Search    : in out Search_Type;
       Directory : String;
       Pattern   : String;
-      Filter    : Filter_Type := (others => True));
+      Filter    : Filter_Type := [others => True]);
    --  Starts a search in the directory entry in the directory named by
    --  Directory for entries matching Pattern. Pattern represents a file name
    --  matching pattern. If Pattern is null, all items in the directory are
@@ -407,7 +407,7 @@ package Ada.Directories is
    procedure Search
      (Directory : String;
       Pattern   : String;
-      Filter    : Filter_Type := (others => True);
+      Filter    : Filter_Type := [others => True];
       Process   : not null access procedure
                                     (Directory_Entry : Directory_Entry_Type));
    --  Searches in the directory named by Directory for entries matching

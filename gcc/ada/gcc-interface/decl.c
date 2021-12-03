@@ -335,11 +335,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
   /* Since a use of an itype is a definition, process it as such if it is in
      the main unit, except for E_Access_Subtype because it's actually a use
-     of its base type, see below.  */
+     of its base type, and for E_Class_Wide_Subtype with an Equivalent_Type
+     because it's actually a use of the latter type.  */
   if (!definition
       && is_type
       && Is_Itype (gnat_entity)
       && Ekind (gnat_entity) != E_Access_Subtype
+      && !(Ekind (gnat_entity) == E_Class_Wide_Subtype
+	   && Present (Equivalent_Type (gnat_entity)))
       && !present_gnu_tree (gnat_entity)
       && In_Extended_Main_Code_Unit (gnat_entity))
     {
@@ -4423,8 +4426,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  tree size = TYPE_SIZE (gnu_type);
 
 	  /* If the size is self-referential, annotate the maximum value
-	     after saturating it, if need be, to avoid a No_Uint value.  */
-	  if (CONTAINS_PLACEHOLDER_P (size))
+	     after saturating it, if need be, to avoid a No_Uint value.
+	     But do not do it for cases where Analyze_Object_Declaration
+	     in Sem_Ch3 would build a default subtype for objects.  */
+	  if (CONTAINS_PLACEHOLDER_P (size)
+	      && !Is_Limited_Record (gnat_entity)
+	      && !Is_Concurrent_Type (gnat_entity))
 	    {
 	      const unsigned int align
 		= UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT;
@@ -7218,13 +7225,12 @@ choices_to_gnu (tree gnu_operand, Node_Id gnat_choices)
 static int
 adjust_packed (tree field_type, tree record_type, int packed)
 {
-  /* If the field contains an array with self-referential size, we'd better
-     not pack it because this would misalign it and, therefore, cause large
-     temporaries to be created in case we need to take the address of the
-     field.  See addressable_p and the notes on the addressability issues
-     for further details.  */
-  if (AGGREGATE_TYPE_P (field_type)
-      && aggregate_type_contains_array_p (field_type, true))
+  /* If the field is an array of variable size, we'd better not pack it because
+     this would misalign it and, therefore, probably cause large temporarie to
+     be created in case we need to take its address.  See addressable_p and the
+     notes on the addressability issues for further details.  */
+  if (TREE_CODE (field_type) == ARRAY_TYPE
+      && type_has_variable_size (field_type))
     return 0;
 
   /* In the other cases, we can honor the packing.  */

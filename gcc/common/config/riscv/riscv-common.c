@@ -50,6 +50,20 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
+  {"zk", "zkn"},
+  {"zk", "zkr"},
+  {"zk", "zkt"},
+  {"zkn", "zbkb"},
+  {"zkn", "zbkc"},
+  {"zkn", "zbkx"},
+  {"zkn", "zkne"},
+  {"zkn", "zknd"},
+  {"zkn", "zknh"},
+  {"zks", "zbkb"},
+  {"zks", "zbkc"},
+  {"zks", "zbkx"},
+  {"zks", "zksed"},
+  {"zks", "zksh"},
   {NULL, NULL}
 };
 
@@ -105,6 +119,17 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbs", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zbkb",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zbkc",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zbkx",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkne",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zknd",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zknh",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkr",   ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zksed", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
@@ -491,7 +516,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbjtpvn";
+  return "mafdqlcbjktpvn";
 }
 
 /* Parsing subset version.
@@ -914,6 +939,17 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
   {"zbc",    &gcc_options::x_riscv_zb_subext, MASK_ZBC},
   {"zbs",    &gcc_options::x_riscv_zb_subext, MASK_ZBS},
+
+  {"zbkb",   &gcc_options::x_riscv_zk_subext, MASK_ZBKB},
+  {"zbkc",   &gcc_options::x_riscv_zk_subext, MASK_ZBKC},
+  {"zbkx",   &gcc_options::x_riscv_zk_subext, MASK_ZBKX},
+  {"zknd",   &gcc_options::x_riscv_zk_subext, MASK_ZKND},
+  {"zkne",   &gcc_options::x_riscv_zk_subext, MASK_ZKNE},
+  {"zknh",   &gcc_options::x_riscv_zk_subext, MASK_ZKNH},
+  {"zkr",    &gcc_options::x_riscv_zk_subext, MASK_ZKR},
+  {"zksed",  &gcc_options::x_riscv_zk_subext, MASK_ZKSED},
+  {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
+  {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
 
   {NULL, NULL, 0}
 };

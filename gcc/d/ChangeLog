@@ -1,3 +1,16 @@
+2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103520
+	* d-frontend.h (gc_disable): Declare.
+	* d-lang.cc (d_init_options): Disable the D runtime garbage collector
+	after initializing.
+
+2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Prefix object files from the root
+	package with root-.
+	(d/root-%.o): New recipe.
+
 2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-spec.cc (lang_specific_driver): Set SKIPOPT on -static-libstdc++

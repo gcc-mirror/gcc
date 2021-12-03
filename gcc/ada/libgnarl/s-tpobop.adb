@@ -942,21 +942,21 @@ package body System.Tasking.Protected_Objects.Operations is
 
    New_State : constant array (Boolean, Entry_Call_State)
      of Entry_Call_State :=
-       (True =>
-         (Never_Abortable   => Never_Abortable,
+       [True =>
+         [Never_Abortable   => Never_Abortable,
           Not_Yet_Abortable => Now_Abortable,
           Was_Abortable     => Now_Abortable,
           Now_Abortable     => Now_Abortable,
           Done              => Done,
-          Cancelled         => Cancelled),
+          Cancelled         => Cancelled],
         False =>
-         (Never_Abortable   => Never_Abortable,
+         [Never_Abortable   => Never_Abortable,
           Not_Yet_Abortable => Not_Yet_Abortable,
           Was_Abortable     => Was_Abortable,
           Now_Abortable     => Now_Abortable,
           Done              => Done,
-          Cancelled         => Cancelled)
-       );
+          Cancelled         => Cancelled]
+       ];
 
    procedure Update_For_Queue_To_PO
      (Entry_Call : Entry_Call_Link;

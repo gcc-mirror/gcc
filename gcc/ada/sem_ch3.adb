@@ -6815,8 +6815,7 @@ package body Sem_Ch3 is
       --  in a dispatch table.
 
       if not GNATprove_Mode then
-         Ensure_Freeze_Node (Id);
-         Append_Freeze_Actions (Id, New_List (New_Decl));
+         Append_Freeze_Action (Id, New_Decl);
 
       --  Under GNATprove mode there is no such problem but we do not declare
       --  it in the freezing actions since they are not analyzed under this
@@ -16369,12 +16368,12 @@ package body Sem_Ch3 is
       ------------------------
 
       function Check_Derived_Type return Boolean is
-         E        : Entity_Id;
-         Elmt     : Elmt_Id;
-         List     : Elist_Id;
-         New_Subp : Entity_Id;
-         Op_Elmt  : Elmt_Id;
-         Subp     : Entity_Id;
+         E            : Entity_Id;
+         Derived_Elmt : Elmt_Id;
+         Derived_Op   : Entity_Id;
+         Derived_Ops  : Elist_Id;
+         Parent_Elmt  : Elmt_Id;
+         Parent_Op    : Entity_Id;
 
       begin
          --  Traverse list of entities in the current scope searching for
@@ -16389,7 +16388,7 @@ package body Sem_Ch3 is
                --  Disable this test if Derived_Type completes an incomplete
                --  type because in such case more primitives can be added
                --  later to the list of primitives of Derived_Type by routine
-               --  Process_Incomplete_Dependents
+               --  Process_Incomplete_Dependents.
 
                return True;
             end if;
@@ -16397,13 +16396,13 @@ package body Sem_Ch3 is
             Next_Entity (E);
          end loop;
 
-         List := Collect_Primitive_Operations (Derived_Type);
-         Elmt := First_Elmt (List);
+         Derived_Ops := Collect_Primitive_Operations (Derived_Type);
 
-         Op_Elmt := First_Elmt (Op_List);
-         while Present (Op_Elmt) loop
-            Subp     := Node (Op_Elmt);
-            New_Subp := Node (Elmt);
+         Derived_Elmt := First_Elmt (Derived_Ops);
+         Parent_Elmt  := First_Elmt (Op_List);
+         while Present (Parent_Elmt) loop
+            Parent_Op  := Node (Parent_Elmt);
+            Derived_Op := Node (Derived_Elmt);
 
             --  At this early stage Derived_Type has no entities with attribute
             --  Interface_Alias. In addition, such primitives are always
@@ -16411,31 +16410,31 @@ package body Sem_Ch3 is
             --  Therefore, if found we can safely stop processing pending
             --  entities.
 
-            exit when Present (Interface_Alias (Subp));
+            exit when Present (Interface_Alias (Parent_Op));
 
             --  Handle hidden entities
 
-            if not Is_Predefined_Dispatching_Operation (Subp)
-              and then Is_Hidden (Subp)
+            if not Is_Predefined_Dispatching_Operation (Parent_Op)
+              and then Is_Hidden (Parent_Op)
             then
-               if Present (New_Subp)
-                 and then Primitive_Names_Match (Subp, New_Subp)
+               if Present (Derived_Op)
+                 and then Primitive_Names_Match (Parent_Op, Derived_Op)
                then
-                  Next_Elmt (Elmt);
+                  Next_Elmt (Derived_Elmt);
                end if;
 
             else
-               if not Present (New_Subp)
-                 or else Ekind (Subp) /= Ekind (New_Subp)
-                 or else not Primitive_Names_Match (Subp, New_Subp)
+               if No (Derived_Op)
+                 or else Ekind (Parent_Op) /= Ekind (Derived_Op)
+                 or else not Primitive_Names_Match (Parent_Op, Derived_Op)
                then
                   return False;
                end if;
 
-               Next_Elmt (Elmt);
+               Next_Elmt (Derived_Elmt);
             end if;
 
-            Next_Elmt (Op_Elmt);
+            Next_Elmt (Parent_Elmt);
          end loop;
 
          return True;

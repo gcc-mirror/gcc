@@ -173,7 +173,7 @@ package body System.HTable is
       begin
          --  Use an aggregate for efficiency reasons
 
-         Table := (others => Null_Ptr);
+         Table := [others => Null_Ptr];
       end Reset;
 
       ---------

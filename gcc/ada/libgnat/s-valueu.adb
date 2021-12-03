@@ -234,7 +234,7 @@ package body System.Value_U is
       --  Come here with scanned unsigned value in Uval. The only remaining
       --  required step is to deal with exponent if one is present.
 
-      Expon := Scan_Exponent (Str, Ptr, Max);
+      Scan_Exponent (Str, Ptr, Max, Expon);
 
       if Expon /= 0 and then Uval /= 0 then
 

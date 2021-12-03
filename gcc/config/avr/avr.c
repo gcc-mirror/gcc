@@ -10114,10 +10114,9 @@ avr_output_bss_section_asm_op (const void *data)
 /* Unnamed section callback for progmem*.data sections.  */
 
 static void
-avr_output_progmem_section_asm_op (const void *data)
+avr_output_progmem_section_asm_op (const char *data)
 {
-  fprintf (asm_out_file, "\t.section\t%s,\"a\",@progbits\n",
-           (const char*) data);
+  fprintf (asm_out_file, "\t.section\t%s,\"a\",@progbits\n", data);
 }
 
 

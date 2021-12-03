@@ -450,13 +450,13 @@ package body Ada.Wide_Text_IO.Editing is
            or else Pic.Start_Currency < Pic.Radix_Position
          then
             Answer (Pic.Start_Currency .. Pic.End_Currency) :=
-                                                        (others => ' ');
+                                                        [others => ' '];
             Answer (Pic.End_Currency - Currency_Symbol'Length + 1 ..
                     Pic.End_Currency) := Currency_Symbol;
 
          else
             Answer (Pic.Start_Currency .. Pic.End_Currency) :=
-                                                        (others => ' ');
+                                                        [others => ' '];
             Answer (Pic.Start_Currency ..
                     Pic.Start_Currency + Currency_Symbol'Length - 1) :=
                                                         Currency_Symbol;

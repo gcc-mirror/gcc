@@ -65,7 +65,7 @@ package System.Tasking.Debug is
    -- General GDB support --
    -------------------------
 
-   Known_Tasks : array (0 .. 999) of Task_Id := (others => null)
+   Known_Tasks : array (0 .. 999) of Task_Id := [others => null]
      with Atomic_Components;
    --  Global array of tasks read by gdb, and updated by Create_Task and
    --  Finalize_TCB. Ensure access to its components is atomic to allow

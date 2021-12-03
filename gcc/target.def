@@ -2979,6 +2979,14 @@ The default value of this hook is based on target's libc.",
  bool, (void),
  default_has_ifunc_p)
 
+/* True if it is OK to reference indirect function resolvers locally.  */
+DEFHOOK
+(ifunc_ref_local_ok,
+ "Return true if it is OK to reference indirect function resolvers\n\
+locally.  The default is to return false.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* True if it is OK to do sibling call optimization for the specified
    call expression EXP.  DECL will be the called function, or NULL if
    this is an indirect call.  */

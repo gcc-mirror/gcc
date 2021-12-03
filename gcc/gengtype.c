@@ -172,6 +172,7 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
   int nb_struct = 0, nb_union = 0, nb_array = 0, nb_pointer = 0;
   int nb_lang_struct = 0;
   int nb_user_struct = 0, nb_undefined = 0;
+  int nb_callback = 0;
   type_p p = NULL;
   for (p = t; p; p = p->next)
     {
@@ -202,6 +203,9 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 	case TYPE_ARRAY:
 	  nb_array++;
 	  break;
+	case TYPE_CALLBACK:
+	  nb_callback++;
+	  break;
 	case TYPE_LANG_STRUCT:
 	  nb_lang_struct++;
 	  break;
@@ -217,6 +221,8 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
     fprintf (stderr, "@@%%@@ %d structs, %d unions\n", nb_struct, nb_union);
   if (nb_pointer > 0 || nb_array > 0)
     fprintf (stderr, "@@%%@@ %d pointers, %d arrays\n", nb_pointer, nb_array);
+  if (nb_callback > 0)
+    fprintf (stderr, "@@%%@@ %d callbacks\n", nb_callback);
   if (nb_lang_struct > 0)
     fprintf (stderr, "@@%%@@ %d lang_structs\n", nb_lang_struct);
   if (nb_user_struct > 0)
@@ -493,6 +499,10 @@ struct type scalar_nonchar = {
 
 struct type scalar_char = {
   TYPE_SCALAR, 0, 0, 0, GC_USED, {0}
+};
+
+struct type callback_type = {
+  TYPE_CALLBACK, 0, 0, 0, GC_USED, {0}
 };
 
 /* Lists of various things.  */
@@ -1464,7 +1474,7 @@ static void set_gc_used (pair_p);
 
 static void
 process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
-		    int *length, int *skip, type_p *nested_ptr)
+		    int *length, int *skip, int *callback, type_p *nested_ptr)
 {
   options_p o;
   for (o = opt; o; o = o->next)
@@ -1478,6 +1488,8 @@ process_gc_options (options_p opt, enum gc_used_enum level, int *maybe_undef,
       *length = 1;
     else if (strcmp (o->name, "skip") == 0)
       *skip = 1;
+    else if (strcmp (o->name, "callback") == 0)
+      *callback = 1;
     else if (strcmp (o->name, "nested_ptr") == 0
 	     && o->kind == OPTION_NESTED)
       *nested_ptr = ((const struct nested_ptr_data *) o->info.nested)->type;
@@ -1526,7 +1538,7 @@ set_gc_used_type (type_p t, enum gc_used_enum level,
 	type_p dummy2;
 	bool allow_undefined_field_types = (t->kind == TYPE_USER_STRUCT);
 
-	process_gc_options (t->u.s.opt, level, &dummy, &dummy, &dummy,
+	process_gc_options (t->u.s.opt, level, &dummy, &dummy, &dummy, &dummy,
 			    &dummy2);
 
 	if (t->u.s.base_class)
@@ -1542,9 +1554,10 @@ set_gc_used_type (type_p t, enum gc_used_enum level,
 	    int maybe_undef = 0;
 	    int length = 0;
 	    int skip = 0;
+	    int callback = 0;
 	    type_p nested_ptr = NULL;
 	    process_gc_options (f->opt, level, &maybe_undef, &length, &skip,
-				&nested_ptr);
+				&callback, &nested_ptr);
 
 	    if (nested_ptr && f->type->kind == TYPE_POINTER)
 	      set_gc_used_type (nested_ptr, GC_POINTED_TO);
@@ -1554,6 +1567,8 @@ set_gc_used_type (type_p t, enum gc_used_enum level,
 	      set_gc_used_type (f->type->u.p, GC_MAYBE_POINTED_TO);
 	    else if (skip)
 	      ;			/* target type is not used through this field */
+	    else if (callback)
+	      f->type = &callback_type;
 	    else
 	      set_gc_used_type (f->type, GC_USED, allow_undefined_field_types);
 	  }
@@ -2519,6 +2534,7 @@ output_mangled_typename (outf_p of, const_type_p t)
       {
       case TYPE_NONE:
       case TYPE_UNDEFINED:
+      case TYPE_CALLBACK:
 	gcc_unreachable ();
 	break;
       case TYPE_POINTER:
@@ -2719,6 +2735,8 @@ walk_type (type_p t, struct walk_type_data *d)
       ;
     else if (strcmp (oo->name, "for_user") == 0)
       ;
+    else if (strcmp (oo->name, "callback") == 0)
+      ;
     else
       error_at_line (d->line, "unknown option `%s'\n", oo->name);
 
@@ -2744,6 +2762,7 @@ walk_type (type_p t, struct walk_type_data *d)
     {
     case TYPE_SCALAR:
     case TYPE_STRING:
+    case TYPE_CALLBACK:
       d->process_field (t, d);
       break;
 
@@ -3275,6 +3294,7 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
       break;
 
     case TYPE_SCALAR:
+    case TYPE_CALLBACK:
       break;
 
     case TYPE_ARRAY:
@@ -3820,6 +3840,7 @@ write_types_local_user_process_field (type_p f, const struct walk_type_data *d)
       break;
 
     case TYPE_SCALAR:
+    case TYPE_CALLBACK:
       break;
 
     case TYPE_ARRAY:
@@ -3904,6 +3925,13 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
       break;
 
     case TYPE_SCALAR:
+      break;
+
+    case TYPE_CALLBACK:
+      oprintf (d->of, "%*sif ((void *)(%s) == this_obj)\n", d->indent, "",
+	       d->prev_val[3]);
+      oprintf (d->of, "%*s  gt_pch_note_callback (&(%s), this_obj);\n",
+	       d->indent, "", d->val);
       break;
 
     case TYPE_ARRAY:
@@ -4434,6 +4462,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
     case TYPE_UNDEFINED:
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
+    case TYPE_CALLBACK:
       error_at_line (line, "global `%s' is unimplemented type", name);
     }
 }
@@ -4728,6 +4757,9 @@ dump_typekind (int indent, enum typekind kind)
     case TYPE_ARRAY:
       printf ("TYPE_ARRAY");
       break;
+    case TYPE_CALLBACK:
+      printf ("TYPE_CALLBACK");
+      break;
     case TYPE_LANG_STRUCT:
       printf ("TYPE_LANG_STRUCT");
       break;
@@ -4894,6 +4926,7 @@ dump_type (int indent, type_p t)
 	      t->u.scalar_is_char ? "true" : "false");
       break;
     case TYPE_STRING:
+    case TYPE_CALLBACK:
       break;
     case TYPE_STRUCT:
     case TYPE_UNION:

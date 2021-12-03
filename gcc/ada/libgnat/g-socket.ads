@@ -506,7 +506,7 @@ package GNAT.Sockets is
    --  Octet for Internet address
 
    Inet_Addr_Bytes_Length : constant array (Family_Inet_4_6) of Natural :=
-     (Family_Inet => 4, Family_Inet6 => 16);
+     [Family_Inet => 4, Family_Inet6 => 16];
 
    type Inet_Addr_Bytes is array (Natural range <>) of Inet_Addr_Comp_Type;
 
@@ -521,10 +521,10 @@ package GNAT.Sockets is
    type Inet_Addr_Type (Family : Family_Inet_4_6 := Family_Inet) is record
       case Family is
          when Family_Inet =>
-            Sin_V4 : Inet_Addr_V4_Type := (others => 0);
+            Sin_V4 : Inet_Addr_V4_Type := [others => 0];
 
          when Family_Inet6 =>
-            Sin_V6 : Inet_Addr_V6_Type := (others => 0);
+            Sin_V6 : Inet_Addr_V6_Type := [others => 0];
 
       end case;
    end record;
@@ -571,7 +571,7 @@ package GNAT.Sockets is
    --  Idem for IPv6 protocol
 
    IPv4_To_IPv6_Prefix : constant Inet_Addr_Bytes :=
-     (1 .. 10 => 0, 11 .. 12 => 255);
+     [1 .. 10 => 0, 11 .. 12 => 255];
    --  Prefix for IPv4 mapped to IPv6 addresses
 
    --  Functions to handle masks and prefixes
@@ -1122,7 +1122,7 @@ package GNAT.Sockets is
       Family : Family_Type := Family_Inet;
       Mode   : Mode_Type   := Socket_Stream;
       Level  : Level_Type  := IP_Protocol_For_IP_Level);
-   --  Create an endpoint for communication. Raises Socket_Error on error.
+   --  Create an endpoint for communication. Raises Socket_Error on error
 
    procedure Create_Socket_Pair
      (Left   : out Socket_Type;
@@ -1529,37 +1529,39 @@ private
    No_Port  : constant Port_Type := 0;
 
    Any_Inet_Addr       : constant Inet_Addr_Type :=
-                           (Family_Inet, (others => 0));
+                           (Family_Inet, [others => 0]);
    Any_Inet6_Addr      : constant Inet_Addr_Type :=
-                           (Family_Inet6, (others => 0));
+                           (Family_Inet6, [others => 0]);
    No_Inet_Addr        : constant Inet_Addr_Type :=
-                           (Family_Inet, (others => 0));
+                           (Family_Inet, [others => 0]);
    Broadcast_Inet_Addr : constant Inet_Addr_Type :=
-                           (Family_Inet, (others => 255));
+                           (Family_Inet, [others => 255]);
    Loopback_Inet_Addr  : constant Inet_Addr_Type :=
-                           (Family_Inet, (127, 0, 0, 1));
+                           (Family_Inet, [127, 0, 0, 1]);
    Loopback_Inet6_Addr : constant Inet_Addr_Type :=
                            (Family_Inet6,
-                            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1));
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 
    Unspecified_Group_Inet_Addr : constant Inet_Addr_Type :=
-                                   (Family_Inet, (224, 0, 0, 0));
+                                   (Family_Inet, [224, 0, 0, 0]);
    All_Hosts_Group_Inet_Addr   : constant Inet_Addr_Type :=
-                                   (Family_Inet, (224, 0, 0, 1));
+                                   (Family_Inet, [224, 0, 0, 1]);
    All_Routers_Group_Inet_Addr : constant Inet_Addr_Type :=
-                                   (Family_Inet, (224, 0, 0, 2));
+                                   (Family_Inet, [224, 0, 0, 2]);
 
    Unspecified_Group_Inet6_Addr : constant Inet_Addr_Type :=
-     (Family_Inet6, (255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+     (Family_Inet6, [255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
    All_Hosts_Group_Inet6_Addr   : constant Inet_Addr_Type :=
-     (Family_Inet6, (255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1));
+     (Family_Inet6, [255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
    All_Routers_Group_Inet6_Addr : constant Inet_Addr_Type :=
-     (Family_Inet6, (255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2));
+     (Family_Inet6, [255, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]);
 
    No_Sock_Addr : constant Sock_Addr_Type := (Family_Inet, No_Inet_Addr, 0);
 
-   Max_Name_Length : constant := 64;
-   --  The constant MAXHOSTNAMELEN is usually set to 64
+   Max_Name_Length : constant := SOSC.NI_MAXHOST;
+   --  Most systems don't provide constants that specify the maximum size
+   --  of either a FQDN or a service name. In order to aid applications in
+   --  allocating buffers, the constant NI_MAXHOST is defined in <netdb.h>.
 
    subtype Name_Index is Natural range 1 .. Max_Name_Length;
 

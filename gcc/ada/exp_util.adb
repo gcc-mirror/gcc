@@ -458,7 +458,6 @@ package body Exp_Util is
       else
          Append (N, Actions (Fnode));
       end if;
-
    end Append_Freeze_Action;
 
    ---------------------------

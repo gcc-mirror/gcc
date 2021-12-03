@@ -1173,7 +1173,7 @@ if test "x$enable_offload_defaulted" = xyes; then
 fi
 
 AC_ARG_WITH(multilib-list,
-[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, OR1K, RISC-V, SH and x86-64 only)])],
+[AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, ARM, AVR, OR1K, RISC-V, SH and x86-64 only)])],
 :,
 with_multilib_list=default)
 
@@ -6965,6 +6965,9 @@ fi
 # Check if the target LIBC handles PT_GNU_STACK.
 gcc_cv_libc_gnustack=unknown
 case "$target" in
+  mips*-*-linux-musl*)
+    gcc_cv_libc_gnustack=yes
+    ;;
   mips*-*-linux*)
     GCC_GLIBC_VERSION_GTE_IFELSE([2], [31], [gcc_cv_libc_gnustack=yes], )
     ;;

@@ -205,6 +205,15 @@ If @code{skip} is applied to a field, the type machinery will ignore it.
 This is somewhat dangerous; the only safe use is in a union when one
 field really isn't ever used.
 
+@findex callback
+@item callback
+
+@code{callback} should be applied to fields with pointer to function type
+and causes the field to be ignored similarly to @code{skip}, except when
+writing PCH and the field is non-NULL it will remember the field's address
+for relocation purposes if the process writing PCH has different load base
+from a process reading PCH.
+
 @findex for_user
 @item for_user
 

@@ -1,3 +1,15 @@
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94490
+	* pt.c (expand_integer_pack): Call
+	instantiate_non_dependent_expr_sfinae.
+
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103408
+	* cxx-pretty-print.c (pp_cxx_parameter_mapping): Print "<unnamed>"
+	rather than crash on an unnamed template parameter.
+
 2021-12-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103310

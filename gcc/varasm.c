@@ -250,8 +250,8 @@ object_block_hasher::hash (object_block *old)
 /* Return a new unnamed section with the given fields.  */
 
 section *
-get_unnamed_section (unsigned int flags, void (*callback) (const void *),
-		     const void *data)
+get_unnamed_section (unsigned int flags, void (*callback) (const char *),
+		     const char *data)
 {
   section *sect;
 
@@ -7474,7 +7474,8 @@ default_binds_local_p_3 (const_tree exp, bool shlib, bool weak_dominate,
      FIXME: We can resolve the weakref case more curefuly by looking at the
      weakref alias.  */
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (exp))
-      || (TREE_CODE (exp) == FUNCTION_DECL
+      || (!targetm.ifunc_ref_local_ok ()
+	  && TREE_CODE (exp) == FUNCTION_DECL
 	  && cgraph_node::get (exp)
 	  && cgraph_node::get (exp)->ifunc_resolver))
     return false;
@@ -7778,9 +7779,9 @@ file_end_indicate_split_stack (void)
    a get_unnamed_section callback.  */
 
 void
-output_section_asm_op (const void *directive)
+output_section_asm_op (const char *directive)
 {
-  fprintf (asm_out_file, "%s\n", (const char *) directive);
+  fprintf (asm_out_file, "%s\n", directive);
 }
 
 /* Emit assembly code to switch to section NEW_SECTION.  Do nothing if

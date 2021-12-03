@@ -1258,7 +1258,7 @@ package Ada.Strings.Fixed with SPARK_Mode is
           Head'Result (1 .. Source'Length) = Source
             and then
               Head'Result (Source'Length + 1 .. Count)
-              = (1 .. Count - Source'Length => Pad)),
+              = [1 .. Count - Source'Length => Pad]),
      Global         => null;
    --  Returns a string of length Count. If Count <= Source'Length, the string
    --  comprises the first Count characters of Source. Otherwise, its contents
@@ -1315,10 +1315,10 @@ package Ada.Strings.Fixed with SPARK_Mode is
            --  characters.
 
           (if Source'Length = 0
-           then Tail'Result = (1 .. Count => Pad)
+           then Tail'Result = [1 .. Count => Pad]
            else
              Tail'Result (1 .. Count - Source'Length)
-             = (1 .. Count - Source'Length => Pad)
+             = [1 .. Count - Source'Length => Pad]
                and then
                  Tail'Result (Count - Source'Length + 1 .. Tail'Result'Last)
                  = Source)),

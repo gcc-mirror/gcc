@@ -154,6 +154,9 @@ enum typekind {
   TYPE_UNION,           /* Type for GTY-ed discriminated unions.  */
   TYPE_POINTER,         /* Pointer type to GTY-ed type.  */
   TYPE_ARRAY,           /* Array of GTY-ed types.  */
+  TYPE_CALLBACK,	/* A function pointer that needs relocation if
+			   the executable has been loaded at a different
+			   address.  */
   TYPE_LANG_STRUCT,     /* GCC front-end language specific structs.
                            Various languages may have homonymous but
                            different structs.  */
@@ -330,6 +333,9 @@ extern struct type string_type;
    set early in main.  */
 extern struct type scalar_nonchar;
 extern struct type scalar_char;
+
+/* The one and only TYPE_CALLBACK.  */
+extern struct type callback_type;
 
 /* Test if a type is a union, either a plain one or a language
    specific one.  */

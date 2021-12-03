@@ -32,7 +32,7 @@ along with this program; see the file COPYING3.  If not see
    -nop: Instead of running lto-wrapper, pass the original to the plugin. This
    only works if the input files are hybrid. 
    -linker-output-known: Do not determine linker output
-   -linker-output-auto-notlo-rel: Switch from rel to nolto-rel mode without
+   -linker-output-auto-nolto-rel: Switch from rel to nolto-rel mode without
    warning.  This is used on systems like VxWorks (kernel) where the link is
    always partial and repeated incremental linking is generally not used.
    -sym-style={none,win32,underscore|uscore}
@@ -1321,7 +1321,9 @@ process_option (const char *option)
 {
   if (strcmp (option, "-linker-output-known") == 0)
     linker_output_known = true;
-  else if (strcmp (option, "-linker-output-auto-notlo-rel") == 0)
+  /* Also accept "notlo" for backwards compatibility.  */
+  else if ((strcmp (option, "-linker-output-auto-nolto-rel") == 0)
+           || (strcmp (option, "-linker-output-auto-notlo-rel") == 0))
     linker_output_auto_nolto_rel = true;
   else if (strcmp (option, "-debug") == 0)
     debug = true;

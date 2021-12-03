@@ -639,10 +639,10 @@ private
       Paren_Count      : Natural      := 0;          --  # paren groups
       Flags            : Regexp_Flags := No_Flags;
       Program          : Program_Data (Program_First .. Size) :=
-                           (others => ASCII.NUL);
+                           [others => ASCII.NUL];
    end record;
 
    Never_Match : constant Pattern_Matcher :=
-      (0, ASCII.NUL, False, 0, 0, 0, No_Flags, (others => ASCII.NUL));
+      (0, ASCII.NUL, False, 0, 0, 0, No_Flags, [others => ASCII.NUL]);
 
 end System.Regpat;

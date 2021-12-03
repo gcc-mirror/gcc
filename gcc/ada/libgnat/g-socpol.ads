@@ -171,10 +171,10 @@ package GNAT.Sockets.Poll is
 
 private
 
-   Input_Event  : constant Wait_Event_Set := (Input => True, Output => False);
-   Output_Event : constant Wait_Event_Set := (Input => False, Output => True);
-   Both_Events  : constant Wait_Event_Set := (others => True);
-   Error_Event  : constant Wait_Event_Set := (others => False);
+   Input_Event  : constant Wait_Event_Set := [Input => True, Output => False];
+   Output_Event : constant Wait_Event_Set := [Input => False, Output => True];
+   Both_Events  : constant Wait_Event_Set := [others => True];
+   Error_Event  : constant Wait_Event_Set := [others => False];
 
    package SOC renames System.OS_Constants;
 

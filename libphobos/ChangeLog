@@ -1,3 +1,13 @@
+2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/thread/osthread.d (callWithStackShell): Push all
+	callee-save registers on the stack for AArch64 and ARM.
+
+2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/std/math/hardware.d (FloatingPointControl.getControlState): Add
+	missing ControlState variable for AArch64.
+
 2021-12-01  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* testsuite/testsuite_flags.in: Add libphobos library directory as

@@ -1403,6 +1403,8 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
   return t;
 }
 
+static GTY(()) tree target_attribute_cache[3];
+
 /* Hook to validate attribute((target("string"))).  */
 
 bool
@@ -1422,6 +1424,19 @@ ix86_valid_target_attribute_p (tree fndecl,
       && TREE_CHAIN (args) == NULL_TREE
       && strcmp (TREE_STRING_POINTER (TREE_VALUE (args)), "default") == 0)
     return true;
+
+  if ((DECL_FUNCTION_SPECIFIC_TARGET (fndecl) == target_attribute_cache[1]
+       || DECL_FUNCTION_SPECIFIC_TARGET (fndecl) == NULL_TREE)
+      && (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl)
+	  == target_attribute_cache[2]
+	  || DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) == NULL_TREE)
+      && simple_cst_list_equal (args, target_attribute_cache[0]))
+    {
+      DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = target_attribute_cache[1];
+      DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl)
+	= target_attribute_cache[2];
+      return true;
+    }
 
   tree old_optimize = build_optimization_node (&global_options,
 					       &global_options_set);
@@ -1459,8 +1474,17 @@ ix86_valid_target_attribute_p (tree fndecl,
   if (new_target == error_mark_node)
     ret = false;
 
-  else if (fndecl && new_target)
+  else if (new_target)
     {
+      if (DECL_FUNCTION_SPECIFIC_TARGET (fndecl) == NULL_TREE
+	  && DECL_FUNCTION_SPECIFIC_OPTIMIZATION (fndecl) == NULL_TREE)
+	{
+	  target_attribute_cache[0] = copy_list (args);
+	  target_attribute_cache[1] = new_target;
+	  target_attribute_cache[2]
+	    = old_optimize != new_optimize ? new_optimize : NULL_TREE;
+	}
+
       DECL_FUNCTION_SPECIFIC_TARGET (fndecl) = new_target;
 
       if (old_optimize != new_optimize)

@@ -59,28 +59,28 @@ package body System.Tasking.Rendezvous is
    ----------------
 
    Default_Treatment : constant array (Select_Modes) of Select_Treatment :=
-     (Simple_Mode         => No_Alternative_Open,
+     [Simple_Mode         => No_Alternative_Open,
       Else_Mode           => Else_Selected,
       Terminate_Mode      => Terminate_Selected,
-      Delay_Mode          => No_Alternative_Open);
+      Delay_Mode          => No_Alternative_Open];
 
    New_State : constant array (Boolean, Entry_Call_State)
      of Entry_Call_State :=
-       (True =>
-         (Never_Abortable   => Never_Abortable,
+       [True =>
+         [Never_Abortable   => Never_Abortable,
           Not_Yet_Abortable => Now_Abortable,
           Was_Abortable     => Now_Abortable,
           Now_Abortable     => Now_Abortable,
           Done              => Done,
-          Cancelled         => Cancelled),
+          Cancelled         => Cancelled],
         False =>
-         (Never_Abortable   => Never_Abortable,
+         [Never_Abortable   => Never_Abortable,
           Not_Yet_Abortable => Not_Yet_Abortable,
           Was_Abortable     => Was_Abortable,
           Now_Abortable     => Now_Abortable,
           Done              => Done,
-          Cancelled         => Cancelled)
-       );
+          Cancelled         => Cancelled]
+       ];
 
    -----------------------
    -- Local Subprograms --

@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "cfgloop.h"
 #include "sreal.h"
+#include "file-prefix-map.h"
 
 #include "profile.h"
 
@@ -1059,6 +1060,9 @@ output_location (hash_set<location_triplet_hash> *streamed_locations,
   static char const *prev_file_name;
   static int prev_line;
   bool name_differs, line_differs;
+
+  if (file_name != NULL)
+    file_name = remap_profile_filename (file_name);
 
   location_triplet triplet;
   triplet.filename = file_name;

@@ -803,11 +803,11 @@ public:
   unsigned int max_column_hint;
 
   /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
-  line_map_realloc reallocator;
+  line_map_realloc GTY((callback)) reallocator;
 
   /* The allocators' function used to know the actual size it
      allocated, for a certain allocation size requested.  */
-  line_map_round_alloc_size_func round_alloc_size;
+  line_map_round_alloc_size_func GTY((callback)) round_alloc_size;
 
   struct location_adhoc_data_map location_adhoc_data_map;
 

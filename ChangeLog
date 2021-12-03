@@ -1,3 +1,9 @@
+2021-12-02  Pekka Seppänen  <pexu@gcc.mail.kapsi.fi>
+
+	* configure: Regenerate.
+	* configure.ac: For CPP_FOR_BUILD use $(CC_FOR_BUILD) -E instead of
+	$(CPP).
+
 2021-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.def: Add bootstrap to libbacktrace, libphobos, zlib, and

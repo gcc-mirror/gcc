@@ -2845,7 +2845,7 @@ write_init_file (void)
   fprintf (init_file, "#include \"rs6000-builtins.h\"\n");
   fprintf (init_file, "\n");
 
-  fprintf (init_file, "int new_builtins_are_live = 0;\n\n");
+  fprintf (init_file, "int new_builtins_are_live = 1;\n\n");
 
   fprintf (init_file, "tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
 

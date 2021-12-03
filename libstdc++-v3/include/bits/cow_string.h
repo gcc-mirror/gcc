@@ -207,10 +207,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // so we need to use an atomic load. However, _M_is_leaked
 	  // predicate does not change concurrently (i.e. the string is either
 	  // leaked or not), so a relaxed load is enough.
-	  if (!__gnu_cxx::__is_single_threaded())
-	    return __atomic_load_n(&this->_M_refcount, __ATOMIC_RELAXED) < 0;
-#endif
+	  return __atomic_load_n(&this->_M_refcount, __ATOMIC_RELAXED) < 0;
+#else
 	  return this->_M_refcount < 0;
+#endif
 	}
 
 	bool

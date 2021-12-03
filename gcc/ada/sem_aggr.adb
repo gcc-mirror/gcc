@@ -248,7 +248,7 @@ package body Sem_Aggr is
    --  The procedure works by recursively checking each nested aggregate.
    --  Specifically, after checking a sub-aggregate nested at the i-th level
    --  we recursively check all the subaggregates at the i+1-st level (if any).
-   --  Note that for aggregates analysis and resolution go hand in hand.
+   --  Note that aggregates analysis and resolution go hand in hand.
    --  Aggregate analysis has been delayed up to here and it is done while
    --  resolving the aggregate.
    --
@@ -918,6 +918,12 @@ package body Sem_Aggr is
         and then Ekind (Typ) /= E_Record_Type
         and then Ada_Version >= Ada_2022
       then
+         --  Check for Ada 2022 and () aggregate.
+
+         if not Is_Homogeneous_Aggregate (N) then
+            Error_Msg_N ("container aggregate must use '['], not ()", N);
+         end if;
+
          Resolve_Container_Aggregate (N, Typ);
 
       elsif Is_Record_Type (Typ) then
@@ -1790,6 +1796,22 @@ package body Sem_Aggr is
         and then not Null_Record_Present (N)
       then
          return False;
+      end if;
+
+      --  Disable the warning for GNAT Mode to allow for easier transition.
+
+      if Ada_Version >= Ada_2022
+        and then Warn_On_Obsolescent_Feature
+        and then not GNAT_Mode
+        and then not Is_Homogeneous_Aggregate (N)
+        and then not Is_Enum_Array_Aggregate (N)
+        and then Is_Parenthesis_Aggregate (N)
+        and then Nkind (Parent (N)) /= N_Qualified_Expression
+        and then Comes_From_Source (N)
+      then
+         Error_Msg_N
+           ("?j?array aggregate using () is an" &
+              " obsolescent syntax, use '['] instead", N);
       end if;
 
       --  STEP 1: make sure the aggregate is correctly formatted

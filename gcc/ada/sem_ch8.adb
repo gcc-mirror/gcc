@@ -4689,7 +4689,6 @@ package body Sem_Ch8 is
             if Is_Tagged_Type (Etype (P))
               and then In_Open_Scopes (Scope (Etype (P)))
             then
-               Ensure_Freeze_Node (Etype (P));
                Append_Freeze_Action (Etype (P), Body_Node);
             else
                Rewrite (N, Body_Node);
