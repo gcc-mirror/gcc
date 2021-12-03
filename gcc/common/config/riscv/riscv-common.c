@@ -64,6 +64,38 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zks", "zbkx"},
   {"zks", "zksed"},
   {"zks", "zksh"},
+
+  {"v", "zvl128b"},
+  {"v", "zve64d"},
+
+  {"zve32f", "f"},
+  {"zve64f", "f"},
+  {"zve64d", "d"},
+
+  {"zve32x", "zvl32b"},
+  {"zve32f", "zve32x"},
+  {"zve32f", "zvl32b"},
+
+  {"zve64x", "zve32x"},
+  {"zve64x", "zvl64b"},
+  {"zve64f", "zve32f"},
+  {"zve64f", "zve64x"},
+  {"zve64f", "zvl64b"},
+  {"zve64d", "zve64f"},
+  {"zve64d", "zvl64b"},
+
+  {"zvl64b", "zvl32b"},
+  {"zvl128b", "zvl64b"},
+  {"zvl256b", "zvl128b"},
+  {"zvl512b", "zvl256b"},
+  {"zvl1024b", "zvl512b"},
+  {"zvl2048b", "zvl1024b"},
+  {"zvl4096b", "zvl2048b"},
+  {"zvl8192b", "zvl4096b"},
+  {"zvl16384b", "zvl8192b"},
+  {"zvl32768b", "zvl16384b"},
+  {"zvl65536b", "zvl32768b"},
+
   {NULL, NULL}
 };
 
@@ -109,6 +141,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"c", ISA_SPEC_CLASS_20190608, 2, 0},
   {"c", ISA_SPEC_CLASS_2P2,      2, 0},
 
+  {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zicsr", ISA_SPEC_CLASS_20190608, 2, 0},
 
@@ -130,6 +164,26 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zksed", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zksh",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkt",   ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zve32x", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zve32f", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zve32d", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zve64x", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zve64f", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zve64d", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zvl32b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl64b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl128b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl256b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl512b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl1024b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl2048b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl4096b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl8192b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl16384b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl32768b", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zvl65536b", ISA_SPEC_CLASS_NONE, 1, 0},
 
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
@@ -965,6 +1019,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"f", &gcc_options::x_target_flags, MASK_HARD_FLOAT},
   {"d", &gcc_options::x_target_flags, MASK_DOUBLE_FLOAT},
   {"c", &gcc_options::x_target_flags, MASK_RVC},
+  {"v", &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
   {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
@@ -984,6 +1039,37 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"zksed",  &gcc_options::x_riscv_zk_subext, MASK_ZKSED},
   {"zksh",   &gcc_options::x_riscv_zk_subext, MASK_ZKSH},
   {"zkt",    &gcc_options::x_riscv_zk_subext, MASK_ZKT},
+
+  {"zve32x",   &gcc_options::x_target_flags, MASK_VECTOR},
+  {"zve32f",   &gcc_options::x_target_flags, MASK_VECTOR},
+  {"zve64x",   &gcc_options::x_target_flags, MASK_VECTOR},
+  {"zve64f",   &gcc_options::x_target_flags, MASK_VECTOR},
+  {"zve64d",   &gcc_options::x_target_flags, MASK_VECTOR},
+
+  /* We don't need to put complete EEW/EEW_FP info here, due to the
+     implication relation of vector extension.
+     e.g. v -> zve64d ... zve32x, so v has set MASK_VECTOR_EEW_FP_64,
+     MASK_VECTOR_EEW_FP_32, MASK_VECTOR_EEW_64 and MASK_VECTOR_EEW_32
+     due to the extension implication.  */
+  {"zve32x",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_32},
+  {"zve32f",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_32},
+  {"zve64x",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_64},
+  {"zve64f",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_32},
+  {"zve64d",   &gcc_options::x_riscv_vector_eew_flags, MASK_VECTOR_EEW_FP_64},
+
+  {"zvl32b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL32B},
+  {"zvl64b",    &gcc_options::x_riscv_zvl_flags, MASK_ZVL64B},
+  {"zvl128b",   &gcc_options::x_riscv_zvl_flags, MASK_ZVL128B},
+  {"zvl256b",   &gcc_options::x_riscv_zvl_flags, MASK_ZVL256B},
+  {"zvl512b",   &gcc_options::x_riscv_zvl_flags, MASK_ZVL512B},
+  {"zvl1024b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL1024B},
+  {"zvl2048b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL2048B},
+  {"zvl4096b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL4096B},
+  {"zvl8192b",  &gcc_options::x_riscv_zvl_flags, MASK_ZVL8192B},
+  {"zvl16384b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL16384B},
+  {"zvl32768b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL32768B},
+  {"zvl65536b", &gcc_options::x_riscv_zvl_flags, MASK_ZVL65536B},
+
 
   {NULL, NULL, 0}
 };
