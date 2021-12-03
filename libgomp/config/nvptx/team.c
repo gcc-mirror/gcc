@@ -33,9 +33,13 @@
 
 struct gomp_thread *nvptx_thrs __attribute__((shared,nocommon));
 int __gomp_team_num __attribute__((shared,nocommon));
+uint32_t __nvptx_lowlat_heap_root __attribute__((shared,nocommon));
 
 static void gomp_thread_start (struct gomp_thread_pool *);
 
+/* There should be some .shared space reserved for us.  There's no way to
+   express this magic extern sizeless array in C so use asm.  */
+asm (".extern .shared .u8 __nvptx_lowlat_pool[];\n");
 
 /* This externally visible function handles target region entry.  It
    sets up a per-team thread pool and transfers control by calling FN (FN_DATA)
@@ -63,6 +67,27 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
       nvptx_thrs = alloca (ntids * sizeof (*nvptx_thrs));
       memset (nvptx_thrs, 0, ntids * sizeof (*nvptx_thrs));
 
+      /* Find the low-latency heap details ....  */
+      uint32_t *shared_pool;
+      uint32_t shared_pool_size;
+      asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r"(shared_pool));
+      asm ("mov.u32\t%0, %%dynamic_smem_size;\n"
+	   : "=r"(shared_pool_size));
+
+      /* ... and initialize it with an empty free-chain.  */
+      union {
+	uint32_t raw;
+	struct {
+	  uint16_t offset;
+	  uint16_t size;
+	} desc;
+      } root;
+      root.desc.offset = 0;		 /* The first byte is free.  */
+      root.desc.size = shared_pool_size; /* The whole space is free.  */
+      __nvptx_lowlat_heap_root = root.raw;
+      shared_pool[0] = 0;		 /* Terminate free chain.  */
+
+      /* Initialize the thread pool.  */
       struct gomp_thread_pool *pool = alloca (sizeof (*pool));
       pool->threads = alloca (ntids * sizeof (*pool->threads));
       for (tid = 0; tid < ntids; tid++)
