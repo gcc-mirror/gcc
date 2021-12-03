@@ -25,7 +25,6 @@
 
 with Aspects;              use Aspects;
 with Atree;                use Atree;
-with Csets;                use Csets;
 with Debug;                use Debug;
 with Einfo;                use Einfo;
 with Einfo.Entities;       use Einfo.Entities;
@@ -45,6 +44,7 @@ with Snames;               use Snames;
 with Sinput;               use Sinput;
 with Stand;                use Stand;
 with Stringt;              use Stringt;
+with System.Case_Util;     use System.Case_Util;
 with SCIL_LL;              use SCIL_LL;
 with Uintp;                use Uintp;
 with Urealp;               use Urealp;
@@ -135,9 +135,9 @@ package body Treepr is
    function From_Union is new Unchecked_Conversion (Union_Id, Uint);
    function From_Union is new Unchecked_Conversion (Union_Id, Ureal);
 
-   function Capitalize (S : String) return String;
-   procedure Capitalize (S : in out String);
-   --  Turns an identifier into Mixed_Case
+   function To_Mixed (S : String) return String;
+   --  Turns an identifier into Mixed_Case. For bootstrap reasons, we cannot
+   --  use To_Mixed function from System.Case_Util.
 
    function Image (F : Node_Or_Entity_Field) return String;
 
@@ -255,35 +255,6 @@ package body Treepr is
    --  descendants are to be printed. Prefix_Str is to be added to all
    --  printed lines.
 
-   ----------------
-   -- Capitalize --
-   ----------------
-
-   procedure Capitalize (S : in out String) is
-      Cap : Boolean := True;
-   begin
-      for J in S'Range loop
-         declare
-            Old : constant Character := S (J);
-         begin
-            if Cap then
-               S (J) := Fold_Upper (S (J));
-            else
-               S (J) := Fold_Lower (S (J));
-            end if;
-
-            Cap := Old = '_';
-         end;
-      end loop;
-   end Capitalize;
-
-   function Capitalize (S : String) return String is
-   begin
-      return Result : String (S'Range) := S do
-         Capitalize (Result);
-      end return;
-   end Capitalize;
-
    ----------
    -- Hash --
    ----------
@@ -400,7 +371,7 @@ package body Treepr is
 
          when others =>
             declare
-               Result : constant String := Capitalize (F'Img);
+               Result : constant String := To_Mixed (F'Img);
             begin
                return Result (3 .. Result'Last); -- Remove "F_"
             end;
@@ -1713,22 +1684,8 @@ package body Treepr is
    --------------------------
 
    procedure Print_Str_Mixed_Case (S : String) is
-      Ucase : Boolean;
-
    begin
-      if Phase = Printing then
-         Ucase := True;
-
-         for J in S'Range loop
-            if Ucase then
-               Write_Char (S (J));
-            else
-               Write_Char (Fold_Lower (S (J)));
-            end if;
-
-            Ucase := (S (J) = '_');
-         end loop;
-      end if;
+      Print_Str (To_Mixed (S));
    end Print_Str_Mixed_Case;
 
    ----------------
@@ -1861,6 +1818,17 @@ package body Treepr is
       Serial_Numbers.Put (Hash_Table, Hash_Id, Next_Serial_Number);
       Next_Serial_Number := Next_Serial_Number + 1;
    end Set_Serial_Number;
+
+   --------------
+   -- To_Mixed --
+   --------------
+
+   function To_Mixed (S : String) return String is
+   begin
+      return Result : String (S'Range) := S do
+         To_Mixed (Result);
+      end return;
+   end To_Mixed;
 
    ---------------
    -- Tree_Dump --
