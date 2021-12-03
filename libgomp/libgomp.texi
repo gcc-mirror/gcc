@@ -3012,9 +3012,9 @@ value.
 @item omp_const_mem_alloc       @tab omp_const_mem_space
 @item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
 @item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
-@item omp_cgroup_mem_alloc      @tab --
-@item omp_pteam_mem_alloc       @tab --
-@item omp_thread_mem_alloc      @tab --
+@item omp_cgroup_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
+@item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
+@item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
 @end multitable
 
 The predefined allocators use the default values for the traits,
@@ -3060,7 +3060,7 @@ OMP_ALLOCATOR=omp_low_lat_mem_space:pinned=true,partition=nearest
 
 @item @emph{See also}:
 @ref{Memory allocation}, @ref{omp_get_default_allocator},
-@ref{omp_set_default_allocator}
+@ref{omp_set_default_allocator}, @ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 6.21
@@ -5710,7 +5710,8 @@ For the memory spaces, the following applies:
 @itemize
 @item @code{omp_default_mem_space} is supported
 @item @code{omp_const_mem_space} maps to @code{omp_default_mem_space}
-@item @code{omp_low_lat_mem_space} maps to @code{omp_default_mem_space}
+@item @code{omp_low_lat_mem_space} is only available on supported devices,
+      and maps to @code{omp_default_mem_space} otherwise.
 @item @code{omp_large_cap_mem_space} maps to @code{omp_default_mem_space},
       unless the memkind library is available
 @item @code{omp_high_bw_mem_space} maps to @code{omp_default_mem_space},

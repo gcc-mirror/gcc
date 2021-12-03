@@ -37,6 +37,12 @@ int __gomp_team_num __attribute__((shared,nocommon));
 static void gomp_thread_start (struct gomp_thread_pool *);
 extern void build_indirect_map (void);
 
+/* There should be some .shared space reserved for us.  There's no way to
+   express this magic extern sizeless array in C so use asm.  */
+asm (".extern .shared .u8 __nvptx_lowlat_pool[];\n");
+
+/* Defined in basic-allocator.c via config/nvptx/allocator.c.  */
+void __nvptx_lowlat_init (void *heap, size_t size);
 
 /* This externally visible function handles target region entry.  It
    sets up a per-team thread pool and transfers control by calling FN (FN_DATA)
@@ -68,6 +74,18 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
       nvptx_thrs = alloca (ntids * sizeof (*nvptx_thrs));
       memset (nvptx_thrs, 0, ntids * sizeof (*nvptx_thrs));
 
+      /* Find the low-latency heap details ....  */
+      uint32_t *shared_pool;
+      uint32_t shared_pool_size = 0;
+      asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r"(shared_pool));
+#if __PTX_ISA_VERSION_MAJOR__ > 4 \
+    || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR__ >= 1)
+      asm ("mov.u32\t%0, %%dynamic_smem_size;\n"
+	   : "=r"(shared_pool_size));
+#endif
+      __nvptx_lowlat_init (shared_pool, shared_pool_size);
+
+      /* Initialize the thread pool.  */
       struct gomp_thread_pool *pool = alloca (sizeof (*pool));
       pool->threads = alloca (ntids * sizeof (*pool->threads));
       for (tid = 0; tid < ntids; tid++)
