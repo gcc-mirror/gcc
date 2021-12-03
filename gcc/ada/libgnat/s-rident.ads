@@ -145,6 +145,7 @@ package System.Rident is
       No_Standard_Storage_Pools,                 -- GNAT
       No_Stream_Optimizations,                   -- GNAT
       No_Streams,                                -- GNAT
+      No_Tagged_Type_Registration,               -- GNAT
       No_Task_Allocators,                        -- (RM D.7(7))
       No_Task_Attributes_Package,                -- GNAT
       No_Task_At_Interrupt_Priority,             -- GNAT

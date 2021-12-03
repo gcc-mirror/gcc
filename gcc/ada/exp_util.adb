@@ -12698,9 +12698,10 @@ package body Exp_Util is
               and then Is_Library_Level_Entity (Typ)
               and then Convention (Typ) = Convention_Ada
               and then Present (Access_Disp_Table (Typ))
-              and then RTE_Available (RE_Unregister_Tag)
               and then not Is_Abstract_Type (Typ)
               and then not No_Run_Time_Mode
+              and then not Restriction_Active (No_Tagged_Type_Registration)
+              and then RTE_Available (RE_Unregister_Tag)
             then
                return True;
             end if;

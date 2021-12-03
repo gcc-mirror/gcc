@@ -2622,6 +2622,15 @@ package body Sem_Attr is
             Check_Restriction (No_Exception_Registration, P);
          end if;
 
+         --  If the No_Tagged_Type_Registration restriction is active, then
+         --  class-wide streaming attributes are not allowed.
+
+         if Restriction_Check_Required (No_Tagged_Type_Registration)
+           and then Is_Class_Wide_Type (P_Type)
+         then
+            Check_Restriction (No_Tagged_Type_Registration, P);
+         end if;
+
          --  Here we must check that the first argument is an access type
          --  that is compatible with Ada.Streams.Root_Stream_Type'Class.
 

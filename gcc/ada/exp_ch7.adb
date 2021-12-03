@@ -2222,7 +2222,10 @@ package body Exp_Ch7 is
                      Last_Top_Level_Ctrl_Construct := Decl;
                   end if;
 
-               else
+               --  Unregister tagged type, unless No_Tagged_Type_Registration
+               --  is active.
+
+               elsif not Restriction_Active (No_Tagged_Type_Registration) then
                   Process_Tagged_Type_Declaration (Decl);
                end if;
 
@@ -2286,9 +2289,10 @@ package body Exp_Ch7 is
                  and then Is_Library_Level_Entity (Typ)
                  and then Convention (Typ) = Convention_Ada
                  and then Present (Access_Disp_Table (Typ))
-                 and then RTE_Available (RE_Register_Tag)
                  and then not Is_Abstract_Type (Typ)
                  and then not No_Run_Time_Mode
+                 and then not Restriction_Active (No_Tagged_Type_Registration)
+                 and then RTE_Available (RE_Register_Tag)
                then
                   Processing_Actions;
                end if;
