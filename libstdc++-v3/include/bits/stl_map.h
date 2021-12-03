@@ -154,6 +154,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       typedef __gnu_cxx::__alloc_traits<_Pair_alloc_type> _Alloc_traits;
 
+#if __cplusplus >= 201703L
+      template<typename _Up, typename _Vp = remove_reference_t<_Up>>
+	static constexpr bool __usable_key
+	  = __or_v<is_same<const _Vp, const _Key>,
+		   __and_<is_scalar<_Vp>, is_scalar<_Key>>>;
+#endif
+
     public:
       // many of these are specified differently in ISO, but the following are
       // "functionally equivalent"
@@ -574,7 +581,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename... _Args>
 	std::pair<iterator, bool>
 	emplace(_Args&&... __args)
-	{ return _M_t._M_emplace_unique(std::forward<_Args>(__args)...); }
+	{
+#if __cplusplus >= 201703L
+	  if constexpr (sizeof...(_Args) == 2)
+	    if constexpr (is_same_v<allocator_type, allocator<value_type>>)
+	      {
+		auto&& [__a, __v] = pair<_Args&...>(__args...);
+		if constexpr (__usable_key<decltype(__a)>)
+		  {
+		    const key_type& __k = __a;
+		    iterator __i = lower_bound(__k);
+		    if (__i == end() || key_comp()(__k, (*__i).first))
+		      {
+			__i = emplace_hint(__i, std::forward<_Args>(__args)...);
+			return {__i, true};
+		      }
+		    return {__i, false};
+		  }
+	      }
+#endif
+	  return _M_t._M_emplace_unique(std::forward<_Args>(__args)...);
+	}
 
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
@@ -814,7 +841,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__enable_if_t<is_constructible<value_type, _Pair>::value,
 		      pair<iterator, bool>>
 	insert(_Pair&& __x)
-	{ return _M_t._M_emplace_unique(std::forward<_Pair>(__x)); }
+	{
+#if __cplusplus >= 201703L
+	  using _P2 = remove_reference_t<_Pair>;
+	  if constexpr (__is_pair<_P2>)
+	    if constexpr (is_same_v<allocator_type, allocator<value_type>>)
+	      if constexpr (__usable_key<typename _P2::first_type>)
+		{
+		  const key_type& __k = __x.first;
+		  iterator __i = lower_bound(__k);
+		  if (__i == end() || key_comp()(__k, (*__i).first))
+		    {
+		      __i = emplace_hint(__i, std::forward<_Pair>(__x));
+		      return {__i, true};
+		    }
+		  return {__i, false};
+		}
+#endif
+	  return _M_t._M_emplace_unique(std::forward<_Pair>(__x));
+	}
 #endif
       /// @}
 
