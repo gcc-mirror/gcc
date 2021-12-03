@@ -84,6 +84,8 @@ package body Treepr is
    --  Simple Hash function for Node_Ids, List_Ids and Elist_Ids
 
    procedure Destroy (Value : in out Nat) is null;
+   pragma Annotate (CodePeer, False_Positive, "unassigned parameter",
+                    "in out parameter is required to instantiate generic");
    --  Dummy routine for destroing hashed values
 
    package Serial_Numbers is new Dynamic_Hash_Tables
