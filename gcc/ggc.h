@@ -46,6 +46,10 @@ typedef void (*gt_handle_reorder) (void *, void *, gt_pointer_operator,
 /* Used by the gt_pch_n_* routines.  Register an object in the hash table.  */
 extern int gt_pch_note_object (void *, void *, gt_note_pointers);
 
+/* Used by the gt_pch_p_* routines.  Register address of a callback
+   pointer.  */
+extern void gt_pch_note_callback (void *, void *);
+
 /* Used by the gt_pch_n_* routines.  Register that an object has a reorder
    function.  */
 extern void gt_pch_note_reorder (void *, void *, gt_handle_reorder);

@@ -1961,7 +1961,7 @@ struct GTY(()) tree_function_decl {
 struct GTY(()) tree_translation_unit_decl {
   struct tree_decl_common common;
   /* Source language of this translation unit.  Used for DWARF output.  */
-  const char * GTY((skip(""))) language;
+  const char *language;
   /* TODO: Non-optimization used to build this translation unit.  */
   /* TODO: Root of a partial DWARF tree for global types and decls.  */
 };

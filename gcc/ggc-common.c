@@ -246,6 +246,7 @@ saving_hasher::equal (const ptr_data *p1, const void *p2)
 }
 
 static hash_table<saving_hasher> *saving_htab;
+static vec<void *> callback_vec;
 
 /* Register an object in the hash table.  */
 
@@ -276,6 +277,23 @@ gt_pch_note_object (void *obj, void *note_ptr_cookie,
   else
     (*slot)->size = ggc_get_size (obj);
   return 1;
+}
+
+/* Register address of a callback pointer.  */
+void
+gt_pch_note_callback (void *obj, void *base)
+{
+  void *ptr;
+  memcpy (&ptr, obj, sizeof (void *));
+  if (ptr != NULL)
+    {
+      struct ptr_data *data
+	= (struct ptr_data *)
+	  saving_htab->find_with_hash (base, POINTER_HASH (base));
+      gcc_assert (data);
+      callback_vec.safe_push ((char *) data->new_addr
+			      + ((char *) obj - (char *) base));
+    }
 }
 
 /* Register an object in the hash table.  */
@@ -576,10 +594,20 @@ gt_pch_save (FILE *f)
   ggc_pch_finish (state.d, state.f);
   gt_pch_fixup_stringpool ();
 
+  unsigned num_callbacks = callback_vec.length ();
+  void (*pch_save) (FILE *) = &gt_pch_save;
+  if (fwrite (&pch_save, sizeof (pch_save), 1, f) != 1
+      || fwrite (&num_callbacks, sizeof (num_callbacks), 1, f) != 1
+      || (num_callbacks
+	  && fwrite (callback_vec.address (), sizeof (void *), num_callbacks,
+		     f) != num_callbacks))
+    fatal_error (input_location, "cannot write PCH file: %m");
+
   XDELETE (state.ptrs);
   XDELETE (this_object);
   delete saving_htab;
   saving_htab = NULL;
+  callback_vec.release ();
 }
 
 /* Read the state of the compiler back in from F.  */
@@ -660,6 +688,30 @@ gt_pch_restore (FILE *f)
   ggc_pch_read (f, mmi.preferred_base);
 
   gt_pch_restore_stringpool ();
+
+  void (*pch_save) (FILE *);
+  unsigned num_callbacks;
+  if (fread (&pch_save, sizeof (pch_save), 1, f) != 1
+      || fread (&num_callbacks, sizeof (num_callbacks), 1, f) != 1)
+    fatal_error (input_location, "cannot read PCH file: %m");
+  if (pch_save != &gt_pch_save)
+    {
+      uintptr_t bias = (uintptr_t) &gt_pch_save - (uintptr_t) pch_save;
+      void **ptrs = XNEWVEC (void *, num_callbacks);
+      unsigned i;
+
+      if (fread (ptrs, sizeof (void *), num_callbacks, f) != num_callbacks)
+	fatal_error (input_location, "cannot read PCH file: %m");
+      for (i = 0; i < num_callbacks; ++i)
+	{
+	  memcpy (&pch_save, ptrs[i], sizeof (pch_save));
+	  pch_save = (void (*) (FILE *)) ((uintptr_t) pch_save + bias);
+	  memcpy (ptrs[i], &pch_save, sizeof (pch_save));
+	}
+      XDELETE (ptrs);
+    }
+  else if (fseek (f, num_callbacks * sizeof (void *), SEEK_CUR) != 0)
+    fatal_error (input_location, "cannot read PCH file: %m");
 
   /* Barring corruption of the PCH file, the restored line table should be
      complete and usable.  */
