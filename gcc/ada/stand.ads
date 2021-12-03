@@ -375,9 +375,6 @@ package Stand is
    --  them the type is still Any_Type, the node has no possible interpretation
    --  and an error can be emitted (and Any_Type will be propagated upwards).
 
-   Any_Access : Entity_Id;
-   --  Used to resolve the overloaded literal NULL
-
    Any_Array : Entity_Id;
    --  Used to represent some unknown array type
 
@@ -450,6 +447,9 @@ package Stand is
    --  two fixed point numbers, and has no specified bounds (since, unlike
    --  universal integer and universal real, it is never used for runtime
    --  calculations).
+
+   Universal_Access : Entity_Id;
+   --  Entity for universal access type. It is only used for the literal null
 
    Standard_Integer_8   : Entity_Id;
    Standard_Integer_16  : Entity_Id;

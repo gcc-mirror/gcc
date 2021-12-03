@@ -915,10 +915,10 @@ package body Sem_Type is
       elsif     (T2 = Universal_Integer and then Is_Integer_Type (T1))
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
         or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
+        or else (T2 = Universal_Access  and then Is_Access_Type (T1))
         or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
         or else (T2 = Any_Character     and then Is_Character_Type (T1))
         or else (T2 = Any_String        and then Is_String_Type (T1))
-        or else (T2 = Any_Access        and then Is_Access_Type (T1))
       then
          return True;
 
@@ -1215,7 +1215,7 @@ package body Sem_Type is
                        and then Is_Access_Type (T2)
                        and then Designated_Type (T1) = Designated_Type (T2))
                    or else
-                     (T1 = Any_Access
+                     (T1 = Universal_Access
                        and then Is_Access_Type (Underlying_Type (T2)))
                    or else
                      (T2 = Any_Composite
@@ -3388,12 +3388,12 @@ package body Sem_Type is
       elsif T1 = Any_Character and then Is_Character_Type (T2) then
          return B2;
 
-      elsif T1 = Any_Access
+      elsif T1 = Universal_Access
         and then (Is_Access_Type (T2) or else Is_Remote_Access (T2))
       then
          return T2;
 
-      elsif T2 = Any_Access
+      elsif T2 = Universal_Access
         and then (Is_Access_Type (T1) or else Is_Remote_Access (T1))
       then
          return T1;
@@ -3401,7 +3401,7 @@ package body Sem_Type is
       --  In an instance, the specific type may have a private view. Use full
       --  view to check legality.
 
-      elsif T2 = Any_Access
+      elsif T2 = Universal_Access
         and then Is_Private_Type (T1)
         and then Present (Full_View (T1))
         and then Is_Access_Type (Full_View (T1))

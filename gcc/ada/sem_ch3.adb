@@ -4409,9 +4409,9 @@ package body Sem_Ch3 is
 
          --  If E is null and has been replaced by an N_Raise_Constraint_Error
          --  node (which was marked already-analyzed), we need to set the type
-         --  to something other than Any_Access in order to keep gigi happy.
+         --  to something else than Universal_Access to keep gigi happy.
 
-         if Etype (E) = Any_Access then
+         if Etype (E) = Universal_Access then
             Set_Etype (E, T);
          end if;
 

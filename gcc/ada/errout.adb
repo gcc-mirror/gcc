@@ -3622,8 +3622,7 @@ package body Errout is
          Set_Msg_Str ("exception name");
          return;
 
-      elsif     Error_Msg_Node_1 = Any_Access
-        or else Error_Msg_Node_1 = Any_Array
+      elsif Error_Msg_Node_1 = Any_Array
         or else Error_Msg_Node_1 = Any_Boolean
         or else Error_Msg_Node_1 = Any_Character
         or else Error_Msg_Node_1 = Any_Composite
@@ -3640,16 +3639,20 @@ package body Errout is
          Set_Msg_Name_Buffer;
          return;
 
-      elsif Error_Msg_Node_1 = Universal_Real then
-         Set_Msg_Str ("type universal real");
-         return;
-
       elsif Error_Msg_Node_1 = Universal_Integer then
          Set_Msg_Str ("type universal integer");
          return;
 
+      elsif Error_Msg_Node_1 = Universal_Real then
+         Set_Msg_Str ("type universal real");
+         return;
+
       elsif Error_Msg_Node_1 = Universal_Fixed then
          Set_Msg_Str ("type universal fixed");
+         return;
+
+      elsif Error_Msg_Node_1 = Universal_Access then
+         Set_Msg_Str ("type universal access");
          return;
       end if;
 

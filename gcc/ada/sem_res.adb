@@ -1774,11 +1774,11 @@ package body Sem_Res is
                   elsif Opnd_Type = Universal_Real then
                      Orig_Type := Type_In_P (Is_Real_Type'Access);
 
+                  elsif Opnd_Type = Universal_Access then
+                     Orig_Type := Type_In_P (Is_Definite_Access_Type'Access);
+
                   elsif Opnd_Type = Any_String then
                      Orig_Type := Type_In_P (Is_String_Type'Access);
-
-                  elsif Opnd_Type = Any_Access then
-                     Orig_Type := Type_In_P (Is_Definite_Access_Type'Access);
 
                   elsif Opnd_Type = Any_Composite then
                      Orig_Type := Type_In_P (Is_Composite_Type'Access);
@@ -8748,7 +8748,7 @@ package body Sem_Res is
             Set_Etype (N, Any_Type);
             return;
 
-         elsif T = Any_Access
+         elsif T = Universal_Access
            or else Ekind (T) in E_Allocator_Type | E_Access_Attribute_Type
          then
             T := Find_Unique_Access_Type;

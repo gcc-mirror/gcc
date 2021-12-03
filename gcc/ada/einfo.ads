@@ -4864,10 +4864,6 @@ package Einfo is
 --  associated with an access attribute. After resolution a specific access
 --  type will be established as determined by the context.
 
---  Finally, the type Any_Access is used to label -null- during type
---  resolution. Any_Access is also replaced by the context type after
---  resolution.
-
    --------------------------------------------------------
    -- Description of Defined Attributes for Entity_Kinds --
    --------------------------------------------------------
