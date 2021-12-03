@@ -1970,6 +1970,12 @@ package body Sem_Util is
       --  Similar to previous one, for discriminated components constrained
       --  by the discriminant of the enclosing object.
 
+      function Build_Discriminant_Reference
+        (Discrim_Name : Node_Id; Obj : Node_Id := P) return Node_Id;
+      --  Build a reference to the discriminant denoted by Discrim_Name.
+      --  The prefix of the result is usually Obj, but it could be
+      --  a prefix of Obj in some corner cases.
+
       function Copy_And_Maybe_Dereference (N : Node_Id) return Node_Id;
       --  Copy the subtree rooted at N and insert an explicit dereference if it
       --  is of an access type.
@@ -1993,11 +1999,7 @@ package body Sem_Util is
             Old_Hi := Type_High_Bound (Etype (Indx));
 
             if Denotes_Discriminant (Old_Lo) then
-               Lo :=
-                 Make_Selected_Component (Loc,
-                   Prefix => Copy_And_Maybe_Dereference (P),
-                   Selector_Name => New_Occurrence_Of (Entity (Old_Lo), Loc));
-
+               Lo := Build_Discriminant_Reference (Old_Lo);
             else
                Lo := New_Copy_Tree (Old_Lo);
 
@@ -2011,11 +2013,7 @@ package body Sem_Util is
             end if;
 
             if Denotes_Discriminant (Old_Hi) then
-               Hi :=
-                 Make_Selected_Component (Loc,
-                   Prefix => Copy_And_Maybe_Dereference (P),
-                   Selector_Name => New_Occurrence_Of (Entity (Old_Hi), Loc));
-
+               Hi := Build_Discriminant_Reference (Old_Hi);
             else
                Hi := New_Copy_Tree (Old_Hi);
                Set_Analyzed (Hi, False);
@@ -2041,10 +2039,7 @@ package body Sem_Util is
          D := First_Elmt (Discriminant_Constraint (Desig_Typ));
          while Present (D) loop
             if Denotes_Discriminant (Node (D)) then
-               D_Val := Make_Selected_Component (Loc,
-                 Prefix => Copy_And_Maybe_Dereference (P),
-                Selector_Name => New_Occurrence_Of (Entity (Node (D)), Loc));
-
+               D_Val := Build_Discriminant_Reference (Node (D));
             else
                D_Val := New_Copy_Tree (Node (D));
             end if;
@@ -2055,6 +2050,89 @@ package body Sem_Util is
 
          return Constraints;
       end Build_Actual_Record_Constraint;
+
+      ----------------------------------
+      -- Build_Discriminant_Reference --
+      ----------------------------------
+
+      function Build_Discriminant_Reference
+        (Discrim_Name : Node_Id; Obj : Node_Id := P) return Node_Id
+      is
+         Discrim : constant Entity_Id := Entity (Discrim_Name);
+
+         function Obj_Is_Good_Prefix return Boolean;
+         --  Returns True if Obj.Discrim makes sense; that is, if
+         --  Obj has Discrim as one of its discriminants (or is an
+         --  access value that designates such an object).
+
+         ------------------------
+         -- Obj_Is_Good_Prefix --
+         ------------------------
+
+         function Obj_Is_Good_Prefix return Boolean is
+            Obj_Type           : Entity_Id :=
+              Implementation_Base_Type (Etype (Obj));
+
+            Discriminated_Type : constant Entity_Id :=
+              Implementation_Base_Type
+                (Scope (Original_Record_Component (Discrim)));
+         begin
+            --  The order of the following two tests matters in the
+            --  access-to-class-wide case.
+
+            if Is_Access_Type (Obj_Type) then
+               Obj_Type := Implementation_Base_Type
+                             (Designated_Type (Obj_Type));
+            end if;
+
+            if Is_Class_Wide_Type (Obj_Type) then
+               Obj_Type := Implementation_Base_Type
+                             (Find_Specific_Type (Obj_Type));
+            end if;
+
+            --  If a type T1 defines a discriminant D1, then Obj.D1 is ok (for
+            --  our purposes here) if T1 is an ancestor of the type of Obj.
+            --  So that's what we would like to test for here.
+            --  The bad news: Is_Ancestor is only defined in the tagged case.
+            --  The good news: in the untagged case, Implementation_Base_Type
+            --  looks through derived types so we can use a simpler test.
+
+            if Is_Tagged_Type (Discriminated_Type) then
+               return Is_Ancestor (Discriminated_Type, Obj_Type);
+            else
+               return Discriminated_Type = Obj_Type;
+            end if;
+         end Obj_Is_Good_Prefix;
+
+      --  Start of processing for Build_Discriminant_Reference
+
+      begin
+         if Obj_Is_Good_Prefix then
+            return Make_Selected_Component (Loc,
+                     Prefix => Copy_And_Maybe_Dereference (Obj),
+                     Selector_Name => New_Occurrence_Of (Discrim, Loc));
+         else
+            --  If the given discriminant is not a component of the given
+            --  object, then try the enclosing object.
+
+            if Nkind (Obj) = N_Selected_Component then
+               return Build_Discriminant_Reference
+                        (Discrim_Name => Discrim_Name,
+                         Obj          => Prefix (Obj));
+            elsif Nkind (Obj) in N_Has_Entity
+              and then Nkind (Parent (Entity (Obj))) =
+                       N_Object_Renaming_Declaration
+            then
+               --  Look through a renaming (a corner case of a corner case).
+               return Build_Discriminant_Reference
+                        (Discrim_Name => Discrim_Name,
+                         Obj          => Name (Parent (Entity (Obj))));
+            else
+               pragma Assert (False);
+               raise Program_Error;
+            end if;
+         end if;
+      end Build_Discriminant_Reference;
 
       ------------------------------------
       -- Build_Access_Record_Constraint --
