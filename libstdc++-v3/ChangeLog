@@ -1,3 +1,31 @@
+2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULY_DYNAMIC_STRING]
+	(logic_error, runtime_error): Remove custom definitions.
+
+2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103340
+	PR libstdc++/103400
+	PR libstdc++/103381
+	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Remove mt, bitmap
+	and pool options.
+	* configure: Regenerate.
+	* config/allocator/bitmap_allocator_base.h: Removed.
+	* config/allocator/mt_allocator_base.h: Removed.
+	* config/allocator/pool_allocator_base.h: Removed.
+	* doc/xml/manual/allocator.xml: Update.
+	* doc/xml/manual/configure.xml: Update.
+	* doc/xml/manual/evolution.xml: Document removal.
+	* doc/xml/manual/mt_allocator.xml: Editorial tweaks.
+	* doc/html/manual/*: Regenerate.
+
+2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string::_M_is_leaked()):
+	Revert change to check __is_single_threaded() before using
+	atomic load.
+
 2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103501

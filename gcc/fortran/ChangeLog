@@ -1,3 +1,11 @@
+2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/90030
+	* trans-openmp.c (gfc_omp_finish_clause): Remove fold_convert to pointer
+	to char_type_node, add gcc_assert of POINTER_TYPE_P.
+	(gfc_trans_omp_array_section): Likewise.
+	(gfc_trans_omp_clauses): Likewise.
+
 2021-11-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102787

@@ -1,3 +1,110 @@
+2021-12-02  Ilya Lipnitskiy  <ilya.lipnitskiy@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac: Define TARGET_LIBC_GNUSTACK on musl.
+
+2021-12-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/55610
+	* config/host-darwin.c (TRY_EMPTY_VM_SPACE,
+	SAFE_ALLOC_SIZE): New.
+	(darwin_gt_pch_get_address): Rewrite to use nominated
+	memory segments rather than part of the compiler __DATA
+	segment.
+	(darwin_gt_pch_use_address): Likewise.
+
+2021-12-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (*-*-freebsd*): Remove references to
+	FreeBSD 1 and FreeBSD 2.
+
+2021-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/103437
+	* ira-color.c (setup_allocno_priorities): Switch off backup code
+	for overflow if compiler has __builtin_smul_overflow.  Use <
+	for comparison with -INT_MAX.
+
+2021-12-02  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/altivec.h: Delete a number of #defines that are	now
+	superfluous.  Alphabetize.  Include rs6000-vecdefines.h.  Include some
+	synonyms.
+	* config/rs6000/rs6000-builtin-new.def (CMPB): Flag as no32bit.
+	(BPERMD): Flag as 32bit (needing special handling for 32-bit).
+	(UNPACK_TD): Return unsigned long long instead of unsigned long.
+	(GET_TEXASR): Return unsigned long instead of unsigned long long.
+	(GET_TEXASRU): Likewise.
+	(GET_TFHAR): Likewise.
+	(GET_TFIAR): Likewise.
+	(SET_TEXASR): Pass unsigned long instead of unsigned long long.
+	(SET_TEXASRU): Likewise.
+	(SET_TFHAR): Likewise.
+	(SET_TFIAR): Likewise.
+	(TABORTDC): Likewise.
+	(TABORTDCI): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_expand_new_builtin): Fix error
+	handling for no32bit.  Add 32bit handling for RS6000_BIF_BPERMD.
+	* config/rs6000/rs6000-gen-builtins.c (write_init_file): Initialize
+	new_builtins_are_live to 1.
+
+2021-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/103437
+	* ira-color.c (setup_allocno_priorities): Use long long
+	multiplication as backup for overflow processing.
+
+2021-12-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_gen_shareable_zero): New.
+	* config/aarch64/aarch64-simd.md (aarch64_rshrn<mode>,
+	aarch64_rshrn2<mode>): Generate rounding half-ing add when appropriate.
+	* config/aarch64/aarch64.c (aarch64_gen_shareable_zero): New.
+
+2021-12-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/103437
+	* ira-color.c (setup_allocno_priorities): Process multiplication
+	overflow.
+
+2021-12-02  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/96092
+	* common.opt: New option.
+	* coverage.c (coverage_begin_function): Emit filename with
+	remap_profile_filename.
+	* doc/invoke.texi: Document the new option.
+	* file-prefix-map.c (add_profile_prefix_map): New.
+	(remap_profile_filename): Likewise.
+	* file-prefix-map.h (add_profile_prefix_map): Likewise.
+	(remap_profile_filename): Likewise.
+	* lto-opts.c (lto_write_options): Handle
+	OPT_fprofile_prefix_map_.
+	* opts-global.c (handle_common_deferred_options): Likewise.
+	* opts.c (common_handle_option): Likewise.
+	(gen_command_line_string): Likewise.
+	* profile.c (output_location): Emit filename with
+	remap_profile_filename.
+
+2021-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/103271
+	* internal-fn.c (expand_DEFERRED_INIT): When the base
+	of the LHS is a decl with matching constant size use
+	that as the initialization target instead of an
+	eventual VLA typed one.
+
+2021-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103527
+	* tree-vect-stmts.c (vect_build_gather_load_calls): Always
+	use a truth type for building the vector mask.
+
+2021-12-02  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxworks.h (LTO_PLUGIN_SPEC): Adapt to corrected
+	spelling of -linker-output-auto-nolto-rel.
+
 2021-12-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/102811

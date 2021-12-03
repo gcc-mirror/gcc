@@ -1,3 +1,86 @@
+2021-12-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103526
+	* gcc.dg/analyzer/pr103526.c: New test.
+
+2021-12-02  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/bfp/scalar-extract-exp-2.c: Adjust expected error
+	message.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-8.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-test-neg-5.c: Likewise.
+	* gcc.target/powerpc/byte-in-set-2.c: Likewise.
+	* gcc.target/powerpc/cmpb-2.c: Likewise.
+	* gcc.target/powerpc/cmpb-3.c: Likewise.
+	* gcc.target/powerpc/cmpb32-2.c: Likewise.
+	* gcc.target/powerpc/crypto-builtin-2.c: Likewise.
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: Remove invalid
+	test and adjust xxpermdi count.
+	* gcc.target/powerpc/fold-vec-splat-longlong.c: Remove invalid
+	tests and adjust instruction counts.
+	* gcc.target/powerpc/fold-vec-splat-misc-invalid.c: Adjust expected
+	error messages.
+	* gcc.target/powerpc/int_128bit-runnable.c: Adjust instruction counts.
+	* gcc.target/powerpc/pr80315-1.c: Adjust expected error message.
+	* gcc.target/powerpc/pr80315-2.c: Likewise.
+	* gcc.target/powerpc/pr80315-3.c: Likewise.
+	* gcc.target/powerpc/pr80315-4.c: Likewise.
+	* gcc.target/powerpc/pr88100.c: Likewise.
+	* gcc.target/powerpc/pragma_misc9.c: Likewise.
+	* gcc.target/powerpc/pragma_power8.c: Undef _RS6000_VECDEFINES_H.
+	* gcc.target/powerpc/pragma_power9.c: Likewise.
+	* gcc.target/powerpc/test_fpscr_drn_builtin_error.c: Adjust expected
+	error messages.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_error.c: Likewise.
+	* gcc.target/powerpc/vec-gnb-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cmpnez-7.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cntlz-lsbb-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-cnttz-lsbb-2.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-13.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-12.c: Likewise.
+
+2021-12-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-1.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-2.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-3.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-4.c: New test.
+
+2021-12-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/103479
+	* gcc.dg/bic-bitmask-18.c: Update regexpr to expect = 0;.
+
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94490
+	* g++.dg/ext/integer-pack5.C: New test.
+
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103408
+	* g++.dg/cpp23/concepts-err1.C: New test.
+
+2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/90030
+	* gfortran.dg/goacc/finalize-1.f: Adjust scan test.
+	* gfortran.dg/gomp/affinity-clause-1.f90: Likewise.
+	* gfortran.dg/gomp/affinity-clause-5.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-4.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-5.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-6.f90: Likewise.
+	* gfortran.dg/gomp/map-3.f90: Likewise.
+	* gfortran.dg/gomp/pr78260-2.f90: Likewise.
+	* gfortran.dg/gomp/pr78260-3.f90: Likewise.
+
 2021-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102471

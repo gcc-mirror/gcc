@@ -1,3 +1,492 @@
+2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in (ADA_GENERATED_FILES): Add warning.
+
+2021-12-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/a-assert.ads, gcc-interface/a-assert.adb: Remove.
+
+2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not back-annotate a
+	maximum size for the Esize of limited record and concurrent types.
+
+2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (aggregate_type_contains_array_p): Delete.
+	(type_has_variable_size): Declare.
+	* gcc-interface/decl.c (adjust_packed): Return 0 only if the field
+	type is an array with variable size.
+	* gcc-interface/utils.c (aggregate_type_contains_array_p): Make
+	static and remove SELF_REFERENTIAL parameter.
+	(type_has_variable_size): Make public.
+	(create_field_decl): Adjust call to aggregate_type_contains_array_p.
+
+2021-12-02  Justin Squirek  <squirek@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Skip normal
+	processing for Itypes that are E_Class_Wide_Subtype with
+	Equivalent_Type set.
+
+2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Rename GNAT_NAME variable
+	into GNAT_SUBPROG to avoid later shadowing.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-arit32.adb: Add ghost instances and lemmas.
+	(Scaled_Divide32): Add ghost code to prove. Minor code
+	modification to return early in error when divisor is zero.
+	* libgnat/s-arit32.ads: Add ghost instances and utilities.
+	(Scaled_Divide32): Add contract.
+
+2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sprint.adb (Source_Dump): Set both Print_Generated_Code and
+	Debug_Generated_Code to False at the end.
+
+2021-12-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Filter out nodes not
+	coming from source before emitting the warning.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Log_Single_Size, Big_0): New ghost
+	constants.
+	(Lemma_Mult_Non_Negative, Lemma_Mult_Non_Positive,
+	Lemma_Not_In_Range_Big2xx64): New lemmas on big integers.
+	(Double_Divide): Remove justifications. Amend for that local
+	lemma Prove_Overflow_Case.
+	(Scaled_Divide): Remove justifications. Insert for that local
+	lemmas Prove_Negative_Dividend, Prove_Positive_Dividend and
+	Prove_Q_Too_Big, and amend local lemma Prove_Overflow.  To prove
+	the loop invariant on (Shift mod 2 = 0), introduce local ghost
+	variable Iter to count loop iterations, and relate its value to
+	the value of Shift through Log_Single_Size, with the help of
+	local lemma Prove_Power. Deal with proof regression by adding
+	new local lemma Prove_First_Iteration and local ghost variable
+	D123.
+	* libgnat/s-arit64.ads (Multiply_With_Ovflo_Check64): Remove
+	unnecessary Pure_Function on function as package is Pure.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-widthi.adb: Add pragma Annotate.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-widint.ads: Mark in SPARK.
+	* libgnat/s-widlli.ads: Likewise.
+	* libgnat/s-widllli.ads: Likewise.
+	* libgnat/s-widlllu.ads: Likewise.
+	* libgnat/s-widllu.ads: Disable ghost/contract.
+	* libgnat/s-widthi.adb: Replicate and adapt the proof from
+	s-widthu.adb.
+	* libgnat/s-widthi.ads: Add minimal postcondition.
+	* libgnat/s-widthu.adb: Fix comments in the modular case.
+	* libgnat/s-widthu.ads: Add minimal postcondition.
+	* libgnat/s-widuns.ads: Disable ghost/contract.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* rtsfind.ads (RE_Id, RE_Unit_Table): Add RE_Suspension_Object.
+	* sem_util.adb (Is_Descendant_Of_Suspension_Object): Use Is_RTE.
+	(Is_Suspension_Object): Remove body.
+	* sem_util.ads (Is_Suspension_Object): Remove spec.
+	* snames.ads-tmpl (Name_Suspension_Object): Remove, now
+	unreferenced.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Append_Freeze_Action): Tune whitespace to make
+	the code look similar to Append_Freeze_Actions, which takes a
+	List_Id.
+	* sem_ch6.adb (Analyze_Return_Type): Cleanup with
+	Append_Freeze_Action.
+	* exp_ch3.adb (Build_Access_Subprogram_Wrapper_Body): Likewise.
+	* sem_ch3.adb (Build_Access_Subprogram_Wrapper): Likewise.
+	* contracts.adb (Add_Indirect_Call_Wrapper): Remove extra call
+	to Ensure_Freeze_Node.
+	(Add_Call_Helper): Likewise.
+	* freeze.adb (Check_Inherited_Conditions): Likewise.
+	(Attribute_Renaming): Likewise.
+	* sem_ch8.adb: Likewise.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst
+	(No_Dispatching_Calls): Fix whitespace in example code.
+	* gnat_rm.texi: Regenerate.
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Replace low-level
+	membership test with a high-level wrapper.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Remove unnecessary
+	initialization of list of wrapper declarations and unnecessary
+	guard for list of their bodies (if no bodies are created then
+	Append_Freeze_Actions is a no-op).
+
+2021-12-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_imgv.adb (Append_Table_To): Add new parameter to
+	Make_Aggregate call.
+	* gen_il-fields.ads (Opt_Field_Enum):
+	Add Is_Parenthesis_Aggregate and Is_Enum_Array_Aggregate.
+	* gen_il-gen-gen_nodes.adb (Union): Add Is_Enum_Array_Aggregate
+	and Is_Parenthesis_Aggregate field to N_Aggregate.
+	* libgnarl/s-interr.adb (User_Handler, User_Entry, Blocked)
+	(Ignored, Last_Unblocker, Server_ID): Likewise.
+	* libgnarl/s-intman.ads (Keep_Unmasked, Reserve): Likewise.
+	* libgnarl/s-intman__posix.adb (Exception_Interrupts)
+	(Initialize): Likewise.
+	* libgnarl/s-mudido__affinity.adb (Create): Likewise.
+	* libgnarl/s-osinte__linux.ads (Unmasked, Reserved): Likewise.
+	* libgnarl/s-taprop__linux.adb (Create_Task, Set_Task_Affinity)
+	* libgnarl/s-tasdeb.adb (Trace_On): Likewise.
+	* libgnarl/s-tasdeb.ads (Known_Tasks): Likewise.
+	* libgnarl/s-tasinf__linux.ads (Any_CPU, No_CPU): Likewise.
+	* libgnarl/s-taskin.adb (Initialize_ATCB): Likewise.
+	* libgnarl/s-taskin.ads (Ada_Task_Control_Block): Likewise.
+	* libgnarl/s-tasren.adb (Default_Treatment)
+	(New_State): Likewise.
+	* libgnarl/s-tassta.adb (Trace_Unhandled_Exception_In_Task):
+	Likewise.
+	* libgnarl/s-tataat.adb (Index_Array): Likewise.
+	* libgnarl/s-tpobop.adb (New_State): Likewise.
+	* libgnat/a-calend.adb (Cumulative_Days_Before_Month)
+	(Leap_Second_Times): Likewise.
+	* libgnat/a-calend.ads (Days_In_Month): Likewise.
+	* libgnat/a-cfinve.adb (Insert): Likewise.
+	* libgnat/a-chahan.adb (Char_Map): Likewise.
+	* libgnat/a-chtgbo.adb (Clear): Likewise.
+	* libgnat/a-cobove.adb ("&", Insert, To_Vector): Likewise.
+	* libgnat/a-cofove.adb (Insert, To_Vector): Likewise.
+	* libgnat/a-cohata.ads (Hash_Table_Type): Likewise.
+	* libgnat/a-coinve.adb (Merge, Insert, Insert_Space): Likewise.
+	* libgnat/a-convec.adb (Insert, To_Vector): Likewise.
+	* libgnat/a-coprnu.ads (Primes): Likewise.
+	* libgnat/a-direct.adb (Empty_String): Use regular "" instead
+	of aggregate.
+	(Start_Search_Internal, Name_Case_Equivalence, Search)
+	(Start_Search, Start_Search_Internal): Use bracket for
+	aggregate.
+	* libgnat/a-direct.ads (Start_Search,Search): Likewise.
+	* libgnat/a-direio.adb (Zeroes): Likewise.
+	* libgnat/a-nbnbre.adb (Leading_Padding, Trailing_Padding)
+	(Numerator_Image): Likewise.
+	* libgnat/a-ngrear.adb (Jacobi): Likewise.
+	* libgnat/a-stbubo.adb (Get_UTF_8): Likewise.
+	* libgnat/a-stbufo.adb (Put): Likewise.
+	* libgnat/a-stbuun.adb (Get_UTF_8): Likewise.
+	* libgnat/a-stbuut.adb (Put_7bit, Put_Character)
+	(Put_Wide_Character, Put_Wide_Wide_Character): Likewise.
+	* libgnat/a-stmaco.ads (Control_Set,Graphic_Set,Letter_Set)
+	(Lower_Set, Upper_Set, Basic_Set, Decimal_Digit_Set)
+	(Hexadecimal_Digit_Set, Alphanumeric_Set, Special_Set)
+	(ISO_646_Set): Likewise.
+	* libgnat/a-strbou.ads (Insert, Tail, "*", Replicate)
+	(Null_Bounded_String): Likewise.
+	* libgnat/a-strfix.ads (Head, Tail): Likewise.
+	* libgnat/a-strmap.adb (To_Domain, Lemma_Is_Sorted): Likewise.
+	* libgnat/a-strmap.ads (Null_Set): Likewise.
+	* libgnat/a-strsup.adb (Super_Head, Super_Replicate)
+	(Super_Tail): Likewise.
+	* libgnat/a-strsup.ads (Super_Head, Super_Tail, Times)
+	(Super_Replicate): Likewise.
+	* libgnat/a-sttebu.adb (Put_UTF8, Wide_Put_UTF_16): Likewise.
+	* libgnat/a-stuten.ads (BOM_16): Likewise.
+	* libgnat/a-stwibo.ads (Null_Bounded_Wide_String): Likewise.
+	* libgnat/a-stwima.ads (Null_Range): Likewise.
+	* libgnat/a-stwisu.adb (Super_Head, Super_Replicate)
+	(Super_Tail): Likewise.
+	* libgnat/a-stzbou.ads
+	(Null_Bounded_Wide_Wide_String): Likewise.
+	* libgnat/a-stzmap.ads (Null_Range): Likewise.
+	* libgnat/a-stzsup.adb (Super_Head, Super_Replicate)
+	(Super_Tail, Super_Trim): Likewise.
+	* libgnat/a-swmwco.ads (Control_Ranges, Graphic_Ranges)
+	(Letter_Ranges, Lower_Ranges, Upeer_Ranges, Basic_Ranges)
+	(Decimal_Digit_Ranges, Hexadecimal_Digit_Ranges)
+	(Alphanumeric_Ranges, Special_Graphic_Ranges, ISO_646_Ranges)
+	(Character_Ranges, Lower_Case_Mapping, Upper_Case_Mapping)
+	(Basic_Mapping): Likewise.
+	* libgnat/a-szmzco.ads (Control_Ranges, Graphic_Ranges)
+	(Letter_Ranges, Lower_Ranges, Upeer_Ranges, Basic_Ranges)
+	(Decimal_Digit_Ranges, Hexadecimal_Digit_Ranges)
+	(Alphanumeric_Ranges, Special_Graphic_Ranges, ISO_646_Ranges)
+	(Character_Ranges, Lower_Case_Mapping, Upper_Case_Mapping)
+	(Basic_Mapping): Likewise.
+	* libgnat/a-teioed.adb (Format_Number): Likewise.
+	* libgnat/a-wtedit.adb (Format_Number): Likewise.
+	* libgnat/a-ztedit.adb (Format_Number): Likewise.
+	* libgnat/g-arrspl.adb (Separators): Likewise.
+	* libgnat/g-catiio.adb (Month_Name_To_Number): Likewise.
+	* libgnat/g-cgideb.adb (NL, Title): Likewise.
+	* libgnat/g-comlin.adb (Internal_Initialize_Option_Scan)
+	(Display_Section_Help): Likewise.
+	* libgnat/g-comlin.ads (Opt_Parser_Data): Likewise.
+	* libgnat/g-debpoo.adb (Set_Dead_Beef, Dump): Likewise.
+	* libgnat/g-expect.adb (Expect, Has_Process, Send): Likewise.
+	* libgnat/g-forstr.adb ("+", Get_Formatted): Likewise.
+	* libgnat/g-memdum.adb (Dump): Likewise.
+	* libgnat/g-rannum.adb (Image): Likewise.
+	* libgnat/g-sechas.adb (Final, HMAC_Initial_Context): Likewise.
+	* libgnat/g-sehamd.ads (Initial_State): Likewise.
+	* libgnat/g-sehash.ads (Initial_State): Likewise.
+	* libgnat/g-sercom.ads (Data_Rate_Value): Likewise.
+	* libgnat/g-sercom__linux.adb (C_Data_Rate, C_Bits, C_Stop_Bits)
+	(C_Parity): Likewise.
+	* libgnat/g-shsh32.ads (K, Transform): Likewise.
+	* libgnat/g-shsh64.ads (K, Transform): Likewise.
+	* libgnat/g-socket.adb (Levels, Modes, Shutmodes, Requests)
+	(Options, Flags, Get_Name_Info, Image): Likewise.
+	* libgnat/g-socket.ads (Inet_Addr_Bytes_Length, Inet_Addr_Type)
+	(IPv4_To_IPv6_Prefix, Any_Inet_Addr, Any_Inet6_Addr)
+	(No_Inet_Addr, Broadcast_Inet_Addr, Loopback_Inet_Addr)
+	(Loopback_Inet6_Addr, Unspecified_Group_Inet_Addr)
+	(All_Hosts_Group_Inet_Addr, All_Routers_Group_Inet_Addr)
+	(Unspecified_Group_Inet6_Addr, All_Hosts_Group_Inet6_Addr)
+	(All_Routers_Group_Inet6_Addr):	Likewise.
+	* libgnat/g-socpol.adb (To_C, Status, Get_Events): Likewise.
+	* libgnat/g-socpol.ads (Input_Event, Output_Event, Both_Event)
+	(Error_Event): Likewise.
+	* libgnat/g-sothco.ads (Families, Lengths, Sockaddr): Likewise.
+	* libgnat/g-spipat.adb (OK_For_Simple_Arbno): Likewise.
+	* libgnat/i-cobol.ads (Ada_To_COBOL, COBOL_To_Ada): Likewise.
+	* libgnat/i-pacdec.adb (Packed_Byte): Likewise.
+	* libgnat/i-pacdec.ads (Packed_Size): Likewise.
+	* libgnat/s-bitops.adb (Masks): Likewise.
+	* libgnat/s-crc32.adb (Table): Likewise.
+	* libgnat/s-gearop.adb (Unit_Matrix, Unit_Vector): Likewise.
+	* libgnat/s-genbig.adb (Out_data, Zero_Data, Big_Exp, Big_Mul)
+	(To_Bignum, To_String, Image, Leading_Padding): Likewise.
+	* libgnat/s-htable.adb (Reset): Likewise.
+	* libgnat/s-imgcha.adb (C0, C1): Likewise.
+	* libgnat/s-powflt.ads (Powten): Likewise.
+	* libgnat/s-powlfl.ads (Powten): Likewise.
+	* libgnat/s-powllf.ads (Powten): Likewise.
+	* libgnat/s-rannum.adb (Matrix_A, Random_Float_Template, Image):
+	Likewise.
+	* libgnat/s-rannum.ads (Generator): Likewise.
+	* libgnat/s-regexp.adb (Compile,Create_Primary_Table)
+	(Create_Primary_Table_Glob, Create_Secondary_Table, Compile):
+	Likewise.
+	* libgnat/s-regpat.adb (Bit_Conversion, Set, Dump_Until)
+	(Dump_Current, Dump_Error, Try, Reset_Class): Likewise.
+	* libgnat/s-regpat.ads (Pattern_Matcher, Never_Match): Likewise.
+	* libgnat/s-scaval__128.adb (Initialize): Likewise.
+	* libgnat/s-statxd.adb (Fields, W_F, W_LF)
+	(W_LLF, W_SF): Likewise.
+	* libgnat/s-stausa.adb (Initialize, Initialize_Analyzer)
+	(Output_Results): Likewise.
+	* libgnat/s-strops.adb (Str_Concat_SC): Likewise.
+	* libgnat/s-valrea.adb (Maxexp32, Maxexp64, Maxexp80): Likewise.
+	* libgnat/s-wchcon.ads (WC_Encoding_Letters)
+	(WC_Longest_Sequences): Likewise.
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Set
+	Is_Parenthesis_Aggregate when creating a N_Aggregate using
+	parenthesis.
+	* scng.adb (Scan): Lower version needed for bracket syntax from
+	Extensions to Ada2022.
+	* sem_aggr.adb (Resolve_Aggregate): Raise error for container
+	aggregate using parenthesis instead of bracket.
+	(Resolve_Array_Aggregate): Raise warning for aggregate using
+	parenthesis in Ada2022 with obsolescent warning enabled and not
+	in GNAT mode.
+	* sem_util.ads (Check_Ambiguous_Aggregate): Typo fix in comment.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/a-taside.ads (Activation_Is_Complete): Add pragma
+	Inline.
+
+2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Freeze_Package_Instance): Consistently consider
+	the freeze node of the parent and use large inequality for
+	Slocs.
+	(Freeze_Subprogram_Instance): Likewise.
+	(Insert_Freeze_Node_For_Instance): For an instance in a package
+	spec with no source body that immediately follows, consider the
+	body of the package for the placement of the freeze node and go
+	to the outer level if there is no such body.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch13.ads (Expand_N_Freeze_Entity): Add note about a SPARK
+	twin.
+	* exp_ch3.ads (Freeze_Type): Likewise.
+	* exp_spark.adb (Expand_SPARK_N_Freeze_Entity): Mimic what is
+	done in Freeze_Entity.
+	(SPARK_Freeze_Type): Mimic what is done in Freeze_Type; add call
+	to Make_Predefined_Primitive_Eq_Spec.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Move code for
+	spec of dispatching equality.
+	(Predefined_Primitive_Bodies): Move code for body if dispatching
+	equality.
+	(Make_Predefined_Primitive_Eq_Spec): Separated code for spec of
+	dispatching equality.
+	(Predefined_Primitive_Eq_Body): Separated code for body of
+	dispatching equality.
+	* exp_ch3.ads: Update.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/s-valuti.ads (Scan_Natural_Ghost): Split body from
+	spec and put it into private part, so that GNATprove can pick it
+	both when analysing the unit and its clients.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.adb, exp_ch6.adb, par-ch4.adb, sem_ch13.adb: Remove
+	extra space after ":=" symbol.
+	* gen_il-gen.adb: Likewise; add missing headerbox.
+
+2021-12-02  Richard Kenner  <kenner@adacore.com>
+
+	* rtsfind.adb (Maybe_Add_With): Ensure that the added "with" is
+	never marked as ignored ghost code.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Replace First_Entity/Next_Entity
+	with First_Component/Next_Component; remove condition with Ekind
+	equal to E_Component.
+	* sem_ch13.adb (Check_Record_Representation_Clause): Likewise
+	for component-or-discriminant.
+	* sem_util.adb (Is_Fully_Initialized_Type): Likewise; rename Ent
+	to a more specific Comp.
+	* sem_warn.adb (Check_References): Likewise.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unassigned_Out_Parameter): Move inner
+	loop at the beginning of subprogram, so it is executed only
+	once; fix order in the "add an ad hoc" phrase.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_warn.adb (Check_References): Remove redundant condition.
+
+2021-12-02  Doug Rupp  <rupp@adacore.com>
+
+	* vxworks7-cert-rtp-link__ppcXX.spec: New file.
+	* Makefile.rtl: Use it.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/i-c.adb: Add ghost code.
+	(C_Length_Ghost): New ghost functions to query the C length of a
+	string.
+	(To_Ada): Insert constant Count_Cst where needed to comply with
+	SPARK.  Homogeneize code between variants for char, wchar_t,
+	char16_t and char32_t. Use char16_nul and char32_nul
+	systematically instead of their value. Fix the type of index To
+	to be Integer instead of Positive, to avoid a possible range
+	check failure on an empty Target. Insert an exit statement to
+	avoid a possible overflow failure when the last index in Target
+	is Natural'Last (possibly on a small string as well).
+	* libgnat/i-c.ads: Add contracts.
+	(C_Length_Ghost): New ghost functions to query the C length of a
+	string.
+	* libgnat/s-os_lib.adb: Remove pragma Compiler_Unit_Warning
+	causing a spurious error during compilation of GNAT, as this
+	pragma is not needed anymore now that we bootstrap (stage1) with
+	the base compiler runtime.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnarl/a-taside.ads (Activation_Is_Complete): Add
+	precondition.
+
+2021-12-02  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Check_Derived_Type): Rename local variables; fix
+	style in comment.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-valboo.adb (First_Non_Space_Ghost): Move to
+	utilities.
+	(Value_Boolean): Prefix call to First_Non_Space_Ghost.
+	* libgnat/s-valboo.ads (First_Non_Space_Ghost): Move to
+	utilities.
+	(Is_Boolean_Image_Ghost, Value_Boolean): Prefix call to
+	First_Non_Space_Ghost.
+	* libgnat/s-valuer.adb (Scan_Raw_Real): Adapt to change of
+	function Scan_Exponent to procedure.
+	* libgnat/s-valueu.adb (Scan_Raw_Unsigned): Adapt to change of
+	function Scan_Exponent to procedure.
+	* libgnat/s-valuti.adb (First_Non_Space_Ghost): Function moved
+	here.
+	(Last_Number_Ghost): New ghost query function.
+	(Scan_Exponent): Change function with side-effects into
+	procedure, to mark in SPARK. Prove procedure wrt contract.
+	Change type of local P to avoid possible range check failure (it
+	is not known whether this can be activated by callers).
+	(Scan_Plus_Sign, Scan_Sign): Change type of local P to avoid
+	possible range check failure. Add loop invariants and assertions
+	for proof.
+	(Scan_Trailing_Blanks): Add loop invariant.
+	(Scan_Underscore): Remove SPARK_Mode Off.
+	* libgnat/s-valuti.ads (First_Non_Space_Ghost): Function moved
+	here.
+	(Last_Number_Ghost, Only_Number_Ghost, Is_Natural_Format_Ghost,
+	Scan_Natural_Ghost): New ghost query functions.
+	(Scan_Plus_Sign, Scan_Sign, Scan_Exponent, Scan_Trailing_Blanks,
+	Scan_Underscore): Add functional contracts.
+
+2021-12-02  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-imgboo.adb: Mark in SPARK.
+	* libgnat/s-imgboo.ads: Mark in SPARK. Change from Pure to
+	Preelaborate unit in order to be able to depend on
+	System.Val_Bool.
+	(Image_Boolean): Functionally specify the result of the
+	procedure by calling System.Val_Bool.Value_Boolean on the
+	result.
+	* libgnat/s-valboo.adb: Mark in SPARK.
+	(First_Non_Space_Ghost): New ghost function.
+	(Value_Boolean): Change type of L and F to avoid possible range
+	check failure on empty Str.
+	* libgnat/s-valboo.ads: Mark in SPARK. Duplicate with-clause
+	from body in the spec to be able to call
+	System.Val_Util.Only_Space_Ghost in the contract.
+	(First_Non_Space_Ghost): New ghost function computing the first
+	non-space character in a string.
+	(Is_Boolean_Image_Ghost): New ghost function computing whether a
+	string is the image of a boolean value.
+	(Value_Boolean): Add in precondition the conditions to avoid
+	raising Constraint_Error. This precondition is never executed,
+	and only used in proof, thanks to the use of pragma
+	Assertion_Policy. Given that precondition, the postcondition can
+	simply check the first non-space character to decide whether
+	True or False is read.
+	* libgnat/s-valuti.adb: Mark in SPARK, but use SPARK_Mode Off on
+	all subprograms not yet proved.
+	(Bad_Value): Annotate expected exception.
+	(Normalize_String): Rewrite to avoid possible overflow when
+	incrementing F in the first loop. Add loop invariants.
+	* libgnat/s-valuti.ads: Mark in SPARK.
+	(Bad_Value): Add Depends contract to avoid warning on unused S.
+	(Only_Space_Ghost): New ghost function to query if string has
+	only space in the specified range.
+	(Normalize_String): Add functional contract.
+	(Scan_Exponent): Mark spec as not in SPARK as this function has
+	side-effects.
+
+2021-12-02  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-socket.ads (Max_Name_Length): Initialize with
+	NI_MAXHOST.
+
+2021-12-02  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/g-socket.ads: Minor style fix.
+
 2021-12-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (E_Decimal_Fixed_Point_Subtype): Fix pasto.
