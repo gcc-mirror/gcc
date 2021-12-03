@@ -217,7 +217,8 @@ public:
     }
 
   /* Call the call back on each pair of key and value with the passed in
-     arg.  */
+     arg until either the call back returns false or all pairs have been seen.
+     The traversal is unordered.  */
 
   template<typename Arg, bool (*f)(const typename Traits::key_type &,
 				   const Value &, Arg)>
@@ -225,7 +226,8 @@ public:
     {
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
 	   iter != m_table.end (); ++iter)
-	f ((*iter).m_key, (*iter).m_value, a);
+	if (!f ((*iter).m_key, (*iter).m_value, a))
+	  break;
     }
 
   template<typename Arg, bool (*f)(const typename Traits::key_type &,
