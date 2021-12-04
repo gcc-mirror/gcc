@@ -260,8 +260,13 @@ inline tree compute_objsize (tree ptr, int ostype, access_ref *pref)
 }
 
 /* Legacy/transitional API.  Should not be used in new code.  */
-extern tree compute_objsize (tree, int, tree * = nullptr, tree * = nullptr,
-			     range_query * = nullptr);
+extern tree compute_objsize (tree, gimple *, int, tree * = nullptr,
+			     tree * = nullptr, range_query * = nullptr);
+inline tree compute_objsize (tree ptr, int ostype, tree *pdecl = nullptr,
+			     tree *poff = nullptr, range_query *rvals = nullptr)
+{
+  return compute_objsize (ptr, nullptr, ostype, pdecl, poff, rvals);
+}
 
 /* Return the field at the constant offset.  */
 extern tree field_at_offset (tree, tree, HOST_WIDE_INT,

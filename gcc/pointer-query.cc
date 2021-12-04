@@ -1645,7 +1645,7 @@ handle_array_ref (tree aref, gimple *stmt, bool addr, int ostype,
   offset_int orng[2];
   tree off = pref->eval (TREE_OPERAND (aref, 1));
   range_query *const rvals = qry ? qry->rvals : NULL;
-  if (!get_offset_range (off, NULL, orng, rvals))
+  if (!get_offset_range (off, stmt, orng, rvals))
     {
       /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
       orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
@@ -1732,7 +1732,7 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
   offset_int orng[2];
   tree off = pref->eval (TREE_OPERAND (mref, 1));
   range_query *const rvals = qry ? qry->rvals : NULL;
-  if (!get_offset_range (off, NULL, orng, rvals))
+  if (!get_offset_range (off, stmt, orng, rvals))
     {
       /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
       orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
@@ -1948,7 +1948,7 @@ compute_objsize_r (tree ptr, gimple *stmt, int ostype, access_ref *pref,
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
-      if (get_offset_range (off, NULL, orng, rvals))
+      if (get_offset_range (off, stmt, orng, rvals))
 	pref->add_offset (orng[0], orng[1]);
       else
 	pref->add_max_offset ();
@@ -2197,13 +2197,13 @@ compute_objsize (tree ptr, gimple *stmt, int ostype, access_ref *pref,
    once callers transition to one of the two above.  */
 
 tree
-compute_objsize (tree ptr, int ostype, tree *pdecl /* = NULL */,
+compute_objsize (tree ptr, gimple *stmt, int ostype, tree *pdecl /* = NULL */,
 		 tree *poff /* = NULL */, range_query *rvals /* = NULL */)
 {
   /* Set the initial offsets to zero and size to negative to indicate
      none has been computed yet.  */
   access_ref ref;
-  tree size = compute_objsize (ptr, nullptr, ostype, &ref, rvals);
+  tree size = compute_objsize (ptr, stmt, ostype, &ref, rvals);
   if (!size || !ref.base0)
     return NULL_TREE;
 
