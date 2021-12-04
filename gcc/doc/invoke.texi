@@ -8963,6 +8963,39 @@ type @samp{T}.
 
 This warning can be disabled with @option{-Wno-missing-requires}.
 
+@item -Wno-missing-template-keyword
+@opindex Wmissing-template-keyword
+@opindex Wno-missing-template-keyword
+
+The member access tokens ., -> and :: must be followed by the @code{template}
+keyword if the parent object is dependent and the member being named is a
+template.
+
+@smallexample
+template <class X>
+void DoStuff (X x)
+@{
+  x.template DoSomeOtherStuff<X>(); // Good.
+  x.DoMoreStuff<X>(); // Warning, x is dependent.
+@}
+@end smallexample
+
+In rare cases it is possible to get false positives. To silence this, wrap
+the expression in parentheses. For example, the following is treated as a
+template, even where m and N are integers:
+
+@smallexample
+void NotATemplate (my_class t)
+@{
+  int N = 5;
+
+  bool test = t.m < N > (0); // Treated as a template.
+  test = (t.m < N) > (0); // Same meaning, but not treated as a template.
+@}
+@end smallexample
+
+This warning can be disabled with @option{-Wno-missing-template-keyword}.
+
 @item -Wno-multichar
 @opindex Wno-multichar
 @opindex Wmultichar

@@ -1275,17 +1275,32 @@ cp_lexer_rollback_tokens (cp_lexer* lexer)
   lexer->next_token = lexer->saved_tokens.pop ();
 }
 
-/* RAII wrapper around the above functions, with sanity checking.  Creating
-   a variable saves tokens, which are committed when the variable is
-   destroyed unless they are explicitly rolled back by calling the rollback
-   member function.  */
+/* Determines what saved_token_sentinel does when going out of scope.  */
+
+enum saved_token_sentinel_mode {
+  STS_COMMIT,
+  STS_ROLLBACK,
+  STS_DONOTHING
+};
+
+/* RAII wrapper around the above functions, with sanity checking (the token
+   stream should be the same at the point of instantiation as it is at the
+   point of destruction).
+
+   Creating a variable saves tokens.  MODE determines what happens when the
+   object is destroyed.  STS_COMMIT commits tokens (default),
+   STS_ROLLBACK rolls-back and STS_DONOTHING does nothing.  Calling
+   rollback() will immediately roll-back tokens and set MODE to
+   STS_DONOTHING.  */
 
 struct saved_token_sentinel
 {
   cp_lexer *lexer;
   unsigned len;
-  bool commit;
-  saved_token_sentinel(cp_lexer *lexer): lexer(lexer), commit(true)
+  saved_token_sentinel_mode mode;
+  saved_token_sentinel (cp_lexer *_lexer,
+			saved_token_sentinel_mode _mode = STS_COMMIT)
+    : lexer (_lexer), mode (_mode)
   {
     len = lexer->saved_tokens.length ();
     cp_lexer_save_tokens (lexer);
@@ -1293,12 +1308,15 @@ struct saved_token_sentinel
   void rollback ()
   {
     cp_lexer_rollback_tokens (lexer);
-    commit = false;
+    mode = STS_DONOTHING;
   }
-  ~saved_token_sentinel()
+  ~saved_token_sentinel ()
   {
-    if (commit)
+    if (mode == STS_COMMIT)
       cp_lexer_commit_tokens (lexer);
+    else if (mode == STS_ROLLBACK)
+      cp_lexer_rollback_tokens (lexer);
+
     gcc_assert (lexer->saved_tokens.length () == len);
   }
 };
@@ -2771,7 +2789,11 @@ static void cp_parser_skip_to_end_of_block_or_statement
   (cp_parser *);
 static bool cp_parser_skip_to_closing_brace
   (cp_parser *);
-static void cp_parser_skip_to_end_of_template_parameter_list
+static bool cp_parser_skip_entire_template_parameter_list
+  (cp_parser *);
+static void cp_parser_require_end_of_template_parameter_list
+  (cp_parser *);
+static bool cp_parser_skip_to_end_of_template_parameter_list
   (cp_parser *);
 static void cp_parser_skip_to_pragma_eol
   (cp_parser*, cp_token *);
@@ -6129,47 +6151,41 @@ cp_parser_id_expression (cp_parser *parser,
 					    template_keyword_p)
        != NULL_TREE);
 
+  cp_expr id = NULL_TREE;
+  tree scope = parser->scope;
+
+  /* Peek at the next token.  */
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+
   /* If there is a nested-name-specifier, then we are looking at
      the first qualified-id production.  */
   if (nested_name_specifier_p)
     {
-      tree saved_scope;
       tree saved_object_scope;
       tree saved_qualifying_scope;
-      cp_expr unqualified_id;
-      bool is_template;
 
       /* See if the next token is the `template' keyword.  */
       if (!template_p)
-	template_p = &is_template;
+	template_p = &template_keyword_p;
       *template_p = cp_parser_optional_template_keyword (parser);
       /* Name lookup we do during the processing of the
 	 unqualified-id might obliterate SCOPE.  */
-      saved_scope = parser->scope;
       saved_object_scope = parser->object_scope;
       saved_qualifying_scope = parser->qualifying_scope;
       /* Process the final unqualified-id.  */
-      unqualified_id = cp_parser_unqualified_id (parser, *template_p,
-						 check_dependency_p,
-						 declarator_p,
-						 /*optional_p=*/false);
+      id = cp_parser_unqualified_id (parser, *template_p,
+				     check_dependency_p,
+				     declarator_p,
+				     /*optional_p=*/false);
       /* Restore the SAVED_SCOPE for our caller.  */
-      parser->scope = saved_scope;
+      parser->scope = scope;
       parser->object_scope = saved_object_scope;
       parser->qualifying_scope = saved_qualifying_scope;
-
-      return unqualified_id;
     }
   /* Otherwise, if we are in global scope, then we are looking at one
      of the other qualified-id productions.  */
   else if (global_scope_p)
     {
-      cp_token *token;
-      tree id;
-
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-
       /* If it's an identifier, and the next token is not a "<", then
 	 we can avoid the template-id case.  This is an optimization
 	 for this common case.  */
@@ -6195,11 +6211,15 @@ cp_parser_id_expression (cp_parser *parser,
       switch (token->type)
 	{
 	case CPP_NAME:
-	  return cp_parser_identifier (parser);
+	  id = cp_parser_identifier (parser);
+	  break;
 
 	case CPP_KEYWORD:
 	  if (token->keyword == RID_OPERATOR)
-	    return cp_parser_operator_function_id (parser);
+	    {
+	      id = cp_parser_operator_function_id (parser);
+	      break;
+	    }
 	  /* Fall through.  */
 
 	default:
@@ -6208,10 +6228,44 @@ cp_parser_id_expression (cp_parser *parser,
 	}
     }
   else
-    return cp_parser_unqualified_id (parser, template_keyword_p,
+    {
+      if (!scope)
+	scope = parser->context->object_type;
+      id = cp_parser_unqualified_id (parser, template_keyword_p,
 				     /*check_dependency_p=*/true,
 				     declarator_p,
 				     optional_p);
+    }
+
+  if (id && TREE_CODE (id) == IDENTIFIER_NODE
+      && warn_missing_template_keyword
+      && !template_keyword_p
+      /* Don't warn if we're looking inside templates.  */
+      && check_dependency_p
+      /* In a template argument list a > could be closing
+	 the enclosing targs.  */
+      && !parser->in_template_argument_list_p
+      && scope && dependentish_scope_p (scope)
+      /* Don't confuse an ill-formed constructor declarator for a missing
+	 template keyword in a return type.  */
+      && !(declarator_p && constructor_name_p (id, scope))
+      && cp_parser_nth_token_starts_template_argument_list_p (parser, 1)
+      && warning_enabled_at (token->location,
+			     OPT_Wmissing_template_keyword))
+    {
+      saved_token_sentinel toks (parser->lexer, STS_ROLLBACK);
+      if (cp_parser_skip_entire_template_parameter_list (parser)
+	  /* An operator after the > suggests that the > ends a
+	     template-id; a name or literal suggests that the > is an
+	     operator.  */
+	  && (cp_lexer_peek_token (parser->lexer)->type
+	      <= CPP_LAST_PUNCTUATOR))
+	warning_at (token->location, OPT_Wmissing_template_keyword,
+		    "expected %qs keyword before dependent "
+		    "template name", "template");
+    }
+
+  return id;
 }
 
 /* Parse an unqualified-id.
@@ -11472,7 +11526,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       cp_lexer_consume_token (parser->lexer);
 
       template_param_list = cp_parser_template_parameter_list (parser);
-      cp_parser_skip_to_end_of_template_parameter_list (parser);
+      cp_parser_require_end_of_template_parameter_list (parser);
 
       /* We may have a constrained generic lambda; parse the requires-clause
 	 immediately after the template-parameter-list and combine with any
@@ -12353,11 +12407,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	{
 	  if (saved_tokens.lexer == lexer)
 	    {
-	      if (saved_tokens.commit)
+	      if (saved_tokens.mode == STS_COMMIT)
 		cp_lexer_commit_tokens (lexer);
 	      gcc_assert (lexer->saved_tokens.length () == saved_tokens.len);
 	      saved_tokens.lexer = parser->lexer;
-	      saved_tokens.commit = false;
+	      saved_tokens.mode = STS_DONOTHING;
 	      saved_tokens.len = parser->lexer->saved_tokens.length ();
 	    }
 	  cp_lexer_destroy (lexer);
@@ -31493,7 +31547,7 @@ cp_parser_explicit_template_declaration (cp_parser* parser, bool member_p)
     }
 
   /* Look for the `>'.  */
-  cp_parser_skip_to_end_of_template_parameter_list (parser);
+  cp_parser_require_end_of_template_parameter_list (parser);
 
   /* Manage template requirements */
   if (flag_concepts)
@@ -32017,7 +32071,7 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 	}
     }
   else
-    cp_parser_skip_to_end_of_template_parameter_list (parser);
+    cp_parser_require_end_of_template_parameter_list (parser);
   /* The `>' token might be a greater-than operator again now.  */
   parser->greater_than_is_operator_p
     = saved_greater_than_is_operator_p;
@@ -32912,21 +32966,51 @@ cp_parser_require (cp_parser* parser,
     }
 }
 
-/* An error message is produced if the next token is not '>'.
-   All further tokens are skipped until the desired token is
-   found or '{', '}', ';' or an unbalanced ')' or ']'.  */
+/* Skip an entire parameter list from start to finish.  The next token must
+   be the initial "<" of the parameter list.  Returns true on success and
+   false otherwise.  */
+
+static bool
+cp_parser_skip_entire_template_parameter_list (cp_parser* parser)
+{
+  /* Consume the "<" because cp_parser_skip_to_end_of_template_parameter_list
+     requires it.  */
+  cp_lexer_consume_token (parser->lexer);
+  return cp_parser_skip_to_end_of_template_parameter_list (parser);
+}
+
+/* Ensure we are at the end of a template parameter list.  If we are, return.
+   If we are not, something has gone wrong, in which case issue an error and
+   skip to end of the parameter list.  */
 
 static void
+cp_parser_require_end_of_template_parameter_list (cp_parser* parser)
+{
+  /* Are we ready, yet?  If not, issue error message.  */
+  if (cp_parser_require (parser, CPP_GREATER, RT_GREATER))
+    return;
+
+  cp_parser_skip_to_end_of_template_parameter_list (parser);
+}
+
+/* You should only call this function from inside a template parameter list
+   (i.e. the current token should at least be the initial "<" of the
+   parameter list).  If you are skipping the entire list, it may be better to
+   use cp_parser_skip_entire_template_parameter_list.
+
+   Tokens are skipped until the final ">" is found, or if we see
+   '{', '}', ';', or if we find an unbalanced ')' or ']'.
+
+   Returns true if we successfully reached the end, and false if
+   something unexpected happened (e.g. end of file).  */
+
+static bool
 cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 {
   /* Current level of '< ... >'.  */
   unsigned level = 0;
   /* Ignore '<' and '>' nested inside '( ... )' or '[ ... ]'.  */
   unsigned nesting_depth = 0;
-
-  /* Are we ready, yet?  If not, issue error message.  */
-  if (cp_parser_require (parser, CPP_GREATER, RT_GREATER))
-    return;
 
   /* Skip tokens until the desired token is found.  */
   while (true)
@@ -32951,7 +33035,7 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
                  spurious.  Just consume the `>>' and stop; we've
                  already produced at least one error.  */
 	      cp_lexer_consume_token (parser->lexer);
-	      return;
+	      return false;
 	    }
           /* Fall through for C++0x, so we handle the second `>' in
              the `>>'.  */
@@ -32962,7 +33046,7 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 	    {
 	      /* We've reached the token we want, consume it and stop.  */
 	      cp_lexer_consume_token (parser->lexer);
-	      return;
+	      return true;
 	    }
 	  break;
 
@@ -32974,7 +33058,7 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 	case CPP_CLOSE_PAREN:
 	case CPP_CLOSE_SQUARE:
 	  if (nesting_depth-- == 0)
-	    return;
+	    return false;
 	  break;
 
 	case CPP_EOF:
@@ -32983,7 +33067,7 @@ cp_parser_skip_to_end_of_template_parameter_list (cp_parser* parser)
 	case CPP_OPEN_BRACE:
 	case CPP_CLOSE_BRACE:
 	  /* The '>' was probably forgotten, don't look further.  */
-	  return;
+	  return false;
 
 	default:
 	  break;
