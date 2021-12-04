@@ -45,8 +45,8 @@ DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
 	  | m_GOLDMONT_PLUS | m_TREMONT | m_ALDERLAKE | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
-   on modern chips.  Preffer stores affecting whole integer register
-   over partial stores.  For example preffer MOVZBL or MOVQ to load 8bit
+   on modern chips.  Prefer stores affecting whole integer register
+   over partial stores.  For example prefer MOVZBL or MOVQ to load 8bit
    value over movb.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
           m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2

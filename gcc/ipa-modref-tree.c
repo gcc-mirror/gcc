@@ -297,7 +297,7 @@ modref_access_node::closer_pair_p (const modref_access_node &a1,
 	dist2 = offseta2 - offsetb2 - b2.max_size;
     }
   /* It may happen that intervals overlap in case size
-     is different.  Preffer the overlap to non-overlap.  */
+     is different.  Prefer the overlap to non-overlap.  */
   if (known_lt (dist1, 0) && known_ge (dist2, 0))
     return true;
   if (known_lt (dist2, 0) && known_ge (dist1, 0))
