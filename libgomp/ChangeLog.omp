@@ -1,6 +1,13 @@
 2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Update status.
+
+2022-02-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-11-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/thread-limit-1.f90: New test.
