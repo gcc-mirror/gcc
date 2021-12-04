@@ -596,15 +596,9 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
   return var;
 }
 
-/* Given a statement STMT, set the bounds of the reference to at most
-   as many bytes as BOUND or unknown when null, and at least one when
-   the MINACCESS is true unless BOUND is a constant zero.  STMT is
-   used for context to get accurate range info.  */
+/* Initialize the object.  */
 
-access_ref::access_ref (range_query *qry /* = nullptr */,
-			tree bound /* = NULL_TREE */,
-			gimple *stmt /* = nullptr */,
-			bool minaccess /* = false */)
+access_ref::access_ref ()
   : ref (), eval ([](tree x){ return x; }), deref (), trail1special (true),
     base0 (true), parmarray ()
 {
@@ -613,21 +607,6 @@ access_ref::access_ref (range_query *qry /* = nullptr */,
   offmax[0] = offmax[1] = 0;
   /* Invalidate.   */
   sizrng[0] = sizrng[1] = -1;
-
-  /* Set the default bounds of the access and adjust below.  */
-  bndrng[0] = minaccess ? 1 : 0;
-  bndrng[1] = HOST_WIDE_INT_M1U;
-
-  /* When BOUND is nonnull and a range can be extracted from it,
-     set the bounds of the access to reflect both it and MINACCESS.
-     BNDRNG[0] is the size of the minimum access.  */
-  tree rng[2];
-  if (bound && get_size_range (qry, bound, stmt, rng, SR_ALLOW_ZERO))
-    {
-      bndrng[0] = wi::to_offset (rng[0]);
-      bndrng[1] = wi::to_offset (rng[1]);
-      bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
-    }
 }
 
 /* Return the PHI node REF refers to or null if it doesn't.  */
@@ -1197,6 +1176,54 @@ access_ref::inform_access (access_mode mode) const
   else
     inform (loc, "object of size %s allocated by %qE",
 	    sizestr, allocfn);
+}
+
+/* Set the access to at most MAXWRITE and MAXREAD bytes, and at least 1
+   when MINWRITE or MINREAD, respectively, is set.  */
+access_data::access_data (range_query *query, gimple *stmt, access_mode mode,
+			  tree maxwrite /* = NULL_TREE */,
+			  bool minwrite /* = false */,
+			  tree maxread /* = NULL_TREE */,
+			  bool minread /* = false */)
+  : stmt (stmt), call (), dst (), src (), mode (mode)
+{
+  set_bound (dst_bndrng, maxwrite, minwrite, query, stmt);
+  set_bound (src_bndrng, maxread, minread, query, stmt);
+}
+
+/* Set the access to at most MAXWRITE and MAXREAD bytes, and at least 1
+   when MINWRITE or MINREAD, respectively, is set.  */
+access_data::access_data (range_query *query, tree expr, access_mode mode,
+			  tree maxwrite /* = NULL_TREE */,
+			  bool minwrite /* = false */,
+			  tree maxread /* = NULL_TREE */,
+			  bool minread /* = false */)
+  : stmt (), call (expr),  dst (), src (), mode (mode)
+{
+  set_bound (dst_bndrng, maxwrite, minwrite, query, stmt);
+  set_bound (src_bndrng, maxread, minread, query, stmt);
+}
+
+/* Set BNDRNG to the range of BOUND for the statement STMT.  */
+
+void
+access_data::set_bound (offset_int bndrng[2], tree bound, bool minaccess,
+			range_query *query, gimple *stmt)
+{
+  /* Set the default bounds of the access and adjust below.  */
+  bndrng[0] = minaccess ? 1 : 0;
+  bndrng[1] = HOST_WIDE_INT_M1U;
+
+  /* When BOUND is nonnull and a range can be extracted from it,
+     set the bounds of the access to reflect both it and MINACCESS.
+     BNDRNG[0] is the size of the minimum access.  */
+  tree rng[2];
+  if (bound && get_size_range (query, bound, stmt, rng, SR_ALLOW_ZERO))
+    {
+      bndrng[0] = wi::to_offset (rng[0]);
+      bndrng[1] = wi::to_offset (rng[1]);
+      bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
+    }
 }
 
 /* Set a bit for the PHI in VISITED and return true if it wasn't
@@ -1948,14 +1975,8 @@ compute_objsize_r (tree ptr, gimple *stmt, int ostype, access_ref *pref,
 	  if (const access_ref *cache_ref = qry->get_ref (ptr))
 	    {
 	      /* If the pointer is in the cache set *PREF to what it refers
-		 to and return success.
-		 FIXME: BNDRNG is determined by each access and so it doesn't
-		 belong in access_ref.  Until the design is changed, keep it
-		 unchanged here.  */
-	      const offset_int bndrng[2] = { pref->bndrng[0], pref->bndrng[1] };
+		 to and return success.  */
 	      *pref = *cache_ref;
-	      pref->bndrng[0] = bndrng[0];
-	      pref->bndrng[1] = bndrng[1];
 	      return true;
 	    }
 	}
