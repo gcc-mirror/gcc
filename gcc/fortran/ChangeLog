@@ -1,3 +1,19 @@
+2021-12-03  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103505
+	* array.c (match_array_element_spec): Try to simplify array
+	element specifications to improve early checking.
+	* expr.c (gfc_try_simplify_expr): New.  Try simplification of an
+	expression via gfc_simplify_expr.  When an error occurs, roll
+	back.
+	* gfortran.h (gfc_try_simplify_expr): Declare it.
+
+2021-12-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_allocate): Set e3_has_nodescriptor to true
+	only for non-named arrays.
+
 2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR fortran/90030

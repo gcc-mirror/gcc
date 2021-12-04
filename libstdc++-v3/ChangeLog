@@ -1,3 +1,16 @@
+2021-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (_Rb_tree::_Auto_node): Define new
+	RAII helper for creating and inserting new nodes.
+	(_Rb_tree::_M_insert_node): Use trailing-return-type to simplify
+	out-of-line definition.
+	(_Rb_tree::_M_insert_lower_node): Likewise.
+	(_Rb_tree::_M_insert_equal_lower_node): Likewise.
+	(_Rb_tree::_M_emplace_unique): Likewise. Use _Auto_node.
+	(_Rb_tree::_M_emplace_equal): Likewise.
+	(_Rb_tree::_M_emplace_hint_unique): Likewise.
+	(_Rb_tree::_M_emplace_hint_equal): Likewise.
+
 2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULLY_DYNAMIC_STRING]
