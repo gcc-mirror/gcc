@@ -35,7 +35,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template<typename, typename>
     class basic_regex;
 
-  template<typename, typename>
+  template<typename _Bi_iter, typename _Alloc>
     class match_results;
 
 _GLIBCXX_END_NAMESPACE_CXX11
@@ -2078,7 +2078,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _M_suffix()
       { return _Base_type::operator[](_Base_type::size() - 1); }
 
-      _Bi_iter _M_begin;
+      _Bi_iter _M_begin {};
       /// @endcond
     };
 
