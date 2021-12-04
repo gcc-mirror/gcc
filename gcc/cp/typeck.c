@@ -2209,9 +2209,9 @@ invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
   return false;
 }
 
-/* If EXP is a reference to a bitfield, and the type of EXP does not
-   match the declared type of the bitfield, return the declared type
-   of the bitfield.  Otherwise, return NULL_TREE.  */
+/* If EXP is a reference to a bit-field, and the type of EXP does not
+   match the declared type of the bit-field, return the declared type
+   of the bit-field.  Otherwise, return NULL_TREE.  */
 
 tree
 is_bitfield_expr_with_lowered_type (const_tree exp)
@@ -2230,6 +2230,14 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
 
     case MODIFY_EXPR:
     case SAVE_EXPR:
+    case UNARY_PLUS_EXPR:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case NEGATE_EXPR:
+    case NON_LVALUE_EXPR:
+    case BIT_NOT_EXPR:
       return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
 
     case COMPONENT_REF:
