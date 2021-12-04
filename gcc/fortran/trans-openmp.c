@@ -4492,7 +4492,7 @@ gfc_trans_omp_atomic (gfc_code *code)
   enum tree_code op = ERROR_MARK;
   enum tree_code aop = OMP_ATOMIC;
   bool var_on_left = false;
-  enum omp_memory_order mo;
+  enum omp_memory_order mo, fail_mo;
   switch (atomic_code->ext.omp_clauses->memorder)
     {
     case OMP_MEMORDER_UNSET: mo = OMP_MEMORY_ORDER_UNSPECIFIED; break;
@@ -4503,6 +4503,15 @@ gfc_trans_omp_atomic (gfc_code *code)
     case OMP_MEMORDER_SEQ_CST: mo = OMP_MEMORY_ORDER_SEQ_CST; break;
     default: gcc_unreachable ();
     }
+  switch (atomic_code->ext.omp_clauses->fail)
+    {
+    case OMP_MEMORDER_UNSET: fail_mo = OMP_FAIL_MEMORY_ORDER_UNSPECIFIED; break;
+    case OMP_MEMORDER_ACQUIRE: fail_mo = OMP_FAIL_MEMORY_ORDER_ACQUIRE; break;
+    case OMP_MEMORDER_RELAXED: fail_mo = OMP_FAIL_MEMORY_ORDER_RELAXED; break;
+    case OMP_MEMORDER_SEQ_CST: fail_mo = OMP_FAIL_MEMORY_ORDER_SEQ_CST; break;
+    default: gcc_unreachable ();
+    }
+   mo = (omp_memory_order) (mo | fail_mo);
 
   code = code->block->next;
   gcc_assert (code->op == EXEC_ASSIGN);
@@ -4733,6 +4742,7 @@ gfc_trans_omp_atomic (gfc_code *code)
     {
       x = build2_v (OMP_ATOMIC, lhsaddr, convert (type, x));
       OMP_ATOMIC_MEMORY_ORDER (x) = mo;
+      OMP_ATOMIC_WEAK (x) = atomic_code->ext.omp_clauses->weak;
       gfc_add_expr_to_block (&block, x);
     }
   else
@@ -4756,6 +4766,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 	}
       x = build2 (aop, type, lhsaddr, convert (type, x));
       OMP_ATOMIC_MEMORY_ORDER (x) = mo;
+      OMP_ATOMIC_WEAK (x) = atomic_code->ext.omp_clauses->weak;
       x = convert (TREE_TYPE (vse.expr), x);
       gfc_add_modify (&block, vse.expr, x);
     }

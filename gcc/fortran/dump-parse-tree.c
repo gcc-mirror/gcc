@@ -1810,6 +1810,10 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (')', dumpfile);
     }
+  if (omp_clauses->weak)
+    fputs (" WEAK", dumpfile);
+  if (omp_clauses->compare)
+    fputs (" COMPARE", dumpfile);
   if (omp_clauses->nogroup)
     fputs (" NOGROUP", dumpfile);
   if (omp_clauses->simd)
@@ -1925,6 +1929,20 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (' ', dumpfile);
       fputs (memorder, dumpfile);
+    }
+  if (omp_clauses->fail != OMP_MEMORDER_UNSET)
+    {
+      const char *memorder;
+      switch (omp_clauses->fail)
+	{
+	case OMP_MEMORDER_ACQUIRE: memorder = "AQUIRE"; break;
+	case OMP_MEMORDER_RELAXED: memorder = "RELAXED"; break;
+	case OMP_MEMORDER_SEQ_CST: memorder = "SEQ_CST"; break;
+	default: gcc_unreachable ();
+	}
+      fputs (" FAIL(", dumpfile);
+      fputs (memorder, dumpfile);
+      putc (')', dumpfile);
     }
   if (omp_clauses->at != OMP_AT_UNSET)
     {
