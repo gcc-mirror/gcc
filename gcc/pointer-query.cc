@@ -199,7 +199,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
 	       of the source object.  */
 	    access_ref aref;
 	    tree src = gimple_call_arg (stmt, 1);
-	    if (compute_objsize (src, stmt, 1, &aref, qry)
+	    if (compute_objsize_r (src, stmt, 1, &aref, snlim, qry)
 		&& aref.sizrng[1] < offrng[1])
 	      offrng[1] = aref.sizrng[1];
 	  }
