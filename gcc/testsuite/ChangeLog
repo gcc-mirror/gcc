@@ -1,3 +1,54 @@
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	* gfortran.dg/array_constructor_54.f90: New test.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102717
+	* gfortran.dg/reshape_shape_2.f90: New test.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103411
+	* gfortran.dg/pr68153.f90: Adjust test to improved check.
+	* gfortran.dg/reshape_7.f90: Likewise.
+	* gfortran.dg/reshape_9.f90: New test.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103473
+	* gfortran.dg/minmaxloc_15.f90: New test.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-03  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103505
+	* gfortran.dg/pr103505.f90: New test.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* c-c++-common/gomp/pr102432.c: New test.
+	* c-c++-common/goacc/pr102432.c: New test.
+
 2021-12-02  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

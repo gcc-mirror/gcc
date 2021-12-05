@@ -1,3 +1,56 @@
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102787
+	* array.c (expand_constructor): When encountering a constant array
+	expression or array section within a constructor, simplify it to
+	enable better expansion.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102717
+	* simplify.c (gfc_simplify_reshape): Replace assert by error
+	message for negative elements in SHAPE array.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103411
+	* check.c (gfc_check_reshape): Improve check of size of source
+	array for the RESHAPE intrinsic against the given shape when pad
+	is not given, and shape is a parameter.  Try other simplifications
+	of shape.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103473
+	* simplify.c (simplify_minmaxloc_nodim): Avoid NULL pointer
+	dereference when shape is not set.
+
+2021-12-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-03  Harald Anlauf  <anlauf@gmx.de>
+		    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103505
+	* array.c (match_array_element_spec): Try to simplify array
+	element specifications to improve early checking.
+	* expr.c (gfc_try_simplify_expr): New.  Try simplification of an
+	expression via gfc_simplify_expr.  When an error occurs, roll
+	back.
+	* gfortran.h (gfc_try_simplify_expr): Declare it.
+
 2021-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* lex.c (_cpp_lex_direct): If buffer->need_line while
+	pfile->state.in_deferred_pragma, return CPP_PRAGMA_EOL token instead
+	of assertion failure.
+
 2021-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
