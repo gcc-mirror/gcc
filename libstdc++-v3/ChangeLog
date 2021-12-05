@@ -1,3 +1,10 @@
+2021-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103549
+	* include/bits/regex.h (match_results): Give names to template
+	parameters in first declaration.
+	(match_results::_M_begin): Add default member-initializer.
+
 2021-12-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_tree.h (_Rb_tree::_Auto_node): Define new

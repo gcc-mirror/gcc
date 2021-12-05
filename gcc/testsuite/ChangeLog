@@ -1,3 +1,47 @@
+2021-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93614
+	* g++.dg/template/lookup18.C: New test.
+
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/atomic-2.f90: Move now supported code to ...
+	* gfortran.dg/gomp/atomic.f90: here.
+	* gfortran.dg/gomp/atomic-10.f90: New test.
+	* gfortran.dg/gomp/atomic-12.f90: New test.
+	* gfortran.dg/gomp/atomic-15.f90: New test.
+	* gfortran.dg/gomp/atomic-16.f90: New test.
+	* gfortran.dg/gomp/atomic-17.f90: New test.
+	* gfortran.dg/gomp/atomic-18.f90: New test.
+	* gfortran.dg/gomp/atomic-19.f90: New test.
+	* gfortran.dg/gomp/atomic-20.f90: New test.
+	* gfortran.dg/gomp/atomic-22.f90: New test.
+	* gfortran.dg/gomp/atomic-24.f90: New test.
+	* gfortran.dg/gomp/atomic-25.f90: New test.
+	* gfortran.dg/gomp/atomic-26.f90: New test.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/bit-cast11.C: New test.
+	* g++.dg/cpp2a/bit-cast12.C: New test.
+	* g++.dg/cpp2a/bit-cast13.C: New test.
+	* g++.dg/cpp2a/bit-cast14.C: New test.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* c-c++-common/gomp/pr102432.c: New test.
+	* c-c++-common/goacc/pr102432.c: New test.
+
+2021-12-04  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/103028
+	* gcc.dg/pr103028.c: New.
+
+2021-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vec_reve_1.c: Require VSX.
+
 2021-12-03  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/diagnostic/scope1.C: New test.

@@ -1,3 +1,12 @@
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (is_byte_access_type_not_plain_char): Declare.
+	* tree.c (is_byte_access_type_not_plain_char): New function.
+	* constexpr.c (clear_uchar_or_std_byte_in_mask): New function.
+	(cxx_eval_bit_cast): Don't error about padding bits if target
+	type is unsigned char or std::byte, instead return no clearing
+	ctor.  Use clear_uchar_or_std_byte_in_mask.
+
 2021-12-03  Jason Merrill  <jason@redhat.com>
 
 	* error.c (current_dump_scope): New variable.

@@ -1,3 +1,15 @@
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_REG_DEPENDENCY): Fix
+	comment typo, Preffer -> prefer.
+	* ipa-modref-tree.c (modref_access_node::closer_pair_p): Likewise.
+
+2021-12-04  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/103028
+	* ifcvt.c (find_cond_trap): Validate new insns more strictly
+	after reload.
+
 2021-12-03  Martin Liska  <mliska@suse.cz>
 	    Peter Bergner  <bergner@linux.ibm.com>
 

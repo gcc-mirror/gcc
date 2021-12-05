@@ -1,3 +1,11 @@
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OpenMP 5.1): Update status.
+
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (OMP_PLACES): Extend description for OMP 5.1 changes.
+
 2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR fortran/90030
