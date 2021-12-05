@@ -690,8 +690,8 @@ Format parsePrintfFormatSpecifier(scope const char[] format, ref size_t idx,
                 return error();
             while ('0' <= format[i] && format[i] <= '9')
             {
-               ++i;
-               if (i == length)
+                ++i;
+                if (i == length)
                     return error();
             }
         }
@@ -720,8 +720,8 @@ Format parsePrintfFormatSpecifier(scope const char[] format, ref size_t idx,
                 return error();
             while ('0' <= format[i] && format[i] <= '9')
             {
-               ++i;
-               if (i == length)
+                ++i;
+                if (i == length)
                     return error();
             }
         }

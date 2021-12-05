@@ -400,25 +400,23 @@ version (Posix) private void[] readImpl(scope const(char)[] name, scope const(FS
         : result[0 .. size.get];
 }
 
+version (Windows)
+private extern (Windows) @nogc nothrow
+{
+    pragma(mangle, CreateFileW.mangleof)
+    HANDLE trustedCreateFileW(scope const(wchar)* namez, DWORD dwDesiredAccess,
+        DWORD dwShareMode, SECURITY_ATTRIBUTES* lpSecurityAttributes,
+        DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,
+        HANDLE hTemplateFile)  @trusted;
+
+    pragma(mangle, CloseHandle.mangleof) BOOL trustedCloseHandle(HANDLE) @trusted;
+}
 
 version (Windows) private void[] readImpl(scope const(char)[] name, scope const(FSChar)* namez,
                                           size_t upTo = size_t.max) @trusted
 {
     import core.memory : GC;
     import std.algorithm.comparison : min;
-    static trustedCreateFileW(scope const(wchar)* namez, DWORD dwDesiredAccess, DWORD dwShareMode,
-                              SECURITY_ATTRIBUTES *lpSecurityAttributes, DWORD dwCreationDisposition,
-                              DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
-    {
-        return CreateFileW(namez, dwDesiredAccess, dwShareMode,
-                           lpSecurityAttributes, dwCreationDisposition,
-                           dwFlagsAndAttributes, hTemplateFile);
-
-    }
-    static trustedCloseHandle(HANDLE hObject)
-    {
-        return CloseHandle(hObject);
-    }
     static trustedGetFileSize(HANDLE hFile, out ulong fileSize)
     {
         DWORD sizeHigh;
@@ -1125,6 +1123,9 @@ version (Windows) private ulong makeUlong(DWORD dwLow, DWORD dwHigh) @safe pure 
     return li.QuadPart;
 }
 
+version (Posix) private extern (C) pragma(mangle, stat.mangleof)
+int trustedStat(const(FSChar)* namez, ref stat_t buf) @nogc nothrow @trusted;
+
 /**
 Get size of file `name` in bytes.
 
@@ -1148,10 +1149,6 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     {
         auto namez = name.tempCString();
 
-        static trustedStat(const(FSChar)* namez, out stat_t buf) @trusted
-        {
-            return stat(namez, &buf);
-        }
         static if (isNarrowString!R && is(immutable ElementEncodingType!R == immutable char))
             alias names = name;
         else
@@ -1253,10 +1250,6 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     {
         auto namez = name.tempCString();
 
-        static auto trustedStat(const(FSChar)* namez, ref stat_t buf) @trusted
-        {
-            return stat(namez, &buf);
-        }
         stat_t statbuf = void;
 
         static if (isNarrowString!R && is(immutable ElementEncodingType!R == immutable char))
@@ -1679,10 +1672,6 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     else version (Posix)
     {
         auto namez = name.tempCString!FSChar();
-        static auto trustedStat(const(FSChar)* namez, ref stat_t buf) @trusted
-        {
-            return stat(namez, &buf);
-        }
         stat_t statbuf = void;
 
         static if (isNarrowString!R && is(immutable ElementEncodingType!R == immutable char))
@@ -1770,10 +1759,6 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R))
     else version (Posix)
     {
         auto namez = name.tempCString!FSChar();
-        static auto trustedStat(const(FSChar)* namez, ref stat_t buf) @trusted
-        {
-            return stat(namez, &buf);
-        }
         stat_t statbuf = void;
 
         return trustedStat(namez, statbuf) != 0 ?
@@ -2042,10 +2027,6 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     else version (Posix)
     {
         auto namez = name.tempCString!FSChar();
-        static auto trustedStat(const(FSChar)* namez, ref stat_t buf) @trusted
-        {
-            return stat(namez, &buf);
-        }
         stat_t statbuf = void;
 
         static if (isNarrowString!R && is(immutable ElementEncodingType!R == immutable char))
@@ -5275,9 +5256,20 @@ slurp(Types...)(string filename, scope const(char)[] format)
     assert(slurp!(int)(deleteme, "%d") == [10, 20]);
 }
 
-
 /**
 Returns the path to a directory for temporary files.
+On POSIX platforms, it searches through the following list of directories
+and returns the first one which is found to exist:
+$(OL
+    $(LI The directory given by the `TMPDIR` environment variable.)
+    $(LI The directory given by the `TEMP` environment variable.)
+    $(LI The directory given by the `TMP` environment variable.)
+    $(LI `/tmp/`)
+    $(LI `/var/tmp/`)
+    $(LI `/usr/tmp/`)
+)
+
+On all platforms, `tempDir` returns the current working directory on failure.
 
 The return value of the function is cached, so the procedures described
 below will only be performed the first time the function is called.  All
@@ -5308,6 +5300,7 @@ Returns:
 */
 string tempDir() @trusted
 {
+    import std.path : dirSeparator;
     static string cache;
     if (cache is null)
     {
@@ -5327,7 +5320,7 @@ string tempDir() @trusted
             static string findExistingDir(T...)(lazy T alternatives)
             {
                 foreach (dir; alternatives)
-                    if (!dir.empty && exists(dir)) return dir;
+                    if (!dir.empty && exists(dir)) return dir ~ dirSeparator;
                 return null;
             }
 
@@ -5340,7 +5333,10 @@ string tempDir() @trusted
         }
         else static assert(false, "Unsupported platform");
 
-        if (cache is null) cache = getcwd();
+        if (cache is null)
+        {
+            cache = getcwd() ~ dirSeparator;
+        }
     }
     return cache;
 }
@@ -5361,6 +5357,13 @@ string tempDir() @trusted
 
     myFile.write("hello");
     assert(myFile.readText == "hello");
+}
+
+@safe unittest
+{
+    import std.algorithm.searching : endsWith;
+    import std.path : dirSeparator;
+    assert(tempDir.endsWith(dirSeparator));
 }
 
 /**

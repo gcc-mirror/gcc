@@ -1,7 +1,7 @@
 /* TEST_OUTPUT:
 ---
 fail_compilation/test17425.d(24): Error: parameter index must be in range 0..4 not 4
-fail_compilation/test17425.d(27): Error: first argument to `__traits(getParameterStorageClasses, i, 4)` is not a function
+fail_compilation/test17425.d(27): Error: first argument to `__traits(getParameterStorageClasses, i, 4)` is not a function or a function call
 fail_compilation/test17425.d(29): Error: expression expected as second argument of `__traits(getParameterStorageClasses, foo, int)`
 fail_compilation/test17425.d(31): Error: expected 2 arguments for `getParameterStorageClasses` but had 3
 ---

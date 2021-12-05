@@ -145,7 +145,7 @@ get_internal_fn (tree ident, const Visibility &visibility)
   fd->loc = Loc (mod->srcfile.toChars (), 1, 0);
   fd->parent = mod;
   fd->visibility = visibility;
-  fd->semanticRun = PASSsemantic3done;
+  fd->semanticRun = PASS::semantic3done;
 
   return fd;
 }

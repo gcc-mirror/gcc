@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 
 #include "d-tree.h"
+#include "d-frontend.h"
 
 /* Implements back-end specific interfaces used by the frontend.  */
 
@@ -51,7 +52,7 @@ isBuiltin (FuncDeclaration *fd)
    Return result; NULL if cannot evaluate it.  */
 
 Expression *
-eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
+eval_builtin (const Loc &loc, FuncDeclaration *fd, Expressions *arguments)
 {
   if (fd->builtin == BUILTIN::unimp)
     return NULL;
@@ -78,10 +79,16 @@ eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
 /* Build and return typeinfo type for TYPE.  */
 
 Type *
-getTypeInfoType (Loc loc, Type *type, Scope *sc)
+getTypeInfoType (const Loc &loc, Type *type, Scope *sc)
 {
   gcc_assert (type->ty != TY::Terror);
   check_typeinfo_type (loc, sc);
   create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
   return type->vtinfo->type;
+}
+
+void
+toObjFile (Dsymbol *ds, bool)
+{
+  build_decl_tree (ds);
 }

@@ -562,15 +562,10 @@ struct MyStruct {}
 static assert(fullyQualifiedName!(const MyStruct[]) == "const(myModule.MyStruct[])");
 -----------------
 */
-template fullyQualifiedName(T...)
-if (T.length == 1)
-{
+enum fullyQualifiedName(T) = fqnType!(T, false, false, false, false);
 
-    static if (is(T))
-        enum fullyQualifiedName = fqnType!(T[0], false, false, false, false);
-    else
-        enum fullyQualifiedName = fqnSym!(T[0]);
-}
+/// ditto
+enum fullyQualifiedName(alias T) = fqnSym!(T);
 
 ///
 @safe unittest
@@ -986,8 +981,8 @@ private template fqnType(T,
  * is not part of a type, but the attribute of the function
  * (see template $(LREF functionAttributes)).
  */
-template ReturnType(func...)
-if (func.length == 1 && isCallable!func)
+template ReturnType(alias func)
+if (isCallable!func)
 {
     static if (is(FunctionTypeOf!func R == return))
         alias ReturnType = R;
@@ -1045,8 +1040,8 @@ Get, as a tuple, the types of the parameters to a function, a pointer
 to function, a delegate, a struct with an `opCall`, a pointer to a
 struct with an `opCall`, or a class with an `opCall`.
 */
-template Parameters(func...)
-if (func.length == 1 && isCallable!func)
+template Parameters(alias func)
+if (isCallable!func)
 {
     static if (is(FunctionTypeOf!func P == function))
         alias Parameters = P;
@@ -1095,9 +1090,8 @@ alias ParameterTypeTuple = Parameters;
 Returns the number of arguments of function `func`.
 arity is undefined for variadic functions.
 */
-template arity(func...)
-if (func.length == 1 && isCallable!func &&
-    variadicFunctionStyle!func == Variadic.no)
+template arity(alias func)
+if (isCallable!func && variadicFunctionStyle!func == Variadic.no)
 {
     enum size_t arity = Parameters!func.length;
 }
@@ -1143,8 +1137,8 @@ enum ParameterStorageClass : uint
 }
 
 /// ditto
-template ParameterStorageClassTuple(func...)
-if (func.length == 1 && isCallable!func)
+template ParameterStorageClassTuple(alias func)
+if (isCallable!func)
 {
     alias Func = FunctionTypeOf!func;
 
@@ -1308,8 +1302,8 @@ template extractParameterStorageClassFlags(Attribs...)
 /**
 Get, as a tuple, the identifiers of the parameters to a function symbol.
  */
-template ParameterIdentifierTuple(func...)
-if (func.length == 1 && isCallable!func)
+template ParameterIdentifierTuple(alias func)
+if (isCallable!func)
 {
     static if (is(FunctionTypeOf!func PT == __parameters))
     {
@@ -1331,7 +1325,7 @@ if (func.length == 1 && isCallable!func)
     }
     else
     {
-        static assert(0, func[0].stringof ~ " is not a function");
+        static assert(0, func.stringof ~ " is not a function");
 
         // Define dummy entities to avoid pointless errors
         template Get(size_t i) { enum Get = ""; }
@@ -1407,11 +1401,11 @@ if (func.length == 1 && isCallable!func)
 Get, as a tuple, the default value of the parameters to a function symbol.
 If a parameter doesn't have the default value, `void` is returned instead.
  */
-template ParameterDefaults(func...)
-if (func.length == 1 && isCallable!func)
+template ParameterDefaults(alias func)
+if (isCallable!func)
 {
     alias param_names = ParameterIdentifierTuple!func;
-    static if (is(FunctionTypeOf!(func[0]) PT == __parameters))
+    static if (is(FunctionTypeOf!(func) PT == __parameters))
     {
         template Get(size_t i)
         {
@@ -1444,7 +1438,7 @@ if (func.length == 1 && isCallable!func)
     }
     else
     {
-        static assert(0, func[0].stringof ~ " is not a function");
+        static assert(0, func.stringof ~ " is not a function");
 
         // Define dummy entities to avoid pointless errors
         template Get(size_t i) { enum Get = ""; }
@@ -1559,8 +1553,8 @@ enum FunctionAttribute : uint
 }
 
 /// ditto
-template functionAttributes(func...)
-if (func.length == 1 && isCallable!func)
+template functionAttributes(alias func)
+if (isCallable!func)
 {
     // @bug: workaround for opCall
     alias FuncSym = Select!(is(typeof(__traits(getFunctionAttributes, func))),
@@ -2090,8 +2084,8 @@ Params:
 Returns:
     one of the strings "D", "C", "C++", "Windows", "Objective-C", or "System".
 */
-template functionLinkage(func...)
-if (func.length == 1 && isCallable!func)
+template functionLinkage(alias func)
+if (isCallable!func)
 {
     enum string functionLinkage = __traits(getLinkage, FunctionTypeOf!func);
 }
@@ -2148,8 +2142,8 @@ enum Variadic
 }
 
 /// ditto
-template variadicFunctionStyle(func...)
-if (func.length == 1 && isCallable!func)
+template variadicFunctionStyle(alias func)
+if (isCallable!func)
 {
     enum string varargs = __traits(getFunctionVariadicStyle, FunctionTypeOf!func);
     enum Variadic variadicFunctionStyle =
@@ -2198,25 +2192,25 @@ Note:
 Do not confuse function types with function pointer types; function types are
 usually used for compile-time reflection purposes.
  */
-template FunctionTypeOf(func...)
-if (func.length == 1 && isCallable!func)
+template FunctionTypeOf(alias func)
+if (isCallable!func)
 {
-    static if ((is(typeof(& func[0]) Fsym : Fsym*) && is(Fsym == function)) || is(typeof(& func[0]) Fsym == delegate))
+    static if ((is(typeof(& func) Fsym : Fsym*) && is(Fsym == function)) || is(typeof(& func) Fsym == delegate))
     {
         alias FunctionTypeOf = Fsym; // HIT: (nested) function symbol
     }
-    else static if (is(typeof(& func[0].opCall) Fobj == delegate) || is(typeof(& func[0].opCall!()) Fobj == delegate))
+    else static if (is(typeof(& func.opCall) Fobj == delegate) || is(typeof(& func.opCall!()) Fobj == delegate))
     {
         alias FunctionTypeOf = Fobj; // HIT: callable object
     }
     else static if (
-            (is(typeof(& func[0].opCall) Ftyp : Ftyp*) && is(Ftyp == function)) ||
-            (is(typeof(& func[0].opCall!()) Ftyp : Ftyp*) && is(Ftyp == function))
+            (is(typeof(& func.opCall) Ftyp : Ftyp*) && is(Ftyp == function)) ||
+            (is(typeof(& func.opCall!()) Ftyp : Ftyp*) && is(Ftyp == function))
         )
     {
         alias FunctionTypeOf = Ftyp; // HIT: callable type
     }
-    else static if (is(func[0] T) || is(typeof(func[0]) T))
+    else static if (is(func T) || is(typeof(func) T))
     {
         static if (is(T == function))
             alias FunctionTypeOf = T;    // HIT: function
@@ -2675,12 +2669,8 @@ template hasNested(T)
  */
 template Fields(T)
 {
-    static if (is(T == struct) || is(T == union))
-        alias Fields = typeof(T.tupleof[0 .. $ - isNested!T]);
-    else static if (is(T == class) || is(T == interface))
-        alias Fields = typeof(T.tupleof);
-    else
-        alias Fields = AliasSeq!T;
+    import core.internal.traits : _Fields = Fields;
+    alias Fields = _Fields!T;
 }
 
 ///
@@ -2847,6 +2837,8 @@ template RepresentationTypeTuple(T)
     struct S5 { int a; Rebindable!(immutable Object) b; }
     alias R2 = RepresentationTypeTuple!S5;
     static assert(R2.length == 2 && is(R2[0] == int) && is(R2[1] == immutable(Object)));
+
+    static assert(is(RepresentationTypeTuple!noreturn == AliasSeq!noreturn));
 }
 
 @safe unittest
@@ -2869,7 +2861,7 @@ private template RepresentationTypeTupleImpl(T)
 {
     import std.typecons : Rebindable;
 
-    static if (is(T R: Rebindable!R))
+    static if (is(immutable T == immutable Rebindable!R, R))
     {
         alias RepresentationTypeTupleImpl
             = staticMapMeta!(.RepresentationTypeTupleImpl, RepresentationTypeTupleImpl!R);
@@ -3292,13 +3284,15 @@ template hasAliasing(T...)
     class S15 { S15[1] a; }
     static assert( hasAliasing!S15);
     static assert(!hasAliasing!(immutable(S15)));
+
+    static assert(!hasAliasing!noreturn);
 }
 
 private template hasAliasingImpl(T)
 {
     import std.typecons : Rebindable;
 
-    static if (is(T : Rebindable!R, R))
+    static if (is(immutable T == immutable Rebindable!R, R))
     {
         enum hasAliasingImpl = hasAliasingImpl!R;
     }
@@ -3324,15 +3318,8 @@ $(LI a [context pointer][isNested].))
  */
 template hasIndirections(T)
 {
-    static if (is(T == struct) || is(T == union))
-        enum hasIndirections = anySatisfy!(.hasIndirections, typeof(T.tupleof));
-    else static if (isStaticArray!T && is(T : E[N], E, size_t N))
-        enum hasIndirections = is(E == void) ? true : hasIndirections!E;
-    else static if (isFunctionPointer!T)
-        enum hasIndirections = false;
-    else
-        enum hasIndirections = isPointer!T || isDelegate!T || isDynamicArray!T ||
-            isAssociativeArray!T || is (T == class) || is(T == interface);
+    import core.internal.traits : _hasIndirections = hasIndirections;
+    alias hasIndirections = _hasIndirections!T;
 }
 
 ///
@@ -3409,6 +3396,8 @@ template hasIndirections(T)
     int local;
     struct HasContextPointer { int opCall() { return ++local; } }
     static assert(hasIndirections!HasContextPointer);
+
+    static assert(!hasIndirections!noreturn);
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=12000
@@ -3575,13 +3564,15 @@ template hasUnsharedAliasing(T...)
     static assert( hasUnsharedAliasing!S18);
     static assert( hasUnsharedAliasing!S19);
     static assert(!hasUnsharedAliasing!S20);
+
+    static assert(!hasUnsharedAliasing!noreturn);
 }
 
 private template hasUnsharedAliasingImpl(T)
 {
     import std.typecons : Rebindable;
 
-    static if (is(T R: Rebindable!R))
+    static if (is(immutable T == immutable Rebindable!R, R))
     {
         enum hasUnsharedAliasingImpl = hasUnsharedAliasingImpl!R;
     }
@@ -3603,17 +3594,25 @@ private template hasUnsharedAliasingImpl(T)
     }
 }
 
-/**
- True if `S` or any type embedded directly in the representation of `S`
- defines an elaborate copy constructor. Elaborate copy constructors are
- introduced by defining `this(this)` for a `struct`.
+version (StdDdoc)
+{
+    /**
+       True if `S` or any type embedded directly in the representation of `S`
+       defines an elaborate copy constructor. Elaborate copy constructors are
+       introduced by defining `this(this)` for a `struct`.
 
- Classes and unions never have elaborate copy constructors.
- */
-template hasElaborateCopyConstructor(S)
+       Classes and unions never have elaborate copy constructors.
+    */
+    template hasElaborateCopyConstructor(S)
+    {
+        import core.internal.traits : hasElabCCtor = hasElaborateCopyConstructor;
+        alias hasElaborateCopyConstructor = hasElabCCtor!(S);
+    }
+}
+else
 {
     import core.internal.traits : hasElabCCtor = hasElaborateCopyConstructor;
-    alias hasElaborateCopyConstructor = hasElabCCtor!(S);
+    alias hasElaborateCopyConstructor = hasElabCCtor;
 }
 
 ///
@@ -3732,19 +3731,27 @@ template hasElaborateAssign(S)
     static assert( hasElaborateAssign!SS9);
 }
 
-/**
-   True if `S` or any type directly embedded in the representation
-   of `S` defines an elaborate destructor. Elaborate destructors
-   are introduced by defining `~this()` for a $(D
-   struct).
+version (StdDdoc)
+{
+    /**
+       True if `S` or any type directly embedded in the representation
+       of `S` defines an elaborate destructor. Elaborate destructors
+       are introduced by defining `~this()` for a $(D
+       struct).
 
-   Classes and unions never have elaborate destructors, even
-   though classes may define `~this()`.
- */
-template hasElaborateDestructor(S)
+       Classes and unions never have elaborate destructors, even
+       though classes may define `~this()`.
+    */
+    template hasElaborateDestructor(S)
+    {
+        import core.internal.traits : hasElabDest = hasElaborateDestructor;
+        alias hasElaborateDestructor = hasElabDest!(S);
+    }
+}
+else
 {
     import core.internal.traits : hasElabDest = hasElaborateDestructor;
-    alias hasElaborateDestructor = hasElabDest!(S);
+    alias hasElaborateDestructor = hasElabDest;
 }
 
 ///
@@ -3771,17 +3778,25 @@ template hasElaborateDestructor(S)
     static assert( hasElaborateDestructor!S7);
 }
 
-/**
- True if `S` or any type embedded directly in the representation of `S`
- defines elaborate move semantics. Elaborate move semantics are
- introduced by defining `opPostMove(ref typeof(this))` for a `struct`.
+version (StdDdoc)
+{
+    /**
+       True if `S` or any type embedded directly in the representation of `S`
+       defines elaborate move semantics. Elaborate move semantics are
+       introduced by defining `opPostMove(ref typeof(this))` for a `struct`.
 
- Classes and unions never have elaborate move semantics.
- */
-template hasElaborateMove(S)
+       Classes and unions never have elaborate move semantics.
+    */
+    template hasElaborateMove(S)
+    {
+        import core.internal.traits : hasElabMove = hasElaborateMove;
+        alias hasElaborateMove = hasElabMove!(S);
+    }
+}
+else
 {
     import core.internal.traits : hasElabMove = hasElaborateMove;
-    alias hasElaborateMove = hasElabMove!(S);
+    alias hasElaborateMove = hasElabMove;
 }
 
 ///
@@ -4116,50 +4131,9 @@ int[] abc = cast(int[]) [ EnumMembers!E ];
 template EnumMembers(E)
 if (is(E == enum))
 {
-    import std.meta : AliasSeq;
-    // Supply the specified identifier to an constant value.
-    template WithIdentifier(string ident)
-    {
-        static if (ident == "Symbolize")
-        {
-            template Symbolize(alias value)
-            {
-                enum Symbolize = value;
-            }
-        }
-        else
-        {
-            mixin("template Symbolize(alias "~ ident ~")"
-                 ~"{"
-                     ~"alias Symbolize = "~ ident ~";"
-                 ~"}");
-        }
-    }
-
-    template EnumSpecificMembers(names...)
-    {
-        static if (names.length == 1)
-        {
-            alias EnumSpecificMembers = AliasSeq!(WithIdentifier!(names[0])
-                        .Symbolize!(__traits(getMember, E, names[0])));
-        }
-        else static if (names.length > 0)
-        {
-            alias EnumSpecificMembers =
-                AliasSeq!(
-                    WithIdentifier!(names[0])
-                        .Symbolize!(__traits(getMember, E, names[0])),
-                    EnumSpecificMembers!(names[1 .. $/2]),
-                    EnumSpecificMembers!(names[$/2..$])
-                );
-        }
-        else
-        {
-            alias EnumSpecificMembers = AliasSeq!();
-        }
-    }
-
-    alias EnumMembers = EnumSpecificMembers!(__traits(allMembers, E));
+    alias EnumMembers = AliasSeq!();
+    static foreach (M; __traits(allMembers, E))
+        EnumMembers = AliasSeq!(EnumMembers, __traits(getMember, E, M));
 }
 
 /// Create an array of enumerated values
@@ -4494,14 +4468,7 @@ template InterfacesTuple(T)
  * interfaces. $(D_PARAM TransitiveBaseTypeTuple!Object) yields the
  * empty type tuple.
  */
-template TransitiveBaseTypeTuple(T)
-{
-    static if (is(T == Object))
-        alias TransitiveBaseTypeTuple = AliasSeq!();
-    else
-        alias TransitiveBaseTypeTuple =
-            AliasSeq!(BaseClassesTuple!T, InterfacesTuple!T);
-}
+alias TransitiveBaseTypeTuple(T) = AliasSeq!(BaseClassesTuple!T, InterfacesTuple!T);
 
 ///
 @safe unittest
@@ -4748,22 +4715,13 @@ if (is(C == class) || is(C == interface))
 Returns an alias to the template that `T` is an instance of.
 It will return `void` if a symbol without a template is given.
  */
-template TemplateOf(alias T : Base!Args, alias Base, Args...)
-{
-    alias TemplateOf = Base;
-}
+alias TemplateOf(alias T : Base!Args, alias Base, Args...) = Base;
 
 /// ditto
-template TemplateOf(T : Base!Args, alias Base, Args...)
-{
-    alias TemplateOf = Base;
-}
+alias TemplateOf(T : Base!Args, alias Base, Args...) = Base;
 
 /// ditto
-template TemplateOf(T)
-{
-    alias TemplateOf = void;
-}
+alias TemplateOf(T) = void;
 
 ///
 @safe unittest
@@ -4805,16 +4763,10 @@ template TemplateOf(T)
 /**
 Returns a `AliasSeq` of the template arguments used to instantiate `T`.
  */
-template TemplateArgsOf(alias T : Base!Args, alias Base, Args...)
-{
-    alias TemplateArgsOf = Args;
-}
+alias TemplateArgsOf(alias T : Base!Args, alias Base, Args...) = Args;
 
 /// ditto
-template TemplateArgsOf(T : Base!Args, alias Base, Args...)
-{
-    alias TemplateArgsOf = Args;
-}
+alias TemplateArgsOf(T : Base!Args, alias Base, Args...) = Args;
 
 ///
 @safe unittest
@@ -4850,24 +4802,15 @@ template TemplateArgsOf(T : Base!Args, alias Base, Args...)
     static assert(is(TemplateArgsOf!(Foo10!()) == AliasSeq!()));
 }
 
-
-package template maxAlignment(U...)
-if (isTypeTuple!U)
+// Returns the largest alignment in a type tuple.
+package enum maxAlignment(U...) =
 {
-    static if (U.length == 0)
-        static assert(0);
-    else static if (U.length == 1)
-        enum maxAlignment = U[0].alignof;
-    else static if (U.length == 2)
-        enum maxAlignment = U[0].alignof > U[1].alignof ? U[0].alignof : U[1].alignof;
-    else
-    {
-        enum a = maxAlignment!(U[0 .. ($+1)/2]);
-        enum b = maxAlignment!(U[($+1)/2 .. $]);
-        enum maxAlignment = a > b ? a : b;
-    }
-}
-
+    size_t result = U[0].alignof;
+    static foreach (T; U[1 .. $])
+        if (result < T.alignof)
+            result = T.alignof;
+    return result;
+}();
 
 /**
 Returns class instance alignment.
@@ -4902,25 +4845,10 @@ types have no common type.
  */
 template CommonType(T...)
 {
-    static if (!T.length)
-    {
-        alias CommonType = void;
-    }
-    else static if (T.length == 1)
-    {
-        static if (is(typeof(T[0])))
-        {
-            alias CommonType = typeof(T[0]);
-        }
-        else
-        {
-            alias CommonType = T[0];
-        }
-    }
+    static if (T.length == 1)
+        alias CommonType = typeof(T[0].init);
     else static if (is(typeof(true ? T[0].init : T[1].init) U))
-    {
         alias CommonType = CommonType!(U, T[2 .. $]);
-    }
     else
         alias CommonType = void;
 }
@@ -4966,36 +4894,29 @@ template AllImplicitConversionTargets(T)
 {
     static if (is(T == bool))
         alias AllImplicitConversionTargets =
-            AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong, CentTypeList,
-                       float, double, real, char, wchar, dchar);
+            AliasSeq!(byte, AllImplicitConversionTargets!byte);
     else static if (is(T == byte))
         alias AllImplicitConversionTargets =
-            AliasSeq!(ubyte, short, ushort, int, uint, long, ulong, CentTypeList,
-                       float, double, real, char, wchar, dchar);
+            AliasSeq!(char, ubyte, short, AllImplicitConversionTargets!short);
     else static if (is(T == ubyte))
         alias AllImplicitConversionTargets =
-            AliasSeq!(byte, short, ushort, int, uint, long, ulong, CentTypeList,
-                       float, double, real, char, wchar, dchar);
+            AliasSeq!(byte, char, short, AllImplicitConversionTargets!short);
     else static if (is(T == short))
         alias AllImplicitConversionTargets =
-            AliasSeq!(ushort, int, uint, long, ulong, CentTypeList, float, double, real);
+            AliasSeq!(ushort, wchar, int, AllImplicitConversionTargets!int);
     else static if (is(T == ushort))
         alias AllImplicitConversionTargets =
-            AliasSeq!(short, int, uint, long, ulong, CentTypeList, float, double, real);
+            AliasSeq!(short, wchar, dchar, AllImplicitConversionTargets!dchar);
     else static if (is(T == int))
         alias AllImplicitConversionTargets =
-            AliasSeq!(uint, long, ulong, CentTypeList, float, double, real);
+            AliasSeq!(dchar, uint, long, AllImplicitConversionTargets!long);
     else static if (is(T == uint))
         alias AllImplicitConversionTargets =
-            AliasSeq!(int, long, ulong, CentTypeList, float, double, real);
+            AliasSeq!(dchar, int, long, AllImplicitConversionTargets!long);
     else static if (is(T == long))
-        alias AllImplicitConversionTargets = AliasSeq!(ulong, float, double, real);
+        alias AllImplicitConversionTargets = AliasSeq!(ulong, CentTypeList, float, double, real);
     else static if (is(T == ulong))
-        alias AllImplicitConversionTargets = AliasSeq!(long, float, double, real);
-    else static if (is(cent) && is(T == cent))
-        alias AllImplicitConversionTargets = AliasSeq!(UnsignedCentTypeList, float, double, real);
-    else static if (is(ucent) && is(T == ucent))
-        alias AllImplicitConversionTargets = AliasSeq!(SignedCentTypeList, float, double, real);
+        alias AllImplicitConversionTargets = AliasSeq!(long, CentTypeList, float, double, real);
     else static if (is(T == float))
         alias AllImplicitConversionTargets = AliasSeq!(double, real);
     else static if (is(T == double))
@@ -5004,21 +4925,17 @@ template AllImplicitConversionTargets(T)
         alias AllImplicitConversionTargets = AliasSeq!(float, double);
     else static if (is(T == char))
         alias AllImplicitConversionTargets =
-            AliasSeq!(wchar, dchar, byte, ubyte, short, ushort,
-                       int, uint, long, ulong, CentTypeList, float, double, real);
+            AliasSeq!(byte, ubyte, short, AllImplicitConversionTargets!short);
     else static if (is(T == wchar))
         alias AllImplicitConversionTargets =
-            AliasSeq!(dchar, short, ushort, int, uint, long, ulong, CentTypeList,
-                       float, double, real);
+            AliasSeq!(short, ushort, dchar, AllImplicitConversionTargets!dchar);
     else static if (is(T == dchar))
         alias AllImplicitConversionTargets =
-            AliasSeq!(int, uint, long, ulong, CentTypeList, float, double, real);
-    else static if (is(T : typeof(null)))
-        alias AllImplicitConversionTargets = AliasSeq!(typeof(null));
+            AliasSeq!(int, uint, long, AllImplicitConversionTargets!long);
     else static if (is(T == class))
-        alias AllImplicitConversionTargets = staticMap!(ApplyLeft!(CopyConstness, T), TransitiveBaseTypeTuple!(T));
+        alias AllImplicitConversionTargets = staticMap!(ApplyLeft!(CopyConstness, T), TransitiveBaseTypeTuple!T);
     else static if (is(T == interface))
-        alias AllImplicitConversionTargets = staticMap!(ApplyLeft!(CopyConstness, T), InterfacesTuple!(T));
+        alias AllImplicitConversionTargets = staticMap!(ApplyLeft!(CopyConstness, T), InterfacesTuple!T);
     else static if (isDynamicArray!T && !is(typeof(T.init[0]) == const))
     {
        static if (is(typeof(T.init[0]) == shared))
@@ -5028,8 +4945,12 @@ template AllImplicitConversionTargets(T)
            alias AllImplicitConversionTargets =
            AliasSeq!(const(Unqual!(typeof(T.init[0])))[]);
     }
-    else static if (is(T : void*))
+    else static if (is(T : void*) && !is(T == void*))
         alias AllImplicitConversionTargets = AliasSeq!(void*);
+    else static if (is(cent) && is(T == cent))
+        alias AllImplicitConversionTargets = AliasSeq!(UnsignedCentTypeList, float, double, real);
+    else static if (is(ucent) && is(T == ucent))
+        alias AllImplicitConversionTargets = AliasSeq!(SignedCentTypeList, float, double, real);
     else
         alias AllImplicitConversionTargets = AliasSeq!();
 }
@@ -5040,22 +4961,23 @@ template AllImplicitConversionTargets(T)
     import std.meta : AliasSeq;
 
     static assert(is(AllImplicitConversionTargets!(ulong) == AliasSeq!(long, float, double, real)));
-    static assert(is(AllImplicitConversionTargets!(int) == AliasSeq!(uint, long, ulong, float, double, real)));
+    static assert(is(AllImplicitConversionTargets!(int) == AliasSeq!(dchar, uint, long, ulong, float, double, real)));
     static assert(is(AllImplicitConversionTargets!(float) == AliasSeq!(double, real)));
     static assert(is(AllImplicitConversionTargets!(double) == AliasSeq!(float, real)));
 
-    static assert(is(AllImplicitConversionTargets!(char) == AliasSeq!(
-        wchar, dchar, byte, ubyte, short, ushort, int, uint, long, ulong, float, double, real
-    )));
+    static assert(is(AllImplicitConversionTargets!(char) ==
+        AliasSeq!(byte, ubyte, short, ushort, wchar, int, dchar, uint, long,
+            ulong, float, double, real)
+    ));
     static assert(is(AllImplicitConversionTargets!(wchar) == AliasSeq!(
-        dchar, short, ushort, int, uint, long, ulong, float, double, real
+        short, ushort, dchar, int, uint, long, ulong, float, double, real
     )));
     static assert(is(AllImplicitConversionTargets!(dchar) == AliasSeq!(
         int, uint, long, ulong, float, double, real
     )));
 
     static assert(is(AllImplicitConversionTargets!(string) == AliasSeq!(const(char)[])));
-    static assert(is(AllImplicitConversionTargets!(void*) == AliasSeq!(void*)));
+    static assert(is(AllImplicitConversionTargets!(int*) == AliasSeq!(void*)));
 
     interface A {}
     interface B {}
@@ -5747,13 +5669,11 @@ Note: Trying to use returned value will result in a
 // SomethingTypeOf
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 
-private alias AliasThisTypeOf(T) = typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0]));
-
 /*
  */
 template BooleanTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+    static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
         alias X = BooleanTypeOf!AT;
     else
         alias X = OriginalType!T;
@@ -5804,7 +5724,7 @@ template BooleanTypeOf(T)
  */
 template IntegralTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+    static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
         alias X = IntegralTypeOf!AT;
     else
         alias X = OriginalType!T;
@@ -5840,7 +5760,7 @@ template IntegralTypeOf(T)
  */
 template FloatingPointTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+    static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
         alias X = FloatingPointTypeOf!AT;
     else
         alias X = OriginalType!T;
@@ -5925,7 +5845,7 @@ template SignedTypeOf(T)
  */
 template CharTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+    static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
         alias X = CharTypeOf!AT;
     else
         alias X = OriginalType!T;
@@ -5966,7 +5886,7 @@ template CharTypeOf(T)
  */
 template StaticArrayTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+    static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
         alias X = StaticArrayTypeOf!AT;
     else
         alias X = OriginalType!T;
@@ -6001,17 +5921,8 @@ template StaticArrayTypeOf(T)
  */
 template DynamicArrayTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
-        alias X = DynamicArrayTypeOf!AT;
-    else
-        alias X = OriginalType!T;
-
-    static if (is(X == E[], E))
-    {
-        alias DynamicArrayTypeOf = X;
-    }
-    else
-        static assert(0, T.stringof~" is not a dynamic array");
+    import core.internal.traits : _DynamicArrayTypeOf = DynamicArrayTypeOf;
+    alias DynamicArrayTypeOf = _DynamicArrayTypeOf!T;
 }
 
 @safe unittest
@@ -6132,7 +6043,7 @@ template StringTypeOf(T)
  */
 template AssocArrayTypeOf(T)
 {
-    static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+    static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
         alias X = AssocArrayTypeOf!AT;
     else
         alias X = OriginalType!T;
@@ -6173,7 +6084,7 @@ template BuiltinTypeOf(T)
         alias BuiltinTypeOf = void;
     else
     {
-        static if (is(AliasThisTypeOf!T AT) && !is(AT[] == AT))
+        static if (is(typeof(__traits(getMember, T.init, __traits(getAliasThis, T)[0])) AT) && !is(AT[] == AT))
             alias X = BuiltinTypeOf!AT;
         else
             alias X = OriginalType!T;
@@ -6902,7 +6813,9 @@ template isAutodecodableString(T)
     import std.range.primitives : autodecodeStrings;
 
     enum isAutodecodableString = autodecodeStrings &&
-        (is(T : const char[]) || is(T : const wchar[])) && !is(T : U[n], U, size_t n);
+        (is(T : const char[]) || is(T : const wchar[]))
+        && !is(T : U[n], U, size_t n)
+        && !is(immutable T : immutable noreturn[]);
 }
 
 ///
@@ -6937,6 +6850,9 @@ template isAutodecodableString(T)
 
     static assert(isAutodecodableString!(H));
     static assert(isAutodecodableString!(I));
+
+    static assert(!isAutodecodableString!(noreturn[]));
+    static assert(!isAutodecodableString!(immutable(noreturn)[]));
 }
 
 /**
@@ -7381,15 +7297,14 @@ alias isExpressionTuple = isExpressions;
  *
  * See_Also: $(LREF isExpressions).
  */
-template isTypeTuple(T...)
+enum isTypeTuple(T...) =
 {
-    static if (T.length >= 2)
-        enum bool isTypeTuple = isTypeTuple!(T[0 .. $/2]) && isTypeTuple!(T[$/2 .. $]);
-    else static if (T.length == 1)
-        enum bool isTypeTuple = is(T[0]);
-    else
-        enum bool isTypeTuple = true; // default
-}
+    static foreach (U; T)
+        static if (!is(U))
+            if (__ctfe)
+                return false;
+    return true;
+}();
 
 ///
 @safe unittest
@@ -7473,15 +7388,14 @@ Params:
 Returns:
     A `bool`
  */
-template isSomeFunction(T...)
-if (T.length == 1)
+template isSomeFunction(alias T)
 {
-    static if (is(typeof(& T[0]) U : U*) && is(U == function) || is(typeof(& T[0]) U == delegate))
+    static if (is(typeof(& T) U : U*) && is(U == function) || is(typeof(& T) U == delegate))
     {
         // T is a (nested) function symbol.
         enum bool isSomeFunction = true;
     }
-    else static if (is(T[0] W) || is(typeof(T[0]) W))
+    else static if (is(T W) || is(typeof(T) W))
     {
         // T is an expression or a type.  Take the type of it and examine.
         static if (is(W F : F*) && is(F == function))
@@ -7623,11 +7537,7 @@ Params:
 Returns:
     A `bool`
  */
-template isAbstractFunction(T...)
-if (T.length == 1)
-{
-    enum bool isAbstractFunction = __traits(isAbstractFunction, T[0]);
-}
+enum isAbstractFunction(alias T) = __traits(isAbstractFunction, T);
 
 ///
 @safe unittest
@@ -7644,11 +7554,7 @@ if (T.length == 1)
 /**
  * Detect whether `T` is a final function.
  */
-template isFinalFunction(T...)
-if (T.length == 1)
-{
-    enum bool isFinalFunction = __traits(isFinalFunction, T[0]);
-}
+enum isFinalFunction(alias T) = __traits(isFinalFunction, T);
 
 ///
 @safe unittest
@@ -7716,11 +7622,7 @@ template isNestedFunction(alias f)
 /**
  * Detect whether `T` is an abstract class.
  */
-template isAbstractClass(T...)
-if (T.length == 1)
-{
-    enum bool isAbstractClass = __traits(isAbstractClass, T[0]);
-}
+enum isAbstractClass(alias T) = __traits(isAbstractClass, T);
 
 ///
 @safe unittest
@@ -7740,11 +7642,7 @@ if (T.length == 1)
 /**
  * Detect whether `T` is a final class.
  */
-template isFinalClass(T...)
-if (T.length == 1)
-{
-    enum bool isFinalClass = __traits(isFinalClass, T[0]);
-}
+enum isFinalClass(alias T) = __traits(isFinalClass, T);
 
 ///
 @safe unittest
@@ -7767,13 +7665,21 @@ if (T.length == 1)
 // General Types
 //::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::://
 
-/**
-Removes `const`, `inout` and `immutable` qualifiers, if any, from type `T`.
- */
-template Unconst(T)
+version (StdDdoc)
+{
+    /**
+       Removes `const`, `inout` and `immutable` qualifiers, if any, from type `T`.
+    */
+    template Unconst(T)
+    {
+        import core.internal.traits : CoreUnconst = Unconst;
+        alias Unconst = CoreUnconst!(T);
+    }
+}
+else
 {
     import core.internal.traits : CoreUnconst = Unconst;
-    alias Unconst = CoreUnconst!(T);
+    alias Unconst = CoreUnconst;
 }
 
 ///
@@ -7802,13 +7708,21 @@ template Unconst(T)
     static assert(is(Unconst!ImmIntArr == immutable(int)[]));
 }
 
-/**
-Removes all qualifiers, if any, from type `T`.
- */
-template Unqual(T)
+version (StdDdoc)
+{
+    /**
+       Removes all qualifiers, if any, from type `T`.
+    */
+    template Unqual(T)
+    {
+        import core.internal.traits : CoreUnqual = Unqual;
+        alias Unqual = CoreUnqual!(T);
+    }
+}
+else
 {
     import core.internal.traits : CoreUnqual = Unqual;
-    alias Unqual = CoreUnqual!(T);
+    alias Unqual = CoreUnqual;
 }
 
 ///
@@ -7840,29 +7754,8 @@ template Unqual(T)
 // [For internal use]
 package template ModifyTypePreservingTQ(alias Modifier, T)
 {
-         static if (is(T U ==          immutable U)) alias ModifyTypePreservingTQ =          immutable Modifier!U;
-    else static if (is(T U == shared inout const U)) alias ModifyTypePreservingTQ = shared inout const Modifier!U;
-    else static if (is(T U == shared inout       U)) alias ModifyTypePreservingTQ = shared inout       Modifier!U;
-    else static if (is(T U == shared       const U)) alias ModifyTypePreservingTQ = shared       const Modifier!U;
-    else static if (is(T U == shared             U)) alias ModifyTypePreservingTQ = shared             Modifier!U;
-    else static if (is(T U ==        inout const U)) alias ModifyTypePreservingTQ =        inout const Modifier!U;
-    else static if (is(T U ==        inout       U)) alias ModifyTypePreservingTQ =              inout Modifier!U;
-    else static if (is(T U ==              const U)) alias ModifyTypePreservingTQ =              const Modifier!U;
-    else                                             alias ModifyTypePreservingTQ =                    Modifier!T;
-}
-
-@safe unittest
-{
-    alias Intify(T) = int;
-    static assert(is(ModifyTypePreservingTQ!(Intify,                    real) ==                    int));
-    static assert(is(ModifyTypePreservingTQ!(Intify,              const real) ==              const int));
-    static assert(is(ModifyTypePreservingTQ!(Intify,        inout       real) ==        inout       int));
-    static assert(is(ModifyTypePreservingTQ!(Intify,        inout const real) ==        inout const int));
-    static assert(is(ModifyTypePreservingTQ!(Intify, shared             real) == shared             int));
-    static assert(is(ModifyTypePreservingTQ!(Intify, shared       const real) == shared       const int));
-    static assert(is(ModifyTypePreservingTQ!(Intify, shared inout       real) == shared inout       int));
-    static assert(is(ModifyTypePreservingTQ!(Intify, shared inout const real) == shared inout const int));
-    static assert(is(ModifyTypePreservingTQ!(Intify,          immutable real) ==          immutable int));
+    import core.internal.traits : _ModifyTypePreservingTQ = ModifyTypePreservingTQ;
+    alias ModifyTypePreservingTQ = _ModifyTypePreservingTQ!(Modifier, T);
 }
 
 /**
@@ -8009,20 +7902,8 @@ template ForeachType(T)
  */
 template OriginalType(T)
 {
-    static if (is(T == enum))
-    {
-        template Impl(T)
-        {
-            static if (is(T U == enum)) alias Impl = OriginalType!U;
-            else                        alias Impl =              T;
-        }
-
-        alias OriginalType = ModifyTypePreservingTQ!(Impl, T);
-    }
-    else
-    {
-        alias OriginalType = T;
-    }
+    import core.internal.traits : _OriginalType = OriginalType;
+    alias OriginalType = _OriginalType!T;
 }
 
 ///
@@ -8158,25 +8039,9 @@ returned.
 template Largest(T...)
 if (T.length >= 1)
 {
-    static if (T.length == 1)
-    {
-        alias Largest = T[0];
-    }
-    else static if (T.length == 2)
-    {
-        static if (T[0].sizeof >= T[1].sizeof)
-        {
-            alias Largest = T[0];
-        }
-        else
-        {
-            alias Largest = T[1];
-        }
-    }
-    else
-    {
-        alias Largest = Largest!(Largest!(T[0 .. $/2]), Largest!(T[$/2 .. $]));
-    }
+    alias Largest = T[0];
+    static foreach (U; T[1 .. $])
+        Largest = Select!(U.sizeof > Largest.sizeof, U, Largest);
 }
 
 ///
@@ -8332,11 +8197,7 @@ Returns the mangled name of symbol or type `sth`.
 might be more convenient in generic code, e.g. as a template argument
 when invoking staticMap.
  */
-template mangledName(sth...)
-if (sth.length == 1)
-{
-    enum string mangledName = sth[0].mangleof;
-}
+enum mangledName(alias sth) = sth.mangleof;
 
 ///
 @safe unittest
@@ -8451,10 +8312,7 @@ B select(bool cond : false, A, B)(lazy A a, B b) { return b; }
     See_Also:
         $(LREF getUDAs)
   +/
-template hasUDA(alias symbol, alias attribute)
-{
-    enum hasUDA = getUDAs!(symbol, attribute).length != 0;
-}
+enum hasUDA(alias symbol, alias attribute) = getUDAs!(symbol, attribute).length != 0;
 
 ///
 @safe unittest
@@ -8941,28 +8799,22 @@ private template getSymbolsByUDAImpl(alias symbol, alias attribute, names...)
 }
 
 /**
-   Returns: `true` iff all types `T` are the same.
+   Returns: `true` iff all types `Ts` are the same.
 */
-template allSameType(T...)
+enum bool allSameType(Ts...) =
 {
-    static foreach (idx, Ti; T)
-    {
-        static if (idx + 1 < T.length &&
-                   !is(typeof(allSameType) == bool) &&
-                   !is(T[idx] == T[idx + 1]))
-        {
-            enum bool allSameType = false;
-        }
-    }
-    static if (!is(typeof(allSameType) == bool))
-    {
-        enum bool allSameType = true;
-    }
-}
+    static foreach (T; Ts[Ts.length > 1 .. $])
+        static if (!is(Ts[0] == T))
+            if (__ctfe)  // Dodge the "statement is unreachable" warning
+                return false;
+    return true;
+}();
 
 ///
 @safe unittest
 {
+    static assert(allSameType!());
+    static assert(allSameType!(int));
     static assert(allSameType!(int, int));
     static assert(allSameType!(int, int, int));
     static assert(allSameType!(float, float, float));
@@ -8993,11 +8845,7 @@ enum ifTestable(T, alias pred = a => a) = __traits(compiles, { if (pred(T.init))
  * Returns:
  *      `true` if `X` is a type, `false` otherwise
  */
-template isType(X...)
-if (X.length == 1)
-{
-    enum isType = is(X[0]);
-}
+enum isType(alias X) = is(X);
 
 ///
 @safe unittest
@@ -9037,16 +8885,15 @@ if (X.length == 1)
  *     Use $(LREF isFunctionPointer) or $(LREF isDelegate) for detecting those types
  *     respectively.
  */
-template isFunction(X...)
-if (X.length == 1)
+template isFunction(alias X)
 {
-    static if (is(typeof(&X[0]) U : U*) && is(U == function) ||
-               is(typeof(&X[0]) U == delegate))
+    static if (is(typeof(&X) U : U*) && is(U == function) ||
+               is(typeof(&X) U == delegate))
     {
         // x is a (nested) function symbol.
         enum isFunction = true;
     }
-    else static if (is(X[0] T))
+    else static if (is(X T))
     {
         // x is a type.  Take the type of it and examine.
         enum isFunction = is(T == function);
@@ -9074,13 +8921,12 @@ if (X.length == 1)
  * Returns:
  *     `true` if `X` is final, `false` otherwise
  */
-template isFinal(X...)
-if (X.length == 1)
+template isFinal(alias X)
 {
-    static if (is(X[0] == class))
-        enum isFinal = __traits(isFinalClass, X[0]);
+    static if (is(X == class))
+        enum isFinal = __traits(isFinalClass, X);
     else static if (isFunction!X)
-        enum isFinal = __traits(isFinalFunction, X[0]);
+        enum isFinal = __traits(isFinalFunction, X);
     else
         enum isFinal = false;
 }

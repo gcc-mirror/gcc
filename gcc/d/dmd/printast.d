@@ -59,7 +59,7 @@ extern (C++) final class PrintASTVisitor : Visitor
         printIndent(indent);
 
         import dmd.hdrgen : floatToBuffer;
-        import dmd.root.outbuffer : OutBuffer;
+        import dmd.common.outbuffer : OutBuffer;
         OutBuffer buf;
         floatToBuffer(e.type, e.value, &buf, false);
         printf("Real %s %s\n", buf.peekChars(), e.type ? e.type.toChars() : "");

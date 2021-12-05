@@ -89,7 +89,7 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
 
         if (hasPointers && v.type.toBasetype().ty != Tstruct)
         {
-            if ((ad.type.alignment() < target.ptrsize ||
+            if ((!ad.type.alignment.isDefault() && ad.type.alignment.get() < target.ptrsize ||
                  (v.offset & (target.ptrsize - 1))) &&
                 sc.func.setUnsafe())
             {

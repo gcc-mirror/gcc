@@ -697,6 +697,54 @@ static if(is(typeof(foo20831) Params20831 == __parameters))
 
 /************************************************/
 
+/************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=15804
+
+template test15804()
+{
+    alias AliasSeq(T...) = T;
+
+    @(42) struct Foo(D) {}
+    auto fooFac(T)()
+    {
+        static assert(__traits(getAttributes, Foo) == AliasSeq!42);
+        static assert(__traits(getAttributes, Foo!int) == AliasSeq!42);
+        return Foo!T();
+    }
+
+    auto booFac(T)()
+    {
+        @(43) struct Boo {}
+        static assert(__traits(getAttributes, Boo) == AliasSeq!43);
+        return Boo();
+    }
+
+    auto barFac(T)()
+    {
+        @(44) struct Bar(D) {}
+        static assert(__traits(getAttributes, Bar) == AliasSeq!44); // Fixed
+        static assert(__traits(getAttributes, Bar!int) == AliasSeq!44);
+        return Bar!T();
+    }
+
+    auto bazFac(T)()
+    {
+        @(45) static struct Baz(D) {}
+        static assert(__traits(getAttributes, Baz) == AliasSeq!45); // Fixed
+        static assert(__traits(getAttributes, Baz!int) == AliasSeq!45);
+        return Baz!T();
+    }
+
+    auto foo = fooFac!int;
+    auto boo = booFac!int;
+    auto bar = barFac!int;
+    auto baz = bazFac!int;
+}
+
+alias a15804 = test15804!();
+
+/************************************************/
+
 int main()
 {
     test1();

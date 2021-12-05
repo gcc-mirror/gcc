@@ -27,7 +27,7 @@ import dmd.expression;
 import dmd.func;
 import dmd.dmangle;
 import dmd.mtype;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.root.stringtable;
 import dmd.dscope;

@@ -13,7 +13,7 @@ module dmd.root.rootobject;
 
 import core.stdc.stdio;
 
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 
 /***********************************************************
  */

@@ -210,7 +210,7 @@ struct RIPEMD160
          * RIPEMD160 basic transformation. Transforms state based on block.
          */
 
-        private void transform(const(ubyte[64])* block)
+        void transform(const(ubyte[64])* block)
             pure nothrow @nogc
         {
             uint aa = _state[0],

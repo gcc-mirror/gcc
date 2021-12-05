@@ -45,7 +45,7 @@ import dmd.mtype;
 import dmd.root.array;
 import dmd.root.file;
 import dmd.root.filename;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.port;
 import dmd.root.rmem;
 import dmd.root.string;
@@ -3995,8 +3995,8 @@ private size_t startTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const r
     const iDelimiterRowEnd = parseTableDelimiterRow(buf, iEnd + 1, inQuote, columnAlignments);
     if (iDelimiterRowEnd)
     {
-        const delta = replaceTableRow(buf, iStart, iEnd, loc, inlineDelimiters, columnAlignments, true);
-        if (delta)
+        size_t delta;
+        if (replaceTableRow(buf, iStart, iEnd, loc, inlineDelimiters, columnAlignments, true, delta))
         {
             buf.remove(iEnd + delta, iDelimiterRowEnd - iEnd);
             buf.insert(iEnd + delta, "$(TBODY ");
@@ -4023,12 +4023,15 @@ private size_t startTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const r
  *  headerRow = if `true` then the number of columns will be enforced to match
  *              `columnAlignments.length` and the row will be surrounded by a
  *              `THEAD` macro
- * Returns: the number of characters added by replacing the row, or `0` if unchanged
+ *  delta     = the number of characters added by replacing the row, or `0` if unchanged
+ * Returns: `true` if a table row was found and replaced
  */
-private size_t replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, TableColumnAlignment[] columnAlignments, bool headerRow)
+private bool replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, TableColumnAlignment[] columnAlignments, bool headerRow, out size_t delta)
 {
+    delta = 0;
+
     if (!columnAlignments.length || iStart == iEnd)
-        return 0;
+        return false;
 
     iStart = skipChars(buf, iStart, " \t");
     int cellCount = 0;
@@ -4045,15 +4048,13 @@ private size_t replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, co
         ++cellCount;
 
     if (headerRow && cellCount != columnAlignments.length)
-        return 0;
+        return false;
 
     if (headerRow && global.params.vmarkdown)
     {
         const s = buf[][iStart..iEnd];
         message(loc, "Ddoc: formatting table '%.*s'", cast(int)s.length, s.ptr);
     }
-
-    size_t delta = 0;
 
     void replaceTableCell(size_t iCellStart, size_t iCellEnd, int cellIndex, int di)
     {
@@ -4146,7 +4147,7 @@ private size_t replaceTableRow(ref OutBuffer buf, size_t iStart, size_t iEnd, co
         delta += 9;
     }
 
-    return delta;
+    return true;
 }
 
 /****************************************************
@@ -4182,7 +4183,8 @@ private size_t endTable(ref OutBuffer buf, size_t i, ref TableColumnAlignment[] 
  */
 private size_t endRowAndTable(ref OutBuffer buf, size_t iStart, size_t iEnd, const ref Loc loc, ref MarkdownDelimiter[] inlineDelimiters, ref TableColumnAlignment[] columnAlignments)
 {
-    size_t delta = replaceTableRow(buf, iStart, iEnd, loc, inlineDelimiters, columnAlignments, false);
+    size_t delta;
+    replaceTableRow(buf, iStart, iEnd, loc, inlineDelimiters, columnAlignments, false, delta);
     delta += endTable(buf, iEnd + delta, columnAlignments);
     return delta;
 }
@@ -4263,8 +4265,8 @@ private void highlightText(Scope* sc, Dsymbols* a, Loc loc, ref OutBuffer buf, s
                 i += startTable(buf, iLineStart, i, loc, lineQuoted, inlineDelimiters, columnAlignments);
             else if (columnAlignments.length)
             {
-                const delta = replaceTableRow(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments, false);
-                if (delta)
+                size_t delta;
+                if (replaceTableRow(buf, iLineStart, i, loc, inlineDelimiters, columnAlignments, false, delta))
                     i += delta;
                 else
                     i += endTable(buf, i, columnAlignments);

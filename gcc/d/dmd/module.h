@@ -119,7 +119,7 @@ public:
 
     static Module* create(const char *arg, Identifier *ident, int doDocComment, int doHdrGen);
 
-    static Module *load(Loc loc, Identifiers *packages, Identifier *ident);
+    static Module *load(const Loc &loc, Identifiers *packages, Identifier *ident);
 
     const char *kind() const;
     bool read(const Loc &loc); // read file, returns 'true' if succeed, 'false' otherwise.

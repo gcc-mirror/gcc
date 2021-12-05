@@ -9,44 +9,50 @@
 */
 module core.internal.array.construction;
 
+import core.internal.traits : Unqual;
+
 /**
  * Does array initialization (not assignment) from another array of the same element type.
  * Params:
- *  to = what array to initialize
  *  from = what data the array should be initialized with
  * Returns:
- *  The constructed `to`
+ *  The created and initialized array `to`
  * Bugs:
  *  This function template was ported from a much older runtime hook that bypassed safety,
  *  purity, and throwabilty checks. To prevent breaking existing code, this function template
  *  is temporarily declared `@trusted` until the implementation can be brought up to modern D expectations.
  */
-Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
+Tarr1 _d_arrayctor(Tarr1 : T1[], Tarr2 : T2[], T1, T2)(scope Tarr2 from) @trusted
+    if (is(Unqual!T1 == Unqual!T2))
 {
     pragma(inline, false);
-    import core.internal.traits : hasElaborateCopyConstructor, Unqual;
+    import core.internal.traits : hasElaborateCopyConstructor;
     import core.lifetime : copyEmplace;
     import core.stdc.string : memcpy;
-    debug(PRINTF) import core.stdc.stdio;
+    import core.stdc.stdint : uintptr_t;
+    debug(PRINTF) import core.stdc.stdio : printf;
 
-    // Force `enforceRawArraysConformable` to be `pure`
-    void enforceRawArraysConformable(const char[] action, const size_t elementSize, const void[] a1, const void[] a2, in bool allowOverlap = false) @trusted
-    {
-        import core.internal.util.array : enforceRawArraysConformable;
+    debug(PRINTF) printf("_d_arrayctor(to = %p,%d, from = %p,%d) size = %d\n", from.ptr, from.length, to.ptr, to.length, T1.tsize);
 
-        alias Type = void function(const char[] action, const size_t elementSize, const void[] a1, const void[] a2, in bool allowOverlap = false) pure nothrow;
-        (cast(Type)&enforceRawArraysConformable)(action, elementSize, a1, a2, allowOverlap);
-    }
-
-    debug(PRINTF) printf("_d_arrayctor(to = %p,%d, from = %p,%d) size = %d\n", from.ptr, from.length, to.ptr, to.length, T.tsize);
-
-    auto element_size = T.sizeof;
+    Tarr1 to = void;
 
     void[] vFrom = (cast(void*)from.ptr)[0..from.length];
     void[] vTo = (cast(void*)to.ptr)[0..to.length];
-    enforceRawArraysConformable("initialization", element_size, vFrom, vTo, false);
 
-    static if (hasElaborateCopyConstructor!T)
+    // Force `enforceRawArraysConformable` to be `pure`
+    void enforceRawArraysConformable(const char[] action, const size_t elementSize,
+        const void[] a1, const void[] a2) @trusted
+    {
+        import core.internal.util.array : enforceRawArraysConformableNogc;
+
+        alias Type = void function(const char[] action, const size_t elementSize,
+            const void[] a1, const void[] a2, in bool allowOverlap = false) @nogc pure nothrow;
+        (cast(Type)&enforceRawArraysConformableNogc)(action, elementSize, a1, a2, false);
+    }
+
+    enforceRawArraysConformable("initialization", T1.sizeof, vFrom, vTo);
+
+    static if (hasElaborateCopyConstructor!T1)
     {
         size_t i;
         try
@@ -60,7 +66,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
             */
             while (i--)
             {
-                auto elem = cast(Unqual!T*)&to[i];
+                auto elem = cast(Unqual!T1*)&to[i];
                 destroy(*elem);
             }
 
@@ -70,7 +76,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
     else
     {
         // blit all elements at once
-        memcpy(cast(void*) to.ptr, from.ptr, to.length * T.sizeof);
+        memcpy(cast(void*) to.ptr, from.ptr, to.length * T1.sizeof);
     }
 
     return to;
@@ -88,7 +94,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
 
     S[4] arr1;
     S[4] arr2 = [S(0), S(1), S(2), S(3)];
-    _d_arrayctor(arr1[], arr2[]);
+    arr1 = _d_arrayctor!(typeof(arr1))(arr2[]);
 
     assert(counter == 4);
     assert(arr1 == arr2);
@@ -111,7 +117,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
 
     S[4] arr1;
     S[4] arr2 = [S(0), S(1), S(2), S(3)];
-    _d_arrayctor(arr1[], arr2[]);
+    arr1 = _d_arrayctor!(typeof(arr1))(arr2[]);
 
     assert(counter == 4);
     assert(arr1 == arr2);
@@ -137,7 +143,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
     {
         Throw[4] a;
         Throw[4] b = [Throw(1), Throw(2), Throw(3), Throw(4)];
-        _d_arrayctor(a[], b[]);
+        a = _d_arrayctor!(typeof(a))(b[]);
     }
     catch (Exception)
     {
@@ -162,7 +168,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
     {
         NoThrow[4] a;
         NoThrow[4] b = [NoThrow(1), NoThrow(2), NoThrow(3), NoThrow(4)];
-        _d_arrayctor(a[], b[]);
+        a = _d_arrayctor!(typeof(a))(b[]);
     }
     catch (Exception)
     {
@@ -186,7 +192,6 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from) @trusted
 void _d_arraysetctor(Tarr : T[], T)(scope Tarr p, scope ref T value) @trusted
 {
     pragma(inline, false);
-    import core.internal.traits : Unqual;
     import core.lifetime : copyEmplace;
 
     size_t i;
@@ -269,7 +274,7 @@ void _d_arraysetctor(Tarr : T[], T)(scope Tarr p, scope ref T value) @trusted
     {
         Throw[4] a;
         Throw[4] b = [Throw(1), Throw(2), Throw(3), Throw(4)];
-        _d_arrayctor(a[], b[]);
+        a = _d_arrayctor!(typeof(a))(b[]);
     }
     catch (Exception)
     {

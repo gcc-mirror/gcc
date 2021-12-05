@@ -794,6 +794,19 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
     if (!needToHash(sd))
         return null;
 
+    /* The trouble is that the following code relies on .tupleof, but .tupleof
+     * is not allowed for C files. If we allow it for C files, then that turns on
+     * the other D properties, too, such as .dup which will then conflict with allowed
+     * field names.
+     * One way to fix it is to replace the following foreach and .tupleof with C
+     * statements and expressions.
+     * But, it's debatable whether C structs should even need toHash().
+     * Note that it would only be necessary if it has floating point fields.
+     * For now, we'll just not generate a toHash() for C files.
+     */
+    if (sc.flags & SCOPE.Cfile)
+        return null;
+
     //printf("StructDeclaration::buildXtoHash() %s\n", sd.toPrettyChars());
     Loc declLoc; // loc is unnecessary so __xtoHash is never called directly
     Loc loc; // internal code should have no loc to prevent coverage
@@ -831,31 +844,31 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
 }
 
 /*****************************************
- * Create inclusive destructor for struct/class by aggregating
- * all the destructors in dtors[] with the destructors for
+ * Create aggregate destructor for struct/class by aggregating
+ * all the destructors in userDtors[] with the destructors for
  * all the members.
+ * Sets ad's fieldDtor, aggrDtor, dtor and tidtor fields.
  * Params:
  *      ad = struct or class to build destructor for
  *      sc = context
- * Returns:
- *      generated function, null if none needed
  * Note:
  * Close similarity with StructDeclaration::buildPostBlit(),
  * and the ordering changes (runs backward instead of forwards).
  */
-DtorDeclaration buildDtor(AggregateDeclaration ad, Scope* sc)
+void buildDtors(AggregateDeclaration ad, Scope* sc)
 {
     //printf("AggregateDeclaration::buildDtor() %s\n", ad.toChars());
     if (ad.isUnionDeclaration())
-        return null;                    // unions don't have destructors
+        return;                    // unions don't have destructors
 
     StorageClass stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
-    Loc declLoc = ad.dtors.dim ? ad.dtors[0].loc : ad.loc;
+    Loc declLoc = ad.userDtors.dim ? ad.userDtors[0].loc : ad.loc;
     Loc loc; // internal code should have no loc to prevent coverage
     FuncDeclaration xdtor_fwd = null;
 
-    // if the dtor is an extern(C++) prototype, then we expect it performs a full-destruction; we don't need to build a full-dtor
-    const bool dtorIsCppPrototype = ad.dtors.dim == 1 && ad.dtors[0].linkage == LINK.cpp && !ad.dtors[0].fbody;
+    // Build the field destructor (`ad.fieldDtor`), if needed.
+    // If the user dtor is an extern(C++) prototype, then we expect it performs a full-destruction and skip building.
+    const bool dtorIsCppPrototype = ad.userDtors.dim && ad.userDtors[0].linkage == LINK.cpp && !ad.userDtors[0].fbody;
     if (!dtorIsCppPrototype)
     {
         Expression e = null;
@@ -936,36 +949,6 @@ DtorDeclaration buildDtor(AggregateDeclaration ad, Scope* sc)
             e = Expression.combine(ex, e); // combine in reverse order
         }
 
-        /* extern(C++) destructors call into super to destruct the full hierarchy
-        */
-        ClassDeclaration cldec = ad.isClassDeclaration();
-        if (cldec && cldec.classKind == ClassKind.cpp && cldec.baseClass && cldec.baseClass.primaryDtor)
-        {
-            // WAIT BUT: do I need to run `cldec.baseClass.dtor` semantic? would it have been run before?
-            cldec.baseClass.dtor.functionSemantic();
-
-            stc = mergeFuncAttrs(stc, cldec.baseClass.primaryDtor);
-            if (!(stc & STC.disable))
-            {
-                // super.__xdtor()
-
-                Expression ex = new SuperExp(loc);
-
-                // This is a hack so we can call destructors on const/immutable objects.
-                // Do it as a type 'paint'.
-                ex = new CastExp(loc, ex, cldec.baseClass.type.mutableOf());
-                if (stc & STC.safe)
-                    stc = (stc & ~STC.safe) | STC.trusted;
-
-                ex = new DotVarExp(loc, ex, cldec.baseClass.primaryDtor, false);
-                ex = new CallExp(loc, ex);
-
-                e = Expression.combine(e, ex); // super dtor last
-            }
-        }
-
-        /* Build our own "destructor" which executes e
-         */
         if (e || (stc & STC.disable))
         {
             //printf("Building __fieldDtor(), %s\n", e.toChars());
@@ -973,29 +956,45 @@ DtorDeclaration buildDtor(AggregateDeclaration ad, Scope* sc)
             dd.generated = true;
             dd.storage_class |= STC.inference;
             dd.fbody = new ExpStatement(loc, e);
-            ad.dtors.shift(dd);
             ad.members.push(dd);
             dd.dsymbolSemantic(sc);
             ad.fieldDtor = dd;
         }
     }
 
-    DtorDeclaration xdtor = null;
-    switch (ad.dtors.dim)
+    // Generate list of dtors to call in that order
+    DtorDeclarations dtors;
+    foreach_reverse (userDtor; ad.userDtors[])
+        dtors.push(userDtor);
+    if (ad.fieldDtor)
+        dtors.push(ad.fieldDtor);
+    if (!dtorIsCppPrototype)
+    {
+        // extern(C++) destructors call into super to destruct the full hierarchy
+        ClassDeclaration cldec = ad.isClassDeclaration();
+        if (cldec && cldec.classKind == ClassKind.cpp && cldec.baseClass && cldec.baseClass.aggrDtor)
+            dtors.push(cldec.baseClass.aggrDtor);
+    }
+
+    // Set/build `ad.aggrDtor`
+    switch (dtors.dim)
     {
     case 0:
         break;
 
     case 1:
-        xdtor = ad.dtors[0];
+        // Use the single existing dtor directly as aggregate dtor.
+        // Note that this might be `cldec.baseClass.aggrDtor`.
+        ad.aggrDtor = dtors[0];
         break;
 
     default:
+        // Build the aggregate destructor, calling all dtors in order.
         assert(!dtorIsCppPrototype);
         Expression e = null;
         e = null;
         stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
-        foreach (FuncDeclaration fd; ad.dtors)
+        foreach (FuncDeclaration fd; dtors)
         {
             stc = mergeFuncAttrs(stc, fd);
             if (stc & STC.disable)
@@ -1005,8 +1004,9 @@ DtorDeclaration buildDtor(AggregateDeclaration ad, Scope* sc)
             }
             Expression ex = new ThisExp(loc);
             ex = new DotVarExp(loc, ex, fd, false);
-            ex = new CallExp(loc, ex);
-            e = Expression.combine(ex, e);
+            CallExp ce = new CallExp(loc, ex);
+            ce.directcall = true;
+            e = Expression.combine(e, ce);
         }
         auto dd = new DtorDeclaration(declLoc, Loc.initial, stc, Id.__aggrDtor);
         dd.generated = true;
@@ -1014,19 +1014,20 @@ DtorDeclaration buildDtor(AggregateDeclaration ad, Scope* sc)
         dd.fbody = new ExpStatement(loc, e);
         ad.members.push(dd);
         dd.dsymbolSemantic(sc);
-        xdtor = dd;
+        ad.aggrDtor = dd;
         break;
     }
 
-    ad.primaryDtor = xdtor;
+    // Set/build `ad.dtor`.
+    // On Windows, the dtor in the vtable is a shim with different signature.
+    ad.dtor = (ad.aggrDtor && ad.aggrDtor.linkage == LINK.cpp && !target.cpp.twoDtorInVtable)
+        ? buildWindowsCppDtor(ad, ad.aggrDtor, sc)
+        : ad.aggrDtor;
 
-    if (xdtor && xdtor.linkage == LINK.cpp && !target.cpp.twoDtorInVtable)
-        xdtor = buildWindowsCppDtor(ad, xdtor, sc);
-
-    // Add an __xdtor alias to make the inclusive dtor accessible
-    if (xdtor)
+    // Add an __xdtor alias to make `ad.dtor` accessible
+    if (ad.dtor)
     {
-        auto _alias = new AliasDeclaration(Loc.initial, Id.__xdtor, xdtor);
+        auto _alias = new AliasDeclaration(Loc.initial, Id.__xdtor, ad.dtor);
         _alias.dsymbolSemantic(sc);
         ad.members.push(_alias);
         if (xdtor_fwd)
@@ -1035,7 +1036,8 @@ DtorDeclaration buildDtor(AggregateDeclaration ad, Scope* sc)
             _alias.addMember(sc, ad); // add to symbol table
     }
 
-    return xdtor;
+    // Set/build `ad.tidtor`
+    ad.tidtor = buildExternDDtor(ad, sc);
 }
 
 /**
@@ -1069,17 +1071,16 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
     auto ftype = new TypeFunction(ParameterList(params), Type.tvoidptr, LINK.cpp, dtor.storage_class);
     auto func = new DtorDeclaration(dtor.loc, dtor.loc, dtor.storage_class, Id.cppdtor);
     func.type = ftype;
-    if (dtor.fbody)
-    {
-        const loc = dtor.loc;
-        auto stmts = new Statements;
-        auto call = new CallExp(loc, dtor, null);
-        call.directcall = true;
-        stmts.push(new ExpStatement(loc, call));
-        stmts.push(new ReturnStatement(loc, new CastExp(loc, new ThisExp(loc), Type.tvoidptr)));
-        func.fbody = new CompoundStatement(loc, stmts);
-        func.generated = true;
-    }
+
+    // Always generate the function with body, because it is not exported from DLLs.
+    const loc = dtor.loc;
+    auto stmts = new Statements;
+    auto call = new CallExp(loc, dtor, null);
+    call.directcall = true;
+    stmts.push(new ExpStatement(loc, call));
+    stmts.push(new ReturnStatement(loc, new CastExp(loc, new ThisExp(loc), Type.tvoidptr)));
+    func.fbody = new CompoundStatement(loc, stmts);
+    func.generated = true;
 
     auto sc2 = sc.push();
     sc2.stc &= ~STC.static_; // not a static destructor
@@ -1094,7 +1095,7 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
 }
 
 /**
- * build a shim function around the compound dtor that translates
+ * build a shim function around the aggregate dtor that translates
  *  a C++ destructor to a destructor with extern(D) calling convention
  *
  * Params:
@@ -1104,9 +1105,9 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
  * Returns:
  *  the shim destructor, semantically analyzed and added to the class as a member
  */
-DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
+private DtorDeclaration buildExternDDtor(AggregateDeclaration ad, Scope* sc)
 {
-    auto dtor = ad.primaryDtor;
+    auto dtor = ad.aggrDtor;
     if (!dtor)
         return null;
 

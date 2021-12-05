@@ -2124,7 +2124,9 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
                 () @trusted { memset(&source, 0, sz); }();
             else
             {
-                auto init = typeid(T).initializer();
+                import core.internal.lifetime : emplaceInitializer;
+                ubyte[T.sizeof] init = void;
+                emplaceInitializer(*(() @trusted { return cast(T*)init.ptr; }()));
                 () @trusted { memcpy(&source, init.ptr, sz); }();
             }
         }

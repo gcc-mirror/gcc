@@ -78,6 +78,7 @@ else version (IN_GCC)
     extern (C++)
     {
         Statement asmSemantic(AsmStatement s, Scope* sc);
+        void toObjFile(Dsymbol ds, bool multiobj);
     }
 
     // stubs

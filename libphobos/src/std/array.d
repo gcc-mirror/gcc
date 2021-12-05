@@ -259,6 +259,19 @@ if (isPointer!Range && isIterable!(PointerTarget!Range) && !isAutodecodableStrin
     )));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=20937
+@safe pure nothrow unittest
+{
+    struct S {int* x;}
+    struct R
+    {
+        immutable(S) front;
+        bool empty;
+        @safe pure nothrow void popFront(){empty = true;}
+    }
+    R().array;
+}
+
 /**
 Convert a narrow autodecoding string to an array type that fully supports
 random access.  This is handled as a special case and always returns an array
@@ -1609,7 +1622,7 @@ private template isInputRangeOrConvertible(E)
         `true` if $(D lhs.ptr == rhs.ptr), `false` otherwise.
   +/
 @safe
-pure nothrow bool sameHead(T)(in T[] lhs, in T[] rhs)
+pure nothrow @nogc bool sameHead(T)(in T[] lhs, in T[] rhs)
 {
     return lhs.ptr == rhs.ptr;
 }
@@ -1637,7 +1650,7 @@ pure nothrow bool sameHead(T)(in T[] lhs, in T[] rhs)
         `false` otherwise.
   +/
 @trusted
-pure nothrow bool sameTail(T)(in T[] lhs, in T[] rhs)
+pure nothrow @nogc bool sameTail(T)(in T[] lhs, in T[] rhs)
 {
     return lhs.ptr + lhs.length == rhs.ptr + rhs.length;
 }
@@ -3492,13 +3505,14 @@ if (isDynamicArray!A)
         }
         else
         {
-            import core.internal.lifetime : emplaceRef;
+            import core.lifetime : emplace;
 
             ensureAddable(1);
             immutable len = _data.arr.length;
 
             auto bigData = (() @trusted => _data.arr.ptr[0 .. len + 1])();
-            emplaceRef!(Unqual!T)(bigData[len], cast() item);
+            auto itemUnqual = (() @trusted => & cast() item)();
+            emplace(&bigData[len], *itemUnqual);
             //We do this at the end, in case of exceptions
             _data.arr = bigData;
         }

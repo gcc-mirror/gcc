@@ -283,6 +283,13 @@ Sets @code{__traits(getTargetInfo "cppStd")} to @code{202002}.
 @cindex @option{-fno-invariants}
 Turns off code generation for class @code{invariant} contracts.
 
+@item -fmain
+@cindex @option{-fmain}
+Generates a default @code{main()} function when compiling.  This is useful when
+unittesting a library, as it enables running the unittests in a library without
+having to manually define an entry-point function.  This option does nothing
+when @code{main} is already defined in user code.
+
 @item -fno-moduleinfo
 @cindex @option{-fmoduleinfo}
 @cindex @option{-fno-moduleinfo}
@@ -742,6 +749,8 @@ List information on all D language transitions.
 List all usages of complex or imaginary types.
 @item field
 List all non-mutable fields which occupy an object instance.
+@item in
+List all usages of @code{in} on parameter.
 @item nogc
 List all hidden GC allocations.
 @item templates

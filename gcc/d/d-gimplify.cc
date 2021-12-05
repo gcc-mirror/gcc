@@ -120,52 +120,47 @@ d_gimplify_addr_expr (tree *expr_p)
 static gimplify_status
 d_gimplify_call_expr (tree *expr_p, gimple_seq *pre_p)
 {
-  if (CALL_EXPR_ARGS_ORDERED (*expr_p))
+  /* Strictly evaluate all arguments from left to right.  */
+  int nargs = call_expr_nargs (*expr_p);
+  location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
+
+  /* No need to enforce evaluation order if only one argument.  */
+  if (nargs < 2)
+    return GS_UNHANDLED;
+
+  /* Or if all arguments are already free of side-effects.  */
+  bool has_side_effects = false;
+  for (int i = 0; i < nargs; i++)
     {
-      /* Strictly evaluate all arguments from left to right.  */
-      int nargs = call_expr_nargs (*expr_p);
-      location_t loc = EXPR_LOC_OR_LOC (*expr_p, input_location);
-
-      /* No need to enforce evaluation order if only one argument.  */
-      if (nargs < 2)
-	return GS_UNHANDLED;
-
-      /* Or if all arguments are already free of side-effects.  */
-      bool has_side_effects = false;
-      for (int i = 0; i < nargs; i++)
+      if (TREE_SIDE_EFFECTS (CALL_EXPR_ARG (*expr_p, i)))
 	{
-	  if (TREE_SIDE_EFFECTS (CALL_EXPR_ARG (*expr_p, i)))
-	    {
-	      has_side_effects = true;
-	      break;
-	    }
+	  has_side_effects = true;
+	  break;
 	}
-
-      if (!has_side_effects)
-	return GS_UNHANDLED;
-
-      /* Leave the last argument for gimplify_call_expr.  */
-      for (int i = 0; i < nargs - 1; i++)
-	{
-	  tree new_arg = CALL_EXPR_ARG (*expr_p, i);
-
-	  /* If argument has a side-effect, gimplify_arg will handle it.  */
-	  if (gimplify_arg (&new_arg, pre_p, loc) == GS_ERROR)
-	    return GS_ERROR;
-
-	  /* Even if an argument itself doesn't have any side-effects, it
-	     might be altered by another argument in the list.  */
-	  if (new_arg == CALL_EXPR_ARG (*expr_p, i)
-	      && !really_constant_p (new_arg))
-	    new_arg = get_formal_tmp_var (new_arg, pre_p);
-
-	  CALL_EXPR_ARG (*expr_p, i) = new_arg;
-	}
-
-      return GS_OK;
     }
 
-  return GS_UNHANDLED;
+  if (!has_side_effects)
+    return GS_UNHANDLED;
+
+  /* Leave the last argument for gimplify_call_expr.  */
+  for (int i = 0; i < nargs - 1; i++)
+    {
+      tree new_arg = CALL_EXPR_ARG (*expr_p, i);
+
+      /* If argument has a side-effect, gimplify_arg will handle it.  */
+      if (gimplify_arg (&new_arg, pre_p, loc) == GS_ERROR)
+	return GS_ERROR;
+
+      /* Even if an argument itself doesn't have any side-effects, it
+	 might be altered by another argument in the list.  */
+      if (new_arg == CALL_EXPR_ARG (*expr_p, i)
+	  && !really_constant_p (new_arg))
+	new_arg = get_formal_tmp_var (new_arg, pre_p);
+
+      CALL_EXPR_ARG (*expr_p, i) = new_arg;
+    }
+
+  return GS_OK;
 }
 
 /* Gimplify an UNSIGNED_RSHIFT_EXPR node.  */

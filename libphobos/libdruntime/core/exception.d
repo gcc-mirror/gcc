@@ -97,7 +97,7 @@ class ArrayIndexError : RangeError
         this.length = length;
 
         // Constructing the message is a bit clumsy:
-        // It's essentially `printf("index [%zu] exceeds array of length [%zu]", index, length)`,
+        // It's essentially `printf("index [%zu] is out of bounds for array of length [%zu]", index, length)`,
         // but even `snprintf` isn't `pure`.
         // Also string concatenation isn't `@nogc`, and casting to/from immutable isn't `@safe`
         import core.internal.string : unsignedToTempString;
@@ -106,8 +106,7 @@ class ArrayIndexError : RangeError
         char[] sink = buf[];
         sink.rangeMsgPut("index [");
         sink.rangeMsgPut(unsignedToTempString!10(index, tmpBuf));
-        sink.rangeMsgPut("]");
-        sink.rangeMsgPut(" exceeds array of length ");
+        sink.rangeMsgPut("] is out of bounds for array of length ");
         sink.rangeMsgPut(unsignedToTempString!10(length, tmpBuf));
         this.msgBuf = buf;
         super(msgBuf[0..$-sink.length], file, line, next);
@@ -116,7 +115,7 @@ class ArrayIndexError : RangeError
 
 @safe pure unittest
 {
-    assert(new ArrayIndexError(900, 700).msg == "index [900] exceeds array of length 700");
+    assert(new ArrayIndexError(900, 700).msg == "index [900] is out of bounds for array of length 700");
     // Ensure msg buffer doesn't overflow on large numbers
     assert(new ArrayIndexError(size_t.max, size_t.max-1).msg);
 }
@@ -836,11 +835,23 @@ extern (C)
         onArraySliceError(lower, upper, length, file[0 .. strlen(file)], line);
     }
 
+    /// ditto
+    void _d_arraybounds_slice(string file, uint line, size_t lower, size_t upper, size_t length)
+    {
+        onArraySliceError(lower, upper, length, file, line);
+    }
+
     /// Called when an out of range array index is accessed
     void _d_arraybounds_indexp(immutable(char*) file, uint line, size_t index, size_t length)
     {
         import core.stdc.string : strlen;
         onArrayIndexError(index, length, file[0 .. strlen(file)], line);
+    }
+
+    /// ditto
+    void _d_arraybounds_index(string file, uint line, size_t index, size_t length)
+    {
+        onArrayIndexError(index, length, file, line);
     }
 }
 

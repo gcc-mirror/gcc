@@ -54,7 +54,7 @@ import dmd.nogc;
 import dmd.opover;
 import dmd.parse;
 import dmd.printast;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.string;
 import dmd.semantic2;
 import dmd.sideeffect;
@@ -659,20 +659,6 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
         result = fs;
     }
 
-    /*******************
-     * Determines the return type of makeTupleForeach.
-     */
-    private static template MakeTupleForeachRet(bool isDecl)
-    {
-        static if(isDecl)
-        {
-            alias MakeTupleForeachRet = Dsymbols*;
-        }
-        else
-        {
-            alias MakeTupleForeachRet = void;
-        }
-    }
 
     /*******************
      * Type check and unroll `foreach` over an expression tuple as well
@@ -696,29 +682,24 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
      * expands the tuples into multiple `STC.local` `static foreach`
      * variables.
      */
-    MakeTupleForeachRet!isDecl makeTupleForeach(bool isStatic, bool isDecl)(ForeachStatement fs, TupleForeachArgs!(isStatic, isDecl) args)
+    auto makeTupleForeach(bool isStatic, bool isDecl)(ForeachStatement fs, Dsymbols* dbody, bool needExpansion)
     {
+        // Voldemort return type
+        union U
+        {
+            Statement statement;
+            Dsymbols* decl;
+        }
+
+        U result;
+
         auto returnEarly()
         {
-            static if (isDecl)
-            {
-                return null;
-            }
+            if (isDecl)
+                result.decl = null;
             else
-            {
-                result = new ErrorStatement();
-                return;
-            }
-        }
-        static if(isDecl)
-        {
-            static assert(isStatic);
-            auto dbody = args[0];
-        }
-        static if(isStatic)
-        {
-            auto needExpansion = args[$-1];
-            assert(sc);
+                result.statement = new ErrorStatement();
+            return result;
         }
 
         auto loc = fs.loc;
@@ -827,7 +808,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                 }
                 Initializer ie = new ExpInitializer(Loc.initial, new IntegerExp(k));
                 auto var = new VarDeclaration(loc, p.type, p.ident, ie);
-                var.storage_class |= STC.manifest;
+                var.storage_class |= STC.foreach_ | STC.manifest;
                 static if(isStatic) var.storage_class |= STC.local;
                 static if(!isDecl)
                 {
@@ -919,8 +900,9 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                         e = resolveProperties(sc, e);
                         Initializer ie = new ExpInitializer(Loc.initial, e);
                         auto v = new VarDeclaration(loc, type, ident, ie, storageClass);
+                        v.storage_class |= STC.foreach_;
                         if (storageClass & STC.ref_)
-                            v.storage_class |= STC.ref_ | STC.foreach_;
+                            v.storage_class |= STC.ref_;
                         if (isStatic || storageClass&STC.manifest || e.isConst() ||
                             e.op == TOK.string_ ||
                             e.op == TOK.structLiteral ||
@@ -1057,23 +1039,17 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                 ls.gotoTarget = res;
             if (te && te.e0)
                 res = new CompoundStatement(loc, new ExpStatement(te.e0.loc, te.e0), res);
+            result.statement = res;
         }
         else static if (!isDecl)
         {
-            Statement res = new CompoundStatement(loc, statements);
+            result.statement = new CompoundStatement(loc, statements);
         }
         else
         {
-            auto res = declarations;
+            result.decl = declarations;
         }
-        static if (!isDecl)
-        {
-            result = res;
-        }
-        else
-        {
-            return res;
-        }
+        return result;
     }
 
     override void visit(ForeachStatement fs)
@@ -1202,10 +1178,10 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (tab.ty == Ttuple) // don't generate new scope for tuple loops
         {
-            makeTupleForeach!(false,false)(fs);
+            Statement s = makeTupleForeach!(false,false)(fs, null, false).statement;
             if (vinit)
-                result = new CompoundStatement(loc, new ExpStatement(loc, vinit), result);
-            result = result.statementSemantic(sc);
+                s = new CompoundStatement(loc, new ExpStatement(loc, vinit), s);
+            result = s.statementSemantic(sc);
             return;
         }
 
@@ -2727,7 +2703,8 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                 needswitcherror = true;
         }
 
-        if (!sc.sw.sdefault && (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on))
+        if (!sc.sw.sdefault && !(sc.flags & SCOPE.Cfile) &&
+            (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on))
         {
             ss.hasNoDefault = 1;
 
@@ -3061,7 +3038,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (lval - fval > 256)
         {
-            crs.error("had %llu cases which is more than 256 cases in case range", lval - fval);
+            crs.error("had %llu cases which is more than 257 cases in case range", 1 + lval - fval);
             errors = true;
             lval = fval + 256;
         }
@@ -3295,12 +3272,14 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
             if (e0)
                 e0 = e0.optimize(WANTvalue);
 
-            /* Void-return function can have void typed expression
+            /* Void-return function can have void / noreturn typed expression
              * on return statement.
              */
-            if (tbret && tbret.ty == Tvoid || rs.exp.type.ty == Tvoid)
+            const convToVoid = rs.exp.type.ty == Tvoid || rs.exp.type.ty == Tnoreturn;
+
+            if (tbret && tbret.ty == Tvoid || convToVoid)
             {
-                if (rs.exp.type.ty != Tvoid)
+                if (!convToVoid)
                 {
                     rs.error("cannot return non-void from `void` function");
                     errors = true;
@@ -3345,7 +3324,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                     }
                     else if (rs.exp.op != TOK.error)
                     {
-                        rs.error("Expected return type of `%s`, not `%s`:",
+                        rs.error("expected return type of `%s`, not `%s`:",
                                  tret.toChars(),
                                  rs.exp.type.toChars());
                         errorSupplemental((fd.returns) ? (*fd.returns)[0].loc : fd.loc,
@@ -3409,10 +3388,20 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
         }
         else
         {
+            // Type of the returned expression (if any), might've been moved to e0
+            auto resType = e0 ? e0.type : Type.tvoid;
+
             // infer return type
             if (fd.inferRetType)
             {
-                if (tf.next && tf.next.ty != Tvoid)
+                // 1. First `return <noreturn exp>?`
+                // 2. Potentially found a returning branch, update accordingly
+                if (!tf.next || tf.next.toBasetype().isTypeNoreturn())
+                {
+                    tf.next = resType; // infer void or noreturn
+                }
+                // Found an actual return value before
+                else if (tf.next.ty != Tvoid && !resType.toBasetype().isTypeNoreturn())
                 {
                     if (tf.next.ty != Terror)
                     {
@@ -3421,20 +3410,23 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                     errors = true;
                     tf.next = Type.terror;
                 }
-                else
-                    tf.next = Type.tvoid;
 
-                    tret = tf.next;
+                tret = tf.next;
                 tbret = tret.toBasetype();
             }
 
             if (inferRef) // deduce 'auto ref'
                 tf.isref = false;
 
-            if (tbret.ty != Tvoid) // if non-void return
+            if (tbret.ty != Tvoid && !resType.isTypeNoreturn()) // if non-void return
             {
                 if (tbret.ty != Terror)
-                    rs.error("`return` expression expected");
+                {
+                    if (e0)
+                        rs.error("expected return type of `%s`, not `%s`", tret.toChars(), resType.toChars());
+                    else
+                        rs.error("`return` expression expected");
+                }
                 errors = true;
             }
             else if (fd.isMain())
@@ -3522,7 +3514,12 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
             }
             else
             {
-                result = new CompoundStatement(rs.loc, new ExpStatement(rs.loc, e0), rs);
+                auto es = new ExpStatement(rs.loc, e0);
+                if (e0.type.isTypeNoreturn())
+                    result = es; // Omit unreachable return;
+                else
+                    result = new CompoundStatement(rs.loc, es, rs);
+
                 return;
             }
         }
@@ -4014,7 +4011,7 @@ private extern (C++) final class StatementSemanticVisitor : Visitor
                 /* If catch exception type is derived from Exception
                  */
                 if (c.type.toBasetype().implicitConvTo(ClassDeclaration.exception.type) &&
-                    (!c.handler || !c.handler.comeFrom()))
+                    (!c.handler || !c.handler.comeFrom()) && !(sc.flags & SCOPE.debug_))
                 {
                     // Remove c from the array of catches
                     tcs.catches.remove(i);
@@ -4570,44 +4567,13 @@ Statement scopeCode(Statement statement, Scope* sc, out Statement sentry, out St
 
 
 /*******************
- * Determines additional argument types for makeTupleForeach.
- */
-static template TupleForeachArgs(bool isStatic, bool isDecl)
-{
-    alias Seq(T...)=T;
-    static if(isStatic) alias T = Seq!(bool);
-    else alias T = Seq!();
-    static if(!isDecl) alias TupleForeachArgs = T;
-    else alias TupleForeachArgs = Seq!(Dsymbols*,T);
-}
-
-/*******************
- * Determines the return type of makeTupleForeach.
- */
-static template TupleForeachRet(bool isStatic, bool isDecl)
-{
-    alias Seq(T...)=T;
-    static if(!isDecl) alias TupleForeachRet = Statement;
-    else alias TupleForeachRet = Dsymbols*;
-}
-
-
-/*******************
  * See StatementSemanticVisitor.makeTupleForeach.  This is a simple
  * wrapper that returns the generated statements/declarations.
  */
-TupleForeachRet!(isStatic, isDecl) makeTupleForeach(bool isStatic, bool isDecl)(Scope* sc, ForeachStatement fs, TupleForeachArgs!(isStatic, isDecl) args)
+auto makeTupleForeach(bool isStatic, bool isDecl)(Scope* sc, ForeachStatement fs, Dsymbols* dbody, bool needExpansion)
 {
     scope v = new StatementSemanticVisitor(sc);
-    static if(!isDecl)
-    {
-        v.makeTupleForeach!(isStatic, isDecl)(fs, args);
-        return v.result;
-    }
-    else
-    {
-        return v.makeTupleForeach!(isStatic, isDecl)(fs, args);
-    }
+    return v.makeTupleForeach!(isStatic, isDecl)(fs, dbody, needExpansion);
 }
 
 /*********************************
@@ -4731,7 +4697,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             sfs.sfe.prepare(sc);
             if (sfs.sfe.ready())
             {
-                auto s = makeTupleForeach!(true, false)(sc, sfs.sfe.aggrfe, sfs.sfe.needExpansion);
+                Statement s = makeTupleForeach!(true, false)(sc, sfs.sfe.aggrfe, null, sfs.sfe.needExpansion).statement;
                 auto result = s.flatten(sc);
                 if (result)
                 {

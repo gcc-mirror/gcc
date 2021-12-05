@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice10212.d(13): Error: Expected return type of `int`, not `int function() pure nothrow @nogc @safe`:
+fail_compilation/ice10212.d(13): Error: expected return type of `int`, not `int function() pure nothrow @nogc @safe`:
 fail_compilation/ice10212.d(13):        Return type of `int` inferred here.
 ---
 */

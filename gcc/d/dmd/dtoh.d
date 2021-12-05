@@ -17,6 +17,7 @@ import core.stdc.ctype;
 
 import dmd.astcodegen;
 import dmd.arraytypes;
+import dmd.attrib;
 import dmd.dsymbol;
 import dmd.errors;
 import dmd.globals;
@@ -25,7 +26,7 @@ import dmd.root.filename;
 import dmd.visitor;
 import dmd.tokens;
 
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.utils;
 
 //debug = Debug_DtoH;
@@ -254,7 +255,7 @@ public:
         Identifier ident;
 
         /// Original type of the currently visited declaration
-        AST.Type* origType;
+        AST.Type origType;
 
         /// Last written visibility level applying to the current scope
         AST.Visibility.Kind currentVisibility;
@@ -706,6 +707,10 @@ public:
         // printf("FuncDeclaration %s %s\n", fd.toPrettyChars(), fd.type.toChars());
         visited[cast(void*)fd] = true;
 
+        // silently ignore non-user-defined destructors
+        if (fd.generated && fd.isDtorDeclaration())
+            return;
+
         // Note that tf might be null for templated (member) functions
         auto tf = cast(AST.TypeFunction)fd.type;
         if ((tf && tf.linkage != LINK.c && tf.linkage != LINK.cpp) || (!tf && fd.isPostBlitDeclaration()))
@@ -841,12 +846,12 @@ public:
             return;
 
         if (vd.originalType && vd.type == AST.Type.tsize_t)
-            origType = &vd.originalType;
+            origType = vd.originalType;
         scope(exit) origType = null;
 
-        if (vd.alignment != STRUCTALIGN_DEFAULT)
+        if (!vd.alignment.isDefault())
         {
-            buf.printf("// Ignoring var %s alignment %u", vd.toChars(), vd.alignment);
+            buf.printf("// Ignoring var %s alignment %d", vd.toChars(), vd.alignment.get());
             buf.writenl();
         }
 
@@ -1008,12 +1013,12 @@ public:
             if (ad.originalType && ad.type.ty == AST.Tpointer &&
                 (cast(AST.TypePointer)t).nextOf.ty == AST.Tfunction)
             {
-                origType = &ad.originalType;
+                origType = ad.originalType;
             }
             scope(exit) origType = null;
 
             buf.writestring("typedef ");
-            typeToBuffer(origType ? *origType : t, ad);
+            typeToBuffer(origType !is null ? origType : t, ad);
             writeDeclEnd();
             return;
         }
@@ -1346,7 +1351,7 @@ public:
 
     /// Starts a custom alignment section using `#pragma pack` if
     /// `alignment` specifies a custom alignment
-    private void pushAlignToBuffer(uint alignment)
+    private void pushAlignToBuffer(structalign_t alignment)
     {
         // DMD ensures alignment is a power of two
         //assert(alignment > 0 && ((alignment & (alignment - 1)) == 0),
@@ -1354,20 +1359,20 @@ public:
 
         // When no alignment is specified, `uint.max` is the default
         // FIXME: alignment is 0 for structs templated members
-        if (alignment == STRUCTALIGN_DEFAULT || (tdparent && alignment == 0))
+        if (alignment.isDefault() || (tdparent && alignment.isUnknown()))
         {
             return;
         }
 
-        buf.printf("#pragma pack(push, %d)", alignment);
+        buf.printf("#pragma pack(push, %d)", alignment.get());
         buf.writenl();
     }
 
     /// Ends a custom alignment section using `#pragma pack` if
     /// `alignment` specifies a custom alignment
-    private void popAlignToBuffer(uint alignment)
+    private void popAlignToBuffer(structalign_t alignment)
     {
-        if (alignment == STRUCTALIGN_DEFAULT || (tdparent && alignment == 0))
+        if (alignment.isDefault() || (tdparent && alignment.isUnknown()))
             return;
 
         buf.writestringln("#pragma pack(pop)");
@@ -1645,7 +1650,7 @@ public:
         }
 
         this.ident = s.ident;
-        auto type = origType ? *origType : t;
+        auto type = origType !is null ? origType : t;
         AST.Dsymbol customLength;
 
         // Check for quirks that are usually resolved during semantic

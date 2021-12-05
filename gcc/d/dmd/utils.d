@@ -16,7 +16,7 @@ import dmd.errors;
 import dmd.globals;
 import dmd.root.file;
 import dmd.root.filename;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.string;
 
 

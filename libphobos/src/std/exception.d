@@ -191,7 +191,7 @@ auto assertNotThrown(T : Throwable = Exception, E)
 {
     import core.exception : AssertError;
 
-    void throwEx(Throwable t) { throw t; }
+    static noreturn throwEx(Throwable t) { throw t; }
     bool nothrowEx() { return true; }
 
     try
@@ -294,7 +294,9 @@ void assertThrown(T : Throwable = Exception, E)
         expression();
     catch (T)
         return;
-    throw new AssertError("assertThrown failed: No " ~ T.stringof ~ " was thrown"
+
+    static if (!is(immutable E == immutable noreturn))
+        throw new AssertError("assertThrown failed: No " ~ T.stringof ~ " was thrown"
                                  ~ (msg.length == 0 ? "." : ": ") ~ msg,
                           file, line);
 }
@@ -318,7 +320,7 @@ void assertThrown(T : Throwable = Exception, E)
 {
     import core.exception : AssertError;
 
-    void throwEx(Throwable t) { throw t; }
+    static noreturn throwEx(Throwable t) { throw t; }
     void nothrowEx() { }
 
     try
@@ -666,7 +668,9 @@ T collectException(T = Exception, E)(lazy E expression, ref E result)
     {
         return e;
     }
-    return null;
+    // Avoid "statement not reachable" warning
+    static if (!is(immutable E == immutable noreturn))
+        return null;
 }
 ///
 @system unittest
@@ -675,9 +679,14 @@ T collectException(T = Exception, E)(lazy E expression, ref E result)
     int foo() { throw new Exception("blah"); }
     assert(collectException(foo(), b));
 
-    int[] a = new int[3];
-    import core.exception : RangeError;
-    assert(collectException!RangeError(a[4], b));
+    version (D_NoBoundsChecks) {}
+    else
+    {
+        // check for out of bounds error
+        int[] a = new int[3];
+        import core.exception : RangeError;
+        assert(collectException!RangeError(a[4], b));
+    }
 }
 
 /++
@@ -706,7 +715,9 @@ T collectException(T : Throwable = Exception, E)(lazy E expression)
     {
         return t;
     }
-    return null;
+    // Avoid "statement not reachable" warning
+    static if (!is(immutable E == immutable noreturn))
+        return null;
 }
 
 ///
@@ -742,7 +753,9 @@ string collectExceptionMsg(T = Exception, E)(lazy E expression)
     {
         expression();
 
-        return cast(string) null;
+        // Avoid "statement not reachable" warning
+        static if (!is(immutable E == immutable noreturn))
+            return cast(string) null;
     }
     catch (T e)
         return e.msg.empty ? emptyExceptionMsg : e.msg;
@@ -765,6 +778,25 @@ string collectExceptionMsg(T = Exception, E)(lazy E expression)
     with an empty exception message.
  +/
 enum emptyExceptionMsg = "<Empty Exception Message>";
+
+// https://issues.dlang.org/show_bug.cgi?id=22364
+@system unittest
+{
+    static noreturn foo() { throw new Exception(""); }
+
+    const ex = collectException!(Exception, noreturn)(foo());
+    assert(ex);
+
+    const msg = collectExceptionMsg!(Exception, noreturn)(foo());
+    assert(msg);
+
+    noreturn n;
+
+    // Triggers a backend assertion failure
+    // collectException!(Exception, noreturn)(foo(), n);
+
+    static assert(__traits(compiles, collectException!(Exception, noreturn)(foo(), n)));
+}
 
 /**
  * Casts a mutable array to an immutable array in an idiomatic

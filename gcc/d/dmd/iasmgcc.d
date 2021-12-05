@@ -300,7 +300,7 @@ Ldone:
  * Returns:
  *      the completed gcc asm statement, or null if errors occurred
  */
-public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
+extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 {
     //printf("GccAsmStatement.semantic()\n");
     scope p = new Parser!ASTCodegen(sc._module, ";", false);

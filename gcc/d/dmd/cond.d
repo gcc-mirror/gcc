@@ -28,7 +28,7 @@ import dmd.globals;
 import dmd.identifier;
 import dmd.mtype;
 import dmd.typesem;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.tokens;
@@ -452,7 +452,6 @@ extern (C++) final class StaticForeach : RootObject
             sc = sc.startCTFE();
             aggrfe.aggr = aggrfe.aggr.expressionSemantic(sc);
             sc = sc.endCTFE();
-            aggrfe.aggr = aggrfe.aggr.optimize(WANTvalue);
         }
 
         if (aggrfe && aggrfe.aggr.type.toBasetype().ty == Terror)

@@ -33,7 +33,7 @@ import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.mtype;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.target;
@@ -794,8 +794,8 @@ public:
             property("init", d._init.toString());
         if (d.isField())
             property("offset", d.offset);
-        if (d.alignment && d.alignment != STRUCTALIGN_DEFAULT)
-            property("align", d.alignment);
+        if (!d.alignment.isUnknown() && !d.alignment.isDefault())
+            property("align", d.alignment.get());
         objectEnd();
     }
 

@@ -41,7 +41,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.nspace;
 import dmd.root.array;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.target;
@@ -98,21 +98,20 @@ extern(C++) const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
 }
 
 /******************************
- * Determine if sym is the 'primary' destructor, that is,
- * the most-aggregate destructor (the one that is defined as __xdtor)
+ * Determine if sym is a full aggregate destructor.
  * Params:
  *      sym = Dsymbol
  * Returns:
- *      true if sym is the primary destructor for an aggregate
+ *      true if sym is an aggregate destructor
  */
-bool isPrimaryDtor(const Dsymbol sym)
+bool isAggregateDtor(const Dsymbol sym)
 {
     const dtor = sym.isDtorDeclaration();
     if (!dtor)
         return false;
     const ad = dtor.isMember();
     assert(ad);
-    return dtor == ad.primaryDtor;
+    return dtor == ad.aggrDtor;
 }
 
 /// Context used when processing pre-semantic AST
@@ -1069,7 +1068,7 @@ private final class CppMangleVisitor : Visitor
 
             if (auto ctor = d.isCtorDeclaration())
                 buf.writestring(ctor.isCpCtor ? "C2" : "C1");
-            else if (d.isPrimaryDtor())
+            else if (d.isAggregateDtor())
                 buf.writestring("D1");
             else if (d.ident && d.ident == Id.assign)
                 buf.writestring("aS");
@@ -1184,7 +1183,7 @@ private final class CppMangleVisitor : Visitor
             mangleFunctionParameters(tf.parameterList);
             return;
         }
-        else if (d.isPrimaryDtor())
+        else if (d.isAggregateDtor())
         {
             buf.writestring("D1");
             mangleFunctionParameters(tf.parameterList);

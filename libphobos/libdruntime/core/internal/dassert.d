@@ -191,7 +191,7 @@ private string miniFormat(V)(const scope ref V v)
         }
 
         // Fall back to a simple cast - we're violating the type system anyways
-        return miniFormat(__ctfe ? cast(const T) v : *cast(const T*) &v);
+        return miniFormat(*cast(const T*) &v);
     }
     // Format enum members using their name
     else static if (is(V BaseType == enum))

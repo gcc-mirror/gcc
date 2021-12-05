@@ -39,7 +39,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.dinterpret;
 import dmd.mtype;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.sapply;
 import dmd.sideeffect;
@@ -463,7 +463,7 @@ extern (C++) class ExpStatement : Statement
         this.exp = new DeclarationExp(loc, declaration);
     }
 
-    static ExpStatement create(Loc loc, Expression exp)
+    static ExpStatement create(const ref Loc loc, Expression exp)
     {
         return new ExpStatement(loc, exp);
     }
@@ -577,7 +577,7 @@ extern (C++) class CompoundStatement : Statement
             statements.push(s);
     }
 
-    static CompoundStatement create(Loc loc, Statement s1, Statement s2)
+    static CompoundStatement create(const ref Loc loc, Statement s1, Statement s2)
     {
         return new CompoundStatement(loc, s1, s2);
     }
@@ -1635,7 +1635,7 @@ extern (C++) final class TryFinallyStatement : Statement
         this.bodyFallsThru = true;      // assume true until statementSemantic()
     }
 
-    static TryFinallyStatement create(Loc loc, Statement _body, Statement finalbody)
+    static TryFinallyStatement create(const ref Loc loc, Statement _body, Statement finalbody)
     {
         return new TryFinallyStatement(loc, _body, finalbody);
     }

@@ -49,7 +49,7 @@ import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 import dmd.root.rootobject;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.string;
 
 enum LOGSEMANTIC = false;
@@ -1410,19 +1410,30 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         auto o = (*e.args)[0];
         auto o1 = (*e.args)[1];
 
-        FuncDeclaration fd;
-        TypeFunction tf = toTypeFunction(o, fd);
-
         ParameterList fparams;
-        if (tf)
-            fparams = tf.parameterList;
-        else if (fd)
-            fparams = fd.getParameterList();
+
+        CallExp ce;
+        if (auto exp = isExpression(o))
+            ce = exp.isCallExp();
+
+        if (ce)
+        {
+            fparams = ce.f.getParameterList();
+        }
         else
         {
-            e.error("first argument to `__traits(getParameterStorageClasses, %s, %s)` is not a function",
-                o.toChars(), o1.toChars());
-            return ErrorExp.get();
+            FuncDeclaration fd;
+            auto tf = toTypeFunction(o, fd);
+            if (tf)
+                fparams = tf.parameterList;
+            else if (fd)
+                fparams = fd.getParameterList();
+            else
+            {
+                e.error("first argument to `__traits(getParameterStorageClasses, %s, %s)` is not a function or a function call",
+                    o.toChars(), o1.toChars());
+                return ErrorExp.get();
+            }
         }
 
         // Avoid further analysis for invalid functions leading to misleading error messages

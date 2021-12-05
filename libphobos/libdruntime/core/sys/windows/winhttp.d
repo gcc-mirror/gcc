@@ -4,7 +4,7 @@
  * Translated from Windows SDK Headers
  *
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/_winhttp.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/_winhttp.d)
  */
 module core.sys.windows.winhttp;
 version (Windows):

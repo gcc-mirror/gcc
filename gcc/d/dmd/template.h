@@ -131,7 +131,7 @@ public:
     virtual bool declareParameter(Scope *sc) = 0;
     virtual void print(RootObject *oarg, RootObject *oded) = 0;
     virtual RootObject *specialization() = 0;
-    virtual RootObject *defaultArg(Loc instLoc, Scope *sc) = 0;
+    virtual RootObject *defaultArg(const Loc &instLoc, Scope *sc) = 0;
     virtual bool hasDefaultArg() = 0;
 
     /* Create dummy argument based on parameter.
@@ -154,7 +154,7 @@ public:
     bool declareParameter(Scope *sc);
     void print(RootObject *oarg, RootObject *oded);
     RootObject *specialization();
-    RootObject *defaultArg(Loc instLoc, Scope *sc);
+    RootObject *defaultArg(const Loc &instLoc, Scope *sc);
     bool hasDefaultArg();
     RootObject *dummyArg();
     void accept(Visitor *v) { v->visit(this); }
@@ -186,7 +186,7 @@ public:
     bool declareParameter(Scope *sc);
     void print(RootObject *oarg, RootObject *oded);
     RootObject *specialization();
-    RootObject *defaultArg(Loc instLoc, Scope *sc);
+    RootObject *defaultArg(const Loc &instLoc, Scope *sc);
     bool hasDefaultArg();
     RootObject *dummyArg();
     void accept(Visitor *v) { v->visit(this); }
@@ -207,7 +207,7 @@ public:
     bool declareParameter(Scope *sc);
     void print(RootObject *oarg, RootObject *oded);
     RootObject *specialization();
-    RootObject *defaultArg(Loc instLoc, Scope *sc);
+    RootObject *defaultArg(const Loc &instLoc, Scope *sc);
     bool hasDefaultArg();
     RootObject *dummyArg();
     void accept(Visitor *v) { v->visit(this); }
@@ -224,7 +224,7 @@ public:
     bool declareParameter(Scope *sc);
     void print(RootObject *oarg, RootObject *oded);
     RootObject *specialization();
-    RootObject *defaultArg(Loc instLoc, Scope *sc);
+    RootObject *defaultArg(const Loc &instLoc, Scope *sc);
     bool hasDefaultArg();
     RootObject *dummyArg();
     void accept(Visitor *v) { v->visit(this); }

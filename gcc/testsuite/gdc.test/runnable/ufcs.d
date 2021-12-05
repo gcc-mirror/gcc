@@ -196,6 +196,7 @@ void test5()
     {
         // f5_1 .. f5_5 are symbols which declared in module scope
         assert(100.f5_1() == 1);
+        assert(001.f5_1() == 1); // https://issues.dlang.org/show_bug.cgi?id=8346
         assert("s".f5_2() == 2);
         assert(1.4.f5_3() == 3);
         assert(100.f5_4() == 1);

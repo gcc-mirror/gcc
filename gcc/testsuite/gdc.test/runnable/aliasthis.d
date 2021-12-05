@@ -2102,6 +2102,42 @@ void test16633()
     root.populate;
 }
 
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=13009
+
+struct RefCounted13009_2(T)
+{
+    ref T refCountedPayload()
+    {
+        assert(false);
+    }
+
+    ref inout(T) refCountedPayload() inout
+    {
+        assert(false);
+    }
+
+    alias refCountedPayload this;
+}
+
+struct S13009_2
+{
+    struct Payload
+    {
+        int[] data;
+    }
+
+    RefCounted13009_2!Payload payload;
+    alias X = typeof(payload.data[0]);
+
+    void foo()
+    {
+        payload.data[0] = 0;
+    }
+}
+
+/***************************************************/
+
 int main()
 {
     test1();

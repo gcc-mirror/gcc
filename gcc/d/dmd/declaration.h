@@ -188,7 +188,7 @@ public:
     Dsymbol *overnext;          // next in overload list
     Dsymbol *_import;           // !=NULL if unresolved internal alias for selective import
 
-    static AliasDeclaration *create(Loc loc, Identifier *id, Type *type);
+    static AliasDeclaration *create(const Loc &loc, Identifier *id, Type *type);
     AliasDeclaration *syntaxCopy(Dsymbol *);
     bool overloadInsert(Dsymbol *s);
     const char *kind() const;
@@ -511,7 +511,7 @@ enum class BUILTIN : unsigned char
     toPrecReal
 };
 
-Expression *eval_builtin(Loc loc, FuncDeclaration *fd, Expressions *arguments);
+Expression *eval_builtin(const Loc &loc, FuncDeclaration *fd, Expressions *arguments);
 BUILTIN isBuiltin(FuncDeclaration *fd);
 
 class FuncDeclaration : public Declaration
@@ -534,6 +534,8 @@ public:
 
     VarDeclaration *vresult;            // result variable for out contracts
     LabelDsymbol *returnLabel;          // where the return goes
+
+    void *isTypeIsolatedCache;          // An AA on the D side to cache an expensive check result
 
     // used to prevent symbols in different
     // scopes from having the same name
@@ -839,9 +841,6 @@ public:
 class NewDeclaration : public FuncDeclaration
 {
 public:
-    Parameters *parameters;
-    VarArg varargs;
-
     NewDeclaration *syntaxCopy(Dsymbol *);
     const char *kind() const;
     bool isVirtual() const;
