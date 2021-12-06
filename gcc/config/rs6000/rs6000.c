@@ -3477,6 +3477,10 @@ rs6000_override_options_after_change (void)
     }
   else if (!OPTION_SET_P (flag_cunroll_grow_size))
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
+
+  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
+  if (rs6000_rop_protect)
+    flag_shrink_wrap = 0;
 }
 
 #ifdef TARGET_USES_LINUX64_OPT
@@ -4040,10 +4044,6 @@ rs6000_option_override_internal (bool global_init_p)
       && !TARGET_QUAD_MEMORY_ATOMIC
       && ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) == 0))
     rs6000_isa_flags |= OPTION_MASK_QUAD_MEMORY_ATOMIC;
-
-  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
-  if (rs6000_rop_protect)
-    flag_shrink_wrap = 0;
 
   /* If we can shrink-wrap the TOC register save separately, then use
      -msave-toc-indirect unless explicitly disabled.  */
@@ -22745,7 +22745,7 @@ rs6000_builtin_reciprocal (tree fndecl)
 {
   switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
-    case VSX_BUILTIN_XVSQRTDP:
+    case RS6000_BIF_XVSQRTDP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
 
@@ -22753,7 +22753,7 @@ rs6000_builtin_reciprocal (tree fndecl)
 	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
       return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
-    case VSX_BUILTIN_XVSQRTSP:
+    case RS6000_BIF_XVSQRTSP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
 

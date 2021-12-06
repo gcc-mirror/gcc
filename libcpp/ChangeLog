@@ -1,3 +1,16 @@
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* lex.c (_cpp_lex_direct): If buffer->need_line while
+	pfile->state.in_deferred_pragma, return CPP_PRAGMA_EOL token instead
+	of assertion failure.
+
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* include/line-map.h (class line_maps): Add GTY((callback)) to
+	reallocator and round_alloc_size members.
+
 2021-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100977

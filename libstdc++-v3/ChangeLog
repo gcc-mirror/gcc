@@ -1,6 +1,26 @@
+2021-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103549
+	* include/bits/regex.h (match_results): Give names to template
+	parameters in first declaration.
+	(match_results::_M_begin): Add default member-initializer.
+
+2021-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (_Rb_tree::_Auto_node): Define new
+	RAII helper for creating and inserting new nodes.
+	(_Rb_tree::_M_insert_node): Use trailing-return-type to simplify
+	out-of-line definition.
+	(_Rb_tree::_M_insert_lower_node): Likewise.
+	(_Rb_tree::_M_insert_equal_lower_node): Likewise.
+	(_Rb_tree::_M_emplace_unique): Likewise. Use _Auto_node.
+	(_Rb_tree::_M_emplace_equal): Likewise.
+	(_Rb_tree::_M_emplace_hint_unique): Likewise.
+	(_Rb_tree::_M_emplace_hint_equal): Likewise.
+
 2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
 
-	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULY_DYNAMIC_STRING]
+	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULLY_DYNAMIC_STRING]
 	(logic_error, runtime_error): Remove custom definitions.
 
 2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
@@ -151,7 +171,7 @@
 
 2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
 
-	* doc/xml/manual/debug_mode.xml: Replace "his or her" with "they".
+	* doc/xml/manual/debug_mode.xml: Replace "his or her" with "their".
 	* doc/html/manual/debug_mode_design.html: Regenerate.
 
 2021-11-30  Jakub Jelinek  <jakub@redhat.com>

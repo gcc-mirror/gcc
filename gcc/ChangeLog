@@ -1,3 +1,217 @@
+2021-12-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Move
+	AIX math builtin initialization before new_builtins_are_live.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_PARTIAL_REG_DEPENDENCY): Fix
+	comment typo, Preffer -> prefer.
+	* ipa-modref-tree.c (modref_access_node::closer_pair_p): Likewise.
+
+2021-12-04  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/103028
+	* ifcvt.c (find_cond_trap): Validate new insns more strictly
+	after reload.
+
+2021-12-03  Martin Liska  <mliska@suse.cz>
+	    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101324
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Move the
+	disabling of shrink-wrapping when using -mrop-protect from here...
+	(rs6000_override_options_after_change): ...to here.
+
+2021-12-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103269
+	* config/i386/i386-expand.c (ix86_expand_builtin): Pass PVW_NONE
+	and PVW_NONE to ix86_target_string.
+	* config/i386/i386-options.c (ix86_target_string): Add arguments
+	for move_max and store_max.
+	(ix86_target_string::add_vector_width): New lambda.
+	(ix86_debug_options): Pass ix86_move_max and ix86_store_max to
+	ix86_target_string.
+	(ix86_function_specific_print): Pass ptr->x_ix86_move_max and
+	ptr->x_ix86_store_max to ix86_target_string.
+	(ix86_valid_target_attribute_tree): Handle x_ix86_move_max and
+	x_ix86_store_max.
+	(ix86_option_override_internal): Set the default x_ix86_move_max
+	and x_ix86_store_max.
+	* config/i386/i386-options.h (ix86_target_string): Add
+	prefer_vector_width and prefer_vector_width.
+	* config/i386/i386.h (TARGET_AVX256_MOVE_BY_PIECES): Removed.
+	(TARGET_AVX256_STORE_BY_PIECES): Likewise.
+	(MOVE_MAX): Use 64 if ix86_move_max or ix86_store_max ==
+	PVW_AVX512.  Use 32 if ix86_move_max or ix86_store_max >=
+	PVW_AVX256.
+	(STORE_MAX_PIECES): Use 64 if ix86_store_max == PVW_AVX512.
+	Use 32 if ix86_store_max >= PVW_AVX256.
+	* config/i386/i386.opt: Add -mmove-max=bits and -mstore-max=bits.
+	* config/i386/x86-tune.def (X86_TUNE_AVX512_MOVE_BY_PIECES): New.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Likewise.
+	* doc/invoke.texi: Document -mmove-max=bits and -mstore-max=bits.
+
+2021-12-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_reciprocal): Fix builtin
+	identifiers.
+
+2021-12-03  SiYu Wu  <siyu@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.c (riscv_implied_info):
+	Add K-ext related entry.
+	(riscv_supported_std_ext): Add 'k'.
+	* config/riscv/arch-canonicalize (CANONICAL_ORDER): Add 'k'.
+	(IMPLIED_EXT): Add K-ext related entry.
+
+2021-12-03  SiYu Wu  <siyu@isrc.iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.c (riscv_ext_version_table):
+	Add zbk* and zk*.
+	* config/riscv/riscv-opts.h (MASK_ZBKB): New.
+	(MASK_ZBKC): Ditto.
+	(MASK_ZBKX): Ditto.
+	(MASK_ZKNE): Ditto.
+	(MASK_ZKND): Ditto.
+	(MASK_ZKNH): Ditto.
+	(MASK_ZKR): Ditto.
+	(MASK_ZKSED): Ditto.
+	(MASK_ZKSH): Ditto.
+	(MASK_ZKT): Ditto.
+	(TARGET_ZBKB): Ditto.
+	(TARGET_ZBKC): Ditto.
+	(TARGET_ZBKX): Ditto.
+	(TARGET_ZKNE): Ditto.
+	(TARGET_ZKND): Ditto.
+	(TARGET_ZKNH): Ditto.
+	(TARGET_ZKR): Ditto.
+	(TARGET_ZKSED): Ditto.
+	(TARGET_ZKSH): Ditto.
+	(TARGET_ZKT): Ditto.
+	* config/riscv/riscv.opt (riscv_zk_subext): New.
+
+2021-12-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-stmts.c (prepare_load_store_mask): Rename to...
+	(prepare_vec_mask): ...This and record operations that have already been
+	masked.
+	(vectorizable_call): Use it.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* tree-vectorizer.h (class _loop_vec_info): Add vec_cond_masked_set.
+	(vec_cond_masked_set_type, tree_cond_mask_hash): New.
+
+2021-12-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/51469
+	PR target/83782
+	* target.def (ifunc_ref_local_ok): Add a target hook.
+	* varasm.c (default_binds_local_p_3): Force indirect function
+	resolver non-local only if targetm.ifunc_ref_local_ok returns
+	false.
+	* config/i386/i386-expand.c (ix86_expand_call): Call
+	ix86_call_use_plt_p to check if PLT should be used.
+	* config/i386/i386-protos.h (ix86_call_use_plt_p): New.
+	* config/i386/i386.c (output_pic_addr_const): Call
+	ix86_call_use_plt_p to check if "@PLT" is needed.
+	(ix86_call_use_plt_p): New.
+	(TARGET_IFUNC_REF_LOCAL_OK): New.
+	* doc/tm.texi.in: Add TARGET_IFUNC_REF_LOCAL_OK.
+	* doc/tm.texi: Regenerated.
+
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.h (simple_cst_list_equal): Declare.
+	* attribs.c (simple_cst_list_equal): No longer static.
+	* config/i386/i386-options.c (target_attribute_cache): New variable.
+	(ix86_valid_target_attribute_p): Cache DECL_FUNCTION_SPECIFIC_TARGET
+	and DECL_FUNCTION_SPECIFIC_OPTIMIZATION based on args.
+
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* ggc.h (gt_pch_note_callback): Declare.
+	* gengtype.h (enum typekind): Add TYPE_CALLBACK.
+	(callback_type): Declare.
+	* gengtype.c (dbgprint_count_type_at): Handle TYPE_CALLBACK.
+	(callback_type): New variable.
+	(process_gc_options): Add CALLBACK argument, handle callback
+	option.
+	(set_gc_used_type): Adjust process_gc_options caller, if callback,
+	set type to &callback_type.
+	(output_mangled_typename): Handle TYPE_CALLBACK.
+	(walk_type): Likewise.  Handle callback option.
+	(write_types_process_field): Handle TYPE_CALLBACK.
+	(write_types_local_user_process_field): Likewise.
+	(write_types_local_process_field): Likewise.
+	(write_root): Likewise.
+	(dump_typekind): Likewise.
+	(dump_type): Likewise.
+	* gengtype-state.c (type_lineloc): Handle TYPE_CALLBACK.
+	(state_writer::write_state_callback_type): New method.
+	(state_writer::write_state_type): Handle TYPE_CALLBACK.
+	(read_state_callback_type): New function.
+	(read_state_type): Handle TYPE_CALLBACK.
+	* ggc-common.c (callback_vec): New variable.
+	(gt_pch_note_callback): New function.
+	(gt_pch_save): Stream out gt_pch_save function address and relocation
+	table.
+	(gt_pch_restore): Stream in saved gt_pch_save function address and
+	relocation table and apply relocations if needed.
+	* doc/gty.texi (callback): Document new GTY option.
+	* varasm.c (get_unnamed_section): Change callback argument's type and
+	last argument's type from const void * to const char *.
+	(output_section_asm_op): Change argument's type from const void *
+	to const char *, remove unnecessary cast.
+	* tree-core.h (struct tree_translation_unit_decl): Drop GTY((skip))
+	from language member.
+	* output.h (unnamed_section_callback): Change argument type from
+	const void * to const char *.
+	(struct unnamed_section): Use GTY((callback)) instead of GTY((skip))
+	for callback member.  Change data member type from const void *
+	to const char *.
+	(struct noswitch_section): Use GTY((callback)) instead of GTY((skip))
+	for callback member.
+	(get_unnamed_section): Change callback argument's type and
+	last argument's type from const void * to const char *.
+	(output_section_asm_op): Change argument's type from const void *
+	to const char *.
+	* config/avr/avr.c (avr_output_progmem_section_asm_op): Likewise.
+	Remove unneeded cast.
+	* config/darwin.c (output_objc_section_asm_op): Change argument's type
+	from const void * to const char *.
+	* config/pa/pa.c (som_output_text_section_asm_op): Likewise.
+	(som_output_comdat_data_section_asm_op): Likewise.
+	* config/rs6000/rs6000.c (rs6000_elf_output_toc_section_asm_op):
+	Likewise.
+	(rs6000_xcoff_output_readonly_section_asm_op): Likewise.  Instead
+	of dereferencing directive hardcode variable names and decide based on
+	whether directive is NULL or not.
+	(rs6000_xcoff_output_readwrite_section_asm_op): Change argument's type
+	from const void * to const char *.
+	(rs6000_xcoff_output_tls_section_asm_op): Likewise.  Instead
+	of dereferencing directive hardcode variable names and decide based on
+	whether directive is NULL or not.
+	(rs6000_xcoff_output_toc_section_asm_op): Change argument's type
+	from const void * to const char *.
+	(rs6000_xcoff_asm_init_sections): Adjust get_unnamed_section callers.
+
+2021-12-03  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* Makefile.in: Fix "argument list too long" from install-plugins.
+
+2021-12-03  Matt Jacobson  <mhjacobson@me.com>
+
+	* config.gcc: For the AVR target, populate TM_MULTILIB_CONFIG.
+	* config/avr/genmultilib.awk: Add ability to filter generated multilib
+	list.
+	* config/avr/t-avr: Pass TM_MULTILIB_CONFIG to genmultilib.awk.
+	* configure.ac: Update help string for --with-multilib-list.
+	* configure: Regenerate.
+
 2021-12-02  Ilya Lipnitskiy  <ilya.lipnitskiy@gmail.com>
 
 	* configure: Regenerate.

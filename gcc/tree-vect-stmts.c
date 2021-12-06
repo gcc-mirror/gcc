@@ -2785,7 +2785,7 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
 
       ncopies *= 2;
 
-      if (mask && masktype == real_masktype)
+      if (mask && VECTOR_TYPE_P (real_masktype))
 	{
 	  for (int i = 0; i < count; ++i)
 	    sel[i] = i | (count / 2);
@@ -2882,7 +2882,7 @@ vect_build_gather_load_calls (vec_info *vinfo, stmt_vec_info stmt_info,
 		  mask_op = var;
 		}
 	    }
-	  if (modifier == NARROW && masktype != real_masktype)
+	  if (modifier == NARROW && !VECTOR_TYPE_P (real_masktype))
 	    {
 	      var = vect_get_new_ssa_name (mask_halftype, vect_simple_var);
 	      gassign *new_stmt

@@ -1,3 +1,11 @@
+2021-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-metadata-tags.h (objc_rt_trees): Declare here.
+	* objc-next-runtime-abi-01.c: Remove from here.
+	* objc-next-runtime-abi-02.c: Likewise.
+	* objc-runtime-shared-support.c: Reorder headers, provide
+	a GTY declaration the definition of objc_rt_trees.
+
 2021-11-30  Richard Biener  <rguenther@suse.de>
 
 	* objc-act.c (objc_build_setter_call): Remove unreachable

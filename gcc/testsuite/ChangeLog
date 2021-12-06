@@ -1,3 +1,131 @@
+2021-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/93614
+	* g++.dg/template/lookup18.C: New test.
+
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/atomic-2.f90: Move now supported code to ...
+	* gfortran.dg/gomp/atomic.f90: here.
+	* gfortran.dg/gomp/atomic-10.f90: New test.
+	* gfortran.dg/gomp/atomic-12.f90: New test.
+	* gfortran.dg/gomp/atomic-15.f90: New test.
+	* gfortran.dg/gomp/atomic-16.f90: New test.
+	* gfortran.dg/gomp/atomic-17.f90: New test.
+	* gfortran.dg/gomp/atomic-18.f90: New test.
+	* gfortran.dg/gomp/atomic-19.f90: New test.
+	* gfortran.dg/gomp/atomic-20.f90: New test.
+	* gfortran.dg/gomp/atomic-22.f90: New test.
+	* gfortran.dg/gomp/atomic-24.f90: New test.
+	* gfortran.dg/gomp/atomic-25.f90: New test.
+	* gfortran.dg/gomp/atomic-26.f90: New test.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/bit-cast11.C: New test.
+	* g++.dg/cpp2a/bit-cast12.C: New test.
+	* g++.dg/cpp2a/bit-cast13.C: New test.
+	* g++.dg/cpp2a/bit-cast14.C: New test.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* c-c++-common/gomp/pr102432.c: New test.
+	* c-c++-common/goacc/pr102432.c: New test.
+
+2021-12-04  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/103028
+	* gcc.dg/pr103028.c: New.
+
+2021-12-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/vec_reve_1.c: Require VSX.
+
+2021-12-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/diagnostic/scope1.C: New test.
+
+2021-12-03  Martin Liska  <mliska@suse.cz>
+
+	PR target/101324
+	* gcc.target/powerpc/pr101324.c: New test.
+
+2021-12-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_rop_ok): New function.
+	* gcc.target/powerpc/rop-1.c: Use it.
+	* gcc.target/powerpc/rop-2.c: Likewise.
+	* gcc.target/powerpc/rop-3.c: Likewise.
+	* gcc.target/powerpc/rop-4.c: Likewise.
+	* gcc.target/powerpc/rop-5.c: Likewise.
+
+2021-12-03  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103505
+	* gfortran.dg/pr103505.f90: New test.
+
+2021-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103403
+	* g++.dg/cpp1y/decltype-auto2.C: New test.
+	* g++.dg/cpp1y/decltype-auto3.C: New test.
+	* g++.dg/cpp1y/decltype-auto4.C: New test.
+	* g++.dg/cpp1z/decomp-decltype1.C: New test.
+
+2021-12-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103269
+	* gcc.target/i386/pieces-memcpy-17.c: New test.
+	* gcc.target/i386/pieces-memcpy-18.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-19.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-20.c: Likewise.
+	* gcc.target/i386/pieces-memcpy-21.c: Likewise.
+	* gcc.target/i386/pieces-memset-45.c: Likewise.
+	* gcc.target/i386/pieces-memset-46.c: Likewise.
+	* gcc.target/i386/pieces-memset-47.c: Likewise.
+	* gcc.target/i386/pieces-memset-48.c: Likewise.
+	* gcc.target/i386/pieces-memset-49.c: Likewise.
+
+2021-12-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/83782
+	* gcc.target/i386/pr83782-1.c: Also scan leal x32.
+	* gcc.target/i386/pr83782-2.c: Likewise.
+
+2021-12-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred-combine-and.c: New test.
+
+2021-12-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/51469
+	PR target/83782
+	* gcc.target/i386/pr83782-1.c: New test.
+	* gcc.target/i386/pr83782-2.c: Likewise.
+
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103456
+	* gcc.dg/ubsan/pr103456.c: Add -ffat-lto-objects to dg-options.
+
+2021-12-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/allocate_with_source_26.f90: Adjust testcase.
+	* gfortran.dg/allocate_with_mold_4.f90: New testcase.
+
+2021-12-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/102735
+	* lib/gcc-dg.exp (process-message): Make sure that we get unique
+	test names.
+
+2021-12-03  Andrew Pinski  <apinski@marvell.com>
+
+	PR c++/71792
+	* g++.dg/torture/pr71792.C: New test.
+
 2021-12-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103526

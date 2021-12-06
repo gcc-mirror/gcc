@@ -12305,6 +12305,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       char *opts = ix86_target_string (bisa, bisa2, 0, 0, NULL, NULL,
 				       (enum fpmath_unit) 0,
 				       (enum prefer_vector_width) 0,
+				       PVW_NONE, PVW_NONE,
 				       false, add_abi_p);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);

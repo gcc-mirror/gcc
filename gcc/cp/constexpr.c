@@ -4275,6 +4275,118 @@ check_bit_cast_type (const constexpr_ctx *ctx, location_t loc, tree type,
   return false;
 }
 
+/* Helper function for cxx_eval_bit_cast.  For unsigned char or
+   std::byte members of CONSTRUCTOR (recursively) if they contain
+   some indeterminate bits (as set in MASK), remove the ctor elts,
+   mark the CONSTRUCTOR as CONSTRUCTOR_NO_CLEARING and clear the
+   bits in MASK.  */
+
+static void
+clear_uchar_or_std_byte_in_mask (location_t loc, tree t, unsigned char *mask)
+{
+  if (TREE_CODE (t) != CONSTRUCTOR)
+    return;
+
+  unsigned i, j = 0;
+  tree index, value;
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, index, value)
+    {
+      tree type = TREE_TYPE (value);
+      if (TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE
+	  && DECL_BIT_FIELD_TYPE (index) != NULL_TREE)
+	{
+	  if (is_byte_access_type_not_plain_char (DECL_BIT_FIELD_TYPE (index)))
+	    {
+	      HOST_WIDE_INT fldsz = TYPE_PRECISION (TREE_TYPE (index));
+	      gcc_assert (fldsz != 0);
+	      HOST_WIDE_INT pos = int_byte_position (index);
+	      HOST_WIDE_INT bpos
+		= tree_to_uhwi (DECL_FIELD_BIT_OFFSET (index));
+	      bpos %= BITS_PER_UNIT;
+	      HOST_WIDE_INT end
+		= ROUND_UP (bpos + fldsz, BITS_PER_UNIT) / BITS_PER_UNIT;
+	      gcc_assert (end == 1 || end == 2);
+	      unsigned char *p = mask + pos;
+	      unsigned char mask_save[2];
+	      mask_save[0] = mask[pos];
+	      mask_save[1] = end == 2 ? mask[pos + 1] : 0;
+	      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+		sorry_at (loc, "PDP11 bit-field handling unsupported"
+			       " in %qs", "__builtin_bit_cast");
+	      else if (BYTES_BIG_ENDIAN)
+		{
+		  /* Big endian.  */
+		  if (bpos + fldsz <= BITS_PER_UNIT)
+		    *p &= ~(((1 << fldsz) - 1)
+			    << (BITS_PER_UNIT - bpos - fldsz));
+		  else
+		    {
+		      gcc_assert (bpos);
+		      *p &= ~(((1U << BITS_PER_UNIT) - 1) >> bpos);
+		      p++;
+		      fldsz -= BITS_PER_UNIT - bpos;
+		      gcc_assert (fldsz && fldsz < BITS_PER_UNIT);
+		      *p &= ((1U << BITS_PER_UNIT) - 1) >> fldsz;
+		    }
+		}
+	      else
+		{
+		  /* Little endian.  */
+		  if (bpos + fldsz <= BITS_PER_UNIT)
+		    *p &= ~(((1 << fldsz) - 1) << bpos);
+		  else
+		    {
+		      gcc_assert (bpos);
+		      *p &= ~(((1 << BITS_PER_UNIT) - 1) << bpos);
+		      p++;
+		      fldsz -= BITS_PER_UNIT - bpos;
+		      gcc_assert (fldsz && fldsz < BITS_PER_UNIT);
+		      *p &= ~((1 << fldsz) - 1);
+		    }
+		}
+	      if (mask_save[0] != mask[pos]
+		  || (end == 2 && mask_save[1] != mask[pos + 1]))
+		{
+		  CONSTRUCTOR_NO_CLEARING (t) = 1;
+		  continue;
+		}
+	    }
+	}
+      else if (is_byte_access_type_not_plain_char (type))
+	{
+	  HOST_WIDE_INT pos;
+	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	    pos = tree_to_shwi (index);
+	  else
+	    pos = int_byte_position (index);
+	  if (mask[pos])
+	    {
+	      CONSTRUCTOR_NO_CLEARING (t) = 1;
+	      mask[pos] = 0;
+	      continue;
+	    }
+	}
+      if (TREE_CODE (value) == CONSTRUCTOR)
+	{
+	  HOST_WIDE_INT pos;
+	  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	    pos = tree_to_shwi (index)
+		  * tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (t))));
+	  else
+	    pos = int_byte_position (index);
+	  clear_uchar_or_std_byte_in_mask (loc, value, mask + pos);
+	}
+      if (i != j)
+	{
+	  CONSTRUCTOR_ELT (t, j)->index = index;
+	  CONSTRUCTOR_ELT (t, j)->value = value;
+	}
+      ++j;
+    }
+  if (CONSTRUCTOR_NELTS (t) != j)
+    vec_safe_truncate (CONSTRUCTOR_ELTS (t), j);
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to evaluate a BIT_CAST_EXPR.  */
 
@@ -4351,12 +4463,27 @@ cxx_eval_bit_cast (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
 
   tree r = NULL_TREE;
   if (can_native_interpret_type_p (TREE_TYPE (t)))
-    r = native_interpret_expr (TREE_TYPE (t), ptr, len);
+    {
+      r = native_interpret_expr (TREE_TYPE (t), ptr, len);
+      if (is_byte_access_type_not_plain_char (TREE_TYPE (t)))
+	{
+	  gcc_assert (len == 1);
+	  if (mask[0])
+	    {
+	      memset (mask, 0, len);
+	      r = build_constructor (TREE_TYPE (r), NULL);
+	      CONSTRUCTOR_NO_CLEARING (r) = 1;
+	    }
+	}
+    }
   else if (TREE_CODE (TREE_TYPE (t)) == RECORD_TYPE)
     {
       r = native_interpret_aggregate (TREE_TYPE (t), ptr, 0, len);
       if (r != NULL_TREE)
-	clear_type_padding_in_mask (TREE_TYPE (t), mask);
+	{
+	  clear_type_padding_in_mask (TREE_TYPE (t), mask);
+	  clear_uchar_or_std_byte_in_mask (loc, r, mask);
+	}
     }
 
   if (r != NULL_TREE)

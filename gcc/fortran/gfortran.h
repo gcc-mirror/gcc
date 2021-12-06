@@ -1529,10 +1529,11 @@ typedef struct gfc_omp_clauses
   unsigned sched_simd:1, sched_monotonic:1, sched_nonmonotonic:1;
   unsigned simd:1, threads:1, depend_source:1, destroy:1, order_concurrent:1;
   unsigned order_unconstrained:1, order_reproducible:1, capture:1;
-  unsigned grainsize_strict:1, num_tasks_strict:1;
+  unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
+  ENUM_BITFIELD (gfc_omp_memorder) fail:3;
   ENUM_BITFIELD (gfc_omp_cancel_kind) cancel:3;
   ENUM_BITFIELD (gfc_omp_proc_bind_kind) proc_bind:3;
   ENUM_BITFIELD (gfc_omp_depend_op) depobj_update:3;
@@ -3585,6 +3586,7 @@ void gfc_free_ref_list (gfc_ref *);
 void gfc_type_convert_binary (gfc_expr *, int);
 bool gfc_is_constant_expr (gfc_expr *);
 bool gfc_simplify_expr (gfc_expr *, int);
+bool gfc_try_simplify_expr (gfc_expr *, int);
 int gfc_has_vector_index (gfc_expr *);
 
 gfc_expr *gfc_get_expr (void);
