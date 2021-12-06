@@ -103,6 +103,10 @@ typedef off_t gfc_offset;
 #define NULL (void *) 0
 #endif
 
+#if defined(__powerpc64__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ \
+    && defined __GLIBC_PREREQ && __GLIBC_PREREQ (2, 32)
+#define POWER_IEEE128 1
+#endif
 
 /* These functions from <ctype.h> should only be used on values that can be
    represented as unsigned char, otherwise the behavior is undefined.
@@ -386,6 +390,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_10) gfc_array_r10;
 #ifdef HAVE_GFC_REAL_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_16) gfc_array_r16;
 #endif
+#ifdef HAVE_GFC_REAL_17
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_17) gfc_array_r17;
+#endif
 typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_4) gfc_array_c4;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_8) gfc_array_c8;
 #ifdef HAVE_GFC_COMPLEX_10
@@ -393,6 +400,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_10) gfc_array_c10;
 #endif
 #ifdef HAVE_GFC_COMPLEX_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_16) gfc_array_c16;
+#endif
+#ifdef HAVE_GFC_COMPLEX_17
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_17) gfc_array_c17;
 #endif
 typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_1) gfc_array_l1;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_2) gfc_array_l2;
@@ -507,6 +517,10 @@ typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_a
 #define GFC_DTYPE_REAL_16 ((BT_REAL << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_REAL_16) << GFC_DTYPE_SIZE_SHIFT))
 #endif
+#ifdef HAVE_GFC_REAL_17
+#define GFC_DTYPE_REAL_17 ((BT_REAL << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_REAL_17) << GFC_DTYPE_SIZE_SHIFT))
+#endif
 
 #define GFC_DTYPE_COMPLEX_4 ((BT_COMPLEX << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_COMPLEX_4) << GFC_DTYPE_SIZE_SHIFT))
@@ -519,6 +533,10 @@ typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_a
 #ifdef HAVE_GFC_COMPLEX_16
 #define GFC_DTYPE_COMPLEX_16 ((BT_COMPLEX << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_COMPLEX_16) << GFC_DTYPE_SIZE_SHIFT))
+#endif
+#ifdef HAVE_GFC_COMPLEX_17
+#define GFC_DTYPE_COMPLEX_17 ((BT_COMPLEX << GFC_DTYPE_TYPE_SHIFT) \
+   | (sizeof(GFC_COMPLEX_17) << GFC_DTYPE_SIZE_SHIFT))
 #endif
 
 /* Macros to determine the alignment of pointers.  */
@@ -1780,6 +1798,33 @@ void cshift1_16_c16 (gfc_array_c16 * const restrict,
         const gfc_array_i16 * const restrict,
         const GFC_INTEGER_16 * const restrict);
 internal_proto(cshift1_16_c16);
+#endif
+
+/* Prototypes for the POWER __ieee128 functions.  */
+#ifdef POWER_IEEE128
+extern __float128 __acoshieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __acosieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __asinhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __asinieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __atan2ieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __atanhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __atanieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __coshieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __cosieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __erfieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __expieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __fabsieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __jnieee128 (int, __float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __log10ieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __logieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __powieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __sinhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __sinieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __sqrtieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __tanhieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __tanieee128 (__float128) __attribute__ ((__nothrow__, __leaf__));
+extern __float128 __ynieee128 (int , __float128) __attribute__ ((__nothrow__, __leaf__));
+
 #endif
 
 /* We always have these.  */

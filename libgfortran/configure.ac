@@ -145,6 +145,7 @@ AC_SUBST(CFLAGS)
 AM_PROG_CC_C_O
 
 # Add -Wall -fno-repack-arrays -fno-underscoring if we are using GCC.
+have_real_17=no
 if test "x$GCC" = "xyes"; then
   AM_FCFLAGS="-I . -Wall -Werror -fimplicit-none -fno-repack-arrays -fno-underscoring"
   ## We like to use C11 and C99 routines when available.  This makes
@@ -154,8 +155,24 @@ if test "x$GCC" = "xyes"; then
   ## Compile the following tests with the same system header contents
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
-fi
 
+  case x$target in
+    xpowerpc64le*-linux*)
+      AC_PREPROC_IFELSE(
+        [AC_LANG_PROGRAM([[#if __SIZEOF_LONG_DOUBLE__ != 16
+			   #error long double is double
+			   #endif]],
+                         [[(void) 0;]])],
+        [AM_FCFLAGS="$AM_FCFLAGS -mabi=ibmlongdouble";
+	 AM_CFLAGS="$AM_CFLAGS -mabi=ibmlongdouble";
+	 CFLAGS="$CFLAGS -mabi=ibmlongdouble";
+	 have_real_17=yes])
+      ;;
+    *)
+      ;;
+  esac
+fi
+AM_CONDITIONAL([HAVE_REAL_17], [test "x$have_real_17" != xno])
 # Add CET specific flags if CET is enabled
 GCC_CET_FLAGS(CET_FLAGS)
 AM_FCFLAGS="$AM_FCFLAGS $CET_FLAGS"
@@ -665,10 +682,10 @@ LIBGFOR_CHECK_CRLF
 # Check whether we support AVX extensions
 LIBGFOR_CHECK_AVX
 
-# Check wether we support AVX2 extensions
+# Check whether we support AVX2 extensions
 LIBGFOR_CHECK_AVX2
 
-# Check wether we support AVX512f extensions
+# Check whether we support AVX512f extensions
 LIBGFOR_CHECK_AVX512F
 
 # Check for FMA3 extensions

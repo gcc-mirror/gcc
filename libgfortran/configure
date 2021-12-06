@@ -692,6 +692,8 @@ LIBGFOR_USE_SYMVER_FALSE
 LIBGFOR_USE_SYMVER_TRUE
 AM_CFLAGS
 AM_FCFLAGS
+HAVE_REAL_17_FALSE
+HAVE_REAL_17_TRUE
 toolexeclibdir
 toolexecdir
 EGREP
@@ -5984,6 +5986,7 @@ fi
 
 
 # Add -Wall -fno-repack-arrays -fno-underscoring if we are using GCC.
+have_real_17=no
 if test "x$GCC" = "xyes"; then
   AM_FCFLAGS="-I . -Wall -Werror -fimplicit-none -fno-repack-arrays -fno-underscoring"
   ## We like to use C11 and C99 routines when available.  This makes
@@ -5993,6 +5996,40 @@ if test "x$GCC" = "xyes"; then
   ## Compile the following tests with the same system header contents
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
+
+  case x$target in
+    xpowerpc64le*-linux*)
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if __SIZEOF_LONG_DOUBLE__ != 16
+			   #error long double is double
+			   #endif
+int
+main ()
+{
+(void) 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  AM_FCFLAGS="$AM_FCFLAGS -mabi=ibmlongdouble";
+	 AM_CFLAGS="$AM_CFLAGS -mabi=ibmlongdouble";
+	 CFLAGS="$CFLAGS -mabi=ibmlongdouble";
+	 have_real_17=yes
+fi
+rm -f conftest.err conftest.i conftest.$ac_ext
+      ;;
+    *)
+      ;;
+  esac
+fi
+ if test "x$have_real_17" != xno; then
+  HAVE_REAL_17_TRUE=
+  HAVE_REAL_17_FALSE='#'
+else
+  HAVE_REAL_17_TRUE='#'
+  HAVE_REAL_17_FALSE=
 fi
 
 # Add CET specific flags if CET is enabled
@@ -12728,7 +12765,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12731 "configure"
+#line 12769 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12834,7 +12871,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12837 "configure"
+#line 12875 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -27093,7 +27130,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$ac_save_CFLAGS"
 
 
-# Check wether we support AVX2 extensions
+# Check whether we support AVX2 extensions
 
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="-O2 -mavx2"
@@ -27123,7 +27160,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$ac_save_CFLAGS"
 
 
-# Check wether we support AVX512f extensions
+# Check whether we support AVX512f extensions
 
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="-O2 -mavx512f"
@@ -27520,6 +27557,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_REAL_17_TRUE}" && test -z "${HAVE_REAL_17_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_REAL_17\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_USE_SYMVER_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_FALSE}"; then
