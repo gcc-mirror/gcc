@@ -127,7 +127,8 @@ extern "C" {
       _UVRSC_VFP = 1,       /* vfp */
       _UVRSC_FPA = 2,       /* fpa */
       _UVRSC_WMMXD = 3,     /* Intel WMMX data register */
-      _UVRSC_WMMXC = 4      /* Intel WMMX control register */
+      _UVRSC_WMMXC = 4,     /* Intel WMMX control register */
+      _UVRSC_PAC = 5        /* Armv8.1-M Mainline PAC/AUTH pseudo-register */
     }
   _Unwind_VRS_RegClass;
 
