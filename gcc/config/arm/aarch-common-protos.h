@@ -153,4 +153,10 @@ rtx_insn *arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 			     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
 			     location_t loc);
 
+/* Parsing routine for branch-protection common to AArch64 and Arm.  */
+enum aarch_parse_opt_result aarch_parse_branch_protection (const char*, char**);
+
+/* Validation routine for branch-protection common to AArch64 and Arm.  */
+bool aarch_validate_mbranch_protection (const char *);
+
 #endif /* GCC_AARCH_COMMON_PROTOS_H */

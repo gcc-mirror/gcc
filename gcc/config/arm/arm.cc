@@ -72,6 +72,8 @@
 #include "selftest.h"
 #include "tree-vectorizer.h"
 #include "opts.h"
+#include "aarch-common.h"
+#include "aarch-common-protos.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2416,6 +2418,11 @@ const struct tune_params arm_fa726te_tune =
   tune_params::FUSE_NOTHING,
   tune_params::SCHED_AUTOPREF_OFF
 };
+
+/* Key type for Pointer Authentication extension.  */
+enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A;
+
+char *accepted_branch_protection_string = NULL;
 
 /* Auto-generated CPU, FPU and architecture tables.  */
 #include "arm-cpu-data.h"

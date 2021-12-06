@@ -183,14 +183,14 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BTI_DEFAULT", pfile);
 
   cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     {
       int v = 0;
-      if (aarch64_ra_sign_key == AARCH64_KEY_A)
+      if (aarch_ra_sign_key == AARCH_KEY_A)
 	v |= 1;
-      if (aarch64_ra_sign_key == AARCH64_KEY_B)
+      if (aarch_ra_sign_key == AARCH_KEY_B)
 	v |= 2;
-      if (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL)
+      if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
 	v |= 4;
       builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", v);
     }
