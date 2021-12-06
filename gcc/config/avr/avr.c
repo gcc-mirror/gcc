@@ -10089,7 +10089,7 @@ avr_asm_asm_output_aligned_bss (FILE *file, tree decl, const char *name,
    to track need of __do_copy_data.  */
 
 static void
-avr_output_data_section_asm_op (const void *data)
+avr_output_data_section_asm_op (const char *data)
 {
   avr_need_copy_data_p = true;
 
@@ -10102,7 +10102,7 @@ avr_output_data_section_asm_op (const void *data)
    to track need of __do_clear_bss.  */
 
 static void
-avr_output_bss_section_asm_op (const void *data)
+avr_output_bss_section_asm_op (const char *data)
 {
   avr_need_clear_bss_p = true;
 
