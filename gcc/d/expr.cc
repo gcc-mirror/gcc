@@ -2598,7 +2598,8 @@ public:
 	/* Copy the string contents to a null terminated string.  */
 	dinteger_t length = (e->len * e->sz);
 	char *string = XALLOCAVEC (char, length + 1);
-	memcpy (string, e->string, length);
+	if (length > 0)
+	  memcpy (string, e->string, length);
 	string[length] = '\0';
 
 	/* String value and type includes the null terminator.  */
