@@ -323,6 +323,10 @@ mbranch-cost=
 Target RejectNegative Joined UInteger Var(arm_branch_cost) Init(-1)
 Cost to assume for a branch insn.
 
+mbranch-protection=
+Target RejectNegative Joined Var(arm_branch_protection_string) Save
+Use branch-protection features.
+
 mgeneral-regs-only
 Target RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses the core registers only (r0-r14).

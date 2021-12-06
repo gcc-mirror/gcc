@@ -825,7 +825,9 @@ Objective-C and Objective-C++ Dialects}.
 -mcmse @gol
 -mfix-cmse-cve-2021-35465 @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset} @gol
--mfdpic}
+-mfdpic @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
+[+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args @gol
@@ -21528,6 +21530,40 @@ behavior is acceptable, use -static and -Wl,-dynamic-linker options.
 The opposite @option{-mno-fdpic} option is useful (and required) to
 build the Linux kernel using the same (@code{arm-*-uclinuxfdpiceabi})
 toolchain as the one used to build the userland programs.
+
+@item
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}][+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]
+@opindex mbranch-protection
+Enable branch protection features (armv8.1-m.main only).
+@samp{none} generate code without branch protection or return address
+signing.
+@samp{standard[+@var{leaf}]} generate code with all branch protection
+features enabled at their standard level.
+@samp{pac-ret[+@var{leaf}]} generate code with return address signing
+set to its standard level, which is to sign all functions that save
+the return address to memory.
+@samp{leaf} When return address signing is enabled, also sign leaf
+functions even if they do not write the return address to memory.
++@samp{bti} Add landing-pad instructions at the permitted targets of
+indirect branch instructions.
+
+If the @samp{+pacbti} architecture extension is not enabled, then all
+branch protection and return address signing operations are
+constrained to use only the instructions defined in the
+architectural-NOP space. The generated code will remain
+backwards-compatible with earlier versions of the architecture, but
+the additional security can be enabled at run time on processors that
+support the @samp{PACBTI} extension.
+
+Branch target enforcement using BTI can only be enabled at runtime if
+all code in the application has been compiled with at least
+@samp{-mbranch-protection=bti}.
+
+Any setting other than @samp{none} is supported only on armv8-m.main
+or later.
+
+The default is to generate code without branch protection or return
+address signing.
 
 @end table
 
