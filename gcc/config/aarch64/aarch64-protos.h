@@ -23,6 +23,7 @@
 #define GCC_AARCH64_PROTOS_H
 
 #include "input.h"
+#include "config/arm/aarch-common.h"
 
 /* SYMBOL_SMALL_ABSOLUTE: Generate symbol accesses through
    high and lo relocs that calculate the base address using a PC
@@ -650,18 +651,6 @@ enum aarch64_extra_tuning_flags
   AARCH64_EXTRA_TUNE_ALL = (1u << AARCH64_EXTRA_TUNE_index_END) - 1
 };
 
-/* Enum describing the various ways that the
-   aarch64_parse_{arch,tune,cpu,extension} functions can fail.
-   This way their callers can choose what kind of error to give.  */
-
-enum aarch64_parse_opt_result
-{
-  AARCH64_PARSE_OK,			/* Parsing was successful.  */
-  AARCH64_PARSE_MISSING_ARG,		/* Missing argument.  */
-  AARCH64_PARSE_INVALID_FEATURE,	/* Invalid feature modifier.  */
-  AARCH64_PARSE_INVALID_ARG		/* Invalid arch, tune, cpu arg.  */
-};
-
 /* Enum to distinguish which type of check is to be done in
    aarch64_simd_valid_immediate.  This is used as a bitmask where
    AARCH64_CHECK_MOV has both bits set.  Thus AARCH64_CHECK_MOV will
@@ -672,13 +661,7 @@ enum simd_immediate_check {
   AARCH64_CHECK_MOV  = AARCH64_CHECK_ORR | AARCH64_CHECK_BIC
 };
 
-/* The key type that -msign-return-address should use.  */
-enum aarch64_key_type {
-  AARCH64_KEY_A,
-  AARCH64_KEY_B
-};
-
-extern enum aarch64_key_type aarch64_ra_sign_key;
+extern enum aarch_key_type aarch_ra_sign_key;
 
 extern struct tune_params aarch64_tune_params;
 
@@ -1043,9 +1026,9 @@ extern bool aarch64_classify_address (struct aarch64_address_info *, rtx,
 bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
 const char *aarch64_rewrite_selected_cpu (const char *name);
-enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
-						       uint64_t *,
-						       std::string *);
+enum aarch_parse_opt_result aarch64_parse_extension (const char *,
+						     uint64_t *,
+						     std::string *);
 void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
 std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
 

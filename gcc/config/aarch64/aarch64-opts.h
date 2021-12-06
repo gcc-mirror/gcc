@@ -71,16 +71,6 @@ enum aarch64_code_model {
   AARCH64_CMODEL_LARGE
 };
 
-/* Function types -msign-return-address should sign.  */
-enum aarch64_function_type {
-  /* Don't sign any function.  */
-  AARCH64_FUNCTION_NONE,
-  /* Non-leaf functions.  */
-  AARCH64_FUNCTION_NON_LEAF,
-  /* All functions.  */
-  AARCH64_FUNCTION_ALL
-};
-
 /* SVE vector register sizes.  */
 enum aarch64_sve_vector_bits_enum {
   SVE_SCALABLE,

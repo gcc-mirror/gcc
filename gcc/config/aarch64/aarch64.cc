@@ -81,6 +81,8 @@
 #include "rtlanal.h"
 #include "tree-dfa.h"
 #include "asan.h"
+#include "config/arm/aarch-common.h"
+#include "config/arm/aarch-common-protos.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -321,11 +323,7 @@ bool aarch64_pcrelative_literal_loads;
 /* Global flag for whether frame pointer is enabled.  */
 bool aarch64_use_frame_pointer;
 
-#define BRANCH_PROTECT_STR_MAX 255
 char *accepted_branch_protection_string = NULL;
-
-static enum aarch64_parse_opt_result
-aarch64_parse_branch_protection (const char*, char**);
 
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
@@ -2711,7 +2709,7 @@ static const struct processor *selected_arch;
 static const struct processor *selected_cpu;
 static const struct processor *selected_tune;
 
-enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A;
+enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A;
 
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
@@ -2780,100 +2778,6 @@ aarch64_cc;
 
 #define AARCH64_INVERSE_CONDITION_CODE(X) ((aarch64_cc) (((int) X) ^ 1))
 
-struct aarch64_branch_protect_type
-{
-  /* The type's name that the user passes to the branch-protection option
-    string.  */
-  const char* name;
-  /* Function to handle the protection type and set global variables.
-    First argument is the string token corresponding with this type and the
-    second argument is the next token in the option string.
-    Return values:
-    * AARCH64_PARSE_OK: Handling was sucessful.
-    * AARCH64_INVALID_ARG: The type is invalid in this context and the caller
-      should print an error.
-    * AARCH64_INVALID_FEATURE: The type is invalid and the handler prints its
-      own error.  */
-  enum aarch64_parse_opt_result (*handler)(char*, char*);
-  /* A list of types that can follow this type in the option string.  */
-  const aarch64_branch_protect_type* subtypes;
-  unsigned int num_subtypes;
-};
-
-static enum aarch64_parse_opt_result
-aarch64_handle_no_branch_protection (char* str, char* rest)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
-  aarch64_enable_bti = 0;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH64_PARSE_INVALID_FEATURE;
-    }
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_standard_branch_protection (char* str, char* rest)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-  aarch64_ra_sign_key = AARCH64_KEY_A;
-  aarch64_enable_bti = 1;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH64_PARSE_INVALID_FEATURE;
-    }
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
-				    char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-  aarch64_ra_sign_key = AARCH64_KEY_A;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
-			      char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_ALL;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_b_key (char* str ATTRIBUTE_UNUSED,
-			      char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_key = AARCH64_KEY_B;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
-				    char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_enable_bti = 1;
-  return AARCH64_PARSE_OK;
-}
-
-static const struct aarch64_branch_protect_type aarch64_pac_ret_subtypes[] = {
-  { "leaf", aarch64_handle_pac_ret_leaf, NULL, 0 },
-  { "b-key", aarch64_handle_pac_ret_b_key, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
-};
-
-static const struct aarch64_branch_protect_type aarch64_branch_protect_types[] = {
-  { "none", aarch64_handle_no_branch_protection, NULL, 0 },
-  { "standard", aarch64_handle_standard_branch_protection, NULL, 0 },
-  { "pac-ret", aarch64_handle_pac_ret_protection, aarch64_pac_ret_subtypes,
-    ARRAY_SIZE (aarch64_pac_ret_subtypes) },
-  { "bti", aarch64_handle_bti_protection, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
-};
 
 /* The condition codes of the processor, and the inverse function.  */
 static const char * const aarch64_condition_codes[] =
@@ -8621,10 +8525,10 @@ aarch64_return_address_signing_enabled (void)
   if (crtl->calls_eh_return)
     return false;
 
-  /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
+  /* If signing scope is AARCH_FUNCTION_NON_LEAF, we only sign a leaf function
      if its LR is pushed onto stack.  */
-  return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
-	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
+  return (aarch_ra_sign_scope == AARCH_FUNCTION_ALL
+	  || (aarch_ra_sign_scope == AARCH_FUNCTION_NON_LEAF
 	      && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0)));
 }
 
@@ -8632,7 +8536,7 @@ aarch64_return_address_signing_enabled (void)
 bool
 aarch64_bti_enabled (void)
 {
-  return (aarch64_enable_bti == 1);
+  return (aarch_enable_bti == 1);
 }
 
 /* The caller is going to use ST1D or LD1D to save or restore an SVE
@@ -9624,12 +9528,12 @@ aarch64_expand_prologue (void)
   /* Sign return address for functions.  */
   if (aarch64_return_address_signing_enabled ())
     {
-      switch (aarch64_ra_sign_key)
+      switch (aarch_ra_sign_key)
 	{
-	  case AARCH64_KEY_A:
+	  case AARCH_KEY_A:
 	    insn = emit_insn (gen_paciasp ());
 	    break;
-	  case AARCH64_KEY_B:
+	  case AARCH_KEY_B:
 	    insn = emit_insn (gen_pacibsp ());
 	    break;
 	  default:
@@ -9930,12 +9834,12 @@ aarch64_expand_epilogue (bool for_sibcall)
   if (aarch64_return_address_signing_enabled ()
       && (for_sibcall || !TARGET_ARMV8_3))
     {
-      switch (aarch64_ra_sign_key)
+      switch (aarch_ra_sign_key)
 	{
-	  case AARCH64_KEY_A:
+	  case AARCH_KEY_A:
 	    insn = emit_insn (gen_autiasp ());
 	    break;
-	  case AARCH64_KEY_B:
+	  case AARCH_KEY_B:
 	    insn = emit_insn (gen_autibsp ());
 	    break;
 	  default:
@@ -17077,12 +16981,12 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 
 /* Parse the TO_PARSE string and put the architecture struct that it
    selects into RES and the architectural features into ISA_FLAGS.
-   Return an aarch64_parse_opt_result describing the parse result.
+   Return an aarch_parse_opt_result describing the parse result.
    If there is an error parsing, RES and ISA_FLAGS are left unchanged.
    When the TO_PARSE string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
 		    uint64_t *isa_flags, std::string *invalid_extension)
 {
@@ -17098,7 +17002,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
     len = strlen (to_parse);
 
   if (len == 0)
-    return AARCH64_PARSE_MISSING_ARG;
+    return AARCH_PARSE_MISSING_ARG;
 
 
   /* Loop through the list of supported ARCHes to find a match.  */
@@ -17112,32 +17016,32 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 	  if (ext != NULL)
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
-	      enum aarch64_parse_opt_result ext_res
+	      enum aarch_parse_opt_result ext_res
 		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
-	      if (ext_res != AARCH64_PARSE_OK)
+	      if (ext_res != AARCH_PARSE_OK)
 		return ext_res;
 	    }
 	  /* Extension parsing was successful.  Confirm the result
 	     arch and ISA flags.  */
 	  *res = arch;
 	  *isa_flags = isa_temp;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* ARCH name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse the TO_PARSE string and put the result tuning in RES and the
-   architecture flags in ISA_FLAGS.  Return an aarch64_parse_opt_result
+   architecture flags in ISA_FLAGS.  Return an aarch_parse_opt_result
    describing the parse result.  If there is an error parsing, RES and
    ISA_FLAGS are left unchanged.
    When the TO_PARSE string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
 		   uint64_t *isa_flags, std::string *invalid_extension)
 {
@@ -17153,7 +17057,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     len = strlen (to_parse);
 
   if (len == 0)
-    return AARCH64_PARSE_MISSING_ARG;
+    return AARCH_PARSE_MISSING_ARG;
 
 
   /* Loop through the list of supported CPUs to find a match.  */
@@ -17167,29 +17071,29 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
 	  if (ext != NULL)
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
-	      enum aarch64_parse_opt_result ext_res
+	      enum aarch_parse_opt_result ext_res
 		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
-	      if (ext_res != AARCH64_PARSE_OK)
+	      if (ext_res != AARCH_PARSE_OK)
 		return ext_res;
 	    }
 	  /* Extension parsing was successfull.  Confirm the result
 	     cpu and ISA flags.  */
 	  *res = cpu;
 	  *isa_flags = isa_temp;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse the TO_PARSE string and put the cpu it selects into RES.
-   Return an aarch64_parse_opt_result describing the parse result.
+   Return an aarch_parse_opt_result describing the parse result.
    If the parsing fails the RES does not change.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_tune (const char *to_parse, const struct processor **res)
 {
   const struct processor *cpu;
@@ -17200,12 +17104,12 @@ aarch64_parse_tune (const char *to_parse, const struct processor **res)
       if (strcmp (cpu->name, to_parse) == 0)
 	{
 	  *res = cpu;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse TOKEN, which has length LENGTH to see if it is an option
@@ -17783,22 +17687,22 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
 		       uint64_t *isa_flags)
 {
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing cpu name in %<-mcpu=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-mcpu%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-mcpu=%s%>",
 	       invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -17883,110 +17787,6 @@ aarch64_validate_sls_mitigation (const char *const_str)
   free (str_root);
 }
 
-/* Parses CONST_STR for branch protection features specified in
-   aarch64_branch_protect_types, and set any global variables required.  Returns
-   the parsing result and assigns LAST_STR to the last processed token from
-   CONST_STR so that it can be used for error reporting.  */
-
-static enum
-aarch64_parse_opt_result aarch64_parse_branch_protection (const char *const_str,
-							  char** last_str)
-{
-  char *str_root = xstrdup (const_str);
-  char* token_save = NULL;
-  char *str = strtok_r (str_root, "+", &token_save);
-  enum aarch64_parse_opt_result res = AARCH64_PARSE_OK;
-  if (!str)
-    res = AARCH64_PARSE_MISSING_ARG;
-  else
-    {
-      char *next_str = strtok_r (NULL, "+", &token_save);
-      /* Reset the branch protection features to their defaults.  */
-      aarch64_handle_no_branch_protection (NULL, NULL);
-
-      while (str && res == AARCH64_PARSE_OK)
-	{
-	  const aarch64_branch_protect_type* type = aarch64_branch_protect_types;
-	  bool found = false;
-	  /* Search for this type.  */
-	  while (type && type->name && !found && res == AARCH64_PARSE_OK)
-	    {
-	      if (strcmp (str, type->name) == 0)
-		{
-		  found = true;
-		  res = type->handler (str, next_str);
-		  str = next_str;
-		  next_str = strtok_r (NULL, "+", &token_save);
-		}
-	      else
-		type++;
-	    }
-	  if (found && res == AARCH64_PARSE_OK)
-	    {
-	      bool found_subtype = true;
-	      /* Loop through each token until we find one that isn't a
-		 subtype.  */
-	      while (found_subtype)
-		{
-		  found_subtype = false;
-		  const aarch64_branch_protect_type *subtype = type->subtypes;
-		  /* Search for the subtype.  */
-		  while (str && subtype && subtype->name && !found_subtype
-			  && res == AARCH64_PARSE_OK)
-		    {
-		      if (strcmp (str, subtype->name) == 0)
-			{
-			  found_subtype = true;
-			  res = subtype->handler (str, next_str);
-			  str = next_str;
-			  next_str = strtok_r (NULL, "+", &token_save);
-			}
-		      else
-			subtype++;
-		    }
-		}
-	    }
-	  else if (!found)
-	    res = AARCH64_PARSE_INVALID_ARG;
-	}
-    }
-  /* Copy the last processed token into the argument to pass it back.
-    Used by option and attribute validation to print the offending token.  */
-  if (last_str)
-    {
-      if (str) strcpy (*last_str, str);
-      else *last_str = NULL;
-    }
-  if (res == AARCH64_PARSE_OK)
-    {
-      /* If needed, alloc the accepted string then copy in const_str.
-	Used by override_option_after_change_1.  */
-      if (!accepted_branch_protection_string)
-	accepted_branch_protection_string = (char *) xmalloc (
-						      BRANCH_PROTECT_STR_MAX
-							+ 1);
-      strncpy (accepted_branch_protection_string, const_str,
-		BRANCH_PROTECT_STR_MAX + 1);
-      /* Forcibly null-terminate.  */
-      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
-    }
-  return res;
-}
-
-static bool
-aarch64_validate_mbranch_protection (const char *const_str)
-{
-  char *str = (char *) xmalloc (strlen (const_str));
-  enum aarch64_parse_opt_result res =
-    aarch64_parse_branch_protection (const_str, &str);
-  if (res == AARCH64_PARSE_INVALID_ARG)
-    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
-  else if (res == AARCH64_PARSE_MISSING_ARG)
-    error ("missing argument for %<-mbranch-protection=%>");
-  free (str);
-  return res == AARCH64_PARSE_OK;
-}
-
 /* Validate a command-line -march option.  Parse the arch and extensions
    (if any) specified in STR and throw errors if appropriate.  Put the
    results, if they are valid, in RES and ISA_FLAGS.  Return whether the
@@ -17997,22 +17797,22 @@ aarch64_validate_march (const char *str, const struct processor **res,
 			 uint64_t *isa_flags)
 {
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_arch (str, res, isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing arch name in %<-march=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-march%>", str);
 	aarch64_print_hint_for_arch (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-march=%s%>",
 	       invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18032,18 +17832,18 @@ aarch64_validate_march (const char *str, const struct processor **res,
 static bool
 aarch64_validate_mtune (const char *str, const struct processor **res)
 {
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_tune (str, res);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing cpu name in %<-mtune=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-mtune%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
@@ -18135,7 +17935,7 @@ aarch64_override_options (void)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
-    aarch64_validate_mbranch_protection (aarch64_branch_protection_string);
+    aarch_validate_mbranch_protection (aarch64_branch_protection_string);
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
@@ -18213,12 +18013,12 @@ aarch64_override_options (void)
   if (!selected_tune)
     selected_tune = selected_cpu;
 
-  if (aarch64_enable_bti == 2)
+  if (aarch_enable_bti == 2)
     {
 #ifdef TARGET_ENABLE_BTI
-      aarch64_enable_bti = 1;
+      aarch_enable_bti = 1;
 #else
-      aarch64_enable_bti = 0;
+      aarch_enable_bti = 0;
 #endif
     }
 
@@ -18228,9 +18028,9 @@ aarch64_override_options (void)
   if (!TARGET_ILP32 && accepted_branch_protection_string == NULL)
     {
 #ifdef TARGET_ENABLE_PAC_RET
-      aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+      aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
 #else
-      aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
+      aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
 #endif
     }
 
@@ -18244,7 +18044,7 @@ aarch64_override_options (void)
   /* Convert -msve-vector-bits to a VG count.  */
   aarch64_sve_vg = aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits);
 
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE && TARGET_ILP32)
     sorry ("return address signing is only supported for %<-mabi=lp64%>");
 
   /* Make sure we properly set up the explicit options.  */
@@ -18371,7 +18171,7 @@ aarch64_option_restore (struct gcc_options *opts,
     = ptr->x_aarch64_branch_protection_string;
   if (opts->x_aarch64_branch_protection_string)
     {
-      aarch64_parse_branch_protection (opts->x_aarch64_branch_protection_string,
+      aarch_parse_branch_protection (opts->x_aarch64_branch_protection_string,
 					NULL);
     }
 
@@ -18495,10 +18295,10 @@ aarch64_handle_attr_arch (const char *str)
 {
   const struct processor *tmp_arch = NULL;
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_arch (str, &tmp_arch, &aarch64_isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_arch);
       selected_arch = tmp_arch;
@@ -18508,14 +18308,14 @@ aarch64_handle_attr_arch (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing name in %<target(\"arch=\")%> pragma or attribute");
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"arch=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_arch (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %s of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18534,10 +18334,10 @@ aarch64_handle_attr_cpu (const char *str)
 {
   const struct processor *tmp_cpu = NULL;
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_cpu (str, &tmp_cpu, &aarch64_isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_cpu);
       selected_tune = tmp_cpu;
@@ -18550,14 +18350,14 @@ aarch64_handle_attr_cpu (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing name in %<target(\"cpu=\")%> pragma or attribute");
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"cpu=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18575,23 +18375,23 @@ aarch64_handle_attr_cpu (const char *str)
  aarch64_handle_attr_branch_protection (const char* str)
  {
   char *err_str = (char *) xmalloc (strlen (str) + 1);
-  enum aarch64_parse_opt_result res = aarch64_parse_branch_protection (str,
-								      &err_str);
+  enum aarch_parse_opt_result res = aarch_parse_branch_protection (str,
+								   &err_str);
   bool success = false;
   switch (res)
     {
-     case AARCH64_PARSE_MISSING_ARG:
+     case AARCH_PARSE_MISSING_ARG:
        error ("missing argument to %<target(\"branch-protection=\")%> pragma or"
 	      " attribute");
        break;
-     case AARCH64_PARSE_INVALID_ARG:
+     case AARCH_PARSE_INVALID_ARG:
        error ("invalid protection type %qs in %<target(\"branch-protection"
 	      "=\")%> pragma or attribute", err_str);
        break;
-     case AARCH64_PARSE_OK:
+     case AARCH_PARSE_OK:
        success = true;
       /* Fall through.  */
-     case AARCH64_PARSE_INVALID_FEATURE:
+     case AARCH_PARSE_INVALID_FEATURE:
        break;
      default:
        gcc_unreachable ();
@@ -18606,10 +18406,10 @@ static bool
 aarch64_handle_attr_tune (const char *str)
 {
   const struct processor *tmp_tune = NULL;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_tune (str, &tmp_tune);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_tune);
       selected_tune = tmp_tune;
@@ -18619,7 +18419,7 @@ aarch64_handle_attr_tune (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"tune=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
@@ -18638,7 +18438,7 @@ aarch64_handle_attr_tune (const char *str)
 static bool
 aarch64_handle_attr_isa_flags (char *str)
 {
-  enum aarch64_parse_opt_result parse_res;
+  enum aarch_parse_opt_result parse_res;
   uint64_t isa_flags = aarch64_isa_flags;
 
   /* We allow "+nothing" in the beginning to clear out all architectural
@@ -18652,7 +18452,7 @@ aarch64_handle_attr_isa_flags (char *str)
   std::string invalid_extension;
   parse_res = aarch64_parse_extension (str, &isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       aarch64_isa_flags = isa_flags;
       return true;
@@ -18660,11 +18460,11 @@ aarch64_handle_attr_isa_flags (char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing value in %<target()%> pragma or attribute");
 	break;
 
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	break;
@@ -18913,10 +18713,10 @@ aarch64_process_target_attr (tree args)
 	     leading '+'.  */
 	  uint64_t isa_temp = 0;
 	  auto with_plus = std::string ("+") + token;
-	  enum aarch64_parse_opt_result ext_res
+	  enum aarch_parse_opt_result ext_res
 	    = aarch64_parse_extension (with_plus.c_str (), &isa_temp, nullptr);
 
-	  if (ext_res == AARCH64_PARSE_OK)
+	  if (ext_res == AARCH_PARSE_OK)
 	    error ("arch extension %<%s%> should be prefixed by %<+%>",
 		   token);
 	  else
@@ -22610,7 +22410,7 @@ void
 aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
 {
   if (cfun->machine->frame.laid_out && aarch64_return_address_signing_enabled ()
-      && aarch64_ra_sign_key == AARCH64_KEY_B)
+      && aarch_ra_sign_key == AARCH_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
 
@@ -26898,7 +26698,7 @@ aarch64_file_end_indicate_exec_stack ()
   if (aarch64_bti_enabled ())
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_BTI;
 
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
 
   if (feature_1_and)

@@ -21,6 +21,9 @@
 HeaderInclude
 config/aarch64/aarch64-opts.h
 
+HeaderInclude
+config/arm/aarch-common.h
+
 TargetVariable
 enum aarch64_processor explicit_tune_core = aarch64_none
 
@@ -34,7 +37,7 @@ TargetVariable
 uint64_t aarch64_isa_flags = 0
 
 TargetVariable
-unsigned aarch64_enable_bti = 2
+unsigned aarch_enable_bti = 2
 
 ; The TLS dialect names to use with -mtls-dialect.
 
@@ -161,21 +164,21 @@ Target RejectNegative Joined Var(aarch64_branch_protection_string) Save
 Use branch-protection features.
 
 msign-return-address=
-Target WarnRemoved RejectNegative Joined Enum(aarch64_ra_sign_scope_t) Var(aarch64_ra_sign_scope) Init(AARCH64_FUNCTION_NONE) Save
+Target WarnRemoved RejectNegative Joined Enum(aarch_ra_sign_scope_t) Var(aarch_ra_sign_scope) Init(AARCH_FUNCTION_NONE) Save
 Select return address signing scope.
 
 Enum
-Name(aarch64_ra_sign_scope_t) Type(enum aarch64_function_type)
+Name(aarch_ra_sign_scope_t) Type(enum aarch_function_type)
 Supported AArch64 return address signing scope (for use with -msign-return-address= option):
 
 EnumValue
-Enum(aarch64_ra_sign_scope_t) String(none) Value(AARCH64_FUNCTION_NONE)
+Enum(aarch_ra_sign_scope_t) String(none) Value(AARCH_FUNCTION_NONE)
 
 EnumValue
-Enum(aarch64_ra_sign_scope_t) String(non-leaf) Value(AARCH64_FUNCTION_NON_LEAF)
+Enum(aarch_ra_sign_scope_t) String(non-leaf) Value(AARCH_FUNCTION_NON_LEAF)
 
 EnumValue
-Enum(aarch64_ra_sign_scope_t) String(all) Value(AARCH64_FUNCTION_ALL)
+Enum(aarch_ra_sign_scope_t) String(all) Value(AARCH_FUNCTION_ALL)
 
 mlow-precision-recip-sqrt
 Target Var(flag_mrecip_low_precision_sqrt) Optimization

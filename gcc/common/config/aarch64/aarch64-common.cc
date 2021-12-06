@@ -30,6 +30,7 @@
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "config/arm/aarch-common.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -192,11 +193,11 @@ static const struct arch_to_arch_name all_architectures[] =
 
 /* Parse the architecture extension string STR and update ISA_FLAGS
    with the architecture features turned on or off.  Return a
-   aarch64_parse_opt_result describing the result.
+   aarch_parse_opt_result describing the result.
    When the STR string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-enum aarch64_parse_opt_result
+enum aarch_parse_opt_result
 aarch64_parse_extension (const char *str, uint64_t *isa_flags,
 			 std::string *invalid_extension)
 {
@@ -229,7 +230,7 @@ aarch64_parse_extension (const char *str, uint64_t *isa_flags,
 	adding_ext = 1;
 
       if (len == 0)
-	return AARCH64_PARSE_MISSING_ARG;
+	return AARCH_PARSE_MISSING_ARG;
 
 
       /* Scan over the extensions table trying to find an exact match.  */
@@ -251,13 +252,13 @@ aarch64_parse_extension (const char *str, uint64_t *isa_flags,
 	  /* Extension not found in list.  */
 	  if (invalid_extension)
 	    *invalid_extension = std::string (str, len);
-	  return AARCH64_PARSE_INVALID_FEATURE;
+	  return AARCH_PARSE_INVALID_FEATURE;
 	}
 
       str = ext;
     };
 
-  return AARCH64_PARSE_OK;
+  return AARCH_PARSE_OK;
 }
 
 /* Append all architecture extension candidates to the CANDIDATES vector.  */

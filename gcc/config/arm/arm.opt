@@ -21,6 +21,15 @@
 HeaderInclude
 config/arm/arm-opts.h
 
+HeaderInclude
+config/arm/aarch-common.h
+
+TargetVariable
+enum aarch_function_type aarch_ra_sign_scope = AARCH_FUNCTION_NONE
+
+TargetVariable
+unsigned aarch_enable_bti = 2
+
 Enum
 Name(tls_type) Type(enum arm_tls_type)
 TLS dialect to use:
