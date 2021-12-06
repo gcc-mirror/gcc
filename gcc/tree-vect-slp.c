@@ -2915,8 +2915,13 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		vinfo = next;
 	      }
 	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
-	    /* It can be still vectorized as part of an SLP reduction.  */
-	    loop_vinfo->reductions.safe_push (last);
+	    /* It can be still vectorized as part of an SLP reduction.
+	       ???  But only if we didn't skip a conversion around the group.
+	       In that case we'd have to reverse engineer that conversion
+	       stmt following the chain using reduc_idx and from the PHI
+	       using reduc_def.  */
+	    if (STMT_VINFO_DEF_TYPE (last) == vect_reduction_def)
+	      loop_vinfo->reductions.safe_push (last);
 	  }
 
       /* Find SLP sequences starting from groups of reductions.  */
