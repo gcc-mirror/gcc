@@ -3263,6 +3263,17 @@ arm_configure_build_target (struct arm_build_target *target,
       tune_opts = strchr (opts->x_arm_tune_string, '+');
     }
 
+  if (opts->x_arm_branch_protection_string)
+    {
+      aarch_validate_mbranch_protection (opts->x_arm_branch_protection_string);
+
+      if (aarch_ra_sign_key != AARCH_KEY_A)
+	{
+	  warning (0, "invalid key type for %<-mbranch-protection=%>");
+	  aarch_ra_sign_key = AARCH_KEY_A;
+	}
+    }
+
   if (arm_selected_arch)
     {
       arm_initialize_isa (target->isa, arm_selected_arch->common.isa_bits);
