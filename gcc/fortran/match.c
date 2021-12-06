@@ -6075,6 +6075,15 @@ match_case_selector (gfc_case **cp)
 	  m = gfc_match_init_expr (&c->high);
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
+	  if (m == MATCH_YES
+	      && c->high->ts.type != BT_LOGICAL
+	      && c->high->ts.type != BT_INTEGER
+	      && c->high->ts.type != BT_CHARACTER)
+	    {
+	      gfc_error ("Expression in CASE selector at %L cannot be %s",
+			 &c->high->where, gfc_typename (c->high));
+	      goto cleanup;
+	    }
 	  /* MATCH_NO is fine.  It's OK if nothing is there!  */
 	}
     }
