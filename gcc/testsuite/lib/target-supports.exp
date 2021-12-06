@@ -5123,6 +5123,22 @@ proc check_effective_target_arm_cmse_clear_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if the target supports executing PACBTI instructions, 0
+# otherwise.
+
+proc check_effective_target_arm_pacbti_hw {} {
+    return [check_runtime arm_pacbti_hw_available {
+	__attribute__ ((naked)) int
+	main (void)
+	{
+	  asm ("pac r12, lr, sp");
+	  asm ("mov r0, #0");
+	  asm ("autg r12, lr, sp");
+	  asm ("bx lr");
+	}
+    } "-march=armv8.1-m.main+pacbti+fp -mbranch-protection=standard -mthumb -mfloat-abi=hard"]
+}
+
 # Return 1 if this compilation turns on string_ops_prefer_neon on.
 
 proc check_effective_target_arm_tune_string_ops_prefer_neon { } {

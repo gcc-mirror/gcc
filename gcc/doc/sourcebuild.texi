@@ -2167,6 +2167,10 @@ ARM target supports options to generate instructions from ARMv8.1-M with
 the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
 Some multilibs may be incompatible with these options.
 
+@item arm_pacbti_hw
+Test system supports executing Pointer Authentication and Branch Target
+Identification instructions.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -2255,6 +2259,12 @@ executing the Armv8.1-M Mainline Low Overhead Loop instructions
 ARM target generates Thumb-2 code for @code{-mthumb} but does not
 support executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
+
+@item mbranch_protection_ok
+ARM target supporting @code{-mbranch-protection=standard}.
+
+@item arm_pacbti_hw
+Test system supports for executing non nop pacbti instructions.
 
 @end table
 
