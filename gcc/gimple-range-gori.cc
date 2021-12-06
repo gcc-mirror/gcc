@@ -555,6 +555,9 @@ gori_map::calculate_gori (basic_block bb)
   m_outgoing[bb->index] = BITMAP_ALLOC (&m_bitmaps);
   m_incoming[bb->index] = BITMAP_ALLOC (&m_bitmaps);
 
+  if (single_succ_p (bb))
+    return;
+
   // If this block's last statement may generate range informaiton, go
   // calculate it.
   gimple *stmt = gimple_outgoing_range_stmt_p (bb);
