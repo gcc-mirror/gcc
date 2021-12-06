@@ -624,6 +624,97 @@ access_ref::phi () const
   return as_a <gphi *> (def_stmt);
 }
 
+/* Determine the size and offset for ARG, append it to ALL_REFS, and
+   merge the result with *THIS.  Ignore ARG if SKIP_NULL is set and
+   ARG refers to the null pointer.  Return true on success and false
+   on failure.  */
+
+bool
+access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
+		       int ostype, bool skip_null,
+		       ssa_name_limit_t &snlim, pointer_query &qry)
+{
+  access_ref aref;
+  if (!compute_objsize_r (arg, stmt, ostype, &aref, snlim, &qry)
+      || aref.sizrng[0] < 0)
+    /* This may be a PHI with all null pointer arguments.  */
+    return false;
+
+  if (all_refs)
+    {
+      access_ref dummy_ref;
+      aref.get_ref (all_refs, &dummy_ref, ostype, &snlim, &qry);
+    }
+
+  if (TREE_CODE (arg) == SSA_NAME)
+    qry.put_ref (arg, aref, ostype);
+
+  if (all_refs)
+    all_refs->safe_push (aref);
+
+  aref.deref += deref;
+
+  bool merged_parmarray = aref.parmarray;
+
+  const bool nullp = skip_null && integer_zerop (arg);
+  const offset_int maxobjsize = wi::to_offset (max_object_size ());
+  offset_int minsize = sizrng[0];
+
+  if (sizrng[0] < 0)
+    {
+      /* If *THIS doesn't contain a meaningful result yet set it to AREF
+	 unless the argument is null and it's okay to ignore it.  */
+      if (!nullp)
+	*this = aref;
+
+      /* Set if the current argument refers to one or more objects of
+	 known size (or range of sizes), as opposed to referring to
+	 one or more unknown object(s).  */
+      const bool arg_known_size = (aref.sizrng[0] != 0
+				   || aref.sizrng[1] != maxobjsize);
+      if (arg_known_size)
+	sizrng[0] = aref.sizrng[0];
+
+      return true;
+    }
+
+  /* Disregard null pointers in PHIs with two or more arguments.
+     TODO: Handle this better!  */
+  if (nullp)
+    return true;
+
+  const bool known_size = (sizrng[0] != 0 || sizrng[1] != maxobjsize);
+
+  if (known_size && aref.sizrng[0] < minsize)
+    minsize = aref.sizrng[0];
+
+  /* Determine the amount of remaining space in the argument.  */
+  offset_int argrem[2];
+  argrem[1] = aref.size_remaining (argrem);
+
+  /* Determine the amount of remaining space computed so far and
+     if the remaining space in the argument is more use it instead.  */
+  offset_int merged_rem[2];
+  merged_rem[1] = size_remaining (merged_rem);
+
+  /* Reset the PHI's BASE0 flag if any of the nonnull arguments
+     refers to an object at an unknown offset.  */
+  if (!aref.base0)
+    base0 = false;
+
+  if (merged_rem[1] < argrem[1]
+      || (merged_rem[1] == argrem[1]
+	  && sizrng[1] < aref.sizrng[1]))
+    /* Use the argument with the most space remaining as the result,
+       or the larger one if the space is equal.  */
+    *this = aref;
+
+  sizrng[0] = minsize;
+  parmarray = merged_parmarray;
+
+  return true;
+}
+
 /* Determine and return the largest object to which *THIS refers.  If
    *THIS refers to a PHI and PREF is nonnull, fill *PREF with the details
    of the object determined by compute_objsize(ARG, OSTYPE) for each PHI
@@ -636,9 +727,8 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 		     ssa_name_limit_t *psnlim /* = NULL */,
 		     pointer_query *qry /* = NULL */) const
 {
-  gphi *phi_stmt = this->phi ();
-  if (!phi_stmt)
-    return ref;
+  if (!ref || TREE_CODE (ref) != SSA_NAME)
+    return NULL;
 
   /* FIXME: Calling get_ref() with a null PSNLIM is dangerous and might
      cause unbounded recursion.  */
@@ -646,12 +736,48 @@ access_ref::get_ref (vec<access_ref> *all_refs,
   if (!psnlim)
     psnlim = &snlim_buf;
 
-  if (!psnlim->visit_phi (ref))
-    return NULL_TREE;
-
   pointer_query empty_qry;
   if (!qry)
     qry = &empty_qry;
+
+  if (gimple *def_stmt = SSA_NAME_DEF_STMT (ref))
+    {
+      if (is_gimple_assign (def_stmt))
+	{
+	  tree_code code = gimple_assign_rhs_code (def_stmt);
+	  if (code != MIN_EXPR && code != MAX_EXPR)
+	    return NULL_TREE;
+
+	  access_ref aref;
+	  tree arg1 = gimple_assign_rhs1 (def_stmt);
+	  if (!aref.merge_ref (all_refs, arg1, def_stmt, ostype, false,
+			       *psnlim, *qry))
+	    return NULL_TREE;
+
+	  tree arg2 = gimple_assign_rhs2 (def_stmt);
+	  if (!aref.merge_ref (all_refs, arg2, def_stmt, ostype, false,
+			       *psnlim, *qry))
+	    return NULL_TREE;
+
+	  if (pref && pref != this)
+	    {
+	      tree ref = pref->ref;
+	      *pref = aref;
+	      pref->ref = ref;
+	    }
+
+	  return aref.ref;
+	}
+    }
+  else
+    return NULL_TREE;
+
+  gphi *phi_stmt = this->phi ();
+  if (!phi_stmt)
+    return ref;
+
+  if (!psnlim->visit_phi (ref))
+    return NULL_TREE;
 
   /* The conservative result of the PHI reflecting the offset and size
      of the largest PHI argument, regardless of whether or not they all
@@ -670,90 +796,16 @@ access_ref::get_ref (vec<access_ref> *all_refs,
       phi_ref = *pref;
     }
 
-  /* Set if any argument is a function array (or VLA) parameter not
-     declared [static].  */
-  bool parmarray = false;
-  /* The size of the smallest object referenced by the PHI arguments.  */
-  offset_int minsize = 0;
-  const offset_int maxobjsize = wi::to_offset (max_object_size ());
-
   const unsigned nargs = gimple_phi_num_args (phi_stmt);
   for (unsigned i = 0; i < nargs; ++i)
     {
       access_ref phi_arg_ref;
+      bool skip_null = i || i + 1 < nargs;
       tree arg = gimple_phi_arg_def (phi_stmt, i);
-      if (!compute_objsize_r (arg, phi_stmt, ostype, &phi_arg_ref, *psnlim,
-			      qry)
-	  || phi_arg_ref.sizrng[0] < 0)
-	/* A PHI with all null pointer arguments.  */
+      if (!phi_ref.merge_ref (all_refs, arg, phi_stmt, ostype, skip_null,
+			      *psnlim, *qry))
 	return NULL_TREE;
-
-      if (TREE_CODE (arg) == SSA_NAME)
-	qry->put_ref (arg, phi_arg_ref);
-
-      if (all_refs)
-	all_refs->safe_push (phi_arg_ref);
-
-      parmarray |= phi_arg_ref.parmarray;
-
-      const bool nullp = integer_zerop (arg) && (i || i + 1 < nargs);
-
-      if (phi_ref.sizrng[0] < 0)
-	{
-	  /* If PHI_REF doesn't contain a meaningful result yet set it
-	     to the result for the first argument.  */
-	  if (!nullp)
-	    phi_ref = phi_arg_ref;
-
-	  /* Set if the current argument refers to one or more objects of
-	     known size (or range of sizes), as opposed to referring to
-	     one or more unknown object(s).  */
-	  const bool arg_known_size = (phi_arg_ref.sizrng[0] != 0
-				       || phi_arg_ref.sizrng[1] != maxobjsize);
-	  if (arg_known_size)
-	    minsize = phi_arg_ref.sizrng[0];
-
-	  continue;
-	}
-
-      const bool phi_known_size = (phi_ref.sizrng[0] != 0
-				   || phi_ref.sizrng[1] != maxobjsize);
-
-      if (phi_known_size && phi_arg_ref.sizrng[0] < minsize)
-	minsize = phi_arg_ref.sizrng[0];
-
-      /* Disregard null pointers in PHIs with two or more arguments.
-	 TODO: Handle this better!  */
-      if (nullp)
-	continue;
-
-      /* Determine the amount of remaining space in the argument.  */
-      offset_int argrem[2];
-      argrem[1] = phi_arg_ref.size_remaining (argrem);
-
-      /* Determine the amount of remaining space computed so far and
-	 if the remaining space in the argument is more use it instead.  */
-      offset_int phirem[2];
-      phirem[1] = phi_ref.size_remaining (phirem);
-
-      /* Reset the PHI's BASE0 flag if any of the nonnull arguments
-	 refers to an object at an unknown offset.  */
-      if (!phi_arg_ref.base0)
-	phi_ref.base0 = false;
-
-      if (phirem[1] < argrem[1]
-	  || (phirem[1] == argrem[1]
-	      && phi_ref.sizrng[1] < phi_arg_ref.sizrng[1]))
-	/* Use the argument with the most space remaining as the result,
-	   or the larger one if the space is equal.  */
-	phi_ref = phi_arg_ref;
     }
-
-  /* Replace the lower bound of the largest argument with the size
-     of the smallest argument, and set PARMARRAY if any argument
-     was one.  */
-  phi_ref.sizrng[0] = minsize;
-  phi_ref.parmarray = parmarray;
 
   if (phi_ref.sizrng[0] < 0)
     {
@@ -766,7 +818,14 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 
   /* Avoid changing *THIS.  */
   if (pref && pref != this)
-    *pref = phi_ref;
+    {
+      /* Keep the SSA_NAME of the PHI unchanged so that all PHI arguments
+	 can be referred to later if necessary.  This is useful even if
+	 they all refer to the same object.  */
+      tree ref = pref->ref;
+      *pref = phi_ref;
+      pref->ref = ref;
+    }
 
   psnlim->leave_phi (ref);
 

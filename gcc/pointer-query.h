@@ -66,6 +66,10 @@ struct access_ref
   /* Return the PHI node REF refers to or null if it doesn't.  */
   gphi *phi () const;
 
+  /* Merge the result for a pointer with *THIS.  */
+  bool merge_ref (vec<access_ref> *all_refs, tree, gimple *, int, bool,
+		  ssa_name_limit_t &, pointer_query &);
+
   /* Return the object to which REF refers.  */
   tree get_ref (vec<access_ref> *, access_ref * = nullptr, int = 1,
 		ssa_name_limit_t * = nullptr, pointer_query * = nullptr) const;
