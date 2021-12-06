@@ -28357,6 +28357,8 @@ static void
 arm_file_start (void)
 {
   int val;
+  bool pac = (aarch_ra_sign_scope != AARCH_FUNCTION_NONE);
+  bool bti = (aarch_enable_bti == 1);
 
   arm_print_asm_arch_directives
     (asm_out_file, TREE_TARGET_OPTION (target_option_default_node));
@@ -28426,6 +28428,22 @@ arm_file_start (void)
       if (arm_fp16_format)
 	arm_emit_eabi_attribute ("Tag_ABI_FP_16bit_format", 38,
 			     (int) arm_fp16_format);
+
+      if (TARGET_HAVE_PACBTI)
+	{
+	  arm_emit_eabi_attribute ("Tag_PAC_extension", 50, 2);
+	  arm_emit_eabi_attribute ("Tag_BTI_extension", 52, 2);
+	}
+      else if (pac || bti)
+	{
+	  arm_emit_eabi_attribute ("Tag_PAC_extension", 50, 1);
+	  arm_emit_eabi_attribute ("Tag_BTI_extension", 52, 1);
+	}
+
+      if (bti)
+        arm_emit_eabi_attribute ("TAG_BTI_use", 74, 1);
+      if (pac)
+	arm_emit_eabi_attribute ("TAG_PACRET_use", 76, 1);
 
       if (arm_lang_output_object_attributes_hook)
 	arm_lang_output_object_attributes_hook();
