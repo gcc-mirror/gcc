@@ -122,7 +122,7 @@ struct access_ref
 
   /* Issue an informational message describing the target of an access
      with the given mode.  */
-  void inform_access (access_mode) const;
+  void inform_access (access_mode, int = 1) const;
 
   /* Reference to the accessed object(s).  */
   tree ref;
@@ -234,6 +234,8 @@ struct access_data
   /* Read-only for functions like memcmp or strlen, write-only
      for memset, read-write for memcpy or strcat.  */
   access_mode mode;
+  /* The object size type.  */
+  int ostype;
 };
 
 enum size_range_flags
