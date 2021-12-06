@@ -2107,11 +2107,7 @@ package body Sem_Util is
       --  Start of processing for Build_Discriminant_Reference
 
       begin
-         if Obj_Is_Good_Prefix then
-            return Make_Selected_Component (Loc,
-                     Prefix => Copy_And_Maybe_Dereference (Obj),
-                     Selector_Name => New_Occurrence_Of (Discrim, Loc));
-         else
+         if not Obj_Is_Good_Prefix then
             --  If the given discriminant is not a component of the given
             --  object, then try the enclosing object.
 
@@ -2128,10 +2124,15 @@ package body Sem_Util is
                         (Discrim_Name => Discrim_Name,
                          Obj          => Name (Parent (Entity (Obj))));
             else
-               pragma Assert (False);
-               raise Program_Error;
+               --  We are in some unexpected case here, so revert to the
+               --  old behavior (by falling through to it).
+               null;
             end if;
          end if;
+
+         return Make_Selected_Component (Loc,
+                  Prefix => Copy_And_Maybe_Dereference (Obj),
+                  Selector_Name => New_Occurrence_Of (Discrim, Loc));
       end Build_Discriminant_Reference;
 
       ------------------------------------
