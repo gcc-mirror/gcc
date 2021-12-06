@@ -124,6 +124,9 @@ struct access_ref
      with the given mode.  */
   void inform_access (access_mode, int = 1) const;
 
+  /* Dump *THIS to a file.  */
+  void dump (FILE *) const;
+
   /* Reference to the accessed object(s).  */
   tree ref;
 

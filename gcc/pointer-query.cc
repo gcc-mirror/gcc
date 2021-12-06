@@ -1240,6 +1240,63 @@ access_ref::inform_access (access_mode mode, int ostype /* = 1 */) const
 	    sizestr, allocfn);
 }
 
+/* Dump *THIS to FILE.  */
+
+void
+access_ref::dump (FILE *file) const
+{
+  for (int i = deref; i < 0; ++i)
+    fputc ('&', file);
+
+  for (int i = 0; i < deref; ++i)
+    fputc ('*', file);
+
+  if (gphi *phi_stmt = phi ())
+    {
+      fputs ("PHI <", file);
+      unsigned nargs = gimple_phi_num_args (phi_stmt);
+      for (unsigned i = 0; i != nargs; ++i)
+	{
+	  tree arg = gimple_phi_arg_def (phi_stmt, i);
+	  print_generic_expr (file, arg);
+	  if (i + 1 < nargs)
+	    fputs (", ", file);
+	}
+      fputc ('>', file);
+    }
+  else
+    print_generic_expr (file, ref);
+
+  if (offrng[0] != offrng[1])
+    fprintf (file, " + [%lli, %lli]",
+	     (long long) offrng[0].to_shwi (),
+	     (long long) offrng[1].to_shwi ());
+  else if (offrng[0] != 0)
+    fprintf (file, " %c %lli",
+	     offrng[0] < 0 ? '-' : '+',
+	     (long long) offrng[0].to_shwi ());
+
+  if (base0)
+    fputs (" (base0)", file);
+
+  fputs ("; size: ", file);
+  if (sizrng[0] != sizrng[1])
+    {
+      offset_int maxsize = wi::to_offset (max_object_size ());
+      if (sizrng[0] == 0 && sizrng[1] >= maxsize)
+	fputs ("unknown", file);
+      else
+	fprintf (file, "[%llu, %llu]",
+		 (unsigned long long) sizrng[0].to_uhwi (),
+		 (unsigned long long) sizrng[1].to_uhwi ());
+    }
+  else if (sizrng[0] != 0)
+    fprintf (file, "%llu",
+	     (unsigned long long) sizrng[0].to_uhwi ());
+
+  fputc ('\n', file);
+}
+
 /* Set the access to at most MAXWRITE and MAXREAD bytes, and at least 1
    when MINWRITE or MINREAD, respectively, is set.  */
 access_data::access_data (range_query *query, gimple *stmt, access_mode mode,
@@ -1498,6 +1555,9 @@ pointer_query::flush_cache ()
 void
 pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 {
+  if (!var_cache)
+    return;
+
   unsigned nused = 0, nrefs = 0;
   unsigned nidxs = var_cache->indices.length ();
   for (unsigned i = 0; i != nidxs; ++i)
@@ -1558,35 +1618,40 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
       else
 	fprintf (dump_file, "  _%u = ", ver);
 
-      if (gphi *phi = aref.phi ())
-	{
-	  fputs ("PHI <", dump_file);
-	  unsigned nargs = gimple_phi_num_args (phi);
-	  for (unsigned i = 0; i != nargs; ++i)
-	    {
-	      tree arg = gimple_phi_arg_def (phi, i);
-	      print_generic_expr (dump_file, arg);
-	      if (i + 1 < nargs)
-		fputs (", ", dump_file);
-	    }
-	  fputc ('>', dump_file);
-	}
-      else
-	print_generic_expr (dump_file, aref.ref);
-
-      if (aref.offrng[0] != aref.offrng[1])
-	fprintf (dump_file, " + [%lli, %lli]",
-		 (long long) aref.offrng[0].to_shwi (),
-		 (long long) aref.offrng[1].to_shwi ());
-      else if (aref.offrng[0] != 0)
-	fprintf (dump_file, " %c %lli",
-		 aref.offrng[0] < 0 ? '-' : '+',
-		 (long long) aref.offrng[0].to_shwi ());
-
-      fputc ('\n', dump_file);
+      aref.dump (dump_file);
     }
 
   fputc ('\n', dump_file);
+
+  {
+    fputs ("\npointer_query cache contents (again):\n", dump_file);
+
+    tree var;
+    unsigned i;
+    FOR_EACH_SSA_NAME (i, var, cfun)
+      {
+	if (TREE_CODE (TREE_TYPE (var)) != POINTER_TYPE)
+	  continue;
+
+	for (unsigned ost = 0; ost != 2; ++ost)
+	  {
+	    if (const access_ref *cache_ref = get_ref (var, ost))
+	      {
+		unsigned ver = SSA_NAME_VERSION (var);
+		fprintf (dump_file, "  %u.%u: ", ver, ost);
+		if (tree name = ssa_name (ver))
+		  {
+		    print_generic_expr (dump_file, name);
+		    fputs (" = ", dump_file);
+		  }
+		else
+		  fprintf (dump_file, "  _%u = ", ver);
+
+		cache_ref->dump (dump_file);
+	      }
+	  }
+      }
+  }
 }
 
 /* A helper of compute_objsize_r() to determine the size from an assignment
