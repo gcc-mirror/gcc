@@ -5123,6 +5123,16 @@ proc check_effective_target_arm_cmse_clear_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if this is an ARM target supporting
+# -mbranch-protection=standard, 0 otherwise.
+
+proc check_effective_target_mbranch_protection_ok {} {
+
+    return [check_no_compiler_messages mbranch_protection_ok object {
+	int main (void) { return 0; }
+    } "-mbranch-protection=standard"]
+}
+
 # Return 1 if the target supports executing PACBTI instructions, 0
 # otherwise.
 
