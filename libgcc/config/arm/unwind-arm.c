@@ -64,6 +64,12 @@ struct wmmxc_regs
   _uw wc[4];
 };
 
+/*  Holds value of pseudo registers eg. PAC.  */
+struct pseudo_regs
+{
+  _uw pac;
+};
+
 /* The ABI specifies that the unwind routines may only use core registers,
    except when actually manipulating coprocessor state.  This allows
    us to write one implementation that works on all platforms by
@@ -78,6 +84,9 @@ typedef struct
   /* The first fields must be the same as a phase2_vrs.  */
   _uw demand_save_flags;
   struct core_regs core;
+  /* Armv8.1-M Mainline PAC/AUTH values.  This field should be in the same field
+     order as phase2_vrs.  */
+  struct pseudo_regs pseudo;
   _uw prev_sp; /* Only valid during forced unwinding.  */
   struct vfp_regs vfp;
   struct vfpv3_regs vfp_regs_16_to_31;
@@ -99,6 +108,7 @@ typedef struct
 {
   _uw demand_save_flags;
   struct core_regs core;
+  struct pseudo_regs pac;
 } phase2_vrs;
 
 /* Coprocessor register state manipulation functions.  */
@@ -175,6 +185,10 @@ _Unwind_VRS_Result _Unwind_VRS_Get (_Unwind_Context *context,
     case _UVRSC_WMMXC:
       return _UVRSR_NOT_IMPLEMENTED;
 
+    case _UVRSC_PAC:
+      *(_uw *) valuep = vrs->pseudo.pac;
+      return _UVRSR_OK;
+
     default:
       return _UVRSR_FAILED;
     }
@@ -205,6 +219,10 @@ _Unwind_VRS_Result _Unwind_VRS_Set (_Unwind_Context *context,
     case _UVRSC_WMMXD:
     case _UVRSC_WMMXC:
       return _UVRSR_NOT_IMPLEMENTED;
+
+    case _UVRSC_PAC:
+      vrs->pseudo.pac = *(_uw *) valuep;
+      return _UVRSR_OK;
 
     default:
       return _UVRSR_FAILED;
@@ -245,6 +263,16 @@ _Unwind_VRS_Result _Unwind_VRS_Pop (_Unwind_Context *context,
 	  vrs->core.r[R_SP] = (_uw) ptr;
       }
       return _UVRSR_OK;
+
+    case _UVRSC_PAC:
+      {
+	_uw *ptr = (_uw *) vrs->core.r[R_SP];
+	if (discriminator != 0)
+	  return _UVRSR_FAILED;
+	vrs->pseudo.pac = *(ptr++);
+	vrs->core.r[R_SP] = (_uw) ptr;
+	return _UVRSR_OK;
+      }
 
     case _UVRSC_VFP:
       {
