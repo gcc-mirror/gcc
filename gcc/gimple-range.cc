@@ -358,6 +358,22 @@ gimple_range_calc_op2 (irange &r, const gimple *stmt,
 						 op1_range);
 }
 
+// Construct a gimple_ranger.
+
+gimple_ranger::gimple_ranger () : m_cache (*this)
+{
+  m_stmt_list.create (0);
+  m_stmt_list.safe_grow (num_ssa_names);
+  m_stmt_list.truncate (0);
+}
+
+// Destruct a gimple_ranger.
+
+gimple_ranger::~gimple_ranger ()
+{
+  m_stmt_list.release ();
+}
+
 // Calculate a range for statement S and return it in R. If NAME is provided it
 // represents the SSA_NAME on the LHS of the statement. It is only required
 // if there is more than one lhs/output.  If a range cannot
@@ -1069,6 +1085,9 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   if (m_cache.get_non_stale_global_range (r, name))
     return true;
 
+  // Avoid deep recursive call chains.
+  prefill_stmt_dependencies (name);
+
   // Otherwise calculate a new value.
   int_range_max tmp;
   calc_stmt (tmp, s, name);
@@ -1085,6 +1104,111 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
     m_cache.set_range_invariant (name);
 
   return true;
+}
+
+// Check if NAME is a dependency that needs resolving, and push it on the
+// stack if so.  R is a scratch range.
+
+inline void
+gimple_ranger::prefill_name (irange &r, tree name)
+{
+  if (!gimple_range_ssa_p (name))
+    return;
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
+  // Only pre-process range-ops and PHIs.
+  if (!gimple_range_handler (stmt) && !is_a<gphi *> (stmt))
+    return;
+
+  // If this op has not been processed yet, then push it on the stack
+  if (!m_cache.get_global_range (r, name))
+    {
+      // Set as current.
+      m_cache.get_non_stale_global_range (r, name);
+      m_stmt_list.safe_push (name);
+    }
+}
+
+// This routine will seed the global cache with most of the depnedencies of
+// NAME.  This prevents excessive call depth through the normal API.
+
+void
+gimple_ranger::prefill_stmt_dependencies (tree ssa)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (ssa))
+    return;
+
+  int_range_max r;
+  gimple *stmt = SSA_NAME_DEF_STMT (ssa);
+  gcc_checking_assert (stmt && gimple_bb (stmt));
+
+  // Only pre-process range-ops and PHIs.
+  if (!gimple_range_handler (stmt) && !is_a<gphi *> (stmt))
+    return;
+
+  // Mark where on the stack we are starting.
+  unsigned start = m_stmt_list.length ();
+  m_stmt_list.safe_push (ssa);
+
+  if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
+    {
+      fprintf (dump_file, "Range_of_stmt dependence fill starting at");
+      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+    }
+
+  // Loop until back at the start point.
+  while (m_stmt_list.length () > start)
+    {
+      tree name = m_stmt_list.last ();
+      // NULL is a marker which indicates the next name in the stack has now
+      // been fully resolved, so we can fold it.
+      if (!name)
+	{
+	  // Pop the NULL, then pop the name.
+	  m_stmt_list.pop ();
+	  name = m_stmt_list.pop ();
+	  // Don't fold initial request, it will be calculated upon return.
+	  if (m_stmt_list.length () > start)
+	    {
+	      // Fold and save the value for NAME.
+	      stmt = SSA_NAME_DEF_STMT (name);
+	      calc_stmt (r, stmt, name);
+	      m_cache.set_global_range (name, r);
+	    }
+	  continue;
+	}
+
+      // Add marker indicating previous NAME in list should be folded
+      // when we get to this NULL.
+      m_stmt_list.safe_push (NULL_TREE);
+      stmt = SSA_NAME_DEF_STMT (name);
+
+      if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
+	{
+	  fprintf(dump_file, "   ROS dep fill (");
+	  print_generic_expr (dump_file, name, TDF_SLIM);
+	  fputs (") at stmt ", dump_file);
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+
+      gphi *phi = dyn_cast <gphi *> (stmt);
+      if (phi)
+	{
+	  for (unsigned x = 0; x < gimple_phi_num_args (phi); x++)
+	    prefill_name (r, gimple_phi_arg_def (phi, x));
+	}
+      else
+	{
+	  gcc_checking_assert (gimple_range_handler (stmt));
+	  tree op = gimple_range_operand2 (stmt);
+	  if (op)
+	    prefill_name (r, op);
+	  op = gimple_range_operand1 (stmt);
+	  if (op)
+	    prefill_name (r, op);
+	}
+    }
+  if (dump_file && (param_evrp_mode & EVRP_MODE_TRACE))
+    fprintf (dump_file, "END range_of_stmt dependence fill\n");
 }
 
 // This routine will export whatever global ranges are known to GCC

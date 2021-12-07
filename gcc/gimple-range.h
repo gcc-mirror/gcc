@@ -46,7 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 class gimple_ranger : public range_query
 {
 public:
-  gimple_ranger () : m_cache (*this) { }
+  gimple_ranger ();
+  ~gimple_ranger ();
   virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL) OVERRIDE;
   virtual bool range_of_expr (irange &r, tree name, gimple * = NULL) OVERRIDE;
   virtual bool range_on_edge (irange &r, edge e, tree name) OVERRIDE;
@@ -55,11 +56,14 @@ public:
   void export_global_ranges ();
   void dump (FILE *f);
 protected:
+  void prefill_name (irange &r, tree name);
+  void prefill_stmt_dependencies (tree ssa);
   bool calc_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   bool range_of_range_op (irange &r, gimple *s);
   bool range_of_call (irange &r, gcall *call);
   bool range_of_cond_expr (irange &r, gassign* cond);
   ranger_cache m_cache;
+  vec<tree> m_stmt_list;
 private:
   bool range_of_phi (irange &r, gphi *phi);
   bool range_of_address (irange &r, gimple *s);
