@@ -1,3 +1,7 @@
+2021-12-06  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter out one warning.
+
 2021-11-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* download_prerequisites: Update to gmp-6.2.1, mpfr-4.1.0,

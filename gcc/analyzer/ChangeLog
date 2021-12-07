@@ -1,3 +1,15 @@
+2021-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/103533
+	* constraint-manager.cc (equiv_class::contains_non_constant_p):
+	New.
+	(constraint_manager::canonicalize): Call it when determining
+	redundant ECs.
+	(selftest::test_purging): New selftest.
+	(selftest::run_constraint_manager_tests): Likewise.
+	* constraint-manager.h (equiv_class::contains_non_constant_p):
+	New decl.
+
 2021-12-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/102471

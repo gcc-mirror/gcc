@@ -1,3 +1,14 @@
+2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* LOCAL_PATCHES: Add commit 70b043845d7.
+
+2021-12-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR sanitizer/103466
+	* tsan/tsan_rtl_amd64.S (__tsan_trace_switch_thunk): Replace
+	vmovdqu with movdqu.
+	(__tsan_report_race_thunk): Likewise.
+
 2021-11-28  Andrew Pinski  <apinski@marvell.com>
 
 	PR sanitizer/62157

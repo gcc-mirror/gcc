@@ -1,3 +1,10 @@
+2021-12-06  Nelson Chu  <nelson.chu@sifive.com>
+
+	* config/riscv/div.S: Add the hidden alias symbol for __udivdi3, and
+	then use HIDDEN_JUMPTARGET to target it since it is non-preemptible.
+	* config/riscv/riscv-asm.h: Added new macros HIDDEN_JUMPTARGET and
+	HIDDEN_DEF.
+
 2021-11-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* config/vxcrtstuff.c: Undefine caddr_t, pid_t, rlim_t,
