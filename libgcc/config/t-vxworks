@@ -17,4 +17,6 @@ LIBGCC2_INCLUDES = -nostdinc -I. \
     -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h -I=/system -I=/public, \
     -I=/ -I=/wrn/coreip)
 
-CRTSTUFF_T_CFLAGS = $(LIBGCC2_INCLUDES)
+# Use these also for the vxcrstuff objects (.e.g for version.h), on top of
+# the options possibly already set specifically for the target:
+CRTSTUFF_T_CFLAGS += $(LIBGCC2_INCLUDES)
