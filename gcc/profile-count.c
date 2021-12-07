@@ -84,16 +84,26 @@ const char *profile_quality_display_names[] =
   "precise"
 };
 
+/* Dump THIS to BUFFER.  */
+
+void
+profile_count::dump (char *buffer) const
+{
+  if (!initialized_p ())
+    sprintf (buffer, "uninitialized");
+  else
+    sprintf (buffer, "%" PRId64 " (%s)", m_val,
+	     profile_quality_display_names[m_quality]);
+}
+
 /* Dump THIS to F.  */
 
 void
 profile_count::dump (FILE *f) const
 {
-  if (!initialized_p ())
-    fprintf (f, "uninitialized");
-  else
-    fprintf (f, "%" PRId64 " (%s)", m_val,
-	     profile_quality_display_names[m_quality]);
+  char buffer[64];
+  dump (buffer);
+  fputs (buffer, f);
 }
 
 /* Dump THIS to stderr.  */
@@ -151,30 +161,42 @@ profile_count::stream_out (struct lto_output_stream *ob)
   streamer_write_uhwi_stream (ob, m_quality);
 }
 
-/* Dump THIS to F.  */
+
+/* Output THIS to BUFFER.  */
 
 void
-profile_probability::dump (FILE *f) const
+profile_probability::dump (char *buffer) const
 {
   if (!initialized_p ())
-    fprintf (f, "uninitialized");
+    sprintf (buffer, "uninitialized");
   else
     {
       /* Make difference between 0.00 as a roundoff error and actual 0.
 	 Similarly for 1.  */
       if (m_val == 0)
-        fprintf (f, "never");
+	buffer += sprintf (buffer, "never");
       else if (m_val == max_probability)
-        fprintf (f, "always");
+	buffer += sprintf (buffer, "always");
       else
-        fprintf (f, "%3.1f%%", (double)m_val * 100 / max_probability);
+	buffer += sprintf (buffer, "%3.1f%%", (double)m_val * 100 / max_probability);
+
       if (m_quality == ADJUSTED)
-	fprintf (f, " (adjusted)");
+	sprintf (buffer, " (adjusted)");
       else if (m_quality == AFDO)
-	fprintf (f, " (auto FDO)");
+	sprintf (buffer, " (auto FDO)");
       else if (m_quality == GUESSED)
-	fprintf (f, " (guessed)");
+	sprintf (buffer, " (guessed)");
     }
+}
+
+/* Dump THIS to F.  */
+
+void
+profile_probability::dump (FILE *f) const
+{
+  char buffer[64];
+  dump (buffer);
+  fputs (buffer, f);
 }
 
 /* Dump THIS to stderr.  */

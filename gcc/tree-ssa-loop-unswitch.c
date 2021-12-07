@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "cfghooks.h"
 #include "tree-ssa-loop-manip.h"
+#include "tree-vectorizer.h"
 
 /* This file implements the loop unswitching, i.e. transformation of loops like
 
@@ -273,14 +274,17 @@ tree_unswitch_single_loop (class loop *loop, int num)
   bool changed = false;
   HOST_WIDE_INT iterations;
 
+  dump_user_location_t loc = find_loop_location (loop);
+
   /* Perform initial tests if unswitch is eligible.  */
   if (num == 0)
     {
       /* Do not unswitch in cold regions. */
       if (optimize_loop_for_size_p (loop))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, ";; Not unswitching cold loops\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Not unswitching cold loops\n");
 	  return false;
 	}
 
@@ -288,8 +292,9 @@ tree_unswitch_single_loop (class loop *loop, int num)
       if (tree_num_loop_insns (loop, &eni_size_weights)
 	  > (unsigned) param_max_unswitch_insns)
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, ";; Not unswitching, loop too big\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Not unswitching, loop too big\n");
 	  return false;
 	}
 
@@ -300,9 +305,10 @@ tree_unswitch_single_loop (class loop *loop, int num)
         iterations = likely_max_loop_iterations_int (loop);
       if (iterations >= 0 && iterations <= 1)
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, ";; Not unswitching, loop is not expected"
-		     " to iterate\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Not unswitching, loop is not expected"
+			     " to iterate\n");
 	  return false;
 	}
     }
@@ -320,10 +326,10 @@ tree_unswitch_single_loop (class loop *loop, int num)
 
       if (i == loop->num_nodes)
 	{
-	  if (dump_file
-	      && num > param_max_unswitch_level
-	      && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, ";; Not unswitching anymore, hit max level\n");
+	  if (dump_enabled_p ()
+	      && num > param_max_unswitch_level)
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "Not unswitching anymore, hit max level\n");
 
 	  if (found == loop->num_nodes)
 	    {
@@ -445,8 +451,10 @@ tree_unswitch_single_loop (class loop *loop, int num)
 	}
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, ";; Unswitching loop\n");
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		     "Unswitching loop on condition: %G\n",
+		     last_stmt (bbs[found]));
 
   initialize_original_copy_tables ();
   /* Unswitch the loop on this condition.  */
@@ -520,9 +528,10 @@ tree_unswitch_outer_loop (class loop *loop)
     iterations = likely_max_loop_iterations_int (loop);
   if (iterations >= 0 && iterations <= 1)
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, ";; Not unswitching, loop is not expected"
-		 " to iterate\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, find_loop_location (loop),
+			 "Not unswitching, loop is not expected"
+			 " to iterate\n");
       return false;
     }
 
@@ -623,26 +632,31 @@ find_loop_guard (class loop *loop)
   else
     return NULL;
 
+  dump_user_location_t loc = find_loop_location (loop);
+
   /* Guard edge must skip inner loop.  */
   if (!dominated_by_p (CDI_DOMINATORS, loop->inner->header,
       guard_edge == fe ? te->dest : fe->dest))
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Guard edge %d --> %d is not around the loop!\n",
-		 guard_edge->src->index, guard_edge->dest->index);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "Guard edge %d --> %d is not around the loop!\n",
+			 guard_edge->src->index, guard_edge->dest->index);
       return NULL;
     }
   if (guard_edge->dest == loop->latch)
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Guard edge destination is loop latch.\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "Guard edge destination is loop latch.\n");
       return NULL;
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file,
-	     "Considering guard %d -> %d in loop %d\n",
-	     guard_edge->src->index, guard_edge->dest->index, loop->num);
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, loc,
+		     "Considering guard %d -> %d in loop %d\n",
+		     guard_edge->src->index, guard_edge->dest->index,
+		     loop->num);
   /* Check if condition operands do not have definitions inside loop since
      any bb copying is not performed.  */
   FOR_EACH_SSA_TREE_OPERAND (use, cond, iter, SSA_OP_USE)
@@ -652,9 +666,9 @@ find_loop_guard (class loop *loop)
       if (def_bb
           && flow_bb_inside_loop_p (loop, def_bb))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  guard operands have definitions"
-				" inside loop\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc, "guard operands have definitions"
+			     " inside loop\n");
 	  return NULL;
 	}
     }
@@ -667,23 +681,26 @@ find_loop_guard (class loop *loop)
 	continue;
       if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Block %d is marked as irreducible in loop\n",
-		      bb->index);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "Block %d is marked as irreducible in loop\n",
+			     bb->index);
 	  guard_edge = NULL;
 	  goto end;
 	}
       if (!empty_bb_without_guard_p (loop, bb))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  block %d has side effects\n", bb->index);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "Block %d has side effects\n", bb->index);
 	  guard_edge = NULL;
 	  goto end;
 	}
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  suitable to hoist\n");
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		     "suitable to hoist\n");
 end:
   if (body)
     free (body);
@@ -822,13 +839,19 @@ hoist_guard (class loop *loop, edge guard)
   update_stmt (cond_stmt);
   /* Create new loop pre-header.  */
   e = split_block (pre_header, last_stmt (pre_header));
-  if (dump_file && (dump_flags & TDF_DETAILS))
+
+  dump_user_location_t loc = find_loop_location (loop);
+
+  if (dump_enabled_p ())
     {
-      fprintf (dump_file, "  Moving guard %i->%i (prob ",
-	       guard->src->index, guard->dest->index);
-      guard->probability.dump (dump_file);
-      fprintf (dump_file, ") to bb %i, new preheader is %i\n",
-	       e->src->index, e->dest->index);
+      char buffer[64];
+      guard->probability.dump (buffer);
+
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+		       "Moving guard %i->%i (prob %s) to bb %i, "
+		       "new preheader is %i\n",
+		       guard->src->index, guard->dest->index,
+		       buffer, e->src->index, e->dest->index);
     }
 
   gcc_assert (loop_preheader_edge (loop)->src == e->dest);
@@ -860,11 +883,14 @@ hoist_guard (class loop *loop, edge guard)
       fprintf (dump_file, "  Capping count; expect profile inconsistency\n");
       skip_count = e->count ();
     }
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_enabled_p ())
     {
-      fprintf (dump_file, "  Estimated probability of skipping loop is ");
-      new_edge->probability.dump (dump_file);
-      fprintf (dump_file, "\n");
+      char buffer[64];
+      new_edge->probability.dump (buffer);
+
+      dump_printf_loc (MSG_NOTE, loc,
+		       "Estimated probability of skipping loop is %s\n",
+		       buffer);
     }
 
   /* Update profile after the transform:
@@ -883,15 +909,15 @@ hoist_guard (class loop *loop, edge guard)
      where profile does not change.  */
   basic_block *body = get_loop_body (loop);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  Scaling nonguarded BBs in loop:");
   for (unsigned int i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = body[i];
       if (!dominated_by_p (CDI_DOMINATORS, bb, not_guard->dest))
 	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, " %i", bb->index);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, loc,
+			     "Scaling nonguarded BBs in loop: %i\n",
+			     bb->index);
 	  if (e->probability.initialized_p ())
             scale_bbs_frequencies (&bb, 1, e->probability);
   	}
@@ -922,8 +948,9 @@ hoist_guard (class loop *loop, edge guard)
 	}
     }
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n  guard hoisted.\n");
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+		     "Guard hoisted\n");
 
   free (body);
 }

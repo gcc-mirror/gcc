@@ -609,6 +609,9 @@ public:
   /* Output THIS to F.  */
   void dump (FILE *f) const;
 
+  /* Output THIS to BUFFER.  */
+  void dump (char *buffer) const;
+
   /* Print THIS to stderr.  */
   void debug () const;
 
@@ -1207,6 +1210,9 @@ public:
 
   /* Output THIS to F.  */
   void dump (FILE *f) const;
+
+  /* Output THIS to BUFFER.  */
+  void dump (char *buffer) const;
 
   /* Print THIS to stderr.  */
   void debug () const;
