@@ -1594,9 +1594,18 @@ package body Sem_Ch8 is
          return;
       end if;
 
-      --  Check for Text_IO special unit (we may be renaming a Text_IO child)
+      --  Check for Text_IO special units (we may be renaming a Text_IO child),
+      --  but make sure not to catch renamings generated for package instances
+      --  that have nothing to do with them but are nevertheless homonyms.
 
-      Check_Text_IO_Special_Unit (Name (N));
+      if Is_Entity_Name (Name (N))
+        and then Present (Entity (Name (N)))
+        and then Is_Generic_Instance (Entity (Name (N)))
+      then
+         null;
+      else
+         Check_Text_IO_Special_Unit (Name (N));
+      end if;
 
       if Current_Scope /= Standard_Standard then
          Set_Is_Pure (New_P, Is_Pure (Current_Scope));
