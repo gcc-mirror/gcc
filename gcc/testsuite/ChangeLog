@@ -1,3 +1,23 @@
+2021-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103581
+	* gcc.dg/vect/pr103581.c: New testcase.
+
+2021-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103544
+	* gcc.dg/vect/pr103544.c: New testcase.
+
+2021-12-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/103404
+	* gcc.target/i386/pr103404.c: New test.
+
+2021-12-06  Hongtao Liu  <Hongtao.liu@intel.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr95740.c: New test.
+
 2021-12-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/93614

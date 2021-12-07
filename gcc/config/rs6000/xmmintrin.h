@@ -1353,7 +1353,7 @@ extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artifici
 _mm_movemask_ps (__m128  __A)
 {
 #ifdef _ARCH_PWR10
-  return vec_extractm ((vector unsigned int) __A);
+  return vec_extractm ((__vector unsigned int) __A);
 #else
   __vector unsigned long long result;
   static const __vector unsigned int perm_mask =

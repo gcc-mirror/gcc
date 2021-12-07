@@ -3044,7 +3044,7 @@ assert_is_empty (const_basic_block const &, edge_prediction *const &value,
 		 void *)
 {
   gcc_assert (!value);
-  return false;
+  return true;
 }
 
 /* Predict branch probabilities and estimate profile for basic block BB.

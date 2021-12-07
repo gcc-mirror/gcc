@@ -158,10 +158,12 @@ class gori_compute : public gori_map
 public:
   gori_compute (int not_executable_flag = 0);
   bool outgoing_edge_range_p (irange &r, edge e, tree name, range_query &q);
-  bool has_edge_range_p (tree name, edge e = NULL);
+  bool has_edge_range_p (tree name, basic_block bb = NULL);
+  bool has_edge_range_p (tree name, edge e);
   void dump (FILE *f);
 private:
-  bool may_recompute_p (tree name, edge e = NULL);
+  bool may_recompute_p (tree name, edge e);
+  bool may_recompute_p (tree name, basic_block bb = NULL);
   bool compute_operand_range (irange &r, gimple *stmt, const irange &lhs,
 			      tree name, class fur_source &src);
   bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,

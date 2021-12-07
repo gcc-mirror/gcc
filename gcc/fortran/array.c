@@ -2403,12 +2403,11 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
 	{
 	  stride_expr = gfc_copy_expr(ar->stride[dimen]); 
 
-	  if(!gfc_simplify_expr(stride_expr, 1))
-	    gfc_internal_error("Simplification error");
-
-	  if (stride_expr->expr_type != EXPR_CONSTANT
-	      || mpz_cmp_ui (stride_expr->value.integer, 0) == 0)
+	  if (!gfc_simplify_expr (stride_expr, 1)
+	     || stride_expr->expr_type != EXPR_CONSTANT
+	     || mpz_cmp_ui (stride_expr->value.integer, 0) == 0)
 	    {
+	      gfc_free_expr (stride_expr);
 	      mpz_clear (stride);
 	      return false;
 	    }

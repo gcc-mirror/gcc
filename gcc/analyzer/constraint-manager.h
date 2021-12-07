@@ -248,6 +248,8 @@ public:
 
   json::object *to_json () const;
 
+  bool contains_non_constant_p () const;
+
   /* An equivalence class can contain multiple constants (e.g. multiple
      different zeroes, for different types); these are just for the last
      constant added.  */

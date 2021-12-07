@@ -1,3 +1,79 @@
+2021-12-06  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/103545
+	* config/rs6000/xmmintrin.h (_mm_movemask_ps): Replace "vector" with
+	"__vector".
+
+2021-12-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.c (bpf_handle_preserve_access_index_attribute):
+	Mark arguments `args' and flags' as unused.
+	(bpf_core_newdecl): Remove unused local `newdecl'.
+	(bpf_core_newdecl): Remove unused argument `loc'.
+	(ctfc_debuginfo_early_finish_p): Remove unused function.
+	(TARGET_CTFC_DEBUGINFO_EARLY_FINISH_P): Remove definition.
+	(bpf_core_walk): Do not pass a location to bpf_core_newdecl.
+
+2021-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range::edge_range_p): Add
+	a shortcut for blocks with single successors.
+	* gimple-range-gori.cc (gori_map::calculate_gori): Likewise.
+
+2021-12-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* value-range.cc (irange::irange_union): Use quick_push rather
+	than safe_push.  Use widest_int rather than wide_int.  Avoid
+	assigning wi::to_* results to wide*_int temporaries.
+
+2021-12-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Check for
+	a range from dominators before filling the cache.
+	(ranger_cache::range_from_dom): New.
+	* gimple-range-cache.h (ranger_cache::range_from_dom): Add prototype.
+
+2021-12-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.h (class gori_compute):: Add prototypes.
+	* gimple-range-gori.cc (gori_compute::has_edge_range_p): Add alternate
+	API for basic block.  Call for edge alterantive.
+	(gori_compute::may_recompute_p): Ditto.
+
+2021-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103581
+	* tree-vect-stmts.c (vect_build_gather_load_calls): Properly
+	guard all the AVX512 mask cases.
+
+2021-12-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103544
+	* tree-vect-slp.c (vect_analyze_slp): Only add a SLP reduction
+	opportunity if the stmt in question is the reduction root.
+	(dot_slp_tree): Add missing check for NULL child.
+
+2021-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* config/avr/avr.c (avr_output_data_section_asm_op,
+	avr_output_bss_section_asm_op): Change argument type from const void *
+	to const char *.
+
+2021-12-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/103404
+	* cse.c (find_sets_in_insn): Don't select elements out of a V1 mode
+	subreg.
+
+2021-12-06  Hongtao Liu  <Hongtao.liu@intel.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/95740
+	* config/i386/i386.c (ix86_preferred_reload_class): Allow
+	integer regs when moves between register units are cheap.
+	* config/i386/i386.h (INT_SSE_CLASS_P): New.
+
 2021-12-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Move

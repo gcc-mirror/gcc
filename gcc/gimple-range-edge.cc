@@ -182,6 +182,9 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
 gimple *
 gimple_outgoing_range::edge_range_p (irange &r, edge e)
 {
+  if (single_succ_p (e->src))
+    return NULL;
+
   // Determine if there is an outgoing edge.
   gimple *s = gimple_outgoing_range_stmt_p (e->src);
   if (!s)

@@ -264,6 +264,7 @@ set mips_option_groups {
     frame-header "-mframe-header-opt|-mno-frame-header-opt"
     stack-protector "-fstack-protector"
     stdlib "REQUIRES_STDLIB"
+    unaligned-access "-m(no-|)unaligned-access"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {
