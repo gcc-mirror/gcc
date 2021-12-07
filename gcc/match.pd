@@ -7828,3 +7828,13 @@ and,
 	       == TYPE_UNSIGNED (TREE_TYPE (@3))))
        && single_use (@4)
        && single_use (@5))))
+
+(for bit_op (bit_and bit_ior bit_xor)
+ (match (bitwise_induction_p @0 @2 @3)
+  (bit_op:c
+   (nop_convert1? (bit_not2?@0 (convert3? (lshift integer_onep@1 @2))))
+   @3)))
+
+(match (bitwise_induction_p @0 @2 @3)
+ (bit_not
+  (nop_convert1? (bit_xor@0 (convert2? (lshift integer_onep@1 @2)) @3))))
