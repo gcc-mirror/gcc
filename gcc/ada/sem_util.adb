@@ -6604,7 +6604,7 @@ package body Sem_Util is
       Error_Msg_Warn := Warn or SPARK_Mode /= On;
 
       --  A static constraint error in an instance body is not a fatal error.
-      --  we choose to inhibit the message altogether, because there is no
+      --  We choose to inhibit the message altogether, because there is no
       --  obvious node (for now) on which to post it. On the other hand the
       --  offending node must be replaced with a constraint_error in any case.
 

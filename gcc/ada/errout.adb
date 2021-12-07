@@ -1049,7 +1049,7 @@ package body Errout is
          elsif No (Cunit (Main_Unit)) then
             null;
 
-         --  If the flag location is not in the main extended source unit, then
+         --  If the flag location is not in the extended main source unit, then
          --  we want to eliminate the warning, unless it is in the extended
          --  main code unit and we want warnings on the instance.
 
