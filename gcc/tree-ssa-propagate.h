@@ -66,7 +66,7 @@ extern void move_ssa_defining_stmt_for_defs (gimple *, gimple *);
 extern bool update_gimple_call (gimple_stmt_iterator *, tree, int, ...);
 extern bool update_call_from_tree (gimple_stmt_iterator *, tree);
 extern bool stmt_makes_single_store (gimple *);
-extern bool may_propagate_copy (tree, tree);
+extern bool may_propagate_copy (tree, tree, bool = false);
 extern bool may_propagate_copy_into_stmt (gimple *, tree);
 extern bool may_propagate_copy_into_asm (tree);
 extern void propagate_value (use_operand_p, tree);
