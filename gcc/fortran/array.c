@@ -2296,8 +2296,7 @@ gfc_copy_iterator (gfc_iterator *src)
 /********* Subroutines for determining the size of an array *********/
 
 /* These are needed just to accommodate RESHAPE().  There are no
-   diagnostics here, we just return a negative number if something
-   goes wrong.  */
+   diagnostics here, we just return false if something goes wrong.  */
 
 
 /* Get the size of single dimension of an array specification.  The
@@ -2329,6 +2328,9 @@ spec_dimen_size (gfc_array_spec *as, int dimen, mpz_t *result)
 	   as->lower[dimen]->value.integer);
 
   mpz_add_ui (*result, *result, 1);
+
+  if (mpz_cmp_si (*result, 0) < 0)
+    mpz_set_si (*result, 0);
 
   return true;
 }
