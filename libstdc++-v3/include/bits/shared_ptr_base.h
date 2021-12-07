@@ -143,10 +143,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void*
       _M_get_deleter(const std::type_info&) noexcept = 0;
 
+      // Increment the use count (used when the count is greater than zero).
       void
       _M_add_ref_copy()
       { __gnu_cxx::__atomic_add_dispatch(&_M_use_count, 1); }
 
+      // Increment the use count if it is non-zero, throw otherwise.
       void
       _M_add_ref_lock()
       {
@@ -154,42 +156,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __throw_bad_weak_ptr();
       }
 
+      // Increment the use count if it is non-zero.
       bool
       _M_add_ref_lock_nothrow() noexcept;
 
+      // Decrement the use count.
       void
-      _M_release() noexcept
-      {
-        // Be race-detector-friendly.  For more info see bits/c++config.
-        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count);
-	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
-	  {
-            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count);
-	    _M_dispose();
-	    // There must be a memory barrier between dispose() and destroy()
-	    // to ensure that the effects of dispose() are observed in the
-	    // thread that runs destroy().
-	    // See http://gcc.gnu.org/ml/libstdc++/2005-11/msg00136.html
-	    if (_Mutex_base<_Lp>::_S_need_barriers)
-	      {
-		__atomic_thread_fence (__ATOMIC_ACQ_REL);
-	      }
+      _M_release() noexcept;
 
-            // Be race-detector-friendly.  For more info see bits/c++config.
-            _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count);
-	    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count,
-						       -1) == 1)
-              {
-                _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count);
-	        _M_destroy();
-              }
+      // Called by _M_release() when the use count reaches zero.
+      void
+      _M_release_last_use() noexcept
+      {
+	_GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count);
+	_M_dispose();
+	// There must be a memory barrier between dispose() and destroy()
+	// to ensure that the effects of dispose() are observed in the
+	// thread that runs destroy().
+	// See http://gcc.gnu.org/ml/libstdc++/2005-11/msg00136.html
+	if (_Mutex_base<_Lp>::_S_need_barriers)
+	  {
+	    __atomic_thread_fence (__ATOMIC_ACQ_REL);
+	  }
+
+	// Be race-detector-friendly.  For more info see bits/c++config.
+	_GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count);
+	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count,
+						   -1) == 1)
+	  {
+	    _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count);
+	    _M_destroy();
 	  }
       }
 
+      // As above, but 'noinline' to reduce code size on the cold path.
+      __attribute__((__noinline__))
+      void
+      _M_release_last_use_cold() noexcept
+      { _M_release_last_use(); }
+
+      // Increment the weak count.
       void
       _M_weak_add_ref() noexcept
       { __gnu_cxx::__atomic_add_dispatch(&_M_weak_count, 1); }
 
+      // Decrement the weak count.
       void
       _M_weak_release() noexcept
       {
@@ -284,6 +295,67 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           if (--_M_weak_count == 0)
             _M_destroy();
         }
+    }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_mutex>::_M_release() noexcept
+    {
+      // Be race-detector-friendly.  For more info see bits/c++config.
+      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count);
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
+	{
+	  _M_release_last_use();
+	}
+    }
+
+  template<>
+    inline void
+    _Sp_counted_base<_S_atomic>::_M_release() noexcept
+    {
+      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count);
+#if ! _GLIBCXX_TSAN
+      constexpr bool __lock_free
+	= __atomic_always_lock_free(sizeof(long long), 0)
+	&& __atomic_always_lock_free(sizeof(_Atomic_word), 0);
+      constexpr bool __double_word
+	= sizeof(long long) == 2 * sizeof(_Atomic_word);
+      // The ref-count members follow the vptr, so are aligned to
+      // alignof(void*).
+      constexpr bool __aligned = __alignof(long long) <= alignof(void*);
+      if _GLIBCXX17_CONSTEXPR (__lock_free && __double_word && __aligned)
+	{
+	  constexpr long long __unique_ref
+	    = 1LL + (1LL << (__CHAR_BIT__ * sizeof(_Atomic_word)));
+	  auto __both_counts = reinterpret_cast<long long*>(&_M_use_count);
+
+	  _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count);
+	  if (__atomic_load_n(__both_counts, __ATOMIC_ACQUIRE) == __unique_ref)
+	    {
+	      // Both counts are 1, so there are no weak references and
+	      // we are releasing the last strong reference. No other
+	      // threads can observe the effects of this _M_release()
+	      // call (e.g. calling use_count()) without a data race.
+	      *(long long*)(&_M_use_count) = 0;
+	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count);
+	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count);
+	      _M_dispose();
+	      _M_destroy();
+	      return;
+	    }
+	  if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
+	    [[__unlikely__]]
+	    {
+	      _M_release_last_use_cold();
+	      return;
+	    }
+	}
+      else
+#endif
+      if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
+	{
+	  _M_release_last_use();
+	}
     }
 
   template<>
