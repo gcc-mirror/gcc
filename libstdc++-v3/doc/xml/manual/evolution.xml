@@ -1041,6 +1041,13 @@ no longer derives from <classname>__gnu_cxx::new_allocator</classname>;
 they both derive from <classname>std::__new_allocator</classname> instead.
 </para>
 
+<para>
+<function>std::condition_variable::wait</function> changed to be
+<code>noexcept(false)</code> to allow thread cancellation exceptions to
+be thrown from <function>pthread_cond_wait</function> without aborting
+the process.
+</para>
+
 </section>
 
 </section>

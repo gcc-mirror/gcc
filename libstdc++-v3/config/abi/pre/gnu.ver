@@ -1285,7 +1285,6 @@ GLIBCXX_3.4.11 {
     # condition_variable
     _ZNSt18condition_variable10notify_allEv;
     _ZNSt18condition_variable10notify_oneEv;
-    _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE;
     _ZNSt18condition_variableC1Ev;
     _ZNSt18condition_variableC2Ev;
     _ZNSt18condition_variableD1Ev;
@@ -1294,6 +1293,12 @@ GLIBCXX_3.4.11 {
     _ZNSt22condition_variable_anyC2Ev;
     _ZNSt22condition_variable_anyD1Ev;
     _ZNSt22condition_variable_anyD2Ev;
+
+#ifndef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
+    # The original definition of this symbol gets versioned as @GLIBCXX_3.4.11
+    # if ".symver" is supported, or as @@GLIBCXX_3.4.11 otherwise.
+    _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE;
+#endif
 
     # thread
     _ZNSt6thread4joinEv;
@@ -2400,6 +2405,11 @@ GLIBCXX_3.4.29 {
 GLIBCXX_3.4.30 {
 
     _ZSt21__glibcxx_assert_fail*;
+
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
+    # The new definition of this symbol gets versioned as @@GLIBCXX_3.4.30
+    _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE;
+#endif
 
 } GLIBCXX_3.4.29;
 

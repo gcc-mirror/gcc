@@ -92,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     notify_all() noexcept;
 
     void
-    wait(unique_lock<mutex>& __lock) noexcept;
+    wait(unique_lock<mutex>& __lock);
 
     template<typename _Predicate>
       void
