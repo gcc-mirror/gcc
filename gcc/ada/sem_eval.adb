@@ -2117,6 +2117,7 @@ package body Sem_Eval is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "division by zero", CE_Divide_By_Zero,
+                        Loc  => Sloc (Right),
                         Warn => not Stat or SPARK_Mode = On);
                      return;
 
@@ -2139,6 +2140,7 @@ package body Sem_Eval is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "mod with zero divisor", CE_Divide_By_Zero,
+                        Loc  => Sloc (Right),
                         Warn => not Stat or SPARK_Mode = On);
                      return;
 
@@ -2159,6 +2161,7 @@ package body Sem_Eval is
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "rem with zero divisor", CE_Divide_By_Zero,
+                        Loc  => Sloc (Right),
                         Warn => not Stat or SPARK_Mode = On);
                      return;
 
@@ -2218,7 +2221,8 @@ package body Sem_Eval is
             else pragma Assert (Nkind (N) = N_Op_Divide);
                if UR_Is_Zero (Right_Real) then
                   Apply_Compile_Time_Constraint_Error
-                    (N, "division by zero", CE_Divide_By_Zero);
+                    (N, "division by zero", CE_Divide_By_Zero,
+                     Loc => Sloc (Right));
                   return;
                end if;
 
