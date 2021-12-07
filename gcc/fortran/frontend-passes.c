@@ -2914,6 +2914,7 @@ do_subscript (gfc_expr **e)
 		    {
 		      if (ar->as->lower[i]
 			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->lower[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
 			gfc_warning (warn, "Array reference at %L out of bounds "
 				     "(%ld < %ld) in loop beginning at %L",
@@ -2923,6 +2924,7 @@ do_subscript (gfc_expr **e)
 
 		      if (ar->as->upper[i]
 			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->upper[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
 			    gfc_warning (warn, "Array reference at %L out of bounds "
 					 "(%ld > %ld) in loop beginning at %L",
@@ -2938,6 +2940,7 @@ do_subscript (gfc_expr **e)
 		    {
 		      if (ar->as->lower[i]
 			  && ar->as->lower[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->lower[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->lower[i]->value.integer) < 0)
 			gfc_warning (warn, "Array reference at %L out of bounds "
 				     "(%ld < %ld) in loop beginning at %L",
@@ -2947,6 +2950,7 @@ do_subscript (gfc_expr **e)
 
 		      if (ar->as->upper[i]
 			  && ar->as->upper[i]->expr_type == EXPR_CONSTANT
+			  && ar->as->upper[i]->ts.type == BT_INTEGER
 			  && mpz_cmp (val, ar->as->upper[i]->value.integer) > 0)
 			gfc_warning (warn, "Array reference at %L out of bounds "
 				     "(%ld > %ld) in loop beginning at %L",
