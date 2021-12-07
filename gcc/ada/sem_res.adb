@@ -11737,7 +11737,7 @@ package body Sem_Res is
                         Apply_Compile_Time_Constraint_Error
                           (N, "character out of range??",
                            CE_Range_Check_Failed,
-                           Loc => Source_Ptr (Int (Loc) + J));
+                           Loc => Loc + Source_Ptr (J));
                      end if;
                   end loop;
 
