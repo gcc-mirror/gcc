@@ -15987,7 +15987,8 @@ ix86_call_use_plt_p (rtx call_op)
 {
   if (SYMBOL_REF_LOCAL_P (call_op))
     {
-      if (SYMBOL_REF_DECL (call_op))
+      if (SYMBOL_REF_DECL (call_op)
+	  && TREE_CODE (SYMBOL_REF_DECL (call_op)) == FUNCTION_DECL)
 	{
 	  /* NB: All ifunc functions must be called via PLT.  */
 	  cgraph_node *node
