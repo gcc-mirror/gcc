@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "gimple.h"
@@ -132,25 +134,78 @@ detach_value (location_t loc, gimple_stmt_iterator *gsip, tree val)
   tree ret = make_ssa_name (TREE_TYPE (val));
   SET_SSA_NAME_VAR_OR_IDENTIFIER (ret, SSA_NAME_IDENTIFIER (val));
 
-  /* Output asm ("" : "=g" (ret) : "0" (val));  */
+  /* Some modes won't fit in general regs, so we fall back to memory
+     for them.  ??? It would be ideal to try to identify an alternate,
+     wider or more suitable register class, and use the corresponding
+     constraint, but there's no logic to go from register class to
+     constraint, even if there is a corresponding constraint, and even
+     if we could enumerate constraints, we can't get to their string
+     either.  So this will do for now.  */
+  bool need_memory = true;
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (val));
+  if (mode != BLKmode)
+    for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i)
+	  && targetm.hard_regno_mode_ok (i, mode))
+	{
+	  need_memory = false;
+	  break;
+	}
+
+  tree asminput = val;
+  tree asmoutput = ret;
+  const char *constraint_out = need_memory ? "=m" : "=g";
+  const char *constraint_in = need_memory ? "m" : "0";
+
+  if (need_memory)
+    {
+      tree temp = create_tmp_var (TREE_TYPE (val), "dtch");
+      mark_addressable (temp);
+
+      gassign *copyin = gimple_build_assign (temp, asminput);
+      gimple_set_location (copyin, loc);
+      gsi_insert_before (gsip, copyin, GSI_SAME_STMT);
+
+      asminput = asmoutput = temp;
+    }
+
+  /* Output an asm statement with matching input and output.  It does
+     nothing, but after it the compiler no longer knows the output
+     still holds the same value as the input.  */
   vec<tree, va_gc> *inputs = NULL;
   vec<tree, va_gc> *outputs = NULL;
   vec_safe_push (outputs,
 		 build_tree_list
 		 (build_tree_list
-		  (NULL_TREE, build_string (2, "=g")),
-		  ret));
+		  (NULL_TREE, build_string (strlen (constraint_out),
+					    constraint_out)),
+		  asmoutput));
   vec_safe_push (inputs,
 		 build_tree_list
 		 (build_tree_list
-		  (NULL_TREE, build_string (1, "0")),
-		  val));
+		  (NULL_TREE, build_string (strlen (constraint_in),
+					    constraint_in)),
+		  asminput));
   gasm *detach = gimple_build_asm_vec ("", inputs, outputs,
 				       NULL, NULL);
   gimple_set_location (detach, loc);
   gsi_insert_before (gsip, detach, GSI_SAME_STMT);
 
-  SSA_NAME_DEF_STMT (ret) = detach;
+  if (need_memory)
+    {
+      gassign *copyout = gimple_build_assign (ret, asmoutput);
+      gimple_set_location (copyout, loc);
+      gsi_insert_before (gsip, copyout, GSI_SAME_STMT);
+      SSA_NAME_DEF_STMT (ret) = copyout;
+
+      gassign *clobber = gimple_build_assign (asmoutput,
+					      build_clobber
+					      (TREE_TYPE (asmoutput)));
+      gimple_set_location (clobber, loc);
+      gsi_insert_before (gsip, clobber, GSI_SAME_STMT);
+    }
+  else
+    SSA_NAME_DEF_STMT (ret) = detach;
 
   return ret;
 }

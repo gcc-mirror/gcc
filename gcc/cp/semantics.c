@@ -5025,6 +5025,18 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	t = TREE_OPERAND (t, 0);
       ret = t;
+      while (TREE_CODE (t) == INDIRECT_REF)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  STRIP_NOPS (t);
+	  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+	    t = TREE_OPERAND (t, 0);
+	}
+      while (TREE_CODE (t) == COMPOUND_EXPR)
+	{
+	  t = TREE_OPERAND (t, 1);
+	  STRIP_NOPS (t);
+	}
       if (TREE_CODE (t) == COMPONENT_REF
 	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
@@ -5049,15 +5061,20 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  return error_mark_node;
 		}
 	      t = TREE_OPERAND (t, 0);
-	      if (ort == C_ORT_ACC && TREE_CODE (t) == INDIRECT_REF)
-		t = TREE_OPERAND (t, 0);
+	      while (TREE_CODE (t) == MEM_REF
+		     || TREE_CODE (t) == INDIRECT_REF
+		     || TREE_CODE (t) == ARRAY_REF)
+		{
+		  t = TREE_OPERAND (t, 0);
+		  STRIP_NOPS (t);
+		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		    t = TREE_OPERAND (t, 0);
+		}
 	    }
 	  if (REFERENCE_REF_P (t))
 	    t = TREE_OPERAND (t, 0);
 	}
-      if (TREE_CODE (t) == FIELD_DECL
-	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
-	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND))
+      if (TREE_CODE (t) == FIELD_DECL)
 	ret = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
       else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
@@ -5071,18 +5088,6 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "%qE is not a variable in %qs clause", t,
 		      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	  return error_mark_node;
-	}
-      else if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
-	       && TREE_CODE (t) == PARM_DECL
-	       && DECL_ARTIFICIAL (t)
-	       && DECL_NAME (t) == this_identifier
-	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
-	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
-	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "%<this%> allowed in OpenMP only in %<declare simd%>"
-		    " clauses");
 	  return error_mark_node;
 	}
       else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
@@ -5347,15 +5352,25 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       /* If there is a pointer type anywhere but in the very first
-	 array-section-subscript, the array section can't be contiguous.  */
+	 array-section-subscript, the array section could be non-contiguous.  */
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
 	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
-	  error_at (OMP_CLAUSE_LOCATION (c),
-		    "array section is not contiguous in %qs clause",
-		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	  return error_mark_node;
+	  /* If any prior dimension has a non-one length, then deem this
+	     array section as non-contiguous.  */
+	  for (tree d = TREE_CHAIN (t); TREE_CODE (d) == TREE_LIST;
+	       d = TREE_CHAIN (d))
+	    {
+	      tree d_length = TREE_VALUE (d);
+	      if (d_length == NULL_TREE || !integer_onep (d_length))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "array section is not contiguous in %qs clause",
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  return error_mark_node;
+		}
+	    }
 	}
     }
   else
@@ -5599,6 +5614,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    }
 	  OMP_CLAUSE_DECL (c) = first;
 	  OMP_CLAUSE_SIZE (c) = size;
+	  if (TREE_CODE (t) == FIELD_DECL)
+	    t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
 	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
 	      || (TREE_CODE (t) == COMPONENT_REF
 		  && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
@@ -5624,16 +5641,37 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    default:
 	      break;
 	    }
+	  bool reference_always_pointer = true;
 	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 				      OMP_CLAUSE_MAP);
 	  if (TREE_CODE (t) == COMPONENT_REF)
-	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	    {
+	      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+
+	      if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
+		  && TYPE_REF_P (TREE_TYPE (t)))
+		{
+		  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == ARRAY_TYPE)
+		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
+		  else
+		    t = convert_from_reference (t);
+
+		  reference_always_pointer = false;
+		}
+	    }
 	  else if (REFERENCE_REF_P (t)
 		   && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	    {
-	      t = TREE_OPERAND (t, 0);
-	      gomp_map_kind k = (ort == C_ORT_ACC) ? GOMP_MAP_ATTACH_DETACH
-						   : GOMP_MAP_ALWAYS_POINTER;
+	      gomp_map_kind k;
+	      if ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
+		  && TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+		k = GOMP_MAP_ATTACH_DETACH;
+	      else
+		{
+		  t = TREE_OPERAND (t, 0);
+		  k = (ort == C_ORT_ACC
+		       ? GOMP_MAP_ATTACH_DETACH : GOMP_MAP_ALWAYS_POINTER);
+		}
 	      OMP_CLAUSE_SET_MAP_KIND (c2, k);
 	    }
 	  else
@@ -5657,8 +5695,10 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  OMP_CLAUSE_SIZE (c2) = t;
 	  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
 	  OMP_CLAUSE_CHAIN (c) = c2;
+
 	  ptr = OMP_CLAUSE_DECL (c2);
-	  if (OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
+	  if (reference_always_pointer
+	      && OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
 	      && TYPE_REF_P (TREE_TYPE (ptr))
 	      && INDIRECT_TYPE_P (TREE_TYPE (TREE_TYPE (ptr))))
 	    {
@@ -6611,6 +6651,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool order_seen = false;
   bool schedule_seen = false;
   bool oacc_async = false;
+  bool indir_component_ref_p = false;
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
   /* 1 if normal/task reduction has been seen, -1 if inscan reduction
@@ -7858,10 +7899,22 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == COMPONENT_REF
 		      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		    {
-		      while (TREE_CODE (t) == COMPONENT_REF)
-			t = TREE_OPERAND (t, 0);
-		      if (REFERENCE_REF_P (t))
-			t = TREE_OPERAND (t, 0);
+		      do
+			{
+			  t = TREE_OPERAND (t, 0);
+			  if (REFERENCE_REF_P (t))
+			    t = TREE_OPERAND (t, 0);
+			  if (TREE_CODE (t) == MEM_REF
+			      || TREE_CODE (t) == INDIRECT_REF)
+			    {
+			      t = TREE_OPERAND (t, 0);
+			      STRIP_NOPS (t);
+			      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+				t = TREE_OPERAND (t, 0);
+			    }
+			}
+		      while (TREE_CODE (t) == COMPONENT_REF);
+
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			  && OMP_CLAUSE_MAP_IMPLICIT (c)
 			  && (bitmap_bit_p (&map_head, DECL_UID (t))
@@ -7932,11 +7985,34 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	    {
 	      t = TREE_OPERAND (t, 0);
-	      OMP_CLAUSE_DECL (c) = t;
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
+		OMP_CLAUSE_DECL (c) = t;
 	    }
+	  while (TREE_CODE (t) == INDIRECT_REF
+		 || TREE_CODE (t) == ARRAY_REF)
+	    {
+	      t = TREE_OPERAND (t, 0);
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		t = TREE_OPERAND (t, 0);
+	    }
+	  while (TREE_CODE (t) == COMPOUND_EXPR)
+	    {
+	      t = TREE_OPERAND (t, 1);
+	      STRIP_NOPS (t);
+	    }
+	  indir_component_ref_p = false;
 	  if (TREE_CODE (t) == COMPONENT_REF
-	      && TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF)
-	    t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+	      && (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
+		  || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
+	    {
+	      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+	      indir_component_ref_p = true;
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		t = TREE_OPERAND (t, 0);
+	    }
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE__CACHE_)
 	    {
@@ -7970,6 +8046,24 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      break;
 		    }
 		  t = TREE_OPERAND (t, 0);
+		  if (TREE_CODE (t) == MEM_REF)
+		    {
+		      if (maybe_ne (mem_ref_offset (t), 0))
+			error_at (OMP_CLAUSE_LOCATION (c),
+				  "cannot dereference %qE in %qs clause", t,
+				  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      else
+			t = TREE_OPERAND (t, 0);
+		    }
+		  while (TREE_CODE (t) == MEM_REF
+			 || TREE_CODE (t) == INDIRECT_REF
+			 || TREE_CODE (t) == ARRAY_REF)
+		    {
+		      t = TREE_OPERAND (t, 0);
+		      STRIP_NOPS (t);
+		      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+			t = TREE_OPERAND (t, 0);
+		    }
 		}
 	      if (remove)
 		break;
@@ -7982,6 +8076,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  && bitmap_bit_p (&map_head, DECL_UID (t))))
 		    goto handle_map_references;
 		}
+	    }
+	  if (!processing_template_decl
+	      && TREE_CODE (t) == FIELD_DECL)
+	    {
+	      OMP_CLAUSE_DECL (c) = finish_non_static_data_member (t, NULL_TREE,
+								   NULL_TREE);
+	      break;
 	    }
 	  if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	    {
@@ -8009,19 +8110,12 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (ort != C_ORT_ACC && t == current_class_ptr)
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%<this%> allowed in OpenMP only in %<declare simd%>"
-			" clauses");
-	      remove = true;
-	      break;
-	    }
 	  else if (!processing_template_decl
 		   && !TYPE_REF_P (TREE_TYPE (t))
 		   && (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
 		       || (OMP_CLAUSE_MAP_KIND (c)
 			   != GOMP_MAP_FIRSTPRIVATE_POINTER))
+		   && !indir_component_ref_p
 		   && !cxx_mark_addressable (t))
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
@@ -8067,7 +8161,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    "%qD appears more than once in data clauses", t);
 		  remove = true;
 		}
-	      else if (bitmap_bit_p (&map_head, DECL_UID (t)))
+	      else if (bitmap_bit_p (&map_head, DECL_UID (t))
+		       && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
 		{
 		  if (ort == C_ORT_ACC)
 		    error_at (OMP_CLAUSE_LOCATION (c),
@@ -8114,8 +8209,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else
 	    {
 	      bitmap_set_bit (&map_head, DECL_UID (t));
-	      if (t != OMP_CLAUSE_DECL (c)
-		  && TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPONENT_REF)
+
+	      tree decl = OMP_CLAUSE_DECL (c);
+	      if (t != decl
+		  && (TREE_CODE (decl) == COMPONENT_REF
+		      || (INDIRECT_REF_P (decl)
+			  && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
+			  && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (decl, 0))))))
 		bitmap_set_bit (&map_field_head, DECL_UID (t));
 	    }
 	handle_map_references:
@@ -8144,7 +8244,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					      OMP_CLAUSE_MAP);
 		  if (TREE_CODE (t) == COMPONENT_REF)
-		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
 		  else
 		    OMP_CLAUSE_SET_MAP_KIND (c2,
 					     GOMP_MAP_FIRSTPRIVATE_REFERENCE);
@@ -9174,6 +9274,533 @@ finish_omp_construct (enum tree_code code, tree body, tree clauses)
   OMP_BODY (stmt) = body;
   OMP_CLAUSES (stmt) = clauses;
 
+  return add_stmt (stmt);
+}
+
+/* Used to walk OpenMP target directive body.  */
+
+struct omp_target_walk_data
+{
+  /* Holds the 'this' expression found in current function.  */
+  tree current_object;
+
+  /* True if the 'this' expression was accessed in the target body.  */
+  bool this_expr_accessed;
+
+  /* For non-static functions, record which pointer-typed members were
+     accessed, and the whole expression.  */
+  hash_map<tree, tree> ptr_members_accessed;
+
+  /* Record which lambda objects were accessed in target body.  */
+  hash_set<tree> lambda_objects_accessed;
+
+  /* For lambda functions, the __closure object expression of the current
+     function, and the set of captured variables accessed in target body.  */
+  tree current_closure;
+  hash_set<tree> closure_vars_accessed;
+
+  /* Local variables declared inside a BIND_EXPR, used to filter out such
+     variables when recording lambda_objects_accessed.  */
+  hash_set<tree> local_decls;
+};
+
+/* Helper function of finish_omp_target_clauses, called via
+   cp_walk_tree_without_duplicates.  Traverse body of OpenMP target
+   directive *TP, and fill out omp_target_walk_data passed in *PTR.  */
+
+static tree
+finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
+{
+  tree t = *tp;
+  struct omp_target_walk_data *data = (struct omp_target_walk_data *) ptr;
+  tree current_object = data->current_object;
+  tree current_closure = data->current_closure;
+
+  /* References inside of these expression codes shouldn't incur any
+     form of mapping, so return early.  */
+  if (TREE_CODE (t) == SIZEOF_EXPR
+      || TREE_CODE (t) == ALIGNOF_EXPR)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (current_object)
+    {
+      tree this_expr = TREE_OPERAND (current_object, 0);
+
+      if (operand_equal_p (t, this_expr))
+	{
+	  data->this_expr_accessed = true;
+	  *walk_subtrees = 0;
+	  return NULL_TREE;
+	}
+
+      if (TREE_CODE (t) == COMPONENT_REF
+	  && POINTER_TYPE_P (TREE_TYPE (t))
+	  && operand_equal_p (TREE_OPERAND (t, 0), current_object)
+	  && TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL)
+	{
+	  data->this_expr_accessed = true;
+	  tree fld = TREE_OPERAND (t, 1);
+	  if (data->ptr_members_accessed.get (fld) == NULL)
+	    {
+	      if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
+		t = convert_from_reference (t);
+	      data->ptr_members_accessed.put (fld, t);
+	    }
+	  *walk_subtrees = 0;
+	  return NULL_TREE;
+	}
+    }
+
+  /* When the current_function_decl is a lambda function, the closure object
+     argument's type seems to not yet have fields layed out, so a recording
+     of DECL_VALUE_EXPRs during the target body walk seems the only way to
+     find them.  */
+  if (current_closure
+      && (TREE_CODE (t) == VAR_DECL
+	  || TREE_CODE (t) == PARM_DECL
+	  || TREE_CODE (t) == RESULT_DECL)
+      && DECL_HAS_VALUE_EXPR_P (t)
+      && TREE_CODE (DECL_VALUE_EXPR (t)) == COMPONENT_REF
+      && operand_equal_p (current_closure,
+			  TREE_OPERAND (DECL_VALUE_EXPR (t), 0)))
+    {
+      if (!data->closure_vars_accessed.contains (t))
+	data->closure_vars_accessed.add (t);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (t) == BIND_EXPR)
+    {
+      tree block = BIND_EXPR_BLOCK (t);
+      for (tree var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
+	if (!data->local_decls.contains (var))
+	  data->local_decls.add (var);
+      return NULL_TREE;
+    }
+
+  if (TREE_TYPE (t) && LAMBDA_TYPE_P (TREE_TYPE (t)))
+    {
+      tree lt = TREE_TYPE (t);
+      gcc_assert (CLASS_TYPE_P (lt));
+
+      if (!data->lambda_objects_accessed.contains (t)
+	  /* Do not prepare to create target maps for locally declared
+	     lambdas or anonymous ones.  */
+	  && !data->local_decls.contains (t)
+	  && TREE_CODE (t) != TARGET_EXPR)
+	data->lambda_objects_accessed.add (t);
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  return NULL_TREE;
+}
+
+/* Helper function for finish_omp_target, and also from tsubst_expr.
+   Create additional clauses for mapping of non-static members, lambda objects,
+   etc.  */
+
+void
+finish_omp_target_clauses (location_t loc, tree body, tree *clauses_ptr)
+{
+  omp_target_walk_data data;
+  data.this_expr_accessed = false;
+
+  tree ct = current_nonlambda_class_type ();
+  if (ct)
+    {
+      tree object = maybe_dummy_object (ct, NULL);
+      object = maybe_resolve_dummy (object, true);
+      data.current_object = object;
+    }
+  else
+    data.current_object = NULL_TREE;
+
+  if (DECL_LAMBDA_FUNCTION_P (current_function_decl))
+    {
+      tree closure = DECL_ARGUMENTS (current_function_decl);
+      data.current_closure = build_indirect_ref (loc, closure, RO_UNARY_STAR);
+    }
+  else
+    data.current_closure = NULL_TREE;
+
+  cp_walk_tree_without_duplicates (&body, finish_omp_target_clauses_r, &data);
+
+  auto_vec<tree, 16> new_clauses;
+
+  tree omp_target_this_expr = NULL_TREE;
+  tree *explicit_this_deref_map = NULL;
+  if (data.this_expr_accessed)
+    {
+      omp_target_this_expr = TREE_OPERAND (data.current_object, 0);
+
+      /* See if explicit user-specified map(this[:]) clause already exists.
+	 If not, we create an implicit map(tofrom:this[:1]) clause.  */
+      for (tree *cp = clauses_ptr; *cp; cp = &OMP_CLAUSE_CHAIN (*cp))
+	if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP
+	    && (TREE_CODE (OMP_CLAUSE_DECL (*cp)) == INDIRECT_REF
+		|| TREE_CODE (OMP_CLAUSE_DECL (*cp)) == MEM_REF)
+	    && operand_equal_p (TREE_OPERAND (OMP_CLAUSE_DECL (*cp), 0),
+				omp_target_this_expr))
+	  {
+	    explicit_this_deref_map = cp;
+	    break;
+	  }
+    }
+
+  if (DECL_LAMBDA_FUNCTION_P (current_function_decl)
+      && (data.this_expr_accessed
+	  || !data.closure_vars_accessed.is_empty ()))
+    {
+      /* For lambda functions, we need to first create a copy of the
+	 __closure object.  */
+      tree closure = DECL_ARGUMENTS (current_function_decl);
+      tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TO);
+      OMP_CLAUSE_DECL (c)
+	= build_indirect_ref (loc, closure, RO_UNARY_STAR);
+      OMP_CLAUSE_SIZE (c)
+	= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (closure)));
+      new_clauses.safe_push (c);
+
+      tree closure_obj = OMP_CLAUSE_DECL (c);
+      tree closure_type = TREE_TYPE (closure_obj);
+
+      gcc_assert (LAMBDA_TYPE_P (closure_type)
+		  && CLASS_TYPE_P (closure_type));
+
+      tree c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
+      OMP_CLAUSE_DECL (c2) = closure;
+      OMP_CLAUSE_SIZE (c2) = size_zero_node;
+      new_clauses.safe_push (c2);
+    }
+
+  if (data.this_expr_accessed)
+    {
+      /* If the this-expr was accessed, create a map(*this) clause.  */
+      enum gomp_map_kind kind = GOMP_MAP_TOFROM;
+      if (explicit_this_deref_map)
+	{
+	  tree this_map = *explicit_this_deref_map;
+	  tree nc = OMP_CLAUSE_CHAIN (this_map);
+	  gcc_assert (nc != NULL_TREE
+		      && OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+		      && (OMP_CLAUSE_MAP_KIND (nc)
+			  == GOMP_MAP_FIRSTPRIVATE_POINTER));
+	  kind = OMP_CLAUSE_MAP_KIND (this_map);
+	  /* Remove the original 'map(*this) map(firstprivate_ptr:this)'
+	     two-map sequence away from the chain.  */
+	  *explicit_this_deref_map = OMP_CLAUSE_CHAIN (nc);
+	}
+      tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (c, kind);
+      OMP_CLAUSE_DECL (c)
+	= build_indirect_ref (loc, omp_target_this_expr, RO_UNARY_STAR);
+      OMP_CLAUSE_SIZE (c)
+	= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (omp_target_this_expr)));
+      new_clauses.safe_push (c);
+
+      /* If we're in a lambda function, the this-pointer will actually be
+	 '__closure->this', a mapped member of __closure, hence always_pointer.
+	 Otherwise it's a firstprivate pointer.  */
+      enum gomp_map_kind ptr_kind
+	= (DECL_LAMBDA_FUNCTION_P (current_function_decl)
+	   ? GOMP_MAP_ALWAYS_POINTER
+	   : GOMP_MAP_FIRSTPRIVATE_POINTER);
+      c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (c, ptr_kind);
+      OMP_CLAUSE_DECL (c) = omp_target_this_expr;
+      OMP_CLAUSE_SIZE (c) = size_zero_node;
+      new_clauses.safe_push (c);
+    }
+
+  if (DECL_LAMBDA_FUNCTION_P (current_function_decl))
+    {
+      if (omp_target_this_expr)
+	{
+	  STRIP_NOPS (omp_target_this_expr);
+	  gcc_assert (DECL_HAS_VALUE_EXPR_P (omp_target_this_expr));
+	  omp_target_this_expr = DECL_VALUE_EXPR (omp_target_this_expr);
+	}
+
+      for (hash_set<tree>::iterator i = data.closure_vars_accessed.begin ();
+	   i != data.closure_vars_accessed.end (); ++i)
+	{
+	  tree orig_decl = *i;
+	  tree closure_expr = DECL_VALUE_EXPR (orig_decl);
+
+	  if (TREE_CODE (TREE_TYPE (orig_decl)) == POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (orig_decl)) == REFERENCE_TYPE)
+	    {
+	      /* this-pointer is processed above, outside this loop.  */
+	      if (omp_target_this_expr
+		  && operand_equal_p (closure_expr, omp_target_this_expr))
+		continue;
+
+	      bool ptr_p = TREE_CODE (TREE_TYPE (orig_decl)) == POINTER_TYPE;
+	      enum gomp_map_kind kind, ptr_kind, nc_kind;
+	      tree size;
+
+	      if (ptr_p)
+		{
+		  /* For pointers, default mapped as zero-length array
+		     section.  */
+		  kind = GOMP_MAP_ALLOC;
+		  nc_kind = GOMP_MAP_FIRSTPRIVATE_POINTER;
+		  ptr_kind = GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION;
+		  size = size_zero_node;
+		}
+	      else
+		{
+		  /* For references, default mapped as appearing on map
+		     clause.  */
+		  kind = GOMP_MAP_TOFROM;
+		  nc_kind = GOMP_MAP_FIRSTPRIVATE_REFERENCE;
+		  ptr_kind = GOMP_MAP_ALWAYS_POINTER;
+		  size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (closure_expr)));
+		}
+
+	      for (tree *p = clauses_ptr; *p; p = &OMP_CLAUSE_CHAIN (*p))
+		if (OMP_CLAUSE_CODE (*p) == OMP_CLAUSE_MAP
+		    && (TREE_CODE (OMP_CLAUSE_DECL (*p)) == INDIRECT_REF
+			|| TREE_CODE (OMP_CLAUSE_DECL (*p)) == MEM_REF)
+		    && operand_equal_p (TREE_OPERAND (OMP_CLAUSE_DECL (*p), 0),
+					orig_decl))
+		  {
+		    /* If this was already specified by user as a map,
+		       save the user specified map kind, delete the
+		       "map(*ptr/ref), map(firstprivate ptr/ref)" sequence,
+		       and insert our own sequence:
+		       "map(*__closure->ptr/ref), map(<ptr_kind>:__closure->ref"
+		    */
+		    tree nc = OMP_CLAUSE_CHAIN (*p);
+		    gcc_assert (nc != NULL_TREE
+				&& OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+				&& OMP_CLAUSE_MAP_KIND (nc) == nc_kind);
+		    /* Update with user specified kind and size.  */
+		    kind = OMP_CLAUSE_MAP_KIND (*p);
+		    size = OMP_CLAUSE_SIZE (*p);
+		    *p = OMP_CLAUSE_CHAIN (nc);
+		    break;
+		  }
+
+	      tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (c, kind);
+	      OMP_CLAUSE_DECL (c)
+		= build_indirect_ref (loc, closure_expr, RO_UNARY_STAR);
+	      OMP_CLAUSE_SIZE (c) = size;
+	      if (ptr_p)
+		OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+	      new_clauses.safe_push (c);
+
+	      c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (c, ptr_kind);
+	      OMP_CLAUSE_DECL (c) = closure_expr;
+	      OMP_CLAUSE_SIZE (c) = size_zero_node;
+	      new_clauses.safe_push (c);
+	    }
+	}
+    }
+
+  if (!data.ptr_members_accessed.is_empty ())
+    for (hash_map<tree, tree>::iterator i = data.ptr_members_accessed.begin ();
+	 i != data.ptr_members_accessed.end (); ++i)
+      {
+	/* For each referenced member that is of pointer or reference-to-pointer
+	   type, create the equivalent of map(alloc:this->ptr[:0]).  */
+	tree field_decl = (*i).first;
+	tree ptr_member = (*i).second;
+
+	for (tree c = *clauses_ptr; c; c = OMP_CLAUSE_CHAIN (c))
+	  {
+	    /* If map(this->ptr[:N] already exists, avoid creating another
+	       such map.  */
+	    tree decl = OMP_CLAUSE_DECL (c);
+	    if ((TREE_CODE (decl) == INDIRECT_REF
+		 || TREE_CODE (decl) == MEM_REF)
+		&& operand_equal_p (TREE_OPERAND (decl, 0), ptr_member))
+	      goto next_ptr_member;
+	  }
+
+	if (!cxx_mark_addressable (ptr_member))
+	  gcc_unreachable ();
+
+	if (TREE_CODE (TREE_TYPE (field_decl)) == REFERENCE_TYPE)
+	  {
+	    /* For reference to pointers, we need to map the referenced
+	       pointer first for things to be correct.  */
+	    tree ptr_member_type = TREE_TYPE (ptr_member);
+
+	    /* Map pointer target as zero-length array section.  */
+	    tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALLOC);
+	    OMP_CLAUSE_DECL (c)
+	      = build1 (INDIRECT_REF, TREE_TYPE (ptr_member_type), ptr_member);
+	    OMP_CLAUSE_SIZE (c) = size_zero_node;
+	    OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+
+	    /* Map pointer to zero-length array section.  */
+	    tree c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	    OMP_CLAUSE_SET_MAP_KIND
+	      (c2, GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION);
+	    OMP_CLAUSE_DECL (c2) = ptr_member;
+	    OMP_CLAUSE_SIZE (c2) = size_zero_node;
+
+	    /* Attach reference-to-pointer field to pointer.  */
+	    tree c3 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	    OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_ATTACH);
+	    OMP_CLAUSE_DECL (c3) = TREE_OPERAND (ptr_member, 0);
+	    OMP_CLAUSE_SIZE (c3) = size_zero_node;
+
+	    new_clauses.safe_push (c);
+	    new_clauses.safe_push (c2);
+	    new_clauses.safe_push (c3);
+	  }
+	else if (TREE_CODE (TREE_TYPE (field_decl)) == POINTER_TYPE)
+	  {
+	    /* Map pointer target as zero-length array section.  */
+	    tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALLOC);
+	    OMP_CLAUSE_DECL (c) = build_indirect_ref (loc, ptr_member,
+						      RO_UNARY_STAR);
+	    OMP_CLAUSE_SIZE (c) = size_zero_node;
+	    OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+
+	    /* Attach zero-length array section to pointer.  */
+	    tree c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	    OMP_CLAUSE_SET_MAP_KIND
+	      (c2, GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION);
+	    OMP_CLAUSE_DECL (c2) = ptr_member;
+	    OMP_CLAUSE_SIZE (c2) = size_zero_node;
+
+	    new_clauses.safe_push (c);
+	    new_clauses.safe_push (c2);
+	  }
+	else
+	  gcc_unreachable ();
+
+      next_ptr_member:
+	;
+      }
+
+  for (hash_set<tree>::iterator i = data.lambda_objects_accessed.begin ();
+       i != data.lambda_objects_accessed.end (); ++i)
+    {
+      tree lobj = *i;
+      if (TREE_CODE (lobj) == TARGET_EXPR)
+	lobj = TREE_OPERAND (lobj, 0);
+
+      tree lt = TREE_TYPE (lobj);
+      gcc_assert (LAMBDA_TYPE_P (lt) && CLASS_TYPE_P (lt));
+
+      tree lc = build_omp_clause (loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (lc, GOMP_MAP_TO);
+      OMP_CLAUSE_DECL (lc) = lobj;
+      OMP_CLAUSE_SIZE (lc) = TYPE_SIZE_UNIT (lt);
+      new_clauses.safe_push (lc);
+
+      for (tree fld = TYPE_FIELDS (lt); fld; fld = DECL_CHAIN (fld))
+	{
+	  if (TREE_CODE (TREE_TYPE (fld)) == POINTER_TYPE)
+	    {
+	      tree exp = build3 (COMPONENT_REF, TREE_TYPE (fld),
+				 lobj, fld, NULL_TREE);
+	      tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALLOC);
+	      OMP_CLAUSE_DECL (c)
+		= build_indirect_ref (loc, exp, RO_UNARY_STAR);
+	      OMP_CLAUSE_SIZE (c) = size_zero_node;
+	      OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
+	      new_clauses.safe_push (c);
+
+	      c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND
+		(c, GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION);
+	      OMP_CLAUSE_DECL (c) = exp;
+	      OMP_CLAUSE_SIZE (c) = size_zero_node;
+	      new_clauses.safe_push (c);
+	    }
+	  else if (TREE_CODE (TREE_TYPE (fld)) == REFERENCE_TYPE)
+	    {
+	      tree exp = build3 (COMPONENT_REF, TREE_TYPE (fld),
+				 lobj, fld, NULL_TREE);
+	      tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
+	      OMP_CLAUSE_DECL (c)
+		= build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
+	      OMP_CLAUSE_SIZE (c)
+		= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (exp)));
+	      new_clauses.safe_push (c);
+
+	      c = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
+	      OMP_CLAUSE_DECL (c) = exp;
+	      OMP_CLAUSE_SIZE (c) = size_zero_node;
+	      new_clauses.safe_push (c);
+	    }
+	}
+    }
+
+  tree c = *clauses_ptr;
+  for (int i = new_clauses.length () - 1; i >= 0; i--)
+    {
+      OMP_CLAUSE_CHAIN (new_clauses[i]) = c;
+      c = new_clauses[i];
+    }
+  *clauses_ptr = c;
+}
+
+/* Called from cp_parser_omp_target.  Create additional implicit clauses for
+   OpenMP target directives, and do sanity checks.  */
+
+tree
+finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
+{
+  if (!processing_template_decl)
+    finish_omp_target_clauses (loc, body, &clauses);
+
+  tree stmt = make_node (OMP_TARGET);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_TARGET_CLAUSES (stmt) = clauses;
+  OMP_TARGET_BODY (stmt) = body;
+  OMP_TARGET_COMBINED (stmt) = combined_p;
+  SET_EXPR_LOCATION (stmt, loc);
+
+  tree c = clauses;
+  while (c)
+    {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
+	switch (OMP_CLAUSE_MAP_KIND (c))
+	  {
+	  case GOMP_MAP_TO:
+	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_FROM:
+	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_TOFROM:
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
+	  case GOMP_MAP_ATTACH:
+	  case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+	  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+	    break;
+	  default:
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%<#pragma omp target%> with map-type other "
+		      "than %<to%>, %<from%>, %<tofrom%> or %<alloc%> "
+		      "on %<map%> clause");
+	    break;
+	  }
+      c = OMP_CLAUSE_CHAIN (c);
+    }
   return add_stmt (stmt);
 }
 

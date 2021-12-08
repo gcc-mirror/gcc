@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-cfg.h"
 #include "tree-ssa.h"
+#include "tree-hash-traits.h"
 #include "omp-general.h"
 #include "omp-low.h"
 #include "gimple-low.h"
@@ -8659,7 +8660,7 @@ insert_struct_comp_map (enum tree_code code, tree c, tree struct_node,
 
 static tree
 extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
-			 poly_offset_int *poffsetp)
+			 poly_offset_int *poffsetp, tree *offsetp)
 {
   tree offset;
   poly_int64 bitsize, bitpos;
@@ -8706,10 +8707,11 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0))) == REFERENCE_TYPE)
     base = TREE_OPERAND (base, 0);
 
-  gcc_assert (offset == NULL_TREE || poly_int_tree_p (offset));
-
-  if (offset)
-    poffset = wi::to_poly_offset (offset);
+  if (offset && poly_int_tree_p (offset))
+    {
+      poffset = wi::to_poly_offset (offset);
+      offset = NULL_TREE;
+    }
   else
     poffset = 0;
 
@@ -8718,6 +8720,7 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
 
   *bitposp = bitpos;
   *poffsetp = poffset;
+  *offsetp = offset;
 
   /* Set *BASE_REF if BASE was a dereferenced reference variable.  */
   if (base_ref && orig_base != base)
@@ -8731,12 +8734,22 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
 static bool
 is_or_contains_p (tree expr, tree base_ptr)
 {
-  while (expr != base_ptr)
-    if (TREE_CODE (base_ptr) == COMPONENT_REF)
-      base_ptr = TREE_OPERAND (base_ptr, 0);
-    else
-      break;
-  return expr == base_ptr;
+  if ((TREE_CODE (expr) == INDIRECT_REF && TREE_CODE (base_ptr) == MEM_REF)
+      || (TREE_CODE (expr) == MEM_REF && TREE_CODE (base_ptr) == INDIRECT_REF))
+    return operand_equal_p (TREE_OPERAND (expr, 0),
+			    TREE_OPERAND (base_ptr, 0));
+  while (!operand_equal_p (expr, base_ptr))
+    {
+      if (TREE_CODE (base_ptr) == COMPOUND_EXPR)
+	base_ptr = TREE_OPERAND (base_ptr, 1);
+      if (TREE_CODE (base_ptr) == COMPONENT_REF
+	  || TREE_CODE (base_ptr) == POINTER_PLUS_EXPR
+	  || TREE_CODE (base_ptr) == SAVE_EXPR)
+	base_ptr = TREE_OPERAND (base_ptr, 0);
+      else
+	break;
+    }
+  return operand_equal_p (expr, base_ptr);
 }
 
 /* Implement OpenMP 5.x map ordering rules for target directives. There are
@@ -8816,20 +8829,106 @@ omp_target_reorder_clauses (tree *list_p)
 	    tree base_ptr = TREE_OPERAND (decl, 0);
 	    STRIP_TYPE_NOPS (base_ptr);
 	    for (unsigned int j = i + 1; j < atf.length (); j++)
-	      {
-		tree *cp2 = atf[j];
-		tree decl2 = OMP_CLAUSE_DECL (*cp2);
-		if (is_or_contains_p (decl2, base_ptr))
-		  {
-		    /* Move *cp2 to before *cp.  */
-		    tree c = *cp2;
-		    *cp2 = OMP_CLAUSE_CHAIN (c);
-		    OMP_CLAUSE_CHAIN (c) = *cp;
-		    *cp = c;
-		    atf[j] = NULL;
+	      if (atf[j])
+		{
+		  tree *cp2 = atf[j];
+		  tree decl2 = OMP_CLAUSE_DECL (*cp2);
+
+		  decl2 = OMP_CLAUSE_DECL (*cp2);
+		  if (is_or_contains_p (decl2, base_ptr))
+		    {
+		      /* Move *cp2 to before *cp.  */
+		      tree c = *cp2;
+		      *cp2 = OMP_CLAUSE_CHAIN (c);
+		      OMP_CLAUSE_CHAIN (c) = *cp;
+		      *cp = c;
+
+		      if (*cp2 != NULL_TREE
+			  && OMP_CLAUSE_CODE (*cp2) == OMP_CLAUSE_MAP
+			  && OMP_CLAUSE_MAP_KIND (*cp2) == GOMP_MAP_ALWAYS_POINTER)
+			{
+			  tree c2 = *cp2;
+			  *cp2 = OMP_CLAUSE_CHAIN (c2);
+			  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
+			  OMP_CLAUSE_CHAIN (c) = c2;
+			}
+
+		      atf[j] = NULL;
 		  }
-	      }
+		}
 	  }
+      }
+
+  /* For attach_detach map clauses, if there is another map that maps the
+     attached/detached pointer, make sure that map is ordered before the
+     attach_detach.  */
+  atf.truncate (0);
+  for (tree *cp = list_p; *cp; cp = &OMP_CLAUSE_CHAIN (*cp))
+    if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_MAP)
+      {
+	/* Collect alloc, to, from, to/from clauses, and
+	   always_pointer/attach_detach clauses.  */
+	gomp_map_kind k = OMP_CLAUSE_MAP_KIND (*cp);
+	if (k == GOMP_MAP_ALLOC
+	    || k == GOMP_MAP_TO
+	    || k == GOMP_MAP_FROM
+	    || k == GOMP_MAP_TOFROM
+	    || k == GOMP_MAP_ALWAYS_TO
+	    || k == GOMP_MAP_ALWAYS_FROM
+	    || k == GOMP_MAP_ALWAYS_TOFROM
+	    || k == GOMP_MAP_ATTACH_DETACH
+	    || k == GOMP_MAP_ALWAYS_POINTER)
+	  atf.safe_push (cp);
+      }
+
+  for (unsigned int i = 0; i < atf.length (); i++)
+    if (atf[i])
+      {
+	tree *cp = atf[i];
+	tree ptr = OMP_CLAUSE_DECL (*cp);
+	STRIP_TYPE_NOPS (ptr);
+	if (OMP_CLAUSE_MAP_KIND (*cp) == GOMP_MAP_ATTACH_DETACH)
+	  for (unsigned int j = i + 1; j < atf.length (); j++)
+	    {
+	      tree *cp2 = atf[j];
+	      tree decl2 = OMP_CLAUSE_DECL (*cp2);
+	      if (OMP_CLAUSE_MAP_KIND (*cp2) != GOMP_MAP_ATTACH_DETACH
+		  && OMP_CLAUSE_MAP_KIND (*cp2) != GOMP_MAP_ALWAYS_POINTER
+		  && is_or_contains_p (decl2, ptr))
+		{
+		  /* Move *cp2 to before *cp.  */
+		  tree c = *cp2;
+		  *cp2 = OMP_CLAUSE_CHAIN (c);
+		  OMP_CLAUSE_CHAIN (c) = *cp;
+		  *cp = c;
+		  atf[j] = NULL;
+
+		  /* If decl2 is of the form '*decl2_opnd0', and followed by an
+		     ALWAYS_POINTER or ATTACH_DETACH of 'decl2_opnd0', move the
+		     pointer operation along with *cp2. This can happen for C++
+		     reference sequences.  */
+		  if (j + 1 < atf.length ()
+		      && (TREE_CODE (decl2) == INDIRECT_REF
+			  || TREE_CODE (decl2) == MEM_REF))
+		    {
+		      tree *cp3 = atf[j + 1];
+		      tree decl3 = OMP_CLAUSE_DECL (*cp3);
+		      tree decl2_opnd0 = TREE_OPERAND (decl2, 0);
+		      if ((OMP_CLAUSE_MAP_KIND (*cp3) == GOMP_MAP_ALWAYS_POINTER
+			   || OMP_CLAUSE_MAP_KIND (*cp3) == GOMP_MAP_ATTACH_DETACH)
+			  && operand_equal_p (decl3, decl2_opnd0))
+			{
+			  /* Also move *cp3 to before *cp.  */
+			  c = *cp3;
+			  *cp2 = OMP_CLAUSE_CHAIN (c);
+			  OMP_CLAUSE_CHAIN (c) = *cp;
+			  *cp = c;
+			  atf[j + 1] = NULL;
+			  j += 1;
+			}
+		    }
+		}
+	    }
       }
 }
 
@@ -8921,7 +9020,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 {
   struct gimplify_omp_ctx *ctx, *outer_ctx;
   tree c;
-  hash_map<tree, tree> *struct_map_to_clause = NULL;
+  hash_map<tree_operand_hash, tree> *struct_map_to_clause = NULL;
+  hash_map<tree_operand_hash, tree *> *struct_seen_clause = NULL;
   hash_set<tree> *struct_deref_set = NULL;
   tree *prev_list_p = NULL, *orig_list_p = list_p;
   int handled_depend_iterators = -1;
@@ -9365,7 +9465,14 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 				  GOVD_FIRSTPRIVATE | GOVD_SEEN);
 	    }
 
-	  if (!DECL_P (decl))
+	  if (TREE_CODE (decl) == TARGET_EXPR)
+	    {
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+				 is_gimple_lvalue, fb_lvalue)
+		  == GS_ERROR)
+		remove = true;
+	    }
+	  else if (!DECL_P (decl))
 	    {
 	      tree d = decl, *pd;
 	      if (TREE_CODE (d) == ARRAY_REF)
@@ -9381,12 +9488,16 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  && TREE_CODE (decl) == INDIRECT_REF
 		  && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
 		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
-		      == REFERENCE_TYPE))
+		      == REFERENCE_TYPE)
+		  && (OMP_CLAUSE_MAP_KIND (c)
+		      != GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION))
 		{
 		  pd = &TREE_OPERAND (decl, 0);
 		  decl = TREE_OPERAND (decl, 0);
 		}
 	      bool indir_p = false;
+	      bool component_ref_p = false;
+	      tree indir_base = NULL_TREE;
 	      tree orig_decl = decl;
 	      tree decl_ref = NULL_TREE;
 	      if ((region_type & (ORT_ACC | ORT_TARGET | ORT_TARGET_DATA)) != 0
@@ -9397,6 +9508,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  while (TREE_CODE (decl) == COMPONENT_REF)
 		    {
 		      decl = TREE_OPERAND (decl, 0);
+		      component_ref_p = true;
 		      if (((TREE_CODE (decl) == MEM_REF
 			    && integer_zerop (TREE_OPERAND (decl, 1)))
 			   || INDIRECT_REF_P (decl))
@@ -9404,7 +9516,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			      == POINTER_TYPE))
 			{
 			  indir_p = true;
+			  indir_base = decl;
 			  decl = TREE_OPERAND (decl, 0);
+			  STRIP_NOPS (decl);
 			}
 		      if (TREE_CODE (decl) == INDIRECT_REF
 			  && DECL_P (TREE_OPERAND (decl, 0))
@@ -9416,8 +9530,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			}
 		    }
 		}
-	      else if (TREE_CODE (decl) == COMPONENT_REF)
+	      else if (TREE_CODE (decl) == COMPONENT_REF
+		       && (OMP_CLAUSE_MAP_KIND (c)
+			   != GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION))
 		{
+		  component_ref_p = true;
 		  while (TREE_CODE (decl) == COMPONENT_REF)
 		    decl = TREE_OPERAND (decl, 0);
 		  if (TREE_CODE (decl) == INDIRECT_REF
@@ -9446,7 +9563,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			       != GOMP_MAP_POINTER)
 			   || OMP_CLAUSE_DECL (next_clause) != decl)
 		      && (!struct_deref_set
-			  || !struct_deref_set->contains (decl)))
+			  || !struct_deref_set->contains (decl))
+		      && (!struct_map_to_clause
+			  || !struct_map_to_clause->get (indir_base)))
 		    {
 		      if (!struct_deref_set)
 			struct_deref_set = new hash_set<tree> ();
@@ -9487,7 +9606,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      if (code == OACC_UPDATE
 		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
-	      if (DECL_P (decl)
+	      if ((DECL_P (decl)
+		   || (component_ref_p
+		       && (INDIRECT_REF_P (decl)
+			   || TREE_CODE (decl) == MEM_REF
+			   || TREE_CODE (decl) == ARRAY_REF)))
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH
@@ -9522,7 +9645,15 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			  remove = true;
 			  break;
 			}
-		      if (OMP_CLAUSE_CHAIN (*prev_list_p) != c)
+
+		      /* The below prev_list_p based error recovery code is
+			 currently no longer valid for OpenMP.  */
+		      if (code != OMP_TARGET
+			  && code != OMP_TARGET_DATA
+			  && code != OMP_TARGET_UPDATE
+			  && code != OMP_TARGET_ENTER_DATA
+			  && code != OMP_TARGET_EXIT_DATA
+			  && OMP_CLAUSE_CHAIN (*prev_list_p) != c)
 			{
 			  tree ch = OMP_CLAUSE_CHAIN (*prev_list_p);
 			  if (ch == NULL_TREE || OMP_CLAUSE_CHAIN (ch) != c)
@@ -9535,16 +9666,21 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 		  poly_offset_int offset1;
 		  poly_int64 bitpos1;
+		  tree tree_offset1;
 		  tree base_ref;
 
 		  tree base
 		    = extract_base_bit_offset (OMP_CLAUSE_DECL (c), &base_ref,
-					       &bitpos1, &offset1);
+					       &bitpos1, &offset1,
+					       &tree_offset1);
 
-		  gcc_assert (base == decl);
+		  bool do_map_struct = (base == decl && !tree_offset1);
 
 		  splay_tree_node n
-		    = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
+		    = (DECL_P (decl)
+		       ? splay_tree_lookup (ctx->variables,
+					    (splay_tree_key) decl)
+		       : NULL);
 		  bool ptr = (OMP_CLAUSE_MAP_KIND (c)
 			      == GOMP_MAP_ALWAYS_POINTER);
 		  bool attach_detach = (OMP_CLAUSE_MAP_KIND (c)
@@ -9570,7 +9706,37 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      OMP_CLAUSE_SET_MAP_KIND (c, k);
 		      has_attachments = true;
 		    }
-		  if (n == NULL || (n->value & GOVD_MAP) == 0)
+
+		  /* We currently don't handle non-constant offset accesses wrt to
+		     GOMP_MAP_STRUCT elements.  */
+		  if (!do_map_struct)
+		    goto skip_map_struct;
+
+		  /* Nor for attach_detach for OpenMP.  */
+		  if ((code == OMP_TARGET
+		       || code == OMP_TARGET_DATA
+		       || code == OMP_TARGET_UPDATE
+		       || code == OMP_TARGET_ENTER_DATA
+		       || code == OMP_TARGET_EXIT_DATA)
+		      && attach_detach)
+		    {
+		      if (DECL_P (decl))
+			{
+			  if (struct_seen_clause == NULL)
+			    struct_seen_clause
+			      = new hash_map<tree_operand_hash, tree *>;
+			  if (!struct_seen_clause->get (decl))
+			    struct_seen_clause->put (decl, list_p);
+			}
+
+		      goto skip_map_struct;
+		    }
+
+		  if ((DECL_P (decl)
+		       && (n == NULL || (n->value & GOVD_MAP) == 0))
+		      || (!DECL_P (decl)
+			  && (!struct_map_to_clause
+			      || struct_map_to_clause->get (decl) == NULL)))
 		    {
 		      tree l = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 						 OMP_CLAUSE_MAP);
@@ -9581,7 +9747,18 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      if (base_ref)
 			OMP_CLAUSE_DECL (l) = unshare_expr (base_ref);
 		      else
-			OMP_CLAUSE_DECL (l) = decl;
+			{
+			  OMP_CLAUSE_DECL (l) = unshare_expr (decl);
+			  if (!DECL_P (OMP_CLAUSE_DECL (l))
+			      && (gimplify_expr (&OMP_CLAUSE_DECL (l),
+						 pre_p, NULL, is_gimple_lvalue,
+						 fb_lvalue)
+				  == GS_ERROR))
+			    {
+			      remove = true;
+			      break;
+			    }
+			}
 		      OMP_CLAUSE_SIZE (l)
 			= (!attach
 			   ? size_int (1)
@@ -9589,13 +9766,19 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			   ? DECL_SIZE_UNIT (OMP_CLAUSE_DECL (l))
 			   : TYPE_SIZE_UNIT (TREE_TYPE (OMP_CLAUSE_DECL (l))));
 		      if (struct_map_to_clause == NULL)
-			struct_map_to_clause = new hash_map<tree, tree>;
+			struct_map_to_clause
+			  = new hash_map<tree_operand_hash, tree>;
 		      struct_map_to_clause->put (decl, l);
 		      if (ptr || attach_detach)
 			{
-			  insert_struct_comp_map (code, c, l, *prev_list_p,
+			  tree **sc = (struct_seen_clause
+				       ? struct_seen_clause->get (decl)
+				       : NULL);
+			  tree *insert_node_pos = sc ? *sc : prev_list_p;
+
+			  insert_struct_comp_map (code, c, l, *insert_node_pos,
 						  NULL);
-			  *prev_list_p = l;
+			  *insert_node_pos = l;
 			  prev_list_p = NULL;
 			}
 		      else
@@ -9623,15 +9806,41 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			flags |= GOVD_SEEN;
 		      if (has_attachments)
 			flags |= GOVD_MAP_HAS_ATTACHMENTS;
-		      goto do_add_decl;
+
+		      /* If this is a *pointer-to-struct expression, make sure a
+			 firstprivate map of the base-pointer exists.  */
+		      if (component_ref_p
+			  && ((TREE_CODE (decl) == MEM_REF
+			       && integer_zerop (TREE_OPERAND (decl, 1)))
+			      || INDIRECT_REF_P (decl))
+			  && DECL_P (TREE_OPERAND (decl, 0))
+			  && !splay_tree_lookup (ctx->variables,
+						 ((splay_tree_key)
+						  TREE_OPERAND (decl, 0))))
+			{
+			  decl = TREE_OPERAND (decl, 0);
+			  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+						      OMP_CLAUSE_MAP);
+			  enum gomp_map_kind mkind
+			    = GOMP_MAP_FIRSTPRIVATE_POINTER;
+			  OMP_CLAUSE_SET_MAP_KIND (c2, mkind);
+			  OMP_CLAUSE_DECL (c2) = decl;
+			  OMP_CLAUSE_SIZE (c2) = size_zero_node;
+			  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
+			  OMP_CLAUSE_CHAIN (c) = c2;
+			}
+
+		      if (DECL_P (decl))
+			goto do_add_decl;
 		    }
 		  else if (struct_map_to_clause)
 		    {
 		      tree *osc = struct_map_to_clause->get (decl);
 		      tree *sc = NULL, *scp = NULL;
-		      if (GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c))
-			  || ptr
-			  || attach_detach)
+		      if (n != NULL
+			  && (GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c))
+			      || ptr
+			      || attach_detach))
 			n->value |= GOVD_SEEN;
 		      sc = &OMP_CLAUSE_CHAIN (*osc);
 		      if (*sc != c
@@ -9655,9 +9864,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			    tree sc_decl = OMP_CLAUSE_DECL (*sc);
 			    poly_offset_int offsetn;
 			    poly_int64 bitposn;
+			    tree tree_offsetn;
 			    tree base
 			      = extract_base_bit_offset (sc_decl, NULL,
-							 &bitposn, &offsetn);
+							 &bitposn, &offsetn,
+							 &tree_offsetn);
 			    if (base != decl)
 			      break;
 			    if (scp)
@@ -9732,22 +9943,34 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			}
 		      else if (*sc != c)
 			{
+			  if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
+					     fb_lvalue)
+			      == GS_ERROR)
+			    {
+			      remove = true;
+			      break;
+			    }
 			  *list_p = OMP_CLAUSE_CHAIN (c);
 			  OMP_CLAUSE_CHAIN (c) = *sc;
 			  *sc = c;
 			  continue;
 			}
 		    }
+		skip_map_struct:
+		  ;
 		}
 	      else if ((code == OACC_ENTER_DATA
 			|| code == OACC_EXIT_DATA
 			|| code == OACC_DATA
 			|| code == OACC_PARALLEL
 			|| code == OACC_KERNELS
-			|| code == OACC_SERIAL)
+			|| code == OACC_SERIAL
+			|| code == OMP_TARGET_ENTER_DATA
+			|| code == OMP_TARGET_EXIT_DATA)
 		       && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		{
-		  gomp_map_kind k = (code == OACC_EXIT_DATA
+		  gomp_map_kind k = ((code == OACC_EXIT_DATA
+				      || code == OMP_TARGET_EXIT_DATA)
 				     ? GOMP_MAP_DETACH : GOMP_MAP_ATTACH);
 		  OMP_CLAUSE_SET_MAP_KIND (c, k);
 		}
@@ -9865,6 +10088,24 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		{
 		  remove = true;
 		  break;
+		}
+
+	      /* If this was of the form map(*pointer_to_struct), then the
+		 'pointer_to_struct' DECL should be considered deref'ed.  */
+	      if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALLOC
+		   || GOMP_MAP_COPY_TO_P (OMP_CLAUSE_MAP_KIND (c))
+		   || GOMP_MAP_COPY_FROM_P (OMP_CLAUSE_MAP_KIND (c)))
+		  && INDIRECT_REF_P (orig_decl)
+		  && DECL_P (TREE_OPERAND (orig_decl, 0))
+		  && TREE_CODE (TREE_TYPE (orig_decl)) == RECORD_TYPE)
+		{
+		  tree ptr = TREE_OPERAND (orig_decl, 0);
+		  if (!struct_deref_set || !struct_deref_set->contains (ptr))
+		    {
+		      if (!struct_deref_set)
+			struct_deref_set = new hash_set<tree> ();
+		      struct_deref_set->add (ptr);
+		    }
 		}
 
 	      if (!remove
@@ -10561,6 +10802,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
   ctx->clauses = *orig_list_p;
   gimplify_omp_ctxp = ctx;
+  if (struct_seen_clause)
+    delete struct_seen_clause;
   if (struct_map_to_clause)
     delete struct_map_to_clause;
   if (struct_deref_set)
@@ -11216,6 +11459,12 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    }
 		}
 	    }
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	      && (code == OMP_TARGET_EXIT_DATA || code == OACC_EXIT_DATA))
+	    {
+	      remove = true;
+	      break;
+	    }
 	  if (!DECL_P (decl))
 	    {
 	      if ((ctx->region_type & ORT_TARGET) != 0
@@ -11262,10 +11511,6 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		      = OMP_CLAUSE_CHAIN (OMP_CLAUSE_CHAIN (c));
 		}
 	    }
-	  else if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
-		   && (code == OMP_TARGET_EXIT_DATA
-		       || code == OACC_EXIT_DATA))
-	    remove = true;
 	  else if (DECL_SIZE (decl)
 		   && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
 		   && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_POINTER

@@ -1,3 +1,57 @@
+2021-12-07  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/103438
+	* config/s390/s390.c (s390_valid_target_attribute_inner_p):
+	Use new enum CLVC_INTEGER.
+	* opt-functions.awk: Use new CLVC_INTEGER.
+	* opts-common.c (set_option): Likewise.
+	(option_enabled): Return -1,0,1 for CLVC_INTEGER.
+	(get_option_state): Use new CLVC_INTEGER.
+	(control_warning_option): Likewise.
+	* opts.h (enum cl_var_type): Likewise.
+
+2021-12-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/103594
+	* config/i386/i386.c (ix86_call_use_plt_p): Check FUNCTION_DECL
+	before calling cgraph_node::get.
+
+2021-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/103596
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Note we are not propagating into a PHI argument to may_propagate_copy.
+	* tree-ssa-propagate.h (may_propagate_copy): Add
+	argument specifying whether we propagate into a PHI arg.
+	* tree-ssa-propagate.c (may_propagate_copy): Likewise.
+	When not doing so we can replace an abnormal with
+	something else.
+	(may_propagate_into_stmt): Update may_propagate_copy calls.
+	(replace_exp_1): Move propagation checking code to
+	propagate_value and rename to ...
+	(replace_exp): ... this and elide previous wrapper.
+	(propagate_value): Perform checking with adjusted
+	may_propagate_copy call and dispatch to replace_exp.
+
+2021-12-07  Matthias Kretz  <m.kretz@gsi.de>
+
+	* hash-map.h (hash_map::traverse): Let both overloads behave the
+	same.
+	* predict.c (assert_is_empty): Return true, thus not changing
+	behavior.
+
+2021-12-07  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* config/mips/mips.h (ISA_HAS_UNALIGNED_ACCESS, STRICT_ALIGNMENT):
+		R6 can unaligned access.
+	* config/mips/mips.md (movmisalign<mode>): Likewise.
+	* config/mips/mips.opt: add -m(no-)unaligned-access
+	* doc/invoke.texi: Likewise.
+
+2021-12-07  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.c (afdo_propagate_edge): Improve count propagation algorithm.
+
 2021-12-06  Paul A. Clarke  <pc@us.ibm.com>
 
 	PR target/103545

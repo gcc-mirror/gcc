@@ -1,3 +1,21 @@
+2021-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103607
+	* frontend-passes.c (do_subscript): Ensure that array bounds are
+	of type INTEGER before performing checks on array subscripts.
+
+2021-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103588
+	* array.c (gfc_ref_dimen_size): Do not generate internal error on
+	failed simplification of stride expression; just return failure.
+
+2021-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103591
+	* match.c (match_case_selector): Check type of upper bound in case
+	range.
+
 2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Handle

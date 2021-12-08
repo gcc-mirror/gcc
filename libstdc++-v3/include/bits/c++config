@@ -577,6 +577,15 @@ namespace std
   do { __glibcxx_constexpr_assert(cond); } while (false)
 #endif
 
+// Macro indicating that TSAN is in use.
+#if __SANITIZE_THREAD__
+#  define _GLIBCXX_TSAN 1
+#elif defined __has_feature
+# if __has_feature(thread_sanitizer)
+#  define _GLIBCXX_TSAN 1
+# endif
+#endif
+
 // Macros for race detectors.
 // _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) and
 // _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A) should be used to explain
