@@ -1400,7 +1400,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
 		    && !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
-		  post_error ("??`Storage_Error` will be raised at run time!",
+		  post_error ("??Storage_Error will be raised at run time!",
 			      gnat_entity);
 
 		gnu_expr
