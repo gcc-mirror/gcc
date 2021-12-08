@@ -1,3 +1,13 @@
+2021-12-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/103305
+	* config/os/newlib/ctype_base.h (upper, lower, alpha, digit, xdigit,
+	space, print, graph, cntrl, punct, alnum, blank): Use short or long
+	names depending on if short ones are defined.
+
 2021-12-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103549
