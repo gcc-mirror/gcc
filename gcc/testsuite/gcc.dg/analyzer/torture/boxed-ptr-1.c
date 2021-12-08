@@ -47,9 +47,7 @@ void test_2 (int flag)
 
   boxed_free (ptr);  
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
-  /* TODO: ideally we would have purged the state of "ptr", and there would be
-     just 1 enode here (PR analyzer/104943).  */
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }
 
 void test_3 (int kind)
@@ -76,7 +74,5 @@ void test_3 (int kind)
 
   boxed_free (ptr);  
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "4 processed enodes" } */
-  /* TODO: ideally we would have purged the state of "ptr", and there would be
-     just 1 enode here (PR analyzer/104943).  */  
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }

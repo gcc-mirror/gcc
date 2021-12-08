@@ -1122,52 +1122,90 @@ program_state::prune_for_point (exploded_graph &eg,
   if (pm)
     {
       unsigned num_ssas_purged = 0;
-      auto_vec<const decl_region *> ssa_name_regs;
-      new_state.m_region_model->get_ssa_name_regions_for_current_frame
-	(&ssa_name_regs);
-      ssa_name_regs.qsort (region::cmp_ptr_ptr);
+      unsigned num_decls_purged = 0;
+      auto_vec<const decl_region *> regs;
+      new_state.m_region_model->get_regions_for_current_frame (&regs);
+      regs.qsort (region::cmp_ptr_ptr);
       unsigned i;
       const decl_region *reg;
-      FOR_EACH_VEC_ELT (ssa_name_regs, i, reg)
+      FOR_EACH_VEC_ELT (regs, i, reg)
 	{
-	  tree ssa_name = reg->get_decl ();
-	  const state_purge_per_ssa_name &per_ssa
-	    = pm->get_data_for_ssa_name (ssa_name);
-	  if (!per_ssa.needed_at_point_p (point.get_function_point ()))
+	  const tree node = reg->get_decl ();
+	  if (TREE_CODE (node) == SSA_NAME)
 	    {
-	      /* Don't purge bindings of SSA names to svalues
-		 that have unpurgable sm-state, so that leaks are
-		 reported at the end of the function, rather than
-		 at the last place that such an SSA name is referred to.
-
-		 But do purge them for temporaries (when SSA_NAME_VAR is
-		 NULL), so that we report for cases where a leak happens when
-		 a variable is overwritten with another value, so that the leak
-		 is reported at the point of overwrite, rather than having
-		 temporaries keep the value reachable until the frame is
-		 popped.  */
-	      const svalue *sval
-		= new_state.m_region_model->get_store_value (reg, NULL);
-	      if (!new_state.can_purge_p (eg.get_ext_state (), sval)
-		  && SSA_NAME_VAR (ssa_name))
+	      const tree ssa_name = node;
+	      const state_purge_per_ssa_name &per_ssa
+		= pm->get_data_for_ssa_name (node);
+	      if (!per_ssa.needed_at_point_p (point.get_function_point ()))
 		{
-		  /* (currently only state maps can keep things
-		     alive).  */
-		  if (logger)
-		    logger->log ("not purging binding for %qE"
-				 " (used by state map)", ssa_name);
-		  continue;
-		}
+		  /* Don't purge bindings of SSA names to svalues
+		     that have unpurgable sm-state, so that leaks are
+		     reported at the end of the function, rather than
+		     at the last place that such an SSA name is referred to.
 
-	      new_state.m_region_model->purge_region (reg);
-	      num_ssas_purged++;
+		     But do purge them for temporaries (when SSA_NAME_VAR is
+		     NULL), so that we report for cases where a leak happens when
+		     a variable is overwritten with another value, so that the leak
+		     is reported at the point of overwrite, rather than having
+		     temporaries keep the value reachable until the frame is
+		     popped.  */
+		  const svalue *sval
+		    = new_state.m_region_model->get_store_value (reg, NULL);
+		  if (!new_state.can_purge_p (eg.get_ext_state (), sval)
+		      && SSA_NAME_VAR (ssa_name))
+		    {
+		      /* (currently only state maps can keep things
+			 alive).  */
+		      if (logger)
+			logger->log ("not purging binding for %qE"
+				     " (used by state map)", ssa_name);
+		      continue;
+		    }
+
+		  new_state.m_region_model->purge_region (reg);
+		  num_ssas_purged++;
+		}
+	    }
+	  else
+	    {
+	      const tree decl = node;
+	      gcc_assert (TREE_CODE (node) == VAR_DECL
+			  || TREE_CODE (node) == PARM_DECL
+			  || TREE_CODE (node) == RESULT_DECL);
+	      if (const state_purge_per_decl *per_decl
+		  = pm->get_any_data_for_decl (decl))
+		if (!per_decl->needed_at_point_p (point.get_function_point ()))
+		  {
+		    /* Don't purge bindings of decls if there are svalues
+		       that have unpurgable sm-state within the decl's cluster,
+		       so that leaks are reported at the end of the function,
+		       rather than at the last place that such a decl is
+		       referred to.  */
+		    if (!new_state.can_purge_base_region_p (eg.get_ext_state (),
+							    reg))
+		      {
+			/* (currently only state maps can keep things
+			   alive).  */
+			if (logger)
+			  logger->log ("not purging binding for %qE"
+				       " (value in binding used by state map)",
+				       decl);
+			continue;
+		      }
+
+		    new_state.m_region_model->purge_region (reg);
+		    num_decls_purged++;
+		  }
 	    }
 	}
 
-      if (num_ssas_purged > 0)
+      if (num_ssas_purged > 0 || num_decls_purged > 0)
 	{
 	  if (logger)
-	    logger->log ("num_ssas_purged: %i", num_ssas_purged);
+	    {
+	      logger->log ("num_ssas_purged: %i", num_ssas_purged);
+	      logger->log ("num_decl_purged: %i", num_decls_purged);
+	    }
 	  impl_region_model_context ctxt (eg, enode_for_diag,
 					  this,
 					  &new_state,
@@ -1180,6 +1218,27 @@ program_state::prune_for_point (exploded_graph &eg,
   new_state.m_region_model->canonicalize ();
 
   return new_state;
+}
+
+/* Return true if there are no unpurgeable bindings within BASE_REG. */
+
+bool
+program_state::can_purge_base_region_p (const extrinsic_state &ext_state,
+					const region *base_reg) const
+{
+  binding_cluster *cluster
+    = m_region_model->get_store ()->get_cluster (base_reg);
+  if (!cluster)
+    return true;
+
+  for (auto iter : *cluster)
+    {
+      const svalue *sval = iter.second;
+      if (!can_purge_p (ext_state, sval))
+	return false;
+    }
+
+  return true;
 }
 
 /* Get a representative tree to use for describing SVAL.  */

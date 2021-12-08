@@ -104,6 +104,8 @@ public:
     return m_stmt_idx;
   }
 
+  bool final_stmt_p () const;
+
   /* Factory functions for making various kinds of program_point.  */
 
   static function_point from_function_entry (const supergraph &sg,
@@ -144,6 +146,8 @@ public:
 
   /* For before_stmt, go to next stmt.  */
   void next_stmt ();
+
+  function_point get_next () const;
 
  private:
   const supernode *m_supernode;

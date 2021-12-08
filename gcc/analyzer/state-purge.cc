@@ -49,13 +49,165 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-point.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/state-purge.h"
+#include "tristate.h"
+#include "selftest.h"
+#include "analyzer/store.h"
+#include "analyzer/region-model.h"
+#include "gimple-walk.h"
 
 #if ENABLE_ANALYZER
 
+/* Given NODE at an access, determine if this access is within
+   a decl that could be consider for purging, and if so, return the decl.  */
+
+static tree
+get_candidate_for_purging (tree node)
+{
+  tree iter = node;
+  while (1)
+    switch (TREE_CODE (iter))
+      {
+      default:
+	return NULL_TREE;
+
+      case COMPONENT_REF:
+	iter = TREE_OPERAND (iter, 0);
+	continue;
+
+      case VAR_DECL:
+	if (is_global_var (iter))
+	  return NULL_TREE;
+	else
+	  return iter;
+
+      case PARM_DECL:
+      case RESULT_DECL:
+	return iter;
+      }
+}
+
+/* Class-based handler for walk_stmt_load_store_addr_ops at a particular
+   function_point, for populating the worklists within a state_purge_map.  */
+
+class gimple_op_visitor : public log_user
+{
+public:
+  gimple_op_visitor (state_purge_map *map,
+		     const function_point &point,
+		     function *fun)
+  : log_user (map->get_logger ()),
+    m_map (map),
+    m_point (point),
+    m_fun (fun)
+  {}
+
+  bool on_load (gimple *stmt, tree base, tree op)
+  {
+    LOG_FUNC (get_logger ());
+    if (get_logger ())
+      {
+	pretty_printer pp;
+	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
+	log ("on_load: %s; base: %qE, op: %qE",
+	     pp_formatted_text (&pp), base, op);
+      }
+    if (tree node = get_candidate_for_purging (base))
+      add_needed (node);
+    return true;
+  }
+
+  bool on_store (gimple *stmt, tree base, tree op)
+  {
+    LOG_FUNC (get_logger ());
+    if (get_logger ())
+      {
+	pretty_printer pp;
+	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
+	log ("on_store: %s; base: %qE, op: %qE",
+	     pp_formatted_text (&pp), base, op);
+      }
+    return true;
+  }
+
+  bool on_addr (gimple *stmt, tree base, tree op)
+  {
+    LOG_FUNC (get_logger ());
+    if (get_logger ())
+      {
+	pretty_printer pp;
+	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
+	log ("on_addr: %s; base: %qE, op: %qE",
+	     pp_formatted_text (&pp), base, op);
+      }
+    if (TREE_CODE (op) != ADDR_EXPR)
+      return true;
+    if (tree node = get_candidate_for_purging (base))
+      {
+	add_needed (node);
+	add_pointed_to (node);
+      }
+    return true;
+  }
+
+private:
+  void add_needed (tree decl)
+  {
+    gcc_assert (get_candidate_for_purging (decl) == decl);
+    state_purge_per_decl &data
+      = get_or_create_data_for_decl (decl);
+    data.add_needed_at (m_point);
+
+    /* Handle calls: if we're seeing a use at a call, then add a use at the
+       "after-supernode" point (in case of interprocedural call superedges).  */
+    if (m_point.final_stmt_p ())
+      data.add_needed_at (m_point.get_next ());
+  }
+
+  void add_pointed_to (tree decl)
+  {
+    gcc_assert (get_candidate_for_purging (decl) == decl);
+    get_or_create_data_for_decl (decl).add_pointed_to_at (m_point);
+  }
+
+  state_purge_per_decl &
+  get_or_create_data_for_decl (tree decl)
+  {
+    return m_map->get_or_create_data_for_decl (m_fun, decl);
+  }
+
+  state_purge_map *m_map;
+  const function_point &m_point;
+  function *m_fun;
+};
+
+static bool
+my_load_cb  (gimple *stmt, tree base, tree op, void *user_data)
+{
+  gimple_op_visitor *x = (gimple_op_visitor *)user_data;
+  return x->on_load (stmt, base, op);
+}
+
+static bool
+my_store_cb  (gimple *stmt, tree base, tree op, void *user_data)
+{
+  gimple_op_visitor *x = (gimple_op_visitor *)user_data;
+  return x->on_store (stmt, base, op);
+}
+
+static bool
+my_addr_cb  (gimple *stmt, tree base, tree op, void *user_data)
+{
+  gimple_op_visitor *x = (gimple_op_visitor *)user_data;
+  return x->on_addr (stmt, base, op);
+}
+
 /* state_purge_map's ctor.  Walk all SSA names in all functions, building
-   a state_purge_per_ssa_name instance for each.  */
+   a state_purge_per_ssa_name instance for each.
+   Also, walk all loads and address-taken ops of local variables, building
+   a state_purge_per_decl as appropriate.  */
 
 state_purge_map::state_purge_map (const supergraph &sg,
+				  region_model_manager *mgr,
 				  logger *logger)
 : log_user (logger), m_sg (sg)
 {
@@ -78,18 +230,64 @@ state_purge_map::state_purge_map (const supergraph &sg,
 	  if (TREE_CODE (var) == VAR_DECL)
 	    if (VAR_DECL_IS_VIRTUAL_OPERAND (var))
 	      continue;
-	m_map.put (name, new state_purge_per_ssa_name (*this, name, fun));
+	m_ssa_map.put (name, new state_purge_per_ssa_name (*this, name, fun));
       }
   }
+
+  /* Find all uses of local vars.
+     We iterate through all function points, finding loads, stores, and
+     address-taken operations on locals, building a pair of worklists.  */
+  for (auto snode : sg.m_nodes)
+    {
+      if (logger)
+	log ("SN: %i", snode->m_index);
+      /* We ignore m_returning_call and phi nodes.  */
+      gimple *stmt;
+      unsigned i;
+      FOR_EACH_VEC_ELT (snode->m_stmts, i, stmt)
+	{
+	  function_point point (function_point::before_stmt (snode, i));
+	  gimple_op_visitor v (this, point, snode->get_function ());
+	  walk_stmt_load_store_addr_ops (stmt, &v,
+					 my_load_cb, my_store_cb, my_addr_cb);
+	}
+    }
+
+  /* Now iterate through the m_decl_map, processing each pair of worklists.  */
+  for (state_purge_map::decl_iterator iter = begin_decls ();
+       iter != end_decls ();
+       ++iter)
+    {
+      state_purge_per_decl *per_decl_data = (*iter).second;
+      per_decl_data->process_worklists (*this, mgr);
+    }
 }
 
 /* state_purge_map's dtor.  */
 
 state_purge_map::~state_purge_map ()
 {
-  for (iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
-    delete (*iter).second;
+  for (auto iter : m_ssa_map)
+    delete iter.second;
+  for (auto iter : m_decl_map)
+    delete iter.second;
 }
+
+/* Get the state_purge_per_decl for local DECL within FUN, creating it
+   if necessary.  */
+
+state_purge_per_decl &
+state_purge_map::get_or_create_data_for_decl (function *fun, tree decl)
+{
+  if (state_purge_per_decl **slot
+      = const_cast <decl_map_t&> (m_decl_map).get (decl))
+    return **slot;
+  state_purge_per_decl *result = new state_purge_per_decl (*this, decl, fun);
+  m_decl_map.put (decl, result);
+  return *result;
+}
+
+/* class state_purge_per_ssa_name : public state_purge_per_tree.  */
 
 /* state_purge_per_ssa_name's ctor.
 
@@ -103,7 +301,7 @@ state_purge_map::~state_purge_map ()
 state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 						    tree name,
 						    function *fun)
-: m_points_needing_name (), m_name (name), m_fun (fun)
+: state_purge_per_tree (fun), m_points_needing_name (), m_name (name)
 {
   LOG_FUNC (map.get_logger ());
 
@@ -270,7 +468,7 @@ state_purge_per_ssa_name::add_to_worklist (const function_point &point,
       logger->end_log_line ();
     }
 
-  gcc_assert (point.get_function () == m_fun);
+  gcc_assert (point.get_function () == get_function ());
   if (point.get_from_edge ())
     gcc_assert (point.get_from_edge ()->get_kind () == SUPEREDGE_CFG_EDGE);
 
@@ -470,6 +668,382 @@ state_purge_per_ssa_name::process_point (const function_point &point,
     }
 }
 
+/* class state_purge_per_decl : public state_purge_per_tree.  */
+
+/* state_purge_per_decl's ctor.  */
+
+state_purge_per_decl::state_purge_per_decl (const state_purge_map &map,
+					    tree decl,
+					    function *fun)
+: state_purge_per_tree (fun),
+  m_decl (decl)
+{
+  /* The RESULT_DECL is always needed at the end of its function. */
+  if (TREE_CODE (decl) == RESULT_DECL)
+    {
+      supernode *exit_snode = map.get_sg ().get_node_for_function_exit (fun);
+      add_needed_at (function_point::after_supernode (exit_snode));
+    }
+}
+
+/* Mark the value of the decl (or a subvalue within it) as being needed
+   at POINT.  */
+
+void
+state_purge_per_decl::add_needed_at (const function_point &point)
+{
+  m_points_needing_decl.add (point);
+}
+
+/* Mark that a pointer to the decl (or a region within it) is taken
+   at POINT.  */
+
+void
+state_purge_per_decl::add_pointed_to_at (const function_point &point)
+{
+  m_points_taking_address.add (point);
+}
+
+/* Process the worklists for this decl:
+   (a) walk backwards from points where we know the value of the decl
+   is needed, marking points until we get to a stmt that fully overwrites
+   the decl.
+   (b) walk forwards from points where the address of the decl is taken,
+   marking points as potentially needing the value of the decl.  */
+
+void
+state_purge_per_decl::process_worklists (const state_purge_map &map,
+					 region_model_manager *mgr)
+{
+  logger *logger = map.get_logger ();
+  LOG_SCOPE (logger);
+  if (logger)
+    logger->log ("decl: %qE within %qD", m_decl, get_fndecl ());
+
+  /* Worklist for walking backwards from uses.  */
+  {
+    auto_vec<function_point> worklist;
+    point_set_t seen;
+
+    /* Add all uses of the decl to the worklist.  */
+    for (auto iter : m_points_needing_decl)
+      worklist.safe_push (iter);
+
+    region_model model (mgr);
+    model.push_frame (get_function (), NULL, NULL);
+
+    /* Process worklist by walking backwards until we reach a stmt
+       that fully overwrites the decl.  */
+    {
+      log_scope s (logger, "processing worklist");
+      while (worklist.length () > 0)
+	{
+	  function_point point = worklist.pop ();
+	  process_point_backwards (point, &worklist, &seen, map, model);
+	}
+    }
+  }
+
+  /* Worklist for walking forwards from address-taken points.  */
+  {
+    auto_vec<function_point> worklist;
+    point_set_t seen;
+
+    /* Add all uses of the decl to the worklist.  */
+    for (auto iter : m_points_taking_address)
+      {
+	worklist.safe_push (iter);
+
+	/* Add to m_points_needing_decl (now that we traversed
+	   it above for the backward worklist).  */
+	m_points_needing_decl.add (iter);
+      }
+
+    /* Process worklist by walking forwards. */
+    {
+      log_scope s (logger, "processing worklist");
+      while (worklist.length () > 0)
+	{
+	  function_point point = worklist.pop ();
+	  process_point_forwards (point, &worklist, &seen, map);
+	}
+    }
+  }
+}
+
+/* Add POINT to *WORKLIST if the point is not already in *seen.
+   Add newly seen points to *SEEN and to m_points_needing_name.  */
+
+void
+state_purge_per_decl::add_to_worklist (const function_point &point,
+				       auto_vec<function_point> *worklist,
+				       point_set_t *seen,
+				       logger *logger)
+{
+  LOG_FUNC (logger);
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("point: '");
+      point.print (logger->get_printer (), format (false));
+      logger->log_partial ("' for worklist for %qE", m_decl);
+      logger->end_log_line ();
+    }
+
+  gcc_assert (point.get_function () == get_function ());
+  if (point.get_from_edge ())
+    gcc_assert (point.get_from_edge ()->get_kind () == SUPEREDGE_CFG_EDGE);
+
+  if (seen->contains (point))
+    {
+      if (logger)
+	logger->log ("already seen for %qE", m_decl);
+    }
+  else
+    {
+      if (logger)
+	logger->log ("not seen; adding to worklist for %qE", m_decl);
+      m_points_needing_decl.add (point);
+      seen->add (point);
+      worklist->safe_push (point);
+    }
+}
+
+/* Determine if REG_A and REG_B express writing to exactly the same
+   set of bits.
+   For example, when "s.field" is the only field of "s", and there's no
+   padding, this should return true.  */
+
+static bool
+same_binding_p (const region *reg_a, const region *reg_b,
+		store_manager *store_mgr)
+{
+  if (reg_a->get_base_region () != reg_b->get_base_region ())
+    return false;
+  const binding_key *bind_key_a = binding_key::make (store_mgr, reg_a);
+  const binding_key *bind_key_b = binding_key::make (store_mgr, reg_b);
+  return bind_key_a == bind_key_b;
+}
+
+/* Return true if STMT fully overwrites DECL.  */
+
+static bool
+fully_overwrites_p (const gimple *stmt, tree decl,
+		    const region_model &model)
+{
+  if (tree lhs = gimple_get_lhs (stmt))
+    {
+      /* Determine if LHS fully overwrites DECL.
+	 We can't just check for equality; consider the case of
+	 "s.field = EXPR;" where the stmt writes to the only field
+	 of "s", and there's no padding.  */
+      const region *lhs_reg = model.get_lvalue (lhs, NULL);
+      const region *decl_reg = model.get_lvalue (decl, NULL);
+      if (same_binding_p (lhs_reg, decl_reg,
+			  model.get_manager ()->get_store_manager ()))
+	return true;
+    }
+  return false;
+}
+
+/* Process POINT, popped from *WORKLIST.
+   Iterate over predecessors of POINT, adding to *WORKLIST and *SEEN,
+   until we get to a stmt that fully overwrites the decl.  */
+
+void
+state_purge_per_decl::
+process_point_backwards (const function_point &point,
+			 auto_vec<function_point> *worklist,
+			 point_set_t *seen,
+			 const state_purge_map &map,
+			 const region_model &model)
+{
+  logger *logger = map.get_logger ();
+  LOG_FUNC (logger);
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("considering point: '");
+      point.print (logger->get_printer (), format (false));
+      logger->log_partial ("' for %qE", m_decl);
+      logger->end_log_line ();
+    }
+  const supernode *snode = point.get_supernode ();
+
+  switch (point.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+
+    case PK_ORIGIN:
+      break;
+
+    case PK_BEFORE_SUPERNODE:
+      {
+	/* Add given pred to worklist.  */
+	if (point.get_from_edge ())
+	  {
+	    gcc_assert (point.get_from_edge ()->m_src);
+	    add_to_worklist
+	      (function_point::after_supernode (point.get_from_edge ()->m_src),
+	       worklist, seen, logger);
+	  }
+	else
+	  {
+	    /* Add any intraprocedually edge for a call.  */
+	    if (snode->m_returning_call)
+	    {
+	      gcall *returning_call = snode->m_returning_call;
+	      cgraph_edge *cedge
+		  = supergraph_call_edge (snode->m_fun,
+					  returning_call);
+	      if(cedge)
+		{
+		  superedge *sedge
+		    = map.get_sg ().get_intraprocedural_edge_for_call (cedge);
+		  gcc_assert (sedge);
+		  add_to_worklist
+		    (function_point::after_supernode (sedge->m_src),
+		     worklist, seen, logger);
+		}
+	      else
+		{
+		  supernode *callernode
+		    = map.get_sg ().get_supernode_for_stmt (returning_call);
+
+		  gcc_assert (callernode);
+		  add_to_worklist
+		    (function_point::after_supernode (callernode),
+		     worklist, seen, logger);
+		}
+	    }
+	  }
+      }
+      break;
+
+    case PK_BEFORE_STMT:
+      {
+	/* This is somewhat equivalent to how the SSA case handles
+	   def-stmts.  */
+	if (fully_overwrites_p (point.get_stmt (), m_decl, model))
+	  {
+	    if (logger)
+	      logger->log ("stmt fully overwrites %qE; terminating", m_decl);
+	    return;
+	  }
+	if (point.get_stmt_idx () > 0)
+	  add_to_worklist (function_point::before_stmt
+			     (snode, point.get_stmt_idx () - 1),
+			   worklist, seen, logger);
+	else
+	{
+	  /* Add before_supernode to worklist.  This captures the in-edge,
+	     so we have to do it once per in-edge.  */
+	  unsigned i;
+	  superedge *pred;
+	  FOR_EACH_VEC_ELT (snode->m_preds, i, pred)
+	    add_to_worklist (function_point::before_supernode (snode,
+							       pred),
+			     worklist, seen, logger);
+	}
+      }
+      break;
+
+    case PK_AFTER_SUPERNODE:
+      {
+	if (snode->m_stmts.length ())
+	  add_to_worklist
+	    (function_point::before_stmt (snode,
+					  snode->m_stmts.length () - 1),
+	     worklist, seen, logger);
+	else
+	  {
+	    /* Add before_supernode to worklist.  This captures the in-edge,
+	       so we have to do it once per in-edge.  */
+	    unsigned i;
+	    superedge *pred;
+	    FOR_EACH_VEC_ELT (snode->m_preds, i, pred)
+	      add_to_worklist (function_point::before_supernode (snode,
+								 pred),
+			       worklist, seen, logger);
+	  }
+      }
+      break;
+    }
+
+}
+
+/* Process POINT, popped from *WORKLIST.
+   Iterate over successors of POINT, adding to *WORKLIST and *SEEN.  */
+
+void
+state_purge_per_decl::
+process_point_forwards (const function_point &point,
+			auto_vec<function_point> *worklist,
+			point_set_t *seen,
+			const state_purge_map &map)
+{
+  logger *logger = map.get_logger ();
+  LOG_FUNC (logger);
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("considering point: '");
+      point.print (logger->get_printer (), format (false));
+      logger->log_partial ("' for %qE", m_decl);
+      logger->end_log_line ();
+    }
+  const supernode *snode = point.get_supernode ();
+
+  switch (point.get_kind ())
+    {
+    default:
+    case PK_ORIGIN:
+      gcc_unreachable ();
+
+    case PK_BEFORE_SUPERNODE:
+      {
+	function_point next = point.get_next ();
+	add_to_worklist (next, worklist, seen, logger);
+      }
+      break;
+
+    case PK_BEFORE_STMT:
+      {
+	/* Perhaps we should stop at a clobber of the decl,
+	   but that ought to purge state for us explicitly.  */
+	function_point next = point.get_next ();
+	add_to_worklist (next, worklist, seen, logger);
+      }
+      break;
+
+    case PK_AFTER_SUPERNODE:
+      {
+	/* Look at interprocedural out-edges.  */
+	unsigned i;
+	superedge *succ;
+	FOR_EACH_VEC_ELT (snode->m_succs, i, succ)
+	  {
+	    enum edge_kind kind = succ->get_kind ();
+	    if (kind == SUPEREDGE_CFG_EDGE
+		|| kind == SUPEREDGE_INTRAPROCEDURAL_CALL)
+	      add_to_worklist (function_point::before_supernode (succ->m_dest,
+								 succ),
+			       worklist, seen, logger);
+	  }
+      }
+      break;
+    }
+}
+
+/* Return true if the decl is needed at POINT.  */
+
+bool
+state_purge_per_decl::needed_at_point_p (const function_point &point) const
+{
+  return const_cast <point_set_t &> (m_points_needing_decl).contains (point);
+}
+
 /* class state_purge_annotator : public dot_annotator.  */
 
 /* Implementation of dot_annotator::add_node_annotations vfunc for
@@ -580,7 +1154,8 @@ state_purge_annotator::add_stmt_annotations (graphviz_out *gv,
   print_needed (gv, before_stmt, true);
 }
 
-/* Get the ssa names needed and not-needed at POINT, and print them to GV.
+/* Get the decls and SSA names needed and not-needed at POINT, and
+   print them to GV.
    If WITHIN_TABLE is true, print them within <TR> elements.  */
 
 void
@@ -590,8 +1165,8 @@ state_purge_annotator::print_needed (graphviz_out *gv,
 {
   auto_vec<tree> needed;
   auto_vec<tree> not_needed;
-  for (state_purge_map::iterator iter = m_map->begin ();
-       iter != m_map->end ();
+  for (state_purge_map::ssa_iterator iter = m_map->begin_ssas ();
+       iter != m_map->end_ssas ();
        ++iter)
     {
       tree name = (*iter).first;
@@ -602,6 +1177,20 @@ state_purge_annotator::print_needed (graphviz_out *gv,
 	    needed.safe_push (name);
 	  else
 	    not_needed.safe_push (name);
+	}
+    }
+  for (state_purge_map::decl_iterator iter = m_map->begin_decls ();
+       iter != m_map->end_decls ();
+       ++iter)
+    {
+      tree decl = (*iter).first;
+      state_purge_per_decl *per_decl_data = (*iter).second;
+      if (per_decl_data->get_function () == point.get_function ())
+	{
+	  if (per_decl_data->needed_at_point_p (point))
+	    needed.safe_push (decl);
+	  else
+	    not_needed.safe_push (decl);
 	}
     }
 

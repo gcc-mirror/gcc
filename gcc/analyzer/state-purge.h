@@ -70,17 +70,22 @@ pod_hash_traits<function_point>::is_empty (value_type v)
 
 namespace ana {
 
-/* The result of analyzing which SSA names can be purged from state at
+/* The result of analyzing which decls and SSA names can be purged from state at
    different points in the program, so that we can simplify program_state
    objects, in the hope of reducing state-blowup.  */
 
 class state_purge_map : public log_user
 {
 public:
-  typedef ordered_hash_map<tree, state_purge_per_ssa_name *> map_t;
-  typedef map_t::iterator iterator;
+  typedef ordered_hash_map<tree, state_purge_per_ssa_name *> ssa_map_t;
+  typedef ssa_map_t::iterator ssa_iterator;
 
-  state_purge_map (const supergraph &sg, logger *logger);
+  typedef ordered_hash_map<tree, state_purge_per_decl *> decl_map_t;
+  typedef decl_map_t::iterator decl_iterator;
+
+  state_purge_map (const supergraph &sg,
+		   region_model_manager *mgr,
+		   logger *logger);
   ~state_purge_map ();
 
   const state_purge_per_ssa_name &get_data_for_ssa_name (tree name) const
@@ -91,20 +96,58 @@ public:
 	gcc_assert (!VAR_DECL_IS_VIRTUAL_OPERAND (var));
 
     state_purge_per_ssa_name **slot
-      = const_cast <map_t&> (m_map).get (name);
+      = const_cast <ssa_map_t&> (m_ssa_map).get (name);
     return **slot;
   }
 
+  const state_purge_per_decl *get_any_data_for_decl (tree decl) const
+  {
+    gcc_assert (TREE_CODE (decl) == VAR_DECL
+		|| TREE_CODE (decl) == PARM_DECL
+		|| TREE_CODE (decl) == RESULT_DECL);
+    if (state_purge_per_decl **slot
+	= const_cast <decl_map_t&> (m_decl_map).get (decl))
+      return *slot;
+    else
+      return NULL;
+  }
+
+  state_purge_per_decl &get_or_create_data_for_decl (function *fun, tree decl);
+
   const supergraph &get_sg () const { return m_sg; }
 
-  iterator begin () const { return m_map.begin (); }
-  iterator end () const { return m_map.end (); }
+  ssa_iterator begin_ssas () const { return m_ssa_map.begin (); }
+  ssa_iterator end_ssas () const { return m_ssa_map.end (); }
+
+  decl_iterator begin_decls () const { return m_decl_map.begin (); }
+  decl_iterator end_decls () const { return m_decl_map.end (); }
 
 private:
   DISABLE_COPY_AND_ASSIGN (state_purge_map);
 
   const supergraph &m_sg;
-  map_t m_map;
+  ssa_map_t m_ssa_map;
+  decl_map_t m_decl_map;
+};
+
+  /* Base class for state_purge_per_ssa_name and state_purge_per_decl.  */
+
+class state_purge_per_tree
+{
+public:
+  function *get_function () const { return m_fun; }
+  tree get_fndecl () const { return m_fun->decl; }
+
+protected:
+  typedef hash_set<function_point> point_set_t;
+
+  state_purge_per_tree (function *fun)
+  : m_fun (fun)
+  {
+  }
+
+private:
+  function *m_fun;
 };
 
 /* The part of a state_purge_map relating to a specific SSA name.
@@ -114,7 +157,7 @@ private:
    their successor states, so that we can simplify program_state objects,
    in the hope of reducing state-blowup.  */
 
-class state_purge_per_ssa_name
+class state_purge_per_ssa_name : public state_purge_per_tree
 {
 public:
   state_purge_per_ssa_name (const state_purge_map &map,
@@ -122,8 +165,6 @@ public:
 			    function *fun);
 
   bool needed_at_point_p (const function_point &point) const;
-
-  function *get_function () const { return m_fun; }
 
 private:
   static function_point before_use_stmt (const state_purge_map &map,
@@ -137,10 +178,53 @@ private:
 		      auto_vec<function_point> *worklist,
 		      const state_purge_map &map);
 
-  typedef hash_set<function_point> point_set_t;
   point_set_t m_points_needing_name;
   tree m_name;
-  function *m_fun;
+};
+
+/* The part of a state_purge_map relating to a specific decl.
+
+   Analogous to state_purge_per_ssa_name, but for local decls.
+
+   This is more involved than the SSA name case, because we also need
+   to handle pointers and components.  */
+
+class state_purge_per_decl : public state_purge_per_tree
+{
+public:
+  state_purge_per_decl (const state_purge_map &map,
+			tree decl,
+			function *fun);
+
+  bool needed_at_point_p (const function_point &point) const;
+
+  void add_needed_at (const function_point &point);
+  void add_pointed_to_at (const function_point &point);
+  void process_worklists (const state_purge_map &map,
+			  region_model_manager *mgr);
+
+private:
+  static function_point before_use_stmt (const state_purge_map &map,
+					 const gimple *use_stmt);
+
+  void add_to_worklist (const function_point &point,
+			auto_vec<function_point> *worklist,
+			point_set_t *seen,
+			logger *logger);
+
+  void process_point_backwards (const function_point &point,
+				auto_vec<function_point> *worklist,
+				point_set_t *seen,
+				const state_purge_map &map,
+				const region_model &model);
+  void process_point_forwards (const function_point &point,
+			       auto_vec<function_point> *worklist,
+			       point_set_t *seen,
+			       const state_purge_map &map);
+
+  point_set_t m_points_needing_decl;
+  point_set_t m_points_taking_address;
+  tree m_decl;
 };
 
 /* Subclass of dot_annotator for use by -fdump-analyzer-state-purge.

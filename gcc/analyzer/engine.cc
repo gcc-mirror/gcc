@@ -5728,7 +5728,7 @@ impl_run_checkers (logger *logger)
   state_purge_map *purge_map = NULL;
 
   if (flag_analyzer_state_purge)
-    purge_map = new state_purge_map (sg, logger);
+    purge_map = new state_purge_map (sg, eng.get_model_manager (), logger);
 
   if (flag_dump_analyzer_supergraph)
     {

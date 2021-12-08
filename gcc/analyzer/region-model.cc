@@ -4148,39 +4148,35 @@ region_model::get_fndecl_for_call (const gcall *call,
 
 /* Would be much simpler to use a lambda here, if it were supported.  */
 
-struct append_ssa_names_cb_data
+struct append_regions_cb_data
 {
   const region_model *model;
   auto_vec<const decl_region *> *out;
 };
 
-/* Populate *OUT with all decl_regions for SSA names in the current
+/* Populate *OUT with all decl_regions in the current
    frame that have clusters within the store.  */
 
 void
 region_model::
-get_ssa_name_regions_for_current_frame (auto_vec<const decl_region *> *out)
-  const
+get_regions_for_current_frame (auto_vec<const decl_region *> *out) const
 {
-  append_ssa_names_cb_data data;
+  append_regions_cb_data data;
   data.model = this;
   data.out = out;
-  m_store.for_each_cluster (append_ssa_names_cb, &data);
+  m_store.for_each_cluster (append_regions_cb, &data);
 }
 
-/* Implementation detail of get_ssa_name_regions_for_current_frame.  */
+/* Implementation detail of get_regions_for_current_frame.  */
 
 void
-region_model::append_ssa_names_cb (const region *base_reg,
-				   append_ssa_names_cb_data *cb_data)
+region_model::append_regions_cb (const region *base_reg,
+				 append_regions_cb_data *cb_data)
 {
   if (base_reg->get_parent_region () != cb_data->model->m_current_frame)
     return;
   if (const decl_region *decl_reg = base_reg->dyn_cast_decl_region ())
-    {
-      if (TREE_CODE (decl_reg->get_decl ()) == SSA_NAME)
-	cb_data->out->safe_push (decl_reg);
-    }
+    cb_data->out->safe_push (decl_reg);
 }
 
 /* Return a new region describing a heap-allocated block of memory.

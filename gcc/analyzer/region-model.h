@@ -494,7 +494,7 @@ private:
   auto_delete_vec<region> m_managed_dynamic_regions;
 };
 
-struct append_ssa_names_cb_data;
+struct append_regions_cb_data;
 
 /* Helper class for handling calls to functions with known behavior.
    Implemented in region-model-impl-calls.c.  */
@@ -756,10 +756,9 @@ class region_model
   tree get_fndecl_for_call (const gcall *call,
 			    region_model_context *ctxt);
 
-  void get_ssa_name_regions_for_current_frame
-    (auto_vec<const decl_region *> *out) const;
-  static void append_ssa_names_cb (const region *base_reg,
-				   struct append_ssa_names_cb_data *data);
+  void get_regions_for_current_frame (auto_vec<const decl_region *> *out) const;
+  static void append_regions_cb (const region *base_reg,
+				 struct append_regions_cb_data *data);
 
   const svalue *get_store_value (const region *reg,
 				 region_model_context *ctxt) const;
