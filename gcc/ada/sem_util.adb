@@ -10926,7 +10926,12 @@ package body Sem_Util is
    ----------------------
 
    function Get_Fullest_View
-     (E : Entity_Id; Include_PAT : Boolean := True) return Entity_Id is
+     (E           : Entity_Id;
+      Include_PAT : Boolean := True;
+      Recurse     : Boolean := True) return Entity_Id
+   is
+      New_E : Entity_Id := Empty;
+
    begin
       --  Prevent cascaded errors
 
@@ -10934,47 +10939,45 @@ package body Sem_Util is
          return E;
       end if;
 
-      --  Strictly speaking, the recursion below isn't necessary, but
-      --  it's both simplest and safest.
+      --  Look at each kind of entity to see where we may need to go deeper.
 
       case Ekind (E) is
          when Incomplete_Kind =>
             if From_Limited_With (E) then
-               return Get_Fullest_View (Non_Limited_View (E), Include_PAT);
+               New_E := Non_Limited_View (E);
             elsif Present (Full_View (E)) then
-               return Get_Fullest_View (Full_View (E), Include_PAT);
+               New_E := Full_View (E);
             elsif Ekind (E) = E_Incomplete_Subtype then
-               return Get_Fullest_View (Etype (E));
+               New_E := Etype (E);
             end if;
 
          when Private_Kind =>
             if Present (Underlying_Full_View (E)) then
-               return
-                 Get_Fullest_View (Underlying_Full_View (E), Include_PAT);
+               New_E := Underlying_Full_View (E);
             elsif Present (Full_View (E)) then
-               return Get_Fullest_View (Full_View (E), Include_PAT);
+               New_E := Full_View (E);
             elsif Etype (E) /= E then
-               return Get_Fullest_View (Etype (E), Include_PAT);
+               New_E := Etype (E);
             end if;
 
          when Array_Kind =>
             if Include_PAT and then Present (Packed_Array_Impl_Type (E)) then
-               return Get_Fullest_View (Packed_Array_Impl_Type (E));
+               New_E := Packed_Array_Impl_Type (E);
             end if;
 
          when E_Record_Subtype =>
             if Present (Cloned_Subtype (E)) then
-               return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
+               New_E := Cloned_Subtype (E);
             end if;
 
          when E_Class_Wide_Type =>
-            return Get_Fullest_View (Root_Type (E), Include_PAT);
+            New_E := Root_Type (E);
 
          when E_Class_Wide_Subtype =>
             if Present (Equivalent_Type (E)) then
-               return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
+               New_E := Equivalent_Type (E);
             elsif Present (Cloned_Subtype (E)) then
-               return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
+               New_E := Cloned_Subtype (E);
             end if;
 
          when E_Protected_Subtype
@@ -10983,25 +10986,29 @@ package body Sem_Util is
             | E_Task_Type
          =>
             if Present (Corresponding_Record_Type (E)) then
-               return Get_Fullest_View (Corresponding_Record_Type (E),
-                                        Include_PAT);
+               New_E := Corresponding_Record_Type (E);
             end if;
 
          when E_Access_Protected_Subprogram_Type
             | E_Anonymous_Access_Protected_Subprogram_Type
          =>
             if Present (Equivalent_Type (E)) then
-               return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
+               New_E := Equivalent_Type (E);
             end if;
 
          when E_Access_Subtype =>
-            return Get_Fullest_View (Base_Type (E), Include_PAT);
+            New_E := Base_Type (E);
 
          when others =>
             null;
       end case;
 
-      return E;
+      --  If we found a fuller view, either return it or recurse. Otherwise,
+      --  return our input.
+
+      return (if    No (New_E) then E
+              elsif Recurse then Get_Fullest_View (New_E, Include_PAT, Recurse)
+              else  New_E);
    end Get_Fullest_View;
 
    ------------------------
