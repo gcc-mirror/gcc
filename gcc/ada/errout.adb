@@ -3254,7 +3254,7 @@ package body Errout is
       function Check_For_Warning (N : Node_Id) return Traverse_Result;
       --  This function checks one node for a possible warning message
 
-      function Check_All_Warnings is new Traverse_Func (Check_For_Warning);
+      procedure Check_All_Warnings is new Traverse_Proc (Check_For_Warning);
       --  This defines the traversal operation
 
       -----------------------
@@ -3341,37 +3341,23 @@ package body Errout is
             --  the current tree. Given that we are in unreachable code, this
             --  modification to the tree is harmless.
 
-            declare
-               Status : Traverse_Final_Result;
-
-            begin
-               if Is_List_Member (N) then
-                  Set_Condition (N, Original_Node (N));
-                  Status := Check_All_Warnings (Condition (N));
-               else
-                  Rewrite (N, Original_Node (N));
-                  Status := Check_All_Warnings (N);
-               end if;
-
-               return Status;
-            end;
-
-         else
-            return OK;
+            if Is_List_Member (N) then
+               Set_Condition (N, Original_Node (N));
+               Check_All_Warnings (Condition (N));
+            else
+               Rewrite (N, Original_Node (N));
+               Check_All_Warnings (N);
+            end if;
          end if;
+
+         return OK;
       end Check_For_Warning;
 
    --  Start of processing for Remove_Warning_Messages
 
    begin
       if Warnings_Detected /= 0 then
-         declare
-            Discard : Traverse_Final_Result;
-            pragma Warnings (Off, Discard);
-
-         begin
-            Discard := Check_All_Warnings (N);
-         end;
+         Check_All_Warnings (N);
       end if;
    end Remove_Warning_Messages;
 
