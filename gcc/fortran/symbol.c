@@ -5253,6 +5253,9 @@ gfc_sym_get_dummy_args (gfc_symbol *sym)
 {
   gfc_formal_arglist *dummies;
 
+  if (sym == NULL)
+    return NULL;
+
   dummies = sym->formal;
   if (dummies == NULL && sym->ts.interface != NULL)
     dummies = sym->ts.interface->formal;
