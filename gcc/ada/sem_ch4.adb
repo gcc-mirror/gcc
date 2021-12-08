@@ -9597,31 +9597,29 @@ package body Sem_Ch4 is
          begin
             Error := False;
 
-            if Is_Non_Empty_List (Intface_List) then
-               Intface := First (Intface_List);
-               while Present (Intface) loop
+            Intface := First (Intface_List);
+            while Present (Intface) loop
 
-                  --  Look for acceptable class-wide homonyms associated with
-                  --  the interface.
+               --  Look for acceptable class-wide homonyms associated with the
+               --  interface.
 
-                  Traverse_Homonyms (Etype (Intface), Error);
+               Traverse_Homonyms (Etype (Intface), Error);
 
-                  if Error then
-                     return;
-                  end if;
+               if Error then
+                  return;
+               end if;
 
-                  --  Continue the search by looking at each of the interface's
-                  --  associated interface ancestors.
+               --  Continue the search by looking at each of the interface's
+               --  associated interface ancestors.
 
-                  Traverse_Interfaces (Etype (Intface), Error);
+               Traverse_Interfaces (Etype (Intface), Error);
 
-                  if Error then
-                     return;
-                  end if;
+               if Error then
+                  return;
+               end if;
 
-                  Next (Intface);
-               end loop;
-            end if;
+               Next (Intface);
+            end loop;
          end Traverse_Interfaces;
 
       --  Start of processing for Try_Class_Wide_Operation

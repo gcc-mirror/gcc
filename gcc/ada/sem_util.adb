@@ -6046,31 +6046,29 @@ package body Sem_Util is
 
          --  Traverse the graph of ancestor interfaces
 
-         if Is_Non_Empty_List (Abstract_Interface_List (Full_T)) then
-            Id := First (Abstract_Interface_List (Full_T));
-            while Present (Id) loop
-               Iface := Etype (Id);
+         Id := First (Abstract_Interface_List (Full_T));
+         while Present (Id) loop
+            Iface := Etype (Id);
 
-               --  Protect against wrong uses. For example:
-               --    type I is interface;
-               --    type O is tagged null record;
-               --    type Wrong is new I and O with null record; -- ERROR
+            --  Protect against wrong uses. For example:
+            --    type I is interface;
+            --    type O is tagged null record;
+            --    type Wrong is new I and O with null record; -- ERROR
 
-               if Is_Interface (Iface) then
-                  if Exclude_Parents
-                    and then Etype (T) /= T
-                    and then Interface_Present_In_Ancestor (Etype (T), Iface)
-                  then
-                     null;
-                  else
-                     Collect (Iface);
-                     Append_Unique_Elmt (Iface, Ifaces_List);
-                  end if;
+            if Is_Interface (Iface) then
+               if Exclude_Parents
+                 and then Etype (T) /= T
+                 and then Interface_Present_In_Ancestor (Etype (T), Iface)
+               then
+                  null;
+               else
+                  Collect (Iface);
+                  Append_Unique_Elmt (Iface, Ifaces_List);
                end if;
+            end if;
 
-               Next (Id);
-            end loop;
-         end if;
+            Next (Id);
+         end loop;
       end Collect;
 
    --  Start of processing for Collect_Interfaces
@@ -13024,18 +13022,15 @@ package body Sem_Util is
       Node : Node_Id;
 
    begin
-      if Is_Non_Empty_List (L) then
-         Node := First (L);
+      Node := First (L);
 
-         loop
-            if Nkind (Node) not in N_Null_Statement | N_Call_Marker then
-               return True;
-            end if;
+      while Present (Node) loop
+         if Nkind (Node) not in N_Null_Statement | N_Call_Marker then
+            return True;
+         end if;
 
-            Next (Node);
-            exit when Node = Empty;
-         end loop;
-      end if;
+         Next (Node);
+      end loop;
 
       return False;
    end Has_Non_Null_Statements;
@@ -13094,28 +13089,26 @@ package body Sem_Util is
       Node : Node_Id;
 
    begin
-      if Is_Non_Empty_List (L) then
-         Node := First (L);
+      Node := First (L);
 
-         loop
-            case Nkind (Node) is
-               when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
-                  null;
-               when N_Object_Declaration =>
-                  if Present (Expression (Node))
-                    and then not Side_Effect_Free (Expression (Node))
-                  then
-                     return False;
-                  end if;
+      while Present (Node) loop
+         case Nkind (Node) is
+            when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
+               null;
 
-               when others =>
+            when N_Object_Declaration =>
+               if Present (Expression (Node))
+                 and then not Side_Effect_Free (Expression (Node))
+               then
                   return False;
-            end case;
+               end if;
 
-            Next (Node);
-            exit when Node = Empty;
-         end loop;
-      end if;
+            when others =>
+               return False;
+         end case;
+
+         Next (Node);
+      end loop;
 
       return True;
    end Side_Effect_Free_Statements;

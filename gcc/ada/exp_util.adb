@@ -9495,14 +9495,12 @@ package body Exp_Util is
    begin
       W := Warn;
 
-      if Is_Non_Empty_List (L) then
-         N := First (L);
-         while Present (N) loop
-            Kill_Dead_Code (N, W);
-            W := False;
-            Next (N);
-         end loop;
-      end if;
+      N := First (L);
+      while Present (N) loop
+         Kill_Dead_Code (N, W);
+         W := False;
+         Next (N);
+      end loop;
    end Kill_Dead_Code;
 
    -----------------------------

@@ -9351,13 +9351,11 @@ package body Sem_Ch3 is
          declare
             Iface : Node_Id;
          begin
-            if Is_Non_Empty_List (Interface_List (Type_Def)) then
-               Iface := First (Interface_List (Type_Def));
-               while Present (Iface) loop
-                  Freeze_Before (N, Etype (Iface));
-                  Next (Iface);
-               end loop;
-            end if;
+            Iface := First (Interface_List (Type_Def));
+            while Present (Iface) loop
+               Freeze_Before (N, Etype (Iface));
+               Next (Iface);
+            end loop;
          end;
       end if;
 

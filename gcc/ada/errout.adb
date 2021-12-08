@@ -3378,13 +3378,11 @@ package body Errout is
    procedure Remove_Warning_Messages (L : List_Id) is
       Stat : Node_Id;
    begin
-      if Is_Non_Empty_List (L) then
-         Stat := First (L);
-         while Present (Stat) loop
-            Remove_Warning_Messages (Stat);
-            Next (Stat);
-         end loop;
-      end if;
+      Stat := First (L);
+      while Present (Stat) loop
+         Remove_Warning_Messages (Stat);
+         Next (Stat);
+      end loop;
    end Remove_Warning_Messages;
 
    --------------------

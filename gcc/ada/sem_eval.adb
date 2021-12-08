@@ -7479,13 +7479,11 @@ package body Sem_Eval is
       procedure Why_Not_Static_List (L : List_Id) is
          N : Node_Id;
       begin
-         if Is_Non_Empty_List (L) then
-            N := First (L);
-            while Present (N) loop
-               Why_Not_Static (N);
-               Next (N);
-            end loop;
-         end if;
+         N := First (L);
+         while Present (N) loop
+            Why_Not_Static (N);
+            Next (N);
+         end loop;
       end Why_Not_Static_List;
 
    --  Start of processing for Why_Not_Static
