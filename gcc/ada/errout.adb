@@ -1240,10 +1240,13 @@ package body Errout is
                       or else
                     Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
 
-      --  Propagate Warn_Err to this message and preceding continuations
+      --  Propagate Warn_Err to this message and preceding continuations.
+      --  Likewise, propagate Is_Warning_Msg, because the current continued
+      --  message could have been escalated from warning to error.
 
       for J in reverse 1 .. Errors.Last loop
          Errors.Table (J).Warn_Err := Warn_Err;
+         Errors.Table (J).Warn     := Is_Warning_Msg;
          exit when not Errors.Table (J).Msg_Cont;
       end loop;
 
