@@ -116,6 +116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_in 		= 1L << 3,
       _S_out 		= 1L << 4,
       _S_trunc 		= 1L << 5,
+      _S_noreplace 	= 1L << 6,
       _S_ios_openmode_end = 1L << 16,
       _S_ios_openmode_max = __INT_MAX__,
       _S_ios_openmode_min = ~__INT_MAX__
@@ -465,6 +466,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Truncate an existing stream when opening.  Default for @c ofstream.
     static const openmode trunc =	_S_trunc;
+
+    static const openmode __noreplace =	_S_noreplace;
+
+#if __cplusplus >= 202100L
+#define __cpp_lib_ios_noreplace 202200L
+    /// Open a file in exclusive mode.
+    static const openmode noreplace =	_S_noreplace;
+#endif
 
     // 27.4.2.1.5  Type ios_base::seekdir
     /**
