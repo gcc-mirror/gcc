@@ -1,3 +1,13 @@
+2021-12-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95009
+	* typeck.c (is_bitfield_expr_with_lowered_type) <case MODIFY_EXPR>:
+	Handle UNARY_PLUS_EXPR, NEGATE_EXPR, NON_LVALUE_EXPR, BIT_NOT_EXPR,
+	P*CREMENT_EXPR too.
+
 2021-12-02  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

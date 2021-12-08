@@ -1,3 +1,12 @@
+2021-12-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95009
+	* g++.dg/cpp0x/decltype-bitfield1.C: New test.
+	* g++.dg/cpp0x/decltype-bitfield2.C: New test.
+
 2021-12-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
