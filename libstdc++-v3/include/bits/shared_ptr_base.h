@@ -325,8 +325,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool __aligned = __alignof(long long) <= alignof(void*);
       if _GLIBCXX17_CONSTEXPR (__lock_free && __double_word && __aligned)
 	{
-	  constexpr long long __unique_ref
-	    = 1LL + (1LL << (__CHAR_BIT__ * sizeof(_Atomic_word)));
+	  constexpr int __wordbits = __CHAR_BIT__ * sizeof(_Atomic_word);
+	  constexpr int __shiftbits = __double_word ? __wordbits : 0;
+	  constexpr long long __unique_ref = 1LL + (1LL << __shiftbits);
 	  auto __both_counts = reinterpret_cast<long long*>(&_M_use_count);
 
 	  _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count);
