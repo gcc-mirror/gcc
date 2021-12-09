@@ -902,6 +902,7 @@ package body Erroutc is
          Is_Serious_Error     := True;
          Is_Unconditional_Msg := False;
          Is_Warning_Msg       := False;
+         Is_Runtime_Raise     := False;
 
          --  Check style message
 

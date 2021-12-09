@@ -217,6 +217,7 @@ package body Errutil is
             Info                => Is_Info_Msg,
             Check               => Is_Check_Msg,
             Warn_Err            => Warning_Mode = Treat_As_Error,
+            Warn_Runtime_Raise  => Is_Runtime_Raise,
             Warn_Chr            => Warning_Msg_Char,
             Style               => Is_Style_Msg,
             Serious             => Is_Serious_Error,

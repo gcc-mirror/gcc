@@ -1224,6 +1224,7 @@ package body Errout is
           Check               => Is_Check_Msg,
           Warn_Err            => False, -- reset below
           Warn_Chr            => Warning_Msg_Char,
+          Warn_Runtime_Raise  => Is_Runtime_Raise,
           Style               => Is_Style_Msg,
           Serious             => Is_Serious_Error,
           Uncond              => Is_Unconditional_Msg,
@@ -1241,12 +1242,14 @@ package body Errout is
                     Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg)));
 
       --  Propagate Warn_Err to this message and preceding continuations.
-      --  Likewise, propagate Is_Warning_Msg, because the current continued
-      --  message could have been escalated from warning to error.
+      --  Likewise, propagate Is_Warning_Msg and Is_Runtime_Raise, because the
+      --  current continued message could have been escalated from warning to
+      --  error.
 
       for J in reverse 1 .. Errors.Last loop
-         Errors.Table (J).Warn_Err := Warn_Err;
-         Errors.Table (J).Warn     := Is_Warning_Msg;
+         Errors.Table (J).Warn_Err           := Warn_Err;
+         Errors.Table (J).Warn               := Is_Warning_Msg;
+         Errors.Table (J).Warn_Runtime_Raise := Is_Runtime_Raise;
          exit when not Errors.Table (J).Msg_Cont;
       end loop;
 
@@ -3290,13 +3293,17 @@ package body Errout is
                --  not remove style messages here. They are warning messages
                --  but not ones we want removed in this context.
 
-               and then Errors.Table (E).Warn
+               and then (Errors.Table (E).Warn
+                           or else
+                         Errors.Table (E).Warn_Runtime_Raise)
 
                --  Don't remove unconditional messages
 
                and then not Errors.Table (E).Uncond
             then
-               Warnings_Detected := Warnings_Detected - 1;
+               if Errors.Table (E).Warn then
+                  Warnings_Detected := Warnings_Detected - 1;
+               end if;
 
                if Errors.Table (E).Info then
                   Warning_Info_Messages := Warning_Info_Messages - 1;
@@ -4072,7 +4079,8 @@ package body Errout is
                if Is_Warning_Msg
                  and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
                then
-                  Is_Warning_Msg := False;
+                  Is_Warning_Msg   := False;
+                  Is_Runtime_Raise := True;
                end if;
 
                if Is_Warning_Msg then
