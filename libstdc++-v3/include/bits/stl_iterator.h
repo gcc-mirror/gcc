@@ -506,6 +506,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<=>(const reverse_iterator<_IteratorL>& __x,
 		const reverse_iterator<_IteratorR>& __y)
     { return __y.base() <=> __x.base(); }
+
+  // Additional, non-standard overloads to avoid ambiguities with greedy,
+  // unconstrained overloads in associated namespaces.
+
+  template<typename _Iterator>
+    constexpr bool
+    operator==(const reverse_iterator<_Iterator>& __x,
+	       const reverse_iterator<_Iterator>& __y)
+    requires requires { { __x.base() == __y.base() } -> convertible_to<bool>; }
+    { return __x.base() == __y.base(); }
+
+  template<three_way_comparable _Iterator>
+    constexpr compare_three_way_result_t<_Iterator, _Iterator>
+    operator<=>(const reverse_iterator<_Iterator>& __x,
+		const reverse_iterator<_Iterator>& __y)
+    { return __y.base() <=> __x.base(); }
 #endif // C++20
   ///@}
 
@@ -1082,6 +1098,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		const __normal_iterator<_IteratorR, _Container>& __rhs)
     noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
     { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
+
+  template<typename _Iterator, typename _Container>
+    constexpr bool
+    operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
+	       const __normal_iterator<_Iterator, _Container>& __rhs)
+    noexcept(noexcept(__lhs.base() == __rhs.base()))
+    requires requires {
+      { __lhs.base() == __rhs.base() } -> std::convertible_to<bool>;
+    }
+    { return __lhs.base() == __rhs.base(); }
+
+  template<typename _Iterator, typename _Container>
+    constexpr std::__detail::__synth3way_t<_Iterator>
+    operator<=>(const __normal_iterator<_Iterator, _Container>& __lhs,
+		const __normal_iterator<_Iterator, _Container>& __rhs)
+    noexcept(noexcept(std::__detail::__synth3way(__lhs.base(), __rhs.base())))
+    { return std::__detail::__synth3way(__lhs.base(), __rhs.base()); }
 #else
    // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
@@ -1539,13 +1572,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     { return !(__x < __y); }
 
-#if ! (__cplusplus > 201703L && __cpp_lib_concepts)
   // Note: See __normal_iterator operators note from Gaby to understand
   // why we have these extra overloads for some move_iterator operators.
-
-  // These extra overloads are not needed in C++20, because the ones above
-  // are constrained with a requires-clause and so overload resolution will
-  // prefer them to greedy unconstrained function templates.
 
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
@@ -1553,6 +1581,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const move_iterator<_Iterator>& __y)
     { return __x.base() == __y.base(); }
 
+#if __cpp_lib_three_way_comparison
+  template<three_way_comparable _Iterator>
+    constexpr compare_three_way_result_t<_Iterator>
+    operator<=>(const move_iterator<_Iterator>& __x,
+		const move_iterator<_Iterator>& __y)
+    { return __x.base() <=> __y.base(); }
+#else
   template<typename _Iterator>
     inline _GLIBCXX17_CONSTEXPR bool
     operator!=(const move_iterator<_Iterator>& __x,
