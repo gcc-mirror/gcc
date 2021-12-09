@@ -1,3 +1,75 @@
+2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103609
+	* gfortran.dg/pr103609.f90: New test.
+
+2021-12-08  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/pru_irq_map.c: New test.
+
+2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103610
+	* gfortran.dg/shape_11.f90: New test.
+
+2021-12-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/loop-unswitch-1.c: Adjust test-case based on
+	dump_printf_loc.
+	* gcc.dg/loop-unswitch-2.c: Likewise.
+	* gcc.dg/loop-unswitch-3.c: Likewise.
+	* gcc.dg/loop-unswitch-4.c: Likewise.
+	* gcc.dg/loop-unswitch-5.c: Likewise.
+
+2021-12-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/sibcall-1.c, gcc.dg/sibcall-10.c,
+	gcc.dg/sibcall-2.c, gcc.dg/sibcall-3.c,
+	gcc.dg/sibcall-4.c, gcc.dg/sibcall-9.c: Replace
+	attribute "noinline" with "noipa".
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/goacc/deep-copy-arrayofstruct.c: Adjust testcase.
+	* c-c++-common/gomp/target-enter-data-1.c: New testcase.
+	* c-c++-common/gomp/target-implicit-map-2.c: New testcase.
+
+2021-12-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/exttrunc-2.c: New test case.
+	* gcc.target/nvptx/exttrunc-3.c: New test case.
+	* gcc.target/nvptx/exttrunc-4.c: New test case.
+	* gcc.target/nvptx/exttrunc-5.c: New test case.
+	* gcc.target/nvptx/exttrunc-6.c: New test case.
+
+2021-12-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/exttrunc-1.c: New test case.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* gcc.dg/gomp/target-3.c: New testcase.
+	* g++.dg/gomp/target-3.C: New testcase.
+	* g++.dg/gomp/target-lambda-1.C: New testcase.
+	* g++.dg/gomp/target-lambda-2.C: New testcase.
+	* g++.dg/gomp/target-this-1.C: New testcase.
+	* g++.dg/gomp/target-this-2.C: New testcase.
+	* g++.dg/gomp/target-this-3.C: New testcase.
+	* g++.dg/gomp/target-this-4.C: New testcase.
+	* g++.dg/gomp/target-this-5.C: New testcase.
+	* g++.dg/gomp/this-2.C: Adjust testcase.
+
+2021-12-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/100738
+	* g++.target/i386/pr100738-1.C: New test.
+
+2021-12-08  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/103149
+	* gcc.target/aarch64/pr103149.c: New.
+
 2021-12-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103607

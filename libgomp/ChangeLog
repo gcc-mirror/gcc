@@ -1,3 +1,45 @@
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Make sure attached pointer is
+	not overwritten during cross-host/device copying.
+	(gomp_update): Likewise.
+	(gomp_exit_data): Likewise.
+	* testsuite/libgomp.c++/target-11.C: Adjust testcase.
+	* testsuite/libgomp.c++/target-12.C: Likewise.
+	* testsuite/libgomp.c++/target-15.C: Likewise.
+	* testsuite/libgomp.c++/target-16.C: Likewise.
+	* testsuite/libgomp.c++/target-17.C: Likewise.
+	* testsuite/libgomp.c++/target-21.C: Likewise.
+	* testsuite/libgomp.c++/target-23.C: Likewise.
+	* testsuite/libgomp.c/target-23.c: Likewise.
+	* testsuite/libgomp.c/target-29.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-2.c: New testcase.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* libgomp.h (gomp_attach_pointer): Add bool parameter.
+	* oacc-mem.c (acc_attach_async): Update call to gomp_attach_pointer.
+	(goacc_enter_data_internal): Likewise.
+	* target.c (gomp_map_vars_existing): Update assert condition to
+	include GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION.
+	(gomp_map_pointer): Add 'bool allow_zero_length_array_sections'
+	parameter, add support for mapping a pointer with NULL target.
+	(gomp_attach_pointer): Add 'bool allow_zero_length_array_sections'
+	parameter, add support for attaching a pointer with NULL target.
+	(gomp_map_vars_internal): Update calls to gomp_map_pointer and
+	gomp_attach_pointer, add handling for
+	GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION, and
+	GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION cases.
+	* testsuite/libgomp.c++/target-23.C: New testcase.
+	* testsuite/libgomp.c++/target-lambda-1.C: New testcase.
+	* testsuite/libgomp.c++/target-lambda-2.C: New testcase.
+	* testsuite/libgomp.c++/target-this-1.C: New testcase.
+	* testsuite/libgomp.c++/target-this-2.C: New testcase.
+	* testsuite/libgomp.c++/target-this-3.C: New testcase.
+	* testsuite/libgomp.c++/target-this-4.C: New testcase.
+	* testsuite/libgomp.c++/target-this-5.C: New testcase.
+
 2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (OpenMP 5.1): Update status.

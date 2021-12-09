@@ -1,3 +1,28 @@
+2021-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_release()):
+	Make shift width conditional on __double_word condition.
+
+2021-12-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/deque (erase_if): Use _GLIBCXX_STD_C container reference and
+	__niter_wrap to limit _GLIBCXX_DEBUG mode impact.
+	* include/std/vector (erase_if): Likewise.
+
+2021-12-08  Maged Michael  <maged.michael@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_TSAN): Define macro
+	indicating that TSan is in use.
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_release):
+	Replace definition in primary template with explicit
+	specializations for _S_mutex and _S_atomic policies.
+	(_Sp_counted_base<_S_mutex>::_M_release): New specialization.
+	(_Sp_counted_base<_S_atomic>::_M_release): New specialization,
+	using a single atomic load to access both reference counts at
+	once.
+	(_Sp_counted_base::_M_release_last_use): New member function.
+
 2021-12-07  Tamar Christina  <tamar.christina@arm.com>
 
 	Revert:

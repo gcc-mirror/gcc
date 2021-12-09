@@ -1,3 +1,20 @@
+2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103609
+	* symbol.c (gfc_sym_get_dummy_args): Catch NULL pointer
+	dereference.
+
+2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103610
+	* array.c (spec_dimen_size): Fix simplification of SHAPE:
+	dimensions must be non-negative.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_array_section): Do not generate
+	GOMP_MAP_ALWAYS_POINTER map for main array maps of ARRAY_TYPE type.
+
 2021-12-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103607

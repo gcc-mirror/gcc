@@ -1,3 +1,17 @@
+2021-12-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103558
+	* libdruntime/MERGE: Merge upstream druntime 178c44ff.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_LINUX): Add
+	core/sys/linux/syscalls.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/pthread_np.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos 574bf883b.
+	* src/Makefile.am (D_EXTRA_DFLAGS): Add -fpreview=fieldwise.
+	* src/Makefile.in: Regenerate.
+	* testsuite/libphobos.exceptions/assert_fail.d: Update test.
+	* testsuite/libphobos.betterc/test22336.d: New test.
+
 2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/core/thread/osthread.d (callWithStackShell): Push all
