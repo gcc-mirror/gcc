@@ -225,6 +225,7 @@ namespace std
 
     /// @cond undocumented
     template<typename _Ex>
+      _GLIBCXX_CDTOR_CALLABI
       inline void
       __dest_thunk(void* __x)
       { static_cast<_Ex*>(__x)->~_Ex(); }
@@ -233,28 +234,28 @@ namespace std
   } // namespace __exception_ptr
 
   /// Obtain an exception_ptr pointing to a copy of the supplied object.
+#if (__cplusplus >= 201103L && __cpp_rtti) || __cpp_exceptions
   template<typename _Ex>
-    exception_ptr 
+    exception_ptr
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
-#if __cpp_exceptions && __cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI \
-      && __cplusplus >= 201103L
-      using _Ex2 = typename remove_reference<_Ex>::type;
+#if __cplusplus >= 201103L && __cpp_rtti
+      using _Ex2 = typename decay<_Ex>::type;
       void* __e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
       (void) __cxxabiv1::__cxa_init_primary_exception(
 	  __e, const_cast<std::type_info*>(&typeid(_Ex)),
 	  __exception_ptr::__dest_thunk<_Ex2>);
-      try
+      __try
 	{
-	  ::new (__e) _Ex2(std::forward<_Ex>(__ex));
-          return exception_ptr(__e);
+	  ::new (__e) _Ex2(__ex);
+	  return exception_ptr(__e);
 	}
-      catch(...)
+      __catch(...)
 	{
 	  __cxxabiv1::__cxa_free_exception(__e);
 	  return current_exception();
 	}
-#elif __cpp_exceptions
+#else
       try
 	{
           throw __ex;
@@ -263,10 +264,17 @@ namespace std
 	{
 	  return current_exception();
 	}
-#else // no RTTI and no exceptions
-      return exception_ptr();
 #endif
     }
+#else // no RTTI and no exceptions
+  // This is always_inline so the linker will never use this useless definition
+  // instead of a working one compiled with RTTI and/or exceptions enabled.
+  template<typename _Ex>
+    __attribute__ ((__always_inline__))
+    exception_ptr
+    make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT
+    { return exception_ptr(); }
+#endif
 
 #undef _GLIBCXX_EH_PTR_USED
 
