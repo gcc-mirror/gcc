@@ -2399,7 +2399,7 @@ PREDEFINED             = __cplusplus=202002L \
                          "__has_builtin(x)=1" \
                          _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP \
                          _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE \
-                         _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED \
+                         _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED \
                          _GLIBCXX_HAVE_BUILTIN_LAUNDER \
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this

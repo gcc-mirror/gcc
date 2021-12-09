@@ -1458,7 +1458,7 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
   switch (option->var_type)
     {
-    case CLVC_BOOLEAN:
+    case CLVC_INTEGER:
 	if (option->cl_host_wide_int)
 	  {
 	    *(HOST_WIDE_INT *) flag_var = value;
@@ -1586,7 +1586,8 @@ option_flag_var (int opt_index, struct gcc_options *opts)
 }
 
 /* Return 1 if option OPT_IDX is enabled in OPTS, 0 if it is disabled,
-   or -1 if it isn't a simple on-off switch.  */
+   or -1 if it isn't a simple on-off switch
+   (or if the value is unknown, typically set later in target).  */
 
 int
 option_enabled (int opt_idx, unsigned lang_mask, void *opts)
@@ -1606,11 +1607,17 @@ option_enabled (int opt_idx, unsigned lang_mask, void *opts)
   if (flag_var)
     switch (option->var_type)
       {
-      case CLVC_BOOLEAN:
+      case CLVC_INTEGER:
 	if (option->cl_host_wide_int)
-	  return *(HOST_WIDE_INT *) flag_var != 0;
+	  {
+	    HOST_WIDE_INT v = *(HOST_WIDE_INT *) flag_var;
+	    return v != 0 ? (v < 0 ? -1 : 1) : 0;
+	  }
 	else
-	  return *(int *) flag_var != 0;
+	  {
+	    int v = *(int *) flag_var;
+	    return v != 0 ? (v < 0 ? -1 : 1) : 0;
+	  }
 
       case CLVC_EQUAL:
 	if (option->cl_host_wide_int) 
@@ -1658,7 +1665,7 @@ get_option_state (struct gcc_options *opts, int option,
 
   switch (cl_options[option].var_type)
     {
-    case CLVC_BOOLEAN:
+    case CLVC_INTEGER:
     case CLVC_EQUAL:
     case CLVC_SIZE:
       state->data = flag_var;
@@ -1725,7 +1732,7 @@ control_warning_option (unsigned int opt_index, int kind, const char *arg,
       const struct cl_option *option = &cl_options[opt_index];
 
       /* -Werror=foo implies -Wfoo.  */
-      if (option->var_type == CLVC_BOOLEAN
+      if (option->var_type == CLVC_INTEGER
 	  || option->var_type == CLVC_ENUM
 	  || option->var_type == CLVC_SIZE)
 	{

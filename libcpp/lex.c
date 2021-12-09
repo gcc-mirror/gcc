@@ -3530,7 +3530,21 @@ _cpp_lex_direct (cpp_reader *pfile)
   buffer = pfile->buffer;
   if (buffer->need_line)
     {
-      gcc_assert (!pfile->state.in_deferred_pragma);
+      if (pfile->state.in_deferred_pragma)
+	{
+	  /* This can happen in cases like:
+	     #define loop(x) whatever
+	     #pragma omp loop
+	     where when trying to expand loop we need to peek
+	     next token after loop, but aren't still in_deferred_pragma
+	     mode but are in in_directive mode, so buffer->need_line
+	     is set, a CPP_EOF is peeked.  */
+	  result->type = CPP_PRAGMA_EOL;
+	  pfile->state.in_deferred_pragma = false;
+	  if (!pfile->state.pragma_allow_expansion)
+	    pfile->state.prevent_expansion--;
+	  return result;
+	}
       if (!_cpp_get_fresh_line (pfile))
 	{
 	  result->type = CPP_EOF;

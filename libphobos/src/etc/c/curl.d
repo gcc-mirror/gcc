@@ -548,29 +548,36 @@ enum CurlProxy {
 alias curl_proxytype = int;
 
 ///
-enum CurlAuth : long {
-  none =         0,
-  basic =        1,  /** Basic (default) */
-  digest =       2,  /** Digest */
-  gssnegotiate = 4,  /** GSS-Negotiate */
-  ntlm =         8,  /** NTLM */
-  digest_ie =    16, /** Digest with IE flavour */
-  only =         2_147_483_648, /** used together with a single other
-                                type to force no auth or just that
-                                single type */
-  any = -17,     /* (~CURLAUTH_DIGEST_IE) */  /** all fine types set */
-  anysafe = -18  /* (~(CURLAUTH_BASIC|CURLAUTH_DIGEST_IE)) */ ///
+enum CurlAuth : ulong {
+  none =         0UL,        /** None */
+  basic =        1UL << 0,   /** Basic (default) */
+  digest =       1UL << 1,   /** Digest */
+  negotiate =    1UL << 2,   /** Negotiate (SPNEGO) */
+  gssnegotiate = negotiate,  /** GSS-Negotiate */
+  gssapi =       negotiate,  /** GSS-Negoatiate */
+  ntlm =         1UL << 3,   /** NTLM */
+  digest_ie =    1UL << 4,   /** Digest with IE flavour */
+  ntlm_WB =      1UL << 5,   /** NTML delegated to winbind helper */
+  bearer =       1UL << 6,   /** Bearer token authentication */
+  only =         1UL << 31,  /** used together with a single other
+                                 type to force no auth or just that
+                                 single type */
+  any =          ~digest_ie, /** any allows */
+  anysafe =      ~(basic | digest_ie) /** any except basic */
 }
 
 ///
 enum CurlSshAuth {
-  any       = -1,     /** all types supported by the server */
+  any       = ~0,     /** all types supported by the server */
   none      = 0,      /** none allowed, silly but complete */
-  publickey = 1, /** public/private key files */
-  password  = 2, /** password */
-  host      = 4, /** host key files */
-  keyboard  = 8, /** keyboard interactive */
-  default_  = -1 // CURLSSH_AUTH_ANY;
+  publickey = 1 << 0, /** public/private key files */
+  password  = 1 << 1, /** password */
+  host      = 1 << 2, /** host key files */
+  keyboard  = 1 << 3, /** keyboard interactive */
+  agent     = 1 << 4, /** agent (ssh-agent, pageant...) */
+  gssapi    = 1 << 5, /** gssapi (kerberos, ...) */
+
+  default_  = any // CURLSSH_AUTH_ANY;
 }
 ///
 enum CURL_ERROR_SIZE = 256;

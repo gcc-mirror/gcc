@@ -37,13 +37,12 @@ int main(int argc, char* argv[])
     {
       int j, k;
       for (k = 0; k < S; k++)
-#pragma acc parallel loop copy(m[k].a[0:N]) /* { dg-error "expected .\\\). before .\\\.. token" } */
+#pragma acc parallel loop copy(m[k].a[0:N])
         for (j = 0; j < N; j++)
           m[k].a[j]++;
 
       for (k = 0; k < S; k++)
-#pragma acc parallel loop copy(m[k].b[0:N], m[k].c[5:N-10]) /* { dg-error "expected .\\\). before .\\\.. token" } */
-	/* { dg-error ".m. appears more than once in data clauses" "" { target c++ } .-1 } */
+#pragma acc parallel loop copy(m[k].b[0:N], m[k].c[5:N-10])
 	for (j = 0; j < N; j++)
 	  {
 	    m[k].b[j]++;

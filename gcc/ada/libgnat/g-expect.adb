@@ -351,7 +351,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       N           : Expect_Match;
-      Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
+      Descriptors : Array_Of_Pd := [Descriptor'Unrestricted_Access];
       Try_Until   : constant Time := Clock + Duration (Timeout) / 1000.0;
       Timeout_Tmp : Integer := Timeout;
 
@@ -508,7 +508,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       N           : Expect_Match;
-      Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
+      Descriptors : Array_Of_Pd := [Descriptor'Unrestricted_Access];
 
    begin
       pragma Assert (Matched'First = 0);
@@ -1078,7 +1078,7 @@ package body GNAT.Expect is
 
    function Has_Process (Regexp : Multiprocess_Regexp_Array) return Boolean is
    begin
-      return Regexp /= (Regexp'Range => (null, null));
+      return Regexp /= [Regexp'Range => (null, null)];
    end Has_Process;
 
    ---------------
@@ -1294,8 +1294,8 @@ package body GNAT.Expect is
       Add_LF       : Boolean := True;
       Empty_Buffer : Boolean := False)
    is
-      Line_Feed   : aliased constant String := (1 .. 1 => ASCII.LF);
-      Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
+      Line_Feed   : aliased constant String := [1 .. 1 => ASCII.LF];
+      Descriptors : Array_Of_Pd := [Descriptor'Unrestricted_Access];
 
       Result  : Expect_Match;
       Discard : Natural;

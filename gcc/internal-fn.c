@@ -3050,6 +3050,23 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 	lhs_base = TREE_OPERAND (lhs_base, 0);
       reg_lhs = (mem_ref_refers_to_non_mem_p (lhs_base)
 		 || non_mem_decl_p (lhs_base));
+      /* If this expands to a register and the underlying decl is wrapped in
+	 a MEM_REF that just serves as an access type change expose the decl
+	 if it is of correct size.  This avoids a situation as in PR103271
+	 if the target does not support a direct move to the registers mode.  */
+      if (reg_lhs
+	  && TREE_CODE (lhs_base) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (lhs_base, 0)) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0))
+	  && integer_zerop (TREE_OPERAND (lhs_base, 1))
+	  && tree_fits_uhwi_p (var_size)
+	  && tree_int_cst_equal
+	       (var_size,
+		DECL_SIZE_UNIT (TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0))))
+	{
+	  lhs = TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0);
+	  var_type = TREE_TYPE (lhs);
+	}
     }
 
   if (!reg_lhs)

@@ -536,7 +536,8 @@ version (CRuntime_Glibc)
 
     enum
     {
-        SOMAXCONN       = 128
+        // https://sourceware.org/git/?p=glibc.git;a=commit;f=sysdeps/unix/sysv/linux/bits/socket.h;h=96958e2700f5b4f4d1183a0606b2b9848a53ea44
+        SOMAXCONN       = 4096
     }
 
     enum : uint

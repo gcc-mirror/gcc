@@ -1121,7 +1121,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			|| first_stmt_code == BIT_FIELD_REF
 			|| first_stmt_code == INDIRECT_REF
 			|| first_stmt_code == COMPONENT_REF
-			|| first_stmt_code == MEM_REF)))
+			|| first_stmt_code == MEM_REF)
+		    && (rhs_code == ARRAY_REF
+			|| rhs_code == BIT_FIELD_REF
+			|| rhs_code == INDIRECT_REF
+			|| rhs_code == COMPONENT_REF
+			|| rhs_code == MEM_REF)))
 	      || first_stmt_load_p != load_p
 	      || first_stmt_phi_p != phi_p)
 	    {
@@ -2532,7 +2537,8 @@ dot_slp_tree (FILE *f, slp_tree node, hash_set<slp_tree> &visited)
     fprintf (f, "\"%p\" -> \"%p\";", (void *)node, (void *)child);
 
   for (slp_tree child : SLP_TREE_CHILDREN (node))
-    dot_slp_tree (f, child, visited);
+    if (child)
+      dot_slp_tree (f, child, visited);
 }
 
 DEBUG_FUNCTION void
@@ -3413,8 +3419,13 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		vinfo = next;
 	      }
 	    STMT_VINFO_DEF_TYPE (first_element) = vect_internal_def;
-	    /* It can be still vectorized as part of an SLP reduction.  */
-	    loop_vinfo->reductions.safe_push (last);
+	    /* It can be still vectorized as part of an SLP reduction.
+	       ???  But only if we didn't skip a conversion around the group.
+	       In that case we'd have to reverse engineer that conversion
+	       stmt following the chain using reduc_idx and from the PHI
+	       using reduc_def.  */
+	    if (STMT_VINFO_DEF_TYPE (last) == vect_reduction_def)
+	      loop_vinfo->reductions.safe_push (last);
 	  }
 
       /* Find SLP sequences starting from groups of reductions.  */

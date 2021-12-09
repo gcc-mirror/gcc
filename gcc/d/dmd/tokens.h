@@ -187,6 +187,7 @@ enum
         TOKarrow,
         TOKcolonColon,
         TOKwchar_tLiteral,
+        TOKcompoundLiteral,
 
         TOKinline,
         TOKregister,

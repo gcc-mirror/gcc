@@ -55,6 +55,15 @@ is
    Double_Size : constant Natural := Double_Int'Size;
    Single_Size : constant Natural := Double_Int'Size / 2;
 
+   --  Log of Single_Size in base 2, so that Single_Size = 2 ** Log_Single_Size
+   Log_Single_Size : constant Natural :=
+     (case Single_Size is
+        when 32  => 5,
+        when 64  => 6,
+        when 128 => 7,
+        when others => raise Program_Error)
+   with Ghost;
+
    --  Power-of-two constants. Use the names Big_2xx32, Big_2xx63 and Big_2xx64
    --  even if Single_Size might not be 32 and Double_Size might not be 64, as
    --  this facilitates code and proof understanding, compared to more generic
@@ -66,6 +75,9 @@ is
    pragma Warnings
      (Off, "non-static constant in preelaborated unit",
       Reason => "Ghost code is not compiled");
+   Big_0 : constant Big_Integer :=
+     Big (Double_Uns'(0))
+   with Ghost;
    Big_2xx32 : constant Big_Integer :=
      Big (Double_Int'(2 ** Single_Size))
    with Ghost;
@@ -197,6 +209,20 @@ is
    with
      Ghost,
      Post => abs (X * Y) = abs X * abs Y;
+
+   procedure Lemma_Mult_Non_Negative (X, Y : Big_Integer)
+   with
+     Ghost,
+     Pre  => (X >= Big_0 and then Y >= Big_0)
+       or else (X <= Big_0 and then Y <= Big_0),
+     Post => X * Y >= Big_0;
+
+   procedure Lemma_Mult_Non_Positive (X, Y : Big_Integer)
+   with
+     Ghost,
+     Pre  => (X <= Big_0 and then Y >= Big_0)
+       or else (X >= Big_0 and then Y <= Big_0),
+     Post => X * Y <= Big_0;
 
    procedure Lemma_Abs_Rem_Commutation (X, Y : Big_Integer)
    with
@@ -407,6 +433,11 @@ is
      Pre  => Y /= 0,
      Post => X rem Y = X rem (-Y);
 
+   procedure Lemma_Not_In_Range_Big2xx64
+   with
+     Post => not In_Double_Int_Range (Big_2xx64)
+       and then not In_Double_Int_Range (-Big_2xx64);
+
    procedure Lemma_Powers_Of_2 (M, N : Natural)
    with
      Ghost,
@@ -551,7 +582,10 @@ is
    procedure Lemma_Mult_Commutation (X, Y : Double_Int) is null;
    procedure Lemma_Mult_Commutation (X, Y, Z : Double_Uns) is null;
    procedure Lemma_Mult_Distribution (X, Y, Z : Big_Integer) is null;
+   procedure Lemma_Mult_Non_Negative (X, Y : Big_Integer) is null;
+   procedure Lemma_Mult_Non_Positive (X, Y : Big_Integer) is null;
    procedure Lemma_Neg_Rem (X, Y : Big_Integer) is null;
+   procedure Lemma_Not_In_Range_Big2xx64 is null;
    procedure Lemma_Rem_Commutation (X, Y : Double_Uns) is null;
    procedure Lemma_Rem_Is_Ident (X, Y : Big_Integer) is null;
    procedure Lemma_Rem_Sign (X, Y : Big_Integer) is null;
@@ -722,21 +756,15 @@ is
 
       --  Local lemmas
 
-      function Is_Division_By_Zero_Case return Boolean is
-        (Y = 0 or else Z = 0)
-      with Ghost;
-
-      function Is_Overflow_Case return Boolean is
-        (not In_Double_Int_Range (Big (X) / (Big (Y) * Big (Z))))
-      with
-        Ghost,
-        Pre => Y /= 0 and Z /= 0;
-
       procedure Prove_Overflow_Case
       with
         Ghost,
         Pre  => X = Double_Int'First and then Big (Y) * Big (Z) = -1,
-        Post => Is_Overflow_Case;
+        Post => not In_Double_Int_Range (Big (X) / (Big (Y) * Big (Z)))
+          and then not In_Double_Int_Range
+            (Round_Quotient (Big (X), Big (Y) * Big (Z),
+                             Big (X) / (Big (Y) * Big (Z)),
+                             Big (X) rem (Big (Y) * Big (Z))));
       --  Proves the special case where -2**(Double_Size - 1) is divided by -1,
       --  generating an overflow.
 
@@ -852,11 +880,7 @@ is
 
    begin
       if Yu = 0 or else Zu = 0 then
-         pragma Assert (Is_Division_By_Zero_Case);
          Raise_Error;
-         pragma Annotate
-           (GNATprove, Intentional, "call to nonreturning subprogram",
-            "Constraint_Error is raised in case of division by zero");
       end if;
 
       pragma Assert (Mult /= 0);
@@ -998,9 +1022,6 @@ is
       if X = Double_Int'First and then Du = 1 and then not Den_Pos then
          Prove_Overflow_Case;
          Raise_Error;
-         pragma Annotate
-           (GNATprove, Intentional, "call to nonreturning subprogram",
-            "Constraint_Error is raised in case of overflow");
       end if;
 
       --  Perform the actual division
@@ -1624,10 +1645,9 @@ is
       Quot  : Big_Integer with Ghost;
       Big_R : Big_Integer with Ghost;
       Big_Q : Big_Integer with Ghost;
+      Inter : Natural with Ghost;
 
       --  Local lemmas
-
-      function Is_Division_By_Zero_Case return Boolean is (Z = 0) with Ghost;
 
       procedure Prove_Dividend_Scaling
       with
@@ -1666,12 +1686,60 @@ is
       --  Proves correctness of the multiplication of divisor by quotient to
       --  compute amount to subtract.
 
+      procedure Prove_Negative_Dividend
+      with
+        Ghost,
+        Pre  => Z /= 0
+          and then Big (Qu) = abs Big_Q
+          and then In_Double_Int_Range (Big_Q)
+          and then Big (Ru) = abs Big_R
+          and then ((X >= 0 and Y < 0) or (X < 0 and Y >= 0))
+          and then Big_Q =
+            (if Round then Round_Quotient (Big (X) * Big (Y), Big (Z),
+                                           Big (X) * Big (Y) / Big (Z),
+                                           Big (X) * Big (Y) rem Big (Z))
+             else Big (X) * Big (Y) / Big (Z))
+          and then Big_R = Big (X) * Big (Y) rem Big (Z),
+         Post =>
+           (if Z > 0 then Big_Q <= Big_0
+              and then In_Double_Int_Range (-Big (Qu))
+            else Big_Q >= Big_0
+              and then In_Double_Int_Range (Big (Qu)))
+           and then In_Double_Int_Range (-Big (Ru));
+      --  Proves the sign of rounded quotient when dividend is non-positive
+
       procedure Prove_Overflow
       with
         Ghost,
         Pre  => Z /= 0 and then Mult >= Big_2xx64 * Big (Double_Uns'(abs Z)),
-        Post => not In_Double_Int_Range (Big (X) * Big (Y) / Big (Z));
+        Post => not In_Double_Int_Range (Big (X) * Big (Y) / Big (Z))
+          and then not In_Double_Int_Range
+            (Round_Quotient (Big (X) * Big (Y), Big (Z),
+                             Big (X) * Big (Y) / Big (Z),
+                             Big (X) * Big (Y) rem Big (Z)));
       --  Proves overflow case when the quotient has at least 3 digits
+
+      procedure Prove_Positive_Dividend
+      with
+        Ghost,
+        Pre  => Z /= 0
+          and then Big (Qu) = abs Big_Q
+          and then In_Double_Int_Range (Big_Q)
+          and then Big (Ru) = abs Big_R
+          and then ((X >= 0 and Y >= 0) or (X < 0 and Y < 0))
+          and then Big_Q =
+            (if Round then Round_Quotient (Big (X) * Big (Y), Big (Z),
+                                           Big (X) * Big (Y) / Big (Z),
+                                           Big (X) * Big (Y) rem Big (Z))
+             else Big (X) * Big (Y) / Big (Z))
+          and then Big_R = Big (X) * Big (Y) rem Big (Z),
+        Post =>
+           (if Z > 0 then Big_Q >= Big_0
+              and then In_Double_Int_Range (Big (Qu))
+            else Big_Q <= Big_0
+              and then In_Double_Int_Range (-Big (Qu)))
+           and then In_Double_Int_Range (Big (Ru));
+      --  Proves the sign of rounded quotient when dividend is non-negative
 
       procedure Prove_Qd_Calculation_Part_1 (J : Integer)
       with
@@ -1688,6 +1756,14 @@ is
       --  of the quotient given by dividing the first 2 digits of the dividend
       --  by the first digit of the divisor is not an underestimate (so
       --  readjusting down works).
+
+      procedure Prove_Q_Too_Big
+      with
+        Ghost,
+        Pre  => In_Double_Int_Range (Big_Q)
+          and then abs Big_Q = Big_2xx64,
+        Post => False;
+      --  Proves the inconsistency when Q is equal to Big_2xx64
 
       procedure Prove_Rescaling
       with
@@ -1846,6 +1922,15 @@ is
               Big (Double_Uns (S1)));
       end Prove_Multiplication;
 
+      -----------------------------
+      -- Prove_Negative_Dividend --
+      -----------------------------
+
+      procedure Prove_Negative_Dividend is
+      begin
+         Lemma_Mult_Non_Positive (Big (X), Big (Y));
+      end Prove_Negative_Dividend;
+
       --------------------
       -- Prove_Overflow --
       --------------------
@@ -1856,6 +1941,15 @@ is
          Lemma_Abs_Commutation (Z);
          Lemma_Abs_Div_Commutation (Big (X) * Big (Y), Big (Z));
       end Prove_Overflow;
+
+      -----------------------------
+      -- Prove_Positive_Dividend --
+      -----------------------------
+
+      procedure Prove_Positive_Dividend is
+      begin
+         Lemma_Mult_Non_Negative (Big (X), Big (Y));
+      end Prove_Positive_Dividend;
 
       ---------------------------------
       -- Prove_Qd_Calculation_Part_1 --
@@ -1887,6 +1981,16 @@ is
          Lemma_Div_Lt (Big3 (D (J), D (J + 1), D (J + 2)),
                        Big (Double_Uns (Qd (J))) + 1, Big (Zu));
       end Prove_Qd_Calculation_Part_1;
+
+      ---------------------
+      -- Prove_Q_Too_Big --
+      ---------------------
+
+      procedure Prove_Q_Too_Big is
+      begin
+         pragma Assert (Big_Q = Big_2xx64 or Big_Q = -Big_2xx64);
+         Lemma_Not_In_Range_Big2xx64;
+      end Prove_Q_Too_Big;
 
       ---------------------
       -- Prove_Rescaling --
@@ -1974,11 +2078,7 @@ is
 
    begin
       if Z = 0 then
-         pragma Assert (Is_Division_By_Zero_Case);
          Raise_Error;
-         pragma Annotate
-           (GNATprove, Intentional, "call to nonreturning subprogram",
-            "Constraint_Error is raised in case of division by zero");
       end if;
 
       Quot := Big (X) * Big (Y) / Big (Z);
@@ -2136,9 +2236,6 @@ is
 
             Prove_Overflow;
             Raise_Error;
-            pragma Annotate
-              (GNATprove, Intentional, "call to nonreturning subprogram",
-               "Constraint_Error is raised in case of overflow");
 
          --  Here we are dividing at most three digits by one digit
 
@@ -2159,9 +2256,6 @@ is
          Lemma_Ge_Commutation (D (1) & D (2), Zu);
          Prove_Overflow;
          Raise_Error;
-         pragma Annotate
-           (GNATprove, Intentional, "call to nonreturning subprogram",
-            "Constraint_Error is raised in case of overflow");
 
       --  This is the complex case where we definitely have a double digit
       --  divisor and a dividend of at least three digits. We use the classical
@@ -2177,6 +2271,7 @@ is
          Mask  := Single_Uns'Last;
          Scale := 0;
 
+         Inter := 0;
          pragma Assert (Big_2xx (Scale) = 1);
 
          while Shift > 1 loop
@@ -2187,17 +2282,26 @@ is
             pragma Loop_Invariant (Zu = Shift_Left (abs Z, Scale));
             pragma Loop_Invariant (Big (Zu) =
               Big (Double_Uns'(abs Z)) * Big_2xx (Scale));
+            pragma Loop_Invariant (Inter in 0 .. Log_Single_Size - 1);
+            pragma Loop_Invariant (Shift = 2 ** (Log_Single_Size - Inter));
             pragma Loop_Invariant (Shift mod 2 = 0);
-            pragma Annotate
-              (GNATprove, False_Positive, "loop invariant",
-               "Shift actually is a power of 2");
-            --  Note : this scaling algorithm only works when Single_Size is a
-            --  power of 2.
 
             declare
+               --  Local ghost variables
+
                Shift_Prev : constant Natural := Shift with Ghost;
                Mask_Prev  : constant Single_Uns := Mask with Ghost;
                Zu_Prev    : constant Double_Uns := Zu with Ghost;
+
+               --  Local lemmas
+
+               procedure Prove_Power
+               with
+                 Ghost,
+                 Pre  => Inter in 0 .. Log_Single_Size - 1
+                   and then Shift = 2 ** (Log_Single_Size - Inter),
+                 Post => Shift / 2 = 2 ** (Log_Single_Size - (Inter + 1))
+                   and then (Shift = 2 or (Shift / 2) mod 2 = 0);
 
                procedure Prove_Shifting
                with
@@ -2211,6 +2315,12 @@ is
                    and then (Hi (Zu_Prev) and Mask_Prev and not Mask) /= 0,
                  Post => (Hi (Zu) and Mask) /= 0;
 
+               -----------------
+               -- Prove_Power --
+               -----------------
+
+               procedure Prove_Power is null;
+
                --------------------
                -- Prove_Shifting --
                --------------------
@@ -2218,8 +2328,11 @@ is
                procedure Prove_Shifting is null;
 
             begin
+               Prove_Power;
+
                Shift := Shift / 2;
 
+               Inter := Inter + 1;
                pragma Assert (Shift_Prev = 2 * Shift);
 
                Mask := Shift_Left (Mask, Shift);
@@ -2306,7 +2419,29 @@ is
          --  Loop to compute quotient digits, runs twice for Qd (1) and Qd (2)
 
          declare
-            Qd1 : Single_Uns := 0 with Ghost;
+            --  Local lemmas
+
+            procedure Prove_First_Iteration (X1, X2, X3, X4 : Single_Uns)
+            with
+              Ghost,
+              Pre  => X1 = 0,
+              Post =>
+                Big_2xx32 * Big3 (X1, X2, X3) + Big (Double_Uns (X4))
+                  = Big3 (X2, X3, X4);
+
+            ---------------------------
+            -- Prove_First_Iteration --
+            ---------------------------
+
+            procedure Prove_First_Iteration (X1, X2, X3, X4 : Single_Uns) is
+            null;
+
+            --  Local ghost variables
+
+            Qd1  : Single_Uns := 0 with Ghost;
+            D123 : constant Big_Integer := Big3 (D (1), D (2), D (3))
+              with Ghost;
+
          begin
             for J in 1 .. 2 loop
                Lemma_Hi_Lo (D (J) & D (J + 1), D (J), D (J + 1));
@@ -2432,12 +2567,11 @@ is
 
                if J = 1 then
                   Qd1 := Qd (1);
-                  pragma Assert
-                    (Big_2xx32 * Big_2xx32 * Big (Double_Uns (D (1))) = 0);
-                  pragma Assert
-                    (Mult * Big_2xx (Scale) =
-                       Big_2xx32 * Big3 (S1, S2, S3)
-                     + Big3 (D (2), D (3), D (4)));
+                  Lemma_Substitution
+                    (Mult * Big_2xx (Scale), Big_2xx32, D123,
+                     Big3 (D (1), D (2), D (3)) + Big3 (S1, S2, S3),
+                     Big (Double_Uns (D (4))));
+                  Prove_First_Iteration (D (1), D (2), D (3), D (4));
                   Lemma_Substitution (Mult * Big_2xx (Scale), Big_2xx32,
                                       Big3 (S1, S2, S3),
                                       Big (Double_Uns (Qd1)) * Big (Zu),
@@ -2510,11 +2644,8 @@ is
             --  an overflow when the quotient is too large.
 
             if Qu = Double_Uns'Last then
-               pragma Assert (abs Big_Q = Big_2xx64);
+               Prove_Q_Too_Big;
                Raise_Error;
-               pragma Annotate
-                 (GNATprove, Intentional, "call to nonreturning subprogram",
-                  "Constraint_Error is raised in case of overflow");
             end if;
 
             Lemma_Add_One (Qu);
@@ -2530,28 +2661,18 @@ is
       --  Case of dividend (X * Y) sign positive
 
       if (X >= 0 and then Y >= 0) or else (X < 0 and then Y < 0) then
-         R := To_Pos_Int (Ru);
-         pragma Annotate
-           (GNATprove, Intentional, "precondition",
-            "Constraint_Error is raised in case of overflow");
+         Prove_Positive_Dividend;
 
+         R := To_Pos_Int (Ru);
          Q := (if Z > 0 then To_Pos_Int (Qu) else To_Neg_Int (Qu));
-         pragma Annotate
-           (GNATprove, Intentional, "precondition",
-            "Constraint_Error is raised in case of overflow");
 
       --  Case of dividend (X * Y) sign negative
 
       else
-         R := To_Neg_Int (Ru);
-         pragma Annotate
-           (GNATprove, Intentional, "precondition",
-            "Constraint_Error is raised in case of overflow");
+         Prove_Negative_Dividend;
 
+         R := To_Neg_Int (Ru);
          Q := (if Z > 0 then To_Neg_Int (Qu) else To_Pos_Int (Qu));
-         pragma Annotate
-           (GNATprove, Intentional, "precondition",
-            "Constraint_Error is raised in case of overflow");
       end if;
 
       Prove_Sign_R;

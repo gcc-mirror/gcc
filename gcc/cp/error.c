@@ -211,6 +211,10 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
       }
 }
 
+/* The scope of the declaration we're currently printing, to avoid redundantly
+   dumping the same scope on parameter types.  */
+static tree current_dump_scope;
+
 /* Dump a scope, if deemed necessary.  */
 
 static void
@@ -218,7 +222,7 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
 {
   int f = flags & (TFF_SCOPE | TFF_CHASE_TYPEDEF);
 
-  if (scope == NULL_TREE)
+  if (scope == NULL_TREE || scope == current_dump_scope)
     return;
 
   /* Enum values within an unscoped enum will be CONST_DECL with an
@@ -1755,6 +1759,10 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
     }
   else
     dump_scope (pp, CP_DECL_CONTEXT (t), flags);
+
+  /* Name lookup for the rest of the function declarator is implicitly in the
+     scope of the function, so avoid printing redundant scope qualifiers.  */
+  auto cds = make_temp_override (current_dump_scope, CP_DECL_CONTEXT (t));
 
   dump_function_name (pp, t, dump_function_name_flags);
 

@@ -375,30 +375,29 @@ void
 path_range_query::compute_ranges_in_phis (basic_block bb)
 {
   int_range_max r;
-  gphi_iterator iter;
+  auto_bitmap phi_set;
 
   // PHIs must be resolved simultaneously on entry to the block
   // because any dependencies must be satistifed with values on entry.
   // Thus, we calculate all PHIs first, and then update the cache at
   // the end.
 
-  m_tmp_phi_cache.clear ();
-  for (iter = gsi_start_phis (bb); !gsi_end_p (iter); gsi_next (&iter))
+  for (auto iter = gsi_start_phis (bb); !gsi_end_p (iter); gsi_next (&iter))
     {
       gphi *phi = iter.phi ();
       tree name = gimple_phi_result (phi);
 
       if (import_p (name) && range_defined_in_block (r, name, bb))
-	m_tmp_phi_cache.set_global_range (name, r);
+	{
+	  unsigned v = SSA_NAME_VERSION (name);
+	  set_cache (r, name);
+	  bitmap_set_bit (phi_set, v);
+	  // Pretend we don't have a cache entry for this name until
+	  // we're done with all PHIs.
+	  bitmap_clear_bit (m_has_cache_entry, v);
+	}
     }
-  for (iter = gsi_start_phis (bb); !gsi_end_p (iter); gsi_next (&iter))
-    {
-      gphi *phi = iter.phi ();
-      tree name = gimple_phi_result (phi);
-
-      if (m_tmp_phi_cache.get_global_range (r, name))
-	set_cache (r, name);
-    }
+  bitmap_ior_into (m_has_cache_entry, phi_set);
 }
 
 // Compute ranges defined in the current block, or exported to the

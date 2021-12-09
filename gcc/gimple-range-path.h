@@ -82,8 +82,6 @@ private:
   // Range cache for SSA names.
   ssa_global_cache *m_cache;
 
-  ssa_global_cache m_tmp_phi_cache;
-
   // Set for each SSA that has an active entry in the cache.
   bitmap m_has_cache_entry;
 

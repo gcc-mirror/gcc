@@ -844,7 +844,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
 
       elsif Count <= Max_Length then
          Result.Data (1 .. Slen) := Source.Data (1 .. Slen);
-         Result.Data (Slen + 1 .. Count) := (others => Pad);
+         Result.Data (Slen + 1 .. Count) := [others => Pad];
          Result.Current_Length := Count;
 
       else
@@ -853,18 +853,18 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                Result.Data (1 .. Slen) := Source.Data (1 .. Slen);
 
                if Slen < Max_Length then
-                  Result.Data (Slen + 1 .. Max_Length) := (others => Pad);
+                  Result.Data (Slen + 1 .. Max_Length) := [others => Pad];
                end if;
 
             when Strings.Left =>
                if Npad >= Max_Length then
-                  Result.Data := (others => Pad);
+                  Result.Data := [others => Pad];
 
                else
                   Result.Data (1 .. Max_Length - Npad) :=
                     Source.Data (Count - Max_Length + 1 .. Slen);
                   Result.Data (Max_Length - Npad + 1 .. Max_Length) :=
-                    (others => Pad);
+                    [others => Pad];
                end if;
 
             when Strings.Error =>
@@ -893,26 +893,26 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          Source.Current_Length := Count;
 
       elsif Count <= Max_Length then
-         Source.Data (Slen + 1 .. Count) := (others => Pad);
+         Source.Data (Slen + 1 .. Count) := [others => Pad];
          Source.Current_Length := Count;
 
       else
          case Drop is
             when Strings.Right =>
                if Slen < Max_Length then
-                  Source.Data (Slen + 1 .. Max_Length) := (others => Pad);
+                  Source.Data (Slen + 1 .. Max_Length) := [others => Pad];
                end if;
 
             when Strings.Left =>
                if Npad > Max_Length then
-                  Source.Data := (others => Pad);
+                  Source.Data := [others => Pad];
 
                else
                   Temp := Source.Data;
                   Source.Data (1 .. Max_Length - Npad) :=
                     Temp (Count - Max_Length + 1 .. Slen);
                   Source.Data (Max_Length - Npad + 1 .. Max_Length) :=
-                    (others => Pad);
+                    [others => Pad];
                end if;
 
             when Strings.Error =>
@@ -1385,14 +1385,14 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
 
    begin
       if Count <= Max_Length then
-         Result.Data (1 .. Count) := (others => Item);
+         Result.Data (1 .. Count) := [others => Item];
          Result.Current_Length := Count;
 
       elsif Drop = Strings.Error then
          raise Ada.Strings.Length_Error;
 
       else
-         Result.Data (1 .. Max_Length) := (others => Item);
+         Result.Data (1 .. Max_Length) := [others => Item];
          Result.Current_Length := Max_Length;
       end if;
 
@@ -1686,7 +1686,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          end if;
 
       elsif Count <= Max_Length then
-         Result.Data (1 .. Npad) := (others => Pad);
+         Result.Data (1 .. Npad) := [others => Pad];
 
          if Slen > 0 then
             Result.Data (Npad + 1 .. Count) := Source.Data (1 .. Slen);
@@ -1698,16 +1698,16 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          case Drop is
             when Strings.Right =>
                if Npad >= Max_Length then
-                  Result.Data := (others => Pad);
+                  Result.Data := [others => Pad];
 
                else
-                  Result.Data (1 .. Npad) := (others => Pad);
+                  Result.Data (1 .. Npad) := [others => Pad];
                   Result.Data (Npad + 1 .. Max_Length) :=
                     Source.Data (1 .. Max_Length - Npad);
                end if;
 
             when Strings.Left =>
-               Result.Data (1 .. Max_Length - Slen) := (others => Pad);
+               Result.Data (1 .. Max_Length - Slen) := [others => Pad];
                Result.Data (Max_Length - Slen + 1 .. Max_Length) :=
                  Source.Data (1 .. Slen);
 
@@ -1743,7 +1743,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          end if;
 
       elsif Count <= Max_Length then
-         Source.Data (1 .. Npad) := (others => Pad);
+         Source.Data (1 .. Npad) := [others => Pad];
 
          if Slen > 0 then
             Source.Data (Npad + 1 .. Count) := Temp (1 .. Slen);
@@ -1755,16 +1755,16 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
          case Drop is
             when Strings.Right =>
                if Npad >= Max_Length then
-                  Source.Data := (others => Pad);
+                  Source.Data := [others => Pad];
 
                else
-                  Source.Data (1 .. Npad) := (others => Pad);
+                  Source.Data (1 .. Npad) := [others => Pad];
                   Source.Data (Npad + 1 .. Max_Length) :=
                     Temp (1 .. Max_Length - Npad);
                end if;
 
             when Strings.Left =>
-               Source.Data (1 .. Max_Length - Slen) := (others => Pad);
+               Source.Data (1 .. Max_Length - Slen) := [others => Pad];
                Source.Data (Max_Length - Slen + 1 .. Max_Length) :=
                  Temp (1 .. Slen);
 

@@ -17,7 +17,7 @@ module std.format.internal.floats;
 import std.format.spec : FormatSpec;
 
 // wrapper for unittests
-private auto printFloat(T, Char)(T val, FormatSpec!Char f)
+private auto printFloat(T, Char)(const(T) val, FormatSpec!Char f)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
 {
@@ -28,7 +28,7 @@ if (is(T == float) || is(T == double)
     return w.data;
 }
 
-package(std.format) void printFloat(Writer, T, Char)(auto ref Writer w, T val, FormatSpec!Char f)
+package(std.format) void printFloat(Writer, T, Char)(auto ref Writer w, const(T) val, FormatSpec!Char f)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
 {
@@ -76,7 +76,7 @@ if (is(T == float) || is(T == double)
     }
 }
 
-private void printFloatA(Writer, T, Char)(auto ref Writer w, T val,
+private void printFloatA(Writer, T, Char)(auto ref Writer w, const(T) val,
     FormatSpec!Char f, string sgn, int exp, ulong mnt, bool is_upper)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
@@ -586,7 +586,7 @@ if (is(T == float) || is(T == double)
     assert(printFloat(0x1.19f01p0, f) == "0X1.19FP+0");
 }
 
-private void printFloatE(bool g, Writer, T, Char)(auto ref Writer w, T val,
+private void printFloatE(bool g, Writer, T, Char)(auto ref Writer w, const(T) val,
     FormatSpec!Char f, string sgn, int exp, ulong mnt, bool is_upper)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
@@ -1505,7 +1505,7 @@ if (is(T == float) || is(T == double)
     });
 }
 
-private void printFloatF(bool g, Writer, T, Char)(auto ref Writer w, T val,
+private void printFloatF(bool g, Writer, T, Char)(auto ref Writer w, const(T) val,
     FormatSpec!Char f, string sgn, int exp, ulong mnt, bool is_upper)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))
@@ -2268,7 +2268,7 @@ if (is(T == float) || is(T == double)
            ~"7175706828388979108268586060148663818836212158203125");
 }
 
-private void printFloatG(Writer, T, Char)(auto ref Writer w, T val,
+private void printFloatG(Writer, T, Char)(auto ref Writer w, const(T) val,
     FormatSpec!Char f, string sgn, int exp, ulong mnt, bool is_upper)
 if (is(T == float) || is(T == double)
     || (is(T == real) && (T.mant_dig == double.mant_dig || T.mant_dig == 64)))

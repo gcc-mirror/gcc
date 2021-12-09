@@ -1425,11 +1425,11 @@ package body Scng is
 
          when '[' =>
 
-            --  [] under -gnatX is an aggregate notation and the special
+            --  [] under -gnat2022 is an aggregate notation and the special
             --  wide character notation becomes unsupported since the two
             --  are ambiguous.
 
-            if Extensions_Allowed then
+            if Ada_Version >= Ada_2022 then
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Left_Bracket;
                return;

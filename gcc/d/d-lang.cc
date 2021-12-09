@@ -288,7 +288,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
 {
   /* Initialize the D runtime.  */
   rt_init ();
-//  gc_disable ();
+  gc_disable ();
 
   /* Set default values.  */
   global._init ();
@@ -674,12 +674,17 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_ftransition_all:
       global.params.vfield = value;
       global.params.vgc = value;
+      global.params.vin = value;
       global.params.vmarkdown= value;
       global.params.vtls = value;
       break;
 
     case OPT_ftransition_field:
       global.params.vfield = value;
+      break;
+
+    case OPT_ftransition_in:
+      global.params.vin = value;
       break;
 
     case OPT_ftransition_nogc:
@@ -1176,6 +1181,14 @@ d_parse_file (void)
     {
       Module *m = modules[i];
 
+      /* If this is the `__main` module, check that `D main` hasn't already
+	 been declared in user code before running semantic on it.  */
+      if (m == main_module && global.hasMainFunction)
+	{
+	  modules.remove (i);
+	  continue;
+	}
+
       if (global.params.verbose)
 	message ("semantic  %s", m->toChars ());
 
@@ -1357,6 +1370,9 @@ d_parse_file (void)
   for (size_t i = 0; i < modules.length; i++)
     {
       Module *m = modules[i];
+
+      /* Skip generating code for header files, or when the module wasn't
+	 specified by `-fonly=`.  */
       if ((m->isHdrFile && m != main_module)
 	  || (d_option.fonly && m != Module::rootModule))
 	continue;

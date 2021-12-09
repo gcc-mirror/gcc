@@ -1192,7 +1192,8 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 /* If a basic block's count is known, and only one of its in/out edges' count
    is unknown, its count can be calculated. Meanwhile, if all of the in/out
    edges' counts are known, then the basic block's unknown count can also be
-   calculated.
+   calculated. Also, if a block has a single predecessor or successor, the block's
+   count can be propagated to that predecessor or successor.
    IS_SUCC is true if out edges of a basic blocks are examined.
    Update ANNOTATED_BB accordingly.
    Return TRUE if any basic block/edge count is changed.  */
@@ -1208,6 +1209,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
     edge e, unknown_edge = NULL;
     edge_iterator ei;
     int num_unknown_edge = 0;
+    int num_edge = 0;
     profile_count total_known_count = profile_count::zero ().afdo ();
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
@@ -1217,6 +1219,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 	  num_unknown_edge++, unknown_edge = e;
 	else
 	  total_known_count += AFDO_EINFO (e)->get_count ();
+	num_edge++;
       }
 
     /* Be careful not to annotate block with no successor in special cases.  */
@@ -1230,7 +1233,20 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
     else if (num_unknown_edge == 1 && is_bb_annotated (bb, *annotated_bb))
       {
 	if (bb->count > total_known_count)
-	  AFDO_EINFO (unknown_edge)->set_count (bb->count - total_known_count);
+	  {
+	      profile_count new_count = bb->count - total_known_count;
+	      AFDO_EINFO(unknown_edge)->set_count(new_count);
+	      if (num_edge == 1)
+		{
+		  basic_block succ_or_pred_bb = is_succ ? unknown_edge->dest : unknown_edge->src;
+		  if (new_count > succ_or_pred_bb->count)
+		    {
+		      succ_or_pred_bb->count = new_count;
+		      if (!is_bb_annotated (succ_or_pred_bb, *annotated_bb))
+			set_bb_annotated (succ_or_pred_bb, annotated_bb);
+		    }
+		}
+	   }
 	else
 	  AFDO_EINFO (unknown_edge)->set_count (profile_count::zero().afdo ());
 	AFDO_EINFO (unknown_edge)->set_annotated ();

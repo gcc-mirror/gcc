@@ -287,13 +287,7 @@ package body Exp_Ch3 is
    --  controlled components that require finalization actions (the deep
    --  in the name refers to the fact that the action applies to components).
    --
-   --  The list is returned in Predef_List. The Parameter Renamed_Eq either
-   --  returns the value Empty, or else the defining unit name for the
-   --  predefined equality function in the case where the type has a primitive
-   --  operation that is a renaming of predefined equality (but only if there
-   --  is also an overriding user-defined equality function). The returned
-   --  Renamed_Eq will be passed to the corresponding parameter of
-   --  Predefined_Primitive_Bodies.
+   --  The list of specs is returned in Predef_List
 
    function Has_New_Non_Standard_Rep (T : Entity_Id) return Boolean;
    --  Returns True if there are representation clauses for type T that are not
@@ -586,8 +580,7 @@ package body Exp_Ch3 is
 
       --  Place body in list of freeze actions for the type.
 
-      Ensure_Freeze_Node (Type_Id);
-      Append_Freeze_Actions (Type_Id, New_List (Body_Node));
+      Append_Freeze_Action (Type_Id, Body_Node);
    end Build_Access_Subprogram_Wrapper_Body;
 
    ---------------------------
@@ -5501,7 +5494,7 @@ package body Exp_Ch3 is
       Comp_Typ    : Entity_Id;
       Predef_List : List_Id;
 
-      Wrapper_Decl_List : List_Id := No_List;
+      Wrapper_Decl_List : List_Id;
       Wrapper_Body_List : List_Id := No_List;
 
       Renamed_Eq : Node_Id := Empty;
@@ -5912,9 +5905,7 @@ package body Exp_Ch3 is
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden
          --  inherited functions, then add their bodies to the freeze actions.
 
-         if Present (Wrapper_Body_List) then
-            Append_Freeze_Actions (Typ, Wrapper_Body_List);
-         end if;
+         Append_Freeze_Actions (Typ, Wrapper_Body_List);
 
          --  Create extra formals for the primitive operations of the type.
          --  This must be done before analyzing the body of the initialization
@@ -10366,13 +10357,13 @@ package body Exp_Ch3 is
       return Decl_List;
    end Make_Null_Procedure_Specs;
 
-   -------------------------------------
-   -- Make_Predefined_Primitive_Specs --
-   -------------------------------------
+   ---------------------------------------
+   -- Make_Predefined_Primitive_Eq_Spec --
+   ---------------------------------------
 
-   procedure Make_Predefined_Primitive_Specs
+   procedure Make_Predefined_Primitive_Eq_Spec
      (Tag_Typ     : Entity_Id;
-      Predef_List : out List_Id;
+      Predef_List : List_Id;
       Renamed_Eq  : out Entity_Id)
    is
       function Is_Predefined_Eq_Renaming (Prim : Node_Id) return Boolean;
@@ -10394,10 +10385,10 @@ package body Exp_Ch3 is
 
       --  Local variables
 
-      Loc       : constant Source_Ptr := Sloc (Tag_Typ);
-      Res       : constant List_Id    := New_List;
-      Eq_Name   : Name_Id             := Name_Op_Eq;
-      Eq_Needed : Boolean;
+      Loc : constant Source_Ptr := Sloc (Tag_Typ);
+
+      Eq_Name   : Name_Id := Name_Op_Eq;
+      Eq_Needed : Boolean := True;
       Eq_Spec   : Node_Id;
       Prim      : Elmt_Id;
 
@@ -10405,9 +10396,140 @@ package body Exp_Ch3 is
       --  Set to True if Tag_Typ has a primitive that renames the predefined
       --  equality operator. Used to implement (RM 8-5-4(8)).
 
-      use Exp_Put_Image;
-
    --  Start of processing for Make_Predefined_Primitive_Specs
+
+   begin
+      Renamed_Eq := Empty;
+
+      Prim := First_Elmt (Primitive_Operations (Tag_Typ));
+      while Present (Prim) loop
+
+         --  If a primitive is encountered that renames the predefined equality
+         --  operator before reaching any explicit equality primitive, then we
+         --  still need to create a predefined equality function, because calls
+         --  to it can occur via the renaming. A new name is created for the
+         --  equality to avoid conflicting with any user-defined equality.
+         --  (Note that this doesn't account for renamings of equality nested
+         --  within subpackages???)
+
+         if Is_Predefined_Eq_Renaming (Node (Prim)) then
+            Has_Predef_Eq_Renaming := True;
+            Eq_Name := New_External_Name (Chars (Node (Prim)), 'E');
+
+         --  User-defined equality
+
+         elsif Is_User_Defined_Equality (Node (Prim)) then
+            if No (Alias (Node (Prim)))
+              or else Nkind (Unit_Declaration_Node (Node (Prim))) =
+                        N_Subprogram_Renaming_Declaration
+            then
+               Eq_Needed := False;
+               exit;
+
+            --  If the parent is not an interface type and has an abstract
+            --  equality function explicitly defined in the sources, then the
+            --  inherited equality is abstract as well, and no body can be
+            --  created for it.
+
+            elsif not Is_Interface (Etype (Tag_Typ))
+              and then Present (Alias (Node (Prim)))
+              and then Comes_From_Source (Alias (Node (Prim)))
+              and then Is_Abstract_Subprogram (Alias (Node (Prim)))
+            then
+               Eq_Needed := False;
+               exit;
+
+            --  If the type has an equality function corresponding with a
+            --  primitive defined in an interface type, the inherited equality
+            --  is abstract as well, and no body can be created for it.
+
+            elsif Present (Alias (Node (Prim)))
+              and then Comes_From_Source (Ultimate_Alias (Node (Prim)))
+              and then
+                Is_Interface
+                  (Find_Dispatching_Type (Ultimate_Alias (Node (Prim))))
+            then
+               Eq_Needed := False;
+               exit;
+            end if;
+         end if;
+
+         Next_Elmt (Prim);
+      end loop;
+
+      --  If a renaming of predefined equality was found but there was no
+      --  user-defined equality (so Eq_Needed is still true), then set the name
+      --  back to Name_Op_Eq. But in the case where a user-defined equality was
+      --  located after such a renaming, then the predefined equality function
+      --  is still needed, so Eq_Needed must be set back to True.
+
+      if Eq_Name /= Name_Op_Eq then
+         if Eq_Needed then
+            Eq_Name := Name_Op_Eq;
+         else
+            Eq_Needed := True;
+         end if;
+      end if;
+
+      if Eq_Needed then
+         Eq_Spec := Predef_Spec_Or_Body (Loc,
+           Tag_Typ => Tag_Typ,
+           Name    => Eq_Name,
+           Profile => New_List (
+             Make_Parameter_Specification (Loc,
+               Defining_Identifier =>
+                 Make_Defining_Identifier (Loc, Name_X),
+               Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)),
+
+             Make_Parameter_Specification (Loc,
+               Defining_Identifier =>
+                 Make_Defining_Identifier (Loc, Name_Y),
+               Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
+             Ret_Type => Standard_Boolean);
+         Append_To (Predef_List, Eq_Spec);
+
+         if Has_Predef_Eq_Renaming then
+            Renamed_Eq := Defining_Unit_Name (Specification (Eq_Spec));
+
+            Prim := First_Elmt (Primitive_Operations (Tag_Typ));
+            while Present (Prim) loop
+
+               --  Any renamings of equality that appeared before an overriding
+               --  equality must be updated to refer to the entity for the
+               --  predefined equality, otherwise calls via the renaming would
+               --  get incorrectly resolved to call the user-defined equality
+               --  function.
+
+               if Is_Predefined_Eq_Renaming (Node (Prim)) then
+                  Set_Alias (Node (Prim), Renamed_Eq);
+
+               --  Exit upon encountering a user-defined equality
+
+               elsif Chars (Node (Prim)) = Name_Op_Eq
+                 and then No (Alias (Node (Prim)))
+               then
+                  exit;
+               end if;
+
+               Next_Elmt (Prim);
+            end loop;
+         end if;
+      end if;
+   end Make_Predefined_Primitive_Eq_Spec;
+
+   -------------------------------------
+   -- Make_Predefined_Primitive_Specs --
+   -------------------------------------
+
+   procedure Make_Predefined_Primitive_Specs
+     (Tag_Typ     : Entity_Id;
+      Predef_List : out List_Id;
+      Renamed_Eq  : out Entity_Id)
+   is
+      Loc : constant Source_Ptr := Sloc (Tag_Typ);
+      Res : constant List_Id    := New_List;
+
+      use Exp_Put_Image;
 
    begin
       Renamed_Eq := Empty;
@@ -10462,126 +10584,10 @@ package body Exp_Ch3 is
 
       --  Spec of "=" is expanded if the type is not limited and if a user
       --  defined "=" was not already declared for the non-full view of a
-      --  private extension
+      --  private extension.
 
       if not Is_Limited_Type (Tag_Typ) then
-         Eq_Needed := True;
-         Prim := First_Elmt (Primitive_Operations (Tag_Typ));
-         while Present (Prim) loop
-
-            --  If a primitive is encountered that renames the predefined
-            --  equality operator before reaching any explicit equality
-            --  primitive, then we still need to create a predefined equality
-            --  function, because calls to it can occur via the renaming. A
-            --  new name is created for the equality to avoid conflicting with
-            --  any user-defined equality. (Note that this doesn't account for
-            --  renamings of equality nested within subpackages???)
-
-            if Is_Predefined_Eq_Renaming (Node (Prim)) then
-               Has_Predef_Eq_Renaming := True;
-               Eq_Name := New_External_Name (Chars (Node (Prim)), 'E');
-
-            --  User-defined equality
-
-            elsif Is_User_Defined_Equality (Node (Prim)) then
-               if No (Alias (Node (Prim)))
-                 or else Nkind (Unit_Declaration_Node (Node (Prim))) =
-                           N_Subprogram_Renaming_Declaration
-               then
-                  Eq_Needed := False;
-                  exit;
-
-               --  If the parent is not an interface type and has an abstract
-               --  equality function explicitly defined in the sources, then
-               --  the inherited equality is abstract as well, and no body can
-               --  be created for it.
-
-               elsif not Is_Interface (Etype (Tag_Typ))
-                 and then Present (Alias (Node (Prim)))
-                 and then Comes_From_Source (Alias (Node (Prim)))
-                 and then Is_Abstract_Subprogram (Alias (Node (Prim)))
-               then
-                  Eq_Needed := False;
-                  exit;
-
-               --  If the type has an equality function corresponding with
-               --  a primitive defined in an interface type, the inherited
-               --  equality is abstract as well, and no body can be created
-               --  for it.
-
-               elsif Present (Alias (Node (Prim)))
-                 and then Comes_From_Source (Ultimate_Alias (Node (Prim)))
-                 and then
-                   Is_Interface
-                     (Find_Dispatching_Type (Ultimate_Alias (Node (Prim))))
-               then
-                  Eq_Needed := False;
-                  exit;
-               end if;
-            end if;
-
-            Next_Elmt (Prim);
-         end loop;
-
-         --  If a renaming of predefined equality was found but there was no
-         --  user-defined equality (so Eq_Needed is still true), then set the
-         --  name back to Name_Op_Eq. But in the case where a user-defined
-         --  equality was located after such a renaming, then the predefined
-         --  equality function is still needed, so Eq_Needed must be set back
-         --  to True.
-
-         if Eq_Name /= Name_Op_Eq then
-            if Eq_Needed then
-               Eq_Name := Name_Op_Eq;
-            else
-               Eq_Needed := True;
-            end if;
-         end if;
-
-         if Eq_Needed then
-            Eq_Spec := Predef_Spec_Or_Body (Loc,
-              Tag_Typ => Tag_Typ,
-              Name    => Eq_Name,
-              Profile => New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier =>
-                    Make_Defining_Identifier (Loc, Name_X),
-                  Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc)),
-
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier =>
-                    Make_Defining_Identifier (Loc, Name_Y),
-                  Parameter_Type      => New_Occurrence_Of (Tag_Typ, Loc))),
-                Ret_Type => Standard_Boolean);
-            Append_To (Res, Eq_Spec);
-
-            if Has_Predef_Eq_Renaming then
-               Renamed_Eq := Defining_Unit_Name (Specification (Eq_Spec));
-
-               Prim := First_Elmt (Primitive_Operations (Tag_Typ));
-               while Present (Prim) loop
-
-                  --  Any renamings of equality that appeared before an
-                  --  overriding equality must be updated to refer to the
-                  --  entity for the predefined equality, otherwise calls via
-                  --  the renaming would get incorrectly resolved to call the
-                  --  user-defined equality function.
-
-                  if Is_Predefined_Eq_Renaming (Node (Prim)) then
-                     Set_Alias (Node (Prim), Renamed_Eq);
-
-                  --  Exit upon encountering a user-defined equality
-
-                  elsif Chars (Node (Prim)) = Name_Op_Eq
-                    and then No (Alias (Node (Prim)))
-                  then
-                     exit;
-                  end if;
-
-                  Next_Elmt (Prim);
-               end loop;
-            end if;
-         end if;
+         Make_Predefined_Primitive_Eq_Spec (Tag_Typ, Res, Renamed_Eq);
 
          --  Spec for dispatching assignment
 
@@ -10926,31 +10932,21 @@ package body Exp_Ch3 is
            For_Body => False);
    end Predef_Stream_Attr_Spec;
 
-   ---------------------------------
-   -- Predefined_Primitive_Bodies --
-   ---------------------------------
+   ----------------------------------
+   -- Predefined_Primitive_Eq_Body --
+   ----------------------------------
 
-   function Predefined_Primitive_Bodies
-     (Tag_Typ    : Entity_Id;
-      Renamed_Eq : Entity_Id) return List_Id
+   procedure Predefined_Primitive_Eq_Body
+     (Tag_Typ     : Entity_Id;
+      Predef_List : List_Id;
+      Renamed_Eq  : Entity_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (Tag_Typ);
-      Res       : constant List_Id    := New_List;
-      Adj_Call  : Node_Id;
       Decl      : Node_Id;
-      Fin_Call  : Node_Id;
-      Prim      : Elmt_Id;
       Eq_Needed : Boolean;
       Eq_Name   : Name_Id;
-      Ent       : Entity_Id;
-
-      pragma Warnings (Off, Ent);
-
-      use Exp_Put_Image;
+      Prim      : Elmt_Id;
 
    begin
-      pragma Assert (not Is_Interface (Tag_Typ));
-
       --  See if we have a predefined "=" operator
 
       if Present (Renamed_Eq) then
@@ -11003,6 +10999,48 @@ package body Exp_Ch3 is
             Next_Elmt (Prim);
          end loop;
       end if;
+
+      --  If equality is needed, we will have its name
+
+      pragma Assert (Eq_Needed = Present (Eq_Name));
+
+      --  Body for equality
+
+      if Eq_Needed then
+         Decl := Make_Eq_Body (Tag_Typ, Eq_Name);
+         Append_To (Predef_List, Decl);
+      end if;
+
+      --  Body for inequality (if required)
+
+      Decl := Make_Neq_Body (Tag_Typ);
+
+      if Present (Decl) then
+         Append_To (Predef_List, Decl);
+      end if;
+   end Predefined_Primitive_Eq_Body;
+
+   ---------------------------------
+   -- Predefined_Primitive_Bodies --
+   ---------------------------------
+
+   function Predefined_Primitive_Bodies
+     (Tag_Typ    : Entity_Id;
+      Renamed_Eq : Entity_Id) return List_Id
+   is
+      Loc      : constant Source_Ptr := Sloc (Tag_Typ);
+      Res      : constant List_Id    := New_List;
+      Adj_Call : Node_Id;
+      Decl     : Node_Id;
+      Fin_Call : Node_Id;
+      Ent      : Entity_Id;
+
+      pragma Warnings (Off, Ent);
+
+      use Exp_Put_Image;
+
+   begin
+      pragma Assert (not Is_Interface (Tag_Typ));
 
       --  Body of _Size
 
@@ -11118,21 +11156,9 @@ package body Exp_Ch3 is
       end if;
 
       if not Is_Limited_Type (Tag_Typ) then
+         --  Body for equality and inequality
 
-         --  Body for equality
-
-         if Eq_Needed then
-            Decl := Make_Eq_Body (Tag_Typ, Eq_Name);
-            Append_To (Res, Decl);
-         end if;
-
-         --  Body for inequality (if required)
-
-         Decl := Make_Neq_Body (Tag_Typ);
-
-         if Present (Decl) then
-            Append_To (Res, Decl);
-         end if;
+         Predefined_Primitive_Eq_Body (Tag_Typ, Res, Renamed_Eq);
 
          --  Body for dispatching assignment
 

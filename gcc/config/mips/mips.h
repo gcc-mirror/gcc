@@ -243,6 +243,10 @@ struct mips_cpu_info {
 				 && (mips_isa_rev >= 6 \
 				     || ISA_HAS_MSA))
 
+/* ISA load/store instructions can handle unaligned address */
+#define ISA_HAS_UNALIGNED_ACCESS (TARGET_UNALIGNED_ACCESS \
+				 && (mips_isa_rev >= 6))
+
 /* The ISA compression flags that are currently in effect.  */
 #define TARGET_COMPRESSION (target_flags & (MASK_MIPS16 | MASK_MICROMIPS))
 
@@ -1684,7 +1688,7 @@ FP_ASM_SPEC "\
   (ISA_HAS_MSA ? BITS_PER_MSA_REG : LONG_DOUBLE_TYPE_SIZE)
 
 /* All accesses must be aligned.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (!ISA_HAS_UNALIGNED_ACCESS)
 
 /* Define this if you wish to imitate the way many other C compilers
    handle alignment of bitfields and the structures that contain

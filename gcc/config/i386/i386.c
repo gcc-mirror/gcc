@@ -12150,7 +12150,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	  assemble_name (file, name);
 	}
       if (!TARGET_MACHO && !(TARGET_64BIT && TARGET_PECOFF)
-	  && code == 'P' && ! SYMBOL_REF_LOCAL_P (x))
+	  && code == 'P' && ix86_call_use_plt_p (x))
 	fputs ("@PLT", file);
       break;
 
@@ -15980,6 +15980,27 @@ ix86_zero_extend_to_Pmode (rtx exp)
   return force_reg (Pmode, convert_to_mode (Pmode, exp, 1));
 }
 
+/* Return true if the function is called via PLT.   */
+
+bool
+ix86_call_use_plt_p (rtx call_op)
+{
+  if (SYMBOL_REF_LOCAL_P (call_op))
+    {
+      if (SYMBOL_REF_DECL (call_op)
+	  && TREE_CODE (SYMBOL_REF_DECL (call_op)) == FUNCTION_DECL)
+	{
+	  /* NB: All ifunc functions must be called via PLT.  */
+	  cgraph_node *node
+	    = cgraph_node::get (SYMBOL_REF_DECL (call_op));
+	  if (node && node->ifunc_resolver)
+	    return true;
+	}
+      return false;
+    }
+  return true;
+}
+
 /* Return true if the function being called was marked with attribute
    "noplt" or using -fno-plt and we are compiling for non-PIC.  We need
    to handle the non-PIC case in the backend because there is no easy
@@ -19194,9 +19215,17 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
       return NO_REGS;
     }
 
-  /* Prefer SSE regs only, if we can use them for math.  */
+  /* Prefer SSE if we can use them for math.  Also allow integer regs
+     when moves between register units are cheap.  */
   if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
-    return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
+    {
+      if (TARGET_INTER_UNIT_MOVES_FROM_VEC
+	  && TARGET_INTER_UNIT_MOVES_TO_VEC
+	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode))
+	return INT_SSE_CLASS_P (regclass) ? regclass : NO_REGS;
+      else
+	return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
+    }
 
   /* Generally when we see PLUS here, it's the function invariant
      (plus soft-fp const_int).  Which can only be computed into general
@@ -24581,6 +24610,9 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME \
   ix86_get_multilib_abi_name
+
+#undef TARGET_IFUNC_REF_LOCAL_OK
+#define TARGET_IFUNC_REF_LOCAL_OK hook_bool_void_true
 
 static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {

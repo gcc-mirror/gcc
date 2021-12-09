@@ -1148,7 +1148,7 @@ package body GNAT.Debug_Pools is
       Modulo : constant Storage_Count :=
                  Size_In_Storage_Elements mod Dead_Bytes;
    begin
-      M.all := (others => Dead);
+      M.all := [others => Dead];
 
       --  Any bytes left (up to three of them)
 
@@ -1942,7 +1942,7 @@ package body GNAT.Debug_Pools is
          Grand_Total : Float;
 
          Max  : array (1 .. Size) of Traceback_Htable_Elem_Ptr :=
-           (others => null);
+           [others => null];
          --  Sorted array for the biggest memory users
 
          Allocated_In_Pool : Byte_Count;

@@ -8308,11 +8308,16 @@ public:
         YYYY-MM-DDTHH:MM:SS.FFFFFFFTZ (where F is fractional seconds and TZ
         is the time zone).
 
+        Default behaviour:
         Note that the number of digits in the fractional seconds varies with the
         number of fractional seconds. It's a maximum of 7 (which would be
         hnsecs), but only has as many as are necessary to hold the correct value
         (so no trailing zeroes), and if there are no fractional seconds, then
         there is no decimal point.
+
+        The optional parameter "prec" allows to change the default behavior by
+        specifying the precision of the fractional seconds. The accepted values
+        are in the range [-1, 7], where -1 represents the default behavior.
 
         If this $(LREF SysTime)'s time zone is
         $(REF LocalTime,std,datetime,timezone), then TZ is empty. If its time
@@ -8325,25 +8330,30 @@ public:
         Params:
             writer = A `char` accepting
             $(REF_ALTTEXT output range, isOutputRange, std, range, primitives)
+            prec = An `int` representing the desired precision. Acceptable values range from -1 to 7, where -1 represents the default behavior.
         Returns:
             A `string` when not using an output range; `void` otherwise.
       +/
-    string toISOExtString() @safe const nothrow scope
+    string toISOExtString(int prec = -1) @safe const nothrow scope
     {
+        assert(prec >= -1 && prec <= 7, "Precision must be in the range [-1, 7]");
+
         import std.array : appender;
         auto app = appender!string();
         app.reserve(35);
         try
-            toISOExtString(app);
+            toISOExtString(app, prec);
         catch (Exception e)
             assert(0, "toISOExtString() threw.");
         return app.data;
     }
 
     /// ditto
-    void toISOExtString(W)(ref W writer) const scope
+    void toISOExtString(W)(ref W writer, int prec = -1) const scope
     if (isOutputRange!(W, char))
     {
+        assert(prec >= -1 && prec <= 7, "Precision must be in the range [-1, 7]");
+
         immutable adjustedTime = adjTime;
         long hnsecs = adjustedTime;
 
@@ -8365,14 +8375,14 @@ public:
         if (_timezone is LocalTime())
         {
             dateTime.toISOExtString(writer);
-            fracSecsToISOString(writer, cast(int) hnsecs);
+            fracSecsToISOString(writer, cast(int) hnsecs, prec);
             return;
         }
 
         if (_timezone is UTC())
         {
             dateTime.toISOExtString(writer);
-            fracSecsToISOString(writer, cast(int) hnsecs);
+            fracSecsToISOString(writer, cast(int) hnsecs, prec);
             put(writer, 'Z');
             return;
         }
@@ -8380,7 +8390,7 @@ public:
         immutable utcOffset = dur!"hnsecs"(adjustedTime - stdTime);
 
         dateTime.toISOExtString(writer);
-        fracSecsToISOString(writer, cast(int) hnsecs);
+        fracSecsToISOString(writer, cast(int) hnsecs, prec);
         SimpleTimeZone.toISOExtString(writer, utcOffset);
     }
 
@@ -8401,6 +8411,15 @@ public:
 
         assert(SysTime(DateTime(-4, 1, 5, 0, 0, 2), hnsecs(520_920)).toISOExtString() ==
                "-0004-01-05T00:00:02.052092");
+
+        assert(SysTime(DateTime(-4, 1, 5, 0, 0, 2), hnsecs(520_920)).toISOExtString(4) ==
+               "-0004-01-05T00:00:02.0520");
+
+        assert(SysTime(DateTime(-4, 1, 5, 0, 0, 2), hnsecs(520_920)).toISOExtString(2) ==
+               "-0004-01-05T00:00:02.05");
+
+        assert(SysTime(DateTime(-4, 1, 5, 0, 0, 2), hnsecs(520_920)).toISOExtString(7) ==
+               "-0004-01-05T00:00:02.0520920");
     }
 
     @safe unittest
@@ -11025,32 +11044,41 @@ private:
 /+
     Returns the given hnsecs as an ISO string of fractional seconds.
   +/
-string fracSecsToISOString(int hnsecs) @safe pure nothrow
+string fracSecsToISOString(int hnsecs, int prec = -1) @safe pure nothrow
 {
     import std.array : appender;
     auto w = appender!string();
     try
-        fracSecsToISOString(w, hnsecs);
+        fracSecsToISOString(w, hnsecs, prec);
     catch (Exception e)
         assert(0, "fracSecsToISOString() threw.");
     return w.data;
 }
 
-void fracSecsToISOString(W)(ref W writer, int hnsecs)
+void fracSecsToISOString(W)(ref W writer, int hnsecs, int prec = -1)
 {
     import std.conv : toChars;
     import std.range : padLeft;
 
     assert(hnsecs >= 0);
 
+    if (prec == 0)
+        return;
+
     if (hnsecs == 0)
         return;
 
     put(writer, '.');
     auto chars = hnsecs.toChars.padLeft('0', 7);
-    while (chars.back == '0')
-        chars.popBack();
-    put(writer, chars);
+
+    if (prec == -1)
+    {
+        while (chars.back == '0')
+            chars.popBack();
+        put(writer, chars);
+    }
+    else
+        put(writer, chars[0 .. prec]);
 }
 
 @safe unittest

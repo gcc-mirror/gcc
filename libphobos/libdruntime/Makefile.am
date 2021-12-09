@@ -280,8 +280,9 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/sys/procfs.d core/sys/linux/sys/signalfd.d \
 	core/sys/linux/sys/socket.d core/sys/linux/sys/sysinfo.d \
 	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
-	core/sys/linux/termios.d core/sys/linux/time.d \
-	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
+	core/sys/linux/syscalls.d core/sys/linux/termios.d \
+	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
+	core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/err.d core/sys/netbsd/execinfo.d \
@@ -294,12 +295,13 @@ DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 
 DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
 	core/sys/openbsd/err.d core/sys/openbsd/execinfo.d \
-	core/sys/openbsd/stdlib.d core/sys/openbsd/string.d \
-	core/sys/openbsd/sys/cdefs.d core/sys/openbsd/sys/elf.d \
-	core/sys/openbsd/sys/elf32.d core/sys/openbsd/sys/elf64.d \
-	core/sys/openbsd/sys/elf_common.d core/sys/openbsd/sys/link_elf.d \
-	core/sys/openbsd/sys/mman.d core/sys/openbsd/sys/sysctl.d \
-	core/sys/openbsd/time.d core/sys/openbsd/unistd.d
+	core/sys/openbsd/pthread_np.d core/sys/openbsd/stdlib.d \
+	core/sys/openbsd/string.d core/sys/openbsd/sys/cdefs.d \
+	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
+	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
+	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
+	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d \
+	core/sys/openbsd/unistd.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \

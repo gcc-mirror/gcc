@@ -1285,7 +1285,7 @@ cmp_attrib_identifiers (const_tree attr1, const_tree attr2)
 /* Compare two constructor-element-type constants.  Return 1 if the lists
    are known to be equal; otherwise return 0.  */
 
-static bool
+bool
 simple_cst_list_equal (const_tree l1, const_tree l2)
 {
   while (l1 != NULL_TREE && l2 != NULL_TREE)

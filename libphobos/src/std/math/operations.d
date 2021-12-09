@@ -1717,11 +1717,12 @@ if (isFloatingPoint!T)
     bool negative;
 }
 
-FloatingPointBitpattern!T extractBitpattern(T)(T val) @trusted
+FloatingPointBitpattern!T extractBitpattern(T)(const(T) value) @trusted
 if (isFloatingPoint!T)
 {
     import std.math : floatTraits, RealFormat;
 
+    T val = value;
     FloatingPointBitpattern!T ret;
 
     alias F = floatTraits!T;

@@ -68,7 +68,7 @@ private
    Initial_D : constant := 16#10325476#;
 
    Initial_State : constant Hash_State.State :=
-                     (Initial_A, Initial_B, Initial_C, Initial_D);
+                     [Initial_A, Initial_B, Initial_C, Initial_D];
    --  Initialization vector from RFC 1321
 
 end GNAT.Secure_Hashes.MD5;

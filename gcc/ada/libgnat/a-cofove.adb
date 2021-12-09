@@ -763,7 +763,7 @@ is
 
       J := To_Array_Index (Before);
 
-      Container.Elements (J .. J - 1 + Count) := (others => New_Item);
+      Container.Elements (J .. J - 1 + Count) := [others => New_Item];
    end Insert;
 
    procedure Insert
@@ -1304,7 +1304,7 @@ is
          return
            (Capacity => Length,
             Last     => Last,
-            Elements => (others => New_Item));
+            Elements => [others => New_Item]);
       end;
    end To_Vector;
 

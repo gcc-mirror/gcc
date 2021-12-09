@@ -436,6 +436,10 @@ ftransition=field
 D RejectNegative
 List all non-mutable fields which occupy an object instance.
 
+ftransition=in
+D RejectNegative
+List all usages of 'in' on parameter.
+
 ftransition=nogc
 D RejectNegative
 List all hidden GC allocations.

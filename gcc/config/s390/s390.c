@@ -15926,7 +15926,7 @@ s390_valid_target_attribute_inner_p (tree args,
 	  new_opts_set->x_target_flags |= mask;
 	}
 
-      else if (cl_options[opt].var_type == CLVC_BOOLEAN)
+      else if (cl_options[opt].var_type == CLVC_INTEGER)
 	{
 	  int value;
 

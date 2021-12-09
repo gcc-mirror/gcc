@@ -1056,26 +1056,23 @@ Note: In the special case where only a single function is provided
 (`F[0]`).
 */
 template adjoin(F...)
-if (F.length == 1)
+if (F.length >= 1)
 {
-    alias adjoin = F[0];
-}
-/// ditto
-template adjoin(F...)
-if (F.length > 1)
-{
-    auto adjoin(V...)(auto ref V a)
-    {
-        import std.typecons : tuple;
-        import std.meta : staticMap;
-
-        auto resultElement(size_t i)()
+    static if (F.length == 1)
+        alias adjoin = F[0];
+    else
+        auto adjoin(V...)(auto ref V a)
         {
-            return F[i](a);
-        }
+            import std.typecons : tuple;
+            import std.meta : staticMap;
 
-        return tuple(staticMap!(resultElement, Iota!(F.length)));
-    }
+            auto resultElement(size_t i)()
+            {
+                return F[i](a);
+            }
+
+            return tuple(staticMap!(resultElement, Iota!(F.length)));
+        }
 }
 
 ///

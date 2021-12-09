@@ -2,7 +2,7 @@
 // REQUIRED_ARGS: -O
 // POST_SCRIPT: compilable/extra-files/objdump-postscript.sh
 // only testing on SYSV-ABI, but backend code is identical across platforms
-// DISABLED: win32 win64 osx linux32 freebsd32 freebsd64
+// DISABLED: win32 win64 osx linux32 freebsd32 freebsd64 openbsd32 openbsd64
 
 bool test_ltz(ubyte x) { return x <  0; }
 bool test_lez(ubyte x) { return x <= 0; }

@@ -673,6 +673,11 @@ package body Sprint is
             end if;
          end loop;
       end if;
+
+      --  See above for the rationale, but we cannot do it earlier for them
+
+      Print_Generated_Code := False;
+      Debug_Generated_Code := False;
    end Source_Dump;
 
    ---------------------

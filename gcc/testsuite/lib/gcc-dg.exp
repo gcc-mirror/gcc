@@ -1191,8 +1191,18 @@ proc process-message { msgproc msgprefix dgargs } {
     upvar dg-messages dg-messages
 
     if { [llength $dgargs] == 5 } {
-	set num [get-absolute-line [lindex $dgargs 0] [lindex $dgargs 4]]
-	set dgargs [lreplace $dgargs 4 4 $num]
+	set useline [lindex $dgargs 0]
+
+	# Resolve absolute line number.
+	set line [get-absolute-line $useline [lindex $dgargs 4]]
+	set dgargs [lreplace $dgargs 4 4 $line]
+
+	if { $line != $useline } {
+	    # Make sure that we get unique test names if different USELINEs
+	    # refer to the same LINE.
+	    set comment "[lindex $dgargs 2] at line $useline"
+	    set dgargs [lreplace $dgargs 2 2 $comment]
+	}
     }
 
     # Process the dg- directive, including adding the regular expression

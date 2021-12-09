@@ -186,7 +186,7 @@ class ExpStatement : public Statement
 public:
     Expression *exp;
 
-    static ExpStatement *create(Loc loc, Expression *exp);
+    static ExpStatement *create(const Loc &loc, Expression *exp);
     ExpStatement *syntaxCopy();
 
     void accept(Visitor *v) { v->visit(this); }
@@ -218,7 +218,7 @@ class CompoundStatement : public Statement
 public:
     Statements *statements;
 
-    static CompoundStatement *create(Loc loc, Statement *s1, Statement *s2);
+    static CompoundStatement *create(const Loc &loc, Statement *s1, Statement *s2);
     CompoundStatement *syntaxCopy();
     ReturnStatement *endsWithReturnStatement();
     Statement *last();
@@ -615,7 +615,7 @@ public:
     Statement *tryBody;   // set to enclosing TryCatchStatement or TryFinallyStatement if in _body portion
     bool bodyFallsThru;   // true if _body falls through to finally
 
-    static TryFinallyStatement *create(Loc loc, Statement *body, Statement *finalbody);
+    static TryFinallyStatement *create(const Loc &loc, Statement *body, Statement *finalbody);
     TryFinallyStatement *syntaxCopy();
     bool hasBreak() const;
     bool hasContinue() const;

@@ -10206,7 +10206,7 @@ package body Exp_Ch6 is
       --  If function is inherited, a conversion may be necessary.
 
       if Nkind (Par) = N_Assignment_Statement then
-         Last_Actual :=  Name (Par);
+         Last_Actual := Name (Par);
 
          if not Comes_From_Source (Orig_Func)
            and then Etype (Orig_Func) /= Etype (Func_Id)

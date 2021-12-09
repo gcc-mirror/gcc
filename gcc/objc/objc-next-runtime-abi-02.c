@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "objc-runtime-hooks.h"
 #include "objc-runtime-shared-support.h"
+#include "objc-next-metadata-tags.h"
 #include "objc-encoding.h"
 
 /* ABI 2 Private definitions. */
@@ -179,14 +180,6 @@ enum objc_v2_tree_index
 #define objc2_end_catch_decl	objc_v2_global_trees[OCTI_V2_END_CATCH_DECL]
 #define objc_rethrow_exception_decl \
 				objc_v2_global_trees[OCTI_V2_RETHROW_DECL]
-
-/* rt_trees identifiers - shared between NeXT implementations.  These allow
-   the FE to tag meta-data in a manner that survives LTO and can be used when
-   the  runtime requires that certain meta-data items appear in particular
-   named sections.  */
-
-#include "objc-next-metadata-tags.h"
-extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
 
 /* The OCTI_V2_... enumeration itself is in above.  */
 static GTY(()) tree objc_v2_global_trees[OCTI_V2_MAX];

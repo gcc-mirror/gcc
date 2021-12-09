@@ -771,7 +771,7 @@ private void getoptImpl(T...)(ref string[] args, ref configuration cfg,
                     args = args.remove(i);
                 break;
             }
-            if (!a.length || a[0] != optionChar)
+            if (a.length < 2 || a[0] != optionChar)
             {
                 // not an option
                 if (cfg.stopOnFirstNonOption) break;
@@ -1888,6 +1888,17 @@ void defaultGetoptFormatter(Output)(Output output, string text, Option[] opt, st
     assert(n == -50);
     assert(c == '-');
     assert(f == "-");
+}
+
+// Hyphen at the option value;
+// https://issues.dlang.org/show_bug.cgi?id=22394
+@safe unittest
+{
+    auto args = ["program", "-"];
+
+    getopt(args);
+
+    assert(args == ["program", "-"]);
 }
 
 @safe unittest

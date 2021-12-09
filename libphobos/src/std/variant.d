@@ -78,7 +78,7 @@ import std.meta, std.traits, std.typecons;
 /++
     Gives the `sizeof` the largest type given.
 
-    See_Also: https://forum.dlang.org/thread/wbpnncxepehgcswhuazl@forum.dlang.org?page=1
+    See_Also: $(LINK https://forum.dlang.org/thread/wbpnncxepehgcswhuazl@forum.dlang.org?page=1)
   +/
 template maxSize(Ts...)
 {

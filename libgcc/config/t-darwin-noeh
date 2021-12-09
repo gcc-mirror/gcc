@@ -1,4 +1,0 @@
-# Most Darwin versions get their unwinder from libSystem.
-# so remove the unwinder from the shared lib.
-# We still need it in the _eh.a for Darwin8/9.
-LIB2ADDEHSHARED =

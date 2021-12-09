@@ -1910,7 +1910,6 @@ pure @safe unittest
 }
 
 
-private:
 // Converts a big uint to a hexadecimal string.
 //
 // Optionally, a separator character (eg, an underscore) may be added between
@@ -2185,7 +2184,6 @@ do
 }
 
 
-private:
 // ------------------------
 // These in-place functions are only for internal use; they are incompatible
 // with COW.
@@ -2628,8 +2626,6 @@ again:
     }
 }
 
-private:
-
 // TODO: Replace with a library call
 void itoaZeroPadded(char[] output, uint value)
     pure nothrow @safe @nogc
@@ -2668,8 +2664,6 @@ void toHexZeroPadded(char[] output, uint value,
         value >>= 4;
     }
 }
-
-private:
 
 // Returns the highest value of i for which left[i]!=right[i],
 // or 0 if left[] == right[]

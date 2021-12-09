@@ -103,8 +103,9 @@
    high-speed extension allocators, covered below. Thus, all
    allocation and deallocation depends on the base class.
    </p><p>
-     The base class that <code class="classname">allocator</code> is derived from
-     may not be user-configurable.
+     The choice of base class that <code class="classname">allocator</code>
+     is derived from is fixed at the time when GCC is built,
+     and the different choices are not ABI compatible.
 </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="allocator.default"></a>Selecting Default Allocation Policy</h5></div></div></div><p>
      It's difficult to pick an allocation strategy that will provide
    maximum utility, without excessively penalizing some behavior. In
@@ -198,6 +199,10 @@
      Probably the best place to start would be to copy one of the
    extension allocators: say a simple one like
    <code class="classname">new_allocator</code>.
+   </p><p>
+     Since C++11 the minimal interface require for an allocator is
+     much smaller, as <code class="classname">std::allocator_traits</code>
+     can provide default for much of the interface.
    </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.ext"></a>Extension Allocators</h4></div></div></div><p>
     Several other allocators are provided as part of this
     implementation.  The location of the extension allocators and their
@@ -224,9 +229,10 @@
        </p></li><li class="listitem"><p>
        <code class="classname">debug_allocator</code>
        </p><p>
-	 A wrapper around an arbitrary allocator A.  It passes on
-	 slightly increased size requests to A, and uses the extra
-	 memory to store size information.  When a pointer is passed
+	 A wrapper around an arbitrary allocator <code class="classname">A</code>.
+	 It passes on slightly increased size requests to <code class="classname">A</code>,
+	 and uses the extra memory to store size information.
+	 When a pointer is passed
 	 to <code class="function">deallocate()</code>, the stored size is
 	 checked, and <code class="function">assert()</code> is used to
 	 guarantee they match.
@@ -248,41 +254,14 @@
 	 request is passed to <code class="function">::operator new</code>
 	 directly.
        </p><p>
-	 Older versions of this class take a boolean template
-	 parameter, called <code class="varname">thr</code>, and an integer template
-	 parameter, called <code class="varname">inst</code>.
+	 For thread-enabled configurations, the pool is locked with a
+	 single big lock. In some situations, this implementation detail
+	 may result in severe performance degradation.
        </p><p>
-	 The <code class="varname">inst</code> number is used to track additional memory
-      pools.  The point of the number is to allow multiple
-      instantiations of the classes without changing the semantics at
-      all.  All three of
-       </p><pre class="programlisting">
-    typedef  __pool_alloc&lt;true,0&gt;    normal;
-    typedef  __pool_alloc&lt;true,1&gt;    private;
-    typedef  __pool_alloc&lt;true,42&gt;   also_private;
-   </pre><p>
-     behave exactly the same way.  However, the memory pool for each type
-      (and remember that different instantiations result in different types)
-      remains separate.
-   </p><p>
-     The library uses <span class="emphasis"><em>0</em></span> in all its instantiations.  If you
-      wish to keep separate free lists for a particular purpose, use a
-      different number.
-   </p><p>The <code class="varname">thr</code> boolean determines whether the
-   pool should be manipulated atomically or not.  When
-   <code class="varname">thr</code> = <code class="constant">true</code>, the allocator
-   is thread-safe, while <code class="varname">thr</code> =
-   <code class="constant">false</code>, is slightly faster but unsafe for
-   multiple threads.
-   </p><p>
-     For thread-enabled configurations, the pool is locked with a
-     single big lock. In some situations, this implementation detail
-     may result in severe performance degradation.
-   </p><p>
-     (Note that the GCC thread abstraction layer allows us to provide
-     safe zero-overhead stubs for the threading routines, if threads
-     were disabled at configuration time.)
-   </p></li><li class="listitem"><p>
+	 (Note that the GCC thread abstraction layer allows us to provide
+	 safe zero-overhead stubs for the threading routines, if threads
+	 were disabled at configuration time.)
+       </p></li><li class="listitem"><p>
        <code class="classname">__mt_alloc</code>
        </p><p>
 	 A high-performance fixed-size allocator with

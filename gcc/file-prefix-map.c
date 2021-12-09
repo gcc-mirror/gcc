@@ -92,6 +92,7 @@ remap_filename (file_prefix_map *maps, const char *filename)
 /* Linked lists of file_prefix_map structures.  */
 static file_prefix_map *macro_prefix_maps; /* -fmacro-prefix-map  */
 static file_prefix_map *debug_prefix_maps; /* -fdebug-prefix-map  */
+static file_prefix_map *profile_prefix_maps; /* -fprofile-prefix-map  */
 
 /* Record a file prefix mapping for -fmacro-prefix-map.  */
 void
@@ -113,6 +114,14 @@ add_file_prefix_map (const char *arg)
 {
   add_prefix_map (macro_prefix_maps, arg, "-ffile-prefix-map");
   add_prefix_map (debug_prefix_maps, arg, "-ffile-prefix-map");
+  add_prefix_map (profile_prefix_maps, arg, "-ffile-prefix-map");
+}
+
+/* Record a file prefix mapping for -fprofile-prefix-map.  */
+void
+add_profile_prefix_map (const char *arg)
+{
+  add_prefix_map (profile_prefix_maps, arg, "-fprofile-prefix-map");
 }
 
 /* Remap using -fmacro-prefix-map.  Return the GC-allocated new name
@@ -129,4 +138,12 @@ const char *
 remap_debug_filename (const char *filename)
 {
   return remap_filename (debug_prefix_maps, filename);
+}
+
+/* Remap using -fprofile-prefix-map.  Return the GC-allocated new name
+   corresponding to FILENAME or FILENAME if no remapping was performed.  */
+const char *
+remap_profile_filename (const char *filename)
+{
+  return remap_filename (profile_prefix_maps, filename);
 }

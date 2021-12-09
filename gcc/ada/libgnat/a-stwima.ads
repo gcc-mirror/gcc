@@ -181,8 +181,7 @@ private
    overriding procedure Adjust     (Object : in out Wide_Character_Set);
    overriding procedure Finalize   (Object : in out Wide_Character_Set);
 
-   Null_Range : aliased constant Wide_Character_Ranges :=
-                  (1 .. 0 => (Low => ' ', High => ' '));
+   Null_Range : aliased constant Wide_Character_Ranges := [];
 
    Null_Set : constant Wide_Character_Set :=
                 (AF.Controlled with

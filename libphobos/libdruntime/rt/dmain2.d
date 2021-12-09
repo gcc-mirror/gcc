@@ -538,7 +538,7 @@ private extern (C) int _d_run_main2(char[][] args, size_t totalArgsLength, MainF
     return result;
 }
 
-private void formatThrowable(Throwable t, scope void delegate(const scope char[] s) nothrow sink)
+private void formatThrowable(Throwable t, scope void delegate(in char[] s) nothrow sink)
 {
     foreach (u; t)
     {
@@ -667,7 +667,7 @@ extern (C) void _d_print_throwable(Throwable t)
         }
     }
 
-    void sink(const scope char[] buf) scope nothrow
+    void sink(in char[] buf) scope nothrow
     {
         fprintf(stderr, "%.*s", cast(int)buf.length, buf.ptr);
     }

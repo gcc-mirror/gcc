@@ -38,7 +38,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.mtype;
 import dmd.root.array;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.stringtable;
 import dmd.target;
 import dmd.tokens;

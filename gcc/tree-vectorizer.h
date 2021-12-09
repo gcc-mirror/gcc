@@ -328,6 +328,12 @@ struct default_hash_traits<scalar_cond_masked_key>
 
 typedef hash_set<scalar_cond_masked_key> scalar_cond_masked_set_type;
 
+/* Key and map that records association between vector conditions and
+   corresponding loop mask, and is populated by prepare_vec_mask.  */
+
+typedef pair_hash<tree_operand_hash, tree_operand_hash> tree_cond_mask_hash;
+typedef hash_set<tree_cond_mask_hash> vec_cond_masked_set_type;
+
 /* Describes two objects whose addresses must be unequal for the vectorized
    loop to be valid.  */
 typedef std::pair<tree, tree> vec_object_pair;
@@ -646,6 +652,9 @@ public:
 
   /* Set of scalar conditions that have loop mask applied.  */
   scalar_cond_masked_set_type scalar_cond_masked_set;
+
+  /* Set of vector conditions that have loop mask applied.  */
+  vec_cond_masked_set_type vec_cond_masked_set;
 
   /* If we are using a loop mask to align memory addresses, this variable
      contains the number of vector elements that we should skip in the

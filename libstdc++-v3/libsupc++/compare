@@ -555,7 +555,7 @@ namespace std
 	  {
 	    auto __pt = static_cast<const volatile void*>(__t);
 	    auto __pu = static_cast<const volatile void*>(__u);
-	    if (__builtin_is_constant_evaluated())
+	    if (std::__is_constant_evaluated())
 	      return __pt <=> __pu;
 	    auto __it = reinterpret_cast<__UINTPTR_TYPE__>(__pt);
 	    auto __iu = reinterpret_cast<__UINTPTR_TYPE__>(__pu);

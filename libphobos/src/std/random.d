@@ -1799,13 +1799,19 @@ how excellent the source of entropy is.
                 {
                     db 0x0f, 0xc7, 0xf0; // rdrand EAX
                     jnc LnotUsingRdrand;
+                    mov result, EAX;
                     // Some AMD CPUs shipped with bugs where RDRAND could fail
                     // but still set the carry flag to 1. In those cases the
                     // output will be -1.
                     cmp EAX, 0xffff_ffff;
+                    jne LusingRdrand;
+                    // If result was -1 verify RDAND isn't constantly returning -1.
+                    db 0x0f, 0xc7, 0xf0;
+                    jnc LusingRdrand;
+                    cmp EAX, 0xffff_ffff;
                     je LnotUsingRdrand;
-                    mov result, EAX;
                 }
+            LusingRdrand:
                 return result;
             }
         LnotUsingRdrand:
@@ -1853,13 +1859,19 @@ if (isUnsigned!UIntType)
                             {
                                 db 0x0f, 0xc7, 0xf0; // rdrand EAX
                                 jnc LnotUsingRdrand;
+                                mov result, EAX;
                                 // Some AMD CPUs shipped with bugs where RDRAND could fail
                                 // but still set the carry flag to 1. In those cases the
                                 // output will be -1.
                                 cmp EAX, 0xffff_ffff;
+                                jne LusingRdrand;
+                                // If result was -1 verify RDAND isn't constantly returning -1.
+                                db 0x0f, 0xc7, 0xf0;
+                                jnc LusingRdrand;
+                                cmp EAX, 0xffff_ffff;
                                 je LnotUsingRdrand;
-                                mov result, EAX;
                             }
+                        LusingRdrand:
                             return cast(UIntType) result;
                         }
                         else version (D_InlineAsm_X86_64)
@@ -1869,13 +1881,19 @@ if (isUnsigned!UIntType)
                             {
                                 db 0x48, 0x0f, 0xc7, 0xf0; // rdrand RAX
                                 jnc LnotUsingRdrand;
+                                mov result, RAX;
                                 // Some AMD CPUs shipped with bugs where RDRAND could fail
                                 // but still set the carry flag to 1. In those cases the
                                 // output will be -1.
                                 cmp RAX, 0xffff_ffff_ffff_ffff;
+                                jne LusingRdrand;
+                                // If result was -1 verify RDAND isn't constantly returning -1.
+                                db 0x48, 0x0f, 0xc7, 0xf0;
+                                jnc LusingRdrand;
+                                cmp RAX, 0xffff_ffff_ffff_ffff;
                                 je LnotUsingRdrand;
-                                mov result, RAX;
                             }
+                        LusingRdrand:
                             return result;
                         }
                         else

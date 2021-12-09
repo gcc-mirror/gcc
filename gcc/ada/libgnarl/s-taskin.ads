@@ -1157,7 +1157,7 @@ package System.Tasking is
       --  non-terminated task so that the associated storage is automatically
       --  reclaimed when the task terminates.
 
-      Attributes : Attribute_Array := (others => 0);
+      Attributes : Attribute_Array := [others => 0];
       --  Task attributes
 
       --  IMPORTANT Note: the Entry_Queues field is last for efficiency of

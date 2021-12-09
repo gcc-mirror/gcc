@@ -1186,7 +1186,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
     else
       GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
     endif
-    GCC_SPEC_FILES+=vxworks7-cert-rtp-link.spec
+    GCC_SPEC_FILES+=vxworks7-cert-rtp-link__ppcXX.spec
   else
     GCC_SPEC_FILES+=vxworks-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-cert-$(ARCH_STR)-link.spec

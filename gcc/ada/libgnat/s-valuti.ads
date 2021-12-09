@@ -31,16 +31,72 @@
 
 --  This package provides some common utilities used by the s-valxxx files
 
-package System.Val_Util is
-   pragma Pure;
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. Postconditions and
+--  contract cases should not be executed at runtime as well, in order not to
+--  slow down the execution of these functions.
 
-   procedure Bad_Value (S : String);
+pragma Assertion_Policy (Pre            => Ignore,
+                         Post           => Ignore,
+                         Contract_Cases => Ignore,
+                         Ghost          => Ignore);
+
+with System.Case_Util;
+
+package System.Val_Util
+  with SPARK_Mode, Pure
+is
+   pragma Unevaluated_Use_Of_Old (Allow);
+
+   procedure Bad_Value (S : String)
+   with
+     Depends => (null => S);
    pragma No_Return (Bad_Value);
    --  Raises constraint error with message: bad input for 'Value: "xxx"
 
+   function Only_Space_Ghost (S : String; From, To : Integer) return Boolean is
+      (for all J in From .. To => S (J) = ' ')
+   with
+     Ghost,
+     Pre => From > To or else (From >= S'First and then To <= S'Last);
+   --  Ghost function that returns True if S has only space characters from
+   --  index From to index To.
+
+   function First_Non_Space_Ghost (S : String) return Positive
+   with
+     Ghost,
+     Pre  => not Only_Space_Ghost (S, S'First, S'Last),
+     Post => First_Non_Space_Ghost'Result in S'Range
+       and then S (First_Non_Space_Ghost'Result) /= ' '
+       and then Only_Space_Ghost
+         (S, S'First, First_Non_Space_Ghost'Result - 1);
+   --  Ghost function that returns the index of the first non-space character
+   --  in S, which necessarily exists given the precondition on S.
+
    procedure Normalize_String
      (S    : in out String;
-      F, L : out Integer);
+      F, L : out Integer)
+   with
+     Post => (if Only_Space_Ghost (S'Old, S'First, S'Last) then
+                F > L
+              else
+                F >= S'First
+                  and then L <= S'Last
+                  and then F <= L
+                  and then Only_Space_Ghost (S'Old, S'First, F - 1)
+                  and then S'Old (F) /= ' '
+                  and then S'Old (L) /= ' '
+                  and then
+                    (if L < S'Last then
+                      Only_Space_Ghost (S'Old, L + 1, S'Last))
+                  and then
+                    (if S'Old (F) /= ''' then
+                      (for all J in S'Range =>
+                        (if J in F .. L then
+                           S (J) = System.Case_Util.To_Upper (S'Old (J))
+                         else
+                           S (J) = S'Old (J)))));
    --  This procedure scans the string S setting F to be the index of the first
    --  non-blank character of S and L to be the index of the last non-blank
    --  character of S. Any lower case characters present in S will be folded to
@@ -52,7 +108,27 @@ package System.Val_Util is
       Ptr   : not null access Integer;
       Max   : Integer;
       Minus : out Boolean;
-      Start : out Positive);
+      Start : out Positive)
+   with
+     Pre  =>
+       --  Ptr.all .. Max is either an empty range, or a valid range in Str
+       (Ptr.all > Max or else (Ptr.all >= Str'First and then Max <= Str'Last))
+       and then not Only_Space_Ghost (Str, Ptr.all, Max)
+       and then
+         (declare
+            F : constant Positive :=
+              First_Non_Space_Ghost (Str (Ptr.all .. Max));
+          begin
+            (if Str (F) in '+' | '-' then
+               F <= Max - 1 and then Str (F + 1) /= ' ')),
+     Post =>
+       (declare
+          F : constant Positive :=
+            First_Non_Space_Ghost (Str (Ptr.all'Old .. Max));
+        begin
+          Minus = (Str (F) = '-')
+            and then Ptr.all = (if Str (F) in '+' | '-' then F + 1 else F)
+            and then Start = F);
    --  The Str, Ptr, Max parameters are as for the scan routines (Str is the
    --  string to be scanned starting at Ptr.all, and Max is the index of the
    --  last character in the string). Scan_Sign first scans out any initial
@@ -77,15 +153,135 @@ package System.Val_Util is
      (Str   : String;
       Ptr   : not null access Integer;
       Max   : Integer;
-      Start : out Positive);
+      Start : out Positive)
+   with
+     Pre  =>
+       --  Ptr.all .. Max is either an empty range, or a valid range in Str
+       (Ptr.all > Max or else (Ptr.all >= Str'First and then Max <= Str'Last))
+       and then not Only_Space_Ghost (Str, Ptr.all, Max)
+       and then
+         (declare
+            F : constant Positive :=
+              First_Non_Space_Ghost (Str (Ptr.all .. Max));
+          begin
+            (if Str (F) = '+' then
+               F <= Max - 1 and then Str (F + 1) /= ' ')),
+     Post =>
+       (declare
+          F : constant Positive :=
+            First_Non_Space_Ghost (Str (Ptr.all'Old .. Max));
+        begin
+          Ptr.all = (if Str (F) = '+' then F + 1 else F)
+            and then Start = F);
    --  Same as Scan_Sign, but allows only plus, not minus. This is used for
    --  modular types.
 
-   function Scan_Exponent
+   function Only_Number_Ghost (Str : String; From, To : Integer) return Boolean
+   is
+      (for all J in From .. To => Str (J) in '0' .. '9' | '_')
+   with
+     Ghost,
+     Pre => From > To or else (From >= Str'First and then To <= Str'Last);
+   --  Ghost function that returns True if S has only number characters from
+   --  index From to index To.
+
+   function Last_Number_Ghost (Str : String) return Positive
+   with
+     Ghost,
+     Pre  => Str /= "" and then Str (Str'First) in '0' .. '9',
+     Post => Last_Number_Ghost'Result in Str'Range
+       and then (if Last_Number_Ghost'Result < Str'Last then
+                   Str (Last_Number_Ghost'Result + 1) not in '0' .. '9' | '_')
+       and then Only_Number_Ghost (Str, Str'First, Last_Number_Ghost'Result);
+   --  Ghost function that returns the index of the last character in S that
+   --  is either a figure or underscore, which necessarily exists given the
+   --  precondition on S.
+
+   function Is_Natural_Format_Ghost (Str : String) return Boolean is
+     (Str /= ""
+        and then Str (Str'First) in '0' .. '9'
+        and then
+        (declare
+           L : constant Positive := Last_Number_Ghost (Str);
+         begin
+           Str (L) in '0' .. '9'
+             and then (for all J in Str'First .. L =>
+                         (if Str (J) = '_' then Str (J + 1) /= '_'))))
+   with
+     Ghost;
+   --  Ghost function that determines if Str has the correct format for a
+   --  natural number, consisting in a sequence of figures possibly separated
+   --  by single underscores. It may be followed by other characters.
+
+   function Scan_Natural_Ghost
+     (Str : String;
+      P   : Natural;
+      Acc : Natural)
+      return Natural
+   with
+     Ghost,
+     Subprogram_Variant => (Increases => P),
+     Pre => Is_Natural_Format_Ghost (Str)
+       and then P in Str'First .. Last_Number_Ghost (Str)
+       and then Acc < Integer'Last / 10;
+   --  Ghost function that recursively computes the natural number in Str, up
+   --  to the first number greater or equal to Natural'Last / 10, assuming Acc
+   --  has been scanned already and scanning continues at index P.
+
+   procedure Scan_Exponent
      (Str  : String;
       Ptr  : not null access Integer;
       Max  : Integer;
-      Real : Boolean := False) return Integer;
+      Exp  : out Integer;
+      Real : Boolean := False)
+   with
+     Pre =>
+       --  Ptr.all .. Max is either an empty range, or a valid range in Str
+       (Ptr.all > Max or else (Ptr.all >= Str'First and then Max <= Str'Last))
+         and then
+       Max < Natural'Last
+         and then
+       (if Ptr.all < Max and then Str (Ptr.all) in 'E' | 'e' then
+          (declare
+             Plus_Sign  : constant Boolean := Str (Ptr.all + 1) = '+';
+             Minus_Sign : constant Boolean := Str (Ptr.all + 1) = '-';
+             Sign       : constant Boolean := Plus_Sign or Minus_Sign;
+           begin
+             (if Minus_Sign and not Real then True
+              elsif Sign
+                and then (Ptr.all > Max - 2
+                            or else Str (Ptr.all + 2) not in '0' .. '9')
+              then True
+              else
+                (declare
+                   Start : constant Natural :=
+                     (if Sign then Ptr.all + 2 else Ptr.all + 1);
+                 begin
+                   Is_Natural_Format_Ghost (Str (Start .. Max)))))),
+     Post =>
+       (if Ptr.all'Old < Max and then Str (Ptr.all'Old) in 'E' | 'e' then
+          (declare
+             Plus_Sign  : constant Boolean := Str (Ptr.all'Old + 1) = '+';
+             Minus_Sign : constant Boolean := Str (Ptr.all'Old + 1) = '-';
+             Sign       : constant Boolean := Plus_Sign or Minus_Sign;
+             Unchanged  : constant Boolean :=
+               Exp = 0 and Ptr.all = Ptr.all'Old;
+           begin
+             (if Minus_Sign and not Real then Unchanged
+              elsif Sign
+                and then (Ptr.all'Old > Max - 2
+                            or else Str (Ptr.all'Old + 2) not in '0' .. '9')
+              then Unchanged
+              else
+                (declare
+                   Start : constant Natural :=
+                     (if Sign then Ptr.all'Old + 2 else Ptr.all'Old + 1);
+                   Value : constant Natural :=
+                     Scan_Natural_Ghost (Str (Start .. Max), Start, 0);
+                 begin
+                   Exp = (if Minus_Sign then -Value else Value))))
+        else
+          Exp = 0 and Ptr.all = Ptr.all'Old);
    --  Called to scan a possible exponent. Str, Ptr, Max are as described above
    --  for Scan_Sign. If Ptr.all < Max and Str (Ptr.all) = 'E' or 'e', then an
    --  exponent is scanned out, with the exponent value returned in Exp, and
@@ -100,18 +296,37 @@ package System.Val_Util is
    --  This routine must not be called with Str'Last = Positive'Last. There is
    --  no check for this case, the caller must ensure this condition is met.
 
-   procedure Scan_Trailing_Blanks (Str : String; P : Positive);
+   procedure Scan_Trailing_Blanks (Str : String; P : Positive)
+   with
+     Pre => P >= Str'First
+       and then Only_Space_Ghost (Str, P, Str'Last);
    --  Checks that the remainder of the field Str (P .. Str'Last) is all
    --  blanks. Raises Constraint_Error if a non-blank character is found.
 
+   pragma Warnings
+     (GNATprove, Off, """Ptr"" is not modified",
+      Reason => "Ptr is actually modified when raising an exception");
    procedure Scan_Underscore
      (Str : String;
       P   : in out Natural;
       Ptr : not null access Integer;
       Max : Integer;
-      Ext : Boolean);
+      Ext : Boolean)
+   with
+     Pre  => P in Str'Range
+       and then Str (P) = '_'
+       and then Max in Str'Range
+       and then P < Max
+       and then
+         (if Ext then
+            Str (P + 1) in '0' .. '9' | 'A' .. 'F' | 'a' .. 'f'
+          else
+            Str (P + 1) in '0' .. '9'),
+     Post =>
+       P = P'Old + 1
+         and then Ptr.all = Ptr.all;
    --  Called if an underscore is encountered while scanning digits. Str (P)
-   --  contains the underscore. Ptr it the pointer to be returned to the
+   --  contains the underscore. Ptr is the pointer to be returned to the
    --  ultimate caller of the scan routine, Max is the maximum subscript in
    --  Str, and Ext indicates if extended digits are allowed. In the case
    --  where the underscore is invalid, Constraint_Error is raised with Ptr
@@ -120,5 +335,33 @@ package System.Val_Util is
    --
    --  This routine must not be called with Str'Last = Positive'Last. There is
    --  no check for this case, the caller must ensure this condition is met.
+   pragma Warnings (GNATprove, On, """Ptr"" is not modified");
+
+private
+
+   ------------------------
+   -- Scan_Natural_Ghost --
+   ------------------------
+
+   function Scan_Natural_Ghost
+     (Str : String;
+      P   : Natural;
+      Acc : Natural)
+      return Natural
+   is
+     (if Str (P) = '_' then
+        Scan_Natural_Ghost (Str, P + 1, Acc)
+      else
+        (declare
+           Shift_Acc : constant Natural :=
+             Acc * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
+         begin
+           (if P = Str'Last
+              or else Str (P + 1) not in '0' .. '9' | '_'
+              or else Shift_Acc >= Integer'Last / 10
+            then
+              Shift_Acc
+            else
+              Scan_Natural_Ghost (Str, P + 1, Shift_Acc))));
 
 end System.Val_Util;

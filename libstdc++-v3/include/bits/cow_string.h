@@ -37,7 +37,7 @@
 #ifdef __cpp_lib_is_constant_evaluated
 // Support P1032R1 in C++20 (but not P0980R1 for COW strings).
 # define __cpp_lib_constexpr_string 201811L
-#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 // Support P0426R1 changes to char_traits in C++17.
 # define __cpp_lib_constexpr_string 201611L
 #endif
@@ -105,7 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  destroy the empty-string _Rep object.
    *
    *  All but the last paragraph is considered pretty conventional
-   *  for a C++ string implementation.
+   *  for a Copy-On-Write C++ string implementation.
   */
   // 21.3  Template class basic_string
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -222,10 +222,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // but one reference concurrently with this check, so we need this
 	  // load to be acquire to synchronize with release fetch_and_add in
 	  // _M_dispose.
-	  return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
-#else
-	  return this->_M_refcount > 0;
+	  if (!__gnu_cxx::__is_single_threaded())
+	    return __atomic_load_n(&this->_M_refcount, __ATOMIC_ACQUIRE) > 0;
 #endif
+	  return this->_M_refcount > 0;
 	}
 
 	void
@@ -629,12 +629,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
 	// Rather than allocate an empty string for the rvalue string,
 	// just share ownership with it by incrementing the reference count.
-	// If the rvalue string was "leaked" then it was the unique owner,
-	// so need an extra increment to indicate shared ownership.
-	if (_M_rep()->_M_is_leaked())
-	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 2);
-	else
+	// If the rvalue string was the unique owner then there are exactly
+	// two owners now.
+	if (_M_rep()->_M_is_shared())
 	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 1);
+	else
+	  _M_rep()->_M_refcount = 1;
 #endif
       }
 

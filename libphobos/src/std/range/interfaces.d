@@ -100,7 +100,9 @@ interface InputRange(E) {
     ///
     @property E front();
 
-    ///
+    /**Calls $(REF moveFront, std, range, primitives) on the wrapped range, if
+     * possible. Otherwise, throws an $(LREF UnsupportedRangeMethod) exception.
+     */
     E moveFront();
 
     ///
@@ -162,7 +164,9 @@ interface BidirectionalRange(E) : ForwardRange!(E) {
     ///
     @property E back();
 
-    ///
+    /**Calls $(REF moveBack, std, range, primitives) on the wrapped range, if
+     * possible. Otherwise, throws an $(LREF UnsupportedRangeMethod) exception
+     */
     E moveBack();
 
     ///
@@ -197,7 +201,9 @@ interface RandomAccessFinite(E) : BidirectionalRange!(E) {
 
 /**Interface for an infinite random access range of type `E`.*/
 interface RandomAccessInfinite(E) : ForwardRange!E {
-    ///
+    /**Calls $(REF moveAt, std, range, primitives) on the wrapped range, if
+     * possible. Otherwise, throws an $(LREF UnsupportedRangeMethod) exception.
+     */
     E moveAt(size_t);
 
     ///
@@ -377,7 +383,11 @@ if (isInputRange!(Unqual!R))
             @property E front() { return _range.front; }
 
             E moveFront() {
-                return _range.moveFront();
+                static if (__traits(compiles, _range.moveFront()))
+                    return _range.moveFront();
+                else
+                    throw new UnsupportedRangeMethod(
+                        "Cannot move the front of a(n) `" ~ R.stringof ~ "`");
             }
 
             void popFront() { _range.popFront(); }
@@ -402,7 +412,11 @@ if (isInputRange!(Unqual!R))
                 @property E back() { return _range.back; }
 
                 E moveBack() {
-                    return _range.moveBack();
+                    static if (__traits(compiles, _range.moveFront()))
+                        return _range.moveBack();
+                    else
+                        throw new UnsupportedRangeMethod(
+                            "Cannot move the back of a(n) `" ~ R.stringof ~ "`");
                 }
 
                 void popBack() { return _range.popBack(); }
@@ -422,7 +436,11 @@ if (isInputRange!(Unqual!R))
                 }
 
                 E moveAt(size_t index) {
-                    return _range.moveAt(index);
+                    static if (__traits(compiles, _range.moveAt(index)))
+                        return _range.moveAt(index);
+                    else
+                        throw new UnsupportedRangeMethod(
+                            "Cannot move an element of a(n) `" ~ R.stringof ~ "`");
                 }
 
                 static if (hasAssignableElements!R)
@@ -520,6 +538,14 @@ template outputRangeObject(E...) {
      static assert(is(typeof(appWrapped) : OutputRange!(uint)));
 }
 
+/// Thrown when an interface method is not supported by the wrapped range
+class UnsupportedRangeMethod : Exception
+{
+    import std.exception : basicExceptionCtors;
+
+    mixin basicExceptionCtors;
+}
+
 @system unittest
 {
     import std.algorithm.comparison : equal;
@@ -567,4 +593,17 @@ template outputRangeObject(E...) {
     appWrapped.put([2, 3]);
     assert(app.data.length == 3);
     assert(equal(app.data, [1,2,3]));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=19544
+@safe unittest
+{
+    import std.range : repeat;
+
+    static struct HasCC
+    {
+        inout this(ref inout typeof(this)) {}
+    }
+
+    auto r = repeat(HasCC.init).inputRangeObject;
 }

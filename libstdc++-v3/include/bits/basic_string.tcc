@@ -488,7 +488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	  const size_type __how_much = __old_size - __pos - __len1;
 #if __cpp_lib_is_constant_evaluated
-	  if (__builtin_is_constant_evaluated())
+	  if (std::is_constant_evaluated())
 	    {
 	      auto __newp = _Alloc_traits::allocate(_M_get_allocator(),
 						    __new_size);
@@ -571,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __p = _M_create(__n, __capacity);
 	  this->_S_copy(__p, _M_data(), length()); // exclude trailing null
 #if __cpp_lib_is_constant_evaluated
-	  if (__builtin_is_constant_evaluated())
+	  if (std::is_constant_evaluated())
 	    traits_type::assign(__p + length(), __n - length(), _CharT());
 #endif
 	  _M_dispose();

@@ -127,6 +127,7 @@ t-multilib-avr: $(srcdir)/config/avr/genmultilib.awk \
 		-v HAVE_LONG_DOUBLE64=$(HAVE_LONG_DOUBLE64) 		\
 		-v with_double=$(WITH_DOUBLE) 				\
 		-v with_long_double=$(WITH_LONG_DOUBLE)			\
+		-v with_multilib_list=$(TM_MULTILIB_CONFIG)		\
 		-f $< $< $(AVR_MCUS) > $@
 
 include t-multilib-avr

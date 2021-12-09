@@ -428,11 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
 #if __cplusplus >= 201402L
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-	if (__builtin_is_constant_evaluated())
-#else
-	if (__builtin_constant_p(__x > __y))
-#endif
+	if (std::__is_constant_evaluated())
 	  return __x > __y;
 #endif
 	return (__UINTPTR_TYPE__)__x > (__UINTPTR_TYPE__)__y;
@@ -447,11 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
 #if __cplusplus >= 201402L
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-	if (__builtin_is_constant_evaluated())
-#else
-	if (__builtin_constant_p(__x < __y))
-#endif
+	if (std::__is_constant_evaluated())
 	  return __x < __y;
 #endif
 	return (__UINTPTR_TYPE__)__x < (__UINTPTR_TYPE__)__y;
@@ -466,11 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
 #if __cplusplus >= 201402L
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-	if (__builtin_is_constant_evaluated())
-#else
-	if (__builtin_constant_p(__x >= __y))
-#endif
+	if (std::__is_constant_evaluated())
 	  return __x >= __y;
 #endif
 	return (__UINTPTR_TYPE__)__x >= (__UINTPTR_TYPE__)__y;
@@ -485,11 +473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_Tp* __x, _Tp* __y) const _GLIBCXX_NOTHROW
       {
 #if __cplusplus >= 201402L
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-	if (__builtin_is_constant_evaluated())
-#else
-	if (__builtin_constant_p(__x <= __y))
-#endif
+	if (std::__is_constant_evaluated())
 	  return __x <= __y;
 #endif
 	return (__UINTPTR_TYPE__)__x <= (__UINTPTR_TYPE__)__y;

@@ -54,7 +54,7 @@ package body System.Tasking.Debug is
 
    type Trace_Flag_Set is array (Character) of Boolean;
 
-   Trace_On : Trace_Flag_Set := ('A' .. 'Z' => False, others => True);
+   Trace_On : Trace_Flag_Set := ['A' .. 'Z' => False, others => True];
 
    Stderr_Fd : constant := 2;
    --  File descriptor for standard error

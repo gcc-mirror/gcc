@@ -1,5 +1,11 @@
 // https://issues.dlang.org/show_bug.cgi?id=21997
 
+struct Strukt
+{
+    int i;
+    string s;
+}
+
 int nonPureFunc(int i)
 {
     return 2 * i;
@@ -28,6 +34,14 @@ int mainCtfe()
     auto baseDel = cast(int delegate(int)) pureDel;
     assert(baseDel(4) == 20);
     */
+
+    {
+        shared Strukt shStr;
+        Strukt str = *cast(Strukt*) &shStr;
+
+        shared(Strukt)* ptr = cast(shared(Strukt)*) &str;
+    }
+
     return 0;
 }
 

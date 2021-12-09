@@ -5313,7 +5313,22 @@ parse_omp_oacc_atomic (bool omp_p)
       st = next_statement ();
       if (st == ST_NONE)
 	unexpected_eof ();
-      else if (st == ST_ASSIGNMENT)
+      else if (np->ext.omp_clauses->compare
+	       && (st == ST_SIMPLE_IF || st == ST_IF_BLOCK))
+	{
+	  count--;
+	  if (st == ST_IF_BLOCK)
+	    {
+	      parse_if_block ();
+	      /* With else (or elseif).  */
+	      if (gfc_state_stack->tail->block->block)
+		count--;
+	    }
+	  accept_statement (st);
+	}
+      else if (st == ST_ASSIGNMENT
+	       && (!np->ext.omp_clauses->compare
+		   || np->ext.omp_clauses->capture))
 	{
 	  accept_statement (st);
 	  count--;
@@ -5332,8 +5347,6 @@ parse_omp_oacc_atomic (bool omp_p)
       gfc_warning_check ();
       st = next_statement ();
     }
-  else if (np->ext.omp_clauses->capture)
-    gfc_error ("Missing !$OMP END ATOMIC after !$OMP ATOMIC CAPTURE at %C");
   return st;
 }
 

@@ -4275,7 +4275,12 @@ find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
       else if (GET_CODE (SET_SRC (x)) == CALL)
 	;
       else if (GET_CODE (SET_SRC (x)) == CONST_VECTOR
-	       && GET_MODE_CLASS (GET_MODE (SET_SRC (x))) != MODE_VECTOR_BOOL)
+	       && GET_MODE_CLASS (GET_MODE (SET_SRC (x))) != MODE_VECTOR_BOOL
+	       /* Prevent duplicates from being generated if the type is a V1
+		  type and a subreg.  Folding this will result in the same
+		  element as folding x itself.  */
+	       && !(SUBREG_P (SET_DEST (x))
+		    && known_eq (GET_MODE_NUNITS (GET_MODE (SET_SRC (x))), 1)))
 	{
 	  /* First register the vector itself.  */
 	  add_to_set (psets, x);

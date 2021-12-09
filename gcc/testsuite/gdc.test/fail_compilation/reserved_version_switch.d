@@ -103,6 +103,8 @@
 // REQUIRED_ARGS: -version=assert
 // REQUIRED_ARGS: -version=all
 // REQUIRED_ARGS: -version=none
+// REQUIRED_ARGS: -version=D_PreConditions
+// REQUIRED_ARGS: -version=D_PostConditions
 // REQUIRED_ARGS: -debug=DigitalMars
 // REQUIRED_ARGS: -debug=GNU
 // REQUIRED_ARGS: -debug=LDC
@@ -203,6 +205,8 @@
 // REQUIRED_ARGS: -debug=assert
 // REQUIRED_ARGS: -debug=all
 // REQUIRED_ARGS: -debug=none
+// REQUIRED_ARGS: -debug=D_PreConditions
+// REQUIRED_ARGS: -debug=D_PostConditions
 /*
 TEST_OUTPUT:
 ---
@@ -309,5 +313,7 @@ Error: version identifier `unittest` is reserved and cannot be set
 Error: version identifier `assert` is reserved and cannot be set
 Error: version identifier `all` is reserved and cannot be set
 Error: version identifier `none` is reserved and cannot be set
+Error: version identifier `D_PreConditions` is reserved and cannot be set
+Error: version identifier `D_PostConditions` is reserved and cannot be set
 ---
 */

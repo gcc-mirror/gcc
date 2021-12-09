@@ -2446,7 +2446,7 @@ class Throwable : Object
     override string toString()
     {
         string s;
-        toString((buf) { s ~= buf; });
+        toString((in buf) { s ~= buf; });
         return s;
     }
 
@@ -4752,3 +4752,79 @@ template _arrayOp(Args...)
 }
 
 public import core.builtins : __ctfeWrite;
+
+/**
+
+Provides an "inline import", i.e. an `import` that is only available for a
+limited lookup. For example:
+
+---
+void fun(imported!"std.stdio".File input)
+{
+    ... use File from std.stdio normally ...
+}
+---
+
+There is no need to import `std.stdio` at top level, so `fun` carries its own
+dependencies. The same approach can be used for template constraints:
+
+---
+void fun(T)(imported!"std.stdio".File input, T value)
+if (imported!"std.traits".isIntegral!T)
+{
+    ...
+}
+---
+
+An inline import may be used in conjunction with the `with` statement as well.
+Inside the scope controlled by `with`, all symbols in the imported module are
+made available:
+
+---
+void fun()
+{
+    with (imported!"std.datetime")
+    with (imported!"std.stdio")
+    {
+        Clock.currTime.writeln;
+    }
+}
+---
+
+The advantages of inline imports over top-level uses of the `import` declaration
+are the following:
+
+$(UL
+$(LI The `imported` template specifies dependencies at declaration level, not at
+module level. This allows reasoning about the dependency cost of declarations in
+separation instead of aggregated at module level.)
+$(LI Declarations using `imported` are easier to move around because they don't
+require top-level context, making for simpler and quicker refactorings.)
+$(LI Declarations using `imported` scale better with templates. This is because
+templates that are not instantiated do not have their parameters and constraints
+instantiated, so additional modules are not imported without necessity. This
+makes the cost of unused templates negligible. Dependencies are pulled on a need
+basis depending on the declarations used by client code.)
+)
+
+The use of `imported` also has drawbacks:
+
+$(UL
+$(LI If most declarations in a module need the same imports, then factoring them
+at top level, outside the declarations, is simpler than repeating them.)
+$(LI Traditional dependency-tracking tools such as make and other build systems
+assume file-level dependencies and need special tooling (such as rdmd) in order
+to work efficiently.)
+$(LI Dependencies at the top of a module are easier to inspect quickly than
+dependencies spread throughout the module.)
+)
+
+See_Also: The $(HTTP forum.dlang.org/post/tzqzmqhankrkbrfsrmbo@forum.dlang.org,
+forum discussion) that led to the creation of the `imported` facility. Credit is
+due to Daniel Nielsen and Dominikus Dittes Scherkl.
+
+*/
+template imported(string moduleName)
+{
+    mixin("import imported = " ~ moduleName ~ ";");
+}

@@ -12284,26 +12284,18 @@ package body Sem_Ch13 is
             --  Find maximum bit of any component of the parent type
 
             Parent_Last_Bit := UI_From_Int (System_Address_Size - 1);
-            Pcomp := First_Entity (Tagged_Parent);
+            Pcomp := First_Component_Or_Discriminant (Tagged_Parent);
             while Present (Pcomp) loop
-               if Ekind (Pcomp) in E_Discriminant | E_Component then
-                  if Present (Component_Bit_Offset (Pcomp))
-                    and then Known_Static_Esize (Pcomp)
-                  then
-                     Parent_Last_Bit :=
-                       UI_Max
-                         (Parent_Last_Bit,
-                          Component_Bit_Offset (Pcomp) + Esize (Pcomp) - 1);
-                  end if;
-               else
-
-                  --  Skip anonymous types generated for constrained array
-                  --  or record components.
-
-                  null;
+               if Present (Component_Bit_Offset (Pcomp))
+                 and then Known_Static_Esize (Pcomp)
+               then
+                  Parent_Last_Bit :=
+                    UI_Max
+                      (Parent_Last_Bit,
+                       Component_Bit_Offset (Pcomp) + Esize (Pcomp) - 1);
                end if;
 
-               Next_Entity (Pcomp);
+               Next_Component_Or_Discriminant (Pcomp);
             end loop;
          end if;
       end;
@@ -15558,7 +15550,7 @@ package body Sem_Ch13 is
             Add_Unnamed_Subp := Subp;
 
          elsif Op_Name = Name_New_Indexed then
-            New_Indexed_Subp :=  Subp;
+            New_Indexed_Subp := Subp;
 
          elsif Op_Name = Name_Assign_Indexed then
             Assign_Indexed_Subp := Subp;

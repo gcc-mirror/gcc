@@ -2209,7 +2209,7 @@ package(std) template HeapOps(alias less, Range)
         ~ " RandomAccessRange");
     static assert(hasLength!Range, Range.stringof ~ " must have length");
     static assert(hasSwappableElements!Range || hasAssignableElements!Range,
-        Range.stringof ~ " must have swappable of assignable Elements");
+        Range.stringof ~ " must have swappable or assignable Elements");
 
     alias lessFun = binaryFun!less;
 
@@ -2329,8 +2329,8 @@ private template TimSortImpl(alias pred, R)
         ~ " RandomAccessRange");
     static assert(hasLength!R, R.stringof ~ " must have a length");
     static assert(hasSlicing!R, R.stringof ~ " must support slicing");
-    static assert(hasAssignableElements!R, R.stringof ~ " must support"
-        ~ " assigning elements");
+    static assert(hasAssignableElements!R, R.stringof ~ " must have"
+        ~ " assignable elements");
 
     alias T = ElementType!R;
 
@@ -3571,7 +3571,7 @@ void topNImpl(alias less, R)(R r, size_t n, ref bool useSampling)
 private size_t topNPartition(alias lp, R)(R r, size_t n, bool useSampling)
 {
     import std.format : format;
-    assert(r.length >= 9 && n < r.length, "length must be longer than 9"
+    assert(r.length >= 9 && n < r.length, "length must be longer than 8"
         ~ " and n must be less than r.length");
     immutable ninth = r.length / 9;
     auto pivot = ninth / 2;
@@ -4220,8 +4220,8 @@ if (isRandomAccessRange!Range && hasLength!Range &&
     Indexes.length >= 2 && Indexes.length <= 5 &&
     allSatisfy!(isUnsigned, Indexes))
 {
-    assert(r.length >= Indexes.length, "r.length must be greater equal to"
-        ~ " Indexes.length");
+    assert(r.length >= Indexes.length, "r.length must be greater than or"
+        ~ " equal to Indexes.length");
     import std.functional : binaryFun;
     alias lt = binaryFun!less;
     enum k = Indexes.length;

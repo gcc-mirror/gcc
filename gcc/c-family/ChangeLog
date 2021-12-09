@@ -1,3 +1,15 @@
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* c-pch.c (struct c_pch_validity): Remove pch_init member.
+	(pch_init): Don't initialize v.pch_init.
+	(c_common_valid_pch): Don't warn and punt if .text addresses change.
+
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103310
+	* c.opt: Add -fconstexpr-fp-except.
+
 2021-11-29  Richard Biener  <rguenther@suse.de>
 
 	* c-format.c (check_format_string): Remove spurious

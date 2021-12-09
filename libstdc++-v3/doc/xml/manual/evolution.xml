@@ -1033,6 +1033,11 @@ accessors for the unexpected handler are deprecated for C++11 and later.
 Dynamic exception specifications should be replaced with <code>noexcept</code>.
 </para>
 
+<para>
+The <literal>bitmap</literal>, <literal>mt</literal>, and <literal>pool</literal>
+options for <option>--enable-libstdcxx-allocator</option> were removed.
+</para>
+
 </section>
 
 </section>

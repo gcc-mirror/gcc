@@ -59,7 +59,7 @@ import dmd.opover;
 import dmd.optimize;
 import dmd.root.ctfloat;
 import dmd.root.filename;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.root.rootobject;
 import dmd.root.string;
@@ -1201,20 +1201,14 @@ extern (C++) abstract class Expression : ASTNode
         // DtorDeclaration without parents should fail at an earlier stage
         auto ad = cast(AggregateDeclaration) f.toParent2();
         assert(ad);
-        assert(ad.dtors.length);
 
-        // Search for the user-defined destructor (if any)
-        foreach(dtor; ad.dtors)
+        if (ad.userDtors.dim)
         {
-            if (dtor.generated)
-                continue;
-
-            if (!check(dtor)) // doesn't match check (e.g. is impure as well)
+            if (!check(ad.userDtors[0])) // doesn't match check (e.g. is impure as well)
                 return;
 
             // Sanity check
-            assert(!check(cast(DtorDeclaration) ad.fieldDtor));
-            break;
+            assert(!check(ad.fieldDtor));
         }
 
         dd.loc.errorSupplemental("%s`%s.~this` is %.*s because of the following field's destructors:",
@@ -1781,13 +1775,13 @@ extern (C++) final class IntegerExp : Expression
         this.value = cast(d_int32)value;
     }
 
-    static IntegerExp create(Loc loc, dinteger_t value, Type type)
+    static IntegerExp create(const ref Loc loc, dinteger_t value, Type type)
     {
         return new IntegerExp(loc, value, type);
     }
 
     // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, Loc loc, dinteger_t value, Type type)
+    static void emplace(UnionExp* pue, const ref Loc loc, dinteger_t value, Type type)
     {
         emplaceExp!(IntegerExp)(pue, loc, value, type);
     }
@@ -2052,13 +2046,13 @@ extern (C++) final class RealExp : Expression
         this.type = type;
     }
 
-    static RealExp create(Loc loc, real_t value, Type type)
+    static RealExp create(const ref Loc loc, real_t value, Type type)
     {
         return new RealExp(loc, value, type);
     }
 
     // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, Loc loc, real_t value, Type type)
+    static void emplace(UnionExp* pue, const ref Loc loc, real_t value, Type type)
     {
         emplaceExp!(RealExp)(pue, loc, value, type);
     }
@@ -2127,13 +2121,13 @@ extern (C++) final class ComplexExp : Expression
         //printf("ComplexExp::ComplexExp(%s)\n", toChars());
     }
 
-    static ComplexExp create(Loc loc, complex_t value, Type type)
+    static ComplexExp create(const ref Loc loc, complex_t value, Type type)
     {
         return new ComplexExp(loc, value, type);
     }
 
     // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, Loc loc, complex_t value, Type type)
+    static void emplace(UnionExp* pue, const ref Loc loc, complex_t value, Type type)
     {
         emplaceExp!(ComplexExp)(pue, loc, value, type);
     }
@@ -2203,7 +2197,7 @@ extern (C++) class IdentifierExp : Expression
         this.ident = ident;
     }
 
-    static IdentifierExp create(Loc loc, Identifier ident)
+    static IdentifierExp create(const ref Loc loc, Identifier ident)
     {
         return new IdentifierExp(loc, ident);
     }
@@ -2421,28 +2415,28 @@ extern (C++) final class StringExp : Expression
         this.postfix = postfix;
     }
 
-    static StringExp create(Loc loc, char* s)
+    static StringExp create(const ref Loc loc, const(char)* s)
     {
         return new StringExp(loc, s.toDString());
     }
 
-    static StringExp create(Loc loc, void* string, size_t len)
+    static StringExp create(const ref Loc loc, const(void)* string, size_t len)
     {
         return new StringExp(loc, string[0 .. len]);
     }
 
     // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, Loc loc, char* s)
+    static void emplace(UnionExp* pue, const ref Loc loc, const(char)* s)
     {
         emplaceExp!(StringExp)(pue, loc, s.toDString());
     }
 
-    extern (D) static void emplace(UnionExp* pue, Loc loc, const(void)[] string)
+    extern (D) static void emplace(UnionExp* pue, const ref Loc loc, const(void)[] string)
     {
         emplaceExp!(StringExp)(pue, loc, string);
     }
 
-    extern (D) static void emplace(UnionExp* pue, Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix)
+    extern (D) static void emplace(UnionExp* pue, const ref Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix)
     {
         emplaceExp!(StringExp)(pue, loc, string, len, sz, postfix);
     }
@@ -2863,7 +2857,7 @@ extern (C++) final class TupleExp : Expression
         }
     }
 
-    static TupleExp create(Loc loc, Expressions* exps)
+    static TupleExp create(const ref Loc loc, Expressions* exps)
     {
         return new TupleExp(loc, exps);
     }
@@ -2946,13 +2940,13 @@ extern (C++) final class ArrayLiteralExp : Expression
         this.elements = elements;
     }
 
-    static ArrayLiteralExp create(Loc loc, Expressions* elements)
+    static ArrayLiteralExp create(const ref Loc loc, Expressions* elements)
     {
         return new ArrayLiteralExp(loc, null, elements);
     }
 
     // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, Loc loc, Expressions* elements)
+    static void emplace(UnionExp* pue, const ref Loc loc, Expressions* elements)
     {
         emplaceExp!(ArrayLiteralExp)(pue, loc, null, elements);
     }
@@ -3188,7 +3182,7 @@ extern (C++) final class StructLiteralExp : Expression
         //printf("StructLiteralExp::StructLiteralExp(%s)\n", toChars());
     }
 
-    static StructLiteralExp create(Loc loc, StructDeclaration sd, void* elements, Type stype = null)
+    static StructLiteralExp create(const ref Loc loc, StructDeclaration sd, void* elements, Type stype = null)
     {
         return new StructLiteralExp(loc, sd, cast(Expressions*)elements, stype);
     }
@@ -3532,7 +3526,7 @@ extern (C++) final class NewExp : Expression
         this.arguments = arguments;
     }
 
-    static NewExp create(Loc loc, Expression thisexp, Expressions* newargs, Type newtype, Expressions* arguments)
+    static NewExp create(const ref Loc loc, Expression thisexp, Expressions* newargs, Type newtype, Expressions* arguments)
     {
         return new NewExp(loc, thisexp, newargs, newtype, arguments);
     }
@@ -3653,7 +3647,7 @@ extern (C++) final class VarExp : SymbolExp
         this.type = var.type;
     }
 
-    static VarExp create(Loc loc, Declaration var, bool hasOverloads = true)
+    static VarExp create(const ref Loc loc, Declaration var, bool hasOverloads = true)
     {
         return new VarExp(loc, var, hasOverloads);
     }
@@ -3965,6 +3959,7 @@ extern (C++) final class FuncExp : Expression
             auto tfy = new TypeFunction(tfx.parameterList, tof.next,
                         tfx.linkage, STC.undefined_);
             tfy.mod = tfx.mod;
+            tfy.trust = tfx.trust;
             tfy.isnothrow = tfx.isnothrow;
             tfy.isnogc = tfx.isnogc;
             tfy.purity = tfx.purity;
@@ -4688,6 +4683,7 @@ extern (C++) final class DotIdExp : UnaExp
     Identifier ident;
     bool noderef;       // true if the result of the expression will never be dereferenced
     bool wantsym;       // do not replace Symbol with its initializer during semantic()
+    bool arrow;         // ImportC: if -> instead of .
 
     extern (D) this(const ref Loc loc, Expression e, Identifier ident)
     {
@@ -4695,7 +4691,7 @@ extern (C++) final class DotIdExp : UnaExp
         this.ident = ident;
     }
 
-    static DotIdExp create(Loc loc, Expression e, Identifier ident)
+    static DotIdExp create(const ref Loc loc, Expression e, Identifier ident)
     {
         return new DotIdExp(loc, e, ident);
     }
@@ -4889,6 +4885,31 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
         return ti.updateTempDecl(sc, s);
     }
 
+    override bool checkType()
+    {
+        // Same logic as ScopeExp.checkType()
+        if (ti.tempdecl &&
+            ti.semantictiargsdone &&
+            ti.semanticRun == PASS.init)
+        {
+            error("partial %s `%s` has no type", ti.kind(), toChars());
+            return true;
+        }
+        return false;
+    }
+
+    override bool checkValue()
+    {
+        if (ti.tempdecl &&
+            ti.semantictiargsdone &&
+            ti.semanticRun == PASS.init)
+
+            error("partial %s `%s` has no value", ti.kind(), toChars());
+        else
+            error("%s `%s` has no value", ti.kind(), ti.toChars());
+        return true;
+    }
+
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -4987,17 +5008,17 @@ extern (C++) final class CallExp : UnaExp
         this.f = fd;
     }
 
-    static CallExp create(Loc loc, Expression e, Expressions* exps)
+    static CallExp create(const ref Loc loc, Expression e, Expressions* exps)
     {
         return new CallExp(loc, e, exps);
     }
 
-    static CallExp create(Loc loc, Expression e)
+    static CallExp create(const ref Loc loc, Expression e)
     {
         return new CallExp(loc, e);
     }
 
-    static CallExp create(Loc loc, Expression e, Expression earg1)
+    static CallExp create(const ref Loc loc, Expression e, Expression earg1)
     {
         return new CallExp(loc, e, earg1);
     }
@@ -5009,7 +5030,7 @@ extern (C++) final class CallExp : UnaExp
     *       fd    = the declaration of the function to call
     *       earg1 = the function argument
     */
-    static CallExp create(Loc loc, FuncDeclaration fd, Expression earg1)
+    static CallExp create(const ref Loc loc, FuncDeclaration fd, Expression earg1)
     {
         return new CallExp(loc, fd, earg1);
     }
@@ -5167,6 +5188,19 @@ extern (C++) final class PtrExp : UnaExp
     override Expression modifiableLvalue(Scope* sc, Expression e)
     {
         //printf("PtrExp::modifiableLvalue() %s, type %s\n", toChars(), type.toChars());
+        Declaration var;
+        if (auto se = e1.isSymOffExp())
+            var = se.var;
+        else if (auto ve = e1.isVarExp())
+            var = ve.var;
+        if (var && var.type.isFunction_Delegate_PtrToFunction())
+        {
+            if (var.type.isTypeFunction())
+                error("function `%s` is not an lvalue and cannot be modified", var.toChars());
+            else
+                error("function pointed to by `%s` is not an lvalue and cannot be modified", var.toChars());
+            return ErrorExp.get();
+        }
         return Expression.modifiableLvalue(sc, e);
     }
 
@@ -5331,13 +5365,13 @@ extern (C++) final class VectorExp : UnaExp
         to = cast(TypeVector)t;
     }
 
-    static VectorExp create(Loc loc, Expression e, Type t)
+    static VectorExp create(const ref Loc loc, Expression e, Type t)
     {
         return new VectorExp(loc, e, t);
     }
 
     // Same as create, but doesn't allocate memory.
-    static void emplace(UnionExp* pue, Loc loc, Expression e, Type type)
+    static void emplace(UnionExp* pue, const ref Loc loc, Expression e, Type type)
     {
         emplaceExp!(VectorExp)(pue, loc, e, type);
     }

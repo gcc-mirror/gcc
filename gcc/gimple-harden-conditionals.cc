@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
+#include "rtl.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "gimple.h"
@@ -33,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "cfghooks.h"
 #include "cfgloop.h"
+#include "tree-eh.h"
 #include "diagnostic.h"
 #include "intl.h"
 
@@ -132,25 +135,78 @@ detach_value (location_t loc, gimple_stmt_iterator *gsip, tree val)
   tree ret = make_ssa_name (TREE_TYPE (val));
   SET_SSA_NAME_VAR_OR_IDENTIFIER (ret, SSA_NAME_IDENTIFIER (val));
 
-  /* Output asm ("" : "=g" (ret) : "0" (val));  */
+  /* Some modes won't fit in general regs, so we fall back to memory
+     for them.  ??? It would be ideal to try to identify an alternate,
+     wider or more suitable register class, and use the corresponding
+     constraint, but there's no logic to go from register class to
+     constraint, even if there is a corresponding constraint, and even
+     if we could enumerate constraints, we can't get to their string
+     either.  So this will do for now.  */
+  bool need_memory = true;
+  enum machine_mode mode = TYPE_MODE (TREE_TYPE (val));
+  if (mode != BLKmode)
+    for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i)
+	  && targetm.hard_regno_mode_ok (i, mode))
+	{
+	  need_memory = false;
+	  break;
+	}
+
+  tree asminput = val;
+  tree asmoutput = ret;
+  const char *constraint_out = need_memory ? "=m" : "=g";
+  const char *constraint_in = need_memory ? "m" : "0";
+
+  if (need_memory)
+    {
+      tree temp = create_tmp_var (TREE_TYPE (val), "dtch");
+      mark_addressable (temp);
+
+      gassign *copyin = gimple_build_assign (temp, asminput);
+      gimple_set_location (copyin, loc);
+      gsi_insert_before (gsip, copyin, GSI_SAME_STMT);
+
+      asminput = asmoutput = temp;
+    }
+
+  /* Output an asm statement with matching input and output.  It does
+     nothing, but after it the compiler no longer knows the output
+     still holds the same value as the input.  */
   vec<tree, va_gc> *inputs = NULL;
   vec<tree, va_gc> *outputs = NULL;
   vec_safe_push (outputs,
 		 build_tree_list
 		 (build_tree_list
-		  (NULL_TREE, build_string (2, "=g")),
-		  ret));
+		  (NULL_TREE, build_string (strlen (constraint_out),
+					    constraint_out)),
+		  asmoutput));
   vec_safe_push (inputs,
 		 build_tree_list
 		 (build_tree_list
-		  (NULL_TREE, build_string (1, "0")),
-		  val));
+		  (NULL_TREE, build_string (strlen (constraint_in),
+					    constraint_in)),
+		  asminput));
   gasm *detach = gimple_build_asm_vec ("", inputs, outputs,
 				       NULL, NULL);
   gimple_set_location (detach, loc);
   gsi_insert_before (gsip, detach, GSI_SAME_STMT);
 
-  SSA_NAME_DEF_STMT (ret) = detach;
+  if (need_memory)
+    {
+      gassign *copyout = gimple_build_assign (ret, asmoutput);
+      gimple_set_location (copyout, loc);
+      gsi_insert_before (gsip, copyout, GSI_SAME_STMT);
+      SSA_NAME_DEF_STMT (ret) = copyout;
+
+      gassign *clobber = gimple_build_assign (asmoutput,
+					      build_clobber
+					      (TREE_TYPE (asmoutput)));
+      gimple_set_location (clobber, loc);
+      gsi_insert_before (gsip, clobber, GSI_SAME_STMT);
+    }
+  else
+    SSA_NAME_DEF_STMT (ret) = detach;
 
   return ret;
 }
@@ -304,6 +360,24 @@ make_pass_harden_conditional_branches (gcc::context *ctxt)
   return new pass_harden_conditional_branches (ctxt);
 }
 
+/* Return the fallthru edge of a block whose other edge is an EH
+   edge.  */
+static inline edge
+non_eh_succ_edge (basic_block bb)
+{
+  gcc_checking_assert (EDGE_COUNT (bb->succs) == 2);
+
+  edge ret = find_fallthru_edge (bb->succs);
+
+  int eh_idx = EDGE_SUCC (bb, 0) == ret;
+  edge eh = EDGE_SUCC (bb, eh_idx);
+
+  gcc_checking_assert (!(ret->flags & EDGE_EH)
+		       && (eh->flags & EDGE_EH));
+
+  return ret;
+}
+
 /* Harden boolean-yielding compares in FUN.  */
 
 unsigned int
@@ -394,7 +468,11 @@ pass_harden_compares::execute (function *fun)
 	if (VECTOR_TYPE_P (TREE_TYPE (op1)))
 	  continue;
 
-	gcc_checking_assert (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE);
+	/* useless_type_conversion_p enables conversions from 1-bit
+	   integer types to boolean to be discarded.  */
+	gcc_checking_assert (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+			     || (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+				 && TYPE_PRECISION (TREE_TYPE (lhs)) == 1));
 
 	tree rhs = copy_ssa_name (lhs);
 
@@ -404,6 +482,20 @@ pass_harden_compares::execute (function *fun)
 	   block after debug stmts, so as to make sure the split block
 	   won't be debug stmts only.  */
 	gsi_next_nondebug (&gsi_split);
+
+	bool throwing_compare_p = stmt_ends_bb_p (asgn);
+	if (throwing_compare_p)
+	  {
+	    basic_block nbb = split_edge (non_eh_succ_edge
+					  (gimple_bb (asgn)));
+	    gsi_split = gsi_start_bb (nbb);
+
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Splitting non-EH edge from block %i into %i"
+		       " after a throwing compare\n",
+		       gimple_bb (asgn)->index, nbb->index);
+	  }
 
 	bool same_p = (op1 == op2);
 	op1 = detach_value (loc, &gsi_split, op1);
@@ -418,17 +510,46 @@ pass_harden_compares::execute (function *fun)
 	if (!gsi_end_p (gsi_split))
 	  {
 	    gsi_prev (&gsi_split);
-	    split_block (bb, gsi_stmt (gsi_split));
+	    basic_block obb = gsi_bb (gsi_split);
+	    basic_block nbb = split_block (obb, gsi_stmt (gsi_split))->dest;
 	    gsi_next (&gsi_split);
 	    gcc_checking_assert (gsi_end_p (gsi_split));
 
 	    single_succ_edge (bb)->goto_locus = loc;
 
 	    if (dump_file)
-	      fprintf (dump_file, "Splitting block %i\n", bb->index);
+	      fprintf (dump_file,
+		       "Splitting block %i into %i"
+		       " before the conditional trap branch\n",
+		       obb->index, nbb->index);
 	  }
 
-	gcc_checking_assert (single_succ_p (bb));
+	/* If the check assignment must end a basic block, we can't
+	   insert the conditional branch in the same block, so split
+	   the block again, and prepare to insert the conditional
+	   branch in the new block.
+
+	   Also assign an EH region to the compare.  Even though it's
+	   unlikely that the hardening compare will throw after the
+	   original compare didn't, the compiler won't even know that
+	   it's the same compare operands, so add the EH edge anyway.  */
+	if (throwing_compare_p)
+	  {
+	    add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
+	    make_eh_edges (asgnck);
+
+	    basic_block nbb = split_edge (non_eh_succ_edge
+					  (gimple_bb (asgnck)));
+	    gsi_split = gsi_start_bb (nbb);
+
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Splitting non-EH edge from block %i into %i after"
+		       " the newly-inserted reversed throwing compare\n",
+		       gimple_bb (asgnck)->index, nbb->index);
+	  }
+
+	gcc_checking_assert (single_succ_p (gsi_bb (gsi_split)));
 
 	insert_check_and_trap (loc, &gsi_split, EDGE_TRUE_VALUE,
 			       EQ_EXPR, lhs, rhs);

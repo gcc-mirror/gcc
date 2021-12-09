@@ -130,7 +130,7 @@
 #define __cpp_lib_chrono 201611
 #define __cpp_lib_clamp 201603
 #if __cplusplus == 201703L // N.B. updated value in C++20
-# if _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+# if _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 #  define __cpp_lib_constexpr_char_traits 201611L
 #  define __cpp_lib_constexpr_string 201611L
 # endif
@@ -195,7 +195,7 @@
 #endif
 #define __cpp_lib_endian 201907L
 #define __cpp_lib_int_pow2 202002L
-#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#ifdef _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
 # define __cpp_lib_is_constant_evaluated 201811L
 #endif
 #define __cpp_lib_is_nothrow_convertible 201806L

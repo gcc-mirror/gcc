@@ -1145,6 +1145,30 @@ equiv_class::canonicalize ()
   m_vars.qsort (svalue::cmp_ptr_ptr);
 }
 
+/* Return true if this EC contains a variable, false if it merely
+   contains constants.
+   Subroutine of constraint_manager::canonicalize, for removing
+   redundant ECs.  */
+
+bool
+equiv_class::contains_non_constant_p () const
+{
+  if (m_constant)
+    {
+      for (auto iter : m_vars)
+	if (iter->maybe_get_constant ())
+	  continue;
+	else
+	  /* We have {non-constant == constant}.  */
+	  return true;
+      /* We only have constants.  */
+      return false;
+    }
+  else
+    /* Return true if we have {non-constant == non-constant}.  */
+    return m_vars.length () > 1;
+}
+
 /* Get a debug string for C_OP.  */
 
 const char *
@@ -2718,8 +2742,7 @@ constraint_manager::canonicalize ()
       {
 	equiv_class *ec = m_equiv_classes[i];
 	if (!used_ecs.contains (ec)
-	    && ((ec->m_vars.length () < 2 && ec->m_constant == NULL_TREE)
-		|| (ec->m_vars.length () == 0)))
+	    && !ec->contains_non_constant_p ())
 	  {
 	    m_equiv_classes.unordered_remove (i);
 	    delete ec;
@@ -3704,6 +3727,127 @@ test_many_constants ()
     }
 }
 
+/* Verify that purging state relating to a variable doesn't leave stray
+   equivalence classes (after canonicalization).  */
+
+static void
+test_purging (void)
+{
+  tree int_0 = build_int_cst (integer_type_node, 0);
+  tree a = build_global_decl ("a", integer_type_node);
+  tree b = build_global_decl ("b", integer_type_node);
+
+  /*  "a != 0".  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, a, NE_EXPR, int_0);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
+
+    /* Purge state for "a".  */
+    const svalue *sval_a = model.get_rvalue (a, NULL);
+    model.purge_state_involving (sval_a, NULL);
+    model.canonicalize ();
+    /* We should have an empty constraint_manager.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
+  }
+
+  /*  "a != 0" && "b != 0".  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, a, NE_EXPR, int_0);
+    ADD_SAT_CONSTRAINT (model, b, NE_EXPR, int_0);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 3);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 2);
+
+    /* Purge state for "a".  */
+    const svalue *sval_a = model.get_rvalue (a, NULL);
+    model.purge_state_involving (sval_a, NULL);
+    model.canonicalize ();
+    /* We should just have the constraint/ECs involving b != 0.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
+    ASSERT_CONDITION_TRUE (model, b, NE_EXPR, int_0);
+  }
+
+  /*  "a != 0" && "b == 0".  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, a, NE_EXPR, int_0);
+    ADD_SAT_CONSTRAINT (model, b, EQ_EXPR, int_0);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
+
+    /* Purge state for "a".  */
+    const svalue *sval_a = model.get_rvalue (a, NULL);
+    model.purge_state_involving (sval_a, NULL);
+    model.canonicalize ();
+    /* We should just have the EC involving b == 0.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
+    ASSERT_CONDITION_TRUE (model, b, EQ_EXPR, int_0);
+  }
+
+  /*  "a == 0".  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_0);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
+
+    /* Purge state for "a".  */
+    const svalue *sval_a = model.get_rvalue (a, NULL);
+    model.purge_state_involving (sval_a, NULL);
+    model.canonicalize ();
+    /* We should have an empty constraint_manager.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
+  }
+
+  /*  "a == 0" && "b != 0".  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_0);
+    ADD_SAT_CONSTRAINT (model, b, NE_EXPR, int_0);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
+
+    /* Purge state for "a".  */
+    const svalue *sval_a = model.get_rvalue (a, NULL);
+    model.purge_state_involving (sval_a, NULL);
+    model.canonicalize ();
+    /* We should just have the constraint/ECs involving b != 0.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
+    ASSERT_CONDITION_TRUE (model, b, NE_EXPR, int_0);
+  }
+
+  /*  "a == 0" && "b == 0".  */
+  {
+    region_model_manager mgr;
+    region_model model (&mgr);
+    ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_0);
+    ADD_SAT_CONSTRAINT (model, b, EQ_EXPR, int_0);
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
+
+    /* Purge state for "a".  */
+    const svalue *sval_a = model.get_rvalue (a, NULL);
+    model.purge_state_involving (sval_a, NULL);
+    model.canonicalize ();
+    /* We should just have the EC involving b == 0.  */
+    ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
+    ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
+    ASSERT_CONDITION_TRUE (model, b, EQ_EXPR, int_0);
+  }
+}
+
 /* Implementation detail of ASSERT_DUMP_BOUNDED_RANGES_EQ.  */
 
 static void
@@ -4035,6 +4179,7 @@ run_constraint_manager_tests (bool transitivity)
   test_constraint_impl ();
   test_equality ();
   test_many_constants ();
+  test_purging ();
   test_bounded_range ();
   test_bounded_ranges ();
 

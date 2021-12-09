@@ -154,39 +154,42 @@ enum {
     S_XFLAG_HASATTR = 0x80000000, /// no DIFLAG for this
 }
 
-enum BLKROSET = _IO(0x12, 93); /// set device read-only
-enum BLKROGET = _IO(0x12, 94); /// get read-only status
-enum BLKRRPART = _IO(0x12, 95); /// re-read partition table
-enum BLKGETSIZE = _IO(0x12, 96); /// return device size
-enum BLKFLSBUF = _IO(0x12, 97); /// flush buffer cache
-enum BLKRASET = _IO(0x12, 98); /// set read ahead for block device
-enum BLKRAGET = _IO(0x12, 99); /// get current read ahead setting
-enum BLKFRASET = _IO(0x12, 100); /// set filesystem
-enum BLKFRAGET = _IO(0x12, 101); /// get filesystem
-enum BLKSECTSET = _IO(0x12, 102); /// set max sectors per request
-enum BLKSECTGET = _IO(0x12, 103); /// get max sectors per request
-enum BLKSSZGET = _IO(0x12, 104); /// get block device sector size
+static if (__traits(compiles, _IO(1, 2)))
+{
+    enum BLKROSET = _IO(0x12, 93); /// set device read-only
+    enum BLKROGET = _IO(0x12, 94); /// get read-only status
+    enum BLKRRPART = _IO(0x12, 95); /// re-read partition table
+    enum BLKGETSIZE = _IO(0x12, 96); /// return device size
+    enum BLKFLSBUF = _IO(0x12, 97); /// flush buffer cache
+    enum BLKRASET = _IO(0x12, 98); /// set read ahead for block device
+    enum BLKRAGET = _IO(0x12, 99); /// get current read ahead setting
+    enum BLKFRASET = _IO(0x12, 100); /// set filesystem
+    enum BLKFRAGET = _IO(0x12, 101); /// get filesystem
+    enum BLKSECTSET = _IO(0x12, 102); /// set max sectors per request
+    enum BLKSECTGET = _IO(0x12, 103); /// get max sectors per request
+    enum BLKSSZGET = _IO(0x12, 104); /// get block device sector size
 
 
-enum BLKBSZGET = _IOR!size_t(0x12, 112);
-enum BLKBSZSET = _IOW!size_t(0x12, 113);
-enum BLKGETSIZE64 = _IOR!size_t(0x12, 114);
-enum BLKTRACESTART = _IO(0x12, 116);
-enum BLKTRACESTOP = _IO(0x12, 117);
-enum BLKTRACETEARDOWN = _IO(0x12, 118);
-enum BLKDISCARD = _IO(0x12, 119);
-enum BLKIOMIN = _IO(0x12, 120);
-enum BLKIOOPT = _IO(0x12, 121);
-enum BLKALIGNOFF = _IO(0x12, 122);
-enum BLKPBSZGET = _IO(0x12, 123);
-enum BLKDISCARDZEROES = _IO(0x12, 124);
-enum BLKSECDISCARD = _IO(0x12, 125);
-enum BLKROTATIONAL = _IO(0x12, 126);
-enum BLKZEROOUT = _IO(0x12, 127);
+    enum BLKBSZGET = _IOR!size_t(0x12, 112);
+    enum BLKBSZSET = _IOW!size_t(0x12, 113);
+    enum BLKGETSIZE64 = _IOR!size_t(0x12, 114);
+    enum BLKTRACESTART = _IO(0x12, 116);
+    enum BLKTRACESTOP = _IO(0x12, 117);
+    enum BLKTRACETEARDOWN = _IO(0x12, 118);
+    enum BLKDISCARD = _IO(0x12, 119);
+    enum BLKIOMIN = _IO(0x12, 120);
+    enum BLKIOOPT = _IO(0x12, 121);
+    enum BLKALIGNOFF = _IO(0x12, 122);
+    enum BLKPBSZGET = _IO(0x12, 123);
+    enum BLKDISCARDZEROES = _IO(0x12, 124);
+    enum BLKSECDISCARD = _IO(0x12, 125);
+    enum BLKROTATIONAL = _IO(0x12, 126);
+    enum BLKZEROOUT = _IO(0x12, 127);
 
-enum BMAP_IOCTL = 1; /// obsolete - kept for compatibility
-enum FIBMAP = _IO(0x00, 1); /// bmap access
-enum FIGETBSZ = _IO(0x00, 2); /// get the block size used for bmap
+    enum BMAP_IOCTL = 1; /// obsolete - kept for compatibility
+    enum FIBMAP = _IO(0x00, 1); /// bmap access
+    enum FIGETBSZ = _IO(0x00, 2); /// get the block size used for bmap
+}
 
 enum FSLABEL_MAX = 256; /// Max chars for the interface; each fs may differ
 

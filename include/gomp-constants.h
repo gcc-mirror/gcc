@@ -143,6 +143,11 @@ enum gomp_map_kind
        No refcount is bumped by this, and the store is done unconditionally.  */
     GOMP_MAP_ALWAYS_POINTER =		(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FLAG_SPECIAL | 1),
+    /* Like GOMP_MAP_POINTER, but allow zero-length array section, i.e. set to
+       NULL if target is not mapped.  */
+    GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION
+      =					(GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_FLAG_SPECIAL | 2),
     /* Forced deallocation of zero length array section.  */
     GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION
       =					(GOMP_MAP_FLAG_SPECIAL_2
@@ -162,6 +167,12 @@ enum gomp_map_kind
     /* In OpenACC, detach a pointer to a mapped struct field.  */
     GOMP_MAP_FORCE_DETACH =		(GOMP_MAP_DEEP_COPY
 					 | GOMP_MAP_FLAG_FORCE | 1),
+
+    /* Like GOMP_MAP_ATTACH, but allow attaching to zero-length array sections
+       (i.e. set to NULL when array section is not mapped) Currently only used
+       by OpenMP.  */
+    GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION
+      =					(GOMP_MAP_DEEP_COPY | 2),
 
     /* Internal to GCC, not used in libgomp.  */
     /* Do not map, but pointer assign a pointer instead.  */
@@ -186,7 +197,8 @@ enum gomp_map_kind
   ((X) == GOMP_MAP_ALWAYS_POINTER)
 
 #define GOMP_MAP_POINTER_P(X) \
-  ((X) == GOMP_MAP_POINTER)
+  ((X) == GOMP_MAP_POINTER \
+   || (X) == GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION)
 
 #define GOMP_MAP_ALWAYS_TO_P(X) \
   (((X) == GOMP_MAP_ALWAYS_TO) || ((X) == GOMP_MAP_ALWAYS_TOFROM))

@@ -4311,6 +4311,18 @@ is_byte_access_type (tree type)
 	  && !strcmp ("byte", TYPE_NAME_STRING (type)));
 }
 
+/* Returns true if TYPE is unsigned char or std::byte.  */
+
+bool
+is_byte_access_type_not_plain_char (tree type)
+{
+  type = TYPE_MAIN_VARIANT (type);
+  if (type == char_type_node)
+    return false;
+
+  return is_byte_access_type (type);
+}
+
 /* Returns 1 iff type T is something we want to treat as a scalar type for
    the purpose of deciding whether it is trivial/POD/standard-layout.  */
 

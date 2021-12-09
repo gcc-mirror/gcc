@@ -72,7 +72,7 @@ noreturn casting(int i)
             return cast() n;
         }
     }
-
+    assert(false);
 }
 
 enum forceCasting0 = casting(0);

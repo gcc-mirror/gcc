@@ -28,7 +28,7 @@ package(std.format):
     `bool`s are formatted as `"true"` or `"false"` with `%s` and as `1` or
     `0` with integral-specific format specs.
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(BooleanTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
     BooleanTypeOf!T val = obj;
@@ -123,7 +123,7 @@ if (is(BooleanTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 /*
     `null` literal is formatted as `"null"`
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(immutable T == immutable typeof(null)) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.format : enforceFmt;
@@ -157,11 +157,9 @@ if (is(immutable T == immutable typeof(null)) && !is(T == enum) && !hasToString!
 /*
     Integrals are formatted like $(REF printf, core, stdc, stdio).
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(IntegralTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
-    import std.range.primitives : put;
-
     alias U = IntegralTypeOf!T;
     U val = obj;    // Extracting alias this may be impure/system/may-throw
 
@@ -171,56 +169,46 @@ if (is(IntegralTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
         auto raw = (ref val) @trusted {
             return (cast(const char*) &val)[0 .. val.sizeof];
         }(val);
-
+        import std.range.primitives : put;
         if (needToSwapEndianess(f))
-        {
             foreach_reverse (c; raw)
                 put(w, c);
-        }
         else
-        {
             foreach (c; raw)
                 put(w, c);
-        }
         return;
     }
 
-    immutable uint base =
-        f.spec == 'x' || f.spec == 'X' || f.spec == 'a' || f.spec == 'A' ? 16 :
-        f.spec == 'o' ? 8 :
-        f.spec == 'b' ? 2 :
-        f.spec == 's' || f.spec == 'd' || f.spec == 'u'
-        || f.spec == 'e' || f.spec == 'E' || f.spec == 'f' || f.spec == 'F'
-        || f.spec == 'g' || f.spec == 'G' ? 10 :
-        0;
-
-    import std.format : enforceFmt;
-    enforceFmt(base > 0,
-        "incompatible format character for integral argument: %" ~ f.spec);
-
-    import std.math.algebraic : abs;
-
-    bool negative = false;
-    ulong arg = val;
     static if (isSigned!U)
     {
-        if (f.spec != 'x' && f.spec != 'X' && f.spec != 'b' && f.spec != 'o' && f.spec != 'u')
-        {
-            if (val < 0)
-            {
-                negative = true;
-                arg = cast(ulong) abs(val);
-            }
-        }
+        const negative = val < 0 && f.spec != 'x' && f.spec != 'X' && f.spec != 'b' && f.spec != 'o' && f.spec != 'u';
+        ulong arg = negative ? -cast(ulong) val : val;
     }
-
+    else
+    {
+        const negative = false;
+        ulong arg = val;
+    }
     arg &= Unsigned!U.max;
 
+    formatValueImplUlong!(Writer, Char)(w, arg, negative, f);
+}
+
+// Helper function for `formatValueImpl` that avoids template bloat
+private void formatValueImplUlong(Writer, Char)(auto ref Writer w, ulong arg, in bool negative,
+                                                scope const ref FormatSpec!Char f)
+{
+    immutable uint base = baseOfSpec(f.spec);
+
+    const bool zero = arg == 0;
     char[64] digits = void;
     size_t pos = digits.length - 1;
     do
     {
-        digits[pos--] = '0' + arg % base;
+        /* `cast(char)` is needed because value range propagation (VRP) cannot
+         * analyze `base` because it’s computed in a separate function
+         * (`baseOfSpec`). */
+        digits[pos--] = cast(char) ('0' + arg % base);
         if (base > 10 && digits[pos + 1] > '9')
             digits[pos + 1] += ((f.spec == 'x' || f.spec == 'a') ? 'a' : 'A') - '0' - 10;
         arg /= base;
@@ -245,12 +233,12 @@ if (is(IntegralTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
     if (f.spec == 'x' || f.spec == 'X' || f.spec == 'b' || f.spec == 'o' || f.spec == 'u'
         || f.spec == 'd' || f.spec == 's')
     {
-        if (f.flHash && (base == 16) && obj != 0)
+        if (f.flHash && (base == 16) && !zero)
         {
             prefix[--left] = f.spec;
             prefix[--left] = '0';
         }
-        if (f.flHash && (base == 8) && obj != 0
+        if (f.flHash && (base == 8) && !zero
             && (digits.length - (pos + 1) >= f.precision || f.precision == f.UNSPECIFIED))
             prefix[--left] = '0';
 
@@ -356,6 +344,48 @@ if (is(IntegralTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
                  digits[pos + 1 .. min(digit_end, $)],
                  suffix[0 .. $], fs,
                  (f.spec == 'g' || f.spec == 'G') ? PrecisionType.allDigits : PrecisionType.fractionalDigits);
+}
+
+private uint baseOfSpec(in char spec) @safe pure
+{
+    typeof(return) base =
+        spec == 'x' || spec == 'X' || spec == 'a' || spec == 'A' ? 16 :
+        spec == 'o' ? 8 :
+        spec == 'b' ? 2 :
+        spec == 's' || spec == 'd' || spec == 'u'
+        || spec == 'e' || spec == 'E' || spec == 'f' || spec == 'F'
+        || spec == 'g' || spec == 'G' ? 10 :
+        0;
+
+    import std.format : enforceFmt;
+    enforceFmt(base > 0,
+        "incompatible format character for integral argument: %" ~ spec);
+
+    return base;
+}
+
+@safe pure unittest
+{
+    assertCTFEable!(
+    {
+        formatTest(byte.min, "-128");
+        formatTest(byte.max, "127");
+        formatTest(short.min, "-32768");
+        formatTest(short.max, "32767");
+        formatTest(int.min, "-2147483648");
+        formatTest(int.max, "2147483647");
+        formatTest(long.min, "-9223372036854775808");
+        formatTest(long.max, "9223372036854775807");
+
+        formatTest(ubyte.min, "0");
+        formatTest(ubyte.max, "255");
+        formatTest(ushort.min, "0");
+        formatTest(ushort.max, "65535");
+        formatTest(uint.min, "0");
+        formatTest(uint.max, "4294967295");
+        formatTest(ulong.min, "0");
+        formatTest(ulong.max, "18446744073709551615");
+    });
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=18838
@@ -577,7 +607,8 @@ if (is(IntegralTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 /*
     Floating-point values are formatted like $(REF printf, core, stdc, stdio)
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj,
+                                      scope const ref FormatSpec!Char f)
 if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.algorithm.searching : find;
@@ -986,7 +1017,7 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
     Formatting a `creal` is deprecated but still kept around for a while.
  */
 deprecated("Use of complex types is deprecated. Use std.complex")
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(immutable T : immutable creal) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.range.primitives : put;
@@ -1006,7 +1037,7 @@ if (is(immutable T : immutable creal) && !is(T == enum) && !hasToString!(T, Char
     Formatting an `ireal` is deprecated but still kept around for a while.
  */
 deprecated("Use of imaginary types is deprecated. Use std.complex")
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(immutable T : immutable ireal) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.range.primitives : put;
@@ -1021,7 +1052,7 @@ if (is(immutable T : immutable ireal) && !is(T == enum) && !hasToString!(T, Char
     Individual characters are formatted as Unicode characters with `%s`
     and as integers with integral-specific format specs
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(CharTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.meta : AliasSeq;
@@ -1111,11 +1142,11 @@ if (is(CharTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 /*
     Strings are formatted like $(REF printf, core, stdc, stdio)
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, scope T obj,
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, scope const(T) obj,
     scope const ref FormatSpec!Char f)
 if (is(StringTypeOf!T) && !is(StaticArrayTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
-    Unqual!(StringTypeOf!T) val = obj;  // for `alias this`, see bug5371
+    Unqual!(const(StringTypeOf!T)) val = obj;  // for `alias this`, see bug5371
     formatRange(w, val, f);
 }
 
@@ -1306,7 +1337,7 @@ if (is(StringTypeOf!T) && !is(StaticArrayTypeOf!T) && !is(T == enum) && !hasToSt
 /*
     Static-size arrays are formatted as dynamic arrays.
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, auto ref T obj,
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, auto ref const(T) obj,
     scope const ref FormatSpec!Char f)
 if (is(StaticArrayTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
@@ -1751,13 +1782,13 @@ void formatChar(Writer)(ref Writer w, in dchar c, in char quote)
     Associative arrays are formatted by using `':'` and $(D ", ") as
     separators, and enclosed by `'['` and `']'`.
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T obj, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) obj, scope const ref FormatSpec!Char f)
 if (is(AssocArrayTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 {
     import std.format : enforceFmt, formatValue;
     import std.range.primitives : put;
 
-    AssocArrayTypeOf!T val = obj;
+    AssocArrayTypeOf!(const(T)) val = obj;
     const spec = f.spec;
 
     enforceFmt(spec == 's' || spec == '(',
@@ -2540,12 +2571,21 @@ if ((is(T == struct) || is(T == union)) && (hasToString!(T, Char) || !is(Builtin
             else static if (0 < i && val.tupleof[i-1].offsetof == val.tupleof[i].offsetof)
             {
                 static if (i == val.tupleof.length - 1 || val.tupleof[i].offsetof != val.tupleof[i+1].offsetof)
-                    put(w, separator~val.tupleof[i].stringof[4 .. $]~"}");
+                {
+                    enum el = separator ~ val.tupleof[i].stringof[4 .. $] ~ "}";
+                    put(w, el);
+                }
                 else
-                    put(w, separator~val.tupleof[i].stringof[4 .. $]);
+                {
+                    enum el = separator ~ val.tupleof[i].stringof[4 .. $];
+                    put(w, el);
+                }
             }
             else static if (i+1 < val.tupleof.length && val.tupleof[i].offsetof == val.tupleof[i+1].offsetof)
-                put(w, (i > 0 ? separator : "")~"#{overlap "~val.tupleof[i].stringof[4 .. $]);
+            {
+                enum el = (i > 0 ? separator : "") ~ "#{overlap " ~ val.tupleof[i].stringof[4 .. $];
+                put(w, el);
+            }
             else
             {
                 static if (i > 0)
@@ -2846,7 +2886,7 @@ void enforceValidFormatSpec(T, Char)(scope const ref FormatSpec!Char f)
 /*
     `enum`s are formatted like their base value
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, T val, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, const(T) val, scope const ref FormatSpec!Char f)
 if (is(T == enum))
 {
     import std.array : appender;
@@ -2866,7 +2906,9 @@ if (is(T == enum))
         auto w2 = appender!string();
 
         // val is not a member of T, output cast(T) rawValue instead.
-        put(w2, "cast(" ~ T.stringof ~ ")");
+        put(w2, "cast(");
+        put(w2, T.stringof);
+        put(w2, ")");
         static assert(!is(OriginalType!T == T), "OriginalType!" ~ T.stringof ~
             "must not be equal to " ~ T.stringof);
 
@@ -2934,7 +2976,7 @@ if (is(T == enum))
 /*
     Pointers are formatted as hex integers.
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, scope T val, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, scope const(T) val, scope const ref FormatSpec!Char f)
 if (isPointer!T && !is(T == enum) && !hasToString!(T, Char))
 {
     static if (is(typeof({ shared const void* p = val; })))
@@ -3048,7 +3090,7 @@ if (isPointer!T && !is(T == enum) && !hasToString!(T, Char))
 /*
     SIMD vectors are formatted as arrays.
  */
-void formatValueImpl(Writer, V, Char)(auto ref Writer w, V val, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, V, Char)(auto ref Writer w, const(V) val, scope const ref FormatSpec!Char f)
 if (isSIMDVector!V)
 {
     formatValueImpl(w, val.array, f);
@@ -3082,7 +3124,7 @@ if (isSIMDVector!V)
     Known bug: Because of issue https://issues.dlang.org/show_bug.cgi?id=18269
                the FunctionAttributes might be wrong.
  */
-void formatValueImpl(Writer, T, Char)(auto ref Writer w, scope T, scope const ref FormatSpec!Char f)
+void formatValueImpl(Writer, T, Char)(auto ref Writer w, scope const(T), scope const ref FormatSpec!Char f)
 if (isDelegate!T)
 {
     formatValueImpl(w, T.stringof, f);

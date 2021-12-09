@@ -19,8 +19,9 @@
 include $(top_srcdir)/d_rules.am
 
 # Make sure GDC can find libdruntime and libphobos include files
-D_EXTRA_DFLAGS=-fpreview=dip1000 -fpreview=dtorfields -nostdinc -I $(srcdir) \
-	-I $(top_srcdir)/libdruntime -I ../libdruntime -I .
+D_EXTRA_DFLAGS=-fpreview=dip1000 -fpreview=dtorfields -fpreview=fieldwise \
+	-nostdinc -I $(srcdir) -I $(top_srcdir)/libdruntime \
+	-I ../libdruntime -I .
 
 # D flags for compilation
 AM_DFLAGS= \

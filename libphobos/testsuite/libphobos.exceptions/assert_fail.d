@@ -426,6 +426,18 @@ void testShared()
     import core.atomic : atomicLoad;
     static assert( __traits(compiles, atomicLoad(s1)));
     static assert(!__traits(compiles, atomicLoad(b1)));
+
+    static struct Fail
+    {
+        int value;
+
+        @safe pure nothrow @nogc:
+        bool opCast () shared const scope { return true; }
+    }
+
+    shared Fail fail = { value: 1 };
+    assert(_d_assert_fail!(shared Fail)("==", fail) == "Fail(1) != true");
+    assert(_d_assert_fail!(shared Fail)("==", fail, fail) == "Fail(1) != Fail(1)");
 }
 
 void testException()

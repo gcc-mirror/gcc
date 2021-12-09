@@ -258,6 +258,8 @@ package Gen_IL.Fields is
       Is_Folded_In_Parser,
       Is_Generic_Contract_Pragma,
       Is_Homogeneous_Aggregate,
+      Is_Parenthesis_Aggregate,
+      Is_Enum_Array_Aggregate,
       Is_Ignored,
       Is_Ignored_Ghost_Pragma,
       Is_In_Discriminant_Check,

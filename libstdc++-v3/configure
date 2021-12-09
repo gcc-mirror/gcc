@@ -16848,7 +16848,7 @@ $as_echo_n "checking for std::allocator base class... " >&6; }
 if test "${enable_libstdcxx_allocator+set}" = set; then :
   enableval=$enable_libstdcxx_allocator;
       case "$enableval" in
-       new|malloc|mt|bitmap|pool|yes|no|auto) ;;
+       new|malloc|yes|no|auto) ;;
        *) as_fn_error $? "Unknown argument to enable/disable libstdcxx-allocator" "$LINENO" 5 ;;
 	  	        esac
 
@@ -16889,25 +16889,13 @@ $as_echo "$enable_libstdcxx_allocator_flag" >&6; }
 
   # Set configure bits for specified locale package
   case ${enable_libstdcxx_allocator_flag} in
-    bitmap)
-      ALLOCATOR_H=config/allocator/bitmap_allocator_base.h
-      ALLOCATOR_NAME=__gnu_cxx::bitmap_allocator
-      ;;
     malloc)
       ALLOCATOR_H=config/allocator/malloc_allocator_base.h
       ALLOCATOR_NAME=__gnu_cxx::malloc_allocator
       ;;
-    mt)
-      ALLOCATOR_H=config/allocator/mt_allocator_base.h
-      ALLOCATOR_NAME=__gnu_cxx::__mt_alloc
-      ;;
     new)
       ALLOCATOR_H=config/allocator/new_allocator_base.h
       ALLOCATOR_NAME=__gnu_cxx::new_allocator
-      ;;
-    pool)
-      ALLOCATOR_H=config/allocator/pool_allocator_base.h
-      ALLOCATOR_NAME=__gnu_cxx::__pool_alloc
       ;;
   esac
 

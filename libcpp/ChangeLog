@@ -1,3 +1,37 @@
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/102432
+	* lex.c (_cpp_lex_direct): If buffer->need_line while
+	pfile->state.in_deferred_pragma, return CPP_PRAGMA_EOL token instead
+	of assertion failure.
+
+2021-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* include/line-map.h (class line_maps): Add GTY((callback)) to
+	reallocator and round_alloc_size members.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100977
+	* init.c (struct lang_flags): Remove cxx23_identifiers.
+	(lang_defaults): Remove cxx23_identifiers initializers.
+	(cpp_set_lang): Don't copy cxx23_identifiers.
+	* include/cpplib.h (struct cpp_options): Adjust comment about
+	c11_identifiers.  Remove cxx23_identifiers field.
+	* lex.c (warn_about_normalization): Use cplusplus instead of
+	cxx23_identifiers.
+	* charset.c (ucn_valid_in_identifier): Likewise.
+
+2021-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/103415
+	* macro.c (stringify_arg): Remove va_opt argument and va_opt handling.
+	(paste_tokens): On successful paste or in PREV_WHITE and
+	PREV_FALLTHROUGH flags from the *plhs token to the new token.
+	(replace_args): Adjust stringify_arg callers.  For #__VA_OPT__,
+	perform token pasting in a separate loop before stringify_arg call.
+
 2021-11-30  Richard Biener  <rguenther@suse.de>
 
 	* charset.c (convert_escape): Remove unreachable break.

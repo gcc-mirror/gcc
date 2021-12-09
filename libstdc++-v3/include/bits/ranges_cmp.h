@@ -119,10 +119,9 @@ namespace ranges
       {
 	if constexpr (__detail::__less_builtin_ptr_cmp<_Tp, _Up>)
 	  {
-#ifdef __cpp_lib_is_constant_evaluated
-	    if (std::is_constant_evaluated())
+	    if (std::__is_constant_evaluated())
 	      return __t < __u;
-#endif
+
 	    auto __x = reinterpret_cast<__UINTPTR_TYPE__>(
 	      static_cast<const volatile void*>(std::forward<_Tp>(__t)));
 	    auto __y = reinterpret_cast<__UINTPTR_TYPE__>(

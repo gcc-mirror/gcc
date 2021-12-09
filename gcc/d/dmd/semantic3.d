@@ -55,7 +55,7 @@ import dmd.objc;
 import dmd.opover;
 import dmd.parse;
 import dmd.root.filename;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.root.rootobject;
 import dmd.sideeffect;
@@ -407,7 +407,8 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     sc2.insert(_arguments);
                     _arguments.parent = funcdecl;
                 }
-                if (f.linkage == LINK.d || f.parameterList.length)
+                if ((f.linkage == LINK.d || f.parameterList.length) &&
+                    !(sc.flags & SCOPE.Cfile))  // don't want to require importing stdarg for C files
                 {
                     // Declare _argptr
                     Type t = target.va_listType(funcdecl.loc, sc);
@@ -598,7 +599,10 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         f.next = Type.tvoid;
                     if (f.checkRetType(funcdecl.loc))
                         funcdecl.fbody = new ErrorStatement();
+                    else if (funcdecl.isMain())
+                        funcdecl.checkDmain();       // Check main() parameters and return type
                 }
+
                 if (global.params.vcomplex && f.next !is null)
                     f.next.checkComplexTransition(funcdecl.loc, sc);
 
@@ -777,8 +781,14 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     }
                     assert(!funcdecl.returnLabel);
                 }
-                else if (f.next.ty == Tnoreturn)
+                else if (f.next.toBasetype().ty == Tnoreturn)
                 {
+                    // Fallthrough despite being declared as noreturn? return is already rejected when evaluating the ReturnStatement
+                    if (blockexit & BE.fallthru)
+                    {
+                        funcdecl.error("is typed as `%s` but does return", f.next.toChars());
+                        funcdecl.loc.errorSupplemental("`noreturn` functions must either throw, abort or loop indefinitely");
+                    }
                 }
                 else
                 {
@@ -1571,7 +1581,7 @@ private struct FuncDeclSem3
     }
 }
 
-private void semanticTypeInfoMembers(StructDeclaration sd)
+extern (C++) void semanticTypeInfoMembers(StructDeclaration sd)
 {
     if (sd.xeq &&
         sd.xeq._scope &&

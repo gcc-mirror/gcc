@@ -1550,70 +1550,50 @@ irange::irange_union (const irange &r)
   // the merge is performed.
   //
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
-  tree ttype = r.type ();
-  signop sign = TYPE_SIGN (ttype);
-
-  auto_vec<tree, 20> res;
-  wide_int u1 ;
-  wi::overflow_type ovf;
+  auto_vec<tree, 20> res (m_num_ranges * 2 + r.m_num_ranges * 2);
   unsigned i = 0, j = 0, k = 0;
 
   while (i < m_num_ranges * 2 && j < r.m_num_ranges * 2)
     {
       // lower of Xi and Xj is the lowest point.
-      if (wi::le_p (wi::to_wide (m_base[i]), wi::to_wide (r.m_base[j]), sign))
+      if (wi::to_widest (m_base[i]) <= wi::to_widest (r.m_base[j]))
 	{
-	  res.safe_push (m_base[i]);
-	  res.safe_push (m_base[i + 1]);
+	  res.quick_push (m_base[i]);
+	  res.quick_push (m_base[i + 1]);
 	  k += 2;
 	  i += 2;
 	}
       else
 	{
-	  res.safe_push (r.m_base[j]);
-	  res.safe_push (r.m_base[j + 1]);
+	  res.quick_push (r.m_base[j]);
+	  res.quick_push (r.m_base[j + 1]);
 	  k += 2;
 	  j += 2;
 	}
     }
   for ( ; i < m_num_ranges * 2; i += 2)
     {
-      res.safe_push (m_base[i]);
-      res.safe_push (m_base[i + 1]);
+      res.quick_push (m_base[i]);
+      res.quick_push (m_base[i + 1]);
       k += 2;
     }
   for ( ; j < r.m_num_ranges * 2; j += 2)
     {
-      res.safe_push (r.m_base[j]);
-      res.safe_push (r.m_base[j + 1]);
+      res.quick_push (r.m_base[j]);
+      res.quick_push (r.m_base[j + 1]);
       k += 2;
     }
 
   // Now normalize the vector removing any overlaps.
   i = 2;
-  int prec = TYPE_PRECISION (ttype);
-  wide_int max_val = wi::max_value (prec, sign);
   for (j = 2; j < k ; j += 2)
     {
-      wide_int val_im1 = wi::to_wide (res[i - 1]);
-      if (val_im1 == max_val)
-	break;
-      u1 = wi::add (val_im1, 1, sign, &ovf);
-
-      // Overflow indicates we are at MAX already.
-      // A wide int bug requires the previous max_val check
-      // trigger: gcc.c-torture/compile/pr80443.c  with -O3
-      if (ovf == wi::OVF_OVERFLOW)
-	break;
-
-      wide_int val_j = wi::to_wide (res[j]);
-      wide_int val_jp1 = wi::to_wide (res[j+1]);
       // Current upper+1 is >= lower bound next pair, then we merge ranges.
-      if (wi::ge_p (u1, val_j, sign))
+      if (wi::to_widest (res[i - 1]) + 1 >= wi::to_widest (res[j]))
 	{
 	  // New upper bounds is greater of current or the next one.
-	  if (wi::gt_p (val_jp1, val_im1, sign))
-	    res [i - 1] = res[j + 1];
+	  if (wi::to_widest (res[j + 1]) > wi::to_widest (res[i - 1]))
+	    res[i - 1] = res[j + 1];
 	}
       else
 	{

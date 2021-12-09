@@ -24,6 +24,61 @@ import std.traits;
 
 public import std.container.util;
 
+pure @system unittest
+{
+    // We test multiple array lengths in order to ensure that the "a1.capacity == a0.length" test is meaningful
+    // for the version in which the constructor uses insertBack
+    // (because for some lengths, the test passes even without reserve).
+    for (size_t n = 0; n < 100; ++n)
+    {
+        float[] a0;
+        {
+            import std.range : iota;
+            import std.array;
+            import std.algorithm.iteration : map;
+            a0 = iota (0, n).map!(i => i * 1.1f).array;
+        }
+
+        auto a1 = Array!float(a0);
+
+        // We check that a1 has the same length and contents as a0:
+        {
+            assert(a1.length == a0.length);
+
+            // I wish that I could write "assert(a1[] == a0[]);",
+            // but the compiler complains: "Error: incompatible types for `(a1.opSlice()) == (a0[])`: `RangeT!(Array!float)` and `float[]`".
+            import std.algorithm.comparison : equal;
+            assert(equal(a1[], a0[]));
+        }
+
+        // We check that a1's constructor has called reserve (to maintain good performance):
+        assert(a1.capacity == a0.length);
+    }
+}
+
+pure @system unittest
+{
+    // To avoid bad performance, we check that an Array constructed from an empty range
+    // does not initialize its RefCountedStore object, even after a call to "reserve(0)".
+
+    {
+        Array!float a1;
+        assert(! a1._data.refCountedStore.isInitialized);
+        a1.reserve(0);
+        assert(! a1._data.refCountedStore.isInitialized);
+    }
+
+    {
+        float[] a0 = [];
+        Array!float a1 = a0;
+        // [2021-09-26] TODO: Investigate RefCounted.
+        //assert(! a1._data.refCountedStore.isInitialized);
+        a1.reserve(0);
+        // [2021-09-26] TODO: Investigate RefCounted.
+        //assert(! a1._data.refCountedStore.isInitialized);
+    }
+}
+
 ///
 pure @system unittest
 {
@@ -246,6 +301,70 @@ private struct RangeT(A)
     }
 }
 
+@system unittest
+{
+    enum : bool { display = false }
+    static if (display)
+    {
+        import std.stdio;
+        enum { nDigitsForPointer = 2 * size_t.sizeof, nDigitsForNObjects = 4 }
+    }
+
+    static struct S
+    {
+        static size_t s_nConstructed;
+        static size_t s_nDestroyed;
+        static void throwIfTooMany()
+        {
+            if (s_nConstructed >= 7) throw new Exception ("Ka-boom !");
+        }
+
+        uint _i;
+
+        ~this()
+        {
+            static if (display) writefln("@%*Xh: Destroying.", nDigitsForPointer, &this);
+            ++s_nDestroyed;
+        }
+
+        this(uint i)
+        {
+            static if (display) writefln("@%*Xh: Constructing.", nDigitsForPointer, &this);
+            _i = i;
+            ++s_nConstructed;
+            throwIfTooMany();
+        }
+
+        this(this)
+        {
+            static if (display) writefln("@%*Xh: Copying.", nDigitsForPointer, &this);
+            ++s_nConstructed;
+            throwIfTooMany();
+        }
+    }
+
+    try
+    {
+        auto a = Array!S (S(0), S(1), S(2), S(3));
+        static if (display) writefln("@%*Xh: This is where the array elements are.", nDigitsForPointer, &a [0]);
+    }
+    catch (Exception e)
+    {
+        static if (display) writefln("Exception caught !");
+    }
+
+    static if (display)
+    {
+        writefln("s_nConstructed %*Xh.", nDigitsForNObjects, S.s_nConstructed);
+        writefln("s_nDestroyed   %*Xh.", nDigitsForNObjects, S.s_nDestroyed);
+        writefln("s_nConstructed should be equal to s_nDestroyed.");
+        writefln("");
+    }
+
+    assert(S.s_nDestroyed == S.s_nConstructed);
+}
+
+
 /**
  * _Array type with deterministic control of memory. The memory allocated
  * for the array is reclaimed as soon as possible; there is no reliance
@@ -441,32 +560,28 @@ if (!is(immutable T == immutable bool))
     this(U)(U[] values...)
     if (isImplicitlyConvertible!(U, T))
     {
-        import core.lifetime : emplace;
+        // [2021-07-17] Checking to see whether *always* calling ensureInitialized works-around-and/or-is-related-to https://issues.dlang.org/show_bug.cgihttps://issues.dlang.org/show_bug.cgi...
+        //if (values.length)
+        {
+            _data.refCountedStore.ensureInitialized();
+            _data.reserve(values.length);
+            foreach (ref value; values)
+            {
+                // We do not simply write "_data.insertBack(value);"
+                // because that might perform, on each iteration, a now-redundant check of length vs capacity.
+                // Thanks to @dkorpel (https://github.com/dlang/phobos/pull/8162#discussion_r667479090).
 
-        static if (T.sizeof == 1)
-        {
-            const nbytes = values.length;
+                import core.lifetime : emplace;
+                emplace(_data._payload.ptr + _data._payload.length, value);
+
+                // We increment the length after each iteration (as opposed to adjusting it just once, after the loop)
+                // in order to improve error-safety (in case one of the calls to emplace throws).
+                _data._payload = _data._payload.ptr[0 .. _data._payload.length + 1];
+            }
         }
-        else
-        {
-            import core.checkedint : mulu;
-            bool overflow;
-            const nbytes = mulu(values.length, T.sizeof, overflow);
-            if (overflow)
-                assert(false, "Overflow");
-        }
-        auto p = cast(T*) enforceMalloc(nbytes);
-        // Before it is added to the gc, initialize the newly allocated memory
-        foreach (i, e; values)
-        {
-            emplace(p + i, e);
-        }
-        static if (hasIndirections!T)
-        {
-            if (p)
-                GC.addRange(p, T.sizeof * values.length);
-        }
-        _data = Data(p[0 .. values.length]);
+
+        assert(length == values.length);   // We check that all values have been inserted.
+        assert(capacity == values.length); // We check that reserve has been called before the loop.
     }
 
     /**
@@ -563,9 +678,9 @@ if (!is(immutable T == immutable bool))
      * Complexity: $(BIGOH 1).
      */
 
-    T[] data() @system
+    inout(T)[] data() inout @system
     {
-        return _data._payload;
+        return _data.refCountedStore.isInitialized ? _data._payload : [];
     }
 
     /**
@@ -581,34 +696,11 @@ if (!is(immutable T == immutable bool))
      */
     void reserve(size_t elements)
     {
-        if (!_data.refCountedStore.isInitialized)
+        if (elements > capacity)
         {
-            if (!elements) return;
-            static if (T.sizeof == 1)
-            {
-                const sz = elements;
-            }
-            else
-            {
-                import core.checkedint : mulu;
-                bool overflow;
-                const sz = mulu(elements, T.sizeof, overflow);
-                if (overflow)
-                    assert(false, "Overflow");
-            }
-            auto p = enforceMalloc(sz);
-            static if (hasIndirections!T)
-            {
-                // Zero out unused capacity to prevent gc from seeing false pointers
-                memset(p, 0, sz);
-                GC.addRange(p, sz);
-            }
-            _data = Data(cast(T[]) p[0 .. 0]);
-            _data._capacity = elements;
-        }
-        else
-        {
+            _data.refCountedStore.ensureInitialized();
             _data.reserve(elements);
+            assert(capacity == elements); // Might need changing to ">=" if implementation of Payload.reserve is changed.
         }
     }
 
@@ -2628,9 +2720,19 @@ if (is(immutable T == immutable bool))
 
 @system unittest
 {
+
     Array!int arr = [1, 2, 4, 5];
     int[] data = arr.data();
 
+    const Array!int arr2 = [8, 9];
+    assert(arr2.data() == [8, 9]);
+
     data[0] = 0;
     assert(arr[0] == 0);
+
+    arr.length = 0;
+    assert(arr.data == []);
+
+    Array!int empty;
+    assert(empty.data == []);
 }

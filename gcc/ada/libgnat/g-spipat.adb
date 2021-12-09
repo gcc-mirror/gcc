@@ -367,7 +367,7 @@ package body GNAT.Spitbol.Patterns is
    --  one character on success, and not to make any entries on the stack.
 
    OK_For_Simple_Arbno : constant array (Pattern_Code) of Boolean :=
-     (PC_Any_CS    |
+     [PC_Any_CS    |
       PC_Any_CH    |
       PC_Any_VF    |
       PC_Any_VP    |
@@ -387,7 +387,7 @@ package body GNAT.Spitbol.Patterns is
       PC_String_4  |
       PC_String_5  |
       PC_String_6   => True,
-      others        => False);
+      others        => False];
 
    -------------------------------
    -- The Pattern History Stack --

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mdejagnu-cpu=power10 -mrop-protect -mprivileged" } */
-/* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target rop_ok } */
 
 /* Verify that privileged ROP-protect instructions are inserted when a
    call is present.  */

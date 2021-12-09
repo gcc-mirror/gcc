@@ -646,13 +646,8 @@ size_t hashOf(T)(T aa) if (!is(T == enum) && __traits(isAssociativeArray, T))
     size_t h = 0;
 
     // The computed hash is independent of the foreach traversal order.
-    foreach (key, ref val; aa)
-    {
-        size_t[2] hpair;
-        hpair[0] = key.hashOf();
-        hpair[1] = val.hashOf();
-        h += hpair.hashOf();
-    }
+    foreach (ref key, ref val; aa)
+        h += hashOf(hashOf(val), hashOf(key));
     return h;
 }
 

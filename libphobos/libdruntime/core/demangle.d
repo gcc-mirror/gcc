@@ -346,6 +346,13 @@ pure @safe:
     }
 
 
+    void popFront(int i)
+    {
+        while (i--)
+            popFront();
+    }
+
+
     void match( char val )
     {
         test( val );
@@ -636,6 +643,7 @@ pure @safe:
         TypeDelegate
         TypeNone
         TypeVoid
+        TypeNoreturn
         TypeByte
         TypeUbyte
         TypeShort
@@ -714,6 +722,9 @@ pure @safe:
 
     TypeVoid:
         v
+
+    TypeNoreturn
+        Nn
 
     TypeByte:
         g
@@ -873,6 +884,10 @@ pure @safe:
             popFront();
             switch ( front )
             {
+            case 'n': // Noreturn
+                popFront();
+                put("noreturn");
+                return dst[beg .. len];
             case 'g': // Wild (Ng Type)
                 popFront();
                 // TODO: Anything needed here?
@@ -1164,9 +1179,11 @@ pure @safe:
             case 'g':
             case 'h':
             case 'k':
+            case 'n':
                 // NOTE: The inout parameter type is represented as "Ng".
                 //       The vector parameter type is represented as "Nh".
                 //       The return parameter type is represented as "Nk".
+                //       The noreturn parameter type is represented as "Nn".
                 //       These make it look like a FuncAttr, but infact
                 //       if we see these, then we know we're really in
                 //       the parameter list.  Rewind and break.
@@ -1217,6 +1234,59 @@ pure @safe:
                 break;
             }
             putComma(n);
+
+            /* Do special return, scope, ref, out combinations
+             */
+            int npops;
+            if ( 'M' == front && peek(1) == 'N' && peek(2) == 'k')
+            {
+                const c3 = peek(3);
+                if (c3 == 'J')
+                {
+                    put("scope return out ");   // MNkJ
+                    npops = 4;
+                }
+                else if (c3 == 'K')
+                {
+                    put("scope return ref ");   // MNkK
+                    npops = 4;
+                }
+            }
+            else if ('N' == front && peek(1) == 'k')
+            {
+                const c2 = peek(2);
+                if (c2 == 'J')
+                {
+                    put("return out ");         // NkJ
+                    npops = 3;
+                }
+                else if (c2 == 'K')
+                {
+                    put("return ref ");         // NkK
+                    npops = 3;
+                }
+                else if (c2 == 'M')
+                {
+                    const c3 = peek(3);
+                    if (c3 == 'J')
+                    {
+                        put("return scope out ");       // NkMJ
+                        npops = 4;
+                    }
+                    else if (c3 == 'K')
+                    {
+                        put("return scope ref ");       // NkMK
+                        npops = 4;
+                    }
+                    else
+                    {
+                        put("return scope ");           // NkM
+                        npops = 3;
+                    }
+                }
+            }
+            popFront(npops);
+
             if ( 'M' == front )
             {
                 popFront();
@@ -2558,6 +2628,15 @@ else
          `nothrow @trusted ulong std.algorithm.iteration.FilterResult!(std.typecons.Tuple!(int, "a", int, "b", int, "c").`
         ~`Tuple.rename!([0:"c", 2:"a"]).rename().__lambda1, int[]).FilterResult.__xtoHash(ref const(std.algorithm.iteration.`
         ~`FilterResult!(std.typecons.Tuple!(int, "a", int, "b", int, "c").Tuple.rename!([0:"c", 2:"a"]).rename().__lambda1, int[]).FilterResult))`],
+
+        ["_D4test4rrs1FKPiZv",    "void test.rrs1(ref int*)"],
+        ["_D4test4rrs1FMNkJPiZv", "void test.rrs1(scope return out int*)"],
+        ["_D4test4rrs1FMNkKPiZv", "void test.rrs1(scope return ref int*)"],
+        ["_D4test4rrs1FNkJPiZv",  "void test.rrs1(return out int*)"],
+        ["_D4test4rrs1FNkKPiZv",  "void test.rrs1(return ref int*)"],
+        ["_D4test4rrs1FNkMJPiZv", "void test.rrs1(return scope out int*)"],
+        ["_D4test4rrs1FNkMKPiZv", "void test.rrs1(return scope ref int*)"],
+        ["_D4test4rrs1FNkMPiZv",  "void test.rrs1(return scope int*)"],
     ];
 
 
@@ -2619,6 +2698,25 @@ unittest
     s ~= "FiZi";
     expected ~= "F";
     assert(s.demangle == expected);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22235
+unittest
+{
+    enum parent = __MODULE__ ~ '.' ~ __traits(identifier, __traits(parent, {}));
+
+    static noreturn abort() { assert(false); }
+    assert(demangle(abort.mangleof) == "pure nothrow @nogc @safe noreturn " ~ parent ~ "().abort()");
+
+    static void accept(noreturn) {}
+    assert(demangle(accept.mangleof) == "pure nothrow @nogc @safe void " ~ parent ~ "().accept(noreturn)");
+
+    static void templ(T)(T, T) {}
+    assert(demangle(templ!noreturn.mangleof) == "pure nothrow @nogc @safe void " ~ parent ~ "().templ!(noreturn).templ(noreturn, noreturn)");
+
+    static struct S(T) {}
+    static void aggr(S!noreturn) { assert(0); }
+    assert(demangle(aggr.mangleof) == "pure nothrow @nogc @safe void " ~ parent ~ "().aggr(" ~ parent ~ "().S!(noreturn).S)");
 }
 
 /*

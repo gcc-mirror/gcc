@@ -614,7 +614,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
       --        different bounds, so take care indexing elements. Assignment
       --        as a whole is fine as sliding is automatic in that case.
 
-      Vectors := (if not Compute_Vectors then (1 .. 0 => (1 .. 0 => 0.0))
+      Vectors := (if not Compute_Vectors then [1 .. 0 => [1 .. 0 => 0.0]]
                   else Unit_Matrix (Vectors'Length (1), Vectors'Length (2)));
       Values := Diagonal (M);
 
@@ -637,7 +637,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
          --  an absolute value that exceeds the threshold.
 
          Diag := Values;
-         Diag_Adj := (others => 0.0); -- Accumulates adjustments to Diag
+         Diag_Adj := [others => 0.0]; -- Accumulates adjustments to Diag
 
          for Row in 1 .. N - 1 loop
             for Col in Row + 1 .. N loop

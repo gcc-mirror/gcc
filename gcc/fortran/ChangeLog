@@ -1,3 +1,77 @@
+2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103609
+	* symbol.c (gfc_sym_get_dummy_args): Catch NULL pointer
+	dereference.
+
+2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103610
+	* array.c (spec_dimen_size): Fix simplification of SHAPE:
+	dimensions must be non-negative.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* trans-openmp.c (gfc_trans_omp_array_section): Do not generate
+	GOMP_MAP_ALWAYS_POINTER map for main array maps of ARRAY_TYPE type.
+
+2021-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103607
+	* frontend-passes.c (do_subscript): Ensure that array bounds are
+	of type INTEGER before performing checks on array subscripts.
+
+2021-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103588
+	* array.c (gfc_ref_dimen_size): Do not generate internal error on
+	failed simplification of stride expression; just return failure.
+
+2021-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103591
+	* match.c (match_case_selector): Check type of upper bound in case
+	range.
+
+2021-12-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Handle
+	weak/compare/fail clause.
+	* gfortran.h (gfc_omp_clauses): Add weak, compare, fail.
+	* openmp.c (enum omp_mask1, gfc_match_omp_clauses,
+	OMP_ATOMIC_CLAUSES): Update for new clauses.
+	(gfc_match_omp_atomic): Update for 5.1 atomic changes.
+	(is_conversion): Support widening in one go.
+	(is_scalar_intrinsic_expr): New.
+	(resolve_omp_atomic): Update for 5.1 atomic changes.
+	* parse.c (parse_omp_oacc_atomic): Update for compare.
+	* resolve.c (gfc_resolve_blocks): Update asserts.
+	* trans-openmp.c (gfc_trans_omp_atomic): Handle new clauses.
+
+2021-12-03  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/103505
+	* array.c (match_array_element_spec): Try to simplify array
+	element specifications to improve early checking.
+	* expr.c (gfc_try_simplify_expr): New.  Try simplification of an
+	expression via gfc_simplify_expr.  When an error occurs, roll
+	back.
+	* gfortran.h (gfc_try_simplify_expr): Declare it.
+
+2021-12-03  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-stmt.c (gfc_trans_allocate): Set e3_has_nodescriptor to true
+	only for non-named arrays.
+
+2021-12-02  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR fortran/90030
+	* trans-openmp.c (gfc_omp_finish_clause): Remove fold_convert to pointer
+	to char_type_node, add gcc_assert of POINTER_TYPE_P.
+	(gfc_trans_omp_array_section): Likewise.
+	(gfc_trans_omp_clauses): Likewise.
+
 2021-11-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102787

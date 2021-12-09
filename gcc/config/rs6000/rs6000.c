@@ -78,7 +78,6 @@
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
 #include "rs6000-internal.h"
-#include "rs6000-builtins.h"
 #include "opts.h"
 
 /* This file should be included last.  */
@@ -3478,6 +3477,10 @@ rs6000_override_options_after_change (void)
     }
   else if (!OPTION_SET_P (flag_cunroll_grow_size))
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
+
+  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
+  if (rs6000_rop_protect)
+    flag_shrink_wrap = 0;
 }
 
 #ifdef TARGET_USES_LINUX64_OPT
@@ -4041,10 +4044,6 @@ rs6000_option_override_internal (bool global_init_p)
       && !TARGET_QUAD_MEMORY_ATOMIC
       && ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) == 0))
     rs6000_isa_flags |= OPTION_MASK_QUAD_MEMORY_ATOMIC;
-
-  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
-  if (rs6000_rop_protect)
-    flag_shrink_wrap = 0;
 
   /* If we can shrink-wrap the TOC register save separately, then use
      -msave-toc-indirect unless explicitly disabled.  */
@@ -20600,7 +20599,7 @@ rs6000_ms_bitfield_layout_p (const_tree record_type)
 /* A get_unnamed_section callback, used for switching to toc_section.  */
 
 static void
-rs6000_elf_output_toc_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+rs6000_elf_output_toc_section_asm_op (const char *data ATTRIBUTE_UNUSED)
 {
   if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
       && TARGET_MINIMAL_TOC)
@@ -21304,35 +21303,39 @@ rs6000_xcoff_asm_globalize_label (FILE *stream, const char *name)
    points to the section string variable.  */
 
 static void
-rs6000_xcoff_output_readonly_section_asm_op (const void *directive)
+rs6000_xcoff_output_readonly_section_asm_op (const char *directive)
 {
   fprintf (asm_out_file, "\t.csect %s[RO],%s\n",
-	   *(const char *const *) directive,
+	   directive
+	   ? xcoff_private_rodata_section_name
+	   : xcoff_read_only_section_name,
 	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
 }
 
 /* Likewise for read-write sections.  */
 
 static void
-rs6000_xcoff_output_readwrite_section_asm_op (const void *directive)
+rs6000_xcoff_output_readwrite_section_asm_op (const char *)
 {
   fprintf (asm_out_file, "\t.csect %s[RW],%s\n",
-	   *(const char *const *) directive,
+	   xcoff_private_data_section_name,
 	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
 }
 
 static void
-rs6000_xcoff_output_tls_section_asm_op (const void *directive)
+rs6000_xcoff_output_tls_section_asm_op (const char *directive)
 {
   fprintf (asm_out_file, "\t.csect %s[TL],%s\n",
-	   *(const char *const *) directive,
+	   directive
+	   ? xcoff_private_data_section_name
+	   : xcoff_tls_data_section_name,
 	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
 }
 
 /* A get_unnamed_section callback, used for switching to toc_section.  */
 
 static void
-rs6000_xcoff_output_toc_section_asm_op (const void *data ATTRIBUTE_UNUSED)
+rs6000_xcoff_output_toc_section_asm_op (const char *data ATTRIBUTE_UNUSED)
 {
   if (TARGET_MINIMAL_TOC)
     {
@@ -21359,26 +21362,26 @@ rs6000_xcoff_asm_init_sections (void)
 {
   read_only_data_section
     = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
-			   &xcoff_read_only_section_name);
+			   NULL);
 
   private_data_section
     = get_unnamed_section (SECTION_WRITE,
 			   rs6000_xcoff_output_readwrite_section_asm_op,
-			   &xcoff_private_data_section_name);
+			   NULL);
 
   read_only_private_data_section
     = get_unnamed_section (0, rs6000_xcoff_output_readonly_section_asm_op,
-			   &xcoff_private_rodata_section_name);
+			   "");
 
   tls_data_section
     = get_unnamed_section (SECTION_TLS,
 			   rs6000_xcoff_output_tls_section_asm_op,
-			   &xcoff_tls_data_section_name);
+			   NULL);
 
   tls_private_data_section
     = get_unnamed_section (SECTION_TLS,
 			   rs6000_xcoff_output_tls_section_asm_op,
-			   &xcoff_private_data_section_name);
+			   "");
 
   toc_section
     = get_unnamed_section (0, rs6000_xcoff_output_toc_section_asm_op, NULL);
@@ -22742,7 +22745,7 @@ rs6000_builtin_reciprocal (tree fndecl)
 {
   switch (DECL_MD_FUNCTION_CODE (fndecl))
     {
-    case VSX_BUILTIN_XVSQRTDP:
+    case RS6000_BIF_XVSQRTDP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
 
@@ -22750,7 +22753,7 @@ rs6000_builtin_reciprocal (tree fndecl)
 	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
       return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
 
-    case VSX_BUILTIN_XVSQRTSP:
+    case RS6000_BIF_XVSQRTSP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
 

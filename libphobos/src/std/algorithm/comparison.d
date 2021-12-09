@@ -58,10 +58,10 @@ T2=$(TR $(TDNW $(LREF $1)) $(TD $+))
  */
 module std.algorithm.comparison;
 
-import std.functional : unaryFun, binaryFun;
+import std.functional : unaryFun, binaryFun, lessThan, greaterThan;
 import std.range.primitives;
 import std.traits;
-import std.meta : allSatisfy;
+import std.meta : allSatisfy, anySatisfy;
 import std.typecons : tuple, Tuple, Flag, Yes;
 
 import std.internal.attributes : betterC;
@@ -247,7 +247,7 @@ auto castSwitch(choices...)(Object switchObject)
         bool result = true;
         foreach (index, choice; choices)
         {
-            result &= is(ReturnType!choice == void);
+            result &= is(ReturnType!choice : void); // void or noreturn
         }
         return result;
     }();
@@ -514,9 +514,54 @@ auto castSwitch(choices...)(Object switchObject)
     ) == "derived from I");
 }
 
-/** Clamps a value into the given bounds.
+// https://issues.dlang.org/show_bug.cgi?id=22384
+@system unittest
+{
+    // Use explicit methods to enforce return types
+    static void objectSkip(Object) {}
+    static void defaultSkip() {}
 
-This function is equivalent to `max(lower, min(upper, val))`.
+    static noreturn objectError(Object) { assert(false); }
+    static noreturn defaultError() { assert(false); }
+
+    {
+        alias test = castSwitch!(objectSkip, defaultError);
+        static assert(is(ReturnType!test == void));
+    }{
+        alias test = castSwitch!(objectError, defaultSkip);
+        static assert(is(ReturnType!test == void));
+    }{
+        alias test = castSwitch!(objectError, defaultError);
+        static assert(is(ReturnType!test == noreturn));
+    }
+
+    // Also works with non-void handlers
+    static int objectValue(Object) { return 1;}
+    static int defaultValue() { return 2; }
+
+    {
+        alias test = castSwitch!(objectValue, defaultError);
+        static assert(is(ReturnType!test == int));
+    }{
+        alias test = castSwitch!(objectError, defaultValue);
+        static assert(is(ReturnType!test == int));
+    }
+
+    // No confusion w.r.t. void callbacks
+    alias FP = void function();
+    static FP objectFunc(Object) { return &defaultSkip; }
+    static FP defaultFunc() { return &defaultSkip; }
+
+    {
+        alias test = castSwitch!(objectFunc, defaultError);
+        static assert(is(ReturnType!test == FP));
+    }{
+        alias test = castSwitch!(objectError, defaultFunc);
+        static assert(is(ReturnType!test == FP));
+    }
+}
+
+/** Clamps `val` into the given bounds. Result has the same type as `val`.
 
 Params:
     val = The value to _clamp.
@@ -524,20 +569,22 @@ Params:
     upper = The _upper bound of the _clamp.
 
 Returns:
-    Returns `val`, if it is between `lower` and `upper`.
-    Otherwise returns the nearest of the two.
-
+    `lower` if `val` is less than `lower`, `upper` if `val` is greater than
+    `upper`, and `val` in all other cases. Comparisons are made
+    correctly (using $(REF lessThan, std,functional) and the return value
+    is converted to the return type using the standard integer coversion rules
+    $(REF greaterThan, std,functional)) even if the signedness of `T1`, `T2`,
+    and `T3` are different.
 */
-auto clamp(T1, T2, T3)(T1 val, T2 lower, T3 upper)
-if (is(typeof(max(min(val, upper), lower))))
+T1 clamp(T1, T2, T3)(T1 val, T2 lower, T3 upper)
+if (is(typeof(val.lessThan(lower) ? lower : val.greaterThan(upper) ? upper : val) : T1))
 in
 {
-    import std.functional : greaterThan;
     assert(!lower.greaterThan(upper), "Lower can't be greater than upper.");
 }
 do
 {
-    return max(min(val, upper), lower);
+    return val.lessThan(lower) ? lower : val.greaterThan(upper) ? upper : val;
 }
 
 ///
@@ -550,6 +597,10 @@ do
     assert(clamp(1, 1, 1) == 1);
 
     assert(clamp(5, -1, 2u) == 2);
+
+    auto x = clamp(42, uint.max, uint.max);
+    static assert(is(typeof(x) == int));
+    assert(x == -1);
 }
 
 @safe unittest
@@ -564,7 +615,7 @@ do
     // mixed sign
     a = -5;
     uint f = 5;
-    static assert(is(typeof(clamp(f, a, b)) == int));
+    static assert(is(typeof(clamp(f, a, b)) == uint));
     assert(clamp(f, a, b) == f);
     // similar type deduction for (u)long
     static assert(is(typeof(clamp(-1L, -2L, 2UL)) == long));
@@ -874,100 +925,120 @@ nothrow pure @safe unittest
 
 // equal
 /**
-Compares two ranges for equality, as defined by predicate `pred`
+Compares two or more ranges for equality, as defined by predicate `pred`
 (which is `==` by default).
 */
 template equal(alias pred = "a == b")
 {
     /++
-    Compares two ranges for equality. The ranges may have
-    different element types, as long as `pred(r1.front, r2.front)`
-    evaluates to `bool`.
-    Performs $(BIGOH min(r1.length, r2.length)) evaluations of `pred`.
+    Compares two or more ranges for equality. The ranges may have
+    different element types, as long as all are comparable by means of
+    the `pred`.
+    Performs $(BIGOH min(rs[0].length, rs[1].length, ...)) evaluations of `pred`. However, if
+    `equal` is invoked with the default predicate, the implementation may take the liberty
+    to use faster implementations that have the theoretical worst-case
+    $(BIGOH max(rs[0].length, rs[1].length, ...)).
 
     At least one of the ranges must be finite. If one range involved is infinite, the result is
     (statically known to be) `false`.
 
-    If the two ranges are different kinds of UTF code unit (`char`, `wchar`, or
-    `dchar`), then the arrays are compared using UTF decoding to avoid
+    If the ranges have different kinds of UTF code unit (`char`, `wchar`, or
+    `dchar`), then they are compared using UTF decoding to avoid
     accidentally integer-promoting units.
 
     Params:
-        r1 = The first range to be compared.
-        r2 = The second range to be compared.
+        rs = The ranges to be compared.
 
     Returns:
-        `true` if and only if the two ranges compare _equal element
+        `true` if and only if all ranges compare _equal element
         for element, according to binary predicate `pred`.
     +/
-    bool equal(Range1, Range2)(Range1 r1, Range2 r2)
-    if (isInputRange!Range1 && isInputRange!Range2 &&
-        !(isInfinite!Range1 && isInfinite!Range2) &&
-        is(typeof(binaryFun!pred(r1.front, r2.front))))
+    bool equal(Ranges...)(Ranges rs)
+    if (rs.length > 1
+        && allSatisfy!(isInputRange, Ranges)
+        && !allSatisfy!(isInfinite, Ranges)
+        && is(typeof(binaryFun!pred(rs[0].front, rs[1].front)))
+        && (rs.length == 2 || is(typeof(equal!pred(rs[1 .. $])) == bool))
+        )
     {
-        // Use code points when comparing two ranges of UTF code units that aren't
-        // the same type. This is for backwards compatibility with autodecode
-        // strings.
-        enum useCodePoint =
-            isSomeChar!(ElementEncodingType!Range1) && isSomeChar!(ElementEncodingType!Range2) &&
-            ElementEncodingType!Range1.sizeof != ElementEncodingType!Range2.sizeof;
+        alias ElementEncodingTypes = staticMap!(ElementEncodingType, Ranges);
+        enum differentSize(T) = T.sizeof != ElementEncodingTypes[0].sizeof;
+        enum useCodePoint = allSatisfy!(isSomeChar, ElementEncodingTypes) &&
+            anySatisfy!(differentSize, ElementEncodingTypes);
+        enum bool comparableWithEq(alias r) = is(typeof(rs[0] == r));
 
-        static if (useCodePoint)
+        static if (anySatisfy!(isInfinite, Ranges))
+        {
+            return false;
+        }
+        else static if (useCodePoint)
         {
             import std.utf : byDchar;
-            return equal(r1.byDchar, r2.byDchar);
+            static bool allByDchar(size_t done, Ranges...)(auto ref Ranges rs)
+            {
+                static if (done == rs.length)
+                    return equalLoop(rs);
+                else
+                    return allByDchar!(done + 1)(rs[0 .. done], rs[done].byDchar, rs[done + 1 .. $]);
+            }
+            return allByDchar!0(rs);
+        }
+        else static if (is(typeof(pred) == string) && pred == "a == b" &&
+                allSatisfy!(isArray, Ranges) && allSatisfy!(comparableWithEq, rs))
+        {
+            static foreach (r; rs[1 .. $])
+                if (rs[0] != r)
+                    return false;
+            return true;
+        }
+        // if one of the arguments is a string and the other isn't, then auto-decoding
+        // can be avoided if they have the same ElementEncodingType
+        // TODO: generalize this
+        else static if (rs.length == 2 && is(typeof(pred) == string) && pred == "a == b" &&
+                isAutodecodableString!(Ranges[0]) != isAutodecodableString!(Ranges[1]) &&
+                is(immutable ElementEncodingType!(Ranges[0]) == immutable ElementEncodingType!(Ranges[1])))
+        {
+            import std.utf : byCodeUnit;
+            static if (isAutodecodableString!(Ranges[0]))
+                return equal(rs[0].byCodeUnit, rs[1]);
+            else
+                return equal(rs[1].byCodeUnit, rs[0]);
         }
         else
         {
-            static if (isInfinite!Range1 || isInfinite!Range2)
+            static foreach (i, R; Ranges)
             {
-                // No finite range can be ever equal to an infinite range.
-                return false;
-            }
-            // Detect default pred and compatible dynamic arrays.
-            else static if (is(typeof(pred) == string) && pred == "a == b" &&
-                isArray!Range1 && isArray!Range2 && is(typeof(r1 == r2)))
-            {
-                return r1 == r2;
-            }
-            // If one of the arguments is a string and the other isn't, then auto-decoding
-            // can be avoided if they have the same ElementEncodingType.
-            else static if (is(typeof(pred) == string) && pred == "a == b" &&
-                isAutodecodableString!Range1 != isAutodecodableString!Range2 &&
-                is(immutable ElementEncodingType!Range1 == immutable ElementEncodingType!Range2))
-            {
-                import std.utf : byCodeUnit;
-
-                static if (isAutodecodableString!Range1)
-                    return equal(r1.byCodeUnit, r2);
-                else
-                    return equal(r2.byCodeUnit, r1);
-            }
-            // Try a fast implementation when the ranges have comparable lengths.
-            else static if (hasLength!Range1 && hasLength!Range2 && is(typeof(r1.length == r2.length)))
-            {
-                immutable len1 = r1.length;
-                immutable len2 = r2.length;
-                if (len1 != len2) return false; //Short circuit return
-
-                // Lengths are the same, so we need to do an actual comparison.
-                // Good news is we can squeeze out a bit of performance by not checking if r2 is empty.
-                for (; !r1.empty; r1.popFront(), r2.popFront())
+                static if (hasLength!R)
                 {
-                    if (!binaryFun!(pred)(r1.front, r2.front)) return false;
+                    static if (!is(typeof(firstLength)))
+                    {
+                        // Found the first range that has length
+                        auto firstLength = rs[i].length;
+                    }
+                    else
+                    {
+                        // Compare the length of the current range against the first with length
+                        if (firstLength != rs[i].length)
+                            return false;
+                    }
                 }
-                return true;
             }
-            else
-            {
-                //Generic case, we have to walk both ranges making sure neither is empty
-                for (; !r1.empty; r1.popFront(), r2.popFront())
-                {
-                    if (r2.empty || !binaryFun!(pred)(r1.front, r2.front)) return false;
-                }
-                return r2.empty;
-            }
+            return equalLoop(rs);
         }
+    }
+
+    private bool equalLoop(Rs...)(Rs rs)
+    {
+        for (; !rs[0].empty; rs[0].popFront)
+            static foreach (r; rs[1 .. $])
+                if (r.empty || !binaryFun!pred(rs[0].front, r.front))
+                    return false;
+                else
+                    r.popFront;
+        static foreach (r; rs[1 .. $])
+            if (!r.empty)
+                return false;
+        return true;
     }
 }
 
@@ -990,6 +1061,31 @@ template equal(alias pred = "a == b")
     // predicated: ensure that two vectors are approximately equal
     double[4] c = [ 1.0000000005, 2, 4, 3];
     assert(equal!isClose(b[], c[]));
+}
+
+@safe @nogc unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.math.operations : isClose;
+
+    auto s1 = "abc", s2 = "abc"w;
+    assert(equal(s1, s2, s2));
+    assert(equal(s1, s2, s2, s1));
+    assert(!equal(s1, s2, s2[1 .. $]));
+
+    int[4] a = [ 1, 2, 4, 3 ];
+    assert(!equal(a[], a[1..$], a[]));
+    assert(equal(a[], a[], a[]));
+    assert(equal!((a, b) => a == b)(a[], a[], a[]));
+
+    // different types
+    double[4] b = [ 1.0, 2, 4, 3];
+    assert(!equal(a[], b[1..$], b[]));
+    assert(equal(a[], b[], a[], b[]));
+
+    // predicated: ensure that two vectors are approximately equal
+    double[4] c = [ 1.0000000005, 2, 4, 3];
+    assert(equal!isClose(b[], c[], b[]));
 }
 
 /++
@@ -1748,21 +1844,26 @@ store the lowest values.
 
 // mismatch
 /**
-Sequentially compares elements in `r1` and `r2` in lockstep, and
+Sequentially compares elements in `rs` in lockstep, and
 stops at the first mismatch (according to `pred`, by default
 equality). Returns a tuple with the reduced ranges that start with the
-two mismatched values. Performs $(BIGOH min(r1.length, r2.length))
+two mismatched values. Performs $(BIGOH min(r[0].length, r[1].length, ...))
 evaluations of `pred`.
 */
-Tuple!(Range1, Range2)
-mismatch(alias pred = "a == b", Range1, Range2)(Range1 r1, Range2 r2)
-if (isInputRange!(Range1) && isInputRange!(Range2))
+Tuple!(Ranges)
+mismatch(alias pred = (a, b) => a == b, Ranges...)(Ranges rs)
+if (rs.length >= 2 && allSatisfy!(isInputRange, Ranges))
 {
-    for (; !r1.empty && !r2.empty; r1.popFront(), r2.popFront())
+    loop: for (; !rs[0].empty; rs[0].popFront)
     {
-        if (!binaryFun!(pred)(r1.front, r2.front)) break;
+        static foreach (r; rs[1 .. $])
+        {
+            if (r.empty || !binaryFun!pred(rs[0].front, r.front))
+                break loop;
+            r.popFront;
+        }
     }
-    return tuple(r1, r2);
+    return tuple(rs);
 }
 
 ///
@@ -1773,6 +1874,12 @@ if (isInputRange!(Range1) && isInputRange!(Range2))
     auto m = mismatch(x[], y[]);
     assert(m[0] == x[3 .. $]);
     assert(m[1] == y[3 .. $]);
+
+    auto m2 = mismatch(x[], y[], x[], y[]);
+    assert(m2[0] == x[3 .. $]);
+    assert(m2[1] == y[3 .. $]);
+    assert(m2[2] == x[3 .. $]);
+    assert(m2[3] == y[3 .. $]);
 }
 
 @safe @nogc unittest
@@ -1925,50 +2032,91 @@ auto predSwitch(alias pred = "a == b", T, R ...)(T switchExpression, lazy R choi
 }
 
 /**
-Checks if the two ranges have the same number of elements. This function is
+Checks if two or more ranges have the same number of elements. This function is
 optimized to always take advantage of the `length` member of either range
 if it exists.
 
-If both ranges have a length member, this function is $(BIGOH 1). Otherwise,
-this function is $(BIGOH min(r1.length, r2.length)).
+If all ranges have a `length` member or at least one is infinite,
+`_isSameLength`'s complexity is $(BIGOH 1). Otherwise, complexity is
+$(BIGOH n), where `n` is the smallest of the lengths of ranges with unknown
+length.
 
-Infinite ranges are considered of the same length. An infinite range has never the same length as a
-finite range.
+Infinite ranges are considered of the same length. An infinite range has never
+the same length as a finite range.
 
 Params:
-    r1 = a finite $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
-    r2 = a finite $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+    rs = two or more $(REF_ALTTEXT input ranges, isInputRange, std,range,primitives)
 
 Returns:
     `true` if both ranges have the same length, `false` otherwise.
 */
-bool isSameLength(Range1, Range2)(Range1 r1, Range2 r2)
-if (isInputRange!Range1 && isInputRange!Range2)
+bool isSameLength(Ranges...)(Ranges rs)
+if (allSatisfy!(isInputRange, Ranges))
 {
-    static if (isInfinite!Range1 || isInfinite!Range2)
+    static if (anySatisfy!(isInfinite, Ranges))
     {
-        return isInfinite!Range1 && isInfinite!Range2;
+        return allSatisfy!(isInfinite, Ranges);
     }
-    else static if (hasLength!(Range1) && hasLength!(Range2))
+    else static if (anySatisfy!(hasLength, Ranges))
     {
-        return r1.length == r2.length;
-    }
-    else static if (hasLength!(Range1) && !hasLength!(Range2))
-    {
-        return r2.walkLength(r1.length + 1) == r1.length;
-    }
-    else static if (!hasLength!(Range1) && hasLength!(Range2))
-    {
-        return r1.walkLength(r2.length + 1) == r2.length;
+        // Compute the O(1) length
+        auto baselineLength = size_t.max;
+        static foreach (i, R; Ranges)
+        {
+            static if (hasLength!R)
+            {
+                if (baselineLength == size_t.max)
+                    baselineLength = rs[i].length;
+                else if (rs[i].length != baselineLength)
+                    return false;
+            }
+        }
+        // Iterate all ranges without known length
+        foreach (_; 0 .. baselineLength)
+            static foreach (i, R; Ranges)
+            {
+                static if (!hasLength!R)
+                {
+                    // All must be non-empty
+                    if (rs[i].empty)
+                        return false;
+                    rs[i].popFront;
+                }
+            }
+        static foreach (i, R; Ranges)
+        {
+            static if (!hasLength!R)
+            {
+                // All must be now empty
+                if (!rs[i].empty)
+                    return false;
+            }
+        }
+        return true;
     }
     else
     {
-        for (; !r1.empty; r1.popFront, r2.popFront)
-        {
-           if (r2.empty)
-              return false;
-        }
-        return r2.empty;
+        // All have unknown length, iterate in lockstep
+        for (;;)
+            static foreach (i, r; rs)
+            {
+                if (r.empty)
+                {
+                    // One is empty, so all must be empty
+                    static if (i != 0)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        static foreach (j, r1; rs[1 .. $])
+                            if (!r1.empty)
+                                return false;
+                        return true;
+                    }
+                }
+                r.popFront;
+            }
     }
 }
 
@@ -1976,34 +2124,42 @@ if (isInputRange!Range1 && isInputRange!Range2)
 @safe nothrow pure unittest
 {
     assert(isSameLength([1, 2, 3], [4, 5, 6]));
+    assert(isSameLength([1, 2, 3], [4, 5, 6], [7, 8, 9]));
     assert(isSameLength([0.3, 90.4, 23.7, 119.2], [42.6, 23.6, 95.5, 6.3]));
     assert(isSameLength("abc", "xyz"));
+    assert(isSameLength("abc", "xyz", [1, 2, 3]));
 
     int[] a;
     int[] b;
     assert(isSameLength(a, b));
+    assert(isSameLength(a, b, a, a, b, b, b));
 
     assert(!isSameLength([1, 2, 3], [4, 5]));
+    assert(!isSameLength([1, 2, 3], [4, 5, 6], [7, 8]));
     assert(!isSameLength([0.3, 90.4, 23.7], [42.6, 23.6, 95.5, 6.3]));
     assert(!isSameLength("abcd", "xyz"));
+    assert(!isSameLength("abcd", "xyz", "123"));
+    assert(!isSameLength("abcd", "xyz", "1234"));
 }
 
 // Test CTFE
 @safe @nogc pure @betterC unittest
 {
-    enum result1 = isSameLength([1, 2, 3], [4, 5, 6]);
-    static assert(result1);
-
-    enum result2 = isSameLength([0.3, 90.4, 23.7], [42.6, 23.6, 95.5, 6.3]);
-    static assert(!result2);
+    static assert(isSameLength([1, 2, 3], [4, 5, 6]));
+    static assert(isSameLength([1, 2, 3], [4, 5, 6], [7, 8, 9]));
+    static assert(!isSameLength([0.3, 90.4, 23.7], [42.6, 23.6, 95.5, 6.3]));
+    static assert(!isSameLength([1], [0.3, 90.4], [42]));
 }
 
 @safe @nogc pure unittest
 {
     import std.range : only;
     assert(isSameLength(only(1, 2, 3), only(4, 5, 6)));
+    assert(isSameLength(only(1, 2, 3), only(4, 5, 6), only(7, 8, 9)));
     assert(isSameLength(only(0.3, 90.4, 23.7, 119.2), only(42.6, 23.6, 95.5, 6.3)));
     assert(!isSameLength(only(1, 3, 3), only(4, 5)));
+    assert(!isSameLength(only(1, 3, 3), only(1, 3, 3), only(4, 5)));
+    assert(!isSameLength(only(1, 3, 3), only(4, 5), only(1, 3, 3)));
 }
 
 @safe nothrow pure unittest
@@ -2033,6 +2189,15 @@ if (isInputRange!Range1 && isInputRange!Range2)
     DummyRange!(ReturnBy.Reference, Length.Yes, RangeType.Input) r11;
     auto r12 = new ReferenceInputRange!int([1, 2, 3, 4, 5, 6, 7, 8]);
     assert(!isSameLength(r11, r12));
+
+    import std.algorithm.iteration : filter;
+
+    assert(isSameLength(filter!"a >= 1"([1, 2, 3]), [4, 5, 6]));
+    assert(!isSameLength(filter!"a > 1"([1, 2, 3]), [4, 5, 6]));
+
+    assert(isSameLength(filter!"a > 1"([1, 2, 3]), filter!"a > 4"([4, 5, 6])));
+    assert(isSameLength(filter!"a > 1"([1, 2, 3]),
+        filter!"a > 4"([4, 5, 6]), filter!"a >= 5"([4, 5, 6])));
 }
 
 // Still functional but not documented anymore.

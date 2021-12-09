@@ -2022,6 +2022,23 @@ pru_assemble_integer (rtx x, unsigned int size, int aligned_p)
     }
 }
 
+/* Implement TARGET_SECTION_TYPE_FLAGS.  */
+
+static unsigned int
+pru_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  /* The .pru_irq_map section is not meant to be loaded into the target
+     memory.  Instead its contents are read by the host remoteproc loader.
+     To prevent being marked as a loadable (allocated) section, the
+     .pru_irq_map section is intercepted and marked as a debug section.  */
+  if (!strcmp (name, ".pru_irq_map"))
+    flags = SECTION_DEBUG | SECTION_RETAIN;
+
+  return flags;
+}
+
 /* Implement TARGET_ASM_FILE_START.  */
 
 static void
@@ -3071,6 +3088,8 @@ pru_unwind_word_mode (void)
 #define TARGET_ASM_FUNCTION_PROLOGUE pru_asm_function_prologue
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER pru_assemble_integer
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS pru_section_type_flags
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START pru_file_start

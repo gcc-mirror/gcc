@@ -45,7 +45,7 @@ with Ada.Unchecked_Conversion;
 package body Ada.Direct_IO is
 
    Zeroes : constant System.Storage_Elements.Storage_Array :=
-     (1 .. System.Storage_Elements.Storage_Offset (Bytes) => 0);
+     [1 .. System.Storage_Elements.Storage_Offset (Bytes) => 0];
    --  Buffer used to fill out partial records
 
    package FCB renames System.File_Control_Block;

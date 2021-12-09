@@ -60,6 +60,11 @@ VEC_SET (v32hf, _Float16, 14);
 VEC_SET (v32hf, _Float16, 16);
 VEC_SET (v32hf, _Float16, 24);
 VEC_SET (v32hf, _Float16, 28);
-/* { dg-final { scan-assembler-times "vpbroadcastw" 10 } } */
-/* { dg-final { scan-assembler-times "vpblendw" 4 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastw" 10 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpblendw" 4 { target { ! ia32 } } } } */
+
+/* { dg-final { scan-assembler-times "vpbroadcastw" 9 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "vpblendw" 3 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "vpinsrw" 1 { target ia32 } } } */
+
 /* { dg-final { scan-assembler-times "vpblendd" 3 } } */
