@@ -39,6 +39,10 @@
 #include <typeinfo>
 #include <new>
 
+#if __cplusplus >= 201103L
+# include <bits/move.h>
+#endif
+
 extern "C++" {
 
 namespace std 
@@ -185,14 +189,16 @@ namespace std
     exception_ptr 
     make_exception_ptr(_Ex __ex) _GLIBCXX_USE_NOEXCEPT
     {
-#if __cpp_exceptions && __cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI
+#if __cpp_exceptions && __cpp_rtti && !_GLIBCXX_HAVE_CDTOR_CALLABI \
+      && __cplusplus >= 201103L
+      using _Ex2 = typename remove_reference<_Ex>::type;
       void* __e = __cxxabiv1::__cxa_allocate_exception(sizeof(_Ex));
       (void) __cxxabiv1::__cxa_init_primary_exception(
-	  __e, const_cast<std::type_info*>(&typeid(__ex)),
-	  __exception_ptr::__dest_thunk<_Ex>);
+	  __e, const_cast<std::type_info*>(&typeid(_Ex)),
+	  __exception_ptr::__dest_thunk<_Ex2>);
       try
 	{
-          ::new (__e) _Ex(__ex);
+	  ::new (__e) _Ex2(std::forward<_Ex>(__ex));
           return exception_ptr(__e);
 	}
       catch(...)
