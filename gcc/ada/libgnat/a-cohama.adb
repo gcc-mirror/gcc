@@ -698,8 +698,6 @@ is
       New_Item  : Element_Type)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
-
       Inserted : Boolean;
 
    begin

@@ -1211,7 +1211,6 @@ package body System.OS_Lib is
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, Mo, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1230,7 +1229,6 @@ package body System.OS_Lib is
       D  : Day_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, Mo, D, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1249,7 +1247,6 @@ package body System.OS_Lib is
       D  : Day_Type;
       H  : Hour_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, Mo, D, H, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1268,7 +1265,6 @@ package body System.OS_Lib is
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Y, D, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1287,7 +1283,6 @@ package body System.OS_Lib is
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
-      pragma Unreferenced (Y, Mo, D, H, Mn);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1425,7 +1420,6 @@ package body System.OS_Lib is
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
-      pragma Unreferenced (Mo, D, H, Mn, S);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);

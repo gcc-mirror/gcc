@@ -7059,7 +7059,7 @@ package body Sem_Ch3 is
       Indic : constant Node_Id    := Subtype_Indication (Def);
 
       Corr_Record      : constant Entity_Id := Make_Temporary (Loc, 'C');
-      Corr_Decl        : Node_Id;
+      Corr_Decl        : Node_Id := Empty;
       Corr_Decl_Needed : Boolean;
       --  If the derived type has fewer discriminants than its parent, the
       --  corresponding record is also a derived type, in order to account for

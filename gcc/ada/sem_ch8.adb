@@ -6432,17 +6432,13 @@ package body Sem_Ch8 is
                   --  Else see if we have a left hand side
 
                   else
-                     case Is_LHS (N) is
-                        when Yes =>
+                     case Known_To_Be_Assigned (N, Only_LHS => True) is
+                        when True =>
                            Generate_Reference (E, N, 'm');
 
-                        when No =>
+                        when False =>
                            Generate_Reference (E, N, 'r');
 
-                        --  If we don't know now, generate reference later
-
-                        when Unknown =>
-                           Defer_Reference ((E, N));
                      end case;
                   end if;
                end if;
@@ -6493,7 +6489,7 @@ package body Sem_Ch8 is
 
       if Needs_Variable_Reference_Marker (N => N, Calls_OK => False) then
          declare
-            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+            Is_Assignment_LHS : constant Boolean := Known_To_Be_Assigned (N);
 
          begin
             Build_Variable_Reference_Marker
@@ -7086,15 +7082,13 @@ package body Sem_Ch8 is
       else
          Set_Entity_Or_Discriminal (N, Id);
 
-         case Is_LHS (N) is
-            when Yes =>
+         case Known_To_Be_Assigned (N, Only_LHS => True) is
+            when True =>
                Generate_Reference (Id, N, 'm');
 
-            when No =>
+            when False =>
                Generate_Reference (Id, N, 'r');
 
-            when Unknown =>
-               Defer_Reference ((Id, N));
          end case;
       end if;
 
@@ -7190,7 +7184,7 @@ package body Sem_Ch8 is
             Calls_OK => False)
       then
          declare
-            Is_Assignment_LHS : constant Boolean := Is_LHS (N) = Yes;
+            Is_Assignment_LHS : constant Boolean := Known_To_Be_Assigned (N);
 
          begin
             Build_Variable_Reference_Marker

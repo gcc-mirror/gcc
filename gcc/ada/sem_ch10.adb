@@ -579,11 +579,6 @@ package body Sem_Ch10 is
                         Error_Msg_N -- CODEFIX
                           ("redundant with clause in body?r?", Clause);
                      end if;
-
-                     Used_In_Body      := False;
-                     Used_In_Spec      := False;
-                     Used_Type_Or_Elab := False;
-                     Withed_In_Spec    := False;
                   end;
 
                --  Standalone package spec or body check

@@ -530,7 +530,7 @@ package body Ghost is
 
          if Is_Checked_Ghost_Entity (Id)
            and then Policy = Name_Ignore
-           and then May_Be_Lvalue (Ref)
+           and then Known_To_Be_Assigned (Ref)
          then
             Error_Msg_Sloc := Sloc (Ref);
 

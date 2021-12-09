@@ -264,8 +264,6 @@ package body System.Tasking.Async_Delays is
       Dequeued         : Delay_Block_Access;
       Dequeued_Task    : Task_Id;
 
-      pragma Unreferenced (Timedout, Yielded);
-
    begin
       pragma Assert (Timer_Server_ID = STPO.Self);
 

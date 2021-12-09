@@ -2159,16 +2159,6 @@ package Sem_Util is
    --  an array, either inside a loop of the form 'for X of A' or a quantified
    --  expression of the form 'for all/some X of A' where A is of array type.
 
-   type Is_LHS_Result is (Yes, No, Unknown);
-   function Is_LHS (N : Node_Id) return Is_LHS_Result;
-   --  Returns Yes if N is definitely used as Name in an assignment statement.
-   --  Returns No if N is definitely NOT used as a Name in an assignment
-   --  statement. Returns Unknown if we can't tell at this stage (happens in
-   --  the case where we don't know the type of N yet, and we have something
-   --  like N.A := 3, where this counts as N being used on the left side of
-   --  an assignment only if N is not an access type. If it is an access type
-   --  then it is N.all.A that is assigned, not N.
-
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,
    --  i.e. a library unit or an entity declared in a library package.
@@ -2589,12 +2579,13 @@ package Sem_Util is
    --  and returns True if so. Returns False otherwise. It is an error to call
    --  this function if N is not of an access type.
 
-   function Known_To_Be_Assigned (N : Node_Id) return Boolean;
+   function Known_To_Be_Assigned
+     (N        : Node_Id;
+      Only_LHS : Boolean := False) return Boolean;
    --  The node N is an entity reference. This function determines whether the
    --  reference is for sure an assignment of the entity, returning True if
-   --  so. This differs from May_Be_Lvalue in that it defaults in the other
-   --  direction. Cases which may possibly be assignments but are not known to
-   --  be may return True from May_Be_Lvalue, but False from this function.
+   --  so. Only_LHS will modify this behavior such that actuals for out or
+   --  in out parameters will not be considered assigned.
 
    function Last_Source_Statement (HSS : Node_Id) return Node_Id;
    --  HSS is a handled statement sequence. This function returns the last
@@ -2632,17 +2623,6 @@ package Sem_Util is
    --  L_Typ and R_Typ are two array types. Returns True when they have the
    --  same number of dimensions, and the same static bounds for each index
    --  position.
-
-   function May_Be_Lvalue (N : Node_Id) return Boolean;
-   --  Determines if N could be an lvalue (e.g. an assignment left hand side).
-   --  An lvalue is defined as any expression which appears in a context where
-   --  a name is required by the syntax, and the identity, rather than merely
-   --  the value of the node is needed (for example, the prefix of an Access
-   --  attribute is in this category). Note that, as implied by the name, this
-   --  test is conservative. If it cannot be sure that N is NOT an lvalue, then
-   --  it returns True. It tries hard to get the answer right, but it is hard
-   --  to guarantee this in all cases. Note that it is more possible to give
-   --  correct answer if the tree is fully analyzed.
 
    function Might_Raise (N : Node_Id) return Boolean;
    --  True if evaluation of N might raise an exception. This is conservative;

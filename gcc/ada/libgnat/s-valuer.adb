@@ -506,7 +506,6 @@ package body System.Value_R is
       --  Local copy of string pointer
 
       Start : Positive;
-      pragma Unreferenced (Start);
 
       Value : Uns;
       --  Mantissa as an Integer

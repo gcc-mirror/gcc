@@ -1490,7 +1490,6 @@ is
       Count     : Count_Type := 1)
    is
       Position : Cursor;
-      pragma Unreferenced (Position);
 
    begin
       Insert_Child (Container, Parent, Before, New_Item, Position, Count);

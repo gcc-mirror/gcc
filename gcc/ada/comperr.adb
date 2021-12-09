@@ -424,7 +424,7 @@ package body Comperr is
       Unit_Name : Node_Id;
 
       Success : Boolean;
-      pragma Unreferenced (Success);
+      pragma Warnings (Off, "modified by call");
 
       procedure Decode_Name_Buffer;
       --  Replace "__" by "." in Name_Buffer, and adjust Name_Len accordingly

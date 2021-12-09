@@ -10413,8 +10413,6 @@ package body Exp_Ch4 is
       Rneg : Boolean;
       --  Set if corresponding operand can be negative
 
-      pragma Unreferenced (Hi);
-
    begin
       Binary_Op_Validity_Checks (N);
 

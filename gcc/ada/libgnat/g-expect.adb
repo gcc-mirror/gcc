@@ -264,7 +264,6 @@ package body GNAT.Expect is
 
    procedure Close (Descriptor : in out Process_Descriptor) is
       Status : Integer;
-      pragma Unreferenced (Status);
    begin
       Close (Descriptor, Status);
    end Close;
@@ -976,7 +975,6 @@ package body GNAT.Expect is
 
       declare
          Result : Expect_Match;
-         pragma Unreferenced (Result);
 
       begin
          --  This loop runs until the call to Expect raises Process_Died
@@ -1439,7 +1437,7 @@ package body GNAT.Expect is
       Pipe3      : not null access Pipe_Type)
    is
       Status : Boolean;
-      pragma Unreferenced (Status);
+      pragma Warnings (Off, "modified by call, but value overwritten");
 
    begin
       --  Create the pipes

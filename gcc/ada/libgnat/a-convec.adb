@@ -1264,6 +1264,7 @@ is
       declare
          SA : Elements_Array renames Container.Elements.EA; -- source
          DA : Elements_Array renames Dst.EA;                -- destination
+         pragma Unreferenced (DA);
 
       begin
          DA (Index_Type'First .. Before - 1) :=
@@ -1918,6 +1919,7 @@ is
       declare
          SA : Elements_Array renames Container.Elements.EA;  -- source
          DA : Elements_Array renames Dst.EA;                 -- destination
+         pragma Unreferenced (DA);
 
       begin
          DA (Index_Type'First .. Before - 1) :=

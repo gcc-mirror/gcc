@@ -232,7 +232,6 @@ package body System.Value_D is
       Base   : Unsigned;
       ScaleB : Integer;
       Extra  : Unsigned;
-      pragma Unreferenced (Extra);
       Minus  : Boolean;
       Val    : Uns;
 
@@ -250,7 +249,6 @@ package body System.Value_D is
       Base   : Unsigned;
       ScaleB : Integer;
       Extra  : Unsigned;
-      pragma Unreferenced (Extra);
       Minus  : Boolean;
       Val    : Uns;
 

@@ -11070,7 +11070,7 @@ package body Sem_Res is
       --  resolution was complete to do this, since otherwise we can't tell if
       --  we are an lvalue or not.
 
-      if May_Be_Lvalue (N) then
+      if Known_To_Be_Assigned (N) then
          Generate_Reference (Entity (S), S, 'm');
       else
          Generate_Reference (Entity (S), S, 'r');
@@ -11096,7 +11096,7 @@ package body Sem_Res is
          if Is_Entity_Name (P)
            and then Has_Deferred_Reference (Entity (P))
          then
-            if May_Be_Lvalue (N) then
+            if Known_To_Be_Assigned (N) then
                Generate_Reference (Entity (P), P, 'm');
             else
                Generate_Reference (Entity (P), P, 'r');

@@ -90,7 +90,7 @@ package body Exp_Imgv is
       Lit  : Entity_Id;
       Nlit : Nat;
       S_Id : Entity_Id;
-      S_N  : Nat;
+      S_N  : Nat := 0;
       Str  : String_Id;
 
       package SPHG renames System.Perfect_Hash_Generators;

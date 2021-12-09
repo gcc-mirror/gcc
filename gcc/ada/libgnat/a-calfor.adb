@@ -99,8 +99,6 @@ package body Ada.Calendar.Formatting is
       Ss : Second_Duration;
       Le : Boolean;
 
-      pragma Unreferenced (Y, Mo, H, Mi);
-
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
       return D;
@@ -131,8 +129,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Y, Mo, D, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
@@ -290,8 +286,6 @@ package body Ada.Calendar.Formatting is
       Ss : Second_Duration;
       Le : Boolean;
 
-      pragma Unreferenced (Y, Mo, D, H);
-
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
       return Mi;
@@ -314,8 +308,6 @@ package body Ada.Calendar.Formatting is
       Ss : Second_Duration;
       Le : Boolean;
 
-      pragma Unreferenced (Y, D, H, Mi);
-
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);
       return Mo;
@@ -334,8 +326,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Y, Mo, D, H, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le);
@@ -582,8 +572,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Y, Mo, D, H, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le);
@@ -896,8 +884,6 @@ package body Ada.Calendar.Formatting is
       Se : Second_Number;
       Ss : Second_Duration;
       Le : Boolean;
-
-      pragma Unreferenced (Mo, D, H, Mi);
 
    begin
       Split (Date, Y, Mo, D, H, Mi, Se, Ss, Le, Time_Zone);

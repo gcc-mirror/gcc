@@ -8361,7 +8361,7 @@ package body Sem_Util is
 
       --  Local variables
 
-      Owner : Node_Id;
+      Owner : Node_Id := Empty;
 
    --  Start of processing for End_Keyword_Location
 
@@ -8979,7 +8979,7 @@ package body Sem_Util is
    function Expression_Of_Expression_Function
      (Subp : Entity_Id) return Node_Id
    is
-      Expr_Func : Node_Id;
+      Expr_Func : Node_Id := Empty;
 
    begin
       pragma Assert (Is_Expression_Function_Or_Completion (Subp));
@@ -9158,6 +9158,12 @@ package body Sem_Util is
       then
          Call_Nam := Name (Call);
 
+         --  A call to an entry family may appear as an indexed component
+
+         if Nkind (Call_Nam) = N_Indexed_Component then
+            Call_Nam := Prefix (Call_Nam);
+         end if;
+
          --  A call to a protected or task entry appears as a selected
          --  component rather than an expanded name.
 
@@ -9167,7 +9173,11 @@ package body Sem_Util is
 
          if Is_Entity_Name (Call_Nam)
            and then Present (Entity (Call_Nam))
-           and then Is_Overloadable (Entity (Call_Nam))
+           and then (Is_Generic_Subprogram (Entity (Call_Nam))
+                      or else Is_Overloadable (Entity (Call_Nam))
+                      or else Ekind (Entity (Call_Nam)) in E_Entry_Family
+                                                         | E_Subprogram_Body
+                                                         | E_Subprogram_Type)
            and then not Is_Overloaded (Call_Nam)
          then
             --  If node is name in call it is not an actual
@@ -18252,60 +18262,124 @@ package body Sem_Util is
       return Is_Array_Type (Container_Typ);
    end Is_Iterator_Over_Array;
 
-   ------------
-   -- Is_LHS --
-   ------------
+   --------------------------
+   -- Known_To_Be_Assigned --
+   --------------------------
 
-   --  We seem to have a lot of overlapping functions that do similar things
-   --  (testing for left hand sides or lvalues???).
+   function Known_To_Be_Assigned
+     (N        : Node_Id;
+      Only_LHS : Boolean := False) return Boolean
+   is
+      function Known_Assn (N : Node_Id) return Boolean is
+        (Known_To_Be_Assigned (N, Only_LHS));
+      --  Local function to simplify the passing of parameters for recursive
+      --  calls.
 
-   function Is_LHS (N : Node_Id) return Is_LHS_Result is
-      P : constant Node_Id := Parent (N);
+      P    : constant Node_Id := Parent (N);
+      Form : Entity_Id := Empty;
+      Call : Node_Id   := Empty;
+
+   --  Start of processing for Known_To_Be_Assigned
 
    begin
-      --  Return True if we are the left hand side of an assignment statement
+      --  Check for out parameters
 
-      if Nkind (P) = N_Assignment_Statement then
-         if Name (P) = N then
-            return Yes;
-         else
-            return No;
-         end if;
+      Find_Actual (N, Form, Call);
 
-      --  Case of prefix of indexed or selected component or slice
-
-      elsif Nkind (P) in N_Indexed_Component | N_Selected_Component | N_Slice
-        and then N = Prefix (P)
-      then
-         --  Here we have the case where the parent P is N.Q or N(Q .. R).
-         --  If P is an LHS, then N is also effectively an LHS, but there
-         --  is an important exception. If N is of an access type, then
-         --  what we really have is N.all.Q (or N.all(Q .. R)). In either
-         --  case this makes N.all a left hand side but not N itself.
-
-         --  If we don't know the type yet, this is the case where we return
-         --  Unknown, since the answer depends on the type which is unknown.
-
-         if No (Etype (N)) then
-            return Unknown;
-
-         --  We have an Etype set, so we can check it
-
-         elsif Is_Access_Type (Etype (N)) then
-            return No;
-
-         --  OK, not access type case, so just test whole expression
-
-         else
-            return Is_LHS (P);
-         end if;
-
-      --  All other cases are not left hand sides
-
-      else
-         return No;
+      if Present (Form) then
+         return Ekind (Form) /= E_In_Parameter and then not Only_LHS;
       end if;
-   end Is_LHS;
+
+      --  Otherwise look at the parent
+
+      case Nkind (P) is
+
+         --  Test left side of assignment
+
+         when N_Assignment_Statement =>
+            return N = Name (P);
+
+         --  Test prefix of component or attribute. Note that the prefix of an
+         --  explicit or implicit dereference cannot be an l-value. In the case
+         --  of a 'Read attribute, the reference can be an actual in the
+         --  argument list of the attribute.
+
+         when N_Attribute_Reference =>
+            return
+              not Only_LHS and then
+                ((N = Prefix (P)
+                   and then Name_Implies_Lvalue_Prefix (Attribute_Name (P)))
+                 or else
+                   Attribute_Name (P) = Name_Read);
+
+         --  For an expanded name, the name is an lvalue if the expanded name
+         --  is an lvalue, but the prefix is never an lvalue, since it is just
+         --  the scope where the name is found.
+
+         when N_Expanded_Name =>
+            if N = Prefix (P) then
+               return Known_Assn (P);
+            else
+               return False;
+            end if;
+
+         --  For a selected component A.B, A is certainly an lvalue if A.B is.
+         --  B is a little interesting, if we have A.B := 3, there is some
+         --  discussion as to whether B is an lvalue or not, we choose to say
+         --  it is. Note however that A is not an lvalue if it is of an access
+         --  type since this is an implicit dereference.
+
+         when N_Selected_Component =>
+            if N = Prefix (P)
+              and then Present (Etype (N))
+              and then Is_Access_Type (Etype (N))
+            then
+               return False;
+            else
+               return Known_Assn (P);
+            end if;
+
+         --  For an indexed component or slice, the index or slice bounds is
+         --  never an lvalue. The prefix is an lvalue if the indexed component
+         --  or slice is an lvalue, except if it is an access type, where we
+         --  have an implicit dereference.
+
+         when N_Indexed_Component | N_Slice =>
+            if N /= Prefix (P)
+              or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
+            then
+               return False;
+            else
+               return Known_Assn (P);
+            end if;
+
+         --  Prefix of a reference is an lvalue if the reference is an lvalue
+
+         when N_Reference =>
+            return Known_Assn (P);
+
+         --  Prefix of explicit dereference is never an lvalue
+
+         when N_Explicit_Dereference =>
+            return False;
+
+         --  Test for appearing in a conversion that itself appears in an
+         --  lvalue context, since this should be an lvalue.
+
+         when N_Type_Conversion =>
+            return Known_Assn (P);
+
+         --  Test for appearance in object renaming declaration
+
+         when N_Object_Renaming_Declaration =>
+            return not Only_LHS;
+
+         --  All other references are definitely not lvalues
+
+         when others =>
+            return False;
+      end case;
+   end Known_To_Be_Assigned;
 
    -----------------------------
    -- Is_Library_Level_Entity --
@@ -22149,121 +22223,6 @@ package body Sem_Util is
       return False;
    end Known_Null;
 
-   --------------------------
-   -- Known_To_Be_Assigned --
-   --------------------------
-
-   function Known_To_Be_Assigned (N : Node_Id) return Boolean is
-      P : constant Node_Id := Parent (N);
-
-   begin
-      case Nkind (P) is
-
-         --  Test left side of assignment
-
-         when N_Assignment_Statement =>
-            return N = Name (P);
-
-         --  Function call arguments are never lvalues
-
-         when N_Function_Call =>
-            return False;
-
-         --  Positional parameter for procedure or accept call
-
-         when N_Accept_Statement
-            | N_Procedure_Call_Statement
-         =>
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-               Act  : Node_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (P);
-
-               if No (Proc) then
-                  return False;
-               end if;
-
-               --  If we are not a list member, something is strange, so
-               --  be conservative and return False.
-
-               if not Is_List_Member (N) then
-                  return False;
-               end if;
-
-               --  We are going to find the right formal by stepping forward
-               --  through the formals, as we step backwards in the actuals.
-
-               Form := First_Formal (Proc);
-               Act  := N;
-               loop
-                  --  If no formal, something is weird, so be conservative
-                  --  and return False.
-
-                  if No (Form) then
-                     return False;
-                  end if;
-
-                  Prev (Act);
-                  exit when No (Act);
-                  Next_Formal (Form);
-               end loop;
-
-               return Ekind (Form) /= E_In_Parameter;
-            end;
-
-         --  Named parameter for procedure or accept call
-
-         when N_Parameter_Association =>
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (Parent (P));
-
-               if No (Proc) then
-                  return False;
-               end if;
-
-               --  Loop through formals to find the one that matches
-
-               Form := First_Formal (Proc);
-               loop
-                  --  If no matching formal, that's peculiar, some kind of
-                  --  previous error, so return False to be conservative.
-                  --  Actually this also happens in legal code in the case
-                  --  where P is a parameter association for an Extra_Formal???
-
-                  if No (Form) then
-                     return False;
-                  end if;
-
-                  --  Else test for match
-
-                  if Chars (Form) = Chars (Selector_Name (P)) then
-                     return Ekind (Form) /= E_In_Parameter;
-                  end if;
-
-                  Next_Formal (Form);
-               end loop;
-            end;
-
-         --  Test for appearing in a conversion that itself appears
-         --  in an lvalue context, since this should be an lvalue.
-
-         when N_Type_Conversion =>
-            return Known_To_Be_Assigned (P);
-
-         --  All other references are definitely not known to be modifications
-
-         when others =>
-            return False;
-      end case;
-   end Known_To_Be_Assigned;
-
    ---------------------------
    -- Last_Source_Statement --
    ---------------------------
@@ -22748,195 +22707,6 @@ package body Sem_Util is
 
       return True;
    end Matching_Static_Array_Bounds;
-
-   -------------------
-   -- May_Be_Lvalue --
-   -------------------
-
-   function May_Be_Lvalue (N : Node_Id) return Boolean is
-      P : constant Node_Id := Parent (N);
-
-   begin
-      case Nkind (P) is
-
-         --  Test left side of assignment
-
-         when N_Assignment_Statement =>
-            return N = Name (P);
-
-         --  Test prefix of component or attribute. Note that the prefix of an
-         --  explicit or implicit dereference cannot be an l-value. In the case
-         --  of a 'Read attribute, the reference can be an actual in the
-         --  argument list of the attribute.
-
-         when N_Attribute_Reference =>
-            return (N = Prefix (P)
-                     and then Name_Implies_Lvalue_Prefix (Attribute_Name (P)))
-                 or else
-                   Attribute_Name (P) = Name_Read;
-
-         --  For an expanded name, the name is an lvalue if the expanded name
-         --  is an lvalue, but the prefix is never an lvalue, since it is just
-         --  the scope where the name is found.
-
-         when N_Expanded_Name =>
-            if N = Prefix (P) then
-               return May_Be_Lvalue (P);
-            else
-               return False;
-            end if;
-
-         --  For a selected component A.B, A is certainly an lvalue if A.B is.
-         --  B is a little interesting, if we have A.B := 3, there is some
-         --  discussion as to whether B is an lvalue or not, we choose to say
-         --  it is. Note however that A is not an lvalue if it is of an access
-         --  type since this is an implicit dereference.
-
-         when N_Selected_Component =>
-            if N = Prefix (P)
-              and then Present (Etype (N))
-              and then Is_Access_Type (Etype (N))
-            then
-               return False;
-            else
-               return May_Be_Lvalue (P);
-            end if;
-
-         --  For an indexed component or slice, the index or slice bounds is
-         --  never an lvalue. The prefix is an lvalue if the indexed component
-         --  or slice is an lvalue, except if it is an access type, where we
-         --  have an implicit dereference.
-
-         when N_Indexed_Component
-            | N_Slice
-         =>
-            if N /= Prefix (P)
-              or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
-            then
-               return False;
-            else
-               return May_Be_Lvalue (P);
-            end if;
-
-         --  Prefix of a reference is an lvalue if the reference is an lvalue
-
-         when N_Reference =>
-            return May_Be_Lvalue (P);
-
-         --  Prefix of explicit dereference is never an lvalue
-
-         when N_Explicit_Dereference =>
-            return False;
-
-         --  Positional parameter for subprogram, entry, or accept call.
-         --  In older versions of Ada function call arguments are never
-         --  lvalues. In Ada 2012 functions can have in-out parameters.
-
-         when N_Accept_Statement
-            | N_Entry_Call_Statement
-            | N_Subprogram_Call
-         =>
-            if Nkind (P) = N_Function_Call and then Ada_Version < Ada_2012 then
-               return False;
-            end if;
-
-            --  The following mechanism is clumsy and fragile. A single flag
-            --  set in Resolve_Actuals would be preferable ???
-
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-               Act  : Node_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (P);
-
-               if No (Proc) then
-                  return True;
-               end if;
-
-               --  If we are not a list member, something is strange, so be
-               --  conservative and return True.
-
-               if not Is_List_Member (N) then
-                  return True;
-               end if;
-
-               --  We are going to find the right formal by stepping forward
-               --  through the formals, as we step backwards in the actuals.
-
-               Form := First_Formal (Proc);
-               Act  := N;
-               loop
-                  --  If no formal, something is weird, so be conservative and
-                  --  return True.
-
-                  if No (Form) then
-                     return True;
-                  end if;
-
-                  Prev (Act);
-                  exit when No (Act);
-                  Next_Formal (Form);
-               end loop;
-
-               return Ekind (Form) /= E_In_Parameter;
-            end;
-
-         --  Named parameter for procedure or accept call
-
-         when N_Parameter_Association =>
-            declare
-               Proc : Entity_Id;
-               Form : Entity_Id;
-
-            begin
-               Proc := Get_Subprogram_Entity (Parent (P));
-
-               if No (Proc) then
-                  return True;
-               end if;
-
-               --  Loop through formals to find the one that matches
-
-               Form := First_Formal (Proc);
-               loop
-                  --  If no matching formal, that's peculiar, some kind of
-                  --  previous error, so return True to be conservative.
-                  --  Actually happens with legal code for an unresolved call
-                  --  where we may get the wrong homonym???
-
-                  if No (Form) then
-                     return True;
-                  end if;
-
-                  --  Else test for match
-
-                  if Chars (Form) = Chars (Selector_Name (P)) then
-                     return Ekind (Form) /= E_In_Parameter;
-                  end if;
-
-                  Next_Formal (Form);
-               end loop;
-            end;
-
-         --  Test for appearing in a conversion that itself appears in an
-         --  lvalue context, since this should be an lvalue.
-
-         when N_Type_Conversion =>
-            return May_Be_Lvalue (P);
-
-         --  Test for appearance in object renaming declaration
-
-         when N_Object_Renaming_Declaration =>
-            return True;
-
-         --  All other references are definitely not lvalues
-
-         when others =>
-            return False;
-      end case;
-   end May_Be_Lvalue;
 
    -----------------
    -- Might_Raise --

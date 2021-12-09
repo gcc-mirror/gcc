@@ -857,7 +857,6 @@ package body System.Tasking.Protected_Objects.Operations is
       Ceiling_Violation : Boolean;
 
       Yielded : Boolean;
-      pragma Unreferenced (Yielded);
 
    begin
       if Self_Id.ATC_Nesting_Level = ATC_Level'Last then

@@ -3886,7 +3886,7 @@ package body Sem_Eval is
       --  Fold will perform the other relevant tests.
 
       if Nkind (Parent (N)) /= N_Attribute_Reference
-        and then Is_LHS (N) = No
+        and then not Known_To_Be_Assigned (N)
         and then not Is_Actual_Out_Or_In_Out_Parameter (N)
       then
          --  Simplify a selected_component on an aggregate by extracting

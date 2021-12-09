@@ -2836,7 +2836,6 @@ package body GNAT.Spitbol.Patterns is
       L     : Natural;
       Start : Natural;
       Stop  : Natural;
-      pragma Unreferenced (Stop);
 
    begin
       Get_String (Subject, S, L);
@@ -2855,7 +2854,6 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern) return Boolean
    is
       Start, Stop : Natural;
-      pragma Unreferenced (Stop);
 
       subtype String1 is String (1 .. Subject'Length);
 
@@ -2935,7 +2933,6 @@ package body GNAT.Spitbol.Patterns is
 
       Start : Natural;
       Stop  : Natural;
-      pragma Unreferenced (Start, Stop);
 
    begin
       Get_String (Subject, S, L);
@@ -2952,7 +2949,6 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern)
    is
       Start, Stop : Natural;
-      pragma Unreferenced (Start, Stop);
 
       subtype String1 is String (1 .. Subject'Length);
 
@@ -3135,7 +3131,6 @@ package body GNAT.Spitbol.Patterns is
 
       Start : Natural;
       Stop  : Natural;
-      pragma Unreferenced (Start, Stop);
 
    begin
       Get_String (Subject, S, L);
@@ -3152,7 +3147,6 @@ package body GNAT.Spitbol.Patterns is
       Pat     : PString)
    is
       Start, Stop : Natural;
-      pragma Unreferenced (Start, Stop);
 
       subtype String1 is String (1 .. Subject'Length);
 

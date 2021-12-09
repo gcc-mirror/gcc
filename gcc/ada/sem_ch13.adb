@@ -17131,7 +17131,7 @@ package body Sem_Ch13 is
       Func_Name   : constant Node_Id := Expression (ASN);
       Overloaded  : Boolean := Is_Overloaded (Func_Name);
 
-      I            : Interp_Index;
+      I            : Interp_Index := 0;
       It           : Interp;
       Param_Type   : Entity_Id;
       Match_Found  : Boolean := False;
