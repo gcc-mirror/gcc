@@ -66,7 +66,7 @@ netbsd_gt_pch_get_address (size_t size, int fd)
    mapping the data at BASE, -1 if we couldn't.  */
 
 static int
-netbsd_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+netbsd_gt_pch_use_address (void *&base, size_t size, int fd, size_t offset)
 {
   void *addr;
 

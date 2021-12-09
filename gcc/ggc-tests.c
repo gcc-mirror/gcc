@@ -415,7 +415,7 @@ gt_pch_nx (user_struct *p)
 static void
 gt_pch_nx (user_struct *p, gt_pointer_operator op, void *cookie)
 {
-  op (&(p->m_ptr), cookie);
+  op (&(p->m_ptr), NULL, cookie);
 }
 
 /* Verify that GTY((user)) works.  */

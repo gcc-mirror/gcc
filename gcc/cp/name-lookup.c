@@ -2123,8 +2123,8 @@ resort_member_name_cmp (const void *a_p, const void *b_p)
   tree name_a = OVL_NAME (a);
   tree name_b = OVL_NAME (b);
 
-  resort_data.new_value (&name_a, resort_data.cookie);
-  resort_data.new_value (&name_b, resort_data.cookie);
+  resort_data.new_value (&name_a, &name_a, resort_data.cookie);
+  resort_data.new_value (&name_b, &name_b, resort_data.cookie);
 
   gcc_checking_assert (name_a != name_b);
 

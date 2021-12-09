@@ -35,10 +35,10 @@ along with GCC; see the file COPYING3.  If not see
   default_gt_pch_alloc_granularity
 
 extern void* default_gt_pch_get_address (size_t, int);
-extern int default_gt_pch_use_address (void *, size_t, int, size_t);
+extern int default_gt_pch_use_address (void *&, size_t, int, size_t);
 extern size_t default_gt_pch_alloc_granularity (void);
 extern void* mmap_gt_pch_get_address (size_t, int);
-extern int mmap_gt_pch_use_address (void *, size_t, int, size_t);
+extern int mmap_gt_pch_use_address (void *&, size_t, int, size_t);
 
 /* The structure is defined in hosthooks.h.  */
 #define HOST_HOOKS_INITIALIZER {		\

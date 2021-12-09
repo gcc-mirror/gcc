@@ -24,7 +24,7 @@
 #include "hosthooks-def.h"
 
 static void *hpux_gt_pch_get_address (size_t, int);
-static int hpux_gt_pch_use_address (void *, size_t, int, size_t);
+static int hpux_gt_pch_use_address (void *&, size_t, int, size_t);
 
 #undef HOST_HOOKS_GT_PCH_GET_ADDRESS
 #define HOST_HOOKS_GT_PCH_GET_ADDRESS hpux_gt_pch_get_address
@@ -78,7 +78,7 @@ hpux_gt_pch_get_address (size_t size, int fd)
    little else we can do given the current PCH implementation.  */
 
 static int
-hpux_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+hpux_gt_pch_use_address (void *&base, size_t size, int fd, size_t offset)
 {
   void *addr;
 

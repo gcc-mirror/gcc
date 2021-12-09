@@ -181,7 +181,7 @@ linux_gt_pch_get_address (size_t size, int fd)
    little else we can do given the current PCH implementation.  */
 
 static int
-linux_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+linux_gt_pch_use_address (void *&base, size_t size, int fd, size_t offset)
 {
   void *addr;
 
@@ -204,24 +204,22 @@ linux_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
   addr = mmap (base, size, PROT_READ | PROT_WRITE,
 	       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
-  if (addr != base)
-    {
-      if (addr != (void *) MAP_FAILED)
-        munmap (addr, size);
-      return -1;
-    }
+  if (addr == (void *) MAP_FAILED)
+    return -1;
 
   if (lseek (fd, offset, SEEK_SET) == (off_t)-1)
     return -1;
+
+  base = addr;
 
   while (size)
     {
       ssize_t nbytes;
 
-      nbytes = read (fd, base, MIN (size, (size_t)-1 >> 1));
+      nbytes = read (fd, addr, MIN (size, (size_t)-1 >> 1));
       if (nbytes <= 0)
         return -1;
-      base = (char *) base + nbytes;
+      addr = (char *) addr + nbytes;
       size -= nbytes;
     }
 

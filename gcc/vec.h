@@ -1388,7 +1388,7 @@ void
 gt_pch_nx (vec<T *, A, vl_embed> *v, gt_pointer_operator op, void *cookie)
 {
   for (unsigned i = 0; i < v->length (); i++)
-    op (&((*v)[i]), cookie);
+    op (&((*v)[i]), NULL, cookie);
 }
 
 template<typename T, typename A>

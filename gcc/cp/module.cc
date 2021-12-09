@@ -11750,7 +11750,7 @@ trees_out::mark_class_def (tree defn)
 /* Nop sorting, needed for resorting the member vec.  */
 
 static void
-nop (void *, void *)
+nop (void *, void *, void *)
 {
 }
 
