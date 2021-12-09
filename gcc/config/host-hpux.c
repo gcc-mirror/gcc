@@ -115,10 +115,10 @@ hpux_gt_pch_use_address (void *&base, size_t size, int fd, size_t offset)
     {
       ssize_t nbytes;
 
-      nbytes = read (fd, base, MIN (size, SSIZE_MAX));
+      nbytes = read (fd, addr, MIN (size, SSIZE_MAX));
       if (nbytes <= 0)
         return -1;
-      base = (char *) base + nbytes;
+      addr = (char *) addr + nbytes;
       size -= nbytes;
     }
 

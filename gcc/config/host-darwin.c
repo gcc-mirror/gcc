@@ -185,10 +185,10 @@ darwin_gt_pch_use_address (void *&addr, size_t sz, int fd, size_t off)
     {
       ssize_t nbytes;
 
-      nbytes = read (fd, addr, MIN (sz, (size_t) -1 >> 1));
+      nbytes = read (fd, mapped_addr, MIN (sz, (size_t) -1 >> 1));
       if (nbytes <= 0)
 	return -1;
-      addr = (char *) addr + nbytes;
+      mapped_addr = (char *) mapped_addr + nbytes;
       sz -= nbytes;
     }
 
