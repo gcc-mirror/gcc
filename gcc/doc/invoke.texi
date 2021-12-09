@@ -13605,6 +13605,14 @@ The maximum number of backtrack attempts the scheduler should make
 when modulo scheduling a loop.  Larger values can exponentially increase
 compilation time.
 
+@item max-inline-functions-called-once-loop-depth
+Maximal loop depth of a call considered by inline heuristics that tries to
+inline all functions called once.
+
+@item max-inline-functions-called-once-insns
+Maximal estimated size of functions produced while inlining functions called
+once.
+
 @item max-inline-insns-single
 Several parameters control the tree inliner used in GCC@.  This number sets the
 maximum number of instructions (counted in GCC's internal representation) in a
