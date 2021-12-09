@@ -2695,9 +2695,6 @@ package body Exp_Ch4 is
       --  lengths of operands. The choice of this type is a little subtle and
       --  is discussed in a separate section at the start of the body code.
 
-      Concatenation_Error : exception;
-      --  Raised if concatenation is sure to raise a CE
-
       Result_May_Be_Null : Boolean := True;
       --  Reset to False if at least one operand is encountered which is known
       --  at compile time to be non-null. Used for handling the special case
@@ -3460,7 +3457,16 @@ package body Exp_Ch4 is
       --  Catch the static out of range case now
 
       if Raises_Constraint_Error (High_Bound) then
-         raise Concatenation_Error;
+         --  Kill warning generated for the declaration of the static out of
+         --  range high bound, and instead generate a Constraint_Error with
+         --  an appropriate specific message.
+
+         Kill_Dead_Code (Declaration_Node (Entity (High_Bound)));
+         Apply_Compile_Time_Constraint_Error
+           (N      => Cnode,
+            Msg    => "concatenation result upper bound out of range??",
+            Reason => CE_Range_Check_Failed);
+         return;
       end if;
 
       --  Now we will generate the assignments to do the actual concatenation
@@ -3629,19 +3635,6 @@ package body Exp_Ch4 is
       pragma Assert (Present (Result));
       Rewrite (Cnode, Result);
       Analyze_And_Resolve (Cnode, Atyp);
-
-   exception
-      when Concatenation_Error =>
-
-         --  Kill warning generated for the declaration of the static out of
-         --  range high bound, and instead generate a Constraint_Error with
-         --  an appropriate specific message.
-
-         Kill_Dead_Code (Declaration_Node (Entity (High_Bound)));
-         Apply_Compile_Time_Constraint_Error
-           (N      => Cnode,
-            Msg    => "concatenation result upper bound out of range??",
-            Reason => CE_Range_Check_Failed);
    end Expand_Concatenate;
 
    ---------------------------------------------------
