@@ -772,7 +772,7 @@ package body Sem_Type is
       function Real_Actual (T : Entity_Id) return Entity_Id;
       --  If an actual in an inner instance is the formal of an enclosing
       --  generic, the actual in the enclosing instance is the one that can
-      --  create an accidental ambiguity, and the check on compatibily of
+      --  create an accidental ambiguity, and the check on compatibility of
       --  generic actual types must use this enclosing actual.
 
       ----------------------
