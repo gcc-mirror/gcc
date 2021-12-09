@@ -30,4 +30,4 @@ public extern (C++) BUILTIN isBuiltin(FuncDeclaration fd);
  * Evaluate builtin function.
  * Return result; NULL if cannot evaluate it.
  */
-public extern (C++) Expression eval_builtin(Loc loc, FuncDeclaration fd, Expressions* arguments);
+public extern (C++) Expression eval_builtin(const ref Loc loc, FuncDeclaration fd, Expressions* arguments);

@@ -777,7 +777,7 @@ builtin_access::builtin_access (range_query *query, gimple *call,
       if (!POINTER_TYPE_P (TREE_TYPE (addr)))
 	addr = build1 (ADDR_EXPR, (TREE_TYPE (addr)), addr);
 
-      if (tree dstsize = compute_objsize (addr, ostype))
+      if (tree dstsize = compute_objsize (addr, call, ostype))
 	dst.basesize = wi::to_offset (dstsize);
       else if (POINTER_TYPE_P (TREE_TYPE (addr)))
 	dst.basesize = HOST_WIDE_INT_MIN;
@@ -791,7 +791,7 @@ builtin_access::builtin_access (range_query *query, gimple *call,
       if (!POINTER_TYPE_P (TREE_TYPE (addr)))
 	addr = build1 (ADDR_EXPR, (TREE_TYPE (addr)), addr);
 
-      if (tree srcsize = compute_objsize (addr, ostype))
+      if (tree srcsize = compute_objsize (addr, call, ostype))
 	src.basesize = wi::to_offset (srcsize);
       else if (POINTER_TYPE_P (TREE_TYPE (addr)))
 	src.basesize = HOST_WIDE_INT_MIN;

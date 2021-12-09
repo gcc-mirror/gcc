@@ -45,7 +45,8 @@ import dmd.identifier;
 import dmd.init;
 import dmd.mtype;
 import dmd.objc;
-import dmd.root.outbuffer;
+import dmd.root.aav;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.root.stringtable;
@@ -260,6 +261,8 @@ extern (C++) class FuncDeclaration : Declaration
 
     VarDeclaration vresult;             /// result variable for out contracts
     LabelDsymbol returnLabel;           /// where the return goes
+
+    bool[size_t] isTypeIsolatedCache;   /// cache for the potentially very expensive isTypeIsolated check
 
     // used to prevent symbols in different
     // scopes from having the same name
@@ -740,7 +743,7 @@ extern (C++) class FuncDeclaration : Declaration
      */
     final BaseClass* overrideInterface()
     {
-        if (ClassDeclaration cd = toParent2().isClassDeclaration())
+        for (ClassDeclaration cd = toParent2().isClassDeclaration(); cd; cd = cd.baseClass)
         {
             foreach (b; cd.interfaces)
             {
@@ -1529,8 +1532,23 @@ extern (C++) class FuncDeclaration : Declaration
     extern (D) final bool isTypeIsolated(Type t)
     {
         StringTable!Type parentTypes;
-        parentTypes._init();
-        return isTypeIsolated(t, parentTypes);
+        const uniqueTypeID = t.getUniqueID();
+        if (uniqueTypeID)
+        {
+            const cacheResultPtr = uniqueTypeID in isTypeIsolatedCache;
+            if (cacheResultPtr !is null)
+                return *cacheResultPtr;
+
+            parentTypes._init();
+            const isIsolated = isTypeIsolated(t, parentTypes);
+            isTypeIsolatedCache[uniqueTypeID] = isIsolated;
+            return isIsolated;
+        }
+        else
+        {
+            parentTypes._init();
+            return isTypeIsolated(t, parentTypes);
+        }
     }
 
     ///ditto
@@ -2593,9 +2611,10 @@ extern (C++) class FuncDeclaration : Declaration
         }
 
         if (!tf.nextOf())
-            error("must return `int` or `void`");
-        else if (tf.nextOf().ty != Tint32 && tf.nextOf().ty != Tvoid)
-            error("must return `int` or `void`, not `%s`", tf.nextOf().toChars());
+            // auto main(), check after semantic
+            assert(this.inferRetType);
+        else if (tf.nextOf().ty != Tint32 && tf.nextOf().ty != Tvoid && tf.nextOf().ty != Tnoreturn)
+            error("must return `int`, `void` or `noreturn`, not `%s`", tf.nextOf().toChars());
         else if (tf.parameterList.varargs || nparams >= 2 || argerr)
             error("parameters must be `main()` or `main(string[] args)`");
     }
@@ -3054,7 +3073,11 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
         return null;
 
     bool hasOverloads = fd.overnext !is null;
-    auto tf = fd.type.toTypeFunction();
+    auto tf = fd.type.isTypeFunction();
+    // if type is an error, the original type should be there for better diagnostics
+    if (!tf)
+        tf = fd.originalType.toTypeFunction();
+
     if (tthis && !MODimplicitConv(tthis.mod, tf.mod)) // modifier mismatch
     {
         OutBuffer thisBuf, funcBuf;
@@ -3253,17 +3276,7 @@ private bool traverseIndirections(Type ta, Type tb)
 {
     //printf("traverseIndirections(%s, %s)\n", ta.toChars(), tb.toChars());
 
-    /* Threaded list of aggregate types already examined,
-     * used to break cycles.
-     * Cycles in type graphs can only occur with aggregates.
-     */
-    static struct Ctxt
-    {
-        Ctxt* prev;
-        Type type;      // an aggregate type
-    }
-
-    static bool traverse(Type ta, Type tb, Ctxt* ctxt, bool reversePass)
+    static bool traverse(Type ta, Type tb, ref scope AssocArray!(const(char)*, bool) table, bool reversePass)
     {
         //printf("traverse(%s, %s)\n", ta.toChars(), tb.toChars());
         ta = ta.baseElemOf();
@@ -3293,28 +3306,27 @@ private bool traverseIndirections(Type ta, Type tb)
 
         if (tb.ty == Tclass || tb.ty == Tstruct)
         {
-            for (Ctxt* c = ctxt; c; c = c.prev)
-                if (tb == c.type)
-                    return true;
-            Ctxt c;
-            c.prev = ctxt;
-            c.type = tb;
-
             /* Traverse the type of each field of the aggregate
              */
+            bool* found = table.getLvalue(tb.deco);
+            if (*found == true)
+                return true; // We have already seen this symbol, break the cycle
+            else
+                *found = true;
+
             AggregateDeclaration sym = tb.toDsymbol(null).isAggregateDeclaration();
             foreach (v; sym.fields)
             {
                 Type tprmi = v.type.addMod(tb.mod);
                 //printf("\ttb = %s, tprmi = %s\n", tb.toChars(), tprmi.toChars());
-                if (!traverse(ta, tprmi, &c, reversePass))
+                if (!traverse(ta, tprmi, table, reversePass))
                     return false;
             }
         }
         else if (tb.ty == Tarray || tb.ty == Taarray || tb.ty == Tpointer)
         {
             Type tind = tb.nextOf();
-            if (!traverse(ta, tind, ctxt, reversePass))
+            if (!traverse(ta, tind, table, reversePass))
                 return false;
         }
         else if (tb.hasPointers())
@@ -3325,7 +3337,10 @@ private bool traverseIndirections(Type ta, Type tb)
 
         // Still no match, so try breaking up ta if we have not done so yet.
         if (!reversePass)
-            return traverse(tb, ta, ctxt, true);
+        {
+            scope newTable = AssocArray!(const(char)*, bool)();
+            return traverse(tb, ta, newTable, true);
+        }
 
         return true;
     }
@@ -3333,7 +3348,8 @@ private bool traverseIndirections(Type ta, Type tb)
     // To handle arbitrary levels of indirections in both parameters, we
     // recursively descend into aggregate members/levels of indirection in both
     // `ta` and `tb` while avoiding cycles. Start with the original types.
-    const result = traverse(ta, tb, null, false);
+    scope table = AssocArray!(const(char)*, bool)();
+    const result = traverse(ta, tb, table, false);
     //printf("  returns %d\n", result);
     return result;
 }

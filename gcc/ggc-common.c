@@ -40,7 +40,7 @@ static ggc_statistics *ggc_stats;
 struct traversal_state;
 
 static int compare_ptr_data (const void *, const void *);
-static void relocate_ptrs (void *, void *);
+static void relocate_ptrs (void *, void *, void *);
 static void write_pch_globals (const struct ggc_root_tab * const *tab,
 			       struct traversal_state *state);
 
@@ -247,6 +247,7 @@ saving_hasher::equal (const ptr_data *p1, const void *p2)
 
 static hash_table<saving_hasher> *saving_htab;
 static vec<void *> callback_vec;
+static vec<void *> reloc_addrs_vec;
 
 /* Register an object in the hash table.  */
 
@@ -363,10 +364,10 @@ compare_ptr_data (const void *p1_p, const void *p2_p)
 /* Callbacks for note_ptr_fn.  */
 
 static void
-relocate_ptrs (void *ptr_p, void *state_p)
+relocate_ptrs (void *ptr_p, void *real_ptr_p, void *state_p)
 {
   void **ptr = (void **)ptr_p;
-  struct traversal_state *state ATTRIBUTE_UNUSED
+  struct traversal_state *state
     = (struct traversal_state *)state_p;
   struct ptr_data *result;
 
@@ -377,6 +378,19 @@ relocate_ptrs (void *ptr_p, void *state_p)
     saving_htab->find_with_hash (*ptr, POINTER_HASH (*ptr));
   gcc_assert (result);
   *ptr = result->new_addr;
+  if (ptr_p == real_ptr_p)
+    return;
+  if (real_ptr_p == NULL)
+    real_ptr_p = ptr_p;
+  gcc_assert (real_ptr_p >= state->ptrs[state->ptrs_i]->obj
+	      && ((char *) real_ptr_p + sizeof (void *)
+		  <= ((char *) state->ptrs[state->ptrs_i]->obj
+		      + state->ptrs[state->ptrs_i]->size)));
+  void *addr
+    = (void *) ((char *) state->ptrs[state->ptrs_i]->new_addr
+		+ ((char *) real_ptr_p
+		   - (char *) state->ptrs[state->ptrs_i]->obj));
+  reloc_addrs_vec.safe_push (addr);
 }
 
 /* Write out, after relocation, the pointers in TAB.  */
@@ -409,6 +423,61 @@ write_pch_globals (const struct ggc_root_tab * const *tab,
 		fatal_error (input_location, "cannot write PCH file: %m");
 	    }
 	}
+}
+
+/* Callback for qsort.  */
+
+static int
+compare_ptr (const void *p1_p, const void *p2_p)
+{
+  void *p1 = *(void *const *)p1_p;
+  void *p2 = *(void *const *)p2_p;
+  return (((uintptr_t)p1 > (uintptr_t)p2)
+	  - ((uintptr_t)p1 < (uintptr_t)p2));
+}
+
+/* Decode one uleb128 from P, return first byte after it, store
+   decoded value into *VAL.  */
+
+static unsigned char *
+read_uleb128 (unsigned char *p, size_t *val)
+{
+  unsigned int shift = 0;
+  unsigned char byte;
+  size_t result;
+
+  result = 0;
+  do
+    {
+      byte = *p++;
+      result |= ((size_t) byte & 0x7f) << shift;
+      shift += 7;
+    }
+  while (byte & 0x80);
+
+  *val = result;
+  return p;
+}
+
+/* Store VAL as uleb128 at P, return length in bytes.  */
+
+static size_t
+write_uleb128 (unsigned char *p, size_t val)
+{
+  size_t len = 0;
+  do
+    {
+      unsigned char byte = (val & 0x7f);
+      val >>= 7;
+      if (val != 0)
+	/* More bytes to follow.  */
+	byte |= 0x80;
+
+      *p++ = byte;
+      ++len;
+    }
+  while (val != 0);
+  return len;
 }
 
 /* Hold the information we need to mmap the file back in.  */
@@ -511,6 +580,7 @@ gt_pch_save (FILE *f)
   /* Actually write out the objects.  */
   for (i = 0; i < state.count; i++)
     {
+      state.ptrs_i = i;
       if (this_object_size < state.ptrs[i]->size)
 	{
 	  this_object_size = state.ptrs[i]->size;
@@ -591,7 +661,42 @@ gt_pch_save (FILE *f)
   vbits.release ();
 #endif
 
+  reloc_addrs_vec.qsort (compare_ptr);
+
+  size_t reloc_addrs_size = 0;
+  void *last_addr = NULL;
+  unsigned char uleb128_buf[sizeof (size_t) * 2];
+  for (void *addr : reloc_addrs_vec)
+    {
+      gcc_assert ((uintptr_t) addr >= (uintptr_t) mmi.preferred_base
+		  && ((uintptr_t) addr + sizeof (void *)
+		      < (uintptr_t) mmi.preferred_base + mmi.size));
+      if (addr == last_addr)
+	continue;
+      if (last_addr == NULL)
+	last_addr = mmi.preferred_base;
+      size_t diff = (uintptr_t) addr - (uintptr_t) last_addr;
+      reloc_addrs_size += write_uleb128 (uleb128_buf, diff);
+      last_addr = addr;
+    }
+  if (fwrite (&reloc_addrs_size, sizeof (reloc_addrs_size), 1, f) != 1)
+    fatal_error (input_location, "cannot write PCH file: %m");
+  last_addr = NULL;
+  for (void *addr : reloc_addrs_vec)
+    {
+      if (addr == last_addr)
+	continue;
+      if (last_addr == NULL)
+	last_addr = mmi.preferred_base;
+      size_t diff = (uintptr_t) addr - (uintptr_t) last_addr;
+      reloc_addrs_size = write_uleb128 (uleb128_buf, diff);
+      if (fwrite (uleb128_buf, 1, reloc_addrs_size, f) != reloc_addrs_size)
+	fatal_error (input_location, "cannot write PCH file: %m");
+      last_addr = addr;
+    }
+
   ggc_pch_finish (state.d, state.f);
+
   gt_pch_fixup_stringpool ();
 
   unsigned num_callbacks = callback_vec.length ();
@@ -608,6 +713,7 @@ gt_pch_save (FILE *f)
   delete saving_htab;
   saving_htab = NULL;
   callback_vec.release ();
+  reloc_addrs_vec.release ();
 }
 
 /* Read the state of the compiler back in from F.  */
@@ -660,6 +766,7 @@ gt_pch_restore (FILE *f)
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
     fatal_error (input_location, "cannot read PCH file: %m");
 
+  void *orig_preferred_base = mmi.preferred_base;
   result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
 					  fileno (f), mmi.offset);
 
@@ -667,7 +774,7 @@ gt_pch_restore (FILE *f)
      address needed.  */
   if (result < 0)
     {
-      sorry_at (input_location, "PCH relocation is not yet supported");
+      sorry_at (input_location, "PCH allocation failure");
       /* There is no point in continuing from here, we will only end up
 	 with a crashed (most likely hanging) compiler.  */
       exit (-1);
@@ -685,9 +792,75 @@ gt_pch_restore (FILE *f)
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
     fatal_error (input_location, "cannot read PCH file: %m");
 
-  ggc_pch_read (f, mmi.preferred_base);
+  size_t reloc_addrs_size;
+  if (fread (&reloc_addrs_size, sizeof (reloc_addrs_size), 1, f) != 1)
+    fatal_error (input_location, "cannot read PCH file: %m");
 
-  gt_pch_restore_stringpool ();
+  if (orig_preferred_base != mmi.preferred_base)
+    {
+      uintptr_t bias
+	= (uintptr_t) mmi.preferred_base - (uintptr_t) orig_preferred_base;
+
+      /* Adjust all the global pointers by bias.  */
+      line_table = new_line_table;
+      for (rt = gt_ggc_rtab; *rt; rt++)
+	for (rti = *rt; rti->base != NULL; rti++)
+      for (i = 0; i < rti->nelt; i++)
+	{
+	  char *addr = (char *)rti->base + rti->stride * i;
+	  char *p;
+	  memcpy (&p, addr, sizeof (void *));
+	  if ((uintptr_t) p >= (uintptr_t) orig_preferred_base
+	      && (uintptr_t) p < (uintptr_t) orig_preferred_base + mmi.size)
+	    {
+	      p = (char *) ((uintptr_t) p + bias);
+	      memcpy (addr, &p, sizeof (void *));
+	    }
+	}
+      new_line_table = line_table;
+      line_table = save_line_table;
+
+      /* And adjust all the pointers in the image by bias too.  */
+      char *addr = (char *) mmi.preferred_base;
+      unsigned char uleb128_buf[4096], *uleb128_ptr = uleb128_buf;
+      while (reloc_addrs_size != 0)
+	{
+	  size_t this_size
+	    = MIN (reloc_addrs_size,
+		   (size_t) (4096 - (uleb128_ptr - uleb128_buf)));
+	  if (fread (uleb128_ptr, 1, this_size, f) != this_size)
+	    fatal_error (input_location, "cannot read PCH file: %m");
+	  unsigned char *uleb128_end = uleb128_ptr + this_size;
+	  if (this_size != reloc_addrs_size)
+	    uleb128_end -= 2 * sizeof (size_t);
+	  uleb128_ptr = uleb128_buf;
+	  while (uleb128_ptr < uleb128_end)
+	    {
+	      size_t diff;
+	      uleb128_ptr = read_uleb128 (uleb128_ptr, &diff);
+	      addr = (char *) ((uintptr_t) addr + diff);
+
+	      char *p;
+	      memcpy (&p, addr, sizeof (void *));
+	      gcc_assert ((uintptr_t) p >= (uintptr_t) orig_preferred_base
+			  && ((uintptr_t) p
+			      < (uintptr_t) orig_preferred_base + mmi.size));
+	      p = (char *) ((uintptr_t) p + bias);
+	      memcpy (addr, &p, sizeof (void *));
+	    }
+	  reloc_addrs_size -= this_size;
+	  if (reloc_addrs_size == 0)
+	    break;
+	  this_size = uleb128_end + 2 * sizeof (size_t) - uleb128_ptr;
+	  memcpy (uleb128_buf, uleb128_ptr, this_size);
+	  uleb128_ptr = uleb128_buf + this_size;
+	}
+    }
+  else if (fseek (f, (mmi.offset + mmi.size + sizeof (reloc_addrs_size)
+		      + reloc_addrs_size), SEEK_SET) != 0)
+    fatal_error (input_location, "cannot read PCH file: %m");
+
+  ggc_pch_read (f, mmi.preferred_base);
 
   void (*pch_save) (FILE *);
   unsigned num_callbacks;
@@ -696,22 +869,27 @@ gt_pch_restore (FILE *f)
     fatal_error (input_location, "cannot read PCH file: %m");
   if (pch_save != &gt_pch_save)
     {
-      uintptr_t bias = (uintptr_t) &gt_pch_save - (uintptr_t) pch_save;
+      uintptr_t binbias = (uintptr_t) &gt_pch_save - (uintptr_t) pch_save;
       void **ptrs = XNEWVEC (void *, num_callbacks);
       unsigned i;
+      uintptr_t bias
+	= (uintptr_t) mmi.preferred_base - (uintptr_t) orig_preferred_base;
 
       if (fread (ptrs, sizeof (void *), num_callbacks, f) != num_callbacks)
 	fatal_error (input_location, "cannot read PCH file: %m");
       for (i = 0; i < num_callbacks; ++i)
 	{
-	  memcpy (&pch_save, ptrs[i], sizeof (pch_save));
-	  pch_save = (void (*) (FILE *)) ((uintptr_t) pch_save + bias);
-	  memcpy (ptrs[i], &pch_save, sizeof (pch_save));
+	  void *ptr = (void *) ((uintptr_t) ptrs[i] + bias);
+	  memcpy (&pch_save, ptr, sizeof (pch_save));
+	  pch_save = (void (*) (FILE *)) ((uintptr_t) pch_save + binbias);
+	  memcpy (ptr, &pch_save, sizeof (pch_save));
 	}
       XDELETE (ptrs);
     }
   else if (fseek (f, num_callbacks * sizeof (void *), SEEK_CUR) != 0)
     fatal_error (input_location, "cannot read PCH file: %m");
+
+  gt_pch_restore_stringpool ();
 
   /* Barring corruption of the PCH file, the restored line table should be
      complete and usable.  */
@@ -736,7 +914,7 @@ default_gt_pch_get_address (size_t size ATTRIBUTE_UNUSED,
    of the PCH file would be required.  */
 
 int
-default_gt_pch_use_address (void *base, size_t size, int fd ATTRIBUTE_UNUSED,
+default_gt_pch_use_address (void *&base, size_t size, int fd ATTRIBUTE_UNUSED,
 			    size_t offset ATTRIBUTE_UNUSED)
 {
   void *addr = xmalloc (size);
@@ -782,7 +960,7 @@ mmap_gt_pch_get_address (size_t size, int fd)
    mapped with something.  */
 
 int
-mmap_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+mmap_gt_pch_use_address (void *&base, size_t size, int fd, size_t offset)
 {
   void *addr;
 

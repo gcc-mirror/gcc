@@ -139,7 +139,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.mtype;
 import dmd.root.ctfloat;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.aav;
 import dmd.root.string;
 import dmd.root.stringtable;
@@ -1259,14 +1259,49 @@ public:
 
     override void visit(Parameter p)
     {
-        if (p.storageClass & STC.scope_ && !(p.storageClass & STC.scopeinferred))
-            buf.writeByte('M');
+        // https://dlang.org/spec/abi.html#Parameter
+
+        auto stc = p.storageClass;
+
+        // Inferred storage classes don't get mangled in
+        if (stc & STC.scopeinferred)
+            stc &= ~(STC.scope_ | STC.scopeinferred);
+        if (stc & STC.returninferred)
+            stc &= ~(STC.return_ | STC.returninferred);
 
         // 'return inout ref' is the same as 'inout ref'
-        if ((p.storageClass & (STC.return_ | STC.wild)) == STC.return_ &&
-            !(p.storageClass & STC.returninferred))
-            buf.writestring("Nk");
-        switch (p.storageClass & (STC.IOR | STC.lazy_))
+        if ((stc & (STC.return_ | STC.wild)) == (STC.return_ | STC.wild))
+            stc &= ~STC.return_;
+
+        // much like hdrgen.stcToBuffer()
+        string rrs;
+        const isout = (stc & STC.out_) != 0;
+        final switch (buildScopeRef(stc))
+        {
+            case ScopeRef.None:
+            case ScopeRef.Scope:
+            case ScopeRef.Ref:
+            case ScopeRef.Return:
+            case ScopeRef.RefScope:
+                break;
+
+            case ScopeRef.ReturnScope:     rrs = "NkM";                  goto L1;  // return scope
+            case ScopeRef.ReturnRef:       rrs = isout ? "NkJ"  : "NkK"; goto L1;  // return ref
+            case ScopeRef.ReturnRef_Scope: rrs = isout ? "MNkJ" : "MNkK"; goto L1; // scope return ref
+            case ScopeRef.Ref_ReturnScope: rrs = isout ? "NkMJ" : "NkMK"; goto L1; // return scope ref
+            L1:
+                buf.writestring(rrs);
+                stc &= ~(STC.out_ | STC.scope_ | STC.ref_ | STC.return_);
+                break;
+        }
+
+        if (stc & STC.scope_)
+            buf.writeByte('M');  // scope
+
+        if (stc & STC.return_)
+            buf.writestring("Nk"); // return
+
+        switch (stc & (STC.IOR | STC.lazy_))
         {
         case 0:
             break;
@@ -1288,10 +1323,10 @@ public:
         default:
             debug
             {
-                printf("storageClass = x%llx\n", p.storageClass & (STC.IOR | STC.lazy_));
+                printf("storageClass = x%llx\n", stc & (STC.IOR | STC.lazy_));
             }
             assert(0);
         }
-        visitWithMask(p.type, (p.storageClass & STC.in_) ? MODFlags.const_ : 0);
+        visitWithMask(p.type, (stc & STC.in_) ? MODFlags.const_ : 0);
     }
 }

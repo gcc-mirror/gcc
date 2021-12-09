@@ -236,7 +236,7 @@ build_frontend_type (tree type)
       sdecl->parent = stubmod;
       sdecl->structsize = int_size_in_bytes (type);
       sdecl->alignsize = TYPE_ALIGN_UNIT (type);
-      sdecl->alignment = STRUCTALIGN_DEFAULT;
+      sdecl->alignment.setDefault ();
       sdecl->sizeok = Sizeok::done;
       sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
       sdecl->type->ctype = type;
@@ -275,7 +275,7 @@ build_frontend_type (tree type)
 						       NULL);
 	  vd->parent = sdecl;
 	  vd->offset = tree_to_uhwi (byte_position (field));
-	  vd->semanticRun = PASSsemanticdone;
+	  vd->semanticRun = PASS::semanticdone;
 	  vd->csym = field;
 	  sdecl->members->push (vd);
 	  sdecl->fields.push (vd);
@@ -855,6 +855,9 @@ d_build_d_type_nodes (void)
 
   ireal_type_node = build_distinct_type_copy (long_double_type_node);
   TYPE_IMAGINARY_FLOAT (ireal_type_node) = 1;
+
+  /* Noreturn type.  */
+  noreturn_type_node = build_distinct_type_copy (void_type_node);
 
   /* Calling build_ctype() links the front-end Type to the GCC node,
      and sets the TYPE_NAME to the D language type.  */

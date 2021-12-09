@@ -16432,6 +16432,16 @@ cp_parser_decltype (cp_parser *parser)
 	= parser->greater_than_is_operator_p;
       parser->greater_than_is_operator_p = true;
 
+      /* Don't synthesize an implicit template type parameter here.  This
+	 could happen with C++23 code like
+
+	   void f(decltype(new auto{0}));
+
+	 where we want to deduce the auto right away so that the parameter
+	 is of type 'int *'.  */
+      auto cleanup = make_temp_override
+	(parser->auto_is_implicit_function_template_parm_p, false);
+
       /* Do not actually evaluate the expression.  */
       ++cp_unevaluated_operand;
 
@@ -24144,22 +24154,22 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 	  /* OK */;
 	else
 	  {
-	    location_t loc = type_specifier_seq.locations[ds_type_spec];
-	    if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+	    if (!cp_parser_simulate_error (parser))
 	      {
-		if (!cp_parser_simulate_error (parser))
+		location_t loc = type_specifier_seq.locations[ds_type_spec];
+		if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
 		  {
 		    error_at (loc, "missing template arguments after %qT",
 			      auto_node);
 		    inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here",
 			    tmpl);
 		  }
+		else if (parser->in_template_argument_list_p)
+		  error_at (loc, "%qT not permitted in template argument",
+			    auto_node);
+		else
+		  error_at (loc, "invalid use of %qT", auto_node);
 	      }
-	    else if (parser->in_template_argument_list_p)
-	      error_at (loc, "%qT not permitted in template argument",
-			auto_node);
-	    else
-	      error_at (loc, "invalid use of %qT", auto_node);
 	    return error_mark_node;
 	  }
       }
@@ -24667,6 +24677,15 @@ cp_parser_parameter_declaration (cp_parser *parser,
 				flags,
 				&decl_specifiers,
 				&declares_class_or_enum);
+
+  /* [dcl.spec.auto.general]: "A placeholder-type-specifier of the form
+     type-constraint opt auto can be used as a decl-specifier of the
+     decl-specifier-seq of a parameter-declaration of a function declaration
+     or lambda-expression..." but we must not synthesize an implicit template
+     type parameter in its declarator.  That is, in "void f(auto[auto{10}]);"
+     we want to synthesize only the first auto.  */
+  auto cleanup = make_temp_override
+    (parser->auto_is_implicit_function_template_parm_p, false);
 
   /* Complain about missing 'typename' or other invalid type names.  */
   if (!decl_specifiers.any_type_specifiers_p
@@ -32368,6 +32387,9 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   saved_non_integral_constant_expression_p
     = parser->non_integral_constant_expression_p;
   parser->integral_constant_expression_p = false;
+
+  auto cleanup = make_temp_override
+    (parser->auto_is_implicit_function_template_parm_p, false);
 
   /* Do not actually evaluate the expression.  */
   ++cp_unevaluated_operand;

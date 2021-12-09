@@ -1019,16 +1019,9 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/math.h ../vxworks/complex.h"
   extra_headers="${extra_headers} ../vxworks/inttypes.h ../vxworks/setjmp.h"
 
-  # We provide stdint.h ...
-
+  # We provide (a tailored version of) stdint.h
   tm_file="${tm_file} vxworks-stdint.h"
-
-  # .. only through the yvals conditional wrapping mentioned above
-  # to abide by the VxWorks 7 expectations.  The final copy is performed
-  # explicitly by a t-vxworks Makefile rule.
-
-  use_gcc_stdint=none
-  extra_headers="${extra_headers} ../../ginclude/stdint-gcc.h"
+  use_gcc_stdint=provide
 
   case ${enable_threads} in
     no) ;;

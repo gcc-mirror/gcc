@@ -36,6 +36,7 @@ immutable
         watchOS,   /// watchOS
         freeBSD,   /// FreeBSD
         netBSD,    /// NetBSD
+        openBSD,   /// OpenBSD
         dragonFlyBSD, /// DragonFlyBSD
         solaris,   /// Solaris
         android,   /// Android
@@ -54,6 +55,7 @@ immutable
     else version (watchOS) OS os = OS.watchOS;
     else version (FreeBSD) OS os = OS.freeBSD;
     else version (NetBSD)  OS os = OS.netBSD;
+    else version (OpenBSD) OS os = OS.openBSD;
     else version (DragonFlyBSD) OS os = OS.dragonFlyBSD;
     else version (Posix)   OS os = OS.otherPosix;
     else OS os = OS.unknown;

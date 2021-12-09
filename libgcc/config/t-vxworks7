@@ -18,3 +18,5 @@ LIBGCC2_INCLUDES = -nostdinc -I. \
       */mrtp*) echo -I$(VSB_DIR)/usr/h/public -I$(VSB_DIR)/usr/h ;; \
       *) echo -I$(VSB_DIR)/krnl/h/system -I$(VSB_DIR)/krnl/h/public ;; \
    esac`
+
+CRTSTUFF_T_CFLAGS = $(LIBGCC2_INCLUDES)

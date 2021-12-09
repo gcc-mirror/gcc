@@ -187,7 +187,7 @@ struct Visibility
     }
 }
 
-enum PASS : int
+enum PASS : ubyte
 {
     init,           // initial state
     semantic,       // semantic() started
@@ -225,11 +225,13 @@ enum : int
  */
 struct FieldState
 {
-    uint offset;        /// offset for next field
+    uint offset;        /// byte offset for next field
 
-    uint fieldOffset;   /// offset for the start of the bit field
+    uint fieldOffset;   /// byte offset for the start of the bit field
+    uint fieldSize;     /// byte size of field
+    uint fieldAlign;    /// byte alignment of field
     uint bitOffset;     /// bit offset for field
-    uint fieldSize;     /// size of field in bytes
+
     bool inFlight;      /// bit field is in flight
 }
 
@@ -793,9 +795,17 @@ extern (C++) class Dsymbol : ASTNode
             Dsymbol s2 = sds.symtabLookup(this,ident);
 
             // If using C tag/prototype/forward declaration rules
-            if (sc.flags & SCOPE.Cfile &&
-                handleTagSymbols(*sc, this, s2, sds))
+            if (sc.flags & SCOPE.Cfile)
+            {
+                if (handleTagSymbols(*sc, this, s2, sds))
                     return;
+                if (handleSymbolRedeclarations(*sc, this, s2, sds))
+                    return;
+
+                sds.multiplyDefined(Loc.initial, this, s2);  // ImportC doesn't allow overloading
+                errors = true;
+                return;
+            }
 
             if (!s2.overloadInsert(this))
             {
@@ -2384,3 +2394,91 @@ Dsymbol handleTagSymbols(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
 }
 
 
+/**********************************************
+ * ImportC allows redeclarations of C variables, functions and typedefs.
+ *    extern int x;
+ *    int x = 3;
+ * and:
+ *    extern void f();
+ *    void f() { }
+ * Attempt to merge them.
+ * Params:
+ *      sc = context
+ *      s = symbol to add to symbol table
+ *      s2 = existing declaration
+ *      sds = symbol table
+ * Returns:
+ *      if s and s2 are successfully put in symbol table then return the merged symbol,
+ *      null if they conflict
+ */
+Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsymbol sds)
+{
+    enum log = false;
+    if (log) printf("handleSymbolRedeclarations('%s')\n", s.toChars());
+
+    static Dsymbol collision()
+    {
+        if (log) printf(" collision\n");
+        return null;
+    }
+
+    auto vd = s.isVarDeclaration(); // new declaration
+    auto vd2 = s2.isVarDeclaration(); // existing declaration
+    if (vd && vd2)
+    {
+        // if one is `static` and the other isn't
+        if ((vd.storage_class ^ vd2.storage_class) & STC.static_)
+            return collision();
+
+        const i1 =  vd._init && ! vd._init.isVoidInitializer();
+        const i2 = vd2._init && !vd2._init.isVoidInitializer();
+
+        if (i1 && i2)
+            return collision();         // can't both have initializers
+
+        if (i1)
+            return vd;
+
+        /* BUG: the types should match, which needs semantic() to be run on it
+         *    extern int x;
+         *    int x;  // match
+         *    typedef int INT;
+         *    INT x;  // match
+         *    long x; // collision
+         * We incorrectly ignore these collisions
+         */
+        return vd2;
+    }
+
+    auto fd = s.isFuncDeclaration(); // new declaration
+    auto fd2 = s2.isFuncDeclaration(); // existing declaration
+    if (fd && fd2)
+    {
+        // if one is `static` and the other isn't
+        if ((fd.storage_class ^ fd2.storage_class) & STC.static_)
+            return collision();
+
+        if (fd.fbody && fd2.fbody)
+            return collision();         // can't both have bodies
+
+        if (fd.fbody)
+            return fd;
+
+        /* BUG: just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
+         * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.
+         */
+        return fd2;
+    }
+
+    auto td  = s.isAliasDeclaration();  // new declaration
+    auto td2 = s2.isAliasDeclaration(); // existing declaration
+    if (td && td2)
+    {
+        /* BUG: just like with variables and functions, the types should match, which needs semantic() to be run on it.
+         * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.
+         */
+        return td2;
+    }
+
+    return collision();
+}

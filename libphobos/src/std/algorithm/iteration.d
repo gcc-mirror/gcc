@@ -77,51 +77,6 @@ import std.range.primitives;
 import std.traits;
 import std.typecons : Flag, Yes, No;
 
-private template aggregate(fun...)
-if (fun.length >= 1)
-{
-    /* --Intentionally not ddoc--
-     * Aggregates elements in each subrange of the given range of ranges using
-     * the given aggregating function(s).
-     * Params:
-     *  fun = One or more aggregating functions (binary functions that return a
-     *      single _aggregate value of their arguments).
-     *  ror = A range of ranges to be aggregated.
-     *
-     * Returns:
-     * A range representing the aggregated value(s) of each subrange
-     * of the original range. If only one aggregating function is specified,
-     * each element will be the aggregated value itself; if multiple functions
-     * are specified, each element will be a tuple of the aggregated values of
-     * each respective function.
-     */
-    auto aggregate(RoR)(RoR ror)
-        if (isInputRange!RoR && isIterable!(ElementType!RoR))
-    {
-        return ror.map!(reduce!fun);
-    }
-
-    @safe unittest
-    {
-        import std.algorithm.comparison : equal, max, min;
-
-        auto data = [[4, 2, 1, 3], [4, 9, -1, 3, 2], [3]];
-
-        // Single aggregating function
-        auto agg1 = data.aggregate!max;
-        assert(agg1.equal([4, 9, 3]));
-
-        // Multiple aggregating functions
-        import std.typecons : tuple;
-        auto agg2 = data.aggregate!(max, min);
-        assert(agg2.equal([
-            tuple(4, 1),
-            tuple(9, -1),
-            tuple(3, 3)
-        ]));
-    }
-}
-
 /++
 `cache` eagerly evaluates $(REF_ALTTEXT front, front, std,range,primitives) of `range`
 on each construction or call to $(REF_ALTTEXT popFront, popFront, std,range,primitives),
@@ -2029,23 +1984,39 @@ private struct ChunkByGroup(alias eq, Range, bool eqEquivalenceAssured)
     }
     private Range  current;
 
-    private RefCounted!(OuterRange) mothership;
+    // using union prevents RefCounted destructor from propagating @system to
+    // user code
+    union { private RefCounted!(OuterRange) mothership; }
+    private @trusted ref cargo() { return mothership.refCountedPayload; }
 
-    this(RefCounted!(OuterRange) origin)
+    private this(ref RefCounted!(OuterRange) origin)
     {
-        groupNum = origin.groupNum;
-        current = origin.current.save;
+        () @trusted { mothership = origin; }();
+        groupNum = cargo.groupNum;
+        current = cargo.current.save;
         assert(!current.empty, "Passed range 'r' must not be empty");
+
         static if (eqEquivalenceAssured)
         {
-            start = origin.current.save;
+            start = cargo.current.save;
 
             // Check for reflexivity.
             assert(eq(start.front, current.front),
                 "predicate is not reflexive");
         }
+    }
 
-        mothership = origin;
+    // Cannot be a copy constructor due to issue 22239
+    this(this) @trusted
+    {
+        import core.lifetime : emplace;
+        // since mothership has to be in a union, we have to manually trigger
+        // an increment to the reference count.
+        auto temp = mothership;
+        mothership = temp;
+
+        // prevents the reference count from falling back with brute force
+        emplace(&temp);
     }
 
     @property bool empty() { return groupNum == size_t.max; }
@@ -2073,14 +2044,14 @@ private struct ChunkByGroup(alias eq, Range, bool eqEquivalenceAssured)
 
         if (nowEmpty)
         {
-            if (groupNum == mothership.groupNum)
+            if (groupNum == cargo.groupNum)
             {
                 // If parent range hasn't moved on yet, help it along by
                 // saving location of start of next Group.
-                mothership.next = current.save;
+                cargo.next = current.save;
                 static if (!eqEquivalenceAssured)
                 {
-                    mothership.nextUpdated = true;
+                    cargo.nextUpdated = true;
                 }
             }
 
@@ -2093,6 +2064,11 @@ private struct ChunkByGroup(alias eq, Range, bool eqEquivalenceAssured)
         auto copy = this;
         copy.current = current.save;
         return copy;
+    }
+
+    @trusted ~this()
+    {
+        mothership.destroy;
     }
 }
 
@@ -2110,23 +2086,48 @@ if (isForwardRange!Range)
 
     static assert(isForwardRange!InnerRange);
 
-    private RefCounted!OuterRange impl;
+    // using union prevents RefCounted destructor from propagating @system to
+    // user code
+    union { private RefCounted!OuterRange _impl; }
+    private @trusted ref impl() { return _impl; }
+    private @trusted ref implPL() { return _impl.refCountedPayload; }
 
     this(Range r)
     {
-        static if (eqEquivalenceAssured)
+        import core.lifetime : move;
+
+        auto savedR = r.save;
+
+        static if (eqEquivalenceAssured) () @trusted
         {
-            impl = RefCounted!OuterRange(0, r, r.save);
-        }
-        else impl = RefCounted!OuterRange(0, r, r.save, false);
+            _impl = RefCounted!OuterRange(0, r, savedR.move);
+        }();
+        else () @trusted
+        {
+            _impl = RefCounted!OuterRange(0, r, savedR.move, false);
+        }();
     }
 
-    @property bool empty() { return impl.current.empty; }
+    // Cannot be a copy constructor due to issue 22239
+    this(this) @trusted
+    {
+        import core.lifetime : emplace;
+        // since _impl has to be in a union, we have to manually trigger
+        // an increment to the reference count.
+        auto temp = _impl;
+        _impl = temp;
+
+        // prevents the reference count from falling back with brute force
+        emplace(&temp);
+    }
+
+    @property bool empty() { return implPL.current.empty; }
 
     static if (opType == GroupingOpType.unary) @property auto front()
     {
         import std.typecons : tuple;
-        return tuple(unaryFun!pred(impl.current.front), InnerRange(impl));
+
+        return tuple(unaryFun!pred(implPL.current.front), InnerRange(impl));
     }
     else @property auto front()
     {
@@ -2138,48 +2139,53 @@ if (isForwardRange!Range)
         // Scan for next group. If we're lucky, one of our Groups would have
         // already set .next to the start of the next group, in which case the
         // loop is skipped.
-        while (!impl.next.empty && eq(impl.current.front, impl.next.front))
+        while (!implPL.next.empty && eq(implPL.current.front, implPL.next.front))
         {
-            impl.next.popFront();
+            implPL.next.popFront();
         }
 
-        impl.current = impl.next.save;
+        implPL.current = implPL.next.save;
 
         // Indicate to any remaining Groups that we have moved on.
-        impl.groupNum++;
+        implPL.groupNum++;
     }
     else void popFront()
     {
-        if (impl.nextUpdated)
+        if (implPL.nextUpdated)
         {
-            impl.current = impl.next.save;
+            implPL.current = implPL.next.save;
         }
         else while (true)
         {
-            auto prevElement = impl.current.front;
-            impl.current.popFront();
-            if (impl.current.empty) break;
-            if (!eq(prevElement, impl.current.front)) break;
+            auto prevElement = implPL.current.front;
+            implPL.current.popFront();
+            if (implPL.current.empty) break;
+            if (!eq(prevElement, implPL.current.front)) break;
         }
 
-        impl.nextUpdated = false;
+        implPL.nextUpdated = false;
         // Indicate to any remaining Groups that we have moved on.
-        impl.groupNum++;
+        implPL.groupNum++;
     }
 
     @property auto save()
     {
         // Note: the new copy of the range will be detached from any existing
         // satellite Groups, and will not benefit from the .next acceleration.
-        return typeof(this)(impl.current.save);
+        return typeof(this)(implPL.current.save);
     }
 
     static assert(isForwardRange!(typeof(this)), typeof(this).stringof
             ~ " must be a forward range");
+
+    @trusted ~this()
+    {
+        _impl.destroy;
+    }
 }
 
 //Test for https://issues.dlang.org/show_bug.cgi?id=14909
-@system unittest
+@safe unittest
 {
     import std.algorithm.comparison : equal;
     import std.typecons : tuple;
@@ -2192,8 +2198,36 @@ if (isForwardRange!Range)
     assert(u.equal!equal([[1],[2],[3]]));
 }
 
+//Testing inferring @system correctly
+@safe unittest
+{
+    struct DeadlySave
+    {
+        int front;
+        @safe void popFront(){front++;}
+        @safe bool empty(){return front >= 5;}
+        @system auto save(){return this;}
+    }
+
+    auto test1()
+    {
+        DeadlySave src;
+        return src.walkLength;
+
+    }
+
+    auto test2()
+    {
+        DeadlySave src;
+        return src.chunkBy!((a,b) => a % 2 == b % 2).walkLength;
+    }
+
+    static assert(isSafe!test1);
+    static assert(!isSafe!test2);
+}
+
 //Test for https://issues.dlang.org/show_bug.cgi?id=18751
-@system unittest
+@safe unittest
 {
     import std.algorithm.comparison : equal;
 
@@ -2205,7 +2239,7 @@ if (isForwardRange!Range)
 }
 
 //Additional test for fix for issues 14909 and 18751
-@system unittest
+@safe unittest
 {
     import std.algorithm.comparison : equal;
     auto v = [2,4,8,3,6,9,1,5,7];
@@ -2329,7 +2363,7 @@ if (isInputRange!Range)
 }
 
 /// Showing usage with binary predicate:
-/*FIXME: @safe*/ @system unittest
+@safe unittest
 {
     import std.algorithm.comparison : equal;
 
@@ -2356,7 +2390,7 @@ if (isInputRange!Range)
 }
 
 /// Showing usage with unary predicate:
-/* FIXME: pure @safe nothrow*/ @system unittest
+/* FIXME: pure nothrow*/ @safe unittest
 {
     import std.algorithm.comparison : equal;
     import std.range.primitives;
@@ -2755,7 +2789,7 @@ if (isInputRange!Range)
 
 
 // https://issues.dlang.org/show_bug.cgi?id=13805
-@system unittest
+@safe unittest
 {
     [""].map!((s) => s).chunkBy!((x, y) => true);
 }
@@ -2790,9 +2824,8 @@ if (isForwardRange!Range)
     return ChunkByImpl!(not!pred, not!pred, GroupingOpType.binaryAny, Range)(r);
 }
 
-//FIXME: these should be @safe
 ///
-nothrow pure @system unittest
+nothrow pure @safe unittest
 {
     import std.algorithm.comparison : equal;
     import std.range : dropExactly;
@@ -2816,7 +2849,7 @@ nothrow pure @system unittest
 }
 
 //ensure we don't iterate the underlying range twice
-nothrow @system unittest
+nothrow @safe unittest
 {
     import std.algorithm.comparison : equal;
     import std.math.algebraic : abs;
@@ -2827,7 +2860,7 @@ nothrow @system unittest
         static int popfrontsSoFar;
 
         auto front(){return elements[0];}
-        nothrow void popFront()
+        nothrow @safe void popFront()
         {   popfrontsSoFar++;
             elements = elements[1 .. $];
         }
@@ -2851,7 +2884,7 @@ nothrow @system unittest
 }
 
 // Issue 13595
-@system unittest
+@safe unittest
 {
     import std.algorithm.comparison : equal;
     auto r = [1, 2, 3, 4, 5, 6, 7, 8, 9].splitWhen!((x, y) => ((x*y) % 3) > 0);
@@ -2863,7 +2896,7 @@ nothrow @system unittest
     ]));
 }
 
-nothrow pure @system unittest
+nothrow pure @safe unittest
 {
     // Grouping by maximum adjacent difference:
     import std.math.algebraic : abs;
@@ -3654,10 +3687,18 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
         {
             @property auto save()
             {
-                auto r = Result(_items.save, _current.save);
+                // the null check is important if it is a class range, since null.save will segfault; issue #22359
+                // could not just compare x is y here without static if due to a compiler assertion failure
+                static if (is(typeof(null) : typeof(_current)))
+                    auto r = Result(_items.save, _current is null ? null : _current.save);
+                else
+                    auto r = Result(_items.save, _current.save);
                 static if (isBidirectional)
                 {
-                    r._currentBack = _currentBack.save;
+                    static if (is(typeof(null) : typeof(_currentBack)))
+                        r._currentBack = _currentBack is null ? null : _currentBack.save;
+                    else
+                        r._currentBack = _currentBack.save;
                     r.reachedFinalElement = reachedFinalElement;
                 }
                 return r;
@@ -3836,6 +3877,26 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
     import std.range.interfaces : inputRangeObject;
     static assert(isInputRange!(typeof(joiner([""]))));
     static assert(isForwardRange!(typeof(joiner([""]))));
+}
+
+@system unittest
+{
+    // this test is system because the virtual interface call to save
+    // is flexible and thus cannot be inferred safe automatically
+
+    // https://issues.dlang.org/show_bug.cgi?id=22359
+    import std.range;
+    ForwardRange!int bug(int[][] r)
+    {
+        import std.range : inputRangeObject;
+        import std.algorithm.iteration : map, joiner;
+
+        auto range = inputRangeObject(r);
+
+        return range.map!(a =>inputRangeObject(a)).joiner.inputRangeObject;
+    }
+    auto f = bug([[]]);
+    f.save(); // should not segfault
 }
 
 @safe unittest

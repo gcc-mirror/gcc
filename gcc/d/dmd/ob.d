@@ -43,7 +43,7 @@ import dmd.tokens;
 import dmd.visitor;
 
 import dmd.root.bitarray;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 
 /**********************************
  * Perform ownership/borrowing checks for funcdecl.

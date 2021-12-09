@@ -1,6 +1,7 @@
-
 // We use 'auto' without a function return type, so specify dialect here
 // { dg-additional-options "-std=c++14" }
+// { dg-do run { target offload_device_nonshared_as } }
+
 #include <cstdlib>
 #include <cstring>
 

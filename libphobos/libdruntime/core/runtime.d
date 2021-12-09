@@ -848,6 +848,7 @@ else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInf
         version (linux) enum enableDwarf = true;
         else version (FreeBSD) enum enableDwarf = true;
         else version (DragonFlyBSD) enum enableDwarf = true;
+        else version (OpenBSD) enum enableDwarf = true;
         else version (Darwin) enum enableDwarf = true;
         else enum enableDwarf = false;
 

@@ -11,7 +11,6 @@
 | [hash.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/hash.d)               | Calculate a hash for a byte array                                                          |
 | [longdouble.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/longdouble.d)   | 80-bit floating point number implementation in case they are not natively supported        |
 | [man.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/man.d)                 | Opens an online manual page                                                                |
-| [outbuffer.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/outbuffer.d)     | An expandable buffer in which you can write text or binary data.                           |
 | [port.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/port.d)               | Portable routines for functions that have different implementations on different platforms |
 | [region.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/region.d)           | A region allocator                                                                         |
 | [response.d](https://github.com/dlang/dmd/blob/master/src/dmd/root/response.d)       | Parse command line arguments from response files                                           |

@@ -225,7 +225,7 @@ gt_pch_nx (unsigned char& x ATTRIBUTE_UNUSED)
 void
 gt_pch_nx (unsigned char *x, gt_pointer_operator op, void *cookie)
 {
-  op (x, cookie);
+  op (x, NULL, cookie);
 }
 
 /* Handle saving and restoring the string pool for PCH.  */

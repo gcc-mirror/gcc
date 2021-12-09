@@ -18,6 +18,6 @@ struct Destructor
 
 void test()
 {
-    auto a0 = Destructor;
+    auto a0 = Destructor();
     testVariadic(1, a0);
 }

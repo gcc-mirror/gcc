@@ -53,7 +53,7 @@ import dmd.objc;
 import dmd.opover;
 import dmd.parse;
 import dmd.root.filename;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.root.rootobject;
 import dmd.sideeffect;
@@ -363,7 +363,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         assert(fd.semanticRun <= PASS.semantic2);
         fd.semanticRun = PASS.semantic2;
 
-        //printf("FuncDeclaration::semantic2 [%s] fd0 = %s %s\n", loc.toChars(), toChars(), type.toChars());
+        //printf("FuncDeclaration::semantic2 [%s] fd: %s type: %s\n", fd.loc.toChars(), fd.toChars(), fd.type ? fd.type.toChars() : "".ptr);
 
         // Only check valid functions which have a body to avoid errors
         // for multiple declarations, e.g.

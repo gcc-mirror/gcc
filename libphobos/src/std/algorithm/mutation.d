@@ -1427,7 +1427,7 @@ private void moveEmplaceImpl(T)(ref scope T target, ref return scope T source)
     {
         import std.exception : doesPointTo;
         assert(!(doesPointTo(source, source) && !hasElaborateMove!T),
-            "Cannot move object with internal pointer unless `opPostMove` is defined.");
+            "Cannot move object of type " ~ T.stringof ~ " with internal pointer unless `opPostMove` is defined.");
     }
 
     static if (is(T == struct))

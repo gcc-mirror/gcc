@@ -31,12 +31,13 @@ import dmd.func;
 import dmd.globals;
 import dmd.impcnvtab;
 import dmd.id;
+import dmd.importc;
 import dmd.init;
 import dmd.intrange;
 import dmd.mtype;
 import dmd.opover;
 import dmd.root.ctfloat;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.tokens;
 import dmd.typesem;
@@ -1445,6 +1446,29 @@ MATCH implicitConvTo(Expression e, Type t)
             if (tb.ty == Tpointer && e.e1.op == TOK.string_)
                 e.e1.accept(this);
         }
+
+        override void visit(TupleExp e)
+        {
+            result = e.type.implicitConvTo(t);
+            if (result != MATCH.nomatch)
+                return;
+
+            /* If target type is a tuple of same length, test conversion of
+             * each expression to the corresponding type in the tuple.
+             */
+            TypeTuple totuple = t.isTypeTuple();
+            if (totuple && e.exps.length == totuple.arguments.length)
+            {
+                result = MATCH.exact;
+                foreach (i, ex; *e.exps)
+                {
+                    auto to = (*totuple.arguments)[i].type;
+                    MATCH mi = ex.implicitConvTo(to);
+                    if (mi < result)
+                        result = mi;
+                }
+            }
+        }
     }
 
     scope ImplicitConvTo v = new ImplicitConvTo(t);
@@ -1476,12 +1500,8 @@ MATCH cimplicitConvTo(Expression e, Type t)
         return MATCH.convert;
     if (tb.isintegral() && typeb.ty == Tpointer) // C11 6.3.2.3-6
         return MATCH.convert;
-    if (tb.ty == Tpointer && typeb.ty == Tpointer)
-    {
-        if (tb.isTypePointer().next.ty == Tvoid ||
-            typeb.isTypePointer().next.ty == Tvoid)
-            return MATCH.convert;       // convert to/from void* C11 6.3.2.3-1
-    }
+    if (tb.ty == Tpointer && typeb.ty == Tpointer) // C11 6.3.2.3-7
+        return MATCH.convert;
 
     return implicitConvTo(e, t);
 }
@@ -2189,13 +2209,20 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 return;
             }
 
+            /* If target type is a tuple of same length, cast each expression to
+             * the corresponding type in the tuple.
+             */
+            TypeTuple totuple;
+            if (auto tt = t.isTypeTuple())
+                totuple = e.exps.length == tt.arguments.length ? tt : null;
+
             TupleExp te = e.copy().isTupleExp();
             te.e0 = e.e0 ? e.e0.copy() : null;
             te.exps = e.exps.copy();
             for (size_t i = 0; i < te.exps.dim; i++)
             {
                 Expression ex = (*te.exps)[i];
-                ex = ex.castTo(sc, t);
+                ex = ex.castTo(sc, totuple ? (*totuple.arguments)[i].type : t);
                 (*te.exps)[i] = ex;
             }
             result = te;
@@ -2821,6 +2848,13 @@ Type typeMerge(Scope* sc, TOK op, ref Expression pe1, ref Expression pe2)
     Expression e1 = pe1;
     Expression e2 = pe2;
 
+    // ImportC: do array/function conversions
+    if (sc)
+    {
+        e1 = e1.arrayFuncConv(sc);
+        e2 = e2.arrayFuncConv(sc);
+    }
+
     Type Lret(Type result)
     {
         pe1 = e1;
@@ -2838,7 +2872,7 @@ Type typeMerge(Scope* sc, TOK op, ref Expression pe1, ref Expression pe2)
         return result;
     }
 
-    /// Converts one of the expression too the other
+    /// Converts one of the expression to the other
     Type convert(ref Expression from, Type to)
     {
         from = from.castTo(sc, to);
@@ -2855,6 +2889,22 @@ Type typeMerge(Scope* sc, TOK op, ref Expression pe1, ref Expression pe2)
 
     Type t1b = e1.type.toBasetype();
     Type t2b = e2.type.toBasetype();
+
+    if (sc && sc.flags & SCOPE.Cfile)
+    {
+        // Integral types can be implicitly converted to pointers
+        if ((t1b.ty == Tpointer) != (t2b.ty == Tpointer))
+        {
+            if (t1b.isintegral())
+            {
+                return convert(e1, t2b);
+            }
+            else if (t2b.isintegral())
+            {
+                return convert(e2, t1b);
+            }
+        }
+    }
 
     if (op != TOK.question || t1b.ty != t2b.ty && (t1b.isTypeBasic() && t2b.isTypeBasic()))
     {
@@ -3132,6 +3182,14 @@ Lagain:
     Lcc:
         while (1)
         {
+            MATCH i1woat = MATCH.exact;
+            MATCH i2woat = MATCH.exact;
+
+            if (auto t2c = t2.isTypeClass())
+                i1woat = t2c.implicitConvToWithoutAliasThis(t1);
+            if (auto t1c = t1.isTypeClass())
+                i2woat = t1c.implicitConvToWithoutAliasThis(t2);
+
             MATCH i1 = e2.implicitConvTo(t1);
             MATCH i2 = e1.implicitConvTo(t2);
 
@@ -3144,10 +3202,25 @@ Lagain:
                     i2 = MATCH.nomatch;
             }
 
-            if (i2)
+            // Match but without 'alias this' on classes
+            if (i2 && i2woat)
                 return coerce(t2);
-            if (i1)
+            if (i1 && i1woat)
                 return coerce(t1);
+
+            // Here use implicitCastTo() instead of castTo() to try 'alias this' on classes
+            Type coerceImplicit(Type towards)
+            {
+                e1 = e1.implicitCastTo(sc, towards);
+                e2 = e2.implicitCastTo(sc, towards);
+                return Lret(towards);
+            }
+
+            // Implicit conversion with 'alias this'
+            if (i2)
+                return coerceImplicit(t2);
+            if (i1)
+                return coerceImplicit(t1);
 
             if (t1.ty == Tclass && t2.ty == Tclass)
             {
@@ -3257,29 +3330,26 @@ Lagain:
         }
     }
 
-    if (t1.ty == Tstruct || t2.ty == Tstruct)
+    if (t1.ty == Tstruct && t1.isTypeStruct().sym.aliasthis)
     {
-        if (t1.ty == Tstruct && t1.isTypeStruct().sym.aliasthis)
-        {
-            if (isRecursiveAliasThis(att1, e1.type))
-                return null;
-            //printf("att tmerge(s || s) e1 = %s\n", e1.type.toChars());
-            e1 = resolveAliasThis(sc, e1);
-            t1 = e1.type;
-            t = t1;
-            goto Lagain;
-        }
-        if (t2.ty == Tstruct && t2.isTypeStruct().sym.aliasthis)
-        {
-            if (isRecursiveAliasThis(att2, e2.type))
-                return null;
-            //printf("att tmerge(s || s) e2 = %s\n", e2.type.toChars());
-            e2 = resolveAliasThis(sc, e2);
-            t2 = e2.type;
-            t = t2;
-            goto Lagain;
-        }
-        return null;
+        if (isRecursiveAliasThis(att1, e1.type))
+            return null;
+        //printf("att tmerge(s || s) e1 = %s\n", e1.type.toChars());
+        e1 = resolveAliasThis(sc, e1);
+        t1 = e1.type;
+        t = t1;
+        goto Lagain;
+    }
+
+    if (t2.ty == Tstruct && t2.isTypeStruct().sym.aliasthis)
+    {
+        if (isRecursiveAliasThis(att2, e2.type))
+            return null;
+        //printf("att tmerge(s || s) e2 = %s\n", e2.type.toChars());
+        e2 = resolveAliasThis(sc, e2);
+        t2 = e2.type;
+        t = t2;
+        goto Lagain;
     }
 
     if ((e1.op == TOK.string_ || e1.op == TOK.null_) && e1.implicitConvTo(t2))

@@ -833,11 +833,9 @@ extern (C) hash_t _aaGetHash(scope const AA* paa, scope const TypeInfo tiRaw) no
     size_t h;
     foreach (b; aa.buckets)
     {
-        if (!b.filled)
-            continue;
-        size_t[2] h2 = [keyHash(b.entry), valHash(b.entry + off)];
         // use addition here, so that hash is independent of element order
-        h += hashOf(h2);
+        if (b.filled)
+            h += hashOf(valHash(b.entry + off), keyHash(b.entry));
     }
 
     return h;

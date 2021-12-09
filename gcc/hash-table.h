@@ -1206,7 +1206,7 @@ template<typename D>
 static inline void
 gt_pch_nx (hash_table<D> *h, gt_pointer_operator op, void *cookie)
 {
-  op (&h->m_entries, cookie);
+  op (&h->m_entries, NULL, cookie);
 }
 
 template<typename H>

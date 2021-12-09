@@ -735,13 +735,13 @@ struct JSONValue
      * Tests wether a key can be found in an object.
      *
      * Returns:
-     *      when found, the `const(JSONValue)*` that matches to the key,
+     *      when found, the `inout(JSONValue)*` that matches to the key,
      *      otherwise `null`.
      *
      * Throws: `JSONException` if the right hand side argument `JSONType`
      * is not `object`.
      */
-    auto opBinaryRight(string op : "in")(string k) const @safe
+    inout(JSONValue)* opBinaryRight(string op : "in")(string k) inout @safe
     {
         return k in this.objectNoRef;
     }
@@ -750,6 +750,8 @@ struct JSONValue
     {
         JSONValue j = [ "language": "D", "author": "walter" ];
         string a = ("author" in j).str;
+        *("author" in j) = "Walter";
+        assert(j["author"].str == "Walter");
     }
 
     bool opEquals(const JSONValue rhs) const @nogc nothrow pure @safe

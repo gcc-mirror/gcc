@@ -108,7 +108,21 @@ struct Visibility
 
 /* State of symbol in winding its way through the passes of the compiler
  */
-enum PASS
+enum class PASS : uint8_t
+{
+    init,           // initial state
+    semantic,       // semantic() started
+    semanticdone,   // semantic() done
+    semantic2,      // semantic2() started
+    semantic2done,  // semantic2() done
+    semantic3,      // semantic3() started
+    semantic3done,  // semantic3() done
+    inline_,         // inline started
+    inlinedone,     // inline done
+    obj             // toObjFile() run
+};
+
+enum
 {
     PASSinit,           // initial state
     PASSsemantic,       // semantic() started
@@ -145,8 +159,10 @@ struct FieldState
     unsigned offset;
 
     unsigned fieldOffset;
+    unsigned fieldSize;
+    unsigned fieldAlign;
     unsigned bitOffset;
-    unsigned fieldSice;
+
     bool inFlight;
 };
 

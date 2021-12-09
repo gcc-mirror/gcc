@@ -2948,12 +2948,12 @@ if (isIntegral!T || isSomeChar!T || isBoolean!T)
 private union EndianSwapper(T)
 if (canSwapEndianness!T)
 {
-    Unqual!T value;
+    T value;
     ubyte[T.sizeof] array;
 
-    static if (is(FloatingPointTypeOf!(Unqual!T) == float))
+    static if (is(immutable FloatingPointTypeOf!(T) == immutable float))
         uint  intValue;
-    else static if (is(FloatingPointTypeOf!(Unqual!T) == double))
+    else static if (is(immutable FloatingPointTypeOf!(T) == immutable double))
         ulong intValue;
 
 }

@@ -72,17 +72,32 @@ extern (C++) final class AliasThis : Dsymbol
     }
 }
 
-Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false)
+/*************************************
+ * Find the `alias this` symbol of e's type.
+ * Params:
+ *      sc = context
+ *      e = expression forming the `this`
+ *      gag = if true do not print errors, return null instead
+ *      findOnly = don't do further processing like resolving properties,
+ *                 i.e. just return plain dotExp() result.
+ * Returns:
+ *      Expression that is `e.aliasthis`
+ */
+Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool findOnly = false)
 {
+    import dmd.typesem : dotExp;
     for (AggregateDeclaration ad = isAggregate(e.type); ad;)
     {
         if (ad.aliasthis)
         {
-            uint olderrors = gag ? global.startGagging() : 0;
             Loc loc = e.loc;
             Type tthis = (e.op == TOK.type ? e.type : null);
-            e = new DotIdExp(loc, e, ad.aliasthis.ident);
-            e = e.expressionSemantic(sc);
+            const flags = DotExpFlag.noAliasThis | (gag ? DotExpFlag.gag : 0);
+            uint olderrors = gag ? global.startGagging() : 0;
+            e = dotExp(e.type, sc, e, ad.aliasthis.ident, flags);
+            if (!e || findOnly)
+                return gag && global.endGagging(olderrors) ? null : e;
+
             if (tthis && ad.aliasthis.sym.needThis())
             {
                 if (e.op == TOK.variable)

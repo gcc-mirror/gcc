@@ -67,7 +67,7 @@ import dmd.initsem;
 import dmd.mtype;
 import dmd.opover;
 import dmd.root.array;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.semantic2;
 import dmd.semantic3;
@@ -985,9 +985,9 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                 buf.writenl();
                 buf.writestring("       ");
             }
-            buf.write((*parameters)[i]);
+            write(buf, (*parameters)[i]);
             buf.writestring(" = ");
-            buf.write(tiargs[i]);
+            write(buf, tiargs[i]);
         }
         // write remaining variadic arguments on the last line
         if (variadic)
@@ -998,16 +998,16 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                 buf.writenl();
                 buf.writestring("       ");
             }
-            buf.write((*parameters)[end]);
+            write(buf, (*parameters)[end]);
             buf.writestring(" = ");
             buf.writeByte('(');
             if (cast(int)tiargs.length - end > 0)
             {
-                buf.write(tiargs[end]);
+                write(buf, tiargs[end]);
                 foreach (j; parameters.length .. tiargs.length)
                 {
                     buf.writestring(", ");
-                    buf.write(tiargs[j]);
+                    write(buf, tiargs[j]);
                 }
             }
             buf.writeByte(')');
@@ -1919,8 +1919,15 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             /* If a semantic error occurs while doing alias this,
                              * eg purity(https://issues.dlang.org/show_bug.cgi?id=7295),
                              * just regard it as not a match.
-                             */
-                            if (auto e = resolveAliasThis(sc, farg, true))
+                             *
+                             * We also save/restore sc.func.flags to avoid messing up
+                             * attribute inference in the evaluation.
+                            */
+                            const oldflags = sc.func ? sc.func.flags : 0;
+                            auto e = resolveAliasThis(sc, farg, true);
+                            if (sc.func)
+                                sc.func.flags = oldflags;
+                            if (e)
                             {
                                 farg = e;
                                 goto Lretry;
@@ -5340,7 +5347,7 @@ extern (C++) class TemplateParameter : ASTNode
 
     abstract RootObject specialization();
 
-    abstract RootObject defaultArg(Loc instLoc, Scope* sc);
+    abstract RootObject defaultArg(const ref Loc instLoc, Scope* sc);
 
     abstract bool hasDefaultArg();
 
@@ -5422,7 +5429,7 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
         return specType;
     }
 
-    override final RootObject defaultArg(Loc instLoc, Scope* sc)
+    override final RootObject defaultArg(const ref Loc instLoc, Scope* sc)
     {
         Type t = defaultType;
         if (t)
@@ -5541,7 +5548,7 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
         return specValue;
     }
 
-    override RootObject defaultArg(Loc instLoc, Scope* sc)
+    override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
     {
         Expression e = defaultValue;
         if (e)
@@ -5640,7 +5647,7 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
         return specAlias;
     }
 
-    override RootObject defaultArg(Loc instLoc, Scope* sc)
+    override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
     {
         RootObject da = defaultAlias;
         Type ta = isType(defaultAlias);
@@ -5741,7 +5748,7 @@ extern (C++) final class TemplateTupleParameter : TemplateParameter
         return null;
     }
 
-    override RootObject defaultArg(Loc instLoc, Scope* sc)
+    override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
     {
         return null;
     }
@@ -8411,5 +8418,13 @@ private struct MATCHpair
         assert(MATCH.min <= mfa && mfa <= MATCH.max);
         this.mta = mta;
         this.mfa = mfa;
+    }
+}
+
+private void write(ref OutBuffer buf, RootObject obj)
+{
+    if (obj)
+    {
+        buf.writestring(obj.toChars());
     }
 }

@@ -610,7 +610,8 @@ public:
 
   void visit (TypeNoreturn *t)
   {
-    t->ctype = void_type_node;
+    t->ctype = noreturn_type_node;
+    TYPE_NAME (t->ctype) = get_identifier (t->toChars ());
   }
 
   /* Basic Data Types.  */
@@ -770,11 +771,17 @@ public:
 	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
-    size_t n_args = t->parameterList.length ();
+    const size_t n_args = t->parameterList.length ();
 
     for (size_t i = 0; i < n_args; i++)
       {
 	tree type = parameter_type (t->parameterList[i]);
+
+	/* Type `noreturn` is a terminator, as no other arguments can possibly
+	   be evaluated after it.  */
+	if (type == noreturn_type_node)
+	  break;
+
 	fnparams = chainon (fnparams, build_tree_list (0, type));
       }
 
@@ -796,6 +803,10 @@ public:
     t->ctype = build_function_type (fntype, fnparams);
     TYPE_LANG_SPECIFIC (t->ctype) = build_lang_type (t);
     d_keep (t->ctype);
+
+    /* Qualify function types that have the type `noreturn` as volatile.  */
+    if (fntype == noreturn_type_node)
+      t->ctype = build_qualified_type (t->ctype, TYPE_QUAL_VOLATILE);
 
     /* Handle any special support for calling conventions.  */
     switch (t->linkage)
@@ -995,8 +1006,8 @@ public:
 	   the context or laying out fields as those types may make
 	   recursive references to this type.  */
 	unsigned structsize = t->sym->structsize;
-	unsigned alignsize = (t->sym->alignment != STRUCTALIGN_DEFAULT)
-	  ? t->sym->alignment : t->sym->alignsize;
+	unsigned alignsize = t->sym->alignment.isDefault ()
+	  ? t->sym->alignsize : t->sym->alignment.get ();
 
 	TYPE_SIZE (t->ctype) = bitsize_int (structsize * BITS_PER_UNIT);
 	TYPE_SIZE_UNIT (t->ctype) = size_int (structsize);

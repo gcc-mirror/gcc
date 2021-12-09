@@ -89,6 +89,9 @@ D_FRONTEND_OBJS = \
 	d/canthrow.o \
 	d/chkformat.o \
 	d/clone.o \
+	d/common-file.o \
+	d/common-outbuffer.o \
+	d/common-string.o \
 	d/compiler.o \
 	d/complex.o \
 	d/cond.o \
@@ -120,6 +123,7 @@ D_FRONTEND_OBJS = \
 	d/escape.o \
 	d/expression.o \
 	d/expressionsem.o \
+	d/file_manager.o \
 	d/foreachvar.o \
 	d/func.o \
 	d/globals.o \
@@ -131,6 +135,7 @@ D_FRONTEND_OBJS = \
 	d/identifier.o \
 	d/impcnvtab.o \
 	d/imphint.o \
+	d/importc.o \
 	d/init.o \
 	d/initsem.o \
 	d/inline.o \
@@ -157,7 +162,6 @@ D_FRONTEND_OBJS = \
 	d/root-filename.o \
 	d/root-hash.o \
 	d/root-longdouble.o \
-	d/root-outbuffer.o \
 	d/root-port.o \
 	d/root-region.o \
 	d/root-rmem.o \
@@ -390,6 +394,10 @@ D_INCLUDES = -I$(srcdir)/d -J$(srcdir)/d/dmd -J$(srcdir)/d/dmd/res
 
 # Override build rules for D frontend.
 d/%.o: d/dmd/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
+
+d/common-%.o: d/dmd/common/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)
 

@@ -1196,8 +1196,8 @@ public:
       +/
     template split(units...)
         if (allAreAcceptedUnits!("weeks", "days", "hours", "minutes", "seconds",
-                                "msecs", "usecs", "hnsecs", "nsecs")(units) &&
-           unitsAreInDescendingOrder(units))
+                                "msecs", "usecs", "hnsecs", "nsecs")([units]) &&
+           unitsAreInDescendingOrder([units]))
     {
         /++ Ditto +/
         void split(Args...)(out Args args) const nothrow @nogc
@@ -3709,7 +3709,7 @@ unittest
 /+
     Whether all of the given strings are among the accepted strings.
   +/
-bool allAreAcceptedUnits(acceptedUnits...)(string[] units...)
+bool allAreAcceptedUnits(acceptedUnits...)(scope string[] units)
 {
     foreach (unit; units)
     {
@@ -3730,12 +3730,12 @@ bool allAreAcceptedUnits(acceptedUnits...)(string[] units...)
 
 unittest
 {
-    assert(allAreAcceptedUnits!("hours", "seconds")("seconds", "hours"));
-    assert(!allAreAcceptedUnits!("hours", "seconds")("minutes", "hours"));
-    assert(!allAreAcceptedUnits!("hours", "seconds")("seconds", "minutes"));
-    assert(allAreAcceptedUnits!("days", "hours", "minutes", "seconds", "msecs")("minutes"));
-    assert(!allAreAcceptedUnits!("days", "hours", "minutes", "seconds", "msecs")("usecs"));
-    assert(!allAreAcceptedUnits!("days", "hours", "minutes", "seconds", "msecs")("secs"));
+    assert(allAreAcceptedUnits!("hours", "seconds")(["seconds", "hours"]));
+    assert(!allAreAcceptedUnits!("hours", "seconds")(["minutes", "hours"]));
+    assert(!allAreAcceptedUnits!("hours", "seconds")(["seconds", "minutes"]));
+    assert(allAreAcceptedUnits!("days", "hours", "minutes", "seconds", "msecs")(["minutes"]));
+    assert(!allAreAcceptedUnits!("days", "hours", "minutes", "seconds", "msecs")(["usecs"]));
+    assert(!allAreAcceptedUnits!("days", "hours", "minutes", "seconds", "msecs")(["secs"]));
 }
 
 
@@ -3743,7 +3743,7 @@ unittest
     Whether the given time unit strings are arranged in order from largest to
     smallest.
   +/
-bool unitsAreInDescendingOrder(string[] units...)
+bool unitsAreInDescendingOrder(scope string[] units)
 {
     if (units.length <= 1)
         return true;
@@ -3783,13 +3783,13 @@ bool unitsAreInDescendingOrder(string[] units...)
 
 unittest
 {
-    assert(unitsAreInDescendingOrder("years", "months", "weeks", "days", "hours", "minutes",
-                                     "seconds", "msecs", "usecs", "hnsecs", "nsecs"));
-    assert(unitsAreInDescendingOrder("weeks", "hours", "msecs"));
-    assert(unitsAreInDescendingOrder("days", "hours", "minutes"));
-    assert(unitsAreInDescendingOrder("hnsecs"));
-    assert(!unitsAreInDescendingOrder("days", "hours", "hours"));
-    assert(!unitsAreInDescendingOrder("days", "hours", "days"));
+    assert(unitsAreInDescendingOrder(["years", "months", "weeks", "days", "hours", "minutes",
+                                     "seconds", "msecs", "usecs", "hnsecs", "nsecs"]));
+    assert(unitsAreInDescendingOrder(["weeks", "hours", "msecs"]));
+    assert(unitsAreInDescendingOrder(["days", "hours", "minutes"]));
+    assert(unitsAreInDescendingOrder(["hnsecs"]));
+    assert(!unitsAreInDescendingOrder(["days", "hours", "hours"]));
+    assert(!unitsAreInDescendingOrder(["days", "hours", "days"]));
 }
 
 version (Darwin)

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "cfghooks.h"
 #include "cfgloop.h"
+#include "tree-eh.h"
 #include "diagnostic.h"
 #include "intl.h"
 
@@ -359,6 +360,24 @@ make_pass_harden_conditional_branches (gcc::context *ctxt)
   return new pass_harden_conditional_branches (ctxt);
 }
 
+/* Return the fallthru edge of a block whose other edge is an EH
+   edge.  */
+static inline edge
+non_eh_succ_edge (basic_block bb)
+{
+  gcc_checking_assert (EDGE_COUNT (bb->succs) == 2);
+
+  edge ret = find_fallthru_edge (bb->succs);
+
+  int eh_idx = EDGE_SUCC (bb, 0) == ret;
+  edge eh = EDGE_SUCC (bb, eh_idx);
+
+  gcc_checking_assert (!(ret->flags & EDGE_EH)
+		       && (eh->flags & EDGE_EH));
+
+  return ret;
+}
+
 /* Harden boolean-yielding compares in FUN.  */
 
 unsigned int
@@ -449,7 +468,11 @@ pass_harden_compares::execute (function *fun)
 	if (VECTOR_TYPE_P (TREE_TYPE (op1)))
 	  continue;
 
-	gcc_checking_assert (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE);
+	/* useless_type_conversion_p enables conversions from 1-bit
+	   integer types to boolean to be discarded.  */
+	gcc_checking_assert (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE
+			     || (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+				 && TYPE_PRECISION (TREE_TYPE (lhs)) == 1));
 
 	tree rhs = copy_ssa_name (lhs);
 
@@ -459,6 +482,20 @@ pass_harden_compares::execute (function *fun)
 	   block after debug stmts, so as to make sure the split block
 	   won't be debug stmts only.  */
 	gsi_next_nondebug (&gsi_split);
+
+	bool throwing_compare_p = stmt_ends_bb_p (asgn);
+	if (throwing_compare_p)
+	  {
+	    basic_block nbb = split_edge (non_eh_succ_edge
+					  (gimple_bb (asgn)));
+	    gsi_split = gsi_start_bb (nbb);
+
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Splitting non-EH edge from block %i into %i"
+		       " after a throwing compare\n",
+		       gimple_bb (asgn)->index, nbb->index);
+	  }
 
 	bool same_p = (op1 == op2);
 	op1 = detach_value (loc, &gsi_split, op1);
@@ -473,17 +510,46 @@ pass_harden_compares::execute (function *fun)
 	if (!gsi_end_p (gsi_split))
 	  {
 	    gsi_prev (&gsi_split);
-	    split_block (bb, gsi_stmt (gsi_split));
+	    basic_block obb = gsi_bb (gsi_split);
+	    basic_block nbb = split_block (obb, gsi_stmt (gsi_split))->dest;
 	    gsi_next (&gsi_split);
 	    gcc_checking_assert (gsi_end_p (gsi_split));
 
 	    single_succ_edge (bb)->goto_locus = loc;
 
 	    if (dump_file)
-	      fprintf (dump_file, "Splitting block %i\n", bb->index);
+	      fprintf (dump_file,
+		       "Splitting block %i into %i"
+		       " before the conditional trap branch\n",
+		       obb->index, nbb->index);
 	  }
 
-	gcc_checking_assert (single_succ_p (bb));
+	/* If the check assignment must end a basic block, we can't
+	   insert the conditional branch in the same block, so split
+	   the block again, and prepare to insert the conditional
+	   branch in the new block.
+
+	   Also assign an EH region to the compare.  Even though it's
+	   unlikely that the hardening compare will throw after the
+	   original compare didn't, the compiler won't even know that
+	   it's the same compare operands, so add the EH edge anyway.  */
+	if (throwing_compare_p)
+	  {
+	    add_stmt_to_eh_lp (asgnck, lookup_stmt_eh_lp (asgn));
+	    make_eh_edges (asgnck);
+
+	    basic_block nbb = split_edge (non_eh_succ_edge
+					  (gimple_bb (asgnck)));
+	    gsi_split = gsi_start_bb (nbb);
+
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Splitting non-EH edge from block %i into %i after"
+		       " the newly-inserted reversed throwing compare\n",
+		       gimple_bb (asgnck)->index, nbb->index);
+	  }
+
+	gcc_checking_assert (single_succ_p (gsi_bb (gsi_split)));
 
 	insert_check_and_trap (loc, &gsi_split, EDGE_TRUE_VALUE,
 			       EQ_EXPR, lhs, rhs);

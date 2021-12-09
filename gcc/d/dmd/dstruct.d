@@ -16,6 +16,7 @@ module dmd.dstruct;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
+import dmd.attrib;
 import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
@@ -127,7 +128,7 @@ extern (C++) void semanticTypeInfo(Scope* sc, Type t)
          */
         if (!sd.members)
             return; // opaque struct
-        if (!sd.xeq && !sd.xcmp && !sd.postblit && !sd.dtor && !sd.xhash && !search_toString(sd))
+        if (!sd.xeq && !sd.xcmp && !sd.postblit && !sd.tidtor && !sd.xhash && !search_toString(sd))
             return; // none of TypeInfo-specific members
 
         // If the struct is in a non-root module, run semantic3 to get
@@ -232,7 +233,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
     }
 
-    static StructDeclaration create(Loc loc, Identifier id, bool inObject)
+    static StructDeclaration create(const ref Loc loc, Identifier id, bool inObject)
     {
         return new StructDeclaration(loc, id, inObject);
     }
@@ -297,22 +298,46 @@ extern (C++) class StructDeclaration : AggregateDeclaration
             return;
         }
 
-        // 0 sized struct's are set to 1 byte
         if (structsize == 0)
         {
             hasNoFields = true;
             alignsize = 1;
-            if (classKind != classKind.c) // C gets a struct size of 0
-                structsize = 1;
+
+            // A fine mess of what size a zero sized struct should be
+            final switch (classKind)
+            {
+                case ClassKind.d:
+                case ClassKind.cpp:
+                    structsize = 1;
+                    break;
+
+                case ClassKind.c:
+                case ClassKind.objc:
+                    if (target.c.bitFieldStyle == TargetC.BitFieldStyle.MS)
+                    {
+                        /* Undocumented MS behavior for:
+                         *   struct S { int :0; };
+                         */
+                        structsize = 4;
+                    }
+                    else if (target.c.bitFieldStyle == TargetC.BitFieldStyle.DM)
+                    {
+                        structsize = 0;
+                        alignsize = 0;
+                    }
+                    else
+                        structsize = 0;
+                    break;
+            }
         }
 
         // Round struct size up to next alignsize boundary.
         // This will ensure that arrays of structs will get their internals
         // aligned properly.
-        if (alignment == STRUCTALIGN_DEFAULT)
+        if (alignment.isDefault() || alignment.isPack())
             structsize = (structsize + alignsize - 1) & ~(alignsize - 1);
         else
-            structsize = (structsize + alignment - 1) & ~(alignment - 1);
+            structsize = (structsize + alignment.get() - 1) & ~(alignment.get() - 1);
 
         sizeok = Sizeok.done;
 

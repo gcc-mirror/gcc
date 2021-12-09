@@ -281,17 +281,14 @@ else version (GENERIC_IO)
     nothrow:
     @nogc:
 
-    private int _FPUTC(int c, _iobuf* fp) { return fputc(c, cast(shared) fp); }
-    private int _FPUTWC(wchar_t c, _iobuf* fp)
+    extern (C) private
     {
-        import core.stdc.wchar_ : fputwc;
-        return fputwc(c, cast(shared) fp);
-    }
-    private int _FGETC(_iobuf* fp) { return fgetc(cast(shared) fp); }
-    private int _FGETWC(_iobuf* fp)
-    {
-        import core.stdc.wchar_ : fgetwc;
-        return fgetwc(cast(shared) fp);
+        static import core.stdc.wchar_;
+
+        pragma(mangle, fputc.mangleof) int _FPUTC(int c, _iobuf* fp);
+        pragma(mangle, core.stdc.wchar_.fputwc.mangleof) int _FPUTWC(wchar_t c, _iobuf* fp);
+        pragma(mangle, fgetc.mangleof) int _FGETC(_iobuf* fp);
+        pragma(mangle, core.stdc.wchar_.fgetwc.mangleof) int _FGETWC(_iobuf* fp);
     }
 
     version (Posix)
@@ -307,27 +304,19 @@ else version (GENERIC_IO)
     // @@@DEPRECATED_2.107@@@
     deprecated("internal function fputc_unlocked was unintentionally available "
                ~ "from std.stdio and will be removed afer 2.107")
-    int fputc_unlocked(int c, _iobuf* fp) { return fputc(c, cast(shared) fp); }
+    extern (C) pragma(mangle, fputc.mangleof) int fputc_unlocked(int c, _iobuf* fp);
     // @@@DEPRECATED_2.107@@@
     deprecated("internal function fputwc_unlocked was unintentionally available "
                ~ "from std.stdio and will be removed afer 2.107")
-    int fputwc_unlocked(wchar_t c, _iobuf* fp)
-    {
-        import core.stdc.wchar_ : fputwc;
-        return fputwc(c, cast(shared) fp);
-    }
+    extern (C) pragma(mangle, core.stdc.wchar_.fputwc.mangleof) int fputwc_unlocked(wchar_t c, _iobuf* fp);
     // @@@DEPRECATED_2.107@@@
     deprecated("internal function fgetc_unlocked was unintentionally available "
                ~ "from std.stdio and will be removed afer 2.107")
-    int fgetc_unlocked(_iobuf* fp) { return fgetc(cast(shared) fp); }
+    extern (C) pragma(mangle, fgetc.mangleof) int fgetc_unlocked(_iobuf* fp);
     // @@@DEPRECATED_2.107@@@
     deprecated("internal function fgetwc_unlocked was unintentionally available "
                ~ "from std.stdio and will be removed afer 2.107")
-    int fgetwc_unlocked(_iobuf* fp)
-    {
-        import core.stdc.wchar_ : fgetwc;
-        return fgetwc(cast(shared) fp);
-    }
+    extern (C) pragma(mangle, core.stdc.wchar_.fgetwc.mangleof) int fgetwc_unlocked(_iobuf* fp);
 
     // @@@DEPRECATED_2.107@@@
     deprecated("internal alias FPUTC was unintentionally available from "
@@ -361,6 +350,16 @@ else version (GENERIC_IO)
 else
 {
     static assert(0, "unsupported C I/O system");
+}
+
+private extern (C) @nogc nothrow
+{
+    pragma(mangle, _FPUTC.mangleof) int trustedFPUTC(int ch, _iobuf* h) @trusted;
+
+    version (DIGITAL_MARS_STDIO)
+        pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(int ch, _iobuf* h) @trusted;
+    else
+        pragma(mangle, _FPUTWC.mangleof) int trustedFPUTWC(wchar_t ch, _iobuf* h) @trusted;
 }
 
 static if (__traits(compiles, core.sys.posix.stdio.getdelim))
@@ -3183,16 +3182,7 @@ is empty, throws an `Exception`. In case of an I/O error throws
         /// ditto
         void put(C)(scope C c) @safe if (isSomeChar!C || is(C : const(ubyte)))
         {
-            import std.traits : Parameters;
             import std.utf : decodeFront, encode, stride;
-            static auto trustedFPUTC(int ch, _iobuf* h) @trusted
-            {
-                return _FPUTC(ch, h);
-            }
-            static auto trustedFPUTWC(Parameters!_FPUTWC[0] ch, _iobuf* h) @trusted
-            {
-                return _FPUTWC(ch, h);
-            }
 
             static if (c.sizeof == 1)
             {

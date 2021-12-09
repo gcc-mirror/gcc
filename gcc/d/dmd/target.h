@@ -63,7 +63,8 @@ struct TargetC
     enum class BitFieldStyle : unsigned char
     {
         Unspecified,
-        Dm_Ms,                // Digital Mars and Microsoft C compilers
+        DM,                   // Digital Mars 32 bit C compiler
+        MS,                   // Microsoft 32 and 64 bit C compilers
                               // https://docs.microsoft.com/en-us/cpp/c-language/c-bit-fields?view=msvc-160
                               // https://docs.microsoft.com/en-us/cpp/cpp/cpp-bit-fields?view=msvc-160
         Gcc_Clang,            // gcc and clang

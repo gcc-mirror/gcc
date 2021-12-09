@@ -16,7 +16,7 @@ import core.stdc.string;
 import dmd.doc;
 import dmd.errors;
 import dmd.globals;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 
 extern (C++) struct MacroTable

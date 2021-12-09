@@ -1498,10 +1498,10 @@ package(std) string searchPathFor(scope const(char)[] executable)
     @safe
 {
     import std.algorithm.iteration : splitter;
-    import std.conv : text;
+    import std.conv : to;
     import std.path : chainPath;
 
-    string result;
+    typeof(return) result;
 
     environment.getImpl("PATH",
         (scope const(char)[] path)
@@ -1514,7 +1514,7 @@ package(std) string searchPathFor(scope const(char)[] executable)
                 auto execPath = chainPath(dir, executable);
                 if (isExecutable(execPath))
                 {
-                    result = text(execPath);
+                    result = execPath.to!(typeof(result));
                     return;
                 }
             }
@@ -1580,6 +1580,7 @@ private void setCLOEXEC(int fd, bool on) nothrow @nogc
 // calls, but we make do...
 version (Posix) @system unittest
 {
+    import core.stdc.errno : errno;
     import core.sys.posix.fcntl : open, O_RDONLY;
     import core.sys.posix.unistd : close;
     import std.algorithm.searching : canFind, findSplitBefore;
@@ -1594,7 +1595,20 @@ version (Posix) @system unittest
     scope(exit) std.file.rmdirRecurse(directory);
     auto path = buildPath(directory, "tmp");
     std.file.write(path, null);
+    errno = 0;
     auto fd = open(path.tempCString, O_RDONLY);
+    if (fd == -1)
+    {
+        import core.stdc.string : strerror;
+        import std.stdio : stderr;
+        import std.string : fromStringz;
+
+        // For the CI logs
+        stderr.writefln("%s: could not open '%s': %s",
+            __FUNCTION__, path, strerror(errno).fromStringz);
+        // TODO: should we retry here instead?
+        return;
+    }
     scope(exit) close(fd);
 
     // command >&2 (or any other number) checks whethether that number
@@ -1642,7 +1656,12 @@ version (Posix) @system unittest
         if (lsofRes.status == 0)
         {
             assert(!lsofRes.output.canFind(path));
-            assert(execute(lsof.path, null, Config.inheritFDs).output.canFind(path));
+            auto lsofOut = execute(lsof.path, null, Config.inheritFDs).output;
+            if (!lsofOut.canFind(path))
+            {
+                std.stdio.stderr.writeln(__FILE__, ':', __LINE__,
+                    ": Warning: unexpected lsof output:", lsofOut);
+            }
             return;
         }
 

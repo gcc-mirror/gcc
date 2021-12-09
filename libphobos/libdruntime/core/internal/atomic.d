@@ -104,7 +104,7 @@ version (DigitalMars)
                             pop RBX;
                             ret;
                         }
-                    }, SrcPtr, RetPtr));
+                    }, [SrcPtr, RetPtr]));
                 }
                 else
                 {
@@ -139,7 +139,7 @@ version (DigitalMars)
                         mov %0, src;
                         lock; cmpxchg [%0], %1;
                     }
-                }, SrcReg, ZeroReg, ResReg));
+                }, [SrcReg, ZeroReg, ResReg]));
             }
             else version (D_InlineAsm_X86_64)
             {
@@ -159,7 +159,7 @@ version (DigitalMars)
                         lock; cmpxchg [%0], %1;
                         ret;
                     }
-                }, SrcReg, ZeroReg, ResReg));
+                }, [SrcReg, ZeroReg, ResReg]));
             }
         }
         else
@@ -252,7 +252,7 @@ version (DigitalMars)
                     mov %0, dest;
                     lock; xadd[%0], %1;
                 }
-            }, DestReg, ValReg));
+            }, [DestReg, ValReg]));
         }
         else version (D_InlineAsm_X86_64)
         {
@@ -276,7 +276,7 @@ version (DigitalMars)
     ?2                mov %2, %1;
                     ret;
                 }
-            }, DestReg, ValReg, ResReg));
+            }, [DestReg, ValReg, ResReg]));
         }
         else
             static assert (false, "Unsupported architecture.");
@@ -305,7 +305,7 @@ version (DigitalMars)
                     mov %0, dest;
                     xchg [%0], %1;
                 }
-            }, DestReg, ValReg));
+            }, [DestReg, ValReg]));
         }
         else version (D_InlineAsm_X86_64)
         {
@@ -329,7 +329,7 @@ version (DigitalMars)
     ?2                mov %2, %1;
                     ret;
                 }
-            }, DestReg, ValReg, ResReg));
+            }, [DestReg, ValReg, ResReg]));
         }
         else
             static assert (false, "Unsupported architecture.");
@@ -362,7 +362,7 @@ version (DigitalMars)
                         setz AL;
                         pop %1;
                     }
-                }, DestAddr, CmpAddr, Val, Cmp));
+                }, [DestAddr, CmpAddr, Val, Cmp]));
             }
             else static if (T.sizeof == 8)
             {
@@ -421,7 +421,7 @@ version (DigitalMars)
                         xor AL, AL;
                         ret;
                     }
-                }, DestAddr, CmpAddr, Val, Res));
+                }, [DestAddr, CmpAddr, Val, Res]));
             }
             else
             {
@@ -500,7 +500,7 @@ version (DigitalMars)
                         lock; cmpxchg [%0], %2;
                         setz AL;
                     }
-                }, DestAddr, Cmp, Val));
+                }, [DestAddr, Cmp, Val]));
             }
             else static if (T.sizeof == 8)
             {
@@ -551,7 +551,7 @@ version (DigitalMars)
                         setz AL;
                         ret;
                     }
-                }, DestAddr, Cmp, Val, AXReg));
+                }, [DestAddr, Cmp, Val, AXReg]));
             }
             else
             {
@@ -1094,7 +1094,7 @@ template needsStoreBarrier( MemoryOrder ms )
 }
 
 // this is a helper to build asm blocks
-string simpleFormat(string format, string[] args...)
+string simpleFormat(string format, scope string[] args)
 {
     string result;
     outer: while (format.length)

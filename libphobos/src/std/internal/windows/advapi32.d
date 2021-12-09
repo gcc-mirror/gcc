@@ -16,17 +16,21 @@ import core.sys.windows.winbase, core.sys.windows.winnt, core.sys.windows.winreg
 
 pragma(lib, "advapi32.lib");
 
-immutable bool isWow64;
-
-shared static this()
+@property bool isWow64()
 {
     // WOW64 is the x86 emulator that allows 32-bit Windows-based applications to run seamlessly on 64-bit Windows
     // IsWow64Process Function - Minimum supported client - Windows Vista, Windows XP with SP2
+    static int result = -1; // <0 if uninitialized, >0 if yes, ==0 if no
+    if (result >= 0)
+        return result > 0;  // short path
+    // Will do this work once per thread to avoid importing std.concurrency
+    // or doing gnarly initonce work.
     alias fptr_t = extern(Windows) BOOL function(HANDLE, PBOOL);
     auto hKernel = GetModuleHandleA("kernel32");
     auto IsWow64Process = cast(fptr_t) GetProcAddress(hKernel, "IsWow64Process");
     BOOL bIsWow64;
-    isWow64 = IsWow64Process && IsWow64Process(GetCurrentProcess(), &bIsWow64) && bIsWow64;
+    result = IsWow64Process && IsWow64Process(GetCurrentProcess(), &bIsWow64) && bIsWow64;
+    return result > 0;
 }
 
 HMODULE hAdvapi32 = null;

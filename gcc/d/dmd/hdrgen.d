@@ -44,7 +44,7 @@ import dmd.mtype;
 import dmd.nspace;
 import dmd.parse;
 import dmd.root.ctfloat;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rootobject;
 import dmd.root.string;
 import dmd.statement;
@@ -909,6 +909,12 @@ public:
 
     override void visit(AttribDeclaration d)
     {
+        bool hasSTC;
+        if (auto stcd = d.isStorageClassDeclaration)
+        {
+            hasSTC = stcToBuffer(buf, stcd.stc);
+        }
+
         if (!d.decl)
         {
             buf.writeByte(';');
@@ -918,10 +924,12 @@ public:
         if (d.decl.dim == 0 || (hgs.hdrgen && d.decl.dim == 1 && (*d.decl)[0].isUnitTestDeclaration()))
         {
             // hack for bugzilla 8081
+            if (hasSTC) buf.writeByte(' ');
             buf.writestring("{}");
         }
         else if (d.decl.dim == 1)
         {
+            if (hasSTC) buf.writeByte(' ');
             (*d.decl)[0].accept(this);
             return;
         }
@@ -941,8 +949,6 @@ public:
 
     override void visit(StorageClassDeclaration d)
     {
-        if (stcToBuffer(buf, d.stc))
-            buf.writeByte(' ');
         visit(cast(AttribDeclaration)d);
     }
 
@@ -1324,11 +1330,10 @@ public:
         if (d.ident)
         {
             buf.writestring(d.ident.toString());
-            buf.writeByte(' ');
         }
         if (d.memtype)
         {
-            buf.writestring(": ");
+            buf.writestring(" : ");
             typeToBuffer(d.memtype, null, buf, hgs);
         }
         if (!d.members)
@@ -2362,7 +2367,10 @@ public:
     override void visit(DotIdExp e)
     {
         expToBuffer(e.e1, PREC.primary, buf, hgs);
-        buf.writeByte('.');
+        if (e.arrow)
+            buf.writestring("->");
+        else
+            buf.writeByte('.');
         buf.writestring(e.ident.toString());
     }
 

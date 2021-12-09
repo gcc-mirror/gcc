@@ -452,6 +452,7 @@ USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
 
 # Enable target overriding of this fragment, as in config/t-vxworks.
 T_GLIMITS_H = $(srcdir)/glimits.h
+T_STDINT_GCC_H = $(srcdir)/ginclude/stdint-gcc.h
 
 # The GCC to use for compiling crt*.o.
 # Usually the one we just built.
@@ -3099,7 +3100,7 @@ gcov-tool$(exeext): $(GCOV_TOOL_OBJS) $(LIBDEPS)
 # be rebuilt.
 
 # Build the include directories.
-stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(USER_H) fixinc_list
+stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(T_STDINT_GCC_H) $(USER_H) fixinc_list
 # Copy in the headers provided with gcc.
 #
 # The sed command gets just the last file name component;
@@ -3145,7 +3146,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(USER_H) fixinc_list
 	  cp $(srcdir)/ginclude/stdint-wrap.h include/stdint.h; \
 	  chmod a+r include/stdint.h; \
 	elif [ $(USE_GCC_STDINT) = provide ]; then \
-	  cp $(srcdir)/ginclude/stdint-gcc.h include/stdint.h; \
+	  cp $(T_STDINT_GCC_H) include/stdint.h; \
 	  chmod a+r include/stdint.h; \
 	fi
 	set -e; for ml in `cat fixinc_list`; do \

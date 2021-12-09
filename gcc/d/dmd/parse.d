@@ -22,7 +22,7 @@ import dmd.identifier;
 import dmd.lexer;
 import dmd.errors;
 import dmd.root.filename;
-import dmd.root.outbuffer;
+import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.root.rootobject;
 import dmd.root.string;
@@ -556,6 +556,9 @@ class Parser(AST) : Lexer
                     {
                     case TOK.leftParenthesis:
                         {
+                            // MixinType
+                            if (isDeclaration(&token, NeedDeclaratorId.mustIfDstyle, TOK.reserved, null))
+                                goto Ldeclaration;
                             // mixin(string)
                             nextToken();
                             auto exps = parseArguments();
@@ -2954,6 +2957,8 @@ class Parser(AST) : Lexer
                         // Don't call nextToken again.
                     }
                 case TOK.in_:
+                    if (global.params.vin)
+                        message(scanloc, "Usage of 'in' on parameter");
                     stc = STC.in_;
                     goto L2;
 
@@ -5406,6 +5411,11 @@ class Parser(AST) : Lexer
 
                 case TOK.scope_:
                     stc = STC.scope_;
+                    goto Lagain;
+
+                case TOK.out_:
+                    error("cannot declare `out` loop variable, use `ref` instead");
+                    stc = STC.out_;
                     goto Lagain;
 
                 case TOK.enum_:

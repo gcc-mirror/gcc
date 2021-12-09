@@ -1,3 +1,5 @@
+// { dg-do run { target offload_device_nonshared_as } }
+
 #include <cstdlib>
 #include <cstring>
 

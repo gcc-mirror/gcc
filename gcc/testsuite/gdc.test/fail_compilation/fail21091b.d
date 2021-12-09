@@ -3,7 +3,8 @@
 /*
 TEST_OUTPUT:
 ----
-fail_compilation/fail21091b.d(15): Error: module `Tid` is in file 'Tid.d' which cannot be read
+fail_compilation/fail21091b.d(16): Error: unable to read module `Tid`
+fail_compilation/fail21091b.d(16):        Expected 'Tid.d' or 'Tid/package.d' in one of the following import paths:
 import path[0] = fail_compilation
 import path[1] = $p:druntime/import$
 import path[2] = $p:phobos$

@@ -6,12 +6,12 @@
   * Authors: Brian Callahan
   */
 module core.sys.openbsd.unistd;
-public import core.sys.posix.unistd;
 
 version (OpenBSD):
 extern (C):
 nothrow:
 @nogc:
 
+int getentropy(void*, size_t);
 int pledge(const scope char*, const scope char*);
 int unveil(const scope char*, const scope char*);

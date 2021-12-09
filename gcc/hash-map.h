@@ -111,7 +111,7 @@ class GTY((user)) hash_map
       static void
       pch_nx_helper (T *&x, gt_pointer_operator op, void *cookie)
 	{
-	  op (&x, cookie);
+	  op (&x, NULL, cookie);
 	}
 
     /* The overloads below should match those in ggc.h.  */
@@ -336,7 +336,7 @@ template<typename K, typename V, typename H>
 static inline void
 gt_pch_nx (hash_map<K, V, H> *h, gt_pointer_operator op, void *cookie)
 {
-  op (&h->m_table.m_entries, cookie);
+  op (&h->m_table.m_entries, NULL, cookie);
 }
 
 enum hm_alloc { hm_heap = false, hm_ggc = true };

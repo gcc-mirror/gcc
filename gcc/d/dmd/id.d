@@ -500,6 +500,17 @@ immutable Msgtable[] msgtable =
     { "vector_size" },
     { "__func__" },
     { "noreturn" },
+    { "__pragma", "pragma" },
+    { "builtin_va_list", "__builtin_va_list" },
+    { "builtin_va_start", "__builtin_va_start" },
+    { "builtin_va_arg", "__builtin_va_arg" },
+    { "builtin_va_copy", "__builtin_va_copy" },
+    { "builtin_va_end", "__builtin_va_end" },
+    { "va_list_tag", "__va_list_tag" },
+    { "pack" },
+    { "show" },
+    { "push" },
+    { "pop" },
 ];
 
 

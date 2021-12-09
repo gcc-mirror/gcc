@@ -32,7 +32,7 @@
 #include <stdlib.h>
 
 static void * mingw32_gt_pch_get_address (size_t, int);
-static int mingw32_gt_pch_use_address (void *, size_t, int, size_t);
+static int mingw32_gt_pch_use_address (void *&, size_t, int, size_t);
 static size_t mingw32_gt_pch_alloc_granularity (void);
 
 #undef HOST_HOOKS_GT_PCH_GET_ADDRESS
@@ -118,7 +118,7 @@ mingw32_gt_pch_get_address (size_t size, int)
    if the memory is allocated but the data not loaded, return 1 if done.  */
 
 static int
-mingw32_gt_pch_use_address (void *addr, size_t size, int fd,
+mingw32_gt_pch_use_address (void *&addr, size_t size, int fd,
 			    size_t offset)
 {
   void * mmap_addr;

@@ -4,7 +4,7 @@
 * Copyright: Copyright Digital Mars 2017
 * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 *
-* Source: $(DRUNTIMESRC src/core/internal/parseoptions.d)
+* Source: $(DRUNTIMESRC core/internal/parseoptions.d)
 */
 
 module core.internal.parseoptions;

@@ -1757,7 +1757,7 @@ public:
 		/* C++ constructors return void, even though front-end semantic
 		   treats them as implicitly returning `this'.  Set returnvalue
 		   to override the result of this expression.  */
-		if (fd->isCtorDeclaration () && fd->linkage == LINK::cpp)
+		if (fd->isCtorDeclaration ())
 		  {
 		    thisexp = d_save_expr (thisexp);
 		    returnvalue = thisexp;
@@ -1846,6 +1846,11 @@ public:
       {
 	tree init = TARGET_EXPR_INITIAL (cleanup);
 	TARGET_EXPR_INITIAL (cleanup) = compound_expr (init, exp);
+
+	/* Keep the return value outside the TARGET_EXPR.  */
+	if (returnvalue != NULL_TREE)
+	  cleanup = compound_expr (cleanup, TREE_OPERAND (exp, 1));
+
 	exp = cleanup;
       }
 
@@ -1856,7 +1861,7 @@ public:
 
   void visit (DelegateExp *e)
   {
-    if (e->func->semanticRun == PASSsemantic3done)
+    if (e->func->semanticRun == PASS::semantic3done)
       {
 	/* Add the function as nested function if it belongs to this module.
 	   ie: it is a member of this module, or it is a template instance.  */
@@ -2593,7 +2598,8 @@ public:
 	/* Copy the string contents to a null terminated string.  */
 	dinteger_t length = (e->len * e->sz);
 	char *string = XALLOCAVEC (char, length + 1);
-	memcpy (string, e->string, length);
+	if (length > 0)
+	  memcpy (string, e->string, length);
 	string[length] = '\0';
 
 	/* String value and type includes the null terminator.  */

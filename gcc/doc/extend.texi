@@ -2524,7 +2524,6 @@ The following attributes are supported on most targets.
 @table @code
 @c Keep this table alphabetized by attribute name.  Treat _ as space.
 
-@item access
 @itemx access (@var{access-mode}, @var{ref-index})
 @itemx access (@var{access-mode}, @var{ref-index}, @var{size-index})
 
@@ -2598,7 +2597,9 @@ __attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (c
 The access mode @code{none} specifies that the pointer to which it applies
 is not used to access the referenced object at all.  Unless the pointer is
 null the pointed-to object must exist and have at least the size as denoted
-by the @var{size-index} argument.  The object need not be initialized.
+by the @var{size-index} argument.  When the optional @var{size-index}
+argument is omitted for an argument of @code{void*} type the actual pointer
+agument is ignored.  The referenced object need not be initialized.
 The mode is intended to be used as a means to help validate the expected
 object size, for example in functions that call @code{__builtin_object_size}.
 @xref{Object Size Checking}.

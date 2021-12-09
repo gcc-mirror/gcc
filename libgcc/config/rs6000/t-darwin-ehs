@@ -1,0 +1,5 @@
+# We need the save_world code for the EH library.
+
+LIBEHSOBJS +=  darwin-world_s.o
+
+$(LIBEHSOBJS): libef_ppc.a

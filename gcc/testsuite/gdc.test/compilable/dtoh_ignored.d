@@ -144,4 +144,7 @@ __gshared void function(ifloat) onVariableFunctionParam;
 
 __gshared ifloat delegate() onVariableDelegate;
 
-noreturn myExit() {}
+noreturn myExit()
+{
+    assert(false);
+}

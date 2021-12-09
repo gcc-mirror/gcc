@@ -2562,3 +2562,20 @@ package(std) mixin template ImplementLength(alias member)
         alias opDollar = length;
     }
 }
+
+@safe unittest
+{
+    import std.meta : AliasSeq;
+
+    foreach (alias E; AliasSeq!(noreturn, const(noreturn), immutable(noreturn) ))
+    {
+        alias R = E[];
+
+        static assert(isInputRange!R);
+        static assert(isForwardRange!R);
+        static assert(isBidirectionalRange!R);
+        static assert(isRandomAccessRange!R);
+    }
+
+    static assert(isOutputRange!(noreturn[], noreturn));
+}

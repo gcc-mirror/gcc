@@ -1,3 +1,115 @@
+2021-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DARWIN_PIE_SPEC): Add -no_pie when
+	linking mdynamic-no-pic code on macOS > 10.7.
+
+2021-12-08  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.c (pru_section_type_flags): New function.
+	(TARGET_SECTION_TYPE_FLAGS): Wire it.
+
+2021-12-08  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.c (handle_attr_preserve): Avoid calling
+	is_gimple_assign with a NULL pointer.
+
+2021-12-08  Martin Liska  <mliska@suse.cz>
+
+	* profile-count.c (profile_count::dump): Add function
+	that can dump to a provided buffer.
+	(profile_probability::dump): Likewise.
+	* profile-count.h: Likewise.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_single_loop):
+	Use dump_printf_loc infrastructure.
+	(tree_unswitch_outer_loop): Likewise.
+	(find_loop_guard): Likewise.
+	(hoist_guard): Likewise.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* gimplify.c (extract_base_bit_offset): Add 'tree *offsetp' parameter,
+	accomodate case where 'offset' return of get_inner_reference is
+	non-NULL.
+	(is_or_contains_p): Further robustify conditions.
+	(omp_target_reorder_clauses): In alloc/to/from sorting phase, also
+	move following GOMP_MAP_ALWAYS_POINTER maps along.  Add new sorting
+	phase where we make sure pointers with an attach/detach map are ordered
+	correctly.
+	(gimplify_scan_omp_clauses): Add modifications to avoid creating
+	GOMP_MAP_STRUCT and associated alloc map for attach/detach maps.
+
+2021-12-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (*extend_trunc_<mode>2_qi,
+	*extend_trunc_<mode>2_hi, *extend_trunc_di2_si): New insns.
+	Use cvt to perform sign-extension of truncation in one step.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* gimplify.c ("tree-hash-traits.h"): Add include.
+	(gimplify_scan_omp_clauses): Change struct_map_to_clause to type
+	hash_map<tree_operand, tree> *. Adjust struct map handling to handle
+	cases of *A and A->B expressions. Under !DECL_P case of
+	GOMP_CLAUSE_MAP handling, add STRIP_NOPS for indir_p case, add to
+	struct_deref_set for map(*ptr_to_struct) cases. Add MEM_REF case when
+	handling component_ref_p case. Add unshare_expr and gimplification
+	when created GOMP_MAP_STRUCT is not a DECL. Add code to add
+	firstprivate pointer for *pointer-to-struct case.
+	(gimplify_adjust_omp_clauses): Move GOMP_MAP_STRUCT removal code for
+	exit data directives code to earlier position.
+	* omp-low.c (lower_omp_target):
+	Handle GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION, and
+	GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION map kinds.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
+2021-12-08  Andrew Stubbs  <ams@codesourcery.com>
+	    Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* dwarf2cfi.c (dw_stack_pointer_regnum): Change type to struct cfa_reg.
+	(dw_frame_pointer_regnum): Likewise.
+	(new_cfi_row): Use set_by_dwreg.
+	(get_cfa_from_loc_descr): Use set_by_dwreg.  Support register spans.
+	handle DW_OP_bregx with DW_OP_breg{0-31}.  Support DW_OP_lit*,
+	DW_OP_const*, DW_OP_minus, DW_OP_shl and DW_OP_plus.
+	(lookup_cfa_1): Use set_by_dwreg.
+	(def_cfa_0): Update for cfa_reg and support register spans.
+	(reg_save): Change sreg parameter to struct cfa_reg.  Support register
+	spans.
+	(dwf_cfa_reg): New function.
+	(dwarf2out_flush_queued_reg_saves): Use dwf_cfa_reg instead of
+	dwf_regno.
+	(dwarf2out_frame_debug_def_cfa): Likewise.
+	(dwarf2out_frame_debug_adjust_cfa): Likewise.
+	(dwarf2out_frame_debug_cfa_offset): Likewise.  Update reg_save usage.
+	(dwarf2out_frame_debug_cfa_register): Likewise.
+	(dwarf2out_frame_debug_expr): Likewise.
+	(create_pseudo_cfg): Use set_by_dwreg.
+	(initial_return_save): Use set_by_dwreg and dwf_cfa_reg,
+	(create_cie_data): Use dwf_cfa_reg.
+	(execute_dwarf2_frame): Use dwf_cfa_reg.
+	(dump_cfi_row): Use set_by_dwreg.
+	* dwarf2out.c (build_span_loc, build_breg_loc): New function.
+	(build_cfa_loc): Support register spans.
+	(build_cfa_aligned_loc): Update cfa_reg usage.
+	(convert_cfa_to_fb_loc_list): Use set_by_dwreg.
+	* dwarf2out.h (struct cfa_reg): New type.
+	(struct dw_cfa_location): Use struct cfa_reg.
+	(build_span_loc): New prototype.
+
+2021-12-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/100738
+	* config/i386/sse.md
+	(*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_not_ltint):
+	Add new define_insn_and_split.
+
+2021-12-08  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/103149
+	* gimple-harden-conditionals.cc (detach_value): Use memory if
+	general regs won't do.
+
 2021-12-07  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/103438

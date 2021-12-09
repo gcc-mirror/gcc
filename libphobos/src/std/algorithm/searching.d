@@ -122,7 +122,9 @@ template all(alias pred = "a")
     if (isInputRange!Range)
     {
         static assert(is(typeof(unaryFun!pred(range.front))),
-                "`" ~ pred.stringof[1..$-1] ~ "` isn't a unary predicate function for range.front");
+                "`" ~ (isSomeString!(typeof(pred))
+                    ? pred.stringof[1..$-1] : pred.stringof)
+                ~ "` isn't a unary predicate function for range.front");
         import std.functional : not;
 
         return find!(not!(unaryFun!pred))(range).empty;
@@ -3572,6 +3574,8 @@ Params:
     r = range from which the minimal element will be selected
     seed = custom seed to use as initial element
 
+Precondition: If a seed is not given, `r` must not be empty.
+
 Returns: The minimal element of the passed-in range.
 
 Note:
@@ -3722,6 +3726,8 @@ Params:
     map = custom accessor for the comparison key
     r = range from which the maximum element will be selected
     seed = custom seed to use as initial element
+
+Precondition: If a seed is not given, `r` must not be empty.
 
 Returns: The maximal element of the passed-in range.
 

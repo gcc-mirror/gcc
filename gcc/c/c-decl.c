@@ -9040,8 +9040,8 @@ resort_field_decl_cmp (const void *x_p, const void *y_p)
   {
     tree d1 = DECL_NAME (*x);
     tree d2 = DECL_NAME (*y);
-    resort_data.new_value (&d1, resort_data.cookie);
-    resort_data.new_value (&d2, resort_data.cookie);
+    resort_data.new_value (&d1, &d1, resort_data.cookie);
+    resort_data.new_value (&d2, &d2, resort_data.cookie);
     if (d1 < d2)
       return -1;
   }

@@ -14,7 +14,7 @@ template Fields(T)
 {
     static if (is(T == struct) || is(T == union))
         alias Fields = typeof(T.tupleof[0 .. $ - __traits(isNested, T)]);
-    else static if (is(T == class))
+    else static if (is(T == class) || is(T == interface))
         alias Fields = typeof(T.tupleof);
     else
         alias Fields = AliasSeq!T;
@@ -326,7 +326,7 @@ template hasElaborateAssign(S)
 template hasIndirections(T)
 {
     static if (is(T == struct) || is(T == union))
-        enum hasIndirections = anySatisfy!(.hasIndirections, Fields!T);
+        enum hasIndirections = anySatisfy!(.hasIndirections, typeof(T.tupleof));
     else static if (is(T == E[N], E, size_t N))
         enum hasIndirections = T.sizeof && is(E == void) ? true : hasIndirections!(BaseElemOf!E);
     else static if (isFunctionPointer!T)
@@ -367,6 +367,10 @@ unittest
     static assert( hasUnsharedIndirections!(Foo*));
     static assert(!hasUnsharedIndirections!(shared(Foo)*));
     static assert(!hasUnsharedIndirections!(immutable(Foo)*));
+
+    int local;
+    struct HasContextPointer { int opCall() { return ++local; } }
+    static assert(hasIndirections!HasContextPointer);
 }
 
 enum bool isAggregateType(T) = is(T == struct) || is(T == union) ||

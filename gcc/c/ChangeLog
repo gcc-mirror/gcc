@@ -1,3 +1,27 @@
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-parser.c (struct omp_dim): New struct type for use inside
+	c_parser_omp_variable_list.
+	(c_parser_omp_variable_list): Allow multiple levels of array and
+	component accesses in array section base-pointer expression.
+	(c_parser_omp_clause_to): Set 'allow_deref' to true in call to
+	c_parser_omp_var_list_parens.
+	(c_parser_omp_clause_from): Likewise.
+	* c-typeck.c (handle_omp_array_sections_1): Extend allowed range
+	of base-pointer expressions involving INDIRECT/MEM/ARRAY_REF and
+	POINTER_PLUS_EXPR.
+	(c_finish_omp_clauses): Extend allowed ranged of expressions
+	involving INDIRECT/MEM/ARRAY_REF and POINTER_PLUS_EXPR.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* c-parser.c (c_parser_omp_clause_map): Set 'allow_deref' argument in
+	call to c_parser_omp_variable_list to 'true'.
+	* c-typeck.c (handle_omp_array_sections_1): Add strip of MEM_REF in
+	array base handling.
+	(c_finish_omp_clauses): Handle 'A->member' case in map clauses.
+
 2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Remove "gang reduction on an

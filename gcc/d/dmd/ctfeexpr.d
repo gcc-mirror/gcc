@@ -685,6 +685,11 @@ bool isSafePointerCast(Type srcPointee, Type destPointee)
     // It's OK if both are the same (modulo const)
     if (srcPointee.constConv(destPointee))
         return true;
+
+    // It's ok to cast from/to shared because CTFE is single threaded anyways
+    if (srcPointee.unSharedOf() == destPointee.unSharedOf())
+        return true;
+
     // It's OK if function pointers differ only in safe/pure/nothrow
     if (srcPointee.ty == Tfunction && destPointee.ty == Tfunction)
         return srcPointee.covariant(destPointee) == Covariant.yes ||

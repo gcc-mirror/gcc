@@ -17,7 +17,13 @@ nothrow:
 
 static if (__BSD_VISIBLE)
 {
+    void explicit_bzero(void*, size_t);
     pure void* memmem(return const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
+    void* memrchr(scope const void*, int, size_t);
+    size_t strlcat(char*, scope const char*, size_t);
+    size_t strlcpy(char*, scope const char*, size_t);
+    void strmode(int, char*);
+    char* strsep(char**, scope const char*);
     pure int timingsafe_bcmp(scope const void*, scope const void*, size_t);
     pure int timingsafe_memcmp(scope const void*, scope const void*, size_t);
 }

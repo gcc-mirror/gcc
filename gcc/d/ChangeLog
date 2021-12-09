@@ -1,3 +1,50 @@
+2021-12-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 568496d5b.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/common-file.o,
+	d/common-outbuffer.o, d/common-string.o, d/file_manager.o,
+	d/importc.o.  Remove d/root-outbuffer.o.
+	(d/common-%.o): New recipe.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	(d_build_d_type_nodes): Set noreturn_type_node.
+	* d-codegen.cc (d_build_call): Don't call function if one of the
+	arguments is type 'noreturn'.
+	(build_vthis_function): Propagate TYPE_QUAL_VOLATILE from original
+	function type.
+	* d-frontend.cc (eval_builtin): Update signature.
+	(getTypeInfoType): Likewise.
+	(toObjFile): New function.
+	* d-gimplify.cc (d_gimplify_call_expr): Always evaluate arguments from
+	left to right.
+	* d-lang.cc (d_handle_option): Handle OPT_ftransition_in.
+	(d_parse_file): Don't generate D main if it is declared in user code.
+	* d-tree.h (CALL_EXPR_ARGS_ORDERED): Remove.
+	(enum d_tree_index): Add DTI_BOTTOM_TYPE.
+	(noreturn_type_node): New.
+	* decl.cc (apply_pragma_crt): Remove.
+	(DeclVisitor::visit): Update for new front-end interface.
+	(DeclVisitor::visit (PragmaDeclaration *)): Don't handle
+	crt_constructor and crt_destructor pragmas.
+	(DeclVisitor::visit (VarDeclaration *)): Don't generate declarations
+	of type 'noreturn'.
+	(DeclVisitor::visit (FuncDeclaration *)): Stop adding parameters when
+	'noreturn' type has been encountered.
+	(get_symbol_decl): Set DECL_STATIC_CONSTRUCTOR and
+	DECL_STATIC_DESTRUCTOR on decl node if requested.
+	(aggregate_initializer_decl): Update for new front-end interface.
+	* expr.cc (ExprVisitor::visit (CallExp *)): Always use the 'this'
+	object as the result of calling any constructor function.
+	(ExprVisitor::visit): Update for new front-end interface.
+	* gdc.texi (Runtime Options): Document -fmain and -ftransition=in.
+	* lang.opt (ftransition=in): New option.
+	* modules.cc (get_internal_fn): Update for new front-end interface.
+	* types.cc (TypeVisitor::visit): Likewise.
+	(TypeVisitor::visit (TypeNoreturn *)): Return noreturn_type_node.
+	(TypeVisitor::visit (TypeFunction *)): Stop adding parameters when
+	'notreturn' type has been encountered.  Qualify function types that
+	return 'noreturn' as TYPE_QUAL_VOLATILE.
+
 2021-12-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/103520

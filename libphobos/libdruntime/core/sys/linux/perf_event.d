@@ -2073,8 +2073,6 @@ else
 
                 struct
                 {
-                        import std.bitmanip : bitfields;
-
                         /* mixin(bitfields!(ulong, "mem_rsvd", 24, ulong, "mem_snoopx", 2, ulong,
                     "mem_remote", 1, ulong, "mem_lvl_num", 4, ulong, "mem_dtlb", 7, ulong,
                     "mem_lock", 2, ulong, "mem_snoop", 5, ulong, "mem_lvl",

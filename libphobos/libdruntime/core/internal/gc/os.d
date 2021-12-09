@@ -213,46 +213,38 @@ else
    Returns:
        true if memory is scarce
 */
-// TOOD: get virtual mem sizes and current usage from OS
+// TODO: get virtual mem sizes and current usage from OS
 // TODO: compare current RSS and avail. physical memory
-version (Windows)
+bool isLowOnMem(size_t mapped) nothrow @nogc
 {
-    bool isLowOnMem(size_t mapped) nothrow @nogc
+    version (Windows)
     {
-        version (D_LP64)
+        import core.sys.windows.winbase : GlobalMemoryStatusEx, MEMORYSTATUSEX;
+
+        MEMORYSTATUSEX stat;
+        stat.dwLength = stat.sizeof;
+        const success = GlobalMemoryStatusEx(&stat) != 0;
+        assert(success, "GlobalMemoryStatusEx() failed");
+        if (!success)
             return false;
-        else
-        {
-            import core.sys.windows.winbase : GlobalMemoryStatus, MEMORYSTATUS;
-            MEMORYSTATUS stat;
-            GlobalMemoryStatus(&stat);
-            // Less than 5 % of virtual address space available
-            return stat.dwAvailVirtual < stat.dwTotalVirtual / 20;
-        }
+
+        // dwMemoryLoad is the 'approximate percentage of physical memory that is in use'
+        // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/ns-sysinfoapi-memorystatusex
+        const percentPhysicalRAM = stat.ullTotalPhys / 100;
+        return (stat.dwMemoryLoad >= 95 && mapped > percentPhysicalRAM)
+            || (stat.dwMemoryLoad >= 90 && mapped > 10 * percentPhysicalRAM);
     }
-}
-else version (Darwin)
-{
-    bool isLowOnMem(size_t mapped) nothrow @nogc
+    else
     {
         enum GB = 2 ^^ 30;
         version (D_LP64)
             return false;
-        else
+        else version (Darwin)
         {
             // 80 % of available 4GB is used for GC (excluding malloc and mmap)
             enum size_t limit = 4UL * GB * 8 / 10;
             return mapped > limit;
         }
-    }
-}
-else
-{
-    bool isLowOnMem(size_t mapped) nothrow @nogc
-    {
-        enum GB = 2 ^^ 30;
-        version (D_LP64)
-            return false;
         else
         {
             // be conservative and assume 3GB

@@ -1614,9 +1614,9 @@ static:
     been evaluated
     bound = The bound being violated
 
-    Returns: `cast(Lhs) rhs`
+    Returns: `cast(T) rhs`
     */
-    Lhs onLowerBound(Rhs, T)(Rhs rhs, T bound)
+    T onLowerBound(Rhs, T)(Rhs rhs, T bound)
     {
         trustedStderr.writefln("Lower bound error: %s(%s) < %s(%s)",
             Rhs.stringof, rhs, T.stringof, bound);
@@ -1791,6 +1791,12 @@ static:
 "Overflow on binary operator: int(-2147483648) * const(int)(-1)" ~ newline ~
 "Overflow on binary operator: int(-2147483648) / const(int)(-1)" ~ newline;
     assert(witness == expected, "'" ~ witness ~ "'");
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22249
+@safe unittest
+{
+    alias _ = Warn.onLowerBound!(int, int);
 }
 
 // ProperCompare
