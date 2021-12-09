@@ -1011,33 +1011,13 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
   if (e->expr_type == EXPR_VARIABLE
       && e->symtree->n.sym->attr.intent == INTENT_IN
       && (gfc_current_intrinsic_arg[n]->intent == INTENT_OUT
-	  || gfc_current_intrinsic_arg[n]->intent == INTENT_INOUT))
+	  || gfc_current_intrinsic_arg[n]->intent == INTENT_INOUT)
+      && !gfc_check_vardef_context (e, false, true, false, NULL))
     {
-      gfc_ref *ref;
-      bool pointer = e->symtree->n.sym->ts.type == BT_CLASS
-		     && CLASS_DATA (e->symtree->n.sym)
-		     ? CLASS_DATA (e->symtree->n.sym)->attr.class_pointer
-		     : e->symtree->n.sym->attr.pointer;
-
-      for (ref = e->ref; ref; ref = ref->next)
-	{
-	  if (pointer && ref->type == REF_COMPONENT)
-	    break;
-	  if (ref->type == REF_COMPONENT
-	      && ((ref->u.c.component->ts.type == BT_CLASS
-		   && CLASS_DATA (ref->u.c.component)->attr.class_pointer)
-		  || (ref->u.c.component->ts.type != BT_CLASS
-		      && ref->u.c.component->attr.pointer)))
-	    break;
-	}
-
-      if (!ref)
-	{
-	  gfc_error ("%qs argument of %qs intrinsic at %L cannot be "
-		     "INTENT(IN)", gfc_current_intrinsic_arg[n]->name,
-		     gfc_current_intrinsic, &e->where);
-	  return false;
-	}
+      gfc_error ("%qs argument of %qs intrinsic at %L cannot be INTENT(IN)",
+		 gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic, &e->where);
+      return false;
     }
 
   if (e->expr_type == EXPR_VARIABLE
