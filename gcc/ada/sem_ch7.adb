@@ -759,6 +759,8 @@ package body Sem_Ch7 is
                  ("optional package body (not allowed in Ada 95)??", N);
             else
                Error_Msg_N ("spec of this package does not allow a body", N);
+               Error_Msg_N ("\either remove the body or add pragma "
+                            & "Elaborate_Body in the spec", N);
             end if;
          end if;
       end if;
@@ -2633,13 +2635,13 @@ package body Sem_Ch7 is
       elsif Abstract_Present (Def) then
          Error_Msg_N ("only a tagged type can be abstract", N);
 
-      --  When extensions are enabled, we initialize the primitive operations
-      --  list of an untagged private type to an empty element list. (Note:
-      --  This could be done for all private types and shared with the tagged
-      --  case above, but for now we do it separately when the feature of
-      --  prefixed calls for untagged types is enabled.)
+      --  We initialize the primitive operations list of an untagged private
+      --  type to an empty element list. Do this even when Extensions_Allowed
+      --  is False to issue better error messages. (Note: This could be done
+      --  for all private types and shared with the tagged case above, but
+      --  for now we do it separately.)
 
-      elsif Extensions_Allowed then
+      else
          Set_Direct_Primitive_Operations (Id, New_Elmt_List);
       end if;
    end New_Private_Type;

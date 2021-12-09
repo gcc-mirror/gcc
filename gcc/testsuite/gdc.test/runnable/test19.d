@@ -128,8 +128,8 @@ int[] test6_1(int[] a)
 void test6()
 {
     printf("test6()\n");
-    int b[3];
-    int a[];
+    int[3] b;
+    int[] a;
 
     b[0] = 0;
     b[1] = 1;
@@ -144,7 +144,7 @@ void test6()
 
 class OutBuffer7
 {
-    char data[];
+    char[] data;
     uint offset;
 
     void write(const(char) *p, uint nbytes)
@@ -161,7 +161,7 @@ void test7()
     OutBuffer7 ob = new OutBuffer7;
 
     ob.data = new char[10];
-    printf("ob.data.length = %d\n", ob.data.length);
+    printf("ob.data.length = %zd\n", ob.data.length);
     assert(ob.data.length == 10);
     for (i = 0; i < 10; i++)
         assert(ob.data[i] == char.init);
@@ -169,14 +169,14 @@ void test7()
 printf("test7.1()\n");
     ob.data[] = '-';
 printf("test7.2()\n");
-    printf("ob.data[] = '%.*s'\n", ob.data.length, ob.data.ptr);
+    printf("ob.data[] = '%.*s'\n", cast(int)ob.data.length, ob.data.ptr);
     for (i = 0; i < 10; i++)
         assert(ob.data[i] == '-');
 
     ob.offset = 3;
     ob.write("foo", 3);
-    printf("ob.data.length = %d\n", ob.data.length);
-    printf("ob.data[] = '%.*s'\n", ob.data.length, ob.data.ptr);
+    printf("ob.data.length = %zd\n", ob.data.length);
+    printf("ob.data[] = '%.*s'\n", cast(int)ob.data.length, ob.data.ptr);
     for (i = 0; i < 10; i++)
     {
         if (i < 3 || i >= 6)
@@ -404,7 +404,7 @@ void test20()
 }
 
 /* ================================ */
-// 7848
+// https://issues.dlang.org/show_bug.cgi?id=7848
 
 @safe pure nothrow void func7848() {}
 
@@ -414,7 +414,7 @@ void test20()
 }
 
 /* ================================ */
-// 8128
+// https://issues.dlang.org/show_bug.cgi?id=8128
 
 int flag8128 = 0;
 

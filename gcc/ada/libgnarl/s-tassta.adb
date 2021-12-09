@@ -1462,7 +1462,7 @@ package body System.Tasking.Stages is
 
       To_Stderr (System.Address_Image (To_Address (Self_Id)));
       To_Stderr (" terminated by unhandled exception");
-      To_Stderr ((1 => ASCII.LF));
+      To_Stderr ([ASCII.LF]);
       To_Stderr (Exception_Information (Excep.all));
       Initialization.Task_Unlock (Self_Id);
    end Trace_Unhandled_Exception_In_Task;

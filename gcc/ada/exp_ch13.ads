@@ -32,6 +32,9 @@ package Exp_Ch13 is
    procedure Expand_N_Attribute_Definition_Clause  (N : Node_Id);
    procedure Expand_N_Free_Statement               (N : Node_Id);
    procedure Expand_N_Freeze_Entity                (N : Node_Id);
+   --  Note: for GNATprove we have a minimal variant of this routine in
+   --  Exp_SPARK.Expand_SPARK_N_Freeze_Entity. They need to be kept in sync.
+
    procedure Expand_N_Record_Representation_Clause (N : Node_Id);
 
 end Exp_Ch13;

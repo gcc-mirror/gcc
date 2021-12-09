@@ -1,4 +1,5 @@
 // REQUIRED_ARGS: -de
+// EXTRA_FILES: imports/dip22.d
 import imports.dip22;
 
 class Foo : Base1, Base2

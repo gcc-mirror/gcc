@@ -17,3 +17,5 @@ LIBGCC2_INCLUDES = -nostdinc -I. \
      */mrtp*) echo -I$(WIND_USR)/h -I$(WIND_USR)/h/wrn/coreip ;; \
      *) echo -I$(WIND_BASE)/target/h -I$(WIND_BASE)/target/h/wrn/coreip ;; \
    esac`
+
+CRTSTUFF_T_CFLAGS = $(LIBGCC2_INCLUDES)

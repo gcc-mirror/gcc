@@ -401,6 +401,32 @@
    %.\\tst%A0.u%T0\\t%0, %1;"
   [(set_attr "subregs_ok" "true")])
 
+;; Sign-extensions of truncations
+
+(define_insn "*extend_trunc_<mode>2_qi"
+  [(set (match_operand:HSDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:HSDIM
+	 (truncate:QI (match_operand:HSDIM 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s%T0.s8\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
+(define_insn "*extend_trunc_<mode>2_hi"
+  [(set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
+	(sign_extend:SDIM
+	 (truncate:HI (match_operand:SDIM 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s%T0.s16\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
+(define_insn "*extend_trunc_di2_si"
+  [(set (match_operand:DI 0 "nvptx_register_operand" "=R")
+	(sign_extend:DI
+	 (truncate:SI (match_operand:DI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tcvt.s64.s32\\t%0, %1;"
+  [(set_attr "subregs_ok" "true")])
+
 ;; Integer arithmetic
 
 (define_insn "add<mode>3"

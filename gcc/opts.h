@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
 enum cl_var_type {
-  /* The switch is enabled when FLAG_VAR is nonzero.  */
-  CLVC_BOOLEAN,
+  /* The switch is an integer value.  */
+  CLVC_INTEGER,
 
   /* The switch is enabled when FLAG_VAR == VAR_VALUE.  */
   CLVC_EQUAL,

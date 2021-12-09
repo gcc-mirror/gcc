@@ -1615,6 +1615,10 @@ fconstexpr-cache-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_cache_depth) Init(8)
 -fconstexpr-cache-depth=<number>	Specify maximum constexpr recursion cache depth.
 
+fconstexpr-fp-except
+C++ ObjC++ Var(flag_constexpr_fp_except) Init(0)
+Allow IEC559 floating point exceptions in constant expressions.
+
 fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.

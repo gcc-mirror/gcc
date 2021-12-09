@@ -206,14 +206,14 @@ is
 
    Cumulative_Days_Before_Month :
      constant array (Month_Number) of Natural :=
-       (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+       [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
 
    --  The following table contains the hard time values of all existing leap
    --  seconds. The values are produced by the utility program xleaps.adb. This
    --  must be updated when additional leap second times are defined.
 
    Leap_Second_Times : constant array (1 .. Leap_Seconds_Count) of Time_Rep :=
-     (-5601484800000000000,
+     [-5601484800000000000,
       -5585587199000000000,
       -5554051198000000000,
       -5522515197000000000,
@@ -239,7 +239,7 @@ is
       -4449513577000000000,
       -4339180776000000000,
       -4244572775000000000,
-      -4197052774000000000);
+      -4197052774000000000];
 
    ---------
    -- "+" --

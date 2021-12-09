@@ -1963,11 +1963,8 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
   const char *data
     = lto_get_summary_section_data (file_data, LTO_section_mode_table, &len);
   if (! data)
-    {
-      internal_error ("cannot read LTO mode table from %s",
-		      file_data->file_name);
-      return;
-    }
+    internal_error ("cannot read LTO mode table from %s",
+		    file_data->file_name);
 
   unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << 8);
   file_data->mode_table = table;

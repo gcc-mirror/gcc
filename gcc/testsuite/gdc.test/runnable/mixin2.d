@@ -1,4 +1,4 @@
-/* RUNNABLE_PHOBOS_TEST
+/*
 TEST_OUTPUT:
 ---
 hello
@@ -31,7 +31,7 @@ hey
 Success
 ---
 */
-import std.stdio;
+import core.stdc.stdio;
 
 /*********************************************/
 
@@ -53,7 +53,7 @@ void test2()
     mixin("
         int x = 3;
         for (int i = 0; i < 10; i++)
-            writeln(x + i, ++j);
+            printf(\"%d%d\n\", x + i, ++j);
         ");
     assert(j == 10);
 }
@@ -64,7 +64,7 @@ mixin("int abc3 = 5;");
 
 void test3()
 {
-    writeln(abc3);
+    printf("%d\n", abc3);
     assert(abc3 == 5);
 }
 
@@ -73,24 +73,24 @@ void test3()
 mixin("
 void test4()
 {
-    writeln(\"test4\");
+    printf(\"test4\n\");
 " ~ "}");
 
 /*********************************************/
 
 int x5;
 
-scope class Foo5
+class Foo5
 {
         this ()
         {
-                writeln ("Constructor");
+                printf ("Constructor\n");
                 assert(x5 == 0);
                 x5++;
         }
         ~this ()
         {
-                writeln ("Destructor");
+                printf ("Destructor\n");
                 assert(x5 == 2);
                 x5++;
         }
@@ -100,7 +100,7 @@ void test5()
 {
     {
         mixin ("scope Foo5 f = new Foo5;\n");
-        writeln ("  Inside Scope");
+        printf ("  Inside Scope\n");
         assert(x5 == 1);
         x5++;
     }
@@ -194,7 +194,7 @@ void test10()
 }
 
 /*********************************************/
-// 7560
+// https://issues.dlang.org/show_bug.cgi?id=7560
 
 class Base7560
 {
@@ -213,7 +213,7 @@ class Derived7560 : Base7560
 }
 
 /*********************************************/
-// 10577
+// https://issues.dlang.org/show_bug.cgi?id=10577
 
 enum sync10577;
 
@@ -267,7 +267,7 @@ class derived10577 : base10577
 }
 
 /*********************************************/
-// 10583
+// https://issues.dlang.org/show_bug.cgi?id=10583
 
 enum sync10583;
 
@@ -329,7 +329,7 @@ void test7156()
 }
 
 /*********************************************/
-// 7553
+// https://issues.dlang.org/show_bug.cgi?id=7553
 
 template Foo7553()
 {
@@ -358,7 +358,7 @@ void test7553()
 }
 
 /*********************************************/
-// 13479
+// https://issues.dlang.org/show_bug.cgi?id=13479
 
 mixin template F13479()
 {
@@ -392,5 +392,5 @@ void main()
     test7156();
     test13479();
 
-    writeln("Success");
+    printf("Success\n");
 }

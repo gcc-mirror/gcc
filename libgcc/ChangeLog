@@ -1,3 +1,39 @@
+2021-12-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host (*-*-darwin*): Add logic to build a shared
+	unwinder library for Darwin8-10.
+	* config/i386/t-darwin: Build legacy libgcc_s.1.
+	* config/rs6000/t-darwin: Likewise.
+	* config/t-darwin: Reorganise the EH fragments to place
+	them for inclusion in a shared EH lib.
+	* config/t-slibgcc-darwin: Build a legacy libgcc_s.1 and
+	the supporting pieces (all FAT libs).
+	* config/t-darwin-noeh: Removed.
+	* config/darwin-unwind.ver: New file.
+	* config/rs6000/t-darwin-ehs: New file.
+	* config/t-darwin-ehs: New file.
+
+2021-12-06  Nelson Chu  <nelson.chu@sifive.com>
+
+	* config/riscv/div.S: Add the hidden alias symbol for __udivdi3, and
+	then use HIDDEN_JUMPTARGET to target it since it is non-preemptible.
+	* config/riscv/riscv-asm.h: Added new macros HIDDEN_JUMPTARGET and
+	HIDDEN_DEF.
+
+2021-11-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Undefine caddr_t, pid_t, rlim_t,
+	ssize_t and vfork after including auto-host.h.
+
+2021-11-29  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config.host (powerpc-wrs-vxworks): Do not add crtbegin.o and
+	crtend.o to extra_parts.
+
+2021-11-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/t-dimode (lib2difuncs): Fix typo.
+
 2021-11-25  Florian Weimer  <fweimer@redhat.com>
 
 	* unwind-dw2-fde-dip.c (struct unw_eh_callback_data): Add hdr.

@@ -59,28 +59,28 @@ package body System.Tasking.Rendezvous is
    ----------------
 
    Default_Treatment : constant array (Select_Modes) of Select_Treatment :=
-     (Simple_Mode         => No_Alternative_Open,
+     [Simple_Mode         => No_Alternative_Open,
       Else_Mode           => Else_Selected,
       Terminate_Mode      => Terminate_Selected,
-      Delay_Mode          => No_Alternative_Open);
+      Delay_Mode          => No_Alternative_Open];
 
    New_State : constant array (Boolean, Entry_Call_State)
      of Entry_Call_State :=
-       (True =>
-         (Never_Abortable   => Never_Abortable,
+       [True =>
+         [Never_Abortable   => Never_Abortable,
           Not_Yet_Abortable => Now_Abortable,
           Was_Abortable     => Now_Abortable,
           Now_Abortable     => Now_Abortable,
           Done              => Done,
-          Cancelled         => Cancelled),
+          Cancelled         => Cancelled],
         False =>
-         (Never_Abortable   => Never_Abortable,
+         [Never_Abortable   => Never_Abortable,
           Not_Yet_Abortable => Not_Yet_Abortable,
           Was_Abortable     => Was_Abortable,
           Now_Abortable     => Now_Abortable,
           Done              => Done,
-          Cancelled         => Cancelled)
-       );
+          Cancelled         => Cancelled]
+       ];
 
    -----------------------
    -- Local Subprograms --
@@ -1452,7 +1452,7 @@ package body System.Tasking.Rendezvous is
            "potentially blocking operation";
       end if;
 
-      Initialization.Defer_Abort (Self_Id);
+      Initialization.Defer_Abort_Nestable (Self_Id);
       Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level + 1;
 
       pragma Debug
@@ -1487,7 +1487,7 @@ package body System.Tasking.Rendezvous is
          STPO.Write_Lock (Self_Id);
          Utilities.Exit_One_ATC_Level (Self_Id);
          STPO.Unlock (Self_Id);
-         Initialization.Undefer_Abort (Self_Id);
+         Initialization.Undefer_Abort_Nestable (Self_Id);
 
          raise Tasking_Error;
       end if;
@@ -1500,7 +1500,7 @@ package body System.Tasking.Rendezvous is
       --  ??? Do we need to yield in case Yielded is False
 
       Rendezvous_Successful := Entry_Call.State = Done;
-      Initialization.Undefer_Abort (Self_Id);
+      Initialization.Undefer_Abort_Nestable (Self_Id);
       Entry_Calls.Check_Exception (Self_Id, Entry_Call);
    end Timed_Task_Entry_Call;
 

@@ -420,6 +420,18 @@ else
 fi
 ])
 
+# Test for D.
+AC_DEFUN([ACX_PROG_GDC],
+[AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
+AC_REQUIRE([AC_PROG_CC])
+AC_CHECK_TOOL(GDC, gdc, no)
+if test "x$GDC" != xno; then
+  have_gdc=yes
+else
+  have_gdc=no
+fi
+])
+
 dnl 'make compare' can be significantly faster, if cmp itself can
 dnl skip bytes instead of using tail.  The test being performed is
 dnl "if cmp --ignore-initial=2 t1 t2 && ! cmp --ignore-initial=1 t1 t2"

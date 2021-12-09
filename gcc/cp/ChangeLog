@@ -1,3 +1,142 @@
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* parser.c (struct omp_dim): New struct type for use inside
+	cp_parser_omp_var_list_no_open.
+	(cp_parser_omp_var_list_no_open): Allow multiple levels of array and
+	component accesses in array section base-pointer expression.
+	(cp_parser_omp_all_clauses): Set 'allow_deref' to true in call to
+	cp_parser_omp_var_list for to/from clauses.
+	* semantics.c (handle_omp_array_sections_1): Extend allowed range
+	of base-pointer expressions involving INDIRECT/MEM/ARRAY_REF and
+	POINTER_PLUS_EXPR.
+	(handle_omp_array_sections): Adjust pointer map generation of
+	references.
+	(finish_omp_clauses): Extend allowed ranged of expressions
+	involving INDIRECT/MEM/ARRAY_REF and POINTER_PLUS_EXPR.
+
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* cp-tree.h (finish_omp_target): New declaration.
+	(finish_omp_target_clauses): Likewise.
+	* parser.c (cp_parser_omp_clause_map): Adjust call to
+	cp_parser_omp_var_list_no_open to set 'allow_deref' argument to true.
+	(cp_parser_omp_target): Factor out code, adjust into calls to new
+	function finish_omp_target.
+	* pt.c (tsubst_expr): Add call to finish_omp_target_clauses for
+	OMP_TARGET case.
+	* semantics.c (handle_omp_array_sections_1): Add handling to create
+	'this->member' from 'member' FIELD_DECL. Remove case of rejecting
+	'this' when not in declare simd.
+	(handle_omp_array_sections): Likewise.
+	(finish_omp_clauses): Likewise. Adjust to allow 'this[]' in OpenMP
+	map clauses. Handle 'A->member' case in map clauses. Remove case of
+	rejecting 'this' when not in declare simd.
+	(struct omp_target_walk_data): New struct for walking over
+	target-directive tree body.
+	(finish_omp_target_clauses_r): New function for tree walk.
+	(finish_omp_target_clauses): New function.
+	(finish_omp_target): New function.
+
+2021-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/95009
+	* typeck.c (is_bitfield_expr_with_lowered_type) <case MODIFY_EXPR>:
+	Handle UNARY_PLUS_EXPR, NEGATE_EXPR, NON_LVALUE_EXPR, BIT_NOT_EXPR,
+	P*CREMENT_EXPR too.
+
+2021-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (is_byte_access_type_not_plain_char): Declare.
+	* tree.c (is_byte_access_type_not_plain_char): New function.
+	* constexpr.c (clear_uchar_or_std_byte_in_mask): New function.
+	(cxx_eval_bit_cast): Don't error about padding bits if target
+	type is unsigned char or std::byte, instead return no clearing
+	ctor.  Use clear_uchar_or_std_byte_in_mask.
+
+2021-12-03  Jason Merrill  <jason@redhat.com>
+
+	* error.c (current_dump_scope): New variable.
+	(dump_scope): Check it.
+	(dump_function_decl): Set it.
+
+2021-12-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103403
+	* cp-gimplify.c (cp_fold): Don't recurse if maybe_undo_parenthesized_ref
+	doesn't change its argument.
+	* pt.c (do_auto_deduction): Don't strip REFERENCE_REF_P trees if they
+	are REF_PARENTHESIZED_P.  Use stripped_init when checking for
+	id-expression.
+	* semantics.c (force_paren_expr): Set REF_PARENTHESIZED_P on
+	REFERENCE_REF_P trees too.
+	(maybe_undo_parenthesized_ref): Remove dead code.
+
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94490
+	* pt.c (expand_integer_pack): Call
+	instantiate_non_dependent_expr_sfinae.
+
+2021-12-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103408
+	* cxx-pretty-print.c (pp_cxx_parameter_mapping): Print "<unnamed>"
+	rather than crash on an unnamed template parameter.
+
+2021-12-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103310
+	* constexpr.c (cxx_eval_binary_expression): Use
+	fold_binary_initializer_loc if manifestly cxeval.
+
+2021-11-30  Jason Merrill  <jason@redhat.com>
+
+	* cp-gimplify.c (genericize_if_stmt): Always build a COND_EXPR.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* logic.cc (cnf_size_r): Remove unreachable and inconsistently
+	placed gcc_unreachable ()s.
+	* pt.c (iterative_hash_template_arg): Remove unreachable
+	gcc_unreachable and return.
+
+2021-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Remove "gang reduction on an
+	orphan loop" checking.
+
+2021-11-30  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Emit an error on orphan
+	OpenACC gang reductions.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_fold_r): Perform folding of
+	std::source_location::current() calls here...
+	(cp_fold): ... rather than here.
+
+2021-11-30  Richard Biener  <rguenther@suse.de>
+
+	* parser.c (cp_parser_postfix_expression): Remove
+	unreachable code.
+	* pt.c (tsubst_expr): Remove unreachable breaks.
+
+2021-11-29  Eric Gallager  <egallager@gcc.gnu.org>
+
+	PR other/103021
+	* Make-lang.in: Use ETAGS variable in TAGS target.
+
+2021-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100493
+	* parser.c (cp_parser_lambda_introducer): In C++17, don't
+	diagnose a redundant 'this' capture alongside a by-copy
+	capture default unless -pedantic.  Move the diagnostic into
+	-Wc++20-extensions and adjust wording accordingly.
+
 2021-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/102753

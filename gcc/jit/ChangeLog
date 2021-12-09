@@ -1,3 +1,7 @@
+2021-11-27  Petter Tomner  <tomner@kth.se>
+
+	* libgccjit.c: %ld -> %zu
+
 2021-11-24  Martin Liska  <mliska@suse.cz>
 
 	* jit-playback.c (function): Initialize m_blocks vector.

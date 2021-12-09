@@ -1,3 +1,12 @@
+2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR middle-end/92120
+	* gomp-constants.h (enum gomp_map_kind):
+	Add GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION, and
+	GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION map kinds.
+	(GOMP_MAP_POINTER_P):
+	Include GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION.
+
 2021-11-12  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* gomp-constants.h (GOMP_MAP_FLAG_SPECIAL_3): Define special bit macro.

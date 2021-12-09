@@ -4726,7 +4726,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
 
   /* If that results in an invalid insn, back out.  */
   for (rtx_insn *x = seq; x; x = NEXT_INSN (x))
-    if (recog_memoized (x) < 0)
+    if (reload_completed
+	? !valid_insn_p (x)
+	: recog_memoized (x) < 0)
       return FALSE;
 
   /* Emit the new insns before cond_earliest.  */

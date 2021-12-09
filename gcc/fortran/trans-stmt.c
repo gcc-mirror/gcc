@@ -6638,16 +6638,13 @@ gfc_trans_allocate (gfc_code * code)
       else
 	e3rhs = gfc_copy_expr (code->expr3);
 
-      // We need to propagate the bounds of the expr3 for source=/mold=;
-      // however, for nondescriptor arrays, we use internally a lower bound
-      // of zero instead of one, which needs to be corrected for the allocate obj
-      if (e3_is == E3_DESC)
-	{
-	  symbol_attribute attr = gfc_expr_attr (code->expr3);
-	  if (code->expr3->expr_type == EXPR_ARRAY ||
-	      (!attr.allocatable && !attr.pointer))
-	    e3_has_nodescriptor = true;
-	}
+      // We need to propagate the bounds of the expr3 for source=/mold=.
+      // However, for non-named arrays, the lbound has to be 1 and neither the
+      // bound used inside the called function even when returning an
+      // allocatable/pointer nor the zero used internally.
+      if (e3_is == E3_DESC
+	  && code->expr3->expr_type != EXPR_VARIABLE)
+	e3_has_nodescriptor = true;
     }
 
   /* Loop over all objects to allocate.  */

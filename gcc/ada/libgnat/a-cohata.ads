@@ -73,7 +73,7 @@ package Ada.Containers.Hash_Tables is
          TC      : aliased Helpers.Tamper_Counts;
          Free    : Count_Type'Base             := -1;
          Nodes   : Nodes_Type (1 .. Capacity);
-         Buckets : Buckets_Type (1 .. Modulus) := (others => 0);
+         Buckets : Buckets_Type (1 .. Modulus) := [others => 0];
       end record;
 
       package Implementation is new Helpers.Generic_Implementation;

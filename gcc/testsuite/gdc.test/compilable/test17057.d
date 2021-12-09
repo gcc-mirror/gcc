@@ -2,7 +2,7 @@
 // PERMUTE_ARGS:
 
 class LeClass {
-    import std.stdio;
+    import core.stdc.stdio;
 }
 
 void main()

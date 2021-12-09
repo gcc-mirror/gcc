@@ -22,6 +22,8 @@
 #ifndef GCC_RS6000_INTERNAL_H
 #define GCC_RS6000_INTERNAL_H
 
+#include "rs6000-builtins.h"
+
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
   int reload_completed;		/* stack info won't change from here on */
@@ -140,6 +142,7 @@ extern void rs6000_output_mi_thunk (FILE *file,
 extern bool rs6000_output_addr_const_extra (FILE *file, rtx x);
 extern bool rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi);
 extern tree rs6000_build_builtin_va_list (void);
+extern void rs6000_invalid_new_builtin (rs6000_gen_builtins fncode);
 extern void rs6000_va_start (tree valist, rtx nextarg);
 extern tree rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 				    gimple_seq *post_p);

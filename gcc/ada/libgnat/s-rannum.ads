@@ -157,7 +157,7 @@ private
       Writable  : Writable_Access (Generator'Access);
       --  This self reference allows functions to modify Generator arguments
 
-      S : State := (others => 0);
+      S : State := [others => 0];
       --  The shift register, a circular buffer
 
       I : Integer := N;

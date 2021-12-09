@@ -61,11 +61,14 @@ class pointer_query;
 struct access_ref
 {
   /* Set the bounds of the reference.  */
-  access_ref (range_query *query = nullptr, tree = NULL_TREE,
-	      gimple * = nullptr, bool = false);
+  access_ref ();
 
   /* Return the PHI node REF refers to or null if it doesn't.  */
   gphi *phi () const;
+
+  /* Merge the result for a pointer with *THIS.  */
+  bool merge_ref (vec<access_ref> *all_refs, tree, gimple *, int, bool,
+		  ssa_name_limit_t &, pointer_query &);
 
   /* Return the object to which REF refers.  */
   tree get_ref (vec<access_ref> *, access_ref * = nullptr, int = 1,
@@ -119,7 +122,10 @@ struct access_ref
 
   /* Issue an informational message describing the target of an access
      with the given mode.  */
-  void inform_access (access_mode) const;
+  void inform_access (access_mode, int = 1) const;
+
+  /* Dump *THIS to a file.  */
+  void dump (FILE *) const;
 
   /* Reference to the accessed object(s).  */
   tree ref;
@@ -129,11 +135,6 @@ struct access_ref
   offset_int sizrng[2];
   /* The minimum and maximum offset computed.  */
   offset_int offmax[2];
-  /* Range of the bound of the access: denotes that the access
-     is at least BNDRNG[0] bytes but no more than BNDRNG[1].
-     For string functions the size of the actual access is
-     further constrained by the length of the string.  */
-  offset_int bndrng[2];
 
   /* Used to fold integer expressions when called from front ends.  */
   tree (*eval)(tree);
@@ -206,23 +207,18 @@ struct access_data
 {
   /* Set the access to at most MAXWRITE and MAXREAD bytes, and
      at least 1 when MINWRITE or MINREAD, respectively, is set.  */
-  access_data (range_query *query, gimple *stmt, access_mode mode,
-	       tree maxwrite = NULL_TREE, bool minwrite = false,
-	       tree maxread = NULL_TREE, bool minread = false)
-    : stmt (stmt), call (),
-      dst (query, maxwrite, stmt, minwrite),
-      src (query, maxread, stmt, minread),
-      mode (mode) { }
+  access_data (range_query *, gimple *, access_mode,
+	       tree = NULL_TREE, bool = false,
+	       tree = NULL_TREE, bool = false);
 
   /* Set the access to at most MAXWRITE and MAXREAD bytes, and
      at least 1 when MINWRITE or MINREAD, respectively, is set.  */
-  access_data (range_query *query, tree expr, access_mode mode,
-	       tree maxwrite = NULL_TREE, bool minwrite = false,
-	       tree maxread = NULL_TREE, bool minread = false)
-    : stmt (), call (expr),
-      dst (query, maxwrite, nullptr, minwrite),
-      src (query, maxread, nullptr, minread),
-      mode (mode) { }
+  access_data (range_query *, tree, access_mode,
+	       tree = NULL_TREE, bool = false,
+	       tree = NULL_TREE, bool = false);
+
+  /* Constructor helper.  */
+  static void set_bound (offset_int[2], tree, bool, range_query *, gimple *);
 
   /* Access statement.  */
   gimple *stmt;
@@ -230,9 +226,19 @@ struct access_data
   tree call;
   /* Destination and source of the access.  */
   access_ref dst, src;
+
+  /* Range of the bound of the access: denotes that the access is at
+     least XXX_BNDRNG[0] bytes but no more than XXX_BNDRNG[1].  For
+     string functions the size of the actual access is further
+     constrained by the length of the string.  */
+  offset_int dst_bndrng[2];
+  offset_int src_bndrng[2];
+
   /* Read-only for functions like memcmp or strlen, write-only
      for memset, read-write for memcpy or strcat.  */
   access_mode mode;
+  /* The object size type.  */
+  int ostype;
 };
 
 enum size_range_flags
@@ -263,8 +269,13 @@ inline tree compute_objsize (tree ptr, int ostype, access_ref *pref)
 }
 
 /* Legacy/transitional API.  Should not be used in new code.  */
-extern tree compute_objsize (tree, int, tree * = nullptr, tree * = nullptr,
-			     range_query * = nullptr);
+extern tree compute_objsize (tree, gimple *, int, tree * = nullptr,
+			     tree * = nullptr, range_query * = nullptr);
+inline tree compute_objsize (tree ptr, int ostype, tree *pdecl = nullptr,
+			     tree *poff = nullptr, range_query *rvals = nullptr)
+{
+  return compute_objsize (ptr, nullptr, ostype, pdecl, poff, rvals);
+}
 
 /* Return the field at the constant offset.  */
 extern tree field_at_offset (tree, tree, HOST_WIDE_INT,

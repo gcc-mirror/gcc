@@ -239,7 +239,7 @@ The following example indicates constructs that violate this restriction.
   with Pkg; use Pkg;
   procedure Example is
     procedure Test (O : T'Class) is
-      N : Natural  := O'Size;--  Error: Dispatching call
+      N : Natural := O'Size; --  Error: Dispatching call
       C : T'Class := O;      --  Error: implicit Dispatching Call
     begin
       if O in DT'Class then  --  OK   : Membership test

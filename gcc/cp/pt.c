@@ -1969,9 +1969,6 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
       return val;
     }
-
-  gcc_unreachable ();
-  return 0;
 }
 
 /* Unregister the specialization SPEC as a specialization of TMPL.
@@ -3795,6 +3792,7 @@ expand_integer_pack (tree call, tree args, tsubst_flags_t complain,
     }
   else
     {
+      hi = instantiate_non_dependent_expr_sfinae (hi, complain);
       hi = cxx_constant_value (hi);
       int len = valid_constant_size_p (hi) ? tree_to_shwi (hi) : -1;
 
@@ -18245,13 +18243,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       stmt = finish_co_yield_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
-      break;
 
     case CO_AWAIT_EXPR:
       stmt = finish_co_await_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
-      break;
 
     case EXPR_STMT:
       tmp = RECUR (EXPR_STMT_EXPR (t));
@@ -18979,6 +18975,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       t = copy_node (t);
       OMP_BODY (t) = stmt;
       OMP_CLAUSES (t) = tmp;
+
+      if (TREE_CODE (t) == OMP_TARGET)
+	finish_omp_target_clauses (EXPR_LOCATION (t), OMP_BODY (t),
+				   &OMP_CLAUSES (t));
+
       if (TREE_CODE (t) == OMP_TARGET && OMP_TARGET_COMBINED (t))
 	{
 	  tree teams = cp_walk_tree (&stmt, tsubst_find_omp_teams, NULL, NULL);
@@ -29893,13 +29894,18 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     }
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
+      /* Figure out if INIT is an unparenthesized id-expression or an
+	 unparenthesized class member access.  */
       tree stripped_init = tree_strip_any_location_wrapper (init);
-      if (REFERENCE_REF_P (stripped_init))
+      /* We need to be able to tell '(r)' and 'r' apart (when it's of
+	 reference type).  Only the latter is an id-expression.  */
+      if (REFERENCE_REF_P (stripped_init)
+	  && !REF_PARENTHESIZED_P (stripped_init))
 	stripped_init = TREE_OPERAND (stripped_init, 0);
-      bool id = (DECL_P (stripped_init)
-		 || ((TREE_CODE (init) == COMPONENT_REF
-		      || TREE_CODE (init) == SCOPE_REF)
-		     && !REF_PARENTHESIZED_P (init)));
+      const bool id = (DECL_P (stripped_init)
+		       || ((TREE_CODE (stripped_init) == COMPONENT_REF
+			    || TREE_CODE (stripped_init) == SCOPE_REF)
+			   && !REF_PARENTHESIZED_P (stripped_init)));
       tree deduced = finish_decltype_type (init, id, complain);
       deduced = canonicalize_type_argument (deduced, complain);
       if (deduced == error_mark_node)

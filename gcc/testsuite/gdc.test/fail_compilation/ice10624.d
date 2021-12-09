@@ -1,9 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice10624.d(38): Error: need member function opCmp() for struct Tuple!(Msg) to compare
-fail_compilation/ice10624.d(48): Error: template instance ice10624.Variant.handler!(Tuple!(Msg)) error instantiating
-fail_compilation/ice10624.d(21):        instantiated from here: opAssign!(Tuple!(Msg))
+fail_compilation/ice10624.d(38): Error: need member function `opCmp()` for struct `Tuple!(Msg)` to compare
+fail_compilation/ice10624.d(48): Error: template instance `ice10624.Variant.handler!(Tuple!(Msg))` error instantiating
+fail_compilation/ice10624.d(21):        instantiated from here: `opAssign!(Tuple!(Msg))`
 ---
 */
 

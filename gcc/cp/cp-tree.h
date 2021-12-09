@@ -7671,6 +7671,8 @@ extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);
 extern tree most_general_lambda			(tree);
+extern tree finish_omp_target			(location_t, tree, tree, bool);
+extern void finish_omp_target_clauses		(location_t, tree, tree *);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
@@ -7791,6 +7793,7 @@ extern tree build_dummy_object			(tree);
 extern tree maybe_dummy_object			(tree, tree *);
 extern bool is_dummy_object			(const_tree);
 extern bool is_byte_access_type			(tree);
+extern bool is_byte_access_type_not_plain_char	(tree);
 extern const struct attribute_spec cxx_attribute_table[];
 extern tree make_ptrmem_cst			(tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);

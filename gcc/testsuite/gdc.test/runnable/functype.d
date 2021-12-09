@@ -183,7 +183,7 @@ void testxx()
 }
 
 /***************************************************/
-// 3646
+// https://issues.dlang.org/show_bug.cgi?id=3646
 
 int bar3646(int x = 10) { printf("bar %d\n", x); return x; }
 int bam3646(int y)      { printf("bam %d\n", y); return y; }
@@ -215,7 +215,7 @@ void test3646()
 }
 
 /***************************************************/
-// 3866
+// https://issues.dlang.org/show_bug.cgi?id=3866
 
 void test3866()
 {
@@ -230,7 +230,7 @@ void test3866()
 }
 
 /***************************************************/
-// 8579
+// https://issues.dlang.org/show_bug.cgi?id=8579
 
 void test8579()
 {
@@ -254,7 +254,7 @@ void test8579()
 }
 
 /***************************************************/
-// 14210
+// https://issues.dlang.org/show_bug.cgi?id=14210
 
 string foo14210a(DT)(string name, DT dg)
 {
@@ -274,7 +274,7 @@ void test14210()
 }
 
 /***************************************************/
-// 10734
+// https://issues.dlang.org/show_bug.cgi?id=10734
 
 // There's no platform independent export symbol, so
 // test just only in Win32.
@@ -297,7 +297,7 @@ void test10734()
 }
 
 /***************************************************/
-// 14656
+// https://issues.dlang.org/show_bug.cgi?id=14656
 
 void test14656()
 {

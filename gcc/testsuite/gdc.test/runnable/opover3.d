@@ -125,7 +125,7 @@ void test4()
 }
 
 /**************************************/
-// 12070
+// https://issues.dlang.org/show_bug.cgi?id=12070
 
 void test12070()
 {
@@ -160,7 +160,7 @@ void test12070()
 }
 
 /**************************************/
-// 12124
+// https://issues.dlang.org/show_bug.cgi?id=12124
 
 struct S12124
 {

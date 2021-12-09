@@ -1,8 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail18970.d(22): Error: no property `y` for type `S`
-fail_compilation/fail18970.d(29): Error: no property `yyy` for type `S2`
+fail_compilation/fail18970.d(24): Error: no property `y` for type `fail18970.S`
+fail_compilation/fail18970.d(24):        potentially malformed `opDispatch`. Use an explicit instantiation to get a better error message
+fail_compilation/fail18970.d(31): Error: no property `yyy` for type `fail18970.S2`
+fail_compilation/fail18970.d(31):        potentially malformed `opDispatch`. Use an explicit instantiation to get a better error message
 ---
 */
 

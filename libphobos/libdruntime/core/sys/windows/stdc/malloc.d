@@ -5,7 +5,7 @@
  *
  * Authors: Iain Buclaw
  * License: $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source: $(DRUNTIMESRC src/core/sys/windows/stdc/_malloc.d)
+ * Source: $(DRUNTIMESRC core/sys/windows/stdc/_malloc.d)
  */
 module core.sys.windows.stdc.malloc;
 version (CRuntime_Microsoft):

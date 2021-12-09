@@ -1337,10 +1337,10 @@ check_access (GimpleOrTree exp, tree dstwrite,
   if (!dstsize)
     dstsize = maxobjsize;
 
-  /* Set RANGE to that of DSTWRITE if non-null, bounded by PAD->DST.BNDRNG
+  /* Set RANGE to that of DSTWRITE if non-null, bounded by PAD->DST_BNDRNG
      if valid.  */
   gimple *stmt = pad ? pad->stmt : nullptr;
-  get_size_range (rvals, dstwrite, stmt, range, pad ? pad->dst.bndrng : NULL);
+  get_size_range (rvals, dstwrite, stmt, range, pad ? pad->dst_bndrng : NULL);
 
   tree func = get_callee_fndecl (exp);
   /* Read vs write access by built-ins can be determined from the const
@@ -1432,9 +1432,9 @@ check_access (GimpleOrTree exp, tree dstwrite,
      of an object.  */
   if (maxread)
     {
-      /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
+      /* Set RANGE to that of MAXREAD, bounded by PAD->SRC_BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (rvals, maxread, stmt, range, pad ? pad->src.bndrng : NULL);
+      get_size_range (rvals, maxread, stmt, range, pad ? pad->src_bndrng : NULL);
 
       location_t loc = get_location (exp);
       tree size = dstsize;
@@ -1479,12 +1479,12 @@ check_access (GimpleOrTree exp, tree dstwrite,
       && (pad->src.offrng[1] < 0
 	  || pad->src.offrng[0] <= pad->src.offrng[1]))
     {
-      /* Set RANGE to that of MAXREAD, bounded by PAD->SRC.BNDRNG if
+      /* Set RANGE to that of MAXREAD, bounded by PAD->SRC_BNDRNG if
 	 PAD is nonnull and BNDRNG is valid.  */
-      get_size_range (rvals, maxread, stmt, range, pad ? pad->src.bndrng : NULL);
+      get_size_range (rvals, maxread, stmt, range, pad ? pad->src_bndrng : NULL);
       /* Set OVERREAD for reads starting just past the end of an object.  */
-      overread = pad->src.sizrng[1] - pad->src.offrng[0] < pad->src.bndrng[0];
-      range[0] = wide_int_to_tree (sizetype, pad->src.bndrng[0]);
+      overread = pad->src.sizrng[1] - pad->src.offrng[0] < pad->src_bndrng[0];
+      range[0] = wide_int_to_tree (sizetype, pad->src_bndrng[0]);
       slen = size_zero_node;
     }
 
@@ -2592,7 +2592,7 @@ pass_waccess::check_strncmp (gcall *stmt)
   /* Determine the range of the bound first and bail if it fails; it's
      cheaper than computing the size of the objects.  */
   tree bndrng[2] = { NULL_TREE, NULL_TREE };
-  get_size_range (m_ptr_qry.rvals, bound, stmt, bndrng, adata1.src.bndrng);
+  get_size_range (m_ptr_qry.rvals, bound, stmt, bndrng, adata1.src_bndrng);
   if (!bndrng[0] || integer_zerop (bndrng[0]))
     return;
 

@@ -1,3 +1,4 @@
+// EXTRA_FILES: test15389_x.d
 import test15389_x;
 
 //struct ns

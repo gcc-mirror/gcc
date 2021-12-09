@@ -2845,7 +2845,7 @@ write_init_file (void)
   fprintf (init_file, "#include \"rs6000-builtins.h\"\n");
   fprintf (init_file, "\n");
 
-  fprintf (init_file, "int new_builtins_are_live = 0;\n\n");
+  fprintf (init_file, "int new_builtins_are_live = 1;\n\n");
 
   fprintf (init_file, "tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
 
@@ -2886,7 +2886,7 @@ write_init_file (void)
 	   "void gt_pch_nx (bifdata *bd, gt_pointer_operator op, "
 	   "void *cookie)\n");
   fprintf (init_file,
-	   "{\n  op(&(bd->fntype), cookie);\n}\n\n");
+	   "{\n  op(&(bd->fntype), NULL, cookie);\n}\n\n");
   fprintf (init_file,
 	   "void gt_ggc_mx (ovlddata *od)\n");
   fprintf (init_file,
@@ -2899,7 +2899,7 @@ write_init_file (void)
 	   "void gt_pch_nx (ovlddata *od, gt_pointer_operator op, "
 	   "void *cookie)\n");
   fprintf (init_file,
-	   "{\n  op(&(od->fntype), cookie);\n}\n");
+	   "{\n  op(&(od->fntype), NULL, cookie);\n}\n");
 
   return 1;
 }

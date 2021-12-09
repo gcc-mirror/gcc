@@ -49,6 +49,7 @@ def skip_warning(filename, message):
             'sse.md': ['-Wparentheses-equality', '-Wtautological-compare'],
             'mmx.md': ['-Wtautological-compare'],
             'genautomata.c': ['-Wstring-plus-int'],
+            'fold-const-call.c': ['-Wreturn-type'],
             'gfortran.texi': [''],
             'libtool': ['']
     }

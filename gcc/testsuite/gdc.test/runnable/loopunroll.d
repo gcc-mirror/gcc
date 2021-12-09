@@ -1,5 +1,22 @@
-
-/* PERMUTE_ARGS: -O
+/*
+PERMUTE_ARGS: -O
+RUN_OUTPUT:
+---
+0
+45
+45
+45
+45
+45
+45
+45
+10
+45
+0
+5
+45
+45
+---
  */
 
 import core.stdc.stdio;

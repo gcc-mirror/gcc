@@ -8566,6 +8566,17 @@
   }
 )
 
+(define_expand "reduc_<fmaxmin>_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (unspec:<VEL> [(match_operand:SVE_FULL_F 1 "register_operand")]
+		 FMAXMINNMV)]
+  "TARGET_SVE"
+  {
+    emit_insn (gen_reduc_<optab>_scal_<mode> (operands[0], operands[1]));
+    DONE;
+  }
+)
+
 ;; Predicated floating-point tree reductions.
 (define_insn "@aarch64_pred_reduc_<optab>_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand" "=w")

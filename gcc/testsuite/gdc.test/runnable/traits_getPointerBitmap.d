@@ -1,8 +1,7 @@
 
 module traits_getPointerBitmap;
 
-import std.stdio;
-static import std.traits;
+import core.stdc.stdio;
 
 // version = RTInfo;
 // debug = LOG;
@@ -190,7 +189,7 @@ class N
 
 union U
 {
-    size_t data[4];
+    size_t[4] data;
     Large*[] arr; // { length, ptr }
 
     struct
@@ -210,8 +209,6 @@ void testRTInfo()
     testType!(int)          ([ 0b0 ]);
     testType!(long)         ([ 0b00 ]);
     testType!(double)       ([ 0b00 ]);
-    testType!(ifloat)       ([ 0b0 ]);
-    testType!(cdouble)      ([ 0b0000 ]);
     testType!(dg)           ([ 0b01 ]);
     testType!(fn)           ([ 0b0 ]);
     testType!(S!fn)         ([ 0b100 ]);

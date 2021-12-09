@@ -10849,13 +10849,8 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	  {
 	    /* Verify this before calling gfc_resolve_code, which might
 	       change it.  */
-	    gcc_assert (b->next && b->next->op == EXEC_ASSIGN);
-	    gcc_assert ((!b->ext.omp_clauses->capture
-			 && b->next->next == NULL)
-			|| (b->ext.omp_clauses->capture
-			    && b->next->next != NULL
-			    && b->next->next->op == EXEC_ASSIGN
-			    && b->next->next->next == NULL));
+	    gcc_assert (b->op == EXEC_OMP_ATOMIC
+			|| (b->next && b->next->op == EXEC_ASSIGN));
 	  }
 	  break;
 

@@ -57,6 +57,7 @@ type_lineloc (const_type_p ty)
     case TYPE_STRING:
     case TYPE_POINTER:
     case TYPE_ARRAY:
+    case TYPE_CALLBACK:
       return NULL;
     default:
       gcc_unreachable ();
@@ -171,6 +172,7 @@ private:
   void write_state_version (const char *version);
   void write_state_scalar_type (type_p current);
   void write_state_string_type (type_p current);
+  void write_state_callback_type (type_p current);
   void write_state_undefined_type (type_p current);
   void write_state_struct_union_type (type_p current, const char *kindstr);
   void write_state_struct_type (type_p current);
@@ -898,6 +900,20 @@ state_writer::write_state_string_type (type_p current)
     fatal ("Unexpected type in write_state_string_type");
 }
 
+/* Write the callback type.  There is only one such thing! */
+void
+state_writer::write_state_callback_type (type_p current)
+{
+  if (current == &callback_type)
+    {
+      write_any_indent (0);
+      fprintf (state_file, "callback ");
+      write_state_common_type_content (current);
+    }
+  else
+    fatal ("Unexpected type in write_state_callback_type");
+}
+
 /* Write an undefined type.  */
 void
 state_writer::write_state_undefined_type (type_p current)
@@ -1142,6 +1158,9 @@ state_writer::write_state_type (type_p current)
 	  break;
 	case TYPE_STRING:
 	  write_state_string_type (current);
+	  break;
+	case TYPE_CALLBACK:
+	  write_state_callback_type (current);
 	  break;
 	}
     }
@@ -1474,6 +1493,14 @@ static void
 read_state_string_type (type_p *type)
 {
   *type = &string_type;
+  read_state_common_type_content (*type);
+}
+
+/* Read the callback_type.  */
+static void
+read_state_callback_type (type_p *type)
+{
+  *type = &callback_type;
   read_state_common_type_content (*type);
 }
 
@@ -1833,6 +1860,11 @@ read_state_type (type_p *current)
 	    {
 	      next_state_tokens (1);
 	      read_state_string_type (current);
+	    }
+	  else if (state_token_is_name (t0, "callback"))
+	    {
+	      next_state_tokens (1);
+	      read_state_callback_type (current);
 	    }
 	  else if (state_token_is_name (t0, "undefined"))
 	    {

@@ -35,7 +35,7 @@
 #include "langhooks.h"
 #include "c/c-tree.h"
 
-#include "rs6000-builtins.h"
+#include "rs6000-internal.h"
 
 static tree altivec_resolve_new_overloaded_builtin (location_t, tree, void *);
 
@@ -1946,7 +1946,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	       non-overloaded function has already been issued.  Add
 	       clarification of the previous message.  */
 	    rich_location richloc (line_table, input_location);
-	    inform (&richloc, "builtin %qs requires builtin %qs",
+	    inform (&richloc,
+		    "overloaded builtin %qs is implemented by builtin %qs",
 		    name, internal_name);
 	  }
 	else
@@ -2986,13 +2987,17 @@ altivec_resolve_new_overloaded_builtin (location_t loc, tree fndecl,
 	const char *name = rs6000_overload_info[adj_fcode].ovld_name;
 	if (!supported)
 	  {
+	    /* Indicate that the instantiation of the overloaded builtin
+	       name is not available with the target flags in effect.  */
+	    rs6000_gen_builtins fcode = (rs6000_gen_builtins) instance->bifid;
+	    rs6000_invalid_new_builtin (fcode);
+	    /* Provide clarity of the relationship between the overload
+	       and the instantiation.  */
 	    const char *internal_name
 	      = rs6000_builtin_info_x[instance->bifid].bifname;
-	    /* An error message making reference to the name of the
-	       non-overloaded function has already been issued.  Add
-	       clarification of the previous message.  */
 	    rich_location richloc (line_table, input_location);
-	    inform (&richloc, "builtin %qs requires builtin %qs",
+	    inform (&richloc,
+		    "overloaded builtin %qs is implemented by builtin %qs",
 		    name, internal_name);
 	  }
 	else

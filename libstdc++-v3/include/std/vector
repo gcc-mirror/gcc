@@ -107,12 +107,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
       using namespace __gnu_cxx;
+      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __ucont = __cont;
       const auto __osz = __cont.size();
-      const auto __end = __cont.end();
-      auto __removed = std::__remove_if(__cont.begin(), __end,
+      const auto __end = __ucont.end();
+      auto __removed = std::__remove_if(__ucont.begin(), __end,
 					__ops::__pred_iter(std::ref(__pred)));
-      __cont.erase(__removed, __end);
-      return __osz - __cont.size();
+      if (__removed != __end)
+	{
+	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
+		       __cont.end());
+	  return __osz - __cont.size();
+	}
+
+      return 0;
     }
 
   template<typename _Tp, typename _Alloc, typename _Up>
@@ -121,12 +128,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
     {
       using namespace __gnu_cxx;
+      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __ucont = __cont;
       const auto __osz = __cont.size();
-      const auto __end = __cont.end();
-      auto __removed = std::__remove_if(__cont.begin(), __end,
+      const auto __end = __ucont.end();
+      auto __removed = std::__remove_if(__ucont.begin(), __end,
 					__ops::__iter_equals_val(__value));
-      __cont.erase(__removed, __end);
-      return __osz - __cont.size();
+      if (__removed != __end)
+	{
+	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
+		       __cont.end());
+	  return __osz - __cont.size();
+	}
+
+      return 0;
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

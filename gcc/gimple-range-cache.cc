@@ -1312,6 +1312,20 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       fprintf (dump_file, " : ");
     }
 
+  // If there are dominators, check if a dominators can supply the range.
+  if (dom_info_available_p (CDI_DOMINATORS)
+      && range_from_dom (block_result, name, bb))
+    {
+      m_on_entry.set_bb_range (name, bb, block_result);
+      if (DEBUG_RANGE_CACHE)
+	{
+	  fprintf (dump_file, "Filled from dominator! :  ");
+	  block_result.dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
+      return;
+    }
+
   while (m_workback.length () > 0)
     {
       basic_block node = m_workback.pop ();
@@ -1394,3 +1408,62 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
     fprintf (dump_file, "  Propagation update done.\n");
 }
 
+
+// Check to see if we can simply get the range from the dominator.
+
+bool
+ranger_cache::range_from_dom (irange &r, tree name, basic_block bb)
+{
+  gcc_checking_assert (dom_info_available_p (CDI_DOMINATORS));
+
+  // Search back to the definition block or entry block.
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+  if (def_bb == NULL)
+    def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+
+  // Flag if we encounter a block with non-null set.
+  bool non_null = false;
+  for (bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+       bb && bb != def_bb;
+       bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+    {
+      // If there is an outgoing range, the on-entry value won't work.
+      if (m_gori.has_edge_range_p (name, bb))
+	{
+	  // Check if we can seed this block with a dominator value. THis will
+	  // prevent the ache from being filled back further than this.
+	  if (bb != def_bb && range_from_dom (r, name, bb))
+	    m_on_entry.set_bb_range (name, bb, r);
+	  return false;
+	}
+
+      // Flag if we see a non-null reference during this walk.
+      if (m_non_null.non_null_deref_p (name, bb, false))
+	non_null = true;
+
+      // If range-on-entry is set in this block, it can be used.
+      if (m_on_entry.get_bb_range (r, name, bb))
+	{
+	  // Apply non-null if appropriate.
+	  if (r.varying_p () && non_null)
+	    {
+	      gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+	      r.set_nonzero (TREE_TYPE (name));
+	    }
+	  return true;
+	}
+    }
+  // If this is the def block, and NAME is an export, then this value
+  // cannot be used.
+  if (bb == def_bb && m_gori.has_edge_range_p (name, bb))
+    return false;
+
+  // Otherwise choose the global value and use it.
+  get_global_range (r, name);
+  if (r.varying_p () && non_null)
+    {
+      gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+      r.set_nonzero (TREE_TYPE (name));
+    }
+  return true;
+}

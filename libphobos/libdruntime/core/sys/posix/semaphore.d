@@ -99,7 +99,7 @@ else version (NetBSD)
 }
 else version (OpenBSD)
 {
-    struct __sem { }
+    struct __sem;
     alias sem_t = __sem*;
 
     enum SEM_FAILED = cast(sem_t*) null;

@@ -11,4 +11,4 @@ foo (int* mem, char sz, int val)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "inv_expr \[0-9\]: \\t\\(unsigned long\\) sz_\[0-9\]*\\(D\\) \\* 4 \\+ \\(unsigned long\\) mem_\[0-9\]*\\(D\\)" "ivopts" } } */
+/* { dg-final { scan-tree-dump "inv_expr \[0-9\]: \\t\\(unsigned (long|int)\\) sz_\[0-9\]*\\(D\\) \\* 4 \\+ \\(unsigned (long|int)\\) mem_\[0-9\]*\\(D\\)" "ivopts" } } */

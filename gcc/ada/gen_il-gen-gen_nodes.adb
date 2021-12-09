@@ -481,7 +481,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expressions, List_Id, Default_No_List),
         Sy (Component_Associations, List_Id, Default_No_List),
         Sy (Null_Record_Present, Flag),
+        Sy (Is_Parenthesis_Aggregate, Flag),
         Sy (Is_Homogeneous_Aggregate, Flag),
+        Sy (Is_Enum_Array_Aggregate, Flag),
         Sm (Aggregate_Bounds, Node_Id),
         Sm (Entity_Or_Associated_Node, Node_Id), -- just Associated_Node
         Sm (Compile_Time_Known_Aggregate, Flag),
@@ -1136,11 +1138,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Formal_Abstract_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag)));
 
    Cc (N_Formal_Concrete_Subprogram_Declaration, N_Formal_Subprogram_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Default_Name, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Box_Present, Flag)));
 
    Ab (N_Push_Pop_xxx_Label, Node_Kind);

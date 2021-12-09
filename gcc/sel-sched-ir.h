@@ -1493,8 +1493,6 @@ bb_next_bb (basic_block bb)
     default:
       return bb->next_bb;
     }
-
-  gcc_unreachable ();
 }
 
 

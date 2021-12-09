@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/attrib.h"
 #include "dmd/declaration.h"
+#include "dmd/expression.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
 #include "dmd/template.h"
@@ -854,7 +855,7 @@ parse_optimize_options (tree args)
     {
       unsigned opt_index = decoded_options[i].opt_index;
       if (opt_index >= cl_options_count
-	  && ! (cl_options[opt_index].flags & CL_OPTIMIZATION))
+	  || ! (cl_options[opt_index].flags & CL_OPTIMIZATION))
 	{
 	  ret = false;
 	  warning (OPT_Wattributes,

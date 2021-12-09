@@ -3733,9 +3733,9 @@ gfc_insert_parameter_exprs (gfc_expr *e, gfc_actual_arglist *param_list)
 {
   gfc_actual_arglist *old_param_spec_list = type_param_spec_list;
   type_param_spec_list = param_list;
-  return gfc_traverse_expr (e, NULL, &insert_parameter_exprs, 1);
-  type_param_spec_list = NULL;
+  bool res = gfc_traverse_expr (e, NULL, &insert_parameter_exprs, 1);
   type_param_spec_list = old_param_spec_list;
+  return res;
 }
 
 /* Determines the instance of a parameterized derived type to be used by

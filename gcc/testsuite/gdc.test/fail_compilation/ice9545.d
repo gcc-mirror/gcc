@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ----
-fail_compilation/ice9545.d(13): Error: type int has no value
+fail_compilation/ice9545.d(13): Error: type `int` has no value
 ----
 */
 

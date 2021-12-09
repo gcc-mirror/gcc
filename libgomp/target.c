@@ -543,7 +543,8 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
 			struct gomp_coalesce_buf *cbuf,
 			htab_t *refcount_set)
 {
-  assert (kind != GOMP_MAP_ATTACH);
+  assert (kind != GOMP_MAP_ATTACH
+	  || kind != GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION);
 
   tgt_var->key = oldn;
   tgt_var->copy_from = GOMP_MAP_COPY_FROM_P (kind);
@@ -580,11 +581,30 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
 	 address/length adjustment is a TODO.  */
       assert (!implicit_subset);
 
-      gomp_copy_host2dev (devicep, aq,
-			  (void *) (oldn->tgt->tgt_start + oldn->tgt_offset
-				    + newn->host_start - oldn->host_start),
-			  (void *) newn->host_start,
-			  newn->host_end - newn->host_start, false, cbuf);
+      if (oldn->aux && oldn->aux->attach_count)
+	{
+	  /* We have to be careful not to overwrite still attached pointers
+	     during the copyback to host.  */
+	  uintptr_t addr = newn->host_start;
+	  while (addr < newn->host_end)
+	    {
+	      size_t i = (addr - oldn->host_start) / sizeof (void *);
+	      if (oldn->aux->attach_count[i] == 0)
+		gomp_copy_host2dev (devicep, aq,
+				    (void *) (oldn->tgt->tgt_start
+					      + oldn->tgt_offset
+					      + addr - oldn->host_start),
+				    (void *) addr,
+				    sizeof (void *), false, cbuf);
+	      addr += sizeof (void *);
+	    }
+	}
+      else
+	gomp_copy_host2dev (devicep, aq,
+			    (void *) (oldn->tgt->tgt_start + oldn->tgt_offset
+				      + newn->host_start - oldn->host_start),
+			    (void *) newn->host_start,
+			    newn->host_end - newn->host_start, false, cbuf);
     }
 
   gomp_increment_refcount (oldn, refcount_set);
@@ -616,7 +636,8 @@ get_implicit (bool short_mapkind, void *kinds, int idx)
 static void
 gomp_map_pointer (struct target_mem_desc *tgt, struct goacc_asyncqueue *aq,
 		  uintptr_t host_ptr, uintptr_t target_offset, uintptr_t bias,
-		  struct gomp_coalesce_buf *cbuf)
+		  struct gomp_coalesce_buf *cbuf,
+		  bool allow_zero_length_array_sections)
 {
   struct gomp_device_descr *devicep = tgt->device_descr;
   struct splay_tree_s *mem_map = &devicep->mem_map;
@@ -638,16 +659,24 @@ gomp_map_pointer (struct target_mem_desc *tgt, struct goacc_asyncqueue *aq,
   splay_tree_key n = gomp_map_lookup (mem_map, &cur_node);
   if (n == NULL)
     {
-      gomp_mutex_unlock (&devicep->lock);
-      gomp_fatal ("Pointer target of array section wasn't mapped");
+      if (allow_zero_length_array_sections)
+	cur_node.tgt_offset = 0;
+      else
+	{
+	  gomp_mutex_unlock (&devicep->lock);
+	  gomp_fatal ("Pointer target of array section wasn't mapped");
+	}
     }
-  cur_node.host_start -= n->host_start;
-  cur_node.tgt_offset
-    = n->tgt->tgt_start + n->tgt_offset + cur_node.host_start;
-  /* At this point tgt_offset is target address of the
-     array section.  Now subtract bias to get what we want
-     to initialize the pointer with.  */
-  cur_node.tgt_offset -= bias;
+  else
+    {
+      cur_node.host_start -= n->host_start;
+      cur_node.tgt_offset
+	= n->tgt->tgt_start + n->tgt_offset + cur_node.host_start;
+      /* At this point tgt_offset is target address of the
+	 array section.  Now subtract bias to get what we want
+	 to initialize the pointer with.  */
+      cur_node.tgt_offset -= bias;
+    }
   gomp_copy_host2dev (devicep, aq, (void *) (tgt->tgt_start + target_offset),
 		      (void *) &cur_node.tgt_offset, sizeof (void *),
 		      true, cbuf);
@@ -724,7 +753,8 @@ attribute_hidden void
 gomp_attach_pointer (struct gomp_device_descr *devicep,
 		     struct goacc_asyncqueue *aq, splay_tree mem_map,
 		     splay_tree_key n, uintptr_t attach_to, size_t bias,
-		     struct gomp_coalesce_buf *cbufp)
+		     struct gomp_coalesce_buf *cbufp,
+		     bool allow_zero_length_array_sections)
 {
   struct splay_tree_key_s s;
   size_t size, idx;
@@ -776,11 +806,19 @@ gomp_attach_pointer (struct gomp_device_descr *devicep,
 
       if (!tn)
 	{
-	  gomp_mutex_unlock (&devicep->lock);
-	  gomp_fatal ("pointer target not mapped for attach");
+	  if (allow_zero_length_array_sections)
+	    /* When allowing attachment to zero-length array sections, we
+	       allow attaching to NULL pointers when the target region is not
+	       mapped.  */
+	    data = 0;
+	  else
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      gomp_fatal ("pointer target not mapped for attach");
+	    }
 	}
-
-      data = tn->tgt->tgt_start + tn->tgt_offset + target - tn->host_start;
+      else
+	data = tn->tgt->tgt_start + tn->tgt_offset + target - tn->host_start;
 
       gomp_debug (1,
 		  "%s: attaching host %p, target %p (struct base %p) to %p\n",
@@ -1038,7 +1076,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  has_firstprivate = true;
 	  continue;
 	}
-      else if ((kind & typemask) == GOMP_MAP_ATTACH)
+      else if ((kind & typemask) == GOMP_MAP_ATTACH
+	       || ((kind & typemask)
+		   == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION))
 	{
 	  tgt->list[i].key = NULL;
 	  has_firstprivate = true;
@@ -1287,7 +1327,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 				      (uintptr_t) *(void **) hostaddrs[j],
 				      k->tgt_offset + ((uintptr_t) hostaddrs[j]
 						       - k->host_start),
-				      sizes[j], cbufp);
+				      sizes[j], cbufp, false);
 		  }
 	      }
 	    i = j - 1;
@@ -1416,6 +1456,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  ++i;
 		continue;
 	      case GOMP_MAP_ATTACH:
+	      case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 		{
 		  cur_node.host_start = (uintptr_t) hostaddrs[i];
 		  cur_node.host_end = cur_node.host_start + sizeof (void *);
@@ -1432,9 +1473,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			 structured/dynamic reference counts ('n->refcount',
 			 'n->dynamic_refcount').  */
 
+		      bool zlas
+			= ((kind & typemask)
+			   == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION);
 		      gomp_attach_pointer (devicep, aq, mem_map, n,
 					   (uintptr_t) hostaddrs[i], sizes[i],
-					   cbufp);
+					   cbufp, zlas);
 		    }
 		  else if ((pragma_kind & GOMP_MAP_VARS_OPENACC) != 0)
 		    {
@@ -1545,9 +1589,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 					false, cbufp);
 		    break;
 		  case GOMP_MAP_POINTER:
-		    gomp_map_pointer (tgt, aq,
-				      (uintptr_t) *(void **) k->host_start,
-				      k->tgt_offset, sizes[i], cbufp);
+		  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+		    gomp_map_pointer
+		      (tgt, aq, (uintptr_t) *(void **) k->host_start,
+		       k->tgt_offset, sizes[i], cbufp,
+		       ((kind & typemask)
+			== GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION));
 		    break;
 		  case GOMP_MAP_TO_PSET:
 		    gomp_copy_host2dev (devicep, aq,
@@ -1589,7 +1636,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 					      k->tgt_offset
 					      + ((uintptr_t) hostaddrs[j]
 						 - k->host_start),
-					      sizes[j], cbufp);
+					      sizes[j], cbufp, false);
 			  }
 			}
 		    i = j - 1;
@@ -1981,17 +2028,45 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 			    (void *) n->host_end);
 	      }
 
+	    if (n->aux && n->aux->attach_count)
+	      {
+		uintptr_t addr = cur_node.host_start;
+		while (addr < cur_node.host_end)
+		  {
+		    /* We have to be careful not to overwrite still attached
+		       pointers during host<->device updates.  */
+		    size_t i = (addr - cur_node.host_start) / sizeof (void *);
+		    if (n->aux->attach_count[i] == 0)
+		      {
+			void *devaddr = (void *) (n->tgt->tgt_start
+						  + n->tgt_offset
+						  + addr - n->host_start);
+			if (GOMP_MAP_COPY_TO_P (kind & typemask))
+			  gomp_copy_host2dev (devicep, NULL,
+					      devaddr, (void *) addr,
+					      sizeof (void *), false, NULL);
+			if (GOMP_MAP_COPY_FROM_P (kind & typemask))
+			  gomp_copy_dev2host (devicep, NULL,
+					      (void *) addr, devaddr,
+					      sizeof (void *));
+		      }
+		    addr += sizeof (void *);
+		  }
+	      }
+	    else
+	      {
+		void *hostaddr = (void *) cur_node.host_start;
+		void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
+					  + cur_node.host_start
+					  - n->host_start);
+		size_t size = cur_node.host_end - cur_node.host_start;
 
-	    void *hostaddr = (void *) cur_node.host_start;
-	    void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
-				      + cur_node.host_start - n->host_start);
-	    size_t size = cur_node.host_end - cur_node.host_start;
-
-	    if (GOMP_MAP_COPY_TO_P (kind & typemask))
-	      gomp_copy_host2dev (devicep, NULL, devaddr, hostaddr, size,
-				  false, NULL);
-	    if (GOMP_MAP_COPY_FROM_P (kind & typemask))
-	      gomp_copy_dev2host (devicep, NULL, hostaddr, devaddr, size);
+		if (GOMP_MAP_COPY_TO_P (kind & typemask))
+		  gomp_copy_host2dev (devicep, NULL, devaddr, hostaddr, size,
+				      false, NULL);
+		if (GOMP_MAP_COPY_FROM_P (kind & typemask))
+		  gomp_copy_dev2host (devicep, NULL, hostaddr, devaddr, size);
+	      }
 	  }
       }
   gomp_mutex_unlock (&devicep->lock);
@@ -2904,11 +2979,31 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 
 	  if ((kind == GOMP_MAP_FROM && do_copy)
 	      || kind == GOMP_MAP_ALWAYS_FROM)
-	    gomp_copy_dev2host (devicep, NULL, (void *) cur_node.host_start,
-				(void *) (k->tgt->tgt_start + k->tgt_offset
-					  + cur_node.host_start
-					  - k->host_start),
-				cur_node.host_end - cur_node.host_start);
+	    {
+	      if (k->aux && k->aux->attach_count)
+		{
+		  /* We have to be careful not to overwrite still attached
+		     pointers during the copyback to host.  */
+		  uintptr_t addr = k->host_start;
+		  while (addr < k->host_end)
+		    {
+		      size_t i = (addr - k->host_start) / sizeof (void *);
+		      if (k->aux->attach_count[i] == 0)
+			gomp_copy_dev2host (devicep, NULL, (void *) addr,
+					    (void *) (k->tgt->tgt_start
+						      + k->tgt_offset
+						      + addr - k->host_start),
+					    sizeof (void *));
+		      addr += sizeof (void *);
+		    }
+		}
+	      else
+		gomp_copy_dev2host (devicep, NULL, (void *) cur_node.host_start,
+				    (void *) (k->tgt->tgt_start + k->tgt_offset
+					      + cur_node.host_start
+					      - k->host_start),
+				    cur_node.host_end - cur_node.host_start);
+	    }
 
 	  /* Structure elements lists are removed altogether at once, which
 	     may cause immediate deallocation of the target_mem_desc, causing

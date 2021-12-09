@@ -114,6 +114,9 @@ package Exp_Ch3 is
    --  delete the node if it is present just for front end purpose and we don't
    --  want Gigi to see the node. This function can't delete the node itself
    --  since it would confuse any remaining processing of the freeze node.
+   --
+   --  Note: for GNATprove we have a minimal variant of this routine in
+   --  Exp_SPARK.SPARK_Freeze_Type. They need to be kept in sync.
 
    function Get_Simple_Init_Val
      (Typ  : Entity_Id;
@@ -155,6 +158,20 @@ package Exp_Ch3 is
    --  initialized; if Variable_Comps is True then tags components located at
    --  variable positions of Target are initialized.
 
+   procedure Make_Predefined_Primitive_Eq_Spec
+     (Tag_Typ     : Entity_Id;
+      Predef_List : List_Id;
+      Renamed_Eq  : out Entity_Id);
+   --  Creates spec for the predefined equality on a tagged type Tag_Typ, if
+   --  required. If created, it will be appended to Predef_List.
+   --
+   --  The Parameter Renamed_Eq either returns the value Empty, or else
+   --  the defining unit name for the predefined equality function in the
+   --  case where the type has a primitive operation that is a renaming
+   --  of predefined equality (but only if there is also an overriding
+   --  user-defined equality function). The returned Renamed_Eq will be
+   --  passed to the corresponding parameter of Predefined_Primitive_Bodies.
+
    function Make_Tag_Assignment (N : Node_Id) return Node_Id;
    --  An object declaration that has an initialization for a tagged object
    --  requires a separate reassignment of the tag of the given type, because
@@ -162,5 +179,16 @@ package Exp_Ch3 is
    --  is inserted after the declaration, but if the object has an address
    --  clause the assignment is handled as part of the freezing of the object,
    --  see Check_Address_Clause.
+
+   procedure Predefined_Primitive_Eq_Body
+     (Tag_Typ     : Entity_Id;
+      Predef_List : List_Id;
+      Renamed_Eq  : Entity_Id);
+   --  Creates body for the predefined equality (and ineqality, if required) on
+   --  a tagged type Tag_Typ. If created they will be appended to Predef_List.
+   --
+   --  The spec for the equality function has been created by
+   --  Make_Predefined_Primitive_Eq_Spec; see there for description of
+   --  the Renamed_Eq parameter.
 
 end Exp_Ch3;

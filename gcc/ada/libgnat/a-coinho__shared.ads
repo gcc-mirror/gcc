@@ -69,6 +69,7 @@ package Ada.Containers.Indefinite_Holders is
    procedure Query_Element
      (Container : Holder;
       Process   : not null access procedure (Element : Element_Type));
+
    procedure Update_Element
      (Container : in out Holder;
       Process   : not null access procedure (Element : in out Element_Type));
@@ -105,6 +106,7 @@ private
    use Ada.Streams;
 
    type Element_Access is access all Element_Type;
+
    type Holder_Access is access all Holder;
 
    type Shared_Holder is record

@@ -917,6 +917,9 @@ enum omp_mask1
   OMP_CLAUSE_AT,  /* OpenMP 5.1.  */
   OMP_CLAUSE_MESSAGE,  /* OpenMP 5.1.  */
   OMP_CLAUSE_SEVERITY,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_COMPARE,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_FAIL,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_WEAK,  /* OpenMP 5.1.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -1450,7 +1453,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
   *cp = NULL;
   while (1)
     {
-      if ((first || gfc_match_char (',') != MATCH_YES)
+      match m = MATCH_NO;
+      if ((first || (m = gfc_match_char (',')) != MATCH_YES)
 	  && (needs_space && gfc_match_space () != MATCH_YES))
 	break;
       needs_space = false;
@@ -1460,7 +1464,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
       gfc_omp_namelist **head;
       old_loc = gfc_current_locus;
       char pc = gfc_peek_ascii_char ();
-      match m;
+      if (pc == '\n' && m == MATCH_YES)
+	{
+	  gfc_error ("Clause expected at %C after trailing comma");
+	  goto error;
+	}
       switch (pc)
 	{
 	case 'a':
@@ -1653,6 +1661,16 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		c->collapse = collapse;
 		continue;
 	      }
+	    }
+	  if ((mask & OMP_CLAUSE_COMPARE)
+	      && (m = gfc_match_dupl_check (!c->compare, "compare"))
+		 != MATCH_NO)
+	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      c->compare = true;
+	      needs_space = true;
+	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_COPY)
 	      && gfc_match ("copy ( ") == MATCH_YES
@@ -2009,6 +2027,27 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 'f':
+	  if ((mask & OMP_CLAUSE_FAIL)
+	      && (m = gfc_match_dupl_check (c->fail == OMP_MEMORDER_UNSET,
+					    "fail", true)) != MATCH_NO)
+	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (gfc_match ("seq_cst") == MATCH_YES)
+		c->fail = OMP_MEMORDER_SEQ_CST;
+	      else if (gfc_match ("acquire") == MATCH_YES)
+		c->fail = OMP_MEMORDER_ACQUIRE;
+	      else if (gfc_match ("relaxed") == MATCH_YES)
+		c->fail = OMP_MEMORDER_RELAXED;
+	      else
+		{
+		  gfc_error ("Expected SEQ_CST, ACQUIRE or RELAXED at %C");
+		  break;
+		}
+	      if (gfc_match (" )") != MATCH_YES)
+		goto error;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_FILTER)
 	      && (m = gfc_match_dupl_check (!c->filter, "filter", true,
 					    &c->filter)) != MATCH_NO)
@@ -2903,6 +2942,16 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_WEAK)
+	      && (m = gfc_match_dupl_check (!c->weak, "weak"))
+		 != MATCH_NO)
+	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      c->weak = true;
+	      needs_space = true;
+	      continue;
+	    }
 	  if ((mask & OMP_CLAUSE_WORKER)
 	      && (m = gfc_match_dupl_check (!c->worker, "worker")) != MATCH_NO)
 	    {
@@ -3593,7 +3642,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_TO) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE)
 #define OMP_ATOMIC_CLAUSES \
   (omp_mask (OMP_CLAUSE_ATOMIC) | OMP_CLAUSE_CAPTURE | OMP_CLAUSE_HINT	\
-   | OMP_CLAUSE_MEMORDER)
+   | OMP_CLAUSE_MEMORDER | OMP_CLAUSE_COMPARE | OMP_CLAUSE_FAIL 	\
+   | OMP_CLAUSE_WEAK)
 #define OMP_MASKED_CLAUSES \
   (omp_mask (OMP_CLAUSE_FILTER))
 #define OMP_ERROR_CLAUSES \
@@ -5718,6 +5768,7 @@ gfc_match_omp_ordered_depend (void)
    - capture
    - memory-order-clause: seq_cst | acq_rel | release | acquire | relaxed
    - hint(hint-expr)
+   - OpenMP 5.1: compare | fail (seq_cst | acquire | relaxed ) | weak
 */
 
 match
@@ -5729,11 +5780,24 @@ gfc_match_omp_atomic (void)
   if (gfc_match_omp_clauses (&c, OMP_ATOMIC_CLAUSES, true, true) != MATCH_YES)
     return MATCH_ERROR;
 
-  if (c->capture && c->atomic_op != GFC_OMP_ATOMIC_UNSET)
-    gfc_error ("OMP ATOMIC at %L with multiple atomic clauses", &loc);
-
   if (c->atomic_op == GFC_OMP_ATOMIC_UNSET)
     c->atomic_op = GFC_OMP_ATOMIC_UPDATE;
+
+  if (c->capture && c->atomic_op != GFC_OMP_ATOMIC_UPDATE)
+    gfc_error ("!$OMP ATOMIC at %L with %s clause is incompatible with "
+	       "READ or WRITE", &loc, "CAPTURE");
+  if (c->compare && c->atomic_op != GFC_OMP_ATOMIC_UPDATE)
+    gfc_error ("!$OMP ATOMIC at %L with %s clause is incompatible with "
+	       "READ or WRITE", &loc, "COMPARE");
+  if (c->fail != OMP_MEMORDER_UNSET && c->atomic_op != GFC_OMP_ATOMIC_UPDATE)
+    gfc_error ("!$OMP ATOMIC at %L with %s clause is incompatible with "
+	       "READ or WRITE", &loc, "FAIL");
+  if (c->weak && !c->compare)
+    {
+      gfc_error ("!$OMP ATOMIC at %L with %s clause requires %s clause", &loc,
+		 "WEAK", "COMPARE");
+      c->weak = false;
+    }
 
   if (c->memorder == OMP_MEMORDER_UNSET)
     {
@@ -5765,32 +5829,24 @@ gfc_match_omp_atomic (void)
     switch (c->atomic_op)
       {
       case GFC_OMP_ATOMIC_READ:
-	if (c->memorder == OMP_MEMORDER_ACQ_REL
-	    || c->memorder == OMP_MEMORDER_RELEASE)
+	if (c->memorder == OMP_MEMORDER_RELEASE)
 	  {
 	    gfc_error ("!$OMP ATOMIC READ at %L incompatible with "
-		       "ACQ_REL or RELEASE clauses", &loc);
+		       "RELEASE clause", &loc);
 	    c->memorder = OMP_MEMORDER_SEQ_CST;
 	  }
+	else if (c->memorder == OMP_MEMORDER_ACQ_REL)
+	  c->memorder = OMP_MEMORDER_ACQUIRE;
 	break;
       case GFC_OMP_ATOMIC_WRITE:
-	if (c->memorder == OMP_MEMORDER_ACQ_REL
-	    || c->memorder == OMP_MEMORDER_ACQUIRE)
+	if (c->memorder == OMP_MEMORDER_ACQUIRE)
 	  {
 	    gfc_error ("!$OMP ATOMIC WRITE at %L incompatible with "
-		       "ACQ_REL or ACQUIRE clauses", &loc);
+		       "ACQUIRE clause", &loc);
 	    c->memorder = OMP_MEMORDER_SEQ_CST;
 	  }
-	break;
-      case GFC_OMP_ATOMIC_UPDATE:
-	if ((c->memorder == OMP_MEMORDER_ACQ_REL
-	     || c->memorder == OMP_MEMORDER_ACQUIRE)
-	    && !c->capture)
-	  {
-	    gfc_error ("!$OMP ATOMIC UPDATE at %L incompatible with "
-		       "ACQ_REL or ACQUIRE clauses", &loc);
-	    c->memorder = OMP_MEMORDER_SEQ_CST;
-	  }
+	else if (c->memorder == OMP_MEMORDER_ACQ_REL)
+	  c->memorder = OMP_MEMORDER_RELEASE;
 	break;
       default:
 	break;
@@ -7451,19 +7507,23 @@ expr_references_sym (gfc_expr *e, gfc_symbol *s, gfc_expr *se)
 
 
 /* If EXPR is a conversion function that widens the type
-   if WIDENING is true or narrows the type if WIDENING is false,
+   if WIDENING is true or narrows the type if NARROW is true,
    return the inner expression, otherwise return NULL.  */
 
 static gfc_expr *
-is_conversion (gfc_expr *expr, bool widening)
+is_conversion (gfc_expr *expr, bool narrowing, bool widening)
 {
   gfc_typespec *ts1, *ts2;
 
   if (expr->expr_type != EXPR_FUNCTION
       || expr->value.function.isym == NULL
       || expr->value.function.esym != NULL
-      || expr->value.function.isym->id != GFC_ISYM_CONVERSION)
+      || expr->value.function.isym->id != GFC_ISYM_CONVERSION
+      || (!narrowing && !widening))
     return NULL;
+
+  if (narrowing && widening)
+    return expr->value.function.actual->expr;
 
   if (widening)
     {
@@ -7483,163 +7543,297 @@ is_conversion (gfc_expr *expr, bool widening)
   return NULL;
 }
 
+static bool
+is_scalar_intrinsic_expr (gfc_expr *expr, bool must_be_var, bool conv_ok)
+{
+  if (must_be_var
+      && (expr->expr_type != EXPR_VARIABLE || !expr->symtree)
+      && (!conv_ok || !is_conversion (expr, true, true)))
+    return false;
+  return (expr->rank == 0
+	  && !gfc_is_coindexed (expr)
+	  && (expr->ts.type != BT_INTEGER
+	      || expr->ts.type != BT_REAL
+	      || expr->ts.type != BT_COMPLEX
+	      || expr->ts.type != BT_LOGICAL));
+}
 
 static void
 resolve_omp_atomic (gfc_code *code)
 {
   gfc_code *atomic_code = code->block;
   gfc_symbol *var;
-  gfc_expr *expr2, *expr2_tmp;
+  gfc_expr *stmt_expr2, *capt_expr2;
   gfc_omp_atomic_op aop
     = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
 			   & GFC_OMP_ATOMIC_MASK);
+  gfc_code *stmt = NULL, *capture_stmt = NULL;
+  gfc_expr *comp_cond = NULL;
+  locus *loc = NULL;
 
   code = code->block->next;
-  /* resolve_blocks asserts this is initially EXEC_ASSIGN.
+  /* resolve_blocks asserts this is initially EXEC_ASSIGN or EXEC_IF
      If it changed to EXEC_NOP, assume an error has been emitted already.  */
-  if (code->op == EXEC_NOP)
+  if (code->op == EXEC_NOP /* FIXME: || (code->next && code->next->op == EXEC_NOP)*/)
     return;
-  if (code->op != EXEC_ASSIGN)
+
+  if (code->op == EXEC_IF && code->block->op == EXEC_IF)
+    comp_cond = code->block->expr1;
+
+  if (atomic_code->ext.omp_clauses->compare
+      && atomic_code->ext.omp_clauses->capture)
     {
-    unexpected:
-      gfc_error ("unexpected !$OMP ATOMIC expression at %L", &code->loc);
-      return;
-    }
-  if (!atomic_code->ext.omp_clauses->capture)
-    {
-      if (code->next != NULL)
-	goto unexpected;
-    }
-  else
-    {
-      if (code->next == NULL)
-	goto unexpected;
-      if (code->next->op == EXEC_NOP)
-	return;
-      if (code->next->op != EXEC_ASSIGN || code->next->next)
+      /* Must be either "if (x == e) then; x = d; else; v = x; end if"
+	 or "v = expr" followed/preceded by
+	 "if (x == e) then; x = d; end if" or "if (x == e) x = d".  */
+      gfc_code *next = code;
+      if (code->op == EXEC_ASSIGN)
 	{
-	  code = code->next;
+	  capture_stmt = code;
+	  next = code->next;
+	}
+      if (next->op == EXEC_IF
+	  && next->block
+	  && next->block->op == EXEC_IF
+	  && next->block->next->op == EXEC_ASSIGN)
+	{
+	  stmt = next->block->next;
+	  if (stmt->next)
+	    {
+	      loc = &stmt->loc;
+	      goto unexpected;
+	    }
+	}
+      if (stmt && !capture_stmt && next->block->block)
+	{
+	  if (next->block->block->expr1)
+	    gfc_error ("Expected ELSE at %L in atomic compare capture",
+		       &next->block->block->expr1->where);
+	  if (!code->block->block->next
+	      || code->block->block->next->op != EXEC_ASSIGN)
+	    {
+	      loc = (code->block->block->next ? &code->block->block->next->loc
+					      : &code->block->block->loc);
+	      goto unexpected;
+	    }
+	  capture_stmt = code->block->block->next;
+	  if (capture_stmt->next)
+	    {
+	      loc = &capture_stmt->next->loc;
+	      goto unexpected;
+	    }
+	}
+      if (stmt && !capture_stmt && code->op == EXEC_ASSIGN)
+	{
+	  capture_stmt = code;
+	}
+      else if (!capture_stmt)
+	{
+	  loc = &code->loc;
 	  goto unexpected;
 	}
     }
+  else if (atomic_code->ext.omp_clauses->compare)
+    {
+      /* Must be: "if (x == e) then; x = d; end if" or "if (x == e) x = d".  */
+      if (code->op == EXEC_IF
+	  && code->block
+	  && code->block->op == EXEC_IF
+	  && code->block->next->op == EXEC_ASSIGN)
+	{
+	  stmt = code->block->next;
+	  if (stmt->next || code->block->block)
+	    {
+	      loc = stmt->next ? &stmt->next->loc : &code->block->block->loc;
+	      goto unexpected;
+	    }
+	}
+      else
+	{
+	  loc = &code->loc;
+	  goto unexpected;
+	}
+    }
+  else if (atomic_code->ext.omp_clauses->capture)
+    {
+      /* Must be: "v = x" followed/preceded by "x = ...". */
+      if (code->op != EXEC_ASSIGN)
+	goto unexpected;
+      if (code->next->op != EXEC_ASSIGN)
+	{
+	  loc = &code->next->loc;
+	  goto unexpected;
+	}
+      gfc_expr *expr2, *expr2_next;
+      expr2 = is_conversion (code->expr2, true, true);
+      if (expr2 == NULL)
+	expr2 = code->expr2;
+      expr2_next = is_conversion (code->next->expr2, true, true);
+      if (expr2_next == NULL)
+	expr2_next = code->next->expr2;
+      if (code->expr1->expr_type == EXPR_VARIABLE
+	  && code->next->expr1->expr_type == EXPR_VARIABLE
+	  && expr2->expr_type == EXPR_VARIABLE
+	  && expr2_next->expr_type == EXPR_VARIABLE)
+	{
+	  if (code->expr1->symtree->n.sym == expr2_next->symtree->n.sym)
+	    {
+	      stmt = code;
+	      capture_stmt = code->next;
+	    }
+	  else
+	    {
+	      capture_stmt = code;
+	      stmt = code->next;
+	    }
+	}
+      else if (expr2->expr_type == EXPR_VARIABLE)
+	{
+	  capture_stmt = code;
+	  stmt = code->next;
+	}
+      else
+	{
+	  stmt = code;
+	  capture_stmt = code->next;
+	}
+      gcc_assert (!code->next->next);
+    }
+  else
+    {
+      /* x = ... */
+      stmt = code;
+      if ((!atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_ASSIGN)
+	  || (atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_IF))
+	goto unexpected;
+      gcc_assert (!code->next);
+    }
 
-  if (code->expr1->expr_type != EXPR_VARIABLE
-      || code->expr1->symtree == NULL
-      || code->expr1->rank != 0
-      || (code->expr1->ts.type != BT_INTEGER
-	  && code->expr1->ts.type != BT_REAL
-	  && code->expr1->ts.type != BT_COMPLEX
-	  && code->expr1->ts.type != BT_LOGICAL))
+  if (comp_cond)
+    {
+      if (comp_cond->expr_type != EXPR_OP
+	  || (comp_cond->value.op.op != INTRINSIC_EQ
+	      && comp_cond->value.op.op != INTRINSIC_EQ_OS
+	      && comp_cond->value.op.op != INTRINSIC_EQV))
+	{
+	  gfc_error ("Expected %<==%>, %<.EQ.%> or %<.EQV.%> atomic comparison "
+		     "expression at %L", &comp_cond->where);
+	  return;
+	}
+      if (!is_scalar_intrinsic_expr (comp_cond->value.op.op1, true, false))
+	{
+	  gfc_error ("Expected scalar intrinsic variable at %L in atomic "
+		     "comparison", &comp_cond->value.op.op1->where);
+	  return;
+	}
+      if (!gfc_resolve_expr (comp_cond->value.op.op2))
+	return;
+      if (!is_scalar_intrinsic_expr (comp_cond->value.op.op2, false, false))
+	{
+	  gfc_error ("Expected scalar intrinsic expression at %L in atomic "
+		     "comparison", &comp_cond->value.op.op1->where);
+	  return;
+	}
+    }
+
+  if (!is_scalar_intrinsic_expr (stmt->expr1, true, false))
     {
       gfc_error ("!$OMP ATOMIC statement must set a scalar variable of "
-		 "intrinsic type at %L", &code->loc);
+		 "intrinsic type at %L", &stmt->expr1->where);
       return;
     }
 
-  var = code->expr1->symtree->n.sym;
-  expr2 = is_conversion (code->expr2, false);
-  if (expr2 == NULL)
+  if (!gfc_resolve_expr (stmt->expr2))
+    return;
+  if (!is_scalar_intrinsic_expr (stmt->expr2, false, false))
     {
-      if (aop == GFC_OMP_ATOMIC_READ || aop == GFC_OMP_ATOMIC_WRITE)
-	expr2 = is_conversion (code->expr2, true);
-      if (expr2 == NULL)
-	expr2 = code->expr2;
+      gfc_error ("!$OMP ATOMIC statement must assign an expression of "
+		 "intrinsic type at %L", &stmt->expr2->where);
+      return;
     }
+
+  if (gfc_expr_attr (stmt->expr1).allocatable)
+    {
+      gfc_error ("!$OMP ATOMIC with ALLOCATABLE variable at %L",
+		 &stmt->expr1->where);
+      return;
+    }
+
+  var = stmt->expr1->symtree->n.sym;
+  stmt_expr2 = is_conversion (stmt->expr2, true, true);
+  if (stmt_expr2 == NULL)
+    stmt_expr2 = stmt->expr2;
 
   switch (aop)
     {
     case GFC_OMP_ATOMIC_READ:
-      if (expr2->expr_type != EXPR_VARIABLE
-	  || expr2->symtree == NULL
-	  || expr2->rank != 0
-	  || (expr2->ts.type != BT_INTEGER
-	      && expr2->ts.type != BT_REAL
-	      && expr2->ts.type != BT_COMPLEX
-	      && expr2->ts.type != BT_LOGICAL))
+      if (stmt_expr2->expr_type != EXPR_VARIABLE)
 	gfc_error ("!$OMP ATOMIC READ statement must read from a scalar "
-		   "variable of intrinsic type at %L", &expr2->where);
+		   "variable of intrinsic type at %L", &stmt_expr2->where);
       return;
     case GFC_OMP_ATOMIC_WRITE:
-      if (expr2->rank != 0 || expr_references_sym (code->expr2, var, NULL))
+      if (expr_references_sym (stmt_expr2, var, NULL))
 	gfc_error ("expr in !$OMP ATOMIC WRITE assignment var = expr "
 		   "must be scalar and cannot reference var at %L",
-		   &expr2->where);
+		   &stmt_expr2->where);
       return;
     default:
       break;
     }
-  if (atomic_code->ext.omp_clauses->capture)
-    {
-      expr2_tmp = expr2;
-      if (expr2 == code->expr2)
-	{
-	  expr2_tmp = is_conversion (code->expr2, true);
-	  if (expr2_tmp == NULL)
-	    expr2_tmp = expr2;
-	}
-      if (expr2_tmp->expr_type == EXPR_VARIABLE)
-	{
-	  if (expr2_tmp->symtree == NULL
-	      || expr2_tmp->rank != 0
-	      || (expr2_tmp->ts.type != BT_INTEGER
-		  && expr2_tmp->ts.type != BT_REAL
-		  && expr2_tmp->ts.type != BT_COMPLEX
-		  && expr2_tmp->ts.type != BT_LOGICAL)
-	      || expr2_tmp->symtree->n.sym == var)
-	    {
-	      gfc_error ("!$OMP ATOMIC CAPTURE capture statement must read from "
-			 "a scalar variable of intrinsic type at %L",
-			 &expr2_tmp->where);
-	      return;
-	    }
-	  var = expr2_tmp->symtree->n.sym;
-	  code = code->next;
-	  if (code->expr1->expr_type != EXPR_VARIABLE
-	      || code->expr1->symtree == NULL
-	      || code->expr1->rank != 0
-	      || (code->expr1->ts.type != BT_INTEGER
-		  && code->expr1->ts.type != BT_REAL
-		  && code->expr1->ts.type != BT_COMPLEX
-		  && code->expr1->ts.type != BT_LOGICAL))
-	    {
-	      gfc_error ("!$OMP ATOMIC CAPTURE update statement must set "
-			 "a scalar variable of intrinsic type at %L",
-			 &code->expr1->where);
-	      return;
-	    }
-	  if (code->expr1->symtree->n.sym != var)
-	    {
-	      gfc_error ("!$OMP ATOMIC CAPTURE capture statement reads from "
-			 "different variable than update statement writes "
-			 "into at %L", &code->expr1->where);
-	      return;
-	    }
-	  expr2 = is_conversion (code->expr2, false);
-	  if (expr2 == NULL)
-	    expr2 = code->expr2;
-	}
-    }
 
-  if (gfc_expr_attr (code->expr1).allocatable)
+  if (atomic_code->ext.omp_clauses->compare
+      && !atomic_code->ext.omp_clauses->capture)
     {
-      gfc_error ("!$OMP ATOMIC with ALLOCATABLE variable at %L",
-		 &code->loc);
+      gfc_error ("Sorry, COMPARE clause in ATOMIC at %L is not yet "
+		 "supported", &atomic_code->loc);
       return;
     }
 
+  if (atomic_code->ext.omp_clauses->capture)
+    {
+      if (!is_scalar_intrinsic_expr (capture_stmt->expr1, true, false))
+	{
+	  gfc_error ("!$OMP ATOMIC capture-statement must set a scalar "
+		     "variable of intrinsic type at %L",
+		     &capture_stmt->expr1->where);
+	  return;
+	}
+
+      if (!is_scalar_intrinsic_expr (capture_stmt->expr2, true, true))
+	{
+	  gfc_error ("!$OMP ATOMIC capture-statement requires a scalar variable"
+		     " of intrinsic type at %L", &capture_stmt->expr2->where);
+	  return;
+	}
+      capt_expr2 = is_conversion (capture_stmt->expr2, true, true);
+      if (capt_expr2 == NULL)
+	capt_expr2 = capture_stmt->expr2;
+
+      if (capt_expr2->symtree->n.sym != var)
+	{
+	  gfc_error ("!$OMP ATOMIC CAPTURE capture statement reads from "
+		     "different variable than update statement writes "
+		     "into at %L", &capture_stmt->expr2->where);
+	      return;
+	}
+    }
+
   if (atomic_code->ext.omp_clauses->capture
-      && code->next == NULL
-      && code->expr2->rank == 0
-      && !expr_references_sym (code->expr2, var, NULL))
+      && !expr_references_sym (stmt_expr2, var, NULL))
     atomic_code->ext.omp_clauses->atomic_op
       = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
 			     | GFC_OMP_ATOMIC_SWAP);
-  else if (expr2->expr_type == EXPR_OP)
+  else if (stmt_expr2->expr_type == EXPR_OP)
     {
       gfc_expr *v = NULL, *e, *c;
-      gfc_intrinsic_op op = expr2->value.op.op;
+      gfc_intrinsic_op op = stmt_expr2->value.op.op;
       gfc_intrinsic_op alt_op = INTRINSIC_NONE;
 
+      if (atomic_code->ext.omp_clauses->fail != OMP_MEMORDER_UNSET
+	  && !atomic_code->ext.omp_clauses->compare)
+	gfc_error ("!$OMP ATOMIC UPDATE at %L with FAIL clause requiries either"
+		   " the COMPARE clause or using the intrinsic MIN/MAX "
+		   "procedure", &atomic_code->loc);
       switch (op)
 	{
 	case INTRINSIC_PLUS:
@@ -7666,7 +7860,7 @@ resolve_omp_atomic (gfc_code *code)
 	default:
 	  gfc_error ("!$OMP ATOMIC assignment operator must be binary "
 		     "+, *, -, /, .AND., .OR., .EQV. or .NEQV. at %L",
-		     &expr2->where);
+		     &stmt_expr2->where);
 	  return;
 	}
 
@@ -7676,12 +7870,12 @@ resolve_omp_atomic (gfc_code *code)
 	 (expr) op var.  We rely here on the fact that the matcher
 	 for x op1 y op2 z where op1 and op2 have equal precedence
 	 returns (x op1 y) op2 z.  */
-      e = expr2->value.op.op2;
+      e = stmt_expr2->value.op.op2;
       if (e->expr_type == EXPR_VARIABLE
 	  && e->symtree != NULL
 	  && e->symtree->n.sym == var)
 	v = e;
-      else if ((c = is_conversion (e, true)) != NULL
+      else if ((c = is_conversion (e, false, true)) != NULL
 	       && c->expr_type == EXPR_VARIABLE
 	       && c->symtree != NULL
 	       && c->symtree->n.sym == var)
@@ -7689,7 +7883,7 @@ resolve_omp_atomic (gfc_code *code)
       else
 	{
 	  gfc_expr **p = NULL, **q;
-	  for (q = &expr2->value.op.op1; (e = *q) != NULL; )
+	  for (q = &stmt_expr2->value.op.op1; (e = *q) != NULL; )
 	    if (e->expr_type == EXPR_VARIABLE
 		&& e->symtree != NULL
 		&& e->symtree->n.sym == var)
@@ -7697,7 +7891,7 @@ resolve_omp_atomic (gfc_code *code)
 		v = e;
 		break;
 	      }
-	    else if ((c = is_conversion (e, true)) != NULL)
+	    else if ((c = is_conversion (e, false, true)) != NULL)
 	      q = &e->value.function.actual->expr;
 	    else if (e->expr_type != EXPR_OP
 		     || (e->value.op.op != op
@@ -7713,7 +7907,7 @@ resolve_omp_atomic (gfc_code *code)
 	  if (v == NULL)
 	    {
 	      gfc_error ("!$OMP ATOMIC assignment must be var = var op expr "
-			 "or var = expr op var at %L", &expr2->where);
+			 "or var = expr op var at %L", &stmt_expr2->where);
 	      return;
 	    }
 
@@ -7728,7 +7922,7 @@ resolve_omp_atomic (gfc_code *code)
 		case INTRINSIC_NEQV:
 		  gfc_error ("!$OMP ATOMIC var = var op expr not "
 			     "mathematically equivalent to var = var op "
-			     "(expr) at %L", &expr2->where);
+			     "(expr) at %L", &stmt_expr2->where);
 		  break;
 		default:
 		  break;
@@ -7736,43 +7930,44 @@ resolve_omp_atomic (gfc_code *code)
 
 	      /* Canonicalize into var = var op (expr).  */
 	      *p = e->value.op.op2;
-	      e->value.op.op2 = expr2;
-	      e->ts = expr2->ts;
-	      if (code->expr2 == expr2)
-		code->expr2 = expr2 = e;
+	      e->value.op.op2 = stmt_expr2;
+	      e->ts = stmt_expr2->ts;
+	      if (stmt->expr2 == stmt_expr2)
+		stmt->expr2 = stmt_expr2 = e;
 	      else
-		code->expr2->value.function.actual->expr = expr2 = e;
+		stmt->expr2->value.function.actual->expr = stmt_expr2 = e;
 
-	      if (!gfc_compare_types (&expr2->value.op.op1->ts, &expr2->ts))
+	      if (!gfc_compare_types (&stmt_expr2->value.op.op1->ts,
+				      &stmt_expr2->ts))
 		{
-		  for (p = &expr2->value.op.op1; *p != v;
+		  for (p = &stmt_expr2->value.op.op1; *p != v;
 		       p = &(*p)->value.function.actual->expr)
 		    ;
 		  *p = NULL;
-		  gfc_free_expr (expr2->value.op.op1);
-		  expr2->value.op.op1 = v;
-		  gfc_convert_type (v, &expr2->ts, 2);
+		  gfc_free_expr (stmt_expr2->value.op.op1);
+		  stmt_expr2->value.op.op1 = v;
+		  gfc_convert_type (v, &stmt_expr2->ts, 2);
 		}
 	    }
 	}
 
-      if (e->rank != 0 || expr_references_sym (code->expr2, var, v))
+      if (e->rank != 0 || expr_references_sym (stmt->expr2, var, v))
 	{
 	  gfc_error ("expr in !$OMP ATOMIC assignment var = var op expr "
 		     "must be scalar and cannot reference var at %L",
-		     &expr2->where);
+		     &stmt_expr2->where);
 	  return;
 	}
     }
-  else if (expr2->expr_type == EXPR_FUNCTION
-	   && expr2->value.function.isym != NULL
-	   && expr2->value.function.esym == NULL
-	   && expr2->value.function.actual != NULL
-	   && expr2->value.function.actual->next != NULL)
+  else if (stmt_expr2->expr_type == EXPR_FUNCTION
+	   && stmt_expr2->value.function.isym != NULL
+	   && stmt_expr2->value.function.esym == NULL
+	   && stmt_expr2->value.function.actual != NULL
+	   && stmt_expr2->value.function.actual->next != NULL)
     {
       gfc_actual_arglist *arg, *var_arg;
 
-      switch (expr2->value.function.isym->id)
+      switch (stmt_expr2->value.function.isym->id)
 	{
 	case GFC_ISYM_MIN:
 	case GFC_ISYM_MAX:
@@ -7780,31 +7975,37 @@ resolve_omp_atomic (gfc_code *code)
 	case GFC_ISYM_IAND:
 	case GFC_ISYM_IOR:
 	case GFC_ISYM_IEOR:
-	  if (expr2->value.function.actual->next->next != NULL)
+	  if (stmt_expr2->value.function.actual->next->next != NULL)
 	    {
 	      gfc_error ("!$OMP ATOMIC assignment intrinsic IAND, IOR "
 			 "or IEOR must have two arguments at %L",
-			 &expr2->where);
+			 &stmt_expr2->where);
 	      return;
 	    }
 	  break;
 	default:
 	  gfc_error ("!$OMP ATOMIC assignment intrinsic must be "
 		     "MIN, MAX, IAND, IOR or IEOR at %L",
-		     &expr2->where);
+		     &stmt_expr2->where);
 	  return;
 	}
 
       var_arg = NULL;
-      for (arg = expr2->value.function.actual; arg; arg = arg->next)
+      for (arg = stmt_expr2->value.function.actual; arg; arg = arg->next)
 	{
-	  if ((arg == expr2->value.function.actual
-	       || (var_arg == NULL && arg->next == NULL))
-	      && arg->expr->expr_type == EXPR_VARIABLE
-	      && arg->expr->symtree != NULL
-	      && arg->expr->symtree->n.sym == var)
-	    var_arg = arg;
-	  else if (expr_references_sym (arg->expr, var, NULL))
+	  gfc_expr *e = NULL;
+	  if (arg == stmt_expr2->value.function.actual
+	      || (var_arg == NULL && arg->next == NULL))
+	    {
+	      e = is_conversion (arg->expr, false, true);
+	      if (!e)
+		e = arg->expr;
+	      if (e->expr_type == EXPR_VARIABLE
+		  && e->symtree != NULL
+		  && e->symtree->n.sym == var)
+		var_arg = arg;
+	    }
+	  if ((!var_arg || !e) && expr_references_sym (arg->expr, var, NULL))
 	    {
 	      gfc_error ("!$OMP ATOMIC intrinsic arguments except one must "
 			 "not reference %qs at %L",
@@ -7822,72 +8023,35 @@ resolve_omp_atomic (gfc_code *code)
       if (var_arg == NULL)
 	{
 	  gfc_error ("First or last !$OMP ATOMIC intrinsic argument must "
-		     "be %qs at %L", var->name, &expr2->where);
+		     "be %qs at %L", var->name, &stmt_expr2->where);
 	  return;
 	}
 
-      if (var_arg != expr2->value.function.actual)
+      if (var_arg != stmt_expr2->value.function.actual)
 	{
 	  /* Canonicalize, so that var comes first.  */
 	  gcc_assert (var_arg->next == NULL);
-	  for (arg = expr2->value.function.actual;
+	  for (arg = stmt_expr2->value.function.actual;
 	       arg->next != var_arg; arg = arg->next)
 	    ;
-	  var_arg->next = expr2->value.function.actual;
-	  expr2->value.function.actual = var_arg;
+	  var_arg->next = stmt_expr2->value.function.actual;
+	  stmt_expr2->value.function.actual = var_arg;
 	  arg->next = NULL;
 	}
     }
   else
     gfc_error ("!$OMP ATOMIC assignment must have an operator or "
-	       "intrinsic on right hand side at %L", &expr2->where);
+	       "intrinsic on right hand side at %L", &stmt_expr2->where);
 
-  if (atomic_code->ext.omp_clauses->capture && code->next)
-    {
-      code = code->next;
-      if (code->expr1->expr_type != EXPR_VARIABLE
-	  || code->expr1->symtree == NULL
-	  || code->expr1->rank != 0
-	  || (code->expr1->ts.type != BT_INTEGER
-	      && code->expr1->ts.type != BT_REAL
-	      && code->expr1->ts.type != BT_COMPLEX
-	      && code->expr1->ts.type != BT_LOGICAL))
-	{
-	  gfc_error ("!$OMP ATOMIC CAPTURE capture statement must set "
-		     "a scalar variable of intrinsic type at %L",
-		     &code->expr1->where);
-	  return;
-	}
+  if (atomic_code->ext.omp_clauses->compare)
+    gfc_error ("Sorry, COMPARE clause in ATOMIC at %L is not yet "
+	       "supported", &atomic_code->loc);
+  return;
 
-      expr2 = is_conversion (code->expr2, false);
-      if (expr2 == NULL)
-	{
-	  expr2 = is_conversion (code->expr2, true);
-	  if (expr2 == NULL)
-	    expr2 = code->expr2;
-	}
-
-      if (expr2->expr_type != EXPR_VARIABLE
-	  || expr2->symtree == NULL
-	  || expr2->rank != 0
-	  || (expr2->ts.type != BT_INTEGER
-	      && expr2->ts.type != BT_REAL
-	      && expr2->ts.type != BT_COMPLEX
-	      && expr2->ts.type != BT_LOGICAL))
-	{
-	  gfc_error ("!$OMP ATOMIC CAPTURE capture statement must read "
-		     "from a scalar variable of intrinsic type at %L",
-		     &expr2->where);
-	  return;
-	}
-      if (expr2->symtree->n.sym != var)
-	{
-	  gfc_error ("!$OMP ATOMIC CAPTURE capture statement reads from "
-		     "different variable than update statement writes "
-		     "into at %L", &expr2->where);
-	  return;
-	}
-    }
+unexpected:
+  gfc_error ("unexpected !$OMP ATOMIC expression at %L",
+	     loc ? loc : &code->loc);
+  return;
 }
 
 

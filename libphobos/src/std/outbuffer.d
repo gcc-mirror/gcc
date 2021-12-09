@@ -1,18 +1,19 @@
 // Written in the D programming language.
 
 /**
-Serialize data to $(D ubyte) arrays.
+Serialize data to `ubyte` arrays.
 
- * Copyright: Copyright Digital Mars 2000 - 2015.
+ * Copyright: Copyright The D Language Foundation 2000 - 2015.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   $(HTTP digitalmars.com, Walter Bright)
- * Source:    $(PHOBOSSRC std/_outbuffer.d)
+ * Source:    $(PHOBOSSRC std/outbuffer.d)
  *
  * $(SCRIPT inhibitQuickIndex = 1;)
  */
 module std.outbuffer;
 
-import core.stdc.stdarg; // : va_list;
+import core.stdc.stdarg;
+import std.traits : isSomeString;
 
 /*********************************************
  * OutBuffer provides a way to build up an array of bytes out
@@ -41,7 +42,7 @@ class OutBuffer
     /*********************************
      * Convert to array of bytes.
      */
-    ubyte[] toBytes() { return data[0 .. offset]; }
+    inout(ubyte)[] toBytes() scope inout { return data[0 .. offset]; }
 
     /***********************************
      * Preallocate nbytes more to the size of the internal buffer.
@@ -59,7 +60,7 @@ class OutBuffer
         {
             assert(offset + nbytes <= data.length);
         }
-        body
+        do
         {
             if (data.length < offset + nbytes)
             {
@@ -78,19 +79,19 @@ class OutBuffer
      * Append data to the internal buffer.
      */
 
-    void write(const(ubyte)[] bytes)
+    void write(scope const(ubyte)[] bytes)
         {
             reserve(bytes.length);
             data[offset .. offset + bytes.length] = bytes[];
             offset += bytes.length;
         }
 
-    void write(in wchar[] chars) @trusted
+    void write(scope const(wchar)[] chars) @trusted
         {
         write(cast(ubyte[]) chars);
         }
 
-    void write(const(dchar)[] chars) @trusted
+    void write(scope const(dchar)[] chars) @trusted
         {
         write(cast(ubyte[]) chars);
         }
@@ -161,12 +162,12 @@ class OutBuffer
         offset += real.sizeof;
     }
 
-    void write(in char[] s) @trusted             /// ditto
+    void write(scope const(char)[] s) @trusted             /// ditto
     {
         write(cast(ubyte[]) s);
     }
 
-    void write(OutBuffer buf)           /// ditto
+    void write(scope const OutBuffer buf)           /// ditto
     {
         write(buf.toBytes());
     }
@@ -195,7 +196,7 @@ class OutBuffer
     {
         assert((offset & (alignsize - 1)) == 0);
     }
-    body
+    do
     {
         auto nbytes = offset & (alignsize - 1);
         if (nbytes)
@@ -245,13 +246,13 @@ class OutBuffer
      * Append output of C's vprintf() to internal buffer.
      */
 
-    void vprintf(string format, va_list args) @trusted nothrow
+    void vprintf(scope string format, va_list args) @trusted nothrow
     {
         import core.stdc.stdio : vsnprintf;
         import core.stdc.stdlib : alloca;
         import std.string : toStringz;
 
-        version (unittest)
+        version (StdUnittest)
             char[3] buffer = void;      // trigger reallocation
         else
             char[128] buffer = void;
@@ -290,7 +291,7 @@ class OutBuffer
      * Append output of C's printf() to internal buffer.
      */
 
-    void printf(string format, ...) @trusted
+    void printf(scope string format, ...) @trusted
     {
         va_list ap;
         va_start(ap, format);
@@ -309,9 +310,9 @@ class OutBuffer
      *  $(REF _writef, std,stdio);
      *  $(REF formattedWrite, std,format);
      */
-    void writef(Char, A...)(in Char[] fmt, A args)
+    void writef(Char, A...)(scope const(Char)[] fmt, A args)
     {
-        import std.format : formattedWrite;
+        import std.format.write : formattedWrite;
         formattedWrite(this, fmt, args);
     }
 
@@ -320,6 +321,25 @@ class OutBuffer
     {
         OutBuffer b = new OutBuffer();
         b.writef("a%sb", 16);
+        assert(b.toString() == "a16b");
+    }
+
+    /// ditto
+    void writef(alias fmt, A...)(A args)
+    if (isSomeString!(typeof(fmt)))
+    {
+        import std.format : checkFormatException;
+
+        alias e = checkFormatException!(fmt, A);
+        static assert(!e, e.msg);
+        return this.writef(fmt, args);
+    }
+
+    ///
+    @safe unittest
+    {
+        OutBuffer b = new OutBuffer();
+        b.writef!"a%sb"(16);
         assert(b.toString() == "a16b");
     }
 
@@ -335,9 +355,9 @@ class OutBuffer
      *  $(REF _writefln, std,stdio);
      *  $(REF formattedWrite, std,format);
      */
-    void writefln(Char, A...)(in Char[] fmt, A args)
+    void writefln(Char, A...)(scope const(Char)[] fmt, A args)
     {
-        import std.format : formattedWrite;
+        import std.format.write : formattedWrite;
         formattedWrite(this, fmt, args);
         put('\n');
     }
@@ -347,6 +367,25 @@ class OutBuffer
     {
         OutBuffer b = new OutBuffer();
         b.writefln("a%sb", 16);
+        assert(b.toString() == "a16b\n");
+    }
+
+    /// ditto
+    void writefln(alias fmt, A...)(A args)
+    if (isSomeString!(typeof(fmt)))
+    {
+        import std.format : checkFormatException;
+
+        alias e = checkFormatException!(fmt, A);
+        static assert(!e, e.msg);
+        return this.writefln(fmt, args);
+    }
+
+    ///
+    @safe unittest
+    {
+        OutBuffer b = new OutBuffer();
+        b.writefln!"a%sb"(16);
         assert(b.toString() == "a16b\n");
     }
 
@@ -360,7 +399,7 @@ class OutBuffer
         {
             assert(index <= offset);
         }
-        body
+        do
         {
             reserve(nbytes);
 

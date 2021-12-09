@@ -60,7 +60,7 @@ package body Ada.Containers.Hash_Tables.Generic_Bounded_Operations is
       --  HT.Busy := 0;
       --  HT.Lock := 0;
       HT.Free := -1;
-      HT.Buckets := (others => 0);  -- optimize this somehow ???
+      HT.Buckets := [others => 0];  -- optimize this somehow ???
    end Clear;
 
    --------------------------

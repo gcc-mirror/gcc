@@ -9,7 +9,7 @@
  *    (See accompanying file LICENSE)
  * Authors:   Sean Kelly
  * Standards: ISO/IEC 9899:1999 (E)
- * Source: $(DRUNTIMESRC src/core/stdc/_stdlib.d)
+ * Source: $(DRUNTIMESRC core/stdc/_stdlib.d)
  */
 
 module core.stdc.stdlib;

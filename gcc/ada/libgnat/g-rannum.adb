@@ -385,7 +385,7 @@ is
       Result : Image_String;
 
    begin
-      Result := (others => ' ');
+      Result := [others => ' '];
       Result (1 .. Sys_Max_Image_Width) := Image (Gen.Rep);
 
       if Gen.Have_Gaussian then

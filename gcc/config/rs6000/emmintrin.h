@@ -1233,6 +1233,9 @@ _mm_loadl_pd (__m128d __A, double const *__B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_pd (__m128d  __A)
 {
+#ifdef _ARCH_PWR10
+  return vec_extractm ((__v2du) __A);
+#else
   __vector unsigned long long result;
   static const __vector unsigned int perm_mask =
     {
@@ -1252,6 +1255,7 @@ _mm_movemask_pd (__m128d  __A)
 #else
   return result[0];
 #endif
+#endif /* !_ARCH_PWR10 */
 }
 #endif /* _ARCH_PWR8 */
 
@@ -2030,6 +2034,9 @@ _mm_min_epu8 (__m128i __A, __m128i __B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_epi8 (__m128i __A)
 {
+#ifdef _ARCH_PWR10
+  return vec_extractm ((__v16qu) __A);
+#else
   __vector unsigned long long result;
   static const __vector unsigned char perm_mask =
     {
@@ -2046,6 +2053,7 @@ _mm_movemask_epi8 (__m128i __A)
 #else
   return result[0];
 #endif
+#endif /* !_ARCH_PWR10 */
 }
 #endif /* _ARCH_PWR8 */
 

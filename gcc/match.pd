@@ -1611,7 +1611,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree stype = TREE_TYPE (@0);
 	  tree ntype = TYPE_UNSIGNED (stype) ? signed_type_for (stype)
 					     : unsigned_type_for (stype); }
-   (convert (rshift:ntype (convert:ntype @0) @1)))))
+   (if (VECTOR_TYPE_P (type))
+    (view_convert (rshift (view_convert:ntype @0) @1))
+    (convert (rshift (convert:ntype @0) @1))))))
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
    when profitable.
@@ -4401,6 +4403,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(op (min @X { wide_int_to_tree (from_type, real_c1); })
 	    { wide_int_to_tree (from_type, c2); })))))))))
 
+/* X != C1 ? -X : C2 simplifies to -X when -C1 == C2.  */
+(simplify
+ (cond (ne @0 INTEGER_CST@1) (negate@3 @0) INTEGER_CST@2)
+ (if (!TYPE_SATURATING (type)
+      && (TYPE_OVERFLOW_WRAPS (type)
+	  || !wi::only_sign_bit_p (wi::to_wide (@1)))
+      && wi::eq_p (wi::neg (wi::to_wide (@1)), wi::to_wide (@2)))
+  @3))
+
+/* X != C1 ? ~X : C2 simplifies to ~X when ~C1 == C2.  */
+(simplify
+ (cond (ne @0 INTEGER_CST@1) (bit_not@3 @0) INTEGER_CST@2)
+ (if (wi::eq_p (wi::bit_not (wi::to_wide (@1)), wi::to_wide (@2)))
+  @3))
+
+/* (X + 1) > Y ? -X : 1 simplifies to X >= Y ? -X : 1 when
+   X is unsigned, as when X + 1 overflows, X is -1, so -X == 1.  */
+(simplify
+ (cond (gt (plus @0 integer_onep) @1) (negate @0) integer_onep@2)
+ (if (TYPE_UNSIGNED (type))
+  (cond (ge @0 @1) (negate @0) @2)))
+
 (for cnd (cond vec_cond)
  /* A ? B : (A ? X : C) -> A ? B : C.  */
  (simplify
@@ -5213,20 +5237,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (eqcmp (bit_and @1 { wide_int_to_tree (ty, mask - rhs); })
 	     { build_zero_cst (ty); }))))))
 
-/* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
-   where ~Y + 1 == pow2 and Z = ~Y.  */
-(for cst (VECTOR_CST INTEGER_CST)
- (for cmp (eq ne)
-      icmp (le gt)
-  (simplify
-   (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
-    (with { tree csts = bitmask_inv_cst_vector_p (@1); }
-     (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
-      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
-       (icmp @0 { csts; })
-       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
-	 (icmp (convert:utype @0) { csts; }))))))))
-
 /* -A CMP -B -> B CMP A.  */
 (for cmp (tcc_comparison)
      scmp (swapped_tcc_comparison)
@@ -5712,6 +5722,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    as we require a tcc_comparison in GIMPLE_CONDs where we'd
    replace if (x == 0) with tem = ~x; if (tem != 0) which is
    clearly less optimal and which we'll transform again in forwprop.  */
+
+/* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z
+   where ~Y + 1 == pow2 and Z = ~Y.  */
+(for cst (VECTOR_CST INTEGER_CST)
+ (for cmp (eq ne)
+      icmp (le gt)
+  (simplify
+   (cmp (bit_and:c@2 @0 cst@1) integer_zerop)
+    (with { tree csts = bitmask_inv_cst_vector_p (@1); }
+     (if (csts && (VECTOR_TYPE_P (TREE_TYPE (@1)) || single_use (@2)))
+      (if (TYPE_UNSIGNED (TREE_TYPE (@1)))
+       (icmp @0 { csts; })
+       (with { tree utype = unsigned_type_for (TREE_TYPE (@1)); }
+	 (icmp (convert:utype @0) { csts; }))))))))
 
 /* When one argument is a constant, overflow detection can be simplified.
    Currently restricted to single use so as not to interfere too much with

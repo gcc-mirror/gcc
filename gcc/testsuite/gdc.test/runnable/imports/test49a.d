@@ -1,6 +1,6 @@
 module imports.test49a;
 
-import std.stdio;
+import core.stdc.stdio;
 
 int x;
 

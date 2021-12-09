@@ -1248,9 +1248,10 @@ package body Rtsfind is
       --  for this unit to the current compilation unit.
 
       declare
-         LibUnit : constant Node_Id := Unit (Cunit (U.Unum));
-         Clause  : Node_Id;
-         Withn   : Node_Id;
+         LibUnit  : constant Node_Id         := Unit (Cunit (U.Unum));
+         Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
+         Clause   : Node_Id;
+         Withn    : Node_Id;
 
       begin
          Clause := U.First_Implicit_With;
@@ -1262,11 +1263,18 @@ package body Rtsfind is
             Clause := Next_Implicit_With (Clause);
          end loop;
 
+         --  We want to make sure that the "with" we create below isn't
+         --  marked as ignored ghost code because this list may be walked
+         --  later, after ignored ghost code is converted to a null
+         --  statement.
+
+         Ghost_Mode := None;
          Withn :=
            Make_With_Clause (Standard_Location,
              Name =>
                Make_Unit_Name
                  (U, Defining_Unit_Name (Specification (LibUnit))));
+         Ghost_Mode := Saved_GM;
 
          Set_Corresponding_Spec  (Withn, U.Entity);
          Set_First_Name          (Withn);

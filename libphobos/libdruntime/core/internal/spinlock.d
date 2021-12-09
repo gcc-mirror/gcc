@@ -2,7 +2,7 @@
  * SpinLock for runtime internal usage.
  *
  * Copyright: Copyright Digital Mars 2015 -.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Martin Nowak
  * Source: $(DRUNTIMESRC core/internal/_spinlock.d)
  */
@@ -50,8 +50,9 @@ shared struct SpinLock
     /// yield with backoff
     void yield(size_t k)
     {
+        import core.time;
         if (k < pauseThresh)
-            return pause();
+            return core.atomic.pause();
         else if (k < 32)
             return Thread.yield();
         Thread.sleep(1.msecs);
@@ -66,25 +67,9 @@ private:
         enum X86 = false;
 
     static if (X86)
-    {
         enum pauseThresh = 16;
-        void pause()
-        {
-            asm @trusted @nogc nothrow
-            {
-                // pause instruction
-                rep;
-                nop;
-            }
-        }
-    }
     else
-    {
         enum pauseThresh = 4;
-        void pause()
-        {
-        }
-    }
 
     size_t val;
     Contention contention;
@@ -93,7 +78,7 @@ private:
 // aligned to cacheline to avoid false sharing
 shared align(64) struct AlignedSpinLock
 {
-    this(SpinLock.Contention contention)
+    this(SpinLock.Contention contention) @trusted @nogc nothrow
     {
         impl = shared(SpinLock)(contention);
     }

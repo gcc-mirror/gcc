@@ -135,7 +135,7 @@ is
       J      : Natural;
 
       type Character_Index is array (Character) of Natural with Ghost;
-      Indexes : Character_Index := (others => 0) with Ghost;
+      Indexes : Character_Index := [others => 0] with Ghost;
 
    begin
       J := 0;
@@ -367,7 +367,7 @@ is
 
       Domain : String (1 .. Map'Length) with Ghost, Relaxed_Initialization;
       type Character_Index is array (Character) of Natural with Ghost;
-      Indexes : Character_Index := (others => 0) with Ghost;
+      Indexes : Character_Index := [others => 0] with Ghost;
 
    --  Start of processing for To_Range
 

@@ -6607,7 +6607,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	   at the definition are also available at uses.  */
 	sprime = eliminate_avail (gimple_bb (SSA_NAME_DEF_STMT (use)), use);
       if (sprime && sprime != use
-	  && may_propagate_copy (use, sprime)
+	  && may_propagate_copy (use, sprime, true)
 	  /* We substitute into debug stmts to avoid excessive
 	     debug temporaries created by removed stmts, but we need
 	     to avoid doing so for inserted sprimes as we never want

@@ -9,15 +9,13 @@ class C19734
     {
         // Invalid 'this' parameter because of applied 'extern' storage class.
         void testin(typeof(this) p)
-        in { assert(this is p); }
-        body
+            in(this is p)
         {
         }
 
         // Undefined reference to __result.
         int testout()
-        out { assert(__result == 2); }
-        body
+            out(; __result == 2)
         {
             return 2;
         }

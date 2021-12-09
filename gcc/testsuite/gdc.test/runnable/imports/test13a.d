@@ -17,7 +17,7 @@ template Ordinal(T) {
     public T clamp(T item, T lower, T upper)
     in {
         assert(lower <= upper);
-    } body {
+    } do {
         return max(min(item, upper), lower);
     }
 }

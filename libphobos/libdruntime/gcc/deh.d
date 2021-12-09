@@ -32,8 +32,8 @@ import gcc.attributes;
 
 extern(C)
 {
-    int _d_isbaseof(ClassInfo, ClassInfo);
-    void _d_createTrace(Object, void*);
+    int _d_isbaseof(ClassInfo, ClassInfo) @nogc nothrow pure @safe;
+    void _d_createTrace(Throwable, void*);
     void _d_print_throwable(Throwable t);
 }
 
@@ -432,6 +432,9 @@ extern(C) void* __gdc_begin_catch(_Unwind_Exception* unwindHeader)
     ExceptionHeader* header = ExceptionHeader.toExceptionHeader(unwindHeader);
 
     void* objectp = cast(void*)header.object;
+    // Remove our reference to the exception. We should not decrease its refcount,
+    // because we pass the object on to the caller.
+    header.object = null;
 
     // Something went wrong when stacking up chained headers...
     if (header != ExceptionHeader.pop())
@@ -454,6 +457,11 @@ extern(C) void _d_throw(Throwable object)
 
     // Add to thrown exception stack.
     eh.push();
+
+    // Increment reference count if object is a refcounted Throwable.
+    auto refcount = object.refcount();
+    if (refcount)
+        object.refcount() = refcount + 1;
 
     // Called by unwinder when exception object needs destruction by other than our code.
     extern(C) void exception_cleanup(_Unwind_Reason_Code code, _Unwind_Exception* exc)
@@ -976,14 +984,10 @@ private _Unwind_Reason_Code __gdc_personality(_Unwind_Action actions,
             if (currentLsd != nextLsd)
                 break;
 
-            // Add our object onto the end of the existing chain.
-            Throwable n = ehn.object;
-            while (n.next)
-                n = n.next;
-            n.next = eh.object;
+            // Add our object onto the end of the existing chain and replace
+            // our exception object with in-flight one.
+            eh.object = Throwable.chainTogether(ehn.object, eh.object);
 
-            // Replace our exception object with in-flight one
-            eh.object = ehn.object;
             if (nextHandler != handler && !bypassed)
             {
                 handler = nextHandler;

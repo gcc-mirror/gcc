@@ -3050,6 +3050,23 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 	lhs_base = TREE_OPERAND (lhs_base, 0);
       reg_lhs = (mem_ref_refers_to_non_mem_p (lhs_base)
 		 || non_mem_decl_p (lhs_base));
+      /* If this expands to a register and the underlying decl is wrapped in
+	 a MEM_REF that just serves as an access type change expose the decl
+	 if it is of correct size.  This avoids a situation as in PR103271
+	 if the target does not support a direct move to the registers mode.  */
+      if (reg_lhs
+	  && TREE_CODE (lhs_base) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (lhs_base, 0)) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0))
+	  && integer_zerop (TREE_OPERAND (lhs_base, 1))
+	  && tree_fits_uhwi_p (var_size)
+	  && tree_int_cst_equal
+	       (var_size,
+		DECL_SIZE_UNIT (TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0))))
+	{
+	  lhs = TREE_OPERAND (TREE_OPERAND (lhs_base, 0), 0);
+	  var_type = TREE_TYPE (lhs);
+	}
     }
 
   if (!reg_lhs)
@@ -3817,6 +3834,67 @@ direct_internal_fn_supported_p (gcall *stmt, optimization_type opt_type)
   return direct_internal_fn_supported_p (fn, types, opt_type);
 }
 
+/* Return true if FN is a binary operation and if FN is commutative.  */
+
+bool
+commutative_binary_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_AVG_FLOOR:
+    case IFN_AVG_CEIL:
+    case IFN_MULH:
+    case IFN_MULHS:
+    case IFN_MULHRS:
+    case IFN_FMIN:
+    case IFN_FMAX:
+    case IFN_COMPLEX_MUL:
+    case IFN_UBSAN_CHECK_ADD:
+    case IFN_UBSAN_CHECK_MUL:
+    case IFN_ADD_OVERFLOW:
+    case IFN_MUL_OVERFLOW:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if FN is a ternary operation and if its first two arguments
+   are commutative.  */
+
+bool
+commutative_ternary_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_FMA:
+    case IFN_FMS:
+    case IFN_FNMA:
+    case IFN_FNMS:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if FN is an associative binary operation.  */
+
+bool
+associative_binary_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_FMIN:
+    case IFN_FMAX:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* If FN is commutative in two consecutive arguments, return the
    index of the first, otherwise return -1.  */
 
@@ -3825,19 +3903,6 @@ first_commutative_argument (internal_fn fn)
 {
   switch (fn)
     {
-    case IFN_FMA:
-    case IFN_FMS:
-    case IFN_FNMA:
-    case IFN_FNMS:
-    case IFN_AVG_FLOOR:
-    case IFN_AVG_CEIL:
-    case IFN_MULH:
-    case IFN_MULHS:
-    case IFN_MULHRS:
-    case IFN_FMIN:
-    case IFN_FMAX:
-      return 0;
-
     case IFN_COND_ADD:
     case IFN_COND_MUL:
     case IFN_COND_MIN:
@@ -3854,6 +3919,9 @@ first_commutative_argument (internal_fn fn)
       return 1;
 
     default:
+      if (commutative_binary_fn_p (fn)
+	  || commutative_ternary_fn_p (fn))
+	return 0;
       return -1;
     }
 }

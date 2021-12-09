@@ -295,7 +295,7 @@ static cpp_context *next_context (cpp_reader *);
 static const cpp_token *padding_token (cpp_reader *, const cpp_token *);
 static const cpp_token *new_string_token (cpp_reader *, uchar *, unsigned int);
 static const cpp_token *stringify_arg (cpp_reader *, const cpp_token **,
-				       unsigned int, bool);
+				       unsigned int);
 static void paste_all_tokens (cpp_reader *, const cpp_token *);
 static bool paste_tokens (cpp_reader *, location_t,
 			  const cpp_token **, const cpp_token *);
@@ -834,8 +834,7 @@ cpp_quote_string (uchar *dest, const uchar *src, unsigned int len)
 /* Convert a token sequence FIRST to FIRST+COUNT-1 to a single string token
    according to the rules of the ISO C #-operator.  */
 static const cpp_token *
-stringify_arg (cpp_reader *pfile, const cpp_token **first, unsigned int count,
-	       bool va_opt)
+stringify_arg (cpp_reader *pfile, const cpp_token **first, unsigned int count)
 {
   unsigned char *dest;
   unsigned int i, escape_it, backslash_count = 0;
@@ -851,24 +850,6 @@ stringify_arg (cpp_reader *pfile, const cpp_token **first, unsigned int count,
   for (i = 0; i < count; i++)
     {
       const cpp_token *token = first[i];
-
-      if (va_opt && (token->flags & PASTE_LEFT))
-	{
-	  location_t virt_loc = pfile->invocation_location;
-	  const cpp_token *rhs;
-	  do
-	    {
-	      if (i == count)
-		abort ();
-	      rhs = first[++i];
-	      if (!paste_tokens (pfile, virt_loc, &token, rhs))
-		{
-		  --i;
-		  break;
-		}
-	    }
-	  while (rhs->flags & PASTE_LEFT);
-	}
 
       if (token->type == CPP_PADDING)
 	{
@@ -1003,6 +984,7 @@ paste_tokens (cpp_reader *pfile, location_t location,
       return false;
     }
 
+  lhs->flags |= (*plhs)->flags & (PREV_WHITE | PREV_FALLTHROUGH);
   *plhs = lhs;
   _cpp_pop_buffer (pfile);
   return true;
@@ -1945,8 +1927,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	if (src->flags & STRINGIFY_ARG)
 	  {
 	    if (!arg->stringified)
-	      arg->stringified = stringify_arg (pfile, arg->first, arg->count,
-						false);
+	      arg->stringified = stringify_arg (pfile, arg->first, arg->count);
 	  }
 	else if ((src->flags & PASTE_LEFT)
 		 || (src != macro->exp.tokens && (src[-1].flags & PASTE_LEFT)))
@@ -2066,11 +2047,46 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		{
 		  unsigned int count
 		    = start ? paste_flag - start : tokens_buff_count (buff);
-		  const cpp_token *t
-		    = stringify_arg (pfile,
-				     start ? start + 1
-				     : (const cpp_token **) (buff->base),
-				     count, true);
+		  const cpp_token **first
+		    = start ? start + 1
+			    : (const cpp_token **) (buff->base);
+		  unsigned int i, j;
+
+		  /* Paste any tokens that need to be pasted before calling
+		     stringify_arg, because stringify_arg uses pfile->u_buff
+		     which paste_tokens can use as well.  */
+		  for (i = 0, j = 0; i < count; i++, j++)
+		    {
+		      const cpp_token *token = first[i];
+
+		      if (token->flags & PASTE_LEFT)
+			{
+			  location_t virt_loc = pfile->invocation_location;
+			  const cpp_token *rhs;
+			  do
+			    {
+			      if (i == count)
+				abort ();
+			      rhs = first[++i];
+			      if (!paste_tokens (pfile, virt_loc, &token, rhs))
+				{
+				  --i;
+				  break;
+				}
+			    }
+			  while (rhs->flags & PASTE_LEFT);
+			}
+
+		      first[j] = token;
+		    }
+		  if (j != i)
+		    {
+		      while (i-- != j)
+			tokens_buff_remove_last_token (buff);
+		      count = j;
+		    }
+
+		  const cpp_token *t = stringify_arg (pfile, first, count);
 		  while (count--)
 		    tokens_buff_remove_last_token (buff);
 		  if (src->flags & PASTE_LEFT)

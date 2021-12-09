@@ -26,7 +26,9 @@
 // ISO C++ 14882:
 //
 
-// Instantiations in this file are only for the new SSO std::string ABI
+// Instantiations in this file are only for the new SSO std::string ABI.
+#define _GLIBCXX_USE_CXX11_ABI 1
+
 #include <sstream>
 
 #if _GLIBCXX_USE_CXX11_ABI

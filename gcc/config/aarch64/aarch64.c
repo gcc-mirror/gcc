@@ -20414,6 +20414,18 @@ aarch64_mov_operand_p (rtx x, machine_mode mode)
     == SYMBOL_TINY_ABSOLUTE;
 }
 
+/* Create a 0 constant that is based on V4SI to allow CSE to optimally share
+   the constant creation.  */
+
+rtx
+aarch64_gen_shareable_zero (machine_mode mode)
+{
+  machine_mode zmode = V4SImode;
+  rtx tmp = gen_reg_rtx (zmode);
+  emit_move_insn (tmp, CONST0_RTX (zmode));
+  return lowpart_subreg (mode, tmp, zmode);
+}
+
 /* Return a const_int vector of VAL.  */
 rtx
 aarch64_simd_gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)

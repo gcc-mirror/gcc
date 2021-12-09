@@ -8,18 +8,21 @@ void acc_routine (void)
   int i, j, k, sum, diff;
 
   {
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
       for (j = 0; j < 10; j++)
         for (k = 0; k < 10; k++)
           sum = 1;
 
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop collapse(2) reduction(+:sum)
     for (i = 0; i < 10; i++)
       for (j = 0; j < 10; j++)
         for (k = 0; k < 10; k++)
           sum = 1;
 
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
       #pragma acc loop reduction(+:sum)
@@ -27,6 +30,7 @@ void acc_routine (void)
         for (k = 0; k < 10; k++)
           sum = 1;
 
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
       #pragma acc loop collapse(2) reduction(+:sum)
@@ -34,6 +38,7 @@ void acc_routine (void)
         for (k = 0; k < 10; k++)
           sum = 1;
 
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
       for (j = 0; j < 10; j++)
@@ -41,6 +46,7 @@ void acc_routine (void)
         for (k = 0; k < 10; k++)
           sum = 1;
 
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum)
     for (i = 0; i < 10; i++)
       #pragma acc loop reduction(+:sum)
@@ -49,6 +55,7 @@ void acc_routine (void)
         for (k = 0; k < 10; k++)
           sum = 1;
 
+    /* { dg-error "gang reduction on an orphan loop" "" { target *-*-* } .+1 } */
     #pragma acc loop reduction(+:sum) reduction(-:diff)
     for (i = 0; i < 10; i++)
       {

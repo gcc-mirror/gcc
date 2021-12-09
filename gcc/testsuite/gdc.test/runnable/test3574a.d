@@ -6,7 +6,7 @@ out
 {
     g = 100;
 }
-body
+do
 {
     return;
     // expected return code == 0

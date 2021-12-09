@@ -763,7 +763,6 @@ stmt_cost (gimple *gs, bool speed)
     }
   
   gcc_unreachable ();
-  return 0;
 }
 
 /* Look up the defining statement for BASE_IN and return a pointer

@@ -77,6 +77,7 @@ extern tree fold_build_call_array_loc (location_t, tree, tree, int, tree *);
 #define fold_build_call_array_initializer(T1,T2,N,T4)\
    fold_build_call_array_initializer_loc (UNKNOWN_LOCATION, T1, T2, N, T4)
 extern tree fold_build_call_array_initializer_loc (location_t, tree, tree, int, tree *);
+extern tree fold_binary_initializer_loc (location_t, tree_code, tree, tree, tree);
 extern tree get_array_ctor_element_at_index (tree, offset_int,
 					     unsigned * = NULL);
 extern bool fold_convertible_p (const_tree, const_tree);

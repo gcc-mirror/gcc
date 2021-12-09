@@ -97,7 +97,7 @@ package Sprint is
    --    -dg  print source from tree, including only the generated code
    --    -do  print source from tree, including only the original code
    --    -df  modify the above to include all units, not just the main unit
-   --    -sz  print source from tree for package Standard
+   --    -dz  print source from tree for package Standard
 
    procedure Sprint_Comma_List (List : List_Id);
    --  Prints the nodes in a list, with separating commas. If the list is empty

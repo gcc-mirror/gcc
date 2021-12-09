@@ -80,7 +80,7 @@ package body GNAT.Serial_Communications is
    pragma Import (C, fcntl, "fcntl");
 
    C_Data_Rate : constant array (Data_Rate) of unsigned :=
-                   (B75      => OSC.B75,
+                   [B75      => OSC.B75,
                     B110     => OSC.B110,
                     B150     => OSC.B150,
                     B300     => OSC.B300,
@@ -105,18 +105,18 @@ package body GNAT.Serial_Communications is
                     B2500000 => OSC.B2500000,
                     B3000000 => OSC.B3000000,
                     B3500000 => OSC.B3500000,
-                    B4000000 => OSC.B4000000);
+                    B4000000 => OSC.B4000000];
 
    C_Bits      : constant array (Data_Bits) of unsigned :=
-                   (CS7 => OSC.CS7, CS8 => OSC.CS8);
+                   [CS7 => OSC.CS7, CS8 => OSC.CS8];
 
    C_Stop_Bits : constant array (Stop_Bits_Number) of unsigned :=
-                   (One => 0, Two => OSC.CSTOPB);
+                   [One => 0, Two => OSC.CSTOPB];
 
    C_Parity    : constant array (Parity_Check) of unsigned :=
-                   (None => 0,
+                   [None => 0,
                     Odd  => OSC.PARENB or OSC.PARODD,
-                    Even => OSC.PARENB);
+                    Even => OSC.PARENB];
 
    procedure Raise_Error (Message : String; Error : Integer := Errno);
    pragma No_Return (Raise_Error);

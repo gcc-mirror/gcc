@@ -6,12 +6,12 @@
 </p><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="allocator.mt.intro"></a>Intro</h2></div></div></div><p>
   The mt allocator [hereinafter referred to simply as "the allocator"]
   is a fixed size (power of two) allocator that was initially
-  developed specifically to suit the needs of multi threaded
+  developed specifically to suit the needs of multi-threaded
   applications [hereinafter referred to as an MT application]. Over
   time the allocator has evolved and been improved in many ways, in
-  particular it now also does a good job in single threaded
-  applications [hereinafter referred to as a ST application]. (Note:
-  In this document, when referring to single threaded applications
+  particular it now also does a good job in single-threaded
+  applications [hereinafter referred to as an ST application]. (Note:
+  In this document, when referring to single-threaded applications
   this also includes applications that are compiled with gcc without
   thread support enabled. This is accomplished using ifdef's on
   __GTHREADS). This allocator is tunable, very flexible, and capable

@@ -2717,7 +2717,7 @@ gt_pch_nx (poly_int_pod<N, C> *)
 
 template<unsigned int N, typename C>
 void
-gt_pch_nx (poly_int_pod<N, C> *, void (*) (void *, void *), void *)
+gt_pch_nx (poly_int_pod<N, C> *, void (*) (void *, void *, void *), void *)
 {
 }
 

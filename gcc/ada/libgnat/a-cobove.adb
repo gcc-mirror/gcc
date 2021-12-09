@@ -258,7 +258,7 @@ package body Ada.Containers.Bounded_Vectors is
       end if;
 
       return Vector'(Capacity => 2,
-                     Elements => (Left, Right),
+                     Elements => [Left, Right],
                      Last     => Index_Type'First + 1,
                      others   => <>);
    end "&";
@@ -1227,7 +1227,7 @@ package body Ada.Containers.Bounded_Vectors is
          --  The new items are being appended to the vector, so no
          --  sliding of existing elements is required.
 
-         EA (J .. New_Length) := (others => New_Item);
+         EA (J .. New_Length) := [others => New_Item];
 
       else
          --  The new items are being inserted before some existing
@@ -1235,7 +1235,7 @@ package body Ada.Containers.Bounded_Vectors is
          --  new home.
 
          EA (J + Count .. New_Length) := EA (J .. Old_Length);
-         EA (J .. J + Count - 1) := (others => New_Item);
+         EA (J .. J + Count - 1) := [others => New_Item];
       end if;
 
       if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
@@ -2770,7 +2770,7 @@ package body Ada.Containers.Bounded_Vectors is
       end if;
 
       return V : Vector (Capacity => Length) do
-         V.Elements := (others => New_Item);
+         V.Elements := [others => New_Item];
          V.Last := Last;
       end return;
    end To_Vector;

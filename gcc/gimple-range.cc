@@ -333,7 +333,7 @@ gimple_ranger::prefill_name (irange &r, tree name)
   if (!gimple_range_ssa_p (name))
     return;
   gimple *stmt = SSA_NAME_DEF_STMT (name);
-  if (!gimple_range_handler (stmt))
+  if (!gimple_range_handler (stmt) && !is_a<gphi *> (stmt))
     return;
 
   bool current;
@@ -356,8 +356,8 @@ gimple_ranger::prefill_stmt_dependencies (tree ssa)
   gimple *stmt = SSA_NAME_DEF_STMT (ssa);
   gcc_checking_assert (stmt && gimple_bb (stmt));
 
-  // Only pre-process range-ops.
-  if (!gimple_range_handler (stmt))
+  // Only pre-process range-ops and phis.
+  if (!gimple_range_handler (stmt) && !is_a<gphi *> (stmt))
     return;
 
   // Mark where on the stack we are starting.
@@ -401,13 +401,22 @@ gimple_ranger::prefill_stmt_dependencies (tree ssa)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	}
 
-      gcc_checking_assert (gimple_range_handler (stmt));
-      tree op = gimple_range_operand2 (stmt);
-      if (op)
-	prefill_name (r, op);
-      op = gimple_range_operand1 (stmt);
-      if (op)
-	prefill_name (r, op);
+      gphi *phi = dyn_cast <gphi *> (stmt);
+      if (phi)
+	{
+	  for (unsigned x = 0; x < gimple_phi_num_args (phi); x++)
+	    prefill_name (r, gimple_phi_arg_def (phi, x));
+	}
+      else
+	{
+	  gcc_checking_assert (gimple_range_handler (stmt));
+	  tree op = gimple_range_operand2 (stmt);
+	  if (op)
+	    prefill_name (r, op);
+	  op = gimple_range_operand1 (stmt);
+	  if (op)
+	    prefill_name (r, op);
+	}
     }
   if (idx)
     tracer.trailer (idx, "ROS ", false, ssa, r);

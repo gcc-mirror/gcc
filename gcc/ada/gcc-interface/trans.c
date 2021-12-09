@@ -4453,14 +4453,14 @@ static tree
 Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	     atomic_acces_t atomic_access, bool atomic_sync)
 {
-  const Node_Id gnat_name = Name (gnat_node);
   const bool function_call = (Nkind (gnat_node) == N_Function_Call);
   const bool returning_value = (function_call && !gnu_target);
   /* The GCC node corresponding to the GNAT subprogram name.  This can either
      be a FUNCTION_DECL node if we are dealing with a standard subprogram call,
      or an indirect reference expression (an INDIRECT_REF node) pointing to a
      subprogram.  */
-  tree gnu_subprog = gnat_to_gnu (gnat_name);
+  const Node_Id gnat_subprog = Name (gnat_node);
+  tree gnu_subprog = gnat_to_gnu (gnat_subprog);
   /* The FUNCTION_TYPE node giving the GCC type of the subprogram.  */
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog);
   /* The return type of the FUNCTION_TYPE.  */
@@ -4487,12 +4487,12 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
      explicit dereference.  In that case, get the list of formal args from the
      type the access type is pointing to.  Otherwise, get the formals from the
      entity being called.  */
-  if (Nkind (gnat_name) == N_Explicit_Dereference)
+  if (Nkind (gnat_subprog) == N_Explicit_Dereference)
     {
       const Entity_Id gnat_prefix_type
-	= Underlying_Type (Etype (Prefix (gnat_name)));
+	= Underlying_Type (Etype (Prefix (gnat_subprog)));
 
-      gnat_formal = First_Formal_With_Extras (Etype (gnat_name));
+      gnat_formal = First_Formal_With_Extras (Etype (gnat_subprog));
       variadic = IN (Convention (gnat_prefix_type), Convention_C_Variadic);
 
       /* If the access type doesn't require foreign-compatible representation,
@@ -4502,7 +4502,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  && Can_Use_Internal_Rep (gnat_prefix_type);
     }
 
-  else if (Nkind (gnat_name) == N_Attribute_Reference)
+  else if (Nkind (gnat_subprog) == N_Attribute_Reference)
     {
       /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
       gnat_formal = Empty;
@@ -4512,15 +4512,15 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
   else
     {
-      gcc_checking_assert (Is_Entity_Name (gnat_name));
+      gcc_checking_assert (Is_Entity_Name (gnat_subprog));
 
-      gnat_formal = First_Formal_With_Extras (Entity (gnat_name));
-      variadic = IN (Convention (Entity (gnat_name)), Convention_C_Variadic);
+      gnat_formal = First_Formal_With_Extras (Entity (gnat_subprog));
+      variadic = IN (Convention (Entity (gnat_subprog)), Convention_C_Variadic);
       by_descriptor = false;
 
       /* If we are calling a stubbed function, then raise Program_Error, but
 	 elaborate all our args first.  */
-      if (Convention (Entity (gnat_name)) == Convention_Stubbed)
+      if (Convention (Entity (gnat_subprog)) == Convention_Stubbed)
 	{
 	  tree call_expr = build_call_raise (PE_Stubbed_Subprogram_Called,
 					     gnat_node, N_Raise_Program_Error);
@@ -4769,8 +4769,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* Do not initialize it for the _Init parameter of an initialization
 	     procedure since no data is meant to be passed in.  */
 	  if (Ekind (gnat_formal) == E_Out_Parameter
-	      && Is_Entity_Name (gnat_name)
-	      && Is_Init_Proc (Entity (gnat_name)))
+	      && Is_Entity_Name (gnat_subprog)
+	      && Is_Init_Proc (Entity (gnat_subprog)))
 	    gnu_name = gnu_temp = create_temporary ("A", TREE_TYPE (gnu_name));
 
 	  /* Initialize it on the fly like for an implicit temporary in the
@@ -5101,10 +5101,10 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       if (function_call)
 	gnu_cico_list = TREE_CHAIN (gnu_cico_list);
 
-      if (Nkind (gnat_name) == N_Explicit_Dereference)
-	gnat_formal = First_Formal_With_Extras (Etype (gnat_name));
+      if (Nkind (gnat_subprog) == N_Explicit_Dereference)
+	gnat_formal = First_Formal_With_Extras (Etype (gnat_subprog));
       else
-	gnat_formal = First_Formal_With_Extras (Entity (gnat_name));
+	gnat_formal = First_Formal_With_Extras (Entity (gnat_subprog));
 
       for (gnat_actual = First_Actual (gnat_node);
 	   Present (gnat_actual);

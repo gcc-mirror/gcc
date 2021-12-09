@@ -2599,7 +2599,7 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
   AC_MSG_CHECKING([for std::allocator base class])
   GLIBCXX_ENABLE(libstdcxx-allocator,auto,[[[=KIND]]],
     [use KIND for target std::allocator base],
-    [permit new|malloc|mt|bitmap|pool|yes|no|auto])
+    [permit new|malloc|yes|no|auto])
 
   # If they didn't use this option switch, or if they specified --enable
   # with no specific model, we'll have to look for one.  If they
@@ -2631,25 +2631,13 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
 
   # Set configure bits for specified locale package
   case ${enable_libstdcxx_allocator_flag} in
-    bitmap)
-      ALLOCATOR_H=config/allocator/bitmap_allocator_base.h
-      ALLOCATOR_NAME=__gnu_cxx::bitmap_allocator
-      ;;
     malloc)
       ALLOCATOR_H=config/allocator/malloc_allocator_base.h
       ALLOCATOR_NAME=__gnu_cxx::malloc_allocator
       ;;
-    mt)
-      ALLOCATOR_H=config/allocator/mt_allocator_base.h
-      ALLOCATOR_NAME=__gnu_cxx::__mt_alloc
-      ;;
     new)
       ALLOCATOR_H=config/allocator/new_allocator_base.h
       ALLOCATOR_NAME=__gnu_cxx::new_allocator
-      ;;
-    pool)
-      ALLOCATOR_H=config/allocator/pool_allocator_base.h
-      ALLOCATOR_NAME=__gnu_cxx::__pool_alloc
       ;;
   esac
 

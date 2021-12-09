@@ -41,7 +41,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // NB: Offsets into ctype<char>::_M_table force a particular size
     // on the mask type. Because of this, we don't use an enum.
     typedef char 		mask;
-#if defined _U && defined _L && defined _N && defined _S
     static const mask upper    	= _U;
     static const mask lower 	= _L;
     static const mask alpha 	= _U | _L;
@@ -53,24 +52,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const mask cntrl 	= _C;
     static const mask punct 	= _P;
     static const mask alnum 	= _U | _L | _N;
-# if __cplusplus >= 201103L
+#if __cplusplus >= 201103L
     static const mask blank 	= space;
-# endif
-#else
-    static const mask upper    = _ISupper;
-    static const mask lower    = _ISlower;
-    static const mask alpha    = _ISupper | _ISlower;
-    static const mask digit    = _ISdigit;
-    static const mask xdigit   = _ISxdigit | _ISdigit;
-    static const mask space    = _ISspace;
-    static const mask print    = _ISpunct | _ISupper | _ISlower | _ISdigit | _ISblank;
-    static const mask graph    = _ISpunct | _ISupper | _ISlower | _ISdigit;
-    static const mask cntrl    = _IScntrl;
-    static const mask punct    = _ISpunct;
-    static const mask alnum    = _ISupper | _ISlower | _ISdigit;
-# if __cplusplus >= 201103L
-    static const mask blank    =  _ISspace | _ISblank;
-# endif
 #endif
   };
 

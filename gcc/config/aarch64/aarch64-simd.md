@@ -1956,20 +1956,32 @@
    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>")]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
-						 INTVAL (operands[2]));
-    rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_rshrn<mode>_insn_be (tmp, operands[1],
-				operands[2], CONST0_RTX (<VNARROWQ>mode)));
+    if (INTVAL (operands[2]) == GET_MODE_UNIT_BITSIZE (<VNARROWQ>mode))
+      {
+	rtx tmp0 = aarch64_gen_shareable_zero (<MODE>mode);
+	emit_insn (gen_aarch64_raddhn<mode> (operands[0], operands[1], tmp0));
+      }
     else
-      emit_insn (gen_aarch64_rshrn<mode>_insn_le (tmp, operands[1],
-				operands[2], CONST0_RTX (<VNARROWQ>mode)));
+      {
+	rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
+	operands[2] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+						         INTVAL (operands[2]));
+	if (BYTES_BIG_ENDIAN)
+	  emit_insn (
+		gen_aarch64_rshrn<mode>_insn_be (tmp, operands[1],
+						 operands[2],
+						 CONST0_RTX (<VNARROWQ>mode)));
+	else
+	  emit_insn (
+		gen_aarch64_rshrn<mode>_insn_le (tmp, operands[1],
+						 operands[2],
+						 CONST0_RTX (<VNARROWQ>mode)));
 
-    /* The intrinsic expects a narrow result, so emit a subreg that will get
-       optimized away as appropriate.  */
-    emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
-						 <VNARROWQ2>mode));
+	/* The intrinsic expects a narrow result, so emit a subreg that will
+	   get optimized away as appropriate.  */
+	emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
+						     <VNARROWQ2>mode));
+      }
     DONE;
   }
 )
@@ -2049,14 +2061,27 @@
    (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<vn_mode>")]
   "TARGET_SIMD"
   {
-    operands[3] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
-						 INTVAL (operands[3]));
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_rshrn2<mode>_insn_be (operands[0], operands[1],
-						  operands[2], operands[3]));
+    if (INTVAL (operands[3]) == GET_MODE_UNIT_BITSIZE (<VNARROWQ2>mode))
+      {
+	rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
+	emit_insn (gen_aarch64_raddhn2<mode> (operands[0], operands[1],
+					      operands[2], tmp));
+      }
     else
-      emit_insn (gen_aarch64_rshrn2<mode>_insn_le (operands[0], operands[1],
-						  operands[2], operands[3]));
+      {
+	operands[3] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+							 INTVAL (operands[3]));
+	if (BYTES_BIG_ENDIAN)
+	  emit_insn (gen_aarch64_rshrn2<mode>_insn_be (operands[0],
+						       operands[1],
+						       operands[2],
+						       operands[3]));
+	else
+	  emit_insn (gen_aarch64_rshrn2<mode>_insn_le (operands[0],
+						       operands[1],
+						       operands[2],
+						       operands[3]));
+      }
     DONE;
   }
 )
@@ -3592,8 +3617,8 @@
 ;; gimple_fold'd to the IFN_REDUC_(MAX|MIN) function.  (This is FP smax/smin).
 (define_expand "reduc_<optab>_scal_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
-   (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")]
-		  FMAXMINV)]
+   (unspec:<VEL> [(match_operand:VHSDF 1 "register_operand")]
+		 FMAXMINV)]
   "TARGET_SIMD"
   {
     rtx elt = aarch64_endian_lane_rtx (<MODE>mode, 0);
@@ -3601,6 +3626,17 @@
     emit_insn (gen_aarch64_reduc_<optab>_internal<mode> (scratch,
 							 operands[1]));
     emit_insn (gen_aarch64_get_lane<mode> (operands[0], scratch, elt));
+    DONE;
+  }
+)
+
+(define_expand "reduc_<fmaxmin>_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (unspec:<VEL> [(match_operand:VHSDF 1 "register_operand")]
+		 FMAXMINNMV)]
+  "TARGET_SIMD"
+  {
+    emit_insn (gen_reduc_<optab>_scal_<mode> (operands[0], operands[1]));
     DONE;
   }
 )

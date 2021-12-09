@@ -659,6 +659,7 @@ HAVE_PERL
 PERL
 BUILD_INFO
 MAKEINFO
+ETAGS
 NOTMAINT
 MAINT
 libiberty_topdir
@@ -2557,6 +2558,11 @@ else
   MAINT='#'
   NOTMAINT=''
 fi
+
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+
 
 # Do we have a single-tree copy of texinfo?  Even if we do, we can't
 # rely on it - libiberty is built before texinfo.

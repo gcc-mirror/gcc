@@ -1,4 +1,5 @@
 // PERMUTE_ARGS:
+// EXTRA_FILES: imports/bug8922.d
 import renamed = imports.bug8922;
 
 void test()

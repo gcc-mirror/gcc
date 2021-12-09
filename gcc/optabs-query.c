@@ -712,13 +712,16 @@ lshift_cheap_p (bool speed_p)
   return cheap[speed_p];
 }
 
-/* Return true if vector conversion optab OP supports at least one mode,
-   given that the second mode is always an integer vector.  */
+/* If MODE is not VOIDmode, return true if vector conversion optab OP supports
+   that mode, given that the second mode is always an integer vector.
+   If MODE is VOIDmode, return true if OP supports any vector mode.  */
 
 static bool
-supports_vec_convert_optab_p (optab op)
+supports_vec_convert_optab_p (optab op, machine_mode mode)
 {
-  for (int i = 0; i < NUM_MACHINE_MODES; ++i)
+  int start = mode == VOIDmode ? 0 : mode;
+  int end = mode == VOIDmode ? MAX_MACHINE_MODE : mode;
+  for (int i = start; i <= end; ++i)
     if (VECTOR_MODE_P ((machine_mode) i))
       for (int j = MIN_MODE_VECTOR_INT; j < MAX_MODE_VECTOR_INT; ++j)
 	if (convert_optab_handler (op, (machine_mode) i,
@@ -728,39 +731,35 @@ supports_vec_convert_optab_p (optab op)
   return false;
 }
 
-/* Return true if vec_gather_load is available for at least one vector
-   mode.  */
+/* If MODE is not VOIDmode, return true if vec_gather_load is available for
+   that mode.  If MODE is VOIDmode, return true if gather_load is available
+   for at least one vector mode.  */
 
 bool
-supports_vec_gather_load_p ()
+supports_vec_gather_load_p (machine_mode mode)
 {
-  if (this_fn_optabs->supports_vec_gather_load_cached)
-    return this_fn_optabs->supports_vec_gather_load;
+  if (!this_fn_optabs->supports_vec_gather_load[mode])
+    this_fn_optabs->supports_vec_gather_load[mode]
+      = (supports_vec_convert_optab_p (gather_load_optab, mode)
+	 || supports_vec_convert_optab_p (mask_gather_load_optab, mode)
+	 ? 1 : -1);
 
-  this_fn_optabs->supports_vec_gather_load_cached = true;
-
-  this_fn_optabs->supports_vec_gather_load
-    = (supports_vec_convert_optab_p (gather_load_optab)
-       || supports_vec_convert_optab_p (mask_gather_load_optab));
-
-  return this_fn_optabs->supports_vec_gather_load;
+  return this_fn_optabs->supports_vec_gather_load[mode] > 0;
 }
 
-/* Return true if vec_scatter_store is available for at least one vector
-   mode.  */
+/* If MODE is not VOIDmode, return true if vec_scatter_store is available for
+   that mode.  If MODE is VOIDmode, return true if scatter_store is available
+   for at least one vector mode.  */
 
 bool
-supports_vec_scatter_store_p ()
+supports_vec_scatter_store_p (machine_mode mode)
 {
-  if (this_fn_optabs->supports_vec_scatter_store_cached)
-    return this_fn_optabs->supports_vec_scatter_store;
+  if (!this_fn_optabs->supports_vec_scatter_store[mode])
+    this_fn_optabs->supports_vec_scatter_store[mode]
+      = (supports_vec_convert_optab_p (scatter_store_optab, mode)
+	 || supports_vec_convert_optab_p (mask_scatter_store_optab, mode)
+	 ? 1 : -1);
 
-  this_fn_optabs->supports_vec_scatter_store_cached = true;
-
-  this_fn_optabs->supports_vec_scatter_store
-    = (supports_vec_convert_optab_p (scatter_store_optab)
-       || supports_vec_convert_optab_p (mask_scatter_store_optab));
-
-  return this_fn_optabs->supports_vec_scatter_store;
+  return this_fn_optabs->supports_vec_scatter_store[mode] > 0;
 }
 

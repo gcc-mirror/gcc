@@ -166,11 +166,8 @@ genericize_if_stmt (tree *stmt_p)
      can contain unfolded immediate function calls, we have to discard
      the then_ block regardless of whether else_ has side-effects or not.  */
   if (IF_STMT_CONSTEVAL_P (stmt))
-    stmt = else_;
-  else if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
-    stmt = then_;
-  else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
-    stmt = else_;
+    stmt = build3 (COND_EXPR, void_type_node, boolean_false_node,
+		   void_node, else_);
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
   protected_set_expr_location_if_unset (stmt, locus);
@@ -928,6 +925,13 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 	  stmt = *stmt_p = build_zero_cst (TREE_TYPE (stmt));
 	  break;
 	}
+      break;
+
+    case CALL_EXPR:
+      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
+	if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
+	    && source_location_current_p (fndecl))
+	  *stmt_p = stmt = cxx_constant_value (stmt);
       break;
 
     default:
@@ -2417,7 +2421,8 @@ cp_fold (tree x)
       if (REF_PARENTHESIZED_P (x))
 	{
 	  tree p = maybe_undo_parenthesized_ref (x);
-	  return cp_fold (p);
+	  if (p != x)
+	    return cp_fold (p);
 	}
       goto unary;
 
@@ -2671,14 +2676,6 @@ cp_fold (tree x)
       {
 	int sv = optimize, nw = sv;
 	tree callee = get_callee_fndecl (x);
-
-	if (tree fndecl = cp_get_callee_fndecl_nofold (x))
-	  if (DECL_IMMEDIATE_FUNCTION_P (fndecl)
-	      && source_location_current_p (fndecl))
-	    {
-	      x = cxx_constant_value (x);
-	      break;
-	    }
 
 	/* Some built-in function calls will be evaluated at compile-time in
 	   fold ().  Set optimize to 1 when folding __builtin_constant_p inside

@@ -64,12 +64,10 @@
 	<code class="code">'--enable-libstdcxx-allocator=auto'</code> (described
 	next).
      </p></dd><dt><span class="term"><code class="code">--enable-libstdcxx-allocator=OPTION  </code></span></dt><dd><p>Select a target-specific underlying std::allocator.  The
-	choices are 'new' to specify a wrapper for new, 'malloc' to
-	specify a wrapper for malloc, 'mt' for a fixed power of two allocator,
-	'pool' for the SGI pooled allocator or 'bitmap' for a bitmap allocator.
-	See this page for more information on allocator
-	<a class="link" href="memory.html#allocator.ext" title="Extension Allocators">extensions</a>. This option
-	can change the library ABI.
+	choices are 'new' to specify a wrapper for new, and 'malloc' to
+	specify a wrapper for malloc.
+	See <a class="xref" href="memory.html#allocator.ext" title="Extension Allocators">the section called “Extension Allocators”</a> for more information.
+	This option can change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-cheaders=OPTION</code></span></dt><dd><p>This allows the user to define the approach taken for C header
 	compatibility with C++. Options are c, c_std, and c_global.
 	These correspond to the source directory's include/c,

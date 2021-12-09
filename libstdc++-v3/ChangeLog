@@ -1,3 +1,225 @@
+2021-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_release()):
+	Make shift width conditional on __double_word condition.
+
+2021-12-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/std/deque (erase_if): Use _GLIBCXX_STD_C container reference and
+	__niter_wrap to limit _GLIBCXX_DEBUG mode impact.
+	* include/std/vector (erase_if): Likewise.
+
+2021-12-08  Maged Michael  <maged.michael@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_TSAN): Define macro
+	indicating that TSan is in use.
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_release):
+	Replace definition in primary template with explicit
+	specializations for _S_mutex and _S_atomic policies.
+	(_Sp_counted_base<_S_mutex>::_M_release): New specialization.
+	(_Sp_counted_base<_S_atomic>::_M_release): New specialization,
+	using a single atomic load to access both reference counts at
+	once.
+	(_Sp_counted_base::_M_release_last_use): New member function.
+
+2021-12-07  Tamar Christina  <tamar.christina@arm.com>
+
+	Revert:
+	2021-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/103305
+	* config/os/newlib/ctype_base.h (upper, lower, alpha, digit, xdigit,
+	space, print, graph, cntrl, punct, alnum, blank): Use short or long
+	names depending on if short ones are defined.
+
+2021-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103549
+	* include/bits/regex.h (match_results): Give names to template
+	parameters in first declaration.
+	(match_results::_M_begin): Add default member-initializer.
+
+2021-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (_Rb_tree::_Auto_node): Define new
+	RAII helper for creating and inserting new nodes.
+	(_Rb_tree::_M_insert_node): Use trailing-return-type to simplify
+	out-of-line definition.
+	(_Rb_tree::_M_insert_lower_node): Likewise.
+	(_Rb_tree::_M_insert_equal_lower_node): Likewise.
+	(_Rb_tree::_M_emplace_unique): Likewise. Use _Auto_node.
+	(_Rb_tree::_M_emplace_equal): Likewise.
+	(_Rb_tree::_M_emplace_hint_unique): Likewise.
+	(_Rb_tree::_M_emplace_hint_equal): Likewise.
+
+2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/cow-stdexcept.cc [_GLIBCXX_FULLY_DYNAMIC_STRING]
+	(logic_error, runtime_error): Remove custom definitions.
+
+2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103340
+	PR libstdc++/103400
+	PR libstdc++/103381
+	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Remove mt, bitmap
+	and pool options.
+	* configure: Regenerate.
+	* config/allocator/bitmap_allocator_base.h: Removed.
+	* config/allocator/mt_allocator_base.h: Removed.
+	* config/allocator/pool_allocator_base.h: Removed.
+	* doc/xml/manual/allocator.xml: Update.
+	* doc/xml/manual/configure.xml: Update.
+	* doc/xml/manual/evolution.xml: Document removal.
+	* doc/xml/manual/mt_allocator.xml: Editorial tweaks.
+	* doc/html/manual/*: Regenerate.
+
+2021-12-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string::_M_is_leaked()):
+	Revert change to check __is_single_threaded() before using
+	atomic load.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103501
+	* include/bits/stl_tree.h (_Rb_tree(_Rb_tree&&, false_type)):
+	Clear container if elements have been moved-from.
+	* testsuite/23_containers/map/allocator/move_cons.cc: Expect
+	moved-from container to be empty.
+	* testsuite/23_containers/multimap/allocator/move_cons.cc:
+	Likewise.
+	* testsuite/23_containers/multiset/allocator/103501.cc: New test.
+	* testsuite/23_containers/set/allocator/103501.cc: New test.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (PREDEFINED): Change macro name.
+	* include/bits/allocator.h (allocate, deallocate): Use
+	std::__is_constant_evaluated() unconditionally, instead of
+	checking whether std::is_constant_evaluated() (or the built-in)
+	can be used.
+	* include/bits/basic_string.h: Check new macro. call
+	std::is_constant_evaluated() directly in C++20-only code that is
+	guarded by a suitable macro.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/c++config (__is_constant_evaluated): Define.
+	(_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED): Replace with ...
+	(_GLIBCXX_HAVE_IS_CONSTANT_EVALUATED): New macro.
+	* include/bits/char_traits.h (char_traits): Replace conditional
+	calls to std::is_constant_evaluated with unconditional calls to
+	std::__is_constant_evaluated.
+	* include/bits/cow_string.h: Use new macro.
+	* include/bits/ranges_algobase.h (__copy_or_move): Replace
+	conditional calls to std::is_constant_evaluated with unconditional
+	calls to std::__is_constant_evaluated.
+	(__copy_or_move_backward, __fill_n_fn): Likewise.
+	* include/bits/ranges_cmp.h (ranges::less): Likewise.
+	* include/bits/stl_algobase.h (lexicographical_compare_three_way):
+	Likewise.
+	* include/bits/stl_bvector.h: Call std::is_constant_evaluated
+	directly in C++20-only code that is guarded by a suitable macro.
+	* include/bits/stl_construct.h (_Construct, _Destroy, _Destroy_n):
+	Replace is_constant_evaluated with __is_constant_evaluated.
+	* include/bits/stl_function.h (greater, less, greater_equal)
+	(less_equal): Replace __builtin_is_constant_evaluated and
+	__builtin_constant_p with __is_constant_evaluated.
+	* include/bits/stl_vector.h: Call std::is_constant_evaluated()
+	in C++20-only code.
+	* include/debug/helper_functions.h (__check_singular): Use
+	__is_constant_evaluated instead of built-in, or remove check
+	entirely.
+	* include/std/array (operator<=>): Use __is_constant_evaluated
+	unconditionally.
+	* include/std/bit (__bit_ceil): Likewise.
+	* include/std/type_traits (is_constant_evaluated): Define using
+	'if consteval' if possible.
+	* include/std/version: Use new macro.
+	* libsupc++/compare: Use __is_constant_evaluated instead of
+	__builtin_is_constant_evaluated.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc:
+	Adjust dg-error lines.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string::_M_is_leaked): Use
+	non-atomic load when __is_single_threaded() is true.
+	(basic_string::_M_is_shared): Likewise.
+	(basic_string::(basic_string&&)) [_GLIBCXX_FULLY_DYNAMIC_STRING]:
+	Use non-atomic store when rvalue is not shared.
+
+2021-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_path.cc (path::_M_split_cmpts()): Remove
+	micro-optimization for "/" path.
+	* src/filesystem/path.cc (path::_M_split_cmpts()): Only access
+	the contents of _M_pathname using const member functions.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/cons/char/moveable.cc: Allow
+	moved-from string to be non-empty.
+	* testsuite/21_strings/basic_string/cons/char/moveable2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/moveable2_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2_c++17.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/87749.cc:
+	Construct empty string before setting oom flag.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/87749.cc:
+	Likewise.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string(basic_string&&)): Fix
+	mem-initializer for _GLIBCXX_FULLY_DYNAMIC_STRING==0 case.
+	* testsuite/21_strings/basic_string/cons/char/noexcept_move_construct.cc:
+	Remove outdated comment.
+	* testsuite/21_strings/basic_string/cons/wchar_t/noexcept_move_construct.cc:
+	Likewise.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/sstream-inst.cc (_GLIBCXX_USE_CXX11_ABI): Define to
+	select new ABI.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector::_S_do_relocate): Remove
+	C++20 constexpr specifier.
+	(vector::_S_relocate) [__cpp_if_constexpr]: Call __relocate_a
+	directly without tag dispatching.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103453
+	* config/allocator/malloc_allocator_base.h
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Define for Clang.
+	* config/allocator/new_allocator_base.h
+	(_GLIBCXX_SANITIZE_STD_ALLOCATOR): Likewise.
+
+2021-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/debug_mode.xml: Replace "his or her" with "their".
+	* doc/html/manual/debug_mode_design.html: Regenerate.
+
+2021-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/bit (byteswap): Add [[nodiscard]].
+
+2021-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/bit (__cpp_lib_byteswap, byteswap): Define.
+	* include/std/version (__cpp_lib_byteswap): Define.
+	* testsuite/26_numerics/bit/bit.byteswap/byteswap.cc: New test.
+	* testsuite/26_numerics/bit/bit.byteswap/version.cc: New test.
+
 2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/24_iterators/move_iterator/dr3265.cc: Fix test to

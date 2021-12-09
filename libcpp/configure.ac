@@ -22,6 +22,11 @@ AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
 AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
 AC_CHECK_PROGS([AUTOHEADER], [autoheader], [$MISSING autoheader])
 
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+
 # Figure out what compiler warnings we can enable.
 # See config/warnings.m4 for details.
 

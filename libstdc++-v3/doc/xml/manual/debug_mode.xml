@@ -393,14 +393,14 @@ That alias is deprecated and may be removed in a future release.
     less recompilation) but are more complicated to implement than
     the lower-numbered conformance levels.
       <orderedlist inheritnum="ignore" continuation="restarts">
-	<listitem><para><emphasis>Full recompilation</emphasis>: The user must recompile his or
-	her entire application and all C++ libraries it depends on,
+	<listitem><para><emphasis>Full recompilation</emphasis>: The user must recompile
+	their entire application and all C++ libraries it depends on,
 	including the C++ standard library that ships with the
 	compiler. This must be done even if only a small part of the
 	program can use debugging features.</para></listitem>
 
 	<listitem><para><emphasis>Full user recompilation</emphasis>: The user must recompile
-	his or her entire application and all C++ libraries it depends
+	their entire application and all C++ libraries it depends
 	on, but not the C++ standard library itself. This must be done
 	even if only a small part of the program can use debugging
 	features. This can be achieved given a full recompilation
@@ -409,7 +409,7 @@ That alias is deprecated and may be removed in a future release.
 	one, e.g., a multilibs approach.</para></listitem>
 
 	<listitem><para><emphasis>Partial recompilation</emphasis>: The user must recompile the
-	parts of his or her application and the C++ libraries it
+	parts of their application and the C++ libraries it
 	depends on that will use the debugging facilities
 	directly. This means that any code that uses the debuggable
 	standard containers would need to be recompiled, but code
@@ -417,7 +417,7 @@ That alias is deprecated and may be removed in a future release.
 	would not have to be recompiled.</para></listitem>
 
 	<listitem><para><emphasis>Per-use recompilation</emphasis>: The user must recompile the
-	parts of his or her application and the C++ libraries it
+	parts of their application and the C++ libraries it
 	depends on where debugging should occur, and any other code
 	that interacts with those containers. This means that a set of
 	translation units that accesses a particular standard

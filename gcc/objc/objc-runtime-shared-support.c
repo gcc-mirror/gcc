@@ -44,16 +44,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "objc-runtime-hooks.h"
 
 #include "objc-runtime-shared-support.h"
+#include "objc-next-metadata-tags.h"
 #include "objc-encoding.h"
 
-/* rt_trees identifiers - shared between NeXT implementations.  These allow
-   the FE to tag meta-data in a manner that survives LTO and can be used when
-   the  runtime requires that certain meta-data items appear in particular
-   named sections.  */
-#include "objc-next-metadata-tags.h"
-extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
-
 /* Rather than repeatedly looking up the identifiers, we save them here.  */
+extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
 tree objc_rt_trees[OCTI_RT_META_MAX];
 
 /* For building an objc struct.  These might not be used when this file

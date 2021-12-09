@@ -112,7 +112,7 @@ extern (D) pure
 {
     auto ELF32_M_SYM(I)(I info) @safe { return info >> 8; }
     auto ELF32_M_SIZE(I)(I info) { return cast(ubyte)info; }
-    auto ELF32_M_INFO(S, SZ)(S sym, SZ size) { return (sym << 8) + cast(ubye)size; }
+    auto ELF32_M_INFO(S, SZ)(S sym, SZ size) { return (sym << 8) + cast(ubyte)size; }
 }
 
 struct Elf32_Cap

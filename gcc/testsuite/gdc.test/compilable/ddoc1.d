@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 1
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 // REQUIRED_ARGS: -d
 
 /** This module is for ABC

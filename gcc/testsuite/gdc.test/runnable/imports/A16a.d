@@ -1,6 +1,6 @@
 import A16;
 
-import std.stdio;
+import core.stdc.stdio;
 
 class B16 : AA16
 {

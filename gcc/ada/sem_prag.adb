@@ -3453,9 +3453,7 @@ package body Sem_Prag is
 
                Parent_Unit := Pack_Id;
                while Present (Parent_Unit) loop
-                  exit when
-                    Private_Present
-                      (Parent (Unit_Declaration_Node (Parent_Unit)));
+                  exit when Is_Private_Library_Unit (Parent_Unit);
                   Parent_Unit := Scope (Parent_Unit);
                end loop;
 
@@ -3503,17 +3501,80 @@ package body Sem_Prag is
          --  encapsulating state must be declared in the same package.
 
          elsif Placement = Private_State_Space then
-            if Scope (Encap_Id) /= Pack_Id then
-               SPARK_Msg_NE
-                 ("indicator Part_Of must denote an abstract state of "
-                  & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
 
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the private part of package %",
-                  Indic, Item_Id);
-               return;
-            end if;
+            --  In the case of the abstract state of a nongeneric private
+            --  child package, it may be encapsulated in the state of a
+            --  public descendant of its parent package.
+
+            declare
+               function Is_Public_Descendant
+                 (Child, Ancestor : Entity_Id)
+                  return Boolean;
+               --  Return True if Child is a public descendant of Pack
+
+               --------------------------
+               -- Is_Public_Descendant --
+               --------------------------
+
+               function Is_Public_Descendant
+                 (Child, Ancestor : Entity_Id)
+                  return Boolean
+               is
+                  P : Entity_Id := Child;
+               begin
+                  while Is_Child_Unit (P)
+                    and then not Is_Private_Library_Unit (P)
+                  loop
+                     if Scope (P) = Ancestor then
+                        return True;
+                     end if;
+
+                     P := Scope (P);
+                  end loop;
+
+                  return False;
+               end Is_Public_Descendant;
+
+               --  Local variables
+
+               Immediate_Pack_Id : constant Entity_Id := Scope (Item_Id);
+
+               Is_State_Of_Private_Child : constant Boolean :=
+                 Is_Child_Unit (Immediate_Pack_Id)
+                   and then not Is_Generic_Unit (Immediate_Pack_Id)
+                   and then Is_Private_Descendant (Immediate_Pack_Id);
+
+               Is_OK_Through_Sibling : Boolean := False;
+
+            begin
+               if Ekind (Item_Id) = E_Abstract_State
+                 and then Is_State_Of_Private_Child
+                 and then Is_Public_Descendant (Scope (Encap_Id), Pack_Id)
+               then
+                  Is_OK_Through_Sibling := True;
+               end if;
+
+               if Scope (Encap_Id) /= Pack_Id
+                 and then not Is_OK_Through_Sibling
+               then
+                  if Is_State_Of_Private_Child then
+                     SPARK_Msg_NE
+                       ("indicator Part_Of must denote abstract state of & "
+                        & "or of its public descendant "
+                        & "(SPARK RM 7.2.6(3))", Indic, Pack_Id);
+                  else
+                     SPARK_Msg_NE
+                       ("indicator Part_Of must denote an abstract state of "
+                        & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
+                  end if;
+
+                  Error_Msg_Name_1 := Chars (Pack_Id);
+                  SPARK_Msg_NE
+                    ("\& is declared in the private part of package %",
+                     Indic, Item_Id);
+                  return;
+               end if;
+            end;
 
          --  Items declared in the body state space of a package do not need
          --  Part_Of indicators as the refinement has already been seen.
@@ -6612,7 +6673,9 @@ package body Sem_Prag is
 
             elsif Nkind (Parent_Node) = N_Compilation_Unit_Aux then
                if Plist /= Pragmas_After (Parent_Node) then
-                  Pragma_Misplaced;
+                  Error_Pragma
+                    ("pragma% misplaced, must be inside or after the "
+                     & "compilation unit");
 
                elsif Arg_Count = 0 then
                   Error_Pragma
@@ -6679,26 +6742,36 @@ package body Sem_Prag is
                   Unit_Node := Unit_Declaration_Node (Current_Scope);
                   Unit_Kind := Nkind (Unit_Node);
 
-                  if Nkind (Parent (Unit_Node)) /= N_Compilation_Unit then
-                     Pragma_Misplaced;
+                  if Unit_Node = Standard_Package_Node then
+                     Error_Pragma
+                       ("pragma% misplaced, must be inside or after the "
+                        & "compilation unit");
+
+                  elsif Nkind (Parent (Unit_Node)) /= N_Compilation_Unit then
+                     Error_Pragma
+                       ("pragma% misplaced, must be on library unit");
 
                   elsif Unit_Kind = N_Subprogram_Body
                     and then not Acts_As_Spec (Unit_Node)
                   then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must be on the subprogram spec");
 
                   elsif Nkind (Parent_Node) = N_Package_Body then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must be on the package spec");
 
                   elsif Nkind (Parent_Node) = N_Package_Specification
                     and then Plist = Private_Declarations (Parent_Node)
                   then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must be in the public part");
 
                   elsif Nkind (Parent_Node) in N_Generic_Declaration
                     and then Plist = Generic_Formal_Declarations (Parent_Node)
                   then
-                     Pragma_Misplaced;
+                     Error_Pragma
+                       ("pragma% misplaced, must not be in formal part");
 
                   elsif Arg_Count > 0 then
                      Analyze (Get_Pragma_Arg (Arg1));
@@ -7754,11 +7827,15 @@ package body Sem_Prag is
 
          if Compile_Time_Known_Value (Arg1x) then
             Validate_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
+
          else
             while Present (P) and then Nkind (P) not in N_Generic_Declaration
             loop
-               if Nkind (P) in N_Package_Body | N_Subprogram_Body then
-                  P := Corresponding_Spec (P);
+               if (Nkind (P) = N_Subprogram_Body and then not Acts_As_Spec (P))
+                 or else Nkind (P) = N_Package_Body
+               then
+                  P := Parent (Corresponding_Spec (P));
+
                else
                   P := Parent (P);
                end if;
@@ -28761,13 +28838,17 @@ package body Sem_Prag is
                         Placement => Placement,
                         Pack_Id   => Pack_Id);
 
-                     --  The constituent is part of the visible state of a
-                     --  private child package, but lacks a Part_Of indicator.
+                     --  The constituent is either part of the hidden state of
+                     --  the package or part of the visible state of a private
+                     --  child package, but lacks a Part_Of indicator.
 
-                     if Placement = Visible_State_Space
-                       and then Is_Child_Unit (Pack_Id)
-                       and then not Is_Generic_Unit (Pack_Id)
-                       and then Is_Private_Descendant (Pack_Id)
+                     if (Placement = Private_State_Space
+                          and then Pack_Id = Spec_Id)
+                       or else
+                         (Placement = Visible_State_Space
+                           and then Is_Child_Unit (Pack_Id)
+                           and then not Is_Generic_Unit (Pack_Id)
+                           and then Is_Private_Descendant (Pack_Id))
                      then
                         Error_Msg_Name_1 := Chars (State_Id);
                         SPARK_Msg_NE

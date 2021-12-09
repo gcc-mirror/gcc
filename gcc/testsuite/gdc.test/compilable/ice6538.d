@@ -1,7 +1,7 @@
 
 
 /**************************************/
-// 6538
+// https://issues.dlang.org/show_bug.cgi?id=6538
 
 template allSatisfy(alias F, T...) { enum bool allSatisfy = true; }
 template isIntegral(T) { enum bool isIntegral = true; }
@@ -23,7 +23,7 @@ void test6538b()
 }
 
 /**************************************/
-// 9361
+// https://issues.dlang.org/show_bug.cgi?id=9361
 
 template Sym(alias A)
 {

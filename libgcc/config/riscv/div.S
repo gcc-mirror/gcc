@@ -40,7 +40,7 @@ FUNC_BEGIN (__udivsi3)
   sll    a0, a0, 32
   sll    a1, a1, 32
   move   t0, ra
-  jal    __udivdi3
+  jal    HIDDEN_JUMPTARGET(__udivdi3)
   sext.w a0, a0
   jr     t0
 FUNC_END (__udivsi3)
@@ -52,7 +52,7 @@ FUNC_BEGIN (__umodsi3)
   srl    a0, a0, 32
   srl    a1, a1, 32
   move   t0, ra
-  jal    __udivdi3
+  jal    HIDDEN_JUMPTARGET(__udivdi3)
   sext.w a0, a1
   jr     t0
 FUNC_END (__umodsi3)
@@ -95,11 +95,12 @@ FUNC_BEGIN (__udivdi3)
 .L5:
   ret
 FUNC_END (__udivdi3)
+HIDDEN_DEF (__udivdi3)
 
 FUNC_BEGIN (__umoddi3)
   /* Call __udivdi3(a0, a1), then return the remainder, which is in a1.  */
   move  t0, ra
-  jal   __udivdi3
+  jal   HIDDEN_JUMPTARGET(__udivdi3)
   move  a0, a1
   jr    t0
 FUNC_END (__umoddi3)
@@ -111,12 +112,12 @@ FUNC_END (__umoddi3)
   bgtz  a1, .L12     /* Compute __udivdi3(-a0, a1), then negate the result.  */
 
   neg   a1, a1
-  j     __udivdi3    /* Compute __udivdi3(-a0, -a1).  */
+  j     HIDDEN_JUMPTARGET(__udivdi3)     /* Compute __udivdi3(-a0, -a1).  */
 .L11:                /* Compute __udivdi3(a0, -a1), then negate the result.  */
   neg   a1, a1
 .L12:
   move  t0, ra
-  jal   __udivdi3
+  jal   HIDDEN_JUMPTARGET(__udivdi3)
   neg   a0, a0
   jr    t0
 FUNC_END (__divdi3)
@@ -126,7 +127,7 @@ FUNC_BEGIN (__moddi3)
   bltz   a1, .L31
   bltz   a0, .L32
 .L30:
-  jal    __udivdi3    /* The dividend is not negative.  */
+  jal    HIDDEN_JUMPTARGET(__udivdi3)    /* The dividend is not negative.  */
   move   a0, a1
   jr     t0
 .L31:
@@ -134,7 +135,7 @@ FUNC_BEGIN (__moddi3)
   bgez   a0, .L30
 .L32:
   neg    a0, a0
-  jal    __udivdi3    /* The dividend is hella negative.  */
+  jal    HIDDEN_JUMPTARGET(__udivdi3)    /* The dividend is hella negative.  */
   neg    a0, a1
   jr     t0
 FUNC_END (__moddi3)

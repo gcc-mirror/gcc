@@ -24,14 +24,6 @@ void test2b()
     static assert(!__traits(compiles, v1 > v2));
     static assert(!__traits(compiles, v1 <= v2));
     static assert(!__traits(compiles, v1 >= v2));
-    static assert(!__traits(compiles, v1 <> v2));
-    static assert(!__traits(compiles, v1 !< v2));
-    static assert(!__traits(compiles, v1 !> v2));
-    static assert(!__traits(compiles, v1 !<> v2));
-    static assert(!__traits(compiles, v1 <>= v2));
-    static assert(!__traits(compiles, v1 !<= v2));
-    static assert(!__traits(compiles, v1 !>= v2));
-    static assert(!__traits(compiles, v1 !<>= v2));
     v1 = v2 << 1;
     v1 = v2 >> 1;
     v1 = v2 >>> 1;

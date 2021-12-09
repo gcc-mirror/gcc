@@ -206,7 +206,10 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
 					 opt_type);
 }
 
+extern bool commutative_binary_fn_p (internal_fn);
+extern bool commutative_ternary_fn_p (internal_fn);
 extern int first_commutative_argument (internal_fn);
+extern bool associative_binary_fn_p (internal_fn);
 
 extern bool set_edom_supported_p (void);
 

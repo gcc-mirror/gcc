@@ -1342,9 +1342,6 @@ op_by_pieces_d::run ()
 	}
     }
   while (1);
-
-  /* The code above should have handled everything.  */
-  gcc_assert (!length);
 }
 
 /* Derived class from op_by_pieces_d, providing support for block move
@@ -3932,7 +3929,7 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
      hard regs shouldn't appear here except as return values.
      We never want to emit such a clobber after reload.  */
   if (x != y
-      && ! (reload_in_progress || reload_completed)
+      && ! (lra_in_progress || reload_in_progress || reload_completed)
       && need_clobber != 0)
     emit_clobber (x);
 

@@ -66,7 +66,7 @@ package body System.Interrupt_Management is
 
    type Interrupt_List is array (Interrupt_ID range <>) of Interrupt_ID;
    Exception_Interrupts : constant Interrupt_List :=
-     (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
+     [SIGFPE, SIGILL, SIGSEGV, SIGBUS];
 
    Unreserve_All_Interrupts : constant Interfaces.C.int;
    pragma Import
@@ -206,8 +206,8 @@ package body System.Interrupt_Management is
 
       act.sa_mask := Signal_Mask;
 
-      pragma Assert (Keep_Unmasked = (Interrupt_ID'Range => False));
-      pragma Assert (Reserve = (Interrupt_ID'Range => False));
+      pragma Assert (Keep_Unmasked = [Interrupt_ID'Range => False]);
+      pragma Assert (Reserve = [Interrupt_ID'Range => False]);
 
       --  Process state of exception signals
 

@@ -2,7 +2,7 @@
 
 /**
 This module is a port of a growing fragment of the $(D_PARAM numeric)
-header in Alexander Stepanov's $(LINK2 http://sgi.com/tech/stl,
+header in Alexander Stepanov's $(LINK2 https://en.wikipedia.org/wiki/Standard_Template_Library,
 Standard Template Library), with a few additions.
 
 Macros:
@@ -10,7 +10,7 @@ Copyright: Copyright Andrei Alexandrescu 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   $(HTTP erdani.org, Andrei Alexandrescu),
                    Don Clugston, Robert Jacques, Ilya Yaroshenko
-Source:    $(PHOBOSSRC std/_numeric.d)
+Source:    $(PHOBOSSRC std/numeric.d)
 */
 /*
          Copyright Andrei Alexandrescu 2008 - 2009.
@@ -22,14 +22,11 @@ module std.numeric;
 
 import std.complex;
 import std.math;
+import core.math : fabs, ldexp, sin, sqrt;
 import std.range.primitives;
 import std.traits;
 import std.typecons;
 
-version (unittest)
-{
-    import std.stdio;
-}
 /// Format flags for CustomFloat.
 public enum CustomFloatFlags
 {
@@ -39,7 +36,7 @@ public enum CustomFloatFlags
     /**
      * Store values in normalized form by default. The actual precision of the
      * significand is extended by 1 bit by assuming an implicit leading bit of 1
-     * instead of 0. i.e. $(D 1.nnnn) instead of $(D 0.nnnn).
+     * instead of 0. i.e. `1.nnnn` instead of `0.nnnn`.
      * True for all $(LINK2 https://en.wikipedia.org/wiki/IEEE_floating_point, IEE754) types
      */
     storeNormalized = 2,
@@ -109,7 +106,7 @@ private template CustomFloatParams(uint precision, uint exponentWidth, CustomFlo
 /**
  * Allows user code to define custom floating-point formats. These formats are
  * for storage only; all operations on them are performed by first implicitly
- * extracting them to $(D real) first. After the operation is completed the
+ * extracting them to `real` first. After the operation is completed the
  * result can be stored in a custom floating-point value via assignment.
  */
 template CustomFloat(uint bits)
@@ -128,7 +125,7 @@ if (((flags & flags.signed) + precision + exponentWidth) % 8 == 0 && precision +
 ///
 @safe unittest
 {
-    import std.math : sin, cos;
+    import std.math.trigonometry : sin, cos;
 
     // Define a 16-bit floating point values
     CustomFloat!16                                x;     // Using the number of bits
@@ -149,13 +146,33 @@ if (((flags & flags.signed) + precision + exponentWidth) % 8 == 0 && precision +
     auto p = Probability(0.5);
 }
 
+// Facilitate converting numeric types to custom float
+private union ToBinary(F)
+if (is(typeof(CustomFloatParams!(F.sizeof*8))) || is(F == real))
+{
+    F set;
+
+    // If on Linux or Mac, where 80-bit reals are padded, ignore the
+    // padding.
+    import std.algorithm.comparison : min;
+    CustomFloat!(CustomFloatParams!(min(F.sizeof*8, 80))) get;
+
+    // Convert F to the correct binary type.
+    static typeof(get) opCall(F value)
+    {
+        ToBinary r;
+        r.set = value;
+        return r.get;
+    }
+    alias get this;
+}
+
 /// ditto
 struct CustomFloat(uint             precision,  // fraction bits (23 for float)
                    uint             exponentWidth,  // exponent bits (8 for float)  Exponent width
                    CustomFloatFlags flags,
                    uint             bias)
-if (((flags & flags.signed)  + precision + exponentWidth) % 8 == 0 &&
-    precision + exponentWidth > 0)
+if (isCorrectCustomFloat(precision, exponentWidth, flags))
 {
     import std.bitmanip : bitfields;
     import std.meta : staticIndexOf;
@@ -180,31 +197,15 @@ private:
 
     alias Flags = CustomFloatFlags;
 
-    // Facilitate converting numeric types to custom float
-    union ToBinary(F)
-        if (is(typeof(CustomFloatParams!(F.sizeof*8))) || is(F == real))
-    {
-        F set;
-
-        // If on Linux or Mac, where 80-bit reals are padded, ignore the
-        // padding.
-        import std.algorithm.comparison : min;
-        CustomFloat!(CustomFloatParams!(min(F.sizeof*8, 80))) get;
-
-        // Convert F to the correct binary type.
-        static typeof(get) opCall(F value)
-        {
-            ToBinary r;
-            r.set = value;
-            return r.get;
-        }
-        alias get this;
-    }
-
     // Perform IEEE rounding with round to nearest detection
     void roundedShift(T,U)(ref T sig, U shift)
     {
-        if (sig << (T.sizeof*8 - shift) == cast(T) 1uL << (T.sizeof*8 - 1))
+        if (shift >= T.sizeof*8)
+        {
+            // avoid illegal shift
+            sig = 0;
+        }
+        else if (sig << (T.sizeof*8 - shift) == cast(T) 1uL << (T.sizeof*8 - 1))
         {
             // round to even
             sig >>= shift;
@@ -386,7 +387,7 @@ public:
         {
             CustomFloat value;
             static if (flags & Flags.signed)
-            value.sign          = 0;
+                value.sign          = 0;
             value.significand   = 0;
             value.exponent      = exponent_max;
             return value;
@@ -398,7 +399,7 @@ public:
         {
             CustomFloat value;
             static if (flags & Flags.signed)
-            value.sign          = 0;
+                value.sign          = 0;
             value.significand   = cast(typeof(significand_max)) 1L << (precision-1);
             value.exponent      = exponent_max;
             return value;
@@ -407,32 +408,18 @@ public:
     /// Returns: number of decimal digits of precision
     static @property size_t dig()
     {
-        auto shiftcnt =  precision - ((flags&Flags.storeNormalized) != 0);
-        immutable x = (shiftcnt == 64) ? 0 : 1uL << shiftcnt;
-        return cast(size_t) log10(x);
+        auto shiftcnt = precision - ((flags&Flags.storeNormalized) == 0);
+        return shiftcnt == 64 ? 19 : cast(size_t) log10(1uL << shiftcnt);
     }
 
     /// Returns: smallest increment to the value 1
     static @property CustomFloat epsilon()
     {
-        CustomFloat value;
-        static if (flags & Flags.signed)
-        value.sign       = 0;
-        T_signed_exp exp = -precision;
-        T_sig        sig = 0;
+        CustomFloat one = CustomFloat(1);
+        CustomFloat onePlusEpsilon = one;
+        onePlusEpsilon.significand = onePlusEpsilon.significand | 1; // |= does not work here
 
-        value.fromNormalized(sig,exp);
-        if (exp == 0 && sig == 0) // underflowed to zero
-        {
-            static if ((flags&Flags.allowDenorm) ||
-                       (~flags&Flags.storeNormalized))
-                sig = 1;
-            else
-                sig = cast(T) 1uL << (precision - 1);
-        }
-        value.exponent     = cast(value.T_exp) exp;
-        value.significand  = cast(value.T_sig) sig;
-        return value;
+        return CustomFloat(onePlusEpsilon - one);
     }
 
     /// the number of bits in mantissa
@@ -442,32 +429,33 @@ public:
     static @property int max_10_exp(){ return cast(int) log10( +max ); }
 
     /// maximum int value such that 2<sup>max_exp-1</sup> is representable
-    enum max_exp = exponent_max-bias+((~flags&(Flags.infinity|flags.nan))!=0);
+    enum max_exp = exponent_max - bias - ((flags & (Flags.infinity | Flags.nan)) != 0) + 1;
 
     /// Returns: minimum int value such that 10<sup>min_10_exp</sup> is representable
     static @property int min_10_exp(){ return cast(int) log10( +min_normal ); }
 
     /// minimum int value such that 2<sup>min_exp-1</sup> is representable as a normalized value
-    enum min_exp = cast(T_signed_exp)-bias +1+ ((flags&Flags.allowDenorm)!=0);
+    enum min_exp = cast(T_signed_exp) -(cast(long) bias) + 1 + ((flags & Flags.allowDenorm) != 0);
 
     /// Returns: largest representable value that's not infinity
     static @property CustomFloat max()
     {
         CustomFloat value;
         static if (flags & Flags.signed)
-        value.sign        = 0;
+            value.sign        = 0;
         value.exponent    = exponent_max - ((flags&(flags.infinity|flags.nan)) != 0);
         value.significand = significand_max;
         return value;
     }
 
     /// Returns: smallest representable normalized value that's not 0
-    static @property CustomFloat min_normal() {
+    static @property CustomFloat min_normal()
+    {
         CustomFloat value;
         static if (flags & Flags.signed)
-        value.sign        = 0;
-        value.exponent    = 1;
-        static if (flags&Flags.storeNormalized)
+            value.sign = 0;
+        value.exponent = (flags & Flags.allowDenorm) != 0;
+        static if (flags & Flags.storeNormalized)
             value.significand = 0;
         else
             value.significand = cast(T_sig) 1uL << (precision - 1);
@@ -480,7 +468,7 @@ public:
     /// Returns: imaginary part
     static @property CustomFloat im() { return CustomFloat(0.0f); }
 
-    /// Initialize from any $(D real) compatible type.
+    /// Initialize from any `real` compatible type.
     this(F)(F input) if (__traits(compiles, cast(real) input ))
     {
         this = input;
@@ -490,18 +478,18 @@ public:
     void opAssign(F:CustomFloat)(F input)
     {
         static if (flags & Flags.signed)
-        sign        = input.sign;
+            sign        = input.sign;
         exponent    = input.exponent;
         significand = input.significand;
     }
 
-    /// Assigns from any $(D real) compatible type.
+    /// Assigns from any `real` compatible type.
     void opAssign(F)(F input)
         if (__traits(compiles, cast(real) input))
     {
         import std.conv : text;
 
-        static if (staticIndexOf!(Unqual!F, float, double, real) >= 0)
+        static if (staticIndexOf!(immutable F, immutable float, immutable double, immutable real) >= 0)
             auto value = ToBinary!(Unqual!F)(input);
         else
             auto value = ToBinary!(real    )(input);
@@ -529,9 +517,9 @@ public:
         significand = cast(T_sig) sig;
     }
 
-    /// Fetches the stored value either as a $(D float), $(D double) or $(D real).
+    /// Fetches the stored value either as a `float`, `double` or `real`.
     @property F get(F)()
-        if (staticIndexOf!(Unqual!F, float, double, real) >= 0)
+        if (staticIndexOf!(immutable F, immutable float, immutable double, immutable real) >= 0)
     {
         import std.conv : text;
 
@@ -555,9 +543,9 @@ public:
     }
 
     ///ditto
-    T opCast(T)() if (__traits(compiles, get!T )) { return get!T; }
+    alias opCast = get;
 
-    /// Convert the CustomFloat to a real and perform the relavent operator on the result
+    /// Convert the CustomFloat to a real and perform the relevant operator on the result
     real opUnary(string op)()
         if (__traits(compiles, mixin(op~`(get!real)`)) || op=="++" || op=="--")
     {
@@ -572,8 +560,19 @@ public:
     }
 
     /// ditto
+    // Define an opBinary `CustomFloat op CustomFloat` so that those below
+    // do not match equally, which is disallowed by the spec:
+    // https://dlang.org/spec/operatoroverloading.html#binary
     real opBinary(string op,T)(T b)
-        if (__traits(compiles, mixin(`get!real`~op~`b`)))
+         if (__traits(compiles, mixin(`get!real`~op~`b.get!real`)))
+     {
+         return mixin(`get!real`~op~`b.get!real`);
+     }
+
+    /// ditto
+    real opBinary(string op,T)(T b)
+        if ( __traits(compiles, mixin(`get!real`~op~`b`)) &&
+            !__traits(compiles, mixin(`get!real`~op~`b.get!real`)))
     {
         return mixin(`get!real`~op~`b`);
     }
@@ -581,7 +580,8 @@ public:
     /// ditto
     real opBinaryRight(string op,T)(T a)
         if ( __traits(compiles, mixin(`a`~op~`get!real`)) &&
-            !__traits(compiles, mixin(`get!real`~op~`b`)))
+            !__traits(compiles, mixin(`get!real`~op~`b`)) &&
+            !__traits(compiles, mixin(`get!real`~op~`b.get!real`)))
     {
         return mixin(`a`~op~`get!real`);
     }
@@ -605,9 +605,10 @@ public:
     /// ditto
     template toString()
     {
-        import std.format : FormatSpec, formatValue;
-        // Needs to be a template because of DMD @@BUG@@ 13737.
-        void toString()(scope void delegate(const(char)[]) sink, FormatSpec!char fmt)
+        import std.format.spec : FormatSpec;
+        import std.format.write : formatValue;
+        // Needs to be a template because of https://issues.dlang.org/show_bug.cgi?id=13737.
+        void toString()(scope void delegate(const(char)[]) sink, scope const ref FormatSpec!char fmt)
         {
             sink.formatValue(get!real, fmt);
         }
@@ -621,7 +622,7 @@ public:
         AliasSeq!(
             CustomFloat!(5, 10),
             CustomFloat!(5, 11, CustomFloatFlags.ieee ^ CustomFloatFlags.signed),
-            CustomFloat!(1, 15, CustomFloatFlags.ieee ^ CustomFloatFlags.signed),
+            CustomFloat!(1, 7, CustomFloatFlags.ieee ^ CustomFloatFlags.signed),
             CustomFloat!(4, 3, CustomFloatFlags.ieee | CustomFloatFlags.probability ^ CustomFloatFlags.signed)
         );
 
@@ -658,26 +659,320 @@ public:
     assert(y.to!string == "0.125");
 }
 
+@safe unittest
+{
+    alias cf = CustomFloat!(5, 2);
+
+    auto a = cf.infinity;
+    assert(a.sign == 0);
+    assert(a.exponent == 3);
+    assert(a.significand == 0);
+
+    auto b = cf.nan;
+    assert(b.exponent == 3);
+    assert(b.significand != 0);
+
+    assert(cf.dig == 1);
+
+    auto c = cf.epsilon;
+    assert(c.sign == 0);
+    assert(c.exponent == 0);
+    assert(c.significand == 1);
+
+    assert(cf.mant_dig == 6);
+
+    assert(cf.max_10_exp == 0);
+    assert(cf.max_exp == 2);
+    assert(cf.min_10_exp == 0);
+    assert(cf.min_exp == 1);
+
+    auto d = cf.max;
+    assert(d.sign == 0);
+    assert(d.exponent == 2);
+    assert(d.significand == 31);
+
+    auto e = cf.min_normal;
+    assert(e.sign == 0);
+    assert(e.exponent == 1);
+    assert(e.significand == 0);
+
+    assert(e.re == e);
+    assert(e.im == cf(0.0));
+}
+
+// check whether CustomFloats identical to float/double behave like float/double
+@safe unittest
+{
+    import std.conv : to;
+
+    alias myFloat = CustomFloat!(23, 8);
+
+    static assert(myFloat.dig == float.dig);
+    static assert(myFloat.mant_dig == float.mant_dig);
+    assert(myFloat.max_10_exp == float.max_10_exp);
+    static assert(myFloat.max_exp == float.max_exp);
+    assert(myFloat.min_10_exp == float.min_10_exp);
+    static assert(myFloat.min_exp == float.min_exp);
+    assert(to!float(myFloat.epsilon) == float.epsilon);
+    assert(to!float(myFloat.max) == float.max);
+    assert(to!float(myFloat.min_normal) == float.min_normal);
+
+    alias myDouble = CustomFloat!(52, 11);
+
+    static assert(myDouble.dig == double.dig);
+    static assert(myDouble.mant_dig == double.mant_dig);
+    assert(myDouble.max_10_exp == double.max_10_exp);
+    static assert(myDouble.max_exp == double.max_exp);
+    assert(myDouble.min_10_exp == double.min_10_exp);
+    static assert(myDouble.min_exp == double.min_exp);
+    assert(to!double(myDouble.epsilon) == double.epsilon);
+    assert(to!double(myDouble.max) == double.max);
+    assert(to!double(myDouble.min_normal) == double.min_normal);
+}
+
+// testing .dig
+@safe unittest
+{
+    static assert(CustomFloat!(1, 6).dig == 0);
+    static assert(CustomFloat!(9, 6).dig == 2);
+    static assert(CustomFloat!(10, 5).dig == 3);
+    static assert(CustomFloat!(10, 6, CustomFloatFlags.none).dig == 2);
+    static assert(CustomFloat!(11, 5, CustomFloatFlags.none).dig == 3);
+    static assert(CustomFloat!(64, 7).dig == 19);
+}
+
+// testing .mant_dig
+@safe unittest
+{
+    static assert(CustomFloat!(10, 5).mant_dig == 11);
+    static assert(CustomFloat!(10, 6, CustomFloatFlags.none).mant_dig == 10);
+}
+
+// testing .max_exp
+@safe unittest
+{
+    static assert(CustomFloat!(1, 6).max_exp == 2^^5);
+    static assert(CustomFloat!(2, 6, CustomFloatFlags.none).max_exp == 2^^5);
+    static assert(CustomFloat!(5, 10).max_exp == 2^^9);
+    static assert(CustomFloat!(6, 10, CustomFloatFlags.none).max_exp == 2^^9);
+    static assert(CustomFloat!(2, 6, CustomFloatFlags.nan).max_exp == 2^^5);
+    static assert(CustomFloat!(6, 10, CustomFloatFlags.nan).max_exp == 2^^9);
+}
+
+// testing .min_exp
+@safe unittest
+{
+    static assert(CustomFloat!(1, 6).min_exp == -2^^5+3);
+    static assert(CustomFloat!(5, 10).min_exp == -2^^9+3);
+    static assert(CustomFloat!(2, 6, CustomFloatFlags.none).min_exp == -2^^5+1);
+    static assert(CustomFloat!(6, 10, CustomFloatFlags.none).min_exp == -2^^9+1);
+    static assert(CustomFloat!(2, 6, CustomFloatFlags.nan).min_exp == -2^^5+2);
+    static assert(CustomFloat!(6, 10, CustomFloatFlags.nan).min_exp == -2^^9+2);
+    static assert(CustomFloat!(2, 6, CustomFloatFlags.allowDenorm).min_exp == -2^^5+2);
+    static assert(CustomFloat!(6, 10, CustomFloatFlags.allowDenorm).min_exp == -2^^9+2);
+}
+
+// testing .max_10_exp
+@safe unittest
+{
+    assert(CustomFloat!(1, 6).max_10_exp == 9);
+    assert(CustomFloat!(5, 10).max_10_exp == 154);
+    assert(CustomFloat!(2, 6, CustomFloatFlags.none).max_10_exp == 9);
+    assert(CustomFloat!(6, 10, CustomFloatFlags.none).max_10_exp == 154);
+    assert(CustomFloat!(2, 6, CustomFloatFlags.nan).max_10_exp == 9);
+    assert(CustomFloat!(6, 10, CustomFloatFlags.nan).max_10_exp == 154);
+}
+
+// testing .min_10_exp
+@safe unittest
+{
+    assert(CustomFloat!(1, 6).min_10_exp == -9);
+    assert(CustomFloat!(5, 10).min_10_exp == -153);
+    assert(CustomFloat!(2, 6, CustomFloatFlags.none).min_10_exp == -9);
+    assert(CustomFloat!(6, 10, CustomFloatFlags.none).min_10_exp == -154);
+    assert(CustomFloat!(2, 6, CustomFloatFlags.nan).min_10_exp == -9);
+    assert(CustomFloat!(6, 10, CustomFloatFlags.nan).min_10_exp == -153);
+    assert(CustomFloat!(2, 6, CustomFloatFlags.allowDenorm).min_10_exp == -9);
+    assert(CustomFloat!(6, 10, CustomFloatFlags.allowDenorm).min_10_exp == -153);
+}
+
+// testing .epsilon
+@safe unittest
+{
+    assert(CustomFloat!(1,6).epsilon.sign == 0);
+    assert(CustomFloat!(1,6).epsilon.exponent == 30);
+    assert(CustomFloat!(1,6).epsilon.significand == 0);
+    assert(CustomFloat!(2,5).epsilon.sign == 0);
+    assert(CustomFloat!(2,5).epsilon.exponent == 13);
+    assert(CustomFloat!(2,5).epsilon.significand == 0);
+    assert(CustomFloat!(3,4).epsilon.sign == 0);
+    assert(CustomFloat!(3,4).epsilon.exponent == 4);
+    assert(CustomFloat!(3,4).epsilon.significand == 0);
+    // the following epsilons are only available, when denormalized numbers are allowed:
+    assert(CustomFloat!(4,3).epsilon.sign == 0);
+    assert(CustomFloat!(4,3).epsilon.exponent == 0);
+    assert(CustomFloat!(4,3).epsilon.significand == 4);
+    assert(CustomFloat!(5,2).epsilon.sign == 0);
+    assert(CustomFloat!(5,2).epsilon.exponent == 0);
+    assert(CustomFloat!(5,2).epsilon.significand == 1);
+}
+
+// testing .max
+@safe unittest
+{
+    static assert(CustomFloat!(5,2).max.sign == 0);
+    static assert(CustomFloat!(5,2).max.exponent == 2);
+    static assert(CustomFloat!(5,2).max.significand == 31);
+    static assert(CustomFloat!(4,3).max.sign == 0);
+    static assert(CustomFloat!(4,3).max.exponent == 6);
+    static assert(CustomFloat!(4,3).max.significand == 15);
+    static assert(CustomFloat!(3,4).max.sign == 0);
+    static assert(CustomFloat!(3,4).max.exponent == 14);
+    static assert(CustomFloat!(3,4).max.significand == 7);
+    static assert(CustomFloat!(2,5).max.sign == 0);
+    static assert(CustomFloat!(2,5).max.exponent == 30);
+    static assert(CustomFloat!(2,5).max.significand == 3);
+    static assert(CustomFloat!(1,6).max.sign == 0);
+    static assert(CustomFloat!(1,6).max.exponent == 62);
+    static assert(CustomFloat!(1,6).max.significand == 1);
+    static assert(CustomFloat!(3,5, CustomFloatFlags.none).max.exponent == 31);
+    static assert(CustomFloat!(3,5, CustomFloatFlags.none).max.significand == 7);
+}
+
+// testing .min_normal
+@safe unittest
+{
+    static assert(CustomFloat!(5,2).min_normal.sign == 0);
+    static assert(CustomFloat!(5,2).min_normal.exponent == 1);
+    static assert(CustomFloat!(5,2).min_normal.significand == 0);
+    static assert(CustomFloat!(4,3).min_normal.sign == 0);
+    static assert(CustomFloat!(4,3).min_normal.exponent == 1);
+    static assert(CustomFloat!(4,3).min_normal.significand == 0);
+    static assert(CustomFloat!(3,4).min_normal.sign == 0);
+    static assert(CustomFloat!(3,4).min_normal.exponent == 1);
+    static assert(CustomFloat!(3,4).min_normal.significand == 0);
+    static assert(CustomFloat!(2,5).min_normal.sign == 0);
+    static assert(CustomFloat!(2,5).min_normal.exponent == 1);
+    static assert(CustomFloat!(2,5).min_normal.significand == 0);
+    static assert(CustomFloat!(1,6).min_normal.sign == 0);
+    static assert(CustomFloat!(1,6).min_normal.exponent == 1);
+    static assert(CustomFloat!(1,6).min_normal.significand == 0);
+    static assert(CustomFloat!(3,5, CustomFloatFlags.none).min_normal.exponent == 0);
+    static assert(CustomFloat!(3,5, CustomFloatFlags.none).min_normal.significand == 4);
+}
+
+@safe unittest
+{
+    import std.math.traits : isNaN;
+
+    alias cf = CustomFloat!(5, 2);
+
+    auto f = cf.nan.get!float();
+    assert(isNaN(f));
+
+    cf a;
+    a = real.max;
+    assert(a == cf.infinity);
+
+    a = 0.015625;
+    assert(a.exponent == 0);
+    assert(a.significand == 0);
+
+    a = 0.984375;
+    assert(a.exponent == 1);
+    assert(a.significand == 0);
+}
+
+@system unittest
+{
+    import std.exception : assertThrown;
+    import core.exception : AssertError;
+
+    alias cf = CustomFloat!(3, 5, CustomFloatFlags.none);
+
+    cf a;
+    assertThrown!AssertError(a = real.max);
+}
+
+@system unittest
+{
+    import std.exception : assertThrown;
+    import core.exception : AssertError;
+
+    alias cf = CustomFloat!(3, 5, CustomFloatFlags.nan);
+
+    cf a;
+    assertThrown!AssertError(a = real.max);
+}
+
+@system unittest
+{
+    import std.exception : assertThrown;
+    import core.exception : AssertError;
+
+    alias cf = CustomFloat!(24, 8, CustomFloatFlags.none);
+
+    cf a;
+    assertThrown!AssertError(a = float.infinity);
+}
+
+private bool isCorrectCustomFloat(uint precision, uint exponentWidth, CustomFloatFlags flags) @safe pure nothrow @nogc
+{
+    // Restrictions from bitfield
+    // due to CustomFloat!80 support hack precision with 64 bits is handled specially
+    auto length = (flags & flags.signed) + exponentWidth + ((precision == 64) ? 0 : precision);
+    if (length != 8 && length != 16 && length != 32 && length != 64) return false;
+
+    // mantissa needs to fit into real mantissa
+    if (precision > real.mant_dig - 1 && precision != 64) return false;
+
+    // exponent needs to fit into real exponent
+    if (1L << exponentWidth - 1 > real.max_exp) return false;
+
+    // mantissa should have at least one bit
+    if (precision == 0) return false;
+
+    // exponent should have at least one bit, in some cases two
+    if (exponentWidth <= ((flags & (flags.allowDenorm | flags.infinity | flags.nan)) != 0)) return false;
+
+    return true;
+}
+
+@safe pure nothrow @nogc unittest
+{
+    assert(isCorrectCustomFloat(3,4,CustomFloatFlags.ieee));
+    assert(isCorrectCustomFloat(3,5,CustomFloatFlags.none));
+    assert(!isCorrectCustomFloat(3,3,CustomFloatFlags.ieee));
+    assert(isCorrectCustomFloat(64,7,CustomFloatFlags.ieee));
+    assert(!isCorrectCustomFloat(64,4,CustomFloatFlags.ieee));
+    assert(!isCorrectCustomFloat(508,3,CustomFloatFlags.ieee));
+    assert(!isCorrectCustomFloat(3,100,CustomFloatFlags.ieee));
+    assert(!isCorrectCustomFloat(0,7,CustomFloatFlags.ieee));
+    assert(!isCorrectCustomFloat(6,1,CustomFloatFlags.ieee));
+    assert(isCorrectCustomFloat(7,1,CustomFloatFlags.none));
+    assert(!isCorrectCustomFloat(8,0,CustomFloatFlags.none));
+}
+
 /**
 Defines the fastest type to use when storing temporaries of a
-calculation intended to ultimately yield a result of type $(D F)
-(where $(D F) must be one of $(D float), $(D double), or $(D
+calculation intended to ultimately yield a result of type `F`
+(where `F` must be one of `float`, `double`, or $(D
 real)). When doing a multi-step computation, you may want to store
-intermediate results as $(D FPTemporary!F).
+intermediate results as `FPTemporary!F`.
 
-The necessity of $(D FPTemporary) stems from the optimized
+The necessity of `FPTemporary` stems from the optimized
 floating-point operations and registers present in virtually all
 processors. When adding numbers in the example above, the addition may
-in fact be done in $(D real) precision internally. In that case,
-storing the intermediate $(D result) in $(D double format) is not only
+in fact be done in `real` precision internally. In that case,
+storing the intermediate `result` in $(D double format) is not only
 less precise, it is also (surprisingly) slower, because a conversion
-from $(D real) to $(D double) is performed every pass through the
-loop. This being a lose-lose situation, $(D FPTemporary!F) has been
+from `real` to `double` is performed every pass through the
+loop. This being a lose-lose situation, `FPTemporary!F` has been
 defined as the $(I fastest) type to use for calculations at precision
-$(D F). There is no need to define a type for the $(I most accurate)
-calculations, as that is always $(D real).
+`F`. There is no need to define a type for the $(I most accurate)
+calculations, as that is always `real`.
 
-Finally, there is no guarantee that using $(D FPTemporary!F) will
+Finally, there is no guarantee that using `FPTemporary!F` will
 always be fastest, as the speed of floating-point calculations depends
 on very many factors.
  */
@@ -693,7 +988,7 @@ if (isFloatingPoint!F)
 ///
 @safe unittest
 {
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
     // Average numbers in an array
     double avg(in double[] a)
@@ -705,14 +1000,14 @@ if (isFloatingPoint!F)
     }
 
     auto a = [1.0, 2.0, 3.0];
-    assert(approxEqual(avg(a), 2));
+    assert(isClose(avg(a), 2));
 }
 
 /**
 Implements the $(HTTP tinyurl.com/2zb9yr, secant method) for finding a
-root of the function $(D fun) starting from points $(D [xn_1, x_n])
-(ideally close to the root). $(D Num) may be $(D float), $(D double),
-or $(D real).
+root of the function `fun` starting from points $(D [xn_1, x_n])
+(ideally close to the root). `Num` may be `float`, `double`,
+or `real`.
 */
 template secantMethod(alias fun)
 {
@@ -723,7 +1018,7 @@ template secantMethod(alias fun)
         typeof(fxn) fxn_1;
 
         xn = xn_1;
-        while (!approxEqual(d, 0) && isFinite(d))
+        while (!isClose(d, 0, 0.0, 1e-5) && isFinite(d))
         {
             xn_1 = xn;
             xn -= d;
@@ -738,29 +1033,31 @@ template secantMethod(alias fun)
 ///
 @safe unittest
 {
-    import std.math : approxEqual, cos;
+    import std.math.operations : isClose;
+    import std.math.trigonometry : cos;
 
     float f(float x)
     {
         return cos(x) - x*x*x;
     }
     auto x = secantMethod!(f)(0f, 1f);
-    assert(approxEqual(x, 0.865474));
+    assert(isClose(x, 0.865474));
 }
 
 @system unittest
 {
     // @system because of __gshared stderr
+    import std.stdio;
     scope(failure) stderr.writeln("Failure testing secantMethod");
     float f(float x)
     {
         return cos(x) - x*x*x;
     }
     immutable x = secantMethod!(f)(0f, 1f);
-    assert(approxEqual(x, 0.865474));
+    assert(isClose(x, 0.865474));
     auto d = &f;
     immutable y = secantMethod!(d)(0f, 1f);
-    assert(approxEqual(y, 0.865474));
+    assert(isClose(y, 0.865474));
 }
 
 
@@ -799,7 +1096,7 @@ public:
  * www.netlib.org,www.netlib.org) as algorithm TOMS478.
  *
  */
-T findRoot(T, DF, DT)(scope DF f, in T a, in T b,
+T findRoot(T, DF, DT)(scope DF f, const T a, const T b,
     scope DT tolerance) //= (T a, T b) => false)
 if (
     isFloatingPoint!T &&
@@ -819,7 +1116,7 @@ if (
 }
 
 ///ditto
-T findRoot(T, DF)(scope DF f, in T a, in T b)
+T findRoot(T, DF)(scope DF f, const T a, const T b)
 {
     return findRoot(f, a, b, (T a, T b) => false);
 }
@@ -837,16 +1134,16 @@ T findRoot(T, DF)(scope DF f, in T a, in T b)
  * bx = Right bound of initial range of `f` known to contain the
  * root.
  *
- * fax = Value of $(D f(ax)).
+ * fax = Value of `f(ax)`.
  *
- * fbx = Value of $(D f(bx)). $(D fax) and $(D fbx) should have opposite signs.
- * ($(D f(ax)) and $(D f(bx)) are commonly known in advance.)
+ * fbx = Value of `f(bx)`. `fax` and `fbx` should have opposite signs.
+ * (`f(ax)` and `f(bx)` are commonly known in advance.)
  *
  *
  * tolerance = Defines an early termination condition. Receives the
  *             current upper and lower bounds on the root. The
- *             delegate must return $(D true) when these bounds are
- *             acceptable. If this function always returns $(D false),
+ *             delegate must return `true` when these bounds are
+ *             acceptable. If this function always returns `false`,
  *             full machine precision will be achieved.
  *
  * Returns:
@@ -857,7 +1154,8 @@ T findRoot(T, DF)(scope DF f, in T a, in T b)
  * root was found, both of the first two elements will contain the
  * root, and the second pair of elements will be 0.
  */
-Tuple!(T, T, R, R) findRoot(T, R, DF, DT)(scope DF f, in T ax, in T bx, in R fax, in R fbx,
+Tuple!(T, T, R, R) findRoot(T, R, DF, DT)(scope DF f,
+    const T ax, const T bx, const R fax, const R fbx,
     scope DT tolerance) // = (T a, T b) => false)
 if (
     isFloatingPoint!T &&
@@ -869,7 +1167,7 @@ in
     assert(!ax.isNaN() && !bx.isNaN(), "Limits must not be NaN");
     assert(signbit(fax) != signbit(fbx), "Parameters must bracket the root.");
 }
-body
+do
 {
     // Author: Don Clugston. This code is (heavily) modified from TOMS748
     // (www.netlib.org).  The changes to improve the worst-cast performance are
@@ -1164,13 +1462,14 @@ whileloop:
 }
 
 ///ditto
-Tuple!(T, T, R, R) findRoot(T, R, DF)(scope DF f, in T ax, in T bx, in R fax, in R fbx)
+Tuple!(T, T, R, R) findRoot(T, R, DF)(scope DF f,
+    const T ax, const T bx, const R fax, const R fbx)
 {
     return findRoot(f, ax, bx, fax, fbx, (T a, T b) => false);
 }
 
 ///ditto
-T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
+T findRoot(T, R)(scope R delegate(T) f, const T a, const T b,
     scope bool delegate(T lo, T hi) tolerance = (T a, T b) => false)
 {
     return findRoot!(T, R delegate(T), bool delegate(T lo, T hi))(f, a, b, tolerance);
@@ -1186,7 +1485,7 @@ T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
         //numCalls=0;
         //++numProblems;
         assert(!x1.isNaN() && !x2.isNaN());
-        assert(signbit(x1) != signbit(x2));
+        assert(signbit(f(x1)) != signbit(f(x2)));
         auto result = findRoot(f, x1, x2, f(x1), f(x2),
           (real lo, real hi) { return false; });
 
@@ -1204,16 +1503,16 @@ T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
         //++numCalls;
         if (x>float.max)
             x = float.max;
-        if (x<-double.max)
-            x = -double.max;
+        if (x<-float.max)
+            x = -float.max;
         // This has a single real root at -59.286543284815
         return 0.386*x*x*x + 23*x*x + 15.7*x + 525.2;
     }
     // Test a function with more than one root.
     real multisine(real x) { ++numCalls; return sin(x); }
-    //testFindRoot( &multisine, 6, 90);
-    //testFindRoot(&cubicfn, -100, 100);
-    //testFindRoot( &cubicfn, -double.max, real.max);
+    testFindRoot( &multisine, 6, 90);
+    testFindRoot(&cubicfn, -100, 100);
+    testFindRoot( &cubicfn, -double.max, real.max);
 
 
 /* Tests from the paper:
@@ -1246,7 +1545,7 @@ T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
     foreach (k; power_nvals)
     {
         n = k;
-        //testFindRoot(&power, -1, 10);
+        testFindRoot(&power, -1, 10);
     }
 
     int powerProblems = numProblems;
@@ -1307,17 +1606,17 @@ T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
     }
 
     numProblems=0;
-    //testFindRoot(&alefeld0, PI_2, PI);
+    testFindRoot(&alefeld0, PI_2, PI);
     for (n=1; n <= 10; ++n)
     {
-        //testFindRoot(&alefeld0, n*n+1e-9L, (n+1)*(n+1)-1e-9L);
+        testFindRoot(&alefeld0, n*n+1e-9L, (n+1)*(n+1)-1e-9L);
     }
     ale_a = -40; ale_b = -1;
-    //testFindRoot(&alefeld1, -9, 31);
+    testFindRoot(&alefeld1, -9, 31);
     ale_a = -100; ale_b = -2;
-    //testFindRoot(&alefeld1, -9, 31);
+    testFindRoot(&alefeld1, -9, 31);
     ale_a = -200; ale_b = -3;
-    //testFindRoot(&alefeld1, -9, 31);
+    testFindRoot(&alefeld1, -9, 31);
     int [] nvals_3 = [1, 2, 5, 10, 15, 20];
     int [] nvals_5 = [1, 2, 4, 5, 8, 15, 20];
     int [] nvals_6 = [1, 5, 10, 15, 20];
@@ -1325,48 +1624,48 @@ T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
 
     for (int i=4; i<12; i+=2)
     {
-       n = i;
-       ale_a = 0.2;
-       //testFindRoot(&alefeld2, 0, 5);
-       ale_a=1;
-       //testFindRoot(&alefeld2, 0.95, 4.05);
-       //testFindRoot(&alefeld2, 0, 1.5);
+        n = i;
+        ale_a = 0.2;
+        testFindRoot(&alefeld2, 0, 5);
+        ale_a=1;
+        testFindRoot(&alefeld2, 0.95, 4.05);
+        testFindRoot(&alefeld2, 0, 1.5);
     }
     foreach (i; nvals_3)
     {
         n=i;
-        //testFindRoot(&alefeld3, 0, 1);
+        testFindRoot(&alefeld3, 0, 1);
     }
     foreach (i; nvals_3)
     {
         n=i;
-        //testFindRoot(&alefeld4, 0, 1);
+        testFindRoot(&alefeld4, 0, 1);
     }
     foreach (i; nvals_5)
     {
         n=i;
-        //testFindRoot(&alefeld5, 0, 1);
+        testFindRoot(&alefeld5, 0, 1);
     }
     foreach (i; nvals_6)
     {
         n=i;
-        //testFindRoot(&alefeld6, 0, 1);
+        testFindRoot(&alefeld6, 0, 1);
     }
     foreach (i; nvals_7)
     {
         n=i;
-        //testFindRoot(&alefeld7, 0.01L, 1);
+        testFindRoot(&alefeld7, 0.01L, 1);
     }
     real worstcase(real x)
     {
         ++numCalls;
         return x<0.3*real.max? -0.999e-3 : 1.0;
     }
-    //testFindRoot(&worstcase, -real.max, real.max);
+    testFindRoot(&worstcase, -real.max, real.max);
 
     // just check that the double + float cases compile
-    //findRoot((double x){ return 0.0; }, -double.max, double.max);
-    //findRoot((float x){ return 0.0f; }, -float.max, float.max);
+    findRoot((double x){ return 0.0; }, -double.max, double.max);
+    findRoot((float x){ return 0.0f; }, -float.max, float.max);
 
 /*
    int grandtotal=0;
@@ -1381,7 +1680,7 @@ T findRoot(T, R)(scope R delegate(T) f, in T a, in T b,
    printf("POWER TOTAL = %d avg = %f ", powercalls,
         (1.0*powercalls)/powerProblems);
 */
-    //Issue 14231
+    // https://issues.dlang.org/show_bug.cgi?id=14231
     auto xp = findRoot((float x) => x, 0f, 1f);
     auto xn = findRoot((float x) => x, -1f, -0f);
 }
@@ -1413,8 +1712,8 @@ Params:
 
 Preconditions:
     `ax` and `bx` shall be finite reals. $(BR)
-    $(D relTolerance) shall be normal positive real. $(BR)
-    $(D absTolerance) shall be normal positive real no less then $(D T.epsilon*2).
+    `relTolerance` shall be normal positive real. $(BR)
+    `absTolerance` shall be normal positive real no less then `T.epsilon*2`.
 
 Returns:
     A tuple consisting of `x`, `y = f(x)` and `error = 3 * (absTolerance * fabs(x) + relTolerance)`.
@@ -1431,10 +1730,10 @@ See_Also: $(LREF findRoot), $(REF isNormal, std,math)
 Tuple!(T, "x", Unqual!(ReturnType!DF), "y", T, "error")
 findLocalMin(T, DF)(
         scope DF f,
-        in T ax,
-        in T bx,
-        in T relTolerance = sqrt(T.epsilon),
-        in T absTolerance = sqrt(T.epsilon),
+        const T ax,
+        const T bx,
+        const T relTolerance = sqrt(T.epsilon),
+        const T absTolerance = sqrt(T.epsilon),
         )
 if (isFloatingPoint!T
     && __traits(compiles, {T _ = DF.init(T.init);}))
@@ -1451,7 +1750,7 @@ out (result)
 {
     assert(isFinite(result.x));
 }
-body
+do
 {
     alias R = Unqual!(CommonType!(ReturnType!DF, T));
     // c is the squared inverse of the golden ratio
@@ -1553,14 +1852,14 @@ body
         //  update  a, b, v, w, and x
         if (fu <= fx)
         {
-            u < x ? b : a = x;
+            (u < x ? b : a) = x;
             v = w; fv = fw;
             w = x; fw = fx;
             x = u; fx = fu;
         }
         else
         {
-            u < x ? a : b = u;
+            (u < x ? a : b) = u;
             if (fu <= fw || w == x)
             {
                 v = w; fv = fw;
@@ -1578,27 +1877,27 @@ body
 ///
 @safe unittest
 {
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
     auto ret = findLocalMin((double x) => (x-4)^^2, -1e7, 1e7);
-    assert(ret.x.approxEqual(4.0));
-    assert(ret.y.approxEqual(0.0));
+    assert(ret.x.isClose(4.0));
+    assert(ret.y.isClose(0.0, 0.0, 1e-10));
 }
 
 @safe unittest
 {
     import std.meta : AliasSeq;
-    foreach (T; AliasSeq!(double, float, real))
+    static foreach (T; AliasSeq!(double, float, real))
     {
         {
             auto ret = findLocalMin!T((T x) => (x-4)^^2, T.min_normal, 1e7);
-            assert(ret.x.approxEqual(T(4)));
-            assert(ret.y.approxEqual(T(0)));
+            assert(ret.x.isClose(T(4)));
+            assert(ret.y.isClose(T(0), 0.0, T.epsilon));
         }
         {
             auto ret = findLocalMin!T((T x) => fabs(x-1), -T.max/4, T.max/4, T.min_normal, 2*T.epsilon);
-            assert(approxEqual(ret.x, T(1)));
-            assert(approxEqual(ret.y, T(0)));
+            assert(isClose(ret.x, T(1)));
+            assert(isClose(ret.y, T(0), 0.0, T.epsilon));
             assert(ret.error <= 10 * T.epsilon);
         }
         {
@@ -1620,19 +1919,19 @@ body
         }
         {
             auto ret = findLocalMin!T((T x) => -fabs(x), -1, 1, T.min_normal, 2*T.epsilon);
-            assert(ret.x.fabs.approxEqual(T(1)));
-            assert(ret.y.fabs.approxEqual(T(1)));
-            assert(ret.error.approxEqual(T(0)));
+            assert(ret.x.fabs.isClose(T(1)));
+            assert(ret.y.fabs.isClose(T(1)));
+            assert(ret.error.isClose(T(0), 0.0, 100*T.epsilon));
         }
     }
 }
 
 /**
 Computes $(LINK2 https://en.wikipedia.org/wiki/Euclidean_distance,
-Euclidean distance) between input ranges $(D a) and
-$(D b). The two ranges must have the same length. The three-parameter
+Euclidean distance) between input ranges `a` and
+`b`. The two ranges must have the same length. The three-parameter
 version stops computation as soon as the distance is greater than or
-equal to $(D limit) (this is useful to save computation if a small
+equal to `limit` (this is useful to save computation if a small
 distance is sought).
  */
 CommonType!(ElementType!(Range1), ElementType!(Range2))
@@ -1677,20 +1976,21 @@ if (isInputRange!(Range1) && isInputRange!(Range2))
 @safe unittest
 {
     import std.meta : AliasSeq;
-    foreach (T; AliasSeq!(double, const double, immutable double))
-    {
+    static foreach (T; AliasSeq!(double, const double, immutable double))
+    {{
         T[] a = [ 1.0, 2.0, ];
         T[] b = [ 4.0, 6.0, ];
         assert(euclideanDistance(a, b) == 5);
+        assert(euclideanDistance(a, b, 6) == 5);
         assert(euclideanDistance(a, b, 5) == 5);
         assert(euclideanDistance(a, b, 4) == 5);
         assert(euclideanDistance(a, b, 2) == 3);
-    }
+    }}
 }
 
 /**
 Computes the $(LINK2 https://en.wikipedia.org/wiki/Dot_product,
-dot product) of input ranges $(D a) and $(D
+dot product) of input ranges `a` and $(D
 b). The two ranges must have the same length. If both ranges define
 length, the check is done once; otherwise, it is done at each
 iteration.
@@ -1765,30 +2065,55 @@ dotProduct(F1, F2)(in F1[] avector, in F2[] bvector)
     return sum0;
 }
 
+/// ditto
+F dotProduct(F, uint N)(const ref scope F[N] a, const ref scope F[N] b)
+if (N <= 16)
+{
+    F sum0 = 0;
+    F sum1 = 0;
+    static foreach (i; 0 .. N / 2)
+    {
+        sum0 += a[i*2] * b[i*2];
+        sum1 += a[i*2+1] * b[i*2+1];
+    }
+    static if (N % 2 == 1)
+    {
+        sum0 += a[N-1] * b[N-1];
+    }
+    return sum0 + sum1;
+}
+
 @system unittest
 {
     // @system due to dotProduct and assertCTFEable
     import std.exception : assertCTFEable;
     import std.meta : AliasSeq;
-    foreach (T; AliasSeq!(double, const double, immutable double))
-    {
+    static foreach (T; AliasSeq!(double, const double, immutable double))
+    {{
         T[] a = [ 1.0, 2.0, ];
         T[] b = [ 4.0, 6.0, ];
         assert(dotProduct(a, b) == 16);
         assert(dotProduct([1, 3, -5], [4, -2, -1]) == 3);
-    }
+        // Test with fixed-length arrays.
+        T[2] c = [ 1.0, 2.0, ];
+        T[2] d = [ 4.0, 6.0, ];
+        assert(dotProduct(c, d) == 16);
+        T[3] e = [1,  3, -5];
+        T[3] f = [4, -2, -1];
+        assert(dotProduct(e, f) == 3);
+    }}
 
     // Make sure the unrolled loop codepath gets tested.
     static const x =
-        [1.0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+        [1.0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
     static const y =
-        [2.0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-    assertCTFEable!({ assert(dotProduct(x, y) == 2280); });
+        [2.0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+    assertCTFEable!({ assert(dotProduct(x, y) == 4048); });
 }
 
 /**
 Computes the $(LINK2 https://en.wikipedia.org/wiki/Cosine_similarity,
-cosine similarity) of input ranges $(D a) and $(D
+cosine similarity) of input ranges `a` and $(D
 b). The two ranges must have the same length. If both ranges define
 length, the check is done once; otherwise, it is done at each
 iteration. If either range has all-zero elements, return 0.
@@ -1815,25 +2140,25 @@ if (isInputRange!(Range1) && isInputRange!(Range2))
 @safe unittest
 {
     import std.meta : AliasSeq;
-    foreach (T; AliasSeq!(double, const double, immutable double))
-    {
+    static foreach (T; AliasSeq!(double, const double, immutable double))
+    {{
         T[] a = [ 1.0, 2.0, ];
         T[] b = [ 4.0, 3.0, ];
-        assert(approxEqual(
+        assert(isClose(
                     cosineSimilarity(a, b), 10.0 / sqrt(5.0 * 25),
                     0.01));
-    }
+    }}
 }
 
 /**
-Normalizes values in $(D range) by multiplying each element with a
-number chosen such that values sum up to $(D sum). If elements in $(D
+Normalizes values in `range` by multiplying each element with a
+number chosen such that values sum up to `sum`. If elements in $(D
 range) sum to zero, assigns $(D sum / range.length) to
-all. Normalization makes sense only if all elements in $(D range) are
-positive. $(D normalize) assumes that is the case without checking it.
+all. Normalization makes sense only if all elements in `range` are
+positive. `normalize` assumes that is the case without checking it.
 
-Returns: $(D true) if normalization completed normally, $(D false) if
-all elements in $(D range) were zero or if $(D range) is empty.
+Returns: `true` if normalization completed normally, `false` if
+all elements in `range` were zero or if `range` is empty.
  */
 bool normalize(R)(R range, ElementType!(R) sum = 1)
 if (isForwardRange!(R))
@@ -1883,13 +2208,14 @@ if (isForwardRange!(R))
     a = [ 1.0, 3.0 ];
     assert(normalize(a));
     assert(a == [ 0.25, 0.75 ]);
+    assert(normalize!(typeof(a))(a, 50)); // a = [12.5, 37.5]
     a = [ 0.0, 0.0 ];
     assert(!normalize(a));
     assert(a == [ 0.5, 0.5 ]);
 }
 
 /**
-Compute the sum of binary logarithms of the input range $(D r).
+Compute the sum of binary logarithms of the input range `r`.
 The error of this method is much smaller than with a naive sum of log2.
  */
 ElementType!Range sumOfLog2s(Range)(Range r)
@@ -1916,7 +2242,7 @@ if (isInputRange!Range && isFloatingPoint!(ElementType!Range))
 ///
 @safe unittest
 {
-    import std.math : isNaN;
+    import std.math.traits : isNaN;
 
     assert(sumOfLog2s(new double[0]) == 0);
     assert(sumOfLog2s([0.0L]) == -real.infinity);
@@ -1932,12 +2258,12 @@ if (isInputRange!Range && isFloatingPoint!(ElementType!Range))
 
 /**
 Computes $(LINK2 https://en.wikipedia.org/wiki/Entropy_(information_theory),
-_entropy) of input range $(D r) in bits. This
-function assumes (without checking) that the values in $(D r) are all
-in $(D [0, 1]). For the entropy to be meaningful, often $(D r) should
+_entropy) of input range `r` in bits. This
+function assumes (without checking) that the values in `r` are all
+in $(D [0, 1]). For the entropy to be meaningful, often `r` should
 be normalized too (i.e., its values should sum to 1). The
 two-parameter version stops evaluating as soon as the intermediate
-result is greater than or equal to $(D max).
+result is greater than or equal to `max`.
  */
 ElementType!Range entropy(Range)(Range r)
 if (isInputRange!Range)
@@ -1969,25 +2295,25 @@ if (isInputRange!Range &&
 @safe unittest
 {
     import std.meta : AliasSeq;
-    foreach (T; AliasSeq!(double, const double, immutable double))
-    {
+    static foreach (T; AliasSeq!(double, const double, immutable double))
+    {{
         T[] p = [ 0.0, 0, 0, 1 ];
         assert(entropy(p) == 0);
         p = [ 0.25, 0.25, 0.25, 0.25 ];
         assert(entropy(p) == 2);
         assert(entropy(p, 1) == 1);
-    }
+    }}
 }
 
 /**
 Computes the $(LINK2 https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence,
 Kullback-Leibler divergence) between input ranges
-$(D a) and $(D b), which is the sum $(D ai * log(ai / bi)). The base
+`a` and `b`, which is the sum $(D ai * log(ai / bi)). The base
 of logarithm is 2. The ranges are assumed to contain elements in $(D
 [0, 1]). Usually the ranges are normalized probability distributions,
 but this is not required or checked by $(D
-kullbackLeiblerDivergence). If any element $(D bi) is zero and the
-corresponding element $(D ai) nonzero, returns infinity. (Otherwise,
+kullbackLeiblerDivergence). If any element `bi` is zero and the
+corresponding element `ai` nonzero, returns infinity. (Otherwise,
 if $(D ai == 0 && bi == 0), the term $(D ai * log(ai / bi)) is
 considered zero.) If the inputs are normalized, the result is
 positive.
@@ -2015,7 +2341,7 @@ if (isInputRange!(Range1) && isInputRange!(Range2))
 ///
 @safe unittest
 {
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
     double[] p = [ 0.0, 0, 0, 1 ];
     assert(kullbackLeiblerDivergence(p, p) == 0);
@@ -2024,21 +2350,21 @@ if (isInputRange!(Range1) && isInputRange!(Range2))
     assert(kullbackLeiblerDivergence(p, p1) == 2);
     assert(kullbackLeiblerDivergence(p1, p) == double.infinity);
     double[] p2 = [ 0.2, 0.2, 0.2, 0.4 ];
-    assert(approxEqual(kullbackLeiblerDivergence(p1, p2), 0.0719281));
-    assert(approxEqual(kullbackLeiblerDivergence(p2, p1), 0.0780719));
+    assert(isClose(kullbackLeiblerDivergence(p1, p2), 0.0719281, 1e-5));
+    assert(isClose(kullbackLeiblerDivergence(p2, p1), 0.0780719, 1e-5));
 }
 
 /**
 Computes the $(LINK2 https://en.wikipedia.org/wiki/Jensen%E2%80%93Shannon_divergence,
-Jensen-Shannon divergence) between $(D a) and $(D
+Jensen-Shannon divergence) between `a` and $(D
 b), which is the sum $(D (ai * log(2 * ai / (ai + bi)) + bi * log(2 *
 bi / (ai + bi))) / 2). The base of logarithm is 2. The ranges are
 assumed to contain elements in $(D [0, 1]). Usually the ranges are
 normalized probability distributions, but this is not required or
-checked by $(D jensenShannonDivergence). If the inputs are normalized,
+checked by `jensenShannonDivergence`. If the inputs are normalized,
 the result is bounded within $(D [0, 1]). The three-parameter version
 stops evaluations as soon as the intermediate result is greater than
-or equal to $(D limit).
+or equal to `limit`.
  */
 CommonType!(ElementType!Range1, ElementType!Range2)
 jensenShannonDivergence(Range1, Range2)(Range1 a, Range2 b)
@@ -2099,33 +2425,33 @@ if (isInputRange!Range1 && isInputRange!Range2 &&
 ///
 @safe unittest
 {
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
     double[] p = [ 0.0, 0, 0, 1 ];
     assert(jensenShannonDivergence(p, p) == 0);
     double[] p1 = [ 0.25, 0.25, 0.25, 0.25 ];
     assert(jensenShannonDivergence(p1, p1) == 0);
-    assert(approxEqual(jensenShannonDivergence(p1, p), 0.548795));
+    assert(isClose(jensenShannonDivergence(p1, p), 0.548795, 1e-5));
     double[] p2 = [ 0.2, 0.2, 0.2, 0.4 ];
-    assert(approxEqual(jensenShannonDivergence(p1, p2), 0.0186218));
-    assert(approxEqual(jensenShannonDivergence(p2, p1), 0.0186218));
-    assert(approxEqual(jensenShannonDivergence(p2, p1, 0.005), 0.00602366));
+    assert(isClose(jensenShannonDivergence(p1, p2), 0.0186218, 1e-5));
+    assert(isClose(jensenShannonDivergence(p2, p1), 0.0186218, 1e-5));
+    assert(isClose(jensenShannonDivergence(p2, p1, 0.005), 0.00602366, 1e-5));
 }
 
 /**
 The so-called "all-lengths gap-weighted string kernel" computes a
-similarity measure between $(D s) and $(D t) based on all of their
+similarity measure between `s` and `t` based on all of their
 common subsequences of all lengths. Gapped subsequences are also
 included.
 
 To understand what $(D gapWeightedSimilarity(s, t, lambda)) computes,
 consider first the case $(D lambda = 1) and the strings $(D s =
 ["Hello", "brave", "new", "world"]) and $(D t = ["Hello", "new",
-"world"]). In that case, $(D gapWeightedSimilarity) counts the
+"world"]). In that case, `gapWeightedSimilarity` counts the
 following matches:
 
-$(OL $(LI three matches of length 1, namely $(D "Hello"), $(D "new"),
-and $(D "world");) $(LI three matches of length 2, namely ($(D
+$(OL $(LI three matches of length 1, namely `"Hello"`, `"new"`,
+and `"world"`;) $(LI three matches of length 2, namely ($(D
 "Hello", "new")), ($(D "Hello", "world")), and ($(D "new", "world"));)
 $(LI one match of length 3, namely ($(D "Hello", "new", "world")).))
 
@@ -2156,12 +2482,12 @@ tally. That leaves only 4 matches.
 The most interesting case is when gapped matches still participate in
 the result, but not as strongly as ungapped matches. The result will
 be a smooth, fine-grained similarity measure between the input
-strings. This is where values of $(D lambda) between 0 and 1 enter
+strings. This is where values of `lambda` between 0 and 1 enter
 into play: gapped matches are $(I exponentially penalized with the
-number of gaps) with base $(D lambda). This means that an ungapped
+number of gaps) with base `lambda`. This means that an ungapped
 match adds 1 to the return value; a match with one gap in either
-string adds $(D lambda) to the return value; ...; a match with a total
-of $(D n) gaps in both strings adds $(D pow(lambda, n)) to the return
+string adds `lambda` to the return value; ...; a match with a total
+of `n` gaps in both strings adds $(D pow(lambda, n)) to the return
 value. In the example above, we have 4 matches without gaps, 2 matches
 with one gap, and 1 match with three gaps. The latter match is ($(D
 "Hello", "world")), which has two gaps in the first string and one gap
@@ -2174,11 +2500,11 @@ string[] t = ["Hello", "new", "world"];
 assert(gapWeightedSimilarity(s, t, 0.5) == 4 + 0.5 * 2 + 0.125);
 ----
 
-$(D gapWeightedSimilarity) is useful wherever a smooth similarity
+`gapWeightedSimilarity` is useful wherever a smooth similarity
 measure between sequences allowing for approximate matches is
 needed. The examples above are given with words, but any sequences
 with elements comparable for equality are allowed, e.g. characters or
-numbers. $(D gapWeightedSimilarity) uses a highly optimized dynamic
+numbers. `gapWeightedSimilarity` uses a highly optimized dynamic
 programming implementation that needs $(D 16 * min(s.length,
 t.length)) extra bytes of memory and $(BIGOH s.length * t.length) time
 to complete.
@@ -2242,25 +2568,25 @@ if (isRandomAccessRange!(R1) && hasLength!(R1) &&
 }
 
 /**
-The similarity per $(D gapWeightedSimilarity) has an issue in that it
+The similarity per `gapWeightedSimilarity` has an issue in that it
 grows with the lengths of the two strings, even though the strings are
 not actually very similar. For example, the range $(D ["Hello",
 "world"]) is increasingly similar with the range $(D ["Hello",
-"world", "world", "world",...]) as more instances of $(D "world") are
-appended. To prevent that, $(D gapWeightedSimilarityNormalized)
+"world", "world", "world",...]) as more instances of `"world"` are
+appended. To prevent that, `gapWeightedSimilarityNormalized`
 computes a normalized version of the similarity that is computed as
 $(D gapWeightedSimilarity(s, t, lambda) /
 sqrt(gapWeightedSimilarity(s, t, lambda) * gapWeightedSimilarity(s, t,
-lambda))). The function $(D gapWeightedSimilarityNormalized) (a
-so-called normalized kernel) is bounded in $(D [0, 1]), reaches $(D 0)
-only for ranges that don't match in any position, and $(D 1) only for
+lambda))). The function `gapWeightedSimilarityNormalized` (a
+so-called normalized kernel) is bounded in $(D [0, 1]), reaches `0`
+only for ranges that don't match in any position, and `1` only for
 identical ranges.
 
-The optional parameters $(D sSelfSim) and $(D tSelfSim) are meant for
+The optional parameters `sSelfSim` and `tSelfSim` are meant for
 avoiding duplicate computation. Many applications may have already
 computed $(D gapWeightedSimilarity(s, s, lambda)) and/or $(D
 gapWeightedSimilarity(t, t, lambda)). In that case, they can be passed
-as $(D sSelfSim) and $(D tSelfSim), respectively.
+as `sSelfSim` and `tSelfSim`, respectively.
  */
 Select!(isFloatingPoint!(F), F, double)
 gapWeightedSimilarityNormalized(alias comp = "a == b", R1, R2, F)
@@ -2289,19 +2615,20 @@ if (isRandomAccessRange!(R1) && hasLength!(R1) &&
 ///
 @system unittest
 {
-    import std.math : approxEqual, sqrt;
+    import std.math.operations : isClose;
+    import std.math.algebraic : sqrt;
 
     string[] s = ["Hello", "brave", "new", "world"];
     string[] t = ["Hello", "new", "world"];
     assert(gapWeightedSimilarity(s, s, 1) == 15);
     assert(gapWeightedSimilarity(t, t, 1) == 7);
     assert(gapWeightedSimilarity(s, t, 1) == 7);
-    assert(approxEqual(gapWeightedSimilarityNormalized(s, t, 1),
+    assert(isClose(gapWeightedSimilarityNormalized(s, t, 1),
                     7.0 / sqrt(15.0 * 7), 0.01));
 }
 
 /**
-Similar to $(D gapWeightedSimilarity), just works in an incremental
+Similar to `gapWeightedSimilarity`, just works in an incremental
 manner by first revealing the matches of length 1, then gapped matches
 of length 2, and so on. The memory requirement is $(BIGOH s.length *
 t.length). The time complexity is $(BIGOH s.length * t.length) time
@@ -2327,8 +2654,8 @@ private:
 
 public:
 /**
-Constructs an object given two ranges $(D s) and $(D t) and a penalty
-$(D lambda). Constructor completes in $(BIGOH s.length * t.length)
+Constructs an object given two ranges `s` and `t` and a penalty
+`lambda`. Constructor completes in $(BIGOH s.length * t.length)
 time and computes all matches of length 1.
  */
     this(Range s, Range t, F lambda)
@@ -2391,7 +2718,7 @@ time and computes all matches of length 1.
     }
 
     /**
-    Returns: $(D this).
+    Returns: `this`.
      */
     ref GapWeightedSimilarityIncremental opSlice()
     {
@@ -2484,7 +2811,7 @@ time and computes all matches of length 1.
 
     /**
     Returns: The gapped similarity at the current match length (initially
-    1, grows with each call to $(D popFront)).
+    1, grows with each call to `popFront`).
     */
     @property F front() { return currentValue; }
 
@@ -2598,61 +2925,63 @@ GapWeightedSimilarityIncremental!(R, F) gapWeightedSimilarityIncremental(R, F)
 }
 
 /**
-Computes the greatest common divisor of $(D a) and $(D b) by using
+Computes the greatest common divisor of `a` and `b` by using
 an efficient algorithm such as $(HTTPS en.wikipedia.org/wiki/Euclidean_algorithm, Euclid's)
 or $(HTTPS en.wikipedia.org/wiki/Binary_GCD_algorithm, Stein's) algorithm.
 
 Params:
-    T = Any numerical type that supports the modulo operator `%`. If
-        bit-shifting `<<` and `>>` are also supported, Stein's algorithm will
+    a = Integer value of any numerical type that supports the modulo operator `%`.
+        If bit-shifting `<<` and `>>` are also supported, Stein's algorithm will
         be used; otherwise, Euclid's algorithm is used as _a fallback.
+    b = Integer value of any equivalent numerical type.
+
 Returns:
     The greatest common divisor of the given arguments.
  */
-T gcd(T)(T a, T b)
-    if (isIntegral!T)
+typeof(Unqual!(T).init % Unqual!(U).init) gcd(T, U)(T a, U b)
+if (isIntegral!T && isIntegral!U)
 {
-    static if (is(T == const) || is(T == immutable))
-    {
-        return gcd!(Unqual!T)(a, b);
-    }
-    else version (DigitalMars)
-    {
-        static if (T.min < 0)
-        {
-            assert(a >= 0 && b >= 0);
-        }
-        while (b)
-        {
-            immutable t = b;
-            b = a % b;
-            a = t;
-        }
-        return a;
-    }
+    // Operate on a common type between the two arguments.
+    alias UCT = Unsigned!(CommonType!(Unqual!T, Unqual!U));
+
+    // `std.math.abs` doesn't support unsigned integers, and `T.min` is undefined.
+    static if (is(T : immutable short) || is(T : immutable byte))
+        UCT ax = (isUnsigned!T || a >= 0) ? a : cast(UCT) -int(a);
     else
+        UCT ax = (isUnsigned!T || a >= 0) ? a : -UCT(a);
+
+    static if (is(U : immutable short) || is(U : immutable byte))
+        UCT bx = (isUnsigned!U || b >= 0) ? b : cast(UCT) -int(b);
+    else
+        UCT bx = (isUnsigned!U || b >= 0) ? b : -UCT(b);
+
+    // Special cases.
+    if (ax == 0)
+        return bx;
+    if (bx == 0)
+        return ax;
+
+    return gcdImpl(ax, bx);
+}
+
+private typeof(T.init % T.init) gcdImpl(T)(T a, T b)
+if (isIntegral!T)
+{
+    pragma(inline, true);
+    import core.bitop : bsf;
+    import std.algorithm.mutation : swap;
+
+    immutable uint shift = bsf(a | b);
+    a >>= a.bsf;
+    do
     {
-        if (a == 0)
-            return b;
-        if (b == 0)
-            return a;
+        b >>= b.bsf;
+        if (a > b)
+            swap(a, b);
+        b -= a;
+    } while (b);
 
-        import core.bitop : bsf;
-        import std.algorithm.mutation : swap;
-
-        immutable uint shift = bsf(a | b);
-        a >>= a.bsf;
-
-        do
-        {
-            b >>= b.bsf;
-            if (a > b)
-                swap(a, b);
-            b -= a;
-        } while (b);
-
-        return a << shift;
-    }
+    return a << shift;
 }
 
 ///
@@ -2663,16 +2992,114 @@ T gcd(T)(T a, T b)
     assert(gcd(a, b) == 13);
 }
 
+@safe unittest
+{
+    import std.meta : AliasSeq;
+    static foreach (T; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong,
+                                 const byte, const short, const int, const long,
+                                 immutable ubyte, immutable ushort, immutable uint, immutable ulong))
+    {
+        static foreach (U; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong,
+                                     const ubyte, const ushort, const uint, const ulong,
+                                     immutable byte, immutable short, immutable int, immutable long))
+        {
+            // Signed and unsigned tests.
+            static if (T.max > byte.max && U.max > byte.max)
+                assert(gcd(T(200), U(200)) == 200);
+            static if (T.max > ubyte.max)
+            {
+                assert(gcd(T(2000), U(20))  == 20);
+                assert(gcd(T(2011), U(17))  == 1);
+            }
+            static if (T.max > ubyte.max && U.max > ubyte.max)
+                assert(gcd(T(1071), U(462)) == 21);
+
+            assert(gcd(T(0),   U(13))  == 13);
+            assert(gcd(T(29),  U(0))   == 29);
+            assert(gcd(T(0),   U(0))   == 0);
+            assert(gcd(T(1),   U(2))   == 1);
+            assert(gcd(T(9),   U(6))   == 3);
+            assert(gcd(T(3),   U(4))   == 1);
+            assert(gcd(T(32),  U(24))  == 8);
+            assert(gcd(T(5),   U(6))   == 1);
+            assert(gcd(T(54),  U(36))  == 18);
+
+            // Int and Long tests.
+            static if (T.max > short.max && U.max > short.max)
+                assert(gcd(T(46391), U(62527)) == 2017);
+            static if (T.max > ushort.max && U.max > ushort.max)
+                assert(gcd(T(63245986), U(39088169)) == 1);
+            static if (T.max > uint.max && U.max > uint.max)
+            {
+                assert(gcd(T(77160074263), U(47687519812)) == 1);
+                assert(gcd(T(77160074264), U(47687519812)) == 4);
+            }
+
+            // Negative tests.
+            static if (T.min < 0)
+            {
+                assert(gcd(T(-21), U(28)) == 7);
+                assert(gcd(T(-3),  U(4))  == 1);
+            }
+            static if (U.min < 0)
+            {
+                assert(gcd(T(1),  U(-2))  == 1);
+                assert(gcd(T(33), U(-44)) == 11);
+            }
+            static if (T.min < 0 && U.min < 0)
+            {
+                assert(gcd(T(-5),  U(-6))  == 1);
+                assert(gcd(T(-50), U(-60)) == 10);
+            }
+        }
+    }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21834
+@safe unittest
+{
+    assert(gcd(-120, 10U) == 10);
+    assert(gcd(120U, -10) == 10);
+    assert(gcd(int.min, 0L) == 1L + int.max);
+    assert(gcd(0L, int.min) == 1L + int.max);
+    assert(gcd(int.min, 0L + int.min) == 1L + int.max);
+    assert(gcd(int.min, 1L + int.max) == 1L + int.max);
+    assert(gcd(short.min, 1U + short.max) == 1U + short.max);
+}
+
 // This overload is for non-builtin numerical types like BigInt or
 // user-defined types.
 /// ditto
-T gcd(T)(T a, T b)
-    if (!isIntegral!T &&
+auto gcd(T)(T a, T b)
+if (!isIntegral!T &&
         is(typeof(T.init % T.init)) &&
         is(typeof(T.init == 0 || T.init > 0)))
 {
-    import std.algorithm.mutation : swap;
+    static if (!is(T == Unqual!T))
+    {
+        return gcd!(Unqual!T)(a, b);
+    }
+    else
+    {
+        // Ensure arguments are unsigned.
+        a = a >= 0 ? a : -a;
+        b = b >= 0 ? b : -b;
 
+        // Special cases.
+        if (a == 0)
+            return b;
+        if (b == 0)
+            return a;
+
+        return gcdImpl(a, b);
+    }
+}
+
+private auto gcdImpl(T)(T a, T b)
+if (!isIntegral!T)
+{
+    pragma(inline, true);
+    import std.algorithm.mutation : swap;
     enum canUseBinaryGcd = is(typeof(() {
         T t, u;
         t <<= 1;
@@ -2681,8 +3108,6 @@ T gcd(T)(T a, T b)
         bool b = (t & 1) == 0;
         swap(t, u);
     }));
-
-    assert(a >= 0 && b >= 0);
 
     static if (canUseBinaryGcd)
     {
@@ -2693,6 +3118,8 @@ T gcd(T)(T a, T b)
             b >>= 1;
             shift++;
         }
+
+        if ((a & 1) == 0) swap(a, b);
 
         do
         {
@@ -2719,13 +3146,16 @@ T gcd(T)(T a, T b)
     }
 }
 
-// Issue 7102
+// https://issues.dlang.org/show_bug.cgi?id=7102
 @system pure unittest
 {
     import std.bigint : BigInt;
     assert(gcd(BigInt("71_000_000_000_000_000_000"),
                BigInt("31_000_000_000_000_000_000")) ==
            BigInt("1_000_000_000_000_000_000"));
+
+    assert(gcd(BigInt(0), BigInt(1234567)) == BigInt(1234567));
+    assert(gcd(BigInt(1234567), BigInt(0)) == BigInt(1234567));
 }
 
 @safe pure nothrow unittest
@@ -2739,16 +3169,149 @@ T gcd(T)(T a, T b)
         {
             return CrippledInt(impl % i.impl);
         }
+        CrippledInt opUnary(string op : "-")()
+        {
+            return CrippledInt(-impl);
+        }
         int opEquals(CrippledInt i) { return impl == i.impl; }
         int opEquals(int i) { return impl == i; }
         int opCmp(int i) { return (impl < i) ? -1 : (impl > i) ? 1 : 0; }
     }
     assert(gcd(CrippledInt(2310), CrippledInt(1309)) == CrippledInt(77));
+    assert(gcd(CrippledInt(-120), CrippledInt(10U)) == CrippledInt(10));
+    assert(gcd(CrippledInt(120U), CrippledInt(-10)) == CrippledInt(10));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=19514
+@system pure unittest
+{
+    import std.bigint : BigInt;
+    assert(gcd(BigInt(2), BigInt(1)) == BigInt(1));
+}
+
+// Issue 20924
+@safe unittest
+{
+    import std.bigint : BigInt;
+    const a = BigInt("123143238472389492934020");
+    const b = BigInt("902380489324729338420924");
+    assert(__traits(compiles, gcd(a, b)));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=21834
+@safe unittest
+{
+    import std.bigint : BigInt;
+    assert(gcd(BigInt(-120), BigInt(10U)) == BigInt(10));
+    assert(gcd(BigInt(120U), BigInt(-10)) == BigInt(10));
+    assert(gcd(BigInt(int.min), BigInt(0L)) == BigInt(1L + int.max));
+    assert(gcd(BigInt(0L), BigInt(int.min)) == BigInt(1L + int.max));
+    assert(gcd(BigInt(int.min), BigInt(0L + int.min)) == BigInt(1L + int.max));
+    assert(gcd(BigInt(int.min), BigInt(1L + int.max)) == BigInt(1L + int.max));
+    assert(gcd(BigInt(short.min), BigInt(1U + short.max)) == BigInt(1U + short.max));
+}
+
+
+/**
+Computes the least common multiple of `a` and `b`.
+Arguments are the same as $(MYREF gcd).
+
+Returns:
+    The least common multiple of the given arguments.
+ */
+typeof(Unqual!(T).init % Unqual!(U).init) lcm(T, U)(T a, U b)
+if (isIntegral!T && isIntegral!U)
+{
+    // Operate on a common type between the two arguments.
+    alias UCT = Unsigned!(CommonType!(Unqual!T, Unqual!U));
+
+    // `std.math.abs` doesn't support unsigned integers, and `T.min` is undefined.
+    static if (is(T : immutable short) || is(T : immutable byte))
+        UCT ax = (isUnsigned!T || a >= 0) ? a : cast(UCT) -int(a);
+    else
+        UCT ax = (isUnsigned!T || a >= 0) ? a : -UCT(a);
+
+    static if (is(U : immutable short) || is(U : immutable byte))
+        UCT bx = (isUnsigned!U || b >= 0) ? b : cast(UCT) -int(b);
+    else
+        UCT bx = (isUnsigned!U || b >= 0) ? b : -UCT(b);
+
+    // Special cases.
+    if (ax == 0)
+        return ax;
+    if (bx == 0)
+        return bx;
+
+    return (ax / gcdImpl(ax, bx)) * bx;
+}
+
+///
+@safe unittest
+{
+    assert(lcm(1, 2) == 2);
+    assert(lcm(3, 4) == 12);
+    assert(lcm(5, 6) == 30);
+}
+
+@safe unittest
+{
+    import std.meta : AliasSeq;
+    static foreach (T; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong,
+                                 const byte, const short, const int, const long,
+                                 immutable ubyte, immutable ushort, immutable uint, immutable ulong))
+    {
+        static foreach (U; AliasSeq!(byte, ubyte, short, ushort, int, uint, long, ulong,
+                                     const ubyte, const ushort, const uint, const ulong,
+                                     immutable byte, immutable short, immutable int, immutable long))
+        {
+            assert(lcm(T(21), U(6))  == 42);
+            assert(lcm(T(41), U(0))  == 0);
+            assert(lcm(T(0),  U(7))  == 0);
+            assert(lcm(T(0),  U(0))  == 0);
+            assert(lcm(T(1U), U(2))  == 2);
+            assert(lcm(T(3),  U(4U)) == 12);
+            assert(lcm(T(5U), U(6U)) == 30);
+            static if (T.min < 0)
+                assert(lcm(T(-42), U(21U)) == 42);
+        }
+    }
+}
+
+/// ditto
+auto lcm(T)(T a, T b)
+if (!isIntegral!T &&
+        is(typeof(T.init % T.init)) &&
+        is(typeof(T.init == 0 || T.init > 0)))
+{
+    // Ensure arguments are unsigned.
+    a = a >= 0 ? a : -a;
+    b = b >= 0 ? b : -b;
+
+    // Special cases.
+    if (a == 0)
+        return a;
+    if (b == 0)
+        return b;
+
+    return (a / gcdImpl(a, b)) * b;
+}
+
+@safe unittest
+{
+    import std.bigint : BigInt;
+    assert(lcm(BigInt(21),  BigInt(6))   == BigInt(42));
+    assert(lcm(BigInt(41),  BigInt(0))   == BigInt(0));
+    assert(lcm(BigInt(0),   BigInt(7))   == BigInt(0));
+    assert(lcm(BigInt(0),   BigInt(0))   == BigInt(0));
+    assert(lcm(BigInt(1U),  BigInt(2))   == BigInt(2));
+    assert(lcm(BigInt(3),   BigInt(4U))  == BigInt(12));
+    assert(lcm(BigInt(5U),  BigInt(6U))  == BigInt(30));
+    assert(lcm(BigInt(-42), BigInt(21U)) == BigInt(42));
 }
 
 // This is to make tweaking the speed/size vs. accuracy tradeoff easy,
 // though floats seem accurate enough for all practical purposes, since
-// they pass the "approxEqual(inverseFft(fft(arr)), arr)" test even for
+// they pass the "isClose(inverseFft(fft(arr)), arr)" test even for
 // size 2 ^^ 22.
 private alias lookup_t = float;
 
@@ -2785,7 +3348,7 @@ private:
         assert(range.length >= 4);
         assert(isPowerOf2(range.length));
     }
-    body
+    do
     {
         auto recurseRange = range;
         recurseRange.doubleSteps();
@@ -2819,7 +3382,7 @@ private:
         assert(range.length >= 4);
         assert(isPowerOf2(range.length));
     }
-    body
+    do
     {
         alias E = ElementType!R;
 
@@ -2927,7 +3490,7 @@ private:
     {
         assert(isPowerOf2(buf.length));
     }
-    body
+    do
     {
         immutable n = buf.length;
         immutable localLookup = negSinLookup[bsf(n)];
@@ -2998,7 +3561,9 @@ private:
     //
     // Also, this is unsafe because the memSpace buffer will be cast
     // to immutable.
-    public this(lookup_t[] memSpace)  // Public b/c of bug 4636.
+    //
+    // Public b/c of https://issues.dlang.org/show_bug.cgi?id=4636.
+    public this(lookup_t[] memSpace)
     {
         immutable size = memSpace.length / 2;
 
@@ -3056,8 +3621,8 @@ private:
     }
 
 public:
-    /**Create an $(D Fft) object for computing fast Fourier transforms of
-     * power of two sizes of $(D size) or smaller.  $(D size) must be a
+    /**Create an `Fft` object for computing fast Fourier transforms of
+     * power of two sizes of `size` or smaller.  `size` must be a
      * power of two.
      */
     this(size_t size)
@@ -3074,11 +3639,11 @@ public:
     }
 
     /**Compute the Fourier transform of range using the $(BIGOH N log N)
-     * Cooley-Tukey Algorithm.  $(D range) must be a random-access range with
-     * slicing and a length equal to $(D size) as provided at the construction of
+     * Cooley-Tukey Algorithm.  `range` must be a random-access range with
+     * slicing and a length equal to `size` as provided at the construction of
      * this object.  The contents of range can be either  numeric types,
      * which will be interpreted as pure real values, or complex types with
-     * properties or members $(D .re) and $(D .im) that can be read.
+     * properties or members `.re` and `.im` that can be read.
      *
      * Note:  Pure real FFTs are automatically detected and the relevant
      *        optimizations are performed.
@@ -3217,7 +3782,7 @@ private enum string MakeLocalFft = q{
     auto fftObj = scoped!Fft(lookupBuf);
 };
 
-/**Convenience functions that create an $(D Fft) object, run the FFT or inverse
+/**Convenience functions that create an `Fft` object, run the FFT or inverse
  * FFT and return the result.  Useful for one-off FFTs.
  *
  * Note:  In addition to convenience, these functions are slightly more
@@ -3260,37 +3825,37 @@ void inverseFft(Ret, R)(R range, Ret buf)
     // Test values from R and Octave.
     auto arr = [1,2,3,4,5,6,7,8];
     auto fft1 = fft(arr);
-    assert(approxEqual(map!"a.re"(fft1),
-        [36.0, -4, -4, -4, -4, -4, -4, -4]));
-    assert(approxEqual(map!"a.im"(fft1),
-        [0, 9.6568, 4, 1.6568, 0, -1.6568, -4, -9.6568]));
+    assert(isClose(map!"a.re"(fft1),
+        [36.0, -4, -4, -4, -4, -4, -4, -4], 1e-4));
+    assert(isClose(map!"a.im"(fft1),
+        [0, 9.6568, 4, 1.6568, 0, -1.6568, -4, -9.6568], 1e-4));
 
     auto fft1Retro = fft(retro(arr));
-    assert(approxEqual(map!"a.re"(fft1Retro),
-        [36.0, 4, 4, 4, 4, 4, 4, 4]));
-    assert(approxEqual(map!"a.im"(fft1Retro),
-        [0, -9.6568, -4, -1.6568, 0, 1.6568, 4, 9.6568]));
+    assert(isClose(map!"a.re"(fft1Retro),
+        [36.0, 4, 4, 4, 4, 4, 4, 4], 1e-4));
+    assert(isClose(map!"a.im"(fft1Retro),
+        [0, -9.6568, -4, -1.6568, 0, 1.6568, 4, 9.6568], 1e-4));
 
     auto fft1Float = fft(to!(float[])(arr));
-    assert(approxEqual(map!"a.re"(fft1), map!"a.re"(fft1Float)));
-    assert(approxEqual(map!"a.im"(fft1), map!"a.im"(fft1Float)));
+    assert(isClose(map!"a.re"(fft1), map!"a.re"(fft1Float)));
+    assert(isClose(map!"a.im"(fft1), map!"a.im"(fft1Float)));
 
     alias C = Complex!float;
     auto arr2 = [C(1,2), C(3,4), C(5,6), C(7,8), C(9,10),
         C(11,12), C(13,14), C(15,16)];
     auto fft2 = fft(arr2);
-    assert(approxEqual(map!"a.re"(fft2),
-        [64.0, -27.3137, -16, -11.3137, -8, -4.6862, 0, 11.3137]));
-    assert(approxEqual(map!"a.im"(fft2),
-        [72, 11.3137, 0, -4.686, -8, -11.3137, -16, -27.3137]));
+    assert(isClose(map!"a.re"(fft2),
+        [64.0, -27.3137, -16, -11.3137, -8, -4.6862, 0, 11.3137], 1e-4));
+    assert(isClose(map!"a.im"(fft2),
+        [72, 11.3137, 0, -4.686, -8, -11.3137, -16, -27.3137], 1e-4));
 
     auto inv1 = inverseFft(fft1);
-    assert(approxEqual(map!"a.re"(inv1), arr));
+    assert(isClose(map!"a.re"(inv1), arr, 1e-6));
     assert(reduce!max(map!"a.im"(inv1)) < 1e-10);
 
     auto inv2 = inverseFft(fft2);
-    assert(approxEqual(map!"a.re"(inv2), map!"a.re"(arr2)));
-    assert(approxEqual(map!"a.im"(inv2), map!"a.im"(arr2)));
+    assert(isClose(map!"a.re"(inv2), map!"a.re"(arr2)));
+    assert(isClose(map!"a.im"(inv2), map!"a.im"(arr2)));
 
     // FFTs of size 0, 1 and 2 are handled as special cases.  Test them here.
     ushort[] empty;
@@ -3305,21 +3870,21 @@ void inverseFft(Ret, R)(R range, Ret buf)
 
     auto oneInv = inverseFft(oneFft);
     assert(oneInv.length == 1);
-    assert(approxEqual(oneInv[0].re, 4.5));
-    assert(approxEqual(oneInv[0].im, 0));
+    assert(isClose(oneInv[0].re, 4.5));
+    assert(isClose(oneInv[0].im, 0, 0.0, 1e-10));
 
     long[2] twoElems = [8, 4];
     auto twoFft = fft(twoElems[]);
     assert(twoFft.length == 2);
-    assert(approxEqual(twoFft[0].re, 12));
-    assert(approxEqual(twoFft[0].im, 0));
-    assert(approxEqual(twoFft[1].re, 4));
-    assert(approxEqual(twoFft[1].im, 0));
+    assert(isClose(twoFft[0].re, 12));
+    assert(isClose(twoFft[0].im, 0, 0.0, 1e-10));
+    assert(isClose(twoFft[1].re, 4));
+    assert(isClose(twoFft[1].im, 0, 0.0, 1e-10));
     auto twoInv = inverseFft(twoFft);
-    assert(approxEqual(twoInv[0].re, 8));
-    assert(approxEqual(twoInv[0].im, 0));
-    assert(approxEqual(twoInv[1].re, 4));
-    assert(approxEqual(twoInv[1].im, 0));
+    assert(isClose(twoInv[0].re, 8));
+    assert(isClose(twoInv[0].im, 0, 0.0, 1e-10));
+    assert(isClose(twoInv[1].re, 4));
+    assert(isClose(twoInv[1].im, 0, 0.0, 1e-10));
 }
 
 // Swaps the real and imaginary parts of a complex number.  This is useful
@@ -3327,6 +3892,89 @@ void inverseFft(Ret, R)(R range, Ret buf)
 C swapRealImag(C)(C input)
 {
     return C(input.im, input.re);
+}
+
+/** This function transforms `decimal` value into a value in the factorial number
+system stored in `fac`.
+
+A factorial number is constructed as:
+$(D fac[0] * 0! + fac[1] * 1! + ... fac[20] * 20!)
+
+Params:
+    decimal = The decimal value to convert into the factorial number system.
+    fac = The array to store the factorial number. The array is of size 21 as
+        `ulong.max` requires 21 digits in the factorial number system.
+Returns:
+    A variable storing the number of digits of the factorial number stored in
+    `fac`.
+*/
+size_t decimalToFactorial(ulong decimal, ref ubyte[21] fac)
+        @safe pure nothrow @nogc
+{
+    import std.algorithm.mutation : reverse;
+    size_t idx;
+
+    for (ulong i = 1; decimal != 0; ++i)
+    {
+        auto temp = decimal % i;
+        decimal /= i;
+        fac[idx++] = cast(ubyte)(temp);
+    }
+
+    if (idx == 0)
+    {
+        fac[idx++] = cast(ubyte) 0;
+    }
+
+    reverse(fac[0 .. idx]);
+
+    // first digit of the number in factorial will always be zero
+    assert(fac[idx - 1] == 0);
+
+    return idx;
+}
+
+///
+@safe pure @nogc unittest
+{
+    ubyte[21] fac;
+    size_t idx = decimalToFactorial(2982, fac);
+
+    assert(fac[0] == 4);
+    assert(fac[1] == 0);
+    assert(fac[2] == 4);
+    assert(fac[3] == 1);
+    assert(fac[4] == 0);
+    assert(fac[5] == 0);
+    assert(fac[6] == 0);
+}
+
+@safe pure unittest
+{
+    ubyte[21] fac;
+    size_t idx = decimalToFactorial(0UL, fac);
+    assert(idx == 1);
+    assert(fac[0] == 0);
+
+    fac[] = 0;
+    idx = 0;
+    idx = decimalToFactorial(ulong.max, fac);
+    assert(idx == 21);
+    auto t = [7, 11, 12, 4, 3, 15, 3, 5, 3, 5, 0, 8, 3, 5, 0, 0, 0, 2, 1, 1, 0];
+    foreach (i, it; fac[0 .. 21])
+    {
+        assert(it == t[i]);
+    }
+
+    fac[] = 0;
+    idx = decimalToFactorial(2982, fac);
+
+    assert(idx == 7);
+    t = [4, 0, 4, 1, 0, 0, 0];
+    foreach (i, it; fac[0 .. idx])
+    {
+        assert(it == t[i]);
+    }
 }
 
 private:

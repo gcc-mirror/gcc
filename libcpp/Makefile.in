@@ -264,11 +264,13 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
 	rm po/$(PACKAGE).pot.tmp
 
+ETAGS = @ETAGS@
+
 TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h system.h ucnid.h \
     include/cpplib.h include/line-map.h include/mkdeps.h include/symtab.h
 
 TAGS: $(TAGS_SOURCES)
-	cd $(srcdir) && etags $(TAGS_SOURCES)
+	cd $(srcdir) && $(ETAGS) $(TAGS_SOURCES)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

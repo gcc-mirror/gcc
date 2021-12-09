@@ -43,7 +43,7 @@
 #include "tree-ssanames.h"
 #include "target.h"
 
-static bool compute_objsize_r (tree, gimple *, int, access_ref *,
+static bool compute_objsize_r (tree, gimple *, bool, int, access_ref *,
 			       ssa_name_limit_t &, pointer_query *);
 
 /* Wrapper around the wide_int overload of get_range that accepts
@@ -199,7 +199,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
 	       of the source object.  */
 	    access_ref aref;
 	    tree src = gimple_call_arg (stmt, 1);
-	    if (compute_objsize (src, stmt, 1, &aref, qry)
+	    if (compute_objsize_r (src, stmt, false, 1, &aref, snlim, qry)
 		&& aref.sizrng[1] < offrng[1])
 	      offrng[1] = aref.sizrng[1];
 	  }
@@ -233,7 +233,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
       {
 	access_ref aref;
 	tree src = gimple_call_arg (stmt, 1);
-	if (compute_objsize_r (src, stmt, 1, &aref, snlim, qry))
+	if (compute_objsize_r (src, stmt, false, 1, &aref, snlim, qry))
 	  offrng[1] = aref.sizrng[1] - 1;
 	else
 	  offrng[1] = HOST_WIDE_INT_M1U;
@@ -258,7 +258,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2], bool *past_end,
 	       of the source object.  */
 	    access_ref aref;
 	    tree src = gimple_call_arg (stmt, 1);
-	    if (compute_objsize_r (src, stmt, 1, &aref, snlim, qry)
+	    if (compute_objsize_r (src, stmt, false, 1, &aref, snlim, qry)
 		&& aref.sizrng[1] < offrng[1])
 	      offrng[1] = aref.sizrng[1];
 	  }
@@ -596,15 +596,9 @@ gimple_parm_array_size (tree ptr, wide_int rng[2],
   return var;
 }
 
-/* Given a statement STMT, set the bounds of the reference to at most
-   as many bytes as BOUND or unknown when null, and at least one when
-   the MINACCESS is true unless BOUND is a constant zero.  STMT is
-   used for context to get accurate range info.  */
+/* Initialize the object.  */
 
-access_ref::access_ref (range_query *qry /* = nullptr */,
-			tree bound /* = NULL_TREE */,
-			gimple *stmt /* = nullptr */,
-			bool minaccess /* = false */)
+access_ref::access_ref ()
   : ref (), eval ([](tree x){ return x; }), deref (), trail1special (true),
     base0 (true), parmarray ()
 {
@@ -613,21 +607,6 @@ access_ref::access_ref (range_query *qry /* = nullptr */,
   offmax[0] = offmax[1] = 0;
   /* Invalidate.   */
   sizrng[0] = sizrng[1] = -1;
-
-  /* Set the default bounds of the access and adjust below.  */
-  bndrng[0] = minaccess ? 1 : 0;
-  bndrng[1] = HOST_WIDE_INT_M1U;
-
-  /* When BOUND is nonnull and a range can be extracted from it,
-     set the bounds of the access to reflect both it and MINACCESS.
-     BNDRNG[0] is the size of the minimum access.  */
-  tree rng[2];
-  if (bound && get_size_range (qry, bound, stmt, rng, SR_ALLOW_ZERO))
-    {
-      bndrng[0] = wi::to_offset (rng[0]);
-      bndrng[1] = wi::to_offset (rng[1]);
-      bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
-    }
 }
 
 /* Return the PHI node REF refers to or null if it doesn't.  */
@@ -645,6 +624,97 @@ access_ref::phi () const
   return as_a <gphi *> (def_stmt);
 }
 
+/* Determine the size and offset for ARG, append it to ALL_REFS, and
+   merge the result with *THIS.  Ignore ARG if SKIP_NULL is set and
+   ARG refers to the null pointer.  Return true on success and false
+   on failure.  */
+
+bool
+access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
+		       int ostype, bool skip_null,
+		       ssa_name_limit_t &snlim, pointer_query &qry)
+{
+  access_ref aref;
+  if (!compute_objsize_r (arg, stmt, false, ostype, &aref, snlim, &qry)
+      || aref.sizrng[0] < 0)
+    /* This may be a PHI with all null pointer arguments.  */
+    return false;
+
+  if (all_refs)
+    {
+      access_ref dummy_ref;
+      aref.get_ref (all_refs, &dummy_ref, ostype, &snlim, &qry);
+    }
+
+  if (TREE_CODE (arg) == SSA_NAME)
+    qry.put_ref (arg, aref, ostype);
+
+  if (all_refs)
+    all_refs->safe_push (aref);
+
+  aref.deref += deref;
+
+  bool merged_parmarray = aref.parmarray;
+
+  const bool nullp = skip_null && integer_zerop (arg);
+  const offset_int maxobjsize = wi::to_offset (max_object_size ());
+  offset_int minsize = sizrng[0];
+
+  if (sizrng[0] < 0)
+    {
+      /* If *THIS doesn't contain a meaningful result yet set it to AREF
+	 unless the argument is null and it's okay to ignore it.  */
+      if (!nullp)
+	*this = aref;
+
+      /* Set if the current argument refers to one or more objects of
+	 known size (or range of sizes), as opposed to referring to
+	 one or more unknown object(s).  */
+      const bool arg_known_size = (aref.sizrng[0] != 0
+				   || aref.sizrng[1] != maxobjsize);
+      if (arg_known_size)
+	sizrng[0] = aref.sizrng[0];
+
+      return true;
+    }
+
+  /* Disregard null pointers in PHIs with two or more arguments.
+     TODO: Handle this better!  */
+  if (nullp)
+    return true;
+
+  const bool known_size = (sizrng[0] != 0 || sizrng[1] != maxobjsize);
+
+  if (known_size && aref.sizrng[0] < minsize)
+    minsize = aref.sizrng[0];
+
+  /* Determine the amount of remaining space in the argument.  */
+  offset_int argrem[2];
+  argrem[1] = aref.size_remaining (argrem);
+
+  /* Determine the amount of remaining space computed so far and
+     if the remaining space in the argument is more use it instead.  */
+  offset_int merged_rem[2];
+  merged_rem[1] = size_remaining (merged_rem);
+
+  /* Reset the PHI's BASE0 flag if any of the nonnull arguments
+     refers to an object at an unknown offset.  */
+  if (!aref.base0)
+    base0 = false;
+
+  if (merged_rem[1] < argrem[1]
+      || (merged_rem[1] == argrem[1]
+	  && sizrng[1] < aref.sizrng[1]))
+    /* Use the argument with the most space remaining as the result,
+       or the larger one if the space is equal.  */
+    *this = aref;
+
+  sizrng[0] = minsize;
+  parmarray = merged_parmarray;
+
+  return true;
+}
+
 /* Determine and return the largest object to which *THIS refers.  If
    *THIS refers to a PHI and PREF is nonnull, fill *PREF with the details
    of the object determined by compute_objsize(ARG, OSTYPE) for each PHI
@@ -657,9 +727,8 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 		     ssa_name_limit_t *psnlim /* = NULL */,
 		     pointer_query *qry /* = NULL */) const
 {
-  gphi *phi_stmt = this->phi ();
-  if (!phi_stmt)
-    return ref;
+  if (!ref || TREE_CODE (ref) != SSA_NAME)
+    return NULL;
 
   /* FIXME: Calling get_ref() with a null PSNLIM is dangerous and might
      cause unbounded recursion.  */
@@ -667,12 +736,48 @@ access_ref::get_ref (vec<access_ref> *all_refs,
   if (!psnlim)
     psnlim = &snlim_buf;
 
-  if (!psnlim->visit_phi (ref))
-    return NULL_TREE;
-
   pointer_query empty_qry;
   if (!qry)
     qry = &empty_qry;
+
+  if (gimple *def_stmt = SSA_NAME_DEF_STMT (ref))
+    {
+      if (is_gimple_assign (def_stmt))
+	{
+	  tree_code code = gimple_assign_rhs_code (def_stmt);
+	  if (code != MIN_EXPR && code != MAX_EXPR)
+	    return NULL_TREE;
+
+	  access_ref aref;
+	  tree arg1 = gimple_assign_rhs1 (def_stmt);
+	  if (!aref.merge_ref (all_refs, arg1, def_stmt, ostype, false,
+			       *psnlim, *qry))
+	    return NULL_TREE;
+
+	  tree arg2 = gimple_assign_rhs2 (def_stmt);
+	  if (!aref.merge_ref (all_refs, arg2, def_stmt, ostype, false,
+			       *psnlim, *qry))
+	    return NULL_TREE;
+
+	  if (pref && pref != this)
+	    {
+	      tree ref = pref->ref;
+	      *pref = aref;
+	      pref->ref = ref;
+	    }
+
+	  return aref.ref;
+	}
+    }
+  else
+    return NULL_TREE;
+
+  gphi *phi_stmt = this->phi ();
+  if (!phi_stmt)
+    return ref;
+
+  if (!psnlim->visit_phi (ref))
+    return NULL_TREE;
 
   /* The conservative result of the PHI reflecting the offset and size
      of the largest PHI argument, regardless of whether or not they all
@@ -691,90 +796,16 @@ access_ref::get_ref (vec<access_ref> *all_refs,
       phi_ref = *pref;
     }
 
-  /* Set if any argument is a function array (or VLA) parameter not
-     declared [static].  */
-  bool parmarray = false;
-  /* The size of the smallest object referenced by the PHI arguments.  */
-  offset_int minsize = 0;
-  const offset_int maxobjsize = wi::to_offset (max_object_size ());
-
   const unsigned nargs = gimple_phi_num_args (phi_stmt);
   for (unsigned i = 0; i < nargs; ++i)
     {
       access_ref phi_arg_ref;
+      bool skip_null = i || i + 1 < nargs;
       tree arg = gimple_phi_arg_def (phi_stmt, i);
-      if (!compute_objsize_r (arg, phi_stmt, ostype, &phi_arg_ref, *psnlim,
-			      qry)
-	  || phi_arg_ref.sizrng[0] < 0)
-	/* A PHI with all null pointer arguments.  */
+      if (!phi_ref.merge_ref (all_refs, arg, phi_stmt, ostype, skip_null,
+			      *psnlim, *qry))
 	return NULL_TREE;
-
-      if (TREE_CODE (arg) == SSA_NAME)
-	qry->put_ref (arg, phi_arg_ref);
-
-      if (all_refs)
-	all_refs->safe_push (phi_arg_ref);
-
-      parmarray |= phi_arg_ref.parmarray;
-
-      const bool nullp = integer_zerop (arg) && (i || i + 1 < nargs);
-
-      if (phi_ref.sizrng[0] < 0)
-	{
-	  /* If PHI_REF doesn't contain a meaningful result yet set it
-	     to the result for the first argument.  */
-	  if (!nullp)
-	    phi_ref = phi_arg_ref;
-
-	  /* Set if the current argument refers to one or more objects of
-	     known size (or range of sizes), as opposed to referring to
-	     one or more unknown object(s).  */
-	  const bool arg_known_size = (phi_arg_ref.sizrng[0] != 0
-				       || phi_arg_ref.sizrng[1] != maxobjsize);
-	  if (arg_known_size)
-	    minsize = phi_arg_ref.sizrng[0];
-
-	  continue;
-	}
-
-      const bool phi_known_size = (phi_ref.sizrng[0] != 0
-				   || phi_ref.sizrng[1] != maxobjsize);
-
-      if (phi_known_size && phi_arg_ref.sizrng[0] < minsize)
-	minsize = phi_arg_ref.sizrng[0];
-
-      /* Disregard null pointers in PHIs with two or more arguments.
-	 TODO: Handle this better!  */
-      if (nullp)
-	continue;
-
-      /* Determine the amount of remaining space in the argument.  */
-      offset_int argrem[2];
-      argrem[1] = phi_arg_ref.size_remaining (argrem);
-
-      /* Determine the amount of remaining space computed so far and
-	 if the remaining space in the argument is more use it instead.  */
-      offset_int phirem[2];
-      phirem[1] = phi_ref.size_remaining (phirem);
-
-      /* Reset the PHI's BASE0 flag if any of the nonnull arguments
-	 refers to an object at an unknown offset.  */
-      if (!phi_arg_ref.base0)
-	phi_ref.base0 = false;
-
-      if (phirem[1] < argrem[1]
-	  || (phirem[1] == argrem[1]
-	      && phi_ref.sizrng[1] < phi_arg_ref.sizrng[1]))
-	/* Use the argument with the most space remaining as the result,
-	   or the larger one if the space is equal.  */
-	phi_ref = phi_arg_ref;
     }
-
-  /* Replace the lower bound of the largest argument with the size
-     of the smallest argument, and set PARMARRAY if any argument
-     was one.  */
-  phi_ref.sizrng[0] = minsize;
-  phi_ref.parmarray = parmarray;
 
   if (phi_ref.sizrng[0] < 0)
     {
@@ -787,7 +818,14 @@ access_ref::get_ref (vec<access_ref> *all_refs,
 
   /* Avoid changing *THIS.  */
   if (pref && pref != this)
-    *pref = phi_ref;
+    {
+      /* Keep the SSA_NAME of the PHI unchanged so that all PHI arguments
+	 can be referred to later if necessary.  This is useful even if
+	 they all refer to the same object.  */
+      tree ref = pref->ref;
+      *pref = phi_ref;
+      pref->ref = ref;
+    }
 
   psnlim->leave_phi (ref);
 
@@ -959,42 +997,45 @@ void access_ref::add_offset (const offset_int &min, const offset_int &max)
    WRITE is set for a write access and clear for a read access.  */
 
 void
-access_ref::inform_access (access_mode mode) const
+access_ref::inform_access (access_mode mode, int ostype /* = 1 */) const
 {
   const access_ref &aref = *this;
   if (!aref.ref)
     return;
 
-  if (aref.phi ())
+  if (phi ())
     {
       /* Set MAXREF to refer to the largest object and fill ALL_REFS
 	 with data for all objects referenced by the PHI arguments.  */
       access_ref maxref;
       auto_vec<access_ref> all_refs;
-      if (!get_ref (&all_refs, &maxref))
+      if (!get_ref (&all_refs, &maxref, ostype))
 	return;
 
-      /* Except for MAXREF, the rest of the arguments' offsets need not
-	 reflect one added to the PHI itself.  Determine the latter from
-	 MAXREF on which the result is based.  */
-      const offset_int orng[] =
+      if (all_refs.length ())
 	{
-	  offrng[0] - maxref.offrng[0],
-	  wi::smax (offrng[1] - maxref.offrng[1], offrng[0]),
-	};
+	  /* Except for MAXREF, the rest of the arguments' offsets need not
+	     reflect one added to the PHI itself.  Determine the latter from
+	     MAXREF on which the result is based.  */
+	  const offset_int orng[] =
+	    {
+	     offrng[0] - maxref.offrng[0],
+	     wi::smax (offrng[1] - maxref.offrng[1], offrng[0]),
+	    };
 
-      /* Add the final PHI's offset to that of each of the arguments
-	 and recurse to issue an inform message for it.  */
-      for (unsigned i = 0; i != all_refs.length (); ++i)
-	{
-	  /* Skip any PHIs; those could lead to infinite recursion.  */
-	  if (all_refs[i].phi ())
-	    continue;
+	  /* Add the final PHI's offset to that of each of the arguments
+	     and recurse to issue an inform message for it.  */
+	  for (unsigned i = 0; i != all_refs.length (); ++i)
+	    {
+	      /* Skip any PHIs; those could lead to infinite recursion.  */
+	      if (all_refs[i].phi ())
+		continue;
 
-	  all_refs[i].add_offset (orng[0], orng[1]);
-	  all_refs[i].inform_access (mode);
+	      all_refs[i].add_offset (orng[0], orng[1]);
+	      all_refs[i].inform_access (mode, ostype);
+	    }
+	  return;
 	}
-      return;
     }
 
   /* Convert offset range and avoid including a zero range since it
@@ -1199,6 +1240,111 @@ access_ref::inform_access (access_mode mode) const
 	    sizestr, allocfn);
 }
 
+/* Dump *THIS to FILE.  */
+
+void
+access_ref::dump (FILE *file) const
+{
+  for (int i = deref; i < 0; ++i)
+    fputc ('&', file);
+
+  for (int i = 0; i < deref; ++i)
+    fputc ('*', file);
+
+  if (gphi *phi_stmt = phi ())
+    {
+      fputs ("PHI <", file);
+      unsigned nargs = gimple_phi_num_args (phi_stmt);
+      for (unsigned i = 0; i != nargs; ++i)
+	{
+	  tree arg = gimple_phi_arg_def (phi_stmt, i);
+	  print_generic_expr (file, arg);
+	  if (i + 1 < nargs)
+	    fputs (", ", file);
+	}
+      fputc ('>', file);
+    }
+  else
+    print_generic_expr (file, ref);
+
+  if (offrng[0] != offrng[1])
+    fprintf (file, " + [%lli, %lli]",
+	     (long long) offrng[0].to_shwi (),
+	     (long long) offrng[1].to_shwi ());
+  else if (offrng[0] != 0)
+    fprintf (file, " %c %lli",
+	     offrng[0] < 0 ? '-' : '+',
+	     (long long) offrng[0].to_shwi ());
+
+  if (base0)
+    fputs (" (base0)", file);
+
+  fputs ("; size: ", file);
+  if (sizrng[0] != sizrng[1])
+    {
+      offset_int maxsize = wi::to_offset (max_object_size ());
+      if (sizrng[0] == 0 && sizrng[1] >= maxsize)
+	fputs ("unknown", file);
+      else
+	fprintf (file, "[%llu, %llu]",
+		 (unsigned long long) sizrng[0].to_uhwi (),
+		 (unsigned long long) sizrng[1].to_uhwi ());
+    }
+  else if (sizrng[0] != 0)
+    fprintf (file, "%llu",
+	     (unsigned long long) sizrng[0].to_uhwi ());
+
+  fputc ('\n', file);
+}
+
+/* Set the access to at most MAXWRITE and MAXREAD bytes, and at least 1
+   when MINWRITE or MINREAD, respectively, is set.  */
+access_data::access_data (range_query *query, gimple *stmt, access_mode mode,
+			  tree maxwrite /* = NULL_TREE */,
+			  bool minwrite /* = false */,
+			  tree maxread /* = NULL_TREE */,
+			  bool minread /* = false */)
+  : stmt (stmt), call (), dst (), src (), mode (mode), ostype ()
+{
+  set_bound (dst_bndrng, maxwrite, minwrite, query, stmt);
+  set_bound (src_bndrng, maxread, minread, query, stmt);
+}
+
+/* Set the access to at most MAXWRITE and MAXREAD bytes, and at least 1
+   when MINWRITE or MINREAD, respectively, is set.  */
+access_data::access_data (range_query *query, tree expr, access_mode mode,
+			  tree maxwrite /* = NULL_TREE */,
+			  bool minwrite /* = false */,
+			  tree maxread /* = NULL_TREE */,
+			  bool minread /* = false */)
+  : stmt (), call (expr),  dst (), src (), mode (mode), ostype ()
+{
+  set_bound (dst_bndrng, maxwrite, minwrite, query, stmt);
+  set_bound (src_bndrng, maxread, minread, query, stmt);
+}
+
+/* Set BNDRNG to the range of BOUND for the statement STMT.  */
+
+void
+access_data::set_bound (offset_int bndrng[2], tree bound, bool minaccess,
+			range_query *query, gimple *stmt)
+{
+  /* Set the default bounds of the access and adjust below.  */
+  bndrng[0] = minaccess ? 1 : 0;
+  bndrng[1] = HOST_WIDE_INT_M1U;
+
+  /* When BOUND is nonnull and a range can be extracted from it,
+     set the bounds of the access to reflect both it and MINACCESS.
+     BNDRNG[0] is the size of the minimum access.  */
+  tree rng[2];
+  if (bound && get_size_range (query, bound, stmt, rng, SR_ALLOW_ZERO))
+    {
+      bndrng[0] = wi::to_offset (rng[0]);
+      bndrng[1] = wi::to_offset (rng[1]);
+      bndrng[0] = bndrng[0] > 0 && minaccess ? 1 : 0;
+    }
+}
+
 /* Set a bit for the PHI in VISITED and return true if it wasn't
    already set.  */
 
@@ -1320,7 +1466,8 @@ pointer_query::get_ref (tree ptr, int ostype /* = 1 */) const
    there or compute it and insert it into the cache if it's nonnonull.  */
 
 bool
-pointer_query::get_ref (tree ptr, gimple *stmt, access_ref *pref, int ostype /* = 1 */)
+pointer_query::get_ref (tree ptr, gimple *stmt, access_ref *pref,
+			int ostype /* = 1 */)
 {
   const unsigned version
     = TREE_CODE (ptr) == SSA_NAME ? SSA_NAME_VERSION (ptr) : 0;
@@ -1408,6 +1555,9 @@ pointer_query::flush_cache ()
 void
 pointer_query::dump (FILE *dump_file, bool contents /* = false */)
 {
+  if (!var_cache)
+    return;
+
   unsigned nused = 0, nrefs = 0;
   unsigned nidxs = var_cache->indices.length ();
   for (unsigned i = 0; i != nidxs; ++i)
@@ -1468,35 +1618,40 @@ pointer_query::dump (FILE *dump_file, bool contents /* = false */)
       else
 	fprintf (dump_file, "  _%u = ", ver);
 
-      if (gphi *phi = aref.phi ())
-	{
-	  fputs ("PHI <", dump_file);
-	  unsigned nargs = gimple_phi_num_args (phi);
-	  for (unsigned i = 0; i != nargs; ++i)
-	    {
-	      tree arg = gimple_phi_arg_def (phi, i);
-	      print_generic_expr (dump_file, arg);
-	      if (i + 1 < nargs)
-		fputs (", ", dump_file);
-	    }
-	  fputc ('>', dump_file);
-	}
-      else
-	print_generic_expr (dump_file, aref.ref);
-
-      if (aref.offrng[0] != aref.offrng[1])
-	fprintf (dump_file, " + [%lli, %lli]",
-		 (long long) aref.offrng[0].to_shwi (),
-		 (long long) aref.offrng[1].to_shwi ());
-      else if (aref.offrng[0] != 0)
-	fprintf (dump_file, " %c %lli",
-		 aref.offrng[0] < 0 ? '-' : '+',
-		 (long long) aref.offrng[0].to_shwi ());
-
-      fputc ('\n', dump_file);
+      aref.dump (dump_file);
     }
 
   fputc ('\n', dump_file);
+
+  {
+    fputs ("\npointer_query cache contents (again):\n", dump_file);
+
+    tree var;
+    unsigned i;
+    FOR_EACH_SSA_NAME (i, var, cfun)
+      {
+	if (TREE_CODE (TREE_TYPE (var)) != POINTER_TYPE)
+	  continue;
+
+	for (unsigned ost = 0; ost != 2; ++ost)
+	  {
+	    if (const access_ref *cache_ref = get_ref (var, ost))
+	      {
+		unsigned ver = SSA_NAME_VERSION (var);
+		fprintf (dump_file, "  %u.%u: ", ver, ost);
+		if (tree name = ssa_name (ver))
+		  {
+		    print_generic_expr (dump_file, name);
+		    fputs (" = ", dump_file);
+		  }
+		else
+		  fprintf (dump_file, "  _%u = ", ver);
+
+		cache_ref->dump (dump_file);
+	      }
+	  }
+      }
+  }
 }
 
 /* A helper of compute_objsize_r() to determine the size from an assignment
@@ -1520,7 +1675,7 @@ handle_min_max_size (tree ptr, int ostype, access_ref *pref,
      for the expression.  */
   access_ref aref[2] = { *pref, *pref };
   tree arg1 = gimple_assign_rhs1 (stmt);
-  if (!compute_objsize_r (arg1, stmt, ostype, &aref[0], snlim, qry))
+  if (!compute_objsize_r (arg1, stmt, false, ostype, &aref[0], snlim, qry))
     {
       aref[0].base0 = false;
       aref[0].offrng[0] = aref[0].offrng[1] = 0;
@@ -1529,7 +1684,7 @@ handle_min_max_size (tree ptr, int ostype, access_ref *pref,
     }
 
   tree arg2 = gimple_assign_rhs2 (stmt);
-  if (!compute_objsize_r (arg2, stmt, ostype, &aref[1], snlim, qry))
+  if (!compute_objsize_r (arg2, stmt, false, ostype, &aref[1], snlim, qry))
     {
       aref[1].base0 = false;
       aref[1].offrng[0] = aref[1].offrng[1] = 0;
@@ -1592,6 +1747,46 @@ handle_min_max_size (tree ptr, int ostype, access_ref *pref,
   return true;
 }
 
+/* A helper of compute_objsize_r() to determine the size of a DECL.
+   Return true on success and (possibly in the future) false on failure.  */
+
+static bool
+handle_decl (tree decl, bool addr, access_ref *pref)
+{
+  tree decl_type = TREE_TYPE (decl);
+
+  pref->ref = decl;
+
+  /* Reset the offset in case it was set by a prior call and not
+     cleared by the caller.  The offset is only adjusted after
+     the identity of the object has been determined.  */
+  pref->offrng[0] = pref->offrng[1] = 0;
+
+  if (!addr && POINTER_TYPE_P (decl_type))
+    {
+      /* Set the maximum size if the reference is to the pointer
+	 itself (as opposed to what it points to), and clear
+	 BASE0 since the offset isn't necessarily zero-based.  */
+      pref->set_max_size_range ();
+      pref->base0 = false;
+      return true;
+    }
+
+  /* Valid offsets into the object are nonnegative.  */
+  pref->base0 = true;
+
+  if (tree size = decl_init_size (decl, false))
+    if (TREE_CODE (size) == INTEGER_CST)
+      {
+	pref->sizrng[0] = wi::to_offset (size);
+	pref->sizrng[1] = pref->sizrng[0];
+	return true;
+      }
+
+  pref->set_max_size_range ();
+  return true;
+}
+
 /* A helper of compute_objsize_r() to determine the size from ARRAY_REF
    AREF.  ADDR is true if PTR is the operand of ADDR_EXPR.  Return true
    on success and false on failure.  */
@@ -1603,8 +1798,6 @@ handle_array_ref (tree aref, gimple *stmt, bool addr, int ostype,
 {
   gcc_assert (TREE_CODE (aref) == ARRAY_REF);
 
-  ++pref->deref;
-
   tree arefop = TREE_OPERAND (aref, 0);
   tree reftype = TREE_TYPE (arefop);
   if (!addr && TREE_CODE (TREE_TYPE (reftype)) == POINTER_TYPE)
@@ -1612,13 +1805,13 @@ handle_array_ref (tree aref, gimple *stmt, bool addr, int ostype,
        of known bound.  */
     return false;
 
-  if (!compute_objsize_r (arefop, stmt, ostype, pref, snlim, qry))
+  if (!compute_objsize_r (arefop, stmt, addr, ostype, pref, snlim, qry))
     return false;
 
   offset_int orng[2];
   tree off = pref->eval (TREE_OPERAND (aref, 1));
   range_query *const rvals = qry ? qry->rvals : NULL;
-  if (!get_offset_range (off, NULL, orng, rvals))
+  if (!get_offset_range (off, stmt, orng, rvals))
     {
       /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
       orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
@@ -1673,6 +1866,96 @@ handle_array_ref (tree aref, gimple *stmt, bool addr, int ostype,
   return true;
 }
 
+/* Given a COMPONENT_REF CREF, set *PREF size to the size of the referenced
+   member.  */
+
+static void
+set_component_ref_size (tree cref, access_ref *pref)
+{
+  const tree base = TREE_OPERAND (cref, 0);
+  const tree base_type = TREE_TYPE (base);
+
+  /* SAM is set for array members that might need special treatment.  */
+  special_array_member sam;
+  tree size = component_ref_size (cref, &sam);
+  if (sam == special_array_member::int_0)
+    pref->sizrng[0] = pref->sizrng[1] = 0;
+  else if (!pref->trail1special && sam == special_array_member::trail_1)
+    pref->sizrng[0] = pref->sizrng[1] = 1;
+  else if (size && TREE_CODE (size) == INTEGER_CST)
+    pref->sizrng[0] = pref->sizrng[1] = wi::to_offset (size);
+  else
+    {
+      /* When the size of the member is unknown it's either a flexible
+	 array member or a trailing special array member (either zero
+	 length or one-element).  Set the size to the maximum minus
+	 the constant size of the base object's type.  */
+      pref->sizrng[0] = 0;
+      pref->sizrng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+      if (tree base_size = TYPE_SIZE_UNIT (base_type))
+	if (TREE_CODE (base_size) == INTEGER_CST)
+	  pref->sizrng[1] -= wi::to_offset (base_size);
+    }
+}
+
+/* A helper of compute_objsize_r() to determine the size from COMPONENT_REF
+   CREF.  Return true on success and false on failure.  */
+
+static bool
+handle_component_ref (tree cref, gimple *stmt, bool addr, int ostype,
+		      access_ref *pref, ssa_name_limit_t &snlim,
+		      pointer_query *qry)
+{
+  gcc_assert (TREE_CODE (cref) == COMPONENT_REF);
+
+  const tree base = TREE_OPERAND (cref, 0);
+  const tree base_type = TREE_TYPE (base);
+  if (TREE_CODE (base_type) == UNION_TYPE)
+    /* In accesses through union types consider the entire unions
+       rather than just their members.  */
+    ostype = 0;
+
+  tree field = TREE_OPERAND (cref, 1);
+
+  if (ostype == 0)
+    {
+      /* In OSTYPE zero (for raw memory functions like memcpy), use
+	 the maximum size instead if the identity of the enclosing
+	 object cannot be determined.  */
+      if (!compute_objsize_r (base, stmt, addr, ostype, pref, snlim, qry))
+	return false;
+
+      /* Otherwise, use the size of the enclosing object and add
+	 the offset of the member to the offset computed so far.  */
+      tree offset = byte_position (field);
+      if (TREE_CODE (offset) == INTEGER_CST)
+	pref->add_offset (wi::to_offset (offset));
+      else
+	pref->add_max_offset ();
+
+      if (!pref->ref)
+	/* PREF->REF may have been already set to an SSA_NAME earlier
+	   to provide better context for diagnostics.  In that case,
+	   leave it unchanged.  */
+	pref->ref = base;
+
+      return true;
+    }
+
+  pref->ref = field;
+
+  if (!addr && POINTER_TYPE_P (TREE_TYPE (field)))
+    {
+      /* Set maximum size if the reference is to the pointer member
+	 itself (as opposed to what it points to).  */
+      pref->set_max_size_range ();
+      return true;
+    }
+
+  set_component_ref_size (cref, pref);
+  return true;
+}
+
 /* A helper of compute_objsize_r() to determine the size from MEM_REF
    MREF.  Return true on success and false on failure.  */
 
@@ -1682,10 +1965,9 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
 {
   gcc_assert (TREE_CODE (mref) == MEM_REF);
 
-  ++pref->deref;
-
-  if (VECTOR_TYPE_P (TREE_TYPE (mref)))
-    {
+  tree mreftype = TYPE_MAIN_VARIANT (TREE_TYPE (mref));
+  if (VECTOR_TYPE_P (mreftype))
+      {
       /* Hack: Handle MEM_REFs of vector types as those to complete
 	 objects; those may be synthesized from multiple assignments
 	 to consecutive data members (see PR 93200 and 96963).
@@ -1699,13 +1981,15 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
     }
 
   tree mrefop = TREE_OPERAND (mref, 0);
-  if (!compute_objsize_r (mrefop, stmt, ostype, pref, snlim, qry))
+  if (!compute_objsize_r (mrefop, stmt, false, ostype, pref, snlim, qry))
     return false;
+
+  ++pref->deref;
 
   offset_int orng[2];
   tree off = pref->eval (TREE_OPERAND (mref, 1));
   range_query *const rvals = qry ? qry->rvals : NULL;
-  if (!get_offset_range (off, NULL, orng, rvals))
+  if (!get_offset_range (off, stmt, orng, rvals))
     {
       /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
       orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
@@ -1716,6 +2000,212 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
   return true;
 }
 
+/* A helper of compute_objsize_r() to determine the size from SSA_NAME
+   PTR.  Return true on success and false on failure.  */
+
+static bool
+handle_ssa_name (tree ptr, bool addr, int ostype,
+		 access_ref *pref, ssa_name_limit_t &snlim,
+		 pointer_query *qry)
+{
+  if (!snlim.next ())
+    return false;
+
+  /* Only process an SSA_NAME if the recursion limit has not yet
+     been reached.  */
+  if (qry)
+    {
+      if (++qry->depth > qry->max_depth)
+	qry->max_depth = qry->depth;
+      if (const access_ref *cache_ref = qry->get_ref (ptr, ostype))
+	{
+	  /* Add the number of DEREFerences accummulated so far.  */
+	  const int deref = pref->deref;
+	  *pref = *cache_ref;
+	  pref->deref += deref;
+	  return true;
+	}
+    }
+
+  gimple *stmt = SSA_NAME_DEF_STMT (ptr);
+  if (is_gimple_call (stmt))
+    {
+      /* If STMT is a call to an allocation function get the size
+	 from its argument(s).  If successful, also set *PREF->REF
+	 to PTR for the caller to include in diagnostics.  */
+      wide_int wr[2];
+      range_query *const rvals = qry ? qry->rvals : NULL;
+      if (gimple_call_alloc_size (stmt, wr, rvals))
+	{
+	  pref->ref = ptr;
+	  pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
+	  pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
+	  /* Constrain both bounds to a valid size.  */
+	  offset_int maxsize = wi::to_offset (max_object_size ());
+	  if (pref->sizrng[0] > maxsize)
+	    pref->sizrng[0] = maxsize;
+	  if (pref->sizrng[1] > maxsize)
+	    pref->sizrng[1] = maxsize;
+	}
+      else
+	{
+	  /* For functions known to return one of their pointer arguments
+	     try to determine what the returned pointer points to, and on
+	     success add OFFRNG which was set to the offset added by
+	     the function (e.g., memchr) to the overall offset.  */
+	  bool past_end;
+	  offset_int offrng[2];
+	  if (tree ret = gimple_call_return_array (stmt, offrng, &past_end,
+						   snlim, qry))
+	    {
+	      if (!compute_objsize_r (ret, stmt, addr, ostype, pref, snlim, qry))
+		return false;
+
+	      /* Cap OFFRNG[1] to at most the remaining size of
+		 the object.  */
+	      offset_int remrng[2];
+	      remrng[1] = pref->size_remaining (remrng);
+	      if (remrng[1] != 0 && !past_end)
+		/* Decrement the size for functions that never return
+		   a past-the-end pointer.  */
+		remrng[1] -= 1;
+
+	      if (remrng[1] < offrng[1])
+		offrng[1] = remrng[1];
+	      pref->add_offset (offrng[0], offrng[1]);
+	    }
+	  else
+	    {
+	      /* For other calls that might return arbitrary pointers
+		 including into the middle of objects set the size
+		 range to maximum, clear PREF->BASE0, and also set
+		 PREF->REF to include in diagnostics.  */
+	      pref->set_max_size_range ();
+	      pref->base0 = false;
+	      pref->ref = ptr;
+	    }
+	}
+      qry->put_ref (ptr, *pref, ostype);
+      return true;
+    }
+
+  if (gimple_nop_p (stmt))
+    {
+      /* For a function argument try to determine the byte size
+	 of the array from the current function declaratation
+	 (e.g., attribute access or related).  */
+      wide_int wr[2];
+      bool static_array = false;
+      if (tree ref = gimple_parm_array_size (ptr, wr, &static_array))
+	{
+	  pref->parmarray = !static_array;
+	  pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
+	  pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
+	  pref->ref = ref;
+	  qry->put_ref (ptr, *pref, ostype);
+	  return true;
+	}
+
+      pref->set_max_size_range ();
+      pref->base0 = false;
+      pref->ref = ptr;
+      qry->put_ref (ptr, *pref, ostype);
+      return true;
+    }
+
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      /* Pass PTR to get_ref() via PREF.  If all PHI arguments refer
+	 to the same object the function will replace it with it.  */
+      pref->ref = ptr;
+      access_ref phi_ref = *pref;
+      if (!pref->get_ref (NULL, &phi_ref, ostype, &snlim, qry))
+	return false;
+      *pref = phi_ref;
+      qry->put_ref (ptr, *pref, ostype);
+      return true;
+    }
+
+  if (!is_gimple_assign (stmt))
+    {
+      /* Clear BASE0 since the assigned pointer might point into
+	 the middle of the object, set the maximum size range and,
+	 if the SSA_NAME refers to a function argumnent, set
+	 PREF->REF to it.  */
+      pref->base0 = false;
+      pref->set_max_size_range ();
+      pref->ref = ptr;
+      return true;
+    }
+
+  tree_code code = gimple_assign_rhs_code (stmt);
+
+  if (code == MAX_EXPR || code == MIN_EXPR)
+    {
+      if (!handle_min_max_size (ptr, ostype, pref, snlim, qry))
+	return false;
+
+      qry->put_ref (ptr, *pref, ostype);
+      return true;
+    }
+
+  tree rhs = gimple_assign_rhs1 (stmt);
+
+  if (code == ASSERT_EXPR)
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      return compute_objsize_r (rhs, stmt, addr, ostype, pref, snlim, qry);
+    }
+
+  if (code == POINTER_PLUS_EXPR
+      && TREE_CODE (TREE_TYPE (rhs)) == POINTER_TYPE)
+    {
+      /* Compute the size of the object first. */
+      if (!compute_objsize_r (rhs, stmt, addr, ostype, pref, snlim, qry))
+	return false;
+
+      offset_int orng[2];
+      tree off = gimple_assign_rhs2 (stmt);
+      range_query *const rvals = qry ? qry->rvals : NULL;
+      if (get_offset_range (off, stmt, orng, rvals))
+	pref->add_offset (orng[0], orng[1]);
+      else
+	pref->add_max_offset ();
+
+      qry->put_ref (ptr, *pref, ostype);
+      return true;
+    }
+
+  if (code == ADDR_EXPR || code == SSA_NAME)
+    {
+      if (!compute_objsize_r (rhs, stmt, addr, ostype, pref, snlim, qry))
+	return false;
+      qry->put_ref (ptr, *pref, ostype);
+      return true;
+    }
+
+  if (ostype > 1 && POINTER_TYPE_P (TREE_TYPE (rhs)))
+    {
+      /* When determining the qualifiers follow the pointer but
+	 avoid caching the result.  As the pointer is added to
+	 and/or dereferenced the computed size and offset need
+	 not be meaningful for other queries involving the same
+	 pointer.  */
+      if (!compute_objsize_r (rhs, stmt, addr, ostype, pref, snlim, qry))
+	return false;
+
+      rhs = pref->ref;
+    }
+
+  /* (This could also be an assignment from a nonlocal pointer.)  Save
+     PTR to mention in diagnostics but otherwise treat it as a pointer
+     to an unknown object.  */
+  pref->ref = rhs;
+  pref->base0 = false;
+  pref->set_max_size_range ();
+  return true;
+}
+
 /* Helper to compute the size of the object referenced by the PTR
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).
@@ -1723,6 +2213,7 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
    if it's unique, otherwise to null, PREF->OFFRNG to the range of
    offsets into it, and PREF->SIZRNG to the range of sizes of
    the object(s).
+   ADDR is true for an enclosing ADDR_EXPR.
    SNLIM is used to avoid visiting the same PHI operand multiple
    times, and, when nonnull, RVALS to determine range information.
    Returns true on success, false when a meaningful size (or range)
@@ -1732,152 +2223,60 @@ handle_mem_ref (tree mref, gimple *stmt, int ostype, access_ref *pref,
    to influence code generation or optimization.  */
 
 static bool
-compute_objsize_r (tree ptr, gimple *stmt, int ostype, access_ref *pref,
-		   ssa_name_limit_t &snlim, pointer_query *qry)
+compute_objsize_r (tree ptr, gimple *stmt, bool addr, int ostype,
+		   access_ref *pref, ssa_name_limit_t &snlim,
+		   pointer_query *qry)
 {
   STRIP_NOPS (ptr);
 
-  const bool addr = TREE_CODE (ptr) == ADDR_EXPR;
-  if (addr)
-    {
-      --pref->deref;
-      ptr = TREE_OPERAND (ptr, 0);
-    }
-
   if (DECL_P (ptr))
+    return handle_decl (ptr, addr, pref);
+
+  switch (TREE_CODE (ptr))
     {
-      pref->ref = ptr;
+    case ADDR_EXPR:
+      {
+	tree ref = TREE_OPERAND (ptr, 0);
+	if (!compute_objsize_r (ref, stmt, true, ostype, pref, snlim, qry))
+	  return false;
 
-      /* Reset the offset in case it was set by a prior call and not
-	 cleared by the caller.  The offset is only adjusted after
-	 the identity of the object has been determined.  */
-      pref->offrng[0] = pref->offrng[1] = 0;
+	--pref->deref;
+	return true;
+      }
 
-      if (!addr && POINTER_TYPE_P (TREE_TYPE (ptr)))
-	{
-	  /* Set the maximum size if the reference is to the pointer
-	     itself (as opposed to what it points to), and clear
-	     BASE0 since the offset isn't necessarily zero-based.  */
-	  pref->set_max_size_range ();
-	  pref->base0 = false;
-	  return true;
-	}
+    case BIT_FIELD_REF:
+      {
+	tree ref = TREE_OPERAND (ptr, 0);
+	if (!compute_objsize_r (ref, stmt, addr, ostype, pref, snlim, qry))
+	  return false;
 
-      /* Valid offsets into the object are nonnegative.  */
-      pref->base0 = true;
+	offset_int off = wi::to_offset (pref->eval (TREE_OPERAND (ptr, 2)));
+	pref->add_offset (off / BITS_PER_UNIT);
+	return true;
+      }
 
-      if (tree size = decl_init_size (ptr, false))
-	if (TREE_CODE (size) == INTEGER_CST)
-	  {
-	    pref->sizrng[0] = pref->sizrng[1] = wi::to_offset (size);
-	    return true;
-	  }
+    case ARRAY_REF:
+	return handle_array_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
 
-      pref->set_max_size_range ();
-      return true;
-    }
+    case COMPONENT_REF:
+      return handle_component_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
 
-  const tree_code code = TREE_CODE (ptr);
-  range_query *const rvals = qry ? qry->rvals : NULL;
+    case MEM_REF:
+      return handle_mem_ref (ptr, stmt, ostype, pref, snlim, qry);
 
-  if (code == BIT_FIELD_REF)
-    {
-      tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize_r (ref, stmt, ostype, pref, snlim, qry))
-	return false;
+    case TARGET_MEM_REF:
+      {
+	tree ref = TREE_OPERAND (ptr, 0);
+	if (!compute_objsize_r (ref, stmt, addr, ostype, pref, snlim, qry))
+	  return false;
 
-      offset_int off = wi::to_offset (pref->eval (TREE_OPERAND (ptr, 2)));
-      pref->add_offset (off / BITS_PER_UNIT);
-      return true;
-    }
+	/* TODO: Handle remaining operands.  Until then, add maximum offset.  */
+	pref->ref = ptr;
+	pref->add_max_offset ();
+	return true;
+      }
 
-  if (code == COMPONENT_REF)
-    {
-      tree ref = TREE_OPERAND (ptr, 0);
-      if (TREE_CODE (TREE_TYPE (ref)) == UNION_TYPE)
-	/* In accesses through union types consider the entire unions
-	   rather than just their members.  */
-	ostype = 0;
-      tree field = TREE_OPERAND (ptr, 1);
-
-      if (ostype == 0)
-	{
-	  /* In OSTYPE zero (for raw memory functions like memcpy), use
-	     the maximum size instead if the identity of the enclosing
-	     object cannot be determined.  */
-	  if (!compute_objsize_r (ref, stmt, ostype, pref, snlim, qry))
-	    return false;
-
-	  /* Otherwise, use the size of the enclosing object and add
-	     the offset of the member to the offset computed so far.  */
-	  tree offset = byte_position (field);
-	  if (TREE_CODE (offset) == INTEGER_CST)
-	    pref->add_offset (wi::to_offset (offset));
-	  else
-	    pref->add_max_offset ();
-
-	  if (!pref->ref)
-	    /* REF may have been already set to an SSA_NAME earlier
-	       to provide better context for diagnostics.  In that case,
-	       leave it unchanged.  */
-	    pref->ref = ref;
-	  return true;
-	}
-
-      pref->ref = field;
-
-      if (!addr && POINTER_TYPE_P (TREE_TYPE (field)))
-	{
-	  /* Set maximum size if the reference is to the pointer member
-	     itself (as opposed to what it points to).  */
-	  pref->set_max_size_range ();
-	  return true;
-	}
-
-      /* SAM is set for array members that might need special treatment.  */
-      special_array_member sam;
-      tree size = component_ref_size (ptr, &sam);
-      if (sam == special_array_member::int_0)
-	pref->sizrng[0] = pref->sizrng[1] = 0;
-      else if (!pref->trail1special && sam == special_array_member::trail_1)
-	pref->sizrng[0] = pref->sizrng[1] = 1;
-      else if (size && TREE_CODE (size) == INTEGER_CST)
-	pref->sizrng[0] = pref->sizrng[1] = wi::to_offset (size);
-      else
-	{
-	  /* When the size of the member is unknown it's either a flexible
-	     array member or a trailing special array member (either zero
-	     length or one-element).  Set the size to the maximum minus
-	     the constant size of the type.  */
-	  pref->sizrng[0] = 0;
-	  pref->sizrng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
-	  if (tree recsize = TYPE_SIZE_UNIT (TREE_TYPE (ref)))
-	    if (TREE_CODE (recsize) == INTEGER_CST)
-	      pref->sizrng[1] -= wi::to_offset (recsize);
-	}
-      return true;
-    }
-
-  if (code == ARRAY_REF)
-    return handle_array_ref (ptr, stmt, addr, ostype, pref, snlim, qry);
-
-  if (code == MEM_REF)
-    return handle_mem_ref (ptr, stmt, ostype, pref, snlim, qry);
-
-  if (code == TARGET_MEM_REF)
-    {
-      tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize_r (ref, stmt, ostype, pref, snlim, qry))
-	return false;
-
-      /* TODO: Handle remaining operands.  Until then, add maximum offset.  */
-      pref->ref = ptr;
-      pref->add_max_offset ();
-      return true;
-    }
-
-  if (code == INTEGER_CST)
-    {
+    case INTEGER_CST:
       /* Pointer constants other than null are most likely the result
 	 of erroneous null pointer addition/subtraction.  Unless zero
 	 is a valid address set size to zero.  For null pointers, set
@@ -1898,21 +2297,17 @@ compute_objsize_r (tree ptr, gimple *stmt, int ostype, access_ref *pref,
 	pref->sizrng[0] = pref->sizrng[1] = 0;
 
       pref->ref = ptr;
-
       return true;
-    }
 
-  if (code == STRING_CST)
-    {
+    case STRING_CST:
       pref->sizrng[0] = pref->sizrng[1] = TREE_STRING_LENGTH (ptr);
       pref->ref = ptr;
       return true;
-    }
 
-  if (code == POINTER_PLUS_EXPR)
+    case POINTER_PLUS_EXPR:
     {
       tree ref = TREE_OPERAND (ptr, 0);
-      if (!compute_objsize_r (ref, stmt, ostype, pref, snlim, qry))
+      if (!compute_objsize_r (ref, stmt, addr, ostype, pref, snlim, qry))
 	return false;
 
       /* Clear DEREF since the offset is being applied to the target
@@ -1921,206 +2316,22 @@ compute_objsize_r (tree ptr, gimple *stmt, int ostype, access_ref *pref,
 
       offset_int orng[2];
       tree off = pref->eval (TREE_OPERAND (ptr, 1));
-      if (get_offset_range (off, NULL, orng, rvals))
+      if (get_offset_range (off, stmt, orng, qry->rvals))
 	pref->add_offset (orng[0], orng[1]);
       else
 	pref->add_max_offset ();
       return true;
     }
 
-  if (code == VIEW_CONVERT_EXPR)
-    {
+    case VIEW_CONVERT_EXPR:
       ptr = TREE_OPERAND (ptr, 0);
-      return compute_objsize_r (ptr, stmt, ostype, pref, snlim, qry);
-    }
+      return compute_objsize_r (ptr, stmt, addr, ostype, pref, snlim, qry);
 
-  if (code == SSA_NAME)
-    {
-      if (!snlim.next ())
-	return false;
+    case SSA_NAME:
+      return handle_ssa_name (ptr, addr, ostype, pref, snlim, qry);
 
-      /* Only process an SSA_NAME if the recursion limit has not yet
-	 been reached.  */
-      if (qry)
-	{
-	  if (++qry->depth)
-	    qry->max_depth = qry->depth;
-	  if (const access_ref *cache_ref = qry->get_ref (ptr))
-	    {
-	      /* If the pointer is in the cache set *PREF to what it refers
-		 to and return success.
-		 FIXME: BNDRNG is determined by each access and so it doesn't
-		 belong in access_ref.  Until the design is changed, keep it
-		 unchanged here.  */
-	      const offset_int bndrng[2] = { pref->bndrng[0], pref->bndrng[1] };
-	      *pref = *cache_ref;
-	      pref->bndrng[0] = bndrng[0];
-	      pref->bndrng[1] = bndrng[1];
-	      return true;
-	    }
-	}
-
-      stmt = SSA_NAME_DEF_STMT (ptr);
-      if (is_gimple_call (stmt))
-	{
-	  /* If STMT is a call to an allocation function get the size
-	     from its argument(s).  If successful, also set *PREF->REF
-	     to PTR for the caller to include in diagnostics.  */
-	  wide_int wr[2];
-	  if (gimple_call_alloc_size (stmt, wr, rvals))
-	    {
-	      pref->ref = ptr;
-	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
-	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
-	      /* Constrain both bounds to a valid size.  */
-	      offset_int maxsize = wi::to_offset (max_object_size ());
-	      if (pref->sizrng[0] > maxsize)
-		pref->sizrng[0] = maxsize;
-	      if (pref->sizrng[1] > maxsize)
-		pref->sizrng[1] = maxsize;
-	    }
-	  else
-	    {
-	      /* For functions known to return one of their pointer arguments
-		 try to determine what the returned pointer points to, and on
-		 success add OFFRNG which was set to the offset added by
-		 the function (e.g., memchr) to the overall offset.  */
-	      bool past_end;
-	      offset_int offrng[2];
-	      if (tree ret = gimple_call_return_array (stmt, offrng,
-						       &past_end, snlim, qry))
-		{
-		  if (!compute_objsize_r (ret, stmt, ostype, pref, snlim, qry))
-		    return false;
-
-		  /* Cap OFFRNG[1] to at most the remaining size of
-		     the object.  */
-		  offset_int remrng[2];
-		  remrng[1] = pref->size_remaining (remrng);
-		  if (remrng[1] != 0 && !past_end)
-		    /* Decrement the size for functions that never return
-		       a past-the-end pointer.  */
-		    remrng[1] -= 1;
-
-		  if (remrng[1] < offrng[1])
-		    offrng[1] = remrng[1];
-		  pref->add_offset (offrng[0], offrng[1]);
-		}
-	      else
-		{
-		  /* For other calls that might return arbitrary pointers
-		     including into the middle of objects set the size
-		     range to maximum, clear PREF->BASE0, and also set
-		     PREF->REF to include in diagnostics.  */
-		  pref->set_max_size_range ();
-		  pref->base0 = false;
-		  pref->ref = ptr;
-		}
-	    }
-	  qry->put_ref (ptr, *pref);
-	  return true;
-	}
-
-      if (gimple_nop_p (stmt))
-	{
-	  /* For a function argument try to determine the byte size
-	     of the array from the current function declaratation
-	     (e.g., attribute access or related).  */
-	  wide_int wr[2];
-	  bool static_array = false;
-	  if (tree ref = gimple_parm_array_size (ptr, wr, &static_array))
-	    {
-	      pref->parmarray = !static_array;
-	      pref->sizrng[0] = offset_int::from (wr[0], UNSIGNED);
-	      pref->sizrng[1] = offset_int::from (wr[1], UNSIGNED);
-	      pref->ref = ref;
-	      qry->put_ref (ptr, *pref);
-	      return true;
-	    }
-
-	  pref->set_max_size_range ();
-	  pref->base0 = false;
-	  pref->ref = ptr;
-	  qry->put_ref (ptr, *pref);
-	  return true;
-	}
-
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	{
-	  pref->ref = ptr;
-	  access_ref phi_ref = *pref;
-	  if (!pref->get_ref (NULL, &phi_ref, ostype, &snlim, qry))
-	    return false;
-	  *pref = phi_ref;
-	  pref->ref = ptr;
-	  qry->put_ref (ptr, *pref);
-	  return true;
-	}
-
-      if (!is_gimple_assign (stmt))
-	{
-	  /* Clear BASE0 since the assigned pointer might point into
-	     the middle of the object, set the maximum size range and,
-	     if the SSA_NAME refers to a function argumnent, set
-	     PREF->REF to it.  */
-	  pref->base0 = false;
-	  pref->set_max_size_range ();
-	  pref->ref = ptr;
-	  return true;
-	}
-
-      tree_code code = gimple_assign_rhs_code (stmt);
-
-      if (code == MAX_EXPR || code == MIN_EXPR)
-	{
-	  if (!handle_min_max_size (ptr, ostype, pref, snlim, qry))
-	    return false;
-
-	  qry->put_ref (ptr, *pref);
-	  return true;
-	}
-
-      tree rhs = gimple_assign_rhs1 (stmt);
-
-      if (code == ASSERT_EXPR)
-	{
-	  rhs = TREE_OPERAND (rhs, 0);
-	  return compute_objsize_r (rhs, stmt, ostype, pref, snlim, qry);
-	}
-
-      if (code == POINTER_PLUS_EXPR
-	  && TREE_CODE (TREE_TYPE (rhs)) == POINTER_TYPE)
-	{
-	  /* Compute the size of the object first. */
-	  if (!compute_objsize_r (rhs, stmt, ostype, pref, snlim, qry))
-	    return false;
-
-	  offset_int orng[2];
-	  tree off = gimple_assign_rhs2 (stmt);
-	  if (get_offset_range (off, stmt, orng, rvals))
-	    pref->add_offset (orng[0], orng[1]);
-	  else
-	    pref->add_max_offset ();
-
-	  qry->put_ref (ptr, *pref);
-	  return true;
-	}
-
-      if (code == ADDR_EXPR || code == SSA_NAME)
-	{
-	  if (!compute_objsize_r (rhs, stmt, ostype, pref, snlim, qry))
-	    return false;
-	  qry->put_ref (ptr, *pref);
-	  return true;
-	}
-
-      /* (This could also be an assignment from a nonlocal pointer.)  Save
-	 PTR to mention in diagnostics but otherwise treat it as a pointer
-	 to an unknown object.  */
-      pref->ref = rhs;
-      pref->base0 = false;
-      pref->set_max_size_range ();
-      return true;
+    default:
+      break;
     }
 
   /* Assume all other expressions point into an unknown object
@@ -2151,7 +2362,7 @@ compute_objsize (tree ptr, gimple *stmt, int ostype, access_ref *pref,
   pref->sizrng[0] = pref->sizrng[1] = -1;
 
   ssa_name_limit_t snlim;
-  if (!compute_objsize_r (ptr, stmt, ostype, pref, snlim, ptr_qry))
+  if (!compute_objsize_r (ptr, stmt, false, ostype, pref, snlim, ptr_qry))
     return NULL_TREE;
 
   offset_int maxsize = pref->size_remaining ();
@@ -2176,13 +2387,13 @@ compute_objsize (tree ptr, gimple *stmt, int ostype, access_ref *pref,
    once callers transition to one of the two above.  */
 
 tree
-compute_objsize (tree ptr, int ostype, tree *pdecl /* = NULL */,
+compute_objsize (tree ptr, gimple *stmt, int ostype, tree *pdecl /* = NULL */,
 		 tree *poff /* = NULL */, range_query *rvals /* = NULL */)
 {
   /* Set the initial offsets to zero and size to negative to indicate
      none has been computed yet.  */
   access_ref ref;
-  tree size = compute_objsize (ptr, nullptr, ostype, &ref, rvals);
+  tree size = compute_objsize (ptr, stmt, ostype, &ref, rvals);
   if (!size || !ref.base0)
     return NULL_TREE;
 

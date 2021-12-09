@@ -1027,7 +1027,7 @@ is
                              SA (Index_Type'First .. Source.Last);
                   begin
                      TA (Index_Type'First .. J) := Src;
-                     Src := (others => null);
+                     Src := [others => null];
                   end;
 
                   Source.Last := No_Index;
@@ -1472,7 +1472,7 @@ is
                      --  we started by clearing out all of the stale values,
                      --  leaving a "hole" in the middle of the array.
 
-                     E (K .. Index - 1) := (others => null);
+                     E (K .. Index - 1) := [others => null];
                      raise;
                end;
             end if;
@@ -2157,7 +2157,7 @@ is
                end if;
 
                E (Index .. New_Last) := E (Before .. Container.Last);
-               E (Before .. Index - 1) := (others => null);
+               E (Before .. Index - 1) := [others => null];
             end if;
          end;
 

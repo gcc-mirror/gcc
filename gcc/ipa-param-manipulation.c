@@ -1279,9 +1279,10 @@ ipa_param_body_adjustments::prepare_debug_expressions (tree dead_ssa)
       if (gimple_assign_copy_p (def)
 	  && TREE_CODE (gimple_assign_rhs1 (def)) == SSA_NAME)
 	{
-	  tree *d = m_dead_ssa_debug_equiv.get (gimple_assign_rhs1 (def));
-	  m_dead_ssa_debug_equiv.put (dead_ssa, *d);
-	  return (*d != NULL_TREE);
+	  tree d = *m_dead_ssa_debug_equiv.get (gimple_assign_rhs1 (def));
+	  gcc_assert (d);
+	  m_dead_ssa_debug_equiv.put (dead_ssa, d);
+	  return true;
 	}
 
       tree val

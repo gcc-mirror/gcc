@@ -442,8 +442,10 @@ enum optimize_size_level
 };
 
 /* Support for user-provided GGC and PCH markers.  The first parameter
-   is a pointer to a pointer, the second a cookie.  */
-typedef void (*gt_pointer_operator) (void *, void *);
+   is a pointer to a pointer, the second either NULL if the pointer to
+   pointer points into a GC object or the actual pointer address if
+   the first argument points to a temporary and the third a cookie.  */
+typedef void (*gt_pointer_operator) (void *, void *, void *);
 
 #if !defined (HAVE_UCHAR)
 typedef unsigned char uchar;

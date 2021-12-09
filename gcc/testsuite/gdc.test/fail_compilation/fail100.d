@@ -5,8 +5,8 @@ fail_compilation/fail100.d(24): Error: cannot implicitly convert expression `f` 
 ---
 */
 
-// Issue 85 - Array of classes doesn't function as array of interfaces
-
+// https://issues.dlang.org/show_bug.cgi?id=85
+// Array of classes doesn't function as array of interfaces
 interface I
 {
     I[] foo();

@@ -1,4 +1,5 @@
-// Issue 76 - Using a non-template struct as a template
+// https://issues.dlang.org/show_bug.cgi?id=76
+// Using a non-template struct as a template
 // Compiling leads to "Assertion failure: 's->parent' on line 1694 in file
 // 'template.c'"
 /*

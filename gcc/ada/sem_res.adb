@@ -10765,17 +10765,23 @@ package body Sem_Res is
 
    begin
       --  Special processing for fixed-point literals to make sure that the
-      --  value is an exact multiple of small where this is required. We skip
-      --  this for the universal real case, and also for generic types.
+      --  value is an exact multiple of the small where this is required. We
+      --  skip this for the universal real case, and also for generic types.
 
       if Is_Fixed_Point_Type (Typ)
         and then Typ /= Universal_Fixed
         and then Typ /= Any_Fixed
         and then not Is_Generic_Type (Typ)
       then
+         --  We must freeze the base type to get the proper value of the small
+
+         if not Is_Frozen (Base_Type (Typ)) then
+            Freeze_Fixed_Point_Type (Base_Type (Typ));
+         end if;
+
          declare
             Val   : constant Ureal := Realval (N);
-            Cintr : constant Ureal := Val / Small_Value (Typ);
+            Cintr : constant Ureal := Val / Small_Value (Base_Type (Typ));
             Cint  : constant Uint  := UR_Trunc (Cintr);
             Den   : constant Uint  := Norm_Den (Cintr);
             Stat  : Boolean;

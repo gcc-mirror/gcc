@@ -413,18 +413,6 @@ public:
 		else
 		  error_at (location, "cannot %<goto%> into %<catch%> block");
 	      }
-	    else if (s->isCaseStatement ())
-	      {
-		location = make_location_t (s->loc);
-		error_at (location, "case cannot be in different "
-			  "%<try%> block level from %<switch%>");
-	      }
-	    else if (s->isDefaultStatement ())
-	      {
-		location = make_location_t (s->loc);
-		error_at (location, "default cannot be in different "
-			  "%<try%> block level from %<switch%>");
-	      }
 	    else
 	      gcc_unreachable ();
 	  }
@@ -709,7 +697,8 @@ public:
       {
 	/* The break label may actually be some levels up.
 	   eg: on a try/finally wrapping a loop.  */
-	LabelStatement *label = this->func_->searchLabel (s->ident)->statement;
+	LabelDsymbol *sym = this->func_->searchLabel (s->ident, s->loc);
+	LabelStatement *label = sym->statement;
 	gcc_assert (label != NULL);
 	Statement *stmt = label->statement->getRelatedLabeled ();
 	this->do_jump (this->lookup_bc_label (stmt, bc_break));
@@ -725,7 +714,8 @@ public:
   {
     if (s->ident)
       {
-	LabelStatement *label = this->func_->searchLabel (s->ident)->statement;
+	LabelDsymbol *sym = this->func_->searchLabel (s->ident, s->loc);
+	LabelStatement *label = sym->statement;
 	gcc_assert (label != NULL);
 	this->do_jump (this->lookup_bc_label (label->statement,
 					      bc_continue));
@@ -759,7 +749,7 @@ public:
     if (this->is_return_label (s->ident))
       sym = this->func_->returnLabel;
     else
-      sym = this->func_->searchLabel (s->ident);
+      sym = this->func_->searchLabel (s->ident, s->loc);
 
     /* If no label found, there was an error.  */
     tree label = this->define_label (sym->statement, sym->ident);
@@ -784,69 +774,9 @@ public:
     tree condition = build_expr_dtor (s->condition);
     Type *condtype = s->condition->type->toBasetype ();
 
-    /* A switch statement on a string gets turned into a library call,
-       which does a binary lookup on list of string cases.  */
-    if (s->condition->type->isString ())
-      {
-	Type *etype = condtype->nextOf ()->toBasetype ();
-	libcall_fn libcall;
-
-	switch (etype->ty)
-	  {
-	  case Tchar:
-	    libcall = LIBCALL_SWITCH_STRING;
-	    break;
-
-	  case Twchar:
-	    libcall = LIBCALL_SWITCH_USTRING;
-	    break;
-
-	  case Tdchar:
-	    libcall = LIBCALL_SWITCH_DSTRING;
-	    break;
-
-	  default:
-	    ::error ("switch statement value must be an array of "
-		     "some character type, not %s", etype->toChars ());
-	    gcc_unreachable ();
-	  }
-
-	/* Apparently the backend is supposed to sort and set the indexes
-	   on the case array, have to change them to be usable.  */
-	Type *satype = condtype->sarrayOf (s->cases->length);
-	vec <constructor_elt, va_gc> *elms = NULL;
-
-	s->cases->sort ();
-
-	for (size_t i = 0; i < s->cases->length; i++)
-	  {
-	    CaseStatement *cs = (*s->cases)[i];
-	    cs->index = i;
-
-	    if (cs->exp->op != TOKstring)
-	      s->error ("case '%s' is not a string", cs->exp->toChars ());
-	    else
-	      {
-		tree exp = build_expr (cs->exp, true);
-		CONSTRUCTOR_APPEND_ELT (elms, size_int (i), exp);
-	      }
-	  }
-
-	/* Build static declaration to reference constructor.  */
-	tree ctor = build_constructor (build_ctype (satype), elms);
-	tree decl = build_artificial_decl (TREE_TYPE (ctor), ctor);
-	TREE_READONLY (decl) = 1;
-	d_pushdecl (decl);
-	rest_of_decl_compilation (decl, 1, 0);
-
-	/* Pass it as a dynamic array.  */
-	decl = d_array_value (build_ctype (condtype->arrayOf ()),
-			      size_int (s->cases->length),
-			      build_address (decl));
-
-	condition = build_libcall (libcall, Type::tint32, 2, decl, condition);
-      }
-    else if (!condtype->isscalar ())
+    /* A switch statement on a string gets turned into a library call.
+       It is not lowered during codegen.  */
+    if (!condtype->isscalar ())
       {
 	error ("cannot handle switch condition of type %s",
 	       condtype->toChars ());
@@ -992,7 +922,10 @@ public:
 
   void visit (SwitchErrorStatement *s)
   {
-    add_stmt (build_assert_call (s->loc, LIBCALL_SWITCH_ERROR));
+    /* A throw SwitchError statement gets turned into a library call.
+       The call is wrapped in the enclosed expression.  */
+    gcc_assert (s->exp != NULL);
+    add_stmt (build_expr (s->exp));
   }
 
   /* A return statement exits the current function and supplies its return
@@ -1000,7 +933,7 @@ public:
 
   void visit (ReturnStatement *s)
   {
-    if (s->exp == NULL || s->exp->type->toBasetype ()->ty == Tvoid)
+    if (s->exp == NULL || s->exp->type->toBasetype ()->ty == TY::Tvoid)
       {
 	/* Return has no value.  */
 	add_stmt (return_expr (NULL_TREE));
@@ -1012,7 +945,7 @@ public:
       ? this->func_->tintro->nextOf () : tf->nextOf ();
 
     if ((this->func_->isMain () || this->func_->isCMain ())
-	&& type->toBasetype ()->ty == Tvoid)
+	&& type->toBasetype ()->ty == TY::Tvoid)
       type = Type::tint32;
 
     if (this->func_->shidden)
@@ -1020,7 +953,7 @@ public:
 	/* Returning by hidden reference, store the result into the retval decl.
 	   The result returned then becomes the retval reference itself.  */
 	tree decl = DECL_RESULT (get_symbol_decl (this->func_));
-	gcc_assert (!tf->isref);
+	gcc_assert (!tf->isref ());
 
 	/* If returning via NRVO, just refer to the DECL_RESULT; this differs
 	   from using NULL_TREE in that it indicates that we care about the
@@ -1096,7 +1029,7 @@ public:
 
 	add_stmt (return_expr (decl));
       }
-    else if (tf->next->ty == Tnoreturn)
+    else if (tf->next->ty == TY::Tnoreturn)
       {
 	/* Returning an expression that has no value, but has a side effect
 	   that should never return.  */
@@ -1514,7 +1447,7 @@ public:
 
     /* If the function has been annotated with `pragma(inline)', then mark
        the asm expression as being inline as well.  */
-    if (this->func_->inlining == PINLINEalways)
+    if (this->func_->inlining == PINLINE::always)
       ASM_INLINE_P (exp) = 1;
 
     add_stmt (exp);

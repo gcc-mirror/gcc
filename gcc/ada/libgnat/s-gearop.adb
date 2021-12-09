@@ -883,7 +883,7 @@ package body System.Generic_Array_Operations is
       return R : Matrix (First_1 .. Check_Unit_Last (First_1, Order, First_1),
                          First_2 .. Check_Unit_Last (First_2, Order, First_2))
       do
-         R := (others => (others => Zero));
+         R := [others => [others => Zero]];
 
          for J in 0 .. Order - 1 loop
             R (First_1 + J, First_2 + J) := One;
@@ -902,7 +902,7 @@ package body System.Generic_Array_Operations is
    is
    begin
       return R : Vector (First .. Check_Unit_Last (Index, Order, First)) do
-         R := (others => Zero);
+         R := [others => Zero];
          R (Index) := One;
       end return;
    end Unit_Vector;

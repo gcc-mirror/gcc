@@ -453,7 +453,7 @@ get_true_reg (rtx *pat)
       }
 }
 
-/* Set if we find any malformed asms in a block.  */
+/* Set if we find any malformed asms in a function.  */
 static bool any_malformed_asm;
 
 /* There are many rules that an asm statement for stack-like regs must
@@ -3014,8 +3014,6 @@ convert_regs_1 (basic_block block)
   bool cfg_altered = false;
   int debug_insns_with_starting_stack = 0;
 
-  any_malformed_asm = false;
-
   /* Choose an initial stack layout, if one hasn't already been chosen.  */
   if (bi->stack_in.top == -2)
     {
@@ -3385,6 +3383,7 @@ reg_to_stack (void)
 	  0, sizeof (char) * (max_uid + 1));
 
   convert_regs ();
+  any_malformed_asm = false;
 
   free_aux_for_blocks ();
   return true;

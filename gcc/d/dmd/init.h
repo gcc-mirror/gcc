@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "root/root.h"
 #include "ast_node.h"
 #include "globals.h"
 #include "arraytypes.h"
@@ -18,36 +17,31 @@
 
 class Identifier;
 class Expression;
-struct Scope;
 class Type;
-class AggregateDeclaration;
-class Initializer;
 class ErrorInitializer;
 class VoidInitializer;
 class StructInitializer;
 class ArrayInitializer;
 class ExpInitializer;
+class CInitializer;
 
 enum NeedInterpret { INITnointerpret, INITinterpret };
-
-Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
 
 class Initializer : public ASTNode
 {
 public:
     Loc loc;
+    unsigned char kind;
 
-    Initializer(Loc loc);
-    virtual Initializer *syntaxCopy() = 0;
-    static Initializers *arraySyntaxCopy(Initializers *ai);
+    const char *toChars() const;
 
-    const char *toChars();
+    ErrorInitializer   *isErrorInitializer();
+    VoidInitializer    *isVoidInitializer();
+    StructInitializer  *isStructInitializer();
+    ArrayInitializer   *isArrayInitializer();
+    ExpInitializer     *isExpInitializer();
+    CInitializer       *isCInitializer();
 
-    virtual ErrorInitializer   *isErrorInitializer() { return NULL; }
-    virtual VoidInitializer    *isVoidInitializer() { return NULL; }
-    virtual StructInitializer  *isStructInitializer()  { return NULL; }
-    virtual ArrayInitializer   *isArrayInitializer()  { return NULL; }
-    virtual ExpInitializer     *isExpInitializer()  { return NULL; }
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -56,20 +50,12 @@ class VoidInitializer : public Initializer
 public:
     Type *type;         // type that this will initialize to
 
-    VoidInitializer(Loc loc);
-    Initializer *syntaxCopy();
-
-    virtual VoidInitializer *isVoidInitializer() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };
 
 class ErrorInitializer : public Initializer
 {
 public:
-    ErrorInitializer();
-    Initializer *syntaxCopy();
-
-    virtual ErrorInitializer *isErrorInitializer() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -79,11 +65,6 @@ public:
     Identifiers field;  // of Identifier *'s
     Initializers value; // parallel array of Initializer *'s
 
-    StructInitializer(Loc loc);
-    Initializer *syntaxCopy();
-    void addInit(Identifier *field, Initializer *value);
-
-    StructInitializer *isStructInitializer() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -96,26 +77,40 @@ public:
     Type *type;         // type that array will be used to initialize
     bool sem;           // true if semantic() is run
 
-    ArrayInitializer(Loc loc);
-    Initializer *syntaxCopy();
-    void addInit(Expression *index, Initializer *value);
-    bool isAssociativeArray();
+    bool isAssociativeArray() const;
     Expression *toAssocArrayLiteral();
 
-    ArrayInitializer *isArrayInitializer() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };
 
 class ExpInitializer : public Initializer
 {
 public:
-    Expression *exp;
     bool expandTuples;
+    Expression *exp;
 
-    ExpInitializer(Loc loc, Expression *exp);
-    Initializer *syntaxCopy();
+    void accept(Visitor *v) { v->visit(this); }
+};
 
-    ExpInitializer *isExpInitializer() { return this; }
+struct Designator
+{
+    Expression *exp;
+    Identifier *ident;
+};
+
+struct DesigInit
+{
+    Designators *designatorList;
+    Initializer *initializer;
+};
+
+class CInitializer : public Initializer
+{
+public:
+    DesigInits initializerList;
+    Type *type;         // type that array will be used to initialize
+    bool sem;           // true if semantic() is run
+
     void accept(Visitor *v) { v->visit(this); }
 };
 

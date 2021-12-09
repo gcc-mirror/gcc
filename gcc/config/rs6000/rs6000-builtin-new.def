@@ -273,7 +273,7 @@
 ; Power6 builtins requiring 64-bit GPRs (even with 32-bit addressing).
 [power6-64]
   const signed long __builtin_p6_cmpb (signed long, signed long);
-    CMPB cmpbdi3 {}
+    CMPB cmpbdi3 {no32bit}
 
 
 ; AltiVec builtins.
@@ -2018,7 +2018,7 @@
     ADDG6S addg6s {}
 
   const signed long __builtin_bpermd (signed long, signed long);
-    BPERMD bpermd_di {}
+    BPERMD bpermd_di {32bit}
 
   const unsigned int __builtin_cbcdtd (unsigned int);
     CBCDTD cbcdtd {}
@@ -2971,7 +2971,7 @@
   void __builtin_set_fpscr_drn (const int[0,7]);
     SET_FPSCR_DRN rs6000_set_fpscr_drn {}
 
-  const unsigned long __builtin_unpack_dec128 (_Decimal128, const int<1>);
+  const unsigned long long __builtin_unpack_dec128 (_Decimal128, const int<1>);
     UNPACK_TD unpacktd {}
 
 
@@ -3014,39 +3014,39 @@
 
 
 [htm]
-  unsigned long long __builtin_get_texasr ();
+  unsigned long __builtin_get_texasr ();
     GET_TEXASR nothing {htm,htmspr}
 
-  unsigned long long __builtin_get_texasru ();
+  unsigned long __builtin_get_texasru ();
     GET_TEXASRU nothing {htm,htmspr}
 
-  unsigned long long __builtin_get_tfhar ();
+  unsigned long __builtin_get_tfhar ();
     GET_TFHAR nothing {htm,htmspr}
 
-  unsigned long long __builtin_get_tfiar ();
+  unsigned long __builtin_get_tfiar ();
     GET_TFIAR nothing {htm,htmspr}
 
-  void __builtin_set_texasr (unsigned long long);
+  void __builtin_set_texasr (unsigned long);
     SET_TEXASR nothing {htm,htmspr}
 
-  void __builtin_set_texasru (unsigned long long);
+  void __builtin_set_texasru (unsigned long);
     SET_TEXASRU nothing {htm,htmspr}
 
-  void __builtin_set_tfhar (unsigned long long);
+  void __builtin_set_tfhar (unsigned long);
     SET_TFHAR nothing {htm,htmspr}
 
-  void __builtin_set_tfiar (unsigned long long);
+  void __builtin_set_tfiar (unsigned long);
     SET_TFIAR nothing {htm,htmspr}
 
   unsigned int __builtin_tabort (unsigned int);
     TABORT tabort {htm,htmcr}
 
-  unsigned int __builtin_tabortdc (unsigned long long, unsigned long long, \
-                                   unsigned long long);
+  unsigned int __builtin_tabortdc (unsigned long, unsigned long, \
+                                   unsigned long);
     TABORTDC tabortdc {htm,htmcr}
 
-  unsigned int __builtin_tabortdci (unsigned long long, unsigned long long, \
-                                    unsigned long long);
+  unsigned int __builtin_tabortdci (unsigned long, unsigned long, \
+                                    unsigned long);
     TABORTDCI tabortdci {htm,htmcr}
 
   unsigned int __builtin_tabortwc (unsigned int, unsigned int, unsigned int);

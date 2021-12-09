@@ -18,7 +18,7 @@ $(TR $(TDNW Helpers) $(TD $(MYREF crcHexString) $(MYREF crc32Of) $(MYREF crc64EC
 )
 
  *
- * This module conforms to the APIs defined in $(D std.digest). To understand the
+ * This module conforms to the APIs defined in `std.digest`. To understand the
  * differences between the template and the OOP API, see $(MREF std, digest).
  *
  * This module publicly imports $(MREF std, digest) and can be used as a stand-alone
@@ -38,7 +38,7 @@ $(TR $(TDNW Helpers) $(TD $(MYREF crcHexString) $(MYREF crc32Of) $(MYREF crc64EC
  * References:
  *      $(LINK2 http://en.wikipedia.org/wiki/Cyclic_redundancy_check, Wikipedia on CRC)
  *
- * Source: $(PHOBOSSRC std/digest/_crc.d)
+ * Source: $(PHOBOSSRC std/digest/crc.d)
  *
  * Standards:
  * Implements the 'common' IEEE CRC32 variant
@@ -59,10 +59,6 @@ $(TR $(TDNW Helpers) $(TD $(MYREF crcHexString) $(MYREF crc32Of) $(MYREF crc64EC
 module std.digest.crc;
 
 public import std.digest;
-
-version (unittest)
-    import std.exception;
-
 
 ///
 @safe unittest
@@ -133,19 +129,19 @@ private T[256][8] genTables(T)(T polynomial)
 
 /**
  * Template API CRC32 implementation.
- * See $(D std.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  */
 alias CRC32 = CRC!(32, 0xEDB88320);
 
 /**
  * Template API CRC64-ECMA implementation.
- * See $(D std.digest.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  */
 alias CRC64ECMA = CRC!(64, 0xC96C5795D7870F42);
 
 /**
  * Template API CRC64-ISO implementation.
- * See $(D std.digest.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  */
 alias CRC64ISO = CRC!(64, 0xD800000000000000);
 
@@ -158,9 +154,10 @@ alias CRC64ISO = CRC!(64, 0xD800000000000000);
  * You may want to use the CRC32, CRC65ECMA and CRC64ISO aliases
  * for convenience.
  *
- * See $(D std.digest.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  */
-struct CRC(uint N, ulong P) if (N == 32 || N == 64)
+struct CRC(uint N, ulong P)
+if (N == 32 || N == 64)
 {
     private:
         static if (N == 32)
@@ -187,7 +184,7 @@ struct CRC(uint N, ulong P) if (N == 32 || N == 64)
         /**
          * Use this to feed the digest with data.
          * Also implements the $(REF isOutputRange, std,range,primitives)
-         * interface for $(D ubyte) and $(D const(ubyte)[]).
+         * interface for `ubyte` and `const(ubyte)[]`.
          */
         void put(scope const(ubyte)[] data...) @trusted pure nothrow @nogc
         {
@@ -206,15 +203,19 @@ struct CRC(uint N, ulong P) if (N == 32 || N == 64)
                     enum hasLittleEndianUnalignedReads = true;
                 else
                     enum hasLittleEndianUnalignedReads = false; // leave decision to optimizer
-                static if (hasLittleEndianUnalignedReads)
+
+                uint one = void;
+                uint two = void;
+
+                if (!__ctfe && hasLittleEndianUnalignedReads)
                 {
-                    uint one = (cast(uint*) data.ptr)[0];
-                    uint two = (cast(uint*) data.ptr)[1];
+                    one = (cast(uint*) data.ptr)[0];
+                    two = (cast(uint*) data.ptr)[1];
                 }
                 else
                 {
-                    uint one = (data.ptr[3] << 24 | data.ptr[2] << 16 | data.ptr[1] << 8 | data.ptr[0]);
-                    uint two = (data.ptr[7] << 24 | data.ptr[6] << 16 | data.ptr[5] << 8 | data.ptr[4]);
+                    one = (data.ptr[3] << 24 | data.ptr[2] << 16 | data.ptr[1] << 8 | data.ptr[0]);
+                    two = (data.ptr[7] << 24 | data.ptr[6] << 16 | data.ptr[5] << 8 | data.ptr[4]);
                 }
 
                 static if (N == 32)
@@ -271,7 +272,7 @@ struct CRC(uint N, ulong P) if (N == 32 || N == 64)
         }
 
         /**
-         * Works like $(D finish) but does not reset the internal state, so it's possible
+         * Works like `finish` but does not reset the internal state, so it's possible
          * to continue putting data into this CRC after a call to peek.
          */
         R peek() const @safe pure nothrow @nogc
@@ -280,6 +281,22 @@ struct CRC(uint N, ulong P) if (N == 32 || N == 64)
             //Complement, LSB first / Little Endian, see http://rosettacode.org/wiki/CRC-32
             return nativeToLittleEndian(~_state);
         }
+}
+
+@safe unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=13471
+    static ubyte[4] foo(string str)
+    {
+        ubyte[4] result = str.crc32Of();
+        if (result == (ubyte[4]).init)
+            throw new Exception("this should not be thrown");
+        return result;
+    }
+    enum buggy1 = foo("Hello World!");
+    enum buggy2 = crc32Of("Hello World!");
+    assert(buggy1 == buggy2);
+    assert(buggy1 == "Hello World!".crc32Of());
 }
 
 ///
@@ -347,117 +364,123 @@ struct CRC(uint N, ulong P) if (N == 32 || N == 64)
 
 @system unittest
 {
+    import std.conv : hexString;
     ubyte[4] digest;
 
     CRC32 crc;
     crc.put(cast(ubyte[])"abcdefghijklmnopqrstuvwxyz");
-    assert(crc.peek() == cast(ubyte[]) x"bd50274c");
+    assert(crc.peek() == cast(ubyte[]) hexString!"bd50274c");
     crc.start();
     crc.put(cast(ubyte[])"");
-    assert(crc.finish() == cast(ubyte[]) x"00000000");
+    assert(crc.finish() == cast(ubyte[]) hexString!"00000000");
 
     digest = crc32Of("");
-    assert(digest == cast(ubyte[]) x"00000000");
+    assert(digest == cast(ubyte[]) hexString!"00000000");
 
     //Test vector from http://rosettacode.org/wiki/CRC-32
     assert(crcHexString(crc32Of("The quick brown fox jumps over the lazy dog")) == "414FA339");
 
     digest = crc32Of("a");
-    assert(digest == cast(ubyte[]) x"43beb7e8");
+    assert(digest == cast(ubyte[]) hexString!"43beb7e8");
 
     digest = crc32Of("abc");
-    assert(digest == cast(ubyte[]) x"c2412435");
+    assert(digest == cast(ubyte[]) hexString!"c2412435");
 
     digest = crc32Of("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
-    assert(digest == cast(ubyte[]) x"5f3f1a17");
+    assert(digest == cast(ubyte[]) hexString!"5f3f1a17");
 
     digest = crc32Of("message digest");
-    assert(digest == cast(ubyte[]) x"7f9d1520");
+    assert(digest == cast(ubyte[]) hexString!"7f9d1520");
 
     digest = crc32Of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-    assert(digest == cast(ubyte[]) x"d2e6c21f");
+    assert(digest == cast(ubyte[]) hexString!"d2e6c21f");
 
     digest = crc32Of("1234567890123456789012345678901234567890"~
                     "1234567890123456789012345678901234567890");
-    assert(digest == cast(ubyte[]) x"724aa97c");
+    assert(digest == cast(ubyte[]) hexString!"724aa97c");
 
-    assert(crcHexString(cast(ubyte[4]) x"c3fcd3d7") == "D7D3FCC3");
+    enum ubyte[4] input = cast(ubyte[4]) hexString!"c3fcd3d7";
+    assert(crcHexString(input) == "D7D3FCC3");
 }
 
 @system unittest
 {
+    import std.conv : hexString;
     ubyte[8] digest;
 
     CRC64ECMA crc;
     crc.put(cast(ubyte[])"abcdefghijklmnopqrstuvwxyz");
-    assert(crc.peek() == cast(ubyte[]) x"2f121b7575789626");
+    assert(crc.peek() == cast(ubyte[]) hexString!"2f121b7575789626");
     crc.start();
     crc.put(cast(ubyte[])"");
-    assert(crc.finish() == cast(ubyte[]) x"0000000000000000");
+    assert(crc.finish() == cast(ubyte[]) hexString!"0000000000000000");
     digest = crc64ECMAOf("");
-    assert(digest == cast(ubyte[]) x"0000000000000000");
+    assert(digest == cast(ubyte[]) hexString!"0000000000000000");
 
     //Test vector from http://rosettacode.org/wiki/CRC-32
     assert(crcHexString(crc64ECMAOf("The quick brown fox jumps over the lazy dog")) == "5B5EB8C2E54AA1C4");
 
     digest = crc64ECMAOf("a");
-    assert(digest == cast(ubyte[]) x"052b652e77840233");
+    assert(digest == cast(ubyte[]) hexString!"052b652e77840233");
 
     digest = crc64ECMAOf("abc");
-    assert(digest == cast(ubyte[]) x"2776271a4a09d82c");
+    assert(digest == cast(ubyte[]) hexString!"2776271a4a09d82c");
 
     digest = crc64ECMAOf("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
-    assert(digest == cast(ubyte[]) x"4b7cdce3746c449f");
+    assert(digest == cast(ubyte[]) hexString!"4b7cdce3746c449f");
 
     digest = crc64ECMAOf("message digest");
-    assert(digest == cast(ubyte[]) x"6f9b8a3156c9bc5d");
+    assert(digest == cast(ubyte[]) hexString!"6f9b8a3156c9bc5d");
 
     digest = crc64ECMAOf("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-    assert(digest == cast(ubyte[]) x"2656b716e1bf0503");
+    assert(digest == cast(ubyte[]) hexString!"2656b716e1bf0503");
 
     digest = crc64ECMAOf("1234567890123456789012345678901234567890"~
                          "1234567890123456789012345678901234567890");
-    assert(digest == cast(ubyte[]) x"bd3eb7765d0a22ae");
+    assert(digest == cast(ubyte[]) hexString!"bd3eb7765d0a22ae");
 
-    assert(crcHexString(cast(ubyte[8]) x"c3fcd3d7efbeadde") == "DEADBEEFD7D3FCC3");
+    enum ubyte[8] input = cast(ubyte[8]) hexString!"c3fcd3d7efbeadde";
+    assert(crcHexString(input) == "DEADBEEFD7D3FCC3");
 }
 
 @system unittest
 {
+    import std.conv : hexString;
     ubyte[8] digest;
 
     CRC64ISO crc;
     crc.put(cast(ubyte[])"abcdefghijklmnopqrstuvwxyz");
-    assert(crc.peek() == cast(ubyte[]) x"f0494ab780989b42");
+    assert(crc.peek() == cast(ubyte[]) hexString!"f0494ab780989b42");
     crc.start();
     crc.put(cast(ubyte[])"");
-    assert(crc.finish() == cast(ubyte[]) x"0000000000000000");
+    assert(crc.finish() == cast(ubyte[]) hexString!"0000000000000000");
     digest = crc64ISOOf("");
-    assert(digest == cast(ubyte[]) x"0000000000000000");
+    assert(digest == cast(ubyte[]) hexString!"0000000000000000");
 
     //Test vector from http://rosettacode.org/wiki/CRC-32
     assert(crcHexString(crc64ISOOf("The quick brown fox jumps over the lazy dog")) == "4EF14E19F4C6E28E");
 
     digest = crc64ISOOf("a");
-    assert(digest == cast(ubyte[]) x"0000000000002034");
+    assert(digest == cast(ubyte[]) hexString!"0000000000002034");
 
     digest = crc64ISOOf("abc");
-    assert(digest == cast(ubyte[]) x"0000000020c47637");
+    assert(digest == cast(ubyte[]) hexString!"0000000020c47637");
 
     digest = crc64ISOOf("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
-    assert(digest == cast(ubyte[]) x"5173f717971365e5");
+    assert(digest == cast(ubyte[]) hexString!"5173f717971365e5");
 
     digest = crc64ISOOf("message digest");
-    assert(digest == cast(ubyte[]) x"a2c355bbc0b93f86");
+    assert(digest == cast(ubyte[]) hexString!"a2c355bbc0b93f86");
 
     digest = crc64ISOOf("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-    assert(digest == cast(ubyte[]) x"598B258292E40084");
+    assert(digest == cast(ubyte[]) hexString!"598B258292E40084");
 
     digest = crc64ISOOf("1234567890123456789012345678901234567890"~
                         "1234567890123456789012345678901234567890");
-    assert(digest == cast(ubyte[]) x"760cd2d3588bf809");
+    assert(digest == cast(ubyte[]) hexString!"760cd2d3588bf809");
 
-    assert(crcHexString(cast(ubyte[8]) x"c3fcd3d7efbeadde") == "DEADBEEFD7D3FCC3");
+    enum ubyte[8] input = cast(ubyte[8]) hexString!"c3fcd3d7efbeadde";
+    assert(crcHexString(input) == "DEADBEEFD7D3FCC3");
 }
 
 /**
@@ -465,8 +488,8 @@ struct CRC(uint N, ulong P) if (N == 32 || N == 64)
  * CRC32 implementation.
  *
  * Params:
- *      data = $(D InputRange) of $(D ElementType) implicitly convertible to
- *             $(D ubyte), $(D ubyte[]) or $(D ubyte[num]) or one or more arrays
+ *      data = `InputRange` of `ElementType` implicitly convertible to
+ *             `ubyte`, `ubyte[]` or `ubyte[num]` or one or more arrays
  *             of any type.
  *
  * Returns:
@@ -500,8 +523,8 @@ ubyte[4] crc32Of(T...)(T data)
  * CRC64-ECMA implementation.
  *
  * Params:
- *      data = $(D InputRange) of $(D ElementType) implicitly convertible to
- *             $(D ubyte), $(D ubyte[]) or $(D ubyte[num]) or one or more arrays
+ *      data = `InputRange` of `ElementType` implicitly convertible to
+ *             `ubyte`, `ubyte[]` or `ubyte[num]` or one or more arrays
  *             of any type.
  *
  * Returns:
@@ -536,8 +559,8 @@ ubyte[8] crc64ECMAOf(T...)(T data)
  * CRC64-ISO implementation.
  *
  * Params:
- *      data = $(D InputRange) of $(D ElementType) implicitly convertible to
- *             $(D ubyte), $(D ubyte[]) or $(D ubyte[num]) or one or more arrays
+ *      data = `InputRange` of `ElementType` implicitly convertible to
+ *             `ubyte`, `ubyte[]` or `ubyte[num]` or one or more arrays
  *             of any type.
  *
  * Returns:
@@ -577,7 +600,7 @@ public alias crcHexString = toHexString!(Order.decreasing, 16);
 
 /**
  * OOP API CRC32 implementation.
- * See $(D std.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  *
  * This is an alias for $(D $(REF WrapperDigest, std,digest)!CRC32), see
  * there for more information.
@@ -586,7 +609,7 @@ alias CRC32Digest = WrapperDigest!CRC32;
 
 /**
  * OOP API CRC64-ECMA implementation.
- * See $(D std.digest.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  *
  * This is an alias for $(D $(REF WrapperDigest, std,digest,digest)!CRC64ECMA),
  * see there for more information.
@@ -595,7 +618,7 @@ alias CRC64ECMADigest = WrapperDigest!CRC64ECMA;
 
 /**
  * OOP API CRC64-ISO implementation.
- * See $(D std.digest.digest) for differences between template and OOP API.
+ * See `std.digest` for differences between template and OOP API.
  *
  * This is an alias for $(D $(REF WrapperDigest, std,digest,digest)!CRC64ISO),
  * see there for more information.
@@ -653,53 +676,55 @@ alias CRC64ISODigest = WrapperDigest!CRC64ISO;
 
 @system unittest
 {
+    import std.conv : hexString;
     import std.range;
+    import std.exception;
 
     auto crc = new CRC32Digest();
 
     crc.put(cast(ubyte[])"abcdefghijklmnopqrstuvwxyz");
-    assert(crc.peek() == cast(ubyte[]) x"bd50274c");
+    assert(crc.peek() == cast(ubyte[]) hexString!"bd50274c");
     crc.reset();
     crc.put(cast(ubyte[])"");
-    assert(crc.finish() == cast(ubyte[]) x"00000000");
+    assert(crc.finish() == cast(ubyte[]) hexString!"00000000");
 
     crc.put(cast(ubyte[])"abcdefghijklmnopqrstuvwxyz");
     ubyte[20] result;
     auto result2 = crc.finish(result[]);
-    assert(result[0 .. 4] == result2 && result2 == cast(ubyte[]) x"bd50274c");
+    assert(result[0 .. 4] == result2 && result2 == cast(ubyte[]) hexString!"bd50274c");
 
     debug
         assertThrown!Error(crc.finish(result[0 .. 3]));
 
     assert(crc.length == 4);
 
-    assert(crc.digest("") == cast(ubyte[]) x"00000000");
+    assert(crc.digest("") == cast(ubyte[]) hexString!"00000000");
 
-    assert(crc.digest("a") == cast(ubyte[]) x"43beb7e8");
+    assert(crc.digest("a") == cast(ubyte[]) hexString!"43beb7e8");
 
-    assert(crc.digest("abc") == cast(ubyte[]) x"c2412435");
+    assert(crc.digest("abc") == cast(ubyte[]) hexString!"c2412435");
 
     assert(crc.digest("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
-           == cast(ubyte[]) x"5f3f1a17");
+           == cast(ubyte[]) hexString!"5f3f1a17");
 
-    assert(crc.digest("message digest") == cast(ubyte[]) x"7f9d1520");
+    assert(crc.digest("message digest") == cast(ubyte[]) hexString!"7f9d1520");
 
     assert(crc.digest("abcdefghijklmnopqrstuvwxyz")
-           == cast(ubyte[]) x"bd50274c");
+           == cast(ubyte[]) hexString!"bd50274c");
 
     assert(crc.digest("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
-           == cast(ubyte[]) x"d2e6c21f");
+           == cast(ubyte[]) hexString!"d2e6c21f");
 
     assert(crc.digest("1234567890123456789012345678901234567890",
                                    "1234567890123456789012345678901234567890")
-           == cast(ubyte[]) x"724aa97c");
+           == cast(ubyte[]) hexString!"724aa97c");
 
     ubyte[] onemilliona = new ubyte[1000000];
     onemilliona[] = 'a';
     auto digest = crc32Of(onemilliona);
-    assert(digest == cast(ubyte[]) x"BCBF25DC");
+    assert(digest == cast(ubyte[]) hexString!"BCBF25DC");
 
     auto oneMillionRange = repeat!ubyte(cast(ubyte)'a', 1000000);
     digest = crc32Of(oneMillionRange);
-    assert(digest == cast(ubyte[]) x"BCBF25DC");
+    assert(digest == cast(ubyte[]) hexString!"BCBF25DC");
 }

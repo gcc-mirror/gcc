@@ -1548,18 +1548,17 @@ package body Sem_Warn is
                               Comp : Entity_Id;
 
                            begin
-                              Comp := First_Entity (E1T);
+                              Comp := First_Component (E1T);
                               while Present (Comp) loop
-                                 if Ekind (Comp) = E_Component
-                                   and then Nkind (Parent (Comp)) =
-                                              N_Component_Declaration
+                                 if Nkind (Parent (Comp)) =
+                                      N_Component_Declaration
                                    and then No (Expression (Parent (Comp)))
                                  then
                                     Error_Msg_Node_2 := Comp;
                                     exit;
                                  end if;
 
-                                 Next_Entity (Comp);
+                                 Next_Component (Comp);
                               end loop;
                            end;
                         end if;
@@ -1569,15 +1568,13 @@ package body Sem_Warn is
                         --  For access types, UR was only set for dereferences,
                         --  so the issue is that the value may be null.
 
-                        if not Is_Trivial_Subprogram (Scope (E1)) then
-                           if not Warnings_Off_E1 then
-                              if Is_Access_Type (Etype (Parent (UR))) then
-                                 Error_Msg_N ("??`&.&` may be null!", UR);
-                              else
-                                 Error_Msg_N
-                                   ("??`&.&` may be referenced before "
-                                    & "it has a value!", UR);
-                              end if;
+                        if not Warnings_Off_E1 then
+                           if Is_Access_Type (Etype (Parent (UR))) then
+                              Error_Msg_N ("??`&.&` may be null!", UR);
+                           else
+                              Error_Msg_N
+                                ("??`&.&` may be referenced before "
+                                 & "it has a value!", UR);
                            end if;
                         end if;
 
@@ -4239,8 +4236,7 @@ package body Sem_Warn is
      (Return_Node : Node_Id;
       Scope_Id    : Entity_Id)
    is
-      Form  : Entity_Id;
-      Form2 : Entity_Id;
+      Form : Entity_Id;
 
    begin
       --  Ignore if procedure or return statement does not come from source
@@ -4250,6 +4246,26 @@ package body Sem_Warn is
       then
          return;
       end if;
+
+      --  Before we issue the warning, add an ad hoc defence against the most
+      --  common case of false positives with this warning which is the case
+      --  where there is a Boolean OUT parameter that has been set, and whose
+      --  meaning is "ignore the values of the other parameters". We can't of
+      --  course reliably tell this case at compile time, but the following
+      --  test kills a lot of false positives, without generating a significant
+      --  number of false negatives (missed real warnings).
+
+      Form := First_Formal (Scope_Id);
+      while Present (Form) loop
+         if Ekind (Form) = E_Out_Parameter
+           and then Root_Type (Etype (Form)) = Standard_Boolean
+           and then not Never_Set_In_Source_Check_Spec (Form)
+         then
+            return;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
 
       --  Loop through formals
 
@@ -4265,27 +4281,6 @@ package body Sem_Warn is
            and then Is_Scalar_Type (Etype (Form))
            and then not Present (Unset_Reference (Form))
          then
-            --  Before we issue the warning, an add ad hoc defence against the
-            --  most common case of false positives with this warning which is
-            --  the case where there is a Boolean OUT parameter that has been
-            --  set, and whose meaning is "ignore the values of the other
-            --  parameters". We can't of course reliably tell this case at
-            --  compile time, but the following test kills a lot of false
-            --  positives, without generating a significant number of false
-            --  negatives (missed real warnings).
-
-            Form2 := First_Formal (Scope_Id);
-            while Present (Form2) loop
-               if Ekind (Form2) = E_Out_Parameter
-                 and then Root_Type (Etype (Form2)) = Standard_Boolean
-                 and then not Never_Set_In_Source_Check_Spec (Form2)
-               then
-                  return;
-               end if;
-
-               Next_Formal (Form2);
-            end loop;
-
             --  Here all conditions are met, record possible unset reference
 
             Set_Unset_Reference (Form, Return_Node);

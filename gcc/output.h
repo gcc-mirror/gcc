@@ -470,7 +470,7 @@ struct GTY(()) named_section {
 
 /* A callback that writes the assembly code for switching to an unnamed
    section.  The argument provides callback-specific data.  */
-typedef void (*unnamed_section_callback) (const void *);
+typedef void (*unnamed_section_callback) (const char *);
 
 /* Information about a SECTION_UNNAMED section.  */
 struct GTY(()) unnamed_section {
@@ -478,8 +478,8 @@ struct GTY(()) unnamed_section {
 
   /* The callback used to switch to the section, and the data that
      should be passed to the callback.  */
-  unnamed_section_callback GTY ((skip)) callback;
-  const void *GTY ((skip)) data;
+  unnamed_section_callback GTY ((callback)) callback;
+  const char *data;
 
   /* The next entry in the chain of unnamed sections.  */
   section *next;
@@ -503,7 +503,7 @@ struct GTY(()) noswitch_section {
   struct section_common common;
 
   /* The callback used to assemble decls in this section.  */
-  noswitch_section_callback GTY ((skip)) callback;
+  noswitch_section_callback GTY ((callback)) callback;
 };
 
 /* Information about a section, which may be named or unnamed.  */
@@ -538,8 +538,8 @@ extern GTY(()) section *bss_noswitch_section;
 extern GTY(()) section *in_section;
 extern GTY(()) bool in_cold_section_p;
 
-extern section *get_unnamed_section (unsigned int, void (*) (const void *),
-				     const void *);
+extern section *get_unnamed_section (unsigned int, void (*) (const char *),
+				     const char *);
 extern section *get_section (const char *, unsigned int, tree,
 			     bool not_existing = false);
 extern section *get_named_section (tree, const char *, int);
@@ -561,7 +561,7 @@ extern section *get_cdtor_priority_section (int, bool);
 
 extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *, tree = nullptr);
-extern void output_section_asm_op (const void *);
+extern void output_section_asm_op (const char *);
 
 extern void record_tm_clone_pair (tree, tree);
 extern void finish_tm_clone_pairs (void);

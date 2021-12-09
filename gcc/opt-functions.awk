@@ -303,7 +303,7 @@ function var_set(flags)
 		return "0, CLVC_STRING, 0"
 	if (flag_set_p("ByteSize", flags))
 		return "0, CLVC_SIZE, 0"
-	return "0, CLVC_BOOLEAN, 0"
+	return "0, CLVC_INTEGER, 0"
 }
 
 # Given that an option called NAME has flags FLAGS, return an initializer

@@ -7546,11 +7546,11 @@ package body Exp_Aggr is
                  Parameter_Associations => Params));
          end if;
 
-         Loop_Stat :=  Make_Implicit_Loop_Statement
-                         (Node             => N,
-                          Identifier       => Empty,
-                          Iteration_Scheme => L_Iteration_Scheme,
-                          Statements       => Stats);
+         Loop_Stat := Make_Implicit_Loop_Statement
+                        (Node             => N,
+                         Identifier       => Empty,
+                         Iteration_Scheme => L_Iteration_Scheme,
+                         Statements       => Stats);
          Append (Loop_Stat, Aggr_Code);
 
       end Expand_Iterated_Component;
@@ -7825,7 +7825,7 @@ package body Exp_Aggr is
                --  required size for the aggregwte : call the provided
                --  constructor rather than the Empty aggregate.
 
-               Index :=  Make_Op_Add (Loc,
+               Index := Make_Op_Add (Loc,
                  Left_Opnd => New_Copy_Tree (Type_Low_Bound (Index_Type)),
                  Right_Opnd => Make_Integer_Literal (Loc, Siz - 1));
 
@@ -9248,7 +9248,7 @@ package body Exp_Aggr is
 
             when N_Object_Declaration =>
                return not Constant_Present (C)
-                 and then Ekind (Current_Scope) in Subprogram_Kind;
+                 and then Is_Subprogram (Current_Scope);
 
             --  False for all other contexts
 

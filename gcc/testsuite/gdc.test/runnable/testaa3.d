@@ -315,7 +315,7 @@ int[int] testRetx()
 void aafunc(int[int] aa) {}
 
 /***************************************************/
-// 12214
+// https://issues.dlang.org/show_bug.cgi?id=12214
 
 void test12214() pure nothrow
 {
@@ -324,7 +324,8 @@ void test12214() pure nothrow
 }
 
 /***************************************************/
-// 12220 & 12221
+// https://issues.dlang.org/show_bug.cgi?id=12220
+// https://issues.dlang.org/show_bug.cgi?id=12221
 
 void test12220()
 {
@@ -338,7 +339,7 @@ void test12220()
 }
 
 /***************************************************/
-// 12403
+// https://issues.dlang.org/show_bug.cgi?id=12403
 
 void test12403()
 {

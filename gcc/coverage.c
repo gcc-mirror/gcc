@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "diagnostic.h"
 #include "varasm.h"
+#include "file-prefix-map.h"
 
 #include "gcov-io.c"
 
@@ -646,7 +647,7 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
 		       && !DECL_FUNCTION_VERSIONED (current_function_decl)
 		       && !DECL_LAMBDA_FUNCTION_P (current_function_decl));
-  gcov_write_filename (startloc.file);
+  gcov_write_filename (remap_profile_filename (startloc.file));
   gcov_write_unsigned (startloc.line);
   gcov_write_unsigned (startloc.column);
 

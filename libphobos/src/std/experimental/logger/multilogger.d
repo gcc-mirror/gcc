@@ -1,34 +1,37 @@
-///
+// Written in the D programming language.
+/**
+Source: $(PHOBOSSRC std/experimental/logger/multilogger.d)
+*/
 module std.experimental.logger.multilogger;
 
 import std.experimental.logger.core;
 import std.experimental.logger.filelogger;
 
-/** This Element is stored inside the $(D MultiLogger) and associates a
-$(D Logger) to a $(D string).
+/** This Element is stored inside the `MultiLogger` and associates a
+`Logger` to a `string`.
 */
 struct MultiLoggerEntry
 {
-    string name; /// The name if the $(D Logger)
-    Logger logger; /// The stored $(D Logger)
+    string name; /// The name if the `Logger`
+    Logger logger; /// The stored `Logger`
 }
 
-/** MultiLogger logs to multiple $(D Logger). The $(D Logger)s are stored in an
-$(D Logger[]) in their order of insertion.
+/** MultiLogger logs to multiple `Logger`. The `Logger`s are stored in an
+`Logger[]` in their order of insertion.
 
-Every data logged to this $(D MultiLogger) will be distributed to all the $(D
-Logger)s inserted into it. This $(D MultiLogger) implementation can
-hold multiple $(D Logger)s with the same name. If the method $(D removeLogger)
-is used to remove a $(D Logger) only the first occurrence with that name will
+Every data logged to this `MultiLogger` will be distributed to all the $(D
+Logger)s inserted into it. This `MultiLogger` implementation can
+hold multiple `Logger`s with the same name. If the method `removeLogger`
+is used to remove a `Logger` only the first occurrence with that name will
 be removed.
 */
 class MultiLogger : Logger
 {
-    /** A constructor for the $(D MultiLogger) Logger.
+    /** A constructor for the `MultiLogger` Logger.
 
     Params:
-      lv = The $(D LogLevel) for the $(D MultiLogger). By default the
-      $(D LogLevel) for $(D MultiLogger) is $(D LogLevel.all).
+      lv = The `LogLevel` for the `MultiLogger`. By default the
+      `LogLevel` for `MultiLogger` is `LogLevel.all`.
 
     Example:
     -------------
@@ -40,32 +43,32 @@ class MultiLogger : Logger
         super(lv);
     }
 
-    /** This member holds all $(D Logger)s stored in the $(D MultiLogger).
+    /** This member holds all `Logger`s stored in the `MultiLogger`.
 
-    When inheriting from $(D MultiLogger) this member can be used to gain
-    access to the stored $(D Logger).
+    When inheriting from `MultiLogger` this member can be used to gain
+    access to the stored `Logger`.
     */
     protected MultiLoggerEntry[] logger;
 
-    /** This method inserts a new Logger into the $(D MultiLogger).
+    /** This method inserts a new Logger into the `MultiLogger`.
 
     Params:
-      name = The name of the $(D Logger) to insert.
-      newLogger = The $(D Logger) to insert.
+      name = The name of the `Logger` to insert.
+      newLogger = The `Logger` to insert.
     */
     void insertLogger(string name, Logger newLogger) @safe
     {
         this.logger ~= MultiLoggerEntry(name, newLogger);
     }
 
-    /** This method removes a Logger from the $(D MultiLogger).
+    /** This method removes a Logger from the `MultiLogger`.
 
     Params:
-      toRemove = The name of the $(D Logger) to remove. If the $(D Logger)
-        is not found $(D null) will be returned. Only the first occurrence of
-        a $(D Logger) with the given name will be removed.
+      toRemove = The name of the `Logger` to remove. If the `Logger`
+        is not found `null` will be returned. Only the first occurrence of
+        a `Logger` with the given name will be removed.
 
-    Returns: The removed $(D Logger).
+    Returns: The removed `Logger`.
     */
     Logger removeLogger(in char[] toRemove) @safe
     {
@@ -87,7 +90,7 @@ class MultiLogger : Logger
     }
 
     /* The override to pass the payload to all children of the
-    $(D MultiLoggerBase).
+    `MultiLoggerBase`.
     */
     override protected void writeLogMsg(ref LogEntry payload) @safe
     {

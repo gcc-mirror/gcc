@@ -1401,7 +1401,6 @@ package Snames is
    --  e.g. Name_UP_RESULT corresponds to the name "RESULT".
 
    Name_UP_RESULT                        : constant Name_Id := N + $;
-   Name_Suspension_Object                : constant Name_Id := N + $;
    Name_Synchronous_Task_Control         : constant Name_Id := N + $;
 
    --  Names used to implement iterators over predefined containers

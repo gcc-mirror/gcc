@@ -491,9 +491,7 @@ package body Repinfo is
          --  been produced when listing the enclosing scope.
 
          if List_Representation_Info_Mechanisms
-           and then (Is_Subprogram (Ent)
-                      or else Ekind (Ent) = E_Entry
-                      or else Ekind (Ent) = E_Entry_Family)
+           and then Is_Subprogram_Or_Entry (Ent)
            and then not In_Subprogram
          then
             List_Subprogram_Info (Ent);
@@ -541,12 +539,12 @@ package body Repinfo is
                elsif Is_Record_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Record_Info (E, Bytes_Big_Endian);
-                  end if;
 
-                  --  Recurse into entities local to a record type
+                     --  Recurse into entities local to a record type
 
-                  if List_Representation_Info = 4 then
-                     List_Entities (E, Bytes_Big_Endian, False);
+                     if List_Representation_Info = 4 then
+                        List_Entities (E, Bytes_Big_Endian, False);
+                     end if;
                   end if;
 
                elsif Is_Array_Type (E) then

@@ -111,7 +111,7 @@ class GTY((user)) hash_map
       static void
       pch_nx_helper (T *&x, gt_pointer_operator op, void *cookie)
 	{
-	  op (&x, cookie);
+	  op (&x, NULL, cookie);
 	}
 
     /* The overloads below should match those in ggc.h.  */
@@ -217,7 +217,8 @@ public:
     }
 
   /* Call the call back on each pair of key and value with the passed in
-     arg.  */
+     arg until either the call back returns false or all pairs have been seen.
+     The traversal is unordered.  */
 
   template<typename Arg, bool (*f)(const typename Traits::key_type &,
 				   const Value &, Arg)>
@@ -225,7 +226,8 @@ public:
     {
       for (typename hash_table<hash_entry>::iterator iter = m_table.begin ();
 	   iter != m_table.end (); ++iter)
-	f ((*iter).m_key, (*iter).m_value, a);
+	if (!f ((*iter).m_key, (*iter).m_value, a))
+	  break;
     }
 
   template<typename Arg, bool (*f)(const typename Traits::key_type &,
@@ -334,7 +336,7 @@ template<typename K, typename V, typename H>
 static inline void
 gt_pch_nx (hash_map<K, V, H> *h, gt_pointer_operator op, void *cookie)
 {
-  op (&h->m_table.m_entries, cookie);
+  op (&h->m_table.m_entries, NULL, cookie);
 }
 
 enum hm_alloc { hm_heap = false, hm_ggc = true };

@@ -18,8 +18,8 @@ class ResourceManager
 
 class Test
 {
-    import std.file;
-    import std.path;
+
+
 
     static Image[] images;
 

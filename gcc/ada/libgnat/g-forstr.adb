@@ -131,7 +131,7 @@ package body GNAT.Formatted_String is
       return Formatted_String'
         (Finalization.Controlled with
            D => new Data'(Format'Length, 1, 1,
-             Null_Unbounded_String, 0, 0, (0, 0), Format));
+             Null_Unbounded_String, 0, 0, [0, 0], Format));
    end "+";
 
    ---------
@@ -433,7 +433,7 @@ package body GNAT.Formatted_String is
 
       declare
          R : String (1 .. Natural'Max (Natural'Max (F_Spec.Width, Len),
-                                       Length (Res))) := (others => ' ');
+                                       Length (Res))) := [others => ' '];
       begin
          if F_Spec.Left_Justify then
             R (1 .. Length (Res)) := To_String (Res);
@@ -785,7 +785,7 @@ package body GNAT.Formatted_String is
 
          elsif F.Precision > E - S + 1 then
             Len := F.Precision - (E - S + 1);
-            Buffer (S - Len .. S - 1) := (others => '0');
+            Buffer (S - Len .. S - 1) := [others => '0'];
             S := S - Len;
          end if;
 

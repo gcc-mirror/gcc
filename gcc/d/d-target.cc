@@ -35,14 +35,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tm_p.h"
 #include "target.h"
+#include "calls.h"
 
 #include "d-tree.h"
 #include "d-target.h"
 
 /* Implements the Target interface defined by the front end.
    Used for retrieving target-specific information.  */
-
-Target target;
 
 /* Internal key handlers for `__traits(getTargetInfo)'.  */
 static tree d_handle_target_cpp_std (void);
@@ -88,9 +87,6 @@ define_float_constants (T &f, tree type)
 
   /* Floating-point NaN.  */
   real_nan (&f.nan.rv (), "", 1, mode);
-
-  /* Signalling floating-point NaN.  */
-  real_nan (&f.snan.rv (), "", 0, mode);
 
   /* Floating-point +Infinity if the target supports infinities.  */
   real_inf (&f.infinity.rv ());
@@ -142,19 +138,19 @@ Target::_init (const Param &)
   /* Define what type to use for size_t, ptrdiff_t.  */
   if (this->ptrsize == 8)
     {
-      global.params.isLP64 = true;
-      Type::tsize_t = Type::basic[Tuns64];
-      Type::tptrdiff_t = Type::basic[Tint64];
+      this->isLP64 = true;
+      Type::tsize_t = Type::basic[(int)TY::Tuns64];
+      Type::tptrdiff_t = Type::basic[(int)TY::Tint64];
     }
   else if (this->ptrsize == 4)
     {
-      Type::tsize_t = Type::basic[Tuns32];
-      Type::tptrdiff_t = Type::basic[Tint32];
+      Type::tsize_t = Type::basic[(int)TY::Tuns32];
+      Type::tptrdiff_t = Type::basic[(int)TY::Tint32];
     }
   else if (this->ptrsize == 2)
     {
-      Type::tsize_t = Type::basic[Tuns16];
-      Type::tptrdiff_t = Type::basic[Tint16];
+      Type::tsize_t = Type::basic[(int)TY::Tuns16];
+      Type::tptrdiff_t = Type::basic[(int)TY::Tint16];
     }
   else
     sorry ("D does not support pointers on this target.");
@@ -164,15 +160,7 @@ Target::_init (const Param &)
   /* Set-up target C ABI.  */
   this->c.longsize = int_size_in_bytes (long_integer_type_node);
   this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
-
-  /* Define what type to use for wchar_t.  We don't want to support wide
-     characters less than "short" in D.  */
-  if (WCHAR_TYPE_SIZE == 32)
-    this->c.twchar_t = Type::basic[Tdchar];
-  else if (WCHAR_TYPE_SIZE == 16)
-    this->c.twchar_t = Type::basic[Twchar];
-  else
-    sorry ("D does not support wide characters on this target.");
+  this->c.wchar_tsize = (WCHAR_TYPE_SIZE / BITS_PER_UNIT);
 
   /* Set-up target C++ ABI.  */
   this->cpp.reverseOverloads = false;
@@ -181,6 +169,12 @@ Target::_init (const Param &)
 
   /* Set-up target Objective-C ABI.  */
   this->objc.supported = false;
+
+  /* Set-up environmental settings.  */
+  this->obj_ext = "o";
+  this->lib_ext = "a";
+  this->dll_ext = "so";
+  this->run_noext = true;
 
   /* Initialize all compile-time properties for floating-point types.
      Should ensure that our real_t type is able to represent real_value.  */
@@ -273,7 +267,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
     type = Type::tuns8;
 
   /* No support for non-trivial types, complex types, or booleans.  */
-  if (!type->isTypeBasic () || type->iscomplex () || type->ty == Tbool)
+  if (!type->isTypeBasic () || type->iscomplex () || type->ty == TY::Tbool)
     return 2;
 
   /* In [simd/vector extensions], which vector types are supported depends on
@@ -293,9 +287,9 @@ Target::isVectorTypeSupported (int sz, Type *type)
    Returns true if the operation is supported or type is not a vector.  */
 
 bool
-Target::isVectorOpSupported (Type *type, TOK op, Type *)
+Target::isVectorOpSupported (Type *type, unsigned op, Type *)
 {
-  if (type->ty != Tvector)
+  if (type->ty != TY::Tvector)
     return true;
 
   /* Don't support if type is non-scalar, such as __vector(void[]).  */
@@ -322,18 +316,10 @@ Target::isVectorOpSupported (Type *type, TOK op, Type *)
       /* Logical operators must have a result type of bool.  */
       return false;
 
-    case TOKue:
-    case TOKlg:
-    case TOKule:
-    case TOKul:
-    case TOKuge:
-    case TOKug:
     case TOKle:
     case TOKlt:
     case TOKge:
     case TOKgt:
-    case TOKleg:
-    case TOKunord:
     case TOKequal:
     case TOKnotequal:
     case TOKidentity:
@@ -379,7 +365,8 @@ TargetCPP::thunkMangle (FuncDeclaration *fd, int offset)
 const char *
 TargetCPP::typeMangle (Type *type)
 {
-  if (type->isTypeBasic () || type->ty == Tvector || type->ty == Tstruct)
+  if (type->isTypeBasic () || type->ty == TY::Tvector
+      || type->ty == TY::Tstruct)
     {
       tree ctype = build_ctype (type);
       return targetm.mangle_type (ctype);
@@ -400,14 +387,14 @@ TargetCPP::parameterType (Parameter *arg)
   else if (arg->storageClass & STClazy)
     {
       /* Mangle as delegate.  */
-      Type *td = TypeFunction::create (NULL, t, VARARGnone, LINKd);
-      td = TypeDelegate::create (td);
-      t = t->merge2 ();
+      TypeFunction *tf = TypeFunction::create (NULL, t, VARARGnone, LINK::d);
+      TypeDelegate *td = TypeDelegate::create (tf);
+      t = td->merge2 ();
     }
 
   /* Could be a va_list, which we mangle as a pointer.  */
   Type *tvalist = target.va_listType (Loc (), NULL);
-  if (t->ty == Tsarray && tvalist->ty == Tsarray)
+  if (t->ty == TY::Tsarray && tvalist->ty == TY::Tsarray)
     {
       Type *tb = t->toBasetype ()->mutableOf ();
       if (tb == tvalist)
@@ -450,10 +437,10 @@ Target::systemLinkage (void)
       /* In [attribute/linkage], `System' is the same as `Windows' on Windows
 	 platforms, and `C' on other platforms.  */
       if (link_system)
-	return LINKwindows;
+	return LINK::windows;
     }
 
-  return LINKc;
+  return LINK::c;
 }
 
 /* Generate a TypeTuple of the equivalent types used to determine if a
@@ -477,12 +464,12 @@ Target::isReturnOnStack (TypeFunction *tf, bool)
   /* Need the back-end type to determine this, but this is called from the
      frontend before semantic processing is finished.  An accurate value
      is not currently needed anyway.  */
-  if (tf->isref)
+  if (tf->isref ())
     return false;
 
   Type *tn = tf->next->toBasetype ();
 
-  return (tn->ty == Tstruct || tn->ty == Tsarray);
+  return (tn->ty == TY::Tstruct || tn->ty == TY::Tsarray);
 }
 
 /* Add all target info in HANDLERS to D_TARGET_INFO_TABLE for use by
@@ -575,12 +562,49 @@ Target::getTargetInfo (const char *key, const Loc &loc)
   return NULL;
 }
 
-/**
- * Returns true if the implementation for object monitors is always defined
- * in the D runtime library (rt/monitor_.d).  */
+/* Returns true if the callee invokes destructors for arguments.  */
+
+bool
+Target::isCalleeDestroyingArgs (TypeFunction *tf)
+{
+  return tf->linkage == LINK::d;
+}
+
+/* Returns true if the implementation for object monitors is always defined
+   in the D runtime library (rt/monitor_.d).  */
 
 bool
 Target::libraryObjectMonitors (FuncDeclaration *, Statement *)
 {
   return true;
+}
+
+/* Decides whether an `in' parameter of the specified POD type PARAM_TYPE is to
+   be passed by reference or by valie.  This is used only when compiling with
+   `-fpreview=in' enabled.  */
+
+bool
+Target::preferPassByRef (Type *param_type)
+{
+  if (param_type->size () == SIZE_INVALID)
+    return false;
+
+  tree type = build_ctype (param_type);
+
+  /* Prefer a `ref' if the type is an aggregate, and its size is greater than
+     its alignment.  */
+  if (AGGREGATE_TYPE_P (type)
+      && (!valid_constant_size_p (TYPE_SIZE_UNIT (type))
+	  || compare_tree_int (TYPE_SIZE_UNIT (type), TYPE_ALIGN (type)) > 0))
+    return true;
+
+  /* If the back-end is always going to pass this by invisible reference.  */
+  if (pass_by_reference (NULL, function_arg_info (type, true)))
+    return true;
+
+  /* If returning the parameter means the caller will do RVO.  */
+  if (targetm.calls.return_in_memory (type, NULL_TREE))
+    return true;
+
+  return false;
 }

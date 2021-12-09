@@ -15,4 +15,4 @@ void* f(T)(T a, T b)
 }
 
 static assert(is(typeof(f!(void*)(null, null)) == void*));
-// { dg-error "static assert  \(.*\) is false" "" { target *-*-* } .-1 }
+// { dg-error "static assert:  \(.*\) is false" "" { target *-*-* } .-1 }

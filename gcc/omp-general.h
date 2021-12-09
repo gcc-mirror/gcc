@@ -32,9 +32,10 @@ enum oacc_loop_flags {
   OLF_INDEPENDENT = 1u << 2,	/* Iterations are known independent.  */
   OLF_GANG_STATIC = 1u << 3,	/* Gang partitioning is static (has op). */
   OLF_TILE	= 1u << 4,	/* Tiled loop. */
+  OLF_REDUCTION = 1u << 5,	/* Reduction loop.  */
   
   /* Explicitly specified loop axes.  */
-  OLF_DIM_BASE = 5,
+  OLF_DIM_BASE = 6,
   OLF_DIM_GANG   = 1u << (OLF_DIM_BASE + GOMP_DIM_GANG),
   OLF_DIM_WORKER = 1u << (OLF_DIM_BASE + GOMP_DIM_WORKER),
   OLF_DIM_VECTOR = 1u << (OLF_DIM_BASE + GOMP_DIM_VECTOR),

@@ -278,11 +278,12 @@ range_def_chain::register_dependency (tree name, tree dep, basic_block bb)
     {
       // Get the def chain for the operand.
       b = get_def_chain (dep);
-      // If there was one, copy it into result.
+      // If there was one, copy it into result.  Access def_chain directly
+      // as the get_def_chain request above could reallocate the vector.
       if (b)
-	bitmap_ior_into (src.bm, b);
+	bitmap_ior_into (m_def_chain[v].bm, b);
       // And copy the import list.
-      set_import (src, NULL_TREE, get_imports (dep));
+      set_import (m_def_chain[v], NULL_TREE, get_imports (dep));
     }
   else
     // Originated outside the block, so it is an import.
@@ -553,6 +554,9 @@ gori_map::calculate_gori (basic_block bb)
   gcc_checking_assert (m_outgoing[bb->index] == NULL);
   m_outgoing[bb->index] = BITMAP_ALLOC (&m_bitmaps);
   m_incoming[bb->index] = BITMAP_ALLOC (&m_bitmaps);
+
+  if (single_succ_p (bb))
+    return;
 
   // If this block's last statement may generate range informaiton, go
   // calculate it.
@@ -1165,33 +1169,12 @@ gori_compute::compute_operand1_and_operand2_range (irange &r,
   r.intersect (op_range);
   return true;
 }
-// Return TRUE if a range can be calculated or recomputed for NAME on edge E.
+
+// Return TRUE if NAME can be recomputed on any edge exiting BB.  If any
+// direct dependant is exported, it may also change the computed value of NAME.
 
 bool
-gori_compute::has_edge_range_p (tree name, edge e)
-{
-  // Check if NAME is an export or can be recomputed.
-  if (e)
-    return is_export_p (name, e->src) || may_recompute_p (name, e);
-
-  // If no edge is specified, check if NAME can have a range calculated
-  // on any edge.
-  return is_export_p (name) || may_recompute_p (name);
-}
-
-// Dump what is known to GORI computes to listing file F.
-
-void
-gori_compute::dump (FILE *f)
-{
-  gori_map::dump (f);
-}
-
-// Return TRUE if NAME can be recomputed on edge E.  If any direct dependant
-// is exported on edge E, it may change the computed value of NAME.
-
-bool
-gori_compute::may_recompute_p (tree name, edge e)
+gori_compute::may_recompute_p (tree name, basic_block bb)
 {
   tree dep1 = depend1 (name);
   tree dep2 = depend2 (name);
@@ -1206,11 +1189,45 @@ gori_compute::may_recompute_p (tree name, edge e)
     return false;
 
   // If edge is specified, check if NAME can be recalculated on that edge.
-  if (e)
-    return ((is_export_p (dep1, e->src))
-	    || (dep2 && is_export_p (dep2, e->src)));
+  if (bb)
+    return ((is_export_p (dep1, bb))
+	    || (dep2 && is_export_p (dep2, bb)));
 
   return (is_export_p (dep1)) || (dep2 && is_export_p (dep2));
+}
+
+// Return TRUE if NAME can be recomputed on edge E.  If any direct dependant
+// is exported on edge E, it may change the computed value of NAME.
+
+bool
+gori_compute::may_recompute_p (tree name, edge e)
+{
+  gcc_checking_assert (e);
+  return may_recompute_p (name, e->src);
+}
+
+
+// Return TRUE if a range can be calculated or recomputed for NAME on any
+// edge exiting BB.
+
+bool
+gori_compute::has_edge_range_p (tree name, basic_block bb)
+{
+  // Check if NAME is an export or can be recomputed.
+  if (bb)
+    return is_export_p (name, bb) || may_recompute_p (name, bb);
+
+  // If no block is specified, check for anywhere in the IL.
+  return is_export_p (name) || may_recompute_p (name);
+}
+
+// Return TRUE if a range can be calculated or recomputed for NAME on edge E.
+
+bool
+gori_compute::has_edge_range_p (tree name, edge e)
+{
+  gcc_checking_assert (e);
+  return has_edge_range_p (name, e->src);
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a
@@ -1286,6 +1303,13 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
   return false;
 }
 
+// Dump what is known to GORI computes to listing file F.
+
+void
+gori_compute::dump (FILE *f)
+{
+  gori_map::dump (f);
+}
 
 // ------------------------------------------------------------------------
 //  GORI iterator.  Although we have bitmap iterators, don't expose that it

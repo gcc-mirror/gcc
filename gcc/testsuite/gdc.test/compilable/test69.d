@@ -16,7 +16,7 @@ void fromFail49()
     }
 }
 
-// Bugzilla 5735
+// https://issues.dlang.org/show_bug.cgi?id=5735
 
 struct A {}
 void b() {}

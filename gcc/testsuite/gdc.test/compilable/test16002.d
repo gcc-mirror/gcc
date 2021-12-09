@@ -1,3 +1,4 @@
+// EXTRA_FILES: imports/plainpackage/plainmodule.d imports/pkgmodule/package.d imports/pkgmodule/plainmodule.d
 module test.compilable.test16002;
 
 import imports.plainpackage.plainmodule;

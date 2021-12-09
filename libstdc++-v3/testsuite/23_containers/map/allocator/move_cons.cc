@@ -41,7 +41,7 @@ void test01()
   VERIFY(1 == v1.get_allocator().get_personality());
   VERIFY(2 == v2.get_allocator().get_personality());
 
-  VERIFY( v1[1].empty() );
+  VERIFY( v1.empty() );
   VERIFY( v2[1] == str );
 }
 

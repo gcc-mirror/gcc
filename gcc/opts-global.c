@@ -386,6 +386,10 @@ handle_common_deferred_options (void)
 	  add_file_prefix_map (opt->arg);
 	  break;
 
+	case OPT_fprofile_prefix_map_:
+	  add_profile_prefix_map (opt->arg);
+	  break;
+
 	case OPT_fdump_:
 	  g->get_dumps ()->dump_switch_p (opt->arg);
 	  break;
