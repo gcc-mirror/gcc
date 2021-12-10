@@ -1014,8 +1014,6 @@ void
 finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		location_t loc)
 {
-  enum unwind_info_type ui_except;
-
   if (opts->x_dump_base_name
       && ! opts->x_dump_base_name_prefixed)
     {
@@ -1115,61 +1113,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_warn_inline = 0;
       opts->x_flag_no_inline = 1;
     }
-
-  /* The optimization to partition hot and cold basic blocks into separate
-     sections of the .o and executable files does not work (currently)
-     with exception handling.  This is because there is no support for
-     generating unwind info.  If opts->x_flag_exceptions is turned on
-     we need to turn off the partitioning optimization.  */
-
-  ui_except = targetm_common.except_unwind_info (opts);
-
-  if (opts->x_flag_exceptions
-      && opts->x_flag_reorder_blocks_and_partition
-      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
-    {
-      if (opts_set->x_flag_reorder_blocks_and_partition)
-        inform (loc,
-		"%<-freorder-blocks-and-partition%> does not work "
-		"with exceptions on this architecture");
-      opts->x_flag_reorder_blocks_and_partition = 0;
-      opts->x_flag_reorder_blocks = 1;
-    }
-
-  /* If user requested unwind info, then turn off the partitioning
-     optimization.  */
-
-  if (opts->x_flag_unwind_tables
-      && !targetm_common.unwind_tables_default
-      && opts->x_flag_reorder_blocks_and_partition
-      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
-    {
-      if (opts_set->x_flag_reorder_blocks_and_partition)
-        inform (loc,
-		"%<-freorder-blocks-and-partition%> does not support "
-		"unwind info on this architecture");
-      opts->x_flag_reorder_blocks_and_partition = 0;
-      opts->x_flag_reorder_blocks = 1;
-    }
-
-  /* If the target requested unwind info, then turn off the partitioning
-     optimization with a different message.  Likewise, if the target does not
-     support named sections.  */
-
-  if (opts->x_flag_reorder_blocks_and_partition
-      && (!targetm_common.have_named_sections
-	  || (opts->x_flag_unwind_tables
-	      && targetm_common.unwind_tables_default
-	      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))))
-    {
-      if (opts_set->x_flag_reorder_blocks_and_partition)
-        inform (loc,
-		"%<-freorder-blocks-and-partition%> does not work "
-		"on this architecture");
-      opts->x_flag_reorder_blocks_and_partition = 0;
-      opts->x_flag_reorder_blocks = 1;
-    }
-
 
   /* Pipelining of outer loops is only possible when general pipelining
      capabilities are requested.  */
@@ -1406,6 +1349,74 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	 && debug_info_level >= DINFO_LEVEL_NORMAL
 	 && dwarf_debuginfo_p ()
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
+
+  diagnose_options (opts, opts_set, loc);
+}
+
+/* The function diagnoses incompatible combinations for provided options
+   (OPTS and OPTS_SET) at a given LOCation.  The function is called both
+   when command line is parsed (after the target optimization hook) and
+   when an optimize/target attribute (or pragma) is used.  */
+
+void diagnose_options (gcc_options *opts, gcc_options *opts_set,
+		       location_t loc)
+{
+  /* The optimization to partition hot and cold basic blocks into separate
+     sections of the .o and executable files does not work (currently)
+     with exception handling.  This is because there is no support for
+     generating unwind info.  If opts->x_flag_exceptions is turned on
+     we need to turn off the partitioning optimization.  */
+
+  enum unwind_info_type ui_except
+    = targetm_common.except_unwind_info (opts);
+
+  if (opts->x_flag_exceptions
+      && opts->x_flag_reorder_blocks_and_partition
+      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
+    {
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+	inform (loc,
+		"%<-freorder-blocks-and-partition%> does not work "
+		"with exceptions on this architecture");
+      opts->x_flag_reorder_blocks_and_partition = 0;
+      opts->x_flag_reorder_blocks = 1;
+    }
+
+  /* If user requested unwind info, then turn off the partitioning
+     optimization.  */
+
+  if (opts->x_flag_unwind_tables
+      && !targetm_common.unwind_tables_default
+      && opts->x_flag_reorder_blocks_and_partition
+      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))
+    {
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+	inform (loc,
+		"%<-freorder-blocks-and-partition%> does not support "
+		"unwind info on this architecture");
+      opts->x_flag_reorder_blocks_and_partition = 0;
+      opts->x_flag_reorder_blocks = 1;
+    }
+
+  /* If the target requested unwind info, then turn off the partitioning
+     optimization with a different message.  Likewise, if the target does not
+     support named sections.  */
+
+  if (opts->x_flag_reorder_blocks_and_partition
+      && (!targetm_common.have_named_sections
+	  || (opts->x_flag_unwind_tables
+	      && targetm_common.unwind_tables_default
+	      && (ui_except == UI_SJLJ || ui_except >= UI_TARGET))))
+    {
+      if (opts_set->x_flag_reorder_blocks_and_partition)
+	inform (loc,
+		"%<-freorder-blocks-and-partition%> does not work "
+		"on this architecture");
+      opts->x_flag_reorder_blocks_and_partition = 0;
+      opts->x_flag_reorder_blocks = 1;
+    }
+
+
 }
 
 #define LEFT_COLUMN	27
