@@ -37,6 +37,7 @@ with Namet;                use Namet;
 with Nlists;               use Nlists;
 with Output;               use Output;
 with Seinfo;               use Seinfo;
+with Sem_Eval;             use Sem_Eval;
 with Sinfo;                use Sinfo;
 with Sinfo.Nodes;          use Sinfo.Nodes;
 with Sinfo.Utils;          use Sinfo.Utils;
@@ -1639,6 +1640,24 @@ package body Treepr is
 
             else
                Print_Name (Chars (N));
+            end if;
+         end if;
+
+         --  If this is an integer-like expression whose value is known, print
+         --  that value.
+
+         if Nkind (N) in N_Subexpr
+           and then Compile_Time_Known_Value (N)
+           and then Present (Etype (N))
+           and then not Is_Array_Type (Etype (N))
+         then
+            if Is_Entity_Name (N) -- e.g. enumeration literal
+              or else Nkind (N) in N_Integer_Literal
+                                 | N_Character_Literal
+                                 | N_Unchecked_Type_Conversion
+            then
+               Print_Str (" val = ");
+               UI_Write (Expr_Value (N));
             end if;
          end if;
 
