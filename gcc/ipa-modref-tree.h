@@ -87,7 +87,8 @@ struct GTY(()) modref_access_node
     {
       return parm_offset_known && parm_index != MODREF_UNKNOWN_PARM
 	     && parm_index != MODREF_RETSLOT_PARM && known_size_p (size)
-	     && known_eq (max_size, size);
+	     && known_eq (max_size, size)
+	     && known_gt (size, 0);
     }
   /* Dump range to debug OUT.  */
   void dump (FILE *out);
