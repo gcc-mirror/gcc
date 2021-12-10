@@ -19,6 +19,8 @@ version (CppRuntime_Gcc)
     version = GenericBaseException;
 version (CppRuntime_Clang)
     version = GenericBaseException;
+version (CppRuntime_Sun)
+    version = GenericBaseException;
 
 extern (C++, "std"):
 @nogc:

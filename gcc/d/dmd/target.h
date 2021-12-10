@@ -26,7 +26,7 @@ class Type;
 class TypeTuple;
 class TypeFunction;
 
-enum class CPU
+enum class CPU : unsigned char
 {
     x87,
     mmx,
@@ -194,7 +194,7 @@ public:
     unsigned fieldalign(Type *type);
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
-    bool isVectorOpSupported(Type *type, unsigned op, Type *t2 = NULL);
+    bool isVectorOpSupported(Type *type, EXP op, Type *t2 = NULL);
     // ABI and backend.
     LINK systemLinkage();
     TypeTuple *toArgTypes(Type *t);

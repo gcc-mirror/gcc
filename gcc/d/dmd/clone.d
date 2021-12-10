@@ -578,7 +578,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     fop.generated = true;
     Expression e1 = new IdentifierExp(loc, Id.p);
     Expression e2 = new IdentifierExp(loc, Id.q);
-    Expression e = new EqualExp(TOK.equal, loc, e1, e2);
+    Expression e = new EqualExp(EXP.equal, loc, e1, e2);
     fop.fbody = new ReturnStatement(loc, e);
     uint errors = global.startGagging(); // Do not report errors
     Scope* sc2 = sc.push();
@@ -642,13 +642,13 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
                 Dsymbol s = null;
                 switch (e.op)
                 {
-                case TOK.overloadSet:
+                case EXP.overloadSet:
                     s = (cast(OverExp)e).vars;
                     break;
-                case TOK.scope_:
+                case EXP.scope_:
                     s = (cast(ScopeExp)e).sds;
                     break;
-                case TOK.variable:
+                case EXP.variable:
                     s = (cast(VarExp)e).var;
                     break;
                 default:

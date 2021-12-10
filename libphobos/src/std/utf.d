@@ -4315,12 +4315,12 @@ if (isSomeChar!C)
             {
                 enum Empty = uint.max;  // range is empty or just constructed
 
-                this(return R r)
+                this(return scope R r)
                 {
                     this.r = r;
                 }
 
-                this(return R r, uint buff)
+                this(return scope R r, uint buff)
                 {
                     this.r = r;
                     this.buff = buff;
@@ -4328,7 +4328,7 @@ if (isSomeChar!C)
 
                 static if (isBidirectionalRange!R)
                 {
-                    this(return R r, uint frontBuff, uint backBuff)
+                    this(return scope R r, uint frontBuff, uint backBuff)
                     {
                         this.r = r;
                         this.buff = frontBuff;
@@ -4436,12 +4436,12 @@ if (isSomeChar!C)
         {
             static struct Result
             {
-                this(return R r)
+                this(return scope R r)
                 {
                     this.r = r;
                 }
 
-                this(return R r, ushort pos, ushort fill, C[4 / C.sizeof] buf)
+                this(return scope R r, ushort pos, ushort fill, C[4 / C.sizeof] buf)
                 {
                     this.r = r;
                     this.pos = pos;
@@ -4451,7 +4451,7 @@ if (isSomeChar!C)
 
                 static if (isBidirectionalRange!R)
                 {
-                    this(return R r, ushort frontPos, ushort frontFill,
+                    this(return scope R r, ushort frontPos, ushort frontFill,
                          ushort backPos, ushort backFill, C[4 / C.sizeof] buf)
                     {
                         this.r = r;

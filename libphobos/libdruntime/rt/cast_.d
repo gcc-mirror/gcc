@@ -36,7 +36,7 @@ extern (D) private bool areClassInfosEqual(scope const ClassInfo a, scope const 
  *      If it is null, return null.
  *      Else, undefined crash
  */
-Object _d_toObject(return void* p)
+Object _d_toObject(return scope void* p)
 {
     if (!p)
         return null;

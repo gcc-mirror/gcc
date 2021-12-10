@@ -3121,14 +3121,14 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R &&
     else
         static assert(false, "`transform` returns an unsortable qualified type: " ~ TB.stringof);
 
-    static trustedMalloc(size_t len) @trusted
+    static trustedMalloc()(size_t len) @trusted
     {
         import core.checkedint : mulu;
-        import core.stdc.stdlib : malloc;
+        import core.memory : pureMalloc;
         bool overflow;
         const nbytes = mulu(len, T.sizeof, overflow);
         if (overflow) assert(false, "multiplication overflowed");
-        T[] result = (cast(T*) malloc(nbytes))[0 .. len];
+        T[] result = (cast(T*) pureMalloc(nbytes))[0 .. len];
         static if (hasIndirections!T)
         {
             import core.memory : GC;
@@ -3145,15 +3145,15 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R &&
         {
             foreach (i; 0 .. length) collectException(destroy(xform1[i]));
         }
-        static void trustedFree(T[] p) @trusted
+        static void trustedFree()(T[] p) @trusted
         {
-            import core.stdc.stdlib : free;
+            import core.memory : pureFree;
             static if (hasIndirections!T)
             {
                 import core.memory : GC;
                 GC.removeRange(p.ptr);
             }
-            free(p.ptr);
+            pureFree(p.ptr);
         }
         trustedFree(xform1);
     }
@@ -3186,7 +3186,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
 }
 
 ///
-@safe unittest
+@safe pure unittest
 {
     import std.algorithm.iteration : map;
     import std.numeric : entropy;
@@ -3207,7 +3207,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
     assert(isSorted!("a > b")(map!(entropy)(arr)));
 }
 
-@safe unittest
+@safe pure unittest
 {
     import std.algorithm.iteration : map;
     import std.numeric : entropy;
@@ -3228,7 +3228,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
     assert(isSorted!("a < b")(map!(entropy)(arr)));
 }
 
-@safe unittest
+@safe pure unittest
 {
     // binary transform function
     string[] strings = [ "one", "two", "three" ];
@@ -3237,7 +3237,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=4909
-@safe unittest
+@safe pure unittest
 {
     import std.typecons : Tuple;
     Tuple!(char)[] chars;
@@ -3245,7 +3245,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=5924
-@safe unittest
+@safe pure unittest
 {
     import std.typecons : Tuple;
     Tuple!(char)[] chars;
@@ -3253,7 +3253,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=13965
-@safe unittest
+@safe pure unittest
 {
     import std.typecons : Tuple;
     Tuple!(char)[] chars;
@@ -3261,7 +3261,7 @@ if (isRandomAccessRange!R && hasLength!R && hasSwappableElements!R)
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=13965
-@safe unittest
+@safe pure unittest
 {
     import std.algorithm.iteration : map;
     import std.numeric : entropy;

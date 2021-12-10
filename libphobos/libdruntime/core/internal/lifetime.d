@@ -89,43 +89,34 @@ Emplaces T.init.
 In contrast to `emplaceRef(chunk)`, there are no checks for disabled default
 constructors etc.
 +/
-template emplaceInitializer(T)
+void emplaceInitializer(T)(scope ref T chunk) nothrow pure @trusted
 if (!is(T == const) && !is(T == immutable) && !is(T == inout))
 {
-    import core.internal.traits : hasElaborateAssign, Unqual;
+    import core.internal.traits : hasElaborateAssign;
 
-    // Avoid stack allocation by hacking to get to the struct/union init symbol.
-    static if (is(T == struct) || is(T == union))
+    static if (__traits(isZeroInit, T))
     {
-        pragma(mangle, "_D" ~ Unqual!T.mangleof[1..$] ~ "6__initZ")
-        __gshared extern immutable T initializer;
+        import core.stdc.string : memset;
+        memset(cast(void*) &chunk, 0, T.sizeof);
     }
-
-    void emplaceInitializer(scope ref T chunk) nothrow pure @trusted
+    else static if (__traits(isScalar, T) ||
+                    T.sizeof <= 16 && !hasElaborateAssign!T && __traits(compiles, (){ T chunk; chunk = T.init; }))
     {
-        static if (__traits(isZeroInit, T))
+        chunk = T.init;
+    }
+    else static if (__traits(isStaticArray, T))
+    {
+        // For static arrays there is no initializer symbol created. Instead, we emplace elements one-by-one.
+        foreach (i; 0 .. T.length)
         {
-            import core.stdc.string : memset;
-            memset(cast(void*) &chunk, 0, T.sizeof);
+            emplaceInitializer(chunk[i]);
         }
-        else static if (__traits(isScalar, T) ||
-                        T.sizeof <= 16 && !hasElaborateAssign!T && __traits(compiles, (){ T chunk; chunk = T.init; }))
-        {
-            chunk = T.init;
-        }
-        else static if (__traits(isStaticArray, T))
-        {
-            // For static arrays there is no initializer symbol created. Instead, we emplace elements one-by-one.
-            foreach (i; 0 .. T.length)
-            {
-                emplaceInitializer(chunk[i]);
-            }
-        }
-        else
-        {
-            import core.stdc.string : memcpy;
-            memcpy(cast(void*)&chunk, &initializer, T.sizeof);
-        }
+    }
+    else
+    {
+        import core.stdc.string : memcpy;
+        const initializer = __traits(initSymbol, T);
+        memcpy(cast(void*)&chunk, initializer.ptr, initializer.length);
     }
 }
 

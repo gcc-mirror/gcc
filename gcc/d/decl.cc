@@ -2239,7 +2239,7 @@ layout_class_initializer (ClassDeclaration *cd)
   ne->type = cd->type;
 
   Expression *e = ne->ctfeInterpret ();
-  gcc_assert (e->op == TOKclassreference);
+  gcc_assert (e->op == EXP::classReference);
 
   return build_class_instance (e->isClassReferenceExp ());
 }

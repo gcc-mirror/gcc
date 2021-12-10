@@ -287,7 +287,7 @@ TypeInfo_Struct fakeEntryTI(ref Impl aa, const TypeInfo keyti, const TypeInfo va
     void* p = GC.malloc(sizeti + (2 + rtisize) * (void*).sizeof);
     import core.stdc.string : memcpy;
 
-    memcpy(p, typeid(TypeInfo_Struct).initializer().ptr, sizeti);
+    memcpy(p, __traits(initSymbol, TypeInfo_Struct).ptr, sizeti);
 
     auto ti = cast(TypeInfo_Struct) p;
     auto extra = cast(TypeInfo*)(p + sizeti);
@@ -853,7 +853,7 @@ struct Range
 
 extern (C) pure nothrow @nogc @safe
 {
-    Range _aaRange(return AA aa)
+    Range _aaRange(return scope AA aa)
     {
         if (!aa)
             return Range();

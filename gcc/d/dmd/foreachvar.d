@@ -223,7 +223,7 @@ void foreachExpAndVar(Statement s,
         void visitWith(WithStatement s)
         {
             // If it is with(Enum) {...}, just execute the body.
-            if (s.exp.op == TOK.scope_ || s.exp.op == TOK.type)
+            if (s.exp.op == EXP.scope_ || s.exp.op == EXP.type)
             {
             }
             else

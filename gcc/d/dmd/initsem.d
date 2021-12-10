@@ -225,7 +225,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 auto tm = vd.type.addMod(t.mod);
                 auto iz = i.value[j].initializerSemantic(sc, tm, needInterpret);
                 auto ex = iz.initializerToExpression();
-                if (ex.op == TOK.error)
+                if (ex.op == EXP.error)
                 {
                     errors = true;
                     elems[fieldi] = ErrorExp.get(); // for better diagnostics on multiple errors
@@ -331,7 +331,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                     errors = true;
                 }
                 length = cast(uint)idxvalue;
-                if (idx.op == TOK.error)
+                if (idx.op == EXP.error)
                     errors = true;
             }
             Initializer val = i.value[j];
@@ -344,7 +344,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 errors = true;
             ei = val.isExpInitializer();
             // found a tuple, expand it
-            if (ei && ei.exp.op == TOK.tuple)
+            if (ei && ei.exp.op == EXP.tuple)
             {
                 TupleExp te = cast(TupleExp)ei.exp;
                 i.index.remove(j);
@@ -384,6 +384,8 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             return err();
 
         const sz = t.nextOf().size();
+        if (sz == SIZE_INVALID)
+            return err();
         bool overflow;
         const max = mulu(i.dim, sz, overflow);
         if (overflow || max >= amax)
@@ -403,7 +405,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         i.exp = resolveProperties(sc, i.exp);
         if (needInterpret)
             sc = sc.endCTFE();
-        if (i.exp.op == TOK.error)
+        if (i.exp.op == EXP.error)
             return err();
         uint olderrors = global.errors;
 
@@ -437,7 +439,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                  */
                 i.exp = i.exp.optimize(WANTvalue);
             i.exp = i.exp.ctfeInterpret();
-            if (i.exp.op == TOK.voidExpression)
+            if (i.exp.op == EXP.voidExpression)
                 error(i.loc, "variables cannot be initialized with an expression of type `void`. Use `void` initialization instead.");
         }
         else
@@ -455,7 +457,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             i.exp = new TupleExp(i.exp.loc, new Expressions());
             i.exp.type = et;
         }
-        if (i.exp.op == TOK.type)
+        if (i.exp.op == EXP.type)
         {
             i.exp.error("initializer must be an expression, not `%s`", i.exp.toChars());
             return err();
@@ -467,7 +469,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             return err();
         }
         Type ti = i.exp.type.toBasetype();
-        if (i.exp.op == TOK.tuple && i.expandTuples && !i.exp.implicitConvTo(t))
+        if (i.exp.op == EXP.tuple && i.expandTuples && !i.exp.implicitConvTo(t))
         {
             return new ExpInitializer(i.loc, i.exp);
         }
@@ -477,7 +479,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
          * Allow this by doing an explicit cast, which will lengthen the string
          * literal.
          */
-        if (i.exp.op == TOK.string_ && tb.ty == Tsarray)
+        if (i.exp.op == EXP.string_ && tb.ty == Tsarray)
         {
             StringExp se = cast(StringExp)i.exp;
             Type typeb = se.type.toBasetype();
@@ -562,12 +564,12 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             {
                 uinteger_t dim1 = (cast(TypeSArray)tb).dim.toInteger();
                 uinteger_t dim2 = dim1;
-                if (i.exp.op == TOK.arrayLiteral)
+                if (i.exp.op == EXP.arrayLiteral)
                 {
                     ArrayLiteralExp ale = cast(ArrayLiteralExp)i.exp;
                     dim2 = ale.elements ? ale.elements.dim : 0;
                 }
-                else if (i.exp.op == TOK.slice)
+                else if (i.exp.op == EXP.slice)
                 {
                     Type tx = toStaticArrayType(cast(SliceExp)i.exp);
                     if (tx)
@@ -582,7 +584,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
             i.exp = i.exp.implicitCastTo(sc, t);
         }
     L1:
-        if (i.exp.op == TOK.error)
+        if (i.exp.op == EXP.error)
         {
             return i;
         }
@@ -667,7 +669,7 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 auto tm = vd.type.addMod(ts.mod);
                 auto iz = di.initializer.initializerSemantic(sc, tm, needInterpret);
                 auto ex = iz.initializerToExpression();
-                if (ex.op == TOK.error)
+                if (ex.op == EXP.error)
                 {
                     errors = true;
                     continue;
@@ -823,6 +825,8 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
         }
 
         const sz = tn.size(); // element size
+        if (sz == SIZE_INVALID)
+            return err();
         bool overflow;
         const max = mulu(edim, sz, overflow);
         if (overflow || max >= amax)
@@ -930,7 +934,7 @@ Initializer inferType(Initializer init, Scope* sc)
                 }
                 assert(iz.isExpInitializer());
                 (*values)[i] = (cast(ExpInitializer)iz).exp;
-                assert((*values)[i].op != TOK.error);
+                assert(!(*values)[i].isErrorExp());
             }
             Expression e = new AssocArrayLiteralExp(init.loc, keys, values);
             auto ei = new ExpInitializer(init.loc, e);
@@ -953,7 +957,7 @@ Initializer inferType(Initializer init, Scope* sc)
                 }
                 assert(iz.isExpInitializer());
                 (*elements)[i] = (cast(ExpInitializer)iz).exp;
-                assert((*elements)[i].op != TOK.error);
+                assert(!(*elements)[i].isErrorExp());
             }
             Expression e = new ArrayLiteralExp(init.loc, null, elements);
             auto ei = new ExpInitializer(init.loc, e);
@@ -977,11 +981,11 @@ Initializer inferType(Initializer init, Scope* sc)
         init.exp = init.exp.expressionSemantic(sc);
 
         // for static alias this: https://issues.dlang.org/show_bug.cgi?id=17684
-        if (init.exp.op == TOK.type)
+        if (init.exp.op == EXP.type)
             init.exp = resolveAliasThis(sc, init.exp);
 
         init.exp = resolveProperties(sc, init.exp);
-        if (init.exp.op == TOK.scope_)
+        if (init.exp.op == EXP.scope_)
         {
             ScopeExp se = cast(ScopeExp)init.exp;
             TemplateInstance ti = se.sds.isTemplateInstance();
@@ -1006,16 +1010,16 @@ Initializer inferType(Initializer init, Scope* sc)
                 return new ErrorInitializer();
             }
         }
-        if (init.exp.op == TOK.address)
+        if (init.exp.op == EXP.address)
         {
             AddrExp ae = cast(AddrExp)init.exp;
-            if (ae.e1.op == TOK.overloadSet)
+            if (ae.e1.op == EXP.overloadSet)
             {
                 init.exp.error("cannot infer type from overloaded function symbol `%s`", init.exp.toChars());
                 return new ErrorInitializer();
             }
         }
-        if (init.exp.op == TOK.error)
+        if (init.exp.op == EXP.error)
         {
             return new ErrorInitializer();
         }
@@ -1125,7 +1129,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
             {
                 if (auto e = init.index[i])
                 {
-                    if (e.op == TOK.int64)
+                    if (e.op == EXP.int64)
                     {
                         const uinteger_t idxval = e.toInteger();
                         if (idxval >= amax)
@@ -1206,7 +1210,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
          */
         foreach (e; (*elements)[0 .. edim])
         {
-            if (e.op == TOK.error)
+            if (e.op == EXP.error)
             {
                 return e;
             }
@@ -1222,7 +1226,7 @@ extern (C++) Expression initializerToExpression(Initializer init, Type itype = n
         {
             //printf("ExpInitializer::toExpression(t = %s) exp = %s\n", itype.toChars(), i.exp.toChars());
             Type tb = itype.toBasetype();
-            Expression e = (i.exp.op == TOK.construct || i.exp.op == TOK.blit) ? (cast(AssignExp)i.exp).e2 : i.exp;
+            Expression e = (i.exp.op == EXP.construct || i.exp.op == EXP.blit) ? (cast(AssignExp)i.exp).e2 : i.exp;
             if (tb.ty == Tsarray && e.implicitConvTo(tb.nextOf()))
             {
                 TypeSArray tsa = cast(TypeSArray)tb;
@@ -1277,7 +1281,7 @@ private bool hasNonConstPointers(Expression e)
 
     if (e.type.ty == Terror)
         return false;
-    if (e.op == TOK.null_)
+    if (e.op == EXP.null_)
         return false;
     if (auto se = e.isStructLiteralExp())
     {
@@ -1318,11 +1322,11 @@ private bool hasNonConstPointers(Expression e)
     }
     if (e.type.ty == Tpointer && !e.type.isPtrToFunction())
     {
-        if (e.op == TOK.symbolOffset) // address of a global is OK
+        if (e.op == EXP.symbolOffset) // address of a global is OK
             return false;
-        if (e.op == TOK.int64) // cast(void *)int is OK
+        if (e.op == EXP.int64) // cast(void *)int is OK
             return false;
-        if (e.op == TOK.string_) // "abc".ptr is OK
+        if (e.op == EXP.string_) // "abc".ptr is OK
             return false;
         return true;
     }

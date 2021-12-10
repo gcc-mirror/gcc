@@ -52,9 +52,6 @@ enum R_386_NUM          = 39;
 
 enum ELF_386_MAXPGSZ = 0x10000;
 
-enum SHF_ORDERED = 0x40000000;
-enum SHF_EXCLUDE = 0x80000000;
-
 enum SHN_BEFORE = 0xff00;
 enum SHN_AFTER  = 0xff01;
 

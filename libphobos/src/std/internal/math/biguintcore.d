@@ -879,7 +879,7 @@ public:
     }
 
     // return x / y
-    static BigUint divInt(T)(scope return BigUint x, T y_) pure nothrow @safe
+    static BigUint divInt(T)(return scope BigUint x, T y_) pure nothrow @safe
     if ( is(immutable T == immutable uint) )
     {
         uint y = y_;
@@ -942,7 +942,7 @@ public:
     }
 
     // return x / y
-    static BigUint div(scope return BigUint x, scope BigUint y) pure nothrow @safe
+    static BigUint div(return scope BigUint x, scope BigUint y) pure nothrow @safe
     {
         if (y.data.length > x.data.length)
             return BigUint(ZERO);
@@ -954,7 +954,7 @@ public:
     }
 
     // return x % y
-    static BigUint mod(scope return BigUint x, scope BigUint y) pure nothrow @safe
+    static BigUint mod(return scope BigUint x, scope BigUint y) pure nothrow @safe
     {
         if (y.data.length > x.data.length) return x;
         if (y.data.length == 1)
@@ -1020,7 +1020,7 @@ public:
      * exponentiation is used.
      * Memory allocation is minimized: at most one temporary BigUint is used.
      */
-    static BigUint pow(scope return BigUint x, ulong y) pure nothrow @safe
+    static BigUint pow(return scope BigUint x, ulong y) pure nothrow @safe
     {
         // Deal with the degenerate cases first.
         if (y == 0) return BigUint(ONE);
@@ -1259,7 +1259,7 @@ public:
 }
 
 // Remove leading zeros from x, to restore the BigUint invariant
-inout(BigDigit) [] removeLeadingZeros(scope return inout(BigDigit) [] x) pure nothrow @safe
+inout(BigDigit) [] removeLeadingZeros(return scope inout(BigDigit) [] x) pure nothrow @safe
 {
     size_t k = x.length;
     while (k>1 && x[k - 1]==0) --k;
@@ -1916,7 +1916,7 @@ pure @safe unittest
 // every 8 digits.
 // buff.length must be data.length*8 if separator is zero,
 // or data.length*9 if separator is non-zero. It will be completely filled.
-char [] biguintToHex(scope return char [] buff, const scope BigDigit [] data, char separator=0,
+char [] biguintToHex(return scope char [] buff, const scope BigDigit [] data, char separator=0,
         LetterCase letterCase = LetterCase.upper) pure nothrow @safe
 {
     int x=0;

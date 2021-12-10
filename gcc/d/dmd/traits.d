@@ -80,9 +80,9 @@ private Dsymbol getDsymbolWithoutExpCtx(RootObject oarg)
 {
     if (auto e = isExpression(oarg))
     {
-        if (e.op == TOK.dotVariable)
+        if (e.op == EXP.dotVariable)
             return (cast(DotVarExp)e).var;
-        if (e.op == TOK.dotTemplateDeclaration)
+        if (e.op == EXP.dotTemplateDeclaration)
             return (cast(DotTemplateExp)e).td;
     }
     return getDsymbol(oarg);
@@ -569,7 +569,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     {
         if (global.params.vcomplex)
         {
-            if (isTypeX(t => t.iscomplex() || t.isimaginary()).isBool(true))
+            if (isTypeX(t => t.iscomplex() || t.isimaginary()).toBool().hasValue(true))
                 return True();
         }
         return isDsymX(t => t.isDeprecated());
@@ -998,7 +998,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 e.error("`bool` expected as third argument of `__traits(getOverloads)`, not `%s` of type `%s`", b.toChars(), b.type.toChars());
                 return ErrorExp.get();
             }
-            includeTemplates = b.isBool(true);
+            includeTemplates = b.toBool().hasValue(true);
         }
 
         StringExp se = ex.toStringExp();
@@ -1055,7 +1055,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         }
         else if (e.ident == Id.getMember)
         {
-            if (ex.op == TOK.dotIdentifier)
+            if (ex.op == EXP.dotIdentifier)
                 // Prevent semantic() from replacing Symbol with its initializer
                 (cast(DotIdExp)ex).wantsym = true;
             ex = ex.expressionSemantic(scx);
@@ -1085,7 +1085,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             {
                 if (dve.var.isFuncDeclaration() || dve.var.isOverDeclaration())
                     f = dve.var;
-                if (dve.e1.op == TOK.dotType || dve.e1.op == TOK.this_)
+                if (dve.e1.op == EXP.dotType || dve.e1.op == EXP.this_)
                     ex = null;
                 else
                     ex = dve.e1;
@@ -1105,7 +1105,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 if (td && td.funcroot)
                     f = td.funcroot;
                 ex = null;
-                if (dte.e1.op != TOK.dotType && dte.e1.op != TOK.this_)
+                if (dte.e1.op != EXP.dotType && dte.e1.op != EXP.this_)
                     ex = dte.e1;
             }
             bool[string] funcTypeHash;
@@ -1290,7 +1290,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                 Expression x = isExpression(o);
                 Type t = isType(o);
                 if (x)
-                    printf("e = %s %s\n", Token.toChars(x.op), x.toChars());
+                    printf("e = %s %s\n", EXPtoString(x.op).ptr, x.toChars());
                 if (t)
                     printf("t = %d %s\n", t.ty, t.toChars());
             }
@@ -1792,7 +1792,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
                         err |= tf.isnothrow && canThrow(ex, sc2.func, false);
                     }
                     ex = checkGC(sc2, ex);
-                    if (ex.op == TOK.error)
+                    if (ex.op == EXP.error)
                         err = true;
                 }
             }
@@ -1918,6 +1918,27 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     if (e.ident == Id.getPointerBitmap)
     {
         return pointerBitmap(e);
+    }
+    if (e.ident == Id.initSymbol)
+    {
+        if (dim != 1)
+            return dimError(1);
+
+        auto o = (*e.args)[0];
+        Type t = isType(o);
+        AggregateDeclaration ad = t ? isAggregate(t) : null;
+
+        // Interfaces don't have an init symbol and hence cause linker errors
+        if (!ad || ad.isInterfaceDeclaration())
+        {
+            e.error("struct / class type expected as argument to __traits(initSymbol) instead of `%s`", o.toChars());
+            return ErrorExp.get();
+        }
+
+        Declaration d = new SymbolDeclaration(ad.loc, ad);
+        d.type = Type.tvoid.arrayOf().constOf();
+        d.storage_class |= STC.rvalue;
+        return new VarExp(e.loc, d);
     }
     if (e.ident == Id.isZeroInit)
     {
@@ -2105,7 +2126,7 @@ private bool isSame(RootObject o1, RootObject o2, Scope* sc)
         }
         else if (auto ea = isExpression(oarg))
         {
-            if (ea.op == TOK.function_)
+            if (ea.op == EXP.function_)
             {
                 if (auto fe = cast(FuncExp)ea)
                     return fe.fd;

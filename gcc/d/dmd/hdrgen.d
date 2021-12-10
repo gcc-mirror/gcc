@@ -164,7 +164,7 @@ public:
 
     override void visit(ExpStatement s)
     {
-        if (s.exp && s.exp.op == TOK.declaration &&
+        if (s.exp && s.exp.op == EXP.declaration &&
             (cast(DeclarationExp)s.exp).declaration)
         {
             // bypass visit(DeclarationExp)
@@ -202,7 +202,7 @@ public:
         foreach (sx; *s.statements)
         {
             auto ds = sx ? sx.isExpStatement() : null;
-            if (ds && ds.exp.op == TOK.declaration)
+            if (ds && ds.exp.op == EXP.declaration)
             {
                 auto d = (cast(DeclarationExp)ds.exp).declaration;
                 assert(d.isDeclaration());
@@ -1260,7 +1260,7 @@ public:
             {
                 buf.writestring(" = ");
                 ExpInitializer ie = vd._init.isExpInitializer();
-                if (ie && (ie.exp.op == TOK.construct || ie.exp.op == TOK.blit))
+                if (ie && (ie.exp.op == EXP.construct || ie.exp.op == EXP.blit))
                     (cast(AssignExp)ie.exp).e2.expressionToBuffer(buf, hgs);
                 else
                     vd._init.initializerToBuffer(buf, hgs);
@@ -1511,7 +1511,7 @@ public:
         {
             buf.writestring(" = ");
             auto ie = v._init.isExpInitializer();
-            if (ie && (ie.exp.op == TOK.construct || ie.exp.op == TOK.blit))
+            if (ie && (ie.exp.op == EXP.construct || ie.exp.op == EXP.blit))
                 (cast(AssignExp)ie.exp).e2.expressionToBuffer(buf, hgs);
             else
                 v._init.initializerToBuffer(buf, hgs);
@@ -1569,7 +1569,7 @@ public:
                 buf.writestring("in");
                 if (auto es = frequire.isExpStatement())
                 {
-                    assert(es.exp && es.exp.op == TOK.assert_);
+                    assert(es.exp && es.exp.op == EXP.assert_);
                     buf.writestring(" (");
                     (cast(AssertExp)es.exp).e1.expressionToBuffer(buf, hgs);
                     buf.writeByte(')');
@@ -1592,7 +1592,7 @@ public:
                 buf.writestring("out");
                 if (auto es = fensure.ensure.isExpStatement())
                 {
-                    assert(es.exp && es.exp.op == TOK.assert_);
+                    assert(es.exp && es.exp.op == EXP.assert_);
                     buf.writestring(" (");
                     if (fensure.id)
                     {
@@ -1749,7 +1749,7 @@ public:
         buf.writestring("invariant");
         if(auto es = d.fbody.isExpStatement())
         {
-            assert(es.exp && es.exp.op == TOK.assert_);
+            assert(es.exp && es.exp.op == EXP.assert_);
             buf.writestring(" (");
             (cast(AssertExp)es.exp).e1.expressionToBuffer(buf, hgs);
             buf.writestring(");");
@@ -1812,7 +1812,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////
     override void visit(Expression e)
     {
-        buf.writestring(Token.toString(e.op));
+        buf.writestring(EXPtoString(e.op));
     }
 
     override void visit(IntegerExp e)
@@ -2278,7 +2278,7 @@ public:
 
     override void visit(UnaExp e)
     {
-        buf.writestring(Token.toString(e.op));
+        buf.writestring(EXPtoString(e.op));
         expToBuffer(e.e1, precedence[e.op], buf, hgs);
     }
 
@@ -2286,7 +2286,7 @@ public:
     {
         expToBuffer(e.e1, precedence[e.op], buf, hgs);
         buf.writeByte(' ');
-        buf.writestring(Token.toString(e.op));
+        buf.writestring(EXPtoString(e.op));
         buf.writeByte(' ');
         expToBuffer(e.e2, cast(PREC)(precedence[e.op] + 1), buf, hgs);
     }
@@ -2415,7 +2415,7 @@ public:
 
     override void visit(CallExp e)
     {
-        if (e.e1.op == TOK.type)
+        if (e.e1.op == EXP.type)
         {
             /* Avoid parens around type to prevent forbidden cast syntax:
              *   (sometype)(arg1)
@@ -2540,12 +2540,12 @@ public:
     override void visit(PostExp e)
     {
         expToBuffer(e.e1, precedence[e.op], buf, hgs);
-        buf.writestring(Token.toString(e.op));
+        buf.writestring(EXPtoString(e.op));
     }
 
     override void visit(PreExp e)
     {
-        buf.writestring(Token.toString(e.op));
+        buf.writestring(EXPtoString(e.op));
         expToBuffer(e.e1, precedence[e.op], buf, hgs);
     }
 
@@ -2568,7 +2568,7 @@ public:
 
     override void visit(DefaultInitExp e)
     {
-        buf.writestring(Token.toString(e.op));
+        buf.writestring(EXPtoString(e.op));
     }
 
     override void visit(ClassReferenceExp e)
@@ -3144,7 +3144,7 @@ private void parameterToBuffer(Parameter p, OutBuffer* buf, HdrGenState* hgs)
     {
         buf.writeByte('@');
 
-        bool isAnonymous = p.userAttribDecl.atts.dim > 0 && (*p.userAttribDecl.atts)[0].op != TOK.call;
+        bool isAnonymous = p.userAttribDecl.atts.dim > 0 && !(*p.userAttribDecl.atts)[0].isCallExp();
         if (isAnonymous)
             buf.writeByte('(');
 
@@ -3253,9 +3253,9 @@ private void sizeToBuffer(Expression e, OutBuffer* buf, HdrGenState* hgs)
 {
     if (e.type == Type.tsize_t)
     {
-        Expression ex = (e.op == TOK.cast_ ? (cast(CastExp)e).e1 : e);
+        Expression ex = (e.op == EXP.cast_ ? (cast(CastExp)e).e1 : e);
         ex = ex.optimize(WANTvalue);
-        const dinteger_t uval = ex.op == TOK.int64 ? ex.toInteger() : cast(dinteger_t)-1;
+        const dinteger_t uval = ex.op == EXP.int64 ? ex.toInteger() : cast(dinteger_t)-1;
         if (cast(sinteger_t)uval >= 0)
         {
             dinteger_t sizemax = void;
@@ -3292,7 +3292,7 @@ private void expToBuffer(Expression e, PREC pr, OutBuffer* buf, HdrGenState* hgs
     debug
     {
         if (precedence[e.op] == PREC.zero)
-            printf("precedence not defined for token '%s'\n", Token.toChars(e.op));
+            printf("precedence not defined for token '%s'\n", EXPtoString(e.op).ptr);
     }
     if (e.op == 0xFF)
     {
@@ -3422,7 +3422,7 @@ private void tiargsToBuffer(TemplateInstance ti, OutBuffer* buf, HdrGenState* hg
         }
         else if (Expression e = isExpression(oarg))
         {
-            if (e.op == TOK.int64 || e.op == TOK.float64 || e.op == TOK.null_ || e.op == TOK.string_ || e.op == TOK.this_)
+            if (e.op == EXP.int64 || e.op == EXP.float64 || e.op == EXP.null_ || e.op == EXP.string_ || e.op == EXP.this_)
             {
                 buf.writestring(e.toChars());
                 return;
@@ -3460,7 +3460,7 @@ private void objectToBuffer(RootObject oarg, OutBuffer* buf, HdrGenState* hgs)
     }
     else if (auto e = isExpression(oarg))
     {
-        if (e.op == TOK.variable)
+        if (e.op == EXP.variable)
             e = e.optimize(WANTvalue); // added to fix https://issues.dlang.org/show_bug.cgi?id=7375
         expToBuffer(e, PREC.assign, buf, hgs);
     }
@@ -3961,4 +3961,159 @@ private void typeToBufferx(Type t, OutBuffer* buf, HdrGenState* hgs)
         case Tnoreturn:  return visitNoreturn(cast(TypeNoreturn)t);
         case Ttag:       return visitTag(cast(TypeTag)t);
     }
+}
+
+/****************************************
+ * Convert EXP to char*.
+ */
+
+string EXPtoString(EXP op)
+{
+    static immutable char*[EXP.max + 1] strings =
+    [
+        EXP.type : "type",
+        EXP.error : "error",
+        EXP.objcClassReference : "class",
+
+        EXP.typeof_ : "typeof",
+        EXP.mixin_ : "mixin",
+
+        EXP.import_ : "import",
+        EXP.dotVariable : "dotvar",
+        EXP.scope_ : "scope",
+        EXP.identifier : "identifier",
+        EXP.this_ : "this",
+        EXP.super_ : "super",
+        EXP.int64 : "long",
+        EXP.float64 : "double",
+        EXP.complex80 : "creal",
+        EXP.null_ : "null",
+        EXP.string_ : "string",
+        EXP.arrayLiteral : "arrayliteral",
+        EXP.assocArrayLiteral : "assocarrayliteral",
+        EXP.classReference : "classreference",
+        EXP.file : "__FILE__",
+        EXP.fileFullPath : "__FILE_FULL_PATH__",
+        EXP.line : "__LINE__",
+        EXP.moduleString : "__MODULE__",
+        EXP.functionString : "__FUNCTION__",
+        EXP.prettyFunction : "__PRETTY_FUNCTION__",
+        EXP.typeid_ : "typeid",
+        EXP.is_ : "is",
+        EXP.assert_ : "assert",
+        EXP.halt : "halt",
+        EXP.template_ : "template",
+        EXP.dSymbol : "symbol",
+        EXP.function_ : "function",
+        EXP.variable : "var",
+        EXP.symbolOffset : "symoff",
+        EXP.structLiteral : "structLiteral",
+        EXP.compoundLiteral : "compoundliteral",
+        EXP.arrayLength : "arraylength",
+        EXP.delegatePointer : "delegateptr",
+        EXP.delegateFunctionPointer : "delegatefuncptr",
+        EXP.remove : "remove",
+        EXP.tuple : "tuple",
+        EXP.traits : "__traits",
+        EXP.default_ : "default",
+        EXP.overloadSet : "__overloadset",
+        EXP.void_ : "void",
+        EXP.vectorArray : "vectorarray",
+        EXP._Generic : "_Generic",
+
+        // post
+        EXP.dotTemplateInstance : "dotti",
+        EXP.dotIdentifier : "dotid",
+        EXP.dotTemplateDeclaration : "dottd",
+        EXP.dot : ".",
+        EXP.dotType : "dottype",
+        EXP.plusPlus : "++",
+        EXP.minusMinus : "--",
+        EXP.prePlusPlus : "++",
+        EXP.preMinusMinus : "--",
+        EXP.call : "call",
+        EXP.slice : "..",
+        EXP.array : "[]",
+        EXP.index : "[i]",
+
+        EXP.delegate_ : "delegate",
+        EXP.address : "&",
+        EXP.star : "*",
+        EXP.negate : "-",
+        EXP.uadd : "+",
+        EXP.not : "!",
+        EXP.tilde : "~",
+        EXP.delete_ : "delete",
+        EXP.new_ : "new",
+        EXP.newAnonymousClass : "newanonclass",
+        EXP.cast_ : "cast",
+
+        EXP.vector : "__vector",
+        EXP.pow : "^^",
+
+        EXP.mul : "*",
+        EXP.div : "/",
+        EXP.mod : "%",
+
+        EXP.add : "+",
+        EXP.min : "-",
+        EXP.concatenate : "~",
+
+        EXP.leftShift : "<<",
+        EXP.rightShift : ">>",
+        EXP.unsignedRightShift : ">>>",
+
+        EXP.lessThan : "<",
+        EXP.lessOrEqual : "<=",
+        EXP.greaterThan : ">",
+        EXP.greaterOrEqual : ">=",
+        EXP.in_ : "in",
+
+        EXP.equal : "==",
+        EXP.notEqual : "!=",
+        EXP.identity : "is",
+        EXP.notIdentity : "!is",
+
+        EXP.and : "&",
+        EXP.xor : "^",
+        EXP.or : "|",
+
+        EXP.andAnd : "&&",
+        EXP.orOr : "||",
+
+        EXP.question : "?",
+
+        EXP.assign : "=",
+        EXP.construct : "=",
+        EXP.blit : "=",
+        EXP.addAssign : "+=",
+        EXP.minAssign : "-=",
+        EXP.concatenateAssign : "~=",
+        EXP.concatenateElemAssign : "~=",
+        EXP.concatenateDcharAssign : "~=",
+        EXP.mulAssign : "*=",
+        EXP.divAssign : "/=",
+        EXP.modAssign : "%=",
+        EXP.powAssign : "^^=",
+        EXP.leftShiftAssign : "<<=",
+        EXP.rightShiftAssign : ">>=",
+        EXP.unsignedRightShiftAssign : ">>>=",
+        EXP.andAssign : "&=",
+        EXP.orAssign : "|=",
+        EXP.xorAssign : "^=",
+
+        EXP.comma : ",",
+        EXP.declaration : "declaration",
+
+        EXP.interval : "interval",
+    ];
+    const p = strings[op];
+    if (!p)
+    {
+        printf("error: EXP %d has no string\n", op);
+        return "XXXXX";
+        //assert(0);
+    }
+    assert(p);
+    return p[0 .. strlen(p)];
 }

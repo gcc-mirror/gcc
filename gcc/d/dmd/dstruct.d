@@ -522,14 +522,14 @@ private bool _isZeroInit(Expression exp)
 {
     switch (exp.op)
     {
-        case TOK.int64:
+        case EXP.int64:
             return exp.toInteger() == 0;
 
-        case TOK.null_:
-        case TOK.false_:
+        case EXP.null_:
+        case EXP.false_:
             return true;
 
-        case TOK.structLiteral:
+        case EXP.structLiteral:
         {
             auto sle = cast(StructLiteralExp) exp;
             foreach (i; 0 .. sle.sd.fields.dim)
@@ -546,7 +546,7 @@ private bool _isZeroInit(Expression exp)
             return true;
         }
 
-        case TOK.arrayLiteral:
+        case EXP.arrayLiteral:
         {
             auto ale = cast(ArrayLiteralExp)exp;
 
@@ -566,7 +566,7 @@ private bool _isZeroInit(Expression exp)
             return true;
         }
 
-        case TOK.string_:
+        case EXP.string_:
         {
             StringExp se = cast(StringExp)exp;
 
@@ -581,14 +581,14 @@ private bool _isZeroInit(Expression exp)
             return true;
         }
 
-        case TOK.vector:
+        case EXP.vector:
         {
             auto ve = cast(VectorExp) exp;
             return _isZeroInit(ve.e1);
         }
 
-        case TOK.float64:
-        case TOK.complex80:
+        case EXP.float64:
+        case EXP.complex80:
         {
             import dmd.root.ctfloat : CTFloat;
             return (exp.toReal()      is CTFloat.zero) &&

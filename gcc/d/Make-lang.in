@@ -162,6 +162,7 @@ D_FRONTEND_OBJS = \
 	d/root-filename.o \
 	d/root-hash.o \
 	d/root-longdouble.o \
+	d/root-optional.o \
 	d/root-port.o \
 	d/root-region.o \
 	d/root-rmem.o \

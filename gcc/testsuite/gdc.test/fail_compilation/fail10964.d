@@ -5,8 +5,8 @@ fail_compilation/fail10964.d(28): Error: function `fail10964.S.__postblit` is no
 fail_compilation/fail10964.d(29): Error: function `fail10964.S.__postblit` is not `nothrow`
 fail_compilation/fail10964.d(30): Error: function `fail10964.S.__postblit` is not `nothrow`
 fail_compilation/fail10964.d(33): Error: function `fail10964.S.__postblit` is not `nothrow`
-fail_compilation/fail10964.d(34): Error: function `fail10964.S.__postblit` is not `nothrow`
-fail_compilation/fail10964.d(35): Error: function `fail10964.S.__postblit` is not `nothrow`
+fail_compilation/fail10964.d(34): Error: function `core.internal.array.construction._d_arraysetctor!(S[], S)._d_arraysetctor` is not `nothrow`
+fail_compilation/fail10964.d(35): Error: function `core.internal.array.construction._d_arrayctor!(S[], S)._d_arrayctor` is not `nothrow`
 fail_compilation/fail10964.d(22): Error: `nothrow` function `fail10964.foo` may throw
 ---
 */

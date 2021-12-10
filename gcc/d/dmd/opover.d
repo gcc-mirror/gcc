@@ -29,6 +29,7 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.mtype;
@@ -41,23 +42,23 @@ import dmd.visitor;
  * Determine if operands of binary op can be reversed
  * to fit operator overload.
  */
-bool isCommutative(TOK op)
+bool isCommutative(EXP op)
 {
     switch (op)
     {
-    case TOK.add:
-    case TOK.mul:
-    case TOK.and:
-    case TOK.or:
-    case TOK.xor:
+    case EXP.add:
+    case EXP.mul:
+    case EXP.and:
+    case EXP.or:
+    case EXP.xor:
     // EqualExp
-    case TOK.equal:
-    case TOK.notEqual:
+    case EXP.equal:
+    case EXP.notEqual:
     // CmpExp
-    case TOK.lessThan:
-    case TOK.lessOrEqual:
-    case TOK.greaterThan:
-    case TOK.greaterOrEqual:
+    case EXP.lessThan:
+    case EXP.lessOrEqual:
+    case EXP.greaterThan:
+    case EXP.greaterOrEqual:
         return true;
     default:
         break;
@@ -72,47 +73,47 @@ private Identifier opId(Expression e)
 {
     switch (e.op)
     {
-    case TOK.uadd:                      return Id.uadd;
-    case TOK.negate:                    return Id.neg;
-    case TOK.tilde:                     return Id.com;
-    case TOK.cast_:                     return Id._cast;
-    case TOK.in_:                       return Id.opIn;
-    case TOK.plusPlus:                  return Id.postinc;
-    case TOK.minusMinus:                return Id.postdec;
-    case TOK.add:                       return Id.add;
-    case TOK.min:                       return Id.sub;
-    case TOK.mul:                       return Id.mul;
-    case TOK.div:                       return Id.div;
-    case TOK.mod:                       return Id.mod;
-    case TOK.pow:                       return Id.pow;
-    case TOK.leftShift:                 return Id.shl;
-    case TOK.rightShift:                return Id.shr;
-    case TOK.unsignedRightShift:        return Id.ushr;
-    case TOK.and:                       return Id.iand;
-    case TOK.or:                        return Id.ior;
-    case TOK.xor:                       return Id.ixor;
-    case TOK.concatenate:               return Id.cat;
-    case TOK.assign:                    return Id.assign;
-    case TOK.addAssign:                 return Id.addass;
-    case TOK.minAssign:                 return Id.subass;
-    case TOK.mulAssign:                 return Id.mulass;
-    case TOK.divAssign:                 return Id.divass;
-    case TOK.modAssign:                 return Id.modass;
-    case TOK.powAssign:                 return Id.powass;
-    case TOK.leftShiftAssign:           return Id.shlass;
-    case TOK.rightShiftAssign:          return Id.shrass;
-    case TOK.unsignedRightShiftAssign:  return Id.ushrass;
-    case TOK.andAssign:                 return Id.andass;
-    case TOK.orAssign:                  return Id.orass;
-    case TOK.xorAssign:                 return Id.xorass;
-    case TOK.concatenateAssign:         return Id.catass;
-    case TOK.equal:                     return Id.eq;
-    case TOK.lessThan:
-    case TOK.lessOrEqual:
-    case TOK.greaterThan:
-    case TOK.greaterOrEqual:            return Id.cmp;
-    case TOK.array:                     return Id.index;
-    case TOK.star:                      return Id.opStar;
+    case EXP.uadd:                      return Id.uadd;
+    case EXP.negate:                    return Id.neg;
+    case EXP.tilde:                     return Id.com;
+    case EXP.cast_:                     return Id._cast;
+    case EXP.in_:                       return Id.opIn;
+    case EXP.plusPlus:                  return Id.postinc;
+    case EXP.minusMinus:                return Id.postdec;
+    case EXP.add:                       return Id.add;
+    case EXP.min:                       return Id.sub;
+    case EXP.mul:                       return Id.mul;
+    case EXP.div:                       return Id.div;
+    case EXP.mod:                       return Id.mod;
+    case EXP.pow:                       return Id.pow;
+    case EXP.leftShift:                 return Id.shl;
+    case EXP.rightShift:                return Id.shr;
+    case EXP.unsignedRightShift:        return Id.ushr;
+    case EXP.and:                       return Id.iand;
+    case EXP.or:                        return Id.ior;
+    case EXP.xor:                       return Id.ixor;
+    case EXP.concatenate:               return Id.cat;
+    case EXP.assign:                    return Id.assign;
+    case EXP.addAssign:                 return Id.addass;
+    case EXP.minAssign:                 return Id.subass;
+    case EXP.mulAssign:                 return Id.mulass;
+    case EXP.divAssign:                 return Id.divass;
+    case EXP.modAssign:                 return Id.modass;
+    case EXP.powAssign:                 return Id.powass;
+    case EXP.leftShiftAssign:           return Id.shlass;
+    case EXP.rightShiftAssign:          return Id.shrass;
+    case EXP.unsignedRightShiftAssign:  return Id.ushrass;
+    case EXP.andAssign:                 return Id.andass;
+    case EXP.orAssign:                  return Id.orass;
+    case EXP.xorAssign:                 return Id.xorass;
+    case EXP.concatenateAssign:         return Id.catass;
+    case EXP.equal:                     return Id.eq;
+    case EXP.lessThan:
+    case EXP.lessOrEqual:
+    case EXP.greaterThan:
+    case EXP.greaterOrEqual:            return Id.cmp;
+    case EXP.array:                     return Id.index;
+    case EXP.star:                      return Id.opStar;
     default:                            assert(0);
     }
 }
@@ -125,20 +126,20 @@ private Identifier opId_r(Expression e)
 {
     switch (e.op)
     {
-    case TOK.in_:               return Id.opIn_r;
-    case TOK.add:               return Id.add_r;
-    case TOK.min:               return Id.sub_r;
-    case TOK.mul:               return Id.mul_r;
-    case TOK.div:               return Id.div_r;
-    case TOK.mod:               return Id.mod_r;
-    case TOK.pow:               return Id.pow_r;
-    case TOK.leftShift:         return Id.shl_r;
-    case TOK.rightShift:        return Id.shr_r;
-    case TOK.unsignedRightShift:return Id.ushr_r;
-    case TOK.and:               return Id.iand_r;
-    case TOK.or:                return Id.ior_r;
-    case TOK.xor:               return Id.ixor_r;
-    case TOK.concatenate:       return Id.cat_r;
+    case EXP.in_:               return Id.opIn_r;
+    case EXP.add:               return Id.add_r;
+    case EXP.min:               return Id.sub_r;
+    case EXP.mul:               return Id.mul_r;
+    case EXP.div:               return Id.div_r;
+    case EXP.mod:               return Id.mod_r;
+    case EXP.pow:               return Id.pow_r;
+    case EXP.leftShift:         return Id.shl_r;
+    case EXP.rightShift:        return Id.shr_r;
+    case EXP.unsignedRightShift:return Id.ushr_r;
+    case EXP.and:               return Id.iand_r;
+    case EXP.or:                return Id.ior_r;
+    case EXP.xor:               return Id.ixor_r;
+    case EXP.concatenate:       return Id.cat_r;
     default:                    return null;
     }
 }
@@ -146,55 +147,55 @@ private Identifier opId_r(Expression e)
 /*******************************************
  * Helper function to turn operator into template argument list
  */
-Objects* opToArg(Scope* sc, TOK op)
+Objects* opToArg(Scope* sc, EXP op)
 {
     /* Remove the = from op=
      */
     switch (op)
     {
-    case TOK.addAssign:
-        op = TOK.add;
+    case EXP.addAssign:
+        op = EXP.add;
         break;
-    case TOK.minAssign:
-        op = TOK.min;
+    case EXP.minAssign:
+        op = EXP.min;
         break;
-    case TOK.mulAssign:
-        op = TOK.mul;
+    case EXP.mulAssign:
+        op = EXP.mul;
         break;
-    case TOK.divAssign:
-        op = TOK.div;
+    case EXP.divAssign:
+        op = EXP.div;
         break;
-    case TOK.modAssign:
-        op = TOK.mod;
+    case EXP.modAssign:
+        op = EXP.mod;
         break;
-    case TOK.andAssign:
-        op = TOK.and;
+    case EXP.andAssign:
+        op = EXP.and;
         break;
-    case TOK.orAssign:
-        op = TOK.or;
+    case EXP.orAssign:
+        op = EXP.or;
         break;
-    case TOK.xorAssign:
-        op = TOK.xor;
+    case EXP.xorAssign:
+        op = EXP.xor;
         break;
-    case TOK.leftShiftAssign:
-        op = TOK.leftShift;
+    case EXP.leftShiftAssign:
+        op = EXP.leftShift;
         break;
-    case TOK.rightShiftAssign:
-        op = TOK.rightShift;
+    case EXP.rightShiftAssign:
+        op = EXP.rightShift;
         break;
-    case TOK.unsignedRightShiftAssign:
-        op = TOK.unsignedRightShift;
+    case EXP.unsignedRightShiftAssign:
+        op = EXP.unsignedRightShift;
         break;
-    case TOK.concatenateAssign:
-        op = TOK.concatenate;
+    case EXP.concatenateAssign:
+        op = EXP.concatenate;
         break;
-    case TOK.powAssign:
-        op = TOK.pow;
+    case EXP.powAssign:
+        op = EXP.pow;
         break;
     default:
         break;
     }
-    Expression e = new StringExp(Loc.initial, Token.toString(op));
+    Expression e = new StringExp(Loc.initial, EXPtoString(op));
     e = e.expressionSemantic(sc);
     auto tiargs = new Objects();
     tiargs.push(e);
@@ -216,13 +217,13 @@ private Expression checkAliasThisForLhs(AggregateDeclaration ad, Scope* sc, BinE
     BinExp be = cast(BinExp)e.copy();
     // Resolve 'alias this' but in case of assigment don't resolve properties yet
     // because 'e1 = e2' could mean 'e1(e2)' or 'e1() = e2'
-    bool findOnly = (e.op == TOK.assign);
+    bool findOnly = (e.op == EXP.assign);
     be.e1 = resolveAliasThis(sc, e.e1, true, findOnly);
     if (!be.e1)
         return null;
 
     Expression result;
-    if (be.op == TOK.concatenateAssign)
+    if (be.op == EXP.concatenateAssign)
         result = be.op_overload(sc);
     else
         result = be.trySemantic(sc);
@@ -247,7 +248,7 @@ private Expression checkAliasThisForRhs(AggregateDeclaration ad, Scope* sc, BinE
         return null;
 
     Expression result;
-    if (be.op == TOK.concatenateAssign)
+    if (be.op == EXP.concatenateAssign)
         result = be.op_overload(sc);
     else
         result = be.trySemantic(sc);
@@ -269,17 +270,17 @@ private Expression checkAliasThisForRhs(AggregateDeclaration ad, Scope* sc, BinE
  *      `null` if not an operator overload,
  *      otherwise the lowered expression
  */
-Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
+Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
 {
     extern (C++) final class OpOverload : Visitor
     {
         alias visit = Visitor.visit;
     public:
         Scope* sc;
-        TOK* pop;
+        EXP* pop;
         Expression result;
 
-        extern (D) this(Scope* sc, TOK* pop)
+        extern (D) this(Scope* sc, EXP* pop)
         {
             this.sc = sc;
             this.pop = pop;
@@ -293,22 +294,22 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
         override void visit(UnaExp e)
         {
             //printf("UnaExp::op_overload() (%s)\n", e.toChars());
-            if (e.e1.op == TOK.array)
+            if (e.e1.op == EXP.array)
             {
                 ArrayExp ae = cast(ArrayExp)e.e1;
                 ae.e1 = ae.e1.expressionSemantic(sc);
                 ae.e1 = resolveProperties(sc, ae.e1);
                 Expression ae1old = ae.e1;
-                const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == TOK.interval);
+                const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == EXP.interval);
                 IntervalExp ie = null;
                 if (maybeSlice && ae.arguments.dim)
                 {
-                    assert((*ae.arguments)[0].op == TOK.interval);
+                    assert((*ae.arguments)[0].op == EXP.interval);
                     ie = cast(IntervalExp)(*ae.arguments)[0];
                 }
                 while (true)
                 {
-                    if (ae.e1.op == TOK.error)
+                    if (ae.e1.op == EXP.error)
                     {
                         result = ae.e1;
                         return;
@@ -326,7 +327,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                         result = resolveOpDollar(sc, ae, &e0);
                         if (!result) // op(a[i..j]) might be: a.opSliceUnary!(op)(i, j)
                             goto Lfallback;
-                        if (result.op == TOK.error)
+                        if (result.op == EXP.error)
                             return;
                         /* Rewrite op(a[arguments]) as:
                          *      a.opIndexUnary!(op)(arguments)
@@ -350,7 +351,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     {
                         // Deal with $
                         result = resolveOpDollar(sc, ae, ie, &e0);
-                        if (result.op == TOK.error)
+                        if (result.op == EXP.error)
                             return;
                         /* Rewrite op(a[i..j]) as:
                          *      a.opSliceUnary!(op)(i, j)
@@ -385,7 +386,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
             }
             e.e1 = e.e1.expressionSemantic(sc);
             e.e1 = resolveProperties(sc, e.e1);
-            if (e.e1.op == TOK.error)
+            if (e.e1.op == EXP.error)
             {
                 result = e.e1;
                 return;
@@ -407,7 +408,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     return;
                 }
                 // D1-style operator overloads, deprecated
-                if (e.op != TOK.prePlusPlus && e.op != TOK.preMinusMinus)
+                if (e.op != EXP.prePlusPlus && e.op != EXP.preMinusMinus)
                 {
                     auto id = opId(e);
                     fd = search_function(ad, id);
@@ -416,7 +417,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                         // @@@DEPRECATED_2.098@@@.
                         // Deprecated in 2.088
                         // Make an error in 2.098
-                        e.deprecation("`%s` is deprecated.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), Token.toChars(e.op));
+                        e.deprecation("`%s` is deprecated.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                         // Rewrite +e1 as e1.add()
                         result = build_overload(e.loc, sc, e.e1, null, fd);
                         return;
@@ -428,7 +429,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     /* Rewrite op(e1) as:
                      *      op(e1.aliasthis)
                      */
-                    //printf("att una %s e1 = %s\n", Token::toChars(op), this.e1.type.toChars());
+                    //printf("att una %s e1 = %s\n", EXPtoString(op).ptr, this.e1.type.toChars());
                     Expression e1 = new DotIdExp(e.loc, e.e1, ad.aliasthis.ident);
                     UnaExp ue = cast(UnaExp)e.copy();
                     ue.e1 = e1;
@@ -444,16 +445,16 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
             ae.e1 = ae.e1.expressionSemantic(sc);
             ae.e1 = resolveProperties(sc, ae.e1);
             Expression ae1old = ae.e1;
-            const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == TOK.interval);
+            const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == EXP.interval);
             IntervalExp ie = null;
             if (maybeSlice && ae.arguments.dim)
             {
-                assert((*ae.arguments)[0].op == TOK.interval);
+                assert((*ae.arguments)[0].op == EXP.interval);
                 ie = cast(IntervalExp)(*ae.arguments)[0];
             }
             while (true)
             {
-                if (ae.e1.op == TOK.error)
+                if (ae.e1.op == EXP.error)
                 {
                     result = ae.e1;
                     return;
@@ -467,7 +468,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                 {
                     // If the non-aggregate expression ae.e1 is indexable or sliceable,
                     // convert it to the corresponding concrete expression.
-                    if (isIndexableNonAggregate(t1b) || ae.e1.op == TOK.type)
+                    if (isIndexableNonAggregate(t1b) || ae.e1.op == EXP.type)
                     {
                         // Convert to SliceExp
                         if (maybeSlice)
@@ -492,7 +493,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     result = resolveOpDollar(sc, ae, &e0);
                     if (!result) // a[i..j] might be: a.opSlice(i, j)
                         goto Lfallback;
-                    if (result.op == TOK.error)
+                    if (result.op == EXP.error)
                         return;
                     /* Rewrite e1[arguments] as:
                      *      e1.opIndex(arguments)
@@ -511,7 +512,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     }
                 }
             Lfallback:
-                if (maybeSlice && ae.e1.op == TOK.type)
+                if (maybeSlice && ae.e1.op == EXP.type)
                 {
                     result = new SliceExp(ae.loc, ae.e1, ie);
                     result = result.expressionSemantic(sc);
@@ -522,7 +523,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                 {
                     // Deal with $
                     result = resolveOpDollar(sc, ae, ie, &e0);
-                    if (result.op == TOK.error)
+                    if (result.op == EXP.error)
                         return;
                     /* Rewrite a[i..j] as:
                      *      a.opSlice(i, j)
@@ -615,7 +616,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
             int argsset = 0;
             AggregateDeclaration ad1 = isAggregate(e.e1.type);
             AggregateDeclaration ad2 = isAggregate(e.e2.type);
-            if (e.op == TOK.assign && ad1 == ad2)
+            if (e.op == EXP.assign && ad1 == ad2)
             {
                 StructDeclaration sd = ad1.isStructDeclaration();
                 if (sd &&
@@ -632,13 +633,13 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
             Dsymbol s = null;
             Dsymbol s_r = null;
             Objects* tiargs = null;
-            if (e.op == TOK.plusPlus || e.op == TOK.minusMinus)
+            if (e.op == EXP.plusPlus || e.op == EXP.minusMinus)
             {
                 // Bug4099 fix
                 if (ad1 && search_function(ad1, Id.opUnary))
                     return;
             }
-            if (e.op != TOK.equal && e.op != TOK.notEqual && e.op != TOK.assign && e.op != TOK.plusPlus && e.op != TOK.minusMinus)
+            if (e.op != EXP.equal && e.op != EXP.notEqual && e.op != EXP.assign && e.op != EXP.plusPlus && e.op != EXP.minusMinus)
             {
                 /* Try opBinary and opBinaryRight
                  */
@@ -684,9 +685,9 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                         // Deprecated in 2.088
                         // Make an error in 2.098
                         if (id == Id.postinc || id == Id.postdec)
-                            e.deprecation("`%s` is deprecated.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), Token.toChars(e.op));
+                            e.deprecation("`%s` is deprecated.  Use `opUnary(string op)() if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                         else
-                            e.deprecation("`%s` is deprecated.  Use `opBinary(string op)(...) if (op == \"%s\")` instead.", id.toChars(), Token.toChars(e.op));
+                            e.deprecation("`%s` is deprecated.  Use `opBinary(string op)(...) if (op == \"%s\")` instead.", id.toChars(), EXPtoString(e.op).ptr);
                     }
                 }
                 if (ad2 && id_r)
@@ -702,7 +703,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                         // @@@DEPRECATED_2.098@@@.
                         // Deprecated in 2.088
                         // Make an error in 2.098
-                        e.deprecation("`%s` is deprecated.  Use `opBinaryRight(string op)(...) if (op == \"%s\")` instead.", id_r.toChars(), Token.toChars(e.op));
+                        e.deprecation("`%s` is deprecated.  Use `opBinaryRight(string op)(...) if (op == \"%s\")` instead.", id_r.toChars(), EXPtoString(e.op).ptr);
                     }
                 }
             }
@@ -751,7 +752,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                         goto L1;
                     m.lastf = null;
                 }
-                if (e.op == TOK.plusPlus || e.op == TOK.minusMinus)
+                if (e.op == EXP.plusPlus || e.op == EXP.minusMinus)
                 {
                     // Kludge because operator overloading regards e++ and e--
                     // as unary, but it's implemented as a binary.
@@ -855,7 +856,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
             }
 
             Expression tempResult;
-            if (!(e.op == TOK.assign && ad2 && ad1 == ad2)) // https://issues.dlang.org/show_bug.cgi?id=2943
+            if (!(e.op == EXP.assign && ad2 && ad1 == ad2)) // https://issues.dlang.org/show_bug.cgi?id=2943
             {
                 result = checkAliasThisForLhs(ad1, sc, e);
                 if (result)
@@ -871,7 +872,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                      * one of the members, hence the `ad1.fields.dim == 2 && ad1.vthis`
                      * condition.
                      */
-                    if (e.op != TOK.assign || e.e1.op == TOK.type)
+                    if (e.op != EXP.assign || e.e1.op == EXP.type)
                         return;
 
                     if (ad1.fields.dim == 1 || (ad1.fields.dim == 2 && ad1.vthis))
@@ -888,7 +889,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     tempResult = result;
                 }
             }
-            if (!(e.op == TOK.assign && ad1 && ad1 == ad2)) // https://issues.dlang.org/show_bug.cgi?id=2943
+            if (!(e.op == EXP.assign && ad1 && ad1 == ad2)) // https://issues.dlang.org/show_bug.cgi?id=2943
             {
                 result = checkAliasThisForRhs(ad2, sc, e);
                 if (result)
@@ -925,12 +926,12 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
 
             /* Check for class equality with null literal or typeof(null).
              */
-            if (t1.ty == Tclass && e.e2.op == TOK.null_ ||
-                t2.ty == Tclass && e.e1.op == TOK.null_)
+            if (t1.ty == Tclass && e.e2.op == EXP.null_ ||
+                t2.ty == Tclass && e.e1.op == EXP.null_)
             {
                 e.error("use `%s` instead of `%s` when comparing with `null`",
-                    Token.toChars(e.op == TOK.equal ? TOK.identity : TOK.notIdentity),
-                    Token.toChars(e.op));
+                    EXPtoString(e.op == EXP.equal ? EXP.identity : EXP.notIdentity).ptr,
+                    EXPtoString(e.op).ptr);
                 result = ErrorExp.get();
                 return;
             }
@@ -968,7 +969,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     result = new DotIdExp(e.loc, result, Id.object);
                     result = new DotIdExp(e.loc, result, Id.eq);
                     result = new CallExp(e.loc, result, e1x, e2x);
-                    if (e.op == TOK.notEqual)
+                    if (e.op == EXP.notEqual)
                         result = new NotExp(e.loc, result);
                     result = result.expressionSemantic(sc);
                     return;
@@ -978,7 +979,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
             result = compare_overload(e, sc, Id.eq, null);
             if (result)
             {
-                if (lastComma(result).op == TOK.call && e.op == TOK.notEqual)
+                if (lastComma(result).op == EXP.call && e.op == EXP.notEqual)
                 {
                     result = new NotExp(result.loc, result);
                     result = result.expressionSemantic(sc);
@@ -998,7 +999,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                  * This is just a rewriting for deterministic AST representation
                  * as the backend input.
                  */
-                auto op2 = e.op == TOK.equal ? TOK.identity : TOK.notIdentity;
+                auto op2 = e.op == EXP.equal ? EXP.identity : EXP.notIdentity;
                 result = new IdentityExp(op2, e.loc, e.e1, e.e2);
                 result = result.expressionSemantic(sc);
                 return;
@@ -1016,7 +1017,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                 if (!global.params.fieldwise && !needOpEquals(sd))
                 {
                     // Use bitwise equality.
-                    auto op2 = e.op == TOK.equal ? TOK.identity : TOK.notIdentity;
+                    auto op2 = e.op == EXP.equal ? EXP.identity : EXP.notIdentity;
                     result = new IdentityExp(op2, e.loc, e.e1, e.e2);
                     result = result.expressionSemantic(sc);
                     return;
@@ -1063,7 +1064,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
 
             /* Check for tuple equality.
              */
-            if (e.e1.op == TOK.tuple && e.e2.op == TOK.tuple)
+            if (e.e1.op == EXP.tuple && e.e2.op == EXP.tuple)
             {
                 auto tup1 = cast(TupleExp)e.e1;
                 auto tup2 = cast(TupleExp)e.e2;
@@ -1079,7 +1080,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                 if (dim == 0)
                 {
                     // zero-length tuple comparison should always return true or false.
-                    result = IntegerExp.createBool(e.op == TOK.equal);
+                    result = IntegerExp.createBool(e.op == EXP.equal);
                 }
                 else
                 {
@@ -1093,10 +1094,10 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
 
                         if (!result)
                             result = eeq;
-                        else if (e.op == TOK.equal)
-                            result = new LogicalExp(e.loc, TOK.andAnd, result, eeq);
+                        else if (e.op == EXP.equal)
+                            result = new LogicalExp(e.loc, EXP.andAnd, result, eeq);
                         else
-                            result = new LogicalExp(e.loc, TOK.orOr, result, eeq);
+                            result = new LogicalExp(e.loc, EXP.orOr, result, eeq);
                     }
                     assert(result);
                 }
@@ -1119,22 +1120,22 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
         override void visit(BinAssignExp e)
         {
             //printf("BinAssignExp::op_overload() (%s)\n", e.toChars());
-            if (e.e1.op == TOK.array)
+            if (e.e1.op == EXP.array)
             {
                 ArrayExp ae = cast(ArrayExp)e.e1;
                 ae.e1 = ae.e1.expressionSemantic(sc);
                 ae.e1 = resolveProperties(sc, ae.e1);
                 Expression ae1old = ae.e1;
-                const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == TOK.interval);
+                const(bool) maybeSlice = (ae.arguments.dim == 0 || ae.arguments.dim == 1 && (*ae.arguments)[0].op == EXP.interval);
                 IntervalExp ie = null;
                 if (maybeSlice && ae.arguments.dim)
                 {
-                    assert((*ae.arguments)[0].op == TOK.interval);
+                    assert((*ae.arguments)[0].op == EXP.interval);
                     ie = cast(IntervalExp)(*ae.arguments)[0];
                 }
                 while (true)
                 {
-                    if (ae.e1.op == TOK.error)
+                    if (ae.e1.op == EXP.error)
                     {
                         result = ae.e1;
                         return;
@@ -1152,10 +1153,10 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                         result = resolveOpDollar(sc, ae, &e0);
                         if (!result) // (a[i..j] op= e2) might be: a.opSliceOpAssign!(op)(e2, i, j)
                             goto Lfallback;
-                        if (result.op == TOK.error)
+                        if (result.op == EXP.error)
                             return;
                         result = e.e2.expressionSemantic(sc);
-                        if (result.op == TOK.error)
+                        if (result.op == EXP.error)
                             return;
                         e.e2 = result;
                         /* Rewrite a[arguments] op= e2 as:
@@ -1181,10 +1182,10 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     {
                         // Deal with $
                         result = resolveOpDollar(sc, ae, ie, &e0);
-                        if (result.op == TOK.error)
+                        if (result.op == EXP.error)
                             return;
                         result = e.e2.expressionSemantic(sc);
-                        if (result.op == TOK.error)
+                        if (result.op == EXP.error)
                             return;
                         e.e2 = result;
                         /* Rewrite (a[i..j] op= e2) as:
@@ -1261,7 +1262,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
                     // @@@DEPRECATED_2.098@@@.
                     // Deprecated in 2.088
                     // Make an error in 2.098
-                    scope char[] op = Token.toString(e.op).dup;
+                    scope char[] op = EXPtoString(e.op).dup;
                     op[$-1] = '\0'; // remove trailing `=`
                     e.deprecation("`%s` is deprecated.  Use `opOpAssign(string op)(...) if (op == \"%s\")` instead.", id.toChars(), op.ptr);
                 }
@@ -1319,7 +1320,7 @@ Expression op_overload(Expression e, Scope* sc, TOK* pop = null)
 /******************************************
  * Common code for overloading of EqualExp and CmpExp
  */
-private Expression compare_overload(BinExp e, Scope* sc, Identifier id, TOK* pop)
+private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop)
 {
     //printf("BinExp::compare_overload(id = %s) %s\n", id.toChars(), e.toChars());
     AggregateDeclaration ad1 = isAggregate(e.e1.type);
@@ -1415,7 +1416,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, TOK* pop
      * at this point, no matching opEquals was found for structs,
      * so we should not follow the alias this comparison code.
      */
-    if ((e.op == TOK.equal || e.op == TOK.notEqual) && ad1 == ad2)
+    if ((e.op == EXP.equal || e.op == EXP.notEqual) && ad1 == ad2)
         return null;
     Expression result = checkAliasThisForLhs(ad1, sc, e);
     return result ? result : checkAliasThisForRhs(isAggregate(e.e2.type), sc, e);
@@ -1482,7 +1483,7 @@ bool inferForeachAggregate(Scope* sc, bool isForeach, ref Expression feaggr, out
         aggr = aggr.expressionSemantic(sc);
         aggr = resolveProperties(sc, aggr);
         aggr = aggr.optimize(WANTvalue);
-        if (!aggr.type || aggr.op == TOK.error)
+        if (!aggr.type || aggr.op == EXP.error)
             return false;
         Type tab = aggr.type.toBasetype();
         switch (tab.ty)
@@ -1507,7 +1508,7 @@ bool inferForeachAggregate(Scope* sc, bool isForeach, ref Expression feaggr, out
                     // opApply aggregate
                     break;
                 }
-                if (feaggr.op != TOK.type)
+                if (feaggr.op != EXP.type)
                 {
                     /* See if rewriting `aggr` to `aggr[]` will work
                      */
@@ -1538,7 +1539,7 @@ bool inferForeachAggregate(Scope* sc, bool isForeach, ref Expression feaggr, out
         }
 
         case Tdelegate:        // https://dlang.org/spec/statement.html#foreach_over_delegates
-            if (aggr.op == TOK.delegate_)
+            if (aggr.op == EXP.delegate_)
             {
                 sapply = (cast(DelegateExp)aggr).func;
             }
@@ -1590,7 +1591,7 @@ bool inferApplyArgTypes(ForeachStatement fes, Scope* sc, ref Dsymbol sapply)
             ethis = fes.aggr;
         else
         {
-            assert(tab.ty == Tdelegate && fes.aggr.op == TOK.delegate_);
+            assert(tab.ty == Tdelegate && fes.aggr.op == EXP.delegate_);
             ethis = (cast(DelegateExp)fes.aggr).e1;
         }
 
@@ -1854,14 +1855,14 @@ private bool matchParamsToOpApply(TypeFunction tf, Parameters* parameters, bool 
  * Returns:
  *      reverse of op
  */
-private TOK reverseRelation(TOK op) pure
+private EXP reverseRelation(EXP op) pure
 {
     switch (op)
     {
-        case TOK.greaterOrEqual:  op = TOK.lessOrEqual;    break;
-        case TOK.greaterThan:     op = TOK.lessThan;       break;
-        case TOK.lessOrEqual:     op = TOK.greaterOrEqual; break;
-        case TOK.lessThan:        op = TOK.greaterThan;    break;
+        case EXP.greaterOrEqual:  op = EXP.lessOrEqual;    break;
+        case EXP.greaterThan:     op = EXP.lessThan;       break;
+        case EXP.lessOrEqual:     op = EXP.greaterOrEqual; break;
+        case EXP.lessThan:        op = EXP.greaterThan;    break;
         default:                  break;
     }
     return op;

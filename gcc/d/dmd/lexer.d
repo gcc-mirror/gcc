@@ -386,6 +386,20 @@ class Lexer
                 // Intentionally not advancing `p`, such that subsequent calls keep returning TOK.endOfFile.
                 return;
             case ' ':
+                // Skip 4 spaces at a time after aligning 'p' to a 4-byte boundary.
+                while ((cast(size_t)p) % uint.sizeof)
+                {
+                    if (*p != ' ')
+                        goto LendSkipFourSpaces;
+                    p++;
+                }
+                while (*(cast(uint*)p) == 0x20202020) // ' ' == 0x20
+                    p += 4;
+                // Skip over any remaining space on the line.
+                while (*p == ' ')
+                    p++;
+            LendSkipFourSpaces:
+                continue; // skip white space
             case '\t':
             case '\v':
             case '\f':
@@ -394,19 +408,11 @@ class Lexer
             case '\r':
                 p++;
                 if (*p != '\n') // if CR stands by itself
-                {
                     endOfLine();
-                    goto skipFourSpaces;
-                }
                 continue; // skip white space
             case '\n':
                 p++;
                 endOfLine();
-                skipFourSpaces:
-                while (*(cast(uint*)p) == 0x20202020) //' ' == 0x20
-                {
-                    p+=4;
-                }
                 continue; // skip white space
             case '0':
                 if (!isZeroSecond(p[1]))        // if numeric literal does not continue

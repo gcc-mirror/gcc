@@ -540,10 +540,10 @@ extern(C++) private final class Supported : Objc
     override void setSelector(FuncDeclaration fd, Scope* sc)
     {
         foreachUda(fd, sc, (e) {
-            if (e.op != TOK.structLiteral)
+            if (!e.isStructLiteralExp())
                 return 0;
 
-            auto literal = cast(StructLiteralExp) e;
+            auto literal = e.isStructLiteralExp();
             assert(literal.sd);
 
             if (!isCoreUda(literal.sd, Id.udaSelector))
@@ -616,10 +616,10 @@ extern(C++) private final class Supported : Objc
         int count;
 
         foreachUda(fd, sc, (e) {
-            if (e.op != TOK.type)
+            if (!e.isTypeExp())
                 return 0;
 
-            auto typeExp = cast(TypeExp) e;
+            auto typeExp = e.isTypeExp();
 
             if (typeExp.type.ty != Tenum)
                 return 0;
@@ -861,10 +861,10 @@ extern(D) private:
         arrayExpressionSemantic(udas, sc, true);
 
         return udas.each!((uda) {
-            if (uda.op != TOK.tuple)
+            if (!uda.isTupleExp())
                 return 0;
 
-            auto exps = (cast(TupleExp) uda).exps;
+            auto exps = uda.isTupleExp().exps;
 
             return exps.each!((e) {
                 assert(e);

@@ -227,7 +227,7 @@ private struct TempCStringBuffer(To = char)
     @disable this(this);
     alias ptr this; /// implicitly covert to raw pointer
 
-    @property inout(To)* buffPtr() inout
+    @property inout(To)* buffPtr() return inout
     {
         return _ptr == useStack ? _buff.ptr : _ptr;
     }

@@ -166,12 +166,16 @@ version (D_InlineAsm_X86_64) version = InlineAsm_X86_Any;
     assert(10.iota.randomSample(3, rnd2).equal([7, 8, 9]));
 
     // Cover all elements in an array in random order
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
-    assert(10.iota.randomCover(rnd2).equal([7, 4, 2, 0, 1, 6, 8, 3, 9, 5]));
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
+        assert(10.iota.randomCover(rnd2).equal([7, 4, 2, 0, 1, 6, 8, 3, 9, 5]));
+    else
+        assert(10.iota.randomCover(rnd2).equal([4, 8, 7, 3, 5, 9, 2, 6, 0, 1]));
 
     // Shuffle an array
-    version (X86_64) // https://issues.dlang.org/show_bug.cgi?id=15147
-    assert([0, 1, 2, 4, 5].randomShuffle(rnd2).equal([2, 0, 4, 5, 1]));
+    version (D_LP64) // https://issues.dlang.org/show_bug.cgi?id=15147
+        assert([0, 1, 2, 4, 5].randomShuffle(rnd2).equal([2, 0, 4, 5, 1]));
+    else
+        assert([0, 1, 2, 4, 5].randomShuffle(rnd2).equal([4, 2, 5, 0, 1]));
 }
 
 version (StdUnittest)
