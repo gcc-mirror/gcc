@@ -3336,6 +3336,7 @@ darwin_override_options (void)
       (s)he knows why...  */
    if (generating_for_darwin_version < 9
        && OPTION_SET_P (flag_reorder_blocks_and_partition)
+       && flag_reorder_blocks_and_partition
        && ((global_options.x_flag_exceptions 		/* User, c++, java */
 	    && !OPTION_SET_P (flag_exceptions)) 	/* User specified... */
 	   || (global_options.x_flag_unwind_tables
