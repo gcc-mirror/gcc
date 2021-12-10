@@ -1,3 +1,10 @@
+2021-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.c++/target-lambda-1.C: Only run under
+	"target offload_device_nonshared_as"
+	* testsuite/libgomp.c++/target-this-3.C: Likewise.
+	* testsuite/libgomp.c++/target-this-4.C: Likewise.
+
 2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* target.c (gomp_map_vars_existing): Make sure attached pointer is

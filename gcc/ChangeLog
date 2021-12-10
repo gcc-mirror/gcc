@@ -1,3 +1,222 @@
+2021-12-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* doc/invoke.texi (max-inline-functions-called-once-loop-depth,
+	max-inline-functions-called-once-insns): New parameters.
+	* ipa-inline.c (check_callers): Handle
+	param_inline_functions_called_once_loop_depth and
+	param_inline_functions_called_once_insns.
+	(edge_badness): Fix linebreaks.
+	* params.opt (param=max-inline-functions-called-once-loop-depth,
+	param=max-inline-functions-called-once-insn): New params.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/103215
+	* pointer-query.cc (access_ref::merge_ref): Extend the offset and
+	size of the merged object instead of using the larger.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101751
+	* doc/extend.texi (attribute access): Adjust.
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_check_access_sizes):
+	Treat access mode none on a void* argument as expecting as few as
+	zero bytes.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* config/aarch64/aarch64-sve-builtins.cc (gt_pch_nx): Change type of
+	second argument from function with 2 pointer arguments to function
+	with 3 pointer arguments.
+
+2021-12-09  Olivier Hainque  <hainque@adacore.com>
+
+	* config/aarch64/aarch64-vxworks.h (TARGET_OS_CPP_BUILTINS):
+	Use VX_CPU_PREFIX in CPU definitions.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.cc (access_ref::dump): Define new function
+	(pointer_query::dump): Call it.
+	* pointer-query.h (access_ref::dump): Declare new function.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.cc (compute_objsize_r): Add an argument.
+	(gimple_call_return_array): Pass a new argument to compute_objsize_r.
+	(access_ref::merge_ref): Same.
+	(access_ref::inform_access): Add an argument and use it.
+	(access_data::access_data): Initialize new member.
+	(handle_min_max_size): Pass a new argument to compute_objsize_r.
+	(handle_decl): New function.
+	(handle_array_ref): Pass a new argument to compute_objsize_r.
+	Avoid incrementing deref.
+	(set_component_ref_size): New function.
+	(handle_component_ref): New function.
+	(handle_mem_ref): Pass a new argument to compute_objsize_r.
+	Only increment deref after successfully computing object size.
+	(handle_ssa_name): New function.
+	(compute_objsize_r): Move code into helpers and call them.
+	(compute_objsize): Pass a new argument to compute_objsize_r.
+	* pointer-query.h (access_ref::inform_access): Add an argument.
+	(access_data::ostype): New member.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	* pointer-query.cc (access_ref::merge_ref): Define new function.
+	(access_ref::get_ref): Move code into merge_ref and call it.
+	* pointer-query.h (access_ref::merge_ref): Declare new function.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-restrict.c (builtin_access::builtin_access): Pass
+	GIMPLE statement to compute_objsize.
+	* pointer-query.cc (compute_objsize): Add a statement argument.
+	* pointer-query.h (compute_objsize): Define a new overload.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-ssa-warn-access.cc (check_access): Adjust to member name
+	change.
+	(pass_waccess::check_strncmp): Same.
+	* pointer-query.cc (access_ref::access_ref): Remove arguments.
+	Simpilfy.
+	(access_data::access_data): Define new ctors.
+	(access_data::set_bound): Define new member function.
+	(compute_objsize_r): Remove unnecessary code.
+	* pointer-query.h (struct access_ref): Remove ctor arguments.
+	(struct access_data): Declare ctor overloads.
+	(access_data::dst_bndrng): New member.
+	(access_data::src_bndrng): New member.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/103143
+	* pointer-query.cc (gimple_call_return_array): Call compute_objsize_r.
+
+2021-12-09  Olivier Hainque  <hainque@adacore.com>
+	    Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* Makefile.in (T_STDINT_GCC_H): New variable, path to
+	stdint-gcc.h that a target configuration may override when
+	use_gcc_stdint is "provide".
+	(stmp-int-hdrs): Depend on it and copy that for
+	USE_GCC_INT=provide.
+	* config.gcc (vxworks): Revert to use_gcc_stdint=provide.
+	* config/t-vxworks (T_STDINT_GCC_H): Define, as vxw-stdint-gcc.h.
+	(vxw-stdint-gcc.h): New target, produced from the original
+	stdint-gcc.h.
+	(vxw-glimits.h): Use an automatic variable to designate the
+	first and only prerequisite.
+	* config/vxworks/stdint.h: Remove.
+
+2021-12-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR pch/71934
+	* config/host-darwin.c (SAFE_ALLOC_SIZE): Remove.
+	(darwin_gt_pch_get_address): Rework for relocatable PCH.
+	(darwin_gt_pch_use_address): Likewise.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* config/host-darwin.c (darwin_gt_pch_use_address): When reading
+	manually the file into mapped area, update mapped_addr as
+	an automatic variable rather than addr which is a reference parameter.
+	* config/host-hpux.c (hpux_gt_pch_use_address): When reading
+	manually the file into mapped area, update addr as
+	an automatic variable rather than base which is a reference parameter.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* coretypes.h (gt_pointer_operator): Use 3 pointer arguments instead
+	of two.
+	* gengtype.c (struct walk_type_data): Add in_nested_ptr argument.
+	(walk_type): Temporarily set d->in_nested_ptr around nested_ptr
+	handling.
+	(write_types_local_user_process_field): Pass a new middle pointer
+	to gt_pointer_operator op calls, if d->in_nested_ptr pass there
+	address of d->prev_val[2], otherwise NULL.
+	(write_types_local_process_field): Likewise.
+	* ggc-common.c (relocate_ptrs): Add real_ptr_p argument.  If equal
+	to ptr_p, do nothing, otherwise if NULL remember ptr_p's
+	or if non-NULL real_ptr_p's corresponding new address in
+	reloc_addrs_vec.
+	(reloc_addrs_vec): New variable.
+	(compare_ptr, read_uleb128, write_uleb128): New functions.
+	(gt_pch_save): When iterating over objects through relocate_ptrs,
+	save current i into state.ptrs_i.  Sort reloc_addrs_vec and emit
+	it as uleb128 of differences between pointer addresses into the
+	PCH file.
+	(gt_pch_restore): Allow restoring of PCH to a different address
+	than the preferred one, in that case adjust global pointers by bias
+	and also adjust by bias addresses read from the relocation table
+	as uleb128 differences.  Otherwise fseek over it.  Perform
+	gt_pch_restore_stringpool only after adjusting callbacks and for
+	callback adjustments also take into account the bias.
+	(default_gt_pch_use_address): Change type of first argument from
+	void * to void *&.
+	(mmap_gt_pch_use_address): Likewise.
+	* ggc-tests.c (gt_pch_nx): Pass NULL as new middle argument to op.
+	* hash-map.h (hash_map::pch_nx_helper): Likewise.
+	(gt_pch_nx): Likewise.
+	* hash-set.h (gt_pch_nx): Likewise.
+	* hash-table.h (gt_pch_nx): Likewise.
+	* hash-traits.h (ggc_remove::pch_nx): Likewise.
+	* hosthooks-def.h (default_gt_pch_use_address): Change type of first
+	argument from void * to void *&.
+	(mmap_gt_pch_use_address): Likewise.
+	* hosthooks.h (struct host_hooks): Change type of first argument of
+	gt_pch_use_address hook from void * to void *&.
+	* machmode.h (gt_pch_nx): Expect a callback with 3 pointers instead of
+	two in the middle argument.
+	* poly-int.h (gt_pch_nx): Likewise.
+	* stringpool.c (gt_pch_nx): Pass NULL as new middle argument to op.
+	* tree-cfg.c (gt_pch_nx): Likewise, except for LOCATION_BLOCK pass
+	the same &(block) twice.
+	* value-range.h (gt_pch_nx): Pass NULL as new middle argument to op.
+	* vec.h (gt_pch_nx): Likewise.
+	* wide-int.h (gt_pch_nx): Likewise.
+	* config/host-darwin.c (darwin_gt_pch_use_address): Change type of
+	first argument from void * to void *&.
+	* config/host-darwin.h (darwin_gt_pch_use_address): Likewise.
+	* config/host-hpux.c (hpux_gt_pch_use_address): Likewise.
+	* config/host-linux.c (linux_gt_pch_use_address): Likewise.  If
+	it couldn't succeed to mmap at the preferred location, set base
+	to the actual one.  Update addr in the manual reading loop instead of
+	base.
+	* config/host-netbsd.c (netbsd_gt_pch_use_address): Change type of
+	first argument from void * to void *&.
+	* config/host-openbsd.c (openbsd_gt_pch_use_address): Likewise.
+	* config/host-solaris.c (sol_gt_pch_use_address): Likewise.
+	* config/i386/host-mingw32.c (mingw32_gt_pch_use_address): Likewise.
+	* config/rs6000/rs6000-gen-builtins.c (write_init_file): Pass NULL
+	as new middle argument to op in the generated code.
+	* doc/gty.texi: Adjust samples for the addition of middle pointer
+	to gt_pointer_operator callback.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103097
+	* reg-stack.c (convert_regs_1): Move any_malformed_asm
+	resetting...
+	(reg_to_stack): ... here.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103302
+	* expr.c (emit_move_multi_word): Skip clobber during lra.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103024
+	PR middle-end/103530
+	* gimple-harden-conditionals.cc (non_eh_succ_edge): New.
+	(pass_harden_compares::execute): Accept 1-bit integral types,
+	and cope with throwing compares.
+
 2021-12-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (DARWIN_PIE_SPEC): Add -no_pie when

@@ -1,3 +1,111 @@
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (operator==, operator<=>): Define
+	overloads for homogeneous specializations of reverse_iterator,
+	__normal_iterator and move_iterator.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Remove
+	dg-error for c++20.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85813
+	* libsupc++/exception_ptr.h (__dest_thunk): Add macro for
+	destructor calling convention.
+	(make_exception_ptr): Enable non-throwing implementation for
+	-fno-exceptions and for non-standard calling conventions. Use
+	always_inline attribute on the useless no-rtti no-exceptions
+	definition.
+	* testsuite/18_support/exception_ptr/64241.cc: Add -fno-rtti so
+	the no-op implementation is still used.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103630
+	* libsupc++/exception_ptr.h (exception_ptr): Fix exception
+	specifications on inline definitions.
+	(make_exception_ptr): Decay the template parameter. Use typeid
+	of the static type.
+	* testsuite/18_support/exception_ptr/103630.cc: New test.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59769
+	* config/io/basic_file_stdio.cc (fopen_mode): Add support for
+	exclusive mode.
+	* include/bits/ios_base.h (_S_noreplace): Define new enumerator.
+	(ios_base::__noreplace): Define.
+	(ios_base::noreplace): Define for C++23.
+	* include/std/version (__cpp_lib_ios_noreplace): Define.
+	* testsuite/27_io/basic_ofstream/open/char/noreplace.cc: New test.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/noreplace.cc: New test.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103382
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.11): Do not export old
+	symbol if .symver renaming is supported.
+	(GLIBCXX_3.4.30): Export new symbol if .symver renaming is
+	supported.
+	* doc/xml/manual/evolution.xml: Document change.
+	* doc/html/manual/api.html: Regenerate.
+	* include/bits/std_mutex.h (__condvar::wait, __condvar::wait_until):
+	Remove noexcept.
+	* include/std/condition_variable (condition_variable::wait):
+	Likewise.
+	* src/c++11/condition_variable.cc (condition_variable::wait):
+	Likewise.
+	* src/c++11/compatibility-condvar.cc (__nothrow_wait_cv::wait):
+	Define nothrow wrapper around std::condition_variable::wait and
+	export the old symbol as an alias to it.
+	* testsuite/30_threads/condition_variable/members/103382.cc: New test.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/92300
+	* include/bits/stl_map.h (insert(Pair&&), emplace(Args&&...)):
+	Check whether the arguments can be looked up directly without
+	constructing a temporary node first.
+	* include/bits/stl_pair.h (__is_pair): Move to here, from ...
+	* include/bits/uses_allocator_args.h (__is_pair): ... here.
+	* testsuite/23_containers/map/modifiers/emplace/92300.cc: New test.
+	* testsuite/23_containers/map/modifiers/insert/92300.cc: New test.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h (basic_string::_M_leak_hard): Do not
+	reallocate an empty string.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103332
+	PR libstdc++/102958
+	PR libstdc++/103483
+	* include/bits/char_traits.h: Suppress stringop and array-bounds
+	warnings.
+
+2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64135
+	* config/allocator/new_allocator_base.h: Include
+	<bits/new_allocator.h> instead of <ext/new_allocator.h>.
+	(__allocator_base): Use std::__new_allocator instead of
+	__gnu_cxx::new_allocator.
+	* doc/xml/manual/allocator.xml: Document new default base class
+	for std::allocator.
+	* doc/xml/manual/evolution.xml: Likewise.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Add bits/new_allocator.h.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/memory_resource (new_delete_resource):
+	Use std::__new_allocator instead of __gnu_cxx::new_allocator.
+	* include/ext/new_allocator.h (new_allocator): Derive from
+	std::__new_allocator. Move implementation to ...
+	* include/bits/new_allocator.h: New file.
+	* testsuite/20_util/allocator/64135.cc: New test.
+
 2021-12-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_release()):

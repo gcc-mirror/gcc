@@ -1,3 +1,7 @@
+2021-12-09  Martin Liska  <mliska@suse.cz>
+
+	* expr.cc: Call memcpy only when length != 0.
+
 2021-12-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 568496d5b.

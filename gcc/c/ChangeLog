@@ -1,3 +1,9 @@
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* c-decl.c (resort_field_decl_cmp): Pass the same pointer twice
+	to resort_data.new_value.
+
 2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-parser.c (struct omp_dim): New struct type for use inside

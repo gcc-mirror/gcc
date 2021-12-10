@@ -1,3 +1,15 @@
+2021-12-09  Fred Konrad  <konrad@adacore.com>
+
+	* config.host (powerpc*-wrs-vxworks7*): Fix path to
+	rs6000/t-ppc64-fp, relative to config/ not libgcc/.
+
+2021-12-09  Olivier Hainque  <hainque@adacore.com>
+	    Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/t-vxworks: Set CRTSTUFF_T_CFLAGS to
+	$(LIBGCC2_INCLUDES).
+	* config/t-vxworks7: Likewise.
+
 2021-12-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host (*-*-darwin*): Add logic to build a shared
