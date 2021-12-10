@@ -243,6 +243,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       void
+      _M_am_pm_format(const _CharT** __ampm_format) const
+      {
+	__ampm_format[0] = _M_data->_M_am_pm_format;
+      }
+
+      void
       _M_am_pm(const _CharT** __ampm) const
       {
 	__ampm[0] = _M_data->_M_am;

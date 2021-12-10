@@ -806,6 +806,13 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  if (!__tmperr && __mem)
 		    __tm->tm_hour += 12;
 		  break;
+		case 'r':
+		  // Locale's 12-hour clock time format (in C %I:%M:%S %p).
+		  const char_type*  __ampm_format;
+		  __tp._M_am_pm_format(&__ampm_format);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __tmperr,
+						__tm, __ampm_format);
+		  break;
 		case 'R':
 		  // Equivalent to (%H:%M).
 		  __cs = "%H:%M";

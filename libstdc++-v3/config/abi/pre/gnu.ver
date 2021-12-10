@@ -185,7 +185,13 @@ GLIBCXX_3.4 {
       std::_List_node_base::unhook*;
       std::_List_node_base::reverse*;
       std::_List_node_base::transfer*;
-      std::__timepunct*;
+#     std::__timepunct*;
+      std::__timepunct?char?::[^_]*;
+      std::__timepunct?char?::_[^M]*;
+      std::__timepunct?char?::_M_[^a]*;
+      std::__timepunct?wchar_t?::[^_]*;
+      std::__timepunct?wchar_t?::_[^M]*;
+      std::__timepunct?wchar_t?::_M_[^a]*;
 #     std::__numeric_limits_base*;
       std::__num_base::_S_format_float*;
       std::__num_base::_S_format_int*;
@@ -683,6 +689,10 @@ GLIBCXX_3.4 {
 
     # std::__convert_to_v
     _ZSt14__convert_to_vI[^gU]*;
+
+    # std::__timepunct
+    _ZNKSt11__timepunctI[cw]E8_M_am_pmEPPK[cw];
+    _ZNKSt11__timepunctI[cw]E15_M_am_pm_formatEPK[cw];
 
     # __gnu_cxx::stdio_sync_filebuf
     _ZTVN9__gnu_cxx18stdio_sync_filebufI[cw]St11char_traitsI[cw]EEE;
@@ -2410,6 +2420,9 @@ GLIBCXX_3.4.30 {
     # The new definition of this symbol gets versioned as @@GLIBCXX_3.4.30
     _ZNSt18condition_variable4waitERSt11unique_lockISt5mutexE;
 #endif
+
+    # std::__timepunct<char>::_M_am_pm_format(const char**)
+    _ZNKSt11__timepunctI[cw]E15_M_am_pm_formatEPPK[cw];
 
 } GLIBCXX_3.4.29;
 
