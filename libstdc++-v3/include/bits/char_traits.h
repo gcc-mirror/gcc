@@ -995,7 +995,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace __detail
 #endif // C++20
 
-#pragma GCC diagnostic push
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
