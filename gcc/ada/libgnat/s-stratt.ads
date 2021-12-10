@@ -37,7 +37,6 @@
 --  defined types, the subprogram for the corresponding root type is called
 --  with an appropriate conversion.
 
-with System;
 with System.Unsigned_Types;
 with Ada.Streams;
 

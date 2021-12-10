@@ -32,7 +32,6 @@
 with Ada.IO_Exceptions;          use Ada.IO_Exceptions;
 with Ada.Unchecked_Deallocation;
 with Interfaces.C_Streams;       use Interfaces.C_Streams;
-with System;                     use System;
 with System.CRTL;
 with System.File_IO;
 with System.Soft_Links;

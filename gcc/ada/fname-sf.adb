@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Casing;        use Casing;
-with Fname;         use Fname;
 with Fname.UF;      use Fname.UF;
 with SFN_Scan;      use SFN_Scan;
 with Osint;         use Osint;

@@ -31,8 +31,6 @@
 
 --  Operations on packed bit strings
 
-with System;
-
 package System.Bit_Ops is
 
    --  Note: in all the following routines, the System.Address parameters

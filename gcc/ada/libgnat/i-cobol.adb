@@ -34,8 +34,7 @@
 --  particular COBOL format is completely contained in the private part of
 --  the spec.
 
-with Interfaces; use Interfaces;
-with System;     use System;
+with System; use System;
 with Ada.Unchecked_Conversion;
 
 package body Interfaces.COBOL is

@@ -200,7 +200,7 @@ package Sinfo is
 
    --  The exceptions to this rule occur with {DEFINING_IDENTIFIERS} in all
    --  contexts, which is handled as described in the previous section, and
-   --  with {,library_unit_NAME} in the N_With_Clause mode, which is handled
+   --  with {,library_unit_NAME} in the N_With_Clause node, which is handled
    --  using the First_Name and Last_Name flags, as further detailed in the
    --  description of the N_With_Clause node.
 

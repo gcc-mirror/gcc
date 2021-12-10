@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.IO_Exceptions;
-with System; use System;
 
 with System.OS_Lib; use System.OS_Lib;
 with System.Mmap.Unix; use System.Mmap.Unix;

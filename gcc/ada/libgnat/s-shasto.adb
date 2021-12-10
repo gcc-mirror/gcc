@@ -36,7 +36,6 @@ with Ada.Streams.Stream_IO;
 with System.Global_Locks;
 with System.Soft_Links;
 
-with System;
 with System.CRTL;
 with System.File_Control_Block;
 with System.File_IO;

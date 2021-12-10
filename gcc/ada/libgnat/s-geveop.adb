@@ -29,7 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;                    use System;
 with System.Address_Operations; use System.Address_Operations;
 with System.Storage_Elements;   use System.Storage_Elements;
 
