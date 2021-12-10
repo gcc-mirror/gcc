@@ -1,3 +1,12 @@
+2021-12-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103609
+	* symbol.c (gfc_sym_get_dummy_args): Catch NULL pointer
+	dereference.
+
 2021-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
