@@ -1248,6 +1248,9 @@ get_symbol_decl (Declaration *decl)
 	      DECL_VINDEX (decl->csym) = size_int (fd->vtblIndex);
 	      DECL_VIRTUAL_P (decl->csym) = 1;
 	    }
+
+	  /* Align method to the minimum boundary for target.  */
+	  SET_DECL_ALIGN (decl->csym, MINIMUM_METHOD_BOUNDARY);
 	}
       else if (fd->isMain () || fd->isCMain ())
 	{
