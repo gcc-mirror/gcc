@@ -1248,6 +1248,9 @@ get_symbol_decl (Declaration *decl)
 	      DECL_VINDEX (decl->csym) = size_int (fd->vtblIndex);
 	      DECL_VIRTUAL_P (decl->csym) = 1;
 	    }
+
+	  /* Align method to the minimum boundary for target.  */
+	  SET_DECL_ALIGN (decl->csym, MINIMUM_METHOD_BOUNDARY);
 	}
       else if (fd->isMain () || fd->isCMain ())
 	{
@@ -2236,7 +2239,7 @@ layout_class_initializer (ClassDeclaration *cd)
   ne->type = cd->type;
 
   Expression *e = ne->ctfeInterpret ();
-  gcc_assert (e->op == TOKclassreference);
+  gcc_assert (e->op == EXP::classReference);
 
   return build_class_instance (e->isClassReferenceExp ());
 }

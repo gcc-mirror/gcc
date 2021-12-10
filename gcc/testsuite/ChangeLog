@@ -1,3 +1,54 @@
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/103215
+	* gcc.dg/Wstringop-overflow-58.c: Adjust and xfail expected warnings.
+	* gcc.dg/Wstringop-overflow-59.c: Same.
+	* gcc.dg/warn-strnlen-no-nul.c: Same.
+	* gcc.dg/Warray-bounds-91.c: New test.
+	* gcc.dg/Warray-bounds-92.c: New test.
+	* gcc.dg/Wstringop-overflow-85.c: New test.
+	* gcc.dg/Wstringop-overflow-87.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101751
+	* gcc.dg/Wstringop-overflow-86.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/103143
+	* gcc.dg/Wstringop-overflow-83.c: New test.
+
+2021-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103401
+	* g++.dg/cpp1y/lambda-generic-85713-2.C: Add dg-error.
+	* g++.dg/cpp1y/pr60054.C: Adjust dg-error.
+	* g++.dg/cpp1y/pr60332.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-3.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979.C: Likewise.
+	* g++.dg/cpp23/auto-fncast7.C: New test.
+	* g++.dg/cpp23/auto-fncast8.C: New test.
+	* g++.dg/cpp23/auto-fncast9.C: New test.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103097
+	* gcc.target/i386/pr103097.c: New.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103302
+	* gcc.target/riscv/pr103302.c: New.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103024
+	PR middle-end/103530
+	* g++.dg/pr103024.C: New.
+	* g++.dg/pr103530.C: New.
+
 2021-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103609

@@ -1,3 +1,9 @@
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* c-pch.c (c_common_no_more_pch): Pass a temporary void * var
+	with NULL value instead of NULL to host_hooks.gt_pch_use_address.
+
 2021-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/71934

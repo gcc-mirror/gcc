@@ -1124,7 +1124,7 @@ version (Windows) private ulong makeUlong(DWORD dwLow, DWORD dwHigh) @safe pure 
 }
 
 version (Posix) private extern (C) pragma(mangle, stat.mangleof)
-int trustedStat(const(FSChar)* namez, ref stat_t buf) @nogc nothrow @trusted;
+int trustedStat(scope const(FSChar)* namez, ref stat_t buf) @nogc nothrow @trusted;
 
 /**
 Get size of file `name` in bytes.
@@ -1928,7 +1928,7 @@ if (isConvertibleToString!R)
     assert(!f.exists);
 }
 
-private bool existsImpl(const(FSChar)* namez) @trusted nothrow @nogc
+private bool existsImpl(scope const(FSChar)* namez) @trusted nothrow @nogc
 {
     version (Windows)
     {
@@ -2010,7 +2010,7 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     version (Windows)
     {
         auto namez = name.tempCString!FSChar();
-        static auto trustedGetFileAttributesW(const(FSChar)* namez) @trusted
+        static auto trustedGetFileAttributesW(scope const(FSChar)* namez) @trusted
         {
             return GetFileAttributesW(namez);
         }
@@ -2220,7 +2220,7 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     version (Windows)
     {
         auto namez = name.tempCString!FSChar();
-        static auto trustedSetFileAttributesW(const(FSChar)* namez, uint dwFileAttributes) @trusted
+        static auto trustedSetFileAttributesW(scope const(FSChar)* namez, uint dwFileAttributes) @trusted
         {
             return SetFileAttributesW(namez, dwFileAttributes);
         }
@@ -2233,7 +2233,7 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     else version (Posix)
     {
         auto namez = name.tempCString!FSChar();
-        static auto trustedChmod(const(FSChar)* namez, mode_t mode) @trusted
+        static auto trustedChmod(scope const(FSChar)* namez, mode_t mode) @trusted
         {
             return chmod(namez, mode);
         }
@@ -2868,14 +2868,14 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
 
     version (Windows)
     {
-        static auto trustedChdir(const(FSChar)* pathz) @trusted
+        static auto trustedChdir(scope const(FSChar)* pathz) @trusted
         {
             return SetCurrentDirectoryW(pathz);
         }
     }
     else version (Posix)
     {
-        static auto trustedChdir(const(FSChar)* pathz) @trusted
+        static auto trustedChdir(scope const(FSChar)* pathz) @trusted
         {
             return core.sys.posix.unistd.chdir(pathz) == 0;
         }
@@ -2939,7 +2939,7 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
 
     version (Windows)
     {
-        static auto trustedCreateDirectoryW(const(FSChar)* pathz) @trusted
+        static auto trustedCreateDirectoryW(scope const(FSChar)* pathz) @trusted
         {
             return CreateDirectoryW(pathz, null);
         }
@@ -2953,7 +2953,7 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
     {
         import std.conv : octal;
 
-        static auto trustedMkdir(const(FSChar)* pathz, mode_t mode) @trusted
+        static auto trustedMkdir(scope const(FSChar)* pathz, mode_t mode) @trusted
         {
             return core.sys.posix.sys.stat.mkdir(pathz, mode);
         }
@@ -3143,14 +3143,14 @@ if (isInputRange!R && !isInfinite!R && isSomeChar!(ElementEncodingType!R) &&
 
     version (Windows)
     {
-        static auto trustedRmdir(const(FSChar)* pathz) @trusted
+        static auto trustedRmdir(scope const(FSChar)* pathz) @trusted
         {
             return RemoveDirectoryW(pathz);
         }
     }
     else version (Posix)
     {
-        static auto trustedRmdir(const(FSChar)* pathz) @trusted
+        static auto trustedRmdir(scope const(FSChar)* pathz) @trusted
         {
             return core.sys.posix.unistd.rmdir(pathz) == 0;
         }
@@ -3859,17 +3859,17 @@ else version (Windows)
             return _size;
         }
 
-        @property SysTime timeCreated() const pure nothrow scope
+        @property SysTime timeCreated() const pure nothrow return scope
         {
             return cast(SysTime)_timeCreated;
         }
 
-        @property SysTime timeLastAccessed() const pure nothrow scope
+        @property SysTime timeLastAccessed() const pure nothrow return scope
         {
             return cast(SysTime)_timeLastAccessed;
         }
 
-        @property SysTime timeLastModified() const pure nothrow scope
+        @property SysTime timeLastModified() const pure nothrow return scope
         {
             return cast(SysTime)_timeLastModified;
         }

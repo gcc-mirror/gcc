@@ -1306,7 +1306,14 @@ extern (C++) class FuncDeclaration : Declaration
         if (!fbody)
             return false;
 
-        if (isVirtualMethod())
+        if (isVirtualMethod() &&
+            /*
+             * https://issues.dlang.org/show_bug.cgi?id=21719
+             *
+             * If we have an auto virtual function we can infer
+             * the attributes.
+             */
+            !(inferRetType && !isCtorDeclaration()))
             return false;               // since they may be overridden
 
         if (sc.func &&

@@ -714,9 +714,6 @@
    */
 #undef LT_OBJDIR
 
-/* Defined if no way to sleep is available. */
-#undef NO_SLEEP
-
 /* Name of package */
 #undef PACKAGE
 
@@ -837,6 +834,9 @@
 
 /* Define if C99 llrint and llround functions are missing from <math.h>. */
 #undef _GLIBCXX_NO_C99_ROUNDING_FUNCS
+
+/* Defined if no way to sleep is available. */
+#undef _GLIBCXX_NO_SLEEP
 
 /* Define if ptrdiff_t is int. */
 #undef _GLIBCXX_PTRDIFF_T_IS_INT

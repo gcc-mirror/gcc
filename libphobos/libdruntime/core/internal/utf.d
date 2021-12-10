@@ -583,7 +583,7 @@ void validate(S)(const scope S s)
 /* =================== Conversion to UTF8 ======================= */
 
 @safe pure nothrow @nogc
-char[] toUTF8(return char[] buf, dchar c)
+char[] toUTF8(return scope char[] buf, dchar c)
     in
     {
         assert(isValidDchar(c));
@@ -623,7 +623,7 @@ char[] toUTF8(return char[] buf, dchar c)
  * Encodes string s into UTF-8 and returns the encoded string.
  */
 @safe pure nothrow
-string toUTF8(return string s)
+string toUTF8(return scope string s)
     in
     {
         validate(s);
@@ -692,7 +692,7 @@ string toUTF8(const scope dchar[] s)
 /* =================== Conversion to UTF16 ======================= */
 
 @safe pure nothrow @nogc
-wchar[] toUTF16(return wchar[] buf, dchar c)
+wchar[] toUTF16(return scope wchar[] buf, dchar c)
     in
     {
         assert(isValidDchar(c));
@@ -784,7 +784,7 @@ wptr toUTF16z(const scope char[] s)
 
 /** ditto */
 @safe pure nothrow
-wstring toUTF16(return wstring s)
+wstring toUTF16(return scope wstring s)
     in
     {
         validate(s);
@@ -864,7 +864,7 @@ dstring toUTF32(const scope wchar[] s)
 
 /** ditto */
 @safe pure nothrow
-dstring toUTF32(return dstring s)
+dstring toUTF32(return scope dstring s)
     in
     {
         validate(s);

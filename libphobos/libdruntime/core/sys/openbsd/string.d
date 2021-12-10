@@ -18,7 +18,7 @@ nothrow:
 static if (__BSD_VISIBLE)
 {
     void explicit_bzero(void*, size_t);
-    pure void* memmem(return const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
+    pure void* memmem(return scope const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
     void* memrchr(scope const void*, int, size_t);
     size_t strlcat(char*, scope const char*, size_t);
     size_t strlcpy(char*, scope const char*, size_t);

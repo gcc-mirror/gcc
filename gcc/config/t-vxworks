@@ -29,7 +29,6 @@ vxworks-c.o: $(srcdir)/config/vxworks-c.c
 # provide our own version and make sure the system one gets exposed.
 
 LIMITS_H_TEST = true
-STMP_FIXINC = stmp-fixinc
 
 # VxWorks system environments have been GCC based for a long time and
 # we need to make sure that our files and the system ones use distinct

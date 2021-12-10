@@ -431,7 +431,7 @@ expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
       gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
 
       Expression *e = isExpression ((*ti->tiargs)[0]);
-      gcc_assert (e && e->op == TOKint64);
+      gcc_assert (e && e->op == EXP::int64);
       count = build_expr (e, true);
     }
 

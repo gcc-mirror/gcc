@@ -1091,20 +1091,30 @@ static bool
 check_callers (struct cgraph_node *node, void *has_hot_call)
 {
   struct cgraph_edge *e;
-   for (e = node->callers; e; e = e->next_caller)
-     {
-       if (!opt_for_fn (e->caller->decl, flag_inline_functions_called_once)
-	   || !opt_for_fn (e->caller->decl, optimize))
-	 return true;
-       if (!can_inline_edge_p (e, true))
-         return true;
-       if (e->recursive_p ())
-	 return true;
-       if (!can_inline_edge_by_limits_p (e, true))
-         return true;
-       if (!(*(bool *)has_hot_call) && e->maybe_hot_p ())
-	 *(bool *)has_hot_call = true;
-     }
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      if (!opt_for_fn (e->caller->decl, flag_inline_functions_called_once)
+	  || !opt_for_fn (e->caller->decl, optimize))
+	return true;
+      if (!can_inline_edge_p (e, true))
+	return true;
+      if (e->recursive_p ())
+	return true;
+      if (!can_inline_edge_by_limits_p (e, true))
+	return true;
+      /* Inlining large functions to large loop depth is often harmful because
+	 of register pressure it implies.  */
+      if ((int)ipa_call_summaries->get (e)->loop_depth
+	  > param_inline_functions_called_once_loop_depth)
+	return true;
+      /* Do not produce gigantic functions.  */
+      if (estimate_size_after_inlining (e->caller->inlined_to ?
+					e->caller->inlined_to : e->caller, e)
+	  > param_inline_functions_called_once_insns)
+	return true;
+      if (!(*(bool *)has_hot_call) && e->maybe_hot_p ())
+	*(bool *)has_hot_call = true;
+    }
   return false;
 }
 
@@ -1327,9 +1337,12 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   " %i (compensated)\n",
 		   badness.to_double (),
 		   freq.to_double (),
-		   edge->count.ipa ().initialized_p () ? edge->count.ipa ().to_gcov_type () : -1,
-		   caller->count.ipa ().initialized_p () ? caller->count.ipa ().to_gcov_type () : -1,
-		   inlining_speedup (edge, freq, unspec_edge_time, edge_time).to_double (),
+		   edge->count.ipa ().initialized_p ()
+		   ? edge->count.ipa ().to_gcov_type () : -1,
+		   caller->count.ipa ().initialized_p ()
+		   ? caller->count.ipa ().to_gcov_type () : -1,
+		   inlining_speedup (edge, freq, unspec_edge_time,
+				     edge_time).to_double (),
 		   estimate_growth (callee),
 		   callee_info->growth, overall_growth);
 	}

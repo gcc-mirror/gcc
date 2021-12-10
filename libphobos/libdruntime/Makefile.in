@@ -367,9 +367,9 @@ am__objects_18 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/sys/procfs.lo core/sys/linux/sys/signalfd.lo \
 	core/sys/linux/sys/socket.lo core/sys/linux/sys/sysinfo.lo \
 	core/sys/linux/sys/time.lo core/sys/linux/sys/xattr.lo \
-	core/sys/linux/syscalls.lo core/sys/linux/termios.lo \
-	core/sys/linux/time.lo core/sys/linux/timerfd.lo \
-	core/sys/linux/tipc.lo core/sys/linux/unistd.lo
+	core/sys/linux/termios.lo core/sys/linux/time.lo \
+	core/sys/linux/timerfd.lo core/sys/linux/tipc.lo \
+	core/sys/linux/unistd.lo
 @DRUNTIME_OS_LINUX_TRUE@am__objects_19 = $(am__objects_18)
 am__objects_20 = core/sys/windows/accctrl.lo \
 	core/sys/windows/aclapi.lo core/sys/windows/aclui.lo \
@@ -944,9 +944,8 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/sys/procfs.d core/sys/linux/sys/signalfd.d \
 	core/sys/linux/sys/socket.d core/sys/linux/sys/sysinfo.d \
 	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
-	core/sys/linux/syscalls.d core/sys/linux/termios.d \
-	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
-	core/sys/linux/unistd.d
+	core/sys/linux/termios.d core/sys/linux/time.d \
+	core/sys/linux/timerfd.d core/sys/linux/tipc.d core/sys/linux/unistd.d
 
 DRUNTIME_DSOURCES_NETBSD = core/sys/netbsd/dlfcn.d \
 	core/sys/netbsd/err.d core/sys/netbsd/execinfo.d \
@@ -1675,7 +1674,6 @@ core/sys/linux/sys/socket.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/sysinfo.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/time.lo: core/sys/linux/sys/$(am__dirstamp)
 core/sys/linux/sys/xattr.lo: core/sys/linux/sys/$(am__dirstamp)
-core/sys/linux/syscalls.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/termios.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/time.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/timerfd.lo: core/sys/linux/$(am__dirstamp)

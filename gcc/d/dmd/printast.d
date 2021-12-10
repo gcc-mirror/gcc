@@ -16,6 +16,7 @@ import core.stdc.stdio;
 import dmd.expression;
 import dmd.tokens;
 import dmd.visitor;
+import dmd.hdrgen;
 
 /********************
  * Print AST data structure in a nice format.
@@ -45,7 +46,8 @@ extern (C++) final class PrintASTVisitor : Visitor
     override void visit(Expression e)
     {
         printIndent(indent);
-        printf("%s %s\n", Token.toChars(e.op), e.type ? e.type.toChars() : "");
+        auto s = EXPtoString(e.op);
+        printf("%.*s %s\n", cast(int)s.length, s.ptr, e.type ? e.type.toChars() : "");
     }
 
     override void visit(IntegerExp e)
@@ -68,7 +70,8 @@ extern (C++) final class PrintASTVisitor : Visitor
     override void visit(StructLiteralExp e)
     {
         printIndent(indent);
-        printf("%s %s, %s\n", Token.toChars(e.op), e.type ? e.type.toChars() : "", e.toChars());
+        auto s = EXPtoString(e.op);
+        printf("%.*s %s, %s\n", cast(int)s.length, s.ptr, e.type ? e.type.toChars() : "", e.toChars());
     }
 
     override void visit(SymbolExp e)

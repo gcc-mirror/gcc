@@ -103,8 +103,8 @@ T emplace(T, Args...)(T chunk, auto ref Args args)
         " is abstract and it can't be emplaced");
 
     // Initialize the object in its pre-ctor state
-    enum classSize = __traits(classInstanceSize, T);
-    (() @trusted => (cast(void*) chunk)[0 .. classSize] = typeid(T).initializer[])();
+    const initializer = __traits(initSymbol, T);
+    (() @trusted { (cast(void*) chunk)[0 .. initializer.length] = initializer[]; })();
 
     static if (isInnerClass!T)
     {
@@ -222,6 +222,31 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
     auto buf = new void[__traits(classInstanceSize, C)];
     auto c = emplace!C(buf, 5);
     assert(c.i == 5);
+}
+
+///
+@betterC
+@nogc pure nothrow @system unittest
+{
+    // works with -betterC too:
+
+    static extern (C++) class C
+    {
+        @nogc pure nothrow @safe:
+        int i = 3;
+        this(int i)
+        {
+            assert(this.i == 3);
+            this.i = i;
+        }
+        int virtualGetI() { return i; }
+    }
+
+    import core.internal.traits : classInstanceAlignment;
+
+    align(classInstanceAlignment!C) byte[__traits(classInstanceSize, C)] buffer;
+    C c = emplace!C(buffer[], 42);
+    assert(c.virtualGetI() == 42);
 }
 
 @system unittest
@@ -1921,7 +1946,7 @@ private void moveImpl(T)(scope ref T target, return scope ref T source)
 
     static if (is(T == struct))
     {
-        //  Unsafe when compiling without -dip1000
+        //  Unsafe when compiling without -preview=dip1000
         if ((() @trusted => &source == &target)()) return;
         // Destroy target before overwriting it
         static if (hasElaborateDestructor!T) target.__xdtor();
@@ -2099,7 +2124,7 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
 
     static if (is(T == struct))
     {
-        //  Unsafe when compiling without -dip1000
+        //  Unsafe when compiling without -preview=dip1000
         assert((() @trusted => &source !is &target)(), "source and target must not be identical");
 
         static if (hasElaborateAssign!T || !isAssignable!T)
@@ -2123,12 +2148,7 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
             static if (__traits(isZeroInit, T))
                 () @trusted { memset(&source, 0, sz); }();
             else
-            {
-                import core.internal.lifetime : emplaceInitializer;
-                ubyte[T.sizeof] init = void;
-                emplaceInitializer(*(() @trusted { return cast(T*)init.ptr; }()));
-                () @trusted { memcpy(&source, init.ptr, sz); }();
-            }
+                () @trusted { memcpy(&source, __traits(initSymbol, T).ptr, sz); }();
         }
     }
     else static if (__traits(isStaticArray, T))
@@ -2200,4 +2220,75 @@ pure nothrow @nogc @system unittest
 
     static assert(!__traits(compiles, f(ncarray)));
     f(move(ncarray));
+}
+
+/**
+ * This is called for a delete statement where the value
+ * being deleted is a pointer to a struct with a destructor
+ * but doesn't have an overloaded delete operator.
+ *
+ * Params:
+ *   p = pointer to the value to be deleted
+ */
+void _d_delstruct(T)(ref T *p)
+{
+    if (p)
+    {
+        debug(PRINTF) printf("_d_delstruct(%p)\n", p);
+
+        import core.memory : GC;
+
+        destroy(*p);
+        GC.free(p);
+        p = null;
+    }
+}
+
+@system unittest
+{
+    int dtors = 0;
+    struct S { ~this() { ++dtors; } }
+
+    S *s = new S();
+    _d_delstruct(s);
+
+    assert(s == null);
+    assert(dtors == 1);
+}
+
+@system unittest
+{
+    int innerDtors = 0;
+    int outerDtors = 0;
+
+    struct Inner { ~this() { ++innerDtors; } }
+    struct Outer
+    {
+        Inner *i1;
+        Inner *i2;
+
+        this(int x)
+        {
+            i1 = new Inner();
+            i2 = new Inner();
+        }
+
+        ~this()
+        {
+            ++outerDtors;
+
+            _d_delstruct(i1);
+            assert(i1 == null);
+
+            _d_delstruct(i2);
+            assert(i2 == null);
+        }
+    }
+
+    Outer *o = new Outer(0);
+    _d_delstruct(o);
+
+    assert(o == null);
+    assert(innerDtors == 2);
+    assert(outerDtors == 1);
 }

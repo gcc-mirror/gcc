@@ -2860,9 +2860,11 @@ static assert(is(S7038b == shared));
 immutable struct S7038c{ int x; }
 static assert(is(S7038c == immutable));
 
-static assert(!is(C7038 == const));
+// https://issues.dlang.org/show_bug.cgi?id=22515
+// Classes fixed for consistency with structs
+static assert(is(C7038 == const));
 const class C7038{ int x; }
-static assert(!is(C7038 == const));
+static assert(is(C7038 == const));
 
 void test7038()
 {
@@ -2871,7 +2873,7 @@ void test7038()
     static assert(is(typeof(s.x) == const int));
 
     C7038 c;
-    static assert(!is(typeof(c) == const));
+    static assert(is(typeof(c) == const));
     static assert(is(typeof(c.x) == const int));
 }
 

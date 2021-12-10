@@ -18,5 +18,5 @@ nothrow:
 
 static if (__USE_GNU)
 {
-    pure void* memmem(return const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
+    pure void* memmem(return scope const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
 }

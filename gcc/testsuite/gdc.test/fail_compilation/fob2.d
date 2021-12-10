@@ -120,7 +120,7 @@ fail_compilation/fob2.d(515): Error: variable `fob2.test52.p` has undefined stat
 }
 
 
-@live void test52()
+@live void test52() @safe
 {
     int x = 5;
     auto p = &x;

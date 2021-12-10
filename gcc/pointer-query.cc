@@ -688,26 +688,31 @@ access_ref::merge_ref (vec<access_ref> *all_refs, tree arg, gimple *stmt,
   if (known_size && aref.sizrng[0] < minsize)
     minsize = aref.sizrng[0];
 
-  /* Determine the amount of remaining space in the argument.  */
-  offset_int argrem[2];
-  argrem[1] = aref.size_remaining (argrem);
+  /* Extend the size and offset of *THIS to account for AREF.  The result
+     can be cached but results in false negatives.  */
 
-  /* Determine the amount of remaining space computed so far and
-     if the remaining space in the argument is more use it instead.  */
-  offset_int merged_rem[2];
-  merged_rem[1] = size_remaining (merged_rem);
+  offset_int orng[2];
+  if (sizrng[1] < aref.sizrng[1])
+    {
+      orng[0] = offrng[0];
+      orng[1] = offrng[1];
+      *this = aref;
+    }
+  else
+    {
+      orng[0] = aref.offrng[0];
+      orng[1] = aref.offrng[1];
+    }
+
+  if (orng[0] < offrng[0])
+    offrng[0] = orng[0];
+  if (offrng[1] < orng[1])
+    offrng[1] = orng[1];
 
   /* Reset the PHI's BASE0 flag if any of the nonnull arguments
      refers to an object at an unknown offset.  */
   if (!aref.base0)
     base0 = false;
-
-  if (merged_rem[1] < argrem[1]
-      || (merged_rem[1] == argrem[1]
-	  && sizrng[1] < aref.sizrng[1]))
-    /* Use the argument with the most space remaining as the result,
-       or the larger one if the space is equal.  */
-    *this = aref;
 
   sizrng[0] = minsize;
   parmarray = merged_parmarray;

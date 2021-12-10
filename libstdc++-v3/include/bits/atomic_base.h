@@ -893,7 +893,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_lib_atomic_wait
       _GLIBCXX_ALWAYS_INLINE void
       wait(__pointer_type __old,
-	   memory_order __m = memory_order_seq_cst) noexcept
+	   memory_order __m = memory_order_seq_cst) const noexcept
       {
 	std::__atomic_wait_address_v(&_M_p, __old,
 				     [__m, this]

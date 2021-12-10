@@ -153,7 +153,7 @@ private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expr
 
     eindex = semanticLength(sc, tup, eindex);
     eindex = eindex.ctfeInterpret();
-    if (eindex.op == TOK.error)
+    if (eindex.op == EXP.error)
     {
         pt = Type.terror;
         return;
@@ -386,7 +386,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
          *  enum a = 1; alias b = a;
          *  template X(alias e){ alias v = e; }  alias x = X!(1);
          *  struct S { int v; alias w = v; }
-         *      // TypeIdentifier 'a', 'e', and 'v' should be TOK.variable,
+         *      // TypeIdentifier 'a', 'e', and 'v' should be EXP.variable,
          *      // because getDsymbol() need to work in AliasDeclaration::semantic().
          */
         if (!v.type ||
@@ -602,7 +602,7 @@ Expression typeToExpression(Type t)
  */
 Expression typeToExpressionHelper(TypeQualified t, Expression e, size_t i = 0)
 {
-    //printf("toExpressionHelper(e = %s %s)\n", Token.toChars(e.op), e.toChars());
+    //printf("toExpressionHelper(e = %s %s)\n", EXPtoString(e.op).ptr, e.toChars());
     foreach (id; t.idents[i .. t.idents.dim])
     {
         //printf("\t[%d] e: '%s', id: '%s'\n", i, e.toChars(), id.toChars());
@@ -722,7 +722,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             mtype.dim = semanticLength(sc, tup, mtype.dim);
             mtype.dim = mtype.dim.ctfeInterpret();
-            if (mtype.dim.op == TOK.error)
+            if (mtype.dim.op == EXP.error)
                 return error();
 
             uinteger_t d = mtype.dim.toUInteger();
@@ -758,7 +758,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
             mtype.dim = mtype.dim.optimize(WANTvalue);
             mtype.dim = mtype.dim.ctfeInterpret();
-            if (mtype.dim.op == TOK.error)
+            if (mtype.dim.op == EXP.error)
                 return error();
 
             errors = global.errors;
@@ -768,7 +768,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
             mtype.dim = mtype.dim.implicitCastTo(sc, Type.tsize_t);
             mtype.dim = mtype.dim.optimize(WANTvalue);
-            if (mtype.dim.op == TOK.error)
+            if (mtype.dim.op == EXP.error)
                 return error();
 
             errors = global.errors;
@@ -776,7 +776,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             if (errors != global.errors)
                 return error();
 
-            if (mtype.dim.op == TOK.error)
+            if (mtype.dim.op == EXP.error)
                 return error();
 
             Type overflowError()
@@ -1273,7 +1273,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 iz = iz.initializerSemantic(sc, fparam.type, INITnointerpret);
                 e = iz.initializerToExpression();
             }
-            if (e.op == TOK.function_) // https://issues.dlang.org/show_bug.cgi?id=4820
+            if (e.op == EXP.function_) // https://issues.dlang.org/show_bug.cgi?id=4820
             {
                 FuncExp fe = cast(FuncExp)e;
                 // Replace function literal with a function symbol,
@@ -1299,7 +1299,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 e = e.toLvalue(sc, e);
 
             fparam.defaultArg = e;
-            return (e.op != TOK.error);
+            return (e.op != EXP.error);
         }
 
         ubyte wildparams = 0;
@@ -1707,7 +1707,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     .error(loc, "%s `%s` is used as a type", s.kind, s.toPrettyChars);
                 //assert(0);
             }
-            else if (e.op == TOK.variable) // special case: variable is used as a type
+            else if (e.op == EXP.variable) // special case: variable is used as a type
             {
                 Dsymbol varDecl = mtype.toDsymbol(sc);
                 const(Loc) varDeclLoc = varDecl.getLoc();
@@ -1814,29 +1814,29 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             switch (e.op)
             {
-            case TOK.dotVariable:
+            case EXP.dotVariable:
                 mtype.sym = (cast(DotVarExp)e).var;
                 break;
-            case TOK.variable:
+            case EXP.variable:
                 mtype.sym = (cast(VarExp)e).var;
                 break;
-            case TOK.function_:
+            case EXP.function_:
                 auto fe = cast(FuncExp)e;
                 mtype.sym = fe.td ? fe.td : fe.fd;
                 break;
-            case TOK.dotTemplateDeclaration:
+            case EXP.dotTemplateDeclaration:
                 mtype.sym = (cast(DotTemplateExp)e).td;
                 break;
-            case TOK.dSymbol:
+            case EXP.dSymbol:
                 mtype.sym = (cast(DsymbolExp)e).s;
                 break;
-            case TOK.template_:
+            case EXP.template_:
                 mtype.sym = (cast(TemplateExp)e).td;
                 break;
-            case TOK.scope_:
+            case EXP.scope_:
                 mtype.sym = (cast(ScopeExp)e).sds;
                 break;
-            case TOK.tuple:
+            case EXP.tuple:
                 TupleExp te = e.toTupleExp();
                 Objects* elems = new Objects(te.exps.dim);
                 foreach (i; 0 .. elems.dim)
@@ -1844,13 +1844,13 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                     auto src = (*te.exps)[i];
                     switch (src.op)
                     {
-                    case TOK.type:
+                    case EXP.type:
                         (*elems)[i] = (cast(TypeExp)src).type;
                         break;
-                    case TOK.dotType:
+                    case EXP.dotType:
                         (*elems)[i] = (cast(DotTypeExp)src).sym.isType();
                         break;
-                    case TOK.overloadSet:
+                    case EXP.overloadSet:
                         (*elems)[i] = (cast(OverExp)src).type;
                         break;
                     default:
@@ -1863,13 +1863,13 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 TupleDeclaration td = new TupleDeclaration(e.loc, Identifier.generateId("__aliastup"), elems);
                 mtype.sym = td;
                 break;
-            case TOK.dotType:
+            case EXP.dotType:
                 result = (cast(DotTypeExp)e).sym.isType();
                 break;
-            case TOK.type:
+            case EXP.type:
                 result = (cast(TypeExp)e).type;
                 break;
-            case TOK.overloadSet:
+            case EXP.overloadSet:
                 result = (cast(OverExp)e).type;
                 break;
             default:
@@ -1979,7 +1979,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         mtype.upr = semanticLength(sc, tbn, mtype.upr);
         mtype.lwr = mtype.lwr.ctfeInterpret();
         mtype.upr = mtype.upr.ctfeInterpret();
-        if (mtype.lwr.op == TOK.error || mtype.upr.op == TOK.error)
+        if (mtype.lwr.op == EXP.error || mtype.upr.op == EXP.error)
             return error();
 
         uinteger_t i1 = mtype.lwr.toUInteger();
@@ -2861,7 +2861,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
             {
                 mt.dim = semanticLength(sc, tup, mt.dim);
                 mt.dim = mt.dim.ctfeInterpret();
-                if (mt.dim.op == TOK.error)
+                if (mt.dim.op == EXP.error)
                     return returnError();
 
                 const d = mt.dim.toUInteger();
@@ -2879,7 +2879,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 if (o.dyncast() == DYNCAST.expression)
                 {
                     Expression e = cast(Expression)o;
-                    if (e.op == TOK.dSymbol)
+                    if (e.op == EXP.dSymbol)
                         return returnSymbol((cast(DsymbolExp)e).s);
                     else
                         return returnExp(e);
@@ -3124,7 +3124,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
         exp2 = resolvePropertiesOnly(sc2, exp2);
         sc2.pop();
 
-        if (exp2.op == TOK.error)
+        if (exp2.op == EXP.error)
         {
             if (!global.gag)
                 mt.exp = exp2;
@@ -3132,8 +3132,8 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
         }
         mt.exp = exp2;
 
-        if (mt.exp.op == TOK.type ||
-            mt.exp.op == TOK.scope_)
+        if (mt.exp.op == EXP.type ||
+            mt.exp.op == EXP.scope_)
         {
             if (mt.exp.checkType())
                 goto Lerr;
@@ -3145,8 +3145,8 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
              * template functions.
              */
         }
-        if (auto f = mt.exp.op == TOK.variable    ? (cast(   VarExp)mt.exp).var.isFuncDeclaration()
-                   : mt.exp.op == TOK.dotVariable ? (cast(DotVarExp)mt.exp).var.isFuncDeclaration() : null)
+        if (auto f = mt.exp.op == EXP.variable    ? (cast(   VarExp)mt.exp).var.isFuncDeclaration()
+                   : mt.exp.op == EXP.dotVariable ? (cast(DotVarExp)mt.exp).var.isFuncDeclaration() : null)
         {
             // f might be a unittest declaration which is incomplete when compiled
             // without -unittest. That causes a segfault in checkForwardRef, see
@@ -3377,12 +3377,12 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             printf("Type::dotExp(e = '%s', ident = '%s')\n", e.toChars(), ident.toChars());
         }
         Expression ex = e.lastComma();
-        if (ex.op == TOK.dotVariable)
+        if (ex.op == EXP.dotVariable)
         {
             DotVarExp dv = cast(DotVarExp)ex;
             v = dv.var.isVarDeclaration();
         }
-        else if (ex.op == TOK.variable)
+        else if (ex.op == EXP.variable)
         {
             VarExp ve = cast(VarExp)ex;
             v = ve.var.isVarDeclaration();
@@ -3552,9 +3552,9 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         {
             printf("TypeVector::dotExp(e = '%s', ident = '%s')\n", e.toChars(), ident.toChars());
         }
-        if (ident == Id.ptr && e.op == TOK.call)
+        if (ident == Id.ptr && e.op == EXP.call)
         {
-            /* The trouble with TOK.call is the return ABI for float[4] is different from
+            /* The trouble with EXP.call is the return ABI for float[4] is different from
              * __vector(float[4]), and a type paint won't do.
              */
             e = new AddrExp(e.loc, e);
@@ -3618,7 +3618,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         }
         else if (ident == Id.ptr)
         {
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
             {
                 e.error("`%s` is not an expression", e.toChars());
                 return ErrorExp.get();
@@ -3644,19 +3644,19 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         {
             printf("TypeDArray::dotExp(e = '%s', ident = '%s')\n", e.toChars(), ident.toChars());
         }
-        if (e.op == TOK.type && (ident == Id.length || ident == Id.ptr))
+        if (e.op == EXP.type && (ident == Id.length || ident == Id.ptr))
         {
             e.error("`%s` is not an expression", e.toChars());
             return ErrorExp.get();
         }
         if (ident == Id.length)
         {
-            if (e.op == TOK.string_)
+            if (e.op == EXP.string_)
             {
                 StringExp se = cast(StringExp)e;
                 return new IntegerExp(se.loc, se.len, Type.tsize_t);
             }
-            if (e.op == TOK.null_)
+            if (e.op == EXP.null_)
             {
                 return new IntegerExp(e.loc, 0, Type.tsize_t);
             }
@@ -3864,7 +3864,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 if (!gagError)
                 {
                     global.endGagging(errors);
-                    if (exp && exp.op == TOK.error)
+                    if (exp && exp.op == EXP.error)
                         exp = null;
                 }
 
@@ -3886,7 +3886,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         {
             printf("TypeStruct::dotExp(e = '%s', ident = '%s')\n", e.toChars(), ident.toChars());
         }
-        assert(e.op != TOK.dot);
+        assert(e.op != EXP.dot);
 
         // https://issues.dlang.org/show_bug.cgi?id=14010
         if (ident == Id._mangleof)
@@ -3909,7 +3909,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
 
             Expression e0;
-            Expression ev = e.op == TOK.type ? null : e;
+            Expression ev = e.op == EXP.type ? null : e;
             if (ev)
                 ev = extractSideEffect(sc, "__tup", e0, ev);
 
@@ -4003,7 +4003,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         TemplateDeclaration td = s.isTemplateDeclaration();
         if (td)
         {
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
                 e = new TemplateExp(e.loc, td);
             else
                 e = new DotTemplateExp(e.loc, e, td);
@@ -4024,7 +4024,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             s = ti.inst.toAlias();
             if (!s.isTemplateInstance())
                 goto L1;
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
                 e = new ScopeExp(e.loc, ti);
             else
                 e = new DotExp(e.loc, e, new ScopeExp(e.loc, ti));
@@ -4040,7 +4040,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         if (o)
         {
             auto oe = new OverExp(e.loc, o);
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
             {
                 return oe;
             }
@@ -4054,7 +4054,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             return ErrorExp.get();
         }
 
-        if (e.op == TOK.type)
+        if (e.op == EXP.type)
         {
             /* It's:
              *    Struct.d
@@ -4084,7 +4084,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             return ve;
         }
 
-        bool unreal = e.op == TOK.variable && (cast(VarExp)e).var.isField();
+        bool unreal = e.op == EXP.variable && (cast(VarExp)e).var.isField();
         if (d.isDataseg() || unreal && d.isField())
         {
             // (e, d)
@@ -4146,7 +4146,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         {
             printf("TypeClass::dotExp(e = '%s', ident = '%s')\n", e.toChars(), ident.toChars());
         }
-        assert(e.op != TOK.dot);
+        assert(e.op != EXP.dot);
 
         // https://issues.dlang.org/show_bug.cgi?id=12543
         if (ident == Id.__sizeof || ident == Id.__xalignof || ident == Id._mangleof)
@@ -4167,7 +4167,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             mt.sym.size(e.loc); // do semantic of type
 
             Expression e0;
-            Expression ev = e.op == TOK.type ? null : e;
+            Expression ev = e.op == EXP.type ? null : e;
             if (ev)
                 ev = extractSideEffect(sc, "__tup", e0, ev);
 
@@ -4207,7 +4207,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             // See if it's a 'this' class or a base class
             if (mt.sym.ident == ident)
             {
-                if (e.op == TOK.type)
+                if (e.op == EXP.type)
                 {
                     return mt.Type.getProperty(sc, e.loc, ident, 0);
                 }
@@ -4217,7 +4217,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
             if (auto cbase = mt.sym.searchBase(ident))
             {
-                if (e.op == TOK.type)
+                if (e.op == EXP.type)
                 {
                     return mt.Type.getProperty(sc, e.loc, ident, 0);
                 }
@@ -4238,7 +4238,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 }
 
                 Type t = Type.typeinfoclass.type;
-                if (e.op == TOK.type || e.op == TOK.dotType)
+                if (e.op == EXP.type || e.op == EXP.dotType)
                 {
                     /* For type.classinfo, we know the classinfo
                      * at compile time.
@@ -4412,7 +4412,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
 
         Expression toTemplateExp(TemplateDeclaration td)
         {
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
                 e = new TemplateExp(e.loc, td);
             else
                 e = new DotTemplateExp(e.loc, e, td);
@@ -4439,7 +4439,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             s = ti.inst.toAlias();
             if (!s.isTemplateInstance())
                 goto L1;
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
                 e = new ScopeExp(e.loc, ti);
             else
                 e = new DotExp(e.loc, e, new ScopeExp(e.loc, ti));
@@ -4456,7 +4456,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         if (o)
         {
             auto oe = new OverExp(e.loc, o);
-            if (e.op == TOK.type)
+            if (e.op == EXP.type)
             {
                 return oe;
             }
@@ -4470,7 +4470,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             return ErrorExp.get();
         }
 
-        if (e.op == TOK.type)
+        if (e.op == EXP.type)
         {
             /* It's:
              *    Class.d
@@ -4589,7 +4589,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 assert(0);
         }
 
-        bool unreal = e.op == TOK.variable && (cast(VarExp)e).var.isField();
+        bool unreal = e.op == EXP.variable && (cast(VarExp)e).var.isField();
         if (d.isDataseg() || unreal && d.isField())
         {
             // (e, d)
@@ -4750,7 +4750,7 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc)
             Parameter p = (*mt.arguments)[i];
             assert(p.type);
             Expression e = p.type.defaultInitLiteral(loc);
-            if (e.op == TOK.error)
+            if (e.op == EXP.error)
             {
                 return e;
             }
@@ -4818,7 +4818,7 @@ private Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identif
 
     static Expression pvalToResult(Expression e, const ref Loc loc)
     {
-        if (e.op != TOK.error)
+        if (e.op != EXP.error)
         {
             e = e.copy();
             e.loc = loc;
@@ -4902,12 +4902,12 @@ private Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identif
              *      maxval = e;
              */
             Expression e = em.value;
-            Expression ec = new CmpExp(id == Id.max ? TOK.greaterThan : TOK.lessThan, em.loc, e, *pval);
+            Expression ec = new CmpExp(id == Id.max ? EXP.greaterThan : EXP.lessThan, em.loc, e, *pval);
             ed.inuse++;
             ec = ec.expressionSemantic(em._scope);
             ed.inuse--;
             ec = ec.ctfeInterpret();
-            if (ec.op == TOK.error)
+            if (ec.op == EXP.error)
             {
                 ed.errors = true;
                 continue;

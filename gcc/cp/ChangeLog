@@ -1,3 +1,22 @@
+2021-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103401
+	* parser.c (cp_parser_decltype): Clear
+	auto_is_implicit_function_template_parm_p.
+	(cp_parser_type_id_1): Give errors only when !cp_parser_simulate_error.
+	(cp_parser_parameter_declaration): Clear
+	auto_is_implicit_function_template_parm_p after parsing the
+	decl-specifier-seq.
+	(cp_parser_sizeof_operand): Clear
+	auto_is_implicit_function_template_parm_p.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* module.cc (nop): Add another void * argument.
+	* name-lookup.c (resort_member_name_cmp): Pass the same pointer twice
+	to resort_data.new_value.
+
 2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* parser.c (struct omp_dim): New struct type for use inside

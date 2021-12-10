@@ -1893,7 +1893,7 @@ Note that only the first item of "matchAll" was ever used in practice
 so we can return `const(Char)[]` instead of `const(Char)[][]` using a
 zero-length string to indicate no match.
 +/
-const(Char)[] matchIPSuffix(Char)(return const(Char)[] s) @nogc nothrow pure @safe
+const(Char)[] matchIPSuffix(Char)(return scope const(Char)[] s) @nogc nothrow pure @safe
 {
     size_t end = s.length;
     if (end < 7) return null;

@@ -120,11 +120,10 @@ nothrow:
                 perror("\tclose error");
                 goto err;
             }
-            // Always store a wchar ^Z past end of buffer so scanner has a sentinel
-            buffer[size] = 0; // ^Z is obsolete, use 0
-            buffer[size + 1] = 0;
-            buffer[size + 2] = 0; //add two more so lexer doesnt read pass the buffer
-            buffer[size + 3] = 0;
+            // Always store a wchar ^Z past end of buffer so scanner has a
+            // sentinel, although ^Z got obselete, so fill with two 0s and add
+            // two more so lexer doesn't read pass the buffer.
+            buffer[size .. size + 4] = 0;
 
             result.success = true;
             result.buffer.data = buffer[0 .. size];
@@ -160,11 +159,10 @@ nothrow:
                 goto err2;
             if (!CloseHandle(h))
                 goto err;
-            // Always store a wchar ^Z past end of buffer so scanner has a sentinel
-            buffer[size] = 0; // ^Z is obsolete, use 0
-            buffer[size + 1] = 0;
-            buffer[size + 2] = 0; //add two more so lexer doesnt read pass the buffer
-            buffer[size + 3] = 0;
+            // Always store a wchar ^Z past end of buffer so scanner has a
+            // sentinel, although ^Z got obselete, so fill with two 0s and add
+            // two more so lexer doesn't read pass the buffer.
+            buffer[size .. size + 4] = 0;
             result.success = true;
             result.buffer.data = buffer[0 .. size];
             return result;

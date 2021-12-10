@@ -50,146 +50,146 @@ private enum CARRAYDECL = 1;
  *
  * Used by hdrgen
  */
-immutable PREC[TOK.max + 1] precedence =
+immutable PREC[EXP.max + 1] precedence =
 [
-    TOK.type : PREC.expr,
-    TOK.error : PREC.expr,
-    TOK.objcClassReference : PREC.expr, // Objective-C class reference, same as TOK.type
+    EXP.type : PREC.expr,
+    EXP.error : PREC.expr,
+    EXP.objcClassReference : PREC.expr, // Objective-C class reference, same as EXP.type
 
-    TOK.typeof_ : PREC.primary,
-    TOK.mixin_ : PREC.primary,
+    EXP.typeof_ : PREC.primary,
+    EXP.mixin_ : PREC.primary,
 
-    TOK.import_ : PREC.primary,
-    TOK.dotVariable : PREC.primary,
-    TOK.scope_ : PREC.primary,
-    TOK.identifier : PREC.primary,
-    TOK.this_ : PREC.primary,
-    TOK.super_ : PREC.primary,
-    TOK.int64 : PREC.primary,
-    TOK.float64 : PREC.primary,
-    TOK.complex80 : PREC.primary,
-    TOK.null_ : PREC.primary,
-    TOK.string_ : PREC.primary,
-    TOK.arrayLiteral : PREC.primary,
-    TOK.assocArrayLiteral : PREC.primary,
-    TOK.classReference : PREC.primary,
-    TOK.file : PREC.primary,
-    TOK.fileFullPath : PREC.primary,
-    TOK.line : PREC.primary,
-    TOK.moduleString : PREC.primary,
-    TOK.functionString : PREC.primary,
-    TOK.prettyFunction : PREC.primary,
-    TOK.typeid_ : PREC.primary,
-    TOK.is_ : PREC.primary,
-    TOK.assert_ : PREC.primary,
-    TOK.halt : PREC.primary,
-    TOK.template_ : PREC.primary,
-    TOK.dSymbol : PREC.primary,
-    TOK.function_ : PREC.primary,
-    TOK.variable : PREC.primary,
-    TOK.symbolOffset : PREC.primary,
-    TOK.structLiteral : PREC.primary,
-    TOK.compoundLiteral : PREC.primary,
-    TOK.arrayLength : PREC.primary,
-    TOK.delegatePointer : PREC.primary,
-    TOK.delegateFunctionPointer : PREC.primary,
-    TOK.remove : PREC.primary,
-    TOK.tuple : PREC.primary,
-    TOK.traits : PREC.primary,
-    TOK.default_ : PREC.primary,
-    TOK.overloadSet : PREC.primary,
-    TOK.void_ : PREC.primary,
-    TOK.vectorArray : PREC.primary,
-    TOK._Generic : PREC.primary,
+    EXP.import_ : PREC.primary,
+    EXP.dotVariable : PREC.primary,
+    EXP.scope_ : PREC.primary,
+    EXP.identifier : PREC.primary,
+    EXP.this_ : PREC.primary,
+    EXP.super_ : PREC.primary,
+    EXP.int64 : PREC.primary,
+    EXP.float64 : PREC.primary,
+    EXP.complex80 : PREC.primary,
+    EXP.null_ : PREC.primary,
+    EXP.string_ : PREC.primary,
+    EXP.arrayLiteral : PREC.primary,
+    EXP.assocArrayLiteral : PREC.primary,
+    EXP.classReference : PREC.primary,
+    EXP.file : PREC.primary,
+    EXP.fileFullPath : PREC.primary,
+    EXP.line : PREC.primary,
+    EXP.moduleString : PREC.primary,
+    EXP.functionString : PREC.primary,
+    EXP.prettyFunction : PREC.primary,
+    EXP.typeid_ : PREC.primary,
+    EXP.is_ : PREC.primary,
+    EXP.assert_ : PREC.primary,
+    EXP.halt : PREC.primary,
+    EXP.template_ : PREC.primary,
+    EXP.dSymbol : PREC.primary,
+    EXP.function_ : PREC.primary,
+    EXP.variable : PREC.primary,
+    EXP.symbolOffset : PREC.primary,
+    EXP.structLiteral : PREC.primary,
+    EXP.compoundLiteral : PREC.primary,
+    EXP.arrayLength : PREC.primary,
+    EXP.delegatePointer : PREC.primary,
+    EXP.delegateFunctionPointer : PREC.primary,
+    EXP.remove : PREC.primary,
+    EXP.tuple : PREC.primary,
+    EXP.traits : PREC.primary,
+    EXP.default_ : PREC.primary,
+    EXP.overloadSet : PREC.primary,
+    EXP.void_ : PREC.primary,
+    EXP.vectorArray : PREC.primary,
+    EXP._Generic : PREC.primary,
 
     // post
-    TOK.dotTemplateInstance : PREC.primary,
-    TOK.dotIdentifier : PREC.primary,
-    TOK.dotTemplateDeclaration : PREC.primary,
-    TOK.dot : PREC.primary,
-    TOK.dotType : PREC.primary,
-    TOK.plusPlus : PREC.primary,
-    TOK.minusMinus : PREC.primary,
-    TOK.prePlusPlus : PREC.primary,
-    TOK.preMinusMinus : PREC.primary,
-    TOK.call : PREC.primary,
-    TOK.slice : PREC.primary,
-    TOK.array : PREC.primary,
-    TOK.index : PREC.primary,
+    EXP.dotTemplateInstance : PREC.primary,
+    EXP.dotIdentifier : PREC.primary,
+    EXP.dotTemplateDeclaration : PREC.primary,
+    EXP.dot : PREC.primary,
+    EXP.dotType : PREC.primary,
+    EXP.plusPlus : PREC.primary,
+    EXP.minusMinus : PREC.primary,
+    EXP.prePlusPlus : PREC.primary,
+    EXP.preMinusMinus : PREC.primary,
+    EXP.call : PREC.primary,
+    EXP.slice : PREC.primary,
+    EXP.array : PREC.primary,
+    EXP.index : PREC.primary,
 
-    TOK.delegate_ : PREC.unary,
-    TOK.address : PREC.unary,
-    TOK.star : PREC.unary,
-    TOK.negate : PREC.unary,
-    TOK.uadd : PREC.unary,
-    TOK.not : PREC.unary,
-    TOK.tilde : PREC.unary,
-    TOK.delete_ : PREC.unary,
-    TOK.new_ : PREC.unary,
-    TOK.newAnonymousClass : PREC.unary,
-    TOK.cast_ : PREC.unary,
+    EXP.delegate_ : PREC.unary,
+    EXP.address : PREC.unary,
+    EXP.star : PREC.unary,
+    EXP.negate : PREC.unary,
+    EXP.uadd : PREC.unary,
+    EXP.not : PREC.unary,
+    EXP.tilde : PREC.unary,
+    EXP.delete_ : PREC.unary,
+    EXP.new_ : PREC.unary,
+    EXP.newAnonymousClass : PREC.unary,
+    EXP.cast_ : PREC.unary,
 
-    TOK.vector : PREC.unary,
-    TOK.pow : PREC.pow,
+    EXP.vector : PREC.unary,
+    EXP.pow : PREC.pow,
 
-    TOK.mul : PREC.mul,
-    TOK.div : PREC.mul,
-    TOK.mod : PREC.mul,
+    EXP.mul : PREC.mul,
+    EXP.div : PREC.mul,
+    EXP.mod : PREC.mul,
 
-    TOK.add : PREC.add,
-    TOK.min : PREC.add,
-    TOK.concatenate : PREC.add,
+    EXP.add : PREC.add,
+    EXP.min : PREC.add,
+    EXP.concatenate : PREC.add,
 
-    TOK.leftShift : PREC.shift,
-    TOK.rightShift : PREC.shift,
-    TOK.unsignedRightShift : PREC.shift,
+    EXP.leftShift : PREC.shift,
+    EXP.rightShift : PREC.shift,
+    EXP.unsignedRightShift : PREC.shift,
 
-    TOK.lessThan : PREC.rel,
-    TOK.lessOrEqual : PREC.rel,
-    TOK.greaterThan : PREC.rel,
-    TOK.greaterOrEqual : PREC.rel,
-    TOK.in_ : PREC.rel,
+    EXP.lessThan : PREC.rel,
+    EXP.lessOrEqual : PREC.rel,
+    EXP.greaterThan : PREC.rel,
+    EXP.greaterOrEqual : PREC.rel,
+    EXP.in_ : PREC.rel,
 
     /* Note that we changed precedence, so that < and != have the same
      * precedence. This change is in the parser, too.
      */
-    TOK.equal : PREC.rel,
-    TOK.notEqual : PREC.rel,
-    TOK.identity : PREC.rel,
-    TOK.notIdentity : PREC.rel,
+    EXP.equal : PREC.rel,
+    EXP.notEqual : PREC.rel,
+    EXP.identity : PREC.rel,
+    EXP.notIdentity : PREC.rel,
 
-    TOK.and : PREC.and,
-    TOK.xor : PREC.xor,
-    TOK.or : PREC.or,
+    EXP.and : PREC.and,
+    EXP.xor : PREC.xor,
+    EXP.or : PREC.or,
 
-    TOK.andAnd : PREC.andand,
-    TOK.orOr : PREC.oror,
+    EXP.andAnd : PREC.andand,
+    EXP.orOr : PREC.oror,
 
-    TOK.question : PREC.cond,
+    EXP.question : PREC.cond,
 
-    TOK.assign : PREC.assign,
-    TOK.construct : PREC.assign,
-    TOK.blit : PREC.assign,
-    TOK.addAssign : PREC.assign,
-    TOK.minAssign : PREC.assign,
-    TOK.concatenateAssign : PREC.assign,
-    TOK.concatenateElemAssign : PREC.assign,
-    TOK.concatenateDcharAssign : PREC.assign,
-    TOK.mulAssign : PREC.assign,
-    TOK.divAssign : PREC.assign,
-    TOK.modAssign : PREC.assign,
-    TOK.powAssign : PREC.assign,
-    TOK.leftShiftAssign : PREC.assign,
-    TOK.rightShiftAssign : PREC.assign,
-    TOK.unsignedRightShiftAssign : PREC.assign,
-    TOK.andAssign : PREC.assign,
-    TOK.orAssign : PREC.assign,
-    TOK.xorAssign : PREC.assign,
+    EXP.assign : PREC.assign,
+    EXP.construct : PREC.assign,
+    EXP.blit : PREC.assign,
+    EXP.addAssign : PREC.assign,
+    EXP.minAssign : PREC.assign,
+    EXP.concatenateAssign : PREC.assign,
+    EXP.concatenateElemAssign : PREC.assign,
+    EXP.concatenateDcharAssign : PREC.assign,
+    EXP.mulAssign : PREC.assign,
+    EXP.divAssign : PREC.assign,
+    EXP.modAssign : PREC.assign,
+    EXP.powAssign : PREC.assign,
+    EXP.leftShiftAssign : PREC.assign,
+    EXP.rightShiftAssign : PREC.assign,
+    EXP.unsignedRightShiftAssign : PREC.assign,
+    EXP.andAssign : PREC.assign,
+    EXP.orAssign : PREC.assign,
+    EXP.xorAssign : PREC.assign,
 
-    TOK.comma : PREC.expr,
-    TOK.declaration : PREC.expr,
+    EXP.comma : PREC.expr,
+    EXP.declaration : PREC.expr,
 
-    TOK.interval : PREC.assign,
+    EXP.interval : PREC.assign,
 ];
 
 enum ParseStatementFlags : int
@@ -4079,7 +4079,7 @@ class Parser(AST) : Lexer
                     // Handle delegate declaration:
                     //      t delegate(parameter list) nothrow pure
                     //      t function(parameter list) nothrow pure
-                    TOK save = token.value;
+                    const save = token.value;
                     nextToken();
 
                     auto parameterList = parseParameterList(null);
@@ -5752,7 +5752,7 @@ LagainStc:
                  * Error: found 'foo' when expecting ';' following statement
                  * becomes Error: found `(` when expecting `;` or `=`, did you mean `Foo foo = 42`?
                  */
-                if (token.value == TOK.identifier && exp.op == TOK.identifier)
+                if (token.value == TOK.identifier && exp.op == EXP.identifier)
                 {
                     error("found `%s` when expecting `;` or `=`, did you mean `%s %s = %s`?", peek(&token).toChars(), exp.toChars(), token.toChars(), peek(peek(&token)).toChars());
                     nextToken();
@@ -5911,7 +5911,7 @@ LagainStc:
                     // mixin(string)
                     AST.Expression e = parseAssignExp();
                     check(TOK.semicolon);
-                    if (e.op == TOK.mixin_)
+                    if (e.op == EXP.mixin_)
                     {
                         AST.MixinExp cpe = cast(AST.MixinExp)e;
                         s = new AST.CompileStatement(loc, cpe.exps);
@@ -6816,8 +6816,8 @@ LagainStc:
         {
             switch (token.value)
             {
-            case TOK.file:           e = new AST.FileInitExp(token.loc, TOK.file); break;
-            case TOK.fileFullPath:   e = new AST.FileInitExp(token.loc, TOK.fileFullPath); break;
+            case TOK.file:           e = new AST.FileInitExp(token.loc, EXP.file); break;
+            case TOK.fileFullPath:   e = new AST.FileInitExp(token.loc, EXP.fileFullPath); break;
             case TOK.line:           e = new AST.LineInitExp(token.loc); break;
             case TOK.moduleString:   e = new AST.ModuleInitExp(token.loc); break;
             case TOK.functionString: e = new AST.FuncInitExp(token.loc); break;
@@ -8470,14 +8470,14 @@ LagainStc:
             nextToken();
             e = parseUnaryExp();
             //e = new AddAssignExp(loc, e, new IntegerExp(loc, 1, Type::tint32));
-            e = new AST.PreExp(TOK.prePlusPlus, loc, e);
+            e = new AST.PreExp(EXP.prePlusPlus, loc, e);
             break;
 
         case TOK.minusMinus:
             nextToken();
             e = parseUnaryExp();
             //e = new MinAssignExp(loc, e, new IntegerExp(loc, 1, Type::tint32));
-            e = new AST.PreExp(TOK.preMinusMinus, loc, e);
+            e = new AST.PreExp(EXP.preMinusMinus, loc, e);
             break;
 
         case TOK.mul:
@@ -8785,11 +8785,11 @@ LagainStc:
                 break;
 
             case TOK.plusPlus:
-                e = new AST.PostExp(TOK.plusPlus, loc, e);
+                e = new AST.PostExp(EXP.plusPlus, loc, e);
                 break;
 
             case TOK.minusMinus:
-                e = new AST.PostExp(TOK.minusMinus, loc, e);
+                e = new AST.PostExp(EXP.minusMinus, loc, e);
                 break;
 
             case TOK.leftParenthesis:
@@ -8946,20 +8946,17 @@ LagainStc:
         const loc = token.loc;
 
         auto e = parseShiftExp();
-        TOK op = token.value;
+        EXP op = EXP.reserved;
 
-        switch (op)
+        switch (token.value)
         {
-        case TOK.equal:
-        case TOK.notEqual:
+        case TOK.equal:         op = EXP.equal; goto Lequal;
+        case TOK.notEqual:      op = EXP.notEqual; goto Lequal;
+        Lequal:
             nextToken();
             auto e2 = parseShiftExp();
             e = new AST.EqualExp(op, loc, e, e2);
             break;
-
-        case TOK.is_:
-            op = TOK.identity;
-            goto L1;
 
         case TOK.not:
         {
@@ -8977,19 +8974,21 @@ LagainStc:
             if (tv != TOK.is_)
                 break;
             nextToken();
-            op = TOK.notIdentity;
-            goto L1;
+            op = EXP.notIdentity;
+            goto Lidentity;
         }
-        L1:
+        case TOK.is_:           op = EXP.identity; goto Lidentity;
+        Lidentity:
             nextToken();
             auto e2 = parseShiftExp();
             e = new AST.IdentityExp(op, loc, e, e2);
             break;
 
-        case TOK.lessThan:
-        case TOK.lessOrEqual:
-        case TOK.greaterThan:
-        case TOK.greaterOrEqual:
+        case TOK.lessThan:       op = EXP.lessThan;       goto Lcmp;
+        case TOK.lessOrEqual:    op = EXP.lessOrEqual;    goto Lcmp;
+        case TOK.greaterThan:    op = EXP.greaterThan;    goto Lcmp;
+        case TOK.greaterOrEqual: op = EXP.greaterOrEqual; goto Lcmp;
+        Lcmp:
             nextToken();
             auto e2 = parseShiftExp();
             e = new AST.CmpExp(op, loc, e, e2);
@@ -9064,7 +9063,7 @@ LagainStc:
         {
             nextToken();
             auto e2 = parseOrExp();
-            e = new AST.LogicalExp(loc, TOK.andAnd, e, e2);
+            e = new AST.LogicalExp(loc, EXP.andAnd, e, e2);
         }
         return e;
     }
@@ -9078,7 +9077,7 @@ LagainStc:
         {
             nextToken();
             auto e2 = parseAndAndExp();
-            e = new AST.LogicalExp(loc, TOK.orOr, e, e2);
+            e = new AST.LogicalExp(loc, EXP.orOr, e, e2);
         }
         return e;
     }
@@ -9107,92 +9106,109 @@ LagainStc:
             return e;
 
         // require parens for e.g. `t ? a = 1 : b = 2`
-        if (e.op == TOK.question && !e.parens && precedence[token.value] == PREC.assign)
-            dmd.errors.error(e.loc, "`%s` must be surrounded by parentheses when next to operator `%s`",
-                e.toChars(), Token.toChars(token.value));
+        void checkRequiredParens()
+        {
+            if (e.op == EXP.question && !e.parens)
+                dmd.errors.error(e.loc, "`%s` must be surrounded by parentheses when next to operator `%s`",
+                    e.toChars(), Token.toChars(token.value));
+        }
 
         const loc = token.loc;
         switch (token.value)
         {
         case TOK.assign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.AssignExp(loc, e, e2);
             break;
 
         case TOK.addAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.AddAssignExp(loc, e, e2);
             break;
 
         case TOK.minAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.MinAssignExp(loc, e, e2);
             break;
 
         case TOK.mulAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.MulAssignExp(loc, e, e2);
             break;
 
         case TOK.divAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.DivAssignExp(loc, e, e2);
             break;
 
         case TOK.modAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.ModAssignExp(loc, e, e2);
             break;
 
         case TOK.powAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.PowAssignExp(loc, e, e2);
             break;
 
         case TOK.andAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.AndAssignExp(loc, e, e2);
             break;
 
         case TOK.orAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.OrAssignExp(loc, e, e2);
             break;
 
         case TOK.xorAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.XorAssignExp(loc, e, e2);
             break;
 
         case TOK.leftShiftAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.ShlAssignExp(loc, e, e2);
             break;
 
         case TOK.rightShiftAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.ShrAssignExp(loc, e, e2);
             break;
 
         case TOK.unsignedRightShiftAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.UshrAssignExp(loc, e, e2);
             break;
 
         case TOK.concatenateAssign:
+            checkRequiredParens();
             nextToken();
             auto e2 = parseAssignExp();
             e = new AST.CatAssignExp(loc, e, e2);

@@ -78,32 +78,38 @@ namespace
 	out    = std::ios_base::out,
 	trunc  = std::ios_base::trunc,
 	app    = std::ios_base::app,
-	binary = std::ios_base::binary
+	binary = std::ios_base::binary,
+	noreplace = std::_S_noreplace
       };
 
     // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 596. 27.8.1.3 Table 112 omits "a+" and "a+b" modes.
-    switch (mode & (in|out|trunc|app|binary))
+    switch (mode & (in|out|trunc|app|binary|noreplace))
       {
-      case (   out                 ): return "w";
-      case (   out      |app       ): return "a";
-      case (             app       ): return "a";
-      case (   out|trunc           ): return "w";
-      case (in                     ): return "r";
-      case (in|out                 ): return "r+";
-      case (in|out|trunc           ): return "w+";
-      case (in|out      |app       ): return "a+";
-      case (in          |app       ): return "a+";
+      case (   out                           ): return "w";
+      case (   out                 |noreplace): return "wx";
+      case (   out|trunc                     ): return "w";
+      case (   out|trunc           |noreplace): return "wx";
+      case (   out      |app                 ): return "a";
+      case (             app                 ): return "a";
+      case (in                               ): return "r";
+      case (in|out                           ): return "r+";
+      case (in|out|trunc                     ): return "w+";
+      case (in|out|trunc           |noreplace): return "w+x";
+      case (in|out      |app                 ): return "a+";
+      case (in          |app                 ): return "a+";
 
-      case (   out          |binary): return "wb";
-      case (   out      |app|binary): return "ab";
-      case (             app|binary): return "ab";
-      case (   out|trunc    |binary): return "wb";
-      case (in              |binary): return "rb";
-      case (in|out          |binary): return "r+b";
-      case (in|out|trunc    |binary): return "w+b";
-      case (in|out      |app|binary): return "a+b";
-      case (in          |app|binary): return "a+b";
+      case (   out          |binary          ): return "wb";
+      case (   out          |binary|noreplace): return "wbx";
+      case (   out      |app|binary          ): return "ab";
+      case (             app|binary          ): return "ab";
+      case (   out|trunc    |binary          ): return "wb";
+      case (in              |binary          ): return "rb";
+      case (in|out          |binary          ): return "r+b";
+      case (in|out|trunc    |binary          ): return "w+b";
+      case (in|out|trunc    |binary|noreplace): return "w+bx";
+      case (in|out      |app|binary          ): return "a+b";
+      case (in          |app|binary          ): return "a+b";
 
       default: return 0; // invalid
       }

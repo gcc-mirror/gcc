@@ -46,7 +46,7 @@ extern (C++) final class ClassReferenceExp : Expression
 
     extern (D) this(const ref Loc loc, StructLiteralExp lit, Type type)
     {
-        super(loc, TOK.classReference, __traits(classInstanceSize, ClassReferenceExp));
+        super(loc, EXP.classReference, __traits(classInstanceSize, ClassReferenceExp));
         assert(lit && lit.sd && lit.sd.isClassDeclaration());
         this.value = lit;
         this.type = type;
@@ -131,7 +131,7 @@ extern (C++) final class ThrownExceptionExp : Expression
 
     extern (D) this(const ref Loc loc, ClassReferenceExp victim)
     {
-        super(loc, TOK.thrownException, __traits(classInstanceSize, ThrownExceptionExp));
+        super(loc, EXP.thrownException, __traits(classInstanceSize, ThrownExceptionExp));
         this.thrown = victim;
         this.type = victim.type;
     }
@@ -167,7 +167,7 @@ extern (C++) final class ThrownExceptionExp : Expression
  */
 extern (C++) final class CTFEExp : Expression
 {
-    extern (D) this(TOK tok)
+    extern (D) this(EXP tok)
     {
         super(Loc.initial, tok, __traits(classInstanceSize, CTFEExp));
         type = Type.tvoid;
@@ -177,17 +177,17 @@ extern (C++) final class CTFEExp : Expression
     {
         switch (op)
         {
-        case TOK.cantExpression:
+        case EXP.cantExpression:
             return "<cant>";
-        case TOK.voidExpression:
+        case EXP.voidExpression:
             return "cast(void)0";
-        case TOK.showCtfeContext:
+        case EXP.showCtfeContext:
             return "<error>";
-        case TOK.break_:
+        case EXP.break_:
             return "<break>";
-        case TOK.continue_:
+        case EXP.continue_:
             return "<continue>";
-        case TOK.goto_:
+        case EXP.goto_:
             return "<goto>";
         default:
             assert(0);
@@ -206,19 +206,19 @@ extern (C++) final class CTFEExp : Expression
 
     extern (D) static bool isCantExp(const Expression e)
     {
-        return e && e.op == TOK.cantExpression;
+        return e && e.op == EXP.cantExpression;
     }
 
     extern (D) static bool isGotoExp(const Expression e)
     {
-        return e && e.op == TOK.goto_;
+        return e && e.op == EXP.goto_;
     }
 }
 
 // True if 'e' is CTFEExp::cantexp, or an exception
 bool exceptionOrCantInterpret(const Expression e)
 {
-    return e && (e.op == TOK.cantExpression || e.op == TOK.thrownException || e.op == TOK.showCtfeContext);
+    return e && (e.op == EXP.cantExpression || e.op == EXP.thrownException || e.op == EXP.showCtfeContext);
 }
 
 /************** Aggregate literals (AA/string/array/struct) ******************/
@@ -231,29 +231,29 @@ bool needToCopyLiteral(const Expression expr)
     {
         switch (e.op)
         {
-        case TOK.arrayLiteral:
+        case EXP.arrayLiteral:
             return (cast(ArrayLiteralExp)e).ownedByCtfe == OwnedBy.code;
-        case TOK.assocArrayLiteral:
+        case EXP.assocArrayLiteral:
             return (cast(AssocArrayLiteralExp)e).ownedByCtfe == OwnedBy.code;
-        case TOK.structLiteral:
+        case EXP.structLiteral:
             return (cast(StructLiteralExp)e).ownedByCtfe == OwnedBy.code;
-        case TOK.string_:
-        case TOK.this_:
-        case TOK.variable:
+        case EXP.string_:
+        case EXP.this_:
+        case EXP.variable:
             return false;
-        case TOK.assign:
+        case EXP.assign:
             return false;
-        case TOK.index:
-        case TOK.dotVariable:
-        case TOK.slice:
-        case TOK.cast_:
+        case EXP.index:
+        case EXP.dotVariable:
+        case EXP.slice:
+        case EXP.cast_:
             e = (cast(UnaExp)e).e1;
             continue;
-        case TOK.concatenate:
+        case EXP.concatenate:
             return needToCopyLiteral((cast(BinExp)e).e1) || needToCopyLiteral((cast(BinExp)e).e2);
-        case TOK.concatenateAssign:
-        case TOK.concatenateElemAssign:
-        case TOK.concatenateDcharAssign:
+        case EXP.concatenateAssign:
+        case EXP.concatenateElemAssign:
+        case EXP.concatenateDcharAssign:
             e = (cast(BinExp)e).e2;
             continue;
         default:
@@ -358,7 +358,7 @@ UnionExp copyLiteral(Expression e)
         r.origin = sle.origin;
         return ue;
     }
-    if (e.op == TOK.function_ || e.op == TOK.delegate_ || e.op == TOK.symbolOffset || e.op == TOK.null_ || e.op == TOK.variable || e.op == TOK.dotVariable || e.op == TOK.int64 || e.op == TOK.float64 || e.op == TOK.char_ || e.op == TOK.complex80 || e.op == TOK.void_ || e.op == TOK.vector || e.op == TOK.typeid_)
+    if (e.op == EXP.function_ || e.op == EXP.delegate_ || e.op == EXP.symbolOffset || e.op == EXP.null_ || e.op == EXP.variable || e.op == EXP.dotVariable || e.op == EXP.int64 || e.op == EXP.float64 || e.op == EXP.char_ || e.op == EXP.complex80 || e.op == EXP.void_ || e.op == EXP.vector || e.op == EXP.typeid_)
     {
         // Simple value types
         // Keep e1 for DelegateExp and DotVarExp
@@ -372,7 +372,7 @@ UnionExp copyLiteral(Expression e)
         if (se.type.toBasetype().ty == Tsarray)
         {
             // same with resolveSlice()
-            if (se.e1.op == TOK.null_)
+            if (se.e1.op == EXP.null_)
             {
                 emplaceExp!(NullExp)(&ue, se.loc, se.type);
                 return ue;
@@ -415,7 +415,7 @@ UnionExp copyLiteral(Expression e)
         emplaceExp!(ClassReferenceExp)(&ue, e.loc, cre.value, e.type);
         return ue;
     }
-    if (e.op == TOK.error)
+    if (e.op == EXP.error)
     {
         emplaceExp!(UnionExp)(&ue, e);
         return ue;
@@ -468,11 +468,11 @@ private UnionExp paintTypeOntoLiteralCopy(Type type, Expression lit)
     {
         emplaceExp!(IndexExp)(&ue, lit.loc, ie.e1, ie.e2);
     }
-    else if (lit.op == TOK.arrayLiteral)
+    else if (lit.op == EXP.arrayLiteral)
     {
         emplaceExp!(SliceExp)(&ue, lit.loc, lit, ctfeEmplaceExp!IntegerExp(Loc.initial, 0, Type.tsize_t), ArrayLength(Type.tsize_t, lit).copy());
     }
-    else if (lit.op == TOK.string_)
+    else if (lit.op == EXP.string_)
     {
         // For strings, we need to introduce another level of indirection
         emplaceExp!(SliceExp)(&ue, lit.loc, lit, ctfeEmplaceExp!IntegerExp(Loc.initial, 0, Type.tsize_t), ArrayLength(Type.tsize_t, lit).copy());
@@ -490,7 +490,7 @@ private UnionExp paintTypeOntoLiteralCopy(Type type, Expression lit)
     {
         // Can't type paint from struct to struct*; this needs another
         // level of indirection
-        if (lit.op == TOK.structLiteral && isPointer(type))
+        if (lit.op == EXP.structLiteral && isPointer(type))
             lit.error("CTFE internal error: painting `%s`", type.toChars());
         ue = copyLiteral(lit);
     }
@@ -511,7 +511,7 @@ Expression resolveSlice(Expression e, UnionExp* pue = null)
     SliceExp se = e.isSliceExp();
     if (!se)
         return e;
-    if (se.e1.op == TOK.null_)
+    if (se.e1.op == EXP.null_)
         return se.e1;
     if (pue)
     {
@@ -531,13 +531,13 @@ uinteger_t resolveArrayLength(const Expression e)
 {
     switch (e.op)
     {
-        case TOK.vector:
+        case EXP.vector:
             return e.isVectorExp().dim;
 
-        case TOK.null_:
+        case EXP.null_:
             return 0;
 
-        case TOK.slice:
+        case EXP.slice:
         {
             auto se = cast(SliceExp)e;
             const ilo = se.lwr.toInteger();
@@ -545,16 +545,16 @@ uinteger_t resolveArrayLength(const Expression e)
             return iup - ilo;
         }
 
-        case TOK.string_:
+        case EXP.string_:
             return e.isStringExp().len;
 
-        case TOK.arrayLiteral:
+        case EXP.arrayLiteral:
         {
             const ale = e.isArrayLiteralExp();
             return ale.elements ? ale.elements.dim : 0;
         }
 
-        case TOK.assocArrayLiteral:
+        case EXP.assocArrayLiteral:
         {
             return e.isAssocArrayLiteralExp().keys.dim;
         }
@@ -667,7 +667,7 @@ bool isPointer(Type t)
 // For CTFE only. Returns true if 'e' is true or a non-null pointer.
 bool isTrueBool(Expression e)
 {
-    return e.isBool(true) || ((e.type.ty == Tpointer || e.type.ty == Tclass) && e.op != TOK.null_);
+    return e.toBool().hasValue(true) || ((e.type.ty == Tpointer || e.type.ty == Tclass) && e.op != EXP.null_);
 }
 
 /* Is it safe to convert from srcPointee* to destPointee* ?
@@ -725,12 +725,12 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
         const ex = dve.e1;
         const v = dve.var.isVarDeclaration();
         assert(v);
-        StructLiteralExp se = (ex.op == TOK.classReference)
+        StructLiteralExp se = (ex.op == EXP.classReference)
             ? (cast(ClassReferenceExp)ex).value
             : cast(StructLiteralExp)ex;
 
         // We can't use getField, because it makes a copy
-        const i = (ex.op == TOK.classReference)
+        const i = (ex.op == EXP.classReference)
             ? (cast(ClassReferenceExp)ex).getFieldIndex(e.type, v.offset)
             : se.getFieldIndex(e.type, v.offset);
         e = (*se.elements)[i];
@@ -738,7 +738,7 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
     if (auto ie = e.isIndexExp())
     {
         // Note that each AA element is part of its own memory block
-        if ((ie.e1.type.ty == Tarray || ie.e1.type.ty == Tsarray || ie.e1.op == TOK.string_ || ie.e1.op == TOK.arrayLiteral) && ie.e2.op == TOK.int64)
+        if ((ie.e1.type.ty == Tarray || ie.e1.type.ty == Tsarray || ie.e1.op == EXP.string_ || ie.e1.op == EXP.arrayLiteral) && ie.e2.op == EXP.int64)
         {
             *ofs = ie.e2.toInteger();
             return ie.e1;
@@ -747,7 +747,7 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
     if (auto se = e.isSliceExp())
     {
         if (se && e.type.toBasetype().ty == Tsarray &&
-           (se.e1.type.ty == Tarray || se.e1.type.ty == Tsarray || se.e1.op == TOK.string_ || se.e1.op == TOK.arrayLiteral) && se.lwr.op == TOK.int64)
+           (se.e1.type.ty == Tarray || se.e1.type.ty == Tsarray || se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral) && se.lwr.op == EXP.int64)
         {
             *ofs = se.lwr.toInteger();
             return se.e1;
@@ -773,17 +773,17 @@ bool pointToSameMemoryBlock(Expression agg1, Expression agg2)
         return true;
     // For integers cast to pointers, we regard them as non-comparable
     // unless they are identical. (This may be overly strict).
-    if (agg1.op == TOK.int64 && agg2.op == TOK.int64 && agg1.toInteger() == agg2.toInteger())
+    if (agg1.op == EXP.int64 && agg2.op == EXP.int64 && agg1.toInteger() == agg2.toInteger())
     {
         return true;
     }
     // Note that type painting can occur with VarExp, so we
     // must compare the variables being pointed to.
-    if (agg1.op == TOK.variable && agg2.op == TOK.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var)
+    if (agg1.op == EXP.variable && agg2.op == EXP.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var)
     {
         return true;
     }
-    if (agg1.op == TOK.symbolOffset && agg2.op == TOK.symbolOffset && (cast(SymOffExp)agg1).var == (cast(SymOffExp)agg2).var)
+    if (agg1.op == EXP.symbolOffset && agg2.op == EXP.symbolOffset && (cast(SymOffExp)agg1).var == (cast(SymOffExp)agg2).var)
     {
         return true;
     }
@@ -803,14 +803,14 @@ UnionExp pointerDifference(const ref Loc loc, Type type, Expression e1, Expressi
         const sz = pointee.size();
         emplaceExp!(IntegerExp)(&ue, loc, (ofs1 - ofs2) * sz, type);
     }
-    else if (agg1.op == TOK.string_ && agg2.op == TOK.string_ &&
+    else if (agg1.op == EXP.string_ && agg2.op == EXP.string_ &&
              (cast(StringExp)agg1).peekString().ptr == (cast(StringExp)agg2).peekString().ptr)
     {
         Type pointee = (cast(TypePointer)agg1.type).next;
         const sz = pointee.size();
         emplaceExp!(IntegerExp)(&ue, loc, (ofs1 - ofs2) * sz, type);
     }
-    else if (agg1.op == TOK.symbolOffset && agg2.op == TOK.symbolOffset &&
+    else if (agg1.op == EXP.symbolOffset && agg2.op == EXP.symbolOffset &&
              (cast(SymOffExp)agg1).var == (cast(SymOffExp)agg2).var)
     {
         emplaceExp!(IntegerExp)(&ue, loc, ofs1 - ofs2, type);
@@ -818,28 +818,28 @@ UnionExp pointerDifference(const ref Loc loc, Type type, Expression e1, Expressi
     else
     {
         error(loc, "`%s - %s` cannot be interpreted at compile time: cannot subtract pointers to two different memory blocks", e1.toChars(), e2.toChars());
-        emplaceExp!(CTFEExp)(&ue, TOK.cantExpression);
+        emplaceExp!(CTFEExp)(&ue, EXP.cantExpression);
     }
     return ue;
 }
 
 // Return eptr op e2, where eptr is a pointer, e2 is an integer,
-// and op is TOK.add or TOK.min
-UnionExp pointerArithmetic(const ref Loc loc, TOK op, Type type, Expression eptr, Expression e2)
+// and op is EXP.add or EXP.min
+UnionExp pointerArithmetic(const ref Loc loc, EXP op, Type type, Expression eptr, Expression e2)
 {
     UnionExp ue;
     if (eptr.type.nextOf().ty == Tvoid)
     {
         error(loc, "cannot perform arithmetic on `void*` pointers at compile time");
     Lcant:
-        emplaceExp!(CTFEExp)(&ue, TOK.cantExpression);
+        emplaceExp!(CTFEExp)(&ue, EXP.cantExpression);
         return ue;
     }
-    if (eptr.op == TOK.address)
+    if (eptr.op == EXP.address)
         eptr = (cast(AddrExp)eptr).e1;
     dinteger_t ofs1;
     Expression agg1 = getAggregateFromPointer(eptr, &ofs1);
-    if (agg1.op == TOK.symbolOffset)
+    if (agg1.op == EXP.symbolOffset)
     {
         if ((cast(SymOffExp)agg1).var.type.ty != Tsarray)
         {
@@ -847,7 +847,7 @@ UnionExp pointerArithmetic(const ref Loc loc, TOK op, Type type, Expression eptr
             goto Lcant;
         }
     }
-    else if (agg1.op != TOK.string_ && agg1.op != TOK.arrayLiteral)
+    else if (agg1.op != EXP.string_ && agg1.op != EXP.arrayLiteral)
     {
         error(loc, "cannot perform pointer arithmetic on non-arrays at compile time");
         goto Lcant;
@@ -857,7 +857,7 @@ UnionExp pointerArithmetic(const ref Loc loc, TOK op, Type type, Expression eptr
     dinteger_t sz = pointee.size();
     sinteger_t indx;
     dinteger_t len;
-    if (agg1.op == TOK.symbolOffset)
+    if (agg1.op == EXP.symbolOffset)
     {
         indx = ofs1 / sz;
         len = (cast(TypeSArray)(cast(SymOffExp)agg1).var.type).dim.toInteger();
@@ -869,9 +869,9 @@ UnionExp pointerArithmetic(const ref Loc loc, TOK op, Type type, Expression eptr
         indx = ofs1;
         len = dollar.toInteger();
     }
-    if (op == TOK.add || op == TOK.addAssign || op == TOK.plusPlus)
+    if (op == EXP.add || op == EXP.addAssign || op == EXP.plusPlus)
         indx += ofs2 / sz;
-    else if (op == TOK.min || op == TOK.minAssign || op == TOK.minusMinus)
+    else if (op == EXP.min || op == EXP.minAssign || op == EXP.minusMinus)
         indx -= ofs2 / sz;
     else
     {
@@ -883,14 +883,14 @@ UnionExp pointerArithmetic(const ref Loc loc, TOK op, Type type, Expression eptr
         error(loc, "cannot assign pointer to index %lld inside memory block `[0..%lld]`", indx, len);
         goto Lcant;
     }
-    if (agg1.op == TOK.symbolOffset)
+    if (agg1.op == EXP.symbolOffset)
     {
         emplaceExp!(SymOffExp)(&ue, loc, (cast(SymOffExp)agg1).var, indx * sz);
         SymOffExp se = cast(SymOffExp)ue.exp();
         se.type = type;
         return ue;
     }
-    if (agg1.op != TOK.arrayLiteral && agg1.op != TOK.string_)
+    if (agg1.op != EXP.arrayLiteral && agg1.op != EXP.string_)
     {
         error(loc, "CTFE internal error: pointer arithmetic `%s`", agg1.toChars());
         goto Lcant;
@@ -918,31 +918,31 @@ UnionExp pointerArithmetic(const ref Loc loc, TOK op, Type type, Expression eptr
 
 // Return 1 if true, 0 if false
 // -1 if comparison is illegal because they point to non-comparable memory blocks
-int comparePointers(TOK op, Expression agg1, dinteger_t ofs1, Expression agg2, dinteger_t ofs2)
+int comparePointers(EXP op, Expression agg1, dinteger_t ofs1, Expression agg2, dinteger_t ofs2)
 {
     if (pointToSameMemoryBlock(agg1, agg2))
     {
         int n;
         switch (op)
         {
-        case TOK.lessThan:
+        case EXP.lessThan:
             n = (ofs1 < ofs2);
             break;
-        case TOK.lessOrEqual:
+        case EXP.lessOrEqual:
             n = (ofs1 <= ofs2);
             break;
-        case TOK.greaterThan:
+        case EXP.greaterThan:
             n = (ofs1 > ofs2);
             break;
-        case TOK.greaterOrEqual:
+        case EXP.greaterOrEqual:
             n = (ofs1 >= ofs2);
             break;
-        case TOK.identity:
-        case TOK.equal:
+        case EXP.identity:
+        case EXP.equal:
             n = (ofs1 == ofs2);
             break;
-        case TOK.notIdentity:
-        case TOK.notEqual:
+        case EXP.notIdentity:
+        case EXP.notEqual:
             n = (ofs1 != ofs2);
             break;
         default:
@@ -950,29 +950,29 @@ int comparePointers(TOK op, Expression agg1, dinteger_t ofs1, Expression agg2, d
         }
         return n;
     }
-    const null1 = (agg1.op == TOK.null_);
-    const null2 = (agg2.op == TOK.null_);
+    const null1 = (agg1.op == EXP.null_);
+    const null2 = (agg2.op == EXP.null_);
     int cmp;
     if (null1 || null2)
     {
         switch (op)
         {
-        case TOK.lessThan:
+        case EXP.lessThan:
             cmp = null1 && !null2;
             break;
-        case TOK.greaterThan:
+        case EXP.greaterThan:
             cmp = !null1 && null2;
             break;
-        case TOK.lessOrEqual:
+        case EXP.lessOrEqual:
             cmp = null1;
             break;
-        case TOK.greaterOrEqual:
+        case EXP.greaterOrEqual:
             cmp = null2;
             break;
-        case TOK.identity:
-        case TOK.equal:
-        case TOK.notIdentity: // 'cmp' gets inverted below
-        case TOK.notEqual:
+        case EXP.identity:
+        case EXP.equal:
+        case EXP.notIdentity: // 'cmp' gets inverted below
+        case EXP.notEqual:
             cmp = (null1 == null2);
             break;
         default:
@@ -983,17 +983,17 @@ int comparePointers(TOK op, Expression agg1, dinteger_t ofs1, Expression agg2, d
     {
         switch (op)
         {
-        case TOK.identity:
-        case TOK.equal:
-        case TOK.notIdentity: // 'cmp' gets inverted below
-        case TOK.notEqual:
+        case EXP.identity:
+        case EXP.equal:
+        case EXP.notIdentity: // 'cmp' gets inverted below
+        case EXP.notEqual:
             cmp = 0;
             break;
         default:
             return -1; // memory blocks are different
         }
     }
-    if (op == TOK.notIdentity || op == TOK.notEqual)
+    if (op == EXP.notIdentity || op == EXP.notEqual)
         cmp ^= 1;
     return cmp;
 }
@@ -1019,35 +1019,35 @@ Expression paintFloatInt(UnionExp* pue, Expression fromVal, Type to)
 /// with >,is, ==, etc, using ctfeCmp, ctfeEqual, ctfeIdentity
 bool isCtfeComparable(Expression e)
 {
-    if (e.op == TOK.slice)
+    if (e.op == EXP.slice)
         e = (cast(SliceExp)e).e1;
     if (e.isConst() != 1)
     {
-        if (e.op == TOK.null_ || e.op == TOK.string_ || e.op == TOK.function_ || e.op == TOK.delegate_ || e.op == TOK.arrayLiteral || e.op == TOK.structLiteral || e.op == TOK.assocArrayLiteral || e.op == TOK.classReference)
+        if (e.op == EXP.null_ || e.op == EXP.string_ || e.op == EXP.function_ || e.op == EXP.delegate_ || e.op == EXP.arrayLiteral || e.op == EXP.structLiteral || e.op == EXP.assocArrayLiteral || e.op == EXP.classReference)
         {
             return true;
         }
         // https://issues.dlang.org/show_bug.cgi?id=14123
         // TypeInfo object is comparable in CTFE
-        if (e.op == TOK.typeid_)
+        if (e.op == EXP.typeid_)
             return true;
         return false;
     }
     return true;
 }
 
-/// Map TOK comparison ops
-private bool numCmp(N)(TOK op, N n1, N n2)
+/// Map EXP comparison ops
+private bool numCmp(N)(EXP op, N n1, N n2)
 {
     switch (op)
     {
-    case TOK.lessThan:
+    case EXP.lessThan:
         return n1 < n2;
-    case TOK.lessOrEqual:
+    case EXP.lessOrEqual:
         return n1 <= n2;
-    case TOK.greaterThan:
+    case EXP.greaterThan:
         return n1 > n2;
-    case TOK.greaterOrEqual:
+    case EXP.greaterOrEqual:
         return n1 >= n2;
 
     default:
@@ -1056,35 +1056,35 @@ private bool numCmp(N)(TOK op, N n1, N n2)
 }
 
 /// Returns cmp OP 0; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool specificCmp(TOK op, int rawCmp)
+bool specificCmp(EXP op, int rawCmp)
 {
     return numCmp!int(op, rawCmp, 0);
 }
 
 /// Returns e1 OP e2; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool intUnsignedCmp(TOK op, dinteger_t n1, dinteger_t n2)
+bool intUnsignedCmp(EXP op, dinteger_t n1, dinteger_t n2)
 {
     return numCmp!dinteger_t(op, n1, n2);
 }
 
 /// Returns e1 OP e2; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool intSignedCmp(TOK op, sinteger_t n1, sinteger_t n2)
+bool intSignedCmp(EXP op, sinteger_t n1, sinteger_t n2)
 {
     return numCmp!sinteger_t(op, n1, n2);
 }
 
 /// Returns e1 OP e2; where OP is ==, !=, <, >=, etc. Result is 0 or 1
-bool realCmp(TOK op, real_t r1, real_t r2)
+bool realCmp(EXP op, real_t r1, real_t r2)
 {
     // Don't rely on compiler, handle NAN arguments separately
     if (CTFloat.isNaN(r1) || CTFloat.isNaN(r2)) // if unordered
     {
         switch (op)
         {
-        case TOK.lessThan:
-        case TOK.lessOrEqual:
-        case TOK.greaterThan:
-        case TOK.greaterOrEqual:
+        case EXP.lessThan:
+        case EXP.lessOrEqual:
+        case EXP.greaterThan:
+        case EXP.greaterOrEqual:
             return false;
 
         default:
@@ -1128,7 +1128,7 @@ private int ctfeCmpArrays(const ref Loc loc, Expression e1, Expression e2, uinte
     auto se2 = x2.isStringExp();
     auto ae2 = x2.isArrayLiteralExp();
 
-    // Now both must be either TOK.arrayLiteral or TOK.string_
+    // Now both must be either EXP.arrayLiteral or EXP.string_
     if (se1 && se2)
         return sliceCmpStringWithString(se1, se2, cast(size_t)lo1, cast(size_t)lo2, cast(size_t)len);
     if (se1 && ae2)
@@ -1171,13 +1171,13 @@ private FuncDeclaration funcptrOf(Expression e)
         return de.func;
     if (auto fe = e.isFuncExp())
         return fe.fd;
-    assert(e.op == TOK.null_);
+    assert(e.op == EXP.null_);
     return null;
 }
 
 private bool isArray(const Expression e)
 {
-    return e.op == TOK.arrayLiteral || e.op == TOK.string_ || e.op == TOK.slice || e.op == TOK.null_;
+    return e.op == EXP.arrayLiteral || e.op == EXP.string_ || e.op == EXP.slice || e.op == EXP.null_;
 }
 
 /*****
@@ -1192,14 +1192,14 @@ private bool isArray(const Expression e)
  */
 private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool identity = false)
 {
-    if (e1.op == TOK.classReference || e2.op == TOK.classReference)
+    if (e1.op == EXP.classReference || e2.op == EXP.classReference)
     {
-        if (e1.op == TOK.classReference && e2.op == TOK.classReference &&
+        if (e1.op == EXP.classReference && e2.op == EXP.classReference &&
             (cast(ClassReferenceExp)e1).value == (cast(ClassReferenceExp)e2).value)
             return 0;
         return 1;
     }
-    if (e1.op == TOK.typeid_ && e2.op == TOK.typeid_)
+    if (e1.op == EXP.typeid_ && e2.op == EXP.typeid_)
     {
         // printf("e1: %s\n", e1.toChars());
         // printf("e2: %s\n", e2.toChars());
@@ -1210,7 +1210,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         return t1 != t2;
     }
     // null == null, regardless of type
-    if (e1.op == TOK.null_ && e2.op == TOK.null_)
+    if (e1.op == EXP.null_ && e2.op == EXP.null_)
         return 0;
     if (e1.type.ty == Tpointer && e2.type.ty == Tpointer)
     {
@@ -1218,7 +1218,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         dinteger_t ofs1, ofs2;
         Expression agg1 = getAggregateFromPointer(e1, &ofs1);
         Expression agg2 = getAggregateFromPointer(e2, &ofs2);
-        if ((agg1 == agg2) || (agg1.op == TOK.variable && agg2.op == TOK.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var))
+        if ((agg1 == agg2) || (agg1.op == EXP.variable && agg2.op == EXP.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var))
         {
             if (ofs1 == ofs2)
                 return 0;
@@ -1232,17 +1232,17 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
             return 1;
         // If both are delegate literals, assume they have the
         // same closure pointer. TODO: We don't support closures yet!
-        if (e1.op == TOK.function_ && e2.op == TOK.function_)
+        if (e1.op == EXP.function_ && e2.op == EXP.function_)
             return 0;
-        assert(e1.op == TOK.delegate_ && e2.op == TOK.delegate_);
+        assert(e1.op == EXP.delegate_ && e2.op == EXP.delegate_);
         // Same .funcptr. Do they have the same .ptr?
         Expression ptr1 = (cast(DelegateExp)e1).e1;
         Expression ptr2 = (cast(DelegateExp)e2).e1;
         dinteger_t ofs1, ofs2;
         Expression agg1 = getAggregateFromPointer(ptr1, &ofs1);
         Expression agg2 = getAggregateFromPointer(ptr2, &ofs2);
-        // If they are TOK.variable, it means they are FuncDeclarations
-        if ((agg1 == agg2 && ofs1 == ofs2) || (agg1.op == TOK.variable && agg2.op == TOK.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var))
+        // If they are EXP.variable, it means they are FuncDeclarations
+        if ((agg1 == agg2 && ofs1 == ofs2) || (agg1.op == EXP.variable && agg2.op == EXP.variable && (cast(VarExp)agg1).var == (cast(VarExp)agg2).var))
         {
             return 0;
         }
@@ -1293,7 +1293,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
         }
         return c1 != c2;
     }
-    if (e1.op == TOK.structLiteral && e2.op == TOK.structLiteral)
+    if (e1.op == EXP.structLiteral && e2.op == EXP.structLiteral)
     {
         StructLiteralExp es1 = cast(StructLiteralExp)e1;
         StructLiteralExp es2 = cast(StructLiteralExp)e2;
@@ -1314,7 +1314,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
                 Expression ee2 = (*es2.elements)[i];
 
                 // https://issues.dlang.org/show_bug.cgi?id=16284
-                if (ee1.op == TOK.void_ && ee2.op == TOK.void_) // if both are VoidInitExp
+                if (ee1.op == EXP.void_ && ee2.op == EXP.void_) // if both are VoidInitExp
                     continue;
 
                 if (ee1 == ee2)
@@ -1328,7 +1328,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
             return 0; // All elements are equal
         }
     }
-    if (e1.op == TOK.assocArrayLiteral && e2.op == TOK.assocArrayLiteral)
+    if (e1.op == EXP.assocArrayLiteral && e2.op == EXP.assocArrayLiteral)
     {
         AssocArrayLiteralExp es1 = cast(AssocArrayLiteralExp)e1;
         AssocArrayLiteralExp es2 = cast(AssocArrayLiteralExp)e2;
@@ -1367,27 +1367,27 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
 }
 
 /// Evaluate ==, !=.  Resolves slices before comparing. Returns 0 or 1
-bool ctfeEqual(const ref Loc loc, TOK op, Expression e1, Expression e2)
+bool ctfeEqual(const ref Loc loc, EXP op, Expression e1, Expression e2)
 {
-    return !ctfeRawCmp(loc, e1, e2) ^ (op == TOK.notEqual);
+    return !ctfeRawCmp(loc, e1, e2) ^ (op == EXP.notEqual);
 }
 
 /// Evaluate is, !is.  Resolves slices before comparing. Returns 0 or 1
-bool ctfeIdentity(const ref Loc loc, TOK op, Expression e1, Expression e2)
+bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
 {
     //printf("ctfeIdentity %s %s\n", e1.toChars(), e2.toChars());
-    //printf("ctfeIdentity op = '%s', e1 = %s %s, e2 = %s %s\n", Token::toChars(op),
-    //    Token::toChars(e1.op), e1.toChars(), Token::toChars(e2.op), e1.toChars());
+    //printf("ctfeIdentity op = '%s', e1 = %s %s, e2 = %s %s\n", EXPtoString(op).ptr,
+    //    EXPtoString(e1.op).ptr, e1.toChars(), EXPtoString(e2.op).ptr, e1.toChars());
     bool cmp;
-    if (e1.op == TOK.null_)
+    if (e1.op == EXP.null_)
     {
-        cmp = (e2.op == TOK.null_);
+        cmp = (e2.op == EXP.null_);
     }
-    else if (e2.op == TOK.null_)
+    else if (e2.op == EXP.null_)
     {
         cmp = false;
     }
-    else if (e1.op == TOK.symbolOffset && e2.op == TOK.symbolOffset)
+    else if (e1.op == EXP.symbolOffset && e2.op == EXP.symbolOffset)
     {
         SymOffExp es1 = cast(SymOffExp)e1;
         SymOffExp es2 = cast(SymOffExp)e2;
@@ -1407,13 +1407,13 @@ bool ctfeIdentity(const ref Loc loc, TOK op, Expression e1, Expression e2)
     {
         cmp = !ctfeRawCmp(loc, e1, e2, true);
     }
-    if (op == TOK.notIdentity || op == TOK.notEqual)
+    if (op == EXP.notIdentity || op == EXP.notEqual)
         cmp ^= true;
     return cmp;
 }
 
 /// Evaluate >,<=, etc. Resolves slices before comparing. Returns 0 or 1
-bool ctfeCmp(const ref Loc loc, TOK op, Expression e1, Expression e2)
+bool ctfeCmp(const ref Loc loc, EXP op, Expression e1, Expression e2)
 {
     Type t1 = e1.type.toBasetype();
     Type t2 = e2.type.toBasetype();
@@ -1435,7 +1435,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
     Type t1 = e1.type.toBasetype();
     Type t2 = e2.type.toBasetype();
     UnionExp ue;
-    if (e2.op == TOK.string_ && e1.op == TOK.arrayLiteral && t1.nextOf().isintegral())
+    if (e2.op == EXP.string_ && e1.op == EXP.arrayLiteral && t1.nextOf().isintegral())
     {
         // [chars] ~ string => string (only valid for CTFE)
         StringExp es1 = cast(StringExp)e2;
@@ -1448,9 +1448,9 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         foreach (size_t i; 0 .. es2.elements.dim)
         {
             Expression es2e = (*es2.elements)[i];
-            if (es2e.op != TOK.int64)
+            if (es2e.op != EXP.int64)
             {
-                emplaceExp!(CTFEExp)(&ue, TOK.cantExpression);
+                emplaceExp!(CTFEExp)(&ue, EXP.cantExpression);
                 return ue;
             }
             dinteger_t v = es2e.toInteger();
@@ -1464,7 +1464,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         es.type = type;
         return ue;
     }
-    if (e1.op == TOK.string_ && e2.op == TOK.arrayLiteral && t2.nextOf().isintegral())
+    if (e1.op == EXP.string_ && e2.op == EXP.arrayLiteral && t2.nextOf().isintegral())
     {
         // string ~ [chars] => string (only valid for CTFE)
         // Concatenate the strings
@@ -1478,9 +1478,9 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         foreach (size_t i; 0 .. es2.elements.dim)
         {
             Expression es2e = (*es2.elements)[i];
-            if (es2e.op != TOK.int64)
+            if (es2e.op != EXP.int64)
             {
-                emplaceExp!(CTFEExp)(&ue, TOK.cantExpression);
+                emplaceExp!(CTFEExp)(&ue, EXP.cantExpression);
                 return ue;
             }
             const v = es2e.toInteger();
@@ -1495,7 +1495,7 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         es.type = type;
         return ue;
     }
-    if (e1.op == TOK.arrayLiteral && e2.op == TOK.arrayLiteral && t1.nextOf().equals(t2.nextOf()))
+    if (e1.op == EXP.arrayLiteral && e2.op == EXP.arrayLiteral && t1.nextOf().equals(t2.nextOf()))
     {
         //  [ e1 ] ~ [ e2 ] ---> [ e1, e2 ]
         ArrayLiteralExp es1 = cast(ArrayLiteralExp)e1;
@@ -1505,13 +1505,13 @@ UnionExp ctfeCat(const ref Loc loc, Type type, Expression e1, Expression e2)
         es1.elements.insert(es1.elements.dim, copyLiteralArray(es2.elements));
         return ue;
     }
-    if (e1.op == TOK.arrayLiteral && e2.op == TOK.null_ && t1.nextOf().equals(t2.nextOf()))
+    if (e1.op == EXP.arrayLiteral && e2.op == EXP.null_ && t1.nextOf().equals(t2.nextOf()))
     {
         //  [ e1 ] ~ null ----> [ e1 ].dup
         ue = paintTypeOntoLiteralCopy(type, copyLiteral(e1).copy());
         return ue;
     }
-    if (e1.op == TOK.null_ && e2.op == TOK.arrayLiteral && t1.nextOf().equals(t2.nextOf()))
+    if (e1.op == EXP.null_ && e2.op == EXP.arrayLiteral && t1.nextOf().equals(t2.nextOf()))
     {
         //  null ~ [ e2 ] ----> [ e2 ].dup
         ue = paintTypeOntoLiteralCopy(type, copyLiteral(e2).copy());
@@ -1532,7 +1532,7 @@ Expression findKeyInAA(const ref Loc loc, AssocArrayLiteralExp ae, Expression e2
     {
         --i;
         Expression ekey = (*ae.keys)[i];
-        const int eq = ctfeEqual(loc, TOK.equal, ekey, e2);
+        const int eq = ctfeEqual(loc, EXP.equal, ekey, e2);
         if (eq)
         {
             return (*ae.values)[i];
@@ -1581,10 +1581,10 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
         return paintTypeOntoLiteral(pue, to, e);
     }
 
-    if (e.op == TOK.null_)
+    if (e.op == EXP.null_)
         return paint();
 
-    if (e.op == TOK.classReference)
+    if (e.op == EXP.classReference)
     {
         // Disallow reinterpreting class casts. Do this by ensuring that
         // the original class can implicitly convert to the target class
@@ -1603,7 +1603,7 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
         return paint();
 
     // Allow casting away const for struct literals
-    if (e.op == TOK.structLiteral && e.type.toBasetype().castMod(0) == to.toBasetype().castMod(0))
+    if (e.op == EXP.structLiteral && e.type.toBasetype().castMod(0) == to.toBasetype().castMod(0))
         return paint();
 
     Expression r;
@@ -1647,14 +1647,14 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
  */
 void assignInPlace(Expression dest, Expression src)
 {
-    if (!(dest.op == TOK.structLiteral || dest.op == TOK.arrayLiteral || dest.op == TOK.string_))
+    if (!(dest.op == EXP.structLiteral || dest.op == EXP.arrayLiteral || dest.op == EXP.string_))
     {
         printf("invalid op %d %d\n", src.op, dest.op);
         assert(0);
     }
     Expressions* oldelems;
     Expressions* newelems;
-    if (dest.op == TOK.structLiteral)
+    if (dest.op == EXP.structLiteral)
     {
         assert(dest.op == src.op);
         oldelems = (cast(StructLiteralExp)dest).elements;
@@ -1666,22 +1666,22 @@ void assignInPlace(Expression dest, Expression src)
             foreach (_; 0 .. newelems.dim - oldelems.dim)
                 oldelems.push(null);
     }
-    else if (dest.op == TOK.arrayLiteral && src.op == TOK.arrayLiteral)
+    else if (dest.op == EXP.arrayLiteral && src.op == EXP.arrayLiteral)
     {
         oldelems = (cast(ArrayLiteralExp)dest).elements;
         newelems = (cast(ArrayLiteralExp)src).elements;
     }
-    else if (dest.op == TOK.string_ && src.op == TOK.string_)
+    else if (dest.op == EXP.string_ && src.op == EXP.string_)
     {
         sliceAssignStringFromString(cast(StringExp)dest, cast(StringExp)src, 0);
         return;
     }
-    else if (dest.op == TOK.arrayLiteral && src.op == TOK.string_)
+    else if (dest.op == EXP.arrayLiteral && src.op == EXP.string_)
     {
         sliceAssignArrayLiteralFromString(cast(ArrayLiteralExp)dest, cast(StringExp)src, 0);
         return;
     }
-    else if (src.op == TOK.arrayLiteral && dest.op == TOK.string_)
+    else if (src.op == EXP.arrayLiteral && dest.op == EXP.string_)
     {
         sliceAssignStringFromArrayLiteral(cast(StringExp)dest, cast(ArrayLiteralExp)src, 0);
         return;
@@ -1696,12 +1696,12 @@ void assignInPlace(Expression dest, Expression src)
     {
         Expression e = (*newelems)[i];
         Expression o = (*oldelems)[i];
-        if (e.op == TOK.structLiteral)
+        if (e.op == EXP.structLiteral)
         {
             assert(o.op == e.op);
             assignInPlace(o, e);
         }
-        else if (e.type.ty == Tsarray && e.op != TOK.void_ && o.type.ty == Tsarray)
+        else if (e.type.ty == Tsarray && e.op != EXP.void_ && o.type.ty == Tsarray)
         {
             assignInPlace(o, e);
         }
@@ -1724,7 +1724,7 @@ Expression assignAssocArrayElement(const ref Loc loc, AssocArrayLiteralExp aae, 
     {
         j--;
         Expression ekey = (*aae.keys)[j];
-        int eq = ctfeEqual(loc, TOK.equal, ekey, index);
+        int eq = ctfeEqual(loc, EXP.equal, ekey, index);
         if (eq)
         {
             (*valuesx)[j] = newval;
@@ -1752,13 +1752,13 @@ UnionExp changeArrayLiteralLength(const ref Loc loc, TypeArray arrayType, Expres
     auto elements = new Expressions(newlen);
     // Resolve slices
     size_t indxlo = 0;
-    if (oldval.op == TOK.slice)
+    if (oldval.op == EXP.slice)
     {
         indxlo = cast(size_t)(cast(SliceExp)oldval).lwr.toInteger();
         oldval = (cast(SliceExp)oldval).e1;
     }
     size_t copylen = oldlen < newlen ? oldlen : newlen;
-    if (oldval.op == TOK.string_)
+    if (oldval.op == EXP.string_)
     {
         StringExp oldse = cast(StringExp)oldval;
         void* s = mem.xcalloc(newlen + 1, oldse.sz);
@@ -1793,7 +1793,7 @@ UnionExp changeArrayLiteralLength(const ref Loc loc, TypeArray arrayType, Expres
     {
         if (oldlen != 0)
         {
-            assert(oldval.op == TOK.arrayLiteral);
+            assert(oldval.op == EXP.arrayLiteral);
             ArrayLiteralExp ae = cast(ArrayLiteralExp)oldval;
             foreach (size_t i; 0 .. copylen)
                 (*elements)[i] = (*ae.elements)[indxlo + i];
@@ -1825,13 +1825,13 @@ bool isCtfeValueValid(Expression newval)
     Type tb = newval.type.toBasetype();
     switch (newval.op)
     {
-        case TOK.int64:
-        case TOK.float64:
-        case TOK.char_:
-        case TOK.complex80:
+        case EXP.int64:
+        case EXP.float64:
+        case EXP.char_:
+        case EXP.complex80:
             return tb.isscalar();
 
-        case TOK.null_:
+        case EXP.null_:
             return tb.ty == Tnull    ||
                    tb.ty == Tpointer ||
                    tb.ty == Tarray   ||
@@ -1839,75 +1839,75 @@ bool isCtfeValueValid(Expression newval)
                    tb.ty == Tclass   ||
                    tb.ty == Tdelegate;
 
-        case TOK.string_:
+        case EXP.string_:
             return true; // CTFE would directly use the StringExp in AST.
 
-        case TOK.arrayLiteral:
+        case EXP.arrayLiteral:
             return true; //((ArrayLiteralExp *)newval)->ownedByCtfe;
 
-        case TOK.assocArrayLiteral:
+        case EXP.assocArrayLiteral:
             return true; //((AssocArrayLiteralExp *)newval)->ownedByCtfe;
 
-        case TOK.structLiteral:
+        case EXP.structLiteral:
             return true; //((StructLiteralExp *)newval)->ownedByCtfe;
 
-        case TOK.classReference:
+        case EXP.classReference:
             return true;
 
-        case TOK.type:
+        case EXP.type:
             return true;
 
-        case TOK.vector:
+        case EXP.vector:
             return true; // vector literal
 
-        case TOK.function_:
+        case EXP.function_:
             return true; // function literal or delegate literal
 
-        case TOK.delegate_:
+        case EXP.delegate_:
         {
             // &struct.func or &clasinst.func
             // &nestedfunc
             Expression ethis = (cast(DelegateExp)newval).e1;
-            return (ethis.op == TOK.structLiteral || ethis.op == TOK.classReference || ethis.op == TOK.variable && (cast(VarExp)ethis).var == (cast(DelegateExp)newval).func);
+            return (ethis.op == EXP.structLiteral || ethis.op == EXP.classReference || ethis.op == EXP.variable && (cast(VarExp)ethis).var == (cast(DelegateExp)newval).func);
         }
 
-        case TOK.symbolOffset:
+        case EXP.symbolOffset:
         {
             // function pointer, or pointer to static variable
             Declaration d = (cast(SymOffExp)newval).var;
             return d.isFuncDeclaration() || d.isDataseg();
         }
 
-        case TOK.typeid_:
+        case EXP.typeid_:
         {
             // always valid
             return true;
         }
 
-        case TOK.address:
+        case EXP.address:
         {
             // e1 should be a CTFE reference
             Expression e1 = (cast(AddrExp)newval).e1;
             return tb.ty == Tpointer &&
             (
-                (e1.op == TOK.structLiteral || e1.op == TOK.arrayLiteral) && isCtfeValueValid(e1) ||
-                 e1.op == TOK.variable ||
-                 e1.op == TOK.dotVariable && isCtfeReferenceValid(e1) ||
-                 e1.op == TOK.index && isCtfeReferenceValid(e1) ||
-                 e1.op == TOK.slice && e1.type.toBasetype().ty == Tsarray
+                (e1.op == EXP.structLiteral || e1.op == EXP.arrayLiteral) && isCtfeValueValid(e1) ||
+                 e1.op == EXP.variable ||
+                 e1.op == EXP.dotVariable && isCtfeReferenceValid(e1) ||
+                 e1.op == EXP.index && isCtfeReferenceValid(e1) ||
+                 e1.op == EXP.slice && e1.type.toBasetype().ty == Tsarray
             );
         }
 
-        case TOK.slice:
+        case EXP.slice:
         {
             // e1 should be an array aggregate
             const SliceExp se = cast(SliceExp)newval;
-            assert(se.lwr && se.lwr.op == TOK.int64);
-            assert(se.upr && se.upr.op == TOK.int64);
-            return (tb.ty == Tarray || tb.ty == Tsarray) && (se.e1.op == TOK.string_ || se.e1.op == TOK.arrayLiteral);
+            assert(se.lwr && se.lwr.op == EXP.int64);
+            assert(se.upr && se.upr.op == EXP.int64);
+            return (tb.ty == Tarray || tb.ty == Tsarray) && (se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral);
         }
 
-        case TOK.void_:
+        case EXP.void_:
             return true; // uninitialized value
 
         default:
@@ -1920,10 +1920,10 @@ bool isCtfeReferenceValid(Expression newval)
 {
     switch (newval.op)
     {
-        case TOK.this_:
+        case EXP.this_:
             return true;
 
-        case TOK.variable:
+        case EXP.variable:
         {
             const VarDeclaration v = (cast(VarExp)newval).var.isVarDeclaration();
             assert(v);
@@ -1931,16 +1931,16 @@ bool isCtfeReferenceValid(Expression newval)
             return true;
         }
 
-        case TOK.index:
+        case EXP.index:
         {
             const Expression eagg = (cast(IndexExp)newval).e1;
-            return eagg.op == TOK.string_ || eagg.op == TOK.arrayLiteral || eagg.op == TOK.assocArrayLiteral;
+            return eagg.op == EXP.string_ || eagg.op == EXP.arrayLiteral || eagg.op == EXP.assocArrayLiteral;
         }
 
-        case TOK.dotVariable:
+        case EXP.dotVariable:
         {
             Expression eagg = (cast(DotVarExp)newval).e1;
-            return (eagg.op == TOK.structLiteral || eagg.op == TOK.classReference) && isCtfeValueValid(eagg);
+            return (eagg.op == EXP.structLiteral || eagg.op == EXP.classReference) && isCtfeValueValid(eagg);
         }
 
         default:
@@ -1959,44 +1959,44 @@ void showCtfeExpr(Expression e, int level = 0)
     // We need the struct definition to detect block assignment
     StructDeclaration sd = null;
     ClassDeclaration cd = null;
-    if (e.op == TOK.structLiteral)
+    if (e.op == EXP.structLiteral)
     {
         elements = (cast(StructLiteralExp)e).elements;
         sd = (cast(StructLiteralExp)e).sd;
         printf("STRUCT type = %s %p:\n", e.type.toChars(), e);
     }
-    else if (e.op == TOK.classReference)
+    else if (e.op == EXP.classReference)
     {
         elements = (cast(ClassReferenceExp)e).value.elements;
         cd = (cast(ClassReferenceExp)e).originalClass();
         printf("CLASS type = %s %p:\n", e.type.toChars(), (cast(ClassReferenceExp)e).value);
     }
-    else if (e.op == TOK.arrayLiteral)
+    else if (e.op == EXP.arrayLiteral)
     {
         elements = (cast(ArrayLiteralExp)e).elements;
         printf("ARRAY LITERAL type=%s %p:\n", e.type.toChars(), e);
     }
-    else if (e.op == TOK.assocArrayLiteral)
+    else if (e.op == EXP.assocArrayLiteral)
     {
         printf("AA LITERAL type=%s %p:\n", e.type.toChars(), e);
     }
-    else if (e.op == TOK.string_)
+    else if (e.op == EXP.string_)
     {
         printf("STRING %s %p\n", e.toChars(), e.isStringExp.peekString.ptr);
     }
-    else if (e.op == TOK.slice)
+    else if (e.op == EXP.slice)
     {
         printf("SLICE %p: %s\n", e, e.toChars());
         showCtfeExpr((cast(SliceExp)e).e1, level + 1);
     }
-    else if (e.op == TOK.variable)
+    else if (e.op == EXP.variable)
     {
         printf("VAR %p %s\n", e, e.toChars());
         VarDeclaration v = (cast(VarExp)e).var.isVarDeclaration();
         if (v && getValue(v))
             showCtfeExpr(getValue(v), level + 1);
     }
-    else if (e.op == TOK.address)
+    else if (e.op == EXP.address)
     {
         // This is potentially recursive. We mustn't try to print the thing we're pointing to.
         printf("POINTER %p to %p: %s\n", e, (cast(AddrExp)e).e1, e.toChars());
@@ -2069,7 +2069,7 @@ UnionExp voidInitLiteral(Type t, VarDeclaration var)
         Expression elem = voidInitLiteral(tsa.next, var).copy();
         // For aggregate value types (structs, static arrays) we must
         // create an a separate copy for each element.
-        const mustCopy = (elem.op == TOK.arrayLiteral || elem.op == TOK.structLiteral);
+        const mustCopy = (elem.op == EXP.arrayLiteral || elem.op == EXP.structLiteral);
         const d = cast(size_t)tsa.dim.toInteger();
         auto elements = new Expressions(d);
         foreach (i; 0 .. d)

@@ -1238,7 +1238,7 @@ powerpc*-*-linux*)
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc*-wrs-vxworks7*)
-        tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules rs6000/t-ppc64-fp t-slibgcc-libgcc"
+        tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules rs6000/t-ppc64-fp t-slibgcc-libgcc"
         case $ppc_fp_type in
         64)
                 ;;
@@ -1255,7 +1255,7 @@ powerpc*-wrs-vxworks7*)
         esac
         ;;
 powerpc-wrs-vxworks*)
-	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
+	tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-fdpbit"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"

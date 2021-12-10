@@ -646,9 +646,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    __cmpexch_failure_order(__m));
       }
 
-#if __cpp_lib_atomic_wait 
+#if __cpp_lib_atomic_wait
     void
-    wait(__pointer_type __old, memory_order __m = memory_order_seq_cst) noexcept
+    wait(__pointer_type __old, memory_order __m = memory_order_seq_cst) const noexcept
     { _M_b.wait(__old, __m); }
 
     // TODO add const volatile overload
@@ -1434,12 +1434,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     inline void
-    atomic_notify_one(atomic<_Tp>* __a) noexcept
+    atomic_notify_one(const atomic<_Tp>* __a) noexcept
     { __a->notify_one(); }
 
   template<typename _Tp>
     inline void
-    atomic_notify_all(atomic<_Tp>* __a) noexcept
+    atomic_notify_all(const atomic<_Tp>* __a) noexcept
     { __a->notify_all(); }
 #endif // __cpp_lib_atomic_wait
 

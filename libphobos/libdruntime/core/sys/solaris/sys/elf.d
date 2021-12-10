@@ -393,7 +393,7 @@ enum SHF_LINK_ORDER       = 0x80;
 enum SHF_OS_NONCONFORMING = 0x100;
 enum SHF_GROUP            = 0x200;
 enum SHF_TLS              = 0x400;
-
+enum SHF_COMPRESSED       = 0x800;
 enum SHF_MASKOS = 0x0ff00000;
 
 enum SHF_MASKPROC = 0xf0000000;
@@ -656,3 +656,6 @@ enum NT_ZONENAME   = 21;
 enum NT_FDINFO     = 22;
 enum NT_SPYMASTER  = 23;
 enum NT_NUM        = 23;
+
+enum SHF_ORDERED = 0x40000000;
+enum SHF_EXCLUDE = 0x80000000;

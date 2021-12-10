@@ -4650,7 +4650,7 @@ if ((isInputRange!R1 && isSomeChar!(ElementEncodingType!R1) || isSomeString!R1) 
     auto namez = name.tempCString!FSChar();
     auto modez = mode.tempCString!FSChar();
 
-    static _fopenImpl(const(FSChar)* namez, const(FSChar)* modez) @trusted nothrow @nogc
+    static _fopenImpl(scope const(FSChar)* namez, scope const(FSChar)* modez) @trusted nothrow @nogc
     {
         version (Windows)
         {

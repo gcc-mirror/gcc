@@ -1987,8 +1987,8 @@ pure:
     {
         return this[0] == val[0] && this[1] == val[1];
     }
-    @property ref inout(uint) a() inout { return _tuple[0]; }
-    @property ref inout(uint) b() inout { return _tuple[1]; }
+    @property ref inout(uint) a() return inout { return _tuple[0]; }
+    @property ref inout(uint) b() return inout { return _tuple[1]; }
 }
 
 /**

@@ -62,7 +62,7 @@ enum STC : ulong  // transfer changes to declaration.h
     foreach_            = 0x4000,   /// variable for foreach loop
     variadic            = 0x8000,   /// the `variadic` parameter in: T foo(T a, U b, V variadic...)
 
-    ctorinit            = 0x1_0000,   /// can only be set inside constructor
+    //                  = 0x1_0000,
     templateparameter   = 0x2_0000,   /// template parameter
     ref_                = 0x4_0000,   /// `ref`
     scope_              = 0x8_0000,   /// `scope`
@@ -74,7 +74,7 @@ enum STC : ulong  // transfer changes to declaration.h
 
     returninferred      = 0x100_0000,   /// `return` has been inferred and should not be part of mangling, `return_` must also be set
     immutable_          = 0x200_0000,   /// `immutable`
-    init                = 0x400_0000,   /// has explicit initializer
+    //                  = 0x400_0000,
     manifest            = 0x800_0000,   /// manifest constant
 
     nodtor              = 0x1000_0000,   /// do not run destructor

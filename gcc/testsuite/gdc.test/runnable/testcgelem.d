@@ -1,5 +1,5 @@
 /*
-REQUIRED_ARGS: -mcpu=native -preview=intpromote
+REQUIRED_ARGS: -mcpu=native
 PERMUTE_ARGS: -O -inline -release
 */
 

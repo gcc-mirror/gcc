@@ -144,7 +144,7 @@ extern (C++) bool isError(const RootObject o)
     if (const t = isType(o))
         return (t.ty == Terror);
     if (const e = isExpression(o))
-        return (e.op == TOK.error || !e.type || e.type.ty == Terror);
+        return (e.op == EXP.error || !e.type || e.type.ty == Terror);
     if (const v = isTuple(o))
         return arrayObjectIsError(&v.objects);
     const s = isDsymbol(o);
@@ -297,8 +297,8 @@ private bool match(RootObject o1, RootObject o2)
 
         static if (log)
         {
-            printf("\te1 = %s '%s' %s\n", e1.type ? e1.type.toChars() : "null", Token.toChars(e1.op), e1.toChars());
-            printf("\te2 = %s '%s' %s\n", e2.type ? e2.type.toChars() : "null", Token.toChars(e2.op), e2.toChars());
+            printf("\te1 = %s '%s' %s\n", e1.type ? e1.type.toChars() : "null", EXPtoString(e1.op).ptr, e1.toChars());
+            printf("\te2 = %s '%s' %s\n", e2.type ? e2.type.toChars() : "null", EXPtoString(e2.op).ptr, e2.toChars());
         }
 
         // two expressions can be equal although they do not have the same
@@ -421,26 +421,26 @@ private size_t expressionHash(Expression e)
 
     switch (e.op)
     {
-    case TOK.int64:
+    case EXP.int64:
         return cast(size_t) e.isIntegerExp().getInteger();
 
-    case TOK.float64:
+    case EXP.float64:
         return CTFloat.hash(e.isRealExp().value);
 
-    case TOK.complex80:
+    case EXP.complex80:
         auto ce = e.isComplexExp();
         return mixHash(CTFloat.hash(ce.toReal), CTFloat.hash(ce.toImaginary));
 
-    case TOK.identifier:
+    case EXP.identifier:
         return cast(size_t)cast(void*) e.isIdentifierExp().ident;
 
-    case TOK.null_:
+    case EXP.null_:
         return cast(size_t)cast(void*) e.isNullExp().type;
 
-    case TOK.string_:
+    case EXP.string_:
         return calcHash(e.isStringExp.peekData());
 
-    case TOK.tuple:
+    case EXP.tuple:
     {
         auto te = e.isTupleExp();
         size_t hash = 0;
@@ -450,7 +450,7 @@ private size_t expressionHash(Expression e)
         return hash;
     }
 
-    case TOK.arrayLiteral:
+    case EXP.arrayLiteral:
     {
         auto ae = e.isArrayLiteralExp();
         size_t hash;
@@ -459,7 +459,7 @@ private size_t expressionHash(Expression e)
         return hash;
     }
 
-    case TOK.assocArrayLiteral:
+    case EXP.assocArrayLiteral:
     {
         auto ae = e.isAssocArrayLiteralExp();
         size_t hash;
@@ -469,7 +469,7 @@ private size_t expressionHash(Expression e)
         return hash;
     }
 
-    case TOK.structLiteral:
+    case EXP.structLiteral:
     {
         auto se = e.isStructLiteralExp();
         size_t hash;
@@ -478,10 +478,10 @@ private size_t expressionHash(Expression e)
         return hash;
     }
 
-    case TOK.variable:
+    case EXP.variable:
         return cast(size_t)cast(void*) e.isVarExp().var;
 
-    case TOK.function_:
+    case EXP.function_:
         return cast(size_t)cast(void*) e.isFuncExp().fd;
 
     default:
@@ -1629,7 +1629,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             farg = (*fargs)[argi + i];
 
                             // Check invalid arguments to detect errors early.
-                            if (farg.op == TOK.error || farg.type.ty == Terror)
+                            if (farg.op == EXP.error || farg.type.ty == Terror)
                                 return nomatch();
 
                             if (!(fparam.storageClass & STC.lazy_) && farg.type.ty == Tvoid)
@@ -1825,7 +1825,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                 }
                 {
                     // Check invalid arguments to detect errors early.
-                    if (farg.op == TOK.error || farg.type.ty == Terror)
+                    if (farg.op == EXP.error || farg.type.ty == Terror)
                         return nomatch();
 
                     Type att = null;
@@ -1837,7 +1837,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     }
                     Type argtype = farg.type;
 
-                    if (!(fparam.storageClass & STC.lazy_) && argtype.ty == Tvoid && farg.op != TOK.function_)
+                    if (!(fparam.storageClass & STC.lazy_) && argtype.ty == Tvoid && farg.op != EXP.function_)
                         return nomatch();
 
                     // https://issues.dlang.org/show_bug.cgi?id=12876
@@ -1853,17 +1853,17 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                         Type taai;
                         if (argtype.ty == Tarray && (prmtype.ty == Tsarray || prmtype.ty == Taarray && (taai = (cast(TypeAArray)prmtype).index).ty == Tident && (cast(TypeIdentifier)taai).idents.dim == 0))
                         {
-                            if (farg.op == TOK.string_)
+                            if (farg.op == EXP.string_)
                             {
                                 StringExp se = cast(StringExp)farg;
                                 argtype = se.type.nextOf().sarrayOf(se.len);
                             }
-                            else if (farg.op == TOK.arrayLiteral)
+                            else if (farg.op == EXP.arrayLiteral)
                             {
                                 ArrayLiteralExp ae = cast(ArrayLiteralExp)farg;
                                 argtype = ae.type.nextOf().sarrayOf(ae.elements.dim);
                             }
-                            else if (farg.op == TOK.slice)
+                            else if (farg.op == EXP.slice)
                             {
                                 SliceExp se = cast(SliceExp)farg;
                                 if (Type tsa = toStaticArrayType(se))
@@ -1939,7 +1939,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     {
                         if (!farg.isLvalue())
                         {
-                            if ((farg.op == TOK.string_ || farg.op == TOK.slice) && (prmtype.ty == Tsarray || prmtype.ty == Taarray))
+                            if ((farg.op == EXP.string_ || farg.op == EXP.slice) && (prmtype.ty == Tsarray || prmtype.ty == Taarray))
                             {
                                 // Allow conversion from T[lwr .. upr] to ref T[upr-lwr]
                             }
@@ -2280,13 +2280,13 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         Declaration d;
         VarDeclaration v = null;
 
-        if (ea && ea.op == TOK.type)
+        if (ea && ea.op == EXP.type)
             ta = ea.type;
-        else if (ea && ea.op == TOK.scope_)
+        else if (ea && ea.op == EXP.scope_)
             sa = (cast(ScopeExp)ea).sds;
-        else if (ea && (ea.op == TOK.this_ || ea.op == TOK.super_))
+        else if (ea && (ea.op == EXP.this_ || ea.op == EXP.super_))
             sa = (cast(ThisExp)ea).var;
-        else if (ea && ea.op == TOK.function_)
+        else if (ea && ea.op == EXP.function_)
         {
             if ((cast(FuncExp)ea).td)
                 sa = (cast(FuncExp)ea).td;
@@ -3826,7 +3826,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                 if (tparam.ty == Tsarray)
                 {
                     TypeSArray tsa = cast(TypeSArray)tparam;
-                    if (tsa.dim.op == TOK.variable && (cast(VarExp)tsa.dim).var.storage_class & STC.templateparameter)
+                    if (tsa.dim.op == EXP.variable && (cast(VarExp)tsa.dim).var.storage_class & STC.templateparameter)
                     {
                         Identifier id = (cast(VarExp)tsa.dim).var.ident;
                         i = templateIdentifierLookup(id, parameters);
@@ -4209,7 +4209,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                         /* If it is one of the template parameters for this template,
                          * we should not attempt to interpret it. It already has a value.
                          */
-                        if (e2.op == TOK.variable && ((cast(VarExp)e2).var.storage_class & STC.templateparameter))
+                        if (e2.op == EXP.variable && ((cast(VarExp)e2).var.storage_class & STC.templateparameter))
                         {
                             /*
                              * (T:Number!(e2), int e2)
@@ -4847,9 +4847,9 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                 // Reset inference target for the later re-semantic
                 e.fd.treq = null;
 
-                if (ex.op == TOK.error)
+                if (ex.op == EXP.error)
                     return;
-                if (ex.op != TOK.function_)
+                if (ex.op != EXP.function_)
                     return;
                 visit(ex.type);
                 return;
@@ -6642,13 +6642,13 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             else if (ea)
             {
             Lexpr:
-                //printf("+[%d] ea = %s %s\n", j, Token.toChars(ea.op), ea.toChars());
+                //printf("+[%d] ea = %s %s\n", j, EXPtoString(ea.op).ptr, ea.toChars());
                 if (flags & 1) // only used by __traits
                 {
                     ea = ea.expressionSemantic(sc);
 
                     // must not interpret the args, excepting template parameters
-                    if (ea.op != TOK.variable || ((cast(VarExp)ea).var.storage_class & STC.templateparameter))
+                    if (ea.op != EXP.variable || ((cast(VarExp)ea).var.storage_class & STC.templateparameter))
                     {
                         ea = ea.optimize(WANTvalue);
                     }
@@ -6659,7 +6659,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     ea = ea.expressionSemantic(sc);
                     sc = sc.endCTFE();
 
-                    if (ea.op == TOK.variable)
+                    if (ea.op == EXP.variable)
                     {
                         /* If the parameter is a function that is not called
                          * explicitly, i.e. `foo!func` as opposed to `foo!func()`,
@@ -6687,8 +6687,8 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                             ea = ErrorExp.get();
                     }
                 }
-                //printf("-[%d] ea = %s %s\n", j, Token.toChars(ea.op), ea.toChars());
-                if (ea.op == TOK.tuple)
+                //printf("-[%d] ea = %s %s\n", j, EXPtoString(ea.op).ptr, ea.toChars());
+                if (ea.op == EXP.tuple)
                 {
                     // Expand tuple
                     TupleExp te = cast(TupleExp)ea;
@@ -6703,24 +6703,24 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     j--;
                     continue;
                 }
-                if (ea.op == TOK.error)
+                if (ea.op == EXP.error)
                 {
                     err = true;
                     continue;
                 }
                 (*tiargs)[j] = ea;
 
-                if (ea.op == TOK.type)
+                if (ea.op == EXP.type)
                 {
                     ta = ea.type;
                     goto Ltype;
                 }
-                if (ea.op == TOK.scope_)
+                if (ea.op == EXP.scope_)
                 {
                     sa = (cast(ScopeExp)ea).sds;
                     goto Ldsym;
                 }
-                if (ea.op == TOK.function_)
+                if (ea.op == EXP.function_)
                 {
                     FuncExp fe = cast(FuncExp)ea;
                     /* A function literal, that is passed to template and
@@ -6741,24 +6741,24 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                         //goto Ldsym;
                     }
                 }
-                if (ea.op == TOK.dotVariable && !(flags & 1))
+                if (ea.op == EXP.dotVariable && !(flags & 1))
                 {
                     // translate expression to dsymbol.
                     sa = (cast(DotVarExp)ea).var;
                     goto Ldsym;
                 }
-                if (ea.op == TOK.template_)
+                if (ea.op == EXP.template_)
                 {
                     sa = (cast(TemplateExp)ea).td;
                     goto Ldsym;
                 }
-                if (ea.op == TOK.dotTemplateDeclaration && !(flags & 1))
+                if (ea.op == EXP.dotTemplateDeclaration && !(flags & 1))
                 {
                     // translate expression to dsymbol.
                     sa = (cast(DotTemplateExp)ea).td;
                     goto Ldsym;
                 }
-                if (ea.op == TOK.dot)
+                if (ea.op == EXP.dot)
                 {
                     if (auto se = (cast(DotExp)ea).e2.isScopeExp())
                     {
@@ -7256,17 +7256,17 @@ extern (C++) class TemplateInstance : ScopeDsymbol
             Tuple va = isTuple(o);
             if (ea)
             {
-                if (ea.op == TOK.variable)
+                if (ea.op == EXP.variable)
                 {
                     sa = (cast(VarExp)ea).var;
                     goto Lsa;
                 }
-                if (ea.op == TOK.this_)
+                if (ea.op == EXP.this_)
                 {
                     sa = (cast(ThisExp)ea).var;
                     goto Lsa;
                 }
-                if (ea.op == TOK.function_)
+                if (ea.op == EXP.function_)
                 {
                     if ((cast(FuncExp)ea).td)
                         sa = (cast(FuncExp)ea).td;
@@ -7275,7 +7275,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                     goto Lsa;
                 }
                 // Emulate Expression.toMangleBuffer call that had exist in TemplateInstance.genIdent.
-                if (ea.op != TOK.int64 && ea.op != TOK.float64 && ea.op != TOK.complex80 && ea.op != TOK.null_ && ea.op != TOK.string_ && ea.op != TOK.arrayLiteral && ea.op != TOK.assocArrayLiteral && ea.op != TOK.structLiteral)
+                if (ea.op != EXP.int64 && ea.op != EXP.float64 && ea.op != EXP.complex80 && ea.op != EXP.null_ && ea.op != EXP.string_ && ea.op != EXP.arrayLiteral && ea.op != EXP.assocArrayLiteral && ea.op != EXP.structLiteral)
                 {
                     ea.error("expression `%s` is not a valid template value argument", ea.toChars());
                     errors = true;
@@ -7317,6 +7317,19 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                             {
                                 enclosing = dparent;
                                 goto L1; // dparent is most nested
+                            }
+                        }
+                        //https://issues.dlang.org/show_bug.cgi?id=17870
+                        if (dparent.isClassDeclaration() && enclosing.isClassDeclaration())
+                        {
+                            auto pc = dparent.isClassDeclaration();
+                            auto ec = enclosing.isClassDeclaration();
+                            if (pc.isBaseOf(ec, null))
+                                goto L1;
+                            else if (ec.isBaseOf(pc, null))
+                            {
+                                enclosing = dparent;
+                                goto L1;
                             }
                         }
                         error("`%s` is nested in both `%s` and `%s`", toChars(), enclosing.toChars(), dparent.toChars());
@@ -7584,15 +7597,15 @@ void unSpeculative(Scope* sc, RootObject o)
 bool definitelyValueParameter(Expression e)
 {
     // None of these can be value parameters
-    if (e.op == TOK.tuple || e.op == TOK.scope_ ||
-        e.op == TOK.type || e.op == TOK.dotType ||
-        e.op == TOK.template_ || e.op == TOK.dotTemplateDeclaration ||
-        e.op == TOK.function_ || e.op == TOK.error ||
-        e.op == TOK.this_ || e.op == TOK.super_ ||
-        e.op == TOK.dot)
+    if (e.op == EXP.tuple || e.op == EXP.scope_ ||
+        e.op == EXP.type || e.op == EXP.dotType ||
+        e.op == EXP.template_ || e.op == EXP.dotTemplateDeclaration ||
+        e.op == EXP.function_ || e.op == EXP.error ||
+        e.op == EXP.this_ || e.op == EXP.super_ ||
+        e.op == EXP.dot)
         return false;
 
-    if (e.op != TOK.dotVariable)
+    if (e.op != EXP.dotVariable)
         return true;
 
     /* Template instantiations involving a DotVar expression are difficult.
@@ -7606,20 +7619,20 @@ bool definitelyValueParameter(Expression e)
     if (f)
         return false;
 
-    while (e.op == TOK.dotVariable)
+    while (e.op == EXP.dotVariable)
     {
         e = (cast(DotVarExp)e).e1;
     }
     // this.x.y and super.x.y couldn't possibly be valid values.
-    if (e.op == TOK.this_ || e.op == TOK.super_)
+    if (e.op == EXP.this_ || e.op == EXP.super_)
         return false;
 
     // e.type.x could be an alias
-    if (e.op == TOK.dotType)
+    if (e.op == EXP.dotType)
         return false;
 
     // var.x.y is the only other possible form of alias
-    if (e.op != TOK.variable)
+    if (e.op != EXP.variable)
         return true;
 
     VarDeclaration v = (cast(VarExp)e).var.isVarDeclaration();
@@ -8010,7 +8023,7 @@ MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, Templ
             uint olderrors = global.startGagging();
             ei = resolveProperties(sc, ei);
             ei = ei.ctfeInterpret();
-            if (global.endGagging(olderrors) || ei.op == TOK.error)
+            if (global.endGagging(olderrors) || ei.op == EXP.error)
                 return matchArgNoMatch();
 
             /* https://issues.dlang.org/show_bug.cgi?id=14520
@@ -8032,7 +8045,7 @@ MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, Templ
             m = MATCH.convert;
         }
 
-        if (ei && ei.op == TOK.variable)
+        if (ei && ei.op == EXP.variable)
         {
             // Resolve const variables that we had skipped earlier
             ei = ei.ctfeInterpret();
@@ -8110,9 +8123,9 @@ MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, Templ
         Type ta = isType(oarg);
         RootObject sa = ta && !ta.deco ? null : getDsymbol(oarg);
         Expression ea = isExpression(oarg);
-        if (ea && (ea.op == TOK.this_ || ea.op == TOK.super_))
+        if (ea && (ea.op == EXP.this_ || ea.op == EXP.super_))
             sa = (cast(ThisExp)ea).var;
-        else if (ea && ea.op == TOK.scope_)
+        else if (ea && ea.op == EXP.scope_)
             sa = (cast(ScopeExp)ea).sds;
         if (sa)
         {

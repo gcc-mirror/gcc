@@ -100,7 +100,7 @@ public:
         However, on Windows, it may be the unabbreviated name (e.g. Pacific
         Standard Time). Regardless, it is not the same as name.
       +/
-    @property string stdName() @safe const nothrow
+    @property string stdName() @safe const scope nothrow
     {
         return _stdName;
     }
@@ -113,7 +113,7 @@ public:
         However, on Windows, it may be the unabbreviated name (e.g. Pacific
         Daylight Time). Regardless, it is not the same as name.
       +/
-    @property string dstName() @safe const nothrow
+    @property string dstName() @safe const scope nothrow
     {
         return _dstName;
     }
@@ -137,7 +137,7 @@ public:
             stdTime = The UTC time that needs to be checked for DST in this time
                       zone.
       +/
-    abstract bool dstInEffect(long stdTime) @safe const nothrow;
+    abstract bool dstInEffect(long stdTime) @safe const scope nothrow;
 
 
     /++
@@ -148,7 +148,7 @@ public:
             stdTime = The UTC time that needs to be adjusted to this time zone's
                       time.
       +/
-    abstract long utcToTZ(long stdTime) @safe const nothrow;
+    abstract long utcToTZ(long stdTime) @safe const scope nothrow;
 
 
     /++
@@ -159,7 +159,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    abstract long tzToUTC(long adjTime) @safe const nothrow;
+    abstract long tzToUTC(long adjTime) @safe const scope nothrow;
 
 
     /++
@@ -170,7 +170,7 @@ public:
             stdTime = The UTC time for which to get the offset from UTC for this
                       time zone.
       +/
-    Duration utcOffsetAt(long stdTime) @safe const nothrow
+    Duration utcOffsetAt(long stdTime) @safe const scope nothrow
     {
         return dur!"hnsecs"(utcToTZ(stdTime) - stdTime);
     }
@@ -580,7 +580,7 @@ public:
         dynamically rather than it being fixed like it would be with most time
         zones.
       +/
-    @property override string stdName() @trusted const nothrow
+    @property override string stdName() @trusted const scope nothrow
     {
         version (Posix)
         {
@@ -665,7 +665,7 @@ public:
         dynamically rather than it being fixed like it would be with most time
         zones.
       +/
-    @property override string dstName() @trusted const nothrow
+    @property override string dstName() @trusted const scope nothrow
     {
         version (Posix)
         {
@@ -809,7 +809,7 @@ public:
             stdTime = The UTC time that needs to be checked for DST in this time
                       zone.
       +/
-    override bool dstInEffect(long stdTime) @trusted const nothrow
+    override bool dstInEffect(long stdTime) @trusted const scope nothrow
     {
         import core.stdc.time : tm;
 
@@ -863,7 +863,7 @@ public:
         See_Also:
             `TimeZone.utcToTZ`
       +/
-    override long utcToTZ(long stdTime) @trusted const nothrow
+    override long utcToTZ(long stdTime) @trusted const scope nothrow
     {
         version (Solaris)
             return stdTime + convert!("seconds", "hnsecs")(tm_gmtoff(stdTime));
@@ -904,7 +904,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @trusted const nothrow
+    override long tzToUTC(long adjTime) @trusted const scope nothrow
     {
         version (Posix)
         {
@@ -1159,7 +1159,7 @@ public:
     /++
         Always returns false.
       +/
-    override bool dstInEffect(long stdTime) @safe const nothrow
+    override bool dstInEffect(long stdTime) @safe const scope nothrow
     {
         return false;
     }
@@ -1175,7 +1175,7 @@ public:
         See_Also:
             `TimeZone.utcToTZ`
       +/
-    override long utcToTZ(long stdTime) @safe const nothrow
+    override long utcToTZ(long stdTime) @safe const scope nothrow
     {
         return stdTime;
     }
@@ -1208,7 +1208,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @safe const nothrow
+    override long tzToUTC(long adjTime) @safe const scope nothrow
     {
         return adjTime;
     }
@@ -1238,7 +1238,7 @@ public:
             stdTime = The UTC time for which to get the offset from UTC for this
                       time zone.
       +/
-    override Duration utcOffsetAt(long stdTime) @safe const nothrow
+    override Duration utcOffsetAt(long stdTime) @safe const scope nothrow
     {
         return dur!"hnsecs"(0);
     }
@@ -1285,7 +1285,7 @@ public:
     /++
         Always returns false.
       +/
-    override bool dstInEffect(long stdTime) @safe const nothrow
+    override bool dstInEffect(long stdTime) @safe const scope nothrow
     {
         return false;
     }
@@ -1299,7 +1299,7 @@ public:
             stdTime = The UTC time that needs to be adjusted to this time zone's
                       time.
       +/
-    override long utcToTZ(long stdTime) @safe const nothrow
+    override long utcToTZ(long stdTime) @safe const scope nothrow
     {
         return stdTime + _utcOffset.total!"hnsecs";
     }
@@ -1326,7 +1326,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @safe const nothrow
+    override long tzToUTC(long adjTime) @safe const scope nothrow
     {
         return adjTime - _utcOffset.total!"hnsecs";
     }
@@ -1352,7 +1352,7 @@ public:
             stdTime = The UTC time for which to get the offset from UTC for this
                       time zone.
       +/
-    override Duration utcOffsetAt(long stdTime) @safe const nothrow
+    override Duration utcOffsetAt(long stdTime) @safe const scope nothrow
     {
         return _utcOffset;
     }
@@ -1919,7 +1919,7 @@ public:
             stdTime = The UTC time that needs to be checked for DST in this time
                       zone.
       +/
-    override bool dstInEffect(long stdTime) @safe const nothrow
+    override bool dstInEffect(long stdTime) @safe const scope nothrow
     {
         assert(!_transitions.empty);
 
@@ -1943,7 +1943,7 @@ public:
             stdTime = The UTC time that needs to be adjusted to this time zone's
                       time.
       +/
-    override long utcToTZ(long stdTime) @safe const nothrow
+    override long utcToTZ(long stdTime) @safe const scope nothrow
     {
         assert(!_transitions.empty);
 
@@ -1968,7 +1968,7 @@ public:
             adjTime = The time in this time zone that needs to be adjusted to
                       UTC time.
       +/
-    override long tzToUTC(long adjTime) @safe const nothrow
+    override long tzToUTC(long adjTime) @safe const scope nothrow
     {
         assert(!_transitions.empty, "UTC offset's not available");
 
@@ -2691,7 +2691,7 @@ private:
     }
 
 
-    int calculateLeapSeconds(long stdTime) @safe const pure nothrow
+    int calculateLeapSeconds(long stdTime) @safe const scope pure nothrow
     {
         if (_leapSeconds.empty)
             return 0;
@@ -2864,7 +2864,7 @@ version (StdDdoc)
             current dates but will still return true for `hasDST` because the
             time zone did at some point have DST.
           +/
-        @property override bool hasDST() @safe const nothrow;
+        @property override bool hasDST() @safe const scope nothrow;
 
 
         /++
@@ -2876,7 +2876,7 @@ version (StdDdoc)
                 stdTime = The UTC time that needs to be checked for DST in this
                           time zone.
           +/
-        override bool dstInEffect(long stdTime) @safe const nothrow;
+        override bool dstInEffect(long stdTime) @safe const scope nothrow;
 
 
         /++
@@ -2888,7 +2888,7 @@ version (StdDdoc)
                 stdTime = The UTC time that needs to be adjusted to this time
                           zone's time.
           +/
-        override long utcToTZ(long stdTime) @safe const nothrow;
+        override long utcToTZ(long stdTime) @safe const scope nothrow;
 
 
         /++
@@ -2900,7 +2900,7 @@ version (StdDdoc)
                 adjTime = The time in this time zone that needs to be adjusted
                           to UTC time.
           +/
-        override long tzToUTC(long adjTime) @safe const nothrow;
+        override long tzToUTC(long adjTime) @safe const scope nothrow;
 
 
         /++
@@ -2945,9 +2945,9 @@ version (StdDdoc)
         else
             alias TIME_ZONE_INFORMATION = void*;
 
-        static bool _dstInEffect(const TIME_ZONE_INFORMATION* tzInfo, long stdTime) nothrow;
-        static long _utcToTZ(const TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) nothrow;
-        static long _tzToUTC(const TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) nothrow;
+        static bool _dstInEffect(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime) nothrow;
+        static long _utcToTZ(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) nothrow;
+        static long _tzToUTC(const scope TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) nothrow;
 
         this() immutable pure
         {
@@ -2967,25 +2967,25 @@ else version (Windows)
 
     public:
 
-        @property override bool hasDST() @safe const nothrow
+        @property override bool hasDST() @safe const scope nothrow
         {
             return _tzInfo.DaylightDate.wMonth != 0;
         }
 
 
-        override bool dstInEffect(long stdTime) @safe const nothrow
+        override bool dstInEffect(long stdTime) @safe const scope nothrow
         {
             return _dstInEffect(&_tzInfo, stdTime);
         }
 
 
-        override long utcToTZ(long stdTime) @safe const nothrow
+        override long utcToTZ(long stdTime) @safe const scope nothrow
         {
             return _utcToTZ(&_tzInfo, stdTime, hasDST);
         }
 
 
-        override long tzToUTC(long adjTime) @safe const nothrow
+        override long tzToUTC(long adjTime) @safe const scope nothrow
         {
             return _tzToUTC(&_tzInfo, adjTime, hasDST);
         }
@@ -3071,7 +3071,7 @@ else version (Windows)
 
     private:
 
-        static bool _dstInEffect(const TIME_ZONE_INFORMATION* tzInfo, long stdTime) @trusted nothrow
+        static bool _dstInEffect(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime) @trusted nothrow
         {
             try
             {
@@ -3155,7 +3155,7 @@ else version (Windows)
         }
 
 
-        static long _utcToTZ(const TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) @safe nothrow
+        static long _utcToTZ(const scope TIME_ZONE_INFORMATION* tzInfo, long stdTime, bool hasDST) @safe nothrow
         {
             if (hasDST && WindowsTimeZone._dstInEffect(tzInfo, stdTime))
                 return stdTime - convert!("minutes", "hnsecs")(tzInfo.Bias + tzInfo.DaylightBias);
@@ -3164,7 +3164,7 @@ else version (Windows)
         }
 
 
-        static long _tzToUTC(const TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) @trusted nothrow
+        static long _tzToUTC(const scope TIME_ZONE_INFORMATION* tzInfo, long adjTime, bool hasDST) @trusted nothrow
         {
             if (hasDST)
             {

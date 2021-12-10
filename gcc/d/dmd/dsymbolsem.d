@@ -133,7 +133,7 @@ AlignDeclaration getAlignment(AlignDeclaration ad, Scope* sc)
         e = e.ctfeInterpret();
         exp = e;                // could be re-evaluated if exps are assigned to more than one AlignDeclaration by CParser.applySpecifier(),
                                 // e.g. `_Alignas(8) int a, b;`
-        if (e.op == TOK.error)
+        if (e.op == EXP.error)
             errors = true;
         else
         {
@@ -611,7 +611,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             }
         Lnomatch:
 
-            if (ie && ie.op == TOK.tuple)
+            if (ie && ie.op == EXP.tuple)
             {
                 auto te = ie.isTupleExp();
                 size_t tedim = te.exps.dim;
@@ -652,6 +652,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     storage_class |= arg.storageClass;
                 auto v = new VarDeclaration(dsym.loc, arg.type, id, ti, storage_class);
                 //printf("declaring field %s of type %s\n", v.toChars(), v.type.toChars());
+                v.overlapped = dsym.overlapped;
+
                 v.dsymbolSemantic(sc);
 
                 if (sc.scopesym)
@@ -879,11 +881,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if ((!dsym._init || dsym._init.isVoidInitializer) && !fd)
         {
             // If not mutable, initializable by constructor only
-            dsym.storage_class |= STC.ctorinit;
+            dsym.setInCtorOnly = true;
         }
 
         if (dsym._init)
-            dsym.storage_class |= STC.init; // remember we had an explicit initializer
+        { } // remember we had an explicit initializer
         else if (dsym.storage_class & STC.manifest)
             dsym.error("manifest constants must have initializers");
 
@@ -1013,7 +1015,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     exp = exp.expressionSemantic(sc);
                     dsym.canassign--;
                     exp = exp.optimize(WANTvalue);
-                    if (exp.op == TOK.error)
+                    if (exp.op == EXP.error)
                     {
                         dsym._init = new ErrorInitializer();
                         ei = null;
@@ -1024,7 +1026,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     if (ei && dsym.isScope())
                     {
                         Expression ex = ei.exp.lastComma();
-                        if (ex.op == TOK.blit || ex.op == TOK.construct)
+                        if (ex.op == EXP.blit || ex.op == EXP.construct)
                             ex = (cast(AssignExp)ex).e2;
                         if (auto ne = ex.isNewExp())
                         {
@@ -1057,7 +1059,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     // Don't run CTFE for the temporary variables inside typeof
                     dsym._init = dsym._init.initializerSemantic(sc, dsym.type, sc.intypeof == 1 ? INITnointerpret : INITinterpret);
                     const init_err = dsym._init.isExpInitializer();
-                    if (init_err && init_err.exp.op == TOK.showCtfeContext)
+                    if (init_err && init_err.exp.op == EXP.showCtfeContext)
                     {
                          errorSupplemental(dsym.loc, "compile time context created here");
                     }
@@ -1085,7 +1087,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     dsym.inuse++;
                     // Bug 20549. Don't try this on modules or packages, syntaxCopy
                     // could crash (inf. recursion) on a mod/pkg referencing itself
-                    if (ei && (ei.exp.op != TOK.scope_ ? true : !ei.exp.isScopeExp().sds.isPackage()))
+                    if (ei && (ei.exp.op != EXP.scope_ ? true : !ei.exp.isScopeExp().sds.isPackage()))
                     {
                         if (ei.exp.type)
                         {
@@ -1241,7 +1243,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             width.error("bit-field `%s` has zero width", dsym.toChars());
             dsym.errors = true;
         }
-        const max_width = dsym.type.size() * 8;
+        const sz = dsym.type.size();
+        if (sz == SIZE_INVALID)
+            dsym.errors = true;
+        const max_width = sz * 8;
         if (uwidth > max_width)
         {
             width.error("width `%lld` of bit-field `%s` does not fit in type `%s`", cast(long)uwidth, dsym.toChars(), dsym.type.toChars());
@@ -1459,7 +1464,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
     override void visit(AnonDeclaration scd)
     {
-        //printf("\tAnonDeclaration::semantic %s %p\n", isunion ? "union" : "struct", this);
+        //printf("\tAnonDeclaration::semantic isunion:%d ptr:%p\n", scd.isunion, scd);
         assert(sc.parent);
         auto p = sc.parent.pastMixin();
         auto ad = p.isAggregateDeclaration();
@@ -1479,6 +1484,11 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             for (size_t i = 0; i < scd.decl.dim; i++)
             {
                 Dsymbol s = (*scd.decl)[i];
+                if (auto var = s.isVarDeclaration)
+                {
+                    if (scd.isunion)
+                        var.overlapped = true;
+                }
                 s.dsymbolSemantic(sc);
             }
             sc = sc.pop();
@@ -1651,7 +1661,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     e = resolveProperties(sc, e);
                     sc = sc.endCTFE();
                     e = ctfeInterpretForPragmaMsg(e);
-                    if (e.op == TOK.error)
+                    if (e.op == EXP.error)
                     {
                         errorSupplemental(pd.loc, "while evaluating `pragma(msg, %s)`", (*pd.args)[i].toChars());
                         return;
@@ -2185,7 +2195,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                     e = resolveProperties(sc, e);
                     e = e.integralPromotions(sc);
                     e = e.ctfeInterpret();
-                    if (e.op == TOK.error)
+                    if (e.op == EXP.error)
                         return errorReturn(em);
                     auto ie = e.isIntegerExp();
                     if (!ie)
@@ -2303,7 +2313,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             e = e.expressionSemantic(sc);
             e = resolveProperties(sc, e);
             e = e.ctfeInterpret();
-            if (e.op == TOK.error)
+            if (e.op == EXP.error)
                 return errorReturn();
             if (first && !em.ed.memtype && !em.ed.isAnonymous())
             {
@@ -2331,7 +2341,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                         ev = ev.implicitCastTo(sc, em.ed.memtype);
                         ev = ev.ctfeInterpret();
                         ev = ev.castTo(sc, em.ed.type);
-                        if (ev.op == TOK.error)
+                        if (ev.op == EXP.error)
                             em.ed.errors = true;
                         enm.value = ev;
                     });
@@ -2429,7 +2439,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             // Set value to (eprev + 1).
             // But first check that (eprev != emax)
             assert(eprev);
-            Expression e = new EqualExp(TOK.equal, em.loc, eprev, emax);
+            Expression e = new EqualExp(EXP.equal, em.loc, eprev, emax);
             e = e.expressionSemantic(sc);
             e = e.ctfeInterpret();
             if (e.toInteger())
@@ -2446,7 +2456,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             e = e.ctfeInterpret();
 
             // save origValue (without cast) for better json output
-            if (e.op != TOK.error) // avoid duplicate diagnostics
+            if (e.op != EXP.error) // avoid duplicate diagnostics
             {
                 assert(emprev.origValue);
                 em.origValue = new AddExp(em.loc, emprev.origValue, IntegerExp.literal!1);
@@ -2454,12 +2464,12 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 em.origValue = em.origValue.ctfeInterpret();
             }
 
-            if (e.op == TOK.error)
+            if (e.op == EXP.error)
                 return errorReturn();
             if (e.type.isfloating())
             {
                 // Check that e != eprev (not always true for floats)
-                Expression etest = new EqualExp(TOK.equal, em.loc, e, eprev);
+                Expression etest = new EqualExp(EXP.equal, em.loc, e, eprev);
                 etest = etest.expressionSemantic(sc);
                 etest = etest.ctfeInterpret();
                 if (etest.toInteger())
@@ -4162,7 +4172,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
             Expression e = new IdentifierExp(Loc.initial, v.ident);
             e = new AddAssignExp(Loc.initial, e, IntegerExp.literal!1);
-            e = new EqualExp(TOK.notEqual, Loc.initial, e, IntegerExp.literal!1);
+            e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!1);
             s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
 
             sa.push(s);
@@ -4239,7 +4249,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
             Expression e = new IdentifierExp(Loc.initial, v.ident);
             e = new AddAssignExp(Loc.initial, e, IntegerExp.literal!(-1));
-            e = new EqualExp(TOK.notEqual, Loc.initial, e, IntegerExp.literal!0);
+            e = new EqualExp(EXP.notEqual, Loc.initial, e, IntegerExp.literal!0);
             s = new IfStatement(Loc.initial, null, e, new ReturnStatement(Loc.initial, null), null, Loc.initial);
 
             sa.push(s);
@@ -4616,6 +4626,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (cldec.errors)
             cldec.type = Type.terror;
+        if (cldec.semanticRun == PASS.init)
+            cldec.type = cldec.type.addSTC(sc.stc | cldec.storage_class);
         cldec.type = cldec.type.typeSemantic(cldec.loc, sc);
         if (auto tc = cldec.type.isTypeClass())
             if (tc.sym != cldec)
@@ -6422,7 +6434,7 @@ void aliasSemantic(AliasDeclaration ds, Scope* sc)
                 s = getDsymbol(e);
                 if (!s)
                 {
-                    if (e.op != TOK.error)
+                    if (e.op != EXP.error)
                         ds.error("cannot alias an expression `%s`", e.toChars());
                     return errorRet();
                 }
@@ -6606,7 +6618,7 @@ private void aliasAssignSemantic(AliasAssign ds, Scope* sc)
                 s = getDsymbol(e);
                 if (!s)
                 {
-                    if (e.op != TOK.error)
+                    if (e.op != EXP.error)
                         ds.error("cannot alias an expression `%s`", e.toChars());
                     return errorRet();
                 }

@@ -27,7 +27,7 @@ module dmd.target;
 
 import dmd.globals : Param;
 
-enum CPU
+enum CPU : ubyte
 {
     x87,
     mmx,
@@ -66,6 +66,7 @@ extern (C++) struct Target
     import dmd.mtype : Type, TypeFunction, TypeTuple;
     import dmd.root.ctfloat : real_t;
     import dmd.statement : Statement;
+    import dmd.tokens : EXP;
 
     /// Bit decoding of the Target.OS
     enum OS : ubyte
@@ -213,7 +214,7 @@ extern (C++) struct Target
      * Returns:
      *      true if the operation is supported or type is not a vector
      */
-    extern (C++) bool isVectorOpSupported(Type type, uint op, Type t2 = null);
+    extern (C++) bool isVectorOpSupported(Type type, EXP op, Type t2 = null);
 
     /**
      * Default system linkage for the target.

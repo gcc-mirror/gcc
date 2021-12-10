@@ -88,7 +88,7 @@ lvalue_p (Expression *e)
   if (ce != NULL && ce->e1->isLvalue ())
     return true;
 
-  return (e->op != TOKslice && e->isLvalue ());
+  return (e->op != EXP::slice && e->isLvalue ());
 }
 
 /* Build an expression of code CODE, data type TYPE, and operands ARG0 and
@@ -162,7 +162,7 @@ binop_assignment (tree_code code, Expression *e1, Expression *e2)
 {
   /* Skip casts for lhs assignment.  */
   Expression *e1b = e1;
-  while (e1b->op == TOKcast)
+  while (e1b->op == EXP::cast_)
     {
       CastExp *ce = e1b->isCastExp ();
       gcc_assert (same_type_p (ce->type, ce->to));
@@ -264,7 +264,7 @@ public:
 
   void visit (IdentityExp *e)
   {
-    tree_code code = (e->op == TOKidentity) ? EQ_EXPR : NE_EXPR;
+    tree_code code = (e->op == EXP::identity) ? EQ_EXPR : NE_EXPR;
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
 
@@ -331,7 +331,7 @@ public:
   {
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
-    tree_code code = (e->op == TOKequal) ? EQ_EXPR : NE_EXPR;
+    tree_code code = (e->op == EXP::equal) ? EQ_EXPR : NE_EXPR;
 
     if ((tb1->ty == TY::Tsarray || tb1->ty == TY::Tarray)
 	&& (tb2->ty == TY::Tsarray || tb2->ty == TY::Tarray))
@@ -391,7 +391,7 @@ public:
 	       Otherwise for inequality:
 		    (e1.length != 0 && memcmp);  */
 	    tree tsizecmp = build_boolop (code, t1len, size_zero_node);
-	    if (e->op == TOKequal)
+	    if (e->op == EXP::equal)
 	      result = build_boolop (TRUTH_ORIF_EXPR, tsizecmp, result);
 	    else
 	      result = build_boolop (TRUTH_ANDIF_EXPR, tsizecmp, result);
@@ -404,7 +404,7 @@ public:
 	    else
 	      {
 		tree tlencmp = build_boolop (code, t1len, t2len);
-		if (e->op == TOKequal)
+		if (e->op == EXP::equal)
 		  result = build_boolop (TRUTH_ANDIF_EXPR, tlencmp, result);
 		else
 		  result = build_boolop (TRUTH_ORIF_EXPR, tlencmp, result);
@@ -428,7 +428,7 @@ public:
 					 d_array_convert (e->e2),
 					 build_typeinfo (e->loc, t1array));
 
-	    if (e->op == TOKnotequal)
+	    if (e->op == EXP::notEqual)
 	      result = build1 (TRUTH_NOT_EXPR, build_ctype (e->type), result);
 
 	    this->result_ = result;
@@ -453,7 +453,7 @@ public:
 				     build_expr (e->e1),
 				     build_expr (e->e2));
 
-	if (e->op == TOKnotequal)
+	if (e->op == EXP::notEqual)
 	  result = build1 (TRUTH_NOT_EXPR, build_ctype (e->type), result);
 
 	this->result_ = result;
@@ -499,19 +499,19 @@ public:
 
     switch (e->op)
       {
-      case TOKle:
+      case EXP::lessOrEqual:
 	code = LE_EXPR;
 	break;
 
-      case TOKlt:
+      case EXP::lessThan:
 	code = LT_EXPR;
 	break;
 
-      case TOKge:
+      case EXP::greaterOrEqual:
 	code = GE_EXPR;
 	break;
 
-      case TOKgt:
+      case EXP::greaterThan:
 	code = GT_EXPR;
 	break;
 
@@ -540,7 +540,7 @@ public:
 
   void visit (LogicalExp *e)
   {
-    tree_code code = (e->op == TOKandand) ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
+    tree_code code = (e->op == EXP::andAnd) ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
 
     if (e->e2->type->toBasetype ()->ty != TY::Tvoid)
       {
@@ -559,7 +559,7 @@ public:
 	tree t2 = build_expr_dtor (e->e2);
 
 	/* Invert condition for logical or if expression.  */
-	if (e->op == TOKoror)
+	if (e->op == EXP::orOr)
 	  t1 = build1 (TRUTH_NOT_EXPR, d_bool_type, t1);
 
 	this->result_ = build_condition (build_ctype (e->type),
@@ -576,8 +576,8 @@ public:
 
     switch (e->op)
       {
-      case TOKadd:
-      case TOKmin:
+      case EXP::add:
+      case EXP::min:
 	if ((e->e1->type->isreal () && e->e2->type->isimaginary ())
 	    || (e->e1->type->isimaginary () && e->e2->type->isreal ()))
 	  {
@@ -586,7 +586,7 @@ public:
 	    tree t1 = build_expr (e->e1);
 	    tree t2 = build_expr (e->e2);
 
-	    if (e->op == TOKmin)
+	    if (e->op == EXP::min)
 	      t2 = build1 (NEGATE_EXPR, TREE_TYPE (t2), t2);
 
 	    if (e->e1->type->isreal ())
@@ -597,22 +597,22 @@ public:
 	    return;
 	  }
 	else
-	  code = (e->op == TOKadd)
+	  code = (e->op == EXP::add)
 	    ? PLUS_EXPR : MINUS_EXPR;
 	break;
 
-      case TOKmul:
+      case EXP::mul:
 	code = MULT_EXPR;
 	break;
 
-      case TOKdiv:
+      case EXP::div:
 	/* Determine if the div expression is a lowered pointer diff operation.
 	   The front-end rewrites `(p1 - p2)' into `(p1 - p2) / stride'.  */
 	if (MinExp *me = e->e1->isMinExp ())
 	  {
 	    if (me->e1->type->ty == TY::Tpointer
 		&& me->e2->type->ty == TY::Tpointer
-		&& e->e2->op == TOKint64)
+		&& e->e2->op == EXP::int64)
 	      {
 		code = EXACT_DIV_EXPR;
 		break;
@@ -623,32 +623,32 @@ public:
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
 
-      case TOKmod:
+      case EXP::mod:
 	code = e->e1->type->isfloating ()
 	  ? FLOAT_MOD_EXPR : TRUNC_MOD_EXPR;
 	break;
 
-      case TOKand:
+      case EXP::and_:
 	code = BIT_AND_EXPR;
 	break;
 
-      case TOKor:
+      case EXP::or_:
 	code = BIT_IOR_EXPR;
 	break;
 
-      case TOKxor:
+      case EXP::xor_:
 	code = BIT_XOR_EXPR;
 	break;
 
-      case TOKshl:
+      case EXP::leftShift:
 	code = LSHIFT_EXPR;
 	  break;
 
-      case TOKshr:
+      case EXP::rightShift:
 	code = RSHIFT_EXPR;
 	break;
 
-      case TOKushr:
+      case EXP::unsignedRightShift:
 	code = UNSIGNED_RSHIFT_EXPR;
 	break;
 
@@ -678,15 +678,15 @@ public:
 
     tree result;
 
-    if (e->e1->op == TOKcat)
+    if (e->e1->op == EXP::concatenate)
       {
 	/* Flatten multiple concatenations to an array.
 	   So the expression ((a ~ b) ~ c) becomes [a, b, c]  */
 	int ndims = 2;
 
-	for (Expression *ex = e->e1; ex->op == TOKcat;)
+	for (Expression *ex = e->e1; ex->op == EXP::concatenate;)
 	  {
-	    if (ex->op == TOKcat)
+	    if (ex->op == EXP::concatenate)
 	      {
 		ex = ex->isCatExp ()->e1;
 		ndims++;
@@ -703,7 +703,7 @@ public:
 	int dim = ndims - 1;
 
 	for (Expression *oe = ce->e2; oe != NULL;
-	     (ce->e1->op != TOKcat
+	     (ce->e1->op != EXP::concatenate
 	      ? (oe = ce->e1)
 	      : (ce = ce->e1->isCatExp (), oe = ce->e2)))
 	  {
@@ -751,59 +751,59 @@ public:
 
     switch (e->op)
       {
-      case TOKaddass:
+      case EXP::addAssign:
 	code = PLUS_EXPR;
 	break;
 
-      case TOKminass:
+      case EXP::minAssign:
 	code = MINUS_EXPR;
 	break;
 
-      case TOKmulass:
+      case EXP::mulAssign:
 	code = MULT_EXPR;
 	break;
 
-      case TOKdivass:
+      case EXP::divAssign:
 	code = e->e1->type->isintegral ()
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
 
-      case TOKmodass:
+      case EXP::modAssign:
 	code = e->e1->type->isfloating ()
 	  ? FLOAT_MOD_EXPR : TRUNC_MOD_EXPR;
 	break;
 
-      case TOKandass:
+      case EXP::andAssign:
 	code = BIT_AND_EXPR;
 	break;
 
-      case TOKorass:
+      case EXP::orAssign:
 	code = BIT_IOR_EXPR;
 	break;
 
-      case TOKxorass:
+      case EXP::xorAssign:
 	code = BIT_XOR_EXPR;
 	break;
 
-      case TOKpowass:
+      case EXP::powAssign:
 	gcc_unreachable ();
 
-      case TOKshlass:
+      case EXP::leftShiftAssign:
 	code = LSHIFT_EXPR;
 	break;
 
-      case TOKshrass:
-      case TOKushrass:
+      case EXP::rightShiftAssign:
+      case EXP::unsignedRightShiftAssign:
 	/* Use the original lhs type before it was promoted.  The left operand
 	   of `>>>=' does not undergo integral promotions before shifting.
 	   Strip off casts just incase anyway.  */
-	while (e1b->op == TOKcast)
+	while (e1b->op == EXP::cast_)
 	  {
 	    CastExp *ce = e1b->isCastExp ();
 	    gcc_assert (same_type_p (ce->type, ce->to));
 	    e1b = ce->e1;
 	  }
-	code = (e->op == TOKshrass) ? RSHIFT_EXPR : UNSIGNED_RSHIFT_EXPR;
+	code = (e->op == EXP::rightShiftAssign) ? RSHIFT_EXPR : UNSIGNED_RSHIFT_EXPR;
 	break;
 
       default:
@@ -908,7 +908,7 @@ public:
     /* First, handle special assignment semantics.  */
 
     /* Look for array.length = n;  */
-    if (e->e1->op == TOKarraylength)
+    if (e->e1->op == EXP::arrayLength)
       {
 	/* This case should have been rewritten to `_d_arraysetlengthT` in the
 	   semantic phase.  */
@@ -916,7 +916,7 @@ public:
       }
 
     /* Look for array[] = n;  */
-    if (e->e1->op == TOKslice)
+    if (e->e1->op == EXP::slice)
       {
 	SliceExp *se = e->e1->isSliceExp ();
 	Type *stype = se->e1->type->toBasetype ();
@@ -937,15 +937,18 @@ public:
 	    tree init = stabilize_expr (&t1);
 	    t1 = d_save_expr (t1);
 
-	    if ((postblit || destructor) && e->op != TOKblit)
+	    if ((postblit || destructor) && e->op != EXP::blit)
 	      {
-		libcall_fn libcall = (e->op == TOKconstruct)
-		  ? LIBCALL_ARRAYSETCTOR : LIBCALL_ARRAYSETASSIGN;
+		/* Need to call postblit/destructor as part of assignment.
+		   Construction has already been handled by the front-end.  */
+		gcc_assert (e->op != EXP::construct);
+
 		/* So we can call postblits on const/immutable objects.  */
 		Type *tm = etype->unSharedOf ()->mutableOf ();
 		tree ti = build_typeinfo (e->loc, tm);
 
-		result = build_libcall (libcall, Type::tvoid, 4,
+		/* Generate: _d_arraysetassign (t1.ptr, &t2, t1.length, ti);  */
+		result = build_libcall (LIBCALL_ARRAYSETASSIGN, Type::tvoid, 4,
 					d_array_ptr (t1),
 					build_address (t2),
 					d_array_length (t1), ti);
@@ -1011,14 +1014,11 @@ public:
 
 		this->result_ = compound_expr (result, t1);
 	      }
-	    else if ((postblit || destructor) && e->op != TOKblit)
+	    else if ((postblit || destructor)
+		     && e->op != EXP::blit && e->op != EXP::construct)
 	      {
-		/* Generate: _d_arrayassign(ti, from, to)
-			 or: _d_arrayctor(ti, from, to)  */
-		libcall_fn libcall = (e->op == TOKconstruct)
-		  ? LIBCALL_ARRAYCTOR : LIBCALL_ARRAYASSIGN;
-
-		this->result_ = build_libcall (libcall, e->type, 3,
+		/* Generate: _d_arrayassign(ti, from, to);  */
+		this->result_ = build_libcall (LIBCALL_ARRAYASSIGN, e->type, 3,
 					       build_typeinfo (e->loc, etype),
 					       d_array_convert (e->e2),
 					       d_array_convert (e->e1));
@@ -1039,8 +1039,8 @@ public:
     /* Look for reference initializations.  */
     if (e->memset == MemorySet::referenceInit)
       {
-	gcc_assert (e->op == TOKconstruct || e->op == TOKblit);
-	gcc_assert (e->e1->op == TOKvar);
+	gcc_assert (e->op == EXP::construct || e->op == EXP::blit);
+	gcc_assert (e->e1->op == EXP::variable);
 
 	Declaration *decl = e->e1->isVarExp ()->var;
 	if (decl->storage_class & (STCout | STCref))
@@ -1060,7 +1060,7 @@ public:
 
     /* Other types of assignments that may require post construction.  */
     Type *tb1 = e->e1->type->toBasetype ();
-    tree_code modifycode = (e->op == TOKconstruct) ? INIT_EXPR : MODIFY_EXPR;
+    tree_code modifycode = (e->op == EXP::construct) ? INIT_EXPR : MODIFY_EXPR;
 
     /* Look for struct assignment.  */
     if (tb1->ty == TY::Tstruct)
@@ -1071,10 +1071,10 @@ public:
 	StructDeclaration *sd = tb1->isTypeStruct ()->sym;
 
 	/* Look for struct = 0.  */
-	if (e->e2->op == TOKint64)
+	if (e->e2->op == EXP::int64)
 	  {
 	    /* Use memset to fill struct.  */
-	    gcc_assert (e->op == TOKblit);
+	    gcc_assert (e->op == EXP::blit);
 	    tree result = build_memset_call (t1);
 
 	    /* Maybe set-up hidden pointer to outer scope context.  */
@@ -1095,8 +1095,8 @@ public:
 	    tree init = NULL_TREE;
 
 	    /* Fill any alignment holes in the struct using memset.  */
-	    if ((e->op == TOKconstruct
-		 || (e->e2->op == TOKstructliteral && e->op == TOKblit))
+	    if ((e->op == EXP::construct
+		 || (e->e2->op == EXP::structLiteral && e->op == EXP::blit))
 		&& (sd->isUnionDeclaration () || !identity_compare_p (sd)))
 	      {
 		t1 = stabilize_reference (t1);
@@ -1120,10 +1120,10 @@ public:
     if (tb1->ty == TY::Tsarray)
       {
 	/* Look for array = 0.  */
-	if (e->e2->op == TOKint64)
+	if (e->e2->op == EXP::int64)
 	  {
 	    /* Use memset to fill the array.  */
-	    gcc_assert (e->op == TOKblit);
+	    gcc_assert (e->op == EXP::blit);
 	    this->result_ = build_memset_call (build_expr (e->e1));
 	    return;
 	  }
@@ -1132,17 +1132,17 @@ public:
 	gcc_assert (e->e2->type->toBasetype ()->ty == TY::Tsarray);
 
 	/* Determine if we need to run postblit.  */
-	bool postblit = needs_postblit (etype);
-	bool destructor = needs_dtor (etype);
-	bool lvalue = lvalue_p (e->e2);
+	const bool postblit = needs_postblit (etype);
+	const bool destructor = needs_dtor (etype);
+	const bool lvalue = lvalue_p (e->e2);
 
 	/* Optimize static array assignment with array literal.  Even if the
 	   elements in rhs are all rvalues and don't have to call postblits,
 	   this assignment should call dtors on old assigned elements.  */
 	if ((!postblit && !destructor)
-	    || (e->op == TOKconstruct && e->e2->op == TOKarrayliteral)
-	    || (e->op == TOKconstruct && !lvalue && postblit)
-	    || (e->op == TOKblit || e->e1->type->size () == 0))
+	    || (e->op == EXP::construct && e->e2->op == EXP::arrayLiteral)
+	    || (e->op == EXP::construct && !lvalue && postblit)
+	    || (e->op == EXP::blit || e->e1->type->size () == 0))
 	  {
 	    tree t1 = build_expr (e->e1);
 	    tree t2 = convert_for_assignment (build_expr (e->e2),
@@ -1152,32 +1152,22 @@ public:
 	    return;
 	  }
 
+	/* All other kinds of lvalue or rvalue static array assignment.
+	   Array construction has already been handled by the front-end.  */
+	gcc_assert (e->op != EXP::construct);
+
+	/* Generate: _d_arrayassign_l()
+		 or: _d_arrayassign_r()  */
+	libcall_fn libcall = (lvalue)
+	  ? LIBCALL_ARRAYASSIGN_L : LIBCALL_ARRAYASSIGN_R;
+	tree elembuf = build_local_temp (build_ctype (etype));
 	Type *arrtype = (e->type->ty == TY::Tsarray)
 	  ? etype->arrayOf () : e->type;
-	tree result;
-
-	if (e->op == TOKconstruct)
-	  {
-	    /* Generate: _d_arrayctor(ti, from, to)  */
-	    result = build_libcall (LIBCALL_ARRAYCTOR, arrtype, 3,
-				    build_typeinfo (e->loc, etype),
-				    d_array_convert (e->e2),
-				    d_array_convert (e->e1));
-	  }
-	else
-	  {
-	    /* Generate: _d_arrayassign_l()
-		     or: _d_arrayassign_r()  */
-	    libcall_fn libcall = (lvalue)
-	      ? LIBCALL_ARRAYASSIGN_L : LIBCALL_ARRAYASSIGN_R;
-	    tree elembuf = build_local_temp (build_ctype (etype));
-
-	    result = build_libcall (libcall, arrtype, 4,
-				    build_typeinfo (e->loc, etype),
-				    d_array_convert (e->e2),
-				    d_array_convert (e->e1),
-				    build_address (elembuf));
-	  }
+	tree result = build_libcall (libcall, arrtype, 4,
+				     build_typeinfo (e->loc, etype),
+				     d_array_convert (e->e2),
+				     d_array_convert (e->e1),
+				     build_address (elembuf));
 
 	/* Cast the libcall result back to a static array.  */
 	if (e->type->ty == TY::Tsarray)
@@ -1202,12 +1192,12 @@ public:
   {
     tree result;
 
-    if (e->op == TOKplusplus)
+    if (e->op == EXP::plusPlus)
       {
 	result = build2 (POSTINCREMENT_EXPR, build_ctype (e->type),
 			 build_expr (e->e1), build_expr (e->e2));
       }
-    else if (e->op == TOKminusminus)
+    else if (e->op == EXP::minusMinus)
       {
 	result = build2 (POSTDECREMENT_EXPR, build_ctype (e->type),
 			 build_expr (e->e1), build_expr (e->e2));
@@ -1441,7 +1431,7 @@ public:
 	   the destructor is called for the object instance.  */
 	libcall_fn libcall;
 
-	if (e->e1->op == TOKvar)
+	if (e->e1->op == EXP::variable)
 	  {
 	    VarDeclaration *v = e->e1->isVarExp ()->var->isVarDeclaration ();
 	    if (v && v->onstack)
@@ -1586,10 +1576,10 @@ public:
     size_t offset;
     tree result;
 
-    if (e->e1->op == TOKadd)
+    if (e->e1->op == EXP::add)
       {
 	AddExp *ae = e->e1->isAddExp ();
-	if (ae->e1->op == TOKaddress
+	if (ae->e1->op == EXP::address
 	    && ae->e2->isConst () && ae->e2->type->isintegral ())
 	  {
 	    Expression *ex = ae->e1->isAddrExp ()->e1;
@@ -1598,7 +1588,7 @@ public:
 	    offset = ae->e2->toUInteger ();
 	  }
       }
-    else if (e->e1->op == TOKsymoff)
+    else if (e->e1->op == EXP::symbolOffset)
       {
 	SymOffExp *se = e->e1->isSymOffExp ();
 	if (!declaration_reference_p (se->var))
@@ -1650,7 +1640,7 @@ public:
 
     /* The frontend optimizer can convert const symbol into a struct literal.
        Taking the address of a struct literal is otherwise illegal.  */
-    if (e->e1->op == TOKstructliteral)
+    if (e->e1->op == EXP::structLiteral)
       {
 	StructLiteralExp *sle = e->e1->isStructLiteralExp ()->origin;
 	gcc_assert (sle != NULL);
@@ -1689,21 +1679,21 @@ public:
     TypeFunction *tf = NULL;
 
     /* Calls to delegates can sometimes look like this.  */
-    if (e1b->op == TOKcomma)
+    if (e1b->op == EXP::comma)
       {
 	e1b = e1b->isCommaExp ()->e2;
-	gcc_assert (e1b->op == TOKvar);
+	gcc_assert (e1b->op == EXP::variable);
 
 	Declaration *var = e1b->isVarExp ()->var;
 	gcc_assert (var->isFuncDeclaration () && !var->needThis ());
       }
 
-    if (e1b->op == TOKdotvar && tb->ty != TY::Tdelegate)
+    if (e1b->op == EXP::dotVariable && tb->ty != TY::Tdelegate)
       {
 	DotVarExp *dve = e1b->isDotVarExp ();
 
 	/* Don't modify the static initializer for struct literals.  */
-	if (dve->e1->op == TOKstructliteral)
+	if (dve->e1->op == EXP::structLiteral)
 	  {
 	    StructLiteralExp *sle = dve->e1->isStructLiteralExp ();
 	    sle->useStaticInit = false;
@@ -1775,7 +1765,7 @@ public:
       {
 	/* This could be a delegate expression (TY == Tdelegate), but not
 	   actually a delegate variable.  */
-	if (e1b->op == TOKdotvar)
+	if (e1b->op == EXP::dotVariable)
 	  {
 	    /* This gets the true function type, getting the function type
 	       from e1->type can sometimes be incorrect, such as when calling
@@ -1795,7 +1785,7 @@ public:
 	object = delegate_object (callee);
 	callee = delegate_method (callee);
       }
-    else if (e1b->op == TOKvar)
+    else if (e1b->op == EXP::variable)
       {
 	FuncDeclaration *fd = e1b->isVarExp ()->var->isFuncDeclaration ();
 	gcc_assert (fd != NULL);
@@ -1877,7 +1867,7 @@ public:
 
     if (e->func->isNested () && !e->func->isThis ())
       {
-	if (e->e1->op == TOKnull)
+	if (e->e1->op == EXP::null_)
 	  object = build_expr (e->e1);
 	else
 	  object = get_frame_for_symbol (e->func);
@@ -1908,7 +1898,7 @@ public:
 
 	/* Get pointer to function out of the virtual table.  */
 	if (e->func->isVirtual () && !e->func->isFinalFunc ()
-	    && e->e1->op != TOKsuper && e->e1->op != TOKdottype)
+	    && e->e1->op != EXP::super_ && e->e1->op != EXP::dotType)
 	  {
 	    tree fntype = build_pointer_type (TREE_TYPE (fndecl));
 	    object = d_save_expr (object);
@@ -2105,9 +2095,9 @@ public:
     Type *ftype = e->type->toBasetype ();
 
     /* This check is for lambda's, remove `vthis' as function isn't nested.  */
-    if (e->fd->tok == TOKreserved && ftype->ty == TY::Tpointer)
+    if (e->fd->tok == TOK::reserved && ftype->ty == TY::Tpointer)
       {
-	e->fd->tok = TOKfunction;
+	e->fd->tok = TOK::function_;
 	e->fd->vthis = NULL;
       }
 
@@ -2196,9 +2186,9 @@ public:
     FuncLiteralDeclaration *fld = e->var->isFuncLiteralDeclaration ();
     if (fld != NULL)
       {
-	if (fld->tok == TOKreserved)
+	if (fld->tok == TOK::reserved)
 	  {
-	    fld->tok = TOKfunction;
+	    fld->tok = TOK::function_;
 	    fld->vthis = NULL;
 	  }
 
@@ -2210,7 +2200,7 @@ public:
       {
 	/* Want the initializer, not the expression.  */
 	VarDeclaration *var = e->var->isVarDeclaration ();
-	SymbolDeclaration *sd = e->var->isSymbolDeclaration ();
+	SymbolDeclaration *sdecl = e->var->isSymbolDeclaration ();
 	tree init = NULL_TREE;
 
 	if (var && (var->isConst () || var->isImmutable ())
@@ -2226,8 +2216,15 @@ public:
 		var->inuse--;
 	      }
 	  }
-	else if (sd && sd->dsym)
-	  init = layout_struct_initializer (sd->dsym);
+	else if (sdecl && sdecl->dsym)
+	  {
+	    if (StructDeclaration *sd = sdecl->dsym->isStructDeclaration ())
+	      init = layout_struct_initializer (sd);
+	    else if (ClassDeclaration *cd = sdecl->dsym->isClassDeclaration ())
+	      init = layout_class_initializer (cd);
+	    else
+	      gcc_unreachable ();
+	  }
 	else
 	  error_at (make_location_t (e->loc), "non-constant expression %qs",
 		    e->toChars ());
@@ -2241,6 +2238,26 @@ public:
       {
 	tree result = get_decl_tree (e->var);
 	TREE_USED (result) = 1;
+
+	/* The variable expression generated for `__traits(initSymbol)'.  */
+	if (SymbolDeclaration *sd = e->var->isSymbolDeclaration ())
+	  {
+	    if (e->type->isTypeDArray ())
+	      {
+		/* Generate a slice for non-zero initialized aggregates,
+		   otherwise create an empty array.  */
+		gcc_assert (e->type == Type::tvoid->arrayOf ()->constOf ());
+
+		tree type = build_ctype (e->type);
+		tree length = size_int (sd->dsym->structsize);
+		tree ptr = (sd->dsym->isStructDeclaration ()
+			    && sd->dsym->type->isZeroInit (e->loc))
+		  ? null_pointer_node : build_address (result);
+
+		this->result_ = d_array_value (type, length, ptr);
+		return;
+	      }
+	  }
 
 	/* For variables that are references - currently only out/inout
 	   arguments; objects don't count - evaluating the variable means
@@ -2954,7 +2971,7 @@ public:
     tree type = build_ctype (e->type);
 
     /* First handle array literal expressions.  */
-    if (e->e1->op == TOKarrayliteral)
+    if (e->e1->op == EXP::arrayLiteral)
       {
 	ArrayLiteralExp *ale = e->e1->isArrayLiteralExp ();
 	vec <constructor_elt, va_gc> *elms = NULL;

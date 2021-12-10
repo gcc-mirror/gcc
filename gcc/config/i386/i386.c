@@ -23144,8 +23144,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
      for Silvermont as it has out of order integer pipeline and can execute
      2 scalar instruction per tick, but has in order SIMD pipeline.  */
   if ((TARGET_CPU_P (SILVERMONT) || TARGET_CPU_P (GOLDMONT)
-       || TARGET_CPU_P (GOLDMONT_PLUS) || TARGET_CPU_P (TREMONT)
-       || TARGET_CPU_P (INTEL))
+       || TARGET_CPU_P (GOLDMONT_PLUS) || TARGET_CPU_P (INTEL))
       && stmt_info && stmt_info->stmt)
     {
       tree lhs_op = gimple_get_lhs (stmt_info->stmt);

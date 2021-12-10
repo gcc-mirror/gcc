@@ -1,3 +1,9 @@
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* gcc-interface/decl.c (gt_pch_nx): Pass NULL as new middle argument
+	to op.
+
 2021-12-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Make-lang.in (ADA_GENERATED_FILES): Add warning.

@@ -152,7 +152,7 @@ extern (C++) final class StaticForeach : RootObject
         sc = sc.endCTFE();
         el = el.optimize(WANTvalue);
         el = el.ctfeInterpret();
-        if (el.op == TOK.int64)
+        if (el.op == EXP.int64)
         {
             Expressions *es = void;
             if (auto ale = aggr.isArrayLiteralExp())
