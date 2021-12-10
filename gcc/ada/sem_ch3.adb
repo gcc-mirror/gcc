@@ -6048,13 +6048,13 @@ package body Sem_Ch3 is
    begin
       Analyze (T);
 
-      if R /= Error then
+      if R = Error then
+         Set_Error_Posted (R);
+         Set_Error_Posted (T);
+      else
          Analyze (R);
          Set_Etype (N, Etype (R));
          Resolve (R, Entity (T));
-      else
-         Set_Error_Posted (R);
-         Set_Error_Posted (T);
       end if;
    end Analyze_Subtype_Indication;
 

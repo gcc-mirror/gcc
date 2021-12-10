@@ -10754,6 +10754,30 @@ package body Sem_Res is
             Fold_Uint (H, Expr_Value (H), Static => True);
          end if;
       end if;
+
+      --  If we have a compile-time-known null range, we warn, because that is
+      --  likely to be a mistake. (Dynamic null ranges make sense, but often
+      --  compile-time-known ones do not.) Warn only if this is in a subtype
+      --  declaration. We do this here, rather than while analyzing a subtype
+      --  declaration, in case we decide to expand the cases. We do not want to
+      --  warn in all cases, because some are idiomatic, such as an empty
+      --  aggregate (1 .. 0 => <>).
+
+      --  We don't warn in generics or their instances, because there might be
+      --  some instances where the range is null, and some where it is not,
+      --  which would lead to false alarms.
+
+      if not (Inside_A_Generic or In_Instance)
+        and then Comes_From_Source (N)
+        and then Compile_Time_Compare
+          (Low_Bound (N), High_Bound (N), Assume_Valid => True) = GT
+        and then Nkind (Parent (N)) = N_Range_Constraint
+        and then Nkind (Parent (Parent (N))) = N_Subtype_Indication
+        and then Nkind (Parent (Parent (Parent (N)))) = N_Subtype_Declaration
+        and then Is_OK_Static_Range (N)
+      then
+         Error_Msg_N ("null range??", N);
+      end if;
    end Resolve_Range;
 
    --------------------------
