@@ -223,6 +223,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-pr103562.c: We don't add this one, since it touches
+   the optimization level of the context as a whole.  */
+
 /* test-pr66700-observing-write-through-ptr.c */
 #define create_code create_code_pr66700_observing_write_through_ptr
 #define verify_code verify_code_pr66700_observing_write_through_ptr

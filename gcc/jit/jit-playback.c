@@ -466,6 +466,7 @@ new_function (location *loc,
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (fndecl) = resdecl;
+  DECL_CONTEXT (resdecl) = fndecl;
 
   if (builtin_id)
     {
