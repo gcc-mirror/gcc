@@ -315,13 +315,13 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     # to avoid a second failure for excess errors.
     # "Error reporting routines re-entered" ICE says "Internal" rather than
     # "internal", so match that too.
-    if [string match {*[Ii]nternal compiler error*} $comp_output] {
+    if [regexp -line -- {[Ii]nternal compiler error.*} $comp_output ice] {
 	upvar 2 name name
 	if { $expect_ice == 0 } {
-	  fail "$name (internal compiler error)"
+	  fail "$name ($ice)"
 	} else {
 	  # We expected an ICE and we got it.
-	  xfail "$name (internal compiler error)"
+	  xfail "$name ($ice)"
 	  # Prune the ICE from the output.
 	  set comp_output [prune_ices $comp_output]
 	}
