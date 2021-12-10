@@ -684,7 +684,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     time_get<_CharT, _InIter>::do_date_order() const
     { return time_base::no_order; }
 
-  // Expand a strftime format string and parse it.  E.g., do_get_date() may
+  // Expand a strptime format string and parse it.  E.g., do_get_date() may
   // pass %m/%d/%Y => extracted characters.
   template<typename _CharT, typename _InIter>
     _InIter
@@ -714,41 +714,27 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  const char* __cs;
 		  _CharT __wcs[10];
 		case 'a':
-		  // Abbreviated weekday name [tm_wday]
-		  const char_type*  __days1[7];
-		  __tp._M_days_abbreviated(__days1);
-		  __beg = _M_extract_name(__beg, __end, __mem, __days1,
-					  7, __io, __tmperr);
-		  if (!__tmperr)
-		    __tm->tm_wday = __mem;
-		  break;
 		case 'A':
-		  // Weekday name [tm_wday].
-		  const char_type*  __days2[7];
-		  __tp._M_days(__days2);
-		  __beg = _M_extract_name(__beg, __end, __mem, __days2,
-					  7, __io, __tmperr);
+		  // Weekday name (possibly abbreviated) [tm_wday]
+		  const char_type*  __days[14];
+		  __tp._M_days(&__days[0]);
+		  __tp._M_days_abbreviated(&__days[7]);
+		  __beg = _M_extract_name(__beg, __end, __mem, __days,
+					  14, __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_wday = __mem;
+		    __tm->tm_wday = __mem % 7;
 		  break;
 		case 'h':
 		case 'b':
-		  // Abbreviated month name [tm_mon]
-		  const char_type*  __months1[12];
-		  __tp._M_months_abbreviated(__months1);
-		  __beg = _M_extract_name(__beg, __end, __mem,
-					  __months1, 12, __io, __tmperr);
-		  if (!__tmperr)
-		    __tm->tm_mon = __mem;
-		  break;
 		case 'B':
-		  // Month name [tm_mon].
-		  const char_type*  __months2[12];
-		  __tp._M_months(__months2);
+		  // Month name (possibly abbreviated) [tm_mon]
+		  const char_type*  __months[24];
+		  __tp._M_months(&__months[0]);
+		  __tp._M_months_abbreviated(&__months[12]);
 		  __beg = _M_extract_name(__beg, __end, __mem,
-					  __months2, 12, __io, __tmperr);
+					  __months, 24, __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_mon = __mem;
+		    __tm->tm_mon = __mem % 12;
 		  break;
 		case 'c':
 		  // Default time and date representation.
@@ -758,21 +744,12 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 						__tm, __dt[0]);
 		  break;
 		case 'd':
-		  // Day [01, 31]. [tm_mday]
+		case 'e':
+		  // Day [1, 31]. [tm_mday]
+		  if (__ctype.is(ctype_base::space, *__beg))
+		    ++__beg;
 		  __beg = _M_extract_num(__beg, __end, __mem, 1, 31, 2,
 					 __io, __tmperr);
-		  if (!__tmperr)
-		    __tm->tm_mday = __mem;
-		  break;
-		case 'e':
-		  // Day [1, 31], with single digits preceded by
-		  // space. [tm_mday]
-		  if (__ctype.is(ctype_base::space, *__beg))
-		    __beg = _M_extract_num(++__beg, __end, __mem, 1, 9,
-					   1, __io, __tmperr);
-		  else
-		    __beg = _M_extract_num(__beg, __end, __mem, 10, 31,
-					   2, __io, __tmperr);
 		  if (!__tmperr)
 		    __tm->tm_mday = __mem;
 		  break;
@@ -795,7 +772,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  __beg = _M_extract_num(__beg, __end, __mem, 1, 12, 2,
 					 __io, __tmperr);
 		  if (!__tmperr)
-		    __tm->tm_hour = __mem;
+		    __tm->tm_hour = __mem % 12;
 		  break;
 		case 'm':
 		  // Month [01, 12]. [tm_mon]
@@ -812,10 +789,22 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		    __tm->tm_min = __mem;
 		  break;
 		case 'n':
-		  if (__ctype.narrow(*__beg, 0) == '\n')
+		case 't':
+		  while (__beg != __end
+			 && __ctype.is(ctype_base::space, *__beg))
 		    ++__beg;
-		  else
-		    __tmperr |= ios_base::failbit;
+		  break;
+		case 'p':
+		  // Locale's a.m. or p.m.
+		  const char_type*  __ampm[2];
+		  __tp._M_am_pm(&__ampm[0]);
+		  if (!__ampm[0][0] || !__ampm[1][0])
+		    break;
+		  __beg = _M_extract_name(__beg, __end, __mem, __ampm,
+					  2, __io, __tmperr);
+		  // FIXME: This only works if %I comes before %p.
+		  if (!__tmperr && __mem)
+		    __tm->tm_hour += 12;
 		  break;
 		case 'R':
 		  // Equivalent to (%H:%M).
@@ -835,12 +824,6 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 					 __io, __tmperr);
 		  if (!__tmperr)
 		  __tm->tm_sec = __mem;
-		  break;
-		case 't':
-		  if (__ctype.narrow(*__beg, 0) == '\t')
-		    ++__beg;
-		  else
-		    __tmperr |= ios_base::failbit;
 		  break;
 		case 'T':
 		  // Equivalent to (%H:%M:%S).
@@ -899,10 +882,23 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		  else
 		    __tmperr |= ios_base::failbit;
 		  break;
+		case '%':
+		  if (*__beg == __ctype.widen('%'))
+		    ++__beg;
+		  else
+		    __tmperr |= ios_base::failbit;
+		  break;
 		default:
 		  // Not recognized.
 		  __tmperr |= ios_base::failbit;
 		}
+	    }
+	  else if (__ctype.is(ctype_base::space, __format[__i]))
+	    {
+	      // Skip any whitespace.
+	      while (__beg != __end
+		     && __ctype.is(ctype_base::space, *__beg))
+		++__beg;
 	    }
 	  else
 	    {
@@ -930,10 +926,6 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       const locale& __loc = __io._M_getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-      // As-is works for __len = 1, 2, 4, the values actually used.
-      int __mult = __len == 2 ? 10 : (__len == 4 ? 1000 : 1);
-
-      ++__min;
       size_t __i = 0;
       int __value = 0;
       for (; __beg != __end && __i < __len; ++__beg, (void)++__i)
@@ -942,19 +934,20 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	  if (__c >= '0' && __c <= '9')
 	    {
 	      __value = __value * 10 + (__c - '0');
-	      const int __valuec = __value * __mult;
-	      if (__valuec > __max || __valuec + __mult < __min)
+	      if (__value > __max)
 		break;
-	      __mult /= 10;
 	    }
 	  else
 	    break;
 	}
-      if (__i == __len)
-	__member = __value;
       // Special encoding for do_get_year, 'y', and 'Y' above.
-      else if (__len == 4 && __i == 2)
+      if (__len == 4 && __i == 2)
 	__member = __value - 100;
+      else if (__len == 4 && __i == 4)
+	__member = __value;
+      else if (__len == 2 && __i && __i <= 2
+	       && __value >= __min && __value <= __max)
+	__member = __value;
       else
 	__err |= ios_base::failbit;
 
@@ -962,7 +955,10 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
     }
 
   // Assumptions:
-  // All elements in __names are unique.
+  // All elements in __names are unique, except if __indexlen is
+  // even __names in the first half could be the same as corresponding
+  // __names in the second half (May is abbreviated as May).  Some __names
+  // elements could be prefixes of other __names elements.
   template<typename _CharT, typename _InIter>
     _InIter
     time_get<_CharT, _InIter>::
@@ -974,12 +970,15 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       const locale& __loc = __io._M_getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-      int* __matches = static_cast<int*>(__builtin_alloca(sizeof(int)
-							  * __indexlen));
+      size_t* __matches
+	= static_cast<size_t*>(__builtin_alloca(2 * sizeof(size_t)
+						* __indexlen));
+      size_t* __lengths = __matches + __indexlen;
       size_t __nmatches = 0;
       size_t __pos = 0;
       bool __testvalid = true;
       const char_type* __name;
+      bool __begupdated = false;
 
       // Look for initial matches.
       // NB: Some of the locale data is in the form of all lowercase
@@ -991,26 +990,88 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	  for (size_t __i1 = 0; __i1 < __indexlen; ++__i1)
 	    if (__c == __names[__i1][0]
 		|| __c == __ctype.toupper(__names[__i1][0]))
-	      __matches[__nmatches++] = __i1;
+	      {
+		__lengths[__nmatches]
+		  = __traits_type::length(__names[__i1]);
+		__matches[__nmatches++] = __i1;
+	      }
 	}
 
       while (__nmatches > 1)
 	{
 	  // Find smallest matching string.
-	  size_t __minlen = __traits_type::length(__names[__matches[0]]);
+	  size_t __minlen = __lengths[0];
 	  for (size_t __i2 = 1; __i2 < __nmatches; ++__i2)
-	    __minlen = std::min(__minlen,
-			      __traits_type::length(__names[__matches[__i2]]));
-	  ++__beg;
+	    __minlen = std::min(__minlen, __lengths[__i2]);
 	  ++__pos;
-	  if (__pos < __minlen && __beg != __end)
-	    for (size_t __i3 = 0; __i3 < __nmatches;)
-	      {
-		__name = __names[__matches[__i3]];
-		if (!(__name[__pos] == *__beg))
-		  __matches[__i3] = __matches[--__nmatches];
+	  ++__beg;
+	  if (__pos == __minlen)
+	    {
+	      // If some match has remaining length of 0,
+	      // need to decide if any match with remaining
+	      // length non-zero matches the next character.
+	      // If so, remove all matches with remaining length
+	      // 0 from consideration, otherwise keep only matches
+	      // with remaining length 0.
+	      bool __match_longer = false;
+
+	      if (__beg != __end)
+		for (size_t __i3 = 0; __i3 < __nmatches; ++__i3)
+		  {
+		    __name = __names[__matches[__i3]];
+		    if (__lengths[__i3] > __pos && (__name[__pos] == *__beg))
+		      {
+			__match_longer = true;
+			break;
+		      }
+		  }
+	      for (size_t __i4 = 0; __i4 < __nmatches;)
+		if (__match_longer == (__lengths[__i4] == __pos))
+		  {
+		    __matches[__i4] = __matches[--__nmatches];
+		    __lengths[__i4] = __lengths[__nmatches];
+		  }
 		else
-		  ++__i3;
+		  ++__i4;
+	      if (__match_longer)
+		{
+		  __minlen = __lengths[0];
+		  for (size_t __i5 = 1; __i5 < __nmatches; ++__i5)
+		    __minlen = std::min(__minlen, __lengths[__i5]);
+		}
+	      else
+		{
+		  // Deal with May being full as well as abbreviated month
+		  // name.  Pick the smaller index.
+		  if (__nmatches == 2 && (__indexlen & 1) == 0)
+		    {
+		      if (__matches[0] < __indexlen / 2)
+			{
+			  if (__matches[1] == __matches[0] + __indexlen / 2)
+			    __nmatches = 1;
+			}
+		      else if (__matches[1] == __matches[0] - __indexlen / 2)
+			{
+			  __matches[0] = __matches[1];
+			  __lengths[0] = __lengths[1];
+			  __nmatches = 1;
+			}
+		    }
+		  __begupdated = true;
+		  break;
+		}
+	    }
+	  if (__pos < __minlen && __beg != __end)
+	    for (size_t __i6 = 0; __i6 < __nmatches;)
+	      {
+		__name = __names[__matches[__i6]];
+		if (!(__name[__pos] == *__beg))
+		  {
+		    __matches[__i6] = __matches[--__nmatches];
+		    __lengths[__i6] = __lengths[__nmatches];
+		  }
+		else
+		  ++__i6;
 	      }
 	  else
 	    break;
@@ -1019,10 +1080,13 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       if (__nmatches == 1)
 	{
 	  // Make sure found name is completely extracted.
-	  ++__beg;
-	  ++__pos;
+	  if (!__begupdated)
+	    {
+	      ++__beg;
+	      ++__pos;
+	    }
 	  __name = __names[__matches[0]];
-	  const size_t __len = __traits_type::length(__name);
+	  const size_t __len = __lengths[0];
 	  while (__pos < __len && __beg != __end && __name[__pos] == *__beg)
 	    ++__beg, (void)++__pos;
 
