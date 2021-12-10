@@ -3391,60 +3391,57 @@ package body Errout is
      (Buf : in out Bounded_String;
       Loc : Source_Ptr)
    is
+      Src_Ind : constant Source_File_Index := Get_Source_File_Index (Loc);
+      Sbuffer : Source_Buffer_Ptr;
+      Ref_Ptr : Integer;
+      Src_Ptr : Source_Ptr;
+
    begin
       --  We have an all lower case name from Namet, and now we want to set
       --  the appropriate case. If possible we copy the actual casing from
       --  the source. If not we use standard identifier casing.
 
-      declare
-         Src_Ind : constant Source_File_Index := Get_Source_File_Index (Loc);
-         Sbuffer : Source_Buffer_Ptr;
-         Ref_Ptr : Integer;
-         Src_Ptr : Source_Ptr;
+      Ref_Ptr := 1;
+      Src_Ptr := Loc;
 
-      begin
-         Ref_Ptr := 1;
-         Src_Ptr := Loc;
+      --  For standard locations, always use mixed case
 
-         --  For standard locations, always use mixed case
+      if Loc <= No_Location then
+         Set_Casing (Buf, Mixed_Case);
 
-         if Loc <= No_Location then
-            Set_Casing (Buf, Mixed_Case);
+      else
+         --  Determine if the reference we are dealing with corresponds to text
+         --  at the point of the error reference. This will often be the case
+         --  for simple identifier references, and is the case where we can
+         --  copy the casing from the source.
 
-         else
-            --  Determine if the reference we are dealing with corresponds to
-            --  text at the point of the error reference. This will often be
-            --  the case for simple identifier references, and is the case
-            --  where we can copy the casing from the source.
+         Sbuffer := Source_Text (Src_Ind);
 
-            Sbuffer := Source_Text (Src_Ind);
+         while Ref_Ptr <= Buf.Length loop
+            exit when
+              Fold_Lower (Sbuffer (Src_Ptr)) /=
+                Fold_Lower (Buf.Chars (Ref_Ptr));
+            Ref_Ptr := Ref_Ptr + 1;
+            Src_Ptr := Src_Ptr + 1;
+         end loop;
 
-            while Ref_Ptr <= Buf.Length loop
-               exit when
-                 Fold_Lower (Sbuffer (Src_Ptr)) /=
-                   Fold_Lower (Buf.Chars (Ref_Ptr));
-               Ref_Ptr := Ref_Ptr + 1;
+         --  If we get through the loop without a mismatch, then output the
+         --  name the way it is cased in the source program.
+
+         if Ref_Ptr > Buf.Length then
+            Src_Ptr := Loc;
+
+            for J in 1 .. Buf.Length loop
+               Buf.Chars (J) := Sbuffer (Src_Ptr);
                Src_Ptr := Src_Ptr + 1;
             end loop;
 
-            --  If we get through the loop without a mismatch, then output the
-            --  name the way it is cased in the source program
+         --  Otherwise set the casing using the default identifier casing
 
-            if Ref_Ptr > Buf.Length then
-               Src_Ptr := Loc;
-
-               for J in 1 .. Buf.Length loop
-                  Buf.Chars (J) := Sbuffer (Src_Ptr);
-                  Src_Ptr := Src_Ptr + 1;
-               end loop;
-
-            --  Otherwise set the casing using the default identifier casing
-
-            else
-               Set_Casing (Buf, Identifier_Casing (Src_Ind));
-            end if;
+         else
+            Set_Casing (Buf, Identifier_Casing (Src_Ind));
          end if;
-      end;
+      end if;
    end Adjust_Name_Case;
 
    ---------------------------
