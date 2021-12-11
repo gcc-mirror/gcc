@@ -545,6 +545,8 @@ public:
   virtual bool is_float () const = 0;
   virtual bool is_bool () const = 0;
   virtual type *is_pointer () = 0;
+  virtual type *is_volatile () { return NULL; }
+  virtual type *is_const () { return NULL; }
   virtual type *is_array () = 0;
   virtual struct_ *is_struct () { return NULL; }
   virtual bool is_void () const { return false; }
@@ -687,6 +689,15 @@ public:
   /* Strip off the "const", giving the underlying type.  */
   type *unqualified () FINAL OVERRIDE { return m_other_type; }
 
+  virtual bool is_same_type_as (type *other)
+  {
+    if (!other->is_const ())
+      return false;
+    return m_other_type->is_same_type_as (other->is_const ());
+  }
+
+  virtual type *is_const () { return m_other_type; }
+
   void replay_into (replayer *) FINAL OVERRIDE;
 
 private:
@@ -701,8 +712,17 @@ public:
   memento_of_get_volatile (type *other_type)
   : decorated_type (other_type) {}
 
+  virtual bool is_same_type_as (type *other)
+  {
+    if (!other->is_volatile ())
+      return false;
+    return m_other_type->is_same_type_as (other->is_volatile ());
+  }
+
   /* Strip off the "volatile", giving the underlying type.  */
   type *unqualified () FINAL OVERRIDE { return m_other_type; }
+
+  virtual type *is_volatile () { return m_other_type; }
 
   void replay_into (replayer *) FINAL OVERRIDE;
 
