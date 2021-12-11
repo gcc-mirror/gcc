@@ -1,3 +1,10 @@
+2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (get_symbol_decl): Align methods to MINIMUM_METHOD_BOUNDARY.
+
 2021-11-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

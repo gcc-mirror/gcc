@@ -1,3 +1,16 @@
+2021-12-10  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	Backported from master:
+	2021-12-10  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/102994
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::wait()):
+	Add const qualifier.
+	* include/std/atomic (atomic<_Tp*>::wait(), atomic_wait()):
+	Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/102994.cc:
+	New test.
+
 2021-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
