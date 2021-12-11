@@ -1,3 +1,81 @@
+2021-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/71367
+	* config/locale/dragonfly/time_members.cc (_M_initialize_timepunct):
+	Initialize "C" _M_am_pm_format to %I:%M:%S %p rather than empty
+	string.
+	* config/locale/gnu/time_members.cc (_M_initialize_timepunct):
+	Likewise.
+	* config/locale/generic/time_members.cc (_M_initialize_timepunct):
+	Likewise.
+	* include/bits/locale_facets_nonio.h (_M_am_pm_format): New method.
+	* include/bits/locale_facets_nonio.tcc (_M_extract_via_format): Handle
+	%r.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.30): Export _M_am_pm_format
+	with const _CharT** argument, ensure it isn't exported in GLIBCXX_3.4.
+	* testsuite/22_locale/time_get/get/char/71367.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/71367.cc: New test.
+
+2021-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/78714
+	* include/bits/locale_facets_nonio.tcc (_M_extract_via_format):
+	Mention in function comment it interprets strptime format string
+	rather than strftime.  Handle %a and %A the same by accepting both
+	full and abbreviated names.  Similarly handle %h, %b and %B the same.
+	Handle %d and %e the same by accepting possibly optional single space
+	and 1 or 2 digits.  For %I store tm_hour 0 instead of tm_hour 12.  For
+	%t and %n skip any whitespace.  Handle %p and %%.  For whitespace in
+	the string skip any whitespace.
+	(_M_extract_num): For __len == 2 accept 1 or 2 digits rather than
+	always 2.  Don't punt early if __value * __mult is larget than __max
+	or smaller than __min - __mult, instead punt if __value > __max.
+	At the end verify __value is in between __min and __max and punt
+	otherwise.
+	(_M_extract_name): Allow non-unique names or names which are prefixes
+	of other names.  Don't recompute lengths of names for every character.
+	* testsuite/22_locale/time_get/get/char/3.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/3.cc: New test.
+	* testsuite/22_locale/time_get/get_date/char/12791.cc (test01): Use
+	62 instead 60 and expect 6 to be accepted and thus *ret01 == '2'.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12791.cc (test01):
+	Similarly.
+	* testsuite/22_locale/time_get/get_time/char/2.cc (test02): Add " PM"
+	to the string.
+	* testsuite/22_locale/time_get/get_time/char/5.cc (test01): Expect
+	tm_hour 1 rather than 0.
+	* testsuite/22_locale/time_get/get_time/wchar_t/2.cc (test02): Add
+	" PM" to the string.
+	* testsuite/22_locale/time_get/get_time/wchar_t/5.cc (test01): Expect
+	tm_hour 1 rather than 0.
+
+2021-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103638
+	* include/bits/atomic_timed_wait.h: Check _GLIBCXX_HAS_GTHREADS
+	before using std::mutex and std::__condvar.
+
+2021-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add _GLIBCXX_
+	prefix to NO_SLEEP macro.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2021-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h: Change pragma push to pop.
+
+2021-12-10  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/102994
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::wait()):
+	Add const qualifier.
+	* include/std/atomic (atomic<_Tp*>::wait(), atomic_wait()):
+	Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/102994.cc:
+	New test.
+
 2021-12-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator.h (operator==, operator<=>): Define

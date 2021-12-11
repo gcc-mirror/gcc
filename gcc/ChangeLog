@@ -1,3 +1,42 @@
+2021-12-10  Jason Merrill  <jason@redhat.com>
+
+	* symtab.c (symtab_node::equal_address_to): Fix comment typo.
+
+2021-12-10  Doug Rupp  <rupp@adacore.com>
+
+	* config/vxworks.h (LINK_SPEC): Remove %(link_target).
+	Change %{v:-v} to %{v:-V}.
+
+2021-12-10  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Remove assignment to STMP_FIXINC.
+
+2021-12-10  Martin Liska  <mliska@suse.cz>
+
+	* params.opt: Add missing dot.
+
+2021-12-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR ipa/103601
+	* ipa-modref-tree.h (useful_for_kill_p): Zero width accesses aren't
+	useful for kill tracking.
+
+2021-12-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.c (process_asm): Process the variable table
+	completely differently.
+	(process_obj): Encode the varaible data differently.
+
+2021-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	PR tree-optimization/103523
+	* tree-vect-loop.c (vectorizable_induction): Check for
+	PLUS_EXPR/MINUS_EXPR support.
+
+2021-12-10  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/i386.c (ix86_vector_costs::add_stmt_cost): Remove Tremont.
+
 2021-12-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (max-inline-functions-called-once-loop-depth,
