@@ -1643,13 +1643,13 @@ package body Treepr is
             end if;
          end if;
 
-         --  If this is an integer-like expression whose value is known, print
-         --  that value.
+         --  If this is a discrete expression whose value is known, print that
+         --  value.
 
          if Nkind (N) in N_Subexpr
            and then Compile_Time_Known_Value (N)
            and then Present (Etype (N))
-           and then not Is_Array_Type (Etype (N))
+           and then Is_Discrete_Type (Etype (N))
          then
             if Is_Entity_Name (N) -- e.g. enumeration literal
               or else Nkind (N) in N_Integer_Literal
