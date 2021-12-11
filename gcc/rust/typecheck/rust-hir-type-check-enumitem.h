@@ -74,8 +74,7 @@ public:
     auto backend = rust_get_backend ();
     auto folded_discriminant
       = ConstFold::ConstFoldExpr::fold (discriminant.get ());
-    if (folded_discriminant == nullptr
-	|| backend->is_error_expression (folded_discriminant))
+    if (backend->is_error_expression (folded_discriminant))
       return;
 
     size_t specified_discriminant;

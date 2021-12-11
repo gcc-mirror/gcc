@@ -64,8 +64,6 @@ void
 ConstFoldItem::visit (HIR::ConstantItem &item)
 {
   auto folded_expr = ConstFoldExpr::fold (item.get_expr ());
-  if (folded_expr == nullptr)
-    return;
 
   folded = folded_expr;
 }

@@ -151,8 +151,6 @@ TypeCheckType::visit (HIR::ArrayType &type)
     return;
 
   auto capacity = ConstFold::ConstFoldExpr::fold (type.get_size_expr ());
-  if (capacity == nullptr)
-    return;
 
   TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
   translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (), capacity,
