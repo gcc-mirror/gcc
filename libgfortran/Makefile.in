@@ -7630,7 +7630,14 @@ $(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM
 selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
 
 # Build *_r17.F90 and *_c17.F90 with additional -mabi=ieeelongdouble on powerpc64le-linux.
-@HAVE_REAL_17_TRUE@$(patsubst %.F90,%.lo,$(filter %_r17.F90 %_c17.F90,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -mabi=ieeelongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_r17.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_r17.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_c17.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_c17.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_r16.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_r16.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_c16.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+@HAVE_REAL_17_TRUE@$(patsubst %_c16.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
 
 # Add flags for IEEE modules
 @IEEE_SUPPORT_TRUE@$(patsubst %.F90,%.lo,$(notdir $(gfor_ieee_src))): AM_FCFLAGS += -Wno-unused-dummy-argument -Wno-c-binding-type -ffree-line-length-0 -fallow-leading-underscore -fsignaling-nans

@@ -1078,7 +1078,14 @@ selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-unders
 
 # Build *_r17.F90 and *_c17.F90 with additional -mabi=ieeelongdouble on powerpc64le-linux.
 if HAVE_REAL_17
-$(patsubst %.F90,%.lo,$(filter %_r17.F90 %_c17.F90,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -mabi=ieeelongdouble
+$(patsubst %_r17.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+$(patsubst %_r17.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+$(patsubst %_c17.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+$(patsubst %_c17.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ieeelongdouble
+$(patsubst %_r16.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+$(patsubst %_r16.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+$(patsubst %_c16.F90,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
+$(patsubst %_c16.c,%.lo,$(notdir $(gfor_specific_src))): AM_FCFLAGS += -mabi=ibmlongdouble
 endif
 
 if IEEE_SUPPORT
