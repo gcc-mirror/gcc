@@ -195,6 +195,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-tls.c */
+#define create_code create_code_tls
+#define verify_code verify_code_tls
+#include "test-tls.c"
+#undef create_code
+#undef verify_code
+
 /* test-hello-world.c */
 #define create_code create_code_hello_world
 #define verify_code verify_code_hello_world
@@ -466,6 +473,9 @@ const struct testcase testcases[] = {
   {"switch",
    create_code_switch,
    verify_code_switch},
+  {"tls",
+   create_code_tls,
+   verify_code_tls},
   {"types",
    create_code_types,
    verify_code_types},

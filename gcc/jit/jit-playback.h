@@ -675,6 +675,12 @@ public:
   rvalue *
   get_address (location *loc);
 
+  void
+  set_tls_model (enum tls_model tls_model)
+  {
+    set_decl_tls_model (as_tree (), tls_model);
+  }
+
 private:
   bool mark_addressable (location *loc);
 };
