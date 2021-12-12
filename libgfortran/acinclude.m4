@@ -510,3 +510,26 @@ AC_DEFUN([LIBGFOR_CHECK_AVX128], [
 	[AM_CONDITIONAL([HAVE_AVX128],false)])
   CFLAGS="$ac_save_CFLAGS"
 ])
+
+AC_DEFUN([LIBGFOR_CHECK_MATH_IEEE128],
+[
+  AC_REQUIRE([GCC_CHECK_LIBM])
+  AC_REQUIRE([GCC_CHECK_MATH_HEADERS])
+  AC_CACHE_CHECK([for $1], [gcc_cv_math_func_$1],
+		 [AC_LINK_IFELSE([AC_LANG_SOURCE([
+__float128 $1 (__float128);
+__float128 (*ptr)(__float128) = $1;
+
+int
+main ()
+{
+  return 0;
+}
+])],
+[gcc_cv_math_func_$1=yes],
+[gcc_cv_math_func_$1=no])])
+  if test $gcc_cv_math_func_$1 = yes; then
+    AC_DEFINE_UNQUOTED(AS_TR_CPP(HAVE_$1),[1],
+                       [Define to 1 if you have the `$1' function.])
+  fi
+])
