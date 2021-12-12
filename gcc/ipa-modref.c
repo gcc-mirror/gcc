@@ -1750,6 +1750,19 @@ modref_access_analysis::analyze ()
       for (si = gsi_start_nondebug_after_labels_bb (bb);
 	   !gsi_end_p (si); gsi_next_nondebug (&si))
 	{
+	  /* NULL memory accesses terminates BB.  These accesses are known
+	     to trip undefined behaviour.  gimple-ssa-isolate-paths turns them
+	     to volatile accesses and adds builtin_trap call which would
+	     confuse us otherwise.  */
+	  if (infer_nonnull_range_by_dereference (gsi_stmt (si),
+						  null_pointer_node))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, " - NULL memory access; terminating BB\n");
+	      if (flag_non_call_exceptions)
+		set_side_effects ();
+	      break;
+	    }
 	  analyze_stmt (gsi_stmt (si), always_executed);
 
 	  /* Avoid doing useles work.  */
