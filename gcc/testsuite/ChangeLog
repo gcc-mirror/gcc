@@ -1,3 +1,104 @@
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95415
+	* jit.dg/all-non-failing-tests.h: Add test-tls.c.
+	* jit.dg/test-tls.c: New test.
+
+2021-12-11  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96066
+	PR target/96067
+	* jit.dg/all-non-failing-tests.h: Add test-builtin-types.c.
+	* jit.dg/test-builtin-types.c
+	* jit.dg/test-error-bad-assignment.c
+	* jit.dg/test-fuzzer.c: Add fuzzing for type qualifiers.
+
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103606
+	* gfortran.dg/pr103606.f90: New test.
+
+2021-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103534
+	* g++.dg/warn/Wstringop-overflow-8.C: New test.
+
+2021-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/103562
+	* jit.dg/all-non-failing-tests.h: Add comment about...
+	* jit.dg/test-pr103562.c: New test.
+
+2021-12-10  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp23/auto-fncast10.C: New test.
+
+2021-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103418
+	* gfortran.dg/move_alloc_8.f90: Adjust error messages.
+	* gfortran.dg/pointer_intent_9.f90: New test.
+
+2021-12-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR ipa/103601
+	* gcc.dg/ipa/pr103601.c: New test case.
+
+2021-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.target/aarch64/pr103523.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/103215
+	* gcc.dg/Wstringop-overflow-58.c: Adjust and xfail expected warnings.
+	* gcc.dg/Wstringop-overflow-59.c: Same.
+	* gcc.dg/warn-strnlen-no-nul.c: Same.
+	* gcc.dg/Warray-bounds-91.c: New test.
+	* gcc.dg/Warray-bounds-92.c: New test.
+	* gcc.dg/Wstringop-overflow-85.c: New test.
+	* gcc.dg/Wstringop-overflow-87.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101751
+	* gcc.dg/Wstringop-overflow-86.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/103143
+	* gcc.dg/Wstringop-overflow-83.c: New test.
+
+2021-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103401
+	* g++.dg/cpp1y/lambda-generic-85713-2.C: Add dg-error.
+	* g++.dg/cpp1y/pr60054.C: Adjust dg-error.
+	* g++.dg/cpp1y/pr60332.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-3.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979.C: Likewise.
+	* g++.dg/cpp23/auto-fncast7.C: New test.
+	* g++.dg/cpp23/auto-fncast8.C: New test.
+	* g++.dg/cpp23/auto-fncast9.C: New test.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103097
+	* gcc.target/i386/pr103097.c: New.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103302
+	* gcc.target/riscv/pr103302.c: New.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103024
+	PR middle-end/103530
+	* g++.dg/pr103024.C: New.
+	* g++.dg/pr103530.C: New.
+
 2021-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103609

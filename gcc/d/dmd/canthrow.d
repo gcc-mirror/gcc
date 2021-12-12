@@ -150,7 +150,7 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
         override void visit(AssignExp ae)
         {
             // blit-init cannot throw
-            if (ae.op == TOK.blit)
+            if (ae.op == EXP.blit)
                 return;
             /* Element-wise assignment could invoke postblits.
              */

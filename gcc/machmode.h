@@ -1199,7 +1199,7 @@ gt_pch_nx (pod_mode<T> *)
 
 template<typename T>
 void
-gt_pch_nx (pod_mode<T> *, void (*) (void *, void *), void *)
+gt_pch_nx (pod_mode<T> *, void (*) (void *, void *, void *), void *)
 {
 }
 

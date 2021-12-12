@@ -2491,6 +2491,7 @@ struct walk_type_data
   int loopcounter;
   bool in_ptr_field;
   bool have_this_obj;
+  bool in_nested_ptr;
 };
 
 
@@ -2807,6 +2808,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	    if (nested_ptr_d)
 	      {
 		const char *oldprevval2 = d->prev_val[2];
+		bool old_in_nested_ptr = d->in_nested_ptr;
 
 		if (!union_or_struct_p (nested_ptr_d->type))
 		  {
@@ -2817,6 +2819,7 @@ walk_type (type_p t, struct walk_type_data *d)
 		  }
 
 		d->prev_val[2] = d->val;
+		d->in_nested_ptr = true;
 		oprintf (d->of, "%*s{\n", d->indent, "");
 		d->indent += 2;
 		d->val = xasprintf ("x%d", d->counter++);
@@ -2846,6 +2849,7 @@ walk_type (type_p t, struct walk_type_data *d)
 		oprintf (d->of, "%*s}\n", d->indent, "");
 		d->val = d->prev_val[2];
 		d->prev_val[2] = oldprevval2;
+		d->in_nested_ptr = old_in_nested_ptr;
 	      }
 	    else
 	      d->process_field (t->u.p, d);
@@ -3828,12 +3832,17 @@ write_types_local_user_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
     case TYPE_STRING:
-      oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+      if (d->in_nested_ptr)
+	oprintf (d->of, "%*s  op (&(%s), &(%s), cookie);\n",
+		 d->indent, "", d->val, d->prev_val[2]);
+      oprintf (d->of, "%*s  op (&(%s), NULL, cookie);\n",
+	       d->indent, "", d->val);
       break;
 
     case TYPE_USER_STRUCT:
       if (d->in_ptr_field)
-	oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+	oprintf (d->of, "%*s  op (&(%s), NULL, cookie);\n",
+		 d->indent, "", d->val);
       else
 	oprintf (d->of, "%*s  gt_pch_nx (&(%s), op, cookie);\n",
 		 d->indent, "", d->val);
@@ -3911,14 +3920,20 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_STRING:
       oprintf (d->of, "%*sif ((void *)(%s) == this_obj)\n", d->indent, "",
 	       d->prev_val[3]);
-      oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+      if (d->in_nested_ptr)
+	oprintf (d->of, "%*s  op (&(%s), &(%s), cookie);\n",
+		 d->indent, "", d->val, d->prev_val[2]);
+      else
+	oprintf (d->of, "%*s  op (&(%s), NULL, cookie);\n",
+		 d->indent, "", d->val);
       break;
 
     case TYPE_USER_STRUCT:
       oprintf (d->of, "%*sif ((void *)(%s) == this_obj)\n", d->indent, "",
 	       d->prev_val[3]);
       if (d->in_ptr_field)
-	oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+	oprintf (d->of, "%*s  op (&(%s), NULL, cookie);\n",
+		 d->indent, "", d->val);
       else
 	oprintf (d->of, "%*s  gt_pch_nx (&(%s), op, cookie);\n",
 		 d->indent, "", d->val);

@@ -61,6 +61,9 @@ Enum(ptx_isa) String(sm_30) Value(PTX_ISA_SM30)
 EnumValue
 Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
 
+EnumValue
+Enum(ptx_isa) String(sm_53) Value(PTX_ISA_SM53)
+
 ; Default needs to be in sync with default in ASM_SPEC in nvptx.h.
 misa=
 Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM35)

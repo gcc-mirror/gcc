@@ -515,7 +515,7 @@ extern (C++) abstract class Type : ASTNode
                         }
                         else if (tp1.ty == Tdelegate)
                         {
-                            if (tp1.implicitConvTo(tp2))
+                            if (tp2.implicitConvTo(tp1))
                                 goto Lcov;
                         }
                     }
@@ -4783,7 +4783,7 @@ extern (C++) final class TypeFunction : TypeNext
                             goto Nomatch;
                         }
 
-                        if (arg.op == TOK.string_ && tp.ty == Tsarray)
+                        if (arg.op == EXP.string_ && tp.ty == Tsarray)
                         {
                             if (ta.ty != Tsarray)
                             {
@@ -4792,7 +4792,7 @@ extern (C++) final class TypeFunction : TypeNext
                                 ta = tn.sarrayOf(dim);
                             }
                         }
-                        else if (arg.op == TOK.slice && tp.ty == Tsarray)
+                        else if (arg.op == EXP.slice && tp.ty == Tsarray)
                         {
                             // Allow conversion from T[lwr .. upr] to ref T[upr-lwr]
                             if (ta.ty != Tsarray)
@@ -4805,7 +4805,7 @@ extern (C++) final class TypeFunction : TypeNext
                         else if ((p.storageClass & STC.in_) && global.params.previewIn)
                         {
                             // Allow converting a literal to an `in` which is `ref`
-                            if (arg.op == TOK.arrayLiteral && tp.ty == Tsarray)
+                            if (arg.op == EXP.arrayLiteral && tp.ty == Tsarray)
                             {
                                 Type tn = tp.nextOf();
                                 dinteger_t dim = (cast(TypeSArray)tp).dim.toUInteger();
@@ -4988,7 +4988,7 @@ extern (C++) final class TypeFunction : TypeNext
     {
         assert(to);
 
-        if (this == to)
+        if (this.equals(to))
             return MATCH.constant;
 
         if (this.covariant(to) == Covariant.yes)
@@ -5301,7 +5301,7 @@ extern (C++) final class TypeDelegate : TypeNext
         //printf("TypeDelegate.implicitConvTo(this=%p, to=%p)\n", this, to);
         //printf("from: %s\n", toChars());
         //printf("to  : %s\n", to.toChars());
-        if (this == to)
+        if (this.equals(to))
             return MATCH.exact;
 
         if (auto toDg = to.isTypeDelegate())
@@ -5814,7 +5814,7 @@ extern (C++) final class TypeStruct : Type
             }
             else
                 e = vd.type.defaultInitLiteral(loc);
-            if (e && e.op == TOK.error)
+            if (e && e.op == EXP.error)
                 return e;
             if (e)
                 offset = vd.offset + cast(uint)vd.type.size();
@@ -6225,7 +6225,7 @@ extern (C++) final class TypeEnum : Type
 
     override bool isZeroInit(const ref Loc loc)
     {
-        return sym.getDefaultValue(loc).isBool(false);
+        return sym.getDefaultValue(loc).toBool().hasValue(false);
     }
 
     override bool hasPointers()

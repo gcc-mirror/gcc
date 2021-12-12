@@ -26,6 +26,10 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+version (CRuntime_Glibc)
+    version = AlignedAllocSupported;
+else {}
+
 extern (C):
 @system:
 
@@ -165,6 +169,12 @@ void*   calloc(size_t nmemb, size_t size);
 void*   realloc(void* ptr, size_t size);
 ///
 void    free(void* ptr);
+
+/// since C11
+version (AlignedAllocSupported)
+{
+    void* aligned_alloc(size_t alignment, size_t size);
+}
 
 ///
 noreturn abort() @safe;

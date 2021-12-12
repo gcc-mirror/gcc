@@ -545,6 +545,14 @@ The maximum expansion factor when copying basic blocks.
 Common Joined UInteger Var(param_max_hoist_depth) Init(30) Param Optimization
 Maximum depth of search in the dominator tree for expressions to hoist.
 
+-param=max-inline-functions-called-once-loop-depth=
+Common Joined UInteger Var(param_inline_functions_called_once_loop_depth) Init(6) Optimization Param
+Maximum loop depth of a call which is considered for inlining functions called once.
+
+-param=max-inline-functions-called-once-insns=
+Common Joined UInteger Var(param_inline_functions_called_once_insns) Init(4000) Optimization Param
+Maximum combinaed size of caller and callee wich is inlined if callee is called once.
+
 -param=max-inline-insns-auto=
 Common Joined UInteger Var(param_max_inline_insns_auto) Init(15) Optimization Param
 The maximum number of instructions when automatically inlining.

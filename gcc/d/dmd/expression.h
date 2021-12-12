@@ -18,6 +18,7 @@
 #include "tokens.h"
 
 #include "root/dcompat.h"
+#include "root/optional.h"
 
 class Type;
 class TypeVector;
@@ -76,7 +77,7 @@ enum class ModifyFlags
 class Expression : public ASTNode
 {
 public:
-    TOK op;                     // to minimize use of dynamic_cast
+    EXP op;                     // to minimize use of dynamic_cast
     unsigned char size;         // # of bytes in Expression so we can copy() it
     unsigned char parens;       // if this is a parenthesized expression
     Type *type;                 // !=NULL means that semantic() has been run
@@ -121,8 +122,7 @@ public:
     // A compile-time result is required. Give an error if not possible
     Expression *ctfeInterpret();
     int isConst();
-    virtual bool isBool(bool result);
-
+    virtual Optional<bool> toBool();
     virtual bool hasCode()
     {
         return true;
@@ -249,7 +249,7 @@ public:
     real_t toReal();
     real_t toImaginary();
     complex_t toComplex();
-    bool isBool(bool result);
+    Optional<bool> toBool();
     Expression *toLvalue(Scope *sc, Expression *e);
     void accept(Visitor *v) { v->visit(this); }
     dinteger_t getInteger() { return value; }
@@ -280,7 +280,7 @@ public:
     real_t toReal();
     real_t toImaginary();
     complex_t toComplex();
-    bool isBool(bool result);
+    Optional<bool> toBool();
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -297,7 +297,7 @@ public:
     real_t toReal();
     real_t toImaginary();
     complex_t toComplex();
-    bool isBool(bool result);
+    Optional<bool> toBool();
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -336,7 +336,7 @@ public:
     VarDeclaration *var;
 
     ThisExp *syntaxCopy();
-    bool isBool(bool result);
+    Optional<bool> toBool();
     bool isLvalue();
     Expression *toLvalue(Scope *sc, Expression *e);
 
@@ -353,7 +353,7 @@ class NullExp : public Expression
 {
 public:
     bool equals(const RootObject *o) const;
-    bool isBool(bool result);
+    Optional<bool> toBool();
     StringExp *toStringExp();
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -374,7 +374,7 @@ public:
     bool equals(const RootObject *o) const;
     StringExp *toStringExp();
     StringExp *toUTF8(Scope *sc);
-    bool isBool(bool result);
+    Optional<bool> toBool();
     bool isLvalue();
     Expression *toLvalue(Scope *sc, Expression *e);
     Expression *modifiableLvalue(Scope *sc, Expression *e);
@@ -420,7 +420,7 @@ public:
     bool equals(const RootObject *o) const;
     Expression *getElement(d_size_t i); // use opIndex instead
     Expression *opIndex(d_size_t i);
-    bool isBool(bool result);
+    Optional<bool> toBool();
     StringExp *toStringExp();
 
     void accept(Visitor *v) { v->visit(this); }
@@ -435,7 +435,7 @@ public:
 
     bool equals(const RootObject *o) const;
     AssocArrayLiteralExp *syntaxCopy();
-    bool isBool(bool result);
+    Optional<bool> toBool();
 
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -567,7 +567,7 @@ class SymOffExp : public SymbolExp
 public:
     dinteger_t offset;
 
-    bool isBool(bool result);
+    Optional<bool> toBool();
 
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -926,7 +926,7 @@ public:
     bool isLvalue();
     Expression *toLvalue(Scope *sc, Expression *e);
     Expression *modifiableLvalue(Scope *sc, Expression *e);
-    bool isBool(bool result);
+    Optional<bool> toBool();
 
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -997,7 +997,7 @@ public:
     bool isLvalue();
     Expression *toLvalue(Scope *sc, Expression *e);
     Expression *modifiableLvalue(Scope *sc, Expression *e);
-    bool isBool(bool result);
+    Optional<bool> toBool();
     Expression *addDtorHook(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };

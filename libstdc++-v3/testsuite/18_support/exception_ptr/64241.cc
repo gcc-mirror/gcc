@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-fno-exceptions -O0" }
+// { dg-options "-fno-exceptions -fno-rtti -O0" }
 // { dg-do run { target c++11 } }
 
 #include <exception>

@@ -9946,13 +9946,13 @@ void
 gt_pch_nx (edge_def *e, gt_pointer_operator op, void *cookie)
 {
   tree block = LOCATION_BLOCK (e->goto_locus);
-  op (&(e->src), cookie);
-  op (&(e->dest), cookie);
+  op (&(e->src), NULL, cookie);
+  op (&(e->dest), NULL, cookie);
   if (current_ir_type () == IR_GIMPLE)
-    op (&(e->insns.g), cookie);
+    op (&(e->insns.g), NULL, cookie);
   else
-    op (&(e->insns.r), cookie);
-  op (&(block), cookie);
+    op (&(e->insns.r), NULL, cookie);
+  op (&(block), &(block), cookie);
 }
 
 #if CHECKING_P

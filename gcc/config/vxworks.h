@@ -141,8 +141,8 @@ along with GCC; see the file COPYING3.  If not see
  %{!shared:						\
    %{mrtp:-q %{h*}					\
           %{R*} %{!T*: %(link_start) }			\
-          %(link_target) %(link_os)}}			\
- %{v:-v}						\
+          %(link_os)}}					\
+ %{v:-V}						\
  %{shared:-shared}					\
  %{Bstatic:-Bstatic}					\
  %{Bdynamic:-Bdynamic}					\

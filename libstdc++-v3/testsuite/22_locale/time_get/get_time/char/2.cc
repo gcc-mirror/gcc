@@ -48,7 +48,7 @@ void test02()
 
   // inspection of named locales, en_HK
   iss.imbue(loc_hk);
-  iss.str("12:00:00 PST"); 
+  iss.str("12:00:00 PM PST"); 
   // Hong Kong in California! Well, they have Paris in Vegas... this
   // is all a little disney-esque anyway. Besides, you can get decent
   // Dim Sum in San Francisco.

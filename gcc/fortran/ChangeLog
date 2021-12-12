@@ -1,3 +1,18 @@
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103606
+	* resolve.c (resolve_fl_procedure): Do not access CLASS components
+	before class container has been built.
+
+2021-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103418
+	* check.c (variable_check): Replace previous check of procedure
+	dummy arguments with INTENT(IN) attribute when passed to intrinsic
+	procedures by gfc_check_vardef_context.
+	* expr.c (gfc_check_vardef_context): Correct check of INTENT(IN)
+	dummy arguments for the case of sub-components of a CLASS pointer.
+
 2021-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103609

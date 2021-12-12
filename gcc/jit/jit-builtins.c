@@ -541,11 +541,11 @@ builtins_manager::make_primitive_type (enum jit_builtin_type type_id)
     // case BT_DFLOAT128:
     // case BT_VALIST_REF:
     // case BT_VALIST_ARG:
-    // case BT_I1:
-    // case BT_I2:
-    // case BT_I4:
-    // case BT_I8:
-    // case BT_I16:
+    case BT_I1: return m_ctxt->get_int_type (1, true);
+    case BT_I2: return m_ctxt->get_int_type (2, true);
+    case BT_I4: return m_ctxt->get_int_type (4, true);
+    case BT_I8: return m_ctxt->get_int_type (8, true);
+    case BT_I16: return m_ctxt->get_int_type (16, true);
     // case BT_PTR_CONST_STRING:
     }
 }

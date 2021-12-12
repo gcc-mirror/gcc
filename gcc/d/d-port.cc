@@ -145,6 +145,8 @@ Port::readlongBE (const void *buffer)
 void
 Port::valcpy (void *buffer, uint64_t value, size_t sz)
 {
+  gcc_assert (((size_t) buffer) % sz == 0);
+
   switch (sz)
     {
     case 1:

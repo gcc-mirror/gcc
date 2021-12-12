@@ -274,7 +274,7 @@ enum gomp_map_kind
 #define GOMP_VERSION	1
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
-#define GOMP_VERSION_GCN 1
+#define GOMP_VERSION_GCN 2
 
 #define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
 #define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)

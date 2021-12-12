@@ -318,6 +318,157 @@ enum TOK : ushort
     __attribute__,
 }
 
+/// Expression nodes
+enum EXP : ubyte
+{
+    reserved,
+
+    // Other
+    negate,
+    cast_,
+    null_,
+    assert_,
+    true_,
+    false_,
+    array,
+    call,
+    address,
+    type,
+    throw_,
+    new_,
+    delete_,
+    star,
+    symbolOffset,
+    variable,
+    dotVariable,
+    dotIdentifier,
+    dotTemplateInstance,
+    dotType,
+    slice,
+    arrayLength,
+    version_,
+    dollar,
+    template_,
+    dotTemplateDeclaration,
+    declaration,
+    typeof_,
+    pragma_,
+    dSymbol,
+    typeid_,
+    uadd,
+    remove,
+    newAnonymousClass,
+    arrayLiteral,
+    assocArrayLiteral,
+    structLiteral,
+    classReference,
+    thrownException,
+    delegatePointer,
+    delegateFunctionPointer,
+
+    // Operators
+    lessThan,
+    greaterThan,
+    lessOrEqual,
+    greaterOrEqual,
+    equal,
+    notEqual,
+    identity,
+    notIdentity,
+    index,
+    is_,
+
+    leftShift,
+    rightShift,
+    leftShiftAssign,
+    rightShiftAssign,
+    unsignedRightShift,
+    unsignedRightShiftAssign,
+    concatenate,
+    concatenateAssign, // ~=
+    concatenateElemAssign,
+    concatenateDcharAssign,
+    add,
+    min,
+    addAssign,
+    minAssign,
+    mul,
+    div,
+    mod,
+    mulAssign,
+    divAssign,
+    modAssign,
+    and,
+    or,
+    xor,
+    andAssign,
+    orAssign,
+    xorAssign,
+    assign,
+    not,
+    tilde,
+    plusPlus,
+    minusMinus,
+    construct,
+    blit,
+    dot,
+    comma,
+    question,
+    andAnd,
+    orOr,
+    prePlusPlus,
+    preMinusMinus,
+
+    // Leaf operators
+    identifier,
+    string_,
+    this_,
+    super_,
+    halt,
+    tuple,
+    error,
+
+    // Basic types
+    void_,
+    int64,
+    float64,
+    complex80,
+    char_,
+    import_,
+    delegate_,
+    function_,
+    mixin_,
+    in_,
+    default_,
+    break_,
+    continue_,
+    goto_,
+    scope_,
+
+    traits,
+    overloadSet,
+    line,
+    file,
+    fileFullPath,
+    moduleString,   // __MODULE__
+    functionString, // __FUNCTION__
+    prettyFunction, // __PRETTY_FUNCTION__
+    shared_,
+    pow,
+    powAssign,
+    vector,
+
+    voidExpression,
+    cantExpression,
+    showCtfeContext,
+    objcClassReference,
+    vectorArray,
+    arrow,      // ->
+    compoundLiteral, // ( type-name ) { initializer-list }
+    _Generic,
+    interval,
+}
+
 enum FirstCKeyword = TOK.inline;
 
 // Assert that all token enum members have consecutive values and
@@ -1009,12 +1160,17 @@ nothrow:
         return p;
     }
 
-    static const(char)* toChars(uint value)
+    static const(char)* toChars(TOK value)
     {
         return toString(value).ptr;
     }
 
-    extern (D) static string toString(uint value) pure nothrow @nogc @safe
+    static const(char)* toChars(ushort value)
+    {
+        return toString(cast(TOK)value).ptr;
+    }
+
+    extern (D) static string toString(TOK value) pure nothrow @nogc @safe
     {
         return tochars[value];
     }

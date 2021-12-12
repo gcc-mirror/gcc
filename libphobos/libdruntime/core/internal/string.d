@@ -119,7 +119,7 @@ char[] signedToTempString(uint radix = 10)(long value, return scope char[] buf) 
     if (neg)
     {
         // about to do a slice without a bounds check
-        auto trustedSlice(return char[] r) @trusted { assert(r.ptr > buf.ptr); return (r.ptr-1)[0..r.length+1]; }
+        auto trustedSlice(return scope char[] r) @trusted { assert(r.ptr > buf.ptr); return (r.ptr-1)[0..r.length+1]; }
         r = trustedSlice(r);
         r[0] = '-';
     }

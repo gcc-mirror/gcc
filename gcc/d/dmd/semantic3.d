@@ -611,7 +611,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     for (size_t i = 0; i < funcdecl.returns.dim;)
                     {
                         Expression exp = (*funcdecl.returns)[i].exp;
-                        if (exp.op == TOK.variable && (cast(VarExp)exp).var == funcdecl.vresult)
+                        if (exp.op == EXP.variable && (cast(VarExp)exp).var == funcdecl.vresult)
                         {
                             if (addReturn0())
                                 exp.type = Type.tint32;
@@ -817,7 +817,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     {
                         ReturnStatement rs = (*funcdecl.returns)[i];
                         Expression exp = rs.exp;
-                        if (exp.op == TOK.error)
+                        if (exp.op == EXP.error)
                             continue;
                         if (tret.ty == Terror)
                         {

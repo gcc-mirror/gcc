@@ -137,6 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // (e.g. __ulock_wait())which is better than pthread_cond_clockwait
 #endif // ! PLATFORM_TIMED_WAIT
 
+#ifdef _GLIBCXX_HAS_GTHREADS
     // Returns true if wait ended before timeout.
     // _Clock must be either steady_clock or system_clock.
     template<typename _Clock, typename _Dur>
@@ -192,6 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return false;
 	  }
       }
+#endif // _GLIBCXX_HAS_GTHREADS
 
     struct __timed_waiter_pool : __waiter_pool_base
     {
@@ -238,6 +240,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __now = __wait_clock_t::now();
 	if (_M_deadline <= __now)
 	  return false;
+
+	// FIXME: this_thread::sleep_for not available #ifdef _GLIBCXX_NO_SLEEP
 
 	auto __elapsed = __now - _M_t0;
 	if (__elapsed > 128ms)

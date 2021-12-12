@@ -94,15 +94,15 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result = BE.fallthru;
             if (s.exp)
             {
-                if (s.exp.op == TOK.halt)
+                if (s.exp.op == EXP.halt)
                 {
                     result = BE.halt;
                     return;
                 }
-                if (s.exp.op == TOK.assert_)
+                if (s.exp.op == EXP.assert_)
                 {
                     AssertExp a = cast(AssertExp)s.exp;
-                    if (a.e1.isBool(false)) // if it's an assert(0)
+                    if (a.e1.toBool().hasValue(false)) // if it's an assert(0)
                     {
                         result = BE.halt;
                         return;
@@ -216,7 +216,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             {
                 if (canThrow(s.condition, func, mustNotThrow))
                     result |= BE.throw_;
-                if (!(result & BE.break_) && s.condition.isBool(true))
+                if (!(result & BE.break_) && s.condition.toBool().hasValue(true))
                     result &= ~BE.fallthru;
             }
             result &= ~(BE.break_ | BE.continue_);
@@ -235,9 +235,10 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             {
                 if (canThrow(s.condition, func, mustNotThrow))
                     result |= BE.throw_;
-                if (s.condition.isBool(true))
+                const opt = s.condition.toBool();
+                if (opt.hasValue(true))
                     result &= ~BE.fallthru;
-                else if (s.condition.isBool(false))
+                else if (opt.hasValue(false))
                     return;
             }
             else
@@ -274,11 +275,13 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
             result = BE.none;
             if (canThrow(s.condition, func, mustNotThrow))
                 result |= BE.throw_;
-            if (s.condition.isBool(true))
+
+            const opt = s.condition.toBool();
+            if (opt.hasValue(true))
             {
                 result |= blockExit(s.ifbody, func, mustNotThrow);
             }
-            else if (s.condition.isBool(false))
+            else if (opt.hasValue(false))
             {
                 result |= blockExit(s.elsebody, func, mustNotThrow);
             }
@@ -534,4 +537,3 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
     s.accept(be);
     return be.result;
 }
-

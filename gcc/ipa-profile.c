@@ -854,18 +854,6 @@ ipa_profile (void)
 	      node_map_initialized = true;
 	      ncommon++;
 
-	      if (in_lto_p)
-		{
-		  if (dump_file)
-		    {
-		      fprintf (dump_file,
-			       "Updating hotness threshold in LTO mode.\n");
-		      fprintf (dump_file, "Updated min count: %" PRId64 "\n",
-			       (int64_t) threshold / spec_count);
-		    }
-		  set_hot_bb_threshold (threshold / spec_count);
-		}
-
 	      unsigned speculative_id = 0;
 	      profile_count orig = e->count;
 	      for (unsigned i = 0; i < spec_count; i++)

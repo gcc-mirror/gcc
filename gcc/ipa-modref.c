@@ -754,7 +754,7 @@ get_modref_function_summary (cgraph_node *func)
      we don't want to return anything, even if we have summary for the target
      function.  */
   enum availability avail;
-  func = func->function_or_virtual_thunk_symbol
+  func = func->ultimate_alias_target
 		 (&avail, current_function_decl ?
 			  cgraph_node::get (current_function_decl) : NULL);
   if (avail <= AVAIL_INTERPOSABLE)
@@ -1750,6 +1750,19 @@ modref_access_analysis::analyze ()
       for (si = gsi_start_nondebug_after_labels_bb (bb);
 	   !gsi_end_p (si); gsi_next_nondebug (&si))
 	{
+	  /* NULL memory accesses terminates BB.  These accesses are known
+	     to trip undefined behaviour.  gimple-ssa-isolate-paths turns them
+	     to volatile accesses and adds builtin_trap call which would
+	     confuse us otherwise.  */
+	  if (infer_nonnull_range_by_dereference (gsi_stmt (si),
+						  null_pointer_node))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, " - NULL memory access; terminating BB\n");
+	      if (flag_non_call_exceptions)
+		set_side_effects ();
+	      break;
+	    }
 	  analyze_stmt (gsi_stmt (si), always_executed);
 
 	  /* Avoid doing useles work.  */
@@ -4065,7 +4078,7 @@ ignore_edge (struct cgraph_edge *e)
   if (!e->inline_failed)
     return false;
   enum availability avail;
-  cgraph_node *callee = e->callee->function_or_virtual_thunk_symbol
+  cgraph_node *callee = e->callee->ultimate_alias_target
 			  (&avail, e->caller);
 
   return (avail <= AVAIL_INTERPOSABLE
@@ -4088,7 +4101,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
       class ipa_call_summary *es
 	     = ipa_call_summaries->get (callee_edge);
       cgraph_node *callee
-	 = callee_edge->callee->function_or_virtual_thunk_symbol
+	 = callee_edge->callee->ultimate_alias_target
 			      (NULL, callee_edge->caller);
 
       caller_parms_info
@@ -4578,7 +4591,7 @@ modref_propagate_in_scc (cgraph_node *component_node)
 
 	      /* Get the callee and its summary.  */
 	      enum availability avail;
-	      callee = callee_edge->callee->function_or_virtual_thunk_symbol
+	      callee = callee_edge->callee->ultimate_alias_target
 			 (&avail, cur);
 
 	      /* It is not necessary to re-process calls outside of the
@@ -5021,7 +5034,7 @@ modref_propagate_flags_in_scc (cgraph_node *component_node)
 
 	      /* Get the callee and its summary.  */
 	      enum availability avail;
-	      callee = callee_edge->callee->function_or_virtual_thunk_symbol
+	      callee = callee_edge->callee->ultimate_alias_target
 			 (&avail, cur);
 
 	      /* It is not necessary to re-process calls outside of the

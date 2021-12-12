@@ -52,7 +52,7 @@ void test01()
   VERIFY( err == (failbit | eofbit) );
   VERIFY( tm0.tm_sec == 0 );
   VERIFY( tm0.tm_min == 0 );
-  VERIFY( tm0.tm_hour == 0 );
+  VERIFY( tm0.tm_hour == 1 );
 
   const wstring str1 = L"12:00:00 ";
   iter_type end1 = tg.get_time(str1.begin(), str1.end(), iss, err, &tm1);

@@ -264,7 +264,7 @@ struct Monitor
 
 private:
 
-@property ref shared(Monitor*) monitor(return Object h) pure nothrow @nogc
+@property ref shared(Monitor*) monitor(return scope Object h) pure nothrow @nogc
 {
     return *cast(shared Monitor**)&h.__monitor;
 }

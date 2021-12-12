@@ -887,7 +887,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      * Returns:
      *   true if node was added
      */
-    private bool _add(return Elem n)
+    private bool _add(return scope Elem n)
     {
         Node result;
         static if (!allowDuplicates)

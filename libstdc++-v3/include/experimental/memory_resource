@@ -40,7 +40,7 @@
 #include <atomic>			// atomic
 #include <new>				// placement new
 #include <cstddef>			// max_align_t
-#include <ext/new_allocator.h>
+#include <bits/new_allocator.h>
 #include <debug/assertions.h>
 
 /// @cond
@@ -503,7 +503,7 @@ namespace pmr {
   inline memory_resource*
   new_delete_resource() noexcept
   {
-    using type = resource_adaptor<__gnu_cxx::new_allocator<char>>;
+    using type = resource_adaptor<std::__new_allocator<char>>;
     alignas(type) static unsigned char __buf[sizeof(type)];
     static type* __r = new(__buf) type;
     return __r;

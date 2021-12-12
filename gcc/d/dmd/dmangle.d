@@ -979,7 +979,7 @@ public:
                     goto Lsa;
                 }
                 buf.writeByte('V');
-                if (ea.op == TOK.tuple)
+                if (ea.op == EXP.tuple)
                 {
                     ea.error("tuple is not a valid template value argument");
                     continue;
@@ -987,7 +987,7 @@ public:
                 // Now that we know it is not an alias, we MUST obtain a value
                 uint olderr = global.errors;
                 ea = ea.ctfeInterpret();
-                if (ea.op == TOK.error || olderr != global.errors)
+                if (ea.op == EXP.error || olderr != global.errors)
                     continue;
 
                 /* Use type mangling that matches what it would be for a function parameter

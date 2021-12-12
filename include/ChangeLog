@@ -1,3 +1,7 @@
+2021-12-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gomp-constants.h (GOMP_VERSION_GCN): Bump.
+
 2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR middle-end/92120

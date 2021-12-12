@@ -188,6 +188,20 @@
 #undef create_code
 #undef verify_code
 
+/* test-builtin-types.c */
+#define create_code create_code_builtin_types
+#define verify_code verify_code_builtin_types
+#include "test-builtin-types.c"
+#undef create_code
+#undef verify_code
+
+/* test-tls.c */
+#define create_code create_code_tls
+#define verify_code verify_code_tls
+#include "test-tls.c"
+#undef create_code
+#undef verify_code
+
 /* test-hello-world.c */
 #define create_code create_code_hello_world
 #define verify_code verify_code_hello_world
@@ -229,6 +243,9 @@
 #include "test-nested-loops.c"
 #undef create_code
 #undef verify_code
+
+/* test-pr103562.c: We don't add this one, since it touches
+   the optimization level of the context as a whole.  */
 
 /* test-pr66700-observing-write-through-ptr.c */
 #define create_code create_code_pr66700_observing_write_through_ptr
@@ -408,6 +425,9 @@ const struct testcase testcases[] = {
   {"functions",
    create_code_functions,
    verify_code_functions},
+  {"builtin-types",
+   create_code_builtin_types,
+   verify_code_builtin_types},
   {"hello_world",
    create_code_hello_world,
    verify_code_hello_world},
@@ -453,6 +473,9 @@ const struct testcase testcases[] = {
   {"switch",
    create_code_switch,
    verify_code_switch},
+  {"tls",
+   create_code_tls,
+   verify_code_tls},
   {"types",
    create_code_types,
    verify_code_types},

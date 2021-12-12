@@ -287,7 +287,7 @@ Target::isVectorTypeSupported (int sz, Type *type)
    Returns true if the operation is supported or type is not a vector.  */
 
 bool
-Target::isVectorOpSupported (Type *type, unsigned op, Type *)
+Target::isVectorOpSupported (Type *type, EXP op, Type *)
 {
   if (type->ty != TY::Tvector)
     return true;
@@ -299,31 +299,31 @@ Target::isVectorOpSupported (Type *type, unsigned op, Type *)
   /* Don't support if expression cannot be represented.  */
   switch (op)
     {
-    case TOKpow:
-    case TOKpowass:
+    case EXP::pow:
+    case EXP::powAssign:
       /* pow() is lowered as a function call.  */
       return false;
 
-    case TOKmod:
-    case TOKmodass:
+    case EXP::mod:
+    case EXP::modAssign:
       /* fmod() is lowered as a function call.  */
       if (type->isfloating ())
 	return false;
       break;
 
-    case TOKandand:
-    case TOKoror:
+    case EXP::andAnd:
+    case EXP::orOr:
       /* Logical operators must have a result type of bool.  */
       return false;
 
-    case TOKle:
-    case TOKlt:
-    case TOKge:
-    case TOKgt:
-    case TOKequal:
-    case TOKnotequal:
-    case TOKidentity:
-    case TOKnotidentity:
+    case EXP::lessOrEqual:
+    case EXP::lessThan:
+    case EXP::greaterOrEqual:
+    case EXP::greaterThan:
+    case EXP::equal:
+    case EXP::notEqual:
+    case EXP::identity:
+    case EXP::notIdentity:
       /* Comparison operators must have a result type of bool.  */
       return false;
 

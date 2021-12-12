@@ -111,3 +111,15 @@ void* useTls()
     void* a3 = &globalNoreturn;
     return a1 < a2 ? a2 : a3;
 }
+
+/***************************************************/
+
+noreturn testfn(noreturn function() fn)
+{
+    fn();
+}
+
+noreturn testdg(noreturn delegate() dg)
+{
+    dg();
+}

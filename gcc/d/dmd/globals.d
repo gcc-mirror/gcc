@@ -148,7 +148,7 @@ extern (C++) struct Param
     bool betterC;           // be a "better C" compiler; no dependency on D runtime
     bool addMain;           // add a default main() function
     bool allInst;           // generate code for all template instantiations
-    bool fix16997;          // fix integral promotions for unary + - ~ operators
+    bool fix16997 = true;   // fix integral promotions for unary + - ~ operators
                             // https://issues.dlang.org/show_bug.cgi?id=16997
     bool fixAliasThis;      // if the current scope has an alias this, check it before searching upper scopes
     bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract

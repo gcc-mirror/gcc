@@ -294,6 +294,8 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
     case E_DImode:
       return ".u64";
 
+    case E_HFmode:
+      return ".f16";
     case E_SFmode:
       return ".f32";
     case E_DFmode:
@@ -5406,7 +5408,9 @@ nvptx_file_start (void)
     fputs ("\t.version\t6.3\n", asm_out_file);
   else
     fputs ("\t.version\t3.1\n", asm_out_file);
-  if (TARGET_SM35)
+  if (TARGET_SM53)
+    fputs ("\t.target\tsm_53\n", asm_out_file);
+  else if (TARGET_SM35)
     fputs ("\t.target\tsm_35\n", asm_out_file);
   else
     fputs ("\t.target\tsm_30\n", asm_out_file);
@@ -5717,7 +5721,9 @@ nvptx_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
       if (strcmp (name, "sm_30") == 0)
 	return !TARGET_SM35;
       if (strcmp (name, "sm_35") == 0)
-	return TARGET_SM35;
+	return TARGET_SM35 && !TARGET_SM53;
+      if (strcmp (name, "sm_53") == 0)
+	return TARGET_SM53;
       return 0;
     default:
       gcc_unreachable ();
@@ -6614,6 +6620,24 @@ nvptx_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static bool
+nvptx_scalar_mode_supported_p (scalar_mode mode)
+{
+  if (mode == HFmode && TARGET_SM53)
+    return true;
+
+  return default_scalar_mode_supported_p (mode);
+}
+
+static bool
+nvptx_libgcc_floating_mode_supported_p (scalar_float_mode mode)
+{
+  if (mode == HFmode && TARGET_SM53)
+    return true;
+
+  return default_libgcc_floating_mode_supported_p (mode);
+}
+
+static bool
 nvptx_vector_mode_supported (machine_mode mode)
 {
   return (mode == V2SImode
@@ -6934,6 +6958,13 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM nvptx_cannot_force_const_mem
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P nvptx_scalar_mode_supported_p
+
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
+  nvptx_libgcc_floating_mode_supported_p
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P nvptx_vector_mode_supported

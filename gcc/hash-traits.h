@@ -254,7 +254,7 @@ struct ggc_remove
   static void
   pch_nx (T &p, gt_pointer_operator op, void *cookie)
   {
-    op (&p, cookie);
+    op (&p, NULL, cookie);
   }
 };
 

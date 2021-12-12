@@ -337,10 +337,10 @@ build_attributes (Expressions *eattrs)
 	continue;
 
       /* Get the result of the attribute if it hasn't already been folded.  */
-      if (attr->op == TOKcall)
+      if (attr->op == EXP::call)
 	attr = attr->ctfeInterpret ();
 
-      if (attr->op != TOKstructliteral)
+      if (attr->op != EXP::structLiteral)
 	{
 	  warning_at (make_location_t (attr->loc), OPT_Wattributes,
 		      "%qE attribute has no effect",
@@ -353,7 +353,7 @@ build_attributes (Expressions *eattrs)
       Expressions *elems = attr->isStructLiteralExp ()->elements;
       Expression *e0 = (*elems)[0];
 
-      if (e0->op != TOKstring)
+      if (e0->op != EXP::string_)
 	{
 	  warning_at (make_location_t (attr->loc), OPT_Wattributes,
 		      "unknown attribute %qs", e0->toChars());

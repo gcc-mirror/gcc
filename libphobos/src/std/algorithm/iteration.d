@@ -3595,7 +3595,6 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR)
     assert(res.equal("cba"));
 }
 
-
 /// Ditto
 auto joiner(RoR)(RoR r)
 if (isInputRange!RoR && isInputRange!(ElementType!RoR))
@@ -3621,14 +3620,32 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
                 _currentBack = typeof(_currentBack).init;
         }
 
+        void replaceCurrent(typeof(_current) current) @trusted
+        {
+            import core.lifetime : move;
+
+            current.move(_current);
+        }
+
+        static if (isBidirectional)
+        {
+            void replaceCurrentBack(typeof(_currentBack) currentBack) @trusted
+            {
+                import core.lifetime : move;
+
+                currentBack.move(_currentBack);
+            }
+        }
+
     public:
         this(RoR r)
         {
             _items = r;
+            // field _current must be initialized in constructor, because it is nested struct
+            _current = typeof(_current).init;
 
             static if (isBidirectional && hasNested!Result)
                 _currentBack = typeof(_currentBack).init;
-            // field _current must be initialized in constructor, because it is nested struct
             mixin(popFrontEmptyElements);
             static if (isBidirectional)
                 mixin(popBackEmptyElements);
@@ -3673,13 +3690,13 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
                 // consumed when a .save'd copy of ourselves is iterated over. So
                 // we need to .save each subrange we traverse.
                 static if (isForwardRange!RoR && isForwardRange!(ElementType!RoR))
-                    _current = _items.front.save;
+                    replaceCurrent(_items.front.save);
                 else
-                    _current = _items.front;
+                    replaceCurrent(_items.front);
             }
             else
             {
-                _current = typeof(_current).init;
+                replaceCurrent(typeof(_current).init);
             }
         };
 
@@ -3696,9 +3713,9 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
                 static if (isBidirectional)
                 {
                     static if (is(typeof(null) : typeof(_currentBack)))
-                        r._currentBack = _currentBack is null ? null : _currentBack.save;
+                        r.replaceCurrentBack(_currentBack is null ? null : _currentBack.save);
                     else
-                        r._currentBack = _currentBack.save;
+                        r.replaceCurrentBack(_currentBack.save);
                     r.reachedFinalElement = reachedFinalElement;
                 }
                 return r;
@@ -3784,22 +3801,22 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
                     static if (isForwardRange!RoR && isForwardRange!(ElementType!RoR))
                     {
                         if (reachedFinalElement)
-                            _current = _items.back.save;
+                            replaceCurrent(_items.back.save);
                         else
-                            _currentBack = _items.back.save;
+                            replaceCurrentBack(_items.back.save);
                     }
                     else
                     {
                         if (reachedFinalElement)
-                            _current = _items.back;
+                            replaceCurrent(_items.back);
                         else
-                            _currentBack = _items.back;
+                            replaceCurrentBack(_items.back);
                     }
                 }
                 else
                 {
-                    _current = typeof(_current).init;
-                    _currentBack = typeof(_currentBack).init;
+                    replaceCurrent(typeof(_current).init);
+                    replaceCurrentBack(typeof(_currentBack).init);
                 }
             };
 
@@ -4230,6 +4247,15 @@ if (isInputRange!RoR && isInputRange!(ElementType!RoR))
 @safe pure unittest
 {
     assert([[0]].joiner.save.back == 0);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22561
+@safe pure unittest
+{
+    import std.range : only;
+
+    static immutable struct S { int[] array; }
+    assert([only(S(null))].joiner.front == S(null));
 }
 
 /++

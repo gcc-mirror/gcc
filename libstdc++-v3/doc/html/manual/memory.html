@@ -140,9 +140,11 @@
      <a class="link" href="http://gcc.gnu.org/viewcvs/gcc/trunk/libstdc++-v3/testsuite/performance/23_containers/producer_consumer/associative.cc?view=markup" target="_top">associative</a>
      containers.
      </p></li></ol></div><p>
-     The current default choice for
+     Since GCC 12 the default choice for
      <code class="classname">allocator</code> is
-     <code class="classname">__gnu_cxx::new_allocator</code>.
+     <code class="classname">std::__new_allocator</code>.
+     Before GCC 12 it was the <code class="classname">__gnu_cxx::new_allocator</code>
+     extension (which has identical behaviour).
    </p></div><div class="section"><div class="titlepage"><div><div><h5 class="title"><a id="allocator.caching"></a>Disabling Memory Caching</h5></div></div></div><p>
       In use, <code class="classname">allocator</code> may allocate and
       deallocate using implementation-specific strategies and

@@ -219,9 +219,11 @@
    </orderedlist>
 
    <para>
-     The current default choice for
+     Since GCC 12 the default choice for
      <classname>allocator</classname> is
-     <classname>__gnu_cxx::new_allocator</classname>.
+     <classname>std::__new_allocator</classname>.
+     Before GCC 12 it was the <classname>__gnu_cxx::new_allocator</classname>
+     extension (which has identical behaviour).
    </para>
 
   </section>

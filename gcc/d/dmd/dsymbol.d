@@ -1785,11 +1785,11 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
         Expression eold = null;
         for (Expression e = withstate.exp; e != eold; e = resolveAliasThis(_scope, e))
         {
-            if (e.op == TOK.scope_)
+            if (e.op == EXP.scope_)
             {
                 s = (cast(ScopeExp)e).sds;
             }
-            else if (e.op == TOK.type)
+            else if (e.op == EXP.type)
             {
                 s = e.type.toDsymbol(null);
             }
@@ -1826,14 +1826,14 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
 extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
 {
     // either a SliceExp, an IndexExp, an ArrayExp, a TypeTuple or a TupleDeclaration.
-    // Discriminated using DYNCAST and, for expressions, also TOK
+    // Discriminated using DYNCAST and, for expressions, also EXP
     private RootObject arrayContent;
     Scope* sc;
 
     extern (D) this(Scope* sc, Expression exp)
     {
         super(exp.loc, null);
-        assert(exp.op == TOK.index || exp.op == TOK.slice || exp.op == TOK.array);
+        assert(exp.op == EXP.index || exp.op == EXP.slice || exp.op == EXP.array);
         this.sc = sc;
         this.arrayContent = exp;
     }
@@ -1950,7 +1950,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
             else if (ce.type && (t = ce.type.toBasetype()) !is null && (t.ty == Tstruct || t.ty == Tclass))
             {
                 // Look for opDollar
-                assert(exp.op == TOK.array || exp.op == TOK.slice);
+                assert(exp.op == EXP.array || exp.op == EXP.slice);
                 AggregateDeclaration ad = isAggregate(t);
                 assert(ad);
                 Dsymbol s = ad.search(loc, Id.opDollar);
@@ -1962,11 +1962,11 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                 if (TemplateDeclaration td = s.isTemplateDeclaration())
                 {
                     dinteger_t dim = 0;
-                    if (exp.op == TOK.array)
+                    if (exp.op == EXP.array)
                     {
                         dim = (cast(ArrayExp)exp).currentDimension;
                     }
-                    else if (exp.op == TOK.slice)
+                    else if (exp.op == EXP.slice)
                     {
                         dim = 0; // slices are currently always one-dimensional
                     }
@@ -1987,7 +1987,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                      * Note that it's impossible to have both template & function opDollar,
                      * because both take no arguments.
                      */
-                    if (exp.op == TOK.array && (cast(ArrayExp)exp).arguments.dim != 1)
+                    if (exp.op == EXP.array && (cast(ArrayExp)exp).arguments.dim != 1)
                     {
                         exp.error("`%s` only defines opDollar for one dimension", ad.toChars());
                         return null;

@@ -14,14 +14,14 @@ fail_compilation/retscope.d(49): Error: address of struct temporary returned by 
 
 
 
-int* foo1(return scope int* p) { return p; } // ok
+int* foo1(return scope int* p) @safe { return p; } // ok
 
-int* foo2()(scope int* p) { return p; }  // ok, 'return' is inferred
+int* foo2()(scope int* p) @safe { return p; }  // ok, 'return' is inferred
 alias foo2a = foo2!();
 
-int* foo3(scope int* p) { return p; }   // error
+int* foo3(scope int* p) @safe { return p; }   // error
 
-int* foo4(bool b)
+int* foo4(bool b) @safe
 {
     int i;
     int j;

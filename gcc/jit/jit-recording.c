@@ -2598,8 +2598,13 @@ recording::memento_of_get_pointer::accepts_writes_from (type *rtype)
     return false;
 
   /* It's OK to assign to a (const T *) from a (T *).  */
-  return m_other_type->unqualified ()
-    ->accepts_writes_from (rtype_points_to);
+  if (m_other_type->unqualified ()->accepts_writes_from (rtype_points_to))
+  {
+    return true;
+  }
+
+  /* It's OK to assign to a (volatile const T *) from a (volatile const T *). */
+  return m_other_type->is_same_type_as (rtype_points_to);
 }
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -3713,6 +3718,12 @@ recording::lvalue::get_address (recording::location *loc)
   return result;
 }
 
+void
+recording::lvalue::set_tls_model (enum gcc_jit_tls_model model)
+{
+    m_tls_model = model;
+}
+
 /* The implementation of class gcc::jit::recording::param.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4539,6 +4550,16 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 #  pragma GCC diagnostic pop
 #endif
 
+namespace recording {
+static const enum tls_model tls_models[] = {
+  TLS_MODEL_NONE, /* GCC_JIT_TLS_MODEL_NONE */
+  TLS_MODEL_GLOBAL_DYNAMIC, /* GCC_JIT_TLS_MODEL_GLOBAL_DYNAMIC */
+  TLS_MODEL_LOCAL_DYNAMIC, /* GCC_JIT_TLS_MODEL_LOCAL_DYNAMIC */
+  TLS_MODEL_INITIAL_EXEC, /* GCC_JIT_TLS_MODEL_INITIAL_EXEC */
+  TLS_MODEL_LOCAL_EXEC, /* GCC_JIT_TLS_MODEL_LOCAL_EXEC */
+};
+} /* namespace recording */
+
 /* The implementation of class gcc::jit::recording::global.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4547,8 +4568,7 @@ recording::block::dump_edges_to_dot (pretty_printer *pp)
 void
 recording::global::replay_into (replayer *r)
 {
-  set_playback_obj (
-    m_initializer
+    playback::lvalue *global = m_initializer
     ? r->new_global_initialized (playback_location (r, m_loc),
 				 m_kind,
 				 m_type->playback_type (),
@@ -4560,7 +4580,11 @@ recording::global::replay_into (replayer *r)
     : r->new_global (playback_location (r, m_loc),
 		     m_kind,
 		     m_type->playback_type (),
-		     playback_string (m_name)));
+		     playback_string (m_name));
+  if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
+    global->set_tls_model (recording::tls_models[m_tls_model]);
+
+  set_playback_obj (global);
 }
 
 /* Override the default implementation of
@@ -4658,6 +4682,14 @@ recording::global::write_initializer_reproducer (const char *id, reproducer &r)
 
 /* Implementation of recording::memento::write_reproducer for globals. */
 
+static const char * const tls_model_enum_strings[] = {
+  "GCC_JIT_TLS_MODEL_NONE",
+  "GCC_JIT_TLS_MODEL_GLOBAL_DYNAMIC",
+  "GCC_JIT_TLS_MODEL_LOCAL_DYNAMIC",
+  "GCC_JIT_TLS_MODEL_INITIAL_EXEC",
+  "GCC_JIT_TLS_MODEL_LOCAL_EXEC",
+};
+
 void
 recording::global::write_reproducer (reproducer &r)
 {
@@ -4674,6 +4706,12 @@ recording::global::write_reproducer (reproducer &r)
     global_kind_reproducer_strings[m_kind],
     r.get_identifier_as_type (get_type ()),
     m_name->get_debug_string ());
+
+  if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
+    r.write ("  gcc_jit_lvalue_set_tls_model (%s, /* gcc_jit_lvalue *lvalue */\n"
+	     "                                %s); /* enum gcc_jit_tls_model model */\n",
+	     id,
+	     tls_model_enum_strings[m_tls_model]);
 
   if (m_initializer)
     switch (m_type->dereference ()->get_size ())

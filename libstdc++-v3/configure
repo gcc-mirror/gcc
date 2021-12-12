@@ -21006,7 +21006,7 @@ $as_echo "$ac_has_win32_sleep" >&6; }
 
   if test x"$ac_no_sleep" = x"yes"; then
 
-$as_echo "#define NO_SLEEP 1" >>confdefs.h
+$as_echo "#define _GLIBCXX_NO_SLEEP 1" >>confdefs.h
 
   fi
 

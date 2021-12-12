@@ -1562,7 +1562,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   fi
 
   if test x"$ac_no_sleep" = x"yes"; then
-    AC_DEFINE(NO_SLEEP,1, [Defined if no way to sleep is available.])
+    AC_DEFINE(_GLIBCXX_NO_SLEEP,1, [Defined if no way to sleep is available.])
   fi
 
   AC_SUBST(GLIBCXX_LIBS)
