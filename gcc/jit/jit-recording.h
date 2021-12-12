@@ -1133,7 +1133,8 @@ public:
 	  location *loc,
 	  type *type_)
     : rvalue (ctxt, loc, type_),
-    m_tls_model (GCC_JIT_TLS_MODEL_NONE)
+    m_tls_model (GCC_JIT_TLS_MODEL_NONE),
+    m_link_section (NULL)
     {}
 
   playback::lvalue *
@@ -1156,9 +1157,11 @@ public:
   virtual const char *access_as_lvalue (reproducer &r);
   virtual bool is_global () const { return false; }
   void set_tls_model (enum gcc_jit_tls_model model);
+  void set_link_section (const char *name);
 
 protected:
   enum gcc_jit_tls_model m_tls_model;
+  string *m_link_section;
 };
 
 class param : public lvalue

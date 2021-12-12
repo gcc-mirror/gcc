@@ -293,3 +293,12 @@ entrypoints:
 thread-local storage model of a variable:
 
   * :func:`gcc_jit_lvalue_set_tls_model`
+
+.. _LIBGCCJIT_ABI_18:
+
+``LIBGCCJIT_ABI_18``
+-----------------------
+``LIBGCCJIT_ABI_18`` covers the addition of an API entrypoint to set the link
+section of a variable:
+
+  * :func:`gcc_jit_lvalue_set_link_section`

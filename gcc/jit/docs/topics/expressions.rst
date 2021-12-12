@@ -576,6 +576,27 @@ where the rvalue is computed by reading from the storage area.
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model
 
+.. function:: void
+              gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
+                                               const char *section_name)
+
+   Set the link section of a variable.
+   The parameter ``section_name`` must be non-NULL and must contain the
+   leading dot. Analogous to:
+
+   .. code-block:: c
+
+     int variable __attribute__((section(".section")));
+
+   in C.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_18`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_link_section
+
 Global variables
 ****************
 
