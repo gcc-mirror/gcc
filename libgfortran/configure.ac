@@ -173,6 +173,7 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 AM_CONDITIONAL([HAVE_REAL_17], [test "x$have_real_17" != xno])
+
 # Add CET specific flags if CET is enabled
 GCC_CET_FLAGS(CET_FLAGS)
 AM_FCFLAGS="$AM_FCFLAGS $CET_FLAGS"
@@ -542,6 +543,33 @@ GCC_CHECK_MATH_FUNC([catanh])
 GCC_CHECK_MATH_FUNC([catanhf])
 GCC_CHECK_MATH_FUNC([catanhl])
 GCC_CHECK_MATH_FUNC([catanl])
+
+# For POWER, check the ieee128 math functions
+
+if test "x$have_real_17" = "xyes"; then
+LIBGFOR_CHECK_MATH_IEEE128([__acoshieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__acosieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__asinhieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__asinieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__atan2ieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__atanhieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__atanieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__coshieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__cosieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__erfieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__expieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__fabsieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__jnieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__log10ieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__logieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__powieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__sinhieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__sinieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__sqrtieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__tanhieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__tanieee128])
+LIBGFOR_CHECK_MATH_IEEE128([__ynieee128])
+fi
 
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
