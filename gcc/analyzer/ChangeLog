@@ -1,3 +1,10 @@
+2021-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/101962
+	* region-model.cc (region_model::eval_condition_without_cm):
+	Refactor comparison against zero, adding a check for
+	POINTER_PLUS_EXPR of non-NULL.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.
