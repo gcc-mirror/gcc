@@ -1,3 +1,33 @@
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102787
+	* array.c (expand_constructor): When encountering a constant array
+	expression or array section within a constructor, simplify it to
+	enable better expansion.
+
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-10-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102717
+	* simplify.c (gfc_simplify_reshape): Replace assert by error
+	message for negative elements in SHAPE array.
+
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-11-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103411
+	* check.c (gfc_check_reshape): Improve check of size of source
+	array for the RESHAPE intrinsic against the given shape when pad
+	is not given, and shape is a parameter.  Try other simplifications
+	of shape.
+
 2021-12-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
