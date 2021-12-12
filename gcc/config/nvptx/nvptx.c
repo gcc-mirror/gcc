@@ -5410,7 +5410,11 @@ nvptx_file_start (void)
     fputs ("\t.version\t6.3\n", asm_out_file);
   else
     fputs ("\t.version\t3.1\n", asm_out_file);
-  if (TARGET_SM53)
+  if (TARGET_SM80)
+    fputs ("\t.target\tsm_80\n", asm_out_file);
+  else if (TARGET_SM75)
+    fputs ("\t.target\tsm_75\n", asm_out_file);
+  else if (TARGET_SM53)
     fputs ("\t.target\tsm_53\n", asm_out_file);
   else if (TARGET_SM35)
     fputs ("\t.target\tsm_35\n", asm_out_file);
