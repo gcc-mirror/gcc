@@ -1,3 +1,9 @@
+2021-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103534
+	* include/bits/basic_string.h (append (basic_string)): Call pointer
+	append instead of _M_append directly.
+
 2021-12-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/71367

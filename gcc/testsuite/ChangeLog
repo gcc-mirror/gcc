@@ -1,3 +1,28 @@
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95415
+	* jit.dg/all-non-failing-tests.h: Add test-tls.c.
+	* jit.dg/test-tls.c: New test.
+
+2021-12-11  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96066
+	PR target/96067
+	* jit.dg/all-non-failing-tests.h: Add test-builtin-types.c.
+	* jit.dg/test-builtin-types.c
+	* jit.dg/test-error-bad-assignment.c
+	* jit.dg/test-fuzzer.c: Add fuzzing for type qualifiers.
+
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103606
+	* gfortran.dg/pr103606.f90: New test.
+
+2021-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103534
+	* g++.dg/warn/Wstringop-overflow-8.C: New test.
+
 2021-12-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/103562

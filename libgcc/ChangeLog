@@ -1,3 +1,13 @@
+2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Make constructor and destructor
+	functions static when possible.
+
+2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Remove constructor/destructor
+	declarations.
+
 2021-12-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/t-darwin: Add libgcc_tm.h to the dependencies

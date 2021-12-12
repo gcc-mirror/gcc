@@ -1,3 +1,15 @@
+2021-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-profile.c (ipa_profile): Do not update hot bb threshold.
+
+2021-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (get_modref_function_summary): Use ultimate_alias_target.
+	(ignore_edge): Likewise.
+	(compute_parm_map): Likewise.
+	(modref_propagate_in_scc): Likewise.
+	(modref_propagate_flags_in_scc): Likewise.
+
 2021-12-10  Jason Merrill  <jason@redhat.com>
 
 	* symtab.c (symtab_node::equal_address_to): Fix comment typo.
