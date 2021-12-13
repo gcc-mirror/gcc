@@ -303,11 +303,11 @@ public:
   void visit (AST::ArrayElemsValues &elems) override
   {
     std::vector<std::unique_ptr<HIR::Expr> > elements;
-    elems.iterate ([&] (AST::Expr *elem) mutable -> bool {
-      HIR::Expr *translated_elem = ASTLoweringExpr::translate (elem);
-      elements.push_back (std::unique_ptr<HIR::Expr> (translated_elem));
-      return true;
-    });
+    for (auto &elem : elems.get_values ())
+      {
+	HIR::Expr *translated_elem = ASTLoweringExpr::translate (elem.get ());
+	elements.push_back (std::unique_ptr<HIR::Expr> (translated_elem));
+      }
 
     translated_array_elems = new HIR::ArrayElemsValues (std::move (elements));
   }
