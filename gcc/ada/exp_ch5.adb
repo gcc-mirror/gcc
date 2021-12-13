@@ -4559,9 +4559,7 @@ package body Exp_Ch5 is
 
                Set_Else_Statements (N, New_List (New_If));
 
-               if Present (Condition_Actions (E)) then
-                  Insert_List_Before (New_If, Condition_Actions (E));
-               end if;
+               Insert_List_Before (New_If, Condition_Actions (E));
 
                Remove (E);
 
@@ -5455,9 +5453,7 @@ package body Exp_Ch5 is
       --  Condition_Actions of the iterator. Insert them now at the head of
       --  the loop.
 
-      if Present (Condition_Actions (Isc)) then
-         Insert_List_Before (N, Condition_Actions (Isc));
-      end if;
+      Insert_List_Before (N, Condition_Actions (Isc));
 
       Rewrite (N, New_Loop);
       Analyze (N);

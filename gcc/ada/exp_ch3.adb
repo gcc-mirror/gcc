@@ -6908,9 +6908,7 @@ package body Exp_Ch3 is
                New_Nodes := Make_DT (Base_Typ, N);
             end if;
 
-            if not Is_Empty_List (New_Nodes) then
-               Insert_List_Before (N, New_Nodes);
-            end if;
+            Insert_List_Before (N, New_Nodes);
          end;
       end if;
 

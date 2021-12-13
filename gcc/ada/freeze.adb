@@ -2354,7 +2354,6 @@ package body Freeze is
       procedure Freeze_All_Ent (From : Entity_Id; After : in out Node_Id) is
          E     : Entity_Id;
          Flist : List_Id;
-         Lastn : Node_Id;
 
          procedure Process_Flist;
          --  If freeze nodes are present, insert and analyze, and reset cursor
@@ -2365,6 +2364,7 @@ package body Freeze is
          -------------------
 
          procedure Process_Flist is
+            Lastn : Node_Id;
          begin
             if Is_Non_Empty_List (Flist) then
                Lastn := Next (After);

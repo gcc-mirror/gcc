@@ -12516,13 +12516,7 @@ package body Exp_Ch9 is
          --  procedure for this corresponding record type and we won't get it
          --  in time if we don't freeze now.
 
-         declare
-            L : constant List_Id := Freeze_Entity (Rec_Ent, N);
-         begin
-            if Is_Non_Empty_List (L) then
-               Insert_List_After (Body_Decl, L);
-            end if;
-         end;
+         Insert_List_After (Body_Decl, List => Freeze_Entity (Rec_Ent, N));
       end if;
 
       --  Complete the expansion of access types to the current task type, if

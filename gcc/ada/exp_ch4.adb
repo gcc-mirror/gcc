@@ -6198,18 +6198,10 @@ package body Exp_Ch4 is
          Set_Sloc (Parent (N), Loc);
       end if;
 
-      --  Make sure Then_Actions and Else_Actions are appropriately moved
-      --  to the new if statement.
+      --  Move Then_Actions and Else_Actions, if any, to the new if statement
 
-      if Present (Then_Actions (N)) then
-         Insert_List_Before
-           (First (Then_Statements (New_If)), Then_Actions (N));
-      end if;
-
-      if Present (Else_Actions (N)) then
-         Insert_List_Before
-           (First (Else_Statements (New_If)), Else_Actions (N));
-      end if;
+      Insert_List_Before (First (Then_Statements (New_If)), Then_Actions (N));
+      Insert_List_Before (First (Else_Statements (New_If)), Else_Actions (N));
 
       Insert_Action (N, Decl);
       Insert_Action (N, New_If);
