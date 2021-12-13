@@ -1,3 +1,96 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Remove unique-ptr-tests.o.
+	* selftest-run-tests.c (selftest::run_tests): Remove
+	unique_ptr_tests_cc_tests.
+	* selftest.h (unique_ptr_tests_cc_tests): Remove.
+	* system.h: Check INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR
+	and include <memory> instead of "unique-ptr.h".
+	* unique-ptr-tests.cc: Removed.
+
+2021-12-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx-opts.h (ptx_isa): Add PTX_ISA_SM53 ISA level
+	to enumeration.
+	* config/nvptx/nvptx.opt: Add sm_53 to -misa.
+	* config/nvptx/nvptx-modes.def: Add support for HFmode.
+	* config/nvptx/nvptx.h (TARGET_SM53):
+	New helper macro to conditionalize functionality on target ISA.
+	* config/nvptx/nvptx-c.c (nvptx_cpu_cpp_builtins): Add __PTX_SM__
+	support for the new ISA levels.
+	* config/nvptx/nvptx.c (nvtx_ptx_type_from_mode): Support new HFmode
+	with the ".f16" suffix/qualifier.
+	(nvptx_file_start): Add support for TARGET_SM53.
+	(nvptx_omp_device_kind_arch_isa): Add support for TARGET_SM53
+	and tweak TARGET_SM35.
+	(nvptx_scalar_mode_supported_p): Target hook with conditional
+	HFmode support on TARGET_SM53 and higher.
+	(nvptx_libgcc_floating_mode_supported_p): Likewise.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Use nvptx_scalar_mode_supported_p.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Likewise, use new hook.
+	* config/nvptx/nvptx.md (*movhf_insn): New define_insn.
+	(movhf): New define_expand for HFmode moves.
+	(addhf3, subhf3, mulhf, extendhf<mode>2, trunc<mode>hf2): New
+	instructions conditional on TARGET_SM53 (i.e. -misa=sm_53).
+
+2021-12-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103665
+	* ipa-modref.c (modref_access_analysis::analyze): Terminate BB
+	analysis on NULL memory access.
+	* ipa-pure-const.c (analyze_function): Likewise.
+
+2021-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-profile.c (ipa_profile): Do not update hot bb threshold.
+
+2021-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (get_modref_function_summary): Use ultimate_alias_target.
+	(ignore_edge): Likewise.
+	(compute_parm_map): Likewise.
+	(modref_propagate_in_scc): Likewise.
+	(modref_propagate_flags_in_scc): Likewise.
+
+2021-12-10  Jason Merrill  <jason@redhat.com>
+
+	* symtab.c (symtab_node::equal_address_to): Fix comment typo.
+
+2021-12-10  Doug Rupp  <rupp@adacore.com>
+
+	* config/vxworks.h (LINK_SPEC): Remove %(link_target).
+	Change %{v:-v} to %{v:-V}.
+
+2021-12-10  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Remove assignment to STMP_FIXINC.
+
+2021-12-10  Martin Liska  <mliska@suse.cz>
+
+	* params.opt: Add missing dot.
+
+2021-12-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR ipa/103601
+	* ipa-modref-tree.h (useful_for_kill_p): Zero width accesses aren't
+	useful for kill tracking.
+
+2021-12-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/mkoffload.c (process_asm): Process the variable table
+	completely differently.
+	(process_obj): Encode the varaible data differently.
+
+2021-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	PR tree-optimization/103523
+	* tree-vect-loop.c (vectorizable_induction): Check for
+	PLUS_EXPR/MINUS_EXPR support.
+
+2021-12-10  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/i386.c (ix86_vector_costs::add_stmt_cost): Remove Tremont.
+
 2021-12-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (max-inline-functions-called-once-loop-depth,

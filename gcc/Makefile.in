@@ -1699,7 +1699,6 @@ OBJS = \
 	tree.o \
 	tristate.o \
 	typed-splay-tree.o \
-	unique-ptr-tests.o \
 	valtrack.o \
 	value-pointer-equiv.o \
 	value-query.o \

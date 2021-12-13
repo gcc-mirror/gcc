@@ -2257,7 +2257,7 @@ symtab_node::equal_address_to (symtab_node *s2, bool memory_accessed)
   if (rs1->alias || rs2->alias)
     return -1;
 
-  /* If we have a non-interposale definition of at least one of the symbols
+  /* If we have a non-interposable definition of at least one of the symbols
      and the other symbol is different, we know other unit cannot interpose
      it to the first symbol; all aliases of the definition needs to be 
      present in the current unit.  */

@@ -1382,7 +1382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       basic_string&
       append(const basic_string& __str)
-      { return _M_append(__str._M_data(), __str.size()); }
+      { return this->append(__str._M_data(), __str.size()); }
 
       /**
        *  @brief  Append a substring.
@@ -1400,9 +1400,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       basic_string&
       append(const basic_string& __str, size_type __pos, size_type __n = npos)
-      { return _M_append(__str._M_data()
-			 + __str._M_check(__pos, "basic_string::append"),
-			 __str._M_limit(__pos, __n)); }
+      { return this->append(__str._M_data()
+			    + __str._M_check(__pos, "basic_string::append"),
+			    __str._M_limit(__pos, __n)); }
 
       /**
        *  @brief  Append a C substring.

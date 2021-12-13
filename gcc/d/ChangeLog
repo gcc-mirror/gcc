@@ -1,3 +1,38 @@
+2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103529
+	* dmd/MERGE: Merge upstream dmd 3982604c5.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/root-optional.o.
+	* d-attribs.cc (build_attributes): Update for new front-end interface.
+	* d-codegen.cc (d_build_call): Likewise.
+	* d-compiler.cc (Compiler::paintAsType): Likewise.
+	* d-lang.cc (d_handle_option): Remove OPT_fpreview_intpromote, add
+	handling of OPT_frevert_intpromote.
+	* d-port.cc (Port::valcpy): Assert buffer is aligned.
+	* d-target.cc (Target::isVectorOpSupported): Update for new front-end
+	interface.
+	* decl.cc (layout_class_initializer): Likewise.
+	* expr.cc (lvalue_p): Likewise.
+	(binop_assignment): Likewise.
+	(ExprVisitor::visit): Likewise.
+	(ExprVisitor::visit (AssignExp *)): Remove generation of _d_arrayctor
+	and _d_arraysetctor library helpers.
+	(ExprVisitor::visit (VarExp *)): Support __traits(initSymbol).
+	* intrinsics.cc (expand_intrinsic_rotate): Update for new front-end
+	interface.
+	* lang.opt (fpreview=intpromote): Remove.
+	(frevert=intpromote): New.
+	* runtime.def (ARRAYCTOR): Remove.
+	(ARRAYSETCTOR): Remove.
+	* toir.cc (IRVisitor::visit): Update for new front-end interface.
+	* types.cc (layout_aggregate_members): Likewise.
+	* dmd/root/optional.d: New file.
+	* dmd/root/optional.h: New file.
+
+2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (get_symbol_decl): Align methods to MINIMUM_METHOD_BOUNDARY.
+
 2021-12-09  Martin Liska  <mliska@suse.cz>
 
 	* expr.cc: Call memcpy only when length != 0.

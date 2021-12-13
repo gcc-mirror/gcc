@@ -284,3 +284,21 @@ entrypoints:
   * :func:`gcc_jit_struct_get_field`
 
   * :func:`gcc_jit_struct_get_field_count`
+
+.. _LIBGCCJIT_ABI_17:
+
+``LIBGCCJIT_ABI_17``
+-----------------------
+``LIBGCCJIT_ABI_17`` covers the addition of an API entrypoint to set the
+thread-local storage model of a variable:
+
+  * :func:`gcc_jit_lvalue_set_tls_model`
+
+.. _LIBGCCJIT_ABI_18:
+
+``LIBGCCJIT_ABI_18``
+-----------------------
+``LIBGCCJIT_ABI_18`` covers the addition of an API entrypoint to set the link
+section of a variable:
+
+  * :func:`gcc_jit_lvalue_set_link_section`

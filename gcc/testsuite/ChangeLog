@@ -1,3 +1,66 @@
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/100688
+	* jit.dg/all-non-failing-tests.h: Mention new test
+	link-section-assembler.
+	* jit.dg/test-link-section-assembler.c: New test.
+	* jit.dg/jit.exp: New helper function to test that the
+	assembly contains a pattern.
+
+2021-12-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-1.c: New test case.
+
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95415
+	* jit.dg/all-non-failing-tests.h: Add test-tls.c.
+	* jit.dg/test-tls.c: New test.
+
+2021-12-11  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96066
+	PR target/96067
+	* jit.dg/all-non-failing-tests.h: Add test-builtin-types.c.
+	* jit.dg/test-builtin-types.c
+	* jit.dg/test-error-bad-assignment.c
+	* jit.dg/test-fuzzer.c: Add fuzzing for type qualifiers.
+
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103606
+	* gfortran.dg/pr103606.f90: New test.
+
+2021-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103534
+	* g++.dg/warn/Wstringop-overflow-8.C: New test.
+
+2021-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/103562
+	* jit.dg/all-non-failing-tests.h: Add comment about...
+	* jit.dg/test-pr103562.c: New test.
+
+2021-12-10  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp23/auto-fncast10.C: New test.
+
+2021-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103418
+	* gfortran.dg/move_alloc_8.f90: Adjust error messages.
+	* gfortran.dg/pointer_intent_9.f90: New test.
+
+2021-12-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR ipa/103601
+	* gcc.dg/ipa/pr103601.c: New test case.
+
+2021-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.target/aarch64/pr103523.c: New test.
+
 2021-12-09  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/103215

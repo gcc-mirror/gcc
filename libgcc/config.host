@@ -325,9 +325,6 @@ case ${host} in
   tmake_file="vms/t-vms"
   extra_parts="crt0.o crtbegin.o crtbeginS.o crtend.o crtendS.o"
   ;;
-*-*-vxworks7*)
-  tmake_file=t-vxworks7
-  ;;
 *-*-vxworksae*)
   tmake_file=t-vxworksae
   ;;
@@ -339,11 +336,8 @@ case ${host} in
   ;;
 esac
 
-# Except on ARM where we do not use DWARF, table based EH on VxWorks
-# relies on specially crafted crtstuff files
+# VxWorks ports rely on specially crafted crtstuff files
 case ${host} in
-arm-*-vxworks*)
-  ;;
 *-*-vxworks*)
   tmake_file="${tmake_file} t-vxcrtstuff"
   ;;
@@ -1238,7 +1232,8 @@ powerpc*-*-linux*)
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc*-wrs-vxworks7*)
-        tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules rs6000/t-ppc64-fp t-slibgcc-libgcc"
+        tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-dfprules rs6000/t-ppc64-fp"
+        tmake_file="rs6000/t-crtstuff ${tmake_file}"
         case $ppc_fp_type in
         64)
                 ;;

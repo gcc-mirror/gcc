@@ -1097,6 +1097,28 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 	   !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
+	  /* NULL memory accesses terminates BB.  These accesses are known
+	     to trip undefined behaviour.  gimple-ssa-isolate-paths turns them
+	     to volatile accesses and adds builtin_trap call which would
+	     confuse us otherwise.  */
+	  if (infer_nonnull_range_by_dereference (gsi_stmt (gsi),
+						  null_pointer_node))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "  NULL memory access; terminating BB%s\n",
+			 flag_non_call_exceptions ? "; looping" : "");
+	      if (flag_non_call_exceptions)
+		{
+		  l->looping = true;
+		  if (stmt_can_throw_external (cfun, gsi_stmt (gsi)))
+		    {
+		      if (dump_file)
+			fprintf (dump_file, "    can throw externally\n");
+		      l->can_throw = true;
+		    }
+		}
+	      break;
+	    }
 	  check_stmt (&gsi, l, ipa);
 	  if (l->pure_const_state == IPA_NEITHER
 	      && l->looping

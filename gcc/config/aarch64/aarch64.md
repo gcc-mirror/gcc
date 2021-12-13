@@ -143,6 +143,7 @@
     UNSPEC_AUTIBSP
     UNSPEC_CALLEE_ABI
     UNSPEC_CASESI
+    UNSPEC_CPYMEM
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
     UNSPEC_CRC32CH
@@ -188,6 +189,7 @@
     UNSPEC_LD3_LANE
     UNSPEC_LD4_LANE
     UNSPEC_MB
+    UNSPEC_MOVMEM
     UNSPEC_NOP
     UNSPEC_PACIA1716
     UNSPEC_PACIB1716
@@ -202,6 +204,7 @@
     UNSPEC_SABDL2
     UNSPEC_SADALP
     UNSPEC_SCVTF
+    UNSPEC_SETMEM
     UNSPEC_SISD_NEG
     UNSPEC_SISD_SSHL
     UNSPEC_SISD_USHL
@@ -1572,6 +1575,18 @@
   }
 )
 
+(define_insn "aarch64_cpymemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))])]
+ "TARGET_MOPS"
+ "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
+ [(set_attr "length" "12")]
+)
+
 ;; 0 is dst
 ;; 1 is src
 ;; 2 is size of copy in bytes
@@ -1580,9 +1595,9 @@
 (define_expand "cpymemdi"
   [(match_operand:BLK 0 "memory_operand")
    (match_operand:BLK 1 "memory_operand")
-   (match_operand:DI 2 "immediate_operand")
+   (match_operand:DI 2 "general_operand")
    (match_operand:DI 3 "immediate_operand")]
-   "!STRICT_ALIGNMENT"
+   "!STRICT_ALIGNMENT || TARGET_MOPS"
 {
   if (aarch64_expand_cpymem (operands))
     DONE;
@@ -1590,18 +1605,75 @@
 }
 )
 
+(define_insn "aarch64_movmemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_MOVMEM))])]
+ "TARGET_MOPS"
+ "cpyp\t[%x0]!, [%x1]!, %x2!\;cpym\t[%x0]!, [%x1]!, %x2!\;cpye\t[%x0]!, [%x1]!, %x2!"
+ [(set_attr "length" "12")]
+)
+
+;; 0 is dst
+;; 1 is src
+;; 2 is size of copy in bytes
+;; 3 is alignment
+
+(define_expand "movmemdi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:DI 2 "general_operand")
+   (match_operand:DI 3 "immediate_operand")]
+   "TARGET_MOPS"
+{
+   rtx sz_reg = operands[2];
+   /* For constant-sized memmoves check the threshold.
+      FIXME: We should add a non-MOPS memmove expansion for smaller,
+      constant-sized memmove to avoid going to a libcall.  */
+   if (CONST_INT_P (sz_reg)
+       && INTVAL (sz_reg) < aarch64_mops_memmove_size_threshold)
+     FAIL;
+
+   rtx addr_dst = XEXP (operands[0], 0);
+   rtx addr_src = XEXP (operands[1], 0);
+
+   if (!REG_P (sz_reg))
+     sz_reg = force_reg (DImode, sz_reg);
+   if (!REG_P (addr_dst))
+     addr_dst = force_reg (DImode, addr_dst);
+   if (!REG_P (addr_src))
+     addr_src = force_reg (DImode, addr_src);
+   emit_insn (gen_aarch64_movmemdi (addr_dst, addr_src, sz_reg));
+   DONE;
+}
+)
+
+(define_insn "aarch64_setmemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(match_operand:QI 1 "aarch64_reg_or_zero" "rZ")
+                    (match_dup 2)] UNSPEC_SETMEM))])]
+ "TARGET_MOPS"
+ "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
+ [(set_attr "length" "12")]
+)
+
 ;; 0 is dst
 ;; 1 is val
 ;; 2 is size of copy in bytes
 ;; 3 is alignment
-
 (define_expand "setmemdi"
   [(set (match_operand:BLK 0 "memory_operand")     ;; Dest
         (match_operand:QI  2 "nonmemory_operand")) ;; Value
-   (use (match_operand:DI  1 "immediate_operand")) ;; Length
+   (use (match_operand:DI  1 "general_operand")) ;; Length
    (match_operand          3 "immediate_operand")] ;; Align
-  "TARGET_SIMD"
-{
+ "TARGET_SIMD || TARGET_MOPS"
+ {
   if (aarch64_expand_setmem (operands))
     DONE;
 

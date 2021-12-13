@@ -383,6 +383,8 @@ namespace ranges
     template<typename _Tp>
       concept __sentinel_size = requires(_Tp& __t)
 	{
+	  requires (!is_unbounded_array_v<remove_reference_t<_Tp>>);
+
 	  { _Begin{}(__t) } -> forward_iterator;
 
 	  { _End{}(__t) } -> sized_sentinel_for<decltype(_Begin{}(__t))>;
@@ -466,6 +468,8 @@ namespace ranges
     template<typename _Tp>
       concept __eq_iter_empty = requires(_Tp& __t)
 	{
+	  requires (!is_unbounded_array_v<remove_reference_t<_Tp>>);
+
 	  { _Begin{}(__t) } -> forward_iterator;
 
 	  bool(_Begin{}(__t) == _End{}(__t));

@@ -570,7 +570,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsingle-precision-constant  -fsplit-ivs-in-unroller  -fsplit-loops@gol
 -fsplit-paths @gol
 -fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt @gol
--fstdarg-opt  -fstore-merging  -fstrict-aliasing @gol
+-fstdarg-opt  -fstore-merging  -fstrict-aliasing -fipa-strict-aliasing @gol
 -fthread-jumps  -ftracer  -ftree-bit-ccp @gol
 -ftree-builtin-call-dce  -ftree-ccp  -ftree-ch @gol
 -ftree-coalesce-vars  -ftree-copy-prop  -ftree-dce  -ftree-dominator-opts @gol
@@ -12423,6 +12423,16 @@ int f() @{
 The @option{-fstrict-aliasing} option is enabled at levels
 @option{-O2}, @option{-O3}, @option{-Os}.
 
+@item -fipa-strict-aliasing
+@opindex fipa-strict-aliasing
+Constrols whether rules of @option{-fstrict-aliasing} are applied across
+function boundaries.  Note that if multiple functions gets inlined into a
+signle function the memory accesses are no longer considred to be crossing a
+function bounday.
+
+The @option{-fipa-strict-aliasing} option is enabled by default and is
+effective only in combination with @option{-fstrict-aliasing}.
+
 @item -falign-functions
 @itemx -falign-functions=@var{n}
 @itemx -falign-functions=@var{n}:@var{m}
@@ -18853,6 +18863,7 @@ and the features that they enable by default:
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+ls64}
+@item @samp{armv8.8-a} @tab Armv8.8-a @tab @samp{armv8.7-a}, @samp{+mops}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
@@ -19144,6 +19155,10 @@ prior to Armv8.2-A is not supported.
 @item ls64
 Enable the 64-byte atomic load and store instructions for accelerators.
 This option is enabled by default for @option{-march=armv8.7-a}.
+@item mops
+Enable the instructions to accelerate memory operations like @code{memcpy},
+@code{memmove}, @code{memset}.  This option is enabled by default for
+@option{-march=armv8.8-a}
 @item flagm
 Enable the Flag Manipulation instructions Extension.
 @item pauth

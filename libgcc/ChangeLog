@@ -1,3 +1,24 @@
+2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Make constructor and destructor
+	functions static when possible.
+
+2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* config/vxcrtstuff.c: Remove constructor/destructor
+	declarations.
+
+2021-12-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-darwin: Add libgcc_tm.h to the dependencies
+	for darwin10-unwind-find-enc-func.
+
+2021-12-10  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/rs6000/t-vxworks: New file.
+	* config.host (powerpc*-*-vxworks*): Use it instead of
+	t-ppccomm.
+
 2021-12-09  Fred Konrad  <konrad@adacore.com>
 
 	* config.host (powerpc*-wrs-vxworks7*): Fix path to

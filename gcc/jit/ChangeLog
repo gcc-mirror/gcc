@@ -1,3 +1,53 @@
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/100688
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_18): New ABI
+	tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_lvalue_set_link_section.
+	* jit-playback.h: New function (set_link_section).
+	* jit-recording.c: New function (set_link_section) and
+	support for setting the link section.
+	* jit-recording.h: New function (set_link_section) and new
+	field m_link_section.
+	* libgccjit.c: New function (gcc_jit_lvalue_set_link_section).
+	* libgccjit.h: New function (gcc_jit_lvalue_set_link_section).
+	* libgccjit.map (LIBGCCJIT_ABI_18): New ABI tag.
+
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95415
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_17): New ABI
+	tag.
+	* docs/topics/expressions.rst: Add document for the function
+	gcc_jit_lvalue_set_tls_model.
+	* jit-playback.h: New function (set_tls_model).
+	* jit-recording.c: New function (set_tls_model), new
+	variables (tls_models and tls_model_enum_strings) and support
+	for setting the tls model.
+	* jit-recording.h: New function (set_tls_model) and new
+	field m_tls_model.
+	* libgccjit.c: New function (gcc_jit_lvalue_set_tls_model).
+	* libgccjit.h: New function (gcc_jit_lvalue_set_tls_model)
+	and new enum (gcc_jit_tls_model).
+	* libgccjit.map (LIBGCCJIT_ABI_17): New ABI tag.
+
+2021-12-11  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96066
+	PR target/96067
+	* jit-builtins.c: Implement missing types for builtins.
+	* jit-recording.c:: Allow sending a volatile const void * as
+	argument.
+	* jit-recording.h: New functions (is_volatile, is_const) and
+	allow comparing qualified types.
+
+2021-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/103562
+	* jit-playback.c (gcc::jit::playback::context::new_function): Set
+	DECL_CONTEXT of the result_decl.
+
 2021-11-27  Petter Tomner  <tomner@kth.se>
 
 	* libgccjit.c: %ld -> %zu

@@ -23,7 +23,8 @@
 enum ptx_isa
 {
   PTX_ISA_SM30,
-  PTX_ISA_SM35
+  PTX_ISA_SM35,
+  PTX_ISA_SM53
 };
 
 enum ptx_version

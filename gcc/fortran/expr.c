@@ -6254,10 +6254,13 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
     {
       if (ptr_component && ref->type == REF_COMPONENT)
 	check_intentin = false;
-      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
+      if (ref->type == REF_COMPONENT)
 	{
-	  ptr_component = true;
-	  if (!pointer)
+	  gfc_component *comp = ref->u.c.component;
+	  ptr_component = (comp->ts.type == BT_CLASS && comp->attr.class_ok)
+			? CLASS_DATA (comp)->attr.class_pointer
+			: comp->attr.pointer;
+	  if (ptr_component && !pointer)
 	    check_intentin = false;
 	}
       if (ref->type == REF_INQUIRY

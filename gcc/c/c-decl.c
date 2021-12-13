@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_STRING
-#define INCLUDE_UNIQUE_PTR
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"

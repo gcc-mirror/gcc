@@ -1,3 +1,9 @@
+2021-12-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct gcn_image_desc): Remove global_variables.
+	(GOMP_OFFLOAD_load_image): Locate the offload variables via the
+	table, not individual symbols.
+
 2021-12-09  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* testsuite/libgomp.c++/target-lambda-1.C: Only run under

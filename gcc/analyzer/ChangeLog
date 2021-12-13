@@ -1,3 +1,7 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* engine.cc: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.
+
 2021-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/103533
