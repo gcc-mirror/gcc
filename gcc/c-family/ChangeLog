@@ -1,3 +1,10 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* known-headers.cc: Define INCLUDE_MEMORY instead of
+	INCLUDE_UNIQUE_PTR.
+	* name-hint.h: Likewise.
+	(class name_hint): Use std::unique_ptr instead of gnu::unique_ptr.
+
 2021-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/71934

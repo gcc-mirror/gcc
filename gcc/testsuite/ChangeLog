@@ -1,5 +1,18 @@
 2021-12-12  Antoni Boucher  <bouanto@zoho.com>
 
+	PR target/100688
+	* jit.dg/all-non-failing-tests.h: Mention new test
+	link-section-assembler.
+	* jit.dg/test-link-section-assembler.c: New test.
+	* jit.dg/jit.exp: New helper function to test that the
+	assembly contains a pattern.
+
+2021-12-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-1.c: New test case.
+
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
 	PR target/95415
 	* jit.dg/all-non-failing-tests.h: Add test-tls.c.
 	* jit.dg/test-tls.c: New test.

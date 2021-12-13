@@ -1,3 +1,45 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.in: Remove unique-ptr-tests.o.
+	* selftest-run-tests.c (selftest::run_tests): Remove
+	unique_ptr_tests_cc_tests.
+	* selftest.h (unique_ptr_tests_cc_tests): Remove.
+	* system.h: Check INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR
+	and include <memory> instead of "unique-ptr.h".
+	* unique-ptr-tests.cc: Removed.
+
+2021-12-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx-opts.h (ptx_isa): Add PTX_ISA_SM53 ISA level
+	to enumeration.
+	* config/nvptx/nvptx.opt: Add sm_53 to -misa.
+	* config/nvptx/nvptx-modes.def: Add support for HFmode.
+	* config/nvptx/nvptx.h (TARGET_SM53):
+	New helper macro to conditionalize functionality on target ISA.
+	* config/nvptx/nvptx-c.c (nvptx_cpu_cpp_builtins): Add __PTX_SM__
+	support for the new ISA levels.
+	* config/nvptx/nvptx.c (nvtx_ptx_type_from_mode): Support new HFmode
+	with the ".f16" suffix/qualifier.
+	(nvptx_file_start): Add support for TARGET_SM53.
+	(nvptx_omp_device_kind_arch_isa): Add support for TARGET_SM53
+	and tweak TARGET_SM35.
+	(nvptx_scalar_mode_supported_p): Target hook with conditional
+	HFmode support on TARGET_SM53 and higher.
+	(nvptx_libgcc_floating_mode_supported_p): Likewise.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Use nvptx_scalar_mode_supported_p.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Likewise, use new hook.
+	* config/nvptx/nvptx.md (*movhf_insn): New define_insn.
+	(movhf): New define_expand for HFmode moves.
+	(addhf3, subhf3, mulhf, extendhf<mode>2, trunc<mode>hf2): New
+	instructions conditional on TARGET_SM53 (i.e. -misa=sm_53).
+
+2021-12-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103665
+	* ipa-modref.c (modref_access_analysis::analyze): Terminate BB
+	analysis on NULL memory access.
+	* ipa-pure-const.c (analyze_function): Likewise.
+
 2021-12-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-profile.c (ipa_profile): Do not update hot bb threshold.

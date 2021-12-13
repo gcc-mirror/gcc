@@ -1,3 +1,8 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-decl.c: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.
+	* c-parser.c: Likewise.
+
 2021-12-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/71934
