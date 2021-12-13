@@ -440,6 +440,28 @@ package body Errout is
         and then Warnings_Detected >= Maximum_Messages
       then
          return;
+
+      --  Suppress warnings inside a loop that is known to be null or is
+      --  probably null (i.e. when loop executes only if invalid values
+      --  present). In either case warnings in the loop are likely to be junk.
+
+      elsif Is_Warning_Msg and then Present (N) then
+
+         declare
+            P : Node_Id;
+
+         begin
+            P := Parent (N);
+            while Present (P) loop
+               if Nkind (P) = N_Loop_Statement
+                 and then Suppress_Loop_Warnings (P)
+               then
+                  return;
+               end if;
+
+               P := Parent (P);
+            end loop;
+         end;
       end if;
 
       --  The idea at this stage is that we have two kinds of messages
@@ -1490,26 +1512,6 @@ package body Errout is
             Last_Killed := True;
             return;
          end if;
-
-         --  Suppress if inside loop that is known to be null or is probably
-         --  null (case where loop executes only if invalid values present).
-         --  In either case warnings in the loop are likely to be junk.
-
-         declare
-            P : Node_Id;
-
-         begin
-            P := Parent (N);
-            while Present (P) loop
-               if Nkind (P) = N_Loop_Statement
-                 and then Suppress_Loop_Warnings (P)
-               then
-                  return;
-               end if;
-
-               P := Parent (P);
-            end loop;
-         end;
       end if;
 
       --  Test for message to be output
