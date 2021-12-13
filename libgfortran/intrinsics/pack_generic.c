@@ -85,6 +85,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
+  bool zero_sized;
   index_type n;
   index_type dim;
   index_type nelem;
@@ -114,10 +115,13 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   else
     runtime_error ("Funny sized logical array");
 
+  zero_sized = false;
   for (n = 0; n < dim; n++)
     {
       count[n] = 0;
       extent[n] = GFC_DESCRIPTOR_EXTENT(array,n);
+      if (extent[n] <= 0)
+	zero_sized = true;
       sstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(array,n);
       mstride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(mask,n);
     }
@@ -125,6 +129,11 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
     sstride[0] = size;
   if (mstride[0] == 0)
     mstride[0] = mask_kind;
+
+  if (zero_sized)
+    sptr = NULL;
+  else
+    sptr = array->base_addr;
 
   if (ret->base_addr == NULL || unlikely (compile_options.bounds_check))
     {
