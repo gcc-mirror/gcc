@@ -7552,10 +7552,10 @@ is_scalar_intrinsic_expr (gfc_expr *expr, bool must_be_var, bool conv_ok)
     return false;
   return (expr->rank == 0
 	  && !gfc_is_coindexed (expr)
-	  && (expr->ts.type != BT_INTEGER
-	      || expr->ts.type != BT_REAL
-	      || expr->ts.type != BT_COMPLEX
-	      || expr->ts.type != BT_LOGICAL));
+	  && (expr->ts.type == BT_INTEGER
+	      || expr->ts.type == BT_REAL
+	      || expr->ts.type == BT_COMPLEX
+	      || expr->ts.type == BT_LOGICAL));
 }
 
 static void
@@ -7574,11 +7574,8 @@ resolve_omp_atomic (gfc_code *code)
   code = code->block->next;
   /* resolve_blocks asserts this is initially EXEC_ASSIGN or EXEC_IF
      If it changed to EXEC_NOP, assume an error has been emitted already.  */
-  if (code->op == EXEC_NOP /* FIXME: || (code->next && code->next->op == EXEC_NOP)*/)
+  if (code->op == EXEC_NOP)
     return;
-
-  if (code->op == EXEC_IF && code->block->op == EXEC_IF)
-    comp_cond = code->block->expr1;
 
   if (atomic_code->ext.omp_clauses->compare
       && atomic_code->ext.omp_clauses->capture)
@@ -7597,6 +7594,7 @@ resolve_omp_atomic (gfc_code *code)
 	  && next->block->op == EXEC_IF
 	  && next->block->next->op == EXEC_ASSIGN)
 	{
+	  comp_cond = next->block->expr1;
 	  stmt = next->block->next;
 	  if (stmt->next)
 	    {
@@ -7604,11 +7602,20 @@ resolve_omp_atomic (gfc_code *code)
 	      goto unexpected;
 	    }
 	}
+      else if (capture_stmt)
+	{
+	  gfc_error ("Expected IF at %L in atomic compare capture",
+		     &next->loc);
+	  return;
+	}
       if (stmt && !capture_stmt && next->block->block)
 	{
 	  if (next->block->block->expr1)
-	    gfc_error ("Expected ELSE at %L in atomic compare capture",
-		       &next->block->block->expr1->where);
+	    {
+	      gfc_error ("Expected ELSE at %L in atomic compare capture",
+			 &next->block->block->expr1->where);
+	      return;
+	    }
 	  if (!code->block->block->next
 	      || code->block->block->next->op != EXEC_ASSIGN)
 	    {
@@ -7623,10 +7630,8 @@ resolve_omp_atomic (gfc_code *code)
 	      goto unexpected;
 	    }
 	}
-      if (stmt && !capture_stmt && code->op == EXEC_ASSIGN)
-	{
-	  capture_stmt = code;
-	}
+      if (stmt && !capture_stmt && next->next->op == EXEC_ASSIGN)
+	capture_stmt = next->next;
       else if (!capture_stmt)
 	{
 	  loc = &code->loc;
@@ -7641,6 +7646,7 @@ resolve_omp_atomic (gfc_code *code)
 	  && code->block->op == EXEC_IF
 	  && code->block->next->op == EXEC_ASSIGN)
 	{
+	  comp_cond = code->block->expr1;
 	  stmt = code->block->next;
 	  if (stmt->next || code->block->block)
 	    {
@@ -7703,8 +7709,7 @@ resolve_omp_atomic (gfc_code *code)
     {
       /* x = ... */
       stmt = code;
-      if ((!atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_ASSIGN)
-	  || (atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_IF))
+      if (!atomic_code->ext.omp_clauses->compare && stmt->op != EXEC_ASSIGN)
 	goto unexpected;
       gcc_assert (!code->next);
     }
@@ -7720,7 +7725,7 @@ resolve_omp_atomic (gfc_code *code)
 		     "expression at %L", &comp_cond->where);
 	  return;
 	}
-      if (!is_scalar_intrinsic_expr (comp_cond->value.op.op1, true, false))
+      if (!is_scalar_intrinsic_expr (comp_cond->value.op.op1, true, true))
 	{
 	  gfc_error ("Expected scalar intrinsic variable at %L in atomic "
 		     "comparison", &comp_cond->value.op.op1->where);
@@ -7781,14 +7786,6 @@ resolve_omp_atomic (gfc_code *code)
       break;
     }
 
-  if (atomic_code->ext.omp_clauses->compare
-      && !atomic_code->ext.omp_clauses->capture)
-    {
-      gfc_error ("Sorry, COMPARE clause in ATOMIC at %L is not yet "
-		 "supported", &atomic_code->loc);
-      return;
-    }
-
   if (atomic_code->ext.omp_clauses->capture)
     {
       if (!is_scalar_intrinsic_expr (capture_stmt->expr1, true, false))
@@ -7818,8 +7815,31 @@ resolve_omp_atomic (gfc_code *code)
 	}
     }
 
-  if (atomic_code->ext.omp_clauses->capture
-      && !expr_references_sym (stmt_expr2, var, NULL))
+  if (atomic_code->ext.omp_clauses->compare)
+    {
+      gfc_expr *var_expr;
+      if (comp_cond->value.op.op1->expr_type == EXPR_VARIABLE)
+	var_expr = comp_cond->value.op.op1;
+      else
+	var_expr = comp_cond->value.op.op1->value.function.actual->expr;
+      if (var_expr->symtree->n.sym != var)
+	{
+	  gfc_error ("For !$OMP ATOMIC COMPARE, the first operand in comparison"
+		     " at %L must be the variable %qs that the update statement"
+		     " writes into at %L", &var_expr->where, var->name,
+		     &stmt->expr1->where);
+	  return;
+	}
+      if (stmt_expr2->rank != 0 || expr_references_sym (stmt_expr2, var, NULL))
+	{
+	  gfc_error ("expr in !$OMP ATOMIC COMPARE assignment var = expr "
+		     "must be scalar and cannot reference var at %L",
+		     &stmt_expr2->where);
+	  return;
+	}
+    }
+  else if (atomic_code->ext.omp_clauses->capture
+	   && !expr_references_sym (stmt_expr2, var, NULL))
     atomic_code->ext.omp_clauses->atomic_op
       = (gfc_omp_atomic_op) (atomic_code->ext.omp_clauses->atomic_op
 			     | GFC_OMP_ATOMIC_SWAP);
@@ -7829,8 +7849,7 @@ resolve_omp_atomic (gfc_code *code)
       gfc_intrinsic_op op = stmt_expr2->value.op.op;
       gfc_intrinsic_op alt_op = INTRINSIC_NONE;
 
-      if (atomic_code->ext.omp_clauses->fail != OMP_MEMORDER_UNSET
-	  && !atomic_code->ext.omp_clauses->compare)
+      if (atomic_code->ext.omp_clauses->fail != OMP_MEMORDER_UNSET)
 	gfc_error ("!$OMP ATOMIC UPDATE at %L with FAIL clause requiries either"
 		   " the COMPARE clause or using the intrinsic MIN/MAX "
 		   "procedure", &atomic_code->loc);
@@ -8042,10 +8061,6 @@ resolve_omp_atomic (gfc_code *code)
   else
     gfc_error ("!$OMP ATOMIC assignment must have an operator or "
 	       "intrinsic on right hand side at %L", &stmt_expr2->where);
-
-  if (atomic_code->ext.omp_clauses->compare)
-    gfc_error ("Sorry, COMPARE clause in ATOMIC at %L is not yet "
-	       "supported", &atomic_code->loc);
   return;
 
 unexpected:

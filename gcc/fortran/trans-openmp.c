@@ -4488,13 +4488,13 @@ gfc_trans_omp_atomic (gfc_code *code)
   gfc_se lse;
   gfc_se rse;
   gfc_se vse;
-  gfc_expr *expr2, *e;
+  gfc_expr *expr1, *expr2, *e, *capture_expr1 = NULL, *capture_expr2 = NULL;
   gfc_symbol *var;
   stmtblock_t block;
-  tree lhsaddr, type, rhs, x;
+  tree lhsaddr, type, rhs, x, compare = NULL_TREE, comp_tgt = NULL_TREE;
   enum tree_code op = ERROR_MARK;
   enum tree_code aop = OMP_ATOMIC;
-  bool var_on_left = false;
+  bool var_on_left = false, else_branch = false;
   enum omp_memory_order mo, fail_mo;
   switch (atomic_code->ext.omp_clauses->memorder)
     {
@@ -4514,18 +4514,86 @@ gfc_trans_omp_atomic (gfc_code *code)
     case OMP_MEMORDER_SEQ_CST: fail_mo = OMP_FAIL_MEMORY_ORDER_SEQ_CST; break;
     default: gcc_unreachable ();
     }
-   mo = (omp_memory_order) (mo | fail_mo);
+  mo = (omp_memory_order) (mo | fail_mo);
 
   code = code->block->next;
-  gcc_assert (code->op == EXEC_ASSIGN);
-  var = code->expr1->symtree->n.sym;
+  if (atomic_code->ext.omp_clauses->compare)
+    {
+      gfc_expr *comp_expr;
+      if (code->op == EXEC_IF)
+	{
+	  comp_expr = code->block->expr1;
+	  gcc_assert (code->block->next->op == EXEC_ASSIGN);
+	  expr1 = code->block->next->expr1;
+	  expr2 = code->block->next->expr2;
+	  if (code->block->block)
+	    {
+	      gcc_assert (atomic_code->ext.omp_clauses->capture
+			  && code->block->block->next->op == EXEC_ASSIGN);
+	      else_branch = true;
+	      aop = OMP_ATOMIC_CAPTURE_OLD;
+	      capture_expr1 = code->block->block->next->expr1;
+	      capture_expr2 = code->block->block->next->expr2;
+	    }
+	  else if (atomic_code->ext.omp_clauses->capture)
+	    {
+	      gcc_assert (code->next->op == EXEC_ASSIGN);
+	      aop = OMP_ATOMIC_CAPTURE_NEW;
+	      capture_expr1 = code->next->expr1;
+	      capture_expr2 = code->next->expr2;
+	    }
+	}
+      else
+	{
+	  gcc_assert (atomic_code->ext.omp_clauses->capture
+		      && code->op == EXEC_ASSIGN
+		      && code->next->op == EXEC_IF);
+	  aop = OMP_ATOMIC_CAPTURE_OLD;
+	  capture_expr1 = code->expr1;
+	  capture_expr2 = code->expr2;
+	  expr1 = code->next->block->next->expr1;
+	  expr2 = code->next->block->next->expr2;
+	  comp_expr = code->next->block->expr1;
+	}
+      gfc_init_se (&lse, NULL);
+      gfc_conv_expr (&lse, comp_expr->value.op.op2);
+      gfc_add_block_to_block (&block, &lse.pre);
+      compare = lse.expr;
+      var = expr1->symtree->n.sym;
+    }
+  else
+    {
+      gcc_assert (code->op == EXEC_ASSIGN);
+      expr1 = code->expr1;
+      expr2 = code->expr2;
+      if (atomic_code->ext.omp_clauses->capture
+	  && (expr2->expr_type == EXPR_VARIABLE
+	      || (expr2->expr_type == EXPR_FUNCTION
+		  && expr2->value.function.isym
+		  && expr2->value.function.isym->id == GFC_ISYM_CONVERSION
+		  && (expr2->value.function.actual->expr->expr_type
+		      == EXPR_VARIABLE))))
+	{
+	  capture_expr1 = expr1;
+	  capture_expr2 = expr2;
+	  expr1 = code->next->expr1;
+	  expr2 = code->next->expr2;
+	  aop = OMP_ATOMIC_CAPTURE_OLD;
+	}
+      else if (atomic_code->ext.omp_clauses->capture)
+	{
+	  aop = OMP_ATOMIC_CAPTURE_NEW;
+	  capture_expr1 = code->next->expr1;
+	  capture_expr2 = code->next->expr2;
+	}
+      var = expr1->symtree->n.sym;
+    }
 
   gfc_init_se (&lse, NULL);
   gfc_init_se (&rse, NULL);
   gfc_init_se (&vse, NULL);
   gfc_start_block (&block);
 
-  expr2 = code->expr2;
   if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        != GFC_OMP_ATOMIC_WRITE)
       && expr2->expr_type == EXPR_FUNCTION
@@ -4536,7 +4604,7 @@ gfc_trans_omp_atomic (gfc_code *code)
   if ((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
       == GFC_OMP_ATOMIC_READ)
     {
-      gfc_conv_expr (&vse, code->expr1);
+      gfc_conv_expr (&vse, expr1);
       gfc_add_block_to_block (&block, &vse.pre);
 
       gfc_conv_expr (&lse, expr2);
@@ -4554,36 +4622,32 @@ gfc_trans_omp_atomic (gfc_code *code)
 
       return gfc_finish_block (&block);
     }
-  if (atomic_code->ext.omp_clauses->capture)
-    {
-      aop = OMP_ATOMIC_CAPTURE_NEW;
-      if (expr2->expr_type == EXPR_VARIABLE)
-	{
-	  aop = OMP_ATOMIC_CAPTURE_OLD;
-	  gfc_conv_expr (&vse, code->expr1);
-	  gfc_add_block_to_block (&block, &vse.pre);
 
-	  gfc_conv_expr (&lse, expr2);
-	  gfc_add_block_to_block (&block, &lse.pre);
-	  gfc_init_se (&lse, NULL);
-	  code = code->next;
-	  var = code->expr1->symtree->n.sym;
-	  expr2 = code->expr2;
-	  if (expr2->expr_type == EXPR_FUNCTION
-	      && expr2->value.function.isym
-	      && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
-	    expr2 = expr2->value.function.actual->expr;
-	}
+  if (capture_expr2
+      && capture_expr2->expr_type == EXPR_FUNCTION
+      && capture_expr2->value.function.isym
+      && capture_expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
+    capture_expr2 = capture_expr2->value.function.actual->expr;
+  gcc_assert (!capture_expr2 || capture_expr2->expr_type == EXPR_VARIABLE);
+
+  if (aop == OMP_ATOMIC_CAPTURE_OLD)
+    {
+      gfc_conv_expr (&vse, capture_expr1);
+      gfc_add_block_to_block (&block, &vse.pre);
+      gfc_conv_expr (&lse, capture_expr2);
+      gfc_add_block_to_block (&block, &lse.pre);
+      gfc_init_se (&lse, NULL);
     }
 
-  gfc_conv_expr (&lse, code->expr1);
+  gfc_conv_expr (&lse, expr1);
   gfc_add_block_to_block (&block, &lse.pre);
   type = TREE_TYPE (lse.expr);
   lhsaddr = gfc_build_addr_expr (NULL, lse.expr);
 
   if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        == GFC_OMP_ATOMIC_WRITE)
-      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP))
+      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP)
+      || compare)
     {
       gfc_conv_expr (&rse, expr2);
       gfc_add_block_to_block (&block, &rse.pre);
@@ -4675,6 +4739,10 @@ gfc_trans_omp_atomic (gfc_code *code)
 	  gcc_unreachable ();
 	}
       e = expr2->value.function.actual->expr;
+      if (e->expr_type == EXPR_FUNCTION
+	  && e->value.function.isym
+	  && e->value.function.isym->id == GFC_ISYM_CONVERSION)
+	e = e->value.function.actual->expr;
       gcc_assert (e->expr_type == EXPR_VARIABLE
 		  && e->symtree != NULL
 		  && e->symtree->n.sym == var);
@@ -4717,11 +4785,27 @@ gfc_trans_omp_atomic (gfc_code *code)
 			NULL_TREE, NULL_TREE);
     }
 
-  rhs = gfc_evaluate_now (rse.expr, &block);
+  if (compare)
+    {
+      tree var = create_tmp_var_raw (TREE_TYPE (lhsaddr));
+      DECL_CONTEXT (var) = current_function_decl;
+      lhsaddr = build4 (TARGET_EXPR, TREE_TYPE (lhsaddr), var, lhsaddr, NULL,
+			NULL);
+      lse.expr = build_fold_indirect_ref_loc (input_location, lhsaddr);
+      compare = convert (TREE_TYPE (lse.expr), compare);
+      compare = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				 lse.expr, compare);
+    }
+
+  if (expr2->expr_type == EXPR_VARIABLE || compare)
+    rhs = rse.expr;
+  else
+    rhs = gfc_evaluate_now (rse.expr, &block);
 
   if (((atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_MASK)
        == GFC_OMP_ATOMIC_WRITE)
-      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP))
+      || (atomic_code->ext.omp_clauses->atomic_op & GFC_OMP_ATOMIC_SWAP)
+      || compare)
     x = rhs;
   else
     {
@@ -4741,6 +4825,30 @@ gfc_trans_omp_atomic (gfc_code *code)
   gfc_add_block_to_block (&block, &lse.pre);
   gfc_add_block_to_block (&block, &rse.pre);
 
+  if (aop == OMP_ATOMIC_CAPTURE_NEW)
+    {
+      gfc_conv_expr (&vse, capture_expr1);
+      gfc_add_block_to_block (&block, &vse.pre);
+      gfc_add_block_to_block (&block, &lse.pre);
+    }
+
+  if (compare && else_branch)
+    {
+      tree var2 = create_tmp_var_raw (boolean_type_node);
+      DECL_CONTEXT (var2) = current_function_decl;
+      comp_tgt = build4 (TARGET_EXPR, boolean_type_node, var2,
+			 boolean_false_node, NULL, NULL);
+      compare = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (var2),
+				 var2, compare);
+      TREE_OPERAND (compare, 0) = comp_tgt;
+      compare = omit_one_operand_loc (input_location, boolean_type_node,
+				      compare, comp_tgt);
+    }
+
+  if (compare)
+    x = build3_loc (input_location, COND_EXPR, type, compare,
+		    convert (type, x), lse.expr);
+
   if (aop == OMP_ATOMIC)
     {
       x = build2_v (OMP_ATOMIC, lhsaddr, convert (type, x));
@@ -4750,28 +4858,31 @@ gfc_trans_omp_atomic (gfc_code *code)
     }
   else
     {
-      if (aop == OMP_ATOMIC_CAPTURE_NEW)
-	{
-	  code = code->next;
-	  expr2 = code->expr2;
-	  if (expr2->expr_type == EXPR_FUNCTION
-	      && expr2->value.function.isym
-	      && expr2->value.function.isym->id == GFC_ISYM_CONVERSION)
-	    expr2 = expr2->value.function.actual->expr;
-
-	  gcc_assert (expr2->expr_type == EXPR_VARIABLE);
-	  gfc_conv_expr (&vse, code->expr1);
-	  gfc_add_block_to_block (&block, &vse.pre);
-
-	  gfc_init_se (&lse, NULL);
-	  gfc_conv_expr (&lse, expr2);
-	  gfc_add_block_to_block (&block, &lse.pre);
-	}
       x = build2 (aop, type, lhsaddr, convert (type, x));
       OMP_ATOMIC_MEMORY_ORDER (x) = mo;
       OMP_ATOMIC_WEAK (x) = atomic_code->ext.omp_clauses->weak;
-      x = convert (TREE_TYPE (vse.expr), x);
-      gfc_add_modify (&block, vse.expr, x);
+      if (compare && else_branch)
+	{
+	  tree vtmp = create_tmp_var_raw (TREE_TYPE (x));
+	  DECL_CONTEXT (vtmp) = current_function_decl;
+	  x = fold_build2_loc (input_location, MODIFY_EXPR,
+			       TREE_TYPE (vtmp), vtmp, x);
+	  vtmp = build4 (TARGET_EXPR, TREE_TYPE (vtmp), vtmp,
+			 build_zero_cst (TREE_TYPE (vtmp)), NULL, NULL);
+	  TREE_OPERAND (x, 0) = vtmp;
+	  tree x2 = convert (TREE_TYPE (vse.expr), vtmp);
+	  x2 = fold_build2_loc (input_location, MODIFY_EXPR,
+			       TREE_TYPE (vse.expr), vse.expr, x2);
+	  x2 = build3_loc (input_location, COND_EXPR, void_type_node, comp_tgt,
+			   void_node, x2);
+	  x = omit_one_operand_loc (input_location, TREE_TYPE (x2), x2, x);
+	  gfc_add_expr_to_block (&block, x);
+	}
+      else
+	{
+	  x = convert (TREE_TYPE (vse.expr), x);
+	  gfc_add_modify (&block, vse.expr, x);
+	}
     }
 
   return gfc_finish_block (&block);
