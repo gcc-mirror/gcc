@@ -11394,6 +11394,13 @@ rs6000_is_valid_mask (rtx mask, int *b, int *e, machine_mode mode)
   return true;
 }
 
+bool
+rs6000_is_valid_rotate_dot_mask (rtx mask, machine_mode mode)
+{
+  int nb, ne;
+  return rs6000_is_valid_mask (mask, &nb, &ne, mode) && nb >= ne && ne > 0;
+}
+
 /* Return whether MASK (a CONST_INT) is a valid mask for any rlwinm, rldicl,
    or rldicr instruction, to implement an AND with it in mode MODE.  */
 
