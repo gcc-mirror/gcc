@@ -18853,6 +18853,7 @@ and the features that they enable by default:
 @item @samp{armv8.5-a} @tab Armv8.5-A @tab @samp{armv8.4-a}, @samp{+sb}, @samp{+ssbs}, @samp{+predres}
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+ls64}
+@item @samp{armv8.8-a} @tab Armv8.8-a @tab @samp{armv8.7-a}, @samp{+mops}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
@@ -19146,7 +19147,8 @@ Enable the 64-byte atomic load and store instructions for accelerators.
 This option is enabled by default for @option{-march=armv8.7-a}.
 @item mops
 Enable the instructions to accelerate memory operations like @code{memcpy},
-@code{memmove}, @code{memset}.
+@code{memmove}, @code{memset}.  This option is enabled by default for
+@option{-march=armv8.8-a}
 @item flagm
 Enable the Flag Manipulation instructions Extension.
 @item pauth

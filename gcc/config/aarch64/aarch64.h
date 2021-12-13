@@ -243,6 +243,9 @@ extern unsigned aarch64_architecture_version;
 /* Hardware memory operation instructions.  */
 #define AARCH64_FL_MOPS       (1ULL << 44)
 
+/* Armv8.8-a architecture extensions.  */
+#define AARCH64_FL_V8_8       (1ULL << 45)
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -269,6 +272,8 @@ extern unsigned aarch64_architecture_version;
    | AARCH64_FL_I8MM | AARCH64_FL_BF16)
 #define AARCH64_FL_FOR_ARCH8_7			\
   (AARCH64_FL_FOR_ARCH8_6 | AARCH64_FL_V8_7 | AARCH64_FL_LS64)
+#define AARCH64_FL_FOR_ARCH8_8			\
+  (AARCH64_FL_FOR_ARCH8_7 | AARCH64_FL_V8_8 | AARCH64_FL_MOPS)
 
 #define AARCH64_FL_FOR_ARCH8_R     \
   (AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_V8_R)
