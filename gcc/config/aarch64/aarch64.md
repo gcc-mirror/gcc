@@ -204,6 +204,7 @@
     UNSPEC_SABDL2
     UNSPEC_SADALP
     UNSPEC_SCVTF
+    UNSPEC_SETMEM
     UNSPEC_SISD_NEG
     UNSPEC_SISD_SSHL
     UNSPEC_SISD_USHL
@@ -1650,18 +1651,29 @@
 }
 )
 
+(define_insn "aarch64_setmemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(match_operand:QI 1 "aarch64_reg_or_zero" "rZ")
+                    (match_dup 2)] UNSPEC_SETMEM))])]
+ "TARGET_MOPS"
+ "setp\t[%x0]!, %x2!, %x1\;setm\t[%x0]!, %x2!, %x1\;sete\t[%x0]!, %x2!, %x1"
+ [(set_attr "length" "12")]
+)
+
 ;; 0 is dst
 ;; 1 is val
 ;; 2 is size of copy in bytes
 ;; 3 is alignment
-
 (define_expand "setmemdi"
   [(set (match_operand:BLK 0 "memory_operand")     ;; Dest
         (match_operand:QI  2 "nonmemory_operand")) ;; Value
-   (use (match_operand:DI  1 "immediate_operand")) ;; Length
+   (use (match_operand:DI  1 "general_operand")) ;; Length
    (match_operand          3 "immediate_operand")] ;; Align
-  "TARGET_SIMD"
-{
+ "TARGET_SIMD || TARGET_MOPS"
+ {
   if (aarch64_expand_setmem (operands))
     DONE;
 
