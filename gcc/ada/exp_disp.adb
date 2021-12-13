@@ -6379,9 +6379,7 @@ package body Exp_Disp is
                New_List (New_Occurrence_Of (DT_Ptr, Loc))));
       end if;
 
-      if not Is_Empty_List (Elab_Code) then
-         Append_List_To (Result, Elab_Code);
-      end if;
+      Append_List_To (Result, Elab_Code);
 
       --  Populate the two auxiliary tables used for dispatching asynchronous,
       --  conditional and timed selects for synchronized types that implement

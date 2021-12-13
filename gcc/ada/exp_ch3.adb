@@ -2885,9 +2885,7 @@ package body Exp_Ch3 is
                   Fixed_Comps    => False,
                   Variable_Comps => True);
 
-               if Is_Non_Empty_List (Init_Tags_List) then
-                  Append_List_To (Body_Stmts, Init_Tags_List);
-               end if;
+               Append_List_To (Body_Stmts, Init_Tags_List);
             end if;
          end if;
 
