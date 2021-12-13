@@ -19144,6 +19144,9 @@ prior to Armv8.2-A is not supported.
 @item ls64
 Enable the 64-byte atomic load and store instructions for accelerators.
 This option is enabled by default for @option{-march=armv8.7-a}.
+@item mops
+Enable the instructions to accelerate memory operations like @code{memcpy},
+@code{memmove}, @code{memset}.
 @item flagm
 Enable the Flag Manipulation instructions Extension.
 @item pauth

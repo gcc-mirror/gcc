@@ -235,4 +235,7 @@ AARCH64_OPT_EXTENSION("pauth", AARCH64_FL_PAUTH, 0, 0, false, "paca pacg")
 /* Enabling/Disabling "ls64" only changes "ls64".  */
 AARCH64_OPT_EXTENSION("ls64", AARCH64_FL_LS64, 0, 0, false, "")
 
+/* Enabling/disabling "mops" only changes "mops".  */
+AARCH64_OPT_EXTENSION("mops", AARCH64_FL_MOPS, 0, 0, false, "")
+
 #undef AARCH64_OPT_EXTENSION

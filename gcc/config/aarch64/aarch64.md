@@ -143,6 +143,7 @@
     UNSPEC_AUTIBSP
     UNSPEC_CALLEE_ABI
     UNSPEC_CASESI
+    UNSPEC_CPYMEM
     UNSPEC_CRC32B
     UNSPEC_CRC32CB
     UNSPEC_CRC32CH
@@ -1572,6 +1573,18 @@
   }
 )
 
+(define_insn "aarch64_cpymemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_CPYMEM))])]
+ "TARGET_MOPS"
+ "cpyfp\t[%x0]!, [%x1]!, %x2!\;cpyfm\t[%x0]!, [%x1]!, %x2!\;cpyfe\t[%x0]!, [%x1]!, %x2!"
+ [(set_attr "length" "12")]
+)
+
 ;; 0 is dst
 ;; 1 is src
 ;; 2 is size of copy in bytes
@@ -1580,9 +1593,9 @@
 (define_expand "cpymemdi"
   [(match_operand:BLK 0 "memory_operand")
    (match_operand:BLK 1 "memory_operand")
-   (match_operand:DI 2 "immediate_operand")
+   (match_operand:DI 2 "general_operand")
    (match_operand:DI 3 "immediate_operand")]
-   "!STRICT_ALIGNMENT"
+   "!STRICT_ALIGNMENT || TARGET_MOPS"
 {
   if (aarch64_expand_cpymem (operands))
     DONE;

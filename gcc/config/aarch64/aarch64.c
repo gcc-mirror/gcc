@@ -23568,6 +23568,28 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
   *dst = aarch64_progress_pointer (*dst);
 }
 
+/* Expand a cpymem using the MOPS extension.  OPERANDS are taken
+   from the cpymem pattern.  Return true iff we succeeded.  */
+static bool
+aarch64_expand_cpymem_mops (rtx *operands)
+{
+  if (!TARGET_MOPS)
+    return false;
+  rtx addr_dst = XEXP (operands[0], 0);
+  rtx addr_src = XEXP (operands[1], 0);
+  rtx sz_reg = operands[2];
+
+  if (!REG_P (sz_reg))
+    sz_reg = force_reg (DImode, sz_reg);
+  if (!REG_P (addr_dst))
+    addr_dst = force_reg (DImode, addr_dst);
+  if (!REG_P (addr_src))
+    addr_src = force_reg (DImode, addr_src);
+  emit_insn (gen_aarch64_cpymemdi (addr_dst, addr_src, sz_reg));
+
+  return true;
+}
+
 /* Expand cpymem, as if from a __builtin_memcpy.  Return true if
    we succeed, otherwise return false, indicating that a libcall to
    memcpy should be emitted.  */
@@ -23581,19 +23603,25 @@ aarch64_expand_cpymem (rtx *operands)
   rtx base;
   machine_mode cur_mode = BLKmode;
 
-  /* Only expand fixed-size copies.  */
+  /* Variable-sized memcpy can go through the MOPS expansion if available.  */
   if (!CONST_INT_P (operands[2]))
-    return false;
+    return aarch64_expand_cpymem_mops (operands);
 
   unsigned HOST_WIDE_INT size = INTVAL (operands[2]);
 
-  /* Try to inline up to 256 bytes.  */
-  unsigned HOST_WIDE_INT max_copy_size = 256;
+  /* Try to inline up to 256 bytes or use the MOPS threshold if available.  */
+  unsigned HOST_WIDE_INT max_copy_size
+    = TARGET_MOPS ? aarch64_mops_memcpy_size_threshold : 256;
 
   bool size_p = optimize_function_for_size_p (cfun);
 
+  /* Large constant-sized cpymem should go through MOPS when possible.
+     It should be a win even for size optimization in the general case.
+     For speed optimization the choice between MOPS and the SIMD sequence
+     depends on the size of the copy, rather than number of instructions,
+     alignment etc.  */
   if (size > max_copy_size)
-    return false;
+    return aarch64_expand_cpymem_mops (operands);
 
   int copy_bits = 256;
 
@@ -23643,9 +23671,9 @@ aarch64_expand_cpymem (rtx *operands)
       nops += 2;
       n -= mode_bits;
 
-      /* Emit trailing copies using overlapping unaligned accesses - this is
-	 smaller and faster.  */
-      if (n > 0 && n < copy_bits / 2)
+      /* Emit trailing copies using overlapping unaligned accesses
+	(when !STRICT_ALIGNMENT) - this is smaller and faster.  */
+      if (n > 0 && n < copy_bits / 2 && !STRICT_ALIGNMENT)
 	{
 	  machine_mode next_mode = smallest_mode_for_size (n, MODE_INT);
 	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
@@ -23657,9 +23685,25 @@ aarch64_expand_cpymem (rtx *operands)
     }
   rtx_insn *seq = get_insns ();
   end_sequence ();
+  /* MOPS sequence requires 3 instructions for the memory copying + 1 to move
+     the constant size into a register.  */
+  unsigned mops_cost = 3 + 1;
+
+  /* If MOPS is available at this point we don't consider the libcall as it's
+     not a win even on code size.  At this point only consider MOPS if
+     optimizing for size.  For speed optimizations we will have chosen between
+     the two based on copy size already.  */
+  if (TARGET_MOPS)
+    {
+      if (size_p && mops_cost < nops)
+	return aarch64_expand_cpymem_mops (operands);
+      emit_insn (seq);
+      return true;
+    }
 
   /* A memcpy libcall in the worst case takes 3 instructions to prepare the
-     arguments + 1 for the call.  */
+     arguments + 1 for the call.  When MOPS is not available and we're
+     optimizing for size a libcall may be preferable.  */
   unsigned libcall_cost = 4;
   if (size_p && libcall_cost < nops)
     return false;
