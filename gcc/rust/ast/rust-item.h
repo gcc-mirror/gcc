@@ -1975,15 +1975,6 @@ public:
   std::vector<StructField> &get_fields () { return fields; }
   const std::vector<StructField> &get_fields () const { return fields; }
 
-  void iterate (std::function<bool (StructField &)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field))
-	  return;
-      }
-  }
-
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

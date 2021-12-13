@@ -308,11 +308,9 @@ public:
     if (struct_decl.has_where_clause ())
       ResolveWhereClause::Resolve (struct_decl.get_where_clause ());
 
-    struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
+    for (AST::StructField &field : struct_decl.get_fields ())
       ResolveType::go (field.get_field_type ().get (),
 		       struct_decl.get_node_id ());
-      return true;
-    });
 
     resolver->get_type_scope ().pop ();
   }
