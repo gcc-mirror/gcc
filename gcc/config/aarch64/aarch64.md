@@ -189,6 +189,7 @@
     UNSPEC_LD3_LANE
     UNSPEC_LD4_LANE
     UNSPEC_MB
+    UNSPEC_MOVMEM
     UNSPEC_NOP
     UNSPEC_PACIA1716
     UNSPEC_PACIB1716
@@ -1600,6 +1601,52 @@
   if (aarch64_expand_cpymem (operands))
     DONE;
   FAIL;
+}
+)
+
+(define_insn "aarch64_movmemdi"
+  [(parallel [
+   (set (match_operand:DI 2 "register_operand" "+&r") (const_int 0))
+   (clobber (match_operand:DI 0 "register_operand" "+&r"))
+   (clobber (match_operand:DI 1 "register_operand" "+&r"))
+   (set (mem:BLK (match_dup 0))
+        (unspec:BLK [(mem:BLK (match_dup 1)) (match_dup 2)] UNSPEC_MOVMEM))])]
+ "TARGET_MOPS"
+ "cpyp\t[%x0]!, [%x1]!, %x2!\;cpym\t[%x0]!, [%x1]!, %x2!\;cpye\t[%x0]!, [%x1]!, %x2!"
+ [(set_attr "length" "12")]
+)
+
+;; 0 is dst
+;; 1 is src
+;; 2 is size of copy in bytes
+;; 3 is alignment
+
+(define_expand "movmemdi"
+  [(match_operand:BLK 0 "memory_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:DI 2 "general_operand")
+   (match_operand:DI 3 "immediate_operand")]
+   "TARGET_MOPS"
+{
+   rtx sz_reg = operands[2];
+   /* For constant-sized memmoves check the threshold.
+      FIXME: We should add a non-MOPS memmove expansion for smaller,
+      constant-sized memmove to avoid going to a libcall.  */
+   if (CONST_INT_P (sz_reg)
+       && INTVAL (sz_reg) < aarch64_mops_memmove_size_threshold)
+     FAIL;
+
+   rtx addr_dst = XEXP (operands[0], 0);
+   rtx addr_src = XEXP (operands[1], 0);
+
+   if (!REG_P (sz_reg))
+     sz_reg = force_reg (DImode, sz_reg);
+   if (!REG_P (addr_dst))
+     addr_dst = force_reg (DImode, addr_dst);
+   if (!REG_P (addr_src))
+     addr_src = force_reg (DImode, addr_src);
+   emit_insn (gen_aarch64_movmemdi (addr_dst, addr_src, sz_reg));
+   DONE;
 }
 )
 
