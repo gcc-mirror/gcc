@@ -325,28 +325,28 @@ public:
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     std::vector<HIR::StructField> variants;
-    union_decl.iterate ([&] (AST::StructField &variant) mutable -> bool {
-      HIR::Visibility vis = HIR::Visibility::create_public ();
-      HIR::Type *type
-	= ASTLoweringType::translate (variant.get_field_type ().get ());
+    for (AST::StructField &variant : union_decl.get_variants ())
+      {
+	HIR::Visibility vis = HIR::Visibility::create_public ();
+	HIR::Type *type
+	  = ASTLoweringType::translate (variant.get_field_type ().get ());
 
-      auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, variant.get_node_id (),
-				     mappings->get_next_hir_id (crate_num),
-				     mappings->get_next_localdef_id (
-				       crate_num));
+	auto crate_num = mappings->get_current_crate ();
+	Analysis::NodeMapping mapping (crate_num, variant.get_node_id (),
+				       mappings->get_next_hir_id (crate_num),
+				       mappings->get_next_localdef_id (
+					 crate_num));
 
-      HIR::StructField translated_variant (mapping, variant.get_field_name (),
-					   std::unique_ptr<HIR::Type> (type),
-					   vis, variant.get_locus (),
-					   variant.get_outer_attrs ());
+	HIR::StructField translated_variant (mapping, variant.get_field_name (),
+					     std::unique_ptr<HIR::Type> (type),
+					     vis, variant.get_locus (),
+					     variant.get_outer_attrs ());
 
-      if (struct_field_name_exists (variants, translated_variant))
-	return false;
+	if (struct_field_name_exists (variants, translated_variant))
+	  break;
 
-      variants.push_back (std::move (translated_variant));
-      return true;
-    });
+	variants.push_back (std::move (translated_variant));
+      }
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, union_decl.get_node_id (),

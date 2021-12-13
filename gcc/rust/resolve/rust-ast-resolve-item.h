@@ -331,11 +331,9 @@ public:
     if (union_decl.has_where_clause ())
       ResolveWhereClause::Resolve (union_decl.get_where_clause ());
 
-    union_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
+    for (AST::StructField &field : union_decl.get_variants ())
       ResolveType::go (field.get_field_type ().get (),
 		       union_decl.get_node_id ());
-      return true;
-    });
 
     resolver->get_type_scope ().pop ();
   }
