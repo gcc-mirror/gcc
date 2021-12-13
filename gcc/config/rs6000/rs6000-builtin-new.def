@@ -1204,24 +1204,6 @@
   const vull __builtin_altivec_vandc_v2di_uns (vull, vull);
     VANDC_V2DI_UNS andcv2di3 {}
 
-  const vsll __builtin_altivec_vcmpequd (vull, vull);
-    VCMPEQUD vector_eqv2di {}
-
-  const int __builtin_altivec_vcmpequd_p (int, vsll, vsll);
-    VCMPEQUD_P vector_eq_v2di_p {pred}
-
-  const vsll __builtin_altivec_vcmpgtsd (vsll, vsll);
-    VCMPGTSD vector_gtv2di {}
-
-  const int __builtin_altivec_vcmpgtsd_p (int, vsll, vsll);
-    VCMPGTSD_P vector_gt_v2di_p {pred}
-
-  const vsll __builtin_altivec_vcmpgtud (vull, vull);
-    VCMPGTUD vector_gtuv2di {}
-
-  const int __builtin_altivec_vcmpgtud_p (int, vsll, vsll);
-    VCMPGTUD_P vector_gtu_v2di_p {pred}
-
   const vd __builtin_altivec_vnor_v2df (vd, vd);
     VNOR_V2DF norv2df3 {}
 
@@ -2224,6 +2206,24 @@
 
   const vsc __builtin_altivec_vbpermq2 (vsc, vsc);
     VBPERMQ2 altivec_vbpermq2 {}
+
+  const vsll __builtin_altivec_vcmpequd (vull, vull);
+    VCMPEQUD vector_eqv2di {}
+
+  const int __builtin_altivec_vcmpequd_p (int, vsll, vsll);
+    VCMPEQUD_P vector_eq_v2di_p {pred}
+
+  const vsll __builtin_altivec_vcmpgtsd (vsll, vsll);
+    VCMPGTSD vector_gtv2di {}
+
+  const int __builtin_altivec_vcmpgtsd_p (int, vsll, vsll);
+    VCMPGTSD_P vector_gt_v2di_p {pred}
+
+  const vsll __builtin_altivec_vcmpgtud (vull, vull);
+    VCMPGTUD vector_gtuv2di {}
+
+  const int __builtin_altivec_vcmpgtud_p (int, vsll, vsll);
+    VCMPGTUD_P vector_gtu_v2di_p {pred}
 
   const vsll __builtin_altivec_vmaxsd (vsll, vsll);
     VMAXSD smaxv2di3 {}
