@@ -3724,6 +3724,11 @@ recording::lvalue::set_tls_model (enum gcc_jit_tls_model model)
     m_tls_model = model;
 }
 
+void recording::lvalue::set_link_section (const char *name)
+{
+  m_link_section = new_string (name);
+}
+
 /* The implementation of class gcc::jit::recording::param.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -4568,8 +4573,8 @@ static const enum tls_model tls_models[] = {
 void
 recording::global::replay_into (replayer *r)
 {
-    playback::lvalue *global = m_initializer
-    ? r->new_global_initialized (playback_location (r, m_loc),
+  playback::lvalue *global = m_initializer
+  ? r->new_global_initialized (playback_location (r, m_loc),
 				 m_kind,
 				 m_type->playback_type (),
 				 m_type->dereference ()->get_size (),
@@ -4577,12 +4582,16 @@ recording::global::replay_into (replayer *r)
 				 / m_type->dereference ()->get_size (),
 				 m_initializer,
 				 playback_string (m_name))
-    : r->new_global (playback_location (r, m_loc),
+  : r->new_global (playback_location (r, m_loc),
 		     m_kind,
 		     m_type->playback_type (),
 		     playback_string (m_name));
+
   if (m_tls_model != GCC_JIT_TLS_MODEL_NONE)
     global->set_tls_model (recording::tls_models[m_tls_model]);
+
+  if (m_link_section != NULL)
+    global->set_link_section (m_link_section->c_str ());
 
   set_playback_obj (global);
 }
@@ -4712,6 +4721,12 @@ recording::global::write_reproducer (reproducer &r)
 	     "                                %s); /* enum gcc_jit_tls_model model */\n",
 	     id,
 	     tls_model_enum_strings[m_tls_model]);
+
+  if (m_link_section != NULL)
+    r.write ("  gcc_jit_lvalue_set_link_section (%s, /* gcc_jit_lvalue *lvalue */\n"
+	"                                  \"%s\"); /* */\n",
+     id,
+     m_link_section->c_str ());
 
   if (m_initializer)
     switch (m_type->dereference ()->get_size ())

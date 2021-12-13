@@ -1,3 +1,15 @@
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* error.c: Define INCLUDE_MEMORY instead of
+	INCLUDE_UNIQUE_PTR.
+	* lex.c: Likewise.
+	* name-lookup.c: Likewise.
+	(class namespace_limit_reached): Use std::unique_ptr instead of
+	gnu::unique_ptr.
+	(suggest_alternatives_for): Use std::move instead of gnu::move.
+	(suggest_alternatives_in_other_namespaces): Likewise.
+	* parser.c: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.
+
 2021-12-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/103401

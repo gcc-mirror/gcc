@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_UNIQUE_PTR
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -6340,7 +6340,7 @@ class namespace_limit_reached : public deferred_diagnostic
 {
  public:
   namespace_limit_reached (location_t loc, unsigned limit, tree name,
-			   gnu::unique_ptr<deferred_diagnostic> wrapped)
+			   std::unique_ptr<deferred_diagnostic> wrapped)
   : deferred_diagnostic (loc),
     m_limit (limit), m_name (name),
     m_wrapped (move (wrapped))
@@ -6360,7 +6360,7 @@ class namespace_limit_reached : public deferred_diagnostic
  private:
   unsigned m_limit;
   tree m_name;
-  gnu::unique_ptr<deferred_diagnostic> m_wrapped;
+  std::unique_ptr<deferred_diagnostic> m_wrapped;
 };
 
 /* Subclass of deferred_diagnostic, for use when issuing a single suggestion.
@@ -6604,7 +6604,7 @@ suggest_alternatives_for (location_t location, tree name,
   if (!result)
     result = suggest_alternatives_for_1 (location, name, suggest_misspellings);
 
-  return ns_hints.maybe_decorate_with_limit (gnu::move (result));
+  return ns_hints.maybe_decorate_with_limit (std::move (result));
 }
 
 /* The second half of suggest_alternatives_for, for when no exact matches
@@ -6649,7 +6649,7 @@ suggest_alternatives_in_other_namespaces (location_t location, tree name)
 
   name_hint result = ns_hints.convert_candidates_to_name_hint ();
 
-  return ns_hints.maybe_decorate_with_limit (gnu::move (result));
+  return ns_hints.maybe_decorate_with_limit (std::move (result));
 }
 
 /* A well-known name within the C++ standard library, returned by

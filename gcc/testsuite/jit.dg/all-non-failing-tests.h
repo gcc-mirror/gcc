@@ -209,6 +209,9 @@
 #undef create_code
 #undef verify_code
 
+/* test-link-section-assembler.c: This can't be in the testcases array as it
+   doesn't have a verify_code implementation.  */
+
 /* test-linked-list.c */
 #define create_code create_code_linked_list
 #define verify_code verify_code_linked_list

@@ -681,6 +681,12 @@ public:
     set_decl_tls_model (as_tree (), tls_model);
   }
 
+  void
+  set_link_section (const char* name)
+  {
+    set_decl_section_name (as_tree (), name);
+  }
+
 private:
   bool mark_addressable (location *loc);
 };

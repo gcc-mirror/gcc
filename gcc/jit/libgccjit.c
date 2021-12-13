@@ -2238,6 +2238,19 @@ gcc_jit_lvalue_set_tls_model (gcc_jit_lvalue *lvalue,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::lvalue::set_link_section method in jit-recording.c.  */
+
+void
+gcc_jit_lvalue_set_link_section (gcc_jit_lvalue *lvalue,
+			    const char *section_name)
+{
+  RETURN_IF_FAIL (section_name, NULL, NULL, "NULL section_name");
+  lvalue->set_link_section (section_name);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::function::new_local method in jit-recording.c.  */
 
 gcc_jit_lvalue *

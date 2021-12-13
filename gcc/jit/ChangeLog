@@ -1,5 +1,21 @@
 2021-12-12  Antoni Boucher  <bouanto@zoho.com>
 
+	PR target/100688
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_18): New ABI
+	tag.
+	* docs/topics/expressions.rst: Add documentation for the
+	function gcc_jit_lvalue_set_link_section.
+	* jit-playback.h: New function (set_link_section).
+	* jit-recording.c: New function (set_link_section) and
+	support for setting the link section.
+	* jit-recording.h: New function (set_link_section) and new
+	field m_link_section.
+	* libgccjit.c: New function (gcc_jit_lvalue_set_link_section).
+	* libgccjit.h: New function (gcc_jit_lvalue_set_link_section).
+	* libgccjit.map (LIBGCCJIT_ABI_18): New ABI tag.
+
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
 	PR target/95415
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_17): New ABI
 	tag.
