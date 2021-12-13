@@ -999,9 +999,11 @@ modref_access_analysis::record_access (modref_records *tt,
 				       ao_ref *ref,
 				       modref_access_node &a)
 {
-  alias_set_type base_set = !flag_strict_aliasing ? 0
+  alias_set_type base_set = !flag_strict_aliasing
+			    || !flag_ipa_strict_aliasing ? 0
 			    : ao_ref_base_alias_set (ref);
-  alias_set_type ref_set = !flag_strict_aliasing ? 0
+  alias_set_type ref_set = !flag_strict_aliasing
+			   || !flag_ipa_strict_aliasing ? 0
 			    : (ao_ref_alias_set (ref));
   if (dump_file)
     {
@@ -1021,7 +1023,7 @@ modref_access_analysis::record_access_lto (modref_records_lto *tt, ao_ref *ref,
   /* get_alias_set sometimes use different type to compute the alias set
      than TREE_TYPE (base).  Do same adjustments.  */
   tree base_type = NULL_TREE, ref_type = NULL_TREE;
-  if (flag_strict_aliasing)
+  if (flag_strict_aliasing && flag_ipa_strict_aliasing)
     {
       tree base;
 

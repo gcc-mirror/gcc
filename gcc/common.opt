@@ -1945,6 +1945,10 @@ fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority]	Set the used IRA algorithm.
 
+fipa-strict-aliasing
+Common Var(flag_ipa_strict_aliasing) Init(1) Optimization
+Assume strict aliasing rules apply across (uninlined) function boundaries.
+
 Enum
 Name(ira_algorithm) Type(enum ira_algorithm) UnknownError(unknown IRA algorithm %qs)
 
