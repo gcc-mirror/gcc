@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    recognition code for Power targets, based on text files that
    describe the built-in functions and vector overloads:
 
-     rs6000-builtin-new.def     Table of built-in functions
+     rs6000-builtins.def        Table of built-in functions
      rs6000-overload.def        Table of overload functions
 
    Both files group similar functions together in "stanzas," as
@@ -126,7 +126,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The second line contains the <bif-id> that this particular instance of
    the overloaded function maps to.  It must match a token that appears in
-   rs6000-builtin-new.def.  Optionally, a second token may appear.  If only
+   rs6000-builtins.def.  Optionally, a second token may appear.  If only
    one token is on the line, it is also used to build the unique identifier
    for the overloaded function.  If a second token is present, the second
    token is used instead for this purpose.  This is necessary in cases
