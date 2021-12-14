@@ -45,6 +45,10 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 			 const Analysis::NodeMapping &mappings,
 			 Location expr_locus, bool is_qualified_path)
 {
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
+  rust_assert (ok);
+
   // need to look up the reference for this identifier
   NodeId ref_node_id = UNKNOWN_NODEID;
   if (ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
@@ -63,8 +67,44 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   // in that case the caller should attempt ResolvePathType::Compile
   if (ref_node_id == UNKNOWN_NODEID)
     {
-      rust_error_at (expr_locus, "unknown nodeid for path expr");
-      return ctx->get_backend ()->error_expression ();
+      // it might be an enum data-less enum variant
+      if (lookup->get_kind () != TyTy::TypeKind::ADT)
+	return ctx->get_backend ()->error_expression ();
+
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
+      if (!adt->is_enum ())
+	return ctx->get_backend ()->error_expression ();
+
+      HirId variant_id;
+      if (!ctx->get_tyctx ()->lookup_variant_definition (mappings.get_hirid (),
+							 &variant_id))
+	return ctx->get_backend ()->error_expression ();
+
+      int union_disriminator = -1;
+      TyTy::VariantDef *variant = nullptr;
+      if (!adt->lookup_variant_by_id (variant_id, &variant,
+				      &union_disriminator))
+	return ctx->get_backend ()->error_expression ();
+
+      // FIXME should really return error_mark_node and or rust_internal_error
+      // error_mark_node
+      rust_assert (variant->get_variant_type ()
+		   == TyTy::VariantDef::VariantType::NUM);
+
+      // we need the actual gcc type
+      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
+
+      // make the ctor for the union
+      mpz_t val;
+      mpz_init_set_ui (val, variant->get_discriminant ());
+      tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
+      tree qualifier
+	= double_int_to_tree (t, mpz_get_double_int (t, val, true));
+
+      return ctx->get_backend ()->constructor_expression (compiled_adt_type,
+							  true, {qualifier},
+							  union_disriminator,
+							  expr_locus);
     }
 
   HirId ref;
@@ -86,9 +126,6 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     return ctx->get_backend ()->var_expression (var, expr_locus);
 
   // it might be a function call
-  TyTy::BaseType *lookup = nullptr;
-  bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
-  rust_assert (ok);
   if (lookup->get_kind () == TyTy::TypeKind::FNDEF)
     {
       TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup);
@@ -102,7 +139,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
   // let the query system figure it out
   return query_compile (ref, lookup, final_segment, mappings, expr_locus,
 			is_qualified_path);
-}
+} // namespace Compile
 
 tree
 ResolvePathRef::query_compile (HirId ref, TyTy::BaseType *lookup,

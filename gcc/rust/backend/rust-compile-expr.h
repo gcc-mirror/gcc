@@ -100,8 +100,8 @@ public:
       }
 
     translated
-      = ctx->get_backend ()->constructor_expression (tuple_type, vals, -1,
-						     expr.get_locus ());
+      = ctx->get_backend ()->constructor_expression (tuple_type, false, vals,
+						     -1, expr.get_locus ());
   }
 
   void visit (HIR::ReturnExpr &expr) override
@@ -660,22 +660,84 @@ public:
 	return;
       }
 
-    tree type = TyTyResolveCompile::compile (ctx, tyty);
-    rust_assert (type != nullptr);
+    // it must be an ADT
+    rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
+    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
+
+    // what variant is it?
+    int union_disriminator = struct_expr.union_index;
+    TyTy::VariantDef *variant = nullptr;
+    if (!adt->is_enum ())
+      {
+	rust_assert (adt->number_of_variants () == 1);
+	variant = adt->get_variants ().at (0);
+      }
+    else
+      {
+	HirId variant_id;
+	bool ok = ctx->get_tyctx ()->lookup_variant_definition (
+	  struct_expr.get_struct_name ().get_mappings ().get_hirid (),
+	  &variant_id);
+	rust_assert (ok);
+
+	ok = adt->lookup_variant_by_id (variant_id, &variant,
+					&union_disriminator);
+	rust_assert (ok);
+      }
+
+    // compile it
+    tree compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
     // this assumes all fields are in order from type resolution and if a base
     // struct was specified those fields are filed via accesors
-    std::vector<tree> vals;
-    for (auto &field : struct_expr.get_fields ())
+    std::vector<tree> arguments;
+    for (size_t i = 0; i < struct_expr.get_fields ().size (); i++)
       {
-	tree expr = CompileStructExprField::Compile (field.get (), ctx);
-	vals.push_back (expr);
+	auto &argument = struct_expr.get_fields ().at (i);
+	auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
+
+	// assignments are coercion sites so lets convert the rvalue if
+	// necessary
+	auto respective_field = variant->get_field_at_index (i);
+	auto expected = respective_field->get_field_type ();
+
+	TyTy::BaseType *actual = nullptr;
+	bool ok = ctx->get_tyctx ()->lookup_type (
+	  argument->get_mappings ().get_hirid (), &actual);
+
+	// coerce it if required/possible see
+	// compile/torture/struct_base_init_1.rs
+	if (ok)
+	  {
+	    rvalue = coercion_site (rvalue, actual, expected,
+				    argument->get_locus ());
+	  }
+
+	// add it to the list
+	arguments.push_back (rvalue);
       }
 
-    translated
-      = ctx->get_backend ()->constructor_expression (type, vals,
-						     struct_expr.union_index,
-						     struct_expr.get_locus ());
+    // the constructor depends on whether this is actually an enum or not if
+    // its an enum we need to setup the discriminator
+    std::vector<tree> ctor_arguments;
+    if (adt->is_enum ())
+      {
+	HirId variant_id = variant->get_id ();
+	mpz_t val;
+	mpz_init_set_ui (val, variant_id);
+
+	tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
+	tree qualifier
+	  = double_int_to_tree (t, mpz_get_double_int (t, val, true));
+
+	ctor_arguments.push_back (qualifier);
+      }
+    for (auto &arg : arguments)
+      ctor_arguments.push_back (arg);
+
+    translated = ctx->get_backend ()->constructor_expression (
+      compiled_adt_type, adt->is_enum (), ctor_arguments, union_disriminator,
+      struct_expr.get_locus ());
   }
 
   void visit (HIR::GroupedExpr &expr) override

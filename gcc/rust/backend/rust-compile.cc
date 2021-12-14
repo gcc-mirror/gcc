@@ -336,8 +336,8 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
     }
 
   tree constructed_trait_object
-    = ctx->get_backend ()->constructor_expression (dynamic_object, vals, -1,
-						   locus);
+    = ctx->get_backend ()->constructor_expression (dynamic_object, false, vals,
+						   -1, locus);
 
   fncontext fnctx = ctx->peek_fn ();
   tree enclosing_scope = ctx->peek_enclosing_scope ();

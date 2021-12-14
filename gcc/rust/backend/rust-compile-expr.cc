@@ -168,19 +168,36 @@ CompileExpr::visit (HIR::CallExpr &expr)
   // must be a tuple constructor
   bool is_fn = tyty->get_kind () == TyTy::TypeKind::FNDEF
 	       || tyty->get_kind () == TyTy::TypeKind::FNPTR;
-  if (!is_fn)
+  bool is_adt_ctor = !is_fn;
+  if (is_adt_ctor)
     {
       rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
       tree compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
 
-      rust_assert (!adt->is_enum ());
-      rust_assert (adt->number_of_variants () == 1);
-      auto variant = adt->get_variants ().at (0);
+      // what variant is it?
+      int union_disriminator = -1;
+      TyTy::VariantDef *variant = nullptr;
+      if (!adt->is_enum ())
+	{
+	  rust_assert (adt->number_of_variants () == 1);
+	  variant = adt->get_variants ().at (0);
+	}
+      else
+	{
+	  HirId variant_id;
+	  bool ok = ctx->get_tyctx ()->lookup_variant_definition (
+	    expr.get_fnexpr ()->get_mappings ().get_hirid (), &variant_id);
+	  rust_assert (ok);
+
+	  ok = adt->lookup_variant_by_id (variant_id, &variant,
+					  &union_disriminator);
+	  rust_assert (ok);
+	}
 
       // this assumes all fields are in order from type resolution and if a
       // base struct was specified those fields are filed via accesors
-      std::vector<tree> vals;
+      std::vector<tree> arguments;
       for (size_t i = 0; i < expr.get_arguments ().size (); i++)
 	{
 	  auto &argument = expr.get_arguments ().at (i);
@@ -200,95 +217,111 @@ CompileExpr::visit (HIR::CallExpr &expr)
 	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
 
 	  // add it to the list
-	  vals.push_back (rvalue);
+	  arguments.push_back (rvalue);
 	}
 
-      translated
-	= ctx->get_backend ()->constructor_expression (compiled_adt_type, vals,
-						       -1, expr.get_locus ());
+      // the constructor depends on whether this is actually an enum or not if
+      // its an enum we need to setup the discriminator
+      std::vector<tree> ctor_arguments;
+      if (adt->is_enum ())
+	{
+	  HirId variant_id = variant->get_id ();
+	  mpz_t val;
+	  mpz_init_set_ui (val, variant_id);
+
+	  tree t = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
+	  tree qualifier
+	    = double_int_to_tree (t, mpz_get_double_int (t, val, true));
+	  ctor_arguments.push_back (qualifier);
+	}
+      for (auto &arg : arguments)
+	ctor_arguments.push_back (arg);
+
+      translated = ctx->get_backend ()->constructor_expression (
+	compiled_adt_type, adt->is_enum (), ctor_arguments, union_disriminator,
+	expr.get_locus ());
+
+      return;
+    }
+
+  auto get_parameter_tyty_at_index
+    = [] (const TyTy::BaseType *base, size_t index,
+	  TyTy::BaseType **result) -> bool {
+    bool is_fn = base->get_kind () == TyTy::TypeKind::FNDEF
+		 || base->get_kind () == TyTy::TypeKind::FNPTR;
+    rust_assert (is_fn);
+
+    if (base->get_kind () == TyTy::TypeKind::FNPTR)
+      {
+	const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (base);
+	*result = fn->param_at (index);
+
+	return true;
+      }
+
+    const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (base);
+    auto param = fn->param_at (index);
+    *result = param.second;
+
+    return true;
+  };
+
+  bool is_varadic = false;
+  if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+    {
+      const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
+      is_varadic = fn->is_varadic ();
+    }
+
+  size_t required_num_args;
+  if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+    {
+      const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
+      required_num_args = fn->num_params ();
     }
   else
     {
-      auto get_parameter_tyty_at_index
-	= [] (const TyTy::BaseType *base, size_t index,
-	      TyTy::BaseType **result) -> bool {
-	bool is_fn = base->get_kind () == TyTy::TypeKind::FNDEF
-		     || base->get_kind () == TyTy::TypeKind::FNPTR;
-	rust_assert (is_fn);
-
-	if (base->get_kind () == TyTy::TypeKind::FNPTR)
-	  {
-	    const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (base);
-	    *result = fn->param_at (index);
-
-	    return true;
-	  }
-
-	const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (base);
-	auto param = fn->param_at (index);
-	*result = param.second;
-
-	return true;
-      };
-
-      bool is_varadic = false;
-      if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
-	{
-	  const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
-	  is_varadic = fn->is_varadic ();
-	}
-
-      size_t required_num_args;
-      if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
-	{
-	  const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
-	  required_num_args = fn->num_params ();
-	}
-      else
-	{
-	  const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (tyty);
-	  required_num_args = fn->num_params ();
-	}
-
-      std::vector<tree> args;
-      for (size_t i = 0; i < expr.get_arguments ().size (); i++)
-	{
-	  auto &argument = expr.get_arguments ().at (i);
-	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
-
-	  if (is_varadic && i >= required_num_args)
-	    {
-	      args.push_back (rvalue);
-	      continue;
-	    }
-
-	  // assignments are coercion sites so lets convert the rvalue if
-	  // necessary
-	  bool ok;
-	  TyTy::BaseType *expected = nullptr;
-	  ok = get_parameter_tyty_at_index (tyty, i, &expected);
-	  rust_assert (ok);
-
-	  TyTy::BaseType *actual = nullptr;
-	  ok = ctx->get_tyctx ()->lookup_type (
-	    argument->get_mappings ().get_hirid (), &actual);
-	  rust_assert (ok);
-
-	  // coerce it if required
-	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
-
-	  // add it to the list
-	  args.push_back (rvalue);
-	}
-
-      // must be a call to a function
-      auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
-      auto fncontext = ctx->peek_fn ();
-      translated
-	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
-						args, nullptr,
-						expr.get_locus ());
+      const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (tyty);
+      required_num_args = fn->num_params ();
     }
+
+  std::vector<tree> args;
+  for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+    {
+      auto &argument = expr.get_arguments ().at (i);
+      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+
+      if (is_varadic && i >= required_num_args)
+	{
+	  args.push_back (rvalue);
+	  continue;
+	}
+
+      // assignments are coercion sites so lets convert the rvalue if
+      // necessary
+      bool ok;
+      TyTy::BaseType *expected = nullptr;
+      ok = get_parameter_tyty_at_index (tyty, i, &expected);
+      rust_assert (ok);
+
+      TyTy::BaseType *actual = nullptr;
+      ok = ctx->get_tyctx ()->lookup_type (
+	argument->get_mappings ().get_hirid (), &actual);
+      rust_assert (ok);
+
+      // coerce it if required
+      rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+      // add it to the list
+      args.push_back (rvalue);
+    }
+
+  // must be a call to a function
+  auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+  auto fncontext = ctx->peek_fn ();
+  translated
+    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address, args,
+					    nullptr, expr.get_locus ());
 }
 
 void
