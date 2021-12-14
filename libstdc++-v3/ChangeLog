@@ -1,3 +1,25 @@
+2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/make_exports.pl: Replace '?' with '.' when turning
+	a glob into a regex.
+
+2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::size, ranges::empty): Add
+	explicit check for unbounded arrays before using ranges::begin.
+	* testsuite/std/ranges/access/empty.cc: Check handling of unbounded
+	arrays.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+
+2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103664
+	* include/bits/regex.h (__regex_replace): Declare.
+	(regex_replace): Use it.
+	* include/bits/regex.tcc (__regex_replace): Replace regex_replace
+	definition with __regex_replace.
+	* testsuite/28_regex/algorithms/regex_replace/char/103664.cc: New test.
+
 2021-12-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103534

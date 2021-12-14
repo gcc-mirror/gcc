@@ -1,3 +1,147 @@
+2021-12-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99531
+	* ira-costs.c (record_operand_costs): Do not take pseudo class
+	calculated on the 1st iteration into account when processing move
+	involving the pseudo and a hard register.
+
+2021-12-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_split any_or:SWI248 -> orb %?h):
+	Optimize the case where the integer constant operand is zero.
+
+2021-12-13  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_LINK_OS_SPEC): New spec.
+	(VXWORKS_BASE_LINK_SPEC): New spec, using the former.
+	(VXWORKS_EXTRA_LINK_SPEC): New spec for old and new VxWorks.
+	(VXWORKS_LINK_SPEC): Combo of BASE and EXTRA specs.
+	* config/rs6000/vxworks.h (VXWORKS_LINK_OS_SPEC): Empty.
+	(LINK_OS_EXTRA_SPEC32): Use VXWORKS_LINK_SPEC.
+	(LINK_OS_EXTRA_SPEC64): Likewise.
+
+2021-12-13  Fred Konrad  <konrad@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_BASE_LIBS_RTP): Guard -lc_internal
+	on !shared+!non-static and document.
+	(VXWORKS_LIB_SPEC): Remove the bits intended to drag the
+	init/fini functions from libc_internal in the shared lib case.
+	(VX_CRTBEGIN_SPEC/VX_CRTEND_SPEC): Use vxcrtstuff objects also in
+	configurations with shared lib and INITFINI_ARRAY support.
+
+2021-12-13  Fred Konrad  <konrad@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h: Define REAL_LIBGCC_SPEC since the
+	'-non-static' option is not standard.
+	* config/vxworks.h (VXWORKS_LIBGCC_SPEC): Implement the LIBGCC_SPEC
+	since REAL_LIBGCC_SPEC is used now.
+	(STARTFILE_PREFIX_SPEC): Use the PIC VSB when building shared libraries
+	or non-static binaries.
+
+2021-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt: Add -fipa-strict-aliasing.
+	* doc/invoke.texi: Document -fipa-strict-aliasing.
+	* ipa-modref.c (modref_access_analysis::record_access): Honor
+	-fipa-strict-aliasing.
+	(modref_access_analysis::record_access_lto): Likewise.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv8.8-a): Define.
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_8): Define.
+	(AARCH64_FL_FOR_ARCH8_8): Define.
+	* doc/invoke.texi: Document -march=armv8.8-a.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_setmem_mops): Define.
+	(aarch64_expand_setmem): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.h (CLEAR_RATIO): Adjust for TARGET_MOPS.
+	(SET_RATIO): Likewise.
+	* config/aarch64/aarch64.md ("unspec"): Add UNSPEC_SETMEM.
+	(aarch64_setmemdi): Define.
+	(setmemdi): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.opt (aarch64-mops-memset-size-threshold):
+	New param.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_movmemdi): Define.
+	(movmemdi): Define.
+	(unspec): Add UNSPEC_MOVMEM.
+	* config/aarch64/aarch64.opt (aarch64-mops-memmove-size-threshold):
+	New param.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (mops): Define.
+	* config/aarch64/aarch64.c (aarch64_expand_cpymem_mops): Define.
+	(aarch64_expand_cpymem): Define.
+	* config/aarch64/aarch64.h (AARCH64_FL_MOPS): Define.
+	(AARCH64_ISA_MOPS): Define.
+	(TARGET_MOPS): Define.
+	(MOVE_RATIO): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.md ("unspec"): Add UNSPEC_CPYMEM.
+	(aarch64_cpymemdi): New pattern.
+	(cpymemdi): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.opt (aarch64-mops-memcpy-size-threshol):
+	New param.
+	* doc/invoke.texi (AArch64 Options): Document +mops.
+
+2021-12-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/103636
+	* ipa-inline.c (can_inline_edge_p): Move logic checking
+	no_profile_instrument_function logic to ...
+	(can_early_inline_edge_p): ... here.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks/_yvals.h: #include yvals.h also if
+	defined(__RTP__).
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_OS_CPP_BUILTINS): Define
+	_C99 for C++.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Clear NATIVE_SYSTEM_HEADER_DIR.
+	* config/vxworks.h (SYSROOT_HEADERS_SUFFIX_SPEC): Define, for
+	VxWorks 7 and earlier.
+	(VXWORKS_ADDITIONAL_CPP_SPEC): Simplify accordingly.
+	(STARTFILE_PREFIX_SPEC): Adjust accordingly.
+	* config/rs6000/vxworks.h (STARTFILE_PREFIX_SPEC): Adjust.
+
+2021-12-13  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Use @item for the first @itemx entry.
+
+2021-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* machmode.h (gt_pch_nx): Use gt_pointer_operator as type of second
+	argument instead of equivalent void (*) (void *, void *, void *).
+	* poly-int.h (gt_pch_nx): Likewise.
+	* wide-int.h (gt_pch_nx): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (gt_pch_nx): Likewise.
+
+2021-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103513
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Do not ICE
+	on ternary expression.
+
+2021-12-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103515
+	* attribs.c (decl_attributes): Check if target options change and
+	create one node if so.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* Makefile.in: Remove unique-ptr-tests.o.
