@@ -404,7 +404,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       COND_EXPR_IS_VEC_DELETE (in COND_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
-      COMPOUND_EXPR_OVERLOADED (in COMPOUND_EXPR).
       CLEANUP_P (in TRY_BLOCK)
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF, SCOPE_REF)
@@ -4014,11 +4013,6 @@ struct GTY(()) lang_decl {
 
 #define CALL_OR_AGGR_INIT_CHECK(NODE) \
   TREE_CHECK2 ((NODE), CALL_EXPR, AGGR_INIT_EXPR)
-
-/* Indicates that this is a non-dependent COMPOUND_EXPR which will
-   resolve to a function call.  */
-#define COMPOUND_EXPR_OVERLOADED(NODE) \
-  TREE_LANG_FLAG_0 (COMPOUND_EXPR_CHECK (NODE))
 
 /* In a CALL_EXPR appearing in a template, true if Koenig lookup
    should be performed at instantiation time.  */
