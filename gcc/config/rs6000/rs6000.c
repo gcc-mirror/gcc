@@ -5568,14 +5568,14 @@ rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
    Implement targetm.vectorize.builtin_vectorized_function.  */
 
 static tree
-rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
-					tree type_in)
+rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
+				    tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
 
   if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr, "rs6000_new_builtin_vectorized_function (%s, %s, %s)\n",
+    fprintf (stderr, "rs6000_builtin_vectorized_function (%s, %s, %s)\n",
 	     combined_fn_name (combined_fn (fn)),
 	     GET_MODE_NAME (TYPE_MODE (type_out)),
 	     GET_MODE_NAME (TYPE_MODE (type_in)));
@@ -5700,15 +5700,15 @@ rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
 /* Implement targetm.vectorize.builtin_md_vectorized_function.  */
 
 static tree
-rs6000_new_builtin_md_vectorized_function (tree fndecl, tree type_out,
-					   tree type_in)
+rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
+				       tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr,
-	     "rs6000_new_builtin_md_vectorized_function (%s, %s, %s)\n",
+	     "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
 	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
 	     GET_MODE_NAME (TYPE_MODE (type_out)),
 	     GET_MODE_NAME (TYPE_MODE (type_in)));
@@ -5918,25 +5918,6 @@ rs6000_builtin_vectorized_libmass (combined_fn fn, tree type_out,
   return new_fndecl;
 }
 
-/* Returns a function decl for a vectorized version of the builtin function
-   with builtin function code FN and the result vector type TYPE, or NULL_TREE
-   if it is not available.  */
-
-static tree
-rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
-				    tree type_in)
-{
-  return rs6000_new_builtin_vectorized_function (fn, type_out, type_in);
-}
-
-/* Implement TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION.  */
-
-static tree
-rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
-				       tree type_in)
-{
-  return rs6000_new_builtin_md_vectorized_function (fndecl, type_out, type_in);
-}
 
 /* Default CPU string for rs6000*_file_start functions.  */
 static const char *rs6000_default_cpu;

@@ -167,9 +167,6 @@ static const struct
   { "arch_3_1",		PPC_FEATURE2_ARCH_3_1,		1 },
   { "mma",		PPC_FEATURE2_MMA,		1 },
 };
-
-static rtx rs6000_expand_new_builtin (tree, rtx, rtx, machine_mode, int);
-static bool rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi);
 
 /* Nonzero if we can use a floating-point register to pass this arg.  */
 #define USE_FP_FOR_ARG_P(CUM,MODE)		\
@@ -3258,7 +3255,7 @@ altivec_expand_vec_ext_builtin (tree exp, rtx target)
    appropriate target options being set.  */
 
 void
-rs6000_invalid_new_builtin (enum rs6000_gen_builtins fncode)
+rs6000_invalid_builtin (enum rs6000_gen_builtins fncode)
 {
   size_t j = (size_t) fncode;
   const char *name = rs6000_builtin_info_x[j].bifname;
@@ -3479,20 +3476,11 @@ fold_mergeeo_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_odd)
   gsi_replace (gsi, g, true);
 }
 
-/* Fold a machine-dependent built-in in GIMPLE.  (For folding into
-   a constant, use rs6000_fold_builtin.)  */
-
-bool
-rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
-{
-  return rs6000_gimple_fold_new_builtin (gsi);
-}
-
 /*  Helper function to sort out which built-ins may be valid without having
     a LHS.  */
 static bool
-rs6000_new_builtin_valid_without_lhs (enum rs6000_gen_builtins fn_code,
-				      tree fndecl)
+rs6000_builtin_valid_without_lhs (enum rs6000_gen_builtins fn_code,
+				  tree fndecl)
 {
   if (TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node)
     return true;
@@ -3520,7 +3508,7 @@ rs6000_new_builtin_valid_without_lhs (enum rs6000_gen_builtins fn_code,
 /* Check whether a builtin function is supported in this target
    configuration.  */
 bool
-rs6000_new_builtin_is_supported (enum rs6000_gen_builtins fncode)
+rs6000_builtin_is_supported (enum rs6000_gen_builtins fncode)
 {
   switch (rs6000_builtin_info_x[(size_t) fncode].enable)
     {
@@ -3576,8 +3564,8 @@ rs6000_new_builtin_is_supported (enum rs6000_gen_builtins fncode)
    __vector_quad arguments into pass-by-value arguments, leading to more
    efficient code generation.  */
 static bool
-rs6000_gimple_fold_new_mma_builtin (gimple_stmt_iterator *gsi,
-				    rs6000_gen_builtins fn_code)
+rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
+				rs6000_gen_builtins fn_code)
 {
   gimple *stmt = gsi_stmt (*gsi);
   size_t fncode = (size_t) fn_code;
@@ -3776,8 +3764,8 @@ rs6000_gimple_fold_new_mma_builtin (gimple_stmt_iterator *gsi,
 
 /* Fold a machine-dependent built-in in GIMPLE.  (For folding into
    a constant, use rs6000_fold_builtin.)  */
-static bool
-rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
+bool
+rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
   tree fndecl = gimple_call_fndecl (stmt);
@@ -3796,23 +3784,23 @@ rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
 			  : "nothing";
 
   if (TARGET_DEBUG_BUILTIN)
-      fprintf (stderr, "rs6000_gimple_fold_new_builtin %d %s %s\n",
+      fprintf (stderr, "rs6000_gimple_fold_builtin %d %s %s\n",
 	       fn_code, fn_name1, fn_name2);
 
   if (!rs6000_fold_gimple)
     return false;
 
   /* Prevent gimple folding for code that does not have a LHS, unless it is
-     allowed per the rs6000_new_builtin_valid_without_lhs helper function.  */
+     allowed per the rs6000_builtin_valid_without_lhs helper function.  */
   if (!gimple_call_lhs (stmt)
-      && !rs6000_new_builtin_valid_without_lhs (fn_code, fndecl))
+      && !rs6000_builtin_valid_without_lhs (fn_code, fndecl))
     return false;
 
   /* Don't fold invalid builtins, let rs6000_expand_builtin diagnose it.  */
-  if (!rs6000_new_builtin_is_supported (fn_code))
+  if (!rs6000_builtin_is_supported (fn_code))
     return false;
 
-  if (rs6000_gimple_fold_new_mma_builtin (gsi, fn_code))
+  if (rs6000_gimple_fold_mma_builtin (gsi, fn_code))
     return true;
 
   switch (fn_code)
@@ -4755,20 +4743,6 @@ rs6000_gimple_fold_new_builtin (gimple_stmt_iterator *gsi)
   return false;
 }
 
-/* Expand an expression EXP that calls a built-in function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
-rtx
-rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		       machine_mode mode ATTRIBUTE_UNUSED,
-		       int ignore ATTRIBUTE_UNUSED)
-{
-  return rs6000_expand_new_builtin (exp, target, subtarget, mode, ignore);
-}
-
 /* Expand ALTIVEC_BUILTIN_MASK_FOR_LOAD.  */
 rtx
 rs6000_expand_ldst_mask (rtx target, tree arg0)
@@ -4803,8 +4777,8 @@ rs6000_expand_ldst_mask (rtx target, tree arg0)
 
 /* Expand the CPU builtin in FCODE and store the result in TARGET.  */
 static rtx
-new_cpu_expand_builtin (enum rs6000_gen_builtins fcode,
-			tree exp ATTRIBUTE_UNUSED, rtx target)
+cpu_expand_builtin (enum rs6000_gen_builtins fcode,
+		    tree exp ATTRIBUTE_UNUSED, rtx target)
 {
   /* __builtin_cpu_init () is a nop, so expand to nothing.  */
   if (fcode == RS6000_BIF_CPU_INIT)
@@ -5206,8 +5180,8 @@ stv_expand_builtin (insn_code icode, rtx *op,
 
 /* Expand the MMA built-in in EXP, and return it.  */
 static rtx
-new_mma_expand_builtin (tree exp, rtx target, insn_code icode,
-			rs6000_gen_builtins fcode)
+mma_expand_builtin (tree exp, rtx target, insn_code icode,
+		    rs6000_gen_builtins fcode)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   bool void_func = TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node;
@@ -5319,7 +5293,7 @@ new_mma_expand_builtin (tree exp, rtx target, insn_code icode,
 
 /* Return the appropriate SPR number associated with the given builtin.  */
 static inline HOST_WIDE_INT
-new_htm_spr_num (enum rs6000_gen_builtins code)
+htm_spr_num (enum rs6000_gen_builtins code)
 {
   if (code == RS6000_BIF_GET_TFHAR
       || code == RS6000_BIF_SET_TFHAR)
@@ -5338,8 +5312,8 @@ new_htm_spr_num (enum rs6000_gen_builtins code)
 /* Expand the HTM builtin in EXP and store the result in TARGET.
    Return the expanded rtx.  */
 static rtx
-new_htm_expand_builtin (bifdata *bifaddr, rs6000_gen_builtins fcode,
-			tree exp, rtx target)
+htm_expand_builtin (bifdata *bifaddr, rs6000_gen_builtins fcode,
+		    tree exp, rtx target)
 {
   if (!TARGET_POWERPC64
       && (fcode == RS6000_BIF_TABORTDC
@@ -5425,7 +5399,7 @@ new_htm_expand_builtin (bifdata *bifaddr, rs6000_gen_builtins fcode,
   if (uses_spr)
     {
       machine_mode mode = TARGET_POWERPC64 ? DImode : SImode;
-      op[nopnds++] = gen_rtx_CONST_INT (mode, new_htm_spr_num (fcode));
+      op[nopnds++] = gen_rtx_CONST_INT (mode, htm_spr_num (fcode));
     }
   /* If this builtin accesses a CR field, then pass in a scratch
      CR field as the last operand.  */
@@ -5497,11 +5471,9 @@ new_htm_expand_builtin (bifdata *bifaddr, rs6000_gen_builtins fcode,
    SUBTARGET may be used as the target for computing one of EXP's operands.
    IGNORE is nonzero if the value is to be ignored.
    Use the new builtin infrastructure.  */
-static rtx
-rs6000_expand_new_builtin (tree exp, rtx target,
-			   rtx /* subtarget */,
-			   machine_mode /* mode */,
-			   int ignore)
+rtx
+rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
+		       machine_mode /* mode */, int ignore)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   enum rs6000_gen_builtins fcode
@@ -5610,7 +5582,7 @@ rs6000_expand_new_builtin (tree exp, rtx target,
 	|| (e == ENB_P10_64 && TARGET_POWER10 && TARGET_POWERPC64)
 	|| (e == ENB_MMA && TARGET_MMA)))
     {
-      rs6000_invalid_new_builtin (fcode);
+      rs6000_invalid_builtin (fcode);
       return expand_call (exp, target, ignore);
     }
 
@@ -5636,7 +5608,7 @@ rs6000_expand_new_builtin (tree exp, rtx target,
     }
 
   if (bif_is_cpu (*bifaddr))
-    return new_cpu_expand_builtin (fcode, exp, target);
+    return cpu_expand_builtin (fcode, exp, target);
 
   if (bif_is_init (*bifaddr))
     return altivec_expand_vec_init_builtin (TREE_TYPE (exp), exp, target);
@@ -5651,7 +5623,7 @@ rs6000_expand_new_builtin (tree exp, rtx target,
     return altivec_expand_predicate_builtin (icode, exp, target);
 
   if (bif_is_htm (*bifaddr))
-    return new_htm_expand_builtin (bifaddr, fcode, exp, target);
+    return htm_expand_builtin (bifaddr, fcode, exp, target);
 
   if (bif_is_32bit (*bifaddr) && TARGET_32BIT)
     {
@@ -5837,7 +5809,7 @@ rs6000_expand_new_builtin (tree exp, rtx target,
     return lxvrze_expand_builtin (target, icode, op, mode[0], mode[1]);
 
   if (bif_is_mma (*bifaddr))
-    return new_mma_expand_builtin (exp, target, icode, fcode);
+    return mma_expand_builtin (exp, target, icode, fcode);
 
   if (fcode == RS6000_BIF_PACK_IF
       && TARGET_LONG_DOUBLE_128
@@ -6386,8 +6358,8 @@ rs6000_init_builtins (void)
   return;
 }
 
-static tree
-rs6000_new_builtin_decl (unsigned code, bool /* initialize_p */)
+tree
+rs6000_builtin_decl (unsigned code, bool /* initialize_p */)
 {
   rs6000_gen_builtins fcode = (rs6000_gen_builtins) code;
 
@@ -6395,17 +6367,6 @@ rs6000_new_builtin_decl (unsigned code, bool /* initialize_p */)
     return error_mark_node;
 
   return rs6000_builtin_decls_x[code];
-}
-
-/* Returns the rs6000 builtin decl for CODE.  Note that we don't check
-   the builtin mask here since there could be some #pragma/attribute
-   target functions and the rs6000_builtin_mask could be wrong when
-   this checking happens, though it will be updated properly later.  */
-
-tree
-rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
-{
-  return rs6000_new_builtin_decl (code, initialize_p);
 }
 
 /* Return the internal arg pointer used for function incoming
