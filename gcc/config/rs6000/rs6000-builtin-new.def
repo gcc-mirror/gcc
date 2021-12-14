@@ -137,6 +137,7 @@
 ;   lxvrse   Needs special handling for load-rightmost, sign-extended
 ;   lxvrze   Needs special handling for load-rightmost, zero-extended
 ;   endian   Needs special handling for endianness
+;   ibmld    Restrict usage to the case when TFmode is IBM-128
 ;
 ; Each attribute corresponds to extra processing required when
 ; the built-in is expanded.  All such special processing should
@@ -215,13 +216,10 @@
   double __builtin_mffsl ();
     MFFSL rs6000_mffsl {}
 
-; This thing really assumes long double == __ibm128, and I'm told it has
-; been used as such within libgcc.  Given that __builtin_pack_ibm128
-; exists for the same purpose, this should really not be used at all.
-; TODO: Consider adding special handling for this to warn whenever
-; long double is not __ibm128.
+; This is redundant with __builtin_pack_ibm128, as it requires long
+; double to be __ibm128.  Should probably be deprecated.
   const long double __builtin_pack_longdouble (double, double);
-    PACK_TF packtf {}
+    PACK_TF packtf {ibmld}
 
   unsigned long __builtin_ppc_mftb ();
     MFTB rs6000_mftb_di {32bit}
@@ -244,9 +242,10 @@
   const double __builtin_unpack_ibm128 (__ibm128, const int<1>);
     UNPACK_IF unpackif {}
 
-; See above comments for __builtin_pack_longdouble.
+; This is redundant with __builtin_unpack_ibm128, as it requires long
+; double to be __ibm128.  Should probably be deprecated.
   const double __builtin_unpack_longdouble (long double, const int<1>);
-    UNPACK_TF unpacktf {}
+    UNPACK_TF unpacktf {ibmld}
 
 
 ; Builtins that have been around just about forever, but not quite.
