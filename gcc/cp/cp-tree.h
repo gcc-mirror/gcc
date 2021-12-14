@@ -2344,6 +2344,7 @@ struct GTY(()) lang_type {
   unsigned unique_obj_representations : 1;
   unsigned unique_obj_representations_set : 1;
   bool erroneous : 1;
+  bool non_pod_aggregate : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -2352,7 +2353,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 4;
+  unsigned dummy : 3;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2672,6 +2673,12 @@ struct GTY(()) lang_type {
 /* True if we saw errors while instantiating this class.  */
 #define CLASSTYPE_ERRONEOUS(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->erroneous)
+
+/* True if this class is non-layout-POD only because it was not an aggregate
+   before C++14.  If we run out of bits in lang_type, this could be replaced
+   with a hash_set only filled in when abi_version_crosses (17).  */
+#define CLASSTYPE_NON_POD_AGGREGATE(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_pod_aggregate)
 
 /* Additional macros for inheritance information.  */
 

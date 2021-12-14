@@ -990,6 +990,10 @@ Driver Undocumented
 ;     Adds missing 'on' in mangling of operator names in some cases.
 ;     Default in G++ 11.
 ;
+; 17: Fixes layout of classes that inherit from aggregate classes with default
+;     member initializers in C++14 and up.
+;     Default in G++ 12.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
