@@ -168,11 +168,8 @@ bpf_core_reloc_add (const tree type, const char * section_name,
   bpf_core_reloc_ref bpfcr = ggc_cleared_alloc<bpf_core_reloc_t> ();
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
 
-  /* Buffer the access string in the auxiliary strtab. Since the two string
-     tables are concatenated, add the length of the first to the offset.  */
-  size_t strtab_len = ctfc_get_strtab_len (ctfc, CTF_STRTAB);
+  /* Buffer the access string in the auxiliary strtab.  */
   ctf_add_string (ctfc, buf, &(bpfcr->bpfcr_astr_off), CTF_AUX_STRTAB);
-  bpfcr->bpfcr_astr_off += strtab_len;
 
   bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
   bpfcr->bpfcr_insn_label = label;
@@ -191,7 +188,6 @@ bpf_core_reloc_add (const tree type, const char * section_name,
   sec = ggc_cleared_alloc<bpf_core_section_t> ();
 
   ctf_add_string (ctfc, section_name, &sec->name_offset, CTF_AUX_STRTAB);
-  sec->name_offset += strtab_len;
   if (strcmp (section_name, ""))
     ctfc->ctfc_aux_strlen += strlen (section_name) + 1;
 
@@ -287,6 +283,9 @@ output_btfext_header (void)
 static void
 output_asm_btfext_core_reloc (bpf_core_reloc_ref bpfcr)
 {
+  bpfcr->bpfcr_astr_off += ctfc_get_strtab_len (ctf_get_tu_ctfc (),
+						CTF_STRTAB);
+
   dw2_assemble_integer (4, gen_rtx_LABEL_REF (Pmode, bpfcr->bpfcr_insn_label));
   fprintf (asm_out_file, "\t%s bpfcr_insn\n", ASM_COMMENT_START);
 
@@ -323,6 +322,11 @@ output_btfext_core_sections (void)
       /* Section name offset, refers to the offset of a string with the name of
 	 the section to which these CORE relocations refer, e.g. '.text'.
 	 The string is buffered in the BTF strings table.  */
+
+      /* BTF specific strings are in CTF_AUX_STRTAB, which is concatenated
+	 after CTF_STRTAB. Add the length of STRTAB to the final offset.  */
+      sec->name_offset += ctfc_get_strtab_len (ctf_get_tu_ctfc (), CTF_STRTAB);
+
       dw2_asm_output_data (4, sec->name_offset,  "btfext_secinfo_sec_name_off");
       dw2_asm_output_data (4, vec_safe_length (sec->relocs),
 			   "btfext_secinfo_num_recs");
