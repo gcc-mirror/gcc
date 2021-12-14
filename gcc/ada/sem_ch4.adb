@@ -7260,7 +7260,9 @@ package body Sem_Ch4 is
             then
                return;
 
-            elsif Has_Possible_Literal_Aspects (N) then
+            elsif Present (Entity (N))
+              and then Has_Possible_Literal_Aspects (N)
+            then
                return;
 
             --  If we have a logical operator, one of whose operands is
