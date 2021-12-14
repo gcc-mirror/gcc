@@ -149,6 +149,17 @@ public:
 	      type *type,
 	      const char *name);
 
+  rvalue *
+  new_ctor (location *loc,
+	    type *type,
+	    size_t num_values,
+	    field **fields,
+	    rvalue **values);
+
+  void
+  new_global_init_rvalue (lvalue *variable,
+			  rvalue *init);
+
   template <typename HOST_TYPE>
   rvalue *
   new_rvalue_from_const (type *type,
@@ -549,6 +560,7 @@ public:
   virtual type *is_const () { return NULL; }
   virtual type *is_array () = 0;
   virtual struct_ *is_struct () { return NULL; }
+  virtual bool is_union () const { return false; }
   virtual bool is_void () const { return false; }
   virtual vector_type *is_vector () { return NULL; }
   virtual bool has_known_size () const { return true; }
@@ -1016,6 +1028,8 @@ public:
 
   void replay_into (replayer *r) FINAL OVERRIDE;
 
+  virtual bool is_union () const FINAL OVERRIDE { return true; }
+
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
@@ -1421,6 +1435,23 @@ public:
     m_initializer_num_bytes = num_bytes;
   }
 
+  void set_flags (int flag_fields)
+  {
+    m_flags = (enum global_var_flags)(m_flags | flag_fields);
+  }
+  /* Returns true if any of the flags in the argument is set.  */
+  bool test_flags_anyof (int flag_fields) const
+  {
+    return m_flags & flag_fields;
+  }
+
+  enum gcc_jit_global_kind get_kind () const
+  {
+    return m_kind;
+  }
+
+  void set_rvalue_init (rvalue *val) { m_rvalue_init = val; }
+
 private:
   string * make_debug_string () FINAL OVERRIDE { return m_name; }
   template <typename T>
@@ -1433,8 +1464,10 @@ private:
 
 private:
   enum gcc_jit_global_kind m_kind;
+  enum global_var_flags m_flags = GLOBAL_VAR_FLAGS_NONE;
   string *m_name;
   void *m_initializer;
+  rvalue *m_rvalue_init = nullptr; /* Only needed for write_dump.  */
   size_t m_initializer_num_bytes;
 };
 
@@ -1517,6 +1550,32 @@ private:
 private:
   vector_type *m_vector_type;
   auto_vec<rvalue *> m_elements;
+};
+
+class ctor : public rvalue
+{
+public:
+  ctor (context *ctxt,
+	location *loc,
+	type *type)
+  : rvalue (ctxt, loc, type)
+  { }
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_PRIMARY;
+  }
+
+public:
+  auto_vec<field *> m_fields;
+  auto_vec<rvalue *> m_values;
 };
 
 class unary_op : public rvalue
@@ -2362,6 +2421,24 @@ private:
   string *m_asm_stmts;
 };
 
+class global_init_rvalue : public memento
+{
+public:
+  global_init_rvalue (context *ctxt, lvalue *variable, rvalue *init) :
+    memento (ctxt), m_variable (variable), m_init (init) {};
+
+  void write_to_dump (dump &d) FINAL OVERRIDE;
+
+private:
+  void replay_into (replayer *r) FINAL OVERRIDE;
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  lvalue *m_variable;
+  rvalue *m_init;
+};
+
 } // namespace gcc::jit::recording
 
 /* Create a recording::memento_of_new_rvalue_from_const instance and add
@@ -2379,6 +2456,23 @@ recording::context::new_rvalue_from_const (recording::type *type,
     new memento_of_new_rvalue_from_const <HOST_TYPE> (this, NULL, type, value);
   record (result);
   return result;
+}
+
+/* Don't call this directly.  Call types_kinda_same.  */
+bool
+types_kinda_same_internal (recording::type *a,
+			   recording::type *b);
+
+/* Strip all qualifiers and count pointer depth, returning true
+   if the types and pointer depth are the same, otherwise false.
+
+   For array and vector types the number of element also
+   has to match, aswell as the element types themself.  */
+static inline bool
+types_kinda_same (recording::type *a, recording::type *b)
+{
+  /* Handle trivial case here, to allow for inlining.  */
+  return a == b || types_kinda_same_internal (a, b);
 }
 
 } // namespace gcc::jit

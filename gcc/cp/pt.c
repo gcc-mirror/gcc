@@ -448,7 +448,7 @@ inline_needs_template_parms (tree decl, bool nsdmi)
     return false;
 
   return (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (most_general_template (decl)))
-	  > (processing_template_decl + DECL_TEMPLATE_SPECIALIZATION (decl)));
+	  > (current_template_depth + DECL_TEMPLATE_SPECIALIZATION (decl)));
 }
 
 /* Subroutine of maybe_begin_member_template_processing.
@@ -467,7 +467,7 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
 
   ++processing_template_decl;
   current_template_parms
-    = tree_cons (size_int (processing_template_decl),
+    = tree_cons (size_int (current_template_depth + 1),
 		 parms, current_template_parms);
   TEMPLATE_PARMS_FOR_INLINE (current_template_parms) = 1;
 
@@ -523,7 +523,7 @@ maybe_begin_member_template_processing (tree decl)
   if (inline_needs_template_parms (decl, nsdmi))
     {
       parms = DECL_TEMPLATE_PARMS (most_general_template (decl));
-      levels = TMPL_PARMS_DEPTH (parms) - processing_template_decl;
+      levels = TMPL_PARMS_DEPTH (parms) - current_template_depth;
 
       if (DECL_TEMPLATE_SPECIALIZATION (decl))
 	{
@@ -716,7 +716,7 @@ begin_template_parm_list (void)
 
   /* Add a dummy parameter level while we process the parameter list.  */
   current_template_parms
-    = tree_cons (size_int (processing_template_decl),
+    = tree_cons (size_int (current_template_depth + 1),
 		 make_tree_vec (0),
 		 current_template_parms);
 }
@@ -4613,8 +4613,8 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       DECL_INITIAL (parm) = DECL_INITIAL (decl)
-	= build_template_parm_index (idx, processing_template_decl,
-				     processing_template_decl,
+	= build_template_parm_index (idx, current_template_depth,
+				     current_template_depth,
 				     decl, TREE_TYPE (parm));
 
       TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm))
@@ -4655,8 +4655,8 @@ process_template_parm (tree list, location_t parm_loc, tree parm,
       TYPE_STUB_DECL (t) = decl;
       parm = decl;
       TEMPLATE_TYPE_PARM_INDEX (t)
-	= build_template_parm_index (idx, processing_template_decl,
-				     processing_template_decl,
+	= build_template_parm_index (idx, current_template_depth,
+				     current_template_depth,
 				     decl, TREE_TYPE (parm));
       TEMPLATE_TYPE_PARAMETER_PACK (t) = is_parameter_pack;
       if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
@@ -4705,7 +4705,7 @@ end_template_parm_list (tree parms)
   current_template_parms = TREE_CHAIN (current_template_parms);
 
   current_template_parms
-    = tree_cons (size_int (processing_template_decl),
+    = tree_cons (size_int (current_template_depth + 1),
 		 saved_parmlist, current_template_parms);
 
   for (unsigned ix = 0; parms; ix++)
@@ -5747,7 +5747,7 @@ push_template_decl (tree decl, bool is_friend)
   /* See if this is a primary template.  */
   bool is_primary = false;
   if (is_friend && ctx
-      && uses_template_parms_level (ctx, processing_template_decl))
+      && uses_template_parms_level (ctx, current_template_depth))
     /* A friend template that specifies a class context, i.e.
          template <typename T> friend void A<T>::f();
        is not primary.  */
@@ -6157,7 +6157,7 @@ add_inherited_template_parms (tree fn, tree inherited)
     = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (inherited));
   inner_parms = copy_node (inner_parms);
   tree parms
-    = tree_cons (size_int (processing_template_decl + 1),
+    = tree_cons (size_int (current_template_depth + 1),
 		 inner_parms, current_template_parms);
   tree tmpl = build_template_decl (fn, parms, /*member*/true);
   tree args = template_parms_to_args (parms);
@@ -12165,13 +12165,10 @@ instantiate_class_template_1 (tree type)
 	      /* Build new CLASSTYPE_FRIEND_CLASSES.  */
 
 	      tree friend_type = t;
-	      bool adjust_processing_template_decl = false;
-
 	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 		{
 		  /* template <class T> friend class C;  */
 		  friend_type = tsubst_friend_class (friend_type, args);
-		  adjust_processing_template_decl = true;
 		}
 	      else if (TREE_CODE (friend_type) == UNBOUND_CLASS_TEMPLATE)
 		{
@@ -12180,7 +12177,6 @@ instantiate_class_template_1 (tree type)
 					tf_warning_or_error, NULL_TREE);
 		  if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 		    friend_type = TREE_TYPE (friend_type);
-		  adjust_processing_template_decl = true;
 		}
 	      else if (TREE_CODE (friend_type) == TYPENAME_TYPE
 		       || TREE_CODE (friend_type) == TEMPLATE_TYPE_PARM)
@@ -12199,8 +12195,6 @@ instantiate_class_template_1 (tree type)
 		  ++processing_template_decl;
 		  friend_type = tsubst (friend_type, args,
 					tf_warning_or_error, NULL_TREE);
-		  if (dependent_type_p (friend_type))
-		    adjust_processing_template_decl = true;
 		  --processing_template_decl;
 		}
 	      else if (uses_template_parms (friend_type))
@@ -12218,19 +12212,8 @@ instantiate_class_template_1 (tree type)
 
 		 We don't have to do anything in these cases.  */
 
-	      if (adjust_processing_template_decl)
-		/* Trick make_friend_class into realizing that the friend
-		   we're adding is a template, not an ordinary class.  It's
-		   important that we use make_friend_class since it will
-		   perform some error-checking and output cross-reference
-		   information.  */
-		++processing_template_decl;
-
 	      if (friend_type != error_mark_node)
 		make_friend_class (type, friend_type, /*complain=*/false);
-
-	      if (adjust_processing_template_decl)
-		--processing_template_decl;
 	    }
 	  else
 	    {
@@ -28373,8 +28356,7 @@ build_non_dependent_expr (tree expr)
 		    ? build_non_dependent_expr (TREE_OPERAND (expr, 1))
 		    : build_non_dependent_expr (TREE_OPERAND (expr, 0))),
 		   build_non_dependent_expr (TREE_OPERAND (expr, 2)));
-  if (TREE_CODE (expr) == COMPOUND_EXPR
-      && !COMPOUND_EXPR_OVERLOADED (expr))
+  if (TREE_CODE (expr) == COMPOUND_EXPR)
     return build2 (COMPOUND_EXPR,
 		   TREE_TYPE (expr),
 		   TREE_OPERAND (expr, 0),
@@ -28417,7 +28399,7 @@ make_auto_1 (tree name, bool set_canonical)
   TYPE_NAME (au) = build_decl (input_location, TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
-    (0, processing_template_decl + 1, processing_template_decl + 1,
+    (0, current_template_depth + 1, current_template_depth + 1,
      TYPE_NAME (au), NULL_TREE);
   if (set_canonical)
     TYPE_CANONICAL (au) = canonical_type_parameter (au);
@@ -30070,7 +30052,7 @@ splice_late_return_type (tree type, tree late_return_type)
     }
 
   if (tree auto_node = find_type_usage (type, is_auto))
-    if (TEMPLATE_TYPE_LEVEL (auto_node) <= processing_template_decl)
+    if (TEMPLATE_TYPE_LEVEL (auto_node) <= current_template_depth)
       {
 	/* In an abbreviated function template we didn't know we were dealing
 	   with a function template when we saw the auto return type, so rebuild

@@ -15741,6 +15741,13 @@ rs6000_expand_new_builtin (tree exp, rtx target,
       return const0_rtx;
     }
 
+  if (bif_is_ibmld (*bifaddr) && !FLOAT128_2REG_P (TFmode))
+    {
+      error ("%<%s%> requires %<long double%> to be IBM 128-bit format",
+	     bifaddr->bifname);
+      return const0_rtx;
+    }
+
   if (bif_is_cpu (*bifaddr))
     return new_cpu_expand_builtin (fcode, exp, target);
 

@@ -10016,6 +10016,10 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		    && (aarch64_offset_9bit_signed_unscaled_p (mode, offset)
 			|| offset_12bit_unsigned_scaled_p (mode, offset)));
 
+	  if (mode == V8DImode)
+	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
+	            && aarch64_offset_7bit_signed_scaled_p (DImode, offset + 48));
+
 	  /* A 7bit offset check because OImode will emit a ldp/stp
 	     instruction (only big endian will get here).
 	     For ldp/stp instructions, the offset is scaled for the size of a

@@ -3629,7 +3629,7 @@ fixup_template_type (tree type)
   // the scope we're trying to enter.
   tree parms = current_template_parms;
   int depth = template_class_depth (type);
-  for (int n = processing_template_decl; n > depth && parms; --n)
+  for (int n = current_template_depth; n > depth && parms; --n)
     parms = TREE_CHAIN (parms);
   if (!parms)
     return type;

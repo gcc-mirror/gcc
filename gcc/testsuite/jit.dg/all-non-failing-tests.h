@@ -181,6 +181,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-global-init-rvalue.c */
+#define create_code create_code_global_init_rvalue
+#define verify_code verify_code_global_init_rvalue
+#include "test-global-init-rvalue.c"
+#undef create_code
+#undef verify_code
+
 /* test-global-set-initializer.c */
 #define create_code create_code_global_set_initializer
 #define verify_code verify_code_global_set_initializer
@@ -216,6 +223,13 @@
 #define create_code create_code_linked_list
 #define verify_code verify_code_linked_list
 #include "test-linked-list.c"
+#undef create_code
+#undef verify_code
+
+/* test-local-init-rvalue.c */
+#define create_code create_code_local_init_rvalue
+#define verify_code verify_code_local_init_rvalue
+#include "test-local-init-rvalue.c"
 #undef create_code
 #undef verify_code
 
@@ -431,12 +445,18 @@ const struct testcase testcases[] = {
   {"builtin-types",
    create_code_builtin_types,
    verify_code_builtin_types},
+  {"global_rvalue_init",
+   create_code_global_init_rvalue,
+   verify_code_global_init_rvalue},
   {"hello_world",
    create_code_hello_world,
    verify_code_hello_world},
   {"linked_list",
    create_code_linked_list,
    verify_code_linked_list},
+  {"local_rvalue_init",
+   create_code_local_init_rvalue,
+   verify_code_local_init_rvalue},
   {"long_names",
    create_code_long_names,
    verify_code_long_names},

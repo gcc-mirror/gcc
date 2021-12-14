@@ -29779,14 +29779,9 @@ static tree
 cp_parser_requires_clause_expression (cp_parser *parser, bool lambda_p)
 {
   processing_constraint_expression_sentinel parsing_constraint;
-  temp_override<int> ovr (processing_template_decl);
-  if (!processing_template_decl)
-    /* Adjust processing_template_decl so that we always obtain template
-       trees here.  We don't do the usual ++processing_template_decl
-       because that would skew the template parameter depth of a lambda
-       within if we're already inside a template.  */
-    processing_template_decl = 1;
+  ++processing_template_decl;
   cp_expr expr = cp_parser_constraint_logical_or_expression (parser, lambda_p);
+  --processing_template_decl;
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
   return expr;
@@ -29805,12 +29800,10 @@ static tree
 cp_parser_constraint_expression (cp_parser *parser)
 {
   processing_constraint_expression_sentinel parsing_constraint;
-  temp_override<int> ovr (processing_template_decl);
-  if (!processing_template_decl)
-    /* As in cp_parser_requires_clause_expression.  */
-    processing_template_decl = 1;
+  ++processing_template_decl;
   cp_expr expr = cp_parser_binary_expression (parser, false, true,
 					      PREC_NOT_OPERATOR, NULL);
+  --processing_template_decl;
   if (check_for_bare_parameter_packs (expr))
     expr = error_mark_node;
   expr.maybe_add_location_wrapper ();
@@ -29924,11 +29917,9 @@ cp_parser_requires_expression (cp_parser *parser)
       parms = NULL_TREE;
 
     /* Parse the requirement body. */
-    temp_override<int> ovr (processing_template_decl);
-    if (!processing_template_decl)
-      /* As in cp_parser_requires_clause_expression.  */
-      processing_template_decl = 1;
+    ++processing_template_decl;
     reqs = cp_parser_requirement_body (parser);
+    --processing_template_decl;
     if (reqs == error_mark_node)
       return error_mark_node;
   }
@@ -48091,6 +48082,10 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
   gcc_assert(!proto || TREE_CODE (proto) == TYPE_DECL);
   synth_tmpl_parm = finish_template_type_parm (class_type_node, synth_id);
 
+  if (become_template)
+    current_template_parms = tree_cons (size_int (current_template_depth + 1),
+					NULL_TREE, current_template_parms);
+
   /* Attach the constraint to the parm before processing.  */
   tree node = build_tree_list (NULL_TREE, synth_tmpl_parm);
   TREE_TYPE (node) = constr;
@@ -48130,8 +48125,7 @@ synthesize_implicit_template_parm  (cp_parser *parser, tree constr)
 
       tree new_parms = make_tree_vec (1);
       TREE_VEC_ELT (new_parms, 0) = parser->implicit_template_parms;
-      current_template_parms = tree_cons (size_int (processing_template_decl),
-					  new_parms, current_template_parms);
+      TREE_VALUE (current_template_parms) = new_parms;
     }
   else
     {

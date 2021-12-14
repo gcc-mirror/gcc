@@ -202,6 +202,15 @@ enum inner_bool_option
   NUM_INNER_BOOL_OPTIONS
 };
 
+/* Flags for global variables class.  For when the playback of the
+   global need to know what will happen to it later.  */
+enum global_var_flags
+{
+  GLOBAL_VAR_FLAGS_NONE = 0,
+  GLOBAL_VAR_FLAGS_WILL_BE_RVAL_INIT = 1,
+  GLOBAL_VAR_FLAGS_WILL_BE_BLOB_INIT = 2,
+};
+
 } // namespace gcc::jit
 
 } // namespace gcc

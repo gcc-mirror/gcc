@@ -97,6 +97,43 @@ namespace jit {
  Playback.
  **********************************************************************/
 
+/* Fold a readonly non-volatile variable with an initial constant value,
+   to that value.
+
+   Otherwise return the argument unchanged.
+
+   This fold is needed for setting a variable's DECL_INITIAL to the value
+   of a const variable.  The c-frontend does this in its own special
+   fold (), so we lift this part out and do it explicitly where there is a
+   potential for variables to be used as rvalues.  */
+static tree
+fold_const_var (tree node)
+{
+  /* See c_fully_fold_internal in c-fold.c and decl_constant_value_1
+     in c-typeck.c.  */
+  if (VAR_P (node)
+      && TREE_READONLY (node)
+      && !TREE_THIS_VOLATILE (node)
+      && DECL_INITIAL (node) != NULL_TREE
+      /* "This is invalid if initial value is not constant.
+	  If it has either a function call, a memory reference,
+	  or a variable, then re-evaluating it could give different
+	  results."  */
+      && TREE_CONSTANT (DECL_INITIAL (node)))
+    {
+      tree ret = DECL_INITIAL (node);
+      /* "Avoid unwanted tree sharing between the initializer and current
+	  function's body where the tree can be modified e.g. by the
+	  gimplifier."  */
+      if (TREE_STATIC (node))
+	ret = unshare_expr (ret);
+
+      return ret;
+    }
+
+  return node;
+}
+
 /* Build a STRING_CST tree for STR, or return NULL if it is NULL.
    The TREE_TYPE is not initialized.  */
 
@@ -538,15 +575,28 @@ playback::context::
 global_new_decl (location *loc,
 		 enum gcc_jit_global_kind kind,
 		 type *type,
-		 const char *name)
+		 const char *name,
+		 enum global_var_flags flags)
 {
   gcc_assert (type);
   gcc_assert (name);
+
+  tree type_tree = type->as_tree ();
+
   tree inner = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 			   get_identifier (name),
-			   type->as_tree ());
+			   type_tree);
+
   TREE_PUBLIC (inner) = (kind != GCC_JIT_GLOBAL_INTERNAL);
-  DECL_COMMON (inner) = 1;
+
+
+  int will_be_init = flags & (GLOBAL_VAR_FLAGS_WILL_BE_RVAL_INIT |
+			      GLOBAL_VAR_FLAGS_WILL_BE_BLOB_INIT);
+
+  /* A VAR_DECL with DECL_INITIAL will not end up in .common section.  */
+  if (!will_be_init)
+    DECL_COMMON (inner) = 1;
+
   switch (kind)
     {
     default:
@@ -564,6 +614,9 @@ global_new_decl (location *loc,
       DECL_EXTERNAL (inner) = 1;
       break;
     }
+
+  if (TYPE_READONLY (type_tree))
+    TREE_READONLY (inner) = 1;
 
   if (loc)
     set_tree_location (inner, loc);
@@ -589,11 +642,119 @@ playback::context::
 new_global (location *loc,
 	    enum gcc_jit_global_kind kind,
 	    type *type,
-	    const char *name)
+	    const char *name,
+	    enum global_var_flags flags)
 {
-  tree inner = global_new_decl (loc, kind, type, name);
+  tree inner =
+    global_new_decl (loc, kind, type, name, flags);
 
   return global_finalize_lvalue (inner);
+}
+
+void
+playback::context::
+global_set_init_rvalue (lvalue* variable,
+			rvalue* init)
+{
+  tree inner = variable->as_tree ();
+
+  /* We need to fold all expressions as much as possible.  The code
+     for a DECL_INITIAL only handles some operations,
+     etc addition, minus, 'address of'.  See output_addressed_constants ()
+     in varasm.c.  */
+  tree init_tree = init->as_tree ();
+  tree folded = fold_const_var (init_tree);
+
+  if (!TREE_CONSTANT (folded))
+    {
+      tree name = DECL_NAME (inner);
+
+      if (name != NULL_TREE)
+	add_error (NULL,
+		   "unable to convert initial value for the global variable %s"
+		   " to a compile-time constant",
+		   IDENTIFIER_POINTER (name));
+      else
+	add_error (NULL,
+		   "unable to convert initial value for global variable"
+		   " to a compile-time constant");
+      return;
+    }
+
+  DECL_INITIAL (inner) = folded;
+}
+
+playback::rvalue *
+playback::context::
+new_ctor (location *loc,
+	  type *type,
+	  const auto_vec<field*> *fields,
+	  const auto_vec<rvalue*> *rvalues)
+{
+  tree type_tree = type->as_tree ();
+
+  /* Handle empty ctors first.  I.e. set everything to 0.  */
+  if (rvalues->length () == 0)
+    return new rvalue (this, build_constructor (type_tree, NULL));
+
+  /* Handle arrays (and return).  */
+  if (TREE_CODE (type_tree) == ARRAY_TYPE)
+    {
+      int n = rvalues->length ();
+      /* The vec for the constructor node.  */
+      vec<constructor_elt, va_gc> *v = NULL;
+      vec_alloc (v, n);
+
+      for (int i = 0; i < n; i++)
+	{
+	  rvalue *rv = (*rvalues)[i];
+	  /* null rvalues indicate that the element should be zeroed.  */
+	  if (rv)
+	    CONSTRUCTOR_APPEND_ELT (v,
+				    build_int_cst (size_type_node, i),
+				    rv->as_tree ());
+	  else
+	    CONSTRUCTOR_APPEND_ELT (v,
+				    build_int_cst (size_type_node, i),
+				    build_zero_cst (TREE_TYPE (type_tree)));
+	}
+
+      tree ctor = build_constructor (type_tree, v);
+
+      if (loc)
+	set_tree_location (ctor, loc);
+
+      return new rvalue (this, ctor);
+    }
+
+  /* Handle structs and unions.  */
+  int n = fields->length ();
+
+  /* The vec for the constructor node.  */
+  vec<constructor_elt, va_gc> *v = NULL;
+  vec_alloc (v, n);
+
+  /* Iterate over the fields, building initializations.  */
+  for (int i = 0;i < n; i++)
+    {
+      tree field = (*fields)[i]->as_tree ();
+      rvalue *rv = (*rvalues)[i];
+      /* If the value is NULL, it means we should zero the field.  */
+      if (rv)
+	CONSTRUCTOR_APPEND_ELT (v, field, rv->as_tree ());
+      else
+	{
+	  tree zero_cst = build_zero_cst (TREE_TYPE (field));
+	  CONSTRUCTOR_APPEND_ELT (v, field, zero_cst);
+	}
+    }
+
+  tree ctor = build_constructor (type_tree, v);
+
+  if (loc)
+    set_tree_location (ctor, loc);
+
+  return new rvalue (this, build_constructor (type_tree, v));
 }
 
 /* Fill 'constructor_elements' with the memory content of
@@ -629,9 +790,10 @@ new_global_initialized (location *loc,
                         size_t element_size,
 			size_t initializer_num_elem,
 			const void *initializer,
-			const char *name)
+			const char *name,
+			enum global_var_flags flags)
 {
-  tree inner = global_new_decl (loc, kind, type, name);
+  tree inner = global_new_decl (loc, kind, type, name, flags);
 
   vec<constructor_elt, va_gc> *constructor_elements = NULL;
 
@@ -831,7 +993,8 @@ as_truth_value (tree expr, location *loc)
   if (loc)
     set_tree_location (typed_zero, loc);
 
-  expr = build2 (NE_EXPR, integer_type_node, expr, typed_zero);
+  expr = fold_build2_loc (UNKNOWN_LOCATION,
+    NE_EXPR, integer_type_node, expr, typed_zero);
   if (loc)
     set_tree_location (expr, loc);
 
@@ -867,6 +1030,8 @@ new_unary_op (location *loc,
   gcc_assert (a);
 
   tree node = a->as_tree ();
+  node = fold_const_var (node);
+
   tree inner_result = NULL;
 
   switch (op)
@@ -898,6 +1063,10 @@ new_unary_op (location *loc,
   inner_result = build1 (inner_op,
 			 result_type->as_tree (),
 			 node);
+
+  /* Try to fold.  */
+  inner_result = fold (inner_result);
+
   if (loc)
     set_tree_location (inner_result, loc);
 
@@ -922,7 +1091,10 @@ new_binary_op (location *loc,
   gcc_assert (b);
 
   tree node_a = a->as_tree ();
+  node_a = fold_const_var (node_a);
+
   tree node_b = b->as_tree ();
+  node_b = fold_const_var (node_b);
 
   switch (op)
     {
@@ -992,6 +1164,10 @@ new_binary_op (location *loc,
 			    result_type->as_tree (),
 			    node_a,
 			    node_b);
+
+  /* Try to fold the expression.  */
+  inner_expr = fold (inner_expr);
+
   if (loc)
     set_tree_location (inner_expr, loc);
 
@@ -1039,10 +1215,19 @@ new_comparison (location *loc,
       break;
     }
 
+  tree node_a = a->as_tree ();
+  node_a = fold_const_var (node_a);
+  tree node_b = b->as_tree ();
+  node_b = fold_const_var (node_b);
+
   tree inner_expr = build2 (inner_op,
 			    boolean_type_node,
-			    a->as_tree (),
-			    b->as_tree ());
+			    node_a,
+			    node_b);
+
+  /* Try to fold.  */
+  inner_expr = fold (inner_expr);
+
   if (loc)
     set_tree_location (inner_expr, loc);
   return new rvalue (this, inner_expr);
@@ -1142,6 +1327,8 @@ playback::context::build_cast (playback::location *loc,
 
      Only some kinds of cast are currently supported here.  */
   tree t_expr = expr->as_tree ();
+  t_expr = fold_const_var (t_expr);
+
   tree t_dst_type = type_->as_tree ();
   tree t_ret = NULL;
   t_ret = targetm.convert_to_type (t_dst_type, t_expr);
@@ -1220,7 +1407,10 @@ new_array_access (location *loc,
        c-family/c-common.c: pointer_int_sum
   */
   tree t_ptr = ptr->as_tree ();
+  t_ptr = fold_const_var (t_ptr);
   tree t_index = index->as_tree ();
+  t_index = fold_const_var (t_index);
+
   tree t_type_ptr = TREE_TYPE (t_ptr);
   tree t_type_star_ptr = TREE_TYPE (t_type_ptr);
 
@@ -1228,6 +1418,7 @@ new_array_access (location *loc,
     {
       tree t_result = build4 (ARRAY_REF, t_type_star_ptr, t_ptr, t_index,
 			      NULL_TREE, NULL_TREE);
+      t_result = fold (t_result);
       if (loc)
 	set_tree_location (t_result, loc);
       return new lvalue (this, t_result);
@@ -1237,12 +1428,14 @@ new_array_access (location *loc,
       /* Convert index to an offset in bytes.  */
       tree t_sizeof = size_in_bytes (t_type_star_ptr);
       t_index = fold_build1 (CONVERT_EXPR, sizetype, t_index);
-      tree t_offset = build2 (MULT_EXPR, sizetype, t_index, t_sizeof);
+      tree t_offset = fold_build2_loc (UNKNOWN_LOCATION,
+	MULT_EXPR, sizetype, t_index, t_sizeof);
 
       /* Locate (ptr + offset).  */
-      tree t_address = build2 (POINTER_PLUS_EXPR, t_type_ptr, t_ptr, t_offset);
+      tree t_address = fold_build2_loc (UNKNOWN_LOCATION,
+	POINTER_PLUS_EXPR, t_type_ptr, t_ptr, t_offset);
 
-      tree t_indirection = build1 (INDIRECT_REF, t_type_star_ptr, t_address);
+      tree t_indirection = fold_build1 (INDIRECT_REF, t_type_star_ptr, t_address);
       if (loc)
 	{
 	  set_tree_location (t_sizeof, loc);
@@ -1290,7 +1483,7 @@ new_dereference (tree ptr,
   gcc_assert (ptr);
 
   tree type = TREE_TYPE (TREE_TYPE(ptr));
-  tree datum = build1 (INDIRECT_REF, type, ptr);
+  tree datum = fold_build1 (INDIRECT_REF, type, ptr);
   if (loc)
     set_tree_location (datum, loc);
   return datum;
@@ -1444,7 +1637,7 @@ get_address (location *loc)
   tree t_lvalue = as_tree ();
   tree t_thistype = TREE_TYPE (t_lvalue);
   tree t_ptrtype = build_pointer_type (t_thistype);
-  tree ptr = build1 (ADDR_EXPR, t_ptrtype, t_lvalue);
+  tree ptr = fold_build1 (ADDR_EXPR, t_ptrtype, t_lvalue);
   if (loc)
     get_context ()->set_tree_location (ptr, loc);
   if (mark_addressable (loc))

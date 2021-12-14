@@ -48,10 +48,12 @@ enum modref_special_parms {
   MODREF_UNKNOWN_PARM = -1,
   MODREF_STATIC_CHAIN_PARM = -2,
   MODREF_RETSLOT_PARM = -3,
+  /* Used for bases that points to memory that escapes from function.  */
+  MODREF_GLOBAL_MEMORY_PARM = -4,
   /* Used in modref_parm_map to tak references which can be removed
      from the summary during summary update since they now points to loca
      memory.  */
-  MODREF_LOCAL_MEMORY_PARM = -4
+  MODREF_LOCAL_MEMORY_PARM = -5
 };
 
 /* Modref record accesses relative to function parameters.
@@ -86,6 +88,7 @@ struct GTY(()) modref_access_node
   bool useful_for_kill_p () const
     {
       return parm_offset_known && parm_index != MODREF_UNKNOWN_PARM
+	     && parm_index != MODREF_GLOBAL_MEMORY_PARM
 	     && parm_index != MODREF_RETSLOT_PARM && known_size_p (size)
 	     && known_eq (max_size, size)
 	     && known_gt (size, 0);
@@ -175,6 +178,7 @@ struct GTY((user)) modref_ref_node
        in the caller.  */
     gcc_checking_assert (a.parm_index >= 0
 			 || a.parm_index == MODREF_STATIC_CHAIN_PARM
+			 || a.parm_index == MODREF_GLOBAL_MEMORY_PARM
 			 || a.parm_index == MODREF_UNKNOWN_PARM);
 
     if (!a.useful_p ())
@@ -524,7 +528,8 @@ struct GTY((user)) modref_tree
 	      unsigned int max_accesses,
 	      modref_tree <T> *other, vec <modref_parm_map> *parm_map,
 	      modref_parm_map *static_chain_map,
-	      bool record_accesses)
+	      bool record_accesses,
+	      bool promote_unknown_to_global = false)
   {
     if (!other || every_base)
       return false;
@@ -579,7 +584,9 @@ struct GTY((user)) modref_tree
 		  {
 		    modref_access_node a = *access_node;
 
-		    if (a.parm_index != MODREF_UNKNOWN_PARM && parm_map)
+		    if (a.parm_index != MODREF_UNKNOWN_PARM
+			&& a.parm_index != MODREF_GLOBAL_MEMORY_PARM
+			&& parm_map)
 		      {
 			if (a.parm_index >= (int)parm_map->length ())
 			  a.parm_index = MODREF_UNKNOWN_PARM;
@@ -596,6 +603,9 @@ struct GTY((user)) modref_tree
 			    a.parm_index = m.parm_index;
 			  }
 		      }
+		    if (a.parm_index == MODREF_UNKNOWN_PARM
+			&& promote_unknown_to_global)
+		      a.parm_index = MODREF_GLOBAL_MEMORY_PARM;
 		    changed |= insert (max_bases, max_refs, max_accesses,
 				       base_node->base, ref_node->ref,
 				       a, record_accesses);
@@ -614,12 +624,14 @@ struct GTY((user)) modref_tree
   bool merge (tree fndecl,
 	      modref_tree <T> *other, vec <modref_parm_map> *parm_map,
 	      modref_parm_map *static_chain_map,
-	      bool record_accesses)
+	      bool record_accesses,
+	      bool promote_unknown_to_global = false)
   {
      return merge (opt_for_fn (fndecl, param_modref_max_bases),
 		   opt_for_fn (fndecl, param_modref_max_refs),
 		   opt_for_fn (fndecl, param_modref_max_accesses),
-		   other, parm_map, static_chain_map, record_accesses);
+		   other, parm_map, static_chain_map, record_accesses,
+		   promote_unknown_to_global);
   }
 
   /* Copy OTHER to THIS.  */
@@ -657,7 +669,8 @@ struct GTY((user)) modref_tree
 	    if (ref_node->every_access)
 	      return true;
 	    FOR_EACH_VEC_SAFE_ELT (ref_node->accesses, k, access_node)
-	      if (access_node->parm_index == MODREF_UNKNOWN_PARM)
+	      if (access_node->parm_index == MODREF_UNKNOWN_PARM
+		  || access_node->parm_index == MODREF_GLOBAL_MEMORY_PARM)
 		return true;
 	  }
       }

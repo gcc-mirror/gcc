@@ -1,3 +1,40 @@
+2021-12-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99531
+	* gcc.target/i386/pr99531.c: New test.
+
+2021-12-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr103611-1.c: New test case.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_3.c: New test.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_2.c: New test.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_1.c: New test.
+
+2021-12-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/atomic-25.f90: Remove sorry, fix + add checks.
+	* gfortran.dg/gomp/atomic-26.f90: Likewise.
+	* gfortran.dg/gomp/atomic-21.f90: New test.
+
+2021-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103513
+	* gcc.c-torture/compile/pr103513.c: New test.
+
+2021-12-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103515
+	* gcc.target/powerpc/pr103515.c: New test.
+
 2021-12-12  Antoni Boucher  <bouanto@zoho.com>
 
 	PR target/100688

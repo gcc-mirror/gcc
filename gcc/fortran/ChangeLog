@@ -1,3 +1,10 @@
+2021-12-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/103576
+	* openmp.c (is_scalar_intrinsic_expr): Fix condition.
+	(resolve_omp_atomic): Fix/update checks, accept compare.
+	* trans-openmp.c (gfc_trans_omp_atomic): Handle compare.
+
 2021-12-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103606

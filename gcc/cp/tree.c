@@ -3577,11 +3577,6 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
 
-  if (code == COMPOUND_EXPR && TREE_CODE (non_dep) != COMPOUND_EXPR)
-    /* This should not be considered a COMPOUND_EXPR, because it
-       resolves to an overload.  */
-    COMPOUND_EXPR_OVERLOADED (t) = 1;
-
   va_end (p);
   return convert_from_reference (t);
 }

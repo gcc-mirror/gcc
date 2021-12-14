@@ -261,7 +261,20 @@ make_friend_class (tree type, tree friend_type, bool complain)
      The friend is a template friend iff FRIEND_DEPTH is nonzero.  */
 
   int class_template_depth = template_class_depth (type);
-  int friend_depth = processing_template_decl - class_template_depth;
+  int friend_depth = 0;
+  if (current_template_depth)
+    /* When processing a friend declaration at parse time, just compare the
+       current depth to that of the class template.  */
+    friend_depth = current_template_depth - class_template_depth;
+  else
+    {
+      /* Otherwise, we got here from instantiate_class_template.  Determine
+	 the friend depth by looking at the template parameters used within
+	 FRIEND_TYPE.  */
+      gcc_checking_assert (class_template_depth == 0);
+      while (uses_template_parms_level (friend_type, friend_depth + 1))
+	++friend_depth;
+    }
 
   if (! MAYBE_CLASS_TYPE_P (friend_type)
       && TREE_CODE (friend_type) != TEMPLATE_TEMPLATE_PARM)
@@ -351,8 +364,13 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  tree name = TYPE_IDENTIFIER (friend_type);
 	  tree decl;
 
-	  if (!uses_template_parms_level (ctype, class_template_depth
-						 + friend_depth))
+	  /* We need to distinguish a TYPENAME_TYPE for the non-template
+	     class B in
+	       template<class T> friend class A<T>::B;
+	     vs for the class template B in
+	       template<class T> template<class U> friend class A<T>::B;  */
+	  if (current_template_depth
+	      && !uses_template_parms_level (ctype, current_template_depth))
 	    template_member_p = true;
 
 	  if (class_template_depth)
@@ -517,7 +535,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	 3. TEMPLATE_MEMBER_P is true (for `W').  */
 
       int class_template_depth = template_class_depth (current_class_type);
-      int friend_depth = processing_template_decl - class_template_depth;
+      int friend_depth = current_template_depth - class_template_depth;
       /* We will figure this out later.  */
       bool template_member_p = false;
 

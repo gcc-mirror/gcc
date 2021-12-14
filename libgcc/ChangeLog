@@ -1,3 +1,36 @@
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc*-*-vxworks7*): Remove
+	rs6000/t-linux and t-slibgcc-libgcc from tmake_file.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (*vxworks*): Remove special case for
+	arm on the use of vxcrtstuff.
+
+2021-12-13  Fred Konrad  <konrad@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxcrtstuffS: New Makefile fragment.
+	* config/vxcrtstuff.c: Provide __dso_handle. Provide _init/_fini
+	functions for INITFINI_ARRAY support in shared libs and guard
+	the definition of eh table registration functions on conditions
+	indicating they are needed.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc*-wrs-vxworks7*): Place t-crtstuff
+	ahead of the other files in tmake_files.
+	* config/t-vxworks: Add to CRTSTUFF_T_CFLAGS instead of
+	overriding it.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Simplify and handle
+	both VxWorks7 and earlier.
+	* config/t-vxworks7: Remove.
+	* config.host: Remove special case for vxworks7.
+
 2021-12-11  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
 	* config/vxcrtstuff.c: Make constructor and destructor
