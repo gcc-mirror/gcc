@@ -3258,9 +3258,9 @@ void
 rs6000_invalid_builtin (enum rs6000_gen_builtins fncode)
 {
   size_t j = (size_t) fncode;
-  const char *name = rs6000_builtin_info_x[j].bifname;
+  const char *name = rs6000_builtin_info[j].bifname;
 
-  switch (rs6000_builtin_info_x[j].enable)
+  switch (rs6000_builtin_info[j].enable)
     {
     case ENB_P5:
       error ("%qs requires the %qs option", name, "-mcpu=power5");
@@ -3510,7 +3510,7 @@ rs6000_builtin_valid_without_lhs (enum rs6000_gen_builtins fn_code,
 bool
 rs6000_builtin_is_supported (enum rs6000_gen_builtins fncode)
 {
-  switch (rs6000_builtin_info_x[(size_t) fncode].enable)
+  switch (rs6000_builtin_info[(size_t) fncode].enable)
     {
     case ENB_ALWAYS:
       return true;
@@ -3570,18 +3570,18 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
   gimple *stmt = gsi_stmt (*gsi);
   size_t fncode = (size_t) fn_code;
 
-  if (!bif_is_mma (rs6000_builtin_info_x[fncode]))
+  if (!bif_is_mma (rs6000_builtin_info[fncode]))
     return false;
 
   /* Each call that can be gimple-expanded has an associated built-in
      function that it will expand into.  If this one doesn't, we have
      already expanded it!  Exceptions: lxvp and stxvp.  */
-  if (rs6000_builtin_info_x[fncode].assoc_bif == RS6000_BIF_NONE
+  if (rs6000_builtin_info[fncode].assoc_bif == RS6000_BIF_NONE
       && fncode != RS6000_BIF_LXVP
       && fncode != RS6000_BIF_STXVP)
     return false;
 
-  bifdata *bd = &rs6000_builtin_info_x[fncode];
+  bifdata *bd = &rs6000_builtin_info[fncode];
   unsigned nopnds = bd->nargs;
   gimple_seq new_seq = NULL;
   gimple *new_call;
@@ -3626,7 +3626,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 	 to emit a xxmfacc instruction now, since we cannot do it later.  */
       if (fncode == RS6000_BIF_DISASSEMBLE_ACC)
 	{
-	  new_decl = rs6000_builtin_decls_x[RS6000_BIF_XXMFACC_INTERNAL];
+	  new_decl = rs6000_builtin_decls[RS6000_BIF_XXMFACC_INTERNAL];
 	  new_call = gimple_build_call (new_decl, 1, src);
 	  src = create_tmp_reg_or_ssa_name (vector_quad_type_node);
 	  gimple_call_set_lhs (new_call, src);
@@ -3635,7 +3635,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 
       /* Copy the accumulator/pair vector by vector.  */
       new_decl
-	= rs6000_builtin_decls_x[rs6000_builtin_info_x[fncode].assoc_bif];
+	= rs6000_builtin_decls[rs6000_builtin_info[fncode].assoc_bif];
       tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
 						   ptr_mode, true);
       tree dst_base = build1 (VIEW_CONVERT_EXPR, dst_type, dst_ptr);
@@ -3693,7 +3693,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 
   /* Convert this built-in into an internal version that uses pass-by-value
      arguments.  The internal built-in is found in the assoc_bif field.  */
-  new_decl = rs6000_builtin_decls_x[rs6000_builtin_info_x[fncode].assoc_bif];
+  new_decl = rs6000_builtin_decls[rs6000_builtin_info[fncode].assoc_bif];
   tree lhs, op[MAX_MMA_OPERANDS];
   tree acc = gimple_call_arg (stmt, 0);
   push_gimplify_context (true);
@@ -3777,8 +3777,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   gimple *g;
 
   size_t uns_fncode = (size_t) fn_code;
-  enum insn_code icode = rs6000_builtin_info_x[uns_fncode].icode;
-  const char *fn_name1 = rs6000_builtin_info_x[uns_fncode].bifname;
+  enum insn_code icode = rs6000_builtin_info[uns_fncode].icode;
+  const char *fn_name1 = rs6000_builtin_info[uns_fncode].bifname;
   const char *fn_name2 = (icode != CODE_FOR_nothing)
 			  ? get_insn_name ((int) icode)
 			  : "nothing";
@@ -4801,7 +4801,7 @@ cpu_expand_builtin (enum rs6000_gen_builtins fcode,
   if (TREE_CODE (arg) != STRING_CST)
     {
       error ("builtin %qs only accepts a string argument",
-	     rs6000_builtin_info_x[(size_t) fcode].bifname);
+	     rs6000_builtin_info[(size_t) fcode].bifname);
       return const0_rtx;
     }
 
@@ -4820,7 +4820,7 @@ cpu_expand_builtin (enum rs6000_gen_builtins fcode,
 	{
 	  /* Invalid CPU argument.  */
 	  error ("cpu %qs is an invalid argument to builtin %qs",
-		 cpu, rs6000_builtin_info_x[(size_t) fcode].bifname);
+		 cpu, rs6000_builtin_info[(size_t) fcode].bifname);
 	  return const0_rtx;
 	}
 
@@ -4849,7 +4849,7 @@ cpu_expand_builtin (enum rs6000_gen_builtins fcode,
 	  /* Invalid HWCAP argument.  */
 	  error ("%s %qs is an invalid argument to builtin %qs",
 		 "hwcap", hwcap,
-		 rs6000_builtin_info_x[(size_t) fcode].bifname);
+		 rs6000_builtin_info[(size_t) fcode].bifname);
 	  return const0_rtx;
 	}
 
@@ -4877,7 +4877,7 @@ cpu_expand_builtin (enum rs6000_gen_builtins fcode,
 
 #else
   warning (0, "builtin %qs needs GLIBC (2.23 and newer) that exports hardware "
-	   "capability bits", rs6000_builtin_info_x[(size_t) fcode].bifname);
+	   "capability bits", rs6000_builtin_info[(size_t) fcode].bifname);
 
   /* For old LIBCs, always return FALSE.  */
   emit_move_insn (target, GEN_INT (0));
@@ -5479,7 +5479,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
   enum rs6000_gen_builtins fcode
     = (enum rs6000_gen_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   size_t uns_fcode = (size_t)fcode;
-  enum insn_code icode = rs6000_builtin_info_x[uns_fcode].icode;
+  enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
 
   /* TODO: The following commentary and code is inherited from the original
      builtin processing code.  The commentary is a bit confusing, with the
@@ -5557,7 +5557,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
   /* In case of "#pragma target" changes, we initialize all builtins
      but check for actual availability now, during expand time.  For
      invalid builtins, generate a normal call.  */
-  bifdata *bifaddr = &rs6000_builtin_info_x[uns_fcode];
+  bifdata *bifaddr = &rs6000_builtin_info[uns_fcode];
   bif_enable e = bifaddr->enable;
 
   if (!(e == ENB_ALWAYS
@@ -6267,7 +6267,7 @@ rs6000_init_builtins (void)
       fprintf (stderr, "\nAutogenerated built-in functions:\n\n");
       for (int i = 1; i < (int) RS6000_BIF_MAX; i++)
 	{
-	  bif_enable e = rs6000_builtin_info_x[i].enable;
+	  bif_enable e = rs6000_builtin_info[i].enable;
 	  if (e == ENB_P5 && !TARGET_POPCNTB)
 	    continue;
 	  if (e == ENB_P6 && !TARGET_CMPB)
@@ -6306,10 +6306,10 @@ rs6000_init_builtins (void)
 	    continue;
 	  if (e == ENB_MMA && !TARGET_MMA)
 	    continue;
-	  tree fntype = rs6000_builtin_info_x[i].fntype;
+	  tree fntype = rs6000_builtin_info[i].fntype;
 	  tree t = TREE_TYPE (fntype);
 	  fprintf (stderr, "%s %s (", rs6000_type_string (t),
-		   rs6000_builtin_info_x[i].bifname);
+		   rs6000_builtin_info[i].bifname);
 	  t = TYPE_ARG_TYPES (fntype);
 	  while (t && TREE_VALUE (t) != void_type_node)
 	    {
@@ -6320,7 +6320,7 @@ rs6000_init_builtins (void)
 		fprintf (stderr, ", ");
 	    }
 	  fprintf (stderr, "); %s [%4d]\n",
-		   rs6000_builtin_info_x[i].attr_string, (int) i);
+		   rs6000_builtin_info[i].attr_string, (int) i);
 	}
       fprintf (stderr, "\nEnd autogenerated built-in functions.\n\n\n");
      }
@@ -6349,7 +6349,7 @@ rs6000_init_builtins (void)
     }
 
   altivec_builtin_mask_for_load
-    = rs6000_builtin_decls_x[RS6000_BIF_MASK_FOR_LOAD];
+    = rs6000_builtin_decls[RS6000_BIF_MASK_FOR_LOAD];
 
 #ifdef SUBTARGET_INIT_BUILTINS
   SUBTARGET_INIT_BUILTINS;
@@ -6366,7 +6366,7 @@ rs6000_builtin_decl (unsigned code, bool /* initialize_p */)
   if (fcode >= RS6000_OVLD_MAX)
     return error_mark_node;
 
-  return rs6000_builtin_decls_x[code];
+  return rs6000_builtin_decls[code];
 }
 
 /* Return the internal arg pointer used for function incoming

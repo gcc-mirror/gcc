@@ -2212,7 +2212,7 @@ write_decls (void)
   fprintf (header_file, "  RS6000_OVLD_MAX\n};\n\n");
 
   fprintf (header_file,
-	   "extern GTY(()) tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
+	   "extern GTY(()) tree rs6000_builtin_decls[RS6000_OVLD_MAX];\n\n");
 
   fprintf (header_file,
 	   "enum rs6000_ovld_instances\n{\n  RS6000_INST_NONE,\n");
@@ -2343,9 +2343,6 @@ write_decls (void)
 	   "#define bif_is_ibmld(x)\t((x).bifattrs & bif_ibmld_bit)\n");
   fprintf (header_file, "\n");
 
-  /* #### Note that the _x is added for now to avoid conflict with
-     the existing rs6000_builtin_info[] file while testing.  It will
-     be removed as we progress.  */
   /* #### Cannot mark this as a GC root because only pointer types can
      be marked as GTY((user)) and be GC roots.  All trees in here are
      kept alive by other globals, so not a big deal.  Alternatively,
@@ -2353,7 +2350,7 @@ write_decls (void)
      to avoid requiring a GTY((user)) designation, but that seems
      unnecessarily gross.  */
   fprintf (header_file,
-	   "extern bifdata rs6000_builtin_info_x[RS6000_BIF_MAX];\n\n");
+	   "extern bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
 
   fprintf (header_file, "struct GTY((user)) ovlddata\n");
   fprintf (header_file, "{\n");
@@ -2502,12 +2499,12 @@ write_header_file (void)
   return 1;
 }
 
-/* Write the decl and initializer for rs6000_builtin_info_x[].  */
+/* Write the decl and initializer for rs6000_builtin_info[].  */
 static void
 write_bif_static_init (void)
 {
   const char *res[3];
-  fprintf (init_file, "bifdata rs6000_builtin_info_x[RS6000_BIF_MAX] =\n");
+  fprintf (init_file, "bifdata rs6000_builtin_info[RS6000_BIF_MAX] =\n");
   fprintf (init_file, "  {\n");
   fprintf (init_file, "    { /* RS6000_BIF_NONE: */\n");
   fprintf (init_file, "      \"\", ENB_ALWAYS, 0, CODE_FOR_nothing, 0,\n");
@@ -2674,7 +2671,7 @@ write_init_bif_table (void)
   for (int i = 0; i <= curr_bif; i++)
     {
       fprintf (init_file,
-	       "  rs6000_builtin_info_x[RS6000_BIF_%s].fntype"
+	       "  rs6000_builtin_info[RS6000_BIF_%s].fntype"
 	       "\n    = %s;\n",
 	       bifs[i].idname, bifs[i].fndecl);
 
@@ -2701,7 +2698,7 @@ write_init_bif_table (void)
 	}
 
       fprintf (init_file,
-	       "  rs6000_builtin_decls_x[(int)RS6000_BIF_%s] = t\n",
+	       "  rs6000_builtin_decls[(int)RS6000_BIF_%s] = t\n",
 	       bifs[i].idname);
       fprintf (init_file,
 	       "    = add_builtin_function (\"%s\",\n",
@@ -2742,7 +2739,7 @@ write_init_bif_table (void)
 	  fprintf (init_file, "    }\n");
 	  fprintf (init_file, "  else\n");
 	  fprintf (init_file, "    {\n");
-	  fprintf (init_file, "      rs6000_builtin_decls_x"
+	  fprintf (init_file, "      rs6000_builtin_decls"
 		   "[(int)RS6000_BIF_%s] = NULL_TREE;\n", bifs[i].idname);
 	  fprintf (init_file, "    }\n");
 	}
@@ -2795,7 +2792,7 @@ write_init_ovld_table (void)
 	    }
 
 	  fprintf (init_file,
-		   "  rs6000_builtin_decls_x[(int)RS6000_OVLD_%s] = t\n",
+		   "  rs6000_builtin_decls[(int)RS6000_OVLD_%s] = t\n",
 		   stanza->stanza_id);
 	  fprintf (init_file,
 		   "    = add_builtin_function (\"%s\",\n",
@@ -2844,7 +2841,7 @@ write_init_file (void)
   fprintf (init_file, "#include \"rs6000-builtins.h\"\n");
   fprintf (init_file, "\n");
 
-  fprintf (init_file, "tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
+  fprintf (init_file, "tree rs6000_builtin_decls[RS6000_OVLD_MAX];\n\n");
 
   write_bif_static_init ();
   write_ovld_static_init ();
@@ -2860,11 +2857,11 @@ write_init_file (void)
   fprintf (init_file, "\n");
 
   fprintf (init_file,
-	   "  rs6000_builtin_decls_x[RS6000_BIF_NONE] = NULL_TREE;\n");
+	   "  rs6000_builtin_decls[RS6000_BIF_NONE] = NULL_TREE;\n");
   fprintf (init_file,
-	   "  rs6000_builtin_decls_x[RS6000_BIF_MAX] = NULL_TREE;\n");
+	   "  rs6000_builtin_decls[RS6000_BIF_MAX] = NULL_TREE;\n");
   fprintf (init_file,
-	   "  rs6000_builtin_decls_x[RS6000_OVLD_NONE] = NULL_TREE;\n\n");
+	   "  rs6000_builtin_decls[RS6000_OVLD_NONE] = NULL_TREE;\n\n");
 
   write_init_bif_table ();
   write_init_ovld_table ();
