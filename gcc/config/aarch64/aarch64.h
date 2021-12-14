@@ -319,6 +319,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
 #define AARCH64_ISA_V9		   (aarch64_isa_flags & AARCH64_FL_V9)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
+#define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -412,6 +413,9 @@ extern unsigned aarch64_architecture_version;
 
 /* MOPS instructions are enabled through +mops.  */
 #define TARGET_MOPS (AARCH64_ISA_MOPS)
+
+/* LS64 instructions are enabled through +ls64.  */
+#define TARGET_LS64 (AARCH64_ISA_LS64)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

@@ -49,6 +49,7 @@
 #include "gimple-fold.h"
 
 #define v8qi_UP  E_V8QImode
+#define v8di_UP  E_V8DImode
 #define v4hi_UP  E_V4HImode
 #define v4hf_UP  E_V4HFmode
 #define v2si_UP  E_V2SImode
@@ -607,6 +608,11 @@ enum aarch64_builtins
   AARCH64_MEMTAG_BUILTIN_SET_TAG,
   AARCH64_MEMTAG_BUILTIN_GET_TAG,
   AARCH64_MEMTAG_BUILTIN_END,
+  /* LS64 builtins.  */
+  AARCH64_LS64_BUILTIN_LD64B,
+  AARCH64_LS64_BUILTIN_ST64B,
+  AARCH64_LS64_BUILTIN_ST64BV,
+  AARCH64_LS64_BUILTIN_ST64BV0,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1571,6 +1577,70 @@ aarch64_init_memtag_builtins (void)
 #undef AARCH64_INIT_MEMTAG_BUILTINS_DECL
 }
 
+/* Add builtins for Load/store 64 Byte instructions.  */
+
+typedef struct
+{
+  const char *name;
+  unsigned int code;
+  tree type;
+} ls64_builtins_data;
+
+static GTY(()) tree ls64_arm_data_t = NULL_TREE;
+
+static void
+aarch64_init_ls64_builtins_types (void)
+{
+  /* Synthesize:
+
+     typedef struct {
+       uint64_t val[8];
+     } __arm_data512_t;  */
+  const char *tuple_type_name = "__arm_data512_t";
+  tree node_type = get_typenode_from_name (UINT64_TYPE);
+  tree array_type = build_array_type_nelts (node_type, 8);
+  SET_TYPE_MODE (array_type, V8DImode);
+
+  gcc_assert (TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type));
+  gcc_assert (TYPE_ALIGN (array_type) == 64);
+
+  tree field = build_decl (input_location, FIELD_DECL,
+                           get_identifier ("val"), array_type);
+
+  ls64_arm_data_t = lang_hooks.types.simulate_record_decl (input_location,
+                         tuple_type_name,
+                         make_array_slice (&field, 1));
+
+  gcc_assert (TYPE_MODE (ls64_arm_data_t) == V8DImode);
+  gcc_assert (TYPE_MODE_RAW (ls64_arm_data_t) == TYPE_MODE (ls64_arm_data_t));
+  gcc_assert (TYPE_ALIGN (ls64_arm_data_t) == 64);
+}
+
+static void
+aarch64_init_ls64_builtins (void)
+{
+  aarch64_init_ls64_builtins_types ();
+
+  ls64_builtins_data data[4] = {
+    {"__builtin_aarch64_ld64b", AARCH64_LS64_BUILTIN_LD64B,
+     build_function_type_list (ls64_arm_data_t,
+                               const_ptr_type_node, NULL_TREE)},
+    {"__builtin_aarch64_st64b", AARCH64_LS64_BUILTIN_ST64B,
+     build_function_type_list (void_type_node, ptr_type_node,
+                               ls64_arm_data_t, NULL_TREE)},
+    {"__builtin_aarch64_st64bv", AARCH64_LS64_BUILTIN_ST64BV,
+     build_function_type_list (uint64_type_node, ptr_type_node,
+                               ls64_arm_data_t, NULL_TREE)},
+    {"__builtin_aarch64_st64bv0", AARCH64_LS64_BUILTIN_ST64BV0,
+     build_function_type_list (uint64_type_node, ptr_type_node,
+                               ls64_arm_data_t, NULL_TREE)},
+  };
+
+  for (size_t i = 0; i < ARRAY_SIZE (data); ++i)
+    aarch64_builtin_decls[data[i].code]
+      = aarch64_general_add_builtin (data[i].name, data[i].type, data[i].code);
+}
+
 /* Initialize fpsr fpcr getters and setters.  */
 
 static void
@@ -1660,6 +1730,9 @@ aarch64_general_init_builtins (void)
 
   if (TARGET_MEMTAG)
     aarch64_init_memtag_builtins ();
+
+  if (TARGET_LS64)
+    aarch64_init_ls64_builtins ();
 }
 
 /* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */
@@ -2130,6 +2203,57 @@ aarch64_expand_builtin_tme (int fcode, tree exp, rtx target)
     return target;
 }
 
+/* Function to expand an expression EXP which calls one of the Load/Store
+   64 Byte extension (LS64) builtins FCODE with the result going to TARGET.  */
+static rtx
+aarch64_expand_builtin_ls64 (int fcode, tree exp, rtx target)
+{
+  expand_operand ops[3];
+
+  switch (fcode)
+    {
+    case AARCH64_LS64_BUILTIN_LD64B:
+      {
+        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+        create_output_operand (&ops[0], target, V8DImode);
+        create_input_operand (&ops[1], op0, DImode);
+        expand_insn (CODE_FOR_ld64b, 2, ops);
+        return ops[0].value;
+      }
+    case AARCH64_LS64_BUILTIN_ST64B:
+      {
+        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+        rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+        create_output_operand (&ops[0], op0, DImode);
+        create_input_operand (&ops[1], op1, V8DImode);
+        expand_insn (CODE_FOR_st64b, 2, ops);
+        return const0_rtx;
+      }
+    case AARCH64_LS64_BUILTIN_ST64BV:
+      {
+        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+        rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+        create_output_operand (&ops[0], target, DImode);
+        create_input_operand (&ops[1], op0, DImode);
+        create_input_operand (&ops[2], op1, V8DImode);
+        expand_insn (CODE_FOR_st64bv, 3, ops);
+        return ops[0].value;
+      }
+    case AARCH64_LS64_BUILTIN_ST64BV0:
+      {
+        rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+        rtx op1 = expand_normal (CALL_EXPR_ARG (exp, 1));
+        create_output_operand (&ops[0], target, DImode);
+        create_input_operand (&ops[1], op0, DImode);
+        create_input_operand (&ops[2], op1, V8DImode);
+        expand_insn (CODE_FOR_st64bv0, 3, ops);
+        return ops[0].value;
+      }
+    }
+
+  gcc_unreachable ();
+}
+
 /* Expand a random number builtin EXP with code FCODE, putting the result
    int TARGET.  If IGNORE is true the return value is ignored.  */
 
@@ -2387,6 +2511,12 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
       || fcode == AARCH64_TME_BUILTIN_TTEST
       || fcode == AARCH64_TME_BUILTIN_TCANCEL)
     return aarch64_expand_builtin_tme (fcode, exp, target);
+
+  if (fcode == AARCH64_LS64_BUILTIN_LD64B
+      || fcode == AARCH64_LS64_BUILTIN_ST64B
+      || fcode == AARCH64_LS64_BUILTIN_ST64BV
+      || fcode == AARCH64_LS64_BUILTIN_ST64BV0)
+    return aarch64_expand_builtin_ls64 (fcode, exp, target);
 
   if (fcode >= AARCH64_MEMTAG_BUILTIN_START
       && fcode <= AARCH64_MEMTAG_BUILTIN_END)

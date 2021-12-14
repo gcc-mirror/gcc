@@ -7123,6 +7123,15 @@
     }
 })
 
+(define_expand "movv8di"
+  [(set (match_operand:V8DI 0 "nonimmediate_operand")
+	(match_operand:V8DI 1 "general_operand"))]
+  "TARGET_SIMD"
+{
+  if (can_create_pseudo_p () && MEM_P (operands[0]))
+    operands[1] = force_reg (V8DImode, operands[1]);
+})
+
 (define_expand "aarch64_ld1x3<vstruct_elt>"
   [(match_operand:VSTRUCT_3QD 0 "register_operand")
    (match_operand:DI 1 "register_operand")]
@@ -7251,6 +7260,17 @@
   [(set_attr "type" "multiple,neon_store<nregs>_<nregs>reg_q,\
 		     neon_load<nregs>_<nregs>reg_q")
    (set_attr "length" "<insn_count>,4,4")]
+)
+
+(define_insn "*aarch64_movv8di"
+  [(set (match_operand:V8DI 0 "nonimmediate_operand" "=r,m,r")
+	(match_operand:V8DI 1 "general_operand" " r,r,m"))]
+  "!BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], V8DImode)
+       || register_operand (operands[1], V8DImode))"
+  "#"
+  [(set_attr "type" "multiple,multiple,multiple")
+   (set_attr "length" "32,16,16")]
 )
 
 (define_insn "aarch64_be_ld1<mode>"
@@ -7490,6 +7510,34 @@
 		      simplify_gen_subreg (OImode, operands[1], XImode, 0));
       emit_move_insn (simplify_gen_subreg (OImode, operands[0], XImode, 32),
 		      simplify_gen_subreg (OImode, operands[1], XImode, 32));
+      DONE;
+    }
+  else
+    FAIL;
+})
+
+(define_split
+  [(set (match_operand:V8DI 0 "nonimmediate_operand")
+        (match_operand:V8DI 1 "general_operand"))]
+  "TARGET_SIMD && reload_completed"
+  [(const_int 0)]
+{
+  if (register_operand (operands[0], V8DImode)
+      && register_operand (operands[1], V8DImode))
+    {
+      aarch64_simd_emit_reg_reg_move (operands, DImode, 8);
+      DONE;
+    }
+  else if ((register_operand (operands[0], V8DImode)
+            && memory_operand (operands[1], V8DImode))
+           || (memory_operand (operands[0], V8DImode)
+            && register_operand (operands[1], V8DImode)))
+    {
+      for (int offset = 0; offset < 64; offset += 16)
+        emit_move_insn (simplify_gen_subreg (TImode, operands[0],
+                                             V8DImode, offset),
+                        simplify_gen_subreg (TImode, operands[1],
+                                             V8DImode, offset));
       DONE;
     }
   else
