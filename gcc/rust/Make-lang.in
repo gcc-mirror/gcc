@@ -93,6 +93,7 @@ GRS_OBJS = \
     rust/rust-compile-intrinsic.o \
     rust/rust-base62.o \
     rust/rust-compile-expr.o \
+    rust/rust-compile-type.o \
     $(END)
 # removed object files from here
 
