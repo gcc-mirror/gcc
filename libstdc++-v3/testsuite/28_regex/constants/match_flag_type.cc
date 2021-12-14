@@ -20,9 +20,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.5.1 
+// C++11 28.5.2 [re.matchflag]
 
 #include <regex>
+#include <testsuite_common_types.h>
 
 void
 test01()
@@ -42,6 +43,28 @@ test01()
   flag |= std::regex_constants::format_no_copy;
   flag |= std::regex_constants::format_first_only;
 }
+
+#if __cplusplus >= 201402L
+static_assert(
+    __gnu_test::test_bitmask_values( {
+      std::regex_constants::match_not_bol,
+      std::regex_constants::match_not_eol,
+      std::regex_constants::match_not_bow,
+      std::regex_constants::match_not_eow,
+      std::regex_constants::match_any,
+      std::regex_constants::match_not_null,
+      std::regex_constants::match_continuous,
+      std::regex_constants::match_prev_avail,
+      std::regex_constants::format_sed,
+      std::regex_constants::format_no_copy,
+      std::regex_constants::format_first_only
+    },
+    {
+      std::regex_constants::match_default,
+      std::regex_constants::format_default
+    }),
+    "std::regex_constants::match_flag_type bitmask elements are distinct" );
+#endif
 
 int main()
 {
