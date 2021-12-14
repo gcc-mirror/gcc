@@ -299,7 +299,7 @@ public:
     if (folder.ctx->get_backend ()->is_error_expression (folder.folded))
       {
 	rust_error_at (expr->get_locus (), "non const value");
-	return nullptr;
+	return folder.ctx->get_backend ()->error_expression ();
       }
 
     folder.ctx->insert_const (expr->get_mappings ().get_hirid (),
@@ -423,12 +423,7 @@ public:
   void visit (HIR::ArithmeticOrLogicalExpr &expr) override
   {
     auto lhs = ConstFoldExpr::fold (expr.get_lhs ());
-    if (lhs == nullptr)
-      return;
-
     auto rhs = ConstFoldExpr::fold (expr.get_rhs ());
-    if (rhs == nullptr)
-      return;
 
     auto op = expr.get_expr_type ();
     auto location = expr.get_locus ();
@@ -441,8 +436,6 @@ public:
   void visit (HIR::NegationExpr &expr) override
   {
     auto negated_expr = ConstFoldExpr::fold (expr.get_expr ().get ());
-    if (negated_expr == nullptr)
-      return;
 
     auto op = expr.get_expr_type ();
     auto location = expr.get_locus ();

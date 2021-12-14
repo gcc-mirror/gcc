@@ -224,10 +224,8 @@ public:
 
   void visit (AST::ArrayElemsValues &elems) override
   {
-    elems.iterate ([&] (AST::Expr *elem) mutable -> bool {
-      ResolveExpr::go (elem, elems.get_node_id ());
-      return true;
-    });
+    for (auto &elem : elems.get_values ())
+      ResolveExpr::go (elem.get (), elems.get_node_id ());
   }
 
   void visit (AST::ArrayExpr &expr) override

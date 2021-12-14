@@ -996,15 +996,6 @@ public:
 
   size_t get_num_values () const { return values.size (); }
 
-  void iterate (std::function<bool (Expr *)> cb)
-  {
-    for (auto it = values.begin (); it != values.end (); it++)
-      {
-	if (!cb ((*it).get ()))
-	  return;
-      }
-  }
-
 protected:
   ArrayElemsValues *clone_array_elems_impl () const override
   {

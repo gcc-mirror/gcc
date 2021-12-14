@@ -1975,15 +1975,6 @@ public:
   std::vector<StructField> &get_fields () { return fields; }
   const std::vector<StructField> &get_fields () const { return fields; }
 
-  void iterate (std::function<bool (StructField &)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field))
-	  return;
-      }
-  }
-
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2109,15 +2100,6 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<TupleField> &get_fields () { return fields; }
   const std::vector<TupleField> &get_fields () const { return fields; }
-
-  void iterate (std::function<bool (TupleField &)> cb)
-  {
-    for (auto &field : fields)
-      {
-	if (!cb (field))
-	  return;
-      }
-  }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2489,15 +2471,6 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<StructField> &get_variants () { return variants; }
   const std::vector<StructField> &get_variants () const { return variants; }
-
-  void iterate (std::function<bool (StructField &)> cb)
-  {
-    for (auto &variant : variants)
-      {
-	if (!cb (variant))
-	  return;
-      }
-  }
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
