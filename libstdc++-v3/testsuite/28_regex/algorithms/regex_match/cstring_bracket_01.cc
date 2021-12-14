@@ -69,6 +69,16 @@ test01()
 void
 test02()
 {
+  VERIFY(regex_match("-", regex("[-]", regex_constants::ECMAScript)));
+  VERIFY(regex_match("-", regex("[--]", regex_constants::ECMAScript)));
+  VERIFY(regex_match("-", regex("[---]", regex_constants::ECMAScript)));
+  VERIFY(regex_match("-", regex("[----]", regex_constants::ECMAScript)));
+  VERIFY(regex_match("-", regex("[-----]", regex_constants::ECMAScript)));
+
+  VERIFY(regex_match("-", regex("[-]", regex_constants::extended)));
+  VERIFY(regex_match("-", regex("[--]", regex_constants::extended)));
+  VERIFY(regex_match("-", regex("[---]", regex_constants::extended)));
+  VERIFY(regex_match("-", regex("[----]", regex_constants::extended)));
   try
   {
     std::regex re("[-----]", std::regex::extended);
@@ -78,7 +88,6 @@ test02()
   {
     VERIFY(e.code() == std::regex_constants::error_range);
   }
-  std::regex re("[-----]", std::regex::ECMAScript);
 
   VERIFY(!regex_match("b", regex("[-ac]", regex_constants::extended)));
   VERIFY(!regex_match("b", regex("[ac-]", regex_constants::extended)));
@@ -93,7 +102,27 @@ test02()
   }
   catch (const std::regex_error& e)
   {
+    VERIFY(e.code() == std::regex_constants::error_range);
   }
+  try
+  {
+    regex("[@--]", regex_constants::extended);
+    VERIFY(false);
+  }
+  catch (const std::regex_error& e)
+  {
+    VERIFY(e.code() == std::regex_constants::error_range);
+  }
+  try
+  {
+    regex("[--%]", regex_constants::extended);
+    VERIFY(false);
+  }
+  catch (const std::regex_error& e)
+  {
+    VERIFY(e.code() == std::regex_constants::error_range);
+  }
+
   VERIFY(regex_match("].", regex("[][.hyphen.]-0]*", regex_constants::extended)));
 }
 
@@ -158,6 +187,36 @@ test06()
   VERIFY(regex_match("a-", debian_cron_namespace_ok));
 }
 
+// libstdc++/102447
+void
+test07()
+{
+  VERIFY(regex_match("-", std::regex("[\\w-]", std::regex::ECMAScript)));
+  VERIFY(regex_match("a", std::regex("[\\w-]", std::regex::ECMAScript)));
+  VERIFY(regex_match("-", std::regex("[a-]", std::regex::ECMAScript)));
+  VERIFY(regex_match("a", std::regex("[a-]", std::regex::ECMAScript)));
+
+  try
+  {
+    std::regex re("[\\w-a]", std::regex::ECMAScript);
+    VERIFY(false);
+  }
+  catch (const std::regex_error& e)
+  {
+    VERIFY(e.code() == std::regex_constants::error_range);
+  }
+
+  try
+  {
+    std::regex re("[\\w--]", std::regex::ECMAScript);
+    VERIFY(false);
+  }
+  catch (const std::regex_error& e)
+  {
+    VERIFY(e.code() == std::regex_constants::error_range);
+  }
+}
+
 int
 main()
 {
@@ -167,6 +226,7 @@ main()
   test04();
   test05();
   test06();
+  test07();
 
   return 0;
 }
