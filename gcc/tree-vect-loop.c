@@ -7997,8 +7997,8 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   tree step_vectype = get_same_sized_vectype (TREE_TYPE (step_expr), vectype);
 
   /* Check for backend support of PLUS/MINUS_EXPR. */
-  if (!directly_supported_p (PLUS_EXPR, step_vectype)
-      || !directly_supported_p (MINUS_EXPR, step_vectype))
+  if (!target_supports_op_p (step_vectype, PLUS_EXPR, optab_default)
+      || !target_supports_op_p (step_vectype, MINUS_EXPR, optab_default))
     return false;
 
   if (!vec_stmt) /* transformation not required.  */
