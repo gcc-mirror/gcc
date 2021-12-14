@@ -2399,7 +2399,6 @@ struct altivec_builtin_types
   signed char op2;
   signed char op3;
 };
-extern const struct altivec_builtin_types altivec_overloaded_builtins[];
 
 enum rs6000_builtin_type_index
 {
