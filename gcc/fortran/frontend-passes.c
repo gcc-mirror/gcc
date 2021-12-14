@@ -2653,7 +2653,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 
 	      do_sym = cl->ext.iterator->var->symtree->n.sym;
 
-	      if (a->expr && a->expr->symtree
+	      if (a->expr && a->expr->symtree && f->sym
 		  && a->expr->symtree->n.sym == do_sym)
 		{
 		  if (f->sym->attr.intent == INTENT_OUT)
