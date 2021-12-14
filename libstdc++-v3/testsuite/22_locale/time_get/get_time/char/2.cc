@@ -25,6 +25,8 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
+static bool ampm_time_format();
+
 void test02()
 {
   using namespace std;
@@ -36,19 +38,23 @@ void test02()
   locale loc_hk = locale(ISO_8859(1,en_HK));
   VERIFY( loc_hk != loc_c );
 
+  const int pm = ampm_time_format() ? 12 : 0;
   const string empty;
-  const tm time_bday = __gnu_test::test_tm(0, 0, 12, 4, 3, 71, 0, 93, 0);
+  const tm time_bday = __gnu_test::test_tm(1, 2, 0+pm, 4, 3, 71, 0, 93, 0);
 
   // create an ostream-derived object, cache the time_get facet
   iterator_type end;
   istringstream iss;
-  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc()); 
+  const time_get<char>& tim_get = use_facet<time_get<char> >(iss.getloc());
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
 
   // inspection of named locales, en_HK
   iss.imbue(loc_hk);
-  iss.str("12:00:00 PM PST"); 
+  if (pm)
+    iss.str("12:02:01 PM PST");
+  else
+    iss.str("12:02:01 PST"); // %I means 12-hour clock, so parsed as 12am
   // Hong Kong in California! Well, they have Paris in Vegas... this
   // is all a little disney-esque anyway. Besides, you can get decent
   // Dim Sum in San Francisco.
@@ -60,6 +66,27 @@ void test02()
   VERIFY( time20.tm_min == time_bday.tm_min );
   VERIFY( time20.tm_hour == time_bday.tm_hour );
   VERIFY( errorstate == ios_base::eofbit );
+}
+
+#include <locale.h>
+#if __has_include(<langinfo.h>)
+# include <langinfo.h>
+#endif
+#include <string.h>
+
+static bool ampm_time_format()
+{
+#ifdef T_FMT
+  std::string orig = setlocale(LC_TIME, NULL);
+  if (setlocale(LC_TIME, ISO_8859(1,en_HK)) != NULL)
+  {
+    // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=103687
+    std::string t_fmt = nl_langinfo(T_FMT);
+    setlocale(LC_TIME, orig.c_str());
+    return t_fmt.find("%p") != std::string::npos;
+  }
+#endif
+  return false;
 }
 
 int main()
