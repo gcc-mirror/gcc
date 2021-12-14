@@ -456,7 +456,17 @@ class StructPatternField
   std::vector<Attribute> outer_attrs;
   Location locus;
 
+protected:
+  NodeId node_id;
+
 public:
+  enum ItemType
+  {
+    TUPLE_PAT,
+    IDENT_PAT,
+    IDENT
+  };
+
   virtual ~StructPatternField () {}
 
   // Unique pointer custom clone function
@@ -474,14 +484,18 @@ public:
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
+  virtual ItemType get_item_type () const = 0;
+
+  NodeId get_node_id () const { return node_id; }
 
   // TODO: seems kinda dodgy. Think of better way.
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
 protected:
-  StructPatternField (std::vector<Attribute> outer_attribs, Location locus)
-    : outer_attrs (std::move (outer_attribs)), locus (locus)
+  StructPatternField (std::vector<Attribute> outer_attribs, Location locus,
+		      NodeId node_id)
+    : outer_attrs (std::move (outer_attribs)), locus (locus), node_id (node_id)
   {}
 
   // Clone function implementation as pure virtual method
@@ -499,8 +513,9 @@ public:
 			      std::unique_ptr<Pattern> tuple_pattern,
 			      std::vector<Attribute> outer_attribs,
 			      Location locus)
-    : StructPatternField (std::move (outer_attribs), locus), index (index),
-      tuple_pattern (std::move (tuple_pattern))
+    : StructPatternField (std::move (outer_attribs), locus,
+			  Analysis::Mappings::get ()->get_next_node_id ()),
+      index (index), tuple_pattern (std::move (tuple_pattern))
   {}
 
   // Copy constructor requires clone
@@ -508,6 +523,7 @@ public:
     : StructPatternField (other), index (other.index)
   {
     // guard to prevent null dereference (only required if error state)
+    node_id = other.get_node_id ();
     if (other.tuple_pattern != nullptr)
       tuple_pattern = other.tuple_pattern->clone_pattern ();
   }
@@ -519,6 +535,7 @@ public:
     StructPatternField::operator= (other);
     index = other.index;
     // outer_attrs = other.outer_attrs;
+    node_id = other.get_node_id ();
 
     // guard to prevent null dereference (only required if error state)
     if (other.tuple_pattern != nullptr)
@@ -552,6 +569,8 @@ public:
     return tuple_pattern;
   }
 
+  ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -572,7 +591,8 @@ public:
 			      std::unique_ptr<Pattern> ident_pattern,
 			      std::vector<Attribute> outer_attrs,
 			      Location locus)
-    : StructPatternField (std::move (outer_attrs), locus),
+    : StructPatternField (std::move (outer_attrs), locus,
+			  Analysis::Mappings::get ()->get_next_node_id ()),
       ident (std::move (ident)), ident_pattern (std::move (ident_pattern))
   {}
 
@@ -581,6 +601,7 @@ public:
     : StructPatternField (other), ident (other.ident)
   {
     // guard to prevent null dereference (only required if error state)
+    node_id = other.get_node_id ();
     if (other.ident_pattern != nullptr)
       ident_pattern = other.ident_pattern->clone_pattern ();
   }
@@ -592,6 +613,7 @@ public:
     StructPatternField::operator= (other);
     ident = other.ident;
     // outer_attrs = other.outer_attrs;
+    node_id = other.get_node_id ();
 
     // guard to prevent null dereference (only required if error state)
     if (other.ident_pattern != nullptr)
@@ -618,12 +640,16 @@ public:
     return ident_pattern == nullptr;
   }
 
+  const Identifier &get_identifier () const { return ident; }
+
   // TODO: is this better? Or is a "vis_pattern" better?
   std::unique_ptr<Pattern> &get_ident_pattern ()
   {
     rust_assert (ident_pattern != nullptr);
     return ident_pattern;
   }
+
+  ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -644,8 +670,9 @@ class StructPatternFieldIdent : public StructPatternField
 public:
   StructPatternFieldIdent (Identifier ident, bool is_ref, bool is_mut,
 			   std::vector<Attribute> outer_attrs, Location locus)
-    : StructPatternField (std::move (outer_attrs), locus), has_ref (is_ref),
-      has_mut (is_mut), ident (std::move (ident))
+    : StructPatternField (std::move (outer_attrs), locus,
+			  Analysis::Mappings::get ()->get_next_node_id ()),
+      has_ref (is_ref), has_mut (is_mut), ident (std::move (ident))
   {}
 
   std::string as_string () const override;
@@ -655,6 +682,14 @@ public:
   // based on idea of identifier no longer existing
   void mark_for_strip () override { ident = {}; }
   bool is_marked_for_strip () const override { return ident.empty (); }
+
+  const Identifier &get_identifier () const { return ident; }
+
+  ItemType get_item_type () const override final { return ItemType::IDENT; }
+
+  bool is_ref () const { return has_ref; }
+
+  bool is_mut () const { return has_mut; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -827,6 +862,12 @@ protected:
 class TupleStructItems
 {
 public:
+  enum ItemType
+  {
+    RANGE,
+    NO_RANGE
+  };
+
   virtual ~TupleStructItems () {}
 
   // TODO: should this store location data?
@@ -840,6 +881,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (ASTVisitor &vis) = 0;
+
+  virtual ItemType get_item_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -889,6 +932,8 @@ public:
   {
     return patterns;
   }
+
+  ItemType get_item_type () const override final { return ItemType::NO_RANGE; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -965,6 +1010,8 @@ public:
   {
     return upper_patterns;
   }
+
+  ItemType get_item_type () const override final { return ItemType::RANGE; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

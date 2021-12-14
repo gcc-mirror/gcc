@@ -77,6 +77,7 @@ GRS_OBJS = \
     rust/rust-hir-map.o \
     rust/rust-ast-lower.o \
     rust/rust-ast-resolve.o \
+    rust/rust-ast-resolve-pattern.o \
     rust/rust-hir-type-check.o \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \

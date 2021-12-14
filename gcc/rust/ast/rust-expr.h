@@ -4337,23 +4337,26 @@ struct MatchCase
 private:
   MatchArm arm;
   std::unique_ptr<Expr> expr;
+  NodeId node_id;
 
   /* TODO: does whether trailing comma exists need to be stored? currently
    * assuming it is only syntactical and has no effect on meaning. */
 
 public:
   MatchCase (MatchArm arm, std::unique_ptr<Expr> expr)
-    : arm (std::move (arm)), expr (std::move (expr))
+    : arm (std::move (arm)), expr (std::move (expr)),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   MatchCase (const MatchCase &other)
-    : arm (other.arm), expr (other.expr->clone_expr ())
+    : arm (other.arm), expr (other.expr->clone_expr ()), node_id (other.node_id)
   {}
 
   MatchCase &operator= (const MatchCase &other)
   {
     arm = other.arm;
     expr = other.expr->clone_expr ();
+    node_id = other.node_id;
 
     return *this;
   }
@@ -4378,6 +4381,8 @@ public:
     rust_assert (!arm.is_error ());
     return arm;
   }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 #if 0

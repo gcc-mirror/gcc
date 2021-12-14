@@ -83,6 +83,13 @@ public:
 				    pattern.get_is_mut ());
   }
 
+  // cases in a match expression
+  void visit (AST::PathInExpression &pattern) override;
+
+  void visit (AST::StructPattern &pattern) override;
+
+  void visit (AST::TupleStructPattern &pattern) override;
+
 private:
   PatternDeclaration (NodeId parent) : ResolverBase (parent) {}
 };
