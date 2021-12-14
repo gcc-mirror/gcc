@@ -171,7 +171,6 @@ static int dbg_cost_ctrl;
 
 /* Built in types.  */
 tree rs6000_builtin_types[RS6000_BTI_MAX];
-tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 /* Flag to say the TOC is initialized */
 int toc_initialized, need_toc_init;
@@ -2585,8 +2584,6 @@ rs6000_debug_reg_global (void)
 	   (int)rs6000_sched_restricted_insns_priority);
   fprintf (stderr, DEBUG_FMT_D, "Number of standard builtins",
 	   (int)END_BUILTINS);
-  fprintf (stderr, DEBUG_FMT_D, "Number of rs6000 builtins",
-	   (int)RS6000_BUILTIN_COUNT);
 
   fprintf (stderr, DEBUG_FMT_D, "Enable float128 on VSX",
 	   (int)TARGET_FLOAT128_ENABLE_TYPE);
