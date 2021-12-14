@@ -1,3 +1,7 @@
+2021-12-13  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.target/aarch64/pr103523.c: New test.
+
 2021-12-12  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
