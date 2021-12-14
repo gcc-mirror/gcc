@@ -259,7 +259,7 @@ output_btfext_header (void)
   uint32_t core_relo_off = 0, core_relo_len = 0;
 
   /* Header core_relo_len is the sum total length in bytes of all CO-RE
-     relocation sections.  */
+     relocation sections, plus the 4 byte record size.  */
   size_t i;
   bpf_core_section_ref sec;
   core_relo_len += vec_safe_length (bpf_core_sections)
@@ -268,6 +268,9 @@ output_btfext_header (void)
   FOR_EACH_VEC_ELT (*bpf_core_sections, i, sec)
     core_relo_len +=
       vec_safe_length (sec->relocs) * sizeof (struct btf_ext_reloc);
+
+  if (core_relo_len)
+    core_relo_len += sizeof (uint32_t);
 
   dw2_asm_output_data (4, func_info_off, "func_info_offset");
   dw2_asm_output_data (4, func_info_len, "func_info_len");
@@ -310,12 +313,13 @@ output_btfext_core_sections (void)
 {
   size_t i;
   bpf_core_section_ref sec;
+
+  /* BTF Ext section info. */
+  dw2_asm_output_data (4, sizeof (struct btf_ext_reloc),
+		       "btfext_core_info_rec_size");
+
   FOR_EACH_VEC_ELT (*bpf_core_sections, i, sec)
     {
-      /* BTF Ext section info. */
-      dw2_asm_output_data (4, sizeof (struct btf_ext_reloc),
-			   "btfext_secinfo_rec_size");
-
       /* Section name offset, refers to the offset of a string with the name of
 	 the section to which these CORE relocations refer, e.g. '.text'.
 	 The string is buffered in the BTF strings table.  */
