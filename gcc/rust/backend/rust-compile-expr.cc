@@ -24,6 +24,9 @@
 #include "rust-hir-path-probe.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
+#include "rust-compile-pattern.h"
+
+#include "fold-const.h"
 
 namespace Rust {
 namespace Compile {
@@ -152,6 +155,175 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
   translated
     = ctx->get_backend ()->indirect_expression (expected_type, main_expr,
 						known_valid, expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::MatchExpr &expr)
+{
+  // https://gcc.gnu.org/onlinedocs/gccint/Basic-Statements.html#Basic-Statements
+  // TODO
+  // SWITCH_ALL_CASES_P is true if the switch includes a default label or the
+  // case label ranges cover all possible values of the condition expression
+
+  /* Switch expression.
+
+     TREE_TYPE is the original type of the condition, before any
+     language required type conversions.  It may be NULL, in which case
+     the original type and final types are assumed to be the same.
+
+     Operand 0 is the expression used to perform the branch,
+     Operand 1 is the body of the switch, which probably contains
+       CASE_LABEL_EXPRs.  It may also be NULL, in which case operand 2
+       must not be NULL.  */
+  // DEFTREECODE (SWITCH_EXPR, "switch_expr", tcc_statement, 2)
+
+  /* Used to represent a case label.
+
+     Operand 0 is CASE_LOW.  It may be NULL_TREE, in which case the label
+       is a 'default' label.
+     Operand 1 is CASE_HIGH.  If it is NULL_TREE, the label is a simple
+       (one-value) case label.  If it is non-NULL_TREE, the case is a range.
+     Operand 2 is CASE_LABEL, which has the corresponding LABEL_DECL.
+     Operand 3 is CASE_CHAIN.  This operand is only used in tree-cfg.c to
+       speed up the lookup of case labels which use a particular edge in
+       the control flow graph.  */
+  // DEFTREECODE (CASE_LABEL_EXPR, "case_label_expr", tcc_statement, 4)
+
+  TyTy::BaseType *scrutinee_expr_tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_scrutinee_expr ()->get_mappings ().get_hirid (),
+	&scrutinee_expr_tyty))
+    {
+      translated = ctx->get_backend ()->error_expression ();
+      return;
+    }
+
+  rust_assert (scrutinee_expr_tyty->get_kind () == TyTy::TypeKind::ADT);
+
+  // this will need to change but for now the first pass implementation, lets
+  // assert this is the case
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
+  rust_assert (adt->is_enum ());
+  rust_assert (adt->number_of_variants () > 0);
+
+  TyTy::BaseType *expr_tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+				       &expr_tyty))
+    {
+      translated = ctx->get_backend ()->error_expression ();
+      return;
+    }
+
+  fncontext fnctx = ctx->peek_fn ();
+  Bvariable *tmp = NULL;
+  bool needs_temp = !expr_tyty->is_unit ();
+  if (needs_temp)
+    {
+      tree enclosing_scope = ctx->peek_enclosing_scope ();
+      tree block_type = TyTyResolveCompile::compile (ctx, expr_tyty);
+
+      bool is_address_taken = false;
+      tree ret_var_stmt = nullptr;
+      tmp = ctx->get_backend ()->temporary_variable (
+	fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
+	expr.get_locus (), &ret_var_stmt);
+      ctx->add_statement (ret_var_stmt);
+    }
+
+  // lets compile the scrutinee expression
+  tree match_scrutinee_expr
+    = CompileExpr::Compile (expr.get_scrutinee_expr ().get (), ctx);
+
+  // need to access the qualifier field, if we use QUAL_UNION_TYPE this would be
+  // DECL_QUALIFIER i think. For now this will just access the first record
+  // field and its respective qualifier because it will always be set because
+  // this is all a big special union
+  tree scrutinee_first_record_expr
+    = ctx->get_backend ()->struct_field_expression (
+      match_scrutinee_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
+  tree match_scrutinee_expr_qualifier_expr
+    = ctx->get_backend ()->struct_field_expression (
+      scrutinee_first_record_expr, 0, expr.get_scrutinee_expr ()->get_locus ());
+
+  // setup the end label so the cases can exit properly
+  tree fndecl = fnctx.fndecl;
+  Location end_label_locus = expr.get_locus (); // FIXME
+  tree end_label
+    = ctx->get_backend ()->label (fndecl,
+				  "" /* empty creates an artificial label */,
+				  end_label_locus);
+  tree end_label_decl_statement
+    = ctx->get_backend ()->label_definition_statement (end_label);
+
+  // setup the switch-body-block
+  Location start_location; // FIXME
+  Location end_location;   // FIXME
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree switch_body_block
+    = ctx->get_backend ()->block (fndecl, enclosing_scope, {}, start_location,
+				  end_location);
+  ctx->push_block (switch_body_block);
+
+  for (auto &kase : expr.get_match_cases ())
+    {
+      // for now lets just get single pattern's working
+      HIR::MatchArm &kase_arm = kase.get_arm ();
+      rust_assert (kase_arm.get_patterns ().size () > 0);
+
+      // generate implicit label
+      Location arm_locus = kase_arm.get_patterns ().at (0)->get_locus ();
+      tree case_label = ctx->get_backend ()->label (
+	fndecl, "" /* empty creates an artificial label */, arm_locus);
+
+      // not sure if we need to add this to the block or if the CASE_LABEL_EXPR
+      // does this implicitly
+      //
+      // tree case_label_decl_statement
+      //   = ctx->get_backend ()->label_definition_statement (case_label);
+
+      // setup the bindings for the block
+      for (auto &kase_pattern : kase_arm.get_patterns ())
+	{
+	  tree switch_kase_expr
+	    = CompilePatternCaseLabelExpr::Compile (kase_pattern.get (),
+						    case_label, ctx);
+	  // ctx->add_statement (case_label_decl_statement);
+	  ctx->add_statement (switch_kase_expr);
+
+	  CompilePatternBindings::Compile (kase_pattern.get (),
+					   match_scrutinee_expr, ctx);
+	}
+
+      // compile the expr and setup the assignment if required when tmp != NULL
+      tree kase_expr_tree = CompileExpr::Compile (kase.get_expr ().get (), ctx);
+      if (tmp != NULL)
+	{
+	  tree result_reference
+	    = ctx->get_backend ()->var_expression (tmp, arm_locus);
+	  tree assignment = ctx->get_backend ()->assignment_statement (
+	    fnctx.fndecl, result_reference, kase_expr_tree, arm_locus);
+	  ctx->add_statement (assignment);
+	}
+
+      // go to end label
+      tree goto_end_label = build1_loc (arm_locus.gcc_location (), GOTO_EXPR,
+					void_type_node, end_label);
+      ctx->add_statement (goto_end_label);
+    }
+
+  // setup the switch expression
+  tree match_body = ctx->pop_block ();
+  tree match_expr_stmt
+    = build2_loc (expr.get_locus ().gcc_location (), SWITCH_EXPR,
+		  TREE_TYPE (match_scrutinee_expr_qualifier_expr),
+		  match_scrutinee_expr_qualifier_expr, match_body);
+  ctx->add_statement (match_expr_stmt);
+  ctx->add_statement (end_label_decl_statement);
+
+  if (tmp != NULL)
+    {
+      translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
+    }
 }
 
 void

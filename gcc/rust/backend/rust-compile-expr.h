@@ -221,6 +221,10 @@ public:
 	translated
 	  = ctx->get_backend ()->var_expression (var, expr.get_locus ());
       }
+    else if (ctx->lookup_pattern_binding (ref, &translated))
+      {
+	return;
+      }
     else
       {
 	rust_fatal_error (expr.get_locus (),
@@ -1042,6 +1046,8 @@ public:
   }
 
   void visit (HIR::DereferenceExpr &expr) override;
+
+  void visit (HIR::MatchExpr &expr) override;
 
 protected:
   tree compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
