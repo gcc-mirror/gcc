@@ -5567,7 +5567,7 @@ start_decl (const cp_declarator *declarator,
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
-      bool this_tmpl = (processing_template_decl
+      bool this_tmpl = (current_template_depth
 			> template_class_depth (context));
       if (VAR_P (decl))
 	{
@@ -9878,7 +9878,7 @@ grokfndecl (tree ctype,
       tree ctx = friendp ? current_class_type : ctype;
       bool block_local = TREE_CODE (current_scope ()) == FUNCTION_DECL;
       bool memtmpl = (!block_local
-		      && (processing_template_decl
+		      && (current_template_depth
 			  > template_class_depth (ctx)));
       if (memtmpl)
 	{
@@ -10300,7 +10300,7 @@ grokfndecl (tree ctype,
   if (ctype != NULL_TREE && check)
     {
       tree old_decl = check_classfn (ctype, decl,
-				     (processing_template_decl
+				     (current_template_depth
 				      > template_class_depth (ctype))
 				     ? current_template_parms
 				     : NULL_TREE);
@@ -10576,7 +10576,7 @@ grokvardecl (tree type,
         }
     }
   else if (flag_concepts
-	   && processing_template_decl > template_class_depth (scope))
+	   && current_template_depth > template_class_depth (scope))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
       tree ci = build_constraints (reqs, NULL_TREE);
@@ -13975,7 +13975,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		/* Set the constraints on the declaration.  */
-		bool memtmpl = (processing_template_decl
+		bool memtmpl = (current_template_depth
 				> template_class_depth (current_class_type));
 		if (memtmpl)
 		  {

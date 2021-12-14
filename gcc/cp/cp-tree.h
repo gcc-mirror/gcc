@@ -1886,6 +1886,8 @@ extern GTY(()) struct saved_scope *scope_chain;
    stored in the TREE_VALUE.  */
 
 #define current_template_parms scope_chain->template_parms
+#define current_template_depth \
+  (current_template_parms ? TMPL_PARMS_DEPTH (current_template_parms) : 0)
 
 #define processing_template_decl scope_chain->x_processing_template_decl
 #define processing_specialization scope_chain->x_processing_specialization
@@ -5099,7 +5101,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    full specialization.  */
 #define PROCESSING_REAL_TEMPLATE_DECL_P() \
   (!processing_template_parmlist \
-   && processing_template_decl > template_class_depth (current_scope ()))
+   && current_template_depth > template_class_depth (current_scope ()))
 
 /* Nonzero if this VAR_DECL or FUNCTION_DECL has already been
    instantiated, i.e. its definition has been generated from the

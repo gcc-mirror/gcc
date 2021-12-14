@@ -2016,14 +2016,6 @@ type_deducible_p (tree expr, tree type, tree placeholder, tree args,
      references are preserved in the result.  */
   expr = force_paren_expr_uneval (expr);
 
-  /* When args is NULL, we're evaluating a non-templated requires expression,
-     but even those are parsed under processing_template_decl == 1, and so the
-     placeholder 'auto' inside this return-type-requirement has level 2.  In
-     order to have all parms and arguments match up for satisfaction, we need
-     to pass an empty level of OUTER_TARGS in this case.  */
-  if (!args)
-    args = make_tree_vec (0);
-
   tree deduced_type = do_auto_deduction (type, expr, placeholder,
 					 info.complain, adc_requirement,
 					 /*outer_targs=*/args);
@@ -3063,14 +3055,6 @@ normalize_placeholder_type_constraints (tree t, bool diag)
      scope for this placeholder type; use them as the initial template
      parameters for normalization.  */
   tree initial_parms = TREE_PURPOSE (ci);
-
-  if (!initial_parms && TEMPLATE_TYPE_LEVEL (t) == 2)
-    /* This is a return-type-requirement of a non-templated requires-expression,
-       which are parsed under processing_template_decl == 1 and empty
-       current_template_parms; hence the 'auto' has level 2 and initial_parms
-       is empty.  Fix up initial_parms to be consistent with the value of
-       processing_template_decl whence the 'auto' was created.  */
-    initial_parms = build_tree_list (size_int (1), make_tree_vec (0));
 
   /* The 'auto' itself is used as the first argument in its own constraints,
      and its level is one greater than its template depth.  So in order to
