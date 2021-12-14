@@ -27071,9 +27071,11 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  return;
 	}
 
-      if (GET_CODE (src) == UNSPEC)
+      if (GET_CODE (src) == UNSPEC
+	  || GET_CODE (src) == UNSPEC_VOLATILE)
 	{
-	  gcc_assert (XINT (src, 1) == UNSPEC_MMA_ASSEMBLE);
+	  gcc_assert (XINT (src, 1) == UNSPEC_VSX_ASSEMBLE
+		      || XINT (src, 1) == UNSPECV_MMA_ASSEMBLE);
 	  gcc_assert (REG_P (dst));
 	  if (GET_MODE (src) == XOmode)
 	    gcc_assert (FP_REGNO_P (REGNO (dst)));
