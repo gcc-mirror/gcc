@@ -1140,10 +1140,14 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc64-*-darwin*)
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
