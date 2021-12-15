@@ -38,8 +38,11 @@
 private generic
    type Num is (<>);
 
-   with function Scan
-     (Str : String; Ptr : not null access Integer; Max : Integer) return Num;
+   with procedure Scan
+     (Str : String;
+      Ptr : not null access Integer;
+      Max : Integer;
+      Res : out Num);
    with procedure Set_Image
      (V : Num; S : in out String; P : in out Natural);
    with procedure Set_Image_Width
