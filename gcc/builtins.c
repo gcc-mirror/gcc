@@ -4003,7 +4003,7 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
       constfundata = &valc;
     }
 
-  rtx ptr = copy_addr_to_reg (convert_to_mode (ptr_mode, XEXP (to, 0), 0));
+  rtx ptr = copy_addr_to_reg (XEXP (to, 0));
   rtx rem = copy_to_mode_reg (ptr_mode, convert_to_mode (ptr_mode, len, 0));
   to = replace_equiv_address (to, ptr);
   set_mem_align (to, align);
