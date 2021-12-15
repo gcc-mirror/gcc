@@ -76,6 +76,7 @@ GRS_OBJS = \
     rust/rust-hir-full-test.o \
     rust/rust-hir-map.o \
     rust/rust-ast-lower.o \
+    rust/rust-ast-lower-pattern.o \
     rust/rust-ast-resolve.o \
     rust/rust-ast-resolve-pattern.o \
     rust/rust-hir-type-check.o \

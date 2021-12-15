@@ -377,26 +377,6 @@ protected:
   }
 };
 
-// aka StructPatternEtCetera; potential element in struct pattern
-struct StructPatternEtc
-{
-private:
-  AST::AttrVec outer_attrs;
-
-  // should this store location data?
-
-public:
-  StructPatternEtc (AST::AttrVec outer_attribs)
-    : outer_attrs (std::move (outer_attribs))
-  {}
-
-  // Creates an empty StructPatternEtc
-  static StructPatternEtc create_empty ()
-  {
-    return StructPatternEtc (AST::AttrVec ());
-  }
-};
-
 // Base class for a single field in a struct pattern - abstract
 class StructPatternField
 {
@@ -561,15 +541,7 @@ protected:
 struct StructPatternElements
 {
 private:
-  // bool has_struct_pattern_fields;
   std::vector<std::unique_ptr<StructPatternField> > fields;
-
-  bool has_struct_pattern_etc;
-  StructPatternEtc etc;
-
-  // must have at least one of the two and maybe both
-
-  // should this store location data?
 
 public:
   // Returns whether there are any struct pattern fields
@@ -577,29 +549,16 @@ public:
 
   /* Returns whether the struct pattern elements is entirely empty (no fields,
    * no etc). */
-  bool is_empty () const
-  {
-    return !has_struct_pattern_fields () && !has_struct_pattern_etc;
-  }
+  bool is_empty () const { return !has_struct_pattern_fields (); }
 
   // Constructor for StructPatternElements with both (potentially)
   StructPatternElements (
-    std::vector<std::unique_ptr<StructPatternField> > fields,
-    StructPatternEtc etc)
-    : fields (std::move (fields)), has_struct_pattern_etc (true),
-      etc (std::move (etc))
-  {}
-
-  // Constructor for StructPatternElements with no StructPatternEtc
-  StructPatternElements (
     std::vector<std::unique_ptr<StructPatternField> > fields)
-    : fields (std::move (fields)), has_struct_pattern_etc (false),
-      etc (StructPatternEtc::create_empty ())
+    : fields (std::move (fields))
   {}
 
   // Copy constructor with vector clone
   StructPatternElements (StructPatternElements const &other)
-    : has_struct_pattern_etc (other.has_struct_pattern_etc), etc (other.etc)
   {
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
@@ -609,9 +568,6 @@ public:
   // Overloaded assignment operator with vector clone
   StructPatternElements &operator= (StructPatternElements const &other)
   {
-    etc = other.etc;
-    has_struct_pattern_etc = other.has_struct_pattern_etc;
-
     fields.reserve (other.fields.size ());
     for (const auto &e : other.fields)
       fields.push_back (e->clone_struct_pattern_field ());
@@ -637,27 +593,15 @@ public:
 class StructPattern : public Pattern
 {
   PathInExpression path;
-
-  // bool has_struct_pattern_elements;
   StructPatternElements elems;
-
-  // TODO: should this store location data? Accessor uses path location data.
 
 public:
   std::string as_string () const override;
 
-  // Constructs a struct pattern from specified StructPatternElements
-  StructPattern (PathInExpression struct_path,
-		 StructPatternElements elems
-		 = StructPatternElements::create_empty ())
+  StructPattern (PathInExpression struct_path, StructPatternElements elems)
     : path (std::move (struct_path)), elems (std::move (elems))
   {}
 
-  /* TODO: constructor to construct via elements included in
-   * StructPatternElements */
-
-  /* Returns whether struct pattern has any struct pattern elements (if not, it
-   * is empty). */
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
 
   Location get_locus () const { return path.get_locus (); }

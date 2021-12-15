@@ -2575,16 +2575,6 @@ StructPatternElements::as_string () const
 	}
     }
 
-  str += "\n  Etc: ";
-  if (has_struct_pattern_etc)
-    {
-      str += "true";
-    }
-  else
-    {
-      str += "false";
-    }
-
   return str;
 }
 

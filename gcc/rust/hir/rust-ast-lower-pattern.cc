@@ -1,0 +1,115 @@
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
+#include "rust-ast-lower-pattern.h"
+#include "rust-ast-lower-expr.h"
+
+namespace Rust {
+namespace HIR {
+
+void
+ASTLoweringPattern::visit (AST::PathInExpression &pattern)
+{
+  translated = ASTLowerPathInExpression::translate (&pattern);
+}
+
+void
+ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
+{
+  HIR::PathInExpression *path
+    = ASTLowerPathInExpression::translate (&pattern.get_path ());
+
+  TupleStructItems *lowered = nullptr;
+  auto &items = pattern.get_items ();
+  switch (items->get_item_type ())
+    {
+      case AST::TupleStructItems::RANGE: {
+	// TODO
+	gcc_unreachable ();
+      }
+      break;
+
+      case AST::TupleStructItems::NO_RANGE: {
+	AST::TupleStructItemsNoRange &items_no_range
+	  = static_cast<AST::TupleStructItemsNoRange &> (*items.get ());
+
+	std::vector<std::unique_ptr<HIR::Pattern> > patterns;
+	for (auto &inner_pattern : items_no_range.get_patterns ())
+	  {
+	    HIR::Pattern *p
+	      = ASTLoweringPattern::translate (inner_pattern.get ());
+	    patterns.push_back (std::unique_ptr<HIR::Pattern> (p));
+	  }
+
+	lowered = new HIR::TupleStructItemsNoRange (std::move (patterns));
+      }
+      break;
+    }
+
+  translated = new HIR::TupleStructPattern (
+    *path, std::unique_ptr<HIR::TupleStructItems> (lowered));
+}
+
+void
+ASTLoweringPattern::visit (AST::StructPattern &pattern)
+{
+  HIR::PathInExpression *path
+    = ASTLowerPathInExpression::translate (&pattern.get_path ());
+
+  auto &raw_elems = pattern.get_struct_pattern_elems ();
+  rust_assert (!raw_elems.has_etc ());
+
+  std::vector<std::unique_ptr<HIR::StructPatternField> > fields;
+  for (auto &field : raw_elems.get_struct_pattern_fields ())
+    {
+      HIR::StructPatternField *f = nullptr;
+      switch (field->get_item_type ())
+	{
+	  case AST::StructPatternField::ItemType::TUPLE_PAT: {
+	    // TODO
+	    gcc_unreachable ();
+	  }
+	  break;
+
+	  case AST::StructPatternField::ItemType::IDENT_PAT: {
+	    // TODO
+	    gcc_unreachable ();
+	  }
+	  break;
+
+	  case AST::StructPatternField::ItemType::IDENT: {
+	    AST::StructPatternFieldIdent &ident
+	      = static_cast<AST::StructPatternFieldIdent &> (*field.get ());
+
+	    f = new HIR::StructPatternFieldIdent (
+	      ident.get_identifier (), ident.is_ref (),
+	      ident.is_mut () ? Mutability::Mut : Mutability::Imm,
+	      ident.get_outer_attrs (), ident.get_locus ());
+	  }
+	  break;
+	}
+
+      fields.push_back (std::unique_ptr<HIR::StructPatternField> (f));
+    }
+
+  HIR::StructPatternElements elems (std::move (fields));
+  translated = new HIR::StructPattern (*path, std::move (elems));
+}
+
+} // namespace HIR
+} // namespace Rust

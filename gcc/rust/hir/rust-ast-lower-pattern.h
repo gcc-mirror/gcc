@@ -20,7 +20,6 @@
 #define RUST_AST_LOWER_PATTERN
 
 #include "rust-ast-lower-base.h"
-#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace HIR {
@@ -34,12 +33,11 @@ public:
   {
     ASTLoweringPattern resolver;
     pattern->accept_vis (resolver);
+    rust_assert (resolver.translated != nullptr);
     return resolver.translated;
   }
 
-  virtual ~ASTLoweringPattern () override {}
-
-  void visit (AST::IdentifierPattern &pattern)
+  void visit (AST::IdentifierPattern &pattern) override
   {
     std::unique_ptr<Pattern> to_bind;
     translated
@@ -49,6 +47,12 @@ public:
 							  : Mutability::Imm,
 				    std::move (to_bind));
   }
+
+  void visit (AST::PathInExpression &pattern) override;
+
+  void visit (AST::StructPattern &pattern) override;
+
+  void visit (AST::TupleStructPattern &pattern) override;
 
 private:
   ASTLoweringPattern () : translated (nullptr) {}

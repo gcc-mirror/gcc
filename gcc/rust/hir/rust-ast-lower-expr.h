@@ -23,6 +23,7 @@
 #include "rust-ast-lower-base.h"
 #include "rust-ast-lower-block.h"
 #include "rust-ast-lower-struct-field-expr.h"
+#include "rust-ast-lower-pattern.h"
 
 namespace Rust {
 namespace HIR {
@@ -665,6 +666,56 @@ public:
       = new HIR::DereferenceExpr (mapping,
 				  std::unique_ptr<HIR::Expr> (dref_lvalue),
 				  expr.get_outer_attrs (), expr.get_locus ());
+  }
+
+  void visit (AST::MatchExpr &expr) override
+  {
+    HIR::Expr *branch_value
+      = ASTLoweringExpr::translate (expr.get_scrutinee_expr ().get ());
+
+    std::vector<HIR::MatchCase> match_arms;
+    for (auto &match_case : expr.get_match_cases ())
+      {
+	HIR::Expr *kase_expr
+	  = ASTLoweringExpr::translate (match_case.get_expr ().get ());
+
+	HIR::Expr *kase_guard_expr = nullptr;
+	if (match_case.get_arm ().has_match_arm_guard ())
+	  {
+	    kase_guard_expr = ASTLoweringExpr::translate (
+	      match_case.get_arm ().get_guard_expr ().get ());
+	  }
+
+	std::vector<std::unique_ptr<HIR::Pattern> > match_arm_patterns;
+	for (auto &pattern : match_case.get_arm ().get_patterns ())
+	  {
+	    HIR::Pattern *ptrn = ASTLoweringPattern::translate (pattern.get ());
+	    match_arm_patterns.push_back (std::unique_ptr<HIR::Pattern> (ptrn));
+	  }
+
+	HIR::MatchArm arm (std::move (match_arm_patterns),
+			   std::unique_ptr<HIR::Expr> (kase_guard_expr),
+			   match_case.get_arm ().get_outer_attrs ());
+
+	auto crate_num = mappings->get_current_crate ();
+	Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				       mappings->get_next_hir_id (crate_num),
+				       UNKNOWN_LOCAL_DEFID);
+
+	HIR::MatchCase kase (std::move (mapping), std::move (arm),
+			     std::unique_ptr<HIR::Expr> (kase_expr));
+	match_arms.push_back (std::move (kase));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::MatchExpr (mapping, std::unique_ptr<HIR::Expr> (branch_value),
+			    std::move (match_arms), expr.get_inner_attrs (),
+			    expr.get_outer_attrs (), expr.get_locus ());
   }
 
 private:
