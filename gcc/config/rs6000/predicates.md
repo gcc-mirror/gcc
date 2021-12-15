@@ -601,12 +601,37 @@
   if (TARGET_VSX && op == CONST0_RTX (mode))
     return 1;
 
+  /* Constants that can be generated with ISA 3.1 instructions are easy.  */
+  vec_const_128bit_type vsx_const;
+  if (TARGET_POWER10 && vec_const_128bit_to_bytes (op, mode, &vsx_const))
+    {
+      if (constant_generates_lxvkq (&vsx_const) != 0)
+	return true;
+    }
+
   /* Otherwise consider floating point constants hard, so that the
      constant gets pushed to memory during the early RTL phases.  This
      has the advantage that double precision constants that can be
      represented in single precision without a loss of precision will
      use single precision loads.  */
    return 0;
+})
+
+;; Return 1 if the operand is a special IEEE 128-bit value that can be loaded
+;; via the LXVKQ instruction.
+
+(define_predicate "easy_vector_constant_ieee128"
+  (match_code "const_vector,const_double")
+{
+  vec_const_128bit_type vsx_const;
+
+  /* Can we generate the LXVKQ instruction?  */
+  if (!TARGET_IEEE128_CONSTANT || !TARGET_FLOAT128_HW || !TARGET_POWER10
+      || !TARGET_VSX)
+    return false;
+
+  return (vec_const_128bit_to_bytes (op, mode, &vsx_const)
+	  && constant_generates_lxvkq (&vsx_const) != 0);
 })
 
 ;; Return 1 if the operand is a constant that can loaded with a XXSPLTIB
@@ -652,6 +677,15 @@
 
       if (zero_constant (op, mode) || all_ones_constant (op, mode))
 	return true;
+
+      /* Constants that can be generated with ISA 3.1 instructions are
+         easy.  */
+      vec_const_128bit_type vsx_const;
+      if (TARGET_POWER10 && vec_const_128bit_to_bytes (op, mode, &vsx_const))
+	{
+	  if (constant_generates_lxvkq (&vsx_const) != 0)
+	    return true;
+	}
 
       if (TARGET_P9_VECTOR
           && xxspltib_constant_p (op, mode, &num_insns, &value))

@@ -250,6 +250,7 @@ typedef struct {
 
 extern bool vec_const_128bit_to_bytes (rtx, machine_mode,
 				       vec_const_128bit_type *);
+extern unsigned constant_generates_lxvkq (vec_const_128bit_type *);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
