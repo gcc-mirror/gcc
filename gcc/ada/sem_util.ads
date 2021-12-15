@@ -824,9 +824,9 @@ package Sem_Util is
    --  Returns the entity of the package or subprogram enclosing E, if any.
    --  Returns Empty if no enclosing package or subprogram.
 
-   function Enclosing_Subprogram (E : Entity_Id) return Entity_Id;
+   function Enclosing_Subprogram (N : Node_Or_Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the subprogram enclosing
-   --  the entity E, if any. Returns Empty if no enclosing subprogram.
+   --  N, if any. Returns Empty if no enclosing subprogram.
 
    function End_Keyword_Location (N : Node_Id) return Source_Ptr;
    --  Given block statement, entry body, package body, package declaration,

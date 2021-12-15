@@ -327,9 +327,8 @@ package body Sem_Util is
 
             elsif Nkind (Node_Par) in N_Extended_Return_Statement
                                     | N_Simple_Return_Statement
-              and then Ekind (Current_Scope) = E_Function
             then
-               return Scope_Depth (Current_Scope);
+               return Scope_Depth (Enclosing_Subprogram (Node_Par));
 
             --  Statements are counted as masters
 
@@ -8356,10 +8355,29 @@ package body Sem_Util is
    -- Enclosing_Subprogram --
    --------------------------
 
-   function Enclosing_Subprogram (E : Entity_Id) return Entity_Id is
-      Dyn_Scop : constant Entity_Id := Enclosing_Dynamic_Scope (E);
+   function Enclosing_Subprogram (N : Node_Or_Entity_Id) return Entity_Id is
+      Dyn_Scop  : Entity_Id;
+      Encl_Scop : Entity_Id;
 
    begin
+      --  Obtain the enclosing scope when N is a Node_Id - taking care to
+      --  handle the case when the enclosing scope is already a subprogram.
+
+      if Nkind (N) not in N_Entity then
+         Encl_Scop := Find_Enclosing_Scope (N);
+
+         if No (Encl_Scop) then
+            return Empty;
+         elsif Ekind (Encl_Scop) in Subprogram_Kind then
+            return Encl_Scop;
+         end if;
+
+         return Enclosing_Subprogram (Encl_Scop);
+      end if;
+
+      --  When N is already an Entity_Id proceed
+
+      Dyn_Scop := Enclosing_Dynamic_Scope (N);
       if Dyn_Scop = Standard_Standard then
          return Empty;
 
@@ -23091,8 +23109,8 @@ package body Sem_Util is
          if not Is_Limited_Type (Comp_Typ) then
             return False;
 
-            --  Only limited types can have access discriminants with
-            --  defaults.
+         --  Only limited types can have access discriminants with
+         --  defaults.
 
          elsif Has_Unconstrained_Access_Discriminants (Comp_Typ) then
             return True;
@@ -23122,16 +23140,18 @@ package body Sem_Util is
          return False;
       end Has_Unconstrained_Access_Discriminant_Component;
 
-      Disable_Coextension_Cases : constant Boolean := True;
-      --  Flag used to temporarily disable a "True" result for types with
-      --  access discriminants and related coextension cases.
+      Disable_Tagged_Cases : constant Boolean := True;
+      --  Flag used to temporarily disable a "True" result for tagged types.
+      --  See comments further below for details.
 
    --  Start of processing for Needs_Result_Accessibility_Level
 
    begin
-      --  False if completion unavailable (how does this happen???)
+      --  False if completion unavailable, which can happen when we are
+      --  analyzing an abstract subprogram or if the subprogram has
+      --  delayed freezing.
 
-      if not Present (Func_Typ) then
+      if No (Func_Typ) then
          return False;
 
       --  False if not a function, also handle enum-lit renames case
@@ -23164,14 +23184,6 @@ package body Sem_Util is
       elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
          return True;
 
-      --  The following cases are related to coextensions and do not fully
-      --  cover everything mentioned in RM 3.10.2 (12) ???
-
-      --  Temporarily disabled ???
-
-      elsif Disable_Coextension_Cases then
-         return False;
-
       --  In the case of, say, a null tagged record result type, the need for
       --  this extra parameter might not be obvious so this function returns
       --  True for all tagged types for compatibility reasons.
@@ -23188,8 +23200,11 @@ package body Sem_Util is
       --  solve these issues by introducing wrappers, but that is not the
       --  approach that was chosen.
 
+      --  Note: Despite the reasoning noted above, the extra accessibility
+      --  parameter for tagged types is disabled for performance reasons.
+
       elsif Is_Tagged_Type (Func_Typ) then
-         return True;
+         return not Disable_Tagged_Cases;
 
       elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then
          return True;

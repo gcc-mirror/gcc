@@ -777,6 +777,12 @@ package body Sem_Ch6 is
          function First_Selector (Assoc : Node_Id) return Node_Id;
          --  Obtain the first selector or choice from a given association
 
+         function Is_Formal_Of_Current_Function
+           (Assoc_Expr : Entity_Id) return Boolean;
+         --  Predicate to test if a given expression associated with a
+         --  discriminant is a formal parameter to the function in which the
+         --  return construct we checking applies to.
+
          --------------------
          -- First_Selector --
          --------------------
@@ -793,6 +799,19 @@ package body Sem_Ch6 is
                raise Program_Error;
             end if;
          end First_Selector;
+
+         -----------------------------------
+         -- Is_Formal_Of_Current_Function --
+         -----------------------------------
+
+         function Is_Formal_Of_Current_Function
+           (Assoc_Expr : Entity_Id) return Boolean is
+         begin
+            return Is_Entity_Name (Assoc_Expr)
+                     and then Enclosing_Subprogram
+                                (Entity (Assoc_Expr)) = Scope_Id
+                     and then Is_Formal (Entity (Assoc_Expr));
+         end Is_Formal_Of_Current_Function;
 
          --  Local declarations
 
@@ -869,7 +888,10 @@ package body Sem_Ch6 is
          --  with all anonymous access discriminants, then generate a
          --  dynamic check or static error when relevant.
 
-         Unqual := Unqualify (Original_Node (Return_Con));
+         --  Note the repeated use of Original_Node to avoid checking
+         --  expanded code.
+
+         Unqual := Original_Node (Unqualify (Original_Node (Return_Con)));
 
          --  Get the corresponding declaration based on the return object's
          --  identifier.
@@ -1052,8 +1074,6 @@ package body Sem_Ch6 is
                if Nkind (Assoc) = N_Component_Association
                  and then Box_Present (Assoc)
                then
-                  Assoc_Present := False;
-
                   if Nkind (First_Selector (Assoc)) = N_Others_Choice then
                      Unseen_Disc_Count := 0;
                   end if;
@@ -1178,9 +1198,24 @@ package body Sem_Ch6 is
             if Present (Assoc_Expr)
               and then Present (Disc)
               and then Ekind (Etype (Disc)) = E_Anonymous_Access_Type
+
+              --  We disable the check when we have a tagged return type and
+              --  the associated expression for the discriminant is a formal
+              --  parameter since the check would require us to compare the
+              --  accessibility level of Assoc_Expr to the level of the
+              --  Extra_Accessibility_Of_Result of the function - which is
+              --  currently disabled for functions with tagged return types.
+              --  This may change in the future ???
+
+              --  See Needs_Result_Accessibility_Level for details.
+
+              and then not
+                (No (Extra_Accessibility_Of_Result (Scope_Id))
+                  and then Is_Formal_Of_Current_Function (Assoc_Expr)
+                  and then Is_Tagged_Type (Etype (Scope_Id)))
             then
                --  Generate a dynamic check based on the extra accessibility of
-               --  the result or the scope.
+               --  the result or the scope of the current function.
 
                Check_Cond :=
                  Make_Op_Gt (Loc,
@@ -1188,14 +1223,24 @@ package body Sem_Ch6 is
                                    (Expr              => Assoc_Expr,
                                     Level             => Dynamic_Level,
                                     In_Return_Context => True),
-                   Right_Opnd => (if Present
-                                       (Extra_Accessibility_Of_Result
-                                         (Scope_Id))
-                                  then
-                                     Extra_Accessibility_Of_Result (Scope_Id)
-                                  else
-                                     Make_Integer_Literal
-                                       (Loc, Scope_Depth (Scope (Scope_Id)))));
+                   Right_Opnd =>
+                     (if Present (Extra_Accessibility_Of_Result (Scope_Id))
+
+                        --  When Assoc_Expr is a formal we have to look at the
+                        --  extra accessibility-level formal associated with
+                        --  the result.
+
+                        and then Is_Formal_Of_Current_Function (Assoc_Expr)
+                      then
+                         New_Occurrence_Of
+                           (Extra_Accessibility_Of_Result (Scope_Id), Loc)
+
+                      --  Otherwise, we compare the level of Assoc_Expr to the
+                      --  scope of the current function.
+
+                      else
+                         Make_Integer_Literal
+                           (Loc, Scope_Depth (Scope (Scope_Id)))));
 
                Insert_Before_And_Analyze (Return_Stmt,
                  Make_Raise_Program_Error (Loc,
