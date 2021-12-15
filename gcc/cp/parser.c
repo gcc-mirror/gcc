@@ -31673,8 +31673,13 @@ cp_parser_single_declaration (cp_parser* parser,
       && (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
 	  || decl_specifiers.type != error_mark_node))
     {
+      int flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+      /* We don't delay parsing for friends, though CWG 2510 may change
+	 that.  */
+      if (member_p && !(friend_p && *friend_p))
+	flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
       decl = cp_parser_init_declarator (parser,
-					CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
+					flags,
 				        &decl_specifiers,
 				        checks,
 				        /*function_definition_allowed_p=*/true,
