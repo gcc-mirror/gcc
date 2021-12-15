@@ -6723,6 +6723,13 @@ output_vec_const_move (rtx *operands)
 	      operands[2] = GEN_INT (imm);
 	      return "xxspltiw %x0,%2";
 	    }
+
+	  imm = constant_generates_xxspltidp (&vsx_const);
+	  if (imm)
+	    {
+	      operands[2] = GEN_INT (imm);
+	      return "xxspltidp %x0,%2";
+	    }
 	}
 
       if (TARGET_P9_VECTOR
@@ -26524,6 +26531,9 @@ prefixed_xxsplti_p (rtx_insn *insn)
     {
       if (constant_generates_xxspltiw (&vsx_const))
 	return true;
+
+      if (constant_generates_xxspltidp (&vsx_const))
+	return true;
     }
 
   return false;
@@ -28729,6 +28739,104 @@ constant_generates_xxspltiw (vec_const_128bit_type *vsx_const)
     return 0;
 
   return vsx_const->words[0];
+}
+
+/* Determine if a vector constant can be loaded with XXSPLTIDP.  Return zero if
+   the XXSPLTIDP instruction cannot be used.  Otherwise return the immediate
+   value to be used with the XXSPLTIDP instruction.  */
+
+unsigned
+constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
+{
+  if (!TARGET_SPLAT_FLOAT_CONSTANT || !TARGET_PREFIXED || !TARGET_VSX)
+    return 0;
+
+  /* Reject if the two 64-bit segments are not the same.  */
+  if (!vsx_const->all_double_words_same)
+    return 0;
+
+  /* If the bytes, half words, or words are all the same, don't use XXSPLTIDP.
+     Use a simpler instruction (XXSPLTIB, VSPLTISB, VSPLTISH, or VSPLTISW).  */
+  if (vsx_const->all_bytes_same
+      || vsx_const->all_half_words_same
+      || vsx_const->all_words_same)
+    return 0;
+
+  unsigned HOST_WIDE_INT value = vsx_const->double_words[0];
+
+  /* Avoid values that look like DFmode NaN's, except for the normal NaN bit
+     pattern and the signalling NaN bit pattern.  Recognize infinity and
+     negative infinity.  */
+
+  /* Bit representation of DFmode normal quiet NaN.  */
+#define RS6000_CONST_DF_NAN	HOST_WIDE_INT_UC (0x7ff8000000000000)
+
+  /* Bit representation of DFmode normal signaling NaN.  */
+#define RS6000_CONST_DF_NANS	HOST_WIDE_INT_UC (0x7ff4000000000000)
+
+  /* Bit representation of DFmode positive infinity.  */
+#define RS6000_CONST_DF_INF	HOST_WIDE_INT_UC (0x7ff0000000000000)
+
+  /* Bit representation of DFmode negative infinity.  */
+#define RS6000_CONST_DF_NEG_INF	HOST_WIDE_INT_UC (0xfff0000000000000)
+
+  if (value != RS6000_CONST_DF_NAN
+      && value != RS6000_CONST_DF_NANS
+      && value != RS6000_CONST_DF_INF
+      && value != RS6000_CONST_DF_NEG_INF)
+    {
+      /* The IEEE 754 64-bit floating format has 1 bit for sign, 11 bits for
+	 the exponent, and 52 bits for the mantissa (not counting the hidden
+	 bit used for normal numbers).  NaN values have the exponent set to all
+	 1 bits, and the mantissa non-zero (mantissa == 0 is infinity).  */
+
+      int df_exponent = (value >> 52) & 0x7ff;
+      unsigned HOST_WIDE_INT
+	df_mantissa = value & ((HOST_WIDE_INT_1U << 52) - HOST_WIDE_INT_1U);
+
+      if (df_exponent == 0x7ff && df_mantissa != 0)	/* other NaNs.  */
+	return 0;
+
+      /* Avoid values that are DFmode subnormal values.  Subnormal numbers have
+	 the exponent all 0 bits, and the mantissa non-zero.  If the value is
+	 subnormal, then the hidden bit in the mantissa is not set.  */
+      if (df_exponent == 0 && df_mantissa != 0)		/* subnormal.  */
+	return 0;
+    }
+
+  /* Change the representation to DFmode constant.  */
+  long df_words[2] = { vsx_const->words[0], vsx_const->words[1] };
+
+  /* real_from_target takes the target words in target order.  */
+  if (!BYTES_BIG_ENDIAN)
+    std::swap (df_words[0], df_words[1]);
+
+  REAL_VALUE_TYPE rv_type;
+  real_from_target (&rv_type, df_words, DFmode);
+
+  const REAL_VALUE_TYPE *rv = &rv_type;
+
+  /* Validate that the number can be stored as a SFmode value.  */
+  if (!exact_real_truncate (SFmode, rv))
+    return 0;
+
+  /* Validate that the number is not a SFmode subnormal value (exponent is 0,
+     mantissa field is non-zero) which is undefined for the XXSPLTIDP
+     instruction.  */
+  long sf_value;
+  real_to_target (&sf_value, rv, SFmode);
+
+  /* IEEE 754 32-bit values have 1 bit for the sign, 8 bits for the exponent,
+     and 23 bits for the mantissa.  Subnormal numbers have the exponent all
+     0 bits, and the mantissa non-zero.  */
+  long sf_exponent = (sf_value >> 23) & 0xFF;
+  long sf_mantissa = sf_value & 0x7FFFFF;
+
+  if (sf_exponent == 0 && sf_mantissa != 0)
+    return 0;
+
+  /* Return the immediate to be used.  */
+  return sf_value;
 }
 
 
