@@ -1054,6 +1054,12 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
         emplaceExp!(UnionExp)(&ue, ex);
         return ue;
     }
+    if (e1.type.toBasetype.equals(type) && type.equals(to))
+    {
+        emplaceExp!(UnionExp)(&ue, e1);
+        ue.exp().type = type;
+        return ue;
+    }
     if (e1.type.implicitConvTo(to) >= MATCH.constant || to.implicitConvTo(e1.type) >= MATCH.constant)
     {
         goto L1;
@@ -1087,7 +1093,19 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
     }
     else if (tb.ty == Tbool)
     {
-        emplaceExp!(IntegerExp)(&ue, loc, e1.toInteger() != 0, type);
+        bool val = void;
+        const opt = e1.toBool();
+        if (opt.hasValue(true))
+            val = true;
+        else if (opt.hasValue(false))
+            val = false;
+        else
+        {
+            cantExp(ue);
+            return ue;
+        }
+
+        emplaceExp!(IntegerExp)(&ue, loc, val, type);
     }
     else if (type.isintegral())
     {

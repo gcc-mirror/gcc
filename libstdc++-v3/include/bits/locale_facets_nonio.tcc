@@ -910,7 +910,9 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	  else
 	    {
 	      // Verify format and input match, extract and discard.
-	      if (__format[__i] == *__beg)
+	      // TODO real case-insensitive comparison
+	      if (__ctype.tolower(__format[__i]) == __ctype.tolower(*__beg)
+		  || __ctype.toupper(__format[__i]) == __ctype.toupper(*__beg))
 		++__beg;
 	      else
 		__tmperr |= ios_base::failbit;
@@ -988,15 +990,15 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       bool __begupdated = false;
 
       // Look for initial matches.
-      // NB: Some of the locale data is in the form of all lowercase
-      // names, and some is in the form of initially-capitalized
-      // names. Look for both.
       if (__beg != __end)
 	{
 	  const char_type __c = *__beg;
+	  // TODO real case-insensitive comparison
+	  const char_type __cl = __ctype.tolower(__c);
+	  const char_type __cu = __ctype.toupper(__c);
 	  for (size_t __i1 = 0; __i1 < __indexlen; ++__i1)
-	    if (__c == __names[__i1][0]
-		|| __c == __ctype.toupper(__names[__i1][0]))
+	    if (__cl == __ctype.tolower(__names[__i1][0])
+		|| __cu == __ctype.toupper(__names[__i1][0]))
 	      {
 		__lengths[__nmatches]
 		  = __traits_type::length(__names[__i1]);
@@ -1023,15 +1025,22 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	      bool __match_longer = false;
 
 	      if (__beg != __end)
-		for (size_t __i3 = 0; __i3 < __nmatches; ++__i3)
-		  {
-		    __name = __names[__matches[__i3]];
-		    if (__lengths[__i3] > __pos && (__name[__pos] == *__beg))
-		      {
-			__match_longer = true;
-			break;
-		      }
-		  }
+		{
+		  // TODO real case-insensitive comparison
+		  const char_type __cl = __ctype.tolower(*__beg);
+		  const char_type __cu = __ctype.toupper(*__beg);
+		  for (size_t __i3 = 0; __i3 < __nmatches; ++__i3)
+		    {
+		      __name = __names[__matches[__i3]];
+		      if (__lengths[__i3] > __pos
+			  && (__ctype.tolower(__name[__pos]) == __cl
+			      || __ctype.toupper(__name[__pos]) == __cu))
+			{
+			  __match_longer = true;
+			  break;
+			}
+		    }
+		}
 	      for (size_t __i4 = 0; __i4 < __nmatches;)
 		if (__match_longer == (__lengths[__i4] == __pos))
 		  {
@@ -1069,17 +1078,23 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 		}
 	    }
 	  if (__pos < __minlen && __beg != __end)
-	    for (size_t __i6 = 0; __i6 < __nmatches;)
-	      {
-		__name = __names[__matches[__i6]];
-		if (!(__name[__pos] == *__beg))
-		  {
-		    __matches[__i6] = __matches[--__nmatches];
-		    __lengths[__i6] = __lengths[__nmatches];
-		  }
-		else
-		  ++__i6;
-	      }
+	    {
+	      // TODO real case-insensitive comparison
+	      const char_type __cl = __ctype.tolower(*__beg);
+	      const char_type __cu = __ctype.toupper(*__beg);
+	      for (size_t __i6 = 0; __i6 < __nmatches;)
+		{
+		  __name = __names[__matches[__i6]];
+		  if (__ctype.tolower(__name[__pos]) != __cl
+		      && __ctype.toupper(__name[__pos]) != __cu)
+		    {
+		      __matches[__i6] = __matches[--__nmatches];
+		      __lengths[__i6] = __lengths[__nmatches];
+		    }
+		  else
+		    ++__i6;
+		}
+	    }
 	  else
 	    break;
 	}
@@ -1094,7 +1109,12 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	    }
 	  __name = __names[__matches[0]];
 	  const size_t __len = __lengths[0];
-	  while (__pos < __len && __beg != __end && __name[__pos] == *__beg)
+	  while (__pos < __len
+		 && __beg != __end
+		 // TODO real case-insensitive comparison
+		 && (__ctype.tolower(__name[__pos]) == __ctype.tolower(*__beg)
+		     || (__ctype.toupper(__name[__pos])
+			 == __ctype.toupper(*__beg))))
 	    ++__beg, (void)++__pos;
 
 	  if (__len == __pos)

@@ -1,3 +1,24 @@
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103717
+	* frontend-passes.c (doloop_code): Prevent NULL pointer
+	dereference when checking for passing a do-loop variable to a
+	contained procedure with an interface mismatch.
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103718
+	PR fortran/103719
+	* frontend-passes.c (doloop_contained_procedure_code): Add several
+	checks to prevent NULL pointer dereferences on valid and invalid
+	code called within do-loops.
+
+2021-12-14  Manfred Schwarb  <manfred99@gmx.ch>
+
+	PR fortran/91497
+	* simplify.c (simplify_min_max): Disable conversion warnings for
+	MIN1 and MAX1.
+
 2021-12-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/103576

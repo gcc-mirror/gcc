@@ -32040,14 +32040,18 @@ fi
      # Check that we can build shared objects with -fPIC -shared
      saved_LDFLAGS="$LDFLAGS"
      saved_CFLAGS="$CFLAGS"
+     saved_CXXFLAGS="$CXXFLAGS"
      case "${host}" in
        *-*-darwin*)
 	 CFLAGS=`echo $CFLAGS | sed s/-mdynamic-no-pic//g`
 	 CFLAGS="$CFLAGS -fPIC"
+	 CXXFLAGS=`echo $CXXFLAGS | sed s/-mdynamic-no-pic//g`
+	 CXXFLAGS="$CXXFLAGS -fPIC"
 	 LDFLAGS="$LDFLAGS -shared -undefined dynamic_lookup"
        ;;
        *)
 	 CFLAGS="$CFLAGS -fPIC"
+	 CXXFLAGS="$CXXFLAGS -fPIC"
 	 LDFLAGS="$LDFLAGS -fPIC -shared"
        ;;
      esac
@@ -32079,6 +32083,7 @@ rm -f core conftest.err conftest.$ac_objext \
      fi
      LDFLAGS="$saved_LDFLAGS"
      CFLAGS="$saved_CFLAGS"
+     CXXFLAGS="$saved_CXXFLAGS"
 
      # If plugin support had been requested but not available, fail.
      if test x"$enable_plugin" = x"no" ; then

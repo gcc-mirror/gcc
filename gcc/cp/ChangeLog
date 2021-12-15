@@ -1,3 +1,57 @@
+2021-12-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103408
+	* constraint.cc (type_deducible_p): Remove workaround for
+	non-templated requires-expressions.
+	(normalize_placeholder_type_constraints): Likewise.
+	* cp-tree.h (current_template_depth): Define.
+	(PROCESSING_REAL_TEMPLATE_DECL): Inspect current_template_depth
+	instead of the magnitude of processing_template_decl.
+	* decl.c (start_decl): Likewise.
+	(grokfndecl): Likewise.
+	(grokvardecl): Likewise.
+	(grokdeclarator): Likewise.
+	* friend.c (make_friend_class): Likewise.  Calculate
+	friend_depth differently when called at instantiation time
+	instead of parse time.
+	(do_friend): Likewise.
+	* parser.c (cp_parser_requires_clause_expression): Remove
+	workaround for lambdas inside constraints.
+	(cp_parser_constraint_expression): Likewise.
+	(cp_parser_requires_expression): Likewise.
+	(synthesize_implicit_template_parm): Add to current_template_parms
+	before calling process_template_parm.
+	* pt.c (inline_needs_template_parms): Inspect
+	current_template_depth instead of the magnitude of
+	processing_template_decl.
+	(push_inline_template_parms_recursive): Likewise.
+	(maybe_begin_member_template_processing): Likewise.
+	(begin_template_parm_list): Likewise.
+	(process_template_parm): Likewise.
+	(end_template_parm_list): Likewise.
+	(push_template_decl): Likewise.
+	(add_inherited_template_parms): Likewise.
+	(instantiate_class_template_1): Don't adjust
+	processing_template_decl around the call to make_friend_class.
+	adjust_processing_template_decl to adjust_template_depth.  Set
+	current_template_parms instead of processing_template_decl when
+	adjust_template_depth.
+	(make_auto_1): Inspect current_template_depth instead of the
+	magnitude of processing_template_decl.
+	(splice_late_return_type): Likewise.
+	* semantics.c (fixup_template_type): Likewise.
+
+2021-12-14  Patrick Palka  <ppalka@redhat.com>
+
+	* call.c (build_new_op): Use releasing_vec for arglist.  Declare
+	conv in the scope it's used.
+
+2021-12-14  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (COMPOUND_EXPR_OVERLOADED): Remove.
+	* pt.c (build_non_dependent_expr): Don't inspect the flag.
+	* tree.c (build_min_non_dep): Don't set the flag.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* error.c: Define INCLUDE_MEMORY instead of

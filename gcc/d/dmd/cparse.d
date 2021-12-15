@@ -975,12 +975,17 @@ final class CParser(AST) : Parser!AST
                          token.value == TOK.leftParenthesis &&
                          !isCastExpression(pt))
                 {
-                    /* this might actually be a function
-                     * call that looks like `(a)(b)` or even `(a)(b,c)`
+                    /* (t)(...)... might be a cast expression or a function call,
+                     * with different grammars: a cast would be cparseCastExp(),
+                     * a function call would be cparsePostfixExp(CallExp(cparseArguments())).
+                     * We can't know until t is known. So, parse it as a function call
+                     * and let semantic() rewrite the AST as a CastExp if it turns out
+                     * to be a type.
                      */
                     auto ie = new AST.IdentifierExp(loc, t.isTypeIdentifier().ident);
-                    ie.parens = true;    // disambiguate it from being a declaration
-                    return new AST.CallExp(loc, ie, cparseArguments());
+                    ie.parens = true;    // let semantic know it might be a CastExp
+                    AST.Expression e = new AST.CallExp(loc, ie, cparseArguments());
+                    return cparsePostfixOperators(e);
                 }
                 else
                 {
@@ -1483,9 +1488,12 @@ final class CParser(AST) : Parser!AST
 
         /* If a declarator does not follow, it is unnamed
          */
-        if (token.value == TOK.semicolon && tspec)
+        if (token.value == TOK.semicolon)
         {
             nextToken();
+            if (!tspec)
+                return;         // accept empty declaration as an extension
+
             auto tt = tspec.isTypeTag();
             if (!tt ||
                 !tt.id && (tt.tok == TOK.struct_ || tt.tok == TOK.union_))
@@ -1662,7 +1670,8 @@ final class CParser(AST) : Parser!AST
                 {
                     // Give non-extern variables an implicit void initializer
                     // if one has not been explicitly set.
-                    if (!hasInitializer && !(specifier.scw & SCW.xextern))
+                    if (!hasInitializer &&
+                        !(specifier.scw & (SCW.xextern | SCW.xstatic | SCW.x_Thread_local) || level == LVL.global))
                         initializer = new AST.VoidInitializer(token.loc);
                     s = new AST.VarDeclaration(token.loc, dt, id, initializer, specifiersToSTC(level, specifier));
                 }
@@ -2492,7 +2501,18 @@ final class CParser(AST) : Parser!AST
                 return t;
             }
 
-            t = constApply(t);
+            if (declarator == DTR.xparameter &&
+                t.isTypePointer())
+            {
+                /* Because there are instances in .h files of "const pointer to mutable",
+                 * skip applying transitive `const`
+                 * https://issues.dlang.org/show_bug.cgi?id=22534
+                 */
+                auto tn = cast(AST.TypeNext)t;
+                tn.next = constApply(tn.next);
+            }
+            else
+                t = constApply(t);
         }
 
         //printf("result: %s\n", t.toChars());
@@ -2610,6 +2630,8 @@ final class CParser(AST) : Parser!AST
 
             Identifier id;
             auto t = cparseDeclarator(DTR.xparameter, tspec, id, specifier);
+            if (token.value == TOK.__attribute__)
+                cparseGnuAttributes(specifier);
             if (specifier.mod & MOD.xconst)
                 t = toConst(t);
             auto param = new AST.Parameter(STC.parameter, t, id, null, null);

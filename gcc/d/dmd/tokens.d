@@ -52,38 +52,22 @@ enum TOK : ushort
     new_,
     delete_,
     star,
-    symbolOffset,
     variable,
-    dotVariable,
-    dotIdentifier,
-    dotTemplateInstance,
-    dotType,
     slice,
-    arrayLength,
     version_,
     module_,
     dollar,
     template_,
-    dotTemplateDeclaration,
     declaration,
     typeof_,
     pragma_,
-    dSymbol,
     typeid_,
     uadd,
     remove,
-    newAnonymousClass,
     comment,
-    arrayLiteral,
-    assocArrayLiteral,
-    structLiteral,
-    classReference,
-    thrownException,
-    delegatePointer,
-    delegateFunctionPointer,
 
     // Operators
-    lessThan = 54,
+    lessThan,
     greaterThan,
     lessOrEqual,
     greaterOrEqual,
@@ -94,7 +78,7 @@ enum TOK : ushort
     index,
     is_,
 
-    leftShift = 64,
+    leftShift,
     rightShift,
     leftShiftAssign,
     rightShiftAssign,
@@ -136,7 +120,7 @@ enum TOK : ushort
     preMinusMinus,
 
     // Numeric literals
-    int32Literal = 104,
+    int32Literal,
     uns32Literal,
     int64Literal,
     uns64Literal,
@@ -150,22 +134,21 @@ enum TOK : ushort
     imaginary80Literal,
 
     // Char constants
-    charLiteral = 116,
+    charLiteral,
     wcharLiteral,
     dcharLiteral,
 
     // Leaf operators
-    identifier = 119,
+    identifier,
     string_,
     hexadecimalString,
     this_,
     super_,
-    halt,
     tuple,
     error,
 
     // Basic types
-    void_ = 127,
+    void_,
     int8,
     uns8,
     int16,
@@ -191,7 +174,7 @@ enum TOK : ushort
     bool_,
 
     // Aggregates
-    struct_ = 151,
+    struct_,
     class_,
     interface_,
     union_,
@@ -223,7 +206,7 @@ enum TOK : ushort
     immutable_,
 
     // Statements
-    if_ = 181,
+    if_,
     else_,
     while_,
     for_,
@@ -249,7 +232,7 @@ enum TOK : ushort
     onScopeSuccess,
 
     // Contracts
-    invariant_ = 205,
+    invariant_,
 
     // Testing
     unittest_,
@@ -259,7 +242,7 @@ enum TOK : ushort
     ref_,
     macro_,
 
-    parameters = 210,
+    parameters,
     traits,
     overloadSet,
     pure_,
@@ -279,18 +262,9 @@ enum TOK : ushort
     vector,
     pound,
 
-    interval = 229,
-    voidExpression,
-    cantExpression,
-    showCtfeContext,
-
-    objcClassReference,
-    vectorArray,
-
     arrow,      // ->
     colonColon, // ::
     wchar_tLiteral,
-    compoundLiteral, // ( type-name ) { initializer-list }
 
     // C only keywords
     inline,
@@ -885,33 +859,17 @@ extern (C++) struct Token
 
         // For debugging
         TOK.error: "error",
-        TOK.dotIdentifier: "dotid",
-        TOK.dotTemplateDeclaration: "dottd",
-        TOK.dotTemplateInstance: "dotti",
-        TOK.dotVariable: "dotvar",
-        TOK.dotType: "dottype",
-        TOK.symbolOffset: "symoff",
-        TOK.arrayLength: "arraylength",
-        TOK.arrayLiteral: "arrayliteral",
-        TOK.assocArrayLiteral: "assocarrayliteral",
-        TOK.structLiteral: "structliteral",
         TOK.string_: "string",
-        TOK.dSymbol: "symbol",
         TOK.tuple: "tuple",
         TOK.declaration: "declaration",
         TOK.onScopeExit: "scope(exit)",
         TOK.onScopeSuccess: "scope(success)",
         TOK.onScopeFailure: "scope(failure)",
-        TOK.delegatePointer: "delegateptr",
 
         // Finish up
         TOK.reserved: "reserved",
         TOK.remove: "remove",
-        TOK.newAnonymousClass: "newanonclass",
         TOK.comment: "comment",
-        TOK.classReference: "classreference",
-        TOK.thrownException: "thrownexception",
-        TOK.delegateFunctionPointer: "delegatefuncptr",
         TOK.int32Literal: "int32v",
         TOK.uns32Literal: "uns32v",
         TOK.int64Literal: "int64v",
@@ -928,18 +886,8 @@ extern (C++) struct Token
         TOK.wcharLiteral: "wcharv",
         TOK.dcharLiteral: "dcharv",
         TOK.wchar_tLiteral: "wchar_tv",
-        TOK.compoundLiteral: "compoundliteral",
 
-        TOK.halt: "halt",
         TOK.hexadecimalString: "xstring",
-
-        TOK.interval: "interval",
-        TOK.voidExpression: "voidexp",
-        TOK.cantExpression: "cantexp",
-        TOK.showCtfeContext : "showCtfeContext",
-
-        TOK.objcClassReference: "class",
-        TOK.vectorArray: "vectorarray",
 
         // C only keywords
         TOK.inline    : "inline",

@@ -26,6 +26,7 @@ import dmd.expressionsem;
 import dmd.globals;
 import dmd.init;
 import dmd.mtype;
+import dmd.printast;
 import dmd.root.ctfloat;
 import dmd.sideeffect;
 import dmd.tokens;
@@ -270,6 +271,7 @@ package void setLengthVarIfKnown(VarDeclaration lengthVar, Type type)
  */
 Expression Expression_optimize(Expression e, int result, bool keepLvalue)
 {
+    //printf("Expression_optimize() %s\n", e.toChars());
     Expression ret = e;
 
     void error()
@@ -455,6 +457,59 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
             if (!ve.var.isReference() && !ve.var.isImportedSymbol())
             {
                 ret = new SymOffExp(e.loc, ve.var, 0, ve.hasOverloads);
+                ret.type = e.type;
+                return;
+            }
+        }
+        if (e.e1.isDotVarExp())
+        {
+            /******************************
+             * Run down the left side of the a.b.c expression to determine the
+             * leftmost variable being addressed (`a`), and accumulate the offsets of the `.b` and `.c`.
+             * Params:
+             *      e = the DotVarExp or VarExp
+             *      var = set to the VarExp at the end, or null if doesn't end in VarExp
+             *      offset = accumulation of all the .var offsets encountered
+             * Returns: true on error
+             */
+            static bool getVarAndOffset(Expression e, ref VarDeclaration var, ref uint offset)
+            {
+                if (e.type.size() == SIZE_INVALID)  // trigger computation of v.offset
+                    return true;
+
+                if (auto dve = e.isDotVarExp())
+                {
+                    auto v = dve.var.isVarDeclaration();
+                    if (!v || !v.isField() || v.isBitFieldDeclaration())
+                        return false;
+
+                    if (getVarAndOffset(dve.e1, var, offset))
+                        return true;
+                    offset += v.offset;
+                }
+                else if (auto ve = e.isVarExp())
+                {
+                    if (!ve.var.isReference() &&
+                        !ve.var.isImportedSymbol() &&
+                        ve.var.isDataseg() &&
+                        ve.var.isCsymbol())
+                    {
+                        var = ve.var.isVarDeclaration();
+                    }
+                }
+                return false;
+            }
+
+            uint offset;
+            VarDeclaration var;
+            if (getVarAndOffset(e.e1, var, offset))
+            {
+                ret = ErrorExp.get();
+                return;
+            }
+            if (var)
+            {
+                ret = new SymOffExp(e.loc, var, offset, false);
                 ret.type = e.type;
                 return;
             }

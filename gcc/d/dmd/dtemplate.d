@@ -5529,6 +5529,20 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
 
     override bool declareParameter(Scope* sc)
     {
+        /*
+            Do type semantic earlier.
+
+            This means for certain erroneous value parameters
+            their "type" can be known earlier and thus a better
+            error message given.
+
+            For example:
+            `template test(x* x) {}`
+            now yields "undefined identifier" rather than the opaque
+            "variable `x` is used as a type".
+         */
+        if (valType)
+            valType = valType.typeSemantic(loc, sc);
         auto v = new VarDeclaration(loc, valType, ident, null);
         v.storage_class = STC.templateparameter;
         return sc.insert(v) !is null;

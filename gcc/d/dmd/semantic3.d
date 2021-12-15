@@ -235,6 +235,18 @@ private extern(C++) final class Semantic3Visitor : Visitor
         if (funcdecl.errors || isError(funcdecl.parent))
         {
             funcdecl.errors = true;
+
+            // Mark that the return type could not be inferred
+            if (funcdecl.inferRetType)
+            {
+                assert(funcdecl.type);
+                auto tf = funcdecl.type.isTypeFunction();
+
+                // Only change the return type s.t. other analysis is
+                // still possible e.g. missmatched parameter types
+                if (tf && !tf.next)
+                    tf.next = Type.terror;
+            }
             return;
         }
         //printf("FuncDeclaration::semantic3('%s.%s', %p, sc = %p, loc = %s)\n", funcdecl.parent.toChars(), funcdecl.toChars(), funcdecl, sc, funcdecl.loc.toChars());

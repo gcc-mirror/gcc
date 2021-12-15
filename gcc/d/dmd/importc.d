@@ -15,13 +15,18 @@ module dmd.importc;
 
 import core.stdc.stdio;
 
+import dmd.astenums;
 import dmd.dcast;
+import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.identifier;
+import dmd.init;
 import dmd.mtype;
+import dmd.tokens;
+import dmd.typesem;
 
 /**************************************
  * C11 does not allow array or function parameters.
@@ -84,7 +89,7 @@ Expression arrayFuncConv(Expression e, Scope* sc)
     }
     else if (t.isTypeFunction())
     {
-        e = e.addressOf();
+        e = new AddrExp(e.loc, e);
     }
     else
         return e;
@@ -169,3 +174,89 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     auto ep = new PtrExp(ae.loc, new AddExp(ae.loc, e1, e2));
     return ep.expressionSemantic(sc);
 }
+
+/******************************************
+ * Determine default initializer for const global symbol.
+ */
+void addDefaultCInitializer(VarDeclaration dsym)
+{
+    //printf("addDefaultCInitializer() %s\n", dsym.toChars());
+    if (!(dsym.storage_class & (STC.static_ | STC.gshared)))
+        return;
+    if (dsym.storage_class & (STC.extern_ | STC.field | STC.in_ | STC.foreach_ | STC.parameter | STC.result))
+        return;
+
+    Type t = dsym.type;
+    if (t.isTypeSArray() && t.isTypeSArray().isIncomplete())
+    {
+        dsym._init = new VoidInitializer(dsym.loc);
+        return; // incomplete arrays will be diagnosed later
+    }
+
+    if (t.isMutable())
+        return;
+
+    auto e = dsym.type.defaultInit(dsym.loc, true);
+    dsym._init = new ExpInitializer(dsym.loc, e);
+}
+
+/********************************************
+ * Resolve cast/call grammar ambiguity.
+ * Params:
+ *      e = expression that might be a cast, might be a call
+ *      sc = context
+ * Returns:
+ *      null means leave as is, !=null means rewritten AST
+ */
+Expression castCallAmbiguity(Expression e, Scope* sc)
+{
+    Expression* pe = &e;
+
+    while (1)
+    {
+        // Walk down the postfix expressions till we find a CallExp or something else
+        switch ((*pe).op)
+        {
+            case EXP.dotIdentifier:
+                pe = &(*pe).isDotIdExp().e1;
+                continue;
+
+            case EXP.plusPlus:
+            case EXP.minusMinus:
+                pe = &(*pe).isPostExp().e1;
+                continue;
+
+            case EXP.array:
+                pe = &(*pe).isArrayExp().e1;
+                continue;
+
+            case EXP.call:
+                auto ce = (*pe).isCallExp();
+                if (ce.e1.parens)
+                {
+                    ce.e1 = expressionSemantic(ce.e1, sc);
+                    if (ce.e1.op == EXP.type)
+                    {
+                        const numArgs = ce.arguments ? ce.arguments.length : 0;
+                        if (numArgs >= 1)
+                        {
+                            ce.e1.parens = false;
+                            Expression arg;
+                            foreach (a; (*ce.arguments)[])
+                            {
+                                arg = arg ? new CommaExp(a.loc, arg, a) : a;
+                            }
+                            auto t = ce.e1.isTypeExp().type;
+                            *pe = arg;
+                            return new CastExp(ce.loc, e, t);
+                        }
+                    }
+                }
+                return null;
+
+            default:
+                return null;
+        }
+    }
+}
+

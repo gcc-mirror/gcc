@@ -39,7 +39,7 @@ void test01()
 
   wistringstream iss;
   iss.imbue(loc_tw);
-  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc()); 
+  const time_get<wchar_t>& tim_get = use_facet<time_get<wchar_t> >(iss.getloc());
 
   const ios_base::iostate good = ios_base::goodbit;
   ios_base::iostate errorstate = good;
@@ -66,13 +66,14 @@ void test01()
 static bool debian_date_format()
 {
 #ifdef D_FMT
+  std::string orig = setlocale(LC_TIME, NULL);
   if (setlocale(LC_TIME, "zh_TW.UTF-8") != NULL)
   {
     // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=31413
     // and https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71641#c2
-    if (*nl_langinfo(D_FMT) == '%')
-      return true;
-    setlocale(LC_TIME, "C");
+    std::string d_fmt = nl_langinfo(D_FMT);
+    setlocale(LC_TIME, orig.c_str());
+    return d_fmt[0] == '%';
   }
 #endif
   return false;

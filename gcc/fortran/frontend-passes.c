@@ -2390,7 +2390,7 @@ doloop_contained_procedure_code (gfc_code **c,
   switch (co->op)
     {
     case EXEC_ASSIGN:
-      if (co->expr1->symtree->n.sym == do_var)
+      if (co->expr1->symtree && co->expr1->symtree->n.sym == do_var)
 	gfc_error_now (errmsg, do_var->name, &co->loc, info->procedure->name,
 		       &info->where_do);
       break;
@@ -2411,14 +2411,14 @@ doloop_contained_procedure_code (gfc_code **c,
       break;
 
     case EXEC_OPEN:
-      if (co->ext.open->iostat
+      if (co->ext.open && co->ext.open->iostat
 	  && co->ext.open->iostat->symtree->n.sym == do_var)
 	gfc_error_now (errmsg, do_var->name, &co->ext.open->iostat->where,
 		       info->procedure->name, &info->where_do);
       break;
 
     case EXEC_CLOSE:
-      if (co->ext.close->iostat
+      if (co->ext.close && co->ext.close->iostat
 	  && co->ext.close->iostat->symtree->n.sym == do_var)
 	gfc_error_now (errmsg, do_var->name, &co->ext.close->iostat->where,
 		       info->procedure->name, &info->where_do);
@@ -2429,7 +2429,8 @@ doloop_contained_procedure_code (gfc_code **c,
 	{
 
 	case EXEC_INQUIRE:
-#define CHECK_INQ(a) do { if (co->ext.inquire->a &&			\
+#define CHECK_INQ(a) do { if (co->ext.inquire    &&			\
+			      co->ext.inquire->a &&			\
 			      co->ext.inquire->a->symtree->n.sym == do_var) \
 	      gfc_error_now (errmsg, do_var->name,			\
 			     &co->ext.inquire->a->where,		\
@@ -2448,21 +2449,23 @@ doloop_contained_procedure_code (gfc_code **c,
 #undef CHECK_INQ
 
 	case EXEC_READ:
-	  if (co->expr1 && co->expr1->symtree->n.sym == do_var)
+	  if (co->expr1 && co->expr1->symtree
+	      && co->expr1->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->expr1->where,
 			   info->procedure->name, &info->where_do);
 
 	  /* Fallthrough.  */
 
 	case EXEC_WRITE:
-	  if (co->ext.dt->iostat
+	  if (co->ext.dt && co->ext.dt->iostat && co->ext.dt->iostat->symtree
 	      && co->ext.dt->iostat->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->ext.dt->iostat->where,
 			   info->procedure->name, &info->where_do);
 	  break;
 
 	case EXEC_IOLENGTH:
-	  if (co->expr1 && co->expr1->symtree->n.sym == do_var)
+	  if (co->expr1 && co->expr1->symtree
+	      && co->expr1->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->expr1->where,
 			   info->procedure->name, &info->where_do);
 	  break;
@@ -2650,7 +2653,7 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 
 	      do_sym = cl->ext.iterator->var->symtree->n.sym;
 
-	      if (a->expr && a->expr->symtree
+	      if (a->expr && a->expr->symtree && f->sym
 		  && a->expr->symtree->n.sym == do_sym)
 		{
 		  if (f->sym->attr.intent == INTENT_OUT)

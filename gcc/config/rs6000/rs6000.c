@@ -171,7 +171,6 @@ static int dbg_cost_ctrl;
 
 /* Built in types.  */
 tree rs6000_builtin_types[RS6000_BTI_MAX];
-tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 /* Flag to say the TOC is initialized */
 int toc_initialized, need_toc_init;
@@ -2585,8 +2584,6 @@ rs6000_debug_reg_global (void)
 	   (int)rs6000_sched_restricted_insns_priority);
   fprintf (stderr, DEBUG_FMT_D, "Number of standard builtins",
 	   (int)END_BUILTINS);
-  fprintf (stderr, DEBUG_FMT_D, "Number of rs6000 builtins",
-	   (int)RS6000_BUILTIN_COUNT);
 
   fprintf (stderr, DEBUG_FMT_D, "Enable float128 on VSX",
 	   (int)TARGET_FLOAT128_ENABLE_TYPE);
@@ -5571,14 +5568,14 @@ rs6000_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
    Implement targetm.vectorize.builtin_vectorized_function.  */
 
 static tree
-rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
-					tree type_in)
+rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
+				    tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
 
   if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr, "rs6000_new_builtin_vectorized_function (%s, %s, %s)\n",
+    fprintf (stderr, "rs6000_builtin_vectorized_function (%s, %s, %s)\n",
 	     combined_fn_name (combined_fn (fn)),
 	     GET_MODE_NAME (TYPE_MODE (type_out)),
 	     GET_MODE_NAME (TYPE_MODE (type_in)));
@@ -5599,95 +5596,95 @@ rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_CPSGNDP];
+	return rs6000_builtin_decls[RS6000_BIF_CPSGNDP];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_CPSGNSP];
+	return rs6000_builtin_decls[RS6000_BIF_CPSGNSP];
       if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_COPYSIGN_V4SF];
+	return rs6000_builtin_decls[RS6000_BIF_COPYSIGN_V4SF];
       break;
     CASE_CFN_CEIL:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIP];
+	return rs6000_builtin_decls[RS6000_BIF_XVRDPIP];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIP];
+	return rs6000_builtin_decls[RS6000_BIF_XVRSPIP];
       if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_VRFIP];
+	return rs6000_builtin_decls[RS6000_BIF_VRFIP];
       break;
     CASE_CFN_FLOOR:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIM];
+	return rs6000_builtin_decls[RS6000_BIF_XVRDPIM];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIM];
+	return rs6000_builtin_decls[RS6000_BIF_XVRSPIM];
       if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_VRFIM];
+	return rs6000_builtin_decls[RS6000_BIF_VRFIM];
       break;
     CASE_CFN_FMA:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVMADDDP];
+	return rs6000_builtin_decls[RS6000_BIF_XVMADDDP];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVMADDSP];
+	return rs6000_builtin_decls[RS6000_BIF_XVMADDSP];
       if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_VMADDFP];
+	return rs6000_builtin_decls[RS6000_BIF_VMADDFP];
       break;
     CASE_CFN_TRUNC:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIZ];
+	return rs6000_builtin_decls[RS6000_BIF_XVRDPIZ];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIZ];
+	return rs6000_builtin_decls[RS6000_BIF_XVRSPIZ];
       if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_VRFIZ];
+	return rs6000_builtin_decls[RS6000_BIF_VRFIZ];
       break;
     CASE_CFN_NEARBYINT:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && flag_unsafe_math_optimizations
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPI];
+	return rs6000_builtin_decls[RS6000_BIF_XVRDPI];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && flag_unsafe_math_optimizations
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPI];
+	return rs6000_builtin_decls[RS6000_BIF_XVRSPI];
       break;
     CASE_CFN_RINT:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && !flag_trapping_math
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRDPIC];
+	return rs6000_builtin_decls[RS6000_BIF_XVRDPIC];
       if (VECTOR_UNIT_VSX_P (V4SFmode)
 	  && !flag_trapping_math
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_XVRSPIC];
+	return rs6000_builtin_decls[RS6000_BIF_XVRSPIC];
       break;
     default:
       break;
@@ -5703,15 +5700,15 @@ rs6000_new_builtin_vectorized_function (unsigned int fn, tree type_out,
 /* Implement targetm.vectorize.builtin_md_vectorized_function.  */
 
 static tree
-rs6000_new_builtin_md_vectorized_function (tree fndecl, tree type_out,
-					   tree type_in)
+rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
+				       tree type_in)
 {
   machine_mode in_mode, out_mode;
   int in_n, out_n;
 
   if (TARGET_DEBUG_BUILTIN)
     fprintf (stderr,
-	     "rs6000_new_builtin_md_vectorized_function (%s, %s, %s)\n",
+	     "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
 	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
 	     GET_MODE_NAME (TYPE_MODE (type_out)),
 	     GET_MODE_NAME (TYPE_MODE (type_in)));
@@ -5734,25 +5731,25 @@ rs6000_new_builtin_md_vectorized_function (tree fndecl, tree type_out,
       if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_VRSQRTFP];
+	return rs6000_builtin_decls[RS6000_BIF_VRSQRTFP];
       break;
     case RS6000_BIF_RSQRT:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
+	return rs6000_builtin_decls[RS6000_BIF_RSQRT_2DF];
       break;
     case RS6000_BIF_RECIPF:
       if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
 	  && out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls_x[RS6000_BIF_VRECIPFP];
+	return rs6000_builtin_decls[RS6000_BIF_VRECIPFP];
       break;
     case RS6000_BIF_RECIP:
       if (VECTOR_UNIT_VSX_P (V2DFmode)
 	  && out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls_x[RS6000_BIF_RECIP_V2DF];
+	return rs6000_builtin_decls[RS6000_BIF_RECIP_V2DF];
       break;
     default:
       break;
@@ -5807,7 +5804,7 @@ rs6000_new_builtin_md_vectorized_function (tree fndecl, tree type_out,
 	}
 
       if (in_mode == exp_mode && in_vmode == exp_vmode)
-	return rs6000_builtin_decls_x[bif];
+	return rs6000_builtin_decls[bif];
     }
 
   return NULL_TREE;
@@ -5921,256 +5918,6 @@ rs6000_builtin_vectorized_libmass (combined_fn fn, tree type_out,
   return new_fndecl;
 }
 
-/* Returns a function decl for a vectorized version of the builtin function
-   with builtin function code FN and the result vector type TYPE, or NULL_TREE
-   if it is not available.  */
-
-static tree
-rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
-				    tree type_in)
-{
-  machine_mode in_mode, out_mode;
-  int in_n, out_n;
-
-  if (new_builtins_are_live)
-    return rs6000_new_builtin_vectorized_function (fn, type_out, type_in);
-
-  if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr, "rs6000_builtin_vectorized_function (%s, %s, %s)\n",
-	     combined_fn_name (combined_fn (fn)),
-	     GET_MODE_NAME (TYPE_MODE (type_out)),
-	     GET_MODE_NAME (TYPE_MODE (type_in)));
-
-  if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE)
-    return NULL_TREE;
-
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
-
-  switch (fn)
-    {
-    CASE_CFN_COPYSIGN:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_CPSGNDP];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_CPSGNSP];
-      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_COPYSIGN_V4SF];
-      break;
-    CASE_CFN_CEIL:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRDPIP];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRSPIP];
-      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_VRFIP];
-      break;
-    CASE_CFN_FLOOR:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRDPIM];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRSPIM];
-      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_VRFIM];
-      break;
-    CASE_CFN_FMA:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVMADDDP];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVMADDSP];
-      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_VMADDFP];
-      break;
-    CASE_CFN_TRUNC:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRDPIZ];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRSPIZ];
-      if (VECTOR_UNIT_ALTIVEC_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_VRFIZ];
-      break;
-    CASE_CFN_NEARBYINT:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && flag_unsafe_math_optimizations
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRDPI];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && flag_unsafe_math_optimizations
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRSPI];
-      break;
-    CASE_CFN_RINT:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && !flag_trapping_math
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRDPIC];
-      if (VECTOR_UNIT_VSX_P (V4SFmode)
-	  && !flag_trapping_math
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[VSX_BUILTIN_XVRSPIC];
-      break;
-    default:
-      break;
-    }
-
-  /* Generate calls to libmass if appropriate.  */
-  if (rs6000_veclib_handler)
-    return rs6000_veclib_handler (combined_fn (fn), type_out, type_in);
-
-  return NULL_TREE;
-}
-
-/* Implement TARGET_VECTORIZE_BUILTIN_MD_VECTORIZED_FUNCTION.  */
-
-static tree
-rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
-				       tree type_in)
-{
-  machine_mode in_mode, out_mode;
-  int in_n, out_n;
-
-  if (new_builtins_are_live)
-    return rs6000_new_builtin_md_vectorized_function (fndecl, type_out,
-						      type_in);
-
-  if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr, "rs6000_builtin_md_vectorized_function (%s, %s, %s)\n",
-	     IDENTIFIER_POINTER (DECL_NAME (fndecl)),
-	     GET_MODE_NAME (TYPE_MODE (type_out)),
-	     GET_MODE_NAME (TYPE_MODE (type_in)));
-
-  if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE)
-    return NULL_TREE;
-
-  out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
-
-  enum rs6000_builtins fn
-    = (enum rs6000_builtins) DECL_MD_FUNCTION_CODE (fndecl);
-  switch (fn)
-    {
-    case RS6000_BUILTIN_RSQRTF:
-      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_VRSQRTFP];
-      break;
-    case RS6000_BUILTIN_RSQRT:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
-      break;
-    case RS6000_BUILTIN_RECIPF:
-      if (VECTOR_UNIT_ALTIVEC_OR_VSX_P (V4SFmode)
-	  && out_mode == SFmode && out_n == 4
-	  && in_mode == SFmode && in_n == 4)
-	return rs6000_builtin_decls[ALTIVEC_BUILTIN_VRECIPFP];
-      break;
-    case RS6000_BUILTIN_RECIP:
-      if (VECTOR_UNIT_VSX_P (V2DFmode)
-	  && out_mode == DFmode && out_n == 2
-	  && in_mode == DFmode && in_n == 2)
-	return rs6000_builtin_decls[VSX_BUILTIN_RECIP_V2DF];
-      break;
-    default:
-      break;
-    }
-
-  machine_mode in_vmode = TYPE_MODE (type_in);
-  machine_mode out_vmode = TYPE_MODE (type_out);
-
-  /* Power10 supported vectorized built-in functions.  */
-  if (TARGET_POWER10
-      && in_vmode == out_vmode
-      && VECTOR_UNIT_ALTIVEC_OR_VSX_P (in_vmode))
-    {
-      machine_mode exp_mode = DImode;
-      machine_mode exp_vmode = V2DImode;
-      enum rs6000_builtins bif;
-      switch (fn)
-	{
-	case MISC_BUILTIN_DIVWE:
-	case MISC_BUILTIN_DIVWEU:
-	  exp_mode = SImode;
-	  exp_vmode = V4SImode;
-	  if (fn == MISC_BUILTIN_DIVWE)
-	    bif = P10V_BUILTIN_DIVES_V4SI;
-	  else
-	    bif = P10V_BUILTIN_DIVEU_V4SI;
-	  break;
-	case MISC_BUILTIN_DIVDE:
-	case MISC_BUILTIN_DIVDEU:
-	  if (fn == MISC_BUILTIN_DIVDE)
-	    bif = P10V_BUILTIN_DIVES_V2DI;
-	  else
-	    bif = P10V_BUILTIN_DIVEU_V2DI;
-	  break;
-	case P10_BUILTIN_CFUGED:
-	  bif = P10V_BUILTIN_VCFUGED;
-	  break;
-	case P10_BUILTIN_CNTLZDM:
-	  bif = P10V_BUILTIN_VCLZDM;
-	  break;
-	case P10_BUILTIN_CNTTZDM:
-	  bif = P10V_BUILTIN_VCTZDM;
-	  break;
-	case P10_BUILTIN_PDEPD:
-	  bif = P10V_BUILTIN_VPDEPD;
-	  break;
-	case P10_BUILTIN_PEXTD:
-	  bif = P10V_BUILTIN_VPEXTD;
-	  break;
-	default:
-	  return NULL_TREE;
-	}
-
-      if (in_mode == exp_mode && in_vmode == exp_vmode)
-	return rs6000_builtin_decls[bif];
-    }
-
-  return NULL_TREE;
-}
 
 /* Default CPU string for rs6000*_file_start functions.  */
 static const char *rs6000_default_cpu;
@@ -6902,6 +6649,13 @@ xxspltib_constant_p (rtx op,
   else if (IN_RANGE (value, -1, 0))
     *num_insns_ptr = 1;
 
+  /* Do not generate XXSPLTIB and a sign extend operation if we can generate a
+     single XXSPLTIW or XXSPLTIDP instruction.  */
+  else if (vsx_prefixed_constant (op, mode))
+    return false;
+
+  /* Return XXSPLITB followed by a sign extend operation to convert the
+     constant to V8HImode or V4SImode.  */
   else
     *num_insns_ptr = 2;
 
@@ -6951,6 +6705,31 @@ output_vec_const_move (rtx *operands)
 
 	  else
 	    gcc_unreachable ();
+	}
+
+      vec_const_128bit_type vsx_const;
+      if (TARGET_POWER10 && vec_const_128bit_to_bytes (vec, mode, &vsx_const))
+	{
+	  unsigned imm = constant_generates_lxvkq (&vsx_const);
+	  if (imm)
+	    {
+	      operands[2] = GEN_INT (imm);
+	      return "lxvkq %x0,%2";
+	    }
+
+	  imm = constant_generates_xxspltiw (&vsx_const);
+	  if (imm)
+	    {
+	      operands[2] = GEN_INT (imm);
+	      return "xxspltiw %x0,%2";
+	    }
+
+	  imm = constant_generates_xxspltidp (&vsx_const);
+	  if (imm)
+	    {
+	      operands[2] = GEN_INT (imm);
+	      return "xxspltidp %x0,%2";
+	    }
 	}
 
       if (TARGET_P9_VECTOR
@@ -22749,17 +22528,13 @@ rs6000_builtin_reciprocal (tree fndecl)
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V2DFmode))
 	return NULL_TREE;
 
-      if (new_builtins_are_live)
-	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_2DF];
-      return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_2DF];
+      return rs6000_builtin_decls[RS6000_BIF_RSQRT_2DF];
 
     case RS6000_BIF_XVSQRTSP:
       if (!RS6000_RECIP_AUTO_RSQRTE_P (V4SFmode))
 	return NULL_TREE;
 
-      if (new_builtins_are_live)
-	return rs6000_builtin_decls_x[RS6000_BIF_RSQRT_4SF];
-      return rs6000_builtin_decls[VSX_BUILTIN_RSQRT_4SF];
+      return rs6000_builtin_decls[RS6000_BIF_RSQRT_4SF];
 
     default:
       return NULL_TREE;
@@ -25381,10 +25156,7 @@ add_condition_to_bb (tree function_decl, tree version_decl,
 
   tree bool_zero = build_int_cst (bool_int_type_node, 0);
   tree cond_var = create_tmp_var (bool_int_type_node);
-  tree predicate_decl
-    = new_builtins_are_live
-	? rs6000_builtin_decls_x[(int) RS6000_BIF_CPU_SUPPORTS]
-	: rs6000_builtin_decls [(int) RS6000_BUILTIN_CPU_SUPPORTS];
+  tree predicate_decl = rs6000_builtin_decls[(int) RS6000_BIF_CPU_SUPPORTS];
   const char *arg_str = rs6000_clone_map[clone_isa].name;
   tree predicate_arg = build_string_literal (strlen (arg_str) + 1, arg_str);
   gimple *call_cond_stmt = gimple_build_call (predicate_decl, 1, predicate_arg);
@@ -26729,6 +26501,44 @@ prefixed_paddi_p (rtx_insn *insn)
   return (iform == INSN_FORM_PCREL_EXTERNAL || iform == INSN_FORM_PCREL_LOCAL);
 }
 
+/* Whether an instruction is a prefixed XXSPLTI* instruction.  This is called
+   from the prefixed attribute processing.  */
+
+bool
+prefixed_xxsplti_p (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return false;
+
+  rtx dest = SET_DEST (set);
+  rtx src = SET_SRC (set);
+  machine_mode mode = GET_MODE (dest);
+
+  if (!REG_P (dest) && !SUBREG_P (dest))
+    return false;
+
+  if (GET_CODE (src) == UNSPEC)
+    {
+      int unspec = XINT (src, 1);
+      return (unspec == UNSPEC_XXSPLTIW
+	      || unspec == UNSPEC_XXSPLTIDP
+	      || unspec == UNSPEC_XXSPLTI32DX);
+    }
+
+  vec_const_128bit_type vsx_const;
+  if (vec_const_128bit_to_bytes (src, mode, &vsx_const))
+    {
+      if (constant_generates_xxspltiw (&vsx_const))
+	return true;
+
+      if (constant_generates_xxspltidp (&vsx_const))
+	return true;
+    }
+
+  return false;
+}
+
 /* Whether the next instruction needs a 'p' prefix issued before the
    instruction is printed out.  */
 static bool prepend_p_to_next_insn;
@@ -27309,9 +27119,11 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  return;
 	}
 
-      if (GET_CODE (src) == UNSPEC)
+      if (GET_CODE (src) == UNSPEC
+	  || GET_CODE (src) == UNSPEC_VOLATILE)
 	{
-	  gcc_assert (XINT (src, 1) == UNSPEC_MMA_ASSEMBLE);
+	  gcc_assert (XINT (src, 1) == UNSPEC_VSX_ASSEMBLE
+		      || XINT (src, 1) == UNSPECV_MMA_ASSEMBLE);
 	  gcc_assert (REG_P (dst));
 	  if (GET_MODE (src) == XOmode)
 	    gcc_assert (FP_REGNO_P (REGNO (dst)));
@@ -28024,12 +27836,8 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
       return;
     }
 
-  tree mffs
-    = new_builtins_are_live ? rs6000_builtin_decls_x[RS6000_BIF_MFFS]
-			    : rs6000_builtin_decls[RS6000_BUILTIN_MFFS];
-  tree mtfsf
-    = new_builtins_are_live ? rs6000_builtin_decls_x[RS6000_BIF_MTFSF]
-			    : rs6000_builtin_decls[RS6000_BUILTIN_MTFSF];
+  tree mffs = rs6000_builtin_decls[RS6000_BIF_MFFS];
+  tree mtfsf = rs6000_builtin_decls[RS6000_BIF_MTFSF];
   tree call_mffs = build_call_expr (mffs, 0);
 
   /* Generates the equivalent of feholdexcept (&fenv_var)
@@ -28596,6 +28404,442 @@ rs6000_output_addr_vec_elt (FILE *file, int value)
   fprintf (file, "\n");
 }
 
+
+/* Copy an integer constant to the vector constant structure.  */
+
+static void
+constant_int_to_128bit_vector (rtx op,
+			       machine_mode mode,
+			       size_t byte_num,
+			       vec_const_128bit_type *info)
+{
+  unsigned HOST_WIDE_INT uvalue = UINTVAL (op);
+  unsigned bitsize = GET_MODE_BITSIZE (mode);
+
+  for (int shift = bitsize - 8; shift >= 0; shift -= 8)
+    info->bytes[byte_num++] = (uvalue >> shift) & 0xff;
+}
+
+/* Copy a floating point constant to the vector constant structure.  */
+
+static void
+constant_fp_to_128bit_vector (rtx op,
+			      machine_mode mode,
+			      size_t byte_num,
+			      vec_const_128bit_type *info)
+{
+  unsigned bitsize = GET_MODE_BITSIZE (mode);
+  unsigned num_words = bitsize / 32;
+  const REAL_VALUE_TYPE *rtype = CONST_DOUBLE_REAL_VALUE (op);
+  long real_words[VECTOR_128BIT_WORDS];
+
+  /* Make sure we don't overflow the real_words array and that it is
+     filled completely.  */
+  gcc_assert (num_words <= VECTOR_128BIT_WORDS && (bitsize % 32) == 0);
+
+  real_to_target (real_words, rtype, mode);
+
+  /* Iterate over each 32-bit word in the floating point constant.  The
+     real_to_target function puts out words in target endian fashion.  We need
+     to arrange the order so that the bytes are written in big endian order.  */
+  for (unsigned num = 0; num < num_words; num++)
+    {
+      unsigned endian_num = (BYTES_BIG_ENDIAN
+			     ? num
+			     : num_words - 1 - num);
+
+      unsigned uvalue = real_words[endian_num];
+      for (int shift = 32 - 8; shift >= 0; shift -= 8)
+	info->bytes[byte_num++] = (uvalue >> shift) & 0xff;
+    }
+
+  /* Mark that this constant involves floating point.  */
+  info->fp_constant_p = true;
+}
+
+/* Convert a vector constant OP with mode MODE to a vector 128-bit constant
+   structure INFO.
+
+   Break out the constant out to bytes, half words, words, and double words.
+   Return true if we have successfully converted the constant.
+
+   We handle CONST_INT, CONST_DOUBLE, CONST_VECTOR, and VEC_DUPLICATE of
+   constants.  Integer and floating point scalar constants are splatted to fill
+   out the vector.  */
+
+bool
+vec_const_128bit_to_bytes (rtx op,
+			   machine_mode mode,
+			   vec_const_128bit_type *info)
+{
+  /* Initialize the constant structure.  */
+  memset ((void *)info, 0, sizeof (vec_const_128bit_type));
+
+  /* Assume CONST_INTs are DImode.  */
+  if (mode == VOIDmode)
+    mode = CONST_INT_P (op) ? DImode : GET_MODE (op);
+
+  if (mode == VOIDmode)
+    return false;
+
+  unsigned size = GET_MODE_SIZE (mode);
+  bool splat_p = false;
+
+  if (size > VECTOR_128BIT_BYTES)
+    return false;
+
+  /* Set up the bits.  */
+  switch (GET_CODE (op))
+    {
+      /* Integer constants, default to double word.  */
+    case CONST_INT:
+      {
+	constant_int_to_128bit_vector (op, mode, 0, info);
+	splat_p = true;
+	break;
+      }
+
+      /* Floating point constants.  */
+    case CONST_DOUBLE:
+      {
+	/* Fail if the floating point constant is the wrong mode.  */
+	if (GET_MODE (op) != mode)
+	  return false;
+
+	/* SFmode stored as scalars are stored in DFmode format.  */
+	if (mode == SFmode)
+	  {
+	    mode = DFmode;
+	    size = GET_MODE_SIZE (DFmode);
+	  }
+
+	constant_fp_to_128bit_vector (op, mode, 0, info);
+	splat_p = true;
+	break;
+      }
+
+      /* Vector constants, iterate over each element.  On little endian
+	 systems, we have to reverse the element numbers.  */
+    case CONST_VECTOR:
+      {
+	/* Fail if the vector constant is the wrong mode or size.  */
+	if (GET_MODE (op) != mode
+	    || GET_MODE_SIZE (mode) != VECTOR_128BIT_BYTES)
+	  return false;
+
+	machine_mode ele_mode = GET_MODE_INNER (mode);
+	size_t ele_size = GET_MODE_SIZE (ele_mode);
+	size_t nunits = GET_MODE_NUNITS (mode);
+
+	for (size_t num = 0; num < nunits; num++)
+	  {
+	    rtx ele = CONST_VECTOR_ELT (op, num);
+	    size_t byte_num = (BYTES_BIG_ENDIAN
+			       ? num
+			       : nunits - 1 - num) * ele_size;
+
+	    if (CONST_INT_P (ele))
+	      constant_int_to_128bit_vector (ele, ele_mode, byte_num, info);
+	    else if (CONST_DOUBLE_P (ele))
+	      constant_fp_to_128bit_vector (ele, ele_mode, byte_num, info);
+	    else
+	      return false;
+	  }
+
+	break;
+      }
+
+	/* Treat VEC_DUPLICATE of a constant just like a vector constant.
+	   Since we are duplicating the element, we don't have to worry about
+	   endian issues.  */
+    case VEC_DUPLICATE:
+      {
+	/* Fail if the vector duplicate is the wrong mode or size.  */
+	if (GET_MODE (op) != mode
+	    || GET_MODE_SIZE (mode) != VECTOR_128BIT_BYTES)
+	  return false;
+
+	machine_mode ele_mode = GET_MODE_INNER (mode);
+	size_t ele_size = GET_MODE_SIZE (ele_mode);
+	rtx ele = XEXP (op, 0);
+	size_t nunits = GET_MODE_NUNITS (mode);
+
+	if (!CONST_INT_P (ele) && !CONST_DOUBLE_P (ele))
+	  return false;
+
+	for (size_t num = 0; num < nunits; num++)
+	  {
+	    size_t byte_num = num * ele_size;
+
+	    if (CONST_INT_P (ele))
+	      constant_int_to_128bit_vector (ele, ele_mode, byte_num, info);
+	    else
+	      constant_fp_to_128bit_vector (ele, ele_mode, byte_num, info);
+	  }
+
+	break;
+      }
+
+      /* Any thing else, just return failure.  */
+    default:
+      return false;
+    }
+
+  /* Splat the constant to fill 128 bits if desired.  */
+  if (splat_p && size < VECTOR_128BIT_BYTES)
+    {
+      if ((VECTOR_128BIT_BYTES % size) != 0)
+	return false;
+
+      for (size_t offset = size;
+	   offset < VECTOR_128BIT_BYTES;
+	   offset += size)
+	memcpy ((void *) &info->bytes[offset],
+		(void *) &info->bytes[0],
+		size);
+    }
+
+  /* Remember original size.  */
+  info->original_size = size;
+
+  /* Determine if the bytes are all the same.  */
+  unsigned char first_byte = info->bytes[0];
+  info->all_bytes_same = true;
+  for (size_t i = 1; i < VECTOR_128BIT_BYTES; i++)
+    if (first_byte != info->bytes[i])
+      {
+	info->all_bytes_same = false;
+	break;
+      }
+
+  /* Pack half words together & determine if all of the half words are the
+     same.  */
+  for (size_t i = 0; i < VECTOR_128BIT_HALF_WORDS; i++)
+    info->half_words[i] = ((info->bytes[i * 2] << 8)
+			   | info->bytes[(i * 2) + 1]);
+
+  unsigned short first_hword = info->half_words[0];
+  info->all_half_words_same = true;
+  for (size_t i = 1; i < VECTOR_128BIT_HALF_WORDS; i++)
+    if (first_hword != info->half_words[i])
+      {
+	info->all_half_words_same = false;
+	break;
+      }
+
+  /* Pack words together & determine if all of the words are the same.  */
+  for (size_t i = 0; i < VECTOR_128BIT_WORDS; i++)
+    info->words[i] = ((info->bytes[i * 4] << 24)
+		      | (info->bytes[(i * 4) + 1] << 16)
+		      | (info->bytes[(i * 4) + 2] << 8)
+		      | info->bytes[(i * 4) + 3]);
+
+  info->all_words_same
+    = (info->words[0] == info->words[1]
+       && info->words[0] == info->words[1]
+       && info->words[0] == info->words[2]
+       && info->words[0] == info->words[3]);
+
+  /* Pack double words together & determine if all of the double words are the
+     same.  */
+  for (size_t i = 0; i < VECTOR_128BIT_DOUBLE_WORDS; i++)
+    {
+      unsigned HOST_WIDE_INT d_word = 0;
+      for (size_t j = 0; j < 8; j++)
+	d_word = (d_word << 8) | info->bytes[(i * 8) + j];
+
+      info->double_words[i] = d_word;
+    }
+
+  info->all_double_words_same
+    = (info->double_words[0] == info->double_words[1]);
+
+  return true;
+}
+
+/* Determine if an IEEE 128-bit constant can be loaded with LXVKQ.  Return zero
+   if the LXVKQ instruction cannot be used.  Otherwise return the immediate
+   value to be used with the LXVKQ instruction.  */
+
+unsigned
+constant_generates_lxvkq (vec_const_128bit_type *vsx_const)
+{
+  /* Is the instruction supported with power10 code generation, IEEE 128-bit
+     floating point hardware and VSX registers are available.  */
+  if (!TARGET_IEEE128_CONSTANT || !TARGET_FLOAT128_HW || !TARGET_POWER10
+      || !TARGET_VSX)
+    return 0;
+
+  /* All of the constants that are generated by LXVKQ have the bottom 3 words
+     that are 0.  */
+  if (vsx_const->words[1] != 0
+      || vsx_const->words[2] != 0
+      || vsx_const->words[3] != 0)
+      return 0;
+
+  /* See if we have a match for the first word.  */
+  switch (vsx_const->words[0])
+    {
+    case 0x3FFF0000U: return 1;		/* IEEE 128-bit +1.0.  */
+    case 0x40000000U: return 2;		/* IEEE 128-bit +2.0.  */
+    case 0x40008000U: return 3;		/* IEEE 128-bit +3.0.  */
+    case 0x40010000U: return 4;		/* IEEE 128-bit +4.0.  */
+    case 0x40014000U: return 5;		/* IEEE 128-bit +5.0.  */
+    case 0x40018000U: return 6;		/* IEEE 128-bit +6.0.  */
+    case 0x4001C000U: return 7;		/* IEEE 128-bit +7.0.  */
+    case 0x7FFF0000U: return 8;		/* IEEE 128-bit +Infinity.  */
+    case 0x7FFF8000U: return 9;		/* IEEE 128-bit quiet NaN.  */
+    case 0x80000000U: return 16;	/* IEEE 128-bit -0.0.  */
+    case 0xBFFF0000U: return 17;	/* IEEE 128-bit -1.0.  */
+    case 0xC0000000U: return 18;	/* IEEE 128-bit -2.0.  */
+    case 0xC0008000U: return 19;	/* IEEE 128-bit -3.0.  */
+    case 0xC0010000U: return 20;	/* IEEE 128-bit -4.0.  */
+    case 0xC0014000U: return 21;	/* IEEE 128-bit -5.0.  */
+    case 0xC0018000U: return 22;	/* IEEE 128-bit -6.0.  */
+    case 0xC001C000U: return 23;	/* IEEE 128-bit -7.0.  */
+    case 0xFFFF0000U: return 24;	/* IEEE 128-bit -Infinity.  */
+
+      /* anything else cannot be loaded.  */
+    default:
+      break;
+    }
+
+  return 0;
+}
+
+/* Determine if a vector constant can be loaded with XXSPLTIW.  Return zero if
+   the XXSPLTIW instruction cannot be used.  Otherwise return the immediate
+   value to be used with the XXSPLTIW instruction.  */
+
+unsigned
+constant_generates_xxspltiw (vec_const_128bit_type *vsx_const)
+{
+  if (!TARGET_SPLAT_WORD_CONSTANT || !TARGET_PREFIXED || !TARGET_VSX)
+    return 0;
+
+  if (!vsx_const->all_words_same)
+    return 0;
+
+  /* If we can use XXSPLTIB, don't generate XXSPLTIW.  */
+  if (vsx_const->all_bytes_same)
+    return 0;
+
+  /* See if we can use VSPLTISH or VSPLTISW.  */
+  if (vsx_const->all_half_words_same)
+    {
+      unsigned short h_word = vsx_const->half_words[0];
+      short sign_h_word = ((h_word & 0xffff) ^ 0x8000) - 0x8000;
+      if (EASY_VECTOR_15 (sign_h_word))
+	return 0;
+    }
+
+  unsigned int word = vsx_const->words[0];
+  int sign_word = ((word & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  if (EASY_VECTOR_15 (sign_word))
+    return 0;
+
+  return vsx_const->words[0];
+}
+
+/* Determine if a vector constant can be loaded with XXSPLTIDP.  Return zero if
+   the XXSPLTIDP instruction cannot be used.  Otherwise return the immediate
+   value to be used with the XXSPLTIDP instruction.  */
+
+unsigned
+constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
+{
+  if (!TARGET_SPLAT_FLOAT_CONSTANT || !TARGET_PREFIXED || !TARGET_VSX)
+    return 0;
+
+  /* Reject if the two 64-bit segments are not the same.  */
+  if (!vsx_const->all_double_words_same)
+    return 0;
+
+  /* If the bytes, half words, or words are all the same, don't use XXSPLTIDP.
+     Use a simpler instruction (XXSPLTIB, VSPLTISB, VSPLTISH, or VSPLTISW).  */
+  if (vsx_const->all_bytes_same
+      || vsx_const->all_half_words_same
+      || vsx_const->all_words_same)
+    return 0;
+
+  unsigned HOST_WIDE_INT value = vsx_const->double_words[0];
+
+  /* Avoid values that look like DFmode NaN's, except for the normal NaN bit
+     pattern and the signalling NaN bit pattern.  Recognize infinity and
+     negative infinity.  */
+
+  /* Bit representation of DFmode normal quiet NaN.  */
+#define RS6000_CONST_DF_NAN	HOST_WIDE_INT_UC (0x7ff8000000000000)
+
+  /* Bit representation of DFmode normal signaling NaN.  */
+#define RS6000_CONST_DF_NANS	HOST_WIDE_INT_UC (0x7ff4000000000000)
+
+  /* Bit representation of DFmode positive infinity.  */
+#define RS6000_CONST_DF_INF	HOST_WIDE_INT_UC (0x7ff0000000000000)
+
+  /* Bit representation of DFmode negative infinity.  */
+#define RS6000_CONST_DF_NEG_INF	HOST_WIDE_INT_UC (0xfff0000000000000)
+
+  if (value != RS6000_CONST_DF_NAN
+      && value != RS6000_CONST_DF_NANS
+      && value != RS6000_CONST_DF_INF
+      && value != RS6000_CONST_DF_NEG_INF)
+    {
+      /* The IEEE 754 64-bit floating format has 1 bit for sign, 11 bits for
+	 the exponent, and 52 bits for the mantissa (not counting the hidden
+	 bit used for normal numbers).  NaN values have the exponent set to all
+	 1 bits, and the mantissa non-zero (mantissa == 0 is infinity).  */
+
+      int df_exponent = (value >> 52) & 0x7ff;
+      unsigned HOST_WIDE_INT
+	df_mantissa = value & ((HOST_WIDE_INT_1U << 52) - HOST_WIDE_INT_1U);
+
+      if (df_exponent == 0x7ff && df_mantissa != 0)	/* other NaNs.  */
+	return 0;
+
+      /* Avoid values that are DFmode subnormal values.  Subnormal numbers have
+	 the exponent all 0 bits, and the mantissa non-zero.  If the value is
+	 subnormal, then the hidden bit in the mantissa is not set.  */
+      if (df_exponent == 0 && df_mantissa != 0)		/* subnormal.  */
+	return 0;
+    }
+
+  /* Change the representation to DFmode constant.  */
+  long df_words[2] = { vsx_const->words[0], vsx_const->words[1] };
+
+  /* real_from_target takes the target words in target order.  */
+  if (!BYTES_BIG_ENDIAN)
+    std::swap (df_words[0], df_words[1]);
+
+  REAL_VALUE_TYPE rv_type;
+  real_from_target (&rv_type, df_words, DFmode);
+
+  const REAL_VALUE_TYPE *rv = &rv_type;
+
+  /* Validate that the number can be stored as a SFmode value.  */
+  if (!exact_real_truncate (SFmode, rv))
+    return 0;
+
+  /* Validate that the number is not a SFmode subnormal value (exponent is 0,
+     mantissa field is non-zero) which is undefined for the XXSPLTIDP
+     instruction.  */
+  long sf_value;
+  real_to_target (&sf_value, rv, SFmode);
+
+  /* IEEE 754 32-bit values have 1 bit for the sign, 8 bits for the exponent,
+     and 23 bits for the mantissa.  Subnormal numbers have the exponent all
+     0 bits, and the mantissa non-zero.  */
+  long sf_exponent = (sf_value >> 23) & 0xFF;
+  long sf_mantissa = sf_value & 0x7FFFFF;
+
+  if (sf_exponent == 0 && sf_mantissa != 0)
+    return 0;
+
+  /* Return the immediate to be used.  */
+  return sf_value;
+}
+
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

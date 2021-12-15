@@ -1113,8 +1113,6 @@ dwf_cfa_reg (rtx reg)
 {
   struct cfa_reg result;
 
-  gcc_assert (REGNO (reg) < FIRST_PSEUDO_REGISTER);
-
   result.reg = dwf_regno (reg);
   result.span = 1;
   result.span_width = 0;
@@ -1142,6 +1140,28 @@ dwf_cfa_reg (rtx reg)
     }
 
   return result;
+}
+
+/* More efficient comparisons that don't call targetm.dwarf_register_span
+   unnecessarily.  These cfa_reg vs. rtx comparisons should be done at
+   least for call-saved REGs that might not be CFA related (like stack
+   pointer, hard frame pointer or DRAP registers are), in other cases it is
+   just a compile time and memory optimization.  */
+
+static bool
+operator== (cfa_reg &cfa, rtx reg)
+{
+  unsigned int regno = dwf_regno (reg);
+  if (cfa.reg != regno)
+    return false;
+  struct cfa_reg other = dwf_cfa_reg (reg);
+  return cfa == other;
+}
+
+static inline bool
+operator!= (cfa_reg &cfa, rtx reg)
+{
+  return !(cfa == reg);
 }
 
 /* Compare X and Y for equivalence.  The inputs may be REGs or PC_RTX.  */
@@ -1313,7 +1333,7 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
   switch (GET_CODE (src))
     {
     case PLUS:
-      gcc_assert (dwf_cfa_reg (XEXP (src, 0)) == cur_cfa->reg);
+      gcc_assert (cur_cfa->reg == XEXP (src, 0));
       cur_cfa->offset -= rtx_to_poly_int64 (XEXP (src, 1));
       break;
 
@@ -1346,11 +1366,11 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
   switch (GET_CODE (addr))
     {
     case REG:
-      gcc_assert (dwf_cfa_reg (addr) == cur_cfa->reg);
+      gcc_assert (cur_cfa->reg == addr);
       offset = -cur_cfa->offset;
       break;
     case PLUS:
-      gcc_assert (dwf_cfa_reg (XEXP (addr, 0)) == cur_cfa->reg);
+      gcc_assert (cur_cfa->reg == XEXP (addr, 0));
       offset = rtx_to_poly_int64 (XEXP (addr, 1)) - cur_cfa->offset;
       break;
     default:
@@ -1797,7 +1817,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	{
 	  /* Setting FP from SP.  */
 	case REG:
-	  if (cur_cfa->reg == dwf_cfa_reg (src))
+	  if (cur_cfa->reg == src)
 	    {
 	      /* Rule 1 */
 	      /* Update the CFA rule wrt SP or FP.  Make sure src is
@@ -1828,7 +1848,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 		{
 		  gcc_assert (REGNO (dest) == HARD_FRAME_POINTER_REGNUM
 			      && fde->drap_reg != INVALID_REGNUM
-			      && cur_cfa->reg != dwf_cfa_reg (src)
+			      && cur_cfa->reg != src
 			      && fde->rule18);
 		  fde->rule18 = 0;
 		  /* The save of hard frame pointer has been deferred
@@ -1852,8 +1872,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      /* Adjusting SP.  */
 	      if (REG_P (XEXP (src, 1)))
 		{
-		  gcc_assert (dwf_cfa_reg (XEXP (src, 1))
-			      == cur_trace->cfa_temp.reg);
+		  gcc_assert (cur_trace->cfa_temp.reg == XEXP (src, 1));
 		  offset = cur_trace->cfa_temp.offset;
 		}
 	      else if (!poly_int_rtx_p (XEXP (src, 1), &offset))
@@ -1886,7 +1905,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      gcc_assert (frame_pointer_needed);
 
 	      gcc_assert (REG_P (XEXP (src, 0))
-			  && dwf_cfa_reg (XEXP (src, 0)) == cur_cfa->reg);
+			  && cur_cfa->reg == XEXP (src, 0));
 	      offset = rtx_to_poly_int64 (XEXP (src, 1));
 	      if (GET_CODE (src) != MINUS)
 		offset = -offset;
@@ -1899,7 +1918,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	      /* Rule 4 */
 	      if (REG_P (XEXP (src, 0))
-		  && dwf_cfa_reg (XEXP (src, 0)) == cur_cfa->reg
+		  && cur_cfa->reg == XEXP (src, 0)
 		  && poly_int_rtx_p (XEXP (src, 1), &offset))
 		{
 		  /* Setting a temporary CFA register that will be copied
@@ -1914,7 +1933,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	      /* Rule 5 */
 	      else if (REG_P (XEXP (src, 0))
-		       && dwf_cfa_reg (XEXP (src, 0)) == cur_trace->cfa_temp.reg
+		       && cur_trace->cfa_temp.reg == XEXP (src, 0)
 		       && XEXP (src, 1) == stack_pointer_rtx)
 		{
 		  /* Setting a scratch register that we will use instead
@@ -1945,7 +1964,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  /* Rule 7 */
 	case IOR:
 	  gcc_assert (REG_P (XEXP (src, 0))
-		      && dwf_cfa_reg (XEXP (src, 0)) == cur_trace->cfa_temp.reg
+		      && cur_trace->cfa_temp.reg == XEXP (src, 0)
 		      && CONST_INT_P (XEXP (src, 1)));
 
 	  cur_trace->cfa_temp.reg = dwf_cfa_reg (dest);
@@ -1981,7 +2000,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      dwarf2out_flush_queued_reg_saves ();
 
               gcc_assert (cur_trace->cfa_store.reg
-			  == dwf_cfa_reg (XEXP (src, 0)));
+			  == XEXP (src, 0));
               fde->stack_realign = 1;
               fde->stack_realignment = INTVAL (XEXP (src, 1));
               cur_trace->cfa_store.offset = 0;
@@ -2109,8 +2128,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	  /* Rule 14 */
 	case POST_INC:
-	  gcc_assert (cur_trace->cfa_temp.reg
-		      == dwf_cfa_reg (XEXP (XEXP (dest, 0), 0)));
+	  gcc_assert (cur_trace->cfa_temp.reg == XEXP (XEXP (dest, 0), 0));
 	  offset = -cur_trace->cfa_temp.offset;
 	  cur_trace->cfa_temp.offset -= GET_MODE_SIZE (GET_MODE (dest));
 	  break;
@@ -2128,7 +2146,7 @@ dwarf2out_frame_debug_expr (rtx expr)
       if (REG_P (src)
 	  && REGNO (src) != STACK_POINTER_REGNUM
 	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM
-	  && dwf_cfa_reg (src) == cur_cfa->reg)
+	  && cur_cfa->reg == src)
 	{
 	  /* We're storing the current CFA reg into the stack.  */
 
@@ -3210,8 +3228,7 @@ create_cie_data (void)
   dw_cfa_location loc;
   dw_trace_info cie_trace;
 
-  dw_stack_pointer_regnum = dwf_cfa_reg (gen_rtx_REG (Pmode,
-						      STACK_POINTER_REGNUM));
+  dw_stack_pointer_regnum = dwf_cfa_reg (stack_pointer_rtx);
 
   memset (&cie_trace, 0, sizeof (cie_trace));
   cur_trace = &cie_trace;
@@ -3270,8 +3287,7 @@ static unsigned int
 execute_dwarf2_frame (void)
 {
   /* Different HARD_FRAME_POINTER_REGNUM might coexist in the same file.  */
-  dw_frame_pointer_regnum
-    = dwf_cfa_reg (gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM));
+  dw_frame_pointer_regnum = dwf_cfa_reg (hard_frame_pointer_rtx);
 
   /* The first time we're called, compute the incoming frame state.  */
   if (cie_cfi_vec == NULL)

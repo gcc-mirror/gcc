@@ -20,7 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.5.3 
+// C++11 28.5.3 [re.err]
 
 #include <regex>
 

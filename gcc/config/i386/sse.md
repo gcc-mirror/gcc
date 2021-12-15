@@ -266,9 +266,7 @@
 (define_mode_iterator VI12HF_AVX512VL
   [V64QI (V16QI "TARGET_AVX512VL") (V32QI "TARGET_AVX512VL")
    V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")
-   (V32HF "TARGET_AVX512FP16")
-   (V16HF "TARGET_AVX512FP16 && TARGET_AVX512VL")
-   (V8HF "TARGET_AVX512FP16 && TARGET_AVX512VL")])
+   V32HF (V16HF "TARGET_AVX512VL") (V8HF "TARGET_AVX512VL")])
 
 ;; Same iterator, but without supposed TARGET_AVX512BW
 (define_mode_iterator VI12_AVX512VLBW
@@ -285,8 +283,7 @@
    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
    (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
    (V8DI "TARGET_AVX512F")  (V4DI "TARGET_AVX") V2DI
-   (V32HF "TARGET_AVX512FP16") (V16HF "TARGET_AVX512FP16")
-   (V8HF "TARGET_AVX512FP16")
+   (V32HF "TARGET_AVX512F") (V16HF "TARGET_AVX") V8HF
    (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
    (V8DF "TARGET_AVX512F")  (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
 
@@ -311,10 +308,10 @@
 
 ;; All 256bit and 512bit vector modes
 (define_mode_iterator V_256_512
-  [V32QI V16HI V8SI V4DI V8SF V4DF
-   (V64QI "TARGET_AVX512F") (V32HI "TARGET_AVX512F") (V16SI "TARGET_AVX512F")
-   (V8DI "TARGET_AVX512F") (V16SF "TARGET_AVX512F") (V8DF "TARGET_AVX512F")
-   (V16HF "TARGET_AVX512FP16") (V32HF "TARGET_AVX512FP16")])
+  [V32QI V16HI V16HF V8SI V4DI V8SF V4DF
+   (V64QI "TARGET_AVX512F") (V32HI "TARGET_AVX512F") (V32HF "TARGET_AVX512F")
+   (V16SI "TARGET_AVX512F") (V8DI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
+   (V8DF "TARGET_AVX512F")])
 
 ;; All vector float modes
 (define_mode_iterator VF
@@ -15290,6 +15287,20 @@
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
 
+;; PR target/101796: Transfrom movl+vpbranchcastw+vpsravw to vpsraw
+;; when COUNT is immediate.
+(define_split
+  [(set (match_operand:VI248_AVX512BW 0 "register_operand")
+	(any_shift:VI248_AVX512BW
+	  (match_operand:VI248_AVX512BW 1 "nonimmediate_operand")
+	  (match_operand:VI248_AVX512BW 2 "const_vector_duplicate_operand")))]
+  "TARGET_AVX512F && GET_MODE_UNIT_BITSIZE (<MODE>mode)
+   > INTVAL (XVECEXP (operands[2], 0, 0))"
+  [(set (match_dup 0)
+	(any_shift:VI248_AVX512BW
+	  (match_dup 1)
+	  (match_dup 3)))]
+  "operands[3] = XVECEXP (operands[2], 0, 0);")
 
 (define_expand "vec_shl_<mode>"
   [(set (match_dup 3)
@@ -24892,8 +24903,8 @@
   "operands[2] = gen_lowpart (<ssehalfvecmode>mode, operands[0]);")
 
 (define_insn "avx_vbroadcastf128_<mode>"
-  [(set (match_operand:V_256 0 "register_operand" "=x,x,x,v,v,v,v")
-	(vec_concat:V_256
+  [(set (match_operand:V_256H 0 "register_operand" "=x,x,x,v,v,v,v")
+	(vec_concat:V_256H
 	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "m,0,?x,m,0,m,0")
 	  (match_dup 1)))]
   "TARGET_AVX"

@@ -19299,7 +19299,21 @@ aarch64_short_vector_p (const_tree type,
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	   || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {
-      /* Rely only on the type, not the mode, when processing SVE types.  */
+      /* The containing "else if" is too loose: it means that we look at TYPE
+	 if the type is a vector type (good), but that we otherwise ignore TYPE
+	 and look only at the mode.  This is wrong because the type describes
+	 the language-level information whereas the mode is purely an internal
+	 GCC concept.  We can therefore reach here for types that are not
+	 vectors in the AAPCS64 sense.
+
+	 We can't "fix" that for the traditional Advanced SIMD vector modes
+	 without breaking backwards compatibility.  However, there's no such
+	 baggage for the structure modes, which were introduced in GCC 12.  */
+      if (aarch64_advsimd_struct_mode_p (mode))
+	return false;
+
+      /* For similar reasons, rely only on the type, not the mode, when
+	 processing SVE types.  */
       if (type && aarch64_some_values_include_pst_objects_p (type))
 	/* Leave later code to report an error if SVE is disabled.  */
 	gcc_assert (!TARGET_SVE || aarch64_sve_mode_p (mode));
@@ -19310,7 +19324,8 @@ aarch64_short_vector_p (const_tree type,
     {
       /* 64-bit and 128-bit vectors should only acquire an SVE mode if
 	 they are being treated as scalable AAPCS64 types.  */
-      gcc_assert (!aarch64_sve_mode_p (mode));
+      gcc_assert (!aarch64_sve_mode_p (mode)
+		  && !aarch64_advsimd_struct_mode_p (mode));
       return true;
     }
   return false;

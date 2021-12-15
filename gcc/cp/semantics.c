@@ -9325,6 +9325,9 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
       return NULL_TREE;
     }
 
+  if (TREE_CODE (t) == OMP_CLAUSE)
+    return NULL_TREE;
+
   if (current_object)
     {
       tree this_expr = TREE_OPERAND (current_object, 0);
