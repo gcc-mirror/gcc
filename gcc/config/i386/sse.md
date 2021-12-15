@@ -4465,6 +4465,18 @@
 		      (const_string "<sseinsnmode>")
 		      (const_string "XI")))])
 
+;; Generic part doesn't support the simpliciation of logic operation with
+;; float_vector_all_ones_operand since it's not valid rtl. Add combine spiltter
+;; for them, it should be safe since there's no SIMD Floating-Point Exceptions.
+(define_insn_and_split "*bit_and_float_vector_all_ones"
+  [(set (match_operand:VFB 0 "nonimmediate_operand")
+	(and:VFB (match_operand:VFB 1 "nonimmediate_operand")
+		 (match_operand:VFB 2 "float_vector_all_ones_operand")))]
+ "TARGET_SSE && ix86_pre_reload_split ()"
+ "#"
+ "&& 1"
+ [(set (match_dup 0) (match_dup 1))])
+
 (define_expand "copysign<mode>3"
   [(set (match_dup 4)
 	(and:VFB
