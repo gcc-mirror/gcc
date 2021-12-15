@@ -1047,8 +1047,8 @@ public:
 
 	for (size_t j = 0; j < a->num_fields (); j++)
 	  {
-	    TyTy::StructFieldType *base_field = a->get_field_at_index (i);
-	    TyTy::StructFieldType *other_field = b->get_field_at_index (i);
+	    TyTy::StructFieldType *base_field = a->get_field_at_index (j);
+	    TyTy::StructFieldType *other_field = b->get_field_at_index (j);
 
 	    TyTy::BaseType *this_field_ty = base_field->get_field_type ();
 	    TyTy::BaseType *other_field_ty = other_field->get_field_type ();
