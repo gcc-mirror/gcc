@@ -30,7 +30,8 @@ enum ptx_isa
 enum ptx_version
 {
   PTX_VERSION_3_1,
-  PTX_VERSION_6_3
+  PTX_VERSION_6_3,
+  PTX_VERSION_7_0
 };
 
 #endif

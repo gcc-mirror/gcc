@@ -5404,7 +5404,9 @@ static void
 nvptx_file_start (void)
 {
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
-  if (TARGET_PTX_6_3)
+  if (TARGET_PTX_7_0)
+    fputs ("\t.version\t7.0\n", asm_out_file);
+  else if (TARGET_PTX_6_3)
     fputs ("\t.version\t6.3\n", asm_out_file);
   else
     fputs ("\t.version\t3.1\n", asm_out_file);
