@@ -319,7 +319,7 @@ struct GTY(()) machine_function
 #define NO_DOT_IN_LABEL
 #define ASM_COMMENT_START "//"
 
-#define STORE_FLAG_VALUE -1
+#define STORE_FLAG_VALUE 1
 #define FLOAT_STORE_FLAG_VALUE(MODE) REAL_VALUE_ATOF("1.0", (MODE))
 
 #define CASE_VECTOR_MODE SImode
