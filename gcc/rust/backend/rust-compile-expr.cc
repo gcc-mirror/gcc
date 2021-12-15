@@ -154,6 +154,268 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
 						known_valid, expr.get_locus ());
 }
 
+void
+CompileExpr::visit (HIR::CallExpr &expr)
+{
+  TyTy::BaseType *tyty = nullptr;
+  if (!ctx->get_tyctx ()->lookup_type (
+	expr.get_fnexpr ()->get_mappings ().get_hirid (), &tyty))
+    {
+      rust_error_at (expr.get_locus (), "unknown type");
+      return;
+    }
+
+  // must be a tuple constructor
+  bool is_fn = tyty->get_kind () == TyTy::TypeKind::FNDEF
+	       || tyty->get_kind () == TyTy::TypeKind::FNPTR;
+  if (!is_fn)
+    {
+      rust_assert (tyty->get_kind () == TyTy::TypeKind::ADT);
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
+      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, tyty);
+
+      rust_assert (!adt->is_enum ());
+      rust_assert (adt->number_of_variants () == 1);
+      auto variant = adt->get_variants ().at (0);
+
+      // this assumes all fields are in order from type resolution and if a
+      // base struct was specified those fields are filed via accesors
+      std::vector<tree> vals;
+      for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+	{
+	  auto &argument = expr.get_arguments ().at (i);
+	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+
+	  // assignments are coercion sites so lets convert the rvalue if
+	  // necessary
+	  auto respective_field = variant->get_field_at_index (i);
+	  auto expected = respective_field->get_field_type ();
+
+	  TyTy::BaseType *actual = nullptr;
+	  bool ok = ctx->get_tyctx ()->lookup_type (
+	    argument->get_mappings ().get_hirid (), &actual);
+	  rust_assert (ok);
+
+	  // coerce it if required
+	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+	  // add it to the list
+	  vals.push_back (rvalue);
+	}
+
+      translated
+	= ctx->get_backend ()->constructor_expression (compiled_adt_type, vals,
+						       -1, expr.get_locus ());
+    }
+  else
+    {
+      auto get_parameter_tyty_at_index
+	= [] (const TyTy::BaseType *base, size_t index,
+	      TyTy::BaseType **result) -> bool {
+	bool is_fn = base->get_kind () == TyTy::TypeKind::FNDEF
+		     || base->get_kind () == TyTy::TypeKind::FNPTR;
+	rust_assert (is_fn);
+
+	if (base->get_kind () == TyTy::TypeKind::FNPTR)
+	  {
+	    const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (base);
+	    *result = fn->param_at (index);
+
+	    return true;
+	  }
+
+	const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (base);
+	auto param = fn->param_at (index);
+	*result = param.second;
+
+	return true;
+      };
+
+      bool is_varadic = false;
+      if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+	{
+	  const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
+	  is_varadic = fn->is_varadic ();
+	}
+
+      size_t required_num_args;
+      if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+	{
+	  const TyTy::FnType *fn = static_cast<const TyTy::FnType *> (tyty);
+	  required_num_args = fn->num_params ();
+	}
+      else
+	{
+	  const TyTy::FnPtr *fn = static_cast<const TyTy::FnPtr *> (tyty);
+	  required_num_args = fn->num_params ();
+	}
+
+      std::vector<tree> args;
+      for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+	{
+	  auto &argument = expr.get_arguments ().at (i);
+	  auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+
+	  if (is_varadic && i >= required_num_args)
+	    {
+	      args.push_back (rvalue);
+	      continue;
+	    }
+
+	  // assignments are coercion sites so lets convert the rvalue if
+	  // necessary
+	  bool ok;
+	  TyTy::BaseType *expected = nullptr;
+	  ok = get_parameter_tyty_at_index (tyty, i, &expected);
+	  rust_assert (ok);
+
+	  TyTy::BaseType *actual = nullptr;
+	  ok = ctx->get_tyctx ()->lookup_type (
+	    argument->get_mappings ().get_hirid (), &actual);
+	  rust_assert (ok);
+
+	  // coerce it if required
+	  rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+	  // add it to the list
+	  args.push_back (rvalue);
+	}
+
+      // must be a call to a function
+      auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
+      auto fncontext = ctx->peek_fn ();
+      translated
+	= ctx->get_backend ()->call_expression (fncontext.fndecl, fn_address,
+						args, nullptr,
+						expr.get_locus ());
+    }
+}
+
+void
+CompileExpr::visit (HIR::MethodCallExpr &expr)
+{
+  // method receiver
+  tree self = CompileExpr::Compile (expr.get_receiver ().get (), ctx);
+
+  // lookup the resolved name
+  NodeId resolved_node_id = UNKNOWN_NODEID;
+  if (!ctx->get_resolver ()->lookup_resolved_name (
+	expr.get_mappings ().get_nodeid (), &resolved_node_id))
+    {
+      rust_error_at (expr.get_locus (), "failed to lookup resolved MethodCall");
+      return;
+    }
+
+  // reverse lookup
+  HirId ref;
+  if (!ctx->get_mappings ()->lookup_node_to_hir (
+	expr.get_mappings ().get_crate_num (), resolved_node_id, &ref))
+    {
+      rust_fatal_error (expr.get_locus (), "reverse lookup failure");
+      return;
+    }
+
+  // lookup the expected function type
+  TyTy::BaseType *lookup_fntype = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    expr.get_method_name ().get_mappings ().get_hirid (), &lookup_fntype);
+  rust_assert (ok);
+  rust_assert (lookup_fntype->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup_fntype);
+
+  TyTy::BaseType *receiver = nullptr;
+  ok = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
+					   &receiver);
+  rust_assert (ok);
+
+  bool is_dyn_dispatch
+    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
+  bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
+  if (is_generic_receiver)
+    {
+      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
+      receiver = p->resolve ();
+    }
+
+  if (is_dyn_dispatch)
+    {
+      const TyTy::DynamicObjectType *dyn
+	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
+
+      std::vector<HIR::Expr *> arguments;
+      for (auto &arg : expr.get_arguments ())
+	arguments.push_back (arg.get ());
+
+      translated = compile_dyn_dispatch_call (dyn, receiver, fntype, self,
+					      arguments, expr.get_locus ());
+      return;
+    }
+
+  // lookup compiled functions since it may have already been compiled
+  HIR::PathExprSegment method_name = expr.get_method_name ();
+  HIR::PathIdentSegment segment_name = method_name.get_segment ();
+  tree fn_expr
+    = resolve_method_address (fntype, ref, receiver, segment_name,
+			      expr.get_mappings (), expr.get_locus ());
+
+  // lookup the autoderef mappings
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (
+    expr.get_mappings ().get_hirid (), &adjustments);
+  rust_assert (ok);
+
+  for (auto &adjustment : *adjustments)
+    {
+      switch (adjustment.get_type ())
+	{
+	case Resolver::Adjustment::AdjustmentType::IMM_REF:
+	case Resolver::Adjustment::AdjustmentType::MUT_REF:
+	  self = ctx->get_backend ()->address_expression (
+	    self, expr.get_receiver ()->get_locus ());
+	  break;
+
+	case Resolver::Adjustment::AdjustmentType::DEREF_REF:
+	  tree expected_type
+	    = TyTyResolveCompile::compile (ctx, adjustment.get_expected ());
+	  self = ctx->get_backend ()->indirect_expression (
+	    expected_type, self, true, /* known_valid*/
+	    expr.get_receiver ()->get_locus ());
+	  break;
+	}
+    }
+
+  std::vector<tree> args;
+  args.push_back (self); // adjusted self
+
+  // normal args
+  for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+    {
+      auto &argument = expr.get_arguments ().at (i);
+      auto rvalue = CompileExpr::Compile (argument.get (), ctx);
+
+      // assignments are coercion sites so lets convert the rvalue if
+      // necessary, offset from the already adjusted implicit self
+      bool ok;
+      TyTy::BaseType *expected = fntype->param_at (i + 1).second;
+
+      TyTy::BaseType *actual = nullptr;
+      ok = ctx->get_tyctx ()->lookup_type (
+	argument->get_mappings ().get_hirid (), &actual);
+      rust_assert (ok);
+
+      // coerce it if required
+      rvalue = coercion_site (rvalue, actual, expected, expr.get_locus ());
+
+      // add it to the list
+      args.push_back (rvalue);
+    }
+
+  auto fncontext = ctx->peek_fn ();
+  translated
+    = ctx->get_backend ()->call_expression (fncontext.fndecl, fn_expr, args,
+					    nullptr, expr.get_locus ());
+}
+
 tree
 CompileExpr::compile_dyn_dispatch_call (const TyTy::DynamicObjectType *dyn,
 					TyTy::BaseType *receiver,
