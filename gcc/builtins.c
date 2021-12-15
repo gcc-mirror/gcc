@@ -3963,7 +3963,8 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
   else if (max_len == min_len)
     blksize = max_len;
   else
-    gcc_unreachable ();
+    /* Huh, max_len < min_len?  Punt.  See pr100843.c.  */
+    return false;
   if (min_len >= blksize)
     {
       min_len -= blksize;
