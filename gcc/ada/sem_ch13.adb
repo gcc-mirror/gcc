@@ -15176,25 +15176,24 @@ package body Sem_Ch13 is
                end if;
 
                --  The components of the type are directly visible and can
-               --  be referenced without a prefix.
+               --  be referenced in the source code without a prefix.
+               --  If a name denoting a component doesn't already have a
+               --  prefix, then normalize it by adding a reference to the
+               --  current instance of the type as a prefix.
+               --
+               --  This isn't right in the pathological corner case of an
+               --  object-declaring expression (e.g., a quantified expression
+               --  or a declare expression) that declares an object with the
+               --  same name as a visible component declaration, thereby hiding
+               --  the component within that expression. For example, given a
+               --  record with a Boolean component "C" and a dynamic predicate
+               --  "C = (for some C in Character => Some_Function (C))", only
+               --  the first of the two uses of C should have a prefix added
+               --  here; instead, both will get prefixes.
 
-               if Nkind (Parent (N)) = N_Selected_Component then
-                  null;
-
-               --  In expression C (I), C may be a directly visible function
-               --  or a visible component that has an array type. Disambiguate
-               --  by examining the component type.
-
-               elsif Nkind (Parent (N)) = N_Indexed_Component
-                 and then N = Prefix (Parent (N))
+               if Nkind (Parent (N)) /= N_Selected_Component
+                 or else N /= Selector_Name (Parent (N))
                then
-                  Comp := Visible_Component (Chars (N));
-
-                  if Present (Comp) and then Is_Array_Type (Etype (Comp)) then
-                     Add_Prefix (N, Comp);
-                  end if;
-
-               else
                   Comp := Visible_Component (Chars (N));
 
                   if Present (Comp) then
