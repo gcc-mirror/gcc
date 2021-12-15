@@ -450,8 +450,6 @@ deduce_concept_introduction (tree check)
 /* Build a constrained placeholder type where SPEC is a type-constraint.
    SPEC can be anything were concept_definition_p is true.
 
-   If DECLTYPE_P is true, then the placeholder is decltype(auto).
-
    Returns a pair whose FIRST is the concept being checked and whose
    SECOND is the prototype parameter.  */
 
