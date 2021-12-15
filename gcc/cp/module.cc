@@ -10067,9 +10067,10 @@ trees_out::get_merge_kind (tree decl, depset *dep)
       tree ctx = CP_DECL_CONTEXT (decl);
       if (TREE_CODE (ctx) == FUNCTION_DECL)
 	{
-	  /* USING_DECLs cannot have DECL_TEMPLATE_INFO -- this isn't
-	     permitting them to have one.   */
+	  /* USING_DECLs and NAMESPACE_DECLs cannot have DECL_TEMPLATE_INFO --
+	     this isn't permitting them to have one.   */
 	  gcc_checking_assert (TREE_CODE (decl) == USING_DECL
+			       || TREE_CODE (decl) == NAMESPACE_DECL
 			       || !DECL_LANG_SPECIFIC (decl)
 			       || !DECL_TEMPLATE_INFO (decl));
 
