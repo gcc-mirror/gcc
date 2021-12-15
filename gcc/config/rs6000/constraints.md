@@ -213,6 +213,12 @@
   "A signed 34-bit integer constant if prefixed instructions are supported."
   (match_operand 0 "cint34_operand"))
 
+;; A SF/DF scalar constant or a vector constant that can be loaded into vector
+;; registers with one prefixed instruction such as XXSPLTIDP or XXSPLTIW.
+(define_constraint "eP"
+  "A constant that can be loaded into a VSX register with one prefixed insn."
+  (match_operand 0 "vsx_prefixed_constant"))
+
 ;; A TF/KF scalar constant or a vector constant that can load certain IEEE
 ;; 128-bit constants into vector registers using LXVKQ.
 (define_constraint "eQ"

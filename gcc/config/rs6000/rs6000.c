@@ -6649,6 +6649,13 @@ xxspltib_constant_p (rtx op,
   else if (IN_RANGE (value, -1, 0))
     *num_insns_ptr = 1;
 
+  /* Do not generate XXSPLTIB and a sign extend operation if we can generate a
+     single XXSPLTIW or XXSPLTIDP instruction.  */
+  else if (vsx_prefixed_constant (op, mode))
+    return false;
+
+  /* Return XXSPLITB followed by a sign extend operation to convert the
+     constant to V8HImode or V4SImode.  */
   else
     *num_insns_ptr = 2;
 
@@ -6708,6 +6715,13 @@ output_vec_const_move (rtx *operands)
 	    {
 	      operands[2] = GEN_INT (imm);
 	      return "lxvkq %x0,%2";
+	    }
+
+	  imm = constant_generates_xxspltiw (&vsx_const);
+	  if (imm)
+	    {
+	      operands[2] = GEN_INT (imm);
+	      return "xxspltiw %x0,%2";
 	    }
 	}
 
@@ -26480,6 +26494,41 @@ prefixed_paddi_p (rtx_insn *insn)
   return (iform == INSN_FORM_PCREL_EXTERNAL || iform == INSN_FORM_PCREL_LOCAL);
 }
 
+/* Whether an instruction is a prefixed XXSPLTI* instruction.  This is called
+   from the prefixed attribute processing.  */
+
+bool
+prefixed_xxsplti_p (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return false;
+
+  rtx dest = SET_DEST (set);
+  rtx src = SET_SRC (set);
+  machine_mode mode = GET_MODE (dest);
+
+  if (!REG_P (dest) && !SUBREG_P (dest))
+    return false;
+
+  if (GET_CODE (src) == UNSPEC)
+    {
+      int unspec = XINT (src, 1);
+      return (unspec == UNSPEC_XXSPLTIW
+	      || unspec == UNSPEC_XXSPLTIDP
+	      || unspec == UNSPEC_XXSPLTI32DX);
+    }
+
+  vec_const_128bit_type vsx_const;
+  if (vec_const_128bit_to_bytes (src, mode, &vsx_const))
+    {
+      if (constant_generates_xxspltiw (&vsx_const))
+	return true;
+    }
+
+  return false;
+}
+
 /* Whether the next instruction needs a 'p' prefix issued before the
    instruction is printed out.  */
 static bool prepend_p_to_next_insn;
@@ -28646,6 +28695,40 @@ constant_generates_lxvkq (vec_const_128bit_type *vsx_const)
     }
 
   return 0;
+}
+
+/* Determine if a vector constant can be loaded with XXSPLTIW.  Return zero if
+   the XXSPLTIW instruction cannot be used.  Otherwise return the immediate
+   value to be used with the XXSPLTIW instruction.  */
+
+unsigned
+constant_generates_xxspltiw (vec_const_128bit_type *vsx_const)
+{
+  if (!TARGET_SPLAT_WORD_CONSTANT || !TARGET_PREFIXED || !TARGET_VSX)
+    return 0;
+
+  if (!vsx_const->all_words_same)
+    return 0;
+
+  /* If we can use XXSPLTIB, don't generate XXSPLTIW.  */
+  if (vsx_const->all_bytes_same)
+    return 0;
+
+  /* See if we can use VSPLTISH or VSPLTISW.  */
+  if (vsx_const->all_half_words_same)
+    {
+      unsigned short h_word = vsx_const->half_words[0];
+      short sign_h_word = ((h_word & 0xffff) ^ 0x8000) - 0x8000;
+      if (EASY_VECTOR_15 (sign_h_word))
+	return 0;
+    }
+
+  unsigned int word = vsx_const->words[0];
+  int sign_word = ((word & 0xffffffff) ^ 0x80000000) - 0x80000000;
+  if (EASY_VECTOR_15 (sign_word))
+    return 0;
+
+  return vsx_const->words[0];
 }
 
 
