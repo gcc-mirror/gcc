@@ -1,3 +1,9 @@
+2021-12-14  Joel Hutton  <joel.hutton@arm.com>
+
+	PR bootstrap/103688
+	* tree-vect-loop.c (vectorizable_induction): Rework to avoid
+	directly_supported_p.
+
 2021-12-13  Joel Hutton  <joel.hutton@arm.com>
 
 	PR tree-optimization/103523
