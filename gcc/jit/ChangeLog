@@ -1,3 +1,40 @@
+2021-12-14  Petter Tomner  <tomner@kth.se>
+
+	* jit-common.h: New enum
+	* jit-playback.c : Folding an setting intitial
+	(global_new_decl) : Handle const global generation
+	(new_global) : New flag
+	(global_set_init_rvalue) : New
+	(new_ctor) : New
+	(new_global_initialized) : Flag
+	(as_truth_value) : Fold
+	(new_unary_op) : Fold
+	(new_binary_op) : Fold
+	(new_comparison) : Fold
+	(new_array_access) : Fold
+	(new_dereference) : Fold
+	(get_address) : Fold
+	* jit-playback.h :
+	(global_set_init_rvalue) : New
+	(new_ctor) : New
+	* jit-recording.c :
+	* jit-recording.h :
+	(new_global_init_rvalue) : New
+	(new_ctor) : New
+	(ctor) : New, inherits rvalue
+	(global_init_rvalue) : New, inherits memento
+	(type::is_union) : New
+	* libgccjit++.h : New entrypoints, see C-header
+	* libgccjit.c : See .h
+	* libgccjit.h : New entrypoints
+	(gcc_jit_context_new_array_constructor) : New
+	(gcc_jit_context_new_struct_constructor) : New
+	(gcc_jit_context_new_union_constructor) : New
+	(gcc_jit_global_set_initializer_rvalue) : New
+	(LIBGCCJIT_HAVE_CTORS) : New feuture macro
+	* libgccjit.map : New entrypoints added to ABI 19
+	* docs/topics/expressions.rst : Updated docs
+
 2021-12-12  Antoni Boucher  <bouanto@zoho.com>
 
 	PR target/100688

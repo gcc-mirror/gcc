@@ -1,3 +1,114 @@
+2021-12-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.c-torture/compile/pr103682.c: New test.
+
+2021-12-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/103548
+	* gcc.target/powerpc/mma-builtin-10-pair.c: New test.
+	* gcc.target/powerpc/mma-builtin-10-quad.c: New test.
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103717
+	* gfortran.dg/do_check_19.f90: New test.
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103718
+	PR fortran/103719
+	* gfortran.dg/do_check_18.f90: New test.
+
+2021-12-14  Petter Tomner  <tomner@kth.se>
+
+	* jit.dg/all-non-failing-tests.h: Added two tests
+	* jit.dg/test-error-ctor-array-wrong-obj.c: New
+	* jit.dg/test-error-ctor-struct-too-big.c: New
+	* jit.dg/test-error-ctor-struct-wrong-field-obj.c: New
+	* jit.dg/test-error-ctor-struct-wrong-type.c: New
+	* jit.dg/test-error-ctor-struct-wrong-type2.c
+	* jit.dg/test-error-ctor-union-wrong-field-name.c: New
+	* jit.dg/test-error-global-already-init.c: New
+	* jit.dg/test-error-global-common-section.c: New
+	* jit.dg/test-error-global-init-too-small-array.c: New
+	* jit.dg/test-error-global-lvalue-init.c: New
+	* jit.dg/test-error-global-nonconst-init.c: New
+	* jit.dg/test-global-init-rvalue.c: New
+	* jit.dg/test-local-init-rvalue.c: New
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/103634
+	* gfortran.dg/intrinsic_pack_6.f90: New test.
+
+2021-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/analyzer/data-model-1.c: Disable ipa-modref.
+	* gcc.dg/uninit-38.c: Likewise.
+	* gcc.dg/uninit-pr98578.c: Liewise.
+
+2021-12-14  Manfred Schwarb  <manfred99@gmx.ch>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: Adjust test to use
+	dg-require-effective-target directive.
+	* gfortran.dg/pr91497_2.f90: New test to cover all targets.
+	Cover MAX1 and MIN1 intrinsics.
+
+2021-12-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99531
+	* gcc.target/i386/pr99531.c: Do not scan for ia32.
+
+2021-12-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* gcc.target/aarch64/acle/ls64_asm.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld64b.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld64b-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld64b-3.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64b.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld_st_o0.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64b-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv-3.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv0.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv0-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv0-3.c: New test.
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Add checks
+	for __ARM_FEATURE_LS64.
+
+2021-12-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/avx2-psraq-1.c: Use ARRAY_SIZE.
+	* gcc.target/i386/m128-check.h: Move it to the top-level
+	context.
+	* gcc.target/i386/sse2-psraq-1.c: Use ARRAY_SIZE.
+	* gcc.target/i386/sse4_2-check.h: Include the header with
+	ARRAY_SIZE definition.
+
+2021-12-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103408
+	* g++.dg/concepts/diagnostic18.C: Expect a "constraints on a
+	non-templated function" error.
+	* g++.dg/cpp23/auto-fncast11.C: New test.
+
+2021-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/103587
+	* gcc.dg/pr103587.c: New test.
+
+2021-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/103576
+	PR testsuite/103697
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Adjust.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90:
+	Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang.f90: Likewise.
+
 2021-12-13  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/99531

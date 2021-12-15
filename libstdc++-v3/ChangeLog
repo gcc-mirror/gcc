@@ -1,3 +1,54 @@
+2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103687
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Restore
+	original locale before returning.
+	* testsuite/22_locale/time_get/get_time/char/2.cc: Check for %p
+	in locale's T_FMT and adjust accordingly.
+	* testsuite/22_locale/time_get/get_time/wchar_t/2.cc: Likewise.
+
+2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/102447
+	* include/bits/regex_compiler.h (_Compiler::_BracketState): New
+	class.
+	(_Compiler::_BrackeyMatcher): New alias template.
+	(_Compiler::_M_expression_term): Change pair<bool, CharT>
+	parameter to _BracketState. Process first character for
+	ECMAScript syntax as well as POSIX.
+	* include/bits/regex_compiler.tcc
+	(_Compiler::_M_insert_bracket_matcher): Pass _BracketState.
+	(_Compiler::_M_expression_term): Use _BracketState to store
+	state between calls. Improve handling of dashes in ranges.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Add more tests for ranges containing dashes. Check invalid
+	ranges with character class at the beginning.
+
+2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/pointer.h (_Relative_pointer_impl::_UIntPtrType):
+	Rename to uintptr_t and define as __UINTPTR_TYPE__.
+
+2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_constants.h (__syntax_option, __match_flag):
+	Remove.
+	(syntax_option_type, match_flag_type): Define enumerators.
+	Use to initialize globals. Add constexpr to compound assignment
+	operators.
+	* include/bits/regex_error.h (error_type): Add comment.
+	* testsuite/28_regex/constants/constexpr.cc: Remove comment.
+	* testsuite/28_regex/constants/error_type.cc: Improve comment.
+	* testsuite/28_regex/constants/match_flag_type.cc: Check bitmask
+	requirements.
+	* testsuite/28_regex/constants/syntax_option_type.cc: Likewise.
+
+2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc (_Compiler::_M_match_token):
+	Use reserved name for parameter.
+	* testsuite/17_intro/names.cc: Check "token".
+
 2021-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* scripts/make_exports.pl: Replace '?' with '.' when turning
