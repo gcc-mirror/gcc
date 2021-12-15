@@ -829,6 +829,10 @@ private template fqnType(T,
     {
         enum fqnType = "dstring";
     }
+    else static if (is(T == typeof(null)))
+    {
+        enum fqnType = "typeof(null)";
+    }
     else static if (isBasicType!T && !is(T == enum))
     {
         enum fqnType = chain!((Unqual!T).stringof);
@@ -919,6 +923,7 @@ private template fqnType(T,
         static assert(fqn!(string) == "string");
         static assert(fqn!(wstring) == "wstring");
         static assert(fqn!(dstring) == "dstring");
+        static assert(fqn!(typeof(null)) == "typeof(null)");
         static assert(fqn!(void) == "void");
         static assert(fqn!(const(void)) == "const(void)");
         static assert(fqn!(shared(void)) == "shared(void)");

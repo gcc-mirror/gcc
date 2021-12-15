@@ -3661,6 +3661,28 @@ void test20133()
 }
 
 /************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=22530
+
+class D22530 { }
+
+class C22530
+{
+    D22530 y = new D22530;
+    alias y this;
+}
+
+void test22530()
+{
+    // fixed
+    static assert(cast(D22530)(new C22530) is null);
+    static assert((1 ? cast(D22530)(new C22530) : new D22530) is null);
+
+    // runtime version already works
+    assert(cast(D22530)(new C22530) is null);
+    assert((1 ? cast(D22530)(new C22530) : new D22530) is null);
+}
+
+/************************************************/
 
 int main()
 {
@@ -3789,6 +3811,7 @@ int main()
     test20400();
     test21878();
     test20133();
+    test22530();
 
     printf("Success\n");
     return 0;

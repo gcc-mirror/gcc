@@ -70,6 +70,7 @@ struct TargetC
         Gcc_Clang,            // gcc and clang
     };
 
+    uint8_t crtDestructorsSupported; // Not all platforms support crt_destructor
     uint8_t longsize;            // size of a C 'long' or 'unsigned long' type
     uint8_t long_doublesize;     // size of a C 'long double'
     uint8_t wchar_tsize;         // size of a C 'wchar_t' type

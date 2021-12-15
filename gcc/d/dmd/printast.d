@@ -82,6 +82,24 @@ extern (C++) final class PrintASTVisitor : Visitor
         printf(".var: %s\n", e.var ? e.var.toChars() : "");
     }
 
+    override void visit(SymOffExp e)
+    {
+        printIndent(indent);
+        printf("SymOff %s\n", e.type ? e.type.toChars() : "");
+        printIndent(indent + 2);
+        printf(".var: %s\n", e.var ? e.var.toChars() : "");
+        printIndent(indent + 2);
+        printf(".offset: %llx\n", e.offset);
+    }
+
+    override void visit(VarExp e)
+    {
+        printIndent(indent);
+        printf("Var %s\n", e.type ? e.type.toChars() : "");
+        printIndent(indent + 2);
+        printf(".var: %s\n", e.var ? e.var.toChars() : "");
+    }
+
     override void visit(DsymbolExp e)
     {
         visit(cast(Expression)e);
@@ -117,6 +135,15 @@ extern (C++) final class PrintASTVisitor : Visitor
     {
         printIndent(indent);
         printf("VectorArray %s\n", e.type ? e.type.toChars() : "");
+        printAST(e.e1, indent + 2);
+    }
+
+    override void visit(DotVarExp e)
+    {
+        printIndent(indent);
+        printf("DotVar %s\n", e.type ? e.type.toChars() : "");
+        printIndent(indent + 2);
+        printf(".var: %s\n", e.var.toChars());
         printAST(e.e1, indent + 2);
     }
 

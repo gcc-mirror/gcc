@@ -1,36 +1,3 @@
-/*
-GCC 5.1 introduced new implementations of std::string and std::list:
-
-https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html
-
-This causes e.g. std::string to be actually defined as
-std::__cxx11::string.
-
-On machines with GCC 5.1, this manifests as a linker error when
-running the cppa.d / cppb.cpp test:
-
-cppa.o: In function `_D4cppa6test14FZv':
-cppa.d:(.text._D4cppa6test14FZv+0x11): undefined reference to `foo14a(std::string*)'
-cppa.d:(.text._D4cppa6test14FZv+0x18): undefined reference to `foo14b(std::basic_string<int, std::char_traits<int>, std::allocator<int> >*)'
-cppa.d:(.text._D4cppa6test14FZv+0x3a): undefined reference to `foo14f(std::char_traits<char>*, std::string*, std::string*)'
-cppa.o: In function `_D4cppa7testeh3FZv':
-cppa.d:(.text._D4cppa7testeh3FZv+0x19): undefined reference to `throwle()'
-collect2: error: ld returned 1 exit status
---- errorlevel 1
-
-When the .cpp file is compiled with g++ 5.3.0, the actual function
-signatures in the cppb.o object file are:
-
-foo14a(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*)
-foo14b(std::__cxx11::basic_string<int, std::char_traits<int>, std::allocator<int> >*)
-foo14f(std::char_traits<char>*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >*)
-
-Fortunately, it is easily possible to disable the new feature
-by defining _GLIBCXX_USE_CXX11_ABI as 0 before including any standard
-headers.
-*/
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>

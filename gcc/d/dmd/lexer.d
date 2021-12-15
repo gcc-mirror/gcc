@@ -2073,6 +2073,7 @@ class Lexer
         bool overflow = false;
         bool anyBinaryDigitsNoSingleUS = false;
         bool anyHexDigitsNoSingleUS = false;
+        char errorDigit = 0;
         dchar c = *p;
         if (c == '0')
         {
@@ -2093,8 +2094,7 @@ class Lexer
 
             case '8':
             case '9':
-                if (Ccompile)
-                    error("octal digit expected, not `%c`", c);
+                errorDigit = cast(char) c;
                 base = 8;
                 break;
             case 'x':
@@ -2205,12 +2205,9 @@ class Lexer
             // got a digit here, set any necessary flags, check for errors
             anyHexDigitsNoSingleUS = true;
             anyBinaryDigitsNoSingleUS = true;
-            if (!err && d >= base)
+            if (!errorDigit && d >= base)
             {
-                error("%s digit expected, not `%c`", base == 2 ? "binary".ptr :
-                                                     base == 8 ? "octal".ptr :
-                                                     "decimal".ptr, c);
-                err = true;
+                errorDigit = cast(char) c;
             }
             // Avoid expensive overflow check if we aren't at risk of overflow
             if (n <= 0x0FFF_FFFF_FFFF_FFFFUL)
@@ -2224,6 +2221,13 @@ class Lexer
             }
         }
     Ldone:
+        if (errorDigit)
+        {
+            error("%s digit expected, not `%c`", base == 2 ? "binary".ptr :
+                                                 base == 8 ? "octal".ptr :
+                                                 "decimal".ptr, errorDigit);
+            err = true;
+        }
         if (overflow && !err)
         {
             error("integer overflow");

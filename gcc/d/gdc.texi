@@ -267,15 +267,16 @@ Sets the C++ name mangling compatibility to the version identified by
 @table @samp
 @item c++98
 @item c++03
-Sets @code{__traits(getTargetInfo "cppStd")} to @code{199711}.
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{199711}.
 @item c++11
-Sets @code{__traits(getTargetInfo "cppStd")} to @code{201103}.
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201103}.
 @item c++14
-Sets @code{__traits(getTargetInfo "cppStd")} to @code{201402}.
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201402}.
 @item c++17
-Sets @code{__traits(getTargetInfo "cppStd")} to @code{201703}.
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201703}.
+This is the default.
 @item c++20
-Sets @code{__traits(getTargetInfo "cppStd")} to @code{202002}.
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{202002}.
 @end table
 
 @item -fno-invariants

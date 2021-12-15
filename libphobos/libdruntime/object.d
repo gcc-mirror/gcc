@@ -4651,7 +4651,7 @@ public import core.internal.array.construction : _d_arrayctor;
 public import core.internal.array.construction : _d_arraysetctor;
 public import core.internal.array.capacity: _d_arraysetlengthTImpl;
 
-public import core.lifetime : _d_delstruct;
+public import core.lifetime : _d_delstructImpl;
 
 public import core.internal.dassert: _d_assert_fail;
 

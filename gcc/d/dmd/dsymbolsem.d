@@ -46,6 +46,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
+import dmd.importc;
 import dmd.init;
 import dmd.initsem;
 import dmd.hdrgen;
@@ -891,6 +892,10 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         bool isBlit = false;
         d_uns64 sz;
+        if (sc.flags & SCOPE.Cfile && !dsym._init)
+        {
+            addDefaultCInitializer(dsym);
+        }
         if (!dsym._init &&
             !(dsym.storage_class & (STC.static_ | STC.gshared | STC.extern_)) &&
             fd &&
@@ -900,7 +905,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         {
             // Provide a default initializer
 
-            //printf("Providing default initializer for '%s'\n", toChars());
+            //printf("Providing default initializer for '%s'\n", dsym.toChars());
             if (sz == SIZE_INVALID && dsym.type.ty != Terror)
                 dsym.error("size of type `%s` is invalid", dsym.type.toChars());
 

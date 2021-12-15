@@ -5758,7 +5758,26 @@ LagainStc:
                     nextToken();
                 }
                 else
-                    check(TOK.semicolon, "statement");
+                {
+                    /*
+                     * https://issues.dlang.org/show_bug.cgi?id=22529
+                     * Avoid empty declaration error in case of missing semicolon
+                     * followed by another token and another semicolon. E.g.:
+                     *
+                     *  foo()
+                     *  return;
+                     *
+                     * When the missing `;` error is emitted, token is sitting on return.
+                     * If we simply use `check` to emit the error, the token is advanced
+                     * to `;` and the empty statement error would follow. To avoid that,
+                     * we check if the next token is a semicolon and simply output the error,
+                     * otherwise we fall back on the old path (advancing the token).
+                     */
+                    if (token.value != TOK.semicolon && peek(&token).value == TOK.semicolon)
+                        error("found `%s` when expecting `;` following statement", token.toChars());
+                    else
+                        check(TOK.semicolon, "statement");
+                }
                 s = new AST.ExpStatement(loc, exp);
                 break;
             }

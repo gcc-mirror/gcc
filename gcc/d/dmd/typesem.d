@@ -1709,13 +1709,22 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             }
             else if (e.op == EXP.variable) // special case: variable is used as a type
             {
+                /*
+                    N.B. This branch currently triggers for the following code
+                    template test(x* x)
+                    {
+
+                    }
+                    i.e. the compiler prints "variable x is used as a type"
+                    which isn't a particularly good error message (x is a variable?).
+                */
                 Dsymbol varDecl = mtype.toDsymbol(sc);
                 const(Loc) varDeclLoc = varDecl.getLoc();
-                Module varDeclModule = varDecl.getModule();
+                Module varDeclModule = varDecl.getModule(); //This can be null
 
                 .error(loc, "variable `%s` is used as a type", mtype.toChars());
-
-                if (varDeclModule != sc._module) // variable is imported
+                //Check for null to avoid https://issues.dlang.org/show_bug.cgi?id=22574
+                if ((varDeclModule !is null) && varDeclModule != sc._module) // variable is imported
                 {
                     const(Loc) varDeclModuleImportLoc = varDeclModule.getLoc();
                     .errorSupplemental(
@@ -4630,11 +4639,12 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
  * Params:
  *  mt = the type for which the init expression is returned
  *  loc = the location where the expression needs to be evaluated
+ *  isCfile = default initializers are different with C
  *
  * Returns:
  *  The initialization expression for the type.
  */
-extern (C++) Expression defaultInit(Type mt, const ref Loc loc)
+extern (C++) Expression defaultInit(Type mt, const ref Loc loc, const bool isCfile = false)
 {
     Expression visitBasic(TypeBasic mt)
     {
@@ -4647,12 +4657,12 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc)
         switch (mt.ty)
         {
         case Tchar:
-            value = 0xFF;
+            value = isCfile ? 0 : 0xFF;
             break;
 
         case Twchar:
         case Tdchar:
-            value = 0xFFFF;
+            value = isCfile ? 0 : 0xFFFF;
             break;
 
         case Timaginary32:
@@ -4661,14 +4671,15 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc)
         case Tfloat32:
         case Tfloat64:
         case Tfloat80:
-            return new RealExp(loc, target.RealProperties.nan, mt);
+            return new RealExp(loc, isCfile ? CTFloat.zero : target.RealProperties.nan, mt);
 
         case Tcomplex32:
         case Tcomplex64:
         case Tcomplex80:
             {
                 // Can't use fvalue + I*fvalue (the im part becomes a quiet NaN).
-                const cvalue = complex_t(target.RealProperties.nan, target.RealProperties.nan);
+                const cvalue = isCfile ? complex_t(CTFloat.zero, CTFloat.zero)
+                                       : complex_t(target.RealProperties.nan, target.RealProperties.nan);
                 return new ComplexExp(loc, cvalue, mt);
             }
 
@@ -4686,7 +4697,7 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc)
     {
         //printf("TypeVector::defaultInit()\n");
         assert(mt.basetype.ty == Tsarray);
-        Expression e = mt.basetype.defaultInit(loc);
+        Expression e = mt.basetype.defaultInit(loc, isCfile);
         auto ve = new VectorExp(loc, e, mt);
         ve.type = mt;
         ve.dim = cast(int)(mt.basetype.size(loc) / mt.elementType().size(loc));
@@ -4700,9 +4711,9 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc)
             printf("TypeSArray::defaultInit() '%s'\n", mt.toChars());
         }
         if (mt.next.ty == Tvoid)
-            return mt.tuns8.defaultInit(loc);
+            return mt.tuns8.defaultInit(loc, isCfile);
         else
-            return mt.next.defaultInit(loc);
+            return mt.next.defaultInit(loc, isCfile);
     }
 
     Expression visitFunction(TypeFunction mt)

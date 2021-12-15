@@ -323,7 +323,7 @@ struct TargetC
                               /// https://docs.microsoft.com/en-us/cpp/cpp/cpp-bit-fields?view=msvc-160
         Gcc_Clang,            /// gcc and clang
     }
-
+    bool  crtDestructorsSupported = true; /// Not all platforms support crt_destructor
     ubyte longsize;           /// size of a C `long` or `unsigned long` type
     ubyte long_doublesize;    /// size of a C `long double`
     ubyte wchar_tsize;        /// size of a C `wchar_t` type

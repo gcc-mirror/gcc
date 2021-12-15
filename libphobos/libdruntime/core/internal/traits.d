@@ -185,22 +185,38 @@ template dtorIsNothrow(T)
 }
 
 // taken from std.meta.allSatisfy
-enum allSatisfy(alias pred, items...) =
+template allSatisfy(alias F, T...)
 {
-    static foreach (item; items)
-        static if (!pred!item)
-            if (__ctfe) return false;
-    return true;
-}();
+    static foreach (Ti; T)
+    {
+        static if (!is(typeof(allSatisfy) == bool) && // not yet defined
+                   !F!(Ti))
+        {
+            enum allSatisfy = false;
+        }
+    }
+    static if (!is(typeof(allSatisfy) == bool)) // if not yet defined
+    {
+        enum allSatisfy = true;
+    }
+}
 
 // taken from std.meta.anySatisfy
-enum anySatisfy(alias pred, items...) =
+template anySatisfy(alias F, Ts...)
 {
-    static foreach (item; items)
-        static if (pred!item)
-            if (__ctfe) return true;
-    return false;
-}();
+    static foreach (T; Ts)
+    {
+        static if (!is(typeof(anySatisfy) == bool) && // not yet defined
+                   F!T)
+        {
+            enum anySatisfy = true;
+        }
+    }
+    static if (!is(typeof(anySatisfy) == bool)) // if not yet defined
+    {
+        enum anySatisfy = false;
+    }
+}
 
 // simplified from std.traits.maxAlignment
 template maxAlignment(Ts...)

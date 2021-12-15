@@ -434,11 +434,22 @@ extern(C++) Initializer initializerSemantic(Initializer init, Scope* sc, ref Typ
                 return i;
             }
             if (sc.flags & SCOPE.Cfile)
+            {
                 /* the interpreter turns (char*)"string" into &"string"[0] which then
                  * it cannot interpret. Resolve that case by doing optimize() first
                  */
                 i.exp = i.exp.optimize(WANTvalue);
-            i.exp = i.exp.ctfeInterpret();
+                if (i.exp.isSymOffExp())
+                {
+                    /* `static variable cannot be read at compile time`
+                     * https://issues.dlang.org/show_bug.cgi?id=22513
+                     * Maybe this would be better addressed in ctfeInterpret()?
+                     */
+                    needInterpret = NeedInterpret.INITnointerpret;
+                }
+            }
+            if (needInterpret)
+                i.exp = i.exp.ctfeInterpret();
             if (i.exp.op == EXP.voidExpression)
                 error(i.loc, "variables cannot be initialized with an expression of type `void`. Use `void` initialization instead.");
         }
