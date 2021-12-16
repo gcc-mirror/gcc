@@ -1,3 +1,7 @@
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_requires): Don't "sorry" dynamic_allocators.
+
 2021-10-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

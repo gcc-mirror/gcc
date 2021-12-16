@@ -22509,9 +22509,6 @@ c_parser_omp_requires (c_parser *parser)
 	      c_parser_skip_to_pragma_eol (parser, false);
 	      return;
 	    }
-	  if (this_req == OMP_REQUIRES_DYNAMIC_ALLOCATORS)
-	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
-			    "supported yet", p);
 	  if (p)
 	    c_parser_consume_token (parser);
 	  if (this_req)

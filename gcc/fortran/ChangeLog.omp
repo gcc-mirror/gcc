@@ -1,3 +1,7 @@
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_requires): Don't "sorry" dynamic_allocators.
+
 2021-10-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from master:

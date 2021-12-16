@@ -1,3 +1,8 @@
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gfortran.dg/gomp/requires-8.f90: Reinstate dynamic allocators
+	requirement.
+
 2021-11-10  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
