@@ -380,6 +380,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
+  NodeId get_pattern_node_id () const override final { return get_node_id (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -901,6 +903,8 @@ public:
   }
 
   NodeId get_node_id () const override { return _node_id; }
+
+  NodeId get_pattern_node_id () const override final { return get_node_id (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
