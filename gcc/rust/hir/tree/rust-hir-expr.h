@@ -3681,57 +3681,29 @@ public:
   std::string as_string () const;
 };
 
-/*
-// Base "match case" for a match expression - abstract
-class MatchCase
-{
-  MatchArm arm;
-
-protected:
-  MatchCase (MatchArm arm) : arm (std::move (arm)) {}
-
-  // Should not require copy constructor or assignment operator overloading
-
-  // Clone function implementation as pure virtual method
-  virtual MatchCase *clone_match_case_impl () const = 0;
-
-public:
-  virtual ~MatchCase () {}
-
-  // Unique pointer custom clone function
-  std::unique_ptr<MatchCase> clone_match_case () const
-  {
-    return std::unique_ptr<MatchCase> (clone_match_case_impl ());
-  }
-
-  virtual std::string as_string () const;
-
-  virtual void accept_vis (HIRVisitor &vis) = 0;
-};
-*/
-
 /* A "match case" - a correlated match arm and resulting expression. Not
  * abstract. */
 struct MatchCase
 {
 private:
+  Analysis::NodeMapping mappings;
   MatchArm arm;
   std::unique_ptr<Expr> expr;
 
-  /* TODO: does whether trailing comma exists need to be stored? currently
-   * assuming it is only syntactical and has no effect on meaning. */
-
 public:
-  MatchCase (MatchArm arm, std::unique_ptr<Expr> expr)
-    : arm (std::move (arm)), expr (std::move (expr))
+  MatchCase (Analysis::NodeMapping mappings, MatchArm arm,
+	     std::unique_ptr<Expr> expr)
+    : mappings (mappings), arm (std::move (arm)), expr (std::move (expr))
   {}
 
   MatchCase (const MatchCase &other)
-    : arm (other.arm), expr (other.expr->clone_expr ())
+    : mappings (other.mappings), arm (other.arm),
+      expr (other.expr->clone_expr ())
   {}
 
   MatchCase &operator= (const MatchCase &other)
   {
+    mappings = other.mappings;
     arm = other.arm;
     expr = other.expr->clone_expr ();
 
@@ -3744,6 +3716,8 @@ public:
   ~MatchCase () = default;
 
   std::string as_string () const;
+
+  Analysis::NodeMapping get_mappings () const { return mappings; }
 };
 
 #if 0
@@ -3841,23 +3815,15 @@ class MatchExpr : public ExprWithBlock
 {
   std::unique_ptr<Expr> branch_value;
   AST::AttrVec inner_attrs;
-
-  // bool has_match_arms;
-  // MatchArms match_arms;
-  // std::vector<std::unique_ptr<MatchCase> > match_arms; // inlined from
-  // MatchArms
   std::vector<MatchCase> match_arms;
-
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  // Returns whether the match expression has any match arms.
   bool has_match_arms () const { return !match_arms.empty (); }
 
   MatchExpr (Analysis::NodeMapping mappings, std::unique_ptr<Expr> branch_value,
-	     // std::vector<std::unique_ptr<MatchCase> > match_arms,
 	     std::vector<MatchCase> match_arms, AST::AttrVec inner_attrs,
 	     AST::AttrVec outer_attrs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attrs)),

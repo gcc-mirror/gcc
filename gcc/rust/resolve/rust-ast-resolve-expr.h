@@ -24,6 +24,7 @@
 #include "rust-ast-resolve-struct-expr-field.h"
 #include "rust-ast-verify-assignee.h"
 #include "rust-ast-resolve-type.h"
+#include "rust-ast-resolve-pattern.h"
 
 namespace Rust {
 namespace Resolver {
@@ -407,6 +408,41 @@ public:
   void visit (AST::DereferenceExpr &expr) override
   {
     ResolveExpr::go (expr.get_dereferenced_expr ().get (), expr.get_node_id ());
+  }
+
+  void visit (AST::MatchExpr &expr) override
+  {
+    ResolveExpr::go (expr.get_scrutinee_expr ().get (), expr.get_node_id ());
+    for (auto &match_case : expr.get_match_cases ())
+      {
+	// each arm is in its own scope
+	NodeId scope_node_id = match_case.get_node_id ();
+	resolver->get_name_scope ().push (scope_node_id);
+	resolver->get_type_scope ().push (scope_node_id);
+	resolver->get_label_scope ().push (scope_node_id);
+	resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+	resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+	resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+	// resolve
+	AST::MatchArm &arm = match_case.get_arm ();
+	if (arm.has_match_arm_guard ())
+	  ResolveExpr::go (arm.get_guard_expr ().get (), expr.get_node_id ());
+
+	// insert any possible new patterns
+	for (auto &pattern : arm.get_patterns ())
+	  {
+	    PatternDeclaration::go (pattern.get (), expr.get_node_id ());
+	  }
+
+	// resolve the body
+	ResolveExpr::go (match_case.get_expr ().get (), expr.get_node_id ());
+
+	// done
+	resolver->get_name_scope ().pop ();
+	resolver->get_type_scope ().pop ();
+	resolver->get_label_scope ().pop ();
+      }
   }
 
 private:
