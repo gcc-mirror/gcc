@@ -16005,7 +16005,7 @@ package body Sem_Ch13 is
 
       function Valid_Empty (E :  Entity_Id) return Boolean is
       begin
-         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ)  then
+         if Etype (E) /= Typ or else Scope (E) /= Scope (Typ) then
             return False;
 
          elsif Ekind (E) = E_Constant then

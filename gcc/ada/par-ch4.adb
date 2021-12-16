@@ -2968,7 +2968,7 @@ package body Ch4 is
                   Save_Scan_State (Scan_State);
                   Scan;   --  past FOR
 
-                  if Token = Tok_All or else Token = Tok_Some  then
+                  if Token = Tok_All or else Token = Tok_Some then
                      Restore_Scan_State (Scan_State);  -- To FOR
                      Node1 := P_Quantified_Expression;
 

@@ -4615,7 +4615,7 @@ package body Exp_Disp is
                --  case concerning the need for this check, and this topic may
                --  go back to the ARG.
 
-               if not Is_Abstract_Subprogram (Prim)  then
+               if not Is_Abstract_Subprogram (Prim) then
                   Formal := First_Formal (Prim);
                   while Present (Formal) loop
                      Check_Premature_Freezing (Prim, Typ, Etype (Formal));

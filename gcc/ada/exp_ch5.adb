@@ -2664,7 +2664,7 @@ package body Exp_Ch5 is
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
             Apply_Discriminant_Check (Rhs, Typ, Lhs);
 
-         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ)  then
+         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ) then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
             Apply_Length_Check (Rhs, Typ);
