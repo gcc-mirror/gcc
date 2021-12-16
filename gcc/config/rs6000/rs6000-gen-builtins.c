@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    recognition code for Power targets, based on text files that
    describe the built-in functions and vector overloads:
 
-     rs6000-builtin-new.def     Table of built-in functions
+     rs6000-builtins.def        Table of built-in functions
      rs6000-overload.def        Table of overload functions
 
    Both files group similar functions together in "stanzas," as
@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
      lxvrse   Needs special handling for load-rightmost, sign-extended
      lxvrze   Needs special handling for load-rightmost, zero-extended
      endian   Needs special handling for endianness
+     ibmld    Restrict usage to the case when TFmode is IBM-128
 
    An example stanza might look like this:
 
@@ -125,7 +126,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The second line contains the <bif-id> that this particular instance of
    the overloaded function maps to.  It must match a token that appears in
-   rs6000-builtin-new.def.  Optionally, a second token may appear.  If only
+   rs6000-builtins.def.  Optionally, a second token may appear.  If only
    one token is on the line, it is also used to build the unique identifier
    for the overloaded function.  If a second token is present, the second
    token is used instead for this purpose.  This is necessary in cases
@@ -390,6 +391,7 @@ struct attrinfo
   bool islxvrse;
   bool islxvrze;
   bool isendian;
+  bool isibmld;
 };
 
 /* Fields associated with a function prototype (bif or overload).  */
@@ -1435,6 +1437,8 @@ parse_bif_attrs (attrinfo *attrptr)
 	  attrptr->islxvrze = 1;
 	else if (!strcmp (attrname, "endian"))
 	  attrptr->isendian = 1;
+	else if (!strcmp (attrname, "ibmld"))
+	  attrptr->isibmld = 1;
 	else
 	  {
 	    diag (oldpos, "unknown attribute.\n");
@@ -1468,14 +1472,14 @@ parse_bif_attrs (attrinfo *attrptr)
 	"ldvec = %d, stvec = %d, reve = %d, pred = %d, htm = %d, "
 	"htmspr = %d, htmcr = %d, mma = %d, quad = %d, pair = %d, "
 	"mmaint = %d, no32bit = %d, 32bit = %d, cpu = %d, ldstmask = %d, "
-	"lxvrse = %d, lxvrze = %d, endian = %d.\n",
+	"lxvrse = %d, lxvrze = %d, endian = %d, ibmdld= %d.\n",
 	attrptr->isinit, attrptr->isset, attrptr->isextract,
 	attrptr->isnosoft, attrptr->isldvec, attrptr->isstvec,
 	attrptr->isreve, attrptr->ispred, attrptr->ishtm, attrptr->ishtmspr,
 	attrptr->ishtmcr, attrptr->ismma, attrptr->isquad, attrptr->ispair,
 	attrptr->ismmaint, attrptr->isno32bit, attrptr->is32bit,
 	attrptr->iscpu, attrptr->isldstmask, attrptr->islxvrse,
-	attrptr->islxvrze, attrptr->isendian);
+	attrptr->islxvrze, attrptr->isendian, attrptr->isibmld);
 #endif
 
   return PC_OK;
@@ -2208,7 +2212,7 @@ write_decls (void)
   fprintf (header_file, "  RS6000_OVLD_MAX\n};\n\n");
 
   fprintf (header_file,
-	   "extern GTY(()) tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
+	   "extern GTY(()) tree rs6000_builtin_decls[RS6000_OVLD_MAX];\n\n");
 
   fprintf (header_file,
 	   "enum rs6000_ovld_instances\n{\n  RS6000_INST_NONE,\n");
@@ -2289,6 +2293,7 @@ write_decls (void)
   fprintf (header_file, "#define bif_lxvrse_bit\t\t(0x00080000)\n");
   fprintf (header_file, "#define bif_lxvrze_bit\t\t(0x00100000)\n");
   fprintf (header_file, "#define bif_endian_bit\t\t(0x00200000)\n");
+  fprintf (header_file, "#define bif_ibmld_bit\t\t(0x00400000)\n");
   fprintf (header_file, "\n");
   fprintf (header_file,
 	   "#define bif_is_init(x)\t\t((x).bifattrs & bif_init_bit)\n");
@@ -2334,11 +2339,10 @@ write_decls (void)
 	   "#define bif_is_lxvrze(x)\t((x).bifattrs & bif_lxvrze_bit)\n");
   fprintf (header_file,
 	   "#define bif_is_endian(x)\t((x).bifattrs & bif_endian_bit)\n");
+  fprintf (header_file,
+	   "#define bif_is_ibmld(x)\t((x).bifattrs & bif_ibmld_bit)\n");
   fprintf (header_file, "\n");
 
-  /* #### Note that the _x is added for now to avoid conflict with
-     the existing rs6000_builtin_info[] file while testing.  It will
-     be removed as we progress.  */
   /* #### Cannot mark this as a GC root because only pointer types can
      be marked as GTY((user)) and be GC roots.  All trees in here are
      kept alive by other globals, so not a big deal.  Alternatively,
@@ -2346,7 +2350,7 @@ write_decls (void)
      to avoid requiring a GTY((user)) designation, but that seems
      unnecessarily gross.  */
   fprintf (header_file,
-	   "extern bifdata rs6000_builtin_info_x[RS6000_BIF_MAX];\n\n");
+	   "extern bifdata rs6000_builtin_info[RS6000_BIF_MAX];\n\n");
 
   fprintf (header_file, "struct GTY((user)) ovlddata\n");
   fprintf (header_file, "{\n");
@@ -2375,8 +2379,7 @@ write_decls (void)
 
   fprintf (header_file, "extern void rs6000_init_generated_builtins ();\n\n");
   fprintf (header_file,
-	   "extern bool rs6000_new_builtin_is_supported "
-	   "(rs6000_gen_builtins);\n");
+	   "extern bool rs6000_builtin_is_supported (rs6000_gen_builtins);\n");
   fprintf (header_file,
 	   "extern tree rs6000_builtin_decl (unsigned, "
 	   "bool ATTRIBUTE_UNUSED);\n\n");
@@ -2485,7 +2488,6 @@ write_header_file (void)
 
   fprintf (header_file, "#ifndef _RS6000_BUILTINS_H\n");
   fprintf (header_file, "#define _RS6000_BUILTINS_H 1\n\n");
-  fprintf (header_file, "extern int new_builtins_are_live;\n\n");
 
   write_decls ();
 
@@ -2497,12 +2499,12 @@ write_header_file (void)
   return 1;
 }
 
-/* Write the decl and initializer for rs6000_builtin_info_x[].  */
+/* Write the decl and initializer for rs6000_builtin_info[].  */
 static void
 write_bif_static_init (void)
 {
   const char *res[3];
-  fprintf (init_file, "bifdata rs6000_builtin_info_x[RS6000_BIF_MAX] =\n");
+  fprintf (init_file, "bifdata rs6000_builtin_info[RS6000_BIF_MAX] =\n");
   fprintf (init_file, "  {\n");
   fprintf (init_file, "    { /* RS6000_BIF_NONE: */\n");
   fprintf (init_file, "      \"\", ENB_ALWAYS, 0, CODE_FOR_nothing, 0,\n");
@@ -2568,6 +2570,8 @@ write_bif_static_init (void)
 	fprintf (init_file, " | bif_lxvrze_bit");
       if (bifp->attrs.isendian)
 	fprintf (init_file, " | bif_endian_bit");
+      if (bifp->attrs.isibmld)
+	fprintf (init_file, " | bif_ibmld_bit");
       fprintf (init_file, ",\n");
       fprintf (init_file, "      /* restr_opnd */\t{%d, %d, %d},\n",
 	       bifp->proto.restr_opnd[0], bifp->proto.restr_opnd[1],
@@ -2667,7 +2671,7 @@ write_init_bif_table (void)
   for (int i = 0; i <= curr_bif; i++)
     {
       fprintf (init_file,
-	       "  rs6000_builtin_info_x[RS6000_BIF_%s].fntype"
+	       "  rs6000_builtin_info[RS6000_BIF_%s].fntype"
 	       "\n    = %s;\n",
 	       bifs[i].idname, bifs[i].fndecl);
 
@@ -2682,68 +2686,64 @@ write_init_bif_table (void)
 		       || strstr (bifs[i].fndecl, "dd") != NULL
 		       || strstr (bifs[i].fndecl, "td") != NULL);
 
-      fprintf (init_file,
-	       "  if (new_builtins_are_live)\n");
-      fprintf (init_file, "    {\n");
-
       if (tf_found)
 	{
-	  fprintf (init_file, "      if (float128_type_node)\n");
-	  fprintf (init_file, "        {\n");
+	  fprintf (init_file, "  if (float128_type_node)\n");
+	  fprintf (init_file, "    {\n");
 	}
       else if (dfp_found)
 	{
-	  fprintf (init_file, "      if (dfloat64_type_node)\n");
-	  fprintf (init_file, "        {\n");
+	  fprintf (init_file, "  if (dfloat64_type_node)\n");
+	  fprintf (init_file, "    {\n");
 	}
 
       fprintf (init_file,
-	       "      rs6000_builtin_decls_x[(int)RS6000_BIF_%s] = t\n",
+	       "  rs6000_builtin_decls[(int)RS6000_BIF_%s] = t\n",
 	       bifs[i].idname);
       fprintf (init_file,
-	       "        = add_builtin_function (\"%s\",\n",
+	       "    = add_builtin_function (\"%s\",\n",
 	       bifs[i].proto.bifname);
       fprintf (init_file,
-	       "                                %s,\n",
+	       "                            %s,\n",
 	       bifs[i].fndecl);
       fprintf (init_file,
-	       "                                (int)RS6000_BIF_%s,"
+	       "                            (int)RS6000_BIF_%s,"
 	       " BUILT_IN_MD,\n",
 	       bifs[i].idname);
       fprintf (init_file,
-	       "                                NULL, NULL_TREE);\n");
+	       "                            NULL, NULL_TREE);\n");
       if (bifs[i].kind == FNK_CONST)
 	{
-	  fprintf (init_file, "      TREE_READONLY (t) = 1;\n");
-	  fprintf (init_file, "      TREE_NOTHROW (t) = 1;\n");
+	  fprintf (init_file, "  TREE_READONLY (t) = 1;\n");
+	  fprintf (init_file, "  TREE_NOTHROW (t) = 1;\n");
 	}
       else if (bifs[i].kind == FNK_PURE)
 	{
-	  fprintf (init_file, "      DECL_PURE_P (t) = 1;\n");
-	  fprintf (init_file, "      TREE_NOTHROW (t) = 1;\n");
+	  fprintf (init_file, "  DECL_PURE_P (t) = 1;\n");
+	  fprintf (init_file, "  TREE_NOTHROW (t) = 1;\n");
 	}
       else if (bifs[i].kind == FNK_FPMATH)
 	{
-	  fprintf (init_file, "      TREE_NOTHROW (t) = 1;\n");
-	  fprintf (init_file, "      if (flag_rounding_math)\n");
-	  fprintf (init_file, "        {\n");
-	  fprintf (init_file, "          DECL_PURE_P (t) = 1;\n");
-	  fprintf (init_file, "          DECL_IS_NOVOPS (t) = 1;\n");
-	  fprintf (init_file, "        }\n");
-	  fprintf (init_file, "      else\n");
-	  fprintf (init_file, "        TREE_READONLY (t) = 1;\n");
+	  fprintf (init_file, "  TREE_NOTHROW (t) = 1;\n");
+	  fprintf (init_file, "  if (flag_rounding_math)\n");
+	  fprintf (init_file, "    {\n");
+	  fprintf (init_file, "      DECL_PURE_P (t) = 1;\n");
+	  fprintf (init_file, "      DECL_IS_NOVOPS (t) = 1;\n");
+	  fprintf (init_file, "    }\n");
+	  fprintf (init_file, "  else\n");
+	  fprintf (init_file, "    TREE_READONLY (t) = 1;\n");
 	}
 
       if (tf_found || dfp_found)
 	{
-	  fprintf (init_file, "        }\n");
-	  fprintf (init_file, "      else\n");
-	  fprintf (init_file, "        {\n");
-	  fprintf (init_file, "          rs6000_builtin_decls_x"
+	  fprintf (init_file, "    }\n");
+	  fprintf (init_file, "  else\n");
+	  fprintf (init_file, "    {\n");
+	  fprintf (init_file, "      rs6000_builtin_decls"
 		   "[(int)RS6000_BIF_%s] = NULL_TREE;\n", bifs[i].idname);
-	  fprintf (init_file, "        }\n");
+	  fprintf (init_file, "    }\n");
 	}
-      fprintf (init_file, "    }\n\n");
+      fprintf (init_file, "\n");
     }
 }
 
@@ -2780,41 +2780,37 @@ write_init_ovld_table (void)
 			   || strstr (ovlds[i].fndecl, "dd") != NULL
 			   || strstr (ovlds[i].fndecl, "td") != NULL);
 
-	  fprintf (init_file,
-		   "  if (new_builtins_are_live)\n");
-	  fprintf (init_file, "    {\n");
-
 	  if (tf_found)
 	    {
-	      fprintf (init_file, "      if (float128_type_node)\n");
-	      fprintf (init_file, "        {\n");
+	      fprintf (init_file, "  if (float128_type_node)\n");
+	      fprintf (init_file, "    {\n");
 	    }
 	  else if (dfp_found)
 	    {
-	      fprintf (init_file, "      if (dfloat64_type_node)\n");
-	      fprintf (init_file, "        {\n");
+	      fprintf (init_file, "  if (dfloat64_type_node)\n");
+	      fprintf (init_file, "    {\n");
 	    }
 
 	  fprintf (init_file,
-		   "      rs6000_builtin_decls_x[(int)RS6000_OVLD_%s] = t\n",
+		   "  rs6000_builtin_decls[(int)RS6000_OVLD_%s] = t\n",
 		   stanza->stanza_id);
 	  fprintf (init_file,
-		   "        = add_builtin_function (\"%s\",\n",
+		   "    = add_builtin_function (\"%s\",\n",
 		   stanza->intern_name);
 	  fprintf (init_file,
-		   "                                %s,\n",
+		   "                            %s,\n",
 		   ovlds[i].fndecl);
 	  fprintf (init_file,
-		   "                                (int)RS6000_OVLD_%s,"
+		   "                            (int)RS6000_OVLD_%s,"
 		   " BUILT_IN_MD,\n",
 		   stanza->stanza_id);
 	  fprintf (init_file,
-		   "                                NULL, NULL_TREE);\n");
+		   "                            NULL, NULL_TREE);\n");
 
 	  if (tf_found || dfp_found)
-	    fprintf (init_file, "        }\n");
+	    fprintf (init_file, "    }\n");
 
-	  fprintf (init_file, "    }\n\n");
+	  fprintf (init_file, "\n");
 
 	  fprintf (init_file,
 		   "  rs6000_overload_info[RS6000_OVLD_%s - base]"
@@ -2845,9 +2841,7 @@ write_init_file (void)
   fprintf (init_file, "#include \"rs6000-builtins.h\"\n");
   fprintf (init_file, "\n");
 
-  fprintf (init_file, "int new_builtins_are_live = 1;\n\n");
-
-  fprintf (init_file, "tree rs6000_builtin_decls_x[RS6000_OVLD_MAX];\n\n");
+  fprintf (init_file, "tree rs6000_builtin_decls[RS6000_OVLD_MAX];\n\n");
 
   write_bif_static_init ();
   write_ovld_static_init ();
@@ -2863,11 +2857,11 @@ write_init_file (void)
   fprintf (init_file, "\n");
 
   fprintf (init_file,
-	   "  rs6000_builtin_decls_x[RS6000_BIF_NONE] = NULL_TREE;\n");
+	   "  rs6000_builtin_decls[RS6000_BIF_NONE] = NULL_TREE;\n");
   fprintf (init_file,
-	   "  rs6000_builtin_decls_x[RS6000_BIF_MAX] = NULL_TREE;\n");
+	   "  rs6000_builtin_decls[RS6000_BIF_MAX] = NULL_TREE;\n");
   fprintf (init_file,
-	   "  rs6000_builtin_decls_x[RS6000_OVLD_NONE] = NULL_TREE;\n\n");
+	   "  rs6000_builtin_decls[RS6000_OVLD_NONE] = NULL_TREE;\n\n");
 
   write_init_bif_table ();
   write_init_ovld_table ();

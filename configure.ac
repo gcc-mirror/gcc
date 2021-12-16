@@ -1465,6 +1465,65 @@ elif test "$have_compiler" = yes; then
   fi
 fi
 
+AC_ARG_ENABLE([pgo-build],
+[AS_HELP_STRING([--enable-pgo-build[[=lto]]],
+		[enable the PGO build])],
+[enable_pgo_build=$enableval],
+[enable_pgo_build=no])
+
+# Issue errors and warnings for invalid/strange PGO build combinations.
+case "$have_compiler:$host:$target:$enable_pgo_build" in
+  *:*:*:no) ;;
+
+  # Allow the PGO build only if we aren't building a compiler and
+  # we are in a native configuration.
+  no:$build:$build:yes | no:$build:$build:lto) ;;
+
+  # Disallow the PGO bootstrap if we are building a compiler.
+  yes:*:*:yes | yes:*:*:lto)
+    AC_MSG_ERROR([cannot perform the PGO bootstrap when building a compiler]) ;;
+
+  *)
+    AC_MSG_ERROR([invalid option for --enable-pgo-build])
+    ;;
+esac
+
+if test "$enable_pgo_build" != "no"; then
+  AC_MSG_CHECKING([whether the compiler supports -fprofile-generate])
+  old_CFLAGS="$CFLAGS"
+  PGO_BUILD_GEN_CFLAGS="-fprofile-generate"
+  CFLAGS="$CFLAGS $PGO_BUILD_CFLAGS"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([int foo;])],,
+		    [PGO_BUILD_GEN_CFLAGS=])
+  CFLAGS="$old_CFLAGS"
+  if test -n "$PGO_BUILD_GEN_CFLAGS"; then
+    AC_MSG_RESULT([yes])
+    PGO_BUILD_USE_CFLAGS="-fprofile-use"
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([cannot perform the PGO build without -fprofile-generate])
+  fi
+
+  if test "$enable_pgo_build" = "lto"; then
+    AC_MSG_CHECKING([whether the compiler supports -flto=jobserver -ffat-lto-objects])
+    old_CFLAGS="$CFLAGS"
+    PGO_BUILD_LTO_CFLAGS="-flto=jobserver -ffat-lto-objects"
+    CFLAGS="$CFLAGS $PGO_BUILD_LTO_CFLAGS"
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE([int foo;])],,
+		      [PGO_BUILD_LTO_CFLAGS=])
+    CFLAGS="$old_CFLAGS"
+    if test -n "$PGO_BUILD_LTO_CFLAGS"; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+      AC_MSG_WARN([LTO is disabled for the PGO build])
+    fi
+  fi
+fi
+AC_SUBST(PGO_BUILD_GEN_CFLAGS)
+AC_SUBST(PGO_BUILD_USE_CFLAGS)
+AC_SUBST(PGO_BUILD_LTO_CFLAGS)
+
 # Used for setting $lt_cv_objdir
 _LT_CHECK_OBJDIR
 
@@ -2995,6 +3054,12 @@ extrasub_target="$extrasub_target
 /^@if /,/^@endif /d
 /^@unless /d
 /^@endunless /d"
+
+if test "$enable_pgo_build" != "no"; then
+  extrasub_build="$extrasub_build
+/^@if pgo-build\$/d
+/^@endif pgo-build\$/d"
+fi
 
 # Create the serialization dependencies.  This uses a temporary file.
 

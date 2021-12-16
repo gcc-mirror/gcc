@@ -442,28 +442,54 @@ void test13161()
 
 version (linux)
 {
-    extern(C++, __gnu_cxx)
+    static if (__traits(getTargetInfo, "cppStd") < 201703)
     {
-        struct new_allocator(T)
+        // See note on std::allocator below.
+        extern(C++, __gnu_cxx)
         {
-            alias size_type = size_t;
-            static if (is(T : char))
-                void deallocate(T*, size_type) { }
-            else
-                void deallocate(T*, size_type);
+            struct new_allocator(T)
+            {
+                alias size_type = size_t;
+                static if (is(T : char))
+                    void deallocate(T*, size_type) { }
+                else
+                    void deallocate(T*, size_type);
+            }
         }
     }
 }
 
 extern (C++, std)
 {
+    version (linux)
+    {
+        static if (__traits(getTargetInfo, "cppStd") >= 201703)
+        {
+            // std::allocator no longer derives from __gnu_cxx::new_allocator,
+            // it derives from std::__new_allocator instead. 
+            struct __new_allocator(T)
+            {
+                alias size_type = size_t;
+                static if (is(T : char))
+                    void deallocate(T*, size_type) { }
+                else
+                    void deallocate(T*, size_type);
+            }
+        }
+    }
+
     extern (C++, class) struct allocator(T)
     {
         version (linux)
         {
             alias size_type = size_t;
             void deallocate(T* p, size_type sz)
-            {   (cast(__gnu_cxx.new_allocator!T*)&this).deallocate(p, sz); }
+            {
+                static if (__traits(getTargetInfo, "cppStd") >= 201703)
+                    (cast(std.__new_allocator!T*)&this).deallocate(p, sz);
+                else
+                    (cast(__gnu_cxx.new_allocator!T*)&this).deallocate(p, sz);
+            }
         }
     }
 
@@ -476,12 +502,21 @@ extern (C++, std)
     {
     }
 
-    // https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html
-    version (none)
+    version (CppRuntime_Gcc)
     {
-        extern (C++, __cxx11)
+        // https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html
+        static if (__traits(getTargetInfo, "cppStd") >= 201103)
         {
-            struct basic_string(T, C = char_traits!T, A = allocator!T)
+            extern (C++, __cxx11)
+            {
+                struct basic_string(T, C = char_traits!T, A = allocator!T)
+                {
+                }
+            }
+        }
+        else
+        {
+            extern (C++, class) struct basic_string(T, C = char_traits!T, A = allocator!T)
             {
             }
         }

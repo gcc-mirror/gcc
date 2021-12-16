@@ -61,35 +61,19 @@ enum class TOK : unsigned short
     new_,
     delete_,
     star,
-    symbolOffset,
     variable,
-    dotVariable,
-    dotIdentifier,
-    dotTemplateInstance,
-    dotType,
     slice,
-    arrayLength,
     version_,
     module_,
     dollar,
     template_,
-    dotTemplateDeclaration,
     declaration,
     typeof_,
     pragma_,
-    dSymbol,
     typeid_,
     uadd,
     remove,
-    newAnonymousClass,
     comment,
-    arrayLiteral,
-    assocArrayLiteral,
-    structLiteral,
-    classReference,
-    thrownException,
-    delegatePointer,
-    delegateFunctionPointer,
 
     // Operators
     lessThan,       // 54
@@ -169,7 +153,6 @@ enum class TOK : unsigned short
     hexadecimalString,
     this_,
     super_,
-    halt,
     tuple,
     error,
 
@@ -288,18 +271,9 @@ enum class TOK : unsigned short
     vector,
     pound,
 
-    interval,       // 229
-    voidExpression,
-    cantExpression,
-    showCtfeContext,
-
-    objcClassReference,
-    vectorArray,
-
     arrow,      // ->
     colonColon, // ::
     wchar_tLiteral,
-    compoundLiteral, // ( type-name ) { initializer-list }
 
     // C only keywords
     inline_,

@@ -142,7 +142,7 @@ extern void rs6000_output_mi_thunk (FILE *file,
 extern bool rs6000_output_addr_const_extra (FILE *file, rtx x);
 extern bool rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi);
 extern tree rs6000_build_builtin_va_list (void);
-extern void rs6000_invalid_new_builtin (rs6000_gen_builtins fncode);
+extern void rs6000_invalid_builtin (rs6000_gen_builtins fncode);
 extern void rs6000_va_start (tree valist, rtx nextarg);
 extern tree rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 				    gimple_seq *post_p);

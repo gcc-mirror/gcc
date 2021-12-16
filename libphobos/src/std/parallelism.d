@@ -2738,7 +2738,7 @@ public:
             immutable size_t nBytesNeeded = nWorkUnits * RTask.sizeof;
 
             import core.stdc.stdlib : malloc, free;
-            if (nBytesNeeded < maxStack)
+            if (nBytesNeeded <= maxStack)
             {
                 tasks = (cast(RTask*) buf.ptr)[0 .. nWorkUnits];
             }
@@ -3045,11 +3045,11 @@ public:
     Since the underlying data for this struct is heap-allocated, this struct
     has reference semantics when passed between functions.
 
-    The main uses cases for `WorkerLocalStorageStorage` are:
+    The main uses cases for `WorkerLocalStorage` are:
 
     1.  Performing parallel reductions with an imperative, as opposed to
         functional, programming style.  In this case, it's useful to treat
-        `WorkerLocalStorageStorage` as local to each thread for only the parallel
+        `WorkerLocalStorage` as local to each thread for only the parallel
         portion of an algorithm.
 
     2.  Recycling temporary buffers across iterations of a parallel foreach loop.

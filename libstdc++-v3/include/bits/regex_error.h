@@ -48,7 +48,7 @@ namespace regex_constants
 
   enum error_type
     {
-      _S_error_collate,
+      _S_error_collate, // XXX should have been a non-zero value
       _S_error_ctype,
       _S_error_escape,
       _S_error_backref,

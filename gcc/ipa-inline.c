@@ -396,22 +396,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_SANITIZE_ATTRIBUTE_MISMATCH;
       inlinable = false;
     }
-  else if (profile_arc_flag
-	   && (lookup_attribute ("no_profile_instrument_function",
-				 DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
-	   != (lookup_attribute ("no_profile_instrument_function",
-				 DECL_ATTRIBUTES (callee->decl)) == NULL_TREE))
-    {
-      cgraph_node *origin = caller;
-      while (origin->clone_of)
-	origin = origin->clone_of;
-
-      if (!DECL_STRUCT_FUNCTION (origin->decl)->always_inline_functions_inlined)
-	{
-	  e->inline_failed = CIF_UNSPECIFIED;
-	  inlinable = false;
-	}
-    }
 
   if (!inlinable && report)
     report_inline_failed_reason (e);
@@ -637,6 +621,8 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
 static bool
 can_early_inline_edge_p (struct cgraph_edge *e)
 {
+  cgraph_node *caller = (e->caller->inlined_to
+			 ? e->caller->inlined_to : e->caller);
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   /* Early inliner might get called at WPA stage when IPA pass adds new
      function.  In this case we cannot really do any of early inlining
@@ -660,6 +646,13 @@ can_early_inline_edge_p (struct cgraph_edge *e)
 			 "  edge not inlinable: not in SSA form\n");
       return false;
     }
+  else if (profile_arc_flag
+	   && ((lookup_attribute ("no_profile_instrument_function",
+				 DECL_ATTRIBUTES (caller->decl)) == NULL_TREE)
+	       != (lookup_attribute ("no_profile_instrument_function",
+				     DECL_ATTRIBUTES (callee->decl)) == NULL_TREE)))
+    return false;
+
   if (!can_inline_edge_p (e, true, true)
       || !can_inline_edge_by_limits_p (e, true, false, true))
     return false;

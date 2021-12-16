@@ -2344,63 +2344,6 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_MMA			\
 				 | RS6000_BTM_P10)
 
-/* Define builtin enum index.  */
-
-#undef RS6000_BUILTIN_0
-#undef RS6000_BUILTIN_1
-#undef RS6000_BUILTIN_2
-#undef RS6000_BUILTIN_3
-#undef RS6000_BUILTIN_4
-#undef RS6000_BUILTIN_A
-#undef RS6000_BUILTIN_D
-#undef RS6000_BUILTIN_H
-#undef RS6000_BUILTIN_M
-#undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_X
-
-#define RS6000_BUILTIN_0(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_1(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_2(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_3(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_4(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_A(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_D(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_H(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_M(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_P(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-#define RS6000_BUILTIN_X(ENUM, NAME, MASK, ATTR, ICODE) ENUM,
-
-enum rs6000_builtins
-{
-#include "rs6000-builtin.def"
-
-  RS6000_BUILTIN_COUNT
-};
-
-#undef RS6000_BUILTIN_0
-#undef RS6000_BUILTIN_1
-#undef RS6000_BUILTIN_2
-#undef RS6000_BUILTIN_3
-#undef RS6000_BUILTIN_4
-#undef RS6000_BUILTIN_A
-#undef RS6000_BUILTIN_D
-#undef RS6000_BUILTIN_H
-#undef RS6000_BUILTIN_M
-#undef RS6000_BUILTIN_P
-#undef RS6000_BUILTIN_X
-
-/* Mappings for overloaded builtins.  */
-struct altivec_builtin_types
-{
-  enum rs6000_builtins code;
-  enum rs6000_builtins overloaded_code;
-  signed char ret_type;
-  signed char op1;
-  signed char op2;
-  signed char op3;
-};
-extern const struct altivec_builtin_types altivec_overloaded_builtins[];
-
 enum rs6000_builtin_type_index
 {
   RS6000_BTI_NOT_OPAQUE,
@@ -2601,7 +2544,6 @@ enum rs6000_builtin_type_index
 #define ptr_long_long_unsigned_type_node (rs6000_builtin_types[RS6000_BTI_ptr_long_long_unsigned])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
-extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
 #ifndef USED_FOR_TARGET
 extern GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];

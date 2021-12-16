@@ -462,6 +462,21 @@ extern (C++) class Dsymbol : ASTNode
         return null;
     }
 
+    /**************************************
+     * Does this Dsymbol come from a C file?
+     * Returns:
+     *  true if it does
+     */
+     final bool isCsymbol()
+     {
+        if (Module m = getModule())
+        {
+            if (m.isCFile)
+                return true;
+        }
+        return false;
+    }
+
     /**********************************
      * Determine which Module a Dsymbol is in, as far as access rights go.
      */
@@ -1783,7 +1798,7 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
         // Acts as proxy to the with class declaration
         Dsymbol s = null;
         Expression eold = null;
-        for (Expression e = withstate.exp; e != eold; e = resolveAliasThis(_scope, e))
+        for (Expression e = withstate.exp; e && e != eold; e = resolveAliasThis(_scope, e, true))
         {
             if (e.op == EXP.scope_)
             {
@@ -2426,7 +2441,9 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
     auto vd2 = s2.isVarDeclaration(); // existing declaration
     if (vd && vd2)
     {
-        // if one is `static` and the other isn't
+        /* if one is `static` and the other isn't, the result is undefined
+         * behavior, C11 6.2.2.7
+         */
         if ((vd.storage_class ^ vd2.storage_class) & STC.static_)
             return collision();
 
@@ -2437,7 +2454,10 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
             return collision();         // can't both have initializers
 
         if (i1)
-            return vd;
+        {
+            vd2._init = vd._init;
+            vd._init = null;
+        }
 
         /* BUG: the types should match, which needs semantic() to be run on it
          *    extern int x;
@@ -2454,15 +2474,38 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
     auto fd2 = s2.isFuncDeclaration(); // existing declaration
     if (fd && fd2)
     {
-        // if one is `static` and the other isn't
-        if ((fd.storage_class ^ fd2.storage_class) & STC.static_)
+        /* if one is `static` and the other isn't, the result is undefined
+         * behavior, C11 6.2.2.7
+         * However, match what gcc allows:
+         *    static int sun1(); int sun1() { return 0; }
+         * and:
+         *    static int sun2() { return 0; } int sun2();
+         * Both produce a static function.
+         *
+         * Both of these should fail:
+         *    int sun3(); static int sun3() { return 0; }
+         * and:
+         *    int sun4() { return 0; } static int sun4();
+         */
+        // if adding `static`
+        if (   fd.storage_class & STC.static_ &&
+            !(fd2.storage_class & STC.static_))
+        {
             return collision();
+        }
 
         if (fd.fbody && fd2.fbody)
             return collision();         // can't both have bodies
 
         if (fd.fbody)
-            return fd;
+        {
+            fd2.fbody = fd.fbody;       // transfer body to existing declaration
+            fd.fbody = null;
+
+            auto tf = fd.type.toTypeFunction();
+            auto tf2 = fd2.type.toTypeFunction();
+            tf2.parameterList = tf.parameterList;   // transfer parameter list.
+        }
 
         /* BUG: just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
          * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.

@@ -1574,7 +1574,7 @@ Expression ctfeIndex(UnionExp* pue, const ref Loc loc, Type type, Expression e1,
     assert(0);
 }
 
-Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expression e)
+Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expression e, bool explicitCast = false)
 {
     Expression paint()
     {
@@ -1587,9 +1587,12 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
     if (e.op == EXP.classReference)
     {
         // Disallow reinterpreting class casts. Do this by ensuring that
-        // the original class can implicitly convert to the target class
-        ClassDeclaration originalClass = (cast(ClassReferenceExp)e).originalClass();
-        if (originalClass.type.implicitConvTo(to.mutableOf()))
+        // the original class can implicitly convert to the target class.
+        // Also do not check 'alias this' for explicit cast expressions.
+        auto tclass = (cast(ClassReferenceExp)e).originalClass().type.isTypeClass();
+        auto match = explicitCast ? tclass.implicitConvToWithoutAliasThis(to.mutableOf())
+                                  : tclass.implicitConvTo(to.mutableOf());
+        if (match)
             return paint();
         else
         {

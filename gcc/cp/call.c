@@ -6461,13 +6461,12 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	      tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
-  vec<tree, va_gc> *arglist;
+  releasing_vec arglist;
   tree result = NULL_TREE;
   bool result_valid_p = false;
   enum tree_code code2 = ERROR_MARK;
   enum tree_code code_orig_arg1 = ERROR_MARK;
   enum tree_code code_orig_arg2 = ERROR_MARK;
-  conversion *conv;
   void *p;
   bool strict_p;
   bool any_viable_p;
@@ -6543,7 +6542,6 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
       arg2_type = integer_type_node;
     }
 
-  vec_alloc (arglist, 3);
   arglist->quick_push (arg1);
   if (arg2 != NULL_TREE)
     arglist->quick_push (arg2);
@@ -6814,7 +6812,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	     corresponding parameters of the selected operation function,
 	     except that the second standard conversion sequence of a
 	     user-defined conversion sequence (12.3.3.1.2) is not applied."  */
-	  conv = cand->convs[0];
+	  conversion *conv = cand->convs[0];
 	  if (conv->user_conv_p)
 	    {
 	      conv = strip_standard_conversion (conv);

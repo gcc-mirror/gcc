@@ -3629,7 +3629,7 @@ fixup_template_type (tree type)
   // the scope we're trying to enter.
   tree parms = current_template_parms;
   int depth = template_class_depth (type);
-  for (int n = processing_template_decl; n > depth && parms; --n)
+  for (int n = current_template_depth; n > depth && parms; --n)
     parms = TREE_CHAIN (parms);
   if (!parms)
     return type;
@@ -9324,6 +9324,9 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
       *walk_subtrees = 0;
       return NULL_TREE;
     }
+
+  if (TREE_CODE (t) == OMP_CLAUSE)
+    return NULL_TREE;
 
   if (current_object)
     {

@@ -4846,6 +4846,11 @@ c_parser_balanced_token_sequence (c_parser *parser)
 	case CPP_EOF:
 	  return;
 
+	case CPP_PRAGMA:
+	  c_parser_consume_pragma (parser);
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  break;
+
 	default:
 	  c_parser_consume_token (parser);
 	  break;

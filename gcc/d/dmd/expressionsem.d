@@ -316,6 +316,9 @@ Expression resolveOpDollar(Scope* sc, ArrayExp ae, IntervalExp ie, Expression* p
     ie.lwr = sem(ie.lwr);
     ie.upr = sem(ie.upr);
 
+    if (ie.lwr.isErrorExp() || ie.upr.isErrorExp())
+        errors = true;
+
     if (lengthVar != ae.lengthVar && sc.func)
     {
         // If $ was used, declare it now
@@ -536,15 +539,15 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
                 ce.e1 = ey;
                 if (isDotOpDispatch(ey))
                 {
-                    uint errors = global.startGagging();
-                    e = ce.syntaxCopy().expressionSemantic(sc);
-                    if (!global.endGagging(errors))
-                        return e;
-
                     // even opDispatch and UFCS must have valid arguments,
                     // so now that we've seen indication of a problem,
                     // check them for issues.
                     Expressions* originalArguments = Expression.arraySyntaxCopy(ce.arguments);
+
+                    uint errors = global.startGagging();
+                    e = ce.expressionSemantic(sc);
+                    if (!global.endGagging(errors))
+                        return e;
 
                     if (arrayExpressionSemantic(originalArguments, sc))
                         return ErrorExp.get();
@@ -2792,6 +2795,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             exp.error("undefined identifier `%s`, did you mean %s `%s`?", exp.ident.toChars(), s2.kind(), s2.toChars());
         else if (const p = Scope.search_correct_C(exp.ident))
             exp.error("undefined identifier `%s`, did you mean `%s`?", exp.ident.toChars(), p);
+        else if (exp.ident == Id.dollar)
+            exp.error("undefined identifier `$`");
         else
             exp.error("undefined identifier `%s`", exp.ident.toChars());
 
@@ -4244,6 +4249,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 return;
             }
         }
+        if (sc.flags & SCOPE.Cfile)
+        {
+            /* See if need to rewrite the AST because of cast/call ambiguity
+             */
+            if (auto e = castCallAmbiguity(exp, sc))
+            {
+                result = expressionSemantic(e, sc);
+                return;
+            }
+        }
 
         if (Expression ex = resolveUFCS(sc, exp))
         {
@@ -4425,24 +4440,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             else if (exp.e1.op == EXP.type && (sc && sc.flags & SCOPE.Cfile))
             {
                 const numArgs = exp.arguments ? exp.arguments.length : 0;
-                if (e1org.parens && numArgs >= 1)
-                {
-                    /* Ambiguous cases arise from CParser where there is not enough
-                     * information to determine if we have a function call or a cast.
-                     *   ( type-name ) ( identifier ) ;
-                     *   ( identifier ) ( identifier ) ;
-                     * If exp.e1 is a type-name, then this is a cast.
-                     */
-                    Expression arg;
-                    foreach (a; (*exp.arguments)[])
-                    {
-                        arg = arg ? new CommaExp(a.loc, arg, a) : a;
-                    }
-                    auto t = exp.e1.isTypeExp().type;
-                    auto e = new CastExp(exp.loc, arg, t);
-                    result = e.expressionSemantic(sc);
-                    return;
-                }
 
                 /* Ambiguous cases arise from CParser where there is not enough
                  * information to determine if we have a function call or declaration.
@@ -6406,6 +6403,18 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             printf("DotIdExp::semantic(this = %p, '%s')\n", exp, exp.toChars());
             //printf("e1.op = %d, '%s'\n", e1.op, Token::toChars(e1.op));
         }
+
+        if (sc.flags & SCOPE.Cfile)
+        {
+            /* See if need to rewrite the AST because of cast/call ambiguity
+             */
+            if (auto e = castCallAmbiguity(exp, sc))
+            {
+                result = expressionSemantic(e, sc);
+                return;
+            }
+        }
+
         if (exp.arrow) // ImportC only
             exp.e1 = exp.e1.expressionSemantic(sc).arrayFuncConv(sc);
 
@@ -8059,6 +8068,17 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         }
         assert(!exp.type);
 
+        if (sc.flags & SCOPE.Cfile)
+        {
+            /* See if need to rewrite the AST because of cast/call ambiguity
+             */
+            if (auto e = castCallAmbiguity(exp, sc))
+            {
+                result = expressionSemantic(e, sc);
+                return;
+            }
+        }
+
         result = exp.carraySemantic(sc);  // C semantics
         if (result)
             return;
@@ -8450,6 +8470,17 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         {
             result = exp;
             return;
+        }
+
+        if (sc.flags & SCOPE.Cfile)
+        {
+            /* See if need to rewrite the AST because of cast/call ambiguity
+             */
+            if (auto e = castCallAmbiguity(exp, sc))
+            {
+                result = expressionSemantic(e, sc);
+                return;
+            }
         }
 
         if (Expression ex = binSemantic(exp, sc))
@@ -13050,7 +13081,7 @@ private bool fit(StructDeclaration sd, const ref Loc loc, Scope* sc, Expressions
         e = resolveProperties(sc, e);
         if (i >= nfields)
         {
-            if (i <= sd.fields.dim && e.op == EXP.null_)
+            if (i < sd.fields.dim && e.op == EXP.null_)
             {
                 // CTFE sometimes creates null as hidden pointer; we'll allow this.
                 continue;

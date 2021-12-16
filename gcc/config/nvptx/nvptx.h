@@ -88,8 +88,11 @@
 
 #define TARGET_SM35 (ptx_isa_option >= PTX_ISA_SM35)
 #define TARGET_SM53 (ptx_isa_option >= PTX_ISA_SM53)
+#define TARGET_SM75 (ptx_isa_option >= PTX_ISA_SM75)
+#define TARGET_SM80 (ptx_isa_option >= PTX_ISA_SM80)
 
 #define TARGET_PTX_6_3 (ptx_version_option >= PTX_VERSION_6_3)
+#define TARGET_PTX_7_0 (ptx_version_option >= PTX_VERSION_7_0)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.

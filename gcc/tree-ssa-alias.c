@@ -2544,6 +2544,30 @@ refs_output_dependent_p (tree store1, tree store2)
   return refs_may_alias_p_1 (&r1, &r2, false);
 }
 
+/* Return ture if REF may access global memory.  */
+
+bool
+ref_may_access_global_memory_p (ao_ref *ref)
+{
+  if (!ref->ref)
+    return true;
+  tree base = ao_ref_base (ref);
+  if (TREE_CODE (base) == MEM_REF
+      || TREE_CODE (base) == TARGET_MEM_REF)
+    {
+      if (ptr_deref_may_alias_global_p (TREE_OPERAND (base, 0)))
+	return true;
+    }
+  else
+    {
+      if (!auto_var_in_fn_p (base, current_function_decl)
+	  || pt_solution_includes (&cfun->gimple_df->escaped,
+				   base))
+	return true;
+    }
+  return false;
+}
+
 /* Returns true if and only if REF may alias any access stored in TT.
    IF TBAA_P is true, use TBAA oracle.  */
 
@@ -2552,6 +2576,7 @@ modref_may_conflict (const gcall *stmt,
 		     modref_tree <alias_set_type> *tt, ao_ref *ref, bool tbaa_p)
 {
   alias_set_type base_set, ref_set;
+  bool global_memory_ok = false;
 
   if (tt->every_base)
     return true;
@@ -2601,6 +2626,17 @@ modref_may_conflict (const gcall *stmt,
 	    {
 	      if (num_tests >= max_tests)
 		return true;
+
+	      if (access_node.parm_index == MODREF_GLOBAL_MEMORY_PARM)
+		{
+		  if (global_memory_ok)
+		    continue;
+		  if (ref_may_access_global_memory_p (ref))
+		    return true;
+		  global_memory_ok = true;
+		  num_tests++;
+		  continue;
+		}
 
 	      tree arg = access_node.get_call_arg (stmt);
 	      if (!arg)

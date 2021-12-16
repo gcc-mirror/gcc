@@ -24,7 +24,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <_vxworks-versions.h>
 
-#if _VXWORKS_MAJOR_GE(7)
+/* #include the VxWorks yvals.h in setups we expect it to be available.
+   It is around for both kernel mode and rtps on VxWorks >= 7, only for
+   rtps prior to that.  */
+
+#if _VXWORKS_MAJOR_GE(7) || defined(__RTP__)
 
 /* We need to deactivate the definitions tailored for the Dinkumware
    intrinsics, incompatible with a compilation by G++.  */

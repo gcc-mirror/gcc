@@ -206,7 +206,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  STARTFILE_PREFIX_SPEC
 #define STARTFILE_PREFIX_SPEC						\
- "%{mrtp:%{!shared:%:getenv(WIND_BASE /target/lib/usr/lib/ppc/PPC32/common)}}"
+ "%{mrtp:%{!shared:/lib/usr/lib/ppc/PPC32/common}}"
 
 /* For aggregates passing, use the same, consistent ABI as Linux.  */
 #define AGGREGATE_PADDING_FIXED 0
@@ -252,15 +252,18 @@ along with GCC; see the file COPYING3.  If not see
 #undef DOT_SYMBOLS
 #define DOT_SYMBOLS 0
 
-#undef LINK_OS_VXWORKS_SPEC
-#define LINK_OS_VXWORKS_SPEC \
-  " %{!mrtp:-r} %{mrtp:-q -static} %{!Xbind-lazy:-z now}"
+/* For link specs, we leverage the linux configuration bits through
+   LINK_OS_EXTRA_SPEC32/64 and need to cancel the default %(link_os)
+   expansion in VXWORKS_LINK_SPEC.  */
+
+#undef VXWORKS_LINK_OS_SPEC
+#define VXWORKS_LINK_OS_SPEC ""
 
 #undef LINK_OS_EXTRA_SPEC32
-#define LINK_OS_EXTRA_SPEC32 LINK_OS_VXWORKS_SPEC " " VXWORKS_RELAX_LINK_SPEC
+#define LINK_OS_EXTRA_SPEC32 VXWORKS_LINK_SPEC " " VXWORKS_RELAX_LINK_SPEC
 
 #undef LINK_OS_EXTRA_SPEC64
-#define LINK_OS_EXTRA_SPEC64 LINK_OS_VXWORKS_SPEC
+#define LINK_OS_EXTRA_SPEC64 VXWORKS_LINK_SPEC
 
 /* linux64.h enables this, not supported in vxWorks.  */
 #undef TARGET_FLOAT128_ENABLE_TYPE

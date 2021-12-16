@@ -700,6 +700,9 @@ extra_mpc_gmp_configure_flags
 extra_mpfr_configure_flags
 gmpinc
 gmplibs
+PGO_BUILD_LTO_CFLAGS
+PGO_BUILD_USE_CFLAGS
+PGO_BUILD_GEN_CFLAGS
 HAVE_CXX11_FOR_BUILD
 HAVE_CXX11
 do_compare
@@ -804,6 +807,7 @@ enable_libssp
 enable_libstdcxx
 enable_liboffloadmic
 enable_bootstrap
+enable_pgo_build
 with_mpc
 with_mpc_include
 with_mpc_lib
@@ -1544,6 +1548,8 @@ Optional Features:
   --enable-liboffloadmic=ARG
                           build liboffloadmic [ARG={no,host,target}]
   --enable-bootstrap      enable bootstrapping [yes if native build]
+  --enable-pgo-build[=lto]
+                          enable the PGO build
   --disable-isl-version-check
                           disable check for isl version
   --enable-lto            enable link time optimization support
@@ -7810,6 +7816,91 @@ $as_echo "#define HAVE_CXX11_FOR_BUILD 1" >>confdefs.h
   fi
 fi
 
+# Check whether --enable-pgo-build was given.
+if test "${enable_pgo_build+set}" = set; then :
+  enableval=$enable_pgo_build; enable_pgo_build=$enableval
+else
+  enable_pgo_build=no
+fi
+
+
+# Issue errors and warnings for invalid/strange PGO build combinations.
+case "$have_compiler:$host:$target:$enable_pgo_build" in
+  *:*:*:no) ;;
+
+  # Allow the PGO build only if we aren't building a compiler and
+  # we are in a native configuration.
+  no:$build:$build:yes | no:$build:$build:lto) ;;
+
+  # Disallow the PGO bootstrap if we are building a compiler.
+  yes:*:*:yes | yes:*:*:lto)
+    as_fn_error $? "cannot perform the PGO bootstrap when building a compiler" "$LINENO" 5 ;;
+
+  *)
+    as_fn_error $? "invalid option for --enable-pgo-build" "$LINENO" 5
+    ;;
+esac
+
+if test "$enable_pgo_build" != "no"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports -fprofile-generate" >&5
+$as_echo_n "checking whether the compiler supports -fprofile-generate... " >&6; }
+  old_CFLAGS="$CFLAGS"
+  PGO_BUILD_GEN_CFLAGS="-fprofile-generate"
+  CFLAGS="$CFLAGS $PGO_BUILD_CFLAGS"
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  PGO_BUILD_GEN_CFLAGS=
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$old_CFLAGS"
+  if test -n "$PGO_BUILD_GEN_CFLAGS"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    PGO_BUILD_USE_CFLAGS="-fprofile-use"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    as_fn_error $? "cannot perform the PGO build without -fprofile-generate" "$LINENO" 5
+  fi
+
+  if test "$enable_pgo_build" = "lto"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports -flto=jobserver -ffat-lto-objects" >&5
+$as_echo_n "checking whether the compiler supports -flto=jobserver -ffat-lto-objects... " >&6; }
+    old_CFLAGS="$CFLAGS"
+    PGO_BUILD_LTO_CFLAGS="-flto=jobserver -ffat-lto-objects"
+    CFLAGS="$CFLAGS $PGO_BUILD_LTO_CFLAGS"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  PGO_BUILD_LTO_CFLAGS=
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    CFLAGS="$old_CFLAGS"
+    if test -n "$PGO_BUILD_LTO_CFLAGS"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: LTO is disabled for the PGO build" >&5
+$as_echo "$as_me: WARNING: LTO is disabled for the PGO build" >&2;}
+    fi
+  fi
+fi
+
+
+
+
 # Used for setting $lt_cv_objdir
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for objdir" >&5
 $as_echo_n "checking for objdir... " >&6; }
@@ -7999,8 +8090,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   # Check for the recommended and required versions of GMP.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of gmp.h" >&5
 $as_echo_n "checking for the correct version of gmp.h... " >&6; }
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "gmp.h"
 int
@@ -9777,6 +9867,12 @@ extrasub_target="$extrasub_target
 /^@if /,/^@endif /d
 /^@unless /d
 /^@endunless /d"
+
+if test "$enable_pgo_build" != "no"; then
+  extrasub_build="$extrasub_build
+/^@if pgo-build\$/d
+/^@endif pgo-build\$/d"
+fi
 
 # Create the serialization dependencies.  This uses a temporary file.
 

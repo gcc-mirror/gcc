@@ -2464,7 +2464,8 @@ public:
                         if (!tzName.extension().empty ||
                             !tzName.startsWith(subName) ||
                             baseName(tzName) == "leapseconds" ||
-                            tzName == "+VERSION")
+                            tzName == "+VERSION" ||
+                            tzName == "SECURITY")
                         {
                             continue;
                         }

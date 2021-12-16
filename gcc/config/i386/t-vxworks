@@ -9,11 +9,4 @@ MULTILIB_DIRNAMES = mrtp
 ifneq (,$(findstring x86_64, $(target)))
 MULTILIB_OPTIONS += mcmodel=large
 MULTILIB_DIRNAMES += large
-else
-MULTILIB_OPTIONS += fPIC
-MULTILIB_DIRNAMES += fPIC
-MULTILIB_MATCHES = fPIC=fpic
-
-# -fPIC is only supported in combination with -mrtp
-MULTILIB_EXCEPTIONS = fPIC
 endif

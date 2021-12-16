@@ -121,13 +121,45 @@ namespace __detail
 	void
 	_M_insert_bracket_matcher(bool __neg);
 
-      // Returns true if successfully matched one term and should continue.
+      // Cache of the last atom seen in a bracketed range expression.
+      struct _BracketState
+      {
+	enum class _Type : char { _None, _Char, _Class } _M_type = _Type::_None;
+	_CharT _M_char;
+
+	void
+	set(_CharT __c) noexcept { _M_type = _Type::_Char; _M_char = __c; }
+
+	_GLIBCXX_NODISCARD _CharT
+	get() const noexcept { return _M_char; }
+
+	void
+	reset(_Type __t = _Type::_None) noexcept { _M_type = __t; }
+
+	explicit operator bool() const noexcept
+	{ return _M_type != _Type::_None; }
+
+	// Previous token was a single character.
+	_GLIBCXX_NODISCARD bool
+	_M_is_char() const noexcept { return _M_type == _Type::_Char; }
+
+	// Previous token was a character class, equivalent class,
+	// collating symbol etc.
+	_GLIBCXX_NODISCARD bool
+	_M_is_class() const noexcept { return _M_type == _Type::_Class; }
+      };
+
+      template<bool __icase, bool __collate>
+	using _BracketMatcher
+	  = std::__detail::_BracketMatcher<_TraitsT, __icase, __collate>;
+
+      // Returns true if successfully parsed one term and should continue
+      // compiling a bracket expression.
       // Returns false if the compiler should move on.
       template<bool __icase, bool __collate>
 	bool
-	_M_expression_term(pair<bool, _CharT>& __last_char,
-			   _BracketMatcher<_TraitsT, __icase, __collate>&
-			   __matcher);
+	_M_expression_term(_BracketState& __last_char,
+			   _BracketMatcher<__icase, __collate>& __matcher);
 
       int
       _M_cur_int_value(int __radix);

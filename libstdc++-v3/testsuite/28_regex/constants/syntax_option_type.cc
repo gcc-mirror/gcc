@@ -20,10 +20,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.5.1 
+// C++11 28.5.1 [re.synopt]
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <testsuite_common_types.h>
 
 void
 test01()
@@ -91,6 +92,29 @@ test05()
   regex re("((a)(s))", nosubs | ECMAScript);
   VERIFY(re.mark_count() == 0);
 }
+
+#if __cplusplus >= 201402L
+static_assert(
+    __gnu_test::test_bitmask_values( {
+      std::regex_constants::icase,
+      std::regex_constants::nosubs,
+      std::regex_constants::optimize,
+      std::regex_constants::collate,
+      std::regex_constants::ECMAScript,
+      std::regex_constants::basic,
+      std::regex_constants::extended,
+      std::regex_constants::awk,
+      std::regex_constants::grep,
+      std::regex_constants::egrep,
+      std::regex_constants::__multiline,
+      std::regex_constants::__polynomial
+    }, {
+#if __cplusplus >= 201703L
+      std::regex_constants::multiline // equal to __multiline
+#endif
+    }),
+    "std::regex_constants::syntax_option_type bitmask elements are distinct" );
+#endif
 
 int main()
 {

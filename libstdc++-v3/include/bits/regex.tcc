@@ -461,10 +461,10 @@ namespace __detail
   template<typename _Out_iter, typename _Bi_iter,
 	   typename _Rx_traits, typename _Ch_type>
     _Out_iter
-    regex_replace(_Out_iter __out, _Bi_iter __first, _Bi_iter __last,
-		  const basic_regex<_Ch_type, _Rx_traits>& __e,
-		  const _Ch_type* __fmt,
-		  regex_constants::match_flag_type __flags)
+    __regex_replace(_Out_iter __out, _Bi_iter __first, _Bi_iter __last,
+		    const basic_regex<_Ch_type, _Rx_traits>& __e,
+		    const _Ch_type* __fmt, size_t __len,
+		    regex_constants::match_flag_type __flags)
     {
       typedef regex_iterator<_Bi_iter, _Ch_type, _Rx_traits> _IterT;
       _IterT __i(__first, __last, __e, __flags);
@@ -477,7 +477,6 @@ namespace __detail
       else
 	{
 	  sub_match<_Bi_iter> __last;
-	  auto __len = char_traits<_Ch_type>::length(__fmt);
 	  for (; __i != __end; ++__i)
 	    {
 	      if (!(__flags & regex_constants::format_no_copy))

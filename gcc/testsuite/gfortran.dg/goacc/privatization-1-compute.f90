@@ -43,6 +43,5 @@ contains
     ! { dg-note {variable 'j' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO3" { xfail *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'a' in 'private' clause potentially has improper OpenACC privatization level: 'parm_decl'} "TODO4" { xfail *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
   end subroutine f
 end module m

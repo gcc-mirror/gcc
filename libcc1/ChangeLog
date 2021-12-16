@@ -1,3 +1,7 @@
+2021-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+
 2021-08-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Switch mdynamic-no-pic to fPIC.

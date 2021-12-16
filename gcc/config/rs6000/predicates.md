@@ -601,12 +601,82 @@
   if (TARGET_VSX && op == CONST0_RTX (mode))
     return 1;
 
+  /* Constants that can be generated with ISA 3.1 instructions are easy.  */
+  vec_const_128bit_type vsx_const;
+  if (TARGET_POWER10 && vec_const_128bit_to_bytes (op, mode, &vsx_const))
+    {
+      if (constant_generates_lxvkq (&vsx_const))
+	return true;
+
+      if (constant_generates_xxspltiw (&vsx_const))
+	return true;
+
+      if (constant_generates_xxspltidp (&vsx_const))
+	return true;
+    }
+
   /* Otherwise consider floating point constants hard, so that the
      constant gets pushed to memory during the early RTL phases.  This
      has the advantage that double precision constants that can be
      represented in single precision without a loss of precision will
      use single precision loads.  */
    return 0;
+})
+
+;; Return 1 if the operand is a 64-bit floating point scalar constant or a
+;; vector constant that can be loaded to a VSX register with one prefixed
+;; instruction, such as XXSPLTIDP or XXSPLTIW.
+;;
+;; In addition regular constants, we also recognize constants formed with the
+;; VEC_DUPLICATE insn from scalar constants.
+;;
+;; We don't handle scalar integer constants here because the assumption is the
+;; normal integer constants will be loaded into GPR registers.  For the
+;; constants that need to be loaded into vector registers, the instructions
+;; don't work well with TImode variables assigned a constant.  This is because
+;; the 64-bit scalar constants are splatted into both halves of the register.
+
+(define_predicate "vsx_prefixed_constant"
+  (match_code "const_double,const_vector,vec_duplicate")
+{
+  /* If we can generate the constant with a few Altivec instructions, don't
+      generate a prefixed instruction.  */
+  if (CONST_VECTOR_P (op) && easy_altivec_constant (op, mode))
+    return false;
+
+  /* Do we have prefixed instructions and are VSX registers available?  Is the
+     constant recognized?  */
+  if (!TARGET_PREFIXED || !TARGET_VSX)
+    return false;
+
+  vec_const_128bit_type vsx_const;
+  if (!vec_const_128bit_to_bytes (op, mode, &vsx_const))
+    return false;
+
+  if (constant_generates_xxspltiw (&vsx_const))
+    return true;
+
+  if (constant_generates_xxspltidp (&vsx_const))
+    return true;
+
+  return false;
+})
+
+;; Return 1 if the operand is a special IEEE 128-bit value that can be loaded
+;; via the LXVKQ instruction.
+
+(define_predicate "easy_vector_constant_ieee128"
+  (match_code "const_vector,const_double")
+{
+  vec_const_128bit_type vsx_const;
+
+  /* Can we generate the LXVKQ instruction?  */
+  if (!TARGET_IEEE128_CONSTANT || !TARGET_FLOAT128_HW || !TARGET_POWER10
+      || !TARGET_VSX)
+    return false;
+
+  return (vec_const_128bit_to_bytes (op, mode, &vsx_const)
+	  && constant_generates_lxvkq (&vsx_const) != 0);
 })
 
 ;; Return 1 if the operand is a constant that can loaded with a XXSPLTIB
@@ -652,6 +722,21 @@
 
       if (zero_constant (op, mode) || all_ones_constant (op, mode))
 	return true;
+
+      /* Constants that can be generated with ISA 3.1 instructions are
+         easy.  */
+      vec_const_128bit_type vsx_const;
+      if (TARGET_POWER10 && vec_const_128bit_to_bytes (op, mode, &vsx_const))
+	{
+	  if (constant_generates_lxvkq (&vsx_const))
+	    return true;
+
+	  if (constant_generates_xxspltiw (&vsx_const))
+	    return true;
+
+	  if (constant_generates_xxspltidp (&vsx_const))
+	    return true;
+	}
 
       if (TARGET_P9_VECTOR
           && xxspltib_constant_p (op, mode, &num_insns, &value))

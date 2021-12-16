@@ -26,6 +26,7 @@
    UNSPEC_EXP2
    UNSPEC_SIN
    UNSPEC_COS
+   UNSPEC_TANH
 
    UNSPEC_FPINT_FLOOR
    UNSPEC_FPINT_BTRUNC
@@ -196,6 +197,7 @@
 (define_mode_iterator QHIM [QI HI])
 (define_mode_iterator QHSIM [QI HI SI])
 (define_mode_iterator SDFM [SF DF])
+(define_mode_iterator HSFM [HF SF])
 (define_mode_iterator SDCM [SC DC])
 (define_mode_iterator BITS [SI SF])
 (define_mode_iterator BITD [DI DF])
@@ -1142,6 +1144,36 @@
 		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
   "TARGET_SM53"
   "%.\\tmul.f16\\t%0, %1, %2;")
+
+(define_insn "exp2hf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(unspec:HF [(match_operand:HF 1 "nvptx_register_operand" "R")]
+		   UNSPEC_EXP2))]
+  "TARGET_SM75 && flag_unsafe_math_optimizations"
+  "%.\\tex2.approx.f16\\t%0, %1;")
+
+(define_insn "tanh<mode>2"
+  [(set (match_operand:HSFM 0 "nvptx_register_operand" "=R")
+	(unspec:HSFM [(match_operand:HSFM 1 "nvptx_register_operand" "R")]
+		     UNSPEC_TANH))]
+  "TARGET_SM75 && flag_unsafe_math_optimizations"
+  "%.\\ttanh.approx%t0\\t%0, %1;")
+
+;; HFmode floating point arithmetic.
+
+(define_insn "sminhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(smin:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM80"
+  "%.\\tmin.f16\\t%0, %1, %2;")
+
+(define_insn "smaxhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(smax:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM80"
+  "%.\\tmax.f16\\t%0, %1, %2;")
 
 ;; Conversions involving floating point
 

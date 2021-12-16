@@ -1192,16 +1192,19 @@
 
 ;;              VSX store  VSX load   VSX move  VSX->GPR   GPR->VSX    LQ (GPR)
 ;;              STQ (GPR)  GPR load   GPR store GPR move   XXSPLTIB    VSPLTISW
+;;              LXVKQ      XXSPLTI*
 ;;              VSX 0/-1   VMX const  GPR const LVX (VMX)  STVX (VMX)
 (define_insn "vsx_mov<mode>_64bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      wa,        wa,        r,         we,        ?wQ,
                 ?&r,       ??r,       ??Y,       <??r>,     wa,        v,
+                wa,        wa,
                 ?wa,       v,         <??r>,     wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "wa,        ZwO,       wa,        we,        r,         r,
                 wQ,        Y,         r,         r,         wE,        jwM,
+                eQ,        eP,
                 ?jwM,      W,         <nW>,      v,         wZ"))]
 
   "TARGET_POWERPC64 && VECTOR_MEM_VSX_P (<MODE>mode)
@@ -1213,35 +1216,43 @@
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, mtvsr,     mfvsr,     load,
                 store,     load,      store,     *,         vecsimple, vecsimple,
+                vecperm,   vecperm,
                 vecsimple, *,         *,         vecstore,  vecload")
    (set_attr "num_insns"
                "*,         *,         *,         2,         *,         2,
                 2,         2,         2,         2,         *,         *,
+                *,         *,
                 *,         5,         2,         *,         *")
    (set_attr "max_prefixed_insns"
                "*,         *,         *,         *,         *,         2,
                 2,         2,         2,         2,         *,         *,
+                *,         *,
                 *,         *,         *,         *,         *")
    (set_attr "length"
                "*,         *,         *,         8,         *,         8,
                 8,         8,         8,         8,         *,         *,
+                *,         *,
                 *,         20,        8,         *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 *,         *,         *,         *,         p9v,       *,
+                p10,       p10,
                 <VSisa>,   *,         *,         *,         *")])
 
 ;;              VSX store  VSX load   VSX move   GPR load   GPR store  GPR move
+;;              LXVKQ      XXSPLTI*
 ;;              XXSPLTIB   VSPLTISW   VSX 0/-1   VMX const  GPR const
 ;;              LVX (VMX)  STVX (VMX)
 (define_insn "*vsx_mov<mode>_32bit"
   [(set (match_operand:VSX_M 0 "nonimmediate_operand"
                "=ZwO,      wa,        wa,        ??r,       ??Y,       <??r>,
+                wa,        wa,
                 wa,        v,         ?wa,       v,         <??r>,
                 wZ,        v")
 
 	(match_operand:VSX_M 1 "input_operand" 
                "wa,        ZwO,       wa,        Y,         r,         r,
+                eQ,        eP,
                 wE,        jwM,       ?jwM,      W,         <nW>,
                 v,         wZ"))]
 
@@ -1253,14 +1264,17 @@
 }
   [(set_attr "type"
                "vecstore,  vecload,   vecsimple, load,      store,    *,
+                vecperm,   vecperm,
                 vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
    (set_attr "length"
                "*,         *,         *,         16,        16,        16,
+                *,         *,
                 *,         *,         *,         20,        16,
                 *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
+                p10,       p10,
                 p9v,       *,         <VSisa>,   *,         *,
                 *,         *")])
 

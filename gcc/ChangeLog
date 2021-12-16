@@ -1,3 +1,660 @@
+2021-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+
+2021-12-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx-opts.h (ptx_isa): PTX_ISA_SM75 and PTX_ISA_SM80
+	ISA levels.
+	* config/nvptx/nvptx.opt: Add sm_75 and sm_80 to -misa.
+	* config/nvptx/nvptx.h (TARGET_SM75, TARGET_SM80):
+	New helper macros to conditionalize functionality on target ISA.
+	* config/nvptx/nvptx-c.c (nvptx_cpu_cpp_builtins): Add __PTX_SM__
+	support for the new ISA levels.
+	* config/nvptx/nvptx.c (nvptx_file_start): Add support for TARGET_SM75
+	and TARGET_SM80.
+	* config/nvptx/nvptx.md (define_c_enum "unspec"): New UNSPEC_TANH.
+	(define_mode_iterator HSFM): New iterator for HFmode and SFmode.
+	(exp2hf2): New define_insn controlled by TARGET_SM75.
+	(tanh<mode>2): New define_insn controlled by TARGET_SM75.
+	(sminhf3, smaxhf3): New define_isnns controlled by TARGET_SM80.
+
+2021-12-15  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add PTX_VERSION_7_0.
+	* config/nvptx/nvptx.c (nvptx_file_start): Handle TARGET_PTX_7_0.
+	* config/nvptx/nvptx.h (TARGET_PTX_7_0): New macro.
+	* config/nvptx/nvptx.opt (ptx_version): Add 7.0.
+
+2021-12-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/103094
+	* config/aarch64/aarch64.c (aarch64_short_vector_p): Return false
+	for structure modes, rather than ignoring the type in that case.
+
+2021-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/103350
+	* ree.c (add_removable_extension): Don't stop at first definition but
+	inspect all.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103619
+	* dwarf2cfi.c (dwf_cfa_reg): Remove gcc_assert.
+	(operator==, operator!=): New overloaded operators.
+	(dwarf2out_frame_debug_adjust_cfa, dwarf2out_frame_debug_cfa_offset,
+	dwarf2out_frame_debug_expr): Compare vars with cfa_reg type directly
+	with REG rtxes rather than with dwf_cfa_reg results on those REGs.
+	(create_cie_data): Use stack_pointer_rtx instead of
+	gen_rtx_REG (Pmode, STACK_POINTER_REGNUM).
+	(execute_dwarf2_frame): Use hard_frame_pointer_rtx instead of
+	gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM).
+
+2021-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/103661
+	* config/i386/i386-builtins.c (fold_builtin_cpu): Compare to 0
+	as API expects that non-zero values are returned (do that
+	it mask == 31).
+	For "avx512vbmi2" argument, we return now 1 << 31, which is a
+	negative integer value.
+
+2021-12-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/101796
+	* config/i386/predicates.md (const_vector_operand):
+	Add new predicate.
+	* config/i386/sse.md(<insn><mode>3<mask_name>):
+	Add new define_split below.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/rs6000.md (UNSPEC_XXSPLTIDP_CONST): New unspec.
+	(UNSPEC_XXSPLTIW_CONST): New unspec.
+	(movsf_hardfloat): Add support for generating XXSPLTIDP.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	(xxspltidp_<mode>_internal): New insns.
+	(xxspltiw_<mode>_internal): New insns.
+	(splitters for SF/DFmode): Add new splitters for XXSPLTIDP.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	generating XXSPLTIDP.
+	(vsx_prefixed_constant): Likewise.
+	(easy_vector_constant): Likewise.
+	* config/rs6000/rs6000-protos.h (constant_generates_xxspltidp):
+	New declaration.
+	* config/rs6000/rs6000.c (output_vec_const_move): Add support for
+	generating XXSPLTIDP.
+	(prefixed_xxsplti_p): Likewise.
+	(constant_generates_xxspltidp): New function.
+	* config/rs6000/rs6000.opt (-msplat-float-constant): New debug option.
+
+2021-12-15  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (eP): Update comment.
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	generating XXSPLTIW.
+	(vsx_prefixed_constant): New predicate.
+	(easy_vector_constant): Add support for
+	generating XXSPLTIW.
+	* config/rs6000/rs6000-protos.h (prefixed_xxsplti_p): New
+	declaration.
+	(constant_generates_xxspltiw): Likewise.
+	* config/rs6000/rs6000.c (xxspltib_constant_p): Generate XXSPLTIW
+	if possible instead of XXSPLTIB and sign extending the constant.
+	(output_vec_const_move): Add support for XXSPLTIW.
+	(prefixed_xxsplti_p): New function.
+	(constant_generates_xxspltiw): New function.
+	* config/rs6000/rs6000.md (prefixed attribute): Add support to
+	mark XXSPLTI* instructions as being prefixed.
+	* config/rs6000/rs6000.opt (-msplat-word-constant): New debug
+	switch.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Add support for
+	generating XXSPLTIW or XXSPLTIDP.
+	(vsx_mov<mode>_32bit): Likewise.
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document the
+	eP constraint.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/constraints.md (eQ): New constraint.
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	generating the LXVKQ instruction.
+	(easy_vector_constant_ieee128): New predicate.
+	(easy_vector_constant): Add support for generating the LXVKQ
+	instruction.
+	* config/rs6000/rs6000-protos.h (constant_generates_lxvkq): New
+	declaration.
+	* config/rs6000/rs6000.c (output_vec_const_move): Add support for
+	generating LXVKQ.
+	(constant_generates_lxvkq): New function.
+	* config/rs6000/rs6000.opt (-mieee128-constant): New debug
+	option.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Add support for
+	generating LXVKQ.
+	(vsx_mov<mode>_32bit): Likewise.
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document the
+	eQ constraint.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/rs6000-protos.h (VECTOR_128BIT_BITS): New macro.
+	(VECTOR_128BIT_BYTES): Likewise.
+	(VECTOR_128BIT_HALF_WORDS): Likewise.
+	(VECTOR_128BIT_WORDS): Likewise.
+	(VECTOR_128BIT_DOUBLE_WORDS): Likewise.
+	(vec_const_128bit_type): New structure type.
+	(vec_const_128bit_to_bytes): New declaration.
+	* config/rs6000/rs6000.c (constant_int_to_128bit_vector): New
+	helper function.
+	(constant_fp_to_128bit_vector): New helper function.
+	(vec_const_128bit_to_bytes): New function.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/100518
+	* builtins.c (try_store_by_multiple_pieces): Drop address
+	conversion to ptr_mode.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/100843
+	* builtins.c (try_store_by_multiple_pieces): Fail if min_len
+	is greater than max_len.
+
+2021-12-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103682
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Check
+	is_gimple_assign before gimple_assign_rhs_code.
+
+2021-12-14  Sören Tempel  <soeren@soeren-tempel.net>
+
+	* ginclude/stddef.h (__DEFINED_ptrdiff_t): Add support for musl
+	libc typedef macro guard.
+	(__DEFINED_size_t): Ditto.
+	(__DEFINED_wchar_t): Ditto.
+
+2021-12-14  JoJo R  <rjiejie@linux.alibaba.com>
+
+	* regrename.c (find_rename_reg): Return satisfied regno
+	if instruction is noop move.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Rename
+	rs6000_builtin_decls_x to rs6000_builtin_decls.
+	(altivec_resolve_overloaded_builtin): Likewise.  Also rename
+	rs6000_builtin_info_x to rs6000_builtin_info.
+	* config/rs6000/rs6000-call.c (rs6000_invalid_builtin): Rename
+	rs6000_builtin_info_x to rs6000_builtin_info.
+	(rs6000_builtin_is_supported): Likewise.
+	(rs6000_gimple_fold_mma_builtin): Likewise.  Also rename
+	rs6000_builtin_decls_x to rs6000_builtin_decls.
+	(rs6000_gimple_fold_builtin): Rename rs6000_builtin_info_x to
+	rs6000_builtin_info.
+	(cpu_expand_builtin): Likewise.
+	(rs6000_expand_builtin): Likewise.
+	(rs6000_init_builtins): Likewise.  Also rename rs6000_builtin_decls_x
+	to rs6000_builtin_decls.
+	(rs6000_builtin_decl): Rename rs6000_builtin_decls_x to
+	rs6000_builtin_decls.
+	* config/rs6000/rs6000-gen-builtins.c (write_decls): In generated code,
+	rename rs6000_builtin_decls_x to rs6000_builtin_decls, and rename
+	rs6000_builtin_info_x to rs6000_builtin_info.
+	(write_bif_static_init): In generated code, rename
+	rs6000_builtin_info_x to rs6000_builtin_info.
+	(write_init_bif_table): In generated code, rename
+	rs6000_builtin_decls_x to rs6000_builtin_decls, and rename
+	rs6000_builtin_info_x to rs6000_builtin_info.
+	(write_init_ovld_table): In generated code, rename
+	rs6000_builtin_decls_x to rs6000_builtin_decls.
+	(write_init_file): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_function):
+	Likewise.
+	(rs6000_builtin_md_vectorized_function): Likewise.
+	(rs6000_builtin_reciprocal): Likewise.
+	(add_condition_to_bb): Likewise.
+	(rs6000_atomic_assign_expand_fenv): Likewise.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_new_overloaded_builtin):
+	Remove forward declaration.
+	(rs6000_new_builtin_type_compatible): Rename to
+	rs6000_builtin_type_compatible.
+	(rs6000_builtin_type_compatible): Remove.
+	(altivec_resolve_overloaded_builtin): Remove.
+	(altivec_build_new_resolved_builtin): Rename to
+	altivec_build_resolved_builtin.
+	(altivec_resolve_new_overloaded_builtin): Rename to
+	altivec_resolve_overloaded_builtin.  Remove static keyword.  Adjust
+	called function names.
+	* config/rs6000/rs6000-call.c (rs6000_expand_new_builtin): Remove
+	forward declaration.
+	(rs6000_gimple_fold_new_builtin): Likewise.
+	(rs6000_invalid_new_builtin): Rename to rs6000_invalid_builtin.
+	(rs6000_gimple_fold_builtin): Remove.
+	(rs6000_new_builtin_valid_without_lhs): Rename to
+	rs6000_builtin_valid_without_lhs.
+	(rs6000_new_builtin_is_supported): Rename to
+	rs6000_builtin_is_supported.
+	(rs6000_gimple_fold_new_mma_builtin): Rename to
+	rs6000_gimple_fold_mma_builtin.
+	(rs6000_gimple_fold_new_builtin): Rename to
+	rs6000_gimple_fold_builtin.  Remove static keyword.  Adjust called
+	function names.
+	(rs6000_expand_builtin): Remove.
+	(new_cpu_expand_builtin): Rename to cpu_expand_builtin.
+	(new_mma_expand_builtin): Rename to mma_expand_builtin.
+	(new_htm_spr_num): Rename to htm_spr_num.
+	(new_htm_expand_builtin): Rename to htm_expand_builtin.  Change name
+	of called function.
+	(rs6000_expand_new_builtin): Rename to rs6000_expand_builtin.  Remove
+	static keyword.  Adjust called function names.
+	(rs6000_new_builtin_decl): Rename to rs6000_builtin_decl.  Remove
+	static keyword.
+	(rs6000_builtin_decl): Remove.
+	* config/rs6000/rs6000-gen-builtins.c (write_decls): In gnerated code,
+	rename rs6000_new_builtin_is_supported to rs6000_builtin_is_supported.
+	* config/rs6000/rs6000-internal.h (rs6000_invalid_new_builtin): Rename
+	to rs6000_invalid_builtin.
+	* config/rs6000/rs6000.c (rs6000_new_builtin_vectorized_function):
+	Rename to rs6000_builtin_vectorized_function.
+	(rs6000_new_builtin_md_vectorized_function): Rename to
+	rs6000_builtin_md_vectorized_function.
+	(rs6000_builtin_vectorized_function): Remove.
+	(rs6000_builtin_md_vectorized_function): Remove.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Delete.
+	* config/rs6000/rs6000-call.c (builtin_compatibility): Delete.
+	(builtin_description): Delete.
+	(builtin_hash_struct): Delete.
+	(builtin_hasher): Delete.
+	(builtin_hash_table): Delete.
+	(builtin_hasher::hash): Delete.
+	(builtin_hasher::equal): Delete.
+	(rs6000_builtin_info_type): Delete.
+	(rs6000_builtin_info): Delete.
+	(bdesc_compat): Delete.
+	(bdesc_3arg): Delete.
+	(bdesc_4arg): Delete.
+	(bdesc_dst): Delete.
+	(bdesc_2arg): Delete.
+	(bdesc_altivec_preds): Delete.
+	(bdesc_abs): Delete.
+	(bdesc_1arg): Delete.
+	(bdesc_0arg): Delete.
+	(bdesc_htm): Delete.
+	(bdesc_mma): Delete.
+	(rs6000_overloaded_builtin_p): Delete.
+	(rs6000_overloaded_builtin_name): Delete.
+	(htm_spr_num): Delete.
+	(rs6000_builtin_is_supported_p): Delete.
+	(rs6000_gimple_fold_mma_builtin): Delete.
+	(gt-rs6000-call.h): Remove include directive.
+	* config/rs6000/rs6000-protos.h (rs6000_overloaded_builtin_p): Delete.
+	(rs6000_builtin_is_supported_p): Delete.
+	(rs6000_overloaded_builtin_name): Delete.
+	* config/rs6000/rs6000.c (rs6000_builtin_decls): Delete.
+	(rs6000_debug_reg_global): Remove reference to RS6000_BUILTIN_COUNT.
+	* config/rs6000/rs6000.h (rs6000_builtins): Delete.
+	(altivec_builtin_types): Delete.
+	(rs6000_builtin_decls): Delete.
+	* config/rs6000/t-rs6000 (TM_H): Don't add rs6000-builtin.def.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin-new.def: Rename to...
+	* config/rs6000/rs6000-builtins.def: ...this.
+	* config/rs6000/rs6000-gen-builtins.c: Adjust header commentary.
+	* config/rs6000/t-rs6000 (EXTRA_GTYPE_DEPS): Rename
+	rs6000-builtin-new.def to rs6000-builtins.def.
+	(rs6000-builtins.c): Likewise.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (altivec_overloaded_builtins): Remove.
+	* config/rs6000/rs6000.h (altivec_overloaded_builtins): Remove.
+
+2021-12-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/103548
+	* config/rs6000/mma.md (UNSPEC_MMA_ASSEMBLE): Rename unspec from this...
+	(UNSPEC_VSX_ASSEMBLE): ...to this.
+	(UNSPECV_MMA_ASSEMBLE): New unspecv.
+	(vsx_assemble_pair): Use UNSPEC_VSX_ASSEMBLE.
+	(*vsx_assemble_pair): Likewise.
+	(mma_assemble_acc): Use UNSPECV_MMA_ASSEMBLE.
+	(*mma_assemble_acc): Likewise.
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Handle
+	UNSPEC_VOLATILE.  Use UNSPEC_VSX_ASSEMBLE and UNSPECV_MMA_ASSEMBLE.
+
+2021-12-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103571
+	* config/i386/i386-expand.c (ix86_expand_vector_init_duplicate)
+	<case E_V8HFmode>: Implement for TARGET_SSE2.
+	<case E_V16HFmode>: Implement for TARGET_AVX.
+	<case E_V32HFmode>: Implement for TARGET_AVX512F.
+	(ix86_expand_vector_set_var): Handle V32HFmode
+	without TARGET_AVX512BW.
+	(ix86_expand_vector_extract)
+	<case E_V8HFmode>: Implement for TARGET_SSE2.
+	<case E_V16HFmode>: Implement for TARGET_AVX.
+	<case E_V32HFmode>: Implement for TARGET_AVX512BW.
+	(expand_vec_perm_broadcast_1) <case E_V8HFmode>: New.
+	* config/i386/sse.md (VI12HF_AVX512VL): Remove
+	TARGET_AVX512FP16 condition.
+	(V): Ditto.
+	(V_256_512): Ditto.
+	(avx_vbroadcastf128_<mode>): Use V_256H mode iterator.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS): Remove
+	test for new_builtins_are_live and simplify.
+	* config/rs6000/rs6000-c.c (altivec_build_resolved_builtin): Remove
+	dead function.
+	(altivec_resolve_overloaded_builtin): Remove test for
+	new_builtins_are_live and simplify.
+	* config/rs6000/rs6000-call.c (altivec_init_builtins): Remove forward
+	declaration.
+	(builtin_function_type): Likewise.
+	(rs6000_common_init_builtins): Likewise.
+	(htm_init_builtins): Likewise.
+	(mma_init_builtins): Likewise.
+	(def_builtin): Remove dead function.
+	(rs6000_expand_zeroop_builtin): Likewise.
+	(rs6000_expand_mtfsf_builtin): Likewise.
+	(rs6000_expand_mtfsb_builtin): Likewise.
+	(rs6000_expand_set_fpscr_rn_builtin): Likewise.
+	(rs6000_expand_set_fpscr_drn_builtin): Likewise.
+	(rs6000_expand_unop_builtin): Likewise.
+	(altivec_expand_abs_builtin): Likewise.
+	(rs6000_expand_binop_builtin): Likewise.
+	(altivec_expand_lxvr_builtin): Likewise.
+	(altivec_expand_lv_builtin): Likewise.
+	(altivec_expand_stxvl_builtin): Likewise.
+	(altivec_expand_stv_builtin): Likewise.
+	(mma_expand_builtin): Likewise.
+	(htm_expand_builtin): Likewise.
+	(cpu_expand_builtin): Likewise.
+	(rs6000_expand_quaternop_builtin): Likewise.
+	(rs6000_expand_ternop_builtin): Likewise.
+	(altivec_expand_dst_builtin): Likewise.
+	(altivec_expand_vec_sel_builtin): Likewise.
+	(altivec_expand_builtin): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_builtin_valid_without_lhs): Likewise.
+	(rs6000_gimple_fold_builtin): Remove test for new_builtins_are_live and
+	simplify.
+	(rs6000_expand_builtin): Likewise.
+	(rs6000_init_builtins): Remove tests for new_builtins_are_live and
+	simplify.
+	(rs6000_builtin_decl): Likewise.
+	(altivec_init_builtins): Remove dead function.
+	(mma_init_builtins): Likewise.
+	(htm_init_builtins): Likewise.
+	(builtin_quaternary_function_type): Likewise.
+	(builtin_function_type): Likewise.
+	(rs6000_common_init_builtins): Likewise.
+	* config/rs6000/rs6000-gen-builtins.c (write_header_file): Don't
+	declare new_builtins_are_live.
+	(write_init_bif_table): In generated code, remove test for
+	new_builtins_are_live and simplify.
+	(write_init_ovld_table): Likewise.
+	(write_init_file): Don't initialize new_builtins_are_live.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_function): Remove
+	test for new_builtins_are_live and simplify.
+	(rs6000_builtin_md_vectorized_function): Likewise.
+	(rs6000_builtin_reciprocal): Likewise.
+	(add_condition_to_bb): Likewise.
+	(rs6000_atomic_assign_expand_fenv): Likewise.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/103625
+	* config/rs6000/rs6000-builtin-new.def (__builtin_altivec_vcmpequd):
+	Move to power8-vector stanza.
+	(__builtin_altivec_vcmpequd_p): Likewise.
+	(__builtin_altivec_vcmpgtsd): Likewise.
+	(__builtin_altivec_vcmpgtsd_p): Likewise.
+	(__builtin_altivec_vcmpgtud): Likewise.
+	(__builtin_altivec_vcmpgtud_p): Likewise.
+
+2021-12-14  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/103623
+	* config/rs6000/rs6000-builtin-new.def (__builtin_pack_longdouble): Add
+	ibmld attribute.
+	(__builtin_unpack_longdouble): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_expand_new_builtin): Add special
+	handling for ibmld attribute.
+	* config/rs6000/rs6000-gen-builtins.c (attrinfo): Add isibmld.
+	(parse_bif_attrs): Handle ibmld.
+	(write_decls): Likewise.
+	(write_bif_static_init): Likewise.
+
+2021-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103585
+	* ipa-modref-tree.c (modref_access_node::range_info_useful_p): Handle
+	MODREF_GLOBAL_MEMORY_PARM.
+	(modref_access_node::dump): Likewise.
+	(modref_access_node::get_call_arg): Likewise.
+	* ipa-modref-tree.h (enum modref_special_parms): Add
+	MODREF_GLOBAL_MEMORY_PARM.
+	(modref_access_node::useful_for_kill): Handle
+	MODREF_GLOBAL_MEMORY_PARM.
+	(modref:tree::merge): Add promote_unknown_to_global.
+	* ipa-modref.c (verify_arg):New function.
+	(may_access_nonescaping_parm_p): New function.
+	(modref_access_analysis::record_global_memory_load): New member
+	function.
+	(modref_access_analysis::record_global_memory_store): Likewise.
+	(modref_access_analysis::process_fnspec): Distingush global and local
+	memory.
+	(modref_access_analysis::analyze_call): Likewise.
+	* tree-ssa-alias.c (ref_may_access_global_memory_p): New function.
+	(modref_may_conflict): Use it.
+
+2021-12-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins):
+	Define AARCH64_LS64_BUILTIN_LD64B, AARCH64_LS64_BUILTIN_ST64B,
+	AARCH64_LS64_BUILTIN_ST64BV, AARCH64_LS64_BUILTIN_ST64BV0.
+	(aarch64_init_ls64_builtin_decl): Helper function.
+	(aarch64_init_ls64_builtins): Helper function.
+	(aarch64_init_ls64_builtins_types): Helper function.
+	(aarch64_general_init_builtins): Init LS64 intrisics for
+	TARGET_LS64.
+	(aarch64_expand_builtin_ls64): LS64 intrinsics expander.
+	(aarch64_general_expand_builtin): Handle aarch64_expand_builtin_ls64.
+	(ls64_builtins_data): New helper struct.
+	(v8di_UP): New define.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_LS64.
+	* config/aarch64/aarch64.c (aarch64_classify_address): Enforce the
+	V8DI range (7-bit signed scaled) for both ends of the range.
+	* config/aarch64/aarch64-simd.md (movv8di): New pattern.
+	(aarch64_movv8di): New pattern.
+	* config/aarch64/aarch64.h (AARCH64_ISA_LS64): New define.
+	(TARGET_LS64): New define.
+	* config/aarch64/aarch64.md: Add UNSPEC_LD64B, UNSPEC_ST64B,
+	UNSPEC_ST64BV and UNSPEC_ST64BV0.
+	(ld64b): New define_insn.
+	(st64b): New define_insn.
+	(st64bv): New define_insn.
+	(st64bv0): New define_insn.
+	* config/aarch64/arm_acle.h (data512_t): New type derived from
+	__arm_data512_t.
+	(__arm_data512_t): New internal type.
+	(__arm_ld64b): New intrinsic.
+	(__arm_st64b): New intrinsic.
+	(__arm_st64bv): New intrinsic.
+	(__arm_st64bv0): New intrinsic.
+	* config/arm/types.md: Add new type ls64.
+
+2021-12-14  Olivier Hainque  <hainque@adacore.com>
+
+	* config/i386/t-vxworks: Drop the fPIC multilibs.
+
+2021-12-14  Fred Konrad  <konrad@adacore.com>
+
+	* config/rs6000/t-vxworks: Drop the fPIC multilib.
+
+2021-12-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99531
+	* ira-costs.c (record_operand_costs): Do not take pseudo class
+	calculated on the 1st iteration into account when processing move
+	involving the pseudo and a hard register.
+
+2021-12-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (define_split any_or:SWI248 -> orb %?h):
+	Optimize the case where the integer constant operand is zero.
+
+2021-12-13  Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_LINK_OS_SPEC): New spec.
+	(VXWORKS_BASE_LINK_SPEC): New spec, using the former.
+	(VXWORKS_EXTRA_LINK_SPEC): New spec for old and new VxWorks.
+	(VXWORKS_LINK_SPEC): Combo of BASE and EXTRA specs.
+	* config/rs6000/vxworks.h (VXWORKS_LINK_OS_SPEC): Empty.
+	(LINK_OS_EXTRA_SPEC32): Use VXWORKS_LINK_SPEC.
+	(LINK_OS_EXTRA_SPEC64): Likewise.
+
+2021-12-13  Fred Konrad  <konrad@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_BASE_LIBS_RTP): Guard -lc_internal
+	on !shared+!non-static and document.
+	(VXWORKS_LIB_SPEC): Remove the bits intended to drag the
+	init/fini functions from libc_internal in the shared lib case.
+	(VX_CRTBEGIN_SPEC/VX_CRTEND_SPEC): Use vxcrtstuff objects also in
+	configurations with shared lib and INITFINI_ARRAY support.
+
+2021-12-13  Fred Konrad  <konrad@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vx-common.h: Define REAL_LIBGCC_SPEC since the
+	'-non-static' option is not standard.
+	* config/vxworks.h (VXWORKS_LIBGCC_SPEC): Implement the LIBGCC_SPEC
+	since REAL_LIBGCC_SPEC is used now.
+	(STARTFILE_PREFIX_SPEC): Use the PIC VSB when building shared libraries
+	or non-static binaries.
+
+2021-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common.opt: Add -fipa-strict-aliasing.
+	* doc/invoke.texi: Document -fipa-strict-aliasing.
+	* ipa-modref.c (modref_access_analysis::record_access): Honor
+	-fipa-strict-aliasing.
+	(modref_access_analysis::record_access_lto): Likewise.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv8.8-a): Define.
+	* config/aarch64/aarch64.h (AARCH64_FL_V8_8): Define.
+	(AARCH64_FL_FOR_ARCH8_8): Define.
+	* doc/invoke.texi: Document -march=armv8.8-a.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_setmem_mops): Define.
+	(aarch64_expand_setmem): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.h (CLEAR_RATIO): Adjust for TARGET_MOPS.
+	(SET_RATIO): Likewise.
+	* config/aarch64/aarch64.md ("unspec"): Add UNSPEC_SETMEM.
+	(aarch64_setmemdi): Define.
+	(setmemdi): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.opt (aarch64-mops-memset-size-threshold):
+	New param.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_movmemdi): Define.
+	(movmemdi): Define.
+	(unspec): Add UNSPEC_MOVMEM.
+	* config/aarch64/aarch64.opt (aarch64-mops-memmove-size-threshold):
+	New param.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (mops): Define.
+	* config/aarch64/aarch64.c (aarch64_expand_cpymem_mops): Define.
+	(aarch64_expand_cpymem): Define.
+	* config/aarch64/aarch64.h (AARCH64_FL_MOPS): Define.
+	(AARCH64_ISA_MOPS): Define.
+	(TARGET_MOPS): Define.
+	(MOVE_RATIO): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.md ("unspec"): Add UNSPEC_CPYMEM.
+	(aarch64_cpymemdi): New pattern.
+	(cpymemdi): Adjust for TARGET_MOPS.
+	* config/aarch64/aarch64.opt (aarch64-mops-memcpy-size-threshol):
+	New param.
+	* doc/invoke.texi (AArch64 Options): Document +mops.
+
+2021-12-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/103636
+	* ipa-inline.c (can_inline_edge_p): Move logic checking
+	no_profile_instrument_function logic to ...
+	(can_early_inline_edge_p): ... here.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks/_yvals.h: #include yvals.h also if
+	defined(__RTP__).
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_OS_CPP_BUILTINS): Define
+	_C99 for C++.
+
+2021-12-13  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Clear NATIVE_SYSTEM_HEADER_DIR.
+	* config/vxworks.h (SYSROOT_HEADERS_SUFFIX_SPEC): Define, for
+	VxWorks 7 and earlier.
+	(VXWORKS_ADDITIONAL_CPP_SPEC): Simplify accordingly.
+	(STARTFILE_PREFIX_SPEC): Adjust accordingly.
+	* config/rs6000/vxworks.h (STARTFILE_PREFIX_SPEC): Adjust.
+
+2021-12-13  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Use @item for the first @itemx entry.
+
+2021-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* machmode.h (gt_pch_nx): Use gt_pointer_operator as type of second
+	argument instead of equivalent void (*) (void *, void *, void *).
+	* poly-int.h (gt_pch_nx): Likewise.
+	* wide-int.h (gt_pch_nx): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (gt_pch_nx): Likewise.
+
+2021-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103513
+	* ipa-fnsummary.c (evaluate_conditions_for_known_args): Do not ICE
+	on ternary expression.
+
+2021-12-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103515
+	* attribs.c (decl_attributes): Check if target options change and
+	create one node if so.
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* Makefile.in: Remove unique-ptr-tests.o.

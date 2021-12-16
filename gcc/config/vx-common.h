@@ -23,8 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Most of these will probably be overridden by subsequent headers.  We
    undefine them here just in case, and define VXWORKS_ versions of each,
    to be used in port-specific vxworks.h.  */
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC VXWORKS_LIBGCC_SPEC
+
+/* REAL_LIBGCC_SPEC needs to be used since the non-static option is not
+   handled in gcc.c.  */
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC VXWORKS_LIBGCC_SPEC
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
 
