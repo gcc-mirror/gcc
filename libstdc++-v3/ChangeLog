@@ -1,3 +1,25 @@
+2021-12-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_iterator.h
+	(std::pointer_traits<__gnu_cxx::__normal_iterator<>>): Remove.
+	(std::__to_address(const __gnu_cxx::__normal_iterator<>&)): New for C++11 to C++17.
+	* include/debug/safe_iterator.h
+	(std::__to_address(const __gnu_debug::_Safe_iterator<__gnu_cxx::__normal_iterator<>,
+	_Sequence>&)): New for C++11 to C++17.
+	* testsuite/24_iterators/normal_iterator/to_address.cc: Add check on std::vector::iterator
+	to validate both __gnu_cxx::__normal_iterator<> __to_address overload in normal mode and
+	__gnu_debug::_Safe_iterator in _GLIBCXX_DEBUG mode.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/71557
+	* include/bits/locale_facets_nonio.tcc (_M_extract_via_format):
+	Compare characters other than format specifiers and whitespace
+	case insensitively.
+	(_M_extract_name): Compare characters case insensitively.
+	* testsuite/22_locale/time_get/get/char/71557.cc: New test.
+	* testsuite/22_locale/time_get/get/wchar_t/71557.cc: New test.
+
 2021-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103687

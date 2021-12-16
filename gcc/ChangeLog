@@ -1,3 +1,172 @@
+2021-12-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+
+2021-12-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx-opts.h (ptx_isa): PTX_ISA_SM75 and PTX_ISA_SM80
+	ISA levels.
+	* config/nvptx/nvptx.opt: Add sm_75 and sm_80 to -misa.
+	* config/nvptx/nvptx.h (TARGET_SM75, TARGET_SM80):
+	New helper macros to conditionalize functionality on target ISA.
+	* config/nvptx/nvptx-c.c (nvptx_cpu_cpp_builtins): Add __PTX_SM__
+	support for the new ISA levels.
+	* config/nvptx/nvptx.c (nvptx_file_start): Add support for TARGET_SM75
+	and TARGET_SM80.
+	* config/nvptx/nvptx.md (define_c_enum "unspec"): New UNSPEC_TANH.
+	(define_mode_iterator HSFM): New iterator for HFmode and SFmode.
+	(exp2hf2): New define_insn controlled by TARGET_SM75.
+	(tanh<mode>2): New define_insn controlled by TARGET_SM75.
+	(sminhf3, smaxhf3): New define_isnns controlled by TARGET_SM80.
+
+2021-12-15  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-opts.h (enum ptx_version): Add PTX_VERSION_7_0.
+	* config/nvptx/nvptx.c (nvptx_file_start): Handle TARGET_PTX_7_0.
+	* config/nvptx/nvptx.h (TARGET_PTX_7_0): New macro.
+	* config/nvptx/nvptx.opt (ptx_version): Add 7.0.
+
+2021-12-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/103094
+	* config/aarch64/aarch64.c (aarch64_short_vector_p): Return false
+	for structure modes, rather than ignoring the type in that case.
+
+2021-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/103350
+	* ree.c (add_removable_extension): Don't stop at first definition but
+	inspect all.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/103619
+	* dwarf2cfi.c (dwf_cfa_reg): Remove gcc_assert.
+	(operator==, operator!=): New overloaded operators.
+	(dwarf2out_frame_debug_adjust_cfa, dwarf2out_frame_debug_cfa_offset,
+	dwarf2out_frame_debug_expr): Compare vars with cfa_reg type directly
+	with REG rtxes rather than with dwf_cfa_reg results on those REGs.
+	(create_cie_data): Use stack_pointer_rtx instead of
+	gen_rtx_REG (Pmode, STACK_POINTER_REGNUM).
+	(execute_dwarf2_frame): Use hard_frame_pointer_rtx instead of
+	gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM).
+
+2021-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/103661
+	* config/i386/i386-builtins.c (fold_builtin_cpu): Compare to 0
+	as API expects that non-zero values are returned (do that
+	it mask == 31).
+	For "avx512vbmi2" argument, we return now 1 << 31, which is a
+	negative integer value.
+
+2021-12-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/101796
+	* config/i386/predicates.md (const_vector_operand):
+	Add new predicate.
+	* config/i386/sse.md(<insn><mode>3<mask_name>):
+	Add new define_split below.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/rs6000.md (UNSPEC_XXSPLTIDP_CONST): New unspec.
+	(UNSPEC_XXSPLTIW_CONST): New unspec.
+	(movsf_hardfloat): Add support for generating XXSPLTIDP.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	(xxspltidp_<mode>_internal): New insns.
+	(xxspltiw_<mode>_internal): New insns.
+	(splitters for SF/DFmode): Add new splitters for XXSPLTIDP.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	generating XXSPLTIDP.
+	(vsx_prefixed_constant): Likewise.
+	(easy_vector_constant): Likewise.
+	* config/rs6000/rs6000-protos.h (constant_generates_xxspltidp):
+	New declaration.
+	* config/rs6000/rs6000.c (output_vec_const_move): Add support for
+	generating XXSPLTIDP.
+	(prefixed_xxsplti_p): Likewise.
+	(constant_generates_xxspltidp): New function.
+	* config/rs6000/rs6000.opt (-msplat-float-constant): New debug option.
+
+2021-12-15  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (eP): Update comment.
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	generating XXSPLTIW.
+	(vsx_prefixed_constant): New predicate.
+	(easy_vector_constant): Add support for
+	generating XXSPLTIW.
+	* config/rs6000/rs6000-protos.h (prefixed_xxsplti_p): New
+	declaration.
+	(constant_generates_xxspltiw): Likewise.
+	* config/rs6000/rs6000.c (xxspltib_constant_p): Generate XXSPLTIW
+	if possible instead of XXSPLTIB and sign extending the constant.
+	(output_vec_const_move): Add support for XXSPLTIW.
+	(prefixed_xxsplti_p): New function.
+	(constant_generates_xxspltiw): New function.
+	* config/rs6000/rs6000.md (prefixed attribute): Add support to
+	mark XXSPLTI* instructions as being prefixed.
+	* config/rs6000/rs6000.opt (-msplat-word-constant): New debug
+	switch.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Add support for
+	generating XXSPLTIW or XXSPLTIDP.
+	(vsx_mov<mode>_32bit): Likewise.
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document the
+	eP constraint.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/constraints.md (eQ): New constraint.
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for
+	generating the LXVKQ instruction.
+	(easy_vector_constant_ieee128): New predicate.
+	(easy_vector_constant): Add support for generating the LXVKQ
+	instruction.
+	* config/rs6000/rs6000-protos.h (constant_generates_lxvkq): New
+	declaration.
+	* config/rs6000/rs6000.c (output_vec_const_move): Add support for
+	generating LXVKQ.
+	(constant_generates_lxvkq): New function.
+	* config/rs6000/rs6000.opt (-mieee128-constant): New debug
+	option.
+	* config/rs6000/vsx.md (vsx_mov<mode>_64bit): Add support for
+	generating LXVKQ.
+	(vsx_mov<mode>_32bit): Likewise.
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document the
+	eQ constraint.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* config/rs6000/rs6000-protos.h (VECTOR_128BIT_BITS): New macro.
+	(VECTOR_128BIT_BYTES): Likewise.
+	(VECTOR_128BIT_HALF_WORDS): Likewise.
+	(VECTOR_128BIT_WORDS): Likewise.
+	(VECTOR_128BIT_DOUBLE_WORDS): Likewise.
+	(vec_const_128bit_type): New structure type.
+	(vec_const_128bit_to_bytes): New declaration.
+	* config/rs6000/rs6000.c (constant_int_to_128bit_vector): New
+	helper function.
+	(constant_fp_to_128bit_vector): New helper function.
+	(vec_const_128bit_to_bytes): New function.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/100518
+	* builtins.c (try_store_by_multiple_pieces): Drop address
+	conversion to ptr_mode.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/100843
+	* builtins.c (try_store_by_multiple_pieces): Fail if min_len
+	is greater than max_len.
+
 2021-12-14  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/103682
