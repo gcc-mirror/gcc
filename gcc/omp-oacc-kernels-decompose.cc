@@ -793,7 +793,8 @@ make_data_region_try_statement (location_t loc, gimple *body)
 
 /* If INNER_BIND_VARS holds variables, build an OpenACC data region with
    location LOC containing BODY and having 'create (var)' clauses for each
-   variable.  If INNER_CLEANUP is present, add a try-finally statement with
+   variable (as a side effect, such variables also get TREE_ADDRESSABLE set).
+   If INNER_CLEANUP is present, add a try-finally statement with
    this cleanup code in the finally block.  Return the new data region, or
    the original BODY if no data region was needed.  */
 
@@ -842,6 +843,9 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
 	  inner_data_clauses = new_clause;
 
 	  prev_mapped_var = v;
+
+	  /* See <https://gcc.gnu.org/PR100280>.  */
+	  TREE_ADDRESSABLE (v) = 1;
 	}
     }
 

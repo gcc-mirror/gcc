@@ -32,11 +32,7 @@ int main()
   {
     /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
     int c = 234;
-    /* { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute }
-       { dg-note {variable 'c\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute } */
-
-    /*TODO Hopefully, this is the same issue as '../../../gcc/testsuite/c-c++-common/goacc/kernels-decompose-ice-1.c'.  */
-    (volatile int *) &c;
+    /* { dg-note {variable 'c' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute } */
 
 #pragma acc loop independent gang /* { dg-line l_loop_i[incr c_loop_i] } */
     /* { dg-note {parallelized loop nest in OpenACC 'kernels' region} {} { target *-*-* } l_loop_i$c_loop_i } */

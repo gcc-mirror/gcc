@@ -55,7 +55,7 @@ main ()
     ;
   }
 
-  { /*TODO Instead of using 'for (int i = 0; [...])', move 'int i' outside, to work around for ICE detailed in 'kernels-decompose-ice-1.c'.  */
+  {
     int i;
 #pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
     /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute } */
@@ -63,6 +63,20 @@ main ()
   for (i = 0; i < N; i++)
     a[i] = 0;
   }
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {beginning 'gang-single' part in OpenACC 'kernels' region} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
+  {
+    int i;
+  }
+
+#pragma acc kernels /* { dg-line l_compute[incr c_compute] } */
+  /* { dg-note {variable 'i' declared in block is candidate for adjusting OpenACC privatization level} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-optimized {assigned OpenACC gang loop parallelism} {} { target *-*-* } l_compute$c_compute } */
+  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  for (int i = 0; i < N; i++)
+    a[i] = 0;
 
 #pragma acc kernels loop /* { dg-line l_loop_i[incr c_loop_i] } */
   /* { dg-note {forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis} {} { target *-*-* } l_loop_i$c_loop_i } */
