@@ -8789,6 +8789,7 @@ trees_out::type_node (tree type)
     case DECLTYPE_TYPE:
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
+    case DEPENDENT_OPERATOR_TYPE:
       tree_node (TYPE_VALUES_RAW (type));
       if (TREE_CODE (type) == DECLTYPE_TYPE)
 	/* We stash a whole bunch of things into decltype's
@@ -9311,6 +9312,7 @@ trees_in::tree_node (bool is_use)
 	  case DECLTYPE_TYPE:
 	  case TYPEOF_TYPE:
 	  case UNDERLYING_TYPE:
+	  case DEPENDENT_OPERATOR_TYPE:
 	    {
 	      tree expr = tree_node ();
 	      if (!get_overrun ())

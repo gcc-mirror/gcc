@@ -12640,23 +12640,26 @@ expand_empty_fold (tree t, tsubst_flags_t complain)
 static tree
 fold_expression (tree t, tree left, tree right, tsubst_flags_t complain)
 {
-  tree op = FOLD_EXPR_OP (t);
-  tree_code code = (tree_code)TREE_INT_CST_LOW (op);
+  tree_code code = FOLD_EXPR_OP (t);
+
+  tree lookups = templated_operator_saved_lookups (t);
 
   // Handle compound assignment operators.
   if (FOLD_EXPR_MODIFY_P (t))
-    return build_x_modify_expr (input_location, left, code, right, complain);
+    return build_x_modify_expr (input_location, left, code, right,
+				lookups, complain);
 
   warning_sentinel s(warn_parentheses);
   switch (code)
     {
     case COMPOUND_EXPR:
-      return build_x_compound_expr (input_location, left, right, complain);
+      return build_x_compound_expr (input_location, left, right,
+				    lookups, complain);
     default:
       return build_x_binary_op (input_location, code,
                                 left, TREE_CODE (left),
                                 right, TREE_CODE (right),
-                                /*overload=*/NULL,
+				lookups, /*overload=*/NULL,
                                 complain);
     }
 }
@@ -17891,7 +17894,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
 	      tree lhs = RECUR (TREE_OPERAND (incr, 0));
 	      tree rhs = RECUR (TREE_OPERAND (incr, 1));
 	      incr = build_x_modify_expr (EXPR_LOCATION (incr), lhs,
-					  NOP_EXPR, rhs, complain);
+					  NOP_EXPR, rhs, NULL_TREE, complain);
 	    }
 	  else
 	    incr = RECUR (incr);
@@ -19204,6 +19207,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	RETURN (RECUR (TREE_OPERAND (t, 1)));
       RETURN (build_x_compound_expr (EXPR_LOCATION (t), tmp,
 				    RECUR (TREE_OPERAND (t, 1)),
+				    templated_operator_saved_lookups (t),
 				    complain));
 
     case ANNOTATE_EXPR:
@@ -19855,6 +19859,7 @@ tsubst_copy_and_build (tree t,
 	  }
 	else
 	  r = build_x_indirect_ref (input_location, r, RO_UNARY_STAR,
+				    templated_operator_saved_lookups (t),
 				    complain|decltype_flag);
 
 	if (REF_PARENTHESIZED_P (t))
@@ -19965,6 +19970,7 @@ tsubst_copy_and_build (tree t,
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
       RETURN (build_x_unary_op (input_location, TREE_CODE (t), op1,
+				templated_operator_saved_lookups (t),
 				complain|decltype_flag));
 
     case PREDECREMENT_EXPR:
@@ -19978,6 +19984,7 @@ tsubst_copy_and_build (tree t,
     case IMAGPART_EXPR:
       RETURN (build_x_unary_op (input_location, TREE_CODE (t),
 				RECUR (TREE_OPERAND (t, 0)),
+				templated_operator_saved_lookups (t),
 				complain|decltype_flag));
 
     case FIX_TRUNC_EXPR:
@@ -19996,6 +20003,7 @@ tsubst_copy_and_build (tree t,
 	op1 = tsubst_non_call_postfix_expression (op1, args, complain,
 						  in_decl);
       RETURN (build_x_unary_op (input_location, ADDR_EXPR, op1,
+				templated_operator_saved_lookups (t),
 				complain|decltype_flag));
 
     case PLUS_EXPR:
@@ -20060,6 +20068,7 @@ tsubst_copy_and_build (tree t,
 	   (warning_suppressed_p (TREE_OPERAND (t, 1))
 	    ? ERROR_MARK
 	    : TREE_CODE (TREE_OPERAND (t, 1))),
+	   templated_operator_saved_lookups (t),
 	   /*overload=*/NULL,
 	   complain|decltype_flag);
 	if (EXPR_P (r))
@@ -20212,8 +20221,10 @@ tsubst_copy_and_build (tree t,
 	warning_sentinel s(warn_div_by_zero);
 	tree lhs = RECUR (TREE_OPERAND (t, 0));
 	tree rhs = RECUR (TREE_OPERAND (t, 2));
+
 	tree r = build_x_modify_expr
 	  (EXPR_LOCATION (t), lhs, TREE_CODE (TREE_OPERAND (t, 1)), rhs,
+	   templated_operator_saved_lookups (t),
 	   complain|decltype_flag);
 	/* TREE_NO_WARNING must be set if either the expression was
 	   parenthesized or it uses an operator such as >>= rather
@@ -20314,6 +20325,7 @@ tsubst_copy_and_build (tree t,
 	RETURN (build_x_compound_expr (EXPR_LOCATION (t),
 				       op0,
 				       RECUR (TREE_OPERAND (t, 1)),
+				       templated_operator_saved_lookups (t),
 				       complain|decltype_flag));
       }
 
@@ -26992,6 +27004,9 @@ dependent_type_p_r (tree type)
   /* All TYPE_PACK_EXPANSIONs are dependent, because parameter packs must
      be template parameters.  */
   if (TREE_CODE (type) == TYPE_PACK_EXPANSION)
+    return true;
+
+  if (TREE_CODE (type) == DEPENDENT_OPERATOR_TYPE)
     return true;
 
   if (any_dependent_type_attributes_p (TYPE_ATTRIBUTES (type)))

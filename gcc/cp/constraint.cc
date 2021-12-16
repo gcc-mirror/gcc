@@ -202,15 +202,8 @@ finish_constraint_binary_op (location_t loc,
     return error_mark_node;
   if (!check_constraint_operands (loc, lhs, rhs))
     return error_mark_node;
-  tree overload;
-  cp_expr expr = build_x_binary_op (loc, code,
-				    lhs, TREE_CODE (lhs),
-				    rhs, TREE_CODE (rhs),
-				    &overload, tf_none);
-  /* When either operand is dependent, the overload set may be non-empty.  */
-  if (expr == error_mark_node)
-    return error_mark_node;
-  expr.set_location (loc);
+  cp_expr expr
+    = build_min_nt_loc (loc, code, lhs.get_value (), rhs.get_value ());
   expr.set_range (lhs.get_start (), rhs.get_finish ());
   return expr;
 }

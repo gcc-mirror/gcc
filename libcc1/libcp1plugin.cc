@@ -2669,7 +2669,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       break;
 
     default:
-      result = build_x_unary_op (/*loc=*/0, opcode, op0, tf_error);
+      result = build_x_unary_op (/*loc=*/0, opcode, op0, NULL_TREE, tf_error);
       break;
     }
 
@@ -2794,7 +2794,7 @@ plugin_build_binary_expr (cc1_plugin::connection *self,
 
     default:
       result = build_x_binary_op (/*loc=*/0, opcode, op0, ERROR_MARK,
-				  op1, ERROR_MARK, NULL, tf_error);
+				  op1, ERROR_MARK, NULL_TREE, NULL, tf_error);
       break;
     }
 

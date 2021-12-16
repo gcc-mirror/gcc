@@ -2920,7 +2920,7 @@ finish_increment_expr (cp_expr expr, enum tree_code code)
 					   expr.get_start (),
 					   get_finish (input_location));
   cp_expr result = build_x_unary_op (combined_loc, code, expr,
-				     tf_warning_or_error);
+				     NULL_TREE, tf_warning_or_error);
   /* TODO: build_x_unary_op doesn't honor the location, so set it here.  */
   result.set_location (combined_loc);
   return result;
@@ -3031,7 +3031,8 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
      of the operator token to the end of EXPR.  */
   location_t combined_loc = make_location (op_loc,
 					   op_loc, expr.get_finish ());
-  cp_expr result = build_x_unary_op (combined_loc, code, expr, complain);
+  cp_expr result = build_x_unary_op (combined_loc, code, expr,
+				     NULL_TREE, complain);
   /* TODO: build_x_unary_op doesn't always honor the location.  */
   result.set_location (combined_loc);
 
@@ -9884,7 +9885,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 					TREE_CODE (cond),
 					iter, ERROR_MARK,
 					TREE_OPERAND (cond, 1), ERROR_MARK,
-					NULL, tf_warning_or_error);
+					NULL_TREE, NULL, tf_warning_or_error);
 	  if (error_operand_p (tem))
 	    return true;
 	}
@@ -9898,9 +9899,10 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
       error_at (elocus, "invalid controlling predicate");
       return true;
     }
-  diff = build_x_binary_op (elocus, MINUS_EXPR, TREE_OPERAND (cond, 1),
-			    ERROR_MARK, iter, ERROR_MARK, NULL,
-			    tf_warning_or_error);
+  diff = build_x_binary_op (elocus, MINUS_EXPR,
+			    TREE_OPERAND (cond, 1), ERROR_MARK,
+			    iter, ERROR_MARK,
+			    NULL_TREE, NULL, tf_warning_or_error);
   diff = cp_fully_fold (diff);
   if (error_operand_p (diff))
     return true;
@@ -9928,7 +9930,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 	}
       iter_incr = build_x_unary_op (EXPR_LOCATION (incr),
 				    TREE_CODE (incr), iter,
-				    tf_warning_or_error);
+				    NULL_TREE, tf_warning_or_error);
       if (error_operand_p (iter_incr))
 	return true;
       else if (TREE_CODE (incr) == PREINCREMENT_EXPR
@@ -9954,6 +9956,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 		  iter_incr = build_x_modify_expr (EXPR_LOCATION (rhs),
 						   iter, TREE_CODE (rhs),
 						   TREE_OPERAND (rhs, 1),
+						   NULL_TREE,
 						   tf_warning_or_error);
 		  if (error_operand_p (iter_incr))
 		    return true;
@@ -9983,13 +9986,13 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 						 PLUS_EXPR,
 						 TREE_OPERAND (rhs, 0),
 						 ERROR_MARK, iter,
-						 ERROR_MARK, NULL,
+						 ERROR_MARK, NULL_TREE, NULL,
 						 tf_warning_or_error);
 		  if (error_operand_p (iter_incr))
 		    return true;
 		  iter_incr = build_x_modify_expr (EXPR_LOCATION (rhs),
 						   iter, NOP_EXPR,
-						   iter_incr,
+						   iter_incr, NULL_TREE,
 						   tf_warning_or_error);
 		  if (error_operand_p (iter_incr))
 		    return true;
@@ -10100,7 +10103,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   if (init != NULL)
     finish_expr_stmt (build_x_modify_expr (elocus,
 					   iter, NOP_EXPR, init,
-					   tf_warning_or_error));
+					   NULL_TREE, tf_warning_or_error));
   init = build_int_cst (TREE_TYPE (diff), 0);
   if (c && iter_incr == NULL
       && (!ordered || (i < collapse && collapse > 1)))
@@ -10109,23 +10112,24 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 	{
 	  finish_expr_stmt (build_x_modify_expr (elocus,
 						 incr_var, NOP_EXPR,
-						 incr, tf_warning_or_error));
+						 incr, NULL_TREE,
+						 tf_warning_or_error));
 	  incr = incr_var;
 	}
       iter_incr = build_x_modify_expr (elocus,
 				       iter, PLUS_EXPR, incr,
-				       tf_warning_or_error);
+				       NULL_TREE, tf_warning_or_error);
     }
   if (c && ordered && i < collapse && collapse > 1)
     iter_incr = incr;
   finish_expr_stmt (build_x_modify_expr (elocus,
 					 last, NOP_EXPR, init,
-					 tf_warning_or_error));
+					 NULL_TREE, tf_warning_or_error));
   if (diffvar)
     {
       finish_expr_stmt (build_x_modify_expr (elocus,
 					     diffvar, NOP_EXPR,
-					     diff, tf_warning_or_error));
+					     diff, NULL_TREE, tf_warning_or_error));
       diff = diffvar;
     }
   *pre_body = pop_stmt_list (*pre_body);
@@ -10141,13 +10145,13 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   iter_init = build2 (MINUS_EXPR, TREE_TYPE (diff), decl, last);
   iter_init = build_x_modify_expr (elocus,
 				   iter, PLUS_EXPR, iter_init,
-				   tf_warning_or_error);
+				   NULL_TREE, tf_warning_or_error);
   if (iter_init != error_mark_node)
     iter_init = build1 (NOP_EXPR, void_type_node, iter_init);
   finish_expr_stmt (iter_init);
   finish_expr_stmt (build_x_modify_expr (elocus,
 					 last, NOP_EXPR, decl,
-					 tf_warning_or_error));
+					 NULL_TREE, tf_warning_or_error));
   add_stmt (orig_body);
   *body = pop_stmt_list (*body);
 
@@ -10165,7 +10169,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 	  iter_init = build2 (MINUS_EXPR, TREE_TYPE (diff), iter_init, last);
 	  iter_init = build_x_modify_expr (elocus,
 					   iter, PLUS_EXPR, iter_init,
-					   tf_warning_or_error);
+					   NULL_TREE, tf_warning_or_error);
 	  if (iter_init != error_mark_node)
 	    iter_init = build1 (NOP_EXPR, void_type_node, iter_init);
 	  finish_expr_stmt (iter_init);
@@ -10876,7 +10880,7 @@ finish_omp_cancel (tree clauses)
 	ifc = build_x_binary_op (OMP_CLAUSE_LOCATION (ifc), NE_EXPR,
 				 OMP_CLAUSE_IF_EXPR (ifc), ERROR_MARK,
 				 integer_zero_node, ERROR_MARK,
-				 NULL, tf_warning_or_error);
+				 NULL_TREE, NULL, tf_warning_or_error);
     }
   else
     ifc = boolean_true_node;
@@ -12128,6 +12132,9 @@ finish_unary_fold_expr (tree expr, int op, tree_code dir)
   tree code = build_int_cstu (integer_type_node, abs (op));
   tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
+  TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
+						    FOLD_EXPR_OP (fold),
+						    FOLD_EXPR_MODIFY_P (fold));
   return fold;
 }
 
@@ -12154,6 +12161,9 @@ finish_binary_fold_expr (tree pack, tree init, int op, tree_code dir)
   tree code = build_int_cstu (integer_type_node, abs (op));
   tree fold = build_min_nt_loc (UNKNOWN_LOCATION, dir, code, pack, init);
   FOLD_EXPR_MODIFY_P (fold) = (op < 0);
+  TREE_TYPE (fold) = build_dependent_operator_type (NULL_TREE,
+						    FOLD_EXPR_OP (fold),
+						    FOLD_EXPR_MODIFY_P (fold));
   return fold;
 }
 
