@@ -33,16 +33,32 @@ public:
   {
     ASTLoweringPattern resolver;
     pattern->accept_vis (resolver);
+
     rust_assert (resolver.translated != nullptr);
+
+    resolver.mappings->insert_hir_pattern (
+      resolver.translated->get_pattern_mappings ().get_crate_num (),
+      resolver.translated->get_pattern_mappings ().get_hirid (),
+      resolver.translated);
+    resolver.mappings->insert_location (
+      resolver.translated->get_pattern_mappings ().get_crate_num (),
+      resolver.translated->get_pattern_mappings ().get_hirid (),
+      pattern->get_locus ());
+
     return resolver.translated;
   }
 
   void visit (AST::IdentifierPattern &pattern) override
   {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
     std::unique_ptr<Pattern> to_bind;
     translated
-      = new HIR::IdentifierPattern (pattern.get_ident (), pattern.get_locus (),
-				    pattern.get_is_ref (),
+      = new HIR::IdentifierPattern (mapping, pattern.get_ident (),
+				    pattern.get_locus (), pattern.get_is_ref (),
 				    pattern.get_is_mut () ? Mutability::Mut
 							  : Mutability::Imm,
 				    std::move (to_bind));

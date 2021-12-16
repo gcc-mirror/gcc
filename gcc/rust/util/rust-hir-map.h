@@ -347,6 +347,9 @@ public:
 				HIR::StructExprField *type);
   HIR::StructExprField *lookup_hir_struct_field (CrateNum crateNum, HirId id);
 
+  void insert_hir_pattern (CrateNum crateNum, HirId id, HIR::Pattern *pattern);
+  HIR::Pattern *lookup_hir_pattern (CrateNum crateNum, HirId id);
+
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
 
@@ -479,43 +482,44 @@ private:
   std::map<CrateNum, HIR::Crate *> hirCrateMappings;
 
   std::map<DefId, HIR::Item *> defIdMappings;
-  std::map<CrateNum, std::map<LocalDefId, HIR::Item *> > localDefIdMappings;
-  std::map<CrateNum, std::map<HirId, HIR::Module *> > hirModuleMappings;
-  std::map<CrateNum, std::map<HirId, HIR::Item *> > hirItemMappings;
-  std::map<CrateNum, std::map<HirId, HIR::Type *> > hirTypeMappings;
-  std::map<CrateNum, std::map<HirId, HIR::Expr *> > hirExprMappings;
-  std::map<CrateNum, std::map<HirId, HIR::Stmt *> > hirStmtMappings;
-  std::map<CrateNum, std::map<HirId, HIR::FunctionParam *> > hirParamMappings;
-  std::map<CrateNum, std::map<HirId, HIR::StructExprField *> >
+  std::map<CrateNum, std::map<LocalDefId, HIR::Item *>> localDefIdMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Module *>> hirModuleMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Item *>> hirItemMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Type *>> hirTypeMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Expr *>> hirExprMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Stmt *>> hirStmtMappings;
+  std::map<CrateNum, std::map<HirId, HIR::FunctionParam *>> hirParamMappings;
+  std::map<CrateNum, std::map<HirId, HIR::StructExprField *>>
     hirStructFieldMappings;
-  std::map<CrateNum, std::map<HirId, std::pair<HirId, HIR::ImplItem *> > >
+  std::map<CrateNum, std::map<HirId, std::pair<HirId, HIR::ImplItem *>>>
     hirImplItemMappings;
-  std::map<CrateNum, std::map<HirId, HIR::SelfParam *> > hirSelfParamMappings;
+  std::map<CrateNum, std::map<HirId, HIR::SelfParam *>> hirSelfParamMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
-  std::map<CrateNum, std::map<HirId, HIR::ImplBlock *> > hirImplBlockMappings;
-  std::map<CrateNum, std::map<HirId, HIR::TraitItem *> > hirTraitItemMappings;
-  std::map<CrateNum, std::map<HirId, HIR::ExternalItem *> >
+  std::map<CrateNum, std::map<HirId, HIR::ImplBlock *>> hirImplBlockMappings;
+  std::map<CrateNum, std::map<HirId, HIR::TraitItem *>> hirTraitItemMappings;
+  std::map<CrateNum, std::map<HirId, HIR::ExternalItem *>>
     hirExternItemMappings;
-  std::map<CrateNum, std::map<HirId, HIR::PathExprSegment *> >
+  std::map<CrateNum, std::map<HirId, HIR::PathExprSegment *>>
     hirPathSegMappings;
-  std::map<CrateNum, std::map<HirId, HIR::GenericParam *> >
+  std::map<CrateNum, std::map<HirId, HIR::GenericParam *>>
     hirGenericParamMappings;
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
+  std::map<CrateNum, std::map<HirId, HIR::Pattern *>> hirPatternMappings;
 
   // this maps the lang=<item_type> to DefId mappings
   std::map<RustLangItem::ItemType, DefId> lang_item_mappings;
 
   // canonical paths
-  std::map<CrateNum, std::map<NodeId, const Resolver::CanonicalPath> > paths;
+  std::map<CrateNum, std::map<NodeId, const Resolver::CanonicalPath>> paths;
 
   // location info
-  std::map<CrateNum, std::map<NodeId, Location> > locations;
+  std::map<CrateNum, std::map<NodeId, Location>> locations;
 
   // reverse mappings
-  std::map<CrateNum, std::map<NodeId, HirId> > nodeIdToHirMappings;
+  std::map<CrateNum, std::map<NodeId, HirId>> nodeIdToHirMappings;
 
   // all hirid nodes
-  std::map<CrateNum, std::set<HirId> > hirNodesWithinCrate;
+  std::map<CrateNum, std::set<HirId>> hirNodesWithinCrate;
 
   // crate names
   std::map<CrateNum, std::string> crate_names;

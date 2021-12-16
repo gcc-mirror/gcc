@@ -276,12 +276,19 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
   if (function.is_method ())
     {
+      // these are implicit mappings and not used
+      auto mappings = Analysis::Mappings::get ();
+      auto crate_num = mappings->get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, mappings->get_next_node_id (),
+				     mappings->get_next_hir_id (crate_num),
+				     UNKNOWN_LOCAL_DEFID);
+
       // add the synthetic self param at the front, this is a placeholder
       // for compilation to know parameter names. The types are ignored
       // but we reuse the HIR identifier pattern which requires it
       HIR::SelfParam &self_param = function.get_self ();
       HIR::IdentifierPattern *self_pattern
-	= new HIR::IdentifierPattern ("self", self_param.get_locus (),
+	= new HIR::IdentifierPattern (mapping, "self", self_param.get_locus (),
 				      self_param.is_ref (),
 				      self_param.is_mut () ? Mutability::Mut
 							   : Mutability::Imm,

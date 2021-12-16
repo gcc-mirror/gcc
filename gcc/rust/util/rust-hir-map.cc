@@ -566,6 +566,29 @@ Mappings::lookup_hir_struct_field (CrateNum crateNum, HirId id)
 }
 
 void
+Mappings::insert_hir_pattern (CrateNum crateNum, HirId id,
+			      HIR::Pattern *pattern)
+{
+  hirPatternMappings[crateNum][id] = pattern;
+  nodeIdToHirMappings[crateNum][pattern->get_pattern_mappings ().get_nodeid ()]
+    = id;
+}
+
+HIR::Pattern *
+Mappings::lookup_hir_pattern (CrateNum crateNum, HirId id)
+{
+  auto it = hirPatternMappings.find (crateNum);
+  if (it == hirPatternMappings.end ())
+    return nullptr;
+
+  auto iy = it->second.find (id);
+  if (iy == it->second.end ())
+    return nullptr;
+
+  return iy->second;
+}
+
+void
 Mappings::insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				      HIR::Item *item)
 {
