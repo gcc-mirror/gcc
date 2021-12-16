@@ -5151,11 +5151,14 @@ package body Sem_Attr is
                --  Entities mentioned within the prefix of attribute 'Old must
                --  be global to the related postcondition. If this is not the
                --  case, then the scope of the local entity is nested within
-               --  that of the subprogram.
+               --  that of the subprogram. Moreover, we need to know whether
+               --  Entity (Nod) occurs in the tree rooted at the prefix to
+               --  ensure the entity is not declared within then prefix itself.
 
                elsif Is_Entity_Name (Nod)
                  and then Present (Entity (Nod))
                  and then Scope_Within (Scope (Entity (Nod)), Subp_Id)
+                 and then not In_Subtree (Entity (Nod), P)
                then
                   Error_Attr
                     ("prefix of attribute % cannot reference local entities",
