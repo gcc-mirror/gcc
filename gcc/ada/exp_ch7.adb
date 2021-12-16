@@ -6188,15 +6188,15 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Must_Hook : Boolean := False;
+         Must_Hook : Boolean;
          --  Flag denoting whether the context requires transient object
          --  export to the outer finalizer.
 
          function Is_Subprogram_Call (N : Node_Id) return Traverse_Result;
-         --  Determine whether an arbitrary node denotes a subprogram call
+         --  Return Abandon if arbitrary node denotes a subprogram call
 
-         procedure Detect_Subprogram_Call is
-           new Traverse_Proc (Is_Subprogram_Call);
+         function Has_Subprogram_Call is
+           new Traverse_Func (Is_Subprogram_Call);
 
          procedure Process_Transient_In_Scope
            (Obj_Decl  : Node_Id;
@@ -6216,7 +6216,6 @@ package body Exp_Ch7 is
             --  A regular procedure or function call
 
             if Nkind (N) in N_Subprogram_Call then
-               Must_Hook := True;
                return Abandon;
 
             --  Special cases
@@ -6226,20 +6225,13 @@ package body Exp_Ch7 is
             --  of the call.
 
             elsif Is_Rewrite_Substitution (N) then
-               Detect_Subprogram_Call (Original_Node (N));
-
-               if Must_Hook then
-                  return Abandon;
-               else
-                  return OK;
-               end if;
+               return Has_Subprogram_Call (Original_Node (N));
 
             --  Generalized indexing always involves a function call
 
             elsif Nkind (N) = N_Indexed_Component
               and then Present (Generalized_Indexing (N))
             then
-               Must_Hook := True;
                return Abandon;
 
             --  Keep searching
@@ -6476,8 +6468,8 @@ package body Exp_Ch7 is
          --  due to the possibility of abnormal call termination.
 
          else
-            Detect_Subprogram_Call (N);
-            Blk_Ins := Last_Object;
+            Must_Hook := Has_Subprogram_Call (N) = Abandon;
+            Blk_Ins   := Last_Object;
          end if;
 
          if Clean then
