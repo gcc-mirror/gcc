@@ -1,3 +1,11 @@
+2021-12-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-11-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102347
+	* gcc.target/powerpc/pr102347.c: New test.
+
 2021-12-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
