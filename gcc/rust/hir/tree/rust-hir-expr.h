@@ -3614,14 +3614,8 @@ struct MatchArm
 {
 private:
   AST::AttrVec outer_attrs;
-  // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
-
-  // bool has_match_arm_guard;
-  // inlined from MatchArmGuard
+  std::vector<std::unique_ptr<Pattern> > match_arm_patterns;
   std::unique_ptr<Expr> guard_expr;
-
-  // TODO: should this store location data?
 
 public:
   // Returns whether the MatchArm has a match arm guard expression
@@ -3679,6 +3673,11 @@ public:
   }
 
   std::string as_string () const;
+
+  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
+  {
+    return match_arm_patterns;
+  }
 };
 
 /* A "match case" - a correlated match arm and resulting expression. Not
@@ -3718,6 +3717,9 @@ public:
   std::string as_string () const;
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
+
+  MatchArm &get_arm () { return arm; }
+  std::unique_ptr<Expr> &get_expr () { return expr; }
 };
 
 #if 0
@@ -3867,6 +3869,15 @@ public:
   Location get_locus () const override final { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::unique_ptr<Expr> &get_scrutinee_expr ()
+  {
+    rust_assert (branch_value != nullptr);
+    return branch_value;
+  }
+
+  const std::vector<MatchCase> &get_match_cases () const { return match_arms; }
+  std::vector<MatchCase> &get_match_cases () { return match_arms; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -49,7 +49,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
 	    PatternDeclaration::go (inner_pattern.get (),
-				    pattern.get_node_id ());
+				    inner_pattern->get_pattern_node_id ());
 	  }
       }
       break;
@@ -85,10 +85,10 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	    resolver->get_name_scope ().insert (
 	      CanonicalPath::new_seg (ident.get_node_id (),
 				      ident.get_identifier ()),
-	      ident.get_node_id (), pattern.get_locus ());
-	    resolver->insert_new_definition (
-	      ident.get_node_id (),
-	      Definition{ident.get_node_id (), pattern.get_node_id ()});
+	      ident.get_node_id (), ident.get_locus ());
+	    resolver->insert_new_definition (ident.get_node_id (),
+					     Definition{ident.get_node_id (),
+							ident.get_node_id ()});
 	    resolver->mark_decl_mutability (ident.get_node_id (),
 					    ident.is_mut ());
 	  }

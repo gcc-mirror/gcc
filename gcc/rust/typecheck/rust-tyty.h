@@ -1018,6 +1018,21 @@ public:
     STRUCT
   };
 
+  static std::string variant_type_string (VariantType type)
+  {
+    switch (type)
+      {
+      case NUM:
+	return "enumeral";
+      case TUPLE:
+	return "tuple";
+      case STRUCT:
+	return "struct";
+      }
+    gcc_unreachable ();
+    return "";
+  }
+
   VariantDef (HirId id, std::string identifier, int discriminant)
     : id (id), identifier (identifier), discriminant (discriminant)
   {
