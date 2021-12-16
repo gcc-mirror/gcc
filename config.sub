@@ -1283,7 +1283,7 @@ esac
 if test x$basic_os != x
 then
 
-# First recognize some ad-hoc caes, or perhaps split kernel-os, or else just
+# First recognize some ad-hoc cases, or perhaps split kernel-os, or else just
 # set os.
 case $basic_os in
 	gnu/linux*)

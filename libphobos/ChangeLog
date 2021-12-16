@@ -1,3 +1,13 @@
+2021-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103604
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 3:0:0.
+	* libdruntime/MERGE: Merge upstream druntime 6364e010.
+	* src/MERGE: Merge upstream phobos 575b67a9b.
+	* testsuite/libphobos.traits/all_satisfy.d: New test.
+	* testsuite/libphobos.traits/traits.exp: New test.
+
 2021-12-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/103528

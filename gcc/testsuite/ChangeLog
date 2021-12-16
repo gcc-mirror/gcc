@@ -1,3 +1,88 @@
+2021-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102229
+	* g++.dg/cpp1y/decltype-auto5.C: New test.
+
+2021-12-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/fortran-torture.exp (fortran-torture-compile)
+	(fortran-torture-execute): Be more informative for ICEs.
+	* lib/gcc-defs.exp (${tool}_check_compile): Likewise.
+	* lib/gcc-dg.exp (gcc-dg-test-1): Likewise.
+	* lib/go-torture.exp (go-torture-compile, go-torture-execute):
+	Likewise.
+
+2021-12-15  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78969
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-6.c: New test.
+
+2021-12-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-2.c: New test case.
+	* gcc.target/nvptx/tanh-1.c: New test case.
+
+2021-12-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/103094
+	* gcc.target/aarch64/pr103094.c: New test.
+
+2021-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/103350
+	* gcc.target/aarch64/pr103350-1.c: New test.
+	* gcc.target/aarch64/pr103350-2.c: New test.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103408
+	* g++.dg/cpp23/auto-fncast11.C: Fix expected diagnostic wording.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103704
+	* g++.dg/gomp/pr103704.C: New test.
+
+2021-12-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/101796
+	* gcc.target/i386/pr101796-1.c: New test.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* gcc.target/powerpc/vec-splat-constant-df.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-sf.c: New test.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: Update insn
+	regex for power10.
+	* gcc.target/powerpc/vec-splat-constant-v2df.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v2di.c: New test.
+
+2021-12-15  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-splat-constant-v16qi.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v4sf.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v4si.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v8hi.c: New test.
+	* gcc.target/powerpc/vec-splati-runnable.c: Update insn count.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* gcc.target/powerpc/float128-constant.c: New test.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/100518
+	* gcc.target/aarch64/pr100518.c: New.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/100843
+	* gcc.dg/pr100843.c: New.
+
 2021-12-14  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.c-torture/compile/pr103682.c: New test.

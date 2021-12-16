@@ -1,3 +1,21 @@
+2021-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102229
+	* decl.c (check_decltype_auto): New.
+	(grokdeclarator): Call it.
+	* pt.c (do_auto_deduction): Don't check decltype(auto) here.
+
+2021-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR c++/103713
+	* tree.c (maybe_warn_parm_abi): Fix warning word splitting.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103704
+	* semantics.c (finish_omp_target_clauses_r): For OMP_CLAUSEs
+	just walk subtrees.
+
 2021-12-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/103408

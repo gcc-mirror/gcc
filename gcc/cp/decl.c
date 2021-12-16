@@ -11354,6 +11354,33 @@ name_unnamed_type (tree type, tree decl)
   gcc_assert (!TYPE_UNNAMED_P (type));
 }
 
+/* Check that decltype(auto) was well-formed: only plain decltype(auto)
+   is allowed.  TYPE might contain a decltype(auto).  Returns true if
+   there was a problem, false otherwise.  */
+
+static bool
+check_decltype_auto (location_t loc, tree type)
+{
+  if (tree a = type_uses_auto (type))
+    {
+      if (AUTO_IS_DECLTYPE (a))
+	{
+	  if (a != type)
+	    {
+	      error_at (loc, "%qT as type rather than plain "
+			"%<decltype(auto)%>", type);
+	      return true;
+	    }
+	  else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+	    {
+	      error_at (loc, "%<decltype(auto)%> cannot be cv-qualified");
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
+
 /* Given declspecs and a declarator (abstract or otherwise), determine
    the name and type of the object declared and construct a DECL node
    for it.
@@ -12702,25 +12729,9 @@ grokdeclarator (const cp_declarator *declarator,
 			  "allowed");
 		return error_mark_node;
 	      }
-	    /* Only plain decltype(auto) is allowed.  */
-	    if (tree a = type_uses_auto (type))
-	      {
-		if (AUTO_IS_DECLTYPE (a))
-		  {
-		    if (a != type)
-		      {
-			error_at (typespec_loc, "%qT as type rather than "
-				  "plain %<decltype(auto)%>", type);
-			return error_mark_node;
-		      }
-		    else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
-		      {
-			error_at (typespec_loc, "%<decltype(auto)%> cannot be "
-				  "cv-qualified");
-			return error_mark_node;
-		      }
-		  }
-	      }
+
+	    if (check_decltype_auto (typespec_loc, type))
+	      return error_mark_node;
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -13079,6 +13090,15 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   id_loc = declarator ? declarator->id_loc : input_location;
+
+  if (innermost_code != cdk_function
+    /* Don't check this if it can be the artifical decltype(auto)
+       we created when building a constraint in a compound-requirement:
+       that the type-constraint is plain is going to be checked in
+       cp_parser_compound_requirement.  */
+      && decl_context != TYPENAME
+      && check_decltype_auto (id_loc, type))
+    return error_mark_node;
 
   /* A `constexpr' specifier used in an object declaration declares
      the object as `const'.  */
