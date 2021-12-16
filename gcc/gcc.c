@@ -4017,26 +4017,25 @@ check_offload_target_name (const char *target, ptrdiff_t len)
       memcpy (cand, OFFLOAD_TARGETS, olen);
       for (c = strtok (cand, ","); c; c = strtok (NULL, ","))
 	candidates.safe_push (c);
+      candidates.safe_push ("default");
+      candidates.safe_push ("disable");
 
       char *target2 = XALLOCAVEC (char, len + 1);
       memcpy (target2, target, len);
       target2[len] = '\0';
 
-      error ("GCC is not configured to support %qs as offload target", target2);
+      error ("GCC is not configured to support %qs as %<-foffload=%> argument",
+	     target2);
 
-      if (candidates.is_empty ())
-	inform (UNKNOWN_LOCATION, "no offloading targets configured");
+      char *s;
+      const char *hint = candidates_list_and_hint (target2, s, candidates);
+      if (hint)
+	inform (UNKNOWN_LOCATION,
+		"valid %<-foffload=%> arguments are: %s; "
+		"did you mean %qs?", s, hint);
       else
-	{
-	  char *s;
-	  const char *hint = candidates_list_and_hint (target2, s, candidates);
-	  if (hint)
-	    inform (UNKNOWN_LOCATION,
-		    "valid offload targets are: %s; did you mean %qs?", s, hint);
-	  else
-	    inform (UNKNOWN_LOCATION, "valid offload targets are: %s", s);
-	  XDELETEVEC (s);
-	}
+	inform (UNKNOWN_LOCATION, "valid %<-foffload=%> arguments are: %s", s);
+      XDELETEVEC (s);
       return false;
     }
   return true;
