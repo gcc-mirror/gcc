@@ -404,6 +404,8 @@ public:
     return mappings;
   }
 
+  Location get_locus () const override final { return locus; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
