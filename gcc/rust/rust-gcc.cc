@@ -110,6 +110,11 @@ public:
   void debug (tree t) { debug_tree (t); };
   void debug (Bvariable *t) { debug_tree (t->get_decl ()); };
 
+  tree get_identifier_node (const std::string &str)
+  {
+    return get_identifier_with_length (str.data (), str.length ());
+  }
+
   // Types.
   tree error_type () { return error_mark_node; }
 
@@ -288,7 +293,8 @@ public:
   tree lazy_boolean_expression (LazyBooleanOperator op, tree left, tree right,
 				Location);
 
-  tree constructor_expression (tree, const std::vector<tree> &, int, Location);
+  tree constructor_expression (tree, bool, const std::vector<tree> &, int,
+			       Location);
 
   tree array_constructor_expression (tree, const std::vector<unsigned long> &,
 				     const std::vector<tree> &, Location);
@@ -1715,7 +1721,7 @@ Gcc_backend::lazy_boolean_expression (LazyBooleanOperator op, tree left_tree,
 // Return an expression that constructs BTYPE with VALS.
 
 tree
-Gcc_backend::constructor_expression (tree type_tree,
+Gcc_backend::constructor_expression (tree type_tree, bool is_variant,
 				     const std::vector<tree> &vals,
 				     int union_index, Location location)
 {
@@ -1728,46 +1734,40 @@ Gcc_backend::constructor_expression (tree type_tree,
   tree sink = NULL_TREE;
   bool is_constant = true;
   tree field = TYPE_FIELDS (type_tree);
-  if (union_index != -1)
+
+  if (is_variant)
     {
+      gcc_assert (union_index != -1);
       gcc_assert (TREE_CODE (type_tree) == UNION_TYPE);
-      tree val = vals.front ();
+
       for (int i = 0; i < union_index; i++)
 	{
 	  gcc_assert (field != NULL_TREE);
 	  field = DECL_CHAIN (field);
 	}
-      if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
-	  || TREE_TYPE (val) == error_mark_node)
-	return this->error_expression ();
 
-      if (int_size_in_bytes (TREE_TYPE (field)) == 0)
-	{
-	  // GIMPLE cannot represent indices of zero-sized types so
-	  // trying to construct a map with zero-sized keys might lead
-	  // to errors.  Instead, we evaluate each expression that
-	  // would have been added as a map element for its
-	  // side-effects and construct an empty map.
-	  append_to_statement_list (val, &sink);
-	}
-      else
-	{
-	  constructor_elt empty = {NULL, NULL};
-	  constructor_elt *elt = init->quick_push (empty);
-	  elt->index = field;
-	  elt->value = this->convert_tree (TREE_TYPE (field), val, location);
-	  if (!TREE_CONSTANT (elt->value))
-	    is_constant = false;
-	}
+      tree nested_ctor
+	= constructor_expression (TREE_TYPE (field), false, vals, -1, location);
+
+      constructor_elt empty = {NULL, NULL};
+      constructor_elt *elt = init->quick_push (empty);
+      elt->index = field;
+      elt->value
+	= this->convert_tree (TREE_TYPE (field), nested_ctor, location);
+      if (!TREE_CONSTANT (elt->value))
+	is_constant = false;
     }
   else
     {
-      gcc_assert (TREE_CODE (type_tree) == RECORD_TYPE);
-      for (std::vector<tree>::const_iterator p = vals.begin ();
-	   p != vals.end (); ++p, field = DECL_CHAIN (field))
+      if (union_index != -1)
 	{
-	  gcc_assert (field != NULL_TREE);
-	  tree val = (*p);
+	  gcc_assert (TREE_CODE (type_tree) == UNION_TYPE);
+	  tree val = vals.front ();
+	  for (int i = 0; i < union_index; i++)
+	    {
+	      gcc_assert (field != NULL_TREE);
+	      field = DECL_CHAIN (field);
+	    }
 	  if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
 	      || TREE_TYPE (val) == error_mark_node)
 	    return this->error_expression ();
@@ -1780,18 +1780,53 @@ Gcc_backend::constructor_expression (tree type_tree,
 	      // would have been added as a map element for its
 	      // side-effects and construct an empty map.
 	      append_to_statement_list (val, &sink);
-	      continue;
 	    }
-
-	  constructor_elt empty = {NULL, NULL};
-	  constructor_elt *elt = init->quick_push (empty);
-	  elt->index = field;
-	  elt->value = this->convert_tree (TREE_TYPE (field), val, location);
-	  if (!TREE_CONSTANT (elt->value))
-	    is_constant = false;
+	  else
+	    {
+	      constructor_elt empty = {NULL, NULL};
+	      constructor_elt *elt = init->quick_push (empty);
+	      elt->index = field;
+	      elt->value
+		= this->convert_tree (TREE_TYPE (field), val, location);
+	      if (!TREE_CONSTANT (elt->value))
+		is_constant = false;
+	    }
 	}
-      gcc_assert (field == NULL_TREE);
+      else
+	{
+	  gcc_assert (TREE_CODE (type_tree) == RECORD_TYPE);
+	  for (std::vector<tree>::const_iterator p = vals.begin ();
+	       p != vals.end (); ++p, field = DECL_CHAIN (field))
+	    {
+	      gcc_assert (field != NULL_TREE);
+	      tree val = (*p);
+	      if (TREE_TYPE (field) == error_mark_node || val == error_mark_node
+		  || TREE_TYPE (val) == error_mark_node)
+		return this->error_expression ();
+
+	      if (int_size_in_bytes (TREE_TYPE (field)) == 0)
+		{
+		  // GIMPLE cannot represent indices of zero-sized types so
+		  // trying to construct a map with zero-sized keys might lead
+		  // to errors.  Instead, we evaluate each expression that
+		  // would have been added as a map element for its
+		  // side-effects and construct an empty map.
+		  append_to_statement_list (val, &sink);
+		  continue;
+		}
+
+	      constructor_elt empty = {NULL, NULL};
+	      constructor_elt *elt = init->quick_push (empty);
+	      elt->index = field;
+	      elt->value
+		= this->convert_tree (TREE_TYPE (field), val, location);
+	      if (!TREE_CONSTANT (elt->value))
+		is_constant = false;
+	    }
+	  gcc_assert (field == NULL_TREE);
+	}
     }
+
   tree ret = build_constructor (type_tree, init);
   if (is_constant)
     TREE_CONSTANT (ret) = 1;

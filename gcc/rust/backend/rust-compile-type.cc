@@ -18,8 +18,47 @@
 
 #include "rust-compile-type.h"
 
+#include "tree.h"
+
 namespace Rust {
 namespace Compile {
+
+static const std::string RUST_ENUM_DISR_FIELD_NAME = "RUST$ENUM$DISR";
+
+// see: gcc/c/c-decl.c:8230-8241
+// https://github.com/Rust-GCC/gccrs/blob/0024bc2f028369b871a65ceb11b2fddfb0f9c3aa/gcc/c/c-decl.c#L8229-L8241
+tree
+TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
+{
+  // static tree enum_node = NULL_TREE;
+  // if (enum_node == NULL_TREE)
+  //   {
+  //     enum_node = make_node (ENUMERAL_TYPE);
+  //     SET_TYPE_MODE (enum_node, TYPE_MODE (unsigned_type_node));
+  //     SET_TYPE_ALIGN (enum_node, TYPE_ALIGN (unsigned_type_node));
+  //     TYPE_USER_ALIGN (enum_node) = 0;
+  //     TYPE_UNSIGNED (enum_node) = 1;
+  //     TYPE_PRECISION (enum_node) = TYPE_PRECISION (unsigned_type_node);
+  //     TYPE_MIN_VALUE (enum_node) = TYPE_MIN_VALUE (unsigned_type_node);
+  //     TYPE_MAX_VALUE (enum_node) = TYPE_MAX_VALUE (unsigned_type_node);
+
+  //     // tree identifier = ctx->get_backend ()->get_identifier_node
+  //     // ("enumeral"); tree enum_decl
+  //     //   = build_decl (BUILTINS_LOCATION, TYPE_DECL, identifier,
+  //     enum_node);
+  //     // TYPE_NAME (enum_node) = enum_decl;
+  //   }
+  // return enum_node;
+
+  static tree enum_node = NULL_TREE;
+  if (enum_node == NULL_TREE)
+    {
+      enum_node = ctx->get_backend ()->named_type (
+	"enumeral", ctx->get_backend ()->integer_type (false, 64),
+	Linemap::predeclared_location ());
+    }
+  return enum_node;
+}
 
 void
 TyTyResolveCompile::visit (const TyTy::ErrorType &)
@@ -120,29 +159,120 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
   if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
     return;
 
-  // we dont support enums yet
-  rust_assert (!type.is_enum ());
-  rust_assert (type.number_of_variants () == 1);
-
-  TyTy::VariantDef &variant = *type.get_variants ().at (0);
-  std::vector<Backend::typed_identifier> fields;
-  for (size_t i = 0; i < variant.num_fields (); i++)
+  tree type_record = error_mark_node;
+  if (!type.is_enum ())
     {
-      const TyTy::StructFieldType *field = variant.get_field_at_index (i);
-      tree compiled_field_ty
-	= TyTyResolveCompile::compile (ctx, field->get_field_type ());
+      rust_assert (type.number_of_variants () == 1);
 
-      Backend::typed_identifier f (field->get_name (), compiled_field_ty,
-				   ctx->get_mappings ()->lookup_location (
-				     type.get_ty_ref ()));
-      fields.push_back (std::move (f));
+      TyTy::VariantDef &variant = *type.get_variants ().at (0);
+      std::vector<Backend::typed_identifier> fields;
+      for (size_t i = 0; i < variant.num_fields (); i++)
+	{
+	  const TyTy::StructFieldType *field = variant.get_field_at_index (i);
+	  tree compiled_field_ty
+	    = TyTyResolveCompile::compile (ctx, field->get_field_type ());
+
+	  Backend::typed_identifier f (field->get_name (), compiled_field_ty,
+				       ctx->get_mappings ()->lookup_location (
+					 type.get_ty_ref ()));
+	  fields.push_back (std::move (f));
+	}
+
+      type_record = type.is_union ()
+		      ? ctx->get_backend ()->union_type (fields)
+		      : ctx->get_backend ()->struct_type (fields);
+    }
+  else
+    {
+      // see:
+      // https://github.com/bminor/binutils-gdb/blob/527b8861cd472385fa9160a91dd6d65a25c41987/gdb/dwarf2/read.c#L9010-L9241
+      //
+      // enums are actually a big union so for example the rust enum:
+      //
+      // enum AnEnum {
+      //   A,
+      //   B,
+      //   C (char),
+      //   D { x: i64, y: i64 },
+      // }
+      //
+      // we actually turn this into
+      //
+      // union {
+      //   struct A { int RUST$ENUM$DISR; }; <- this is a data-less variant
+      //   struct B { int RUST$ENUM$DISR; }; <- this is a data-less variant
+      //   struct C { int RUST$ENUM$DISR; char __0; };
+      //   struct D { int RUST$ENUM$DISR; i64 x; i64 y; };
+      // }
+      //
+      // Ada, qual_union_types might still work for this but I am not 100% sure.
+      // I ran into some issues lets reuse our normal union and ask Ada people
+      // about it.
+
+      std::vector<tree> variant_records;
+      for (auto &variant : type.get_variants ())
+	{
+	  std::vector<Backend::typed_identifier> fields;
+
+	  // add in the qualifier field for the variant
+	  tree enumeral_type
+	    = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
+	  Backend::typed_identifier f (RUST_ENUM_DISR_FIELD_NAME, enumeral_type,
+				       ctx->get_mappings ()->lookup_location (
+					 variant->get_id ()));
+	  fields.push_back (std::move (f));
+
+	  // compile the rest of the fields
+	  for (size_t i = 0; i < variant->num_fields (); i++)
+	    {
+	      const TyTy::StructFieldType *field
+		= variant->get_field_at_index (i);
+	      tree compiled_field_ty
+		= TyTyResolveCompile::compile (ctx, field->get_field_type ());
+
+	      std::string field_name = field->get_name ();
+	      if (variant->get_variant_type ()
+		  == TyTy::VariantDef::VariantType::TUPLE)
+		field_name = "__" + field->get_name ();
+
+	      Backend::typed_identifier f (
+		field_name, compiled_field_ty,
+		ctx->get_mappings ()->lookup_location (type.get_ty_ref ()));
+	      fields.push_back (std::move (f));
+	    }
+
+	  tree variant_record = ctx->get_backend ()->struct_type (fields);
+	  tree named_variant_record = ctx->get_backend ()->named_type (
+	    variant->get_identifier (), variant_record,
+	    ctx->get_mappings ()->lookup_location (variant->get_id ()));
+
+	  // set the qualifier to be a builtin
+	  DECL_ARTIFICIAL (TYPE_FIELDS (variant_record)) = 1;
+
+	  // add them to the list
+	  variant_records.push_back (named_variant_record);
+	}
+
+      // now we need to make the actual union, but first we need to make
+      // named_type TYPE_DECL's out of the variants
+
+      size_t i = 0;
+      std::vector<Backend::typed_identifier> enum_fields;
+      for (auto &variant_record : variant_records)
+	{
+	  TyTy::VariantDef *variant = type.get_variants ().at (i++);
+	  std::string implicit_variant_name = variant->get_identifier ();
+
+	  Backend::typed_identifier f (implicit_variant_name, variant_record,
+				       ctx->get_mappings ()->lookup_location (
+					 type.get_ty_ref ()));
+	  enum_fields.push_back (std::move (f));
+	}
+
+      // finally make the union or the enum
+      type_record = ctx->get_backend ()->union_type (enum_fields);
     }
 
-  tree type_record;
-  if (type.is_union ())
-    type_record = ctx->get_backend ()->union_type (fields);
-  else
-    type_record = ctx->get_backend ()->struct_type (fields);
   tree named_struct
     = ctx->get_backend ()->named_type (type.get_name (), type_record,
 				       ctx->get_mappings ()->lookup_location (

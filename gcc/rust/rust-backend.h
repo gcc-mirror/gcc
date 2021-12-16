@@ -122,6 +122,8 @@ public:
     return "unknown";
   }
 
+  virtual tree get_identifier_node (const std::string &str) = 0;
+
   // Types.
 
   // Produce an error type.  Actually the backend could probably just
@@ -348,7 +350,7 @@ public:
   // Return an expression that constructs BTYPE with VALS.  BTYPE must be the
   // backend representation a of struct.  VALS must be in the same order as the
   // corresponding fields in BTYPE.
-  virtual tree constructor_expression (tree btype,
+  virtual tree constructor_expression (tree btype, bool is_variant,
 				       const std::vector<tree> &vals, int,
 				       Location)
     = 0;

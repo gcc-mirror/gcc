@@ -1268,15 +1268,21 @@ public:
     return false;
   }
 
-  bool lookup_variant_by_id (HirId id, VariantDef **found_variant) const
+  bool lookup_variant_by_id (HirId id, VariantDef **found_variant,
+			     int *index = nullptr) const
   {
+    int i = 0;
     for (auto &variant : variants)
       {
 	if (variant->get_id () == id)
 	  {
+	    if (index != nullptr)
+	      *index = i;
+
 	    *found_variant = variant;
 	    return true;
 	  }
+	i++;
       }
     return false;
   }
