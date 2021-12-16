@@ -33527,7 +33527,7 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
   class_decl_loc_t *cdlguide = this;
 
   tree type = TREE_TYPE (type_decl);
-  if (CLASSTYPE_IMPLICIT_INSTANTIATION (type))
+  if (CLASS_TYPE_P (type) && CLASSTYPE_IMPLICIT_INSTANTIATION (type))
     {
       /* For implicit instantiations of a primary template look up
 	 the primary or partial specialization and use it as
