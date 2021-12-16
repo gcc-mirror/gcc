@@ -39,6 +39,8 @@ extern tree get_attribute_name (const_tree);
 extern tree get_attribute_namespace (const_tree);
 extern void apply_tm_attr (tree, tree);
 extern tree make_attribute (const char *, const char *, tree);
+extern bool attribute_ignored_p (tree);
+extern bool attribute_ignored_p (const attribute_spec *const);
 
 extern struct scoped_attributes* register_scoped_attributes (const struct attribute_spec *,
 							     const char *,

@@ -4643,7 +4643,7 @@ c_warn_unused_attributes (tree attrs)
 	 constraint violation.  */
       pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
 	       get_attribute_name (t));
-    else
+    else if (!attribute_ignored_p (t))
       warning (OPT_Wattributes, "%qE attribute ignored",
 	       get_attribute_name (t));
 }
