@@ -32,6 +32,7 @@
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-dot-operator.h"
 #include "rust-hir-address-taken.h"
+#include "rust-hir-type-check-pattern.h"
 
 namespace Rust {
 namespace Resolver {
@@ -51,6 +52,9 @@ public:
 
     if (resolver.infered == nullptr)
       {
+	// FIXME
+	// this is an internal error message for debugging and should be removed
+	// at some point
 	rust_error_at (expr->get_locus (), "failed to type resolve expression");
 	return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
       }
@@ -540,6 +544,8 @@ public:
 	Definition def;
 	if (!resolver->lookup_definition (ref_node_id, &def))
 	  {
+	    // FIXME
+	    // this is an internal error
 	    rust_error_at (expr.get_locus (),
 			   "unknown reference for resolved name");
 	    return;
@@ -548,6 +554,8 @@ public:
       }
     else if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
       {
+	// FIXME
+	// this is an internal error
 	rust_error_at (expr.get_locus (),
 		       "Failed to lookup type reference for node: %s",
 		       expr.as_string ().c_str ());
@@ -556,6 +564,8 @@ public:
 
     if (ref_node_id == UNKNOWN_NODEID)
       {
+	// FIXME
+	// this is an internal error
 	rust_error_at (expr.get_locus (), "unresolved node: %s",
 		       expr.as_string ().c_str ());
 	return;
@@ -566,6 +576,8 @@ public:
     if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
 				       ref_node_id, &ref))
       {
+	// FIXME
+	// this is an internal error
 	rust_error_at (expr.get_locus (), "123 reverse lookup failure");
 	return;
       }
@@ -574,6 +586,8 @@ public:
     TyTy::BaseType *lookup;
     if (!context->lookup_type (ref, &lookup))
       {
+	// FIXME
+	// this is an internal error
 	rust_error_at (mappings->lookup_location (ref),
 		       "Failed to resolve IdentifierExpr type: %s",
 		       expr.as_string ().c_str ());
@@ -1263,6 +1277,50 @@ public:
       = TypeCheckType::Resolve (expr.get_type_to_convert_to ().get ());
 
     infered = expr_to_convert->cast (tyty_to_convert_to);
+  }
+
+  void visit (HIR::MatchExpr &expr) override
+  {
+    // this needs to perform a least upper bound coercion on the blocks and then
+    // unify the scruintee and arms
+    TyTy::BaseType *scrutinee_tyty
+      = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get (), false);
+
+    std::vector<TyTy::BaseType *> kase_block_tys;
+    for (auto &kase : expr.get_match_cases ())
+      {
+	// lets check the arms
+	HIR::MatchArm &kase_arm = kase.get_arm ();
+	for (auto &pattern : kase_arm.get_patterns ())
+	  {
+	    TyTy::BaseType *kase_arm_ty
+	      = TypeCheckPattern::Resolve (pattern.get ());
+
+	    TyTy::BaseType *checked_kase = scrutinee_tyty->unify (kase_arm_ty);
+	    if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
+	      return;
+	  }
+
+	// check the kase type
+	TyTy::BaseType *kase_block_ty
+	  = TypeCheckExpr::Resolve (kase.get_expr ().get (), false);
+	kase_block_tys.push_back (kase_block_ty);
+      }
+
+    if (kase_block_tys.size () == 0)
+      {
+	infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+	return;
+      }
+
+    infered = kase_block_tys.at (0);
+    for (size_t i = 1; i < kase_block_tys.size (); i++)
+      {
+	TyTy::BaseType *kase_ty = kase_block_tys.at (i);
+	infered = infered->unify (kase_ty);
+	if (infered->get_kind () == TyTy::TypeKind::ERROR)
+	  return;
+      }
   }
 
 protected:
