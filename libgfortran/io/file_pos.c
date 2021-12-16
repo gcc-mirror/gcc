@@ -527,7 +527,7 @@ st_flush (st_parameter_filepos *fpp)
     }
   else
     /* FLUSH on unconnected unit is illegal: F95 std., 9.3.5. */ 
-    generate_error (&fpp->common, LIBERROR_BAD_OPTION,
+    generate_error (&fpp->common, -LIBERROR_BAD_UNIT,
 			"Specified UNIT in FLUSH is not connected");
 
   if (needs_unlock)
