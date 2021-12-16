@@ -68,16 +68,13 @@ protected:
 // Identifier pattern HIR node (bind value matched to a variable)
 class IdentifierPattern : public Pattern
 {
-public:
   Identifier variable_ident;
   bool is_ref;
   Mutability mut;
-
-  // bool has_pattern;
   std::unique_ptr<Pattern> to_bind;
-
   Location locus;
 
+public:
   std::string as_string () const override;
 
   // Returns whether the IdentifierPattern has a pattern to bind.
@@ -125,6 +122,8 @@ public:
   bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Identifier get_identifier () const { return variable_ident; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
