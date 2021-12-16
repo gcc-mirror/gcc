@@ -330,6 +330,11 @@ public:
 	   == 0;
   }
 
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return get_mappings ();
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -823,6 +828,11 @@ public:
   QualifiedPathType &get_path_type () { return path_type; }
 
   Location get_locus () { return locus; }
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return get_mappings ();
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

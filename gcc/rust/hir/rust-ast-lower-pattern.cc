@@ -61,8 +61,13 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
       break;
     }
 
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
   translated = new HIR::TupleStructPattern (
-    *path, std::unique_ptr<HIR::TupleStructItems> (lowered));
+    mapping, *path, std::unique_ptr<HIR::TupleStructItems> (lowered));
 }
 
 void
@@ -96,19 +101,38 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	    AST::StructPatternFieldIdent &ident
 	      = static_cast<AST::StructPatternFieldIdent &> (*field.get ());
 
+	    auto crate_num = mappings->get_current_crate ();
+	    Analysis::NodeMapping mapping (crate_num, ident.get_node_id (),
+					   mappings->get_next_hir_id (
+					     crate_num),
+					   UNKNOWN_LOCAL_DEFID);
+
 	    f = new HIR::StructPatternFieldIdent (
-	      ident.get_identifier (), ident.is_ref (),
+	      mapping, ident.get_identifier (), ident.is_ref (),
 	      ident.is_mut () ? Mutability::Mut : Mutability::Imm,
 	      ident.get_outer_attrs (), ident.get_locus ());
 	  }
 	  break;
 	}
 
+      // insert the reverse mappings and locations
+      auto crate_num = f->get_mappings ().get_crate_num ();
+      auto field_id = f->get_mappings ().get_hirid ();
+      auto field_node_id = f->get_mappings ().get_nodeid ();
+      mappings->insert_location (crate_num, field_id, f->get_locus ());
+      mappings->insert_node_to_hir (crate_num, field_node_id, field_id);
+
+      // add it to the lowered fields list
       fields.push_back (std::unique_ptr<HIR::StructPatternField> (f));
     }
 
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
   HIR::StructPatternElements elems (std::move (fields));
-  translated = new HIR::StructPattern (*path, std::move (elems));
+  translated = new HIR::StructPattern (mapping, *path, std::move (elems));
 }
 
 } // namespace HIR

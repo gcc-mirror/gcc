@@ -24,37 +24,39 @@
 
 namespace Rust {
 namespace HIR {
+
 // Literal pattern HIR node (comparing to a literal)
 class LiteralPattern : public Pattern
 {
   Literal lit;
-  /* make literal have a type given by enum, etc. rustc uses an extended form of
-   * its literal token implementation */
-  // TODO: literal representation - use LiteralExpr? or another thing?
-
-  // Minus prefixed to literal (if integer or floating-point)
   bool has_minus;
-  // Actually, this might be a good place to use a template.
-
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   // Constructor for a literal pattern
-  LiteralPattern (Literal lit, Location locus, bool has_minus = false)
-    : lit (std::move (lit)), has_minus (has_minus), locus (locus)
+  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, Location locus,
+		  bool has_minus = false)
+    : lit (std::move (lit)), has_minus (has_minus), locus (locus),
+      mappings (mappings)
   {}
 
-  LiteralPattern (std::string val, Literal::LitType type, Location locus,
-		  bool has_minus = false)
+  LiteralPattern (Analysis::NodeMapping mappings, std::string val,
+		  Literal::LitType type, Location locus, bool has_minus = false)
     : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
-      has_minus (has_minus), locus (locus)
+      has_minus (has_minus), locus (locus), mappings (mappings)
   {}
 
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -73,6 +75,7 @@ class IdentifierPattern : public Pattern
   Mutability mut;
   std::unique_ptr<Pattern> to_bind;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
@@ -81,17 +84,18 @@ public:
   bool has_pattern_to_bind () const { return to_bind != nullptr; }
 
   // Constructor
-  IdentifierPattern (Identifier ident, Location locus, bool is_ref = false,
+  IdentifierPattern (Analysis::NodeMapping mappings, Identifier ident,
+		     Location locus, bool is_ref = false,
 		     Mutability mut = Mutability::Imm,
 		     std::unique_ptr<Pattern> to_bind = nullptr)
     : variable_ident (std::move (ident)), is_ref (is_ref), mut (mut),
-      to_bind (std::move (to_bind)), locus (locus)
+      to_bind (std::move (to_bind)), locus (locus), mappings (mappings)
   {}
 
   // Copy constructor with clone
   IdentifierPattern (IdentifierPattern const &other)
     : variable_ident (other.variable_ident), is_ref (other.is_ref),
-      mut (other.mut), locus (other.locus)
+      mut (other.mut), locus (other.locus), mappings (other.mappings)
   {
     // fix to get prevent null pointer dereference
     if (other.to_bind != nullptr)
@@ -105,6 +109,7 @@ public:
     is_ref = other.is_ref;
     mut = other.mut;
     locus = other.locus;
+    mappings = other.mappings;
 
     // fix to get prevent null pointer dereference
     if (other.to_bind != nullptr)
@@ -123,6 +128,11 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
+
   Identifier get_identifier () const { return variable_ident; }
 
 protected:
@@ -138,15 +148,23 @@ protected:
 class WildcardPattern : public Pattern
 {
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override { return std::string (1, '_'); }
 
-  WildcardPattern (Location locus) : locus (locus) {}
+  WildcardPattern (Analysis::NodeMapping mappings, Location locus)
+    : locus (locus), mappings (mappings)
+  {}
 
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -278,23 +296,27 @@ class RangePattern : public Pattern
   /* location only stored to avoid a dereference - lower pattern should give
    * correct location so maybe change in future */
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
   // Constructor
-  RangePattern (std::unique_ptr<RangePatternBound> lower,
+  RangePattern (Analysis::NodeMapping mappings,
+		std::unique_ptr<RangePatternBound> lower,
 		std::unique_ptr<RangePatternBound> upper, Location locus,
 		bool has_ellipsis_syntax = false)
     : lower (std::move (lower)), upper (std::move (upper)),
-      has_ellipsis_syntax (has_ellipsis_syntax), locus (locus)
+      has_ellipsis_syntax (has_ellipsis_syntax), locus (locus),
+      mappings (mappings)
   {}
 
   // Copy constructor with clone
   RangePattern (RangePattern const &other)
     : lower (other.lower->clone_range_pattern_bound ()),
       upper (other.upper->clone_range_pattern_bound ()),
-      has_ellipsis_syntax (other.has_ellipsis_syntax), locus (other.locus)
+      has_ellipsis_syntax (other.has_ellipsis_syntax), locus (other.locus),
+      mappings (other.mappings)
   {}
 
   // Overloaded assignment operator to clone
@@ -304,6 +326,7 @@ public:
     upper = other.upper->clone_range_pattern_bound ();
     has_ellipsis_syntax = other.has_ellipsis_syntax;
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -315,6 +338,11 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -332,20 +360,23 @@ class ReferencePattern : public Pattern
   Mutability mut;
   std::unique_ptr<Pattern> pattern;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
-  ReferencePattern (std::unique_ptr<Pattern> pattern, Mutability reference_mut,
+  ReferencePattern (Analysis::NodeMapping mappings,
+		    std::unique_ptr<Pattern> pattern, Mutability reference_mut,
 		    bool ref_has_two_amps, Location locus)
     : has_two_amps (ref_has_two_amps), mut (reference_mut),
-      pattern (std::move (pattern)), locus (locus)
+      pattern (std::move (pattern)), locus (locus), mappings (mappings)
   {}
 
   // Copy constructor requires clone
   ReferencePattern (ReferencePattern const &other)
     : has_two_amps (other.has_two_amps), mut (other.mut),
-      pattern (other.pattern->clone_pattern ()), locus (other.locus)
+      pattern (other.pattern->clone_pattern ()), locus (other.locus),
+      mappings (other.mappings)
   {}
 
   // Overload assignment operator to clone
@@ -355,6 +386,7 @@ public:
     mut = other.mut;
     has_two_amps = other.has_two_amps;
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -366,6 +398,11 @@ public:
   bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -381,8 +418,16 @@ class StructPatternField
 {
   AST::AttrVec outer_attrs;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
+  enum ItemType
+  {
+    TUPLE_PAT,
+    IDENT_PAT,
+    IDENT
+  };
+
   virtual ~StructPatternField () {}
 
   // Unique pointer custom clone function
@@ -393,14 +438,17 @@ public:
   }
 
   virtual std::string as_string () const;
+  virtual void accept_vis (HIRVisitor &vis) = 0;
+  virtual ItemType get_item_type () const = 0;
 
   Location get_locus () const { return locus; }
-
-  virtual void accept_vis (HIRVisitor &vis) = 0;
+  Analysis::NodeMapping get_mappings () const { return mappings; };
 
 protected:
-  StructPatternField (AST::AttrVec outer_attribs, Location locus)
-    : outer_attrs (std::move (outer_attribs)), locus (locus)
+  StructPatternField (Analysis::NodeMapping mappings,
+		      AST::AttrVec outer_attribs, Location locus)
+    : outer_attrs (std::move (outer_attribs)), locus (locus),
+      mappings (mappings)
   {}
 
   // Clone function implementation as pure virtual method
@@ -414,11 +462,11 @@ class StructPatternFieldTuplePat : public StructPatternField
   std::unique_ptr<Pattern> tuple_pattern;
 
 public:
-  StructPatternFieldTuplePat (TupleIndex index,
+  StructPatternFieldTuplePat (Analysis::NodeMapping mappings, TupleIndex index,
 			      std::unique_ptr<Pattern> tuple_pattern,
 			      AST::AttrVec outer_attribs, Location locus)
-    : StructPatternField (std::move (outer_attribs), locus), index (index),
-      tuple_pattern (std::move (tuple_pattern))
+    : StructPatternField (mappings, std::move (outer_attribs), locus),
+      index (index), tuple_pattern (std::move (tuple_pattern))
   {}
 
   // Copy constructor requires clone
@@ -448,6 +496,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -464,10 +514,10 @@ class StructPatternFieldIdentPat : public StructPatternField
   std::unique_ptr<Pattern> ident_pattern;
 
 public:
-  StructPatternFieldIdentPat (Identifier ident,
+  StructPatternFieldIdentPat (Analysis::NodeMapping mappings, Identifier ident,
 			      std::unique_ptr<Pattern> ident_pattern,
 			      AST::AttrVec outer_attrs, Location locus)
-    : StructPatternField (std::move (outer_attrs), locus),
+    : StructPatternField (mappings, std::move (outer_attrs), locus),
       ident (std::move (ident)), ident_pattern (std::move (ident_pattern))
   {}
 
@@ -498,6 +548,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -515,10 +567,11 @@ class StructPatternFieldIdent : public StructPatternField
   Identifier ident;
 
 public:
-  StructPatternFieldIdent (Identifier ident, bool is_ref, Mutability mut,
+  StructPatternFieldIdent (Analysis::NodeMapping mappings, Identifier ident,
+			   bool is_ref, Mutability mut,
 			   AST::AttrVec outer_attrs, Location locus)
-    : StructPatternField (std::move (outer_attrs), locus), has_ref (is_ref),
-      mut (mut), ident (std::move (ident))
+    : StructPatternField (mappings, std::move (outer_attrs), locus),
+      has_ref (is_ref), mut (mut), ident (std::move (ident))
   {}
 
   std::string as_string () const override;
@@ -526,6 +579,10 @@ public:
   bool is_mut () const { return mut == Mutability::Mut; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  ItemType get_item_type () const override final { return ItemType::IDENT; }
+
+  Identifier get_identifier () const { return ident; };
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -586,6 +643,12 @@ public:
   }
 
   std::string as_string () const;
+
+  std::vector<std::unique_ptr<StructPatternField> > &
+  get_struct_pattern_fields ()
+  {
+    return fields;
+  }
 };
 
 // Struct pattern HIR node representation
@@ -593,12 +656,15 @@ class StructPattern : public Pattern
 {
   PathInExpression path;
   StructPatternElements elems;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
-  StructPattern (PathInExpression struct_path, StructPatternElements elems)
-    : path (std::move (struct_path)), elems (std::move (elems))
+  StructPattern (Analysis::NodeMapping mappings, PathInExpression struct_path,
+		 StructPatternElements elems)
+    : path (std::move (struct_path)), elems (std::move (elems)),
+      mappings (mappings)
   {}
 
   bool has_struct_pattern_elems () const { return !elems.is_empty (); }
@@ -606,6 +672,14 @@ public:
   Location get_locus () const { return path.get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  PathInExpression &get_path () { return path; }
+  StructPatternElements &get_struct_pattern_elems () { return elems; }
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -620,6 +694,12 @@ protected:
 class TupleStructItems
 {
 public:
+  enum ItemType
+  {
+    RANGE,
+    NO_RANGE
+  };
+
   virtual ~TupleStructItems () {}
 
   // TODO: should this store location data?
@@ -633,6 +713,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
+
+  virtual ItemType get_item_type () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -675,6 +757,14 @@ public:
   std::string as_string () const override;
 
   void accept_vis (HIRVisitor &vis) override;
+
+  std::vector<std::unique_ptr<Pattern> > &get_patterns () { return patterns; }
+  const std::vector<std::unique_ptr<Pattern> > &get_patterns () const
+  {
+    return patterns;
+  }
+
+  ItemType get_item_type () const override final { return ItemType::NO_RANGE; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -732,6 +822,27 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::vector<std::unique_ptr<Pattern> > &get_lower_patterns ()
+  {
+    return lower_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern> > &get_lower_patterns () const
+  {
+    return lower_patterns;
+  }
+
+  // TODO: seems kinda dodgy. Think of better way.
+  std::vector<std::unique_ptr<Pattern> > &get_upper_patterns ()
+  {
+    return upper_patterns;
+  }
+  const std::vector<std::unique_ptr<Pattern> > &get_upper_patterns () const
+  {
+    return upper_patterns;
+  }
+
+  ItemType get_item_type () const override final { return ItemType::RANGE; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -746,6 +857,7 @@ class TupleStructPattern : public Pattern
 {
   PathInExpression path;
   std::unique_ptr<TupleStructItems> items;
+  Analysis::NodeMapping mappings;
 
   /* TOOD: should this store location data? current accessor uses path location
    * data */
@@ -753,14 +865,17 @@ class TupleStructPattern : public Pattern
 public:
   std::string as_string () const override;
 
-  TupleStructPattern (PathInExpression tuple_struct_path,
+  TupleStructPattern (Analysis::NodeMapping mappings,
+		      PathInExpression tuple_struct_path,
 		      std::unique_ptr<TupleStructItems> items)
-    : path (std::move (tuple_struct_path)), items (std::move (items))
+    : path (std::move (tuple_struct_path)), items (std::move (items)),
+      mappings (mappings)
   {}
 
   // Copy constructor required to clone
   TupleStructPattern (TupleStructPattern const &other)
-    : path (other.path), items (other.items->clone_tuple_struct_items ())
+    : path (other.path), items (other.items->clone_tuple_struct_items ()),
+      mappings (other.mappings)
   {}
 
   // Operator overload assignment operator to clone
@@ -768,6 +883,7 @@ public:
   {
     path = other.path;
     items = other.items->clone_tuple_struct_items ();
+    mappings = other.mappings;
 
     return *this;
   }
@@ -779,6 +895,15 @@ public:
   Location get_locus () const { return path.get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  PathInExpression &get_path () { return path; }
+
+  std::unique_ptr<TupleStructItems> &get_items () { return items; }
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -955,10 +1080,9 @@ protected:
 // HIR node representing a tuple pattern
 class TuplePattern : public Pattern
 {
-  // bool has_tuple_pattern_items;
   std::unique_ptr<TuplePatternItems> items;
-
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
@@ -966,13 +1090,15 @@ public:
   // Returns true if the tuple pattern has items
   bool has_tuple_pattern_items () const { return items != nullptr; }
 
-  TuplePattern (std::unique_ptr<TuplePatternItems> items, Location locus)
-    : items (std::move (items)), locus (locus)
+  TuplePattern (Analysis::NodeMapping mappings,
+		std::unique_ptr<TuplePatternItems> items, Location locus)
+    : items (std::move (items)), locus (locus), mappings (mappings)
   {}
 
   // Copy constructor requires clone
   TuplePattern (TuplePattern const &other)
-    : items (other.items->clone_tuple_pattern_items ()), locus (other.locus)
+    : items (other.items->clone_tuple_pattern_items ()), locus (other.locus),
+      mappings (other.mappings)
   {}
 
   // Overload assignment operator to clone
@@ -980,6 +1106,7 @@ public:
   {
     items = other.items->clone_tuple_pattern_items ();
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -987,6 +1114,11 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1002,6 +1134,7 @@ class GroupedPattern : public Pattern
 {
   std::unique_ptr<Pattern> pattern_in_parens;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override
@@ -1009,14 +1142,16 @@ public:
     return "(" + pattern_in_parens->as_string () + ")";
   }
 
-  GroupedPattern (std::unique_ptr<Pattern> pattern_in_parens, Location locus)
-    : pattern_in_parens (std::move (pattern_in_parens)), locus (locus)
+  GroupedPattern (Analysis::NodeMapping mappings,
+		  std::unique_ptr<Pattern> pattern_in_parens, Location locus)
+    : pattern_in_parens (std::move (pattern_in_parens)), locus (locus),
+      mappings (mappings)
   {}
 
   // Copy constructor uses clone
   GroupedPattern (GroupedPattern const &other)
     : pattern_in_parens (other.pattern_in_parens->clone_pattern ()),
-      locus (other.locus)
+      locus (other.locus), mappings (other.mappings)
   {}
 
   // Overload assignment operator to clone
@@ -1024,6 +1159,7 @@ public:
   {
     pattern_in_parens = other.pattern_in_parens->clone_pattern ();
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -1035,6 +1171,11 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -1050,16 +1191,19 @@ class SlicePattern : public Pattern
 {
   std::vector<std::unique_ptr<Pattern> > items;
   Location locus;
+  Analysis::NodeMapping mappings;
 
 public:
   std::string as_string () const override;
 
-  SlicePattern (std::vector<std::unique_ptr<Pattern> > items, Location locus)
-    : items (std::move (items)), locus (locus)
+  SlicePattern (Analysis::NodeMapping mappings,
+		std::vector<std::unique_ptr<Pattern> > items, Location locus)
+    : items (std::move (items)), locus (locus), mappings (mappings)
   {}
 
   // Copy constructor with vector clone
-  SlicePattern (SlicePattern const &other) : locus (other.locus)
+  SlicePattern (SlicePattern const &other)
+    : locus (other.locus), mappings (other.mappings)
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1070,6 +1214,7 @@ public:
   SlicePattern &operator= (SlicePattern const &other)
   {
     locus = other.locus;
+    mappings = other.mappings;
 
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -1085,6 +1230,11 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  Analysis::NodeMapping get_pattern_mappings () const override final
+  {
+    return mappings;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

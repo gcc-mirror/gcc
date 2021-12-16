@@ -328,6 +328,8 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
+  virtual Analysis::NodeMapping get_pattern_mappings () const = 0;
+
 protected:
   // Clone pattern implementation as pure virtual method
   virtual Pattern *clone_pattern_impl () const = 0;
