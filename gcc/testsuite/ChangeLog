@@ -1,3 +1,82 @@
+2021-12-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-12-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/decltype-bitfield1.C: Change a type to unsigned
+	long long.  Only run on longlong64 targets.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100493
+	* g++.dg/cpp1z/lambda-this1.C: Adjust expected diagnostics.
+	* g++.dg/cpp1z/lambda-this8.C: New test.
+	* g++.dg/cpp2a/lambda-this3.C: Compile with -pedantic in C++17
+	to continue to diagnose redundant 'this' captures.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103198
+	* g++.dg/cpp2a/concepts-this1.C: New test.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99911
+	* g++.dg/cpp2a/fn-template24.C: New test.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98394
+	PR c++/85846
+	* g++.dg/cpp2a/concepts-pr98394.C: New test.
+	* g++.dg/cpp2a/concepts-pr85846.C: New test.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102933
+	* g++.dg/cpp2a/nontype-class50.C: New test.
+	* g++.dg/cpp2a/nontype-class50a.C: New test.
+
+2021-12-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103717
+	* gfortran.dg/do_check_19.f90: New test.
+
+2021-12-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103718
+	PR fortran/103719
+	* gfortran.dg/do_check_18.f90: New test.
+
+2021-12-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-11-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102347
+	* gcc.target/powerpc/pr102347.c: New test.
+
 2021-12-13  Joel Hutton  <joel.hutton@arm.com>
 
 	* gcc.target/aarch64/pr103523.c: New test.

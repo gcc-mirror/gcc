@@ -1,3 +1,61 @@
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100493
+	* parser.c (cp_parser_lambda_introducer): In C++17, don't
+	diagnose a redundant 'this' capture alongside a by-copy
+	capture default unless -pedantic.  Move the diagnostic into
+	-Wc++20-extensions and adjust wording accordingly.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103198
+	* pt.c (any_template_parm_r): Walk the TREE_TYPE of a dummy
+	object.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99911
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Don't diagnose
+	name lookup failure if the arguments to an unresolved template
+	name are still dependent.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-11-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98394
+	PR c++/85846
+	* parser.c (cp_parser_placeholder_type_specifier): Declare
+	static.  Don't override tentative to false when tmpl is a
+	concept-id with empty argument list.  Don't emit a "does not
+	constrain a type" error when tentative.
+
+2021-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/102933
+	* parser.c (cp_parser_simple_type_specifier): Adjust diagnostic
+	for using auto in parameter declaration.
+	* pt.c (extract_autos_r): Ignore CTAD placeholders.
+	(extract_autos): Use range-based for.
+	(do_auto_deduction): Use extract_autos only for the concepts TS
+	and not also for standard concepts.
+	(type_uses_auto): Likewise with for_each_template_parm.
+	(check_auto_in_tmpl_args): Just return false outside of the
+	concepts TS.  Simplify.
+
 2021-12-07  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

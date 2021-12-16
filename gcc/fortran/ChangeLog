@@ -1,3 +1,24 @@
+2021-12-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103717
+	* frontend-passes.c (doloop_code): Prevent NULL pointer
+	dereference when checking for passing a do-loop variable to a
+	contained procedure with an interface mismatch.
+
+2021-12-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103718
+	PR fortran/103719
+	* frontend-passes.c (doloop_contained_procedure_code): Add several
+	checks to prevent NULL pointer dereferences on valid and invalid
+	code called within do-loops.
+
 2021-12-12  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

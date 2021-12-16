@@ -1,3 +1,12 @@
+2021-12-15  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2021-11-30  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/102347
+	* config/rs6000/rs6000-call.c (rs6000_builtin_decl): Remove builtin mask
+	check.
+
 2021-12-14  Joel Hutton  <joel.hutton@arm.com>
 
 	PR bootstrap/103688
