@@ -39,7 +39,6 @@ with Exp_Dbug;       use Exp_Dbug;
 with Exp_Pakd;       use Exp_Pakd;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
-with Expander;       use Expander;
 with Inline;         use Inline;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -3876,7 +3875,6 @@ package body Exp_Ch5 is
       if Extensions_Allowed and then not Is_Discrete_Type (Etype (Expr)) then
          Rewrite (N, Expand_General_Case_Statement);
          Analyze (N);
-         Expand (N);
          return;
       end if;
 
