@@ -1132,7 +1132,7 @@ handle_pragma_pop_options (cpp_reader *ARG_UNUSED(dummy))
 				      p->optimize_binary);
       optimization_current_node = p->optimize_binary;
     }
-  if (flag_checking)
+  if (flag_checking && !seen_error ())
     {
       cl_optimization_compare (p->saved_global_options, &global_options);
       free (p->saved_global_options);
