@@ -1037,7 +1037,6 @@ public:
   virtual ~Pattern () {}
 
   virtual std::string as_string () const = 0;
-
   virtual void accept_vis (ASTVisitor &vis) = 0;
 
   // as only one kind of pattern can be stripped, have default of nothing
@@ -1045,16 +1044,11 @@ public:
   virtual bool is_marked_for_strip () const { return false; }
 
   virtual Location get_locus () const = 0;
-
-  virtual NodeId get_node_id () const { return node_id; }
+  virtual NodeId get_pattern_node_id () const = 0;
 
 protected:
   // Clone pattern implementation as pure virtual method
   virtual Pattern *clone_pattern_impl () const = 0;
-
-  Pattern () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
-
-  NodeId node_id;
 };
 
 // forward decl for Type

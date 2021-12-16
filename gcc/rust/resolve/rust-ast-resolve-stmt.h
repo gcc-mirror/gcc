@@ -82,8 +82,8 @@ public:
 	ResolveExpr::go (stmt.get_init_expr ().get (), stmt.get_node_id ());
 
 	// mark the assignment
-	resolver->mark_assignment_to_decl (stmt.get_pattern ()->get_node_id (),
-					   stmt.get_node_id ());
+	resolver->mark_assignment_to_decl (
+	  stmt.get_pattern ()->get_pattern_node_id (), stmt.get_node_id ());
       }
 
     PatternDeclaration::go (stmt.get_pattern ().get (), stmt.get_node_id ());
@@ -316,8 +316,8 @@ public:
 
 	// the mutability checker needs to verify for immutable decls the number
 	// of assignments are <1. This marks an implicit assignment
-	resolver->mark_assignment_to_decl (param.get_pattern ()->get_node_id (),
-					   param.get_node_id ());
+	resolver->mark_assignment_to_decl (
+	  param.get_pattern ()->get_pattern_node_id (), param.get_node_id ());
       }
 
     // resolve the function body
