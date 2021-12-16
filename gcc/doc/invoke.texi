@@ -778,7 +778,7 @@ Objective-C and Objective-C++ Dialects}.
 -malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc @gol
 -mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi @gol
 -mexpand-adddi  -mindexed-loads  -mlra  -mlra-priority-none @gol
--mlra-priority-compact mlra-priority-noncompact  -mmillicode @gol
+-mlra-priority-compact -mlra-priority-noncompact  -mmillicode @gol
 -mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level} @gol
 -mtune=@var{cpu}  -mmultcost=@var{num}  -mcode-density-frame @gol
 -munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo} @gol
