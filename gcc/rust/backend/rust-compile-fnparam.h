@@ -48,10 +48,8 @@ public:
     address_taken_context->lookup_addess_taken (
       param.get_mappings ().get_hirid (), &address_taken);
 
-    compiled_param
-      = ctx->get_backend ()->parameter_variable (fndecl, pattern.variable_ident,
-						 decl_type, address_taken,
-						 locus);
+    compiled_param = ctx->get_backend ()->parameter_variable (
+      fndecl, pattern.get_identifier (), decl_type, address_taken, locus);
   }
 
 private:
