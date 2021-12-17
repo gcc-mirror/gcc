@@ -12713,6 +12713,7 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @node Object Size Checking
 @section Object Size Checking Built-in Functions
 @findex __builtin_object_size
+@findex __builtin_dynamic_object_size
 @findex __builtin___memcpy_chk
 @findex __builtin___mempcpy_chk
 @findex __builtin___memmove_chk
@@ -12778,6 +12779,18 @@ assert (__builtin_object_size (q, 0)
 /* The subobject q points to is var.b.  */
 assert (__builtin_object_size (q, 1) == sizeof (var.b));
 @end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} {size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+is similar to @code{__builtin_object_size} in that it returns a number of bytes
+from @var{ptr} to the end of the object @var{ptr} pointer points to, except
+that the size returned may not be a constant.  This results in successful
+evaluation of object size estimates in a wider range of use cases and can be
+more precise than @code{__builtin_object_size}, but it incurs a performance
+penalty since it may add a runtime overhead on size computation.  Semantics of
+@var{type} as well as return values in case it is not possible to determine
+which objects @var{ptr} points to at compile time are the same as in the case
+of @code{__builtin_object_size}.
 @end deftypefn
 
 There are built-in functions added for many common string operation

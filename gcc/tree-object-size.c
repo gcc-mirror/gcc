@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "builtins.h"
 
 struct object_size_info
 {
@@ -51,13 +52,6 @@ struct GTY(()) object_size
   tree size;
   /* Estimate of the size of the whole object.  */
   tree wholesize;
-};
-
-enum
-{
-  OST_SUBOBJECT = 1,
-  OST_MINIMUM = 2,
-  OST_END = 4,
 };
 
 static tree compute_object_offset (const_tree, const_tree);
@@ -760,8 +754,9 @@ compute_builtin_object_size (tree ptr, int object_size_type,
       object_sizes_grow (object_size_type);
       if (dump_file)
 	{
-	  fprintf (dump_file, "Computing %s %sobject size for ",
+	  fprintf (dump_file, "Computing %s %s%sobject size for ",
 		   (object_size_type & OST_MINIMUM) ? "minimum" : "maximum",
+		   (object_size_type & OST_DYNAMIC) ? "dynamic " : "",
 		   (object_size_type & OST_SUBOBJECT) ? "sub" : "");
 	  print_generic_expr (dump_file, ptr, dump_flags);
 	  fprintf (dump_file, ":\n");
@@ -850,9 +845,10 @@ compute_builtin_object_size (tree ptr, int object_size_type,
 		print_generic_expr (dump_file, ssa_name (i),
 				    dump_flags);
 		fprintf (dump_file,
-			 ": %s %sobject size ",
+			 ": %s %s%sobject size ",
 			 ((object_size_type & OST_MINIMUM) ? "minimum"
 			  : "maximum"),
+			 (object_size_type & OST_DYNAMIC) ? "dynamic " : "",
 			 (object_size_type & OST_SUBOBJECT) ? "sub" : "");
 		print_generic_expr (dump_file, object_sizes_get (&osi, i),
 				    dump_flags);
@@ -1404,8 +1400,85 @@ do_valueize (tree t)
   return t;
 }
 
+/* Process a __builtin_object_size or __builtin_dynamic_object_size call in
+   CALL early for subobjects before any object information is lost due to
+   optimization.  Insert a MIN or MAX expression of the result and
+   __builtin_object_size at I so that it may be processed in the second pass.
+   __builtin_dynamic_object_size is treated like __builtin_object_size here
+   since we're only looking for constant bounds.  */
+
+static void
+early_object_sizes_execute_one (gimple_stmt_iterator *i, gimple *call)
+{
+  tree ost = gimple_call_arg (call, 1);
+  tree lhs = gimple_call_lhs (call);
+  gcc_assert (lhs != NULL_TREE);
+
+  if (!tree_fits_uhwi_p (ost))
+    return;
+
+  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
+  tree ptr = gimple_call_arg (call, 0);
+
+  if (object_size_type != 1 && object_size_type != 3)
+    return;
+
+  if (TREE_CODE (ptr) != ADDR_EXPR && TREE_CODE (ptr) != SSA_NAME)
+    return;
+
+  tree type = TREE_TYPE (lhs);
+  tree bytes;
+  if (!compute_builtin_object_size (ptr, object_size_type, &bytes)
+      || !int_fits_type_p (bytes, type))
+    return;
+
+  tree tem = make_ssa_name (type);
+  gimple_call_set_lhs (call, tem);
+  enum tree_code code = object_size_type & OST_MINIMUM ? MAX_EXPR : MIN_EXPR;
+  tree cst = fold_convert (type, bytes);
+  gimple *g = gimple_build_assign (lhs, code, tem, cst);
+  gsi_insert_after (i, g, GSI_NEW_STMT);
+  update_stmt (call);
+}
+
+/* Attempt to fold one __builtin_dynamic_object_size call in CALL into an
+   expression and insert it at I.  Return true if it succeeds.  */
+
+static bool
+dynamic_object_sizes_execute_one (gimple_stmt_iterator *i, gimple *call)
+{
+  gcc_assert (gimple_call_num_args (call) == 2);
+
+  tree args[2];
+  args[0] = gimple_call_arg (call, 0);
+  args[1] = gimple_call_arg (call, 1);
+
+  location_t loc = EXPR_LOC_OR_LOC (args[0], input_location);
+  tree result_type = gimple_call_return_type (as_a <gcall *> (call));
+  tree result = fold_builtin_call_array (loc, result_type,
+					 gimple_call_fn (call), 2, args);
+
+  if (!result)
+    return false;
+
+  /* fold_builtin_call_array may wrap the result inside a
+     NOP_EXPR.  */
+  STRIP_NOPS (result);
+  gimplify_and_update_call_from_tree (i, result);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Simplified (dynamic)\n  ");
+      print_gimple_stmt (dump_file, call, 0, dump_flags);
+      fprintf (dump_file, " to ");
+      print_generic_expr (dump_file, result);
+      fprintf (dump_file, "\n");
+    }
+  return true;
+}
+
 static unsigned int
-object_sizes_execute (function *fun, bool insert_min_max_p)
+object_sizes_execute (function *fun, bool early)
 {
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
@@ -1414,8 +1487,12 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
 	{
 	  tree result;
+	  bool dynamic = false;
+
 	  gimple *call = gsi_stmt (i);
-	  if (!gimple_call_builtin_p (call, BUILT_IN_OBJECT_SIZE))
+	  if (gimple_call_builtin_p (call, BUILT_IN_DYNAMIC_OBJECT_SIZE))
+	    dynamic = true;
+	  else if (!gimple_call_builtin_p (call, BUILT_IN_OBJECT_SIZE))
 	    continue;
 
 	  tree lhs = gimple_call_lhs (call);
@@ -1424,42 +1501,39 @@ object_sizes_execute (function *fun, bool insert_min_max_p)
 
 	  init_object_sizes ();
 
-	  /* If insert_min_max_p, only attempt to fold
+	  /* If early, only attempt to fold
 	     __builtin_object_size (x, 1) and __builtin_object_size (x, 3),
 	     and rather than folding the builtin to the constant if any,
 	     create a MIN_EXPR or MAX_EXPR of the __builtin_object_size
-	     call result and the computed constant.  */
-	  if (insert_min_max_p)
+	     call result and the computed constant.  Do the same for
+	     __builtin_dynamic_object_size too.  */
+	  if (early)
 	    {
-	      tree ost = gimple_call_arg (call, 1);
-	      if (tree_fits_uhwi_p (ost))
+	      early_object_sizes_execute_one (&i, call);
+	      continue;
+	    }
+
+	  if (dynamic)
+	    {
+	      if (dynamic_object_sizes_execute_one (&i, call))
+		continue;
+	      else
 		{
-		  unsigned HOST_WIDE_INT object_size_type = tree_to_uhwi (ost);
-		  tree ptr = gimple_call_arg (call, 0);
-		  if ((object_size_type & OST_SUBOBJECT)
-		      && (TREE_CODE (ptr) == ADDR_EXPR
-			  || TREE_CODE (ptr) == SSA_NAME))
+		  /* If we could not find a suitable size expression, lower to
+		     __builtin_object_size so that we may at least get a
+		     constant lower or higher estimate.  */
+		  tree bosfn = builtin_decl_implicit (BUILT_IN_OBJECT_SIZE);
+		  gimple_call_set_fndecl (call, bosfn);
+		  update_stmt (call);
+
+		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
-		      tree type = TREE_TYPE (lhs);
-		      tree bytes;
-		      if (compute_builtin_object_size (ptr, object_size_type,
-						       &bytes)
-			  && int_fits_type_p (bytes, type))
-			{
-			  tree tem = make_ssa_name (type);
-			  gimple_call_set_lhs (call, tem);
-			  enum tree_code code
-			    = (object_size_type & OST_MINIMUM
-			       ? MAX_EXPR : MIN_EXPR);
-			  tree cst = fold_convert (type, bytes);
-			  gimple *g
-			    = gimple_build_assign (lhs, code, tem, cst);
-			  gsi_insert_after (&i, g, GSI_NEW_STMT);
-			  update_stmt (call);
-			}
+		      print_generic_expr (dump_file, gimple_call_arg (call, 0),
+					  dump_flags);
+		      fprintf (dump_file,
+			       ": Retrying as __builtin_object_size\n");
 		    }
 		}
-	      continue;
 	    }
 
 	  result = gimple_fold_stmt_to_constant (call, do_valueize);
