@@ -31,7 +31,7 @@ using namespace __asan;
 
 static uptr allocated_for_dlsym;
 static uptr last_dlsym_alloc_size_in_words;
-static const uptr kDlsymAllocPoolSize = SANITIZER_RTEMS ? 4096 : 1024;
+static const uptr kDlsymAllocPoolSize = SANITIZER_RTEMS ? 4096 : 8192;
 static uptr alloc_memory_for_dlsym[kDlsymAllocPoolSize];
 
 static INLINE bool IsInDlsymAllocPool(const void *ptr) {
