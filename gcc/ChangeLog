@@ -1,3 +1,15 @@
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/103661
+	* config/i386/i386-builtins.c (fold_builtin_cpu): Compare to 0
+	as API expects that non-zero values are returned (do that
+	it mask == 31).
+	For "avx512vbmi2" argument, we return now 1 << 31, which is a
+	negative integer value.
+
 2021-12-15  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
