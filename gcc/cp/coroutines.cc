@@ -912,7 +912,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
   if (MAYBE_CLASS_TYPE_P (TREE_TYPE (a)))
     {
       o = build_new_op (loc, CO_AWAIT_EXPR, LOOKUP_NORMAL, a, NULL_TREE,
-			NULL_TREE, NULL, tf_warning_or_error);
+			NULL_TREE, NULL_TREE, NULL, tf_warning_or_error);
       /* If no viable functions are found, o is a.  */
       if (!o || o == error_mark_node)
 	o = a;

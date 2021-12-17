@@ -212,6 +212,7 @@ void test_a0 (struct A0 *p, unsigned n)
 struct A1
 {
   int32_t n;
+  __attribute__ ((aligned (4)))
   int16_t a1[1];    // { dg-message "while referencing 'a1'" }
 };
 

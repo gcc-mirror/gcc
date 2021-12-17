@@ -151,6 +151,12 @@ cxx_print_type (FILE *file, tree node, int indent)
       print_node (file, "expr", DECLTYPE_TYPE_EXPR (node), indent + 4);
       return;
 
+    case DEPENDENT_OPERATOR_TYPE:
+      print_node (file, "saved_lookups",
+		  DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS (node),
+		  indent + 4);
+      return;
+
     case TYPENAME_TYPE:
       print_node (file, "fullname", TYPENAME_TYPE_FULLNAME (node),
 		  indent + 4);

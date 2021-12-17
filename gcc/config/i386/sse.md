@@ -3525,8 +3525,7 @@
 	     UNSPEC_PCMP)))]
   "TARGET_AVX512VL && ix86_pre_reload_split ()
   /* LT or GE 0 */
-  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[2]))
-      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[1])))"
+  && ((INTVAL (operands[5]) == 1) || (INTVAL (operands[5]) == 5))"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -3540,6 +3539,7 @@
 {
   if (INTVAL (operands[5]) == 5)
     std::swap (operands[1], operands[2]);
+  operands[2] = force_reg (<MODE>mode, operands[2]);
 })
 
 (define_insn_and_split "*avx_cmp<mode>3_ltint"
@@ -3554,8 +3554,7 @@
 	     UNSPEC_PCMP)))]
   "TARGET_AVX512VL && ix86_pre_reload_split ()
   /* LT or GE 0 */
-  && ((INTVAL (operands[5]) == 1 && !MEM_P (operands[2]))
-      || (INTVAL (operands[5]) == 5 && !MEM_P (operands[1])))"
+  && ((INTVAL (operands[5]) == 1) || (INTVAL (operands[5]) == 5))"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -3572,7 +3571,44 @@
     std::swap (operands[1], operands[2]);
   operands[0] = gen_lowpart (<ssebytemode>mode, operands[0]);
   operands[1] = gen_lowpart (<ssebytemode>mode, operands[1]);
+  operands[2] = force_reg (<ssebytemode>mode,
+			  gen_lowpart (<ssebytemode>mode, operands[2]));
+})
+
+(define_insn_and_split "*avx_cmp<mode>3_ltint_not"
+ [(set (match_operand:VI48_AVX  0 "register_operand")
+       (vec_merge:VI48_AVX
+	 (match_operand:VI48_AVX 1 "vector_operand")
+	 (match_operand:VI48_AVX 2 "vector_operand")
+	 (unspec:<avx512fmaskmode>
+	   [(subreg:VI48_AVX
+	    (not:<ssebytemode>
+	      (match_operand:<ssebytemode> 3 "vector_operand")) 0)
+	    (match_operand:VI48_AVX 4 "const0_operand")
+	    (match_operand:SI 5 "const_0_to_7_operand")]
+	    UNSPEC_PCMP)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+  /* not LT or GE 0 */
+  && ((INTVAL (operands[5]) == 1) || (INTVAL (operands[5]) == 5))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<ssebytemode>
+	  [(match_dup 1)
+	   (match_dup 2)
+	   (subreg:<ssebytemode>
+	     (lt:VI48_AVX
+	      (match_dup 3)
+	      (match_dup 4)) 0)]
+	    UNSPEC_BLENDV))]
+{
+  if (INTVAL (operands[5]) == 5)
+    std::swap (operands[1], operands[2]);
+  operands[0] = gen_lowpart (<ssebytemode>mode, operands[0]);
+  operands[1] = force_reg (<ssebytemode>mode,
+			  gen_lowpart (<ssebytemode>mode, operands[1]));
   operands[2] = gen_lowpart (<ssebytemode>mode, operands[2]);
+  operands[3] = lowpart_subreg (<MODE>mode, operands[3], <ssebytemode>mode);
 })
 
 (define_insn "avx_vmcmp<mode>3"

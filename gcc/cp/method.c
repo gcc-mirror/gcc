@@ -1372,7 +1372,7 @@ do_one_comp (location_t loc, const comp_info &info, tree sub, tree lhs, tree rhs
      to </=, so don't give an error yet if <=> lookup fails.  */
   bool tentative = retcat != cc_last;
   tree comp = build_new_op (loc, code, flags, lhs, rhs,
-			    NULL_TREE, &overload,
+			    NULL_TREE, NULL_TREE, &overload,
 			    tentative ? tf_none : complain);
 
   if (code != SPACESHIP_EXPR)
@@ -1684,8 +1684,8 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
 		  comp = retval = var;
 		}
 	      eq = build_new_op (info.loc, EQ_EXPR, flags, comp,
-				 integer_zero_node, NULL_TREE, NULL,
-				 complain);
+				 integer_zero_node, NULL_TREE, NULL_TREE,
+				 NULL, complain);
 	    }
 	  tree ceq = contextual_conv_bool (eq, complain);
 	  info.check (ceq);
@@ -1720,7 +1720,7 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
   else if (code == NE_EXPR)
     {
       tree comp = build_new_op (info.loc, EQ_EXPR, flags, lhs, rhs,
-				NULL_TREE, NULL, complain);
+				NULL_TREE, NULL_TREE, NULL, complain);
       comp = contextual_conv_bool (comp, complain);
       info.check (comp);
       if (defining)
@@ -1732,9 +1732,9 @@ build_comparison_op (tree fndecl, bool defining, tsubst_flags_t complain)
   else
     {
       tree comp = build_new_op (info.loc, SPACESHIP_EXPR, flags, lhs, rhs,
-				NULL_TREE, NULL, complain);
+				NULL_TREE, NULL_TREE, NULL, complain);
       tree comp2 = build_new_op (info.loc, code, flags, comp, integer_zero_node,
-				 NULL_TREE, NULL, complain);
+				 NULL_TREE, NULL_TREE, NULL, complain);
       info.check (comp2);
       if (defining)
 	finish_return_stmt (comp2);

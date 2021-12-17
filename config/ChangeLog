@@ -1,3 +1,10 @@
+2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc-plugin.m4 (GCC_PLUGIN_OPTION): New.
+
 2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc-plugin.m4 (GCC_PLUGIN_OPTION): New.

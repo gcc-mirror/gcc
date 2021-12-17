@@ -1,3 +1,57 @@
+2021-12-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/20021029-1.c: Build with -G0 for nios2.
+
+2021-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99980
+	* g++.dg/cpp0x/noexcept71.C: New test.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/103703
+	* g++.dg/warn/Wmismatched-tags-9.C: New test.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/103751
+	* gcc.dg/Warray-bounds-48.c: Fix member alignment.
+
+2021-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	PR c++/83035
+	PR c++/100465
+	* g++.dg/lookup/operator-3.C: Split out operator overload
+	declarations into ...
+	* g++.dg/lookup/operator-3-ops.h: ... here.
+	* g++.dg/lookup/operator-3a.C: New test.
+	* g++.dg/lookup/operator-4.C: New test.
+	* g++.dg/lookup/operator-4a.C: New test.
+	* g++.dg/lookup/operator-5.C: New test.
+	* g++.dg/lookup/operator-5a.C: New test.
+	* g++.dg/lookup/operator-6.C: New test.
+	* g++.dg/lookup/operator-7.C: New test.
+	* g++.dg/lookup/operator-8.C: New test.
+
+2021-12-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103571
+	* gcc.target/i386/pr102812.c (dg-final): Do not scan for movdqa.
+
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR c++/103696
+	* g++.target/i386/pr103696.C: New test.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/iostat_5.f90: New file.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/date_and_time_1.f90: New file.
+
 2021-12-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102229

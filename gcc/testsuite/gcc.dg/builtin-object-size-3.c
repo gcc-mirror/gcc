@@ -430,6 +430,36 @@ test8 (void)
     abort ();
 }
 
+void
+__attribute__ ((noinline))
+test9 (unsigned cond)
+{
+  char *buf2 = malloc (10);
+  char *p;
+
+  if (cond)
+    p = &buf2[8];
+  else
+    p = &buf2[4];
+
+  if (__builtin_object_size (&p[-4], 2) != 6)
+    abort ();
+
+  for (unsigned i = cond; i > 0; i--)
+    p--;
+
+  if (__builtin_object_size (p, 2) != 2)
+    abort ();
+
+  p = &y.c[8];
+  for (unsigned i = cond; i > 0; i--)
+    p--;
+
+  if (__builtin_object_size (p, 2)
+      != sizeof (y) - __builtin_offsetof (struct A, c) - 8)
+    abort ();
+}
+
 int
 main (void)
 {
@@ -443,5 +473,6 @@ main (void)
   test6 (4);
   test7 ();
   test8 ();
+  test9 (1);
   exit (0);
 }

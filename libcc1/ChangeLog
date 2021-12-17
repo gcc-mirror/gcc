@@ -1,3 +1,12 @@
+2021-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	PR c++/83035
+	PR c++/100465
+	* libcp1plugin.cc (plugin_build_unary_expr): Adjust call to
+	build_x_unary_op.
+	(plugin_build_binary_expr): Adjust call to build_x_binary_op.
+
 2021-12-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

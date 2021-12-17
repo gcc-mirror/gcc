@@ -3857,9 +3857,14 @@ check_field_decls (tree t, tree *access_decls,
 
       /* Now that we've removed bit-field widths from DECL_INITIAL,
 	 anything left in DECL_INITIAL is an NSDMI that makes the class
-	 non-aggregate in C++11.  */
-      if (DECL_INITIAL (field) && cxx_dialect < cxx14)
-	CLASSTYPE_NON_AGGREGATE (t) = true;
+	 non-aggregate in C++11, and non-layout-POD always.  */
+      if (DECL_INITIAL (field))
+	{
+	  if (cxx_dialect < cxx14)
+	    CLASSTYPE_NON_AGGREGATE (t) = true;
+	  else
+	    CLASSTYPE_NON_POD_AGGREGATE (t) = true;
+	}
 
       if (CP_TYPE_CONST_P (type))
 	{
@@ -6045,6 +6050,16 @@ check_bases_and_members (tree t)
   TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
 
+  /* Is this class non-layout-POD because it wasn't an aggregate in C++98?  */
+  if (CLASSTYPE_NON_POD_AGGREGATE (t))
+    {
+      if (CLASSTYPE_NON_LAYOUT_POD_P (t))
+	/* It's non-POD for another reason.  */
+	CLASSTYPE_NON_POD_AGGREGATE (t) = false;
+      else if (abi_version_at_least (17))
+	CLASSTYPE_NON_LAYOUT_POD_P (t) = true;
+    }
+
   /* If the only explicitly declared default constructor is user-provided,
      set TYPE_HAS_COMPLEX_DFLT.  */
   if (!TYPE_HAS_COMPLEX_DFLT (t)
@@ -6341,12 +6356,17 @@ end_of_base (tree binfo)
   return size_binop (PLUS_EXPR, BINFO_OFFSET (binfo), size);
 }
 
-/* Returns the offset of the byte just past the end of the base class or empty
-   data member with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero,
-   then only non-virtual bases are included.  */
+/* Returns one of three variations of the ending offset of T.  If MODE is
+   eoc_nvsize, the result is the ABI "nvsize" (i.e. sizeof before allocating
+   vbases).  If MODE is eoc_vsize, the result is the sizeof after allocating
+   vbases but before rounding, which is not named in the ABI.  If MODE is
+   eoc_nv_or_dsize, the result is the greater of "nvsize" and "dsize" (the size
+   of the actual data in the class, kinda), as used for allocation of
+   potentially-overlapping fields.  */
 
+enum eoc_mode { eoc_nvsize, eoc_vsize, eoc_nv_or_dsize };
 static tree
-end_of_class (tree t, bool include_virtuals_p)
+end_of_class (tree t, eoc_mode mode)
 {
   tree result = size_zero_node;
   vec<tree, va_gc> *vbases;
@@ -6358,8 +6378,7 @@ end_of_class (tree t, bool include_virtuals_p)
   for (binfo = TYPE_BINFO (t), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      if (!include_virtuals_p
-	  && BINFO_VIRTUAL_P (base_binfo)
+      if (BINFO_VIRTUAL_P (base_binfo)
 	  && (!BINFO_PRIMARY_P (base_binfo)
 	      || BINFO_INHERITANCE_CHAIN (base_binfo) != TYPE_BINFO (t)))
 	continue;
@@ -6369,30 +6388,79 @@ end_of_class (tree t, bool include_virtuals_p)
 	result = offset;
     }
 
-  /* Also consider empty data members.  */
   for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL
-	&& !DECL_ARTIFICIAL (field)
-	&& field_poverlapping_p (field)
-	&& is_empty_class (TREE_TYPE (field)))
+	&& !DECL_FIELD_IS_BASE (field))
       {
-	/* Update sizeof(C) to max (sizeof(C), offset(D)+sizeof(D)) */
-	offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
-			     TYPE_SIZE_UNIT (TREE_TYPE (field)));
+	tree size = DECL_SIZE_UNIT (field);
+	if (!size)
+	  /* DECL_SIZE_UNIT can be null for a flexible array.  */
+	  continue;
+
+	if (is_empty_field (field))
+	  /* For empty fields DECL_SIZE_UNIT is 0, but we want the
+	     size of the type (usually 1) for computing nvsize.  */
+	  size = TYPE_SIZE_UNIT (TREE_TYPE (field));
+
+	offset = size_binop (PLUS_EXPR, byte_position (field), size);
 	if (tree_int_cst_lt (result, offset))
 	  result = offset;
       }
 
-  if (include_virtuals_p)
+  if (mode != eoc_nvsize)
     for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
 	 vec_safe_iterate (vbases, i, &base_binfo); i++)
       {
-	offset = end_of_base (base_binfo);
+	if (mode == eoc_nv_or_dsize)
+	  /* For dsize, don't count trailing empty bases.  */
+	  offset = size_binop (PLUS_EXPR, BINFO_OFFSET (binfo),
+			       CLASSTYPE_SIZE_UNIT (BINFO_TYPE (binfo)));
+	else
+	  offset = end_of_base (base_binfo);
 	if (tree_int_cst_lt (result, offset))
 	  result = offset;
       }
 
   return result;
+}
+
+/* Warn as appropriate about the change in whether we pack into the tail
+   padding of FIELD, a base field which has a C++14 aggregate type with default
+   member initializers.  */
+
+static void
+check_non_pod_aggregate (tree field)
+{
+  if (!abi_version_crosses (17) || cxx_dialect < cxx14)
+    return;
+  if (TREE_CODE (field) != FIELD_DECL
+      || (!DECL_FIELD_IS_BASE (field)
+	  && !field_poverlapping_p (field)))
+    return;
+  tree next = DECL_CHAIN (field);
+  while (next && TREE_CODE (next) != FIELD_DECL) next = DECL_CHAIN (next);
+  if (!next)
+    return;
+  tree type = TREE_TYPE (field);
+  if (TYPE_IDENTIFIER (type) == as_base_identifier)
+    type = TYPE_CONTEXT (type);
+  if (!CLASS_TYPE_P (type) || !CLASSTYPE_NON_POD_AGGREGATE (type))
+    return;
+  tree size = end_of_class (type, (DECL_FIELD_IS_BASE (field)
+				   ? eoc_nvsize : eoc_nv_or_dsize));
+  tree rounded = round_up_loc (input_location, size, DECL_ALIGN_UNIT (next));
+  if (tree_int_cst_lt (rounded, TYPE_SIZE_UNIT (type)))
+    {
+      location_t loc = DECL_SOURCE_LOCATION (next);
+      if (DECL_FIELD_IS_BASE (next))
+	warning_at (loc, OPT_Wabi,"offset of %qT base class for "
+		    "%<-std=c++14%> and up changes in "
+		    "%<-fabi-version=17%> (GCC 12)", TREE_TYPE (next));
+      else
+	warning_at (loc, OPT_Wabi, "offset of %qD for "
+		    "%<-std=c++14%> and up changes in "
+		    "%<-fabi-version=17%> (GCC 12)", next);
+    }
 }
 
 /* Warn about bases of T that are inaccessible because they are
@@ -6468,7 +6536,7 @@ include_empty_classes (record_layout_info rli)
      because we are willing to overlay multiple bases at the same
      offset.  However, now we need to make sure that RLI is big enough
      to reflect the entire class.  */
-  eoc = end_of_class (rli->t, CLASSTYPE_AS_BASE (rli->t) != NULL_TREE);
+  eoc = end_of_class (rli->t, eoc_vsize);
   rli_size = rli_size_unit_so_far (rli);
   if (TREE_CODE (rli_size) == INTEGER_CST
       && tree_int_cst_lt (rli_size, eoc))
@@ -6580,21 +6648,13 @@ layout_class_type (tree t, tree *virtuals_p)
 	{
 	  /* if D is a potentially-overlapping data member, update sizeof(C) to
 	     max (sizeof(C), offset(D)+max (nvsize(D), dsize(D))).  */
-	  tree nvsize = CLASSTYPE_SIZE_UNIT (type);
-	  /* end_of_class doesn't always give dsize, but it does in the case of
-	     a class with virtual bases, which is when dsize > nvsize.  */
-	  tree dsize = end_of_class (type, /*vbases*/true);
 	  if (CLASSTYPE_EMPTY_P (type))
 	    DECL_SIZE (field) = DECL_SIZE_UNIT (field) = size_zero_node;
-	  else if (tree_int_cst_le (dsize, nvsize))
-	    {
-	      DECL_SIZE_UNIT (field) = nvsize;
-	      DECL_SIZE (field) = CLASSTYPE_SIZE (type);
-	    }
 	  else
 	    {
-	      DECL_SIZE_UNIT (field) = dsize;
-	      DECL_SIZE (field) = bit_from_pos (dsize, bitsize_zero_node);
+	      tree size = end_of_class (type, eoc_nv_or_dsize);
+	      DECL_SIZE_UNIT (field) = size;
+	      DECL_SIZE (field) = bit_from_pos (size, bitsize_zero_node);
 	    }
 	}
 
@@ -6760,16 +6820,19 @@ layout_class_type (tree t, tree *virtuals_p)
      instead, so that the backends can emit -Wpsabi warnings in the cases
      where the ABI changed.  */
   for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL
-	&& DECL_C_BIT_FIELD (field)
-	/* We should not be confused by the fact that grokbitfield
-	   temporarily sets the width of the bit field into
-	   DECL_BIT_FIELD_REPRESENTATIVE (field).
-	   check_bitfield_decl eventually sets DECL_SIZE (field)
-	   to that width.  */
-	&& (DECL_SIZE (field) == NULL_TREE
-	    || integer_zerop (DECL_SIZE (field))))
-      SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field, 1);
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && DECL_C_BIT_FIELD (field)
+	  /* We should not be confused by the fact that grokbitfield
+	     temporarily sets the width of the bit field into
+	     DECL_BIT_FIELD_REPRESENTATIVE (field).
+	     check_bitfield_decl eventually sets DECL_SIZE (field)
+	     to that width.  */
+	  && (DECL_SIZE (field) == NULL_TREE
+	      || integer_zerop (DECL_SIZE (field))))
+	SET_DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD (field, 1);
+      check_non_pod_aggregate (field);
+    }
 
   if (CLASSTYPE_NON_LAYOUT_POD_P (t) || CLASSTYPE_EMPTY_P (t))
     {
@@ -6792,7 +6855,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	 used to compute TYPE_SIZE_UNIT.  */
 
       /* Set the size and alignment for the new type.  */
-      tree eoc = end_of_class (t, /*include_virtuals_p=*/0);
+      tree eoc = end_of_class (t, eoc_nvsize);
       TYPE_SIZE_UNIT (base_t)
 	= size_binop (MAX_EXPR,
 		      fold_convert (sizetype,

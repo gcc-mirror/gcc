@@ -2185,7 +2185,8 @@ enum languages { lang_c, lang_cplusplus };
    || TREE_CODE (T) == TYPENAME_TYPE			\
    || TREE_CODE (T) == TYPEOF_TYPE			\
    || TREE_CODE (T) == BOUND_TEMPLATE_TEMPLATE_PARM	\
-   || TREE_CODE (T) == DECLTYPE_TYPE)
+   || TREE_CODE (T) == DECLTYPE_TYPE			\
+   || TREE_CODE (T) == DEPENDENT_OPERATOR_TYPE)
 
 /* Nonzero if T is a class (or struct or union) type.  Also nonzero
    for template type parameters, typename types, and instantiated
@@ -2343,6 +2344,7 @@ struct GTY(()) lang_type {
   unsigned unique_obj_representations : 1;
   unsigned unique_obj_representations_set : 1;
   bool erroneous : 1;
+  bool non_pod_aggregate : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -2351,7 +2353,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 4;
+  unsigned dummy : 3;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2671,6 +2673,12 @@ struct GTY(()) lang_type {
 /* True if we saw errors while instantiating this class.  */
 #define CLASSTYPE_ERRONEOUS(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->erroneous)
+
+/* True if this class is non-layout-POD only because it was not an aggregate
+   before C++14.  If we run out of bits in lang_type, this could be replaced
+   with a hash_set only filled in when abi_version_crosses (17).  */
+#define CLASSTYPE_NON_POD_AGGREGATE(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_pod_aggregate)
 
 /* Additional macros for inheritance information.  */
 
@@ -3978,8 +3986,12 @@ struct GTY(()) lang_decl {
   TREE_LANG_FLAG_0 (FOLD_EXPR_CHECK (NODE))
 
 /* An INTEGER_CST containing the tree code of the folded operator. */
-#define FOLD_EXPR_OP(NODE) \
+#define FOLD_EXPR_OP_RAW(NODE) \
   TREE_OPERAND (FOLD_EXPR_CHECK (NODE), 0)
+
+/* The tree code of the folded operator.  */
+#define FOLD_EXPR_OP(NODE) \
+  ((enum tree_code) TREE_INT_CST_LOW (FOLD_EXPR_OP_RAW (NODE)))
 
 /* The expression containing an unexpanded parameter pack. */
 #define FOLD_EXPR_PACK(NODE) \
@@ -4034,6 +4046,26 @@ struct GTY(()) lang_decl {
    call.  */
 #define CALL_EXPR_OPERATOR_SYNTAX(NODE) \
   TREE_LANG_FLAG_6 (CALL_OR_AGGR_INIT_CHECK (NODE))
+
+/* A TREE_LIST containing the result of phase 1 name lookup of the operator
+   overloads that are pertinent to the dependent operator expression whose
+   type is NODE.  Each TREE_PURPOSE is an IDENTIFIER_NODE and TREE_VALUE is
+   the corresponding (possibly empty) lookup result.  The TREE_TYPE of the
+   first TREE_LIST node points back to NODE.  */
+#define DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS(NODE) \
+  TYPE_VALUES_RAW (DEPENDENT_OPERATOR_TYPE_CHECK (NODE))
+
+/* Guarded helper for the above accessor macro that takes a (templated)
+   operator expression instead of the type thereof.  */
+inline tree
+templated_operator_saved_lookups (tree t)
+{
+  tree type = TREE_TYPE (EXPR_CHECK (t));
+  if (type && TREE_CODE (type) == DEPENDENT_OPERATOR_TYPE)
+    return DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS (type);
+  else
+    return NULL_TREE;
+}
 
 /* Indicates whether a string literal has been parenthesized. Such
    usages are disallowed in certain circumstances.  */
@@ -6464,14 +6496,15 @@ extern tree build_special_member_call		(tree, tree,
 						 tree, int, tsubst_flags_t);
 extern tree build_new_op			(const op_location_t &,
 						 enum tree_code,
-						 int, tree, tree, tree, tree *,
-						 tsubst_flags_t);
+						 int, tree, tree, tree, tree,
+						 tree *, tsubst_flags_t);
 /* Wrapper that leaves out the usually-null op3 and overload parms.  */
 inline tree build_new_op (const op_location_t &loc, enum tree_code code,
 			  int flags, tree arg1, tree arg2,
 			  tsubst_flags_t complain)
 {
-  return build_new_op (loc, code, flags, arg1, arg2, NULL_TREE, NULL, complain);
+  return build_new_op (loc, code, flags, arg1, arg2, NULL_TREE, NULL_TREE,
+		       NULL, complain);
 }
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
@@ -7875,8 +7908,9 @@ extern tree build_class_member_access_expr      (cp_expr, tree, tree, bool,
 extern tree finish_class_member_access_expr     (cp_expr, tree, bool,
 						 tsubst_flags_t);
 extern tree lookup_destructor			(tree, tree, tree, tsubst_flags_t);
+extern tree build_dependent_operator_type	(tree, enum tree_code, bool);
 extern tree build_x_indirect_ref		(location_t, tree,
-						 ref_operator,
+						 ref_operator, tree,
 						 tsubst_flags_t);
 extern tree cp_build_indirect_ref		(location_t, tree,
 						 ref_operator,
@@ -7894,20 +7928,20 @@ extern tree cp_build_function_call_vec		(tree, vec<tree, va_gc> **,
 extern tree build_x_binary_op			(const op_location_t &,
 						 enum tree_code, tree,
 						 enum tree_code, tree,
-						 enum tree_code, tree *,
-						 tsubst_flags_t);
+						 enum tree_code, tree,
+						 tree *, tsubst_flags_t);
 inline tree build_x_binary_op (const op_location_t &loc,
 			       enum tree_code code, tree arg1, tree arg2,
 			       tsubst_flags_t complain)
 {
   return build_x_binary_op (loc, code, arg1, TREE_CODE (arg1), arg2,
-			    TREE_CODE (arg2), NULL, complain);
+			    TREE_CODE (arg2), NULL_TREE, NULL, complain);
 }
 extern tree build_x_array_ref			(location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree build_x_unary_op			(location_t,
 						 enum tree_code, cp_expr,
-                                                 tsubst_flags_t);
+						 tree, tsubst_flags_t);
 extern tree cp_build_addressof			(location_t, tree,
 						 tsubst_flags_t);
 extern tree cp_build_addr_expr			(tree, tsubst_flags_t);
@@ -7922,7 +7956,7 @@ extern tree build_x_compound_expr_from_list	(tree, expr_list_kind,
 extern tree build_x_compound_expr_from_vec	(vec<tree, va_gc> *,
 						 const char *, tsubst_flags_t);
 extern tree build_x_compound_expr		(location_t, tree, tree,
-						 tsubst_flags_t);
+						 tree, tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);
 extern tree cp_build_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_static_cast			(location_t, tree, tree,
@@ -7938,7 +7972,7 @@ extern tree cp_build_c_cast			(location_t, tree, tree,
 						 tsubst_flags_t);
 extern cp_expr build_x_modify_expr		(location_t, tree,
 						 enum tree_code, tree,
-						 tsubst_flags_t);
+						 tree, tsubst_flags_t);
 extern tree cp_build_modify_expr		(location_t, tree,
 						 enum tree_code, tree,
 						 tsubst_flags_t);

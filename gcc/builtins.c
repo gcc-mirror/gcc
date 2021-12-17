@@ -178,7 +178,7 @@ static rtx expand_builtin_memory_chk (tree, rtx, machine_mode,
 				      enum built_in_function);
 static void maybe_emit_chk_warning (tree, enum built_in_function);
 static void maybe_emit_sprintf_chk_warning (tree, enum built_in_function);
-static tree fold_builtin_object_size (tree, tree);
+static tree fold_builtin_object_size (tree, tree, enum built_in_function);
 
 unsigned HOST_WIDE_INT target_newline;
 unsigned HOST_WIDE_INT target_percent;
@@ -7909,6 +7909,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       return const0_rtx;
 
     case BUILT_IN_OBJECT_SIZE:
+    case BUILT_IN_DYNAMIC_OBJECT_SIZE:
       return expand_builtin_object_size (exp);
 
     case BUILT_IN_MEMCPY_CHK:
@@ -9315,7 +9316,8 @@ fold_builtin_2 (location_t loc, tree expr, tree fndecl, tree arg0, tree arg1)
       break;
 
     case BUILT_IN_OBJECT_SIZE:
-      return fold_builtin_object_size (arg0, arg1);
+    case BUILT_IN_DYNAMIC_OBJECT_SIZE:
+      return fold_builtin_object_size (arg0, arg1, fcode);
 
     case BUILT_IN_ATOMIC_ALWAYS_LOCK_FREE:
       return fold_builtin_atomic_always_lock_free (arg0, arg1);
@@ -10253,9 +10255,9 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
    if possible.  */
 
 static tree
-fold_builtin_object_size (tree ptr, tree ost)
+fold_builtin_object_size (tree ptr, tree ost, enum built_in_function fcode)
 {
-  unsigned HOST_WIDE_INT bytes;
+  tree bytes;
   int object_size_type;
 
   if (!validate_arg (ptr, POINTER_TYPE)
@@ -10277,11 +10279,14 @@ fold_builtin_object_size (tree ptr, tree ost)
   if (TREE_SIDE_EFFECTS (ptr))
     return build_int_cst_type (size_type_node, object_size_type < 2 ? -1 : 0);
 
+  if (fcode == BUILT_IN_DYNAMIC_OBJECT_SIZE)
+    object_size_type |= OST_DYNAMIC;
+
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
       compute_builtin_object_size (ptr, object_size_type, &bytes);
-      if (wi::fits_to_tree_p (bytes, size_type_node))
-	return build_int_cstu (size_type_node, bytes);
+      if (int_fits_type_p (bytes, size_type_node))
+	return fold_convert (size_type_node, bytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -10289,8 +10294,8 @@ fold_builtin_object_size (tree ptr, tree ost)
        later.  Maybe subsequent passes will help determining
        it.  */
       if (compute_builtin_object_size (ptr, object_size_type, &bytes)
-	  && wi::fits_to_tree_p (bytes, size_type_node))
-	return build_int_cstu (size_type_node, bytes);
+	  && int_fits_type_p (bytes, size_type_node))
+	return fold_convert (size_type_node, bytes);
     }
 
   return NULL_TREE;

@@ -202,15 +202,8 @@ finish_constraint_binary_op (location_t loc,
     return error_mark_node;
   if (!check_constraint_operands (loc, lhs, rhs))
     return error_mark_node;
-  tree overload;
-  cp_expr expr = build_x_binary_op (loc, code,
-				    lhs, TREE_CODE (lhs),
-				    rhs, TREE_CODE (rhs),
-				    &overload, tf_none);
-  /* When either operand is dependent, the overload set may be non-empty.  */
-  if (expr == error_mark_node)
-    return error_mark_node;
-  expr.set_location (loc);
+  cp_expr expr
+    = build_min_nt_loc (loc, code, lhs.get_value (), rhs.get_value ());
   expr.set_range (lhs.get_start (), rhs.get_finish ());
   return expr;
 }
@@ -456,8 +449,6 @@ deduce_concept_introduction (tree check)
 
 /* Build a constrained placeholder type where SPEC is a type-constraint.
    SPEC can be anything were concept_definition_p is true.
-
-   If DECLTYPE_P is true, then the placeholder is decltype(auto).
 
    Returns a pair whose FIRST is the concept being checked and whose
    SECOND is the prototype parameter.  */

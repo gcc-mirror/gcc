@@ -605,7 +605,8 @@ decl_attributes (tree *node, tree attributes, int flags,
     }
 
   if (TREE_CODE (*node) == FUNCTION_DECL
-      && optimization_current_node != optimization_default_node
+      && (optimization_current_node != optimization_default_node
+	  || target_option_current_node != target_option_default_node)
       && !DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node))
     {
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;

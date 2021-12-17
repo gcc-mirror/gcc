@@ -465,10 +465,7 @@ extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
 extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
-extern void maybe_save_operator_binding (tree);
-extern void push_operator_bindings (void);
 extern void push_using_decl_bindings (tree, tree);
-extern void discard_operator_bindings (tree);
 
 /* Lower level interface for modules. */
 extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_global,

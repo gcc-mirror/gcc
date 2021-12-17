@@ -1,3 +1,65 @@
+2021-12-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103571
+	* config/i386/i386.h (VALID_AVX256_REG_MODE): Add V16HFmode.
+	(VALID_AVX256_REG_OR_OI_VHF_MODE): Replace with ...
+	(VALID_AVX256_REG_OR_OI_MODE): ... this.  Remove V16HFmode.
+	(VALID_AVX512F_SCALAR_MODE): Remove HImode and HFmode.
+	(VALID_AVX512FP16_SCALAR_MODE): New.
+	(VALID_AVX512F_REG_MODE): Add V32HFmode.
+	(VALID_SSE2_REG_MODE): Add V8HFmode, V4HFmode and V2HFmode.
+	(VALID_SSE2_REG_VHF_MODE): Remove.
+	(VALID_INT_MODE_P): Add V2HFmode.
+	* config/i386/i386.c (function_arg_advance_64):
+	Remove explicit mention of V16HFmode and V32HFmode.
+	(ix86_hard_regno_mode_ok): Remove explicit mention of XImode
+	and V32HFmode, use VALID_AVX512F_REG_OR_XI_MODE instead.
+	Use VALID_AVX512FP_SCALAR_MODE for TARGET_aVX512FP16.
+	Use VALID_AVX256_REG_OR_OI_MODE instead of
+	VALID_AVX256_REG_OR_OI_VHF_MODE and VALID_SSE2_REG_MODE instead
+	of VALID_SSE2_REG_VHF_MODE.
+	(ix86_set_reg_reg_cost): Remove usge of VALID_AVX512FP16_REG_MODE.
+	(ix86_vector_mode_supported): Ditto.
+
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR c++/103696
+	* attribs.c (decl_attributes): Check if
+	target_option_current_node is changed.
+
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing dash.
+
+2021-12-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (resolution): New enum.
+	(resolve_vec_mul): New function.
+	(resolve_vec_cmpne): Likewise.
+	(resolve_vec_adde_sube): Likewise.
+	(resolve_vec_addec_subec): Likewise.
+	(resolve_vec_splats): Likewise.
+	(resolve_vec_extract): Likewise.
+	(resolve_vec_insert): Likewise.
+	(resolve_vec_step): Likewise.
+	(find_instance): Likewise.
+	(altivec_resolve_overloaded_builtin): Many cleanups.  Call factored-out
+	functions.  Move variable declarations closer to uses.  Add commentary.
+	Remove unnecessary levels of braces.  Avoid use of gotos.  Change
+	misleading variable names.  Use switches over if-else-if chains.
+
+2021-12-16  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	PR target/103729
+	* config/aarch64/aarch64-simd.md (aarch64_movv8di): Allow big endian
+	targets to move V8DI.
+
+2021-12-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR driver/103644
+	* gcc.c (check_offload_target_name): Add 'default' and 'disable'
+	to the candidate list.
+
 2021-12-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure: Regenerate.

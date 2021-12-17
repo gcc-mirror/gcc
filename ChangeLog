@@ -1,3 +1,21 @@
+2021-12-16  Matthias Seidel  <mseidel@apache.org>
+
+	* config.sub: Fix typo.
+
+2021-12-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.tpl (AR): Add @AR_PLUGIN_OPTION@
+	(RANLIB): Add @RANLIB_PLUGIN_OPTION@.
+	* configure.ac: Include config/gcc-plugin.m4.
+	AC_SUBST AR_PLUGIN_OPTION and RANLIB_PLUGIN_OPTION.
+	* libtool.m4 (_LT_CMD_OLD_ARCHIVE): Pass --plugin to AR and
+	RANLIB if possible.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
 2021-12-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	* Makefile.tpl (BUILD_CFLAGS): New.

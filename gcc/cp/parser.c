@@ -8731,7 +8731,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    return build_x_unary_op (token->location,
 				     (keyword == RID_REALPART
 				      ? REALPART_EXPR : IMAGPART_EXPR),
-				     expression,
+				     expression, NULL_TREE,
                                      tf_warning_or_error);
 	  }
 	  break;
@@ -8908,7 +8908,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	case INDIRECT_REF:
 	  non_constant_p = NIC_STAR;
 	  expression = build_x_indirect_ref (loc, cast_expression,
-					     RO_UNARY_STAR,
+					     RO_UNARY_STAR, NULL_TREE,
                                              complain);
           /* TODO: build_x_indirect_ref does not always honor the
              location, so ensure it is set.  */
@@ -8921,7 +8921,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	case BIT_NOT_EXPR:
 	  expression = build_x_unary_op (loc, unary_operator,
 					 cast_expression,
-                                         complain);
+					 NULL_TREE, complain);
           /* TODO: build_x_unary_op does not always honor the location,
              so ensure it is set.  */
           expression.set_location (loc);
@@ -10149,7 +10149,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  op_location_t op_loc (current.loc, combined_loc);
 	  current.lhs = build_x_binary_op (op_loc, current.tree_type,
                                            current.lhs, current.lhs_type,
-                                           rhs, rhs_type, &overload,
+					   rhs, rhs_type, NULL_TREE, &overload,
                                            complain_flags (decltype_p));
           /* TODO: build_x_binary_op doesn't always honor the location.  */
           current.lhs.set_location (combined_loc);
@@ -10328,7 +10328,7 @@ cp_parser_assignment_expression (cp_parser* parser, cp_id_kind * pidk,
 				   rhs.get_finish ());
 	      expr = build_x_modify_expr (loc, expr,
 					  assignment_operator,
-					  rhs,
+					  rhs, NULL_TREE,
 					  complain_flags (decltype_p));
               /* TODO: build_x_modify_expr doesn't honor the location,
                  so we must set it here.  */
@@ -10480,7 +10480,7 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
 			       expression.get_start (),
 			       assignment_expression.get_finish ());
 	  expression = build_x_compound_expr (loc, expression,
-					      assignment_expression,
+					      assignment_expression, NULL_TREE,
 					      complain_flags (decltype_p));
 	  expression.set_location (loc);
 	}
@@ -13617,7 +13617,7 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 	  iter_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
 				  iter_type);
 	  iter_decl = build_x_indirect_ref (input_location, iter_decl,
-					    RO_UNARY_STAR,
+					    RO_UNARY_STAR, NULL_TREE,
 					    tf_warning_or_error);
 	  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
 						iter_decl, auto_node,
@@ -13804,7 +13804,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
   condition = build_x_binary_op (input_location, NE_EXPR,
 				 begin, ERROR_MARK,
 				 end, ERROR_MARK,
-				 NULL, tf_warning_or_error);
+				 NULL_TREE, NULL, tf_warning_or_error);
   finish_for_cond (condition, statement, ivdep, unroll);
 
   /* The new increment expression.  */
@@ -13818,7 +13818,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 
   /* The declaration is initialized with *__begin inside the loop body.  */
   tree deref_begin = build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
-					   tf_warning_or_error);
+					   NULL_TREE, tf_warning_or_error);
   cp_finish_decl (range_decl, deref_begin,
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING);
@@ -13924,7 +13924,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 		  && (build_x_binary_op (input_location, NE_EXPR,
 					 *begin, ERROR_MARK,
 					 *end, ERROR_MARK,
-					 NULL, tf_none)
+					 NULL_TREE, NULL, tf_none)
 		      != error_mark_node))
 		/* P0184R0 allows __begin and __end to have different types,
 		   but make sure they are comparable so we can give a better
@@ -18924,7 +18924,7 @@ cp_parser_template_argument (cp_parser* parser)
 	    {
 	      if (address_p)
 		argument = build_x_unary_op (loc, ADDR_EXPR, argument,
-					     tf_warning_or_error);
+					     NULL_TREE, tf_warning_or_error);
 	      else
 		argument = convert_from_reference (argument);
 	      return argument;
@@ -31673,8 +31673,13 @@ cp_parser_single_declaration (cp_parser* parser,
       && (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON)
 	  || decl_specifiers.type != error_mark_node))
     {
+      int flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
+      /* We don't delay parsing for friends, though CWG 2510 may change
+	 that.  */
+      if (member_p && !(friend_p && *friend_p))
+	flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
       decl = cp_parser_init_declarator (parser,
-					CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
+					flags,
 				        &decl_specifiers,
 				        checks,
 				        /*function_definition_allowed_p=*/true,
@@ -33527,7 +33532,7 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
   class_decl_loc_t *cdlguide = this;
 
   tree type = TREE_TYPE (type_decl);
-  if (CLASSTYPE_IMPLICIT_INSTANTIATION (type))
+  if (CLASS_TYPE_P (type) && CLASSTYPE_IMPLICIT_INSTANTIATION (type))
     {
       /* For implicit instantiations of a primary template look up
 	 the primary or partial specialization and use it as
@@ -41564,7 +41569,7 @@ cp_parser_omp_for_cond (cp_parser *parser, tree decl, enum tree_code code)
 			    TREE_CODE (cond),
 			    TREE_OPERAND (cond, 0), ERROR_MARK,
 			    TREE_OPERAND (cond, 1), ERROR_MARK,
-			    /*overload=*/NULL, tf_warning_or_error);
+			    NULL_TREE, /*overload=*/NULL, tf_warning_or_error);
 }
 
 /* Helper function, to parse omp for increment expression.  */
@@ -41641,11 +41646,13 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
 		lhs = rhs;
 	      else
 		lhs = build_x_unary_op (input_location, NEGATE_EXPR, rhs,
-					tf_warning_or_error);
+					NULL_TREE, tf_warning_or_error);
 	    }
 	  else
-	    lhs = build_x_binary_op (input_location, op, lhs, ERROR_MARK, rhs,
-				     ERROR_MARK, NULL, tf_warning_or_error);
+	    lhs = build_x_binary_op (input_location, op,
+				     lhs, ERROR_MARK,
+				     rhs, ERROR_MARK,
+				     NULL_TREE, NULL, tf_warning_or_error);
 	}
     }
   while (token->type == CPP_PLUS || token->type == CPP_MINUS);
@@ -41873,7 +41880,7 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
 	  orig_init = rhs;
 	  finish_expr_stmt (build_x_modify_expr (EXPR_LOCATION (rhs),
 						 decl, NOP_EXPR,
-						 rhs,
+						 rhs, NULL_TREE,
 						 tf_warning_or_error));
 	  if (!add_private_clause)
 	    add_private_clause = decl;
@@ -41995,7 +42002,7 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
     cond = build_x_binary_op (input_location, NE_EXPR,
 			      begin, ERROR_MARK,
 			      end, ERROR_MARK,
-			      NULL, tf_warning_or_error);
+			      NULL_TREE, NULL, tf_warning_or_error);
 
   /* The new increment expression.  */
   if (CLASS_TYPE_P (iter_type))
@@ -42033,7 +42040,7 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
   if (auto_node)
     {
       tree t = build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
-				     tf_none);
+				     NULL_TREE, tf_none);
       if (!error_operand_p (t))
 	TREE_TYPE (orig_decl) = do_auto_deduction (TREE_TYPE (orig_decl),
 						   t, auto_node);
@@ -42073,7 +42080,7 @@ cp_finish_omp_range_for (tree orig, tree begin)
   /* The declaration is initialized with *__begin inside the loop body.  */
   cp_finish_decl (decl,
 		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
-					tf_warning_or_error),
+					NULL_TREE, tf_warning_or_error),
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING);
   if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))

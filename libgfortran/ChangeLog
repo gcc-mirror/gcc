@@ -1,3 +1,13 @@
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io/file_pos.c: Fix error code.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/time_1.h: Prefer clock_gettime() over
+	  gettimeofday().
+	* intrinsics/date_and_time.c: Fix timezone wrapping.
+
 2021-12-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR libfortran/103634
