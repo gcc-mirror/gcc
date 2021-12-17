@@ -6361,7 +6361,9 @@ vectorizable_operation (vec_info *vinfo,
 	  /* When combining two masks check if either of them is elsewhere
 	     combined with a loop mask, if that's the case we can mark that the
 	     new combined mask doesn't need to be combined with a loop mask.  */
-	  if (masked_loop_p && code == BIT_AND_EXPR)
+	  if (masked_loop_p
+	      && code == BIT_AND_EXPR
+	      && VECTOR_BOOLEAN_TYPE_P (vectype))
 	    {
 	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0,
 								 ncopies}))
