@@ -27016,7 +27016,7 @@ $as_echo "$as_me: WARNING: LTO for $target requires binutils >= 2.20.1, but vers
 	;;
     esac
     case $target_os in
-       darwin2[0-9]* | darwin19*)
+       darwin2* | darwin19*)
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for llvm assembler x86-pad-for-align option" >&5
 $as_echo_n "checking assembler for llvm assembler x86-pad-for-align option... " >&6; }
 if ${gcc_cv_as_mllvm_x86_pad_for_align+:} false; then :

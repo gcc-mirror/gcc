@@ -2,7 +2,7 @@
 
 // { dg-do run { target *-*-darwin* } }
 // { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } }
-// { dg-skip-if "Headers incompatible with 10.4 APIs" { *-*-darwin1[1-9]* *-*-darwin2[0-9]* } { "-fnext-runtime" } { "" } }
+// { dg-skip-if "Headers incompatible with 10.4 APIs" { *-*-darwin1[1-9]* *-*-darwin2* } { "-fnext-runtime" } { "" } }
 // { dg-additional-options "-fobjc-call-cxx-cdtors -mmacosx-version-min=10.4 -framework Foundation" }
 // This test has no equivalent or meaning for m64/ABI V2
 // { dg-xfail-run-if "No Test Avail" {  *-*-darwin* && lp64 } { "-fnext-runtime" } { "" } }

@@ -1872,7 +1872,7 @@ hppa[12]*-*-hpux11*)
 		dwarf2=no
 	fi
 	;;
-i[34567]86-*-darwin1[89]*)
+i[34567]86-*-darwin1[89]* | i[34567]86-*-darwin2*)
 	echo "Error: 32bit target is not supported after Darwin17" 1>&2
 	;;
 i[34567]86-*-darwin*)
@@ -1882,7 +1882,7 @@ i[34567]86-*-darwin*)
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch t-slibgcc"
 	tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
 	;;
-x86_64-*-darwin1[89]* | x86_64-*-darwin2[01]*)
+x86_64-*-darwin1[89]* | x86_64-*-darwin2*)
 	# Only 64b from now
 	with_cpu=${with_cpu:-core2}
 	tmake_file="${tmake_file} t-slibgcc"
