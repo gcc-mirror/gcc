@@ -221,9 +221,9 @@ namespace __detail
       _CharT
       _M_translate(_CharT __ch) const
       {
-	if (__icase)
+	if _GLIBCXX17_CONSTEXPR (__icase)
 	  return _M_traits.translate_nocase(__ch);
-	else if (__collate)
+	else if _GLIBCXX17_CONSTEXPR (__collate)
 	  return _M_traits.translate(__ch);
 	else
 	  return __ch;
@@ -285,9 +285,10 @@ namespace __detail
       bool
       _M_match_range(_CharT __first, _CharT __last, _CharT __ch) const
       {
-	if (!__icase)
+	if _GLIBCXX17_CONSTEXPR (!__icase)
 	  return __first <= __ch && __ch <= __last;
-	return this->_M_in_range_icase(__first, __last, __ch);
+	else
+	  return this->_M_in_range_icase(__first, __last, __ch);
       }
     };
 

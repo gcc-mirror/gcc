@@ -143,13 +143,13 @@ namespace __gnu_test
 		      = std::regex_constants::match_default)
     {
       using namespace std::__detail;
-      auto __res1 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	   _RegexExecutorPolicy::_S_auto, true>
-	(__s, __e, __m, __re, __flags);
+      auto __res1 = __regex_algo_impl(__s, __e, __m, __re, __flags,
+				      _RegexExecutorPolicy::_S_auto,
+				      true);
       match_results<_Bi_iter, _Alloc> __mm;
-      auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	   _RegexExecutorPolicy::_S_alternate, true>
-	(__s, __e, __mm, __re, __flags);
+      auto __res2 = __regex_algo_impl(__s, __e, __mm, __re, __flags,
+				      _RegexExecutorPolicy::_S_alternate,
+				      true);
       if (__res1 == __res2 && __m == __mm)
 	return __res1;
       throw std::exception();
@@ -229,13 +229,13 @@ namespace __gnu_test
 		       = std::regex_constants::match_default)
     {
       using namespace std::__detail;
-      auto __res1 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	   _RegexExecutorPolicy::_S_auto, false>
-        (__s, __e, __m, __re, __flags);
+      auto __res1 = __regex_algo_impl(__s, __e, __m, __re, __flags,
+				      _RegexExecutorPolicy::_S_auto,
+				      false);
       match_results<_Bi_iter, _Alloc> __mm;
-      auto __res2 = __regex_algo_impl<_Bi_iter, _Alloc, _Ch_type, _Rx_traits,
-	   _RegexExecutorPolicy::_S_alternate, false>
-        (__s, __e, __mm, __re, __flags);
+      auto __res2 = __regex_algo_impl(__s, __e, __mm, __re, __flags,
+				      _RegexExecutorPolicy::_S_alternate,
+				      false);
       if (__res1 == __res2 && __m == __mm)
         return __res1;
       throw(std::exception()); // Let test fail. Give it a name.
