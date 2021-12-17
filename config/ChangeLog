@@ -1,3 +1,11 @@
+2021-12-16  Martin Storsjö  <martin@martin.st>
+
+	Backported from master:
+	2021-04-13  Martin Storsjö  <martin@martin.st>
+
+	* mh-mingw: Set __USE_MINGW_ACCESS in missed C++ flags
+	variables
+
 2021-06-01  Release Manager
 
 	* GCC 9.4.0 released.

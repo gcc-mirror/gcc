@@ -1,3 +1,22 @@
+2021-12-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103606
+	* resolve.c (resolve_fl_procedure): Do not access CLASS components
+	before class container has been built.
+
+2021-12-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103717
+	* frontend-passes.c (doloop_code): Prevent NULL pointer
+	dereference when checking for passing a do-loop variable to a
+	contained procedure with an interface mismatch.
+
 2021-12-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
