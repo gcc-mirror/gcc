@@ -1,3 +1,9 @@
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101289
+	PR c/97548
+	* c-warn.c (warn_parm_array_mismatch): Use OEP_DECL_NAME.
+
 2021-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

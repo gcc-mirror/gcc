@@ -1,3 +1,30 @@
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101751
+	* doc/extend.texi (attribute access): Adjust.
+	* calls.c (maybe_warn_rdwr_sizes): Treat access mode none on a void*
+	argument as expecting as few as zero bytes.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c/101289
+	PR c/97548
+	* fold-const.c (operand_compare::operand_equal_p): Handle OEP_DECL_NAME.
+	(operand_compare::verify_hash_value): Same.
+	* tree-core.h (OEP_DECL_NAME): New.
+
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-12-15  Martin Liska  <mliska@suse.cz>
+
+	PR target/103661
+	* config/i386/i386-builtins.c (fold_builtin_cpu): Compare to 0
+	as API expects that non-zero values are returned (do that
+	it mask == 31).
+	For "avx512vbmi2" argument, we return now 1 << 31, which is a
+	negative integer value.
+
 2021-12-15  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

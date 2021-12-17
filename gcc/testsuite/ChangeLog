@@ -1,3 +1,17 @@
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101751
+	* gcc.dg/Wstringop-overflow-86.c: New test.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wvla-parameter-12.c: New test.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/103703
+	* g++.dg/warn/Wmismatched-tags-9.C: New test.
+
 2021-12-15  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
