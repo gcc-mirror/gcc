@@ -10255,7 +10255,7 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 static tree
 fold_builtin_object_size (tree ptr, tree ost)
 {
-  unsigned HOST_WIDE_INT bytes;
+  tree bytes;
   int object_size_type;
 
   if (!validate_arg (ptr, POINTER_TYPE)
@@ -10280,8 +10280,8 @@ fold_builtin_object_size (tree ptr, tree ost)
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
       compute_builtin_object_size (ptr, object_size_type, &bytes);
-      if (wi::fits_to_tree_p (bytes, size_type_node))
-	return build_int_cstu (size_type_node, bytes);
+      if (int_fits_type_p (bytes, size_type_node))
+	return fold_convert (size_type_node, bytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
     {
@@ -10289,8 +10289,8 @@ fold_builtin_object_size (tree ptr, tree ost)
        later.  Maybe subsequent passes will help determining
        it.  */
       if (compute_builtin_object_size (ptr, object_size_type, &bytes)
-	  && wi::fits_to_tree_p (bytes, size_type_node))
-	return build_int_cstu (size_type_node, bytes);
+	  && int_fits_type_p (bytes, size_type_node))
+	return fold_convert (size_type_node, bytes);
     }
 
   return NULL_TREE;

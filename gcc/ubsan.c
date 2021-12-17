@@ -2160,9 +2160,8 @@ instrument_object_size (gimple_stmt_iterator *gsi, tree t, bool is_lhs)
   if (decl_p)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
-  unsigned HOST_WIDE_INT size;
-  if (compute_builtin_object_size (base_addr, 0, &size))
-    sizet = build_int_cst (sizetype, size);
+  if (compute_builtin_object_size (base_addr, 0, &sizet))
+    ;
   else if (optimize)
     {
       if (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION)
