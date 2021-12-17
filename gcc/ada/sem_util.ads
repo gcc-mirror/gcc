@@ -448,6 +448,10 @@ package Sem_Util is
    --  Verify that the profile of nonvolatile function Func_Id does not contain
    --  effectively volatile parameters or return type for reading.
 
+   function Check_Parents (N : Node_Id; List : Elist_Id) return Boolean;
+   --  Return True if all the occurrences of subtree N referencing entities in
+   --  the given List have the right value in their Parent field.
+
    procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id);
    --  Verify the legality of reference Ref to variable Var_Id when the
    --  variable is a constituent of a single protected/task type.

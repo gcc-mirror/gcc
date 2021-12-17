@@ -4443,6 +4443,44 @@ package body Sem_Util is
       end if;
    end Check_Nonvolatile_Function_Profile;
 
+   -------------------
+   -- Check_Parents --
+   -------------------
+
+   function Check_Parents (N : Node_Id; List : Elist_Id) return Boolean is
+
+      function Check_Node
+        (Parent_Node : Node_Id;
+         N           : Node_Id) return Traverse_Result;
+      --  Process a single node.
+
+      ----------------
+      -- Check_Node --
+      ----------------
+
+      function Check_Node
+        (Parent_Node : Node_Id;
+         N           : Node_Id) return Traverse_Result is
+      begin
+         if Nkind (N) = N_Identifier
+           and then Parent (N) /= Parent_Node
+           and then Present (Entity (N))
+           and then Contains (List, Entity (N))
+         then
+            return Abandon;
+         end if;
+
+         return OK;
+      end Check_Node;
+
+      function Traverse is new Traverse_Func_With_Parent (Check_Node);
+
+   --  Start of processing for Check_Parents
+
+   begin
+      return Traverse (N) = OK;
+   end Check_Parents;
+
    -----------------------------
    -- Check_Part_Of_Reference --
    -----------------------------
