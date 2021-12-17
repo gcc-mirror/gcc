@@ -237,6 +237,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->begin_group_cb = NULL;
   context->end_group_cb = NULL;
   context->final_cb = default_diagnostic_final_cb;
+  context->includes_seen = NULL;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -328,6 +329,12 @@ diagnostic_finish (diagnostic_context *context)
     {
       delete context->edit_context_ptr;
       context->edit_context_ptr = NULL;
+    }
+
+  if (context->includes_seen)
+    {
+      delete context->includes_seen;
+      context->includes_seen = nullptr;
     }
 }
 
@@ -700,6 +707,31 @@ set_last_module (diagnostic_context *context, const line_map_ordinary *map)
   context->last_module = map;
 }
 
+/* Only dump the "In file included from..." stack once for each file.  */
+
+static bool
+includes_seen (diagnostic_context *context, const line_map_ordinary *map)
+{
+  /* No include path for main.  */
+  if (MAIN_FILE_P (map))
+    return true;
+
+  /* Always identify C++ modules, at least for now.  */
+  auto probe = map;
+  if (linemap_check_ordinary (map)->reason == LC_RENAME)
+    /* The module source file shows up as LC_RENAME inside LC_MODULE.  */
+    probe = linemap_included_from_linemap (line_table, map);
+  if (MAP_MODULE_P (probe))
+    return false;
+
+  if (!context->includes_seen)
+    context->includes_seen = new hash_set<location_t, false, location_hash>;
+
+  /* Hash the location of the #include directive to better handle files
+     that are included multiple times with different macros defined.  */
+  return context->includes_seen->add (linemap_included_from (map));
+}
+
 void
 diagnostic_report_current_module (diagnostic_context *context, location_t where)
 {
@@ -721,7 +753,7 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
   if (map && last_module_changed_p (context, map))
     {
       set_last_module (context, map);
-      if (! MAIN_FILE_P (map))
+      if (!includes_seen (context, map))
 	{
 	  bool first = true, need_inc = true, was_module = MAP_MODULE_P (map);
 	  expanded_location s = {};
@@ -760,7 +792,7 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 			   "locus", s.file, line_col);
 	      first = false, need_inc = was_module, was_module = is_module;
 	    }
-	  while (! MAIN_FILE_P (map));
+	  while (!includes_seen (context, map));
 	  pp_verbatim (context->printer, ":");
 	  pp_newline (context->printer);
 	}

@@ -387,6 +387,10 @@ struct diagnostic_context
      the BLOCK_SUPERCONTEXT() chain hanging off the LOCATION_BLOCK()
      of a diagnostic's location.  */
   void (*set_locations_cb)(diagnostic_context *, diagnostic_info *);
+
+  /* Include files that diagnostic_report_current_module has already listed the
+     include path for.  */
+  hash_set<location_t, false, location_hash> *includes_seen;
 };
 
 static inline void
