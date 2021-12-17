@@ -141,6 +141,8 @@ FROM M2Reserved IMPORT NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTo
                        GreaterTok, GreaterEqualTok, InTok, PlusTok, MinusTok,
                        OrTok, TimesTok, DivTok, DivideTok, ModTok, RemTok, AndTok, AmbersandTok ;
 
+IMPORT M2Error ;
+
 
 CONST
    Debugging = FALSE ;
@@ -538,7 +540,8 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % PushAutoOn %
+ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+                                                                           % PushAutoOn %
                   Ident                                                    % P3StartBuildProgModule %
                                                                            % BuildModuleStart %
                                                                            % PushAutoOff %
@@ -555,7 +558,8 @@ ProgramModule := "MODULE"                                                  % Pus
                                                                              PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION" "MODULE"                          % PushAutoOn %
+ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"                          % PushAutoOn %
                          Ident                                             % StartBuildModFile %
                                                                            % P3StartBuildImpModule %
                                                                            % BuildModuleStart %
@@ -1105,7 +1109,7 @@ DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" 
                             "__INLINE__" ]
                        =:
 
-ProcedureHeading := "PROCEDURE"
+ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
                      DefineBuiltinProcedure                                % PushAutoOn %
                      ( Ident                                               % StartBuildProcedure %
                                                                            % PushAutoOff %
@@ -1175,7 +1179,8 @@ DefOptArg := "[" Ident ":" FormalType "=" SilentConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % PushAutoOn %
+ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+                                                                           % PushAutoOn %
                      Ident                                                 % StartBuildInnerModule ;
                                                                              BuildModuleStart ;
 
@@ -1201,7 +1206,8 @@ Import :=  "FROM" Ident "IMPORT" IdentList ";" |
            "IMPORT"
             IdentList ";" =:
 
-DefinitionModule := "DEFINITION" "MODULE"                                  % PushAutoOn %
+DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE"                                  % PushAutoOn %
                     [ "FOR" string ]
                     Ident                                                  % StartBuildDefFile ;
                                                                              P3StartBuildDefModule ;

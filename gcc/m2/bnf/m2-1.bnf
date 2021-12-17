@@ -55,6 +55,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatC
 FROM M2Debug IMPORT Assert ;
 FROM M2Printf IMPORT printf0 ;
 FROM SymbolTable IMPORT AddNameToScope ;
+IMPORT M2Error ;
 
 
 (* imports for Pass1 *)
@@ -552,7 +553,8 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % PushAutoOn ; %
+ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+                                                                           % PushAutoOn ; %
                   Ident                                                    % P1StartBuildProgramModule ; %
                                                                            % PushAutoOff ; %
                   [ Priority ]
@@ -566,7 +568,8 @@ ProgramModule := "MODULE"                                                  % Pus
                   "."                                                      % PopAuto ; PopAuto ; PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION" "MODULE"                          % PushAutoOn ; %
+ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"                          % PushAutoOn ; %
                          Ident                                             % P1StartBuildImplementationModule ; %
                                                                            % PushAutoOff ; %
                          [ Priority ] ";"                                  % PushAutoOn ; %
@@ -888,7 +891,8 @@ DefineBuiltinProcedure := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")"
                           |                                                % PushT(NulTok) %
                        =:
 
-ProcedureHeading := "PROCEDURE"                                            % PushAutoOn %
+ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
                      DefineBuiltinProcedure
                      ( PossiblyExportIdent                                 % StartBuildProcedure %
                                                                            % PushAutoOff %
@@ -964,7 +968,8 @@ DefOptArg := "[" IdentScope ":" FormalType "=" ConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % PushAutoOn %
+ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+                                                                           % PushAutoOn %
                      Ident                                                 % StartBuildInnerModule %
                                                                            % PushAutoOff %
                      [ Priority ] ";"                                      % PushAutoOn %
@@ -989,7 +994,8 @@ Import :=  "FROM" Ident "IMPORT" IdentList ";" |
                                                                              (* determines whether Ident or Module *) %
             IdentList ";" =:
 
-DefinitionModule := "DEFINITION" "MODULE"                                  % PushAutoOn %
+DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE"                                  % PushAutoOn %
                     ( "FOR"  string |                                      % (* epsilon *)
                                                                              PushT(NulSym) %
                     )

@@ -117,6 +117,8 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
 
 FROM M2Batch IMPORT IsModuleKnown ;
 
+IMPORT M2Error ;
+
 
 CONST
    Debugging = FALSE ;
@@ -512,7 +514,8 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % PushAutoOn %
+ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+                                                                           % PushAutoOn %
                   Ident                                                    % PCStartBuildProgModule %
                                                                            % PushAutoOff %
                   [ Priority
@@ -525,7 +528,8 @@ ProgramModule := "MODULE"                                                  % Pus
                   "."                                                      % PopAuto ; PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION" "MODULE"                          % PushAutoOn %
+ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"                          % PushAutoOn %
                          Ident                                             % PCStartBuildImpModule %
                                                                            % PushAutoOff %
                          [ Priority
@@ -1076,7 +1080,8 @@ DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__"
                                           ")" ")" | "__INLINE__" ]
                       =:
 
-ProcedureHeading := "PROCEDURE"                                            % PushAutoOn %
+ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
                      DefineBuiltinProcedure
                      ( Ident
                                                                            % PCStartBuildProcedure ;
@@ -1089,7 +1094,8 @@ ProcedureHeading := "PROCEDURE"                                            % Pus
 
 Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
 
-DefProcedureHeading := "PROCEDURE"                                         % PushAutoOn %
+DefProcedureHeading := "PROCEDURE"                                         % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
                         Builtin
                         ( Ident
                                                                            % PCStartBuildProcedure ;
@@ -1164,7 +1170,8 @@ DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % PushAutoOn %
+ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+                                                                           % PushAutoOn %
                      Ident                                                 % PCStartBuildInnerModule %
                                                                            % PushAutoOff %
                      [ Priority ] ";"
@@ -1191,7 +1198,8 @@ Import :=                                                                  % Pus
             IdentList ";" )                                                % PopAuto %
         =:
 
-DefinitionModule := "DEFINITION" "MODULE"                                  % PushAutoOn %
+DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE"                                  % PushAutoOn %
                     [ "FOR" string ]
                     Ident                                                  % PCStartBuildDefModule ;
                                                                              PushAutoOff %

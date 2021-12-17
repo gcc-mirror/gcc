@@ -44,7 +44,7 @@ EXPORT QUALIFIED OpenSource, CloseSource, ReInitialize, GetToken, InsertToken,
                  currenttoken, currentstring, currentinteger,
                  AddTok, AddTokCharStar, AddTokInteger, MakeVirtualTok,
                  SetFile, PushFile, PopFile,
-                 PrintTokenNo,
+                 PrintTokenNo, DisplayToken, DumpTokens,
                  BuiltinTokenNo, UnknownTokenNo ;
 
 CONST
@@ -258,6 +258,20 @@ PROCEDURE PopFile (filename: ADDRESS) ;
 *)
 
 PROCEDURE PrintTokenNo (tokenno: CARDINAL) ;
+
+
+(*
+   DisplayToken - display the token name using printf0 no newline is emitted.
+*)
+
+PROCEDURE DisplayToken (tok: toktype) ;
+
+
+(*
+   DumpTokens - developer debugging aid.
+*)
+
+PROCEDURE DumpTokens ;
 
 
 END M2LexBuf.

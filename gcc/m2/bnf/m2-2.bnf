@@ -132,6 +132,9 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         IsRecord, IsAModula2Type,
                         RequestSym ;
 
+IMPORT M2Error ;
+
+
 CONST
    Debugging = FALSE ;
    Pass1     = FALSE ;          (* permanently disabled for the time being *)
@@ -529,7 +532,7 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"
+ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
                   Ident                                                    % P2StartBuildProgramModule ; %
 
 
@@ -548,7 +551,8 @@ ProgramModule := "MODULE"
                   "."
                   =:
 
-ImplementationModule := "IMPLEMENTATION" "MODULE"
+ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"
                          Ident                                             % P2StartBuildImplementationModule ; %
 
                          [ Priority
@@ -979,7 +983,7 @@ DefineBuiltinProcedure :=  [ "__ATTRIBUTE__" "__BUILTIN__"
                                           ")" ")" | "__INLINE__" ]
                       =:
 
-ProcedureHeading := "PROCEDURE"
+ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
                      DefineBuiltinProcedure
                      ( Ident
                                                                            % StartBuildProcedure %
@@ -993,7 +997,7 @@ ProcedureHeading := "PROCEDURE"
 
 Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
 
-DefProcedureHeading := "PROCEDURE"
+DefProcedureHeading := "PROCEDURE"                                         % M2Error.DefaultProcedure %
                         Builtin
                         ( Ident
                                                                            % StartBuildProcedure %
@@ -1119,7 +1123,7 @@ FormalType := "ARRAY" "OF"                                                 % VAR
                                                                              PushTF(Sym, Type) %
             =:
 
-ModuleDeclaration := "MODULE"
+ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
                      Ident                                                 % StartBuildInnerModule %
                      [ Priority
                                 ] ";"
@@ -1143,7 +1147,8 @@ Import :=  "FROM" Ident "IMPORT" IdentList ";" |
                                                                              (* determines whether Ident or Module *) %
             IdentList ";" =:
 
-DefinitionModule := "DEFINITION" "MODULE"
+DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE"
                     [ "FOR" string ]
                     Ident                                                  % P2StartBuildDefModule %
                     ";"

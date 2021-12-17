@@ -40,11 +40,11 @@ FROM M2Error IMPORT WarnStringAt ;
 CONST
    MaxBucketSize      = 100 ;
    Debugging          = FALSE ;
+   DebugRecover       = FALSE ;
    InitialSourceToken = 2 ;   (* 0 is unknown, 1 is builtin.  *)
 
 TYPE
-   SourceList = POINTER TO sourcelist ;
-   sourcelist =            RECORD
+   SourceList = POINTER TO RECORD
                               left,
                               right: SourceList ;
                               name : String ;
@@ -53,17 +53,17 @@ TYPE
                            END ;
 
    TokenDesc = RECORD
-                  token: toktype ;
-                  str  : Name ;
-                  int  : INTEGER ;
-                  line : CARDINAL ;
-                  col  : CARDINAL ;
-                  file : SourceList ;
-                  loc  : location_t ;
+                  token : toktype ;
+                  str   : Name ;          (* ident name or string literal.  *)
+                  int   : INTEGER ;
+                  line  : CARDINAL ;
+                  col   : CARDINAL ;
+                  file  : SourceList ;
+                  loc   : location_t ;
+                  insert: TokenBucket ;   (* contains any inserted tokens.  *)
                END ;
 
-   TokenBucket = POINTER TO tokenbucket ;
-   tokenbucket =            RECORD
+   TokenBucket = POINTER TO RECORD
                                buf : ARRAY [0..MaxBucketSize] OF TokenDesc ;
                                len : CARDINAL ;
                                next: TokenBucket ;
@@ -81,6 +81,7 @@ VAR
    CurrentUsed      : BOOLEAN ;
    ListOfTokens     : ListDesc ;
    CurrentTokNo     : CARDINAL ;
+   InsertionIndex   : CARDINAL ;
 
 
 (*
@@ -91,8 +92,26 @@ VAR
 
 PROCEDURE InitTokenList ;
 BEGIN
-   NEW(ListOfTokens.head) ;
+   NEW (ListOfTokens.head) ;
    ListOfTokens.tail := ListOfTokens.head ;
+   WITH ListOfTokens.tail^.buf[0] DO
+      token := eoftok ;
+      str := NulName ;
+      int := 0 ;
+      line := 0 ;
+      col := 0 ;
+      file := NIL ;
+      loc := UnknownLocation ()
+   END ;
+   WITH ListOfTokens.tail^.buf[1] DO
+      token := eoftok ;
+      str := NulName ;
+      int := 0 ;
+      line := 0 ;
+      col := 0 ;
+      file := NIL ;
+      loc := BuiltinsLocation ()
+   END ;
    ListOfTokens.tail^.len := InitialSourceToken
 END InitTokenList ;
 
@@ -103,6 +122,7 @@ END InitTokenList ;
 
 PROCEDURE Init ;
 BEGIN
+   InsertionIndex := 0 ;
    currenttoken := eoftok ;
    CurrentTokNo := InitialSourceToken ;
    CurrentSource := NIL ;
@@ -149,8 +169,8 @@ PROCEDURE NewElement (s: ADDRESS) : SourceList ;
 VAR
    l: SourceList ;
 BEGIN
-   NEW(l) ;
-   IF l=NIL
+   NEW (l) ;
+   IF l = NIL
    THEN
       HALT
    ELSE
@@ -160,7 +180,7 @@ BEGIN
          right := NIL
       END
    END ;
-   RETURN( l )
+   RETURN l
 END NewElement ;
 
 
@@ -172,13 +192,13 @@ PROCEDURE NewList () : SourceList ;
 VAR
    l: SourceList ;
 BEGIN
-   NEW(l) ;
+   NEW (l) ;
    WITH l^ DO
       left  := l ;
       right := l ;
       name  := NIL
    END ;
-   RETURN( l )
+   RETURN l
 END NewList ;
 
 
@@ -197,7 +217,7 @@ BEGIN
       h := CurrentSource ;
       CurrentSource := NewList() ;
       WHILE l#h DO
-         AddTo(NewElement(l^.name)) ;
+         AddTo (NewElement (l^.name)) ;
          l := l^.right
       END
    END
@@ -213,7 +233,7 @@ VAR
    l: SourceList ;
 BEGIN
    CheckIfNeedToDuplicate ;
-   AddTo(NewElement(filename)) ;
+   AddTo (NewElement (filename)) ;
    IF Debugging
    THEN
       IF CurrentSource^.right#CurrentSource
@@ -305,8 +325,8 @@ PROCEDURE SetFile (filename: ADDRESS) ;
 BEGIN
    KillList ;
    CurrentUsed   := FALSE ;
-   CurrentSource := NewList() ;
-   AddTo(NewElement(filename))
+   CurrentSource := NewList () ;
+   AddTo (NewElement (filename))
 END SetFile ;
 
 
@@ -359,99 +379,100 @@ END CloseSource ;
 
 PROCEDURE ResetForNewPass ;
 BEGIN
+   InsertionIndex := 0 ;
    CurrentTokNo := InitialSourceToken ;
    UseBufferedTokens := TRUE
 END ResetForNewPass ;
 
 
 (*
-   DisplayToken -
+   DisplayToken - display the token name using printf0 no newline is emitted.
 *)
 
 PROCEDURE DisplayToken (tok: toktype) ;
 BEGIN
    CASE tok OF
 
-   eoftok: printf0('eoftok\n') |
-   plustok: printf0('plustok\n') |
-   minustok: printf0('minustok\n') |
-   timestok: printf0('timestok\n') |
-   dividetok: printf0('dividetok\n') |
-   becomestok: printf0('becomestok\n') |
-   ambersandtok: printf0('ambersandtok\n') |
-   periodtok: printf0('periodtok\n') |
-   commatok: printf0('commatok\n') |
-   semicolontok: printf0('semicolontok\n') |
-   lparatok: printf0('lparatok\n') |
-   rparatok: printf0('rparatok\n') |
-   lsbratok: printf0('lsbratok\n') |
-   rsbratok: printf0('rsbratok\n') |
-   lcbratok: printf0('lcbratok\n') |
-   rcbratok: printf0('rcbratok\n') |
-   uparrowtok: printf0('uparrowtok\n') |
-   singlequotetok: printf0('singlequotetok\n') |
-   equaltok: printf0('equaltok\n') |
-   hashtok: printf0('hashtok\n') |
-   lesstok: printf0('lesstok\n') |
-   greatertok: printf0('greatertok\n') |
-   lessgreatertok: printf0('lessgreatertok\n') |
-   lessequaltok: printf0('lessequaltok\n') |
-   greaterequaltok: printf0('greaterequaltok\n') |
-   periodperiodtok: printf0('periodperiodtok\n') |
-   colontok: printf0('colontok\n') |
-   doublequotestok: printf0('doublequotestok\n') |
-   bartok: printf0('bartok\n') |
-   andtok: printf0('andtok\n') |
-   arraytok: printf0('arraytok\n') |
-   begintok: printf0('begintok\n') |
-   bytok: printf0('bytok\n') |
-   casetok: printf0('casetok\n') |
-   consttok: printf0('consttok\n') |
-   definitiontok: printf0('definitiontok\n') |
-   divtok: printf0('divtok\n') |
-   dotok: printf0('dotok\n') |
-   elsetok: printf0('elsetok\n') |
-   elsiftok: printf0('elsiftok\n') |
-   endtok: printf0('endtok\n') |
-   exittok: printf0('exittok\n') |
-   exporttok: printf0('exporttok\n') |
-   fortok: printf0('fortok\n') |
-   fromtok: printf0('fromtok\n') |
-   iftok: printf0('iftok\n') |
-   implementationtok: printf0('implementationtok\n') |
-   importtok: printf0('importtok\n') |
-   intok: printf0('intok\n') |
-   looptok: printf0('looptok\n') |
-   modtok: printf0('modtok\n') |
-   moduletok: printf0('moduletok\n') |
-   nottok: printf0('nottok\n') |
-   oftok: printf0('oftok\n') |
-   ortok: printf0('ortok\n') |
-   pointertok: printf0('pointertok\n') |
-   proceduretok: printf0('proceduretok\n') |
-   qualifiedtok: printf0('qualifiedtok\n') |
-   unqualifiedtok: printf0('unqualifiedtok\n') |
-   recordtok: printf0('recordtok\n') |
-   repeattok: printf0('repeattok\n') |
-   returntok: printf0('returntok\n') |
-   settok: printf0('settok\n') |
-   thentok: printf0('thentok\n') |
-   totok: printf0('totok\n') |
-   typetok: printf0('typetok\n') |
-   untiltok: printf0('untiltok\n') |
-   vartok: printf0('vartok\n') |
-   whiletok: printf0('whiletok\n') |
-   withtok: printf0('withtok\n') |
-   asmtok: printf0('asmtok\n') |
-   volatiletok: printf0('volatiletok\n') |
-   periodperiodperiodtok: printf0('periodperiodperiodtok\n') |
-   datetok: printf0('datetok\n') |
-   linetok: printf0('linetok\n') |
-   filetok: printf0('filetok\n') |
-   integertok: printf0('integertok\n') |
-   identtok: printf0('identtok\n') |
-   realtok: printf0('realtok\n') |
-   stringtok: printf0('stringtok\n')
+   eoftok: printf0('eoftok') |
+   plustok: printf0('plustok') |
+   minustok: printf0('minustok') |
+   timestok: printf0('timestok') |
+   dividetok: printf0('dividetok') |
+   becomestok: printf0('becomestok') |
+   ambersandtok: printf0('ambersandtok') |
+   periodtok: printf0('periodtok') |
+   commatok: printf0('commatok') |
+   semicolontok: printf0('semicolontok') |
+   lparatok: printf0('lparatok') |
+   rparatok: printf0('rparatok') |
+   lsbratok: printf0('lsbratok') |
+   rsbratok: printf0('rsbratok') |
+   lcbratok: printf0('lcbratok') |
+   rcbratok: printf0('rcbratok') |
+   uparrowtok: printf0('uparrowtok') |
+   singlequotetok: printf0('singlequotetok') |
+   equaltok: printf0('equaltok') |
+   hashtok: printf0('hashtok') |
+   lesstok: printf0('lesstok') |
+   greatertok: printf0('greatertok') |
+   lessgreatertok: printf0('lessgreatertok') |
+   lessequaltok: printf0('lessequaltok') |
+   greaterequaltok: printf0('greaterequaltok') |
+   periodperiodtok: printf0('periodperiodtok') |
+   colontok: printf0('colontok') |
+   doublequotestok: printf0('doublequotestok') |
+   bartok: printf0('bartok') |
+   andtok: printf0('andtok') |
+   arraytok: printf0('arraytok') |
+   begintok: printf0('begintok') |
+   bytok: printf0('bytok') |
+   casetok: printf0('casetok') |
+   consttok: printf0('consttok') |
+   definitiontok: printf0('definitiontok') |
+   divtok: printf0('divtok') |
+   dotok: printf0('dotok') |
+   elsetok: printf0('elsetok') |
+   elsiftok: printf0('elsiftok') |
+   endtok: printf0('endtok') |
+   exittok: printf0('exittok') |
+   exporttok: printf0('exporttok') |
+   fortok: printf0('fortok') |
+   fromtok: printf0('fromtok') |
+   iftok: printf0('iftok') |
+   implementationtok: printf0('implementationtok') |
+   importtok: printf0('importtok') |
+   intok: printf0('intok') |
+   looptok: printf0('looptok') |
+   modtok: printf0('modtok') |
+   moduletok: printf0('moduletok') |
+   nottok: printf0('nottok') |
+   oftok: printf0('oftok') |
+   ortok: printf0('ortok') |
+   pointertok: printf0('pointertok') |
+   proceduretok: printf0('proceduretok') |
+   qualifiedtok: printf0('qualifiedtok') |
+   unqualifiedtok: printf0('unqualifiedtok') |
+   recordtok: printf0('recordtok') |
+   repeattok: printf0('repeattok') |
+   returntok: printf0('returntok') |
+   settok: printf0('settok') |
+   thentok: printf0('thentok') |
+   totok: printf0('totok') |
+   typetok: printf0('typetok') |
+   untiltok: printf0('untiltok') |
+   vartok: printf0('vartok') |
+   whiletok: printf0('whiletok') |
+   withtok: printf0('withtok') |
+   asmtok: printf0('asmtok') |
+   volatiletok: printf0('volatiletok') |
+   periodperiodperiodtok: printf0('periodperiodperiodtok') |
+   datetok: printf0('datetok') |
+   linetok: printf0('linetok') |
+   filetok: printf0('filetok') |
+   integertok: printf0('integertok') |
+   identtok: printf0('identtok') |
+   realtok: printf0('realtok') |
+   stringtok: printf0('stringtok')
 
    ELSE
    END
@@ -466,17 +487,122 @@ END DisplayToken ;
 
 PROCEDURE UpdateFromBucket (b: TokenBucket; offset: CARDINAL) ;
 BEGIN
-   WITH b^.buf[offset] DO
-      currenttoken   := token ;
-      currentstring  := KeyToCharStar(str) ;
-      currentcolumn  := col ;
-      currentinteger := int ;
-      IF Debugging
+   IF InsertionIndex > 0
+   THEN
+      (* we have an inserted token to use.  *)
+      Assert (b^.buf[offset].insert # NIL) ;
+      WITH b^.buf[offset].insert^.buf[InsertionIndex] DO
+         currenttoken   := token ;
+         currentstring  := KeyToCharStar(str) ;
+         currentcolumn  := col ;
+         currentinteger := int ;
+         IF Debugging
+         THEN
+            printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo)
+         END
+      END ;
+      INC (InsertionIndex) ;
+      IF InsertionIndex = b^.buf[offset].insert^.len
       THEN
-         printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo) ;
+         InsertionIndex := 0 ;  (* finished consuming the inserted tokens.  *)
+         INC (CurrentTokNo)
       END
+   ELSIF (b^.buf[offset].insert # NIL) AND (InsertionIndex = 0)
+   THEN
+      (* this source token has extra tokens appended after it by the error recovery.  *)
+      Assert (b^.buf[offset].insert^.len > 0) ;  (* we must have at least one token.  *)
+      InsertionIndex := 1 ; (* so set the index ready for the next UpdateFromBucket.  *)
+      (* and read the original token.  *)
+      WITH b^.buf[offset] DO
+         currenttoken   := token ;
+         currentstring  := KeyToCharStar(str) ;
+         currentcolumn  := col ;
+         currentinteger := int ;
+         IF Debugging
+         THEN
+            printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo)
+         END
+      END
+   ELSE
+      (* no inserted tokens after this token so read it and move on.  *)
+      WITH b^.buf[offset] DO
+         currenttoken   := token ;
+         currentstring  := KeyToCharStar(str) ;
+         currentcolumn  := col ;
+         currentinteger := int ;
+         IF Debugging
+         THEN
+            printf3('line %d (# %d  %d) ', line, offset, CurrentTokNo)
+         END
+      END ;
+      INC (CurrentTokNo)
    END
 END UpdateFromBucket ;
+
+
+(*
+   DisplayTokenEntry -
+*)
+
+PROCEDURE DisplayTokenEntry (topBucket: TokenBucket; index, total: CARDINAL) ;
+VAR
+   i: CARDINAL ;
+BEGIN
+   printf1 ("%d: ", total) ;
+   DisplayToken (topBucket^.buf[index].token) ;
+   printf1 (" %a ", topBucket^.buf[index].str) ;
+   IF total = GetTokenNo ()
+   THEN
+      printf0 (" <- current token")
+   END ;
+   printf0 ("\n") ;
+   (* now check for inserted tokens.  *)
+   IF topBucket^.buf[index].insert # NIL
+   THEN
+      i := 1 ;
+      WHILE i < topBucket^.buf[index].insert^.len DO
+         printf1 ("   %d: ", i) ;
+         DisplayToken (topBucket^.buf[index].insert^.buf[i].token) ;
+         printf1 (" %a\n", topBucket^.buf[index].insert^.buf[i].str) ;
+         INC (i)
+      END
+   END
+END DisplayTokenEntry ;
+
+
+(*
+   DumpTokens - developer debugging aid.
+*)
+
+PROCEDURE DumpTokens ;
+VAR
+   tb    : TokenBucket ;
+   i,
+   tokenNo,
+   total,
+   length : CARDINAL ;
+BEGIN
+   tokenNo := GetTokenNo () ;
+   tb := ListOfTokens.head ;
+   total := 0 ;
+   WHILE tb # NIL DO
+      length := tb^.len ;
+      i := 0 ;
+      WHILE i < length DO
+         DisplayTokenEntry (tb, i, total) ;
+         INC (i) ;
+         INC (total)
+      END ;
+      tb := tb^.next
+   END ;
+   printf2 ("%d: tokenNo,  %d: total\n", tokenNo, total) ;
+   IF (total # 0) AND (tokenNo = total)
+   THEN
+      printf1 ("%d: end of buffer ", total) ;
+      printf0 (" <- current token") ;
+      printf0 ("\n") ;
+   END ;
+END DumpTokens ;
 
 
 (*
@@ -492,7 +618,7 @@ BEGIN
    THEN
       t := CurrentTokNo ;
       b := FindTokenBucket(t) ;
-      UpdateFromBucket(b, t)
+      UpdateFromBucket (b, t)
    ELSE
       IF ListOfTokens.tail=NIL
       THEN
@@ -507,8 +633,8 @@ BEGIN
          (* CurrentTokNo is in the last bucket or needs to be read *)
          IF CurrentTokNo-ListOfTokens.LastBucketOffset<ListOfTokens.tail^.len
          THEN
-            UpdateFromBucket(ListOfTokens.tail,
-                             CurrentTokNo-ListOfTokens.LastBucketOffset)
+            UpdateFromBucket (ListOfTokens.tail,
+                              CurrentTokNo-ListOfTokens.LastBucketOffset)
          ELSE
             (* call the lexical phase to place a new token into the last bucket *)
             m2flex.GetToken () ;
@@ -520,12 +646,7 @@ BEGIN
          b := FindTokenBucket (t) ;
          UpdateFromBucket (b, t)
       END
-   END ;
-   IF Debugging
-   THEN
-      DisplayToken (currenttoken)
-   END ;
-   INC (CurrentTokNo)
+   END
 END GetToken ;
 
 
@@ -546,23 +667,59 @@ END SyncOpenWithBuffer ;
 
 
 (*
+   GetInsertBucket - returns the insertion bucket associated with token count
+                     and the topBucket.  It creates a new TokenBucket if necessary.
+*)
+
+PROCEDURE GetInsertBucket (topBucket: TokenBucket; count: CARDINAL) : TokenBucket ;
+BEGIN
+   IF topBucket^.buf[count].insert = NIL
+   THEN
+      NEW (topBucket^.buf[count].insert) ;
+      topBucket^.buf[count].insert^.buf[0] := topBucket^.buf[count] ;
+      topBucket^.buf[count].insert^.buf[0].insert := NIL ;
+      topBucket^.buf[count].insert^.len := 1  (* empty, slot 0 contains the original token for ease.  *)
+   END ;
+   RETURN topBucket^.buf[count].insert
+END GetInsertBucket ;
+
+
+(*
+   AppendToken - appends desc to the end of the insertionBucket.
+*)
+
+PROCEDURE AppendToken (insertionBucket: TokenBucket; desc: TokenDesc) ;
+BEGIN
+   IF insertionBucket^.len < MaxBucketSize
+   THEN
+      insertionBucket^.buf[insertionBucket^.len] := desc ;
+      INC (insertionBucket^.len)
+   END
+END AppendToken ;
+
+
+(*
    InsertToken - inserts a symbol, token, infront of the current token
                  ready for the next pass.
 *)
 
 PROCEDURE InsertToken (token: toktype) ;
+VAR
+   topBucket, insertionBucket: TokenBucket ;
+   count : CARDINAL ;
+   desc  : TokenDesc ;
 BEGIN
-   IF ListOfTokens.tail#NIL
+   Assert (ListOfTokens.tail # NIL) ;
+   count := GetTokenNo () -1 ;
+   topBucket := FindTokenBucket (count) ;
+   insertionBucket := GetInsertBucket (topBucket, count) ;
+   desc := topBucket^.buf[count] ;
+   desc.token := token ;
+   desc.insert := NIL ;
+   AppendToken (insertionBucket, desc) ;
+   IF DebugRecover
    THEN
-      WITH ListOfTokens.tail^ DO
-         IF len>0
-         THEN
-            buf[len-1].token := token
-         END
-      END ;
-      AddTokToList(currenttoken, NulName, 0,
-                   GetLineNo(), GetColumnNo(), CurrentSource, m2flex.GetLocation()) ;
-      GetToken
+      DumpTokens
    END
 END InsertToken ;
 
@@ -573,18 +730,18 @@ END InsertToken ;
 *)
 
 PROCEDURE InsertTokenAndRewind (token: toktype) ;
+VAR
+   offset   : CARDINAL ;
+   topBucket: TokenBucket ;
 BEGIN
-   IF ListOfTokens.tail#NIL
+   IF GetTokenNo () > 0
    THEN
-      WITH ListOfTokens.tail^ DO
-         IF len>0
-         THEN
-            buf[len-1].token := token
-         END
-      END ;
-      AddTokToList(currenttoken, NulName, 0,
-                   GetLineNo(), GetColumnNo(), CurrentSource, m2flex.GetLocation()) ;
-      currenttoken := token
+      InsertToken (token) ;
+      offset := CurrentTokNo -2 ;
+      topBucket := FindTokenBucket (offset) ;
+      InsertionIndex := topBucket^.buf[offset].insert^.len -1 ;
+      DEC (CurrentTokNo, 2) ;
+      GetToken
    END
 END InsertTokenAndRewind ;
 
@@ -603,7 +760,7 @@ BEGIN
       RETURN( 0 )
    END
       *)
-   RETURN( GetLineNo() )
+   RETURN GetLineNo ()
 END GetPreviousTokenLineNo ;
 
 
@@ -614,11 +771,11 @@ END GetPreviousTokenLineNo ;
 
 PROCEDURE GetLineNo () : CARDINAL ;
 BEGIN
-   IF CurrentTokNo=0
+   IF CurrentTokNo = 0
    THEN
-      RETURN( 0 )
+      RETURN 0
    ELSE
-      RETURN( TokenToLineNo(GetTokenNo(), 0) )
+      RETURN TokenToLineNo (GetTokenNo (), 0)
    END
 END GetLineNo ;
 
@@ -630,11 +787,11 @@ END GetLineNo ;
 
 PROCEDURE GetColumnNo () : CARDINAL ;
 BEGIN
-   IF CurrentTokNo=0
+   IF CurrentTokNo = 0
    THEN
-      RETURN( 0 )
+      RETURN 0
    ELSE
-      RETURN( TokenToColumnNo(GetTokenNo(), 0) )
+      RETURN TokenToColumnNo (GetTokenNo (), 0)
    END
 END GetColumnNo ;
 
@@ -645,7 +802,7 @@ END GetColumnNo ;
 
 PROCEDURE GetTokenNo () : CARDINAL ;
 BEGIN
-   IF CurrentTokNo=0
+   IF CurrentTokNo = 0
    THEN
       RETURN 0
    ELSE
@@ -663,7 +820,7 @@ VAR
    b: TokenBucket ;
    n: Name ;
 BEGIN
-   b := FindTokenBucket(tokenno) ;
+   b := FindTokenBucket (tokenno) ;
    IF b=NIL
    THEN
       RETURN NulName
@@ -696,12 +853,12 @@ BEGIN
          THEN
             RETURN b
          ELSE
-            DEC(TokenNo, len)
+            DEC (TokenNo, len)
          END
       END ;
       b := b^.next
    END ;
-   RETURN( NIL )
+   RETURN NIL
 END FindTokenBucket ;
 
 
@@ -722,14 +879,14 @@ BEGIN
    THEN
       RETURN 0
    ELSE
-      b := FindTokenBucket(TokenNo) ;
-      IF b=NIL
+      b := FindTokenBucket (TokenNo) ;
+      IF b = NIL
       THEN
-         RETURN( 0 )
+         RETURN 0
       ELSE
-         IF depth=0
+         IF depth = 0
          THEN
-            RETURN( b^.buf[TokenNo].line)
+            RETURN b^.buf[TokenNo].line
          ELSE
             l := b^.buf[TokenNo].file^.left ;
             WHILE depth>0 DO
@@ -738,7 +895,7 @@ BEGIN
                THEN
                   RETURN 0
                END ;
-               DEC(depth)
+               DEC (depth)
             END ;
             RETURN l^.line
          END
@@ -764,14 +921,14 @@ BEGIN
    THEN
       RETURN 0
    ELSE
-      b := FindTokenBucket(TokenNo) ;
+      b := FindTokenBucket (TokenNo) ;
       IF b=NIL
       THEN
          RETURN 0
       ELSE
-         IF depth=0
+         IF depth = 0
          THEN
-            RETURN( b^.buf[TokenNo].col )
+            RETURN b^.buf[TokenNo].col
          ELSE
             l := b^.buf[TokenNo].file^.left ;
             WHILE depth>0 DO
@@ -780,7 +937,7 @@ BEGIN
                THEN
                   RETURN 0
                END ;
-               DEC(depth)
+               DEC (depth)
             END ;
             RETURN l^.col
          END
@@ -804,12 +961,12 @@ BEGIN
    THEN
       RETURN BuiltinsLocation ()
    ELSE
-      b := FindTokenBucket(TokenNo) ;
+      b := FindTokenBucket (TokenNo) ;
       IF b=NIL
       THEN
          RETURN UnknownLocation ()
       ELSE
-         RETURN( b^.buf[TokenNo].loc )
+         RETURN b^.buf[TokenNo].loc
       END
    END
 END TokenToLocation ;
@@ -828,7 +985,7 @@ VAR
    b: TokenBucket ;
    l: SourceList ;
 BEGIN
-   b := FindTokenBucket(TokenNo) ;
+   b := FindTokenBucket (TokenNo) ;
    IF b=NIL
    THEN
       RETURN NIL
@@ -845,11 +1002,11 @@ BEGIN
             l := l^.left ;
             IF l=b^.buf[TokenNo].file^.left
             THEN
-               RETURN( NIL )
+               RETURN NIL
             END ;
-            DEC(depth)
+            DEC (depth)
          END ;
-         RETURN( l^.name )
+         RETURN l^.name
       END
    END
 END FindFileNameFromToken ;
@@ -878,7 +1035,7 @@ PROCEDURE AddTokToList (t: toktype; n: Name;
 BEGIN
    IF ListOfTokens.head=NIL
    THEN
-      NEW(ListOfTokens.head) ;
+      NEW (ListOfTokens.head) ;
       IF ListOfTokens.head=NIL
       THEN
          (* list error *)
@@ -888,7 +1045,7 @@ BEGIN
    ELSIF ListOfTokens.tail^.len=MaxBucketSize
    THEN
       Assert(ListOfTokens.tail^.next=NIL) ;
-      NEW(ListOfTokens.tail^.next) ;
+      NEW (ListOfTokens.tail^.next) ;
       IF ListOfTokens.tail^.next=NIL
       THEN
          (* list error *)
@@ -896,20 +1053,21 @@ BEGIN
          ListOfTokens.tail := ListOfTokens.tail^.next ;
          ListOfTokens.tail^.len := 0
       END ;
-      INC(ListOfTokens.LastBucketOffset, MaxBucketSize)
+      INC (ListOfTokens.LastBucketOffset, MaxBucketSize)
    END ;
    WITH ListOfTokens.tail^ DO
       next := NIL ;
       WITH buf[len] DO
-         token := t ;
-         str   := n ;
-         int   := i ;
-         line  := l ;
-         col   := c ;
-         file  := f ;
-         loc   := location
+         token  := t ;
+         str    := n ;
+         int    := i ;
+         line   := l ;
+         col    := c ;
+         file   := f ;
+         loc    := location ;
+         insert := NIL ;
       END ;
-      INC(len)
+      INC (len)
    END
 END AddTokToList ;
 
@@ -1002,10 +1160,6 @@ BEGIN
          AddTokToList (virtualrangetok, NulName, 0,
                        bufLeft^.buf[left].line, bufLeft^.buf[left].col, bufLeft^.buf[left].file,
                        GetLocationBinary (lc, ll, lr)) ;
-         IF ListOfTokens.LastBucketOffset + ListOfTokens.tail^.len - 1 = 2862
-         THEN
-            stop
-         END ;
          RETURN ListOfTokens.LastBucketOffset + ListOfTokens.tail^.len - 1
       END
    END ;
@@ -1050,10 +1204,6 @@ END AddTok ;
 
 PROCEDURE AddTokCharStar (t: toktype; s: ADDRESS) ;
 BEGIN
-   IF strlen(s)>80
-   THEN
-      stop
-   END ;
    AddTokToList(t, makekey(s), 0, m2flex.GetLineNo(),
                 m2flex.GetColumnNo(), CurrentSource, m2flex.GetLocation()) ;
    CurrentUsed := TRUE

@@ -976,6 +976,7 @@ BEGIN
    ELSE
       IF IsProcedure (scope)
       THEN
+         M2Error.DefaultProcedure ;
          M2Error.EnterProcedureScope (GetSymName (scope)) ;
          doError (eb, GetDeclaredMod (sym)) ;
       ELSE
@@ -983,9 +984,11 @@ BEGIN
          THEN
             IF IsInnerModule (scope)
             THEN
+               M2Error.DefaultInnerModule ;
                M2Error.EnterModuleScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             ELSE
+               M2Error.DefaultProgramModule ;
                M2Error.EnterProgramScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             END
@@ -997,9 +1000,11 @@ BEGIN
             UNTIL GetScope(OuterModule)=NulSym ;  *)
             IF GetDeclaredModule (sym) = UnknownTokenNo
             THEN
+               M2Error.DefaultDefinitionModule ;
                M2Error.EnterDefinitionScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             ELSE
+               M2Error.DefaultImplementationModule ;
                M2Error.EnterImplementationScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             END
@@ -1027,6 +1032,7 @@ BEGIN
    ELSE
       IF IsProcedure (scope)
       THEN
+         M2Error.DefaultProcedure ;
          M2Error.EnterProcedureScope (GetSymName (scope)) ;
          doError (eb, GetDeclaredDef (sym)) ;
       ELSE
@@ -1034,9 +1040,11 @@ BEGIN
          THEN
             IF IsInnerModule (scope)
             THEN
+               M2Error.DefaultInnerModule ;
                M2Error.EnterModuleScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             ELSE
+               M2Error.DefaultProgramModule ;
                M2Error.EnterProgramScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             END
@@ -1048,9 +1056,11 @@ BEGIN
             UNTIL GetScope(OuterModule)=NulSym ;  *)
             IF GetDeclaredDefinition (sym) = UnknownTokenNo
             THEN
+               M2Error.DefaultImplementationModule ;
                M2Error.EnterImplementationScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredMod (sym))
             ELSE
+               M2Error.DefaultDefinitionModule ;
                M2Error.EnterDefinitionScope (GetSymName (scope)) ;
                doError (eb, GetDeclaredDef (sym))
             END

@@ -44,7 +44,9 @@ see <https://www.gnu.org/licenses/>.  *)
 
 IMPLEMENTATION MODULE P0SyntaxCheck ;
 
-FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken, InsertTokenAndRewind, GetTokenNo ;
+FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
+                     InsertTokenAndRewind, GetTokenNo, DisplayToken, DumpTokens ;
+
 FROM M2MetaError IMPORT MetaErrorStringT0 ;
 FROM M2Quads IMPORT PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto, DisplayStack, PushTFtok ;
 FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok, BuiltinTok, InlineTok ;
@@ -66,32 +68,35 @@ FROM P0SymBuild IMPORT RegisterImports, RegisterInnerImports,
 
 FROM SymbolTable IMPORT NulSym, PutModuleContainsBuiltin, PutHiddenTypeDeclared ;
 
+IMPORT M2Error ;
+
 
 CONST
-   Debugging = FALSE ;
-   Pass0     = TRUE ;
-   Pass1     = FALSE ;
-   Pass2     = FALSE ;          (* permanently disabled for the time being *)
-   Pass3     = FALSE ;          (* permanently disabled for the time being *)
-   MaxInsert = 10 ;             (* allow 10 tokens to be inserted before   *)
-                                (* giving up.                              *)
+   Debugging    = FALSE ;
+   DebugRecover = FALSE ;
+   Pass0        = TRUE ;
+   Pass1        = FALSE ;
+   Pass2        = FALSE ;          (* permanently disabled for the time being *)
+   Pass3        = FALSE ;          (* permanently disabled for the time being *)
+   MaxInsert    = 10 ;             (* allow 10 tokens to be inserted before   *)
+                                   (* giving up.                              *)
 
 VAR
-   WasNoError : BOOLEAN ;
+   seenError  : BOOLEAN ;
    LastIdent  : Name ;
    InsertCount: CARDINAL ;
 
 
 PROCEDURE ErrorString (s: String) ;
 BEGIN
-   MetaErrorStringT0(GetTokenNo(), s) ;
-   WasNoError := FALSE
+   MetaErrorStringT0 (GetTokenNo (), s) ;
+   seenError := TRUE
 END ErrorString ;
 
 
 PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
 BEGIN
-   ErrorString(InitString(a))
+   ErrorString (InitString (a))
 END ErrorArray ;
 
 
@@ -134,16 +139,16 @@ BEGIN
      	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
    THEN
-      SyntaxError(stopset0, stopset1, stopset2)
+      SyntaxError (stopset0, stopset1, stopset2)
    END
 END SyntaxCheck ;
 
 
 (*
-   WarnMissingToken - generates a warning message about a missing token, t.
+   GetMissingTokenMessage - generates and returns a string about a missing token, t.
 *)
 
-PROCEDURE WarnMissingToken (t: toktype) ;
+PROCEDURE GetMissingTokenMessage (t: toktype) : String ;
 VAR
    s0 : SetOfStop0 ;
    s1 : SetOfStop1 ;
@@ -162,10 +167,40 @@ BEGIN
    ELSE
       s2 := SetOfStop2{t}
    END ;
-   str := DescribeStop(s0, s1, s2) ;
+   str := DescribeStop (s0, s1, s2) ;
+   RETURN str
+END GetMissingTokenMessage ;
 
-   str := ConCat(InitString('syntax error,'), Mark(str)) ;
-   MetaErrorStringT0(GetTokenNo(), str)
+
+(*
+   ErrorMissingToken - generates an error message about a missing token, t.
+*)
+
+PROCEDURE ErrorMissingToken (t: toktype) ;
+VAR
+   str: String ;
+BEGIN
+   str := GetMissingTokenMessage (t) ;
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   MetaErrorStringT0 (GetTokenNo (), str)
+END ErrorMissingToken ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   str: String ;
+BEGIN
+   str := GetMissingTokenMessage (t) ;
+   str := ConCat (InitString ('{%W}syntax warning,'), Mark (str)) ;
+   MetaErrorStringT0 (GetTokenNo (), str) ;
+   IF DebugRecover
+   THEN
+      printf0 ("warning note created\n")
+   END
 END WarnMissingToken ;
 
 
@@ -175,37 +210,60 @@ END WarnMissingToken ;
 
 PROCEDURE MissingToken (t: toktype) ;
 BEGIN
-   WarnMissingToken(t) ;
-   INC(InsertCount) ;
    IF (InsertCount<MaxInsert) AND
       ((t#identtok) AND (t#integertok) AND (t#realtok) AND (t#stringtok))
    THEN
-      IF Debugging
+      IF DebugRecover
       THEN
-         printf0('inserting token\n')
+         printf0 ("missing token detected and going to be inserted: ");
+         DisplayToken (t)
       END ;
-      InsertToken(t)
+      WarnMissingToken (t) ;
+      INC (InsertCount) ;
+      IF DebugRecover
+      THEN
+         printf0 ('inserting token\n')
+      END ;
+      InsertToken (t)
+   ELSE
+      IF DebugRecover
+      THEN
+         printf0 ("missing token detected but cannot be inserted: ");
+         DisplayToken (t)
+      END ;
+      ErrorMissingToken (t)
    END
 END MissingToken ;
 
 
 (*
-   CheckAndInsert -
+   CheckInsertCandidate -
 *)
 
-PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+PROCEDURE CheckInsertCandidate (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
 BEGIN
    IF ((ORD(t)<32) AND (t IN stopset0)) OR
       ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
       ((ORD(t)>=64) AND (t IN stopset2))
    THEN
-      WarnMissingToken(t) ;
-      InsertTokenAndRewind(t) ;
-      RETURN( TRUE )
-   ELSE
-      RETURN( FALSE )
-   END
-END CheckAndInsert ;
+      INC (InsertCount) ;
+      IF InsertCount < MaxInsert
+      THEN
+         WarnMissingToken (t) ;
+         IF DebugRecover
+         THEN
+            printf0 ('buffer before\n') ;
+            DumpTokens ;
+            printf0 ('inserting token: buffer after\n') ;
+            DumpTokens ;
+            printf0 ('inserting token\n')
+         END ;
+         InsertTokenAndRewind (t) ;
+         RETURN TRUE
+      END
+   END ;
+   RETURN FALSE
+END CheckInsertCandidate ;
 
 
 (*
@@ -242,16 +300,17 @@ BEGIN
             ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
       (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
    THEN
-      (* SyntaxCheck would fail since currentoken is not part of the stopset
-         we check to see whether any of currenttoken might be a commonly omitted token *)
-      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
-         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
+      (* SyntaxCheck will fail since currentoken is not part of the stopset
+         we check to see whether one of the following is in the stopset and
+         if not emit a warning and also the token.  *)
+      IF CheckInsertCandidate (semicolontok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (rsbratok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (rparatok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (rcbratok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (periodtok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (oftok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (endtok, stopset0, stopset1, stopset2) OR
+         CheckInsertCandidate (commatok, stopset0, stopset1, stopset2)
       THEN
       END
    END
@@ -267,19 +326,14 @@ BEGIN
    IF currenttoken=t
    THEN
       GetToken ;
-(*
-      WriteFormat2('token number %d token was %a',
-                    GetTokenNo(), makekey(currentstring)) ;
-      FlushErrors ;
-*)
       IF Pass0
       THEN
-         PeepToken(stopset0, stopset1, stopset2)
+         PeepToken (stopset0, stopset1, stopset2)
       END
    ELSE
-      MissingToken(t)
+      MissingToken (t)
    END ;
-   SyntaxCheck(stopset0, stopset1, stopset2)
+   SyntaxCheck (stopset0, stopset1, stopset2)
 END Expect ;
 
 
@@ -290,10 +344,10 @@ END Expect ;
 
 PROCEDURE CompilationUnit () : BOOLEAN ;
 BEGIN
-   WasNoError := TRUE ;
+   seenError := FALSE ;
    InsertCount := 0 ;
-   FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
-   RETURN( WasNoError )
+   FileUnit (SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   RETURN NOT seenError
 END CompilationUnit ;
 
 
@@ -479,6 +533,7 @@ FileUnit :=                                                                % Pus
          =:
 
 ProgramModule := "MODULE"                                                  % PushAutoOn ; %
+                                                                           % M2Error.DefaultProgramModule %
                   Ident                                                    % RegisterProgramModule ; %
                                                                            % PushAutoOff ; %
                   [ Priority ]
@@ -491,7 +546,8 @@ ProgramModule := "MODULE"                                                  % Pus
                                                                            % PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION" "MODULE"                          % PushAutoOn ; %
+ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"                          % PushAutoOn ; %
                          Ident                                             % RegisterImplementationModule ; %
                                                                            % PushAutoOff ; %
                          [ Priority ] ";"                                  % PushAutoOn ; %
@@ -735,7 +791,7 @@ ProcedureDeclaration :=
 DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" |
                             "__INLINE__" ] =:
 
-ProcedureHeading := "PROCEDURE"
+ProcedureHeading := "PROCEDURE"                                           % M2Error.DefaultProcedure %
                      DefineBuiltinProcedure
                      (                                                    % PushAutoOn %
                        Ident                                              % RegisterProcedure %
@@ -805,6 +861,7 @@ DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
 FormalType := { "ARRAY" "OF" } Qualident =:
 
 ModuleDeclaration := "MODULE"                                              % PushAutoOn %
+                                                                           % M2Error.DefaultInnerModule %
                      Ident                                                 % RegisterInnerModule %
                                                                            % PushAutoOff %
                      [ Priority ] ";"                                      % PushAutoOn %
@@ -827,7 +884,8 @@ Import :=  "FROM" Ident "IMPORT" IdentList ";" |
                                                                              (* determines whether Ident or Module *) %
             IdentList ";" =:
 
-DefinitionModule := "DEFINITION" "MODULE" [ "FOR"  string ]                % PushAutoOn %
+DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE" [ "FOR"  string ]                % PushAutoOn %
                     Ident                                                  % RegisterDefinitionModule %
                     ";"
                     { Import                                               % RegisterImports %

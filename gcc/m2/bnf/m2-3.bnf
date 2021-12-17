@@ -171,6 +171,7 @@ FROM M2Batch IMPORT IsModuleKnown ;
 
 FROM M2CaseList IMPORT BeginCaseList, EndCaseList ;
 
+IMPORT M2Error ;
 
 CONST
    Debugging = FALSE ;
@@ -570,7 +571,8 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % PushAutoOn %
+ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+                                                                           % PushAutoOn %
                   Ident                                                    % P3StartBuildProgModule %
                                                                            % StartBuildModFile %
                                                                            % BuildModuleStart %
@@ -585,7 +587,8 @@ ProgramModule := "MODULE"                                                  % Pus
                   "."                                                      % PopAuto ; PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION" "MODULE"                          % PushAutoOn %
+ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"                          % PushAutoOn %
                          Ident                                             % StartBuildModFile %
                                                                            % P3StartBuildImpModule %
                                                                            % BuildModuleStart %
@@ -1266,7 +1269,8 @@ DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__"
                                           ")" ")" | "__INLINE__" ]
                       =:
 
-ProcedureHeading := "PROCEDURE"                                            % PushAutoOn %
+ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
                      DefineBuiltinProcedure
                      ( Ident
                                                                            % StartBuildProcedure ;
@@ -1279,7 +1283,8 @@ ProcedureHeading := "PROCEDURE"                                            % Pus
 
 Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
 
-DefProcedureHeading := "PROCEDURE"                                         % PushAutoOn %
+DefProcedureHeading := "PROCEDURE"                                         % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
                         Builtin
                         ( Ident
                                                                            % StartBuildProcedure ;
@@ -1369,7 +1374,8 @@ DefOptArg := "[" Ident ":" FormalType "=" ConstExpression                  % Bui
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % PushAutoOn %
+ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+                                                                           % PushAutoOn %
                      Ident                                                 % StartBuildInnerModule %
                                                                            % BuildModuleStart ;
                                                                              PushAutoOff %
@@ -1403,7 +1409,8 @@ WithoutFromImport :=                                                       % Pus
 
 Import :=  FromImport | WithoutFromImport =:
 
-DefinitionModule := "DEFINITION" "MODULE"                                  % PushAutoOn %
+DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE"                                  % PushAutoOn %
                     [ "FOR" string ]
                     Ident                                                  % StartBuildDefFile ;
                                                                              P3StartBuildDefModule ;

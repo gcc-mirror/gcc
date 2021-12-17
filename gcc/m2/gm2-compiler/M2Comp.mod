@@ -35,7 +35,9 @@ FROM M2FileName IMPORT CalculateFileName ;
 FROM M2Preprocess IMPORT PreprocessModule ;
 FROM libc IMPORT exit ;
 
-FROM M2Error IMPORT ErrorStringAt, ErrorStringAt2, ErrorStringsAt2, WriteFormat0, FlushErrors, FlushWarnings ;
+FROM M2Error IMPORT ErrorStringAt, ErrorStringAt2, ErrorStringsAt2,
+                    WriteFormat0, FlushErrors, FlushWarnings, ParsingComplete ;
+
 FROM M2MetaError IMPORT MetaErrorString1, MetaError0, MetaError1 ;
 FROM FormatStrings IMPORT Sprintf1 ;
 FROM P0SymBuild IMPORT P0Init, P1Init ;
@@ -139,7 +141,7 @@ BEGIN
    qprintf0('Pass 3: quadruple generation\n') ;
    ResetForNewPass ;
    DoPass3 ;
-   FlushWarnings ; FlushErrors ;
+   FlushWarnings ; FlushErrors ; ParsingComplete ;
    qprintf0('Pass 4: gcc tree generation\n') ;
    Code ;
    FlushWarnings ; FlushErrors

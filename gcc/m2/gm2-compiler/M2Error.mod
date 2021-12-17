@@ -71,6 +71,7 @@ VAR
    lastKind,
    scopeKind   : KindScope ;
    scopeStack  : StackOfWord ;
+   parsing     : BOOLEAN ;
 
 
 (*
@@ -403,7 +404,7 @@ BEGIN
       fatal  := TRUE ;
       color  := FALSE ;
    END ;
-   Assert (scopeKind # noscope) ;
+   (* Assert (scopeKind # noscope) ;  *)
    e^.scopeKind := scopeKind ;
    e^.scopeName := scopeName ;
    IF (head=NIL) OR (head^.token>AtTokenNo)
@@ -570,7 +571,8 @@ BEGIN
    scopeStack := InitStackWord () ;
    scopeName := NulName ;
    scopeKind := noscope ;
-   lastKind := noscope
+   lastKind := noscope ;
+   parsing := TRUE
 END Init ;
 
 
@@ -830,9 +832,13 @@ BEGIN
       pre := Sprintf1 (Mark (InitString ("%s: ")), filename)
    END ;
 
-   quoted := quoteOpen (InitString ('')) ;
-   quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (scopeName)))) ;
-   quoted := quoteClose (quoted) ;
+   quoted := InitString ('') ;
+   IF scopeName # NulName
+   THEN
+      quoted := quoteOpen (quoted) ;
+      quoted := ConCat (quoted, Mark (InitStringCharStar (KeyToCharStar (scopeName)))) ;
+      quoted := quoteClose (quoted)
+   END ;
    CASE scopeKind OF
 
    definition    :   desc := InitString ("In definition module") |
@@ -863,12 +869,101 @@ BEGIN
       lastKind := e^.scopeKind ;
       scopeKind := e^.scopeKind ;
       scopeName := e^.scopeName ;
-      Assert (e^.scopeKind # noscope) ;
-      filename := FindFileNameFromToken (e^.token, 0) ;
-      message := GetAnnounceScope (filename, message)
+      IF e^.scopeKind = noscope
+      THEN
+         RETURN InitString ("no scope active")
+      ELSE
+         Assert (e^.scopeKind # noscope) ;
+         filename := FindFileNameFromToken (e^.token, 0) ;
+         message := GetAnnounceScope (filename, message)
+      END
    END ;
    RETURN message
 END AnnounceScope ;
+
+
+(*
+   DefaultProgramModule - sets up an unnamed program scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultProgramModule ;
+BEGIN
+   IF parsing
+   THEN
+      scopeKind := program ;
+      scopeName := NulName ;
+      PushWord (scopeStack, scopeKind) ;
+      PushWord (scopeStack, scopeName)
+   END
+END DefaultProgramModule ;
+
+
+(*
+   DefaultImplementationModule - sets up an unnamed implementation
+                                 scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultImplementationModule ;
+BEGIN
+   IF parsing
+   THEN
+      scopeKind := implementation ;
+      scopeName := NulName ;
+      PushWord (scopeStack, scopeKind) ;
+      PushWord (scopeStack, scopeName)
+   END
+END DefaultImplementationModule ;
+
+
+(*
+   DefaultDefinitionModule - sets up an unnamed definition
+                             scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultDefinitionModule ;
+BEGIN
+   IF parsing
+   THEN
+      PushWord (scopeStack, scopeKind) ;
+      PushWord (scopeStack, scopeName) ;
+      scopeKind := definition ;
+      scopeName := NulName
+   END
+END DefaultDefinitionModule ;
+
+
+(*
+   DefaultInnerModule - sets up an unnamed inner
+                        scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultInnerModule ;
+BEGIN
+   IF parsing
+   THEN
+      scopeKind := module ;
+      scopeName := NulName ;
+      PushWord (scopeStack, scopeKind) ;
+      PushWord (scopeStack, scopeName)
+   END
+END DefaultInnerModule ;
+
+
+(*
+   DefaultProcedure - sets up an unnamed procedure
+                      scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultProcedure ;
+BEGIN
+   IF parsing
+   THEN
+      scopeKind := procedure ;
+      scopeName := NulName ;
+      PushWord (scopeStack, scopeKind) ;
+      PushWord (scopeStack, scopeName)
+   END ;
+END DefaultProcedure ;
 
 
 (*
@@ -878,6 +973,11 @@ END AnnounceScope ;
 
 PROCEDURE EnterImplementationScope (scopename: Name) ;
 BEGIN
+   IF parsing
+   THEN
+      Assert (scopeKind = implementation) ;
+      LeaveScope   (* shutdown the default implementation scope.  *)
+   END ;
    PushWord (scopeStack, scopeKind) ;
    PushWord (scopeStack, scopeName) ;
    scopeKind := implementation ;
@@ -892,6 +992,11 @@ END EnterImplementationScope ;
 
 PROCEDURE EnterProgramScope (scopename: Name) ;
 BEGIN
+   IF parsing
+   THEN
+      Assert (scopeKind = program) ;
+      LeaveScope   (* shutdown the default program scope.  *)
+   END ;
    PushWord (scopeStack, scopeKind) ;
    PushWord (scopeStack, scopeName) ;
    scopeKind := program ;
@@ -906,6 +1011,11 @@ END EnterProgramScope ;
 
 PROCEDURE EnterModuleScope (scopename: Name) ;
 BEGIN
+   IF parsing
+   THEN
+      Assert (scopeKind = module) ;
+      LeaveScope   (* shutdown the default inner module scope.  *)
+   END ;
    PushWord (scopeStack, scopeKind) ;
    PushWord (scopeStack, scopeName) ;
    scopeKind := module ;
@@ -920,6 +1030,11 @@ END EnterModuleScope ;
 
 PROCEDURE EnterDefinitionScope (scopename: Name) ;
 BEGIN
+   IF parsing
+   THEN
+      Assert (scopeKind = definition)
+   END ;
+   LeaveScope ;  (* shutdown the default definition module scope.  *)
    PushWord (scopeStack, scopeKind) ;
    PushWord (scopeStack, scopeName) ;
    scopeKind := definition ;
@@ -934,6 +1049,11 @@ END EnterDefinitionScope ;
 
 PROCEDURE EnterProcedureScope (scopename: Name) ;
 BEGIN
+   IF parsing
+   THEN
+      Assert (scopeKind = procedure) ;
+      LeaveScope  (* shutdown the default procedure scope.  *)
+   END ;
    PushWord (scopeStack, scopeKind) ;
    PushWord (scopeStack, scopeName) ;
    scopeKind := procedure ;
@@ -960,6 +1080,17 @@ PROCEDURE DepthScope () : CARDINAL ;
 BEGIN
    RETURN NoOfItemsInStackWord (scopeStack)
 END DepthScope ;
+
+
+(*
+   ParsingComplete - after this is called the Enter scope procedure
+                     will not assert the default scope was set.
+*)
+
+PROCEDURE ParsingComplete ;
+BEGIN
+   parsing := FALSE
+END ParsingComplete ;
 
 
 BEGIN

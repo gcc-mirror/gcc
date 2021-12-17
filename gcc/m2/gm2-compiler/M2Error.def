@@ -45,7 +45,10 @@ EXPORT QUALIFIED Error,
                  WarnFormat0, WarnFormat1, MoveError,
                  AnnounceScope, EnterImplementationScope,
                  EnterModuleScope, EnterDefinitionScope, EnterProgramScope,
-                 EnterProcedureScope, LeaveScope, DepthScope, GetAnnounceScope ;
+                 EnterProcedureScope, LeaveScope, DepthScope, GetAnnounceScope,
+                 DefaultProgramModule, DefaultImplementationModule,
+                 DefaultDefinitionModule, DefaultInnerModule, DefaultProcedure,
+                 ParsingComplete ;
 
 TYPE
    Error ;
@@ -291,6 +294,53 @@ PROCEDURE DepthScope () : CARDINAL ;
 *)
 
 PROCEDURE GetAnnounceScope (filename, message: String) : String ;
+
+
+(*
+   DefaultProgramModule - sets up an unnamed program scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultProgramModule ;
+
+
+(*
+   DefaultImplementationModule - sets up an unnamed implementation
+                                 scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultImplementationModule ;
+
+
+(*
+   DefaultDefinitionModule - sets up an unnamed definition
+                             scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultDefinitionModule ;
+
+
+(*
+   DefaultInnerModule - sets up an unnamed inner
+                        scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultInnerModule ;
+
+
+(*
+   DefaultProcedure - sets up an unnamed procedure
+                      scope before the Ident is seen.
+*)
+
+PROCEDURE DefaultProcedure ;
+
+
+(*
+   ParsingComplete - after this is called the Enter scope procedure
+                     will not assert the default scope was set.
+*)
+
+PROCEDURE ParsingComplete ;
 
 
 END M2Error.

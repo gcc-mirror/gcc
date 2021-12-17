@@ -41,8 +41,7 @@ CONST
 TYPE
    Kind = (module, program, defimp, inner, procedure, universe, unknown) ;
 
-   BlockInfoPtr = POINTER TO BlockInfo ;
-   BlockInfo    = RECORD
+   BlockInfoPtr = POINTER TO RECORD
                      name           : Name ;
                      kind           : Kind ;
                      sym            : CARDINAL ;
@@ -383,14 +382,14 @@ VAR
    sym: CARDINAL ;
    tok: CARDINAL ;
 BEGIN
-   Assert(Level=0) ;
-   INC(Level) ;
+   Assert (Level=0) ;
+   INC (Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
-   sym := MakeProgramSource(tok, n) ;
-   SetCurrentModule(sym) ;
-   SetFileModule(sym) ;
-   BeginBlock(n, program, sym, tok) ;
+   sym := MakeProgramSource (tok, n) ;
+   SetCurrentModule (sym) ;
+   SetFileModule (sym) ;
+   BeginBlock (n, program, sym, tok) ;
    M2Error.EnterProgramScope (n)
 END RegisterProgramModule ;
 
@@ -405,14 +404,14 @@ VAR
    sym: CARDINAL ;
    tok: CARDINAL ;
 BEGIN
-   Assert(Level=0) ;
-   INC(Level) ;
+   Assert (Level=0) ;
+   INC (Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
-   sym := MakeImplementationSource(tok, n) ;
-   SetCurrentModule(sym) ;
-   SetFileModule(sym) ;
-   BeginBlock(n, defimp, sym, tok) ;
+   sym := MakeImplementationSource (tok, n) ;
+   SetCurrentModule (sym) ;
+   SetFileModule (sym) ;
+   BeginBlock (n, defimp, sym, tok) ;
    M2Error.EnterImplementationScope (n)
 END RegisterImplementationModule ;
 
@@ -431,10 +430,10 @@ BEGIN
    INC(Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
-   sym := MakeDefinitionSource(tok, n) ;
-   SetCurrentModule(sym) ;
-   SetFileModule(sym) ;
-   BeginBlock(n, defimp, sym, tok) ;
+   sym := MakeDefinitionSource (tok, n) ;
+   SetCurrentModule (sym) ;
+   SetFileModule (sym) ;
+   BeginBlock (n, defimp, sym, tok) ;
    M2Error.EnterDefinitionScope (n)
 END RegisterDefinitionModule ;
 
@@ -453,8 +452,8 @@ BEGIN
    INC(Level) ;
    PopTtok (n, tok) ;
    PushTtok (n, tok) ;
-   RegisterLocalModule(n) ;
-   BeginBlock(n, inner, NulSym, tok) ;
+   RegisterLocalModule (n) ;
+   BeginBlock (n, inner, NulSym, tok) ;
    M2Error.EnterModuleScope (n)
 END RegisterInnerModule ;
 
