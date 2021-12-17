@@ -3021,7 +3021,7 @@
 ; is replaced by a constructor.  The single overload here causes
 ; __builtin_vec_promote to be registered with the front end so that can happen.
 [VEC_PROMOTE, vec_promote, __builtin_vec_promote]
-  vsi __builtin_vec_promote (vsi);
+  vsi __builtin_vec_promote (vsi, const int);
     ABS_V4SI PROMOTE_FAKERY
 
 [VEC_RE, vec_re, __builtin_vec_re]
