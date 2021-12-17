@@ -2942,9 +2942,7 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, machine_mode mode,
 
   /* Unnamed 512 and 256bit vector mode parameters are passed on stack.  */
   if (!named && (VALID_AVX512F_REG_MODE (mode)
-		 || VALID_AVX256_REG_MODE (mode)
-		 || mode == V16HFmode
-		 || mode == V32HFmode))
+		 || VALID_AVX256_REG_MODE (mode)))
     return 0;
 
   if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs)
@@ -19915,13 +19913,15 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	  - XI mode
 	  - any of 512-bit wide vector mode
 	  - any scalar mode.  */
-      /* For AVX512FP16, vmovw supports movement of HImode
-	 between gpr and sse registser.  */
       if (TARGET_AVX512F
-	  && (mode == XImode
-	      || mode == V32HFmode
-	      || VALID_AVX512F_REG_MODE (mode)
+	  && (VALID_AVX512F_REG_OR_XI_MODE (mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
+	return true;
+
+      /* For AVX512FP16, vmovw supports movement of HImode
+	 and HFmode between GPR and SSE registers.  */
+      if (TARGET_AVX512FP16
+	  && VALID_AVX512FP16_SCALAR_MODE (mode))
 	return true;
 
       /* For AVX-5124FMAPS or AVX-5124VNNIW
@@ -19934,7 +19934,7 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       /* TODO check for QI/HI scalars.  */
       /* AVX512VL allows sse regs16+ for 128/256 bit modes.  */
       if (TARGET_AVX512VL
-	  && (VALID_AVX256_REG_OR_OI_VHF_MODE (mode)
+	  && (VALID_AVX256_REG_OR_OI_MODE (mode)
 	      || VALID_AVX512VL_128_REG_MODE (mode)))
 	return true;
 
@@ -19944,9 +19944,9 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
       /* OImode and AVX modes are available only when AVX is enabled.  */
       return ((TARGET_AVX
-	       && VALID_AVX256_REG_OR_OI_VHF_MODE (mode))
+	       && VALID_AVX256_REG_OR_OI_MODE (mode))
 	      || VALID_SSE_REG_MODE (mode)
-	      || VALID_SSE2_REG_VHF_MODE (mode)
+	      || VALID_SSE2_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE_3DNOW (mode));
     }
@@ -20156,8 +20156,7 @@ ix86_set_reg_reg_cost (machine_mode mode)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
-      if ((TARGET_AVX512FP16 && VALID_AVX512FP16_REG_MODE (mode))
-	  || (TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
+      if ((TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
 	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
@@ -22079,8 +22078,6 @@ ix86_vector_mode_supported_p (machine_mode mode)
     return true;
   if ((TARGET_MMX || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE (mode))
-    return true;
-  if (TARGET_AVX512FP16 && VALID_AVX512FP16_REG_MODE (mode))
     return true;
   if ((TARGET_3DNOW || TARGET_MMX_WITH_SSE)
       && VALID_MMX_REG_MODE_3DNOW (mode))

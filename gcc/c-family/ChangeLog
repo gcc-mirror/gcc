@@ -1,3 +1,10 @@
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/103709
+	* c-pragma.c (handle_pragma_pop_options): Do not check
+	global options modification when an error is seen in parsing
+	of options (pragmas or attributes).
+
 2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* known-headers.cc: Define INCLUDE_MEMORY instead of

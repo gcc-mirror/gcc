@@ -507,7 +507,7 @@
 #define SUBTARGET_INIT_BUILTINS						\
 do {									\
   darwin_patch_builtins ();						\
-  rs6000_builtin_decls_x[(unsigned) (RS6000_BIF_CFSTRING)]		\
+  rs6000_builtin_decls[(unsigned) (RS6000_BIF_CFSTRING)]		\
     = darwin_init_cfstring_builtins ((unsigned) (RS6000_BIF_CFSTRING)); \
 } while(0)
 

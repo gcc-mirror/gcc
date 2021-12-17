@@ -1,3 +1,111 @@
+2021-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99980
+	* parser.c (cp_parser_single_declaration): Maybe pass
+	CP_PARSER_FLAGS_DELAY_NOEXCEPT down to cp_parser_init_declarator.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/103703
+	* parser.c (class_decl_loc_t::diag_mismatched_tags): Check for class
+	type before assuming a type is one.
+
+2021-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	PR c++/83035
+	PR c++/100465
+	* call.c (add_operator_candidates): Add lookups parameter.
+	Use it to avoid performing a second unqualified lookup when
+	instantiating a dependent operator expression.
+	(build_new_op): Add lookups parameter and pass it appropriately.
+	* constraint.cc (finish_constraint_binary_op): Use
+	build_min_nt_loc instead of build_x_binary_op.
+	* coroutines.cc (build_co_await): Adjust call to build_new_op.
+	* cp-objcp-common.c (cp_common_init_ts): Mark
+	DEPENDENT_OPERATOR_TYPE appropriately.
+	* cp-tree.def (DEPENDENT_OPERATOR_TYPE): Define.
+	* cp-tree.h (WILDCARD_TYPE_P): Accept DEPENDENT_OPERATOR_TYPE.
+	(FOLD_EXPR_OP_RAW): New, renamed from ...
+	(FOLD_EXPR_OP): ... this.  Change this to return the tree_code directly.
+	(DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS): Define.
+	(templated_operator_saved_lookups): Define.
+	(build_new_op): Add lookups parameter.
+	(build_dependent_operator_type): Declare.
+	(build_x_indirect_ref): Add lookups parameter.
+	(build_x_binary_op): Likewise.
+	(build_x_unary_op): Likewise.
+	(build_x_compound_expr): Likewise.
+	(build_x_modify_expr): Likewise.
+	* cxx-pretty-print.c (get_fold_operator): Adjust after
+	FOLD_EXPR_OP change.
+	* decl.c (start_preparsed_function): Don't call
+	push_operator_bindings.
+	* decl2.c (grok_array_decl): Adjust calls to build_new_op.
+	* method.c (do_one_comp): Likewise.
+	(build_comparison_op): Likewise.
+	* module.cc (trees_out::type_node): Handle DEPENDENT_OPERATOR_TYPE.
+	(trees_in::tree_node): Likewise.
+	* name-lookup.c (lookup_name): Revert r11-2876 change.
+	(op_unqualified_lookup): Remove.
+	(maybe_save_operator_binding): Remove.
+	(discard_operator_bindings): Remove.
+	(push_operator_bindings): Remove.
+	* name-lookup.h (maybe_save_operator_binding): Remove.
+	(push_operator_bindings): Remove.
+	(discard_operator_bindings): Remove.
+	* parser.c (cp_parser_unary_expression): Adjust calls to build_x_*.
+	(cp_parser_binary_expression): Likewise.
+	(cp_parser_assignment_expression): Likewise.
+	(cp_parser_expression): Likewise.
+	(do_range_for_auto_deduction): Likewise.
+	(cp_convert_range_for): Likewise.
+	(cp_parser_perform_range_for_lookup): Likewise.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_omp_for_cond): Likewise.
+	(cp_parser_omp_for_incr): Likewise.
+	(cp_parser_omp_for_loop_init): Likewise.
+	(cp_convert_omp_range_for): Likewise.
+	(cp_finish_omp_range_for): Likewise.
+	* pt.c (fold_expression): Adjust after FOLD_EXPR_OP change. Pass
+	templated_operator_saved_lookups to build_x_*.
+	(tsubst_omp_for_iterator): Adjust call to build_x_modify_expr.
+	(tsubst_expr) <case COMPOUND_EXPR>: Pass
+	templated_operator_saved_lookups to build_x_*.
+	(tsubst_copy_and_build) <case INDIRECT_REF>: Likewise.
+	<case tcc_unary>: Likewise.
+	<case tcc_binary>: Likewise.
+	<case MODOP_EXPR>: Likewise.
+	<case COMPOUND_EXPR>: Likewise.
+	(dependent_type_p_r): Return true for DEPENDENT_OPERATOR_TYPE.
+	* ptree.c (cxx_print_type): Handle DEPENDENT_OPERATOR_TYPE.
+	* semantics.c (finish_increment_expr): Adjust call to
+	build_x_unary_op.
+	(finish_unary_op_expr): Likewise.
+	(handle_omp_for_class_iterator): Adjust calls to build_x_*.
+	(finish_omp_cancel): Likewise.
+	(finish_unary_fold_expr): Use build_dependent_operator_type.
+	(finish_binary_fold_expr): Likewise.
+	* tree.c (cp_free_lang_data): Don't call discard_operator_bindings.
+	* typeck.c (rationalize_conditional_expr): Adjust call to
+	build_x_binary_op.
+	(op_unqualified_lookup): Define.
+	(build_dependent_operator_type): Define.
+	(build_x_indirect_ref): Add lookups parameter and use
+	build_dependent_operator_type.
+	(build_x_binary_op): Likewise.
+	(build_x_array_ref): Likewise.
+	(build_x_unary_op): Likewise.
+	(build_x_compound_expr_from_list): Adjust call to
+	build_x_compound_expr.
+	(build_x_compound_expr_from_vec): Likewise.
+	(build_x_compound_expr): Add lookups parameter and use
+	build_dependent_operator_type.
+	(cp_build_modify_expr): Adjust call to build_new_op.
+	(build_x_modify_expr): Add lookups parameter and use
+	build_dependent_operator_type.
+	* typeck2.c (build_x_arrow): Adjust call to build_new_op.
+
 2021-12-15  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/102229

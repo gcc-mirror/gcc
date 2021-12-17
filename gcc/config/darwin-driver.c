@@ -416,6 +416,10 @@ darwin_driver_init (unsigned int *decoded_options_count,
     }
 #endif
 
+  /* If there is nothing else on the command line, do not add sysroot etc.  */
+  if (*decoded_options_count <= 1)
+    return;
+
   if (appendM32 || appendM64)
     {
       ++*decoded_options_count;
@@ -426,7 +430,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 		       &(*decoded_options)[*decoded_options_count - 1]);
     }
 
-  if (! seen_sysroot_p)
+  if (!seen_sysroot_p)
     {
       /* We will pick up an SDKROOT if we didn't specify a sysroot and treat
 	 it as overriding any configure-time --with-sysroot.  */
@@ -445,7 +449,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
   /* We will need to know the OS X version we're trying to build for here
      so that we can figure out the mechanism and source for the sysroot to
      be used.  */
-  if (! seen_version_min && *decoded_options_count > 1)
+  if (!seen_version_min)
     /* Not set by the User, try to figure it out.  */
     vers_string = darwin_default_min_version ();
 

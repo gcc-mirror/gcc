@@ -12425,10 +12425,10 @@ The @option{-fstrict-aliasing} option is enabled at levels
 
 @item -fipa-strict-aliasing
 @opindex fipa-strict-aliasing
-Constrols whether rules of @option{-fstrict-aliasing} are applied across
+Controls whether rules of @option{-fstrict-aliasing} are applied across
 function boundaries.  Note that if multiple functions gets inlined into a
-signle function the memory accesses are no longer considred to be crossing a
-function bounday.
+single function the memory accesses are no longer considered to be crossing a
+function boundary.
 
 The @option{-fipa-strict-aliasing} option is enabled by default and is
 effective only in combination with @option{-fstrict-aliasing}.
@@ -14184,7 +14184,7 @@ value of a shared integer constant.
 
 @item ssp-buffer-size
 The minimum size of buffers (i.e.@: arrays) that receive stack smashing
-protection when @option{-fstack-protection} is used.
+protection when @option{-fstack-protector} is used.
 
 @item min-size-for-stack-sharing
 The minimum size of variables taking part in stack slot sharing when not

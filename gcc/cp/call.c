@@ -6285,12 +6285,17 @@ op_is_ordered (tree_code code)
 
 /* Subroutine of build_new_op: Add to CANDIDATES all candidates for the
    operator indicated by CODE/CODE2.  This function calls itself recursively to
-   handle C++20 rewritten comparison operator candidates.  */
+   handle C++20 rewritten comparison operator candidates.
+
+   LOOKUPS, if non-NULL, is the set of pertinent namespace-scope operator
+   overloads to consider.  This parameter is used when instantiating a
+   dependent operator expression and has the same structure as
+   DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS.  */
 
 static tree
 add_operator_candidates (z_candidate **candidates,
 			 tree_code code, tree_code code2,
-			 vec<tree, va_gc> *arglist,
+			 vec<tree, va_gc> *arglist, tree lookups,
 			 int flags, tsubst_flags_t complain)
 {
   z_candidate *start_candidates = *candidates;
@@ -6326,7 +6331,15 @@ add_operator_candidates (z_candidate **candidates,
      consider.  */
   if (!memonly)
     {
-      tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE);
+      tree fns;
+      if (!lookups)
+	fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE);
+      /* If LOOKUPS is non-NULL, then we're instantiating a dependent operator
+	 expression, and LOOKUPS is the result of stage 1 name lookup.  */
+      else if (tree found = purpose_member (fnname, lookups))
+	fns = TREE_VALUE (found);
+      else
+	fns = NULL_TREE;
       fns = lookup_arg_dependent (fnname, fns, arglist);
       add_candidates (fns, NULL_TREE, arglist, NULL_TREE,
 		      NULL_TREE, false, NULL_TREE, NULL_TREE,
@@ -6429,7 +6442,7 @@ add_operator_candidates (z_candidate **candidates,
 	  if (rewrite_code != code)
 	    /* Add rewritten candidates in same order.  */
 	    add_operator_candidates (candidates, rewrite_code, ERROR_MARK,
-				     arglist, flags, complain);
+				     arglist, lookups, flags, complain);
 
 	  z_candidate *save_cand = *candidates;
 
@@ -6439,7 +6452,7 @@ add_operator_candidates (z_candidate **candidates,
 	  revlist->quick_push ((*arglist)[1]);
 	  revlist->quick_push ((*arglist)[0]);
 	  add_operator_candidates (candidates, rewrite_code, ERROR_MARK,
-				   revlist, flags, complain);
+				   revlist, lookups, flags, complain);
 
 	  /* Release the vec if we didn't add a candidate that uses it.  */
 	  for (z_candidate *c = *candidates; c != save_cand; c = c->next)
@@ -6457,8 +6470,8 @@ add_operator_candidates (z_candidate **candidates,
 
 tree
 build_new_op (const op_location_t &loc, enum tree_code code, int flags,
-	      tree arg1, tree arg2, tree arg3, tree *overload,
-	      tsubst_flags_t complain)
+	      tree arg1, tree arg2, tree arg3, tree lookups,
+	      tree *overload, tsubst_flags_t complain)
 {
   struct z_candidate *candidates = 0, *cand;
   releasing_vec arglist;
@@ -6552,7 +6565,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
   p = conversion_obstack_alloc (0);
 
   result = add_operator_candidates (&candidates, code, code2, arglist,
-				    flags, complain);
+				    lookups, flags, complain);
   if (result == error_mark_node)
     goto user_defined_result_ready;
 
@@ -6608,7 +6621,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	  else
 	    code = PREDECREMENT_EXPR;
 	  result = build_new_op (loc, code, flags, arg1, NULL_TREE,
-				 NULL_TREE, overload, complain);
+				 NULL_TREE, lookups, overload, complain);
 	  break;
 
 	  /* The caller will deal with these.  */
@@ -6765,7 +6778,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		    warning_sentinel ws (warn_zero_as_null_pointer_constant);
 		    result = build_new_op (loc, code,
 					   LOOKUP_NORMAL|LOOKUP_REWRITTEN,
-					   lhs, rhs, NULL_TREE,
+					   lhs, rhs, NULL_TREE, lookups,
 					   NULL, complain);
 		  }
 		  break;

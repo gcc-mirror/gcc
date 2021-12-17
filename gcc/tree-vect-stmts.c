@@ -6361,7 +6361,9 @@ vectorizable_operation (vec_info *vinfo,
 	  /* When combining two masks check if either of them is elsewhere
 	     combined with a loop mask, if that's the case we can mark that the
 	     new combined mask doesn't need to be combined with a loop mask.  */
-	  if (masked_loop_p && code == BIT_AND_EXPR)
+	  if (masked_loop_p
+	      && code == BIT_AND_EXPR
+	      && VECTOR_BOOLEAN_TYPE_P (vectype))
 	    {
 	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0,
 								 ncopies}))
@@ -9247,6 +9249,8 @@ vectorizable_load (vec_info *vinfo,
       group_size = vec_num = 1;
       group_gap_adj = 0;
       ref_type = reference_alias_ptr_type (DR_REF (first_dr_info->dr));
+      if (slp)
+	vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
     }
 
   gcc_assert (alignment_support_scheme);
@@ -9592,7 +9596,7 @@ vectorizable_load (vec_info *vinfo,
 		final_mask = prepare_vec_mask (loop_vinfo, mask_vectype,
 					       final_mask, vec_mask, gsi);
 
-	      if (i > 0)
+	      if (i > 0 && !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 		dataref_ptr = bump_vector_ptr (vinfo, dataref_ptr, ptr_incr,
 					       gsi, stmt_info, bump);
 
@@ -9609,7 +9613,7 @@ vectorizable_load (vec_info *vinfo,
 			&& gs_info.ifn != IFN_LAST)
 		      {
 			if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-			  vec_offset = vec_offsets[j];
+			  vec_offset = vec_offsets[vec_num * j + i];
 			tree zero = build_zero_cst (vectype);
 			tree scale = size_int (gs_info.scale);
 			gcall *call;

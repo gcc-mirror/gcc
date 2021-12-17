@@ -268,11 +268,6 @@ extern GTY(()) int darwin_ms_struct;
   "%{unexported_symbols_list*:\
      -Xlinker -unexported_symbols_list -Xlinker %*} \
      %<unexported_symbols_list*",					\
-  "%{!weak_reference_mismatches*:\
-     %:version-compare(< 10.5 asm_macosx_version_min= -Xlinker) \
- %:version-compare(< 10.5 asm_macosx_version_min= -weak_reference_mismatches) \
-     %:version-compare(< 10.5 asm_macosx_version_min= -Xlinker) \
-     %:version-compare(< 10.5 asm_macosx_version_min= non-weak)}",	\
   "%{weak_reference_mismatches*:\
     -Xlinker -weak_reference_mismatches -Xlinker %*} \
     %<weak_reference_mismatches*",					\

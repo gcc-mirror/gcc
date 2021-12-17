@@ -7725,28 +7725,20 @@ lookup_name (tree name, LOOK_where where, LOOK_want want)
 
 	    if (binding)
 	      {
-		/* The saved lookups for an operator record 'nothing
-		   found' as error_mark_node.  We need to stop the search
-		   here, but not return the error mark node.  */
-		if (binding == error_mark_node)
-		  binding = NULL_TREE;
-
 		val = binding;
-		goto found;
+		break;
 	      }
 	  }
       }
 
   /* Now lookup in namespace scopes.  */
-  if (bool (where & LOOK_where::NAMESPACE))
+  if (!val && bool (where & LOOK_where::NAMESPACE))
     {
       name_lookup lookup (name, want);
       if (lookup.search_unqualified
 	  (current_decl_namespace (), current_binding_level))
 	val = lookup.value;
     }
-
- found:;
 
   /* If we have a known type overload, pull it out.  This can happen
      for both using decls and unhidden functions.  */
@@ -8947,127 +8939,6 @@ cp_emit_debug_info_for_using (tree t, tree context)
 	debug_hooks->imported_module_or_decl (fn, NULL_TREE, context,
 					      false, false);
     }
-}
-
-/* Return the result of unqualified lookup for the overloaded operator
-   designated by CODE, if we are in a template and the binding we find is
-   not.  */
-
-static tree
-op_unqualified_lookup (tree fnname)
-{
-  if (cxx_binding *binding = IDENTIFIER_BINDING (fnname))
-    {
-      cp_binding_level *l = binding->scope;
-      while (l && !l->this_entity)
-	l = l->level_chain;
-
-      if (l && uses_template_parms (l->this_entity))
-	/* Don't preserve decls from an uninstantiated template,
-	   wait until that template is instantiated.  */
-	return NULL_TREE;
-    }
-
-  tree fns = lookup_name (fnname);
-  if (!fns)
-    /* Remember we found nothing!  */
-    return error_mark_node;
-
-  tree d = fns;
-  if (TREE_CODE (d) == TREE_LIST)
-    d = TREE_VALUE (d);
-  if (is_overloaded_fn (d))
-    d = get_first_fn (d);
-  if (DECL_CLASS_SCOPE_P (d))
-    /* We don't need to remember class-scope functions or declarations,
-       normal unqualified lookup will find them again.  */
-    return NULL_TREE;
-
-  return fns;
-}
-
-/* E is an expression representing an operation with dependent type, so we
-   don't know yet whether it will use the built-in meaning of the operator or a
-   function.  Remember declarations of that operator in scope.
-
-   We then inject a fake binding of that lookup into the
-   instantiation's parameter scope.  This approach fails if the user
-   has different using declarations or directives in different local
-   binding of the current function from whence we need to do lookups
-   (we'll cache what we see on the first lookup).  */
-
-static const char *const op_bind_attrname = "operator bindings";
-
-void
-maybe_save_operator_binding (tree e)
-{
-  /* This is only useful in a template.  */
-  if (!processing_template_decl)
-    return;
-
-  tree cfn = current_function_decl;
-  if (!cfn)
-    return;
-
-  tree fnname;
-  if(TREE_CODE (e) == MODOP_EXPR)
-    fnname = ovl_op_identifier (true, TREE_CODE (TREE_OPERAND (e, 1)));
-  else
-    fnname = ovl_op_identifier (false, TREE_CODE (e));
-  if (!fnname || fnname == assign_op_identifier)
-    return;
-
-  tree attributes = DECL_ATTRIBUTES (cfn);
-  tree op_attr = lookup_attribute (op_bind_attrname, attributes);
-  if (!op_attr)
-    {
-      tree *ap = &DECL_ATTRIBUTES (cfn);
-      while (*ap && ATTR_IS_DEPENDENT (*ap))
-	ap = &TREE_CHAIN (*ap);
-      op_attr = tree_cons (get_identifier (op_bind_attrname),
-			   NULL_TREE, *ap);
-      *ap = op_attr;
-    }
-
-  tree op_bind = purpose_member (fnname, TREE_VALUE (op_attr));
-  if (!op_bind)
-    {
-      tree fns = op_unqualified_lookup (fnname);
-
-      /* Always record, so we don't keep looking for this
-	 operator.  */
-      TREE_VALUE (op_attr) = tree_cons (fnname, fns, TREE_VALUE (op_attr));
-    }
-}
-
-/* Called from cp_free_lang_data so we don't put this into LTO.  */
-
-void
-discard_operator_bindings (tree decl)
-{
-  DECL_ATTRIBUTES (decl) = remove_attribute (op_bind_attrname,
-					     DECL_ATTRIBUTES (decl));
-}
-
-/* Subroutine of start_preparsed_function: push the bindings we saved away in
-   maybe_save_op_lookup into the function parameter binding level.  */
-
-void
-push_operator_bindings ()
-{
-  tree decl1 = current_function_decl;
-  if (tree attr = lookup_attribute (op_bind_attrname,
-				    DECL_ATTRIBUTES (decl1)))
-    for (tree binds = TREE_VALUE (attr); binds; binds = TREE_CHAIN (binds))
-      if (tree val = TREE_VALUE (binds))
-	{
-	  tree name = TREE_PURPOSE (binds);
-	  if (TREE_CODE (val) == TREE_LIST)
-	    for (tree v = val; v; v = TREE_CHAIN (v))
-	      push_local_binding (name, TREE_VALUE (v), /*using*/true);
-	  else
-	    push_local_binding (name, val, /*using*/true);
-	}
 }
 
 #include "gt-cp-name-lookup.h"
