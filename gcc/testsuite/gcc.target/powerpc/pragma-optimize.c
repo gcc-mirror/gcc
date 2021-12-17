@@ -1,3 +1,4 @@
+/* { dg-require-ifunc "" } */
 /* { dg-options "-O2 -mlong-double-128 -mabi=ibmlongdouble" } */
 
 extern unsigned long int x;
