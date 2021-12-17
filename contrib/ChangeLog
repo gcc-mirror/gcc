@@ -1,3 +1,7 @@
+2021-12-16  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* analyze_brprob_spec.py: Add verbose argument.
+
 2021-12-06  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Filter out one warning.
