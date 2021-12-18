@@ -5135,6 +5135,9 @@ gfc_check_sizeof (gfc_expr *arg)
       return false;
     }
 
+  if (illegal_boz_arg (arg))
+    return false;
+
   /* TYPE(*) is acceptable if and only if it uses an array descriptor.  */
   if (arg->ts.type == BT_ASSUMED
       && (arg->symtree->n.sym->as == NULL
