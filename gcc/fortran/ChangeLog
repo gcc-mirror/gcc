@@ -1,3 +1,12 @@
+2021-12-17  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103610
+	* array.c (spec_dimen_size): Fix simplification of SHAPE:
+	dimensions must be non-negative.
+
 2021-12-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
