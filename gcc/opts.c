@@ -745,6 +745,15 @@ default_options_optimization (struct gcc_options *opts,
 	  opts->x_optimize_debug = 0;
 	  break;
 
+	case OPT_Oz:
+	  opts->x_optimize_size = 2;
+
+	  /* Optimizing for size forces optimize to be 2.  */
+	  opts->x_optimize = 2;
+	  opts->x_optimize_fast = 0;
+	  opts->x_optimize_debug = 0;
+	  break;
+
 	case OPT_Ofast:
 	  /* -Ofast only adds flags to -O3.  */
 	  opts->x_optimize_size = 0;
@@ -2609,6 +2618,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_Os:
     case OPT_Ofast:
     case OPT_Og:
+    case OPT_Oz:
       /* Currently handled in a prescan.  */
       break;
 

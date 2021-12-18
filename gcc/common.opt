@@ -483,6 +483,10 @@ Og
 Common Optimization
 Optimize for debugging experience rather than speed or size.
 
+Oz
+Common Optimization
+Optimize for space aggressively rather than speed.
+
 Q
 Driver
 
