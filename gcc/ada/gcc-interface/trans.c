@@ -865,6 +865,20 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
 	      || must_pass_by_ref (gnu_type)
 	      || default_pass_by_ref (gnu_type));
 
+    case N_Pragma_Argument_Association:
+      return lvalue_required_p (gnat_parent, gnu_type, constant,
+				address_of_constant);
+
+    case N_Pragma:
+      if (Is_Pragma_Name (Chars (Pragma_Identifier (gnat_parent))))
+	{
+	  const unsigned char id
+	    = Get_Pragma_Id (Chars (Pragma_Identifier (gnat_parent)));
+	  return id == Pragma_Inspection_Point;
+	}
+      else
+	return 0;
+
     case N_Indexed_Component:
       /* Only the array expression can require an lvalue.  */
       if (Prefix (gnat_parent) != gnat_node)
@@ -1387,6 +1401,9 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  char *comment;
 #endif
 	  gnu_expr = maybe_unconstrained_array (gnu_expr);
+	  if (TREE_CODE (gnu_expr) == CONST_DECL
+	      && DECL_CONST_CORRESPONDING_VAR (gnu_expr))
+	    gnu_expr = DECL_CONST_CORRESPONDING_VAR (gnu_expr);
 	  gnat_mark_addressable (gnu_expr);
 
 #ifdef ASM_COMMENT_START
