@@ -233,6 +233,21 @@ public:
     return true;
   }
 
+  void insert_pattern_binding (HirId id, tree binding)
+  {
+    implicit_pattern_bindings[id] = binding;
+  }
+
+  bool lookup_pattern_binding (HirId id, tree *binding)
+  {
+    auto it = implicit_pattern_bindings.find (id);
+    if (it == implicit_pattern_bindings.end ())
+      return false;
+
+    *binding = it->second;
+    return true;
+  }
+
   void push_fn (tree fn, ::Bvariable *ret_addr)
   {
     fn_stack.push_back (fncontext{fn, ret_addr});
@@ -326,6 +341,7 @@ private:
   std::map<const TyTy::BaseType *, std::pair<HirId, tree>> mono;
   std::map<DefId, std::vector<std::pair<const TyTy::BaseType *, tree>>>
     mono_fns;
+  std::map<HirId, tree> implicit_pattern_bindings;
 
   // To GCC middle-end
   std::vector<tree> type_decls;
