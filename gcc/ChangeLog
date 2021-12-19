@@ -1,3 +1,42 @@
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103611
+	* config/i386/i386.md (any_or_plus): New code iterator.
+	(define_split): Split (HI<<32)|zext(LO) into piece-wise
+	move instructions on !TARGET_64BIT.
+	* config/i386/sse.md (*vec_extractv4si_0_zext_sse4):
+	Restrict to TARGET_64BIT.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/32803
+	* common.opt (Oz): New command line option.
+	* doc/invoke.texi: Document the new -Oz option.
+	* lto-wrapper.c (merge_and_complain, append_compiler_options):
+	Treat OPT_Oz as synonymous with OPT_Os.
+	* optc-save-gen.awk: Increase maximum value of optimize_size to 2.
+	* opts.c (default_options_optimization) [OPT_Oz]: Handle OPT_Oz
+	just like OPT_Os, except set opt->x_optimize_size to 2.
+	(common_handle_option): Skip OPT_Oz just like OPT_Os.
+	* config/i386/i386.md (*movdi_internal): Use a push/pop sequence
+	for suitable SImode TYPE_IMOV moves when optimize_size > 1.
+	(*movsi_internal): Likewise.
+
+2021-12-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/103759
+	* tree-object-size.c (unknown, initval): Remove functions.
+	(size_unknown, size_initval, size_unknown_p): Operate directly
+	on trees.
+
+2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/darwin-driver.c: Make version code more future-proof.
+	* config.gcc: Homogeneize darwin versions.
+	* configure.ac: Homogeneize darwin versions.
+	* configure: Regenerate.
+
 2021-12-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/103649
