@@ -13,4 +13,6 @@ constexpr float f = u.f;
 constexpr unsigned char c = u.ca[0]; // { dg-error "U::ca" }
 
 constexpr double d = 1.0;
-constexpr unsigned char c2 = (unsigned char&)d; // { dg-error "char. glvalue" }
+constexpr unsigned char c2 = reinterpret_cast<unsigned char const&>(d); // { dg-error "char. glvalue" }
+constexpr unsigned char c3 = (unsigned char const&)d; // OK, same as:
+constexpr unsigned char c4 = static_cast<unsigned char const&>(d);

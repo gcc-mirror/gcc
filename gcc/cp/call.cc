@@ -1967,13 +1967,28 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
   conv->need_temporary_p = true;
   conv->rvaluedness_matches_p = TYPE_REF_IS_RVALUE (rto);
 
+  if (c_cast_p && (complain & tf_warning)
+    && warning (OPT_Wconversion, "reference binding temporary for C-style "
+		"cast"))
+      inform (input_location, " use %<reinterpret_cast%> for type-punning");
+
   /* [dcl.init.ref]
 
      Otherwise, the reference shall be an lvalue reference to a
      non-volatile const type, or the reference shall be an rvalue
      reference.  */
   if (!CP_TYPE_CONST_NON_VOLATILE_P (to) && !TYPE_REF_IS_RVALUE (rto))
-    conv->bad_p = true;
+    {
+      /* If this is a C-style cast, we can cast away const later.  */
+      if (c_cast_p)
+	{
+	  int cflags = (cp_type_quals (to)|TYPE_QUAL_CONST)&~TYPE_QUAL_VOLATILE;
+	  to = cp_build_qualified_type (to, cflags);
+	  conv->type = cp_build_reference_type (to, false);
+	}
+      else
+	conv->bad_p = true;
+    }
 
   /* [dcl.init.ref]
 

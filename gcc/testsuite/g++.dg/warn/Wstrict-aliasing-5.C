@@ -6,6 +6,7 @@ typedef unsigned uint32_t __attribute__((mode (__SI__)));
 float foo ()
 {
   uint32_t MASK = 0x80000000;
-  return (float &) MASK; /* { dg-warning "strict-aliasing" } */
+  float f1 = (float &)MASK; // OK, same as const_cast<float &>(static_cast<float const &>(MASK))
+  return reinterpret_cast<float &>(MASK); /* { dg-warning "strict-aliasing" } */
 }
 
