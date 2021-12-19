@@ -5019,9 +5019,15 @@ modref_merge_call_site_flags (escape_summary *sum,
   bool changed = false;
   bool ignore_stores = ignore_stores_p (caller, callee_ecf_flags);
 
-  /* If we have no useful info to propagate.  */
-  if ((!cur_summary || !cur_summary->arg_flags.length ())
-      && (!cur_summary_lto || !cur_summary_lto->arg_flags.length ()))
+  /* Return early if we have no useful info to propagate.  */
+  if ((!cur_summary
+       || (!cur_summary->arg_flags.length ()
+	   && !cur_summary->static_chain_flags
+	   && !cur_summary->retslot_flags))
+      && (!cur_summary_lto
+	  || (!cur_summary_lto->arg_flags.length ()
+	      && !cur_summary_lto->static_chain_flags
+	      && !cur_summary_lto->retslot_flags)))
     return false;
 
   FOR_EACH_VEC_ELT (sum->esc, i, ee)
