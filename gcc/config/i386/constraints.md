@@ -168,6 +168,7 @@
 ;;  z  Constant call address operand.
 ;;  C  Integer SSE constant with all bits set operand.
 ;;  F  Floating-point SSE constant with all bits set operand.
+;;  M  x86-64 memory operand.
 
 (define_constraint "Bf"
   "@internal Flags register operand."
@@ -231,6 +232,15 @@
   "@internal floating-point SSE constant with all bits set operand."
   (and (match_test "TARGET_SSE")
        (match_operand 0 "float_vector_all_ones_operand")))
+
+;; NB: Similar to 'm', but don't use define_memory_constraint on x86-64
+;; to prevent LRA from converting the operand to the form '(mem (reg X))'
+;; where X is a base register.
+(define_constraint "BM"
+  "@internal x86-64 memory operand."
+  (and (match_code "mem")
+       (match_test "memory_address_addr_space_p (GET_MODE (op), XEXP (op, 0),
+						 MEM_ADDR_SPACE (op))")))
 
 ;; Integer constant constraints.
 (define_constraint "Wb"
