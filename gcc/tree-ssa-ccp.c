@@ -3703,8 +3703,8 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	      g = SSA_NAME_DEF_STMT (mask);
 	    }
 
-	  rhs_code = gimple_assign_rhs_code (g);
-	  if (rhs_code != LSHIFT_EXPR
+	  if (!is_gimple_assign (g)
+	      || gimple_assign_rhs_code (g) != LSHIFT_EXPR
 	      || !integer_onep (gimple_assign_rhs1 (g)))
 	    return;
 	  bit = gimple_assign_rhs2 (g);

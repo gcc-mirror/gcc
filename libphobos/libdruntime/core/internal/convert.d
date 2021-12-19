@@ -801,7 +801,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == delegate) || is(T : V*, V
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref return scope T val) if (is(T == struct) || is(T == union))
+const(ubyte)[] toUbyte(T)(const return ref scope T val) if (is(T == struct) || is(T == union))
 {
     if (__ctfe)
     {
@@ -826,7 +826,11 @@ const(ubyte)[] toUbyte(T)(const ref return scope T val) if (is(T == struct) || i
     }
     else
     {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
+        // We're escaping a reference to `val` here because we cannot express
+        // ref return + scope, it's currently seen as ref + return scope
+        // https://issues.dlang.org/show_bug.cgi?id=22541
+        // Once fixed, the @system lambda should be removed
+        return (() @system => (cast(const(ubyte)*)&val)[0 .. T.sizeof])();
     }
 }
 

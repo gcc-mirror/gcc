@@ -929,12 +929,13 @@ extern (C++) final class PragmaDeclaration : AttribDeclaration
             (*args)[0] = e;
         }
 
-        if (e.isBool(true))
-            return PINLINE.always;
-        else if (e.isBool(false))
-            return PINLINE.never;
-        else
+        const opt = e.toBool();
+        if (opt.isEmpty())
             return PINLINE.default_;
+        else if (opt.get())
+            return PINLINE.always;
+        else
+            return PINLINE.never;
     }
 
     override const(char)* kind() const
@@ -1198,7 +1199,7 @@ extern (C++) final class StaticForeachDeclaration : AttribDeclaration
 
         // expand static foreach
         import dmd.statementsem: makeTupleForeach;
-        Dsymbols* d = makeTupleForeach!(true,true)(_scope, sfe.aggrfe, decl, sfe.needExpansion).decl;
+        Dsymbols* d = makeTupleForeach(_scope, true, true, sfe.aggrfe, decl, sfe.needExpansion).decl;
         if (d) // process generated declarations
         {
             // Add members lazily.

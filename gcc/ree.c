@@ -1165,31 +1165,28 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 	   to change them all at once in one transaction.  */
 	else if (VECTOR_MODE_P (GET_MODE (XEXP (src, 0))))
 	  {
-	    if (idx == 0)
-	      {
-		struct df_link *ref_chain, *ref_link;
+	    struct df_link *ref_chain, *ref_link;
 
-		ref_chain = DF_REF_CHAIN (def->ref);
-		for (ref_link = ref_chain; ref_link; ref_link = ref_link->next)
+	    ref_chain = DF_REF_CHAIN (def->ref);
+	    for (ref_link = ref_chain; ref_link; ref_link = ref_link->next)
+	      {
+		if (ref_link->ref == NULL
+		    || DF_REF_INSN_INFO (ref_link->ref) == NULL)
 		  {
-		    if (ref_link->ref == NULL
-			|| DF_REF_INSN_INFO (ref_link->ref) == NULL)
-		      {
-			idx = -1U;
-			break;
-		      }
-		    rtx_insn *use_insn = DF_REF_INSN (ref_link->ref);
-		    if (use_insn != insn && !DEBUG_INSN_P (use_insn))
-		      {
-			idx = -1U;
-			break;
-		      }
+		    idx = -1U;
+		    break;
 		  }
-		if (idx == -1U)
-		  def_map[INSN_UID (DF_REF_INSN (def->ref))] = idx;
+		rtx_insn *use_insn = DF_REF_INSN (ref_link->ref);
+		if (use_insn != insn && !DEBUG_INSN_P (use_insn))
+		  {
+		    idx = -1U;
+		    break;
+		  }
 	      }
+
 	    if (idx == -1U)
 	      {
+		def_map[INSN_UID (DF_REF_INSN (def->ref))] = idx;
 		if (dump_file)
 		  {
 		    fprintf (dump_file, "Cannot eliminate extension:\n");

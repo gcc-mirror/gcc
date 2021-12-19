@@ -101,6 +101,9 @@ string rt_cmdlineOption(string opt, scope rt_configCallBack dg) @nogc nothrow
     {
         foreach (a; rt_args)
         {
+            if (a == "--")
+                break;
+
             if (a.length >= opt.length + 7 && a[0..6] == "--DRT-" &&
                 a[6 .. 6 + opt.length] == opt && a[6 + opt.length] == '=')
             {

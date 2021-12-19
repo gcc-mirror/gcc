@@ -380,10 +380,6 @@ fpreview=inclusiveincontracts
 D RejectNegative
 Implement 'in' contracts of overridden methods to be a superset of parent contract.
 
-fpreview=intpromote
-D RejectNegative
-Use C-style integral promotion for unary '+', '-' and '~'.
-
 fpreview=nosharedaccess
 D RejectNegative
 Disable access to shared memory objects.
@@ -411,6 +407,10 @@ Revert DIP25: Sealed references.
 frevert=dtorfields
 D RejectNegative
 Don't destruct fields of partially constructed objects.
+
+frevert=intpromote
+D RejectNegative
+Use C-style integral promotion for unary '+', '-' and '~'.
 
 frevert=markdown
 D RejectNegative

@@ -3366,10 +3366,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     _M_leak_hard()
     {
-#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
-      if (_M_rep() == &_S_empty_rep())
+      // No need to create a new copy of an empty string when a non-const
+      // reference/pointer/iterator into it is obtained. Modifying the
+      // trailing null character is undefined, so the ref/pointer/iterator
+      // is effectively const anyway.
+      if (this->empty())
 	return;
-#endif
+
       if (_M_rep()->_M_is_shared())
 	_M_mutate(0, 0, 0);
       _M_rep()->_M_set_leaked();

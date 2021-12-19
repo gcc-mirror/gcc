@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    location rather than implicitly using input_location.  */
 
 #include "config.h"
-#define INCLUDE_UNIQUE_PTR
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -4846,6 +4846,11 @@ c_parser_balanced_token_sequence (c_parser *parser)
 	case CPP_EOF:
 	  return;
 
+	case CPP_PRAGMA:
+	  c_parser_consume_pragma (parser);
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  break;
+
 	default:
 	  c_parser_consume_token (parser);
 	  break;
@@ -4938,7 +4943,9 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
 	parens.skip_until_found_close (parser);
 	return error_mark_node;
       }
-    if (as)
+    /* If this is a fake attribute created to handle -Wno-attributes,
+       we must skip parsing the arguments.  */
+    if (as && !attribute_ignored_p (as))
       {
 	bool takes_identifier
 	  = (ns != NULL_TREE

@@ -462,6 +462,21 @@ extern (C++) class Dsymbol : ASTNode
         return null;
     }
 
+    /**************************************
+     * Does this Dsymbol come from a C file?
+     * Returns:
+     *  true if it does
+     */
+     final bool isCsymbol()
+     {
+        if (Module m = getModule())
+        {
+            if (m.isCFile)
+                return true;
+        }
+        return false;
+    }
+
     /**********************************
      * Determine which Module a Dsymbol is in, as far as access rights go.
      */
@@ -1783,13 +1798,13 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
         // Acts as proxy to the with class declaration
         Dsymbol s = null;
         Expression eold = null;
-        for (Expression e = withstate.exp; e != eold; e = resolveAliasThis(_scope, e))
+        for (Expression e = withstate.exp; e && e != eold; e = resolveAliasThis(_scope, e, true))
         {
-            if (e.op == TOK.scope_)
+            if (e.op == EXP.scope_)
             {
                 s = (cast(ScopeExp)e).sds;
             }
-            else if (e.op == TOK.type)
+            else if (e.op == EXP.type)
             {
                 s = e.type.toDsymbol(null);
             }
@@ -1826,14 +1841,14 @@ extern (C++) final class WithScopeSymbol : ScopeDsymbol
 extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
 {
     // either a SliceExp, an IndexExp, an ArrayExp, a TypeTuple or a TupleDeclaration.
-    // Discriminated using DYNCAST and, for expressions, also TOK
+    // Discriminated using DYNCAST and, for expressions, also EXP
     private RootObject arrayContent;
     Scope* sc;
 
     extern (D) this(Scope* sc, Expression exp)
     {
         super(exp.loc, null);
-        assert(exp.op == TOK.index || exp.op == TOK.slice || exp.op == TOK.array);
+        assert(exp.op == EXP.index || exp.op == EXP.slice || exp.op == EXP.array);
         this.sc = sc;
         this.arrayContent = exp;
     }
@@ -1950,7 +1965,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
             else if (ce.type && (t = ce.type.toBasetype()) !is null && (t.ty == Tstruct || t.ty == Tclass))
             {
                 // Look for opDollar
-                assert(exp.op == TOK.array || exp.op == TOK.slice);
+                assert(exp.op == EXP.array || exp.op == EXP.slice);
                 AggregateDeclaration ad = isAggregate(t);
                 assert(ad);
                 Dsymbol s = ad.search(loc, Id.opDollar);
@@ -1962,11 +1977,11 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                 if (TemplateDeclaration td = s.isTemplateDeclaration())
                 {
                     dinteger_t dim = 0;
-                    if (exp.op == TOK.array)
+                    if (exp.op == EXP.array)
                     {
                         dim = (cast(ArrayExp)exp).currentDimension;
                     }
-                    else if (exp.op == TOK.slice)
+                    else if (exp.op == EXP.slice)
                     {
                         dim = 0; // slices are currently always one-dimensional
                     }
@@ -1987,7 +2002,7 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                      * Note that it's impossible to have both template & function opDollar,
                      * because both take no arguments.
                      */
-                    if (exp.op == TOK.array && (cast(ArrayExp)exp).arguments.dim != 1)
+                    if (exp.op == EXP.array && (cast(ArrayExp)exp).arguments.dim != 1)
                     {
                         exp.error("`%s` only defines opDollar for one dimension", ad.toChars());
                         return null;
@@ -2426,7 +2441,9 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
     auto vd2 = s2.isVarDeclaration(); // existing declaration
     if (vd && vd2)
     {
-        // if one is `static` and the other isn't
+        /* if one is `static` and the other isn't, the result is undefined
+         * behavior, C11 6.2.2.7
+         */
         if ((vd.storage_class ^ vd2.storage_class) & STC.static_)
             return collision();
 
@@ -2437,7 +2454,10 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
             return collision();         // can't both have initializers
 
         if (i1)
-            return vd;
+        {
+            vd2._init = vd._init;
+            vd._init = null;
+        }
 
         /* BUG: the types should match, which needs semantic() to be run on it
          *    extern int x;
@@ -2454,15 +2474,38 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
     auto fd2 = s2.isFuncDeclaration(); // existing declaration
     if (fd && fd2)
     {
-        // if one is `static` and the other isn't
-        if ((fd.storage_class ^ fd2.storage_class) & STC.static_)
+        /* if one is `static` and the other isn't, the result is undefined
+         * behavior, C11 6.2.2.7
+         * However, match what gcc allows:
+         *    static int sun1(); int sun1() { return 0; }
+         * and:
+         *    static int sun2() { return 0; } int sun2();
+         * Both produce a static function.
+         *
+         * Both of these should fail:
+         *    int sun3(); static int sun3() { return 0; }
+         * and:
+         *    int sun4() { return 0; } static int sun4();
+         */
+        // if adding `static`
+        if (   fd.storage_class & STC.static_ &&
+            !(fd2.storage_class & STC.static_))
+        {
             return collision();
+        }
 
         if (fd.fbody && fd2.fbody)
             return collision();         // can't both have bodies
 
         if (fd.fbody)
-            return fd;
+        {
+            fd2.fbody = fd.fbody;       // transfer body to existing declaration
+            fd.fbody = null;
+
+            auto tf = fd.type.toTypeFunction();
+            auto tf2 = fd2.type.toTypeFunction();
+            tf2.parameterList = tf.parameterList;   // transfer parameter list.
+        }
 
         /* BUG: just like with VarDeclaration, the types should match, which needs semantic() to be run on it.
          * FuncDeclaration::semantic2() can detect this, but it relies overnext being set.

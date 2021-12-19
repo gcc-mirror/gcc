@@ -3577,11 +3577,6 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
   for (i = 0; i < length; i++)
     TREE_OPERAND (t, i) = va_arg (p, tree);
 
-  if (code == COMPOUND_EXPR && TREE_CODE (non_dep) != COMPOUND_EXPR)
-    /* This should not be considered a COMPOUND_EXPR, because it
-       resolves to an overload.  */
-    COMPOUND_EXPR_OVERLOADED (t) = 1;
-
   va_end (p);
   return convert_from_reference (t);
 }
@@ -4376,8 +4371,9 @@ maybe_warn_parm_abi (tree t, location_t loc)
 			"the calling convention for %qT, which was "
 			"accidentally changed in 8.1", t);
       else
-	w = warning_at (loc, OPT_Wabi, "%<-fabi-version=12%> (GCC 8.1) accident"
-			"ally changes the calling convention for %qT", t);
+	w = warning_at (loc, OPT_Wabi, "%<-fabi-version=12%> (GCC 8.1) "
+			"accidentally changes the calling convention for %qT",
+			t);
       if (w)
 	inform (location_of (t), " declared here");
       return;
@@ -5979,8 +5975,6 @@ cp_free_lang_data (tree t)
       DECL_EXTERNAL (t) = 1;
       TREE_STATIC (t) = 0;
     }
-  if (TREE_CODE (t) == FUNCTION_DECL)
-    discard_operator_bindings (t);
   if (TREE_CODE (t) == NAMESPACE_DECL)
     /* We do not need the leftover chaining of namespaces from the
        binding level.  */

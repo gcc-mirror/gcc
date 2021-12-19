@@ -6,10 +6,6 @@
  * Authors:   Walter Bright, Sean Kelly, Martin Nowak
  * Source: $(DRUNTIMESRC rt/_monitor_.d)
  */
-
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module rt.monitor_;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string;
@@ -175,37 +171,7 @@ package:
 alias IMonitor = Object.Monitor;
 alias DEvent = void delegate(Object);
 
-version (GNU)
-{
-    import gcc.config;
-    static if (GNU_Thread_Model == ThreadModel.Single)
-        version = SingleThreaded;
-    // Ignore ThreadModel, we don't want posix threads on windows and
-    // will always use native threading instead.
-}
-
-version (SingleThreaded)
-{
-@nogc:
-    alias Mutex = int;
-
-    void initMutex(Mutex* mtx)
-    {
-    }
-
-    void destroyMutex(Mutex* mtx)
-    {
-    }
-
-    void lockMutex(Mutex* mtx)
-    {
-    }
-
-    void unlockMutex(Mutex* mtx)
-    {
-    }
-}
-else version (Windows)
+version (Windows)
 {
     version (CRuntime_DigitalMars)
     {
@@ -264,7 +230,7 @@ struct Monitor
 
 private:
 
-@property ref shared(Monitor*) monitor(return Object h) pure nothrow @nogc
+@property ref shared(Monitor*) monitor(return scope Object h) pure nothrow @nogc
 {
     return *cast(shared Monitor**)&h.__monitor;
 }

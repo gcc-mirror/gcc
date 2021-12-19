@@ -490,7 +490,7 @@ private final class CppMangleVisitor : Visitor
                 mangle_function(d.isFuncDeclaration());
                 buf.writestring("EE");
             }
-            else if (e && e.op == TOK.variable && (cast(VarExp)e).var.isVarDeclaration())
+            else if (e && e.op == EXP.variable && (cast(VarExp)e).var.isVarDeclaration())
             {
                 VarDeclaration vd = (cast(VarExp)e).var.isVarDeclaration();
                 buf.writeByte('L');

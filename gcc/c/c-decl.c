@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_STRING
-#define INCLUDE_UNIQUE_PTR
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -4643,7 +4643,7 @@ c_warn_unused_attributes (tree attrs)
 	 constraint violation.  */
       pedwarn (input_location, OPT_Wattributes, "%qE attribute ignored",
 	       get_attribute_name (t));
-    else
+    else if (!attribute_ignored_p (t))
       warning (OPT_Wattributes, "%qE attribute ignored",
 	       get_attribute_name (t));
 }

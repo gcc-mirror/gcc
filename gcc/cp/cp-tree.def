@@ -476,6 +476,11 @@ DEFTREECODE (UNDERLYING_TYPE, "underlying_type", tcc_type, 0)
    BASES_TYPE is the type in question.  */
 DEFTREECODE (BASES, "bases", tcc_type, 0)
 
+/* Dependent operator expressions are given this type rather than a NULL_TREE
+   type so that we have somewhere to stash the result of phase 1 name lookup
+   (namely into DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS).  */
+DEFTREECODE (DEPENDENT_OPERATOR_TYPE, "dependent_operator_type", tcc_type, 0)
+
 /* Used to represent the template information stored by template
    specializations.
    The accessors are:

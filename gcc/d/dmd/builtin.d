@@ -13,8 +13,6 @@
 
 module dmd.builtin;
 
-import core.stdc.math;
-import core.stdc.string;
 import dmd.arraytypes;
 import dmd.expression;
 import dmd.func;

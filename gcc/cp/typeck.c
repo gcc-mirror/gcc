@@ -2602,6 +2602,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
 						    ? LE_EXPR : GE_EXPR),
 						   op0, TREE_CODE (op0),
 						   op1, TREE_CODE (op1),
+						   NULL_TREE,
 						   /*overload=*/NULL,
 						   complain),
                                 cp_build_unary_op (code, op0, false, complain),
@@ -3487,6 +3488,67 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
   return build_simple_component_ref (ptrmem, member);
 }
 
+/* Return a TREE_LIST of namespace-scope overloads for the given operator,
+   and for any other relevant operator.  */
+
+static tree
+op_unqualified_lookup (tree_code code, bool is_assign)
+{
+  tree lookups = NULL_TREE;
+
+  if (cxx_dialect >= cxx20 && !is_assign)
+    {
+      if (code == NE_EXPR)
+	{
+	  /* != can get rewritten in terms of ==.  */
+	  tree fnname = ovl_op_identifier (false, EQ_EXPR);
+	  if (tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE))
+	    lookups = tree_cons (fnname, fns, lookups);
+	}
+      else if (code == GT_EXPR || code == LE_EXPR
+	       || code == LT_EXPR || code == GE_EXPR)
+	{
+	  /* These can get rewritten in terms of <=>.  */
+	  tree fnname = ovl_op_identifier (false, SPACESHIP_EXPR);
+	  if (tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE))
+	    lookups = tree_cons (fnname, fns, lookups);
+	}
+    }
+
+  tree fnname = ovl_op_identifier (is_assign, code);
+  if (tree fns = lookup_name (fnname, LOOK_where::BLOCK_NAMESPACE))
+    lookups = tree_cons (fnname, fns, lookups);
+
+  if (lookups)
+    return lookups;
+  else
+    return build_tree_list (NULL_TREE, NULL_TREE);
+}
+
+/* Create a DEPENDENT_OPERATOR_TYPE for a dependent operator expression of
+   the given operator.  LOOKUPS, if non-NULL, is the result of phase 1
+   name lookup for the given operator.  */
+
+tree
+build_dependent_operator_type (tree lookups, tree_code code, bool is_assign)
+{
+  if (lookups)
+    /* We're partially instantiating a dependent operator expression, and
+       LOOKUPS is the result of phase 1 name lookup that we performed
+       earlier at template definition time, so just reuse the corresponding
+       DEPENDENT_OPERATOR_TYPE.  */
+    return TREE_TYPE (lookups);
+
+  /* Otherwise we're processing a dependent operator expression at template
+     definition time, so perform phase 1 name lookup now.  */
+  lookups = op_unqualified_lookup (code, is_assign);
+
+  tree type = cxx_make_type (DEPENDENT_OPERATOR_TYPE);
+  DEPENDENT_OPERATOR_TYPE_SAVED_LOOKUPS (type) = lookups;
+  TREE_TYPE (lookups) = type;
+  return type;
+}
+
 /* Given an expression PTR for a pointer, return an expression
    for the value pointed to.
    ERRORSTRING is the name of the operator to appear in error messages.
@@ -3496,7 +3558,7 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
 
 tree
 build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring, 
-                      tsubst_flags_t complain)
+		      tree lookups, tsubst_flags_t complain)
 {
   tree orig_expr = expr;
   tree rval;
@@ -3516,12 +3578,18 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
 	  return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
 	}
       if (type_dependent_expression_p (expr))
-	return build_min_nt_loc (loc, INDIRECT_REF, expr);
+	{
+	  expr = build_min_nt_loc (loc, INDIRECT_REF, expr);
+	  TREE_TYPE (expr)
+	    = build_dependent_operator_type (lookups, INDIRECT_REF, false);
+	  return expr;
+	}
       expr = build_non_dependent_expr (expr);
     }
 
   rval = build_new_op (loc, INDIRECT_REF, LOOKUP_NORMAL, expr,
-		       NULL_TREE, NULL_TREE, &overload, complain);
+		       NULL_TREE, NULL_TREE, lookups,
+		       &overload, complain);
   if (!rval)
     rval = cp_build_indirect_ref (loc, expr, errorstring, complain);
 
@@ -4458,8 +4526,8 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 tree
 build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 		   enum tree_code arg1_code, tree arg2,
-		   enum tree_code arg2_code, tree *overload_p,
-		   tsubst_flags_t complain)
+		   enum tree_code arg2_code, tree lookups,
+		   tree *overload_p, tsubst_flags_t complain)
 {
   tree orig_arg1;
   tree orig_arg2;
@@ -4475,7 +4543,8 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 	  || type_dependent_expression_p (arg2))
 	{
 	  expr = build_min_nt_loc (loc, code, arg1, arg2);
-	  maybe_save_operator_binding (expr);
+	  TREE_TYPE (expr)
+	    = build_dependent_operator_type (lookups, code, false);
 	  return expr;
 	}
       arg1 = build_non_dependent_expr (arg1);
@@ -4486,7 +4555,7 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
     expr = build_m_component_ref (arg1, arg2, complain);
   else
     expr = build_new_op (loc, code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE,
-			 &overload, complain);
+			 lookups, &overload, complain);
 
   if (overload_p != NULL)
     *overload_p = overload;
@@ -4538,7 +4607,7 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
     }
 
   expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, arg1, arg2,
-		       NULL_TREE, &overload, complain);
+		       NULL_TREE, NULL_TREE, &overload, complain);
 
   if (processing_template_decl && expr != error_mark_node)
     {
@@ -6402,7 +6471,7 @@ pointer_diff (location_t loc, tree op0, tree op1, tree ptrtype,
 
 tree
 build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
-		  tsubst_flags_t complain)
+		  tree lookups, tsubst_flags_t complain)
 {
   tree orig_expr = xarg;
   tree exp;
@@ -6414,7 +6483,7 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
       if (type_dependent_expression_p (xarg))
 	{
 	  tree e = build_min_nt_loc (loc, code, xarg.get_value (), NULL_TREE);
-	  maybe_save_operator_binding (e);
+	  TREE_TYPE (e) = build_dependent_operator_type (lookups, code, false);
 	  return e;
 	}
 
@@ -6439,7 +6508,7 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
     /* Don't look for a function.  */;
   else
     exp = build_new_op (loc, code, LOOKUP_NORMAL, xarg, NULL_TREE,
-			NULL_TREE, &overload, complain);
+			NULL_TREE, lookups, &overload, complain);
 
   if (!exp && code == ADDR_EXPR)
     {
@@ -7508,7 +7577,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
 	expr = build_x_compound_expr (EXPR_LOCATION (TREE_VALUE (list)),
-				      expr, TREE_VALUE (list), complain);
+				      expr, TREE_VALUE (list), NULL_TREE,
+				      complain);
     }
 
   return expr;
@@ -7543,7 +7613,7 @@ build_x_compound_expr_from_vec (vec<tree, va_gc> *vec, const char *msg,
       expr = (*vec)[0];
       for (ix = 1; vec->iterate (ix, &t); ++ix)
 	expr = build_x_compound_expr (EXPR_LOCATION (t), expr,
-				      t, complain);
+				      t, NULL_TREE, complain);
 
       return expr;
     }
@@ -7553,7 +7623,7 @@ build_x_compound_expr_from_vec (vec<tree, va_gc> *vec, const char *msg,
 
 tree
 build_x_compound_expr (location_t loc, tree op1, tree op2,
-		       tsubst_flags_t complain)
+		       tree lookups, tsubst_flags_t complain)
 {
   tree result;
   tree orig_op1 = op1;
@@ -7566,7 +7636,8 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
 	  || type_dependent_expression_p (op2))
 	{
 	  result = build_min_nt_loc (loc, COMPOUND_EXPR, op1, op2);
-	  maybe_save_operator_binding (result);
+	  TREE_TYPE (result)
+	    = build_dependent_operator_type (lookups, COMPOUND_EXPR, false);
 	  return result;
 	}
       op1 = build_non_dependent_expr (op1);
@@ -7574,7 +7645,7 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
     }
 
   result = build_new_op (loc, COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2,
-			 NULL_TREE, &overload, complain);
+			 NULL_TREE, lookups, &overload, complain);
   if (!result)
     result = cp_build_compound_expr (op1, op2, complain);
 
@@ -9017,8 +9088,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	    {
 	      result = build_new_op (input_location, MODIFY_EXPR,
 				     LOOKUP_NORMAL, lhs, rhs,
-				     make_node (NOP_EXPR), /*overload=*/NULL,
-				     complain);
+				     make_node (NOP_EXPR), NULL_TREE,
+				     /*overload=*/NULL, complain);
 	      if (result == NULL_TREE)
 		return error_mark_node;
 	      goto ret;
@@ -9233,7 +9304,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 
 cp_expr
 build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
-		     tree rhs, tsubst_flags_t complain)
+		     tree rhs, tree lookups, tsubst_flags_t complain)
 {
   tree orig_lhs = lhs;
   tree orig_rhs = rhs;
@@ -9250,7 +9321,9 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	{
 	  tree op = build_min_nt_loc (loc, modifycode, NULL_TREE, NULL_TREE);
 	  tree rval = build_min_nt_loc (loc, MODOP_EXPR, lhs, op, rhs);
-	  maybe_save_operator_binding (rval);
+	  if (modifycode != NOP_EXPR)
+	    TREE_TYPE (rval)
+	      = build_dependent_operator_type (lookups, modifycode, true);
 	  return rval;
 	}
 
@@ -9262,7 +9335,7 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     {
       tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
       tree rval = build_new_op (loc, MODIFY_EXPR, LOOKUP_NORMAL,
-				lhs, rhs, op, &overload, complain);
+				lhs, rhs, op, lookups, &overload, complain);
       if (rval)
 	{
 	  if (rval == error_mark_node)

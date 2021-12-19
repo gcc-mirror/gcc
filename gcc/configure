@@ -26947,7 +26947,7 @@ $as_echo "$as_me: WARNING: LTO for $target requires binutils >= 2.20.1, but vers
 	;;
     esac
     case $target_os in
-       darwin2[0-9]* | darwin19*)
+       darwin2* | darwin19*)
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for llvm assembler x86-pad-for-align option" >&5
 $as_echo_n "checking assembler for llvm assembler x86-pad-for-align option... " >&6; }
 if ${gcc_cv_as_mllvm_x86_pad_for_align+:} false; then :
@@ -32038,14 +32038,18 @@ fi
      # Check that we can build shared objects with -fPIC -shared
      saved_LDFLAGS="$LDFLAGS"
      saved_CFLAGS="$CFLAGS"
+     saved_CXXFLAGS="$CXXFLAGS"
      case "${host}" in
        *-*-darwin*)
 	 CFLAGS=`echo $CFLAGS | sed s/-mdynamic-no-pic//g`
 	 CFLAGS="$CFLAGS -fPIC"
+	 CXXFLAGS=`echo $CXXFLAGS | sed s/-mdynamic-no-pic//g`
+	 CXXFLAGS="$CXXFLAGS -fPIC"
 	 LDFLAGS="$LDFLAGS -shared -undefined dynamic_lookup"
        ;;
        *)
 	 CFLAGS="$CFLAGS -fPIC"
+	 CXXFLAGS="$CXXFLAGS -fPIC"
 	 LDFLAGS="$LDFLAGS -fPIC -shared"
        ;;
      esac
@@ -32077,6 +32081,7 @@ rm -f core conftest.err conftest.$ac_objext \
      fi
      LDFLAGS="$saved_LDFLAGS"
      CFLAGS="$saved_CFLAGS"
+     CXXFLAGS="$saved_CXXFLAGS"
 
      # If plugin support had been requested but not available, fail.
      if test x"$enable_plugin" = x"no" ; then

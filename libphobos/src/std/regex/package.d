@@ -70,7 +70,7 @@ $(TR $(TD Objects) $(TD
 
   ...
   // multi-pattern regex
-  auto multi = regex([`\d+,\d+`,`(a-z]+):(\d+)`]);
+  auto multi = regex([`\d+,\d+`, `([a-z]+):(\d+)`]);
   auto m = "abc:43 12,34".matchAll(multi);
   assert(m.front.whichPattern == 2);
   assert(m.front[1] == "abc");
@@ -80,9 +80,17 @@ $(TR $(TD Objects) $(TD
   assert(m.front[1] == "12");
   ...
 
-  // The result of the `matchAll/matchFirst` is directly testable with if/assert/while.
-  // e.g. test if a string consists of letters:
-  assert(matchFirst("Letter", `^\p{L}+$`));
+  // The result of `matchAll/matchFirst` is directly testable with `if/assert/while`,
+  // e.g. test if a string consists of letters only:
+  assert(matchFirst("LettersOnly", `^\p{L}+$`));
+
+  // And we can take advantage of the ability to define a variable in the $(LINK2 https://dlang.org/spec/statement.html#IfCondition `IfCondition`):
+  if (const auto captures = matchFirst("At l34st one digit, but maybe more...", `((\d)(\d*))`))
+  {
+      assert(captures[2] == "3");
+      assert(captures[3] == "4");
+      assert(captures[1] == "34");
+  }
   ---
 
   $(SECTION Syntax and general information)

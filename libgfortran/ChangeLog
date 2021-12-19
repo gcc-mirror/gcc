@@ -1,3 +1,29 @@
+2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: include ctype.h, provide safe macros.
+	* io/format.c: use safe macros.
+	* io/list_read.c: use safe macros.
+	* io/read.c: use safe macros.
+	* io/write.c: use safe macros.
+	* runtime/environ.c: use safe macros.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io/file_pos.c: Fix error code.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/time_1.h: Prefer clock_gettime() over
+	  gettimeofday().
+	* intrinsics/date_and_time.c: Fix timezone wrapping.
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/103634
+	* intrinsics/pack_generic.c (pack_internal): Handle case when the
+	array argument of PACK has one or more extents of size zero to
+	avoid invalid reads.
+
 2021-10-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/102086

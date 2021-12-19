@@ -103,8 +103,8 @@ T emplace(T, Args...)(T chunk, auto ref Args args)
         " is abstract and it can't be emplaced");
 
     // Initialize the object in its pre-ctor state
-    enum classSize = __traits(classInstanceSize, T);
-    (() @trusted => (cast(void*) chunk)[0 .. classSize] = typeid(T).initializer[])();
+    const initializer = __traits(initSymbol, T);
+    (() @trusted { (cast(void*) chunk)[0 .. initializer.length] = initializer[]; })();
 
     static if (isInnerClass!T)
     {
@@ -222,6 +222,31 @@ T emplace(T, Args...)(void[] chunk, auto ref Args args)
     auto buf = new void[__traits(classInstanceSize, C)];
     auto c = emplace!C(buf, 5);
     assert(c.i == 5);
+}
+
+///
+@betterC
+@nogc pure nothrow @system unittest
+{
+    // works with -betterC too:
+
+    static extern (C++) class C
+    {
+        @nogc pure nothrow @safe:
+        int i = 3;
+        this(int i)
+        {
+            assert(this.i == 3);
+            this.i = i;
+        }
+        int virtualGetI() { return i; }
+    }
+
+    import core.internal.traits : classInstanceAlignment;
+
+    align(classInstanceAlignment!C) byte[__traits(classInstanceSize, C)] buffer;
+    C c = emplace!C(buffer[], 42);
+    assert(c.virtualGetI() == 42);
 }
 
 @system unittest
@@ -1921,7 +1946,7 @@ private void moveImpl(T)(scope ref T target, return scope ref T source)
 
     static if (is(T == struct))
     {
-        //  Unsafe when compiling without -dip1000
+        //  Unsafe when compiling without -preview=dip1000
         if ((() @trusted => &source == &target)()) return;
         // Destroy target before overwriting it
         static if (hasElaborateDestructor!T) target.__xdtor();
@@ -2086,9 +2111,6 @@ private T trustedMoveImpl(T)(return scope ref T source) @trusted
 // target must be first-parameter, because in void-functions DMD + dip1000 allows it to take the place of a return-scope
 private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
 {
-    import core.stdc.string : memcpy, memset;
-    import core.internal.traits;
-
     // TODO: this assert pulls in half of phobos. we need to work out an alternative assert strategy.
 //    static if (!is(T == class) && hasAliasing!T) if (!__ctfe)
 //    {
@@ -2099,11 +2121,16 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
 
     static if (is(T == struct))
     {
-        //  Unsafe when compiling without -dip1000
+        import core.internal.traits;
+
+        //  Unsafe when compiling without -preview=dip1000
         assert((() @trusted => &source !is &target)(), "source and target must not be identical");
 
         static if (hasElaborateAssign!T || !isAssignable!T)
+        {
+            import core.stdc.string : memcpy;
             () @trusted { memcpy(&target, &source, T.sizeof); }();
+        }
         else
             target = source;
 
@@ -2121,20 +2148,21 @@ private void moveEmplaceImpl(T)(scope ref T target, return scope ref T source)
                 enum sz = T.sizeof;
 
             static if (__traits(isZeroInit, T))
+            {
+                import core.stdc.string : memset;
                 () @trusted { memset(&source, 0, sz); }();
+            }
             else
             {
-                import core.internal.lifetime : emplaceInitializer;
-                ubyte[T.sizeof] init = void;
-                emplaceInitializer(*(() @trusted { return cast(T*)init.ptr; }()));
-                () @trusted { memcpy(&source, init.ptr, sz); }();
+                import core.stdc.string : memcpy;
+                () @trusted { memcpy(&source, __traits(initSymbol, T).ptr, sz); }();
             }
         }
     }
     else static if (__traits(isStaticArray, T))
     {
         for (size_t i = 0; i < source.length; ++i)
-            move(source[i], target[i]);
+            moveEmplaceImpl(target[i], source[i]);
     }
     else
     {
@@ -2184,6 +2212,34 @@ pure nothrow @nogc @system unittest
     assert(val == 0);
 }
 
+@betterC
+pure nothrow @nogc @system unittest
+{
+    static struct Foo
+    {
+    pure nothrow @nogc:
+        this(int* ptr) { _ptr = ptr; }
+        ~this() { if (_ptr) ++*_ptr; }
+        int* _ptr;
+    }
+
+    int val;
+    {
+        Foo[1] foo1 = void; // uninitialized
+        Foo[1] foo2 = [Foo(&val)];// initialized
+        assert(foo2[0]._ptr is &val);
+
+        // Using `move(foo2, foo1)` would have an undefined effect because it would destroy
+        // the uninitialized foo1.
+        // moveEmplace directly overwrites foo1 without destroying or initializing it first.
+        moveEmplace(foo2, foo1);
+        assert(foo1[0]._ptr is &val);
+        assert(foo2[0]._ptr is null);
+        assert(val == 0);
+    }
+    assert(val == 1);
+}
+
 // issue 18913
 @safe unittest
 {
@@ -2200,4 +2256,108 @@ pure nothrow @nogc @system unittest
 
     static assert(!__traits(compiles, f(ncarray)));
     f(move(ncarray));
+}
+
+/// Implementation of `_d_delstruct` and `_d_delstructTrace`
+template _d_delstructImpl(T)
+{
+    private void _d_delstructImpure(ref T p)
+    {
+        debug(PRINTF) printf("_d_delstruct(%p)\n", p);
+
+        import core.memory : GC;
+
+        destroy(*p);
+        GC.free(p);
+        p = null;
+    }
+
+    /**
+     * This is called for a delete statement where the value being deleted is a
+     * pointer to a struct with a destructor but doesn't have an overloaded
+     * `delete` operator.
+     *
+     * Params:
+     *   p = pointer to the value to be deleted
+     *
+     * Bugs:
+     *   This function template was ported from a much older runtime hook that
+     *   bypassed safety, purity, and throwabilty checks. To prevent breaking
+     *   existing code, this function template is temporarily declared
+     *   `@trusted` until the implementation can be brought up to modern D
+     *   expectations.
+     */
+    void _d_delstruct(ref T p) @trusted @nogc pure nothrow
+    {
+        if (p)
+        {
+            alias Type = void function(ref T P) @nogc pure nothrow;
+            (cast(Type) &_d_delstructImpure)(p);
+        }
+    }
+
+    import core.internal.array.utils : _d_HookTraceImpl;
+
+    private enum errorMessage = "Cannot delete struct if compiling without support for runtime type information!";
+
+    /**
+     * TraceGC wrapper around $(REF _d_delstruct, core,lifetime,_d_delstructImpl).
+     *
+     * Bugs:
+     *   This function template was ported from a much older runtime hook that
+     *   bypassed safety, purity, and throwabilty checks. To prevent breaking
+     *   existing code, this function template is temporarily declared
+     *   `@trusted` until the implementation can be brought up to modern D
+     *   expectations.
+     */
+    alias _d_delstructTrace = _d_HookTraceImpl!(T, _d_delstruct, errorMessage);
+}
+
+@system pure nothrow unittest
+{
+    int dtors = 0;
+    struct S { ~this() { ++dtors; } }
+
+    S *s = new S();
+    _d_delstructImpl!(typeof(s))._d_delstruct(s);
+
+    assert(s == null);
+    assert(dtors == 1);
+}
+
+@system pure unittest
+{
+    int innerDtors = 0;
+    int outerDtors = 0;
+
+    struct Inner { ~this() { ++innerDtors; } }
+    struct Outer
+    {
+        Inner *i1;
+        Inner *i2;
+
+        this(int x)
+        {
+            i1 = new Inner();
+            i2 = new Inner();
+        }
+
+        ~this()
+        {
+            ++outerDtors;
+
+            _d_delstructImpl!(typeof(i1))._d_delstruct(i1);
+            assert(i1 == null);
+
+           _d_delstructImpl!(typeof(i2))._d_delstruct(i2);
+            assert(i2 == null);
+        }
+    }
+
+    Outer *o = new Outer(0);
+    _d_delstructImpl!(typeof(o))._d_delstruct(o);
+
+    assert(o == null);
+    assert(innerDtors == 2);
+    assert(outerDtors == 1);
 }

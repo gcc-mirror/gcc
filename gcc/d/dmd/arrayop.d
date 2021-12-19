@@ -23,6 +23,7 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.mtype;
@@ -37,9 +38,9 @@ import dmd.visitor;
 bool isArrayOpValid(Expression e)
 {
     //printf("isArrayOpValid() %s\n", e.toChars());
-    if (e.op == TOK.slice)
+    if (e.op == EXP.slice)
         return true;
-    if (e.op == TOK.arrayLiteral)
+    if (e.op == EXP.arrayLiteral)
     {
         Type t = e.type.toBasetype();
         while (t.ty == Tarray || t.ty == Tsarray)
@@ -53,17 +54,17 @@ bool isArrayOpValid(Expression e)
         {
             return isArrayOpValid((cast(UnaExp)e).e1);
         }
-        if (isBinArrayOp(e.op) || isBinAssignArrayOp(e.op) || e.op == TOK.assign)
+        if (isBinArrayOp(e.op) || isBinAssignArrayOp(e.op) || e.op == EXP.assign)
         {
             BinExp be = cast(BinExp)e;
             return isArrayOpValid(be.e1) && isArrayOpValid(be.e2);
         }
-        if (e.op == TOK.construct)
+        if (e.op == EXP.construct)
         {
             BinExp be = cast(BinExp)e;
-            return be.e1.op == TOK.slice && isArrayOpValid(be.e2);
+            return be.e1.op == EXP.slice && isArrayOpValid(be.e2);
         }
-        // if (e.op == TOK.call)
+        // if (e.op == EXP.call)
         // {
         // TODO: Decide if [] is required after arrayop calls.
         // }
@@ -74,7 +75,7 @@ bool isArrayOpValid(Expression e)
 
 bool isNonAssignmentArrayOp(Expression e)
 {
-    if (e.op == TOK.slice)
+    if (e.op == EXP.slice)
         return isNonAssignmentArrayOp((cast(SliceExp)e).e1);
 
     Type tb = e.type.toBasetype();
@@ -166,11 +167,11 @@ Expression arrayOp(BinAssignExp e, Scope* sc)
     if (tn && (!tn.isMutable() || !tn.isAssignable()))
     {
         e.error("slice `%s` is not mutable", e.e1.toChars());
-        if (e.op == TOK.addAssign)
+        if (e.op == EXP.addAssign)
             checkPossibleAddCatError!(AddAssignExp, CatAssignExp)(e.isAddAssignExp);
         return ErrorExp.get();
     }
-    if (e.e1.op == TOK.arrayLiteral)
+    if (e.e1.op == EXP.arrayLiteral)
     {
         return e.e1.modifiableLvalue(sc, e.e1);
     }
@@ -228,7 +229,7 @@ private void buildArrayOp(Scope* sc, Expression e, Objects* tiargs, Expressions*
                 // RPN, prefix unary ops with u
                 OutBuffer buf;
                 buf.writestring("u");
-                buf.writestring(Token.toString(e.op));
+                buf.writestring(EXPtoString(e.op));
                 e.e1.accept(this);
                 tiargs.push(new StringExp(Loc.initial, buf.extractSlice()).expressionSemantic(sc));
             }
@@ -246,7 +247,7 @@ private void buildArrayOp(Scope* sc, Expression e, Objects* tiargs, Expressions*
                 // RPN
                 e.e1.accept(this);
                 e.e2.accept(this);
-                tiargs.push(new StringExp(Loc.initial, Token.toString(e.op)).expressionSemantic(sc));
+                tiargs.push(new StringExp(Loc.initial, EXPtoString(e.op)).expressionSemantic(sc));
             }
         }
     }
@@ -274,12 +275,12 @@ bool isArrayOpImplicitCast(TypeDArray tfrom, TypeDArray tto)
 /***********************************************
  * Test if expression is a unary array op.
  */
-bool isUnaArrayOp(TOK op)
+bool isUnaArrayOp(EXP op)
 {
     switch (op)
     {
-    case TOK.negate:
-    case TOK.tilde:
+    case EXP.negate:
+    case EXP.tilde:
         return true;
     default:
         break;
@@ -290,19 +291,19 @@ bool isUnaArrayOp(TOK op)
 /***********************************************
  * Test if expression is a binary array op.
  */
-bool isBinArrayOp(TOK op)
+bool isBinArrayOp(EXP op)
 {
     switch (op)
     {
-    case TOK.add:
-    case TOK.min:
-    case TOK.mul:
-    case TOK.div:
-    case TOK.mod:
-    case TOK.xor:
-    case TOK.and:
-    case TOK.or:
-    case TOK.pow:
+    case EXP.add:
+    case EXP.min:
+    case EXP.mul:
+    case EXP.div:
+    case EXP.mod:
+    case EXP.xor:
+    case EXP.and:
+    case EXP.or:
+    case EXP.pow:
         return true;
     default:
         break;
@@ -313,19 +314,19 @@ bool isBinArrayOp(TOK op)
 /***********************************************
  * Test if expression is a binary assignment array op.
  */
-bool isBinAssignArrayOp(TOK op)
+bool isBinAssignArrayOp(EXP op)
 {
     switch (op)
     {
-    case TOK.addAssign:
-    case TOK.minAssign:
-    case TOK.mulAssign:
-    case TOK.divAssign:
-    case TOK.modAssign:
-    case TOK.xorAssign:
-    case TOK.andAssign:
-    case TOK.orAssign:
-    case TOK.powAssign:
+    case EXP.addAssign:
+    case EXP.minAssign:
+    case EXP.mulAssign:
+    case EXP.divAssign:
+    case EXP.modAssign:
+    case EXP.xorAssign:
+    case EXP.andAssign:
+    case EXP.orAssign:
+    case EXP.powAssign:
         return true;
     default:
         break;
@@ -339,9 +340,9 @@ bool isBinAssignArrayOp(TOK op)
 bool isArrayOpOperand(Expression e)
 {
     //printf("Expression.isArrayOpOperand() %s\n", e.toChars());
-    if (e.op == TOK.slice)
+    if (e.op == EXP.slice)
         return true;
-    if (e.op == TOK.arrayLiteral)
+    if (e.op == EXP.arrayLiteral)
     {
         Type t = e.type.toBasetype();
         while (t.ty == Tarray || t.ty == Tsarray)
@@ -354,7 +355,7 @@ bool isArrayOpOperand(Expression e)
         return (isUnaArrayOp(e.op) ||
                 isBinArrayOp(e.op) ||
                 isBinAssignArrayOp(e.op) ||
-                e.op == TOK.assign);
+                e.op == EXP.assign);
     }
     return false;
 }
@@ -371,9 +372,9 @@ bool isArrayOpOperand(Expression e)
 ErrorExp arrayOpInvalidError(Expression e)
 {
     e.error("invalid array operation `%s` (possible missing [])", e.toChars());
-    if (e.op == TOK.add)
+    if (e.op == EXP.add)
         checkPossibleAddCatError!(AddExp, CatExp)(e.isAddExp());
-    else if (e.op == TOK.addAssign)
+    else if (e.op == EXP.addAssign)
         checkPossibleAddCatError!(AddAssignExp, CatAssignExp)(e.isAddAssignExp());
     return ErrorExp.get();
 }

@@ -394,6 +394,11 @@ find_rename_reg (du_head_p this_head, enum reg_class super_class,
 			  this_head, *unavailable))
     return this_head->tied_chain->regno;
 
+  /* If this insn is a noop move, then do not rename in this chain as doing so
+     would inhibit removal of the noop move.  */
+  if (noop_move_p (this_head->first->insn))
+    return best_new_reg;
+
   /* If PREFERRED_CLASS is not NO_REGS, we iterate in the first pass
      over registers that belong to PREFERRED_CLASS and try to find the
      best register within the class.  If that failed, we iterate in

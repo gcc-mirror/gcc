@@ -26,7 +26,7 @@ class Type;
 class TypeTuple;
 class TypeFunction;
 
-enum class CPU
+enum class CPU : unsigned char
 {
     x87,
     mmx,
@@ -70,6 +70,7 @@ struct TargetC
         Gcc_Clang,            // gcc and clang
     };
 
+    uint8_t crtDestructorsSupported; // Not all platforms support crt_destructor
     uint8_t longsize;            // size of a C 'long' or 'unsigned long' type
     uint8_t long_doublesize;     // size of a C 'long double'
     uint8_t wchar_tsize;         // size of a C 'wchar_t' type
@@ -194,7 +195,7 @@ public:
     unsigned fieldalign(Type *type);
     Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
-    bool isVectorOpSupported(Type *type, unsigned op, Type *t2 = NULL);
+    bool isVectorOpSupported(Type *type, EXP op, Type *t2 = NULL);
     // ABI and backend.
     LINK systemLinkage();
     TypeTuple *toArgTypes(Type *t);

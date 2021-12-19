@@ -31,11 +31,11 @@ public import core.sys.posix.locale : locale_t;
 public import core.stdc.string;
 
 /// Copy string until character found
-void*  memccpy(return void* dst, scope const void* src, int c, size_t n) pure;
+void*  memccpy(return scope void* dst, scope const void* src, int c, size_t n) pure;
 /// Copy string (including terminating '\0')
-char*  stpcpy(return char* dst, scope const char* src) pure;
+char*  stpcpy(return scope char* dst, scope const char* src) pure;
 /// Ditto
-char*  stpncpy(return char* dst, const char* src, size_t len) pure;
+char*  stpncpy(return scope char* dst, const char* src, size_t len) pure;
 /// Compare strings according to current collation
 int    strcoll_l(scope const char* s1, scope const char* s2, locale_t locale);
 ///
@@ -47,6 +47,6 @@ size_t strnlen(scope const char* str, size_t maxlen) pure;
 /// System signal messages
 const(char)*  strsignal(int);
 /// Isolate sequential tokens in a null-terminated string
-char*  strtok_r(return char* str, scope const char* sep, char** context) pure;
+char*  strtok_r(return scope char* str, scope const char* sep, char** context) pure;
 /// Transform a string under locale
 size_t strxfrm_l(char* s1, scope const char* s2, size_t n, locale_t locale);

@@ -886,31 +886,13 @@ if (isInputRange!Range && hasLvalueElements!Range && hasAssignableElements!Range
     static if (hasElaborateAssign!T)
     {
         import std.algorithm.internal : addressOf;
-        //Elaborate opAssign. Must go the memcpy road.
-        //We avoid calling emplace here, because our goal is to initialize to
-        //the static state of T.init,
-        //So we want to avoid any un-necassarilly CC'ing of T.init
+        //Elaborate opAssign. Must go the memcpy/memset road.
         static if (!__traits(isZeroInit, T))
         {
-            auto p = typeid(T).initializer();
             for ( ; !range.empty ; range.popFront() )
             {
-                static if (__traits(isStaticArray, T))
-                {
-                    // static array initializer only contains initialization
-                    // for one element of the static array.
-                    auto elemp = cast(void *) addressOf(range.front);
-                    auto endp = elemp + T.sizeof;
-                    while (elemp < endp)
-                    {
-                        memcpy(elemp, p.ptr, p.length);
-                        elemp += p.length;
-                    }
-                }
-                else
-                {
-                    memcpy(addressOf(range.front), p.ptr, T.sizeof);
-                }
+                import core.internal.lifetime : emplaceInitializer;
+                emplaceInitializer(range.front);
             }
         }
         else
@@ -1456,10 +1438,7 @@ private void moveEmplaceImpl(T)(ref scope T target, ref return scope T source)
             static if (__traits(isZeroInit, T))
                 () @trusted { memset(&source, 0, sz); }();
             else
-            {
-                auto init = typeid(T).initializer();
-                () @trusted { memcpy(&source, init.ptr, sz); }();
-            }
+                () @trusted { memcpy(&source, __traits(initSymbol, T).ptr, sz); }();
         }
     }
     else static if (isStaticArray!T)

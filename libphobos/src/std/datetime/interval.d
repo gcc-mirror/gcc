@@ -8349,7 +8349,7 @@ private:
     }
 
     {
-        SysTime stFunc(scope const SysTime st) { return cast(SysTime) st; }
+        SysTime stFunc(scope const SysTime st) { return SysTime.init; }
         auto interval = Interval!SysTime(SysTime(DateTime(2010, 7, 4, 12, 1, 7)),
                                          SysTime(DateTime(2012, 1, 7, 14, 0, 0)));
         auto ir = IntervalRange!(SysTime, Direction.fwd)(interval, &stFunc);
@@ -8794,7 +8794,7 @@ private:
     }
 
     {
-        SysTime stFunc(scope const SysTime st) { return cast(SysTime) st; }
+        SysTime stFunc(scope const SysTime st) { return SysTime.init; }
         auto posInfInterval = PosInfInterval!SysTime(SysTime(DateTime(2010, 7, 4, 12, 1, 7)));
         auto ir = PosInfIntervalRange!SysTime(posInfInterval, &stFunc);
     }
@@ -9076,7 +9076,7 @@ private:
     }
 
     {
-        SysTime stFunc(scope const SysTime st) { return cast(SysTime)(st); }
+        SysTime stFunc(scope const SysTime st) { return SysTime.init; }
         auto negInfInterval = NegInfInterval!SysTime(SysTime(DateTime(2012, 1, 7, 14, 0, 0)));
         auto ir = NegInfIntervalRange!(SysTime)(negInfInterval, &stFunc);
     }

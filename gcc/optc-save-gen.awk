@@ -93,7 +93,7 @@ var_opt_char[1] = "optimize_size";
 var_opt_char[2] = "optimize_debug";
 var_opt_char[3] = "optimize_fast";
 var_opt_range["optimize"] = "0, 255";
-var_opt_range["optimize_size"] = "0, 1";
+var_opt_range["optimize_size"] = "0, 2";
 var_opt_range["optimize_debug"] = "0, 1";
 var_opt_range["optimize_fast"] = "0, 1";
 

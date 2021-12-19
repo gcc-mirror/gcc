@@ -2541,8 +2541,8 @@ pp_cxx_addressof_expression (cxx_pretty_printer *pp, tree t)
 static char const*
 get_fold_operator (tree t)
 {
-  int op = int_cst_value (FOLD_EXPR_OP (t));
-  ovl_op_info_t *info = OVL_OP_INFO (FOLD_EXPR_MODIFY_P (t), op);
+  ovl_op_info_t *info = OVL_OP_INFO (FOLD_EXPR_MODIFY_P (t),
+				     FOLD_EXPR_OP (t));
   return info->name;
 }
 

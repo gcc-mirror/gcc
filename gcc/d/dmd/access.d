@@ -201,7 +201,7 @@ bool checkAccess(Loc loc, Scope* sc, Expression e, Dsymbol d)
     {
         // Do access check
         ClassDeclaration cd = tc.sym;
-        if (e.op == TOK.super_)
+        if (e.op == EXP.super_)
         {
             if (ClassDeclaration cd2 = sc.func.toParent().isClassDeclaration())
                 cd = cd2;

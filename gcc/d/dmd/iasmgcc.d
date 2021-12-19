@@ -348,7 +348,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 
             e = (*s.constraints)[i];
             e = e.expressionSemantic(sc);
-            assert(e.op == TOK.string_ && (cast(StringExp) e).sz == 1);
+            assert(e.op == EXP.string_ && (cast(StringExp) e).sz == 1);
             (*s.constraints)[i] = e;
         }
     }
@@ -360,7 +360,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
         {
             Expression e = (*s.clobbers)[i];
             e = e.expressionSemantic(sc);
-            assert(e.op == TOK.string_ && (cast(StringExp) e).sz == 1);
+            assert(e.op == EXP.string_ && (cast(StringExp) e).sz == 1);
             (*s.clobbers)[i] = e;
         }
     }

@@ -969,8 +969,7 @@ public:
 	StructLiteralExp *sle = NULL;
 	bool using_rvo_p = false;
 
-	if (DotVarExp *dve = (s->exp->op == TOKcall
-			      && s->exp->isCallExp ()->e1->op == TOKdotvar
+	if (DotVarExp *dve = (s->exp->isCallExp ()
 			      ? s->exp->isCallExp ()->e1->isDotVarExp ()
 			      : NULL))
 	  {

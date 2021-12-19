@@ -136,7 +136,7 @@ public:
 
     override void visit(DeleteExp e)
     {
-        if (e.e1.op == TOK.variable)
+        if (e.e1.op == EXP.variable)
         {
             VarDeclaration v = (cast(VarExp)e.e1).var.isVarDeclaration();
             if (v && v.onstack)
@@ -189,7 +189,7 @@ public:
 
     override void visit(AssignExp e)
     {
-        if (e.e1.op == TOK.arrayLength)
+        if (e.e1.op == EXP.arrayLength)
         {
             if (f.setGC())
             {
@@ -230,7 +230,7 @@ public:
 Expression checkGC(Scope* sc, Expression e)
 {
     FuncDeclaration f = sc.func;
-    if (e && e.op != TOK.error && f && sc.intypeof != 1 && !(sc.flags & SCOPE.ctfe) &&
+    if (e && e.op != EXP.error && f && sc.intypeof != 1 && !(sc.flags & SCOPE.ctfe) &&
            (f.type.ty == Tfunction &&
             (cast(TypeFunction)f.type).isnogc || (f.flags & FUNCFLAG.nogcInprocess) || global.params.vgc) &&
            !(sc.flags & SCOPE.debug_))

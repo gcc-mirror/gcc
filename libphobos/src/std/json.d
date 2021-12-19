@@ -159,7 +159,7 @@ struct JSONValue
         return store.str;
     }
     /// ditto
-    @property string str(return string v) pure nothrow @nogc @trusted return // TODO make @safe
+    @property string str(return scope string v) pure nothrow @nogc @trusted return // TODO make @safe
     {
         assign(v);
         return v;
@@ -282,7 +282,7 @@ struct JSONValue
         return store.object;
     }
     /// ditto
-    @property JSONValue[string] object(return JSONValue[string] v) pure nothrow @nogc @trusted // TODO make @safe
+    @property JSONValue[string] object(return scope JSONValue[string] v) pure nothrow @nogc @trusted // TODO make @safe
     {
         assign(v);
         return v;
@@ -321,14 +321,14 @@ struct JSONValue
        (*a)[0] = "world";  // segmentation fault
        ---
      */
-    @property ref inout(JSONValue[]) array() inout pure @system
+    @property ref inout(JSONValue[]) array() return scope inout pure @system
     {
         enforce!JSONException(type == JSONType.array,
                                 "JSONValue is not an array");
         return store.array;
     }
     /// ditto
-    @property JSONValue[] array(return JSONValue[] v) pure nothrow @nogc @trusted scope // TODO make @safe
+    @property JSONValue[] array(return scope JSONValue[] v) pure nothrow @nogc @trusted scope // TODO make @safe
     {
         assign(v);
         return v;
@@ -635,7 +635,7 @@ struct JSONValue
      * Hash syntax for json objects.
      * Throws: `JSONException` if `type` is not `JSONType.object`.
      */
-    ref inout(JSONValue) opIndex(return string k) inout pure @safe
+    ref inout(JSONValue) opIndex(return scope string k) inout pure @safe
     {
         auto o = this.objectNoRef;
         return *enforce!JSONException(k in o,

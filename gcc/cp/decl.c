@@ -5567,7 +5567,7 @@ start_decl (const cp_declarator *declarator,
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
-      bool this_tmpl = (processing_template_decl
+      bool this_tmpl = (current_template_depth
 			> template_class_depth (context));
       if (VAR_P (decl))
 	{
@@ -9878,7 +9878,7 @@ grokfndecl (tree ctype,
       tree ctx = friendp ? current_class_type : ctype;
       bool block_local = TREE_CODE (current_scope ()) == FUNCTION_DECL;
       bool memtmpl = (!block_local
-		      && (processing_template_decl
+		      && (current_template_depth
 			  > template_class_depth (ctx)));
       if (memtmpl)
 	{
@@ -10300,7 +10300,7 @@ grokfndecl (tree ctype,
   if (ctype != NULL_TREE && check)
     {
       tree old_decl = check_classfn (ctype, decl,
-				     (processing_template_decl
+				     (current_template_depth
 				      > template_class_depth (ctype))
 				     ? current_template_parms
 				     : NULL_TREE);
@@ -10576,7 +10576,7 @@ grokvardecl (tree type,
         }
     }
   else if (flag_concepts
-	   && processing_template_decl > template_class_depth (scope))
+	   && current_template_depth > template_class_depth (scope))
     {
       tree reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
       tree ci = build_constraints (reqs, NULL_TREE);
@@ -11352,6 +11352,33 @@ name_unnamed_type (tree type, tree decl)
   /* Check that our job is done, and that it would fail if we
      attempted to do it again.  */
   gcc_assert (!TYPE_UNNAMED_P (type));
+}
+
+/* Check that decltype(auto) was well-formed: only plain decltype(auto)
+   is allowed.  TYPE might contain a decltype(auto).  Returns true if
+   there was a problem, false otherwise.  */
+
+static bool
+check_decltype_auto (location_t loc, tree type)
+{
+  if (tree a = type_uses_auto (type))
+    {
+      if (AUTO_IS_DECLTYPE (a))
+	{
+	  if (a != type)
+	    {
+	      error_at (loc, "%qT as type rather than plain "
+			"%<decltype(auto)%>", type);
+	      return true;
+	    }
+	  else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
+	    {
+	      error_at (loc, "%<decltype(auto)%> cannot be cv-qualified");
+	      return true;
+	    }
+	}
+    }
+  return false;
 }
 
 /* Given declspecs and a declarator (abstract or otherwise), determine
@@ -12702,25 +12729,9 @@ grokdeclarator (const cp_declarator *declarator,
 			  "allowed");
 		return error_mark_node;
 	      }
-	    /* Only plain decltype(auto) is allowed.  */
-	    if (tree a = type_uses_auto (type))
-	      {
-		if (AUTO_IS_DECLTYPE (a))
-		  {
-		    if (a != type)
-		      {
-			error_at (typespec_loc, "%qT as type rather than "
-				  "plain %<decltype(auto)%>", type);
-			return error_mark_node;
-		      }
-		    else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
-		      {
-			error_at (typespec_loc, "%<decltype(auto)%> cannot be "
-				  "cv-qualified");
-			return error_mark_node;
-		      }
-		  }
-	      }
+
+	    if (check_decltype_auto (typespec_loc, type))
+	      return error_mark_node;
 
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
@@ -13079,6 +13090,15 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   id_loc = declarator ? declarator->id_loc : input_location;
+
+  if (innermost_code != cdk_function
+    /* Don't check this if it can be the artifical decltype(auto)
+       we created when building a constraint in a compound-requirement:
+       that the type-constraint is plain is going to be checked in
+       cp_parser_compound_requirement.  */
+      && decl_context != TYPENAME
+      && check_decltype_auto (id_loc, type))
+    return error_mark_node;
 
   /* A `constexpr' specifier used in an object declaration declares
      the object as `const'.  */
@@ -13975,7 +13995,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		/* Set the constraints on the declaration.  */
-		bool memtmpl = (processing_template_decl
+		bool memtmpl = (current_template_depth
 				> template_class_depth (current_class_type));
 		if (memtmpl)
 		  {
@@ -15415,6 +15435,16 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
     {
       error ("reference to %qD is ambiguous", name);
       print_candidates (decl);
+      return error_mark_node;
+    }
+
+  if (DECL_CLASS_TEMPLATE_P (decl)
+      && !template_header_p
+      && how == TAG_how::CURRENT_ONLY)
+    {
+      error ("class template %qD redeclared as non-template", name);
+      inform (location_of (decl), "previous declaration here");
+      CLASSTYPE_ERRONEOUS (TREE_TYPE (decl)) = true;
       return error_mark_node;
     }
 
@@ -17097,8 +17127,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   start_fname_decls ();
 
   store_parm_decls (current_function_parms);
-
-  push_operator_bindings ();
 
   if (!processing_template_decl
       && (flag_lifetime_dse > 1)

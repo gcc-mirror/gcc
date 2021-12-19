@@ -59,9 +59,8 @@ ifneq ($(LIBEHSOBJS),)
 EHS_INSTNAME = libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)
 
 # multilib build for a shared EH lib.
-$(LIBEHSOBJS): libgcc_tm.h
 
-libgcc_ehs$(SHLIB_EXT): $(LIBEHSOBJS)
+libgcc_ehs$(SHLIB_EXT): $(LIBEHSOBJS) $(extra-parts)
 	mkdir -p $(MULTIDIR)
 	$(CC) $(LIBGCC2_CFLAGS) $(LDFLAGS) -dynamiclib -nodefaultlibs \
 	-install_name $(SHLIB_INSTALL_DIR)/$(EHS_INSTNAME) \
@@ -113,7 +112,8 @@ libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT): all-multi libgcc_ehs$(SHLIB_EXT)
 	rm libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T*
 
 
-libgcc_s.1.dylib: libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT) libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)
+libgcc_s.1.dylib: all-multi libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT) \
+		  libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)
 	MLIBS=`$(CC) --print-multi-lib | sed -e 's/;.*$$//'` ; \
 	for mlib in $$MLIBS ; do \
 	  cp ../$${mlib}/libgcc/$${mlib}/libgcc_s$(SHLIB_EXT)  \
@@ -134,7 +134,7 @@ libgcc_s.1.dylib: libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT) libgcc_ehs.$(SHLIB_SOV
 
 else
 
-libgcc_s.1.dylib: libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)
+libgcc_s.1.dylib: all-multi libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)
 	MLIBS=`$(CC) --print-multi-lib | sed -e 's/;.*$$//'` ; \
 	for mlib in $$MLIBS ; do \
 	  cp ../$${mlib}/libgcc/$${mlib}/libgcc_s$(SHLIB_EXT)  \

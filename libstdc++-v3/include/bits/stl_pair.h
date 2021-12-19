@@ -777,6 +777,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp1, typename _Tp2>
     inline constexpr size_t tuple_size_v<const pair<_Tp1, _Tp2>> = 2;
+
+  template<typename _Tp>
+    inline constexpr bool __is_pair = false;
+
+  template<typename _Tp, typename _Up>
+    inline constexpr bool __is_pair<pair<_Tp, _Up>> = true;
+
+  template<typename _Tp, typename _Up>
+    inline constexpr bool __is_pair<const pair<_Tp, _Up>> = true;
 #endif
 
   /// @cond undocumented

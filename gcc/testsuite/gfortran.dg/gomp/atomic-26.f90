@@ -59,7 +59,7 @@ real function bar (y, e, f)
   !$omp atomic compare fail	! { dg-error "Expected '\\\(' after 'fail'" }
   if (x == y) x = d
   !$omp atomic compare fail(	! { dg-error "Expected SEQ_CST, ACQUIRE or RELAXED" }
-  if (x == y) x = d             ! { dg-error "Sorry, COMPARE clause in ATOMIC at .1. is not yet supported" "" { target *-*-* } .-1 }
+  if (x == y) x = d
   !$omp atomic compare fail()	! { dg-error "Expected SEQ_CST, ACQUIRE or RELAXED" }
   if (x == y) x = d
   !$omp atomic compare fail(foobar)	! { dg-error "Expected SEQ_CST, ACQUIRE or RELAXED" }
@@ -72,4 +72,28 @@ real function bar (y, e, f)
   if (x == y) x = d
   bar = v
 end
+
+subroutine foobar
+  implicit none
+  integer :: i, j, k
+
+  !$omp atomic compare write  ! { dg-error "COMPARE clause is incompatible with READ or WRITE" }
+    if (i == 1) i = 5
+
+  !$omp atomic compare
+    if (k == 5) i = 7 ! { dg-error "For !.OMP ATOMIC COMPARE, the first operand in comparison at .1. must be the variable 'i' that the update statement writes into at .2." }
+
+  !$omp atomic compare
+    if (j == i) i = 8 ! { dg-error "For !.OMP ATOMIC COMPARE, the first operand in comparison at .1. must be the variable 'i' that the update statement writes into at .2." }
+
+  !$omp atomic compare
+    if (i == 5) i = 8
+
+  !$omp atomic compare
+    if (5 == i) i = 8 ! { dg-error "Expected scalar intrinsic variable at .1. in atomic comparison" }
+
+  !$omp atomic compare
+    if (i == 5) i = i + 8 ! { dg-error "20: expr in !.OMP ATOMIC COMPARE assignment var = expr must be scalar and cannot reference var" }
+
+end subroutine
 end module

@@ -38,8 +38,8 @@ proc ${tool}_check_compile {testcase option objname gcc_output} {
 	return 0
     }
 
-    if [string match "*internal compiler error*" $gcc_output] then {
-	${tool}_fail $testcase "$option (internal compiler error)"
+    if [regexp -line -- "internal compiler error.*" $gcc_output ice] then {
+	${tool}_fail $testcase "$option ($ice)"
 	return 0
     }
 

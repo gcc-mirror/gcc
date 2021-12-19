@@ -513,15 +513,21 @@ else version (DragonFlyBSD)
 }
 else version (Solaris)
 {
+    //SIGABRT (defined in core.stdc.signal)
     enum SIGALRM = 14;
     enum SIGBUS = 10;
     enum SIGCHLD = 18;
     enum SIGCONT = 25;
+    //SIGFPE (defined in core.stdc.signal)
     enum SIGHUP = 1;
+    //SIGILL (defined in core.stdc.signal)
+    //SIGINT (defined in core.stdc.signal)
     enum SIGKILL = 9;
     enum SIGPIPE = 13;
     enum SIGQUIT = 3;
+    //SIGSEGV (defined in core.stdc.signal)
     enum SIGSTOP = 23;
+    //SIGTERM (defined in core.stdc.signal)
     enum SIGTSTP = 24;
     enum SIGTTIN = 26;
     enum SIGTTOU = 27;
@@ -1339,6 +1345,10 @@ else version (Solaris)
         uint[4] __bits;
     }
 
+    enum SIG_BLOCK = 1;
+    enum SIG_UNBLOCK = 2;
+    enum SIG_SETMASK = 3;
+
     struct siginfo_t
     {
         int si_signo;
@@ -1426,6 +1436,18 @@ else version (Solaris)
 
         ___data __data;
     }
+
+    enum SI_NOINFO  = 32767;
+    enum SI_DTRACE  = 2050;
+    enum SI_RCTL    = 2049;
+    enum SI_USER    = 0;
+    enum SI_LWP     = -1;
+    enum SI_QUEUE   = -2;
+    enum SI_TIMER   = -3;
+    enum SI_ASYNCIO = -4;
+    enum SI_MESGQ   = -5;
+
+    enum SIGIO = SIGPOLL;
 
     int kill(pid_t, int);
     int sigaction(int, const scope sigaction_t*, sigaction_t*);
@@ -2833,9 +2855,9 @@ else version (Solaris)
     enum SIGPROF = 29;
     enum SIGSYS = 12;
     enum SIGTRAP = 5;
-    enum SIGVTALRM = 31;
+    enum SIGVTALRM = 28;
     enum SIGXCPU = 30;
-    enum SIGXFSZ = 25;
+    enum SIGXFSZ = 31;
 
     enum
     {

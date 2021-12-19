@@ -483,6 +483,10 @@ Og
 Common Optimization
 Optimize for debugging experience rather than speed or size.
 
+Oz
+Common Optimization
+Optimize for space aggressively rather than speed.
+
 Q
 Driver
 
@@ -989,6 +993,10 @@ Driver Undocumented
 ; 16: Changes the mangling of __alignof__ to be distinct from that of alignof.
 ;     Adds missing 'on' in mangling of operator names in some cases.
 ;     Default in G++ 11.
+;
+; 17: Fixes layout of classes that inherit from aggregate classes with default
+;     member initializers in C++14 and up.
+;     Default in G++ 12.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -1944,6 +1952,10 @@ Perform IPA Value Range Propagation.
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization
 -fira-algorithm=[CB|priority]	Set the used IRA algorithm.
+
+fipa-strict-aliasing
+Common Var(flag_ipa_strict_aliasing) Init(1) Optimization
+Assume strict aliasing rules apply across (uninlined) function boundaries.
 
 Enum
 Name(ira_algorithm) Type(enum ira_algorithm) UnknownError(unknown IRA algorithm %qs)

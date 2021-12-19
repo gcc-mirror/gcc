@@ -26,6 +26,7 @@
    UNSPEC_EXP2
    UNSPEC_SIN
    UNSPEC_COS
+   UNSPEC_TANH
 
    UNSPEC_FPINT_FLOOR
    UNSPEC_FPINT_BTRUNC
@@ -196,6 +197,7 @@
 (define_mode_iterator QHIM [QI HI])
 (define_mode_iterator QHSIM [QI HI SI])
 (define_mode_iterator SDFM [SF DF])
+(define_mode_iterator HSFM [HF SF])
 (define_mode_iterator SDCM [SC DC])
 (define_mode_iterator BITS [SI SF])
 (define_mode_iterator BITD [DI DF])
@@ -272,6 +274,48 @@
   return nvptx_output_mov_insn (operands[0], operands[1]);
 }
   [(set_attr "subregs_ok" "true")])
+
+(define_insn "*movhf_insn"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "=R,R,m")
+	(match_operand:HF 1 "nonimmediate_operand" "R,m,R"))]
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
+  "@
+   %.\\tmov.b16\\t%0, %1;
+   %.\\tld.b16\\t%0, %1;
+   %.\\tst.b16\\t%0, %1;")
+
+(define_expand "movhf"
+  [(set (match_operand:HF 0 "nonimmediate_operand" "")
+	(match_operand:HF 1 "nonimmediate_operand" ""))]
+  ""
+{
+  /* Load HFmode constants as SFmode with an explicit FLOAT_TRUNCATE.  */
+  if (CONST_DOUBLE_P (operands[1]))
+    {
+      rtx tmp1 = gen_reg_rtx (SFmode);
+      REAL_VALUE_TYPE d = *CONST_DOUBLE_REAL_VALUE (operands[1]);
+      real_convert (&d, SFmode, &d);
+      emit_move_insn (tmp1, const_double_from_real_value (d, SFmode));
+
+      if (!REG_P (operands[0]))
+	{
+	  rtx tmp2 = gen_reg_rtx (HFmode);
+	  emit_insn (gen_truncsfhf2 (tmp2, tmp1));
+	  emit_move_insn (operands[0], tmp2);
+	}
+      else
+        emit_insn (gen_truncsfhf2 (operands[0], tmp1));
+      DONE;
+    }
+
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
+    {
+      rtx tmp = gen_reg_rtx (HFmode);
+      emit_move_insn (tmp, operands[1]);
+      emit_move_insn (operands[0], tmp);
+      DONE;
+    }
+})
 
 (define_insn "load_arg_reg<mode>"
   [(set (match_operand:QHIM 0 "nvptx_register_operand" "=R")
@@ -1078,6 +1122,59 @@
   "flag_unsafe_math_optimizations"
   "%.\\tex2.approx%t0\\t%0, %1;")
 
+;; HFmode floating point arithmetic.
+
+(define_insn "addhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(plus:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tadd.f16\\t%0, %1, %2;")
+
+(define_insn "subhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(minus:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		  (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tsub.f16\\t%0, %1, %2;")
+
+(define_insn "mulhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(mult:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tmul.f16\\t%0, %1, %2;")
+
+(define_insn "exp2hf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(unspec:HF [(match_operand:HF 1 "nvptx_register_operand" "R")]
+		   UNSPEC_EXP2))]
+  "TARGET_SM75 && flag_unsafe_math_optimizations"
+  "%.\\tex2.approx.f16\\t%0, %1;")
+
+(define_insn "tanh<mode>2"
+  [(set (match_operand:HSFM 0 "nvptx_register_operand" "=R")
+	(unspec:HSFM [(match_operand:HSFM 1 "nvptx_register_operand" "R")]
+		     UNSPEC_TANH))]
+  "TARGET_SM75 && flag_unsafe_math_optimizations"
+  "%.\\ttanh.approx%t0\\t%0, %1;")
+
+;; HFmode floating point arithmetic.
+
+(define_insn "sminhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(smin:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM80"
+  "%.\\tmin.f16\\t%0, %1, %2;")
+
+(define_insn "smaxhf3"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(smax:HF (match_operand:HF 1 "nvptx_register_operand" "R")
+		 (match_operand:HF 2 "nvptx_register_operand" "R")))]
+  "TARGET_SM80"
+  "%.\\tmax.f16\\t%0, %1, %2;")
+
 ;; Conversions involving floating point
 
 (define_insn "extendsfdf2"
@@ -1170,6 +1267,18 @@
 		     FPINT2))]
   ""
   "%.\\tcvt<FPINT2:fpint2_roundingmode>.s%T0%t1\\t%0, %1;")
+
+(define_insn "extendhf<mode>2"
+  [(set (match_operand:SDFM 0 "nvptx_register_operand" "=R")
+	(float_extend:SDFM (match_operand:HF 1 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tcvt%t0%t1\\t%0, %1;")
+
+(define_insn "trunc<mode>hf2"
+  [(set (match_operand:HF 0 "nvptx_register_operand" "=R")
+	(float_truncate:HF (match_operand:SDFM 1 "nvptx_register_operand" "R")))]
+  "TARGET_SM53"
+  "%.\\tcvt%#%t0%t1\\t%0, %1;")
 
 ;; Vector operations
 

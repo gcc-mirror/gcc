@@ -392,7 +392,6 @@ struct gcn_image_desc
   const unsigned kernel_count;
   struct hsa_kernel_description *kernel_infos;
   const unsigned global_variable_count;
-  struct global_var_info *global_variables;
 };
 
 /* This enum mirrors the corresponding LLVM enum's values for all ISAs that we
@@ -3365,37 +3364,41 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
   if (!create_and_finalize_hsa_program (agent))
     return -1;
 
-  for (unsigned i = 0; i < var_count; i++)
+  if (var_count > 0)
     {
-      struct global_var_info *v = &image_desc->global_variables[i];
-      GCN_DEBUG ("Looking for variable %s\n", v->name);
-
       hsa_status_t status;
       hsa_executable_symbol_t var_symbol;
       status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						     v->name, agent->id,
+						     ".offload_var_table",
+						     agent->id,
 						     0, &var_symbol);
 
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not find symbol for variable in the code object",
 		   status);
 
-      uint64_t var_addr;
-      uint32_t var_size;
+      uint64_t var_table_addr;
       status = hsa_fns.hsa_executable_symbol_get_info_fn
-	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS, &var_addr);
+	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_ADDRESS,
+	 &var_table_addr);
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not extract a variable from its symbol", status);
-      status = hsa_fns.hsa_executable_symbol_get_info_fn
-	(var_symbol, HSA_EXECUTABLE_SYMBOL_INFO_VARIABLE_SIZE, &var_size);
-      if (status != HSA_STATUS_SUCCESS)
-	hsa_fatal ("Could not extract a variable size from its symbol", status);
 
-      pair->start = var_addr;
-      pair->end = var_addr + var_size;
-      GCN_DEBUG ("Found variable %s at %p with size %u\n", v->name,
-		 (void *)var_addr, var_size);
-      pair++;
+      struct {
+	uint64_t addr;
+	uint64_t size;
+      } var_table[var_count];
+      GOMP_OFFLOAD_dev2host (agent->device_id, var_table,
+			     (void*)var_table_addr, sizeof (var_table));
+
+      for (unsigned i = 0; i < var_count; i++)
+	{
+	  pair->start = var_table[i].addr;
+	  pair->end = var_table[i].addr + var_table[i].size;
+	  GCN_DEBUG ("Found variable at %p with size %lu\n",
+		     (void *)var_table[i].addr, var_table[i].size);
+	  pair++;
+	}
     }
 
   GCN_DEBUG ("Looking for variable %s\n", STRINGX (GOMP_DEVICE_NUM_VAR));

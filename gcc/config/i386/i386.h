@@ -1005,20 +1005,22 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define VALID_AVX256_REG_MODE(MODE)					\
   ((MODE) == V32QImode || (MODE) == V16HImode || (MODE) == V8SImode	\
    || (MODE) == V4DImode || (MODE) == V2TImode || (MODE) == V8SFmode	\
-   || (MODE) == V4DFmode)
+   || (MODE) == V4DFmode || (MODE) == V16HFmode)
 
-#define VALID_AVX256_REG_OR_OI_VHF_MODE(MODE)		\
-  (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode || (MODE) == V16HFmode)
+#define VALID_AVX256_REG_OR_OI_MODE(MODE)		\
+  (VALID_AVX256_REG_MODE (MODE) || (MODE) == OImode)
 
 #define VALID_AVX512F_SCALAR_MODE(MODE)					\
   ((MODE) == DImode || (MODE) == DFmode || (MODE) == SImode		\
-   || (MODE) == SFmode							\
-   || (TARGET_AVX512FP16 && ((MODE) == HImode || (MODE) == HFmode)))
+   || (MODE) == SFmode)
+
+#define VALID_AVX512FP16_SCALAR_MODE(MODE)	\
+  ((MODE) == HImode || (MODE) == HFmode)
 
 #define VALID_AVX512F_REG_MODE(MODE)					\
   ((MODE) == V8DImode || (MODE) == V8DFmode || (MODE) == V64QImode	\
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
-   || (MODE) == V4TImode)
+   || (MODE) == V4TImode || (MODE) == V32HFmode)
 
 #define VALID_AVX512F_REG_OR_XI_MODE(MODE)				\
   (VALID_AVX512F_REG_MODE (MODE) || (MODE) == XImode)
@@ -1035,12 +1037,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define VALID_SSE2_REG_MODE(MODE)					\
   ((MODE) == V16QImode || (MODE) == V8HImode || (MODE) == V2DFmode	\
+   || (MODE) == V8HFmode || (MODE) == V4HFmode || (MODE) == V2HFmode	\
    || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
    || (MODE) == V2DImode || (MODE) == DFmode || (MODE) == HFmode)
-
-#define VALID_SSE2_REG_VHF_MODE(MODE)			\
-  (VALID_SSE2_REG_MODE (MODE) || (MODE) == V8HFmode	\
-   || (MODE) == V4HFmode || (MODE) == V2HFmode)
 
 #define VALID_SSE_REG_MODE(MODE)					\
   ((MODE) == V1TImode || (MODE) == TImode				\
@@ -1072,7 +1071,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == CSImode || (MODE) == CDImode				\
    || (MODE) == SDmode || (MODE) == DDmode				\
    || (MODE) == HFmode || (MODE) == HCmode				\
-   || (MODE) == V4QImode || (MODE) == V2HImode || (MODE) == V1SImode	\
+   || (MODE) == V2HImode || (MODE) == V2HFmode				\
+   || (MODE) == V1SImode || (MODE) == V4QImode				\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
 	   || (MODE) == TFmode || (MODE) == TCmode			\

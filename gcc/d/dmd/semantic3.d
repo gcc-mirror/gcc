@@ -235,6 +235,18 @@ private extern(C++) final class Semantic3Visitor : Visitor
         if (funcdecl.errors || isError(funcdecl.parent))
         {
             funcdecl.errors = true;
+
+            // Mark that the return type could not be inferred
+            if (funcdecl.inferRetType)
+            {
+                assert(funcdecl.type);
+                auto tf = funcdecl.type.isTypeFunction();
+
+                // Only change the return type s.t. other analysis is
+                // still possible e.g. missmatched parameter types
+                if (tf && !tf.next)
+                    tf.next = Type.terror;
+            }
             return;
         }
         //printf("FuncDeclaration::semantic3('%s.%s', %p, sc = %p, loc = %s)\n", funcdecl.parent.toChars(), funcdecl.toChars(), funcdecl, sc, funcdecl.loc.toChars());
@@ -611,7 +623,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     for (size_t i = 0; i < funcdecl.returns.dim;)
                     {
                         Expression exp = (*funcdecl.returns)[i].exp;
-                        if (exp.op == TOK.variable && (cast(VarExp)exp).var == funcdecl.vresult)
+                        if (exp.op == EXP.variable && (cast(VarExp)exp).var == funcdecl.vresult)
                         {
                             if (addReturn0())
                                 exp.type = Type.tint32;
@@ -817,7 +829,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                     {
                         ReturnStatement rs = (*funcdecl.returns)[i];
                         Expression exp = rs.exp;
-                        if (exp.op == TOK.error)
+                        if (exp.op == EXP.error)
                             continue;
                         if (tret.ty == Terror)
                         {

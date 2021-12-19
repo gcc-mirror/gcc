@@ -1122,6 +1122,7 @@
   coproc,\
   tme,\
   memtag,\
+  ls64,\
   mve_move,\
   mve_store,\
   mve_load"

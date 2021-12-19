@@ -15,7 +15,8 @@
 /* { dg-additional-options "-mmacosx-version-min=010.013.06 -DCHECK=101306" { target *-*-darwin17* } } */
 /* { dg-additional-options "-mmacosx-version-min=010.014.05 -DCHECK=101405" { target *-*-darwin18* } } */
 /* { dg-additional-options "-mmacosx-version-min=010.015.06 -DCHECK=101506" { target *-*-darwin19* } } */
-/* { dg-additional-options "-mmacosx-version-min=011.000.00 -DCHECK=110000" { target *-*-darwin20 } } */
+/* { dg-additional-options "-mmacosx-version-min=011.000.00 -DCHECK=110000" { target *-*-darwin20* } } */
+/* { dg-additional-options "-mmacosx-version-min=012.000.00 -DCHECK=120000" { target *-*-darwin21* } } */
 
 int
 main ()

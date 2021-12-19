@@ -26,6 +26,7 @@ import dmd.dtemplate;
 import dmd.expression;
 import dmd.func;
 import dmd.dmangle;
+import dmd.hdrgen;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
@@ -337,7 +338,7 @@ public:
             return;
 
         buf.writeByte('(');
-        buf.writestring(Token.toString(exp.op));
+        buf.writestring(EXPtoString(exp.op));
         exp.e1.accept(this);
         if (buf.length != 0)
             buf.writestring(")_");
@@ -370,7 +371,7 @@ public:
             return;
 
         buf.writeByte('(');
-        buf.writestring(Token.toChars(exp.op));
+        buf.writestring(EXPtoString(exp.op).ptr);
 
         exp.e1.accept(this);
         if (buf.length == 0)

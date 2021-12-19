@@ -325,9 +325,6 @@ case ${host} in
   tmake_file="vms/t-vms"
   extra_parts="crt0.o crtbegin.o crtbeginS.o crtend.o crtendS.o"
   ;;
-*-*-vxworks7*)
-  tmake_file=t-vxworks7
-  ;;
 *-*-vxworksae*)
   tmake_file=t-vxworksae
   ;;
@@ -339,11 +336,8 @@ case ${host} in
   ;;
 esac
 
-# Except on ARM where we do not use DWARF, table based EH on VxWorks
-# relies on specially crafted crtstuff files
+# VxWorks ports rely on specially crafted crtstuff files
 case ${host} in
-arm-*-vxworks*)
-  ;;
 *-*-vxworks*)
   tmake_file="${tmake_file} t-vxcrtstuff"
   ;;
@@ -1146,10 +1140,14 @@ powerpc-*-darwin*)
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc64-*-darwin*)
+	# We build the darwin10 EH shim for Rosetta (running on x86 machines).
+	tm_file="$tm_file i386/darwin-lib.h"
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
 	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
@@ -1238,7 +1236,8 @@ powerpc*-*-linux*)
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
 powerpc*-wrs-vxworks7*)
-        tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-linux t-dfprules config/rs6000/t-ppc64-fp t-slibgcc-libgcc"
+        tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-dfprules rs6000/t-ppc64-fp"
+        tmake_file="rs6000/t-crtstuff ${tmake_file}"
         case $ppc_fp_type in
         64)
                 ;;
@@ -1255,7 +1254,7 @@ powerpc*-wrs-vxworks7*)
         esac
         ;;
 powerpc-wrs-vxworks*)
-	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
+	tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-fdpbit"
 	;;
 powerpc-*-lynxos*)
 	tmake_file="$tmake_file rs6000/t-lynx t-fdpbit"

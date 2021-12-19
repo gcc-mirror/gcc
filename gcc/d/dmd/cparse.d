@@ -212,7 +212,7 @@ final class CParser(AST) : Parser!AST
         case TOK.sizeof_:
         Lexp:
             auto exp = cparseExpression();
-            if (token.value == TOK.identifier && exp.op == TOK.identifier)
+            if (token.value == TOK.identifier && exp.op == EXP.identifier)
             {
                 error("found `%s` when expecting `;` or `=`, did you mean `%s %s = %s`?", peek(&token).toChars(), exp.toChars(), token.toChars(), peek(peek(&token)).toChars());
                 nextToken();
@@ -781,11 +781,11 @@ final class CParser(AST) : Parser!AST
                 break;
 
             case TOK.plusPlus:
-                e = new AST.PostExp(TOK.plusPlus, loc, e);
+                e = new AST.PostExp(EXP.plusPlus, loc, e);
                 break;
 
             case TOK.minusMinus:
-                e = new AST.PostExp(TOK.minusMinus, loc, e);
+                e = new AST.PostExp(EXP.minusMinus, loc, e);
                 break;
 
             case TOK.leftParenthesis:
@@ -841,14 +841,14 @@ final class CParser(AST) : Parser!AST
             // Parse `++` as an unary operator so that cast expressions only give
             // an error for being non-lvalues.
             e = cparseCastExp();
-            e = new AST.PreExp(TOK.prePlusPlus, loc, e);
+            e = new AST.PreExp(EXP.prePlusPlus, loc, e);
             break;
 
         case TOK.minusMinus:
             nextToken();
             // Parse `--` as an unary operator, same as prefix increment.
             e = cparseCastExp();
-            e = new AST.PreExp(TOK.preMinusMinus, loc, e);
+            e = new AST.PreExp(EXP.preMinusMinus, loc, e);
             break;
 
         case TOK.and:
@@ -975,12 +975,17 @@ final class CParser(AST) : Parser!AST
                          token.value == TOK.leftParenthesis &&
                          !isCastExpression(pt))
                 {
-                    /* this might actually be a function
-                     * call that looks like `(a)(b)` or even `(a)(b,c)`
+                    /* (t)(...)... might be a cast expression or a function call,
+                     * with different grammars: a cast would be cparseCastExp(),
+                     * a function call would be cparsePostfixExp(CallExp(cparseArguments())).
+                     * We can't know until t is known. So, parse it as a function call
+                     * and let semantic() rewrite the AST as a CastExp if it turns out
+                     * to be a type.
                      */
                     auto ie = new AST.IdentifierExp(loc, t.isTypeIdentifier().ident);
-                    ie.parens = true;    // disambiguate it from being a declaration
-                    return new AST.CallExp(loc, ie, cparseArguments());
+                    ie.parens = true;    // let semantic know it might be a CastExp
+                    AST.Expression e = new AST.CallExp(loc, ie, cparseArguments());
+                    return cparsePostfixOperators(e);
                 }
                 else
                 {
@@ -1122,14 +1127,15 @@ final class CParser(AST) : Parser!AST
         const loc = token.loc;
 
         auto e = cparseShiftExp();
-        TOK op = token.value;
 
-        switch (op)
+        EXP op = EXP.reserved;
+        switch (token.value)
         {
-        case TOK.lessThan:
-        case TOK.lessOrEqual:
-        case TOK.greaterThan:
-        case TOK.greaterOrEqual:
+        case TOK.lessThan:       op = EXP.lessThan; goto Lcmp;
+        case TOK.lessOrEqual:    op = EXP.lessOrEqual; goto Lcmp;
+        case TOK.greaterThan:    op = EXP.greaterThan; goto Lcmp;
+        case TOK.greaterOrEqual: op = EXP.greaterOrEqual; goto Lcmp;
+        Lcmp:
             nextToken();
             auto e2 = cparseShiftExp();
             e = new AST.CmpExp(op, loc, e, e2);
@@ -1153,12 +1159,13 @@ final class CParser(AST) : Parser!AST
         const loc = token.loc;
 
         auto e = cparseRelationalExp();
-        const TOK op = token.value;
 
-        switch (op)
+        EXP op = EXP.reserved;
+        switch (token.value)
         {
-        case TOK.equal:
-        case TOK.notEqual:
+        case TOK.equal:         op = EXP.equal;    goto Lequal;
+        case TOK.notEqual:      op = EXP.notEqual; goto Lequal;
+        Lequal:
             nextToken();
             auto e2 = cparseRelationalExp();
             e = new AST.EqualExp(op, loc, e, e2);
@@ -1245,7 +1252,7 @@ final class CParser(AST) : Parser!AST
         {
             nextToken();
             auto e2 = cparseOrExp();
-            e = new AST.LogicalExp(loc, TOK.andAnd, e, e2);
+            e = new AST.LogicalExp(loc, EXP.andAnd, e, e2);
         }
         return e;
     }
@@ -1265,7 +1272,7 @@ final class CParser(AST) : Parser!AST
         {
             nextToken();
             auto e2 = cparseAndAndExp();
-            e = new AST.LogicalExp(loc, TOK.orOr, e, e2);
+            e = new AST.LogicalExp(loc, EXP.orOr, e, e2);
         }
         return e;
     }
@@ -1481,9 +1488,12 @@ final class CParser(AST) : Parser!AST
 
         /* If a declarator does not follow, it is unnamed
          */
-        if (token.value == TOK.semicolon && tspec)
+        if (token.value == TOK.semicolon)
         {
             nextToken();
+            if (!tspec)
+                return;         // accept empty declaration as an extension
+
             auto tt = tspec.isTypeTag();
             if (!tt ||
                 !tt.id && (tt.tok == TOK.struct_ || tt.tok == TOK.union_))
@@ -1660,7 +1670,8 @@ final class CParser(AST) : Parser!AST
                 {
                     // Give non-extern variables an implicit void initializer
                     // if one has not been explicitly set.
-                    if (!hasInitializer && !(specifier.scw & SCW.xextern))
+                    if (!hasInitializer &&
+                        !(specifier.scw & (SCW.xextern | SCW.xstatic | SCW.x_Thread_local) || level == LVL.global))
                         initializer = new AST.VoidInitializer(token.loc);
                     s = new AST.VarDeclaration(token.loc, dt, id, initializer, specifiersToSTC(level, specifier));
                 }
@@ -1693,7 +1704,11 @@ final class CParser(AST) : Parser!AST
             switch (token.value)
             {
                 case TOK.identifier:
-                    error("missing comma");
+                    if (s)
+                    {
+                        error("missing comma or semicolon after declaration of `%s`, found `%s` instead", s.toChars(), token.toChars());
+                        goto Lend;
+                    }
                     goto default;
 
                 case TOK.semicolon:
@@ -1707,7 +1722,8 @@ final class CParser(AST) : Parser!AST
                     break;
 
                 default:
-                    error("`=`, `;` or `,` expected");
+                    error("`=`, `;` or `,` expected to end declaration instead of `%s`", token.toChars());
+                Lend:
                     while (token.value != TOK.semicolon && token.value != TOK.endOfFile)
                         nextToken();
                     nextToken();
@@ -2485,7 +2501,18 @@ final class CParser(AST) : Parser!AST
                 return t;
             }
 
-            t = constApply(t);
+            if (declarator == DTR.xparameter &&
+                t.isTypePointer())
+            {
+                /* Because there are instances in .h files of "const pointer to mutable",
+                 * skip applying transitive `const`
+                 * https://issues.dlang.org/show_bug.cgi?id=22534
+                 */
+                auto tn = cast(AST.TypeNext)t;
+                tn.next = constApply(tn.next);
+            }
+            else
+                t = constApply(t);
         }
 
         //printf("result: %s\n", t.toChars());
@@ -2603,6 +2630,8 @@ final class CParser(AST) : Parser!AST
 
             Identifier id;
             auto t = cparseDeclarator(DTR.xparameter, tspec, id, specifier);
+            if (token.value == TOK.__attribute__)
+                cparseGnuAttributes(specifier);
             if (specifier.mod & MOD.xconst)
                 t = toConst(t);
             auto param = new AST.Parameter(STC.parameter, t, id, null, null);

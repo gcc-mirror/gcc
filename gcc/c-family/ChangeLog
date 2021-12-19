@@ -1,3 +1,28 @@
+2021-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103681
+	* c-opts.c (c_common_post_options): Update defaults.
+
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/103709
+	* c-pragma.c (handle_pragma_pop_options): Do not check
+	global options modification when an error is seen in parsing
+	of options (pragmas or attributes).
+
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* known-headers.cc: Define INCLUDE_MEMORY instead of
+	INCLUDE_UNIQUE_PTR.
+	* name-hint.h: Likewise.
+	(class name_hint): Use std::unique_ptr instead of gnu::unique_ptr.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* c-pch.c (c_common_no_more_pch): Pass a temporary void * var
+	with NULL value instead of NULL to host_hooks.gt_pch_use_address.
+
 2021-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/71934

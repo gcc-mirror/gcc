@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast" } */
+/* { dg-options "-Ofast -mdejagnu-cpu=power7" } */
 
 #include <math.h>
 

@@ -36,7 +36,8 @@ modref_access_node::operator == (modref_access_node &a) const
 {
   if (parm_index != a.parm_index)
     return false;
-  if (parm_index != MODREF_UNKNOWN_PARM)
+  if (parm_index != MODREF_UNKNOWN_PARM
+      && parm_index != MODREF_GLOBAL_MEMORY_PARM)
     {
       if (parm_offset_known != a.parm_offset_known)
 	return false;
@@ -613,7 +614,9 @@ modref_access_node::insert (vec <modref_access_node, va_gc> *&accesses,
 bool
 modref_access_node::range_info_useful_p () const
 {
-  return parm_index != MODREF_UNKNOWN_PARM && parm_offset_known
+  return parm_index != MODREF_UNKNOWN_PARM
+	 && parm_index != MODREF_GLOBAL_MEMORY_PARM
+	 && parm_offset_known
 	 && (known_size_p (size)
 	     || known_size_p (max_size)
 	     || known_ge (offset, 0));
@@ -625,7 +628,9 @@ modref_access_node::dump (FILE *out)
 {
   if (parm_index != MODREF_UNKNOWN_PARM)
     {
-      if (parm_index >= 0)
+      if (parm_index == MODREF_GLOBAL_MEMORY_PARM)
+	fprintf (out, " Base in global memory");
+      else if (parm_index >= 0)
 	fprintf (out, " Parm %i", parm_index);
       else if (parm_index == MODREF_STATIC_CHAIN_PARM)
 	fprintf (out, " Static chain");
@@ -655,7 +660,8 @@ modref_access_node::dump (FILE *out)
 tree
 modref_access_node::get_call_arg (const gcall *stmt) const
 {
-  if (parm_index == MODREF_UNKNOWN_PARM)
+  if (parm_index == MODREF_UNKNOWN_PARM
+      || parm_index == MODREF_GLOBAL_MEMORY_PARM)
     return NULL;
   if (parm_index == MODREF_STATIC_CHAIN_PARM)
     return gimple_call_chain (stmt);

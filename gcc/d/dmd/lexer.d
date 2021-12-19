@@ -386,6 +386,20 @@ class Lexer
                 // Intentionally not advancing `p`, such that subsequent calls keep returning TOK.endOfFile.
                 return;
             case ' ':
+                // Skip 4 spaces at a time after aligning 'p' to a 4-byte boundary.
+                while ((cast(size_t)p) % uint.sizeof)
+                {
+                    if (*p != ' ')
+                        goto LendSkipFourSpaces;
+                    p++;
+                }
+                while (*(cast(uint*)p) == 0x20202020) // ' ' == 0x20
+                    p += 4;
+                // Skip over any remaining space on the line.
+                while (*p == ' ')
+                    p++;
+            LendSkipFourSpaces:
+                continue; // skip white space
             case '\t':
             case '\v':
             case '\f':
@@ -394,19 +408,11 @@ class Lexer
             case '\r':
                 p++;
                 if (*p != '\n') // if CR stands by itself
-                {
                     endOfLine();
-                    goto skipFourSpaces;
-                }
                 continue; // skip white space
             case '\n':
                 p++;
                 endOfLine();
-                skipFourSpaces:
-                while (*(cast(uint*)p) == 0x20202020) //' ' == 0x20
-                {
-                    p+=4;
-                }
                 continue; // skip white space
             case '0':
                 if (!isZeroSecond(p[1]))        // if numeric literal does not continue
@@ -2067,6 +2073,7 @@ class Lexer
         bool overflow = false;
         bool anyBinaryDigitsNoSingleUS = false;
         bool anyHexDigitsNoSingleUS = false;
+        char errorDigit = 0;
         dchar c = *p;
         if (c == '0')
         {
@@ -2087,8 +2094,7 @@ class Lexer
 
             case '8':
             case '9':
-                if (Ccompile)
-                    error("octal digit expected, not `%c`", c);
+                errorDigit = cast(char) c;
                 base = 8;
                 break;
             case 'x':
@@ -2199,12 +2205,9 @@ class Lexer
             // got a digit here, set any necessary flags, check for errors
             anyHexDigitsNoSingleUS = true;
             anyBinaryDigitsNoSingleUS = true;
-            if (!err && d >= base)
+            if (!errorDigit && d >= base)
             {
-                error("%s digit expected, not `%c`", base == 2 ? "binary".ptr :
-                                                     base == 8 ? "octal".ptr :
-                                                     "decimal".ptr, c);
-                err = true;
+                errorDigit = cast(char) c;
             }
             // Avoid expensive overflow check if we aren't at risk of overflow
             if (n <= 0x0FFF_FFFF_FFFF_FFFFUL)
@@ -2218,6 +2221,13 @@ class Lexer
             }
         }
     Ldone:
+        if (errorDigit)
+        {
+            error("%s digit expected, not `%c`", base == 2 ? "binary".ptr :
+                                                 base == 8 ? "octal".ptr :
+                                                 "decimal".ptr, errorDigit);
+            err = true;
+        }
         if (overflow && !err)
         {
             error("integer overflow");

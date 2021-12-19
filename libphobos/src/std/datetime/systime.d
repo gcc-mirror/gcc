@@ -503,7 +503,7 @@ public:
                        given $(REF DateTime,std,datetime,date) is assumed to
                        be in the given time zone.
       +/
-    this(DateTime dateTime, immutable TimeZone tz = null) @safe nothrow
+    this(DateTime dateTime, return scope immutable TimeZone tz = null) return scope @safe nothrow
     {
         try
             this(dateTime, Duration.zero, tz);
@@ -554,7 +554,7 @@ public:
             $(REF DateTimeException,std,datetime,date) if `fracSecs` is negative or if it's
             greater than or equal to one second.
       +/
-    this(DateTime dateTime, Duration fracSecs, immutable TimeZone tz = null) @safe
+    this(DateTime dateTime, Duration fracSecs, return scope immutable TimeZone tz = null) return scope @safe
     {
         enforce(fracSecs >= Duration.zero, new DateTimeException("A SysTime cannot have negative fractional seconds."));
         enforce(fracSecs < seconds(1), new DateTimeException("Fractional seconds must be less than one second."));
@@ -611,7 +611,7 @@ public:
                    given $(REF Date,std,datetime,date) is assumed to be in the
                    given time zone.
       +/
-    this(Date date, immutable TimeZone tz = null) @safe nothrow
+    this(Date date, return scope immutable TimeZone tz = null) return scope @safe nothrow
     {
         _timezone = tz is null ? LocalTime() : tz;
 
@@ -664,7 +664,7 @@ public:
                       $(LREF SysTime). If null,
                       $(REF LocalTime,std,datetime,timezone) will be used.
       +/
-    this(long stdTime, immutable TimeZone tz = null) @safe pure nothrow
+    this(long stdTime, return scope immutable TimeZone tz = null) return scope @safe pure nothrow
     {
         _stdTime = stdTime;
         _timezone = tz is null ? LocalTime() : tz;
@@ -693,7 +693,7 @@ public:
 
         Returns: The `this` of this `SysTime`.
       +/
-    ref SysTime opAssign()(auto ref const(SysTime) rhs) return @safe pure nothrow scope
+    ref SysTime opAssign()(auto ref const(SysTime) rhs) return scope @safe pure nothrow
     {
         _stdTime = rhs._stdTime;
         _timezone = rhs._timezone;
@@ -710,6 +710,7 @@ public:
         st = other;
         assert(st == other);
 
+        version (none) // https://issues.dlang.org/show_bug.cgi?id=21175
         static void testScope(scope ref SysTime left, const scope SysTime right) @safe
         {
             left = right;
@@ -2184,7 +2185,7 @@ public:
         hours - adjust the time to this $(LREF SysTime)'s time zone before
         returning.
       +/
-    @property immutable(TimeZone) timezone() @safe const pure nothrow scope
+    @property immutable(TimeZone) timezone() @safe const pure nothrow return scope
     {
         return _timezone;
     }
@@ -2238,7 +2239,7 @@ public:
     /++
         Returns whether DST is in effect for this $(LREF SysTime).
       +/
-    @property bool dstInEffect() @safe const nothrow scope
+    @property bool dstInEffect() @safe const nothrow return scope
     {
         return _timezone.dstInEffect(_stdTime);
     }
@@ -2261,7 +2262,7 @@ public:
         Returns what the offset from UTC is for this $(LREF SysTime).
         It includes the DST offset in effect at that time (if any).
       +/
-    @property Duration utcOffset() @safe const nothrow scope
+    @property Duration utcOffset() @safe const nothrow return scope
     {
         return _timezone.utcOffsetAt(_stdTime);
     }
@@ -9586,13 +9587,13 @@ private:
 
         @property override bool hasDST() @safe const nothrow @nogc { return false; }
 
-        override bool dstInEffect(long stdTime) @safe const nothrow @nogc { return false; }
+        override bool dstInEffect(long stdTime) @safe const scope nothrow @nogc { return false; }
 
-        override long utcToTZ(long stdTime) @safe const nothrow @nogc { return 0; }
+        override long utcToTZ(long stdTime) @safe const scope nothrow @nogc { return 0; }
 
-        override long tzToUTC(long adjTime) @safe const nothrow @nogc { return 0; }
+        override long tzToUTC(long adjTime) @safe const scope nothrow @nogc { return 0; }
 
-        override Duration utcOffsetAt(long stdTime) @safe const nothrow @nogc { return Duration.zero; }
+        override Duration utcOffsetAt(long stdTime) @safe const scope nothrow @nogc { return Duration.zero; }
 
     private:
 
@@ -9628,7 +9629,7 @@ private:
         return _timezoneStorage is null ? InitTimeZone() : _timezoneStorage;
     }
 
-    pragma(inline, true) @property void _timezone(immutable TimeZone tz) @safe pure nothrow @nogc scope
+    pragma(inline, true) @property void _timezone(return scope immutable TimeZone tz) @safe pure nothrow @nogc scope
     {
         _timezoneStorage = tz;
     }

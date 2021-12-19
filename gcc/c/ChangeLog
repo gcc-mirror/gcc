@@ -1,3 +1,28 @@
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* c-decl.c (c_warn_unused_attributes): Don't warn for
+	attribute_ignored_p.
+	* c-parser.c (c_parser_std_attribute): Skip parsing of the attribute
+	arguments when the attribute is ignored.
+
+2021-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/103587
+	* c-parser.c (c_parser_balanced_token_sequence): For CPP_PRAGMA,
+	consume the pragma and silently skip to the pragma eol.
+
+2021-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c-decl.c: Define INCLUDE_MEMORY instead of INCLUDE_UNIQUE_PTR.
+	* c-parser.c: Likewise.
+
+2021-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/71934
+	* c-decl.c (resort_field_decl_cmp): Pass the same pointer twice
+	to resort_data.new_value.
+
 2021-12-08  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-parser.c (struct omp_dim): New struct type for use inside

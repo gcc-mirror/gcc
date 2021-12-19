@@ -513,7 +513,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 					      op->index ? &vr : &op0);
 		    }
 		  else
-		    gcc_unreachable ();
+		    res.set_varying (op->type);
 		  type = op->type;
 		  vr = res;
 		}

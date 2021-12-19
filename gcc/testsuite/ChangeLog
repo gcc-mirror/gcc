@@ -1,3 +1,541 @@
+2021-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103412
+	* gfortran.dg/illegal_boz_arg_2.f90: New test.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103611
+	* gcc.target/i386/pr103611-2.c: New test case.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/32803
+	* gcc.target/i386/pr32803.c: New test case.
+
+2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Test darwin21.
+	* obj-c++.dg/cxx-ivars-3.mm: Homogeneize darwin versions.
+	* obj-c++.dg/objc-gc-3.mm: Homogeneize darwin versions.
+	* objc.dg/objc-gc-4.m: Homogeneize darwin versions.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* c-c++-common/Wno-attributes-6.c: New test.
+
+2021-12-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c
+
+2021-12-17  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/powerpc/pr97142.c: Add -mdejagnu-cpu=power7
+	to the dg-options.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103749
+	* g++.dg/template/redecl4.C: Adjust dg-error.
+	* g++.dg/diagnostic/redeclaration-2.C: New test.
+
+2021-12-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103624
+	* gcc.target/powerpc/darn-0.c: Remove target clause.
+	* gcc.target/powerpc/darn-1.c: Remove target clause. Remove lp64
+	requirement.  Change return type to long.
+	* gcc.target/powerpc/darn-2.c: Ditto.
+	* gcc.target/powerpc/darn-3.c: Remove target clause.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100127
+	* g++.dg/coroutines/pr100127.C: New test.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100772
+	* g++.dg/coroutines/pr100772-a.C: New test.
+	* g++.dg/coroutines/pr100772-b.C: New test.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96517
+	* g++.dg/coroutines/pr96517.C: New test.
+
+2021-12-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pragma-optimize.c: Require ifunc support.
+
+2021-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103744
+	* gcc.dg/vect/pr103744-1.c: New test.
+	* gcc.dg/vect/pr103744-2.c: Likewise.
+
+2021-12-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103741
+	* gcc.target/aarch64/pr103741.c: New test.
+
+2021-12-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/100738
+	* g++.target/i386/avx512vl-pr100738-1.C: New test.
+
+2021-12-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* g++.dg/ext/builtin-dynamic-object-size1.C: New test.
+	* g++.dg/ext/builtin-dynamic-object-size2.C: Likewise.
+	* gcc.dg/builtin-dynamic-alloc-size.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-1.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-10.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-11.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-12.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-13.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-14.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-15.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-16.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-17.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-18.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-19.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-3.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-4.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-5.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-6.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-7.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-8.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-9.c: Likewise.
+	* gcc.dg/builtin-object-size-16.c: Adjust to allow inclusion
+	from builtin-dynamic-object-size-16.c.
+	* gcc.dg/builtin-object-size-17.c: Likewise.
+
+2021-12-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/builtin-object-size-1.c (test9): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-2.c (test8): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-3.c (test9): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-4.c (test8): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-5.c (test5, test6, test7): New
+	tests.
+
+2021-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103681
+	* g++.dg/abi/macro0.C: Update value.
+	* g++.dg/abi/no_unique_address6.C: New test.
+	* g++.dg/abi/nsdmi-aggr1.C: New test.
+	* g++.dg/abi/nsdmi-aggr1a.C: New test.
+
+2021-12-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/20021029-1.c: Build with -G0 for nios2.
+
+2021-12-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99980
+	* g++.dg/cpp0x/noexcept71.C: New test.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/103703
+	* g++.dg/warn/Wmismatched-tags-9.C: New test.
+
+2021-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/103751
+	* gcc.dg/Warray-bounds-48.c: Fix member alignment.
+
+2021-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	PR c++/83035
+	PR c++/100465
+	* g++.dg/lookup/operator-3.C: Split out operator overload
+	declarations into ...
+	* g++.dg/lookup/operator-3-ops.h: ... here.
+	* g++.dg/lookup/operator-3a.C: New test.
+	* g++.dg/lookup/operator-4.C: New test.
+	* g++.dg/lookup/operator-4a.C: New test.
+	* g++.dg/lookup/operator-5.C: New test.
+	* g++.dg/lookup/operator-5a.C: New test.
+	* g++.dg/lookup/operator-6.C: New test.
+	* g++.dg/lookup/operator-7.C: New test.
+	* g++.dg/lookup/operator-8.C: New test.
+
+2021-12-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103571
+	* gcc.target/i386/pr102812.c (dg-final): Do not scan for movdqa.
+
+2021-12-16  Martin Liska  <mliska@suse.cz>
+
+	PR c++/103696
+	* g++.target/i386/pr103696.C: New test.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/iostat_5.f90: New file.
+
+2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/date_and_time_1.f90: New file.
+
+2021-12-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102229
+	* g++.dg/cpp1y/decltype-auto5.C: New test.
+
+2021-12-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/fortran-torture.exp (fortran-torture-compile)
+	(fortran-torture-execute): Be more informative for ICEs.
+	* lib/gcc-defs.exp (${tool}_check_compile): Likewise.
+	* lib/gcc-dg.exp (gcc-dg-test-1): Likewise.
+	* lib/go-torture.exp (go-torture-compile, go-torture-execute):
+	Likewise.
+
+2021-12-15  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78969
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-6.c: New test.
+
+2021-12-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-2.c: New test case.
+	* gcc.target/nvptx/tanh-1.c: New test case.
+
+2021-12-15  Richard Sandiford  <richard.sandiford@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/103094
+	* gcc.target/aarch64/pr103094.c: New test.
+
+2021-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR rtl-optimization/103350
+	* gcc.target/aarch64/pr103350-1.c: New test.
+	* gcc.target/aarch64/pr103350-2.c: New test.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103408
+	* g++.dg/cpp23/auto-fncast11.C: Fix expected diagnostic wording.
+
+2021-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/103704
+	* g++.dg/gomp/pr103704.C: New test.
+
+2021-12-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/101796
+	* gcc.target/i386/pr101796-1.c: New test.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* gcc.target/powerpc/vec-splat-constant-df.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-sf.c: New test.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: Update insn
+	regex for power10.
+	* gcc.target/powerpc/vec-splat-constant-v2df.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v2di.c: New test.
+
+2021-12-15  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/vec-splat-constant-v16qi.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v4sf.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v4si.c: New test.
+	* gcc.target/powerpc/vec-splat-constant-v8hi.c: New test.
+	* gcc.target/powerpc/vec-splati-runnable.c: Update insn count.
+
+2021-12-15  Michael Meissner  <meissner@the-meissners.org>
+
+	* gcc.target/powerpc/float128-constant.c: New test.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/100518
+	* gcc.target/aarch64/pr100518.c: New.
+
+2021-12-15  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/100843
+	* gcc.dg/pr100843.c: New.
+
+2021-12-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.c-torture/compile/pr103682.c: New test.
+
+2021-12-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/103548
+	* gcc.target/powerpc/mma-builtin-10-pair.c: New test.
+	* gcc.target/powerpc/mma-builtin-10-quad.c: New test.
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103717
+	* gfortran.dg/do_check_19.f90: New test.
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103718
+	PR fortran/103719
+	* gfortran.dg/do_check_18.f90: New test.
+
+2021-12-14  Petter Tomner  <tomner@kth.se>
+
+	* jit.dg/all-non-failing-tests.h: Added two tests
+	* jit.dg/test-error-ctor-array-wrong-obj.c: New
+	* jit.dg/test-error-ctor-struct-too-big.c: New
+	* jit.dg/test-error-ctor-struct-wrong-field-obj.c: New
+	* jit.dg/test-error-ctor-struct-wrong-type.c: New
+	* jit.dg/test-error-ctor-struct-wrong-type2.c
+	* jit.dg/test-error-ctor-union-wrong-field-name.c: New
+	* jit.dg/test-error-global-already-init.c: New
+	* jit.dg/test-error-global-common-section.c: New
+	* jit.dg/test-error-global-init-too-small-array.c: New
+	* jit.dg/test-error-global-lvalue-init.c: New
+	* jit.dg/test-error-global-nonconst-init.c: New
+	* jit.dg/test-global-init-rvalue.c: New
+	* jit.dg/test-local-init-rvalue.c: New
+
+2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/103634
+	* gfortran.dg/intrinsic_pack_6.f90: New test.
+
+2021-12-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/analyzer/data-model-1.c: Disable ipa-modref.
+	* gcc.dg/uninit-38.c: Likewise.
+	* gcc.dg/uninit-pr98578.c: Liewise.
+
+2021-12-14  Manfred Schwarb  <manfred99@gmx.ch>
+
+	PR fortran/91497
+	* gfortran.dg/pr91497.f90: Adjust test to use
+	dg-require-effective-target directive.
+	* gfortran.dg/pr91497_2.f90: New test to cover all targets.
+	Cover MAX1 and MIN1 intrinsics.
+
+2021-12-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99531
+	* gcc.target/i386/pr99531.c: Do not scan for ia32.
+
+2021-12-14  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+	* gcc.target/aarch64/acle/ls64_asm.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld64b.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld64b-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld64b-3.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64b.c: New test.
+	* gcc.target/aarch64/acle/ls64_ld_st_o0.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64b-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv-3.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv0.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv0-2.c: New test.
+	* gcc.target/aarch64/acle/ls64_st64bv0-3.c: New test.
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Add checks
+	for __ARM_FEATURE_LS64.
+
+2021-12-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/avx2-psraq-1.c: Use ARRAY_SIZE.
+	* gcc.target/i386/m128-check.h: Move it to the top-level
+	context.
+	* gcc.target/i386/sse2-psraq-1.c: Use ARRAY_SIZE.
+	* gcc.target/i386/sse4_2-check.h: Include the header with
+	ARRAY_SIZE definition.
+
+2021-12-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103408
+	* g++.dg/concepts/diagnostic18.C: Expect a "constraints on a
+	non-templated function" error.
+	* g++.dg/cpp23/auto-fncast11.C: New test.
+
+2021-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/103587
+	* gcc.dg/pr103587.c: New test.
+
+2021-12-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/103576
+	PR testsuite/103697
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Adjust.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90:
+	Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang.f90: Likewise.
+
+2021-12-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99531
+	* gcc.target/i386/pr99531.c: New test.
+
+2021-12-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr103611-1.c: New test case.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_3.c: New test.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_2.c: New test.
+
+2021-12-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/mops_1.c: New test.
+
+2021-12-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/atomic-25.f90: Remove sorry, fix + add checks.
+	* gfortran.dg/gomp/atomic-26.f90: Likewise.
+	* gfortran.dg/gomp/atomic-21.f90: New test.
+
+2021-12-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103513
+	* gcc.c-torture/compile/pr103513.c: New test.
+
+2021-12-13  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/103515
+	* gcc.target/powerpc/pr103515.c: New test.
+
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/100688
+	* jit.dg/all-non-failing-tests.h: Mention new test
+	link-section-assembler.
+	* jit.dg/test-link-section-assembler.c: New test.
+	* jit.dg/jit.exp: New helper function to test that the
+	assembly contains a pattern.
+
+2021-12-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/float16-1.c: New test case.
+
+2021-12-12  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/95415
+	* jit.dg/all-non-failing-tests.h: Add test-tls.c.
+	* jit.dg/test-tls.c: New test.
+
+2021-12-11  Antoni Boucher  <bouanto@zoho.com>
+
+	PR target/96066
+	PR target/96067
+	* jit.dg/all-non-failing-tests.h: Add test-builtin-types.c.
+	* jit.dg/test-builtin-types.c
+	* jit.dg/test-error-bad-assignment.c
+	* jit.dg/test-fuzzer.c: Add fuzzing for type qualifiers.
+
+2021-12-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103606
+	* gfortran.dg/pr103606.f90: New test.
+
+2021-12-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103534
+	* g++.dg/warn/Wstringop-overflow-8.C: New test.
+
+2021-12-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/103562
+	* jit.dg/all-non-failing-tests.h: Add comment about...
+	* jit.dg/test-pr103562.c: New test.
+
+2021-12-10  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp23/auto-fncast10.C: New test.
+
+2021-12-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103418
+	* gfortran.dg/move_alloc_8.f90: Adjust error messages.
+	* gfortran.dg/pointer_intent_9.f90: New test.
+
+2021-12-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR ipa/103601
+	* gcc.dg/ipa/pr103601.c: New test case.
+
+2021-12-10  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.target/aarch64/pr103523.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/103215
+	* gcc.dg/Wstringop-overflow-58.c: Adjust and xfail expected warnings.
+	* gcc.dg/Wstringop-overflow-59.c: Same.
+	* gcc.dg/warn-strnlen-no-nul.c: Same.
+	* gcc.dg/Warray-bounds-91.c: New test.
+	* gcc.dg/Warray-bounds-92.c: New test.
+	* gcc.dg/Wstringop-overflow-85.c: New test.
+	* gcc.dg/Wstringop-overflow-87.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/101751
+	* gcc.dg/Wstringop-overflow-86.c: New test.
+
+2021-12-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/103143
+	* gcc.dg/Wstringop-overflow-83.c: New test.
+
+2021-12-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103401
+	* g++.dg/cpp1y/lambda-generic-85713-2.C: Add dg-error.
+	* g++.dg/cpp1y/pr60054.C: Adjust dg-error.
+	* g++.dg/cpp1y/pr60332.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-2.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979-3.C: Likewise.
+	* g++.dg/cpp2a/concepts-pr84979.C: Likewise.
+	* g++.dg/cpp23/auto-fncast7.C: New test.
+	* g++.dg/cpp23/auto-fncast8.C: New test.
+	* g++.dg/cpp23/auto-fncast9.C: New test.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103097
+	* gcc.target/i386/pr103097.c: New.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/103302
+	* gcc.target/riscv/pr103302.c: New.
+
+2021-12-09  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/103024
+	PR middle-end/103530
+	* g++.dg/pr103024.C: New.
+	* g++.dg/pr103530.C: New.
+
 2021-12-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103609

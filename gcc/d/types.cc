@@ -338,7 +338,7 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 		  RootObject *ro = (*td->objects)[j];
 		  gcc_assert (ro->dyncast () == DYNCAST_EXPRESSION);
 		  Expression *e = (Expression *) ro;
-		  gcc_assert (e->op == TOKdsymbol);
+		  gcc_assert (e->op == EXP::dSymbol);
 		  DsymbolExp *se = e->isDsymbolExp ();
 
 		  tmembers.push (se->s);

@@ -140,13 +140,6 @@ DEF_D_RUNTIME (ARRAYASSIGN_R, "_d_arrayassign_r", RT(ARRAY_VOID),
 DEF_D_RUNTIME (ARRAYSETASSIGN, "_d_arraysetassign", RT(VOIDPTR),
 	       P4(VOIDPTR, VOIDPTR, SIZE_T, CONST_TYPEINFO), 0)
 
-/* Used for constructing a new array from an existing array.  The `set' variant
-   is for when the constructor value is a single element.  */
-DEF_D_RUNTIME (ARRAYCTOR, "_d_arrayctor", RT(ARRAY_VOID),
-	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
-DEF_D_RUNTIME (ARRAYSETCTOR, "_d_arraysetctor", RT(VOIDPTR),
-	       P4(VOIDPTR, VOIDPTR, SIZE_T, CONST_TYPEINFO), 0)
-
 /* Used for concatenating two or more arrays together.  Then `n' variant is
    for when there is more than two arrays to handle.  */
 DEF_D_RUNTIME (ARRAYCATT, "_d_arraycatT", RT(ARRAY_BYTE),

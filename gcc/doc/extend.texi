@@ -2524,8 +2524,7 @@ The following attributes are supported on most targets.
 @table @code
 @c Keep this table alphabetized by attribute name.  Treat _ as space.
 
-@item access
-@itemx access (@var{access-mode}, @var{ref-index})
+@item access (@var{access-mode}, @var{ref-index})
 @itemx access (@var{access-mode}, @var{ref-index}, @var{size-index})
 
 The @code{access} attribute enables the detection of invalid or unsafe
@@ -2598,7 +2597,9 @@ __attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (c
 The access mode @code{none} specifies that the pointer to which it applies
 is not used to access the referenced object at all.  Unless the pointer is
 null the pointed-to object must exist and have at least the size as denoted
-by the @var{size-index} argument.  The object need not be initialized.
+by the @var{size-index} argument.  When the optional @var{size-index}
+argument is omitted for an argument of @code{void*} type the actual pointer
+agument is ignored.  The referenced object need not be initialized.
 The mode is intended to be used as a means to help validate the expected
 object size, for example in functions that call @code{__builtin_object_size}.
 @xref{Object Size Checking}.
@@ -12712,6 +12713,7 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @node Object Size Checking
 @section Object Size Checking Built-in Functions
 @findex __builtin_object_size
+@findex __builtin_dynamic_object_size
 @findex __builtin___memcpy_chk
 @findex __builtin___mempcpy_chk
 @findex __builtin___memmove_chk
@@ -12777,6 +12779,18 @@ assert (__builtin_object_size (q, 0)
 /* The subobject q points to is var.b.  */
 assert (__builtin_object_size (q, 1) == sizeof (var.b));
 @end smallexample
+@end deftypefn
+
+@deftypefn {Built-in Function} {size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+is similar to @code{__builtin_object_size} in that it returns a number of bytes
+from @var{ptr} to the end of the object @var{ptr} pointer points to, except
+that the size returned may not be a constant.  This results in successful
+evaluation of object size estimates in a wider range of use cases and can be
+more precise than @code{__builtin_object_size}, but it incurs a performance
+penalty since it may add a runtime overhead on size computation.  Semantics of
+@var{type} as well as return values in case it is not possible to determine
+which objects @var{ptr} points to at compile time are the same as in the case
+of @code{__builtin_object_size}.
 @end deftypefn
 
 There are built-in functions added for many common string operation

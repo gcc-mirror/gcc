@@ -28,7 +28,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "format.h"
 #include "unix.h"
 #include <string.h>
-#include <ctype.h>
 #include <assert.h>
 #include "async.h"
 
@@ -959,7 +958,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 	 between "NaN" and the optional perenthesis is not permitted.  */
       while (w > 0)
 	{
-	  *out = tolower (*p);
+	  *out = safe_tolower (*p);
 	  switch (*p)
 	    {
 	    case ' ':
@@ -981,7 +980,7 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 		goto bad_float;
 	      break;
 	    default:
-	      if (!isalnum (*out))
+	      if (!safe_isalnum (*out))
 		goto bad_float;
 	    }
 	  --w;
@@ -1109,7 +1108,7 @@ exponent:
 
   if (dtp->u.p.blank_status == BLANK_UNSPECIFIED)
     {
-      while (w > 0 && isdigit (*p))
+      while (w > 0 && safe_isdigit (*p))
 	{
 	  exponent *= 10;
 	  exponent += *p - '0';
@@ -1137,7 +1136,7 @@ exponent:
 	      else
 		assert (dtp->u.p.blank_status == BLANK_NULL);
 	    }
-	  else if (!isdigit (*p))
+	  else if (!safe_isdigit (*p))
 	    goto bad_float;
 	  else
 	    {

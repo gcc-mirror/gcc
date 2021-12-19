@@ -109,6 +109,7 @@
 #define func (
 #define tmp (
 #define sz (
+#define token (
 
 #if __cplusplus < 201103L
 #define uses_allocator  (

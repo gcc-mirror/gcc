@@ -196,6 +196,12 @@ struct DList(T)
 
         T _payload = T.init;
 
+        this (BaseNode _base, T _payload)
+        {
+            this._base = _base;
+            this._payload = _payload;
+        }
+
         inout(BaseNode)* asBaseNode() inout @trusted
         {
             return &_base;

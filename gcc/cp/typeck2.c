@@ -1956,7 +1956,7 @@ build_x_arrow (location_t loc, tree expr, tsubst_flags_t complain)
 
       while ((expr = build_new_op (loc, COMPONENT_REF,
 				   LOOKUP_NORMAL, expr, NULL_TREE, NULL_TREE,
-				   &fn, complain)))
+				   NULL_TREE, &fn, complain)))
 	{
 	  if (expr == error_mark_node)
 	    return error_mark_node;

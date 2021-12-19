@@ -181,7 +181,7 @@ extern (C) void _d_delstruct(void** p, TypeInfo_Struct inf) @weak
 }
 
 // strip const/immutable/shared/inout from type info
-inout(TypeInfo) unqualify(return inout(TypeInfo) cti) pure nothrow @nogc
+inout(TypeInfo) unqualify(return scope inout(TypeInfo) cti) pure nothrow @nogc
 {
     TypeInfo ti = cast() cti;
     while (ti)
@@ -381,7 +381,7 @@ size_t __arrayAllocLength(ref BlkInfo info, const TypeInfo tinext) pure nothrow
 /**
   get the start of the array for the given block
   */
-void *__arrayStart(return BlkInfo info) nothrow pure
+void *__arrayStart(return scope BlkInfo info) nothrow pure
 {
     return info.base + ((info.size & BIGLENGTHMASK) ? LARGEPREFIX : 0);
 }

@@ -640,6 +640,18 @@ mprivileged
 Target Var(rs6000_privileged) Init(0)
 Generate code that will run in privileged state.
 
+msplat-word-constant
+Target Var(TARGET_SPLAT_WORD_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the XXSPLTIW instruction.
+
+msplat-float-constant
+Target Var(TARGET_SPLAT_FLOAT_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the XXSPLTIDP instruction.
+
+mieee128-constant
+Target Var(TARGET_IEEE128_CONSTANT) Init(1) Save
+Generate (do not generate) code that uses the LXVKQ instruction.
+
 -param=rs6000-density-pct-threshold=
 Target Undocumented Joined UInteger Var(rs6000_density_pct_threshold) Init(85) IntegerRange(0, 100) Param
 When costing for loop vectorization, we probably need to penalize the loop body

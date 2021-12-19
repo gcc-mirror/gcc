@@ -22,6 +22,7 @@ set dg-output-text [list]
 set config_test_list [list \
     { test19433 "--DRT-dont-eat-me" 0 } \
     { test20459 "foo bar -- --DRT-gcopts=profile:1" 0 } \
+    { test22523 "-- --DRT-testmode=run-main" 0 } \
 ]
 
 # Initialize dg.

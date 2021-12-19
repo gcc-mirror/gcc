@@ -1,4 +1,5 @@
 /* { dg-require-effective-target alloca } */
+/* { dg-additional-options "-fno-ipa-modref" } */
 
 #include <stdlib.h>
 #include <string.h>

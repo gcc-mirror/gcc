@@ -975,9 +975,9 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 16;
-  /* Generate compatibility aliases for ABI v11 (7.1) by default.  */
-  const int abi_compat_default = 11;
+  const int latest_abi_version = 17;
+  /* Generate compatibility aliases for ABI v13 (8.2) by default.  */
+  const int abi_compat_default = 13;
 
 #define clamp(X) if (X == 0 || X > latest_abi_version) X = latest_abi_version
   clamp (flag_abi_version);

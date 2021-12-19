@@ -2154,9 +2154,9 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	{
 	Lagain:
 	  Expression *arg = (*arguments)[i];
-	  gcc_assert (arg->op != TOKtuple);
+	  gcc_assert (arg->op != EXP::tuple);
 
-	  if (arg->op == TOKcomma)
+	  if (arg->op == EXP::comma)
 	    {
 	      CommaExp *ce = arg->isCommaExp ();
 	      tree tce = build_expr (ce->e1);
@@ -2200,7 +2200,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	      /* Nested structs also have ADDRESSABLE set, but if the type has
 		 neither a copy constructor nor a destructor available, then we
 		 need to take care of copying its value before passing it.  */
-	      if (arg->op == TOKstructliteral || (!sd->postblit && !sd->dtor))
+	      if (arg->op == EXP::structLiteral || (!sd->postblit && !sd->dtor))
 		targ = force_target_expr (targ);
 
 	      targ = convert (build_reference_type (TREE_TYPE (targ)),

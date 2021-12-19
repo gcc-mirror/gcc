@@ -304,7 +304,7 @@ handle_ignored_attributes_option (vec<char *> *v)
 	 We can't free it here, so squirrel away the pointers.  */
       attribute_spec *table = new attribute_spec[2];
       ignored_attributes_table.safe_push (table);
-      table[0] = { attr, 0, 0, false, false, false, false, nullptr, nullptr };
+      table[0] = { attr, 0, -2, false, false, false, false, nullptr, nullptr };
       table[1] = { nullptr, 0, 0, false, false, false, false, nullptr,
 		   nullptr };
       register_scoped_attributes (table, IDENTIFIER_POINTER (vendor_id), !attr);
@@ -569,6 +569,32 @@ attr_namespace_ignored_p (tree ns)
   return r && r->ignored_p;
 }
 
+/* Return true if the attribute ATTR should not be warned about.  */
+
+bool
+attribute_ignored_p (tree attr)
+{
+  if (!cxx11_attribute_p (attr))
+    return false;
+  if (tree ns = get_attribute_namespace (attr))
+    {
+      if (attr_namespace_ignored_p (ns))
+	return true;
+      const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (attr));
+      if (as && as->max_length == -2)
+	return true;
+    }
+  return false;
+}
+
+/* Like above, but takes an attribute_spec AS, which must be nonnull.  */
+
+bool
+attribute_ignored_p (const attribute_spec *const as)
+{
+  return as->max_length == -2;
+}
+
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
    it should be modified in place; if a TYPE, a copy should be created
@@ -605,9 +631,21 @@ decl_attributes (tree *node, tree attributes, int flags,
     }
 
   if (TREE_CODE (*node) == FUNCTION_DECL
-      && optimization_current_node != optimization_default_node
+      && (optimization_current_node != optimization_default_node
+	  || target_option_current_node != target_option_default_node)
       && !DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node))
-    DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;
+    {
+      DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node) = optimization_current_node;
+      tree cur_tree
+	= build_target_option_node (&global_options, &global_options_set);
+      tree old_tree = DECL_FUNCTION_SPECIFIC_TARGET (*node);
+      if (!old_tree)
+	old_tree = target_option_default_node;
+      /* The changes on optimization options can cause the changes in
+	 target options, update it accordingly if it's changed.  */
+      if (old_tree != cur_tree)
+	DECL_FUNCTION_SPECIFIC_TARGET (*node) = cur_tree;
+    }
 
   /* If this is a function and the user used #pragma GCC target, add the
      options to the attribute((target(...))) list.  */

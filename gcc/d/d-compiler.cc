@@ -50,7 +50,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     cst = build_integer_cst (expr->toInteger (), build_ctype (expr->type));
   else if (expr->type->isfloating ())
     cst = build_float_cst (expr->toReal (), expr->type);
-  else if (expr->op == TOKarrayliteral)
+  else if (expr->op == EXP::arrayLiteral)
     {
       /* Build array as VECTOR_CST, assumes EXPR is constant.  */
       Expressions *elements = expr->isArrayLiteralExp ()->elements;
@@ -99,7 +99,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       cst = native_interpret_expr (vectype, buffer, len);
 
       Expression *e = d_eval_constant_expression (expr->loc, cst);
-      gcc_assert (e != NULL && e->op == TOKvector);
+      gcc_assert (e != NULL && e->op == EXP::vector);
 
       return e->isVectorExp ()->e1;
     }

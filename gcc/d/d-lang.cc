@@ -297,8 +297,8 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.argv0 = xstrdup (decoded_options[0].arg);
   global.params.errorLimit = flag_max_errors;
 
-  /* Default extern(C++) mangling to C++14.  */
-  global.params.cplusplus = CppStdRevisionCpp14;
+  /* Default extern(C++) mangling to C++17.  */
+  global.params.cplusplus = CppStdRevisionCpp17;
 
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICinform;
@@ -620,10 +620,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.inclusiveInContracts = value;
       break;
 
-    case OPT_fpreview_intpromote:
-      global.params.fix16997 = value;
-      break;
-
     case OPT_fpreview_nosharedaccess:
       global.params.noSharedAccess = value;
       break;
@@ -642,8 +638,9 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_frevert_all:
       global.params.useDIP25 = FeatureState::disabled;
-      global.params.markdown = !value;
       global.params.dtorFields = FeatureState::disabled;
+      global.params.fix16997 = !value;
+      global.params.markdown = !value;
       break;
 
     case OPT_frevert_dip25:
@@ -652,6 +649,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_frevert_dtorfields:
       global.params.dtorFields = FeatureState::disabled;
+      break;
+
+    case OPT_frevert_intpromote:
+      global.params.fix16997 = !value;
       break;
 
     case OPT_frevert_markdown:

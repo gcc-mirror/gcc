@@ -2998,6 +2998,10 @@ pass_waccess::maybe_check_access_sizes (rdwr_map *rwm, tree fndecl, tree fntype,
 	  if (access.second.minsize
 	      && access.second.minsize != HOST_WIDE_INT_M1U)
 	    access_nelts = build_int_cstu (sizetype, access.second.minsize);
+	  else if (VOID_TYPE_P (argtype) && access.second.mode == access_none)
+	    /* Treat access mode none on a void* argument as expecting
+	       as little as zero bytes.  */
+	    access_nelts = size_zero_node;
 	  else
 	    access_nelts = size_one_node;
 	}
