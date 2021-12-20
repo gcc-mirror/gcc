@@ -1,9 +1,12 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
 /* { dg-additional-options "-fopt-info-omp-all" } */
+
 /* { dg-additional-options "-fchecking --param=openacc-kernels=decompose" } */
 /* { dg-ice "TODO" }
    { dg-prune-output "during GIMPLE pass: omplower" } */
+
+/* { dg-additional-options "--param=openacc-privatization=noisy" } */
 
 /* Reduced from 'kernels-decompose-2.c'.
    (Hopefully) similar instances:
@@ -18,7 +21,9 @@ main ()
 #define N 10
 
 #pragma acc kernels
-  for (int i = 0; i < N; i++) /* { dg-message "note: beginning 'parloops' part in OpenACC 'kernels' region" } */
+  /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } .-1 } */
+  /* { dg-note {beginning 'parloops' part in OpenACC 'kernels' region} {} { target *-*-* } .+1 } */
+  for (int i = 0; i < N; i++)
     ;
 
   return 0;
