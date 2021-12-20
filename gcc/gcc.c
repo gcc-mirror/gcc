@@ -4492,7 +4492,9 @@ driver_handle_option (struct gcc_options *opts,
     case OPT__sysroot_:
       target_system_root = arg;
       target_system_root_changed = 1;
-      do_save = false;
+      /* Saving this option is useful to let self-specs decide to
+	 provide a default one.  */
+      do_save = true;
       break;
 
     case OPT_time_:
