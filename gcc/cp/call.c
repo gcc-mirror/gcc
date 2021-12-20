@@ -11163,6 +11163,33 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	}
       if (INDIRECT_REF_P (call))
 	call = TREE_OPERAND (call, 0);
+
+      /* Prune all but the selected function from the original overload
+	 set so that we can avoid some duplicate work at instantiation time.  */
+      if (really_overloaded_fn (fns))
+	{
+	  if (DECL_TEMPLATE_INFO (fn)
+	      && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (fn))
+	      && dependent_type_p (DECL_CONTEXT (fn)))
+	    {
+	      /* FIXME: We're not prepared to fully instantiate "inside-out"
+		 partial instantiations such as A<T>::f<int>().  So instead
+		 use the selected template, not the specialization.  */
+
+	      if (OVL_SINGLE_P (fns))
+		/* If the original overload set consists of a single function
+		   template, this isn't beneficial.  */
+		goto skip_prune;
+
+	      fn = ovl_make (DECL_TI_TEMPLATE (fn));
+	      if (template_only)
+		fn = lookup_template_function (fn, explicit_targs);
+	    }
+	  orig_fns = copy_node (orig_fns);
+	  BASELINK_FUNCTIONS (orig_fns) = fn;
+	}
+
+skip_prune:
       call = (build_min_non_dep_call_vec
 	      (call,
 	       build_min (COMPONENT_REF, TREE_TYPE (CALL_EXPR_FN (call)),
