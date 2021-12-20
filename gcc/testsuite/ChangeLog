@@ -1,3 +1,160 @@
+2021-12-19  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/uninit-pr89230-1.c: Change the dg-bogus messages
+	around and xfail both of them.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* g++.dg/cpp0x/lambda/lambda-nested9a.C: New test.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103714
+	* g++.dg/cpp2a/concepts-uneval5.C: New test.
+
+2021-12-19  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/pr100509.c: Needs alias.
+	* gcc.dg/pragma-diag-10.c: Needs alias.
+
+2021-12-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103412
+	* gfortran.dg/illegal_boz_arg_2.f90: New test.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103611
+	* gcc.target/i386/pr103611-2.c: New test case.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/32803
+	* gcc.target/i386/pr32803.c: New test case.
+
+2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Test darwin21.
+	* obj-c++.dg/cxx-ivars-3.mm: Homogeneize darwin versions.
+	* obj-c++.dg/objc-gc-3.mm: Homogeneize darwin versions.
+	* objc.dg/objc-gc-4.m: Homogeneize darwin versions.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* c-c++-common/Wno-attributes-6.c: New test.
+
+2021-12-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c
+
+2021-12-17  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/powerpc/pr97142.c: Add -mdejagnu-cpu=power7
+	to the dg-options.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103749
+	* g++.dg/template/redecl4.C: Adjust dg-error.
+	* g++.dg/diagnostic/redeclaration-2.C: New test.
+
+2021-12-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103624
+	* gcc.target/powerpc/darn-0.c: Remove target clause.
+	* gcc.target/powerpc/darn-1.c: Remove target clause. Remove lp64
+	requirement.  Change return type to long.
+	* gcc.target/powerpc/darn-2.c: Ditto.
+	* gcc.target/powerpc/darn-3.c: Remove target clause.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100127
+	* g++.dg/coroutines/pr100127.C: New test.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100772
+	* g++.dg/coroutines/pr100772-a.C: New test.
+	* g++.dg/coroutines/pr100772-b.C: New test.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96517
+	* g++.dg/coroutines/pr96517.C: New test.
+
+2021-12-17  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pragma-optimize.c: Require ifunc support.
+
+2021-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103744
+	* gcc.dg/vect/pr103744-1.c: New test.
+	* gcc.dg/vect/pr103744-2.c: Likewise.
+
+2021-12-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103741
+	* gcc.target/aarch64/pr103741.c: New test.
+
+2021-12-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/100738
+	* g++.target/i386/avx512vl-pr100738-1.C: New test.
+
+2021-12-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* g++.dg/ext/builtin-dynamic-object-size1.C: New test.
+	* g++.dg/ext/builtin-dynamic-object-size2.C: Likewise.
+	* gcc.dg/builtin-dynamic-alloc-size.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-1.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-10.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-11.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-12.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-13.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-14.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-15.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-16.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-17.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-18.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-19.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-3.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-4.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-5.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-6.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-7.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-8.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-9.c: Likewise.
+	* gcc.dg/builtin-object-size-16.c: Adjust to allow inclusion
+	from builtin-dynamic-object-size-16.c.
+	* gcc.dg/builtin-object-size-17.c: Likewise.
+
+2021-12-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* gcc.dg/builtin-object-size-1.c (test9): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-2.c (test8): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-3.c (test9): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-4.c (test8): New test.
+	(main): Call it.
+	* gcc.dg/builtin-object-size-5.c (test5, test6, test7): New
+	tests.
+
+2021-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103681
+	* g++.dg/abi/macro0.C: Update value.
+	* g++.dg/abi/no_unique_address6.C: New test.
+	* g++.dg/abi/nsdmi-aggr1.C: New test.
+	* g++.dg/abi/nsdmi-aggr1a.C: New test.
+
 2021-12-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.dg/20021029-1.c: Build with -G0 for nios2.

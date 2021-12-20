@@ -221,6 +221,8 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
     }
   else
     {
+      STRIP_ANY_LOCATION_WRAPPER (expr);
+
       if (!by_reference_p && is_capture_proxy (expr))
 	{
 	  /* When capturing by-value another capture proxy from an enclosing
@@ -246,6 +248,10 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
 bool
 is_capture_proxy (tree decl)
 {
+  /* Location wrappers should be stripped or otherwise handled by the
+     caller before using this predicate.  */
+  gcc_checking_assert (!location_wrapper_p (decl));
+
   return (VAR_P (decl)
 	  && DECL_HAS_VALUE_EXPR_P (decl)
 	  && !DECL_ANON_UNION_VAR_P (decl)
@@ -1496,7 +1502,8 @@ mark_const_cap_r (tree *t, int *walk_subtrees, void *data)
 	  *walk_subtrees = 0;
 	}
     }
-  else if (is_constant_capture_proxy (*t))
+  else if (!location_wrapper_p (*t) /* is_capture_proxy dislikes them.  */
+	   && is_constant_capture_proxy (*t))
     var = DECL_CAPTURED_VARIABLE (*t);
 
   if (var)

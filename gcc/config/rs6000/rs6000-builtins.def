@@ -2798,14 +2798,14 @@
 
 ; Miscellaneous P9 functions
 [power9]
-  signed long long __builtin_darn ();
-    DARN darn {}
+  signed long __builtin_darn ();
+    DARN darn_64_di {32bit}
 
-  signed int __builtin_darn_32 ();
-    DARN_32 darn_32 {}
+  signed long __builtin_darn_32 ();
+    DARN_32 darn_32_di {32bit}
 
-  signed long long __builtin_darn_raw ();
-    DARN_RAW darn_raw {}
+  signed long __builtin_darn_raw ();
+    DARN_RAW darn_raw_di {32bit}
 
   const signed int __builtin_dtstsfi_eq_dd (const int<6>, _Decimal64);
     TSTSFI_EQ_DD dfptstsfi_eq_dd {}

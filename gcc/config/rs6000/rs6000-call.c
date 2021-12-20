@@ -5631,6 +5631,12 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 	icode = CODE_FOR_rs6000_mftb_si;
       else if (fcode == RS6000_BIF_BPERMD)
 	icode = CODE_FOR_bpermd_si;
+      else if (fcode == RS6000_BIF_DARN)
+	icode = CODE_FOR_darn_64_si;
+      else if (fcode == RS6000_BIF_DARN_32)
+	icode = CODE_FOR_darn_32_si;
+      else if (fcode == RS6000_BIF_DARN_RAW)
+	icode = CODE_FOR_darn_raw_si;
       else
 	gcc_unreachable ();
     }

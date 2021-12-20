@@ -484,6 +484,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    fputs (" decl_6", file);
 	  if (DECL_LANG_FLAG_7 (node))
 	    fputs (" decl_7", file);
+	  if (DECL_LANG_FLAG_8 (node))
+	    fputs (" decl_8", file);
 
 	  mode = DECL_MODE (node);
 	  fprintf (file, " %s", GET_MODE_NAME (mode));

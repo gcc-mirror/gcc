@@ -1,3 +1,14 @@
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	* config.sub: Sync from master.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-12-16  Matthias Seidel  <mseidel@apache.org>
+
+	* config.sub: Fix typo.
+
 2021-12-16  Matthias Seidel  <mseidel@apache.org>
 
 	* config.sub: Fix typo.

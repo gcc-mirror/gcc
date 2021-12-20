@@ -1,3 +1,14 @@
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add shim declaration header to powerpc*-darwin builds.
+	* config/rs6000/t-darwin-ehs: Remove dependency on the powerpc end
+	file.
+	* config/t-darwin-ehs: Add dependencies to the shared unwinder
+	objects.
+	* config/t-slibgcc-darwin: Add extra_parts to the dependencies for
+	the shared EH lib.  Add all-multi to the dependencies for the
+	libgcc_s.1.dylib redirections.
+
 2021-12-13  Olivier Hainque  <hainque@adacore.com>
 
 	* config.host (powerpc*-*-vxworks7*): Remove

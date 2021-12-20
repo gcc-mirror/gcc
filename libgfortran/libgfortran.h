@@ -39,6 +39,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* config.h MUST be first because it can affect system headers.  */
 #include "config.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -101,6 +102,20 @@ typedef off_t gfc_offset;
 #ifndef NULL
 #define NULL (void *) 0
 #endif
+
+
+/* These functions from <ctype.h> should only be used on values that can be
+   represented as unsigned char, otherwise the behavior is undefined.
+   Some targets have a char type that is signed, so we cast the argument
+   to unsigned char. See:
+     https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95177
+     https://wiki.sei.cmu.edu/confluence/x/BNcxBQ
+ */
+
+#define safe_isalnum(x) isalnum((unsigned char) (x))
+#define safe_isdigit(x) isdigit((unsigned char) (x))
+#define safe_tolower(x) tolower((unsigned char) (x))
+#define safe_toupper(x) toupper((unsigned char) (x))
 
 
 /* The following macros can be used to annotate conditions which are likely or
