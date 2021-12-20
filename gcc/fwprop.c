@@ -866,10 +866,13 @@ forward_propagate_into (use_info *use, bool reg_prop_only = false)
   rtx src = SET_SRC (def_set);
 
   /* Allow propagations into a loop only for reg-to-reg copies, since
-     replacing one register by another shouldn't increase the cost.  */
+     replacing one register by another shouldn't increase the cost.
+     Propagations from inner loop to outer loop should also be ok.  */
   struct loop *def_loop = def_insn->bb ()->cfg_bb ()->loop_father;
   struct loop *use_loop = use->bb ()->cfg_bb ()->loop_father;
-  if ((reg_prop_only || def_loop != use_loop)
+  if ((reg_prop_only
+       || (def_loop != use_loop
+	   && !flow_loop_nested_p (use_loop, def_loop)))
       && (!reg_single_def_p (dest) || !reg_single_def_p (src)))
     return false;
 
