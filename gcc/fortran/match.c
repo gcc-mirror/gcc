@@ -6088,6 +6088,19 @@ match_case_selector (gfc_case **cp)
 	}
     }
 
+  if (c->low && c->low->rank != 0)
+    {
+      gfc_error ("Expression in CASE selector at %L must be scalar",
+		 &c->low->where);
+      goto cleanup;
+    }
+  if (c->high && c->high->rank != 0)
+    {
+      gfc_error ("Expression in CASE selector at %L must be scalar",
+		 &c->high->where);
+      goto cleanup;
+    }
+
   *cp = c;
   return MATCH_YES;
 
