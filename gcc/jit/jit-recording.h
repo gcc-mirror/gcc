@@ -516,6 +516,8 @@ private:
   bool m_created_by_user;
 };
 
+class array_type;
+
 class type : public memento
 {
 public:
@@ -542,7 +544,7 @@ public:
   virtual function_type *as_a_function_type() { gcc_unreachable (); return NULL; }
   virtual struct_ *dyn_cast_struct () { return NULL; }
   virtual vector_type *dyn_cast_vector_type () { return NULL; }
-  virtual array_type *dyn_cast_array_type () FINAL OVERRIDE { return NULL; }
+  virtual array_type *dyn_cast_array_type () { return NULL; }
 
   /* Is it typesafe to copy to this type from rtype?  */
   virtual bool accepts_writes_from (type *rtype)
