@@ -11187,6 +11187,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	    }
 	  orig_fns = copy_node (orig_fns);
 	  BASELINK_FUNCTIONS (orig_fns) = fn;
+	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (orig_fns) = true;
 	}
 
 skip_prune:

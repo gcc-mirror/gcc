@@ -464,6 +464,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
       IMPLICIT_CONV_EXPR_NONTYPE_ARG (in IMPLICIT_CONV_EXPR)
+      BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (in BASELINK)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -1060,6 +1061,10 @@ struct GTY(()) tree_template_decl {
 /* Nonzero if this baselink was from a qualified lookup.  */
 #define BASELINK_QUALIFIED_P(NODE) \
   TREE_LANG_FLAG_0 (BASELINK_CHECK (NODE))
+/* Nonzero if the overload set for this baselink might be incomplete due
+   to the lookup being performed from an incomplete-class context.  */
+#define BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P(NODE) \
+  TREE_LANG_FLAG_1 (BASELINK_CHECK (NODE))
 
 struct GTY(()) tree_baselink {
   struct tree_common common;
