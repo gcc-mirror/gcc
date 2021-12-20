@@ -16,6 +16,7 @@ Ctest::operator const char *() const
 int main()
 {
   Ctest obj;
-  char* temp = (char *)obj;		// { dg-error "16:invalid cast" } 
+  char* temp = reinterpret_cast<char *>(obj); // { dg-error "16:invalid cast" }
   temp[0] = '\0';
+  char* temp2 = (char *)obj; // OK, const_cast<char *>(static_cast<char const *>(...))
 }

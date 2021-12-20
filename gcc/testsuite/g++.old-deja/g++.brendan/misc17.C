@@ -32,5 +32,7 @@ FwtStdProgram::usage_if_not_complete()
 {
 	FwtStdProgram& thisp = *this;
 	thisp.form("%s: error, there were unrecognized options",
-		   (char *) FwtErrorManager::_program);// { dg-error "" } .*
+		   (char *) FwtErrorManager::_program); // OK, same as const_cast<char*>(static_cast<char const*>(...))
+	thisp.form("%s: error, there were unrecognized options",
+		   reinterpret_cast<char *>(FwtErrorManager::_program)); // { dg-error "" } .*
 }

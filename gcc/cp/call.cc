@@ -153,10 +153,11 @@ static struct obstack conversion_obstack;
 static bool conversion_obstack_initialized;
 struct rejection_reason;
 
-static struct z_candidate * tourney (struct z_candidate *, tsubst_flags_t);
+static struct z_candidate * tourney (struct z_candidate *, tsubst_flags_t,
+				     bool);
 static int equal_functions (tree, tree);
 static int joust (struct z_candidate *, struct z_candidate *, bool,
-		  tsubst_flags_t);
+		  tsubst_flags_t, bool);
 static int compare_ics (conversion *, conversion *);
 static void maybe_warn_class_memaccess (location_t, tree,
 					const vec<tree, va_gc> *);
@@ -167,7 +168,7 @@ static tree convert_like_with_context (conversion *, tree, tree, int,
 static void op_error (const op_location_t &, enum tree_code, enum tree_code,
 		      tree, tree, tree, bool);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int,
-							 tsubst_flags_t);
+							 tsubst_flags_t, bool);
 static void print_z_candidate (location_t, const char *, struct z_candidate *);
 static void print_z_candidates (location_t, struct z_candidate *);
 static tree build_this (tree);
@@ -1880,7 +1881,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	the reference is bound to the lvalue result of the conversion
 	in the second case.  */
       z_candidate *cand = build_user_type_conversion_1 (rto, expr, flags,
-							complain);
+							complain, c_cast_p);
       if (cand)
 	return cand->second_conv;
     }
@@ -2088,7 +2089,7 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
 	  && !CLASSTYPE_NON_AGGREGATE (complete_type (to)))
 	return build_aggr_conv (to, expr, flags, complain);
 
-      cand = build_user_type_conversion_1 (to, expr, flags, complain);
+      cand = build_user_type_conversion_1 (to, expr, flags, complain, c_cast_p);
       if (cand)
 	{
 	  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
@@ -4122,7 +4123,7 @@ add_list_candidates (tree fns, tree first_arg,
 
 static struct z_candidate *
 build_user_type_conversion_1 (tree totype, tree expr, int flags,
-			      tsubst_flags_t complain)
+			      tsubst_flags_t complain, bool c_cast_p)
 {
   struct z_candidate *candidates, *cand;
   tree fromtype;
@@ -4281,7 +4282,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	    = implicit_conversion (totype,
 				   rettype,
 				   0,
-				   /*c_cast_p=*/false, convflags,
+				   c_cast_p, convflags,
 				   complain);
 
 	  /* If LOOKUP_NO_TEMP_BIND isn't set, then this is
@@ -4359,7 +4360,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       return NULL;
     }
 
-  cand = tourney (candidates, complain);
+  cand = tourney (candidates, complain, c_cast_p);
   if (cand == NULL)
     {
       if (complain & tf_error)
@@ -4427,13 +4428,14 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 
 tree
 build_user_type_conversion (tree totype, tree expr, int flags,
-			    tsubst_flags_t complain)
+			    tsubst_flags_t complain, bool c_cast_p)
 {
   struct z_candidate *cand;
   tree ret;
 
   auto_cond_timevar tv (TV_OVERLOAD);
-  cand = build_user_type_conversion_1 (totype, expr, flags, complain);
+  cand = build_user_type_conversion_1 (totype, expr, flags, complain,
+				       c_cast_p);
 
   if (cand)
     {
@@ -4715,7 +4717,7 @@ perform_overload_resolution (tree fn,
 
   *candidates = splice_viable (*candidates, false, any_viable_p);
   if (*any_viable_p)
-    cand = tourney (*candidates, complain);
+    cand = tourney (*candidates, complain, /*c_cast_p=*/false);
   else
     cand = NULL;
 
@@ -5086,7 +5088,7 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
     }
   else
     {
-      cand = tourney (candidates, complain);
+      cand = tourney (candidates, complain, /*c_cast_p=*/false);
       if (cand == 0)
 	{
           if (complain & tf_error)
@@ -5739,7 +5741,7 @@ build_conditional_expr (const op_location_t &loc,
 		      arg2_type, arg3_type);
 	  return error_mark_node;
 	}
-      cand = tourney (candidates, complain);
+      cand = tourney (candidates, complain, /*c_cast_p=*/false);
       if (!cand)
 	{
           if (complain & tf_error)
@@ -6658,7 +6660,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
     }
   else
     {
-      cand = tourney (candidates, complain);
+      cand = tourney (candidates, complain, /*c_cast_p=*/false);
       if (cand == 0)
 	{
 	  if (complain & tf_error)
@@ -6795,7 +6797,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 	    {
 	      struct candidate_warning *w;
 	      for (w = cand->warnings; w; w = w->next)
-		joust (cand, w->loser, 1, complain);
+		joust (cand, w->loser, 1, complain, /*c_cast_p=*/false);
 	    }
 
 	  /* Check for comparison of different enum types.  */
@@ -7014,7 +7016,7 @@ build_op_subscript (const op_location_t &loc, tree obj,
     }
   else
     {
-      cand = tourney (candidates, complain);
+      cand = tourney (candidates, complain, /*c_cast_p=*/false);
       if (cand == 0)
 	{
 	  if (complain & tf_error)
@@ -7915,7 +7917,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  /* We chose the surrogate function from add_conv_candidate, now we
 	     actually need to build the conversion.  */
 	  cand = build_user_type_conversion_1 (totype, expr,
-					       LOOKUP_NO_CONVERSION, complain);
+					       LOOKUP_NO_CONVERSION, complain,
+					       c_cast_p);
 
 	tree convfn = cand->fn;
 
@@ -8020,7 +8023,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  /* Call build_user_type_conversion again for the error.  */
 	  int flags = (convs->need_temporary_p
 		       ? LOOKUP_IMPLICIT : LOOKUP_NORMAL);
-	  build_user_type_conversion (totype, convs->u.expr, flags, complain);
+	  build_user_type_conversion (totype, convs->u.expr, flags, complain,
+				      c_cast_p);
 	  gcc_assert (seen_error ());
 	  maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 	}
@@ -9278,7 +9282,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       struct candidate_warning *w;
       for (w = cand->warnings; w; w = w->next)
-	joust (cand, w->loser, 1, complain);
+	joust (cand, w->loser, 1, complain, /*c_cast_p=*/false);
     }
 
   /* Core issue 2327: P0135 doesn't say how to handle the case where the
@@ -11061,7 +11065,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
     }
   else
     {
-      cand = tourney (candidates, complain);
+      cand = tourney (candidates, complain, /*c_cast_p=*/false);
       if (cand == 0)
 	{
 	  char *pretty_name;
@@ -11991,19 +11995,31 @@ cand_parms_match (z_candidate *c1, z_candidate *c2)
 
 static int
 joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
-       tsubst_flags_t complain)
+       tsubst_flags_t complain, bool c_cast_p)
 {
   int winner = 0;
   int off1 = 0, off2 = 0;
   size_t i;
   size_t len;
 
+  /* If a (C-style) conversion can be interpreted in more than one of the ways
+     listed above, the interpretation that appears first in the list is used,
+     even if a cast resulting from that interpretation is ill-formed.  */
+  if (c_cast_p)
+    {
+      /* Since this is a user-defined conversion, it must be a static_cast
+	 optionally followed by a const_cast.  */
+      int qual1 = cand1->second_conv->kind == ck_qual;
+      int qual2 = cand2->second_conv->kind == ck_qual;
+      if (qual1 != qual2)
+	winner = qual1 ? 2 : 1;
+      /* Don't return yet, since we need to generate various warnings.  */
+    }
+
   /* Candidates that involve bad conversions are always worse than those
-     that don't.  */
-  if (cand1->viable > cand2->viable)
-    return 1;
-  if (cand1->viable < cand2->viable)
-    return -1;
+     that don't - except when performing a C-style cast.  */
+  if (!c_cast_p && cand1->viable != cand2->viable)
+    return cand1->viable > cand2->viable ? 1 : -1;
 
   /* If we have two pseudo-candidates for conversions to the same type,
      or two candidates for the same function, arbitrarily pick one.  */
@@ -12517,7 +12533,8 @@ tweak:
    algorithm.  */
 
 static struct z_candidate *
-tourney (struct z_candidate *candidates, tsubst_flags_t complain)
+tourney (struct z_candidate *candidates, tsubst_flags_t complain,
+	 bool c_cast_p)
 {
   struct z_candidate *champ = candidates, *challenger;
   int fate;
@@ -12528,7 +12545,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 
   for (challenger = champ->next; challenger; )
     {
-      fate = joust (champ, challenger, 0, complain);
+      fate = joust (champ, challenger, 0, complain, c_cast_p);
       if (fate == 1)
 	challenger = challenger->next;
       else
@@ -12558,7 +12575,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 	 && !(champ_compared_to_predecessor && challenger->next == champ);
        challenger = challenger->next)
     {
-      fate = joust (champ, challenger, 0, complain);
+      fate = joust (champ, challenger, 0, complain, c_cast_p);
       if (fate != 1)
 	return NULL;
     }

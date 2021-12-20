@@ -6496,7 +6496,7 @@ extern tree extract_call_expr			(tree);
 extern tree build_trivial_dtor_call		(tree, bool = false);
 extern bool ref_conv_binds_directly_p		(tree, tree);
 extern tree build_user_type_conversion		(tree, tree, int,
-						 tsubst_flags_t);
+						 tsubst_flags_t, bool = false);
 extern tree build_new_function_call		(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, vec<tree, va_gc> **,
