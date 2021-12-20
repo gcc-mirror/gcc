@@ -1,3 +1,13 @@
+2021-12-19  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-12-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/103634
+	* intrinsics/pack_generic.c (pack_internal): Handle case when the
+	array argument of PACK has one or more extents of size zero to
+	avoid invalid reads.
+
 2021-07-28  Release Manager
 
 	* GCC 11.2.0 released.
