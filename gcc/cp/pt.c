@@ -29601,6 +29601,13 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
     return ptype;
 
+  /* If the class was erroneous, don't try to deduce, because that
+     can generate a lot of diagnostic.  */
+  if (TREE_TYPE (tmpl)
+      && TYPE_LANG_SPECIFIC (TREE_TYPE (tmpl))
+      && CLASSTYPE_ERRONEOUS (TREE_TYPE (tmpl)))
+    return ptype;
+
   /* Wait until the enclosing scope is non-dependent.  */
   if (DECL_CLASS_SCOPE_P (tmpl)
       && dependent_type_p (DECL_CONTEXT (tmpl)))

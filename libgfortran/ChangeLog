@@ -1,3 +1,17 @@
+2021-12-19  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* configure.host: Add aarch64-apple-darwin support.
+	* config/fpu-aarch64.h: New file.
+
+2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: include ctype.h, provide safe macros.
+	* io/format.c: use safe macros.
+	* io/list_read.c: use safe macros.
+	* io/read.c: use safe macros.
+	* io/write.c: use safe macros.
+	* runtime/environ.c: use safe macros.
+
 2021-12-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* io/file_pos.c: Fix error code.

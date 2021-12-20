@@ -588,7 +588,7 @@ Objective-C and Objective-C++ Dialects}.
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt @gol
 -fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs @gol
 --param @var{name}=@var{value}
--O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og}
+-O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og  -Oz}
 
 @item Program Instrumentation Options
 @xref{Instrumentation Options,,Program Instrumentation Options}.
@@ -10733,6 +10733,13 @@ optimization flags except for those that may interfere with debugging:
 -finline-functions-called-once @gol
 -fmove-loop-invariants  -fmove-loop-stores  -fssa-phiopt @gol
 -ftree-bit-ccp  -ftree-dse  -ftree-pta  -ftree-sra}
+
+@item -Oz
+@opindex Oz
+Optimize aggressively for size rather than speed.  This may increase
+the number of instructions executed if those instructions require
+fewer bytes to encode.  @option{-Oz} behaves similarly to @option{-Os}
+including enabling most @option{-O2} optimizations.
 
 @end table
 

@@ -370,12 +370,14 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	case OPT_Oz:
 	  existing_opt = -1;
 	  for (j = 0; j < decoded_options.length (); ++j)
 	    if (decoded_options[j].opt_index == OPT_O
 		|| decoded_options[j].opt_index == OPT_Ofast
 		|| decoded_options[j].opt_index == OPT_Og
-		|| decoded_options[j].opt_index == OPT_Os)
+		|| decoded_options[j].opt_index == OPT_Os
+		|| decoded_options[j].opt_index == OPT_Oz)
 	      {
 		existing_opt = j;
 		break;
@@ -407,6 +409,7 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
 		  level = MAX (level, 1);
 		  break;
 		case OPT_Os:
+		case OPT_Oz:
 		  level = MAX (level, 2);
 		  break;
 		default:
@@ -428,6 +431,7 @@ merge_and_complain (vec<cl_decoded_option> &decoded_options,
 		  level = MAX (level, 1);
 		  break;
 		case OPT_Os:
+		case OPT_Oz:
 		  level = MAX (level, 2);
 		  break;
 		default:
@@ -725,6 +729,7 @@ append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	case OPT_Oz:
 	  break;
 
 	case OPT_Xassembler:

@@ -2232,7 +2232,7 @@ class modref_eaf_analysis
 {
 public:
   /* Mark NAME as relevant for analysis.  */
-  void analyze_ssa_name (tree name);
+  void analyze_ssa_name (tree name, bool deferred = false);
   /* Dataflow slover.  */
   void propagate ();
   /* Return flags computed earlier for NAME.  */
@@ -2373,33 +2373,36 @@ callee_to_caller_flags (int call_flags, bool ignore_stores,
    are processed later)  */
 
 void
-modref_eaf_analysis::analyze_ssa_name (tree name)
+modref_eaf_analysis::analyze_ssa_name (tree name, bool deferred)
 {
   imm_use_iterator ui;
   gimple *use_stmt;
   int index = SSA_NAME_VERSION (name);
 
-  /* See if value is already computed.  */
-  if (m_lattice[index].known || m_lattice[index].do_dataflow)
-   return;
-  if (m_lattice[index].open)
+  if (!deferred)
     {
-      if (dump_file)
-	fprintf (dump_file,
-		 "%*sCycle in SSA graph\n",
-		 m_depth * 4, "");
-      return;
-    }
-  /* Recursion guard.  */
-  m_lattice[index].init ();
-  if (m_depth == param_modref_max_depth)
-    {
-      if (dump_file)
-	fprintf (dump_file,
-		 "%*sMax recursion depth reached; postponing\n",
-		 m_depth * 4, "");
-      m_deferred_names.safe_push (name);
-      return;
+      /* See if value is already computed.  */
+      if (m_lattice[index].known || m_lattice[index].do_dataflow)
+       return;
+      if (m_lattice[index].open)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "%*sCycle in SSA graph\n",
+		     m_depth * 4, "");
+	  return;
+	}
+      /* Recursion guard.  */
+      m_lattice[index].init ();
+      if (m_depth == param_modref_max_depth)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "%*sMax recursion depth reached; postponing\n",
+		     m_depth * 4, "");
+	  m_deferred_names.safe_push (name);
+	  return;
+	}
     }
 
   if (dump_file)
@@ -2742,10 +2745,9 @@ modref_eaf_analysis::propagate ()
   while (m_deferred_names.length ())
     {
       tree name = m_deferred_names.pop ();
-      m_lattice[SSA_NAME_VERSION (name)].open = false;
       if (dump_file)
 	fprintf (dump_file, "Analyzing deferred SSA name\n");
-      analyze_ssa_name (name);
+      analyze_ssa_name (name, true);
     }
 
   if (!m_names_to_propagate.length ())
@@ -5019,9 +5021,15 @@ modref_merge_call_site_flags (escape_summary *sum,
   bool changed = false;
   bool ignore_stores = ignore_stores_p (caller, callee_ecf_flags);
 
-  /* If we have no useful info to propagate.  */
-  if ((!cur_summary || !cur_summary->arg_flags.length ())
-      && (!cur_summary_lto || !cur_summary_lto->arg_flags.length ()))
+  /* Return early if we have no useful info to propagate.  */
+  if ((!cur_summary
+       || (!cur_summary->arg_flags.length ()
+	   && !cur_summary->static_chain_flags
+	   && !cur_summary->retslot_flags))
+      && (!cur_summary_lto
+	  || (!cur_summary_lto->arg_flags.length ()
+	      && !cur_summary_lto->static_chain_flags
+	      && !cur_summary_lto->retslot_flags)))
     return false;
 
   FOR_EACH_VEC_ELT (sum->esc, i, ee)

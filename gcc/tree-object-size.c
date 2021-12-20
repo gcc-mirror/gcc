@@ -83,30 +83,13 @@ static bitmap computed[OST_END];
 /* Maximum value of offset we consider to be addition.  */
 static unsigned HOST_WIDE_INT offset_limit;
 
-/* Initial value of object sizes; zero for maximum and SIZE_MAX for minimum
-   object size.  */
-
-static inline unsigned HOST_WIDE_INT
-initval (int object_size_type)
-{
-  return (object_size_type & OST_MINIMUM) ? HOST_WIDE_INT_M1U : 0;
-}
-
-/* Unknown object size value; it's the opposite of initval.  */
-
-static inline unsigned HOST_WIDE_INT
-unknown (int object_size_type)
-{
-  return ~initval (object_size_type);
-}
-
 /* Return true if VAL is represents an unknown size for OBJECT_SIZE_TYPE.  */
 
 static inline bool
 size_unknown_p (tree val, int object_size_type)
 {
-  return (tree_fits_uhwi_p (val)
-	  && tree_to_uhwi (val) == unknown (object_size_type));
+  return ((object_size_type & OST_MINIMUM)
+	  ? integer_zerop (val) : integer_all_onesp (val));
 }
 
 /* Return a tree with initial value for OBJECT_SIZE_TYPE.  */
@@ -114,7 +97,8 @@ size_unknown_p (tree val, int object_size_type)
 static inline tree
 size_initval (int object_size_type)
 {
-  return size_int (initval (object_size_type));
+  return ((object_size_type & OST_MINIMUM)
+	  ? TYPE_MAX_VALUE (sizetype) : size_zero_node);
 }
 
 /* Return a tree with unknown value for OBJECT_SIZE_TYPE.  */
@@ -122,7 +106,8 @@ size_initval (int object_size_type)
 static inline tree
 size_unknown (int object_size_type)
 {
-  return size_int (unknown (object_size_type));
+  return ((object_size_type & OST_MINIMUM)
+	  ? size_zero_node : TYPE_MAX_VALUE (sizetype));
 }
 
 /* Grow object_sizes[OBJECT_SIZE_TYPE] to num_ssa_names.  */

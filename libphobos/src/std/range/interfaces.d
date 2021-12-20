@@ -201,6 +201,9 @@ interface RandomAccessFinite(E) : BidirectionalRange!(E) {
 
 /**Interface for an infinite random access range of type `E`.*/
 interface RandomAccessInfinite(E) : ForwardRange!E {
+    ///
+    enum bool empty = false;
+
     /**Calls $(REF moveAt, std, range, primitives) on the wrapped range, if
      * possible. Otherwise, throws an $(LREF UnsupportedRangeMethod) exception.
      */
@@ -211,6 +214,12 @@ interface RandomAccessInfinite(E) : ForwardRange!E {
 
     ///
     E opIndex(size_t);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22608
+@safe unittest
+{
+    static assert(isRandomAccessRange!(RandomAccessInfinite!int));
 }
 
 /**Adds assignable elements to InputRange.*/

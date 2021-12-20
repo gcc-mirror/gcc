@@ -1,3 +1,11 @@
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* c-decl.c (c_warn_unused_attributes): Don't warn for
+	attribute_ignored_p.
+	* c-parser.c (c_parser_std_attribute): Skip parsing of the attribute
+	arguments when the attribute is ignored.
+
 2021-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/103587

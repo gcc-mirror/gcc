@@ -15439,6 +15439,16 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
     }
 
   if (DECL_CLASS_TEMPLATE_P (decl)
+      && !template_header_p
+      && how == TAG_how::CURRENT_ONLY)
+    {
+      error ("class template %qD redeclared as non-template", name);
+      inform (location_of (decl), "previous declaration here");
+      CLASSTYPE_ERRONEOUS (TREE_TYPE (decl)) = true;
+      return error_mark_node;
+    }
+
+  if (DECL_CLASS_TEMPLATE_P (decl)
       /* If scope is TAG_how::CURRENT_ONLY we're defining a class,
 	 so ignore a template template parameter.  */
       || (how != TAG_how::CURRENT_ONLY && DECL_TEMPLATE_TEMPLATE_PARM_P (decl)))

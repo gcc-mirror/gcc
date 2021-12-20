@@ -2453,10 +2453,10 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
         if (i1 && i2)
             return collision();         // can't both have initializers
 
-        if (i1)
+        if (i1)                         // vd is the definition
         {
-            vd2._init = vd._init;
-            vd._init = null;
+            sds.symtab.update(vd);      // replace vd2 with the definition
+            return vd;
         }
 
         /* BUG: the types should match, which needs semantic() to be run on it
@@ -2497,14 +2497,10 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
         if (fd.fbody && fd2.fbody)
             return collision();         // can't both have bodies
 
-        if (fd.fbody)
+        if (fd.fbody)                   // fd is the definition
         {
-            fd2.fbody = fd.fbody;       // transfer body to existing declaration
-            fd.fbody = null;
-
-            auto tf = fd.type.toTypeFunction();
-            auto tf2 = fd2.type.toTypeFunction();
-            tf2.parameterList = tf.parameterList;   // transfer parameter list.
+            sds.symtab.update(fd);      // replace fd2 in symbol table with fd
+            return fd;
         }
 
         /* BUG: just like with VarDeclaration, the types should match, which needs semantic() to be run on it.

@@ -4943,7 +4943,9 @@ c_parser_std_attribute (c_parser *parser, bool for_tm)
 	parens.skip_until_found_close (parser);
 	return error_mark_node;
       }
-    if (as)
+    /* If this is a fake attribute created to handle -Wno-attributes,
+       we must skip parsing the arguments.  */
+    if (as && !attribute_ignored_p (as))
       {
 	bool takes_identifier
 	  = (ns != NULL_TREE

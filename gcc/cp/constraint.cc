@@ -3177,9 +3177,11 @@ satisfy_declaration_constraints (tree t, sat_info info)
     {
       if (!push_tinst_level (t))
 	return result;
+      push_to_top_level ();
       push_access_scope (t);
       result = satisfy_normalized_constraints (norm, args, info);
       pop_access_scope (t);
+      pop_from_top_level ();
       pop_tinst_level ();
     }
 
@@ -3235,9 +3237,11 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
       if (!push_tinst_level (t, args))
 	return result;
       tree pattern = DECL_TEMPLATE_RESULT (t);
+      push_to_top_level ();
       push_access_scope (pattern);
       result = satisfy_normalized_constraints (norm, args, info);
       pop_access_scope (pattern);
+      pop_from_top_level ();
       pop_tinst_level ();
     }
 

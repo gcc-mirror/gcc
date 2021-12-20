@@ -1,3 +1,187 @@
+2021-12-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103766
+	* ipa-modref.c (modref_merge_call_site_flags): Fix early exit condition
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	* print-tree.c (print_node) <case tcc_declaration>: Dump
+	DECL_LANG_FLAG_8.
+
+2021-12-19  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (gimple_simplify_phiopt): Annotate the
+	new sequence with the location of the conditional statement.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103611
+	* config/i386/i386.md (any_or_plus): New code iterator.
+	(define_split): Split (HI<<32)|zext(LO) into piece-wise
+	move instructions on !TARGET_64BIT.
+	* config/i386/sse.md (*vec_extractv4si_0_zext_sse4):
+	Restrict to TARGET_64BIT.
+
+2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/32803
+	* common.opt (Oz): New command line option.
+	* doc/invoke.texi: Document the new -Oz option.
+	* lto-wrapper.c (merge_and_complain, append_compiler_options):
+	Treat OPT_Oz as synonymous with OPT_Os.
+	* optc-save-gen.awk: Increase maximum value of optimize_size to 2.
+	* opts.c (default_options_optimization) [OPT_Oz]: Handle OPT_Oz
+	just like OPT_Os, except set opt->x_optimize_size to 2.
+	(common_handle_option): Skip OPT_Oz just like OPT_Os.
+	* config/i386/i386.md (*movdi_internal): Use a push/pop sequence
+	for suitable SImode TYPE_IMOV moves when optimize_size > 1.
+	(*movsi_internal): Likewise.
+
+2021-12-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/103759
+	* tree-object-size.c (unknown, initval): Remove functions.
+	(size_unknown, size_initval, size_unknown_p): Operate directly
+	on trees.
+
+2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/darwin-driver.c: Make version code more future-proof.
+	* config.gcc: Homogeneize darwin versions.
+	* configure.ac: Homogeneize darwin versions.
+	* configure: Regenerate.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* attribs.c (handle_ignored_attributes_option): Create the fake
+	attribute with max_length == -2.
+	(attribute_ignored_p): New overloads.
+	* attribs.h (attribute_ignored_p): Declare them.
+	* tree-core.h (struct attribute_spec): Document that max_length
+	can be -2.
+
+2021-12-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/103624
+	* config/rs6000/rs6000-builtins.def (__builtin_darn): Expand to
+	darn_64_di.  Add {32bit} attribute.  Return long.
+	(__builtin_darn_32): Expand to darn_32_di.  Add {32bit} attribute.
+	Return long.
+	(__builtin_darn_raw): Expand to darn_raw_di.  Add {32bit} attribute.
+	Return long.
+	* config/rs6000/rs6000-call.c (rs6000_expand_builtin): Expand the darn
+	builtins to the _si variants for -m32.
+	* config/rs6000/rs6000.md (UNSPECV_DARN_32, UNSPECV_DARN_RAW): Delete.
+	(UNSPECV_DARN): Update comment.
+	(darn_32, darn_raw, darn): Delete.
+	(darn_32_<mode>, darn_64_<mode>, darn_raw_<mode> for GPR): New.
+	(@darn<mode> for GPR): New.
+
+2021-12-17  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-overload.def (__builtin_vec_promote): Add second
+	argument.
+
+2021-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/103744
+	* tree-vect-stmts.c (vectorizable_load): Handle multi-vector
+	SLP gather loads.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Rename to -fstack-protector.
+
+2021-12-17  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Fix spelling issues.
+
+2021-12-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/103741
+	* tree-vect-stmts.c (vectorizable_operation): Check for boolean.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_driver_init): Exit from the
+	option handling early if the command line is definitely enpty.
+	* config/darwin.h (SUBTARGET_DRIVER_SELF_SPECS): Remove
+	setting for the default content of weak_reference_mismatches.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: Drop trailing _x from the
+	builtin_decls array name.
+
+2021-12-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/100738
+	* config/i386/sse.md (*avx_cmp<mode>3_lt, *avx_cmp<mode>3_ltint):
+	Remove MEM_P restriction and add force_reg for operands[2].
+	(*avx_cmp<mode>3_ltint_not): Add new define_insn_and_split.
+
+2021-12-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* builtins.def (BUILT_IN_DYNAMIC_OBJECT_SIZE): New builtin.
+	* tree-object-size.h: Move object size type bits enum from
+	tree-object-size.c and add new value OST_DYNAMIC.
+	* builtins.c (expand_builtin, fold_builtin_2): Handle it.
+	(fold_builtin_object_size): Handle new builtin and adjust for
+	change to compute_builtin_object_size.
+	* tree-object-size.c: Include builtins.h.
+	(compute_builtin_object_size): Adjust.
+	(early_object_sizes_execute_one,
+	dynamic_object_sizes_execute_one): New functions.
+	(object_sizes_execute): Rename insert_min_max_p argument to
+	early.  Handle BUILT_IN_DYNAMIC_OBJECT_SIZE and call the new
+	functions.
+	* doc/extend.texi (__builtin_dynamic_object_size): Document new
+	builtin.
+
+2021-12-17  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.h (compute_builtin_object_size): Return tree
+	instead of HOST_WIDE_INT.
+	* builtins.c (fold_builtin_object_size): Adjust.
+	* gimple-fold.c (gimple_fold_builtin_strncat): Likewise.
+	* ubsan.c (instrument_object_size): Likewise.
+	* tree-object-size.c (object_size): New structure.
+	(object_sizes): Change type to vec<object_size>.
+	(initval): New function.
+	(unknown): Use it.
+	(size_unknown_p, size_initval, size_unknown): New functions.
+	(object_sizes_unknown_p): Use it.
+	(object_sizes_get): Return tree.
+	(object_sizes_initialize): Rename from object_sizes_set_force
+	and set VAL parameter type as tree.  Add new parameter WHOLEVAL.
+	(object_sizes_set): Set VAL parameter type as tree and adjust
+	implementation.  Add new parameter WHOLEVAL.
+	(size_for_offset): New function.
+	(decl_init_size): Adjust comment.
+	(addr_object_size): Change PSIZE parameter to tree and adjust
+	implementation.  Add new parameter PWHOLESIZE.
+	(alloc_object_size): Return tree.
+	(compute_builtin_object_size): Return tree in PSIZE.
+	(expr_object_size, call_object_size, unknown_object_size):
+	Adjust for object_sizes_set change.
+	(merge_object_sizes): Drop OFFSET parameter and adjust
+	implementation for tree change.
+	(plus_stmt_object_size): Call collect_object_sizes_for directly
+	instead of merge_object_size and call size_for_offset to get net
+	size.
+	(cond_expr_object_size, collect_object_sizes_for,
+	object_sizes_execute): Adjust for change of type from
+	HOST_WIDE_INT to tree.
+	(check_for_plus_in_loops_1): Likewise and skip non-positive
+	offsets.
+
+2021-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103681
+	* common.opt (fabi-version): Add v17.
+
 2021-12-16  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103571

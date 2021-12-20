@@ -723,7 +723,7 @@ default_options_optimization (struct gcc_options *opts,
 	      const int optimize_val = integral_argument (opt->arg);
 	      if (optimize_val == -1)
 		error_at (loc, "argument to %<-O%> should be a non-negative "
-			       "integer, %<g%>, %<s%> or %<fast%>");
+			       "integer, %<g%>, %<s%>, %<z%> or %<fast%>");
 	      else
 		{
 		  opts->x_optimize = optimize_val;
@@ -738,6 +738,15 @@ default_options_optimization (struct gcc_options *opts,
 
 	case OPT_Os:
 	  opts->x_optimize_size = 1;
+
+	  /* Optimizing for size forces optimize to be 2.  */
+	  opts->x_optimize = 2;
+	  opts->x_optimize_fast = 0;
+	  opts->x_optimize_debug = 0;
+	  break;
+
+	case OPT_Oz:
+	  opts->x_optimize_size = 2;
 
 	  /* Optimizing for size forces optimize to be 2.  */
 	  opts->x_optimize = 2;
@@ -2609,6 +2618,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_Os:
     case OPT_Ofast:
     case OPT_Og:
+    case OPT_Oz:
       /* Currently handled in a prescan.  */
       break;
 

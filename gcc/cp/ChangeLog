@@ -1,3 +1,69 @@
+2021-12-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* module.cc (trees_out::get_merge_kind): NAMESPACE_DECLs also
+	cannot have a DECL_TEMPLATE_INFO.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* lambda.c (lambda_capture_field_type): Strip location wrappers
+	before checking for a capture proxy.
+	(is_capture_proxy): Assert that we don't see a location wrapper.
+	(mark_const_cap_r): Don't call is_constant_capture_proxy on a
+	location wrapper.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103714
+	* constraint.cc (satisfy_declaration_constraints): Do
+	push_to_top_level and pop_from_top_level around the call to
+	satisfy_normalized_constraints.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c/103649
+	* parser.c (cp_parser_declaration): Don't warn for attribute_ignored_p.
+	(cp_parser_std_attribute): Skip parsing of the attribute
+	arguments when the attribute is ignored.
+
+2021-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/103749
+	* decl.c (lookup_and_check_tag): Give an error when a class was
+	declared as template but no template header has been provided.
+	* pt.c (do_class_deduction): Don't deduce CLASSTYPE_ERRONEOUS
+	types.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100127
+	* coroutines.cc (coro_rewrite_function_body): Handle initial
+	await expressions that try to produce a reference value.
+
+2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100772
+	* coroutines.cc (morph_fn_to_coro): Convert function parms
+	from reference before constructing any operator-new args
+	list.
+
+2021-12-17  Jason Merrill  <jason@redhat.com>
+
+	* constraint.cc (deduce_concept_introduction): Adjust comment.
+
+2021-12-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103681
+	* cp-tree.h (struct lang_type): Add non_pod_aggregate.
+	(CLASSTYPE_NON_POD_AGGREGATE): New.
+	* class.c (check_field_decls): Set it.
+	(check_bases_and_members): Check it.
+	(check_non_pod_aggregate): New.
+	(enum eoc_mode): New.
+	(end_of_class): Always include non-empty fields.
+	Add eoc_nv_or_dsize mode.
+	(include_empty_classes, layout_class_type): Adjust.
+
 2021-12-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99980

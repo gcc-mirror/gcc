@@ -4837,6 +4837,47 @@ public:
                 result = interpret(ce, istate);
                 return;
             }
+            else if (fd.ident == Id._d_delstruct)
+            {
+                // Only interpret the dtor and the argument.
+                assert(e.arguments.dim == 1);
+
+                Type tb = (*e.arguments)[0].type.toBasetype();
+                auto ts = tb.nextOf().baseElemOf().isTypeStruct();
+                if (ts)
+                {
+                    result = interpretRegion((*e.arguments)[0], istate);
+                    if (exceptionOrCant(result))
+                        return;
+
+                    if (result.op == EXP.null_)
+                    {
+                        result = CTFEExp.voidexp;
+                        return;
+                    }
+
+                    if (result.op != EXP.address ||
+                        (cast(AddrExp)result).e1.op != EXP.structLiteral)
+                    {
+                        e.error("`delete` on invalid struct pointer `%s`", result.toChars());
+                        result = CTFEExp.cantexp;
+                        return;
+                    }
+
+                    auto sd = ts.sym;
+                    if (sd.dtor)
+                    {
+                        auto sle = cast(StructLiteralExp)(cast(AddrExp)result).e1;
+                        result = interpretFunction(pue, sd.dtor, istate, null, sle);
+                        if (exceptionOrCant(result))
+                            return;
+
+                        result = CTFEExp.voidexp;
+                    }
+                }
+
+                return;
+            }
         }
         else if (auto soe = ecall.isSymOffExp())
         {
