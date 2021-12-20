@@ -3559,13 +3559,21 @@ void
 __gnat_kill (int pid, int sig, int close ATTRIBUTE_UNUSED)
 {
 #if defined(_WIN32)
-  HANDLE h = OpenProcess (PROCESS_ALL_ACCESS, FALSE, pid);
-  if (h == NULL)
-    return;
+  HANDLE h;
 
-  TerminateProcess (h, sig);
+  switch (sig) {
+    case 9: // SIGKILL is not declared in Windows headers
+    case SIGINT:
+    case SIGBREAK:
+    case SIGTERM:
+    case SIGABRT:
+      h = OpenProcess (PROCESS_ALL_ACCESS, FALSE, pid);
+      if (h != NULL) {
+        TerminateProcess (h, sig);
+        CloseHandle (h);
+      }
+  }
 
-  CloseHandle (h);
 #elif defined (__vxworks)
   /* Not implemented */
 #else
