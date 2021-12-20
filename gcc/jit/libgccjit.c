@@ -3954,11 +3954,11 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
 
 static pthread_mutex_t version_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-struct version_info
+struct jit_version_info
 {
   /* Default constructor.  Populate via parse_basever,
      guarded by version_mutex.  */
-  version_info ()
+  jit_version_info ()
   {
     pthread_mutex_lock (&version_mutex);
     parse_basever (&major, &minor, &patchlevel);
@@ -3974,21 +3974,21 @@ struct version_info
 extern int
 gcc_jit_version_major (void)
 {
-  version_info vi;
+  jit_version_info vi;
   return vi.major;
 }
 
 extern int
 gcc_jit_version_minor (void)
 {
-  version_info vi;
+  jit_version_info vi;
   return vi.minor;
 }
 
 extern int
 gcc_jit_version_patchlevel (void)
 {
-  version_info vi;
+  jit_version_info vi;
   return vi.patchlevel;
 }
 
