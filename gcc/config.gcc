@@ -686,6 +686,20 @@ case ${target} in
     macos_min=0
   fi
   def_ld64=85.2
+  # Tools hosted on earlier versions of Darwin constrained all object
+  # alignment to be 2^15 or smaller.  From Darwin11 (macOS 10.7) the
+  # alignment of non-common is allowed to be up to 2^28.  Note that the
+  # larger alignment is permitted when targeting 10.6 from 10.7 so that
+  # the constraint only need be applied per host (and only if the host
+  # is Darwin).
+  case ${host} in
+      *-*-darwin[4-9]* | *-*-darwin10*)
+          tm_defines="$tm_defines L2_MAX_OFILE_ALIGNMENT=15U"
+          ;;
+      *)
+          tm_defines="$tm_defines L2_MAX_OFILE_ALIGNMENT=28U"
+          ;;
+  esac
   case ${target} in
       # Darwin 4 to 19 correspond to macOS 10.0 to 10.15
       *-*-darwin[4-9]* | *-*-darwin1[0-9]*)

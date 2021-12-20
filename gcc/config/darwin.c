@@ -2553,7 +2553,6 @@ darwin_emit_common (FILE *fp, const char *name,
     rounded = (size + (align-1)) & ~(align-1);
 
   l2align = floor_log2 (align);
-  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
 
   in_section = comm_section;
   /* We mustn't allow multiple public symbols to share an address when using
@@ -2704,6 +2703,10 @@ darwin_asm_output_aligned_decl_common (FILE *fp, tree decl, const char *name,
 #ifdef DEBUG_DARWIN_MEM_ALLOCATORS
 fprintf (fp, "# adcom: %s (%d,%d) decl=0x0\n", name, (int)size, (int)align);
 #endif
+     /* Common variables are limited to a maximum alignment of 2^15.  */
+      if (align > 32768)
+	error_at (UNKNOWN_LOCATION, "common variables must have an alignment"
+		  " of 32678 or less");
       darwin_emit_common (fp, name, size, align);
       return;
     }
@@ -2731,7 +2734,7 @@ fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
     }
 
   /* We shouldn't be messing with this if the decl has a section name.  */
-  gcc_assert (DECL_SECTION_NAME (decl) == NULL);
+  gcc_checking_assert (DECL_SECTION_NAME (decl) == NULL);
 
   /* We would rather not have to check this here - but it seems that we might
      be passed a decl that should be in coalesced space.  */
@@ -2760,10 +2763,16 @@ fprintf (fp, "# adcom: %s (%lld,%d) ro %d cst %d stat %d com %d pub %d"
 
   l2align = floor_log2 (align / BITS_PER_UNIT);
   /* Check we aren't asking for more aligment than the platform allows.  */
-  gcc_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
+  gcc_checking_assert (l2align <= L2_MAX_OFILE_ALIGNMENT);
 
   if (TREE_PUBLIC (decl) != 0)
-    darwin_emit_common (fp, name, size, align);
+    {
+      /* Common variables are limited to a maximum alignment of 2^15.  */
+      if (l2align > 15)
+	error_at (DECL_SOURCE_LOCATION (decl), "common variables must have"
+		  " an alignment of 32678 or less");
+      darwin_emit_common (fp, name, size, align);
+    }
   else
     darwin_emit_local_bss (fp, decl, name, size, l2align);
 }
