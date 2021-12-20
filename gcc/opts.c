@@ -723,7 +723,7 @@ default_options_optimization (struct gcc_options *opts,
 	      const int optimize_val = integral_argument (opt->arg);
 	      if (optimize_val == -1)
 		error_at (loc, "argument to %<-O%> should be a non-negative "
-			       "integer, %<g%>, %<s%> or %<fast%>");
+			       "integer, %<g%>, %<s%>, %<z%> or %<fast%>");
 	      else
 		{
 		  opts->x_optimize = optimize_val;
