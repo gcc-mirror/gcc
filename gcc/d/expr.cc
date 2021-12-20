@@ -1477,16 +1477,10 @@ public:
 	t1 = build_address (t1);
 	Type *tnext = tb1->isTypePointer ()->next->toBasetype ();
 
+	/* This case should have been rewritten to `_d_delstruct` in the
+	   semantic phase.  */
 	if (TypeStruct *ts = tnext->isTypeStruct ())
-	  {
-	    if (ts->sym->dtor)
-	      {
-		tree ti = build_typeinfo (e->loc, tnext);
-		this->result_ = build_libcall (LIBCALL_DELSTRUCT, Type::tvoid,
-					       2, t1, ti);
-		return;
-	      }
-	  }
+	  gcc_assert (!ts->sym->dtor);
 
 	/* Otherwise, the garbage collector is called to immediately free the
 	   memory allocated for the pointer.  */

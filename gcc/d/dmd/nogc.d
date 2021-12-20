@@ -83,6 +83,20 @@ public:
             }
             f.printGCUsage(e.loc, "setting `length` may cause a GC allocation");
         }
+        else if (fd.ident == Id._d_delstruct)
+        {
+            // In expressionsem.d, `delete s` was lowererd to `_d_delstruct(s)`.
+            // The following code handles the call like the original expression,
+            // so the error is menaningful to the user.
+            if (f.setGC())
+            {
+                e.error("cannot use `delete` in `@nogc` %s `%s`", f.kind(),
+                    f.toPrettyChars());
+                err = true;
+                return;
+            }
+            f.printGCUsage(e.loc, "`delete` requires the GC");
+        }
     }
 
     override void visit(ArrayLiteralExp e)
