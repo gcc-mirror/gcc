@@ -17430,7 +17430,7 @@
 
 ;; sse4_1_pinsrd must come before sse2_loadld since it is preferred.
 (define_insn "<sse2p4_1>_pinsr<ssemodesuffix>"
-  [(set (match_operand:PINSR_MODE 0 "register_operand" "=x,x,x,x,v,v,x")
+  [(set (match_operand:PINSR_MODE 0 "register_operand" "=x,x,x,x,v,v,&x")
 	(vec_merge:PINSR_MODE
 	  (vec_duplicate:PINSR_MODE
 	    (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "r,m,r,m,r,m,x"))
@@ -17499,25 +17499,6 @@
 	   (const_string "*")))])
 
 ;; For TARGET_AVX2, implement insert from XMM reg with PBROADCASTW + PBLENDW.
-;; First try to get a scratch register and go through it.  In case this fails,
-;; overwrite source reg with broadcasted value and blend from there.
-(define_peephole2
-  [(match_scratch:V8_128 4 "x")
-   (set (match_operand:V8_128 0 "sse_reg_operand")
-	(vec_merge:V8_128
-	  (vec_duplicate:V8_128
-	    (match_operand:<ssescalarmode> 2 "sse_reg_operand"))
-	  (match_operand:V8_128 1 "sse_reg_operand")
-	  (match_operand:SI 3 "const_int_operand")))]
-  "TARGET_AVX2
-   && INTVAL (operands[3]) > 1
-   && ((unsigned) exact_log2 (INTVAL (operands[3]))
-       < GET_MODE_NUNITS (<MODE>mode))"
-  [(set (match_dup 4)
-	(vec_duplicate:V8_128 (match_dup 2)))
-   (set (match_dup 0)
-	(vec_merge:V8_128 (match_dup 4) (match_dup 1) (match_dup 3)))])
-
 (define_split
   [(set (match_operand:V8_128 0 "sse_reg_operand")
 	(vec_merge:V8_128
@@ -17525,18 +17506,14 @@
 	    (match_operand:<ssescalarmode> 2 "sse_reg_operand"))
 	  (match_operand:V8_128 1 "sse_reg_operand")
 	  (match_operand:SI 3 "const_int_operand")))]
-  "TARGET_AVX2 && epilogue_completed
+  "TARGET_AVX2 && reload_completed
    && INTVAL (operands[3]) > 1
    && ((unsigned) exact_log2 (INTVAL (operands[3]))
        < GET_MODE_NUNITS (<MODE>mode))"
-  [(set (match_dup 4)
+  [(set (match_dup 0)
 	(vec_duplicate:V8_128 (match_dup 2)))
    (set (match_dup 0)
-	(vec_merge:V8_128 (match_dup 4) (match_dup 1) (match_dup 3)))]
-{
-  operands[4] = lowpart_subreg (<MODE>mode, operands[2],
-				<ssescalarmode>mode);
-})
+	(vec_merge:V8_128 (match_dup 0) (match_dup 1) (match_dup 3)))])
 
 (define_expand "<extract_type>_vinsert<shuffletype><extract_suf>_mask"
   [(match_operand:AVX512_VEC 0 "register_operand")
