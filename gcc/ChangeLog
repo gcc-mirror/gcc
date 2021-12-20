@@ -1,3 +1,18 @@
+2021-12-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103766
+	* ipa-modref.c (modref_merge_call_site_flags): Fix early exit condition
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	* print-tree.c (print_node) <case tcc_declaration>: Dump
+	DECL_LANG_FLAG_8.
+
+2021-12-19  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.c (gimple_simplify_phiopt): Annotate the
+	new sequence with the location of the conditional statement.
+
 2021-12-18  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uroš Bizjak  <ubizjak@gmail.com>
 

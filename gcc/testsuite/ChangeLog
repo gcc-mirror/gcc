@@ -1,3 +1,23 @@
+2021-12-19  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/uninit-pr89230-1.c: Change the dg-bogus messages
+	around and xfail both of them.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* g++.dg/cpp0x/lambda/lambda-nested9a.C: New test.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103714
+	* g++.dg/cpp2a/concepts-uneval5.C: New test.
+
+2021-12-19  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/pr100509.c: Needs alias.
+	* gcc.dg/pragma-diag-10.c: Needs alias.
+
 2021-12-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103412

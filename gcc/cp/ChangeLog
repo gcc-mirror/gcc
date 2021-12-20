@@ -1,3 +1,24 @@
+2021-12-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* module.cc (trees_out::get_merge_kind): NAMESPACE_DECLs also
+	cannot have a DECL_TEMPLATE_INFO.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94376
+	* lambda.c (lambda_capture_field_type): Strip location wrappers
+	before checking for a capture proxy.
+	(is_capture_proxy): Assert that we don't see a location wrapper.
+	(mark_const_cap_r): Don't call is_constant_capture_proxy on a
+	location wrapper.
+
+2021-12-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103714
+	* constraint.cc (satisfy_declaration_constraints): Do
+	push_to_top_level and pop_from_top_level around the call to
+	satisfy_normalized_constraints.
+
 2021-12-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c/103649
