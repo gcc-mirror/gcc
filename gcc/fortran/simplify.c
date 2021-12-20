@@ -4878,6 +4878,9 @@ gfc_simplify_maskr (gfc_expr *i, gfc_expr *kind_arg)
   bool fail = gfc_extract_int (i, &arg);
   gcc_assert (!fail);
 
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
+
   result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
 
   /* MASKR(n) = 2^n - 1 */
@@ -4908,6 +4911,9 @@ gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
 
   bool fail = gfc_extract_int (i, &arg);
   gcc_assert (!fail);
+
+  if (!gfc_check_mask (i, kind_arg))
+    return &gfc_bad_expr;
 
   result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
 
