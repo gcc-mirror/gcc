@@ -3059,7 +3059,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       Present (gnat_field);
 	       gnat_field = Next_Entity (gnat_field))
 	    if ((Ekind (gnat_field) == E_Component
-		 || Ekind (gnat_field) == E_Discriminant)
+		 || (Ekind (gnat_field) == E_Discriminant
+		     && !is_unchecked_union))
 		&& No (Component_Clause (gnat_field)))
 	      {
 		all_rep = false;
@@ -7874,8 +7875,7 @@ typedef struct vinfo
 
    DEBUG_INFO is true if we need to write debug information about the type.
 
-   MAYBE_UNUSED is true if this type may be unused in the end; this doesn't
-   mean that its contents may be unused as well, only the container itself.
+   IN_VARIANT is true if the componennt list is that of a variant.
 
    FIRST_FREE_POS, if nonzero, is the first (lowest) free field position in
    the outer record type down to this variant level.  It is nonzero only if
@@ -7890,7 +7890,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 		      tree gnu_field_list, tree gnu_record_type, int packed,
 		      bool definition, bool cancel_alignment, bool all_rep,
 		      bool unchecked_union, bool artificial, bool debug_info,
-		      bool maybe_unused, tree first_free_pos,
+		      bool in_variant, tree first_free_pos,
 		      tree *p_gnu_rep_list)
 {
   const bool needs_xv_encodings
@@ -8075,15 +8075,21 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 		= TYPE_SIZE_UNIT (gnu_record_type);
 	    }
 
-	  /* Add the fields into the record type for the variant.  Note that
-	     we aren't sure to really use it at this point, see below.  */
+	  /* Add the fields into the record type for the variant but note that
+	     we aren't sure to really use it at this point, see below.  In the
+	     case of an unchecked union, we force the fields with a rep clause
+	     present in a nested variant to be moved to the outermost variant,
+	     so as to flatten the rep-ed layout as much as possible, the reason
+	     being that we cannot do any flattening when a subtype statically
+	     selects a variant later on, for example for an aggregate.  */
 	  has_rep
 	    = components_to_record (Component_List (variant), gnat_record_type,
 				    NULL_TREE, gnu_variant_type, packed,
 				    definition, !all_rep_and_size, all_rep,
 				    unchecked_union, true, needs_xv_encodings,
 				    true, this_first_free_pos,
-				    all_rep || this_first_free_pos
+				    (all_rep || this_first_free_pos)
+				    && !(in_variant && unchecked_union)
 				    ? NULL : &gnu_rep_list);
 
 	  /* Translate the qualifier and annotate the GNAT node.  */
@@ -8206,9 +8212,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 	  finish_record_type (gnu_union_type, nreverse (gnu_variant_list),
 			      all_rep_and_size ? 1 : 0, needs_xv_encodings);
 
-	  /* If GNU_UNION_TYPE is our record type, it means we must have an
-	     Unchecked_Union with no fields.  Verify that and, if so, just
-	     return.  */
+	  /* If GNU_UNION_TYPE is our record type, this means that we must have
+	     an Unchecked_Union whose fields are all in the variant part.  Now
+	     verify that and, if so, just return.  */
 	  if (gnu_union_type == gnu_record_type)
 	    {
 	      gcc_assert (unchecked_union
@@ -8275,7 +8281,6 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
     = (Convention (gnat_record_type) == Convention_Ada
        && Warn_On_Questionable_Layout
        && !(No_Reordering (gnat_record_type) && GNAT_Mode));
-  const bool in_variant = (p_gnu_rep_list != NULL);
   tree gnu_zero_list = NULL_TREE;
   tree gnu_self_list = NULL_TREE;
   tree gnu_var_list = NULL_TREE;
@@ -8640,7 +8645,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   TYPE_ARTIFICIAL (gnu_record_type) = artificial;
 
   finish_record_type (gnu_record_type, gnu_field_list, layout_with_rep ? 1 : 0,
-		      debug_info && !maybe_unused);
+		      debug_info && !in_variant);
 
   /* Chain the fields with zero size at the beginning of the field list.  */
   if (gnu_zero_list)
