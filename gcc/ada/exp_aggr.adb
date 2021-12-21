@@ -1872,12 +1872,6 @@ package body Exp_Aggr is
                   Set_Etype (Indexed_Comp, Ctype);
                   Append_To (Stmts, Make_Invariant_Call (Indexed_Comp));
                end if;
-
-            elsif Is_Access_Type (Ctype) then
-               Append_To (Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Copy_Tree (Indexed_Comp),
-                   Expression => Make_Null (Loc)));
             end if;
 
             if Needs_Finalization (Ctype) then
@@ -2212,15 +2206,10 @@ package body Exp_Aggr is
 
       begin
          if Box_Present (Assoc) then
-            if Is_Scalar_Type (Ctype) then
-               if Present (Default_Aspect_Component_Value (Typ)) then
-                  return Default_Aspect_Component_Value (Typ);
-               elsif Present (Default_Aspect_Value (Ctype)) then
-                  return Default_Aspect_Value (Ctype);
-               else
-                  return Empty;
-               end if;
-
+            if Present (Default_Aspect_Component_Value (Typ)) then
+               return Default_Aspect_Component_Value (Typ);
+            elsif Needs_Simple_Initialization (Ctype) then
+               return Get_Simple_Init_Val (Ctype, N);
             else
                return Empty;
             end if;
