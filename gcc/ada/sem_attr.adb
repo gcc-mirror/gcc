@@ -1184,7 +1184,7 @@ package body Sem_Attr is
          function Is_Within
            (Nod      : Node_Id;
             Encl_Nod : Node_Id) return Boolean;
-         --  Subsidiary to Check_Placemenet_In_XXX. Determine whether arbitrary
+         --  Subsidiary to Check_Placement_In_XXX. Determine whether arbitrary
          --  node Nod is within enclosing node Encl_Nod.
 
          procedure Placement_Error;
