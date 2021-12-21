@@ -70,12 +70,16 @@ Enum
 Name(ptx_version) Type(int)
 Known PTX versions (for use with the -mptx= option):
 
+; Keep 3.1 for backwards compatibility only
 EnumValue
-Enum(ptx_version) String(3.1) Value(PTX_VERSION_3_1)
+Enum(ptx_version) String(3.1) Value(PTX_VERSION_4_1)
+
+EnumValue
+Enum(ptx_version) String(4.1) Value(PTX_VERSION_4_1)
 
 EnumValue
 Enum(ptx_version) String(6.3) Value(PTX_VERSION_6_3)
 
 mptx=
-Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_3_1)
+Target RejectNegative ToLower Joined Enum(ptx_version) Var(ptx_version_option) Init(PTX_VERSION_4_1)
 Specify the version of the ptx version to use.

@@ -26423,8 +26423,8 @@ strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
 @item -mptx=@var{version-string}
 @opindex mptx
 Generate code for given the specified PTX version (e.g.@: @samp{6.3}).
-Valid version strings include @samp{3.1} and @samp{6.3}.  The default PTX
-version is 3.1.
+Valid version strings include @samp{4.1} and @samp{6.3}.  The default PTX
+version is 4.1.
 
 @item -mmainkernel
 @opindex mmainkernel

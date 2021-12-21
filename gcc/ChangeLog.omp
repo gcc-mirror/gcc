@@ -1,3 +1,12 @@
+2021-12-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/nvptx/nvptx-opts.h (ptx_version): Change PTX_VERSION_3_1 to
+	PTX_VERSION_4_1.
+	* config/nvptx/nvptx.c (nvptx_file_start): Bump minimum PTX version
+	to 4.1.
+	* config/nvptx/nvptx.opt (ptx_version): Add 4.1. Change default.
+	doc/invoke.texi: -mptx default is now 4.1.
+
 2021-11-02  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from master:
