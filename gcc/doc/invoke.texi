@@ -16266,6 +16266,10 @@ Use the @command{gold} linker instead of the default linker.
 @opindex fuse-ld=lld
 Use the LLVM @command{lld} linker instead of the default linker.
 
+@item -fuse-ld=mold
+@opindex fuse-ld=mold
+Use the Modern Linker (@command{mold}) instead of the default linker.
+
 @cindex Libraries
 @item -l@var{library}
 @itemx -l @var{library}
