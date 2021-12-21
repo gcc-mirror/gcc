@@ -222,6 +222,10 @@ package body GNAT.Expect is
       Next_Filter    : Filter_List;
 
    begin
+      if Descriptor.Pid > 0 then  --  see comment in Send_Signal
+         Kill (Descriptor.Pid, Sig_Num => 9, Close => 0);
+      end if;
+
       Close_Input (Descriptor);
 
       if Descriptor.Error_Fd /= Descriptor.Output_Fd
@@ -232,12 +236,6 @@ package body GNAT.Expect is
 
       if Descriptor.Output_Fd /= Invalid_FD then
          Close (Descriptor.Output_Fd);
-      end if;
-
-      --  ??? Should have timeouts for different signals
-
-      if Descriptor.Pid > 0 then  --  see comment in Send_Signal
-         Kill (Descriptor.Pid, Sig_Num => 9, Close => 0);
       end if;
 
       GNAT.OS_Lib.Free (Descriptor.Buffer);
