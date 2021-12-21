@@ -1,3 +1,44 @@
+2021-12-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103772
+	* config/i386/sse.md (<sse2p4_1>_pinsr<ssemodesuffix>): Add
+	earlyclobber to (x,x,x,i) alternative.
+	(<sse2p4_1>_pinsr<ssemodesuffix> peephole2): Remove.
+	(<sse2p4_1>_pinsr<ssemodesuffix> splitter): Use output
+	operand as a temporary register.  Split after reload_completed.
+
+2021-12-20  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_mul_highpart): New code iterator.
+	(sgnprefix, s): Add attribute support for [su]mul_highpart.
+	(<s>mul<mode>3_highpart): Delete expander.
+	(<s>mul<mode>3_highpart, <s>mulsi32_highpart_zext):
+	New define_insn patterns.
+	(define_peephole2): Tweak the register allocation for the above
+	instructions after reload.
+
+2021-12-20  Joel Sherrill  <joel@rtems.org>
+
+	* config.gcc: Obsolete m32c-*-rtems* target.
+
+2021-12-20  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (default_options_optimization): Support -Oz in -Ox option hints.
+
+2021-12-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103669
+	* ipa-modref.c (modref_eaf_analysis::analyze_ssa_name): Add deferred
+	parameter.
+	(modref_eaf_analysis::propagate): Use it.
+
+2021-12-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98468
+	* config/i386/sse.md (*bit_and_float_vector_all_ones): New
+	pre-reload splitter.
+
 2021-12-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103766

@@ -1,3 +1,39 @@
+2021-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/lookup/memfn1.C: New test.
+	* g++.dg/template/non-dependent16b.C: New test.
+
+2021-12-20  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.dg/vect/vect-simd-20.c: Fix size of p[]
+	to accommodate the number of strides performed
+	by foo() for s == 78.
+
+2021-12-20  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/smuldi3_highpart.c: New test case.
+
+2021-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/error2.C: Make the call to foo type-dependent in
+	order to avoid latent pretty-printing issue for FUNCTION_DECL
+	inside MODOP_EXPR.
+	* g++.dg/cpp0x/fntmp-equiv1.C: Make the calls to d, d2 and d3
+	within the function signatures dependent.
+	* g++.dg/template/non-dependent16.C: New test.
+	* g++.dg/template/non-dependent16a.C: New test.
+	* g++.dg/template/non-dependent17.C: New test.
+
+2021-12-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103669
+	* g++.dg/torture/pr103669.C: New test.
+
+2021-12-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr98468.c: New test.
+
 2021-12-19  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.dg/uninit-pr89230-1.c: Change the dg-bogus messages
