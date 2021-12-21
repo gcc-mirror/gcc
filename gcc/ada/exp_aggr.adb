@@ -1021,7 +1021,7 @@ package body Exp_Aggr is
 
    --  2. If the aggregate contains positional elements we
 
-   --     (a) translate the positional elements in a series of assignments
+   --     (a) Translate the positional elements in a series of assignments
 
    --     (b) Generate a final loop to cover the others choice if any.
    --         Note that this final loop has to be a while loop since the case
@@ -1032,7 +1032,7 @@ package body Exp_Aggr is
 
    --         cannot be handled by a for loop. Thus for the following
 
-   --             array (L .. H) := (.. positional elements.., others =>E);
+   --             array (L .. H) := (.. positional elements.., others => E);
 
    --         we always generate something like:
 
@@ -2063,11 +2063,9 @@ package body Exp_Aggr is
          --  Construct "for L_J in Index_Base range L .. H"
 
          L_Iteration_Scheme :=
-           Make_Iteration_Scheme
-             (Loc,
+           Make_Iteration_Scheme (Loc,
               Loop_Parameter_Specification =>
-                Make_Loop_Parameter_Specification
-                  (Loc,
+                Make_Loop_Parameter_Specification (Loc,
                    Defining_Identifier         => L_J,
                    Discrete_Subtype_Definition => L_Range));
 
