@@ -6855,12 +6855,12 @@ and SSE4.2).
 @item sse4.1
 @itemx no-sse4.1
 @cindex @code{target("sse4.1")} function attribute, x86
-Enable/disable the generation of the sse4.1 instructions.
+Enable/disable the generation of the SSE4.1 instructions.
 
 @item sse4.2
 @itemx no-sse4.2
 @cindex @code{target("sse4.2")} function attribute, x86
-Enable/disable the generation of the sse4.2 instructions.
+Enable/disable the generation of the SSE4.2 instructions.
 
 @item sse4a
 @itemx no-sse4a
