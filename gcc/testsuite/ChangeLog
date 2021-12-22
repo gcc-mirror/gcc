@@ -1,3 +1,23 @@
+2021-12-21  Jiang Haochen  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/bmi-1.c: Add test for new intrinsic.
+	* gcc.target/i386/bmi-2.c: Ditto.
+	* gcc.target/i386/bmi-3.c: Ditto.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/recip-3.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-lim-19.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-20.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-21.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-22.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-23.c: New test.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR middle-end/103270
+	* gcc.dg/pr103270.c: New test.
+
 2021-12-20  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/lookup/memfn1.C: New test.

@@ -1,3 +1,45 @@
+2021-12-21  Jiang Haochen  <haochen.jiang@intel.com>
+
+	* config/i386/bmiintrin.h (_tzcnt_u16): New intrinsic.
+	(_andn_u32): Ditto.
+	(_andn_u64): Ditto.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* tree-ssa-loop-im.c (bb_colder_than_loop_preheader): New
+	function.
+	(get_coldest_out_loop): New function.
+	(determine_max_movement): Use get_coldest_out_loop.
+	(move_computations_worker): Adjust and fix iteration udpate.
+	(class ref_in_loop_hot_body): New functor.
+	(ref_in_loop_hot_body::operator): New.
+	(can_sm_ref_p): Use for_all_locs_in_loop.
+	(fill_coldest_and_hotter_out_loop): New.
+	(tree_ssa_lim_finalize): Free coldest_outermost_loop and
+	hotter_than_inner_loop.
+	(loop_invariant_motion_in_fun): Call fill_coldest_and_hotter_out_loop.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* tree-ssa-loop-split.c (split_loop): Fix incorrect
+	profile_count and probability.
+	(do_split_loop_on_cond): Likewise.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR middle-end/103270
+	* predict.c (predict_extra_loop_exits): Add loop parameter.
+	(predict_loops): Call with loop argument.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vaddu<VI_char>s): Replace
+	UNSPEC_VADDU with us_plus.
+	(altivec_vadds<VI_char>s): Replace UNSPEC_VADDS with ss_plus.
+	(altivec_vsubu<VI_char>s): Replace UNSPEC_VSUBU with us_minus.
+	(altivec_vsubs<VI_char>s): Replace UNSPEC_VSUBS with ss_minus.
+	(altivec_abss_<mode>): Likewise.
+
 2021-12-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/103772
