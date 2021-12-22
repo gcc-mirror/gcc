@@ -7,7 +7,7 @@
 
 This chapter describes the structure of the GCC source tree, and how
 GCC is built.  The user documentation for building and installing GCC
-is in a separate manual (@uref{http://gcc.gnu.org/install/}), with
+is in a separate manual (@uref{https://gcc.gnu.org/install/}), with
 which it is presumed that you are familiar.
 
 @menu

@@ -55,7 +55,7 @@ For instructions on reporting bugs, see
 @c man end
 @c man begin AUTHOR
 See the Info entry for @command{gcc}, or
-@w{@uref{http://gcc.gnu.org/onlinedocs/gcc/Contributors.html}},
+@w{@uref{https://gcc.gnu.org/onlinedocs/gcc/Contributors.html}},
 for contributors to GCC@.
 @c man end
 @end ignore
@@ -2355,7 +2355,7 @@ ISO C99.  This standard is substantially completely supported, modulo
 bugs and floating-point issues
 (mainly but not entirely relating to optional C99 features from
 Annexes F and G).  See
-@w{@uref{http://gcc.gnu.org/c99status.html}} for more information.  The
+@w{@uref{https://gcc.gnu.org/c99status.html}} for more information.  The
 names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 
 @item c11
@@ -6720,7 +6720,7 @@ The standard is worded confusingly, therefore there is some debate
 over the precise meaning of the sequence point rules in subtle cases.
 Links to discussions of the problem, including proposed formal
 definitions, may be found on the GCC readings page, at
-@uref{http://gcc.gnu.org/@/readings.html}.
+@uref{https://gcc.gnu.org/@/readings.html}.
 
 This warning is enabled by @option{-Wall} for C and C++.
 
@@ -17329,7 +17329,7 @@ visibility so that the @samp{type_info} nodes are unified between
 the DSOs.
 
 An overview of these techniques, their benefits and how to use them
-is at @uref{http://gcc.gnu.org/@/wiki/@/Visibility}.
+is at @uref{https://gcc.gnu.org/@/wiki/@/Visibility}.
 
 @item -fstrict-volatile-bitfields
 @opindex fstrict-volatile-bitfields
@@ -25243,7 +25243,7 @@ generates 64-bit code when you select a 64-bit architecture, but you
 can use @option{-mgp32} to get 32-bit code instead.
 
 For information about the O64 ABI, see
-@uref{http://gcc.gnu.org/@/projects/@/mipso64-abi.html}.
+@uref{https://gcc.gnu.org/@/projects/@/mipso64-abi.html}.
 
 GCC supports a variant of the o32 ABI in which floating-point registers
 are 64 rather than 32 bits wide.  You can select this combination with

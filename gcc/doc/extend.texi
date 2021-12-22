@@ -12303,7 +12303,7 @@ All objects must be the same size.
 
 There are 6 different memory orders that can be specified.  These map
 to the C++11 memory orders with the same names, see the C++11 standard
-or the @uref{http://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync,GCC wiki
+or the @uref{https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync,GCC wiki
 on atomic synchronization} for detailed definitions.  Individual
 targets may also support additional memory orders for use on specific
 architectures.  Refer to the target documentation for details of
@@ -25016,7 +25016,7 @@ of foo is created by using the same function signature but with a
 different target string.  Function foo is called or a pointer to it is
 taken just like a regular function.  GCC takes care of doing the
 dispatching to call the right version at runtime.  Refer to the
-@uref{http://gcc.gnu.org/wiki/FunctionMultiVersioning, GCC wiki on
+@uref{https://gcc.gnu.org/wiki/FunctionMultiVersioning, GCC wiki on
 Function Multiversioning} for more details.
 
 @node Type Traits
