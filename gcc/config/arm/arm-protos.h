@@ -204,6 +204,11 @@ extern int arm_apply_result_size (void);
 
 #endif /* RTX_CODE */
 
+/* MVE functions.  */
+namespace arm_mve {
+  void handle_arm_mve_types_h ();
+}
+
 /* Thumb functions.  */
 extern void arm_init_expanders (void);
 extern const char *thumb1_unexpanded_epilogue (void);

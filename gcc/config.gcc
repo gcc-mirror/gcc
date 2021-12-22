@@ -353,14 +353,14 @@ arc*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_objs="arm-builtins.o aarch-common.o"
+	extra_objs="arm-builtins.o arm-mve-builtins.o aarch-common.o"
 	extra_headers="mmintrin.h arm_neon.h arm_acle.h arm_fp16.h arm_cmse.h arm_bf16.h arm_mve_types.h arm_mve.h arm_cde.h"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
 	d_target_objs="arm-d.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
-	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c"
+	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.c \$(srcdir)/config/arm/arm-mve-builtins.h \$(srcdir)/config/arm/arm-mve-builtins.cc"
 	;;
 avr-*-*)
 	cpu_type=avr
