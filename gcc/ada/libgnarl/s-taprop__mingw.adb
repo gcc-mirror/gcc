@@ -559,7 +559,6 @@ package body System.Task_Primitives.Operations is
       Abs_Time   : Duration;
 
       Result : Integer;
-      pragma Unreferenced (Result);
 
       Local_Timedout : Boolean;
 
@@ -615,7 +614,6 @@ package body System.Task_Primitives.Operations is
 
       Timedout : Boolean;
       Result   : Integer;
-      pragma Unreferenced (Timedout, Result);
 
    begin
       Write_Lock (Self_ID);
