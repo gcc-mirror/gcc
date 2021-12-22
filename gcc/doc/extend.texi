@@ -14570,15 +14570,15 @@ instructions, but allow the compiler to schedule those calls.
 These built-in functions are available for the AArch64 family of
 processors.
 @smallexample
-unsigned int __builtin_aarch64_get_fpcr ()
-void __builtin_aarch64_set_fpcr (unsigned int)
-unsigned int __builtin_aarch64_get_fpsr ()
-void __builtin_aarch64_set_fpsr (unsigned int)
+unsigned int __builtin_aarch64_get_fpcr ();
+void __builtin_aarch64_set_fpcr (unsigned int);
+unsigned int __builtin_aarch64_get_fpsr ();
+void __builtin_aarch64_set_fpsr (unsigned int);
 
-unsigned long long __builtin_aarch64_get_fpcr64 ()
-void __builtin_aarch64_set_fpcr64 (unsigned long long)
-unsigned long long __builtin_aarch64_get_fpsr64 ()
-void __builtin_aarch64_set_fpsr64 (unsigned long long)
+unsigned long long __builtin_aarch64_get_fpcr64 ();
+void __builtin_aarch64_set_fpcr64 (unsigned long long);
+unsigned long long __builtin_aarch64_get_fpsr64 ();
+void __builtin_aarch64_set_fpsr64 (unsigned long long);
 @end smallexample
 
 @node Alpha Built-in Functions
