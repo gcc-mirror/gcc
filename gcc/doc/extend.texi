@@ -14682,7 +14682,7 @@ void __builtin_stbio (volatile void *, int);
 void __builtin_sthio (volatile void *, int);
 void __builtin_stwio (volatile void *, int);
 void __builtin_sync (void);
-int __builtin_rdctl (int) 
+int __builtin_rdctl (int);
 int __builtin_rdprs (int, int);
 void __builtin_wrctl (int, int);
 void __builtin_flushd (volatile void *);
@@ -15478,28 +15478,28 @@ output values to non-contiguous port layouts. Some examples:
 
 @smallexample
 // same as val, bits is unused
-__builtin_avr_insert_bits (0xffffffff, bits, val)
+__builtin_avr_insert_bits (0xffffffff, bits, val);
 @end smallexample
 
 @smallexample
 // same as bits, val is unused
-__builtin_avr_insert_bits (0x76543210, bits, val)
+__builtin_avr_insert_bits (0x76543210, bits, val);
 @end smallexample
 
 @smallexample
 // same as rotating bits by 4
-__builtin_avr_insert_bits (0x32107654, bits, 0)
+__builtin_avr_insert_bits (0x32107654, bits, 0);
 @end smallexample
 
 @smallexample
 // high nibble of result is the high nibble of val
 // low nibble of result is the low nibble of bits
-__builtin_avr_insert_bits (0xffff3210, bits, val)
+__builtin_avr_insert_bits (0xffff3210, bits, val);
 @end smallexample
 
 @smallexample
 // reverse the bit order of bits
-__builtin_avr_insert_bits (0x01234567, bits, 0)
+__builtin_avr_insert_bits (0x01234567, bits, 0);
 @end smallexample
 
 @item void __builtin_avr_nops (unsigned count)
@@ -19751,7 +19751,7 @@ PowerPC family of processors, starting with ISA 3.1 (@option{-mcpu=power10}):
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector centrifuge operation, as if implemented by the
 @code{vcfuged} instruction.
@@ -19759,7 +19759,7 @@ Perform a vector centrifuge operation, as if implemented by the
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector count leading zeros under bit mask operation, as if
 implemented by the @code{vclzdm} instruction.
@@ -19767,7 +19767,7 @@ implemented by the @code{vclzdm} instruction.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector count trailing zeros under bit mask operation, as if
 implemented by the @code{vctzdm} instruction.
@@ -19775,9 +19775,9 @@ implemented by the @code{vctzdm} instruction.
 
 @smallexample
 @exdent vector signed char
-@exdent vec_clrl (vector signed char a, unsigned int n)
+@exdent vec_clrl (vector signed char a, unsigned int n);
 @exdent vector unsigned char
-@exdent vec_clrl (vector unsigned char a, unsigned int n)
+@exdent vec_clrl (vector unsigned char a, unsigned int n);
 @end smallexample
 Clear the left-most @code{(16 - n)} bytes of vector argument @code{a}, as if
 implemented by the @code{vclrlb} instruction on a big-endian target
@@ -19787,9 +19787,9 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 
 @smallexample
 @exdent vector signed char
-@exdent vec_clrr (vector signed char a, unsigned int n)
+@exdent vec_clrr (vector signed char a, unsigned int n);
 @exdent vector unsigned char
-@exdent vec_clrr (vector unsigned char a, unsigned int n)
+@exdent vec_clrr (vector unsigned char a, unsigned int n);
 @end smallexample
 Clear the right-most @code{(16 - n)} bytes of vector argument @code{a}, as if
 implemented by the @code{vclrrb} instruction on a big-endian target
@@ -19799,7 +19799,7 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_gnb (vector unsigned __int128, const unsigned char)
+@exdent vec_gnb (vector unsigned __int128, const unsigned char);
 @end smallexample
 Perform a 128-bit vector gather  operation, as if implemented by the
 @code{vgnb} instruction.  The second argument must be a literal
@@ -19811,13 +19811,13 @@ Vector Extract
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vec_extractl (vector unsigned short, vector unsigned short, unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vec_extractl (vector unsigned int, vector unsigned int, unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int)
+@exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int);
 @end smallexample
 Extract an element from two concatenated vectors starting at the given byte index
 in natural-endian order, and place it zero-extended in doubleword 1 of the result
@@ -19838,15 +19838,15 @@ consistent with the limitation on @code{vec_perm}.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_extracth (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vec_extracth (vector unsigned char, vector unsigned char, unsigned int);
 @exdent vector unsigned long long int
 @exdent vec_extracth (vector unsigned short, vector unsigned short,
-unsigned int)
+unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extracth (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vec_extracth (vector unsigned int, vector unsigned int, unsigned int);
 @exdent vector unsigned long long int
 @exdent vec_extracth (vector unsigned long long, vector unsigned long long,
-unsigned int)
+unsigned int);
 @end smallexample
 Extract an element from two concatenated vectors starting at the given byte
 index.  The index is based on big endian order for a little endian system.
@@ -19869,7 +19869,7 @@ limitation on @code{vec_perm}.
 @findex vec_extracth
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_pdep (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector parallel bits deposit operation, as if implemented by
 the @code{vpdepd} instruction.
@@ -20147,17 +20147,17 @@ contained in the first two arguments.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_pext (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector parallel bit extract operation, as if implemented by
 the @code{vpextd} instruction.
 @findex vec_pext
 
 @smallexample
-@exdent vector unsigned char vec_stril (vector unsigned char)
-@exdent vector signed char vec_stril (vector signed char)
-@exdent vector unsigned short vec_stril (vector unsigned short)
-@exdent vector signed short vec_stril (vector signed short)
+@exdent vector unsigned char vec_stril (vector unsigned char);
+@exdent vector signed char vec_stril (vector signed char);
+@exdent vector unsigned short vec_stril (vector unsigned short);
+@exdent vector signed short vec_stril (vector signed short);
 @end smallexample
 Isolate the left-most non-zero elements of the incoming vector argument,
 replacing all elements to the right of the left-most zero element
@@ -20168,10 +20168,10 @@ little-endian targets.
 @findex vec_stril
 
 @smallexample
-@exdent int vec_stril_p (vector unsigned char)
-@exdent int vec_stril_p (vector signed char)
-@exdent int short vec_stril_p (vector unsigned short)
-@exdent int vec_stril_p (vector signed short)
+@exdent int vec_stril_p (vector unsigned char);
+@exdent int vec_stril_p (vector signed char);
+@exdent int short vec_stril_p (vector unsigned short);
+@exdent int vec_stril_p (vector signed short);
 @end smallexample
 Return a non-zero value if and only if the argument contains a zero
 element.  The typical implementation uses
@@ -20182,10 +20182,10 @@ zero element if the same argument is also passed to @code{vec_stril}.
 @findex vec_stril_p
 
 @smallexample
-@exdent vector unsigned char vec_strir (vector unsigned char)
-@exdent vector signed char vec_strir (vector signed char)
-@exdent vector unsigned short vec_strir (vector unsigned short)
-@exdent vector signed short vec_strir (vector signed short)
+@exdent vector unsigned char vec_strir (vector unsigned char);
+@exdent vector signed char vec_strir (vector signed char);
+@exdent vector unsigned short vec_strir (vector unsigned short);
+@exdent vector signed short vec_strir (vector signed short);
 @end smallexample
 Isolate the right-most non-zero elements of the incoming vector argument,
 replacing all elements to the left of the right-most zero element
@@ -20196,10 +20196,10 @@ little-endian targets.
 @findex vec_strir
 
 @smallexample
-@exdent int vec_strir_p (vector unsigned char)
-@exdent int vec_strir_p (vector signed char)
-@exdent int short vec_strir_p (vector unsigned short)
-@exdent int vec_strir_p (vector signed short)
+@exdent int vec_strir_p (vector unsigned char);
+@exdent int vec_strir_p (vector signed char);
+@exdent int short vec_strir_p (vector unsigned short);
+@exdent int vec_strir_p (vector signed short);
 @end smallexample
 Return a non-zero value if and only if the argument contains a zero
 element.  The typical implementation uses
@@ -20212,19 +20212,19 @@ zero element if the same argument is also passed to @code{vec_strir}.
 @smallexample
 @exdent vector unsigned char
 @exdent vec_ternarylogic (vector unsigned char, vector unsigned char,
-            vector unsigned char, const unsigned int)
+            vector unsigned char, const unsigned int);
 @exdent vector unsigned short
 @exdent vec_ternarylogic (vector unsigned short, vector unsigned short,
-            vector unsigned short, const unsigned int)
+            vector unsigned short, const unsigned int);
 @exdent vector unsigned int
 @exdent vec_ternarylogic (vector unsigned int, vector unsigned int,
-            vector unsigned int, const unsigned int)
+            vector unsigned int, const unsigned int);
 @exdent vector unsigned long long int
 @exdent vec_ternarylogic (vector unsigned long long int, vector unsigned long long int,
-            vector unsigned long long int, const unsigned int)
+            vector unsigned long long int, const unsigned int);
 @exdent vector unsigned __int128
 @exdent vec_ternarylogic (vector unsigned __int128, vector unsigned __int128,
-            vector unsigned __int128, const unsigned int)
+            vector unsigned __int128, const unsigned int);
 @end smallexample
 Perform a 128-bit vector evaluate operation, as if implemented by the
 @code{xxeval} instruction.  The fourth argument must be a literal
@@ -20232,20 +20232,20 @@ integer value between 0 and 255 inclusive.
 @findex vec_ternarylogic
 
 @smallexample
-@exdent vector unsigned char vec_genpcvm (vector unsigned char, const int)
-@exdent vector unsigned short vec_genpcvm (vector unsigned short, const int)
-@exdent vector unsigned int vec_genpcvm (vector unsigned int, const int)
+@exdent vector unsigned char vec_genpcvm (vector unsigned char, const int);
+@exdent vector unsigned short vec_genpcvm (vector unsigned short, const int);
+@exdent vector unsigned int vec_genpcvm (vector unsigned int, const int);
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
-                                         const int)
+                                         const int);
 @end smallexample
 
 Vector Integer Multiply/Divide/Modulo
 
 @smallexample
 @exdent vector signed int
-@exdent vec_mulh (vector signed int a, vector signed int b)
+@exdent vec_mulh (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_mulh (vector unsigned int a, vector unsigned int b)
+@exdent vec_mulh (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer
@@ -20255,9 +20255,9 @@ into word element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_mulh (vector signed long long a, vector signed long long b)
+@exdent vec_mulh (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer
@@ -20267,9 +20267,9 @@ are placed into doubleword element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector unsigned long long
-@exdent vec_mul (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_mul (vector unsigned long long a, vector unsigned long long b);
 @exdent vector signed long long
-@exdent vec_mul (vector signed long long a, vector signed long long b)
+@exdent vec_mul (vector signed long long a, vector signed long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer
@@ -20279,9 +20279,9 @@ are placed into doubleword element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector signed int
-@exdent vec_div (vector signed int a, vector signed int b)
+@exdent vec_div (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_div (vector unsigned int a, vector unsigned int b)
+@exdent vec_div (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -20292,9 +20292,9 @@ the vector returned. If an attempt is made to perform any of the divisions
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_div (vector signed long long a, vector signed long long b)
+@exdent vec_div (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_div (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_div (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -20306,9 +20306,9 @@ the quotient is undefined.
 
 @smallexample
 @exdent vector signed int
-@exdent vec_dive (vector signed int a, vector signed int b)
+@exdent vec_dive (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_dive (vector unsigned int a, vector unsigned int b)
+@exdent vec_dive (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -20320,9 +20320,9 @@ divisions <anything> ÷ 0 then the quotient is undefined.
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_dive (vector signed long long a, vector signed long long b)
+@exdent vec_dive (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_dive (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_dive (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -20334,9 +20334,9 @@ quotient cannot be represented in 64 bits, or if an attempt is made to perform
 
 @smallexample
 @exdent vector signed int
-@exdent vec_mod (vector signed int a, vector signed int b)
+@exdent vec_mod (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_mod (vector unsigned int a, vector unsigned int b)
+@exdent vec_mod (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -20347,9 +20347,9 @@ the vector returned.  If an attempt is made to perform any of the divisions
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_mod (vector signed long long a, vector signed long long b)
+@exdent vec_mod (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_mod (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_mod (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
