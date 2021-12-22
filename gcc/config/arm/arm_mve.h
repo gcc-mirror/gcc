@@ -16171,14 +16171,14 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_u8 (uint8_t * __addr, uint8x16_t __value, mve_pred16_t __p)
 {
-  return vstrbq_p_u8 (__addr, __value, __p);
+  return __arm_vstrbq_p_u8 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_s8 (int8_t * __addr, int8x16_t __value, mve_pred16_t __p)
 {
-  return vstrbq_p_s8 (__addr, __value, __p);
+  return __arm_vstrbq_p_s8 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -16203,14 +16203,14 @@ __extension__ extern __inline uint8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_u8 (uint8_t const *__base, mve_pred16_t __p)
 {
-  return vldrbq_z_u8 ( __base, __p);
+  return __arm_vldrbq_z_u8 ( __base, __p);
 }
 
 __extension__ extern __inline int8x16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_s8 (int8_t const *__base, mve_pred16_t __p)
 {
-  return vldrbq_z_s8 ( __base, __p);
+  return __arm_vldrbq_z_s8 ( __base, __p);
 }
 
 __extension__ extern __inline int8x16x2_t
@@ -16253,14 +16253,14 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_u16 (uint16_t * __addr, uint16x8_t __value, mve_pred16_t __p)
 {
-  return vstrhq_p_u16 (__addr, __value, __p);
+  return __arm_vstrhq_p_u16 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_s16 (int16_t * __addr, int16x8_t __value, mve_pred16_t __p)
 {
-  return vstrhq_p_s16 (__addr, __value, __p);
+  return __arm_vstrhq_p_s16 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -16285,14 +16285,14 @@ __extension__ extern __inline uint16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_u16 (uint16_t const *__base, mve_pred16_t __p)
 {
-  return vldrhq_z_u16 ( __base, __p);
+  return __arm_vldrhq_z_u16 ( __base, __p);
 }
 
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_s16 (int16_t const *__base, mve_pred16_t __p)
 {
-  return vldrhq_z_s16 ( __base, __p);
+  return __arm_vldrhq_z_s16 ( __base, __p);
 }
 
 __extension__ extern __inline int16x8x2_t
@@ -16335,14 +16335,14 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_u32 (uint32_t * __addr, uint32x4_t __value, mve_pred16_t __p)
 {
-  return vstrwq_p_u32 (__addr, __value, __p);
+  return __arm_vstrwq_p_u32 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_s32 (int32_t * __addr, int32x4_t __value, mve_pred16_t __p)
 {
-  return vstrwq_p_s32 (__addr, __value, __p);
+  return __arm_vstrwq_p_s32 (__addr, __value, __p);
 }
 
 __extension__ extern __inline void
@@ -16367,14 +16367,14 @@ __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_u32 (uint32_t const *__base, mve_pred16_t __p)
 {
-  return vldrwq_z_u32 ( __base, __p);
+  return __arm_vldrwq_z_u32 ( __base, __p);
 }
 
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_s32 (int32_t const *__base, mve_pred16_t __p)
 {
-  return vldrwq_z_s32 ( __base, __p);
+  return __arm_vldrwq_z_s32 ( __base, __p);
 }
 
 __extension__ extern __inline int32x4x2_t
@@ -19837,7 +19837,7 @@ __extension__ extern __inline float16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_f16 (float16_t const *__base, mve_pred16_t __p)
 {
-  return vldrhq_z_f16 (__base, __p);
+  return __arm_vldrhq_z_f16 (__base, __p);
 }
 
 __extension__ extern __inline void
@@ -19853,7 +19853,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_f16 (float16_t * __addr, float16x8_t __value, mve_pred16_t __p)
 {
-  return vstrhq_p_f16 (__addr, __value, __p);
+  return __arm_vstrhq_p_f16 (__addr, __value, __p);
 }
 
 __extension__ extern __inline float32x4x4_t
@@ -19878,7 +19878,7 @@ __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vld1q_z_f32 (float32_t const *__base, mve_pred16_t __p)
 {
-  return vldrwq_z_f32 (__base, __p);
+  return __arm_vldrwq_z_f32 (__base, __p);
 }
 
 __extension__ extern __inline void
@@ -19894,7 +19894,7 @@ __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __arm_vst1q_p_f32 (float32_t * __addr, float32x4_t __value, mve_pred16_t __p)
 {
-  return vstrwq_p_f32 (__addr, __value, __p);
+  return __arm_vstrwq_p_f32 (__addr, __value, __p);
 }
 
 __extension__ extern __inline float16x8_t
