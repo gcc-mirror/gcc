@@ -82,6 +82,22 @@ extern (C++) bool canThrow(Expression e, FuncDeclaration func, bool mustNotThrow
 
             if (global.errors && !ce.e1.type)
                 return; // error recovery
+
+            import dmd.id : Id;
+
+            if (ce.f && ce.f.ident == Id._d_delstruct)
+            {
+                // Only check if the dtor throws.
+                Type tb = (*ce.arguments)[0].type.toBasetype();
+                auto ts = tb.nextOf().baseElemOf().isTypeStruct();
+                if (ts)
+                {
+                    auto sd = ts.sym;
+                    if (sd.dtor)
+                        checkFuncThrows(ce, sd.dtor);
+                }
+            }
+
             /* If calling a function or delegate that is typed as nothrow,
              * then this expression cannot throw.
              * Note that pure functions can throw.

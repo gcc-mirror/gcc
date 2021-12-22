@@ -146,6 +146,11 @@ public:
 enum dep_kind { lim_raw, sm_war, sm_waw };
 enum dep_state { dep_unknown, dep_independent, dep_dependent };
 
+/* coldest outermost loop for given loop.  */
+vec<class loop *> coldest_outermost_loop;
+/* hotter outer loop nearest to given loop.  */
+vec<class loop *> hotter_than_inner_loop;
+
 /* Populate the loop dependence cache of REF for LOOP, KIND with STATE.  */
 
 static void
@@ -417,6 +422,63 @@ movement_possibility (gimple *stmt)
   return ret;
 }
 
+/* Compare the profile count inequality of bb and loop's preheader, it is
+   three-state as stated in profile-count.h, FALSE is returned if inequality
+   cannot be decided.  */
+bool
+bb_colder_than_loop_preheader (basic_block bb, class loop *loop)
+{
+  gcc_assert (bb && loop);
+  return bb->count < loop_preheader_edge (loop)->src->count;
+}
+
+/* Check coldest loop between OUTERMOST_LOOP and LOOP by comparing profile
+   count.
+  It does three steps check:
+  1) Check whether CURR_BB is cold in it's own loop_father, if it is cold, just
+  return NULL which means it should not be moved out at all;
+  2) CURR_BB is NOT cold, check if pre-computed COLDEST_LOOP is outside of
+  OUTERMOST_LOOP, if it is inside of OUTERMOST_LOOP, return the COLDEST_LOOP;
+  3) If COLDEST_LOOP is outside of OUTERMOST_LOOP, check whether there is a
+  hotter loop between OUTERMOST_LOOP and loop in pre-computed
+  HOTTER_THAN_INNER_LOOP, return it's nested inner loop, otherwise return
+  OUTERMOST_LOOP.
+  At last, the coldest_loop is inside of OUTERMOST_LOOP, just return it as
+  the hoist target.  */
+
+static class loop *
+get_coldest_out_loop (class loop *outermost_loop, class loop *loop,
+		      basic_block curr_bb)
+{
+  gcc_assert (outermost_loop == loop
+	      || flow_loop_nested_p (outermost_loop, loop));
+
+  /* If bb_colder_than_loop_preheader returns false due to three-state
+    comparision, OUTERMOST_LOOP is returned finally to preserve the behavior.
+    Otherwise, return the coldest loop between OUTERMOST_LOOP and LOOP.  */
+  if (curr_bb && bb_colder_than_loop_preheader (curr_bb, loop))
+    return NULL;
+
+  class loop *coldest_loop = coldest_outermost_loop[loop->num];
+  if (loop_depth (coldest_loop) < loop_depth (outermost_loop))
+    {
+      class loop *hotter_loop = hotter_than_inner_loop[loop->num];
+      if (!hotter_loop
+	  || loop_depth (hotter_loop) < loop_depth (outermost_loop))
+	return outermost_loop;
+
+      /*  hotter_loop is between OUTERMOST_LOOP and LOOP like:
+	[loop tree root, ..., coldest_loop, ..., outermost_loop, ...,
+	hotter_loop, second_coldest_loop, ..., loop]
+	return second_coldest_loop to be the hoist target.  */
+      class loop *aloop;
+      for (aloop = hotter_loop->inner; aloop; aloop = aloop->next)
+	if (aloop == loop || flow_loop_nested_p (aloop, loop))
+	  return aloop;
+    }
+  return coldest_loop;
+}
+
 /* Suppose that operand DEF is used inside the LOOP.  Returns the outermost
    loop to that we could move the expression using DEF if it did not have
    other operands, i.e. the outermost loop enclosing LOOP in that the value
@@ -685,7 +747,9 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
     level = ALWAYS_EXECUTED_IN (bb);
   else
     level = superloop_at_depth (loop, 1);
-  lim_data->max_loop = level;
+  lim_data->max_loop = get_coldest_out_loop (level, loop, bb);
+  if (!lim_data->max_loop)
+    return false;
 
   if (gphi *phi = dyn_cast <gphi *> (stmt))
     {
@@ -1217,7 +1281,10 @@ move_computations_worker (basic_block bb)
       /* We do not really want to move conditionals out of the loop; we just
 	 placed it here to force its operands to be moved if necessary.  */
       if (gimple_code (stmt) == GIMPLE_COND)
-	continue;
+	{
+	  gsi_next (&bsi);
+	  continue;
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -3023,6 +3090,26 @@ ref_indep_loop_p (class loop *loop, im_mem_ref *ref, dep_kind kind)
   return indep_p;
 }
 
+class ref_in_loop_hot_body
+{
+public:
+  ref_in_loop_hot_body (class loop *loop_) : l (loop_) {}
+  bool operator () (mem_ref_loc *loc);
+  class loop *l;
+};
+
+/* Check the coldest loop between loop L and innermost loop.  If there is one
+   cold loop between L and INNER_LOOP, store motion can be performed, otherwise
+   no cold loop means no store motion.  get_coldest_out_loop also handles cases
+   when l is inner_loop.  */
+bool
+ref_in_loop_hot_body::operator () (mem_ref_loc *loc)
+{
+  basic_block curr_bb = gimple_bb (loc->stmt);
+  class loop *inner_loop = curr_bb->loop_father;
+  return get_coldest_out_loop (l, inner_loop, curr_bb);
+}
+
 
 /* Returns true if we can perform store motion of REF from LOOP.  */
 
@@ -3075,6 +3162,12 @@ can_sm_ref_p (class loop *loop, im_mem_ref *ref)
      against stores is done later when we cannot guarantee preserving
      the order of stores.  */
   if (!ref_indep_loop_p (loop, ref, sm_war))
+    return false;
+
+  /* Verify whether the candidate is hot for LOOP.  Only do store motion if the
+    candidate's profile count is hot.  Statement in cold BB shouldn't be moved
+    out of it's loop_father.  */
+  if (!for_all_locs_in_loop (loop, ref, ref_in_loop_hot_body (loop)))
     return false;
 
   return true;
@@ -3289,6 +3382,48 @@ fill_always_executed_in (void)
     fill_always_executed_in_1 (loop, contains_call);
 }
 
+/* Find the coldest loop preheader for LOOP, also find the nearest hotter loop
+   to LOOP.  Then recursively iterate each inner loop.  */
+
+void
+fill_coldest_and_hotter_out_loop (class loop *coldest_loop,
+				  class loop *hotter_loop, class loop *loop)
+{
+  if (bb_colder_than_loop_preheader (loop_preheader_edge (loop)->src,
+				     coldest_loop))
+    coldest_loop = loop;
+
+  coldest_outermost_loop[loop->num] = coldest_loop;
+
+  hotter_than_inner_loop[loop->num] = NULL;
+  class loop *outer_loop = loop_outer (loop);
+  if (hotter_loop
+      && bb_colder_than_loop_preheader (loop_preheader_edge (loop)->src,
+					hotter_loop))
+    hotter_than_inner_loop[loop->num] = hotter_loop;
+
+  if (outer_loop && outer_loop != current_loops->tree_root
+      && bb_colder_than_loop_preheader (loop_preheader_edge (loop)->src,
+					outer_loop))
+    hotter_than_inner_loop[loop->num] = outer_loop;
+
+  if (dump_enabled_p ())
+    {
+      dump_printf (MSG_NOTE, "loop %d's coldest_outermost_loop is %d, ",
+		   loop->num, coldest_loop->num);
+      if (hotter_than_inner_loop[loop->num])
+	dump_printf (MSG_NOTE, "hotter_than_inner_loop is %d\n",
+		     hotter_than_inner_loop[loop->num]->num);
+      else
+	dump_printf (MSG_NOTE, "hotter_than_inner_loop is NULL\n");
+    }
+
+  class loop *inner_loop;
+  for (inner_loop = loop->inner; inner_loop; inner_loop = inner_loop->next)
+    fill_coldest_and_hotter_out_loop (coldest_loop,
+				      hotter_than_inner_loop[loop->num],
+				      inner_loop);
+}
 
 /* Compute the global information needed by the loop invariant motion pass.  */
 
@@ -3373,6 +3508,9 @@ tree_ssa_lim_finalize (void)
     free_affine_expand_cache (&memory_accesses.ttae_cache);
 
   free (bb_loop_postorder);
+
+  coldest_outermost_loop.release ();
+  hotter_than_inner_loop.release ();
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
@@ -3391,6 +3529,16 @@ loop_invariant_motion_in_fun (function *fun, bool store_motion)
 
   /* Fills ALWAYS_EXECUTED_IN information for basic blocks.  */
   fill_always_executed_in ();
+
+  /* Pre-compute coldest outermost loop and nearest hotter loop of each loop.
+   */
+  class loop *loop;
+  coldest_outermost_loop.create (number_of_loops (cfun));
+  coldest_outermost_loop.safe_grow_cleared (number_of_loops (cfun));
+  hotter_than_inner_loop.create (number_of_loops (cfun));
+  hotter_than_inner_loop.safe_grow_cleared (number_of_loops (cfun));
+  for (loop = current_loops->tree_root->inner; loop != NULL; loop = loop->next)
+    fill_coldest_and_hotter_out_loop (loop, NULL, loop);
 
   int *rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
   int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);

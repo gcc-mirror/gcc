@@ -1565,9 +1565,9 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 result = e;
                 return;
             }
-            if (e.op == EXP.variable)
+            if (auto ve = e.isVarExp())
             {
-                VarDeclaration v = (cast(VarExp)e).var.isVarDeclaration();
+                VarDeclaration v = ve.var.isVarDeclaration();
                 if (v && v.storage_class & STC.manifest)
                 {
                     result = e.ctfeInterpret();
@@ -1852,8 +1852,8 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         override void visit(StructLiteralExp e)
         {
             visit(cast(Expression)e);
-            if (result.op == EXP.structLiteral)
-                (cast(StructLiteralExp)result).stype = t; // commit type
+            if (auto sle = result.isStructLiteralExp())
+                sle.stype = t; // commit type
         }
 
         override void visit(StringExp e)
@@ -1866,7 +1866,8 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
             //printf("StringExp::castTo(t = %s), '%s' committed = %d\n", t.toChars(), e.toChars(), e.committed);
 
-            if (!e.committed && t.ty == Tpointer && t.nextOf().ty == Tvoid)
+            if (!e.committed && t.ty == Tpointer && t.nextOf().ty == Tvoid &&
+                (!sc || !(sc.flags & SCOPE.Cfile)))
             {
                 e.error("cannot convert string literal to `void*`");
                 result = ErrorExp.get();
@@ -1883,7 +1884,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 
             if (!e.committed)
             {
-                se = cast(StringExp)e.copy();
+                se = e.copy().isStringExp();
                 se.committed = 1;
                 copied = 1;
             }
@@ -1908,7 +1909,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 if (!copied)
                 {
-                    se = cast(StringExp)e.copy();
+                    se = e.copy().isStringExp();
                     copied = 1;
                 }
                 se.type = t;
@@ -1924,7 +1925,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
              */
             if (e.committed && tb.ty == Tsarray && typeb.ty == Tarray)
             {
-                se = cast(StringExp)e.copy();
+                se = e.copy().isStringExp();
                 d_uns64 szx = tb.nextOf().size();
                 assert(szx <= 255);
                 se.sz = cast(ubyte)szx;
@@ -1952,7 +1953,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 if (!copied)
                 {
-                    se = cast(StringExp)e.copy();
+                    se = e.copy().isStringExp();
                     copied = 1;
                 }
                 return lcast();
@@ -1961,7 +1962,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 if (!copied)
                 {
-                    se = cast(StringExp)e.copy();
+                    se = e.copy().isStringExp();
                     copied = 1;
                 }
                 return lcast();
@@ -1977,7 +1978,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 if (!copied)
                 {
-                    se = cast(StringExp)e.copy();
+                    se = e.copy().isStringExp();
                     copied = 1;
                 }
                 if (tb.ty == Tsarray)
@@ -2088,7 +2089,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 L1:
                     if (!copied)
                     {
-                        se = cast(StringExp)e.copy();
+                        se = e.copy().isStringExp();
                         copied = 1;
                     }
 
@@ -2154,10 +2155,10 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             }
 
             // Look for pointers to functions where the functions are overloaded.
-            if (e.e1.op == EXP.overloadSet &&
+            if (e.e1.isOverExp() &&
                 (tb.ty == Tpointer || tb.ty == Tdelegate) && tb.nextOf().ty == Tfunction)
             {
-                OverExp eo = cast(OverExp)e.e1;
+                OverExp eo = e.e1.isOverExp();
                 FuncDeclaration f = null;
                 for (size_t i = 0; i < eo.vars.a.dim; i++)
                 {
@@ -2188,11 +2189,11 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 }
             }
 
-            if (e.e1.op == EXP.variable &&
+            if (e.e1.isVarExp() &&
                 typeb.ty == Tpointer && typeb.nextOf().ty == Tfunction &&
                 tb.ty == Tpointer && tb.nextOf().ty == Tfunction)
             {
-                auto ve = cast(VarExp)e.e1;
+                auto ve = e.e1.isVarExp();
                 auto f = ve.var.isFuncDeclaration();
                 if (f)
                 {
@@ -2303,7 +2304,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                             goto L1;
                     }
 
-                    ae = cast(ArrayLiteralExp)e.copy();
+                    ae = e.copy().isArrayLiteralExp();
                     if (e.basis)
                         ae.basis = e.basis.castTo(sc, tb.nextOf());
                     ae.elements = e.elements.copy();
@@ -2325,7 +2326,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 Type tp = typeb.nextOf().pointerTo();
                 if (!tp.equals(ae.type))
                 {
-                    ae = cast(ArrayLiteralExp)e.copy();
+                    ae = e.copy().isArrayLiteralExp();
                     ae.type = tp;
                 }
             }
@@ -2382,7 +2383,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             if (tb.ty == Taarray && typeb.ty == Taarray &&
                 tb.nextOf().toBasetype().ty != Tvoid)
             {
-                AssocArrayLiteralExp ae = cast(AssocArrayLiteralExp)e.copy();
+                AssocArrayLiteralExp ae = e.copy().isAssocArrayLiteralExp();
                 ae.keys = e.keys.copy();
                 ae.values = e.values.copy();
                 assert(e.keys.dim == e.values.dim);
@@ -2422,7 +2423,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             {
                 result = e.copy();
                 result.type = t;
-                (cast(SymOffExp)result).hasOverloads = false;
+                result.isSymOffExp().hasOverloads = false;
                 return;
             }
 
@@ -2641,7 +2642,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 {
                     Expression e1x = e.e1.implicitCastTo(sc, t1b);
                     assert(e1x.op != EXP.error);
-                    e = cast(SliceExp)e.copy();
+                    e = e.copy().isSliceExp();
                     e.e1 = e1x;
                     e.type = t;
                     result = e;
@@ -2751,10 +2752,10 @@ Expression inferType(Expression e, Type t, int flag = 0)
 
     if (t) switch (e.op)
     {
-        case EXP.arrayLiteral:      return visitAle(cast(ArrayLiteralExp) e);
-        case EXP.assocArrayLiteral: return visitAar(cast(AssocArrayLiteralExp) e);
-        case EXP.function_:         return visitFun(cast(FuncExp) e);
-        case EXP.question:          return visitTer(cast(CondExp) e);
+        case EXP.arrayLiteral:      return visitAle(e.isArrayLiteralExp());
+        case EXP.assocArrayLiteral: return visitAar(e.isAssocArrayLiteralExp());
+        case EXP.function_:         return visitFun(e.isFuncExp());
+        case EXP.question:          return visitTer(e.isCondExp());
         default:
     }
     return e;
@@ -2830,9 +2831,9 @@ Expression scaleFactor(BinExp be, Scope* sc)
  */
 private bool isVoidArrayLiteral(Expression e, Type other)
 {
-    while (e.op == EXP.arrayLiteral && e.type.ty == Tarray && ((cast(ArrayLiteralExp)e).elements.dim == 1))
+    while (e.op == EXP.arrayLiteral && e.type.ty == Tarray && (e.isArrayLiteralExp().elements.dim == 1))
     {
-        auto ale = cast(ArrayLiteralExp)e;
+        auto ale = e.isArrayLiteralExp();
         e = ale[0];
         if (other.ty == Tsarray || other.ty == Tarray)
             other = other.nextOf();
@@ -2842,7 +2843,7 @@ private bool isVoidArrayLiteral(Expression e, Type other)
     if (other.ty != Tsarray && other.ty != Tarray)
         return false;
     Type t = e.type;
-    return (e.op == EXP.arrayLiteral && t.ty == Tarray && t.nextOf().ty == Tvoid && (cast(ArrayLiteralExp)e).elements.dim == 0);
+    return (e.op == EXP.arrayLiteral && t.ty == Tarray && t.nextOf().ty == Tvoid && e.isArrayLiteralExp().elements.dim == 0);
 }
 
 /**
@@ -3463,20 +3464,20 @@ LmodCompare:
         Expression rhs = e2;
 
         // T[x .. y] op ?
-        if (e1.isSliceExp())
-            lhs = new IndexExp(Loc.initial, (cast(UnaExp)e1).e1, IntegerExp.literal!0);
+        if (auto se1 = e1.isSliceExp())
+            lhs = new IndexExp(Loc.initial, se1.e1, IntegerExp.literal!0);
 
         // [t1, t2, .. t3] op ?
-        if (e1.isArrayLiteralExp())
-            lhs = (cast(ArrayLiteralExp)e1).opIndex(0);
+        if (auto ale1 = e1.isArrayLiteralExp())
+            lhs = ale1.opIndex(0);
 
         // ? op U[z .. t]
-        if (e2.isSliceExp())
-            rhs = new IndexExp(Loc.initial, (cast(UnaExp)e2).e1, IntegerExp.literal!0);
+        if (auto se2 = e2.isSliceExp())
+            rhs = new IndexExp(Loc.initial, se2.e1, IntegerExp.literal!0);
 
         // ? op [u1, u2, .. u3]
-        if (e2.isArrayLiteralExp())
-            rhs = (cast(ArrayLiteralExp)e2).opIndex(0);
+        if (auto ale2 = e2.isArrayLiteralExp())
+            rhs = ale2.opIndex(0);
 
         // create a new binary expression with the new lhs and rhs (at this stage, at least
         // one of lhs/rhs has been replaced with the 0'th element of the array it was before)

@@ -6971,7 +6971,7 @@ mixin template Proxy(alias a)
             static if (is(typeof(a.opCmp(b))))
                 return a.opCmp(b);
             else static if (is(typeof(b.opCmp(a))))
-                return -b.opCmp(b);
+                return -b.opCmp(a);
             else
                 return a < b ? -1 : a > b ? +1 : 0;
         }

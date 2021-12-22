@@ -1859,7 +1859,7 @@ predict_iv_comparison (class loop *loop, basic_block bb,
    exits to predict them using PRED_LOOP_EXTRA_EXIT.  */
 
 static void
-predict_extra_loop_exits (edge exit_edge)
+predict_extra_loop_exits (class loop *loop, edge exit_edge)
 {
   unsigned i;
   bool check_value_one;
@@ -1912,12 +1912,14 @@ predict_extra_loop_exits (edge exit_edge)
 	continue;
       if (EDGE_COUNT (e->src->succs) != 1)
 	{
-	  predict_paths_leading_to_edge (e, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN);
+	  predict_paths_leading_to_edge (e, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN,
+					 loop);
 	  continue;
 	}
 
       FOR_EACH_EDGE (e1, ei, e->src->preds)
-	predict_paths_leading_to_edge (e1, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN);
+	predict_paths_leading_to_edge (e1, PRED_LOOP_EXTRA_EXIT, NOT_TAKEN,
+				       loop);
     }
 }
 
@@ -2008,7 +2010,7 @@ predict_loops (void)
 			 ex->src->index, ex->dest->index);
 	      continue;
 	    }
-	  predict_extra_loop_exits (ex);
+	  predict_extra_loop_exits (loop, ex);
 
 	  if (number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	    niter = niter_desc.niter;

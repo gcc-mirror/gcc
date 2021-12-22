@@ -23,4 +23,4 @@ float h ()
 	F[0] += E / d;
 }
 
-/* { dg-final { scan-tree-dump-times " / " 1 "recip" } } */
+/* { dg-final { scan-tree-dump-times " / " 5 "recip" } } */
