@@ -1,3 +1,47 @@
+2021-12-22  Murray Steele  <murray.steele@arm.com>
+
+	* config.gcc (arm*-*-*): Add arm-mve-builtins.o to extra_objs.
+	* config/arm/arm-c.c (arm_pragma_arm): Handle "#pragma GCC arm".
+	(arm_register_target_pragmas): Register it.
+	* config/arm/arm-protos.h: (arm_mve::arm_handle_mve_types_h): New
+	prototype.
+	* config/arm/arm_mve_types.h: Replace MVE type definitions with
+	new pragma.
+	* config/arm/t-arm: (arm-mve-builtins.o): New target rule.
+	* config/arm/arm-mve-builtins.cc: New file.
+	* config/arm/arm-mve-builtins.def: New file.
+	* config/arm/arm-mve-builtins.h: New file.
+
+2021-12-22  Murray Steele  <murray.steele@arm.com>
+
+	* config/arm/arm-builtins.c (enum arm_type_qualifiers): Move to
+	arm_builtins.h.
+	(enum arm_simd_type): Move to arm-builtins.h.
+	(struct arm_simd_type_info): Move to arm-builtins.h.
+	* config/arm/arm-builtins.h (enum arm_simd_type): Move from
+	arm-builtins.c.
+	(enum arm_type_qualifiers): Move from arm-builtins.c.
+	(struct arm_simd_type_info): Move from arm-builtins.c.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Unify all function declarations in examples
+	where some miss trailing ';'.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Unify all function declarations in examples
+	where some miss trailing ';'.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Unify all function declarations in examples
+	where some miss trailing ';'.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Use uppercase letters for SSEx.
+
 2021-12-21  Jiang Haochen  <haochen.jiang@intel.com>
 
 	* config/i386/bmiintrin.h (_tzcnt_u16): New intrinsic.

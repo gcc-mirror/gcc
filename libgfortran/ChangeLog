@@ -1,3 +1,8 @@
+2021-12-22  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* kinds-override.h: Move GFC_REAL_16_IS_* macros...
+	* mk-kinds-h.sh: ... here.
+
 2021-12-19  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* configure.host: Add aarch64-apple-darwin support.

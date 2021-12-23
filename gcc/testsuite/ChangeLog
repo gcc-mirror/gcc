@@ -1,3 +1,20 @@
+2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103778
+	* gfortran.dg/illegal_boz_arg_3.f90: New test.
+
+2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103776
+	* gfortran.dg/select_10.f90: New test.
+
+2021-12-22  Murray Steele  <murray.steele@arm.com>
+
+	* gcc.target/arm/mve/mve.exp: Add new subdirectories.
+	* gcc.target/arm/mve/general-c/type_redef_1.c: New test.
+	* gcc.target/arm/mve/general/double_pragmas_1.c: New test.
+	* gcc.target/arm/mve/general/nomve_1.c: New test.
+
 2021-12-21  Jiang Haochen  <haochen.jiang@intel.com>
 
 	* gcc.target/i386/bmi-1.c: Add test for new intrinsic.
