@@ -5689,8 +5689,27 @@ package body Sem_Ch8 is
                      null;
 
                   else
-                     Error_Msg_N -- CODEFIX
-                       ("non-visible declaration#!", N);
+                     --  When the entity comes from a generic instance the
+                     --  normal error message machinery will give the line
+                     --  number of the generic package and the location of
+                     --  the generic instance, but not the name of the
+                     --  the instance.
+
+                     --  So, in order to give more descriptive error messages
+                     --  in this case, we include the name of the generic
+                     --  package.
+
+                     if Is_Generic_Instance (Scope (Ent)) then
+                        Error_Msg_Name_1 := Chars (Scope (Ent));
+                        Error_Msg_N -- CODEFIX
+                          ("non-visible declaration from %#!", N);
+
+                     --  Otherwise print the message normally
+
+                     else
+                        Error_Msg_N -- CODEFIX
+                          ("non-visible declaration#!", N);
+                     end if;
 
                      if Ekind (Scope (Ent)) /= E_Generic_Package then
                         Found := True;
