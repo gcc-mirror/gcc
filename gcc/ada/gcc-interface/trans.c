@@ -1171,7 +1171,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
      specific circumstances only, so evaluated lazily.  < 0 means
      unknown, > 0 means known true, 0 means known false.  */
   int require_lvalue = -1;
-  Node_Id gnat_result_type;
+  Entity_Id gnat_result_type;
   tree gnu_result, gnu_result_type;
 
   /* If the Etype of this node is not the same as that of the Entity, then
@@ -4457,6 +4457,22 @@ return_slot_opt_for_pure_call_p (tree target, tree call)
   return !bitmap_bit_p (decls, DECL_UID (target));
 }
 
+/* Elaborate types referenced in the profile (FIRST_FORMAL, RESULT_TYPE).  */
+
+static void
+elaborate_profile (Entity_Id first_formal, Entity_Id result_type)
+{
+  Entity_Id formal;
+
+  for (formal = first_formal;
+       Present (formal);
+       formal = Next_Formal_With_Extras (formal))
+    (void) gnat_to_gnu_type (Etype (formal));
+
+  if (Present (result_type) && Ekind (result_type) != E_Void)
+    (void) gnat_to_gnu_type (result_type);
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
@@ -4481,7 +4497,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   /* The FUNCTION_TYPE node giving the GCC type of the subprogram.  */
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog);
   /* The return type of the FUNCTION_TYPE.  */
-  tree gnu_result_type = TREE_TYPE (gnu_subprog_type);
+  tree gnu_result_type;;
   const bool frontend_builtin
     = (TREE_CODE (gnu_subprog) == FUNCTION_DECL
        && DECL_BUILT_IN_CLASS (gnu_subprog) == BUILT_IN_FRONTEND);
@@ -4496,6 +4512,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   bool variadic;
   bool by_descriptor;
   Entity_Id gnat_formal;
+  Entity_Id gnat_result_type;
   Node_Id gnat_actual;
   atomic_acces_t aa_type;
   bool aa_sync;
@@ -4510,6 +4527,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	= Underlying_Type (Etype (Prefix (gnat_subprog)));
 
       gnat_formal = First_Formal_With_Extras (Etype (gnat_subprog));
+      gnat_result_type = Etype (Etype (gnat_subprog));
       variadic = IN (Convention (gnat_prefix_type), Convention_C_Variadic);
 
       /* If the access type doesn't require foreign-compatible representation,
@@ -4523,6 +4541,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
     {
       /* Assume here that this must be 'Elab_Body or 'Elab_Spec.  */
       gnat_formal = Empty;
+      gnat_result_type = Empty;
       variadic = false;
       by_descriptor = false;
     }
@@ -4532,6 +4551,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       gcc_checking_assert (Is_Entity_Name (gnat_subprog));
 
       gnat_formal = First_Formal_With_Extras (Entity (gnat_subprog));
+      gnat_result_type = Etype (Entity_Id (gnat_subprog));
       variadic = IN (Convention (Entity (gnat_subprog)), Convention_C_Variadic);
       by_descriptor = false;
 
@@ -4549,6 +4569,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  if (returning_value)
 	    {
+	      gnu_result_type = TREE_TYPE (gnu_subprog_type);
 	      *gnu_result_type_p = gnu_result_type;
 	      return build1 (NULL_EXPR, gnu_result_type, call_expr);
 	    }
@@ -4557,7 +4578,13 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	}
     }
 
+  /* We must elaborate the entire profile now because, if it references types
+     that were initially incomplete,, their elaboration changes the contents
+     of GNU_SUBPROG_TYPE and, in particular, may change the result type.  */
+  elaborate_profile (gnat_formal, gnat_result_type);
+
   gcc_assert (FUNC_OR_METHOD_TYPE_P (gnu_subprog_type));
+  gnu_result_type = TREE_TYPE (gnu_subprog_type);
 
   if (TREE_CODE (gnu_subprog) == FUNCTION_DECL)
     {
