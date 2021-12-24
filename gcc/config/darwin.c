@@ -3339,10 +3339,10 @@ darwin_override_options (void)
 
    /* Disable -freorder-blocks-and-partition when unwind tables are being
       emitted for Darwin < 9 (OSX 10.5).
-      The strategy is, "Unless the User has specifically set/unset an unwind
+      The strategy is, "Unless the user has specifically set/unset an unwind
       flag we will switch off -freorder-blocks-and-partition when unwind tables
-      will be generated".  If the User specifically sets flags... we assume
-      (s)he knows why...  */
+      will be generated".  If the user specifically sets flags, we have to
+      assume they know why.  */
    if (generating_for_darwin_version < 9
        && OPTION_SET_P (flag_reorder_blocks_and_partition)
        && flag_reorder_blocks_and_partition
