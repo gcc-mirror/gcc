@@ -16221,6 +16221,81 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     }
 }
 
+/* OLDFNS is a lookup set of member functions from some class template, and
+   NEWFNS is a lookup set of member functions from a specialization of that
+   class template.  Return the subset of NEWFNS which are specializations of
+   a function from OLDFNS.  */
+
+static tree
+filter_memfn_lookup (tree oldfns, tree newfns)
+{
+  /* Record all member functions from the old lookup set OLDFNS into
+     VISIBLE_SET.  */
+  hash_set<tree> visible_set;
+  for (tree fn : lkp_range (oldfns))
+    {
+      if (TREE_CODE (fn) == USING_DECL)
+	{
+	  /* FIXME: Punt on (dependent) USING_DECL for now; mapping
+	     a dependent USING_DECL to its instantiation seems
+	     tricky.  */
+	  gcc_checking_assert (DECL_DEPENDENT_P (fn));
+	  return newfns;
+	}
+      else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	/* A member function template.  */
+	visible_set.add (fn);
+      else if (TREE_CODE (fn) == FUNCTION_DECL)
+	{
+	  if (DECL_TEMPLATE_INFO (fn))
+	    /* A non-template member function.  */
+	    visible_set.add (DECL_TI_TEMPLATE (fn));
+	  else
+	    /* A non-template member function from a non-template base,
+	       injected via a using-decl.  */
+	    visible_set.add (fn);
+	}
+      else
+	gcc_unreachable ();
+    }
+
+  /* Returns true iff (a less specialized version of) FN appeared in
+     the old lookup set OLDFNS.  */
+  auto visible_p = [&visible_set] (tree fn) {
+    if (TREE_CODE (fn) == FUNCTION_DECL
+	&& !DECL_TEMPLATE_INFO (fn))
+      return visible_set.contains (fn);
+    else if (DECL_TEMPLATE_INFO (fn))
+      return visible_set.contains (DECL_TI_TEMPLATE (fn));
+    else
+      gcc_unreachable ();
+  };
+
+  bool lookup_changed_p = false;
+  for (tree fn : lkp_range (newfns))
+    if (!visible_p (fn))
+      {
+	lookup_changed_p = true;
+	break;
+      }
+  if (!lookup_changed_p)
+    return newfns;
+
+  /* Filter out from NEWFNS the member functions that weren't
+     previously visible according to OLDFNS.  */
+  tree filtered_fns = NULL_TREE;
+  unsigned filtered_size = 0;
+  for (tree fn : lkp_range (newfns))
+    if (visible_p (fn))
+      {
+	filtered_fns = lookup_add (fn, filtered_fns);
+	filtered_size++;
+      }
+  gcc_checking_assert (filtered_size == visible_set.elements ());
+
+  return filtered_fns;
+}
+
 /* tsubst a BASELINK.  OBJECT_TYPE, if non-NULL, is the type of the
    expression on the left-hand side of the "." or "->" operator.  We
    only do the lookup if we had a dependent BASELINK.  Otherwise we
@@ -16274,8 +16349,21 @@ tsubst_baselink (tree baselink, tree object_type,
 	/* Treat as-if non-dependent below.  */
 	dependent_p = false;
 
+      bool maybe_incomplete = BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink);
       baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1,
 				  complain);
+      if (maybe_incomplete)
+	{
+	  /* Filter out from the new lookup set those functions which didn't
+	     appear in the original lookup set (in a less specialized form).
+	     This is needed to preserve the consistency of member lookup
+	     performed in an incomplete-class context, within which
+	     later-declared members ought to remain invisible.  */
+	  BASELINK_FUNCTIONS (baselink)
+	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink));
+	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
+	}
+
       if (!baselink)
 	{
 	  if ((complain & tf_error)
@@ -16285,8 +16373,7 @@ tsubst_baselink (tree baselink, tree object_type,
 	  return error_mark_node;
 	}
 
-      if (BASELINK_P (baselink))
-	fns = BASELINK_FUNCTIONS (baselink);
+      fns = BASELINK_FUNCTIONS (baselink);
     }
   else
     {

@@ -6855,12 +6855,12 @@ and SSE4.2).
 @item sse4.1
 @itemx no-sse4.1
 @cindex @code{target("sse4.1")} function attribute, x86
-Enable/disable the generation of the sse4.1 instructions.
+Enable/disable the generation of the SSE4.1 instructions.
 
 @item sse4.2
 @itemx no-sse4.2
 @cindex @code{target("sse4.2")} function attribute, x86
-Enable/disable the generation of the sse4.2 instructions.
+Enable/disable the generation of the SSE4.2 instructions.
 
 @item sse4a
 @itemx no-sse4a
@@ -14570,15 +14570,15 @@ instructions, but allow the compiler to schedule those calls.
 These built-in functions are available for the AArch64 family of
 processors.
 @smallexample
-unsigned int __builtin_aarch64_get_fpcr ()
-void __builtin_aarch64_set_fpcr (unsigned int)
-unsigned int __builtin_aarch64_get_fpsr ()
-void __builtin_aarch64_set_fpsr (unsigned int)
+unsigned int __builtin_aarch64_get_fpcr ();
+void __builtin_aarch64_set_fpcr (unsigned int);
+unsigned int __builtin_aarch64_get_fpsr ();
+void __builtin_aarch64_set_fpsr (unsigned int);
 
-unsigned long long __builtin_aarch64_get_fpcr64 ()
-void __builtin_aarch64_set_fpcr64 (unsigned long long)
-unsigned long long __builtin_aarch64_get_fpsr64 ()
-void __builtin_aarch64_set_fpsr64 (unsigned long long)
+unsigned long long __builtin_aarch64_get_fpcr64 ();
+void __builtin_aarch64_set_fpcr64 (unsigned long long);
+unsigned long long __builtin_aarch64_get_fpsr64 ();
+void __builtin_aarch64_set_fpsr64 (unsigned long long);
 @end smallexample
 
 @node Alpha Built-in Functions
@@ -14591,34 +14591,34 @@ The following built-in functions are always available.  They
 all generate the machine instruction that is part of the name.
 
 @smallexample
-long __builtin_alpha_implver (void)
-long __builtin_alpha_rpcc (void)
-long __builtin_alpha_amask (long)
-long __builtin_alpha_cmpbge (long, long)
-long __builtin_alpha_extbl (long, long)
-long __builtin_alpha_extwl (long, long)
-long __builtin_alpha_extll (long, long)
-long __builtin_alpha_extql (long, long)
-long __builtin_alpha_extwh (long, long)
-long __builtin_alpha_extlh (long, long)
-long __builtin_alpha_extqh (long, long)
-long __builtin_alpha_insbl (long, long)
-long __builtin_alpha_inswl (long, long)
-long __builtin_alpha_insll (long, long)
-long __builtin_alpha_insql (long, long)
-long __builtin_alpha_inswh (long, long)
-long __builtin_alpha_inslh (long, long)
-long __builtin_alpha_insqh (long, long)
-long __builtin_alpha_mskbl (long, long)
-long __builtin_alpha_mskwl (long, long)
-long __builtin_alpha_mskll (long, long)
-long __builtin_alpha_mskql (long, long)
-long __builtin_alpha_mskwh (long, long)
-long __builtin_alpha_msklh (long, long)
-long __builtin_alpha_mskqh (long, long)
-long __builtin_alpha_umulh (long, long)
-long __builtin_alpha_zap (long, long)
-long __builtin_alpha_zapnot (long, long)
+long __builtin_alpha_implver (void);
+long __builtin_alpha_rpcc (void);
+long __builtin_alpha_amask (long);
+long __builtin_alpha_cmpbge (long, long);
+long __builtin_alpha_extbl (long, long);
+long __builtin_alpha_extwl (long, long);
+long __builtin_alpha_extll (long, long);
+long __builtin_alpha_extql (long, long);
+long __builtin_alpha_extwh (long, long);
+long __builtin_alpha_extlh (long, long);
+long __builtin_alpha_extqh (long, long);
+long __builtin_alpha_insbl (long, long);
+long __builtin_alpha_inswl (long, long);
+long __builtin_alpha_insll (long, long);
+long __builtin_alpha_insql (long, long);
+long __builtin_alpha_inswh (long, long);
+long __builtin_alpha_inslh (long, long);
+long __builtin_alpha_insqh (long, long);
+long __builtin_alpha_mskbl (long, long);
+long __builtin_alpha_mskwl (long, long);
+long __builtin_alpha_mskll (long, long);
+long __builtin_alpha_mskql (long, long);
+long __builtin_alpha_mskwh (long, long);
+long __builtin_alpha_msklh (long, long);
+long __builtin_alpha_mskqh (long, long);
+long __builtin_alpha_umulh (long, long);
+long __builtin_alpha_zap (long, long);
+long __builtin_alpha_zapnot (long, long);
 @end smallexample
 
 The following built-in functions are always with @option{-mmax}
@@ -14627,19 +14627,19 @@ later.  They all generate the machine instruction that is part
 of the name.
 
 @smallexample
-long __builtin_alpha_pklb (long)
-long __builtin_alpha_pkwb (long)
-long __builtin_alpha_unpkbl (long)
-long __builtin_alpha_unpkbw (long)
-long __builtin_alpha_minub8 (long, long)
-long __builtin_alpha_minsb8 (long, long)
-long __builtin_alpha_minuw4 (long, long)
-long __builtin_alpha_minsw4 (long, long)
-long __builtin_alpha_maxub8 (long, long)
-long __builtin_alpha_maxsb8 (long, long)
-long __builtin_alpha_maxuw4 (long, long)
-long __builtin_alpha_maxsw4 (long, long)
-long __builtin_alpha_perr (long, long)
+long __builtin_alpha_pklb (long);
+long __builtin_alpha_pkwb (long);
+long __builtin_alpha_unpkbl (long);
+long __builtin_alpha_unpkbw (long);
+long __builtin_alpha_minub8 (long, long);
+long __builtin_alpha_minsb8 (long, long);
+long __builtin_alpha_minuw4 (long, long);
+long __builtin_alpha_minsw4 (long, long);
+long __builtin_alpha_maxub8 (long, long);
+long __builtin_alpha_maxsb8 (long, long);
+long __builtin_alpha_maxuw4 (long, long);
+long __builtin_alpha_maxsw4 (long, long);
+long __builtin_alpha_perr (long, long);
 @end smallexample
 
 The following built-in functions are always with @option{-mcix}
@@ -14648,9 +14648,9 @@ later.  They all generate the machine instruction that is part
 of the name.
 
 @smallexample
-long __builtin_alpha_cttz (long)
-long __builtin_alpha_ctlz (long)
-long __builtin_alpha_ctpop (long)
+long __builtin_alpha_cttz (long);
+long __builtin_alpha_ctlz (long);
+long __builtin_alpha_ctpop (long);
 @end smallexample
 
 The following built-in functions are available on systems that use the OSF/1
@@ -14659,8 +14659,8 @@ PAL calls, but when invoked with @option{-mtls-kernel}, they invoke
 @code{rdval} and @code{wrval}.
 
 @smallexample
-void *__builtin_thread_pointer (void)
-void __builtin_set_thread_pointer (void *)
+void *__builtin_thread_pointer (void);
+void __builtin_set_thread_pointer (void *);
 @end smallexample
 
 @node Altera Nios II Built-in Functions
@@ -14673,26 +14673,26 @@ The following built-in functions are always available.  They
 all generate the machine instruction that is part of the name.
 
 @example
-int __builtin_ldbio (volatile const void *)
-int __builtin_ldbuio (volatile const void *)
-int __builtin_ldhio (volatile const void *)
-int __builtin_ldhuio (volatile const void *)
-int __builtin_ldwio (volatile const void *)
-void __builtin_stbio (volatile void *, int)
-void __builtin_sthio (volatile void *, int)
-void __builtin_stwio (volatile void *, int)
-void __builtin_sync (void)
-int __builtin_rdctl (int) 
-int __builtin_rdprs (int, int)
-void __builtin_wrctl (int, int)
-void __builtin_flushd (volatile void *)
-void __builtin_flushda (volatile void *)
+int __builtin_ldbio (volatile const void *);
+int __builtin_ldbuio (volatile const void *);
+int __builtin_ldhio (volatile const void *);
+int __builtin_ldhuio (volatile const void *);
+int __builtin_ldwio (volatile const void *);
+void __builtin_stbio (volatile void *, int);
+void __builtin_sthio (volatile void *, int);
+void __builtin_stwio (volatile void *, int);
+void __builtin_sync (void);
+int __builtin_rdctl (int);
+int __builtin_rdprs (int, int);
+void __builtin_wrctl (int, int);
+void __builtin_flushd (volatile void *);
+void __builtin_flushda (volatile void *);
 int __builtin_wrpie (int);
 void __builtin_eni (int);
-int __builtin_ldex (volatile const void *)
-int __builtin_stex (volatile void *, int)
-int __builtin_ldsex (volatile const void *)
-int __builtin_stsex (volatile void *, int)
+int __builtin_ldex (volatile const void *);
+int __builtin_stex (volatile void *, int);
+int __builtin_ldsex (volatile const void *);
+int __builtin_stsex (volatile void *, int);
 @end example
 
 The following built-in functions are always available.  They
@@ -14722,58 +14722,58 @@ The letters represent the following data types:
 
 And the function names are:
 @example
-void __builtin_custom_n (void)
-void __builtin_custom_ni (int)
-void __builtin_custom_nf (float)
-void __builtin_custom_np (void *)
-void __builtin_custom_nii (int, int)
-void __builtin_custom_nif (int, float)
-void __builtin_custom_nip (int, void *)
-void __builtin_custom_nfi (float, int)
-void __builtin_custom_nff (float, float)
-void __builtin_custom_nfp (float, void *)
-void __builtin_custom_npi (void *, int)
-void __builtin_custom_npf (void *, float)
-void __builtin_custom_npp (void *, void *)
-int __builtin_custom_in (void)
-int __builtin_custom_ini (int)
-int __builtin_custom_inf (float)
-int __builtin_custom_inp (void *)
-int __builtin_custom_inii (int, int)
-int __builtin_custom_inif (int, float)
-int __builtin_custom_inip (int, void *)
-int __builtin_custom_infi (float, int)
-int __builtin_custom_inff (float, float)
-int __builtin_custom_infp (float, void *)
-int __builtin_custom_inpi (void *, int)
-int __builtin_custom_inpf (void *, float)
-int __builtin_custom_inpp (void *, void *)
-float __builtin_custom_fn (void)
-float __builtin_custom_fni (int)
-float __builtin_custom_fnf (float)
-float __builtin_custom_fnp (void *)
-float __builtin_custom_fnii (int, int)
-float __builtin_custom_fnif (int, float)
-float __builtin_custom_fnip (int, void *)
-float __builtin_custom_fnfi (float, int)
-float __builtin_custom_fnff (float, float)
-float __builtin_custom_fnfp (float, void *)
-float __builtin_custom_fnpi (void *, int)
-float __builtin_custom_fnpf (void *, float)
-float __builtin_custom_fnpp (void *, void *)
-void * __builtin_custom_pn (void)
-void * __builtin_custom_pni (int)
-void * __builtin_custom_pnf (float)
-void * __builtin_custom_pnp (void *)
-void * __builtin_custom_pnii (int, int)
-void * __builtin_custom_pnif (int, float)
-void * __builtin_custom_pnip (int, void *)
-void * __builtin_custom_pnfi (float, int)
-void * __builtin_custom_pnff (float, float)
-void * __builtin_custom_pnfp (float, void *)
-void * __builtin_custom_pnpi (void *, int)
-void * __builtin_custom_pnpf (void *, float)
-void * __builtin_custom_pnpp (void *, void *)
+void __builtin_custom_n (void);
+void __builtin_custom_ni (int);
+void __builtin_custom_nf (float);
+void __builtin_custom_np (void *);
+void __builtin_custom_nii (int, int);
+void __builtin_custom_nif (int, float);
+void __builtin_custom_nip (int, void *);
+void __builtin_custom_nfi (float, int);
+void __builtin_custom_nff (float, float);
+void __builtin_custom_nfp (float, void *);
+void __builtin_custom_npi (void *, int);
+void __builtin_custom_npf (void *, float);
+void __builtin_custom_npp (void *, void *);
+int __builtin_custom_in (void);
+int __builtin_custom_ini (int);
+int __builtin_custom_inf (float);
+int __builtin_custom_inp (void *);
+int __builtin_custom_inii (int, int);
+int __builtin_custom_inif (int, float);
+int __builtin_custom_inip (int, void *);
+int __builtin_custom_infi (float, int);
+int __builtin_custom_inff (float, float);
+int __builtin_custom_infp (float, void *);
+int __builtin_custom_inpi (void *, int);
+int __builtin_custom_inpf (void *, float);
+int __builtin_custom_inpp (void *, void *);
+float __builtin_custom_fn (void);
+float __builtin_custom_fni (int);
+float __builtin_custom_fnf (float);
+float __builtin_custom_fnp (void *);
+float __builtin_custom_fnii (int, int);
+float __builtin_custom_fnif (int, float);
+float __builtin_custom_fnip (int, void *);
+float __builtin_custom_fnfi (float, int);
+float __builtin_custom_fnff (float, float);
+float __builtin_custom_fnfp (float, void *);
+float __builtin_custom_fnpi (void *, int);
+float __builtin_custom_fnpf (void *, float);
+float __builtin_custom_fnpp (void *, void *);
+void * __builtin_custom_pn (void);
+void * __builtin_custom_pni (int);
+void * __builtin_custom_pnf (float);
+void * __builtin_custom_pnp (void *);
+void * __builtin_custom_pnii (int, int);
+void * __builtin_custom_pnif (int, float);
+void * __builtin_custom_pnip (int, void *);
+void * __builtin_custom_pnfi (float, int);
+void * __builtin_custom_pnff (float, float);
+void * __builtin_custom_pnfp (float, void *);
+void * __builtin_custom_pnpi (void *, int);
+void * __builtin_custom_pnpf (void *, float);
+void * __builtin_custom_pnpp (void *, void *);
 @end example
 
 @node ARC Built-in Functions
@@ -15008,147 +15008,147 @@ for ARC, grouped by calling signature.
 The following take two @code{__v8hi} arguments and return a
 @code{__v8hi} result:
 @example
-__v8hi __builtin_arc_vaddaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vaddw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vand (__v8hi, __v8hi)
-__v8hi __builtin_arc_vandaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vavb (__v8hi, __v8hi)
-__v8hi __builtin_arc_vavrb (__v8hi, __v8hi)
-__v8hi __builtin_arc_vbic (__v8hi, __v8hi)
-__v8hi __builtin_arc_vbicaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vdifaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vdifw (__v8hi, __v8hi)
-__v8hi __builtin_arc_veqw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vh264f (__v8hi, __v8hi)
-__v8hi __builtin_arc_vh264ft (__v8hi, __v8hi)
-__v8hi __builtin_arc_vh264fw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vlew (__v8hi, __v8hi)
-__v8hi __builtin_arc_vltw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmaxaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmaxw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vminaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vminw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr1aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr1w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr2aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr2w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr3aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr3w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr4aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr4w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr5aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr5w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr6aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr6w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr7aw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmr7w (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmrb (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmulaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmulfaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmulfw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vmulw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vnew (__v8hi, __v8hi)
-__v8hi __builtin_arc_vor (__v8hi, __v8hi)
-__v8hi __builtin_arc_vsubaw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vsubw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vsummw (__v8hi, __v8hi)
-__v8hi __builtin_arc_vvc1f (__v8hi, __v8hi)
-__v8hi __builtin_arc_vvc1ft (__v8hi, __v8hi)
-__v8hi __builtin_arc_vxor (__v8hi, __v8hi)
-__v8hi __builtin_arc_vxoraw (__v8hi, __v8hi)
+__v8hi __builtin_arc_vaddaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vaddw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vand (__v8hi, __v8hi);
+__v8hi __builtin_arc_vandaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vavb (__v8hi, __v8hi);
+__v8hi __builtin_arc_vavrb (__v8hi, __v8hi);
+__v8hi __builtin_arc_vbic (__v8hi, __v8hi);
+__v8hi __builtin_arc_vbicaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vdifaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vdifw (__v8hi, __v8hi);
+__v8hi __builtin_arc_veqw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vh264f (__v8hi, __v8hi);
+__v8hi __builtin_arc_vh264ft (__v8hi, __v8hi);
+__v8hi __builtin_arc_vh264fw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vlew (__v8hi, __v8hi);
+__v8hi __builtin_arc_vltw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmaxaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmaxw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vminaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vminw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr1aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr1w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr2aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr2w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr3aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr3w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr4aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr4w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr5aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr5w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr6aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr6w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr7aw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmr7w (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmrb (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmulaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmulfaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmulfw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vmulw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vnew (__v8hi, __v8hi);
+__v8hi __builtin_arc_vor (__v8hi, __v8hi);
+__v8hi __builtin_arc_vsubaw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vsubw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vsummw (__v8hi, __v8hi);
+__v8hi __builtin_arc_vvc1f (__v8hi, __v8hi);
+__v8hi __builtin_arc_vvc1ft (__v8hi, __v8hi);
+__v8hi __builtin_arc_vxor (__v8hi, __v8hi);
+__v8hi __builtin_arc_vxoraw (__v8hi, __v8hi);
 @end example
 
 The following take one @code{__v8hi} and one @code{int} argument and return a
 @code{__v8hi} result:
 
 @example
-__v8hi __builtin_arc_vbaddw (__v8hi, int)
-__v8hi __builtin_arc_vbmaxw (__v8hi, int)
-__v8hi __builtin_arc_vbminw (__v8hi, int)
-__v8hi __builtin_arc_vbmulaw (__v8hi, int)
-__v8hi __builtin_arc_vbmulfw (__v8hi, int)
-__v8hi __builtin_arc_vbmulw (__v8hi, int)
-__v8hi __builtin_arc_vbrsubw (__v8hi, int)
-__v8hi __builtin_arc_vbsubw (__v8hi, int)
+__v8hi __builtin_arc_vbaddw (__v8hi, int);
+__v8hi __builtin_arc_vbmaxw (__v8hi, int);
+__v8hi __builtin_arc_vbminw (__v8hi, int);
+__v8hi __builtin_arc_vbmulaw (__v8hi, int);
+__v8hi __builtin_arc_vbmulfw (__v8hi, int);
+__v8hi __builtin_arc_vbmulw (__v8hi, int);
+__v8hi __builtin_arc_vbrsubw (__v8hi, int);
+__v8hi __builtin_arc_vbsubw (__v8hi, int);
 @end example
 
 The following take one @code{__v8hi} argument and one @code{int} argument which
 must be a 3-bit compile time constant indicating a register number
 I0-I7.  They return a @code{__v8hi} result.
 @example
-__v8hi __builtin_arc_vasrw (__v8hi, const int)
-__v8hi __builtin_arc_vsr8 (__v8hi, const int)
-__v8hi __builtin_arc_vsr8aw (__v8hi, const int)
+__v8hi __builtin_arc_vasrw (__v8hi, const int);
+__v8hi __builtin_arc_vsr8 (__v8hi, const int);
+__v8hi __builtin_arc_vsr8aw (__v8hi, const int);
 @end example
 
 The following take one @code{__v8hi} argument and one @code{int}
 argument which must be a 6-bit compile time constant.  They return a
 @code{__v8hi} result.
 @example
-__v8hi __builtin_arc_vasrpwbi (__v8hi, const int)
-__v8hi __builtin_arc_vasrrpwbi (__v8hi, const int)
-__v8hi __builtin_arc_vasrrwi (__v8hi, const int)
-__v8hi __builtin_arc_vasrsrwi (__v8hi, const int)
-__v8hi __builtin_arc_vasrwi (__v8hi, const int)
-__v8hi __builtin_arc_vsr8awi (__v8hi, const int)
-__v8hi __builtin_arc_vsr8i (__v8hi, const int)
+__v8hi __builtin_arc_vasrpwbi (__v8hi, const int);
+__v8hi __builtin_arc_vasrrpwbi (__v8hi, const int);
+__v8hi __builtin_arc_vasrrwi (__v8hi, const int);
+__v8hi __builtin_arc_vasrsrwi (__v8hi, const int);
+__v8hi __builtin_arc_vasrwi (__v8hi, const int);
+__v8hi __builtin_arc_vsr8awi (__v8hi, const int);
+__v8hi __builtin_arc_vsr8i (__v8hi, const int);
 @end example
 
 The following take one @code{__v8hi} argument and one @code{int} argument which
 must be a 8-bit compile time constant.  They return a @code{__v8hi}
 result.
 @example
-__v8hi __builtin_arc_vd6tapf (__v8hi, const int)
-__v8hi __builtin_arc_vmvaw (__v8hi, const int)
-__v8hi __builtin_arc_vmvw (__v8hi, const int)
-__v8hi __builtin_arc_vmvzw (__v8hi, const int)
+__v8hi __builtin_arc_vd6tapf (__v8hi, const int);
+__v8hi __builtin_arc_vmvaw (__v8hi, const int);
+__v8hi __builtin_arc_vmvw (__v8hi, const int);
+__v8hi __builtin_arc_vmvzw (__v8hi, const int);
 @end example
 
 The following take two @code{int} arguments, the second of which which
 must be a 8-bit compile time constant.  They return a @code{__v8hi}
 result:
 @example
-__v8hi __builtin_arc_vmovaw (int, const int)
-__v8hi __builtin_arc_vmovw (int, const int)
-__v8hi __builtin_arc_vmovzw (int, const int)
+__v8hi __builtin_arc_vmovaw (int, const int);
+__v8hi __builtin_arc_vmovw (int, const int);
+__v8hi __builtin_arc_vmovzw (int, const int);
 @end example
 
 The following take a single @code{__v8hi} argument and return a
 @code{__v8hi} result:
 @example
-__v8hi __builtin_arc_vabsaw (__v8hi)
-__v8hi __builtin_arc_vabsw (__v8hi)
-__v8hi __builtin_arc_vaddsuw (__v8hi)
-__v8hi __builtin_arc_vexch1 (__v8hi)
-__v8hi __builtin_arc_vexch2 (__v8hi)
-__v8hi __builtin_arc_vexch4 (__v8hi)
-__v8hi __builtin_arc_vsignw (__v8hi)
-__v8hi __builtin_arc_vupbaw (__v8hi)
-__v8hi __builtin_arc_vupbw (__v8hi)
-__v8hi __builtin_arc_vupsbaw (__v8hi)
-__v8hi __builtin_arc_vupsbw (__v8hi)
+__v8hi __builtin_arc_vabsaw (__v8hi);
+__v8hi __builtin_arc_vabsw (__v8hi);
+__v8hi __builtin_arc_vaddsuw (__v8hi);
+__v8hi __builtin_arc_vexch1 (__v8hi);
+__v8hi __builtin_arc_vexch2 (__v8hi);
+__v8hi __builtin_arc_vexch4 (__v8hi);
+__v8hi __builtin_arc_vsignw (__v8hi);
+__v8hi __builtin_arc_vupbaw (__v8hi);
+__v8hi __builtin_arc_vupbw (__v8hi);
+__v8hi __builtin_arc_vupsbaw (__v8hi);
+__v8hi __builtin_arc_vupsbw (__v8hi);
 @end example
 
 The following take two @code{int} arguments and return no result:
 @example
-void __builtin_arc_vdirun (int, int)
-void __builtin_arc_vdorun (int, int)
+void __builtin_arc_vdirun (int, int);
+void __builtin_arc_vdorun (int, int);
 @end example
 
 The following take two @code{int} arguments and return no result.  The
 first argument must a 3-bit compile time constant indicating one of
 the DR0-DR7 DMA setup channels:
 @example
-void __builtin_arc_vdiwr (const int, int)
-void __builtin_arc_vdowr (const int, int)
+void __builtin_arc_vdiwr (const int, int);
+void __builtin_arc_vdowr (const int, int);
 @end example
 
 The following take an @code{int} argument and return no result:
 @example
-void __builtin_arc_vendrec (int)
-void __builtin_arc_vrec (int)
-void __builtin_arc_vrecrun (int)
-void __builtin_arc_vrun (int)
+void __builtin_arc_vendrec (int);
+void __builtin_arc_vrec (int);
+void __builtin_arc_vrecrun (int);
+void __builtin_arc_vrun (int);
 @end example
 
 The following take a @code{__v8hi} argument and two @code{int}
@@ -15162,10 +15162,10 @@ bits of the @code{__v8hi} register provided as the first argument with
 the value loaded from the @code{[Ib, u8]} location in the SDM.
 
 @example
-__v8hi __builtin_arc_vld32 (__v8hi, const int, const int)
-__v8hi __builtin_arc_vld32wh (__v8hi, const int, const int)
-__v8hi __builtin_arc_vld32wl (__v8hi, const int, const int)
-__v8hi __builtin_arc_vld64 (__v8hi, const int, const int)
+__v8hi __builtin_arc_vld32 (__v8hi, const int, const int);
+__v8hi __builtin_arc_vld32wh (__v8hi, const int, const int);
+__v8hi __builtin_arc_vld32wl (__v8hi, const int, const int);
+__v8hi __builtin_arc_vld64 (__v8hi, const int, const int);
 @end example
 
 The following take two @code{int} arguments and return a @code{__v8hi}
@@ -15174,8 +15174,8 @@ indicating one the registers I0-I7, and the second argument must be an
 8-bit compile time constant.
 
 @example
-__v8hi __builtin_arc_vld128 (const int, const int)
-__v8hi __builtin_arc_vld64w (const int, const int)
+__v8hi __builtin_arc_vld128 (const int, const int);
+__v8hi __builtin_arc_vld64w (const int, const int);
 @end example
 
 The following take a @code{__v8hi} argument and two @code{int}
@@ -15184,8 +15184,8 @@ compile time constants, indicating one the registers I0-I7, and the
 third argument must be an 8-bit compile time constant.
 
 @example
-void __builtin_arc_vst128 (__v8hi, const int, const int)
-void __builtin_arc_vst64 (__v8hi, const int, const int)
+void __builtin_arc_vst128 (__v8hi, const int, const int);
+void __builtin_arc_vst64 (__v8hi, const int, const int);
 @end example
 
 The following take a @code{__v8hi} argument and three @code{int}
@@ -15196,8 +15196,8 @@ indicating one the registers I0-I7, and the fourth argument must be an
 8-bit compile time constant.
 
 @example
-void __builtin_arc_vst16_n (__v8hi, const int, const int, const int)
-void __builtin_arc_vst32_n (__v8hi, const int, const int, const int)
+void __builtin_arc_vst16_n (__v8hi, const int, const int, const int);
+void __builtin_arc_vst32_n (__v8hi, const int, const int, const int);
 @end example
 
 @node ARM iWMMXt Built-in Functions
@@ -15211,146 +15211,146 @@ typedef int v2si __attribute__ ((vector_size (8)));
 typedef short v4hi __attribute__ ((vector_size (8)));
 typedef char v8qi __attribute__ ((vector_size (8)));
 
-int __builtin_arm_getwcgr0 (void)
-void __builtin_arm_setwcgr0 (int)
-int __builtin_arm_getwcgr1 (void)
-void __builtin_arm_setwcgr1 (int)
-int __builtin_arm_getwcgr2 (void)
-void __builtin_arm_setwcgr2 (int)
-int __builtin_arm_getwcgr3 (void)
-void __builtin_arm_setwcgr3 (int)
-int __builtin_arm_textrmsb (v8qi, int)
-int __builtin_arm_textrmsh (v4hi, int)
-int __builtin_arm_textrmsw (v2si, int)
-int __builtin_arm_textrmub (v8qi, int)
-int __builtin_arm_textrmuh (v4hi, int)
-int __builtin_arm_textrmuw (v2si, int)
-v8qi __builtin_arm_tinsrb (v8qi, int, int)
-v4hi __builtin_arm_tinsrh (v4hi, int, int)
-v2si __builtin_arm_tinsrw (v2si, int, int)
-long long __builtin_arm_tmia (long long, int, int)
-long long __builtin_arm_tmiabb (long long, int, int)
-long long __builtin_arm_tmiabt (long long, int, int)
-long long __builtin_arm_tmiaph (long long, int, int)
-long long __builtin_arm_tmiatb (long long, int, int)
-long long __builtin_arm_tmiatt (long long, int, int)
-int __builtin_arm_tmovmskb (v8qi)
-int __builtin_arm_tmovmskh (v4hi)
-int __builtin_arm_tmovmskw (v2si)
-long long __builtin_arm_waccb (v8qi)
-long long __builtin_arm_wacch (v4hi)
-long long __builtin_arm_waccw (v2si)
-v8qi __builtin_arm_waddb (v8qi, v8qi)
-v8qi __builtin_arm_waddbss (v8qi, v8qi)
-v8qi __builtin_arm_waddbus (v8qi, v8qi)
-v4hi __builtin_arm_waddh (v4hi, v4hi)
-v4hi __builtin_arm_waddhss (v4hi, v4hi)
-v4hi __builtin_arm_waddhus (v4hi, v4hi)
-v2si __builtin_arm_waddw (v2si, v2si)
-v2si __builtin_arm_waddwss (v2si, v2si)
-v2si __builtin_arm_waddwus (v2si, v2si)
-v8qi __builtin_arm_walign (v8qi, v8qi, int)
-long long __builtin_arm_wand(long long, long long)
-long long __builtin_arm_wandn (long long, long long)
-v8qi __builtin_arm_wavg2b (v8qi, v8qi)
-v8qi __builtin_arm_wavg2br (v8qi, v8qi)
-v4hi __builtin_arm_wavg2h (v4hi, v4hi)
-v4hi __builtin_arm_wavg2hr (v4hi, v4hi)
-v8qi __builtin_arm_wcmpeqb (v8qi, v8qi)
-v4hi __builtin_arm_wcmpeqh (v4hi, v4hi)
-v2si __builtin_arm_wcmpeqw (v2si, v2si)
-v8qi __builtin_arm_wcmpgtsb (v8qi, v8qi)
-v4hi __builtin_arm_wcmpgtsh (v4hi, v4hi)
-v2si __builtin_arm_wcmpgtsw (v2si, v2si)
-v8qi __builtin_arm_wcmpgtub (v8qi, v8qi)
-v4hi __builtin_arm_wcmpgtuh (v4hi, v4hi)
-v2si __builtin_arm_wcmpgtuw (v2si, v2si)
-long long __builtin_arm_wmacs (long long, v4hi, v4hi)
-long long __builtin_arm_wmacsz (v4hi, v4hi)
-long long __builtin_arm_wmacu (long long, v4hi, v4hi)
-long long __builtin_arm_wmacuz (v4hi, v4hi)
-v4hi __builtin_arm_wmadds (v4hi, v4hi)
-v4hi __builtin_arm_wmaddu (v4hi, v4hi)
-v8qi __builtin_arm_wmaxsb (v8qi, v8qi)
-v4hi __builtin_arm_wmaxsh (v4hi, v4hi)
-v2si __builtin_arm_wmaxsw (v2si, v2si)
-v8qi __builtin_arm_wmaxub (v8qi, v8qi)
-v4hi __builtin_arm_wmaxuh (v4hi, v4hi)
-v2si __builtin_arm_wmaxuw (v2si, v2si)
-v8qi __builtin_arm_wminsb (v8qi, v8qi)
-v4hi __builtin_arm_wminsh (v4hi, v4hi)
-v2si __builtin_arm_wminsw (v2si, v2si)
-v8qi __builtin_arm_wminub (v8qi, v8qi)
-v4hi __builtin_arm_wminuh (v4hi, v4hi)
-v2si __builtin_arm_wminuw (v2si, v2si)
-v4hi __builtin_arm_wmulsm (v4hi, v4hi)
-v4hi __builtin_arm_wmulul (v4hi, v4hi)
-v4hi __builtin_arm_wmulum (v4hi, v4hi)
-long long __builtin_arm_wor (long long, long long)
-v2si __builtin_arm_wpackdss (long long, long long)
-v2si __builtin_arm_wpackdus (long long, long long)
-v8qi __builtin_arm_wpackhss (v4hi, v4hi)
-v8qi __builtin_arm_wpackhus (v4hi, v4hi)
-v4hi __builtin_arm_wpackwss (v2si, v2si)
-v4hi __builtin_arm_wpackwus (v2si, v2si)
-long long __builtin_arm_wrord (long long, long long)
-long long __builtin_arm_wrordi (long long, int)
-v4hi __builtin_arm_wrorh (v4hi, long long)
-v4hi __builtin_arm_wrorhi (v4hi, int)
-v2si __builtin_arm_wrorw (v2si, long long)
-v2si __builtin_arm_wrorwi (v2si, int)
-v2si __builtin_arm_wsadb (v2si, v8qi, v8qi)
-v2si __builtin_arm_wsadbz (v8qi, v8qi)
-v2si __builtin_arm_wsadh (v2si, v4hi, v4hi)
-v2si __builtin_arm_wsadhz (v4hi, v4hi)
-v4hi __builtin_arm_wshufh (v4hi, int)
-long long __builtin_arm_wslld (long long, long long)
-long long __builtin_arm_wslldi (long long, int)
-v4hi __builtin_arm_wsllh (v4hi, long long)
-v4hi __builtin_arm_wsllhi (v4hi, int)
-v2si __builtin_arm_wsllw (v2si, long long)
-v2si __builtin_arm_wsllwi (v2si, int)
-long long __builtin_arm_wsrad (long long, long long)
-long long __builtin_arm_wsradi (long long, int)
-v4hi __builtin_arm_wsrah (v4hi, long long)
-v4hi __builtin_arm_wsrahi (v4hi, int)
-v2si __builtin_arm_wsraw (v2si, long long)
-v2si __builtin_arm_wsrawi (v2si, int)
-long long __builtin_arm_wsrld (long long, long long)
-long long __builtin_arm_wsrldi (long long, int)
-v4hi __builtin_arm_wsrlh (v4hi, long long)
-v4hi __builtin_arm_wsrlhi (v4hi, int)
-v2si __builtin_arm_wsrlw (v2si, long long)
-v2si __builtin_arm_wsrlwi (v2si, int)
-v8qi __builtin_arm_wsubb (v8qi, v8qi)
-v8qi __builtin_arm_wsubbss (v8qi, v8qi)
-v8qi __builtin_arm_wsubbus (v8qi, v8qi)
-v4hi __builtin_arm_wsubh (v4hi, v4hi)
-v4hi __builtin_arm_wsubhss (v4hi, v4hi)
-v4hi __builtin_arm_wsubhus (v4hi, v4hi)
-v2si __builtin_arm_wsubw (v2si, v2si)
-v2si __builtin_arm_wsubwss (v2si, v2si)
-v2si __builtin_arm_wsubwus (v2si, v2si)
-v4hi __builtin_arm_wunpckehsb (v8qi)
-v2si __builtin_arm_wunpckehsh (v4hi)
-long long __builtin_arm_wunpckehsw (v2si)
-v4hi __builtin_arm_wunpckehub (v8qi)
-v2si __builtin_arm_wunpckehuh (v4hi)
-long long __builtin_arm_wunpckehuw (v2si)
-v4hi __builtin_arm_wunpckelsb (v8qi)
-v2si __builtin_arm_wunpckelsh (v4hi)
-long long __builtin_arm_wunpckelsw (v2si)
-v4hi __builtin_arm_wunpckelub (v8qi)
-v2si __builtin_arm_wunpckeluh (v4hi)
-long long __builtin_arm_wunpckeluw (v2si)
-v8qi __builtin_arm_wunpckihb (v8qi, v8qi)
-v4hi __builtin_arm_wunpckihh (v4hi, v4hi)
-v2si __builtin_arm_wunpckihw (v2si, v2si)
-v8qi __builtin_arm_wunpckilb (v8qi, v8qi)
-v4hi __builtin_arm_wunpckilh (v4hi, v4hi)
-v2si __builtin_arm_wunpckilw (v2si, v2si)
-long long __builtin_arm_wxor (long long, long long)
-long long __builtin_arm_wzero ()
+int __builtin_arm_getwcgr0 (void);
+void __builtin_arm_setwcgr0 (int);
+int __builtin_arm_getwcgr1 (void);
+void __builtin_arm_setwcgr1 (int);
+int __builtin_arm_getwcgr2 (void);
+void __builtin_arm_setwcgr2 (int);
+int __builtin_arm_getwcgr3 (void);
+void __builtin_arm_setwcgr3 (int);
+int __builtin_arm_textrmsb (v8qi, int);
+int __builtin_arm_textrmsh (v4hi, int);
+int __builtin_arm_textrmsw (v2si, int);
+int __builtin_arm_textrmub (v8qi, int);
+int __builtin_arm_textrmuh (v4hi, int);
+int __builtin_arm_textrmuw (v2si, int);
+v8qi __builtin_arm_tinsrb (v8qi, int, int);
+v4hi __builtin_arm_tinsrh (v4hi, int, int);
+v2si __builtin_arm_tinsrw (v2si, int, int);
+long long __builtin_arm_tmia (long long, int, int);
+long long __builtin_arm_tmiabb (long long, int, int);
+long long __builtin_arm_tmiabt (long long, int, int);
+long long __builtin_arm_tmiaph (long long, int, int);
+long long __builtin_arm_tmiatb (long long, int, int);
+long long __builtin_arm_tmiatt (long long, int, int);
+int __builtin_arm_tmovmskb (v8qi);
+int __builtin_arm_tmovmskh (v4hi);
+int __builtin_arm_tmovmskw (v2si);
+long long __builtin_arm_waccb (v8qi);
+long long __builtin_arm_wacch (v4hi);
+long long __builtin_arm_waccw (v2si);
+v8qi __builtin_arm_waddb (v8qi, v8qi);
+v8qi __builtin_arm_waddbss (v8qi, v8qi);
+v8qi __builtin_arm_waddbus (v8qi, v8qi);
+v4hi __builtin_arm_waddh (v4hi, v4hi);
+v4hi __builtin_arm_waddhss (v4hi, v4hi);
+v4hi __builtin_arm_waddhus (v4hi, v4hi);
+v2si __builtin_arm_waddw (v2si, v2si);
+v2si __builtin_arm_waddwss (v2si, v2si);
+v2si __builtin_arm_waddwus (v2si, v2si);
+v8qi __builtin_arm_walign (v8qi, v8qi, int);
+long long __builtin_arm_wand(long long, long long);
+long long __builtin_arm_wandn (long long, long long);
+v8qi __builtin_arm_wavg2b (v8qi, v8qi);
+v8qi __builtin_arm_wavg2br (v8qi, v8qi);
+v4hi __builtin_arm_wavg2h (v4hi, v4hi);
+v4hi __builtin_arm_wavg2hr (v4hi, v4hi);
+v8qi __builtin_arm_wcmpeqb (v8qi, v8qi);
+v4hi __builtin_arm_wcmpeqh (v4hi, v4hi);
+v2si __builtin_arm_wcmpeqw (v2si, v2si);
+v8qi __builtin_arm_wcmpgtsb (v8qi, v8qi);
+v4hi __builtin_arm_wcmpgtsh (v4hi, v4hi);
+v2si __builtin_arm_wcmpgtsw (v2si, v2si);
+v8qi __builtin_arm_wcmpgtub (v8qi, v8qi);
+v4hi __builtin_arm_wcmpgtuh (v4hi, v4hi);
+v2si __builtin_arm_wcmpgtuw (v2si, v2si);
+long long __builtin_arm_wmacs (long long, v4hi, v4hi);
+long long __builtin_arm_wmacsz (v4hi, v4hi);
+long long __builtin_arm_wmacu (long long, v4hi, v4hi);
+long long __builtin_arm_wmacuz (v4hi, v4hi);
+v4hi __builtin_arm_wmadds (v4hi, v4hi);
+v4hi __builtin_arm_wmaddu (v4hi, v4hi);
+v8qi __builtin_arm_wmaxsb (v8qi, v8qi);
+v4hi __builtin_arm_wmaxsh (v4hi, v4hi);
+v2si __builtin_arm_wmaxsw (v2si, v2si);
+v8qi __builtin_arm_wmaxub (v8qi, v8qi);
+v4hi __builtin_arm_wmaxuh (v4hi, v4hi);
+v2si __builtin_arm_wmaxuw (v2si, v2si);
+v8qi __builtin_arm_wminsb (v8qi, v8qi);
+v4hi __builtin_arm_wminsh (v4hi, v4hi);
+v2si __builtin_arm_wminsw (v2si, v2si);
+v8qi __builtin_arm_wminub (v8qi, v8qi);
+v4hi __builtin_arm_wminuh (v4hi, v4hi);
+v2si __builtin_arm_wminuw (v2si, v2si);
+v4hi __builtin_arm_wmulsm (v4hi, v4hi);
+v4hi __builtin_arm_wmulul (v4hi, v4hi);
+v4hi __builtin_arm_wmulum (v4hi, v4hi);
+long long __builtin_arm_wor (long long, long long);
+v2si __builtin_arm_wpackdss (long long, long long);
+v2si __builtin_arm_wpackdus (long long, long long);
+v8qi __builtin_arm_wpackhss (v4hi, v4hi);
+v8qi __builtin_arm_wpackhus (v4hi, v4hi);
+v4hi __builtin_arm_wpackwss (v2si, v2si);
+v4hi __builtin_arm_wpackwus (v2si, v2si);
+long long __builtin_arm_wrord (long long, long long);
+long long __builtin_arm_wrordi (long long, int);
+v4hi __builtin_arm_wrorh (v4hi, long long);
+v4hi __builtin_arm_wrorhi (v4hi, int);
+v2si __builtin_arm_wrorw (v2si, long long);
+v2si __builtin_arm_wrorwi (v2si, int);
+v2si __builtin_arm_wsadb (v2si, v8qi, v8qi);
+v2si __builtin_arm_wsadbz (v8qi, v8qi);
+v2si __builtin_arm_wsadh (v2si, v4hi, v4hi);
+v2si __builtin_arm_wsadhz (v4hi, v4hi);
+v4hi __builtin_arm_wshufh (v4hi, int);
+long long __builtin_arm_wslld (long long, long long);
+long long __builtin_arm_wslldi (long long, int);
+v4hi __builtin_arm_wsllh (v4hi, long long);
+v4hi __builtin_arm_wsllhi (v4hi, int);
+v2si __builtin_arm_wsllw (v2si, long long);
+v2si __builtin_arm_wsllwi (v2si, int);
+long long __builtin_arm_wsrad (long long, long long);
+long long __builtin_arm_wsradi (long long, int);
+v4hi __builtin_arm_wsrah (v4hi, long long);
+v4hi __builtin_arm_wsrahi (v4hi, int);
+v2si __builtin_arm_wsraw (v2si, long long);
+v2si __builtin_arm_wsrawi (v2si, int);
+long long __builtin_arm_wsrld (long long, long long);
+long long __builtin_arm_wsrldi (long long, int);
+v4hi __builtin_arm_wsrlh (v4hi, long long);
+v4hi __builtin_arm_wsrlhi (v4hi, int);
+v2si __builtin_arm_wsrlw (v2si, long long);
+v2si __builtin_arm_wsrlwi (v2si, int);
+v8qi __builtin_arm_wsubb (v8qi, v8qi);
+v8qi __builtin_arm_wsubbss (v8qi, v8qi);
+v8qi __builtin_arm_wsubbus (v8qi, v8qi);
+v4hi __builtin_arm_wsubh (v4hi, v4hi);
+v4hi __builtin_arm_wsubhss (v4hi, v4hi);
+v4hi __builtin_arm_wsubhus (v4hi, v4hi);
+v2si __builtin_arm_wsubw (v2si, v2si);
+v2si __builtin_arm_wsubwss (v2si, v2si);
+v2si __builtin_arm_wsubwus (v2si, v2si);
+v4hi __builtin_arm_wunpckehsb (v8qi);
+v2si __builtin_arm_wunpckehsh (v4hi);
+long long __builtin_arm_wunpckehsw (v2si);
+v4hi __builtin_arm_wunpckehub (v8qi);
+v2si __builtin_arm_wunpckehuh (v4hi);
+long long __builtin_arm_wunpckehuw (v2si);
+v4hi __builtin_arm_wunpckelsb (v8qi);
+v2si __builtin_arm_wunpckelsh (v4hi);
+long long __builtin_arm_wunpckelsw (v2si);
+v4hi __builtin_arm_wunpckelub (v8qi);
+v2si __builtin_arm_wunpckeluh (v4hi);
+long long __builtin_arm_wunpckeluw (v2si);
+v8qi __builtin_arm_wunpckihb (v8qi, v8qi);
+v4hi __builtin_arm_wunpckihh (v4hi, v4hi);
+v2si __builtin_arm_wunpckihw (v2si, v2si);
+v8qi __builtin_arm_wunpckilb (v8qi, v8qi);
+v4hi __builtin_arm_wunpckilh (v4hi, v4hi);
+v2si __builtin_arm_wunpckilw (v2si, v2si);
+long long __builtin_arm_wxor (long long, long long);
+long long __builtin_arm_wzero ();
 @end smallexample
 
 
@@ -15404,18 +15404,18 @@ As part of the Security Extensions GCC implements the intrinsics below.  FPTR
 is used here to mean any function pointer type.
 
 @smallexample
-cmse_address_info_t cmse_TT (void *)
-cmse_address_info_t cmse_TT_fptr (FPTR)
-cmse_address_info_t cmse_TTT (void *)
-cmse_address_info_t cmse_TTT_fptr (FPTR)
-cmse_address_info_t cmse_TTA (void *)
-cmse_address_info_t cmse_TTA_fptr (FPTR)
-cmse_address_info_t cmse_TTAT (void *)
-cmse_address_info_t cmse_TTAT_fptr (FPTR)
-void * cmse_check_address_range (void *, size_t, int)
-typeof(p) cmse_nsfptr_create (FPTR p)
-intptr_t cmse_is_nsfptr (FPTR)
-int cmse_nonsecure_caller (void)
+cmse_address_info_t cmse_TT (void *);
+cmse_address_info_t cmse_TT_fptr (FPTR);
+cmse_address_info_t cmse_TTT (void *);
+cmse_address_info_t cmse_TTT_fptr (FPTR);
+cmse_address_info_t cmse_TTA (void *);
+cmse_address_info_t cmse_TTA_fptr (FPTR);
+cmse_address_info_t cmse_TTAT (void *);
+cmse_address_info_t cmse_TTAT_fptr (FPTR);
+void * cmse_check_address_range (void *, size_t, int);
+typeof(p) cmse_nsfptr_create (FPTR p);
+intptr_t cmse_is_nsfptr (FPTR);
+int cmse_nonsecure_caller (void);
 @end smallexample
 
 @node AVR Built-in Functions
@@ -15478,28 +15478,28 @@ output values to non-contiguous port layouts. Some examples:
 
 @smallexample
 // same as val, bits is unused
-__builtin_avr_insert_bits (0xffffffff, bits, val)
+__builtin_avr_insert_bits (0xffffffff, bits, val);
 @end smallexample
 
 @smallexample
 // same as bits, val is unused
-__builtin_avr_insert_bits (0x76543210, bits, val)
+__builtin_avr_insert_bits (0x76543210, bits, val);
 @end smallexample
 
 @smallexample
 // same as rotating bits by 4
-__builtin_avr_insert_bits (0x32107654, bits, 0)
+__builtin_avr_insert_bits (0x32107654, bits, 0);
 @end smallexample
 
 @smallexample
 // high nibble of result is the high nibble of val
 // low nibble of result is the low nibble of bits
-__builtin_avr_insert_bits (0xffff3210, bits, val)
+__builtin_avr_insert_bits (0xffff3210, bits, val);
 @end smallexample
 
 @smallexample
 // reverse the bit order of bits
-__builtin_avr_insert_bits (0x01234567, bits, 0)
+__builtin_avr_insert_bits (0x01234567, bits, 0);
 @end smallexample
 
 @item void __builtin_avr_nops (unsigned count)
@@ -15536,8 +15536,8 @@ automatically add workarounds for hardware errata involving these
 instructions.  These functions are named as follows:
 
 @smallexample
-void __builtin_bfin_csync (void)
-void __builtin_bfin_ssync (void)
+void __builtin_bfin_csync (void);
+void __builtin_bfin_ssync (void);
 @end smallexample
 
 @node BPF Built-in Functions
@@ -16113,110 +16113,110 @@ instruction.  Please refer to the architecture specification
 for details on what each instruction does.
 
 @smallexample
-v2q15 __builtin_mips_addq_ph (v2q15, v2q15)
-v2q15 __builtin_mips_addq_s_ph (v2q15, v2q15)
-q31 __builtin_mips_addq_s_w (q31, q31)
-v4i8 __builtin_mips_addu_qb (v4i8, v4i8)
-v4i8 __builtin_mips_addu_s_qb (v4i8, v4i8)
-v2q15 __builtin_mips_subq_ph (v2q15, v2q15)
-v2q15 __builtin_mips_subq_s_ph (v2q15, v2q15)
-q31 __builtin_mips_subq_s_w (q31, q31)
-v4i8 __builtin_mips_subu_qb (v4i8, v4i8)
-v4i8 __builtin_mips_subu_s_qb (v4i8, v4i8)
-i32 __builtin_mips_addsc (i32, i32)
-i32 __builtin_mips_addwc (i32, i32)
-i32 __builtin_mips_modsub (i32, i32)
-i32 __builtin_mips_raddu_w_qb (v4i8)
-v2q15 __builtin_mips_absq_s_ph (v2q15)
-q31 __builtin_mips_absq_s_w (q31)
-v4i8 __builtin_mips_precrq_qb_ph (v2q15, v2q15)
-v2q15 __builtin_mips_precrq_ph_w (q31, q31)
-v2q15 __builtin_mips_precrq_rs_ph_w (q31, q31)
-v4i8 __builtin_mips_precrqu_s_qb_ph (v2q15, v2q15)
-q31 __builtin_mips_preceq_w_phl (v2q15)
-q31 __builtin_mips_preceq_w_phr (v2q15)
-v2q15 __builtin_mips_precequ_ph_qbl (v4i8)
-v2q15 __builtin_mips_precequ_ph_qbr (v4i8)
-v2q15 __builtin_mips_precequ_ph_qbla (v4i8)
-v2q15 __builtin_mips_precequ_ph_qbra (v4i8)
-v2q15 __builtin_mips_preceu_ph_qbl (v4i8)
-v2q15 __builtin_mips_preceu_ph_qbr (v4i8)
-v2q15 __builtin_mips_preceu_ph_qbla (v4i8)
-v2q15 __builtin_mips_preceu_ph_qbra (v4i8)
-v4i8 __builtin_mips_shll_qb (v4i8, imm0_7)
-v4i8 __builtin_mips_shll_qb (v4i8, i32)
-v2q15 __builtin_mips_shll_ph (v2q15, imm0_15)
-v2q15 __builtin_mips_shll_ph (v2q15, i32)
-v2q15 __builtin_mips_shll_s_ph (v2q15, imm0_15)
-v2q15 __builtin_mips_shll_s_ph (v2q15, i32)
-q31 __builtin_mips_shll_s_w (q31, imm0_31)
-q31 __builtin_mips_shll_s_w (q31, i32)
-v4i8 __builtin_mips_shrl_qb (v4i8, imm0_7)
-v4i8 __builtin_mips_shrl_qb (v4i8, i32)
-v2q15 __builtin_mips_shra_ph (v2q15, imm0_15)
-v2q15 __builtin_mips_shra_ph (v2q15, i32)
-v2q15 __builtin_mips_shra_r_ph (v2q15, imm0_15)
-v2q15 __builtin_mips_shra_r_ph (v2q15, i32)
-q31 __builtin_mips_shra_r_w (q31, imm0_31)
-q31 __builtin_mips_shra_r_w (q31, i32)
-v2q15 __builtin_mips_muleu_s_ph_qbl (v4i8, v2q15)
-v2q15 __builtin_mips_muleu_s_ph_qbr (v4i8, v2q15)
-v2q15 __builtin_mips_mulq_rs_ph (v2q15, v2q15)
-q31 __builtin_mips_muleq_s_w_phl (v2q15, v2q15)
-q31 __builtin_mips_muleq_s_w_phr (v2q15, v2q15)
-a64 __builtin_mips_dpau_h_qbl (a64, v4i8, v4i8)
-a64 __builtin_mips_dpau_h_qbr (a64, v4i8, v4i8)
-a64 __builtin_mips_dpsu_h_qbl (a64, v4i8, v4i8)
-a64 __builtin_mips_dpsu_h_qbr (a64, v4i8, v4i8)
-a64 __builtin_mips_dpaq_s_w_ph (a64, v2q15, v2q15)
-a64 __builtin_mips_dpaq_sa_l_w (a64, q31, q31)
-a64 __builtin_mips_dpsq_s_w_ph (a64, v2q15, v2q15)
-a64 __builtin_mips_dpsq_sa_l_w (a64, q31, q31)
-a64 __builtin_mips_mulsaq_s_w_ph (a64, v2q15, v2q15)
-a64 __builtin_mips_maq_s_w_phl (a64, v2q15, v2q15)
-a64 __builtin_mips_maq_s_w_phr (a64, v2q15, v2q15)
-a64 __builtin_mips_maq_sa_w_phl (a64, v2q15, v2q15)
-a64 __builtin_mips_maq_sa_w_phr (a64, v2q15, v2q15)
-i32 __builtin_mips_bitrev (i32)
-i32 __builtin_mips_insv (i32, i32)
-v4i8 __builtin_mips_repl_qb (imm0_255)
-v4i8 __builtin_mips_repl_qb (i32)
-v2q15 __builtin_mips_repl_ph (imm_n512_511)
-v2q15 __builtin_mips_repl_ph (i32)
-void __builtin_mips_cmpu_eq_qb (v4i8, v4i8)
-void __builtin_mips_cmpu_lt_qb (v4i8, v4i8)
-void __builtin_mips_cmpu_le_qb (v4i8, v4i8)
-i32 __builtin_mips_cmpgu_eq_qb (v4i8, v4i8)
-i32 __builtin_mips_cmpgu_lt_qb (v4i8, v4i8)
-i32 __builtin_mips_cmpgu_le_qb (v4i8, v4i8)
-void __builtin_mips_cmp_eq_ph (v2q15, v2q15)
-void __builtin_mips_cmp_lt_ph (v2q15, v2q15)
-void __builtin_mips_cmp_le_ph (v2q15, v2q15)
-v4i8 __builtin_mips_pick_qb (v4i8, v4i8)
-v2q15 __builtin_mips_pick_ph (v2q15, v2q15)
-v2q15 __builtin_mips_packrl_ph (v2q15, v2q15)
-i32 __builtin_mips_extr_w (a64, imm0_31)
-i32 __builtin_mips_extr_w (a64, i32)
-i32 __builtin_mips_extr_r_w (a64, imm0_31)
-i32 __builtin_mips_extr_s_h (a64, i32)
-i32 __builtin_mips_extr_rs_w (a64, imm0_31)
-i32 __builtin_mips_extr_rs_w (a64, i32)
-i32 __builtin_mips_extr_s_h (a64, imm0_31)
-i32 __builtin_mips_extr_r_w (a64, i32)
-i32 __builtin_mips_extp (a64, imm0_31)
-i32 __builtin_mips_extp (a64, i32)
-i32 __builtin_mips_extpdp (a64, imm0_31)
-i32 __builtin_mips_extpdp (a64, i32)
-a64 __builtin_mips_shilo (a64, imm_n32_31)
-a64 __builtin_mips_shilo (a64, i32)
-a64 __builtin_mips_mthlip (a64, i32)
-void __builtin_mips_wrdsp (i32, imm0_63)
-i32 __builtin_mips_rddsp (imm0_63)
-i32 __builtin_mips_lbux (void *, i32)
-i32 __builtin_mips_lhx (void *, i32)
-i32 __builtin_mips_lwx (void *, i32)
-a64 __builtin_mips_ldx (void *, i32) [MIPS64 only]
-i32 __builtin_mips_bposge32 (void)
+v2q15 __builtin_mips_addq_ph (v2q15, v2q15);
+v2q15 __builtin_mips_addq_s_ph (v2q15, v2q15);
+q31 __builtin_mips_addq_s_w (q31, q31);
+v4i8 __builtin_mips_addu_qb (v4i8, v4i8);
+v4i8 __builtin_mips_addu_s_qb (v4i8, v4i8);
+v2q15 __builtin_mips_subq_ph (v2q15, v2q15);
+v2q15 __builtin_mips_subq_s_ph (v2q15, v2q15);
+q31 __builtin_mips_subq_s_w (q31, q31);
+v4i8 __builtin_mips_subu_qb (v4i8, v4i8);
+v4i8 __builtin_mips_subu_s_qb (v4i8, v4i8);
+i32 __builtin_mips_addsc (i32, i32);
+i32 __builtin_mips_addwc (i32, i32);
+i32 __builtin_mips_modsub (i32, i32);
+i32 __builtin_mips_raddu_w_qb (v4i8);
+v2q15 __builtin_mips_absq_s_ph (v2q15);
+q31 __builtin_mips_absq_s_w (q31);
+v4i8 __builtin_mips_precrq_qb_ph (v2q15, v2q15);
+v2q15 __builtin_mips_precrq_ph_w (q31, q31);
+v2q15 __builtin_mips_precrq_rs_ph_w (q31, q31);
+v4i8 __builtin_mips_precrqu_s_qb_ph (v2q15, v2q15);
+q31 __builtin_mips_preceq_w_phl (v2q15);
+q31 __builtin_mips_preceq_w_phr (v2q15);
+v2q15 __builtin_mips_precequ_ph_qbl (v4i8);
+v2q15 __builtin_mips_precequ_ph_qbr (v4i8);
+v2q15 __builtin_mips_precequ_ph_qbla (v4i8);
+v2q15 __builtin_mips_precequ_ph_qbra (v4i8);
+v2q15 __builtin_mips_preceu_ph_qbl (v4i8);
+v2q15 __builtin_mips_preceu_ph_qbr (v4i8);
+v2q15 __builtin_mips_preceu_ph_qbla (v4i8);
+v2q15 __builtin_mips_preceu_ph_qbra (v4i8);
+v4i8 __builtin_mips_shll_qb (v4i8, imm0_7);
+v4i8 __builtin_mips_shll_qb (v4i8, i32);
+v2q15 __builtin_mips_shll_ph (v2q15, imm0_15);
+v2q15 __builtin_mips_shll_ph (v2q15, i32);
+v2q15 __builtin_mips_shll_s_ph (v2q15, imm0_15);
+v2q15 __builtin_mips_shll_s_ph (v2q15, i32);
+q31 __builtin_mips_shll_s_w (q31, imm0_31);
+q31 __builtin_mips_shll_s_w (q31, i32);
+v4i8 __builtin_mips_shrl_qb (v4i8, imm0_7);
+v4i8 __builtin_mips_shrl_qb (v4i8, i32);
+v2q15 __builtin_mips_shra_ph (v2q15, imm0_15);
+v2q15 __builtin_mips_shra_ph (v2q15, i32);
+v2q15 __builtin_mips_shra_r_ph (v2q15, imm0_15);
+v2q15 __builtin_mips_shra_r_ph (v2q15, i32);
+q31 __builtin_mips_shra_r_w (q31, imm0_31);
+q31 __builtin_mips_shra_r_w (q31, i32);
+v2q15 __builtin_mips_muleu_s_ph_qbl (v4i8, v2q15);
+v2q15 __builtin_mips_muleu_s_ph_qbr (v4i8, v2q15);
+v2q15 __builtin_mips_mulq_rs_ph (v2q15, v2q15);
+q31 __builtin_mips_muleq_s_w_phl (v2q15, v2q15);
+q31 __builtin_mips_muleq_s_w_phr (v2q15, v2q15);
+a64 __builtin_mips_dpau_h_qbl (a64, v4i8, v4i8);
+a64 __builtin_mips_dpau_h_qbr (a64, v4i8, v4i8);
+a64 __builtin_mips_dpsu_h_qbl (a64, v4i8, v4i8);
+a64 __builtin_mips_dpsu_h_qbr (a64, v4i8, v4i8);
+a64 __builtin_mips_dpaq_s_w_ph (a64, v2q15, v2q15);
+a64 __builtin_mips_dpaq_sa_l_w (a64, q31, q31);
+a64 __builtin_mips_dpsq_s_w_ph (a64, v2q15, v2q15);
+a64 __builtin_mips_dpsq_sa_l_w (a64, q31, q31);
+a64 __builtin_mips_mulsaq_s_w_ph (a64, v2q15, v2q15);
+a64 __builtin_mips_maq_s_w_phl (a64, v2q15, v2q15);
+a64 __builtin_mips_maq_s_w_phr (a64, v2q15, v2q15);
+a64 __builtin_mips_maq_sa_w_phl (a64, v2q15, v2q15);
+a64 __builtin_mips_maq_sa_w_phr (a64, v2q15, v2q15);
+i32 __builtin_mips_bitrev (i32);
+i32 __builtin_mips_insv (i32, i32);
+v4i8 __builtin_mips_repl_qb (imm0_255);
+v4i8 __builtin_mips_repl_qb (i32);
+v2q15 __builtin_mips_repl_ph (imm_n512_511);
+v2q15 __builtin_mips_repl_ph (i32);
+void __builtin_mips_cmpu_eq_qb (v4i8, v4i8);
+void __builtin_mips_cmpu_lt_qb (v4i8, v4i8);
+void __builtin_mips_cmpu_le_qb (v4i8, v4i8);
+i32 __builtin_mips_cmpgu_eq_qb (v4i8, v4i8);
+i32 __builtin_mips_cmpgu_lt_qb (v4i8, v4i8);
+i32 __builtin_mips_cmpgu_le_qb (v4i8, v4i8);
+void __builtin_mips_cmp_eq_ph (v2q15, v2q15);
+void __builtin_mips_cmp_lt_ph (v2q15, v2q15);
+void __builtin_mips_cmp_le_ph (v2q15, v2q15);
+v4i8 __builtin_mips_pick_qb (v4i8, v4i8);
+v2q15 __builtin_mips_pick_ph (v2q15, v2q15);
+v2q15 __builtin_mips_packrl_ph (v2q15, v2q15);
+i32 __builtin_mips_extr_w (a64, imm0_31);
+i32 __builtin_mips_extr_w (a64, i32);
+i32 __builtin_mips_extr_r_w (a64, imm0_31);
+i32 __builtin_mips_extr_s_h (a64, i32);
+i32 __builtin_mips_extr_rs_w (a64, imm0_31);
+i32 __builtin_mips_extr_rs_w (a64, i32);
+i32 __builtin_mips_extr_s_h (a64, imm0_31);
+i32 __builtin_mips_extr_r_w (a64, i32);
+i32 __builtin_mips_extp (a64, imm0_31);
+i32 __builtin_mips_extp (a64, i32);
+i32 __builtin_mips_extpdp (a64, imm0_31);
+i32 __builtin_mips_extpdp (a64, i32);
+a64 __builtin_mips_shilo (a64, imm_n32_31);
+a64 __builtin_mips_shilo (a64, i32);
+a64 __builtin_mips_mthlip (a64, i32);
+void __builtin_mips_wrdsp (i32, imm0_63);
+i32 __builtin_mips_rddsp (imm0_63);
+i32 __builtin_mips_lbux (void *, i32);
+i32 __builtin_mips_lhx (void *, i32);
+i32 __builtin_mips_lwx (void *, i32);
+a64 __builtin_mips_ldx (void *, i32); /* MIPS64 only */
+i32 __builtin_mips_bposge32 (void);
 a64 __builtin_mips_madd (a64, i32, i32);
 a64 __builtin_mips_maddu (a64, ui32, ui32);
 a64 __builtin_mips_msub (a64, i32, i32);
@@ -19729,12 +19729,12 @@ must be a constant integer in the range of 0 to 15.
 The following sign extension builtins are provided:
 
 @smallexample
-vector signed int vec_signexti (vector signed char a)
-vector signed long long vec_signextll (vector signed char a)
-vector signed int vec_signexti (vector signed short a)
-vector signed long long vec_signextll (vector signed short a)
-vector signed long long vec_signextll (vector signed int a)
-vector signed long long vec_signextq (vector signed long long a)
+vector signed int vec_signexti (vector signed char a);
+vector signed long long vec_signextll (vector signed char a);
+vector signed int vec_signexti (vector signed short a);
+vector signed long long vec_signextll (vector signed short a);
+vector signed long long vec_signextll (vector signed int a);
+vector signed long long vec_signextq (vector signed long long a);
 @end smallexample
 
 Each element of the result is produced by sign-extending the element of the
@@ -19751,7 +19751,7 @@ PowerPC family of processors, starting with ISA 3.1 (@option{-mcpu=power10}):
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cfuge (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector centrifuge operation, as if implemented by the
 @code{vcfuged} instruction.
@@ -19759,7 +19759,7 @@ Perform a vector centrifuge operation, as if implemented by the
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cntlzm (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector count leading zeros under bit mask operation, as if
 implemented by the @code{vclzdm} instruction.
@@ -19767,7 +19767,7 @@ implemented by the @code{vclzdm} instruction.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_cnttzm (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector count trailing zeros under bit mask operation, as if
 implemented by the @code{vctzdm} instruction.
@@ -19775,9 +19775,9 @@ implemented by the @code{vctzdm} instruction.
 
 @smallexample
 @exdent vector signed char
-@exdent vec_clrl (vector signed char a, unsigned int n)
+@exdent vec_clrl (vector signed char a, unsigned int n);
 @exdent vector unsigned char
-@exdent vec_clrl (vector unsigned char a, unsigned int n)
+@exdent vec_clrl (vector unsigned char a, unsigned int n);
 @end smallexample
 Clear the left-most @code{(16 - n)} bytes of vector argument @code{a}, as if
 implemented by the @code{vclrlb} instruction on a big-endian target
@@ -19787,9 +19787,9 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 
 @smallexample
 @exdent vector signed char
-@exdent vec_clrr (vector signed char a, unsigned int n)
+@exdent vec_clrr (vector signed char a, unsigned int n);
 @exdent vector unsigned char
-@exdent vec_clrr (vector unsigned char a, unsigned int n)
+@exdent vec_clrr (vector unsigned char a, unsigned int n);
 @end smallexample
 Clear the right-most @code{(16 - n)} bytes of vector argument @code{a}, as if
 implemented by the @code{vclrrb} instruction on a big-endian target
@@ -19799,7 +19799,7 @@ value of @code{n} that is greater than 16 is treated as if it equaled 16.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_gnb (vector unsigned __int128, const unsigned char)
+@exdent vec_gnb (vector unsigned __int128, const unsigned char);
 @end smallexample
 Perform a 128-bit vector gather  operation, as if implemented by the
 @code{vgnb} instruction.  The second argument must be a literal
@@ -19811,13 +19811,13 @@ Vector Extract
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vec_extractl (vector unsigned char, vector unsigned char, unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned short, vector unsigned short, unsigned int)
+@exdent vec_extractl (vector unsigned short, vector unsigned short, unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vec_extractl (vector unsigned int, vector unsigned int, unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int)
+@exdent vec_extractl (vector unsigned long long, vector unsigned long long, unsigned int);
 @end smallexample
 Extract an element from two concatenated vectors starting at the given byte index
 in natural-endian order, and place it zero-extended in doubleword 1 of the result
@@ -19838,15 +19838,15 @@ consistent with the limitation on @code{vec_perm}.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_extracth (vector unsigned char, vector unsigned char, unsigned int)
+@exdent vec_extracth (vector unsigned char, vector unsigned char, unsigned int);
 @exdent vector unsigned long long int
 @exdent vec_extracth (vector unsigned short, vector unsigned short,
-unsigned int)
+unsigned int);
 @exdent vector unsigned long long int
-@exdent vec_extracth (vector unsigned int, vector unsigned int, unsigned int)
+@exdent vec_extracth (vector unsigned int, vector unsigned int, unsigned int);
 @exdent vector unsigned long long int
 @exdent vec_extracth (vector unsigned long long, vector unsigned long long,
-unsigned int)
+unsigned int);
 @end smallexample
 Extract an element from two concatenated vectors starting at the given byte
 index.  The index is based on big endian order for a little endian system.
@@ -19869,7 +19869,7 @@ limitation on @code{vec_perm}.
 @findex vec_extracth
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_pdep (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_pdep (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector parallel bits deposit operation, as if implemented by
 the @code{vpdepd} instruction.
@@ -20147,17 +20147,17 @@ contained in the first two arguments.
 
 @smallexample
 @exdent vector unsigned long long int
-@exdent vec_pext (vector unsigned long long int, vector unsigned long long int)
+@exdent vec_pext (vector unsigned long long int, vector unsigned long long int);
 @end smallexample
 Perform a vector parallel bit extract operation, as if implemented by
 the @code{vpextd} instruction.
 @findex vec_pext
 
 @smallexample
-@exdent vector unsigned char vec_stril (vector unsigned char)
-@exdent vector signed char vec_stril (vector signed char)
-@exdent vector unsigned short vec_stril (vector unsigned short)
-@exdent vector signed short vec_stril (vector signed short)
+@exdent vector unsigned char vec_stril (vector unsigned char);
+@exdent vector signed char vec_stril (vector signed char);
+@exdent vector unsigned short vec_stril (vector unsigned short);
+@exdent vector signed short vec_stril (vector signed short);
 @end smallexample
 Isolate the left-most non-zero elements of the incoming vector argument,
 replacing all elements to the right of the left-most zero element
@@ -20168,10 +20168,10 @@ little-endian targets.
 @findex vec_stril
 
 @smallexample
-@exdent int vec_stril_p (vector unsigned char)
-@exdent int vec_stril_p (vector signed char)
-@exdent int short vec_stril_p (vector unsigned short)
-@exdent int vec_stril_p (vector signed short)
+@exdent int vec_stril_p (vector unsigned char);
+@exdent int vec_stril_p (vector signed char);
+@exdent int short vec_stril_p (vector unsigned short);
+@exdent int vec_stril_p (vector signed short);
 @end smallexample
 Return a non-zero value if and only if the argument contains a zero
 element.  The typical implementation uses
@@ -20182,10 +20182,10 @@ zero element if the same argument is also passed to @code{vec_stril}.
 @findex vec_stril_p
 
 @smallexample
-@exdent vector unsigned char vec_strir (vector unsigned char)
-@exdent vector signed char vec_strir (vector signed char)
-@exdent vector unsigned short vec_strir (vector unsigned short)
-@exdent vector signed short vec_strir (vector signed short)
+@exdent vector unsigned char vec_strir (vector unsigned char);
+@exdent vector signed char vec_strir (vector signed char);
+@exdent vector unsigned short vec_strir (vector unsigned short);
+@exdent vector signed short vec_strir (vector signed short);
 @end smallexample
 Isolate the right-most non-zero elements of the incoming vector argument,
 replacing all elements to the left of the right-most zero element
@@ -20196,10 +20196,10 @@ little-endian targets.
 @findex vec_strir
 
 @smallexample
-@exdent int vec_strir_p (vector unsigned char)
-@exdent int vec_strir_p (vector signed char)
-@exdent int short vec_strir_p (vector unsigned short)
-@exdent int vec_strir_p (vector signed short)
+@exdent int vec_strir_p (vector unsigned char);
+@exdent int vec_strir_p (vector signed char);
+@exdent int short vec_strir_p (vector unsigned short);
+@exdent int vec_strir_p (vector signed short);
 @end smallexample
 Return a non-zero value if and only if the argument contains a zero
 element.  The typical implementation uses
@@ -20212,19 +20212,19 @@ zero element if the same argument is also passed to @code{vec_strir}.
 @smallexample
 @exdent vector unsigned char
 @exdent vec_ternarylogic (vector unsigned char, vector unsigned char,
-            vector unsigned char, const unsigned int)
+            vector unsigned char, const unsigned int);
 @exdent vector unsigned short
 @exdent vec_ternarylogic (vector unsigned short, vector unsigned short,
-            vector unsigned short, const unsigned int)
+            vector unsigned short, const unsigned int);
 @exdent vector unsigned int
 @exdent vec_ternarylogic (vector unsigned int, vector unsigned int,
-            vector unsigned int, const unsigned int)
+            vector unsigned int, const unsigned int);
 @exdent vector unsigned long long int
 @exdent vec_ternarylogic (vector unsigned long long int, vector unsigned long long int,
-            vector unsigned long long int, const unsigned int)
+            vector unsigned long long int, const unsigned int);
 @exdent vector unsigned __int128
 @exdent vec_ternarylogic (vector unsigned __int128, vector unsigned __int128,
-            vector unsigned __int128, const unsigned int)
+            vector unsigned __int128, const unsigned int);
 @end smallexample
 Perform a 128-bit vector evaluate operation, as if implemented by the
 @code{xxeval} instruction.  The fourth argument must be a literal
@@ -20232,20 +20232,20 @@ integer value between 0 and 255 inclusive.
 @findex vec_ternarylogic
 
 @smallexample
-@exdent vector unsigned char vec_genpcvm (vector unsigned char, const int)
-@exdent vector unsigned short vec_genpcvm (vector unsigned short, const int)
-@exdent vector unsigned int vec_genpcvm (vector unsigned int, const int)
+@exdent vector unsigned char vec_genpcvm (vector unsigned char, const int);
+@exdent vector unsigned short vec_genpcvm (vector unsigned short, const int);
+@exdent vector unsigned int vec_genpcvm (vector unsigned int, const int);
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
-                                         const int)
+                                         const int);
 @end smallexample
 
 Vector Integer Multiply/Divide/Modulo
 
 @smallexample
 @exdent vector signed int
-@exdent vec_mulh (vector signed int a, vector signed int b)
+@exdent vec_mulh (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_mulh (vector unsigned int a, vector unsigned int b)
+@exdent vec_mulh (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer
@@ -20255,9 +20255,9 @@ into word element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_mulh (vector signed long long a, vector signed long long b)
+@exdent vec_mulh (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer
@@ -20267,9 +20267,9 @@ are placed into doubleword element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector unsigned long long
-@exdent vec_mul (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_mul (vector unsigned long long a, vector unsigned long long b);
 @exdent vector signed long long
-@exdent vec_mul (vector signed long long a, vector signed long long b)
+@exdent vec_mul (vector signed long long a, vector signed long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer
@@ -20279,9 +20279,9 @@ are placed into doubleword element @code{i} of the vector returned.
 
 @smallexample
 @exdent vector signed int
-@exdent vec_div (vector signed int a, vector signed int b)
+@exdent vec_div (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_div (vector unsigned int a, vector unsigned int b)
+@exdent vec_div (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -20292,9 +20292,9 @@ the vector returned. If an attempt is made to perform any of the divisions
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_div (vector signed long long a, vector signed long long b)
+@exdent vec_div (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_div (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_div (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -20306,9 +20306,9 @@ the quotient is undefined.
 
 @smallexample
 @exdent vector signed int
-@exdent vec_dive (vector signed int a, vector signed int b)
+@exdent vec_dive (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_dive (vector unsigned int a, vector unsigned int b)
+@exdent vec_dive (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -20320,9 +20320,9 @@ divisions <anything> ÷ 0 then the quotient is undefined.
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_dive (vector signed long long a, vector signed long long b)
+@exdent vec_dive (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_dive (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_dive (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -20334,9 +20334,9 @@ quotient cannot be represented in 64 bits, or if an attempt is made to perform
 
 @smallexample
 @exdent vector signed int
-@exdent vec_mod (vector signed int a, vector signed int b)
+@exdent vec_mod (vector signed int a, vector signed int b);
 @exdent vector unsigned int
-@exdent vec_mod (vector unsigned int a, vector unsigned int b)
+@exdent vec_mod (vector unsigned int a, vector unsigned int b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 3, do the following. The integer in
@@ -20347,9 +20347,9 @@ the vector returned.  If an attempt is made to perform any of the divisions
 
 @smallexample
 @exdent vector signed long long
-@exdent vec_mod (vector signed long long a, vector signed long long b)
+@exdent vec_mod (vector signed long long a, vector signed long long b);
 @exdent vector unsigned long long
-@exdent vec_mod (vector unsigned long long a, vector unsigned long long b)
+@exdent vec_mod (vector unsigned long long a, vector unsigned long long b);
 @end smallexample
 
 For each integer value @code{i} from 0 to 1, do the following. The integer in
@@ -20560,28 +20560,28 @@ the @code{__builtin_tcheck} builtin, which does not take any input arguments.
 Refer to the ISA manual for a description of each instruction's operands.
 
 @smallexample
-unsigned int __builtin_tbegin (unsigned int)
-unsigned int __builtin_tend (unsigned int)
+unsigned int __builtin_tbegin (unsigned int);
+unsigned int __builtin_tend (unsigned int);
 
-unsigned int __builtin_tabort (unsigned int)
-unsigned int __builtin_tabortdc (unsigned int, unsigned int, unsigned int)
-unsigned int __builtin_tabortdci (unsigned int, unsigned int, int)
-unsigned int __builtin_tabortwc (unsigned int, unsigned int, unsigned int)
-unsigned int __builtin_tabortwci (unsigned int, unsigned int, int)
+unsigned int __builtin_tabort (unsigned int);
+unsigned int __builtin_tabortdc (unsigned int, unsigned int, unsigned int);
+unsigned int __builtin_tabortdci (unsigned int, unsigned int, int);
+unsigned int __builtin_tabortwc (unsigned int, unsigned int, unsigned int);
+unsigned int __builtin_tabortwci (unsigned int, unsigned int, int);
 
-unsigned int __builtin_tcheck (void)
-unsigned int __builtin_treclaim (unsigned int)
-unsigned int __builtin_trechkpt (void)
-unsigned int __builtin_tsr (unsigned int)
+unsigned int __builtin_tcheck (void);
+unsigned int __builtin_treclaim (unsigned int);
+unsigned int __builtin_trechkpt (void);
+unsigned int __builtin_tsr (unsigned int);
 @end smallexample
 
 In addition to the above HTM built-ins, we have added built-ins for
 some common extended mnemonics of the HTM instructions:
 
 @smallexample
-unsigned int __builtin_tendall (void)
-unsigned int __builtin_tresume (void)
-unsigned int __builtin_tsuspend (void)
+unsigned int __builtin_tendall (void);
+unsigned int __builtin_tresume (void);
+unsigned int __builtin_tsuspend (void);
 @end smallexample
 
 Note that the semantics of the above HTM builtins are required to mimic
@@ -20610,10 +20610,10 @@ The following set of built-in functions are available to gain access
 to the HTM specific special purpose registers.
 
 @smallexample
-unsigned long __builtin_get_texasr (void)
-unsigned long __builtin_get_texasru (void)
-unsigned long __builtin_get_tfhar (void)
-unsigned long __builtin_get_tfiar (void)
+unsigned long __builtin_get_texasr (void);
+unsigned long __builtin_get_texasru (void);
+unsigned long __builtin_get_tfhar (void);
+unsigned long __builtin_get_tfiar (void);
 
 void __builtin_set_texasr (unsigned long);
 void __builtin_set_texasru (unsigned long);
@@ -20694,24 +20694,24 @@ and S/390, allowing users to write one HTM source implementation that
 can be compiled and executed on either system.
 
 @smallexample
-long __TM_simple_begin (void)
-long __TM_begin (void* const TM_buff)
-long __TM_end (void)
-void __TM_abort (void)
-void __TM_named_abort (unsigned char const code)
-void __TM_resume (void)
-void __TM_suspend (void)
+long __TM_simple_begin (void);
+long __TM_begin (void* const TM_buff);
+long __TM_end (void);
+void __TM_abort (void);
+void __TM_named_abort (unsigned char const code);
+void __TM_resume (void);
+void __TM_suspend (void);
 
-long __TM_is_user_abort (void* const TM_buff)
-long __TM_is_named_user_abort (void* const TM_buff, unsigned char *code)
-long __TM_is_illegal (void* const TM_buff)
-long __TM_is_footprint_exceeded (void* const TM_buff)
-long __TM_nesting_depth (void* const TM_buff)
-long __TM_is_nested_too_deep(void* const TM_buff)
-long __TM_is_conflict(void* const TM_buff)
-long __TM_is_failure_persistent(void* const TM_buff)
-long __TM_failure_address(void* const TM_buff)
-long long __TM_failure_code(void* const TM_buff)
+long __TM_is_user_abort (void* const TM_buff);
+long __TM_is_named_user_abort (void* const TM_buff, unsigned char *code);
+long __TM_is_illegal (void* const TM_buff);
+long __TM_is_footprint_exceeded (void* const TM_buff);
+long __TM_nesting_depth (void* const TM_buff);
+long __TM_is_nested_too_deep(void* const TM_buff);
+long __TM_is_conflict(void* const TM_buff);
+long __TM_is_failure_persistent(void* const TM_buff);
+long __TM_failure_address(void* const TM_buff);
+long long __TM_failure_code(void* const TM_buff);
 @end smallexample
 
 Using these common set of HTM inline functions, we can create
@@ -21448,34 +21448,32 @@ inclusion of the @code{c6x_intrinsics.h} header file.  They map directly
 to C6X instructions.
 
 @smallexample
+int _sadd (int, int);
+int _ssub (int, int);
+int _sadd2 (int, int);
+int _ssub2 (int, int);
+long long _mpy2 (int, int);
+long long _smpy2 (int, int);
+int _add4 (int, int);
+int _sub4 (int, int);
+int _saddu4 (int, int);
 
-int _sadd (int, int)
-int _ssub (int, int)
-int _sadd2 (int, int)
-int _ssub2 (int, int)
-long long _mpy2 (int, int)
-long long _smpy2 (int, int)
-int _add4 (int, int)
-int _sub4 (int, int)
-int _saddu4 (int, int)
+int _smpy (int, int);
+int _smpyh (int, int);
+int _smpyhl (int, int);
+int _smpylh (int, int);
 
-int _smpy (int, int)
-int _smpyh (int, int)
-int _smpyhl (int, int)
-int _smpylh (int, int)
+int _sshl (int, int);
+int _subc (int, int);
 
-int _sshl (int, int)
-int _subc (int, int)
+int _avg2 (int, int);
+int _avgu4 (int, int);
 
-int _avg2 (int, int)
-int _avgu4 (int, int)
-
-int _clrr (int, int)
-int _extr (int, int)
-int _extru (int, int)
-int _abs (int)
-int _abs2 (int)
-
+int _clrr (int, int);
+int _extr (int, int);
+int _extru (int, int);
+int _abs (int);
+int _abs2 (int);
 @end smallexample
 
 @node TILE-Gx Built-in Functions
@@ -21497,16 +21495,14 @@ GCC also provides intrinsics to directly access the network registers.
 The intrinsics are:
 
 @smallexample
-
-unsigned long long __tile_idn0_receive (void)
-unsigned long long __tile_idn1_receive (void)
-unsigned long long __tile_udn0_receive (void)
-unsigned long long __tile_udn1_receive (void)
-unsigned long long __tile_udn2_receive (void)
-unsigned long long __tile_udn3_receive (void)
-void __tile_idn_send (unsigned long long)
-void __tile_udn_send (unsigned long long)
-
+unsigned long long __tile_idn0_receive (void);
+unsigned long long __tile_idn1_receive (void);
+unsigned long long __tile_udn0_receive (void);
+unsigned long long __tile_udn1_receive (void);
+unsigned long long __tile_udn2_receive (void);
+unsigned long long __tile_udn3_receive (void);
+void __tile_idn_send (unsigned long long);
+void __tile_udn_send (unsigned long long);
 @end smallexample
 
 The intrinsic @code{void __tile_network_barrier (void)} is used to
@@ -21533,18 +21529,16 @@ GCC also provides intrinsics to directly access the network registers.
 The intrinsics are:
 
 @smallexample
-
-unsigned __tile_idn0_receive (void)
-unsigned __tile_idn1_receive (void)
-unsigned __tile_sn_receive (void)
-unsigned __tile_udn0_receive (void)
-unsigned __tile_udn1_receive (void)
-unsigned __tile_udn2_receive (void)
-unsigned __tile_udn3_receive (void)
-void __tile_idn_send (unsigned)
-void __tile_sn_send (unsigned)
-void __tile_udn_send (unsigned)
-
+unsigned __tile_idn0_receive (void);
+unsigned __tile_idn1_receive (void);
+unsigned __tile_sn_receive (void);
+unsigned __tile_udn0_receive (void);
+unsigned __tile_udn1_receive (void);
+unsigned __tile_udn2_receive (void);
+unsigned __tile_udn3_receive (void);
+void __tile_idn_send (unsigned);
+void __tile_sn_send (unsigned);
+void __tile_udn_send (unsigned);
 @end smallexample
 
 The intrinsic @code{void __tile_network_barrier (void)} is used to
@@ -21921,59 +21915,58 @@ The following built-in functions are made available by @option{-mmmx}.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v8qi __builtin_ia32_paddb (v8qi, v8qi)
-v4hi __builtin_ia32_paddw (v4hi, v4hi)
-v2si __builtin_ia32_paddd (v2si, v2si)
-v8qi __builtin_ia32_psubb (v8qi, v8qi)
-v4hi __builtin_ia32_psubw (v4hi, v4hi)
-v2si __builtin_ia32_psubd (v2si, v2si)
-v8qi __builtin_ia32_paddsb (v8qi, v8qi)
-v4hi __builtin_ia32_paddsw (v4hi, v4hi)
-v8qi __builtin_ia32_psubsb (v8qi, v8qi)
-v4hi __builtin_ia32_psubsw (v4hi, v4hi)
-v8qi __builtin_ia32_paddusb (v8qi, v8qi)
-v4hi __builtin_ia32_paddusw (v4hi, v4hi)
-v8qi __builtin_ia32_psubusb (v8qi, v8qi)
-v4hi __builtin_ia32_psubusw (v4hi, v4hi)
-v4hi __builtin_ia32_pmullw (v4hi, v4hi)
-v4hi __builtin_ia32_pmulhw (v4hi, v4hi)
-di __builtin_ia32_pand (di, di)
-di __builtin_ia32_pandn (di,di)
-di __builtin_ia32_por (di, di)
-di __builtin_ia32_pxor (di, di)
-v8qi __builtin_ia32_pcmpeqb (v8qi, v8qi)
-v4hi __builtin_ia32_pcmpeqw (v4hi, v4hi)
-v2si __builtin_ia32_pcmpeqd (v2si, v2si)
-v8qi __builtin_ia32_pcmpgtb (v8qi, v8qi)
-v4hi __builtin_ia32_pcmpgtw (v4hi, v4hi)
-v2si __builtin_ia32_pcmpgtd (v2si, v2si)
-v8qi __builtin_ia32_punpckhbw (v8qi, v8qi)
-v4hi __builtin_ia32_punpckhwd (v4hi, v4hi)
-v2si __builtin_ia32_punpckhdq (v2si, v2si)
-v8qi __builtin_ia32_punpcklbw (v8qi, v8qi)
-v4hi __builtin_ia32_punpcklwd (v4hi, v4hi)
-v2si __builtin_ia32_punpckldq (v2si, v2si)
-v8qi __builtin_ia32_packsswb (v4hi, v4hi)
-v4hi __builtin_ia32_packssdw (v2si, v2si)
-v8qi __builtin_ia32_packuswb (v4hi, v4hi)
+v8qi __builtin_ia32_paddb (v8qi, v8qi);
+v4hi __builtin_ia32_paddw (v4hi, v4hi);
+v2si __builtin_ia32_paddd (v2si, v2si);
+v8qi __builtin_ia32_psubb (v8qi, v8qi);
+v4hi __builtin_ia32_psubw (v4hi, v4hi);
+v2si __builtin_ia32_psubd (v2si, v2si);
+v8qi __builtin_ia32_paddsb (v8qi, v8qi);
+v4hi __builtin_ia32_paddsw (v4hi, v4hi);
+v8qi __builtin_ia32_psubsb (v8qi, v8qi);
+v4hi __builtin_ia32_psubsw (v4hi, v4hi);
+v8qi __builtin_ia32_paddusb (v8qi, v8qi);
+v4hi __builtin_ia32_paddusw (v4hi, v4hi);
+v8qi __builtin_ia32_psubusb (v8qi, v8qi);
+v4hi __builtin_ia32_psubusw (v4hi, v4hi);
+v4hi __builtin_ia32_pmullw (v4hi, v4hi);
+v4hi __builtin_ia32_pmulhw (v4hi, v4hi);
+di __builtin_ia32_pand (di, di);
+di __builtin_ia32_pandn (di,di);
+di __builtin_ia32_por (di, di);
+di __builtin_ia32_pxor (di, di);
+v8qi __builtin_ia32_pcmpeqb (v8qi, v8qi);
+v4hi __builtin_ia32_pcmpeqw (v4hi, v4hi);
+v2si __builtin_ia32_pcmpeqd (v2si, v2si);
+v8qi __builtin_ia32_pcmpgtb (v8qi, v8qi);
+v4hi __builtin_ia32_pcmpgtw (v4hi, v4hi);
+v2si __builtin_ia32_pcmpgtd (v2si, v2si);
+v8qi __builtin_ia32_punpckhbw (v8qi, v8qi);
+v4hi __builtin_ia32_punpckhwd (v4hi, v4hi);
+v2si __builtin_ia32_punpckhdq (v2si, v2si);
+v8qi __builtin_ia32_punpcklbw (v8qi, v8qi);
+v4hi __builtin_ia32_punpcklwd (v4hi, v4hi);
+v2si __builtin_ia32_punpckldq (v2si, v2si);
+v8qi __builtin_ia32_packsswb (v4hi, v4hi);
+v4hi __builtin_ia32_packssdw (v2si, v2si);
+v8qi __builtin_ia32_packuswb (v4hi, v4hi);
 
-v4hi __builtin_ia32_psllw (v4hi, v4hi)
-v2si __builtin_ia32_pslld (v2si, v2si)
-v1di __builtin_ia32_psllq (v1di, v1di)
-v4hi __builtin_ia32_psrlw (v4hi, v4hi)
-v2si __builtin_ia32_psrld (v2si, v2si)
-v1di __builtin_ia32_psrlq (v1di, v1di)
-v4hi __builtin_ia32_psraw (v4hi, v4hi)
-v2si __builtin_ia32_psrad (v2si, v2si)
-v4hi __builtin_ia32_psllwi (v4hi, int)
-v2si __builtin_ia32_pslldi (v2si, int)
-v1di __builtin_ia32_psllqi (v1di, int)
-v4hi __builtin_ia32_psrlwi (v4hi, int)
-v2si __builtin_ia32_psrldi (v2si, int)
-v1di __builtin_ia32_psrlqi (v1di, int)
-v4hi __builtin_ia32_psrawi (v4hi, int)
-v2si __builtin_ia32_psradi (v2si, int)
-
+v4hi __builtin_ia32_psllw (v4hi, v4hi);
+v2si __builtin_ia32_pslld (v2si, v2si);
+v1di __builtin_ia32_psllq (v1di, v1di);
+v4hi __builtin_ia32_psrlw (v4hi, v4hi);
+v2si __builtin_ia32_psrld (v2si, v2si);
+v1di __builtin_ia32_psrlq (v1di, v1di);
+v4hi __builtin_ia32_psraw (v4hi, v4hi);
+v2si __builtin_ia32_psrad (v2si, v2si);
+v4hi __builtin_ia32_psllwi (v4hi, int);
+v2si __builtin_ia32_pslldi (v2si, int);
+v1di __builtin_ia32_psllqi (v1di, int);
+v4hi __builtin_ia32_psrlwi (v4hi, int);
+v2si __builtin_ia32_psrldi (v2si, int);
+v1di __builtin_ia32_psrlqi (v1di, int);
+v4hi __builtin_ia32_psrawi (v4hi, int);
+v2si __builtin_ia32_psradi (v2si, int);
 @end smallexample
 
 The following built-in functions are made available either with
@@ -21981,92 +21974,92 @@ The following built-in functions are made available either with
 the machine instruction that is part of the name.
 
 @smallexample
-v4hi __builtin_ia32_pmulhuw (v4hi, v4hi)
-v8qi __builtin_ia32_pavgb (v8qi, v8qi)
-v4hi __builtin_ia32_pavgw (v4hi, v4hi)
-v1di __builtin_ia32_psadbw (v8qi, v8qi)
-v8qi __builtin_ia32_pmaxub (v8qi, v8qi)
-v4hi __builtin_ia32_pmaxsw (v4hi, v4hi)
-v8qi __builtin_ia32_pminub (v8qi, v8qi)
-v4hi __builtin_ia32_pminsw (v4hi, v4hi)
-int __builtin_ia32_pmovmskb (v8qi)
-void __builtin_ia32_maskmovq (v8qi, v8qi, char *)
-void __builtin_ia32_movntq (di *, di)
-void __builtin_ia32_sfence (void)
+v4hi __builtin_ia32_pmulhuw (v4hi, v4hi);
+v8qi __builtin_ia32_pavgb (v8qi, v8qi);
+v4hi __builtin_ia32_pavgw (v4hi, v4hi);
+v1di __builtin_ia32_psadbw (v8qi, v8qi);
+v8qi __builtin_ia32_pmaxub (v8qi, v8qi);
+v4hi __builtin_ia32_pmaxsw (v4hi, v4hi);
+v8qi __builtin_ia32_pminub (v8qi, v8qi);
+v4hi __builtin_ia32_pminsw (v4hi, v4hi);
+int __builtin_ia32_pmovmskb (v8qi);
+void __builtin_ia32_maskmovq (v8qi, v8qi, char *);
+void __builtin_ia32_movntq (di *, di);
+void __builtin_ia32_sfence (void);
 @end smallexample
 
 The following built-in functions are available when @option{-msse} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-int __builtin_ia32_comieq (v4sf, v4sf)
-int __builtin_ia32_comineq (v4sf, v4sf)
-int __builtin_ia32_comilt (v4sf, v4sf)
-int __builtin_ia32_comile (v4sf, v4sf)
-int __builtin_ia32_comigt (v4sf, v4sf)
-int __builtin_ia32_comige (v4sf, v4sf)
-int __builtin_ia32_ucomieq (v4sf, v4sf)
-int __builtin_ia32_ucomineq (v4sf, v4sf)
-int __builtin_ia32_ucomilt (v4sf, v4sf)
-int __builtin_ia32_ucomile (v4sf, v4sf)
-int __builtin_ia32_ucomigt (v4sf, v4sf)
-int __builtin_ia32_ucomige (v4sf, v4sf)
-v4sf __builtin_ia32_addps (v4sf, v4sf)
-v4sf __builtin_ia32_subps (v4sf, v4sf)
-v4sf __builtin_ia32_mulps (v4sf, v4sf)
-v4sf __builtin_ia32_divps (v4sf, v4sf)
-v4sf __builtin_ia32_addss (v4sf, v4sf)
-v4sf __builtin_ia32_subss (v4sf, v4sf)
-v4sf __builtin_ia32_mulss (v4sf, v4sf)
-v4sf __builtin_ia32_divss (v4sf, v4sf)
-v4sf __builtin_ia32_cmpeqps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpltps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpleps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpgtps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpgeps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpunordps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpneqps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpnltps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpnleps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpngtps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpngeps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpordps (v4sf, v4sf)
-v4sf __builtin_ia32_cmpeqss (v4sf, v4sf)
-v4sf __builtin_ia32_cmpltss (v4sf, v4sf)
-v4sf __builtin_ia32_cmpless (v4sf, v4sf)
-v4sf __builtin_ia32_cmpunordss (v4sf, v4sf)
-v4sf __builtin_ia32_cmpneqss (v4sf, v4sf)
-v4sf __builtin_ia32_cmpnltss (v4sf, v4sf)
-v4sf __builtin_ia32_cmpnless (v4sf, v4sf)
-v4sf __builtin_ia32_cmpordss (v4sf, v4sf)
-v4sf __builtin_ia32_maxps (v4sf, v4sf)
-v4sf __builtin_ia32_maxss (v4sf, v4sf)
-v4sf __builtin_ia32_minps (v4sf, v4sf)
-v4sf __builtin_ia32_minss (v4sf, v4sf)
-v4sf __builtin_ia32_andps (v4sf, v4sf)
-v4sf __builtin_ia32_andnps (v4sf, v4sf)
-v4sf __builtin_ia32_orps (v4sf, v4sf)
-v4sf __builtin_ia32_xorps (v4sf, v4sf)
-v4sf __builtin_ia32_movss (v4sf, v4sf)
-v4sf __builtin_ia32_movhlps (v4sf, v4sf)
-v4sf __builtin_ia32_movlhps (v4sf, v4sf)
-v4sf __builtin_ia32_unpckhps (v4sf, v4sf)
-v4sf __builtin_ia32_unpcklps (v4sf, v4sf)
-v4sf __builtin_ia32_cvtpi2ps (v4sf, v2si)
-v4sf __builtin_ia32_cvtsi2ss (v4sf, int)
-v2si __builtin_ia32_cvtps2pi (v4sf)
-int __builtin_ia32_cvtss2si (v4sf)
-v2si __builtin_ia32_cvttps2pi (v4sf)
-int __builtin_ia32_cvttss2si (v4sf)
-v4sf __builtin_ia32_rcpps (v4sf)
-v4sf __builtin_ia32_rsqrtps (v4sf)
-v4sf __builtin_ia32_sqrtps (v4sf)
-v4sf __builtin_ia32_rcpss (v4sf)
-v4sf __builtin_ia32_rsqrtss (v4sf)
-v4sf __builtin_ia32_sqrtss (v4sf)
-v4sf __builtin_ia32_shufps (v4sf, v4sf, int)
-void __builtin_ia32_movntps (float *, v4sf)
-int __builtin_ia32_movmskps (v4sf)
+int __builtin_ia32_comieq (v4sf, v4sf);
+int __builtin_ia32_comineq (v4sf, v4sf);
+int __builtin_ia32_comilt (v4sf, v4sf);
+int __builtin_ia32_comile (v4sf, v4sf);
+int __builtin_ia32_comigt (v4sf, v4sf);
+int __builtin_ia32_comige (v4sf, v4sf);
+int __builtin_ia32_ucomieq (v4sf, v4sf);
+int __builtin_ia32_ucomineq (v4sf, v4sf);
+int __builtin_ia32_ucomilt (v4sf, v4sf);
+int __builtin_ia32_ucomile (v4sf, v4sf);
+int __builtin_ia32_ucomigt (v4sf, v4sf);
+int __builtin_ia32_ucomige (v4sf, v4sf);
+v4sf __builtin_ia32_addps (v4sf, v4sf);
+v4sf __builtin_ia32_subps (v4sf, v4sf);
+v4sf __builtin_ia32_mulps (v4sf, v4sf);
+v4sf __builtin_ia32_divps (v4sf, v4sf);
+v4sf __builtin_ia32_addss (v4sf, v4sf);
+v4sf __builtin_ia32_subss (v4sf, v4sf);
+v4sf __builtin_ia32_mulss (v4sf, v4sf);
+v4sf __builtin_ia32_divss (v4sf, v4sf);
+v4sf __builtin_ia32_cmpeqps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpltps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpleps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpgtps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpgeps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpunordps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpneqps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpnltps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpnleps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpngtps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpngeps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpordps (v4sf, v4sf);
+v4sf __builtin_ia32_cmpeqss (v4sf, v4sf);
+v4sf __builtin_ia32_cmpltss (v4sf, v4sf);
+v4sf __builtin_ia32_cmpless (v4sf, v4sf);
+v4sf __builtin_ia32_cmpunordss (v4sf, v4sf);
+v4sf __builtin_ia32_cmpneqss (v4sf, v4sf);
+v4sf __builtin_ia32_cmpnltss (v4sf, v4sf);
+v4sf __builtin_ia32_cmpnless (v4sf, v4sf);
+v4sf __builtin_ia32_cmpordss (v4sf, v4sf);
+v4sf __builtin_ia32_maxps (v4sf, v4sf);
+v4sf __builtin_ia32_maxss (v4sf, v4sf);
+v4sf __builtin_ia32_minps (v4sf, v4sf);
+v4sf __builtin_ia32_minss (v4sf, v4sf);
+v4sf __builtin_ia32_andps (v4sf, v4sf);
+v4sf __builtin_ia32_andnps (v4sf, v4sf);
+v4sf __builtin_ia32_orps (v4sf, v4sf);
+v4sf __builtin_ia32_xorps (v4sf, v4sf);
+v4sf __builtin_ia32_movss (v4sf, v4sf);
+v4sf __builtin_ia32_movhlps (v4sf, v4sf);
+v4sf __builtin_ia32_movlhps (v4sf, v4sf);
+v4sf __builtin_ia32_unpckhps (v4sf, v4sf);
+v4sf __builtin_ia32_unpcklps (v4sf, v4sf);
+v4sf __builtin_ia32_cvtpi2ps (v4sf, v2si);
+v4sf __builtin_ia32_cvtsi2ss (v4sf, int);
+v2si __builtin_ia32_cvtps2pi (v4sf);
+int __builtin_ia32_cvtss2si (v4sf);
+v2si __builtin_ia32_cvttps2pi (v4sf);
+int __builtin_ia32_cvttss2si (v4sf);
+v4sf __builtin_ia32_rcpps (v4sf);
+v4sf __builtin_ia32_rsqrtps (v4sf);
+v4sf __builtin_ia32_sqrtps (v4sf);
+v4sf __builtin_ia32_rcpss (v4sf);
+v4sf __builtin_ia32_rsqrtss (v4sf);
+v4sf __builtin_ia32_sqrtss (v4sf);
+v4sf __builtin_ia32_shufps (v4sf, v4sf, int);
+void __builtin_ia32_movntps (float *, v4sf);
+int __builtin_ia32_movmskps (v4sf);
 @end smallexample
 
 The following built-in functions are available when @option{-msse} is used.
@@ -22092,222 +22085,222 @@ The following built-in functions are available when @option{-msse2} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-int __builtin_ia32_comisdeq (v2df, v2df)
-int __builtin_ia32_comisdlt (v2df, v2df)
-int __builtin_ia32_comisdle (v2df, v2df)
-int __builtin_ia32_comisdgt (v2df, v2df)
-int __builtin_ia32_comisdge (v2df, v2df)
-int __builtin_ia32_comisdneq (v2df, v2df)
-int __builtin_ia32_ucomisdeq (v2df, v2df)
-int __builtin_ia32_ucomisdlt (v2df, v2df)
-int __builtin_ia32_ucomisdle (v2df, v2df)
-int __builtin_ia32_ucomisdgt (v2df, v2df)
-int __builtin_ia32_ucomisdge (v2df, v2df)
-int __builtin_ia32_ucomisdneq (v2df, v2df)
-v2df __builtin_ia32_cmpeqpd (v2df, v2df)
-v2df __builtin_ia32_cmpltpd (v2df, v2df)
-v2df __builtin_ia32_cmplepd (v2df, v2df)
-v2df __builtin_ia32_cmpgtpd (v2df, v2df)
-v2df __builtin_ia32_cmpgepd (v2df, v2df)
-v2df __builtin_ia32_cmpunordpd (v2df, v2df)
-v2df __builtin_ia32_cmpneqpd (v2df, v2df)
-v2df __builtin_ia32_cmpnltpd (v2df, v2df)
-v2df __builtin_ia32_cmpnlepd (v2df, v2df)
-v2df __builtin_ia32_cmpngtpd (v2df, v2df)
-v2df __builtin_ia32_cmpngepd (v2df, v2df)
-v2df __builtin_ia32_cmpordpd (v2df, v2df)
-v2df __builtin_ia32_cmpeqsd (v2df, v2df)
-v2df __builtin_ia32_cmpltsd (v2df, v2df)
-v2df __builtin_ia32_cmplesd (v2df, v2df)
-v2df __builtin_ia32_cmpunordsd (v2df, v2df)
-v2df __builtin_ia32_cmpneqsd (v2df, v2df)
-v2df __builtin_ia32_cmpnltsd (v2df, v2df)
-v2df __builtin_ia32_cmpnlesd (v2df, v2df)
-v2df __builtin_ia32_cmpordsd (v2df, v2df)
-v2di __builtin_ia32_paddq (v2di, v2di)
-v2di __builtin_ia32_psubq (v2di, v2di)
-v2df __builtin_ia32_addpd (v2df, v2df)
-v2df __builtin_ia32_subpd (v2df, v2df)
-v2df __builtin_ia32_mulpd (v2df, v2df)
-v2df __builtin_ia32_divpd (v2df, v2df)
-v2df __builtin_ia32_addsd (v2df, v2df)
-v2df __builtin_ia32_subsd (v2df, v2df)
-v2df __builtin_ia32_mulsd (v2df, v2df)
-v2df __builtin_ia32_divsd (v2df, v2df)
-v2df __builtin_ia32_minpd (v2df, v2df)
-v2df __builtin_ia32_maxpd (v2df, v2df)
-v2df __builtin_ia32_minsd (v2df, v2df)
-v2df __builtin_ia32_maxsd (v2df, v2df)
-v2df __builtin_ia32_andpd (v2df, v2df)
-v2df __builtin_ia32_andnpd (v2df, v2df)
-v2df __builtin_ia32_orpd (v2df, v2df)
-v2df __builtin_ia32_xorpd (v2df, v2df)
-v2df __builtin_ia32_movsd (v2df, v2df)
-v2df __builtin_ia32_unpckhpd (v2df, v2df)
-v2df __builtin_ia32_unpcklpd (v2df, v2df)
-v16qi __builtin_ia32_paddb128 (v16qi, v16qi)
-v8hi __builtin_ia32_paddw128 (v8hi, v8hi)
-v4si __builtin_ia32_paddd128 (v4si, v4si)
-v2di __builtin_ia32_paddq128 (v2di, v2di)
-v16qi __builtin_ia32_psubb128 (v16qi, v16qi)
-v8hi __builtin_ia32_psubw128 (v8hi, v8hi)
-v4si __builtin_ia32_psubd128 (v4si, v4si)
-v2di __builtin_ia32_psubq128 (v2di, v2di)
-v8hi __builtin_ia32_pmullw128 (v8hi, v8hi)
-v8hi __builtin_ia32_pmulhw128 (v8hi, v8hi)
-v2di __builtin_ia32_pand128 (v2di, v2di)
-v2di __builtin_ia32_pandn128 (v2di, v2di)
-v2di __builtin_ia32_por128 (v2di, v2di)
-v2di __builtin_ia32_pxor128 (v2di, v2di)
-v16qi __builtin_ia32_pavgb128 (v16qi, v16qi)
-v8hi __builtin_ia32_pavgw128 (v8hi, v8hi)
-v16qi __builtin_ia32_pcmpeqb128 (v16qi, v16qi)
-v8hi __builtin_ia32_pcmpeqw128 (v8hi, v8hi)
-v4si __builtin_ia32_pcmpeqd128 (v4si, v4si)
-v16qi __builtin_ia32_pcmpgtb128 (v16qi, v16qi)
-v8hi __builtin_ia32_pcmpgtw128 (v8hi, v8hi)
-v4si __builtin_ia32_pcmpgtd128 (v4si, v4si)
-v16qi __builtin_ia32_pmaxub128 (v16qi, v16qi)
-v8hi __builtin_ia32_pmaxsw128 (v8hi, v8hi)
-v16qi __builtin_ia32_pminub128 (v16qi, v16qi)
-v8hi __builtin_ia32_pminsw128 (v8hi, v8hi)
-v16qi __builtin_ia32_punpckhbw128 (v16qi, v16qi)
-v8hi __builtin_ia32_punpckhwd128 (v8hi, v8hi)
-v4si __builtin_ia32_punpckhdq128 (v4si, v4si)
-v2di __builtin_ia32_punpckhqdq128 (v2di, v2di)
-v16qi __builtin_ia32_punpcklbw128 (v16qi, v16qi)
-v8hi __builtin_ia32_punpcklwd128 (v8hi, v8hi)
-v4si __builtin_ia32_punpckldq128 (v4si, v4si)
-v2di __builtin_ia32_punpcklqdq128 (v2di, v2di)
-v16qi __builtin_ia32_packsswb128 (v8hi, v8hi)
-v8hi __builtin_ia32_packssdw128 (v4si, v4si)
-v16qi __builtin_ia32_packuswb128 (v8hi, v8hi)
-v8hi __builtin_ia32_pmulhuw128 (v8hi, v8hi)
-void __builtin_ia32_maskmovdqu (v16qi, v16qi)
-v2df __builtin_ia32_loadupd (double *)
-void __builtin_ia32_storeupd (double *, v2df)
-v2df __builtin_ia32_loadhpd (v2df, double const *)
-v2df __builtin_ia32_loadlpd (v2df, double const *)
-int __builtin_ia32_movmskpd (v2df)
-int __builtin_ia32_pmovmskb128 (v16qi)
-void __builtin_ia32_movnti (int *, int)
-void __builtin_ia32_movnti64 (long long int *, long long int)
-void __builtin_ia32_movntpd (double *, v2df)
-void __builtin_ia32_movntdq (v2df *, v2df)
-v4si __builtin_ia32_pshufd (v4si, int)
-v8hi __builtin_ia32_pshuflw (v8hi, int)
-v8hi __builtin_ia32_pshufhw (v8hi, int)
-v2di __builtin_ia32_psadbw128 (v16qi, v16qi)
-v2df __builtin_ia32_sqrtpd (v2df)
-v2df __builtin_ia32_sqrtsd (v2df)
-v2df __builtin_ia32_shufpd (v2df, v2df, int)
-v2df __builtin_ia32_cvtdq2pd (v4si)
-v4sf __builtin_ia32_cvtdq2ps (v4si)
-v4si __builtin_ia32_cvtpd2dq (v2df)
-v2si __builtin_ia32_cvtpd2pi (v2df)
-v4sf __builtin_ia32_cvtpd2ps (v2df)
-v4si __builtin_ia32_cvttpd2dq (v2df)
-v2si __builtin_ia32_cvttpd2pi (v2df)
-v2df __builtin_ia32_cvtpi2pd (v2si)
-int __builtin_ia32_cvtsd2si (v2df)
-int __builtin_ia32_cvttsd2si (v2df)
-long long __builtin_ia32_cvtsd2si64 (v2df)
-long long __builtin_ia32_cvttsd2si64 (v2df)
-v4si __builtin_ia32_cvtps2dq (v4sf)
-v2df __builtin_ia32_cvtps2pd (v4sf)
-v4si __builtin_ia32_cvttps2dq (v4sf)
-v2df __builtin_ia32_cvtsi2sd (v2df, int)
-v2df __builtin_ia32_cvtsi642sd (v2df, long long)
-v4sf __builtin_ia32_cvtsd2ss (v4sf, v2df)
-v2df __builtin_ia32_cvtss2sd (v2df, v4sf)
-void __builtin_ia32_clflush (const void *)
-void __builtin_ia32_lfence (void)
-void __builtin_ia32_mfence (void)
-v16qi __builtin_ia32_loaddqu (const char *)
-void __builtin_ia32_storedqu (char *, v16qi)
-v1di __builtin_ia32_pmuludq (v2si, v2si)
-v2di __builtin_ia32_pmuludq128 (v4si, v4si)
-v8hi __builtin_ia32_psllw128 (v8hi, v8hi)
-v4si __builtin_ia32_pslld128 (v4si, v4si)
-v2di __builtin_ia32_psllq128 (v2di, v2di)
-v8hi __builtin_ia32_psrlw128 (v8hi, v8hi)
-v4si __builtin_ia32_psrld128 (v4si, v4si)
-v2di __builtin_ia32_psrlq128 (v2di, v2di)
-v8hi __builtin_ia32_psraw128 (v8hi, v8hi)
-v4si __builtin_ia32_psrad128 (v4si, v4si)
-v2di __builtin_ia32_pslldqi128 (v2di, int)
-v8hi __builtin_ia32_psllwi128 (v8hi, int)
-v4si __builtin_ia32_pslldi128 (v4si, int)
-v2di __builtin_ia32_psllqi128 (v2di, int)
-v2di __builtin_ia32_psrldqi128 (v2di, int)
-v8hi __builtin_ia32_psrlwi128 (v8hi, int)
-v4si __builtin_ia32_psrldi128 (v4si, int)
-v2di __builtin_ia32_psrlqi128 (v2di, int)
-v8hi __builtin_ia32_psrawi128 (v8hi, int)
-v4si __builtin_ia32_psradi128 (v4si, int)
-v4si __builtin_ia32_pmaddwd128 (v8hi, v8hi)
-v2di __builtin_ia32_movq128 (v2di)
+int __builtin_ia32_comisdeq (v2df, v2df);
+int __builtin_ia32_comisdlt (v2df, v2df);
+int __builtin_ia32_comisdle (v2df, v2df);
+int __builtin_ia32_comisdgt (v2df, v2df);
+int __builtin_ia32_comisdge (v2df, v2df);
+int __builtin_ia32_comisdneq (v2df, v2df);
+int __builtin_ia32_ucomisdeq (v2df, v2df);
+int __builtin_ia32_ucomisdlt (v2df, v2df);
+int __builtin_ia32_ucomisdle (v2df, v2df);
+int __builtin_ia32_ucomisdgt (v2df, v2df);
+int __builtin_ia32_ucomisdge (v2df, v2df);
+int __builtin_ia32_ucomisdneq (v2df, v2df);
+v2df __builtin_ia32_cmpeqpd (v2df, v2df);
+v2df __builtin_ia32_cmpltpd (v2df, v2df);
+v2df __builtin_ia32_cmplepd (v2df, v2df);
+v2df __builtin_ia32_cmpgtpd (v2df, v2df);
+v2df __builtin_ia32_cmpgepd (v2df, v2df);
+v2df __builtin_ia32_cmpunordpd (v2df, v2df);
+v2df __builtin_ia32_cmpneqpd (v2df, v2df);
+v2df __builtin_ia32_cmpnltpd (v2df, v2df);
+v2df __builtin_ia32_cmpnlepd (v2df, v2df);
+v2df __builtin_ia32_cmpngtpd (v2df, v2df);
+v2df __builtin_ia32_cmpngepd (v2df, v2df);
+v2df __builtin_ia32_cmpordpd (v2df, v2df);
+v2df __builtin_ia32_cmpeqsd (v2df, v2df);
+v2df __builtin_ia32_cmpltsd (v2df, v2df);
+v2df __builtin_ia32_cmplesd (v2df, v2df);
+v2df __builtin_ia32_cmpunordsd (v2df, v2df);
+v2df __builtin_ia32_cmpneqsd (v2df, v2df);
+v2df __builtin_ia32_cmpnltsd (v2df, v2df);
+v2df __builtin_ia32_cmpnlesd (v2df, v2df);
+v2df __builtin_ia32_cmpordsd (v2df, v2df);
+v2di __builtin_ia32_paddq (v2di, v2di);
+v2di __builtin_ia32_psubq (v2di, v2di);
+v2df __builtin_ia32_addpd (v2df, v2df);
+v2df __builtin_ia32_subpd (v2df, v2df);
+v2df __builtin_ia32_mulpd (v2df, v2df);
+v2df __builtin_ia32_divpd (v2df, v2df);
+v2df __builtin_ia32_addsd (v2df, v2df);
+v2df __builtin_ia32_subsd (v2df, v2df);
+v2df __builtin_ia32_mulsd (v2df, v2df);
+v2df __builtin_ia32_divsd (v2df, v2df);
+v2df __builtin_ia32_minpd (v2df, v2df);
+v2df __builtin_ia32_maxpd (v2df, v2df);
+v2df __builtin_ia32_minsd (v2df, v2df);
+v2df __builtin_ia32_maxsd (v2df, v2df);
+v2df __builtin_ia32_andpd (v2df, v2df);
+v2df __builtin_ia32_andnpd (v2df, v2df);
+v2df __builtin_ia32_orpd (v2df, v2df);
+v2df __builtin_ia32_xorpd (v2df, v2df);
+v2df __builtin_ia32_movsd (v2df, v2df);
+v2df __builtin_ia32_unpckhpd (v2df, v2df);
+v2df __builtin_ia32_unpcklpd (v2df, v2df);
+v16qi __builtin_ia32_paddb128 (v16qi, v16qi);
+v8hi __builtin_ia32_paddw128 (v8hi, v8hi);
+v4si __builtin_ia32_paddd128 (v4si, v4si);
+v2di __builtin_ia32_paddq128 (v2di, v2di);
+v16qi __builtin_ia32_psubb128 (v16qi, v16qi);
+v8hi __builtin_ia32_psubw128 (v8hi, v8hi);
+v4si __builtin_ia32_psubd128 (v4si, v4si);
+v2di __builtin_ia32_psubq128 (v2di, v2di);
+v8hi __builtin_ia32_pmullw128 (v8hi, v8hi);
+v8hi __builtin_ia32_pmulhw128 (v8hi, v8hi);
+v2di __builtin_ia32_pand128 (v2di, v2di);
+v2di __builtin_ia32_pandn128 (v2di, v2di);
+v2di __builtin_ia32_por128 (v2di, v2di);
+v2di __builtin_ia32_pxor128 (v2di, v2di);
+v16qi __builtin_ia32_pavgb128 (v16qi, v16qi);
+v8hi __builtin_ia32_pavgw128 (v8hi, v8hi);
+v16qi __builtin_ia32_pcmpeqb128 (v16qi, v16qi);
+v8hi __builtin_ia32_pcmpeqw128 (v8hi, v8hi);
+v4si __builtin_ia32_pcmpeqd128 (v4si, v4si);
+v16qi __builtin_ia32_pcmpgtb128 (v16qi, v16qi);
+v8hi __builtin_ia32_pcmpgtw128 (v8hi, v8hi);
+v4si __builtin_ia32_pcmpgtd128 (v4si, v4si);
+v16qi __builtin_ia32_pmaxub128 (v16qi, v16qi);
+v8hi __builtin_ia32_pmaxsw128 (v8hi, v8hi);
+v16qi __builtin_ia32_pminub128 (v16qi, v16qi);
+v8hi __builtin_ia32_pminsw128 (v8hi, v8hi);
+v16qi __builtin_ia32_punpckhbw128 (v16qi, v16qi);
+v8hi __builtin_ia32_punpckhwd128 (v8hi, v8hi);
+v4si __builtin_ia32_punpckhdq128 (v4si, v4si);
+v2di __builtin_ia32_punpckhqdq128 (v2di, v2di);
+v16qi __builtin_ia32_punpcklbw128 (v16qi, v16qi);
+v8hi __builtin_ia32_punpcklwd128 (v8hi, v8hi);
+v4si __builtin_ia32_punpckldq128 (v4si, v4si);
+v2di __builtin_ia32_punpcklqdq128 (v2di, v2di);
+v16qi __builtin_ia32_packsswb128 (v8hi, v8hi);
+v8hi __builtin_ia32_packssdw128 (v4si, v4si);
+v16qi __builtin_ia32_packuswb128 (v8hi, v8hi);
+v8hi __builtin_ia32_pmulhuw128 (v8hi, v8hi);
+void __builtin_ia32_maskmovdqu (v16qi, v16qi);
+v2df __builtin_ia32_loadupd (double *);
+void __builtin_ia32_storeupd (double *, v2df);
+v2df __builtin_ia32_loadhpd (v2df, double const *);
+v2df __builtin_ia32_loadlpd (v2df, double const *);
+int __builtin_ia32_movmskpd (v2df);
+int __builtin_ia32_pmovmskb128 (v16qi);
+void __builtin_ia32_movnti (int *, int);
+void __builtin_ia32_movnti64 (long long int *, long long int);
+void __builtin_ia32_movntpd (double *, v2df);
+void __builtin_ia32_movntdq (v2df *, v2df);
+v4si __builtin_ia32_pshufd (v4si, int);
+v8hi __builtin_ia32_pshuflw (v8hi, int);
+v8hi __builtin_ia32_pshufhw (v8hi, int);
+v2di __builtin_ia32_psadbw128 (v16qi, v16qi);
+v2df __builtin_ia32_sqrtpd (v2df);
+v2df __builtin_ia32_sqrtsd (v2df);
+v2df __builtin_ia32_shufpd (v2df, v2df, int);
+v2df __builtin_ia32_cvtdq2pd (v4si);
+v4sf __builtin_ia32_cvtdq2ps (v4si);
+v4si __builtin_ia32_cvtpd2dq (v2df);
+v2si __builtin_ia32_cvtpd2pi (v2df);
+v4sf __builtin_ia32_cvtpd2ps (v2df);
+v4si __builtin_ia32_cvttpd2dq (v2df);
+v2si __builtin_ia32_cvttpd2pi (v2df);
+v2df __builtin_ia32_cvtpi2pd (v2si);
+int __builtin_ia32_cvtsd2si (v2df);
+int __builtin_ia32_cvttsd2si (v2df);
+long long __builtin_ia32_cvtsd2si64 (v2df);
+long long __builtin_ia32_cvttsd2si64 (v2df);
+v4si __builtin_ia32_cvtps2dq (v4sf);
+v2df __builtin_ia32_cvtps2pd (v4sf);
+v4si __builtin_ia32_cvttps2dq (v4sf);
+v2df __builtin_ia32_cvtsi2sd (v2df, int);
+v2df __builtin_ia32_cvtsi642sd (v2df, long long);
+v4sf __builtin_ia32_cvtsd2ss (v4sf, v2df);
+v2df __builtin_ia32_cvtss2sd (v2df, v4sf);
+void __builtin_ia32_clflush (const void *);
+void __builtin_ia32_lfence (void);
+void __builtin_ia32_mfence (void);
+v16qi __builtin_ia32_loaddqu (const char *);
+void __builtin_ia32_storedqu (char *, v16qi);
+v1di __builtin_ia32_pmuludq (v2si, v2si);
+v2di __builtin_ia32_pmuludq128 (v4si, v4si);
+v8hi __builtin_ia32_psllw128 (v8hi, v8hi);
+v4si __builtin_ia32_pslld128 (v4si, v4si);
+v2di __builtin_ia32_psllq128 (v2di, v2di);
+v8hi __builtin_ia32_psrlw128 (v8hi, v8hi);
+v4si __builtin_ia32_psrld128 (v4si, v4si);
+v2di __builtin_ia32_psrlq128 (v2di, v2di);
+v8hi __builtin_ia32_psraw128 (v8hi, v8hi);
+v4si __builtin_ia32_psrad128 (v4si, v4si);
+v2di __builtin_ia32_pslldqi128 (v2di, int);
+v8hi __builtin_ia32_psllwi128 (v8hi, int);
+v4si __builtin_ia32_pslldi128 (v4si, int);
+v2di __builtin_ia32_psllqi128 (v2di, int);
+v2di __builtin_ia32_psrldqi128 (v2di, int);
+v8hi __builtin_ia32_psrlwi128 (v8hi, int);
+v4si __builtin_ia32_psrldi128 (v4si, int);
+v2di __builtin_ia32_psrlqi128 (v2di, int);
+v8hi __builtin_ia32_psrawi128 (v8hi, int);
+v4si __builtin_ia32_psradi128 (v4si, int);
+v4si __builtin_ia32_pmaddwd128 (v8hi, v8hi);
+v2di __builtin_ia32_movq128 (v2di);
 @end smallexample
 
 The following built-in functions are available when @option{-msse3} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v2df __builtin_ia32_addsubpd (v2df, v2df)
-v4sf __builtin_ia32_addsubps (v4sf, v4sf)
-v2df __builtin_ia32_haddpd (v2df, v2df)
-v4sf __builtin_ia32_haddps (v4sf, v4sf)
-v2df __builtin_ia32_hsubpd (v2df, v2df)
-v4sf __builtin_ia32_hsubps (v4sf, v4sf)
-v16qi __builtin_ia32_lddqu (char const *)
-void __builtin_ia32_monitor (void *, unsigned int, unsigned int)
-v4sf __builtin_ia32_movshdup (v4sf)
-v4sf __builtin_ia32_movsldup (v4sf)
-void __builtin_ia32_mwait (unsigned int, unsigned int)
+v2df __builtin_ia32_addsubpd (v2df, v2df);
+v4sf __builtin_ia32_addsubps (v4sf, v4sf);
+v2df __builtin_ia32_haddpd (v2df, v2df);
+v4sf __builtin_ia32_haddps (v4sf, v4sf);
+v2df __builtin_ia32_hsubpd (v2df, v2df);
+v4sf __builtin_ia32_hsubps (v4sf, v4sf);
+v16qi __builtin_ia32_lddqu (char const *);
+void __builtin_ia32_monitor (void *, unsigned int, unsigned int);
+v4sf __builtin_ia32_movshdup (v4sf);
+v4sf __builtin_ia32_movsldup (v4sf);
+void __builtin_ia32_mwait (unsigned int, unsigned int);
 @end smallexample
 
 The following built-in functions are available when @option{-mssse3} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v2si __builtin_ia32_phaddd (v2si, v2si)
-v4hi __builtin_ia32_phaddw (v4hi, v4hi)
-v4hi __builtin_ia32_phaddsw (v4hi, v4hi)
-v2si __builtin_ia32_phsubd (v2si, v2si)
-v4hi __builtin_ia32_phsubw (v4hi, v4hi)
-v4hi __builtin_ia32_phsubsw (v4hi, v4hi)
-v4hi __builtin_ia32_pmaddubsw (v8qi, v8qi)
-v4hi __builtin_ia32_pmulhrsw (v4hi, v4hi)
-v8qi __builtin_ia32_pshufb (v8qi, v8qi)
-v8qi __builtin_ia32_psignb (v8qi, v8qi)
-v2si __builtin_ia32_psignd (v2si, v2si)
-v4hi __builtin_ia32_psignw (v4hi, v4hi)
-v1di __builtin_ia32_palignr (v1di, v1di, int)
-v8qi __builtin_ia32_pabsb (v8qi)
-v2si __builtin_ia32_pabsd (v2si)
-v4hi __builtin_ia32_pabsw (v4hi)
+v2si __builtin_ia32_phaddd (v2si, v2si);
+v4hi __builtin_ia32_phaddw (v4hi, v4hi);
+v4hi __builtin_ia32_phaddsw (v4hi, v4hi);
+v2si __builtin_ia32_phsubd (v2si, v2si);
+v4hi __builtin_ia32_phsubw (v4hi, v4hi);
+v4hi __builtin_ia32_phsubsw (v4hi, v4hi);
+v4hi __builtin_ia32_pmaddubsw (v8qi, v8qi);
+v4hi __builtin_ia32_pmulhrsw (v4hi, v4hi);
+v8qi __builtin_ia32_pshufb (v8qi, v8qi);
+v8qi __builtin_ia32_psignb (v8qi, v8qi);
+v2si __builtin_ia32_psignd (v2si, v2si);
+v4hi __builtin_ia32_psignw (v4hi, v4hi);
+v1di __builtin_ia32_palignr (v1di, v1di, int);
+v8qi __builtin_ia32_pabsb (v8qi);
+v2si __builtin_ia32_pabsd (v2si);
+v4hi __builtin_ia32_pabsw (v4hi);
 @end smallexample
 
 The following built-in functions are available when @option{-mssse3} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v4si __builtin_ia32_phaddd128 (v4si, v4si)
-v8hi __builtin_ia32_phaddw128 (v8hi, v8hi)
-v8hi __builtin_ia32_phaddsw128 (v8hi, v8hi)
-v4si __builtin_ia32_phsubd128 (v4si, v4si)
-v8hi __builtin_ia32_phsubw128 (v8hi, v8hi)
-v8hi __builtin_ia32_phsubsw128 (v8hi, v8hi)
-v8hi __builtin_ia32_pmaddubsw128 (v16qi, v16qi)
-v8hi __builtin_ia32_pmulhrsw128 (v8hi, v8hi)
-v16qi __builtin_ia32_pshufb128 (v16qi, v16qi)
-v16qi __builtin_ia32_psignb128 (v16qi, v16qi)
-v4si __builtin_ia32_psignd128 (v4si, v4si)
-v8hi __builtin_ia32_psignw128 (v8hi, v8hi)
-v2di __builtin_ia32_palignr128 (v2di, v2di, int)
-v16qi __builtin_ia32_pabsb128 (v16qi)
-v4si __builtin_ia32_pabsd128 (v4si)
-v8hi __builtin_ia32_pabsw128 (v8hi)
+v4si __builtin_ia32_phaddd128 (v4si, v4si);
+v8hi __builtin_ia32_phaddw128 (v8hi, v8hi);
+v8hi __builtin_ia32_phaddsw128 (v8hi, v8hi);
+v4si __builtin_ia32_phsubd128 (v4si, v4si);
+v8hi __builtin_ia32_phsubw128 (v8hi, v8hi);
+v8hi __builtin_ia32_phsubsw128 (v8hi, v8hi);
+v8hi __builtin_ia32_pmaddubsw128 (v16qi, v16qi);
+v8hi __builtin_ia32_pmulhrsw128 (v8hi, v8hi);
+v16qi __builtin_ia32_pshufb128 (v16qi, v16qi);
+v16qi __builtin_ia32_psignb128 (v16qi, v16qi);
+v4si __builtin_ia32_psignd128 (v4si, v4si);
+v8hi __builtin_ia32_psignw128 (v8hi, v8hi);
+v2di __builtin_ia32_palignr128 (v2di, v2di, int);
+v16qi __builtin_ia32_pabsb128 (v16qi);
+v4si __builtin_ia32_pabsd128 (v4si);
+v8hi __builtin_ia32_pabsw128 (v8hi);
 @end smallexample
 
 The following built-in functions are available when @option{-msse4.1} is
@@ -22315,49 +22308,49 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-v2df __builtin_ia32_blendpd (v2df, v2df, const int)
-v4sf __builtin_ia32_blendps (v4sf, v4sf, const int)
-v2df __builtin_ia32_blendvpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_blendvps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_dppd (v2df, v2df, const int)
-v4sf __builtin_ia32_dpps (v4sf, v4sf, const int)
-v4sf __builtin_ia32_insertps128 (v4sf, v4sf, const int)
+v2df __builtin_ia32_blendpd (v2df, v2df, const int);
+v4sf __builtin_ia32_blendps (v4sf, v4sf, const int);
+v2df __builtin_ia32_blendvpd (v2df, v2df, v2df);
+v4sf __builtin_ia32_blendvps (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_dppd (v2df, v2df, const int);
+v4sf __builtin_ia32_dpps (v4sf, v4sf, const int);
+v4sf __builtin_ia32_insertps128 (v4sf, v4sf, const int);
 v2di __builtin_ia32_movntdqa (v2di *);
-v16qi __builtin_ia32_mpsadbw128 (v16qi, v16qi, const int)
-v8hi __builtin_ia32_packusdw128 (v4si, v4si)
-v16qi __builtin_ia32_pblendvb128 (v16qi, v16qi, v16qi)
-v8hi __builtin_ia32_pblendw128 (v8hi, v8hi, const int)
-v2di __builtin_ia32_pcmpeqq (v2di, v2di)
-v8hi __builtin_ia32_phminposuw128 (v8hi)
-v16qi __builtin_ia32_pmaxsb128 (v16qi, v16qi)
-v4si __builtin_ia32_pmaxsd128 (v4si, v4si)
-v4si __builtin_ia32_pmaxud128 (v4si, v4si)
-v8hi __builtin_ia32_pmaxuw128 (v8hi, v8hi)
-v16qi __builtin_ia32_pminsb128 (v16qi, v16qi)
-v4si __builtin_ia32_pminsd128 (v4si, v4si)
-v4si __builtin_ia32_pminud128 (v4si, v4si)
-v8hi __builtin_ia32_pminuw128 (v8hi, v8hi)
-v4si __builtin_ia32_pmovsxbd128 (v16qi)
-v2di __builtin_ia32_pmovsxbq128 (v16qi)
-v8hi __builtin_ia32_pmovsxbw128 (v16qi)
-v2di __builtin_ia32_pmovsxdq128 (v4si)
-v4si __builtin_ia32_pmovsxwd128 (v8hi)
-v2di __builtin_ia32_pmovsxwq128 (v8hi)
-v4si __builtin_ia32_pmovzxbd128 (v16qi)
-v2di __builtin_ia32_pmovzxbq128 (v16qi)
-v8hi __builtin_ia32_pmovzxbw128 (v16qi)
-v2di __builtin_ia32_pmovzxdq128 (v4si)
-v4si __builtin_ia32_pmovzxwd128 (v8hi)
-v2di __builtin_ia32_pmovzxwq128 (v8hi)
-v2di __builtin_ia32_pmuldq128 (v4si, v4si)
-v4si __builtin_ia32_pmulld128 (v4si, v4si)
-int __builtin_ia32_ptestc128 (v2di, v2di)
-int __builtin_ia32_ptestnzc128 (v2di, v2di)
-int __builtin_ia32_ptestz128 (v2di, v2di)
-v2df __builtin_ia32_roundpd (v2df, const int)
-v4sf __builtin_ia32_roundps (v4sf, const int)
-v2df __builtin_ia32_roundsd (v2df, v2df, const int)
-v4sf __builtin_ia32_roundss (v4sf, v4sf, const int)
+v16qi __builtin_ia32_mpsadbw128 (v16qi, v16qi, const int);
+v8hi __builtin_ia32_packusdw128 (v4si, v4si);
+v16qi __builtin_ia32_pblendvb128 (v16qi, v16qi, v16qi);
+v8hi __builtin_ia32_pblendw128 (v8hi, v8hi, const int);
+v2di __builtin_ia32_pcmpeqq (v2di, v2di);
+v8hi __builtin_ia32_phminposuw128 (v8hi);
+v16qi __builtin_ia32_pmaxsb128 (v16qi, v16qi);
+v4si __builtin_ia32_pmaxsd128 (v4si, v4si);
+v4si __builtin_ia32_pmaxud128 (v4si, v4si);
+v8hi __builtin_ia32_pmaxuw128 (v8hi, v8hi);
+v16qi __builtin_ia32_pminsb128 (v16qi, v16qi);
+v4si __builtin_ia32_pminsd128 (v4si, v4si);
+v4si __builtin_ia32_pminud128 (v4si, v4si);
+v8hi __builtin_ia32_pminuw128 (v8hi, v8hi);
+v4si __builtin_ia32_pmovsxbd128 (v16qi);
+v2di __builtin_ia32_pmovsxbq128 (v16qi);
+v8hi __builtin_ia32_pmovsxbw128 (v16qi);
+v2di __builtin_ia32_pmovsxdq128 (v4si);
+v4si __builtin_ia32_pmovsxwd128 (v8hi);
+v2di __builtin_ia32_pmovsxwq128 (v8hi);
+v4si __builtin_ia32_pmovzxbd128 (v16qi);
+v2di __builtin_ia32_pmovzxbq128 (v16qi);
+v8hi __builtin_ia32_pmovzxbw128 (v16qi);
+v2di __builtin_ia32_pmovzxdq128 (v4si);
+v4si __builtin_ia32_pmovzxwd128 (v8hi);
+v2di __builtin_ia32_pmovzxwq128 (v8hi);
+v2di __builtin_ia32_pmuldq128 (v4si, v4si);
+v4si __builtin_ia32_pmulld128 (v4si, v4si);
+int __builtin_ia32_ptestc128 (v2di, v2di);
+int __builtin_ia32_ptestnzc128 (v2di, v2di);
+int __builtin_ia32_ptestz128 (v2di, v2di);
+v2df __builtin_ia32_roundpd (v2df, const int);
+v4sf __builtin_ia32_roundps (v4sf, const int);
+v2df __builtin_ia32_roundsd (v2df, v2df, const int);
+v4sf __builtin_ia32_roundss (v4sf, v4sf, const int);
 @end smallexample
 
 The following built-in functions are available when @option{-msse4.1} is
@@ -22393,21 +22386,21 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-v16qi __builtin_ia32_pcmpestrm128 (v16qi, int, v16qi, int, const int)
-int __builtin_ia32_pcmpestri128 (v16qi, int, v16qi, int, const int)
-int __builtin_ia32_pcmpestria128 (v16qi, int, v16qi, int, const int)
-int __builtin_ia32_pcmpestric128 (v16qi, int, v16qi, int, const int)
-int __builtin_ia32_pcmpestrio128 (v16qi, int, v16qi, int, const int)
-int __builtin_ia32_pcmpestris128 (v16qi, int, v16qi, int, const int)
-int __builtin_ia32_pcmpestriz128 (v16qi, int, v16qi, int, const int)
-v16qi __builtin_ia32_pcmpistrm128 (v16qi, v16qi, const int)
-int __builtin_ia32_pcmpistri128 (v16qi, v16qi, const int)
-int __builtin_ia32_pcmpistria128 (v16qi, v16qi, const int)
-int __builtin_ia32_pcmpistric128 (v16qi, v16qi, const int)
-int __builtin_ia32_pcmpistrio128 (v16qi, v16qi, const int)
-int __builtin_ia32_pcmpistris128 (v16qi, v16qi, const int)
-int __builtin_ia32_pcmpistriz128 (v16qi, v16qi, const int)
-v2di __builtin_ia32_pcmpgtq (v2di, v2di)
+v16qi __builtin_ia32_pcmpestrm128 (v16qi, int, v16qi, int, const int);
+int __builtin_ia32_pcmpestri128 (v16qi, int, v16qi, int, const int);
+int __builtin_ia32_pcmpestria128 (v16qi, int, v16qi, int, const int);
+int __builtin_ia32_pcmpestric128 (v16qi, int, v16qi, int, const int);
+int __builtin_ia32_pcmpestrio128 (v16qi, int, v16qi, int, const int);
+int __builtin_ia32_pcmpestris128 (v16qi, int, v16qi, int, const int);
+int __builtin_ia32_pcmpestriz128 (v16qi, int, v16qi, int, const int);
+v16qi __builtin_ia32_pcmpistrm128 (v16qi, v16qi, const int);
+int __builtin_ia32_pcmpistri128 (v16qi, v16qi, const int);
+int __builtin_ia32_pcmpistria128 (v16qi, v16qi, const int);
+int __builtin_ia32_pcmpistric128 (v16qi, v16qi, const int);
+int __builtin_ia32_pcmpistrio128 (v16qi, v16qi, const int);
+int __builtin_ia32_pcmpistris128 (v16qi, v16qi, const int);
+int __builtin_ia32_pcmpistriz128 (v16qi, v16qi, const int);
+v2di __builtin_ia32_pcmpgtq (v2di, v2di);
 @end smallexample
 
 The following built-in functions are available when @option{-msse4.2} is
@@ -22442,134 +22435,134 @@ used. All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-v4df __builtin_ia32_addpd256 (v4df,v4df)
-v8sf __builtin_ia32_addps256 (v8sf,v8sf)
-v4df __builtin_ia32_addsubpd256 (v4df,v4df)
-v8sf __builtin_ia32_addsubps256 (v8sf,v8sf)
-v4df __builtin_ia32_andnpd256 (v4df,v4df)
-v8sf __builtin_ia32_andnps256 (v8sf,v8sf)
-v4df __builtin_ia32_andpd256 (v4df,v4df)
-v8sf __builtin_ia32_andps256 (v8sf,v8sf)
-v4df __builtin_ia32_blendpd256 (v4df,v4df,int)
-v8sf __builtin_ia32_blendps256 (v8sf,v8sf,int)
-v4df __builtin_ia32_blendvpd256 (v4df,v4df,v4df)
-v8sf __builtin_ia32_blendvps256 (v8sf,v8sf,v8sf)
-v2df __builtin_ia32_cmppd (v2df,v2df,int)
-v4df __builtin_ia32_cmppd256 (v4df,v4df,int)
-v4sf __builtin_ia32_cmpps (v4sf,v4sf,int)
-v8sf __builtin_ia32_cmpps256 (v8sf,v8sf,int)
-v2df __builtin_ia32_cmpsd (v2df,v2df,int)
-v4sf __builtin_ia32_cmpss (v4sf,v4sf,int)
-v4df __builtin_ia32_cvtdq2pd256 (v4si)
-v8sf __builtin_ia32_cvtdq2ps256 (v8si)
-v4si __builtin_ia32_cvtpd2dq256 (v4df)
-v4sf __builtin_ia32_cvtpd2ps256 (v4df)
-v8si __builtin_ia32_cvtps2dq256 (v8sf)
-v4df __builtin_ia32_cvtps2pd256 (v4sf)
-v4si __builtin_ia32_cvttpd2dq256 (v4df)
-v8si __builtin_ia32_cvttps2dq256 (v8sf)
-v4df __builtin_ia32_divpd256 (v4df,v4df)
-v8sf __builtin_ia32_divps256 (v8sf,v8sf)
-v8sf __builtin_ia32_dpps256 (v8sf,v8sf,int)
-v4df __builtin_ia32_haddpd256 (v4df,v4df)
-v8sf __builtin_ia32_haddps256 (v8sf,v8sf)
-v4df __builtin_ia32_hsubpd256 (v4df,v4df)
-v8sf __builtin_ia32_hsubps256 (v8sf,v8sf)
-v32qi __builtin_ia32_lddqu256 (pcchar)
-v32qi __builtin_ia32_loaddqu256 (pcchar)
-v4df __builtin_ia32_loadupd256 (pcdouble)
-v8sf __builtin_ia32_loadups256 (pcfloat)
-v2df __builtin_ia32_maskloadpd (pcv2df,v2df)
-v4df __builtin_ia32_maskloadpd256 (pcv4df,v4df)
-v4sf __builtin_ia32_maskloadps (pcv4sf,v4sf)
-v8sf __builtin_ia32_maskloadps256 (pcv8sf,v8sf)
-void __builtin_ia32_maskstorepd (pv2df,v2df,v2df)
-void __builtin_ia32_maskstorepd256 (pv4df,v4df,v4df)
-void __builtin_ia32_maskstoreps (pv4sf,v4sf,v4sf)
-void __builtin_ia32_maskstoreps256 (pv8sf,v8sf,v8sf)
-v4df __builtin_ia32_maxpd256 (v4df,v4df)
-v8sf __builtin_ia32_maxps256 (v8sf,v8sf)
-v4df __builtin_ia32_minpd256 (v4df,v4df)
-v8sf __builtin_ia32_minps256 (v8sf,v8sf)
-v4df __builtin_ia32_movddup256 (v4df)
-int __builtin_ia32_movmskpd256 (v4df)
-int __builtin_ia32_movmskps256 (v8sf)
-v8sf __builtin_ia32_movshdup256 (v8sf)
-v8sf __builtin_ia32_movsldup256 (v8sf)
-v4df __builtin_ia32_mulpd256 (v4df,v4df)
-v8sf __builtin_ia32_mulps256 (v8sf,v8sf)
-v4df __builtin_ia32_orpd256 (v4df,v4df)
-v8sf __builtin_ia32_orps256 (v8sf,v8sf)
-v2df __builtin_ia32_pd_pd256 (v4df)
-v4df __builtin_ia32_pd256_pd (v2df)
-v4sf __builtin_ia32_ps_ps256 (v8sf)
-v8sf __builtin_ia32_ps256_ps (v4sf)
-int __builtin_ia32_ptestc256 (v4di,v4di,ptest)
-int __builtin_ia32_ptestnzc256 (v4di,v4di,ptest)
-int __builtin_ia32_ptestz256 (v4di,v4di,ptest)
-v8sf __builtin_ia32_rcpps256 (v8sf)
-v4df __builtin_ia32_roundpd256 (v4df,int)
-v8sf __builtin_ia32_roundps256 (v8sf,int)
-v8sf __builtin_ia32_rsqrtps_nr256 (v8sf)
-v8sf __builtin_ia32_rsqrtps256 (v8sf)
-v4df __builtin_ia32_shufpd256 (v4df,v4df,int)
-v8sf __builtin_ia32_shufps256 (v8sf,v8sf,int)
-v4si __builtin_ia32_si_si256 (v8si)
-v8si __builtin_ia32_si256_si (v4si)
-v4df __builtin_ia32_sqrtpd256 (v4df)
-v8sf __builtin_ia32_sqrtps_nr256 (v8sf)
-v8sf __builtin_ia32_sqrtps256 (v8sf)
-void __builtin_ia32_storedqu256 (pchar,v32qi)
-void __builtin_ia32_storeupd256 (pdouble,v4df)
-void __builtin_ia32_storeups256 (pfloat,v8sf)
-v4df __builtin_ia32_subpd256 (v4df,v4df)
-v8sf __builtin_ia32_subps256 (v8sf,v8sf)
-v4df __builtin_ia32_unpckhpd256 (v4df,v4df)
-v8sf __builtin_ia32_unpckhps256 (v8sf,v8sf)
-v4df __builtin_ia32_unpcklpd256 (v4df,v4df)
-v8sf __builtin_ia32_unpcklps256 (v8sf,v8sf)
-v4df __builtin_ia32_vbroadcastf128_pd256 (pcv2df)
-v8sf __builtin_ia32_vbroadcastf128_ps256 (pcv4sf)
-v4df __builtin_ia32_vbroadcastsd256 (pcdouble)
-v4sf __builtin_ia32_vbroadcastss (pcfloat)
-v8sf __builtin_ia32_vbroadcastss256 (pcfloat)
-v2df __builtin_ia32_vextractf128_pd256 (v4df,int)
-v4sf __builtin_ia32_vextractf128_ps256 (v8sf,int)
-v4si __builtin_ia32_vextractf128_si256 (v8si,int)
-v4df __builtin_ia32_vinsertf128_pd256 (v4df,v2df,int)
-v8sf __builtin_ia32_vinsertf128_ps256 (v8sf,v4sf,int)
-v8si __builtin_ia32_vinsertf128_si256 (v8si,v4si,int)
-v4df __builtin_ia32_vperm2f128_pd256 (v4df,v4df,int)
-v8sf __builtin_ia32_vperm2f128_ps256 (v8sf,v8sf,int)
-v8si __builtin_ia32_vperm2f128_si256 (v8si,v8si,int)
-v2df __builtin_ia32_vpermil2pd (v2df,v2df,v2di,int)
-v4df __builtin_ia32_vpermil2pd256 (v4df,v4df,v4di,int)
-v4sf __builtin_ia32_vpermil2ps (v4sf,v4sf,v4si,int)
-v8sf __builtin_ia32_vpermil2ps256 (v8sf,v8sf,v8si,int)
-v2df __builtin_ia32_vpermilpd (v2df,int)
-v4df __builtin_ia32_vpermilpd256 (v4df,int)
-v4sf __builtin_ia32_vpermilps (v4sf,int)
-v8sf __builtin_ia32_vpermilps256 (v8sf,int)
-v2df __builtin_ia32_vpermilvarpd (v2df,v2di)
-v4df __builtin_ia32_vpermilvarpd256 (v4df,v4di)
-v4sf __builtin_ia32_vpermilvarps (v4sf,v4si)
-v8sf __builtin_ia32_vpermilvarps256 (v8sf,v8si)
-int __builtin_ia32_vtestcpd (v2df,v2df,ptest)
-int __builtin_ia32_vtestcpd256 (v4df,v4df,ptest)
-int __builtin_ia32_vtestcps (v4sf,v4sf,ptest)
-int __builtin_ia32_vtestcps256 (v8sf,v8sf,ptest)
-int __builtin_ia32_vtestnzcpd (v2df,v2df,ptest)
-int __builtin_ia32_vtestnzcpd256 (v4df,v4df,ptest)
-int __builtin_ia32_vtestnzcps (v4sf,v4sf,ptest)
-int __builtin_ia32_vtestnzcps256 (v8sf,v8sf,ptest)
-int __builtin_ia32_vtestzpd (v2df,v2df,ptest)
-int __builtin_ia32_vtestzpd256 (v4df,v4df,ptest)
-int __builtin_ia32_vtestzps (v4sf,v4sf,ptest)
-int __builtin_ia32_vtestzps256 (v8sf,v8sf,ptest)
-void __builtin_ia32_vzeroall (void)
-void __builtin_ia32_vzeroupper (void)
-v4df __builtin_ia32_xorpd256 (v4df,v4df)
-v8sf __builtin_ia32_xorps256 (v8sf,v8sf)
+v4df __builtin_ia32_addpd256 (v4df,v4df);
+v8sf __builtin_ia32_addps256 (v8sf,v8sf);
+v4df __builtin_ia32_addsubpd256 (v4df,v4df);
+v8sf __builtin_ia32_addsubps256 (v8sf,v8sf);
+v4df __builtin_ia32_andnpd256 (v4df,v4df);
+v8sf __builtin_ia32_andnps256 (v8sf,v8sf);
+v4df __builtin_ia32_andpd256 (v4df,v4df);
+v8sf __builtin_ia32_andps256 (v8sf,v8sf);
+v4df __builtin_ia32_blendpd256 (v4df,v4df,int);
+v8sf __builtin_ia32_blendps256 (v8sf,v8sf,int);
+v4df __builtin_ia32_blendvpd256 (v4df,v4df,v4df);
+v8sf __builtin_ia32_blendvps256 (v8sf,v8sf,v8sf);
+v2df __builtin_ia32_cmppd (v2df,v2df,int);
+v4df __builtin_ia32_cmppd256 (v4df,v4df,int);
+v4sf __builtin_ia32_cmpps (v4sf,v4sf,int);
+v8sf __builtin_ia32_cmpps256 (v8sf,v8sf,int);
+v2df __builtin_ia32_cmpsd (v2df,v2df,int);
+v4sf __builtin_ia32_cmpss (v4sf,v4sf,int);
+v4df __builtin_ia32_cvtdq2pd256 (v4si);
+v8sf __builtin_ia32_cvtdq2ps256 (v8si);
+v4si __builtin_ia32_cvtpd2dq256 (v4df);
+v4sf __builtin_ia32_cvtpd2ps256 (v4df);
+v8si __builtin_ia32_cvtps2dq256 (v8sf);
+v4df __builtin_ia32_cvtps2pd256 (v4sf);
+v4si __builtin_ia32_cvttpd2dq256 (v4df);
+v8si __builtin_ia32_cvttps2dq256 (v8sf);
+v4df __builtin_ia32_divpd256 (v4df,v4df);
+v8sf __builtin_ia32_divps256 (v8sf,v8sf);
+v8sf __builtin_ia32_dpps256 (v8sf,v8sf,int);
+v4df __builtin_ia32_haddpd256 (v4df,v4df);
+v8sf __builtin_ia32_haddps256 (v8sf,v8sf);
+v4df __builtin_ia32_hsubpd256 (v4df,v4df);
+v8sf __builtin_ia32_hsubps256 (v8sf,v8sf);
+v32qi __builtin_ia32_lddqu256 (pcchar);
+v32qi __builtin_ia32_loaddqu256 (pcchar);
+v4df __builtin_ia32_loadupd256 (pcdouble);
+v8sf __builtin_ia32_loadups256 (pcfloat);
+v2df __builtin_ia32_maskloadpd (pcv2df,v2df);
+v4df __builtin_ia32_maskloadpd256 (pcv4df,v4df);
+v4sf __builtin_ia32_maskloadps (pcv4sf,v4sf);
+v8sf __builtin_ia32_maskloadps256 (pcv8sf,v8sf);
+void __builtin_ia32_maskstorepd (pv2df,v2df,v2df);
+void __builtin_ia32_maskstorepd256 (pv4df,v4df,v4df);
+void __builtin_ia32_maskstoreps (pv4sf,v4sf,v4sf);
+void __builtin_ia32_maskstoreps256 (pv8sf,v8sf,v8sf);
+v4df __builtin_ia32_maxpd256 (v4df,v4df);
+v8sf __builtin_ia32_maxps256 (v8sf,v8sf);
+v4df __builtin_ia32_minpd256 (v4df,v4df);
+v8sf __builtin_ia32_minps256 (v8sf,v8sf);
+v4df __builtin_ia32_movddup256 (v4df);
+int __builtin_ia32_movmskpd256 (v4df);
+int __builtin_ia32_movmskps256 (v8sf);
+v8sf __builtin_ia32_movshdup256 (v8sf);
+v8sf __builtin_ia32_movsldup256 (v8sf);
+v4df __builtin_ia32_mulpd256 (v4df,v4df);
+v8sf __builtin_ia32_mulps256 (v8sf,v8sf);
+v4df __builtin_ia32_orpd256 (v4df,v4df);
+v8sf __builtin_ia32_orps256 (v8sf,v8sf);
+v2df __builtin_ia32_pd_pd256 (v4df);
+v4df __builtin_ia32_pd256_pd (v2df);
+v4sf __builtin_ia32_ps_ps256 (v8sf);
+v8sf __builtin_ia32_ps256_ps (v4sf);
+int __builtin_ia32_ptestc256 (v4di,v4di,ptest);
+int __builtin_ia32_ptestnzc256 (v4di,v4di,ptest);
+int __builtin_ia32_ptestz256 (v4di,v4di,ptest);
+v8sf __builtin_ia32_rcpps256 (v8sf);
+v4df __builtin_ia32_roundpd256 (v4df,int);
+v8sf __builtin_ia32_roundps256 (v8sf,int);
+v8sf __builtin_ia32_rsqrtps_nr256 (v8sf);
+v8sf __builtin_ia32_rsqrtps256 (v8sf);
+v4df __builtin_ia32_shufpd256 (v4df,v4df,int);
+v8sf __builtin_ia32_shufps256 (v8sf,v8sf,int);
+v4si __builtin_ia32_si_si256 (v8si);
+v8si __builtin_ia32_si256_si (v4si);
+v4df __builtin_ia32_sqrtpd256 (v4df);
+v8sf __builtin_ia32_sqrtps_nr256 (v8sf);
+v8sf __builtin_ia32_sqrtps256 (v8sf);
+void __builtin_ia32_storedqu256 (pchar,v32qi);
+void __builtin_ia32_storeupd256 (pdouble,v4df);
+void __builtin_ia32_storeups256 (pfloat,v8sf);
+v4df __builtin_ia32_subpd256 (v4df,v4df);
+v8sf __builtin_ia32_subps256 (v8sf,v8sf);
+v4df __builtin_ia32_unpckhpd256 (v4df,v4df);
+v8sf __builtin_ia32_unpckhps256 (v8sf,v8sf);
+v4df __builtin_ia32_unpcklpd256 (v4df,v4df);
+v8sf __builtin_ia32_unpcklps256 (v8sf,v8sf);
+v4df __builtin_ia32_vbroadcastf128_pd256 (pcv2df);
+v8sf __builtin_ia32_vbroadcastf128_ps256 (pcv4sf);
+v4df __builtin_ia32_vbroadcastsd256 (pcdouble);
+v4sf __builtin_ia32_vbroadcastss (pcfloat);
+v8sf __builtin_ia32_vbroadcastss256 (pcfloat);
+v2df __builtin_ia32_vextractf128_pd256 (v4df,int);
+v4sf __builtin_ia32_vextractf128_ps256 (v8sf,int);
+v4si __builtin_ia32_vextractf128_si256 (v8si,int);
+v4df __builtin_ia32_vinsertf128_pd256 (v4df,v2df,int);
+v8sf __builtin_ia32_vinsertf128_ps256 (v8sf,v4sf,int);
+v8si __builtin_ia32_vinsertf128_si256 (v8si,v4si,int);
+v4df __builtin_ia32_vperm2f128_pd256 (v4df,v4df,int);
+v8sf __builtin_ia32_vperm2f128_ps256 (v8sf,v8sf,int);
+v8si __builtin_ia32_vperm2f128_si256 (v8si,v8si,int);
+v2df __builtin_ia32_vpermil2pd (v2df,v2df,v2di,int);
+v4df __builtin_ia32_vpermil2pd256 (v4df,v4df,v4di,int);
+v4sf __builtin_ia32_vpermil2ps (v4sf,v4sf,v4si,int);
+v8sf __builtin_ia32_vpermil2ps256 (v8sf,v8sf,v8si,int);
+v2df __builtin_ia32_vpermilpd (v2df,int);
+v4df __builtin_ia32_vpermilpd256 (v4df,int);
+v4sf __builtin_ia32_vpermilps (v4sf,int);
+v8sf __builtin_ia32_vpermilps256 (v8sf,int);
+v2df __builtin_ia32_vpermilvarpd (v2df,v2di);
+v4df __builtin_ia32_vpermilvarpd256 (v4df,v4di);
+v4sf __builtin_ia32_vpermilvarps (v4sf,v4si);
+v8sf __builtin_ia32_vpermilvarps256 (v8sf,v8si);
+int __builtin_ia32_vtestcpd (v2df,v2df,ptest);
+int __builtin_ia32_vtestcpd256 (v4df,v4df,ptest);
+int __builtin_ia32_vtestcps (v4sf,v4sf,ptest);
+int __builtin_ia32_vtestcps256 (v8sf,v8sf,ptest);
+int __builtin_ia32_vtestnzcpd (v2df,v2df,ptest);
+int __builtin_ia32_vtestnzcpd256 (v4df,v4df,ptest);
+int __builtin_ia32_vtestnzcps (v4sf,v4sf,ptest);
+int __builtin_ia32_vtestnzcps256 (v8sf,v8sf,ptest);
+int __builtin_ia32_vtestzpd (v2df,v2df,ptest);
+int __builtin_ia32_vtestzpd256 (v4df,v4df,ptest);
+int __builtin_ia32_vtestzps (v4sf,v4sf,ptest);
+int __builtin_ia32_vtestzps256 (v8sf,v8sf,ptest);
+void __builtin_ia32_vzeroall (void);
+void __builtin_ia32_vzeroupper (void);
+v4df __builtin_ia32_xorpd256 (v4df,v4df);
+v8sf __builtin_ia32_xorps256 (v8sf,v8sf);
 @end smallexample
 
 The following built-in functions are available when @option{-mavx2} is
@@ -22577,177 +22570,177 @@ used. All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-v32qi __builtin_ia32_mpsadbw256 (v32qi,v32qi,int)
-v32qi __builtin_ia32_pabsb256 (v32qi)
-v16hi __builtin_ia32_pabsw256 (v16hi)
-v8si __builtin_ia32_pabsd256 (v8si)
-v16hi __builtin_ia32_packssdw256 (v8si,v8si)
-v32qi __builtin_ia32_packsswb256 (v16hi,v16hi)
-v16hi __builtin_ia32_packusdw256 (v8si,v8si)
-v32qi __builtin_ia32_packuswb256 (v16hi,v16hi)
-v32qi __builtin_ia32_paddb256 (v32qi,v32qi)
-v16hi __builtin_ia32_paddw256 (v16hi,v16hi)
-v8si __builtin_ia32_paddd256 (v8si,v8si)
-v4di __builtin_ia32_paddq256 (v4di,v4di)
-v32qi __builtin_ia32_paddsb256 (v32qi,v32qi)
-v16hi __builtin_ia32_paddsw256 (v16hi,v16hi)
-v32qi __builtin_ia32_paddusb256 (v32qi,v32qi)
-v16hi __builtin_ia32_paddusw256 (v16hi,v16hi)
-v4di __builtin_ia32_palignr256 (v4di,v4di,int)
-v4di __builtin_ia32_andsi256 (v4di,v4di)
-v4di __builtin_ia32_andnotsi256 (v4di,v4di)
-v32qi __builtin_ia32_pavgb256 (v32qi,v32qi)
-v16hi __builtin_ia32_pavgw256 (v16hi,v16hi)
-v32qi __builtin_ia32_pblendvb256 (v32qi,v32qi,v32qi)
-v16hi __builtin_ia32_pblendw256 (v16hi,v16hi,int)
-v32qi __builtin_ia32_pcmpeqb256 (v32qi,v32qi)
-v16hi __builtin_ia32_pcmpeqw256 (v16hi,v16hi)
-v8si __builtin_ia32_pcmpeqd256 (c8si,v8si)
-v4di __builtin_ia32_pcmpeqq256 (v4di,v4di)
-v32qi __builtin_ia32_pcmpgtb256 (v32qi,v32qi)
-v16hi __builtin_ia32_pcmpgtw256 (16hi,v16hi)
-v8si __builtin_ia32_pcmpgtd256 (v8si,v8si)
-v4di __builtin_ia32_pcmpgtq256 (v4di,v4di)
-v16hi __builtin_ia32_phaddw256 (v16hi,v16hi)
-v8si __builtin_ia32_phaddd256 (v8si,v8si)
-v16hi __builtin_ia32_phaddsw256 (v16hi,v16hi)
-v16hi __builtin_ia32_phsubw256 (v16hi,v16hi)
-v8si __builtin_ia32_phsubd256 (v8si,v8si)
-v16hi __builtin_ia32_phsubsw256 (v16hi,v16hi)
-v32qi __builtin_ia32_pmaddubsw256 (v32qi,v32qi)
-v16hi __builtin_ia32_pmaddwd256 (v16hi,v16hi)
-v32qi __builtin_ia32_pmaxsb256 (v32qi,v32qi)
-v16hi __builtin_ia32_pmaxsw256 (v16hi,v16hi)
-v8si __builtin_ia32_pmaxsd256 (v8si,v8si)
-v32qi __builtin_ia32_pmaxub256 (v32qi,v32qi)
-v16hi __builtin_ia32_pmaxuw256 (v16hi,v16hi)
-v8si __builtin_ia32_pmaxud256 (v8si,v8si)
-v32qi __builtin_ia32_pminsb256 (v32qi,v32qi)
-v16hi __builtin_ia32_pminsw256 (v16hi,v16hi)
-v8si __builtin_ia32_pminsd256 (v8si,v8si)
-v32qi __builtin_ia32_pminub256 (v32qi,v32qi)
-v16hi __builtin_ia32_pminuw256 (v16hi,v16hi)
-v8si __builtin_ia32_pminud256 (v8si,v8si)
-int __builtin_ia32_pmovmskb256 (v32qi)
-v16hi __builtin_ia32_pmovsxbw256 (v16qi)
-v8si __builtin_ia32_pmovsxbd256 (v16qi)
-v4di __builtin_ia32_pmovsxbq256 (v16qi)
-v8si __builtin_ia32_pmovsxwd256 (v8hi)
-v4di __builtin_ia32_pmovsxwq256 (v8hi)
-v4di __builtin_ia32_pmovsxdq256 (v4si)
-v16hi __builtin_ia32_pmovzxbw256 (v16qi)
-v8si __builtin_ia32_pmovzxbd256 (v16qi)
-v4di __builtin_ia32_pmovzxbq256 (v16qi)
-v8si __builtin_ia32_pmovzxwd256 (v8hi)
-v4di __builtin_ia32_pmovzxwq256 (v8hi)
-v4di __builtin_ia32_pmovzxdq256 (v4si)
-v4di __builtin_ia32_pmuldq256 (v8si,v8si)
-v16hi __builtin_ia32_pmulhrsw256 (v16hi, v16hi)
-v16hi __builtin_ia32_pmulhuw256 (v16hi,v16hi)
-v16hi __builtin_ia32_pmulhw256 (v16hi,v16hi)
-v16hi __builtin_ia32_pmullw256 (v16hi,v16hi)
-v8si __builtin_ia32_pmulld256 (v8si,v8si)
-v4di __builtin_ia32_pmuludq256 (v8si,v8si)
-v4di __builtin_ia32_por256 (v4di,v4di)
-v16hi __builtin_ia32_psadbw256 (v32qi,v32qi)
-v32qi __builtin_ia32_pshufb256 (v32qi,v32qi)
-v8si __builtin_ia32_pshufd256 (v8si,int)
-v16hi __builtin_ia32_pshufhw256 (v16hi,int)
-v16hi __builtin_ia32_pshuflw256 (v16hi,int)
-v32qi __builtin_ia32_psignb256 (v32qi,v32qi)
-v16hi __builtin_ia32_psignw256 (v16hi,v16hi)
-v8si __builtin_ia32_psignd256 (v8si,v8si)
-v4di __builtin_ia32_pslldqi256 (v4di,int)
-v16hi __builtin_ia32_psllwi256 (16hi,int)
-v16hi __builtin_ia32_psllw256(v16hi,v8hi)
-v8si __builtin_ia32_pslldi256 (v8si,int)
-v8si __builtin_ia32_pslld256(v8si,v4si)
-v4di __builtin_ia32_psllqi256 (v4di,int)
-v4di __builtin_ia32_psllq256(v4di,v2di)
-v16hi __builtin_ia32_psrawi256 (v16hi,int)
-v16hi __builtin_ia32_psraw256 (v16hi,v8hi)
-v8si __builtin_ia32_psradi256 (v8si,int)
-v8si __builtin_ia32_psrad256 (v8si,v4si)
-v4di __builtin_ia32_psrldqi256 (v4di, int)
-v16hi __builtin_ia32_psrlwi256 (v16hi,int)
-v16hi __builtin_ia32_psrlw256 (v16hi,v8hi)
-v8si __builtin_ia32_psrldi256 (v8si,int)
-v8si __builtin_ia32_psrld256 (v8si,v4si)
-v4di __builtin_ia32_psrlqi256 (v4di,int)
-v4di __builtin_ia32_psrlq256(v4di,v2di)
-v32qi __builtin_ia32_psubb256 (v32qi,v32qi)
-v32hi __builtin_ia32_psubw256 (v16hi,v16hi)
-v8si __builtin_ia32_psubd256 (v8si,v8si)
-v4di __builtin_ia32_psubq256 (v4di,v4di)
-v32qi __builtin_ia32_psubsb256 (v32qi,v32qi)
-v16hi __builtin_ia32_psubsw256 (v16hi,v16hi)
-v32qi __builtin_ia32_psubusb256 (v32qi,v32qi)
-v16hi __builtin_ia32_psubusw256 (v16hi,v16hi)
-v32qi __builtin_ia32_punpckhbw256 (v32qi,v32qi)
-v16hi __builtin_ia32_punpckhwd256 (v16hi,v16hi)
-v8si __builtin_ia32_punpckhdq256 (v8si,v8si)
-v4di __builtin_ia32_punpckhqdq256 (v4di,v4di)
-v32qi __builtin_ia32_punpcklbw256 (v32qi,v32qi)
-v16hi __builtin_ia32_punpcklwd256 (v16hi,v16hi)
-v8si __builtin_ia32_punpckldq256 (v8si,v8si)
-v4di __builtin_ia32_punpcklqdq256 (v4di,v4di)
-v4di __builtin_ia32_pxor256 (v4di,v4di)
-v4di __builtin_ia32_movntdqa256 (pv4di)
-v4sf __builtin_ia32_vbroadcastss_ps (v4sf)
-v8sf __builtin_ia32_vbroadcastss_ps256 (v4sf)
-v4df __builtin_ia32_vbroadcastsd_pd256 (v2df)
-v4di __builtin_ia32_vbroadcastsi256 (v2di)
-v4si __builtin_ia32_pblendd128 (v4si,v4si)
-v8si __builtin_ia32_pblendd256 (v8si,v8si)
-v32qi __builtin_ia32_pbroadcastb256 (v16qi)
-v16hi __builtin_ia32_pbroadcastw256 (v8hi)
-v8si __builtin_ia32_pbroadcastd256 (v4si)
-v4di __builtin_ia32_pbroadcastq256 (v2di)
-v16qi __builtin_ia32_pbroadcastb128 (v16qi)
-v8hi __builtin_ia32_pbroadcastw128 (v8hi)
-v4si __builtin_ia32_pbroadcastd128 (v4si)
-v2di __builtin_ia32_pbroadcastq128 (v2di)
-v8si __builtin_ia32_permvarsi256 (v8si,v8si)
-v4df __builtin_ia32_permdf256 (v4df,int)
-v8sf __builtin_ia32_permvarsf256 (v8sf,v8sf)
-v4di __builtin_ia32_permdi256 (v4di,int)
-v4di __builtin_ia32_permti256 (v4di,v4di,int)
-v4di __builtin_ia32_extract128i256 (v4di,int)
-v4di __builtin_ia32_insert128i256 (v4di,v2di,int)
-v8si __builtin_ia32_maskloadd256 (pcv8si,v8si)
-v4di __builtin_ia32_maskloadq256 (pcv4di,v4di)
-v4si __builtin_ia32_maskloadd (pcv4si,v4si)
-v2di __builtin_ia32_maskloadq (pcv2di,v2di)
-void __builtin_ia32_maskstored256 (pv8si,v8si,v8si)
-void __builtin_ia32_maskstoreq256 (pv4di,v4di,v4di)
-void __builtin_ia32_maskstored (pv4si,v4si,v4si)
-void __builtin_ia32_maskstoreq (pv2di,v2di,v2di)
-v8si __builtin_ia32_psllv8si (v8si,v8si)
-v4si __builtin_ia32_psllv4si (v4si,v4si)
-v4di __builtin_ia32_psllv4di (v4di,v4di)
-v2di __builtin_ia32_psllv2di (v2di,v2di)
-v8si __builtin_ia32_psrav8si (v8si,v8si)
-v4si __builtin_ia32_psrav4si (v4si,v4si)
-v8si __builtin_ia32_psrlv8si (v8si,v8si)
-v4si __builtin_ia32_psrlv4si (v4si,v4si)
-v4di __builtin_ia32_psrlv4di (v4di,v4di)
-v2di __builtin_ia32_psrlv2di (v2di,v2di)
-v2df __builtin_ia32_gathersiv2df (v2df, pcdouble,v4si,v2df,int)
-v4df __builtin_ia32_gathersiv4df (v4df, pcdouble,v4si,v4df,int)
-v2df __builtin_ia32_gatherdiv2df (v2df, pcdouble,v2di,v2df,int)
-v4df __builtin_ia32_gatherdiv4df (v4df, pcdouble,v4di,v4df,int)
-v4sf __builtin_ia32_gathersiv4sf (v4sf, pcfloat,v4si,v4sf,int)
-v8sf __builtin_ia32_gathersiv8sf (v8sf, pcfloat,v8si,v8sf,int)
-v4sf __builtin_ia32_gatherdiv4sf (v4sf, pcfloat,v2di,v4sf,int)
-v4sf __builtin_ia32_gatherdiv4sf256 (v4sf, pcfloat,v4di,v4sf,int)
-v2di __builtin_ia32_gathersiv2di (v2di, pcint64,v4si,v2di,int)
-v4di __builtin_ia32_gathersiv4di (v4di, pcint64,v4si,v4di,int)
-v2di __builtin_ia32_gatherdiv2di (v2di, pcint64,v2di,v2di,int)
-v4di __builtin_ia32_gatherdiv4di (v4di, pcint64,v4di,v4di,int)
-v4si __builtin_ia32_gathersiv4si (v4si, pcint,v4si,v4si,int)
-v8si __builtin_ia32_gathersiv8si (v8si, pcint,v8si,v8si,int)
-v4si __builtin_ia32_gatherdiv4si (v4si, pcint,v2di,v4si,int)
-v4si __builtin_ia32_gatherdiv4si256 (v4si, pcint,v4di,v4si,int)
+v32qi __builtin_ia32_mpsadbw256 (v32qi,v32qi,int);
+v32qi __builtin_ia32_pabsb256 (v32qi);
+v16hi __builtin_ia32_pabsw256 (v16hi);
+v8si __builtin_ia32_pabsd256 (v8si);
+v16hi __builtin_ia32_packssdw256 (v8si,v8si);
+v32qi __builtin_ia32_packsswb256 (v16hi,v16hi);
+v16hi __builtin_ia32_packusdw256 (v8si,v8si);
+v32qi __builtin_ia32_packuswb256 (v16hi,v16hi);
+v32qi __builtin_ia32_paddb256 (v32qi,v32qi);
+v16hi __builtin_ia32_paddw256 (v16hi,v16hi);
+v8si __builtin_ia32_paddd256 (v8si,v8si);
+v4di __builtin_ia32_paddq256 (v4di,v4di);
+v32qi __builtin_ia32_paddsb256 (v32qi,v32qi);
+v16hi __builtin_ia32_paddsw256 (v16hi,v16hi);
+v32qi __builtin_ia32_paddusb256 (v32qi,v32qi);
+v16hi __builtin_ia32_paddusw256 (v16hi,v16hi);
+v4di __builtin_ia32_palignr256 (v4di,v4di,int);
+v4di __builtin_ia32_andsi256 (v4di,v4di);
+v4di __builtin_ia32_andnotsi256 (v4di,v4di);
+v32qi __builtin_ia32_pavgb256 (v32qi,v32qi);
+v16hi __builtin_ia32_pavgw256 (v16hi,v16hi);
+v32qi __builtin_ia32_pblendvb256 (v32qi,v32qi,v32qi);
+v16hi __builtin_ia32_pblendw256 (v16hi,v16hi,int);
+v32qi __builtin_ia32_pcmpeqb256 (v32qi,v32qi);
+v16hi __builtin_ia32_pcmpeqw256 (v16hi,v16hi);
+v8si __builtin_ia32_pcmpeqd256 (c8si,v8si);
+v4di __builtin_ia32_pcmpeqq256 (v4di,v4di);
+v32qi __builtin_ia32_pcmpgtb256 (v32qi,v32qi);
+v16hi __builtin_ia32_pcmpgtw256 (16hi,v16hi);
+v8si __builtin_ia32_pcmpgtd256 (v8si,v8si);
+v4di __builtin_ia32_pcmpgtq256 (v4di,v4di);
+v16hi __builtin_ia32_phaddw256 (v16hi,v16hi);
+v8si __builtin_ia32_phaddd256 (v8si,v8si);
+v16hi __builtin_ia32_phaddsw256 (v16hi,v16hi);
+v16hi __builtin_ia32_phsubw256 (v16hi,v16hi);
+v8si __builtin_ia32_phsubd256 (v8si,v8si);
+v16hi __builtin_ia32_phsubsw256 (v16hi,v16hi);
+v32qi __builtin_ia32_pmaddubsw256 (v32qi,v32qi);
+v16hi __builtin_ia32_pmaddwd256 (v16hi,v16hi);
+v32qi __builtin_ia32_pmaxsb256 (v32qi,v32qi);
+v16hi __builtin_ia32_pmaxsw256 (v16hi,v16hi);
+v8si __builtin_ia32_pmaxsd256 (v8si,v8si);
+v32qi __builtin_ia32_pmaxub256 (v32qi,v32qi);
+v16hi __builtin_ia32_pmaxuw256 (v16hi,v16hi);
+v8si __builtin_ia32_pmaxud256 (v8si,v8si);
+v32qi __builtin_ia32_pminsb256 (v32qi,v32qi);
+v16hi __builtin_ia32_pminsw256 (v16hi,v16hi);
+v8si __builtin_ia32_pminsd256 (v8si,v8si);
+v32qi __builtin_ia32_pminub256 (v32qi,v32qi);
+v16hi __builtin_ia32_pminuw256 (v16hi,v16hi);
+v8si __builtin_ia32_pminud256 (v8si,v8si);
+int __builtin_ia32_pmovmskb256 (v32qi);
+v16hi __builtin_ia32_pmovsxbw256 (v16qi);
+v8si __builtin_ia32_pmovsxbd256 (v16qi);
+v4di __builtin_ia32_pmovsxbq256 (v16qi);
+v8si __builtin_ia32_pmovsxwd256 (v8hi);
+v4di __builtin_ia32_pmovsxwq256 (v8hi);
+v4di __builtin_ia32_pmovsxdq256 (v4si);
+v16hi __builtin_ia32_pmovzxbw256 (v16qi);
+v8si __builtin_ia32_pmovzxbd256 (v16qi);
+v4di __builtin_ia32_pmovzxbq256 (v16qi);
+v8si __builtin_ia32_pmovzxwd256 (v8hi);
+v4di __builtin_ia32_pmovzxwq256 (v8hi);
+v4di __builtin_ia32_pmovzxdq256 (v4si);
+v4di __builtin_ia32_pmuldq256 (v8si,v8si);
+v16hi __builtin_ia32_pmulhrsw256 (v16hi, v16hi);
+v16hi __builtin_ia32_pmulhuw256 (v16hi,v16hi);
+v16hi __builtin_ia32_pmulhw256 (v16hi,v16hi);
+v16hi __builtin_ia32_pmullw256 (v16hi,v16hi);
+v8si __builtin_ia32_pmulld256 (v8si,v8si);
+v4di __builtin_ia32_pmuludq256 (v8si,v8si);
+v4di __builtin_ia32_por256 (v4di,v4di);
+v16hi __builtin_ia32_psadbw256 (v32qi,v32qi);
+v32qi __builtin_ia32_pshufb256 (v32qi,v32qi);
+v8si __builtin_ia32_pshufd256 (v8si,int);
+v16hi __builtin_ia32_pshufhw256 (v16hi,int);
+v16hi __builtin_ia32_pshuflw256 (v16hi,int);
+v32qi __builtin_ia32_psignb256 (v32qi,v32qi);
+v16hi __builtin_ia32_psignw256 (v16hi,v16hi);
+v8si __builtin_ia32_psignd256 (v8si,v8si);
+v4di __builtin_ia32_pslldqi256 (v4di,int);
+v16hi __builtin_ia32_psllwi256 (16hi,int);
+v16hi __builtin_ia32_psllw256(v16hi,v8hi);
+v8si __builtin_ia32_pslldi256 (v8si,int);
+v8si __builtin_ia32_pslld256(v8si,v4si);
+v4di __builtin_ia32_psllqi256 (v4di,int);
+v4di __builtin_ia32_psllq256(v4di,v2di);
+v16hi __builtin_ia32_psrawi256 (v16hi,int);
+v16hi __builtin_ia32_psraw256 (v16hi,v8hi);
+v8si __builtin_ia32_psradi256 (v8si,int);
+v8si __builtin_ia32_psrad256 (v8si,v4si);
+v4di __builtin_ia32_psrldqi256 (v4di, int);
+v16hi __builtin_ia32_psrlwi256 (v16hi,int);
+v16hi __builtin_ia32_psrlw256 (v16hi,v8hi);
+v8si __builtin_ia32_psrldi256 (v8si,int);
+v8si __builtin_ia32_psrld256 (v8si,v4si);
+v4di __builtin_ia32_psrlqi256 (v4di,int);
+v4di __builtin_ia32_psrlq256(v4di,v2di);
+v32qi __builtin_ia32_psubb256 (v32qi,v32qi);
+v32hi __builtin_ia32_psubw256 (v16hi,v16hi);
+v8si __builtin_ia32_psubd256 (v8si,v8si);
+v4di __builtin_ia32_psubq256 (v4di,v4di);
+v32qi __builtin_ia32_psubsb256 (v32qi,v32qi);
+v16hi __builtin_ia32_psubsw256 (v16hi,v16hi);
+v32qi __builtin_ia32_psubusb256 (v32qi,v32qi);
+v16hi __builtin_ia32_psubusw256 (v16hi,v16hi);
+v32qi __builtin_ia32_punpckhbw256 (v32qi,v32qi);
+v16hi __builtin_ia32_punpckhwd256 (v16hi,v16hi);
+v8si __builtin_ia32_punpckhdq256 (v8si,v8si);
+v4di __builtin_ia32_punpckhqdq256 (v4di,v4di);
+v32qi __builtin_ia32_punpcklbw256 (v32qi,v32qi);
+v16hi __builtin_ia32_punpcklwd256 (v16hi,v16hi);
+v8si __builtin_ia32_punpckldq256 (v8si,v8si);
+v4di __builtin_ia32_punpcklqdq256 (v4di,v4di);
+v4di __builtin_ia32_pxor256 (v4di,v4di);
+v4di __builtin_ia32_movntdqa256 (pv4di);
+v4sf __builtin_ia32_vbroadcastss_ps (v4sf);
+v8sf __builtin_ia32_vbroadcastss_ps256 (v4sf);
+v4df __builtin_ia32_vbroadcastsd_pd256 (v2df);
+v4di __builtin_ia32_vbroadcastsi256 (v2di);
+v4si __builtin_ia32_pblendd128 (v4si,v4si);
+v8si __builtin_ia32_pblendd256 (v8si,v8si);
+v32qi __builtin_ia32_pbroadcastb256 (v16qi);
+v16hi __builtin_ia32_pbroadcastw256 (v8hi);
+v8si __builtin_ia32_pbroadcastd256 (v4si);
+v4di __builtin_ia32_pbroadcastq256 (v2di);
+v16qi __builtin_ia32_pbroadcastb128 (v16qi);
+v8hi __builtin_ia32_pbroadcastw128 (v8hi);
+v4si __builtin_ia32_pbroadcastd128 (v4si);
+v2di __builtin_ia32_pbroadcastq128 (v2di);
+v8si __builtin_ia32_permvarsi256 (v8si,v8si);
+v4df __builtin_ia32_permdf256 (v4df,int);
+v8sf __builtin_ia32_permvarsf256 (v8sf,v8sf);
+v4di __builtin_ia32_permdi256 (v4di,int);
+v4di __builtin_ia32_permti256 (v4di,v4di,int);
+v4di __builtin_ia32_extract128i256 (v4di,int);
+v4di __builtin_ia32_insert128i256 (v4di,v2di,int);
+v8si __builtin_ia32_maskloadd256 (pcv8si,v8si);
+v4di __builtin_ia32_maskloadq256 (pcv4di,v4di);
+v4si __builtin_ia32_maskloadd (pcv4si,v4si);
+v2di __builtin_ia32_maskloadq (pcv2di,v2di);
+void __builtin_ia32_maskstored256 (pv8si,v8si,v8si);
+void __builtin_ia32_maskstoreq256 (pv4di,v4di,v4di);
+void __builtin_ia32_maskstored (pv4si,v4si,v4si);
+void __builtin_ia32_maskstoreq (pv2di,v2di,v2di);
+v8si __builtin_ia32_psllv8si (v8si,v8si);
+v4si __builtin_ia32_psllv4si (v4si,v4si);
+v4di __builtin_ia32_psllv4di (v4di,v4di);
+v2di __builtin_ia32_psllv2di (v2di,v2di);
+v8si __builtin_ia32_psrav8si (v8si,v8si);
+v4si __builtin_ia32_psrav4si (v4si,v4si);
+v8si __builtin_ia32_psrlv8si (v8si,v8si);
+v4si __builtin_ia32_psrlv4si (v4si,v4si);
+v4di __builtin_ia32_psrlv4di (v4di,v4di);
+v2di __builtin_ia32_psrlv2di (v2di,v2di);
+v2df __builtin_ia32_gathersiv2df (v2df, pcdouble,v4si,v2df,int);
+v4df __builtin_ia32_gathersiv4df (v4df, pcdouble,v4si,v4df,int);
+v2df __builtin_ia32_gatherdiv2df (v2df, pcdouble,v2di,v2df,int);
+v4df __builtin_ia32_gatherdiv4df (v4df, pcdouble,v4di,v4df,int);
+v4sf __builtin_ia32_gathersiv4sf (v4sf, pcfloat,v4si,v4sf,int);
+v8sf __builtin_ia32_gathersiv8sf (v8sf, pcfloat,v8si,v8sf,int);
+v4sf __builtin_ia32_gatherdiv4sf (v4sf, pcfloat,v2di,v4sf,int);
+v4sf __builtin_ia32_gatherdiv4sf256 (v4sf, pcfloat,v4di,v4sf,int);
+v2di __builtin_ia32_gathersiv2di (v2di, pcint64,v4si,v2di,int);
+v4di __builtin_ia32_gathersiv4di (v4di, pcint64,v4si,v4di,int);
+v2di __builtin_ia32_gatherdiv2di (v2di, pcint64,v2di,v2di,int);
+v4di __builtin_ia32_gatherdiv4di (v4di, pcint64,v4di,v4di,int);
+v4si __builtin_ia32_gathersiv4si (v4si, pcint,v4si,v4si,int);
+v8si __builtin_ia32_gathersiv8si (v8si, pcint,v8si,v8si,int);
+v4si __builtin_ia32_gatherdiv4si (v4si, pcint,v2di,v4si,int);
+v4si __builtin_ia32_gatherdiv4si256 (v4si, pcint,v4di,v4si,int);
 @end smallexample
 
 The following built-in functions are available when @option{-maes} is
@@ -22755,12 +22748,12 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-v2di __builtin_ia32_aesenc128 (v2di, v2di)
-v2di __builtin_ia32_aesenclast128 (v2di, v2di)
-v2di __builtin_ia32_aesdec128 (v2di, v2di)
-v2di __builtin_ia32_aesdeclast128 (v2di, v2di)
-v2di __builtin_ia32_aeskeygenassist128 (v2di, const int)
-v2di __builtin_ia32_aesimc128 (v2di)
+v2di __builtin_ia32_aesenc128 (v2di, v2di);
+v2di __builtin_ia32_aesenclast128 (v2di, v2di);
+v2di __builtin_ia32_aesdec128 (v2di, v2di);
+v2di __builtin_ia32_aesdeclast128 (v2di, v2di);
+v2di __builtin_ia32_aeskeygenassist128 (v2di, const int);
+v2di __builtin_ia32_aesimc128 (v2di);
 @end smallexample
 
 The following built-in function is available when @option{-mpclmul} is
@@ -22776,14 +22769,14 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-unsigned int __builtin_ia32_rdfsbase32 (void)
-unsigned long long __builtin_ia32_rdfsbase64 (void)
-unsigned int __builtin_ia32_rdgsbase32 (void)
-unsigned long long __builtin_ia32_rdgsbase64 (void)
-void _writefsbase_u32 (unsigned int)
-void _writefsbase_u64 (unsigned long long)
-void _writegsbase_u32 (unsigned int)
-void _writegsbase_u64 (unsigned long long)
+unsigned int __builtin_ia32_rdfsbase32 (void);
+unsigned long long __builtin_ia32_rdfsbase64 (void);
+unsigned int __builtin_ia32_rdgsbase32 (void);
+unsigned long long __builtin_ia32_rdgsbase64 (void);
+void _writefsbase_u32 (unsigned int);
+void _writefsbase_u64 (unsigned long long);
+void _writegsbase_u32 (unsigned int);
+void _writegsbase_u64 (unsigned long long);
 @end smallexample
 
 The following built-in function is available when @option{-mrdrnd} is
@@ -22791,9 +22784,9 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-unsigned int __builtin_ia32_rdrand16_step (unsigned short *)
-unsigned int __builtin_ia32_rdrand32_step (unsigned int *)
-unsigned int __builtin_ia32_rdrand64_step (unsigned long long *)
+unsigned int __builtin_ia32_rdrand16_step (unsigned short *);
+unsigned int __builtin_ia32_rdrand32_step (unsigned int *);
+unsigned int __builtin_ia32_rdrand64_step (unsigned long long *);
 @end smallexample
 
 The following built-in function is available when @option{-mptwrite} is
@@ -22801,186 +22794,186 @@ used.  All of them generate the machine instruction that is part of the
 name.
 
 @smallexample
-void __builtin_ia32_ptwrite32 (unsigned)
-void __builtin_ia32_ptwrite64 (unsigned long long)
+void __builtin_ia32_ptwrite32 (unsigned);
+void __builtin_ia32_ptwrite64 (unsigned long long);
 @end smallexample
 
 The following built-in functions are available when @option{-msse4a} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-void __builtin_ia32_movntsd (double *, v2df)
-void __builtin_ia32_movntss (float *, v4sf)
-v2di __builtin_ia32_extrq  (v2di, v16qi)
-v2di __builtin_ia32_extrqi (v2di, const unsigned int, const unsigned int)
-v2di __builtin_ia32_insertq (v2di, v2di)
-v2di __builtin_ia32_insertqi (v2di, v2di, const unsigned int, const unsigned int)
+void __builtin_ia32_movntsd (double *, v2df);
+void __builtin_ia32_movntss (float *, v4sf);
+v2di __builtin_ia32_extrq  (v2di, v16qi);
+v2di __builtin_ia32_extrqi (v2di, const unsigned int, const unsigned int);
+v2di __builtin_ia32_insertq (v2di, v2di);
+v2di __builtin_ia32_insertqi (v2di, v2di, const unsigned int, const unsigned int);
 @end smallexample
 
 The following built-in functions are available when @option{-mxop} is used.
 @smallexample
-v2df __builtin_ia32_vfrczpd (v2df)
-v4sf __builtin_ia32_vfrczps (v4sf)
-v2df __builtin_ia32_vfrczsd (v2df)
-v4sf __builtin_ia32_vfrczss (v4sf)
-v4df __builtin_ia32_vfrczpd256 (v4df)
-v8sf __builtin_ia32_vfrczps256 (v8sf)
-v2di __builtin_ia32_vpcmov (v2di, v2di, v2di)
-v2di __builtin_ia32_vpcmov_v2di (v2di, v2di, v2di)
-v4si __builtin_ia32_vpcmov_v4si (v4si, v4si, v4si)
-v8hi __builtin_ia32_vpcmov_v8hi (v8hi, v8hi, v8hi)
-v16qi __builtin_ia32_vpcmov_v16qi (v16qi, v16qi, v16qi)
-v2df __builtin_ia32_vpcmov_v2df (v2df, v2df, v2df)
-v4sf __builtin_ia32_vpcmov_v4sf (v4sf, v4sf, v4sf)
-v4di __builtin_ia32_vpcmov_v4di256 (v4di, v4di, v4di)
-v8si __builtin_ia32_vpcmov_v8si256 (v8si, v8si, v8si)
-v16hi __builtin_ia32_vpcmov_v16hi256 (v16hi, v16hi, v16hi)
-v32qi __builtin_ia32_vpcmov_v32qi256 (v32qi, v32qi, v32qi)
-v4df __builtin_ia32_vpcmov_v4df256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vpcmov_v8sf256 (v8sf, v8sf, v8sf)
-v16qi __builtin_ia32_vpcomeqb (v16qi, v16qi)
-v8hi __builtin_ia32_vpcomeqw (v8hi, v8hi)
-v4si __builtin_ia32_vpcomeqd (v4si, v4si)
-v2di __builtin_ia32_vpcomeqq (v2di, v2di)
-v16qi __builtin_ia32_vpcomequb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomequd (v4si, v4si)
-v2di __builtin_ia32_vpcomequq (v2di, v2di)
-v8hi __builtin_ia32_vpcomequw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomeqw (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomfalseb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomfalsed (v4si, v4si)
-v2di __builtin_ia32_vpcomfalseq (v2di, v2di)
-v16qi __builtin_ia32_vpcomfalseub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomfalseud (v4si, v4si)
-v2di __builtin_ia32_vpcomfalseuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomfalseuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomfalsew (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomgeb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomged (v4si, v4si)
-v2di __builtin_ia32_vpcomgeq (v2di, v2di)
-v16qi __builtin_ia32_vpcomgeub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomgeud (v4si, v4si)
-v2di __builtin_ia32_vpcomgeuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomgeuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomgew (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomgtb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomgtd (v4si, v4si)
-v2di __builtin_ia32_vpcomgtq (v2di, v2di)
-v16qi __builtin_ia32_vpcomgtub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomgtud (v4si, v4si)
-v2di __builtin_ia32_vpcomgtuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomgtuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomgtw (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomleb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomled (v4si, v4si)
-v2di __builtin_ia32_vpcomleq (v2di, v2di)
-v16qi __builtin_ia32_vpcomleub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomleud (v4si, v4si)
-v2di __builtin_ia32_vpcomleuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomleuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomlew (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomltb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomltd (v4si, v4si)
-v2di __builtin_ia32_vpcomltq (v2di, v2di)
-v16qi __builtin_ia32_vpcomltub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomltud (v4si, v4si)
-v2di __builtin_ia32_vpcomltuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomltuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomltw (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomneb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomned (v4si, v4si)
-v2di __builtin_ia32_vpcomneq (v2di, v2di)
-v16qi __builtin_ia32_vpcomneub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomneud (v4si, v4si)
-v2di __builtin_ia32_vpcomneuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomneuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomnew (v8hi, v8hi)
-v16qi __builtin_ia32_vpcomtrueb (v16qi, v16qi)
-v4si __builtin_ia32_vpcomtrued (v4si, v4si)
-v2di __builtin_ia32_vpcomtrueq (v2di, v2di)
-v16qi __builtin_ia32_vpcomtrueub (v16qi, v16qi)
-v4si __builtin_ia32_vpcomtrueud (v4si, v4si)
-v2di __builtin_ia32_vpcomtrueuq (v2di, v2di)
-v8hi __builtin_ia32_vpcomtrueuw (v8hi, v8hi)
-v8hi __builtin_ia32_vpcomtruew (v8hi, v8hi)
-v4si __builtin_ia32_vphaddbd (v16qi)
-v2di __builtin_ia32_vphaddbq (v16qi)
-v8hi __builtin_ia32_vphaddbw (v16qi)
-v2di __builtin_ia32_vphadddq (v4si)
-v4si __builtin_ia32_vphaddubd (v16qi)
-v2di __builtin_ia32_vphaddubq (v16qi)
-v8hi __builtin_ia32_vphaddubw (v16qi)
-v2di __builtin_ia32_vphaddudq (v4si)
-v4si __builtin_ia32_vphadduwd (v8hi)
-v2di __builtin_ia32_vphadduwq (v8hi)
-v4si __builtin_ia32_vphaddwd (v8hi)
-v2di __builtin_ia32_vphaddwq (v8hi)
-v8hi __builtin_ia32_vphsubbw (v16qi)
-v2di __builtin_ia32_vphsubdq (v4si)
-v4si __builtin_ia32_vphsubwd (v8hi)
-v4si __builtin_ia32_vpmacsdd (v4si, v4si, v4si)
-v2di __builtin_ia32_vpmacsdqh (v4si, v4si, v2di)
-v2di __builtin_ia32_vpmacsdql (v4si, v4si, v2di)
-v4si __builtin_ia32_vpmacssdd (v4si, v4si, v4si)
-v2di __builtin_ia32_vpmacssdqh (v4si, v4si, v2di)
-v2di __builtin_ia32_vpmacssdql (v4si, v4si, v2di)
-v4si __builtin_ia32_vpmacsswd (v8hi, v8hi, v4si)
-v8hi __builtin_ia32_vpmacssww (v8hi, v8hi, v8hi)
-v4si __builtin_ia32_vpmacswd (v8hi, v8hi, v4si)
-v8hi __builtin_ia32_vpmacsww (v8hi, v8hi, v8hi)
-v4si __builtin_ia32_vpmadcsswd (v8hi, v8hi, v4si)
-v4si __builtin_ia32_vpmadcswd (v8hi, v8hi, v4si)
-v16qi __builtin_ia32_vpperm (v16qi, v16qi, v16qi)
-v16qi __builtin_ia32_vprotb (v16qi, v16qi)
-v4si __builtin_ia32_vprotd (v4si, v4si)
-v2di __builtin_ia32_vprotq (v2di, v2di)
-v8hi __builtin_ia32_vprotw (v8hi, v8hi)
-v16qi __builtin_ia32_vpshab (v16qi, v16qi)
-v4si __builtin_ia32_vpshad (v4si, v4si)
-v2di __builtin_ia32_vpshaq (v2di, v2di)
-v8hi __builtin_ia32_vpshaw (v8hi, v8hi)
-v16qi __builtin_ia32_vpshlb (v16qi, v16qi)
-v4si __builtin_ia32_vpshld (v4si, v4si)
-v2di __builtin_ia32_vpshlq (v2di, v2di)
-v8hi __builtin_ia32_vpshlw (v8hi, v8hi)
+v2df __builtin_ia32_vfrczpd (v2df);
+v4sf __builtin_ia32_vfrczps (v4sf);
+v2df __builtin_ia32_vfrczsd (v2df);
+v4sf __builtin_ia32_vfrczss (v4sf);
+v4df __builtin_ia32_vfrczpd256 (v4df);
+v8sf __builtin_ia32_vfrczps256 (v8sf);
+v2di __builtin_ia32_vpcmov (v2di, v2di, v2di);
+v2di __builtin_ia32_vpcmov_v2di (v2di, v2di, v2di);
+v4si __builtin_ia32_vpcmov_v4si (v4si, v4si, v4si);
+v8hi __builtin_ia32_vpcmov_v8hi (v8hi, v8hi, v8hi);
+v16qi __builtin_ia32_vpcmov_v16qi (v16qi, v16qi, v16qi);
+v2df __builtin_ia32_vpcmov_v2df (v2df, v2df, v2df);
+v4sf __builtin_ia32_vpcmov_v4sf (v4sf, v4sf, v4sf);
+v4di __builtin_ia32_vpcmov_v4di256 (v4di, v4di, v4di);
+v8si __builtin_ia32_vpcmov_v8si256 (v8si, v8si, v8si);
+v16hi __builtin_ia32_vpcmov_v16hi256 (v16hi, v16hi, v16hi);
+v32qi __builtin_ia32_vpcmov_v32qi256 (v32qi, v32qi, v32qi);
+v4df __builtin_ia32_vpcmov_v4df256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vpcmov_v8sf256 (v8sf, v8sf, v8sf);
+v16qi __builtin_ia32_vpcomeqb (v16qi, v16qi);
+v8hi __builtin_ia32_vpcomeqw (v8hi, v8hi);
+v4si __builtin_ia32_vpcomeqd (v4si, v4si);
+v2di __builtin_ia32_vpcomeqq (v2di, v2di);
+v16qi __builtin_ia32_vpcomequb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomequd (v4si, v4si);
+v2di __builtin_ia32_vpcomequq (v2di, v2di);
+v8hi __builtin_ia32_vpcomequw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomeqw (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomfalseb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomfalsed (v4si, v4si);
+v2di __builtin_ia32_vpcomfalseq (v2di, v2di);
+v16qi __builtin_ia32_vpcomfalseub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomfalseud (v4si, v4si);
+v2di __builtin_ia32_vpcomfalseuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomfalseuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomfalsew (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomgeb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomged (v4si, v4si);
+v2di __builtin_ia32_vpcomgeq (v2di, v2di);
+v16qi __builtin_ia32_vpcomgeub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomgeud (v4si, v4si);
+v2di __builtin_ia32_vpcomgeuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomgeuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomgew (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomgtb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomgtd (v4si, v4si);
+v2di __builtin_ia32_vpcomgtq (v2di, v2di);
+v16qi __builtin_ia32_vpcomgtub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomgtud (v4si, v4si);
+v2di __builtin_ia32_vpcomgtuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomgtuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomgtw (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomleb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomled (v4si, v4si);
+v2di __builtin_ia32_vpcomleq (v2di, v2di);
+v16qi __builtin_ia32_vpcomleub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomleud (v4si, v4si);
+v2di __builtin_ia32_vpcomleuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomleuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomlew (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomltb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomltd (v4si, v4si);
+v2di __builtin_ia32_vpcomltq (v2di, v2di);
+v16qi __builtin_ia32_vpcomltub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomltud (v4si, v4si);
+v2di __builtin_ia32_vpcomltuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomltuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomltw (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomneb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomned (v4si, v4si);
+v2di __builtin_ia32_vpcomneq (v2di, v2di);
+v16qi __builtin_ia32_vpcomneub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomneud (v4si, v4si);
+v2di __builtin_ia32_vpcomneuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomneuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomnew (v8hi, v8hi);
+v16qi __builtin_ia32_vpcomtrueb (v16qi, v16qi);
+v4si __builtin_ia32_vpcomtrued (v4si, v4si);
+v2di __builtin_ia32_vpcomtrueq (v2di, v2di);
+v16qi __builtin_ia32_vpcomtrueub (v16qi, v16qi);
+v4si __builtin_ia32_vpcomtrueud (v4si, v4si);
+v2di __builtin_ia32_vpcomtrueuq (v2di, v2di);
+v8hi __builtin_ia32_vpcomtrueuw (v8hi, v8hi);
+v8hi __builtin_ia32_vpcomtruew (v8hi, v8hi);
+v4si __builtin_ia32_vphaddbd (v16qi);
+v2di __builtin_ia32_vphaddbq (v16qi);
+v8hi __builtin_ia32_vphaddbw (v16qi);
+v2di __builtin_ia32_vphadddq (v4si);
+v4si __builtin_ia32_vphaddubd (v16qi);
+v2di __builtin_ia32_vphaddubq (v16qi);
+v8hi __builtin_ia32_vphaddubw (v16qi);
+v2di __builtin_ia32_vphaddudq (v4si);
+v4si __builtin_ia32_vphadduwd (v8hi);
+v2di __builtin_ia32_vphadduwq (v8hi);
+v4si __builtin_ia32_vphaddwd (v8hi);
+v2di __builtin_ia32_vphaddwq (v8hi);
+v8hi __builtin_ia32_vphsubbw (v16qi);
+v2di __builtin_ia32_vphsubdq (v4si);
+v4si __builtin_ia32_vphsubwd (v8hi);
+v4si __builtin_ia32_vpmacsdd (v4si, v4si, v4si);
+v2di __builtin_ia32_vpmacsdqh (v4si, v4si, v2di);
+v2di __builtin_ia32_vpmacsdql (v4si, v4si, v2di);
+v4si __builtin_ia32_vpmacssdd (v4si, v4si, v4si);
+v2di __builtin_ia32_vpmacssdqh (v4si, v4si, v2di);
+v2di __builtin_ia32_vpmacssdql (v4si, v4si, v2di);
+v4si __builtin_ia32_vpmacsswd (v8hi, v8hi, v4si);
+v8hi __builtin_ia32_vpmacssww (v8hi, v8hi, v8hi);
+v4si __builtin_ia32_vpmacswd (v8hi, v8hi, v4si);
+v8hi __builtin_ia32_vpmacsww (v8hi, v8hi, v8hi);
+v4si __builtin_ia32_vpmadcsswd (v8hi, v8hi, v4si);
+v4si __builtin_ia32_vpmadcswd (v8hi, v8hi, v4si);
+v16qi __builtin_ia32_vpperm (v16qi, v16qi, v16qi);
+v16qi __builtin_ia32_vprotb (v16qi, v16qi);
+v4si __builtin_ia32_vprotd (v4si, v4si);
+v2di __builtin_ia32_vprotq (v2di, v2di);
+v8hi __builtin_ia32_vprotw (v8hi, v8hi);
+v16qi __builtin_ia32_vpshab (v16qi, v16qi);
+v4si __builtin_ia32_vpshad (v4si, v4si);
+v2di __builtin_ia32_vpshaq (v2di, v2di);
+v8hi __builtin_ia32_vpshaw (v8hi, v8hi);
+v16qi __builtin_ia32_vpshlb (v16qi, v16qi);
+v4si __builtin_ia32_vpshld (v4si, v4si);
+v2di __builtin_ia32_vpshlq (v2di, v2di);
+v8hi __builtin_ia32_vpshlw (v8hi, v8hi);
 @end smallexample
 
 The following built-in functions are available when @option{-mfma4} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v2df __builtin_ia32_vfmaddpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfmaddps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfmaddsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfmaddss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfmsubpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfmsubps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfmsubsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfmsubss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfnmaddpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfnmaddps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfnmaddsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfnmaddss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfnmsubpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfnmsubps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfnmsubsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfnmsubss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfmaddsubpd  (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfmaddsubps  (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_vfmsubaddpd  (v2df, v2df, v2df)
-v4sf __builtin_ia32_vfmsubaddps  (v4sf, v4sf, v4sf)
-v4df __builtin_ia32_vfmaddpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vfmaddps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_vfmsubpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vfmsubps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_vfnmaddpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vfnmaddps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_vfnmsubpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vfnmsubps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_vfmaddsubpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vfmaddsubps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_vfmsubaddpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_vfmsubaddps256 (v8sf, v8sf, v8sf)
+v2df __builtin_ia32_vfmaddpd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfmaddps (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfmaddsd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfmaddss (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfmsubpd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfmsubps (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfmsubsd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfmsubss (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfnmaddpd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfnmaddps (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfnmaddsd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfnmaddss (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfnmsubpd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfnmsubps (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfnmsubsd (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfnmsubss (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfmaddsubpd  (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfmaddsubps  (v4sf, v4sf, v4sf);
+v2df __builtin_ia32_vfmsubaddpd  (v2df, v2df, v2df);
+v4sf __builtin_ia32_vfmsubaddps  (v4sf, v4sf, v4sf);
+v4df __builtin_ia32_vfmaddpd256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vfmaddps256 (v8sf, v8sf, v8sf);
+v4df __builtin_ia32_vfmsubpd256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vfmsubps256 (v8sf, v8sf, v8sf);
+v4df __builtin_ia32_vfnmaddpd256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vfnmaddps256 (v8sf, v8sf, v8sf);
+v4df __builtin_ia32_vfnmsubpd256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vfnmsubps256 (v8sf, v8sf, v8sf);
+v4df __builtin_ia32_vfmaddsubpd256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vfmaddsubps256 (v8sf, v8sf, v8sf);
+v4df __builtin_ia32_vfmsubaddpd256 (v4df, v4df, v4df);
+v8sf __builtin_ia32_vfmsubaddps256 (v8sf, v8sf, v8sf);
 
 @end smallexample
 
@@ -22993,12 +22986,12 @@ void __builtin_ia32_llwpcb64 (void *);
 void * __builtin_ia32_llwpcb16 (void);
 void * __builtin_ia32_llwpcb32 (void);
 void * __builtin_ia32_llwpcb64 (void);
-void __builtin_ia32_lwpval16 (unsigned short, unsigned int, unsigned short)
-void __builtin_ia32_lwpval32 (unsigned int, unsigned int, unsigned int)
-void __builtin_ia32_lwpval64 (unsigned __int64, unsigned int, unsigned int)
-unsigned char __builtin_ia32_lwpins16 (unsigned short, unsigned int, unsigned short)
-unsigned char __builtin_ia32_lwpins32 (unsigned int, unsigned int, unsigned int)
-unsigned char __builtin_ia32_lwpins64 (unsigned __int64, unsigned int, unsigned int)
+void __builtin_ia32_lwpval16 (unsigned short, unsigned int, unsigned short);
+void __builtin_ia32_lwpval32 (unsigned int, unsigned int, unsigned int);
+void __builtin_ia32_lwpval64 (unsigned __int64, unsigned int, unsigned int);
+unsigned char __builtin_ia32_lwpins16 (unsigned short, unsigned int, unsigned short);
+unsigned char __builtin_ia32_lwpins32 (unsigned int, unsigned int, unsigned int);
+unsigned char __builtin_ia32_lwpins64 (unsigned __int64, unsigned int, unsigned int);
 @end smallexample
 
 The following built-in functions are available when @option{-mbmi} is used.
@@ -23011,12 +23004,12 @@ unsigned long long __builtin_ia32_bextr_u64 (unsigned long long, unsigned long l
 The following built-in functions are available when @option{-mbmi2} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-unsigned int _bzhi_u32 (unsigned int, unsigned int)
-unsigned int _pdep_u32 (unsigned int, unsigned int)
-unsigned int _pext_u32 (unsigned int, unsigned int)
-unsigned long long _bzhi_u64 (unsigned long long, unsigned long long)
-unsigned long long _pdep_u64 (unsigned long long, unsigned long long)
-unsigned long long _pext_u64 (unsigned long long, unsigned long long)
+unsigned int _bzhi_u32 (unsigned int, unsigned int);
+unsigned int _pdep_u32 (unsigned int, unsigned int);
+unsigned int _pext_u32 (unsigned int, unsigned int);
+unsigned long long _bzhi_u64 (unsigned long long, unsigned long long);
+unsigned long long _pdep_u64 (unsigned long long, unsigned long long);
+unsigned long long _pext_u64 (unsigned long long, unsigned long long);
 @end smallexample
 
 The following built-in functions are available when @option{-mlzcnt} is used.
@@ -23030,26 +23023,26 @@ unsigned long long __builtin_ia32_lzcnt_u64 (unsigned long long);
 The following built-in functions are available when @option{-mfxsr} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-void __builtin_ia32_fxsave (void *)
-void __builtin_ia32_fxrstor (void *)
-void __builtin_ia32_fxsave64 (void *)
-void __builtin_ia32_fxrstor64 (void *)
+void __builtin_ia32_fxsave (void *);
+void __builtin_ia32_fxrstor (void *);
+void __builtin_ia32_fxsave64 (void *);
+void __builtin_ia32_fxrstor64 (void *);
 @end smallexample
 
 The following built-in functions are available when @option{-mxsave} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-void __builtin_ia32_xsave (void *, long long)
-void __builtin_ia32_xrstor (void *, long long)
-void __builtin_ia32_xsave64 (void *, long long)
-void __builtin_ia32_xrstor64 (void *, long long)
+void __builtin_ia32_xsave (void *, long long);
+void __builtin_ia32_xrstor (void *, long long);
+void __builtin_ia32_xsave64 (void *, long long);
+void __builtin_ia32_xrstor64 (void *, long long);
 @end smallexample
 
 The following built-in functions are available when @option{-mxsaveopt} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-void __builtin_ia32_xsaveopt (void *, long long)
-void __builtin_ia32_xsaveopt64 (void *, long long)
+void __builtin_ia32_xsaveopt (void *, long long);
+void __builtin_ia32_xsaveopt64 (void *, long long);
 @end smallexample
 
 The following built-in functions are available when @option{-mtbm} is used.
@@ -23066,37 +23059,37 @@ The following built-in functions are available when @option{-m3dnow} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-void __builtin_ia32_femms (void)
-v8qi __builtin_ia32_pavgusb (v8qi, v8qi)
-v2si __builtin_ia32_pf2id (v2sf)
-v2sf __builtin_ia32_pfacc (v2sf, v2sf)
-v2sf __builtin_ia32_pfadd (v2sf, v2sf)
-v2si __builtin_ia32_pfcmpeq (v2sf, v2sf)
-v2si __builtin_ia32_pfcmpge (v2sf, v2sf)
-v2si __builtin_ia32_pfcmpgt (v2sf, v2sf)
-v2sf __builtin_ia32_pfmax (v2sf, v2sf)
-v2sf __builtin_ia32_pfmin (v2sf, v2sf)
-v2sf __builtin_ia32_pfmul (v2sf, v2sf)
-v2sf __builtin_ia32_pfrcp (v2sf)
-v2sf __builtin_ia32_pfrcpit1 (v2sf, v2sf)
-v2sf __builtin_ia32_pfrcpit2 (v2sf, v2sf)
-v2sf __builtin_ia32_pfrsqrt (v2sf)
-v2sf __builtin_ia32_pfsub (v2sf, v2sf)
-v2sf __builtin_ia32_pfsubr (v2sf, v2sf)
-v2sf __builtin_ia32_pi2fd (v2si)
-v4hi __builtin_ia32_pmulhrw (v4hi, v4hi)
+void __builtin_ia32_femms (void);
+v8qi __builtin_ia32_pavgusb (v8qi, v8qi);
+v2si __builtin_ia32_pf2id (v2sf);
+v2sf __builtin_ia32_pfacc (v2sf, v2sf);
+v2sf __builtin_ia32_pfadd (v2sf, v2sf);
+v2si __builtin_ia32_pfcmpeq (v2sf, v2sf);
+v2si __builtin_ia32_pfcmpge (v2sf, v2sf);
+v2si __builtin_ia32_pfcmpgt (v2sf, v2sf);
+v2sf __builtin_ia32_pfmax (v2sf, v2sf);
+v2sf __builtin_ia32_pfmin (v2sf, v2sf);
+v2sf __builtin_ia32_pfmul (v2sf, v2sf);
+v2sf __builtin_ia32_pfrcp (v2sf);
+v2sf __builtin_ia32_pfrcpit1 (v2sf, v2sf);
+v2sf __builtin_ia32_pfrcpit2 (v2sf, v2sf);
+v2sf __builtin_ia32_pfrsqrt (v2sf);
+v2sf __builtin_ia32_pfsub (v2sf, v2sf);
+v2sf __builtin_ia32_pfsubr (v2sf, v2sf);
+v2sf __builtin_ia32_pi2fd (v2si);
+v4hi __builtin_ia32_pmulhrw (v4hi, v4hi);
 @end smallexample
 
 The following built-in functions are available when @option{-m3dnowa} is used.
 All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v2si __builtin_ia32_pf2iw (v2sf)
-v2sf __builtin_ia32_pfnacc (v2sf, v2sf)
-v2sf __builtin_ia32_pfpnacc (v2sf, v2sf)
-v2sf __builtin_ia32_pi2fw (v2si)
-v2sf __builtin_ia32_pswapdsf (v2sf)
-v2si __builtin_ia32_pswapdsi (v2si)
+v2si __builtin_ia32_pf2iw (v2sf);
+v2sf __builtin_ia32_pfnacc (v2sf, v2sf);
+v2sf __builtin_ia32_pfpnacc (v2sf, v2sf);
+v2sf __builtin_ia32_pi2fw (v2si);
+v2sf __builtin_ia32_pswapdsf (v2sf);
+v2si __builtin_ia32_pswapdsi (v2si);
 @end smallexample
 
 The following built-in functions are available when @option{-mrtm} is used
@@ -23105,30 +23098,30 @@ low level functions. Normally the functions in
 @ref{x86 transactional memory intrinsics} should be used instead.
 
 @smallexample
-int __builtin_ia32_xbegin ()
-void __builtin_ia32_xend ()
-void __builtin_ia32_xabort (status)
-int __builtin_ia32_xtest ()
+int __builtin_ia32_xbegin ();
+void __builtin_ia32_xend ();
+void __builtin_ia32_xabort (status);
+int __builtin_ia32_xtest ();
 @end smallexample
 
 The following built-in functions are available when @option{-mmwaitx} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-void __builtin_ia32_monitorx (void *, unsigned int, unsigned int)
-void __builtin_ia32_mwaitx (unsigned int, unsigned int, unsigned int)
+void __builtin_ia32_monitorx (void *, unsigned int, unsigned int);
+void __builtin_ia32_mwaitx (unsigned int, unsigned int, unsigned int);
 @end smallexample
 
 The following built-in functions are available when @option{-mclzero} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-void __builtin_i32_clzero (void *)
+void __builtin_i32_clzero (void *);
 @end smallexample
 
 The following built-in functions are available when @option{-mpku} is used.
 They generate reads and writes to PKRU.
 @smallexample
-void __builtin_ia32_wrpkru (unsigned int)
-unsigned int __builtin_ia32_rdpkru ()
+void __builtin_ia32_wrpkru (unsigned int);
+unsigned int __builtin_ia32_rdpkru ();
 @end smallexample
 
 The following built-in functions are available when
@@ -23140,10 +23133,10 @@ Normally the functions in @ref{x86 control-flow protection intrinsics}
 should be used instead.
 
 @smallexample
-unsigned int __builtin_ia32_rdsspd (void)
-unsigned long long __builtin_ia32_rdsspq (void)
-void __builtin_ia32_incsspd (unsigned int)
-void __builtin_ia32_incsspq (unsigned long long)
+unsigned int __builtin_ia32_rdsspd (void);
+unsigned long long __builtin_ia32_rdsspq (void);
+void __builtin_ia32_incsspd (unsigned int);
+void __builtin_ia32_incsspq (unsigned long long);
 void __builtin_ia32_saveprevssp(void);
 void __builtin_ia32_rstorssp(void *);
 void __builtin_ia32_wrssd(unsigned int, void *);

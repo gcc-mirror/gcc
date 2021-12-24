@@ -1,3 +1,10 @@
+2021-12-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ad8412530.
+	* expr.cc (ExprVisitor::visit (DeleteExp *)): Remove code generation
+	of _d_delstruct.
+	* runtime.def (DELSTRUCT): Remove.
+
 2021-12-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-lang.cc (d_init_options): Set default -fextern-std= to C++17.

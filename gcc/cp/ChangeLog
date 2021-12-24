@@ -1,3 +1,22 @@
+2021-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	* call.c (build_new_method_call): Set
+	BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P on the pruned baselink.
+	* cp-tree.h (BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P): Define.
+	* pt.c (filter_memfn_lookup): New subroutine of tsubst_baselink.
+	(tsubst_baselink): Use filter_memfn_lookup on the new lookup
+	result when BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P is set on the
+	old baselink.  Remove redundant BASELINK_P check.
+	* search.c (build_baselink): Set
+	BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P appropriately.
+
+2021-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	* call.c (build_new_method_call): For a non-dependent call
+	expression inside a template, returning a templated tree
+	whose overload set contains just the selected function.
+	* semantics.c (finish_call_expr): Likewise.
+
 2021-12-19  Matthias Kretz  <m.kretz@gsi.de>
 
 	* module.cc (trees_out::get_merge_kind): NAMESPACE_DECLs also

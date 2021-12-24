@@ -1,3 +1,185 @@
+2021-12-23  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103773
+	* config/i386/i386.md (*mov<mode>_and): New define_insn for
+	writing a zero to memory using AND.
+	(*mov<mode>_or): Extend to allow memory destination and HImode.
+	(*movdi_internal): Remove -Oz push/pop optimization from here.
+	(*movsi_internal): Likewise.
+	(peephole2): Perform -Oz push/pop optimization here, only for
+	register destinations, values other than zero, and in functions
+	that don't used the red zone.
+	(peephole2): With -Oz, convert writes of 0 or -1 to memory into
+	their clobber forms, i.e. *mov<mode>_and and *mov<mode>_or resp.
+
+2021-12-23  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/avx512bf16intrin.h (_mm_cvtsbh_ss): Add new intrinsic.
+	(_mm512_cvtpbh_ps): Likewise.
+	(_mm512_maskz_cvtpbh_ps): Likewise.
+	(_mm512_mask_cvtpbh_ps): Likewise.
+	* config/i386/avx512bf16vlintrin.h (_mm_cvtness_sbh): Likewise.
+	(_mm_cvtpbh_ps): Likewise.
+	(_mm256_cvtpbh_ps): Likewise.
+	(_mm_maskz_cvtpbh_ps): Likewise.
+	(_mm256_maskz_cvtpbh_ps): Likewise.
+	(_mm_mask_cvtpbh_ps): Likewise.
+	(_mm256_mask_cvtpbh_ps): Likewise.
+
+2021-12-23  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/103786
+	* tree.c (verify_type): Fix typo.
+
+2021-12-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103750
+	* config/i386/sse.md
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	New pre_reload define_insn_and_split.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+
+2021-12-22  Murray Steele  <murray.steele@arm.com>
+
+	* config.gcc (arm*-*-*): Add arm-mve-builtins.o to extra_objs.
+	* config/arm/arm-c.c (arm_pragma_arm): Handle "#pragma GCC arm".
+	(arm_register_target_pragmas): Register it.
+	* config/arm/arm-protos.h: (arm_mve::arm_handle_mve_types_h): New
+	prototype.
+	* config/arm/arm_mve_types.h: Replace MVE type definitions with
+	new pragma.
+	* config/arm/t-arm: (arm-mve-builtins.o): New target rule.
+	* config/arm/arm-mve-builtins.cc: New file.
+	* config/arm/arm-mve-builtins.def: New file.
+	* config/arm/arm-mve-builtins.h: New file.
+
+2021-12-22  Murray Steele  <murray.steele@arm.com>
+
+	* config/arm/arm-builtins.c (enum arm_type_qualifiers): Move to
+	arm_builtins.h.
+	(enum arm_simd_type): Move to arm-builtins.h.
+	(struct arm_simd_type_info): Move to arm-builtins.h.
+	* config/arm/arm-builtins.h (enum arm_simd_type): Move from
+	arm-builtins.c.
+	(enum arm_type_qualifiers): Move from arm-builtins.c.
+	(struct arm_simd_type_info): Move from arm-builtins.c.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Unify all function declarations in examples
+	where some miss trailing ';'.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Unify all function declarations in examples
+	where some miss trailing ';'.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Unify all function declarations in examples
+	where some miss trailing ';'.
+
+2021-12-22  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Use uppercase letters for SSEx.
+
+2021-12-21  Jiang Haochen  <haochen.jiang@intel.com>
+
+	* config/i386/bmiintrin.h (_tzcnt_u16): New intrinsic.
+	(_andn_u32): Ditto.
+	(_andn_u64): Ditto.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* tree-ssa-loop-im.c (bb_colder_than_loop_preheader): New
+	function.
+	(get_coldest_out_loop): New function.
+	(determine_max_movement): Use get_coldest_out_loop.
+	(move_computations_worker): Adjust and fix iteration udpate.
+	(class ref_in_loop_hot_body): New functor.
+	(ref_in_loop_hot_body::operator): New.
+	(can_sm_ref_p): Use for_all_locs_in_loop.
+	(fill_coldest_and_hotter_out_loop): New.
+	(tree_ssa_lim_finalize): Free coldest_outermost_loop and
+	hotter_than_inner_loop.
+	(loop_invariant_motion_in_fun): Call fill_coldest_and_hotter_out_loop.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* tree-ssa-loop-split.c (split_loop): Fix incorrect
+	profile_count and probability.
+	(do_split_loop_on_cond): Likewise.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR middle-end/103270
+	* predict.c (predict_extra_loop_exits): Add loop parameter.
+	(predict_loops): Call with loop argument.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vaddu<VI_char>s): Replace
+	UNSPEC_VADDU with us_plus.
+	(altivec_vadds<VI_char>s): Replace UNSPEC_VADDS with ss_plus.
+	(altivec_vsubu<VI_char>s): Replace UNSPEC_VSUBU with us_minus.
+	(altivec_vsubs<VI_char>s): Replace UNSPEC_VSUBS with ss_minus.
+	(altivec_abss_<mode>): Likewise.
+
+2021-12-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103772
+	* config/i386/sse.md (<sse2p4_1>_pinsr<ssemodesuffix>): Add
+	earlyclobber to (x,x,x,i) alternative.
+	(<sse2p4_1>_pinsr<ssemodesuffix> peephole2): Remove.
+	(<sse2p4_1>_pinsr<ssemodesuffix> splitter): Use output
+	operand as a temporary register.  Split after reload_completed.
+
+2021-12-20  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (any_mul_highpart): New code iterator.
+	(sgnprefix, s): Add attribute support for [su]mul_highpart.
+	(<s>mul<mode>3_highpart): Delete expander.
+	(<s>mul<mode>3_highpart, <s>mulsi32_highpart_zext):
+	New define_insn patterns.
+	(define_peephole2): Tweak the register allocation for the above
+	instructions after reload.
+
+2021-12-20  Joel Sherrill  <joel@rtems.org>
+
+	* config.gcc: Obsolete m32c-*-rtems* target.
+
+2021-12-20  Martin Liska  <mliska@suse.cz>
+
+	* opts.c (default_options_optimization): Support -Oz in -Ox option hints.
+
+2021-12-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103669
+	* ipa-modref.c (modref_eaf_analysis::analyze_ssa_name): Add deferred
+	parameter.
+	(modref_eaf_analysis::propagate): Use it.
+
+2021-12-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98468
+	* config/i386/sse.md (*bit_and_float_vector_all_ones): New
+	pre-reload splitter.
+
 2021-12-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/103766

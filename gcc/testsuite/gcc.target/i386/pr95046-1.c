@@ -1,6 +1,6 @@
 /* PR target/95046 */
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O3 -ffast-math -msse2" } */
+/* { dg-options "-O3 -ffast-math -msse2 -mno-recip" } */
 
 
 float r[2], a[2], b[2];
@@ -31,6 +31,15 @@ test_mult (void)
 }
 
 /* { dg-final { scan-assembler "\tv?mulps" } } */
+
+void
+test_div (void)
+{
+  for (int i = 0; i < 2; i++)
+    r[i] = a[i] / b[i];
+}
+
+/* { dg-final { scan-assembler "\tv?divps" } } */
 
 void
 test_min (void)

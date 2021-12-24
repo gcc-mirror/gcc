@@ -5185,6 +5185,12 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
       return false;
     }
 
+  if (expr->ts.type == BT_BOZ)
+    {
+      *msg = "BOZ literal constant";
+      return false;
+    }
+
   if (expr->ts.type == BT_CLASS)
     {
       *msg = "Expression is polymorphic";

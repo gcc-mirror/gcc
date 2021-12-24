@@ -1,3 +1,11 @@
+2021-12-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* configure: Regenerate.
+
+2021-12-21  Martin Liska  <mliska@suse.cz>
+
+	* config.sub: Change mode back to 755.
+
 2021-12-17  Martin Liska  <mliska@suse.cz>
 
 	* config.sub: Sync from master.

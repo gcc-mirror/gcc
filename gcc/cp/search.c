@@ -1091,6 +1091,10 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
   BASELINK_FUNCTIONS (baselink) = functions;
   BASELINK_OPTYPE (baselink) = optype;
 
+  if (binfo == access_binfo
+      && TYPE_BEING_DEFINED (BINFO_TYPE (access_binfo)))
+    BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
+
   return baselink;
 }
 

@@ -1,3 +1,103 @@
+2021-12-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/smuldi3_highpart.c: Replace long with long long.
+
+2021-12-23  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103773
+	* gcc.target/i386/pr103773-2.c: New test case.
+	* gcc.target/i386/pr103773.c: New test case.
+
+2021-12-23  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512bf16-cvtsbh2ss-1.c: New test.
+	* gcc.target/i386/avx512bf16-vcvtpbh2ps-1.c: Ditto.
+	* gcc.target/i386/avx512bf16vl-cvtness2sbh-1.c: Ditto.
+	* gcc.target/i386/avx512bf16vl-vcvtpbh2ps-1.c: Ditto.
+
+2021-12-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-pr103750-1.c: New test.
+	* gcc.target/i386/avx512bw-pr103750-2.c: New test.
+	* gcc.target/i386/avx512f-pr103750-1.c: New test.
+	* gcc.target/i386/avx512f-pr103750-2.c: New test.
+	* gcc.target/i386/avx512fp16-pr103750-1.c: New test.
+	* gcc.target/i386/avx512fp16-pr103750-2.c: New test.
+
+2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103778
+	* gfortran.dg/illegal_boz_arg_3.f90: New test.
+
+2021-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103776
+	* gfortran.dg/select_10.f90: New test.
+
+2021-12-22  Murray Steele  <murray.steele@arm.com>
+
+	* gcc.target/arm/mve/mve.exp: Add new subdirectories.
+	* gcc.target/arm/mve/general-c/type_redef_1.c: New test.
+	* gcc.target/arm/mve/general/double_pragmas_1.c: New test.
+	* gcc.target/arm/mve/general/nomve_1.c: New test.
+
+2021-12-21  Jiang Haochen  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/bmi-1.c: Add test for new intrinsic.
+	* gcc.target/i386/bmi-2.c: Ditto.
+	* gcc.target/i386/bmi-3.c: Ditto.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/recip-3.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-lim-19.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-20.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-21.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-22.c: New test.
+	* gcc.dg/tree-ssa/ssa-lim-23.c: New test.
+
+2021-12-21  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR middle-end/103270
+	* gcc.dg/pr103270.c: New test.
+
+2021-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/lookup/memfn1.C: New test.
+	* g++.dg/template/non-dependent16b.C: New test.
+
+2021-12-20  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.dg/vect/vect-simd-20.c: Fix size of p[]
+	to accommodate the number of strides performed
+	by foo() for s == 78.
+
+2021-12-20  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/smuldi3_highpart.c: New test case.
+
+2021-12-20  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/error2.C: Make the call to foo type-dependent in
+	order to avoid latent pretty-printing issue for FUNCTION_DECL
+	inside MODOP_EXPR.
+	* g++.dg/cpp0x/fntmp-equiv1.C: Make the calls to d, d2 and d3
+	within the function signatures dependent.
+	* g++.dg/template/non-dependent16.C: New test.
+	* g++.dg/template/non-dependent16a.C: New test.
+	* g++.dg/template/non-dependent17.C: New test.
+
+2021-12-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/103669
+	* g++.dg/torture/pr103669.C: New test.
+
+2021-12-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr98468.c: New test.
+
 2021-12-19  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.dg/uninit-pr89230-1.c: Change the dg-bogus messages

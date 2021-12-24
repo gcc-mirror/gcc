@@ -28,6 +28,7 @@
 #include "c-family/c-pragma.h"
 #include "stringpool.h"
 #include "arm-builtins.h"
+#include "arm-protos.h"
 
 tree
 arm_resolve_cde_builtin (location_t loc, tree fndecl, void *arglist)
@@ -127,6 +128,24 @@ arm_resolve_cde_builtin (location_t loc, tree fndecl, void *arglist)
   if (! check_base_type (to_return, pattern_type))
     return build1 (VIEW_CONVERT_EXPR, to_return, call_expr);
   return call_expr;
+}
+
+/* Implement "#pragma GCC arm".  */
+static void
+arm_pragma_arm (cpp_reader *)
+{
+  tree x;
+  if (pragma_lex (&x) != CPP_STRING)
+    {
+      error ("%<#pragma GCC arm%> requires a string parameter");
+      return;
+    }
+
+  const char *name = TREE_STRING_POINTER (x);
+  if (strcmp (name, "arm_mve_types.h") == 0)
+    arm_mve::handle_arm_mve_types_h ();
+  else
+    error ("unknown %<#pragma GCC arm%> option %qs", name);
 }
 
 /* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.  This is currently only
@@ -475,6 +494,8 @@ arm_register_target_pragmas (void)
   /* Update pragma hook to allow parsing #pragma GCC target.  */
   targetm.target_option.pragma_parse = arm_pragma_target_parse;
   targetm.resolve_overloaded_builtin = arm_resolve_overloaded_builtin;
+
+  c_register_pragma ("GCC", "arm", arm_pragma_arm);
 
 #ifdef REGISTER_SUBTARGET_PRAGMAS
   REGISTER_SUBTARGET_PRAGMAS ();

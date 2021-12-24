@@ -575,7 +575,10 @@ split_loop (class loop *loop1)
 					    stmts2);
 	tree cond = build2 (guard_code, boolean_type_node, guard_init, border);
 	if (!initial_true)
-	  cond = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, cond); 
+	  cond = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, cond);
+
+	edge true_edge, false_edge;
+	extract_true_false_edges_from_block (bbs[i], &true_edge, &false_edge);
 
 	/* Now version the loop, placing loop2 after loop1 connecting
 	   them, and fix up SSA form for that.  */
@@ -583,11 +586,11 @@ split_loop (class loop *loop1)
 	basic_block cond_bb;
 
 	class loop *loop2 = loop_version (loop1, cond, &cond_bb,
-					   profile_probability::always (),
-					   profile_probability::always (),
-					   profile_probability::always (),
-					   profile_probability::always (),
-					   true);
+					  true_edge->probability,
+					  true_edge->probability.invert (),
+					  profile_probability::always (),
+					  profile_probability::always (),
+					  true);
 	gcc_assert (loop2);
 
 	edge new_e = connect_loops (loop1, loop2);
@@ -606,6 +609,38 @@ split_loop (class loop *loop1)
 					    stmts);
 	tree guard_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop1));
 	patch_loop_exit (loop1, guard_stmt, guard_next, newend, initial_true);
+
+	update_ssa (TODO_update_ssa);
+
+	/* Proportion first loop's bb counts except those dominated by true
+	   branch to avoid drop 1s down.  */
+	basic_block *bbs1, *bbs2;
+	bbs1 = get_loop_body (loop1);
+	unsigned j;
+	for (j = 0; j < loop1->num_nodes; j++)
+	  if (bbs1[j] == loop1->latch
+	      || !dominated_by_p (CDI_DOMINATORS, bbs1[j], true_edge->dest))
+	    bbs1[j]->count
+	      = bbs1[j]->count.apply_probability (true_edge->probability);
+	free (bbs1);
+
+	/* Fix first loop's exit probability after scaling.  */
+	edge exit_to_latch1 = single_pred_edge (loop1->latch);
+	exit_to_latch1->probability = exit_to_latch1->probability.apply_scale (
+	  true_edge->probability.to_reg_br_prob_base (), REG_BR_PROB_BASE);
+	single_exit (loop1)->probability
+	  = exit_to_latch1->probability.invert ();
+
+	/* Proportion second loop's bb counts except those dominated by false
+	   branch to avoid drop 1s down.  */
+	basic_block bbi_copy = get_bb_copy (false_edge->dest);
+	bbs2 = get_loop_body (loop2);
+	for (j = 0; j < loop2->num_nodes; j++)
+	  if (bbs2[j] == loop2->latch
+	      || !dominated_by_p (CDI_DOMINATORS, bbs2[j], bbi_copy))
+	    bbs2[j]->count = bbs2[j]->count.apply_probability (
+	      true_edge->probability.invert ());
+	free (bbs2);
 
 	/* Finally patch out the two copies of the condition to be always
 	   true/false (or opposite).  */
@@ -1486,8 +1521,8 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
   initialize_original_copy_tables ();
 
   struct loop *loop2 = loop_version (loop1, boolean_true_node, NULL,
-				     profile_probability::always (),
-				     profile_probability::never (),
+				     invar_branch->probability.invert (),
+				     invar_branch->probability,
 				     profile_probability::always (),
 				     profile_probability::always (),
 				     true);
@@ -1534,6 +1569,40 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
      pre-header, we should update PHIs in loop2 to reflect this connection
      between loop1 and loop2.  */
   connect_loop_phis (loop1, loop2, to_loop2);
+
+  update_ssa (TODO_update_ssa);
+
+  edge true_edge, false_edge, skip_edge1, skip_edge2;
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
+
+  /* Proportion first loop's bb counts except those dominated by true
+     branch to avoid drop 1s down.  */
+  skip_edge1 = true_invar ? false_edge : true_edge;
+  skip_edge2 = true_invar ? true_edge : false_edge;
+  basic_block *bbs1, *bbs2;
+  bbs1 = get_loop_body (loop1);
+  unsigned j;
+  for (j = 0; j < loop1->num_nodes; j++)
+    if (bbs1[j] == loop1->latch
+	|| !dominated_by_p (CDI_DOMINATORS, bbs1[j], skip_edge1->dest))
+      bbs1[j]->count
+	= bbs1[j]->count.apply_probability (skip_edge1->probability);
+  free (bbs1);
+
+  /* Fix first loop's exit probability after scaling.  */
+  to_loop1->probability = invar_branch->probability.invert ();
+  to_loop2->probability = invar_branch->probability;
+
+  /* Proportion second loop's bb counts except those dominated by false
+     branch to avoid drop 1s down.  */
+  basic_block bbi_copy = get_bb_copy (skip_edge2->dest);
+  bbs2 = get_loop_body (loop2);
+  for (j = 0; j < loop2->num_nodes; j++)
+    if (bbs2[j] == loop2->latch
+	|| !dominated_by_p (CDI_DOMINATORS, bbs2[j], bbi_copy))
+      bbs2[j]->count
+	= bbs2[j]->count.apply_probability (skip_edge2->probability);
+  free (bbs2);
 
   free_original_copy_tables ();
 

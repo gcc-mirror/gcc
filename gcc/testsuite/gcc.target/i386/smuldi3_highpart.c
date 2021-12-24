@@ -2,7 +2,7 @@
 /* { dg-options "-O2" } */
 typedef int __attribute ((mode(TI))) ti_t;
 
-long foo(long x)
+long long foo(long long x)
 {
   return ((ti_t)x * 19065) >> 72;
 }
