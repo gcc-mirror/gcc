@@ -1,3 +1,30 @@
+2021-12-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/smuldi3_highpart.c: Replace long with long long.
+
+2021-12-23  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103773
+	* gcc.target/i386/pr103773-2.c: New test case.
+	* gcc.target/i386/pr103773.c: New test case.
+
+2021-12-23  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/avx512bf16-cvtsbh2ss-1.c: New test.
+	* gcc.target/i386/avx512bf16-vcvtpbh2ps-1.c: Ditto.
+	* gcc.target/i386/avx512bf16vl-cvtness2sbh-1.c: Ditto.
+	* gcc.target/i386/avx512bf16vl-vcvtpbh2ps-1.c: Ditto.
+
+2021-12-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512bw-pr103750-1.c: New test.
+	* gcc.target/i386/avx512bw-pr103750-2.c: New test.
+	* gcc.target/i386/avx512f-pr103750-1.c: New test.
+	* gcc.target/i386/avx512f-pr103750-2.c: New test.
+	* gcc.target/i386/avx512fp16-pr103750-1.c: New test.
+	* gcc.target/i386/avx512fp16-pr103750-2.c: New test.
+
 2021-12-22  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/103778

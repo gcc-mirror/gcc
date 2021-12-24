@@ -1,3 +1,58 @@
+2021-12-23  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/103773
+	* config/i386/i386.md (*mov<mode>_and): New define_insn for
+	writing a zero to memory using AND.
+	(*mov<mode>_or): Extend to allow memory destination and HImode.
+	(*movdi_internal): Remove -Oz push/pop optimization from here.
+	(*movsi_internal): Likewise.
+	(peephole2): Perform -Oz push/pop optimization here, only for
+	register destinations, values other than zero, and in functions
+	that don't used the red zone.
+	(peephole2): With -Oz, convert writes of 0 or -1 to memory into
+	their clobber forms, i.e. *mov<mode>_and and *mov<mode>_or resp.
+
+2021-12-23  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/avx512bf16intrin.h (_mm_cvtsbh_ss): Add new intrinsic.
+	(_mm512_cvtpbh_ps): Likewise.
+	(_mm512_maskz_cvtpbh_ps): Likewise.
+	(_mm512_mask_cvtpbh_ps): Likewise.
+	* config/i386/avx512bf16vlintrin.h (_mm_cvtness_sbh): Likewise.
+	(_mm_cvtpbh_ps): Likewise.
+	(_mm256_cvtpbh_ps): Likewise.
+	(_mm_maskz_cvtpbh_ps): Likewise.
+	(_mm256_maskz_cvtpbh_ps): Likewise.
+	(_mm_mask_cvtpbh_ps): Likewise.
+	(_mm256_mask_cvtpbh_ps): Likewise.
+
+2021-12-23  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/103786
+	* tree.c (verify_type): Fix typo.
+
+2021-12-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103750
+	* config/i386/sse.md
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	New pre_reload define_insn_and_split.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Ditto.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_cmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI12_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_ucmp<VI48_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+
 2021-12-22  Murray Steele  <murray.steele@arm.com>
 
 	* config.gcc (arm*-*-*): Add arm-mve-builtins.o to extra_objs.
