@@ -68,10 +68,10 @@ TYPE
    KindScope = (noscope, definition, implementation, program, module, procedure) ;
 
    ErrorScope = POINTER TO RECORD
-                         scopeKind: KindScope ;
-                         scopeName: Name ;
+                              scopeKind: KindScope ;
+                              scopeName: Name ;
                               symbol   : CARDINAL ;   (* symbol table entry.  *)
-                      END ;
+                           END ;
 
 
 VAR
@@ -642,6 +642,7 @@ BEGIN
          WITH e^ DO
             IF (FatalStatus=fatal) AND (s#NIL)
             THEN
+               currentScope := scope ;
                CheckIncludes (token, 0) ;
                EmitError (fatal, note, token, AnnounceScope (e, s)) ;
                IF (child#NIL) AND FlushAll (child, FatalStatus)
@@ -656,13 +657,13 @@ BEGIN
          IF NOT Debugging
          THEN
             WITH f^ DO
-               s := KillString(s)
+               s := KillString (s)
             END ;
-            DISPOSE(f)
+            DISPOSE (f)
          END ;
       UNTIL e=NIL
    END ;
-   RETURN( written )
+   RETURN written
 END FlushAll ;
 
 
@@ -678,7 +679,7 @@ BEGIN
       printf0('\nFlushing all errors\n') ;
       printf0('===================\n')
    END ;
-   IF FlushAll(head, TRUE)
+   IF FlushAll (head, TRUE)
    THEN
       ExitOnHalt(1) ;
       HALT
@@ -952,13 +953,13 @@ BEGIN
       INC (scopeIndex) ;
       es := GetIndice (scopeArray, scopeIndex) ;
       IF DebugError
-   THEN
+      THEN
          IF IsPass1 ()
          THEN
             printf3 ("pass 1:  %d  %d  %d\n", scopeIndex, es^.scopeKind, kind)
          ELSE
             printf3 ("pass 2:  %d  %d  %d\n", scopeIndex, es^.scopeKind, kind)
-   END
+         END
       END ;
       Assert (es^.scopeKind = kind)
    END ;
@@ -1037,9 +1038,9 @@ BEGIN
    IF currentScope^.scopeName = NulName
    THEN
       IF DebugError
-   THEN
+      THEN
          printf1 ("seen implementation: %a\n", scopename)
-   END ;
+      END ;
       currentScope^.scopeName := scopename
    END
 END EnterImplementationScope ;
@@ -1057,9 +1058,9 @@ BEGIN
    IF currentScope^.scopeName = NulName
    THEN
       IF DebugError
-   THEN
+      THEN
          printf1 ("seen program: %a\n", scopename)
-   END ;
+      END ;
       currentScope^.scopeName := scopename
    END
 END EnterProgramScope ;
@@ -1079,7 +1080,7 @@ BEGIN
       IF DebugError
       THEN
          printf1 ("seen module: %a\n", scopename)
-   END ;
+      END ;
       currentScope^.scopeName := scopename
    END
 END EnterModuleScope ;
@@ -1097,9 +1098,9 @@ BEGIN
    IF currentScope^.scopeName = NulName
    THEN
       IF DebugError
-   THEN
+      THEN
          printf1 ("seen definition: %a\n", scopename)
-   END ;
+      END ;
       currentScope^.scopeName := scopename
    END
 END EnterDefinitionScope ;
@@ -1117,9 +1118,9 @@ BEGIN
    IF currentScope^.scopeName = NulName
    THEN
       IF DebugError
-   THEN
+      THEN
          printf1 ("seen procedure: %a\n", scopename)
-   END ;
+      END ;
       currentScope^.scopeName := scopename
    END
 END EnterProcedureScope ;
