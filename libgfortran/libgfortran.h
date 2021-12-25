@@ -710,7 +710,7 @@ internal_proto(show_backtrace);
 #define GFC_LARGEST_BUF (sizeof (GFC_INTEGER_LARGEST))
 #endif
 
-#define GFC_ITOA_BUF_SIZE (sizeof (GFC_INTEGER_LARGEST) * 3 + 2)
+#define GFC_ITOA_BUF_SIZE (sizeof (GFC_INTEGER_LARGEST) * 3 + 1)
 #define GFC_XTOA_BUF_SIZE (GFC_LARGEST_BUF * 2 + 1)
 #define GFC_OTOA_BUF_SIZE (GFC_LARGEST_BUF * 3 + 1)
 #define GFC_BTOA_BUF_SIZE (GFC_LARGEST_BUF * 8 + 1)
@@ -737,9 +737,6 @@ internal_proto(estr_writev);
 extern int st_printf (const char *, ...)
   __attribute__((format (gfc_printf, 1, 2)));
 internal_proto(st_printf);
-
-extern const char *gfc_xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
-internal_proto(gfc_xtoa);
 
 extern _Noreturn void os_error (const char *);
 iexport_proto(os_error);
@@ -896,7 +893,7 @@ internal_proto(fc_strdup);
 extern char *fc_strdup_notrim(const char *, gfc_charlen_type);
 internal_proto(fc_strdup_notrim);
 
-extern const char *gfc_itoa(GFC_INTEGER_LARGEST, char *, size_t);
+extern const char *gfc_itoa(GFC_UINTEGER_LARGEST, char *, size_t);
 internal_proto(gfc_itoa);
 
 /* io/intrinsics.c */
